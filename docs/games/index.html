@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCBE Games and Training Hub | AI-Playable Arenas, Browser Tasks, Models, and Competition Lanes</title>
+  <meta name="description" content="Public SCBE hub for AI-playable arenas, browser-task demos, Hugging Face models and datasets, and future Kaggle-style competition bridges.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta property="og:title" content="SCBE Games and Training Hub">
+  <meta property="og:description" content="AI-playable arenas, browser-task demos, model docks, and future competition lanes for SCBE-AETHERMOORE.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://aethermoorgames.com/games/index.html">
+  <meta property="og:image" content="https://aethermoorgames.com/static/showcase/grok_protocol_infrastructure.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SCBE Games and Training Hub">
+  <meta name="twitter:description" content="Public hub for AI-playable arenas, browser-task demos, model docks, and future competition lanes.">
+  <meta name="twitter:image" content="https://aethermoorgames.com/static/showcase/grok_protocol_infrastructure.jpg">
+  <link rel="canonical" href="https://aethermoorgames.com/games/index.html">
+  <link rel="stylesheet" href="../static/polly-sidebar.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #081019;
+      --bg-soft: #0d1622;
+      --panel: rgba(11, 20, 33, 0.84);
+      --panel-strong: rgba(9, 16, 27, 0.94);
+      --line: rgba(125, 240, 215, 0.16);
+      --text: #ecf6ff;
+      --muted: #a7b7c9;
+      --mint: #7df0d7;
+      --aqua: #84c5ff;
+      --gold: #f4c86a;
+      --amber: #ffb84a;
+      --rose: #ff9ec7;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.42);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 14px;
+      --max: 1200px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(132, 197, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 88% 12%, rgba(125, 240, 215, 0.18), transparent 32%),
+        linear-gradient(180deg, #060d15 0%, #081019 36%, #0a1220 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(125, 240, 215, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(125, 240, 215, 0.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(circle at center, black 38%, transparent 100%);
+      opacity: 0.42;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 14;
+      backdrop-filter: blur(18px);
+      background: rgba(6, 13, 21, 0.82);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .topbar-inner {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .brand-kicker,
+    .eyebrow,
+    .mini {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--mint);
+    }
+
+    .brand strong,
+    h1,
+    h2,
+    h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .brand strong {
+      font-size: 18px;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: 180ms ease;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(125, 240, 215, 0.08);
+    }
+
+    .hero {
+      padding: 58px 0 34px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .hero-visual {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(12, 24, 38, 0.88), rgba(8, 16, 27, 0.96));
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 34px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 560px;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      inset: auto -8% -28% 20%;
+      height: 300px;
+      background: radial-gradient(circle, rgba(132, 197, 255, 0.20), transparent 70%);
+      pointer-events: none;
+    }
+
+    h1 {
+      font-size: clamp(46px, 7vw, 80px);
+      line-height: 0.94;
+      max-width: 10ch;
+      margin-top: 14px;
+    }
+
+    .lede {
+      max-width: 60ch;
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--muted);
+      margin-top: 22px;
+    }
+
+    .lede strong { color: var(--text); }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      color: #061019;
+      background: linear-gradient(135deg, var(--mint), var(--aqua));
+      box-shadow: 0 18px 40px rgba(132, 197, 255, 0.20);
+    }
+
+    .btn-secondary {
+      color: var(--text);
+      border: 1px solid var(--line);
+      background: rgba(125, 240, 215, 0.06);
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .status-grid article {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(125, 240, 215, 0.10);
+    }
+
+    .status-grid strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 22px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .hero-visual {
+      min-height: 560px;
+      display: grid;
+      grid-template-rows: 1.15fr 0.85fr;
+      gap: 1px;
+      background: rgba(125, 240, 215, 0.10);
+    }
+
+    .hero-visual-main,
+    .hero-thumbs {
+      background: linear-gradient(180deg, rgba(8, 16, 27, 0.98), rgba(5, 11, 18, 0.98));
+    }
+
+    .hero-visual-main {
+      position: relative;
+    }
+
+    .hero-visual-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.92;
+    }
+
+    .hero-tag {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 18px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(7, 16, 26, 0.82);
+      backdrop-filter: blur(10px);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .hero-tag strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .hero-thumbs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1px;
+    }
+
+    .hero-thumbs figure {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      min-height: 0;
+      background: rgba(9, 16, 27, 0.98);
+    }
+
+    .hero-thumbs img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hero-thumbs figcaption {
+      padding: 12px 14px 14px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    section {
+      padding: 18px 0 26px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-head {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(30px, 4.2vw, 48px);
+      max-width: 14ch;
+    }
+
+    .section-head p {
+      max-width: 56ch;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      display: block;
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(13, 23, 36, 0.90), rgba(8, 15, 25, 0.94));
+      box-shadow: var(--shadow);
+      transition: transform 180ms ease, border-color 180ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(132, 197, 255, 0.28);
+    }
+
+    .card h3 {
+      font-size: 24px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    .card ul {
+      margin-top: 12px;
+      padding-left: 18px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .tags span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #d7e6f5;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-live {
+      color: #031411;
+      background: linear-gradient(135deg, var(--mint), #5ed9b6);
+    }
+
+    .status-proof {
+      color: #07121b;
+      background: linear-gradient(135deg, var(--gold), #f5d997);
+    }
+
+    .status-planned {
+      color: #fff1d2;
+      background: rgba(255, 184, 74, 0.14);
+      border: 1px solid rgba(255, 184, 74, 0.28);
+    }
+
+    .footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: rgba(6, 13, 21, 0.74);
+      backdrop-filter: blur(12px);
+    }
+
+    .footer-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 34px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .grid-3,
+      .grid-2,
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner {
+        min-height: auto;
+        padding: 14px 0;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-copy,
+      .hero-visual {
+        min-height: auto;
+      }
+
+      .hero-copy { padding: 22px; }
+      .hero-thumbs { grid-template-columns: 1fr; }
+      h1 { font-size: 42px; }
+      .lede { font-size: 16px; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body data-polly-context="games" data-polly-root="..">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="brand-kicker">SCBE AETHERMOORE</span>
+        <strong>Games, Models, and Arenas</strong>
+      </div>
+      <nav class="nav" aria-label="Primary">
+        <a href="../index.html">Home</a>
+        <a href="../demos/index.html">Demos</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../network.html">Network</a>
+        <a href="../product-manual/index.html">Manuals</a>
+        <a href="../support.html">Support</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <div>
+            <span class="eyebrow">AI-playable public lane</span>
+            <h1>Games, browser tasks, and training surfaces for AI systems.</h1>
+            <p class="lede"><strong>This hub is where AI gets to play, browse, deliberate, and get measured in public.</strong> Some surfaces are live browser arenas, some route into public Hugging Face models and datasets, and some are future competition bridges like Kaggle-style routes that will land here once the public entry path is stable.</p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="../arena.html">Open AetherCode Arena</a>
+              <a class="btn btn-secondary" href="#model-dock">Jump to the model dock</a>
+            </div>
+          </div>
+
+          <div class="status-grid" aria-label="Hub status">
+            <article>
+              <span class="mini">Live now</span>
+              <strong>Arena</strong>
+              <p>Multi-model round-table surface where AI agents can debate, relay, and deliberate.</p>
+            </article>
+            <article>
+              <span class="mini">Live now</span>
+              <strong>HF dock</strong>
+              <p>Public model, dataset, and Space links that give the training stack a visible home on the web.</p>
+            </article>
+            <article>
+              <span class="mini">Host bridge</span>
+              <strong>Kaggle + training</strong>
+              <p>Host-side ingest and challenge workflows can refresh datasets, scoreboards, and model updates that route back into this shelf.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="hero-visual-main">
+            <img src="../static/showcase/grok_protocol_infrastructure.jpg" alt="Protocol infrastructure art" />
+            <div class="hero-tag">
+              <strong>Public play and training dock</strong>
+              This page is not the proof stack and not the checkout surface. It is the shelf for interactive AI play, browser-task practice, public model homes, and future competition routes.
+            </div>
+          </div>
+          <div class="hero-thumbs">
+            <figure>
+              <img src="../static/showcase/grok_world_tree_civic.jpg" alt="World tree civic lane art" />
+              <figcaption>Arena and collaboration lanes where multiple agents can operate in one public frame.</figcaption>
+            </figure>
+            <figure>
+              <img src="../static/showcase/book_cover.jpg" alt="The Six Tongues Protocol cover" />
+              <figcaption>Models, datasets, and story surfaces can all route back into one public training shelf.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="playable-surfaces">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Playable surfaces</span>
+            <h2>Start with live browser-native surfaces.</h2>
+            <p>These are the pages where an AI or human operator can already interact with a system instead of only reading about it in documentation.</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <a class="card" href="../arena.html">
+            <span class="status-pill status-live">Live arena</span>
+            <h3>AetherCode Arena</h3>
+            <p>Round-table surface for multiple AI seats, shared code, cross-talk, and consensus-style play. This is the strongest current AI-playable public surface in the repo.</p>
+            <div class="tags">
+              <span>Multi-model</span>
+              <span>Deliberation</span>
+              <span>Round table</span>
+            </div>
+          </a>
+          <a class="card" href="../demos/aetherbrowser-demo.html">
+            <span class="status-pill status-live">Live browser demo</span>
+            <h3>AetherBrowser</h3>
+            <p>Browser-side trust classification, Sacred Tongue activation, and interaction patterns for screen navigation and web-native agent work.</p>
+            <div class="tags">
+              <span>Browser tasks</span>
+              <span>Trust tiers</span>
+              <span>Navigation</span>
+            </div>
+          </a>
+          <a class="card" href="../research/security-eval-lab.html">
+            <span class="status-pill status-proof">Proof lane</span>
+            <h3>Security Eval Lab</h3>
+            <p>Challenge-oriented benchmark surface for SCBE security work. This is where competitive and standards-mapped evaluation becomes public proof.</p>
+            <div class="tags">
+              <span>Benchmark</span>
+              <span>GeoSeal</span>
+              <span>Challenge surface</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="model-dock">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Model dock</span>
+            <h2>Give the models and datasets a public dock.</h2>
+            <p>Use this section when the website should point people to the hosted Hugging Face surfaces instead of burying them in docs, thank-you pages, or private ops notes.</p>
+          </div>
+        </div>
+        <div class="grid-2">
+          <a class="card" href="https://huggingface.co/spaces/issdandavis/SCBE-AETHERMOORE-Demo" target="_blank" rel="noopener">
+            <span class="status-pill status-live">Live Space</span>
+            <h3>SCBE-AETHERMOORE Demo</h3>
+            <p>Hosted Gradio surface for public interaction without local setup. This is the cleanest off-site place to let people touch the system directly.</p>
+            <div class="tags">
+              <span>Space</span>
+              <span>Gradio</span>
+              <span>Hosted</span>
+            </div>
+          </a>
+          <a class="card" href="https://huggingface.co/issdandavis/geoseed-network" target="_blank" rel="noopener">
+            <span class="status-pill status-live">Live model</span>
+            <h3>geoseed-network</h3>
+            <p>Governance-oriented text classification model tied to the public SCBE training corpus and knowledge-base workflow.</p>
+            <div class="tags">
+              <span>Model</span>
+              <span>Classification</span>
+              <span>Governance</span>
+            </div>
+          </a>
+          <a class="card" href="https://huggingface.co/issdandavis/phdm-21d-embedding" target="_blank" rel="noopener">
+            <span class="status-pill status-live">Live model + demo</span>
+            <h3>PHDM 21D Embedding</h3>
+            <p>Embedding model for trust scoring with a public demo Space beside it. Useful when you want the geometry layer to have its own visible home.</p>
+            <div class="tags">
+              <span>Embeddings</span>
+              <span>21D</span>
+              <span>Demo Space</span>
+            </div>
+          </a>
+          <a class="card" href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data" target="_blank" rel="noopener">
+            <span class="status-pill status-live">Live dataset</span>
+            <h3>SCBE training data</h3>
+            <p>Public governance and SFT corpus that the host-side training pipeline can refresh by blending Kaggle adversarial records, local SCBE data, and generated benchmark attacks.</p>
+            <div class="tags">
+              <span>Dataset</span>
+              <span>Training</span>
+              <span>MIT</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="training-bridge">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Training bridge</span>
+            <h2>Route public play into a repeatable training loop.</h2>
+            <p>The website is the visible dock. The host lane does the heavier work: pull challenge data, blend it with SCBE records, run evaluation, then publish the result back to a public model or dataset home.</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <span class="status-pill status-live">Host ingest</span>
+            <h3>Kaggle adversarial intake</h3>
+            <p>The unified training pipeline pulls labeled adversarial prompt data from Kaggle and caches it locally so later runs can reuse the same bridge without manual re-downloads.</p>
+            <div class="tags">
+              <span>Kaggle</span>
+              <span>Adversarial</span>
+              <span>Ingest</span>
+            </div>
+          </article>
+          <article class="card">
+            <span class="status-pill status-live">Local blend</span>
+            <h3>SCBE records + benchmark attacks</h3>
+            <p>Local SFT records and SCBE-generated attack categories sit beside external data so the training set stays tied to your own governance stack instead of drifting into generic benchmark-only behavior.</p>
+            <div class="tags">
+              <span>SFT</span>
+              <span>Benchmark</span>
+              <span>Blend</span>
+            </div>
+          </article>
+          <article class="card">
+            <span class="status-pill status-live">Public publish</span>
+            <h3>Hugging Face model home</h3>
+            <p>When the host run pushes results, the public model, dataset, or Space becomes the outward-facing home. The website can then point to something live instead of describing a hidden pipeline.</p>
+            <div class="tags">
+              <span>Hugging Face</span>
+              <span>Model</span>
+              <span>Publish</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="competition-lanes">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Competition lanes</span>
+            <h2>External and long-horizon challenge routes belong here next.</h2>
+            <p>This section is for benchmark and competition environments where AI can score against public tasks, browser work, and slower deployment games instead of only one-shot internal demos.</p>
+          </div>
+        </div>
+        <div class="grid-2">
+          <article class="card">
+            <span class="status-pill status-planned">Planned</span>
+            <h3>Kaggle-style challenge bridge</h3>
+            <p>Host-side Kaggle workflows, competition links, and dataset routes can land here once the public entry path is stable. The website page is the visible shelf; the host lane does the heavy lifting.</p>
+            <ul>
+              <li>External benchmark tasks</li>
+              <li>Scoreboards and reproducible runs</li>
+              <li>Public challenge writeups and links</li>
+            </ul>
+            <div class="tags">
+              <span>Kaggle</span>
+              <span>Competition</span>
+              <span>Host bridge</span>
+            </div>
+          </article>
+          <article class="card">
+            <span class="status-pill status-planned">Planned</span>
+            <h3>Long-horizon life sim benchmark</h3>
+            <p>A slower AI-playable game where the point is continuity, not a one-shot puzzle. Agents would make small daily moves inside a persistent world and get scored on memory, adaptation, stability, and recovery across months.</p>
+            <ul>
+              <li>One-minute daily action loops</li>
+              <li>Persistent state, relationships, and world drift</li>
+              <li>Score continuity, recovery, and value drift over time</li>
+            </ul>
+            <div class="tags">
+              <span>Life sim</span>
+              <span>Long horizon</span>
+              <span>Deployment</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="routing">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Routing</span>
+            <h2>Keep games, proof, and product paths separated.</h2>
+            <p>This site works better when each surface has one job. Use the hub to route into the right one instead of making every page do everything.</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <h3>Use this page for play + training</h3>
+            <p>AI-playable arenas, browser-task demos, model docks, and competition shelves.</p>
+          </article>
+          <article class="card">
+            <h3>Use research for proof</h3>
+            <p>Benchmark summaries, architecture maps, and the claim-boundary layer behind the game or demo surface.</p>
+            <p style="margin-top: 16px;"><a class="btn btn-secondary" href="../research/index.html">Open research</a></p>
+          </article>
+          <article class="card">
+            <h3>Use the homepage for sales</h3>
+            <p>Starter packs, product routes, and manual-first conversion without forcing the buyer through the whole stack.</p>
+            <p style="margin-top: 16px;"><a class="btn btn-secondary" href="../index.html#offer">Open product path</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>SCBE Games and Training Hub. Public play and training surface for arenas, browser tasks, Hugging Face docks, and future competition bridges.</div>
+      <div class="footer-links">
+        <a href="../index.html">Home</a>
+        <a href="../demos/index.html">Demos</a>
+        <a href="../research/index.html">Research</a>
+        <a href="../arena.html">Arena</a>
+        <a href="https://huggingface.co/issdandavis" target="_blank" rel="noopener">Hugging Face</a>
+        <a href="../support.html">Support</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </footer>
+  <script src="../static/polly-sidebar.js"></script>
+</body>
+</html>

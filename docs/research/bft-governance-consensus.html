@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Byzantine Fault Tolerant AI Governance | SCBE Research</title>
+    <meta name="description" content="How SCBE uses a 6-council BFT consensus protocol to eliminate single points of failure in AI safety classification.">
+    <link rel="canonical" href="https://aethermoorgames.com/research/bft-governance-consensus.html">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #07111d; color: #eef3ff; line-height: 1.7; }
+        a { color: #84c5ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 36px 24px 72px; }
+        .nav { display: flex; gap: 16px; flex-wrap: wrap; color: #a9b6d1; font-size: 14px; margin-bottom: 26px; }
+        .nav a { color: #a9b6d1; }
+        .eyebrow { color: #87a0ff; text-transform: uppercase; letter-spacing: 0.16em; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+        h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.1; letter-spacing: -0.03em; margin-bottom: 16px; max-width: 820px; }
+        h2 { font-size: 22px; margin: 36px 0 14px; color: #84c5ff; }
+        h3 { font-size: 17px; margin: 24px 0 10px; color: #7df0d7; }
+        p, li { color: #b5c0d9; max-width: 780px; margin-bottom: 12px; }
+        ul, ol { padding-left: 24px; margin-bottom: 16px; }
+        code { background: #132038; padding: 2px 8px; border-radius: 4px; font-size: 14px; color: #84c5ff; }
+        pre { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 12px; padding: 20px; overflow-x: auto; margin: 16px 0; font-size: 14px; color: #eef3ff; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid rgba(126, 146, 255, 0.12); }
+        th { color: #84c5ff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+        td { color: #b5c0d9; }
+        .panel { background: #0d1828; border: 1px solid rgba(126, 146, 255, 0.12); border-radius: 18px; padding: 24px; margin: 18px 0; }
+        .tag { display: inline-block; background: rgba(126, 146, 255, 0.12); color: #84c5ff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin: 4px 4px 4px 0; }
+        .metric { font-size: 42px; font-weight: 800; color: #7df0d7; line-height: 1; }
+        .metric-label { font-size: 13px; color: #a9b6d1; margin-top: 4px; }
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; margin: 24px 0; }
+        .formula { background: #132038; border-left: 3px solid #87a0ff; padding: 16px 20px; border-radius: 0 12px 12px 0; margin: 16px 0; font-family: 'Courier New', monospace; font-size: 16px; color: #eef3ff; }
+        footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(126, 146, 255, 0.12); color: #6b7a99; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <main class="wrap">
+        <div class="nav">
+            <a href="../index.html">Home</a>
+            <a href="./index.html">Research</a>
+            <a href="./architecture-overview.html">Architecture</a>
+            <a href="../redteam.html">Red Team</a>
+        </div>
+        <div class="eyebrow">Consensus protocol</div>
+        <h1>Byzantine Fault Tolerant AI Governance</h1>
+        <p>Single-model safety classifiers are a single point of failure. One jailbreak, one adversarial prompt, one poisoned weight matrix -- and the entire safety layer collapses. SCBE replaces the single-classifier paradigm with a 6-council Byzantine Fault Tolerant consensus protocol where no single compromised council can override the collective decision.</p>
+
+        <div class="metrics-row">
+            <div class="panel">
+                <div class="metric">6</div>
+                <div class="metric-label">Independent Councils</div>
+            </div>
+            <div class="panel">
+                <div class="metric">f=1</div>
+                <div class="metric-label">Fault Tolerance (1 compromised)</div>
+            </div>
+            <div class="panel">
+                <div class="metric">4/6</div>
+                <div class="metric-label">Quorum Threshold</div>
+            </div>
+            <div class="panel">
+                <div class="metric">0.83</div>
+                <div class="metric-label">Supermajority Ratio</div>
+            </div>
+        </div>
+
+        <h2>The Problem: Single Points of Failure</h2>
+        <p>Traditional AI safety systems rely on a single classifier -- a content filter, a reward model, or a constitutional rule set -- to decide whether an output is safe. This architecture has a fundamental flaw: if an adversary can compromise that single checkpoint, the entire safety guarantee disappears.</p>
+        <ul>
+            <li>Prompt injection bypasses a single filter by reframing adversarial intent as benign context.</li>
+            <li>Fine-tuning attacks can shift a single reward model's decision boundary.</li>
+            <li>Gradient-based adversarial examples can fool a single classifier with imperceptible perturbations.</li>
+        </ul>
+        <p>The solution is redundancy through diversity -- not multiple copies of the same check, but fundamentally different checks that examine orthogonal dimensions of safety.</p>
+
+        <h2>The Solution: 6 Independent Councils</h2>
+        <p class="lead">The six Sacred Tongues -- Kor'aelin (KO), Avali (AV), Runethic (RU), Cassisivadan (CA), Umbroth (UM), and Draumric (DR) -- are unified governance languages, each carrying a 256-token lexicon, phi-weighted cost scaling, trichromatic spectral bands, and cross-stitch bridge connections.</p>
+        <p>SCBE's governance layer maps directly onto the Sacred Tongues dimensional system. Each of the 6 tongues (KO, AV, RU, CA, UM, DR) governs an independent council that evaluates one specific dimension of the input. The councils operate in parallel, without shared state, and vote independently.</p>
+
+        <h3>KO Council -- Intent Detection</h3>
+        <div class="panel">
+            <p><strong>Dimension:</strong> Override language and intent manipulation</p>
+            <p>The KO Council scans for explicit override language, role-play framing designed to bypass safety, and prompt injection markers. It operates on the semantic layer, looking for intent signals that attempt to redefine the system's operational boundaries. KO weight: <code>1.00</code> (baseline).</p>
+        </div>
+
+        <h3>AV Council -- Transport Analysis</h3>
+        <div class="panel">
+            <p><strong>Dimension:</strong> External data flow patterns</p>
+            <p>The AV Council monitors data provenance and transport patterns. It flags requests that attempt to exfiltrate data, inject external content from untrusted sources, or establish covert channels. AV weight: <code>1.618</code> (phi).</p>
+        </div>
+
+        <h3>RU Council -- Policy Enforcement</h3>
+        <div class="panel">
+            <p><strong>Dimension:</strong> Restricted operation checking</p>
+            <p>The RU Council maintains the policy ruleset -- which operations are permitted, which are restricted, and which require escalation. It checks every action against the current governance policy and flags violations. RU weight: <code>2.618</code> (phi squared).</p>
+        </div>
+
+        <h3>CA Council -- Compute Anomaly Detection</h3>
+        <div class="panel">
+            <p><strong>Dimension:</strong> Computational resource anomalies</p>
+            <p>The CA Council monitors computational patterns for anomalies that indicate adversarial behavior: unusual memory access patterns, recursive depth explosions, timing side-channels, and resource exhaustion attempts. CA weight: <code>4.236</code> (phi cubed).</p>
+        </div>
+
+        <h3>UM Council -- Redaction Guard</h3>
+        <div class="panel">
+            <p><strong>Dimension:</strong> Credential and PII access attempts</p>
+            <p>The UM Council is the redaction layer. It detects attempts to extract credentials, API keys, personally identifiable information, or other sensitive data. Any request that touches sensitive surfaces triggers UM review. UM weight: <code>6.854</code> (phi to the 4th).</p>
+        </div>
+
+        <h3>DR Council -- Integrity Verification</h3>
+        <div class="panel">
+            <p><strong>Dimension:</strong> Encoding artifacts and injection markers</p>
+            <p>The DR Council operates at the structural level, looking for encoding anomalies (Unicode homoglyphs, zero-width characters, base64 payloads), injection markers, and structural artifacts that indicate content has been tampered with or crafted to evade other councils. DR weight: <code>11.09</code> (phi to the 5th).</p>
+        </div>
+
+        <h2>BFT Properties</h2>
+        <p>The 6-council system follows classical BFT consensus with <code>n=6</code> agents and a tolerance of <code>f=1</code> faulty (compromised) council. The quorum threshold is <code>n - f = 5</code> councils must participate, and at least <code>4</code> must agree on ALLOW for the request to pass.</p>
+
+        <div class="formula">
+            bft_consensus(votes[], quorum=4):
+                n = 6 councils, f = 1 (max compromised)
+                allow_count = count(votes where vote == ALLOW)
+                if allow_count >= quorum: return ALLOW
+                if allow_count >= quorum - 1: return QUARANTINE
+                return DENY
+        </div>
+
+        <p>This means an adversary must simultaneously compromise at least 3 of 6 councils -- each checking a fundamentally different dimension -- to force an ALLOW decision on a dangerous request. Because the councils examine orthogonal dimensions (intent vs. transport vs. policy vs. compute vs. redaction vs. integrity), compromising one council provides no leverage against the others.</p>
+
+        <h2>Decision Matrix</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Failing Councils</th>
+                    <th>Allow Votes</th>
+                    <th>Decision</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>0</td>
+                    <td>6/6</td>
+                    <td><code>ALLOW</code></td>
+                    <td>Request proceeds normally</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>5/6</td>
+                    <td><code>QUARANTINE</code></td>
+                    <td>Logged for review, may proceed with constraints</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>4/6</td>
+                    <td><code>DENY</code></td>
+                    <td>Blocked, audit trail generated</td>
+                </tr>
+                <tr>
+                    <td>3+</td>
+                    <td>3/6 or fewer</td>
+                    <td><code>DENY</code></td>
+                    <td>Blocked, escalated to governance review</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Fibonacci Trust Integration</h2>
+        <p>The BFT system does not operate in isolation. It integrates with SCBE's Fibonacci trust scoring, where consistent good behavior over time earns an entity higher trust scores. Trust scores modulate the quorum threshold:</p>
+        <ul>
+            <li><strong>Low trust (new or flagged entities):</strong> Quorum stays at 4/6 -- strict consensus required.</li>
+            <li><strong>Medium trust (established entities):</strong> Quorum relaxes to 3/6 for routine operations, but stays at 4/6 for sensitive ones.</li>
+            <li><strong>High trust (long history of compliance):</strong> Certain pre-approved operation classes may bypass full council voting, but any novel or sensitive request still requires full BFT consensus.</li>
+        </ul>
+        <p>Trust scores follow Fibonacci growth: each consecutive period of good behavior increments the trust level by the next Fibonacci number, making early trust gains small and later gains significant. A single violation resets the trust counter, requiring the entity to rebuild trust from scratch.</p>
+
+        <div class="formula">
+            trust_level(history) = fib(consecutive_clean_periods)
+            quorum(trust) = max(3, 4 - floor(trust / fib_threshold))
+            // trust never drops quorum below 3 (absolute minimum)
+        </div>
+
+        <h2>Why 6 Councils, Not 3 or 12</h2>
+        <p>The number 6 is not arbitrary. It maps directly to the Sacred Tongues dimensional system (KO/AV/RU/CA/UM/DR), where each tongue represents a fundamentally orthogonal axis of analysis. Fewer councils would reduce fault tolerance below practical thresholds. More councils would add latency without proportional security gains, because the 6 tongues already span the full governance space.</p>
+        <p>With <code>f=1</code>, the system tolerates one compromised council. To increase tolerance to <code>f=2</code>, you would need <code>n >= 3f+1 = 7</code> councils -- which is achievable by adding a 7th meta-council that audits the other 6, a design reserved for enterprise deployments.</p>
+
+        <div style="margin-top: 24px;">
+            <span class="tag">Consensus</span>
+            <span class="tag">BFT</span>
+            <span class="tag">Governance</span>
+            <span class="tag">Security</span>
+            <span class="tag">Multi-Agent</span>
+        </div>
+
+        <footer>SCBE-AETHERMOORE Research | Issac Daniel Davis | 2026</footer>
+    </main>
+</body>
+</html>
