@@ -1,0 +1,16 @@
+{
+  "dataset_repo": "issdandavis/scbe-aethermoore-training-data",
+  "output_repo": "_staging/training-data-repo",
+  "include_training_data": true,
+  "claude_export_globs": [
+    "C:/Users/issda/Downloads/data-*.zip"
+  ],
+  "draft_roots": [
+    "C:/Users/issda/Dropbox",
+    "C:/Users/issda/Dropbox (Old)",
+    "C:/Users/issda/OneDrive",
+    "C:/Users/issda/Drive"
+  ],
+  "extra_inputs": [],
+  "exclude_globs": []
+}
