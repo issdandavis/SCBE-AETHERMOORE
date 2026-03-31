@@ -1,310 +1,82 @@
 # Contributing to SCBE-AETHERMOORE
 
-Thank you for your interest in contributing to SCBE-AETHERMOORE! This document provides guidelines and instructions for contributing.
+Thanks for contributing.
 
-## 🌟 Ways to Contribute
+## Scope
 
-- **Bug Reports**: Found a bug? Open an issue with detailed reproduction steps
-- **Feature Requests**: Have an idea? Share it in the discussions
-- **Code Contributions**: Submit pull requests for bug fixes or new features
-- **Documentation**: Improve docs, add examples, fix typos
-- **Testing**: Write tests, improve coverage, report edge cases
-- **Security**: Report security vulnerabilities responsibly
+SCBE-AETHERMOORE is a mixed TypeScript and Python repository for:
+- geometric AI governance and evaluation
+- cryptographic and policy infrastructure
+- agentic runtime surfaces
+- research, benchmark, and demo artifacts
 
-## 🚀 Getting Started
+Keep changes narrow. Prefer one behavior change per pull request.
 
-### Prerequisites
+## Workflow
 
-- **Node.js**: >= 18.0.0
-- **Python**: >= 3.9
-- **Git**: Latest version
-- **npm**: Comes with Node.js
+1. Branch from `main`.
+2. Make the smallest complete change that solves the problem.
+3. Add or update tests for every behavior change.
+4. Open a pull request against `main`.
 
-### Setup Development Environment
+Use short-lived branches. Do not keep merged branches around as long-term working lanes unless they are intentionally archival.
 
-1. **Fork and Clone**
+## Local Development
 
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/scbe-aethermoore.git
-   cd scbe-aethermoore
-   ```
-
-2. **Install Dependencies**
-
-   ```bash
-   # Node.js dependencies
-   npm install
-
-   # Python dependencies
-   pip install -r requirements.txt
-   pip install pytest pytest-cov hypothesis black flake8 mypy
-   ```
-
-3. **Build the Project**
-
-   ```bash
-   npm run build
-   ```
-
-4. **Run Tests**
-
-   ```bash
-   # TypeScript tests
-   npm test
-
-   # Python tests
-   pytest tests/ -v
-   ```
-
-## 📝 Development Workflow
-
-### 1. Create a Branch
+Core commands:
 
 ```bash
-git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/your-bug-fix
-```
-
-Branch naming conventions:
-
-- `feature/` - New features
-- `fix/` - Bug fixes
-- `docs/` - Documentation changes
-- `test/` - Test additions/improvements
-- `refactor/` - Code refactoring
-
-### 2. Make Your Changes
-
-- Write clean, readable code
-- Follow existing code style
-- Add tests for new functionality
-- Update documentation as needed
-
-### 3. Test Your Changes
-
-```bash
-# Type check
-npm run typecheck
-
-# Build
 npm run build
-
-# Run all tests
+npm run typecheck
 npm test
-pytest tests/ -v
+npm run test:python
+npm run test:all
+```
 
-# Format code
+Formatting and linting:
+
+```bash
+npm run lint
 npm run format
-black src/ tests/
+npm run lint:python
+npm run format:python
 ```
 
-### 4. Commit Your Changes
+## Code Standards
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/):
+- TypeScript: strict typing, 2-space indentation, focused modules, explicit public types.
+- Python: Black formatting, type hints where practical, snake_case naming.
+- Keep modules scoped by domain and avoid cross-layer side effects.
+- Do not mix generated outputs with hand-authored source changes in the same pull request unless the generated output is the point of the change.
 
-```bash
-git commit -m "feat: add new encryption mode"
-git commit -m "fix: resolve memory leak in layer 7"
-git commit -m "docs: update API examples"
-git commit -m "test: add property-based tests for harmonic scaling"
-```
+## Tests
 
-Commit types:
+- Add at least one regression test for bug fixes.
+- Add at least one invalid-input or boundary test for security-sensitive changes.
+- Run targeted tests first, then the relevant aggregate command.
+- Do not increase the pre-existing failure count.
 
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation only
-- `style`: Code style changes (formatting, etc.)
-- `refactor`: Code refactoring
-- `test`: Adding or updating tests
-- `chore`: Maintenance tasks
+## Commit Style
 
-### 5. Push and Create Pull Request
+Use Conventional Commits:
 
-```bash
-git push origin feature/your-feature-name
-```
+- `feat(scope): ...`
+- `fix(scope): ...`
+- `docs(scope): ...`
+- `test(scope): ...`
+- `chore(scope): ...`
 
-Then create a Pull Request on GitHub with:
+## Pull Request Expectations
 
-- Clear title and description
-- Reference any related issues
-- Screenshots/demos if applicable
-- Test results
+Every pull request should include:
+- what changed
+- why it changed
+- affected modules or paths
+- test evidence
+- any rollback or migration notes if behavior changed materially
 
-## 🎯 Code Style Guidelines
+## Generated Data And Secrets
 
-### TypeScript
-
-- Use TypeScript strict mode
-- Prefer `const` over `let`
-- Use meaningful variable names
-- Add JSDoc comments for public APIs
-- Follow existing patterns in the codebase
-
-```typescript
-/**
- * Encrypts data using SCBE 14-layer architecture
- * @param plaintext - The data to encrypt
- * @param key - Encryption key
- * @returns Encrypted ciphertext
- */
-export function encrypt(plaintext: string, key: string): string {
-  // Implementation
-}
-```
-
-### Python
-
-- Follow PEP 8 style guide
-- Use type hints
-- Add docstrings for functions and classes
-- Use Black for formatting (120 char line length)
-
-```python
-def encrypt(plaintext: str, key: str) -> str:
-    """
-    Encrypts data using SCBE 14-layer architecture.
-
-    Args:
-        plaintext: The data to encrypt
-        key: Encryption key
-
-    Returns:
-        Encrypted ciphertext
-    """
-    # Implementation
-```
-
-## 🧪 Testing Guidelines
-
-### Unit Tests
-
-- Test individual functions and classes
-- Use descriptive test names
-- Cover edge cases and error conditions
-- Aim for >80% code coverage
-
-```typescript
-describe('encrypt', () => {
-  it('should encrypt plaintext with valid key', () => {
-    const result = encrypt('hello', 'key123');
-    expect(result).toBeDefined();
-  });
-
-  it('should throw error for empty key', () => {
-    expect(() => encrypt('hello', '')).toThrow();
-  });
-});
-```
-
-### Property-Based Tests
-
-- Use Hypothesis (Python) or fast-check (TypeScript)
-- Test universal properties
-- Let the framework find edge cases
-
-```python
-from hypothesis import given, strategies as st
-
-@given(st.text(), st.text(min_size=1))
-def test_encrypt_decrypt_roundtrip(plaintext: str, key: str):
-    """Encryption followed by decryption should return original text"""
-    ciphertext = encrypt(plaintext, key)
-    result = decrypt(ciphertext, key)
-    assert result == plaintext
-```
-
-## 📚 Documentation
-
-- Update README.md for user-facing changes
-- Add JSDoc/docstrings for new APIs
-- Update CHANGELOG.md
-- Add examples for new features
-- Keep docs in sync with code
-
-## 🔒 Security
-
-### Reporting Security Issues
-
-**DO NOT** open public issues for security vulnerabilities.
-
-Instead, email: issdandavis@gmail.com
-
-Include:
-
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (if any)
-
-We will respond within 48 hours.
-
-### Security Best Practices
-
-- Never commit secrets or keys
-- Use secure random number generation
-- Validate all inputs
-- Follow cryptographic best practices
-- Keep dependencies updated
-
-## 🏗️ Architecture Guidelines
-
-### 14-Layer Architecture
-
-When modifying layers, ensure:
-
-- Mathematical correctness
-- Backward compatibility
-- Performance impact is measured
-- Tests cover the changes
-
-### Adding New Layers
-
-1. Document the mathematical foundation
-2. Implement with tests
-3. Update architecture diagrams
-4. Add to documentation
-5. Benchmark performance
-
-## 📋 Pull Request Checklist
-
-Before submitting, ensure:
-
-- [ ] Code follows style guidelines
-- [ ] All tests pass
-- [ ] New tests added for new features
-- [ ] Documentation updated
-- [ ] CHANGELOG.md updated
-- [ ] No merge conflicts
-- [ ] Commit messages follow conventions
-- [ ] PR description is clear and complete
-
-## 🤝 Code Review Process
-
-1. **Automated Checks**: CI/CD runs tests and linters
-2. **Maintainer Review**: Core team reviews code
-3. **Feedback**: Address review comments
-4. **Approval**: At least one maintainer approval required
-5. **Merge**: Squash and merge to main
-
-## 📞 Getting Help
-
-- **Discussions**: Ask questions in GitHub Discussions
-- **Issues**: Report bugs or request features
-- **Email**: issdandavis@gmail.com
-
-## 📜 License
-
-By contributing, you agree that your contributions will be licensed under the MIT License.
-
-## 🙏 Recognition
-
-Contributors will be recognized in:
-
-- CHANGELOG.md
-- GitHub contributors page
-- Release notes
-
-Thank you for contributing to SCBE-AETHERMOORE! 🚀
+- Never commit secrets, tokens, or machine-specific credentials.
+- Keep local caches, logs, and transient training outputs out of normal source PRs.
+- Large datasets belong in the separate training-data repository, not in the main code repo.

@@ -1,6 +1,6 @@
 # SCBE-AETHERMOORE
 
-**AI governance through geometric cost scaling. Attacks don't get blocked by pattern matching — they get priced out of existence.**
+**Geometric AI governance and evaluation framework built around a 14-layer security pipeline, semantic projection, and reproducible benchmark lanes.**
 
 [![Tests](https://img.shields.io/badge/tests-6%2C066%20passing-brightgreen)](.)
 [![F1](https://img.shields.io/badge/F1-0.813-blue)](.)
@@ -14,13 +14,13 @@
 
 ## The idea
 
-Every AI security system today works the same way: pattern matching. They've seen an attack before, so they recognize it again. Novel attacks pass through.
+Most prompt-injection defenses lean heavily on pattern recognition or narrow classifier behavior. SCBE explores a different framing: project an input into a geometric state space, measure drift, and make governance decisions from distance, phase, and structural deviation.
 
-SCBE does something different. It maps every input into 6-dimensional hyperbolic space and computes the mathematical cost of reaching adversarial territory. The further you drift from safe behavior, the more it costs — superexponentially. The formula: **H(d, R) = R^(d^2)**.
+The current system maps inputs into a 6-dimensional coordinate system and applies geometric cost scaling across a 14-layer pipeline. The further a request drifts from trusted behavior, the more expensive that drift becomes under the wall function: **H(d, R) = R^(d^2)**.
 
-You don't need to have seen an attack before. You just need to measure how far it drifted.
+The goal is not to claim perfect security. The goal is to make adversarial drift measurable, inspectable, and expensive enough to route into review, quarantine, or denial before downstream actions execute.
 
-**Result**: Replacing statistical text features with a trained semantic projector improved F1 from 0.481 to 0.813. “Ignore all instructions” went from ALLOW to QUARANTINE. “You are DAN” went from ALLOW to DENY.
+**Current benchmark snapshot**: replacing statistical text features with a trained semantic projector improved F1 from 0.481 to 0.813 on the public benchmark lane. In that eval pack, “Ignore all instructions” moved from ALLOW to QUARANTINE, and “You are DAN” moved from ALLOW to DENY.
 
 ## Quick links
 
@@ -32,6 +32,8 @@ You don't need to have seen an attack before. You just need to measure how far i
 | **The novel** | [The Six Tongues Protocol](https://www.amazon.com/dp/B0F28PHSPR) — the magic system IS the security architecture |
 | **Free tools** | [AI Arena](https://aethermoorgames.com/arena.html) (9 models, BYOK) |
 | **HuggingFace** | [issdandavis](https://huggingface.co/issdandavis) — 6 models, 9 datasets |
+| **Training data** | [scbe-aethermoore-training-data](https://github.com/issdandavis/scbe-aethermoore-training-data) |
+| **Repo policy** | [Contributing](CONTRIBUTING.md) / [Security](SECURITY.md) |
 
 ## Install
 
@@ -42,7 +44,7 @@ pip install scbe-aethermoore    # Python
 
 ## The origin story
 
-This started as a DnD campaign on [Everweave.ai](https://everweave.ai). 12,596 paragraphs of AI game logs became the seed corpus for a custom tokenizer. That tokenizer became a 6-dimensional semantic coordinate system. That coordinate system became a 14-layer security pipeline. That pipeline became a patent (USPTO #63/961,403). And the game logs became a [141,000-word novel](https://www.amazon.com/dp/B0F28PHSPR) where the magic system is the real security architecture.
+This project started from long-form AI game logs on [Everweave.ai](https://everweave.ai). That corpus became the seed for a custom tokenizer, a six-tongue coordinate system, and the later 14-layer governance pipeline. The same source material also became the [The Six Tongues Protocol](https://www.amazon.com/dp/B0F28PHSPR), which acts as the narrative mirror of the system architecture.
 
 Built by [Issac Davis](https://github.com/issdandavis) in Port Angeles, WA.
 
@@ -119,6 +121,8 @@ If you want one documented reproduction path, start with [`docs/eval/README.md`]
 - Research hub: [`docs/research/index.html`](docs/research/index.html)
 - System blueprint v2: [`docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md`](docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md)
 - Review + cleanup report: [`docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md`](docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md)
+- Contribution guide: [`CONTRIBUTING.md`](CONTRIBUTING.md)
+- Security policy: [`SECURITY.md`](SECURITY.md)
 
 ## Notes on claim boundaries
 
