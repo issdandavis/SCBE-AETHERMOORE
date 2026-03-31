@@ -1,91 +1,87 @@
 ---
-objective: Convert local training data to 50K+ SFT pairs for Polly chatbot
+objective: Train Polly chatbot with binary-first orientation stack
 status: in_progress
-phase: 5 of 5
+phase: 6 — training pipeline + architecture validation
 started: 2026-03-30T06:30:00-07:00
-updated: 2026-03-31T00:15:00-07:00
+updated: 2026-03-31T01:00:00-07:00
 ---
 
 ## Source Re-anchor
-- Root source map now lives at `docs/map-room/scbe_source_roots.md`.
-- Use that file first when a future session starts drifting on canon, tokenizer, geometry, Sacred Eggs, embedding docs, or federated-training roots.
-- Important correction from this session: the SCBE system is not speculative or "vapor"; the failure mode was partial context reconstruction instead of immediate re-anchoring on the Notion export, docs, and code roots already in the repo.
-- `references/repo-map.md` and `references/runtime-entrypoints.md` are missing in this repo. `scbe_source_roots.md` is acting as the temporary orientation replacement.
+- Root source map: `docs/map-room/scbe_source_roots.md`
+- Binary-first stack spec: `docs/specs/BINARY_FIRST_TRAINING_STACK.md`
+- Pump code: `src/polly_pump/` (packet.py, retriever.py, stabilizer.py)
+- Sacred Tongues SFT: `scripts/sacred_tongues_to_sft.py`
+- Tongue binary analysis: `scripts/tongue_binary_analysis.py`
 
-## Completed
-- Phase plan created
-- Phase 1: 43,725 pairs from root JSONL (consolidated, deduped)
-- Phase 2: 3,922 pairs from 1,190 Notion export files
-- Phase 3: 6,281 pairs from Everweave RPG lore logs
-- Phase 4: 5,000 enriched triplets with tongue + governance tags
-- Phase 4b: 2,612 pairs from Claude conversation export (602 convos)
-- Phase 4c: 4,107 pairs from subdirectory sessions
-- Phase 4d: 796 content articles + 557 kindle + 811 training-data markdown
-- Phase 4e: 1,176 Python docstrings + 2,244 TypeScript docs + 5,504 remaining docs
-- Phase 4f: 7,385 test behavior descriptions + 8 Polly personality/refusal pairs
-- Phase 4g: 177 CI workflows + README + skills
-- Phase 5a: 12,989 pairs from Avalon Codex lore (406 Spiralverse files in Notion export + codebase)
-- Phase 5b: 447 pairs from pasted comprehensive lore (7 codices, novel chapters, master timeline)
-- Phase 5c: 8 lorem ipsum entries cleaned from book_drafts_sft.jsonl
-- Phase 5d: 90 pairs from Shore to King novel (65KB Notion export)
-- GRAND TOTAL: 123,929 SFT pairs (verified, was 96,996 -> 27.8% increase this session)
-- Raw lore saved: training-data/raw/ (28 files, ~3.2MB total)
-- Sacred Tongues dedicated SFT: scripts/sacred_tongues_to_sft.py
-- All pushed to GitLab overnight/2026-03-30
+## Key Discoveries This Session
 
-## In Progress
-- User pasting novel content across multiple sessions (6+ versions so far)
-- Several pastes still in active conversation buffer awaiting transcript flush
-- Content includes: 6 novel versions, Kor'aelin language system, Lexicon Training Codex,
-  character profiles, worldbuilding docs, ChatGPT creative session logs, ChatGPT memory dumps
+### 1. The Pump Architecture
+- **Separation of orientation from expression** is the real shift
+- Pump = inference-time state retrieval + routing + pre-stabilization
+- PumpPacket: tongue profile, null pattern, governance posture, canon, emotion
+- BundleRetriever: cosine similarity on tongue profiles in aquifer
+- Tests: 3 passing (`tests/test_polly_pump.py`)
+- Demonstrated: different inputs produce measurably different orientations
+  - Lore question: `[##__#_]` dominant UM, canon=lore, ALLOW
+  - Adversarial: `[______]` all null, canon=security, DENY
+  - Architecture: `[__#_##]` dominant RU, canon=architecture, ALLOW
 
-## Completed This Session
-- Phase 5a: 12,989 pairs from Avalon Codex lore (previous session)
-- Phase 5b: 447 pairs from initial lore paste (previous session)
-- Phase 5c: 8 lorem ipsum entries cleaned
-- Phase 5d: 90 pairs from Shore to King novel
-- Phase 5e: 1,371 pairs from segmented novel versions (V3, V5, timeline, writing guide)
-- Phase 5f: 273 pairs from Dark Setting V4 novel (192KB)
-- Phase 5g: Multiple novel versions and ChatGPT session logs pasted (in buffer)
-- Raw file cleanup: removed 11 duplicates, segmented into 25 unique files (2.8MB total)
-- Phase 5h: 211 Sacred Tongues SFT pairs (all 6 tongues, tokenizer mechanics, crypto protocol, origin story)
-- GRAND TOTAL: 123,929 SFT pairs (verified count from sft/ directory)
+### 2. Null Space as Vacuum / Pressure Differential
+- Absence patterns are more diagnostic than presence patterns
+- The null tongues are vacuums adjacent to active tongues
+- Pressure differential IS the signal (physics: P = F/A maps to info density / parameters)
+- Train the model to PREDICT null dimensions from active ones = structural generalization
+- "You don't fill a vacuum. You create conditions where surrounding pressure fills it."
 
-## Raw Files in training-data/raw/
-- 25 unique files, 2.8MB total
-- pasted_lore_01-03: Original Avalon Codex + novel chapters (previous session)
-- pasted_lore_04-14: Earlier extractions (language, manuscripts, blueprints)
-- pasted_lore_23: Dark Setting V4 novel (192KB)
-- pasted_lore_30-36: Segmented novel versions (V3 chronicle, V5 variants, continuations)
-- Additional content in active buffer: V5 "Architect of Realms", ChatGPT session, Kor'aelin guide
+### 3. Training Data Layer Distribution (MEASURED)
+```
+L0 substrate:      ~0   (0.0%)  — effectively absent
+L1 coordination:  ~220  (0.1%)  — only sacred_tongues_sft.jsonl
+L2 orientation:     ~0  (0.0%)  — pump exists but no training data
+L3 expression:  ~150K+ (99.9%)  — everything else
+```
+- Current data is 99.9% cortex. Brainstem barely exists.
+- Mega files (42K each) have L1/L2 METADATA but L3 CONTENT = camouflage
+- "Writing the novel in Morse code doesn't teach telegraph engineering"
 
-## Blocked
-- Dropbox sync in progress -- dozens more book drafts waiting
-- GitHub branch protection -- pushing to GitLab instead
-- Some pastes still in conversation buffer (will be captured on next extraction run)
+### 4. Binary-First Stack (L0→L1→L2→L3)
+- Follows brain developmental order: substrate → sensation → orientation → expression
+- Principle: **shared substrate, separate supervision**
+- Same data, multiple training objectives (L0/L1/L2/L3 jobs)
+- Multi-objective loss: L_byte + L_tongue + L_null + L_word + L_policy
+- Sacred Eggs = genesis/birth condition for the AI's identity and lineage
 
-## New This Session: Polly Pump + Binary-First Stack
-- Built `src/polly_pump/` (packet.py, retriever.py, stabilizer.py) -- inference-time orientation layer
-- Pump separates ORIENTATION from EXPRESSION: sense → locate → lift → compose → respond
-- PumpPacket carries: tongue profile, null pattern, governance posture, canon neighborhood, emotional register
-- BundleRetriever scores aquifer bundles by cosine similarity on tongue profiles
-- ResponseStabilizer composes structured pre-state block for model context
-- Tests: 3 passing in `tests/test_polly_pump.py`
+### 5. Brain Development Pressure Mapping
+- REAL: developmental order (substrate → sensorimotor → association → prefrontal)
+- REAL: current AI overweights expression, SCBE tries to restore substrate/routing/salience
+- PARTIAL: PHDM radial zones as control architecture metaphor
+- FORCED: exact brain-region and physical-pressure equivalence (corrected)
+
+## Completed This Session (Continuation)
+- Phase 5h: 211 Sacred Tongues SFT pairs (all 6 tongues)
+- Polly Pump module: `src/polly_pump/` (3 files, 3 tests passing)
 - Binary-First Training Stack spec: `docs/specs/BINARY_FIRST_TRAINING_STACK.md`
-  - L0 bytes → L1 SS1 tokens → L2 pump packet → L3 words
-  - Multi-objective loss: L_byte + L_tongue + L_null + L_word + L_policy
-  - Measured anchor: semantic projector F1 0.481 → 0.813 (existing)
-  - Target ranges: SEG >= 1.5x, OER >= 15%, DDR >= 20%, F1 gain >= 0.05
-- Sacred Tongues SFT: 211 pairs from all 6 tongue lexicons (scripts/sacred_tongues_to_sft.py)
-- GRAND TOTAL: 123,929 SFT pairs
+- Layer distribution audit of all training data
+- Tongue binary analysis script: `scripts/tongue_binary_analysis.py`
+- GRAND TOTAL SFT: 123,929 pairs (sft/ directory) + 42K mega files (overlap)
 
-## Next Actions (for next session)
-- **Priority 1: Stack-lite dataset row generator** -- stamp 124K pairs with pump packets
-- **Priority 2: Three-way benchmark** -- baseline vs stack-lite vs stack-binary on route/governance/QA tasks
-- **Priority 3: Populate real aquifer** -- compute tongue profiles for representative SFT bundles
-- Run extract script after conversation ends to capture buffered content
-- Train Polly chatbot on pump-annotated pairs (Kaggle free GPU)
-- Build multi-turn conversation pairs from Claude export
-- Create DPO preference pairs (good vs bad answers)
-- Push overnight branch to GitHub via PR
-- Merge training data and upload to Kaggle/HuggingFace dataset
+## Active: Training Pipeline
+- Merge training data for Kaggle/HuggingFace upload
+- Train Polly on Kaggle free GPU (Qwen2.5-3B + QLoRA)
+- Test pump packet at inference time
+- Verify Sacred Tongues encoding/decoding in trained model
+- Run adversarial detection with null-space signatures
+
+## Next Actions
+1. **Merge + upload** training data to HuggingFace/Kaggle
+2. **Train baseline** Polly (L3 only, no pump) on Kaggle
+3. **Train stack-lite** Polly (L3 + pump packet in system prompt)
+4. **Compare** baseline vs stack-lite on:
+   - route classification
+   - governance posture accuracy
+   - domain drift
+   - in-domain QA
+   - adversarial prompt handling
+5. **Build L0/L1/L2 curriculum** — separate training tasks for each layer
+6. **Canonical event compiler** — normalize every row into multi-view format
+7. **Sacred Egg genesis wrapper** — seed identity before training begins
