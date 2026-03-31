@@ -228,7 +228,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
         return results
 
     logger.info("Tor: CONNECTED (exit IP redacted)")
-    logger.debug("Tor exit IP: %s", tor_status.get("exit_ip", "?"))
+    logger.debug("Tor exit IP: [REDACTED]")
     print("  Tor: CONNECTED")
     print("  Double-sandbox: Tor SOCKS5 + Governance Gate")
     print()
