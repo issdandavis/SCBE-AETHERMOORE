@@ -1881,14 +1881,14 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
             out = await _cli_dispatch(parts)
             _append_jsonl(
                 IDE_CLI_LOG,
-                {
+                _scrub_obj({
                     "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                     "kind": "cli_job",
                     "job_id": job_id,
                     "command": raw,
                     "status": "completed",
                     "result": out,
-                },
+                }),
             )
             _cli_jobs[job_id] = {
                 "ok": True,
