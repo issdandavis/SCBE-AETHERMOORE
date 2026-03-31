@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE GitHub Control Plane"
+  short_description: "Audit GitHub branches and cleanup state safely"
+  default_prompt: "Use $scbe-github-control-plane to audit branch cleanup, preserve active PR heads, and produce a safe GitHub cleanup plan."
