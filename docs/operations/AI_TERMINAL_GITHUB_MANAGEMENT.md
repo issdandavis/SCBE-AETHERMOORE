@@ -12,23 +12,31 @@ This is the terminal-first workflow for keeping one repo usable while still pres
 
 ## Where To Run It From
 
-Run from the repo root:
+Run from the repo root. The default audit is now the control plane:
 
 ```powershell
 cd C:\Users\issda\SCBE-AETHERMOORE
+python .\scripts\system\github_control_plane.py --repo-root . --sensitive-sha 27db3abe
+```
+
+If you also want the older HYDRA sweep packet, run it after the control-plane audit:
+
+```powershell
 python .\scripts\system\run_github_sweep.py --repo-root . --include-github
 ```
 
 If you are in another shell location, this also works:
 
 ```powershell
-python C:\Users\issda\SCBE-AETHERMOORE\scripts\system\run_github_sweep.py --repo-root C:\Users\issda\SCBE-AETHERMOORE --include-github
+python C:\Users\issda\SCBE-AETHERMOORE\scripts\system\github_control_plane.py --repo-root C:\Users\issda\SCBE-AETHERMOORE --json
 ```
 
 ## What It Writes
 
 Outputs go to:
 
+- `artifacts/github-control/github_control_latest.json`
+- `artifacts/github-control/github_control_latest.md`
 - `artifacts/agent-sweeps/github_sweep_latest.json`
 - `artifacts/agent-sweeps/github_repo_inventory_latest.json` when `--include-github` is used
 - `artifacts/repo-hygiene/latest_report.json` when `repo_hygiene.py` exists in the target repo
@@ -40,22 +48,28 @@ Use this order:
 1. Sweep and classify
 
 ```powershell
+python .\scripts\system\github_control_plane.py --repo-root . --sensitive-sha 27db3abe
+```
+
+2. If you need the older HYDRA packet too, run:
+
+```powershell
 python .\scripts\system\run_github_sweep.py --repo-root . --include-github
 ```
 
-2. If present, run repo hygiene report
+3. If present, run repo hygiene report
 
 ```powershell
 python .\scripts\system\repo_hygiene.py report
 ```
 
-3. Snapshot before pruning
+4. Snapshot before pruning
 
 ```powershell
 python .\scripts\system\repo_hygiene.py snapshot
 ```
 
-4. Only prune safe untracked noise
+5. Only prune safe untracked noise
 
 ```powershell
 python .\scripts\system\repo_hygiene.py clean --apply
@@ -114,6 +128,8 @@ The rule is:
 - classify second
 - assign agent lanes third
 - edit only after ownership is explicit
+
+For branch cleanup, use the control-plane report first and only delete branches from the `safe-delete` bucket after review.
 
 ## HYDRA Roundtable Rules
 
