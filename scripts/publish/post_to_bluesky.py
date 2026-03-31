@@ -172,7 +172,7 @@ def main():
         print(text[:300])
         return
 
-    print(f"Logging in as {handle}...")
+    print(f"Logging in as {handle[:3]}***...")
     token, did = bsky_login(handle, password)
     print(f"Posting ({len(text[:300])} chars)...")
     resp = bsky_post(token, did, text)

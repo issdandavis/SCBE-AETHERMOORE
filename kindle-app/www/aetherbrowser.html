@@ -1491,7 +1491,7 @@ window.AetherBrowser = (function() {
 
       // Check blocked patterns
       for (const pat of TRUST_REGISTRY.BLOCKED_PATTERNS) {
-        const suffix = pat.replace('*', '');
+        const suffix = pat.replaceAll('*', '');
         if (domain.endsWith(suffix) || domain === pat) {
           return { level: 'BLOCKED', tier: 'BLOCKED', domain: domain, color: 'blocked', fill: 0 };
         }
