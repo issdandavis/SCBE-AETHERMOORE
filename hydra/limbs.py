@@ -395,7 +395,11 @@ class APILimb(HydraLimb):
             sensitivity = 0.6
         if "api_key" in str(body).lower() or "token" in str(body).lower():
             sensitivity = 0.8
-        if any(x in url.lower() for x in ["bank", "pay", "transfer"]):
+        # Use parsed hostname for financial-keyword checks to avoid
+        # false positives from path/query components (e.g. /riverbank/).
+        from urllib.parse import urlparse
+        _host = (urlparse(url).hostname or "").lower()
+        if any(x in _host for x in ["bank", "pay", "transfer"]):
             sensitivity = 0.95
 
         # Check governance

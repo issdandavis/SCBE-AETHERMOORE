@@ -283,15 +283,31 @@ TRUSTED_DOMAINS = {
 }
 
 
+def _domain_matches(hostname: str, reference: str) -> bool:
+    """Return True if *hostname* is exactly *reference* or a subdomain of it.
+
+    This avoids the incomplete-URL-substring-sanitization pitfall where
+    ``"github.com" in "evil-github.com"`` would incorrectly return True.
+    """
+    return hostname == reference or hostname.endswith("." + reference)
+
+
 def check_domain_safety(url: str) -> tuple[str, float]:
-    """Quick domain check. Returns (decision, risk_score)."""
+    """Quick domain check. Returns (decision, risk_score).
+
+    Uses proper URL parsing (``urlparse``) and exact-or-subdomain matching
+    rather than substring checks to prevent bypasses such as
+    ``evil-github.com`` matching ``github.com``.
+    """
     from urllib.parse import urlparse
 
-    domain = urlparse(url).netloc.lower()
+    parsed = urlparse(url)
+    # urlparse.hostname strips port and lowercases; netloc may contain port
+    hostname = (parsed.hostname or "").lower()
 
-    if any(blocked in domain for blocked in BLOCKED_DOMAINS):
+    if any(_domain_matches(hostname, blocked) for blocked in BLOCKED_DOMAINS):
         return "DENY", 1.0
-    if any(trusted in domain for trusted in TRUSTED_DOMAINS):
+    if any(_domain_matches(hostname, trusted) for trusted in TRUSTED_DOMAINS):
         return "ALLOW", 0.0
     # Unknown domain — quarantine for review
     return "QUARANTINE", 0.5
