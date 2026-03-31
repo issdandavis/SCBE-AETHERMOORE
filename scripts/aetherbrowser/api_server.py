@@ -1900,7 +1900,7 @@ async def cli_job(req: CliRunRequest = CliRunRequest()):
                 "result": out,
             }
         except Exception:
-            logger.exception("CLI job failed for command: %s", raw)
+            logger.exception("CLI job failed for command: %s", raw[:40] + "..." if len(raw) > 40 else raw)
             _append_jsonl(
                 IDE_CLI_LOG,
                 {
