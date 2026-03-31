@@ -58,3 +58,44 @@ def test_stage_dataset_repo_copies_small_jsonl_preserving_tree(tmp_path: Path) -
     copied = output_root / copied_rel
     assert copied.exists()
     assert copied.read_text(encoding="utf-8") == source.read_text(encoding="utf-8")
+
+
+def test_stage_dataset_repo_routes_generated_inputs_to_generated_namespace(tmp_path: Path) -> None:
+    generated = tmp_path / "_staging" / "training-data-build" / "generated"
+    generated.mkdir(parents=True)
+    source = generated / "claude_export_lore_01.jsonl"
+    source.write_text('{"prompt":"a","response":"b"}\n', encoding="utf-8")
+
+    output_root = tmp_path / "staged"
+    manifest = shard.stage_dataset_repo(inputs=[str(source)], output_root=output_root, max_bytes=1024)
+
+    file_record = manifest["files"][0]
+    assert file_record["source_path"].endswith("_staging/training-data-build/generated/claude_export_lore_01.jsonl")
+    copied_rel = file_record["outputs"][0]["path"]
+    assert copied_rel == "data/generated/claude_export_lore_01.jsonl"
+    copied = output_root / copied_rel
+    assert copied.exists()
+    assert copied.read_text(encoding="utf-8") == source.read_text(encoding="utf-8")
+
+
+def test_stage_dataset_repo_excludes_matching_globs_and_skips_empty_files(tmp_path: Path) -> None:
+    input_dir = tmp_path / "training-data" / "sft"
+    input_dir.mkdir(parents=True)
+    keep = input_dir / "keep.jsonl"
+    keep.write_text('{"prompt":"a","response":"b"}\n', encoding="utf-8")
+    empty = input_dir / "empty.jsonl"
+    empty.write_text("", encoding="utf-8")
+    excluded = input_dir / "book_drafts_sft.jsonl"
+    excluded.write_text('{"prompt":"bad","response":"bad"}\n', encoding="utf-8")
+
+    output_root = tmp_path / "staged"
+    manifest = shard.stage_dataset_repo(
+        inputs=[str(tmp_path / "training-data")],
+        output_root=output_root,
+        max_bytes=1024,
+        exclude_globs=["training-data/sft/book_drafts_sft.jsonl"],
+    )
+
+    assert manifest["counts"]["source_files"] == 1
+    assert manifest["counts"]["rows"] == 1
+    assert manifest["files"][0]["source_path"].endswith("training-data/sft/keep.jsonl")

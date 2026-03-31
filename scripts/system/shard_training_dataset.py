@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import hashlib
 import json
 import shutil
@@ -25,7 +26,18 @@ class OutputShard:
     sha256: str
 
 
-def discover_jsonl_files(inputs: Iterable[str], output_root: Path) -> list[Path]:
+def should_exclude(path: Path, exclude_globs: Iterable[str]) -> bool:
+    normalized = str(repo_relative(path)).replace("\\", "/")
+    for pattern in exclude_globs:
+        normalized_pattern = pattern.replace("\\", "/")
+        if fnmatch.fnmatch(normalized, normalized_pattern) or fnmatch.fnmatch(path.name, normalized_pattern):
+            return True
+        if "/" in normalized_pattern and normalized.endswith(normalized_pattern):
+            return True
+    return False
+
+
+def discover_jsonl_files(inputs: Iterable[str], output_root: Path, exclude_globs: Iterable[str] = ()) -> list[Path]:
     files: list[Path] = []
     seen: set[Path] = set()
     for raw in inputs:
@@ -40,6 +52,8 @@ def discover_jsonl_files(inputs: Iterable[str], output_root: Path) -> list[Path]
             if candidate.is_dir() or candidate.suffix.lower() != ".jsonl":
                 continue
             if output_root in candidate.parents:
+                continue
+            if should_exclude(candidate, exclude_globs):
                 continue
             if candidate not in seen:
                 seen.add(candidate)
@@ -69,6 +83,15 @@ def repo_relative(path: Path) -> Path:
         return path.relative_to(REPO_ROOT)
     except ValueError:
         return Path(path.name)
+
+
+def dataset_relative(path: Path) -> Path:
+    rel_path = repo_relative(path)
+    if not rel_path.parts:
+        return rel_path
+    if rel_path.parts[0] == "training-data":
+        return rel_path
+    return Path("generated") / Path(path.name)
 
 
 def destination_stem(source: Path, rel_path: Path) -> Path:
@@ -168,9 +191,15 @@ def build_readme(manifest: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def stage_dataset_repo(inputs: Iterable[str], output_root: Path, max_bytes: int, dataset_repo: str | None = None) -> dict:
+def stage_dataset_repo(
+    inputs: Iterable[str],
+    output_root: Path,
+    max_bytes: int,
+    dataset_repo: str | None = None,
+    exclude_globs: Iterable[str] = (),
+) -> dict:
     output_root.mkdir(parents=True, exist_ok=True)
-    files = discover_jsonl_files(inputs, output_root)
+    files = discover_jsonl_files(inputs, output_root, exclude_globs=exclude_globs)
     if not files:
         raise ValueError("No JSONL files found for staging")
 
@@ -179,9 +208,12 @@ def stage_dataset_repo(inputs: Iterable[str], output_root: Path, max_bytes: int,
     total_rows = 0
 
     for source in files:
-        rel_path = repo_relative(source)
+        source_rel_path = repo_relative(source)
+        rel_path = dataset_relative(source)
         source_rows = count_rows(source)
         source_bytes = source.stat().st_size
+        if source_rows == 0:
+            continue
         dest_rel_path = Path("data") / rel_path
 
         if source_bytes <= max_bytes:
@@ -196,7 +228,7 @@ def stage_dataset_repo(inputs: Iterable[str], output_root: Path, max_bytes: int,
         total_rows += source_rows
         records.append(
             {
-                "source_path": str(rel_path).replace("\\", "/"),
+                "source_path": str(source_rel_path).replace("\\", "/"),
                 "source_bytes": source_bytes,
                 "source_rows": source_rows,
                 "mode": mode,
@@ -209,8 +241,9 @@ def stage_dataset_repo(inputs: Iterable[str], output_root: Path, max_bytes: int,
         "dataset_repo": dataset_repo,
         "max_bytes": max_bytes,
         "inputs": [str(Path(item)) for item in inputs],
+        "exclude_globs": list(exclude_globs),
         "counts": {
-            "source_files": len(files),
+            "source_files": len(records),
             "output_files": total_output_files,
             "rows": total_rows,
         },
@@ -230,6 +263,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Output staging repo root")
     parser.add_argument("--max-bytes", type=int, default=DEFAULT_MAX_BYTES, help="Maximum bytes per output file")
     parser.add_argument("--dataset-repo", default=None, help="Optional target repo name for README and manifest")
+    parser.add_argument("--exclude-glob", action="append", default=[], help="Glob for JSONL paths to skip")
     return parser.parse_args()
 
 
@@ -243,6 +277,7 @@ def main() -> int:
         output_root=output_root,
         max_bytes=args.max_bytes,
         dataset_repo=args.dataset_repo,
+        exclude_globs=args.exclude_glob,
     )
     print(f"Staged {manifest['counts']['source_files']} source files into {manifest['counts']['output_files']} output files")
     print(f"Manifest: {output_root / DEFAULT_MANIFEST}")

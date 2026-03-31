@@ -50,6 +50,32 @@ scbe-aethermoore-training-data/
 3. Commit the staged repo there, not in the code repo.
 4. Keep the code repo pointed at the manifest and the generation scripts.
 
+## One-Step Build Flow
+
+Use this when you want to turn export bundles and draft roots into staged dataset shards in one pass.
+
+```powershell
+python scripts/system/publish_training_dataset_repo.py `
+  --include-training-data `
+  --claude-export-zip "C:\Users\issda\Downloads\data-2026-03-30-13-50-27-batch-0000.zip" `
+  --draft-root "C:\Users\issda\Dropbox" `
+  --exclude-glob "training-data/sft/book_drafts_sft.jsonl" `
+  --exclude-glob "training-data/sft/avalon_codex_lore_sft.jsonl" `
+  --output-repo _staging/training-data-repo `
+  --dataset-repo issdandavis/scbe-aethermoore-training-data
+```
+
+Use `--exclude-glob` for noisy or quarantined corpora that should stay local until reviewed. Empty JSONL files are skipped automatically.
+
+This will:
+
+- convert Claude project lore exports into JSONL
+- convert longform `.md`, `.txt`, `.html`, `.docx`, `.rtf`, and `.odt` draft roots into JSONL
+- restage the dataset repo with GitHub-safe shards
+- write a build summary under `_staging/training-data-build/`
+
+Add `--git-commit` and `--git-push` when you want the staged dataset repo updated in place.
+
 ## Current Large-File Pressure
 
 The worst current offenders are generated corpus files such as:
