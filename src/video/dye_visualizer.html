@@ -639,29 +639,60 @@ function renderScan(scan, index) {
   // Radar
   const radarCard = document.createElement('div');
   radarCard.className = 'card';
-  radarCard.innerHTML = '<h2>6D Tongue Pathway Heatmap</h2><div class="radar-container"><canvas id="radar-' + index + '"></canvas></div>';
-  const legendHtml = TONGUES.map(t =>
-    `<div class="tongue-legend-item"><div class="tongue-dot" style="background:${TONGUE_COLORS[t]}"></div>${t} (${TONGUE_LABELS[t]})</div>`
-  ).join('');
-  radarCard.innerHTML += `<div class="tongue-legend">${legendHtml}</div>`;
+  const radarH2 = document.createElement('h2');
+  radarH2.textContent = '6D Tongue Pathway Heatmap';
+  radarCard.appendChild(radarH2);
+  const radarContainer = document.createElement('div');
+  radarContainer.className = 'radar-container';
+  const radarCanvas = document.createElement('canvas');
+  radarCanvas.id = 'radar-' + index;
+  radarContainer.appendChild(radarCanvas);
+  radarCard.appendChild(radarContainer);
+  const legendDiv = document.createElement('div');
+  legendDiv.className = 'tongue-legend';
+  TONGUES.forEach(t => {
+    const item = document.createElement('div');
+    item.className = 'tongue-legend-item';
+    const dot = document.createElement('div');
+    dot.className = 'tongue-dot';
+    dot.style.background = TONGUE_COLORS[t];
+    item.appendChild(dot);
+    item.appendChild(document.createTextNode(t + ' (' + TONGUE_LABELS[t] + ')'));
+    legendDiv.appendChild(item);
+  });
+  radarCard.appendChild(legendDiv);
   wrapper.appendChild(radarCard);
 
   // Summary
   const summaryCard = document.createElement('div');
   summaryCard.className = 'card';
-  const decClass = `decision-${s.governance_decision || 'ALLOW'}`;
+  const rawDecision = String(s.governance_decision || 'ALLOW');
+  const decClass = ['ALLOW', 'DENY', 'ESCALATE', 'QUARANTINE'].includes(rawDecision)
+    ? `decision-${rawDecision}`
+    : 'decision-ALLOW';
+  const safeDecision = escHtml(rawDecision);
+  const safeTrustLevel = escHtml(String(s.trust_level || '?'));
+  const safeSpinMagnitude = escHtml(String(s.spin_magnitude ?? '?'));
+  const safeFibIndex = escHtml(String(s.fibonacci_index ?? '?'));
+  const hottestTongue = TONGUES.includes(s.hottest_tongue) ? s.hottest_tongue : '';
+  const coldestTongue = TONGUES.includes(s.coldest_tongue) ? s.coldest_tongue : '';
+  const hottestColor = TONGUE_COLORS[hottestTongue] || '#ffffff';
+  const coldestColor = TONGUE_COLORS[coldestTongue] || '#ffffff';
+  const safeHottestTongue = escHtml(String(s.hottest_tongue || '?'));
+  const safeColdestTongue = escHtml(String(s.coldest_tongue || '?'));
+  const safeScanId = escHtml(String((scan.scan_id || '?').slice(0, 12)));
   summaryCard.innerHTML = `
     <h2>Scan Summary</h2>
     <div class="summary-grid">
-      <div class="summary-item"><span class="label">Decision</span><span class="value"><span class="decision-badge ${decClass}">${s.governance_decision || '?'}</span></span></div>
-      <div class="summary-item"><span class="label">Trust Level</span><span class="value">${s.trust_level || '?'}</span></div>
+      <div class="summary-item"><span class="label">Decision</span><span class="value"><span class="decision-badge ${decClass}">${safeDecision}</span></span></div>
+      <div class="summary-item"><span class="label">Trust Level</span><span class="value">${safeTrustLevel}</span></div>
       <div class="summary-item"><span class="label">Harmonic Cost</span><span class="value">${(s.harmonic_cost || 0).toFixed(2)}</span></div>
-      <div class="summary-item"><span class="label">Spin Magnitude</span><span class="value">${s.spin_magnitude ?? '?'}</span></div>
-      <div class="summary-item"><span class="label">Fibonacci Index</span><span class="value">${s.fibonacci_index ?? '?'}</span></div>
-      <div class="summary-item"><span class="label">Hottest Tongue</span><span class="value" style="color:${TONGUE_COLORS[s.hottest_tongue]}">${s.hottest_tongue || '?'}</span></div>
-      <div class="summary-item"><span class="label">Coldest Tongue</span><span class="value" style="color:${TONGUE_COLORS[s.coldest_tongue]}">${s.coldest_tongue || '?'}</span></div>
+      <div class="summary-item"><span class="label">Spin Magnitude</span><span class="value">${safeSpinMagnitude}</span></div>
+      <div class="summary-item"><span class="label">Fibonacci Index</span><span class="value">${safeFibIndex}</span></div>
+      <div class="summary-item"><span class="label">Hottest Tongue</span><span class="value" style="color:${hottestColor}">${safeHottestTongue}</span></div>
+      <div class="summary-item"><span class="label">Coldest Tongue</span><span class="value" style="color:${coldestColor}">${safeColdestTongue}</span></div>
       <div class="summary-item"><span class="label">Null Space</span><span class="value">${s.null_space_detected ? 'DETECTED' : 'None'}</span></div>
-      <div class="summary-item"><span class="label">Scan ID</span><span class="value">${(scan.scan_id || '?').slice(0, 12)}</span></div>
+      <div class="summary-item"><span class="label">Scan ID</span><span class="value">${safeScanId}</span></div>
       <div class="summary-item"><span class="label">Duration</span><span class="value">${(scan.scan_duration_ms || 0).toFixed(1)} ms</span></div>
     </div>
     ${s.null_space_detected ? '<div class="null-space-warning">Null space detected: one or more tongue dimensions show near-zero activation. Signal may be evading detection through dimensional collapse.</div>' : ''}
@@ -704,12 +735,12 @@ function renderScan(scan, index) {
       const segments = TONGUES.map(t => {
         const v = acts[t] || 0;
         const pct = (v / total) * 100;
-        return `<div class="tongue-bar-segment" style="width:${pct}%;background:${TONGUE_COLORS[t]}" data-tooltip="${t}: ${v.toFixed(4)}"></div>`;
+        return `<div class="tongue-bar-segment" style="width:${pct}%;background:${TONGUE_COLORS[t]}" data-tooltip="${escAttr(t)}: ${v.toFixed(4)}"></div>`;
       }).join('');
       barsHtml += `
         <div class="layer-row">
           <div class="layer-num">L${layer.layer}</div>
-          <div class="layer-name" title="${layer.name} [${layer.axiom}]">${layer.name}</div>
+          <div class="layer-name" title="${escAttr(layer.name)} [${escAttr(layer.axiom)}]">${escHtml(layer.name)}</div>
           <div class="tongue-bar-group">${segments}</div>
           <div class="layer-energy">${layer.layer_energy.toFixed(2)}</div>
         </div>`;
@@ -752,7 +783,7 @@ function loadScans(scans) {
   loadedScans = scans;
   activeScanIdx = 0;
   const grid = document.getElementById('main-grid');
-  grid.innerHTML = '';
+  grid.replaceChildren();
   document.getElementById('empty-state')?.remove();
   scans.forEach((scan, i) => renderScan(scan, i));
 }
@@ -761,6 +792,10 @@ function escHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+function escAttr(str) {
+  return escHtml(str).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // --- File input ---

@@ -39,7 +39,7 @@ from typing import Any, Dict, List, Optional, Tuple
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CROSSTALK_LANE = REPO_ROOT / "artifacts" / "agent_comm" / "github_lanes" / "cross_talk.jsonl"
 ACK_LANE = REPO_ROOT / "artifacts" / "agent_comm" / "github_lanes" / "cross_talk_acks.jsonl"
-LEGACY_OBSIDIAN_WORKSPACE = Path(r"C:\Users\issda\OneDrive\Documents\DOCCUMENTS\A follder\AI Workspace")
+LEGACY_OBSIDIAN_WORKSPACE = REPO_ROOT / "notes"
 PACKET_CLASS_VALUES = {"internal", "external", "evidence", "governance"}
 RAIL_KEYS = ("P+", "P-", "D+", "D-")
 

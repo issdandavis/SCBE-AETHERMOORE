@@ -32,13 +32,13 @@ import os
 import time
 from typing import Dict, List, Optional, Tuple
 
-from src.symphonic_cipher.scbe_aethermoore.cli_toolkit import (
+from .cli_toolkit import (
     project_to_sphere,
     project_to_cube,
     healpix_id,
     morton_id,
 )
-from src.symphonic_cipher.scbe_aethermoore.sacred_egg_integrator import (
+from .sacred_egg_integrator import (
     SacredEgg,
     SacredEggIntegrator,
     HatchResult,
