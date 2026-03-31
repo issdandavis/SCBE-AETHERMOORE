@@ -11,13 +11,11 @@ from symphonic_cipher.scbe_aethermoore.energy_budget import (
     EnergyLedger,
     EnergyPhase,
     FleetEnergyManager,
-    PHASE_THRESHOLDS,
     TONGUE_WEIGHTS,
     harmonic_cost,
 )
 from symphonic_cipher.scbe_aethermoore.flock_shepherd import (
     Flock,
-    SheepRole,
     SheepState,
     TrainingTrack,
 )

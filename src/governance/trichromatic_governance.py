@@ -133,15 +133,9 @@ class TrichromaticGovernanceEngine:
             for j in range(i + 1, len(tongue_triplets)):
                 right = tongue_triplets[j]
                 phi_bridge = PHI ** abs(i - j)
-                ir_bridge = abs(
-                    left.color.ir * right.color.visible + right.color.ir * left.color.visible
-                ) * phi_bridge
-                vis_bridge = abs(
-                    left.color.visible * right.color.uv + right.color.visible * left.color.uv
-                ) * phi_bridge
-                uv_bridge = abs(
-                    left.color.uv * right.color.ir + right.color.uv * left.color.ir
-                ) * phi_bridge
+                ir_bridge = abs(left.color.ir * right.color.visible + right.color.ir * left.color.visible) * phi_bridge
+                vis_bridge = abs(left.color.visible * right.color.uv + right.color.visible * left.color.uv) * phi_bridge
+                uv_bridge = abs(left.color.uv * right.color.ir + right.color.uv * left.color.ir) * phi_bridge
                 max_bridge = PHI**5
                 bridges[f"{left.tongue}-{right.tongue}"] = (
                     round(min(1.0, ir_bridge / max_bridge), 4),
@@ -314,32 +308,18 @@ class TrichromaticGovernanceEngine:
         cost_harmonic = abs(math.sin(cost * PHI))
         adjacent_idx = (tongue_idx + 1) % len(self._tongues)
         interference = visible_coord * float(coords_all[adjacent_idx])
-        uv = (
-            0.25 * spike
-            + 0.2 * null_space
-            + 0.2 * spin_energy
-            + 0.2 * cost_harmonic
-            + 0.15 * interference
-        )
+        uv = 0.25 * spike + 0.2 * null_space + 0.2 * spin_energy + 0.2 * cost_harmonic + 0.15 * interference
         return max(0.0, min(1.0, uv))
 
-    def _build_bridges(
-        self, tongue_triplets: Sequence[TongueTriplet]
-    ) -> Dict[str, Tuple[float, float, float]]:
+    def _build_bridges(self, tongue_triplets: Sequence[TongueTriplet]) -> Dict[str, Tuple[float, float, float]]:
         bridges: Dict[str, Tuple[float, float, float]] = {}
         for i, left in enumerate(tongue_triplets):
             for j in range(i + 1, len(tongue_triplets)):
                 right = tongue_triplets[j]
                 phi_bridge = PHI ** abs(i - j)
-                ir_bridge = abs(
-                    left.color.ir * right.color.visible + right.color.ir * left.color.visible
-                ) * phi_bridge
-                vis_bridge = abs(
-                    left.color.visible * right.color.uv + right.color.visible * left.color.uv
-                ) * phi_bridge
-                uv_bridge = abs(
-                    left.color.uv * right.color.ir + right.color.uv * left.color.ir
-                ) * phi_bridge
+                ir_bridge = abs(left.color.ir * right.color.visible + right.color.ir * left.color.visible) * phi_bridge
+                vis_bridge = abs(left.color.visible * right.color.uv + right.color.visible * left.color.uv) * phi_bridge
+                uv_bridge = abs(left.color.uv * right.color.ir + right.color.uv * left.color.ir) * phi_bridge
                 max_bridge = PHI**5
                 bridges[f"{left.tongue}-{right.tongue}"] = (
                     round(min(1.0, ir_bridge / max_bridge), 4),

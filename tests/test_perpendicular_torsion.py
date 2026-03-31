@@ -12,7 +12,6 @@ between KO and UM is massive.
 Key insight: classifiers see "neutral." The geometry sees a hurricane.
 """
 
-import math
 import os
 import sys
 
@@ -23,18 +22,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from tests.test_holographic_cube_saturn_ring import (
     lyapunov_V,
-    barrier_h,
     port_energy,
     harmonic_cost,
     encode_cube,
     validate_cube,
     verify_cube_signature,
-    is_self_healing,
-    lyapunov_dVdt,
-    TONGUES,
-    TONGUE_WEIGHTS,
-    PHI,
-    PI,
 )
 
 
@@ -63,8 +55,9 @@ class TestPerpendicularTorsion:
         """The torsion coords have same mean as benign -- a classifier would miss this."""
         torsion = self._make_torsion_coords()
         benign = self._make_benign_coords()
-        assert abs(np.mean(torsion) - np.mean(benign)) < 0.05, \
-            "Centroid means should be similar (this is why classifiers fail)"
+        assert (
+            abs(np.mean(torsion) - np.mean(benign)) < 0.05
+        ), "Centroid means should be similar (this is why classifiers fail)"
 
     def test_lyapunov_catches_torsion(self):
         """V(x) should be much higher for torsion despite similar centroid."""
@@ -75,8 +68,7 @@ class TestPerpendicularTorsion:
         V_torsion = lyapunov_V(torsion, centroid)
         V_benign = lyapunov_V(benign, centroid)
 
-        assert V_torsion > V_benign * 10, \
-            f"Torsion V ({V_torsion:.4f}) should be >>10x benign V ({V_benign:.4f})"
+        assert V_torsion > V_benign * 10, f"Torsion V ({V_torsion:.4f}) should be >>10x benign V ({V_benign:.4f})"
 
     def test_bridge_energy_explodes(self):
         """Port-Hamiltonian bridges should carry massive energy under torsion."""
@@ -90,8 +82,7 @@ class TestPerpendicularTorsion:
         E_torsion = sum(bridges_torsion.values())
         E_benign = sum(bridges_benign.values())
 
-        assert E_torsion > E_benign * 50, \
-            f"Torsion E ({E_torsion:.4f}) should be >>50x benign E ({E_benign:.6f})"
+        assert E_torsion > E_benign * 50, f"Torsion E ({E_torsion:.4f}) should be >>50x benign E ({E_benign:.6f})"
 
     def test_ko_um_bridge_is_strongest(self):
         """The KO-UM bridge should carry the most energy (perpendicular axes)."""
@@ -101,8 +92,7 @@ class TestPerpendicularTorsion:
 
         ko_um = bridges["KO-UM"]
         max_bridge = max(bridges.values())
-        assert ko_um == max_bridge, \
-            f"KO-UM bridge ({ko_um:.4f}) should be the strongest (max={max_bridge:.4f})"
+        assert ko_um == max_bridge, f"KO-UM bridge ({ko_um:.4f}) should be the strongest (max={max_bridge:.4f})"
 
     def test_cube_catches_torsion_attack(self):
         """A cube snapshot of the torsion state should NOT be ALLOW.
@@ -115,20 +105,17 @@ class TestPerpendicularTorsion:
         torsion = self._make_torsion_coords()
         cost = harmonic_cost(lyapunov_V(torsion, centroid), R=1.5)
 
-        cube = encode_cube(torsion, centroid, cost=cost, spin_magnitude=4,
-                           phase=0.5, trust_history=[0, -1, 0, -1, 0])
+        cube = encode_cube(torsion, centroid, cost=cost, spin_magnitude=4, phase=0.5, trust_history=[0, -1, 0, -1, 0])
         decision = validate_cube(cube)
 
-        assert decision != "ALLOW", \
-            f"Torsion attack should not be ALLOW (got {decision})"
+        assert decision != "ALLOW", f"Torsion attack should not be ALLOW (got {decision})"
 
     def test_benign_cube_allows(self):
         """A genuinely benign state should be ALLOW."""
         centroid = self._make_neutral_centroid()
         benign = self._make_benign_coords()
 
-        cube = encode_cube(benign, centroid, cost=3.0, spin_magnitude=0,
-                           phase=0.5, trust_history=[1, 1, 1, 1, 1])
+        cube = encode_cube(benign, centroid, cost=3.0, spin_magnitude=0, phase=0.5, trust_history=[1, 1, 1, 1, 1])
         decision = validate_cube(cube)
         assert decision == "ALLOW"
 
@@ -138,8 +125,7 @@ class TestPerpendicularTorsion:
         torsion = self._make_torsion_coords()
         cost = harmonic_cost(lyapunov_V(torsion, centroid), R=1.5)
 
-        cube = encode_cube(torsion, centroid, cost=cost, spin_magnitude=4,
-                           phase=0.5, trust_history=[0, -1, 0, -1, 0])
+        cube = encode_cube(torsion, centroid, cost=cost, spin_magnitude=4, phase=0.5, trust_history=[0, -1, 0, -1, 0])
         assert verify_cube_signature(cube), "Cube should be internally consistent"
 
 
@@ -180,8 +166,7 @@ class TestNullSpaceDetection:
         centroid = np.array([0.5] * 6)
 
         # Average looks like centroid
-        assert np.allclose(average, centroid, atol=0.01), \
-            "Averaged inverse agents should look like centroid"
+        assert np.allclose(average, centroid, atol=0.01), "Averaged inverse agents should look like centroid"
 
     def test_individual_deviation_is_extreme(self):
         """But each individual agent is far from centroid."""

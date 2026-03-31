@@ -63,8 +63,7 @@ def _derive_topology_lens(
     boundary_signals: list[str] = []
 
     has_password_field = any(
-        any(str(field.get("type", "")).lower() == "password" for field in form.get("fields", []))
-        for form in forms
+        any(str(field.get("type", "")).lower() == "password" for field in form.get("fields", [])) for form in forms
     )
     if has_password_field or any("authentication" in item or "credential" in item for item in approvals):
         boundary_signals.append("identity boundary present")
