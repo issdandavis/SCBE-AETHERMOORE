@@ -253,7 +253,7 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
         r = requests.get("https://check.torproject.org/api/ip",
                          proxies={"http": TOR_SOCKS, "https": TOR_SOCKS}, timeout=10)
         tor_ip = r.json().get("IP", "?")
-        print(f"  Tor: LIVE (exit: {tor_ip})")
+        print(f"  Tor: LIVE (exit: [REDACTED])")
     except Exception as e:
         print(f"  Tor: OFFLINE ({e})")
         print("  Start Tor first: tor --SocksPort 9050 &")
@@ -311,7 +311,7 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
         if hop.governance != "DENY" and hop.content_length > 100:
             sft_pairs.append({
                 "instruction": f"What content is available at {hop.url} when accessed {'via Tor' if hop.network == 'tor' else 'directly'}?",
-                "response": f"Accessed via {hop.network} (exit IP: {hop.exit_ip[:15]}). "
+                "response": f"Accessed via {hop.network} (exit IP: [REDACTED]). "
                             f"Title: {hop.title}. Content size: {hop.content_length} bytes. "
                             f"Governance decision: {hop.governance}. "
                             f"Latency: {hop.latency_ms}ms. "
@@ -352,8 +352,6 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
     print(f"  FIELD TRIP COMPLETE: {route_name}")
     print(f"  Hops: {report.total_hops} | Rotations: {report.identity_rotations}")
     print(f"  Unique exit IPs: {len(report.unique_exit_ips)}")
-    for ip in report.unique_exit_ips:
-        print(f"    - {ip}")
     print(f"  Networks: {', '.join(report.networks_used)}")
     print(f"  SFT pairs: {report.sft_pairs_generated}")
     print(f"  Report: {report_path}")

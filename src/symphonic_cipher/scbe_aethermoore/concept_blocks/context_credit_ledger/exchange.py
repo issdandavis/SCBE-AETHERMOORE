@@ -412,8 +412,8 @@ class ComputeExchange:
             "total_volume_settled": round(total_volume, 6),
             "exchange_rates": {
                 f"{d1.value}/{d2.value}": round(DENOMINATION_WEIGHTS[d1] / DENOMINATION_WEIGHTS[d2], 4)
-                for d1 in Denomination
-                for d2 in Denomination
+                for d1 in list(Denomination)
+                for d2 in list(Denomination)
                 if d1 != d2 and d1.value < d2.value
             },
         }
