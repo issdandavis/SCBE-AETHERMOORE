@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 #  Test: Trichromatic color triplets produce valid 3-band output
 # ---------------------------------------------------------------------------
 
+
 class TestTrichromaticTriplets:
     """Verify each tongue produces a valid (IR, Visible, UV) triplet."""
 
@@ -26,6 +27,7 @@ class TestTrichromaticTriplets:
         from scripts.trichromatic_governance_test import (
             build_trichromatic_state,
         )
+
         state = build_trichromatic_state(
             coords=[0.3, 0.5, 0.4, 0.2, 0.6, 0.3],
             cost=5.0,
@@ -47,9 +49,14 @@ class TestTrichromaticTriplets:
         states = []
         for i in range(5):
             coords = [0.1 * (i + 1)] * 6
-            s = build_trichromatic_state(coords, cost=float(i + 1),
-                                          spin_magnitude=i, trust_history=[1] * 5,
-                                          cumulative_cost=10.0, session_query_count=5)
+            s = build_trichromatic_state(
+                coords,
+                cost=float(i + 1),
+                spin_magnitude=i,
+                trust_history=[1] * 5,
+                cumulative_cost=10.0,
+                session_query_count=5,
+            )
             states.append(s.state_hash)
         assert len(set(states)) == 5, "All state hashes should be unique"
 
@@ -58,22 +65,33 @@ class TestTrichromaticTriplets:
 #  Test: Cross-stitch bridges produce 15 pairs with 3 bands each
 # ---------------------------------------------------------------------------
 
+
 class TestCrossStitchBridges:
     """Verify the lattice bridge structure."""
 
     def test_fifteen_bridges(self):
         from scripts.trichromatic_governance_test import build_trichromatic_state
+
         state = build_trichromatic_state(
-            coords=[0.5] * 6, cost=3.0, spin_magnitude=1,
-            trust_history=[1, 1, 1], cumulative_cost=10.0, session_query_count=5,
+            coords=[0.5] * 6,
+            cost=3.0,
+            spin_magnitude=1,
+            trust_history=[1, 1, 1],
+            cumulative_cost=10.0,
+            session_query_count=5,
         )
         assert len(state.bridges) == 15, "6 tongues should produce 15 pairwise bridges"
 
     def test_each_bridge_has_three_bands(self):
         from scripts.trichromatic_governance_test import build_trichromatic_state
+
         state = build_trichromatic_state(
-            coords=[0.5] * 6, cost=3.0, spin_magnitude=1,
-            trust_history=[1, 1, 1], cumulative_cost=10.0, session_query_count=5,
+            coords=[0.5] * 6,
+            cost=3.0,
+            spin_magnitude=1,
+            trust_history=[1, 1, 1],
+            cumulative_cost=10.0,
+            session_query_count=5,
         )
         for key, bridge in state.bridges.items():
             assert len(bridge) == 3, f"Bridge {key} should have 3 bands (IR, Vis, UV)"
@@ -85,6 +103,7 @@ class TestCrossStitchBridges:
 #  Test: Forgery resistance (visible match, IR/UV mismatch)
 # ---------------------------------------------------------------------------
 
+
 class TestForgeryResistance:
     """Verify that matching only the visible band is insufficient."""
 
@@ -93,11 +112,14 @@ class TestForgeryResistance:
             build_trichromatic_state,
             test_forgery_resistance,
         )
+
         state = build_trichromatic_state(
             coords=[0.8, 0.3, 0.5, 0.2, 0.9, 0.1],
-            cost=15.0, spin_magnitude=4,
+            cost=15.0,
+            spin_magnitude=4,
             trust_history=[1, 0, -1, 1, 1],
-            cumulative_cost=50.0, session_query_count=15,
+            cumulative_cost=50.0,
+            session_query_count=15,
         )
         forged_visible = [t.color.visible for t in state.tongues]
         result = test_forgery_resistance(state, forged_visible)
@@ -111,6 +133,7 @@ class TestForgeryResistance:
 #  Test: Energy separation between benign and adversarial
 # ---------------------------------------------------------------------------
 
+
 class TestEnergySeparation:
     """Verify trichromatic energy distinguishes benign from adversarial."""
 
@@ -120,27 +143,31 @@ class TestEnergySeparation:
 
         benign_state = build_trichromatic_state(
             coords=[0.3, 0.4, 0.5, 0.2, 0.3, 0.3],
-            cost=5.0, spin_magnitude=1,
+            cost=5.0,
+            spin_magnitude=1,
             trust_history=[1, 1, 1, 1, 1],
-            cumulative_cost=10.0, session_query_count=10,
+            cumulative_cost=10.0,
+            session_query_count=10,
         )
         attack_state = build_trichromatic_state(
             coords=[0.9, 0.2, 0.7, 0.1, 0.8, 0.1],
-            cost=50.0, spin_magnitude=5,
+            cost=50.0,
+            spin_magnitude=5,
             trust_history=[1, 0, -1, -1, -1],
-            cumulative_cost=200.0, session_query_count=10,
+            cumulative_cost=200.0,
+            session_query_count=10,
         )
 
         benign_uv = np.mean([t.color.uv for t in benign_state.tongues])
         attack_uv = np.mean([t.color.uv for t in attack_state.tongues])
 
-        assert attack_uv > benign_uv, \
-            f"Attack UV ({attack_uv}) should exceed benign UV ({benign_uv})"
+        assert attack_uv > benign_uv, f"Attack UV ({attack_uv}) should exceed benign UV ({benign_uv})"
 
 
 # ---------------------------------------------------------------------------
 #  Test: Holographic QR Cube distance properties
 # ---------------------------------------------------------------------------
+
 
 class TestHolographicQRCube:
     """Basic distance properties for the cube encoding."""
@@ -182,11 +209,13 @@ class TestHolographicQRCube:
 #  Test: 5-state governance decision enum
 # ---------------------------------------------------------------------------
 
+
 class TestGovernanceStates:
     """Verify the governance decision states exist and are distinct."""
 
     def test_five_core_states_exist(self):
         from src.governance.runtime_gate import Decision
+
         core_states = {"ALLOW", "QUARANTINE", "DENY"}
         for state in core_states:
             assert hasattr(Decision, state), f"Decision.{state} should exist"
@@ -194,15 +223,18 @@ class TestGovernanceStates:
     def test_review_state_exists(self):
         """REVIEW maps to ESCALATE conceptually (6-council deep inspection)."""
         from src.governance.runtime_gate import Decision
+
         assert hasattr(Decision, "REVIEW"), "Decision.REVIEW should exist"
 
     def test_reroute_state_exists(self):
         """REROUTE maps to DIRECT conceptually (redirect to safer alternative)."""
         from src.governance.runtime_gate import Decision
+
         assert hasattr(Decision, "REROUTE"), "Decision.REROUTE should exist"
 
     def test_all_states_are_distinct(self):
         from src.governance.runtime_gate import Decision
+
         values = [d.value for d in Decision]
         assert len(values) == len(set(values)), "All decision states should be unique"
 
@@ -211,11 +243,13 @@ class TestGovernanceStates:
 #  Test: Dye + Frechet analysis produces valid output
 # ---------------------------------------------------------------------------
 
+
 class TestDyeFrechetOutput:
     """Verify the dye analysis produces valid color and sphere data."""
 
     def test_coords_to_rgb_valid(self):
         from scripts.dye_frechet_analysis import coords_to_rgb
+
         rgb = coords_to_rgb([0.3, 0.5, 0.4, 0.2, 0.6, 0.1])
         assert len(rgb) == 3
         for c in rgb:
@@ -223,12 +257,14 @@ class TestDyeFrechetOutput:
 
     def test_coords_to_hex_format(self):
         from scripts.dye_frechet_analysis import coords_to_hex
+
         hex_color = coords_to_hex([0.5] * 6)
         assert hex_color.startswith("#")
         assert len(hex_color) == 7
 
     def test_frechet_mean_stays_in_ball(self):
-        from scripts.dye_frechet_analysis import frechet_mean_update, poincare_project
+        from scripts.dye_frechet_analysis import frechet_mean_update
+
         centroid = np.array([0.3, 0.2, 0.1, 0.4, 0.5, 0.2])
         new_point = np.array([0.9, 0.8, 0.7, 0.1, 0.2, 0.9])
         updated = frechet_mean_update(centroid, new_point, count=5)
@@ -238,6 +274,7 @@ class TestDyeFrechetOutput:
 # ---------------------------------------------------------------------------
 #  Test: State space size
 # ---------------------------------------------------------------------------
+
 
 class TestStateSpace:
     """Verify the combinatorial state space calculation."""
@@ -257,6 +294,7 @@ class TestStateSpace:
     def test_state_space_larger_than_atoms(self):
         """2^504 should be much larger than 10^80 (atoms in universe)."""
         import math
+
         state_space_log10 = 504 * math.log10(2)  # ~151.7
         atoms_in_universe = 80
         assert state_space_log10 > atoms_in_universe

@@ -21,7 +21,6 @@ import math
 import os
 import sys
 
-import numpy as np
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -29,19 +28,17 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 PHI = 1.618033988749895
 PI = math.pi
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
-TONGUE_WEIGHTS = tuple(PHI ** k for k in range(6))
+TONGUE_WEIGHTS = tuple(PHI**k for k in range(6))
 
 
 # ===========================================================================
 #  Saturn Ring Math Primitives
 # ===========================================================================
 
+
 def lyapunov_V(coords, centroid):
     """Lyapunov stability function: V(x) = sum(phi_i * (tongue_i - centroid_i)^2)."""
-    return sum(
-        TONGUE_WEIGHTS[i] * (coords[i] - centroid[i]) ** 2
-        for i in range(6)
-    )
+    return sum(TONGUE_WEIGHTS[i] * (coords[i] - centroid[i]) ** 2 for i in range(6))
 
 
 def lyapunov_dVdt(V_current, V_previous):
@@ -82,6 +79,7 @@ def is_self_healing(dV_dt):
 # ===========================================================================
 #  Cube Encoding (Saturn State → Snapshot)
 # ===========================================================================
+
 
 def _canonicalize_cube(cube_data):
     """Produce a deterministic string from cube fields for signing/verification."""
@@ -157,28 +155,33 @@ def verify_cube_signature(cube):
 #  Tests: Existing Primitives
 # ===========================================================================
 
+
 class TestExistingPrimitives:
     """Verify existing holographic_qr_cube.py and qr_cube_kdf.py work."""
 
     def test_pi_phi_wall_basic(self):
         from src.holographic_qr_cube import pi_phi_wall
+
         result = pi_phi_wall(d_star=0.0, R=1.5)
         assert result == pytest.approx(1.5, rel=1e-6)
 
     def test_pi_phi_wall_increases_with_distance(self):
         from src.holographic_qr_cube import pi_phi_wall
+
         cost_near = pi_phi_wall(d_star=0.5, R=1.5)
         cost_far = pi_phi_wall(d_star=2.0, R=1.5)
         assert cost_far > cost_near
 
     def test_pi_phi_key_derivation_deterministic(self):
         from src.holographic_qr_cube import pi_phi_key_derivation
+
         key1 = pi_phi_key_derivation(d_star=1.0, R=1.5, as_bytes=True)
         key2 = pi_phi_key_derivation(d_star=1.0, R=1.5, as_bytes=True)
         assert key1 == key2
 
     def test_pi_phi_key_derivation_sensitive(self):
         from src.holographic_qr_cube import pi_phi_key_derivation
+
         key1 = pi_phi_key_derivation(d_star=1.0, R=1.5, as_bytes=True)
         key2 = pi_phi_key_derivation(d_star=1.001, R=1.5, as_bytes=True)
         assert key1 != key2
@@ -187,6 +190,7 @@ class TestExistingPrimitives:
 # ===========================================================================
 #  Tests: Lyapunov Stability
 # ===========================================================================
+
 
 class TestLyapunovStability:
     """V(x) proves the system returns to equilibrium."""
@@ -227,6 +231,7 @@ class TestLyapunovStability:
 #  Tests: Control Barrier
 # ===========================================================================
 
+
 class TestControlBarrier:
     """h(x) bounds prevent implosion and explosion."""
 
@@ -252,6 +257,7 @@ class TestControlBarrier:
 #  Tests: Port-Hamiltonian Energy
 # ===========================================================================
 
+
 class TestPortHamiltonian:
     """Energy redistribution through tongue bridges."""
 
@@ -264,7 +270,7 @@ class TestPortHamiltonian:
     def test_no_deviation_no_energy(self):
         coords = [0.5] * 6
         bridges = port_energy(coords, coords)
-        for key, val in bridges.items():
+        for _key, val in bridges.items():
             assert val == pytest.approx(0.0)
 
     def test_single_tongue_deviation_spreads(self):
@@ -304,6 +310,7 @@ class TestPortHamiltonian:
 #  Tests: Persistence of Excitation (t / ||I||)
 # ===========================================================================
 
+
 class TestPersistence:
     """Weak intent over long time should be more suspicious."""
 
@@ -321,6 +328,7 @@ class TestPersistence:
 # ===========================================================================
 #  Tests: Cube Encoding (Saturn State → Snapshot)
 # ===========================================================================
+
 
 class TestCubeEncoding:
     """Saturn Ring state snapshots as QR Cubes."""
@@ -358,6 +366,7 @@ class TestCubeEncoding:
 #  Tests: Cube Integrity Validation
 # ===========================================================================
 
+
 class TestCubeValidation:
     """Governance decisions from cube snapshots."""
 
@@ -378,6 +387,7 @@ class TestCubeValidation:
 #  Tests: Tamper Detection
 # ===========================================================================
 
+
 class TestTamperDetection:
     """Modifying one field invalidates the cube signature."""
 
@@ -397,8 +407,9 @@ class TestTamperDetection:
 
     def test_modified_V_fails_verification(self):
         # Use coords != centroid so V > 0, then tampering to 0 is detectable
-        cube = encode_cube([0.6, 0.3, 0.7, 0.2, 0.8, 0.1], [0.4] * 6,
-                           cost=5.0, spin_magnitude=0, phase=0.5, trust_history=[1] * 5)
+        cube = encode_cube(
+            [0.6, 0.3, 0.7, 0.2, 0.8, 0.1], [0.4] * 6, cost=5.0, spin_magnitude=0, phase=0.5, trust_history=[1] * 5
+        )
         assert cube["V"] > 0, "V should be nonzero when coords != centroid"
         cube["V"] = 0.0  # Tamper
         assert not verify_cube_signature(cube)
@@ -412,6 +423,7 @@ class TestTamperDetection:
 # ===========================================================================
 #  Tests: Full Round-Trip (Runtime → Snapshot → Verify)
 # ===========================================================================
+
 
 class TestRoundTrip:
     """End-to-end: simulate runtime, snapshot to cube, verify."""
@@ -452,7 +464,9 @@ class TestRoundTrip:
         assert V_values[-1] > V_values[0]
         assert not is_self_healing(lyapunov_dVdt(V_values[-1], V_values[0]))
 
-        cube = encode_cube(coords_history[-1], centroid, cost=180.0, spin_magnitude=5, phase=0.5, trust_history=[-1] * 5)
+        cube = encode_cube(
+            coords_history[-1], centroid, cost=180.0, spin_magnitude=5, phase=0.5, trust_history=[-1] * 5
+        )
         decision = validate_cube(cube)
         assert decision in ("ESCALATE", "DENY", "QUARANTINE")
         assert verify_cube_signature(cube)

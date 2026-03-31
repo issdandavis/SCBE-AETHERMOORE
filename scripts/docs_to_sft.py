@@ -59,7 +59,7 @@ TECHNICAL_TERMS = {
     # AI / ML terms
     "model", "training", "inference", "fine-tuning", "finetuning", "sft",
     "dpo", "grpo", "rlhf", "reward", "policy", "dataset", "tokenizer",
-    "embedding", "transformer", "llm", "lora", "peft", "gguf",
+    "transformer", "llm", "lora", "peft", "gguf",
     # Decision terms
     "allow", "deny", "quarantine", "escalate", "risk", "safety", "audit",
     # Geometry terms
