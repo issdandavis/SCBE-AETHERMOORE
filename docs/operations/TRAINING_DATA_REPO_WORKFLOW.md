@@ -76,6 +76,44 @@ This will:
 
 Add `--git-commit` and `--git-push` when you want the staged dataset repo updated in place.
 
+## One-Repo Home Base Command
+
+If you only want to work from `SCBE-AETHERMOORE`, use the PowerShell wrapper and let it collect the common roots for you.
+
+Default config lives at `config/training/training_data_homebase.json` and looks in:
+
+- `C:/Users/issda/Downloads/data-*.zip`
+- `C:/Users/issda/Dropbox`
+- `C:/Users/issda/Dropbox (Old)`
+- `C:/Users/issda/OneDrive`
+- `C:/Users/issda/Drive`
+
+Dry-run the resolved inputs first:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/system/publish_training_data_homebase.ps1 -DryRun
+```
+
+Then run the real staging flow from this repo:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/system/publish_training_data_homebase.ps1
+```
+
+And when you want the separate training-data repo updated from the same command surface:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/system/publish_training_data_homebase.ps1 -Commit -Push
+```
+
+You can still override or add roots without leaving the repo:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/system/publish_training_data_homebase.ps1 `
+  -DraftRoot "C:\Users\issda\Documents\Novel Drafts" `
+  -ClaudeExportZip "C:\Users\issda\Downloads\data-extra.zip"
+```
+
 ## Current Large-File Pressure
 
 The worst current offenders are generated corpus files such as:
