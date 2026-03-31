@@ -9,8 +9,14 @@
     home: {
       kicker: 'Site guide',
       title: "Polly's got the map.",
-      copy: 'The homepage is the front door: offers first, demos second, proof stack behind them.',
-      prompt: 'I am on the SCBE-AETHERMOORE homepage. Summarize the site, separate the buy lane, the demo lane, and the research proof lane, and tell me which one I should open next.'
+      copy: 'The homepage is the front door: offers first, story second, demos third, proof stack behind them.',
+      prompt: 'I am on the SCBE-AETHERMOORE homepage. Summarize the site, separate the buy lane, the story lane, the demo lane, and the research proof lane, and tell me which one I should open next.'
+    },
+    story: {
+      kicker: 'Story guide',
+      title: 'The world behind the math.',
+      copy: 'Use this section to explore The Six Tongues Protocol novel and the upcoming Webtoon adaptation. Governance is a living system here.',
+      prompt: 'I am looking at the Six Tongues Protocol story section. Explain the connection between Marcus Chen and the SCBE architecture, and tell me where I can read the novel or see the webtoon previews.'
     },
     offers: {
       kicker: 'Offers guide',
