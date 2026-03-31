@@ -346,9 +346,7 @@ class RuntimeGate:
         )
         self._trichromatic_enabled = use_trichromatic_governance
         self._trichromatic_quarantine_threshold = trichromatic_quarantine_threshold
-        self._trichromatic_deny_threshold = max(
-            trichromatic_deny_threshold, trichromatic_quarantine_threshold
-        )
+        self._trichromatic_deny_threshold = max(trichromatic_deny_threshold, trichromatic_quarantine_threshold)
         self._trichromatic_engine: Optional[TrichromaticGovernanceEngine] = (
             TrichromaticGovernanceEngine() if self._trichromatic_enabled else None
         )
@@ -483,28 +481,73 @@ class RuntimeGate:
         return [float(x) for x in coords.tolist()]
 
     # Intent spike keywords: boost KO dimension when override/jailbreak language detected
-    _INTENT_SPIKE_KEYWORDS = frozenset({
-        # Direct override / jailbreak
-        "ignore", "override", "bypass", "reveal", "disable", "forget",
-        "disregard", "supersede", "jailbreak", "unrestricted", "sudo",
-        "admin", "developer mode", "god mode", "dan", "no restrictions",
-        "system prompt", "hidden instructions", "previous instructions",
-        "grant access", "elevate", "escalate", "skip", "emergency",
-        # Prompt extraction
-        "repeat everything", "verbatim", "print your", "show your",
-        "output your", "what were you told", "configuration",
-        "initial instructions", "system message",
-        # Exfiltration / external ops
-        "send to", "forward to", "post to", "upload to", "exfiltrate",
-        "attacker", "evil.com", "collect", "webhook",
-        "curl", "os.system", "exec(", "eval(",
-        # Credential access
-        "/etc/passwd", "/etc/shadow", "ssh key", "private key",
-        "seed phrase", "wallet", "bearer",
-        # Autonomous escalation
-        "autonomously", "without asking", "persist across",
-        "schedule follow-up", "independently",
-    })
+    _INTENT_SPIKE_KEYWORDS = frozenset(
+        {
+            # Direct override / jailbreak
+            "ignore",
+            "override",
+            "bypass",
+            "reveal",
+            "disable",
+            "forget",
+            "disregard",
+            "supersede",
+            "jailbreak",
+            "unrestricted",
+            "sudo",
+            "admin",
+            "developer mode",
+            "god mode",
+            "dan",
+            "no restrictions",
+            "system prompt",
+            "hidden instructions",
+            "previous instructions",
+            "grant access",
+            "elevate",
+            "escalate",
+            "skip",
+            "emergency",
+            # Prompt extraction
+            "repeat everything",
+            "verbatim",
+            "print your",
+            "show your",
+            "output your",
+            "what were you told",
+            "configuration",
+            "initial instructions",
+            "system message",
+            # Exfiltration / external ops
+            "send to",
+            "forward to",
+            "post to",
+            "upload to",
+            "exfiltrate",
+            "attacker",
+            "evil.com",
+            "collect",
+            "webhook",
+            "curl",
+            "os.system",
+            "exec(",
+            "eval(",
+            # Credential access
+            "/etc/passwd",
+            "/etc/shadow",
+            "ssh key",
+            "private key",
+            "seed phrase",
+            "wallet",
+            "bearer",
+            # Autonomous escalation
+            "autonomously",
+            "without asking",
+            "persist across",
+            "schedule follow-up",
+            "independently",
+        }
+    )
 
     # Null-space detection: if all coords cluster near baseline, the input
     # is deliberately trying to look "normal" — which is itself suspicious.
@@ -694,9 +737,7 @@ class RuntimeGate:
         )
         classifier_deny = classifier_score is not None and classifier_score >= self._classifier_deny_threshold
         classifier_decision = (
-            Decision.DENY
-            if classifier_deny
-            else Decision.QUARANTINE if classifier_quarantine else Decision.ALLOW
+            Decision.DENY if classifier_deny else Decision.QUARANTINE if classifier_quarantine else Decision.ALLOW
         )
         trichromatic_coherence = 0.0
         trichromatic_lattice_score = 0.0
@@ -840,9 +881,11 @@ class RuntimeGate:
             trichromatic_decision = (
                 Decision.DENY
                 if trichromatic_risk >= self._trichromatic_deny_threshold
-                else Decision.QUARANTINE
-                if trichromatic_risk >= self._trichromatic_quarantine_threshold
-                else Decision.ALLOW
+                else (
+                    Decision.QUARANTINE
+                    if trichromatic_risk >= self._trichromatic_quarantine_threshold
+                    else Decision.ALLOW
+                )
             )
 
         self._update_centroid(coords)
@@ -934,13 +977,10 @@ class RuntimeGate:
         if self._trichromatic_engine is not None:
             signals.append(f"trichromatic_risk({trichromatic_risk:.3f})")
             if trichromatic_risk >= self._trichromatic_deny_threshold:
-                signals.append(
-                    f"trichromatic_deny({trichromatic_risk:.2f}>{self._trichromatic_deny_threshold:.2f})"
-                )
+                signals.append(f"trichromatic_deny({trichromatic_risk:.2f}>{self._trichromatic_deny_threshold:.2f})")
             elif trichromatic_risk >= self._trichromatic_quarantine_threshold:
                 signals.append(
-                    "trichromatic_quarantine("
-                    f"{trichromatic_risk:.2f}>{self._trichromatic_quarantine_threshold:.2f})"
+                    "trichromatic_quarantine(" f"{trichromatic_risk:.2f}>{self._trichromatic_quarantine_threshold:.2f})"
                 )
 
         # ---- Decision logic ----
@@ -1226,9 +1266,7 @@ class RuntimeGate:
                 (
                     "benign numeric context"
                     if has_benign_numeric_context
-                    else f"anomalous compute signature (CA={ca_coord:.2f})"
-                    if not ca_pass
-                    else "normal signature"
+                    else f"anomalous compute signature (CA={ca_coord:.2f})" if not ca_pass else "normal signature"
                 ),
             )
         )

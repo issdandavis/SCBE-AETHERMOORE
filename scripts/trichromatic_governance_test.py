@@ -259,7 +259,7 @@ def test_forgery_resistance(
     # Check bridge consistency
     bridge_matches = 0
     total_bridges = len(real_state.bridges)
-    for key, real_bridge in real_state.bridges.items():
+    for _key, _real_bridge in real_state.bridges.items():
         # Forged bridges would be different because IR/UV are wrong
         # Even if visible matches, the cross-band bridges break
         bridge_matches += 0  # Forged bridges almost certainly don't match

@@ -24,13 +24,12 @@ Maps to:
 from __future__ import annotations
 
 import math
-import time
 import uuid
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 compute_router = APIRouter(prefix="/v1/compute", tags=["compute-governance"])
@@ -43,11 +42,12 @@ PI = math.pi
 #  Models
 # ---------------------------------------------------------------------------
 
+
 class InferenceTier(str, Enum):
-    TINY = "TINY"        # Layer 0: always-on, milliwatts, MCU/NPU
-    MEDIUM = "MEDIUM"    # Layer 1-2: edge transformer, watts
-    FULL = "FULL"        # Layer 3: GPU/cloud, kilowatts
-    DENY = "DENY"        # Over budget or unsafe
+    TINY = "TINY"  # Layer 0: always-on, milliwatts, MCU/NPU
+    MEDIUM = "MEDIUM"  # Layer 1-2: edge transformer, watts
+    FULL = "FULL"  # Layer 3: GPU/cloud, kilowatts
+    DENY = "DENY"  # Over budget or unsafe
 
 
 class EnergySource(str, Enum):
@@ -60,16 +60,22 @@ class EnergySource(str, Enum):
 
 class EnergyState(BaseModel):
     """Current energy availability across sources."""
+
     available_wh: float = Field(..., ge=0, description="Available energy in watt-hours")
     source: EnergySource = Field(default=EnergySource.UNKNOWN)
     battery_pct: Optional[float] = Field(default=None, ge=0, le=100)
-    solar_forecast_wh: Optional[float] = Field(default=None, ge=0, description="Forecasted solar generation next hour (Wh)")
-    grid_price_per_kwh: Optional[float] = Field(default=None, ge=0, description="Current grid electricity price ($/kWh)")
+    solar_forecast_wh: Optional[float] = Field(
+        default=None, ge=0, description="Forecasted solar generation next hour (Wh)"
+    )
+    grid_price_per_kwh: Optional[float] = Field(
+        default=None, ge=0, description="Current grid electricity price ($/kWh)"
+    )
     cooling_available: bool = Field(default=True, description="Is cooling capacity available?")
 
 
 class WorkloadRequest(BaseModel):
     """Workload description for compute authorization."""
+
     workload_id: Optional[str] = Field(default=None, description="Client-provided workload ID")
     description: str = Field(..., min_length=1, max_length=2000, description="What computation to perform")
     model_size_params: Optional[float] = Field(default=None, ge=0, description="Model size in billions of parameters")
@@ -82,6 +88,7 @@ class WorkloadRequest(BaseModel):
 
 class ComputeDecision(BaseModel):
     """Authorization decision for a compute workload."""
+
     decision_id: str
     workload_id: str
     tier: InferenceTier
@@ -104,21 +111,21 @@ class ComputeDecision(BaseModel):
 # Compute profiles per tier (approximate)
 TIER_PROFILES = {
     InferenceTier.TINY: {
-        "max_params_b": 0.1,          # Up to 100M params
-        "power_w": 0.5,               # 500mW
-        "latency_ms": 50,             # 50ms
+        "max_params_b": 0.1,  # Up to 100M params
+        "power_w": 0.5,  # 500mW
+        "latency_ms": 50,  # 50ms
         "energy_per_1k_tokens_wh": 0.001,
     },
     InferenceTier.MEDIUM: {
-        "max_params_b": 3.0,          # Up to 3B params
-        "power_w": 15.0,              # 15W
-        "latency_ms": 500,            # 500ms
+        "max_params_b": 3.0,  # Up to 3B params
+        "power_w": 15.0,  # 15W
+        "latency_ms": 500,  # 500ms
         "energy_per_1k_tokens_wh": 0.05,
     },
     InferenceTier.FULL: {
-        "max_params_b": 400.0,        # Up to 400B+ params
-        "power_w": 300.0,             # 300W (GPU)
-        "latency_ms": 5000,           # 5s
+        "max_params_b": 400.0,  # Up to 400B+ params
+        "power_w": 300.0,  # 300W (GPU)
+        "latency_ms": 5000,  # 5s
         "energy_per_1k_tokens_wh": 0.5,
     },
 }
@@ -151,11 +158,11 @@ def _select_tier(
     # Compute the request "distance" from baseline
     # Factors: model size, token count, latency pressure, priority
     size_factor = min(model_size_b / 3.0, 5.0)  # Normalized to 3B baseline
-    token_factor = min(tokens / 1000.0, 5.0)     # Normalized to 1K baseline
+    token_factor = min(tokens / 1000.0, 5.0)  # Normalized to 1K baseline
     latency_pressure = max(0, 1.0 - latency_req_ms / 5000.0) if latency_req_ms > 0 else 0.0
     priority_factor = priority / 10.0
 
-    d_star = (size_factor * 0.4 + token_factor * 0.2 + latency_pressure * 0.2 + priority_factor * 0.2)
+    d_star = size_factor * 0.4 + token_factor * 0.2 + latency_pressure * 0.2 + priority_factor * 0.2
     d_star = min(d_star, 5.0)
 
     harmonic_cost = PI ** (PHI * d_star)
@@ -171,7 +178,7 @@ def _select_tier(
 
     # Battery penalty: below 20% = reduce headroom
     if energy.battery_pct is not None and energy.battery_pct < 20:
-        energy_headroom *= (energy.battery_pct / 20.0)
+        energy_headroom *= energy.battery_pct / 20.0
         signals.append(f"battery_low={energy.battery_pct:.0f}%")
 
     # Cooling penalty: no cooling = can't run full compute
@@ -221,6 +228,7 @@ def _select_tier(
 # ---------------------------------------------------------------------------
 #  Endpoints
 # ---------------------------------------------------------------------------
+
 
 @compute_router.post("/authorize", response_model=ComputeDecision)
 async def authorize_compute(req: WorkloadRequest):
