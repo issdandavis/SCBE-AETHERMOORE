@@ -76,6 +76,19 @@
       "env": {
         "KAGGLE_API_TOKEN": "${KAGGLE_API_TOKEN}"
       }
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--no-usage-statistics",
+        "--slim"
+      ],
+      "env": {}
     }
   }
 }
