@@ -40,6 +40,49 @@ smee -u https://smee.io/your-channel -t http://127.0.0.1:8080/v1/github-app/webh
 Invoke-RestMethod http://127.0.0.1:8080/v1/github-app/health
 ```
 
+## Terminal access token workflow
+
+This repo includes a terminal helper that reuses the same GitHub App client code as the webhook route.
+
+1. Set the app env vars in your shell:
+
+```powershell
+$env:GITHUB_APP_ID = "3147791"
+$env:GITHUB_PRIVATE_KEY_PATH = "C:\path\to\latticegate.private-key.pem"
+$env:GITHUB_APP_INSTALLATION_ID = "117951870"
+```
+
+You can also use `GITHUB_APP_PRIVATE_KEY` instead of `GITHUB_PRIVATE_KEY_PATH`.
+
+2. Mint and export an installation token into the current shell:
+
+```powershell
+. .\scripts\github\latticegate_env.ps1
+```
+
+3. Use the token with `gh api` or `curl`:
+
+```powershell
+gh api user
+gh api repos/issdandavis/SCBE-AETHERMOORE/pulls
+```
+
+4. If you just want the raw token:
+
+```powershell
+python .\scripts\github\latticegate_token.py
+```
+
+5. If you want structured output for scripting:
+
+```powershell
+python .\scripts\github\latticegate_token.py --json
+```
+
+## Important limitation
+
+The current LatticeGate permission set is suited to checks, issues, pull requests, and metadata workflows. It does not have repository administration permission, so it cannot change repository visibility on its own. Use a normal authenticated user session or a separate admin-capable app for repo visibility changes.
+
 ## What the route does
 
 For `pull_request` events on `opened`, `edited`, `reopened`, `ready_for_review`, and `synchronize`:
