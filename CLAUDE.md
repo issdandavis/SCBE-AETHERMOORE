@@ -81,7 +81,7 @@ There are **two** `symphonic_cipher/` directories with **different** math:
 
 | Location | Formula | Purpose |
 |----------|---------|---------|
-| **Root** `symphonic_cipher/` | `H(d,R) = R^(d²)` | RETIRED (numerical collapse) |
+| **Root** `symphonic_cipher/` | `H(d,pd) = 1/(1+phi*d_H+2*pd)` | RETIRED (numerical collapse) |
 | **`src/symphonic_cipher/`** | `H(d,pd) = 1/(1+d+2*pd)` | Production safety score in (0,1] |
 | **Canonical (March 2026)** | `H(d,pd) = 1/(1+φ*d_H+2*pd)` | Unified formula with phi scaling (see `docs/specs/LAYER_12_CANONICAL_FORMULA.md`) |
 
