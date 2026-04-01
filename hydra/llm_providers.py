@@ -27,7 +27,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, AsyncIterator, Dict, List, Optional
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -45,6 +44,7 @@ _RETRY_DELAYS = [1.0, 2.0, 4.0]  # seconds for exponential back-off
 # Response dataclass
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LLMResponse:
     """Structured response from an LLM provider."""
@@ -59,6 +59,7 @@ class LLMResponse:
 # ---------------------------------------------------------------------------
 # Abstract base
 # ---------------------------------------------------------------------------
+
 
 class LLMProvider(ABC):
     """Abstract base class for HYDRA LLM providers."""
@@ -113,6 +114,7 @@ class LLMProvider(ABC):
 # Retry helper
 # ---------------------------------------------------------------------------
 
+
 async def _retry_with_backoff(coro_factory, retries: int = 3):
     """Execute an async callable with exponential back-off on failure.
 
@@ -142,10 +144,7 @@ async def _retry_with_backoff(coro_factory, retries: int = 3):
             )
             if is_rate_limit and attempt < retries - 1:
                 delay = _RETRY_DELAYS[min(attempt, len(_RETRY_DELAYS) - 1)]
-                print(
-                    f"[LLM] Rate limited (attempt {attempt + 1}/{retries}), "
-                    f"retrying in {delay}s ..."
-                )
+                print(f"[LLM] Rate limited (attempt {attempt + 1}/{retries}), " f"retrying in {delay}s ...")
                 await asyncio.sleep(delay)
             else:
                 raise
@@ -155,6 +154,7 @@ async def _retry_with_backoff(coro_factory, retries: int = 3):
 # ---------------------------------------------------------------------------
 # Claude (Anthropic)
 # ---------------------------------------------------------------------------
+
 
 class ClaudeProvider(LLMProvider):
     """LLM provider backed by the Anthropic Messages API.
@@ -175,8 +175,7 @@ class ClaudeProvider(LLMProvider):
             import anthropic  # noqa: F401
         except ImportError:
             raise ImportError(
-                "The 'anthropic' package is required for ClaudeProvider.\n"
-                "Install it with:  pip install anthropic"
+                "The 'anthropic' package is required for ClaudeProvider.\n" "Install it with:  pip install anthropic"
             )
 
         self.model = model
@@ -209,9 +208,7 @@ class ClaudeProvider(LLMProvider):
                 system=system_prompt,
                 messages=[{"role": "user", "content": prompt}],
             )
-            text = "".join(
-                block.text for block in response.content if hasattr(block, "text")
-            )
+            text = "".join(block.text for block in response.content if hasattr(block, "text"))
             return LLMResponse(
                 text=text,
                 model=response.model,
@@ -247,6 +244,7 @@ class ClaudeProvider(LLMProvider):
 # OpenAI / GPT
 # ---------------------------------------------------------------------------
 
+
 class OpenAIProvider(LLMProvider):
     """LLM provider backed by the OpenAI Chat Completions API.
 
@@ -267,8 +265,7 @@ class OpenAIProvider(LLMProvider):
             import openai  # noqa: F401
         except ImportError:
             raise ImportError(
-                "The 'openai' package is required for OpenAIProvider.\n"
-                "Install it with:  pip install openai"
+                "The 'openai' package is required for OpenAIProvider.\n" "Install it with:  pip install openai"
             )
 
         self.model = model
@@ -350,6 +347,7 @@ class OpenAIProvider(LLMProvider):
 # Google Gemini
 # ---------------------------------------------------------------------------
 
+
 class GeminiProvider(LLMProvider):
     """LLM provider backed by the Google GenAI SDK.
 
@@ -418,9 +416,7 @@ class GeminiProvider(LLMProvider):
             # Determine finish reason
             finish_reason = "stop"
             if response.candidates:
-                raw_reason = getattr(
-                    response.candidates[0], "finish_reason", None
-                )
+                raw_reason = getattr(response.candidates[0], "finish_reason", None)
                 if raw_reason is not None:
                     finish_reason = str(raw_reason)
             return LLMResponse(
@@ -466,13 +462,9 @@ class GeminiProvider(LLMProvider):
                     config=config,
                 ):
                     if chunk.text:
-                        asyncio.get_event_loop().call_soon_threadsafe(
-                            queue.put_nowait, chunk.text
-                        )
+                        asyncio.get_event_loop().call_soon_threadsafe(queue.put_nowait, chunk.text)
             finally:
-                asyncio.get_event_loop().call_soon_threadsafe(
-                    queue.put_nowait, None
-                )
+                asyncio.get_event_loop().call_soon_threadsafe(queue.put_nowait, None)
 
         loop = asyncio.get_event_loop()
         loop.run_in_executor(None, _generate)
@@ -487,6 +479,7 @@ class GeminiProvider(LLMProvider):
 # ---------------------------------------------------------------------------
 # HuggingFace Inference
 # ---------------------------------------------------------------------------
+
 
 class HuggingFaceProvider(LLMProvider):
     """LLM provider backed by the HuggingFace Inference API.
@@ -591,13 +584,9 @@ class HuggingFaceProvider(LLMProvider):
             try:
                 for chunk in response:
                     if chunk.choices and chunk.choices[0].delta.content:
-                        asyncio.get_event_loop().call_soon_threadsafe(
-                            queue.put_nowait, chunk.choices[0].delta.content
-                        )
+                        asyncio.get_event_loop().call_soon_threadsafe(queue.put_nowait, chunk.choices[0].delta.content)
             finally:
-                asyncio.get_event_loop().call_soon_threadsafe(
-                    queue.put_nowait, None
-                )
+                asyncio.get_event_loop().call_soon_threadsafe(queue.put_nowait, None)
 
         loop = asyncio.get_event_loop()
         loop.run_in_executor(None, _consume)
@@ -612,6 +601,7 @@ class HuggingFaceProvider(LLMProvider):
 # ---------------------------------------------------------------------------
 # Local (OpenAI-compatible endpoint)
 # ---------------------------------------------------------------------------
+
 
 class LocalProvider(LLMProvider):
     """LLM provider for local OpenAI-compatible servers (LM Studio, Ollama, vLLM, etc.).
@@ -633,8 +623,7 @@ class LocalProvider(LLMProvider):
             import openai  # noqa: F401
         except ImportError:
             raise ImportError(
-                "The 'openai' package is required for LocalProvider.\n"
-                "Install it with:  pip install openai"
+                "The 'openai' package is required for LocalProvider.\n" "Install it with:  pip install openai"
             )
 
         self.model = model
@@ -711,6 +700,7 @@ class LocalProvider(LLMProvider):
 # Grok (xAI) — OpenAI-compatible endpoint
 # ---------------------------------------------------------------------------
 
+
 class GrokProvider(LLMProvider):
     """LLM provider backed by xAI's Grok API (OpenAI-compatible).
 
@@ -731,8 +721,7 @@ class GrokProvider(LLMProvider):
             import openai  # noqa: F401
         except ImportError:
             raise ImportError(
-                "The 'openai' package is required for GrokProvider.\n"
-                "Install it with:  pip install openai"
+                "The 'openai' package is required for GrokProvider.\n" "Install it with:  pip install openai"
             )
 
         self.model = model
@@ -860,9 +849,7 @@ def create_provider(
 
     if cls is None:
         supported = ", ".join(sorted(_PROVIDER_MAP.keys()))
-        raise ValueError(
-            f"Unknown ai_type '{ai_type}'. Supported types: {supported}"
-        )
+        raise ValueError(f"Unknown ai_type '{ai_type}'. Supported types: {supported}")
 
     if model is not None:
         kwargs["model"] = model

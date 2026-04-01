@@ -27,6 +27,7 @@ from .llm_providers import LLMProvider, LLMResponse, create_provider, HYDRA_SYST
 
 class AIType(str, Enum):
     """Supported AI types."""
+
     CLAUDE = "claude"
     CODEX = "codex"
     GPT = "gpt"
@@ -37,6 +38,7 @@ class AIType(str, Enum):
 
 class HeadStatus(str, Enum):
     """Head connection status."""
+
     DISCONNECTED = "disconnected"
     CONNECTING = "connecting"
     CONNECTED = "connected"
@@ -77,7 +79,7 @@ class HydraHead:
     created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     # Runtime state (set after connection)
-    _spine: 'HydraSpine' = field(default=None, repr=False)  # noqa: F821
+    _spine: "HydraSpine" = field(default=None, repr=False)  # noqa: F821
     _polly_pad: Optional[Dict] = field(default=None, repr=False)
     _provider: Optional[LLMProvider] = field(default=None, repr=False)
 
@@ -85,12 +87,12 @@ class HydraHead:
         if self.callsign is None:
             # Generate callsign based on AI type
             prefixes = {
-                "claude": "CT",   # Claude Trooper
-                "codex": "CX",    # Codex
-                "gpt": "GP",      # GPT
-                "gemini": "GM",   # Gemini
-                "local": "LC",    # Local
-                "custom": "XX"    # Custom
+                "claude": "CT",  # Claude Trooper
+                "codex": "CX",  # Codex
+                "gpt": "GP",  # GPT
+                "gemini": "GM",  # Gemini
+                "local": "LC",  # Local
+                "custom": "XX",  # Custom
             }
             prefix = prefixes.get(self.ai_type.lower(), "XX")
             self.callsign = f"{prefix}-{uuid.uuid4().hex[:4].upper()}"
@@ -198,7 +200,7 @@ class HydraHead:
         if text.startswith("```"):
             # Remove opening fence (```json or ```)
             first_newline = text.index("\n") if "\n" in text else 3
-            text = text[first_newline + 1:]
+            text = text[first_newline + 1 :]
         if text.endswith("```"):
             text = text[:-3]
         text = text.strip()
@@ -210,18 +212,16 @@ class HydraHead:
             start = text.find("[")
             end = text.rfind("]")
             if start != -1 and end != -1 and end > start:
-                actions = json.loads(text[start:end + 1])
+                actions = json.loads(text[start : end + 1])
             else:
-                raise ValueError(
-                    f"LLM did not return valid JSON actions. Raw response:\n{response.text}"
-                )
+                raise ValueError(f"LLM did not return valid JSON actions. Raw response:\n{response.text}")
 
         if not isinstance(actions, list):
             actions = [actions]
 
         return actions
 
-    async def connect(self, spine: 'HydraSpine') -> bool:  # noqa: F821
+    async def connect(self, spine: "HydraSpine") -> bool:  # noqa: F821
         """
         Connect this head to a HYDRA Spine.
 
@@ -277,10 +277,7 @@ class HydraHead:
         Results are logged to the central ledger.
         """
         if self.status != HeadStatus.CONNECTED:
-            return {
-                "success": False,
-                "error": f"Head not connected (status: {self.status.value})"
-            }
+            return {"success": False, "error": f"Head not connected (status: {self.status.value})"}
 
         if not self._spine:
             return {"success": False, "error": "No spine connection"}
@@ -311,12 +308,9 @@ class HydraHead:
         if not self._spine:
             return {"success": False, "error": "Not connected"}
 
-        return await self._spine.execute({
-            "action": "message",
-            "from_head": self.head_id,
-            "to_head": to_head,
-            "message": message
-        })
+        return await self._spine.execute(
+            {"action": "message", "from_head": self.head_id, "to_head": to_head, "message": message}
+        )
 
     async def receive_messages(self) -> list:
         """Receive pending messages from other heads."""
@@ -330,11 +324,7 @@ class HydraHead:
         if not self._spine:
             return False
 
-        result = await self._spine.execute({
-            "action": "remember",
-            "key": key,
-            "value": value
-        })
+        result = await self._spine.execute({"action": "remember", "key": key, "value": value})
         return result.get("success", False)
 
     async def recall(self, key: str) -> Any:
@@ -342,10 +332,7 @@ class HydraHead:
         if not self._spine:
             return None
 
-        result = await self._spine.execute({
-            "action": "recall",
-            "key": key
-        })
+        result = await self._spine.execute({"action": "recall", "key": key})
         return result.get("value")
 
     async def run_workflow(self, workflow_id: str = None, definition: Dict = None) -> Dict[str, Any]:
@@ -358,11 +345,7 @@ class HydraHead:
         if not self._spine:
             return {"success": False, "error": "Not connected"}
 
-        return await self._spine.execute({
-            "action": "workflow",
-            "workflow_id": workflow_id,
-            "definition": definition
-        })
+        return await self._spine.execute({"action": "workflow", "workflow_id": workflow_id, "definition": definition})
 
     # =========================================================================
     # Polly Pad Integration
@@ -405,11 +388,7 @@ class HydraHead:
 
     async def type_text(self, selector: str, text: str) -> Dict[str, Any]:
         """Type text into an element."""
-        return await self.execute({
-            "action": "type",
-            "target": selector,
-            "params": {"text": text}
-        })
+        return await self.execute({"action": "type", "target": selector, "params": {"text": text}})
 
     async def run_command(self, command: str) -> Dict[str, Any]:
         """Run a terminal command."""
@@ -417,16 +396,13 @@ class HydraHead:
 
     async def call_api(self, url: str, method: str = "GET", body: Dict = None) -> Dict[str, Any]:
         """Make an API call."""
-        return await self.execute({
-            "action": "api",
-            "target": url,
-            "params": {"method": method, "body": body or {}}
-        })
+        return await self.execute({"action": "api", "target": url, "params": {"method": method, "body": body or {}}})
 
 
 # =============================================================================
 # Head Factory Functions
 # =============================================================================
+
 
 def create_claude_head(model: str = "sonnet", callsign: str = None) -> HydraHead:
     """Create a Claude head."""

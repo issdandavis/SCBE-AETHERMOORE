@@ -188,7 +188,9 @@ class MCPTenrearyRunner:
         await primary.activate()
         self._browser_limbs["primary"] = primary
 
-        if str(secondary_engine).lower() != str(primary_engine).lower() or bool(dual_browser.get("force_secondary", True)):
+        if str(secondary_engine).lower() != str(primary_engine).lower() or bool(
+            dual_browser.get("force_secondary", True)
+        ):
             secondary = MultiTabBrowserLimb(backend_type=secondary_engine, max_tabs=max_tabs, scbe_url=self.scbe_url)
             await secondary.activate()
             self._browser_limbs["secondary"] = secondary
@@ -502,7 +504,9 @@ class MCPTenrearyRunner:
         if backend == "transformers":
             return self._analyze_transformers(text=text)
         if backend == "langchain":
-            return await self._analyze_langchain(text=text, prompt=prompt, model=str(params.get("model", "gpt-4o-mini")))
+            return await self._analyze_langchain(
+                text=text, prompt=prompt, model=str(params.get("model", "gpt-4o-mini"))
+            )
         return self._analyze_rule(text=text)
 
     def _analyze_openai(self, *, text: str, prompt: str, model: str) -> Dict[str, Any]:
@@ -534,11 +538,7 @@ class MCPTenrearyRunner:
             with urllib.request.urlopen(req, timeout=45) as resp:
                 raw = resp.read().decode("utf-8", errors="replace")
                 payload = json.loads(raw)
-                content = (
-                    payload.get("choices", [{}])[0]
-                    .get("message", {})
-                    .get("content", "")
-                )
+                content = payload.get("choices", [{}])[0].get("message", {}).get("content", "")
                 return {"backend": "openai", "model": model, "analysis": content, "raw": payload}
         except urllib.error.HTTPError as exc:
             body_text = exc.read().decode("utf-8", errors="replace")

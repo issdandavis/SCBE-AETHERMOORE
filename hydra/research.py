@@ -25,7 +25,6 @@ from .limbs import MultiTabBrowserLimb
 from .llm_providers import LLMProvider, create_provider
 from .switchboard import Switchboard
 
-
 _JSON_FENCE_RE = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL | re.IGNORECASE)
 
 
@@ -114,7 +113,14 @@ def html_to_text(raw_html: str, max_chars: int = 8000) -> str:
         text = soup.get_text(separator=" ")
     except Exception:
         # Lightweight fallback for environments without bs4/lxml.
-        text = re.sub(r"<[^>]+>", " ", raw_html)
+        # Strip content inside script/style/noscript/svg/iframe tags first.
+        text = re.sub(
+            r"<(script|style|noscript|svg|iframe)\b[^>]*>.*?</\1>",
+            " ",
+            raw_html,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        text = re.sub(r"<[^>]+>", " ", text)
 
     compact = " ".join(text.split())
     return compact[: max(1, int(max_chars))]
@@ -269,7 +275,11 @@ class ResearchOrchestrator:
                     continue
                 title = str(item.get("title") or f"Subtask {idx}").strip()
                 search_query = str(item.get("search_query") or query).strip()
-                urls = [str(u).strip() for u in item.get("urls", []) if str(u).strip()] if isinstance(item.get("urls"), list) else []
+                urls = (
+                    [str(u).strip() for u in item.get("urls", []) if str(u).strip()]
+                    if isinstance(item.get("urls"), list)
+                    else []
+                )
                 subtasks.append(
                     ResearchSubTask(
                         subtask_id=f"subtask-{idx}",
@@ -435,13 +445,22 @@ class ResearchOrchestrator:
                     resp.raise_for_status()
                     text = html_to_text(resp.text, max_chars=self.config.extract_max_chars)
                     return ResearchSource(
-                        subtask_id=subtask_id, title=title, url=str(resp.url),
-                        excerpt=text, chars=len(text), status="ok", provider="httpx",
+                        subtask_id=subtask_id,
+                        title=title,
+                        url=str(resp.url),
+                        excerpt=text,
+                        chars=len(text),
+                        status="ok",
+                        provider="httpx",
                     )
                 except Exception as exc:
                     return ResearchSource(
-                        subtask_id=subtask_id, title=title, url=url,
-                        status="error", error=str(exc), provider="httpx",
+                        subtask_id=subtask_id,
+                        title=title,
+                        url=url,
+                        status="error",
+                        error=str(exc),
+                        provider="httpx",
                     )
 
             results = await asyncio.gather(*[_fetch(sid, t, u) for sid, t, u in jobs])
@@ -540,10 +559,7 @@ class ResearchOrchestrator:
             return {}
 
         placeholders = ",".join("?" for _ in ids)
-        sql = (
-            "SELECT task_id, status, result_json, error_text "
-            f"FROM tasks WHERE task_id IN ({placeholders})"
-        )
+        sql = "SELECT task_id, status, result_json, error_text " f"FROM tasks WHERE task_id IN ({placeholders})"
 
         out: Dict[str, Dict[str, Any]] = {}
         try:
@@ -612,15 +628,10 @@ class ResearchOrchestrator:
         for source in sources:
             if source.status != "ok":
                 continue
-            context_lines.append(
-                f"- [{source.subtask_id}] {source.url}\n"
-                f"  excerpt: {source.excerpt[:1200]}"
-            )
+            context_lines.append(f"- [{source.subtask_id}] {source.url}\n" f"  excerpt: {source.excerpt[:1200]}")
 
         context_blob = "\n".join(context_lines) if context_lines else "No valid sources were fetched."
-        subtasks_blob = "\n".join(
-            [f"- {s.subtask_id}: {s.title} ({s.search_query})" for s in subtasks]
-        )
+        subtasks_blob = "\n".join([f"- {s.subtask_id}: {s.title} ({s.search_query})" for s in subtasks])
 
         prompt = (
             "You are a research synthesis agent. Use only provided source excerpts. "

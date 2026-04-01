@@ -37,8 +37,7 @@ class Switchboard:
 
     def _init_schema(self) -> None:
         with self._connect() as conn:
-            conn.executescript(
-                """
+            conn.executescript("""
                 CREATE TABLE IF NOT EXISTS tasks (
                   task_id TEXT PRIMARY KEY,
                   role TEXT NOT NULL,
@@ -72,8 +71,7 @@ class Switchboard:
 
                 CREATE INDEX IF NOT EXISTS idx_role_messages_channel_id
                   ON role_messages(channel, id);
-                """
-            )
+                """)
 
     def enqueue_task(
         self,
@@ -294,18 +292,12 @@ class Switchboard:
 
     def stats(self) -> Dict[str, Any]:
         with self._connect() as conn:
-            by_status_rows = conn.execute(
-                "SELECT status, COUNT(*) AS c FROM tasks GROUP BY status"
-            ).fetchall()
-            by_role_rows = conn.execute(
-                "SELECT role, COUNT(*) AS c FROM tasks GROUP BY role"
-            ).fetchall()
+            by_status_rows = conn.execute("SELECT status, COUNT(*) AS c FROM tasks GROUP BY status").fetchall()
+            by_role_rows = conn.execute("SELECT role, COUNT(*) AS c FROM tasks GROUP BY role").fetchall()
             leased_rows = conn.execute(
                 "SELECT task_id, role, lease_owner, lease_expires_at FROM tasks WHERE status='leased' ORDER BY updated_at DESC LIMIT 50"
             ).fetchall()
-            msg_count = conn.execute(
-                "SELECT COUNT(*) AS c FROM role_messages"
-            ).fetchone()
+            msg_count = conn.execute("SELECT COUNT(*) AS c FROM role_messages").fetchone()
 
         return {
             "db_path": self.db_path,
@@ -322,4 +314,3 @@ class Switchboard:
             ],
             "role_message_count": int(msg_count["c"] if msg_count else 0),
         }
-

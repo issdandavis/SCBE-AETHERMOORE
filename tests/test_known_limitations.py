@@ -176,6 +176,7 @@ class TestGeometricLimitations:
 class TestScaleLimitations:
     """Things that break at scale."""
 
+    @pytest.mark.slow
     @pytest.mark.xfail(reason="Memory grows with message size")
     def test_L09_very_large_message(self):
         """L09: Cannot efficiently handle very large messages (>1GB)."""

@@ -239,6 +239,7 @@ class MedicalAIChannel:
         self.ss = SpiralSealSS1(master_secret=master_secret, kid=f"med-{sender_id[:8]}")
         self.audit_trail: List[AuditRecord] = []
         self.session_id = sha256_hex(get_random(32))[:16]
+        self._session_ts = int(time.time())
 
     def _create_aad(self, data_type: MedicalDataType, patient_id: str) -> str:
         """Create HIPAA-compliant AAD with full context."""
@@ -248,7 +249,7 @@ class MedicalAIChannel:
             f"session={self.session_id};"
             f"data_type={data_type.value};"
             f"patient_hash={sha256_hex(patient_id.encode())[:16]};"
-            f"timestamp={int(time.time())}"
+            f"timestamp={self._session_ts}"
         )
 
     def _audit(self, operation: str, resource: str, outcome: str, metadata: Dict = None):

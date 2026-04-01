@@ -253,11 +253,54 @@ class Flock:
     - Status dashboard
     """
 
-    def __init__(self, energy_budget: float = 2000.0) -> None:
+    def __init__(
+        self,
+        energy_budget: float = 2000.0,
+        heartbeat_timeout: float = 60.0,
+        freeze_after_missed_heartbeats: int = 2,
+    ) -> None:
         self.sheep: Dict[str, Sheep] = {}
         self.tasks: Dict[str, FlockTask] = {}
         self._log: List[Dict[str, Any]] = []
         self._energy_manager = FleetEnergyManager(default_budget=energy_budget)
+        self.heartbeat_timeout = heartbeat_timeout
+        self.freeze_after_missed_heartbeats = freeze_after_missed_heartbeats
+
+    # ── Fleet Refresh ──
+
+    def refresh(
+        self,
+        heartbeat_timeout: Optional[float] = None,
+        auto_redistribute: bool = True,
+    ) -> Dict[str, Any]:
+        """Refresh flock health: check heartbeats, redistribute orphaned tasks."""
+        if heartbeat_timeout is not None:
+            self.heartbeat_timeout = heartbeat_timeout
+        now = time.time()
+        stale: List[str] = []
+        for sid, s in self.sheep.items():
+            elapsed = now - s.last_heartbeat
+            if elapsed > self.heartbeat_timeout * self.freeze_after_missed_heartbeats:
+                if s.state != SheepState.FROZEN:
+                    s.state = SheepState.FROZEN
+                stale.append(sid)
+        reassigned = 0
+        if auto_redistribute and stale:
+            available = [
+                sid
+                for sid, s in self.sheep.items()
+                if sid not in stale and s.state in (SheepState.ACTIVE, SheepState.IDLE)
+            ]
+            for tid, task in self.tasks.items():
+                if task.owner in stale and task.status == "active":
+                    if available:
+                        new_owner = available[reassigned % len(available)]
+                        task.owner = new_owner
+                    else:
+                        task.status = "orphaned"
+                        task.owner = None
+                    reassigned += 1
+        return {"stale_agents": stale, "reassigned_tasks": reassigned}
 
     # ── Agent Lifecycle ──
 
@@ -365,6 +408,31 @@ class Flock:
         agent.current_task = task.task_id
         agent.state = SheepState.BUSY
         self._log_event("assign", agent.sheep_id, f"Assigned {task_id} to {agent.name}")
+        return True
+
+    def mark_task_complete(
+        self,
+        task_id: str,
+        success: bool = True,
+        result: Any = None,
+        error_message: Optional[str] = None,
+    ) -> bool:
+        """Mark a task as completed and free the owning agent."""
+        task = self.tasks.get(task_id)
+        if not task or task.status != "active":
+            return False
+        task.status = "completed" if success else "failed"
+        task.result = result if success else {"error": error_message}
+        if task.owner:
+            agent = self.sheep.get(task.owner)
+            if agent:
+                if success:
+                    agent.tasks_completed += 1
+                else:
+                    agent.tasks_failed += 1
+                agent.current_task = None
+                agent.state = SheepState.IDLE
+        self._log_event("complete", task.owner or "unknown", f"Task {task_id} {'completed' if success else 'failed'}")
         return True
 
     def _select_best_agent(self, track: TrainingTrack) -> Optional[Sheep]:
@@ -516,6 +584,22 @@ class Flock:
             "tracks": tracks,
             "energy": energy_status,
         }
+
+    def get_dashboard_data(self) -> Dict[str, Any]:
+        """Return structured dashboard data for API consumers."""
+        h = self.health_check()
+        h["completed_tasks"] = sum(s.tasks_completed for s in self.sheep.values())
+        tasks_list = [
+            {
+                "task_id": t.task_id,
+                "description": t.description,
+                "status": t.status,
+                "owner": t.owner,
+                "priority": t.priority,
+            }
+            for t in self.tasks.values()
+        ]
+        return {"health": h, "tasks": tasks_list}
 
     def status_dashboard(self) -> str:
         """Generate a text status dashboard."""

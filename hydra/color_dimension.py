@@ -49,17 +49,17 @@ PHI = (1 + math.sqrt(5)) / 2  # Golden ratio ≈ 1.618
 
 # Sacred Tongue phi weights (from SCBE spec)
 TONGUE_WEIGHTS = {
-    "KO": PHI ** 0,   # 1.000 — Intent/Origin
-    "AV": PHI ** 1,   # 1.618 — Creative/Narrative
-    "RU": PHI ** 2,   # 2.618 — Security/Structure
-    "CA": PHI ** 3,   # 4.236 — Compute/Efficiency
-    "UM": PHI ** 4,   # 6.854 — Governance/Ethics
-    "DR": PHI ** 5,   # 11.090 — Architecture/Synthesis
+    "KO": PHI**0,  # 1.000 — Intent/Origin
+    "AV": PHI**1,  # 1.618 — Creative/Narrative
+    "RU": PHI**2,  # 2.618 — Security/Structure
+    "CA": PHI**3,  # 4.236 — Compute/Efficiency
+    "UM": PHI**4,  # 6.854 — Governance/Ethics
+    "DR": PHI**5,  # 11.090 — Architecture/Synthesis
 }
 
 # Musical interval ratios (from src/symphonic_cipher/.../langues_metric.py)
 TONGUE_INTERVALS = {
-    "KO": 1.0,    # root (unison)
+    "KO": 1.0,  # root (unison)
     "AV": 9 / 8,  # major second
     "RU": 5 / 4,  # major third
     "CA": 4 / 3,  # perfect fourth
@@ -68,14 +68,13 @@ TONGUE_INTERVALS = {
 }
 
 # Phi-scaled audio frequencies from 440Hz base (from src/ai_brain/detection.ts)
-TONGUE_AUDIO_HZ = {t: 440.0 * PHI ** k for k, t in enumerate(TONGUE_WEIGHTS)}
+TONGUE_AUDIO_HZ = {t: 440.0 * PHI**k for k, t in enumerate(TONGUE_WEIGHTS)}
 
 # Tongue-to-visible-light wavelength mapping (bridges audio to EM spectrum)
 # Maps KO(380nm/violet) through DR(680nm/red) using musical interval scaling
 _VIS_MIN, _VIS_MAX = 380.0, 680.0
 TONGUE_WAVELENGTHS = {
-    t: _VIS_MIN + (_VIS_MAX - _VIS_MIN) * (ratio - 1.0) / (5 / 3 - 1.0)
-    for t, ratio in TONGUE_INTERVALS.items()
+    t: _VIS_MIN + (_VIS_MAX - _VIS_MIN) * (ratio - 1.0) / (5 / 3 - 1.0) for t, ratio in TONGUE_INTERVALS.items()
 }
 
 # Tongue phase angles (from languesMetric.ts: 60° separation)
@@ -86,6 +85,7 @@ TONGUE_PHASES = {t: k * 60.0 for k, t in enumerate(TONGUE_WEIGHTS)}
 #  Color Channel — a single point on the spectrum
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ColorChannel:
     """A single color channel defined by wavelength in the visible spectrum.
@@ -93,6 +93,7 @@ class ColorChannel:
     wavelength_nm: 380 (violet) to 780 (red)
     The channel carries a set of semantic tags and a tongue overtone.
     """
+
     wavelength_nm: float
     tongue: str = "KO"
     tags: FrozenSet[str] = frozenset()
@@ -144,7 +145,7 @@ class ColorChannel:
         else:
             # Different tongues: use composite frequency for cross-tongue separation
             max_freq = (SPEED_OF_LIGHT_NM_THZ / 380) * max(TONGUE_WEIGHTS.values())
-            min_freq = (SPEED_OF_LIGHT_NM_THZ / 780)
+            min_freq = SPEED_OF_LIGHT_NM_THZ / 780
             freq_range = max_freq - min_freq
             if freq_range <= 0:
                 return 0.0
@@ -205,15 +206,17 @@ class ColorChannel:
 #  Predefined color bands — map to model providers and task types
 # ---------------------------------------------------------------------------
 
+
 class ColorBand(str, Enum):
     """Named color bands spanning the visible spectrum."""
-    VIOLET = "violet"       # 380-420nm — Architecture, synthesis (Claude)
-    BLUE = "blue"           # 420-490nm — Drafting, writing (GPT)
-    CYAN = "cyan"           # 490-510nm — Research data, queries
-    GREEN = "green"         # 510-570nm — Fact-check, citations (Gemini)
-    YELLOW = "yellow"       # 570-590nm — Editing, revision
-    ORANGE = "orange"       # 590-645nm — Debate, challenge (Grok)
-    RED = "red"             # 645-780nm — Embeddings, classification (HF)
+
+    VIOLET = "violet"  # 380-420nm — Architecture, synthesis (Claude)
+    BLUE = "blue"  # 420-490nm — Drafting, writing (GPT)
+    CYAN = "cyan"  # 490-510nm — Research data, queries
+    GREEN = "green"  # 510-570nm — Fact-check, citations (Gemini)
+    YELLOW = "yellow"  # 570-590nm — Editing, revision
+    ORANGE = "orange"  # 590-645nm — Debate, challenge (Grok)
+    RED = "red"  # 645-780nm — Embeddings, classification (HF)
 
 
 # Center wavelengths for each band
@@ -291,6 +294,7 @@ def channel_for_task(task_type: str, tongue: str = "KO", tags: Optional[Set[str]
 #  Multi-Color Tag — additive color mixing for multi-tagged items
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class MultiColorTag:
     """A multi-tagged item that exists on multiple color channels simultaneously.
@@ -298,6 +302,7 @@ class MultiColorTag:
     Like white light = all frequencies combined.
     Items tagged with multiple colors are visible to all those channels.
     """
+
     channels: List[ColorChannel] = field(default_factory=list)
 
     @property
@@ -369,6 +374,7 @@ class MultiColorTag:
 #  Color-Dimensional Graph Node — extends graph nodes with color isolation
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ColorNode:
     """A graph node with color-dimensional flow isolation.
@@ -376,9 +382,10 @@ class ColorNode:
     white=True makes it a designated intersection point (all colors merge).
     Otherwise, only flows on compatible color channels can pass through.
     """
+
     node_id: str
-    white: bool = False                                # White node = all colors intersect
-    allowed_bands: Optional[Set[ColorBand]] = None     # None = all bands allowed
+    white: bool = False  # White node = all colors intersect
+    allowed_bands: Optional[Set[ColorBand]] = None  # None = all bands allowed
     resident_flows: List[Tuple[str, ColorChannel]] = field(default_factory=list)  # (flow_id, channel)
     tags: Set[str] = field(default_factory=set)
 
@@ -415,6 +422,7 @@ class ColorNode:
 # ---------------------------------------------------------------------------
 #  Spectral Flow Router — non-intersection routing + hyperbolic drift gates
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class RoutedFlow:
@@ -545,9 +553,7 @@ class SpectralFlowRouter:
                 if self._node_is_merge(node_id):
                     continue
                 if spectral_distance < self.isolation_threshold:
-                    reasons.append(
-                        f"node_overlap:{node_id}:spectral_distance={spectral_distance:.4f}"
-                    )
+                    reasons.append(f"node_overlap:{node_id}:spectral_distance={spectral_distance:.4f}")
 
             # Rule 2: hyperbolic near-collision at the same progression index.
             depth = min(len(path), len(other.path))
@@ -561,9 +567,7 @@ class SpectralFlowRouter:
                 pos_b = self.node_positions[node_b]
                 hd = self.poincare_distance(pos_a, pos_b)
                 if hd < self.hyperbolic_min_separation and spectral_distance < self.isolation_threshold:
-                    reasons.append(
-                        f"hyperbolic_proximity:{node_a}->{node_b}:d={hd:.4f}"
-                    )
+                    reasons.append(f"hyperbolic_proximity:{node_a}->{node_b}:d={hd:.4f}")
 
         return reasons
 
@@ -619,6 +623,7 @@ class SpectralFlowRouter:
 #  Color Spectrum Allocator — assigns non-overlapping channels to flows
 # ---------------------------------------------------------------------------
 
+
 class SpectrumAllocator:
     """Allocates color channels to flows ensuring non-overlap.
 
@@ -631,8 +636,13 @@ class SpectrumAllocator:
         self.min_separation = min_separation_nm
         self.allocated: Dict[str, ColorChannel] = {}  # flow_id -> channel
 
-    def allocate(self, flow_id: str, preferred_band: Optional[ColorBand] = None,
-                 tongue: str = "KO", tags: Optional[Set[str]] = None) -> ColorChannel:
+    def allocate(
+        self,
+        flow_id: str,
+        preferred_band: Optional[ColorBand] = None,
+        tongue: str = "KO",
+        tags: Optional[Set[str]] = None,
+    ) -> ColorChannel:
         """Allocate a color channel for a flow, avoiding collisions."""
         if flow_id in self.allocated:
             return self.allocated[flow_id]
@@ -691,17 +701,21 @@ class SpectrumAllocator:
 #  Disorganized Order — multi-tag sorting by color frequency
 # ---------------------------------------------------------------------------
 
+
 def sort_by_disorganized_order(items: List[MultiColorTag]) -> List[MultiColorTag]:
     """Sort items by their composite color, creating 'disorganized order.'
 
     Items appear jumbled by label/name but are actually sorted by their
     spectral fingerprint — revealing hidden structure through color.
     """
-    return sorted(items, key=lambda item: (
-        item.average_wavelength,
-        item.dominant_channel.composite_frequency if item.dominant_channel else 0,
-        len(item.all_tags),
-    ))
+    return sorted(
+        items,
+        key=lambda item: (
+            item.average_wavelength,
+            item.dominant_channel.composite_frequency if item.dominant_channel else 0,
+            len(item.all_tags),
+        ),
+    )
 
 
 def group_by_color_band(items: List[MultiColorTag]) -> Dict[str, List[MultiColorTag]]:
@@ -719,6 +733,7 @@ def group_by_color_band(items: List[MultiColorTag]) -> Dict[str, List[MultiColor
 # ---------------------------------------------------------------------------
 #  Demo / test harness
 # ---------------------------------------------------------------------------
+
 
 def _demo():
     print("=" * 70)
@@ -742,8 +757,10 @@ def _demo():
     print("\nProvider Color Channels:")
     for provider in ["claude", "gpt", "gemini", "grok", "hf", "local"]:
         ch = channel_for_provider(provider, tongue="DR")
-        print(f"  {provider:8s} -> {ch.wavelength_nm:.0f}nm {ch.hex_color()} "
-              f"composite={ch.composite_frequency:.0f}THz")
+        print(
+            f"  {provider:8s} -> {ch.wavelength_nm:.0f}nm {ch.hex_color()} "
+            f"composite={ch.composite_frequency:.0f}THz"
+        )
 
     # Demonstrate spectral distance
     print("\nSpectral Distances:")
@@ -767,8 +784,20 @@ def _demo():
     # Spectrum allocation
     print("\nSpectrum Allocation (non-overlapping):")
     alloc = SpectrumAllocator(min_separation_nm=15)
-    for i, task in enumerate(["research_A", "draft_B", "edit_C", "debate_D", "embed_E",
-                               "research_F", "draft_G", "govern_H", "code_I", "fact_J"]):
+    for i, task in enumerate(
+        [
+            "research_A",
+            "draft_B",
+            "edit_C",
+            "debate_D",
+            "embed_E",
+            "research_F",
+            "draft_G",
+            "govern_H",
+            "code_I",
+            "fact_J",
+        ]
+    ):
         band = list(ColorBand)[i % len(ColorBand)]
         ch = alloc.allocate(task, preferred_band=band)
         print(f"  {task:15s} -> {ch.wavelength_nm:.0f}nm {ch.hex_color()}")
@@ -777,8 +806,8 @@ def _demo():
     # Color node isolation
     print("\nColor Node Flow Isolation:")
     node = ColorNode("convergence_hub", white=False)
-    flow_a = channel_for_provider("claude")   # 400nm
-    flow_b = channel_for_provider("gpt")      # 455nm
+    flow_a = channel_for_provider("claude")  # 400nm
+    flow_b = channel_for_provider("gpt")  # 455nm
     flow_c = ColorChannel(wavelength_nm=405)  # Close to claude!
 
     print(f"  Flow A (claude, 400nm): can_accept={node.can_accept_flow('a', flow_a)}")
