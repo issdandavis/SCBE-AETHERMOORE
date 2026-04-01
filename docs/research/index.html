@@ -199,14 +199,14 @@
         <div class="brand"><a href="../">SCBE RESEARCH</a></div>
         <nav>
             <a href="../">Home</a>
+            <a href="../enterprise.html">Enterprise</a>
+            <a href="../pricing.html">Pricing</a>
             <a href="../demos/">Demos</a>
             <a href="../articles/">Articles</a>
             <a href="#benchmark-board">Benchmarks</a>
-            <a href="#measured-runs">Measured runs</a>
+            <a href="./multi-agent-security.html">Case Study</a>
             <a href="./layer-coupling.html">Coupling</a>
-            <a href="#active-tracks">Tracks</a>
             <a href="./sphere-grid.html">Sphere Grid</a>
-            <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
             <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
         </nav>
     </div>
@@ -237,24 +237,34 @@
             </p>
             <div class="benchmark-board">
                 <div class="panel">
-                    <div class="score">03 / 30</div>
-                    <h3>March 30 evidence snapshot</h3>
+                    <div class="score">03 / 31</div>
+                    <h3>March 31 evidence snapshot</h3>
                     <p>
-                        This hub now separates three different surfaces that were previously getting blurred together:
-                        the strict-isolation training run, the subsystem overlap harness, and the trichromatic structural packet.
+                        Updated with overnight benchmark suite: spectral sweep (8 configs), null-space ablation (A/B/C),
+                        industry comparison (vs ProtectAI), and 233K multi-view training dataset.
                     </p>
                     <div class="metric-list">
                         <div class="metric">
-                            <strong>94.9% / 73.5%</strong>
-                            Strict-isolation training run: high train-eval accuracy and a separate blind holdout result from the same timestamped artifact.
+                            <strong>85.7% detection, 0% FP (E4 config)</strong>
+                            Spectral sweep best-balanced: semantic tongue coordinates + triple-weight remainder on 91-attack corpus.
+                            <a href="../demos/benchmarks.html">Full methodology</a>
                         </div>
                         <div class="metric">
-                            <strong>54.5% with 0 / 10 benign false positives</strong>
-                            Hybrid overlap harness: classifier, RuntimeGate, and trichromatic all measured on the same benchmark set.
+                            <strong>91 / 91 vs ProtectAI 62 / 91</strong>
+                            Industry comparison: SCBE blocked all attacks with zero false positives.
+                        </div>
+                        <div class="metric">
+                            <strong>F1: 0.481 &rarr; 0.813</strong>
+                            Semantic projector orientation improved F1 by 69% on 260-sample adversarial benchmark. Anchor result for pump architecture.
                         </div>
                         <div class="metric">
                             <strong>504-bit trichromatic state</strong>
-                            Hidden-band governance packet showing measured energy separation and observed forgery resistance.
+                            IR + Visible + UV hidden-band governance. 5/5 forgeries caught even when all visible signals matched.
+                        </div>
+                        <div class="metric">
+                            <strong>233K multi-view SFT pairs</strong>
+                            Binary-first training stack: L0 substrate (9%) + L1 coordination (11%) + L2 orientation (31%) + L3 expression (49%).
+                            <a href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data">HuggingFace</a>
                         </div>
                     </div>
                 </div>
@@ -318,6 +328,26 @@
                         <span>trichromatic</span>
                         <span>state space</span>
                         <span>structure</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section id="case-studies" style="margin-top:48px;">
+            <div class="eyebrow">Case studies</div>
+            <h2>Applied research with measured results</h2>
+            <p class="section-copy">
+                These pages apply the 14-layer pipeline to real multi-agent architectures and adversarial scenarios, showing where the math provides measurable protection.
+            </p>
+            <div class="grid">
+                <a class="panel" href="./multi-agent-security.html">
+                    <h3>SentinelAgent: Multi-Agent Security</h3>
+                    <p>Runtime oversight for hub-and-spoke multi-agent architectures. Covers shared ledger integrity, cascade injection detection, and three-pillar defense (input validation, planning validation, behavioral analysis) mapped to the 14-layer pipeline.</p>
+                    <div class="tags">
+                        <span>Multi-agent</span>
+                        <span>SentinelAgent</span>
+                        <span>Cascade injection</span>
+                        <span>Shared ledger</span>
                     </div>
                 </a>
             </div>
