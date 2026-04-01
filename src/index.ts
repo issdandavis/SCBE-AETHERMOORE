@@ -1,6 +1,8 @@
 /**
- * SCBE-AETHERMOORE v3.0
- * Hyperbolic Geometry-Based Security with 14-Layer Architecture
+ * SCBE-AETHERMOORE core library.
+ *
+ * Published npm surface for governance, tokenizer, crypto, and harmonic
+ * primitives used by the wider SCBE stack.
  *
  * Patent Pending: USPTO #63/961,403
  * Author: Issac Daniel Davis
@@ -42,7 +44,7 @@ export * from './selfHealing/quickFixBot.js';
 export * from './governance/offline_mode.js';
 
 // Version and Metadata
-export const VERSION = '3.0.0';
+export const VERSION = '4.0.0';
 export const PATENT_NUMBER = 'USPTO #63/961,403';
 export const ARCHITECTURE_LAYERS = 14;
 

@@ -1,0 +1,46 @@
+{
+  "name": "scbe-aethermoore-cli",
+  "version": "4.0.0",
+  "description": "Standalone CLI for SCBE-AETHERMOORE core tokenizer and governance primitives",
+  "license": "MIT",
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
+  "type": "commonjs",
+  "bin": {
+    "scbe": "./bin/scbe.js"
+  },
+  "files": [
+    "bin/**/*.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "help": "node ./bin/scbe.js --help",
+    "selftest": "node ./bin/scbe.js selftest"
+  },
+  "keywords": [
+    "scbe",
+    "aethermoore",
+    "cli",
+    "tokenizer",
+    "governance",
+    "sacred-tongues"
+  ],
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "packages/scbe-aethermoore-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "scbe-aethermoore": "^4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
