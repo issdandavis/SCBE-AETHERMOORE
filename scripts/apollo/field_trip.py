@@ -35,15 +35,16 @@ SFT_DIR = ROOT / "training-data" / "apollo" / "field_trips"
 @dataclass
 class Hop:
     """One stop on the field trip."""
+
     hop_number: int
-    network: str          # "clearnet" or "tor"
+    network: str  # "clearnet" or "tor"
     url: str
     exit_ip: str
     status: int
     title: str
     content_length: int
     content_hash: str
-    governance: str       # ALLOW, QUARANTINE, DENY
+    governance: str  # ALLOW, QUARANTINE, DENY
     secrets_scrubbed: int
     latency_ms: int
     timestamp: str
@@ -52,6 +53,7 @@ class Hop:
 @dataclass
 class FieldTripReport:
     """Full report of a field trip."""
+
     route_name: str
     started: str
     finished: str
@@ -63,17 +65,27 @@ class FieldTripReport:
     networks_used: List[str]
 
 
+def _redact_ip(ip: str) -> str:
+    """Redact an IP address for safe logging/storage."""
+    if not ip or ip in ("unknown", "direct"):
+        return ip
+    return ip[:3] + "***" if len(ip) > 3 else "***"
+
+
 def get_exit_ip(use_tor: bool = False) -> str:
-    """Get current exit IP."""
+    """Get current exit IP (returned redacted to prevent cleartext leakage)."""
     import requests
+
     try:
         if use_tor:
-            r = requests.get("https://check.torproject.org/api/ip",
-                             proxies={"http": TOR_SOCKS, "https": TOR_SOCKS}, timeout=15)
-            return r.json().get("IP", "unknown")
+            r = requests.get(
+                "https://check.torproject.org/api/ip", proxies={"http": TOR_SOCKS, "https": TOR_SOCKS}, timeout=15
+            )
+            raw_ip = r.json().get("IP", "unknown")
         else:
             r = requests.get("https://api.ipify.org?format=json", timeout=10)
-            return r.json().get("ip", "unknown")
+            raw_ip = r.json().get("ip", "unknown")
+        return _redact_ip(raw_ip)
     except Exception:
         return "unknown"
 
@@ -83,6 +95,7 @@ def rotate_tor_identity() -> bool:
     try:
         from stem import Signal
         from stem.control import Controller
+
         with Controller.from_port(port=9051) as c:
             c.authenticate()
             c.signal(Signal.NEWNYM)
@@ -135,11 +148,20 @@ def fetch_hop(url: str, use_tor: bool, hop_num: int) -> Hop:
         # Governance check — multi-word phrases only to reduce false positives
         # Single words like "listing" or "vendor" cause false positives on news/research sites
         blocked_phrases = [
-            "add to cart", "buy now", "checkout", "place order",
-            "exploit kit for sale", "ransomware as a service",
-            "fullz for sale", "credit card dumps", "cvv shop",
-            "counterfeit documents", "fake passport", "fake id for sale",
-            "hire a hacker", "ddos service",
+            "add to cart",
+            "buy now",
+            "checkout",
+            "place order",
+            "exploit kit for sale",
+            "ransomware as a service",
+            "fullz for sale",
+            "credit card dumps",
+            "cvv shop",
+            "counterfeit documents",
+            "fake passport",
+            "fake id for sale",
+            "hire a hacker",
+            "ddos service",
         ]
         text_lower = clean.lower()
         hits = [p for p in blocked_phrases if p in text_lower]
@@ -250,9 +272,11 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
 
     # Verify Tor is running
     try:
-        r = requests.get("https://check.torproject.org/api/ip",
-                         proxies={"http": TOR_SOCKS, "https": TOR_SOCKS}, timeout=10)
-        tor_ip = r.json().get("IP", "?")
+        r = requests.get(
+            "https://check.torproject.org/api/ip", proxies={"http": TOR_SOCKS, "https": TOR_SOCKS}, timeout=10
+        )
+        # Discard raw IP — only confirm connectivity
+        _ = r.json().get("IP", "?")
         print(f"  Tor: LIVE (exit: [REDACTED])")
     except Exception as e:
         print(f"  Tor: OFFLINE ({e})")
@@ -294,9 +318,11 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
             exit_ips.add(hop.exit_ip)
 
         gov_sym = {"ALLOW": "OK", "QUARANTINE": "Q ", "DENY": "X "}
-        redacted_ip = hop.exit_ip[:3] + "***" if hop.exit_ip else "?"
-        print(f"         [{gov_sym.get(hop.governance, '??')}] {hop.title[:50]} | "
-              f"{hop.content_length}B | {hop.latency_ms}ms | exit:{redacted_ip}")
+        # exit_ip is already redacted by get_exit_ip()
+        print(
+            f"         [{gov_sym.get(hop.governance, '??')}] {hop.title[:50]} | "
+            f"{hop.content_length}B | {hop.latency_ms}ms | exit:{hop.exit_ip}"
+        )
 
         if hop.secrets_scrubbed > 0:
             print(f"         Scrubbed {hop.secrets_scrubbed} secrets")
@@ -309,16 +335,18 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
     sft_pairs = []
     for hop in hops:
         if hop.governance != "DENY" and hop.content_length > 100:
-            sft_pairs.append({
-                "instruction": f"What content is available at {hop.url} when accessed {'via Tor' if hop.network == 'tor' else 'directly'}?",
-                "response": f"Accessed via {hop.network} (exit IP: [REDACTED]). "
-                            f"Title: {hop.title}. Content size: {hop.content_length} bytes. "
-                            f"Governance decision: {hop.governance}. "
-                            f"Latency: {hop.latency_ms}ms. "
-                            f"{'Secrets scrubbed: ' + str(hop.secrets_scrubbed) if hop.secrets_scrubbed else 'Clean.'}",
-                "source": "apollo_field_trip",
-                "category": f"field_trip_{hop.network}",
-            })
+            sft_pairs.append(
+                {
+                    "instruction": f"What content is available at {hop.url} when accessed {'via Tor' if hop.network == 'tor' else 'directly'}?",
+                    "response": f"Accessed via {hop.network} (exit IP: [REDACTED]). "
+                    f"Title: {hop.title}. Content size: {hop.content_length} bytes. "
+                    f"Governance decision: {hop.governance}. "
+                    f"Latency: {hop.latency_ms}ms. "
+                    f"{'Secrets scrubbed: ' + str(hop.secrets_scrubbed) if hop.secrets_scrubbed else 'Clean.'}",
+                    "source": "apollo_field_trip",
+                    "category": f"field_trip_{hop.network}",
+                }
+            )
 
     # Save SFT
     SFT_DIR.mkdir(parents=True, exist_ok=True)
@@ -329,14 +357,22 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
                 json.dump(p, f, ensure_ascii=False)
                 f.write("\n")
 
+    # Exit IPs are already redacted from get_exit_ip(); ensure redaction on persist
+    redacted_exit_ips = sorted(_redact_ip(ip) for ip in exit_ips)
+    redacted_hops = []
+    for h in hops:
+        d = asdict(h)
+        d["exit_ip"] = _redact_ip(d.get("exit_ip", ""))
+        redacted_hops.append(d)
+
     report = FieldTripReport(
         route_name=route_name,
         started=started,
         finished=finished,
         total_hops=len(hops),
         identity_rotations=rotations,
-        unique_exit_ips=sorted(exit_ips),
-        hops=[asdict(h) for h in hops],
+        unique_exit_ips=redacted_exit_ips,
+        hops=redacted_hops,
         sft_pairs_generated=len(sft_pairs),
         networks_used=sorted(set(h.network for h in hops)),
     )

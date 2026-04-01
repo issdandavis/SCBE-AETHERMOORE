@@ -62,6 +62,7 @@ def load_trusted_sites() -> dict:
 #  Tor Connection
 # =========================================================================== #
 
+
 def check_tor() -> dict:
     """Check if Tor is running and we can connect."""
     result = {"tor_running": False, "socks_proxy": False, "exit_ip": None}
@@ -69,10 +70,15 @@ def check_tor() -> dict:
     # Check if Tor process exists
     try:
         import subprocess
+
         out = subprocess.run(
-            ["tasklist" if sys.platform == "win32" else "pgrep", "/FI" if sys.platform == "win32" else "-x",
-             "IMAGENAME eq tor.exe" if sys.platform == "win32" else "tor"],
-            capture_output=True, text=True
+            [
+                "tasklist" if sys.platform == "win32" else "pgrep",
+                "/FI" if sys.platform == "win32" else "-x",
+                "IMAGENAME eq tor.exe" if sys.platform == "win32" else "tor",
+            ],
+            capture_output=True,
+            text=True,
         )
         result["tor_running"] = "tor" in out.stdout.lower()
     except Exception:
@@ -81,8 +87,11 @@ def check_tor() -> dict:
     # Check SOCKS proxy
     try:
         import requests
-        proxies = {"http": f"socks5h://{TOR_SOCKS_HOST}:{TOR_SOCKS_PORT}",
-                    "https": f"socks5h://{TOR_SOCKS_HOST}:{TOR_SOCKS_PORT}"}
+
+        proxies = {
+            "http": f"socks5h://{TOR_SOCKS_HOST}:{TOR_SOCKS_PORT}",
+            "https": f"socks5h://{TOR_SOCKS_HOST}:{TOR_SOCKS_PORT}",
+        }
         r = requests.get("https://check.torproject.org/api/ip", proxies=proxies, timeout=15)
         data = r.json()
         result["socks_proxy"] = True
@@ -101,6 +110,7 @@ def rotate_identity():
     try:
         from stem import Signal
         from stem.control import Controller
+
         with Controller.from_port(port=TOR_CONTROL_PORT) as controller:
             controller.authenticate()
             controller.signal(Signal.NEWNYM)
@@ -119,6 +129,7 @@ def rotate_identity():
 #  Sandboxed Fetch (double-sandbox: Tor proxy + governance gate)
 # =========================================================================== #
 
+
 def sandboxed_fetch(url: str, timeout: int = 30) -> dict:
     """Fetch a URL through Tor with full governance pipeline.
 
@@ -129,15 +140,23 @@ def sandboxed_fetch(url: str, timeout: int = 30) -> dict:
     from scripts.apollo.apollo_core import scrub_text, vault_secrets
 
     result = {
-        "url": url, "ok": False, "status": None, "content_hash": None,
-        "content_length": 0, "title": "", "snippet": "",
-        "governance_decision": "QUARANTINE", "scrubbed_items": 0,
+        "url": url,
+        "ok": False,
+        "status": None,
+        "content_hash": None,
+        "content_length": 0,
+        "title": "",
+        "snippet": "",
+        "governance_decision": "QUARANTINE",
+        "scrubbed_items": 0,
         "timestamp": datetime.datetime.now().isoformat(),
     }
 
     try:
-        proxies = {"http": f"socks5h://{TOR_SOCKS_HOST}:{TOR_SOCKS_PORT}",
-                    "https": f"socks5h://{TOR_SOCKS_HOST}:{TOR_SOCKS_PORT}"}
+        proxies = {
+            "http": f"socks5h://{TOR_SOCKS_HOST}:{TOR_SOCKS_PORT}",
+            "https": f"socks5h://{TOR_SOCKS_HOST}:{TOR_SOCKS_PORT}",
+        }
         headers = {"User-Agent": "SCBE-Apollo-Research/1.0 (academic research)"}
 
         r = requests.get(url, proxies=proxies, timeout=timeout, headers=headers)
@@ -153,6 +172,7 @@ def sandboxed_fetch(url: str, timeout: int = 30) -> dict:
 
         # Extract title
         import re
+
         title_match = re.search(r"<title[^>]*>(.*?)</title>", raw_text, re.I | re.S)
         if title_match:
             result["title"] = title_match.group(1).strip()[:200]
@@ -166,11 +186,20 @@ def sandboxed_fetch(url: str, timeout: int = 30) -> dict:
         # SANDBOX 2: Governance gate — check for blocked content
         # Multi-word phrases to reduce false positives on news/research sites
         blocked_keywords = [
-            "add to cart", "buy now", "checkout", "place order",
-            "exploit kit for sale", "ransomware as a service",
-            "fullz for sale", "credit card dumps", "cvv shop",
-            "counterfeit documents", "fake passport", "fake id for sale",
-            "hire a hacker", "ddos service",
+            "add to cart",
+            "buy now",
+            "checkout",
+            "place order",
+            "exploit kit for sale",
+            "ransomware as a service",
+            "fullz for sale",
+            "credit card dumps",
+            "cvv shop",
+            "counterfeit documents",
+            "fake passport",
+            "fake id for sale",
+            "hire a hacker",
+            "ddos service",
         ]
         text_lower = clean_text.lower()
         blocked_hits = [kw for kw in blocked_keywords if kw in text_lower]
@@ -195,6 +224,7 @@ def sandboxed_fetch(url: str, timeout: int = 30) -> dict:
 # =========================================================================== #
 #  Sweep — Crawl trusted onion sites
 # =========================================================================== #
+
 
 def sweep(tier: Optional[str] = None) -> List[dict]:
     """Sweep trusted onion sites, fetch and classify content."""
@@ -273,12 +303,14 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
     sft_pairs = []
     for r in results:
         if r["governance_decision"] != "DENY" and r.get("snippet"):
-            sft_pairs.append({
-                "instruction": f"What kind of content is available at {r.get('site_name', 'this site')} on the dark web, and why is it legitimate?",
-                "response": f"{r.get('site_name', 'This site')} ({r.get('tier', 'unknown tier')}, trust level: {r.get('trust', '?')}) provides: {r.get('snippet', 'content not available')[:200]}. This is legitimate because {r.get('site_name', 'it')} is operated by a verified organization with a known clearnet presence at {r.get('url', 'unknown')}.",
-                "source": "tor_sweeper",
-                "category": "dark_web_legitimate",
-            })
+            sft_pairs.append(
+                {
+                    "instruction": f"What kind of content is available at {r.get('site_name', 'this site')} on the dark web, and why is it legitimate?",
+                    "response": f"{r.get('site_name', 'This site')} ({r.get('tier', 'unknown tier')}, trust level: {r.get('trust', '?')}) provides: {r.get('snippet', 'content not available')[:200]}. This is legitimate because {r.get('site_name', 'it')} is operated by a verified organization with a known clearnet presence at {r.get('url', 'unknown')}.",
+                    "source": "tor_sweeper",
+                    "category": "dark_web_legitimate",
+                }
+            )
 
     if sft_pairs:
         SWEEP_TRAINING_DIR.mkdir(parents=True, exist_ok=True)
@@ -295,6 +327,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
 # =========================================================================== #
 #  CLI
 # =========================================================================== #
+
 
 def main():
     parser = argparse.ArgumentParser(description="Apollo Tor Sweeper")
@@ -316,8 +349,13 @@ def main():
     if args.command == "check":
         status = check_tor()
         print("TOR STATUS:")
+        # Redact sensitive fields (exit IP, tokens, etc.) before printing
+        _sensitive_keys = {"exit_ip", "token", "password", "secret", "key"}
         for k, v in status.items():
-            print(f"  {k}: {v}")
+            if k in _sensitive_keys and v and isinstance(v, str) and len(v) > 3:
+                print(f"  {k}: {v[:3]}***")
+            else:
+                print(f"  {k}: {v}")
 
     elif args.command == "sweep":
         sweep(args.tier)
@@ -325,7 +363,9 @@ def main():
     elif args.command == "identity":
         status = check_tor()
         if status.get("exit_ip"):
-            print(f"Exit IP: {status['exit_ip']}")
+            ip = status["exit_ip"]
+            redacted_ip = ip[:3] + "***" if len(ip) > 3 else "***"
+            print(f"Exit IP: {redacted_ip}")
             print(f"Is Tor: {status.get('is_tor', '?')}")
         else:
             print("Tor not connected.")

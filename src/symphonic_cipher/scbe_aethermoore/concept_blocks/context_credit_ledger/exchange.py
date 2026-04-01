@@ -411,9 +411,9 @@ class ComputeExchange:
             "by_state": by_state,
             "total_volume_settled": round(total_volume, 6),
             "exchange_rates": {
-                f"{d1.value}/{d2.value}": round(DENOMINATION_WEIGHTS[d1] / DENOMINATION_WEIGHTS[d2], 4)
-                for d1 in Denomination
-                for d2 in Denomination
+                f"{d1.value}/{d2.value}": round(w1 / w2, 4)
+                for d1, w1 in DENOMINATION_WEIGHTS.items()
+                for d2, w2 in DENOMINATION_WEIGHTS.items()
                 if d1 != d2 and d1.value < d2.value
             },
         }

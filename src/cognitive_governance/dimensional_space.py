@@ -271,15 +271,14 @@ class DimensionalSpace:
         v2 = p2.to_flat_vector()
 
         weighted_diff_sq = 0.0
-        num_tongues = len(TONGUE_NAMES)
-        total_blocks = len(StateValence) * 3  # valence x spatial components
         idx = 0
-        for _ in range(total_blocks):
-            for t_idx in range(num_tongues):
-                w = TONGUES[TONGUE_NAMES[t_idx]]["weight"]
-                diff = v1[idx] - v2[idx]
-                weighted_diff_sq += w * diff * diff
-                idx += 1
+        for valence in StateValence:
+            for spatial in range(3):
+                for tongue in TONGUE_NAMES:
+                    w = TONGUES[tongue]["weight"]
+                    diff = v1[idx] - v2[idx]
+                    weighted_diff_sq += w * diff * diff
+                    idx += 1
 
         return math.sqrt(weighted_diff_sq)
 
