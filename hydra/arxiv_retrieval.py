@@ -22,7 +22,6 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 
-
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
 ARXIV_NS = {
     "atom": "http://www.w3.org/2005/Atom",
@@ -332,10 +331,7 @@ class AI2AIRetrievalService:
         for idx, paper in enumerate(packet.get("papers", []), start=1):
             authors = ", ".join(paper.get("authors", [])[:3])
             cats = ", ".join(paper.get("categories", [])[:3])
-            lines.append(
-                f"{idx}. **{paper.get('title', '').strip()}** "
-                f"({paper.get('arxiv_id', '')})"
-            )
+            lines.append(f"{idx}. **{paper.get('title', '').strip()}** " f"({paper.get('arxiv_id', '')})")
             if authors:
                 lines.append(f"   Authors: {authors}")
             if cats:

@@ -39,11 +39,15 @@ except ImportError:
 
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 
-# Skip all tests if dependencies not available
-pytestmark = pytest.mark.skipif(
-    not RWP_AVAILABLE,
-    reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)",
-)
+# Skip all tests if dependencies not available; also mark slow since Argon2
+# KDF is intentionally expensive and 100 Hypothesis iterations per test add up.
+pytestmark = [
+    pytest.mark.skipif(
+        not RWP_AVAILABLE,
+        reason="RWP v3.0 dependencies not installed (argon2-cffi, pycryptodome)",
+    ),
+    pytest.mark.slow,
+]
 
 # Hypothesis settings for thorough testing
 THOROUGH = settings(

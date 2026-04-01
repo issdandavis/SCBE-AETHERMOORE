@@ -30,7 +30,6 @@ from .librarian import Librarian
 from .arxiv_retrieval import AI2AIRetrievalService, ArxivClient
 from .research import ResearchOrchestrator, ResearchConfig
 
-
 BANNER = """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                                                                               ║
@@ -204,7 +203,7 @@ Branch Commands (ChoiceScript branching + council):
   hydra branch run research_pipeline --topic "swarm navigation" --strategy all_paths
   hydra branch run training_funnel --strategy scored --providers claude,gpt,gemini
   hydra branch run content_publisher --export-n8n workflows/n8n/branch.workflow.json
-        """
+        """,
     )
     if hasattr(parser, "suggest_on_error"):
         parser.suggest_on_error = True
@@ -220,29 +219,13 @@ Branch Commands (ChoiceScript branching + council):
         ),
     )
 
-    parser.add_argument(
-        "args",
-        nargs="*",
-        help="Command arguments"
-    )
+    parser.add_argument("args", nargs="*", help="Command arguments")
 
-    parser.add_argument(
-        "--scbe-url",
-        default="http://127.0.0.1:8080",
-        help="SCBE API URL"
-    )
+    parser.add_argument("--scbe-url", default="http://127.0.0.1:8080", help="SCBE API URL")
 
-    parser.add_argument(
-        "--no-banner",
-        action="store_true",
-        help="Don't show banner"
-    )
+    parser.add_argument("--no-banner", action="store_true", help="Don't show banner")
 
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output as JSON"
-    )
+    parser.add_argument("--json", action="store_true", help="Output as JSON")
     parser.add_argument(
         "--version",
         action="version",
@@ -254,28 +237,16 @@ Branch Commands (ChoiceScript branching + council):
         "--mode",
         default="httpx",
         choices=["httpx", "local", "cloud"],
-        help="Browse mode: httpx (lightweight), local (Playwright), cloud (Docker workers)"
+        help="Browse mode: httpx (lightweight), local (Playwright), cloud (Docker workers)",
     )
 
     parser.add_argument(
-        "--providers",
-        default="claude,gpt,gemini",
-        help="Comma-separated LLM providers (e.g. claude,gpt,gemini)"
+        "--providers", default="claude,gpt,gemini", help="Comma-separated LLM providers (e.g. claude,gpt,gemini)"
     )
 
-    parser.add_argument(
-        "--max-subtasks",
-        type=int,
-        default=5,
-        help="Max parallel subtasks for research (1-10)"
-    )
+    parser.add_argument("--max-subtasks", type=int, default=5, help="Max parallel subtasks for research (1-10)")
 
-    parser.add_argument(
-        "--discovery",
-        type=int,
-        default=3,
-        help="URLs to discover per subtask (1-10)"
-    )
+    parser.add_argument("--discovery", type=int, default=3, help="URLs to discover per subtask (1-10)")
 
     args, passthrough_args = parser.parse_known_args()
     if passthrough_args:
@@ -352,14 +323,15 @@ Branch Commands (ChoiceScript branching + council):
             print("Error: Provide search keywords")
             sys.exit(1)
         from .librarian import MemoryQuery
+
         query = MemoryQuery(keywords=cmd_args)
         results = librarian.search(query)
         if args.json:
-            print(json.dumps([{
-                "key": r.key,
-                "value": r.value,
-                "relevance": r.relevance_score
-            } for r in results], indent=2))
+            print(
+                json.dumps(
+                    [{"key": r.key, "value": r.value, "relevance": r.relevance_score} for r in results], indent=2
+                )
+            )
         else:
             for r in results:
                 print(f"[{r.relevance_score:.2f}] {r.key}: {r.value}")
@@ -520,7 +492,7 @@ async def show_status(spine: HydraSpine, librarian: Librarian, as_json: bool):
         "total_entries": stats.get("total_entries", 0),
         "memory_facts": stats.get("memory_facts", 0),
         "scbe_url": spine.scbe_url,
-        "timestamp": datetime.now(timezone.utc).isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
     if as_json:
@@ -553,10 +525,10 @@ async def show_stats(librarian: Librarian, as_json: bool):
         print(f"  Cache Misses:  {stats.get('cache_misses', 0)}")
         print(f"  Hit Rate:      {stats.get('cache_hit_rate', 0):.2%}")
         print("\n  By Entry Type:")
-        for t, c in stats.get('by_type', {}).items():
+        for t, c in stats.get("by_type", {}).items():
             print(f"    {t}: {c}")
         print("\n  By Decision:")
-        for d, c in stats.get('by_decision', {}).items():
+        for d, c in stats.get("by_decision", {}).items():
             print(f"    {d}: {c}")
         print("=" * 50 + "\n")
 
@@ -586,14 +558,8 @@ async def handle_workflow(args: list, spine: HydraSpine, librarian: Librarian, a
             print(f"Workflow not found: {name}")
             return
 
-        workflow_id = spine.define_workflow(
-            template.get("name"),
-            template.get("phases", [])
-        )
-        result = await spine.execute({
-            "action": "workflow",
-            "workflow_id": workflow_id
-        })
+        workflow_id = spine.define_workflow(template.get("name"), template.get("phases", []))
+        result = await spine.execute({"action": "workflow", "workflow_id": workflow_id})
         print(json.dumps(result, indent=2))
 
     elif subcmd == "show" and len(args) > 1:
@@ -609,11 +575,7 @@ async def handle_workflow(args: list, spine: HydraSpine, librarian: Librarian, a
         definition = _load_json_object(args[2], "workflow definition")
         if definition is None:
             return
-        librarian.save_workflow_template(
-            name,
-            definition.get("phases", []),
-            definition.get("description", "")
-        )
+        librarian.save_workflow_template(name, definition.get("phases", []), definition.get("description", ""))
         print(f"Saved workflow: {name}")
 
     else:
@@ -683,7 +645,9 @@ def handle_arxiv(args: List[str], librarian: Librarian, as_json: bool) -> None:
             print(json.dumps(packet, indent=2))
             return
 
-        print(f"\n[arxiv] packet={packet['packet_id']} returned={packet['returned_results']} total={packet['total_results']}")
+        print(
+            f"\n[arxiv] packet={packet['packet_id']} returned={packet['returned_results']} total={packet['total_results']}"
+        )
         for idx, paper in enumerate(packet.get("papers", []), start=1):
             print(f"{idx}. {paper['arxiv_id']} :: {paper['title']}")
             if paper.get("pdf_url"):
@@ -1070,15 +1034,15 @@ def handle_lattice25d(args: List[str], parsed_args) -> None:
     if not args or args[0] in {"help", "-h", "--help"}:
         print("Lattice25D Commands:")
         print("  hydra lattice25d sample [--count N] [--cell-size F] [--phase-weight F] [--json]")
-        print("  hydra lattice25d notes [--glob PATTERN] [--max-notes N] [--note \"text\"] [--json]")
+        print('  hydra lattice25d notes [--glob PATTERN] [--max-notes N] [--note "text"] [--json]')
         print("                 [--cell-size F] [--max-depth N] [--phase-weight F] [--radius F]")
         print("                 [--index grid|quadtree|hybrid] [--qt-capacity N] [--qt-z-var F] [--qt-extent F]")
         print("                 [--query-intent a,b,c] [--query-x X] [--query-y Y] [--query-phase P] [--query-top-k K]")
         print()
         print("Examples:")
         print("  hydra lattice25d sample --count 16")
-        print("  hydra lattice25d notes --glob \"docs/**/*.md\" --max-notes 50")
-        print("  hydra lattice25d notes --no-glob --note \"council decision packet\" --json")
+        print('  hydra lattice25d notes --glob "docs/**/*.md" --max-notes 50')
+        print('  hydra lattice25d notes --no-glob --note "council decision packet" --json')
         return
 
     subcmd = args[0].strip().lower()
@@ -1170,10 +1134,7 @@ def handle_lattice25d(args: List[str], parsed_args) -> None:
     print()
     print("  Nearest Bundles:")
     for row in payload.get("nearest", [])[:5]:
-        print(
-            f"    - {row['note_label']:28s} "
-            f"tongue={row['tongue']:2s} d={row['distance']:.4f}"
-        )
+        print(f"    - {row['note_label']:28s} " f"tongue={row['tongue']:2s} d={row['distance']:.4f}")
     print("=" * 60)
     print()
 
@@ -1192,7 +1153,7 @@ def handle_branch(args: List[str], parsed_args) -> None:
         print("  hydra branch list")
         print("  hydra branch show <graph> [--topic T]")
         print("  hydra branch run <graph> [--topic T] [--strategy S] [--max-paths N] [--max-depth N]")
-        print("                 [--providers claude,gpt,gemini] [--context '{\"k\":\"v\"}']")
+        print('                 [--providers claude,gpt,gemini] [--context \'{"k":"v"}\']')
         print("                 [--no-council] [--export-n8n path] [--export-choicescript path]")
         print()
         print(f"Available graphs: research_pipeline, content_publisher, training_funnel")
@@ -1265,7 +1226,9 @@ def handle_branch(args: List[str], parsed_args) -> None:
         print(f"  Strategy:   {payload['strategy']}")
         print(f"  Topic:      {options['topic'] or '(default)'}")
         print(f"  Paths:      {payload['paths_explored']}")
-        print(f"  Coverage:   {payload['coverage']:.0%} ({int(payload['coverage'] * payload['total_scenes'])}/{payload['total_scenes']})")
+        print(
+            f"  Coverage:   {payload['coverage']:.0%} ({int(payload['coverage'] * payload['total_scenes'])}/{payload['total_scenes']})"
+        )
         best = payload.get("best_path")
         if best:
             print(f"  Best Path:  {' -> '.join(best['scenes'])} (score={best['score']:.3f})")
@@ -1346,6 +1309,7 @@ def handle_canvas(args: List[str], parsed_args) -> None:
         steps = builder("example_topic")
         if as_json:
             from dataclasses import asdict
+
             print(json.dumps([asdict(s) for s in steps], indent=2, default=str))
             return
 

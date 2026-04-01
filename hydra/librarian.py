@@ -26,6 +26,7 @@ from .ledger import Ledger, LedgerEntry, EntryType
 @dataclass
 class MemoryQuery:
     """A query for searching memory."""
+
     keywords: List[str] = field(default_factory=list)
     category: Optional[str] = None
     min_importance: float = 0.0
@@ -37,6 +38,7 @@ class MemoryQuery:
 @dataclass
 class MemoryResult:
     """A result from memory search."""
+
     key: str
     value: Any
     category: str
@@ -74,12 +76,7 @@ class Librarian:
     # =========================================================================
 
     def remember(
-        self,
-        key: str,
-        value: Any,
-        category: str = "general",
-        importance: float = 0.5,
-        keywords: List[str] = None
+        self, key: str, value: Any, category: str = "general", importance: float = 0.5, keywords: List[str] = None
     ) -> None:
         """
         Store a fact in memory.
@@ -149,7 +146,7 @@ class Librarian:
         memories = self.ledger.search_memory(
             pattern=query.keywords[0] if query.keywords else None,
             category=query.category,
-            limit=query.limit * 2  # Get extra for filtering
+            limit=query.limit * 2,  # Get extra for filtering
         )
 
         for mem in memories:
@@ -165,30 +162,28 @@ class Librarian:
                     continue
 
             # Calculate relevance score
-            relevance = self._calculate_relevance(
-                mem.get("key", ""),
-                mem.get("value", ""),
-                query.keywords
-            )
+            relevance = self._calculate_relevance(mem.get("key", ""), mem.get("value", ""), query.keywords)
 
             # Boost by importance and access count
-            relevance *= (1 + mem.get("importance", 0))
-            relevance *= (1 + min(0.5, mem.get("access_count", 0) * 0.05))
+            relevance *= 1 + mem.get("importance", 0)
+            relevance *= 1 + min(0.5, mem.get("access_count", 0) * 0.05)
 
-            results.append(MemoryResult(
-                key=mem.get("key", ""),
-                value=json.loads(mem.get("value", "null")) if mem.get("value") else None,
-                category=mem.get("category", "general"),
-                importance=mem.get("importance", 0),
-                relevance_score=relevance,
-                access_count=mem.get("access_count", 0),
-                created_at=mem.get("created_at", "")
-            ))
+            results.append(
+                MemoryResult(
+                    key=mem.get("key", ""),
+                    value=json.loads(mem.get("value", "null")) if mem.get("value") else None,
+                    category=mem.get("category", "general"),
+                    importance=mem.get("importance", 0),
+                    relevance_score=relevance,
+                    access_count=mem.get("access_count", 0),
+                    created_at=mem.get("created_at", ""),
+                )
+            )
 
         # Sort by relevance
         results.sort(key=lambda x: x.relevance_score, reverse=True)
 
-        return results[:query.limit]
+        return results[: query.limit]
 
     def forget(self, key: str) -> bool:
         """
@@ -213,17 +208,11 @@ class Librarian:
     # =========================================================================
 
     def get_recent_actions(
-        self,
-        head_id: str = None,
-        limit: int = 50,
-        decision_filter: str = None
+        self, head_id: str = None, limit: int = 50, decision_filter: str = None
     ) -> List[Dict[str, Any]]:
         """Get recent actions from the ledger."""
         entries = self.ledger.query(
-            entry_type=EntryType.ACTION.value,
-            head_id=head_id,
-            decision=decision_filter,
-            limit=limit
+            entry_type=EntryType.ACTION.value, head_id=head_id, decision=decision_filter, limit=limit
         )
 
         return [e.to_dict() for e in entries]
@@ -242,7 +231,7 @@ class Librarian:
             "by_decision": {},
             "success_rate": 0.0,
             "common_targets": {},
-            "peak_hours": {}
+            "peak_hours": {},
         }
 
         if not actions:
@@ -283,22 +272,14 @@ class Librarian:
 
     def get_denied_actions(self, head_id: str = None, limit: int = 20) -> List[Dict[str, Any]]:
         """Get actions that were denied by SCBE."""
-        return self.get_recent_actions(
-            head_id=head_id,
-            decision_filter="DENY",
-            limit=limit
-        )
+        return self.get_recent_actions(head_id=head_id, decision_filter="DENY", limit=limit)
 
     # =========================================================================
     # Workflow Templates
     # =========================================================================
 
     def save_workflow_template(
-        self,
-        name: str,
-        phases: List[Dict[str, Any]],
-        description: str = "",
-        tags: List[str] = None
+        self, name: str, phases: List[Dict[str, Any]], description: str = "", tags: List[str] = None
     ) -> str:
         """
         Save a workflow as a reusable template.
@@ -310,7 +291,7 @@ class Librarian:
             "description": description,
             "phases": phases,
             "tags": tags or [],
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
 
         key = f"workflow:{name}"
@@ -354,12 +335,14 @@ class Librarian:
 
         for e in entries:
             if e.entry_type == EntryType.ACTION.value:
-                actions.append({
-                    "action": e.action,
-                    "target": e.target[:50] if e.target else "",
-                    "decision": e.decision,
-                    "timestamp": e.timestamp
-                })
+                actions.append(
+                    {
+                        "action": e.action,
+                        "target": e.target[:50] if e.target else "",
+                        "decision": e.decision,
+                        "timestamp": e.timestamp,
+                    }
+                )
 
             if e.decision:
                 decisions[e.decision] = decisions.get(e.decision, 0) + 1
@@ -376,7 +359,7 @@ class Librarian:
             "heads_involved": list(heads_involved),
             "limbs_used": list(limbs_used),
             "actions": actions[:20],  # Last 20 actions
-            "generated_at": datetime.now(timezone.utc).isoformat()
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }
 
     def create_handoff_context(self, for_head: str, max_items: int = 10) -> str:
@@ -397,7 +380,7 @@ Heads: {', '.join(summary['heads_involved'])}
 
 Recent Actions:
 """
-        for a in summary['actions'][:max_items]:
+        for a in summary["actions"][:max_items]:
             context += f"  - {a['action']}: {a['target']} ({a['decision']})\n"
 
         context += f"\n=== END CONTEXT ===\n"
@@ -409,11 +392,7 @@ Recent Actions:
     # =========================================================================
 
     def share_knowledge(
-        self,
-        from_head: str,
-        to_head: str,
-        knowledge: Dict[str, Any],
-        category: str = "shared"
+        self, from_head: str, to_head: str, knowledge: Dict[str, Any], category: str = "shared"
     ) -> bool:
         """
         Share knowledge between AI heads with governance.
@@ -428,26 +407,19 @@ Recent Actions:
                 "from": from_head,
                 "to": to_head,
                 "knowledge": knowledge,
-                "shared_at": datetime.now(timezone.utc).isoformat()
+                "shared_at": datetime.now(timezone.utc).isoformat(),
             },
             category=category,
-            importance=0.7
+            importance=0.7,
         )
 
         return True
 
     def get_shared_knowledge(self, head_id: str, limit: int = 20) -> List[Dict]:
         """Get knowledge shared with a specific head."""
-        results = self.ledger.search_memory(
-            pattern=f":{head_id}:",
-            category="shared",
-            limit=limit
-        )
+        results = self.ledger.search_memory(pattern=f":{head_id}:", category="shared", limit=limit)
 
-        return [
-            json.loads(r.get("value", "{}"))
-            for r in results
-        ]
+        return [json.loads(r.get("value", "{}")) for r in results]
 
     # =========================================================================
     # Helper Methods
@@ -456,25 +428,57 @@ Recent Actions:
     def _extract_keywords(self, text: str) -> List[str]:
         """Extract keywords from text."""
         # Remove special characters, split on whitespace
-        words = re.findall(r'\b\w+\b', text.lower())
+        words = re.findall(r"\b\w+\b", text.lower())
 
         # Filter short words and common stop words
         stop_words = {
-            "the", "a", "an", "is", "are", "was", "were", "be", "been",
-            "have", "has", "had", "do", "does", "did", "will", "would",
-            "could", "should", "may", "might", "must", "can", "this",
-            "that", "it", "to", "of", "in", "for", "on", "with", "at",
-            "by", "from", "as", "or", "and", "but", "not", "so", "if"
+            "the",
+            "a",
+            "an",
+            "is",
+            "are",
+            "was",
+            "were",
+            "be",
+            "been",
+            "have",
+            "has",
+            "had",
+            "do",
+            "does",
+            "did",
+            "will",
+            "would",
+            "could",
+            "should",
+            "may",
+            "might",
+            "must",
+            "can",
+            "this",
+            "that",
+            "it",
+            "to",
+            "of",
+            "in",
+            "for",
+            "on",
+            "with",
+            "at",
+            "by",
+            "from",
+            "as",
+            "or",
+            "and",
+            "but",
+            "not",
+            "so",
+            "if",
         }
 
         return [w for w in words if len(w) > 2 and w not in stop_words]
 
-    def _calculate_relevance(
-        self,
-        key: str,
-        value: str,
-        keywords: List[str]
-    ) -> float:
+    def _calculate_relevance(self, key: str, value: str, keywords: List[str]) -> float:
         """Calculate relevance score for a memory."""
         if not keywords:
             return 0.5
@@ -501,5 +505,5 @@ Recent Actions:
             "cache_hits": self._cache_hits,
             "cache_misses": self._cache_misses,
             "cache_hit_rate": self._cache_hits / max(1, self._cache_hits + self._cache_misses),
-            "keyword_index_size": len(self._keyword_index)
+            "keyword_index_size": len(self._keyword_index),
         }

@@ -64,9 +64,9 @@ class HydraLimb(ABC):
                         "agent_id": self.limb_id,
                         "action": action.upper(),
                         "target": target,
-                        "context": {"sensitivity": sensitivity}
+                        "context": {"sensitivity": sensitivity},
                     },
-                    headers={"Content-Type": "application/json"}
+                    headers={"Content-Type": "application/json"},
                 ) as resp:
                     if resp.status == 200:
                         return await resp.json()
@@ -87,12 +87,7 @@ class BrowserLimb(HydraLimb):
 
     limb_type = "browser"
 
-    def __init__(
-        self,
-        backend_type: str = "playwright",
-        tab_id: int = None,
-        scbe_url: str = "http://127.0.0.1:8080"
-    ):
+    def __init__(self, backend_type: str = "playwright", tab_id: int = None, scbe_url: str = "http://127.0.0.1:8080"):
         super().__init__(scbe_url)
         self.backend_type = backend_type
         self.tab_id = tab_id
@@ -107,12 +102,15 @@ class BrowserLimb(HydraLimb):
         try:
             if self.backend_type == "playwright":
                 from .browsers import PlaywrightBackend
+
                 self._backend = PlaywrightBackend(headless=True)
             elif self.backend_type == "selenium":
                 from .browsers import SeleniumBackend
+
                 self._backend = SeleniumBackend(headless=True)
             elif self.backend_type == "cdp":
                 from .browsers import CDPBackend
+
                 self._backend = CDPBackend()
             else:
                 print(f"[BROWSER] Unknown backend: {self.backend_type}")
@@ -140,7 +138,7 @@ class BrowserLimb(HydraLimb):
                 "decision": "DENY",
                 "action": action,
                 "target": target,
-                "reason": gov.get("explanation", "Blocked by SCBE")
+                "reason": gov.get("explanation", "Blocked by SCBE"),
             }
 
         # Execute via backend
@@ -237,12 +235,22 @@ class TerminalLimb(HydraLimb):
 
     # Commands that require escalation
     DANGEROUS_COMMANDS = [
-        "rm -rf", "rm -r", "rmdir", "del /s",
-        "format", "fdisk", "mkfs",
-        "dd if=", ":(){ :|:& };:",
-        "> /dev/sd", "chmod 777",
-        "curl | sh", "wget | sh",
-        "sudo", "su -", "runas"
+        "rm -rf",
+        "rm -r",
+        "rmdir",
+        "del /s",
+        "format",
+        "fdisk",
+        "mkfs",
+        "dd if=",
+        ":(){ :|:& };:",
+        "> /dev/sd",
+        "chmod 777",
+        "curl | sh",
+        "wget | sh",
+        "sudo",
+        "su -",
+        "runas",
     ]
 
     # Commands that are always blocked
@@ -253,12 +261,7 @@ class TerminalLimb(HydraLimb):
         "> /dev/sda",
     ]
 
-    def __init__(
-        self,
-        shell: str = None,
-        cwd: str = None,
-        scbe_url: str = "http://127.0.0.1:8080"
-    ):
+    def __init__(self, shell: str = None, cwd: str = None, scbe_url: str = "http://127.0.0.1:8080"):
         super().__init__(scbe_url)
 
         # Detect shell
@@ -284,7 +287,7 @@ class TerminalLimb(HydraLimb):
                     "decision": "DENY",
                     "action": action,
                     "command": command,
-                    "reason": "Command is permanently blocked for safety"
+                    "reason": "Command is permanently blocked for safety",
                 }
 
         # Check sensitivity
@@ -302,7 +305,7 @@ class TerminalLimb(HydraLimb):
                 "success": False,
                 "decision": "DENY",
                 "command": command,
-                "reason": gov.get("explanation", "Blocked by SCBE")
+                "reason": gov.get("explanation", "Blocked by SCBE"),
             }
 
         if gov.get("decision") == "ESCALATE":
@@ -311,24 +314,23 @@ class TerminalLimb(HydraLimb):
                 "decision": "ESCALATE",
                 "command": command,
                 "reason": "Command requires human approval",
-                "sensitivity": sensitivity
+                "sensitivity": sensitivity,
             }
 
         # Execute command
         try:
             if sys.platform == "win32":
                 result = await asyncio.create_subprocess_shell(
-                    command,
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                    cwd=self.cwd
+                    command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=self.cwd
                 )
             else:
                 result = await asyncio.create_subprocess_exec(
-                    self.shell, "-c", command,
+                    self.shell,
+                    "-c",
+                    command,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
-                    cwd=self.cwd
+                    cwd=self.cwd,
                 )
 
             stdout, stderr = await asyncio.wait_for(result.communicate(), timeout=30.0)
@@ -340,7 +342,7 @@ class TerminalLimb(HydraLimb):
                 "returncode": result.returncode,
                 "stdout": stdout.decode("utf-8", errors="replace")[:5000],
                 "stderr": stderr.decode("utf-8", errors="replace")[:1000],
-                "limb_id": self.limb_id
+                "limb_id": self.limb_id,
             }
 
         except asyncio.TimeoutError:
@@ -348,16 +350,11 @@ class TerminalLimb(HydraLimb):
                 "success": False,
                 "decision": "QUARANTINE",
                 "command": command,
-                "error": "Command timed out after 30s"
+                "error": "Command timed out after 30s",
             }
 
         except Exception as e:
-            return {
-                "success": False,
-                "decision": "ERROR",
-                "command": command,
-                "error": str(e)
-            }
+            return {"success": False, "decision": "ERROR", "command": command, "error": str(e)}
 
 
 class APILimb(HydraLimb):
@@ -370,12 +367,7 @@ class APILimb(HydraLimb):
 
     limb_type = "api"
 
-    def __init__(
-        self,
-        base_url: str = None,
-        headers: Dict[str, str] = None,
-        scbe_url: str = "http://127.0.0.1:8080"
-    ):
+    def __init__(self, base_url: str = None, headers: Dict[str, str] = None, scbe_url: str = "http://127.0.0.1:8080"):
         super().__init__(scbe_url)
         self.base_url = base_url or ""
         self.default_headers = headers or {"Content-Type": "application/json"}
@@ -407,7 +399,7 @@ class APILimb(HydraLimb):
                 "decision": "DENY",
                 "url": url,
                 "method": method,
-                "reason": gov.get("explanation", "Blocked by SCBE")
+                "reason": gov.get("explanation", "Blocked by SCBE"),
             }
 
         # Execute request
@@ -421,7 +413,7 @@ class APILimb(HydraLimb):
                     json=body if method != "GET" else None,
                     params=body if method == "GET" else None,
                     headers=headers,
-                    timeout=aiohttp.ClientTimeout(total=30)
+                    timeout=aiohttp.ClientTimeout(total=30),
                 ) as resp:
                     response_text = await resp.text()
 
@@ -437,17 +429,11 @@ class APILimb(HydraLimb):
                         "method": method,
                         "status": resp.status,
                         "response": response_json or response_text[:2000],
-                        "limb_id": self.limb_id
+                        "limb_id": self.limb_id,
                     }
 
         except Exception as e:
-            return {
-                "success": False,
-                "decision": "ERROR",
-                "url": url,
-                "method": method,
-                "error": str(e)
-            }
+            return {"success": False, "decision": "ERROR", "url": url, "method": method, "error": str(e)}
 
 
 class MultiTabBrowserLimb(HydraLimb):
@@ -460,12 +446,7 @@ class MultiTabBrowserLimb(HydraLimb):
 
     limb_type = "multi_browser"
 
-    def __init__(
-        self,
-        backend_type: str = "playwright",
-        max_tabs: int = 6,
-        scbe_url: str = "http://127.0.0.1:8080"
-    ):
+    def __init__(self, backend_type: str = "playwright", max_tabs: int = 6, scbe_url: str = "http://127.0.0.1:8080"):
         super().__init__(scbe_url)
         self.backend_type = backend_type
         self.max_tabs = max_tabs
@@ -482,11 +463,7 @@ class MultiTabBrowserLimb(HydraLimb):
             return None
 
         tab_id = tab_name or f"tab-{len(self.tabs)}"
-        tab = BrowserLimb(
-            backend_type=self.backend_type,
-            tab_id=len(self.tabs),
-            scbe_url=self.scbe_url
-        )
+        tab = BrowserLimb(backend_type=self.backend_type, tab_id=len(self.tabs), scbe_url=self.scbe_url)
         await tab.activate()
         self.tabs[tab_id] = tab
 
@@ -502,11 +479,7 @@ class MultiTabBrowserLimb(HydraLimb):
             return {"success": True, "tab_id": new_tab_id}
 
         if action == "list_tabs":
-            return {
-                "success": True,
-                "tabs": list(self.tabs.keys()),
-                "count": len(self.tabs)
-            }
+            return {"success": True, "tabs": list(self.tabs.keys()), "count": len(self.tabs)}
 
         if action == "close_tab":
             if tab_id in self.tabs:
@@ -553,7 +526,4 @@ class MultiTabBrowserLimb(HydraLimb):
         # Execute in parallel
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
-        return [
-            r if isinstance(r, dict) else {"success": False, "error": str(r)}
-            for r in results
-        ]
+        return [r if isinstance(r, dict) else {"success": False, "error": str(r)} for r in results]

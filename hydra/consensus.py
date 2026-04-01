@@ -26,6 +26,7 @@ import uuid
 
 class VoteDecision(str, Enum):
     """Possible vote decisions."""
+
     ALLOW = "ALLOW"
     DENY = "DENY"
     ABSTAIN = "ABSTAIN"
@@ -35,6 +36,7 @@ class VoteDecision(str, Enum):
 @dataclass
 class Vote:
     """A vote from a HYDRA head."""
+
     head_id: str
     proposal_id: str
     decision: VoteDecision
@@ -62,13 +64,14 @@ class Vote:
             "reasoning": self.reasoning,
             "confidence": self.confidence,
             "timestamp": self.timestamp,
-            "signature": self.signature[:8] + "..."
+            "signature": self.signature[:8] + "...",
         }
 
 
 @dataclass
 class Proposal:
     """A proposal requiring consensus."""
+
     id: str
     action: str
     target: str
@@ -85,13 +88,14 @@ class Proposal:
             "target": self.target,
             "proposer_id": self.proposer_id,
             "required_quorum": self.required_quorum,
-            "created_at": self.created_at
+            "created_at": self.created_at,
         }
 
 
 @dataclass
 class ConsensusResult:
     """Result of a consensus round."""
+
     proposal_id: str
     consensus_reached: bool
     final_decision: VoteDecision
@@ -110,7 +114,7 @@ class ConsensusResult:
             "total_votes": self.total_votes,
             "quorum_required": self.quorum_required,
             "votes": [v.to_dict() for v in self.votes],
-            "timestamp": self.timestamp
+            "timestamp": self.timestamp,
         }
 
 
@@ -157,12 +161,7 @@ class ByzantineConsensus:
         return 2 * f + 1
 
     def create_proposal(
-        self,
-        action: str,
-        target: str,
-        context: Dict[str, Any],
-        proposer_id: str,
-        num_voters: int
+        self, action: str, target: str, context: Dict[str, Any], proposer_id: str, num_voters: int
     ) -> Proposal:
         """Create a new proposal for voting."""
         proposal = Proposal(
@@ -171,7 +170,7 @@ class ByzantineConsensus:
             target=target,
             context=context,
             proposer_id=proposer_id,
-            required_quorum=self.calculate_quorum(num_voters)
+            required_quorum=self.calculate_quorum(num_voters),
         )
 
         self.proposals[proposal.id] = proposal
@@ -180,23 +179,14 @@ class ByzantineConsensus:
         return proposal
 
     def cast_vote(
-        self,
-        proposal_id: str,
-        head_id: str,
-        decision: VoteDecision,
-        reasoning: str = "",
-        confidence: float = 1.0
+        self, proposal_id: str, head_id: str, decision: VoteDecision, reasoning: str = "", confidence: float = 1.0
     ) -> Vote:
         """Cast a vote on a proposal."""
         if proposal_id not in self.proposals:
             raise ValueError(f"Proposal not found: {proposal_id}")
 
         vote = Vote(
-            head_id=head_id,
-            proposal_id=proposal_id,
-            decision=decision,
-            reasoning=reasoning,
-            confidence=confidence
+            head_id=head_id, proposal_id=proposal_id, decision=decision, reasoning=reasoning, confidence=confidence
         )
         vote.sign(self.secret)
 
@@ -254,7 +244,7 @@ class ByzantineConsensus:
             vote_counts=counts,
             total_votes=len(valid_votes),
             quorum_required=quorum,
-            votes=valid_votes
+            votes=valid_votes,
         )
 
         self.results[proposal_id] = result
@@ -295,16 +285,12 @@ class ByzantineConsensus:
                 vote_counts={d.value: 0 for d in VoteDecision},
                 total_votes=0,
                 quorum_required=1,
-                votes=[]
+                votes=[],
             )
 
         # Create proposal
         proposal = self.create_proposal(
-            action=action,
-            target=target,
-            context=context,
-            proposer_id=proposer_id,
-            num_voters=n
+            action=action, target=target, context=context, proposer_id=proposer_id, num_voters=n
         )
 
         if timeout is not None:
@@ -317,10 +303,7 @@ class ByzantineConsensus:
         # Collect votes from all heads concurrently
         async def collect_vote(head):
             try:
-                vote_data = await asyncio.wait_for(
-                    vote_collector(head, proposal),
-                    timeout=proposal.timeout_seconds
-                )
+                vote_data = await asyncio.wait_for(vote_collector(head, proposal), timeout=proposal.timeout_seconds)
 
                 decision = VoteDecision(vote_data.get("decision", "ABSTAIN"))
                 return self.cast_vote(
@@ -328,7 +311,7 @@ class ByzantineConsensus:
                     head_id=head.head_id,
                     decision=decision,
                     reasoning=vote_data.get("reasoning", ""),
-                    confidence=vote_data.get("confidence", 1.0)
+                    confidence=vote_data.get("confidence", 1.0),
                 )
 
             except asyncio.TimeoutError:
@@ -338,7 +321,7 @@ class ByzantineConsensus:
                     head_id=head.head_id,
                     decision=VoteDecision.ABSTAIN,
                     reasoning="Vote timeout",
-                    confidence=0.0
+                    confidence=0.0,
                 )
 
             except Exception as e:
@@ -348,7 +331,7 @@ class ByzantineConsensus:
                     head_id=head.head_id,
                     decision=VoteDecision.ABSTAIN,
                     reasoning=f"Error: {str(e)}",
-                    confidence=0.0
+                    confidence=0.0,
                 )
 
         # Gather all votes
@@ -384,14 +367,7 @@ class RoundtableConsensus(ByzantineConsensus):
     6. Full Roundtable (all 6): 6 signatures, 518,400× multiplier
     """
 
-    TIER_MULTIPLIERS = {
-        1: 1.5,
-        2: 5.06,
-        3: 38.4,
-        4: 656,
-        5: 14348,
-        6: 518400
-    }
+    TIER_MULTIPLIERS = {1: 1.5, 2: 5.06, 3: 38.4, 4: 656, 5: 14348, 6: 518400}
 
     TIER_TONGUES = {
         1: ["KO"],
@@ -399,7 +375,7 @@ class RoundtableConsensus(ByzantineConsensus):
         3: ["KO", "RU", "UM"],
         4: ["KO", "RU", "UM", "CA"],
         5: ["KO", "RU", "UM", "CA", "AV"],
-        6: ["KO", "AV", "RU", "CA", "UM", "DR"]
+        6: ["KO", "AV", "RU", "CA", "UM", "DR"],
     }
 
     def __init__(self, secret: str = None):
@@ -435,7 +411,7 @@ class RoundtableConsensus(ByzantineConsensus):
         target: str,
         sensitivity: float,
         context: Dict[str, Any],
-        heads: Dict[str, Any]  # tongue -> HydraHead
+        heads: Dict[str, Any],  # tongue -> HydraHead
     ) -> Dict[str, Any]:
         """
         Run Roundtable consensus with tier-based requirements.
@@ -466,7 +442,7 @@ class RoundtableConsensus(ByzantineConsensus):
                 "success": False,
                 "decision": "DENY",
                 "reason": f"Missing required tongues: {missing}",
-                "tier": tier
+                "tier": tier,
             }
 
         # Collect signatures from each required tongue
@@ -479,15 +455,17 @@ class RoundtableConsensus(ByzantineConsensus):
             vote_result = {
                 "decision": "ALLOW",  # In production, would actually query head
                 "confidence": 0.9,
-                "tongue": tongue
+                "tongue": tongue,
             }
 
-            signatures.append({
-                "tongue": tongue,
-                "head_id": head.head_id if hasattr(head, 'head_id') else str(head),
-                "decision": vote_result["decision"],
-                "confidence": vote_result["confidence"]
-            })
+            signatures.append(
+                {
+                    "tongue": tongue,
+                    "head_id": head.head_id if hasattr(head, "head_id") else str(head),
+                    "decision": vote_result["decision"],
+                    "confidence": vote_result["confidence"],
+                }
+            )
 
             if vote_result["decision"] != "ALLOW":
                 all_allow = False
@@ -499,5 +477,5 @@ class RoundtableConsensus(ByzantineConsensus):
             "multiplier": multiplier,
             "signatures": signatures,
             "required_tongues": required_tongues,
-            "timestamp": datetime.now(timezone.utc).isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }

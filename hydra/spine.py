@@ -35,6 +35,7 @@ from .switchboard import Switchboard
 # heavy import chain (scipy, matplotlib) which hangs on Windows.
 try:
     from src.crypto.dual_lattice import TongueLatticeGovernor, SacredTongue
+
     DUAL_LATTICE_AVAILABLE = True
 except (ImportError, Exception):
     DUAL_LATTICE_AVAILABLE = False
@@ -43,6 +44,7 @@ except (ImportError, Exception):
 
 class WorkflowPhase(str, Enum):
     """Phases in a multi-phase workflow."""
+
     INIT = "init"
     PLANNING = "planning"
     EXECUTION = "execution"
@@ -54,6 +56,7 @@ class WorkflowPhase(str, Enum):
 @dataclass
 class Workflow:
     """A multi-phase workflow that can be triggered with one click."""
+
     id: str
     name: str
     phases: List[Dict[str, Any]]
@@ -102,8 +105,8 @@ class HydraSpine:
         self.scbe_url = scbe_url
 
         # Connected components
-        self.heads: Dict[str, 'HydraHead'] = {}  # noqa: F821
-        self.limbs: Dict[str, 'HydraLimb'] = {}  # noqa: F821
+        self.heads: Dict[str, "HydraHead"] = {}  # noqa: F821
+        self.limbs: Dict[str, "HydraLimb"] = {}  # noqa: F821
 
         # Active workflows
         self.workflows: Dict[str, Workflow] = {}
@@ -141,16 +144,12 @@ class HydraSpine:
 ║  Session: {session_id}
 ║  Ledger:  {ledger_path}
 ╚═══════════════════════════════════════════════════════════════╝
-        """.format(
-            session_id=self.ledger.session_id[:30],
-            ledger_path=self.ledger.db_path[-40:]
-        ))
+        """.format(session_id=self.ledger.session_id[:30], ledger_path=self.ledger.db_path[-40:]))
 
         # Log startup
-        self._log_entry(EntryType.CHECKPOINT, "spine_start", "system", {
-            "terminal_mode": terminal_mode,
-            "scbe_url": self.scbe_url
-        })
+        self._log_entry(
+            EntryType.CHECKPOINT, "spine_start", "system", {"terminal_mode": terminal_mode, "scbe_url": self.scbe_url}
+        )
 
         if terminal_mode:
             await self._run_terminal_mode()
@@ -158,7 +157,7 @@ class HydraSpine:
     async def _run_terminal_mode(self) -> None:
         """Run in terminal pipe mode - read JSON from stdin."""
         print("[SPINE] Terminal mode active. Pipe JSON commands or type 'exit' to quit.")
-        print("[SPINE] Example: echo '{\"action\": \"navigate\", \"url\": \"...\"}' | hydra")
+        print('[SPINE] Example: echo \'{"action": "navigate", "url": "..."}\' | hydra')
         print()
 
         loop = asyncio.get_event_loop()
@@ -272,7 +271,7 @@ class HydraSpine:
                 },
                 head_id=head_id,
                 decision=decision,
-                score=lattice_result.get("trust_score", 0)
+                score=lattice_result.get("trust_score", 0),
             )
 
             # Domain-aware turnstile handling (browser vs vehicle vs fleet vs antivirus)
@@ -314,7 +313,7 @@ class HydraSpine:
                         "honeypot": turnstile.deploy_honeypot,
                         "reason": turnstile.reason,
                     },
-                    head_id=head_id
+                    head_id=head_id,
                 )
 
             if turnstile.isolate:
@@ -336,7 +335,7 @@ class HydraSpine:
                     "domain_type": domain_type,
                     "trust_score": trust_score,
                     "tongues_active": lattice_result.get("tongues_active"),
-                    "action_id": action_id
+                    "action_id": action_id,
                 }
 
             # Continue with constrained execution modes.
@@ -349,14 +348,7 @@ class HydraSpine:
                 print(f"[LATTICE] Honeypot deployed for action: {action} → {target[:30]}")
 
         # Log the action request
-        self._log_entry(
-            EntryType.ACTION,
-            action,
-            target,
-            params,
-            head_id=head_id,
-            limb_id=limb_id
-        )
+        self._log_entry(EntryType.ACTION, action, target, params, head_id=head_id, limb_id=limb_id)
 
         # Route to appropriate handler
         if action == "workflow":
@@ -430,7 +422,9 @@ class HydraSpine:
             sender = str(command.get("sender", head_id or "system")).strip()
             if not channel:
                 return {"success": False, "error": "channel is required"}
-            msg_id = self.switchboard.post_role_message(channel, sender, message if isinstance(message, dict) else {"text": str(message)})
+            msg_id = self.switchboard.post_role_message(
+                channel, sender, message if isinstance(message, dict) else {"text": str(message)}
+            )
             return {"success": True, "message_id": msg_id, "channel": channel}
 
         elif action == "switchboard_get_messages":
@@ -513,11 +507,7 @@ class HydraSpine:
             parts = text.split("remember", 1)[-1].strip()
             if "=" in parts:
                 key, value = parts.split("=", 1)
-                return await self.execute({
-                    "action": "remember",
-                    "key": key.strip(),
-                    "value": value.strip()
-                })
+                return await self.execute({"action": "remember", "key": key.strip(), "value": value.strip()})
 
         if "recall" in text_lower:
             key = text.split("recall", 1)[-1].strip()
@@ -526,11 +516,7 @@ class HydraSpine:
         return {"success": False, "error": "Could not parse command", "raw": text}
 
     async def _execute_browser_action(
-        self,
-        action: str,
-        target: str,
-        params: Dict,
-        limb_id: str = None
+        self, action: str, target: str, params: Dict, limb_id: str = None
     ) -> Dict[str, Any]:
         """Execute browser action on specified or any available browser limb."""
         # Find browser limb
@@ -545,11 +531,7 @@ class HydraSpine:
                     break
 
         if not limb:
-            return {
-                "success": False,
-                "error": "No browser limb available",
-                "hint": "Connect a browser limb first"
-            }
+            return {"success": False, "error": "No browser limb available", "hint": "Connect a browser limb first"}
 
         # Execute via limb
         result = await limb.execute(action, target, params)
@@ -562,17 +544,12 @@ class HydraSpine:
             result,
             limb_id=limb.limb_id,
             decision=result.get("decision", "ALLOW"),
-            score=result.get("score", 1.0)
+            score=result.get("score", 1.0),
         )
 
         return result
 
-    async def _execute_terminal_action(
-        self,
-        command: str,
-        params: Dict,
-        limb_id: str = None
-    ) -> Dict[str, Any]:
+    async def _execute_terminal_action(self, command: str, params: Dict, limb_id: str = None) -> Dict[str, Any]:
         """Execute terminal command."""
         limb = None
         if limb_id and limb_id in self.limbs:
@@ -584,20 +561,12 @@ class HydraSpine:
                     break
 
         if not limb:
-            return {
-                "success": False,
-                "error": "No terminal limb available"
-            }
+            return {"success": False, "error": "No terminal limb available"}
 
         result = await limb.execute("run", command, params)
         return result
 
-    async def _execute_api_action(
-        self,
-        endpoint: str,
-        params: Dict,
-        limb_id: str = None
-    ) -> Dict[str, Any]:
+    async def _execute_api_action(self, endpoint: str, params: Dict, limb_id: str = None) -> Dict[str, Any]:
         """Execute API call."""
         limb = None
         if limb_id and limb_id in self.limbs:
@@ -609,10 +578,7 @@ class HydraSpine:
                     break
 
         if not limb:
-            return {
-                "success": False,
-                "error": "No API limb available"
-            }
+            return {"success": False, "error": "No API limb available"}
 
         result = await limb.execute("call", endpoint, params)
         return result
@@ -636,18 +602,11 @@ class HydraSpine:
         ])
         """
         workflow_id = f"workflow-{uuid.uuid4().hex[:8]}"
-        workflow = Workflow(
-            id=workflow_id,
-            name=name,
-            phases=phases
-        )
+        workflow = Workflow(id=workflow_id, name=name, phases=phases)
         self.workflows[workflow_id] = workflow
 
         self._log_entry(
-            EntryType.CHECKPOINT,
-            "workflow_defined",
-            name,
-            {"phases": len(phases), "workflow_id": workflow_id}
+            EntryType.CHECKPOINT, "workflow_defined", name, {"phases": len(phases), "workflow_id": workflow_id}
         )
 
         return workflow_id
@@ -659,10 +618,7 @@ class HydraSpine:
 
         if workflow_def:
             # Define and run inline
-            workflow_id = self.define_workflow(
-                workflow_def.get("name", "inline"),
-                workflow_def.get("phases", [])
-            )
+            workflow_id = self.define_workflow(workflow_def.get("name", "inline"), workflow_def.get("phases", []))
 
         if not workflow_id or workflow_id not in self.workflows:
             return {"success": False, "error": "Workflow not found"}
@@ -696,7 +652,7 @@ class HydraSpine:
             "success": workflow.status == WorkflowPhase.COMPLETE,
             "workflow_id": workflow_id,
             "status": workflow.status.value,
-            "results": workflow.results
+            "results": workflow.results,
         }
 
     # =========================================================================
@@ -716,10 +672,7 @@ class HydraSpine:
 
         # Governance check - is this AI-to-AI communication safe?
         # Check for instruction injection patterns
-        dangerous_patterns = [
-            "ignore", "override", "sudo", "admin",
-            "forget", "disregard", "system prompt"
-        ]
+        dangerous_patterns = ["ignore", "override", "sudo", "admin", "forget", "disregard", "system prompt"]
 
         message_str = json.dumps(message).lower()
         for pattern in dangerous_patterns:
@@ -730,29 +683,18 @@ class HydraSpine:
                     f"{from_head}->{to_head}",
                     {"blocked_pattern": pattern},
                     decision="DENY",
-                    score=0.0
+                    score=0.0,
                 )
-                return {
-                    "success": False,
-                    "decision": "DENY",
-                    "reason": f"Message contains blocked pattern: {pattern}"
-                }
+                return {"success": False, "decision": "DENY", "reason": f"Message contains blocked pattern: {pattern}"}
 
         # Deliver message
         if to_head in self.message_queues:
-            await self.message_queues[to_head].put({
-                "from": from_head,
-                "message": message,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
+            await self.message_queues[to_head].put(
+                {"from": from_head, "message": message, "timestamp": datetime.now(timezone.utc).isoformat()}
+            )
 
             self._log_entry(
-                EntryType.ACTION,
-                "ai_message",
-                f"{from_head}->{to_head}",
-                message,
-                decision="ALLOW",
-                score=0.9
+                EntryType.ACTION, "ai_message", f"{from_head}->{to_head}", message, decision="ALLOW", score=0.9
             )
 
             return {"success": True, "delivered": True}
@@ -780,7 +722,7 @@ class HydraSpine:
     # Head/Limb Management
     # =========================================================================
 
-    def connect_head(self, head: 'HydraHead') -> str:  # noqa: F821
+    def connect_head(self, head: "HydraHead") -> str:  # noqa: F821
         """Connect an AI head to the spine."""
         self.heads[head.head_id] = head
         self.message_queues[head.head_id] = asyncio.Queue()
@@ -789,12 +731,7 @@ class HydraSpine:
         if isinstance(roles, list):
             self.register_head_roles(head.head_id, [str(r) for r in roles])
 
-        self._log_entry(
-            EntryType.HEAD_CONNECT,
-            "connect",
-            head.head_id,
-            {"ai_type": head.ai_type, "model": head.model}
-        )
+        self._log_entry(EntryType.HEAD_CONNECT, "connect", head.head_id, {"ai_type": head.ai_type, "model": head.model})
 
         print(f"[SPINE] Head connected: {head.head_id} ({head.ai_type}/{head.model})")
         return head.head_id
@@ -815,26 +752,16 @@ class HydraSpine:
             del self.heads[head_id]
             self.ledger.unregister_head(head_id)
 
-            self._log_entry(
-                EntryType.HEAD_DISCONNECT,
-                "disconnect",
-                head_id,
-                {}
-            )
+            self._log_entry(EntryType.HEAD_DISCONNECT, "disconnect", head_id, {})
 
             print(f"[SPINE] Head disconnected: {head_id}")
 
-    def connect_limb(self, limb: 'HydraLimb') -> str:  # noqa: F821
+    def connect_limb(self, limb: "HydraLimb") -> str:  # noqa: F821
         """Connect an execution limb."""
         self.limbs[limb.limb_id] = limb
-        self.ledger.register_limb(limb.limb_id, limb.limb_type, getattr(limb, 'tab_id', None))
+        self.ledger.register_limb(limb.limb_id, limb.limb_type, getattr(limb, "tab_id", None))
 
-        self._log_entry(
-            EntryType.LIMB_ACTIVATE,
-            "connect",
-            limb.limb_id,
-            {"limb_type": limb.limb_type}
-        )
+        self._log_entry(EntryType.LIMB_ACTIVATE, "connect", limb.limb_id, {"limb_type": limb.limb_type})
 
         print(f"[SPINE] Limb connected: {limb.limb_id} ({limb.limb_type})")
         return limb.limb_id
@@ -868,9 +795,20 @@ class HydraSpine:
 
         # High sensitivity targets
         high_risk_patterns = [
-            "password", "secret", "token", "key", "admin",
-            "delete", "rm ", "sudo", "chmod", "chown",
-            "bank", "payment", "credit", "financial"
+            "password",
+            "secret",
+            "token",
+            "key",
+            "admin",
+            "delete",
+            "rm ",
+            "sudo",
+            "chmod",
+            "chown",
+            "bank",
+            "payment",
+            "credit",
+            "financial",
         ]
         for pattern in high_risk_patterns:
             if pattern in target_lower:
@@ -879,8 +817,15 @@ class HydraSpine:
 
         # Medium sensitivity targets
         medium_risk_patterns = [
-            "login", "auth", "account", "profile", "settings",
-            "config", "env", ".env", "credentials"
+            "login",
+            "auth",
+            "account",
+            "profile",
+            "settings",
+            "config",
+            "env",
+            ".env",
+            "credentials",
         ]
         for pattern in medium_risk_patterns:
             if pattern in target_lower:
@@ -898,7 +843,7 @@ class HydraSpine:
         head_id: str = None,
         limb_id: str = None,
         decision: str = None,
-        score: float = None
+        score: float = None,
     ) -> str:
         """Log entry to ledger."""
         entry = LedgerEntry(
@@ -911,7 +856,7 @@ class HydraSpine:
             target=target,
             payload=payload,
             decision=decision,
-            score=score
+            score=score,
         )
         return self.ledger.write(entry)
 
@@ -919,6 +864,7 @@ class HydraSpine:
 # =============================================================================
 # CLI Entry Point
 # =============================================================================
+
 
 async def main():
     """Main entry point for hydra CLI."""

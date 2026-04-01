@@ -52,6 +52,7 @@ def _concat_lists(a: list, b: list) -> list:
     """Reducer: concatenate two lists."""
     return (a or []) + (b or [])
 
+
 from hydra.color_dimension import (
     BAND_CENTERS,
     ColorBand,
@@ -69,10 +70,10 @@ from hydra.color_dimension import (
     channel_for_tongue,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Spectral State — the state schema for spectral workflows
 # ---------------------------------------------------------------------------
+
 
 class SpectralState(TypedDict, total=False):
     """State passed between nodes in a spectral graph.
@@ -81,23 +82,25 @@ class SpectralState(TypedDict, total=False):
     Uses Annotated reducers for keys that may be updated concurrently
     by parallel nodes (e.g., when two research lanes run simultaneously).
     """
+
     # Core workflow state
     topic: str
     messages: Annotated[list, _concat_lists]
-    outputs: Annotated[dict, _merge_dicts]            # node_id -> output text
-    artifacts: Annotated[dict, _merge_dicts]           # node_id -> artifact dict
+    outputs: Annotated[dict, _merge_dicts]  # node_id -> output text
+    artifacts: Annotated[dict, _merge_dicts]  # node_id -> artifact dict
 
     # Spectral metadata (auto-managed by SpectralStateGraph)
     _spectral_channels: Annotated[dict, _merge_dicts]  # node_id -> {wavelength_nm, tongue, hex}
-    _spectral_history: Annotated[list, _concat_lists]   # ordered list of (node_id, channel_info, timestamp)
-    _fft_spectrum: Annotated[dict, _merge_dicts]        # merged frequency-domain representation
-    _route_checks: Annotated[list, _concat_lists]       # RouteCheck results for audit trail
-    _quality_scores: Annotated[dict, _merge_dicts]      # node_id -> quality float
+    _spectral_history: Annotated[list, _concat_lists]  # ordered list of (node_id, channel_info, timestamp)
+    _fft_spectrum: Annotated[dict, _merge_dicts]  # merged frequency-domain representation
+    _route_checks: Annotated[list, _concat_lists]  # RouteCheck results for audit trail
+    _quality_scores: Annotated[dict, _merge_dicts]  # node_id -> quality float
 
 
 # ---------------------------------------------------------------------------
 #  FNet-style FFT Mixer — harmonic merging of multi-agent outputs
 # ---------------------------------------------------------------------------
+
 
 class SpectralMixer:
     """FNet-inspired mixer: decomposes text outputs into frequency space.
@@ -143,8 +146,8 @@ class SpectralMixer:
         third = max(1, n // 3)
         return {
             "low": float(magnitudes[:third].sum()) / total,
-            "mid": float(magnitudes[third:2*third].sum()) / total,
-            "high": float(magnitudes[2*third:].sum()) / total,
+            "mid": float(magnitudes[third : 2 * third].sum()) / total,
+            "high": float(magnitudes[2 * third :].sum()) / total,
             "total": total,
         }
 
@@ -186,17 +189,17 @@ class SpectralMixer:
         # Mid frequencies: balanced blend
         for key, spec in spectra.items():
             w = weights.get(key, 0.0)
-            merged[third:2*third] += spec[third:2*third] * w
+            merged[third : 2 * third] += spec[third : 2 * third] * w
 
         # High frequencies: energy-weighted preservation
         energies = {}
         for key, spec in spectra.items():
-            energies[key] = float(np.abs(spec[2*third:]).sum())
+            energies[key] = float(np.abs(spec[2 * third :]).sum())
         total_e = sum(energies.values()) or 1.0
 
         for key, spec in spectra.items():
             e_weight = energies[key] / total_e * high_freq_preserve
-            merged[2*third:] += spec[2*third:] * e_weight
+            merged[2 * third :] += spec[2 * third :] * e_weight
 
         return merged
 
@@ -246,15 +249,17 @@ class SpectralMixer:
 #  Spectral Node Wrapper — adds color metadata to node execution
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SpectralNodeConfig:
     """Configuration for a node in the spectral graph."""
+
     node_id: str
     fn: Callable
     band: Optional[ColorBand] = None
     tongue: str = "KO"
     provider: str = ""
-    prism: bool = False             # Prism = merge node (all colors converge)
+    prism: bool = False  # Prism = merge node (all colors converge)
     poincare_position: Tuple[float, float] = (0.0, 0.0)
     tags: Set[str] = field(default_factory=set)
 
@@ -262,6 +267,7 @@ class SpectralNodeConfig:
 # ---------------------------------------------------------------------------
 #  Spectral State Graph — the main SDK class
 # ---------------------------------------------------------------------------
+
 
 class SpectralStateGraph:
     """LangGraph StateGraph enhanced with spectral flow isolation.
@@ -421,10 +427,7 @@ class SpectralStateGraph:
                 all_channels = dict(state.get("_spectral_channels", {}))
                 all_channels.update(new_channel)
                 if len(all_outputs) > 1:
-                    tongue_map = {
-                        nid: all_channels.get(nid, {}).get("tongue", "KO")
-                        for nid in all_outputs
-                    }
+                    tongue_map = {nid: all_channels.get(nid, {}).get("tongue", "KO") for nid in all_outputs}
                     mix_result = self._mixer.mix_outputs(all_outputs, tongue_weights=tongue_map)
                     fft_delta = {
                         "per_agent_energy": mix_result["per_agent_energy"],
@@ -490,6 +493,7 @@ class SpectralStateGraph:
 #  Pre-built spectral graph recipes
 # ---------------------------------------------------------------------------
 
+
 def build_article_graph(topic: str = "AI safety") -> SpectralStateGraph:
     """Pre-built spectral graph for article generation.
 
@@ -497,6 +501,7 @@ def build_article_graph(topic: str = "AI safety") -> SpectralStateGraph:
         research (GREEN/Gemini) -> outline (VIOLET/Claude) -> draft (BLUE/GPT)
         -> challenge (ORANGE/Grok) -> edit (BLUE/GPT) -> merge (PRISM)
     """
+
     def research_fn(state):
         return {"output": f"Research findings on {state.get('topic', topic)}: 3 key sources found."}
 
@@ -510,7 +515,9 @@ def build_article_graph(topic: str = "AI safety") -> SpectralStateGraph:
 
     def challenge_fn(state):
         draft = state.get("outputs", {}).get("draft", "")
-        return {"output": f"Challenge: Weak point in para 3. Missing citation in section II. Draft preview: {draft[:30]}"}
+        return {
+            "output": f"Challenge: Weak point in para 3. Missing citation in section II. Draft preview: {draft[:30]}"
+        }
 
     def edit_fn(state):
         return {"output": "Revised draft addressing all challenges. Strengthened evidence in section II."}
@@ -518,21 +525,23 @@ def build_article_graph(topic: str = "AI safety") -> SpectralStateGraph:
     def merge_fn(state):
         outputs = state.get("outputs", {})
         fft = state.get("_fft_spectrum", {})
-        return {"output": f"Final article merged from {len(outputs)} color lanes. FFT energy: {fft.get('merged_energy', {})}"}
+        return {
+            "output": f"Final article merged from {len(outputs)} color lanes. FFT energy: {fft.get('merged_energy', {})}"
+        }
 
     g = SpectralStateGraph(SpectralState)
-    g.add_spectral_node("research", research_fn, band=ColorBand.GREEN, tongue="RU", provider="gemini",
-                        position=(0.3, 0.0))
-    g.add_spectral_node("outline", outline_fn, band=ColorBand.VIOLET, tongue="DR", provider="claude",
-                        position=(-0.3, 0.3))
-    g.add_spectral_node("draft", draft_fn, band=ColorBand.BLUE, tongue="AV", provider="gpt",
-                        position=(0.0, -0.3))
-    g.add_spectral_node("challenge", challenge_fn, band=ColorBand.ORANGE, tongue="RU", provider="grok",
-                        position=(0.4, -0.2))
-    g.add_spectral_node("edit", edit_fn, band=ColorBand.BLUE, tongue="AV", provider="gpt",
-                        position=(0.0, -0.5))
-    g.add_spectral_node("merge", merge_fn, prism=True, tongue="UM", provider="claude",
-                        position=(0.0, 0.0))
+    g.add_spectral_node(
+        "research", research_fn, band=ColorBand.GREEN, tongue="RU", provider="gemini", position=(0.3, 0.0)
+    )
+    g.add_spectral_node(
+        "outline", outline_fn, band=ColorBand.VIOLET, tongue="DR", provider="claude", position=(-0.3, 0.3)
+    )
+    g.add_spectral_node("draft", draft_fn, band=ColorBand.BLUE, tongue="AV", provider="gpt", position=(0.0, -0.3))
+    g.add_spectral_node(
+        "challenge", challenge_fn, band=ColorBand.ORANGE, tongue="RU", provider="grok", position=(0.4, -0.2)
+    )
+    g.add_spectral_node("edit", edit_fn, band=ColorBand.BLUE, tongue="AV", provider="gpt", position=(0.0, -0.5))
+    g.add_spectral_node("merge", merge_fn, prism=True, tongue="UM", provider="claude", position=(0.0, 0.0))
 
     g.add_edge("__start__", "research")
     g.add_edge("research", "outline")
@@ -550,6 +559,7 @@ def build_research_graph(topic: str = "quantum computing") -> SpectralStateGraph
 
     Parallel research lanes converge at a prism node for FFT merging.
     """
+
     def arxiv_fn(state):
         return {"output": f"ArXiv: 5 papers on {state.get('topic', topic)}. Key: transformer architectures."}
 
@@ -562,17 +572,15 @@ def build_research_graph(topic: str = "quantum computing") -> SpectralStateGraph
     def synthesis_fn(state):
         outputs = state.get("outputs", {})
         fft = state.get("_fft_spectrum", {})
-        return {"output": f"Synthesis from {len(outputs)} lanes. Consensus: safety gaps in deployment. FFT: {fft.get('merged_energy', {})}"}
+        return {
+            "output": f"Synthesis from {len(outputs)} lanes. Consensus: safety gaps in deployment. FFT: {fft.get('merged_energy', {})}"
+        }
 
     g = SpectralStateGraph(SpectralState)
-    g.add_spectral_node("arxiv", arxiv_fn, band=ColorBand.GREEN, tongue="RU", provider="gemini",
-                        position=(0.3, 0.3))
-    g.add_spectral_node("web", web_fn, band=ColorBand.CYAN, tongue="CA", provider="local",
-                        position=(-0.3, 0.3))
-    g.add_spectral_node("debate", debate_fn, band=ColorBand.ORANGE, tongue="RU", provider="grok",
-                        position=(0.0, -0.3))
-    g.add_spectral_node("synthesis", synthesis_fn, prism=True, tongue="DR", provider="claude",
-                        position=(0.0, 0.0))
+    g.add_spectral_node("arxiv", arxiv_fn, band=ColorBand.GREEN, tongue="RU", provider="gemini", position=(0.3, 0.3))
+    g.add_spectral_node("web", web_fn, band=ColorBand.CYAN, tongue="CA", provider="local", position=(-0.3, 0.3))
+    g.add_spectral_node("debate", debate_fn, band=ColorBand.ORANGE, tongue="RU", provider="grok", position=(0.0, -0.3))
+    g.add_spectral_node("synthesis", synthesis_fn, prism=True, tongue="DR", provider="claude", position=(0.0, 0.0))
 
     g.add_edge("__start__", "arxiv")
     g.add_edge("__start__", "web")
@@ -587,6 +595,7 @@ def build_research_graph(topic: str = "quantum computing") -> SpectralStateGraph
 # ---------------------------------------------------------------------------
 #  Demo
 # ---------------------------------------------------------------------------
+
 
 def _demo():
     print("=" * 70)
@@ -608,17 +617,19 @@ def _demo():
 
     # Execute
     print("\nExecuting...")
-    result = app.invoke({
-        "topic": "signed Chladni modes in AI safety",
-        "messages": [],
-        "outputs": {},
-        "artifacts": {},
-        "_spectral_channels": {},
-        "_spectral_history": [],
-        "_fft_spectrum": {},
-        "_route_checks": [],
-        "_quality_scores": {},
-    })
+    result = app.invoke(
+        {
+            "topic": "signed Chladni modes in AI safety",
+            "messages": [],
+            "outputs": {},
+            "artifacts": {},
+            "_spectral_channels": {},
+            "_spectral_history": [],
+            "_fft_spectrum": {},
+            "_route_checks": [],
+            "_quality_scores": {},
+        }
+    )
 
     print(f"\nExecution complete. {len(result.get('_spectral_history', []))} nodes executed.")
     print(f"Outputs collected from: {list(result.get('outputs', {}).keys())}")
@@ -627,15 +638,19 @@ def _demo():
     # Show spectral history
     print("\nSpectral execution trace:")
     for entry in result.get("_spectral_history", []):
-        print(f"  [{entry['band']:8s}] {entry['node_id']:15s} tongue={entry['tongue']} "
-              f"dt={entry['duration_ms']:.1f}ms")
+        print(
+            f"  [{entry['band']:8s}] {entry['node_id']:15s} tongue={entry['tongue']} "
+            f"dt={entry['duration_ms']:.1f}ms"
+        )
 
     # Show channel assignments
     print("\nChannel assignments:")
     for nid, ch_info in result.get("_spectral_channels", {}).items():
         prism = " [PRISM]" if ch_info.get("prism") else ""
-        print(f"  {nid:15s} {ch_info['wavelength_nm']:.0f}nm {ch_info['hex']} "
-              f"tongue={ch_info['tongue']} provider={ch_info['provider']}{prism}")
+        print(
+            f"  {nid:15s} {ch_info['wavelength_nm']:.0f}nm {ch_info['hex']} "
+            f"tongue={ch_info['tongue']} provider={ch_info['provider']}{prism}"
+        )
 
     # Test FFT mixer directly
     print("\n--- FNet Mixer Test ---")

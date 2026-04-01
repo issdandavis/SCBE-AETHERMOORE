@@ -15,20 +15,21 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-
 # ═══════════════════════════════════════════════════════════
 # Circuit Breaker
 # ═══════════════════════════════════════════════════════════
 
+
 class CircuitState(str, Enum):
-    CLOSED = "closed"       # Normal — requests pass through
-    OPEN = "open"           # Tripped — requests blocked
-    HALF_OPEN = "half_open" # Testing — one request allowed
+    CLOSED = "closed"  # Normal — requests pass through
+    OPEN = "open"  # Tripped — requests blocked
+    HALF_OPEN = "half_open"  # Testing — one request allowed
 
 
 @dataclass
 class CircuitBreaker:
     """Trip after N failures, reset after cooldown."""
+
     failure_threshold: int = 3
     cooldown_seconds: float = 60.0
     failure_count: int = 0
@@ -63,11 +64,12 @@ class CircuitBreaker:
 # Error Classification
 # ═══════════════════════════════════════════════════════════
 
+
 class ErrorClass(str, Enum):
-    RETRYABLE = "retryable"     # Timeout, network, 5xx
-    AUTH = "auth"               # 401/403, bad token
-    NOT_FOUND = "not_found"     # 404, missing resource
-    PERMANENT = "permanent"     # Config error, bad code
+    RETRYABLE = "retryable"  # Timeout, network, 5xx
+    AUTH = "auth"  # 401/403, bad token
+    NOT_FOUND = "not_found"  # 404, missing resource
+    PERMANENT = "permanent"  # Config error, bad code
 
 
 def classify_error(error: Exception) -> ErrorClass:
@@ -85,9 +87,11 @@ def classify_error(error: Exception) -> ErrorClass:
 # Decision Trace
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class DecisionTrace:
     """Record of a heal/resolve decision for audit."""
+
     service: str
     action: str
     confidence: float
@@ -100,9 +104,11 @@ class DecisionTrace:
 # Service Definition
 # ═══════════════════════════════════════════════════════════
 
+
 @dataclass
 class ServiceDef:
     """A monitored service with health check and fallback chain."""
+
     name: str
     category: str
     check: Callable[[], bool]
@@ -118,6 +124,7 @@ class ServiceDef:
 # ═══════════════════════════════════════════════════════════
 # Self-Healing Mesh
 # ═══════════════════════════════════════════════════════════
+
 
 class SelfHealingMesh:
     """Monitors services, detects failures, heals via fallback chains."""
@@ -231,8 +238,9 @@ class SelfHealingMesh:
         for cat, svcs in sorted(by_cat.items()):
             lines.append(f"\n  {cat}:")
             for s in svcs:
-                icon = {"up": "+", "down": "X", "error": "!", "healed": "~",
-                        "circuit_open": "O", "unknown": "?"}.get(s.status, "?")
+                icon = {"up": "+", "down": "X", "error": "!", "healed": "~", "circuit_open": "O", "unknown": "?"}.get(
+                    s.status, "?"
+                )
                 lat = f"{s.last_latency_ms:.0f}ms" if s.last_latency_ms > 0 else ""
                 cb = f" [{s.circuit.state.value}]" if s.circuit.state != CircuitState.CLOSED else ""
                 lines.append(f"    [{icon}] {s.name:<25} {s.status:<15} {lat}{cb}")

@@ -31,8 +31,7 @@ class HFSummarizer:
             from transformers import pipeline  # type: ignore
         except Exception as exc:  # noqa: BLE001
             raise RuntimeError(
-                "transformers is required for HFSummarizer. "
-                "Install with: pip install transformers torch"
+                "transformers is required for HFSummarizer. " "Install with: pip install transformers torch"
             ) from exc
 
         self._pipeline = pipeline("summarization", model=self.model_name)

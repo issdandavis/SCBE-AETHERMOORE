@@ -41,18 +41,17 @@ from .swarm_governance import (
     REALM_CENTERS,
 )
 
-
 # ---------------------------------------------------------------------------
 # Agent definitions
 # ---------------------------------------------------------------------------
 
 AGENTS: Dict[str, Dict[str, Any]] = {
-    "KO": {"role": "scout",   "phase": 0,   "actions": ["navigate"]},
-    "AV": {"role": "vision",  "phase": 60,  "actions": ["screenshot"]},
-    "RU": {"role": "reader",  "phase": 120, "actions": ["get_content"]},
+    "KO": {"role": "scout", "phase": 0, "actions": ["navigate"]},
+    "AV": {"role": "vision", "phase": 60, "actions": ["screenshot"]},
+    "RU": {"role": "reader", "phase": 120, "actions": ["get_content"]},
     "CA": {"role": "clicker", "phase": 180, "actions": ["click"]},
-    "UM": {"role": "typer",   "phase": 240, "actions": ["type"]},
-    "DR": {"role": "judge",   "phase": 300, "actions": ["verify"]},
+    "UM": {"role": "typer", "phase": 240, "actions": ["type"]},
+    "DR": {"role": "judge", "phase": 300, "actions": ["verify"]},
 }
 
 # Sensitivity thresholds --actions above this require Roundtable consensus
@@ -238,14 +237,16 @@ class SwarmBrowser:
             if action in HIGH_SENSITIVITY_ACTIONS:
                 consensus_ok = await self._consensus_check(action, target)
                 if not consensus_ok:
-                    results.append({
-                        "step": step_idx + 1,
-                        "tongue": tongue,
-                        "action": action,
-                        "target": target,
-                        "success": False,
-                        "reason": "Roundtable denied action",
-                    })
+                    results.append(
+                        {
+                            "step": step_idx + 1,
+                            "tongue": tongue,
+                            "action": action,
+                            "target": target,
+                            "success": False,
+                            "reason": "Roundtable denied action",
+                        }
+                    )
                     continue
 
             result = await self._dispatch(tongue, action, target, params)

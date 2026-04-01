@@ -82,10 +82,12 @@ def main() -> None:
 
         if args.status:
             import json
+
             print(json.dumps(swarm.get_status(), indent=2))
         elif args.task:
             result = await swarm.execute_task(args.task)
             import json
+
             print("\n" + json.dumps(result, indent=2, default=str))
 
         await swarm.shutdown()

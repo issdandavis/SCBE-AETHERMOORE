@@ -8,9 +8,10 @@ from scripts.system.run_core_python_checks import (
 
 
 def test_build_pytest_command_includes_optional_ignores():
-    command = build_pytest_command(maxfail=2)
+    command = build_pytest_command(("tests",), maxfail=2)
 
-    assert command[1:4] == ["-m", "pytest", "tests"]
+    assert command[1:4] == ["-m", "pytest", "-v"]
+    assert "tests" in command
     assert "--ignore=tests/node_modules" in command
     assert "--maxfail=2" in command
     for ignored in OPTIONAL_TEST_IGNORES:
@@ -18,7 +19,7 @@ def test_build_pytest_command_includes_optional_ignores():
 
 
 def test_summary_payload_records_repo_settings():
-    command = build_pytest_command(maxfail=1)
+    command = build_pytest_command(("tests",), maxfail=1)
     payload = summary_payload(command)
 
     assert payload["command"] == command
