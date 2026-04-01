@@ -81,8 +81,9 @@ There are **two** `symphonic_cipher/` directories with **different** math:
 
 | Location | Formula | Purpose |
 |----------|---------|---------|
-| **Root** `symphonic_cipher/` | `H(d,R) = R^(d²)` | Exponential cost multiplier |
-| **`src/symphonic_cipher/`** | `H(d,pd) = 1/(1+d+2*pd)` | Bounded safety score in (0,1] |
+| **Root** `symphonic_cipher/` | `H(d,R) = R^(d²)` | RETIRED (numerical collapse) |
+| **`src/symphonic_cipher/`** | `H(d,pd) = 1/(1+d+2*pd)` | Production safety score in (0,1] |
+| **Canonical (March 2026)** | `H(d,pd) = 1/(1+φ*d_H+2*pd)` | Unified formula with phi scaling (see `docs/specs/LAYER_12_CANONICAL_FORMULA.md`) |
 
 **Import collision**: Many test files do `sys.path.insert(0, "src/")`, which causes `import symphonic_cipher` to resolve to the `src/` version instead of root. Both packages expose variant tags for runtime detection:
 
@@ -117,7 +118,7 @@ Use the `_select_dsa_algorithm()` / `_select_kem_algorithm()` helper pattern to 
 | **L8** | Multi-well realms (Hamiltonian CFI) | `hamiltonianCFI.ts` |
 | **L9-10** | Spectral + spin coherence (FFT) | `spectral/index.ts` |
 | **L11** | Triadic temporal distance | `causality_axiom.py` |
-| **L12** | Harmonic wall: `H(d,pd) = 1/(1+d_H+2*pd)` | `harmonicScaling.ts` |
+| **L12** | Harmonic wall: `H(d,pd) = 1/(1+φ*d_H+2*pd)` — canonical unified formula | `harmonicScaling.ts` |
 | **L13** | Risk decision: ALLOW / QUARANTINE / ESCALATE / DENY | Swarm governance |
 | **L14** | Audio axis (FFT telemetry) | `audioAxis.ts`, `vacuumAcoustics.ts` |
 

@@ -417,7 +417,7 @@ Verification requires:
 | L9 | Spectral Coherence | R^n -> [0,1] | S_spec = E_low/(E_low+E_high+eps) |
 | L10 | Spin Coherence | C -> [0,1] | C_spin = ||(1/N) sum exp(i*theta_k)|| |
 | L11 | Triadic Temporal | R^3 -> [0,1] | d_tri = sqrt(lam_1*d_1^2 + lam_2*d_2^2 + lam_3*d_G^2) |
-| L12 | Harmonic Scaling | R+ -> R+ | H = R^(d^2) or H = 1/(1+d+2pd) |
+| L12 | Harmonic Scaling | R+ -> (0,1] | H = 1/(1+phi*d_H+2*pd) — canonical unified formula |
 | L13 | Risk Decision | R^k -> Decision | Omega > 0.85: ALLOW, 0.40-0.85: QUARANTINE, <0.40: DENY |
 | L14 | Audio Axis | Decision -> Signal | [E_a, C_a, F_a, r_HF] telemetry vector |
 
