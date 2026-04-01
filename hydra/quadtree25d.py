@@ -29,6 +29,7 @@ Usage:
     mesh = qt.to_terrain_mesh()
     octree_projection = qt.project_to_octree(max_depth=6)
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -50,19 +51,21 @@ from hydra.voxel_storage import (
 # Constants
 # ---------------------------------------------------------------------------
 
-_DEFAULT_VARIANCE_THRESHOLD = 0.5   # z-range threshold to trigger subdivision
-_DEFAULT_MAX_POINTS_PER_LEAF = 8    # max points before forced split
+_DEFAULT_VARIANCE_THRESHOLD = 0.5  # z-range threshold to trigger subdivision
+_DEFAULT_MAX_POINTS_PER_LEAF = 8  # max points before forced split
 _DEFAULT_MAX_DEPTH = 10
-_DEFAULT_LOD_BIAS = 1.0             # LOD distance scaling factor
+_DEFAULT_LOD_BIAS = 1.0  # LOD distance scaling factor
 
 
 # ---------------------------------------------------------------------------
 # Data types
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class QuadPoint:
     """A 2.5D point: (x, y) planar position + z height + semantic metadata."""
+
     x: float
     y: float
     z: float = 0.0
@@ -87,16 +90,18 @@ class QuadPoint:
 
 class SubdivisionCriterion(Enum):
     """Why a quad node was subdivided."""
-    NONE = "none"             # leaf, no subdivision
-    VARIANCE = "variance"     # z-range exceeded threshold
-    DENSITY = "density"       # too many points in leaf
-    FORCED = "forced"         # explicit subdivision request
-    LOD = "lod"               # level-of-detail refinement
+
+    NONE = "none"  # leaf, no subdivision
+    VARIANCE = "variance"  # z-range exceeded threshold
+    DENSITY = "density"  # too many points in leaf
+    FORCED = "forced"  # explicit subdivision request
+    LOD = "lod"  # level-of-detail refinement
 
 
 @dataclass
 class QuadBounds:
     """Axis-aligned bounding box for a quad node."""
+
     x_min: float
     y_min: float
     x_max: float
@@ -127,16 +132,13 @@ class QuadBounds:
 
     def intersects(self, other: QuadBounds) -> bool:
         return not (
-            self.x_max < other.x_min
-            or self.x_min > other.x_max
-            or self.y_max < other.y_min
-            or self.y_min > other.y_max
+            self.x_max < other.x_min or self.x_min > other.x_max or self.y_max < other.y_min or self.y_min > other.y_max
         )
 
     def quadrant(self, index: int) -> QuadBounds:
         """Return child quadrant bounds. 0=SW, 1=SE, 2=NW, 3=NE."""
         cx, cy = self.cx, self.cy
-        if index == 0:    # SW
+        if index == 0:  # SW
             return QuadBounds(self.x_min, self.y_min, cx, cy)
         elif index == 1:  # SE
             return QuadBounds(cx, self.y_min, self.x_max, cy)
@@ -150,6 +152,7 @@ class QuadBounds:
 # ---------------------------------------------------------------------------
 # QuadNode — recursive quadtree node
 # ---------------------------------------------------------------------------
+
 
 class QuadNode:
     """Adaptive quadtree node with z-variance subdivision.
@@ -190,7 +193,7 @@ class QuadNode:
     def chladni_mode(self) -> Tuple[float, float]:
         """Fractal Chladni: modes scale by phi at each depth level."""
         m, n = self.chladni_base_mode
-        scale = PHI ** self.depth
+        scale = PHI**self.depth
         return (m * scale, n * scale)
 
     @property
@@ -350,9 +353,11 @@ class QuadNode:
 # Terrain mesh generation
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TerrainVertex:
     """Vertex in a terrain mesh generated from quadtree leaves."""
+
     x: float
     y: float
     z: float
@@ -365,6 +370,7 @@ class TerrainVertex:
 @dataclass
 class TerrainTriangle:
     """A triangle in the terrain mesh, referencing vertex indices."""
+
     v0: int
     v1: int
     v2: int
@@ -374,6 +380,7 @@ class TerrainTriangle:
 @dataclass
 class TerrainMesh:
     """Adaptive terrain mesh produced from 2.5D quadtree."""
+
     vertices: List[TerrainVertex]
     triangles: List[TerrainTriangle]
 
@@ -402,14 +409,18 @@ def _build_mesh_from_quadtree(root: QuadNode) -> TerrainMesh:
             return vertex_cache[key]
         idx = len(vertices)
         m, n = root.chladni_base_mode
-        scale = PHI ** depth
+        scale = PHI**depth
         amp = chladni_amplitude(x, y, m * scale, n * scale)
-        vertices.append(TerrainVertex(
-            x=x, y=y, z=z,
-            chladni_amplitude=amp,
-            depth=depth,
-            tongue=tongue,
-        ))
+        vertices.append(
+            TerrainVertex(
+                x=x,
+                y=y,
+                z=z,
+                chladni_amplitude=amp,
+                depth=depth,
+                tongue=tongue,
+            )
+        )
         vertex_cache[key] = idx
         return idx
 
@@ -442,9 +453,11 @@ def _build_mesh_from_quadtree(root: QuadNode) -> TerrainMesh:
 # LOD (Level of Detail) evaluator
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LODQuery:
     """Camera/query position for LOD-based traversal."""
+
     x: float
     y: float
     z: float = 0.0
@@ -489,6 +502,7 @@ def lod_select(
 # ---------------------------------------------------------------------------
 # Quadtree25D — main interface, bridges to octree/lattice
 # ---------------------------------------------------------------------------
+
 
 class Quadtree25D:
     """Adaptive 2.5D quadtree with terrain-style subdivision.
@@ -743,8 +757,10 @@ class Quadtree25D:
             "chladni_base_mode": list(self.root.chladni_base_mode),
             "tongue_distribution": tongue_dist,
             "bounds": [
-                self.root.bounds.x_min, self.root.bounds.y_min,
-                self.root.bounds.x_max, self.root.bounds.y_max,
+                self.root.bounds.x_min,
+                self.root.bounds.y_min,
+                self.root.bounds.x_max,
+                self.root.bounds.y_max,
             ],
         }
 
@@ -753,16 +769,17 @@ class Quadtree25D:
         cells: List[Dict[str, Any]] = []
 
         def _collect_leaf(node: QuadNode) -> None:
-            cells.append({
-                "bounds": [node.bounds.x_min, node.bounds.y_min,
-                           node.bounds.x_max, node.bounds.y_max],
-                "z_mean": node.z_mean,
-                "z_range": node.z_range,
-                "depth": node.depth,
-                "point_count": len(node.points),
-                "chladni_value": node.chladni_value,
-                "subdivision_reason": node.subdivision_reason.value,
-            })
+            cells.append(
+                {
+                    "bounds": [node.bounds.x_min, node.bounds.y_min, node.bounds.x_max, node.bounds.y_max],
+                    "z_mean": node.z_mean,
+                    "z_range": node.z_range,
+                    "depth": node.depth,
+                    "point_count": len(node.points),
+                    "chladni_value": node.chladni_value,
+                    "subdivision_reason": node.subdivision_reason.value,
+                }
+            )
 
         self.root.visit_leaves(_collect_leaf)
         return cells
@@ -771,6 +788,7 @@ class Quadtree25D:
 # ---------------------------------------------------------------------------
 # DEM loader — generate terrain from heightmap functions
 # ---------------------------------------------------------------------------
+
 
 def generate_terrain_points(
     func: Callable[[float, float], float],
@@ -802,11 +820,7 @@ def generate_terrain_points(
 
 def sine_hills(x: float, y: float) -> float:
     """Synthetic terrain: overlapping sine hills."""
-    return (
-        3.0 * math.sin(x * 2.5) * math.cos(y * 2.5)
-        + 1.5 * math.sin(x * 5.0 + 1.0)
-        + 0.8 * math.cos(y * 7.0 - 0.5)
-    )
+    return 3.0 * math.sin(x * 2.5) * math.cos(y * 2.5) + 1.5 * math.sin(x * 5.0 + 1.0) + 0.8 * math.cos(y * 7.0 - 0.5)
 
 
 def ridge_terrain(x: float, y: float) -> float:
@@ -889,6 +903,7 @@ QUADTREE25D_INTEROP = {
 # Demo / CLI
 # ---------------------------------------------------------------------------
 
+
 def demo() -> Dict[str, Any]:
     """Run a full demo: synthetic terrain → quadtree → mesh → octree → lattice."""
     print("=== HYDRA 2.5D Quadtree Demo ===\n")
@@ -964,20 +979,26 @@ def demo() -> Dict[str, Any]:
     # 11. Project to lattice
     lattice = qt.project_to_lattice(cell_size=0.3)
     lattice_stats = lattice.stats()
-    print(f"[10] Lattice projection: {lattice_stats['bundle_count']} bundles, "
-          f"{lattice_stats['overlap_cells']} overlap cells, "
-          f"{lattice_stats['lace_edges']} lace edges")
+    print(
+        f"[10] Lattice projection: {lattice_stats['bundle_count']} bundles, "
+        f"{lattice_stats['overlap_cells']} overlap cells, "
+        f"{lattice_stats['lace_edges']} lace edges"
+    )
 
     # 12. Leaf heatmap
     heatmap = qt.leaf_heatmap()
     variance_leaves = [h for h in heatmap if h["subdivision_reason"] == "variance"]
     density_leaves = [h for h in heatmap if h["point_count"] > 0]
-    print(f"\n[11] Leaf heatmap: {len(heatmap)} total, "
-          f"{len(variance_leaves)} from variance splits, "
-          f"{len(density_leaves)} occupied")
+    print(
+        f"\n[11] Leaf heatmap: {len(heatmap)} total, "
+        f"{len(variance_leaves)} from variance splits, "
+        f"{len(density_leaves)} occupied"
+    )
 
-    print(f"\n[12] Interop matrix covers {len(QUADTREE25D_INTEROP)} concepts "
-          f"across {len(set(lang for concept in QUADTREE25D_INTEROP.values() for lang in concept))} languages")
+    print(
+        f"\n[12] Interop matrix covers {len(QUADTREE25D_INTEROP)} concepts "
+        f"across {len(set(lang for concept in QUADTREE25D_INTEROP.values() for lang in concept))} languages"
+    )
 
     print("\n=== Demo complete ===")
     return {
@@ -992,7 +1013,6 @@ def demo() -> Dict[str, Any]:
     }
 
 
-
 # ---------------------------------------------------------------------------
 # Grok-style AdaptiveQuadTree25D — classic variant with np.var subdivision
 # ---------------------------------------------------------------------------
@@ -1000,8 +1020,10 @@ def demo() -> Dict[str, Any]:
 # Provides AABB-based (origin+size) API for game-engine / GIS compatibility.
 # Bridges to Quadtree25D via .to_hydra_quadtree() for octree/lattice interop.
 
+
 class Point2D5:
     """Simple 2.5D point (game-engine / GIS style)."""
+
     __slots__ = ("x", "y", "z")
 
     def __init__(self, x: float, y: float, z: float = 0.0):
@@ -1012,6 +1034,7 @@ class Point2D5:
 
 class AABB2D:
     """Axis-aligned bounding box (origin + size, GIS convention)."""
+
     __slots__ = ("x", "y", "width", "height")
 
     def __init__(self, x: float, y: float, width: float, height: float):
@@ -1021,14 +1044,15 @@ class AABB2D:
         self.height = height
 
     def contains(self, point: Point2D5) -> bool:
-        return (self.x <= point.x < self.x + self.width and
-                self.y <= point.y < self.y + self.height)
+        return self.x <= point.x < self.x + self.width and self.y <= point.y < self.y + self.height
 
     def intersects(self, other: AABB2D) -> bool:
-        return not (other.x > self.x + self.width or
-                    other.x + other.width < self.x or
-                    other.y > self.y + self.height or
-                    other.y + other.height < self.y)
+        return not (
+            other.x > self.x + self.width
+            or other.x + other.width < self.x
+            or other.y > self.y + self.height
+            or other.y + other.height < self.y
+        )
 
 
 class AdaptiveQuadTree25D:
@@ -1064,13 +1088,17 @@ class AdaptiveQuadTree25D:
         w, h = self.boundary.width / 2, self.boundary.height / 2
 
         self.northwest = AdaptiveQuadTree25D(
-            AABB2D(x, y, w, h), self.capacity, self.max_depth - 1, self.variance_threshold)
+            AABB2D(x, y, w, h), self.capacity, self.max_depth - 1, self.variance_threshold
+        )
         self.northeast = AdaptiveQuadTree25D(
-            AABB2D(x + w, y, w, h), self.capacity, self.max_depth - 1, self.variance_threshold)
+            AABB2D(x + w, y, w, h), self.capacity, self.max_depth - 1, self.variance_threshold
+        )
         self.southwest = AdaptiveQuadTree25D(
-            AABB2D(x, y + h, w, h), self.capacity, self.max_depth - 1, self.variance_threshold)
+            AABB2D(x, y + h, w, h), self.capacity, self.max_depth - 1, self.variance_threshold
+        )
         self.southeast = AdaptiveQuadTree25D(
-            AABB2D(x + w, y + h, w, h), self.capacity, self.max_depth - 1, self.variance_threshold)
+            AABB2D(x + w, y + h, w, h), self.capacity, self.max_depth - 1, self.variance_threshold
+        )
 
         for child in (self.northwest, self.northeast, self.southwest, self.southeast):
             child.lod_level = self.lod_level + 1
@@ -1140,8 +1168,10 @@ class AdaptiveQuadTree25D:
                 avg_z = sum(p.z for p in self.points) / len(self.points)
                 return {
                     "boundary": {
-                        "x": self.boundary.x, "y": self.boundary.y,
-                        "width": self.boundary.width, "height": self.boundary.height,
+                        "x": self.boundary.x,
+                        "y": self.boundary.y,
+                        "width": self.boundary.width,
+                        "height": self.boundary.height,
                     },
                     "height": avg_z,
                     "lod": self.lod_level,
@@ -1196,7 +1226,8 @@ class AdaptiveQuadTree25D:
             phase_rad = (avg_z % (2 * math.pi)) if avg_z >= 0 else ((avg_z % (2 * math.pi)))
 
             lattice.insert_bundle(
-                x=nx, y=ny,
+                x=nx,
+                y=ny,
                 phase_rad=phase_rad,
                 tongue="KO",
                 authority="public",
@@ -1233,7 +1264,9 @@ class AdaptiveQuadTree25D:
             nz = max(-0.99, min(0.99, (p.z / max(abs(p.z), 1.0)) * 0.95))
 
             octree.insert(
-                x=nx, y=ny, z=nz,
+                x=nx,
+                y=ny,
+                z=nz,
                 tongue="KO",
                 authority="public",
                 intent_vector=[0, 0, 0],
@@ -1287,8 +1320,7 @@ class AdaptiveQuadTree25D:
 
     def project_to_octree(self, max_depth: int = 6, chladni_mode: Tuple[int, int] = (3, 2)):
         """Bridge to SignedOctree via HYDRA Quadtree25D."""
-        return self.to_hydra_quadtree().project_to_octree(
-            max_depth=max_depth, chladni_mode=chladni_mode)
+        return self.to_hydra_quadtree().project_to_octree(max_depth=max_depth, chladni_mode=chladni_mode)
 
     # -------------------------------------------------------------------
     # Bridge to HyperbolicLattice25D
@@ -1296,8 +1328,7 @@ class AdaptiveQuadTree25D:
 
     def project_to_lattice(self, cell_size: float = 0.25, max_depth: int = 6):
         """Bridge to HyperbolicLattice25D via HYDRA Quadtree25D."""
-        return self.to_hydra_quadtree().project_to_lattice(
-            cell_size=cell_size, max_depth=max_depth)
+        return self.to_hydra_quadtree().project_to_lattice(cell_size=cell_size, max_depth=max_depth)
 
 
 if __name__ == "__main__":

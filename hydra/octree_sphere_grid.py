@@ -26,6 +26,7 @@ Usage:
     mirror = tree.mirror_octant((True, True, True), (True, True, False))  # +z -> -z
     neighbors = tree.query_octant((False, True, True), intent="govern")
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -46,16 +47,17 @@ from hydra.voxel_storage import (
     intent_similarity,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Morton / Z-Order Curve (space-filling linearization)
 # ---------------------------------------------------------------------------
+
 
 def morton_encode_3d(x: int, y: int, z: int) -> int:
     """Interleave 3 integers into a single Morton code (Z-order curve).
 
     Maps 3D grid coordinates to 1D index preserving spatial locality.
     """
+
     def spread(v: int) -> int:
         v = v & 0x1FFFFF  # 21 bits max
         v = (v | (v << 32)) & 0x1F00000000FFFF
@@ -70,6 +72,7 @@ def morton_encode_3d(x: int, y: int, z: int) -> int:
 
 def morton_decode_3d(code: int) -> Tuple[int, int, int]:
     """Decode a Morton code back to 3D coordinates."""
+
     def compact(v: int) -> int:
         v = v & 0x1249249249249249
         v = (v | (v >> 2)) & 0x10C30C30C30C30C3
@@ -101,11 +104,11 @@ OCTANT_NAMES: Dict[SignTriplet, str] = {
 
 # 6 face planes where cross-branch attachments connect octants
 FACE_PLANES = [
-    ("xy+", (None, None, True)),   # z > 0 face
+    ("xy+", (None, None, True)),  # z > 0 face
     ("xy-", (None, None, False)),  # z < 0 face
-    ("xz+", (None, True, None)),   # y > 0 face
+    ("xz+", (None, True, None)),  # y > 0 face
     ("xz-", (None, False, None)),  # y < 0 face
-    ("yz+", (True, None, None)),   # x > 0 face
+    ("yz+", (True, None, None)),  # x > 0 face
     ("yz-", (False, None, None)),  # x < 0 face
 ]
 
@@ -116,8 +119,12 @@ def sign_triplet(x: float, y: float, z: float) -> SignTriplet:
 
 
 def mirror_point(
-    x: float, y: float, z: float,
-    flip_x: bool = False, flip_y: bool = False, flip_z: bool = False,
+    x: float,
+    y: float,
+    z: float,
+    flip_x: bool = False,
+    flip_y: bool = False,
+    flip_z: bool = False,
 ) -> Tuple[float, float, float]:
     """Mirror a point across specified axes."""
     return (
@@ -138,14 +145,16 @@ def toroidal_wrap(val: float, bound: float = 1.0) -> float:
 #  Sphere Slot — FF10-style character slot inside a voxel node
 # ---------------------------------------------------------------------------
 
+
 class SlotType(str, Enum):
     """Types of sphere grid slots (inspired by FF10)."""
-    INTENT = "intent"           # Semantic intent upgrade
-    AUTHORITY = "authority"     # Authority tier gate
-    SPECTRAL = "spectral"      # Wavelength/frequency shift
-    GOVERNANCE = "governance"   # Governance check node
-    MERGE = "merge"             # Convergence/prism node
-    EMPTY = "empty"             # Unactivated slot
+
+    INTENT = "intent"  # Semantic intent upgrade
+    AUTHORITY = "authority"  # Authority tier gate
+    SPECTRAL = "spectral"  # Wavelength/frequency shift
+    GOVERNANCE = "governance"  # Governance check node
+    MERGE = "merge"  # Convergence/prism node
+    EMPTY = "empty"  # Unactivated slot
 
 
 @dataclass
@@ -155,6 +164,7 @@ class SphereSlot:
     Like FF10's sphere grid: each slot holds an attribute that can be
     "activated" (unlocked) by spending resources (authority, intent, time).
     """
+
     slot_id: int
     slot_type: SlotType = SlotType.EMPTY
     value: float = 0.0
@@ -185,6 +195,7 @@ class SphereGrid:
 
     Progression: "move" through slots by activating them in sequence.
     """
+
     slots: List[SphereSlot] = field(default_factory=list)
     active_slot: int = 0
 
@@ -193,10 +204,16 @@ class SphereGrid:
         """Create a default 10-slot sphere grid for a voxel."""
         tongues = list(TONGUE_WEIGHTS.keys())
         slot_types = [
-            SlotType.INTENT, SlotType.SPECTRAL, SlotType.AUTHORITY,
-            SlotType.GOVERNANCE, SlotType.MERGE,
-            SlotType.INTENT, SlotType.SPECTRAL, SlotType.AUTHORITY,
-            SlotType.GOVERNANCE, SlotType.MERGE,
+            SlotType.INTENT,
+            SlotType.SPECTRAL,
+            SlotType.AUTHORITY,
+            SlotType.GOVERNANCE,
+            SlotType.MERGE,
+            SlotType.INTENT,
+            SlotType.SPECTRAL,
+            SlotType.AUTHORITY,
+            SlotType.GOVERNANCE,
+            SlotType.MERGE,
         ]
 
         slots = []
@@ -213,13 +230,15 @@ class SphereGrid:
             else:
                 connections.append(i - 5)
 
-            slots.append(SphereSlot(
-                slot_id=i,
-                slot_type=slot_types[i],
-                tongue=tongues[i % len(tongues)],
-                label=f"{slot_types[i].value}_{tongues[i % len(tongues)]}",
-                connections=connections,
-            ))
+            slots.append(
+                SphereSlot(
+                    slot_id=i,
+                    slot_type=slot_types[i],
+                    tongue=tongues[i % len(tongues)],
+                    label=f"{slot_types[i].value}_{tongues[i % len(tongues)]}",
+                    connections=connections,
+                )
+            )
 
         return SphereGrid(slots=slots)
 
@@ -277,9 +296,11 @@ class SphereGrid:
 #  Octree Node with Signed Axes + Sphere Grid + Fractal Chladni
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class OctreeVoxel:
     """A voxel stored in the signed octree, with sphere grid attached."""
+
     x: float
     y: float
     z: float
@@ -310,6 +331,7 @@ class OctreeVoxel:
 #  2.5D Cyclic Lattice Layer (x, y, phase) with six-tongue semantic weighting
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CyclicBundle25D:
     """A 2.5D bundle: planar position + cyclic phase + semantic metadata.
@@ -318,6 +340,7 @@ class CyclicBundle25D:
     - phase_rad is cyclic [0, 2π)
     - tongue controls semantic weighting via six-tongue phi metrics
     """
+
     bundle_id: str
     x: float
     y: float
@@ -340,6 +363,7 @@ class CyclicBundle25D:
 @dataclass
 class QuadtreeEntry25D:
     """Quadtree payload entry (2D position with implied z from phase)."""
+
     bundle_id: str
     x: float
     y: float
@@ -842,7 +866,7 @@ class HyperbolicLattice25D:
         for b in candidates:
             scored.append((b, self.bundle_distance(query, b)))
         scored.sort(key=lambda item: item[1])
-        return scored[:max(1, top_k)]
+        return scored[: max(1, top_k)]
 
     def advance_cycle(self, delta_rad: float) -> None:
         """Advance all bundle phases and rebuild octree projection."""
@@ -943,8 +967,8 @@ class OctreeNode:
     @property
     def chladni_mode(self) -> Tuple[int, int]:
         """Fractal Chladni: modes scale by phi at each depth level."""
-        n = max(2, int(self.chladni_base_mode[0] * (PHI ** self.depth)))
-        m = max(2, int(self.chladni_base_mode[1] * (PHI ** self.depth)))
+        n = max(2, int(self.chladni_base_mode[0] * (PHI**self.depth)))
+        m = max(2, int(self.chladni_base_mode[1] * (PHI**self.depth)))
         if n == m:
             m += 1  # avoid degenerate symmetric mode
         return (n, m)
@@ -1025,6 +1049,7 @@ class OctreeNode:
 #  Signed Octree — the main structure tying everything together
 # ---------------------------------------------------------------------------
 
+
 class SignedOctree:
     """Signed-axis octree with mirroring, toroidal wrap, sphere grids, and fractal Chladni.
 
@@ -1057,7 +1082,9 @@ class SignedOctree:
 
     def insert(
         self,
-        x: float, y: float, z: float,
+        x: float,
+        y: float,
+        z: float,
         wavelength_nm: float = 550.0,
         tongue: str = "KO",
         authority: str = "public",
@@ -1093,10 +1120,13 @@ class SignedOctree:
         morton = morton_encode_3d(mx, my, mz)
 
         import time
+
         now = time.time()
 
         voxel = OctreeVoxel(
-            x=x, y=y, z=z,
+            x=x,
+            y=y,
+            z=z,
             octant=octant,
             morton_code=morton,
             wavelength_nm=wavelength_nm,
@@ -1180,7 +1210,9 @@ class SignedOctree:
             intent = list(-v.intent_vector if transform_intent else v.intent_vector)
 
             new_v = self.insert(
-                x=mx, y=my, z=mz,
+                x=mx,
+                y=my,
+                z=mz,
                 wavelength_nm=v.wavelength_nm,
                 tongue=v.tongue,
                 authority=v.authority,
@@ -1206,7 +1238,7 @@ class SignedOctree:
         count = 0
         signs = list(OCTANT_NAMES.keys())
         for i, a in enumerate(signs):
-            for b in signs[i + 1:]:
+            for b in signs[i + 1 :]:
                 # Adjacent = differ in exactly one axis
                 diffs = sum(1 for x, y in zip(a, b) if x != y)
                 if diffs == 1:
@@ -1214,9 +1246,7 @@ class SignedOctree:
                     for ax_idx, (sa, sb) in enumerate(zip(a, b)):
                         if sa != sb:
                             plane = ["yz", "xz", "xy"][ax_idx]
-                            self._cross_branches.append(
-                                (OCTANT_NAMES[a], OCTANT_NAMES[b], plane)
-                            )
+                            self._cross_branches.append((OCTANT_NAMES[a], OCTANT_NAMES[b], plane))
                             count += 1
                             break
         return count
@@ -1353,7 +1383,11 @@ INTEROP_MATRIX = {
     "type_mappings": {
         "np.ndarray": {"rust": "ndarray::Array1<f64>", "go": "[]float64", "ts": "Float64Array"},
         "dataclass": {"rust": "struct", "go": "struct", "ts": "interface/class", "sql": "TABLE"},
-        "Dict[str, Any]": {"rust": "HashMap<String, Value>", "go": "map[string]interface{}", "ts": "Record<string, unknown>"},
+        "Dict[str, Any]": {
+            "rust": "HashMap<String, Value>",
+            "go": "map[string]interface{}",
+            "ts": "Record<string, unknown>",
+        },
         "List[float]": {"rust": "Vec<f64>", "go": "[]float64", "ts": "number[]", "sql": "ARRAY or JSON"},
         "Enum": {"rust": "enum", "go": "const iota", "ts": "enum or union type", "sql": "CHECK constraint"},
         "Optional[T]": {"rust": "Option<T>", "go": "*T or nil", "ts": "T | null", "sql": "NULLABLE"},
@@ -1365,6 +1399,7 @@ INTEROP_MATRIX = {
 # ---------------------------------------------------------------------------
 #  Demo
 # ---------------------------------------------------------------------------
+
 
 def _demo():
     print("=" * 70)
@@ -1384,13 +1419,21 @@ def _demo():
 
     print("\nInserting voxels across signed octants:")
     for agent, label, intent, auth, tongue, x, y, z in agents:
-        v = tree.insert(x, y, z,
-                        wavelength_nm=400 + hash(tongue) % 300,
-                        tongue=tongue, authority=auth,
-                        intent_vector=intent, intent_label=label,
-                        payload={"agent": agent})
-        print(f"  {OCTANT_NAMES[v.octant]:8s} | {label:10s} | chladni={v.chladni_value:+.3f} "
-              f"| morton={v.morton_code:>10d} | mode={v.chladni_mode}")
+        v = tree.insert(
+            x,
+            y,
+            z,
+            wavelength_nm=400 + hash(tongue) % 300,
+            tongue=tongue,
+            authority=auth,
+            intent_vector=intent,
+            intent_label=label,
+            payload={"agent": agent},
+        )
+        print(
+            f"  {OCTANT_NAMES[v.octant]:8s} | {label:10s} | chladni={v.chladni_value:+.3f} "
+            f"| morton={v.morton_code:>10d} | mode={v.chladni_mode}"
+        )
 
     # Mirror +x+y+z octant to -x-y-z
     print("\nMirroring (+x+y+z) -> (-x-y-z):")

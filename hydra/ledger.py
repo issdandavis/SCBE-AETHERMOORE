@@ -19,31 +19,33 @@ import threading
 
 class EntryType(str, Enum):
     """Types of ledger entries."""
-    ACTION = "action"           # User-requested action
-    DECISION = "decision"       # SCBE governance decision
-    HEAD_CONNECT = "head_connect"    # AI head connected
+
+    ACTION = "action"  # User-requested action
+    DECISION = "decision"  # SCBE governance decision
+    HEAD_CONNECT = "head_connect"  # AI head connected
     HEAD_DISCONNECT = "head_disconnect"
     LIMB_ACTIVATE = "limb_activate"  # Execution limb activated
     LIMB_DEACTIVATE = "limb_deactivate"
-    CONSENSUS = "consensus"     # Roundtable vote result
-    MEMORY = "memory"           # Stored fact/context
-    ERROR = "error"             # Error record
-    CHECKPOINT = "checkpoint"   # Session checkpoint
+    CONSENSUS = "consensus"  # Roundtable vote result
+    MEMORY = "memory"  # Stored fact/context
+    ERROR = "error"  # Error record
+    CHECKPOINT = "checkpoint"  # Session checkpoint
     # WebSocket events (Phase 1 Q2 2026)
-    WS_CONNECT = "ws_connect"           # WebSocket client connected
-    WS_DISCONNECT = "ws_disconnect"     # WebSocket client disconnected
-    WS_MESSAGE = "ws_message"           # WebSocket message received
-    WS_BROADCAST = "ws_broadcast"       # Broadcast sent to clients
+    WS_CONNECT = "ws_connect"  # WebSocket client connected
+    WS_DISCONNECT = "ws_disconnect"  # WebSocket client disconnected
+    WS_MESSAGE = "ws_message"  # WebSocket message received
+    WS_BROADCAST = "ws_broadcast"  # Broadcast sent to clients
 
 
 @dataclass
 class LedgerEntry:
     """A single entry in the central ledger."""
+
     id: str
     entry_type: str
     timestamp: str
-    head_id: Optional[str]      # Which AI head
-    limb_id: Optional[str]      # Which execution limb
+    head_id: Optional[str]  # Which AI head
+    limb_id: Optional[str]  # Which execution limb
     action: str
     target: str
     payload: Dict[str, Any]
@@ -80,11 +82,7 @@ class Ledger:
     - Sync-ready for AI Workflow Architect
     """
 
-    def __init__(
-        self,
-        db_path: str = None,
-        session_id: str = None
-    ):
+    def __init__(self, db_path: str = None, session_id: str = None):
         self.db_path = self._resolve_db_path(db_path)
         self.session_id = session_id or self._generate_session_id()
         self._lock = threading.Lock()
@@ -235,9 +233,7 @@ class Ledger:
                     PRIMARY KEY (keyword, memory_key)
                 )
             """)
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_keyword ON keyword_index(keyword)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_keyword ON keyword_index(keyword)")
 
             conn.commit()
             conn.close()
@@ -257,27 +253,30 @@ class Ledger:
             conn = self._get_conn()
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO ledger (
                     id, entry_type, timestamp, head_id, limb_id,
                     action, target, payload, decision, score,
                     parent_id, session_id, signature
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                entry.id,
-                entry.entry_type,
-                entry.timestamp,
-                entry.head_id,
-                entry.limb_id,
-                entry.action,
-                entry.target,
-                json.dumps(entry.payload),
-                entry.decision,
-                entry.score,
-                entry.parent_id,
-                entry.session_id,
-                entry.signature
-            ))
+            """,
+                (
+                    entry.id,
+                    entry.entry_type,
+                    entry.timestamp,
+                    entry.head_id,
+                    entry.limb_id,
+                    entry.action,
+                    entry.target,
+                    json.dumps(entry.payload),
+                    entry.decision,
+                    entry.score,
+                    entry.parent_id,
+                    entry.session_id,
+                    entry.signature,
+                ),
+            )
 
             conn.commit()
             conn.close()
@@ -306,7 +305,7 @@ class Ledger:
         decision: str = None,
         session_id: str = None,
         limit: int = 100,
-        offset: int = 0
+        offset: int = 0,
     ) -> List[LedgerEntry]:
         """Query ledger entries."""
         conditions = []
@@ -334,12 +333,15 @@ class Ledger:
             conn = self._get_conn()
             cursor = conn.cursor()
 
-            cursor.execute(f"""
+            cursor.execute(
+                f"""
                 SELECT * FROM ledger
                 WHERE {where}
                 ORDER BY timestamp DESC
                 LIMIT ? OFFSET ?
-            """, (*params, limit, offset))
+            """,
+                (*params, limit, offset),
+            )
 
             rows = cursor.fetchall()
             conn.close()
@@ -361,7 +363,7 @@ class Ledger:
             score=row["score"],
             parent_id=row["parent_id"],
             session_id=row["session_id"],
-            signature=row["signature"]
+            signature=row["signature"],
         )
 
     # =========================================================================
@@ -374,10 +376,13 @@ class Ledger:
             conn = self._get_conn()
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO memory (key, value, category, importance, updated_at)
                 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
-            """, (key, json.dumps(value), category, importance))
+            """,
+                (key, json.dumps(value), category, importance),
+            )
 
             conn.commit()
             conn.close()
@@ -388,9 +393,12 @@ class Ledger:
             conn = self._get_conn()
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE memory SET access_count = access_count + 1 WHERE key = ?
-            """, (key,))
+            """,
+                (key,),
+            )
 
             cursor.execute("SELECT value FROM memory WHERE key = ?", (key,))
             row = cursor.fetchone()
@@ -409,31 +417,43 @@ class Ledger:
             cursor = conn.cursor()
 
             if pattern and category:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM memory
                     WHERE key LIKE ? AND category = ?
                     ORDER BY importance DESC, access_count DESC
                     LIMIT ?
-                """, (f"%{pattern}%", category, limit))
+                """,
+                    (f"%{pattern}%", category, limit),
+                )
             elif pattern:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM memory
                     WHERE key LIKE ? OR value LIKE ?
                     ORDER BY importance DESC, access_count DESC
                     LIMIT ?
-                """, (f"%{pattern}%", f"%{pattern}%", limit))
+                """,
+                    (f"%{pattern}%", f"%{pattern}%", limit),
+                )
             elif category:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM memory WHERE category = ?
                     ORDER BY importance DESC, access_count DESC
                     LIMIT ?
-                """, (category, limit))
+                """,
+                    (category, limit),
+                )
             else:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM memory
                     ORDER BY importance DESC, access_count DESC
                     LIMIT ?
-                """, (limit,))
+                """,
+                    (limit,),
+                )
 
             rows = cursor.fetchall()
             conn.close()
@@ -488,10 +508,13 @@ class Ledger:
             conn = self._get_conn()
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO active_heads (head_id, ai_type, model, connected_at, status)
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'active')
-            """, (head_id, ai_type, model))
+            """,
+                (head_id, ai_type, model),
+            )
 
             conn.commit()
             conn.close()
@@ -502,9 +525,12 @@ class Ledger:
             conn = self._get_conn()
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 UPDATE active_heads SET status = 'disconnected' WHERE head_id = ?
-            """, (head_id,))
+            """,
+                (head_id,),
+            )
 
             conn.commit()
             conn.close()
@@ -530,10 +556,13 @@ class Ledger:
             conn = self._get_conn()
             cursor = conn.cursor()
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO active_limbs (limb_id, limb_type, tab_id, activated_at, status)
                 VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'active')
-            """, (limb_id, limb_type, tab_id))
+            """,
+                (limb_id, limb_type, tab_id),
+            )
 
             conn.commit()
             conn.close()
@@ -603,7 +632,7 @@ class Ledger:
                 "active_limbs": active_limbs,
                 "memory_facts": memory_count,
                 "session_id": self.session_id,
-                "db_path": self.db_path
+                "db_path": self.db_path,
             }
 
     def export_session(self, session_id: str = None) -> List[Dict]:

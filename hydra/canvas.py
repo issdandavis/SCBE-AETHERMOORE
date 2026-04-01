@@ -68,6 +68,7 @@ try:
         BAND_CENTERS,
         ColorBand,
     )
+
     HAS_COLOR_DIMENSION = True
 except ImportError:
     HAS_COLOR_DIMENSION = False
@@ -77,14 +78,16 @@ except ImportError:
 #  Model Spectrum — non-overlapping color lanes for each provider
 # ---------------------------------------------------------------------------
 
+
 class ModelColor(str, Enum):
     """Each provider gets a color lane defining its specialty."""
-    VIOLET = "violet"    # Claude — architecture, synthesis, governance
-    BLUE = "blue"        # GPT — drafting, expansion, formatting
-    GREEN = "green"      # Gemini — research, fact-checking, citations
-    ORANGE = "orange"    # Grok — debate, contrarian, edge cases
-    RED = "red"          # HuggingFace — embeddings, classification, similarity
-    WHITE = "white"      # Local — code generation, data processing
+
+    VIOLET = "violet"  # Claude — architecture, synthesis, governance
+    BLUE = "blue"  # GPT — drafting, expansion, formatting
+    GREEN = "green"  # Gemini — research, fact-checking, citations
+    ORANGE = "orange"  # Grok — debate, contrarian, edge cases
+    RED = "red"  # HuggingFace — embeddings, classification, similarity
+    WHITE = "white"  # Local — code generation, data processing
 
 
 PROVIDER_SPECTRUM: Dict[str, Dict[str, Any]] = {
@@ -131,39 +134,42 @@ PROVIDER_SPECTRUM: Dict[str, Dict[str, Any]] = {
 #  Step definitions — the LEGO blocks
 # ---------------------------------------------------------------------------
 
+
 class StepType(str, Enum):
     """Types of steps in a canvas workflow."""
-    RESEARCH = "research"           # HYDRA research command
-    ARXIV = "arxiv"                 # HYDRA arxiv search/outline
-    DRAFT = "draft"                 # LLM writes content
-    EDIT = "edit"                   # LLM revises content
-    EXPAND = "expand"               # LLM expands sections
-    SYNTHESIZE = "synthesize"       # Merge multiple model outputs
-    FACT_CHECK = "fact_check"       # Verify claims against sources
-    GOVERNANCE = "governance"       # SCBE governance scan
-    PUBLISH = "publish"             # Push to platform
-    REMEMBER = "remember"           # Store in HYDRA memory
-    BRANCH = "branch"               # ChoiceScript branching decision
-    ROUNDABOUT = "roundabout"       # Backtracking checkpoint
-    CANVAS_MERGE = "canvas_merge"   # Merge all color outputs into final
-    DEBATE = "debate"               # Multi-model debate round
-    CLASSIFY = "classify"           # Categorize content
-    TRANSFORM = "transform"         # Data transformation
-    WAIT = "wait"                   # Barrier — wait for parallel steps
-    BROWSER_NAV = "browser_nav"     # AetherBrowser navigation (arxiv, github, notion)
-    OBSIDIAN_NOTE = "obsidian_note" # Write to Obsidian vault
-    CROSS_TALK = "cross_talk"       # Send cross-talk packet to another agent
-    CUSTOM = "custom"               # User-defined action
+
+    RESEARCH = "research"  # HYDRA research command
+    ARXIV = "arxiv"  # HYDRA arxiv search/outline
+    DRAFT = "draft"  # LLM writes content
+    EDIT = "edit"  # LLM revises content
+    EXPAND = "expand"  # LLM expands sections
+    SYNTHESIZE = "synthesize"  # Merge multiple model outputs
+    FACT_CHECK = "fact_check"  # Verify claims against sources
+    GOVERNANCE = "governance"  # SCBE governance scan
+    PUBLISH = "publish"  # Push to platform
+    REMEMBER = "remember"  # Store in HYDRA memory
+    BRANCH = "branch"  # ChoiceScript branching decision
+    ROUNDABOUT = "roundabout"  # Backtracking checkpoint
+    CANVAS_MERGE = "canvas_merge"  # Merge all color outputs into final
+    DEBATE = "debate"  # Multi-model debate round
+    CLASSIFY = "classify"  # Categorize content
+    TRANSFORM = "transform"  # Data transformation
+    WAIT = "wait"  # Barrier — wait for parallel steps
+    BROWSER_NAV = "browser_nav"  # AetherBrowser navigation (arxiv, github, notion)
+    OBSIDIAN_NOTE = "obsidian_note"  # Write to Obsidian vault
+    CROSS_TALK = "cross_talk"  # Send cross-talk packet to another agent
+    CUSTOM = "custom"  # User-defined action
 
 
 @dataclass
 class CanvasStep:
     """A single step in a multi-step canvas workflow."""
+
     step_id: str
     step_type: StepType
     description: str = ""
     assigned_color: Optional[ModelColor] = None  # Which model lane
-    assigned_provider: Optional[str] = None       # Explicit provider override
+    assigned_provider: Optional[str] = None  # Explicit provider override
     params: Dict[str, Any] = field(default_factory=dict)
     depends_on: List[str] = field(default_factory=list)  # Step IDs this depends on
     retry_limit: int = 2
@@ -175,8 +181,9 @@ class CanvasStep:
 @dataclass
 class StepResult:
     """Result from executing a single step."""
+
     step_id: str
-    status: str = "pending"       # pending | running | done | failed | backtracked
+    status: str = "pending"  # pending | running | done | failed | backtracked
     output: str = ""
     artifacts: Dict[str, Any] = field(default_factory=dict)
     provider_used: str = ""
@@ -189,6 +196,7 @@ class StepResult:
 @dataclass
 class RoundaboutState:
     """Checkpoint for intelligent backtracking."""
+
     checkpoint_id: str
     step_id: str
     context_snapshot: Dict[str, Any]
@@ -201,9 +209,11 @@ class RoundaboutState:
 #  Knowledge Canvas — the final merged product
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class KnowledgeCanvas:
     """The 'painting' — merged output from all model colors."""
+
     canvas_id: str
     topic: str
     colors_used: Dict[str, List[str]] = field(default_factory=dict)  # color -> [step outputs]
@@ -217,11 +227,13 @@ class KnowledgeCanvas:
         if color not in self.colors_used:
             self.colors_used[color] = []
         self.colors_used[color].append(content)
-        self.sections.append({
-            "color": color,
-            "content": content,
-            "source_step": source_step,
-        })
+        self.sections.append(
+            {
+                "color": color,
+                "content": content,
+                "source_step": source_step,
+            }
+        )
 
     def render(self) -> str:
         """Render the canvas as a coherent document."""
@@ -249,73 +261,170 @@ class KnowledgeCanvas:
 #  Canvas Recipes — pre-built multi-step workflows
 # ---------------------------------------------------------------------------
 
+
 def recipe_article(topic: str = "AI safety", target_length: int = 2000) -> List[CanvasStep]:
     """Full article pipeline: research -> outline -> draft -> edit -> expand -> fact-check -> publish."""
     return [
-        CanvasStep("research", StepType.RESEARCH, f"Deep research on: {topic}",
-                   assigned_color=ModelColor.GREEN, params={"query": topic, "max_subtasks": 3}),
-        CanvasStep("arxiv_scan", StepType.ARXIV, f"Find academic papers on: {topic}",
-                   assigned_color=ModelColor.GREEN, params={"query": topic, "max": 5}),
-        CanvasStep("outline", StepType.DRAFT, "Create structured outline from research",
-                   assigned_color=ModelColor.VIOLET, depends_on=["research", "arxiv_scan"],
-                   params={"instruction": f"Create a detailed outline for a {target_length}-word article on '{topic}'. Use the research findings."}),
-        CanvasStep("roundabout_outline", StepType.ROUNDABOUT, "Quality checkpoint: outline",
-                   params={"min_quality": 0.6}),
-        CanvasStep("draft_body", StepType.DRAFT, "Write first draft",
-                   assigned_color=ModelColor.BLUE, depends_on=["outline"],
-                   params={"instruction": f"Write a {target_length}-word article following this outline. Be detailed and engaging."}),
-        CanvasStep("challenge", StepType.DEBATE, "Contrarian review of draft",
-                   assigned_color=ModelColor.ORANGE, depends_on=["draft_body"],
-                   params={"instruction": "Challenge this draft. Find weak arguments, missing evidence, logical gaps."}),
-        CanvasStep("edit", StepType.EDIT, "Revise based on challenges",
-                   assigned_color=ModelColor.BLUE, depends_on=["draft_body", "challenge"],
-                   params={"instruction": "Revise the draft addressing these critiques. Strengthen weak points."}),
-        CanvasStep("expand", StepType.EXPAND, "Expand thin sections",
-                   assigned_color=ModelColor.BLUE, depends_on=["edit"],
-                   params={"instruction": f"Expand any sections under 200 words. Target total: {target_length} words."}),
-        CanvasStep("fact_check", StepType.FACT_CHECK, "Verify all claims",
-                   assigned_color=ModelColor.GREEN, depends_on=["expand"],
-                   params={"instruction": "Verify every factual claim. Flag unverifiable statements."}),
-        CanvasStep("roundabout_quality", StepType.ROUNDABOUT, "Quality checkpoint: final",
-                   depends_on=["fact_check"], params={"min_quality": 0.7},
-                   backtrack_to="edit"),
-        CanvasStep("governance_scan", StepType.GOVERNANCE, "SCBE governance check",
-                   depends_on=["expand"]),
-        CanvasStep("synthesize", StepType.SYNTHESIZE, "Final synthesis from all colors",
-                   assigned_color=ModelColor.VIOLET, depends_on=["expand", "fact_check", "governance_scan"],
-                   params={"instruction": "Synthesize the expanded draft with fact-check results into the final article."}),
-        CanvasStep("remember", StepType.REMEMBER, f"Store article in memory",
-                   depends_on=["synthesize"],
-                   params={"key": f"article_{topic.replace(' ', '_')[:30]}"}),
-        CanvasStep("canvas_merge", StepType.CANVAS_MERGE, "Merge all color outputs",
-                   depends_on=["synthesize"]),
+        CanvasStep(
+            "research",
+            StepType.RESEARCH,
+            f"Deep research on: {topic}",
+            assigned_color=ModelColor.GREEN,
+            params={"query": topic, "max_subtasks": 3},
+        ),
+        CanvasStep(
+            "arxiv_scan",
+            StepType.ARXIV,
+            f"Find academic papers on: {topic}",
+            assigned_color=ModelColor.GREEN,
+            params={"query": topic, "max": 5},
+        ),
+        CanvasStep(
+            "outline",
+            StepType.DRAFT,
+            "Create structured outline from research",
+            assigned_color=ModelColor.VIOLET,
+            depends_on=["research", "arxiv_scan"],
+            params={
+                "instruction": f"Create a detailed outline for a {target_length}-word article on '{topic}'. Use the research findings."
+            },
+        ),
+        CanvasStep(
+            "roundabout_outline", StepType.ROUNDABOUT, "Quality checkpoint: outline", params={"min_quality": 0.6}
+        ),
+        CanvasStep(
+            "draft_body",
+            StepType.DRAFT,
+            "Write first draft",
+            assigned_color=ModelColor.BLUE,
+            depends_on=["outline"],
+            params={
+                "instruction": f"Write a {target_length}-word article following this outline. Be detailed and engaging."
+            },
+        ),
+        CanvasStep(
+            "challenge",
+            StepType.DEBATE,
+            "Contrarian review of draft",
+            assigned_color=ModelColor.ORANGE,
+            depends_on=["draft_body"],
+            params={"instruction": "Challenge this draft. Find weak arguments, missing evidence, logical gaps."},
+        ),
+        CanvasStep(
+            "edit",
+            StepType.EDIT,
+            "Revise based on challenges",
+            assigned_color=ModelColor.BLUE,
+            depends_on=["draft_body", "challenge"],
+            params={"instruction": "Revise the draft addressing these critiques. Strengthen weak points."},
+        ),
+        CanvasStep(
+            "expand",
+            StepType.EXPAND,
+            "Expand thin sections",
+            assigned_color=ModelColor.BLUE,
+            depends_on=["edit"],
+            params={"instruction": f"Expand any sections under 200 words. Target total: {target_length} words."},
+        ),
+        CanvasStep(
+            "fact_check",
+            StepType.FACT_CHECK,
+            "Verify all claims",
+            assigned_color=ModelColor.GREEN,
+            depends_on=["expand"],
+            params={"instruction": "Verify every factual claim. Flag unverifiable statements."},
+        ),
+        CanvasStep(
+            "roundabout_quality",
+            StepType.ROUNDABOUT,
+            "Quality checkpoint: final",
+            depends_on=["fact_check"],
+            params={"min_quality": 0.7},
+            backtrack_to="edit",
+        ),
+        CanvasStep("governance_scan", StepType.GOVERNANCE, "SCBE governance check", depends_on=["expand"]),
+        CanvasStep(
+            "synthesize",
+            StepType.SYNTHESIZE,
+            "Final synthesis from all colors",
+            assigned_color=ModelColor.VIOLET,
+            depends_on=["expand", "fact_check", "governance_scan"],
+            params={"instruction": "Synthesize the expanded draft with fact-check results into the final article."},
+        ),
+        CanvasStep(
+            "remember",
+            StepType.REMEMBER,
+            f"Store article in memory",
+            depends_on=["synthesize"],
+            params={"key": f"article_{topic.replace(' ', '_')[:30]}"},
+        ),
+        CanvasStep("canvas_merge", StepType.CANVAS_MERGE, "Merge all color outputs", depends_on=["synthesize"]),
     ]
 
 
 def recipe_research_deep(topic: str = "quantum computing") -> List[CanvasStep]:
     """Deep multi-source research: arxiv + web + debate + synthesis."""
     return [
-        CanvasStep("arxiv_survey", StepType.ARXIV, f"ArXiv survey: {topic}",
-                   assigned_color=ModelColor.GREEN, params={"query": topic, "max": 10}),
-        CanvasStep("web_research", StepType.RESEARCH, f"Web research: {topic}",
-                   assigned_color=ModelColor.GREEN, params={"query": topic, "max_subtasks": 5}),
-        CanvasStep("classify_sources", StepType.CLASSIFY, "Categorize all sources",
-                   assigned_color=ModelColor.RED, depends_on=["arxiv_survey", "web_research"],
-                   params={"categories": ["theory", "application", "security", "governance"]}),
-        CanvasStep("synthesis_violet", StepType.SYNTHESIZE, "Claude: architecture analysis",
-                   assigned_color=ModelColor.VIOLET, depends_on=["classify_sources"],
-                   params={"instruction": f"Analyze the architectural implications of {topic} research."}),
-        CanvasStep("synthesis_blue", StepType.DRAFT, "GPT: accessible summary",
-                   assigned_color=ModelColor.BLUE, depends_on=["classify_sources"],
-                   params={"instruction": f"Write a clear, accessible summary of {topic} findings."}),
-        CanvasStep("debate_round", StepType.DEBATE, "Multi-model debate",
-                   assigned_color=ModelColor.ORANGE, depends_on=["synthesis_violet", "synthesis_blue"],
-                   params={"instruction": "Compare these two perspectives. Where do they agree? Disagree?"}),
-        CanvasStep("roundabout_depth", StepType.ROUNDABOUT, "Depth checkpoint",
-                   depends_on=["debate_round"], params={"min_quality": 0.5},
-                   backtrack_to="web_research"),
-        CanvasStep("final_canvas", StepType.CANVAS_MERGE, "Paint the knowledge canvas",
-                   depends_on=["synthesis_violet", "synthesis_blue", "debate_round"]),
+        CanvasStep(
+            "arxiv_survey",
+            StepType.ARXIV,
+            f"ArXiv survey: {topic}",
+            assigned_color=ModelColor.GREEN,
+            params={"query": topic, "max": 10},
+        ),
+        CanvasStep(
+            "web_research",
+            StepType.RESEARCH,
+            f"Web research: {topic}",
+            assigned_color=ModelColor.GREEN,
+            params={"query": topic, "max_subtasks": 5},
+        ),
+        CanvasStep(
+            "classify_sources",
+            StepType.CLASSIFY,
+            "Categorize all sources",
+            assigned_color=ModelColor.RED,
+            depends_on=["arxiv_survey", "web_research"],
+            params={"categories": ["theory", "application", "security", "governance"]},
+        ),
+        CanvasStep(
+            "synthesis_violet",
+            StepType.SYNTHESIZE,
+            "Claude: architecture analysis",
+            assigned_color=ModelColor.VIOLET,
+            depends_on=["classify_sources"],
+            params={"instruction": f"Analyze the architectural implications of {topic} research."},
+        ),
+        CanvasStep(
+            "synthesis_blue",
+            StepType.DRAFT,
+            "GPT: accessible summary",
+            assigned_color=ModelColor.BLUE,
+            depends_on=["classify_sources"],
+            params={"instruction": f"Write a clear, accessible summary of {topic} findings."},
+        ),
+        CanvasStep(
+            "debate_round",
+            StepType.DEBATE,
+            "Multi-model debate",
+            assigned_color=ModelColor.ORANGE,
+            depends_on=["synthesis_violet", "synthesis_blue"],
+            params={"instruction": "Compare these two perspectives. Where do they agree? Disagree?"},
+        ),
+        CanvasStep(
+            "roundabout_depth",
+            StepType.ROUNDABOUT,
+            "Depth checkpoint",
+            depends_on=["debate_round"],
+            params={"min_quality": 0.5},
+            backtrack_to="web_research",
+        ),
+        CanvasStep(
+            "final_canvas",
+            StepType.CANVAS_MERGE,
+            "Paint the knowledge canvas",
+            depends_on=["synthesis_violet", "synthesis_blue", "debate_round"],
+        ),
     ]
 
 
@@ -323,55 +432,99 @@ def recipe_content_pipeline(topic: str = "SCBE update", platforms: Optional[List
     """Multi-platform content: write -> adapt per platform -> govern -> publish."""
     platforms = platforms or ["twitter", "linkedin", "github", "medium"]
     steps: List[CanvasStep] = [
-        CanvasStep("core_draft", StepType.DRAFT, f"Core content about: {topic}",
-                   assigned_color=ModelColor.BLUE,
-                   params={"instruction": f"Write the core message about '{topic}' in 500 words."}),
-        CanvasStep("governance", StepType.GOVERNANCE, "Governance scan",
-                   depends_on=["core_draft"]),
+        CanvasStep(
+            "core_draft",
+            StepType.DRAFT,
+            f"Core content about: {topic}",
+            assigned_color=ModelColor.BLUE,
+            params={"instruction": f"Write the core message about '{topic}' in 500 words."},
+        ),
+        CanvasStep("governance", StepType.GOVERNANCE, "Governance scan", depends_on=["core_draft"]),
     ]
 
     for platform in platforms:
         adapt_id = f"adapt_{platform}"
         pub_id = f"publish_{platform}"
-        steps.append(CanvasStep(
-            adapt_id, StepType.EDIT, f"Adapt for {platform}",
-            assigned_color=ModelColor.BLUE, depends_on=["core_draft", "governance"],
-            params={"instruction": f"Adapt this content for {platform}. Follow {platform}'s style and length limits.",
-                    "platform": platform},
-        ))
-        steps.append(CanvasStep(
-            pub_id, StepType.PUBLISH, f"Publish to {platform}",
-            depends_on=[adapt_id],
-            params={"platform": platform},
-        ))
+        steps.append(
+            CanvasStep(
+                adapt_id,
+                StepType.EDIT,
+                f"Adapt for {platform}",
+                assigned_color=ModelColor.BLUE,
+                depends_on=["core_draft", "governance"],
+                params={
+                    "instruction": f"Adapt this content for {platform}. Follow {platform}'s style and length limits.",
+                    "platform": platform,
+                },
+            )
+        )
+        steps.append(
+            CanvasStep(
+                pub_id,
+                StepType.PUBLISH,
+                f"Publish to {platform}",
+                depends_on=[adapt_id],
+                params={"platform": platform},
+            )
+        )
 
-    steps.append(CanvasStep("canvas_merge", StepType.CANVAS_MERGE, "Merge all adaptations",
-                            depends_on=[f"adapt_{p}" for p in platforms]))
+    steps.append(
+        CanvasStep(
+            "canvas_merge", StepType.CANVAS_MERGE, "Merge all adaptations", depends_on=[f"adapt_{p}" for p in platforms]
+        )
+    )
     return steps
 
 
 def recipe_training_data(topic: str = "SCBE governance") -> List[CanvasStep]:
     """Training data generation: research -> generate pairs -> quality check -> export."""
     return [
-        CanvasStep("source_research", StepType.RESEARCH, f"Gather source material: {topic}",
-                   assigned_color=ModelColor.GREEN, params={"query": topic}),
-        CanvasStep("generate_pairs", StepType.DRAFT, "Generate SFT prompt-response pairs",
-                   assigned_color=ModelColor.VIOLET, depends_on=["source_research"],
-                   params={"instruction": f"Generate 20 high-quality SFT pairs about {topic}. Format: prompt/response."}),
-        CanvasStep("quality_check", StepType.DEBATE, "Quality review of pairs",
-                   assigned_color=ModelColor.ORANGE, depends_on=["generate_pairs"],
-                   params={"instruction": "Review these SFT pairs. Flag low-quality, ambiguous, or biased entries."}),
-        CanvasStep("roundabout_quality", StepType.ROUNDABOUT, "Quality gate",
-                   depends_on=["quality_check"], params={"min_quality": 0.7},
-                   backtrack_to="generate_pairs"),
-        CanvasStep("governance_check", StepType.GOVERNANCE, "Governance scan",
-                   depends_on=["generate_pairs"]),
-        CanvasStep("export", StepType.TRANSFORM, "Export to JSONL",
-                   depends_on=["quality_check", "governance_check"],
-                   params={"format": "jsonl", "output": "training-data/canvas/"}),
-        CanvasStep("remember", StepType.REMEMBER, "Store in HYDRA memory",
-                   depends_on=["export"],
-                   params={"key": f"training_{topic.replace(' ', '_')[:20]}"}),
+        CanvasStep(
+            "source_research",
+            StepType.RESEARCH,
+            f"Gather source material: {topic}",
+            assigned_color=ModelColor.GREEN,
+            params={"query": topic},
+        ),
+        CanvasStep(
+            "generate_pairs",
+            StepType.DRAFT,
+            "Generate SFT prompt-response pairs",
+            assigned_color=ModelColor.VIOLET,
+            depends_on=["source_research"],
+            params={"instruction": f"Generate 20 high-quality SFT pairs about {topic}. Format: prompt/response."},
+        ),
+        CanvasStep(
+            "quality_check",
+            StepType.DEBATE,
+            "Quality review of pairs",
+            assigned_color=ModelColor.ORANGE,
+            depends_on=["generate_pairs"],
+            params={"instruction": "Review these SFT pairs. Flag low-quality, ambiguous, or biased entries."},
+        ),
+        CanvasStep(
+            "roundabout_quality",
+            StepType.ROUNDABOUT,
+            "Quality gate",
+            depends_on=["quality_check"],
+            params={"min_quality": 0.7},
+            backtrack_to="generate_pairs",
+        ),
+        CanvasStep("governance_check", StepType.GOVERNANCE, "Governance scan", depends_on=["generate_pairs"]),
+        CanvasStep(
+            "export",
+            StepType.TRANSFORM,
+            "Export to JSONL",
+            depends_on=["quality_check", "governance_check"],
+            params={"format": "jsonl", "output": "training-data/canvas/"},
+        ),
+        CanvasStep(
+            "remember",
+            StepType.REMEMBER,
+            "Store in HYDRA memory",
+            depends_on=["export"],
+            params={"key": f"training_{topic.replace(' ', '_')[:20]}"},
+        ),
     ]
 
 
@@ -383,80 +536,168 @@ def recipe_full_loop(topic: str = "SCBE update") -> List[CanvasStep]:
     """
     return [
         # Phase 1: Multi-source research
-        CanvasStep("browse_arxiv", StepType.BROWSER_NAV, f"Browse arXiv for: {topic}",
-                   params={"target": "arxiv", "query": topic}),
-        CanvasStep("browse_github", StepType.BROWSER_NAV, f"Browse GitHub for: {topic}",
-                   params={"target": "github", "query": topic}),
-        CanvasStep("arxiv_papers", StepType.ARXIV, f"Fetch papers: {topic}",
-                   assigned_color=ModelColor.GREEN, params={"query": topic, "max": 5}),
-        CanvasStep("web_research", StepType.RESEARCH, f"Web research: {topic}",
-                   assigned_color=ModelColor.GREEN, params={"query": topic}),
-
+        CanvasStep(
+            "browse_arxiv",
+            StepType.BROWSER_NAV,
+            f"Browse arXiv for: {topic}",
+            params={"target": "arxiv", "query": topic},
+        ),
+        CanvasStep(
+            "browse_github",
+            StepType.BROWSER_NAV,
+            f"Browse GitHub for: {topic}",
+            params={"target": "github", "query": topic},
+        ),
+        CanvasStep(
+            "arxiv_papers",
+            StepType.ARXIV,
+            f"Fetch papers: {topic}",
+            assigned_color=ModelColor.GREEN,
+            params={"query": topic, "max": 5},
+        ),
+        CanvasStep(
+            "web_research",
+            StepType.RESEARCH,
+            f"Web research: {topic}",
+            assigned_color=ModelColor.GREEN,
+            params={"query": topic},
+        ),
         # Phase 2: AI analysis (parallel model lanes)
-        CanvasStep("architect_analysis", StepType.SYNTHESIZE, "Claude: architectural analysis",
-                   assigned_color=ModelColor.VIOLET,
-                   depends_on=["arxiv_papers", "web_research"],
-                   params={"instruction": f"Analyze the architectural implications of {topic}."}),
-        CanvasStep("draft_article", StepType.DRAFT, "GPT: write article draft",
-                   assigned_color=ModelColor.BLUE,
-                   depends_on=["arxiv_papers", "web_research"],
-                   params={"instruction": f"Write a 2000-word article on {topic}."}),
-        CanvasStep("challenge_review", StepType.DEBATE, "Grok: contrarian review",
-                   assigned_color=ModelColor.ORANGE,
-                   depends_on=["draft_article"],
-                   params={"instruction": "Challenge this draft. Find weak points."}),
-
+        CanvasStep(
+            "architect_analysis",
+            StepType.SYNTHESIZE,
+            "Claude: architectural analysis",
+            assigned_color=ModelColor.VIOLET,
+            depends_on=["arxiv_papers", "web_research"],
+            params={"instruction": f"Analyze the architectural implications of {topic}."},
+        ),
+        CanvasStep(
+            "draft_article",
+            StepType.DRAFT,
+            "GPT: write article draft",
+            assigned_color=ModelColor.BLUE,
+            depends_on=["arxiv_papers", "web_research"],
+            params={"instruction": f"Write a 2000-word article on {topic}."},
+        ),
+        CanvasStep(
+            "challenge_review",
+            StepType.DEBATE,
+            "Grok: contrarian review",
+            assigned_color=ModelColor.ORANGE,
+            depends_on=["draft_article"],
+            params={"instruction": "Challenge this draft. Find weak points."},
+        ),
         # Phase 3: Quality roundabout
-        CanvasStep("quality_gate", StepType.ROUNDABOUT, "Quality checkpoint",
-                   depends_on=["draft_article", "challenge_review"],
-                   params={"min_quality": 0.6}, backtrack_to="draft_article"),
-        CanvasStep("edit_revision", StepType.EDIT, "Revise based on review",
-                   assigned_color=ModelColor.BLUE,
-                   depends_on=["draft_article", "challenge_review", "quality_gate"],
-                   params={"instruction": "Revise the draft addressing all critiques."}),
-        CanvasStep("fact_check", StepType.FACT_CHECK, "Verify all claims",
-                   assigned_color=ModelColor.GREEN,
-                   depends_on=["edit_revision"]),
-
+        CanvasStep(
+            "quality_gate",
+            StepType.ROUNDABOUT,
+            "Quality checkpoint",
+            depends_on=["draft_article", "challenge_review"],
+            params={"min_quality": 0.6},
+            backtrack_to="draft_article",
+        ),
+        CanvasStep(
+            "edit_revision",
+            StepType.EDIT,
+            "Revise based on review",
+            assigned_color=ModelColor.BLUE,
+            depends_on=["draft_article", "challenge_review", "quality_gate"],
+            params={"instruction": "Revise the draft addressing all critiques."},
+        ),
+        CanvasStep(
+            "fact_check",
+            StepType.FACT_CHECK,
+            "Verify all claims",
+            assigned_color=ModelColor.GREEN,
+            depends_on=["edit_revision"],
+        ),
         # Phase 4: Governance + notes
-        CanvasStep("governance", StepType.GOVERNANCE, "SCBE governance scan",
-                   depends_on=["edit_revision"]),
-        CanvasStep("obsidian_research_note", StepType.OBSIDIAN_NOTE, f"Research note: {topic}",
-                   depends_on=["architect_analysis", "fact_check"],
-                   params={"vault": "AI Workspace", "title": f"Research: {topic}"}),
-        CanvasStep("obsidian_article_note", StepType.OBSIDIAN_NOTE, f"Article draft: {topic}",
-                   depends_on=["edit_revision"],
-                   params={"vault": "AI Workspace", "title": f"Article: {topic}"}),
-
+        CanvasStep("governance", StepType.GOVERNANCE, "SCBE governance scan", depends_on=["edit_revision"]),
+        CanvasStep(
+            "obsidian_research_note",
+            StepType.OBSIDIAN_NOTE,
+            f"Research note: {topic}",
+            depends_on=["architect_analysis", "fact_check"],
+            params={"vault": "AI Workspace", "title": f"Research: {topic}"},
+        ),
+        CanvasStep(
+            "obsidian_article_note",
+            StepType.OBSIDIAN_NOTE,
+            f"Article draft: {topic}",
+            depends_on=["edit_revision"],
+            params={"vault": "AI Workspace", "title": f"Article: {topic}"},
+        ),
         # Phase 5: Cross-talk + synthesis
-        CanvasStep("cross_talk_codex", StepType.CROSS_TALK, f"Handoff to Codex: {topic}",
-                   depends_on=["governance"],
-                   params={"recipient": "agent.codex", "task_id": f"canvas-{topic[:20]}",
-                           "summary": f"Canvas pipeline complete for {topic}"}),
-        CanvasStep("final_synthesis", StepType.SYNTHESIZE, "Final canvas synthesis",
-                   assigned_color=ModelColor.VIOLET,
-                   depends_on=["edit_revision", "fact_check", "governance", "architect_analysis"],
-                   params={"instruction": "Merge all model outputs into final knowledge product."}),
-        CanvasStep("remember_result", StepType.REMEMBER, "Store in HYDRA memory",
-                   depends_on=["final_synthesis"],
-                   params={"key": f"canvas_{topic.replace(' ', '_')[:25]}"}),
-
+        CanvasStep(
+            "cross_talk_codex",
+            StepType.CROSS_TALK,
+            f"Handoff to Codex: {topic}",
+            depends_on=["governance"],
+            params={
+                "recipient": "agent.codex",
+                "task_id": f"canvas-{topic[:20]}",
+                "summary": f"Canvas pipeline complete for {topic}",
+            },
+        ),
+        CanvasStep(
+            "final_synthesis",
+            StepType.SYNTHESIZE,
+            "Final canvas synthesis",
+            assigned_color=ModelColor.VIOLET,
+            depends_on=["edit_revision", "fact_check", "governance", "architect_analysis"],
+            params={"instruction": "Merge all model outputs into final knowledge product."},
+        ),
+        CanvasStep(
+            "remember_result",
+            StepType.REMEMBER,
+            "Store in HYDRA memory",
+            depends_on=["final_synthesis"],
+            params={"key": f"canvas_{topic.replace(' ', '_')[:25]}"},
+        ),
         # Phase 6: Multi-platform publish
-        CanvasStep("adapt_twitter", StepType.EDIT, "Adapt for Twitter/X",
-                   assigned_color=ModelColor.BLUE, depends_on=["final_synthesis"],
-                   params={"instruction": "Create a tweet thread from this article.", "platform": "twitter"}),
-        CanvasStep("adapt_linkedin", StepType.EDIT, "Adapt for LinkedIn",
-                   assigned_color=ModelColor.BLUE, depends_on=["final_synthesis"],
-                   params={"instruction": "Adapt for LinkedIn professional audience.", "platform": "linkedin"}),
-        CanvasStep("publish_twitter", StepType.PUBLISH, "Publish to Twitter",
-                   depends_on=["adapt_twitter"], params={"platform": "twitter"}),
-        CanvasStep("publish_linkedin", StepType.PUBLISH, "Publish to LinkedIn",
-                   depends_on=["adapt_linkedin"], params={"platform": "linkedin"}),
-
+        CanvasStep(
+            "adapt_twitter",
+            StepType.EDIT,
+            "Adapt for Twitter/X",
+            assigned_color=ModelColor.BLUE,
+            depends_on=["final_synthesis"],
+            params={"instruction": "Create a tweet thread from this article.", "platform": "twitter"},
+        ),
+        CanvasStep(
+            "adapt_linkedin",
+            StepType.EDIT,
+            "Adapt for LinkedIn",
+            assigned_color=ModelColor.BLUE,
+            depends_on=["final_synthesis"],
+            params={"instruction": "Adapt for LinkedIn professional audience.", "platform": "linkedin"},
+        ),
+        CanvasStep(
+            "publish_twitter",
+            StepType.PUBLISH,
+            "Publish to Twitter",
+            depends_on=["adapt_twitter"],
+            params={"platform": "twitter"},
+        ),
+        CanvasStep(
+            "publish_linkedin",
+            StepType.PUBLISH,
+            "Publish to LinkedIn",
+            depends_on=["adapt_linkedin"],
+            params={"platform": "linkedin"},
+        ),
         # Final merge
-        CanvasStep("canvas_merge", StepType.CANVAS_MERGE, "Paint the knowledge canvas",
-                   depends_on=["final_synthesis", "publish_twitter", "publish_linkedin",
-                               "obsidian_research_note", "obsidian_article_note"]),
+        CanvasStep(
+            "canvas_merge",
+            StepType.CANVAS_MERGE,
+            "Paint the knowledge canvas",
+            depends_on=[
+                "final_synthesis",
+                "publish_twitter",
+                "publish_linkedin",
+                "obsidian_research_note",
+                "obsidian_article_note",
+            ],
+        ),
     ]
 
 
@@ -472,6 +713,7 @@ RECIPE_REGISTRY: Dict[str, Callable] = {
 # ---------------------------------------------------------------------------
 #  Canvas Orchestrator — executes multi-step workflows
 # ---------------------------------------------------------------------------
+
 
 class CanvasOrchestrator:
     """Execute canvas recipes with model spectrum assignment and backtracking."""
@@ -531,12 +773,22 @@ class CanvasOrchestrator:
         if not HAS_COLOR_DIMENSION or not self.spectrum:
             return None
         band = None
-        if provider in {"claude": ColorBand.VIOLET, "gpt": ColorBand.BLUE,
-                         "gemini": ColorBand.GREEN, "grok": ColorBand.ORANGE,
-                         "hf": ColorBand.RED, "local": ColorBand.CYAN}:
-            band = {"claude": ColorBand.VIOLET, "gpt": ColorBand.BLUE,
-                    "gemini": ColorBand.GREEN, "grok": ColorBand.ORANGE,
-                    "hf": ColorBand.RED, "local": ColorBand.CYAN}.get(provider)
+        if provider in {
+            "claude": ColorBand.VIOLET,
+            "gpt": ColorBand.BLUE,
+            "gemini": ColorBand.GREEN,
+            "grok": ColorBand.ORANGE,
+            "hf": ColorBand.RED,
+            "local": ColorBand.CYAN,
+        }:
+            band = {
+                "claude": ColorBand.VIOLET,
+                "gpt": ColorBand.BLUE,
+                "gemini": ColorBand.GREEN,
+                "grok": ColorBand.ORANGE,
+                "hf": ColorBand.RED,
+                "local": ColorBand.CYAN,
+            }.get(provider)
         tongue = "KO"
         # Map step complexity to tongue overtone
         if step.step_type in (StepType.GOVERNANCE, StepType.SYNTHESIZE):
@@ -737,9 +989,11 @@ class CanvasOrchestrator:
                     if rb.visits > self.max_roundabout_visits:
                         # Force through
                         result = StepResult(
-                            step_id=step.step_id, status="done",
+                            step_id=step.step_id,
+                            status="done",
                             output=f"Roundabout {rb_id}: forced through after {rb.visits} visits\n",
-                            provider_used="system", color="white",
+                            provider_used="system",
+                            color="white",
                         )
                     else:
                         result = self._execute_step_stub(step, provider, dep_outputs)
@@ -760,9 +1014,11 @@ class CanvasOrchestrator:
                         if sresult.output.strip() and sresult.color:
                             self.canvas.add_stroke(sresult.color, sresult.output, sid)
                     result = StepResult(
-                        step_id=step.step_id, status="done",
+                        step_id=step.step_id,
+                        status="done",
                         output=f"Canvas merged: {len(self.canvas.sections)} strokes from {len(self.canvas.colors_used)} colors\n",
-                        provider_used="system", color="white",
+                        provider_used="system",
+                        color="white",
                     )
 
                 else:
@@ -785,7 +1041,8 @@ class CanvasOrchestrator:
                 for step in steps:
                     if step.step_id not in executed:
                         self.results[step.step_id] = StepResult(
-                            step_id=step.step_id, status="failed",
+                            step_id=step.step_id,
+                            status="failed",
                             error="deadlock: unmet dependencies",
                         )
                         executed.add(step.step_id)
@@ -822,33 +1079,42 @@ class CanvasOrchestrator:
 #  CLI integration helpers
 # ---------------------------------------------------------------------------
 
+
 def list_recipes() -> List[Dict[str, Any]]:
     """List available canvas recipes."""
     recipes = []
     for name, builder in RECIPE_REGISTRY.items():
         steps = builder("example_topic")
-        recipes.append({
-            "name": name,
-            "steps": len(steps),
-            "colors": list(set(
-                PROVIDER_SPECTRUM.get(
-                    next((p for p, s in PROVIDER_SPECTRUM.items() if s["color"] == st.assigned_color), ""),
-                    {}
-                ).get("color", ModelColor.WHITE).value
-                for st in steps if st.assigned_color
-            )),
-            "description": {
-                "article": "Full article pipeline (14 steps): research -> draft -> edit -> expand -> fact-check -> publish",
-                "research": "Deep multi-source research (8 steps): arxiv + web + debate + synthesis",
-                "content": "Multi-platform content (variable): write -> adapt per platform -> govern -> publish",
-                "training": "Training data generation (7 steps): research -> generate pairs -> quality check -> export",
-                "full_loop": "End-to-end loop: browser nav + research + writing + obsidian + cross-talk + publish",
-            }.get(name, ""),
-        })
+        recipes.append(
+            {
+                "name": name,
+                "steps": len(steps),
+                "colors": list(
+                    set(
+                        PROVIDER_SPECTRUM.get(
+                            next((p for p, s in PROVIDER_SPECTRUM.items() if s["color"] == st.assigned_color), ""), {}
+                        )
+                        .get("color", ModelColor.WHITE)
+                        .value
+                        for st in steps
+                        if st.assigned_color
+                    )
+                ),
+                "description": {
+                    "article": "Full article pipeline (14 steps): research -> draft -> edit -> expand -> fact-check -> publish",
+                    "research": "Deep multi-source research (8 steps): arxiv + web + debate + synthesis",
+                    "content": "Multi-platform content (variable): write -> adapt per platform -> govern -> publish",
+                    "training": "Training data generation (7 steps): research -> generate pairs -> quality check -> export",
+                    "full_loop": "End-to-end loop: browser nav + research + writing + obsidian + cross-talk + publish",
+                }.get(name, ""),
+            }
+        )
     return recipes
 
 
-def run_recipe(recipe_name: str, topic: str, providers: Optional[List[str]] = None, max_steps: int = 0) -> Dict[str, Any]:
+def run_recipe(
+    recipe_name: str, topic: str, providers: Optional[List[str]] = None, max_steps: int = 0
+) -> Dict[str, Any]:
     """Run a canvas recipe and return results."""
     builder = RECIPE_REGISTRY.get(recipe_name)
     if not builder:
@@ -883,6 +1149,7 @@ def run_recipe(recipe_name: str, topic: str, providers: Optional[List[str]] = No
 # ---------------------------------------------------------------------------
 #  Demo
 # ---------------------------------------------------------------------------
+
 
 def _run_demo():
     print("=" * 70)
@@ -930,8 +1197,10 @@ def _run_demo():
     # Run research recipe
     print("-" * 70)
     result2 = run_recipe("research", "hyperbolic geometry AI safety", providers=["claude", "gpt", "grok"])
-    print(f"Research canvas: {result2['summary']['completed']}/{result2['summary']['total_steps']} steps, "
-          f"{result2['summary']['canvas_strokes']} strokes")
+    print(
+        f"Research canvas: {result2['summary']['completed']}/{result2['summary']['total_steps']} steps, "
+        f"{result2['summary']['canvas_strokes']} strokes"
+    )
     print(f"Colors: {result2['colors_used']}")
 
 

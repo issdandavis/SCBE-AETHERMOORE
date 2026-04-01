@@ -19,9 +19,12 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict, Any
 import json
+import logging
 import numpy as np
 import hashlib
 import hmac
+
+logger = logging.getLogger("scbe.api")
 import time
 from collections import defaultdict
 from enum import Enum
@@ -760,7 +763,8 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
 
     except HTTPException:
         raise
-    except Exception:
+    except Exception as exc:
+        logger.exception("seal-memory failed: %s", exc)
         raise HTTPException(500, "Seal failed")
 
 

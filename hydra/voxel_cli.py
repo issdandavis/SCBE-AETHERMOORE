@@ -7,6 +7,7 @@ Usage:
     python -m hydra.voxel_cli layout --flows 8 --mode default --json
     python -m hydra.voxel_cli lattice25d --bundles 12 --cell-size 0.4 --json
 """
+
 from __future__ import annotations
 
 import argparse
@@ -22,7 +23,9 @@ from hydra.color_dimension import TONGUE_WAVELENGTHS, TONGUE_WEIGHTS, ColorBand
 from hydra.octree_sphere_grid import HyperbolicLattice25D
 
 
-def _build_layout(flow_count: int = 8, mode: str = "default", at_unix_ms: float | None = None, window_ms: float = 60000) -> dict:
+def _build_layout(
+    flow_count: int = 8, mode: str = "default", at_unix_ms: float | None = None, window_ms: float = 60000
+) -> dict:
     """Build a layout result compatible with the TypeScript spectralGraph output."""
     grid = VoxelGrid(resolution=16, chladni_mode=(3, 2))
 
@@ -54,7 +57,9 @@ def _build_layout(flow_count: int = 8, mode: str = "default", at_unix_ms: float 
         y = 0.15 + (i * 0.17) % 0.7
 
         v = grid.store(
-            x=x, y=y, z=float(i % 4) * 0.1,
+            x=x,
+            y=y,
+            z=float(i % 4) * 0.1,
             wavelength_nm=float(wl),
             tongue=tongue,
             authority=f"agent.{authority}",
@@ -64,36 +69,42 @@ def _build_layout(flow_count: int = 8, mode: str = "default", at_unix_ms: float 
             voxel_id=f"flow_{i+1}_voxel",
         )
 
-        flows.append({
-            "id": f"flow_{i+1}",
-            "sequence": i,
-            "wavelengthNm": wl,
-            "authority": authority,
-            "intentTag": intent_tag,
-            "intentVector": list(v.intent_vector[:3]),
-            "tongue": tongue,
-            "chladniAddress": v.chladni_address,
-        })
+        flows.append(
+            {
+                "id": f"flow_{i+1}",
+                "sequence": i,
+                "wavelengthNm": wl,
+                "authority": authority,
+                "intentTag": intent_tag,
+                "intentVector": list(v.intent_vector[:3]),
+                "tongue": tongue,
+                "chladniAddress": v.chladni_address,
+            }
+        )
 
     now_ms = at_unix_ms or (time.time() * 1000)
     half = window_ms / 2
 
     voxels_out = []
     for v in grid.voxels.values():
-        voxels_out.append({
-            "id": v.voxel_id,
-            "x": v.x, "y": v.y, "z": v.z,
-            "wavelengthNm": v.wavelength_nm,
-            "authority": v.authority_agent.replace("agent.", ""),
-            "authorityHash": v.authority_hash,
-            "intentTag": v.intent_label,
-            "intentVector": list(v.intent_vector[:3]),
-            "modeN": grid.chladni_n,
-            "modeM": grid.chladni_m,
-            "chladniValue": v.chladni_address,
-            "createdAtUnixMs": v.created_at * 1000,
-            "updatedAtUnixMs": v.updated_at * 1000,
-        })
+        voxels_out.append(
+            {
+                "id": v.voxel_id,
+                "x": v.x,
+                "y": v.y,
+                "z": v.z,
+                "wavelengthNm": v.wavelength_nm,
+                "authority": v.authority_agent.replace("agent.", ""),
+                "authorityHash": v.authority_hash,
+                "intentTag": v.intent_label,
+                "intentVector": list(v.intent_vector[:3]),
+                "modeN": grid.chladni_n,
+                "modeM": grid.chladni_m,
+                "chladniValue": v.chladni_address,
+                "createdAtUnixMs": v.created_at * 1000,
+                "updatedAtUnixMs": v.updated_at * 1000,
+            }
+        )
 
     auth_dist = {}
     intent_dist = {}
@@ -132,6 +143,7 @@ def _build_layout(flow_count: int = 8, mode: str = "default", at_unix_ms: float 
 
 def cmd_demo(_args):
     from hydra.voxel_storage import _demo
+
     _demo()
 
 
@@ -157,24 +169,32 @@ def cmd_store(args):
     grid = VoxelGrid(resolution=16)
     intent = [float(x) for x in args.intent.split(",")]
     v = grid.store(
-        x=args.x, y=args.y, z=args.z,
+        x=args.x,
+        y=args.y,
+        z=args.z,
         wavelength_nm=args.wl,
         tongue=args.tongue,
         authority=args.authority,
         intent_vector=intent,
         intent_label=args.label or "",
     )
-    print(json.dumps({
-        "voxel_id": v.voxel_id,
-        "position": [v.x, v.y, v.z],
-        "wavelength_nm": v.wavelength_nm,
-        "tongue": v.tongue,
-        "authority": v.authority_agent,
-        "authority_hash": v.authority_hash,
-        "intent_vector": list(v.intent_vector),
-        "chladni_address": v.chladni_address,
-        "created_at": v.created_at,
-    }, indent=2, default=str))
+    print(
+        json.dumps(
+            {
+                "voxel_id": v.voxel_id,
+                "position": [v.x, v.y, v.z],
+                "wavelength_nm": v.wavelength_nm,
+                "tongue": v.tongue,
+                "authority": v.authority_agent,
+                "authority_hash": v.authority_hash,
+                "intent_vector": list(v.intent_vector),
+                "chladni_address": v.chladni_address,
+                "created_at": v.created_at,
+            },
+            indent=2,
+            default=str,
+        )
+    )
 
 
 def cmd_chladni(args):
@@ -240,10 +260,7 @@ def cmd_lattice25d(args):
 
     result = {
         "stats": lat.stats(),
-        "overlap_cells": [
-            {"cell": list(cell), "count": len(items)}
-            for cell, items in lat.overlapping_cells().items()
-        ],
+        "overlap_cells": [{"cell": list(cell), "count": len(items)} for cell, items in lat.overlapping_cells().items()],
         "lace_edge_count": len(lat.lace_edges()),
         "nearest": [
             {
@@ -270,8 +287,7 @@ def cmd_lattice25d(args):
         print("  nearest:")
         for n in result["nearest"]:
             print(
-                f"    - {n['label']:14s} tongue={n['tongue']:2s} "
-                f"phase={n['phase_rad']:.3f} d={n['distance']:.4f}"
+                f"    - {n['label']:14s} tongue={n['tongue']:2s} " f"phase={n['phase_rad']:.3f} d={n['distance']:.4f}"
             )
 
 

@@ -75,7 +75,9 @@ def _risk_score(payload: Dict[str, Any]) -> float:
     return min(1.0, score)
 
 
-def _state_vector(task: Dict[str, Any], worker_id: str, status: str, role: str, turnstile_action: str) -> Dict[str, Any]:
+def _state_vector(
+    task: Dict[str, Any], worker_id: str, status: str, role: str, turnstile_action: str
+) -> Dict[str, Any]:
     return {
         "worker_id": worker_id,
         "task_id": str(task.get("task_id", "")),

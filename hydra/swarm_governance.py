@@ -42,17 +42,12 @@ import uuid
 # Try numpy, fallback to pure Python
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     HAS_NUMPY = False
 
-from .consensus import (
-    ByzantineConsensus,
-    Vote,
-    Proposal,
-    ConsensusResult,
-    VoteDecision
-)
+from .consensus import ByzantineConsensus, Vote, Proposal, ConsensusResult, VoteDecision
 
 # Constants
 EPSILON = 1e-10
@@ -76,8 +71,8 @@ BLOCKED_COMMANDS: List[str] = [
     "init 6",
     "format c:",
     "format d:",
-    ":(){",            # fork bomb
-    ">(){ :|:",        # fork bomb variant
+    ":(){",  # fork bomb
+    ">(){ :|:",  # fork bomb variant
     "chmod -R 777 /",
     "chown -R",
     "mv /* ",
@@ -87,7 +82,7 @@ BLOCKED_COMMANDS: List[str] = [
     "curl | bash",
     "wget | bash",
     "> /dev/sda",
-    "> /dev/null",     # harmless, but included for completeness of redirect attacks
+    "> /dev/null",  # harmless, but included for completeness of redirect attacks
     "mkfs.ext",
     "fdisk",
     "parted",
@@ -99,12 +94,12 @@ DEFAULT_EXECUTION_TIMEOUT: int = 30
 
 # Sacred Tongue realm centers (6D)
 REALM_CENTERS = {
-    'KO': [0.3, 0.0, 0.0, 0.0, 0.0, 0.0],   # Knowledge - pure flow
-    'AV': [0.0, 0.3, 0.0, 0.0, 0.0, 0.0],   # Avatara - context boundary
-    'RU': [0.0, 0.0, 0.3, 0.0, 0.0, 0.0],   # Runes - binding chaos
-    'CA': [0.0, 0.0, 0.0, 0.3, 0.0, 0.0],   # Cascade - bit shatter
-    'UM': [0.0, 0.0, 0.0, 0.0, 0.3, 0.0],   # Umbra - veil mystery
-    'DR': [0.0, 0.0, 0.0, 0.0, 0.0, 0.3],   # Draconic - structured order
+    "KO": [0.3, 0.0, 0.0, 0.0, 0.0, 0.0],  # Knowledge - pure flow
+    "AV": [0.0, 0.3, 0.0, 0.0, 0.0, 0.0],  # Avatara - context boundary
+    "RU": [0.0, 0.0, 0.3, 0.0, 0.0, 0.0],  # Runes - binding chaos
+    "CA": [0.0, 0.0, 0.0, 0.3, 0.0, 0.0],  # Cascade - bit shatter
+    "UM": [0.0, 0.0, 0.0, 0.0, 0.3, 0.0],  # Umbra - veil mystery
+    "DR": [0.0, 0.0, 0.0, 0.0, 0.0, 0.3],  # Draconic - structured order
 }
 
 
@@ -112,20 +107,26 @@ REALM_CENTERS = {
 # Vector Operations (numpy-agnostic)
 # ═══════════════════════════════════════════════════════════════
 
+
 def vec_norm(v: List[float]) -> float:
     return math.sqrt(sum(x * x for x in v))
+
 
 def vec_dot(a: List[float], b: List[float]) -> float:
     return sum(x * y for x, y in zip(a, b))
 
+
 def vec_sub(a: List[float], b: List[float]) -> List[float]:
     return [x - y for x, y in zip(a, b)]
+
 
 def vec_add(a: List[float], b: List[float]) -> List[float]:
     return [x + y for x, y in zip(a, b)]
 
+
 def vec_scale(v: List[float], s: float) -> List[float]:
     return [x * s for x in v]
+
 
 def vec_zeros(n: int) -> List[float]:
     return [0.0] * n
@@ -135,23 +136,26 @@ def vec_zeros(n: int) -> List[float]:
 # Agent State
 # ═══════════════════════════════════════════════════════════════
 
+
 class AgentRole(str, Enum):
     """Agent roles in the swarm."""
-    LEADER = "leader"           # Proposes actions, coordinates
-    VALIDATOR = "validator"     # Votes on proposals
-    EXECUTOR = "executor"       # Executes approved actions
-    OBSERVER = "observer"       # Monitors, reports anomalies
-    MALICIOUS = "malicious"     # For simulation: adversarial agent
+
+    LEADER = "leader"  # Proposes actions, coordinates
+    VALIDATOR = "validator"  # Votes on proposals
+    EXECUTOR = "executor"  # Executes approved actions
+    OBSERVER = "observer"  # Monitors, reports anomalies
+    MALICIOUS = "malicious"  # For simulation: adversarial agent
 
 
 class AgentState(str, Enum):
     """Agent operational states."""
+
     ACTIVE = "active"
     IDLE = "idle"
     VOTING = "voting"
     EXECUTING = "executing"
-    ISOLATED = "isolated"       # Quarantined due to low coherence
-    FROZEN = "frozen"           # Suspended due to attack detection
+    ISOLATED = "isolated"  # Quarantined due to low coherence
+    FROZEN = "frozen"  # Suspended due to attack detection
 
 
 @dataclass
@@ -165,6 +169,7 @@ class SwarmAgent:
     - BFT voting capability
     - Execution history
     """
+
     agent_id: str
     role: AgentRole = AgentRole.VALIDATOR
     state: AgentState = AgentState.ACTIVE
@@ -174,13 +179,13 @@ class SwarmAgent:
     velocity: List[float] = field(default_factory=lambda: vec_zeros(6))
 
     # Trust/coherence metrics
-    coherence: float = 1.0          # Current intent validation score
-    trust_score: float = 1.0        # Long-term trust (decays with bad behavior)
-    penalty_accumulated: float = 0.0 # Total harmonic penalties incurred
+    coherence: float = 1.0  # Current intent validation score
+    trust_score: float = 1.0  # Long-term trust (decays with bad behavior)
+    penalty_accumulated: float = 0.0  # Total harmonic penalties incurred
 
     # Adaptive geometry parameters (per-agent)
-    local_R: float = 1.5            # Agent's local harmonic scaling
-    local_kappa: float = -1.0       # Agent's local curvature
+    local_R: float = 1.5  # Agent's local harmonic scaling
+    local_kappa: float = -1.0  # Agent's local curvature
 
     # History
     position_history: List[List[float]] = field(default_factory=list)
@@ -219,7 +224,7 @@ class SwarmAgent:
             "trust_score": round(self.trust_score, 4),
             "penalty_accumulated": round(self.penalty_accumulated, 2),
             "local_R": round(self.local_R, 4),
-            "distance_from_origin": round(self.distance_from_origin(), 4)
+            "distance_from_origin": round(self.distance_from_origin(), 4),
         }
 
 
@@ -227,34 +232,36 @@ class SwarmAgent:
 # Swarm Governance Controller
 # ═══════════════════════════════════════════════════════════════
 
+
 @dataclass
 class GovernanceConfig:
     """Configuration for swarm governance."""
+
     # BFT parameters
-    min_agents: int = 4                    # Minimum for meaningful consensus
-    vote_timeout_seconds: float = 10.0     # Timeout for vote collection
+    min_agents: int = 4  # Minimum for meaningful consensus
+    vote_timeout_seconds: float = 10.0  # Timeout for vote collection
 
     # Adaptive geometry
-    base_R: float = 1.5                    # Base harmonic scaling
-    lambda_penalty: float = 1.5            # Coherence penalty multiplier
-    gamma_curvature: float = 0.5           # Curvature adaptation rate
-    chaos_strength: float = 0.1            # Lorenz chaos amplitude
-    boundary_threshold: float = 0.98       # Ball boundary
+    base_R: float = 1.5  # Base harmonic scaling
+    lambda_penalty: float = 1.5  # Coherence penalty multiplier
+    gamma_curvature: float = 0.5  # Curvature adaptation rate
+    chaos_strength: float = 0.1  # Lorenz chaos amplitude
+    boundary_threshold: float = 0.98  # Ball boundary
 
     # Trust management
-    trust_decay_rate: float = 0.01         # Trust decays over time
-    trust_recovery_rate: float = 0.05      # Trust recovers with good behavior
-    isolation_threshold: float = 0.2       # Coherence below this → isolation
-    freeze_threshold: float = 0.1          # Coherence below this → freeze
+    trust_decay_rate: float = 0.01  # Trust decays over time
+    trust_recovery_rate: float = 0.05  # Trust recovers with good behavior
+    isolation_threshold: float = 0.2  # Coherence below this → isolation
+    freeze_threshold: float = 0.1  # Coherence below this → freeze
 
     # Self-regulation
-    auto_heal_enabled: bool = True         # Auto-recover isolated agents
-    auto_expel_enabled: bool = True        # Auto-remove persistent bad actors
+    auto_heal_enabled: bool = True  # Auto-recover isolated agents
+    auto_expel_enabled: bool = True  # Auto-remove persistent bad actors
     expel_penalty_threshold: float = 1000  # Accumulated penalty for expulsion
 
     # Autonomous execution
-    auto_execute_threshold: float = 0.9    # Coherence needed for auto-execute
-    require_consensus_above: float = 0.5   # Actions above this risk need consensus
+    auto_execute_threshold: float = 0.9  # Coherence needed for auto-execute
+    require_consensus_above: float = 0.5  # Actions above this risk need consensus
 
 
 class SwarmGovernance:
@@ -322,7 +329,7 @@ class SwarmGovernance:
         agent_id: str,
         role: AgentRole = AgentRole.VALIDATOR,
         initial_position: Optional[List[float]] = None,
-        initial_coherence: float = 1.0
+        initial_coherence: float = 1.0,
     ) -> SwarmAgent:
         """Add an agent to the swarm."""
         if agent_id in self.agents:
@@ -334,7 +341,7 @@ class SwarmGovernance:
             position=initial_position or vec_zeros(6),
             coherence=initial_coherence,
             trust_score=initial_coherence,
-            local_R=self.config.base_R
+            local_R=self.config.base_R,
         )
 
         self.agents[agent_id] = agent
@@ -358,10 +365,7 @@ class SwarmGovernance:
 
     def get_active_agents(self) -> List[SwarmAgent]:
         """Get all active (non-isolated, non-frozen) agents."""
-        return [
-            a for a in self.agents.values()
-            if a.state in [AgentState.ACTIVE, AgentState.IDLE, AgentState.VOTING]
-        ]
+        return [a for a in self.agents.values() if a.state in [AgentState.ACTIVE, AgentState.IDLE, AgentState.VOTING]]
 
     # ═══════════════════════════════════════════════════════════════
     # Adaptive Geometry
@@ -414,7 +418,7 @@ class SwarmGovernance:
 
         Superexponential in distance → extreme cost at boundary
         """
-        return R ** (distance ** 2)
+        return R ** (distance**2)
 
     def project_to_ball(self, pos: List[float]) -> List[float]:
         """Project position to stay inside Poincaré ball."""
@@ -427,12 +431,7 @@ class SwarmGovernance:
     # Agent Dynamics (ODE-based drift)
     # ═══════════════════════════════════════════════════════════════
 
-    def compute_drift(
-        self,
-        agent: SwarmAgent,
-        target_realms: List[str],
-        mutations: float = 0
-    ) -> List[float]:
+    def compute_drift(self, agent: SwarmAgent, target_realms: List[str], mutations: float = 0) -> List[float]:
         """
         Compute drift vector for agent position update.
 
@@ -463,7 +462,7 @@ class SwarmGovernance:
         # Chaos term (Lorenz-like for 6D)
         chaos = vec_zeros(dim)
         if self.config.chaos_strength > 0 and dim >= 6:
-            sigma, rho, beta = 10, 28, 8/3
+            sigma, rho, beta = 10, 28, 8 / 3
             cs = self.config.chaos_strength * (1 - agent.coherence)
 
             chaos[0] = cs * sigma * (pos[1] - pos[0])
@@ -476,11 +475,7 @@ class SwarmGovernance:
         return vec_add(vec_add(attraction, repulsion), chaos)
 
     def update_agent_position(
-        self,
-        agent: SwarmAgent,
-        target_realms: List[str],
-        mutations: float = 0,
-        dt: float = 0.1
+        self, agent: SwarmAgent, target_realms: List[str], mutations: float = 0, dt: float = 0.1
     ) -> Tuple[List[float], float]:
         """
         Update agent position using Euler integration.
@@ -497,7 +492,7 @@ class SwarmGovernance:
         new_pos = self.project_to_ball(new_pos)
 
         # Update agent
-        agent.velocity = vec_scale(vec_sub(new_pos, agent.position), 1/dt)
+        agent.velocity = vec_scale(vec_sub(new_pos, agent.position), 1 / dt)
         agent.update_position(new_pos)
 
         # Update adaptive parameters
@@ -522,7 +517,7 @@ class SwarmGovernance:
         action: str,
         target: str,
         context: Dict[str, Any],
-        require_consensus: Optional[bool] = None
+        require_consensus: Optional[bool] = None,
     ) -> Dict[str, Any]:
         """
         Propose an action, potentially requiring BFT consensus.
@@ -544,8 +539,7 @@ class SwarmGovernance:
         needs_consensus = require_consensus
         if needs_consensus is None:
             needs_consensus = (
-                risk > self.config.require_consensus_above or
-                proposer.coherence < self.config.auto_execute_threshold
+                risk > self.config.require_consensus_above or proposer.coherence < self.config.auto_execute_threshold
             )
 
         if not needs_consensus:
@@ -556,7 +550,7 @@ class SwarmGovernance:
                 "auto_executed": True,
                 "result": result,
                 "risk": risk,
-                "proposer_coherence": proposer.coherence
+                "proposer_coherence": proposer.coherence,
             }
 
         # Create BFT proposal
@@ -565,11 +559,7 @@ class SwarmGovernance:
             return {"success": False, "error": "Insufficient active agents for consensus"}
 
         proposal = self.consensus.create_proposal(
-            action=action,
-            target=target,
-            context=context,
-            proposer_id=proposer_id,
-            num_voters=len(active_agents)
+            action=action, target=target, context=context, proposer_id=proposer_id, num_voters=len(active_agents)
         )
 
         # Collect votes
@@ -585,7 +575,7 @@ class SwarmGovernance:
                 "consensus_reached": True,
                 "decision": result.final_decision.value,
                 "result": exec_result,
-                "vote_counts": result.vote_counts
+                "vote_counts": result.vote_counts,
             }
 
         return {
@@ -593,14 +583,10 @@ class SwarmGovernance:
             "consensus_reached": result.consensus_reached,
             "decision": result.final_decision.value,
             "vote_counts": result.vote_counts,
-            "reason": "Consensus denied action"
+            "reason": "Consensus denied action",
         }
 
-    async def _collect_votes(
-        self,
-        proposal: Proposal,
-        voters: List[SwarmAgent]
-    ) -> List[Vote]:
+    async def _collect_votes(self, proposal: Proposal, voters: List[SwarmAgent]) -> List[Vote]:
         """Collect votes from all active agents."""
         votes = []
 
@@ -613,7 +599,7 @@ class SwarmGovernance:
                 head_id=agent.agent_id,
                 decision=decision,
                 reasoning=f"Coherence: {agent.coherence:.2f}, Trust: {agent.trust_score:.2f}",
-                confidence=confidence
+                confidence=confidence,
             )
 
             votes.append(vote)
@@ -621,11 +607,7 @@ class SwarmGovernance:
 
         return votes
 
-    def _agent_vote_decision(
-        self,
-        agent: SwarmAgent,
-        proposal: Proposal
-    ) -> Tuple[VoteDecision, float]:
+    def _agent_vote_decision(self, agent: SwarmAgent, proposal: Proposal) -> Tuple[VoteDecision, float]:
         """
         Determine how an agent votes based on its state.
 
@@ -676,7 +658,7 @@ class SwarmGovernance:
             vote_counts=counts,
             total_votes=len(votes),
             quorum_required=proposal.required_quorum,
-            votes=votes
+            votes=votes,
         )
 
         self.consensus.results[proposal.id] = result
@@ -692,7 +674,7 @@ class SwarmGovernance:
             "execute_code": 0.7,
             "network": 0.5,
             "delete": 0.8,
-            "admin": 0.9
+            "admin": 0.9,
         }.get(action.lower(), 0.5)
 
         # Increase for sensitive targets
@@ -704,13 +686,7 @@ class SwarmGovernance:
 
         return base_risk
 
-    async def _execute_action(
-        self,
-        executor_id: str,
-        action: str,
-        target: str,
-        context: Dict
-    ) -> Dict[str, Any]:
+    async def _execute_action(self, executor_id: str, action: str, target: str, context: Dict) -> Dict[str, Any]:
         """Execute an approved action."""
         executor = self.agents.get(executor_id)
         if executor:
@@ -724,17 +700,13 @@ class SwarmGovernance:
             "target": target,
             "context": context,
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "swarm_coherence": self.swarm_coherence
+            "swarm_coherence": self.swarm_coherence,
         }
         self.action_log.append(log_entry)
 
         # In real implementation, this would dispatch to actual execution
         # For now, simulate success
-        result = {
-            "executed": True,
-            "action": action,
-            "target": target
-        }
+        result = {"executed": True, "action": action, "target": target}
 
         if executor:
             executor.state = AgentState.ACTIVE
@@ -765,7 +737,7 @@ class SwarmGovernance:
             "agents_recovered": 0,
             "agents_expelled": 0,
             "attack_detected": False,
-            "swarm_coherence": 0.0
+            "swarm_coherence": 0.0,
         }
 
         # Update each agent
@@ -819,8 +791,8 @@ class SwarmGovernance:
     def _get_agent_targets(self, agent: SwarmAgent) -> List[str]:
         """Get target realms for an agent based on role."""
         if agent.role == AgentRole.MALICIOUS:
-            return ['CA', 'UM', 'RU']  # Disruptive tongues
-        return ['KO', 'AV', 'DR']  # Constructive tongues
+            return ["CA", "UM", "RU"]  # Disruptive tongues
+        return ["KO", "AV", "DR"]  # Constructive tongues
 
     def _update_swarm_metrics(self) -> None:
         """Update swarm-level metrics."""
@@ -853,10 +825,7 @@ class SwarmGovernance:
             return
 
         # Compute position variance (dispersion)
-        distances_from_centroid = [
-            vec_norm(vec_sub(a.position, self.swarm_centroid))
-            for a in active
-        ]
+        distances_from_centroid = [vec_norm(vec_sub(a.position, self.swarm_centroid)) for a in active]
         avg_distance = sum(distances_from_centroid) / len(distances_from_centroid)
 
         # Agents near boundary
@@ -878,12 +847,15 @@ class SwarmGovernance:
         self.attack_detected = severity > 0.5
 
         if self.attack_detected:
-            self._emit("attack_detected", {
-                "severity": self.attack_severity,
-                "swarm_coherence": self.swarm_coherence,
-                "avg_distance": avg_distance,
-                "boundary_agents": boundary_agents
-            })
+            self._emit(
+                "attack_detected",
+                {
+                    "severity": self.attack_severity,
+                    "swarm_coherence": self.swarm_coherence,
+                    "avg_distance": avg_distance,
+                    "boundary_agents": boundary_agents,
+                },
+            )
 
     def _isolate_low_coherence(self) -> int:
         """Isolate agents with coherence below threshold."""
@@ -965,15 +937,13 @@ class SwarmGovernance:
             "attack_detected": self.attack_detected,
             "attack_severity": round(self.attack_severity, 4),
             "agents_by_state": {
-                state.value: sum(1 for a in self.agents.values() if a.state == state)
-                for state in AgentState
+                state.value: sum(1 for a in self.agents.values() if a.state == state) for state in AgentState
             },
             "agents_by_role": {
-                role.value: sum(1 for a in self.agents.values() if a.role == role)
-                for role in AgentRole
+                role.value: sum(1 for a in self.agents.values() if a.role == role) for role in AgentRole
             },
             "actions_executed": len(self.action_log),
-            "centroid": [round(x, 4) for x in self.swarm_centroid]
+            "centroid": [round(x, 4) for x in self.swarm_centroid],
         }
 
     def get_agent_distances(self) -> Dict[str, Dict[str, float]]:
@@ -983,7 +953,7 @@ class SwarmGovernance:
 
         for i, a1 in enumerate(agents):
             distances[a1.agent_id] = {}
-            for a2 in agents[i+1:]:
+            for a2 in agents[i + 1 :]:
                 d = self.hyperbolic_distance(a1.position, a2.position, -1)
                 distances[a1.agent_id][a2.agent_id] = round(d, 4)
 
@@ -993,6 +963,7 @@ class SwarmGovernance:
 # ═══════════════════════════════════════════════════════════════
 # Autonomous Code Agent
 # ═══════════════════════════════════════════════════════════════
+
 
 class AutonomousCodeAgent:
     """
@@ -1027,11 +998,7 @@ class AutonomousCodeAgent:
         self.sandbox_enabled: bool = True
 
     async def execute_code(
-        self,
-        code: str,
-        language: str = "python",
-        sandbox: bool = True,
-        context: Optional[Dict] = None
+        self, code: str, language: str = "python", sandbox: bool = True, context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """
         Execute code with governance oversight.
@@ -1056,7 +1023,7 @@ class AutonomousCodeAgent:
             proposer_id=self.agent_id,
             action="execute_code",
             target=f"{language}:{context['code_hash']}",
-            context=context
+            context=context,
         )
 
         if not result.get("success"):
@@ -1064,26 +1031,28 @@ class AutonomousCodeAgent:
                 "executed": False,
                 "reason": result.get("reason", "Governance denied"),
                 "decision": result.get("decision"),
-                "risk": risk
+                "risk": risk,
             }
 
         # Execute code in an isolated working directory
         exec_result = self._execute_code(code, language, sandbox)
 
         # Log
-        self.execution_history.append({
-            "code_hash": context["code_hash"],
-            "language": language,
-            "risk": risk,
-            "result": exec_result,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        self.execution_history.append(
+            {
+                "code_hash": context["code_hash"],
+                "language": language,
+                "risk": risk,
+                "result": exec_result,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }
+        )
 
         return {
             "executed": True,
             "result": exec_result,
             "risk": risk,
-            "consensus_required": result.get("consensus_reached", False)
+            "consensus_required": result.get("consensus_reached", False),
         }
 
     def _assess_code_risk(self, code: str, language: str) -> float:
@@ -1245,6 +1214,7 @@ class AutonomousCodeAgent:
             args = command.split()
         else:
             import shlex
+
             try:
                 args = shlex.split(command)
             except ValueError as exc:
@@ -1304,11 +1274,9 @@ class AutonomousCodeAgent:
 # Swarm Attack Simulation
 # ═══════════════════════════════════════════════════════════════
 
+
 async def simulate_swarm_attack(
-    num_honest: int = 8,
-    num_malicious: int = 2,
-    num_steps: int = 60,
-    dt: float = 0.1
+    num_honest: int = 8, num_malicious: int = 2, num_steps: int = 60, dt: float = 0.1
 ) -> Dict[str, Any]:
     """
     Simulate a Byzantine attack on the swarm.
@@ -1357,20 +1325,16 @@ async def simulate_swarm_attack(
             "mal_avg_distance": mal_avg_d,
             "mal_avg_penalty": mal_avg_penalty,
             "isolated_count": result["agents_isolated"],
-            "expelled_count": result["agents_expelled"]
+            "expelled_count": result["agents_expelled"],
         }
         history.append(step_data)
 
         # Debug logging removed for clean test output
 
     return {
-        "config": {
-            "num_honest": num_honest,
-            "num_malicious": num_malicious,
-            "num_steps": num_steps
-        },
+        "config": {"num_honest": num_honest, "num_malicious": num_malicious, "num_steps": num_steps},
         "final_status": gov.get_status(),
-        "history": history
+        "history": history,
     }
 
 
@@ -1378,15 +1342,13 @@ async def simulate_swarm_attack(
 # Factory Functions
 # ═══════════════════════════════════════════════════════════════
 
+
 def create_swarm_governance(config: Optional[GovernanceConfig] = None) -> SwarmGovernance:
     """Create a new swarm governance instance."""
     return SwarmGovernance(config)
 
 
-def create_autonomous_coder(
-    governance: SwarmGovernance,
-    agent_id: str
-) -> AutonomousCodeAgent:
+def create_autonomous_coder(governance: SwarmGovernance, agent_id: str) -> AutonomousCodeAgent:
     """Create an autonomous code execution agent."""
     return AutonomousCodeAgent(governance, agent_id)
 
@@ -1399,12 +1361,7 @@ if __name__ == "__main__":
         print("Starting swarm attack simulation...")
         print("=" * 60)
 
-        results = await simulate_swarm_attack(
-            num_honest=8,
-            num_malicious=2,
-            num_steps=60,
-            dt=0.1
-        )
+        results = await simulate_swarm_attack(num_honest=8, num_malicious=2, num_steps=60, dt=0.1)
 
         print("=" * 60)
         print("Final Status:")

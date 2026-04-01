@@ -61,7 +61,6 @@ def _resolve_safe_glob_pattern(pattern: str) -> str:
     return str(_SAFE_NOTES_ROOT.joinpath(*parts))
 
 
-
 def load_notes_from_glob(
     pattern: str,
     max_notes: int = 100,
@@ -386,4 +385,3 @@ def sample_notes(count: int = 12) -> List[NoteRecord]:
             )
         )
     return out
-

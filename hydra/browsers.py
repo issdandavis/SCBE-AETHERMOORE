@@ -49,6 +49,7 @@ class BrowserBackend(ABC):
 # Playwright Backend (primary)
 # ---------------------------------------------------------------------------
 
+
 class PlaywrightBackend(BrowserBackend):
     """Primary backend using Playwright (async, headless).
 
@@ -115,6 +116,7 @@ class PlaywrightBackend(BrowserBackend):
 # Selenium Backend (fallback)
 # ---------------------------------------------------------------------------
 
+
 class SeleniumBackend(BrowserBackend):
     """Fallback backend using Selenium WebDriver.
 
@@ -132,8 +134,7 @@ class SeleniumBackend(BrowserBackend):
             from selenium.webdriver.chrome.options import Options
         except ImportError:
             raise ImportError(
-                "selenium is required for SeleniumBackend.\n"
-                "Install with:  pip install selenium webdriver-manager"
+                "selenium is required for SeleniumBackend.\n" "Install with:  pip install selenium webdriver-manager"
             )
 
         opts = Options()
@@ -155,38 +156,30 @@ class SeleniumBackend(BrowserBackend):
 
     async def click(self, selector: str) -> Dict[str, Any]:
         from selenium.webdriver.common.by import By
+
         loop = asyncio.get_event_loop()
-        el = await loop.run_in_executor(
-            None, self._driver.find_element, By.CSS_SELECTOR, selector
-        )
+        el = await loop.run_in_executor(None, self._driver.find_element, By.CSS_SELECTOR, selector)
         await loop.run_in_executor(None, el.click)
         return {"clicked": selector}
 
     async def type_text(self, selector: str, text: str) -> Dict[str, Any]:
         from selenium.webdriver.common.by import By
+
         loop = asyncio.get_event_loop()
-        el = await loop.run_in_executor(
-            None, self._driver.find_element, By.CSS_SELECTOR, selector
-        )
+        el = await loop.run_in_executor(None, self._driver.find_element, By.CSS_SELECTOR, selector)
         await loop.run_in_executor(None, el.clear)
         await loop.run_in_executor(None, el.send_keys, text)
         return {"typed": len(text), "selector": selector}
 
     async def screenshot(self) -> bytes:
         loop = asyncio.get_event_loop()
-        png_b64 = await loop.run_in_executor(
-            None, self._driver.get_screenshot_as_base64
-        )
+        png_b64 = await loop.run_in_executor(None, self._driver.get_screenshot_as_base64)
         return base64.b64decode(png_b64)
 
     async def scroll(self, direction: str = "down", amount: int = 300) -> Dict[str, Any]:
         delta = amount if direction == "down" else -amount
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None,
-            self._driver.execute_script,
-            f"window.scrollBy(0, {delta})"
-        )
+        await loop.run_in_executor(None, self._driver.execute_script, f"window.scrollBy(0, {delta})")
         return {"scrolled": direction, "amount": amount}
 
     async def get_page_content(self) -> str:
@@ -202,6 +195,7 @@ class SeleniumBackend(BrowserBackend):
 # ---------------------------------------------------------------------------
 # Chrome DevTools Protocol Backend (minimal/advanced)
 # ---------------------------------------------------------------------------
+
 
 class CDPBackend(BrowserBackend):
     """Minimal Chrome DevTools Protocol backend via websockets.
@@ -222,11 +216,9 @@ class CDPBackend(BrowserBackend):
         try:
             import websockets  # noqa: F401
         except ImportError:
-            raise ImportError(
-                "websockets is required for CDPBackend.\n"
-                "Install with:  pip install websockets"
-            )
+            raise ImportError("websockets is required for CDPBackend.\n" "Install with:  pip install websockets")
         import aiohttp
+
         # Discover the first available debugging target
         async with aiohttp.ClientSession() as session:
             async with session.get(f"{self._cdp_url}/json") as resp:
@@ -238,6 +230,7 @@ class CDPBackend(BrowserBackend):
 
         ws_url = page_targets[0]["webSocketDebuggerUrl"]
         import websockets
+
         self._ws = await websockets.connect(ws_url, max_size=10 * 1024 * 1024)
 
     async def _send(self, method: str, params: Optional[Dict] = None) -> Dict[str, Any]:
@@ -263,7 +256,7 @@ class CDPBackend(BrowserBackend):
     async def type_text(self, selector: str, text: str) -> Dict[str, Any]:
         js = (
             f'let el = document.querySelector("{selector}"); '
-            f'el.focus(); el.value = {json.dumps(text)}; '
+            f"el.focus(); el.value = {json.dumps(text)}; "
             f'el.dispatchEvent(new Event("input", {{bubbles:true}}))'
         )
         await self._send("Runtime.evaluate", {"expression": js})

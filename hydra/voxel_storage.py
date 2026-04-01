@@ -46,10 +46,10 @@ from hydra.color_dimension import (
     TONGUE_WEIGHTS,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Chladni Mode Addressing
 # ---------------------------------------------------------------------------
+
 
 def chladni_amplitude(x: float, y: float, n: int = 3, m: int = 2, L: float = 1.0) -> float:
     """Chladni plate vibration amplitude at (x, y) for mode (n, m).
@@ -97,6 +97,7 @@ def generate_chladni_grid(resolution: int = 16, mode_n: int = 3, mode_m: int = 2
 #  Authority Hash
 # ---------------------------------------------------------------------------
 
+
 def compute_authority_hash(
     agent_id: str,
     payload: str = "",
@@ -121,6 +122,7 @@ def verify_authority(voxel_hash: str, agent_id: str, payload: str, timestamp: fl
 #  Intent Vector
 # ---------------------------------------------------------------------------
 
+
 def normalize_intent(vec: List[float]) -> np.ndarray:
     """Normalize an intent vector to unit length."""
     arr = np.array(vec, dtype=np.float64)
@@ -144,9 +146,11 @@ def intent_similarity(a: np.ndarray, b: np.ndarray) -> float:
 #  Voxel — a single cell in the 6D+t grid
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class Voxel:
     """A 6D+t voxel cell with authority and intent encoding."""
+
     voxel_id: str
 
     # D1-D3: Spatial
@@ -185,21 +189,24 @@ class Voxel:
     @property
     def position_6d(self) -> np.ndarray:
         """Full 6D position vector for distance calculations."""
-        return np.array([
-            self.x,
-            self.y,
-            self.z,
-            self.wavelength_nm / 780.0,  # normalized spectral
-            hash(self.authority_hash) % 1000 / 1000.0 if self.authority_hash else 0.0,
-            float(np.linalg.norm(self.intent_vector)),
-        ], dtype=np.float64)
+        return np.array(
+            [
+                self.x,
+                self.y,
+                self.z,
+                self.wavelength_nm / 780.0,  # normalized spectral
+                hash(self.authority_hash) % 1000 / 1000.0 if self.authority_hash else 0.0,
+                float(np.linalg.norm(self.intent_vector)),
+            ],
+            dtype=np.float64,
+        )
 
     def distance_to(self, other: Voxel) -> float:
         """Euclidean distance in 6D space (tongue-weighted)."""
         a = self.position_6d
         b = other.position_6d
         # Weight dimensions by tongue importance
-        weights = np.array([1.0, 1.0, 1.0, PHI, PHI ** 2, PHI ** 3])
+        weights = np.array([1.0, 1.0, 1.0, PHI, PHI**2, PHI**3])
         diff = (a - b) * weights
         return float(np.linalg.norm(diff))
 
@@ -207,6 +214,7 @@ class Voxel:
 # ---------------------------------------------------------------------------
 #  Voxel Grid — the 6D+t storage engine
 # ---------------------------------------------------------------------------
+
 
 class VoxelGrid:
     """6D voxel storage with Chladni addressing and temporal slicing."""
@@ -242,16 +250,16 @@ class VoxelGrid:
         intent_arr = normalize_intent(intent_vector or [0.0, 0.0, 0.0])
 
         if voxel_id is None:
-            voxel_id = hashlib.md5(
-                f"{x}:{y}:{z}:{wavelength_nm}:{authority}:{now}".encode()
-            ).hexdigest()[:16]
+            voxel_id = hashlib.md5(f"{x}:{y}:{z}:{wavelength_nm}:{authority}:{now}".encode()).hexdigest()[:16]
 
         auth_hash = compute_authority_hash(authority, str(payload or {}), now)
         ca = chladni_address(x, y, self.chladni_n, self.chladni_m)
 
         v = Voxel(
             voxel_id=voxel_id,
-            x=x, y=y, z=z,
+            x=x,
+            y=y,
+            z=z,
             wavelength_nm=wavelength_nm,
             tongue=tongue,
             authority_agent=authority,
@@ -307,7 +315,7 @@ class VoxelGrid:
         scores.sort(key=lambda x: x[1], reverse=True)
         results = []
         seen = set()
-        for vid, sim in scores[:top_k * 2]:  # over-fetch for dedup
+        for vid, sim in scores[: top_k * 2]:  # over-fetch for dedup
             if vid in seen:
                 continue
             seen.add(vid)
@@ -325,10 +333,7 @@ class VoxelGrid:
         tolerance_nm: float = 20.0,
     ) -> List[Voxel]:
         """Find voxels within a spectral band."""
-        return [
-            v for v in self.voxels.values()
-            if abs(v.wavelength_nm - wavelength_nm) <= tolerance_nm
-        ]
+        return [v for v in self.voxels.values() if abs(v.wavelength_nm - wavelength_nm) <= tolerance_nm]
 
     def query_by_authority(self, agent_id: str) -> List[Voxel]:
         """Find all voxels owned by an agent."""
@@ -407,6 +412,7 @@ class VoxelGrid:
 #  Demo
 # ---------------------------------------------------------------------------
 
+
 def _demo():
     print("=" * 70)
     print("  6D Voxel Storage — Authority + Intent + Chladni Addressing")
@@ -436,8 +442,7 @@ def _demo():
             intent_label=label,
             payload={"task": label, "priority": "high"},
         )
-        print(f"  {v.voxel_id} | {agent:15s} | {label:12s} | {wl:.0f}nm | "
-              f"chladni={v.chladni_address:.3f}")
+        print(f"  {v.voxel_id} | {agent:15s} | {label:12s} | {wl:.0f}nm | " f"chladni={v.chladni_address:.3f}")
 
     # Query by intent
     print("\nIntent query (architecture-like [0.9, 0.1, 0.0]):")
@@ -490,11 +495,11 @@ def _demo():
         for col in range(16):
             val = pattern[row, col]
             if abs(val) < 0.3:
-                line += "."   # nodal line
+                line += "."  # nodal line
             elif val > 0:
-                line += "#"   # positive antinode
+                line += "#"  # positive antinode
             else:
-                line += "o"   # negative antinode
+                line += "o"  # negative antinode
         print(f"  {line}")
 
     print("\n" + "=" * 70)

@@ -40,8 +40,7 @@ class PollyPadStore:
 
     def _init_schema(self) -> None:
         with self._connect() as conn:
-            conn.executescript(
-                """
+            conn.executescript("""
                 CREATE TABLE IF NOT EXISTS pads (
                   pad_id TEXT PRIMARY KEY,
                   status TEXT NOT NULL,
@@ -74,8 +73,7 @@ class PollyPadStore:
                   takeover_task_id TEXT NOT NULL,
                   created_at INTEGER NOT NULL
                 );
-                """
-            )
+                """)
 
     def ensure_pad(self, pad_id: str, metadata: Optional[Dict[str, Any]] = None) -> str:
         now = _ts()

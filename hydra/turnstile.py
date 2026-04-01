@@ -19,7 +19,6 @@ from dataclasses import dataclass
 import math
 from typing import Literal
 
-
 Decision = Literal["ALLOW", "DENY", "ESCALATE", "QUARANTINE"]
 Domain = Literal["browser", "vehicle", "fleet", "antivirus", "default"]
 Action = Literal["ALLOW", "HOLD", "PIVOT", "DEGRADE", "ISOLATE", "HONEYPOT", "STOP"]
@@ -178,4 +177,3 @@ def resolve_turnstile(
         antibody_load=antibody,
         membrane_stress=stress,
     )
-

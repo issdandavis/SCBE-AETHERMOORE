@@ -38,6 +38,7 @@ import uuid
 # Type hints for WebSocket - supports both websockets and aiohttp
 try:
     from websockets import WebSocketServerProtocol
+
     WEBSOCKETS_AVAILABLE = True
 except ImportError:
     WEBSOCKETS_AVAILABLE = False
@@ -45,6 +46,7 @@ except ImportError:
 
 try:
     from aiohttp import web
+
     AIOHTTP_AVAILABLE = True
 except ImportError:
     AIOHTTP_AVAILABLE = False
@@ -54,19 +56,21 @@ from .ledger import Ledger, LedgerEntry, EntryType
 
 class SubscriptionChannel(str, Enum):
     """Available subscription channels for real-time updates."""
-    ACTIONS = "actions"           # All action executions
-    DECISIONS = "decisions"       # Governance decisions (ALLOW/DENY/ESCALATE/QUARANTINE)
-    HEADS = "heads"               # Head connect/disconnect events
-    LIMBS = "limbs"               # Limb activation events
-    WORKFLOWS = "workflows"       # Workflow state changes
-    CONSENSUS = "consensus"       # Byzantine consensus votes
-    SPECTRAL = "spectral"         # Spectral anomaly detections
-    BROADCAST = "broadcast"       # General broadcast channel
-    ALL = "all"                   # Subscribe to everything
+
+    ACTIONS = "actions"  # All action executions
+    DECISIONS = "decisions"  # Governance decisions (ALLOW/DENY/ESCALATE/QUARANTINE)
+    HEADS = "heads"  # Head connect/disconnect events
+    LIMBS = "limbs"  # Limb activation events
+    WORKFLOWS = "workflows"  # Workflow state changes
+    CONSENSUS = "consensus"  # Byzantine consensus votes
+    SPECTRAL = "spectral"  # Spectral anomaly detections
+    BROADCAST = "broadcast"  # General broadcast channel
+    ALL = "all"  # Subscribe to everything
 
 
 class ClientState(str, Enum):
     """WebSocket client connection states."""
+
     CONNECTING = "connecting"
     AUTHENTICATING = "authenticating"
     CONNECTED = "connected"
@@ -85,6 +89,7 @@ class WebSocketClient:
     Each client can subscribe to multiple channels and optionally
     associate with a HydraHead for AI-to-AI messaging.
     """
+
     client_id: str
     websocket: Any  # WebSocket connection object
     state: ClientState = ClientState.CONNECTING
@@ -98,10 +103,7 @@ class WebSocketClient:
 
     def is_subscribed(self, channel: str) -> bool:
         """Check if client is subscribed to a channel."""
-        return (
-            SubscriptionChannel.ALL.value in self.subscriptions or
-            channel in self.subscriptions
-        )
+        return SubscriptionChannel.ALL.value in self.subscriptions or channel in self.subscriptions
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize client info (without websocket reference)."""
@@ -114,7 +116,7 @@ class WebSocketClient:
             "last_message_at": self.last_message_at,
             "message_count": self.message_count,
             "error_count": self.error_count,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
@@ -139,11 +141,11 @@ class WebSocketManager:
 
     def __init__(
         self,
-        spine: 'HydraSpine',  # noqa: F821
+        spine: "HydraSpine",  # noqa: F821
         auth_required: bool = True,
         heartbeat_interval: float = 30.0,
         max_clients: int = 100,
-        max_message_size: int = 1024 * 1024  # 1MB
+        max_message_size: int = 1024 * 1024,  # 1MB
     ):
         self._spine = spine
         self._auth_required = auth_required
@@ -155,9 +157,7 @@ class WebSocketManager:
         self._clients: Dict[str, WebSocketClient] = {}
 
         # Subscription index: channel -> set of client_ids
-        self._subscriptions: Dict[str, Set[str]] = {
-            channel.value: set() for channel in SubscriptionChannel
-        }
+        self._subscriptions: Dict[str, Set[str]] = {channel.value: set() for channel in SubscriptionChannel}
 
         # Event handlers for extensibility
         self._handlers: Dict[str, List[Callable]] = {}
@@ -207,7 +207,7 @@ class WebSocketManager:
             EntryType.CHECKPOINT,
             "ws_server_start",
             f"{host}:{port}",
-            {"max_clients": self._max_clients, "auth_required": self._auth_required}
+            {"max_clients": self._max_clients, "auth_required": self._auth_required},
         )
 
         print(f"""
@@ -228,7 +228,7 @@ class WebSocketManager:
             port,
             max_size=self._max_message_size,
             ping_interval=self._heartbeat_interval,
-            ping_timeout=10.0
+            ping_timeout=10.0,
         )
 
         # Keep running until stopped
@@ -260,15 +260,12 @@ class WebSocketManager:
             await self._server.wait_closed()
 
         self._log_entry(
-            EntryType.CHECKPOINT,
-            "ws_server_stop",
-            "system",
-            {"clients_disconnected": len(disconnect_tasks)}
+            EntryType.CHECKPOINT, "ws_server_stop", "system", {"clients_disconnected": len(disconnect_tasks)}
         )
 
         print("[WS] Server stopped")
 
-    def setup_aiohttp(self, app: 'web.Application', path: str = "/ws") -> None:
+    def setup_aiohttp(self, app: "web.Application", path: str = "/ws") -> None:
         """
         Set up WebSocket handler for aiohttp application.
 
@@ -287,29 +284,24 @@ class WebSocketManager:
 
         print(f"[WS] Configured aiohttp handler at {path}")
 
-    async def _on_aiohttp_startup(self, app: 'web.Application') -> None:
+    async def _on_aiohttp_startup(self, app: "web.Application") -> None:
         """aiohttp startup hook."""
         self._running = True
         self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
 
-    async def _on_aiohttp_cleanup(self, app: 'web.Application') -> None:
+    async def _on_aiohttp_cleanup(self, app: "web.Application") -> None:
         """aiohttp cleanup hook."""
         await self.stop()
 
-    async def _aiohttp_handler(self, request: 'web.Request') -> 'web.WebSocketResponse':
+    async def _aiohttp_handler(self, request: "web.Request") -> "web.WebSocketResponse":
         """aiohttp WebSocket request handler."""
-        ws = web.WebSocketResponse(
-            max_msg_size=self._max_message_size,
-            heartbeat=self._heartbeat_interval
-        )
+        ws = web.WebSocketResponse(max_msg_size=self._max_message_size, heartbeat=self._heartbeat_interval)
         await ws.prepare(request)
 
         # Create client
         client_id = f"ws-{uuid.uuid4().hex[:8]}"
         client = WebSocketClient(
-            client_id=client_id,
-            websocket=ws,
-            metadata={"remote": str(request.remote), "path": str(request.path)}
+            client_id=client_id, websocket=ws, metadata={"remote": str(request.remote), "path": str(request.path)}
         )
 
         await self._register_client(client)
@@ -340,9 +332,7 @@ class WebSocketManager:
         # Create client
         client_id = f"ws-{uuid.uuid4().hex[:8]}"
         client = WebSocketClient(
-            client_id=client_id,
-            websocket=websocket,
-            metadata={"remote": str(websocket.remote_address), "path": path}
+            client_id=client_id, websocket=websocket, metadata={"remote": str(websocket.remote_address), "path": path}
         )
 
         await self._register_client(client)
@@ -363,20 +353,18 @@ class WebSocketManager:
         client.state = ClientState.CONNECTED
 
         # Log connection
-        self._log_entry(
-            EntryType.CHECKPOINT,
-            "ws_connect",
-            client.client_id,
-            {"metadata": client.metadata}
-        )
+        self._log_entry(EntryType.CHECKPOINT, "ws_connect", client.client_id, {"metadata": client.metadata})
 
         # Send welcome message
-        await self._send_to_client(client.client_id, {
-            "type": "welcome",
-            "client_id": client.client_id,
-            "server_time": datetime.now(timezone.utc).isoformat(),
-            "channels": [c.value for c in SubscriptionChannel]
-        })
+        await self._send_to_client(
+            client.client_id,
+            {
+                "type": "welcome",
+                "client_id": client.client_id,
+                "server_time": datetime.now(timezone.utc).isoformat(),
+                "channels": [c.value for c in SubscriptionChannel],
+            },
+        )
 
         # Trigger handlers
         await self._emit("connect", client)
@@ -406,8 +394,8 @@ class WebSocketManager:
             {
                 "message_count": client.message_count,
                 "error_count": client.error_count,
-                "duration_connected": client.connected_at
-            }
+                "duration_connected": client.connected_at,
+            },
         )
 
         # Trigger handlers
@@ -434,13 +422,10 @@ class WebSocketManager:
 
         # Send disconnect notice
         try:
-            await self._send_to_client(client_id, {
-                "type": "disconnect",
-                "reason": reason
-            })
+            await self._send_to_client(client_id, {"type": "disconnect", "reason": reason})
 
             # Close WebSocket
-            if hasattr(client.websocket, 'close'):
+            if hasattr(client.websocket, "close"):
                 await client.websocket.close(1000, reason)
         except Exception:
             pass  # Connection may already be closed
@@ -473,11 +458,9 @@ class WebSocketManager:
 
         # Handle different message types
         if msg_type == "ping":
-            await self._send_to_client(client.client_id, {
-                "type": "pong",
-                "id": msg_id,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
+            await self._send_to_client(
+                client.client_id, {"type": "pong", "id": msg_id, "timestamp": datetime.now(timezone.utc).isoformat()}
+            )
 
         elif msg_type == "subscribe":
             await self._handle_subscribe(client, message, msg_id)
@@ -511,19 +494,17 @@ class WebSocketManager:
                 self._subscriptions[channel].add(client.client_id)
                 subscribed.append(channel)
 
-        await self._send_to_client(client.client_id, {
-            "type": "subscribed",
-            "id": msg_id,
-            "channels": subscribed,
-            "all_subscriptions": list(client.subscriptions)
-        })
-
-        self._log_entry(
-            EntryType.ACTION,
-            "ws_subscribe",
+        await self._send_to_client(
             client.client_id,
-            {"channels": subscribed}
+            {
+                "type": "subscribed",
+                "id": msg_id,
+                "channels": subscribed,
+                "all_subscriptions": list(client.subscriptions),
+            },
         )
+
+        self._log_entry(EntryType.ACTION, "ws_subscribe", client.client_id, {"channels": subscribed})
 
     async def _handle_unsubscribe(self, client: WebSocketClient, message: Dict, msg_id: str) -> None:
         """Handle unsubscribe request."""
@@ -538,12 +519,15 @@ class WebSocketManager:
                 self._subscriptions.get(channel, set()).discard(client.client_id)
                 unsubscribed.append(channel)
 
-        await self._send_to_client(client.client_id, {
-            "type": "unsubscribed",
-            "id": msg_id,
-            "channels": unsubscribed,
-            "all_subscriptions": list(client.subscriptions)
-        })
+        await self._send_to_client(
+            client.client_id,
+            {
+                "type": "unsubscribed",
+                "id": msg_id,
+                "channels": unsubscribed,
+                "all_subscriptions": list(client.subscriptions),
+            },
+        )
 
     async def _handle_execute(self, client: WebSocketClient, message: Dict, msg_id: str) -> None:
         """
@@ -574,11 +558,7 @@ class WebSocketManager:
             result = await self._spine.execute(command)
 
             # Send result back to client
-            await self._send_to_client(client.client_id, {
-                "type": "execute_result",
-                "id": msg_id,
-                "result": result
-            })
+            await self._send_to_client(client.client_id, {"type": "execute_result", "id": msg_id, "result": result})
 
             # Broadcast to relevant channels
             decision = result.get("decision", "ALLOW")
@@ -590,9 +570,9 @@ class WebSocketManager:
                     "action": command.get("action"),
                     "target": command.get("target", "")[:50],  # Truncate for broadcast
                     "decision": decision,
-                    "success": result.get("success", False)
+                    "success": result.get("success", False),
                 },
-                exclude_client=client.client_id  # Don't double-send to originator
+                exclude_client=client.client_id,  # Don't double-send to originator
             )
 
             if decision in ["DENY", "ESCALATE", "QUARANTINE"]:
@@ -603,8 +583,8 @@ class WebSocketManager:
                         "client_id": client.client_id,
                         "action": command.get("action"),
                         "decision": decision,
-                        "trust_score": result.get("trust_score")
-                    }
+                        "trust_score": result.get("trust_score"),
+                    },
                 )
 
         except Exception as e:
@@ -629,38 +609,39 @@ class WebSocketManager:
 
         client.head_id = head_id
 
-        await self._send_to_client(client.client_id, {
-            "type": "head_associated",
-            "id": msg_id,
-            "head_id": head_id,
-            "head_info": {
-                "ai_type": self._spine.heads[head_id].ai_type,
-                "model": self._spine.heads[head_id].model,
-                "callsign": self._spine.heads[head_id].callsign
-            }
-        })
-
-        self._log_entry(
-            EntryType.ACTION,
-            "ws_associate_head",
+        await self._send_to_client(
             client.client_id,
-            {"head_id": head_id}
+            {
+                "type": "head_associated",
+                "id": msg_id,
+                "head_id": head_id,
+                "head_info": {
+                    "ai_type": self._spine.heads[head_id].ai_type,
+                    "model": self._spine.heads[head_id].model,
+                    "callsign": self._spine.heads[head_id].callsign,
+                },
+            },
         )
+
+        self._log_entry(EntryType.ACTION, "ws_associate_head", client.client_id, {"head_id": head_id})
 
     async def _handle_status(self, client: WebSocketClient, msg_id: str) -> None:
         """Return server and client status."""
-        await self._send_to_client(client.client_id, {
-            "type": "status",
-            "id": msg_id,
-            "server": {
-                "clients_connected": len(self._clients),
-                "max_clients": self._max_clients,
-                "active_heads": len(self._spine.heads),
-                "active_limbs": len(self._spine.limbs),
-                "running": self._running
+        await self._send_to_client(
+            client.client_id,
+            {
+                "type": "status",
+                "id": msg_id,
+                "server": {
+                    "clients_connected": len(self._clients),
+                    "max_clients": self._max_clients,
+                    "active_heads": len(self._spine.heads),
+                    "active_limbs": len(self._spine.limbs),
+                    "running": self._running,
+                },
+                "client": client.to_dict(),
             },
-            "client": client.to_dict()
-        })
+        )
 
     # =========================================================================
     # Broadcasting
@@ -690,12 +671,7 @@ class WebSocketManager:
                 sent += 1
         return sent
 
-    async def _broadcast_to_channel(
-        self,
-        channel: str,
-        message: Dict[str, Any],
-        exclude_client: str = None
-    ) -> int:
+    async def _broadcast_to_channel(self, channel: str, message: Dict[str, Any], exclude_client: str = None) -> int:
         """Broadcast to all subscribers of a channel."""
         message["channel"] = channel
         message["timestamp"] = datetime.now(timezone.utc).isoformat()
@@ -715,11 +691,7 @@ class WebSocketManager:
         return sent
 
     async def broadcast_state_change(
-        self,
-        event_type: str,
-        entity_type: str,
-        entity_id: str,
-        data: Dict[str, Any]
+        self, event_type: str, entity_type: str, entity_id: str, data: Dict[str, Any]
     ) -> int:
         """
         Broadcast a state change event to appropriate channels.
@@ -739,7 +711,7 @@ class WebSocketManager:
             "limb": SubscriptionChannel.LIMBS.value,
             "workflow": SubscriptionChannel.WORKFLOWS.value,
             "consensus": SubscriptionChannel.CONSENSUS.value,
-            "spectral": SubscriptionChannel.SPECTRAL.value
+            "spectral": SubscriptionChannel.SPECTRAL.value,
         }
 
         channel = channel_map.get(entity_type, SubscriptionChannel.BROADCAST.value)
@@ -749,7 +721,7 @@ class WebSocketManager:
             "event": event_type,
             "entity_type": entity_type,
             "entity_id": entity_id,
-            "data": data
+            "data": data,
         }
 
         return await self._broadcast_to_channel(channel, message)
@@ -768,10 +740,10 @@ class WebSocketManager:
         try:
             payload = json.dumps(message)
 
-            if hasattr(client.websocket, 'send'):
+            if hasattr(client.websocket, "send"):
                 # websockets library
                 await client.websocket.send(payload)
-            elif hasattr(client.websocket, 'send_str'):
+            elif hasattr(client.websocket, "send_str"):
                 # aiohttp
                 await client.websocket.send_str(payload)
             else:
@@ -786,12 +758,10 @@ class WebSocketManager:
 
     async def _send_error(self, client_id: str, error: str, msg_id: str = None) -> None:
         """Send error message to client."""
-        await self._send_to_client(client_id, {
-            "type": "error",
-            "id": msg_id,
-            "error": error,
-            "timestamp": datetime.now(timezone.utc).isoformat()
-        })
+        await self._send_to_client(
+            client_id,
+            {"type": "error", "id": msg_id, "error": error, "timestamp": datetime.now(timezone.utc).isoformat()},
+        )
 
     # =========================================================================
     # Heartbeat & Maintenance
@@ -809,7 +779,7 @@ class WebSocketManager:
 
                 for client_id, client in list(self._clients.items()):
                     if client.last_message_at:
-                        last_msg = datetime.fromisoformat(client.last_message_at.replace('Z', '+00:00'))
+                        last_msg = datetime.fromisoformat(client.last_message_at.replace("Z", "+00:00"))
                         if (now - last_msg).total_seconds() > stale_threshold:
                             # Client hasn't responded, consider stale
                             client.state = ClientState.IDLE
@@ -872,15 +842,10 @@ class WebSocketManager:
             "running": self._running,
             "total_clients": len(self._clients),
             "max_clients": self._max_clients,
-            "subscriptions": {
-                channel: len(clients)
-                for channel, clients in self._subscriptions.items()
-                if clients
-            },
+            "subscriptions": {channel: len(clients) for channel, clients in self._subscriptions.items() if clients},
             "clients_by_state": {
-                state.value: sum(1 for c in self._clients.values() if c.state == state)
-                for state in ClientState
-            }
+                state.value: sum(1 for c in self._clients.values() if c.state == state) for state in ClientState
+            },
         }
 
     # =========================================================================
@@ -894,7 +859,7 @@ class WebSocketManager:
         target: str,
         payload: Dict[str, Any],
         decision: str = None,
-        score: float = None
+        score: float = None,
     ) -> str:
         """Log entry to ledger."""
         entry = LedgerEntry(
@@ -907,7 +872,7 @@ class WebSocketManager:
             target=target,
             payload=payload,
             decision=decision,
-            score=score
+            score=score,
         )
         return self._ledger.write(entry)
 
@@ -916,10 +881,8 @@ class WebSocketManager:
 # Factory Functions
 # =============================================================================
 
-def create_websocket_manager(
-    spine: 'HydraSpine',  # noqa: F821
-    **kwargs
-) -> WebSocketManager:
+
+def create_websocket_manager(spine: "HydraSpine", **kwargs) -> WebSocketManager:  # noqa: F821
     """
     Create a WebSocket manager for a HYDRA spine.
 
@@ -937,10 +900,9 @@ def create_websocket_manager(
 # Standalone Server Entry Point
 # =============================================================================
 
+
 async def run_websocket_server(
-    host: str = "0.0.0.0",
-    port: int = 8765,
-    scbe_url: str = "http://127.0.0.1:8080"
+    host: str = "0.0.0.0", port: int = 8765, scbe_url: str = "http://127.0.0.1:8080"
 ) -> None:
     """
     Run standalone WebSocket server with a new HydraSpine.

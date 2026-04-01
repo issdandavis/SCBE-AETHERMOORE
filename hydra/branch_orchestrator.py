@@ -12,7 +12,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-
 GRAPH_NAMES = ("research_pipeline", "content_publisher", "training_funnel")
 
 

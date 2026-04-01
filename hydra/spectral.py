@@ -27,6 +27,7 @@ import json
 @dataclass
 class SpectralAnomaly:
     """Detected anomaly in the agent interaction graph."""
+
     key: str
     head_id: str
     anomaly_score: float
@@ -43,7 +44,7 @@ class SpectralAnomaly:
             "spectral_energy": self.spectral_energy,
             "reason": self.reason,
             "timestamp": self.timestamp,
-            "severity": self.severity
+            "severity": self.severity,
         }
 
 
@@ -68,9 +69,7 @@ class GraphFourierAnalyzer:
         self.spectral_history: List[np.ndarray] = []
 
     def build_adjacency_matrix(
-        self,
-        knowledge_graph: Dict[str, List[str]],
-        node_list: List[str] = None
+        self, knowledge_graph: Dict[str, List[str]], node_list: List[str] = None
     ) -> Tuple[np.ndarray, List[str]]:
         """
         Build adjacency matrix from knowledge graph.
@@ -126,11 +125,7 @@ class GraphFourierAnalyzer:
 
         return L
 
-    def graph_fourier_transform(
-        self,
-        signal: np.ndarray,
-        L: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def graph_fourier_transform(self, signal: np.ndarray, L: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Compute Graph Fourier Transform of signal.
 
@@ -154,10 +149,7 @@ class GraphFourierAnalyzer:
 
         return spectral_coefficients, eigenvalues, eigenvectors
 
-    def compute_spectral_energy(
-        self,
-        spectral_coefficients: np.ndarray
-    ) -> Dict[str, float]:
+    def compute_spectral_energy(self, spectral_coefficients: np.ndarray) -> Dict[str, float]:
         """
         Compute energy distribution across frequency bands.
 
@@ -168,24 +160,22 @@ class GraphFourierAnalyzer:
         quarter = n // 4
 
         low_freq = spectral_coefficients[:quarter]
-        mid_low = spectral_coefficients[quarter:2*quarter]
-        mid_high = spectral_coefficients[2*quarter:3*quarter]
-        high_freq = spectral_coefficients[3*quarter:]
+        mid_low = spectral_coefficients[quarter : 2 * quarter]
+        mid_high = spectral_coefficients[2 * quarter : 3 * quarter]
+        high_freq = spectral_coefficients[3 * quarter :]
 
-        total_energy = np.sum(spectral_coefficients ** 2) + 1e-10
+        total_energy = np.sum(spectral_coefficients**2) + 1e-10
 
         return {
-            "low": float(np.sum(low_freq ** 2) / total_energy),
-            "mid_low": float(np.sum(mid_low ** 2) / total_energy),
-            "mid_high": float(np.sum(mid_high ** 2) / total_energy),
-            "high": float(np.sum(high_freq ** 2) / total_energy),
-            "total": float(total_energy)
+            "low": float(np.sum(low_freq**2) / total_energy),
+            "mid_low": float(np.sum(mid_low**2) / total_energy),
+            "mid_high": float(np.sum(mid_high**2) / total_energy),
+            "high": float(np.sum(high_freq**2) / total_energy),
+            "total": float(total_energy),
         }
 
     def detect_spectral_rightshift(
-        self,
-        current_energy: Dict[str, float],
-        baseline_energy: Dict[str, float] = None
+        self, current_energy: Dict[str, float], baseline_energy: Dict[str, float] = None
     ) -> Tuple[bool, float]:
         """
         Detect spectral right-shift (anomaly indicator).
@@ -209,9 +199,7 @@ class GraphFourierAnalyzer:
         return is_anomaly, shift_score
 
     def analyze_knowledge_graph(
-        self,
-        knowledge_graph: Dict[str, List[str]],
-        node_signals: Dict[str, float] = None
+        self, knowledge_graph: Dict[str, List[str]], node_signals: Dict[str, float] = None
     ) -> List[SpectralAnomaly]:
         """
         Full spectral analysis of knowledge graph.
@@ -259,15 +247,17 @@ class GraphFourierAnalyzer:
                 else:
                     severity = "LOW"
 
-                anomalies.append(SpectralAnomaly(
-                    key=node,
-                    head_id=self._extract_head_id(node),
-                    anomaly_score=float(shift_score),
-                    spectral_energy=energy,
-                    reason=f"Spectral right-shift detected: {shift_score:.3f}",
-                    timestamp=datetime.now(timezone.utc).isoformat(),
-                    severity=severity
-                ))
+                anomalies.append(
+                    SpectralAnomaly(
+                        key=node,
+                        head_id=self._extract_head_id(node),
+                        anomaly_score=float(shift_score),
+                        spectral_energy=energy,
+                        reason=f"Spectral right-shift detected: {shift_score:.3f}",
+                        timestamp=datetime.now(timezone.utc).isoformat(),
+                        severity=severity,
+                    )
+                )
 
         # Sort by severity and score
         severity_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
@@ -284,11 +274,7 @@ class GraphFourierAnalyzer:
                     return part
         return "unknown"
 
-    def update_baseline(
-        self,
-        knowledge_graph: Dict[str, List[str]],
-        node_signals: Dict[str, float] = None
-    ) -> None:
+    def update_baseline(self, knowledge_graph: Dict[str, List[str]], node_signals: Dict[str, float] = None) -> None:
         """
         Update baseline spectral signature from current "healthy" state.
 
@@ -337,9 +323,7 @@ class ByzantineDetector:
         self.tolerance = tolerance_factor
 
     def detect_byzantine_heads(
-        self,
-        interaction_graph: Dict[str, Dict[str, int]],
-        head_ids: List[str]
+        self, interaction_graph: Dict[str, Dict[str, int]], head_ids: List[str]
     ) -> List[Dict[str, Any]]:
         """
         Detect potentially Byzantine heads using spectral embedding.
@@ -378,7 +362,7 @@ class ByzantineDetector:
         # Get spectral embedding (first few non-trivial eigenvectors)
         eigenvalues, eigenvectors = np.linalg.eigh(L)
         k = min(3, n - 1)  # Use 3 dimensions or less
-        embedding = eigenvectors[:, 1:k+1]  # Skip first (trivial) eigenvector
+        embedding = eigenvectors[:, 1 : k + 1]  # Skip first (trivial) eigenvector
 
         # Compute centroid and distances
         centroid = np.mean(embedding, axis=0)
@@ -392,13 +376,15 @@ class ByzantineDetector:
         suspects = []
         for i, head_id in enumerate(head_ids):
             if distances[i] > threshold:
-                suspects.append({
-                    "head_id": head_id,
-                    "spectral_distance": float(distances[i]),
-                    "threshold": float(threshold),
-                    "z_score": float((distances[i] - mean_dist) / (std_dist + 1e-10)),
-                    "reason": "Spectral outlier in interaction graph"
-                })
+                suspects.append(
+                    {
+                        "head_id": head_id,
+                        "spectral_distance": float(distances[i]),
+                        "threshold": float(threshold),
+                        "z_score": float((distances[i] - mean_dist) / (std_dist + 1e-10)),
+                        "reason": "Spectral outlier in interaction graph",
+                    }
+                )
 
         return sorted(suspects, key=lambda x: x["spectral_distance"], reverse=True)
 
@@ -407,10 +393,9 @@ class ByzantineDetector:
 # Integration with HYDRA Librarian
 # =============================================================================
 
+
 async def analyze_hydra_system(
-    librarian,  # HydraLibrarian instance
-    gfss: GraphFourierAnalyzer = None,
-    byzantine: ByzantineDetector = None
+    librarian, gfss: GraphFourierAnalyzer = None, byzantine: ByzantineDetector = None  # HydraLibrarian instance
 ) -> Dict[str, Any]:
     """
     Run full spectral analysis on HYDRA system.
@@ -456,8 +441,9 @@ async def analyze_hydra_system(
         "total_anomalies": len(anomalies),
         "critical_count": sum(1 for a in anomalies if a.severity == "CRITICAL"),
         "high_count": sum(1 for a in anomalies if a.severity == "HIGH"),
-        "system_health": "HEALTHY" if len(anomalies) == 0 else (
-            "CRITICAL" if any(a.severity == "CRITICAL" for a in anomalies) else
-            "DEGRADED"
-        )
+        "system_health": (
+            "HEALTHY"
+            if len(anomalies) == 0
+            else ("CRITICAL" if any(a.severity == "CRITICAL" for a in anomalies) else "DEGRADED")
+        ),
     }
