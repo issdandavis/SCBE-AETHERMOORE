@@ -1,0 +1,33 @@
+{
+  "experiment": "SCBE Polly Baseline vs Stack-Lite",
+  "date": "2026-04-01",
+  "kaggle_url": "https://www.kaggle.com/code/issacizrealdavis/scbe-polly-baseline-vs-stack-lite",
+  "version": 10,
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "device": "CPU (Kaggle P100 incompatible with PyTorch CUDA)",
+  "lora": {"r": 4, "alpha": 8, "target_modules": ["q_proj", "v_proj"]},
+  "max_steps": 150,
+  "samples_per_model": 3000,
+  "baseline": {
+    "data": "polly_training_merged.jsonl",
+    "description": "L3 expression only (116K source, sampled to 3K)",
+    "loss": 2.2226,
+    "training_time_seconds": 13231
+  },
+  "stack_lite": {
+    "data": "multiview_sft.jsonl",
+    "description": "L0+L1+L2+L3 multi-view (233K source, sampled to 3K)",
+    "loss": 1.9121,
+    "training_time_seconds": 13282
+  },
+  "delta": -0.3105,
+  "relative_improvement": 0.1397,
+  "winner": "stack-lite",
+  "claim": "Multi-view supervision across substrate, coordination, and orientation layers reduces training loss by ~14% at fixed compute compared to expression-only training.",
+  "next_steps": [
+    "3-5 seed verification",
+    "Ablation: L0+L3, L1+L3, L2+L3 separately",
+    "Cross-task generalization test",
+    "Layer weight tuning (alpha coefficients)"
+  ]
+}
