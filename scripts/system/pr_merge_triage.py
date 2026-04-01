@@ -6,7 +6,6 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_DIR = REPO_ROOT / "artifacts" / "system-audit"
 
@@ -18,8 +17,17 @@ def run_gh(args: list[str]) -> Any:
         capture_output=True,
         text=True,
         timeout=60,
-        check=True,
+        check=False,
     )
+    if completed.returncode != 0:
+        # gh pr checks exits non-zero when checks are failing/pending;
+        # still try to parse its stdout, fall back to empty list.
+        if completed.stdout and completed.stdout.strip():
+            try:
+                return json.loads(completed.stdout)
+            except json.JSONDecodeError:
+                pass
+        return []
     return json.loads(completed.stdout or "[]")
 
 
