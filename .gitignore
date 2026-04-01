@@ -185,3 +185,8 @@ config/tor/hidden_service/hs_ed25519_public_key
 config/tor/data/
 config/tor/tor.log
 artifacts/claude_export/
+
+.gemini/
+gha-creds-*.json
+training-data/polly_training_merged.jsonl
+training-data/multiview_sft.jsonl
