@@ -50,10 +50,7 @@ IDE_CLI_LOG = IDE_LOGS_DIR / "cli.jsonl"
 KNOWLEDGE_SEARCH_ROOTS: tuple[Path, ...] = (ROOT / "notes", ROOT / "docs")
 KNOWLEDGE_SUFFIXES = {".md", ".txt", ".html"}
 DEFAULT_OLLAMA_MODEL = os.environ.get("AETHERBOT_OLLAMA_MODEL", "issdandavis7795/AetherBot").strip()
-DEFAULT_HF_CHAT_MODEL = (
-    os.environ.get("AETHERBOT_HF_MODEL", "").strip()
-    or os.environ.get("HF_CHAT_MODEL", "").strip()
-)
+DEFAULT_HF_CHAT_MODEL = os.environ.get("AETHERBOT_HF_MODEL", "").strip() or os.environ.get("HF_CHAT_MODEL", "").strip()
 HF_CHAT_ROUTER_URL = os.environ.get("HF_CHAT_ROUTER_URL", "https://router.huggingface.co/v1/chat/completions").strip()
 SAFE_VAULT_ROOT = (ROOT / "notes").resolve()
 
@@ -140,10 +137,12 @@ def _get_gate():
     if _runtime_gate is None:
         try:
             from governance.runtime_gate import RuntimeGate
+
             _runtime_gate = RuntimeGate(**_runtime_gate_kwargs())
         except Exception:
             try:
                 from src.governance.runtime_gate import RuntimeGate
+
                 _runtime_gate = RuntimeGate(**_runtime_gate_kwargs())
             except Exception:
                 logger.debug("RuntimeGate unavailable, governance gating disabled")
@@ -154,6 +153,7 @@ def _get_gate():
 # ---------------------------------------------------------------------------
 #  Load trusted sites registry
 # ---------------------------------------------------------------------------
+
 
 def _load_trusted_sites() -> dict:
     """Load the trusted external sites JSON, returning the parsed dict."""
@@ -278,6 +278,7 @@ def _safe_vault_root() -> Path:
     logger.warning("Rejected unsafe vault root outside allowed tree: %s", configured)
     return SAFE_VAULT_ROOT
 
+
 # ---------------------------------------------------------------------------
 #  FastAPI App
 # ---------------------------------------------------------------------------
@@ -331,6 +332,7 @@ def _classify_url(url: str) -> Dict[str, Any]:
         url = "https://" + url
     try:
         from urllib.parse import urlparse
+
         hostname = urlparse(url).hostname or url
     except Exception:
         logger.debug("Suppressed error", exc_info=True)
@@ -404,7 +406,7 @@ async def trust_check(url: str = Query(..., description="URL to classify")):
 
 PHI = 1.618033988749895
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
-TONGUE_WEIGHTS = [PHI ** k for k in range(6)]
+TONGUE_WEIGHTS = [PHI**k for k in range(6)]
 
 # Lightweight heuristic tongue patterns (mirrors the PWA stub but returns float activations)
 _TONGUE_PATTERNS = {
@@ -710,7 +712,9 @@ def _call_huggingface_chat(prompt: str, model_id: Optional[str] = None) -> dict[
         with urllib.request.urlopen(request, timeout=120) as response:
             body = json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
-        logger.debug("Hugging Face HTTP error %s: %s", exc.code, exc.read().decode("utf-8", errors="ignore")[:240])
+        # Scrub response body to prevent token/secret leakage in logs
+        raw_body = exc.read().decode("utf-8", errors="ignore")[:240]
+        logger.debug("Hugging Face HTTP error %s: %s", exc.code, _scrub_text(raw_body))
         return {"ok": False, "error": f"Hugging Face router error {exc.code}", "model": chosen_model}
     except Exception as exc:
         logger.debug("Hugging Face call failed: %s", exc)
@@ -882,9 +886,7 @@ async def fact_check(req: FactCheckRequest):
             answer = str(model_result.get("text", "")).strip()
         else:
             provider_meta["error"] = model_result.get("error")
-            answer = (
-                f"{answer}\n\nModel provider note: {model_result.get('error', 'provider unavailable')}."
-            )
+            answer = f"{answer}\n\nModel provider note: {model_result.get('error', 'provider unavailable')}."
 
     _append_jsonl(
         IDE_CHAT_LOG,
@@ -951,9 +953,14 @@ async def red_team_run(req: RedTeamRunRequest = RedTeamRunRequest()):
         return {"error": "Benchmark file not found", "path": str(test_file)}
 
     cmd = [
-        sys.executable, "-m", "pytest",
+        sys.executable,
+        "-m",
+        "pytest",
         str(test_file),
-        "-v", "--tb=short", "--no-header", "-q",
+        "-v",
+        "--tb=short",
+        "--no-header",
+        "-q",
     ]
 
     try:
@@ -1111,7 +1118,9 @@ async def vault_stats():
                     notes = int(stats.get("total_notes", notes))
                     edges = int(stats.get("total_links", edges))
                     orphans = int(stats.get("orphan_count", orphans))
-                    tongues_dist = stats.get("tongues", tongues_dist) if isinstance(stats.get("tongues"), dict) else tongues_dist
+                    tongues_dist = (
+                        stats.get("tongues", tongues_dist) if isinstance(stats.get("tongues"), dict) else tongues_dist
+                    )
                 else:
                     if "nodes" in graph and isinstance(graph["nodes"], list):
                         notes = len(graph["nodes"])
@@ -1173,13 +1182,15 @@ async def vault_search(q: str = Query(..., description="Search query")):
                         title = heading_match.group(1) if heading_match else md_file.stem
                         # Extract snippet around match
                         idx = content.lower().find(query_lower)
-                        snippet = content[max(0, idx - 50):idx + 100].replace("\n", " ").strip() if idx >= 0 else ""
-                        results.append({
-                            "title": title,
-                            "path": str(md_file.relative_to(vault_path)),
-                            "snippet": snippet[:200],
-                            "size": md_file.stat().st_size,
-                        })
+                        snippet = content[max(0, idx - 50) : idx + 100].replace("\n", " ").strip() if idx >= 0 else ""
+                        results.append(
+                            {
+                                "title": title,
+                                "path": str(md_file.relative_to(vault_path)),
+                                "snippet": snippet[:200],
+                                "size": md_file.stat().st_size,
+                            }
+                        )
                         if len(results) >= 20:
                             break
                 except Exception:
@@ -1200,13 +1211,15 @@ async def vault_search(q: str = Query(..., description="Search query")):
                         heading_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
                         title = heading_match.group(1) if heading_match else md_file.stem
                         idx = content.lower().find(query_lower)
-                        snippet = content[max(0, idx - 50):idx + 100].replace("\n", " ").strip() if idx >= 0 else ""
-                        results.append({
-                            "title": title,
-                            "path": str(md_file.relative_to(ROOT)),
-                            "snippet": snippet[:200],
-                            "size": md_file.stat().st_size,
-                        })
+                        snippet = content[max(0, idx - 50) : idx + 100].replace("\n", " ").strip() if idx >= 0 else ""
+                        results.append(
+                            {
+                                "title": title,
+                                "path": str(md_file.relative_to(ROOT)),
+                                "snippet": snippet[:200],
+                                "size": md_file.stat().st_size,
+                            }
+                        )
                         if len(results) >= 20:
                             break
                 except Exception:
@@ -1445,7 +1458,11 @@ async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
 
     cmd = [sys.executable, str(runner), "--config", str(cfg)]
     if req.flow:
-        cmd += ["--flow", str(req.flow)]
+        # Sanitise flow parameter: reject path traversal and shell metacharacters
+        safe_flow = re.sub(r"[^A-Za-z0-9_\-.]", "", str(req.flow))
+        if safe_flow != str(req.flow):
+            return {"error": "Invalid flow parameter (disallowed characters)", "ok": False}
+        cmd += ["--flow", safe_flow]
     if req.execute:
         cmd += ["--execute"]
     if req.max_parallel:
@@ -1513,9 +1530,13 @@ async def ops_chessboard_generate(req: ChessboardGenerateRequest = ChessboardGen
     script = ROOT / "scripts" / "system" / "chessboard_dev_stack.py"
     if not script.exists():
         return {"error": "chessboard_dev_stack.py not found", "ok": False}
+    # Sanitise goal parameter: reject shell metacharacters and path traversal sequences
+    safe_goal = re.sub(r"[^\w\s.,!?:;\-/()'\"]", "", str(req.goal))[:500]
+    if not safe_goal.strip():
+        return {"error": "Invalid goal parameter (empty after sanitisation)", "ok": False}
     result = await asyncio.to_thread(
         _run_subprocess,
-        [sys.executable, str(script), "--goal", str(req.goal)],
+        [sys.executable, str(script), "--goal", safe_goal],
         timeout=60,
     )
     parsed = _parse_last_json(result.get("stdout", ""))
@@ -1602,7 +1623,7 @@ def _cli_command_registry() -> list[dict[str, Any]]:
             "lane": "vault",
             "interop": {"web": True, "python": True, "node": False, "connectors": False},
             "desc": "Vault operations (local Obsidian vault).",
-            "example": "vault search \"harmonic wall\"",
+            "example": 'vault search "harmonic wall"',
         },
         {
             "cmd": "ops email|youtube|tor|tests|git",
@@ -1630,7 +1651,7 @@ def _cli_command_registry() -> list[dict[str, Any]]:
             "lane": "chessboard",
             "interop": {"web": True, "python": True, "node": False, "connectors": False},
             "desc": "Generate or view the latest chessboard dev-stack packet set.",
-            "example": "chessboard generate \"Draft AetherBrowser Mobile V1 spec\"",
+            "example": 'chessboard generate "Draft AetherBrowser Mobile V1 spec"',
         },
         {
             "cmd": "docs list | docs show <key>",
@@ -1654,22 +1675,22 @@ def _cli_help_text() -> str:
         "  matrix",
         "  trust <url>",
         "  vault stats",
-        "  vault search \"query\"",
+        '  vault search "query"',
         "  vault sync",
         "  ops email|youtube|tor|tests|git",
         "  momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
         "  momentum latest [train_id]",
-        "  chessboard generate \"goal...\"",
+        '  chessboard generate "goal..."',
         "  chessboard latest",
         "  docs list",
         "  docs show <key>",
         "",
         "Examples:",
         "  trust aethermoorgames.com",
-        "  vault search \"phi poincare\"",
+        '  vault search "phi poincare"',
         "  ops tests",
         "  momentum run daily_ops --execute --max-parallel 3",
-        "  chessboard generate \"Improve long-running agent workflows\"",
+        '  chessboard generate "Improve long-running agent workflows"',
         "  docs show aetherbrowser-config",
     ]
     return "\n".join(lines)
@@ -1792,7 +1813,10 @@ async def _cli_dispatch(parts: list[str]) -> dict[str, Any]:
             return await ops_momentum_latest(train_id=train_id)
         if sub == "run":
             if len(rest) < 2:
-                return {"ok": False, "error": "Usage: momentum run <train_id> [--flow X] [--execute] [--max-parallel N]"}
+                return {
+                    "ok": False,
+                    "error": "Usage: momentum run <train_id> [--flow X] [--execute] [--max-parallel N]",
+                }
             flags = _cli_parse_flags(rest[2:])
             req = MomentumRunRequest(
                 train_id=rest[1],
@@ -1838,11 +1862,13 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
     raw = (req.command or "").strip()
     if not raw:
         raw = "help"
+    # Sanitise raw command: strip newlines/carriage-returns to prevent log injection
+    safe_raw = raw.replace("\n", " ").replace("\r", " ")
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        logger.debug("CLI parse error: %s", e)
-        return {"ok": False, "command": raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
+        logger.debug("CLI parse error: %s", _scrub_text(str(e)))
+        return {"ok": False, "command": safe_raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
 
     result = await _cli_dispatch(parts)
     # Normalise to always include command + timestamp
@@ -1856,12 +1882,14 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
 
     _append_jsonl(
         IDE_CLI_LOG,
-        {
-            "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            "kind": "cli",
-            "command": raw,
-            "result": out,
-        },
+        _scrub_obj(
+            {
+                "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                "kind": "cli",
+                "command": raw.replace("\n", " ").replace("\r", " "),
+                "result": out,
+            }
+        ),
     )
     return out
 
@@ -1870,52 +1898,60 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
 async def cli_job(req: CliRunRequest = CliRunRequest()):
     """Run a safe CLI command asynchronously and return a job_id."""
     raw = (req.command or "").strip() or "help"
+    # Sanitise raw command: strip newlines/carriage-returns to prevent log injection
+    safe_raw_early = raw.replace("\n", " ").replace("\r", " ")
     try:
         parts = shlex.split(raw, posix=True)
     except Exception as e:
-        logger.debug("CLI job parse error: %s", e)
-        return {"ok": False, "command": raw, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
+        logger.debug("CLI job parse error: %s", _scrub_text(str(e)))
+        return {"ok": False, "command": safe_raw_early, "error": "Invalid command syntax", "timestamp": _cli_now_iso()}
 
     job_id = uuid.uuid4().hex
     started = _cli_now_iso()
-    _cli_jobs[job_id] = {"ok": True, "job_id": job_id, "command": raw, "status": "running", "started_at": started}
+    # Sanitise raw command: strip newlines to prevent log injection
+    safe_raw = raw.replace("\n", " ").replace("\r", " ")
+    _cli_jobs[job_id] = {"ok": True, "job_id": job_id, "command": safe_raw, "status": "running", "started_at": started}
 
     async def _runner():
         try:
             out = await _cli_dispatch(parts)
             _append_jsonl(
                 IDE_CLI_LOG,
-                _scrub_obj({
-                    "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                    "kind": "cli_job",
-                    "job_id": job_id,
-                    "command": raw,
-                    "status": "completed",
-                    "result": out,
-                }),
+                _scrub_obj(
+                    {
+                        "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                        "kind": "cli_job",
+                        "job_id": job_id,
+                        "command": safe_raw,
+                        "status": "completed",
+                        "result": out,
+                    }
+                ),
             )
             _cli_jobs[job_id] = {
                 "ok": True,
                 "job_id": job_id,
-                "command": raw,
+                "command": safe_raw,
                 "status": "completed",
                 "started_at": started,
                 "finished_at": _cli_now_iso(),
                 "result": out,
             }
         except Exception:
-            safe_cmd = (raw[:40] + "..." if len(raw) > 40 else raw).replace("\n", " ").replace("\r", " ")
-            logger.exception("CLI job failed for command: %s", safe_cmd)
+            truncated_cmd = safe_raw[:40] + "..." if len(safe_raw) > 40 else safe_raw
+            logger.exception("CLI job failed for command: %s", truncated_cmd)
             _append_jsonl(
                 IDE_CLI_LOG,
-                {
-                    "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                    "kind": "cli_job",
-                    "job_id": job_id,
-                    "command": raw,
-                    "status": "failed",
-                    "error": "CLI job failed",
-                },
+                _scrub_obj(
+                    {
+                        "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                        "kind": "cli_job",
+                        "job_id": job_id,
+                        "command": safe_raw,
+                        "status": "failed",
+                        "error": "CLI job failed",
+                    }
+                ),
             )
             _cli_jobs[job_id] = {
                 "ok": False,

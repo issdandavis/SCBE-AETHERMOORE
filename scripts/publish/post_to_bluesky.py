@@ -13,6 +13,7 @@ Usage:
   python scripts/publish/post_to_bluesky.py --promo book
   python scripts/publish/post_to_bluesky.py --promo chapter-1
 """
+
 from __future__ import annotations
 
 import argparse
@@ -23,7 +24,6 @@ import sys
 import time
 from pathlib import Path
 from urllib.request import Request, urlopen
-
 
 BSKY_API = "https://bsky.social/xrpc"
 AMAZON_LINK = "https://a.co/d/024VowjS"
@@ -77,8 +77,9 @@ PROMOS = {
 def bsky_login(handle: str, password: str) -> tuple[str, str]:
     """Login and get access token + DID."""
     data = json.dumps({"identifier": handle, "password": password}).encode()
-    req = Request(f"{BSKY_API}/com.atproto.server.createSession", data=data,
-                  headers={"Content-Type": "application/json"})
+    req = Request(
+        f"{BSKY_API}/com.atproto.server.createSession", data=data, headers={"Content-Type": "application/json"}
+    )
     resp = json.loads(urlopen(req, timeout=10).read())
     return resp["accessJwt"], resp["did"]
 
@@ -87,11 +88,13 @@ def bsky_post(token: str, did: str, text: str) -> dict:
     """Create a post on Bluesky."""
     # Detect URLs and create facets (clickable links)
     facets = []
-    for m in re.finditer(r'https?://\S+', text):
-        facets.append({
-            "index": {"byteStart": m.start(), "byteEnd": m.end()},
-            "features": [{"$type": "app.bsky.richtext.facet#link", "uri": m.group()}],
-        })
+    for m in re.finditer(r"https?://\S+", text):
+        facets.append(
+            {
+                "index": {"byteStart": m.start(), "byteEnd": m.end()},
+                "features": [{"$type": "app.bsky.richtext.facet#link", "uri": m.group()}],
+            }
+        )
 
     record = {
         "$type": "app.bsky.feed.post",
@@ -101,14 +104,19 @@ def bsky_post(token: str, did: str, text: str) -> dict:
     if facets:
         record["facets"] = facets
 
-    data = json.dumps({
-        "repo": did,
-        "collection": "app.bsky.feed.post",
-        "record": record,
-    }).encode()
+    data = json.dumps(
+        {
+            "repo": did,
+            "collection": "app.bsky.feed.post",
+            "record": record,
+        }
+    ).encode()
 
-    req = Request(f"{BSKY_API}/com.atproto.repo.createRecord", data=data,
-                  headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+    req = Request(
+        f"{BSKY_API}/com.atproto.repo.createRecord",
+        data=data,
+        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+    )
     return json.loads(urlopen(req, timeout=10).read())
 
 
@@ -172,10 +180,21 @@ def main():
         print(text[:300])
         return
 
-    print(f"Logging in as {handle}...")
-    token, did = bsky_login(handle, password)
+    redacted_handle = handle[:4] + "***" if len(handle) > 4 else "***"
+    print(f"Logging in as {redacted_handle}...")
+    try:
+        token, did = bsky_login(handle, password)
+    except Exception:
+        # Catch broadly to prevent password/token leakage in stack traces
+        print("Login failed. Check your BLUESKY_HANDLE and BLUESKY_APP_PASSWORD.")
+        sys.exit(1)
     print(f"Posting ({len(text[:300])} chars)...")
-    resp = bsky_post(token, did, text)
+    try:
+        resp = bsky_post(token, did, text)
+    except Exception:
+        # Catch broadly to prevent token leakage in stack traces
+        print("Post failed. Check your network connection and credentials.")
+        sys.exit(1)
     uri = resp.get("uri", "")
     # Convert AT URI to web URL
     rkey = uri.split("/")[-1] if "/" in uri else ""
