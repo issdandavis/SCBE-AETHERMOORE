@@ -32,13 +32,14 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
-
 # ---------------------------------------------------------------------------
 # Enums & Constants
 # ---------------------------------------------------------------------------
 
+
 class FlightState(str, Enum):
     """Flight state of a task capsule through the juggling system."""
+
     HELD = "held"
     THROWN = "thrown"
     CAUGHT = "caught"
@@ -68,6 +69,7 @@ PHASE_DRIFT_THRESHOLD = 0.3
 # ---------------------------------------------------------------------------
 # Core Data Types
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class TaskCapsule:
@@ -165,6 +167,7 @@ class SchedulerMetrics:
 # Scoring
 # ---------------------------------------------------------------------------
 
+
 def assignment_score(
     task: TaskCapsule,
     agent: AgentSlot,
@@ -217,6 +220,7 @@ def select_arc_height(risk: float, inertia: float) -> int:
 # ---------------------------------------------------------------------------
 # Juggling Scheduler
 # ---------------------------------------------------------------------------
+
 
 class JugglingScheduler:
     """
@@ -332,13 +336,15 @@ class JugglingScheduler:
         )
         self._receipt_log.append(receipt)
 
-        self._emit(JugglingEvent(
-            type="catch",
-            task_id=capsule.task_id,
-            agent_id=receiver.agent_id,
-            timestamp=now,
-            data={"sender_id": sender_id, "arc_height": capsule.arc_height},
-        ))
+        self._emit(
+            JugglingEvent(
+                type="catch",
+                task_id=capsule.task_id,
+                agent_id=receiver.agent_id,
+                timestamp=now,
+                data={"sender_id": sender_id, "arc_height": capsule.arc_height},
+            )
+        )
 
         if capsule.required_quorum > 1:
             capsule.state = FlightState.VALIDATING
@@ -362,13 +368,15 @@ class JugglingScheduler:
         capsule.last_transition_at = now
         capsule.provenance.append((capsule.owner or "__none__", now, FlightState.DONE))
 
-        self._emit(JugglingEvent(
-            type="complete",
-            task_id=task_id,
-            agent_id=capsule.owner,
-            timestamp=now,
-            data={"retry_count": capsule.retry_count},
-        ))
+        self._emit(
+            JugglingEvent(
+                type="complete",
+                task_id=task_id,
+                agent_id=capsule.owner,
+                timestamp=now,
+                data={"retry_count": capsule.retry_count},
+            )
+        )
         return True
 
     def handle_drop(self, task_id: str) -> Optional[HandoffReceipt]:
@@ -388,13 +396,15 @@ class JugglingScheduler:
         capsule.owner = None
         now = time.time()
 
-        self._emit(JugglingEvent(
-            type="drop",
-            task_id=task_id,
-            agent_id=None,
-            timestamp=now,
-            data={"retry_count": capsule.retry_count},
-        ))
+        self._emit(
+            JugglingEvent(
+                type="drop",
+                task_id=task_id,
+                agent_id=None,
+                timestamp=now,
+                data={"retry_count": capsule.retry_count},
+            )
+        )
 
         # Rule 3: high-inertia or max retries → permanent drop
         if capsule.retry_count >= MAX_RETRIES or (capsule.inertia > 0.7 and capsule.retry_count >= 2):
@@ -422,13 +432,15 @@ class JugglingScheduler:
         drift = overdue / len(all_active)
 
         if drift >= PHASE_DRIFT_THRESHOLD:
-            self._emit(JugglingEvent(
-                type="phase_drift",
-                task_id="__system__",
-                agent_id=None,
-                timestamp=now,
-                data={"drift": drift, "overdue_count": overdue, "total": len(all_active)},
-            ))
+            self._emit(
+                JugglingEvent(
+                    type="phase_drift",
+                    task_id="__system__",
+                    agent_id=None,
+                    timestamp=now,
+                    data={"drift": drift, "overdue_count": overdue, "total": len(all_active)},
+                )
+            )
 
         return drift
 
@@ -533,6 +545,7 @@ class JugglingScheduler:
 # ---------------------------------------------------------------------------
 # Convenience factory
 # ---------------------------------------------------------------------------
+
 
 def create_capsule(
     task_id: str,
