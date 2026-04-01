@@ -19,7 +19,7 @@ Dataset: issdandavis/scbe-aethermoore-training-data
 Base: Qwen/Qwen2.5-Coder-7B-Instruct
 """
 
-### CELL 1: Install dependencies ################################################
+# CELL 1: Install dependencies
 
 # !pip install -q "unsloth[kaggle-new] @ git+https://github.com/unslothai/unsloth.git"
 # !pip install -q datasets huggingface_hub
@@ -29,7 +29,7 @@ Base: Qwen/Qwen2.5-Coder-7B-Instruct
 # !pip install -q --no-deps xformers trl peft accelerate bitsandbytes triton
 # !pip install -q datasets huggingface_hub
 
-### CELL 2: Configuration #######################################################
+# CELL 2: Configuration
 
 import os
 
@@ -69,7 +69,7 @@ MAX_STEPS = -1  # -1 = full epochs. Set to e.g. 500 for quick test.
 # MAX_STEPS = 100
 # This trains ~100 steps in ~10 minutes to verify everything works.
 
-### CELL 3: Load model with Unsloth ############################################
+# CELL 3: Load model with Unsloth
 
 from unsloth import FastLanguageModel
 
@@ -102,7 +102,7 @@ model = FastLanguageModel.get_peft_model(
 
 print(f"Trainable parameters: {model.print_trainable_parameters()}")
 
-### CELL 4: Load and format dataset #############################################
+# CELL 4: Load and format dataset
 
 from datasets import load_dataset
 import json
@@ -201,7 +201,7 @@ dataset = dataset.map(detect_and_format, remove_columns=dataset.column_names)
 
 print(f"\nFormatted sample (first 500 chars):\n{dataset[0]['text'][:500]}")
 
-### CELL 5: Train ##############################################################
+# CELL 5: Train
 
 from trl import SFTTrainer
 from transformers import TrainingArguments
@@ -248,26 +248,26 @@ trainer = SFTTrainer(
 gpu_stats = trainer.accelerator.state
 print(f"\nDevice: {trainer.accelerator.device}")
 print(f"Effective batch size: {BATCH_SIZE * GRAD_ACCUM}")
-print(
-    f"Total optimization steps: {trainer.state.max_steps if MAX_STEPS > 0 else '~' + str(len(dataset) // (BATCH_SIZE * GRAD_ACCUM))}"
-)
-print(f"\nStarting training...")
+est_steps = trainer.state.max_steps if MAX_STEPS > 0 else "~" + str(len(dataset) // (BATCH_SIZE * GRAD_ACCUM))
+print(f"Total optimization steps: {est_steps}")
+print("\nStarting training...")
 
 trainer_stats = trainer.train()
 
-print(f"\nTraining complete!")
+print("\nTraining complete!")
 print(f"  Total steps: {trainer_stats.global_step}")
 print(f"  Training loss: {trainer_stats.training_loss:.4f}")
 print(f"  Runtime: {trainer_stats.metrics['train_runtime'] / 60:.1f} minutes")
 
-### CELL 6: Quick eval ##########################################################
+# CELL 6: Quick eval
 
 # Smoke-test the model with domain-specific prompts
 FastLanguageModel.for_inference(model)
 
 test_prompts = [
-    "Write a Python function that computes the Davis Security Score using H(d,R) = R^(d²) for a given dimension d and radius R.",
-    "Explain how the Six Sacred Tongues map to the 21-dimensional state manifold in SCBE-AETHERMOORE.",
+    "Write a Python function that computes the Davis Security Score "
+    "using H(d,R) = R^(d²) for a given dimension d and radius R.",
+    "Explain how the Six Sacred Tongues map to the 21-dimensional " "state manifold in SCBE-AETHERMOORE.",
     "Write a TypeScript function that implements a PhaseTunnelGate check for an AI agent's intent vector.",
     "Create a GDScript function for Godot 4 that visualizes Poincaré ball embeddings as a 2D projection.",
 ]
@@ -296,7 +296,7 @@ for prompt in test_prompts:
     print(response[:500])
     print()
 
-### CELL 7: Save LoRA adapter to HuggingFace ###################################
+# CELL 7: Save LoRA adapter to HuggingFace
 
 model.save_pretrained_merged(
     "output/merged_16bit",
@@ -309,7 +309,7 @@ model.push_to_hub(OUTPUT_REPO, token=HF_TOKEN)
 tokenizer.push_to_hub(OUTPUT_REPO, token=HF_TOKEN)
 print(f"LoRA adapter pushed to: https://huggingface.co/{OUTPUT_REPO}")
 
-### CELL 8: Export GGUF for Ollama ##############################################
+# CELL 8: Export GGUF for Ollama
 
 # This converts the merged model to GGUF Q4_K_M format
 # and uploads it to HuggingFace for direct Ollama use.
@@ -342,10 +342,10 @@ for f in gguf_files:
 
 print(f"\nGGUF model pushed to: https://huggingface.co/{GGUF_REPO}")
 
-### CELL 9: Create Ollama Modelfile #############################################
+# CELL 9: Create Ollama Modelfile
 
 # Generate the Modelfile for loading in Ollama
-modelfile_content = f"""# SCBE-AETHERMOORE Coder - Ollama Modelfile
+modelfile_content = """# SCBE-AETHERMOORE Coder - Ollama Modelfile
 # Usage: ollama create scbe-coder -f Modelfile
 
 FROM ./unsloth.Q4_K_M.gguf
@@ -399,7 +399,7 @@ print(f"""
 ╚══════════════════════════════════════════════════════════════╝
 """)
 
-### CELL 10: Optional — Also export Q5_K_M for quality comparison ###############
+# CELL 10: Optional — Also export Q5_K_M for quality comparison
 
 # Uncomment to also export a higher-quality quantization:
 #
@@ -417,7 +417,7 @@ print(f"""
 #         repo_id=GGUF_REPO,
 #     )
 
-### NOTES ######################################################################
+# NOTES
 #
 # TRAINING DATA FORMAT:
 #   If your JSONL uses a format not covered by detect_and_format(),
