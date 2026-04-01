@@ -20,6 +20,7 @@ from .packet import PumpPacket, sense
 from .retriever import BundleRetriever, RetrievedBundle
 from .stabilizer import stabilize
 from .compiler import CompiledEvent, compile_event, compile_messages, compile_batch
+from .guards import CycleBudget, UndercoverFilter
 
 __all__ = [
     "PumpPacket",
@@ -31,4 +32,6 @@ __all__ = [
     "compile_event",
     "compile_messages",
     "compile_batch",
+    "CycleBudget",
+    "UndercoverFilter",
 ]
