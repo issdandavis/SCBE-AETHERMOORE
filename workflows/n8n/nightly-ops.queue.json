@@ -18,7 +18,7 @@
       "metadata": {
         "order": 1,
         "source": "scbe workflow styleize",
-        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/nightly-ops.yml"
+        "github_workflow": "/home/user/SCBE-AETHERMOORE/.github/workflows/nightly-ops.yml"
       }
     },
     {
@@ -32,7 +32,7 @@
       "metadata": {
         "order": 2,
         "source": "scbe workflow styleize",
-        "github_workflow": "C:/Users/issda/SCBE-AETHERMOORE/.github/workflows/nightly-ops.yml"
+        "github_workflow": "/home/user/SCBE-AETHERMOORE/.github/workflows/nightly-ops.yml"
       }
     }
   ]
