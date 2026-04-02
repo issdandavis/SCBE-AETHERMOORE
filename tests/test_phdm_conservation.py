@@ -82,8 +82,11 @@ def test_phdm_vectors_remain_inside_poincare_ball(raw_vec: np.ndarray) -> None:
 )
 def test_harmonic_wall_is_strictly_monotonic_in_d(d1: float, d2: float, radius: float) -> None:
     lower_d, upper_d = sorted((d1, d2))
-    if math.isclose(lower_d, upper_d, abs_tol=1e-9):
-        upper_d = lower_d + 1e-6
+    # Ensure a gap large enough for R^(d^2) to be distinguishable in float64.
+    # Near d=0 the derivative is 2*d*ln(R)*R^(d^2) ≈ 0, so sub-1e-3 gaps
+    # are indistinguishable from zero in the output.
+    if math.isclose(lower_d, upper_d, abs_tol=1e-3):
+        upper_d = lower_d + 1e-2
 
     assert harmonic_wall(upper_d, radius) > harmonic_wall(lower_d, radius)
 

@@ -763,6 +763,9 @@ async def seal_memory(request: SealRequest, user: str = Depends(verify_api_key))
 
     except HTTPException:
         raise
+    except ImportError as exc:
+        logger.error("seal-memory missing dependency: %s", exc)
+        raise HTTPException(503, f"Service unavailable: {exc}")
     except Exception as exc:
         logger.exception("seal-memory failed: %s", exc)
         raise HTTPException(500, "Seal failed")
@@ -868,6 +871,9 @@ async def retrieve_memory(request: RetrieveRequest, user: str = Depends(verify_a
 
     except HTTPException:
         raise
+    except ImportError as exc:
+        logger.error("retrieve-memory missing dependency: %s", exc)
+        raise HTTPException(503, f"Service unavailable: {exc}")
     except Exception:
         raise HTTPException(500, "Retrieve failed")
 

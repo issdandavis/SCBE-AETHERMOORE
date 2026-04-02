@@ -37,8 +37,10 @@ except ImportError:
 try:
     from src.crypto.rwp_v3 import RWPv3Protocol
 
+    # Verify runtime deps (argon2-cffi) are also present
+    RWPv3Protocol()
     RWP_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception):
     RWP_AVAILABLE = False
 
 
