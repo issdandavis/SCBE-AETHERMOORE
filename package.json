@@ -6,10 +6,6 @@
   "license": "MIT",
   "type": "commonjs",
   "main": "./dist/src/index.js",
-  "bin": {
-    "scbe": "./bin/scbe.cjs",
-    "scbe-system": "./bin/scbe-system.cjs"
-  },
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
@@ -59,15 +55,21 @@
     }
   },
   "files": [
-    "dist/src",
-    "bin",
-    "scbe.py",
-    "scripts/scbe-system-cli.py",
-    "scripts/scbe_system_cli.py",
-    "scripts/__init__.py",
+    "dist/src/index.js",
+    "dist/src/index.d.ts",
+    "dist/src/index.js.map",
+    "dist/src/index.d.ts.map",
+    "dist/src/harmonic/",
+    "dist/src/symphonic/",
+    "dist/src/crypto/",
+    "dist/src/spiralverse/",
+    "dist/src/tokenizer/",
+    "dist/src/ai_brain/",
+    "dist/src/governance/",
+    "dist/src/spectral/",
+    "dist/src/security/",
     "README.md",
-    "LICENSE",
-    "examples/npm"
+    "LICENSE"
   ],
   "scripts": {
     "clean": "rimraf dist",
@@ -122,6 +124,8 @@
     "publish:prepare": "npm run clean:release && npm run build",
     "publish:pack:json": "node -e \"require('fs').mkdirSync('artifacts/npm-pack',{recursive:true})\" && npm pack --dry-run --json --ignore-scripts --cache ./.npm-cache > artifacts/npm-pack/pack.json",
     "publish:check:strict": "npm run publish:pack:json && node scripts/npm_pack_guard.js --pack-json artifacts/npm-pack/pack.json",
+    "publish:python:build": "python -m build --outdir artifacts/python-dist",
+    "publish:python:check:strict": "python scripts/python_dist_guard.py --dist-dir artifacts/python-dist",
     "prepublishOnly": "npm run publish:prepare",
     "prepack": "npm run publish:check:strict",
     "package": "npm pack",
