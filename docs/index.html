@@ -449,28 +449,29 @@
           <div class="eyebrow">AI governance that runs on math, not rules</div>
           <h1>Govern AI compute, detect attacks, and prove safety with one cost function.</h1>
           <p>
-            <strong>SCBE-AETHERMOORE</strong> uses hyperbolic geometry to make unsafe AI actions exponentially expensive. Whether you are deploying the <strong>AI Governance Toolkit</strong> or following the journey of Marcus Chen in <em>The Six Tongues Protocol</em>, the goal is the same: <strong>Stability through Intent.</strong>
+            <strong>SCBE-AETHERMOORE</strong> uses hyperbolic geometry to make unsafe AI actions exponentially expensive. If you are here as a buyer, the fastest entry is the <strong>AI Governance Toolkit</strong>: one package, one manual, one support route, one controlled pilot before anything larger.
           </p>
           <div class="cta-row">
-            <a class="btn btn-primary" href="contact.html">Request a Demo</a>
             <a class="btn btn-primary" href="offers/index.html" style="background:linear-gradient(135deg,#2dd3a6,#17c6cf);">Explore the Toolkit</a>
-            <a class="btn btn-secondary" href="enterprise.html">Enterprise</a>
+            <a class="btn btn-secondary" href="product-manual/ai-governance-toolkit.html">Read the manual first</a>
+            <a class="btn btn-secondary" href="demos/index.html">Try the demos</a>
             <a class="btn btn-secondary" href="research/index.html">See the Math</a>
           </div>
+          <p style="margin-top:14px;font-size:14px;color:var(--muted);max-width:56ch;">Buyer expectation: this is a one-time starter pack with a visible delivery path, a manual you can inspect before checkout, and a public support route if anything arrives broken or incomplete.</p>
 
-          <!-- Interactive Playground Hook -->
+          <!-- Preview widget -->
           <div style="margin-top:32px;background:rgba(0,0,0,0.4);border:1px solid var(--line);border-radius:18px;padding:20px;backdrop-filter:blur(10px);">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-              <span class="eyebrow" style="margin:0;">Live Protocol Lab</span>
-              <span style="font-size:11px;color:var(--accent);background:rgba(214,167,86,0.1);padding:2px 6px;border-radius:4px;">0.3s Heartbeat Active</span>
+              <span class="eyebrow" style="margin:0;">Packet Preview</span>
+              <span style="font-size:11px;color:var(--accent);background:rgba(214,167,86,0.1);padding:2px 6px;border-radius:4px;">Visual preview only</span>
             </div>
             <div style="display:grid;gap:10px;">
-              <input type="text" id="playground-input" placeholder="Type a message to encode..." style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:12px;color:var(--text);font-family:monospace;width:100%;">
+              <input type="text" id="playground-input" placeholder="Type a short message to preview a packet..." style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:12px;color:var(--text);font-family:monospace;width:100%;">
               <div id="playground-output" style="background:rgba(0,0,0,0.3);border:1px solid var(--line);border-radius:8px;padding:12px;min-height:44px;font-family:monospace;color:var(--accent);font-size:14px;word-break:break-all;display:flex;align-items:center;">
-                Encoded output will appear here...
+                Packet preview will appear here...
               </div>
             </div>
-            <p style="font-size:12px;color:var(--muted);margin-top:10px;margin-bottom:0;">Try the <strong>Sacred Tongue</strong> tokenization used in the 14-layer architecture.</p>
+            <p style="font-size:12px;color:var(--muted);margin-top:10px;margin-bottom:0;">This is an illustrative packet preview for orientation only. Use the <a href="demos/index.html" style="text-decoration:underline;">demo hub</a> when you want the actual live surfaces.</p>
           </div>
 
           <script>
@@ -479,12 +480,13 @@
             input.addEventListener('input', (e) => {
               const text = e.target.value;
               if (!text) {
-                output.innerText = "Encoded output will appear here...";
+                output.innerText = "Packet preview will appear here...";
                 return;
               }
-              // Simple mock of the Sacred Tongue encoding for the hero demo
-              const encoded = btoa(text).split('').map(c => c.charCodeAt(0).toString(16)).join('·').slice(0, 40) + '...';
-              output.innerText = `[AETHER·${encoded}]`;
+              const trimmed = text.trim().slice(0, 18) || "signal";
+              const normalized = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+              const packetId = Array.from(trimmed).reduce((acc, char) => acc + char.charCodeAt(0), 0).toString(16).toUpperCase();
+              output.innerText = `[SCBE::preview::${normalized}::${packetId}]`;
             });
           </script>
 
@@ -557,6 +559,34 @@
               Use this lane when you need benchmark summaries, architecture maps, and active research tracks that keep implemented claims separated from exploratory work.
             </p>
             <p style="margin-top:16px;"><a class="btn btn-secondary" href="research/index.html">Open research and proof</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="buyer-expectations">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow">Buyer expectations</div>
+          <h2>Know the delivery and recovery path before you pay.</h2>
+          <p>
+            A credible product page should make the buyer path explicit. You should know what the package is, how delivery works, and where support lives before checkout.
+          </p>
+        </div>
+        <div class="split split-3">
+          <article class="slab">
+            <h3>One-time package</h3>
+            <p>This is a starter pack, not a subscription or a consulting mystery box. Buy once, receive the package, follow the manual.</p>
+          </article>
+          <article class="slab">
+            <h3>Manual before checkout</h3>
+            <p>The toolkit manual and delivery page are public on purpose so you can inspect the operating surface before you commit.</p>
+            <p style="margin-top:16px;"><a class="btn btn-secondary" href="product-manual/ai-governance-toolkit.html">Open the manual</a></p>
+          </article>
+          <article class="slab">
+            <h3>Visible support route</h3>
+            <p>If something arrives broken or incomplete, the support page and contact path are part of the product, not an afterthought.</p>
+            <p style="margin-top:16px;"><a class="btn btn-secondary" href="support.html">Open support</a></p>
           </article>
         </div>
       </div>

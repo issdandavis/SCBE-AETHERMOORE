@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Governance Toolkit Manual</title>
-  <meta name="description" content="Buyer manual for the SCBE AI Governance Toolkit: what is included, how to use it, and how to verify it is working.">
+  <title>AI Governance Toolkit Manual | SCBE</title>
+  <meta name="description" content="Buyer manual for the SCBE AI Governance Toolkit: what is in the package, how to run a first governed pilot, and how to tell whether the rollout is actually working.">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <meta property="og:title" content="AI Governance Toolkit Manual">
-  <meta property="og:description" content="Buyer manual for the SCBE AI Governance Toolkit: included files, setup path, and success checks.">
+  <meta property="og:title" content="AI Governance Toolkit Manual | SCBE">
+  <meta property="og:description" content="Run a real AI governance pilot with decision records, threshold worksheets, and a controlled first-workflow rollout path.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://issdandavis.github.io/SCBE-AETHERMOORE/product-manual/ai-governance-toolkit.html">
-  <link rel="canonical" href="https://issdandavis.github.io/SCBE-AETHERMOORE/product-manual/ai-governance-toolkit.html">
+  <meta property="og:url" content="https://aethermoorgames.com/product-manual/ai-governance-toolkit.html">
+  <meta property="og:image" content="https://aethermoorgames.com/hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AI Governance Toolkit Manual | SCBE">
+  <meta name="twitter:description" content="Use the governance toolkit to stand up one controlled AI workflow, document decisions, and tighten policy before scaling.">
+  <link rel="canonical" href="https://aethermoorgames.com/product-manual/ai-governance-toolkit.html">
   <link rel="stylesheet" href="assets/manual.css">
   <link rel="stylesheet" href="../static/polly-sidebar.css">
 </head>
@@ -33,30 +37,68 @@
 
   <main class="container">
     <section class="hero">
-      <div class="hero-card">
-        <div class="eyebrow">Buyer Manual</div>
-        <h1>AI Governance Toolkit</h1>
-        <p class="lead">This package is for teams that need a practical governance layer before they need the full SCBE architecture. It should help you make safer decisions, document them clearly, and start with a small controlled pilot instead of a giant rollout.</p>
-        <div class="chip-row">
-          <span class="chip">Decision records</span>
-          <span class="chip">Threshold worksheets</span>
-          <span class="chip">Pilot-first</span>
-          <span class="chip">AI-readable manual</span>
+      <div class="hero-card hero-card-split">
+        <div class="hero-copy">
+          <div class="eyebrow">Buyer Manual</div>
+          <h1>Stand up one governed AI workflow before you scale anything.</h1>
+          <p class="lead">The AI Governance Toolkit is the small controlled entry point. It gives you the decision records, threshold worksheets, and pilot review structure needed to govern one live workflow without pretending you already need the entire SCBE stack.</p>
+          <p class="section-intro">Use this page when the package is already in your hands and the next question is operational: what do I open first, what should be in the bundle, and how do I know the first rollout is actually safe enough to continue?</p>
+          <div class="chip-row">
+            <span class="chip">Threshold worksheets</span>
+            <span class="chip">Decision records</span>
+            <span class="chip">Pilot review loop</span>
+            <span class="chip">AI-readable setup path</span>
+          </div>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#activation-path">Run the first pilot</a>
+            <a class="btn btn-secondary" href="delivery-and-access.html">Check delivery + access</a>
+          </div>
         </div>
+        <aside class="hero-proof" aria-label="Toolkit fit summary">
+          <div class="eyebrow">Best Fit</div>
+          <h2>For teams that need policy discipline before automation drift becomes expensive.</h2>
+          <ul class="proof-list">
+            <li><strong>Good fit:</strong> one real workflow, one accountable operator, one place to record decisions.</li>
+            <li><strong>You leave with:</strong> an explicit allow/quarantine/deny starting policy and the notes needed to tighten it.</li>
+            <li><strong>Not this package:</strong> full SCBE architecture deployment, large-scale agent orchestration, or deep theory onboarding.</li>
+          </ul>
+        </aside>
       </div>
     </section>
 
     <section class="section">
+      <h2>What this toolkit does</h2>
+      <p class="section-intro">It does not “solve AI governance” in one packet. It gives you a disciplined first lane: define the boundary, record the decision, review what happened, and only then widen the rollout.</p>
+      <div class="status-grid">
+        <article class="status-card">
+          <div class="eyebrow">Boundary</div>
+          <h3>Turns vague policy into explicit thresholds</h3>
+          <p>Use the worksheets to move from opinions like “be careful” toward concrete allow, quarantine, and deny boundaries that can be reviewed by someone other than the original operator.</p>
+        </article>
+        <article class="status-card">
+          <div class="eyebrow">Record</div>
+          <h3>Keeps real decisions reviewable</h3>
+          <p>Decision records stop the pilot from becoming folklore. You can point to what was allowed, what was held, what was denied, and why.</p>
+        </article>
+        <article class="status-card">
+          <div class="eyebrow">Pilot</div>
+          <h3>Starts with one workflow instead of a platform rewrite</h3>
+          <p>The package is intentionally narrow so your first test is legible. If the pilot fails, you learn cheaply. If it works, you tighten and expand with evidence instead of optimism.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="activation-path">
       <div class="info-grid">
         <div class="article">
           <section class="flow-wrap">
-            <h3>First-run path</h3>
-            <div class="flow" role="img" aria-label="Open the toolkit, identify the first workflow, set thresholds, test one decision, and record the result.">
-              <div class="flow-step"><strong>1. Unpack</strong><span>Open the files from the delivery bundle and keep them in one working folder.</span></div>
-              <div class="flow-step"><strong>2. Choose one workflow</strong><span>Pick a single real automation or AI decision point to govern first.</span></div>
-              <div class="flow-step"><strong>3. Set thresholds</strong><span>Fill the worksheet with your starting allow, quarantine, and deny boundaries.</span></div>
-              <div class="flow-step"><strong>4. Record a decision</strong><span>Use the decision record template on one concrete example.</span></div>
-              <div class="flow-step"><strong>5. Review</strong><span>Check whether the chosen thresholds match the operational reality you saw.</span></div>
+            <h3>First 30 minutes</h3>
+            <div class="flow" role="img" aria-label="Open the toolkit, choose one workflow, set thresholds, record a live decision, and review what happened.">
+              <div class="flow-step"><strong>1. Unpack the bundle</strong><span>Keep the manual, worksheet, checklist, and review notes in one working folder so the pilot does not fragment immediately.</span></div>
+              <div class="flow-step"><strong>2. Pick one workflow</strong><span>Choose one AI decision point with real stakes but limited blast radius: content approval, assistant escalation, internal response drafting, or tool execution review.</span></div>
+              <div class="flow-step"><strong>3. Set starting thresholds</strong><span>Write the first allow, quarantine, and deny boundaries even if they are conservative. Ambiguous policy is worse than a cautious first pass.</span></div>
+              <div class="flow-step"><strong>4. Run one live example</strong><span>Fill the decision record using an actual decision from your workflow, not a toy prompt built only for the worksheet.</span></div>
+              <div class="flow-step"><strong>5. Tighten after review</strong><span>Review what surprised you, what created hesitation, and which boundary needs to move before a second run.</span></div>
             </div>
           </section>
 
@@ -64,41 +106,66 @@
             <h3>What should be in the package</h3>
             <table>
               <thead>
-                <tr><th>Item</th><th>Why it matters</th><th>How to use it</th></tr>
+                <tr><th>Item</th><th>Why it matters</th><th>First use</th></tr>
               </thead>
               <tbody>
-                <tr><td>Decision record template</td><td>Keeps governance choices explicit and reviewable.</td><td>Fill it out for one real allow/quarantine/deny example.</td></tr>
-                <tr><td>Threshold worksheet</td><td>Stops the policy from staying vague.</td><td>Write the first safe starting values and assumptions.</td></tr>
-                <tr><td>Pilot checklist</td><td>Prevents over-scoping the first rollout.</td><td>Use it before applying the toolkit to more than one workflow.</td></tr>
-                <tr><td>Review notes format</td><td>Makes follow-up tuning easier.</td><td>Log what surprised you and what needs tightening.</td></tr>
+                <tr><td>Decision record template</td><td>Makes every allow, quarantine, or deny explainable after the fact.</td><td>Complete it for one live workflow example in your first session.</td></tr>
+                <tr><td>Threshold worksheet</td><td>Turns policy from prose into operational boundaries.</td><td>Write the first safe starting values before running a live example.</td></tr>
+                <tr><td>Pilot checklist</td><td>Prevents “just one more workflow” sprawl during the first rollout.</td><td>Use it before enabling the toolkit on anything beyond the initial pilot lane.</td></tr>
+                <tr><td>Review notes format</td><td>Captures surprises and tuning changes while they are still fresh.</td><td>Log what felt too permissive, too strict, or operationally unclear after the first run.</td></tr>
               </tbody>
             </table>
           </section>
 
-          <section>
-            <h3>Who this package is for</h3>
-            <ul class="checklist">
-              <li>Teams adding governance to AI-assisted workflows</li>
-              <li>Operators who need a repeatable review path</li>
-              <li>Builders who want a smaller first step than deploying the entire system</li>
-            </ul>
+          <section class="compare-grid">
+            <div>
+              <h3>Good first workflows</h3>
+              <ul class="checklist">
+                <li>Internal content approval before publishing</li>
+                <li>Assistant-generated replies that still need human review</li>
+                <li>Workflow automations with reversible outcomes</li>
+                <li>Decision lanes where one operator can actually own the review notes</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Do not pilot here first</h3>
+              <ul class="flag-list">
+                <li>High-impact legal, medical, or safety-critical decisions</li>
+                <li>Automation with irreversible external actions</li>
+                <li>Workflows where no one will maintain the review record</li>
+                <li>Large multi-team rollouts where the thresholds are still speculative</li>
+              </ul>
+            </div>
           </section>
 
-          <section>
-            <h3>Success check</h3>
-            <ol class="step-list">
-              <li>You can point to one governed workflow.</li>
-              <li>You have one completed threshold worksheet.</li>
-              <li>You have one completed decision record tied to a real example.</li>
-              <li>You know what to tighten before expanding the rollout.</li>
-            </ol>
+          <section class="prompt-block">
+            <h3>Use it with ChatGPT, Claude, or Codex</h3>
+            <p>These manuals are AI-readable on purpose. Hand this starter prompt to the assistant you already use instead of explaining the package from scratch every time.</p>
+            <p class="prompt-copy">I am setting up the SCBE AI Governance Toolkit. Help me choose one low-blast-radius workflow, fill the first threshold worksheet conservatively, and create one decision record from a real example. Keep the rollout pilot-first and tell me what to tighten before I expand it.</p>
           </section>
         </div>
 
         <aside class="article">
           <section class="side-card">
+            <h3>Who this package is for</h3>
+            <ul class="meta-list">
+              <li>Teams adding governance to AI-assisted work without a full platform rebuild</li>
+              <li>Operators who need a repeatable review path with minimal ceremony</li>
+              <li>Builders who want an evidence-backed first step before deeper SCBE adoption</li>
+            </ul>
+          </section>
+          <section class="side-card">
             <h3>Good starting question</h3>
             <p>What is the one AI action or automation decision you least want to leave undocumented?</p>
+          </section>
+          <section class="side-card">
+            <h3>Success looks like this</h3>
+            <ol class="step-list">
+              <li>You can name one governed workflow and one accountable operator.</li>
+              <li>You have one completed threshold worksheet with explicit assumptions.</li>
+              <li>You have one completed decision record tied to a live example.</li>
+              <li>You know what boundary to tighten before adding a second workflow.</li>
+            </ol>
           </section>
           <section class="side-card">
             <h3>If something is missing</h3>
@@ -112,6 +179,13 @@
         </aside>
       </div>
     </section>
+
+    <section class="section">
+      <div class="callout warning">
+        <h3>Important boundary</h3>
+        <p>This page is a usage manual, not a theory archive. If you need deep internal thresholds, harmonic research, or the wider SCBE architecture, route back to the research and implementation surfaces instead of forcing that material into the buyer lane.</p>
+      </div>
+    </section>
   </main>
 
   <footer class="footer container">
@@ -122,7 +196,7 @@
       <a href="../support.html">Support</a>
       <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
     </div>
-    <div>This package manual is for usage and rollout, not for deep theory or internal thresholds.</div>
+    <div>Use this manual to run the toolkit well. Use the research and implementation surfaces for the deeper SCBE stack.</div>
   </footer>
   <script src="../static/polly-sidebar.js"></script>
 </body>
