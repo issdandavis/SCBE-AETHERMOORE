@@ -40,6 +40,8 @@ pnpm-debug.log*
 # Environments / secrets
 .env
 .env.*
+!.env.example
+!.env.sample
 config/connector_oauth/*.json
 config/connector_oauth/.kaggle.env
 *.pem
@@ -77,6 +79,7 @@ artifacts/test_swarm_hub/
 
 # Training runs (large model artifacts)
 training/runs/
+training/tmp_test/
 
 # Generated/combined training data (regeneratable via scripts/merge_and_upload.py)
 training-data/sft_combined*.jsonl
