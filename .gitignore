@@ -193,3 +193,29 @@ training-data/multiview_sft.jsonl
 .codex-publish-clone/
 .codex-publish-worktree/
 .npmrc.publish
+
+# Obsidian local state (machine-specific)
+notes/.obsidian/
+
+# Training ingest state (machine-specific)
+training/ingest/latest_local_cloud_sync.txt
+training/ingest/local_cloud_sync_state.json
+
+# Temp build dirs
+.tmp-build/
+
+# Local training output
+output/
+
+# Code training data (large, hosted on HuggingFace)
+training-data/code_*.jsonl
+
+# Nanobanana output
+nanobanana-output/
+
+# Stale generated content articles (platform-specific)
+content/articles/devto_*.md
+content/articles/huggingface_*.md
+content/articles/linkedin_*.md
+content/articles/medium_*.md
+content/articles/substack_*.md
