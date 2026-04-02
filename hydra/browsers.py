@@ -229,7 +229,7 @@ class CDPBackend(BrowserBackend):
             raise RuntimeError("No page target found on CDP endpoint")
 
         ws_url = page_targets[0]["webSocketDebuggerUrl"]
-        import websockets
+        import websockets  # noqa: F811
 
         self._ws = await websockets.connect(ws_url, max_size=10 * 1024 * 1024)
 

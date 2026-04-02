@@ -21,7 +21,6 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Callable, Set
 from dataclasses import dataclass, field
 from enum import Enum
-import hashlib
 import uuid
 
 # Add parent path for imports
@@ -34,7 +33,7 @@ from .switchboard import Switchboard
 # Import directly from the file to avoid triggering src.crypto.__init__.py's
 # heavy import chain (scipy, matplotlib) which hangs on Windows.
 try:
-    from src.crypto.dual_lattice import TongueLatticeGovernor, SacredTongue
+    from src.crypto.dual_lattice import TongueLatticeGovernor
 
     DUAL_LATTICE_AVAILABLE = True
 except (ImportError, Exception):
@@ -641,7 +640,7 @@ class HydraSpine:
 
             if not result.get("success", True) and result.get("decision") == "DENY":
                 workflow.status = WorkflowPhase.ERROR
-                print(f"  [BLOCKED] Phase denied by SCBE governance")
+                print("  [BLOCKED] Phase denied by SCBE governance")
                 break
 
             workflow.current_phase += 1

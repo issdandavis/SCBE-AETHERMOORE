@@ -295,7 +295,8 @@ class Switchboard:
             by_status_rows = conn.execute("SELECT status, COUNT(*) AS c FROM tasks GROUP BY status").fetchall()
             by_role_rows = conn.execute("SELECT role, COUNT(*) AS c FROM tasks GROUP BY role").fetchall()
             leased_rows = conn.execute(
-                "SELECT task_id, role, lease_owner, lease_expires_at FROM tasks WHERE status='leased' ORDER BY updated_at DESC LIMIT 50"
+                "SELECT task_id, role, lease_owner, lease_expires_at"
+                " FROM tasks WHERE status='leased' ORDER BY updated_at DESC LIMIT 50"
             ).fetchall()
             msg_count = conn.execute("SELECT COUNT(*) AS c FROM role_messages").fetchone()
 

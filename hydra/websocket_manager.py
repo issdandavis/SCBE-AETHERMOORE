@@ -27,12 +27,10 @@ Research Validation:
 
 import asyncio
 import json
-import weakref
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Set, Callable
 from dataclasses import dataclass, field
 from enum import Enum
-import hashlib
 import uuid
 
 # Type hints for WebSocket - supports both websockets and aiohttp
@@ -51,7 +49,7 @@ try:
 except ImportError:
     AIOHTTP_AVAILABLE = False
 
-from .ledger import Ledger, LedgerEntry, EntryType
+from .ledger import LedgerEntry, EntryType
 
 
 class SubscriptionChannel(str, Enum):

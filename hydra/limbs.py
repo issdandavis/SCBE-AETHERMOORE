@@ -11,12 +11,10 @@ All limbs are governed by SCBE before execution.
 """
 
 import asyncio
-import subprocess
 import os
 import sys
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional, List
-from datetime import datetime, timezone
+from typing import Dict, Any, List
 import hashlib
 import json
 import uuid
@@ -39,7 +37,6 @@ class HydraLimb(ABC):
     @abstractmethod
     async def execute(self, action: str, target: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute an action."""
-        pass
 
     async def activate(self) -> bool:
         """Activate this limb."""

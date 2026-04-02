@@ -23,8 +23,6 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Tuple, Optional
 
 from .spine import HydraSpine
-from .head import HydraHead, create_claude_head
-from .limbs import BrowserLimb, TerminalLimb, APILimb, MultiTabBrowserLimb
 from .ledger import Ledger
 from .librarian import Librarian
 from .arxiv_retrieval import AI2AIRetrievalService, ArxivClient
@@ -646,7 +644,8 @@ def handle_arxiv(args: List[str], librarian: Librarian, as_json: bool) -> None:
             return
 
         print(
-            f"\n[arxiv] packet={packet['packet_id']} returned={packet['returned_results']} total={packet['total_results']}"
+            f"\n[arxiv] packet={packet['packet_id']}"
+            f" returned={packet['returned_results']} total={packet['total_results']}"
         )
         for idx, paper in enumerate(packet.get("papers", []), start=1):
             print(f"{idx}. {paper['arxiv_id']} :: {paper['title']}")
@@ -1156,7 +1155,7 @@ def handle_branch(args: List[str], parsed_args) -> None:
         print('                 [--providers claude,gpt,gemini] [--context \'{"k":"v"}\']')
         print("                 [--no-council] [--export-n8n path] [--export-choicescript path]")
         print()
-        print(f"Available graphs: research_pipeline, content_publisher, training_funnel")
+        print("Available graphs: research_pipeline, content_publisher, training_funnel")
         print(f"Available strategies: {', '.join(list_strategies())}")
         return
 
@@ -1227,7 +1226,8 @@ def handle_branch(args: List[str], parsed_args) -> None:
         print(f"  Topic:      {options['topic'] or '(default)'}")
         print(f"  Paths:      {payload['paths_explored']}")
         print(
-            f"  Coverage:   {payload['coverage']:.0%} ({int(payload['coverage'] * payload['total_scenes'])}/{payload['total_scenes']})"
+            f"  Coverage:   {payload['coverage']:.0%}"
+            f" ({int(payload['coverage'] * payload['total_scenes'])}/{payload['total_scenes']})"
         )
         best = payload.get("best_path")
         if best:

@@ -20,8 +20,8 @@ import importlib as _importlib
 # Eager imports — core modules only (sqlite, dataclasses, stdlib)
 # ═══════════════════════════════════════════════════════════
 
-from .ledger import Ledger, LedgerEntry, EntryType
-from .switchboard import Switchboard
+from .ledger import Ledger, LedgerEntry, EntryType  # noqa: F401
+from .switchboard import Switchboard  # noqa: F401
 
 # ═══════════════════════════════════════════════════════════
 # Lazy imports — heavy modules (browsers, LLM providers, websockets)

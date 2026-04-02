@@ -38,12 +38,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 import numpy as np
 
 from hydra.color_dimension import (
-    BAND_CENTERS,
-    ColorBand,
     ColorChannel,
     PHI,
-    TONGUE_WAVELENGTHS,
-    TONGUE_WEIGHTS,
 )
 
 # ---------------------------------------------------------------------------

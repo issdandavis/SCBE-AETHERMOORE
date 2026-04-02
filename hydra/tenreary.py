@@ -13,7 +13,6 @@ Custom multi-step itinerary type for HYDRA that can orchestrate:
 
 from __future__ import annotations
 
-import asyncio
 import json
 import os
 import re
@@ -613,7 +612,7 @@ class MCPTenrearyRunner:
         try:
             from PyQt5.QtWidgets import QApplication, QMessageBox  # type: ignore
 
-            app = QApplication.instance() or QApplication([])
+            QApplication.instance() or QApplication([])
             box = QMessageBox()
             box.setWindowTitle(title)
             box.setText(message)
@@ -625,7 +624,7 @@ class MCPTenrearyRunner:
         try:
             from PySide2.QtWidgets import QApplication, QMessageBox  # type: ignore
 
-            app = QApplication.instance() or QApplication([])
+            QApplication.instance() or QApplication([])
             box = QMessageBox()
             box.setWindowTitle(title)
             box.setText(message)

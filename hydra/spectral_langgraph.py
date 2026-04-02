@@ -28,11 +28,8 @@ Usage:
 from __future__ import annotations
 
 import math
-import operator
 import time
-import hashlib
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Annotated, Any, Callable, Dict, List, Optional, Set, Tuple, TypedDict
 
 import numpy as np
@@ -54,20 +51,10 @@ def _concat_lists(a: list, b: list) -> list:
 
 
 from hydra.color_dimension import (
-    BAND_CENTERS,
     ColorBand,
-    ColorChannel,
-    ColorNode,
-    MultiColorTag,
-    PHI,
-    RouteCheck,
-    RoutedFlow,
     SpectrumAllocator,
     SpectralFlowRouter,
     TONGUE_WEIGHTS,
-    channel_for_provider,
-    channel_for_task,
-    channel_for_tongue,
 )
 
 # ---------------------------------------------------------------------------
@@ -526,7 +513,9 @@ def build_article_graph(topic: str = "AI safety") -> SpectralStateGraph:
         outputs = state.get("outputs", {})
         fft = state.get("_fft_spectrum", {})
         return {
-            "output": f"Final article merged from {len(outputs)} color lanes. FFT energy: {fft.get('merged_energy', {})}"
+            "output": (
+                f"Final article merged from {len(outputs)} color lanes. FFT energy: {fft.get('merged_energy', {})}"
+            )
         }
 
     g = SpectralStateGraph(SpectralState)
@@ -573,7 +562,10 @@ def build_research_graph(topic: str = "quantum computing") -> SpectralStateGraph
         outputs = state.get("outputs", {})
         fft = state.get("_fft_spectrum", {})
         return {
-            "output": f"Synthesis from {len(outputs)} lanes. Consensus: safety gaps in deployment. FFT: {fft.get('merged_energy', {})}"
+            "output": (
+                f"Synthesis from {len(outputs)} lanes. Consensus: safety gaps in deployment."
+                f" FFT: {fft.get('merged_energy', {})}"
+            )
         }
 
     g = SpectralStateGraph(SpectralState)
