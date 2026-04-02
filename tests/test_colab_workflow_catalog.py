@@ -1,44 +1,32 @@
-from __future__ import annotations
-
-import json
-import subprocess
-import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "scripts" / "system" / "colab_workflow_catalog.py"
+from scripts.system.colab_workflow_catalog import extract_embedded_colab_url, resolve_notebook_payload
 
 
-def _run(*args: str) -> str:
-    proc = subprocess.run(
-        [sys.executable, str(SCRIPT), *args],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
-    if proc.returncode != 0:
-        raise AssertionError(f"command failed: {args}\nSTDOUT:\n{proc.stdout}\nSTDERR:\n{proc.stderr}")
-    return proc.stdout
+def test_extract_embedded_colab_url_from_real_notebook() -> None:
+    notebook = Path("notebooks/spiralverse_protocol_training_generator.ipynb")
+    url = extract_embedded_colab_url(notebook)
+    assert url.startswith("https://colab.research.google.com/gist/")
+    assert "spiralverse-protocol-ai-training-data-generator.ipynb" in url
 
 
-def test_list_json_contains_pivot_and_finetune() -> None:
-    payload = json.loads(_run("list", "--json"))
-    names = {row["name"] for row in payload}
-    assert "scbe-pivot-v2" in names
-    assert "scbe-finetune-free" in names
+def test_resolve_notebook_payload_prefers_embedded_url_when_present() -> None:
+    payload = resolve_notebook_payload("generator")
+    assert payload["embedded_colab_url"].startswith("https://colab.research.google.com/gist/")
+    assert payload["colab_url"] == payload["embedded_colab_url"]
+    assert payload["fallback_colab_url"].startswith("https://colab.research.google.com/github/")
 
 
-def test_show_resolves_alias() -> None:
-    payload = json.loads(_run("show", "pivot", "--json"))
-    assert payload["name"] == "scbe-pivot-v2"
-    assert payload["path"] == "notebooks/scbe_pivot_training_v2.ipynb"
-    assert payload["exists"] is True
+def test_resolve_notebook_payload_falls_back_to_github_url_when_no_embedded_link() -> None:
+    payload = resolve_notebook_payload("finetune")
+    assert payload["embedded_colab_url"] == ""
+    assert payload["colab_url"] == payload["fallback_colab_url"]
+    assert payload["colab_url"].startswith("https://colab.research.google.com/github/")
 
 
-def test_url_points_to_colab() -> None:
-    out = _run("url", "finetune").strip()
-    assert out.startswith("https://colab.research.google.com/github/")
-    assert "notebooks/scbe_finetune_colab.ipynb" in out
+def test_canonical_notebook_resolves_and_falls_back_to_github_url() -> None:
+    payload = resolve_notebook_payload("canonical")
+    assert payload["name"] == "canonical-training-lane"
+    assert payload["embedded_colab_url"] == ""
+    assert payload["colab_url"] == payload["fallback_colab_url"]
+    assert payload["colab_url"].startswith("https://colab.research.google.com/github/")

@@ -186,7 +186,8 @@ section { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1a1a3e; }
             Raw Data (824K JSONL records)<br>
             &nbsp;&nbsp;&darr; clean_training_labels.py (drop 690K unknowns, consolidate 254 &rarr; 24 labels)<br>
             Cleaned Data (41,703 samples, 24 categories)<br>
-            &nbsp;&nbsp;&darr; finetune_qwen_governance.ipynb (QLoRA on Kaggle/Colab)<br>
+            &nbsp;&nbsp;&darr; scbe_canonical_training_lane_colab.ipynb (one-notebook upload &rarr; normalize &rarr; QLoRA route on Colab T4)<br>
+            &nbsp;&nbsp;&darr; finetune_qwen_governance.ipynb (QLoRA with Colab-first T4 lane; Kaggle aligned second after kaggle_notebook_smoke.py passes)<br>
             Fine-Tuned Model (Qwen2.5-0.5B + LoRA adapter)<br>
             &nbsp;&nbsp;&darr; push_to_hub (HuggingFace)<br>
             Production Model (issdandavis/scbe-governance-qwen-0.5b)
@@ -206,7 +207,7 @@ section { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1a1a3e; }
             <div class="card">
                 <div class="cat train">Train</div>
                 <h3>QLoRA Fine-Tuning</h3>
-                <p>Qwen2.5-0.5B with LoRA (r=4-16). Runs on free Kaggle/Colab GPUs or CPU fallback. 3 epochs, cosine schedule, gradient checkpointing.</p>
+                <p>Start with <code>scbe_canonical_training_lane_colab.ipynb</code> when you want one Colab surface for upload, normalization, and QLoRA fine-tune. Keep Kaggle aligned to the same contract as a secondary lane, not a CPU-first fallback. Run <code>python scripts/system/kaggle_notebook_smoke.py --micro-train</code> before any long Kaggle job.</p>
             </div>
         </div>
     </section>

@@ -5,6 +5,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -13,9 +16,24 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_REPO = "issdandavis/SCBE-AETHERMOORE"
 CANONICAL_BRANCH = "main"
+COLAB_URL_RE = re.compile(r"https://colab\.research\.google\.com/[^\s\"')>]+")
 
 
 NOTEBOOKS: list[dict[str, Any]] = [
+    {
+        "name": "spiralverse-generator",
+        "aliases": ["generator", "training-generator", "protocol-generator", "spiralverse-generator"],
+        "path": "notebooks/spiralverse_protocol_training_generator.ipynb",
+        "category": "data",
+        "summary": "Canonical Spiralverse protocol generator for raw synthetic conversation corpora.",
+    },
+    {
+        "name": "canonical-training-lane",
+        "aliases": ["canonical", "one-notebook", "ship-train", "canonical-training", "training-lane"],
+        "path": "notebooks/scbe_canonical_training_lane_colab.ipynb",
+        "category": "training",
+        "summary": "One-notebook Colab lane for raw export upload, normalization, and QLoRA fine-tuning.",
+    },
     {
         "name": "scbe-pivot-v2",
         "aliases": ["pivot", "pivot-v2", "conversation-pivot"],
@@ -98,12 +116,55 @@ def _github_repo() -> str:
 
 
 def _github_branch() -> str:
+    env_branch = os.environ.get("SCBE_COLAB_BRANCH", "").strip()
+    if env_branch:
+        return env_branch
+    try:
+        result = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        branch = result.stdout.strip()
+        if branch and branch != "HEAD":
+            return branch
+    except Exception:
+        pass
     return CANONICAL_BRANCH
+
+
+def extract_embedded_colab_url(notebook_path: Path) -> str:
+    """Return an embedded Colab URL from notebook markdown when present."""
+    if not notebook_path.exists():
+        return ""
+    try:
+        payload = json.loads(notebook_path.read_text(encoding="utf-8"))
+    except Exception:
+        return ""
+
+    for cell in payload.get("cells", []):
+        if cell.get("cell_type") != "markdown":
+            continue
+        source = cell.get("source", [])
+        if isinstance(source, list):
+            text = "".join(source)
+        else:
+            text = str(source)
+        match = COLAB_URL_RE.search(text)
+        if match:
+            return match.group(0)
+    return ""
 
 
 def _record_payload(row: dict[str, Any]) -> dict[str, Any]:
     rel_path = row["path"].replace("\\", "/")
     local_path = REPO_ROOT / row["path"]
+    fallback_colab_url = (
+        f"https://colab.research.google.com/github/{_github_repo()}/blob/{_github_branch()}/{rel_path}"
+    )
+    embedded_colab_url = extract_embedded_colab_url(local_path)
     return {
         "name": row["name"],
         "aliases": row["aliases"],
@@ -112,7 +173,9 @@ def _record_payload(row: dict[str, Any]) -> dict[str, Any]:
         "path": rel_path,
         "local_path": str(local_path),
         "exists": local_path.exists(),
-        "colab_url": f"https://colab.research.google.com/github/{_github_repo()}/blob/{_github_branch()}/{rel_path}",
+        "embedded_colab_url": embedded_colab_url,
+        "fallback_colab_url": fallback_colab_url,
+        "colab_url": embedded_colab_url or fallback_colab_url,
     }
 
 

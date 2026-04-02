@@ -12,6 +12,12 @@ The goal is not to train "the whole SCBE system" into one model. The goal is to 
 
 The current portfolio map already positions `phdm-21d-embedding` as the model/data research lane. In this repo, that should be treated as the first HF-facing training surface, not as a license to collapse governance into model weights.
 
+Operational rule:
+
+- Colab T4 remains the primary free-GPU lane.
+- Kaggle is only a valid secondary lane after `python scripts/system/kaggle_notebook_smoke.py --micro-train` passes inside the Kaggle runtime.
+- A Kaggle kernel that has not passed preflight is not considered a valid training start.
+
 ## Repo Surfaces To Anchor On
 
 ### Core training and dataset surfaces
@@ -33,6 +39,8 @@ The current portfolio map already positions `phdm-21d-embedding` as the model/da
   - Builds lore-grounded NPC cards plus SFT and DPO rows.
 - `scripts/system/run_polly_cross_model_bootstrap.ps1`
   - Funnel merge, audit, and training bootstrap lane.
+- `scripts/system/kaggle_notebook_smoke.py`
+  - Hard-fail Kaggle preflight gate for runtime, dependency, dataset, artifact-write, and optional micro-train checks.
 - `scripts/train_hf_longrun_placeholder.py`
   - Current HF training driver with deterministic dedup, local artifact capture, and optional push to Hub.
 - `scripts/run_hf_training_and_monitor.ps1`
@@ -42,7 +50,7 @@ The current portfolio map already positions `phdm-21d-embedding` as the model/da
 - `scripts/push_to_hf.py`
   - Richer dataset push path with train/test split and dataset card upload.
 - `scripts/convert_to_sft.py`
-  - Wrapper for converting raw JSONL or Notion exports into SCBE SFT format.
+  - Wrapper for converting raw JSONL, Notion exports, or nested Spiralverse generator exports into SCBE SFT format.
 - `scripts/scbe_ai_kernel_wrapper.py`
   - Emits governance artifacts and HF training rows from bounded, defensive-mesh-reviewed jobs.
 
@@ -131,7 +139,20 @@ That lane already builds funnel data, runs `scripts/training_auditor.py`, and st
 
 ### Step 2. Normalize or convert to SCBE SFT shape
 
-Use `scripts/convert_to_sft.py` when raw exports are still page-like or mixed-format.
+Use `scripts/convert_to_sft.py` when raw exports are still page-like, mixed-format, or come directly from the nested Spiralverse generator export.
+
+Validated boundary for the current Colab lane:
+
+- `notebooks/spiralverse_protocol_training_generator.ipynb` is a raw corpus generator. It emits nested conversation JSON with `conversations -> turns`, not final SFT rows.
+- `notebooks/scbe_canonical_training_lane_colab.ipynb` is the one-notebook Colab route when you want a single surface for upload -> normalize -> fine-tune.
+- `scripts/convert_to_sft.py` is the canonical repo converter for page-like rows (`title` + `text`), already-flat `instruction`/`response` or `prompt`/`response` records, and the nested Spiralverse generator export.
+- The current converter now flattens the nested Spiralverse generator shape directly into train-ready SFT rows while preserving conversation/topic/language provenance in `metadata`.
+- `notebooks/colab_aethermoor_datagen.ipynb` is the cleaner train-ready lane when the goal is immediate `instruction`/`response` JSONL.
+- `notebooks/colab_aethermoor_finetune.ipynb` and `notebooks/finetune_qwen_governance.ipynb` are the supported fine-tuning lanes after normalization.
+- Default to the canonical Colab notebook if you want one launch surface instead of hopping between old copies.
+- Treat Colab T4 as the primary free-GPU path. Keep Kaggle notebooks aligned to the same prep contract, but do not position CPU-only Kaggle runs as the default training route.
+- Before any long Kaggle training run, require `scripts/system/kaggle_notebook_smoke.py` to pass the runtime, dependency, dataset, artifact-write, and optional one-step micro-train gates. This is the boundary that prevents 12-hour dead runs.
+  - Treat ad hoc download copies of old converter notebooks as non-canonical. The repo script is the source of truth.
 
 The normalized contract should remain:
 
@@ -147,6 +168,8 @@ Within `metadata`, keep explicit fields such as:
 - NPC or speaker identity
 - canon/lore tags
 - run or source provenance
+
+If the source is a raw synthetic conversation generator, preserve that provenance explicitly in `metadata` rather than pretending it was originally authored as flat SFT.
 
 ### Step 3. Keep a deterministic export layer before Hub upload
 

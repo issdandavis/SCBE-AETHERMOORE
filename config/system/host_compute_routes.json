@@ -97,6 +97,18 @@
       "catalog_script": "scripts/system/colab_workflow_catalog.py",
       "priority_notebooks": [
         {
+          "name": "spiralverse-generator",
+          "path": "notebooks/spiralverse_protocol_training_generator.ipynb",
+          "category": "data",
+          "purpose": "Canonical raw synthetic conversation generator with an embedded public Colab launch URL."
+        },
+        {
+          "name": "canonical-training-lane",
+          "path": "notebooks/scbe_canonical_training_lane_colab.ipynb",
+          "category": "training",
+          "purpose": "One-notebook Colab lane for raw export upload, normalization, and QLoRA fine-tuning."
+        },
+        {
           "name": "scbe-pivot-v2",
           "path": "notebooks/scbe_pivot_training_v2.ipynb",
           "category": "training",
@@ -183,6 +195,8 @@
   "recommended_sequence": [
     "Use scripts/system/model_host_quickcall.ps1 -Action routes",
     "Use scripts/system/model_host_quickcall.ps1 -Action inventory-colab",
+    "Use scripts/system/colab_workflow_catalog.py show generator --json to launch the canonical raw data generator",
+    "Use scripts/system/colab_workflow_catalog.py show canonical --json to launch the one-notebook Colab training lane",
     "Evaluate the live HF models first with scripts/eval_legacy_hf_model.py",
     "Choose a Colab notebook from scripts/system/colab_workflow_catalog.py",
     "Run scripts/cloud_kernel_data_pipeline.py to consolidate trainable records",

@@ -84,6 +84,7 @@ So the practical rule is:
 
 - use Kaggle from your normal local shell when you want live Kaggle notebook or competition work
 - keep Hugging Face as the main hosted model/dataset lane
+- treat `python scripts/system/kaggle_notebook_smoke.py --micro-train` as the required preflight before any long Kaggle run; if preflight fails, the run is invalid and should not start
 
 ## 4. Colab: what it is for
 
@@ -108,6 +109,12 @@ Use it for:
   data generation
 - `notebooks/scbe_cloud_workspace.ipynb`:
   general Colab workspace
+
+### Kaggle guardrail
+
+- `scripts/system/kaggle_notebook_smoke.py`
+  - hard-fail preflight for Kaggle runtime, imports, dataset access, artifact write, and optional one-step micro-train
+  - use this before long Kaggle jobs so queued, CPU-only, or broken-auth notebooks fail in minutes instead of hours
 
 Catalog source:
 

@@ -1,6 +1,7 @@
 param(
-    [ValidateSet("status", "kaggle", "hf", "env", "routes", "inventory-kaggle", "inventory-hf", "inventory-colab")]
+    [ValidateSet("status", "kaggle", "hf", "env", "routes", "inventory-kaggle", "inventory-hf", "inventory-colab", "colab-url", "colab-show")]
     [string]$Action = "status",
+    [string]$Notebook = "generator",
     [switch]$ListInventory
 )
 
@@ -231,6 +232,16 @@ function Invoke-ColabInventory {
     }
 }
 
+function Get-ColabNotebookUrl {
+    param([string]$Name)
+    & python (Join-Path $RepoRoot "scripts\system\colab_workflow_catalog.py") url $Name
+}
+
+function Show-ColabNotebook {
+    param([string]$Name)
+    & python (Join-Path $RepoRoot "scripts\system\colab_workflow_catalog.py") show $Name --json
+}
+
 Initialize-HostEnv
 
 switch ($Action) {
@@ -267,6 +278,12 @@ switch ($Action) {
     }
     "inventory-colab" {
         Invoke-ColabInventory | ConvertTo-Json -Depth 5
+    }
+    "colab-url" {
+        Get-ColabNotebookUrl -Name $Notebook
+    }
+    "colab-show" {
+        Show-ColabNotebook -Name $Notebook
     }
     default {
         [pscustomobject]@{

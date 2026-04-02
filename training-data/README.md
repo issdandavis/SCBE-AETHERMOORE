@@ -179,6 +179,8 @@ All records are normalized to these core fields:
 
 Some files use `instruction` instead of `prompt` as the input field. The merge script normalizes everything to `prompt`/`response`.
 
+Raw synthetic conversation exports are a separate shape. In particular, Spiralverse protocol generators may emit nested `conversations -> turns` JSON for corpus generation. The canonical converter at `scripts/convert_to_sft.py` now flattens that generator shape directly into SFT rows while preserving provenance in `metadata`, so the supported lane is generator export -> converter -> merge.
+
 ### Additional Fields (file-dependent)
 
 | Field | Appears In | Description |
