@@ -2,6 +2,32 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## SCBE MCP-First Workflow
+
+For SCBE-specific work, use the local SCBE MCP service as the first orientation layer instead of guessing from repo memory.
+
+Order:
+
+1. Call `scbe_tokenizer_health` when MCP health is uncertain.
+2. Call `scbe_system_manifest` at the start of SCBE repo work to identify the repo, tool inventory, command areas, and canonical docs.
+3. Call `scbe_command_catalog` before suggesting build, test, Docker, browser, publish, or MCP commands.
+4. Call `scbe_reference_lookup` before explaining tokenizer, Sacred Eggs, triadic, harmonic, geometry, training stack, or 21D state concepts.
+5. Only fall back to shell probing or direct file reads when the MCP answer is insufficient.
+
+Authoritative short-form workflow files:
+
+- `skills/scbe-mcp-systems/SKILL.md`
+- `skills/scbe-mcp-systems/references/mcp-first-workflow.md`
+- `skills/scbe-mcp-systems/references/claude-handoff.md`
+
+If Claude is operating without the SCBE MCP mounted, read those files first, then read:
+
+- `mcp/scbe-server/README.md`
+- `docs/map-room/scbe_source_roots.md`
+- `docs/specs/BINARY_FIRST_TRAINING_STACK.md`
+- `docs/research/CANONICAL_TRIADIC_HARMONIC_SYMBOL_REGISTRY.md`
+- `docs/01-architecture/sacred-eggs-systems-model.md`
+
 ## Project Overview
 
 **SCBE-AETHERMOORE** is an AI safety and governance framework using hyperbolic geometry (Poincare ball model) for exponential cost scaling of adversarial behavior. Implements a **14-layer security pipeline** with post-quantum cryptography.

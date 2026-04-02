@@ -5,6 +5,13 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
+const ALLOWED_FILE_PATHS = new Set([
+  "README.md",
+  "LICENSE",
+  "dist/src/index.js",
+  "dist/src/index.d.ts",
+]);
+
 const BANNED_PATTERNS = [
   { re: /(^|\/)__pycache__(\/|$)/, reason: "__pycache__ directory" },
   { re: /\.pyc$/i, reason: ".pyc bytecode file" },
@@ -12,10 +19,26 @@ const BANNED_PATTERNS = [
   { re: /(^|\/)\.pytest_cache(\/|$)/, reason: ".pytest_cache directory" },
   { re: /(^|\/)\.mypy_cache(\/|$)/, reason: ".mypy_cache directory" },
   { re: /(^|\/)\.ruff_cache(\/|$)/, reason: ".ruff_cache directory" },
+  { re: /^docs\//, reason: "docs should not ship in npm tarball" },
+  { re: /^notebooks\//, reason: "notebooks should not ship in npm tarball" },
+  { re: /^training-data\//, reason: "training data should not ship in npm tarball" },
+  { re: /^training\//, reason: "training code should not ship in npm tarball" },
+  { re: /^artifacts\//, reason: "artifacts should not ship in npm tarball" },
+  { re: /^app\//, reason: "app surfaces should not ship in npm tarball" },
+  { re: /^apps\//, reason: "app surfaces should not ship in npm tarball" },
+  { re: /^demo\//, reason: "demo surfaces should not ship in npm tarball" },
+  { re: /^desktop\//, reason: "desktop surfaces should not ship in npm tarball" },
+  { re: /^conference-app\//, reason: "app surfaces should not ship in npm tarball" },
+  { re: /^kindle-app\//, reason: "app surfaces should not ship in npm tarball" },
+  { re: /^prototype\//, reason: "prototype surfaces should not ship in npm tarball" },
+  { re: /^spaces\//, reason: "space surfaces should not ship in npm tarball" },
+  { re: /^examples\//, reason: "examples should not ship in npm tarball" },
+  { re: /^\.github\//, reason: "GitHub workflows should not ship in npm tarball" },
   { re: /^src\//, reason: "raw source tree should not ship" },
   { re: /^tests\//, reason: "tests should not ship in npm tarball" },
   { re: /^scripts\//, reason: "repo scripts should not ship in npm tarball" },
   { re: /\.py$/i, reason: "python files should not ship in npm tarball" },
+  { re: /\.ipynb$/i, reason: "notebooks should not ship in npm tarball" },
   { re: /\.zip$/i, reason: "zip files should not ship in npm tarball" },
 ];
 
@@ -91,6 +114,7 @@ const fileSet = new Set(filePaths);
 
 const violations = [];
 for (const filePath of filePaths) {
+  if (ALLOWED_FILE_PATHS.has(filePath)) continue;
   for (const rule of BANNED_PATTERNS) {
     if (rule.re.test(filePath)) {
       violations.push({ file: filePath, reason: rule.reason });

@@ -2,10 +2,10 @@
   "mcpServers": {
     "fs": {
       "type": "stdio",
-      "command": "cmd",
+      "command": "C:\\Windows\\System32\\cmd.exe",
       "args": [
         "/c",
-        "npx",
+        "C:\\Program Files\\nodejs\\npx.cmd",
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "C:\\Users\\issda\\SCBE-AETHERMOORE"
@@ -14,10 +14,10 @@
     },
     "fetch": {
       "type": "stdio",
-      "command": "cmd",
+      "command": "C:\\Windows\\System32\\cmd.exe",
       "args": [
         "/c",
-        "npx",
+        "C:\\Program Files\\nodejs\\npx.cmd",
         "-y",
         "@modelcontextprotocol/server-fetch"
       ],
@@ -25,15 +25,31 @@
     },
     "github": {
       "type": "stdio",
-      "command": "cmd",
+      "command": "C:\\Windows\\System32\\cmd.exe",
       "args": [
         "/c",
-        "npx",
+        "C:\\Program Files\\nodejs\\npx.cmd",
         "-y",
         "@modelcontextprotocol/server-github"
       ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      }
+    },
+    "huggingface": {
+      "type": "stdio",
+      "command": "C:\\Windows\\System32\\cmd.exe",
+      "args": [
+        "/c",
+        "C:\\Program Files\\nodejs\\npx.cmd",
+        "-y",
+        "mcp-remote",
+        "https://huggingface.co/mcp",
+        "--header",
+        "Authorization: Bearer ${HF_TOKEN}"
+      ],
+      "env": {
+        "HF_TOKEN": "${HF_TOKEN}"
       }
     },
     "scbe-orchestrator": {
@@ -66,8 +82,10 @@
     },
     "kaggle": {
       "type": "stdio",
-      "command": "npx",
+      "command": "C:\\Windows\\System32\\cmd.exe",
       "args": [
+        "/c",
+        "C:\\Program Files\\nodejs\\npx.cmd",
         "mcp-remote",
         "https://www.kaggle.com/mcp",
         "--header",
@@ -79,10 +97,10 @@
     },
     "chrome-devtools": {
       "type": "stdio",
-      "command": "cmd",
+      "command": "C:\\Windows\\System32\\cmd.exe",
       "args": [
         "/c",
-        "npx",
+        "C:\\Program Files\\nodejs\\npx.cmd",
         "-y",
         "chrome-devtools-mcp@latest",
         "--no-usage-statistics",

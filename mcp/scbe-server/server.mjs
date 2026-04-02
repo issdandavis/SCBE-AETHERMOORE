@@ -4,7 +4,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { promises as fs } from 'fs';
 import { createHash } from 'crypto';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
 
@@ -13,6 +13,13 @@ const __dirname = path.dirname(__filename);
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const MAP_ROOM_DIR = path.join(REPO_ROOT, 'docs', 'map-room');
 const MAP_ROOM_LATEST = path.join(MAP_ROOM_DIR, 'session_handoff_latest.md');
+const PACKAGE_JSON_PATH = path.join(REPO_ROOT, 'package.json');
+const SCBE_SOURCE_ROOTS_PATH = path.join(REPO_ROOT, 'docs', 'map-room', 'scbe_source_roots.md');
+const BINARY_FIRST_STACK_PATH = path.join(REPO_ROOT, 'docs', 'specs', 'BINARY_FIRST_TRAINING_STACK.md');
+const TRIADIC_REGISTRY_PATH = path.join(REPO_ROOT, 'docs', 'research', 'CANONICAL_TRIADIC_HARMONIC_SYMBOL_REGISTRY.md');
+const SACRED_EGGS_MODEL_PATH = path.join(REPO_ROOT, 'docs', '01-architecture', 'sacred-eggs-systems-model.md');
+const DIST_TOKENIZER_PATH = path.join(REPO_ROOT, 'dist', 'src', 'tokenizer', 'ss1.js');
+const DIST_BRAIN_PATH = path.join(REPO_ROOT, 'dist', 'src', 'ai_brain', 'index.js');
 const TRUST_STATES = ['T0', 'T1', 'T2', 'T3', 'T4'];
 const SAFE_OPS = new Set(['config.read', 'audit.export', 'diagnostics.run']);
 const PHASE_STEP = Math.PI / 3;
@@ -26,20 +33,137 @@ const TONGUE_WEIGHTS = {
 };
 const RING_ORDER = { core: 0, inner: 1, middle: 2, outer: 3, edge: 4 };
 const execFileAsync = promisify(execFile);
+const REFERENCE_DOCS = [
+  {
+    key: 'source-roots',
+    title: 'SCBE Source Roots',
+    path: SCBE_SOURCE_ROOTS_PATH,
+    description: 'First re-anchor map for canon, tokenizer, geometry, embeddings, and implementation roots.',
+  },
+  {
+    key: 'binary-first-training-stack',
+    title: 'Binary-First Training Stack',
+    path: BINARY_FIRST_STACK_PATH,
+    description: 'Minimal binary-first training scaffold built around SS1 byte bijection and explicit orientation packets.',
+  },
+  {
+    key: 'triadic-harmonic-symbol-registry',
+    title: 'Canonical Triadic and Harmonic Symbol Registry',
+    path: TRIADIC_REGISTRY_PATH,
+    description: 'Canonical separation of triadic, harmonic, kernel, and 21D runtime state symbols.',
+  },
+  {
+    key: 'sacred-eggs-systems-model',
+    title: 'Sacred Eggs Systems Model',
+    path: SACRED_EGGS_MODEL_PATH,
+    description: 'Seed and identity model root for Sacred Eggs and related governance envelopes.',
+  },
+];
+const COMMAND_AREAS = {
+  build: {
+    description: 'Compile and type-check the SCBE TypeScript runtime.',
+    scripts: ['clean', 'build', 'typecheck'],
+  },
+  test: {
+    description: 'Run TypeScript and Python validation suites.',
+    scripts: ['test', 'test:python', 'test:all'],
+  },
+  mcp: {
+    description: 'Inspect and operate the repo MCP terminal helpers.',
+    scripts: ['mcp:doctor', 'mcp:servers', 'mcp:tools', 'mcp:gateway'],
+  },
+  docker: {
+    description: 'Run local Docker health and stack workflows.',
+    scripts: ['docker:doctor:api', 'docker:doctor:unified', 'docker:up:api', 'docker:up:unified', 'docker:down:api', 'docker:down:unified', 'docker:status:all'],
+  },
+  browser: {
+    description: 'Operate local AetherBrowser service lanes.',
+    scripts: ['aetherbrowser:model:cli', 'aetherbrowser:service:start', 'aetherbrowser:service:verify', 'aetherbrowser:service:stop'],
+  },
+  system: {
+    description: 'Bootstrap and inspect the broader SCBE system surface.',
+    scripts: ['connector:health', 'scbe:bootstrap', 'system:cli'],
+  },
+  skills: {
+    description: 'Inspect repo-local SCBE skill bridge output.',
+    scripts: ['skills:bridge', 'skills:bridge:full'],
+  },
+  publish: {
+    description: 'Prepare and validate npm package publishing flows.',
+    scripts: ['publish:prepare', 'publish:check:strict', 'publish:dryrun', 'package'],
+  },
+};
+const SCBE_MCP_TOOL_NAMES = [
+  'scbe_tokenize',
+  'scbe_detokenize',
+  'scbe_detect_tongue',
+  'scbe_map_room_read_latest',
+  'scbe_map_room_write_latest',
+  'scbe_system_manifest',
+  'scbe_command_catalog',
+  'scbe_reference_lookup',
+  'scbe_tokenizer_health',
+  'scbe_fetch_url',
+  'scbe_decide_offline',
+  'scbe_state_emit_21d',
+  'scbe_sacred_egg_create',
+  'cymatic-voxel-layout',
+  'scbe_sacred_egg_hatch',
+];
+let packageJsonPromise;
+const referenceDocCache = new Map();
 
-// Prefer built dist artifacts in production; fallback to source TS in test/dev.
-let tokenizerMod;
-let brainMod;
-try {
-  tokenizerMod = await import('../../dist/src/tokenizer/ss1.js');
-} catch {
-  tokenizerMod = await import('../../src/tokenizer/ss1.ts');
+async function pathExists(targetPath) {
+  try {
+    await fs.access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
 }
-try {
-  brainMod = await import('../../dist/src/ai_brain/index.js');
-} catch {
-  brainMod = await import('../../src/ai_brain/index.ts');
+
+async function ensureCompiledRuntimeArtifacts() {
+  const requiredArtifacts = [DIST_TOKENIZER_PATH, DIST_BRAIN_PATH];
+  const missingBeforeBuild = [];
+  for (const target of requiredArtifacts) {
+    if (!(await pathExists(target))) missingBeforeBuild.push(target);
+  }
+  if (missingBeforeBuild.length === 0) return;
+
+  const tscEntrypoint = path.join(REPO_ROOT, 'node_modules', 'typescript', 'bin', 'tsc');
+  if (!(await pathExists(tscEntrypoint))) {
+    throw new Error(
+      `Missing TypeScript compiler at ${tscEntrypoint}. Run npm install in ${REPO_ROOT} before starting scbe-mcp-server.`,
+    );
+  }
+
+  try {
+    await execFileAsync(process.execPath, [tscEntrypoint, '-p', path.join(REPO_ROOT, 'tsconfig.json')], {
+      cwd: REPO_ROOT,
+      windowsHide: true,
+      timeout: 120000,
+      maxBuffer: 16 * 1024 * 1024,
+    });
+  } catch (error) {
+    const stderr = asText(error?.stderr || '').trim();
+    const stdout = asText(error?.stdout || '').trim();
+    const detail = stderr || stdout || asText(error?.message || error);
+    throw new Error(`Unable to compile SCBE runtime artifacts automatically: ${detail}`);
+  }
+
+  const missingAfterBuild = [];
+  for (const target of requiredArtifacts) {
+    if (!(await pathExists(target))) missingAfterBuild.push(target);
+  }
+  if (missingAfterBuild.length > 0) {
+    throw new Error(`Automatic build completed without required artifacts: ${missingAfterBuild.join(', ')}`);
+  }
 }
+
+await ensureCompiledRuntimeArtifacts();
+
+const tokenizerMod = await import(pathToFileURL(DIST_TOKENIZER_PATH).href);
+const brainMod = await import(pathToFileURL(DIST_BRAIN_PATH).href);
 
 const { decode, detectTongue, encode, TONGUE_CODES } = tokenizerMod;
 const { BRAIN_DIMENSIONS, applyGoldenWeighting, safePoincareEmbed, vectorNorm } = brainMod;
@@ -79,6 +203,209 @@ function asBoolean(value, fallback) {
   if (s === 'true') return true;
   if (s === 'false') return false;
   return fallback;
+}
+
+function asInteger(value, fallback, min, max) {
+  const parsed = Math.floor(asNumber(value, fallback));
+  return Math.max(min, Math.min(max, parsed));
+}
+
+function toRepoRelative(targetPath) {
+  return path.relative(REPO_ROOT, targetPath).replace(/\\/g, '/');
+}
+
+function uniqueStrings(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function compactWhitespace(value) {
+  return asText(value).replace(/\s+/g, ' ').trim();
+}
+
+function compactSnippet(value, maxChars = 240) {
+  const compact = compactWhitespace(value);
+  if (compact.length <= maxChars) return compact;
+  return `${compact.slice(0, Math.max(0, maxChars - 1)).trimEnd()}…`;
+}
+
+function splitMarkdownSections(markdown) {
+  const source = asText(markdown);
+  const sectionPattern = /^##\s+(.+)$/gm;
+  const sections = [];
+  let previousTitle = 'Overview';
+  let previousIndex = 0;
+  let match;
+
+  while ((match = sectionPattern.exec(source)) !== null) {
+    const body = source.slice(previousIndex, match.index).trim();
+    if (body) sections.push({ title: previousTitle, body });
+    previousTitle = match[1].trim();
+    previousIndex = sectionPattern.lastIndex;
+  }
+
+  const tail = source.slice(previousIndex).trim();
+  if (tail) sections.push({ title: previousTitle, body: tail });
+  return sections;
+}
+
+function extractBulletLines(markdown) {
+  return asText(markdown)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('- '))
+    .map((line) => line.slice(2).trim());
+}
+
+function tokenizeQueryTerms(value) {
+  return uniqueStrings(
+    compactWhitespace(value.toLowerCase())
+      .split(/[^a-z0-9]+/)
+      .filter((token) => token.length >= 2),
+  );
+}
+
+function scoreReferenceMatch(queryTerms, doc, section) {
+  if (queryTerms.length === 0) return 0;
+  const titleText = `${doc.key} ${doc.title} ${section.title}`.toLowerCase();
+  const bodyText = section.body.toLowerCase();
+  const descriptionText = doc.description.toLowerCase();
+  let score = 0;
+
+  for (const term of queryTerms) {
+    if (titleText.includes(term)) score += 6;
+    if (descriptionText.includes(term)) score += 3;
+    if (bodyText.includes(term)) score += 2;
+  }
+
+  return score;
+}
+
+async function loadPackageJson() {
+  if (!packageJsonPromise) {
+    packageJsonPromise = fs.readFile(PACKAGE_JSON_PATH, 'utf8').then((content) => JSON.parse(content));
+  }
+  return packageJsonPromise;
+}
+
+async function loadReferenceDoc(doc) {
+  if (!referenceDocCache.has(doc.path)) {
+    referenceDocCache.set(doc.path, fs.readFile(doc.path, 'utf8'));
+  }
+  return referenceDocCache.get(doc.path);
+}
+
+async function buildScbeSystemManifest() {
+  const pkg = await loadPackageJson();
+  const sourceRoots = await loadReferenceDoc(REFERENCE_DOCS[0]);
+  const sections = splitMarkdownSections(sourceRoots).filter(({ title }) => title !== 'Overview');
+
+  return {
+    repo: {
+      name: pkg.name,
+      version: pkg.version,
+      description: pkg.description,
+      repo_root: REPO_ROOT,
+    },
+    mcp: {
+      server: 'scbe-mcp-server',
+      entrypoint: toRepoRelative(path.join(__dirname, 'server.mjs')),
+      tool_count: SCBE_MCP_TOOL_NAMES.length,
+      tools: SCBE_MCP_TOOL_NAMES,
+    },
+    package_bins: pkg.bin || {},
+    primary_source_dirs: ['src/', 'tests/', 'docs/', 'scripts/', 'mcp/scbe-server/'],
+    command_areas: Object.fromEntries(
+      Object.entries(COMMAND_AREAS).map(([area, config]) => [
+        area,
+        {
+          description: config.description,
+          commands: config.scripts.filter((name) => pkg.scripts?.[name]).map((name) => `npm run ${name}`),
+        },
+      ]),
+    ),
+    reference_docs: REFERENCE_DOCS.map((doc) => ({
+      key: doc.key,
+      title: doc.title,
+      path: toRepoRelative(doc.path),
+      description: doc.description,
+    })),
+    source_root_sections: sections.map((section) => ({
+      title: section.title,
+      bullet_count: extractBulletLines(section.body).length,
+    })),
+    recommended_first_steps: [
+      'Use scbe_system_manifest to orient to the repo, tool surface, and command areas.',
+      'Use scbe_command_catalog for the exact npm lanes before falling back to shell exploration.',
+      'Use scbe_reference_lookup with topics like tokenizer, sacred eggs, triadic, geometry, or training to find canonical docs.',
+    ],
+  };
+}
+
+async function buildCommandCatalog(area) {
+  const pkg = await loadPackageJson();
+  const selectedAreas = area ? [area] : Object.keys(COMMAND_AREAS);
+
+  return Object.fromEntries(
+    selectedAreas.map((areaName) => {
+      const config = COMMAND_AREAS[areaName];
+      return [
+        areaName,
+        {
+          description: config.description,
+          commands: config.scripts
+            .filter((scriptName) => pkg.scripts?.[scriptName])
+            .map((scriptName) => ({
+              name: scriptName,
+              command: `npm run ${scriptName}`,
+              script: pkg.scripts[scriptName],
+            })),
+        },
+      ];
+    }),
+  );
+}
+
+async function lookupReferenceDocs(topic, maxMatches) {
+  const query = compactWhitespace(topic);
+  if (!query) {
+    return {
+      topic: '',
+      matches: [],
+      available_docs: REFERENCE_DOCS.map((doc) => ({
+        key: doc.key,
+        title: doc.title,
+        path: toRepoRelative(doc.path),
+        description: doc.description,
+      })),
+    };
+  }
+
+  const queryTerms = tokenizeQueryTerms(query);
+  const matches = [];
+
+  for (const doc of REFERENCE_DOCS) {
+    const markdown = await loadReferenceDoc(doc);
+    const sections = splitMarkdownSections(markdown).filter(({ title }) => title !== 'Overview');
+    for (const section of sections) {
+      const score = scoreReferenceMatch(queryTerms, doc, section);
+      if (score <= 0) continue;
+      matches.push({
+        score,
+        key: doc.key,
+        title: doc.title,
+        path: toRepoRelative(doc.path),
+        section: section.title,
+        snippet: compactSnippet(section.body, 280),
+      });
+    }
+  }
+
+  matches.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title) || a.section.localeCompare(b.section));
+
+  return {
+    topic: query,
+    matches: matches.slice(0, maxMatches),
+  };
 }
 
 function canonicalStringify(value) {
@@ -1020,6 +1347,39 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
       },
     },
     {
+      name: 'scbe_system_manifest',
+      description: 'Return the SCBE repo, MCP, command-area, and canonical-doc manifest for orientation.',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+      },
+    },
+    {
+      name: 'scbe_command_catalog',
+      description: 'Return grouped npm command lanes for SCBE system work.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          area: {
+            type: 'string',
+            enum: Object.keys(COMMAND_AREAS),
+            description: 'Optional command area filter (build/test/mcp/docker/browser/system/skills/publish).',
+          },
+        },
+      },
+    },
+    {
+      name: 'scbe_reference_lookup',
+      description: 'Search canonical SCBE docs for a topic and return the best-matching sections.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          topic: { type: 'string', description: 'Topic or keyword to locate in canonical SCBE docs.' },
+          max_matches: { type: 'number', description: 'Maximum number of section matches to return (default 5).' },
+        },
+      },
+    },
+    {
       name: 'scbe_tokenizer_health',
       description: 'Return tokenizer tool health and supported tongues.',
       inputSchema: {
@@ -1248,6 +1608,48 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         );
       }
 
+      case 'scbe_system_manifest': {
+        const manifest = await buildScbeSystemManifest();
+        return okText(JSON.stringify(manifest, null, 2));
+      }
+
+      case 'scbe_command_catalog': {
+        const area = asText(args.area).trim().toLowerCase();
+        if (area && !COMMAND_AREAS[area]) {
+          return errText(`Unknown command area: ${area}. Expected one of ${Object.keys(COMMAND_AREAS).join(', ')}.`);
+        }
+
+        const catalog = await buildCommandCatalog(area || null);
+        return okText(
+          JSON.stringify(
+            {
+              repo_root: REPO_ROOT,
+              selected_area: area || null,
+              available_areas: Object.keys(COMMAND_AREAS),
+              catalog,
+            },
+            null,
+            2,
+          ),
+        );
+      }
+
+      case 'scbe_reference_lookup': {
+        const maxMatches = asInteger(args.max_matches, 5, 1, 12);
+        const payload = await lookupReferenceDocs(args.topic, maxMatches);
+        payload.available_topics = uniqueStrings([
+          'tokenizer',
+          'sacred eggs',
+          'triadic',
+          'harmonic',
+          '21d state',
+          'geometry',
+          'training',
+          'source roots',
+        ]);
+        return okText(JSON.stringify(payload, null, 2));
+      }
+
       case 'scbe_tokenizer_health': {
         return okText(
           JSON.stringify(
@@ -1257,13 +1659,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               map_room_latest: MAP_ROOM_LATEST,
               tongues: TONGUE_CODES,
               server: 'scbe-mcp-server',
-              tools_added: [
-                'scbe_fetch_url',
-                'scbe_decide_offline',
-                'scbe_state_emit_21d',
-                'scbe_sacred_egg_create',
-                'scbe_sacred_egg_hatch',
-              ],
+              tool_count: SCBE_MCP_TOOL_NAMES.length,
+              tools: SCBE_MCP_TOOL_NAMES,
+              canonical_docs: REFERENCE_DOCS.map((doc) => ({ key: doc.key, path: toRepoRelative(doc.path) })),
             },
             null,
             2,
