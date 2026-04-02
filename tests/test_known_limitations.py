@@ -178,6 +178,10 @@ class TestScaleLimitations:
 
     @pytest.mark.slow
     @pytest.mark.xfail(reason="Memory grows with message size")
+    @pytest.mark.skipif(
+        os.environ.get("SCBE_RUN_OOM_TESTS", "") != "1",
+        reason="Skipped by default: 1GB allocation hangs in CI. Set SCBE_RUN_OOM_TESTS=1 to run.",
+    )
     def test_L09_very_large_message(self):
         """L09: Cannot efficiently handle very large messages (>1GB)."""
         from symphonic_cipher.scbe_aethermoore.spiral_seal import SpiralSealSS1
