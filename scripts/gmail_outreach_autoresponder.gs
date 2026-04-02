@@ -122,6 +122,9 @@ function checkOutreachReplies() {
         // Label as processed
         thread.addLabel(processedLabel);
 
+        // Log as SFT training pair
+        logTrainingPair_(sender, subject, body, draftText);
+
         // Also email yourself a notification
         GmailApp.sendEmail(
           Session.getActiveUser().getEmail(),
@@ -280,6 +283,109 @@ function removeTrigger() {
   });
 }
 
+// ── Training Data Logger ─────────────────────────────────────────────
+
+function logTrainingPair_(sender, subject, body, draftReply) {
+  try {
+    var sheet = getOrCreateTrainingSheet_();
+    var senderDomain = extractEmail_(sender).split('@')[1] || 'unknown';
+
+    sheet.appendRow([
+      new Date().toISOString(),                    // timestamp
+      senderDomain,                                // sender domain
+      subject,                                     // subject
+      body.substring(0, 2000),                     // their message (instruction)
+      draftReply.substring(0, 3000),               // our draft (response)
+      'business_outreach',                         // category
+      'L3',                                        // layer
+      'pending_review'                             // status (you mark as 'approved' after reviewing)
+    ]);
+
+    Logger.log('Training pair logged for ' + senderDomain);
+  } catch (e) {
+    Logger.log('Training log failed: ' + e.toString());
+  }
+}
+
+function getOrCreateTrainingSheet_() {
+  var props = PropertiesService.getScriptProperties();
+  var sheetId = props.getProperty('TRAINING_SHEET_ID');
+
+  if (sheetId) {
+    try {
+      return SpreadsheetApp.openById(sheetId).getActiveSheet();
+    } catch (e) {
+      Logger.log('Stored sheet not found, creating new one');
+    }
+  }
+
+  // Create new spreadsheet
+  var ss = SpreadsheetApp.create('SCBE Outreach Training Data');
+  var sheet = ss.getActiveSheet();
+  sheet.setName('SFT Pairs');
+
+  // Headers
+  sheet.appendRow([
+    'timestamp', 'sender_domain', 'subject',
+    'instruction', 'response', 'category', 'layer', 'status'
+  ]);
+
+  // Bold headers
+  sheet.getRange(1, 1, 1, 8).setFontWeight('bold');
+  sheet.setFrozenRows(1);
+
+  // Save ID for future use
+  props.setProperty('TRAINING_SHEET_ID', ss.getId());
+  Logger.log('Created training sheet: ' + ss.getUrl());
+
+  return sheet;
+}
+
+// Export approved training pairs as JSONL (run manually)
+function exportTrainingJSONL() {
+  var sheet = getOrCreateTrainingSheet_();
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var jsonlLines = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    var status = row[7]; // status column
+
+    // Only export approved pairs (you mark them after review)
+    if (status !== 'approved' && status !== 'pending_review') continue;
+
+    var record = {
+      instruction: String(row[3]),  // their message
+      response: String(row[4]),     // our reply
+      category: String(row[5]),
+      layer: String(row[6]),
+      meta: {
+        source: 'gmail_outreach',
+        sender_domain: String(row[1]),
+        subject: String(row[2]),
+        timestamp: String(row[0]),
+        approved: status === 'approved'
+      }
+    };
+
+    jsonlLines.push(JSON.stringify(record));
+  }
+
+  if (jsonlLines.length === 0) {
+    Logger.log('No training pairs to export');
+    return;
+  }
+
+  // Create as a file in Drive
+  var content = jsonlLines.join('\n');
+  var fileName = 'scbe_outreach_sft_' + new Date().toISOString().split('T')[0] + '.jsonl';
+  var file = DriveApp.createFile(fileName, content, 'application/jsonl');
+
+  Logger.log('Exported ' + jsonlLines.length + ' training pairs to: ' + file.getUrl());
+  Logger.log('Download and add to training-data/ in your repo');
+}
+
 // Run this to test with a specific email
 function testWithLatestEmail() {
   const threads = GmailApp.getInboxThreads(0, 1);
@@ -290,4 +396,15 @@ function testWithLatestEmail() {
   const msg = threads[0].getMessages().pop();
   const reply = generateReply_(msg.getFrom(), msg.getSubject(), msg.getPlainBody().substring(0, 2000));
   Logger.log('Draft reply:\n' + reply);
+}
+
+// Run this to see your training sheet URL
+function showTrainingSheetUrl() {
+  var props = PropertiesService.getScriptProperties();
+  var sheetId = props.getProperty('TRAINING_SHEET_ID');
+  if (sheetId) {
+    Logger.log('Training sheet: https://docs.google.com/spreadsheets/d/' + sheetId);
+  } else {
+    Logger.log('No training sheet yet. It will be created when the first reply is drafted.');
+  }
 }
