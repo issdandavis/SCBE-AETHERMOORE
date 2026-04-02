@@ -2,10 +2,422 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0;url=./aetherbrowser.html">
-<title>AetherBrowser</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<title>AetherCode</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#070b12">
+<style>
+:root {
+  --bg: #070b12;
+  --bg2: #0c1220;
+  --panel: rgba(12, 18, 32, 0.92);
+  --border: rgba(255,255,255,0.06);
+  --text: #eef5ff;
+  --muted: #8899b3;
+  --accent: #d6a756;
+  --accent2: #73d2ff;
+  --green: #4cd89a;
+  --red: #e05555;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); }
+
+/* App shell */
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+
+/* Header */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; padding-top: max(12px, env(safe-area-inset-top));
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  flex-shrink: 0; z-index: 10;
+}
+.header .logo { font-weight: 800; font-size: 16px; color: var(--accent); letter-spacing: 0.08em; }
+.header .status { font-size: 11px; color: var(--green); display: flex; align-items: center; gap: 6px; }
+.header .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+/* Tab content */
+.tab-content { flex: 1; overflow: hidden; position: relative; }
+.tab-pane { position: absolute; inset: 0; display: none; flex-direction: column; }
+.tab-pane.active { display: flex; }
+
+/* ── CHAT TAB ────────────────────────────── */
+.chat-messages { flex: 1; overflow-y: auto; padding: 16px; }
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+.msg { max-width: 85%; margin-bottom: 14px; }
+.msg.user { margin-left: auto; }
+.msg .bubble { padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.6; }
+.msg.user .bubble { background: #1e2a4a; border-bottom-right-radius: 4px; }
+.msg.bot .bubble { background: var(--bg2); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.msg .bubble code { font-family: var(--mono); font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
+.msg .bubble pre { font-family: var(--mono); font-size: 12px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; overflow-x: auto; margin: 6px 0; white-space: pre-wrap; }
+.msg .bubble .result { background: rgba(76,216,154,0.08); border: 1px solid rgba(76,216,154,0.2); border-radius: 8px; padding: 10px; font-family: var(--mono); font-size: 12px; margin: 6px 0; color: var(--green); white-space: pre-wrap; }
+.msg .bubble .error { background: rgba(224,85,85,0.08); border: 1px solid rgba(224,85,85,0.2); border-radius: 8px; padding: 10px; font-family: var(--mono); font-size: 12px; margin: 6px 0; color: var(--red); white-space: pre-wrap; }
+.msg .time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+.typing span { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); margin: 0 2px; animation: pulse 1.2s infinite; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%,80%,100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+.suggestions { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px; }
+.suggestions button {
+  font-size: 12px; padding: 8px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.02);
+  color: var(--muted); font-family: var(--font);
+}
+
+.chat-input {
+  padding: 12px 16px; padding-bottom: max(12px, var(--safe-bottom));
+  border-top: 1px solid var(--border); background: var(--bg);
+  display: flex; gap: 8px; align-items: flex-end;
+}
+.chat-input textarea {
+  flex: 1; resize: none; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text); font-family: var(--font);
+  font-size: 15px; padding: 12px 16px; border-radius: 20px;
+  min-height: 44px; max-height: 120px; outline: none; line-height: 1.4;
+}
+.chat-input textarea:focus { border-color: var(--accent); }
+.chat-input .send {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: var(--accent); color: #14110c; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── CODE TAB ────────────────────────────── */
+.code-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.code-toolbar {
+  display: flex; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border);
+  align-items: center; overflow-x: auto;
+}
+.code-toolbar select, .code-toolbar button {
+  padding: 6px 12px; border-radius: 8px; font-size: 12px;
+  border: 1px solid var(--border); background: var(--bg2); color: var(--text);
+  font-family: var(--font);
+}
+.code-toolbar .run-btn { background: var(--green); color: #111; font-weight: 700; border: none; }
+
+.code-editor {
+  flex: 1; display: flex; flex-direction: column;
+}
+.code-editor textarea {
+  flex: 1; resize: none; border: none; outline: none;
+  background: var(--bg); color: var(--accent2); font-family: var(--mono);
+  font-size: 13px; padding: 16px; line-height: 1.6; tab-size: 4;
+}
+.code-output {
+  max-height: 40%; overflow-y: auto; border-top: 1px solid var(--border);
+  padding: 12px 16px; font-family: var(--mono); font-size: 12px;
+  background: rgba(0,0,0,0.3); color: var(--green); white-space: pre-wrap;
+}
+.code-output.has-error { color: var(--red); }
+
+/* ── EXPLORE TAB ────────────────────────────── */
+.explore { flex: 1; overflow-y: auto; padding: 16px; }
+.explore-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+  padding: 18px; margin-bottom: 12px;
+}
+.explore-card h3 { font-size: 16px; margin-bottom: 6px; }
+.explore-card p { color: var(--muted); font-size: 13px; margin: 0; }
+.explore-card .tag { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 12px; background: rgba(214,167,86,0.1); color: var(--accent); margin-top: 8px; }
+
+/* ── BOTTOM NAV ────────────────────────────── */
+.bottom-nav {
+  display: flex; border-top: 1px solid var(--border); background: var(--bg);
+  padding-bottom: var(--safe-bottom); flex-shrink: 0;
+}
+.bottom-nav button {
+  flex: 1; padding: 10px 0; border: none; background: none;
+  color: var(--muted); font-size: 10px; font-family: var(--font);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.bottom-nav button .icon { font-size: 20px; }
+.bottom-nav button.active { color: var(--accent); }
+</style>
 </head>
 <body>
-<script>window.location.replace('./aetherbrowser.html');</script>
+
+<div class="app">
+  <header class="header">
+    <span class="logo">AETHERCODE</span>
+    <span class="status">Connected</span>
+  </header>
+
+  <div class="tab-content">
+    <!-- CHAT TAB -->
+    <div class="tab-pane active" id="tab-chat">
+      <div class="chat-messages" id="chat-msgs">
+        <div class="msg bot">
+          <div class="bubble">
+            <strong>CAW.</strong> I'm Polly. Ask me anything about SCBE, run code, or try a command:<br><br>
+            <code>/test</code> <code>/bench</code> <code>/tongues</code> <code>/layers</code> <code>/status</code> <code>/help</code>
+          </div>
+        </div>
+      </div>
+      <div class="suggestions" id="suggestions">
+        <button>What is SCBE?</button>
+        <button>Harmonic wall</button>
+        <button>/test</button>
+        <button>/status</button>
+      </div>
+      <div class="chat-input">
+        <textarea id="chat-in" placeholder="Ask Polly..." rows="1"></textarea>
+        <button class="send" id="chat-send">&#9654;</button>
+      </div>
+    </div>
+
+    <!-- CODE TAB -->
+    <div class="tab-pane" id="tab-code">
+      <div class="code-container">
+        <div class="code-toolbar">
+          <select id="code-lang">
+            <option value="python">Python</option>
+            <option value="javascript">JavaScript</option>
+          </select>
+          <button class="run-btn" id="code-run">Run</button>
+          <button id="code-clear">Clear</button>
+          <button id="code-ask-ai">Ask AI to fix</button>
+        </div>
+        <div class="code-editor">
+          <textarea id="code-in" placeholder="# Write code here and tap Run..." spellcheck="false">import math
+
+phi = (1 + math.sqrt(5)) / 2
+pi = math.pi
+
+# Harmonic wall: canonical formula
+def safety_score(d_H, pd):
+    return 1 / (1 + phi * d_H + 2 * pd)
+
+# Theoretical cost
+def theoretical_cost(d_star):
+    return pi ** (phi * d_star)
+
+# Test at different distances
+for d in [0.1, 0.3, 0.5, 0.7, 0.9, 1.0, 1.5, 2.0]:
+    score = safety_score(d, 0.1)
+    cost = theoretical_cost(d)
+    print(f"d={d:.1f}  score={score:.4f}  cost={cost:.2f}")</textarea>
+        </div>
+        <div class="code-output" id="code-out">Output will appear here...</div>
+      </div>
+    </div>
+
+    <!-- EXPLORE TAB -->
+    <div class="tab-pane" id="tab-explore">
+      <div class="explore">
+        <div class="explore-card" onclick="switchTab('chat')">
+          <h3>Chat with Polly</h3>
+          <p>Ask about the 14-layer pipeline, Sacred Tongues, PQC crypto, pricing, or anything SCBE.</p>
+          <span class="tag">No API key needed</span>
+        </div>
+        <div class="explore-card" onclick="switchTab('code')">
+          <h3>Code Sandbox</h3>
+          <p>Write and run Python or JavaScript. Errors get explained by AI. Build, test, iterate.</p>
+          <span class="tag">Python + JS</span>
+        </div>
+        <div class="explore-card" onclick="window.open('https://aethermoorgames.com/SCBE-AETHERMOORE/demos/index.html')">
+          <h3>Interactive Demos</h3>
+          <p>24 browser demos: harmonic wall 3D, tongue encoder, risk calculator, swarm formations.</p>
+          <span class="tag">24 demos</span>
+        </div>
+        <div class="explore-card" onclick="window.open('https://aethermoorgames.com/SCBE-AETHERMOORE/enterprise.html')">
+          <h3>Enterprise</h3>
+          <p>PQC crypto, exponential cost scaling, multi-agent security, inference-time guardrails.</p>
+          <span class="tag">Defense + Finance</span>
+        </div>
+        <div class="explore-card" onclick="window.open('https://aethermoorgames.com/SCBE-AETHERMOORE/compliance.html')">
+          <h3>Compliance Mapping</h3>
+          <p>EU AI Act, NIST AI RMF, MITRE ATLAS, SOC 2, CMMC, HIPAA, OWASP LLM Top 10.</p>
+          <span class="tag">9 frameworks</span>
+        </div>
+        <div class="explore-card" onclick="window.open('https://aethermoorgames.com/SCBE-AETHERMOORE/test-suite.html')">
+          <h3>Test Suite</h3>
+          <p>6,742 passing tests across TypeScript and Python. Six-tier testing architecture.</p>
+          <span class="tag">6,742 tests</span>
+        </div>
+        <div class="explore-card" onclick="window.open('https://github.com/issdandavis/SCBE-AETHERMOORE')">
+          <h3>GitHub</h3>
+          <p>Open source repo. Clone it, run the tests, verify the claims.</p>
+          <span class="tag">Open source</span>
+        </div>
+        <div class="explore-card" onclick="window.open('https://issdandavis-polly-sandbox.hf.space')">
+          <h3>Polly Sandbox (HF Space)</h3>
+          <p>Full chat + code execution on HuggingFace. No install needed.</p>
+          <span class="tag">HuggingFace</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="active" onclick="switchTab('chat')"><span class="icon">&#128172;</span>Chat</button>
+    <button onclick="switchTab('code')"><span class="icon">&#128187;</span>Code</button>
+    <button onclick="switchTab('explore')"><span class="icon">&#9881;</span>Explore</button>
+  </nav>
+</div>
+
+<script>
+// ── Tab switching ──
+function switchTab(tab) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.bottom-nav button')[['chat','code','explore'].indexOf(tab)].classList.add('active');
+}
+
+// ── Chat ──
+const chatMsgs = document.getElementById('chat-msgs');
+const chatIn = document.getElementById('chat-in');
+const chatSend = document.getElementById('chat-send');
+const HF_ENDPOINT = 'https://router.huggingface.co/v1/chat/completions';
+const HF_MODEL = 'issdandavis/scbe-pivot-qwen-0.5b';
+let chatHistory = [];
+
+// Load saved token
+let hfToken = localStorage.getItem('aethercode_hf_token') || '';
+
+function addMsg(who, html) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  div.innerHTML = '<div class="bubble">' + html + '</div><div class="time">' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + '</div>';
+  chatMsgs.appendChild(div);
+  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+}
+
+// Slash commands (work without any token)
+const CMDS = {
+  '/help': () => '<b>Commands:</b><br><code>/test</code> <code>/bench</code> <code>/tongues</code> <code>/layers</code> <code>/pqc</code> <code>/status</code> <code>/help</code><br><br>Just type normally to chat with Polly.',
+  '/test': () => '<div class="result">Test Suite: 6,742 passing\nTypeScript: 5,957 | Python: 785\nCrypto: 100% | CVEs: 0</div>',
+  '/bench': () => '<div class="result">Benchmarks (Mar 31, 2026)\nDetection: 85.7% at 0% FP\nIndustry: 91/91 vs 62/91\nF1: 0.813 | Overhead: <10ms</div>',
+  '/tongues': () => '<b>Sacred Tongues</b><br>KO (Intent) 1.000 | AV (Transport) 1.618<br>RU (Policy) 2.618 | CA (Compute) 4.236<br>UM (Security) 6.854 | DR (Structure) 11.09<br>1,536 tokens total. Phi-weighted.',
+  '/layers': () => '<pre>L1-2  Context realification\nL3-4  Poincare embedding\nL5    Hyperbolic distance\nL6-7  Breathing + Mobius\nL8    Hamiltonian wells\nL9-10 Spectral coherence\nL11   Temporal distance\nL12   Harmonic wall\nL13   ALLOW/QUARANTINE/DENY\nL14   Audit telemetry</pre>',
+  '/pqc': () => '<div class="result">PQC Stack\nML-KEM-768 (FIPS 203) Key encapsulation\nML-DSA-65  (FIPS 204) Digital signatures\nAES-256-GCM           Symmetric\n100% crypto test pass rate</div>',
+  '/status': () => '<div class="result">SCBE v3.3.0 | 6,742 tests | 0 CVEs\nPatent: USPTO #63/961,403\nModel: scbe-pivot-qwen-0.5b\nDataset: 41,703 cleaned + 8K multiview\nSite: 84 pages live</div>',
+};
+
+async function sendChat() {
+  const text = chatIn.value.trim();
+  if (!text) return;
+  chatIn.value = '';
+  addMsg('user', text.replace(/</g,'&lt;'));
+
+  // Check slash commands
+  const cmd = text.split(' ')[0].toLowerCase();
+  if (CMDS[cmd]) { addMsg('bot', CMDS[cmd]()); return; }
+
+  // Try HF model
+  if (!hfToken) {
+    // Try without token (some models allow it)
+    addMsg('bot', 'Add your HF token in Explore > Settings to chat with the model. Slash commands work without a token.');
+    return;
+  }
+
+  chatHistory.push({role:'user', content: text});
+
+  try {
+    const resp = await fetch(HF_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + hfToken },
+      body: JSON.stringify({
+        model: HF_MODEL,
+        messages: [{role:'system',content:'You are Polly, the SCBE governance assistant. Be direct and helpful.'}].concat(chatHistory.slice(-8)),
+        max_tokens: 400, temperature: 0.45
+      })
+    });
+    const data = await resp.json();
+    const reply = data.choices?.[0]?.message?.content || 'No response.';
+    chatHistory.push({role:'assistant', content: reply});
+    addMsg('bot', reply.replace(/</g,'&lt;').replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\n/g,'<br>'));
+  } catch(e) {
+    addMsg('bot', '<div class="error">Connection error: ' + e.message + '</div>');
+  }
+}
+
+chatSend.onclick = sendChat;
+chatIn.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
+chatIn.addEventListener('input', () => { chatIn.style.height = 'auto'; chatIn.style.height = Math.min(chatIn.scrollHeight, 120) + 'px'; });
+
+// Suggestions
+document.querySelectorAll('.suggestions button').forEach(b => {
+  b.onclick = () => { chatIn.value = b.textContent; sendChat(); };
+});
+
+// ── Code Sandbox ──
+const codeIn = document.getElementById('code-in');
+const codeOut = document.getElementById('code-out');
+const codeLang = document.getElementById('code-lang');
+
+document.getElementById('code-run').onclick = async () => {
+  const code = codeIn.value;
+  const lang = codeLang.value;
+  codeOut.className = 'code-output';
+  codeOut.textContent = 'Running...';
+
+  if (lang === 'javascript') {
+    try {
+      const logs = [];
+      const fakeCon = { log: (...a) => logs.push(a.map(String).join(' ')), error: (...a) => logs.push('ERROR: ' + a.map(String).join(' ')) };
+      const fn = new Function('console', 'Math', 'JSON', 'Date', code);
+      fn(fakeCon, Math, JSON, Date);
+      codeOut.textContent = logs.join('\n') || '(no output)';
+    } catch(e) {
+      codeOut.className = 'code-output has-error';
+      codeOut.textContent = e.toString() + '\n\n' + e.stack;
+    }
+  } else {
+    // Python — send to Polly Sandbox
+    try {
+      const resp = await fetch('https://issdandavis-polly-sandbox.hf.space/api/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: [code, []] })
+      });
+      const data = await resp.json();
+      const result = data.data?.[0] || 'No output';
+      if (result.includes('Error') || result.includes('Traceback')) {
+        codeOut.className = 'code-output has-error';
+      }
+      codeOut.textContent = result;
+    } catch(e) {
+      // Fallback: explain that Python needs the sandbox
+      codeOut.className = 'code-output has-error';
+      codeOut.textContent = 'Python execution requires the Polly Sandbox.\nConnect at: https://issdandavis-polly-sandbox.hf.space\n\nError: ' + e.message;
+    }
+  }
+};
+
+document.getElementById('code-clear').onclick = () => { codeIn.value = ''; codeOut.textContent = 'Output will appear here...'; codeOut.className = 'code-output'; };
+
+document.getElementById('code-ask-ai').onclick = () => {
+  const error = codeOut.textContent;
+  const code = codeIn.value;
+  if (!error || error === 'Output will appear here...') return;
+  switchTab('chat');
+  chatIn.value = 'This code failed:\n```\n' + code.substring(0, 300) + '\n```\n\nError:\n```\n' + error.substring(0, 300) + '\n```\n\nExplain the error and fix it.';
+  sendChat();
+};
+
+// Handle tab key in code editor
+codeIn.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = codeIn.selectionStart;
+    codeIn.value = codeIn.value.substring(0, start) + '    ' + codeIn.value.substring(codeIn.selectionEnd);
+    codeIn.selectionStart = codeIn.selectionEnd = start + 4;
+  }
+});
+</script>
+
 </body>
 </html>
