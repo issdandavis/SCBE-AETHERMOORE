@@ -90,13 +90,13 @@ class GovernanceGate:
         # Risk-adjusted score
         risk_adjusted = (1.0 - h_score) * (1.0 + len(risks.get("critical", [])) * 2.0)
 
-        # Decision
+        # Decision (canonical enum: ALLOW | QUARANTINE | DEFER | DENY)
         if risk_adjusted < 0.15 and not risks.get("critical"):
             decision = "ALLOW"
         elif risk_adjusted < 0.45 and not risks.get("critical"):
             decision = "QUARANTINE"
         elif risk_adjusted < 0.75:
-            decision = "ESCALATE"
+            decision = "DEFER"
         else:
             decision = "DENY"
 
@@ -192,7 +192,11 @@ class GovernanceGate:
         if null_count >= 4:
             lines.append(f"WARNING: {null_count}/6 tongues silent — narrow activation pattern")
 
-        lines.append(f"\nTo pass: fix all {severity.upper()} risks listed above.")
+        failed_severities = [s.upper() for s in ["critical", "high", "medium", "low"] if result["risks"].get(s)]
+        if failed_severities:
+            lines.append(f"\nTo pass: fix all {' + '.join(failed_severities)} risks listed above.")
+        else:
+            lines.append("\nNo pattern-based risks found. Decision based on tongue profile and distance.")
         return "\n".join(lines)
 
 
@@ -208,7 +212,7 @@ class CodeRunner:
         """Run test suite and return results."""
         try:
             result = subprocess.run(
-                test_cmd, shell=True, capture_output=True, text=True,
+                test_cmd.split(), capture_output=True, text=True,
                 timeout=timeout, cwd=self.repo_root,
             )
             return {
@@ -232,7 +236,7 @@ class CodeRunner:
 
         try:
             result = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True,
+                cmd.split(), capture_output=True, text=True,
                 timeout=60, cwd=self.repo_root,
             )
             return {
@@ -246,8 +250,8 @@ class CodeRunner:
         """Run type checking."""
         try:
             result = subprocess.run(
-                "npx tsc --noEmit 2>&1 | tail -5",
-                shell=True, capture_output=True, text=True,
+                ["npx", "tsc", "--noEmit"],
+                capture_output=True, text=True,
                 timeout=timeout, cwd=self.repo_root,
             )
             return {"passed": result.returncode == 0, "output": result.stdout[-1000:]}
