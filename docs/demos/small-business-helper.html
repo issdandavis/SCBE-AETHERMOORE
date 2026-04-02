@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Small Business Helper | SCBE Demo Lab</title>
+  <meta
+    name="description"
+    content="Public Small Business Helper web lane for Polly: persistent local sessions, multi-model compare, and export flows for thread bundles, SFT rows, and feedback records."
+  />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <meta property="og:title" content="Small Business Helper | SCBE Demo Lab" />
+  <meta
+    property="og:description"
+    content="Try the governed helper shell in-browser, compare frontier models, and export training bundles without exposing a raw token on the page."
+  />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://issdandavis.github.io/SCBE-AETHERMOORE/demos/small-business-helper.html" />
+  <meta property="og:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Small Business Helper | SCBE Demo Lab" />
+  <meta
+    name="twitter:description"
+    content="Public Small Business Helper shell with compare-model lanes, local session storage, and export-first training loops."
+  />
+  <meta name="twitter:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
+  <link rel="canonical" href="https://issdandavis.github.io/SCBE-AETHERMOORE/demos/small-business-helper.html" />
+  <link rel="stylesheet" href="../static/polly-sidebar.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #06111b;
+      --bg-soft: #0b1a27;
+      --panel: rgba(8, 21, 33, 0.86);
+      --panel-strong: rgba(8, 21, 33, 0.96);
+      --line: rgba(125, 226, 194, 0.18);
+      --line-strong: rgba(125, 226, 194, 0.28);
+      --text: #eef7ff;
+      --muted: #9eb6ca;
+      --mint: #7de2c2;
+      --aqua: #73d2ff;
+      --gold: #ffd977;
+      --ink: #051019;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+      --radius-xl: 30px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --max: 1240px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(115, 210, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 82% 12%, rgba(125, 226, 194, 0.16), transparent 34%),
+        radial-gradient(circle at 50% 78%, rgba(255, 217, 119, 0.08), transparent 30%),
+        linear-gradient(180deg, #05101a 0%, #07131f 42%, #081623 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(125, 226, 194, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(125, 226, 194, 0.035) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, black 44%, transparent 100%);
+      opacity: 0.45;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 12;
+      backdrop-filter: blur(18px);
+      background: rgba(5, 16, 26, 0.72);
+      border-bottom: 1px solid rgba(125, 226, 194, 0.08);
+    }
+
+    .topbar-inner {
+      min-height: 74px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .eyebrow,
+    .meta-label,
+    .stat-label {
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 11px;
+      color: var(--mint);
+    }
+
+    .brand strong,
+    h1,
+    h2,
+    h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: -0.04em;
+      margin: 0;
+    }
+
+    .brand strong {
+      font-size: 18px;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .nav a {
+      color: var(--muted);
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: 180ms ease;
+    }
+
+    .nav a:hover {
+      color: var(--text);
+      border-color: var(--line);
+      background: rgba(125, 226, 194, 0.08);
+    }
+
+    .hero {
+      padding: 54px 0 34px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .hero-panel,
+    .card,
+    .demo-shell {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(10, 24, 37, 0.88), rgba(8, 19, 31, 0.96));
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-copy {
+      padding: 34px;
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      inset: auto -8% -28% 18%;
+      height: 260px;
+      background: radial-gradient(circle, rgba(115, 210, 255, 0.18), transparent 68%);
+      pointer-events: none;
+    }
+
+    .hero-panel {
+      padding: 28px;
+      display: grid;
+      gap: 16px;
+      min-height: 420px;
+    }
+
+    h1 {
+      font-size: clamp(44px, 7vw, 78px);
+      line-height: 0.94;
+      max-width: 10ch;
+    }
+
+    .lede {
+      max-width: 62ch;
+      margin-top: 20px;
+      font-size: 18px;
+      line-height: 1.72;
+      color: var(--muted);
+    }
+
+    .lede strong { color: var(--text); }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 20px;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--mint), var(--aqua));
+      color: var(--ink);
+      box-shadow: 0 18px 40px rgba(115, 210, 255, 0.22);
+    }
+
+    .btn-secondary {
+      border: 1px solid var(--line);
+      background: rgba(125, 226, 194, 0.06);
+      color: var(--text);
+    }
+
+    .meta-stack {
+      display: grid;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .meta-item,
+    .stat-grid div,
+    .bullet-card {
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(125, 226, 194, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .meta-item p,
+    .card p,
+    .bullet-list li {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat-value {
+      display: block;
+      margin-top: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+    }
+
+    main {
+      padding-bottom: 72px;
+    }
+
+    .section {
+      margin-top: 34px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .section-head p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 64ch;
+      line-height: 1.7;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 22px;
+      border-radius: var(--radius-lg);
+    }
+
+    .bullet-list {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
+    .demo-shell {
+      padding: 18px;
+      border-color: var(--line-strong);
+      background:
+        linear-gradient(180deg, rgba(8, 21, 33, 0.74), rgba(8, 21, 33, 0.94)),
+        radial-gradient(circle at top right, rgba(125, 226, 194, 0.08), transparent 36%);
+    }
+
+    .demo-frame {
+      min-height: 840px;
+      border-radius: 22px;
+      border: 1px solid rgba(125, 226, 194, 0.12);
+      overflow: hidden;
+      background: rgba(5, 15, 24, 0.72);
+    }
+
+    .footnote {
+      margin-top: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .footer {
+      border-top: 1px solid rgba(125, 226, 194, 0.08);
+      padding: 28px 0 44px;
+      color: var(--muted);
+    }
+
+    .footer p {
+      margin: 0;
+      line-height: 1.7;
+    }
+
+    .footer a { color: var(--text); }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .grid-3,
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy,
+      .hero-panel {
+        min-height: auto;
+      }
+
+      .demo-frame {
+        min-height: 980px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner,
+      .section-head {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .nav {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .hero-copy,
+      .hero-panel,
+      .card,
+      .demo-shell {
+        border-radius: 22px;
+      }
+    }
+  </style>
+</head>
+<body data-polly-root=".." data-polly-context="smallbiz">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="eyebrow">SCBE demo lane</span>
+        <strong>Small Business Helper</strong>
+      </div>
+      <nav class="nav" aria-label="Page">
+        <a href="../index.html">Home</a>
+        <a href="index.html">Demo Lab</a>
+        <a href="../offers/index.html">Offers</a>
+        <a href="#helper">Open helper</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <article class="hero-copy">
+          <div>
+            <span class="eyebrow">Governed ops shell</span>
+            <h1>Small Business Helper for the public web.</h1>
+            <p class="lede">
+              This is the browser version of the helper lane already running in the Kindle app. It keeps <strong>local session memory</strong>,
+              lets you <strong>fan one prompt across multiple models</strong>, and exports <strong>thread bundles, SFT rows, and feedback rows</strong>
+              so stronger-model conversations can become training material for your smaller SCBE assistant.
+            </p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="#helper">Launch the helper</a>
+              <a class="btn btn-secondary" href="index.html">Back to Demo Lab</a>
+            </div>
+          </div>
+
+          <div class="meta-stack">
+            <div class="meta-item">
+              <span class="meta-label">Public-safe rule</span>
+              <p>GitHub Pages cannot hide secrets. Use a server-side proxy if you want a true public deployment, or bring your own Hugging Face token in Settings for private testing.</p>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">What this is not</span>
+              <p>This page is the governed chat shell and export loop. It is not the full paid integration stack for accounting systems, CRM write paths, or compliance automation.</p>
+            </div>
+          </div>
+        </article>
+
+        <aside class="hero-panel">
+          <div>
+            <span class="eyebrow">Current surface</span>
+            <h2>What works in-browser right now</h2>
+          </div>
+          <div class="stat-grid">
+            <div>
+              <span class="stat-label">Sessions</span>
+              <span class="stat-value">Local</span>
+              <p>Each thread stays on-device in browser storage until you clear it.</p>
+            </div>
+            <div>
+              <span class="stat-label">Compare lanes</span>
+              <span class="stat-value">Multi-model</span>
+              <p>Add stronger models beside Polly and keep them inside one thread.</p>
+            </div>
+            <div>
+              <span class="stat-label">Training exports</span>
+              <span class="stat-value">3 lanes</span>
+              <p>Raw bundle, SFT rows, and feedback rows are all available from the toolbar.</p>
+            </div>
+          </div>
+          <div class="bullet-card">
+            <span class="meta-label">Good fit</span>
+            <ul class="bullet-list">
+              <li>Drafting customer replies with escalation notes.</li>
+              <li>Turning storefront or inventory problems into a priority queue.</li>
+              <li>Reviewing agreements or policy text in read-only mode.</li>
+              <li>Capturing better examples from larger models before training your own smaller lane.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Workflow</span>
+            <h2>Use the helper, then keep the training loop.</h2>
+            <p>The value here is not generic chat. It is that the same governed conversation can become a portable bundle for later ingestion into the SCBE training pipeline.</p>
+          </div>
+        </div>
+        <div class="grid-3">
+          <article class="card">
+            <h3>1. Run one ops thread</h3>
+            <p>Keep the conversation concrete: one customer issue, one bookkeeping lane, one inventory problem, or one compliance review pass.</p>
+          </article>
+          <article class="card">
+            <h3>2. Compare against stronger models</h3>
+            <p>Use the compare-model field in Settings to capture better replies from larger systems in the exact same thread instead of starting over elsewhere.</p>
+          </article>
+          <article class="card">
+            <h3>3. Export the right artifact</h3>
+            <p><strong>Export thread</strong> preserves provenance, <strong>Export SFT</strong> gives quick training rows, and <strong>Export feedback</strong> records what helped versus what needs work.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="helper">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Live helper</span>
+            <h2>Static page, governed helper shell.</h2>
+            <p>The shell below is the same reusable chat engine used in the Kindle app lane. On this public page it starts in safe mode: no hidden token, no hidden proxy, and no claims that a backend already exists.</p>
+          </div>
+        </div>
+        <div class="demo-shell">
+          <div class="demo-frame">
+            <div id="helperApp"></div>
+          </div>
+          <p class="footnote">
+            If you run this through a real server-side proxy later, keep the Hugging Face token off the page and store only the proxy endpoint in browser settings.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>
+        Small Business Helper is a public SCBE demo lane. Return to the <a href="index.html">Demo Lab</a>, open the
+        <a href="../offers/index.html">offers page</a>, or go to <a href="../support.html">support</a> if you need delivery or setup help.
+      </p>
+    </div>
+  </footer>
+
+  <script src="../static/polly-hf-chat.js"></script>
+  <script src="../static/polly-sidebar.js"></script>
+  <script>
+    window.PollyHFChat.mount(document.getElementById("helperApp"), {
+      title: "Polly Helper",
+      assistantName: "Polly Helper",
+      subtitle: "Small-business helper lane with local session storage, compare-model lanes, and export-first training loops.",
+      model: "issdandavis/scbe-pivot-qwen-0.5b",
+      storagePrefix: "scbe_small_business_helper_web",
+      exportSource: "small_business_helper_web",
+      systemPrompt:
+        "You are Polly Helper, a practical small-business operations assistant. Be direct, structured, and risk-aware. Default to read-only guidance, surface compliance or legal risk early, and do not imply that any destructive or financial action has already happened.",
+      suggestions: [
+        "Draft a calm customer reply for a delayed order and list the next operations steps.",
+        "Turn these storefront issues into a priority queue for today's owner shift.",
+        "Review this vendor agreement and flag clauses that need human approval before signature.",
+        "Compare Polly with a larger model on this bookkeeping categorization workflow."
+      ],
+      initialAssistantText:
+        "This public helper shell is ready. Add your own Hugging Face token for private testing, or use a server-side proxy endpoint for a safer public deployment."
+    });
+  </script>
+</body>
+</html>
