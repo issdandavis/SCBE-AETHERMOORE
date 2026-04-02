@@ -22,7 +22,7 @@ def _can_import_cryptography():
         from cryptography.fernet import Fernet  # noqa: F401
 
         return True
-    except Exception:
+    except BaseException:
         return False
 
 
