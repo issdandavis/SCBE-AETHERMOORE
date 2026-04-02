@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBE Workflows | n8n Automation, CI/CD, Training Pipelines & Fleet Ops</title>
+<meta name="description" content="Pre-built automation workflows for AI governance: n8n orchestration, content publishing, web agent tasks, training pipelines, and multi-cloud deployment. 53 GitHub Actions + 14 n8n workflows.">
+<link rel="canonical" href="https://aethermoorgames.com/workflows.html">
+<meta property="og:title" content="SCBE Workflows | n8n + CI/CD Automation">
+<meta property="og:description" content="14 n8n workflows, 53 GitHub Actions, and 149 scripts. From commit to production, every workflow governed.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethermoorgames.com/workflows.html">
+<meta property="og:image" content="https://aethermoorgames.com/hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SCBE Workflows | n8n + CI/CD">
+<meta name="twitter:description" content="14 n8n workflows, 53 GitHub Actions, 149 scripts. Every workflow governed.">
+<meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #070711; color: #edf0ff; line-height: 1.7; }
+a { color: #7b8cff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.topbar { position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(7,7,17,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(123,140,255,0.14); }
+.topbar .brand { font-weight: 800; letter-spacing: 0.08em; }
+.topbar nav { display: flex; gap: 18px; color: #b4b9df; font-size: 14px; flex-wrap: wrap; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8590ff; font-weight: 700; margin-bottom: 10px; }
+h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; }
+h2 { font-size: 24px; margin: 40px 0 12px; color: #c5caff; }
+h3 { font-size: 18px; margin-bottom: 6px; color: #fff; }
+p { color: #afb5da; font-size: 15px; margin-bottom: 10px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 24px 0; }
+.card { background: #0d0d1a; border: 1px solid #1a1a3e; border-radius: 12px; padding: 24px; }
+.card .cat { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.card .cat.n8n { color: #ff6d5a; }
+.card .cat.ci { color: #2ecc71; }
+.card .cat.train { color: #f1c40f; }
+.card .cat.deploy { color: #3498db; }
+.card .cat.bridge { color: #9b59b6; }
+.card p { font-size: 13px; color: #999; }
+.card .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.card .tag { font-size: 11px; color: #d4d8ff; background: rgba(123,140,255,0.08); border: 1px solid rgba(123,140,255,0.12); border-radius: 999px; padding: 2px 8px; }
+
+.flow-diagram { background: #0a0b15; border: 1px solid #1a1a3e; border-radius: 12px; padding: 24px; font-family: 'SF Mono', monospace; font-size: 13px; color: #a29bfe; line-height: 2.2; margin: 20px 0; overflow-x: auto; }
+
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 24px 0; }
+.stat { background: #0d0d1a; border: 1px solid #1a1a3e; border-radius: 12px; padding: 20px; text-align: center; }
+.stat .val { font-size: 32px; font-weight: 800; color: #7cf3db; font-family: monospace; }
+.stat .label { color: #888; font-size: 12px; margin-top: 4px; }
+
+section { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1a1a3e; }
+.footer { margin-top: 60px; text-align: center; color: #555; font-size: 13px; border-top: 1px solid #1a1a3e; padding-top: 24px; }
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; } .stat-row { grid-template-columns: repeat(2, 1fr); } }
+</style>
+<link rel="stylesheet" href="static/shared.css">
+<link rel="stylesheet" href="static/polly-sidebar.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">SCBE AETHERMOORE</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="compliance.html">Compliance</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="test-suite.html">Tests</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+    <div class="eyebrow">Automation</div>
+    <h1>67 workflows. From commit to production.</h1>
+    <p>14 n8n orchestration workflows and 53 GitHub Actions covering CI/CD, content publishing, training pipelines, multi-cloud deployment, and governance scanning. Every workflow is governed.</p>
+
+    <div class="stat-row">
+        <div class="stat"><div class="val">14</div><div class="label">n8n workflows</div></div>
+        <div class="stat"><div class="val">53</div><div class="label">GitHub Actions</div></div>
+        <div class="stat"><div class="val">149</div><div class="label">Automation scripts</div></div>
+        <div class="stat"><div class="val">5</div><div class="label">Cloud targets</div></div>
+    </div>
+
+    <!-- n8n WORKFLOWS -->
+    <section style="border-top:none;">
+        <h2>n8n Orchestration Workflows</h2>
+        <p>Self-hosted n8n with a FastAPI bridge for governance scanning, Sacred Tongue encoding, and training data ingestion.</p>
+
+        <div class="flow-diagram">
+            User/Scheduler &rarr; n8n Trigger &rarr; FastAPI Bridge (port 8001) &rarr; Governance Scan &rarr; Execute &rarr; Log to Airtable/HF
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="cat n8n">n8n</div>
+                <h3>Content Publisher</h3>
+                <p>Multi-platform content publishing with governance scanning. Writes to Medium, LinkedIn, Dev.to, X/Twitter, Bluesky, GitHub, and HuggingFace. Every post passes through the governance gate before publishing.</p>
+                <div class="tags"><span class="tag">9 platforms</span><span class="tag">Governance gate</span><span class="tag">Rate limiting</span></div>
+            </div>
+            <div class="card">
+                <div class="cat n8n">n8n</div>
+                <h3>Web Agent Task Orchestrator</h3>
+                <p>Dispatches autonomous web research tasks to the AetherBrowse agent fleet. Handles URL extraction, content summarization, and training data generation from web sources.</p>
+                <div class="tags"><span class="tag">Web research</span><span class="tag">Auto-summarize</span><span class="tag">SFT generation</span></div>
+            </div>
+            <div class="card">
+                <div class="cat n8n">n8n</div>
+                <h3>M5 Mesh Data Funnel</h3>
+                <p>Ingests data from Notion, Dropbox, and local sources. Runs governance checks on every record, syncs to Airtable, and publishes governed datasets to HuggingFace.</p>
+                <div class="tags"><span class="tag">Notion</span><span class="tag">Dropbox</span><span class="tag">Airtable</span><span class="tag">HuggingFace</span></div>
+            </div>
+            <div class="card">
+                <div class="cat n8n">n8n</div>
+                <h3>AI-to-AI Research Debate</h3>
+                <p>Orchestrates multi-model debates where different AI models argue positions on research questions. Generates DPO training pairs from the debate transcripts.</p>
+                <div class="tags"><span class="tag">Multi-model</span><span class="tag">DPO pairs</span><span class="tag">Research</span></div>
+            </div>
+            <div class="card">
+                <div class="cat n8n">n8n</div>
+                <h3>Vertex AI + HuggingFace Pipeline</h3>
+                <p>Bidirectional sync between Google Vertex AI and HuggingFace. Trains on Vertex, deploys to HF. Governance gate validates model artifacts before promotion.</p>
+                <div class="tags"><span class="tag">Vertex AI</span><span class="tag">HuggingFace</span><span class="tag">Model sync</span></div>
+            </div>
+            <div class="card">
+                <div class="cat n8n">n8n</div>
+                <h3>X Growth + Merch Ops</h3>
+                <p>Social media growth automation with merchandise operations. Scheduled posts, engagement tracking, and merch inventory sync.</p>
+                <div class="tags"><span class="tag">X/Twitter</span><span class="tag">Engagement</span><span class="tag">Merch</span></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+            <div class="cat bridge">Bridge</div>
+            <h3>FastAPI Bridge Server</h3>
+            <p>Connects n8n to the SCBE governance engine. Exposes /health, /v1/governance/scan, /v1/tongue/encode, /v1/agent/task, /v1/training/ingest, and /v1/vertex/push-to-hf endpoints.</p>
+            <div style="font-family:monospace;font-size:12px;color:#7cf3db;margin-top:8px;">python -m uvicorn workflows.n8n.scbe_n8n_bridge:app --port 8001</div>
+        </div>
+    </section>
+
+    <!-- CI/CD -->
+    <section>
+        <h2>CI/CD Pipeline (53 GitHub Actions)</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="cat ci">Core</div>
+                <h3>Build + Test + Lint</h3>
+                <p>Main CI pipeline: TypeScript compile, Vitest (5,957 tests), pytest (785 tests), Prettier, flake8, circular dependency check. Runs on every push and PR.</p>
+            </div>
+            <div class="card">
+                <div class="cat ci">Security</div>
+                <h3>Security Gates</h3>
+                <p>Vulnerability scanning, conflict marker detection, weekly automated security audits. PQC key rotation checks and dependency auditing.</p>
+            </div>
+            <div class="card">
+                <div class="cat ci">Publish</div>
+                <h3>Auto-Publish</h3>
+                <p>Automated npm and Docker publishing on tagged releases. Dry-run verification, pre-publish safety checks, and changelog generation.</p>
+            </div>
+            <div class="card">
+                <div class="cat ci">Deploy</div>
+                <h3>Multi-Cloud Deploy</h3>
+                <p>AWS Lambda, EKS, GKE, and Cloud Run deployment workflows. Docker image building and registry pushing included.</p>
+            </div>
+            <div class="card">
+                <div class="cat ci">Nightly</div>
+                <h3>Automated Checks</h3>
+                <p>Nightly connector health, multicloud training, daily ops, social media updates, and review workflows. Runs on schedule, not on push.</p>
+            </div>
+            <div class="card">
+                <div class="cat ci">Sync</div>
+                <h3>Platform Sync</h3>
+                <p>HuggingFace model sync, Notion integration, cloud kernel data pipeline, and Vertex AI training triggers.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRAINING PIPELINES -->
+    <section>
+        <h2>Training Pipelines</h2>
+        <div class="flow-diagram">
+            Raw Data (824K JSONL records)<br>
+            &nbsp;&nbsp;&darr; clean_training_labels.py (drop 690K unknowns, consolidate 254 &rarr; 24 labels)<br>
+            Cleaned Data (41,703 samples, 24 categories)<br>
+            &nbsp;&nbsp;&darr; finetune_qwen_governance.ipynb (QLoRA on Kaggle/Colab)<br>
+            Fine-Tuned Model (Qwen2.5-0.5B + LoRA adapter)<br>
+            &nbsp;&nbsp;&darr; push_to_hub (HuggingFace)<br>
+            Production Model (issdandavis/scbe-governance-qwen-0.5b)
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="cat train">Data</div>
+                <h3>Multi-Source Ingestion</h3>
+                <p>Ingests from Notion, Obsidian, Dropbox, GitHub, web research, and game session logs. Deduplicates, labels, and validates before entering the training pool.</p>
+            </div>
+            <div class="card">
+                <div class="cat train">Quality</div>
+                <h3>Label Consolidation</h3>
+                <p>254 raw labels consolidated to 24 families. 690,479 "unknown" records dropped. Class imbalance capped at 5,000 samples per label. Minimum 10 samples per label.</p>
+            </div>
+            <div class="card">
+                <div class="cat train">Train</div>
+                <h3>QLoRA Fine-Tuning</h3>
+                <p>Qwen2.5-0.5B with LoRA (r=4-16). Runs on free Kaggle/Colab GPUs or CPU fallback. 3 epochs, cosine schedule, gradient checkpointing.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- DEPLOYMENT -->
+    <section>
+        <h2>Deployment Targets</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="cat deploy">Docker</div>
+                <h3>Container Stack</h3>
+                <p>Multi-stage Dockerfile: Node 20 (TS compile) &rarr; liboqs (PQC) &rarr; Python 3.11 &rarr; runtime. Ports 8080 (API) + 3000 (gateway). Docker Compose for full stack.</p>
+            </div>
+            <div class="card">
+                <div class="cat deploy">Kubernetes</div>
+                <h3>K8s Manifests</h3>
+                <p>Pre-built manifests for EKS (AWS), GKE (Google), and generic Kubernetes. Includes service accounts, RBAC, and ingress configs.</p>
+            </div>
+            <div class="card">
+                <div class="cat deploy">Serverless</div>
+                <h3>Cloud Functions</h3>
+                <p>AWS Lambda and Google Cloud Run deployment configs. Trust policy JSON for IAM roles. Stateless governance evaluation on demand.</p>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="footer">
+    <p>SCBE-AETHERMOORE &middot; Patent Pending USPTO #63/961,403</p>
+    <p style="margin-top:8px;"><a href="index.html">Home</a> &middot; <a href="enterprise.html">Enterprise</a> &middot; <a href="test-suite.html">Tests</a> &middot; <a href="tools.html">Tools</a> &middot; <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a></p>
+</div>
+
+<script src="static/polly-sidebar.js"></script>
+</body>
+</html>

@@ -30,6 +30,12 @@
       copy: 'This page is the try-it-now lane for working public surfaces, not the full manual or the full research archive.',
       prompt: 'I am on the SCBE demo page. Explain the working surfaces in plain language, then tell me whether I should open the product path, the manual hub, or the research proof stack next.'
     },
+    smallbiz: {
+      kicker: 'Helper guide',
+      title: 'This is the governed helper lane.',
+      copy: 'Use this page to test the helper shell, compare model outputs inside one thread, and export training bundles without confusing it with the paid integration roadmap.',
+      prompt: 'I am on the Small Business Helper page. Separate what works in-browser now, what requires my own Hugging Face token or a server-side proxy, what the export buttons produce, and what is still roadmap, then tell me what I should do next.'
+    },
     games: {
       kicker: 'Games guide',
       title: 'This is the public play shelf.',
@@ -86,6 +92,7 @@
     { href: `${root}/offers/index.html`, title: 'Offers', text: 'Owned package catalog with manuals, delivery, and direct checkout routes.' },
     { href: `${root}/network.html`, title: 'Network', text: 'External links, writing lanes, and AI-readable entry points.' },
     { href: `${root}/demos/index.html`, title: 'Demos', text: 'Working browser demos and operator-facing public surfaces.' },
+    { href: `${root}/demos/small-business-helper.html`, title: 'Small Business Helper', text: 'Governed helper shell with compare-model lanes and training exports.' },
     { href: `${root}/games/index.html`, title: 'Games', text: 'AI-playable arenas, model docks, training bridges, and long-horizon game lanes.' },
     { href: 'https://huggingface.co/issdandavis', title: 'Hugging Face', text: 'Public models, datasets, and Spaces for SCBE.' },
     { href: `${root}/redteam.html`, title: 'Red Team', text: 'Current public benchmark surface, dataset link, and eval entry path.' },

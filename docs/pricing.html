@@ -55,19 +55,25 @@ p { color: #afb5da; font-size: 15px; margin-bottom: 10px; }
 section { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1a1a3e; }
 @media (max-width: 700px) { .pricing-grid { grid-template-columns: 1fr; } .use-case-grid { grid-template-columns: 1fr; } }
 </style>
+<link rel="stylesheet" href="static/shared.css">
+<link rel="stylesheet" href="static/polly-sidebar.css">
 </head>
-<body>
+<body data-polly-context="pricing" data-polly-root=".">
 
-<div class="topbar">
-    <div class="brand"><a href="index.html">SCBE-AETHERMOORE</a></div>
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="demos/index.html">Demos</a>
-        <a href="demos/benchmarks.html">Benchmarks</a>
-        <a href="research/index.html">Research</a>
-        <a href="arena.html">Arena</a>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">SCBE AETHERMOORE</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="compliance.html">Compliance</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="test-suite.html">Tests</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
     </nav>
-</div>
+  </div>
+</header>
 
 <div class="wrap">
     <div class="hero">
@@ -311,14 +317,19 @@ section { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1a1a3e; }
     <div style="margin-top: 60px; text-align: center; color: #555; font-size: 13px;">
         <p>SCBE-AETHERMOORE &middot; Built by Issac Davis in Port Angeles, WA &middot; Patent Pending USPTO #63/961,403</p>
         <p style="margin-top: 8px;">
-            <a href="https://github.com/issdandavis/scbe-aethermoore-demo">GitHub</a> &middot;
-            <a href="https://huggingface.co/issdandavis">HuggingFace</a> &middot;
-            <a href="https://www.amazon.com/dp/B0F28PHSPR">Amazon</a> &middot;
-            <a href="https://www.youtube.com/@id8461">YouTube</a> &middot;
+            <a href="index.html">Home</a> &middot;
+            <a href="enterprise.html">Enterprise</a> &middot;
+            <a href="demos/index.html">Demos</a> &middot;
+            <a href="research/index.html">Research</a> &middot;
+            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a> &middot;
+            <a href="https://huggingface.co/issdandavis" target="_blank">HuggingFace</a> &middot;
+            <a href="https://www.amazon.com/dp/B0F28PHSPR" target="_blank">Amazon</a> &middot;
+            <a href="https://www.youtube.com/@id8461" target="_blank">YouTube</a> &middot;
             <a href="mailto:aethermoregames@pm.me">Email</a>
         </p>
     </div>
 </div>
 
+<script src="static/polly-sidebar.js"></script>
 </body>
 </html>

@@ -407,12 +407,15 @@ def main() -> int:
         encoding="utf-8",
     )
 
-    hf_token = os.getenv("HF_TOKEN", "").strip()
-    if not hf_token and get_token is not None:
+    hf_token = ""
+    # Prefer cached login (huggingface-cli) over env var; env var may be stale
+    if get_token is not None:
         try:
             hf_token = (get_token() or "").strip()
         except Exception:  # noqa: BLE001
-            hf_token = ""
+            pass
+    if not hf_token:
+        hf_token = os.getenv("HF_TOKEN", "").strip()
     upload_result = {"status": "skipped", "reason": "HF_TOKEN missing or upload disabled"}
     if args.push_to_hub and hf_token:
         upload_result = upload_to_hf(args.model_repo, run_dir, hf_token, report)

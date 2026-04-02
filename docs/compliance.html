@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBE Compliance | EU AI Act, NIST AI RMF, MITRE ATLAS</title>
+<meta name="description" content="How SCBE-AETHERMOORE maps to EU AI Act, NIST AI RMF, MITRE ATLAS, SOC 2, CMMC, HIPAA, and ISO 42001. Compliance documentation that writes itself.">
+<link rel="canonical" href="https://aethermoorgames.com/compliance.html">
+<meta property="og:title" content="SCBE Compliance Mapping">
+<meta property="og:description" content="How SCBE maps to EU AI Act, NIST AI RMF, MITRE ATLAS, SOC 2, CMMC, HIPAA, and ISO 42001.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethermoorgames.com/compliance.html">
+<meta property="og:image" content="https://aethermoorgames.com/hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SCBE Compliance Mapping">
+<meta name="twitter:description" content="EU AI Act, NIST AI RMF, MITRE ATLAS, SOC 2, CMMC, HIPAA, ISO 42001 alignment.">
+<meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #070711; color: #edf0ff; line-height: 1.7; }
+a { color: #7b8cff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.topbar { position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(7,7,17,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(123,140,255,0.14); }
+.topbar .brand { font-weight: 800; letter-spacing: 0.08em; }
+.topbar nav { display: flex; gap: 18px; color: #b4b9df; font-size: 14px; flex-wrap: wrap; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8590ff; font-weight: 700; margin-bottom: 10px; }
+h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; color: #c5caff; }
+h3 { font-size: 17px; margin-bottom: 6px; color: #fff; }
+p { color: #afb5da; font-size: 15px; margin-bottom: 10px; }
+
+.framework-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin: 24px 0; }
+.fw { background: #0d0d1a; border: 1px solid #1a1a3e; border-radius: 14px; padding: 24px; }
+.fw .badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; }
+.fw .badge.green { background: rgba(46,204,113,0.12); color: #2ecc71; }
+.fw .badge.blue { background: rgba(123,140,255,0.12); color: #7b8cff; }
+.fw .badge.yellow { background: rgba(241,196,15,0.12); color: #f1c40f; }
+.fw p { font-size: 13px; color: #999; }
+
+.map-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+.map-table th { text-align: left; padding: 10px 12px; background: rgba(123,140,255,0.06); color: #c5caff; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1a1a3e; }
+.map-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.03); color: #999; vertical-align: top; }
+.map-table td:first-child { color: #edf0ff; font-weight: 600; white-space: nowrap; }
+.map-table .check { color: #2ecc71; font-weight: 700; }
+.map-table .partial { color: #f1c40f; font-weight: 700; }
+
+.cta-bar { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0; }
+.btn { display: inline-block; padding: 14px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; }
+.btn-primary { background: linear-gradient(135deg, #6f84ff, #9160ff); color: #fff; }
+.btn-ghost { border: 1px solid #333; color: #c5caff; }
+
+section { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1a1a3e; }
+.footer { margin-top: 60px; text-align: center; color: #555; font-size: 13px; border-top: 1px solid #1a1a3e; padding-top: 24px; }
+@media (max-width: 700px) { .framework-grid { grid-template-columns: 1fr; } .map-table { font-size: 12px; } }
+</style>
+<link rel="stylesheet" href="static/shared.css">
+<link rel="stylesheet" href="static/polly-sidebar.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">SCBE AETHERMOORE</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="compliance.html">Compliance</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="test-suite.html">Tests</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+    <div class="eyebrow">Compliance</div>
+    <h1>Map your AI governance to the frameworks that matter.</h1>
+    <p>SCBE-AETHERMOORE aligns with 9 major compliance frameworks. The pump generates audit logs automatically — compliance documentation that writes itself.</p>
+
+    <!-- FRAMEWORK CARDS -->
+    <div class="framework-grid">
+        <div class="fw">
+            <span class="badge green">Strong alignment</span>
+            <h3>EU AI Act (Aug 2026)</h3>
+            <p>Risk management, data governance, technical documentation, automatic logging, transparency, and human oversight. The pump handles AI-specific controls for high-risk systems.</p>
+        </div>
+        <div class="fw">
+            <span class="badge green">Strong alignment</span>
+            <h3>NIST AI RMF 1.0</h3>
+            <p>Map, Measure, Manage, Govern. The 14-layer pipeline provides measurement (L1-L12), governance decisions (L13), and audit telemetry (L14) across all four functions.</p>
+        </div>
+        <div class="fw">
+            <span class="badge green">Strong alignment</span>
+            <h3>MITRE ATLAS</h3>
+            <p>91/91 ATLAS-mapped attacks blocked in benchmarking. Trichromatic governance catches evasion, reconnaissance, and model abuse techniques.</p>
+        </div>
+        <div class="fw">
+            <span class="badge green">Strong alignment</span>
+            <h3>NIST FIPS 203/204 (PQC)</h3>
+            <p>ML-KEM-768 (FIPS 203) for key encapsulation, ML-DSA-65 (FIPS 204) for digital signatures. Quantum-resistant from day one. 100% crypto test pass rate.</p>
+        </div>
+        <div class="fw">
+            <span class="badge blue">Mapped</span>
+            <h3>SOC 2 Type II</h3>
+            <p>JSONL audit logs for every governance decision. Immutable timestamps, tongue profiles, and source references. Export directly to your auditor.</p>
+        </div>
+        <div class="fw">
+            <span class="badge blue">Mapped</span>
+            <h3>CMMC Level 2+</h3>
+            <p>PQC crypto, access controls, audit logging, and airgap-capable deployment. Designed for classified environments and defense contractor requirements.</p>
+        </div>
+        <div class="fw">
+            <span class="badge blue">Mapped</span>
+            <h3>HIPAA</h3>
+            <p>Access controls, audit trails, encryption (AES-256-GCM), and governance decisions logged per query. Domain separation prevents medical AI from drifting into unauthorized areas.</p>
+        </div>
+        <div class="fw">
+            <span class="badge blue">Mapped</span>
+            <h3>ISO 42001</h3>
+            <p>AI management system standard. The pump provides continuous monitoring, risk assessment (L13 decisions), and documented governance policies.</p>
+        </div>
+        <div class="fw">
+            <span class="badge yellow">Reference</span>
+            <h3>OWASP LLM Top 10</h3>
+            <p>Prompt injection (#1), insecure output handling (#2), training data poisoning (#3), model denial of service (#4), supply chain (#5) — all addressed by the 14-layer pipeline.</p>
+        </div>
+    </div>
+
+    <!-- EU AI ACT DETAIL -->
+    <section>
+        <h2>EU AI Act Compliance Matrix</h2>
+        <p>Effective August 2026. These are the Article 9-15 requirements for high-risk AI systems and how SCBE addresses each.</p>
+
+        <table class="map-table">
+            <thead>
+                <tr><th>Requirement</th><th>Article</th><th>SCBE Coverage</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Risk management system</td><td>Art. 9</td><td>14-layer pipeline with L13 ALLOW/QUARANTINE/ESCALATE/DENY decisions</td><td class="check">Covered</td></tr>
+                <tr><td>Data governance</td><td>Art. 10</td><td>Label consolidation pipeline, tongue profiling for domain separation, deduplication</td><td class="check">Covered</td></tr>
+                <tr><td>Technical documentation</td><td>Art. 11</td><td>Automatic JSONL audit logs, governance decision records, tongue profiles</td><td class="check">Covered</td></tr>
+                <tr><td>Record-keeping</td><td>Art. 12</td><td>Immutable audit trail with timestamps, decision rationale, and source references</td><td class="check">Covered</td></tr>
+                <tr><td>Transparency</td><td>Art. 13</td><td>Governance decisions are explainable — tongue profile + null pattern + distance metric</td><td class="check">Covered</td></tr>
+                <tr><td>Human oversight</td><td>Art. 14</td><td>QUARANTINE/ESCALATE tiers require human review before execution</td><td class="check">Covered</td></tr>
+                <tr><td>Accuracy & robustness</td><td>Art. 15</td><td>85.7% detection at 0% FP, 91/91 attacks blocked, property-based testing (L4)</td><td class="check">Covered</td></tr>
+                <tr><td>Cybersecurity</td><td>Art. 15(4)</td><td>ML-KEM-768 + ML-DSA-65 + AES-256-GCM. Post-quantum resistant. 0 CVEs.</td><td class="check">Covered</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- NIST AI RMF -->
+    <section>
+        <h2>NIST AI Risk Management Framework</h2>
+        <table class="map-table">
+            <thead>
+                <tr><th>Function</th><th>SCBE Mapping</th><th>Pipeline Layers</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>GOVERN</td><td>Governance gate decisions, policy enforcement, Sacred Tongues domain separation</td><td>L13, L12</td></tr>
+                <tr><td>MAP</td><td>Context realification, Poincare embedding, multi-well Hamiltonian modeling</td><td>L1-L4, L8</td></tr>
+                <tr><td>MEASURE</td><td>Hyperbolic distance, spectral coherence, triadic temporal distance, harmonic wall</td><td>L5, L9-L12</td></tr>
+                <tr><td>MANAGE</td><td>Risk tier assignment, audit telemetry, cascade injection detection</td><td>L13-L14</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- OWASP LLM TOP 10 -->
+    <section>
+        <h2>OWASP LLM Top 10 Coverage</h2>
+        <table class="map-table">
+            <thead>
+                <tr><th>Vulnerability</th><th>OWASP #</th><th>SCBE Defense</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Prompt Injection</td><td>LLM01</td><td>Tongue profiling detects narrow activation patterns; null-space absence detection catches injections that leave 4-5 domains silent</td><td class="check">Covered</td></tr>
+                <tr><td>Insecure Output Handling</td><td>LLM02</td><td>Output verification via second pump pass; tongue profile of output must match expected domain</td><td class="check">Covered</td></tr>
+                <tr><td>Training Data Poisoning</td><td>LLM03</td><td>Label consolidation, deduplication, governance scanning on all training data ingestion</td><td class="check">Covered</td></tr>
+                <tr><td>Model Denial of Service</td><td>LLM04</td><td>Rate limiting, hyperbolic cost scaling makes resource exhaustion attacks exponentially expensive</td><td class="check">Covered</td></tr>
+                <tr><td>Supply Chain</td><td>LLM05</td><td>PQC signatures on all artifacts, provenance tracking, weekly security audits</td><td class="check">Covered</td></tr>
+                <tr><td>Sensitive Information Disclosure</td><td>LLM06</td><td>Domain separation via Sacred Tongues prevents cross-domain data leakage</td><td class="check">Covered</td></tr>
+                <tr><td>Insecure Plugin Design</td><td>LLM07</td><td>Governance gate validates all agent-to-agent communications; MCP server enforces scope</td><td class="check">Covered</td></tr>
+                <tr><td>Excessive Agency</td><td>LLM08</td><td>QUARANTINE/DENY tiers block autonomous actions outside approved scope</td><td class="check">Covered</td></tr>
+                <tr><td>Overreliance</td><td>LLM09</td><td>Confidence scoring, domain drift detection, ESCALATE tier for uncertain decisions</td><td class="partial">Partial</td></tr>
+                <tr><td>Model Theft</td><td>LLM10</td><td>PQC encryption on model artifacts, ML-DSA-65 signatures, access logging</td><td class="check">Covered</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- AUDIT LOG -->
+    <section>
+        <h2>What the Audit Log Contains</h2>
+        <p>Every query through the pump generates a JSONL record with:</p>
+        <div style="background:#0a0b15;border:1px solid #1a1a3e;border-radius:12px;padding:20px;font-family:'SF Mono',monospace;font-size:12px;color:#a29bfe;margin:16px 0;overflow-x:auto;">
+<pre>{
+  "timestamp": "2026-04-01T13:45:22.107Z",
+  "query_hash": "sha256:a1b2c3...",
+  "tongue_profile": { "KO": 0.82, "AV": 0.41, "RU": 0.15, "CA": 0.03, "UM": 0.01, "DR": 0.00 },
+  "null_pattern": ["CA", "UM", "DR"],
+  "hyperbolic_distance": 0.342,
+  "harmonic_cost": 1.127,
+  "governance_decision": "ALLOW",
+  "confidence": 0.94,
+  "processing_ms": 7.2,
+  "source_ip_hash": "sha256:d4e5f6...",
+  "model_id": "gpt-4o",
+  "session_id": "sess_abc123"
+}</pre>
+        </div>
+        <p>Export as JSONL, CSV, or pipe directly to your SIEM. Compatible with Splunk, Datadog, ELK, and any log aggregator.</p>
+    </section>
+
+    <!-- CTA -->
+    <section style="text-align:center;padding:48px 0;">
+        <h2>Need compliance documentation for your AI deployment?</h2>
+        <p style="max-width:600px;margin:0 auto 24px;">The pump generates audit trails automatically. No security hire needed. EU AI Act deadline is August 2026.</p>
+        <div class="cta-bar" style="justify-content:center;">
+            <a class="btn btn-primary" href="contact.html">Request Compliance Briefing</a>
+            <a class="btn btn-ghost" href="pricing.html">View Pricing</a>
+            <a class="btn btn-ghost" href="enterprise.html">Enterprise Overview</a>
+        </div>
+    </section>
+</div>
+
+<div class="footer">
+    <p>SCBE-AETHERMOORE &middot; Patent Pending USPTO #63/961,403</p>
+    <p style="margin-top:8px;"><a href="index.html">Home</a> &middot; <a href="enterprise.html">Enterprise</a> &middot; <a href="pricing.html">Pricing</a> &middot; <a href="contact.html">Contact</a> &middot; <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a></p>
+</div>
+
+<script src="static/polly-sidebar.js"></script>
+</body>
+</html>

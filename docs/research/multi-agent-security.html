@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi-Agent Security Case Study | SentinelAgent Architecture | SCBE Research</title>
+<meta name="description" content="How SCBE governance secures hub-and-spoke multi-agent architectures. A case study on runtime oversight, shared ledger integrity, and cascade injection detection in orchestrator-worker topologies.">
+<meta property="og:title" content="Multi-Agent Security: SentinelAgent Case Study">
+<meta property="og:description" content="Runtime oversight and anomaly detection for multi-agent systems with shared memory ledgers.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://aethermoorgames.com/research/multi-agent-security.html">
+<link rel="canonical" href="https://aethermoorgames.com/research/multi-agent-security.html">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #070711; color: #edf0ff; line-height: 1.8; }
+a { color: #7b8cff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.topbar { position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(7,7,17,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(123,140,255,0.14); }
+.topbar .brand { font-weight: 800; letter-spacing: 0.08em; }
+.topbar nav { display: flex; gap: 18px; color: #b4b9df; font-size: 14px; flex-wrap: wrap; }
+.wrap { max-width: 820px; margin: 0 auto; padding: 40px 24px 80px; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8590ff; font-weight: 700; margin-bottom: 10px; }
+h1 { font-size: clamp(24px, 4vw, 38px); line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 16px; }
+h2 { font-size: 22px; margin: 40px 0 12px; color: #c5caff; }
+h3 { font-size: 17px; margin: 28px 0 8px; color: #fff; }
+p { color: #afb5da; font-size: 15px; margin-bottom: 14px; }
+.meta-line { font-size: 13px; color: #666; margin-bottom: 28px; }
+
+.diagram { background: #0a0b15; border: 1px solid #1a1a3e; border-radius: 12px; padding: 24px; margin: 20px 0; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: #a29bfe; line-height: 2; overflow-x: auto; }
+.callout { background: rgba(123,140,255,0.06); border-left: 3px solid #6f84ff; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+.callout p { margin: 0; color: #c5caff; }
+.threat-box { background: rgba(231,76,60,0.06); border: 1px solid rgba(231,76,60,0.2); border-radius: 12px; padding: 20px; margin: 20px 0; }
+.defense-box { background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.2); border-radius: 12px; padding: 20px; margin: 20px 0; }
+.pillar-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 20px 0; }
+.pillar-card { background: #0d0d1a; border: 1px solid #1a1a3e; border-radius: 12px; padding: 20px; }
+.pillar-card h4 { color: #7cf3db; font-size: 14px; margin-bottom: 6px; }
+.pillar-card p { font-size: 13px; color: #999; margin: 0; }
+.layer-map { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; margin: 16px 0; font-size: 13px; }
+.layer-map .layer-id { color: #8590ff; font-family: monospace; font-weight: 700; }
+.layer-map .layer-fn { color: #999; }
+
+.btn { display: inline-block; padding: 12px 20px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-right: 10px; margin-top: 10px; }
+.btn-ghost { border: 1px solid #333; color: #c5caff; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="brand"><a href="../">SCBE RESEARCH</a></div>
+    <nav>
+        <a href="../">Home</a>
+        <a href="../enterprise.html">Enterprise</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="./">Research Index</a>
+        <a href="../demos/">Demos</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
+    </nav>
+</div>
+
+<div class="wrap">
+    <div class="eyebrow">Case Study &mdash; Research Domain</div>
+    <h1>SentinelAgent: Runtime Oversight for Multi-Agent Architectures</h1>
+    <p class="meta-line">Published April 2026 &middot; SCBE-AETHERMOORE Research &middot; Issac Davis</p>
+
+    <p>Multi-agent AI systems introduce a class of security challenges that single-model governance cannot address. When a central orchestrator coordinates specialized workers through a shared memory ledger, the attack surface expands from input-output filtering to temporal reasoning across an entire interaction graph.</p>
+    <p>This case study examines how the SCBE 14-layer pipeline provides runtime oversight for hub-and-spoke multi-agent topologies, using a SentinelAgent pattern that maps governance across orchestrator control flow and shared ledger memory flow simultaneously.</p>
+
+    <h2>The Architecture Under Protection</h2>
+
+    <p>The target architecture follows a hub-and-spoke pattern common in general-purpose multi-agent systems designed for open-ended tasks: document analysis, web-based information retrieval, and code execution.</p>
+
+    <div class="diagram">
+        <pre>
+                    +------------------+
+                    |   User Query     |
+                    +--------+---------+
+                             |
+                    +--------v---------+
+                    |   Orchestrator    |  &lt;-- Central hub
+                    |   (Task Router)  |
+                    +--+-----+------+--+
+                       |     |      |
+              +--------+  +--+--+  +--------+
+              |           |     |           |
+     +--------v---+  +----v--+  +---v--------+
+     | FileSurfer |  | Web   |  | Code       |
+     | (Local FS) |  | Surfer|  | Executor   |
+     +-----+------+  +---+---+  +-----+------+
+           |              |            |
+           +--------------+------------+
+                          |
+                 +--------v---------+
+                 |  Shared Ledger   |  &lt;-- Global memory
+                 |  (Collective     |
+                 |   Memory Store)  |
+                 +------------------+
+        </pre>
+    </div>
+
+    <p>The shared ledger enables asynchronous collaboration but introduces a critical diagnostic complexity: it can become both a source of truth and a target of compromise. A malicious agent can insert misleading entries that poison downstream decisions without triggering an immediate, localized anomaly.</p>
+
+    <div class="callout">
+        <p><strong>Key insight:</strong> The SentinelAgent cannot rely on simple, single-round input-output filtering. It must perform temporal and historical reasoning, continuously modeling both the control flow initiated by the Orchestrator and the memory flow cascading through the shared ledger.</p>
+    </div>
+
+    <h2>The Interaction Graph Model</h2>
+
+    <p>The SentinelAgent maps the multi-agent system into a dynamic interaction graph:</p>
+
+    <ul style="margin: 16px 0 16px 20px; color: #afb5da; font-size: 15px;">
+        <li style="margin-bottom:8px;"><strong style="color:#fff;">Orchestrator</strong> &mdash; central hub node, routes tasks and validates results</li>
+        <li style="margin-bottom:8px;"><strong style="color:#fff;">Worker agents</strong> &mdash; peripheral nodes connected to specialized tools (file system, browser, sandboxed execution)</li>
+        <li style="margin-bottom:8px;"><strong style="color:#fff;">Shared ledger</strong> &mdash; global memory node accessible to all agents</li>
+    </ul>
+
+    <p>Under benign conditions, the graph exhibits a structured delegation pattern: the Orchestrator receives a user query, dispatches subtasks to the appropriate workers, coordinates analysis, and consolidates results in the shared ledger before returning output.</p>
+
+    <h2>The Threat: Multi-Point Attack Chains</h2>
+
+    <div class="threat-box">
+        <h3 style="color:#e74c3c;margin-top:0;">Attack Scenario: Code Injection via Content Poisoning</h3>
+        <p>A user asks the Orchestrator to open a local text file or website for processing. The target content contains a hidden prompt injection instructing the system to:</p>
+        <ol style="margin: 12px 0 0 20px; color: #e8a0a0; font-size: 14px;">
+            <li style="margin-bottom:6px;">Abandon the original summarization task</li>
+            <li style="margin-bottom:6px;">Bypass safety constraints on code execution</li>
+            <li style="margin-bottom:6px;">Force the CodeExecutor to run a malicious Python script</li>
+            <li style="margin-bottom:6px;">Establish a remote connection and exfiltrate environment files</li>
+        </ol>
+        <p style="margin-top:12px;color:#999;font-size:13px;">The injection is effective because the Orchestrator treats the file/page content as trusted input for the next agent in the chain. The attack cascades through the delegation graph without any single agent seeing the complete malicious intent.</p>
+    </div>
+
+    <h2>Three Pillars of Defense</h2>
+
+    <p>When the Orchestrator fails to validate the injected instruction and forwards it to the CodeExecutor, the SentinelAgent intervenes through three comprehensive analytical pillars.</p>
+
+    <div class="pillar-grid">
+        <div class="pillar-card">
+            <h4>Pillar 1: Input Validation</h4>
+            <p>Recognizes ambiguous or potentially malicious instructions hidden within orchestrator-to-worker communications. Flags the deceptive nature of prompt injections by profiling tongue activation patterns. Injections activate narrow domains (typically only Cassisivadan/compute) while leaving 4-5 other domains silent.</p>
+        </div>
+        <div class="pillar-card">
+            <h4>Pillar 2: Planning Validation</h4>
+            <p>Detects inadequate tool selection by the Orchestrator. Identifies when the Orchestrator blindly follows an injected command to execute code rather than adhering to expected summarization or safe-handling protocols. The expected task plan doesn't match the observed delegation graph.</p>
+        </div>
+        <div class="pillar-card">
+            <h4>Pillar 3: Behavioral Analysis</h4>
+            <p>Identifies explicit policy violations in CodeExecutor output patterns. Executing unauthorized scripts to establish remote SSH connections or upload local files falls outside the bounds of safe, expected behavior. Matched against stored risk signatures in the L12 harmonic wall.</p>
+        </div>
+    </div>
+
+    <h2>SCBE Pipeline Mapping</h2>
+
+    <p>Each pillar maps to specific layers in the 14-layer SCBE pipeline:</p>
+
+    <div class="layer-map">
+        <span class="layer-id">L1-L2</span><span class="layer-fn">Complex context realification &mdash; decompose the multi-agent interaction into analyzable components</span>
+        <span class="layer-id">L3-L4</span><span class="layer-fn">Weighted transform + Poincare embedding &mdash; encode agent actions in hyperbolic space where adversarial drift is measurable</span>
+        <span class="layer-id">L5</span><span class="layer-fn">Hyperbolic distance &mdash; compute semantic distance between expected behavior and observed behavior</span>
+        <span class="layer-id">L6-L7</span><span class="layer-fn">Breathing transform &mdash; account for legitimate task variation without triggering false positives</span>
+        <span class="layer-id">L8</span><span class="layer-fn">Multi-well Hamiltonian &mdash; model distinct valid operational modes (summarization, analysis, code execution) as energy wells</span>
+        <span class="layer-id">L9-L10</span><span class="layer-fn">Spectral coherence &mdash; FFT analysis detects frequency anomalies in agent communication patterns</span>
+        <span class="layer-id">L11</span><span class="layer-fn">Triadic temporal distance &mdash; tracks the ordering and timing of agent actions to detect causal violations</span>
+        <span class="layer-id">L12</span><span class="layer-fn">Harmonic wall &mdash; the cost function H(d,R) = R^(d^2) makes the malicious code execution exponentially expensive</span>
+        <span class="layer-id">L13</span><span class="layer-fn">Risk decision &mdash; DENY issued on the code execution request; QUARANTINE on the Orchestrator's delegation</span>
+        <span class="layer-id">L14</span><span class="layer-fn">Audit telemetry &mdash; full trace from initial prompt injection through orchestrator misclassification to blocked execution</span>
+    </div>
+
+    <h2>The Defense in Action</h2>
+
+    <div class="defense-box">
+        <h3 style="color:#2ecc71;margin-top:0;">Complete Attack Chain Traced</h3>
+        <p>The SentinelAgent successfully traces the complete attack chain across the interaction graph:</p>
+        <ol style="margin: 12px 0 0 20px; color: #a0e8b4; font-size: 14px;">
+            <li style="margin-bottom:6px;"><strong>Input ambiguity detected</strong> (L3-L4) &mdash; tongue profile shows narrow activation pattern inconsistent with legitimate content processing</li>
+            <li style="margin-bottom:6px;"><strong>Orchestrator misclassification flagged</strong> (L8, L11) &mdash; task routing violates expected planning pattern; code execution was not in the original task decomposition</li>
+            <li style="margin-bottom:6px;"><strong>Policy violation matched</strong> (L12-L13) &mdash; code execution pattern matches stored risk signatures for data exfiltration; harmonic wall cost exceeds DENY threshold</li>
+            <li style="margin-bottom:6px;"><strong>Execution path isolated</strong> (L13) &mdash; compromised delegation chain quarantined; data exfiltration prevented</li>
+            <li style="margin-bottom:6px;"><strong>Diagnostic report generated</strong> (L14) &mdash; root-cause attribution with full interaction graph trace for security analyst review</li>
+        </ol>
+    </div>
+
+    <h2>Shared Ledger Integrity</h2>
+
+    <p>Beyond individual attack chains, the SentinelAgent provides ongoing shared ledger integrity monitoring:</p>
+
+    <ul style="margin: 16px 0 16px 20px; color: #afb5da; font-size: 15px;">
+        <li style="margin-bottom:8px;"><strong style="color:#fff;">Temporal consistency</strong> &mdash; L11 triadic temporal distance detects entries that violate causal ordering (e.g., a result appearing before the query that generated it)</li>
+        <li style="margin-bottom:8px;"><strong style="color:#fff;">Source attribution</strong> &mdash; every ledger entry is tagged with the originating agent and validated against that agent's authorized write scope</li>
+        <li style="margin-bottom:8px;"><strong style="color:#fff;">Poisoning detection</strong> &mdash; spectral coherence (L9-L10) identifies entries whose semantic profile diverges from the established conversation trajectory</li>
+        <li style="margin-bottom:8px;"><strong style="color:#fff;">Cryptographic integrity</strong> &mdash; PQC signatures (ML-DSA-65) on ledger entries provide tamper evidence resistant to quantum attack</li>
+    </ul>
+
+    <h2>Why Existing Approaches Fall Short</h2>
+
+    <p>Current AI governance products focus on single-model input-output filtering. They examine one prompt and one response. In multi-agent architectures, the attack surface is fundamentally different:</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;">
+        <div class="pillar-card">
+            <h4 style="color:#e74c3c;">Single-Model Governance</h4>
+            <p>Checks one input, one output. Cannot detect cascading injections across agent chains. No temporal reasoning. No shared memory validation.</p>
+        </div>
+        <div class="pillar-card">
+            <h4 style="color:#2ecc71;">SCBE Multi-Agent Governance</h4>
+            <p>Maps the full interaction graph. Tracks control flow AND memory flow. 14-layer pipeline provides temporal, spectral, and hyperbolic analysis across the entire agent topology.</p>
+        </div>
+    </div>
+
+    <h2>Implications</h2>
+
+    <p>As AI systems move from single-model deployments to multi-agent architectures, governance must evolve from input-output filtering to interaction graph analysis. The SentinelAgent pattern demonstrates that the SCBE 14-layer pipeline provides the mathematical and computational foundation for this evolution.</p>
+
+    <p>The combination of hyperbolic cost scaling (making attacks exponentially expensive), post-quantum cryptographic integrity (ensuring ledger tamper evidence survives quantum threats), and temporal reasoning (detecting causal violations across agent chains) addresses a governance gap that no existing product fills.</p>
+
+    <div style="margin-top:32px;padding-top:24px;border-top:1px solid #1a1a3e;">
+        <a class="btn btn-ghost" href="../enterprise.html">Enterprise Overview</a>
+        <a class="btn btn-ghost" href="./">Back to Research Index</a>
+        <a class="btn btn-ghost" href="../demos/swarm-formations.html">Swarm Demo</a>
+        <a class="btn btn-ghost" href="../demos/governance-gate.html">Governance Gate Demo</a>
+    </div>
+
+    <div style="margin-top: 40px; text-align: center; color: #555; font-size: 13px;">
+        <p>SCBE-AETHERMOORE Research &middot; Patent Pending USPTO #63/961,403 &middot; ORCID: 0009-0002-3936-9369</p>
+    </div>
+</div>
+
+</body>
+</html>

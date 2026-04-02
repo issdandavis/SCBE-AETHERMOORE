@@ -1,0 +1,112 @@
+{
+  "name": "SCBE Outreach Auto-Responder",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": { "item": [{ "mode": "everyMinute", "value": 5 }] },
+        "filters": {
+          "readStatus": "unread",
+          "receivedAfter": "={{ $now.minus(1, 'hour').toISO() }}"
+        }
+      },
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "hiddenlayer.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "bah.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "credo.ai" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "guardrailsai.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "holisticai.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "dynamo.ai" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "lmco.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "ngc.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "palantir.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "iqt.org" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "saif.vc" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "jpmorgan.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "wellsfargo.com" },
+            { "value1": "={{ $json.from.value[0].address }}", "operation": "contains", "value2": "citi.com" }
+          ],
+          "combineOperation": "any"
+        }
+      },
+      "name": "Filter Outreach Contacts",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:8001/v1/governance/scan",
+        "method": "POST",
+        "body": {
+          "json": {
+            "text": "={{ $json.text }}",
+            "source": "email_inbound",
+            "sender": "={{ $json.from.value[0].address }}"
+          }
+        }
+      },
+      "name": "Governance Scan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://router.huggingface.co/v1/chat/completions",
+        "method": "POST",
+        "headers": {
+          "string": [
+            { "name": "Authorization", "value": "Bearer {{ $env.HF_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "body": {
+          "json": {
+            "model": "issdandavis/scbe-pivot-qwen-0.5b",
+            "messages": [
+              {
+                "role": "system",
+                "content": "You are Issac Davis's business assistant drafting email replies. Use this context for every reply:\n\nSCBE-AETHERMOORE: AI governance framework using hyperbolic geometry + post-quantum cryptography.\nPatent: USPTO #63/961,403 (pending)\nWebsite: https://aethermoorgames.com\nGitHub: https://github.com/issdandavis/SCBE-AETHERMOORE\nHuggingFace: https://huggingface.co/issdandavis\nDataset: 233K multi-view SFT pairs (cleaned to 41K, 24 categories)\nTests: 6,742 passing (5,957 TS + 785 Python), 100% crypto pass rate\nBenchmarks: 85.7% detection at 0% FP, 91/91 vs industry 62/91, F1 0.813\nPricing: Pump API $49/mo, Pro $199/mo, GaaS $499/mo\nBook: The Six Tongues Protocol on Amazon\nLive demos: https://aethermoorgames.com/demos/\nEnterprise: https://aethermoorgames.com/enterprise.html\n\nFour pillars no competitor has: (1) PQC (ML-KEM-768 + ML-DSA-65), (2) Hyperbolic cost scaling H(d,R)=R^(d^2), (3) Multi-agent coordination security (14-layer pipeline), (4) Inference-time guardrails.\n\nTone: Professional, direct, confident but not arrogant. Issac is a solo founder in Port Angeles, WA. Position as complement, not competitor. Always offer a demo or technical briefing as next step."
+              },
+              {
+                "role": "user",
+                "content": "Draft a reply to this email. Sender: {{ $json.from.value[0].address }}. Subject: {{ $json.subject }}. Their message: {{ $json.text }}"
+              }
+            ],
+            "max_tokens": 600,
+            "temperature": 0.4
+          }
+        }
+      },
+      "name": "Draft Reply via HF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "aethermoregames@pm.me",
+        "subject": "DRAFT REPLY: {{ $node['Gmail Trigger'].json.subject }}",
+        "message": "FROM: {{ $node['Gmail Trigger'].json.from.value[0].address }}\nSUBJECT: {{ $node['Gmail Trigger'].json.subject }}\n\n--- THEIR MESSAGE ---\n{{ $node['Gmail Trigger'].json.text }}\n\n--- DRAFT REPLY ---\n{{ $json.choices[0].message.content }}\n\n--- REVIEW AND SEND FROM GMAIL ---"
+      },
+      "name": "Send Draft to Review",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [1130, 300]
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": { "main": [[{ "node": "Filter Outreach Contacts", "type": "main", "index": 0 }]] },
+    "Filter Outreach Contacts": { "main": [[{ "node": "Governance Scan", "type": "main", "index": 0 }]] },
+    "Governance Scan": { "main": [[{ "node": "Draft Reply via HF", "type": "main", "index": 0 }]] },
+    "Draft Reply via HF": { "main": [[{ "node": "Send Draft to Review", "type": "main", "index": 0 }]] }
+  }
+}

@@ -1,0 +1,99 @@
+name: Mobile Dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to run'
+        required: true
+        type: choice
+        options:
+          - test-all
+          - test-ts
+          - test-python
+          - build
+          - push-training-data
+          - status
+          - lint
+      message:
+        description: 'Optional message or parameters'
+        required: false
+        type: string
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: contains(fromJSON('["test-all","test-ts","build","lint"]'), inputs.action)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        if: contains(fromJSON('["test-all","test-python","push-training-data","status"]'), inputs.action)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install deps (Node)
+        if: contains(fromJSON('["test-all","test-ts","build","lint"]'), inputs.action)
+        run: npm ci
+
+      - name: Install deps (Python)
+        if: contains(fromJSON('["test-all","test-python","push-training-data"]'), inputs.action)
+        run: pip install -r requirements.txt 2>/dev/null || pip install pytest numpy huggingface_hub
+
+      - name: Run tests (TypeScript)
+        if: inputs.action == 'test-ts' || inputs.action == 'test-all'
+        run: npm test
+
+      - name: Run tests (Python)
+        if: inputs.action == 'test-python' || inputs.action == 'test-all'
+        run: python -m pytest tests/ -x -q --tb=short
+
+      - name: Build
+        if: inputs.action == 'build'
+        run: npm run build
+
+      - name: Lint
+        if: inputs.action == 'lint'
+        run: npm run lint && npm run lint:python
+
+      - name: Status
+        if: inputs.action == 'status'
+        run: |
+          echo "=== Git Status ==="
+          git log --oneline -10
+          echo ""
+          echo "=== File Count ==="
+          find docs -name "*.html" | wc -l
+          echo " HTML pages in docs/"
+          echo ""
+          echo "=== Test Count ==="
+          echo "TS test files: $(find tests -name '*.test.ts' | wc -l)"
+          echo "Python test files: $(find tests -name 'test_*.py' | wc -l)"
+          echo ""
+          echo "=== Package Version ==="
+          node -e "console.log(require('./package.json').version)"
+
+      - name: Push training data
+        if: inputs.action == 'push-training-data'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          pip install huggingface_hub
+          python -c "
+          from huggingface_hub import HfApi, login
+          login(token='$HF_TOKEN')
+          api = HfApi()
+          api.upload_folder(
+            folder_path='training-data/cleaned',
+            path_in_repo='cleaned',
+            repo_id='issdandavis/scbe-aethermoore-training-data',
+            repo_type='dataset',
+            commit_message='Sync cleaned training data from mobile dispatch',
+          )
+          print('Training data pushed to HF')
+          "

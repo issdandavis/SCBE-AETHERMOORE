@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBE Tools | Governance Toolkit, CLI, APIs & Interactive Demos</title>
+<meta name="description" content="Developer tools for AI governance: Sacred Tongue tokenizer, governance gate CLI, risk calculator, PQC crypto library, multi-agent fleet orchestrator, and 24+ interactive browser demos.">
+<link rel="canonical" href="https://aethermoorgames.com/tools.html">
+<meta property="og:title" content="SCBE Developer Tools">
+<meta property="og:description" content="Governance toolkit, CLI, APIs, and 24 browser demos. Install from npm or PyPI, or try in-browser.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethermoorgames.com/tools.html">
+<meta property="og:image" content="https://aethermoorgames.com/hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SCBE Developer Tools">
+<meta name="twitter:description" content="Governance toolkit, CLI, APIs, and 24 browser demos.">
+<meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #070711; color: #edf0ff; line-height: 1.7; }
+a { color: #7b8cff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.topbar { position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(7,7,17,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(123,140,255,0.14); }
+.topbar .brand { font-weight: 800; letter-spacing: 0.08em; }
+.topbar nav { display: flex; gap: 18px; color: #b4b9df; font-size: 14px; flex-wrap: wrap; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8590ff; font-weight: 700; margin-bottom: 10px; }
+h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; }
+h2 { font-size: 24px; margin: 40px 0 12px; color: #c5caff; }
+h3 { font-size: 18px; margin-bottom: 6px; color: #fff; }
+p { color: #afb5da; font-size: 15px; margin-bottom: 10px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 24px 0; }
+.card { background: #0d0d1a; border: 1px solid #1a1a3e; border-radius: 12px; padding: 24px; transition: border-color 0.2s; }
+.card:hover { border-color: rgba(123,140,255,0.3); }
+.card .cat { font-size: 11px; color: #8590ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.card p { font-size: 13px; color: #999; }
+.card .install { font-family: 'SF Mono', monospace; font-size: 12px; color: #7cf3db; background: rgba(124,243,219,0.06); padding: 6px 10px; border-radius: 6px; margin-top: 10px; display: inline-block; }
+.card .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.card .tag { font-size: 11px; color: #d4d8ff; background: rgba(123,140,255,0.08); border: 1px solid rgba(123,140,255,0.12); border-radius: 999px; padding: 2px 8px; }
+.card .link { display: inline-block; margin-top: 12px; font-size: 13px; color: #7b8cff; font-weight: 600; }
+
+section { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1a1a3e; }
+.footer { margin-top: 60px; text-align: center; color: #555; font-size: 13px; border-top: 1px solid #1a1a3e; padding-top: 24px; }
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+</style>
+<link rel="stylesheet" href="static/shared.css">
+<link rel="stylesheet" href="static/polly-sidebar.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">SCBE AETHERMOORE</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="compliance.html">Compliance</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="test-suite.html">Tests</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+    <div class="eyebrow">Developer Tools</div>
+    <h1>Everything ships as a tool you can run.</h1>
+    <p>Libraries, CLIs, APIs, and 24 browser demos. Install from npm or PyPI, or try in the browser with zero setup.</p>
+
+    <!-- CORE LIBRARIES -->
+    <section style="border-top:none;">
+        <h2>Core Libraries</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="cat">npm + PyPI</div>
+                <h3>scbe-aethermoore</h3>
+                <p>The full governance framework. 14-layer pipeline, Sacred Tongues tokenizer, PQC crypto, governance gate, and multi-agent fleet orchestration in one package.</p>
+                <div class="install">npm install scbe-aethermoore</div><br>
+                <div class="install">pip install scbe-aethermoore</div>
+                <div class="tags">
+                    <span class="tag">v3.3.0</span>
+                    <span class="tag">TypeScript</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">MIT + Commercial</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="cat">npm</div>
+                <h3>@scbe/kernel</h3>
+                <p>Standalone kernel package with pipeline14, spiralSeal, and PQC primitives. Lighter than the full package for embedded use.</p>
+                <div class="tags">
+                    <span class="tag">Pipeline</span>
+                    <span class="tag">PQC</span>
+                    <span class="tag">Lightweight</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="cat">npm</div>
+                <h3>@scbe/sixtongues</h3>
+                <p>Sacred Tongues tokenizer as a standalone package. 6 languages, 256 tokens each, phi-weighted. Bijective encoding/decoding.</p>
+                <div class="tags">
+                    <span class="tag">Tokenizer</span>
+                    <span class="tag">KO/AV/RU/CA/UM/DR</span>
+                    <span class="tag">1,536 tokens</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GOVERNANCE TOOLS -->
+    <section>
+        <h2>Governance Tools</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="cat">API</div>
+                <h3>Pump API</h3>
+                <p>Middleware that sits between your users and your model. Computes tongue profile, checks null pattern, makes governance decision (ALLOW/QUARANTINE/DENY) in &lt;10ms.</p>
+                <a class="link" href="pricing.html">View pricing &rarr;</a>
+            </div>
+            <div class="card">
+                <div class="cat">CLI</div>
+                <h3>scbe-code-prism</h3>
+                <p>Static analysis tool that scans codebases for governance compliance. Checks layer annotations, axiom comments, and security boundary enforcement.</p>
+                <div class="install">pip install scbe-aethermoore && scbe-code-prism scan ./src</div>
+            </div>
+            <div class="card">
+                <div class="cat">CLI</div>
+                <h3>scbe-convert-to-sft</h3>
+                <p>Converts any codebase into SFT training pairs. Extracts function signatures, docstrings, and test cases into instruction/response JSONL format.</p>
+                <div class="install">scbe-convert-to-sft --input ./src --output training.jsonl</div>
+            </div>
+            <div class="card">
+                <div class="cat">API</div>
+                <h3>Governance Gate</h3>
+                <p>FastAPI endpoint that evaluates the full 14-layer pipeline on any input. Returns risk tier, tongue profile, confidence score, and audit record.</p>
+                <div class="install">uvicorn src.api.main:app --port 8000</div>
+                <a class="link" href="demos/governance-gate.html">Try the demo &rarr;</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CRYPTO TOOLS -->
+    <section>
+        <h2>Post-Quantum Cryptography</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="cat">Library</div>
+                <h3>ML-KEM-768 (Kyber)</h3>
+                <p>NIST FIPS 203 key encapsulation. 1,184-byte public keys. Quantum-resistant key exchange built into the governance pipeline.</p>
+                <div class="tags"><span class="tag">FIPS 203</span><span class="tag">1184-byte keys</span></div>
+            </div>
+            <div class="card">
+                <div class="cat">Library</div>
+                <h3>ML-DSA-65 (Dilithium)</h3>
+                <p>NIST FIPS 204 digital signatures. 3,293-byte signatures. Signs governance decisions, audit records, and ledger entries.</p>
+                <div class="tags"><span class="tag">FIPS 204</span><span class="tag">3293-byte sigs</span></div>
+            </div>
+            <div class="card">
+                <div class="cat">Library</div>
+                <h3>AES-256-GCM Envelopes</h3>
+                <p>Symmetric encryption with authenticated data. Wraps governance packets for transport between agents. Replay protection with timestamp validation.</p>
+                <div class="tags"><span class="tag">AEAD</span><span class="tag">Replay protection</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AGENT TOOLS -->
+    <section>
+        <h2>Multi-Agent Tools</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="cat">Framework</div>
+                <h3>HYDRA Fleet Orchestrator</h3>
+                <p>Spawn, coordinate, and govern fleets of AI agents. Balanced ternary consensus, role assignment (leader/validator/executor/observer), health monitoring.</p>
+                <a class="link" href="demos/swarm-formations.html">Swarm demo &rarr;</a>
+            </div>
+            <div class="card">
+                <div class="cat">Agent</div>
+                <h3>AetherBrowse</h3>
+                <p>Governed browser automation agent. Semantic antivirus membrane, tongue-weighted Dijkstra routing, and prompt injection detection for web tasks.</p>
+                <a class="link" href="demos/aetherbrowser-demo.html">Browser demo &rarr;</a>
+            </div>
+            <div class="card">
+                <div class="cat">Protocol</div>
+                <h3>MCP Server</h3>
+                <p>Model Context Protocol server exposing SCBE tools to any MCP-compatible AI agent. Sacred Tongue encoding, governance scanning, training data ingestion.</p>
+                <div class="tags"><span class="tag">MCP 1.26+</span><span class="tag">Claude Code</span><span class="tag">Copilot</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTERACTIVE DEMOS -->
+    <section>
+        <h2>24 Interactive Demos</h2>
+        <p>Every tool has a browser demo. No installation, no API keys, no signup. Just open and try.</p>
+        <div class="grid">
+            <div class="card">
+                <h3>Visualization</h3>
+                <p>Harmonic Wall 3D, Phi-Poincare, Distance Explorer, Energy Landscape, Energy Wells, Embedding Space, Swarm Formations, Attack Radar</p>
+                <a class="link" href="demos/index.html">Open demo hub &rarr;</a>
+            </div>
+            <div class="card">
+                <h3>Interactive Tools</h3>
+                <p>Tongue Encoder, Tongue Heatmap, Risk Calculator, Formula Vault, Governance Gate, Context Fingerprint, Spectral Coherence, Notarize</p>
+                <a class="link" href="demos/tongue-encoder.html">Try tongue encoder &rarr;</a>
+            </div>
+            <div class="card">
+                <h3>Testing & Analysis</h3>
+                <p>Benchmarks, Breathing Phase, Temporal Session, Audio Composition, Audio Telemetry, Small Business Helper</p>
+                <a class="link" href="demos/benchmarks.html">Run benchmarks &rarr;</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRAINING PIPELINE -->
+    <section>
+        <h2>Training Pipeline</h2>
+        <div class="grid">
+            <div class="card">
+                <div class="cat">Script</div>
+                <h3>Codebase-to-SFT</h3>
+                <p>Converts any source tree into supervised fine-tuning pairs. Extracts code patterns, docstrings, and test cases into governance-labeled JSONL.</p>
+                <div class="install">python scripts/codebase_to_sft.py --src ./src --out training.jsonl</div>
+            </div>
+            <div class="card">
+                <div class="cat">Pipeline</div>
+                <h3>Label Consolidation</h3>
+                <p>Cleans raw training data: drops unknowns, merges micro-labels into 24 consolidated families, caps class imbalance. 690K noise records eliminated.</p>
+                <div class="install">python scripts/clean_training_labels.py</div>
+            </div>
+            <div class="card">
+                <div class="cat">Notebook</div>
+                <h3>Qwen Fine-Tune</h3>
+                <p>Colab/Kaggle notebook for QLoRA fine-tuning Qwen2.5-0.5B on cleaned governance data. Runs on free T4 GPU or CPU fallback.</p>
+                <a class="link" href="https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data" target="_blank">Dataset on HF &rarr;</a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div class="footer">
+    <p>SCBE-AETHERMOORE &middot; Patent Pending USPTO #63/961,403</p>
+    <p style="margin-top:8px;"><a href="index.html">Home</a> &middot; <a href="enterprise.html">Enterprise</a> &middot; <a href="test-suite.html">Tests</a> &middot; <a href="workflows.html">Workflows</a> &middot; <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a></p>
+</div>
+
+<script src="static/polly-sidebar.js"></script>
+</body>
+</html>
