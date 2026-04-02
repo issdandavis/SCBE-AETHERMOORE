@@ -23,7 +23,7 @@ import pytest
 
 try:
     from cryptography.fernet import Fernet  # noqa: F401
-except Exception:
+except BaseException:
     pytest.skip(
         "cryptography package not functional (cffi backend missing)",
         allow_module_level=True,
