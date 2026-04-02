@@ -104,7 +104,16 @@ class TestSacredTongueTokenizer:
 # UNIT TESTS: RWP v3.0 Protocol
 # ============================================================
 
+# Check for argon2-cffi (required by RWP v3.0 at runtime)
+try:
+    import argon2  # noqa: F401
 
+    _ARGON2_AVAILABLE = True
+except ImportError:
+    _ARGON2_AVAILABLE = False
+
+
+@pytest.mark.skipif(not _ARGON2_AVAILABLE, reason="argon2-cffi not installed")
 class TestRWPv3Protocol:
     """Test suite for RWP v3.0 protocol"""
 
@@ -168,6 +177,7 @@ class TestRWPv3Protocol:
 # ============================================================
 
 
+@pytest.mark.skipif(not _ARGON2_AVAILABLE, reason="argon2-cffi not installed")
 class TestSCBEContextEncoder:
     """Test suite for SCBE context encoder"""
 
@@ -224,6 +234,7 @@ class TestSCBEContextEncoder:
 # ============================================================
 
 
+@pytest.mark.skipif(not _ARGON2_AVAILABLE, reason="argon2-cffi not installed")
 class TestIntegration:
     """Integration tests for end-to-end workflows"""
 
@@ -302,6 +313,7 @@ class TestIntegration:
 # ============================================================
 
 
+@pytest.mark.skipif(not _ARGON2_AVAILABLE, reason="argon2-cffi not installed")
 class TestProperties:
     """Property-based tests with Hypothesis"""
 
@@ -409,6 +421,7 @@ except ImportError:
 
 
 @pytest.mark.skipif(not BENCHMARK_AVAILABLE, reason="pytest-benchmark not installed (optional)")
+@pytest.mark.skipif(not _ARGON2_AVAILABLE, reason="argon2-cffi not installed")
 @pytest.mark.benchmark
 class TestPerformance:
     """

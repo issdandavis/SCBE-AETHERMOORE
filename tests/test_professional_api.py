@@ -29,6 +29,14 @@ try:
 except ImportError:
     FASTAPI_AVAILABLE = False
 
+# Check for argon2-cffi (required by RWPv3Protocol / seal-memory)
+try:
+    import argon2  # noqa: F401
+
+    ARGON2_AVAILABLE = True
+except ImportError:
+    ARGON2_AVAILABLE = False
+
 
 # =============================================================================
 # API ENDPOINT TESTS
@@ -73,12 +81,14 @@ class TestAPIEndpoints:
 
         response = client.post("/seal-memory", json=payload, headers=auth_headers)
 
-        # 500 can occur when optional crypto deps (argon2-cffi, pycryptodome)
+        # 500/503 can occur when optional crypto deps (argon2-cffi, pycryptodome)
         # are not installed — skip rather than fail in that case.
-        if response.status_code == 500:
+        if response.status_code in (500, 503):
             body = response.json()
-            if "Seal failed" in body.get("error", ""):
+            if "Seal failed" in body.get("detail", body.get("error", "")):
                 pytest.skip("seal-memory requires argon2-cffi and pycryptodome")
+            if "argon2" in body.get("detail", body.get("error", "")).lower():
+                pytest.skip("seal-memory requires argon2-cffi")
 
         assert response.status_code == 200
         data = response.json()
@@ -456,6 +466,7 @@ class TestResponseFormats:
             pytest.skip("FastAPI not available")
         return TestClient(app)
 
+    @pytest.mark.skipif(not ARGON2_AVAILABLE, reason="argon2-cffi not installed")
     def test_seal_response_structure(self, client, valid_api_key):
         """Test seal-memory response has correct structure."""
         payload = {
