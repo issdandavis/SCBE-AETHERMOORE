@@ -13,13 +13,11 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import sys
 import time
 
-import numpy as np
 
-from hydra.voxel_storage import VoxelGrid, Voxel, chladni_amplitude, generate_chladni_grid
-from hydra.color_dimension import TONGUE_WAVELENGTHS, TONGUE_WEIGHTS, ColorBand
+from hydra.voxel_storage import VoxelGrid, generate_chladni_grid
+from hydra.color_dimension import TONGUE_WAVELENGTHS, TONGUE_WEIGHTS
 from hydra.octree_sphere_grid import HyperbolicLattice25D
 
 
@@ -83,7 +81,7 @@ def _build_layout(
         )
 
     now_ms = at_unix_ms or (time.time() * 1000)
-    half = window_ms / 2
+    window_ms / 2
 
     voxels_out = []
     for v in grid.voxels.values():

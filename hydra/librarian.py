@@ -15,12 +15,11 @@ The Librarian manages the central ledger and provides:
 
 import json
 from datetime import datetime, timezone, timedelta
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
-import hashlib
 import re
 
-from .ledger import Ledger, LedgerEntry, EntryType
+from .ledger import Ledger, EntryType
 
 
 @dataclass
@@ -383,7 +382,7 @@ Recent Actions:
         for a in summary["actions"][:max_items]:
             context += f"  - {a['action']}: {a['target']} ({a['decision']})\n"
 
-        context += f"\n=== END CONTEXT ===\n"
+        context += "\n=== END CONTEXT ===\n"
 
         return context
 

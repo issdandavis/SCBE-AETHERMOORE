@@ -9,7 +9,7 @@ Portable, works anywhere Python runs.
 import sqlite3
 import json
 import os
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, asdict
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from enum import Enum

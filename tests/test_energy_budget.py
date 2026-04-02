@@ -246,7 +246,7 @@ class TestFleetEnergyManager:
 
     def test_active_vs_quarantined(self):
         mgr = FleetEnergyManager(default_budget=10.0)
-        a1 = mgr.provision("agent-1")
+        mgr.provision("agent-1")
         a2 = mgr.provision("agent-2")
         # Quarantine agent-2
         far = [5.0] * 6

@@ -37,11 +37,10 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, Callable, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
-import uuid
 
 # Try numpy, fallback to pure Python
 try:
-    import numpy as np
+    pass
 
     HAS_NUMPY = True
 except ImportError:
@@ -1298,7 +1297,7 @@ async def simulate_swarm_attack(
     # Add malicious agents
     for i in range(num_malicious):
         pos = [random.uniform(-0.1, 0.1) for _ in range(6)]
-        agent = gov.add_agent(f"mal-{i}", AgentRole.MALICIOUS, pos, initial_coherence=0.3)
+        gov.add_agent(f"mal-{i}", AgentRole.MALICIOUS, pos, initial_coherence=0.3)
 
     # Run simulation
     history = []
@@ -1355,7 +1354,6 @@ def create_autonomous_coder(governance: SwarmGovernance, agent_id: str) -> Auton
 
 # Entry point for standalone simulation
 if __name__ == "__main__":
-    import asyncio
 
     async def main():
         print("Starting swarm attack simulation...")

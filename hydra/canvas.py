@@ -46,26 +46,15 @@ Usage:
 
 from __future__ import annotations
 
-import copy
 import hashlib
-import json
-import os
 import time
-import uuid
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set
 
 try:
     from hydra.color_dimension import (
-        ColorChannel,
         SpectrumAllocator,
-        channel_for_provider,
-        channel_for_task,
-        sort_by_disorganized_order,
-        MultiColorTag,
-        BAND_CENTERS,
         ColorBand,
     )
 
@@ -286,7 +275,10 @@ def recipe_article(topic: str = "AI safety", target_length: int = 2000) -> List[
             assigned_color=ModelColor.VIOLET,
             depends_on=["research", "arxiv_scan"],
             params={
-                "instruction": f"Create a detailed outline for a {target_length}-word article on '{topic}'. Use the research findings."
+                "instruction": (
+                    f"Create a detailed outline for a {target_length}-word article on"
+                    f" '{topic}'. Use the research findings."
+                )
             },
         ),
         CanvasStep(
@@ -354,7 +346,7 @@ def recipe_article(topic: str = "AI safety", target_length: int = 2000) -> List[
         CanvasStep(
             "remember",
             StepType.REMEMBER,
-            f"Store article in memory",
+            "Store article in memory",
             depends_on=["synthesize"],
             params={"key": f"article_{topic.replace(' ', '_')[:30]}"},
         ),
@@ -885,7 +877,7 @@ class CanvasOrchestrator:
             target = step.params.get("target", "arxiv")
             url = step.params.get("url", "")
             output = f"[browser] Navigate: {target} {url}\n"
-            output += f"  Script: scripts/system/browser_chain_dispatcher.py\n"
+            output += "  Script: scripts/system/browser_chain_dispatcher.py\n"
             artifacts["target"] = target
             artifacts["status"] = "navigated"
 
@@ -894,7 +886,7 @@ class CanvasOrchestrator:
             title = step.params.get("title", step.description)
             output = f"[obsidian] Note created: {title}\n"
             output += f"  Vault: {vault}\n"
-            output += f"  Script: scripts/system/obsidian_byproduct_note.py\n"
+            output += "  Script: scripts/system/obsidian_byproduct_note.py\n"
             artifacts["vault"] = vault
             artifacts["title"] = title
 
@@ -952,7 +944,6 @@ class CanvasOrchestrator:
         )
 
         # Build dependency graph
-        step_map: Dict[str, CanvasStep] = {s.step_id: s for s in steps}
         executed: Set[str] = set()
         max_iterations = len(steps) * (self.max_retries + 1) * self.max_roundabout_visits
         iteration = 0
@@ -1016,7 +1007,10 @@ class CanvasOrchestrator:
                     result = StepResult(
                         step_id=step.step_id,
                         status="done",
-                        output=f"Canvas merged: {len(self.canvas.sections)} strokes from {len(self.canvas.colors_used)} colors\n",
+                        output=(
+                            f"Canvas merged: {len(self.canvas.sections)} strokes"
+                            f" from {len(self.canvas.colors_used)} colors\n"
+                        ),
                         provider_used="system",
                         color="white",
                     )
@@ -1101,10 +1095,17 @@ def list_recipes() -> List[Dict[str, Any]]:
                     )
                 ),
                 "description": {
-                    "article": "Full article pipeline (14 steps): research -> draft -> edit -> expand -> fact-check -> publish",
+                    "article": (
+                        "Full article pipeline (14 steps): research -> draft -> edit"
+                        " -> expand -> fact-check -> publish"
+                    ),
                     "research": "Deep multi-source research (8 steps): arxiv + web + debate + synthesis",
-                    "content": "Multi-platform content (variable): write -> adapt per platform -> govern -> publish",
-                    "training": "Training data generation (7 steps): research -> generate pairs -> quality check -> export",
+                    "content": (
+                        "Multi-platform content (variable): write -> adapt per platform" " -> govern -> publish"
+                    ),
+                    "training": (
+                        "Training data generation (7 steps): research -> generate pairs" " -> quality check -> export"
+                    ),
                     "full_loop": "End-to-end loop: browser nav + research + writing + obsidian + cross-talk + publish",
                 }.get(name, ""),
             }
