@@ -237,6 +237,65 @@ That wrapper:
 
 This is the bounded-AI pattern in practice: use models to produce candidate material, but only promote rows that passed deterministic review gates.
 
+### Step 7. Register and promote remote runs through one hub
+
+Use one registry file to converge Colab and Kaggle candidates instead of
+letting each host become its own truth source.
+
+Command surface:
+
+- `scripts/system/multi_host_training_registry.py`
+
+Default registry:
+
+- `training/runs/multi_host_registry.json`
+
+Register each finished host run:
+
+```powershell
+python scripts/system/multi_host_training_registry.py `
+  register `
+  --run-id kaggle-2026-04-02-b `
+  --host kaggle `
+  --provider hf `
+  --role textgen `
+  --base-model Qwen/Qwen2.5-0.5B-Instruct `
+  --dataset-repo issdandavis/scbe-aethermoore-training-data `
+  --dataset-revision rev-2026-04-02-b `
+  --artifact-id issdandavis/scbe-kaggle-2026-04-02-b `
+  --artifact-uri hf://issdandavis/scbe-kaggle-2026-04-02-b `
+  --quality 0.81 `
+  --safety 0.98 `
+  --latency-ms-p95 105 `
+  --cost-per-1k-tokens 0.72
+```
+
+Promote the current winner for a track:
+
+```powershell
+python scripts/system/multi_host_training_registry.py `
+  promote `
+  --run-id kaggle-2026-04-02-b
+```
+
+Export the promoted HF artifact into the federated manifest lane:
+
+```powershell
+python scripts/system/multi_host_training_registry.py `
+  export-provider-manifest `
+  --provider hf `
+  --output training/runs/promoted_hf_manifest.json
+```
+
+Then feed the promoted manifest into `training/federated_orchestrator.py` with
+the GCP and AWS promoted manifests. This keeps multi-host growth disciplined:
+
+1. train in multiple places,
+2. register every candidate,
+3. promote one winner per track,
+4. converge manifests,
+5. ship the promoted artifact.
+
 ## What Must Stay Deterministic
 
 These parts should remain code-and-data governed, not learned:
