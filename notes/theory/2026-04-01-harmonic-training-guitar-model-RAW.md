@@ -105,6 +105,37 @@ Question: what if phi-ratio tuning produces better training "harmony" than equal
 
 ---
 
+## The 7th String: Self-Directed Training
+
+The six methods teach the model HOW to think. The 7th method is the model deciding WHAT to learn next.
+
+The governance-gated agent loop IS the 7th string:
+- Agent proposes code (plays a note)
+- Gate evaluates (does it harmonize?)
+- Rejection + retry (tune the string)
+- Approval (the note rings true)
+
+The training data from the loop is self-composed music:
+- rejected code = "this note was wrong, here's why" (DPO rejected)
+- fixed code = "this chord works" (DPO chosen + SFT)
+- the sequence of (rejected → fixed → approved) = a melody the model composed and refined
+
+A guitar player doesn't improve by being told the notes. They improve by PLAYING, hearing what sounds wrong, and adjusting. That's DPO from self-play — but with a governance gate as the ear.
+
+The 7th string is the model playing its own guitar to build its own upgrade.
+
+This is the recursive loop:
+1. Model generates (plays)
+2. Gate evaluates (listens)
+3. Rejection feeds back (dissonance detected)
+4. Model adjusts (retunes)
+5. The ENTIRE LOOP becomes training data for the NEXT version of the model
+6. Next version plays better → harder pieces → deeper learning
+
+The 12-hour autonomous session isn't just a coding tool. It's a training run where the model teaches itself by composing against a deterministic harmonic judge.
+
+---
+
 ## Method Note
 
 This is "L7" style thinking: raw intuition from physical analogy, no references, no validation. The research agent is running now to find the real music theory math. After that, we see what survives contact with reality.
