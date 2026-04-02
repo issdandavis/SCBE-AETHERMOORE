@@ -213,9 +213,5 @@ training-data/code_*.jsonl
 # Nanobanana output
 nanobanana-output/
 
-# Stale generated content articles (platform-specific)
-content/articles/devto_*.md
-content/articles/huggingface_*.md
-content/articles/linkedin_*.md
-content/articles/medium_*.md
-content/articles/substack_*.md
+# Local benchmark snapshots
+artifacts/code_ab_results.json
