@@ -16,10 +16,9 @@ Features:
 import asyncio
 import json
 from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional, Callable
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from enum import Enum
-import hashlib
 import uuid
 
 from .llm_providers import LLMProvider, LLMResponse, create_provider, HYDRA_SYSTEM_PROMPT

@@ -275,7 +275,7 @@ async def authorize_compute(req: WorkloadRequest):
             f"{energy_remaining:.1f}Wh remaining"
         )
     else:
-        justification = f"Denied: insufficient energy or cooling for workload"
+        justification = "Denied: insufficient energy or cooling for workload"
 
     reason = "authorized" if authorized else "denied_energy_budget"
 

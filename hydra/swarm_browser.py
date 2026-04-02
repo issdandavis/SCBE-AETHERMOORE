@@ -23,8 +23,6 @@ Usage:
     await swarm.shutdown()
 """
 
-import asyncio
-import json
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -33,7 +31,7 @@ from .spine import HydraSpine
 from .limbs import MultiTabBrowserLimb
 from .ledger import Ledger
 from .librarian import Librarian
-from .consensus import RoundtableConsensus, VoteDecision
+from .consensus import RoundtableConsensus
 from .swarm_governance import (
     SwarmGovernance,
     GovernanceConfig,

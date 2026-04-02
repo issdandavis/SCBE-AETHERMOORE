@@ -34,18 +34,14 @@ from __future__ import annotations
 
 import hashlib
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
 from hydra.color_dimension import PHI, TONGUE_WEIGHTS
-from hydra.voxel_storage import (
-    chladni_amplitude,
-    normalize_intent,
-    intent_similarity,
-)
+from hydra.voxel_storage import chladni_amplitude
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -850,7 +846,10 @@ QUADTREE25D_INTEROP = {
         "rust": "struct QuadPoint { x: f64, y: f64, z: f64, tongue: String, authority: String }",
         "sql": "CREATE TABLE quad_points (id TEXT, x REAL, y REAL, z REAL, tongue TEXT, authority TEXT)",
         "wasm": "QuadPoint { x: f64, y: f64, z: f64 } via wasm-bindgen",
-        "html_css": "<div class='quad-point' data-x data-y data-z style='left: calc(x%); top: calc(y%); height: calc(z*scale)'></div>",
+        "html_css": (
+            "<div class='quad-point' data-x data-y data-z"
+            " style='left: calc(x%); top: calc(y%); height: calc(z*scale)'></div>"
+        ),
         "solidity": "struct QuadPoint { int256 x; int256 y; int256 z; string tongue; }",
         "go": "type QuadPoint struct { X, Y, Z float64; Tongue, Authority string }",
         "glsl": "struct QuadPoint { vec3 pos; float tongue_weight; };",
@@ -859,7 +858,10 @@ QUADTREE25D_INTEROP = {
         "python": "QuadNode(bounds, depth, children, points, z_stats)",
         "typescript": "class QuadNode { bounds: QuadBounds; children: Map<number, QuadNode>; points: QuadPoint[]; }",
         "rust": "struct QuadNode { bounds: QuadBounds, children: [Option<Box<QuadNode>>; 4], points: Vec<QuadPoint> }",
-        "sql": "CREATE TABLE quad_nodes (id TEXT, x_min REAL, y_min REAL, x_max REAL, y_max REAL, depth INT, z_min REAL, z_max REAL)",
+        "sql": (
+            "CREATE TABLE quad_nodes"
+            " (id TEXT, x_min REAL, y_min REAL, x_max REAL, y_max REAL, depth INT, z_min REAL, z_max REAL)"
+        ),
         "go": "type QuadNode struct { Bounds QuadBounds; Children [4]*QuadNode; Points []QuadPoint }",
         "glsl": "uniform sampler2D quadtree_texture; // encoded node hierarchy",
     },
@@ -944,7 +946,7 @@ def demo() -> Dict[str, Any]:
 
     # 5. Stats
     stats = qt.stats()
-    print(f"\n[4] Quadtree stats:")
+    print("\n[4] Quadtree stats:")
     print(f"    Points: {stats['point_count']}")
     print(f"    Leaves: {stats['leaf_count']}")
     print(f"    Max depth used: {stats['max_depth_used']}")
@@ -1251,9 +1253,6 @@ class AdaptiveQuadTree25D:
         Maps 2D quadrants to 3D octants with sign-based partitioning.
         z-height determines sign_z, enabling mirror operations across XY-plane.
         """
-        center_x = self.boundary.x + self.boundary.width / 2
-        center_y = self.boundary.y + self.boundary.height / 2
-
         b = self.boundary
         for p in self.points:
             # Normalize to [-1, 1]

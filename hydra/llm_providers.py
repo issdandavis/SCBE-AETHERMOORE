@@ -21,10 +21,9 @@ Usage:
 """
 
 import asyncio
-import json
 import os
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, AsyncIterator, Dict, List, Optional
 
 # ---------------------------------------------------------------------------
@@ -186,7 +185,7 @@ class ClaudeProvider(LLMProvider):
                 "parameter or set the ANTHROPIC_API_KEY environment variable."
             )
 
-        import anthropic
+        import anthropic  # noqa: F811
 
         self._client = anthropic.AsyncAnthropic(api_key=self._api_key)
 
@@ -276,7 +275,7 @@ class OpenAIProvider(LLMProvider):
                 "parameter or set the OPENAI_API_KEY environment variable."
             )
 
-        import openai
+        import openai  # noqa: F811
 
         kwargs: Dict[str, Any] = {"api_key": self._api_key}
         if base_url:
@@ -379,7 +378,7 @@ class GeminiProvider(LLMProvider):
                 "parameter or set the GOOGLE_API_KEY environment variable."
             )
 
-        from google import genai
+        from google import genai  # noqa: F811
 
         self._client = genai.Client(api_key=self._api_key)
 
@@ -513,7 +512,7 @@ class HuggingFaceProvider(LLMProvider):
         self.model = model
         self._api_key = api_key or os.environ.get("HF_TOKEN", "")
 
-        from huggingface_hub import InferenceClient
+        from huggingface_hub import InferenceClient  # noqa: F811
 
         kwargs: Dict[str, Any] = {"model": model}
         if self._api_key:
@@ -629,7 +628,7 @@ class LocalProvider(LLMProvider):
         self.model = model
         self._base_url = base_url
 
-        import openai
+        import openai  # noqa: F811
 
         self._client = openai.AsyncOpenAI(
             api_key=api_key,
@@ -732,7 +731,7 @@ class GrokProvider(LLMProvider):
                 "parameter or set the XAI_API_KEY environment variable."
             )
 
-        import openai
+        import openai  # noqa: F811
 
         self._client = openai.AsyncOpenAI(
             api_key=self._api_key,

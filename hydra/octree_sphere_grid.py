@@ -33,15 +33,13 @@ import hashlib
 import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
-from hydra.color_dimension import ColorChannel, PHI, TONGUE_WEIGHTS
+from hydra.color_dimension import PHI, TONGUE_WEIGHTS
 from hydra.voxel_storage import (
-    Voxel,
     chladni_amplitude,
-    chladni_address,
     compute_authority_hash,
     normalize_intent,
     intent_similarity,
@@ -1464,7 +1462,7 @@ def _demo():
     print(f"  Path from slot {grid.active_slot} to slot 9: {path}")
 
     # Stats
-    print(f"\nOctree stats:")
+    print("\nOctree stats:")
     stats = tree.stats()
     for k, v in stats.items():
         print(f"  {k}: {v}")
