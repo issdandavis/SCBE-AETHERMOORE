@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCBE-AETHERMOORE Benchmark Suite</title>
-<meta name="description" content="Reproducible benchmark results for the SCBE-AETHERMOORE AI governance framework. 91 attacks, 10 classes, 8 detection configurations, measured against public frameworks.">
+<title>SCBE-AETHERMOORE Benchmark Proof</title>
+<meta name="description" content="Measured SCBE benchmark proof: 13.97% fixed-compute multiview training gain, adversarial detection sweeps, and the fair matched-budget code A/B rerun path.">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #070711; color: #edf0ff; line-height: 1.7; }
@@ -81,11 +81,43 @@ pre { background: #0a0a14; padding: 16px; border-radius: 8px; overflow-x: auto; 
 
 <div class="wrap">
     <div class="hero">
-        <div class="eyebrow">Benchmark Suite</div>
+        <div class="eyebrow">Benchmark Proof</div>
         <h1>Measured Results.<br>Reproducible Methods.</h1>
-        <p>Every number on this page has a documented methodology, a reproducible script, and a known limitation. No hand-waving. No inflated claims. Run the benchmarks yourself.</p>
-        <p class="meta">Last updated: March 31, 2026 &middot; Patent Pending USPTO #63/961,403 &middot; Author: Issac Davis (ORCID 0009-0002-3936-9369)</p>
+        <p>Every number on this page has a documented methodology, a reproducible script, and a known limitation. The strongest confirmed training result is the fixed-compute multiview win. The stalled Kaggle CPU code lane has been retired and replaced with a fair matched-budget GPU rerun path.</p>
+        <p class="meta">Last updated: April 2, 2026 &middot; Patent Pending USPTO #63/961,403 &middot; Author: Issac Davis (ORCID 0009-0002-3936-9369)</p>
     </div>
+
+    <!-- TRAINING EFFICIENCY -->
+    <section>
+        <h2>Training Efficiency Proof</h2>
+        <p>This is the strongest confirmed training benchmark in the public stack: layered SCBE supervision improved loss at fixed compute without increasing model size or training time.</p>
+
+        <div class="card-grid">
+            <div class="card">
+                <h4>Fixed-Compute Loss Reduction</h4>
+                <div class="big-num good">13.97%</div>
+                <p>Multiview stack-lite supervision reduced loss from <span class="num">2.2226</span> to <span class="num">1.9121</span> against the expression-only baseline at the same compute budget.</p>
+            </div>
+            <div class="card">
+                <h4>What Changed</h4>
+                <div class="big-num neutral">L0-L3</div>
+                <p>The gain came from supervision structure, not scaling: substrate, coordination, orientation, and expression instead of expression-only training.</p>
+            </div>
+            <div class="card">
+                <h4>Code A/B Status</h4>
+                <div class="big-num warn">Rerun</div>
+                <p>The original Kaggle CPU code lane was not a fair A/B and timed out. It has been replaced by a matched-budget rerun path for GPU execution.</p>
+            </div>
+        </div>
+
+        <div class="methodology">
+            <h4>Matched-Budget Code Rerun</h4>
+            <p><strong>Why the old lane was wrong:</strong> the original baseline corpus was <span class="num">5,000</span> rows and <span class="num">1,060,324</span> estimated tokens, while the triangulated corpus was <span class="num">47,240</span> rows and <span class="num">6,666,633</span> estimated tokens. That made the stalled Kaggle CPU run a bad comparison even before it timed out.</p>
+            <p><strong>Current fair setup:</strong> the rerun matches both conditions to the same token budget using <span class="num">5,000</span> baseline rows versus <span class="num">7,460</span> triangulated rows, both at roughly <span class="num">1.06M</span> estimated tokens.</p>
+            <p><strong>Current GPU-ready defaults:</strong> <code>Qwen/Qwen2.5-Coder-0.5B-Instruct</code>, <code>1</code> epoch, <code>75</code> max steps per condition, <code>LoRA r=8</code>, <code>max_seq_length=512</code>.</p>
+            <p><strong>Local sources:</strong> <code>scripts/research/train_code_ab_fast.py</code>, <code>artifacts/research/code_ab_fast/manifest.json</code>, and <code>notebooks/code_ab_matched_budget_colab.ipynb</code>.</p>
+        </div>
+    </section>
 
     <!-- HEADLINE RESULTS -->
     <section>
