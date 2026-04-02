@@ -16,9 +16,16 @@
 
 Most prompt-injection defenses lean heavily on pattern recognition or narrow classifier behavior. SCBE explores a different framing: project an input into a geometric state space, measure drift, and make governance decisions from distance, phase, and structural deviation.
 
-The current system maps inputs into a 6-dimensional coordinate system and applies geometric cost scaling across a 14-layer pipeline. The further a request drifts from trusted behavior, the more expensive that drift becomes under the wall function: **H(d, R) = R^(d^2)**.
+The public demo lane uses a base wall intuition: **H_base(d, R) = R^(d^2)**. Some live runtime branches add intent or temporal scaling before the final public gate, so the wall should be treated as a family of geometric cost functions instead of one universal closed form.
 
-The goal is not to claim perfect security. The goal is to make adversarial drift measurable, inspectable, and expensive enough to route into review, quarantine, or denial before downstream actions execute.
+The goal is not to claim perfect security. The goal is to make adversarial drift measurable, inspectable, and expensive enough to route into quarantine, escalation, or denial before downstream actions execute.
+
+### Public governance bands
+
+- `ALLOW` -> `final_score > 0.8`
+- `QUARANTINE` -> `0.5 < final_score <= 0.8`
+- `ESCALATE` -> `0.3 < final_score <= 0.5`
+- `DENY` -> `final_score <= 0.3`
 
 **Current benchmark snapshot**: replacing statistical text features with a trained semantic projector improved F1 from 0.481 to 0.813 on the public benchmark lane. In that eval pack, “Ignore all instructions” moved from ALLOW to QUARANTINE, and “You are DAN” moved from ALLOW to DENY.
 
@@ -77,7 +84,7 @@ Cross-model biblical null-space evaluation:
 - **14-layer governance pipeline** — from context embedding to risk decision
 - **6 Sacred Tongues** — KO (intent), AV (transport), RU (policy), CA (compute), UM (security), DR (structure)
 - **Semantic projector** — trained 385x6 matrix mapping sentence embeddings to tongue coordinates
-- **Harmonic wall** — H(d,R) = R^(d^2), superexponential cost scaling
+- **Harmonic wall family** — base public intuition `H_base(d,R) = R^(d^2)` with runtime branches that can add intent or temporal scaling
 - **Fibonacci trust** — session-aware trust ladder (1,1,2,3,5,8,13...), one betrayal drops to floor
 - **Null-space signatures** — detect attacks by what's ABSENT, not what's present
 - **Neural dye injection** — trace signals through all 14 layers, visualize tongue activation heatmaps
@@ -191,8 +198,8 @@ Layer 6-7:   Breathing Transform + Phase (Möbius addition)
 Layer 8:     Multi-Well Realms
 Layer 9-10:  Spectral + Spin Coherence
 Layer 11:    Triadic Temporal Distance
-Layer 12:    score = 1 / (1 + d_H + 2 * phaseDeviation)  [HARMONIC SCALING]
-Layer 13:    Risk' → ALLOW / QUARANTINE / DENY
+Layer 12:    Harmonic wall scalar  [base public intuition: H_base(d,R) = R^(d^2)]
+Layer 13:    Public gate → ALLOW / QUARANTINE / ESCALATE / DENY
 Layer 14:    Audio Axis (FFT telemetry)
 
 ═══════════════════════════════════════════════════════════════════

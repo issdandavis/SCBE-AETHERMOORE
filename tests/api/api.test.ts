@@ -41,7 +41,7 @@ describe('SCBE API', () => {
       expect(result.score).toBeLessThanOrEqual(1);
       expect(result.distance).toBeGreaterThanOrEqual(0);
       expect(result.scaledCost).toBeGreaterThan(0);
-      expect(['ALLOW', 'REVIEW', 'DENY']).toContain(result.decision);
+      expect(['ALLOW', 'QUARANTINE', 'ESCALATE', 'DENY']).toContain(result.decision);
       expect(result.reason).toBeDefined();
     });
 
@@ -172,7 +172,7 @@ describe('SCBE API', () => {
       const risk = api.evaluateRisk(context);
 
       // 2. If allowed, sign the transaction
-      if (risk.decision === 'ALLOW' || risk.decision === 'REVIEW') {
+      if (risk.decision === 'ALLOW' || risk.decision === 'QUARANTINE') {
         const { envelope } = api.sign(context, ['ko', 'um']);
 
         // 3. Verify the signed transaction
@@ -268,10 +268,10 @@ describe('SecurityGate', () => {
     expect(result.status).toBe('allow');
   });
 
-  it('should review or deny suspicious requests', async () => {
+  it('should quarantine, escalate, or deny suspicious requests', async () => {
     agent.trustScore = 0.1;
     const result = await gate.check(agent, 'delete', { source: 'external' });
-    expect(['review', 'deny']).toContain(result.status);
+    expect(['quarantine', 'escalate', 'deny']).toContain(result.status);
   });
 });
 
@@ -360,7 +360,7 @@ describe('Convenience Functions', () => {
   it('checkAccess should work with agent', async () => {
     const agent = new Agent('Test', [0, 0, 0, 0, 0, 0]);
     const result = await checkAccess(agent, 'read', { source: 'internal' });
-    expect(['allow', 'review', 'deny']).toContain(result.status);
+    expect(['allow', 'quarantine', 'escalate', 'deny']).toContain(result.status);
   });
 
   it('requiredTongues should work', () => {

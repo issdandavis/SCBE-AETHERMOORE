@@ -67,7 +67,7 @@ export interface RiskResult {
   score: number; // 0-1, higher = more risky
   distance: number; // Hyperbolic distance from safe center
   scaledCost: number; // Exponential cost to attack
-  decision: 'ALLOW' | 'REVIEW' | 'DENY';
+  decision: 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY';
   reason: string;
 }
 
@@ -87,7 +87,7 @@ export interface VerifyResult {
 
 /** Security gate check result */
 export interface GateResult {
-  status: 'allow' | 'review' | 'deny';
+  status: 'allow' | 'quarantine' | 'escalate' | 'deny';
   score: number;
   dwellMs: number;
   reason?: string;
@@ -136,8 +136,9 @@ const DEFAULT_KEYRING: Keyring = {
 
 const SAFE_CENTER = [0, 0, 0, 0, 0, 0];
 const RISK_THRESHOLDS = {
-  ALLOW: 0.3,
-  REVIEW: 0.7,
+  ALLOW: 0.2,
+  QUARANTINE: 0.5,
+  ESCALATE: 0.8,
 };
 
 const MAX_COMPLEXITY = 1e10; // Cap to prevent overflow
@@ -263,7 +264,7 @@ export class SecurityGate {
    * Perform security gate check with adaptive dwell time.
    *
    * Higher risk = longer wait time (slows attackers).
-   * Returns allow/review/deny decision.
+   * Returns allow/quarantine/escalate/deny decision.
    */
   async check(agent: Agent, action: string, context: Context): Promise<GateResult> {
     const risk = this.assessRisk(agent, action, context);
@@ -284,7 +285,9 @@ export class SecurityGate {
     if (score > 0.8) {
       return { status: 'allow', score, dwellMs };
     } else if (score > 0.5) {
-      return { status: 'review', score, dwellMs, reason: 'Manual approval required' };
+      return { status: 'quarantine', score, dwellMs, reason: 'Bounded containment required' };
+    } else if (score > 0.3) {
+      return { status: 'escalate', score, dwellMs, reason: 'Manual escalation required' };
     } else {
       return { status: 'deny', score, dwellMs, reason: 'Security threshold not met' };
     }
@@ -435,15 +438,18 @@ export class SCBE {
     const score = Math.min(1, distance / 5);
 
     // Make decision
-    let decision: 'ALLOW' | 'REVIEW' | 'DENY';
+    let decision: 'ALLOW' | 'QUARANTINE' | 'ESCALATE' | 'DENY';
     let reason: string;
 
     if (score < RISK_THRESHOLDS.ALLOW) {
       decision = 'ALLOW';
       reason = 'Context within safe zone';
-    } else if (score < RISK_THRESHOLDS.REVIEW) {
-      decision = 'REVIEW';
-      reason = 'Context requires review - moderate deviation';
+    } else if (score < RISK_THRESHOLDS.QUARANTINE) {
+      decision = 'QUARANTINE';
+      reason = 'Context requires bounded containment checks';
+    } else if (score < RISK_THRESHOLDS.ESCALATE) {
+      decision = 'ESCALATE';
+      reason = 'Context requires manual escalation - elevated deviation';
     } else {
       decision = 'DENY';
       reason = 'Context exceeds safe threshold - high risk';

@@ -21,7 +21,7 @@ paths:
       description: |
         Submit an action request for governance evaluation.
         The system applies policies, evaluates risk via Harmonic Wall,
-        and returns ALLOW/DENY/ESCALATE with rationale.
+        and returns ALLOW/QUARANTINE/ESCALATE/DENY with rationale.
       requestBody:
         required: true
         content:
@@ -252,7 +252,7 @@ components:
           description: Computed risk (0 = safe, 1 = maximum risk)
         harmonic_cost:
           type: number
-          description: Harmonic Wall cost H(d) = exp(d²)
+          description: Harmonic Wall scalar cost emitted by the governance engine
         conditions:
           type: array
           items:

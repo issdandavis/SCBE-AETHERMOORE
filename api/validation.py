@@ -173,7 +173,7 @@ def run_nextgen_action_validation(
 
     Returns:
       (decision_str, score, explanation)
-    where decision_str is one of: ALLOW, QUARANTINE, DENY.
+    where decision_str is one of: ALLOW, QUARANTINE, ESCALATE, DENY.
     """
     ctx = context or {}
     trust_score = _clamp(_to_float(trust_score, 0.5), 0.0, 1.0)
@@ -214,19 +214,20 @@ def run_nextgen_action_validation(
     )
     explanation["layers"]["L14"] = "telemetry_ready"
 
-    # Decision logic.
+    # Decision logic. Public contract is 4-tier:
+    # ALLOW -> QUARANTINE -> ESCALATE -> DENY
     hard_quarantine = (
         norm >= drift_threshold
         or not spectrum["valid"]
         or not symphonic["accepted"]
     )
 
-    if hard_quarantine:
-        decision = "QUARANTINE"
-    elif base_score > 0.6:
+    if base_score > 0.8:
         decision = "ALLOW"
-    elif base_score > 0.3:
+    elif base_score > 0.5:
         decision = "QUARANTINE"
+    elif base_score > 0.3 or hard_quarantine:
+        decision = "ESCALATE"
     else:
         decision = "DENY"
 

@@ -171,6 +171,7 @@ SESSION_MANAGER: Optional[Any] = None
 class Decision(str, Enum):
     ALLOW = "ALLOW"
     DENY = "DENY"
+    ESCALATE = "ESCALATE"
     QUARANTINE = "QUARANTINE"
 
 
@@ -389,10 +390,12 @@ def scbe_14_layer_pipeline(
     explanation["layers"]["L14"] = f"Logged at {time.time():.0f}"
 
     # Decision thresholds
-    if final_score > 0.6:
+    if final_score > 0.8:
         decision = Decision.ALLOW
-    elif final_score > 0.3:
+    elif final_score > 0.5:
         decision = Decision.QUARANTINE
+    elif final_score > 0.3:
+        decision = Decision.ESCALATE
     else:
         decision = Decision.DENY
 
@@ -428,7 +431,7 @@ async def authorize(
     Main governance decision endpoint.
 
     Evaluates an agent's request through the 14-layer SCBE pipeline
-    and returns ALLOW, DENY, or QUARANTINE.
+    and returns ALLOW, QUARANTINE, ESCALATE, or DENY.
     """
     start_time = time.time()
 
@@ -492,7 +495,7 @@ async def authorize(
     }
     reason_codes = [
         f"DECISION_{decision.value}",
-        f"RISK_{'LOW' if score > 0.6 else ('MEDIUM' if score > 0.3 else 'HIGH')}",
+        f"RISK_{'LOW' if score > 0.8 else ('GUARDED' if score > 0.5 else ('ELEVATED' if score > 0.3 else 'HIGH'))}",
         f"ACTION_{request.action.upper()}",
     ]
 
@@ -551,7 +554,7 @@ async def authorize(
     # Persist to Firebase
     try:
         persistence = get_persistence()
-        risk_level = "LOW" if score > 0.6 else ("MEDIUM" if score > 0.3 else "HIGH")
+        risk_level = "LOW" if score > 0.8 else ("GUARDED" if score > 0.5 else ("ELEVATED" if score > 0.3 else "HIGH"))
         audit_id = persistence.log_decision(
             agent_id=request.agent_id,
             action=request.action,
@@ -896,9 +899,11 @@ async def end_cloud_session(
 class MetricsResponse(BaseModel):
     total_decisions: int
     allow_count: int
+    escalate_count: int = 0
     quarantine_count: int
     deny_count: int
     allow_rate: float
+    escalate_rate: float = 0.0
     quarantine_rate: float
     deny_rate: float
     avg_trust_score: float
@@ -1009,7 +1014,7 @@ async def get_alerts(
         alerts = []
         logs = persistence.get_audit_logs(limit=limit)
         for log in logs:
-            if log["decision"] in ["DENY", "QUARANTINE"]:
+            if log["decision"] in ["DENY", "QUARANTINE", "ESCALATE"]:
                 alerts.append({
                     "alert_id": f"alert-{log['audit_id']}",
                     "timestamp": log["timestamp"],
@@ -1277,6 +1282,7 @@ async def run_fleet_scenario(
     decisions = []
     allow_count = 0
     deny_count = 0
+    escalate_count = 0
     quarantine_count = 0
     total_score = 0.0
 
@@ -1300,10 +1306,12 @@ async def run_fleet_scenario(
         # Track metrics
         if decision == Decision.ALLOW:
             allow_count += 1
-        elif decision == Decision.DENY:
-            deny_count += 1
-        else:
+        elif decision == Decision.QUARANTINE:
             quarantine_count += 1
+        elif decision == Decision.ESCALATE:
+            escalate_count += 1
+        else:
+            deny_count += 1
 
         total_score += score
 
@@ -1331,6 +1339,7 @@ async def run_fleet_scenario(
         "actions": len(scenario.actions),
         "allow": allow_count,
         "deny": deny_count,
+        "escalate": escalate_count,
         "quarantine": quarantine_count,
         "elapsed_ms": round(elapsed_ms, 2)
     }))
@@ -1345,12 +1354,14 @@ async def run_fleet_scenario(
             "total_actions": len(scenario.actions),
             "allowed": allow_count,
             "denied": deny_count,
+            "escalated": escalate_count,
             "quarantined": quarantine_count
         },
         decisions=decisions,
         metrics={
             "avg_score": round(total_score / max(len(decisions), 1), 3),
             "allow_rate": round(allow_count / max(len(decisions), 1), 3),
+            "escalate_rate": round(escalate_count / max(len(decisions), 1), 3),
             "elapsed_ms": round(elapsed_ms, 2)
         }
     )
@@ -1396,6 +1407,7 @@ async def generate_audit_report(
     by_outcome = {
         "ALLOW": sum(1 for d in decisions if d.get("decision") == "ALLOW"),
         "DENY": sum(1 for d in decisions if d.get("decision") == "DENY"),
+        "ESCALATE": sum(1 for d in decisions if d.get("decision") == "ESCALATE"),
         "QUARANTINE": sum(1 for d in decisions if d.get("decision") == "QUARANTINE"),
     }
 
@@ -1759,10 +1771,12 @@ async def demo_pipeline_layers(
 
     # Layer 13: Final Score
     final_score = (realm_trust * 0.6 + coherence * 0.2 + temporal_score * 0.2) - risk_factor
-    if final_score > 0.6:
+    if final_score > 0.8:
         decision = "ALLOW"
-    elif final_score > 0.3:
+    elif final_score > 0.5:
         decision = "QUARANTINE"
+    elif final_score > 0.3:
+        decision = "ESCALATE"
     else:
         decision = "DENY"
 
@@ -1772,7 +1786,12 @@ async def demo_pipeline_layers(
         "risk_penalty": round(risk_factor, 4),
         "final_score": round(final_score, 4),
         "decision": decision,
-        "thresholds": {"ALLOW": "> 0.6", "QUARANTINE": "0.3 - 0.6", "DENY": "< 0.3"}
+        "thresholds": {
+            "ALLOW": "> 0.8",
+            "QUARANTINE": "0.5 - 0.8",
+            "ESCALATE": "0.3 - 0.5",
+            "DENY": "<= 0.3",
+        }
     }
 
     # Layer 14: Telemetry

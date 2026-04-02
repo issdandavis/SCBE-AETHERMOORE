@@ -421,13 +421,13 @@ export function govern(request: GovernanceRequest): GovernanceResponse {
   } else if (riskScore > 0.8) {
     finalDecision = 'DENY';
     rationales.push(`Risk score ${riskScore.toFixed(3)} exceeds threshold`);
-  } else if (riskScore > 0.6) {
+  } else if (riskScore > 0.5) {
     finalDecision = 'ESCALATE';
     escalationRequired = true;
-    rationales.push(`Risk score ${riskScore.toFixed(3)} requires review`);
-  } else if (riskScore > 0.4) {
-    finalDecision = 'ALLOW';
-    rationales.push(`Risk score ${riskScore.toFixed(3)} acceptable with monitoring`);
+    rationales.push(`Risk score ${riskScore.toFixed(3)} requires manual escalation`);
+  } else if (riskScore > 0.3) {
+    finalDecision = 'QUARANTINE';
+    rationales.push(`Risk score ${riskScore.toFixed(3)} requires bounded containment`);
   } else {
     finalDecision = 'ALLOW';
     rationales.push(`Risk score ${riskScore.toFixed(3)} within safe bounds`);
@@ -455,7 +455,7 @@ export function govern(request: GovernanceRequest): GovernanceResponse {
   }
 
   // Add conditions for conditional allows
-  if (finalDecision === 'ALLOW' && riskScore > 0.3) {
+  if (finalDecision === 'ALLOW' && riskScore > 0.2) {
     response.conditions = ['Action will be logged', 'Subject to audit review'];
   }
 
