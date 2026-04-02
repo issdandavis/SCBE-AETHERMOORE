@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBE Weekly | AI Governance Newsletter</title>
+<meta name="description" content="Weekly newsletter covering AI governance, post-quantum cryptography, multi-agent security, and SCBE-AETHERMOORE development updates. Free, no spam.">
+<link rel="canonical" href="https://aethermoorgames.com/newsletter.html">
+<meta property="og:title" content="SCBE Weekly | AI Governance Newsletter">
+<meta property="og:description" content="Weekly AI governance updates. PQC, multi-agent security, benchmarks, and what's shipping.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethermoorgames.com/newsletter.html">
+<meta property="og:image" content="https://aethermoorgames.com/hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SCBE Weekly | AI Governance Newsletter">
+<meta name="twitter:description" content="Weekly AI governance updates. Free, no spam.">
+<meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+<link rel="stylesheet" href="static/shared.css">
+<link rel="stylesheet" href="static/polly-sidebar.css">
+<style>
+.signup-box {
+  background: rgba(214,167,86,0.06);
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 36px;
+  max-width: 560px;
+  margin: 32px auto;
+}
+.signup-box h3 { font-size: 24px; margin-bottom: 12px; }
+.signup-box p { color: var(--muted); margin-bottom: 20px; }
+.signup-row {
+  display: flex; gap: 10px;
+}
+.signup-row input {
+  flex: 1; padding: 14px 18px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.3); color: var(--text); border-radius: 12px;
+  font-size: 15px; font-family: inherit; outline: none;
+}
+.signup-row input:focus { border-color: var(--accent); }
+.signup-row button {
+  padding: 14px 24px; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #14110c; font-weight: 700; font-size: 15px; cursor: pointer;
+  white-space: nowrap;
+}
+.signup-row button:hover { opacity: 0.9; }
+.signup-success { display: none; text-align: center; padding: 20px; }
+.signup-success.show { display: block; }
+.signup-success h3 { color: var(--green, #5cd89a); }
+
+.issue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; margin: 24px 0; }
+.issue-card {
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px; padding: 24px;
+}
+.issue-card .date { font-size: 12px; color: var(--accent); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.issue-card h3 { font-size: 18px; margin-bottom: 8px; }
+.issue-card p { color: var(--muted); font-size: 14px; }
+.issue-card .tags { margin-top: 12px; }
+
+.what-you-get { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin: 24px 0; }
+.what-item {
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px; padding: 20px;
+}
+.what-item h4 { margin-bottom: 6px; }
+.what-item p { color: var(--muted); font-size: 14px; margin: 0; }
+
+@media (max-width: 640px) { .signup-row { flex-direction: column; } }
+</style>
+</head>
+<body data-polly-context="newsletter" data-polly-root=".">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">SCBE AETHERMOORE</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="blog.html">Blog</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section style="padding: 72px 0 40px; border-top: none;">
+    <div class="wrap" style="text-align:center;">
+      <div class="eyebrow">Newsletter</div>
+      <h1>SCBE Weekly.</h1>
+      <p class="section-copy" style="margin:0 auto 12px;">What shipped, what broke, what the math says this week. AI governance updates from the lab, not a marketing department.</p>
+    </div>
+  </section>
+
+  <section style="border-top:none;padding-top:0;">
+    <div class="wrap">
+      <div class="signup-box" id="signup-box">
+        <h3>Get the weekly dispatch.</h3>
+        <p>One email per week. Benchmark results, new demos, research findings, and what's actually changing in AI governance. Unsubscribe anytime.</p>
+        <form id="signup-form">
+          <div class="signup-row">
+            <input type="email" id="nl-email" placeholder="you@company.com" required>
+            <button type="submit">Subscribe</button>
+          </div>
+        </form>
+      </div>
+      <div class="signup-success" id="signup-success">
+        <h3>You're in.</h3>
+        <p style="color:var(--muted);">First issue arrives next Monday. In the meantime, check the <a href="blog.html" style="color:var(--accent);">blog</a> for the latest posts.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">What you get</div>
+      <h2>Each issue covers:</h2>
+      <div class="what-you-get">
+        <div class="what-item">
+          <h4>What shipped</h4>
+          <p>New pages, demos, tools, and training data pushed that week. Concrete deliverables, not roadmap promises.</p>
+        </div>
+        <div class="what-item">
+          <h4>Benchmark updates</h4>
+          <p>Detection rates, false positive counts, F1 scores, and training results. Numbers change weekly as the model improves.</p>
+        </div>
+        <div class="what-item">
+          <h4>Research findings</h4>
+          <p>What the math revealed this week. New layer interactions, spectral anomalies, governance edge cases.</p>
+        </div>
+        <div class="what-item">
+          <h4>Industry context</h4>
+          <p>AI governance news, new regulations, competitor moves, and what matters for your deployment.</p>
+        </div>
+        <div class="what-item">
+          <h4>One demo highlight</h4>
+          <p>A specific demo or tool explained in plain English with a link to try it yourself.</p>
+        </div>
+        <div class="what-item">
+          <h4>From the lab</h4>
+          <p>Raw notes from the Obsidian vault. Late-night math, failed experiments, and honest progress reports.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Recent issues</div>
+      <h2>Past dispatches.</h2>
+      <div class="issue-grid">
+        <a href="blog.html" class="issue-card" style="text-decoration:none;color:inherit;">
+          <div class="date">Coming soon</div>
+          <h3>Issue #1 — Launch Week</h3>
+          <p>10 new pages deployed, training data cleaned from 254 to 24 labels, Polly Sandbox goes live, enterprise page launches, and the first outreach emails hit HiddenLayer, Booz Allen, and Credo AI.</p>
+          <div class="tags">
+            <span class="tag">site launch</span>
+            <span class="tag">training</span>
+            <span class="tag">outreach</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section style="text-align:center;padding:56px 0;">
+    <div class="wrap">
+      <h2>No spam. No fluff. Just the work.</h2>
+      <p class="section-copy" style="margin:0 auto 20px;">Written by the founder, generated from actual git commits and training runs, reviewed before sending.</p>
+      <p style="color:var(--muted);font-size:14px;">
+        Issac Davis &middot;
+        <a href="https://www.linkedin.com/in/issdandavis" target="_blank" style="color:var(--accent);">LinkedIn</a> &middot;
+        <a href="https://medium.com/@issdandavis7795" target="_blank" style="color:var(--accent);">Medium</a> &middot;
+        <a href="https://github.com/issdandavis" target="_blank" style="color:var(--accent);">GitHub</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="blog.html">Blog</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
+      <a href="https://www.linkedin.com/in/issdandavis" target="_blank">LinkedIn</a>
+      <a href="https://medium.com/@issdandavis7795" target="_blank">Medium</a>
+    </div>
+    <div>SCBE AETHERMOORE &middot; Patent Pending USPTO #63/961,403</div>
+  </div>
+</footer>
+
+<script>
+// Newsletter signup — stores locally + sends to n8n webhook if available
+const form = document.getElementById('signup-form');
+const box = document.getElementById('signup-box');
+const success = document.getElementById('signup-success');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('nl-email').value.trim();
+  if (!email) return;
+
+  // Save locally
+  try {
+    const subs = JSON.parse(localStorage.getItem('scbe_newsletter_subs') || '[]');
+    if (!subs.includes(email)) {
+      subs.push(email);
+      localStorage.setItem('scbe_newsletter_subs', JSON.stringify(subs));
+    }
+  } catch {}
+
+  // Try webhook (n8n or similar)
+  try {
+    await fetch('https://aethermoorgames.com/api/newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source: 'website', timestamp: new Date().toISOString() }),
+    }).catch(() => {});
+  } catch {}
+
+  // Fallback: open mailto with the subscription
+  const mailto = `mailto:aethermoregames@pm.me?subject=${encodeURIComponent('Newsletter signup: ' + email)}&body=${encodeURIComponent('Please add ' + email + ' to the SCBE Weekly newsletter.')}`;
+  const a = document.createElement('a');
+  a.href = mailto;
+  a.click();
+
+  // Show success
+  box.style.display = 'none';
+  success.classList.add('show');
+});
+</script>
+<script src="static/polly-sidebar.js"></script>
+</body>
+</html>

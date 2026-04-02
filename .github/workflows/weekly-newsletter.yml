@@ -1,0 +1,35 @@
+name: Generate Weekly Newsletter
+on:
+  schedule:
+    - cron: '0 14 * * 1'  # Every Monday at 6am PT (14:00 UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for git log
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Generate newsletter
+        run: python scripts/generate_weekly_newsletter.py --days 7 --output docs/articles
+
+      - name: Commit and push
+        run: |
+          git config user.name "SCBE Newsletter Bot"
+          git config user.email "noreply@aethermoorgames.com"
+          git add docs/articles/
+          if git diff --staged --quiet; then
+            echo "No new newsletter content"
+          else
+            git commit -m "docs: auto-generate weekly newsletter $(date +%Y-%m-%d)"
+            git push
+          fi
