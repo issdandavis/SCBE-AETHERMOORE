@@ -1,30 +1,13 @@
 {
-  "experiment": "Code A/B: Baseline vs Triangulated",
-  "date": "2026-04-02",
-  "platform": "Google Colab T4 GPU",
+  "experiment": "Code A/B local CPU",
   "model": "Qwen/Qwen2.5-0.5B-Instruct",
-  "lora": {"r": 8, "alpha": 16, "targets": ["q_proj", "v_proj"]},
-  "max_steps": 200,
-  "samples_per_model": 5000,
+  "max_steps": 50,
   "baseline": {
-    "data": "code_baseline_l3.jsonl",
-    "description": "L3 code only (read/write/explain)",
-    "loss": 0.6339,
-    "training_time_seconds": 455
+    "loss": 1.848,
+    "time": 1616.3285882472992
   },
   "triangulated": {
-    "data": "code_full_multiview.jsonl",
-    "description": "L0+L1+L2+L3 (bytes + 3 Sacred Tongues + governance + code)",
-    "loss": 0.5302,
-    "training_time_seconds": 455
-  },
-  "delta": -0.1037,
-  "relative_improvement": 0.1636,
-  "winner": "triangulated",
-  "comparison": {
-    "chat_improvement": "14.0% (2.2226 vs 1.9121)",
-    "code_improvement": "16.4% (0.6339 vs 0.5302)",
-    "code_beats_chat": true
-  },
-  "claim": "Triangulated multi-view supervision across bytes, Sacred Tongues, and governance reduces code model training loss by 16.4% at fixed compute compared to code-only training."
+    "loss": 1.8137,
+    "time": 1327.7913727760315
+  }
 }

@@ -66,3 +66,44 @@ Worldbuilding: **Welcome to Aethermoor: Where Languages Are Architecture**
 
 ### New articles
 - `content/articles/2026-03-17-welcome-to-aethermoor-worldbuilding.md` (creative worldbuilding post)
+
+---
+
+# SCBE Article Publishing Status — 2026-04-01
+
+Article: **The First Agent Product Surface Is a Local MCP**
+
+## POSTED (API)
+
+| Platform | Status | URL |
+|---|---|---|
+| GitHub Discussions (tech) | POSTED | https://github.com/issdandavis/SCBE-AETHERMOORE/discussions/912 |
+| HuggingFace (phdm model) | POSTED | https://huggingface.co/issdandavis/phdm-21d-embedding/discussions/5 |
+| Bluesky | POSTED | https://bsky.app/profile/issdandavis.bsky.social/post/3miieoqm7gp25 |
+
+## STAGED / READY
+
+| Platform | File | Notes |
+|---|---|---|
+| Medium | `content/articles/medium_2026-04-01-local-mcp-operator-surface.md` | Full article is formatted and ready, but `MEDIUM_TOKEN` is missing. |
+| Substack | `content/articles/substack_2026-04-01-local-mcp-operator-surface.md` | Newsletter version is ready. Repo has no Substack API publisher. |
+| LinkedIn | `content/articles/linkedin_2026-04-01-local-mcp-operator-surface.md` | Short professional version is ready for manual posting. |
+| Dev.to | `content/articles/devto_2026-04-01-local-mcp-operator-surface.md` | Article is ready, but `DEVTO_API_KEY` is still `REPLACE_ME`. |
+
+## BLOCKERS
+
+| Platform | Blocker |
+|---|---|
+| Dev.to | No live API key configured. |
+| Medium | No live integration token configured. |
+| Substack | No repo-native API lane; manual or browser flow needed. |
+
+## FILES CREATED
+
+- `content/articles/research/2026-04-01-local-mcp-operator-surface.md`
+- `content/articles/research/2026-04-01-source-roots-stop-agent-drift.md`
+- `content/articles/devto_2026-04-01-local-mcp-operator-surface.md`
+- `content/articles/medium_2026-04-01-local-mcp-operator-surface.md`
+- `content/articles/substack_2026-04-01-local-mcp-operator-surface.md`
+- `content/articles/linkedin_2026-04-01-local-mcp-operator-surface.md`
+- `content/articles/huggingface_2026-04-01-local-mcp-operator-surface.md`

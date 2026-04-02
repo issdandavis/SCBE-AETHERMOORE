@@ -130,6 +130,7 @@ class TurnOutcome:
     coherence: float
     mission_progress: Tuple[int, int]
     inventory: Inventory
+    telemetry_event: Dict[str, object]
     notes: List[str]
 
 
@@ -449,6 +450,15 @@ class AethermoorSpiralEngine:
             triadic_stable=triadic_stable,
             spectral_score=spectral,
         )
+        telemetry_event = self._gate.emit_telemetry_event(
+            self._agent_id,
+            layer="L2",
+            stage="active",
+            pqc_valid=True,
+            triadic_stable=triadic_stable,
+            spectral_score=spectral,
+            lock_vector=lock,
+        )
         omega = lock.omega
 
         # Game-facing decision bands tuned for playability while preserving fail-closed exile.
@@ -520,6 +530,7 @@ class AethermoorSpiralEngine:
                 self.mission.objective_packets,
             ),
             inventory=Inventory(**self.inventory.__dict__),
+            telemetry_event=telemetry_event,
             notes=notes,
         )
 
@@ -602,6 +613,7 @@ def run_demo(seed: int = 7, turns: int = 12) -> dict:
                     "triadic": out.lock_vector["triadic_stable"],
                     "spectral": out.lock_vector["spectral_score"],
                 },
+                "telemetry": out.telemetry_event,
                 "obstructions": out.sheaf_obstructions,
                 "progress": list(out.mission_progress),
             }

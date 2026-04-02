@@ -17,7 +17,7 @@ def _load_module(name: str, path: Path):
     return module
 
 
-scbe_cli = _load_module("test_scbe_unified_cli_forwarding", ROOT / "scbe.py")
+scbe_cli = _load_module("test_scbe_unified_cli_forwarding", ROOT / "src" / "spiralverse" / "cli.py")
 
 
 class _Result:
@@ -200,3 +200,18 @@ def test_scbe_colab_forwards_to_system_cli(monkeypatch) -> None:
             "--json",
         ]
     ]
+
+
+def test_scbe_repo_only_command_fails_cleanly_without_system_cli(monkeypatch, tmp_path, capsys) -> None:
+    def fail_if_run(*args, **kwargs):  # noqa: ANN001 - monkeypatched subprocess signature
+        raise AssertionError("subprocess.run should not be called when the system CLI is unavailable")
+
+    monkeypatch.setattr(scbe_cli.subprocess, "run", fail_if_run)
+    monkeypatch.setattr(scbe_cli, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(scbe_cli.importlib.util, "find_spec", lambda name: None)
+    monkeypatch.setattr(sys, "argv", ["scbe", "doctor", "--json"])
+
+    assert scbe_cli.main() == 2
+    stderr = capsys.readouterr().err
+    assert "source checkout" in stderr
+    assert "control-plane command" in stderr

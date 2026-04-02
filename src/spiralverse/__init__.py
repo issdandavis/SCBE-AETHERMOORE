@@ -114,6 +114,9 @@ from .temporal_intent import (
     R_HARMONIC,
     INTENT_DECAY_RATE,
     MAX_INTENT_ACCUMULATION,
+    TEMPORAL_CURVATURE_ALPHA,
+    TEMPORAL_OMEGA_TELEMETRY_SCHEMA_VERSION,
+    validate_telemetry_event,
 )
 
 # === Aethercode Interpreter ===
@@ -211,6 +214,9 @@ __all__ = [
     "R_HARMONIC",
     "INTENT_DECAY_RATE",
     "MAX_INTENT_ACCUMULATION",
+    "TEMPORAL_CURVATURE_ALPHA",
+    "TEMPORAL_OMEGA_TELEMETRY_SCHEMA_VERSION",
+    "validate_telemetry_event",
     # === Aethercode Interpreter ===
     "AetherVerse",
     "AetherProgram",

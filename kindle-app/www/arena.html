@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AetherCode Pocket</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#5fd6ff">
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#050912;
+  --bg2:#0b1322;
+  --panel:rgba(10,18,31,.82);
+  --panel-strong:rgba(16,28,46,.92);
+  --line:rgba(165,201,234,.18);
+  --text:#edf4ff;
+  --muted:#9fb3ca;
+  --accent:#5fd6ff;
+  --accent-2:#f4b36a;
+  --ok:#80f3c5;
+  --shadow:0 22px 70px rgba(0,0,0,.45);
+  --serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"Segoe UI Variable Text","Aptos","Trebuchet MS",sans-serif;
+}
+html,body{margin:0;min-height:100%;background:
+  radial-gradient(1200px 680px at 0% -10%, rgba(95,214,255,.18), transparent 60%),
+  radial-gradient(900px 600px at 100% 0%, rgba(244,179,106,.16), transparent 55%),
+  linear-gradient(180deg,var(--bg),var(--bg2) 60%,#060b14 100%);
+color:var(--text);font-family:var(--sans)}
+body{padding:18px}
+.shell{max-width:1180px;margin:0 auto;display:grid;gap:18px}
+.hero{
+  position:relative;overflow:hidden;border:1px solid var(--line);border-radius:28px;padding:24px;
+  background:linear-gradient(145deg,rgba(7,12,21,.92),rgba(13,22,38,.78));box-shadow:var(--shadow)
+}
+.hero::after{
+  content:"";position:absolute;inset:auto -10% -35% 35%;height:260px;
+  background:radial-gradient(circle, rgba(95,214,255,.22), transparent 62%);
+  pointer-events:none
+}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.kicker{margin:0;color:var(--accent);font-size:.76rem;letter-spacing:.18em;text-transform:uppercase}
+.title{margin:10px 0 10px;font:700 clamp(2.3rem,7vw,4.9rem)/.92 var(--serif);max-width:10ch}
+.lede{margin:0;max-width:54ch;color:var(--muted);font-size:1.02rem;line-height:1.6}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{
+  border:1px solid rgba(95,214,255,.22);border-radius:999px;padding:8px 12px;
+  background:rgba(255,255,255,.03);color:#dff4ff;font-size:.78rem;font-weight:700;letter-spacing:.03em
+}
+.hero-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:26px}
+.hero-panel,.launch-panel,.chat-panel,.notes-panel{
+  border:1px solid var(--line);border-radius:22px;background:var(--panel);backdrop-filter:blur(14px)
+}
+.hero-panel{padding:18px}
+.section-label{margin:0 0 10px;color:var(--accent);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.list{margin:0;padding:0;list-style:none;display:grid;gap:12px}
+.list li{display:grid;gap:4px;padding-bottom:12px;border-bottom:1px solid rgba(159,179,202,.12)}
+.list li:last-child{padding-bottom:0;border-bottom:0}
+.list strong{font-size:.96rem}
+.list span{color:var(--muted);font-size:.92rem;line-height:1.5}
+.launch-panel{padding:18px;display:grid;gap:12px}
+.launch-links{display:grid;gap:10px}
+.launch-link{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;text-decoration:none;
+  color:var(--text);padding:14px 16px;border-radius:16px;
+  background:linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+  border:1px solid rgba(159,179,202,.16)
+}
+.launch-link span{color:var(--muted);font-size:.88rem}
+.launch-link:hover{border-color:rgba(95,214,255,.42);transform:translateY(-1px)}
+.status-line{
+  margin-top:16px;padding-top:16px;border-top:1px solid rgba(159,179,202,.12);
+  color:var(--muted);font-size:.88rem;line-height:1.5
+}
+.workspace{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.9fr);gap:18px}
+.chat-panel{padding:12px}
+.chat-head,.notes-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 8px 14px}
+.chat-head h2,.notes-head h2{margin:0;font-size:1.08rem}
+.chat-head p,.notes-head p{margin:4px 0 0;color:var(--muted);font-size:.9rem;line-height:1.5}
+.route-badge{
+  border:1px solid rgba(128,243,197,.24);border-radius:999px;padding:8px 10px;
+  background:rgba(128,243,197,.08);color:var(--ok);font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em
+}
+.chat-mount{
+  min-height:660px;border:1px solid rgba(159,179,202,.12);border-radius:20px;
+  background:linear-gradient(180deg,rgba(4,10,18,.76),rgba(4,10,18,.42))
+}
+.notes-panel{padding:18px;display:grid;gap:14px}
+.note-card{
+  padding:14px 15px;border-radius:16px;background:rgba(255,255,255,.035);
+  border:1px solid rgba(159,179,202,.12)
+}
+.note-card h3{margin:0 0 8px;font-size:.94rem}
+.note-card p,.note-card li{margin:0;color:var(--muted);font-size:.9rem;line-height:1.55}
+.note-card ul{margin:0;padding-left:18px}
+.code{font-family:"Cascadia Code","JetBrains Mono","Consolas",monospace;color:#dff4ff}
+.footer-note{color:var(--muted);font-size:.82rem;line-height:1.55}
+@media (max-width: 980px){
+  body{padding:12px}
+  .hero-grid,.workspace{grid-template-columns:1fr}
+  .pill-row{justify-content:flex-start}
+  .chat-mount{min-height:540px}
+}
+</style>
+</head>
+<body>
+<main class="shell">
+  <section class="hero">
+    <div class="topbar">
+      <div>
+        <p class="kicker">SCBE Pixel 6 lane</p>
+        <h1 class="title">One live lane. Not nine seats.</h1>
+        <p class="lede">
+          This surface is tuned for the phone workflow: direct chat, model compare when you ask for it, and clean export into training data.
+          It is not a fake round table and it should not ask you to manage provider secrets on a tiny emulator keyboard.
+        </p>
+      </div>
+      <div class="pill-row">
+        <span class="pill">Proxy-first mobile route</span>
+        <span class="pill">Training export built in</span>
+        <span class="pill">Pixel 6 tuned</span>
+      </div>
+    </div>
+
+    <div class="hero-grid">
+      <section class="hero-panel">
+        <p class="section-label">What this lane is for</p>
+        <ul class="list">
+          <li>
+            <strong>Run one useful conversation at a time.</strong>
+            <span>Draft, triage, rewrite, compare, and capture work without turning the phone into a theater diagram.</span>
+          </li>
+          <li>
+            <strong>Use stronger models as training mirrors.</strong>
+            <span>Keep Polly as the main lane, add compare models when needed, then export thread, SFT, or feedback rows for your smaller models.</span>
+          </li>
+          <li>
+            <strong>Keep host secrets off the emulator.</strong>
+            <span>The expected route is <span class="code">/v1/research/mobile-chat</span> on the host. The host keeps the provider token; the phone just talks to the proxy.</span>
+          </li>
+        </ul>
+      </section>
+
+      <aside class="launch-panel">
+        <p class="section-label">Launch Paths</p>
+        <div class="launch-links">
+          <a class="launch-link" href="./small-business-helper.html">
+            <strong>Small Business Helper</strong>
+            <span>Ops-focused preset</span>
+          </a>
+          <a class="launch-link" href="./device-shell.html">
+            <strong>Device Shell</strong>
+            <span>Two-panel phone layout</span>
+          </a>
+          <a class="launch-link" href="./browse.html">
+            <strong>Browse Lane</strong>
+            <span>Browser-first workflow</span>
+          </a>
+          <a class="launch-link" href="./chat.html">
+            <strong>Baseline Chat</strong>
+            <span>General-purpose Polly lane</span>
+          </a>
+        </div>
+        <div class="status-line" id="proxyHint">
+          Resolving the host proxy route…
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="workspace">
+    <section class="chat-panel">
+      <div class="chat-head">
+        <div>
+          <h2>AetherCode Pocket</h2>
+          <p>The mobile workbench for drafting, compare runs, and training capture.</p>
+        </div>
+        <span class="route-badge" id="routeBadge">Proxy route</span>
+      </div>
+      <div class="chat-mount" id="pollyPocketMount"></div>
+    </section>
+
+    <aside class="notes-panel">
+      <div class="notes-head">
+        <div>
+          <h2>Operator Notes</h2>
+          <p>Use the lane like a tool, not a dashboard.</p>
+        </div>
+      </div>
+
+      <article class="note-card">
+        <h3>Recommended prompts</h3>
+        <ul>
+          <li>Draft a customer reply about a delayed order and keep the tone calm.</li>
+          <li>Compare two versions of this answer and keep the stronger one for training.</li>
+          <li>Turn this thread into SFT-ready rows and point out weak assistant turns.</li>
+        </ul>
+      </article>
+
+      <article class="note-card">
+        <h3>Proxy rule</h3>
+        <p>
+          Start the host API with <span class="code">SCBE_ALLOW_LOCAL_MOBILE_CHAT=1</span> and keep
+          <span class="code">HF_TOKEN</span> on the host. Use <span class="code">?proxy=http://10.0.2.2:8000/v1/research/mobile-chat</span>
+          if you need to override the default.
+        </p>
+      </article>
+
+      <article class="note-card">
+        <h3>Why this is different</h3>
+        <p>
+          The old arena treated the phone like a miniature command center. This version treats the phone like a real working surface:
+          one main lane, optional compare models, and a straight path from conversation to training data.
+        </p>
+      </article>
+
+      <p class="footer-note">
+        Add <span class="code">?secrets=1</span> only when you intentionally want the raw token or proxy-key fields visible for debugging.
+      </p>
+    </aside>
+  </section>
+</main>
+
+<script>
+function trimSlash(value) {
+  return String(value || "").replace(/\/+$/, "");
+}
+
+function resolveProxyEndpoint() {
+  const params = new URLSearchParams(window.location.search);
+  const explicitProxy = params.get("proxy");
+  if (explicitProxy) return explicitProxy;
+
+  const explicitBase = params.get("apiBase");
+  if (explicitBase) return `${trimSlash(explicitBase)}/v1/research/mobile-chat`;
+
+  const host = window.location.hostname;
+  const protocol = window.location.protocol;
+  const isCapacitor = Boolean(window.Capacitor) || protocol === "capacitor:" || protocol === "file:";
+  const isEmulator = host === "10.0.2.2";
+  const isLocalBrowser = host === "localhost" || host === "127.0.0.1";
+
+  if (isCapacitor || isEmulator) return "http://10.0.2.2:8000/v1/research/mobile-chat";
+  if (isLocalBrowser) return "http://localhost:8000/v1/research/mobile-chat";
+  return `${window.location.origin}/v1/research/mobile-chat`;
+}
+
+function compareModelsFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const value = params.get("compare");
+  if (!value) return [];
+  return value.split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function allowSecretFields() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("secrets") === "1";
+}
+
+function loadWidgetScript() {
+  const candidates = [
+    "./static/polly-hf-chat.js",
+    "../kindle-app/www/static/polly-hf-chat.js",
+  ];
+
+  return new Promise((resolve, reject) => {
+    function next(index) {
+      if (window.PollyHFChat) {
+        resolve();
+        return;
+      }
+      const src = candidates[index];
+      if (!src) {
+        reject(new Error("Polly widget script is unavailable."));
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = () => {
+        script.remove();
+        next(index + 1);
+      };
+      document.head.appendChild(script);
+    }
+    next(0);
+  });
+}
+
+async function bootPocketSurface() {
+  const proxyEndpoint = resolveProxyEndpoint();
+  document.getElementById("proxyHint").textContent = `Proxy endpoint: ${proxyEndpoint}`;
+  document.getElementById("routeBadge").textContent = proxyEndpoint.includes("/mobile-chat")
+    ? "Host mobile route"
+    : "Custom route";
+
+  try {
+    await loadWidgetScript();
+    window.PollyHFChat.mount(document.getElementById("pollyPocketMount"), {
+      title: "Polly Pocket",
+      subtitle: "Proxy-first phone lane for drafting, compare runs, and training export.",
+      assistantName: "Polly",
+      model: "issdandavis/scbe-pivot-qwen-0.5b",
+      compareModels: compareModelsFromQuery(),
+      proxyEndpoint,
+      compact: true,
+      hideTokenField: !allowSecretFields(),
+      hideApiKeyField: !allowSecretFields(),
+      initialAssistantText:
+        "I am ready on the phone lane. Use me for drafting, compare runs, cleanup, and export into training data.",
+      proxyActiveText:
+        "Host proxy route active. The phone should not need provider keys when the host lane is configured.",
+      directActiveText:
+        "No host proxy was detected. Start the local API lane or override the route with ?proxy=...",
+      settingsNote:
+        "This phone lane is proxy-first. Start the host API with SCBE_ALLOW_LOCAL_MOBILE_CHAT=1 and keep provider keys on the host. Export thread for audit, export SFT for training rows, and export feedback for preference tuning.",
+      modelFacts: [
+        "Primary lane stays focused on one useful response.",
+        "Compare models are optional and should be used for training or quality checks, not always-on noise.",
+        "Exports are intended to feed your smaller SCBE chat models."
+      ],
+      suggestions: [
+        "Draft a customer reply about delayed shipping and keep the tone calm.",
+        "Compare two versions of this answer and tell me which one is better for training.",
+        "Turn this thread into SFT-ready rows and point out weak assistant turns.",
+        "Help me triage today's small-business tasks in order."
+      ]
+    });
+  } catch (error) {
+    document.getElementById("pollyPocketMount").innerHTML = `
+      <div style="padding:20px;color:#edf4ff;font-family:var(--sans);">
+        <strong>Polly widget failed to load.</strong>
+        <p style="color:#9fb3ca;line-height:1.5;">${String(error && error.message ? error.message : error)}</p>
+      </div>
+    `;
+  }
+}
+
+bootPocketSurface();
+</script>
+</body>
+</html>

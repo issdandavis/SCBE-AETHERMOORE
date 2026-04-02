@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe-aethermoore.dev/schemas/fiber-optics-multiview",
+  "title": "SCBE Fiber Optics Multiview Training Record",
+  "description": "Schema for wave-layer training records that teach fiber-optics diagnosis from raw traces through human explanation.",
+  "type": "object",
+  "required": [
+    "id",
+    "category",
+    "instruction",
+    "response",
+    "l0_signal",
+    "l1_wave_features",
+    "l2_diagnosis",
+    "metadata"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^fiber-[a-z0-9-]+-[0-9]{3,5}$"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "fiber-optics-trace-classification",
+        "fiber-optics-link-budget",
+        "fiber-optics-dispersion-analysis",
+        "fiber-optics-polarization-analysis",
+        "fiber-optics-kerr-analysis",
+        "fiber-optics-remediation",
+        "fiber-optics-comparison",
+        "fiber-optics-governance"
+      ]
+    },
+    "instruction": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 4000
+    },
+    "response": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 8000,
+      "description": "L3 human explanation, fix recommendation, or computed answer."
+    },
+    "l0_signal": {
+      "type": "object",
+      "required": ["signal_type", "sampling_axis", "summary"],
+      "properties": {
+        "signal_type": {
+          "type": "string",
+          "enum": ["otdr_trace", "spectrum", "ber_log", "q_factor_series", "constellation_projection", "link_budget_table"]
+        },
+        "sampling_axis": {
+          "type": "string",
+          "enum": ["time", "distance", "frequency", "wavelength", "symbol_index"]
+        },
+        "units": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Compact textual summary of the raw trace when full samples are stored elsewhere."
+        },
+        "samples_ref": {
+          "type": "string",
+          "description": "Optional relative path or URI to raw numeric samples."
+        }
+      },
+      "additionalProperties": false
+    },
+    "l1_wave_features": {
+      "type": "object",
+      "properties": {
+        "attenuation_db": { "type": "number" },
+        "chromatic_dispersion_ps_nm_km": { "type": "number" },
+        "pmd_ps_sqrt_km": { "type": "number" },
+        "launch_power_dbm": { "type": "number" },
+        "nonlinear_phase_shift_rad": { "type": "number" },
+        "ber_log10": { "type": "number" },
+        "q_factor_db": { "type": "number" },
+        "group_delay_ps": { "type": "number" },
+        "polarization_state": {
+          "type": "string",
+          "enum": ["linear", "elliptical", "circular", "mixed", "unknown"]
+        },
+        "fft_bins_summary": { "type": "string" },
+        "phase_summary": { "type": "string" }
+      },
+      "additionalProperties": true,
+      "description": "Wave-native transformed features derived from the raw signal."
+    },
+    "l2_diagnosis": {
+      "type": "object",
+      "required": ["primary_impairment", "confidence"],
+      "properties": {
+        "primary_impairment": {
+          "type": "string",
+          "enum": [
+            "chromatic_dispersion",
+            "polarization_mode_dispersion",
+            "attenuation_loss",
+            "kerr_nonlinearity",
+            "splice_or_connector_loss",
+            "amplifier_noise",
+            "mixed_or_unknown"
+          ]
+        },
+        "secondary_impairments": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recommended_actions": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["source", "version", "domain"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": ["public_tutorial", "paper", "vendor_doc", "simulator", "lab_note", "scbe_synthetic"]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "domain": {
+          "type": "string",
+          "const": "fiber-optics"
+        },
+        "split": {
+          "type": "string",
+          "enum": ["train", "validation", "test"]
+        },
+        "view_set": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["L0", "L1", "L2", "L3"]
+          }
+        },
+        "base_model": {
+          "type": "string"
+        },
+        "license": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "id": "fiber-cd-diagnosis-001",
+      "category": "fiber-optics-dispersion-analysis",
+      "instruction": "Given the OTDR-like trace summary, FFT summary, and measured BER/Q values, identify the dominant impairment and explain the first remediation step.",
+      "response": "The dominant impairment is chromatic dispersion. The trace remains smooth while BER rises with wavelength-dependent broadening, which points away from connector loss and toward pulse spreading. Start with dispersion compensation or DSP equalization before increasing launch power.",
+      "l0_signal": {
+        "signal_type": "otdr_trace",
+        "sampling_axis": "distance",
+        "units": "dB vs km",
+        "summary": "Low splice reflection, gradual slope increase after 45 km, eye closure visible in downstream BER logs."
+      },
+      "l1_wave_features": {
+        "attenuation_db": 12.2,
+        "chromatic_dispersion_ps_nm_km": 17.1,
+        "ber_log10": -5.2,
+        "q_factor_db": 6.8,
+        "phase_summary": "Linear phase slope with wavelength-dependent spread"
+      },
+      "l2_diagnosis": {
+        "primary_impairment": "chromatic_dispersion",
+        "secondary_impairments": ["attenuation_loss"],
+        "confidence": 0.91,
+        "evidence": [
+          "BER degradation tracks pulse broadening rather than reflection spikes",
+          "Measured CD coefficient is above the link's safe budget"
+        ],
+        "recommended_actions": [
+          "Apply dispersion compensation or DSP equalization",
+          "Re-check BER after compensation before changing launch power"
+        ]
+      },
+      "metadata": {
+        "source": "scbe_synthetic",
+        "version": "0.1.0",
+        "domain": "fiber-optics",
+        "split": "train",
+        "view_set": ["L0", "L1", "L2", "L3"],
+        "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
+        "license": "research-only"
+      }
+    }
+  ]
+}

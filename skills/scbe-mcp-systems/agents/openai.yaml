@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE MCP Systems"
+  short_description: "Use SCBE MCP for repo orientation and command lanes"
+  default_prompt: "Use $scbe-mcp-systems to orient to the SCBE repo, commands, and canonical docs before coding."

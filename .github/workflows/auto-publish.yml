@@ -63,7 +63,10 @@ jobs:
           pip install build twine
 
       - name: Build package
-        run: python -m build
+        run: python -m build --outdir artifacts/python-dist
+
+      - name: Strict Python dist guard
+        run: python scripts/python_dist_guard.py --dist-dir artifacts/python-dist
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

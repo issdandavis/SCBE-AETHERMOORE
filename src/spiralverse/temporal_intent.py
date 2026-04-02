@@ -54,6 +54,12 @@ from collections import deque
 # Harmonic ratio (perfect fifth)
 R_HARMONIC = 1.5
 
+# Production curvature baseline used by the live temporal wall.
+TEMPORAL_CURVATURE_ALPHA = 2.0
+
+# Versioned telemetry schema for replay and offline alpha learning.
+TEMPORAL_OMEGA_TELEMETRY_SCHEMA_VERSION = "temporal_omega_telemetry_v1"
+
 # Intent decay rate (how fast old intent fades)
 INTENT_DECAY_RATE = 0.95  # per time window
 
@@ -296,6 +302,135 @@ class OmegaLockVector:
         }
 
 
+def validate_telemetry_event(event: Dict[str, object]) -> Dict[str, object]:
+    """
+    Validate the temporal/Omega telemetry payload.
+
+    This stays intentionally lightweight so the live gate can emit structured
+    telemetry without pulling in an external JSON-schema dependency.
+    """
+
+    if not isinstance(event, dict):
+        raise ValueError("telemetry event must be a dict")
+
+    required_top = {
+        "schema_version",
+        "t",
+        "agent_id",
+        "layer",
+        "state",
+        "temporal",
+        "diagnostics",
+        "omega",
+        "outcome",
+    }
+    missing = required_top.difference(event.keys())
+    if missing:
+        raise ValueError(f"telemetry event missing keys: {sorted(missing)}")
+
+    if event["schema_version"] != TEMPORAL_OMEGA_TELEMETRY_SCHEMA_VERSION:
+        raise ValueError("unexpected telemetry schema version")
+    if not isinstance(event["agent_id"], str) or not event["agent_id"]:
+        raise ValueError("agent_id must be a non-empty string")
+    if not isinstance(event["layer"], str) or not event["layer"]:
+        raise ValueError("layer must be a non-empty string")
+
+    state = event["state"]
+    temporal = event["temporal"]
+    diagnostics = event["diagnostics"]
+    omega = event["omega"]
+    outcome = event["outcome"]
+
+    if not isinstance(state, dict):
+        raise ValueError("state must be a dict")
+    if not isinstance(temporal, dict):
+        raise ValueError("temporal must be a dict")
+    if not isinstance(diagnostics, dict):
+        raise ValueError("diagnostics must be a dict")
+    if not isinstance(omega, dict):
+        raise ValueError("omega must be a dict")
+    if not isinstance(outcome, dict):
+        raise ValueError("outcome must be a dict")
+
+    state_required = {"x", "d", "alpha"}
+    temporal_required = {"H_eff", "harm_score", "latency_multiplier"}
+    diagnostics_required = {"drift_score", "triadic_stability", "spectral_score"}
+    omega_required = {"omega_score", "sublocks", "weakest_lock", "permission_color"}
+    outcome_required = {"decision", "stage"}
+
+    if state_required.difference(state.keys()):
+        raise ValueError("state missing required keys")
+    if temporal_required.difference(temporal.keys()):
+        raise ValueError("temporal missing required keys")
+    if diagnostics_required.difference(diagnostics.keys()):
+        raise ValueError("diagnostics missing required keys")
+    if omega_required.difference(omega.keys()):
+        raise ValueError("omega missing required keys")
+    if outcome_required.difference(outcome.keys()):
+        raise ValueError("outcome missing required keys")
+
+    numeric_fields = [
+        ("t", event["t"]),
+        ("state.x", state["x"]),
+        ("state.d", state["d"]),
+        ("state.alpha", state["alpha"]),
+        ("temporal.H_eff", temporal["H_eff"]),
+        ("temporal.harm_score", temporal["harm_score"]),
+        ("temporal.latency_multiplier", temporal["latency_multiplier"]),
+        ("diagnostics.drift_score", diagnostics["drift_score"]),
+        ("diagnostics.triadic_stability", diagnostics["triadic_stability"]),
+        ("diagnostics.spectral_score", diagnostics["spectral_score"]),
+        ("omega.omega_score", omega["omega_score"]),
+    ]
+    for field_name, value in numeric_fields:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"{field_name} must be numeric")
+
+    bounded = [
+        ("diagnostics.drift_score", diagnostics["drift_score"]),
+        ("diagnostics.triadic_stability", diagnostics["triadic_stability"]),
+        ("diagnostics.spectral_score", diagnostics["spectral_score"]),
+        ("omega.omega_score", omega["omega_score"]),
+    ]
+    for field_name, value in bounded:
+        if not 0.0 <= float(value) <= 1.0:
+            raise ValueError(f"{field_name} must be in [0, 1]")
+
+    if float(state["alpha"]) <= 0.0:
+        raise ValueError("state.alpha must be positive")
+    if float(state["d"]) < 0.0:
+        raise ValueError("state.d must be non-negative")
+    if float(state["x"]) < 0.0:
+        raise ValueError("state.x must be non-negative")
+    if float(temporal["H_eff"]) < 1.0:
+        raise ValueError("temporal.H_eff must be >= 1.0")
+    if float(temporal["latency_multiplier"]) < 1.0:
+        raise ValueError("temporal.latency_multiplier must be >= 1.0")
+
+    sublocks = omega["sublocks"]
+    if not isinstance(sublocks, dict):
+        raise ValueError("omega.sublocks must be a dict")
+    expected_sublocks = {"pqc", "harmonic", "drift", "triadic", "spectral"}
+    if expected_sublocks.difference(sublocks.keys()):
+        raise ValueError("omega.sublocks missing required keys")
+    for field_name, value in sublocks.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"omega.sublocks.{field_name} must be numeric")
+        if not 0.0 <= float(value) <= 1.0:
+            raise ValueError(f"omega.sublocks.{field_name} must be in [0, 1]")
+
+    if not isinstance(omega["weakest_lock"], str) or not omega["weakest_lock"]:
+        raise ValueError("omega.weakest_lock must be a non-empty string")
+    if omega["permission_color"] not in {"green", "amber", "red"}:
+        raise ValueError("omega.permission_color must be green, amber, or red")
+    if outcome["decision"] not in {"ALLOW", "QUARANTINE", "DENY", "EXILE"}:
+        raise ValueError("outcome.decision must be a known gate decision")
+    if not isinstance(outcome["stage"], str) or not outcome["stage"]:
+        raise ValueError("outcome.stage must be a non-empty string")
+
+    return event
+
+
 # =============================================================================
 # Extended Harmonic Wall
 # =============================================================================
@@ -320,7 +455,7 @@ def harmonic_wall_temporal(d: float, x: float, R: float = R_HARMONIC) -> float:
     Returns:
         Security cost multiplier (grows superexponentially with sustained drift)
     """
-    return R ** (d**2 * x)
+    return R ** (d**TEMPORAL_CURVATURE_ALPHA * x)
 
 
 def compare_scaling(d: float, x: float) -> Dict[str, float]:
@@ -356,6 +491,7 @@ class TemporalSecurityGate:
     """
 
     histories: Dict[str, IntentHistory] = field(default_factory=dict)
+    telemetry_log: deque = field(default_factory=lambda: deque(maxlen=1000))
 
     # Decision thresholds from AC-2.3.4
     ALLOW_THRESHOLD = 0.85
@@ -484,6 +620,104 @@ class TemporalSecurityGate:
             permission_color=_permission_color(omega),
             weakest_lock=weakest_lock,
         )
+
+    def build_telemetry_event(
+        self,
+        agent_id: str,
+        *,
+        layer: str = "L2",
+        stage: str = "active",
+        pqc_valid: bool = True,
+        triadic_stable: float = 1.0,
+        spectral_score: float = 1.0,
+        lock_vector: OmegaLockVector | None = None,
+        timestamp: float | None = None,
+    ) -> Dict[str, object]:
+        """
+        Build a schema-backed telemetry packet for one temporal/Omega decision.
+        """
+        vector = lock_vector or self.compute_lock_vector(
+            agent_id=agent_id,
+            pqc_valid=pqc_valid,
+            triadic_stable=triadic_stable,
+            spectral_score=spectral_score,
+        )
+        drift_score = _clamp01(1.0 - vector.drift_factor)
+        event = {
+            "schema_version": TEMPORAL_OMEGA_TELEMETRY_SCHEMA_VERSION,
+            "t": float(time.time() if timestamp is None else timestamp),
+            "agent_id": agent_id,
+            "layer": layer,
+            "state": {
+                "x": float(vector.x_factor),
+                "d": float(vector.distance),
+                "alpha": float(TEMPORAL_CURVATURE_ALPHA),
+            },
+            "temporal": {
+                "H_eff": float(vector.harmonic_wall),
+                "harm_score": float(vector.harm_score),
+                "latency_multiplier": float(vector.latency_multiplier),
+            },
+            "diagnostics": {
+                "drift_score": float(drift_score),
+                "triadic_stability": float(vector.triadic_stable),
+                "spectral_score": float(vector.spectral_score),
+            },
+            "omega": {
+                "omega_score": float(vector.omega),
+                "sublocks": {
+                    "pqc": float(vector.pqc_factor),
+                    "harmonic": float(vector.harm_score),
+                    "drift": float(vector.drift_factor),
+                    "triadic": float(vector.triadic_stable),
+                    "spectral": float(vector.spectral_score),
+                },
+                "weakest_lock": vector.weakest_lock,
+                "permission_color": vector.permission_color,
+            },
+            "outcome": {
+                "decision": vector.decision,
+                "stage": stage,
+            },
+        }
+        return validate_telemetry_event(event)
+
+    def emit_telemetry_event(
+        self,
+        agent_id: str,
+        *,
+        layer: str = "L2",
+        stage: str = "active",
+        pqc_valid: bool = True,
+        triadic_stable: float = 1.0,
+        spectral_score: float = 1.0,
+        lock_vector: OmegaLockVector | None = None,
+        timestamp: float | None = None,
+    ) -> Dict[str, object]:
+        """
+        Emit and retain one validated telemetry event for replay consumers.
+        """
+        event = self.build_telemetry_event(
+            agent_id=agent_id,
+            layer=layer,
+            stage=stage,
+            pqc_valid=pqc_valid,
+            triadic_stable=triadic_stable,
+            spectral_score=spectral_score,
+            lock_vector=lock_vector,
+            timestamp=timestamp,
+        )
+        self.telemetry_log.append(event)
+        return event
+
+    def recent_telemetry(self, agent_id: str | None = None, limit: int = 100) -> list[Dict[str, object]]:
+        """
+        Return recent telemetry events, newest last, optionally filtered by agent.
+        """
+        filtered = [
+            event for event in reversed(self.telemetry_log) if agent_id is None or event["agent_id"] == agent_id
+        ]
+        return list(reversed(filtered[:limit]))
 
     def get_status(self, agent_id: str) -> Dict:
         """Get full status for an agent."""

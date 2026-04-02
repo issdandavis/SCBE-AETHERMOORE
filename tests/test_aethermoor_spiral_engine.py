@@ -53,6 +53,9 @@ def test_step_produces_valid_decision_and_progress_fields() -> None:
     }
     assert isinstance(out.lock_vector, dict)
     assert "harm_score" in out.lock_vector
+    assert isinstance(out.telemetry_event, dict)
+    assert out.telemetry_event["outcome"]["decision"] == out.lock_vector["decision"]
+    assert out.telemetry_event["omega"]["omega_score"] == pytest.approx(out.omega, rel=1e-6)
     assert len(out.voxel_key.split(":")) == 6
     assert out.terrain in {
         "glow_meadow",

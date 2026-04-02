@@ -9,6 +9,8 @@ Status: Research complete, execution pending
 - SCBE SFT dataset: 41,703 cleaned pairs (24 categories) on HuggingFace
 - Code multiview dataset: 8,000 pairs (L0/L1/L2/L3) on HuggingFace
 - Kaggle baseline vs stack-lite: COMPLETE (14% win for multiview)
+- Formal experiment note: `docs/specs/MULTIVIEW_FIXED_COMPUTE_EXPERIMENT_2026-04-01.md`
+- Next-step benchmark packet: `docs/specs/MULTIVIEW_BENCHMARK_AND_ABLATION_PLAN.md`
 - Kaggle governance fine-tune: v4 submitted (CPU, 200 steps)
 - Colab notebook: finetune_qwen_governance.ipynb ready
 
@@ -61,3 +63,11 @@ The conversationality training should use multi-view (L0/L1/L2/L3) format:
 - L3: the actual conversation
 
 This extends the 14% triangulation improvement to conversation quality.
+
+## Fixed-Compute Result, Stated Precisely
+
+Use this wording:
+
+> Multi-view supervision across substrate, coordination, and orientation layers reduced training loss by ~14% at fixed compute compared to expression-only training.
+
+Do not collapse this into a broader claim until the seed and ablation matrix in `docs/specs/MULTIVIEW_BENCHMARK_AND_ABLATION_PLAN.md` has been run.
