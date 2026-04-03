@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AetherReview | AI Peer Review</title>
+<meta name="description" content="Run a four-agent AI review pass on technical documents, specs, papers, or code. Bring your own key and use AetherReview as an operator-side quality gate." />
+<meta property="og:title" content="AetherReview | AI Peer Review" />
+<meta property="og:description" content="A BYOK review lane for technical documents: mathematical rigor, code-to-spec consistency, novelty, and clarity in one governed operator tool." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://aethermoorgames.com/demos/aether-review.html" />
+<meta property="og:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="AetherReview | AI Peer Review" />
+<meta name="twitter:description" content="Paste a document, bring your own API key, and run four focused review agents against it." />
+<link rel="canonical" href="https://aethermoorgames.com/demos/aether-review.html" />
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -11,6 +21,8 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { background: #0a0e1a; }
 @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
+.navlink { color: #64748b; font-size: 11px; text-decoration: none; }
+.navlink:hover { color: #e2e8f0; }
 </style>
 </head>
 <body>
@@ -216,11 +228,13 @@ function App() {
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#a78bfa", letterSpacing: 1 }}>AETHERREVIEW</div>
             <div style={{ fontSize: 9, color: "#64748b" }}>AI Peer Review &middot; aethermoorgames.com</div>
+            <div style={{ marginTop: 4, maxWidth: 520, color: "#94a3b8", fontSize: 10, lineHeight: 1.45 }}>Operator-side quality gate for specs, papers, patent drafts, and code. Bring your own API key, route the document through four review agents, and use the findings as a governed second pass.</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {verdict && <><ScoreRing score={avgScore} size={38} /><div style={{ color: verdictColor, fontSize: 13, fontWeight: 700, fontFamily: "monospace" }}>{verdict}</div></>}
-          <a href="../index.html" style={{ color: "#64748b", fontSize: 11, textDecoration: "none" }}>Home</a>
+          <a href="index.html" className="navlink">Demo Lab</a>
+          <a href="../index.html" className="navlink">Home</a>
         </div>
       </div>
 

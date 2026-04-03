@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Spiral Engine | SCBE-AETHERMOORE</title>
+<meta name="description" content="Play the Spiral Engine governance sandbox: build leyline networks, route Sacred Tongue packets, and watch live SCBE-style Omega gating respond to your structure choices." />
+<meta property="og:title" content="The Spiral Engine | SCBE-AETHERMOORE" />
+<meta property="og:description" content="An advanced lab sandbox for learning how packet flow, harmonic pressure, and Omega gating interact inside a governed SCBE-style system." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://aethermoorgames.com/demos/spiral-engine.html" />
+<meta property="og:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="The Spiral Engine | SCBE-AETHERMOORE" />
+<meta name="twitter:description" content="Build, route, and stress-test a governed packet sandbox inside the AetherMoore demo lab." />
+<link rel="canonical" href="https://aethermoorgames.com/demos/spiral-engine.html" />
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0e1a;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;height:100vh}
@@ -11,6 +21,10 @@ canvas{display:block;cursor:crosshair}
 #ui{position:fixed;top:0;right:0;width:240px;height:100vh;background:rgba(15,23,42,0.95);border-left:1px solid #1e293b;padding:8px;overflow-y:auto;font-size:11px}
 #bar{position:fixed;bottom:0;left:0;right:240px;background:rgba(15,23,42,0.95);border-top:1px solid #1e293b;padding:6px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 #hdr{position:fixed;top:0;left:0;right:240px;background:rgba(15,23,42,0.9);border-bottom:1px solid #1e293b;padding:6px 12px;display:flex;justify-content:space-between;align-items:center;z-index:10}
+.subcopy{margin-top:4px;max-width:560px;color:#94a3b8;font-size:10px;line-height:1.45}
+.navlinks{display:flex;gap:12px;align-items:center;font-size:10px}
+.navlinks a{color:#94a3b8;text-decoration:none}
+.navlinks a:hover{color:#e2e8f0}
 .btn{padding:4px 10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#94a3b8;cursor:pointer;font-size:10px;font-family:monospace}
 .btn:hover{background:#1e293b;color:#e2e8f0}
 .btn.active{background:#7c3aed33;border-color:#7c3aed;color:#a78bfa}
@@ -31,8 +45,15 @@ canvas{display:block;cursor:crosshair}
   <div>
     <span style="color:#a78bfa;font-weight:700;letter-spacing:2px;font-size:14px">THE SPIRAL ENGINE</span>
     <span id="scoreDisp" style="color:#64748b;margin-left:8px;font-size:10px"></span>
+    <div class="subcopy">Advanced lab governance sandbox. Build structures, route Sacred Tongue packets, and learn how braid distance, harmonic pressure, and Omega gating behave under stress.</div>
   </div>
-  <div id="statusDisp" style="font-family:monospace;font-weight:700;font-size:12px"></div>
+  <div style="text-align:right">
+    <div class="navlinks">
+      <a href="index.html">Demo Lab</a>
+      <a href="../index.html">Home</a>
+    </div>
+    <div id="statusDisp" style="font-family:monospace;font-weight:700;font-size:12px;margin-top:8px"></div>
+  </div>
 </div>
 <div id="ui"></div>
 <div id="bar"></div>
@@ -151,12 +172,14 @@ function getMetrics(){
   const eCount=structures.filter(s=>s.type==='egg').length;
   const avgN=structures.length?structures.reduce((s,st)=>s+discNorm(st.x,st.y),0)/structures.length:0;
 
-  // Scale braid inputs - without structures, keep them mild
-  const structBonus=structures.length>0?1:0.1;
-  const Ti=(intent*10+avgN*5)*structBonus;
-  const Tm=((1-coherence)*8+tCount*0.5)*structBonus;
-  const Tg=((1-trust)*6+mission.num*0.3)*structBonus;
-  const Tp=(abs(avgN)*8+threats.length*2)*structBonus;
+  // Braid inputs: structures HELP. Building near center is rewarded.
+  // Each structure reduces braid by 15%. Center structures reduce more.
+  const centerBonus=structures.length?structures.reduce((s,st)=>s+(1-discNorm(st.x,st.y)),0)/structures.length:0;
+  const structDampen=max(0.05, 1 - structures.length*0.15 - centerBonus*0.2);
+  const Ti=intent*5*structDampen;
+  const Tm=(1-coherence)*2*structDampen;
+  const Tg=(1-trust)*2*structDampen;
+  const Tp=threats.length*1.5*structDampen;
   const db=braidDist(Ti,Tm,Tg,Tp);
   const xf=xFactor(intent,trust);
   const Heff=hWall(db,xf);
@@ -165,9 +188,9 @@ function getMetrics(){
   const iMem=min(1,(1-coherence)*0.6+db*0.04);
   const iGov=min(1,(1-trust)*0.5+mission.num*0.015);
   const dTri=triadRisk(iFast,iMem,iGov);
-  const driftF=max(0,min(1,1-db*0.03+pCount*0.02+0.2));
-  const triadF=max(0,min(1,1-dTri*0.3+wCount*0.04+0.2));
-  const specF=max(0,min(1,coherence*0.6+0.4+tCount*0.03));
+  const driftF=max(0,min(1,1-db*0.02+pCount*0.04+0.3));
+  const triadF=max(0,min(1,1-dTri*0.2+wCount*0.06+0.3));
+  const specF=max(0,min(1,coherence*0.5+0.45+tCount*0.04));
   const omega=omegaGate(1,harm,driftF,triadF,specF);
   const status=omega>=0.7?'ALLOW':omega>=0.3?'QUARANTINE':omega>=0.05?'DENY':'EXILE';
   const statusColor=omega>=0.7?'#34d399':omega>=0.3?'#fbbf24':omega>=0.05?'#f87171':'#dc2626';
