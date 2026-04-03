@@ -182,3 +182,126 @@ def test_export_provider_manifest_uses_promoted_runs(tmp_path: Path) -> None:
     assert artifact["id"] == "issdandavis/scbe-colab-run-1"
     assert artifact["role"] == "textgen"
     assert artifact["metadata"]["host"] == "colab"
+
+
+def test_exported_manifest_fuses_with_federated_orchestrator(tmp_path: Path) -> None:
+    registry = tmp_path / "registry.json"
+    hf_manifest = tmp_path / "hf_manifest.json"
+    gcp_manifest = tmp_path / "gcp_manifest.json"
+    aws_manifest = tmp_path / "aws_manifest.json"
+    fused_manifest = tmp_path / "fused_manifest.json"
+
+    register = _run(
+        "--registry",
+        str(registry),
+        "register",
+        "--run-id",
+        "colab-run-1",
+        "--host",
+        "colab",
+        "--provider",
+        "hf",
+        "--role",
+        "textgen",
+        "--base-model",
+        "Qwen/Qwen2.5-0.5B-Instruct",
+        "--dataset-repo",
+        "issdandavis/scbe-aethermoore-training-data",
+        "--dataset-revision",
+        "rev-001",
+        "--artifact-id",
+        "issdandavis/scbe-colab-run-1",
+        "--artifact-uri",
+        "hf://issdandavis/scbe-colab-run-1",
+        "--quality",
+        "0.85",
+        "--safety",
+        "0.99",
+        "--latency-ms-p95",
+        "95",
+        "--cost-per-1k-tokens",
+        "0.7",
+    )
+    assert register.returncode == 0, register.stderr
+
+    promote = _run("--registry", str(registry), "promote", "--run-id", "colab-run-1")
+    assert promote.returncode == 0, promote.stderr
+
+    export_result = _run(
+        "--registry",
+        str(registry),
+        "export-provider-manifest",
+        "--provider",
+        "hf",
+        "--output",
+        str(hf_manifest),
+    )
+    assert export_result.returncode == 0, export_result.stderr
+
+    gcp_manifest.write_text(
+        json.dumps(
+            {
+                "provider": "gcp",
+                "artifacts": [
+                    {
+                        "id": "spiralverse/embedder-v2",
+                        "role": "embed",
+                        "metrics": {
+                            "quality": 0.86,
+                            "safety": 0.99,
+                            "latency_ms_p95": 90,
+                            "cost_per_1k_tokens": 0.6,
+                        },
+                        "uri": "gs://scbe-vertex-staging/spiralverse/embedder-v2",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    aws_manifest.write_text(
+        json.dumps(
+            {
+                "provider": "aws",
+                "artifacts": [
+                    {
+                        "id": "spiralverse/runtime-distilled-v3",
+                        "role": "runtime",
+                        "metrics": {
+                            "quality": 0.8,
+                            "safety": 0.98,
+                            "latency_ms_p95": 70,
+                            "cost_per_1k_tokens": 0.5,
+                        },
+                        "uri": "s3://scbe-training-data/models/runtime-distilled-v3",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    orchestrator = subprocess.run(
+        [
+            sys.executable,
+            "training/federated_orchestrator.py",
+            "--hf-manifest",
+            str(hf_manifest),
+            "--gcp-manifest",
+            str(gcp_manifest),
+            "--aws-manifest",
+            str(aws_manifest),
+            "--output",
+            str(fused_manifest),
+        ],
+        cwd="C:/Users/issda/SCBE-AETHERMOORE",
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert orchestrator.returncode == 0, orchestrator.stderr
+
+    fused = json.loads(fused_manifest.read_text(encoding="utf-8"))
+    assert set(fused["providers"]) == {"hf", "gcp", "aws"}
+    assert fused["units"]["hf"]["id"] == "issdandavis/scbe-colab-run-1"
+    assert fused["units"]["hf"]["role"] == "textgen"
