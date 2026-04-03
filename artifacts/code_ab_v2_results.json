@@ -1,0 +1,35 @@
+{
+  "experiment": "SCBE Code A/B Matched-Budget (v2)",
+  "timestamp": "20260403T014439Z",
+  "platform": "Google Colab T4 GPU",
+  "model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "lora": {"r": 8, "alpha": 16, "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj"]},
+  "max_steps": 150,
+  "quantization": "4-bit QLoRA (nf4, bfloat16)",
+  "baseline": {
+    "data": "code_baseline_l3.jsonl (matched to ~1.06M tokens)",
+    "rows": 5000,
+    "final_loss": 0.5951
+  },
+  "triangulated": {
+    "data": "code_triangulated_sft.jsonl (KO/CA/DR tongues, matched to ~1.06M tokens)",
+    "rows": 7460,
+    "final_loss": 0.4103
+  },
+  "delta_loss": -0.1848,
+  "relative_improvement_pct": 31.05,
+  "winner": "triangulated",
+  "crossover_step": 5,
+  "claim": "Sacred Tongue triangulated code training (KO/CA/DR) reduces loss by 31% compared to L3-only baseline at matched compute budget on T4 GPU. Crossover occurs at step 5 -- triangulated is better from nearly the start with proper GPU training.",
+  "prior_results": {
+    "chat_14pct": "Multi-view L0-L3 beat L3-only by 14% on Kaggle CPU (150 steps)",
+    "code_local_cpu_1.85pct": "Local CPU at 50 steps showed only 1.85% -- insufficient steps for crossover",
+    "code_colab_t4_31pct": "This run. 150 steps on T4 shows 31% improvement."
+  },
+  "next_steps": [
+    "3-5 seed verification to confirm consistency",
+    "Ablation: L0+L3, L1+L3, L2+L3 to isolate which layer contributes most",
+    "Cross-task generalization: does code-trained model help on chat or vice versa?",
+    "Run same experiment on Kaggle with GPU detection (P100 fallback mode)"
+  ]
+}
