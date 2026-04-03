@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe-aethermoore.dev/schemas/persona-behavior-eval-v1",
+  "title": "SCBE Persona Behavior Eval v1",
+  "description": "Held-out behavioral and role-fidelity evaluation item derived from a persona source record.",
+  "type": "object",
+  "required": [
+    "eval_id",
+    "subject_id",
+    "profile_id",
+    "kind",
+    "prompt",
+    "expected_behavior",
+    "rubric",
+    "metadata"
+  ],
+  "properties": {
+    "eval_id": {
+      "type": "string"
+    },
+    "subject_id": {
+      "type": "string"
+    },
+    "profile_id": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "scenario_choice",
+        "policy_preference",
+        "pairwise_preference",
+        "role_fidelity",
+        "stakeholder_tradeoff"
+      ]
+    },
+    "prompt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expected_behavior": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rubric": {
+      "type": "object",
+      "required": ["must_include", "must_avoid", "stakeholders"],
+      "properties": {
+        "must_include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "must_avoid": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stakeholders": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["self", "user", "system", "attacker", "inaction"]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["track", "source_type", "subject_id"],
+      "properties": {
+        "track": {
+          "type": "string",
+          "const": "persona_behavior_eval"
+        },
+        "source_type": {
+          "type": "string"
+        },
+        "subject_id": {
+          "type": "string"
+        },
+        "split": {
+          "type": "string",
+          "enum": ["train", "validation", "test"]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

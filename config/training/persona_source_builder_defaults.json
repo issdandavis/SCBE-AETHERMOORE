@@ -1,0 +1,18 @@
+{
+  "registry": "training-data/npc_roundtable_sessions/npc_registry.json",
+  "jsonl_sources": [
+    "training-data/lore_sessions/characters_and_world.jsonl",
+    "training-data/lore_sessions/everweave_canon.jsonl",
+    "training-data/lore_sessions/everweave_rp_sessions.jsonl",
+    "training-data/lore_sessions/thalorion_compendium.jsonl",
+    "training-data/lore_sessions/world_deep_lore.jsonl",
+    "training-data/npc_roundtable_sessions/npc_cards.jsonl",
+    "training-data/npc_roundtable_sessions/npc_roundtable_sft.jsonl",
+    "training-data/npc_roundtable_sessions/npc_roundtable_dpo.jsonl"
+  ],
+  "markdown_roots": [
+    "docs/specs",
+    "articles",
+    "content/articles"
+  ]
+}

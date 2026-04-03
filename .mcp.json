@@ -86,6 +86,7 @@
       "args": [
         "/c",
         "C:\\Program Files\\nodejs\\npx.cmd",
+        "-y",
         "mcp-remote",
         "https://www.kaggle.com/mcp",
         "--header",

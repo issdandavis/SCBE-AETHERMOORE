@@ -86,6 +86,34 @@ So the practical rule is:
 - keep Hugging Face as the main hosted model/dataset lane
 - treat `python scripts/system/kaggle_notebook_smoke.py --micro-train` as the required preflight before any long Kaggle run; if preflight fails, the run is invalid and should not start
 
+### Terminal-first Kaggle lane
+
+Use the repo helper when you want to stage and launch SCBE kernels directly from
+the terminal instead of pasting code into the Kaggle UI:
+
+```powershell
+npm run kaggle:presets
+npm run kaggle:stage -- --preset smoke-governance
+npm run kaggle:push -- --preset smoke-governance
+npm run kaggle:run:status -- --preset smoke-governance
+npm run kaggle:run:output -- --preset smoke-governance
+```
+
+Current presets:
+
+- `smoke-governance`
+- `polly-comparison`
+- `polly-train`
+- `code-ab`
+- `scbe-coder`
+
+Operational notes:
+
+- `kaggle:stage` writes a ready-to-push kernel folder under `artifacts/kaggle_kernels/<slug>/`.
+- `kaggle:push` triggers the remote run through the installed `kaggle` CLI.
+- `kaggle:run:status` and `kaggle:run:output` are the normal loop for checking the job and pulling `/kaggle/working` artifacts back locally.
+- `smoke-governance` is the preferred remote preflight before long Kaggle training jobs.
+
 ## 4. Colab: what it is for
 
 Colab is the flexible compute lane for training and data generation.

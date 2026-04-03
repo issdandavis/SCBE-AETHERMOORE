@@ -78,6 +78,7 @@ $env:HF_TOKEN = "<your_huggingface_token>"
 Workspace `.mcp.json` includes a `kaggle` MCP entry backed by:
 
 - `mcp-remote`
+- launched via explicit Windows `cmd.exe` + `npx.cmd -y` paths to avoid interactive `npx` prompts during MCP startup
 - remote endpoint: `https://www.kaggle.com/mcp`
 - auth header: `Authorization: Bearer ${KAGGLE_API_TOKEN}`
 

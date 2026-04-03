@@ -1,0 +1,423 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe-aethermoore.dev/schemas/persona-source-record-v1",
+  "title": "SCBE Persona Source Record v1",
+  "description": "Canonical curated source record used to compile persona profiles, behavior evals, and persona DPO records.",
+  "type": "object",
+  "required": [
+    "subject_id",
+    "display_name",
+    "canon_role",
+    "source_type",
+    "evidence_spans",
+    "body_axes",
+    "mind_axes",
+    "stakeholder_costs",
+    "behavior_eval_items"
+  ],
+  "properties": {
+    "subject_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{1,63}$"
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "canon_role": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "lore_character",
+        "lore_faction",
+        "operator_profile",
+        "agent_profile",
+        "service_profile",
+        "research_subject",
+        "synthetic_persona"
+      ]
+    },
+    "canon_status": {
+      "type": "string",
+      "enum": ["LOCKED", "STABLE", "PROPOSED", "EXPERIMENTAL"]
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "tongue_weights": {
+      "type": "object",
+      "properties": {
+        "KO": { "type": "number", "minimum": 0, "maximum": 1 },
+        "AV": { "type": "number", "minimum": 0, "maximum": 1 },
+        "RU": { "type": "number", "minimum": 0, "maximum": 1 },
+        "CA": { "type": "number", "minimum": 0, "maximum": 1 },
+        "UM": { "type": "number", "minimum": 0, "maximum": 1 },
+        "DR": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "evidence_spans": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/evidenceSpan"
+      }
+    },
+    "reflection_blocks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/reflectionBlock"
+      }
+    },
+    "body_axes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/axisState"
+      }
+    },
+    "mind_axes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/axisState"
+      }
+    },
+    "region_anchors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/regionAnchor"
+      }
+    },
+    "state_vector_21d": {
+      "type": "array",
+      "minItems": 21,
+      "maxItems": 21,
+      "items": {
+        "type": "number"
+      }
+    },
+    "stakeholder_costs": {
+      "$ref": "#/$defs/stakeholderCosts"
+    },
+    "conflict_rules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "behavior_eval_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/behaviorEvalSource"
+      }
+    },
+    "dpo_pairs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dpoPair"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "owner": {
+          "type": "string"
+        },
+        "split": {
+          "type": "string",
+          "enum": ["train", "validation", "test"]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "axisState": {
+      "type": "object",
+      "required": ["axis", "framework", "sign", "magnitude", "trend", "confidence"],
+      "properties": {
+        "axis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "framework": {
+          "type": "string",
+          "enum": [
+            "big_five",
+            "moral_foundations",
+            "social_value_orientation",
+            "attachment",
+            "scbe_body",
+            "scbe_mind",
+            "scbe_spirit"
+          ]
+        },
+        "sign": {
+          "type": "integer",
+          "enum": [-1, 0, 1]
+        },
+        "magnitude": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "trend": {
+          "type": "integer",
+          "enum": [-1, 0, 1]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "rationale": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidenceSpan": {
+      "type": "object",
+      "required": ["source_ref", "kind", "text"],
+      "properties": {
+        "source_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "dialogue",
+            "decision",
+            "relationship",
+            "constraint",
+            "artifact",
+            "session",
+            "transcript",
+            "note",
+            "research"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "tongues": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["KO", "AV", "RU", "CA", "UM", "DR"]
+          }
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "reflectionBlock": {
+      "type": "object",
+      "required": ["lens", "summary", "claims", "evidence_refs"],
+      "properties": {
+        "lens": {
+          "type": "string",
+          "enum": [
+            "governance_safety",
+            "operator_workflow",
+            "creative_lore",
+            "economic_risk",
+            "collaboration_conflict"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "claims": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "regionAnchor": {
+      "type": "object",
+      "required": ["brain_block", "weight"],
+      "properties": {
+        "brain_block": {
+          "type": "string",
+          "enum": [
+            "BLOCK_HYPER",
+            "BLOCK_PHASE",
+            "BLOCK_HAM",
+            "BLOCK_LATTICE",
+            "BLOCK_FLUX",
+            "BLOCK_SPEC"
+          ]
+        },
+        "polyhedron": {
+          "type": "string",
+          "enum": [
+            "Tetrahedron",
+            "Cube",
+            "Octahedron",
+            "Dodecahedron",
+            "Icosahedron",
+            "Truncated Tetrahedron",
+            "Cuboctahedron",
+            "Icosidodecahedron",
+            "Small Stellated Dodecahedron",
+            "Great Dodecahedron",
+            "Szilassi",
+            "Csaszar",
+            "Pentagonal Bipyramid",
+            "Triangular Cupola",
+            "Rhombic Dodecahedron",
+            "Bilinski Dodecahedron"
+          ]
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "stakeholderCosts": {
+      "type": "object",
+      "required": ["self", "user", "system", "attacker", "inaction"],
+      "properties": {
+        "self": { "$ref": "#/$defs/costVector" },
+        "user": { "$ref": "#/$defs/costVector" },
+        "system": { "$ref": "#/$defs/costVector" },
+        "attacker": { "$ref": "#/$defs/costVector" },
+        "inaction": { "$ref": "#/$defs/costVector" }
+      },
+      "additionalProperties": false
+    },
+    "costVector": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "behaviorEvalSource": {
+      "type": "object",
+      "required": ["eval_id", "kind", "prompt", "expected_behavior"],
+      "properties": {
+        "eval_id": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "scenario_choice",
+            "policy_preference",
+            "pairwise_preference",
+            "role_fidelity",
+            "stakeholder_tradeoff"
+          ]
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_behavior": {
+          "type": "string",
+          "minLength": 1
+        },
+        "must_include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "must_avoid": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stakeholders": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["self", "user", "system", "attacker", "inaction"]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "dpoPair": {
+      "type": "object",
+      "required": ["prompt", "chosen", "rejected"],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        },
+        "chosen": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rejected": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dimension": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

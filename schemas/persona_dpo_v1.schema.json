@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe-aethermoore.dev/schemas/persona-dpo-v1",
+  "title": "SCBE Persona DPO v1",
+  "description": "Preference pair record aligned to a compiled persona profile for fidelity and governance tuning.",
+  "type": "object",
+  "required": ["prompt", "chosen", "rejected", "metadata"],
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "chosen": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rejected": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["track", "subject_id", "profile_id"],
+      "properties": {
+        "track": {
+          "type": "string",
+          "const": "persona_dpo"
+        },
+        "subject_id": {
+          "type": "string"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "dimension": {
+          "type": "string"
+        },
+        "source_type": {
+          "type": "string"
+        },
+        "split": {
+          "type": "string",
+          "enum": ["train", "validation", "test"]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

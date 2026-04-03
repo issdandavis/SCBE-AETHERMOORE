@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe-aethermoore.dev/schemas/persona-profile-v1",
+  "title": "SCBE Persona Profile v1",
+  "description": "Compiled Body/Mind/Spirit profile card for a lore-native or system-native subject.",
+  "type": "object",
+  "required": [
+    "profile_id",
+    "subject_id",
+    "display_name",
+    "canon_role",
+    "source_type",
+    "matrix_version",
+    "body",
+    "mind",
+    "spirit",
+    "evidence_spans",
+    "derived",
+    "metadata"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "pattern": "^persona-[a-z0-9_-]+-v[0-9]+$"
+    },
+    "subject_id": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "canon_role": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string"
+    },
+    "canon_status": {
+      "type": "string",
+      "enum": ["LOCKED", "STABLE", "PROPOSED", "EXPERIMENTAL"]
+    },
+    "matrix_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "body": {
+      "type": "object",
+      "required": ["axes", "tongue_weights"],
+      "properties": {
+        "axes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "persona_source_record_v1.schema.json#/$defs/axisState"
+          }
+        },
+        "tongue_weights": {
+          "$ref": "persona_source_record_v1.schema.json#/properties/tongue_weights"
+        },
+        "state_vector_21d": {
+          "type": "array",
+          "minItems": 21,
+          "maxItems": 21,
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "mind": {
+      "type": "object",
+      "required": ["axes"],
+      "properties": {
+        "axes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "persona_source_record_v1.schema.json#/$defs/axisState"
+          }
+        },
+        "region_anchors": {
+          "type": "array",
+          "items": {
+            "$ref": "persona_source_record_v1.schema.json#/$defs/regionAnchor"
+          }
+        },
+        "conflict_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "spirit": {
+      "type": "object",
+      "required": ["stakeholder_costs"],
+      "properties": {
+        "stakeholder_costs": {
+          "$ref": "persona_source_record_v1.schema.json#/$defs/stakeholderCosts"
+        }
+      },
+      "additionalProperties": false
+    },
+    "reflection_blocks": {
+      "type": "array",
+      "items": {
+        "$ref": "persona_source_record_v1.schema.json#/$defs/reflectionBlock"
+      }
+    },
+    "evidence_spans": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "persona_source_record_v1.schema.json#/$defs/evidenceSpan"
+      }
+    },
+    "derived": {
+      "type": "object",
+      "required": [
+        "evidence_count",
+        "body_axis_count",
+        "mind_axis_count",
+        "behavior_eval_count",
+        "dpo_pair_count",
+        "available_views"
+      ],
+      "properties": {
+        "evidence_count": { "type": "integer", "minimum": 1 },
+        "body_axis_count": { "type": "integer", "minimum": 1 },
+        "mind_axis_count": { "type": "integer", "minimum": 1 },
+        "behavior_eval_count": { "type": "integer", "minimum": 0 },
+        "dpo_pair_count": { "type": "integer", "minimum": 0 },
+        "dominant_tongue": {
+          "type": "string",
+          "enum": ["KO", "AV", "RU", "CA", "UM", "DR"]
+        },
+        "available_views": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["evidence", "reflection", "behavior", "dpo", "21d"]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["track", "source_refs"],
+      "properties": {
+        "track": {
+          "type": "string",
+          "const": "persona_profile"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "owner": {
+          "type": "string"
+        },
+        "split": {
+          "type": "string",
+          "enum": ["train", "validation", "test"]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
