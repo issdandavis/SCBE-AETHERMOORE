@@ -73,13 +73,15 @@ class HyperspacePoint:
     entropy: float = 0.1
 
     def to_vector(self) -> List[float]:
+        def _safe(v: float) -> float:
+            return v if math.isfinite(v) else 0.0
         return [
-            self.time,
-            self.intent,
-            self.policy,
-            self.trust,
-            self.risk,
-            self.entropy,
+            _safe(self.time),
+            _safe(self.intent),
+            _safe(self.policy),
+            _safe(self.trust),
+            _safe(self.risk),
+            _safe(self.entropy),
         ]
 
     @classmethod
@@ -402,11 +404,16 @@ class FluxingLanguesMetric:
             phi_l = TONGUE_PHASES[lang]
             d_l = abs(x_vec[lang] - mu_vec[lang])
 
-            phase_shift = math.sin(omega_l * t + phi_l)
+            # Guard: non-finite deviation → worst-case 1.0
+            if not math.isfinite(d_l):
+                d_l = 1.0
+
+            phase_shift = math.sin(omega_l * t + phi_l) if math.isfinite(t) else 0.0
             shifted_d = d_l + 0.1 * phase_shift
 
-            # Fractional dimension scales contribution
-            L += nu_l * w_l * math.exp(beta_l * shifted_d)
+            # Fractional dimension scales contribution (clamp exponent)
+            exponent = min(beta_l * shifted_d, 50.0)
+            L += nu_l * w_l * math.exp(exponent)
 
         return min(L, self.clamp_max)
 

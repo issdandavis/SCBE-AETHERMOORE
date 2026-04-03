@@ -177,6 +177,42 @@ class TestLayerIndependence:
         assert isinstance(result["lyapunov"]["is_stable"], bool)
 
 
+class TestNuclearInput:
+    """The ultimate test: every input is broken simultaneously."""
+
+    def test_all_nan_inf_input_produces_finite_output(self):
+        """No combination of bad inputs can break the system globally."""
+        wt = WorldTreeMetric()
+        nightmare = HyperspacePoint(
+            time=float("nan"),
+            intent=float("inf"),
+            policy=float("-inf"),
+            trust=float("nan"),
+            risk=float("inf"),
+            entropy=float("nan"),
+        )
+        r = wt.compute_total(nightmare)
+
+        for k, v in r.items():
+            if isinstance(v, (int, float)):
+                assert math.isfinite(v), f"{k} is not finite: {v}"
+
+    def test_zero_vector_produces_finite_output(self):
+        wt = WorldTreeMetric()
+        zero = HyperspacePoint(time=0, intent=0, policy=0, trust=0, risk=0, entropy=0)
+        r = wt.compute_total(zero)
+        assert math.isfinite(r["L_total"])
+        assert math.isfinite(r["value"])
+
+    def test_extreme_values_produce_finite_output(self):
+        wt = WorldTreeMetric()
+        extreme = HyperspacePoint(time=1e10, intent=1e10, policy=1e10, trust=1e10, risk=1e10, entropy=1e10)
+        r = wt.compute_total(extreme)
+        for k, v in r.items():
+            if isinstance(v, (int, float)):
+                assert math.isfinite(v), f"{k} overflowed at extreme input: {v}"
+
+
 class TestWorldTreeCompleteness:
     """Verify the unified metric returns all expected fields."""
 

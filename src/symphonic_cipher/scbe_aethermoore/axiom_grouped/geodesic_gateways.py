@@ -565,7 +565,8 @@ class SacredEggsMatrix:
             shifted_d = d_l + 0.1 * phase_shift
             beta_l = 1.0 + 0.1 * math.cos(phi_l)
 
-            base_term = nu[l] * w_l * math.exp(beta_l * shifted_d)
+            exponent = min(beta_l * shifted_d, 50.0)  # Clamp to prevent overflow
+            base_term = nu[l] * w_l * math.exp(exponent)
             base_cost += base_term
 
             # Egg-modified weight
@@ -573,7 +574,7 @@ class SacredEggsMatrix:
             for egg in self.eggs:
                 w_eff *= (1.0 + egg.alpha * egg.affinity[l] * V)
 
-            egg_term = nu[l] * w_eff * math.exp(beta_l * shifted_d)
+            egg_term = nu[l] * w_eff * math.exp(exponent)
             egg_cost += egg_term
 
         return egg_cost - base_cost
