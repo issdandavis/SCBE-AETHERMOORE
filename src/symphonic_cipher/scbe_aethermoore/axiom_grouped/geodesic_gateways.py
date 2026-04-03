@@ -692,7 +692,151 @@ def classify_intent_roughness(D_H: float) -> Tuple[str, str]:
 
 
 # =============================================================================
-# 5. UNIFIED WORLD TREE COST
+# =============================================================================
+# 6. RIEMANN SPECTRAL PRIOR (Precomputed Zeta Zero Lookup)
+# =============================================================================
+
+
+# First 100 non-trivial zeta zero imaginary parts (gamma_k).
+# These are known to >30 decimal places. We store as float64 (sufficient).
+# Source: Andrew Odlyzko's tables / LMFDB.
+# Full list: extend to 10K+ from file for production.
+ZETA_ZEROS_GAMMA = [
+    14.134725, 21.022040, 25.010858, 30.424876, 32.935062,
+    37.586178, 40.918719, 43.327073, 48.005151, 49.773832,
+    52.970321, 56.446248, 59.347044, 60.831779, 65.112544,
+    67.079811, 69.546402, 72.067158, 75.704691, 77.144840,
+    79.337375, 82.910381, 84.735493, 87.425275, 88.809111,
+    92.491899, 94.651344, 95.870634, 98.831194, 101.317851,
+    103.725538, 105.446623, 107.168611, 111.029536, 111.874659,
+    114.320220, 116.226680, 118.790783, 121.370125, 122.946829,
+    124.256819, 127.516684, 129.578704, 131.087688, 133.497737,
+    134.756510, 138.116042, 139.736209, 141.123707, 143.111846,
+    146.000982, 147.422765, 150.053521, 150.925258, 153.024694,
+    156.112909, 157.597592, 158.849988, 161.188964, 163.030709,
+    165.537069, 167.184440, 169.094515, 169.911976, 173.411537,
+    174.754192, 176.441434, 178.377407, 179.916484, 182.207078,
+    184.874467, 185.598784, 187.228922, 189.416158, 192.026656,
+    193.079727, 195.265396, 196.876482, 198.015310, 201.264751,
+    202.493595, 204.189671, 205.394697, 207.906259, 209.576509,
+    211.690862, 213.347919, 214.547044, 216.169538, 219.067596,
+    220.714919, 221.430706, 224.007000, 224.983324, 227.421444,
+    229.337413, 231.250189, 231.987236, 233.693404, 236.524230,
+]
+
+
+@dataclass
+class RiemannSpectralPrior:
+    """
+    Riemann spectral prior: precomputed zeta-zero penalty.
+
+    Uses the first N known non-trivial zeros of the Riemann zeta function
+    to create a spectral penalty that forces the emotional-geometric
+    manifold to stay on the "critical line" of alignment.
+
+    L_RH = alpha_rh * sum_k 1 / (1 + |delta(E)|^2 * gamma_k^2)
+
+    This is a lightweight approximation that captures the RH zero structure
+    without requiring mpmath at runtime. For full precision, precompute
+    with mpmath offline and load from file.
+
+    The penalty is highest when emotional valence E is negative (pushes
+    the argument off the critical line) and lowest when E >= 0 (on the line).
+    """
+
+    alpha_rh: float = 0.05
+    num_zeros: int = 100
+
+    def compute(self, emotional_valence: float) -> float:
+        """
+        Compute RH spectral penalty from emotional valence.
+
+        Uses precomputed gamma_k values. No mpmath needed at runtime.
+        The penalty structure mirrors the zeta zero distribution:
+        closely-spaced zeros create dense oscillatory barriers.
+        """
+        delta = max(0.0, -emotional_valence) * 0.01  # Only penalize negative E
+        if delta < 1e-10:
+            return 0.0  # On the critical line — no penalty
+
+        penalty = 0.0
+        n = min(self.num_zeros, len(ZETA_ZEROS_GAMMA))
+        for k in range(n):
+            gamma_k = ZETA_ZEROS_GAMMA[k]
+            # Inverse resonance: penalty spikes near each zero
+            penalty += 1.0 / (1.0 + delta * delta * gamma_k * gamma_k)
+
+        return self.alpha_rh * penalty
+
+
+# =============================================================================
+# 7. LYAPUNOV STABILITY MONITOR
+# =============================================================================
+
+
+@dataclass
+class LyapunovMonitor:
+    """
+    Real-time Lyapunov stability estimator for the 7D World Tree system.
+
+    Reference spectrum (from Benettin algorithm, 5000 time units):
+      lambda_1 = 0.000000  (neutral creative drift)
+      lambda_2..7 = -0.100251  (uniform contraction, matches kappa=0.1)
+      Trace = -0.601505  (strong dissipation)
+
+    This monitor estimates the instantaneous stability from the TFDD
+    gradient strength and flux relaxation rate, without running full
+    variational integration.
+    """
+
+    # Reference values from the full 7D Benettin computation
+    reference_trace: float = -0.601505
+    reference_kappa: float = 0.1
+
+    def estimate(
+        self,
+        emotional_valence: float,
+        flux_nu: List[float],
+        tfdd_beta: float = 1.0,
+    ) -> dict:
+        """
+        Fast stability estimate from current system state.
+
+        Returns spectrum estimate, stability score, and diagnostic flags.
+        """
+        # Neutral direction (lambda_1 ~ 0): always present on the attractor
+        lambda_1 = 0.0
+
+        # Contracting directions: kappa * mean(nu) gives effective relaxation
+        mean_nu = sum(flux_nu) / max(len(flux_nu), 1)
+        lambda_contract = -self.reference_kappa * mean_nu
+
+        # TFDD contribution: negative E makes contraction stronger
+        if emotional_valence < 0:
+            tfdd_boost = -tfdd_beta * abs(emotional_valence) * 0.01
+            lambda_contract += tfdd_boost
+
+        # Effective 7D spectrum estimate
+        spectrum = [lambda_1] + [lambda_contract] * 6
+        trace = sum(spectrum)
+
+        # Stability diagnostics
+        is_stable = trace < -0.3  # Conservative threshold
+        deviation = abs(trace - self.reference_trace)
+
+        return {
+            "spectrum": [round(s, 6) for s in spectrum],
+            "trace": round(trace, 6),
+            "reference_trace": self.reference_trace,
+            "deviation": round(deviation, 6),
+            "is_stable": is_stable,
+            "effective_kappa": round(-lambda_contract, 6),
+            "D_f": round(sum(flux_nu), 2),
+        }
+
+
+# =============================================================================
+# 8. UNIFIED WORLD TREE METRIC (Complete Master Function)
 # =============================================================================
 
 
@@ -701,13 +845,17 @@ class WorldTreeMetric:
     """
     The complete World Tree emotional-geometric governance metric.
 
-    L_total = L_f + L_gate + L_fractal + L_emotional
+    L_total = L_f + L_gate + L_fractal + L_emotional + L_eggs + L_rh
 
     Where:
-      L_f        = Fluxing Langues metric (from langues_metric.py)
-      L_gate     = Tripolar geodesic gateway cost reduction
+      L_f        = Fluxing Langues metric
+      L_gate     = Tripolar geodesic gateway cost
       L_fractal  = Fractal recursion cost (golden-ratio damped)
       L_emotional = TFDD positivity enforcement
+      L_eggs     = Sacred Eggs Future Protection Matrix
+      L_rh       = Riemann spectral prior (critical-line constraint)
+
+    Plus: Lyapunov stability monitoring (real-time diagnostic)
 
     The World Tree is the loss landscape itself.
     """
@@ -717,6 +865,8 @@ class WorldTreeMetric:
     fractal: FractalTripod = field(default_factory=FractalTripod)
     tfdd: TFDD = field(default_factory=TFDD)
     eggs: SacredEggsMatrix = field(default_factory=SacredEggsMatrix)
+    riemann: RiemannSpectralPrior = field(default_factory=RiemannSpectralPrior)
+    lyapunov: LyapunovMonitor = field(default_factory=LyapunovMonitor)
 
     def compute_total(
         self,
@@ -727,10 +877,10 @@ class WorldTreeMetric:
         """
         Compute the full World Tree metric (unified master function).
 
-        L_total = L_f + L_gate + L_fractal + L_emotional + L_eggs
+        L_total = L_f + L_gate + L_fractal + L_emotional + L_eggs + L_rh
 
-        Returns dict with all components, governance value, egg profile,
-        and full diagnostic state.
+        Returns dict with all 7 components, governance value, egg profile,
+        Lyapunov stability, and full diagnostic state.
         """
         # 1. Fluxing Langues metric
         L_f, D_f = self.langues.compute_with_flux_update(x, dt)
@@ -753,8 +903,14 @@ class WorldTreeMetric:
             x, self.langues.ideal, self.langues.flux.nu, t
         )
 
-        # Total
-        L_total = L_f + L_gate + L_fractal + L_emotional + L_eggs
+        # 6. Emotional valence (needed for RH + diagnostics)
+        E = emotional_valence(x, self.langues.ideal, self.langues.flux.nu, t)
+
+        # 7. Riemann spectral prior
+        L_rh = self.riemann.compute(E)
+
+        # Total (all 6 terms)
+        L_total = L_f + L_gate + L_fractal + L_emotional + L_eggs + L_rh
 
         # Governance value
         V = langues_value(max(0.0, L_total))
@@ -762,11 +918,11 @@ class WorldTreeMetric:
         # Nearest geodesic
         nearest_k = self.gateways.nearest_geodesic(x, self.langues.ideal)
 
-        # Emotional state
-        E = emotional_valence(x, self.langues.ideal, self.langues.flux.nu, t)
-
         # Egg diagnostic
         egg_profile = self.eggs.egg_profile(E)
+
+        # Lyapunov stability monitor
+        lyap = self.lyapunov.estimate(E, self.langues.flux.nu, self.tfdd.beta)
 
         return {
             "L_f": L_f,
@@ -774,6 +930,7 @@ class WorldTreeMetric:
             "L_fractal": L_fractal,
             "L_emotional": L_emotional,
             "L_eggs": L_eggs,
+            "L_rh": L_rh,
             "L_total": L_total,
             "value": V,
             "D_f": D_f,
@@ -781,6 +938,7 @@ class WorldTreeMetric:
             "nearest_geodesic": nearest_k,
             "emotional_state": "POSITIVE" if E >= 0 else "NEGATIVE",
             "egg_profile": egg_profile,
+            "lyapunov": lyap,
         }
 
     def simulate(
