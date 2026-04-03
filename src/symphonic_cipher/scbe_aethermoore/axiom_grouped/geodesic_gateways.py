@@ -299,6 +299,9 @@ def emotional_valence(
 
         E += nu[l] * w_l * (mu_vec[l] - d_l) * phase
 
+    # Guard against NaN from bad inputs
+    if not math.isfinite(E):
+        return -1.0  # Worst-case: treat as negative valence
     return E
 
 
@@ -310,19 +313,32 @@ def discouragement_function(e: float, beta: float = 1.0, w: float = 1.0) -> floa
 
     e >= 0: D = w (baseline, no penalty)
     e < 0: D grows exponentially (strong discouragement)
+
+    Guards: NaN/Inf inputs are treated as worst-case (e = -1.0).
+    Exponential is clamped to prevent overflow (max exponent = 50).
     """
-    return w * math.exp(beta * max(0.0, -e))
+    # NaN/Inf guard: treat non-finite as worst-case negative
+    if not math.isfinite(e):
+        e = -1.0
+    # Clamp exponent to prevent overflow (exp(50) ~ 5e21, safe)
+    exponent = min(beta * max(0.0, -e), 50.0)
+    return w * math.exp(exponent)
 
 
 def discouragement_derivative(e: float, beta: float = 1.0, w: float = 1.0) -> float:
     """
     Derivative dD/de — the gradient push.
 
-    For e < 0: dD/de = -beta * w * exp(beta * (-e)) → pushes toward positive
-    For e >= 0: dD/de = 0 → no interference with positive states
+    For e < 0: dD/de = -beta * w * exp(beta * (-e)) -> pushes toward positive
+    For e >= 0: dD/de = 0 -> no interference with positive states
+
+    Guards: NaN/Inf handled, exponent clamped.
     """
+    if not math.isfinite(e):
+        e = -1.0
     if e < 0:
-        return -beta * w * math.exp(beta * (-e))
+        exponent = min(beta * (-e), 50.0)
+        return -beta * w * math.exp(exponent)
     return 0.0
 
 
@@ -330,9 +346,12 @@ def positivity_weight(e: float, gamma: float = 0.5) -> float:
     """
     Positivity weighting P(e) = 1 + gamma * tanh(e).
 
-    Positive e → P > 1 (reward boost, up to 1+gamma)
-    Negative e → P < 1 (damped penalty)
+    Positive e -> P > 1 (reward boost, up to 1+gamma)
+    Negative e -> P < 1 (damped penalty)
+    Guards: NaN/Inf -> neutral (P = 1.0).
     """
+    if not math.isfinite(e):
+        return 1.0  # Neutral weight for non-finite inputs
     return 1.0 + gamma * math.tanh(e)
 
 
@@ -467,9 +486,12 @@ def egg_activation(E: float, gamma: float = 0.5) -> float:
 
     V_i = 1/(1+max(0,-E)) * (1 + gamma*tanh(E))
 
-    Positive E → V ~ 1.0-1.5 (Eggs bloom, amplify weights)
-    Negative E → V → 0 (Eggs close, protective shutdown)
+    Positive E -> V ~ 1.0-1.5 (Eggs bloom, amplify weights)
+    Negative E -> V -> 0 (Eggs close, protective shutdown)
+    Guards: NaN/Inf -> 0.0 (protective shutdown).
     """
+    if not math.isfinite(E):
+        return 0.0  # Non-finite = shut down (protective)
     return (1.0 / (1.0 + max(0.0, -E))) * (1.0 + gamma * math.tanh(E))
 
 

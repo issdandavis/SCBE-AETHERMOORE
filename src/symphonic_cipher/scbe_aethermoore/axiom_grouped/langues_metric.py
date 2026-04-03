@@ -468,10 +468,11 @@ def langues_value(L: float) -> float:
       - Monotonically decreasing in L
       - Always in (0, 1]
 
-    This is the fundamental bridge:
-      Langues metric (cost) → Value (governance coin unit)
+    Guards: NaN → 0.0, negative L → clamped to 0.
     """
-    return 1.0 / (1.0 + L)
+    if not math.isfinite(L):
+        return 0.0  # Non-finite cost = zero value (worst case)
+    return 1.0 / (1.0 + max(0.0, L))
 
 
 @dataclass
