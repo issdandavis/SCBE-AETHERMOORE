@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("status", "kaggle", "hf", "env", "routes", "inventory-kaggle", "inventory-hf", "inventory-colab", "colab-url", "colab-show")]
+    [ValidateSet("status", "kaggle", "hf", "env", "routes", "inventory-kaggle", "inventory-hf", "inventory-colab", "colab-url", "colab-show", "training-audit")]
     [string]$Action = "status",
     [string]$Notebook = "generator",
     [switch]$ListInventory
@@ -242,6 +242,10 @@ function Show-ColabNotebook {
     & python (Join-Path $RepoRoot "scripts\system\colab_workflow_catalog.py") show $Name --json
 }
 
+function Invoke-TrainingAudit {
+    & python (Join-Path $RepoRoot "scripts\system\training_ops_audit.py") --json
+}
+
 Initialize-HostEnv
 
 switch ($Action) {
@@ -284,6 +288,9 @@ switch ($Action) {
     }
     "colab-show" {
         Show-ColabNotebook -Name $Notebook
+    }
+    "training-audit" {
+        Invoke-TrainingAudit
     }
     default {
         [pscustomobject]@{

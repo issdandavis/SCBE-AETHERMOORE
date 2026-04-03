@@ -345,6 +345,84 @@
       gap: 18px;
     }
 
+    .pipeline-frame {
+      padding: 30px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: linear-gradient(180deg, rgba(14, 20, 31, 0.92), rgba(8, 12, 19, 0.96));
+      box-shadow: var(--shadow);
+    }
+
+    .pipeline-intro {
+      max-width: 72ch;
+      color: var(--muted);
+      line-height: 1.74;
+      margin-top: 14px;
+    }
+
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .pipeline-stage {
+      padding: 22px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(180deg, rgba(19, 27, 41, 0.88), rgba(12, 16, 24, 0.96));
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .stage-kicker {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--gold);
+    }
+
+    .pipeline-stage p {
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 15px;
+    }
+
+    .stage-badge {
+      align-self: flex-start;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(214, 167, 86, 0.16);
+      background: rgba(214, 167, 86, 0.08);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .pipeline-callout {
+      margin-top: 20px;
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(140, 180, 255, 0.14);
+      background: rgba(140, 180, 255, 0.08);
+      color: var(--text);
+      line-height: 1.72;
+    }
+
+    .pipeline-callout strong {
+      color: var(--gold-strong);
+    }
+
+    .pipeline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
     .catalog-card {
       padding: 24px;
       display: grid;
@@ -494,6 +572,10 @@
         grid-template-columns: 1fr;
       }
 
+      .pipeline-grid {
+        grid-template-columns: 1fr;
+      }
+
       .metrics {
         grid-template-columns: 1fr;
       }
@@ -503,6 +585,7 @@
       .hero-copy,
       .hero-visual,
       .strip,
+      .pipeline-frame,
       .matrix,
       .catalog-card,
       .support-panel,
@@ -751,6 +834,58 @@
               <a class="btn btn-secondary" href="../product-manual/content-spin-engine.html">Read manual</a>
             </div>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="training-pipeline">
+      <div class="wrap">
+        <div class="pipeline-frame">
+          <div class="section-head" style="margin-bottom:0;">
+            <div class="eyebrow">Training doctrine</div>
+            <h2>Built like a real training academy because governed AI needs discipline.</h2>
+            <p class="pipeline-intro">
+              The Training Vault is not just a bag of JSONL files. It is the doctrine behind the lane: standardized cohort foundation first, role specialization second, squad integration third. The goal is not to breed one benchmark king. The goal is to train a governed pack that can work together under pressure.
+            </p>
+          </div>
+
+          <div class="pipeline-grid">
+            <article class="pipeline-stage">
+              <div class="stage-kicker">1. Cadet Phase</div>
+              <h3>Shared core before ego.</h3>
+              <p>
+                Every model gets the same foundation first: Sacred Tongues, governance invariants, triangulated multi-view training, and the shared memory layer. This is where the structural lift shows up and where the squad learns the same rules before any member gets a special role.
+              </p>
+              <span class="stage-badge">Standardized cohort foundation</span>
+            </article>
+
+            <article class="pipeline-stage">
+              <div class="stage-kicker">2. Role School</div>
+              <h3>Specialize only after baseline competence.</h3>
+              <p>
+                Once a model clears baseline metrics, it branches into a role lane: leader/router, critic/judge, coder, retriever, governance verifier. You do not get specialists by skipping the basics. You get them by building on a shared identity and then pushing targeted tutoring where each member is weak.
+              </p>
+              <span class="stage-badge">Different jobs, same doctrine</span>
+            </article>
+
+            <article class="pipeline-stage">
+              <div class="stage-kicker">3. Squad Phase</div>
+              <h3>Promotion comes from team proof.</h3>
+              <p>
+                The final test is not solo loss. It is mission performance as a bonded pair or squad. We score success, safety, latency, complementarity, disagreement handling, and recovery. The pack gets stronger because the members learn how to work together, not because one model dominates the rest.
+              </p>
+              <span class="stage-badge">Promotion only after real proof</span>
+            </article>
+          </div>
+
+          <div class="pipeline-callout">
+            <strong>Anti-pattern:</strong> narrow obedience plus erased identity may look efficient for a few runs, but it produces brittle systems that break the moment the environment changes. The vault is built to reject that path and train adaptive governed units instead.
+          </div>
+
+          <div class="pipeline-actions">
+            <a class="btn btn-primary" href="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g" target="_blank" rel="noopener">Get the full pipeline + Colab lane</a>
+            <a class="btn btn-secondary" href="../workflows.html#training-pipelines">Read the training route</a>
+          </div>
         </div>
       </div>
     </section>
