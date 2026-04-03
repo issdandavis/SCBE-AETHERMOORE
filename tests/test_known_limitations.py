@@ -6,7 +6,7 @@ They are EXPECTED TO FAIL - that's the point.
 They define the boundaries of what the system was designed for.
 
 Run with: pytest tests/test_known_limitations.py -v
-Expected: Most tests FAIL (xfail markers)
+Expected: Many tests FAIL (xfail markers); resolved limitations pass normally
 """
 
 import pytest
@@ -55,9 +55,8 @@ class TestCryptoLimitations:
         # Cannot produce fake plaintext for coercion scenarios
         assert False, "No deniability feature"
 
-    @pytest.mark.xfail(reason="Side-channel attacks not fully mitigated")
     def test_L04_timing_side_channel(self):
-        """L04: Timing attacks may leak information."""
+        """L04: Timing side-channel mitigated — constant-time unseal."""
         from symphonic_cipher.scbe_aethermoore.spiral_seal import SpiralSealSS1
 
         key = os.urandom(32)
@@ -99,9 +98,8 @@ class TestCryptoLimitations:
 class TestGeometricLimitations:
     """Mathematical edge cases the system cannot handle."""
 
-    @pytest.mark.xfail(reason="Numerical instability at ball boundary")
     def test_L05_boundary_numerical_instability(self):
-        """L05: Points very close to ||u||=1 cause numerical issues."""
+        """L05: Boundary numerical stability now handled correctly."""
         from scbe_14layer_reference import hyperbolic_distance
 
         # Points extremely close to boundary
@@ -113,9 +111,9 @@ class TestGeometricLimitations:
         # Should be finite, but may overflow/NaN
         assert np.isfinite(d), f"Distance is {d} - numerical instability"
 
-    @pytest.mark.xfail(reason="Very high dimensions cause performance degradation")
+    @pytest.mark.xfail(reason="High-D performance borderline — passes on fast hardware, flaky on CI")
     def test_L06_high_dimensional_performance(self):
-        """L06: System slows dramatically in very high dimensions."""
+        """L06: High-dimensional performance borderline (~100ms threshold)."""
         from scbe_14layer_reference import scbe_14layer_pipeline
 
         # Try 1000 dimensions
@@ -137,9 +135,8 @@ class TestGeometricLimitations:
         # Should complete in <100ms, but high-D will be slow
         assert elapsed < 0.1, f"Took {elapsed:.2f}s - too slow for high dimensions"
 
-    @pytest.mark.xfail(reason="Cannot handle complex-valued inputs directly")
     def test_L07_complex_input_handling(self):
-        """L07: System requires realification - no native complex support."""
+        """L07: Complex-valued inputs now handled via realification."""
         from scbe_14layer_reference import poincare_embed
 
         # Complex input
