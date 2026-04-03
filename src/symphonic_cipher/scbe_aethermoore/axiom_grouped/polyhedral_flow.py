@@ -222,12 +222,13 @@ class DualSpin:
     """
 
     n_bits: int = 8
+    seed: int = 1
     lfsr: FibonacciLFSR = None
     step_count: int = 0
 
     def __post_init__(self):
         if self.lfsr is None:
-            self.lfsr = FibonacciLFSR(n_bits=self.n_bits)
+            self.lfsr = FibonacciLFSR(n_bits=self.n_bits, state=max(1, self.seed))
 
     def spin(self) -> List[int]:
         """Generate one dual-spin bit pattern."""
