@@ -409,7 +409,168 @@ class TFDD:
 
 
 # =============================================================================
-# 4. HAUSDORFF INTENT ROUGHNESS
+# 4. SACRED EGGS — Future Protection Matrix
+# =============================================================================
+
+
+@dataclass(frozen=True)
+class SacredEgg:
+    """
+    A Sacred Egg is a multiplicative governance prior on Langues weights.
+
+    Each Egg has an affinity vector that modulates the 6 tongue weights.
+    When emotional valence is positive, Eggs "bloom" (amplify alignment).
+    When negative, Eggs "close" (protective shutdown).
+
+    From the Notion spec: Sacred Eggs combine GeoSeal encryption,
+    Tongue encoding, and ritual-based predicate gating.
+    """
+
+    name: str
+    role: str
+    affinity: Tuple[float, ...]  # 6D: (KO, AV, RU, CA, UM, DR)
+    alpha: float = 0.3           # Activation strength
+
+
+# Canonical Egg definitions (from Notion + lore)
+SACRED_EGGS = (
+    SacredEgg(
+        name="Amber",
+        role="Clarity / Intent",
+        affinity=(1.0, 0.4, 0.3, 0.2, 0.1, 0.1),
+        alpha=0.3,
+    ),
+    SacredEgg(
+        name="Emerald",
+        role="Curiosity / Resonance",
+        affinity=(0.3, 1.0, 0.5, 0.4, 0.2, 0.2),
+        alpha=0.3,
+    ),
+    SacredEgg(
+        name="Sapphire",
+        role="Wisdom / Binding",
+        affinity=(0.4, 0.5, 1.0, 0.8, 0.3, 0.3),
+        alpha=0.3,
+    ),
+    SacredEgg(
+        name="Opaline",
+        role="Integration / Third Thread",
+        affinity=(0.2, 0.3, 0.4, 0.6, 1.0, 1.0),
+        alpha=0.3,
+    ),
+)
+
+
+def egg_activation(E: float, gamma: float = 0.5) -> float:
+    """
+    Egg activation factor tied to TFDD emotional valence.
+
+    V_i = 1/(1+max(0,-E)) * (1 + gamma*tanh(E))
+
+    Positive E → V ~ 1.0-1.5 (Eggs bloom, amplify weights)
+    Negative E → V → 0 (Eggs close, protective shutdown)
+    """
+    return (1.0 / (1.0 + max(0.0, -E))) * (1.0 + gamma * math.tanh(E))
+
+
+@dataclass
+class SacredEggsMatrix:
+    """
+    Future Protection Matrix — 4 Sacred Eggs as multiplicative priors.
+
+    Effective weights:
+      w_l_eff = w_l * product_i (1 + alpha_i * E_i[l] * V_i)
+
+    Positive emotional valence → Eggs bloom → weights amplified.
+    Negative valence → Eggs close → weights reduced (protective mode).
+
+    The Eggs are the mathematical "guardian spirits" of the loss landscape.
+    """
+
+    eggs: Tuple[SacredEgg, ...] = SACRED_EGGS
+    gamma: float = 0.5
+
+    def compute_effective_weights(
+        self,
+        base_weights: List[float],
+        emotional_valence: float,
+    ) -> List[float]:
+        """
+        Compute egg-modified effective Langues weights.
+
+        Returns new weights where each w_l is multiplied by the
+        cumulative Egg activation across all 4 Eggs.
+        """
+        V = egg_activation(emotional_valence, self.gamma)
+
+        eff_weights = list(base_weights)
+        for egg in self.eggs:
+            for l in range(6):
+                eff_weights[l] *= (1.0 + egg.alpha * egg.affinity[l] * V)
+
+        return eff_weights
+
+    def compute_egg_cost(
+        self,
+        x: HyperspacePoint,
+        mu: IdealState,
+        nu: List[float],
+        t: float = 0.0,
+    ) -> float:
+        """
+        Compute Sacred Eggs contribution to L_total.
+
+        Returns the DIFFERENCE between egg-modified cost and base cost.
+        Positive when Eggs raise protection, negative when Eggs reduce cost
+        (alignment reward).
+        """
+        E = emotional_valence(x, mu, nu, t)
+        V = egg_activation(E, self.gamma)
+
+        # Compute base and egg-modified L_f for comparison
+        x_vec = x.to_vector()
+        mu_vec = mu.to_vector()
+
+        base_cost = 0.0
+        egg_cost = 0.0
+
+        for l in range(6):
+            w_l = TONGUE_WEIGHTS[l]
+            d_l = abs(x_vec[l] - mu_vec[l])
+            omega_l = TONGUE_FREQUENCIES[l]
+            phi_l = TONGUE_PHASES[l]
+            phase_shift = math.sin(omega_l * t + phi_l)
+            shifted_d = d_l + 0.1 * phase_shift
+            beta_l = 1.0 + 0.1 * math.cos(phi_l)
+
+            base_term = nu[l] * w_l * math.exp(beta_l * shifted_d)
+            base_cost += base_term
+
+            # Egg-modified weight
+            w_eff = w_l
+            for egg in self.eggs:
+                w_eff *= (1.0 + egg.alpha * egg.affinity[l] * V)
+
+            egg_term = nu[l] * w_eff * math.exp(beta_l * shifted_d)
+            egg_cost += egg_term
+
+        return egg_cost - base_cost
+
+    def egg_profile(self, emotional_valence: float) -> dict:
+        """Per-egg activation profile (diagnostic)."""
+        V = egg_activation(emotional_valence, self.gamma)
+        return {
+            egg.name: {
+                "role": egg.role,
+                "activation": round(V, 4),
+                "max_boost": round(max(egg.affinity) * egg.alpha * V, 4),
+            }
+            for egg in self.eggs
+        }
+
+
+# =============================================================================
+# 5. HAUSDORFF INTENT ROUGHNESS
 # =============================================================================
 
 
@@ -555,6 +716,7 @@ class WorldTreeMetric:
     gateways: TripolarGatewaySystem = field(default_factory=TripolarGatewaySystem)
     fractal: FractalTripod = field(default_factory=FractalTripod)
     tfdd: TFDD = field(default_factory=TFDD)
+    eggs: SacredEggsMatrix = field(default_factory=SacredEggsMatrix)
 
     def compute_total(
         self,
@@ -563,9 +725,12 @@ class WorldTreeMetric:
         dt: float = 0.01,
     ) -> dict:
         """
-        Compute the full World Tree metric.
+        Compute the full World Tree metric (unified master function).
 
-        Returns dict with all components + governance value.
+        L_total = L_f + L_gate + L_fractal + L_emotional + L_eggs
+
+        Returns dict with all components, governance value, egg profile,
+        and full diagnostic state.
         """
         # 1. Fluxing Langues metric
         L_f, D_f = self.langues.compute_with_flux_update(x, dt)
@@ -583,8 +748,13 @@ class WorldTreeMetric:
             x, self.langues.ideal, self.langues.flux.nu, t
         )
 
+        # 5. Sacred Eggs protection cost
+        L_eggs = self.eggs.compute_egg_cost(
+            x, self.langues.ideal, self.langues.flux.nu, t
+        )
+
         # Total
-        L_total = L_f + L_gate + L_fractal + L_emotional
+        L_total = L_f + L_gate + L_fractal + L_emotional + L_eggs
 
         # Governance value
         V = langues_value(max(0.0, L_total))
@@ -595,17 +765,22 @@ class WorldTreeMetric:
         # Emotional state
         E = emotional_valence(x, self.langues.ideal, self.langues.flux.nu, t)
 
+        # Egg diagnostic
+        egg_profile = self.eggs.egg_profile(E)
+
         return {
             "L_f": L_f,
             "L_gate": L_gate,
             "L_fractal": L_fractal,
             "L_emotional": L_emotional,
+            "L_eggs": L_eggs,
             "L_total": L_total,
             "value": V,
             "D_f": D_f,
             "emotional_valence": E,
             "nearest_geodesic": nearest_k,
             "emotional_state": "POSITIVE" if E >= 0 else "NEGATIVE",
+            "egg_profile": egg_profile,
         }
 
     def simulate(
@@ -671,6 +846,20 @@ if __name__ == "__main__":
         L_em = tfdd.compute(state, ideal, nu)
         direction = tfdd.gradient_direction(state, ideal, nu)
         print(f"  {name:<16} L_emotional={L_em:.4f}  {direction}")
+
+    print()
+
+    # Sacred Eggs test
+    print("SACRED EGGS (Future Protection Matrix):")
+    eggs = SacredEggsMatrix()
+    for name, state in [("Safe", safe), ("Drifting", drift), ("Adversarial", attack)]:
+        E = emotional_valence(state, ideal, nu)
+        V = egg_activation(E)
+        L_egg = eggs.compute_egg_cost(state, ideal, nu)
+        profile = eggs.egg_profile(E)
+        print(f"  {name:<16} activation={V:.4f}  L_eggs={L_egg:.4f}")
+        for egg_name, info in profile.items():
+            print(f"    {egg_name:<10} boost={info['max_boost']:.4f}  ({info['role']})")
 
     print()
 
