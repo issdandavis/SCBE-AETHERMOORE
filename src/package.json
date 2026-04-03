@@ -1,7 +1,8 @@
 {
   "name": "scbe-production-pack",
   "version": "1.0.0",
-  "description": "SCBE (Spectral Context-Bound Encryption) - Unified security framework",
+  "private": true,
+  "description": "SCBE (Spectral Context-Bound Encryption) - Unified security framework [INTERNAL - NOT FOR PUBLISHING]",
   "type": "commonjs",
   "main": "crypto/envelope.js",
   "scripts": {

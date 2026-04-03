@@ -1,6 +1,9 @@
 # Kiro MCP Manager - Sensitive configuration files
 .kiro/settings/
 
+# Build outputs (should never be tracked)
+docs-build-smoke/
+
 # Performance test evidence files (hardware-specific)
 docs/evidence/*.json
 
