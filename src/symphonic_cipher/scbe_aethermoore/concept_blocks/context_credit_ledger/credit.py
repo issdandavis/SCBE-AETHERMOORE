@@ -95,6 +95,21 @@ class CreditDNA:
         return 1.0 / (1.0 + self.hamiltonian_d + 2.0 * self.hamiltonian_pd)
 
     @property
+    def langues_value(self) -> float:
+        """
+        Langues-based value: V = 1/(1+L) where L is the Langues cost.
+
+        Uses the Hamiltonian parameters to approximate L for backward compatibility.
+        For full Langues metric integration, use mint_governed_credit() which
+        accepts the full L value directly.
+
+        This bridges the old H(d,pd) to the new Value(x,t) = 1/(1+L) paradigm.
+        """
+        # Approximate L from Hamiltonian params: L ≈ d + 2*pd (same structure)
+        L_approx = self.hamiltonian_d + 2.0 * self.hamiltonian_pd
+        return 1.0 / (1.0 + L_approx)
+
+    @property
     def complexity(self) -> float:
         """How many layers were involved — more layers = rarer credit."""
         return len(self.active_layers) / 14.0
@@ -148,6 +163,9 @@ class ContextCredit:
     # Optional: the actual context data (may be stripped for privacy)
     context_summary: str = ""
 
+    # Langues metric cost at mint time (None = legacy credit, use Hamiltonian)
+    langues_cost: Optional[float] = None
+
     @property
     def face_value(self) -> float:
         """
@@ -159,6 +177,24 @@ class ContextCredit:
         energy = self.dna.energy_cost
         complexity = max(0.01, self.dna.complexity)
         return weight * energy * complexity * self.legibility
+
+    @property
+    def governed_value(self) -> float:
+        """
+        Governance coin value — driven by the Langues metric.
+
+        Value = 1/(1+L) where L is the full Langues cost at mint time.
+
+        This is the governance coin's intrinsic worth:
+          - L=0 (perfect alignment): governed_value = 1.0
+          - L→∞ (adversarial): governed_value → 0.0
+
+        Falls back to Hamiltonian approximation for legacy credits.
+        """
+        if self.langues_cost is not None:
+            return 1.0 / (1.0 + self.langues_cost)
+        # Backward compat: approximate from Hamiltonian
+        return self.dna.langues_value
 
     @property
     def block_hash(self) -> str:
@@ -283,3 +319,87 @@ def mint_credit(
         if nonce > 1_000_000:
             # Safety valve — accept whatever we have
             return candidate
+
+
+def mint_governed_credit(
+    agent_id: str,
+    model_name: str,
+    denomination: str,
+    context_payload: bytes,
+    personality_vector: List[float],
+    langues_cost: float,
+    tongue_profile: Optional[Dict[str, float]] = None,
+    entropy: float = 3.5,
+    active_layers: Optional[List[int]] = None,
+    governance_verdict: str = "ALLOW",
+    parent_credit_ids: Optional[List[str]] = None,
+    legibility: float = 1.0,
+    context_summary: str = "",
+    difficulty: int = 2,
+) -> ContextCredit:
+    """
+    Mint a ContextCredit using the Langues metric as the value engine.
+
+    This is the governance coin minting function. Instead of raw Hamiltonian
+    parameters (d, pd), it accepts the full Langues cost L and derives:
+
+        governed_value = 1/(1+L)
+
+    The credit's intrinsic worth is directly determined by how well the
+    producing agent was aligned at mint time.
+
+    Args:
+        agent_id: Producing agent's ID
+        model_name: Model that generated the context
+        denomination: Sacred Tongue denomination (KO/AV/RU/CA/UM/DR)
+        context_payload: Raw context bytes
+        personality_vector: 21D personality vector
+        langues_cost: Full Langues metric L(x,t) at mint time
+        tongue_profile: Per-tongue cost breakdown (optional)
+        entropy: Shannon entropy of the context
+        active_layers: Which SCBE layers were active
+        governance_verdict: ALLOW or QUARANTINE
+        parent_credit_ids: Credits that fed into this one
+        legibility: How verifiable [0,1]
+        context_summary: Human-readable summary
+        difficulty: Proof-of-context difficulty
+
+    Returns:
+        Newly minted ContextCredit with langues_cost embedded
+    """
+    # Convert Langues cost to Hamiltonian params for backward compat
+    # L ≈ d + 2*pd → split evenly: d = L/3, pd = L/3
+    hamiltonian_d = langues_cost / 3.0
+    hamiltonian_pd = langues_cost / 3.0
+
+    credit = mint_credit(
+        agent_id=agent_id,
+        model_name=model_name,
+        denomination=denomination,
+        context_payload=context_payload,
+        personality_vector=personality_vector,
+        hamiltonian_d=hamiltonian_d,
+        hamiltonian_pd=hamiltonian_pd,
+        entropy=entropy,
+        active_layers=active_layers,
+        governance_verdict=governance_verdict,
+        parent_credit_ids=parent_credit_ids,
+        legibility=legibility,
+        context_summary=context_summary,
+        difficulty=difficulty,
+    )
+
+    # Upgrade to governed credit by injecting Langues cost
+    # ContextCredit is frozen, so we recreate with langues_cost
+    return ContextCredit(
+        credit_id=credit.credit_id,
+        denomination=credit.denomination,
+        dna=credit.dna,
+        payload_hash=credit.payload_hash,
+        parent_credits=credit.parent_credits,
+        timestamp=credit.timestamp,
+        nonce=credit.nonce,
+        legibility=credit.legibility,
+        context_summary=credit.context_summary,
+        langues_cost=langues_cost,
+    )

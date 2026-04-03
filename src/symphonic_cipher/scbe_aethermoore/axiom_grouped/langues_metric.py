@@ -451,6 +451,202 @@ class FluxingLanguesMetric:
         return L_vals, D_f_vals, nu_history
 
 
+# =============================================================================
+# GOVERNANCE COIN — Value Extraction & Continuous Accumulation
+# =============================================================================
+
+
+def langues_value(L: float) -> float:
+    """
+    Extract normalized value from Langues cost.
+
+    Value(x,t) = 1 / (1 + L_f(x,t))
+
+    Properties:
+      - L=0 (perfect alignment) → Value=1.0
+      - L→∞ (adversarial) → Value→0.0
+      - Monotonically decreasing in L
+      - Always in (0, 1]
+
+    This is the fundamental bridge:
+      Langues metric (cost) → Value (governance coin unit)
+    """
+    return 1.0 / (1.0 + L)
+
+
+@dataclass
+class GovernanceCoin:
+    """
+    Governance Coin — continuous value accumulator driven by the Langues metric.
+
+    The coin tracks an agent's accumulated governance value over time:
+
+        G(T) = ∫₀ᵀ Value(x(t), t) dt = ∫₀ᵀ 1/(1 + L_f(x(t), t)) dt
+
+    Properties:
+      - Safe behavior (low L) → fast accumulation
+      - Adversarial behavior (high L) → near-zero accumulation
+      - Time-weighted: longer safe operation = more value
+      - Tongue-denominated: accumulates per tongue independently
+
+    Usage:
+      - Staking for governance voting weight
+      - Access control thresholds
+      - Agent reputation scoring
+      - Credit minting multiplier
+    """
+
+    # Running integral per tongue
+    accumulated: List[float]  # 6 values, one per tongue
+    total: float  # Sum of all tongue accumulations
+    samples: int  # Number of integration steps
+    last_L: float  # Most recent L value
+    last_value: float  # Most recent Value
+    last_Df: float  # Most recent effective dimension
+
+    @classmethod
+    def fresh(cls) -> "GovernanceCoin":
+        """Create a fresh coin with zero accumulation."""
+        return cls(
+            accumulated=[0.0] * 6,
+            total=0.0,
+            samples=0,
+            last_L=0.0,
+            last_value=1.0,
+            last_Df=6.0,
+        )
+
+    def accumulate(
+        self,
+        x: HyperspacePoint,
+        metric: "FluxingLanguesMetric",
+        dt: float = 0.01,
+    ) -> float:
+        """
+        Accumulate governance value for one time step.
+
+        Integrates: dG = Value(x,t) * dt for each tongue independently.
+
+        Returns the value added this step.
+        """
+        # Compute full fluxed metric
+        L, D_f = metric.compute_with_flux_update(x, dt)
+        value = langues_value(L)
+
+        # Per-tongue contribution: proportion of L from each tongue
+        x_vec = x.to_vector()
+        mu_vec = metric.ideal.to_vector()
+        tongue_contributions = []
+
+        for lang in range(6):
+            nu_l = metric.flux.nu[lang]
+            w_l = TONGUE_WEIGHTS[lang]
+            beta_l = metric.betas[lang]
+            d_l = abs(x_vec[lang] - mu_vec[lang])
+            phase_shift = math.sin(
+                TONGUE_FREQUENCIES[lang] * metric.time + TONGUE_PHASES[lang]
+            )
+            shifted_d = d_l + 0.1 * phase_shift
+            contrib = nu_l * w_l * math.exp(beta_l * shifted_d)
+            tongue_contributions.append(contrib)
+
+        # Normalize contributions (what fraction of total L each tongue adds)
+        total_contrib = sum(tongue_contributions)
+        if total_contrib > 0:
+            for lang in range(6):
+                # Each tongue accumulates inversely to its cost share
+                # More aligned tongues earn faster
+                tongue_value = langues_value(tongue_contributions[lang])
+                self.accumulated[lang] += tongue_value * dt
+        else:
+            # Perfect alignment — all tongues earn equally
+            per_tongue = value * dt / 6.0
+            for lang in range(6):
+                self.accumulated[lang] += per_tongue
+
+        step_value = value * dt
+        self.total += step_value
+        self.samples += 1
+        self.last_L = L
+        self.last_value = value
+        self.last_Df = D_f
+
+        return step_value
+
+    @property
+    def mean_value(self) -> float:
+        """Average value per step — agent's governance quality score."""
+        if self.samples == 0:
+            return 0.0
+        return self.total / (self.samples * 0.01)  # Normalize by dt
+
+    @property
+    def tongue_profile(self) -> dict:
+        """Per-tongue accumulation profile — shows where value was earned."""
+        return {
+            tongue: round(self.accumulated[i], 6)
+            for i, tongue in enumerate(TONGUES)
+        }
+
+    @property
+    def voting_weight(self) -> float:
+        """
+        Governance voting weight derived from accumulated value.
+
+        Uses logarithmic scaling so early participants have voice
+        but can't dominate forever.
+        """
+        if self.total <= 0:
+            return 0.0
+        return math.log1p(self.total)
+
+    def to_dict(self) -> dict:
+        return {
+            "accumulated_per_tongue": self.tongue_profile,
+            "total_accumulated": round(self.total, 6),
+            "samples": self.samples,
+            "mean_value": round(self.mean_value, 4),
+            "voting_weight": round(self.voting_weight, 4),
+            "last_L": round(self.last_L, 4),
+            "last_value": round(self.last_value, 4),
+            "last_Df": round(self.last_Df, 2),
+        }
+
+
+def simulate_governance_coin(
+    x: HyperspacePoint,
+    steps: int = 1000,
+    dt: float = 0.01,
+    flux_preset: str = "default",
+) -> GovernanceCoin:
+    """
+    Run a governance coin accumulation simulation.
+
+    Args:
+        x: Agent's state in 6D hyperspace
+        steps: Number of time steps
+        dt: Time step size
+        flux_preset: "default", "quasi", or "demi"
+
+    Returns:
+        GovernanceCoin with accumulated value
+    """
+    if flux_preset == "quasi":
+        flux = DimensionFlux.quasi()
+    elif flux_preset == "demi":
+        flux = DimensionFlux.demi()
+    else:
+        flux = DimensionFlux.default()
+
+    metric = FluxingLanguesMetric(flux=flux)
+    coin = GovernanceCoin.fresh()
+
+    for _ in range(steps):
+        coin.accumulate(x, metric, dt)
+
+    return coin
+
+
 def verify_flux_bounded() -> bool:
     """
     Verify: Flux weights νᵢ stay in [0, 1] under dynamics.
@@ -691,10 +887,59 @@ if __name__ == "__main__":
     print()
 
     print("=" * 70)
+    print("GOVERNANCE COIN — Value Extraction & Accumulation")
+    print("=" * 70)
+    print()
+    print("VALUE FUNCTION: Value(x,t) = 1 / (1 + L_f(x,t))")
+    print()
+
+    # Show value at different cost levels
+    print(f"  {'L (cost)':<15} {'Value':<10} {'Meaning'}")
+    print(f"  {'-'*15} {'-'*10} {'-'*30}")
+    for L_demo in [0.0, 5.0, 12.09, 20.0, 50.0, 100.0, 1000.0]:
+        v = langues_value(L_demo)
+        if L_demo == 0.0:
+            meaning = "Perfect alignment"
+        elif v > 0.5:
+            meaning = "Safe operation"
+        elif v > 0.1:
+            meaning = "Moderate deviation"
+        elif v > 0.01:
+            meaning = "High risk"
+        else:
+            meaning = "Adversarial (near-zero value)"
+        print(f"  {L_demo:<15.1f} {v:<10.4f} {meaning}")
+
+    print()
+    print("GOVERNANCE COIN SIMULATION (safe agent, 1000 steps):")
+    safe_coin = simulate_governance_coin(safe, steps=1000, dt=0.01)
+    print(f"  Total accumulated: {safe_coin.total:.4f}")
+    print(f"  Mean value:        {safe_coin.mean_value:.4f}")
+    print(f"  Voting weight:     {safe_coin.voting_weight:.4f}")
+    print(f"  Tongue profile:    {safe_coin.tongue_profile}")
+
+    print()
+    print("GOVERNANCE COIN SIMULATION (drifting agent, 1000 steps):")
+    drift_coin = simulate_governance_coin(drift, steps=1000, dt=0.01)
+    print(f"  Total accumulated: {drift_coin.total:.4f}")
+    print(f"  Mean value:        {drift_coin.mean_value:.4f}")
+    print(f"  Voting weight:     {drift_coin.voting_weight:.4f}")
+
+    print()
+    print("GOVERNANCE COIN SIMULATION (adversarial agent, 1000 steps):")
+    attack_coin = simulate_governance_coin(attack, steps=1000, dt=0.01)
+    print(f"  Total accumulated: {attack_coin.total:.4f}")
+    print(f"  Mean value:        {attack_coin.mean_value:.4f}")
+    print(f"  Voting weight:     {attack_coin.voting_weight:.4f}")
+
+    print()
+    print("=" * 70)
     print("LANGUES METRIC: L(x,t) = Σ w_l exp(β_l · (d_l + sin(ω_l t + φ_l)))")
     print("FLUXED METRIC:  L_f(x,t) = Σ νᵢ(t) wᵢ exp[βᵢ(dᵢ + sin(ωᵢt + φᵢ))]")
+    print("GOVERNANCE COIN: G(T) = ∫₀ᵀ 1/(1+L_f(x(t),t)) dt")
     print()
     print("  6 dimensions × 6 tongues × golden ratio weights × phase shifts")
     print("  + Fractional dimensions (polly/quasi/demi) for breathing")
+    print("  + Governance coin accumulation → voting weight → access control")
     print("  Unique to SCBE - no other AI safety system has this geometry.")
     print("=" * 70)
