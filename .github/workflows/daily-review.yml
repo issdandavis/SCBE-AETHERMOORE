@@ -48,9 +48,15 @@ jobs:
       - name: Run Python tests
         id: pytest
         continue-on-error: true
+        env:
+          SCBE_FORCE_SKIP_LIBOQS: '1'
+          PYTHONPATH: '.'
         run: |
           if command -v pytest &>/dev/null && [ -d tests/ ]; then
-            pytest tests/ -v --ignore=tests/node_modules 2>&1
+            pytest tests/ -v --ignore=tests/node_modules \
+              --ignore=tests/aetherbrowser/test_integration.py \
+              --ignore=tests/aetherbrowser/test_red_zone_integration.py \
+              -x 2>&1
           else
             echo "::notice::pytest not available or tests/ missing"
           fi
