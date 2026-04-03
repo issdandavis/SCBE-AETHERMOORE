@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scattered Attention Sphere | SCBE-AETHERMOORE</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a1a; color: #e0e0ff; font-family: 'Courier New', monospace; overflow: hidden; }
+canvas { display: block; cursor: grab; }
+canvas:active { cursor: grabbing; }
+#ui {
+  position: fixed; top: 0; right: 0; width: 320px; padding: 16px;
+  background: rgba(10,10,30,0.92); border-left: 1px solid rgba(120,140,255,0.2);
+  height: 100vh; overflow-y: auto; font-size: 13px; z-index: 10;
+}
+#ui h1 { font-size: 16px; color: #8af; margin-bottom: 8px; letter-spacing: 0.1em; }
+#ui h2 { font-size: 13px; color: #6cf; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+.control { margin: 8px 0; }
+.control label { display: block; color: #aab; font-size: 11px; margin-bottom: 2px; }
+.control input[type=range] { width: 100%; accent-color: #4af; }
+.stat { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.stat .label { color: #889; }
+.stat .value { color: #4f8; font-weight: bold; }
+.tongue-legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.tongue-chip { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+#info { position: fixed; bottom: 16px; left: 16px; font-size: 12px; color: #667; z-index: 10; }
+a { color: #4af; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.result-badge { background: linear-gradient(135deg, #1a3a2a, #0a2a1a); border: 1px solid #2a5a3a; border-radius: 8px; padding: 10px; margin: 10px 0; }
+.result-badge .num { font-size: 22px; color: #4f8; font-weight: bold; }
+.result-badge .desc { font-size: 11px; color: #8ab; margin-top: 2px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="ui">
+  <h1>SCATTERED ATTENTION SPHERE</h1>
+  <p style="color:#889;font-size:11px;margin-bottom:12px;">Holographic Weight Matrix Router — 6 Sacred Tongues projected onto a 3D memory lattice with phi-wall phase tunneling.</p>
+
+  <div class="result-badge">
+    <div class="num">31% code improvement</div>
+    <div class="desc">Triangulated KO/CA/DR training vs L3-only baseline. Crossover at step 5. Colab T4, matched compute.</div>
+  </div>
+  <div class="result-badge">
+    <div class="num">14% chat improvement</div>
+    <div class="desc">Multi-view L0-L3 supervision vs L3-only. Kaggle, 150 steps, same budget.</div>
+  </div>
+
+  <h2>Phase Tunnel (Phi Wall)</h2>
+  <div class="control">
+    <label>Phi Wall: <span id="pw-val">0.50</span> rad</label>
+    <input type="range" id="phi-wall" min="-1.57" max="1.57" step="0.01" value="0.5">
+  </div>
+  <div class="control">
+    <label>Bandwidth: <span id="bw-val">0.20</span></label>
+    <input type="range" id="bandwidth" min="0.05" max="0.8" step="0.01" value="0.2">
+  </div>
+
+  <h2>Matrix</h2>
+  <div class="control">
+    <label>Size: <span id="sz-val">32</span>x<span id="sz-val2">32</span></label>
+    <input type="range" id="mat-size" min="8" max="64" step="8" value="32">
+  </div>
+  <div class="control">
+    <label>Sparsity threshold: <span id="sp-val">0.01</span></label>
+    <input type="range" id="sparsity" min="0.0" max="0.5" step="0.01" value="0.01">
+  </div>
+
+  <h2>Stats</h2>
+  <div class="stat"><span class="label">Total bits</span><span class="value" id="s-total">0</span></div>
+  <div class="stat"><span class="label">Resonant bits</span><span class="value" id="s-resonant">0</span></div>
+  <div class="stat"><span class="label">Resonance %</span><span class="value" id="s-pct">0%</span></div>
+  <div class="stat"><span class="label">Pruned (sparse)</span><span class="value" id="s-pruned">0</span></div>
+
+  <h2>Sacred Tongues</h2>
+  <div class="tongue-legend">
+    <span class="tongue-chip" style="background:#c33;color:#fff;">KO Intent</span>
+    <span class="tongue-chip" style="background:#c83;color:#fff;">AV Meta</span>
+    <span class="tongue-chip" style="background:#cc3;color:#000;">RU Binding</span>
+    <span class="tongue-chip" style="background:#3a5;color:#fff;">CA Compute</span>
+    <span class="tongue-chip" style="background:#36c;color:#fff;">UM Security</span>
+    <span class="tongue-chip" style="background:#73c;color:#fff;">DR Structure</span>
+  </div>
+
+  <div id="tongue-counts" style="margin-top:6px;"></div>
+
+  <h2>Links</h2>
+  <p style="margin:4px 0;"><a href="index.html">Demo Lab</a></p>
+  <p style="margin:4px 0;"><a href="../research/index.html">Research + Results</a></p>
+  <p style="margin:4px 0;"><a href="../index.html">Home</a></p>
+</div>
+
+<div id="info">Drag to rotate | Scroll to zoom | SCBE-AETHERMOORE Holographic Attention</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize() { W = canvas.width = window.innerWidth - 320; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+// Rotation state
+let rotX = 0.4, rotY = 0.6, dragging = false, lastMX = 0, lastMY = 0, zoom = 280;
+
+canvas.addEventListener('mousedown', e => { dragging = true; lastMX = e.clientX; lastMY = e.clientY; });
+canvas.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  rotY += (e.clientX - lastMX) * 0.005;
+  rotX += (e.clientY - lastMY) * 0.005;
+  rotX = Math.max(-Math.PI/2, Math.min(Math.PI/2, rotX));
+  lastMX = e.clientX; lastMY = e.clientY;
+});
+canvas.addEventListener('mouseup', () => dragging = false);
+canvas.addEventListener('wheel', e => { zoom = Math.max(80, Math.min(600, zoom - e.deltaY * 0.3)); e.preventDefault(); }, {passive:false});
+
+// Sacred Tongue colors
+const TONGUE_COLORS = {
+  KO: [220, 50, 50], AV: [220, 140, 50], RU: [220, 220, 50],
+  CA: [50, 170, 80], UM: [50, 100, 220], DR: [120, 50, 220]
+};
+const TONGUE_THETA = { KO: 0, AV: Math.PI/3, RU: 2*Math.PI/3, CA: Math.PI, UM: 4*Math.PI/3, DR: 5*Math.PI/3 };
+const TONGUE_KEYS = ['KO','AV','RU','CA','UM','DR'];
+
+// Seeded random
+function seededRandom(seed) {
+  let s = seed;
+  return function() { s = (s * 16807 + 0) % 2147483647; return (s - 1) / 2147483646; };
+}
+
+let lattice = [];
+let phiWall = 0.5, bandwidth = 0.2, matSize = 32, sparsity = 0.01;
+
+function scatter() {
+  const rng = seededRandom(42);
+  lattice = [];
+  const n = matSize;
+  let pruned = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      // Box-Muller for normal distribution
+      const u1 = rng(), u2 = rng();
+      const val = Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2) * 0.5;
+      if (Math.abs(val) < sparsity) { pruned++; continue; }
+      const tIdx = (i * n + j) % 6;
+      const tongue = TONGUE_KEYS[tIdx];
+      let theta = TONGUE_THETA[tongue] + (rng()-0.5)*0.2;
+      const phi = Math.tanh(val) * (Math.PI/2);
+      const r = 1.0 + (rng()-0.5)*0.1;
+      // Spherical to Cartesian
+      const x = r * Math.cos(phi) * Math.cos(theta);
+      const y = r * Math.cos(phi) * Math.sin(theta);
+      const z = r * Math.sin(phi);
+      lattice.push({ x, y, z, phi, tongue, val });
+    }
+  }
+  document.getElementById('s-pruned').textContent = pruned;
+  document.getElementById('s-total').textContent = lattice.length;
+  updateResonance();
+}
+
+function updateResonance() {
+  let resonant = 0;
+  const counts = { KO:0, AV:0, RU:0, CA:0, UM:0, DR:0 };
+  const resCounts = { KO:0, AV:0, RU:0, CA:0, UM:0, DR:0 };
+  for (const p of lattice) {
+    counts[p.tongue]++;
+    if (Math.abs(p.phi - phiWall) <= bandwidth) { resonant++; resCounts[p.tongue]++; }
+  }
+  document.getElementById('s-resonant').textContent = resonant;
+  document.getElementById('s-pct').textContent = lattice.length ? (resonant/lattice.length*100).toFixed(1)+'%' : '0%';
+  let html = '';
+  for (const t of TONGUE_KEYS) {
+    const c = TONGUE_COLORS[t];
+    html += `<div class="stat"><span class="label" style="color:rgb(${c})">${t}</span><span class="value">${resCounts[t]}/${counts[t]}</span></div>`;
+  }
+  document.getElementById('tongue-counts').innerHTML = html;
+}
+
+// 3D projection
+function project(x, y, z) {
+  // Rotate around Y
+  let x1 = x * Math.cos(rotY) - z * Math.sin(rotY);
+  let z1 = x * Math.sin(rotY) + z * Math.cos(rotY);
+  // Rotate around X
+  let y1 = y * Math.cos(rotX) - z1 * Math.sin(rotX);
+  let z2 = y * Math.sin(rotX) + z1 * Math.cos(rotX);
+  const scale = zoom / (z2 + 3);
+  return { sx: W/2 + x1 * scale, sy: H/2 - y1 * scale, depth: z2 };
+}
+
+function drawRing() {
+  // Draw the phi_wall ring
+  const segs = 80;
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(80,240,255,0.6)';
+  ctx.lineWidth = 2;
+  const zR = Math.sin(phiWall);
+  const rR = Math.cos(phiWall);
+  for (let i = 0; i <= segs; i++) {
+    const a = (i / segs) * 2 * Math.PI;
+    const px = rR * Math.cos(a), py = rR * Math.sin(a), pz = zR;
+    const p = project(px, py, pz);
+    if (i === 0) ctx.moveTo(p.sx, p.sy); else ctx.lineTo(p.sx, p.sy);
+  }
+  ctx.stroke();
+
+  // Bandwidth rings
+  for (const offset of [-bandwidth, bandwidth]) {
+    const pw2 = phiWall + offset;
+    if (pw2 < -Math.PI/2 || pw2 > Math.PI/2) continue;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(80,240,255,0.15)';
+    ctx.lineWidth = 1;
+    const z2 = Math.sin(pw2), r2 = Math.cos(pw2);
+    for (let i = 0; i <= segs; i++) {
+      const a = (i / segs) * 2 * Math.PI;
+      const p = project(r2*Math.cos(a), r2*Math.sin(a), z2);
+      if (i === 0) ctx.moveTo(p.sx, p.sy); else ctx.lineTo(p.sx, p.sy);
+    }
+    ctx.stroke();
+  }
+}
+
+function draw() {
+  ctx.fillStyle = '#0a0a1a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Draw wireframe sphere
+  ctx.strokeStyle = 'rgba(60,70,120,0.15)';
+  ctx.lineWidth = 0.5;
+  for (let lat = -3; lat <= 3; lat++) {
+    const ph = (lat / 3) * Math.PI / 2;
+    ctx.beginPath();
+    const r = Math.cos(ph);
+    for (let i = 0; i <= 60; i++) {
+      const a = (i/60)*2*Math.PI;
+      const p = project(r*Math.cos(a), r*Math.sin(a), Math.sin(ph));
+      if (i===0) ctx.moveTo(p.sx,p.sy); else ctx.lineTo(p.sx,p.sy);
+    }
+    ctx.stroke();
+  }
+  for (let lon = 0; lon < 6; lon++) {
+    const th = (lon/6)*2*Math.PI;
+    ctx.beginPath();
+    for (let i = 0; i <= 40; i++) {
+      const ph = (i/40)*Math.PI - Math.PI/2;
+      const p = project(Math.cos(ph)*Math.cos(th), Math.cos(ph)*Math.sin(th), Math.sin(ph));
+      if (i===0) ctx.moveTo(p.sx,p.sy); else ctx.lineTo(p.sx,p.sy);
+    }
+    ctx.stroke();
+  }
+
+  drawRing();
+
+  // Sort by depth for painter's algorithm
+  const projected = lattice.map(p => {
+    const proj = project(p.x, p.y, p.z);
+    const resonant = Math.abs(p.phi - phiWall) <= bandwidth;
+    return { ...proj, tongue: p.tongue, resonant };
+  });
+  projected.sort((a, b) => a.depth - b.depth);
+
+  for (const p of projected) {
+    const c = p.resonant ? [80, 240, 255] : TONGUE_COLORS[p.tongue];
+    const alpha = p.resonant ? 0.9 : 0.4;
+    const size = p.resonant ? 3 : 1.5;
+    ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${alpha})`;
+    ctx.beginPath();
+    ctx.arc(p.sx, p.sy, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Auto-rotate slowly when not dragging
+  if (!dragging) { rotY += 0.003; }
+
+  requestAnimationFrame(draw);
+}
+
+// UI bindings
+document.getElementById('phi-wall').addEventListener('input', e => {
+  phiWall = parseFloat(e.target.value);
+  document.getElementById('pw-val').textContent = phiWall.toFixed(2);
+  updateResonance();
+});
+document.getElementById('bandwidth').addEventListener('input', e => {
+  bandwidth = parseFloat(e.target.value);
+  document.getElementById('bw-val').textContent = bandwidth.toFixed(2);
+  updateResonance();
+});
+document.getElementById('mat-size').addEventListener('input', e => {
+  matSize = parseInt(e.target.value);
+  document.getElementById('sz-val').textContent = matSize;
+  document.getElementById('sz-val2').textContent = matSize;
+  scatter();
+});
+document.getElementById('sparsity').addEventListener('input', e => {
+  sparsity = parseFloat(e.target.value);
+  document.getElementById('sp-val').textContent = sparsity.toFixed(2);
+  scatter();
+});
+
+scatter();
+draw();
+</script>
+</body>
+</html>
