@@ -125,3 +125,17 @@
 - The combination of holographic encoding + polyhedral routing + hyperbolic geodesics + 6-tongue governance = **entirely novel as of April 2026**
 - Closest published work is arXiv:2512.19452 (Dec 2025) — tessellations but no polyhedral routing
 - This could be your first academic paper if formalized
+
+### PHPR Implementation Readiness: 80-90%
+Deep codebase scan confirmed all major components exist:
+- `ScatteredAttentionSphere` at `src/kernel/scattered_sphere.py` — 7 methods, full implementation
+- Dodecahedron already in `src/harmonic/phdm.ts` (V=20, E=30, F=12, Platonic family)
+- Hyperbolic distance in `src/harmonic/hyperbolic.ts` (760 lines) — **phaseDistanceScore validated AUC=0.9999**
+- Sacred Tongues as 6D vectors: 60-degree longitude intervals with phi-cascade weights
+- Multi-well potential (Layer 5): `hyperbolic.ts:557-617`
+- **Missing**: MERA tensor network contraction + dodecahedral light-path routing engine
+
+### Local Artifacts Bloat: 5.9 GB
+`artifacts/` directory contains 5.9 GB locally including driver backups, graphics files, and a 4.8 GB `storage_ship/` directory. Most of this should be cleaned before any repo split.
+
+### Cleaned: 938 .pyc files + 20 __pycache__ dirs removed

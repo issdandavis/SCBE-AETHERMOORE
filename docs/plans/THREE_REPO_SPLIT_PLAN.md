@@ -417,6 +417,57 @@ pip install scbe-aethermoore
 
 ---
 
+## Additional Findings (from deep codebase scan)
+
+### Artifacts Directory is MASSIVE (5.9 GB local)
+```
+artifacts/storage_ship/           4.8 GB  — unclear purpose, investigate before split
+artifacts/gfx2140-unpacked/       1.4 GB  — graphics resources
+artifacts/display-driver-backup/  957 MB  — driver backup (should NOT be in repo)
+artifacts/gfx_win_101.2140.exe    280 MB  — binary executable
+artifacts/claude_export/          245 MB  — Claude session exports
+artifacts/videos/                 120 MB  — video files
+artifacts/kaggle_training_upload/ 112 MB  — training data
+artifacts/training/               694 MB  — training outputs
+```
+**Action**: Most of this should be deleted or moved to external storage before the split.
+
+### GitHub Actions: 70 workflows (not 53)
+Many are auto-* workflows that may be redundant. Audit after GH_TOKEN is fixed.
+
+### Only 2 of 90+ src/ packages ship to PyPI
+MANIFEST.in (lines 26-102) explicitly excludes 85+ packages. Only `spiralverse` and `code_prism` are published. This is a good guard but should be verified after the split.
+
+### Import Layer Structure (verified)
+```
+Layer 1 (Pure Math - NO internal imports):
+  crypto/, harmonic/, pqc/, lattice/, m4mesh/, primitives/, spectral/
+
+Layer 2 (Runtime - imports Layer 1):
+  browser/ → crypto
+  storage/ → crypto, harmonic
+  fleet/, aetherbrowser/ → browser
+  tokenizer/
+
+Layer 3 (Orchestration - imports Layers 1-2):
+  api/ → ai_orchestration, crypto, storage
+  ai_orchestration/ → crypto, browser, api, storage
+  governance/, security/, ai_brain/, knowledge/
+
+Layer 4 (Training - imports multiple layers):
+  training/, cloud/, science_packs/
+```
+This layered structure confirms the 3-repo split is architecturally clean.
+
+### PHPR Implementation Readiness: 80-90%
+Key components already exist:
+- ScatteredAttentionSphere: `src/kernel/scattered_sphere.py` (full class with 7 methods)
+- Dodecahedron: defined in `src/harmonic/phdm.ts` (V=20, E=30, F=12)
+- Hyperbolic distance: `src/harmonic/hyperbolic.ts` (760 lines, AUC=0.9999)
+- Sacred Tongues 6D vectors: fully defined at 60-degree intervals with phi weights
+- Multi-well potential: `src/harmonic/hyperbolic.ts:557-617`
+- Missing: MERA tensor network + light-path routing engine (Layer 6.5/15)
+
 ## What NOT To Do
 
 - Do NOT split into more than 3 repos (premature fragmentation)
