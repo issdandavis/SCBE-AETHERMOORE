@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(python:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(gh:*)",
+      "Bash(ls:*)",
+      "Bash(pwd:*)",
+      "Bash(wc:*)",
+      "Bash(unset:*)",
+      "mcp__scbe-orchestrator__*",
+      "mcp__plugin_context7_context7__*"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(git push --force)",
+      "Bash(git reset --hard)"
+    ]
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before compacting, identify the 3 most critical pieces of context from this conversation: (1) what task the user asked for, (2) what files were modified and why, (3) any user feedback or corrections given. Return these as a systemMessage so they survive compaction.",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "respectGitignore": true
+}

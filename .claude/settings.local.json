@@ -1,31 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(*)",
-      "Edit(*)",
-      "Write(*)",
-      "Read(*)",
-      "Glob(*)",
-      "Grep(*)",
-      "WebSearch",
-      "WebFetch(*)",
-      "Agent(*)",
-      "mcp__claude_ai_Notion__*",
-      "mcp__claude_ai_Stripe__*",
-      "mcp__claude_ai_HubSpot__*",
-      "mcp__claude_ai_Gmail__*",
-      "mcp__claude_ai_Linear__*",
       "mcp__claude_ai_Hugging_Face__*",
-      "mcp__claude_ai_Gamma__*",
+      "mcp__claude_ai_Hugging_Face_2__*",
+      "mcp__claude_ai_Notion__*",
+      "mcp__claude_ai_Gmail__*",
       "mcp__claude_ai_Figma__*",
-      "mcp__claude_ai_Canva__*",
       "mcp__claude_in_chrome__*",
-      "mcp__plugin_context7_context7__*",
-      "mcp__plugin_playwright_playwright__*",
-      "mcp__youtube-studio__youtube_list_videos",
-      "mcp__youtube-studio__youtube_auth",
-      "mcp__youtube-studio__youtube_search",
-      "mcp__youtube-studio__youtube_get_transcript"
+      "mcp__youtube-studio__*",
+      "mcp__fs__*",
+      "mcp__github__*",
+      "mcp__notion-sweep__*",
+      "mcp__chrome-devtools__*",
+      "mcp__plugin_playwright_playwright__browser_navigate"
     ]
   }
 }
