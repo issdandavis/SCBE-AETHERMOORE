@@ -84,7 +84,8 @@ artifacts/test_swarm_hub/
 training/runs/
 training/tmp_test/
 
-# Generated/combined training data (regeneratable via scripts/merge_and_upload.py)
+# Generated/combined training data (regeneratable via scripts/)
+# Large tagged/recast files go to HuggingFace, not git
 training-data/sft_combined*.jsonl
 training-data/sft_*_regen*.jsonl
 training-data/mega_*.jsonl
@@ -92,7 +93,22 @@ training-data/polly_training_merged.jsonl
 training-data/merged_sft.jsonl
 training-data/sft/consolidated*.jsonl
 training-data/sft/claude_*_sft.jsonl
+training-data/sft/claude_*_tagged.jsonl
 training-data/sft/consolidated_plus_claude_exports_sft/
+training-data/sft/recast_*.jsonl
+training-data/sft/spread_*.jsonl
+training-data/sft/tagged_unknown_sft.jsonl
+training-data/sft/published_book_*.jsonl
+training-data/sft/everweave_lore_*.jsonl
+training-data/sft/docs_auto_*.jsonl
+training-data/sft/docs_remaining_*.jsonl
+training-data/sft/combined_session_*.jsonl
+training-data/sft/round2_*.jsonl
+training-data/sft/round3_*.jsonl
+training-data/sft/round4_*.jsonl
+training-data/sft/l0_substrate_full_sft.jsonl
+training-data/sft/l0_substrate_crossbraided.jsonl
+training-data/sft/l0_l1_substrate_sft.jsonl
 training/sft_records/sft_combined*
 training/notion_codebase_comparison.json
 

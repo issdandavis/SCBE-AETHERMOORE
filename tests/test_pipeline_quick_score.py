@@ -10,6 +10,8 @@ import importlib.machinery
 import types
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 
 # Load scbe.py (no .py-less import dance needed now)
@@ -17,6 +19,9 @@ _loader = importlib.machinery.SourceFileLoader("scbe_mod", str(ROOT / "scbe.py")
 _mod = types.ModuleType("scbe_mod")
 _mod.__file__ = str(ROOT / "scbe.py")
 _loader.exec_module(_mod)
+
+if not hasattr(_mod, "pipeline_quick_score"):
+    pytest.skip("pipeline_quick_score removed from scbe.py", allow_module_level=True)
 
 pipeline_quick_score = _mod.pipeline_quick_score
 

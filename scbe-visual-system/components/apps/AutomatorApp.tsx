@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useState, useEffect } from 'react';
-import { Settings, Zap, Database, MessageSquare, Github, Share2, BookOpen, Terminal, Activity, CheckCircle, Clock } from 'lucide-react';
+import { Settings, Zap, Database, MessageSquare, GitFork, Share2, BookOpen, Terminal, Activity, CheckCircle, Clock } from 'lucide-react';
 
 // FIX: Define FileText before it is used in the NODES array
 const FileText = ({ size, className }: { size: number, className: string }) => (
@@ -20,7 +20,7 @@ const NODES = [
     { id: 'zapier', name: 'Zapier', icon: Zap, color: 'text-orange-500', bg: 'bg-orange-500/10', pos: { x: 50, y: 50 }, subtitle: 'Workflow Hub', status: 'online' },
     { id: 'kindle', name: 'Kindle Vellum', icon: BookOpen, color: 'text-amber-500', bg: 'bg-amber-500/10', pos: { x: 80, y: 25 }, subtitle: 'KDP Publishing', status: 'idle' },
     { id: 'slack', name: 'Slack', icon: MessageSquare, color: 'text-purple-500', bg: 'bg-purple-500/10', pos: { x: 80, y: 75 }, subtitle: 'Team Comms', status: 'online' },
-    { id: 'github', name: 'GitHub', icon: Github, color: 'text-zinc-400', bg: 'bg-zinc-400/10', pos: { x: 20, y: 75 }, subtitle: 'InkOS Repos', status: 'deploying' },
+    { id: 'github', name: 'GitHub', icon: GitFork, color: 'text-zinc-400', bg: 'bg-zinc-400/10', pos: { x: 20, y: 75 }, subtitle: 'InkOS Repos', status: 'deploying' },
     { id: 'database', name: 'Cloud Sync', icon: Database, color: 'text-emerald-500', bg: 'bg-emerald-500/10', pos: { x: 50, y: 85 }, subtitle: 'Global Data', status: 'online' },
 ];
 

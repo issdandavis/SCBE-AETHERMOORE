@@ -61,8 +61,7 @@ def test_help_lists_new_command_center_surface() -> None:
     assert "hskills-refresh" in out
     assert "hcascade <topic>" in out
     assert "xtalk-health" in out
-    assert "haction-start <task>" in out
-    assert "buildflow-github <topic>" in out
+    assert "buildflow" in out
     assert "yt-transcript <url|id>" in out
     assert "n8-templates" in out
     assert "hf-train-wave" in out
@@ -103,6 +102,7 @@ def test_xtalk_send_and_ack_round_trip() -> None:
     assert "cross-talk-agent-codex-xtalk-manual" in out
 
 
+@pytest.mark.skip(reason="haction-start/step/close/build commands removed from command center")
 def test_action_map_wrappers_compile_workflow_trace() -> None:
     out = _run_powershell(
         "$run = haction-start 'command center cleanup map smoke' | ConvertFrom-Json; "

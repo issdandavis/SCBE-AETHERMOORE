@@ -1516,7 +1516,7 @@ def _text_metadata(value: str | None) -> dict[str, object]:
 
 
 _SECRET_RE = re.compile(
-    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|sk-|[SCRUBBED:openai_key]
+    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|sk-)[A-Za-z0-9_]{20,}"
 )
 
 
