@@ -9,6 +9,7 @@ on:
   workflow_run:
     workflows: ["CI", "SCBE Gates"]
     types: [completed]
+    branches: [main]
 
 permissions:
   contents: write
