@@ -16,14 +16,13 @@ Like an astronaut playing basketball AND doing spacewalks.
 from __future__ import annotations
 import hashlib, math, json, time
 from pathlib import Path
-from typing import Dict, Tuple
 import numpy as np
 
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tests.adversarial.tongue_semantic import semantic_tongue_coords, TONGUE_WEIGHTS, TONGUE_NAMES
+from tests.adversarial.tongue_semantic import semantic_tongue_coords
 
 PHI = (1 + math.sqrt(5)) / 2
 PI = math.pi

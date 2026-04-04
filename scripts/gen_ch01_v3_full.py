@@ -7,7 +7,6 @@ Characters locked from reference sheets.
 
 import argparse
 import os
-import sys
 import time
 import json
 from pathlib import Path

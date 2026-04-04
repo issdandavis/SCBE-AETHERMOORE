@@ -16,14 +16,12 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import hashlib
 import json
 import logging
-import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +60,6 @@ def search_channel_videos(channel_name: str, max_results: int = 5, handle: str |
     Italian musician, not the AI-safety YouTuber.
     """
     try:
-        import urllib.request
         # Prefer the handle for search queries — it is unique on YouTube
         search_term = handle if handle else channel_name
         # Fallback: use yt-dlp if available

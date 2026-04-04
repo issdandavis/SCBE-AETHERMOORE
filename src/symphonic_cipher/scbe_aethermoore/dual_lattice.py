@@ -716,7 +716,7 @@ if __name__ == "__main__":
     print(f"   Δt:        {result.time_delta*1000:.2f} ms")
 
     if result.state == ConsensusState.SETTLED:
-        print(f"   K(t):      {result.key[:16].hex()}...")
+        print(f"   K(t):      [REDACTED {len(result.key)} bytes]")
         print("   → SETTLED: Key derived via constructive interference")
     else:
         print("   → FAILED: Chaos noise returned")

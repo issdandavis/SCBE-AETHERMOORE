@@ -579,8 +579,8 @@ def run_governance_test(steps: int = 50, verbose: bool = True) -> Dict[str, Any]
     if verbose:
         print(f"\n✓ System initialized with agent: {system.agent.agent_id}")
         print(f"  Using real PQC: {system.kyber.using_real_pqc}")
-        print(f"  Kyber public key: {system.kyber.pk[:8].hex()}...")
-        print(f"  Session key generated: {system.l6.key[:8].hex() if system.l6.key else 'None'}...")
+        print(f"  Kyber public key: [REDACTED {len(system.kyber.pk)} bytes]")
+        print(f"  Session key generated: {'[REDACTED]' if system.l6.key else 'None'}")
 
     # Run time steps
     if verbose:

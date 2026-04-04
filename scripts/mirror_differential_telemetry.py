@@ -31,7 +31,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -191,7 +190,6 @@ def run_mirror_analysis(
     max_layers: int | None = None,
     token: str | None = None,
 ) -> dict:
-    import torch
     from transformers import AutoModel
 
     print(f"Loading model: {model_id}")

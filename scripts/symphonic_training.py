@@ -16,18 +16,12 @@ Usage:
 
 import argparse
 import json
-import math
 import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.training.symphonic_governor import (
-    SymphonicGovernor,
-    run_control_and_test_batches,
-    L_BASE,
-    TONGUES,
-)
+from src.training.symphonic_governor import SymphonicGovernor, run_control_and_test_batches
 
 
 # ── Test Data ────────────────────────────────────────────────────────────────

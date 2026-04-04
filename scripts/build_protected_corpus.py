@@ -16,7 +16,6 @@ import argparse
 import importlib
 import json
 import re
-import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path

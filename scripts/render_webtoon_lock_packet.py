@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from scripts.grok_image_gen import BACKENDS, check_backends, generate, pick_best_backend
+from scripts.grok_image_gen import BACKENDS, check_backends, generate
 from scripts.render_grok_storyboard_packet import nearest_supported_aspect, resolve_backend, should_retry_with_fallback
 
 

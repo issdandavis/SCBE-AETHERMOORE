@@ -26,13 +26,12 @@ Do not use this script alone for detector-vs-detector claims.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -40,17 +39,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tests.adversarial.scbe_harness import (
-    SCBEDetectionGate,
-    text_to_tongue_coords,
-    compute_harmonic_cost,
-    quantize_spin,
-    build_metric_tensor,
-    TONGUE_NAMES,
-    TONGUE_WEIGHTS,
-    PI,
-    PHI,
-)
+from tests.adversarial.scbe_harness import SCBEDetectionGate, text_to_tongue_coords, quantize_spin, build_metric_tensor, TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI
 from tests.adversarial.attack_corpus import (
     BASELINE_CLEAN,
     get_all_attacks,
