@@ -16,10 +16,9 @@ Pass 6: Settling Dynamics — when does meaning crystallize? (early vs late bind
 
 from __future__ import annotations
 
-import math
 import json
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict
 
@@ -29,14 +28,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from scripts.benchmark.dimensional_flux_analysis import (
-    simulate_neural_pipeline,
-    text_to_seed,
-    TONGUE_NAMES,
-    PHI,
-    PI,
-    TONGUE_WEIGHTS,
-)
+from scripts.benchmark.dimensional_flux_analysis import simulate_neural_pipeline, TONGUE_NAMES, TONGUE_WEIGHTS
 
 
 # ═══════════════════════════════════════════════════════════

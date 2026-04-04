@@ -17,7 +17,6 @@ Clear winner at each round. No ambiguity.
 """
 
 import json
-import math
 import sys
 import time
 from pathlib import Path
@@ -27,23 +26,8 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.mcp.context_broker_mcp import (
-    _classify_tongue,
-    _poincare_distance,
-    TONGUE_KEYS,
-    TONGUE_WEIGHTS,
-    TONGUE_KEYWORDS,
-)
-from src.kernel.tetris_embedder import (
-    TetrisEmbedder,
-    augment_text,
-    sacred_rotate,
-    phi_expand_tongue_coords,
-    hyperbolic_distance_from_origin,
-    harmonic_wall_cost,
-    TONGUE_KEYS as TK,
-    TONGUE_WEIGHTS as TW,
-)
+from src.mcp.context_broker_mcp import _classify_tongue
+from src.kernel.tetris_embedder import TetrisEmbedder, hyperbolic_distance_from_origin, harmonic_wall_cost
 from src.training.symphonic_governor import SymphonicGovernor
 
 import os

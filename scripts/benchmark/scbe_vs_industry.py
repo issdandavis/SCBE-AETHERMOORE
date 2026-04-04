@@ -33,29 +33,16 @@ from __future__ import annotations
 import json
 import math
 import os
-import re
 import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tests.adversarial.scbe_harness import (
-    SCBEDetectionGate,
-    text_to_tongue_coords,
-    quantize_spin,
-    build_metric_tensor,
-    TONGUE_NAMES,
-    TONGUE_WEIGHTS,
-    PI,
-    PHI,
-    _ADVERSARIAL_PATTERNS,
-    _MULTILINGUAL_OVERRIDE_PATTERNS,
-)
+from tests.adversarial.scbe_harness import SCBEDetectionGate, build_metric_tensor, TONGUE_NAMES, TONGUE_WEIGHTS, PI, PHI
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
 
 

@@ -23,7 +23,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import requests
 from scripts.system.html_text import html_to_text as _safe_html_to_text

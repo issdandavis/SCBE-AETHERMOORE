@@ -15,7 +15,6 @@ import os
 import sys
 from argparse import ArgumentParser
 from typing import Any, Dict, List, Optional
-from urllib.parse import quote_plus
 
 
 def _get_notion_token() -> str:
@@ -111,7 +110,6 @@ def nav_notion_playwright(
 ) -> List[Dict[str, Any]]:
     """Navigate Notion via Playwright (requires login)."""
     try:
-        from playwright.sync_api import sync_playwright
     except ImportError:
         print("Playwright not installed. Using API only.", file=sys.stderr)
         return search_notion_api(query, max_results)

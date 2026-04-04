@@ -154,7 +154,6 @@ def run_mirage_sweep(
     max_layers: int | None = None,
     token: str | None = None,
 ) -> dict:
-    import torch
 
     print(f"Loading model: {model_id}")
     kwargs = {"token": token} if token else {}

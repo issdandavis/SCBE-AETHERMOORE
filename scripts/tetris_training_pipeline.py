@@ -33,8 +33,8 @@ sys.path.insert(0, str(ROOT))
 
 import numpy as np
 
-from src.kernel.tetris_embedder import TetrisEmbedder, augment_text, TONGUE_KEYS
-from src.kernel.context_grid import FederatedContextGrid, load_obsidian_vault
+from src.kernel.tetris_embedder import TetrisEmbedder, TONGUE_KEYS
+from src.kernel.context_grid import load_obsidian_vault
 
 
 def load_hf_token() -> str:

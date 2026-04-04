@@ -13,10 +13,9 @@ Tests Tetris embedder + PHDM 21D across all data sources:
 """
 
 import json
-import hashlib
 import sys
 import time
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
 import numpy as np

@@ -14,10 +14,8 @@ The staged EPUB at artifacts/book/kdp/the-six-tongues-protocol.epub
 is what you upload to KDP.
 """
 
-import os
 import sys
 import shutil
-import subprocess
 import json
 from datetime import datetime
 from pathlib import Path

@@ -23,10 +23,8 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import os
 import sys
-import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -36,7 +34,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.governance.runtime_gate import RuntimeGate, Decision, TONGUES, TONGUE_WEIGHTS
+from src.governance.runtime_gate import RuntimeGate, TONGUES, TONGUE_WEIGHTS
 
 PHI = 1.618033988749895
 PI = math.pi

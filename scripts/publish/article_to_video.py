@@ -26,8 +26,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-import math
-import os
 import random
 import re
 import shutil
@@ -751,7 +749,6 @@ def _highlight_code(code: str, lang: str) -> list[tuple[str, tuple[int, int, int
     default_color = (200, 200, 220)
 
     try:
-        from pygments import highlight as pyg_highlight
         from pygments.lexers import get_lexer_by_name, TextLexer
         from pygments.token import Token
 

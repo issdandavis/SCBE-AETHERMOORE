@@ -117,7 +117,7 @@ def _try_governance_scan(text: str, url: str) -> Optional[Dict[str, Any]]:
     try:
         # Try importing the PHDM brain from the agents module
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-        from agents.browser.phdm_brain import SimplePHDM, create_phdm_brain
+        from agents.browser.phdm_brain import create_phdm_brain
         import numpy as np
 
         brain = create_phdm_brain(safe_radius=0.92, dim=16)

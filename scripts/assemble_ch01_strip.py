@@ -4,7 +4,7 @@ Variable heights, scroll gaps per scene, 800px wide target.
 Source: manhwa-cinematic-forge skill assembly rules.
 """
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 from pathlib import Path
 import json
 
