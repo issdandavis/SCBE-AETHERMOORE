@@ -21,7 +21,7 @@ Reverse-engineers attack vectors from expected results:
 from __future__ import annotations
 import math, json, time, sys
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))

@@ -3,7 +3,6 @@
 import pdfplumber
 import os
 import re
-from collections import defaultdict
 
 months = [
     "January",

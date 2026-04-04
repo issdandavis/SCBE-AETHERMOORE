@@ -9,9 +9,7 @@ Checks Patent Center status and optionally ProtonMail via Bridge IMAP.
 
 import argparse
 import datetime
-import json
 import os
-import sys
 
 PATENT_INFO = {
     "application_number": "63/961,403",

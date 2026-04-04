@@ -6,7 +6,6 @@ for lore, systems, relationships, timelines, and technical architecture.
 Any AI can query this space to get grounded in the SCBE-AETHERMOORE universe.
 """
 import os
-import json
 import argparse
 from huggingface_hub import HfApi, login
 

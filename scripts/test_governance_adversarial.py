@@ -21,7 +21,6 @@ The geometry of safety catches these because:
 """
 
 import json
-import math
 import sys
 import time
 from pathlib import Path
@@ -31,14 +30,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from src.mcp.context_broker_mcp import (
-    _classify_tongue,
-    _embed_text,
-    _poincare_distance,
-    TONGUE_KEYS,
-    TONGUE_WEIGHTS,
-    TONGUE_KEYWORDS,
-)
+from src.mcp.context_broker_mcp import _classify_tongue, _embed_text, _poincare_distance, TONGUE_KEYWORDS
 from src.kernel.tetris_embedder import hyperbolic_distance_from_origin, harmonic_wall_cost
 
 # ============================================================

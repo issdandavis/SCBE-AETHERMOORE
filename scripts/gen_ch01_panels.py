@@ -1,7 +1,6 @@
 """Generate Chapter 1 manhwa panels using SDXL Turbo on local GPU."""
 
 import os
-import sys
 import time
 import json
 import torch

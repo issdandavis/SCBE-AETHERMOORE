@@ -21,7 +21,6 @@ Structure:
     agents/                    <- Agent archetype vaults
 """
 
-import math
 import shutil
 from pathlib import Path
 

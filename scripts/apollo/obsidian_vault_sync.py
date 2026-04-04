@@ -15,17 +15,14 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import datetime
 import hashlib
 import json
 import os
 import re
-import shutil
-import sys
 from collections import defaultdict
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 VAULT_PATH = Path(os.environ.get("OBSIDIAN_VAULT", r"C:\Users\issda\Documents\Avalon Files"))

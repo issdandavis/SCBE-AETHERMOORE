@@ -68,7 +68,7 @@ def test(name: str):
 # ================================================================
 @test("tetris_sacred_rotation")
 def test_tetris_rotation():
-    from src.kernel.tetris_embedder import sacred_rotate, _ROTATIONS
+    from src.kernel.tetris_embedder import sacred_rotate
 
     # Each tongue should produce a DIFFERENT rotation
     vec = np.random.RandomState(42).randn(384).astype(np.float64)

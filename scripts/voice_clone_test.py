@@ -22,7 +22,6 @@ Run:
 import json
 import os
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -62,7 +61,6 @@ def generate_kokoro_baseline(text: str, output_path: Path) -> bool:
     try:
         import kokoro_onnx
         import soundfile as sf
-        import numpy as np
 
         kokoro = kokoro_onnx.Kokoro(
             str(HOME / "kokoro-v1.0.onnx"),

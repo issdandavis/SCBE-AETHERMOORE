@@ -14,9 +14,8 @@ import json
 import os
 import re
 import hashlib
-import textwrap
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Tuple
 
 # ---------------------------------------------------------------------------
 # Configuration

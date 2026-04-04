@@ -21,7 +21,7 @@ Results cross-referenced as a spectral grid: (-1, 0, +1) per method.
 from __future__ import annotations
 import json, math, time, sys
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Tuple
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))

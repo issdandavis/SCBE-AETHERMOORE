@@ -18,7 +18,6 @@ Run:
 import json
 import hashlib
 import random
-import sys
 import time
 from collections import Counter, defaultdict
 from pathlib import Path

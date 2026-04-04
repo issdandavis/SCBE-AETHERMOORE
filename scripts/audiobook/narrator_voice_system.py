@@ -20,10 +20,9 @@ Usage:
 
 import re
 import json
-import os
 from pathlib import Path
-from dataclasses import dataclass, field
-from typing import List, Optional
+from dataclasses import dataclass
+from typing import List
 
 REPO = Path(r"C:\Users\issda\SCBE-AETHERMOORE")
 READER_DIR = REPO / "content" / "book" / "reader-edition"

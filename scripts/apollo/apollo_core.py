@@ -23,17 +23,14 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import email as email_lib
-import email.header
 import hashlib
 import imaplib
 import json
 import os
 import re
 import sys
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 # Project paths
 ROOT = Path(__file__).resolve().parent.parent.parent

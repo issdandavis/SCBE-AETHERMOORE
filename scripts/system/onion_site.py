@@ -119,7 +119,7 @@ def main():
     if HOSTNAME_FILE.exists():
         existing = HOSTNAME_FILE.read_text(encoding="utf-8").strip()
         if existing:
-            print(f"\n  Existing .onion address: {existing}")
+            print(f"\n  Existing .onion address: {existing[:8]}...{existing[-6:]}")
             if args.generate_only:
                 return
 
@@ -159,7 +159,7 @@ def main():
         hostname = wait_for_onion()
         print("\n" + "=" * 60)
         print(f"  ONION SITE LIVE!")
-        print(f"  Address: http://{hostname}")
+        print(f"  Address: http://{hostname[:8]}...{hostname[-6:]}")
         print(f"  Local:   http://127.0.0.1:{args.port}")
         print(f"  Web dir: {web_dir}")
         print("=" * 60)

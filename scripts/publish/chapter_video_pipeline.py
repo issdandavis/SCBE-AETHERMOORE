@@ -20,9 +20,9 @@ import re
 import subprocess
 import sys
 import textwrap
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 BOOK_PATH = PROJECT_ROOT / "artifacts" / "book" / "kdp" / "six-tongues-protocol-v2.md"

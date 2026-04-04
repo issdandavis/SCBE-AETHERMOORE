@@ -21,11 +21,9 @@ import hashlib
 import imaplib
 import json
 import os
-import re
-import sys
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 # Load env
 _env = Path(__file__).resolve().parent.parent.parent / "config" / "connector_oauth" / ".env.connector.oauth"

@@ -15,7 +15,6 @@ import json
 import os
 from collections import defaultdict
 from datetime import datetime
-from pathlib import Path
 
 # Business expense categories and their Schedule C lines
 BUSINESS_VENDORS = {

@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List
@@ -216,7 +215,6 @@ def push_dataset_to_hf(records: List[Dict[str, Any]]) -> None:
     """Push converted dataset to HuggingFace."""
     try:
         from datasets import Dataset
-        from huggingface_hub import HfApi
 
         # Build dataset from messages
         messages_list = [r["messages"] for r in records]

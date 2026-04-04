@@ -9,8 +9,6 @@ Usage:
   python setup-providers.py --check   # Check current configuration
 """
 
-import os
-import sys
 from pathlib import Path
 from getpass import getpass
 

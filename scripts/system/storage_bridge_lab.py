@@ -28,7 +28,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Optional, Sequence
 
 import numpy as np
 
@@ -40,11 +40,7 @@ from hydra.lattice25d_ops import (
 from hydra.octree_sphere_grid import HyperbolicLattice25D
 from src.crypto.octree import HyperbolicOctree
 from src.kernel.scattered_sphere import ScatteredAttentionSphere
-from src.knowledge.quasicrystal_voxel_drive import (
-    QuasiCrystalVoxelDrive,
-    TONGUE_NAMES,
-    TONGUE_WEIGHTS as QC_TONGUE_WEIGHTS,
-)
+from src.knowledge.quasicrystal_voxel_drive import QuasiCrystalVoxelDrive
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_DIR = REPO_ROOT / "artifacts" / "system_audit" / "storage_bridge_lab"
