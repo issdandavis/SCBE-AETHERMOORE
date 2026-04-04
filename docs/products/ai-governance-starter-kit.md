@@ -397,7 +397,7 @@ SCBE includes a complete Stripe billing integration so you can charge your own c
 ### Step 1: Set Environment Variables
 
 ```bash
-export STRIPE_SECRET_KEY="sk_live_your_stripe_secret_key"
+export STRIPE_SECRET_KEY="[SCRUBBED:stripe_key]"
 export STRIPE_WEBHOOK_SECRET="whsec_your_webhook_signing_secret"
 export SCBE_BILLING_BASE_URL="https://your-domain.com"
 ```
