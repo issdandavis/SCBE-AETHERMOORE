@@ -19,6 +19,7 @@ because credits represent compute receipts, not investment contracts.
 from __future__ import annotations
 
 import hashlib
+import itertools
 import time
 import uuid
 from dataclasses import dataclass
@@ -412,8 +413,6 @@ class ComputeExchange:
             "total_volume_settled": round(total_volume, 6),
             "exchange_rates": {
                 f"{d1.value}/{d2.value}": round(w1 / w2, 4)
-                for i, (d1, w1) in enumerate(DENOMINATION_WEIGHTS.items())
-                for j, (d2, w2) in enumerate(DENOMINATION_WEIGHTS.items())
-                if i < j
+                for (d1, w1), (d2, w2) in itertools.combinations(DENOMINATION_WEIGHTS.items(), 2)
             },
         }

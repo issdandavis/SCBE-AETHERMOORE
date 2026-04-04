@@ -272,13 +272,13 @@ class DimensionalSpace:
 
         weighted_diff_sq = 0.0
         idx = 0
-        for _valence in StateValence:
-            for _spatial in range(3):
-                for tongue in TONGUE_NAMES:
-                    w = TONGUES[tongue]["weight"]
-                    diff = v1[idx] - v2[idx]
-                    weighted_diff_sq += w * diff * diff
-                    idx += 1
+        # Iterate over all (valence × spatial × tongue) triples in flat vector order
+        for _ in range(len(StateValence) * 3):
+            for tongue in TONGUE_NAMES:
+                w = TONGUES[tongue]["weight"]
+                diff = v1[idx] - v2[idx]
+                weighted_diff_sq += w * diff * diff
+                idx += 1
 
         return math.sqrt(weighted_diff_sq)
 
