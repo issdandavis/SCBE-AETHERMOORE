@@ -291,7 +291,7 @@ class Flock:
                 for sid, s in self.sheep.items()
                 if sid not in stale and s.state in (SheepState.ACTIVE, SheepState.IDLE)
             ]
-            for tid, task in self.tasks.items():
+            for _tid, task in self.tasks.items():
                 if task.owner in stale and task.status == "active":
                     if available:
                         new_owner = available[reassigned % len(available)]
