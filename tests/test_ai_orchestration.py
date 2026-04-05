@@ -181,7 +181,7 @@ class TestOutputValidator:
 
     def test_api_key_detection(self, validator):
         """API keys should be flagged."""
-        output = "api_key=sk_test_PLACEHOLDER_NOT_REAL_KEY_12345"
+        output = "api_key=[SCRUBBED:stripe_test_key]"
         is_valid, issues = validator.validate(output)
         assert not is_valid or "api" in str(issues).lower()
 

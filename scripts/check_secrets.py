@@ -24,6 +24,9 @@ PATTERNS = [
     (r"hf_[A-Za-z0-9]{30,}", "HuggingFace token"),
     (r"KGAT_[A-Za-z0-9]{20,}", "Kaggle token"),
     (r"xai-[A-Za-z0-9]{20,}", "xAI API key"),
+    (r"SAM-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "SAM.gov API key"),
+    (r"glpat-[A-Za-z0-9_-]{20,}", "GitLab PAT"),
+    (r"eyJ[A-Za-z0-9_-]{50,}\.[A-Za-z0-9_-]{50,}", "JWT token"),
 ]
 
 def check_staged_files():
@@ -79,13 +82,13 @@ def check_all_files():
 
 
 if __name__ == "__main__":
-    # If called as pre-commit hook, check staged files
-    # If called manually, check everything
-    if len(sys.argv) > 1 and sys.argv[1] == "--staged":
-        found = check_staged_files()
-    else:
+    # Default: check staged files (pre-commit hook mode)
+    # Pass --all for full repo scan (manual mode)
+    if len(sys.argv) > 1 and sys.argv[1] == "--all":
         print("Scanning entire repo for secrets...")
         found = check_all_files()
+    else:
+        found = check_staged_files()
 
     if found:
         print(f"\n{'='*60}")

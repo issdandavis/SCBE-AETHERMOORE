@@ -1,0 +1,2235 @@
+[
+  {
+    "author": "Claude",
+    "date": "2026-04-05T16:28:43Z",
+    "msg": "fix(core): resolve CodeQL alerts and unblock test collection (#895)",
+    "name": "fix/codeql-alerts-and-lazy-httpx",
+    "sha": "9a679e31"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T15:27:22Z",
+    "msg": "chore: update package-lock.json and test telemetry snapshot",
+    "name": "fix/daily-review-and-test-stability",
+    "sha": "0ee8b606"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T14:10:06Z",
+    "msg": "fix(ci): align daily-review pytest ignores with CI and fix URL validation",
+    "name": "fix/daily-review-coherence-and-url-validation",
+    "sha": "8c595bab"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T13:14:32Z",
+    "msg": "fix(security): remediate CodeQL alerts \u00e2\u20ac\u201d log injection, credential exposure, URL",
+    "name": "fix/security-codeql-remediations",
+    "sha": "d8894111"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T12:14:26Z",
+    "msg": "fix(security): resolve high-severity code scanning alerts and align daily-review",
+    "name": "fix/security-alerts-and-daily-review-ci",
+    "sha": "3a341942"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T11:13:06Z",
+    "msg": "fix(ci): align daily-review pytest ignores with CI and fix dimensional_space loo",
+    "name": "fix/daily-review-and-dimensional-space",
+    "sha": "02a9234b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T10:15:22Z",
+    "msg": "fix(web_agent): lazy-load publishers to avoid httpx import failure",
+    "name": "fix/lazy-load-publishers-httpx",
+    "sha": "5b1a2ab6"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T09:17:46Z",
+    "msg": "fix(security): scrub credentials from exception logs and fix nightly-ops workflo",
+    "name": "fix/security-cleartext-logging-and-nightly-ops",
+    "sha": "bf7e3dc6"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T08:32:33Z",
+    "msg": "feat(knowledge,browser): implement 6 voxel drive features and make basin paths c",
+    "name": "feat/voxel-drive-features-and-basin-paths",
+    "sha": "ca28f9c6"
+  },
+  {
+    "author": "dependabot[bot]",
+    "date": "2026-04-05T08:24:30Z",
+    "msg": "chore(deps): bump opentelemetry-instrumentation-redis",
+    "name": "dependabot/pip/opentelemetry-instrumentation-redis-0.61b0",
+    "sha": "3ccd953a"
+  },
+  {
+    "author": "dependabot[bot]",
+    "date": "2026-04-05T08:23:37Z",
+    "msg": "chore(deps): bump uvicorn from 0.42.0 to 0.43.0 (#960)",
+    "name": "main",
+    "sha": "f091d62d"
+  },
+  {
+    "author": "dependabot[bot]",
+    "date": "2026-04-05T08:13:49Z",
+    "msg": "chore(deps): bump chardet from 7.4.0.post1 to 7.4.0.post2",
+    "name": "dependabot/pip/chardet-7.4.0.post2",
+    "sha": "59084ef9"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-04-05T07:50:43Z",
+    "msg": "chore(repo): untrack 748 zombie files + git-ops SFT harvester",
+    "name": "site-publish-v4",
+    "sha": "c471095a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T07:47:33Z",
+    "msg": "chore: commit pre-existing working tree changes from prior session",
+    "name": "fix/daily-review-coherence-alignment",
+    "sha": "0c07a00e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T06:36:31Z",
+    "msg": "fix(tests,security): resolve 2 test failures and 1 URL encoding vulnerability",
+    "name": "fix/test-failures-and-url-encoding",
+    "sha": "700328ac"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T05:26:30Z",
+    "msg": "fix(test,security): fix webtoon lock packet test and harden security surfaces",
+    "name": "fix/test-failure-and-security-hardening",
+    "sha": "9e7a328d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T04:29:03Z",
+    "msg": "fix(test): remove dead pick_best_backend monkeypatch in webtoon lock packet test",
+    "name": "fix/codeql-xss-895",
+    "sha": "a66a69ba"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T03:09:57Z",
+    "msg": "fix(tests): remove stale pick_best_backend monkeypatch from lock packet tests",
+    "name": "fix/stale-monkeypatch-lock-packet-tests",
+    "sha": "5f722134"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T02:21:53Z",
+    "msg": "fix(lint): remove unused imports across 19 scripts via autoflake (#895)",
+    "name": "fix/security-and-codeql-alerts-895",
+    "sha": "39ec78a9"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T01:24:15Z",
+    "msg": "fix(tests): lazy-import publishers to avoid httpx crash and update webtoon test",
+    "name": "fix/lazy-publishers-and-webtoon-test",
+    "sha": "83e88154"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-05T00:40:22Z",
+    "msg": "fix(tests): remove stale pick_best_backend monkeypatch in lock packet tests",
+    "name": "fix/stale-pick-best-backend-monkeypatch",
+    "sha": "047f3f28"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T23:38:50Z",
+    "msg": "fix(security,tests): log injection prevention, lazy publishers import, coherence",
+    "name": "fix/issue-918-921-895-test-security-coherence",
+    "sha": "ab53f82a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T22:25:07Z",
+    "msg": "fix(codeql): resolve loop variable and non-iterable alerts in dimensional_space ",
+    "name": "fix/codeql-loop-alerts",
+    "sha": "7759977e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T21:16:00Z",
+    "msg": "fix(security): redact cryptographic key material from logs and remove 208 unused",
+    "name": "fix/security-redact-and-import-cleanup",
+    "sha": "e2a04e94"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T20:31:35Z",
+    "msg": "fix(ci,security): resolve coherence gate failures and harden security",
+    "name": "fix/ci-coherence-and-security-hardening",
+    "sha": "a328248a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T19:34:14Z",
+    "msg": "fix(security): address CodeQL alerts from #895 \u00e2\u20ac\u201d clear-text credentials, unused ",
+    "name": "fix/codeql-and-cleartext-logging",
+    "sha": "66faa254"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T18:57:16Z",
+    "msg": "fix(ci,security): lower coherence gate threshold and fix code scanning alerts (#",
+    "name": "fix/coherence-gate-and-security-alerts",
+    "sha": "e0a211bb"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T16:39:30Z",
+    "msg": "fix(web_agent): lazy-load publishers to prevent httpx ImportError in tests",
+    "name": "fix/lazy-load-publishers",
+    "sha": "d342bdac"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T04:23:01Z",
+    "msg": "fix(tests,security): stabilize flaky RAG test and remove hardcoded API key",
+    "name": "fix/stabilize-rag-test-and-remove-hardcoded-key",
+    "sha": "87bd377b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T02:28:47Z",
+    "msg": "chore(tests): update telemetry test artifact timestamps",
+    "name": "fix/ci-nightly-ops-and-test-artifacts",
+    "sha": "6023c2cc"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T01:35:24Z",
+    "msg": "fix(ci): deduplicate self-improvement issues and auto-close resolved workflow is",
+    "name": "fix/workflow-issue-dedup-and-autoclose",
+    "sha": "835e0c6f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-04T00:34:30Z",
+    "msg": "fix(security): sanitize command in CLI error response and silence CodeQL loop-va",
+    "name": "fix/security-codeql-895",
+    "sha": "6e9e1d6b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T23:17:47Z",
+    "msg": "fix(crypto): constant-time verify_bool and implement AVX2 detection",
+    "name": "fix/pqc-timing-and-avx2-detection",
+    "sha": "d433a89e"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-04-03T22:32:44Z",
+    "msg": "fix(ci): resolve CodeQL errors and fix daily-review pytest (#920)",
+    "name": "fix/lazy-httpx-import-publishers",
+    "sha": "f6c6e19e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T22:32:18Z",
+    "msg": "fix(ci): resolve CodeQL errors and fix daily-review pytest configuration (#895)",
+    "name": "fix/codeql-bugs-and-daily-review",
+    "sha": "41fa8dc6"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T21:12:23Z",
+    "msg": "fix(ci): repair broken nightly-ops.yml YAML structure",
+    "name": "fix/nightly-ops-yaml-structure",
+    "sha": "91b566b3"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T20:36:24Z",
+    "msg": "fix(tests): remove 4 stale xfail markers for now-passing limitation tests",
+    "name": "fix/remove-stale-xfail-markers-v2",
+    "sha": "eb844356"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T19:33:21Z",
+    "msg": "fix(quality): remove stale xfail markers, narrow warning suppression, add error ",
+    "name": "fix/code-quality-audit-2026-04-03",
+    "sha": "52f65769"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T18:35:56Z",
+    "msg": "fix(security): remove hardcoded secrets and clean up stale xfail markers",
+    "name": "fix/hardcoded-secrets-and-stale-xfails",
+    "sha": "682a629d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T17:27:12Z",
+    "msg": "fix(tests): remove 4 stale xfail markers and fix import placement",
+    "name": "fix/stale-xfail-and-import-cleanup",
+    "sha": "c6c6e02a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T16:24:56Z",
+    "msg": "chore: update test artifacts from latest run",
+    "name": "fix/cleanup-stale-xfail-markers",
+    "sha": "3f9fc971"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T14:12:57Z",
+    "msg": "fix(python): lazy-import httpx to prevent test collection failures and remove st",
+    "name": "fix/lazy-httpx-imports-and-stale-xfails",
+    "sha": "b990ba4c"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T13:28:04Z",
+    "msg": "fix(ci): bump arxiv workflow to Python 3.11 and remove 3 resolved xfail markers",
+    "name": "fix/ci-cleanup-xfail-and-python-version",
+    "sha": "947e68f8"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T12:53:31Z",
+    "msg": "fix(ci): add missing pytest env vars to daily-review and fix CodeQL loop variabl",
+    "name": "fix/resolve-xpass-known-limitations",
+    "sha": "faea5770"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T11:23:32Z",
+    "msg": "fix(web_agent): lazy-import publishers to avoid httpx collection error",
+    "name": "fix/lazy-publisher-imports",
+    "sha": "40613f31"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T10:10:09Z",
+    "msg": "fix(web_agent): lazy-import publishers to avoid httpx crash during test collecti",
+    "name": "fix/lazy-import-publishers-httpx",
+    "sha": "4388733b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T08:20:36Z",
+    "msg": "fix(tests): remove stale xfail markers for resolved limitations (L04-L07)",
+    "name": "fix/promote-resolved-limitations-to-regression-tests",
+    "sha": "3ac41661"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T07:25:56Z",
+    "msg": "fix(tests): promote 4 resolved known limitations from xfail to passing",
+    "name": "fix/promote-resolved-known-limitations",
+    "sha": "a45f54cf"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T06:25:21Z",
+    "msg": "fix(codeql): resolve error-level loop bugs in dimensional_space and exchange",
+    "name": "fix/pyo3-baseexception-guards-v2",
+    "sha": "4cf0d056"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T03:19:59Z",
+    "msg": "fix(crypto): remove stale xfail markers and modernize PQC defaults",
+    "name": "fix/pqc-xfail-type-hints",
+    "sha": "7af8a8d1"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T02:31:25Z",
+    "msg": "fix(tests): remove stale xfail markers for 3 resolved limitations",
+    "name": "fix/remove-stale-xfail-markers",
+    "sha": "ffdf23cf"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T01:19:57Z",
+    "msg": "fix(agents): eliminate false-positive stubs in EngineerAgent and CodePrism emitt",
+    "name": "fix/stub-false-positives",
+    "sha": "0db4cbbc"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-03T00:26:12Z",
+    "msg": "fix(tests): remove stale xfail markers for resolved limitations",
+    "name": "fix/stale-xfail-markers",
+    "sha": "24c1435b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T23:15:34Z",
+    "msg": "fix(security): harden JSON parsing, secret derivation, and auth tokens",
+    "name": "fix/security-hardening-json-auth-secrets",
+    "sha": "c8469396"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T22:14:46Z",
+    "msg": "fix(tests,governance): remove stale xfail markers and add logging to silent exce",
+    "name": "fix/cleanup-xfail-and-silent-exceptions",
+    "sha": "88f1c899"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T21:46:37Z",
+    "msg": "fix(security): redact error details in field_trip.py log output",
+    "name": "fix/pyo3-panic-exception-guards",
+    "sha": "6b394908"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T19:30:55Z",
+    "msg": "chore(tests): update telemetry test artifact timestamps",
+    "name": "fix/pyo3-baseexception-guards",
+    "sha": "d0eb836e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T18:31:07Z",
+    "msg": "fix(security): resolve CodeQL errors and cleartext logging vulnerabilities (#895",
+    "name": "chore/update-test-artifacts",
+    "sha": "61cf5e08"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T17:21:58Z",
+    "msg": "fix(api): harden input validation and error logging in governance server",
+    "name": "fix/api-server-input-validation",
+    "sha": "f95634db"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T17:19:03Z",
+    "msg": "fix(ci): align daily-review pytest step with CI best practices (#895, #906)",
+    "name": "fix/update-stale-xfail-markers",
+    "sha": "9a15a37a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T14:44:09Z",
+    "msg": "fix(security): resolve CodeQL error-level alerts \u00e2\u20ac\u201d unused loop var and non-itera",
+    "name": "fix/flaky-timing-side-channel-test",
+    "sha": "ba7be380"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T10:48:58Z",
+    "msg": "fix(codeql): rename unused loop variables in dimensional_space.py",
+    "name": "fix/cryptography-base-exception-guards",
+    "sha": "1a2d852f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T09:14:06Z",
+    "msg": "fix(tests): catch pyo3 PanicException in cryptography import guards",
+    "name": "fix/cryptography-baseexception-guard",
+    "sha": "8a5c30e0"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T08:46:11Z",
+    "msg": "fix(tests): remove stale xfail markers on 4 resolved known limitations",
+    "name": "fix/resolve-stale-xfail-markers",
+    "sha": "488cdb4b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T06:13:57Z",
+    "msg": "fix(security): resolve CodeQL alerts \u00e2\u20ac\u201d unused loop var, cleartext logging, shell",
+    "name": "fix/api-server-error-handler-and-rate-limit-cleanup",
+    "sha": "ff14fc5d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T05:48:30Z",
+    "msg": "fix(tests): guard argon2-cffi-dependent tests and fix float64 precision in prope",
+    "name": "fix/test-argon2-guards-and-float64-precision",
+    "sha": "9668c0ae"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T04:38:11Z",
+    "msg": "fix(codeql): rename unused loop variable in dimensional_space.py",
+    "name": "fix/cryptography-pyo3-panic-guard",
+    "sha": "d74442e2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T03:26:51Z",
+    "msg": "fix(tests): gracefully skip crypto tests when argon2-cffi is unavailable",
+    "name": "fix/graceful-argon2-skip-in-tests",
+    "sha": "730272fc"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T02:17:43Z",
+    "msg": "fix(security): sanitize raw commands and train_id in api_server.py",
+    "name": "fix/flake8-lint-cleanup-apr2026",
+    "sha": "f4cab7ed"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-02T01:40:04Z",
+    "msg": "fix(security): resolve CodeQL alerts \u00e2\u20ac\u201d unused loop vars, clear-text logging, pat",
+    "name": "fix/flaky-tests-lint-cleanup",
+    "sha": "dd9556e8"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T22:27:45Z",
+    "msg": "fix(tests): catch pyo3 PanicException in cryptography availability guards",
+    "name": "fix/cryptography-panic-exception-guard",
+    "sha": "9e2ce5e8"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T20:18:58Z",
+    "msg": "fix(lint): resolve all flake8 errors across hydra/, src/, and tests/ (#895)",
+    "name": "fix/flake8-codeql-full-sweep",
+    "sha": "db1f3ccc"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T19:51:56Z",
+    "msg": "fix(scripts): handle gh pr checks non-zero exit in pr_merge_triage",
+    "name": "claude/finetune-qwen-coder-qlora-uuqBW",
+    "sha": "a1932546"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T19:39:54Z",
+    "msg": "fix(codeql): wrap dict.items() in list() to satisfy non-iterable check (#895)",
+    "name": "fix/flake8-lint-cleanup",
+    "sha": "a824453b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T19:07:01Z",
+    "msg": "fix(security): resolve CodeQL errors and high-severity security alerts (#895)",
+    "name": "fix/flake8-cleanup-120-warnings",
+    "sha": "fe8b0c5c"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T17:34:10Z",
+    "msg": "fix(lint,security): resolve 120 flake8 errors, CodeQL bugs, and clear-text loggi",
+    "name": "fix/flake8-codeql-security-cleanup",
+    "sha": "ef9785cb"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T17:01:22Z",
+    "msg": "fix(security): use sanitized train_id in api_server response",
+    "name": "fix/code-quality-cleanup-hydra",
+    "sha": "957822b0"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T16:07:47Z",
+    "msg": "fix: resolve 8 test failures, stabilize flaky tests, add missing Flock API metho",
+    "name": "fix/test-failures-and-flock-api",
+    "sha": "87627eb7"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T15:52:05Z",
+    "msg": "chore(deps): update package-lock.json after npm install",
+    "name": "fix/hydra-lint-and-flaky-tests",
+    "sha": "97ee9e15"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T14:46:36Z",
+    "msg": "chore(deps): update package-lock.json from npm install",
+    "name": "fix/test-suite-stability",
+    "sha": "e357f68b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T12:41:18Z",
+    "msg": "style: fix Black formatting whitespace in post_to_x.py",
+    "name": "fix/ci-lint-and-flaky-test",
+    "sha": "1e444bec"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T11:58:05Z",
+    "msg": "fix(security): add centralized log injection sanitizer for api_server",
+    "name": "fix/ci-lint-and-test-fixes",
+    "sha": "9e6be4e4"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T09:02:24Z",
+    "msg": "chore(deps): update package-lock.json from npm install",
+    "name": "fix/ci-health-audit-cleanup",
+    "sha": "e2c76dd2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T07:54:37Z",
+    "msg": "fix(security): additional clear-text log redaction in api_server and tor_sweeper",
+    "name": "fix/ci-formatting-and-lint-cleanup",
+    "sha": "52983a4f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T07:08:29Z",
+    "msg": "chore(deps): update package-lock.json from npm install",
+    "name": "fix/test-collection-guards",
+    "sha": "fa60263e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T06:06:06Z",
+    "msg": "chore(deps): update package-lock.json",
+    "name": "fix/hydra-formatting-and-flaky-tests",
+    "sha": "a0d63d42"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T04:49:00Z",
+    "msg": "fix(security): redact sensitive data in logs + fix CodeQL loop bug",
+    "name": "fix/ci-formatting-lint-test-fixes",
+    "sha": "9c5148de"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T04:40:30Z",
+    "msg": "chore(deps): update package-lock.json after npm install",
+    "name": "fix/ci-formatting-and-flaky-test",
+    "sha": "4eca614f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T03:23:03Z",
+    "msg": "fix(security): resolve CodeQL errors and harden api_server paths",
+    "name": "fix/test-stability-and-import-guards",
+    "sha": "ccb07487"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T02:50:11Z",
+    "msg": "chore(deps): update package-lock.json from npm install",
+    "name": "fix/hydra-lint-cleanup",
+    "sha": "f6236c88"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T02:03:11Z",
+    "msg": "fix(security): scrub sensitive data in log records, use safe_raw consistently (#",
+    "name": "fix/lint-formatting-and-html-fallback-bug",
+    "sha": "7be32bdd"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-04-01T00:27:12Z",
+    "msg": "chore(deps): update package-lock.json after npm install",
+    "name": "fix/codeql-security-batch-895",
+    "sha": "30ba1959"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T23:36:16Z",
+    "msg": "fix(security): resolve CodeQL alerts, harden input validation, bump Pygments",
+    "name": "fix/codeql-security-alerts-895-v2",
+    "sha": "d195d753"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T22:09:03Z",
+    "msg": "fix(security): resolve CodeQL loop bugs, log injection, and cleartext logging",
+    "name": "fix/security-codeql-bugs-895",
+    "sha": "6390373d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T21:11:44Z",
+    "msg": "fix(security): complete HTML escaping and URL sanitization fixes (#895)",
+    "name": "fix/codeql-security-895",
+    "sha": "810fa419"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T20:20:50Z",
+    "msg": "fix(deps): bump Pygments 2.19.2\u00e2\u2020\u20192.20.0 in SCBEAgent uv.lock (CVE-2026-4539)",
+    "name": "fix/pygments-cve-2026-4539",
+    "sha": "e0cda7b7"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T19:20:03Z",
+    "msg": "fix(security): redact sensitive data in clear-text logging",
+    "name": "fix/codeql-unused-loop-var-dimensional-space",
+    "sha": "e5674c67"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T18:20:01Z",
+    "msg": "fix(security): resolve CodeQL errors and harden logging (#895)",
+    "name": "fix/codeql-security-triage-895",
+    "sha": "b8857159"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T18:07:56Z",
+    "msg": "docs: add phi cost exponent proof linking quasicrystal to harmonic wall",
+    "name": "feat/vault-framework",
+    "sha": "bb882689"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T16:12:24Z",
+    "msg": "fix(security): resolve CodeQL errors and harden api_server input validation (#89",
+    "name": "fix/codeql-security-alerts-895",
+    "sha": "e74434d6"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T15:12:43Z",
+    "msg": "fix(ci): resolve CodeQL errors, remove 165 unused imports, fix coherence gate th",
+    "name": "fix/codeql-coherence-unused-imports",
+    "sha": "5acaa7a7"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T14:23:14Z",
+    "msg": "fix(security): resolve CodeQL errors and high-severity scanning alerts (#895)",
+    "name": "fix/security-triage-895",
+    "sha": "bd2221e7"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T12:23:57Z",
+    "msg": "fix(governance): resolve CodeQL loop errors in dimensional_space and exchange",
+    "name": "fix/codeql-loop-errors",
+    "sha": "16f82839"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T11:15:44Z",
+    "msg": "fix(security): resolve CodeQL errors and clear-text logging vulnerabilities (#89",
+    "name": "fix/security-triage-895-codeql-logging",
+    "sha": "69942ad8"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-31T09:23:38Z",
+    "msg": "feat(site): publish nightly roundup article packet",
+    "name": "site-nightly-roundup-publish",
+    "sha": "0e4c72a5"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-31T08:55:31Z",
+    "msg": "docs: finalized interactive demos and corrected benchmark terminology",
+    "name": "site-publish-v6",
+    "sha": "5e61885c"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T08:06:32Z",
+    "msg": "fix(ci): treat skipped/cancelled CI steps as neutral in coherence gate (#890, #8",
+    "name": "fix/coherence-gate-and-stream-parser",
+    "sha": "ce6f8773"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-31T07:35:02Z",
+    "msg": "docs: publish website updates (clean push)",
+    "name": "site-publish-final-v5",
+    "sha": "2874d19f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T06:28:14Z",
+    "msg": "fix(lint): resolve Black formatting and ruff lint errors blocking all PR CI",
+    "name": "fix/lint-format-ci",
+    "sha": "992ccf64"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T05:09:12Z",
+    "msg": "fix(test,ci): narrow BaseException catches and fix coherence gate (#864)",
+    "name": "fix/864-baseexception-and-coherence-gate",
+    "sha": "aa2d5688"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-31T04:20:31Z",
+    "msg": "fix(ci): target master branch in all 20 workflows + fix Black config (#887)",
+    "name": "master",
+    "sha": "03098a4e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T04:19:56Z",
+    "msg": "fix(ci): target master branch in all 20 workflows + fix Black config",
+    "name": "fix/ci-branch-target-and-lint",
+    "sha": "c7f361e7"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-31T04:17:08Z",
+    "msg": "chore(github): professionalize public repo surface",
+    "name": "overnight/2026-03-30",
+    "sha": "804809df"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T03:25:09Z",
+    "msg": "chore: include pending nightly-ops workflow and telemetry snapshot updates",
+    "name": "fix/python-test-failures-2026-03-31",
+    "sha": "12334076"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T02:13:30Z",
+    "msg": "fix(scripts): resolve false critical alerts in gap review (#876)",
+    "name": "fix/gap-review-false-criticals-876",
+    "sha": "63e0be41"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T01:14:33Z",
+    "msg": "fix(scripts): resolve false-critical alerts in self-improvement loop (#876)",
+    "name": "fix/self-improvement-false-criticals",
+    "sha": "fcc9e69e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-31T00:36:56Z",
+    "msg": "fix(scripts): resolve false-positive critical alerts in self-improvement loop (#",
+    "name": "fix/self-improvement-gap-review-false-positives",
+    "sha": "a535f538"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-30T23:36:00Z",
+    "msg": "fix(ci): fix YAML parse error \u00e2\u20ac\u201d '> 0' misread as fold indicator",
+    "name": "fix/ci-auto-fix-yaml-parse",
+    "sha": "93276a09"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T23:23:47Z",
+    "msg": "fix(security): remediate path traversal, XSS, info exposure, and CI masking (#86",
+    "name": "fix/security-remediation-batch2",
+    "sha": "fef3bf3d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T22:20:02Z",
+    "msg": "fix(ci,security): enforce ESLint/overnight failures, fix XSS sinks in arena and ",
+    "name": "fix/ci-masking-xss-remediation-round5",
+    "sha": "4a4484d1"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T21:07:55Z",
+    "msg": "fix(ci): enforce security-check failures and fix daily-review dep masking (#868,",
+    "name": "fix/ci-error-masking-and-dead-code",
+    "sha": "9864df44"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T20:25:14Z",
+    "msg": "chore(scripts): add branch cleanup script for 254 stale remotes",
+    "name": "chore/branch-cleanup-script",
+    "sha": "337b54f2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T20:08:07Z",
+    "msg": "fix(security,ci): path traversal guard and workflow masking fixes (#864, #868)",
+    "name": "fix/security-ci-masking-864-868",
+    "sha": "b6b2d63b"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-30T19:53:15Z",
+    "msg": "feat(flock): add energy-bounded agent lifecycle (optimal foraging) (#884)",
+    "name": "claude/energy-bounded-agents-jNkP0",
+    "sha": "24815e89"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T19:18:39Z",
+    "msg": "chore(ci): add workflow audit report artifacts (#868)",
+    "name": "fix/ci-masking-and-codestyle-868-864",
+    "sha": "688c4f90"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T18:21:26Z",
+    "msg": "fix(security): redact cleartext exit IP and replace empty except blocks (#864)",
+    "name": "fix/codeql-empty-excepts-cleartext-864",
+    "sha": "ee77dfdc"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T18:10:17Z",
+    "msg": "chore: update test artifacts from local test run",
+    "name": "claude/fix-github-actions-UWV3i",
+    "sha": "5550d030"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T16:27:19Z",
+    "msg": "fix(security): enforce CI security gate and remediate P1/P2 alerts (#864, #868)",
+    "name": "fix/issue-864-remediation-round2",
+    "sha": "675a7c70"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T15:24:16Z",
+    "msg": "fix(security): harden innerHTML XSS, narrow BaseException catches, redact sensit",
+    "name": "fix/code-scanning-pr4-pr12-remediation",
+    "sha": "6410395e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T14:33:53Z",
+    "msg": "fix(ci): treat skipped steps as neutral in coherence check (#875)",
+    "name": "fix/code-scanning-remediation-round4",
+    "sha": "a0a90f06"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T13:16:12Z",
+    "msg": "fix(security): scrub file content before LLM context and add path containment to",
+    "name": "fix/codeql-round3-xss-loop",
+    "sha": "8ecbcc0c"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T12:24:59Z",
+    "msg": "refactor(cognitive-governance): clarify loop structure in dimensional_space.py (",
+    "name": "fix/coherence-gate-and-url-sanitization",
+    "sha": "5ca10a0d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T11:15:12Z",
+    "msg": "fix(security): sanitize playerId in arena.html getElementById calls",
+    "name": "fix/issue-864-868-security-bugs",
+    "sha": "365e73ce"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T10:12:06Z",
+    "msg": "fix(security): remediate CodeQL alerts \u00e2\u20ac\u201d XSS sinks, empty excepts, URL sanitizat",
+    "name": "fix/codeql-remediation-round2",
+    "sha": "e2eac2c3"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T09:23:30Z",
+    "msg": "fix(ci,security): stop CI masking failures and remove info exposure (#868, #864)",
+    "name": "fix/ci-masking-and-security-868-864",
+    "sha": "e67217f6"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T08:18:26Z",
+    "msg": "fix(security,ci): remediate P0/P1 code scanning alerts and CI masking (#864, #86",
+    "name": "fix/code-scanning-p0-p1-batch2",
+    "sha": "40ab5a6e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T07:17:13Z",
+    "msg": "fix(security,ci): remediate code scanning alerts and CI masking issues (#864, #8",
+    "name": "fix/issue-864-868-security-ci-remediation",
+    "sha": "5b244d0f"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-30T05:22:27Z",
+    "msg": "chore(backup): capture late training pipeline edits",
+    "name": "backup/pre-restart-2026-03-29-incremental",
+    "sha": "c4082a35"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-30T05:17:25Z",
+    "msg": "chore(backup): capture training pipeline delta",
+    "name": "backup/pre-restart-2026-03-29",
+    "sha": "21bdf525"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T05:16:36Z",
+    "msg": "chore(ci): add workflow governance audit report artifacts (#868)",
+    "name": "fix/issue-864-p0-p1-remediation",
+    "sha": "3e7c2baf"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-30T05:11:00Z",
+    "msg": "feat: add overnight task ledger for autonomous agent work",
+    "name": "session/2026-03-29-full-upgrade",
+    "sha": "639ad7f4"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T04:19:08Z",
+    "msg": "chore(ci): add workflow audit report artifacts from #868",
+    "name": "fix/issue-864-868-ci-and-code-remediation",
+    "sha": "23d043fb"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T03:16:09Z",
+    "msg": "fix(core): resolve bugs from code scanning triage #864 (PR5, PR6, PR8)",
+    "name": "fix/issue-864-pr6-pr5-pr8-bugs",
+    "sha": "93e15fcc"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T02:19:41Z",
+    "msg": "fix(core): fix unused loop iteration variables in dimensional_space.py",
+    "name": "fix/code-scanning-remediation-864-batch2",
+    "sha": "8f9109e8"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T01:23:10Z",
+    "msg": "fix(security): remediate code scanning alerts \u00e2\u20ac\u201d info exposure, HTML regex, unuse",
+    "name": "fix/issue-864-code-scanning-remediation-round2",
+    "sha": "277d60d4"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-30T00:16:45Z",
+    "msg": "fix(security): remediate P0/P1 code scanning alerts from issue #864 (batch 2)",
+    "name": "fix/issue-864-security-remediation-batch2",
+    "sha": "4b0fcb8e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T22:26:59Z",
+    "msg": "fix(security): stop leaking exception details to API clients and fix empty excep",
+    "name": "fix/security-remediation-864-batch2",
+    "sha": "c0f23535"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T21:05:53Z",
+    "msg": "fix(security): remediate code scanning alerts \u00e2\u20ac\u201d info exposure, path traversal, u",
+    "name": "fix/code-scanning-remediation-p0-p1-p2",
+    "sha": "425108e3"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T19:17:05Z",
+    "msg": "fix(security): resolve P0/P1 code scanning alerts from issue #864",
+    "name": "fix/issue-864-p0-p1-security-bugs",
+    "sha": "46b2d62f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T16:42:06Z",
+    "msg": "test(adversarial): add calibrated null-space ablation tests",
+    "name": "claude/find-bible-docs-7RJ2p",
+    "sha": "87db2176"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T11:08:50Z",
+    "msg": "fix(deps): resolve TypeScript 6.0 compatibility issues blocking npm install",
+    "name": "fix/ts6-compat-madge-peer-deps",
+    "sha": "bc14dddd"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T09:17:30Z",
+    "msg": "fix(tests): make httpx imports lazy to prevent pytest collection crashes",
+    "name": "fix/lazy-httpx-imports",
+    "sha": "799c4170"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T08:59:25Z",
+    "msg": "fix(tests): resolve pytest collection failures from symphonic_cipher/governance ",
+    "name": "fix/pytest-collection-import-collision",
+    "sha": "e580d25d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T08:33:48Z",
+    "msg": "fix(tests): guard cryptography imports and add missing governance __init__.py",
+    "name": "fix/pytest-collection-errors",
+    "sha": "97b64815"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-29T06:24:13Z",
+    "msg": "fix(training): add sync-config fallback when Notion search returns 0 pages",
+    "name": "fix/notion-export-zero-page-fallback",
+    "sha": "4bd2dc67"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-29T00:57:37Z",
+    "msg": "fix(aetherbrowser): fall back to local when no provider meets tier",
+    "name": "fix/ci-stability-pass2",
+    "sha": "b612a51b"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-29T00:41:33Z",
+    "msg": "fix(tests): stabilize imports and remove flaky crypto property",
+    "name": "fix/ci-stability-guardrails",
+    "sha": "4a3f0f6f"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-28T23:42:27Z",
+    "msg": "fix(ci): add missing submodule urls to .gitmodules",
+    "name": "fix/gitmodules-submodule-urls",
+    "sha": "8ba2071b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-28T23:14:54Z",
+    "msg": "fix(ci): add missing-tool detection in coherence check and vertex stream validat",
+    "name": "fix/issue-811-coherence-vertex-validation",
+    "sha": "d36af54b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-28T22:23:21Z",
+    "msg": "fix(ci): add missing-tool signal detection and fine-tune stream validation (#811",
+    "name": "fix/issue-811-coherence-and-vertex-validation",
+    "sha": "0a2342a4"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-28T21:15:53Z",
+    "msg": "fix(ci): replace all || true error masking with proper error handling",
+    "name": "fix/ci-error-masking",
+    "sha": "44b836b6"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-28T20:21:39Z",
+    "msg": "fix(ci): remove ~30 || true error masking patterns across CI workflows",
+    "name": "fix/ci-error-masking-cleanup",
+    "sha": "3bf6bc65"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-28T19:15:39Z",
+    "msg": "fix(ci): resolve coherence false-negatives and CI error masking (#811, #810)",
+    "name": "fix/ci-coherence-and-masking",
+    "sha": "dd92892e"
+  },
+  {
+    "author": "dependabot[bot]",
+    "date": "2026-03-27T22:37:39Z",
+    "msg": "chore(deps): bump path-to-regexp (#807)",
+    "name": "fix/crypto-prng-security-ids",
+    "sha": "4527c878"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-27T22:29:22Z",
+    "msg": "Add machine-readable AI estate policy draft",
+    "name": "docs/ai-estate-policy-record",
+    "sha": "270036cf"
+  },
+  {
+    "author": "copilot-swe-agent[bot]",
+    "date": "2026-03-27T16:29:28Z",
+    "msg": "fix: resolve CI failures \u00e2\u20ac\u201d black formatting, snyk action version, duplicate jobs",
+    "name": "copilot/fix-commit-checks-issue",
+    "sha": "4176e997"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T13:24:07Z",
+    "msg": "fix(security): replace Math.random() with crypto PRNG in 4 security-critical mod",
+    "name": "fix/security-hardening-march27",
+    "sha": "100c0f80"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T11:17:52Z",
+    "msg": "fix(test): gracefully skip numpy-dependent Python tests when numpy is absent",
+    "name": "fix/python-test-numpy-collection-guard",
+    "sha": "c0c6098a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T10:10:16Z",
+    "msg": "fix(security): replace all Math.random() with crypto PRNG in security-critical m",
+    "name": "fix/comprehensive-crypto-prng",
+    "sha": "fe8186c3"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T09:09:10Z",
+    "msg": "fix(security): replace Math.random() with crypto PRNG in gateway IDs + fix audit",
+    "name": "fix/audit-and-crypto-prng",
+    "sha": "93ed50e8"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T08:19:26Z",
+    "msg": "fix(security): replace Math.random() with crypto PRNG in security-critical ID ge",
+    "name": "fix/replace-math-random-with-crypto",
+    "sha": "e534b748"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T06:17:54Z",
+    "msg": "fix(logging): replace console.log/error/warn with structured logger in 8 modules",
+    "name": "fix/structured-logging-remaining-modules",
+    "sha": "b9f8174a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T05:15:07Z",
+    "msg": "fix(logging): replace console.log/error with structured logger in 3 core modules",
+    "name": "fix/migrate-console-to-structured-logger",
+    "sha": "95badffc"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T04:05:14Z",
+    "msg": "fix(lint): apply Prettier formatting to combat-network.ts",
+    "name": "fix/prettier-combat-network",
+    "sha": "dbebf086"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T03:11:18Z",
+    "msg": "docs: add pre-push verification, CI gotchas, multi-agent coordination docs",
+    "name": "chore/audit-fix-brace-expansion",
+    "sha": "1af43c5b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T02:14:00Z",
+    "msg": "chore(deps): update patch dependencies (vitest 4.1.2, aws-sdk 3.1018.0)",
+    "name": "chore/patch-deps-update",
+    "sha": "198784c1"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T01:14:26Z",
+    "msg": "fix(test,logging): unskip sheaf cohomology tests and replace console.log with st",
+    "name": "fix/unskip-sheaf-tests-structured-logging",
+    "sha": "bc378817"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-27T00:26:19Z",
+    "msg": "feat(harmonic): implement V1 sheaf cohomology API, unblock 52 skipped tests",
+    "name": "feat/implement-v1-sheaf-api",
+    "sha": "db4c1355"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T23:11:37Z",
+    "msg": "fix(tests): suppress numpy stderr noise and fix 3 test failures",
+    "name": "fix/suppress-numpy-stderr",
+    "sha": "7723d74a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T22:18:05Z",
+    "msg": "fix(test): suppress numpy stderr noise in cross-language tests and fix npm audit",
+    "name": "fix/cross-language-numpy-noise",
+    "sha": "ebc72085"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T21:06:06Z",
+    "msg": "fix(deps): patch brace-expansion DoS vulnerability (GHSA-f886-m6hf-6m8v)",
+    "name": "fix/audit-brace-expansion",
+    "sha": "76b32c55"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T20:05:23Z",
+    "msg": "chore(deps): fix 3 moderate vulnerabilities and update patch deps",
+    "name": "chore/audit-fix-and-patch-updates",
+    "sha": "71cae4a8"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T19:14:03Z",
+    "msg": "fix(tests): suppress numpy stderr noise in cross-language tests",
+    "name": "fix/cross-language-stderr-noise",
+    "sha": "49683753"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T18:12:28Z",
+    "msg": "fix(tests): suppress numpy stderr noise in cross-language parity tests",
+    "name": "fix/suppress-numpy-test-noise",
+    "sha": "4469d3bd"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T17:13:21Z",
+    "msg": "fix(lint): remove 18 unused Python imports flagged by ruff",
+    "name": "fix/ruff-unused-imports",
+    "sha": "b55da98b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T17:13:00Z",
+    "msg": "docs: add pre-push verification, CI gotchas, and coordination docs to CLAUDE.md",
+    "name": "claude/juggling-agent-coordination-8lDUv",
+    "sha": "2b0bbd7d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T13:16:24Z",
+    "msg": "feat(deps): upgrade to TypeScript 6.0.2 (#777)",
+    "name": "chore/evaluate-ts6-777",
+    "sha": "386c41fd"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T13:11:50Z",
+    "msg": "chore(deps): update minor dependencies (#778)",
+    "name": "chore/update-minor-deps-778",
+    "sha": "c049b218"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T12:21:07Z",
+    "msg": "fix(tests): suppress Python stderr noise in cross-language tests",
+    "name": "fix/suppress-python-stderr-noise",
+    "sha": "d74cd805"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T11:21:57Z",
+    "msg": "fix(lint): remove unused imports and fix line-too-long in Python sources",
+    "name": "fix/python-lint-cleanup",
+    "sha": "d12aa588"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T10:04:33Z",
+    "msg": "fix(crypto): remove stale mock PQC code causing roundtrip failures",
+    "name": "fix/crypto-mock-roundtrip-774",
+    "sha": "64e89c7f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T09:34:52Z",
+    "msg": "fix(tests): add import guards for optional deps, fix 40+ test failures",
+    "name": "fix/test-collection-guards-and-bug-fixes",
+    "sha": "8f655bac"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T08:11:27Z",
+    "msg": "fix(code_prism,ci): implement TS body extraction, Go body emission, and remove C",
+    "name": "fix/code-prism-body-extraction-and-ci-hardening",
+    "sha": "4298d532"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T07:10:22Z",
+    "msg": "fix(crypto,api): add JSDoc headers to crypto module, consolidate API auth, add t",
+    "name": "fix/crypto-headers-api-auth",
+    "sha": "6e29e649"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T06:32:17Z",
+    "msg": "fix(crypto,ci): correct PQCrypto sign/verify argument order, add DECIDE tests, a",
+    "name": "fix/pqcrypto-arg-order-and-ci-timeouts",
+    "sha": "a0d81eb3"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T05:15:28Z",
+    "msg": "fix(types): eliminate unsafe type casts and replace skeletal test with real asse",
+    "name": "fix/type-safety-and-test-quality",
+    "sha": "0b067aa7"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T04:18:58Z",
+    "msg": "test(crypto,governance): add unit tests for kms and voxel_store modules",
+    "name": "test/coverage-kms-voxelstore",
+    "sha": "182a41da"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T03:23:05Z",
+    "msg": "fix(ci): add timeout-minutes to weekly-security-audit and workflow-audit",
+    "name": "fix/ci-add-timeout-minutes",
+    "sha": "ab12edd4"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T02:19:02Z",
+    "msg": "feat(security): add Red/Blue arena adversarial simulation engine",
+    "name": "feat/redblue-arena",
+    "sha": "8ad81a4d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T02:14:07Z",
+    "msg": "docs: remove master branch references from SCBE_COMPLETE_SYSTEM.md",
+    "name": "chore/resolve-master-main-divergence",
+    "sha": "fa33eae1"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T01:14:13Z",
+    "msg": "refactor(logging): replace remaining console.* with structured logger",
+    "name": "refactor/structured-logging-remaining",
+    "sha": "74fa0578"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-26T00:13:51Z",
+    "msg": "refactor(logging): replace console.* with structured logger in production module",
+    "name": "refactor/replace-console-with-logger",
+    "sha": "230b2569"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T23:15:40Z",
+    "msg": "fix(ci): harden security gates and standardize Node versions",
+    "name": "fix/ci-hardening-and-headers",
+    "sha": "0927404d"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T22:07:19Z",
+    "msg": "fix(lint): apply Prettier formatting to juggling scheduler",
+    "name": "fix/prettier-juggling-scheduler",
+    "sha": "728be833"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T21:10:41Z",
+    "msg": "chore(deps): update dev and runtime dependencies to latest stable",
+    "name": "chore/update-dev-dependencies",
+    "sha": "758c76ed"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T21:06:25Z",
+    "msg": "fix(ci): add missing npm ci to security audit and fix copilot build deps",
+    "name": "fix/ci-security-audit-and-copilot-deps",
+    "sha": "0eec5664"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-25T21:04:05Z",
+    "msg": "test(hydra): cover juggling task-flight scheduler basics",
+    "name": "feat/hydra-juggling-scheduler",
+    "sha": "fd6230a4"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T20:31:45Z",
+    "msg": "fix(deps): patch yaml stack overflow vulnerability (GHSA-48c2-rrv3-qjmp)",
+    "name": "fix/security-yaml-vulnerability",
+    "sha": "d8675978"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T20:29:56Z",
+    "msg": "fix(lint): resolve flake8 line-length violations in NIST AI RMF module",
+    "name": "fix/python-lint-nist-rmf",
+    "sha": "08c0d923"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T19:25:44Z",
+    "msg": "style(python): apply black formatting to 236 Python files",
+    "name": "fix/python-formatting",
+    "sha": "a59990b2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T19:15:30Z",
+    "msg": "fix(crypto,types): harden envelope salt validation and eliminate remaining `any`",
+    "name": "fix/envelope-salt-and-octree-hash",
+    "sha": "276768e0"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T18:11:59Z",
+    "msg": "fix(ci): update outdated GitHub Action versions for supply chain security",
+    "name": "fix/ci-action-version-pins-round2",
+    "sha": "8f84147c"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T17:15:46Z",
+    "msg": "fix(types): eliminate remaining `any` types and remove misplaced vitest config",
+    "name": "fix/type-safety-remaining-any-types",
+    "sha": "e7c48a7f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T16:12:15Z",
+    "msg": "fix(test): fix 5 Python test failures \u00e2\u20ac\u201d provider map + argon2 skip guard",
+    "name": "fix/eliminate-any-types-pqc",
+    "sha": "dcc446e4"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T16:10:38Z",
+    "msg": "fix(ci): pin GitHub Actions to stable versions for supply chain security",
+    "name": "fix/ci-pin-action-versions",
+    "sha": "89980fca"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T14:48:36Z",
+    "msg": "feat(math): add hyperbolic_angle geodesic computation + fix flaky entropySurface",
+    "name": "feat/geodesic-angle-and-flaky-fix",
+    "sha": "fdafc7e6"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T13:09:16Z",
+    "msg": "chore(ci): remove master branch references from workflow triggers",
+    "name": "chore/reconcile-master-into-main",
+    "sha": "f7542db0"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T11:17:07Z",
+    "msg": "fix(crypto,types): harden envelope salt validation and eliminate `any` types",
+    "name": "fix/type-safety-and-security-hardening",
+    "sha": "ca6b3ac1"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T10:13:51Z",
+    "msg": "feat(harmonic): enable 13 remaining skipped sheaf cohomology tests",
+    "name": "fix/enable-remaining-sheaf-tests",
+    "sha": "e7d4d765"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T09:18:53Z",
+    "msg": "feat(harmonic): implement V1 sheaf API, enable 52 skipped tests",
+    "name": "feat/v1-sheaf-api-enable-tests",
+    "sha": "b2f4f864"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T08:19:46Z",
+    "msg": "feat(harmonic): implement V1 sheaf API and enable 52 previously-skipped tests",
+    "name": "feat/sheaf-v1-api-enable-tests",
+    "sha": "9ea6a610"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T07:41:56Z",
+    "msg": "fix(lint): resolve Prettier formatting violation in entropySurface test",
+    "name": "fix/lint-entropy-surface-formatting",
+    "sha": "f913fbf1"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T06:45:59Z",
+    "msg": "fix(test): stabilize flaky entropySurface test and eliminate pytest collection w",
+    "name": "fix/flaky-tests-and-pytest-warnings",
+    "sha": "cf8ec3d7"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T05:51:05Z",
+    "msg": "feat(harmonic): export sheaf cohomology convenience API + fix selfHealing types",
+    "name": "feat/sheaf-cohomology-api",
+    "sha": "f1d09c78"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-25T05:21:54Z",
+    "msg": "Update ci-auto-fix.yml",
+    "name": "fix/ci-auto-fix-security-alerts",
+    "sha": "eeea1c15"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T03:23:10Z",
+    "msg": "feat: add cognitive governance, sacred eggs, agent comms, and CLI tool",
+    "name": "claude/fix-workflow-typescript-errors-MOMyp",
+    "sha": "07278812"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T03:11:30Z",
+    "msg": "fix(scripts): migrate 13 PowerShell npm scripts to cross-platform Node.js (#693)",
+    "name": "fix/693-cross-platform-scripts",
+    "sha": "1107fd05"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-25T02:50:09Z",
+    "msg": "fix(security): resolve 5 critical + 2 high + 4 error CodeQL alerts",
+    "name": "fix/critical-security-alerts",
+    "sha": "e3355044"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-25T02:38:28Z",
+    "msg": "feat(site): add Government & Enterprise section with design partner CTA",
+    "name": "feat/licensing-monetization-stack",
+    "sha": "e4cb19f3"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-25T02:10:37Z",
+    "msg": "fix(outreach): add CISA Industry Engagement Platform as second entry point",
+    "name": "feat/site-government-outreach",
+    "sha": "35ffa832"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T02:10:21Z",
+    "msg": "fix(ci): resolve broken scripts, CI deps, and formatting issues",
+    "name": "fix/ci-and-broken-scripts",
+    "sha": "7142b194"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-25T01:21:34Z",
+    "msg": "feat(cli): add gh doctor, gh sweep, ops board, ops sweep + fix .gitignore encodi",
+    "name": "feat/cli-gh-doctor-sweep",
+    "sha": "c4b1d88f"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T01:21:15Z",
+    "msg": "feat(licensing): add Sovereign Deployment Manifest for air-gapped Digital Sovere",
+    "name": "claude/security-stack-architecture-uOC6l",
+    "sha": "aaa67f97"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-25T01:15:35Z",
+    "msg": "merge: resolve TS conflicts with main (accept PR #690 .buffer approach)",
+    "name": "feat/pure-python-pqc",
+    "sha": "110a0726"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-25T01:11:25Z",
+    "msg": "fix(build): resolve TS 5.8 Uint8Array type errors and fix CI workflows",
+    "name": "fix/ts-build-errors-and-ci-workflows",
+    "sha": "d46b40d8"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-25T01:04:24Z",
+    "msg": "Create eslint.yml",
+    "name": "issdandavis-patch-6",
+    "sha": "c9e6d59f"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-25T01:02:30Z",
+    "msg": "Create frogbot-scan-and-fix.yml",
+    "name": "issdandavis-patch-5",
+    "sha": "fd77819d"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-25T00:59:04Z",
+    "msg": "Create codeql.yml",
+    "name": "issdandavis-patch-4",
+    "sha": "4e862dc0"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T23:09:06Z",
+    "msg": "fix(tests): make conftest.py resilient to missing numpy and broken cryptography ",
+    "name": "fix/conftest-optional-deps",
+    "sha": "66a92328"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T22:13:28Z",
+    "msg": "fix(tests): graceful skip guards for broken/missing Python deps (#676, #677, #67",
+    "name": "fix/test-collection-crashes-and-deps",
+    "sha": "db4c8110"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T21:28:15Z",
+    "msg": "fix(scripts): prevent pytest collection crash from sys.exit() and fix webtoon qu",
+    "name": "fix/python-test-collection-robustness",
+    "sha": "2a60d5c0"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T20:08:17Z",
+    "msg": "test(core,errors,rollout,memory,constants): add 84 tests for 6 uncovered modules",
+    "name": "fix/prettier-formatting-675",
+    "sha": "4c104e04"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T19:26:08Z",
+    "msg": "fix(config): enable noEmitOnError, add 95 tests for crypto + governance modules",
+    "name": "fix/tsconfig-strict-and-test-coverage",
+    "sha": "7c52d785"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T18:13:07Z",
+    "msg": "test(gateway,selfHealing): add 48 unit tests for uncovered critical modules",
+    "name": "test/gateway-selfhealing-coverage",
+    "sha": "08b0a993"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T17:13:07Z",
+    "msg": "fix(lint): achieve 0 flake8 errors across src/ and tests/, add .flake8 config",
+    "name": "fix/lint-zero-errors-flake8-config",
+    "sha": "2f720725"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T16:22:44Z",
+    "msg": "fix(lint): resolve remaining 56 E501/E731/F811 errors in tests/",
+    "name": "fix/lint-round5-cleanup",
+    "sha": "5b183b55"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T15:22:38Z",
+    "msg": "fix(lint+security): resolve 82 Python lint errors, fix path traversal in Basin, ",
+    "name": "fix/lint-bugs-round3",
+    "sha": "ae34a6a2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T14:23:35Z",
+    "msg": "fix(lint): fix E501 in setup_assistant.py",
+    "name": "fix/python-lint-round3",
+    "sha": "5c554310"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T13:18:08Z",
+    "msg": "chore(deps): update package-lock.json",
+    "name": "fix/python-lint-cleanup-round4",
+    "sha": "6ed0729b"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T12:17:47Z",
+    "msg": "chore(deps): update package-lock.json",
+    "name": "fix/python-lint-f841-e712",
+    "sha": "8445d576"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T11:15:11Z",
+    "msg": "fix(lint): resolve all critical Python lint errors and reduce total by 16%",
+    "name": "fix/python-lint-critical-errors",
+    "sha": "c080e092"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T10:12:14Z",
+    "msg": "chore: update package-lock.json",
+    "name": "fix/lint-cleanup-unused-imports",
+    "sha": "8df96c01"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T09:07:47Z",
+    "msg": "fix(hydra): wrap spectral and research imports in try/except for missing deps",
+    "name": "fix/hydra-optional-imports",
+    "sha": "1c23a736"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T08:08:06Z",
+    "msg": "chore(deps): update package-lock.json",
+    "name": "fix/lint-formatting-644",
+    "sha": "18e5b4dc"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-24T07:59:24Z",
+    "msg": "fix(codeql): harden root-connected error paths",
+    "name": "fix/restore-codeql-config",
+    "sha": "9d5eea26"
+  },
+  {
+    "author": "copilot-swe-agent[bot]",
+    "date": "2026-03-24T07:47:22Z",
+    "msg": "fix: resolve failing CI, SCBE Gates, Security, Self-Improvement, and Deploy work",
+    "name": "copilot/fix-failing-workflows-issues",
+    "sha": "3a3c4328"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T07:04:55Z",
+    "msg": "fix(lint): format hydra-terminal-browse and video generator tests",
+    "name": "fix/daily-review-lint-644",
+    "sha": "6439475a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T06:07:59Z",
+    "msg": "fix(crypto): lazy-load numpy-dependent modules to prevent CLI crash",
+    "name": "fix/lazy-load-numpy-crypto-imports",
+    "sha": "21e2ec86"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T05:07:49Z",
+    "msg": "fix(cli): add deferred annotations to prevent NameError when numpy unavailable",
+    "name": "fix/six-tongues-cli-numpy-annotation",
+    "sha": "cef8df77"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T04:48:36Z",
+    "msg": "fix(ci): repair editable install and Python test collection",
+    "name": "fix/pyproject-license-classifier",
+    "sha": "f2862f2e"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-24T03:17:17Z",
+    "msg": "chore(deps): update package-lock.json from npm install",
+    "name": "feat/audit-export-and-ci-fixes",
+    "sha": "45d4d904"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-24T00:00:40Z",
+    "msg": "Add signed audit export bundles with hash manifest",
+    "name": "codex/add-export-module-for-signed-audit-bundles",
+    "sha": "26ac70dc"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-23T22:13:35Z",
+    "msg": "fix(ci): fix pipefail bug and error-masking patterns across 4 workflows (#611)",
+    "name": "fix/ci-error-masking-611-v2",
+    "sha": "24ffd97a"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-23T20:06:38Z",
+    "msg": "fix(ci): replace error-masking patterns across 6 workflow files (#611)",
+    "name": "fix/ci-error-masking-611",
+    "sha": "ee080dda"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-23T19:13:06Z",
+    "msg": "feat(billing): add free tier + attestation launch article",
+    "name": "fix/ci-masking-and-import-crashes",
+    "sha": "0f2e17e7"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-23T19:11:51Z",
+    "msg": "fix(ci): replace error-masking patterns across 6 workflow files (#611)",
+    "name": "fix/ci-error-masking-round4",
+    "sha": "aece1ff2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-23T18:11:01Z",
+    "msg": "fix(ci): replace error-masking patterns across 4 workflow files (#611)",
+    "name": "fix/ci-masking-round3",
+    "sha": "74699681"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-23T16:13:17Z",
+    "msg": "chore: update package-lock.json",
+    "name": "fix/lint-formatting-cleanup",
+    "sha": "b177745c"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-23T15:13:43Z",
+    "msg": "chore: update package-lock.json from npm install",
+    "name": "fix/daily-review-failures-and-workflow-hardening",
+    "sha": "aa31f8f2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-23T14:13:26Z",
+    "msg": "fix: graceful optional imports in hydra + crypto packages, fix lint",
+    "name": "fix/graceful-optional-imports",
+    "sha": "8c64b5be"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-23T14:10:41Z",
+    "msg": "perf: lazy imports for crypto + hydra packages (infinite hang \u00e2\u2020\u2019 0.2s)",
+    "name": "fix/lazy-imports-and-lfs",
+    "sha": "a3a57744"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-23T01:39:02Z",
+    "msg": "fix: add step to make gradlew executable before build",
+    "name": "issdandavis-patch-3",
+    "sha": "2274b157"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-22T23:36:03Z",
+    "msg": "fix(security): constrain ai bridge absolute vault paths",
+    "name": "fix/ci-foundation-rescue",
+    "sha": "6bb67179"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-22T22:35:13Z",
+    "msg": "fix(ci): rebuild Python foundation and sandbox-safe test paths",
+    "name": "fix/codeql-security-clean",
+    "sha": "b4f081b9"
+  },
+  {
+    "author": "Isaac Davis",
+    "date": "2026-03-22T06:02:25Z",
+    "msg": "feat: add app store strategy and free tier cloud run deployment",
+    "name": "feat/enhance-pipeline-14",
+    "sha": "0d91135d"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-22T02:58:03Z",
+    "msg": "fix(kernel): support multi-model tetris rotations",
+    "name": "archive/agentic-skill-vault",
+    "sha": "8486a626"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-21T00:27:51Z",
+    "msg": "Add PhaseTunnelWrapper implementing real-time phase-gate for attention heads",
+    "name": "phase-tunnel-wrapper",
+    "sha": "c739d2e1"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-20T23:41:03Z",
+    "msg": "fix(ci): resolve three CI pipeline failures",
+    "name": "claude/add-claude-documentation-vBMsR",
+    "sha": "459cd9cb"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-19T22:39:07Z",
+    "msg": "fix(ci,crypto): full pipeline audit \u00e2\u20ac\u201d fix workflows and domain separation bug",
+    "name": "claude/fix-github-actions-11qV5",
+    "sha": "41b56ab4"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-18T16:45:03Z",
+    "msg": "fix(gateway): parameterize prod port mapping",
+    "name": "codex/update-decision-gateway-port-mapping",
+    "sha": "505f76c8"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-17T22:18:43Z",
+    "msg": "feat(fleet): add Code Poker \u00e2\u20ac\u201d collaborative vibe coding card game",
+    "name": "claude/review-docs-coverage-Ye2po",
+    "sha": "d1874707"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-17T08:52:38Z",
+    "msg": "feat: AetherBrowse homepage + browsing toolkit + phone eye + revenue tools",
+    "name": "feat/overnight-content-and-tools",
+    "sha": "66cc0e50"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-15T14:43:00Z",
+    "msg": "Revert \"Update scbe_n8n_bridge.py (#518)\"",
+    "name": "revert-518-issdandavis-patch-2",
+    "sha": "f0e105b9"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-15T14:40:12Z",
+    "msg": "Update scbe_n8n_bridge.py",
+    "name": "issdandavis-patch-2",
+    "sha": "44e6564f"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-15T05:35:41Z",
+    "msg": "Potential fix for code scanning alert no. 2234: Uncontrolled data used in path e",
+    "name": "alert-autofix-2234",
+    "sha": "dffbc139"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T23:34:24Z",
+    "msg": "feat(ops): add ai terminal github sweep workflow",
+    "name": "chore/ai-terminal-github-management",
+    "sha": "7e358ce4"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T22:01:00Z",
+    "msg": "feat(word-addin): split governed pad session from writer client",
+    "name": "feat/polly-pad-governed-session-lane",
+    "sha": "c24638ce"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T20:37:09Z",
+    "msg": "fix(deps): clear dependabot alert batch 1",
+    "name": "fix/dependabot-alerts-batch1",
+    "sha": "3773452b"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T17:37:05Z",
+    "msg": "fix(security): harden remaining code scanning surfaces",
+    "name": "fix/security-batch6",
+    "sha": "0c407ba4"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T08:16:35Z",
+    "msg": "fix(ci): add least-privilege workflow permissions",
+    "name": "fix/security-workflow-permissions",
+    "sha": "2897960b"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T08:11:19Z",
+    "msg": "fix(security): harden code scanning batch 3",
+    "name": "fix/security-code-scanning-batch3",
+    "sha": "648f8602"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T07:56:05Z",
+    "msg": "fix(security): redact sensitive script outputs",
+    "name": "fix/security-code-scanning-batch2",
+    "sha": "8fa920e8"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T07:42:33Z",
+    "msg": "docs(repo): add monorepo ordering baseline",
+    "name": "docs/monorepo-ordering-baseline",
+    "sha": "c4910bc1"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T06:17:25Z",
+    "msg": "fix(security): harden code scanning hotspots",
+    "name": "book/six-tongues-protocol-v1",
+    "sha": "bace2d8b"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-14T06:17:25Z",
+    "msg": "fix(security): harden code scanning hotspots",
+    "name": "fix/security-code-scanning-batch1",
+    "sha": "c3ddb7a2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-12T02:28:01Z",
+    "msg": "feat(billing): add $2 one-time Access Pass to gate free usage",
+    "name": "claude/ordered-rejection-verification-4dz4l",
+    "sha": "ff784588"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-06T21:31:13Z",
+    "msg": "feat(sacred-eggs): add canonical G0-G4 genesis lifecycle implementation",
+    "name": "claude/vibe-coder-conference-app-uifG9",
+    "sha": "1840cb80"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T20:09:47Z",
+    "msg": "Create security-checks.yml",
+    "name": "issdandavis-patch-1",
+    "sha": "233bd620"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-06T14:54:59Z",
+    "msg": "feat(gateway): add Governance-as-a-Service (GaaS) proxy middleware",
+    "name": "feat/quadtree25d-terrain",
+    "sha": "26435a7e"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-06T14:43:06Z",
+    "msg": "docs(site): add hyperbolic playground links to landing pages",
+    "name": "feature/quadtree25d-publish-20260306",
+    "sha": "74b3acff"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T10:49:39Z",
+    "msg": "fix(security): validate HF dataset repo and sanitize commit message inputs (CWE-",
+    "name": "fix/security-hf-command-injection",
+    "sha": "ab2b9a92"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T09:46:14Z",
+    "msg": "fix(security): guard _write_lattice_jsonl against path traversal (CWE-22/23/36) ",
+    "name": "fix/security-cmd-injectioncopilot-fix/cmd-injection-hf-upload",
+    "sha": "7b327232"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T09:46:14Z",
+    "msg": "fix(security): guard _write_lattice_jsonl against path traversal (CWE-22/23/36) ",
+    "name": "fix/security-command-injection-2212fix/security-cmd-injection-2212",
+    "sha": "7b327232"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T09:43:14Z",
+    "msg": "fix(security): guard _write_lattice_jsonl against path traversal (CWE-22/23/36)",
+    "name": "fix/security-n8n-bridge-path-traversal",
+    "sha": "c5734a41"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T09:20:26Z",
+    "msg": "fix(security): harden load_notes_from_glob against path traversal (CWE-22)",
+    "name": "fix/security-path-traversal-2",
+    "sha": "2dd91bfb"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T08:57:47Z",
+    "msg": "fix(security): fix DOM XSS in log() and showEnvelope() - use textContent (CWE-79",
+    "name": "fix/security-codeql-high-alerts",
+    "sha": "48fc4f23"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T07:33:15Z",
+    "msg": "fix(security): prevent exception info exposure in n8n bridge (CWE-209)",
+    "name": "sync/local-changes-20260306",
+    "sha": "26b0e389"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T03:53:15Z",
+    "msg": "ci(pages): add GitHub Pages deploy workflow for /docs static content",
+    "name": "ci/setup-automation-and-pages-1",
+    "sha": "5d9d68c4"
+  },
+  {
+    "author": "Issac Daniel Davis",
+    "date": "2026-03-06T03:49:26Z",
+    "msg": "ci(automation): add Manual workflow with environment/task dispatch inputs",
+    "name": "ci/setup-automation-and-pages",
+    "sha": "8b25999b"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-05T02:00:39Z",
+    "msg": "feat(plugins): add nonstop autonomous work plugin",
+    "name": "clean-sync",
+    "sha": "37b374d2"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-03-04T02:04:55Z",
+    "msg": "feat(browser): add AetherCore unified controller + aetherbrowse skills",
+    "name": "claude/ai-security-engine-aS0Hu",
+    "sha": "ddaa5746"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-03-02T08:55:13Z",
+    "msg": "docs(spec): add machine-science RFC, taxonomy map, and patent-safe abstract",
+    "name": "docs/machine-science-specs",
+    "sha": "f2b40117"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-02-28T17:24:19Z",
+    "msg": "docs: strengthen patent spec with definitions, diagrams, and broader claims",
+    "name": "codex/implement-mission-specifications-and-job-execution",
+    "sha": "8a00f514"
+  },
+  {
+    "author": "Claude",
+    "date": "2026-02-28T00:02:57Z",
+    "msg": "feat(hydra): add apprentice provider, tentacle registry, and code sandbox limb",
+    "name": "claude/godot-hearthstone-day1-setup-S3Vvv",
+    "sha": "0795986c"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-02-24T08:36:41Z",
+    "msg": "fix(security): redact HuggingFace token from settings.local.json",
+    "name": "feat/patent-prep",
+    "sha": "a74846cb"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-02-23T08:09:36Z",
+    "msg": "ci: add conflict marker guard workflow",
+    "name": "codex/conflict-marker-guard-only",
+    "sha": "675c8149"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-02-22T19:56:40Z",
+    "msg": "chore: remove tracked pytest artifacts, now gitignored",
+    "name": "feat/blog-articles",
+    "sha": "132e69e1"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-02-20T14:49:11Z",
+    "msg": "chore(gitignore): ignore local metering db",
+    "name": "feat/linux-hardened-executor",
+    "sha": "533da73c"
+  },
+  {
+    "author": "issdandavis",
+    "date": "2026-01-30T06:31:46Z",
+    "msg": "Initialize gh-pages branch",
+    "name": "gh-pages",
+    "sha": "5d726def"
+  }
+]
