@@ -1816,7 +1816,7 @@ window.AetherBrowser = (function() {
 
         // Summary
         var summary = document.createElement('div');
-        summary.innerHTML = '<span style="color:var(--aqua);">[' + ts + '] COMPLETE: ' + passed + '/' + total + (failed === 0 ? ' ALL PASS' : ' (' + failed + ' FAILED)') + '</span>';
+        summary.innerHTML = '<span style="color:var(--aqua);">[' + _escHtml(ts) + '] COMPLETE: ' + _escHtml(passed + '/' + total) + (failed === 0 ? ' ALL PASS' : ' (' + _escHtml(String(failed)) + ' FAILED)') + '</span>';
         log.appendChild(summary);
         log.scrollTop = log.scrollHeight;
 
