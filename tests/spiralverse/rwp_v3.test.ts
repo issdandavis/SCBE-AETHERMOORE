@@ -216,8 +216,9 @@ describe('RWPv3Protocol', () => {
       const password = Buffer.from('password');
       const envelope = protocol.encrypt(password, Buffer.from('message'));
 
-      // Tamper with ciphertext
-      envelope.ct[0] = "bip'u";
+      // Tamper with ciphertext — ensure replacement differs from original
+      const original = envelope.ct[0];
+      envelope.ct[0] = original === "bip'u" ? "bop'a" : "bip'u";
 
       expect(() => {
         protocol.decrypt(password, envelope);
