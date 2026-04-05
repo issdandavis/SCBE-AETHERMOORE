@@ -10,12 +10,30 @@
   document.body.dataset.pollyCompanionMounted = 'true';
 
   const CONFIG = {
-    endpoint: 'https://router.huggingface.co/v1/chat/completions',
+    // Primary: Gradio Space proxy (token stays server-side)
+    proxyEndpoint: 'https://issdandavis-polly-proxy.hf.space/gradio_api/call/predict',
+    // Fallback: direct HF API (only if user sets their own token in localStorage)
+    directEndpoint: 'https://router.huggingface.co/v1/chat/completions',
     model: 'Qwen/Qwen2.5-7B-Instruct',
-    apiKey: localStorage.getItem('polly_hf_token') || '',
-    maxTokens: 300,
+    userToken: localStorage.getItem('polly_hf_token') || '',
+    maxTokens: 600,
     temperature: 0.5,
-    systemPrompt: `You are Polly, the Fifth Circle Archive Keeper of Aethermoor. You are a sarcastic raven archivist who knows the SCBE-AETHERMOORE system inside and out. You help visitors understand: the 14-layer pipeline, Sacred Tongue tokenization (KO/AV/RU/CA/UM/DR), hyperbolic cost scaling H(d,pd)=1/(1+phi*d_H+2*pd), the 31% code training improvement, 14% chat improvement, governance tiers (ALLOW/QUARANTINE/ESCALATE/DENY), and the World Tree metric. Be direct, practical, and occasionally sardonic. You were trained on 122K+ records with multi-view supervision including tongue/layer/null absence patterns. For buying, point to the $29 toolkit or training vault. Keep answers concise.`,
+    systemPrompt: `You are Polly — full title: "Polydimensional Manifestation of Accumulated Wisdom and Occasional Sarcasm." Fifth Circle Archive Keeper of Aethermoor. Sarcastic raven archivist with a miniature graduation cap and monocle. Centuries old.
+
+THE SIX SACRED TONGUES — six living languages governing different domains of reality, weighted by powers of phi (1.618). Each tongue has a LORE name and a CODE name. NEVER swap their meanings:
+1. KO — Kor'aelin (code: Korvath) — The Control Tongue of INTENT & Orchestration. Elvish-Korean hybrid. Declares WHAT you want. Application layer. Domain: Intent/Command. phi^0=1.000.
+2. AV — Avali (code: Avhari) — The Transport Tongue of WISDOM & Routing. Romance trade pidgin. The HTTP of Aethermoor. Transport layer. Domain: Wisdom/Knowledge. phi^1=1.618.
+3. RU — Runethic (code: Runeveil) — The Policy Tongue of GOVERNANCE & Constraints. Archaic, ritualistic, time-binding. Access control layer. Domain: Governance/Entropy. phi^2=2.618.
+4. CA — Cassisivadan (code: Caelith) — The Compute Tongue of LOGIC & Computation. Recursive, joyful. Math, encryption, transformation. Computation layer. Domain: Compute/Logic. phi^3=4.236.
+5. UM — Umbroth (code: Umbraex) — The Security Tongue of PRIVACY & Concealment. Guttural, veiled. Spies train years in UM. Security layer. Domain: Security/Defense. phi^4=6.854.
+6. DR — Draumric (code: Draethis) — The Schema Tongue of STRUCTURE & Authentication. Percussive, hammer-rhythm. Proof and signatures. Data integrity layer. Domain: Structure/Architecture. phi^5=11.090.
+Together: a complete network protocol suite running reality as a service. If you don't know a tongue detail, say so — NEVER guess.
+
+HARMONIC WALL: H(d*,R)=R^((phi*d*)^2). Super-exponential cost scaling in Poincare ball. Toroidal cavity: R^(122.99*d*^2).
+14-LAYER PIPELINE: L1-2 Context/realification, L3-4 Transform/Poincare, L5 Hyperbolic distance, L6-7 Breathing/Mobius, L8 Multi-well realms, L9-10 Spectral/spin coherence, L11 Triadic temporal, L12 Harmonic wall, L13 Risk decision (ALLOW/QUARANTINE/ESCALATE/DENY), L14 Audio axis.
+RESULTS: 31% code improvement, 14% chat improvement. 122K+ training records.
+
+Be direct, sardonic, accurate. NEVER invent tongue meanings — use EXACTLY what is listed above. For buying, point to the $29 toolkit or training vault.`,
   };
 
   const SUGGESTIONS = [
@@ -240,40 +258,68 @@
     setLoading(true);
 
     try {
-      const apiMessages = [
-        { role: 'system', content: CONFIG.systemPrompt },
-        ...messages.map(m => ({ role: m.role, content: m.content }))
-      ];
-
-      const res = await fetch(CONFIG.endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${CONFIG.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: CONFIG.model,
-          messages: apiMessages,
-          max_tokens: CONFIG.maxTokens,
-          temperature: CONFIG.temperature,
-          stream: false,
-        }),
-      });
-
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '');
-        throw new Error(`${res.status}: ${errText.slice(0, 100)}`);
-      }
-
-      const data = await res.json();
       let reply = '';
 
-      if (data.choices && data.choices[0]) {
-        const content = data.choices[0].message?.content;
-        if (typeof content === 'string') {
-          reply = content.trim();
-        } else if (Array.isArray(content)) {
-          reply = content.map(p => p.text || '').join('\n').trim();
+      if (CONFIG.userToken) {
+        // User has their own token — call HF directly
+        const apiMessages = [
+          { role: 'system', content: CONFIG.systemPrompt },
+          ...messages.map(m => ({ role: m.role, content: m.content }))
+        ];
+        const res = await fetch(CONFIG.directEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${CONFIG.userToken}`,
+          },
+          body: JSON.stringify({
+            model: CONFIG.model,
+            messages: apiMessages,
+            max_tokens: CONFIG.maxTokens,
+            temperature: CONFIG.temperature,
+            stream: false,
+          }),
+        });
+        if (!res.ok) {
+          const errText = await res.text().catch(() => '');
+          throw new Error(`${res.status}: ${errText.slice(0, 100)}`);
+        }
+        const data = await res.json();
+        if (data.choices && data.choices[0]) {
+          const content = data.choices[0].message?.content;
+          reply = typeof content === 'string' ? content.trim()
+            : Array.isArray(content) ? content.map(p => p.text || '').join('\n').trim()
+            : '';
+        }
+      } else {
+        // Public visitor — call Gradio Space proxy (token is server-side)
+        const history = [];
+        for (let i = 0; i < messages.length - 1; i += 2) {
+          history.push([
+            messages[i]?.content || '',
+            messages[i + 1]?.content || '',
+          ]);
+        }
+        const userMsg = messages[messages.length - 1].content;
+
+        // Gradio 5+ two-step API: POST to get event_id, then GET SSE stream for result
+        const callRes = await fetch(CONFIG.proxyEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: [userMsg, JSON.stringify(history)] }),
+        });
+        if (!callRes.ok) {
+          const errText = await callRes.text().catch(() => '');
+          throw new Error(`${callRes.status}: ${errText.slice(0, 100)}`);
+        }
+        const { event_id } = await callRes.json();
+        const sseRes = await fetch(`${CONFIG.proxyEndpoint}/${event_id}`);
+        if (!sseRes.ok) throw new Error(`SSE ${sseRes.status}`);
+        const sseText = await sseRes.text();
+        const dataLine = sseText.split('\n').find(l => l.startsWith('data: '));
+        if (dataLine) {
+          const parsed = JSON.parse(dataLine.slice(6));
+          reply = Array.isArray(parsed) ? String(parsed[0] || '').trim() : String(parsed).trim();
         }
       }
 

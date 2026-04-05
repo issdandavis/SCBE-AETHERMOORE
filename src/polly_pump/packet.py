@@ -23,13 +23,14 @@ import numpy as np
 PHI = (1 + math.sqrt(5)) / 2
 TONGUE_CODES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 TONGUE_NAMES = ["Kor'aelin", "Avali", "Runethic", "Cassisivadan", "Umbroth", "Draumric"]
+TONGUE_CODE_NAMES = ["Korvath", "Avhari", "Runeveil", "Caelith", "Umbraex", "Draethis"]
 TONGUE_DOMAINS = [
-    "Control/Intent",
-    "Transport/Messaging",
-    "Policy/Binding",
-    "Compute/Transforms",
-    "Security/Secrets",
-    "Schema/Structure",
+    "Intent/Command",
+    "Wisdom/Knowledge",
+    "Governance/Entropy",
+    "Compute/Logic",
+    "Security/Defense",
+    "Structure/Architecture",
 ]
 TONGUE_WEIGHTS = [PHI ** k for k in range(6)]
 TONGUE_PHASES_DEG = [0, 60, 120, 180, 240, 300]
