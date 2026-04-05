@@ -195,7 +195,7 @@ pywin32==311
 PyYAML==6.0.3
 questionary==2.1.1
 referencing==0.37.0
-requests==2.33.0
+requests==2.33.1
 responses==0.26.0
 rfc3339-validator==0.1.4
 rich==14.3.3
