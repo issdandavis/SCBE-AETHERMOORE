@@ -110,6 +110,7 @@ def nav_notion_playwright(
 ) -> List[Dict[str, Any]]:
     """Navigate Notion via Playwright (requires login)."""
     try:
+        from playwright.sync_api import sync_playwright  # noqa: F401
     except ImportError:
         print("Playwright not installed. Using API only.", file=sys.stderr)
         return search_notion_api(query, max_results)
