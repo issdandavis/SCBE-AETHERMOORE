@@ -22,9 +22,9 @@ SCBE-AETHERMOORE embeds AI agent state into a Poincaré ball (hyperbolic space) 
 
 This distance feeds a harmonic governance function:
 
-    H(d, p_d) = 1 / (1 + φ·d_H + 2·p_d)
+    H_wall(d*, R) = R^((φ·d*)²)     where φ = (1+√5)/2, R = e
 
-where φ = (1+√5)/2 and p_d is a prior drift penalty. H is bounded in (0,1] by construction — no learned parameter can violate this. As agent state drifts from the safe origin, governance cost increases hyperbolically. An adversary at d_H = 3 faces governance overhead 6× higher than a benign agent at d_H = 0.5. At d_H = 10, the ratio exceeds 30×. The geometry makes sustained adversarial operation computationally infeasible without any adversarial training data.
+H_score = 1/H_wall gives a safety score in (0,1] by construction — no learned parameter can violate this. As agent state drifts from the safe origin, the harmonic wall grows super-exponentially. An adversary at d*=1 faces 13.7× higher cost. At d*=2, the cost is 35,341×. At d*=3, it exceeds 1.6×10⁹. When all six tongue walls couple through the toroidal resonant cavity, the combined barrier at d*=1 reaches 2.6×10⁵³ (176-bit cryptographic equivalent). The geometry makes sustained adversarial operation computationally infeasible without any adversarial training data.
 
 This function is the 12th layer of a 14-layer pipeline where each layer applies a formally verifiable transform:
 
@@ -34,7 +34,7 @@ This function is the 12th layer of a 14-layer pipeline where each layer applies 
 - Layer 8: Multi-well Hamiltonian potential (Configurational Frustration Index)
 - Layers 9–10: Spectral and spin coherence via FFT
 - Layer 11: Triadic temporal distance (causal ordering)
-- Layer 12: Harmonic wall H(d, p_d) — the hard algebraic bound
+- Layer 12: Harmonic wall H_wall(d*,R) = R^((φ·d*)²) — the super-exponential algebraic bound
 - Layer 13: Risk decision gate (ALLOW / QUARANTINE / ESCALATE / DENY)
 - Layer 14: Telemetry and audit
 

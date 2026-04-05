@@ -13,7 +13,7 @@ Your research on trustworthy steerable AI and controllable multi-agent systems i
 
 - **Steerable AI** — I use 6 semantic dimensions with golden-ratio-scaled weights as continuous steering coordinates. Adjusting them deforms agent decision boundaries in real time, no retraining needed.
 - **Multi-agent robustness** — A DTN protocol gives agent fleets 99.99% survival under 30% context occlusion, vs 2.8% for continuous-stream architectures. Custody transfer between agents requires formal axiom verification at every handoff.
-- **Formal guarantees** — A 14-layer pipeline where each layer applies a verifiable transform. Five axiom groups (unitarity, locality, causality, symmetry, composition) must all pass before any agent action executes. The core safety function H(d) = 1/(1+φ·d_H+2·p_d) is bounded in (0,1] by construction — no learned parameter breaks it.
+- **Formal guarantees** — A 14-layer pipeline where each layer applies a verifiable transform. Five axiom groups (unitarity, locality, causality, symmetry, composition) must all pass before any agent action executes. The core harmonic wall H_wall(d*,R) = R^((φ·d*)²) creates super-exponential cost scaling — an attacker at d*=2 faces 35,341× higher cost than a benign agent at d*=0. No learned parameter breaks this; it's algebraic.
 
 I'm 25 minutes from PNNL-Sequim, where the ALOHA team built an offensive cyber agent using Claude with no governance layer on the agent itself. My system is the governance layer they're missing.
 
