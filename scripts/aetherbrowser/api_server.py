@@ -1484,7 +1484,12 @@ async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
 @app.get("/api/ops/momentum/latest")
 async def ops_momentum_latest(train_id: str = "daily_ops"):
     """Return the latest Momentum Train state.json summary (no execution)."""
+    # Validate train_id against allowlist to prevent path traversal (CodeQL alert)
+    if train_id not in MOMENTUM_TRAIN_CONFIGS:
+        return {"error": f"Unknown train_id: {train_id}", "ok": False}
     run_root = MOMENTUM_RUNS_DIR / train_id
+    if not _is_path_within(run_root, MOMENTUM_RUNS_DIR):
+        return {"error": "Invalid train_id", "ok": False}
     if not run_root.exists():
         return {"error": f"No runs found for train_id={train_id}", "ok": False}
     dirs = [p for p in run_root.iterdir() if p.is_dir()]
@@ -1872,13 +1877,14 @@ async def cli_run(req: CliRunRequest = CliRunRequest()):
 
     result = await _cli_dispatch(parts)
     # Normalise to always include command + timestamp
+    # Use safe_raw (newlines stripped) in response to prevent log injection via returned JSON
     if isinstance(result, dict):
         out: dict[str, Any] = dict(result)
         out.setdefault("ok", True)
-        out.setdefault("command", raw)
+        out.setdefault("command", safe_raw)
         out.setdefault("timestamp", _cli_now_iso())
     else:
-        out = {"ok": True, "command": raw, "result": result, "timestamp": _cli_now_iso()}
+        out = {"ok": True, "command": safe_raw, "result": result, "timestamp": _cli_now_iso()}
 
     _append_jsonl(
         IDE_CLI_LOG,
