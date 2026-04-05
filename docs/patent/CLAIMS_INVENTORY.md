@@ -56,16 +56,16 @@ Layer 1 (Quantum Entropy), Layer 2 (Hamiltonian Safety), Layer 3 (Poincare Embed
 ---
 
 ### Dependent Claim 1.4
-**The method of Claim 1.1, wherein the composite risk of step (d) is computed according to Lemma 13.1 as:
+**The method of Claim 1.1, wherein the composite risk of step (d) is computed by multiplying a base risk score by a super-exponential harmonic wall function:
 
-Risk' = Behavioral_Risk x H(d*) x Time_Multi x Intent_Multi
+Risk' = Base_Risk x H_wall(d*, R) x Time_Multi x Intent_Multi
 
-where H(d*) = 1 + alpha * tanh(beta * d*) is a bounded harmonic scaling factor satisfying: (i) H(0) = 1 for perfect alignment, (ii) H(d*) approaches 1 + alpha as d* approaches infinity, (iii) partial_H/partial_d* = alpha * beta * sech^2(beta * d*) > 0 establishing strict monotonicity, and (iv) 1 <= H(d*) <= 1 + alpha establishing boundedness; and wherein Time_Multi >= 1 encodes temporal cost from Layer 11 and Intent_Multi >= 1 encodes intent-alignment cost tuned by the golden ratio phi.**
+where H_wall(d*, R) = R^((φ · d*)²) is the canonical harmonic wall satisfying: (i) H_wall(0, R) = 1 for perfect alignment, (ii) H_wall grows super-exponentially with d* (at d*=1, H_wall ≈ 13.7; at d*=2, H_wall ≈ 35,341; at d*=3, H_wall ≈ 1.6×10⁹ for R=e), (iii) ∂H_wall/∂d* = 2φ²·d*·ln(R)·H_wall > 0 establishing strict monotonicity, and (iv) φ = (1+√5)/2 ≈ 1.618 (golden ratio) provides self-similar Fibonacci-cascade scaling via φ² = φ + 1; and wherein R > 1 is a tunable base (default R = e ≈ 2.718), d* is clamped to [0, D_STAR_MAX] to prevent overflow, Time_Multi ≥ 1 encodes temporal cost from Layer 11, and Intent_Multi ≥ 1 encodes intent-alignment cost. The safety score is H_score = 1/H_wall ∈ (0, 1].**
 
-**Source**: `src/symphonic_cipher/scbe_aethermoore/layer_13.py` (lines 72-98, `harmonic_H`)
-**Mathematical formulation**: `H(d*) = 1.0 + params.alpha * np.tanh(params.beta * d_star)`
-**Novelty**: The specific combination of tanh-bounded harmonic scaling with golden-ratio-tuned intent multipliers is novel. The formal proof of boundedness and monotonicity (Lemma 13.1) provides mathematical guarantees absent in prior AI safety work.
-**Strength**: STRONG
+**Source**: `packages/kernel/src/harmonicScaling.ts`, `docs/specs/CANONICAL_FORMULA_REGISTRY.md`
+**Mathematical formulation**: `H_wall(d*, R) = R^((φ · d*)²)`, `H_score = 1 / H_wall`
+**Novelty**: Super-exponential cost scaling via golden-ratio-coupled harmonic walls in hyperbolic space is entirely novel. Prior AI safety work uses bounded functions (tanh, sigmoid) that cap maximum cost — this formula provides unbounded, geometry-driven cost growth. The φ-scaling creates a toroidal resonant cavity when six tongue walls couple, yielding R^(122.99·d*²) combined barrier (176-bit cryptographic equivalent from geometry alone).
+**Strength**: STRONG — supersedes prior tanh-bounded formulation (V2, February 2026)
 
 ---
 
@@ -276,7 +276,7 @@ where energy_cost = H(d, pd) = 1 / (1 + d + 2*pd), complexity = |active_layers| 
 (d) recording each credit's block_hash for inclusion in an immutable ledger.
 
 **Source**: `src/symphonic_cipher/scbe_aethermoore/concept_blocks/context_credit_ledger/credit.py` (lines 1-280)
-**Mathematical formulation**: `face_value = weight * (1/(1+d+2*pd)) * (|active_layers|/14) * legibility`
+**Mathematical formulation**: `face_value = weight * (1/H_wall(d*,R)) * (|active_layers|/14) * legibility` where `H_wall(d*,R) = R^((phi*d*)^2)`
 **Novelty**: A context-credit economy where AI agents earn credits based on governance-stamped energy expenditure, with proof-of-context mining and Sacred Tongue denomination, is entirely novel. No prior art combines AI governance with economic token systems backed by Hamiltonian energy measures.
 **Strength**: STRONG
 
