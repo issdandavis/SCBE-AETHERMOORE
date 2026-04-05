@@ -21,6 +21,7 @@ import os
 import secrets
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from typing import Any, Dict, Optional
 
@@ -95,9 +96,9 @@ def _stripe_request(
 
     encoded_data = None
     if form_data:
-        encoded_data = "&".join(
-            f"{urllib.request.quote(k)}={urllib.request.quote(str(v))}" for k, v in form_data.items() if v is not None
-        ).encode("utf-8")
+        encoded_data = urllib.parse.urlencode({k: str(v) for k, v in form_data.items() if v is not None}).encode(
+            "utf-8"
+        )
 
     req = urllib.request.Request(
         url,

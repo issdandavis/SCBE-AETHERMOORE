@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import scripts.render_webtoon_lock_packet as renderer
+import scripts.render_grok_storyboard_packet as storyboard_renderer
 
 
 def write_lock_packet(path: Path) -> None:
@@ -34,7 +35,7 @@ def test_run_lock_packet_dry_run_writes_manifest(tmp_path: Path, monkeypatch) ->
         "check_backends",
         lambda: {"imagen": True, "imagen-ultra": True, "hf": True, "zimage": False},
     )
-    monkeypatch.setattr(renderer, "pick_best_backend", lambda preference=None: "imagen")
+    monkeypatch.setattr(storyboard_renderer, "pick_best_backend", lambda preference=None: "imagen")
 
     manifest_path = renderer.run_lock_packet(lock_packet_path, dry_run=True)
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
@@ -56,7 +57,7 @@ def test_run_lock_packet_retries_with_fallback(tmp_path: Path, monkeypatch) -> N
         "check_backends",
         lambda: {"imagen": True, "imagen-ultra": True, "hf": True, "zimage": False},
     )
-    monkeypatch.setattr(renderer, "pick_best_backend", lambda preference=None: "imagen")
+    monkeypatch.setattr(storyboard_renderer, "pick_best_backend", lambda preference=None: "imagen")
 
     def fake_generate(*, backend, prompt, output, aspect, reference, negative_prompt, width, height):
         calls.append(backend)
