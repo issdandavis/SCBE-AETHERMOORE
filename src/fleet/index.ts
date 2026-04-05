@@ -36,6 +36,9 @@ export * from './oscillator-bus';
 export * from './governed-drift';
 export * from './node-kernel';
 
+// DTN Bundle Protocol — Delay-Tolerant Neural Networking (Stage 7)
+export * from './dtn-bundle';
+
 // Export types (canonical source for shared types)
 export * from './types';
 

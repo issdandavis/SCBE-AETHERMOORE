@@ -82,8 +82,10 @@ def test_phdm_vectors_remain_inside_poincare_ball(raw_vec: np.ndarray) -> None:
 )
 def test_harmonic_wall_is_strictly_monotonic_in_d(d1: float, d2: float, radius: float) -> None:
     lower_d, upper_d = sorted((d1, d2))
-    if math.isclose(lower_d, upper_d, abs_tol=1e-9):
-        upper_d = lower_d + 1e-6
+    # Guard: radius**(d²) can't distinguish tiny d values in float64.
+    # Need d² * ln(radius) >> 2.2e-16 (float64 ULP at 1.0).
+    if math.isclose(lower_d, upper_d, abs_tol=1e-6):
+        upper_d = lower_d + 1e-4
 
     assert harmonic_wall(upper_d, radius) > harmonic_wall(lower_d, radius)
 

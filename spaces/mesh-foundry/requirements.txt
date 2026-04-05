@@ -1,0 +1,4 @@
+gradio>=5.0.0
+datasets>=2.14.0
+huggingface_hub>=0.20.0
+duckduckgo-search>=5.0.0
