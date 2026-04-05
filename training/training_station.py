@@ -101,6 +101,158 @@ def detect_environment() -> dict:
 
 
 # ═══════════════════════════════════════════════════════════════
+# STAGE 7: DTN MARS COMMS — Occlusion-Tolerant Training Pairs
+# ═══════════════════════════════════════════════════════════════
+
+# DTN survival: P_DTN = 1 - p^n  vs  P_TCP = (1-p)^n
+# At 30% occlusion over 10 steps: TCP=2.8%, DTN=99.997%
+
+DTN_TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"]
+DTN_OCCLUSION_TEMPLATES = [
+    {
+        "pattern": "bundle_unpack",
+        "instruction": "You received a DTN thought bundle after {steps} steps of context occlusion. "
+                       "The bundle contains: [{assumptions}]. Unpack and continue reasoning.",
+        "tongue": "CA",
+        "layer": "L2",
+    },
+    {
+        "pattern": "custody_transfer",
+        "instruction": "Accept custody of this reasoning chain. Previous custodian ({prev_node}) "
+                       "released at step {step}. Bundle payload: [{payload}]. "
+                       "Verify axiom compliance and continue.",
+        "tongue": "RU",
+        "layer": "L3",
+    },
+    {
+        "pattern": "fec_recovery",
+        "instruction": "This thought bundle was partially corrupted during transit. "
+                       "{corrupted_count}/{total_count} FEC blocks survived: [{surviving}]. "
+                       "Reconstruct the original reasoning.",
+        "tongue": "DR",
+        "layer": "L2",
+    },
+    {
+        "pattern": "occlusion_resume",
+        "instruction": "Context was occluded for {steps} steps. You stored: [{stored_context}]. "
+                       "The occlusion has cleared. Resume the task using only your stored bundle.",
+        "tongue": "AV",
+        "layer": "L3",
+    },
+    {
+        "pattern": "contact_window",
+        "instruction": "A contact window opened for {window_duration} steps. "
+                       "You have {bundle_count} queued bundles with priorities: [{priorities}]. "
+                       "Schedule optimal transmission order.",
+        "tongue": "KO",
+        "layer": "L3",
+    },
+]
+
+
+def _generate_dtn_occlusion_pairs(existing_records: list) -> list:
+    """Generate DTN occlusion-tolerant SFT pairs from existing training data.
+
+    Takes a sample of existing records and wraps them in DTN scenarios:
+    the model must unpack bundled context, recover from occlusion,
+    and complete reasoning with stored-and-forwarded assumptions.
+    """
+    import random
+
+    if len(existing_records) < 20:
+        return []
+
+    dtn_records = []
+    sample_size = min(40, len(existing_records) // 10)
+    samples = random.sample(existing_records, sample_size)
+
+    for i, source in enumerate(samples):
+        template = DTN_OCCLUSION_TEMPLATES[i % len(DTN_OCCLUSION_TEMPLATES)]
+        original_inst = source.get("instruction", "")[:200]
+        original_out = source.get("output", "")[:400]
+        steps = random.randint(3, 15)
+
+        if template["pattern"] == "bundle_unpack":
+            inst = template["instruction"].format(
+                steps=steps,
+                assumptions=original_inst,
+            )
+            out = (f"Bundle received after {steps}-step occlusion. Unpacking stored context.\n\n"
+                   f"Stored assumptions: {original_inst}\n\n"
+                   f"Resumed reasoning:\n{original_out}\n\n"
+                   f"Bundle integrity: VERIFIED (FEC 6/6 tongues intact)")
+
+        elif template["pattern"] == "custody_transfer":
+            prev_nodes = ["L5-symmetry", "L8-locality", "L11-causality", "L13-governance"]
+            inst = template["instruction"].format(
+                prev_node=prev_nodes[i % len(prev_nodes)],
+                step=steps,
+                payload=original_inst,
+            )
+            out = (f"Custody accepted from {prev_nodes[i % len(prev_nodes)]} at step {steps}.\n\n"
+                   f"Axiom compliance check:\n"
+                   f"  - Unitarity: PASS (norm preserved)\n"
+                   f"  - Causality: PASS (temporal ordering intact)\n"
+                   f"  - Symmetry: PASS (gauge invariance maintained)\n\n"
+                   f"Continuing reasoning chain:\n{original_out}")
+
+        elif template["pattern"] == "fec_recovery":
+            survived = random.randint(3, 5)
+            surviving_tongues = random.sample(DTN_TONGUES, survived)
+            inst = template["instruction"].format(
+                corrupted_count=6 - survived,
+                total_count=6,
+                surviving=", ".join(surviving_tongues),
+            )
+            out = (f"Reconstructing from {survived}/6 FEC blocks ({', '.join(surviving_tongues)}).\n\n"
+                   f"Recovered payload: {original_inst}\n\n"
+                   f"Reconstructed response:\n{original_out}\n\n"
+                   f"Confidence: {(survived / 6 * 100):.0f}% (redundancy sufficient)")
+
+        elif template["pattern"] == "occlusion_resume":
+            inst = template["instruction"].format(
+                steps=steps,
+                stored_context=original_inst,
+            )
+            out = (f"Occlusion cleared after {steps} steps. Retrieving stored bundle.\n\n"
+                   f"Stored context: {original_inst}\n\n"
+                   f"Resumed output:\n{original_out}\n\n"
+                   f"Store-and-forward protocol: SUCCESS")
+
+        elif template["pattern"] == "contact_window":
+            priorities = random.sample(["critical", "high", "normal", "low"], 3)
+            inst = template["instruction"].format(
+                window_duration=random.randint(2, 8),
+                bundle_count=random.randint(3, 12),
+                priorities=", ".join(priorities),
+            )
+            out = (f"Scheduling {len(priorities)} bundles by priority:\n\n"
+                   f"1. [{priorities[0].upper()}] {original_inst[:80]}\n"
+                   f"2. [{priorities[1].upper()}] Governance verification bundle\n"
+                   f"3. [{priorities[2].upper()}] Telemetry update\n\n"
+                   f"Transmission order optimized for contact window. "
+                   f"Critical bundles first, low-priority queued for next window.")
+        else:
+            continue
+
+        dtn_records.append({
+            "instruction": inst[:512],
+            "output": out[:1024],
+            "tongue": template["tongue"],
+            "tongues_active": [template["tongue"]],
+            "tongues_null": [t for t in DTN_TONGUES if t != template["tongue"]],
+            "layer": template["layer"],
+            "category": "dtn_mars_comms",
+            "governance": "ALLOW",
+            "view_type": f"dtn_{template['pattern']}",
+            "shape": f"dtn_occlusion_{steps}step",
+            "source_file": "dtn_stage7_generated",
+        })
+
+    return dtn_records
+
+
+# ═══════════════════════════════════════════════════════════════
 # PHASE 1: CONVERT — gather, enrich, prepare training data
 # ═══════════════════════════════════════════════════════════════
 
@@ -154,6 +306,68 @@ def convert_phase(run_dir: Path) -> dict:
                 stats["by_layer"][layer] = stats["by_layer"].get(layer, 0) + 1
                 tongue = normalized["tongue"]
                 stats["by_tongue"][tongue] = stats["by_tongue"].get(tongue, 0) + 1
+
+            elif "substrate" in record and "fu_status" in record:
+                # FU canonical format — extract from target or activation view
+                target = record.get("target", {})
+                inst = target.get("instruction", record.get("instruction", ""))
+                out = target.get("response", record.get("output", ""))
+                if inst and out:
+                    act = record.get("activation", {})
+                    perm = record.get("permission", {})
+                    flw = record.get("flow", {})
+                    normalized = {
+                        "instruction": inst[:512],
+                        "output": out[:1024],
+                        "tongue": (act.get("tongues_active") or ["KO"])[0],
+                        "tongues_active": act.get("tongues_active", []),
+                        "tongues_null": act.get("tongues_null", []),
+                        "layer": act.get("layer", "L0"),
+                        "category": record.get("_source", "fu_canonical"),
+                        "governance": perm.get("governance", "ALLOW"),
+                        "view_type": "fu_canonical",
+                        "shape": record.get("fu_status", ""),
+                        "fu_status": record.get("fu_status", "null"),
+                        "boundary_class": perm.get("class", "DEFER"),
+                        "activation_score": act.get("activation_score", 0.0),
+                        "source_file": f.name,
+                    }
+                    all_records.append(normalized)
+                    file_records += 1
+
+            elif "text" in record and "<|im_start|>" in record.get("text", ""):
+                # Chat-template pre-formatted (round7 SFT view)
+                text = record["text"]
+                # Extract instruction and output from chat template
+                parts = text.split("<|im_end|>")
+                inst_part = parts[0] if parts else ""
+                out_part = parts[1] if len(parts) > 1 else ""
+                inst = inst_part.split("\n", 1)[-1].strip() if "\n" in inst_part else ""
+                out = out_part.split("\n", 1)[-1].strip() if "\n" in out_part else ""
+                if inst and out:
+                    # Parse FU tags from end of output: [Tongue:X|Null:Y|Layer:Z|Gov:W|FU:S|Boundary:B]
+                    tags = {}
+                    if "[" in out and "]" in out:
+                        tag_str = out[out.rfind("[") + 1:out.rfind("]")]
+                        for pair in tag_str.split("|"):
+                            if ":" in pair:
+                                k, v = pair.split(":", 1)
+                                tags[k.strip()] = v.strip()
+                    normalized = {
+                        "instruction": inst[:512],
+                        "output": out[:1024],
+                        "tongue": tags.get("Tongue", "KO"),
+                        "tongues_active": [tags.get("Tongue", "KO")],
+                        "tongues_null": tags.get("Null", "").split(",") if tags.get("Null") else [],
+                        "layer": tags.get("Layer", "L0"),
+                        "category": "fu_sft",
+                        "governance": tags.get("Gov", "ALLOW"),
+                        "view_type": "fu_sft",
+                        "shape": tags.get("FU", ""),
+                        "source_file": f.name,
+                    }
+                    all_records.append(normalized)
+                    file_records += 1
 
             elif "messages" in record:
                 # Chat format — convert to instruction/output
@@ -210,6 +424,15 @@ def convert_phase(run_dir: Path) -> dict:
     except Exception as e:
         print(f"  Warning: Could not enrich records: {e}")
         print(f"  Proceeding with {len(tagged)} pre-tagged records")
+
+    # ─── Stage 7: DTN Mars Comms — Occlusion-Tolerant Training ───
+    # Generate DTN SFT pairs that teach the model to survive context blackouts.
+    # Each record simulates a thought bundle that must persist through occlusion.
+    dtn_records = _generate_dtn_occlusion_pairs(all_records)
+    if dtn_records:
+        all_records.extend(dtn_records)
+        stats["dtn_records"] = len(dtn_records)
+        print(f"\n  Stage 7 DTN: Generated {len(dtn_records)} occlusion-tolerant records")
 
     # Write unified training file
     output_file = run_dir / "training_data.jsonl"
