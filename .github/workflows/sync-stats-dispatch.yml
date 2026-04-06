@@ -1,0 +1,19 @@
+name: Sync Stats to Website
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  dispatch:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger website stats sync
+        run: |
+          gh api repos/issdandavis/issdandavis.github.io/dispatches \
+            -f event_type=scbe-tests-passed
+        env:
+          GH_TOKEN: ${{ secrets.CROSS_REPO_PAT }}
