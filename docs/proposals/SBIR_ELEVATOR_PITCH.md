@@ -43,7 +43,7 @@ where `d_H = arccosh(1 + 2||u-v||^2 / ((1-||u||^2)(1-||v||^2)))` is hyperbolic d
 | Patent status | USPTO Provisional #63/961,403 (Jan 15, 2026) |
 | CIP claims | 47 claims (15 independent, 32 dependent) |
 | Distribution | Published on npm and PyPI |
-| Demos | 24+ interactive demos at aethermoorgames.com |
+| Demos | 24+ interactive demos at aethermoore.com |
 | Architecture | Dual TypeScript (production) / Python (research) |
 | PQC | ML-KEM-768, ML-DSA-65, AES-256-GCM |
 
@@ -92,7 +92,7 @@ Based in Port Angeles, WA (25 minutes from PNNL-Sequim).
 ## Contact
 
 - **GitHub**: github.com/issdandavis/SCBE-AETHERMOORE
-- **Website**: aethermoorgames.com
+- **Website**: aethermoore.com
 - **Patent**: USPTO Provisional #63/961,403
 - **SAM.gov**: [Registration pending/active]
 - **DUNS/UEI**: [To be added after SAM.gov activation]

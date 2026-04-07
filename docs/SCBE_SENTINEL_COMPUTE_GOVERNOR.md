@@ -103,4 +103,4 @@ print(f"Authorized tier: {tier}")
 **Issac Daniel Davis** -- Creator, SCBE-AETHERMOORE
 
 - GitHub: [issdandavis](https://github.com/issdandavis)
-- Site: [aethermoorgames.com](https://aethermoorgames.com)
+- Site: [aethermoore.com](https://aethermoore.com)

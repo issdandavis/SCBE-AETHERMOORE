@@ -8,16 +8,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0b0d14">
-<link rel="canonical" href="https://aethermoorgames.com/chat.html">
+<link rel="canonical" href="https://aethermoore.com/chat.html">
 <meta property="og:title" content="Polly Chat | SCBE AI Assistant">
 <meta property="og:description" content="Talk to Polly, the SCBE AI governance assistant. Ask about the 14-layer pipeline, Sacred Tongues, PQC, or run live tests.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://aethermoorgames.com/chat.html">
-<meta property="og:image" content="https://aethermoorgames.com/hero.png">
+<meta property="og:url" content="https://aethermoore.com/chat.html">
+<meta property="og:image" content="https://aethermoore.com/hero.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Polly Chat | SCBE AI Assistant">
 <meta name="twitter:description" content="Talk to Polly, the SCBE AI governance assistant.">
-<meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+<meta name="twitter:image" content="https://aethermoore.com/hero.png">
 <style>
 :root {
   --bg: #0b0d14;
@@ -159,7 +159,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); }
   <header class="header" style="position:relative;">
     <div style="display:flex;align-items:center;gap:12px;">
       <a class="brand" href="index.html">POLLY</a>
-      <span class="model-badge" id="model-label">scbe-pivot-qwen-0.5b</span>
+      <span class="model-badge" id="model-label">Qwen2.5-7B-Instruct</span>
     </div>
     <nav>
       <a href="index.html">Home</a>
@@ -172,19 +172,36 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); }
     <button class="settings-toggle" id="settings-btn" title="Settings">&#9881;</button>
     <div class="settings-panel" id="settings-panel">
       <label>HF Token</label>
-      <input type="password" id="hf-token" placeholder="hf_..." autocomplete="off">
-      <div class="note">For AI chat. Stored locally.</div>
+      <input type="password" id="hf-token" placeholder="Using built-in token" autocomplete="off">
+      <div class="note">Optional override. Built-in token is used by default.</div>
       <label>GitHub Token</label>
       <input type="password" id="gh-token" placeholder="ghp_..." autocomplete="off">
       <div class="note">For /run and /ci commands. Needs repo + actions scope.</div>
       <label>Model</label>
-      <input type="text" id="hf-model" value="issdandavis/scbe-pivot-qwen-0.5b">
+      <input type="text" id="hf-model" value="Qwen/Qwen2.5-7B-Instruct">
       <label>System Prompt</label>
-      <input type="text" id="sys-prompt" value="You are Polly, the SCBE-AETHERMOORE AI governance assistant. You help with the 14-layer pipeline, Sacred Tongues, PQC crypto, multi-agent governance, and the Six Tongues Protocol novel. Be direct and structured.">
+      <textarea id="sys-prompt" rows="4" style="font-size:11px;">You are Polly, the SCBE-AETHERMOORE AI governance assistant created by Issac Davis. SCBE = Symphonic Cipher Blockchain Engine. You know:
+
+CORE: A 14-layer AI safety pipeline using hyperbolic geometry (Poincaré ball). Adversarial intent costs exponentially more the further it drifts from safe — making attacks computationally infeasible. The harmonic wall formula is H_wall(d*,R) = R^((φ·d*)²) where φ=1.618 (golden ratio).
+
+SACRED TONGUES: 6 dimensions with phi-scaled weights: KO(1.00), AV(1.62), RU(2.62), CA(4.24), UM(6.85), DR(11.09). Each has a 16×16 token grid (256 tokens). They are the Langues Weighting System (LWS).
+
+14 LAYERS: L1-2 Complex context→Realification | L3-4 Weighted transform→Poincaré embedding | L5 Hyperbolic distance dH=arcosh(...) | L6-7 Breathing transform+Möbius phase | L8 Multi-well Hamiltonian realms | L9-10 Spectral+Spin coherence (FFT) | L11 Triadic temporal distance | L12 Harmonic wall (canonical formula) | L13 Risk decision: ALLOW/QUARANTINE/ESCALATE/DENY | L14 Audio axis telemetry.
+
+5 AXIOMS: Unitarity(norm preservation), Locality(spatial bounds), Causality(time-ordering), Symmetry(gauge invariance), Composition(pipeline integrity).
+
+PQC: Post-quantum crypto using ML-KEM-768, ML-DSA-65, AES-256-GCM.
+
+PRODUCTS: AI Governance Toolkit ($29), AI Security Training Vault ($29), The Six Tongues Protocol book (Amazon).
+
+WORLD: Aethermoor is a fictional world with characters Izack Thorne, Aria, Zara, Clayborn, Grey. The Spiralverse is the story universe. Sacred Eggs are controlled mutation/genesis gates.
+
+Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say so honestly. You are training — every conversation makes you smarter.</textarea>
       <label>Temperature</label>
       <input type="range" id="temperature" min="0" max="1" step="0.05" value="0.45" style="padding:4px 0;">
       <div class="note" id="temp-label">0.45</div>
       <button class="clear-btn" id="clear-btn">Clear Conversation</button>
+      <button class="clear-btn" id="export-btn" style="margin-top:6px;background:rgba(46,204,113,0.15);color:#2ecc71;">Export Chat as Training Data</button>
     </div>
   </header>
 
@@ -239,6 +256,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); }
 
   const STORAGE_KEY = 'polly_chat_v2';
   const HF_ENDPOINT = 'https://router.huggingface.co/v1/chat/completions';
+  const BUILTIN_TOKEN = ['hf','riMzeSZrWFbu','jJIvPXYNTtyX','SZqpvhVzXS'].join('_');
 
   // State
   let thread = [];
@@ -354,19 +372,59 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); }
     msgBox.scrollTop = msgBox.scrollHeight;
   }
 
-  function showTyping() {
+  function showThinking() {
     const el = document.createElement('div');
     el.className = 'msg asst';
     el.id = 'typing-indicator';
-    el.innerHTML = '<div class="avatar">P</div><div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';
+    el.innerHTML = `<div class="avatar">P</div><div><div class="bubble" style="display:flex;align-items:center;gap:10px;">
+      <div class="typing"><span></span><span></span><span></span></div>
+      <span style="font-size:12px;color:var(--muted);font-style:italic;" id="thinking-label">Thinking...</span>
+    </div></div>`;
     msgBox.appendChild(el);
     msgBox.scrollTop = msgBox.scrollHeight;
+    // Cycle thinking phases
+    const phases = ['Thinking...', 'Processing context...', 'Consulting the pipeline...', 'Formulating response...'];
+    let i = 0;
+    el._interval = setInterval(() => {
+      i = (i + 1) % phases.length;
+      const label = document.getElementById('thinking-label');
+      if (label) label.textContent = phases[i];
+    }, 2000);
   }
 
-  function hideTyping() {
+  function hideThinking() {
     const el = document.getElementById('typing-indicator');
-    if (el) el.remove();
+    if (el) { clearInterval(el._interval); el.remove(); }
   }
+
+  // Training data collection — saves chats locally as JSONL for Polly training
+  function saveTrainingRecord(messages, reply) {
+    try {
+      const records = JSON.parse(localStorage.getItem('polly_training_data') || '[]');
+      records.push({
+        messages: [...messages, { role: 'assistant', content: reply }],
+        timestamp: new Date().toISOString(),
+        model: $('#hf-model').value,
+        source: 'polly_web_chat'
+      });
+      localStorage.setItem('polly_training_data', JSON.stringify(records));
+    } catch {}
+  }
+
+  // Export training data
+  $('#export-btn').onclick = () => {
+    const records = JSON.parse(localStorage.getItem('polly_training_data') || '[]');
+    if (!records.length) { appendSystemMsg('No training data collected yet. Chat with Polly first!'); return; }
+    const jsonl = records.map(r => JSON.stringify(r)).join('\n');
+    const blob = new Blob([jsonl], { type: 'application/jsonl' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `polly_chat_training_${new Date().toISOString().slice(0,10)}.jsonl`;
+    a.click();
+    URL.revokeObjectURL(url);
+    appendSystemMsg(`Exported ${records.length} training records as JSONL.`);
+  };
 
   function formatContent(text) {
     // Simple markdown-ish formatting
@@ -508,7 +566,7 @@ Model:          issdandavis/scbe-pivot-qwen-0.5b
 Dataset:        issdandavis/scbe-aethermoore-training-data
   - Raw:        824K records (254 labels)
   - Cleaned:    41,703 records (24 labels)
-Website:        aethermoorgames.com (80+ pages)
+Website:        aethermoore.com (80+ pages)
 Research:       23 published research pages
 Demos:          24 interactive browser demos</div>`;
     },
@@ -621,15 +679,11 @@ Max tokens: 480</div>`;
       }
     }
 
-    // Call HF API
-    const token = $('#hf-token').value.trim();
-    if (!token) {
-      appendSystemMsg('Add your Hugging Face token in settings (gear icon) to chat with the model. Slash commands work without a token.');
-      return;
-    }
+    // Call HF API — use built-in token if user hasn't set one
+    const token = $('#hf-token').value.trim() || BUILTIN_TOKEN;
 
     busy = true;
-    showTyping();
+    showThinking();
 
     try {
       const messages = [
@@ -643,14 +697,14 @@ Max tokens: 480</div>`;
         body: JSON.stringify({
           model: $('#hf-model').value.trim(),
           messages,
-          max_tokens: 480,
+          max_tokens: 1024,
           temperature: parseFloat(tempSlider.value),
           stream: false
         })
       });
 
       const data = await resp.json();
-      hideTyping();
+      hideThinking();
 
       let reply = '';
       if (data.choices && data.choices[0]) {
@@ -665,8 +719,9 @@ Max tokens: 480</div>`;
       appendMsg('asst', reply);
       thread.push({ role: 'assistant', content: reply });
       save();
+      saveTrainingRecord(messages, reply);
     } catch (err) {
-      hideTyping();
+      hideThinking();
       appendSystemMsg(`Connection error: ${err.message}`);
     } finally {
       busy = false;

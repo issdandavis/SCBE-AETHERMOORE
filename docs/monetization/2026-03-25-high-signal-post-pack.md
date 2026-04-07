@@ -87,7 +87,7 @@ Audience:
 - people who want the usable layer, not the whole repo
 
 Destination:
-- `https://aethermoorgames.com/`
+- `https://aethermoore.com/`
 
 Post:
 
@@ -97,7 +97,7 @@ Post:
 
 `The SCBE AI Governance Toolkit is the shortest path from curiosity to a working package.`
 
-`https://aethermoorgames.com/`
+`https://aethermoore.com/`
 
 ## Short-form variants
 
@@ -108,7 +108,7 @@ Post:
 `14 public demos, API docs, and the repo in one hub: https://issdandavis.github.io/SCBE-AETHERMOORE/`
 
 ### Variant C
-`One $29 entry point if you want the usable SCBE layer instead of the whole repo: https://aethermoorgames.com/`
+`One $29 entry point if you want the usable SCBE layer instead of the whole repo: https://aethermoore.com/`
 
 ## Hard rules
 

@@ -85,7 +85,7 @@ L3 expression:  ~150K+ (99.9%)  — everything else
   - E4 + null space: 100% detection (holdout FP needs tuning)
 
 ## Publishing (via PR #897)
-- Website article: https://aethermoorgames.com/articles/2026-03-31-nightly-roundup.html
+- Website article: https://aethermoore.com/articles/2026-03-31-nightly-roundup.html
 - GitHub Discussion #896: https://github.com/issdandavis/SCBE-AETHERMOORE/discussions/896
 - Bluesky: https://bsky.app/profile/issdandavis.bsky.social/post/3midtijmubb22
 - Blocked: X (auth), Dev.to (key), HF discussion (shell restriction)

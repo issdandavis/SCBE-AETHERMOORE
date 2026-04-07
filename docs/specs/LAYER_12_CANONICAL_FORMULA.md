@@ -63,8 +63,9 @@ profiles. The canonical formula uses phi as a linear coefficient, not an exponen
 The canonical formula is implemented in:
 - `packages/kernel/src/harmonicScaling.ts` (TypeScript, production)
 
-The production code currently uses `1/(1+d+2*pd)` WITHOUT phi.
-Adding phi as `1/(1+phi*d+2*pd)` is a pending code update.
+The production code now uses the canonical super-exponential wall:
+`H_wall(d*,R) = R^((φ·d*)²)` and `H_score = 1/H_wall ∈ (0,1]`.
+Old additive forms `1/(1+d+2*pd)` are RETIRED (April 2026).
 
 ## How Layer 13 Uses It
 

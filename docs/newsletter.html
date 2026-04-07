@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCBE Weekly | AI Governance Newsletter</title>
 <meta name="description" content="Weekly newsletter covering AI governance, post-quantum cryptography, multi-agent security, and SCBE-AETHERMOORE development updates. Free, no spam.">
-<link rel="canonical" href="https://aethermoorgames.com/newsletter.html">
+<link rel="canonical" href="https://aethermoore.com/newsletter.html">
 <meta property="og:title" content="SCBE Weekly | AI Governance Newsletter">
 <meta property="og:description" content="Weekly AI governance updates. PQC, multi-agent security, benchmarks, and what's shipping.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://aethermoorgames.com/newsletter.html">
-<meta property="og:image" content="https://aethermoorgames.com/hero.png">
+<meta property="og:url" content="https://aethermoore.com/newsletter.html">
+<meta property="og:image" content="https://aethermoore.com/hero.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="SCBE Weekly | AI Governance Newsletter">
 <meta name="twitter:description" content="Weekly AI governance updates. Free, no spam.">
-<meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+<meta name="twitter:image" content="https://aethermoore.com/hero.png">
 <link rel="stylesheet" href="static/shared.css">
 <link rel="stylesheet" href="static/polly-sidebar.css">
 <style>
@@ -221,7 +221,7 @@ form.addEventListener('submit', async (e) => {
 
   // Try webhook (n8n or similar)
   try {
-    await fetch('https://aethermoorgames.com/api/newsletter', {
+    await fetch('https://aethermoore.com/api/newsletter', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, source: 'website', timestamp: new Date().toISOString() }),
@@ -229,7 +229,7 @@ form.addEventListener('submit', async (e) => {
   } catch {}
 
   // Fallback: open mailto with the subscription
-  const mailto = `mailto:aethermoregames@pm.me?subject=${encodeURIComponent('Newsletter signup: ' + email)}&body=${encodeURIComponent('Please add ' + email + ' to the SCBE Weekly newsletter.')}`;
+  const mailto = `mailto:ai@aethermoore.com?subject=${encodeURIComponent('Newsletter signup: ' + email)}&body=${encodeURIComponent('Please add ' + email + ' to the SCBE Weekly newsletter.')}`;
   const a = document.createElement('a');
   a.href = mailto;
   a.click();

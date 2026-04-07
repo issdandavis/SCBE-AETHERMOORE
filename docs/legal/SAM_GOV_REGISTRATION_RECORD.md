@@ -82,7 +82,7 @@
 
 ## Key References
 - **Patent**: USPTO Provisional #63/961,403 (filed January 15, 2026)
-- **Website**: https://aethermoorgames.com
+- **Website**: https://aethermoore.com
 - **GitHub**: https://github.com/issdandavis/SCBE-AETHERMOORE
 - **HuggingFace**: https://huggingface.co/issdandavis
 

@@ -23,7 +23,7 @@ This project uses three overlapping axiom systems. They are not contradictory; t
 
 | FA# | Formal Axiom | Maps to PA# | Pipeline Axiom | Maps to QA | Verification |
 |-----|-------------|-------------|---------------|------------|-------------|
-| FA1 | Positivity of Cost | PA12 | Harmonic scaling H(d,pd)=1/(1+phi*d_H+2*pd) — canonical. R^(d^2) RETIRED. | QA4: Symmetry | VERIFIED (431 tests) |
+| FA1 | Positivity of Cost | PA12 | Harmonic scaling H(d*,R)=R^((phi*d*)^2) — canonical. Old additive forms RETIRED. | QA4: Symmetry | VERIFIED (431 tests) |
 | FA2 | Monotonicity of Deviation | PA12 | Harmonic scaling (monotone in d) | QA4: Symmetry | VERIFIED |
 | FA3 | Convexity of Cost Surface | PA12 | H(d,R) strictly convex for d>=0 | QA4: Symmetry | VERIFIED |
 | FA4 | Bounded Temporal Breathing | PA8 | Breathing diffeomorphism b(t) | QA3: Causality | VERIFIED (post Jan 19) |
@@ -42,9 +42,8 @@ This project uses three overlapping axiom systems. They are not contradictory; t
 Keep these two Layer 12 lanes distinct when adding tests or writing theorem claims:
 
 - `src/scbe_14layer_reference.py::layer_12_harmonic_scaling` is the current bounded reference score:
-  `H_score = 1 / (1 + d + 2*phase_deviation)`, range `(0, 1]`.
-- Legacy theorem/patent-aligned modules such as `src/symphonic_cipher/qasi_core.py`
-  Canonical formula (March 2026): `H(d,pd) = 1/(1+phi*d_H+2*pd)`. The old `R^(d^2)` is RETIRED due to numerical collapse. See `docs/specs/LAYER_12_CANONICAL_FORMULA.md`.
+  Canonical formula (April 2026): `H(d*,R) = R^((phi*d*)^2)` where phi=(1+sqrt(5))/2, R>1 (default e).
+- Legacy additive forms `1/(1+d+2*pd)` and `1/(1+phi*d_H+2*pd)` are RETIRED. See `docs/specs/LAYER_12_CANONICAL_FORMULA.md`.
 
 The new focused suite `tests/industry_standard/test_formal_axioms_reference.py`
 keeps this split explicit: FA1-FA3 are checked against the legacy wall law,

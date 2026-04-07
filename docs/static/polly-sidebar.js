@@ -137,7 +137,7 @@
           <p class="polly-prompt-copy" id="pollyPromptText">${data.prompt}</p>
           <div class="polly-actions">
             <button class="polly-btn" type="button" id="pollyCopyPrompt">Copy prompt</button>
-            <a class="polly-btn" href="mailto:aethermoregames@pm.me?subject=SCBE%20Support%20Help">Email support</a>
+            <a class="polly-btn" href="mailto:ai@aethermoore.com?subject=SCBE%20Support%20Help">Email support</a>
           </div>
           <div class="polly-status" id="pollyStatus" aria-live="polite"></div>
         </div>

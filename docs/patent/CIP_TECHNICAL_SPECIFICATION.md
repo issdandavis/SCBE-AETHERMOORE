@@ -828,7 +828,7 @@ face_value = denomination_weight * energy_cost * complexity * legibility
 
 Where:
 - `denomination_weight` = golden ratio weight for the tongue (1.0 to 11.09)
-- `energy_cost` = H(d, pd) = 1/(1+d+2*pd) -- energy spent to produce the credit
+- `energy_cost` = 1/H_wall(d*,R) where H_wall(d*,R) = R^((phi*d*)^2) -- energy spent to produce the credit
 - `complexity` = max(0.01, active_layers/14) -- layer engagement ratio
 - `legibility` = [0, 1] -- verifiability score
 
@@ -1083,7 +1083,7 @@ The following claim categories should be considered for the CIP. Each maps to a 
 
 ### 6.6 Semantic Antivirus Claims
 - **Claim F1:** A compound threat escalation system where simultaneous detection of prompt injection and malware patterns triggers a risk bonus (0.40) beyond the sum of individual risks, mapped to SCBE Layer 10 Constitutional Alignment.
-- **Claim F2:** A session-level Hamiltonian safety tracking system where `H(d, pd) = 1/(1+d+2*pd)` incorporates both per-content risk (d) and session-wide policy deviation (pd = blocked_count/scan_count), creating adaptive sensitivity.
+- **Claim F2:** A session-level Hamiltonian safety tracking system where `H_wall(d*,R) = R^((phi*d*)^2)` incorporates hyperbolic distance d* (combining per-content risk and session-wide policy deviation), creating adaptive sensitivity with super-exponential cost scaling.
 - **Claim F3:** A domain reputation memory system where accumulated risk across multiple scans degrades domain trust as `reputation = max(0.1, 1.0 - accumulated_risk * 0.2)`.
 
 ### 6.7 MMCCL Context Credit Claims
@@ -1093,14 +1093,14 @@ The following claim categories should be considered for the CIP. Each maps to a 
 - **Claim G4:** A Merkle tree blockchain for context credits where fork resolution uses longest-chain + highest aggregate Hamiltonian energy (proof-of-context > proof-of-work).
 
 ### 6.8 Dual Hamiltonian Claims
-- **Claim H1:** A dual Hamiltonian safety architecture comprising: (a) a bounded safety score `H(d,pd) = 1/(1+d+2*pd)` in (0,1] used for per-interaction scoring, and (b) an exponential cost multiplier `H(d,R) = R^(d^2)` in [1, infinity) used for governance pipeline cost scaling, where the two functions serve complementary purposes within the same unified system.
+- **Claim H1:** A unified Hamiltonian safety architecture comprising: (a) a canonical harmonic wall `H_wall(d*,R) = R^((phi*d*)^2)` in [1, infinity) providing super-exponential cost scaling for governance, and (b) a bounded safety score `H_score = 1/H_wall` in (0,1] for per-interaction scoring, where phi is the golden ratio and R > 1 (default e) is the exponential base.
 - **Claim H2:** A Langues metric cost surface integrating golden-ratio-weighted Sacred Tongue dimensions with harmonic temporal oscillation and exponential cost scaling, producing a continuous 6D cost landscape for AI behavioral governance.
 
 ---
 
 ## 7. Abstract
 
-A computer-implemented system and method for governing artificial intelligence agents using geometric, linguistic, and economic constraints. The system operates a 14-layer governance pipeline on a 9-dimensional quantum hyperbolic manifold where truthful agent actions trace smooth geodesics and adversarial behavior manifests as geometric discontinuities. Six constructed languages ("Sacred Tongues"), each assigned to a specific functional domain and phase position on the unit circle, provide domain-separated communication with post-quantum cryptographic sealing through GeoSeal envelopes. A 21-dimensional brain embedding system maps agent state to a 6D Langues space with Kyber KEM seed derivation binding the defense manifold to quantum-resistant keys. A cultural intelligence knowledge graph projects emotions into Poincare Ball coordinates where emotional extremity increases governance scrutiny. Multiple AI agents are managed through a fleet system with Byzantine Fault Tolerant consensus and coherence-based lifecycle governance. A blockchain-backed context credit ledger mints immutable currency using Hamiltonian energy functions and proof-of-context mining, with golden-ratio-weighted tongue denominations. Dual Hamiltonian safety functions -- a bounded safety score H(d,pd) = 1/(1+d+2*pd) and an exponential cost multiplier H(d,R) = R^(d^2) -- provide complementary governance at different scales. The system ensures that invalid AI states are geometrically impossible on the governed manifold.
+A computer-implemented system and method for governing artificial intelligence agents using geometric, linguistic, and economic constraints. The system operates a 14-layer governance pipeline on a 9-dimensional quantum hyperbolic manifold where truthful agent actions trace smooth geodesics and adversarial behavior manifests as geometric discontinuities. Six constructed languages ("Sacred Tongues"), each assigned to a specific functional domain and phase position on the unit circle, provide domain-separated communication with post-quantum cryptographic sealing through GeoSeal envelopes. A 21-dimensional brain embedding system maps agent state to a 6D Langues space with Kyber KEM seed derivation binding the defense manifold to quantum-resistant keys. A cultural intelligence knowledge graph projects emotions into Poincare Ball coordinates where emotional extremity increases governance scrutiny. Multiple AI agents are managed through a fleet system with Byzantine Fault Tolerant consensus and coherence-based lifecycle governance. A blockchain-backed context credit ledger mints immutable currency using Hamiltonian energy functions and proof-of-context mining, with golden-ratio-weighted tongue denominations. A unified Hamiltonian safety function -- the canonical harmonic wall H_wall(d*,R) = R^((phi*d*)^2) and its reciprocal safety score H_score = 1/H_wall -- provides super-exponential governance cost scaling where phi is the golden ratio. The system ensures that invalid AI states are geometrically impossible on the governed manifold.
 
 ---
 
@@ -1138,12 +1138,11 @@ All formulations in this document are extracted from the following source files:
 
 | Formula | Expression | Range | Used In |
 |---------|-----------|-------|---------|
-| Bounded Safety Score | H(d,pd) = 1/(1+d+2*pd) | (0, 1] | Credits, Antivirus, GeoSeal |
-| Exponential Cost Multiplier | H(d,R) = R^(d^2) | [1, inf) | QASI pipeline, Risk pricing |
-| Harmonic Wall | H_wall(d) = e^(d^2) | [1, inf) | GeoSeal boundary |
-| Bounded Harmonic (L13) | H(d*) = 1+alpha*tanh(beta*d*) | [1, 1+alpha] | Layer 13 Risk |
+| Canonical Harmonic Wall | H_wall(d*,R) = R^((phi*d*)^2) | [1, inf) | All governance layers |
+| Bounded Safety Score | H_score = 1/H_wall(d*,R) | (0, 1] | Credits, Antivirus, GeoSeal |
+| Risk Multiplier | Risk' = base_risk * H_wall(d*,R) | [base, inf) | Layer 13 Risk |
 | Poincare Distance | d(p,q) = arcosh(1+2\|\|p-q\|\|^2/((1-\|\|p\|\|^2)(1-\|\|q\|\|^2))) | [0, inf) | Heart Vault, GeoSeal |
-| Phase+Distance Trust | score = 1/(1+d_H+2*phase_dev) | (0, 1] | GeoSeal immune |
+| Phase+Distance Trust | H_score = 1/R^((phi*d*)^2) | (0, 1] | GeoSeal immune |
 | Langues Metric Cost | L(x,t) = SUM w_l*exp(beta_l*(x_l+sin(omega_l*t+phi_l))) | [6, inf) | PHDM Core |
 | Golden Ratio Weight | W(i) = phi^i | [1, 11.09] | Credits, Heart Credits |
 | Credit Face Value | V = W * H(d,pd) * (layers/14) * legibility | [0, ~11.09] | MMCCL |

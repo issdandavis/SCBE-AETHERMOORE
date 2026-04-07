@@ -165,7 +165,7 @@ Adversarial:       vote_weight=0.18 (near-zero accumulation)
 ## Next Steps
 
 1. Implement Sacred Eggs as SacredEggs class (multiplicative priors)
-2. Add World Tree Live demo to aethermoorgames.com (3D visualization)
+2. Add World Tree Live demo to aethermoore.com (3D visualization)
 3. Run T4 ablation: baseline vs full World Tree metric
 4. Train Polly as first governed courier agent
 5. DARPA CLARA submission (April 17 deadline)

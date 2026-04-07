@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community | AetherMoore — YouTube, Twitch, Discord, Ko-fi</title>
+  <meta name="description" content="Join the AetherMoore community. Watch governance demos on YouTube, catch live builds on Twitch, chat on Discord, and support development on Ko-fi.">
+  <meta property="og:title" content="AetherMoore Community">
+  <meta property="og:description" content="YouTube, Twitch, Discord, and Ko-fi — all the ways to connect with AetherMoore.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://aethermoore.com/community.html">
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --bg-soft: #11161f;
+      --panel: rgba(18, 23, 32, 0.92);
+      --line: rgba(214, 167, 86, 0.18);
+      --text: #f2f0ea;
+      --muted: #a3acb9;
+      --accent: #d6a756;
+      --accent-strong: #f0bf67;
+      --cool: #8cb4ff;
+      --red: #ff4757;
+      --green: #2dd3a6;
+      --purple: #9b59b6;
+      --max: 1180px;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at top, rgba(140, 180, 255, 0.08), transparent 40%),
+        linear-gradient(180deg, #0b0d12 0%, #0e131b 40%, #0b0d12 100%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* Topbar */
+    .topbar {
+      position: sticky; top: 0; z-index: 20;
+      backdrop-filter: blur(14px);
+      background: rgba(11, 13, 18, 0.82);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .topbar-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+      min-height: 68px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    }
+    .brand {
+      font-size: 14px; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--accent); font-weight: 700;
+    }
+    .nav {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      justify-content: flex-end; font-size: 14px; color: var(--muted);
+    }
+    .nav a:hover { color: var(--text); }
+    .nav a.active { color: var(--accent); }
+
+    /* Page layout */
+    .page-inner {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    /* Hero */
+    .hero {
+      padding: 72px 0 48px;
+      text-align: center;
+    }
+    .eyebrow {
+      color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.18em; font-size: 12px; font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 1.02; letter-spacing: -0.03em;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      color: var(--muted); font-size: 18px;
+      max-width: 58ch; margin: 0 auto;
+    }
+
+    /* Platform cards */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+      padding: 0 0 48px;
+    }
+    .platform-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 24px;
+      padding: 28px;
+      transition: border-color 0.2s;
+    }
+    .platform-card:hover { border-color: var(--accent); }
+    .platform-card .card-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 16px;
+    }
+    .platform-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800;
+    }
+    .platform-card h2 { font-size: 22px; }
+    .platform-card p { color: var(--muted); font-size: 15px; margin-bottom: 16px; }
+    .platform-card .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 12px 24px; border-radius: 999px;
+      font-weight: 700; font-size: 14px; transition: 160ms ease;
+      border: 1px solid transparent; min-width: 160px;
+    }
+    .btn-yt { background: linear-gradient(135deg, #ff0000, #cc0000); color: white; }
+    .btn-tw { background: linear-gradient(135deg, #9146ff, #772ce8); color: white; }
+    .btn-dc { background: linear-gradient(135deg, #5865f2, #4752c4); color: white; }
+    .btn-ko { background: linear-gradient(135deg, #72a4f2, #5b8dd9); color: white; }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+
+    /* Embed section */
+    .embed-section {
+      padding: 48px 0;
+      border-top: 1px solid var(--line);
+    }
+    .embed-section h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .embed-section > .page-inner > p {
+      color: var(--muted); font-size: 16px; margin-bottom: 24px;
+    }
+    .embed-grid {
+      display: grid;
+      grid-template-columns: 1.4fr 0.6fr;
+      gap: 22px;
+    }
+    .video-embed {
+      border-radius: 20px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.3);
+    }
+    .video-embed iframe {
+      width: 100%; aspect-ratio: 16/9; border: 0; display: block;
+    }
+    .sidebar-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px; padding: 22px;
+    }
+    .sidebar-card h3 { font-size: 18px; margin-bottom: 10px; }
+    .sidebar-card p { color: var(--muted); font-size: 14px; }
+    .sidebar-card + .sidebar-card { margin-top: 16px; }
+
+    /* Activity feed */
+    .feed {
+      padding: 48px 0;
+      border-top: 1px solid var(--line);
+    }
+    .feed h2 {
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+    .feed-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .feed-item {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px; padding: 20px;
+    }
+    .feed-item .feed-platform {
+      font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.12em; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feed-item h3 { font-size: 16px; margin-bottom: 6px; }
+    .feed-item p { color: var(--muted); font-size: 14px; }
+    .yt-color { color: #ff4444; }
+    .tw-color { color: #9146ff; }
+    .dc-color { color: #5865f2; }
+
+    /* CTA */
+    .final-cta {
+      text-align: center; padding: 64px 0 80px;
+      border-top: 1px solid var(--line);
+    }
+    .final-cta h2 {
+      font-size: clamp(30px, 4vw, 50px);
+      letter-spacing: -0.03em; margin-bottom: 12px;
+    }
+    .final-cta p {
+      color: var(--muted); max-width: 50ch;
+      margin: 0 auto 24px; font-size: 17px;
+    }
+    .cta-row {
+      display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+    }
+    .btn-outline {
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text); background: rgba(255,255,255,0.02);
+      padding: 14px 24px; border-radius: 999px;
+      font-weight: 700; font-size: 14px;
+    }
+    .btn-outline:hover { border-color: var(--accent); }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #14110c; padding: 14px 24px; border-radius: 999px;
+      font-weight: 700; font-size: 14px; border: none;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 26px 0 48px; color: var(--muted); font-size: 14px;
+    }
+    .footer-inner {
+      width: min(var(--max), calc(100% - 32px)); margin: 0 auto;
+      display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+    }
+    .footer-links { display: flex; gap: 18px; flex-wrap: wrap; }
+    .footer a { color: var(--muted); }
+    .footer a:hover { color: var(--text); }
+
+    @media (max-width: 920px) {
+      .platforms, .embed-grid, .feed-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .hero { padding-top: 56px; }
+      .btn { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">AetherMoore</a>
+      <nav class="nav" aria-label="Primary">
+        <a href="enterprise.html">Enterprise</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="demos/index.html">Demos</a>
+        <a href="chat.html">Chat</a>
+        <a href="research/index.html">Research</a>
+        <a href="blog.html">Blog</a>
+        <a href="community.html" class="active">Community</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="page-inner">
+        <div class="eyebrow">Community &amp; Social</div>
+        <h1>Watch it. Stream it. Talk about it. Build with us.</h1>
+        <p>
+          The governance system is open. The research is public. The community is where it all connects — watch demos, catch live builds, join the conversation, or help fund open-source tools for small businesses.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="page-inner">
+        <div class="platforms">
+          <article class="platform-card">
+            <div class="card-header">
+              <div class="platform-icon" style="background:rgba(255,0,0,0.12);color:#ff4444;">&#9654;</div>
+              <div>
+                <h2>YouTube</h2>
+                <span style="font-size:13px;color:var(--muted);">@id8461</span>
+              </div>
+            </div>
+            <p>Story series narrations, governance demos, live training runs, architecture walkthroughs, and behind-the-build sessions. The Six Tongues Protocol — chapter by chapter.</p>
+            <a class="btn btn-yt" href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">Subscribe on YouTube</a>
+          </article>
+
+          <article class="platform-card">
+            <div class="card-header">
+              <div class="platform-icon" style="background:rgba(145,70,255,0.12);color:#9146ff;">&#9670;</div>
+              <div>
+                <h2>Twitch</h2>
+                <span style="font-size:13px;color:var(--muted);">Live builds &amp; demos</span>
+              </div>
+            </div>
+            <p>Live coding sessions — watch the governance pipeline get built in real time. AI training runs, bug hunts, architecture decisions, and Tuxemon modding. No polish, just work.</p>
+            <a class="btn btn-tw" href="https://twitch.tv/" target="_blank" rel="noopener">Follow on Twitch</a>
+          </article>
+
+          <article class="platform-card">
+            <div class="card-header">
+              <div class="platform-icon" style="background:rgba(88,101,242,0.12);color:#5865f2;">&#9673;</div>
+              <div>
+                <h2>Discord</h2>
+                <span style="font-size:13px;color:var(--muted);">AetherMoore Community</span>
+              </div>
+            </div>
+            <p>Talk shop about AI governance, ask questions about the system, share what you're building, or just hang out. Channels for research, development, lore, and open-source small business tools.</p>
+            <a class="btn btn-dc" href="#" target="_blank" rel="noopener">Join Discord (coming soon)</a>
+          </article>
+
+          <article class="platform-card">
+            <div class="card-header">
+              <div class="platform-icon" style="background:rgba(114,164,242,0.12);color:#72a4f2;">&#9829;</div>
+              <div>
+                <h2>Ko-fi</h2>
+                <span style="font-size:13px;color:var(--muted);">Support development</span>
+              </div>
+            </div>
+            <p>Every dollar goes directly to development — GPU time for training, domain costs, and building free open-source tools for small businesses. Solo developer, zero VC, 100% builder.</p>
+            <a class="btn btn-ko" href="https://ko-fi.com/Y8Y51UQYWZ" target="_blank" rel="noopener">Support on Ko-fi</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="embed-section">
+      <div class="page-inner">
+        <div class="eyebrow">Latest from YouTube</div>
+        <h2>The Six Tongues Protocol — Story Series</h2>
+        <p>41 chapters narrated. Each episode explores a layer of the SCBE governance system through the story of Marcus Chen in Aethermoor.</p>
+        <div class="embed-grid">
+          <div class="video-embed">
+            <iframe src="https://www.youtube.com/embed/videoseries?list=PL4NrJc8z1YGBSCOM4wYBQw3PJWnJKM7XG" title="SCBE Story Series" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div>
+            <div class="sidebar-card">
+              <h3>What you're watching</h3>
+              <p>The Six Tongues Protocol adapted as a narrated series. Every chapter maps to real SCBE mechanics — hyperbolic cost scaling, Sacred Tongue tokenization, governance decisions, and drift pressure.</p>
+            </div>
+            <div class="sidebar-card">
+              <h3>Read the book</h3>
+              <p>The full 41-chapter novel is available on Amazon. Same story, deeper detail, your pace.</p>
+              <a href="https://www.amazon.com/dp/B0F28PHSPR" target="_blank" rel="noopener" style="color:var(--accent);font-size:14px;display:block;margin-top:10px;">Amazon &rarr;</a>
+            </div>
+            <div class="sidebar-card">
+              <h3>Read Chapter 1 free</h3>
+              <p>Try before you buy. Chapter 1 is posted publicly on GitHub Discussions.</p>
+              <a href="https://github.com/issdandavis/scbe-aethermoore-demo/discussions/704" target="_blank" rel="noopener" style="color:var(--accent);font-size:14px;display:block;margin-top:10px;">Read free &rarr;</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="feed">
+      <div class="page-inner">
+        <div class="eyebrow">What's happening</div>
+        <h2>Latest across all channels</h2>
+        <div class="feed-grid">
+          <article class="feed-item">
+            <div class="feed-platform yt-color">YouTube</div>
+            <h3>Story Series</h3>
+            <p>41-chapter narrated adaptation of The Six Tongues Protocol. New episodes from the governance arc.</p>
+          </article>
+          <article class="feed-item">
+            <div class="feed-platform" style="color:var(--green);">Open Source</div>
+            <h3>Small Business Tools</h3>
+            <p>Free payment setup, employee management, and AI assistant apps — coming soon. Follow GitHub for launch.</p>
+          </article>
+          <article class="feed-item">
+            <div class="feed-platform" style="color:var(--accent);">Research</div>
+            <h3>Governance Benchmark</h3>
+            <p>Training dataset for ALLOW/QUARANTINE/DENY prediction launching on Kaggle. Try the live demo on the homepage now.</p>
+          </article>
+          <article class="feed-item">
+            <div class="feed-platform tw-color">Live Builds</div>
+            <h3>Twitch Sessions</h3>
+            <p>Watch the governance pipeline get built live. AI training, Tuxemon modding, architecture decisions — unfiltered.</p>
+          </article>
+          <article class="feed-item">
+            <div class="feed-platform dc-color">Discord</div>
+            <h3>Community Server</h3>
+            <p>Research discussions, dev help, lore deep-dives, and open-source collaboration. Server launching soon.</p>
+          </article>
+          <article class="feed-item">
+            <div class="feed-platform" style="color:#72a4f2;">Ko-fi</div>
+            <h3>Support the Build</h3>
+            <p>Solo developer, no VC. Every dollar funds GPU time, domains, and free tools for small businesses who can't afford enterprise software.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <div class="page-inner">
+        <div class="eyebrow">Get involved</div>
+        <h2>Pick your lane.</h2>
+        <p>Watch, build, talk, or support. Every path connects back to the same system.</p>
+        <div class="cta-row">
+          <a class="btn btn-yt" href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+          <a class="btn btn-dc" href="#" target="_blank" rel="noopener">Discord</a>
+          <a class="btn btn-ko" href="https://ko-fi.com/Y8Y51UQYWZ" target="_blank" rel="noopener">Ko-fi</a>
+          <a class="btn-gold" href="index.html" style="display:inline-flex;align-items:center;padding:14px 24px;border-radius:999px;font-weight:700;font-size:14px;">Try the Governance Demo</a>
+        </div>
+        <div style="margin-top:28px;">
+          <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+          <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'Y8Y51UQYWZ');kofiwidget2.draw();</script>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="offers/index.html">Offers</a>
+        <a href="demos/index.html">Demos</a>
+        <a href="research/index.html">Research</a>
+        <a href="blog.html">Blog</a>
+        <a href="community.html">Community</a>
+        <a href="contact.html">Contact</a>
+        <a href="support.html">Support</a>
+        <a href="https://github.com/issdandavis" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+        <a href="https://ko-fi.com/Y8Y51UQYWZ" target="_blank" rel="noopener">Ko-fi</a>
+        <a href="https://huggingface.co/issdandavis" target="_blank" rel="noopener">HuggingFace</a>
+        <a href="https://medium.com/@issdandavis7795" target="_blank" rel="noopener">Medium</a>
+        <a href="https://www.linkedin.com/in/issdandavis" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+      <div>AetherMoore. Geometric AI governance by Issac Davis. Patent pending.</div>
+    </div>
+  </footer>
+</body>
+</html>

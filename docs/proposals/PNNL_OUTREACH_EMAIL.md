@@ -17,7 +17,7 @@ SCBE-AETHERMOORE is a patent-pending AI safety and governance framework (USPTO P
 - Real-time governance decisions (ALLOW / QUARANTINE / DENY) based on geometric distance metrics
 - 47 patent claims (15 independent) covering novel mathematical approaches to AI safety
 - Working code: 50,000+ lines, 1,150+ tests, dual TypeScript/Python implementation
-- Published packages on npm and PyPI, with interactive demos at aethermoorgames.com
+- Published packages on npm and PyPI, with interactive demos at aethermoore.com
 
 **Why PNNL:**
 I recently read about your ALOHA project (Agentic LLMs for Offensive Heuristic Automation), which uses Claude to reconstruct cyberattacks for defensive testing. My system provides exactly the governance layer that autonomous AI agents like ALOHA need — a mathematical guarantee that the agent stays within authorized behavioral boundaries, with formal verification through 5 quantum axioms (Unitarity, Locality, Causality, Symmetry, Composition).
@@ -37,7 +37,7 @@ Best regards,
 Issac Davis
 Port Angeles, WA
 GitHub: github.com/issdandavis
-Website: aethermoorgames.com
+Website: aethermoore.com
 Patent: USPTO Provisional #63/961,403
 
 ---

@@ -393,7 +393,7 @@
 | **Pricing page** | No public pricing. Enterprise buyers need to see tiers. | HIGH |
 | **Customer testimonials** | Zero social proof. Need at least 3 testimonials. | HIGH |
 | **SOC 2 Type 1** | Enterprise gate. At minimum, start the process. | MEDIUM |
-| **Landing page with clear CTA** | aethermoorgames.com exists but doesn't clearly sell a product. | HIGH |
+| **Landing page with clear CTA** | aethermoore.com exists but doesn't clearly sell a product. | HIGH |
 | **Email capture / waitlist** | No way to collect interested leads. | HIGH |
 | **Changelog / release notes** | Users need to see activity and progress. | MEDIUM |
 | **Status page** | Enterprise customers expect uptime monitoring. | LOW |

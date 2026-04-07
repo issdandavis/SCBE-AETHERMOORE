@@ -26,7 +26,7 @@
 | 3 | **Golden Ratio (phi) Weighting** | Tongue weights scale as phi^k: 1, 1.618, 2.618, 4.236, 6.854, 11.090 | Number theory, phyllotaxis, Fibonacci sequences | Sunflower spiral -- each petal placed at the golden angle to maximize coverage | Tongues, Fractal Recursion, Polyhedral Flow, Governance Coin |
 | 4 | **Poincare Ball Model** | Hyperbolic space where all agent states live (norm < 1) | Hyperbolic geometry, differential geometry | A snow globe -- the closer you get to the glass wall, space stretches to infinity | Hyperbolic Distance, Mobius Addition, Breathing Transform, PHDM |
 | 5 | **Hyperbolic Distance (dH)** | Layer 5 invariant metric: `arcosh(1 + 2||u-v||^2/((1-||u||^2)(1-||v||^2)))` | Hyperbolic geometry, Lorentzian metric | Walking toward the edge of a funhouse mirror -- each step covers less ground | Poincare Ball, Harmonic Wall, Risk Decision, Geometric Weakness |
-| 6 | **Harmonic Wall (H)** | Layer 12 safety score: `H(d,pd) = 1/(1+phi*dH+2*pd)` | Control theory (barrier functions), potential theory | Invisible force field -- weakens adversaries exponentially the further they drift | Hyperbolic Distance, Risk Decision, Governance Coin, Value Function |
+| 6 | **Harmonic Wall (H)** | Layer 12 safety score: `H(d*,R) = R^((phi*d*)^2)` | Control theory (barrier functions), potential theory | Invisible force field -- weakens adversaries exponentially the further they drift | Hyperbolic Distance, Risk Decision, Governance Coin, Value Function |
 | 7 | **14-Layer Pipeline** | Sequential security processing from raw input to decision | Signal processing pipeline, defense in depth | 14-floor building where each floor checks your ID differently | All subsystems (each layer hosts specific axioms and transforms) |
 | 8 | **Five Quantum Axioms** | Mathematical constraints guaranteeing pipeline integrity | Quantum field theory axioms (Wightman-like) | 5 constitutional amendments that every law must satisfy | 14-Layer Pipeline, Unitarity, Locality, Causality, Symmetry, Composition |
 | 9 | **Breathing Transform (Layer 6)** | `B(p,t) = tanh(||p|| + A*sin(wt)) * p/||p||` -- points oscillate in the ball | Dynamical systems, limit cycles | Lungs breathing -- the space itself inhales and exhales around safe states | Poincare Ball, Flux Dimensions, Phase Modulation |
@@ -92,7 +92,7 @@ L(x,t) = sum_{l=1}^{6} w_l * exp(beta_l * (d_l + sin(omega_l * t + phi_l)))
 
 **Connections**:
 - **Sacred Tongues**: The 6 dimensions ARE the 6 tongues. Each tongue owns one axis of the hyperspace.
-- **Harmonic Wall**: The canonical Layer 12 formula `H = 1/(1+phi*dH+2*pd)` is the value-space dual of the Langues cost.
+- **Harmonic Wall**: The canonical Layer 12 formula `H(d*,R) = R^((phi*d*)^2)` is the value-space dual of the Langues cost.
 - **Governance Coin**: `Value = 1/(1+L)` converts the cost landscape into a value landscape for coin accumulation.
 - **Flux Dimensions**: The fluxing variant `L_f` multiplies each tongue by `nu_i(t)`, allowing dimensions to breathe.
 
@@ -542,7 +542,7 @@ G(T) = integral from 0 to T of Value(x(t),t) dt
 | `L_f(x,t) = sum nu_i(t) w_i exp(beta_i(d_i + sin(...)))` | Fluxing Langues Metric | langues_metric.py | L3+L6 |
 | `dH(u,v) = arcosh(1 + 2||u-v||^2/((1-||u||^2)(1-||v||^2)))` | Hyperbolic Distance | hyperbolic.ts | L5 |
 | `B(p,t) = tanh(||p|| + A*sin(wt)) * p/||p||` | Breathing Transform | hyperbolic.ts | L6 |
-| `H(d,pd) = 1/(1+phi*dH+2*pd)` | Harmonic Wall (canonical) | harmonicScaling.ts | L12 |
+| `H(d*,R) = R^((phi*d*)^2)` | Harmonic Wall (canonical) | harmonicScaling.ts | L12 |
 | `V(x,t) = 1/(1+L(x,t))` | Value Function | langues_metric.py | - |
 | `G(T) = integral 1/(1+L) dt` | Governance Coin | langues_metric.py | - |
 | `L_gate = alpha * exp(-||x-proj||^2/sigma^2)` | Gateway Cost | geodesic_gateways.py | - |

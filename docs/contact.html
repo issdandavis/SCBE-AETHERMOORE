@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contact SCBE-AETHERMOORE | Message Issac Davis</title>
 <meta name="description" content="Send a message to the SCBE-AETHERMOORE team. Enterprise inquiries, partnership proposals, technical questions, or general feedback.">
-<link rel="canonical" href="https://aethermoorgames.com/contact.html">
+<link rel="canonical" href="https://aethermoore.com/contact.html">
 <meta property="og:title" content="Contact SCBE-AETHERMOORE">
 <meta property="og:description" content="Enterprise evaluations, partnership proposals, technical questions. Messages go directly to Issac.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://aethermoorgames.com/contact.html">
-<meta property="og:image" content="https://aethermoorgames.com/hero.png">
+<meta property="og:url" content="https://aethermoore.com/contact.html">
+<meta property="og:image" content="https://aethermoore.com/hero.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Contact SCBE-AETHERMOORE">
 <meta name="twitter:description" content="Enterprise evaluations, partnerships, or technical questions.">
-<meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
+<meta name="twitter:image" content="https://aethermoore.com/hero.png">
 <style>
 :root { --bg: #070711; --panel: #0d0d1a; --border: #1a1a3e; --text: #edf0ff; --muted: #afb5da; --accent: #7b8cff; --green: #2ecc71; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -86,7 +86,7 @@ p { color: var(--muted); font-size: 15px; margin-bottom: 14px; }
     <div class="channels">
         <div class="channel">
             <div class="label">Email</div>
-            <div class="value"><a href="mailto:aethermoregames@pm.me">aethermoregames@pm.me</a></div>
+            <div class="value"><a href="mailto:ai@aethermoore.com">ai@aethermoore.com</a></div>
         </div>
         <div class="channel">
             <div class="label">GitHub</div>
@@ -195,7 +195,7 @@ form.addEventListener('submit', async (e) => {
 
   // Try n8n webhook (if bridge is running)
   try {
-    await fetch('https://aethermoorgames.com/api/contact', {
+    await fetch('https://aethermoore.com/api/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, topic, message }),
@@ -205,7 +205,7 @@ form.addEventListener('submit', async (e) => {
   // Always fall back to mailto
   const subject = encodeURIComponent(`[SCBE ${topic}] Message from ${name}`);
   const body = encodeURIComponent(`From: ${name} (${email})\nTopic: ${topic}\n\n${message}`);
-  const mailtoLink = `mailto:aethermoregames@pm.me?subject=${subject}&body=${body}`;
+  const mailtoLink = `mailto:ai@aethermoore.com?subject=${subject}&body=${body}`;
 
   // Open mailto as fallback
   const a = document.createElement('a');

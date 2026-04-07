@@ -1,7 +1,7 @@
 # Website Fixes — Priority Order
 
 **Source**: Grok + Gemini site review (April 3, 2026)
-**Site**: https://aethermoorgames.com
+**Site**: https://aethermoore.com
 
 ---
 
@@ -21,7 +21,7 @@
 
 ### 2. Add Real Contact Method
 - Add mailto link or form for government/lab outreach
-- Even just: partnerships@aethermoorgames.com or a Typeform
+- Even just: partnerships@aethermoore.com or a Typeform
 
 ### 3. Hero Section — Less Text, More Proof
 - Lead with "16.4% better AI training. Proven on Colab T4."

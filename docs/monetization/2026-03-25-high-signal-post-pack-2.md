@@ -65,7 +65,7 @@ Audience:
 - people who want something usable now
 
 Destination:
-- `https://aethermoorgames.com/`
+- `https://aethermoore.com/`
 
 Post:
 
@@ -75,7 +75,7 @@ Post:
 
 `One product. One price. One manual. One support route.`
 
-`https://aethermoorgames.com/`
+`https://aethermoore.com/`
 
 ## 5. Open-source proof post
 
@@ -139,4 +139,4 @@ Post:
 `Docs, demos, benchmark page, and repo hub: https://issdandavis.github.io/SCBE-AETHERMOORE/`
 
 ### Variant C
-`Usable layer instead of the whole repo: https://aethermoorgames.com/`
+`Usable layer instead of the whole repo: https://aethermoore.com/`

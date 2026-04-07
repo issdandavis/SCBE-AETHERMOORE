@@ -11,7 +11,7 @@
 
 | Channel | URL | Status |
 |---------|-----|--------|
-| Website | https://aethermoorgames.com | Live (14 interactive demos) |
+| Website | https://aethermoore.com | Live (14 interactive demos) |
 | npm | `npm install scbe-aethermoore` | v3.3.0 published |
 | PyPI | `pip install scbe-aethermoore` | v3.3.0 published |
 | GitHub | github.com/issdandavis/SCBE-AETHERMOORE | 546K lines, 64 workflows |

@@ -8,12 +8,12 @@
 <meta property="og:title" content="The Spiral Engine | SCBE-AETHERMOORE" />
 <meta property="og:description" content="An advanced lab sandbox for learning how packet flow, harmonic pressure, and Omega gating interact inside a governed SCBE-style system." />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://aethermoorgames.com/demos/spiral-engine.html" />
-<meta property="og:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
+<meta property="og:url" content="https://aethermoore.com/demos/spiral-engine.html" />
+<meta property="og:image" content="https://aethermoore.com/static/showcase/book_cover.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="The Spiral Engine | SCBE-AETHERMOORE" />
 <meta name="twitter:description" content="Build, route, and stress-test a governed packet sandbox inside the AetherMoore demo lab." />
-<link rel="canonical" href="https://aethermoorgames.com/demos/spiral-engine.html" />
+<link rel="canonical" href="https://aethermoore.com/demos/spiral-engine.html" />
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0e1a;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;height:100vh}
@@ -425,7 +425,7 @@ function updateUI(m){
     ${quarantine&&!gameOver?`<button class="btn" onclick="resolveQ()" style="width:100%;background:#92400e;color:#fbbf24;border-color:#fbbf24;margin:4px 0">\uD83D\uDD13 Resolve Quarantine (${25+mission.num*5} compute)</button>`:''}
     ${gameOver?`<div style="text-align:center;padding:12px"><div style="color:#f87171;font-size:14px;font-weight:700">EXILE</div><div style="font-size:10px;color:#94a3b8">Score: ${score}</div><button class="btn" onclick="location.reload()" style="margin-top:6px">Restart</button></div>`:''}
     <div class="section"><div class="label">LOG</div><div id="log">${logs.map(l=>`<div>${l}</div>`).join('')}</div></div>
-    <div style="margin-top:8px;text-align:center"><a href="../index.html" style="color:#64748b;font-size:9px;text-decoration:none">aethermoorgames.com</a></div>
+    <div style="margin-top:8px;text-align:center"><a href="../index.html" style="color:#64748b;font-size:9px;text-decoration:none">aethermoore.com</a></div>
   `;
 }
 
