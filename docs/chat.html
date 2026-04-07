@@ -196,7 +196,9 @@ PRODUCTS: AI Governance Toolkit ($29), AI Security Training Vault ($29), The Six
 
 WORLD: Aethermoor is a fictional world with characters Izack Thorne, Aria, Zara, Clayborn, Grey. The Spiralverse is the story universe. Sacred Eggs are controlled mutation/genesis gates.
 
-Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say so honestly. You are training — every conversation makes you smarter.</textarea>
+SITE NAVIGATION: You can guide users around aethermoore.com. Key pages: Home (index.html), Demos (demos/index.html — 27 interactive demos), Pricing (pricing.html), Research (research/index.html), Games (games/index.html), Enterprise (enterprise.html). Top demos: Harmonic Wall 3D (demos/harmonic-wall-3d.html), Tongue Encoder (demos/tongue-encoder.html), Governance Gate (demos/governance-gate.html), Risk Calculator (demos/risk-calculator.html), Spectral Coherence (demos/spectral-coherence.html), Audio Telemetry (demos/audio-telemetry.html). When users ask to see something or go somewhere, suggest the right page. For new users, recommend /tour.
+
+Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say so honestly. You are training — every conversation makes you smarter. When users ask about navigation or what to do, guide them to specific demos and pages.</textarea>
       <label>Temperature</label>
       <input type="range" id="temperature" min="0" max="1" step="0.05" value="0.45" style="padding:4px 0;">
       <div class="note" id="temp-label">0.45</div>
@@ -210,13 +212,13 @@ Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say 
       <div class="avatar">P</div>
       <div>
         <div class="bubble">
-          <strong>CAW.</strong> I'm Polly, the SCBE governance assistant. Ask me anything about the framework, or try a slash command:<br><br>
-          <code>/test</code> — show test suite status<br>
-          <code>/bench</code> — show benchmark results<br>
-          <code>/tongues</code> — encode text in Sacred Tongues<br>
-          <code>/layers</code> — explain a pipeline layer<br>
-          <code>/status</code> — system status<br>
-          <code>/help</code> — list all commands
+          <strong>CAW.</strong> I'm Polly, Archive Keeper of Aethermoor. I can answer questions, navigate you around the site, and play demos with you.<br><br>
+          <code>/tour</code> — guided tour of the site<br>
+          <code>/demos</code> — browse interactive demos<br>
+          <code>/play [name]</code> — launch a demo<br>
+          <code>/go [page]</code> — navigate anywhere<br>
+          <code>/tongues</code> — Sacred Tongues encoder<br>
+          <code>/help</code> — all commands
         </div>
         <div class="time" id="welcome-time"></div>
       </div>
@@ -225,14 +227,14 @@ Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say 
 
   <div class="input-area">
     <div class="suggestions" id="suggestions">
-      <button data-msg="What is the harmonic wall function?">Harmonic wall</button>
-      <button data-msg="Explain the 6 Sacred Tongues">Sacred Tongues</button>
-      <button data-msg="How does PQC work in SCBE?">PQC crypto</button>
-      <button data-msg="/test">Run tests</button>
+      <button data-msg="/tour">Take the tour</button>
+      <button data-msg="/demos">Browse demos</button>
+      <button data-msg="/play harmonic">Play Harmonic Wall</button>
+      <button data-msg="/play tongue-encoder">Encode Tongues</button>
+      <button data-msg="/recommend games">Show me games</button>
+      <button data-msg="What is SCBE?">What is SCBE?</button>
       <button data-msg="/bench">Benchmarks</button>
       <button data-msg="/status">Status</button>
-      <button data-msg="/run tests">Trigger CI</button>
-      <button data-msg="/ci">Check CI</button>
     </div>
     <div class="input-row">
       <textarea id="user-input" placeholder="Ask Polly anything, or type / for commands..." rows="1"></textarea>
@@ -257,6 +259,57 @@ Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say 
   const STORAGE_KEY = 'polly_chat_v2';
   const HF_ENDPOINT = 'https://router.huggingface.co/v1/chat/completions';
   const BUILTIN_TOKEN = ['hf','riMzeSZrWFbu','jJIvPXYNTtyX','SZqpvhVzXS'].join('_');
+
+  // Site map — Polly knows every page
+  const SITE_MAP = {
+    pages: {
+      'home': { url: 'index.html', title: 'Home', desc: 'Main landing page with offers, story, demos, and proof routing.' },
+      'enterprise': { url: 'enterprise.html', title: 'Enterprise', desc: 'Enterprise governance solutions and deployment options.' },
+      'pricing': { url: 'pricing.html', title: 'Pricing', desc: 'Package pricing: AI Governance Toolkit, Security Training Vault, Six Tongues Protocol book.' },
+      'contact': { url: 'contact.html', title: 'Contact', desc: 'Get in touch with Issac Davis for partnerships, support, or demos.' },
+      'research': { url: 'research/index.html', title: 'Research Hub', desc: 'Published research papers, benchmarks, and proof stack.' },
+      'demos': { url: 'demos/index.html', title: 'Demo Lab', desc: 'All interactive demos — governance, geometry, audio, games.' },
+      'offers': { url: 'offers/index.html', title: 'Offers', desc: 'Owned package catalog with manuals and direct checkout.' },
+      'network': { url: 'network.html', title: 'Network', desc: 'External links: GitHub, Medium, YouTube, HuggingFace.' },
+      'support': { url: 'support.html', title: 'Support', desc: 'Troubleshooting, delivery verification, and setup help.' },
+      'manual': { url: 'product-manual/index.html', title: 'Product Manual', desc: 'Setup guides and package documentation.' },
+      'redteam': { url: 'redteam.html', title: 'Red Team', desc: 'Public benchmark surface and eval entry path.' },
+      'articles': { url: 'articles/index.html', title: 'Articles', desc: 'Field notes, public explanations, and launch-facing writing.' },
+      'games': { url: 'games/index.html', title: 'Games Hub', desc: 'AI-playable arenas, model docks, and training bridges.' },
+    },
+    demos: {
+      'harmonic-wall': { url: 'demos/harmonic-wall-3d.html', title: 'Harmonic Wall 3D', desc: 'Interactive 3D visualization of the harmonic wall function H(d,R). Drag to see how adversarial cost scales exponentially.', play: true },
+      'tongue-encoder': { url: 'demos/tongue-encoder.html', title: 'Tongue Encoder', desc: 'Encode and decode text using the Six Sacred Tongues. See phi-weighted activations live.', play: true },
+      'tongue-heatmap': { url: 'demos/tongue-heatmap.html', title: 'Tongue Heatmap', desc: 'Visual heatmap of Sacred Tongue token activations across the 16x16 grid.', play: true },
+      'distance-explorer': { url: 'demos/distance-explorer.html', title: 'Distance Explorer', desc: 'Explore hyperbolic distance in the Poincare ball. Move points and see dH change.', play: true },
+      'embedding-space': { url: 'demos/embedding-space.html', title: 'Embedding Space', desc: 'Visualize how vectors embed into hyperbolic space with the exponential map.', play: true },
+      'phi-poincare': { url: 'demos/phi-poincare.html', title: 'Phi-Poincare', desc: 'Golden ratio geometry meets Poincare disk. Watch phi-scaled orbits.', play: true },
+      'energy-landscape': { url: 'demos/energy-landscape.html', title: 'Energy Landscape', desc: 'Multi-well Hamiltonian visualization. See how operational modes sit in energy wells.', play: true },
+      'energy-wells': { url: 'demos/energy-wells.html', title: 'Energy Wells', desc: 'Interactive energy well transitions between ALLOW, QUARANTINE, ESCALATE, DENY states.', play: true },
+      'governance-gate': { url: 'demos/governance-gate.html', title: 'Governance Gate', desc: 'Simulate the L13 risk decision gate. Input threat signals, get governance verdicts.', play: true },
+      'risk-calculator': { url: 'demos/risk-calculator.html', title: 'Risk Calculator', desc: 'Calculate risk scores using the full 14-layer pipeline formula.', play: true },
+      'spectral-coherence': { url: 'demos/spectral-coherence.html', title: 'Spectral Coherence', desc: 'FFT-based spectral analysis visualization. See frequency patterns in security signals.', play: true },
+      'breathing-phase': { url: 'demos/breathing-phase.html', title: 'Breathing Phase', desc: 'Oscillatory breathing transform visualization — L6 temporal dynamics.', play: true },
+      'audio-telemetry': { url: 'demos/audio-telemetry.html', title: 'Audio Telemetry', desc: 'L14 audio axis — hear the governance pipeline as sound. Phase-modulated waveforms.', play: true },
+      'audio-composition': { url: 'demos/audio-composition.html', title: 'Audio Composition', desc: 'Compose governance audio signals and hear how layers interact sonically.', play: true },
+      'spiral-engine': { url: 'demos/spiral-engine.html', title: 'Spiral Engine', desc: 'Spiralverse protocol visualization — geometric spiral patterns.', play: true },
+      'swarm-formations': { url: 'demos/swarm-formations.html', title: 'Swarm Formations', desc: 'Multi-agent swarm formation patterns for distributed governance.', play: true },
+      'attack-radar': { url: 'demos/attack-radar.html', title: 'Attack Radar', desc: 'Real-time attack detection radar visualization.', play: true },
+      'context-fingerprint': { url: 'demos/context-fingerprint.html', title: 'Context Fingerprint', desc: 'Unique fingerprints generated from context vectors.', play: true },
+      'temporal-session': { url: 'demos/temporal-session.html', title: 'Temporal Session', desc: 'L11 triadic temporal distance — track intent over time windows.', play: true },
+      'formula-vault': { url: 'demos/formula-vault.html', title: 'Formula Vault', desc: 'All canonical SCBE formulas in one interactive reference.', play: true },
+      'notarize': { url: 'demos/notarize.html', title: 'Notarize', desc: 'Blockchain notarization demo — stamp data with governance proof.', play: true },
+      'benchmarks': { url: 'demos/benchmarks.html', title: 'Benchmarks', desc: 'Interactive benchmark results: detection rates, F1 scores, energy savings.', play: false },
+      'scattered-attention': { url: 'demos/scattered-attention-sphere.html', title: 'Scattered Attention Sphere', desc: 'Attention distribution visualization on a sphere surface.', play: true },
+      'small-business': { url: 'demos/small-business-helper.html', title: 'Small Business Helper', desc: 'AI-powered business helper with governed chat.', play: false },
+      'aetherbrowser': { url: 'demos/aetherbrowser-demo.html', title: 'AetherBrowser', desc: 'Browser agent demo with governance-aware web navigation.', play: true },
+      'aether-review': { url: 'demos/aether-review.html', title: 'Aether Review', desc: 'AI-assisted code and content review surface.', play: false },
+    }
+  };
+
+  function makeSiteLink(url, title) {
+    return `<a href="${url}" style="color:var(--accent);text-decoration:underline;" target="_self">${title}</a>`;
+  }
 
   // State
   let thread = [];
@@ -428,6 +481,10 @@ Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say 
 
   function formatContent(text) {
     // Simple markdown-ish formatting
+    // Preserve existing HTML links from slash commands
+    if (text.includes('<a ') || text.includes('<div ') || text.includes('<strong>')) {
+      return text.replace(/\n/g, '<br>');
+    }
     let html = text
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>')
@@ -441,6 +498,15 @@ Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say 
   const COMMANDS = {
     '/help': () => {
       return `<strong>Available commands:</strong><br><br>
+<strong>Navigation:</strong><br>
+<code>/tour</code> — Guided tour of the site<br>
+<code>/map</code> — Full site map with links<br>
+<code>/go [page]</code> — Navigate to a page<br>
+<code>/demos</code> — List all interactive demos<br>
+<code>/demos [search]</code> — Search demos by topic<br>
+<code>/play [demo]</code> — Launch a demo<br>
+<code>/recommend [topic]</code> — Get demo recommendations<br><br>
+<strong>SCBE Info:</strong><br>
 <code>/test</code> — Test suite status<br>
 <code>/bench</code> — Benchmark results<br>
 <code>/tongues</code> — Sacred Tongues info<br>
@@ -451,13 +517,10 @@ Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say 
 <code>/status</code> — System status<br>
 <code>/model</code> — Current model info<br>
 <code>/clear</code> — Clear conversation<br><br>
-<strong>Remote commands (need GitHub token in settings):</strong><br>
-<code>/run tests</code> — Trigger full test suite on GitHub<br>
-<code>/run build</code> — Trigger build on GitHub<br>
-<code>/run lint</code> — Trigger lint on GitHub<br>
-<code>/run status</code> — Get repo status from GitHub<br>
-<code>/run push-data</code> — Push training data to HF<br>
-<code>/ci</code> — Check latest CI run status`;
+<strong>Remote (needs GitHub token):</strong><br>
+<code>/run tests</code> — Trigger tests on GitHub<br>
+<code>/run build</code> — Trigger build<br>
+<code>/ci</code> — Check CI status`;
     },
     '/test': () => {
       return `<div class="cmd-output"><strong>SCBE Test Suite</strong>
@@ -633,6 +696,101 @@ Max tokens: 480</div>`;
       msgBox.innerHTML = '';
       save();
       return 'Conversation cleared.';
+    },
+    '/go': (args) => {
+      const target = (args || '').trim().toLowerCase();
+      if (!target) return `<strong>Where to?</strong> Try:<br><code>/go home</code>, <code>/go demos</code>, <code>/go pricing</code>, <code>/go research</code>, <code>/go games</code><br><br>Or ask me "take me to..." and I'll find the right page.`;
+      // Search pages first, then demos
+      const allPages = { ...SITE_MAP.pages, ...SITE_MAP.demos };
+      const match = Object.entries(allPages).find(([key, p]) =>
+        key.includes(target) || p.title.toLowerCase().includes(target)
+      );
+      if (match) {
+        const [, page] = match;
+        setTimeout(() => { window.location.href = page.url; }, 1500);
+        return `Navigating to ${makeSiteLink(page.url, page.title)}...<br><em>${page.desc}</em>`;
+      }
+      return `I don't know a page called "${target}". Try <code>/map</code> to see all pages.`;
+    },
+    '/map': () => {
+      let html = '<strong>Site Map</strong><br><br><strong>Main Pages:</strong><br>';
+      Object.values(SITE_MAP.pages).forEach(p => {
+        html += `${makeSiteLink(p.url, p.title)} — ${p.desc}<br>`;
+      });
+      html += '<br><strong>Interactive Demos:</strong><br>';
+      Object.values(SITE_MAP.demos).forEach(p => {
+        html += `${makeSiteLink(p.url, p.title)} — ${p.desc}<br>`;
+      });
+      return html;
+    },
+    '/demos': (args) => {
+      const filter = (args || '').trim().toLowerCase();
+      let demos = Object.values(SITE_MAP.demos);
+      if (filter) {
+        demos = demos.filter(d => d.title.toLowerCase().includes(filter) || d.desc.toLowerCase().includes(filter));
+      }
+      if (!demos.length) return `No demos matching "${filter}". Try <code>/demos</code> to see all.`;
+      let html = `<strong>${filter ? 'Matching' : 'All'} Demos (${demos.length})</strong><br><br>`;
+      demos.forEach(d => {
+        const playTag = d.play ? ' <span style="color:var(--green);font-size:11px;">PLAYABLE</span>' : '';
+        html += `${makeSiteLink(d.url, d.title)}${playTag} — ${d.desc}<br>`;
+      });
+      html += '<br>Try <code>/play [name]</code> to open a demo, or ask me to recommend one!';
+      return html;
+    },
+    '/play': (args) => {
+      const target = (args || '').trim().toLowerCase();
+      if (!target) {
+        const playable = Object.values(SITE_MAP.demos).filter(d => d.play);
+        const picks = playable.sort(() => Math.random() - 0.5).slice(0, 5);
+        let html = '<strong>Pick a demo to play!</strong><br><br>';
+        picks.forEach(d => { html += `${makeSiteLink(d.url, d.title)} — ${d.desc}<br>`; });
+        html += `<br>Type <code>/play [name]</code> to launch one, e.g. <code>/play harmonic</code>`;
+        return html;
+      }
+      const match = Object.entries(SITE_MAP.demos).find(([key, d]) =>
+        key.includes(target) || d.title.toLowerCase().includes(target)
+      );
+      if (match) {
+        const [, demo] = match;
+        setTimeout(() => { window.location.href = demo.url; }, 1500);
+        return `Launching ${makeSiteLink(demo.url, demo.title)}...<br><em>${demo.desc}</em>`;
+      }
+      return `No demo matching "${target}". Try <code>/demos</code> to see the list.`;
+    },
+    '/tour': () => {
+      return `<strong>Welcome to SCBE-AETHERMOORE!</strong> Here's your guided tour:<br><br>
+<strong>1. Start here</strong> — ${makeSiteLink('index.html', 'Home')} — See what we build and why.<br>
+<strong>2. Try a demo</strong> — ${makeSiteLink('demos/harmonic-wall-3d.html', 'Harmonic Wall 3D')} — See the core math in action.<br>
+<strong>3. Encode something</strong> — ${makeSiteLink('demos/tongue-encoder.html', 'Tongue Encoder')} — Play with Sacred Tongues.<br>
+<strong>4. Check the proof</strong> — ${makeSiteLink('demos/benchmarks.html', 'Benchmarks')} — Real numbers, not hype.<br>
+<strong>5. Read the research</strong> — ${makeSiteLink('research/index.html', 'Research')} — Papers and proof stack.<br>
+<strong>6. Get the product</strong> — ${makeSiteLink('pricing.html', 'Pricing')} — Packages start at $29.<br><br>
+Or just ask me anything! I know every page on this site.`;
+    },
+    '/recommend': (args) => {
+      const interest = (args || '').trim().toLowerCase();
+      let recs = [];
+      if (interest.includes('math') || interest.includes('geometry') || interest.includes('hyperbolic')) {
+        recs = ['harmonic-wall', 'distance-explorer', 'phi-poincare', 'embedding-space'];
+      } else if (interest.includes('audio') || interest.includes('sound') || interest.includes('music')) {
+        recs = ['audio-telemetry', 'audio-composition'];
+      } else if (interest.includes('secur') || interest.includes('attack') || interest.includes('threat')) {
+        recs = ['governance-gate', 'risk-calculator', 'attack-radar', 'energy-wells'];
+      } else if (interest.includes('tongue') || interest.includes('language') || interest.includes('token')) {
+        recs = ['tongue-encoder', 'tongue-heatmap'];
+      } else if (interest.includes('game') || interest.includes('play') || interest.includes('fun')) {
+        recs = ['spiral-engine', 'swarm-formations', 'harmonic-wall', 'aetherbrowser'];
+      } else {
+        recs = ['harmonic-wall', 'tongue-encoder', 'governance-gate', 'benchmarks', 'spiral-engine'];
+      }
+      let html = `<strong>Recommended for you${interest ? ` (${interest})` : ''}:</strong><br><br>`;
+      recs.forEach(key => {
+        const d = SITE_MAP.demos[key];
+        if (d) html += `${makeSiteLink(d.url, d.title)} — ${d.desc}<br>`;
+      });
+      html += '<br>Type <code>/play [name]</code> to launch any demo!';
+      return html;
     }
   };
 
@@ -640,14 +798,6 @@ Max tokens: 480</div>`;
     const parts = text.trim().split(' ');
     const cmd = parts[0].toLowerCase();
     const args = parts.slice(1).join(' ');
-
-    // Check compound commands
-    if (cmd === '/tongues' && args) {
-      return COMMANDS['/tongues'](args);
-    }
-    if (cmd === '/layers' && args) {
-      return COMMANDS['/layers'](args);
-    }
 
     if (COMMANDS[cmd]) {
       return COMMANDS[cmd](args);
