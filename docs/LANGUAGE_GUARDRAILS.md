@@ -36,7 +36,7 @@ Prevent hype, unsupported claims, and promotional language from entering patent 
 - Use present tense for implemented features, conditional for planned
 - No marketing language in technical docs
 
-**Allowed**: "Layer 12 computes H(d,R) = R^(d^2). Production uses the bounded variant 1/(1+d+2*pd)."
+**Allowed**: "Layer 12 computes the canonical harmonic wall H(d*,R) = R^((phi*d*)^2), where phi=(1+sqrt(5))/2 and R>1 (default e)."
 **Forbidden**: "Our groundbreaking harmonic wall provides military-grade security."
 
 ### 3. Experimental Register (CLAIMS_AUDIT_V4.md, experiment logs)

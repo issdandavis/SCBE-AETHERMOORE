@@ -1256,7 +1256,7 @@ Devices to test:
   - iPad Pro (1024x1366)
 
 Pages to test:
-  - Homepage (aethermoorgames.com)
+  - Homepage (aethermoore.com)
   - All 14 demo pages
   - API documentation
   - Pricing page (when built)
@@ -1497,7 +1497,7 @@ A privacy policy is required for ALL platforms. It must include:
 | **CCPA compliance** | Do Not Sell My Personal Information |
 | **Children's privacy** | Not directed at children under 13 |
 
-**Host at**: `aethermoorgames.com/privacy` (must be publicly accessible URL)
+**Host at**: `aethermoore.com/privacy` (must be publicly accessible URL)
 
 ### 5.7 Permissions Declarations
 

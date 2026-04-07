@@ -35,7 +35,7 @@ This document presents a comprehensive prior art analysis across seven technolog
 
 - **No prior art combines hyperbolic geometry safety scoring with post-quantum cryptographic AI identity** within a layered governance framework
 - **No prior art teaches constructed language protocols (Sacred Tongues) as a security and governance mechanism** for AI fleet communication
-- **No prior art describes the specific H(d,pd) = 1/(1+d+2*pd) bounded safety score function** tied to Poincare Half-Disk Model geometry for AI governance decisions
+- **No prior art describes the specific H(d*,R) = R^((phi*d*)^2) harmonic wall function** tied to Poincare Half-Disk Model geometry for AI governance decisions
 - **The "Context Energy" economic model** with per-operation energy accounting tied to safety layer depth is novel
 - **Byzantine fault tolerance applied through concentric ring topology** with Sacred Tongue encoding is not found in any prior art
 
@@ -200,7 +200,7 @@ This document presents a comprehensive prior art analysis across seven technolog
 **Summary:** Proposes a modular, policy-driven enforcement layer that regulates agent outputs at runtime without modifying internal model logic or assuming agent cooperation. Uses declarative rules (JSON-encoded) and a Trust Factor mechanism that scores agents based on compliance and severity-weighted violations. Operates as a non-invasive runtime proxy.
 
 **SCBE-AETHERMOORE Differentiation:**
-- GaaS uses simple severity-weighted compliance scoring; SCBE uses H(d,pd) = 1/(1+d+2*pd) bounded safety score derived from hyperbolic geometry
+- GaaS uses simple severity-weighted compliance scoring; SCBE uses H(d*,R) = R^((phi*d*)^2) harmonic wall score derived from hyperbolic geometry
 - GaaS is a single enforcement layer; SCBE has 14 distinct layers with different functions
 - GaaS lacks cryptographic identity, constructed language protocols, and Context Energy economics
 - GaaS is JSON-rule-based; SCBE integrates mathematical safety invariants from Poincare geometry
@@ -272,7 +272,7 @@ This document presents a comprehensive prior art analysis across seven technolog
 **SCBE-AETHERMOORE Differentiation:**
 - Nickel & Kiela use Poincare ball for data representation learning (embeddings); SCBE uses Poincare Half-Disk Model for computing AI safety scores
 - Nickel & Kiela's application: hierarchical data embedding and retrieval. SCBE's application: real-time safety decision-making for AI governance
-- SCBE's H(d,pd) = 1/(1+d+2*pd) is a bounded harmonic safety function on the Poincare Half-Disk, not an embedding function on the Poincare ball — different mathematical object and different geometric model
+- SCBE's H(d*,R) = R^((phi*d*)^2) is a super-exponential harmonic wall function on the Poincare Half-Disk, not an embedding function on the Poincare ball — different mathematical object and different geometric model
 - SCBE combines the hyperbolic safety score with 13 other architectural layers including PQC identity — this integration is not suggested by Nickel & Kiela
 - **No patent application found** for this work; published as open research with open-source code
 - **Important:** This is the closest mathematical prior art. CIP claims must clearly specify the Poincare Half-Disk Model (not ball), the specific H(d,pd) function form, and the application to AI governance safety scoring
@@ -885,10 +885,10 @@ This document presents a comprehensive prior art analysis across seven technolog
 ### 10.1 Claims to Strengthen
 
 1. **Hyperbolic Safety Scoring (Highest Novelty)**
-   - Claim the specific H(d,pd) = 1/(1+d+2*pd) bounded safety score function on the Poincare Half-Disk Model
+   - Claim the specific H(d*,R) = R^((phi*d*)^2) harmonic wall function on the Poincare Half-Disk Model
    - Claim the integration of this function into a multi-layer governance architecture
    - Explicitly distinguish from Poincare Ball embeddings (Nickel & Kiela) — different geometric model, different mathematical object, different application
-   - Claim the dual function approach: H(d,R) = R^(d^2) cost multiplier AND H(d,pd) = 1/(1+d+2*pd) safety score
+   - Claim the unified wall/score approach: H_wall(d*,R) = R^((phi*d*)^2) and H_score = 1/H_wall
 
 2. **Sacred Tongues (High Novelty)**
    - Claim constructed languages with designed phonological/grammatical systems for AI governance communication
@@ -1019,8 +1019,8 @@ The following items from the v4.0.0 roadmap should be included as new matter in 
 
 The following unique claim elements have NO direct prior art identified:
 
-1. **H(d,pd) = 1/(1+d+2*pd)** bounded safety score function derived from Poincare Half-Disk Model harmonic analysis, applied to AI governance decision-making
-2. **H(d,R) = R^(d^2)** exponential cost multiplier for governance layer traversal depth
+1. **H(d*,R) = R^((phi*d*)^2)** harmonic wall function derived from Poincare Half-Disk Model geometry, applied to AI governance decision-making (phi = golden ratio, R > 1)
+2. **H_score = 1/H_wall** bounded safety score as the reciprocal of the wall function for governance layer traversal
 3. **Sacred Tongues** — six constructed languages (KO, AV, RU, CA, DR, UM) with full phonological/grammatical systems designed for AI fleet governance communication
 4. **GeoSeal** — geographic context sealing through Sacred Tongue encoding of governance decisions
 5. **Platform-Tongue Mapping** — binding specific Sacred Tongues to specific communication platforms (twitter->KO, linkedin->AV, bluesky->RU, mastodon->CA, wordpress/medium->DR, github->CA, huggingface->UM)

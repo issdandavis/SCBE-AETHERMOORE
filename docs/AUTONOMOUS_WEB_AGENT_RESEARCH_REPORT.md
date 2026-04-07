@@ -525,7 +525,7 @@ Agent Action -> Check Result
 **Role in Web Agent Architecture**:
 - **Personality Vector Encoding**: This model encodes the 21D personality vectors used by CSTM PlayerAgents. Each dimension (reasoning, fairness, empathy, etc.) maps to a specific axis in the PHDM (Polyhedral Hamiltonian Defense Manifold).
 - **Scene-to-Personality Bridge**: Acts as the projection layer between high-dimensional sentence embeddings (384D/768D) and the 21D personality space.
-- **Safety Scoring Input**: The 21D embedding feeds into the SCBE safety score computation: `H(d,pd) = 1/(1+d+2*pd)`, where `d` is hyperbolic distance and `pd` is personality drift.
+- **Safety Scoring Input**: The 21D embedding feeds into the SCBE safety score computation: `H(d*,R) = R^((phi*d*)^2)`, where `d*` is hyperbolic distance and `R > 1` (default `e`) is the base.
 
 **Enhancement Roadmap**:
 1. Fine-tune on CSTM nursery playthrough data to improve personality-to-scene alignment

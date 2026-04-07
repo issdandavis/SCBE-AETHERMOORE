@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBE Blog | AI Governance Lab Notes</title>
+<meta name="description" content="Lab notes, research findings, benchmark updates, and engineering logs from the SCBE-AETHERMOORE AI governance framework.">
+<link rel="canonical" href="https://aethermoore.com/blog.html">
+<meta property="og:title" content="SCBE Blog | AI Governance Lab Notes">
+<meta property="og:description" content="Lab notes, benchmarks, and engineering logs from the SCBE governance framework.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethermoore.com/blog.html">
+<meta property="og:image" content="https://aethermoore.com/hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SCBE Blog">
+<meta name="twitter:description" content="AI governance lab notes and engineering logs.">
+<meta name="twitter:image" content="https://aethermoore.com/hero.png">
+<link rel="stylesheet" href="static/shared.css">
+<link rel="stylesheet" href="static/polly-sidebar.css">
+<style>
+.post-grid { display: grid; gap: 20px; margin: 24px 0; }
+.post {
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px; padding: 28px;
+  display: grid; grid-template-columns: 120px 1fr; gap: 20px; align-items: start;
+}
+.post .date-col { text-align: center; }
+.post .day { font-size: 36px; font-weight: 800; color: var(--accent-strong); line-height: 1; }
+.post .month { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.post .year { font-size: 12px; color: var(--muted); }
+.post h3 { font-size: 20px; margin-bottom: 8px; }
+.post h3 a { color: var(--text); }
+.post h3 a:hover { color: var(--accent); text-decoration: none; }
+.post p { color: var(--muted); font-size: 15px; margin-bottom: 10px; }
+.post .read-more { color: var(--accent); font-size: 14px; font-weight: 600; }
+
+.sidebar-signup {
+  background: rgba(214,167,86,0.06); border: 2px solid var(--line);
+  border-radius: 20px; padding: 24px; margin-top: 24px;
+}
+.sidebar-signup h3 { font-size: 18px; margin-bottom: 8px; }
+.sidebar-signup p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+.sidebar-signup input {
+  width: 100%; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.3); color: var(--text); border-radius: 10px;
+  font-size: 14px; margin-bottom: 8px; outline: none;
+}
+.sidebar-signup button {
+  width: 100%; padding: 10px; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #14110c; font-weight: 700; cursor: pointer;
+}
+
+.blog-layout { display: grid; grid-template-columns: 1fr 300px; gap: 32px; }
+@media (max-width: 900px) {
+  .blog-layout { grid-template-columns: 1fr; }
+  .post { grid-template-columns: 80px 1fr; }
+}
+</style>
+</head>
+<body data-polly-context="blog" data-polly-root=".">
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">SCBE AETHERMOORE</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="newsletter.html">Newsletter</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section style="padding: 72px 0 40px; border-top: none;">
+    <div class="wrap">
+      <div class="eyebrow">Blog</div>
+      <h1>Lab notes from the governance stack.</h1>
+      <p class="section-copy">Engineering logs, benchmark results, research findings, and honest progress reports. Written from git commits, not a content calendar.</p>
+    </div>
+  </section>
+
+  <section style="border-top:none;padding-top:0;">
+    <div class="wrap">
+      <div class="blog-layout">
+        <div class="post-grid">
+
+          <article class="post">
+            <div class="date-col">
+              <div class="day">01</div>
+              <div class="month">Apr</div>
+              <div class="year">2026</div>
+            </div>
+            <div>
+              <h3><a href="#">10 Pages Deployed: Enterprise, Compliance, Chat, and the Full Rewrite</a></h3>
+              <p>Major site expansion — enterprise landing page, compliance matrices (EU AI Act, NIST, OWASP), full-page Polly chat with slash commands, test suite dashboard, tools catalog, workflow gallery, and contact forms. Unified design system across all pages. Sitemap went from 35 to 84 URLs.</p>
+              <div class="tags">
+                <span class="tag">site</span>
+                <span class="tag">enterprise</span>
+                <span class="tag">compliance</span>
+              </div>
+              <a class="read-more" href="#">Read more &rarr;</a>
+            </div>
+          </article>
+
+          <article class="post">
+            <div class="date-col">
+              <div class="day">01</div>
+              <div class="month">Apr</div>
+              <div class="year">2026</div>
+            </div>
+            <div>
+              <h3><a href="#">690K Unknown Labels Dropped: Cleaning the Training Pipeline</a></h3>
+              <p>Training data audit revealed 84% of records labeled "unknown" and 134 labels with fewer than 10 samples. Consolidated 254 raw labels into 24 families. Accuracy on the placeholder model dropped from 66% to 43% — because the task is now real instead of memorizing noise. Qwen fine-tune on Kaggle next.</p>
+              <div class="tags">
+                <span class="tag">training</span>
+                <span class="tag">data quality</span>
+                <span class="tag">HuggingFace</span>
+              </div>
+              <a class="read-more" href="#">Read more &rarr;</a>
+            </div>
+          </article>
+
+          <article class="post">
+            <div class="date-col">
+              <div class="day">31</div>
+              <div class="month">Mar</div>
+              <div class="year">2026</div>
+            </div>
+            <div>
+              <h3><a href="articles/2026-03-31-nightly-roundup.html">Overnight Build: Pump Architecture, 233K Dataset, and Binary-First Stack</a></h3>
+              <p>Pricing page shipped ($49/$199/$499), benchmark suite with 91-attack corpus, spectral sweep across 8 configs, and the 233K multi-view SFT dataset pushed to HuggingFace. Research page updated with March 31 verified numbers.</p>
+              <div class="tags">
+                <span class="tag">pricing</span>
+                <span class="tag">benchmarks</span>
+                <span class="tag">dataset</span>
+              </div>
+              <a class="read-more" href="articles/2026-03-31-nightly-roundup.html">Read more &rarr;</a>
+            </div>
+          </article>
+
+          <article class="post">
+            <div class="date-col">
+              <div class="day">01</div>
+              <div class="month">Apr</div>
+              <div class="year">2026</div>
+            </div>
+            <div>
+              <h3><a href="research/multi-agent-security.html">Case Study: SentinelAgent and Multi-Agent Security</a></h3>
+              <p>How the 14-layer pipeline provides runtime oversight for hub-and-spoke multi-agent architectures. Three pillars of defense mapped to specific pipeline layers: input validation, planning validation, and behavioral analysis.</p>
+              <div class="tags">
+                <span class="tag">multi-agent</span>
+                <span class="tag">case study</span>
+                <span class="tag">security</span>
+              </div>
+              <a class="read-more" href="research/multi-agent-security.html">Read more &rarr;</a>
+            </div>
+          </article>
+
+        </div>
+
+        <aside>
+          <div class="sidebar-signup">
+            <h3>SCBE Weekly</h3>
+            <p>One email per week. What shipped, what the benchmarks say, and what's next.</p>
+            <form onsubmit="event.preventDefault(); const e=this.querySelector('input').value; if(e){try{const s=JSON.parse(localStorage.getItem('scbe_newsletter_subs')||'[]'); if(!s.includes(e)){s.push(e);localStorage.setItem('scbe_newsletter_subs',JSON.stringify(s))} }catch{} window.location.href='mailto:ai@aethermoore.com?subject=Newsletter%20signup:%20'+encodeURIComponent(e); this.innerHTML='<p style=color:var(--green)>You are in.</p>';}">
+              <input type="email" placeholder="you@company.com" required>
+              <button type="submit">Subscribe</button>
+            </form>
+          </div>
+
+          <div style="margin-top:20px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;">
+            <h4 style="margin-bottom:10px;">Quick links</h4>
+            <div style="display:grid;gap:8px;font-size:14px;">
+              <a href="enterprise.html" style="color:var(--accent);">Enterprise overview</a>
+              <a href="demos/index.html" style="color:var(--accent);">Try the demos</a>
+              <a href="test-suite.html" style="color:var(--accent);">Test suite (6,742 passing)</a>
+              <a href="compliance.html" style="color:var(--accent);">Compliance mapping</a>
+              <a href="chat.html" style="color:var(--accent);">Talk to Polly</a>
+              <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" style="color:var(--accent);">GitHub</a>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;">
+            <h4 style="margin-bottom:10px;">About Issac</h4>
+            <p style="color:var(--muted);font-size:13px;margin-bottom:10px;">Solo founder, Port Angeles, WA. Started as a D&D campaign, became a patent-pending AI governance framework.</p>
+            <div style="display:grid;gap:6px;font-size:13px;">
+              <a href="https://www.linkedin.com/in/issdandavis" target="_blank" style="color:var(--accent);">LinkedIn</a>
+              <a href="https://medium.com/@issdandavis7795" target="_blank" style="color:var(--accent);">Medium</a>
+              <a href="https://www.youtube.com/@id8461" target="_blank" style="color:var(--accent);">YouTube</a>
+              <a href="https://huggingface.co/issdandavis" target="_blank" style="color:var(--accent);">HuggingFace</a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
+      <a href="https://www.linkedin.com/in/issdandavis" target="_blank">LinkedIn</a>
+      <a href="https://medium.com/@issdandavis7795" target="_blank">Medium</a>
+      <a href="https://huggingface.co/issdandavis" target="_blank">HuggingFace</a>
+      <a href="https://www.youtube.com/@id8461" target="_blank">YouTube</a>
+    </div>
+    <div>SCBE AETHERMOORE &middot; Patent Pending USPTO #63/961,403</div>
+  </div>
+</footer>
+
+<script src="static/polly-sidebar.js"></script>
+</body>
+</html>

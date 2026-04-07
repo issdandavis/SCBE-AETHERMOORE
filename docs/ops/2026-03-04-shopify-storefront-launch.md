@@ -1,7 +1,7 @@
 # Shopify Storefront Launch (Aethermore Code)
 
 ## Current state
-- Custom domain `https://aethermoorgames.com` resolves to `/password`.
+- Custom domain `https://aethermoore.com` resolves to `/password`.
 - Admin side is reachable at `https://admin.shopify.com/store/aethermore-code/products`.
 - Storefront lock prevents product discovery and sales.
 
@@ -9,8 +9,8 @@
 1. In Shopify Admin open `Online Store -> Preferences`.
 2. In **Password protection**, uncheck `Restrict access to visitors with the password`.
 3. Save changes and verify:
-   - `https://aethermoorgames.com/`
-   - `https://aethermoorgames.com/collections/all`
+   - `https://aethermoore.com/`
+   - `https://aethermoore.com/collections/all`
 
 ## Launch pack commands
 Generate standardized product media + catalog evaluation + both-side smoke report:

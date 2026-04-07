@@ -228,7 +228,7 @@ Cash App Taxes (free, welcome email received Mar 19, 2026)
 - Published book: The Six Tongues Protocol (Amazon KDP)
 - Published packages: npm + PyPI (scbe-aethermoore)
 - Published models: HuggingFace (6 models, 16 datasets)
-- Active website: aethermoorgames.com
+- Active website: aethermoore.com
 - Active store: aethermore-works.myshopify.com
 - YouTube channel: 11 videos
 - GitHub: 800+ commits, 170+ tests, 14-layer pipeline

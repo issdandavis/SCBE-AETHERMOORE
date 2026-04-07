@@ -25,7 +25,7 @@ It also sets a custom `User-Agent` and supports polite request spacing (default 
 Set custom identity if needed:
 
 ```powershell
-$env:ARXIV_USER_AGENT = "AETHERMOORE-HYDRA/1.0 (mailto:issdandavis7795@aethermoorgames.com)"
+$env:ARXIV_USER_AGENT = "AETHERMOORE-HYDRA/1.0 (mailto:issdandavis7795@aethermoore.com)"
 ```
 
 ## HYDRA CLI commands

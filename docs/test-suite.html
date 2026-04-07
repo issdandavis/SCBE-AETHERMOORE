@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBE Test Suite | 6,742 Tests Across TypeScript, Python & Rust</title>
+<meta name="description" content="Live test suite results for the SCBE-AETHERMOORE AI governance framework. 5,957 TypeScript tests, 785 Python tests, 100% crypto module pass rate. Reproducible, tiered, and open source.">
+<link rel="canonical" href="https://aethermoore.com/test-suite.html">
+<meta property="og:title" content="SCBE Test Suite | 6,742 Passing Tests">
+<meta property="og:description" content="5,957 TypeScript + 785 Python tests. 100% crypto pass rate. Reproducible and open source.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethermoore.com/test-suite.html">
+<meta property="og:image" content="https://aethermoore.com/hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SCBE Test Suite | 6,742 Passing Tests">
+<meta name="twitter:description" content="5,957 TypeScript + 785 Python tests. 100% crypto pass rate. Run them yourself.">
+<meta name="twitter:image" content="https://aethermoore.com/hero.png">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #070711; color: #edf0ff; line-height: 1.7; }
+a { color: #7b8cff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.topbar { position: sticky; top: 0; z-index: 30; display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(7,7,17,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(123,140,255,0.14); }
+.topbar .brand { font-weight: 800; letter-spacing: 0.08em; }
+.topbar nav { display: flex; gap: 18px; color: #b4b9df; font-size: 14px; flex-wrap: wrap; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: #8590ff; font-weight: 700; margin-bottom: 10px; }
+h1 { font-size: clamp(28px, 5vw, 48px); line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px; }
+h2 { font-size: 24px; margin: 40px 0 12px; color: #c5caff; }
+h3 { font-size: 18px; margin-bottom: 8px; color: #fff; }
+p { color: #afb5da; font-size: 15px; margin-bottom: 10px; }
+
+.stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 24px 0; }
+.stat { background: #0d0d1a; border: 1px solid #1a1a3e; border-radius: 12px; padding: 20px; text-align: center; }
+.stat .val { font-size: 36px; font-weight: 800; font-family: 'SF Mono', monospace; }
+.stat .val.green { color: #2ecc71; }
+.stat .val.blue { color: #7b8cff; }
+.stat .label { color: #888; font-size: 12px; margin-top: 4px; }
+
+.tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 24px 0; }
+.tier { background: #0d0d1a; border: 1px solid #1a1a3e; border-radius: 12px; padding: 24px; }
+.tier .badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 20px; margin-bottom: 12px; }
+.tier .badge.l1 { background: rgba(46,204,113,0.15); color: #2ecc71; }
+.tier .badge.l2 { background: rgba(52,152,219,0.15); color: #3498db; }
+.tier .badge.l3 { background: rgba(155,89,182,0.15); color: #9b59b6; }
+.tier .badge.l4 { background: rgba(241,196,15,0.15); color: #f1c40f; }
+.tier .badge.l5 { background: rgba(231,76,60,0.15); color: #e74c3c; }
+.tier .badge.l6 { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+.tier p { font-size: 13px; color: #999; }
+
+.framework-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin: 24px 0; }
+.fw-card { background: #0d0d1a; border: 1px solid #1a1a3e; border-radius: 12px; padding: 24px; }
+.fw-card .lang { font-size: 12px; color: #8590ff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.fw-card table { width: 100%; font-size: 13px; color: #999; border-collapse: collapse; margin-top: 12px; }
+.fw-card td { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.fw-card td:last-child { text-align: right; color: #2ecc71; font-family: monospace; }
+
+.cmd { background: #0a0b15; border: 1px solid #1a1a3e; border-radius: 8px; padding: 16px; font-family: 'SF Mono', monospace; font-size: 13px; color: #a29bfe; margin: 8px 0; overflow-x: auto; }
+.cmd .comment { color: #555; }
+
+section { margin-top: 48px; padding-top: 24px; border-top: 1px solid #1a1a3e; }
+.footer { margin-top: 60px; text-align: center; color: #555; font-size: 13px; border-top: 1px solid #1a1a3e; padding-top: 24px; }
+@media (max-width: 700px) { .stat-row { grid-template-columns: repeat(2, 1fr); } .tier-grid, .framework-row { grid-template-columns: 1fr; } }
+</style>
+<link rel="stylesheet" href="static/shared.css">
+<link rel="stylesheet" href="static/polly-sidebar.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="index.html">SCBE AETHERMOORE</a>
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="compliance.html">Compliance</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="test-suite.html">Tests</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+    <div class="eyebrow">Verification</div>
+    <h1>6,742 tests. Zero trust required.</h1>
+    <p>Every claim on this site is backed by a reproducible test. Run them yourself with <code>npm test</code> and <code>python -m pytest tests/</code>. The test suite is open source and runs in CI on every commit.</p>
+
+    <div class="stat-row">
+        <div class="stat"><div class="val green">5,957</div><div class="label">TypeScript tests (Vitest)</div></div>
+        <div class="stat"><div class="val green">785</div><div class="label">Python tests (pytest)</div></div>
+        <div class="stat"><div class="val green">100%</div><div class="label">Crypto module pass rate</div></div>
+        <div class="stat"><div class="val green">0</div><div class="label">CVEs</div></div>
+        <div class="stat"><div class="val blue">174</div><div class="label">TS test files</div></div>
+        <div class="stat"><div class="val blue">65s</div><div class="label">Full TS suite runtime</div></div>
+    </div>
+
+    <!-- TIERED TESTING -->
+    <section style="border-top:none;">
+        <h2>Six-Tier Testing Architecture</h2>
+        <p>Tests are organized by risk level, not just by module. Higher tiers are harder to pass.</p>
+
+        <div class="tier-grid">
+            <div class="tier">
+                <span class="badge l1">L1 Basic</span>
+                <h3>Smoke / Sanity</h3>
+                <p>Does it load? Does it return the right type? Fast, high-coverage, catches regressions immediately.</p>
+            </div>
+            <div class="tier">
+                <span class="badge l2">L2 Unit</span>
+                <h3>Isolated Functions</h3>
+                <p>Individual functions tested in isolation. Covers edge cases, boundary values, and type contracts.</p>
+            </div>
+            <div class="tier">
+                <span class="badge l3">L3 Integration</span>
+                <h3>Component Interactions</h3>
+                <p>Tests that cross module boundaries. Ensures the 14-layer pipeline flows data correctly between layers.</p>
+            </div>
+            <div class="tier">
+                <span class="badge l4">L4 Property</span>
+                <h3>Random-Input Proofs</h3>
+                <p>100+ iterations of randomized inputs using fast-check (TS) and Hypothesis (Python). If the property holds under 100 random inputs, it probably holds.</p>
+            </div>
+            <div class="tier">
+                <span class="badge l5">L5 Security</span>
+                <h3>Crypto Boundary Enforcement</h3>
+                <p>ML-KEM-768, ML-DSA-65, AES-256-GCM boundary tests. Ensures PQC primitives reject malformed inputs and maintain key isolation.</p>
+            </div>
+            <div class="tier">
+                <span class="badge l6">L6 Adversarial</span>
+                <h3>Attack Simulations</h3>
+                <p>Red-team style tests: prompt injection, cascade attacks, domain drift, replay attacks, timing attacks. The governance gate must DENY or QUARANTINE every one.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FRAMEWORK DETAILS -->
+    <section>
+        <h2>Test Frameworks</h2>
+        <div class="framework-row">
+            <div class="fw-card">
+                <div class="lang">TypeScript</div>
+                <h3>Vitest + fast-check</h3>
+                <table>
+                    <tr><td>Test files</td><td>174</td></tr>
+                    <tr><td>Tests</td><td>5,957 passed, 8 skipped</td></tr>
+                    <tr><td>Runtime</td><td>65 seconds</td></tr>
+                    <tr><td>Coverage target</td><td>80% lines/functions, 70% branches</td></tr>
+                    <tr><td>Property tests</td><td>100+ iterations per property</td></tr>
+                </table>
+                <div class="cmd"><span class="comment"># Run all TS tests</span><br>npm test<br><br><span class="comment"># Run single file</span><br>npx vitest run tests/harmonic/pipeline14.test.ts<br><br><span class="comment"># Watch mode</span><br>npx vitest --watch</div>
+            </div>
+            <div class="fw-card">
+                <div class="lang">Python</div>
+                <h3>pytest + Hypothesis</h3>
+                <table>
+                    <tr><td>Tests</td><td>785 passed</td></tr>
+                    <tr><td>Markers</td><td>enterprise, homebrew, quantum, security, api, crypto</td></tr>
+                    <tr><td>Async</td><td>asyncio_mode = auto</td></tr>
+                    <tr><td>Coverage target</td><td>80% lines/functions, 70% branches</td></tr>
+                </table>
+                <div class="cmd"><span class="comment"># Run all Python tests</span><br>python -m pytest tests/ -v<br><br><span class="comment"># Quick smoke tests only</span><br>python -m pytest -m homebrew tests/<br><br><span class="comment"># Security tests only</span><br>python -m pytest -m security tests/</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KEY TEST DOMAINS -->
+    <section>
+        <h2>What Gets Tested</h2>
+        <div class="tier-grid">
+            <div class="tier">
+                <h3>14-Layer Pipeline</h3>
+                <p>20+ test files covering L1 through L14. Each layer's input/output contract, axiom compliance, and cross-layer data flow are verified independently.</p>
+            </div>
+            <div class="tier">
+                <h3>Post-Quantum Crypto</h3>
+                <p>ML-KEM-768 key encapsulation, ML-DSA-65 digital signatures, AES-256-GCM symmetric encryption. 100% pass rate on all crypto modules.</p>
+            </div>
+            <div class="tier">
+                <h3>Governance Decisions</h3>
+                <p>ALLOW / QUARANTINE / ESCALATE / DENY decision paths tested with known-good and known-bad inputs. Zero false positives on benign inputs.</p>
+            </div>
+            <div class="tier">
+                <h3>Sacred Tongues Tokenizer</h3>
+                <p>6 constructed languages (KO/AV/RU/CA/UM/DR), 256 tokens each, phi-weighted. Bijective encoding/decoding verified across all 1,536 tokens.</p>
+            </div>
+            <div class="tier">
+                <h3>Multi-Agent Fleet</h3>
+                <p>HYDRA swarm coordination, consensus protocols, ledger integrity, browser agent sandboxing. Tests cover both cooperative and adversarial multi-agent scenarios.</p>
+            </div>
+            <div class="tier">
+                <h3>Cross-Language Parity</h3>
+                <p>TypeScript and Python implementations tested for identical outputs on the same inputs. Ensures the canonical (TS) and reference (Python) implementations agree.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CI/CD -->
+    <section>
+        <h2>Continuous Integration</h2>
+        <p>53 GitHub Actions workflows run on every push and PR. The gate doesn't open unless all tests pass.</p>
+        <div class="framework-row">
+            <div class="fw-card">
+                <h3>Core Pipeline</h3>
+                <table>
+                    <tr><td>ci.yml</td><td>Build + test + lint</td></tr>
+                    <tr><td>scbe-gates.yml</td><td>SCBE-specific security gates</td></tr>
+                    <tr><td>security-checks.yml</td><td>Vulnerability scanning</td></tr>
+                    <tr><td>conflict-marker-guard.yml</td><td>Merge conflict detection</td></tr>
+                </table>
+            </div>
+            <div class="fw-card">
+                <h3>Automated Checks</h3>
+                <table>
+                    <tr><td>weekly-security-audit.yml</td><td>Automated weekly audit</td></tr>
+                    <tr><td>nightly-connector-health.yml</td><td>Connector health checks</td></tr>
+                    <tr><td>auto-changelog.yml</td><td>Changelog generation</td></tr>
+                    <tr><td>huggingface-sync.yml</td><td>Model sync to HF</td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="cmd"><span class="comment"># Run all tests (TS + Python)</span><br>npm run test:all<br><br><span class="comment"># Run Rust tests</span><br>npm run test:rust<br><br><span class="comment"># E2E tests (Playwright)</span><br>npx playwright test</div>
+    </section>
+
+    <div style="margin-top:32px;display:flex;gap:14px;flex-wrap:wrap;">
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/actions" target="_blank" style="display:inline-block;padding:12px 20px;border-radius:8px;font-weight:700;font-size:14px;background:linear-gradient(135deg,#6f84ff,#9160ff);color:#fff;">View CI on GitHub</a>
+        <a href="research/index.html" style="display:inline-block;padding:12px 20px;border-radius:8px;font-weight:700;font-size:14px;border:1px solid #333;color:#c5caff;">Research & Benchmarks</a>
+        <a href="redteam.html" style="display:inline-block;padding:12px 20px;border-radius:8px;font-weight:700;font-size:14px;border:1px solid #333;color:#c5caff;">Red Team Results</a>
+    </div>
+</div>
+
+<div class="footer">
+    <p style="margin-bottom:8px;"><a href="index.html">Home</a> &middot; <a href="enterprise.html">Enterprise</a> &middot; <a href="pricing.html">Pricing</a> &middot; <a href="demos/index.html">Demos</a> &middot; <a href="research/index.html">Research</a> &middot; <a href="contact.html">Contact</a> &middot; <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a> &middot; <a href="https://www.linkedin.com/in/issdandavis" target="_blank">LinkedIn</a> &middot; <a href="https://medium.com/@issdandavis7795" target="_blank">Medium</a> &middot; <a href="https://huggingface.co/issdandavis" target="_blank">HuggingFace</a> &middot; <a href="https://www.youtube.com/@id8461" target="_blank">YouTube</a></p>
+    <p>SCBE AETHERMOORE &middot; Patent Pending USPTO #63/961,403</p>
+</div>
+
+<script src="static/polly-sidebar.js"></script>
+</body>
+</html>

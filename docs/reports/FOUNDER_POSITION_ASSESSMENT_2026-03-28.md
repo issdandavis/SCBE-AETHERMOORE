@@ -40,7 +40,7 @@ This is an honest assessment of where Issac stands as a founder, what he has, wh
 - **1 Dev.to article** (Browser-as-a-Service)
 - **8 Shopify products** on aethermore-works.myshopify.com
 - **YouTube channel**: @id8461 with chapter series uploaded
-- **Live website**: aethermoorgames.com with demos
+- **Live website**: aethermoore.com with demos
 - **.onion hidden service** running
 
 ### Government & Institutional

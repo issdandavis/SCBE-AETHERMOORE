@@ -1,6 +1,6 @@
 {
   "eval_id": "scbe-public-adversarial-pack-2026-03-26",
-  "primary_domain": "https://aethermoorgames.com",
+  "primary_domain": "https://aethermoore.com",
   "mirror_domain": "https://issdandavis.github.io/SCBE-AETHERMOORE",
   "benchmark_story": {
     "headline": "91 / 91 attacks blocked, 0 / 15 clean false positives in the current public suite",

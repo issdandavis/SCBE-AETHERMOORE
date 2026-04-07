@@ -21,7 +21,7 @@
 - research/energy_simulation_24h_report.json
 
 ### GitHub (`issdandavis/SCBE-AETHERMOORE`)
-- 23 research pages on aethermoorgames.com
+- 23 research pages on aethermoore.com
 - 3 articles ready for Medium/Dev.to
 - Full source code, tests, benchmarks
 

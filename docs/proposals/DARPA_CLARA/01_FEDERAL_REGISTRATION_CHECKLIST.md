@@ -153,7 +153,7 @@ If SAM.gov registration does not complete by April 17:
 ### Section 2: Core Data — Business Information
 - [ ] Organization start date: (date you started doing business)
 - [ ] Fiscal year end date: December 31
-- [ ] Website URL: https://aethermoorgames.com (optional but helps)
+- [ ] Website URL: https://aethermoore.com (optional but helps)
 - [ ] Create MPIN (Marketing Partner ID Number — you make this up during registration)
 - [ ] Mailing address (can copy physical)
 

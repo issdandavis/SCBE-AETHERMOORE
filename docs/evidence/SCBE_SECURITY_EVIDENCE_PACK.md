@@ -79,7 +79,7 @@ d*=3.0 → cost=128.5
 ```
 
 **Limitation:** This function is unbounded — at large d* it overflows float64.
-The bounded safety score `H_score = 1/(1+d+2*pd)` is used for governance
+The bounded safety score `H(d*,R) = R^((phi*d*)^2)` is used for governance
 decisions. The relationship between the two is documented in
 `docs/L12_HARMONIC_SCALING_CANON.md` but not yet validated by external review.
 

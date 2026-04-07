@@ -22,7 +22,7 @@ npm install scbe-aethermoore
 
 ### pip (Python)
 ```bash
-pip install -r requirements.txt
+pip install scbe-aethermoore
 ```
 
 ### From Source
@@ -51,7 +51,7 @@ const sealed = await pipeline.seal({
 
 // Retrieve with trust verification
 const result = await pipeline.retrieve(sealed, { userId: "alice" });
-console.log(result.decision); // "ALLOW" or "DENY"
+console.log(result.decision); // "ALLOW", "QUARANTINE", "ESCALATE", or "DENY"
 ```
 
 ### Python
@@ -69,7 +69,7 @@ sealed = pipeline.seal(
 
 # Retrieve with verification
 result = pipeline.retrieve(sealed, context={"user_id": "alice"})
-print(result["decision"])  # "ALLOW" or "DENY"
+print(result["decision"])  # "ALLOW", "QUARANTINE", "ESCALATE", or "DENY"
 ```
 
 ---
@@ -106,7 +106,7 @@ class SCBE14LayerPipeline {
 #### RetrieveResult
 | Field | Type | Description |
 |-------|------|-------------|
-| `decision` | `"ALLOW" \| "DENY" \| "QUARANTINE"` | Access decision |
+| `decision` | `"ALLOW" \| "QUARANTINE" \| "ESCALATE" \| "DENY"` | Access decision |
 | `data` | `string \| null` | Decrypted data (null if denied) |
 | `riskScore` | `number` | 0-1 risk assessment |
 | `layerResults` | `LayerResult[]` | Per-layer verification results |
@@ -144,9 +144,9 @@ class TrustManager {
 | Score Range | Classification | Action |
 |-------------|----------------|--------|
 | 0.8 - 1.0 | Trusted | ALLOW |
-| 0.5 - 0.8 | Cautious | ALLOW with logging |
-| 0.2 - 0.5 | Suspicious | QUARANTINE |
-| 0.0 - 0.2 | Untrusted | DENY |
+| 0.5 - 0.8 | Guarded | QUARANTINE |
+| 0.3 - 0.5 | Elevated | ESCALATE |
+| 0.0 - 0.3 | Untrusted | DENY |
 
 ---
 

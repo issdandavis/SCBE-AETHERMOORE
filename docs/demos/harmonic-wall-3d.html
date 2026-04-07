@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3D Harmonic Wall Visualization — SCBE-AETHERMOORE</title>
-<meta name="description" content="Interactive 3D visualization of the SCBE harmonic wall formula H(d,R) = R^(d^2). See how adversarial cost explodes exponentially vs linear and quadratic defenses.">
+<meta name="description" content="Interactive 3D visualization of the SCBE base harmonic wall intuition H_base(d,R) = R^(d^2). See how adversarial cost explodes against linear and quadratic defenses.">
 <meta property="og:title" content="3D Harmonic Wall — SCBE Demo">
-<meta property="og:description" content="Interactive 3D surface showing why the harmonic wall makes attacks computationally infeasible.">
+<meta property="og:description" content="Interactive 3D surface showing the base SCBE wall intuition used to explain geometric cost growth in public demos.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://aethermoorgames.com/demos/harmonic-wall-3d.html">
+<meta property="og:url" content="https://aethermoore.com/demos/harmonic-wall-3d.html">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
@@ -390,12 +390,12 @@ input[type="range"]::-moz-range-thumb {
 <div class="wrap">
   <div class="hero">
     <h1>The Harmonic Wall</h1>
-    <p>Adversarial cost scales as R<sup>d<sup>2</sup></sup>: exponential in the <em>square</em> of drift distance. Drag to rotate, scroll to zoom, and watch the wall become visually obvious.</p>
+    <p>The public demo lane uses a base wall intuition where adversarial cost scales as R<sup>d<sup>2</sup></sup>: exponential in the <em>square</em> of drift distance. Drag to rotate, scroll to zoom, and inspect why the cost curve rises so fast near the boundary.</p>
   </div>
 
   <div class="formula-hero">
-    <div class="big">H(d, R) = R<sup>d<sup>2</sup></sup></div>
-    <div class="sub">d = drift distance from safe origin &nbsp;&bull;&nbsp; R = base cost multiplier</div>
+    <div class="big">H<sub>base</sub>(d, R) = R<sup>d<sup>2</sup></sup></div>
+    <div class="sub">Base public intuition only &nbsp;&bull;&nbsp; live governed branches can add intent or temporal scaling before final gating</div>
   </div>
 
   <div class="canvas-section">
@@ -406,7 +406,7 @@ input[type="range"]::-moz-range-thumb {
   <div class="legend">
     <div class="legend-item"><div class="legend-swatch" style="background:#ff6b6b"></div> Linear: d * R</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#ffd977"></div> Quadratic: d&sup2; * R</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:#8fffd3"></div> SCBE Harmonic: R^(d&sup2;)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#8fffd3"></div> Base wall intuition: R^(d&sup2;)</div>
   </div>
 
   <div class="controls">
@@ -680,7 +680,7 @@ function render() {
   ctx.fillStyle = '#6dd8ff';
   ctx.fillText('base cost (R) \u2192', axisR.x, axisR.y);
   ctx.fillStyle = '#ffd977';
-  ctx.fillText('\u2191 H(d,R)', axisH.x - 20, axisH.y);
+  ctx.fillText('\u2191 H_base(d,R)', axisH.x - 34, axisH.y);
 
   // Attacker dot animation
   if (showAttacker) {

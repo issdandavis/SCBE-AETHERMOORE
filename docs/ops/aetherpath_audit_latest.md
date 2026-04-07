@@ -45,7 +45,7 @@ Generated: 2026-03-04T21:08:44.722478+00:00
 - [score=3] C:\Users\issda\SCBE-AETHERMOORE\.playwright-cli\page-2026-03-02T14-41-56-316Z.yml:442 :: - /placeholder: your@email.com
 - [score=3] C:\Users\issda\SCBE-AETHERMOORE\.playwright-cli\page-2026-03-02T14-42-12-535Z.yml:306 :: - /placeholder: your@email.com
 - [score=3] C:\Users\issda\SCBE-AETHERMOORE\.playwright-cli\page-2026-03-02T14-42-14-445Z.yml:314 :: - /placeholder: your@email.com
-- [score=3] C:\Users\issda\SCBE-AETHERMOORE\artifacts\agentic_antivirus_report.json:947 :: "snippet": "output = \"api_key=sk_test_PLACEHOLDER_NOT_REAL_KEY_12345\"",
+- [score=3] C:\Users\issda\SCBE-AETHERMOORE\artifacts\agentic_antivirus_report.json:947 :: "snippet": "output = \"api_key=[SCRUBBED:stripe_test_key]\"",
 - [score=3] C:\Users\issda\SCBE-AETHERMOORE\artifacts\test-results-vitest.after.json:1 :: {"numTotalTestSuites":1203,"numPassedTestSuites":1177,"numFailedTestSuites":26,"numPendingTestSuites":0,"numTotalTests":4254,"numPassedTests":4227,"numFailedTests":21,"numPendingTests":6,"numTodoTests":0,"snapshot":{"add
 - [score=3] C:\Users\issda\SCBE-AETHERMOORE\artifacts\test-results-vitest.json:1 :: {"numTotalTestSuites":1203,"numPassedTestSuites":1154,"numFailedTestSuites":49,"numPendingTestSuites":0,"numTotalTests":4254,"numPassedTests":4179,"numFailedTests":69,"numPendingTests":6,"numTodoTests":0,"snapshot":{"add
 - [score=3] C:\Users\issda\SCBE-AETHERMOORE\demo\aethermoor_game.py:1858 :: flat.append(None)  # type: ignore[arg-type]  # header placeholder

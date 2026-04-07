@@ -118,7 +118,7 @@ where:
 The smallest useful loss is:
 
 ```text
-L_total = L_byte + lambda_t L_tongue + lambda_n L_null + lambda_w L_word + lambda_q L_policy
+L_total = L_byte + lambda_t L_tongue + lambda_n L_null + lambda_w L_word + lambda_q L_policy + lambda_g L_geometry
 ```
 
 where:
@@ -128,8 +128,47 @@ where:
 - `L_null` = predict null pattern
 - `L_word` = later next-token / sequence objective on lexical text
 - `L_policy` = governance posture or intent classification
+- `L_geometry` = polyhedral friction signal — the environment writing its own curriculum (see below)
 
 The point is not to make `L_word` disappear. The point is to stop forcing `L_word` to carry every other job by itself.
+
+### 5. Geometric friction loss (L_geometry) — "friction writes the training script"
+
+Added: 2026-04-04. Source: `polyhedral_flow.py:compute_friction_spectrum()`
+
+The composite harmonic wall (simultaneous polyhedral confinement) creates a geometric environment where polyhedral constraint surfaces vibrate. Where shells meet, their coupled vibration produces a torsional distortion — a "friction signal" that IS the training curriculum.
+
+```text
+L_geometry = || f_predicted - f_actual ||^2
+```
+
+where `f` is the friction vector at each polyhedral boundary crossed during a flow path.
+
+Each polyhedron has a natural frequency:
+
+```text
+f_i = phi^(depth_i * 5) * |faces_i / chi_i| * (1 / edges_i)
+```
+
+Contact friction between adjacent polyhedra:
+
+```text
+friction(i,j) = phi * |f_i - f_j| + harmonic_mean(f_i, f_j) + |chi_i - chi_j| / (edges_i + edges_j)
+```
+
+The training vector for a path through polyhedra P_1 -> P_2 -> ... -> P_n:
+
+```text
+v_train = [friction(P_1, P_2), friction(P_2, P_3), ..., friction(P_{n-1}, P_n)] * tongue_weight
+```
+
+Key properties:
+
+- The geometry generates its own curriculum — no external data needed for this loss
+- Highest-friction boundaries (toroidal/star polyhedra contacts) produce ~73x more signal than smooth transitions
+- The friction Laplacian's eigenvectors form a natural spectral basis for learning
+- With 33 boundaries and 6 tongue channels = 198 friction training dimensions
+- The model learns WHERE the geometry is hostile and HOW to navigate it
 
 ## Why This Could Help
 

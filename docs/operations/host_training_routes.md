@@ -84,6 +84,35 @@ So the practical rule is:
 
 - use Kaggle from your normal local shell when you want live Kaggle notebook or competition work
 - keep Hugging Face as the main hosted model/dataset lane
+- treat `python scripts/system/kaggle_notebook_smoke.py --micro-train` as the required preflight before any long Kaggle run; if preflight fails, the run is invalid and should not start
+
+### Terminal-first Kaggle lane
+
+Use the repo helper when you want to stage and launch SCBE kernels directly from
+the terminal instead of pasting code into the Kaggle UI:
+
+```powershell
+npm run kaggle:presets
+npm run kaggle:stage -- --preset smoke-governance
+npm run kaggle:push -- --preset smoke-governance
+npm run kaggle:run:status -- --preset smoke-governance
+npm run kaggle:run:output -- --preset smoke-governance
+```
+
+Current presets:
+
+- `smoke-governance`
+- `polly-comparison`
+- `polly-train`
+- `code-ab`
+- `scbe-coder`
+
+Operational notes:
+
+- `kaggle:stage` writes a ready-to-push kernel folder under `artifacts/kaggle_kernels/<slug>/`.
+- `kaggle:push` triggers the remote run through the installed `kaggle` CLI.
+- `kaggle:run:status` and `kaggle:run:output` are the normal loop for checking the job and pulling `/kaggle/working` artifacts back locally.
+- `smoke-governance` is the preferred remote preflight before long Kaggle training jobs.
 
 ## 4. Colab: what it is for
 
@@ -108,6 +137,12 @@ Use it for:
   data generation
 - `notebooks/scbe_cloud_workspace.ipynb`:
   general Colab workspace
+
+### Kaggle guardrail
+
+- `scripts/system/kaggle_notebook_smoke.py`
+  - hard-fail preflight for Kaggle runtime, imports, dataset access, artifact write, and optional one-step micro-train
+  - use this before long Kaggle jobs so queued, CPU-only, or broken-auth notebooks fail in minutes instead of hours
 
 Catalog source:
 
@@ -153,3 +188,67 @@ Use this before promoting a hosted model into a demo or assistant lane.
 4. Consolidate trainable data with `cloud_kernel_data_pipeline.py`
 5. Push approved datasets to the `SCBE-AETHER` dataset repos
 6. Use Kaggle as the extra remote compute lane when you need it outside the Codex sandbox
+
+## 7. Multi-host convergence lane
+
+Use one registry file as the convergence point for Colab, Kaggle, and other
+remote runs. The command surface is:
+
+- `scripts/system/multi_host_training_registry.py`
+
+Default registry path:
+
+- `training/runs/multi_host_registry.json`
+
+### Register a completed run
+
+```powershell
+python scripts/system/multi_host_training_registry.py `
+  register `
+  --run-id colab-2026-04-02-a `
+  --host colab `
+  --provider hf `
+  --role textgen `
+  --base-model Qwen/Qwen2.5-0.5B-Instruct `
+  --dataset-repo issdandavis/scbe-aethermoore-training-data `
+  --dataset-revision rev-2026-04-02-a `
+  --artifact-id issdandavis/scbe-colab-2026-04-02-a `
+  --artifact-uri hf://issdandavis/scbe-colab-2026-04-02-a `
+  --quality 0.82 `
+  --safety 0.98 `
+  --latency-ms-p95 110 `
+  --cost-per-1k-tokens 0.75
+```
+
+Repeat the same command for Kaggle or HF Jobs with a different `--host` and
+artifact target.
+
+### Promote the current winner
+
+Promotion is per track (`textgen`, `embed`, `runtime`). Promoting a new run for
+the same track demotes the previous winner back to `candidate`.
+
+```powershell
+python scripts/system/multi_host_training_registry.py `
+  promote `
+  --run-id colab-2026-04-02-a
+```
+
+### Export a provider manifest for federation
+
+This writes a manifest compatible with `training/federated_orchestrator.py`.
+
+```powershell
+python scripts/system/multi_host_training_registry.py `
+  export-provider-manifest `
+  --provider hf `
+  --output training/runs/promoted_hf_manifest.json
+```
+
+Operational rule:
+
+- Colab and Kaggle produce separate candidates.
+- Hugging Face is the central artifact hub.
+- Convergence happens by registering runs, promoting one winner per track, and
+  exporting promoted manifests into the federated release flow.
+- Do not merge weights blindly just because two runs completed.

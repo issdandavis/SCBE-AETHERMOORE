@@ -93,6 +93,32 @@ img { max-width: 100%; }
   box-shadow: var(--shadow);
 }
 
+.hero-card-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.9fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.hero-copy {
+  display: grid;
+  gap: 0;
+}
+
+.hero-proof {
+  padding: 24px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+}
+
+.hero-proof h2 {
+  margin: 0 0 14px;
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
 .eyebrow {
   display: inline-block;
   margin-bottom: 12px;
@@ -281,7 +307,9 @@ img { max-width: 100%; }
 .checklist,
 .step-list,
 .link-list,
-.meta-list {
+.meta-list,
+.proof-list,
+.flag-list {
   margin: 0;
   padding-left: 20px;
 }
@@ -289,8 +317,70 @@ img { max-width: 100%; }
 .step-list li,
 .checklist li,
 .link-list li,
-.meta-list li {
+.meta-list li,
+.proof-list li,
+.flag-list li {
   margin-bottom: 10px;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.status-card {
+  padding: 24px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    linear-gradient(180deg, rgba(143, 134, 255, 0.10), rgba(19, 20, 43, 0.94));
+  box-shadow: var(--shadow);
+}
+
+.status-card h3 {
+  margin: 0 0 10px;
+  font-size: 1.18rem;
+}
+
+.status-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.prompt-block {
+  padding: 24px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(95, 209, 197, 0.26);
+  background: linear-gradient(180deg, rgba(95, 209, 197, 0.08), rgba(19, 20, 43, 0.96));
+  box-shadow: var(--shadow);
+}
+
+.prompt-block h3 {
+  margin: 0 0 10px;
+}
+
+.prompt-block p {
+  margin: 0 0 12px;
+  color: var(--muted);
+}
+
+.prompt-copy {
+  margin: 0;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(7, 8, 20, 0.66);
+  color: #d9d6ff;
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: 0.95rem;
+  line-height: 1.75;
 }
 
 .table-wrap table {
@@ -382,6 +472,8 @@ code {
 
 @media (max-width: 900px) {
   .info-grid { grid-template-columns: 1fr; }
+  .hero-card-split,
+  .compare-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 720px) {

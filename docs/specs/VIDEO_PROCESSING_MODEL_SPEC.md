@@ -402,7 +402,7 @@ Hardware: T4 GPU (HF Spaces free tier for GPU)
 Video segments flow through the standard 14-layer pipeline:
 - L3-4: Transcript text gets tongue-weighted embedding
 - L5: Hyperbolic distance from safe-operation centroid
-- L12: Harmonic wall score `H(d, pd) = 1/(1+d_H+2*pd)` using tongue activation as the polyhedral dimension
+- L12: Harmonic wall score `H(d*,R) = R^((phi*d*)^2)` using tongue activation as the polyhedral dimension
 - L13: Risk decision (ALLOW/QUARANTINE/ESCALATE/DENY) on each segment
 
 A video with DENY segments gets those segments redacted in the output. QUARANTINE segments are flagged for human review.

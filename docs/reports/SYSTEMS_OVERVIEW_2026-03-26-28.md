@@ -283,7 +283,7 @@ Reviewed 4 HuggingFace tax-domain models to extract training patterns: `mrllama/
 - `public/` directory ready for `firebase deploy --only hosting`
 
 ### GitHub Pages
-- Website at aethermoorgames.com updated
+- Website at aethermoore.com updated
 - `docs/index.html` -- Product sales page with Schema.org structured data, $29 Stripe checkout
 - `public/arena.html` -- Arena round table page
 - `docs/sitemap.xml` updated
@@ -338,7 +338,7 @@ Fibonacci consensus modulates governance thresholds. Trust builds incrementally 
 
 | Asset | URL / Location | Status |
 |-------|---------------|--------|
-| Website | aethermoorgames.com | Live, SEO-optimized, Schema.org structured data |
+| Website | aethermoore.com | Live, SEO-optimized, Schema.org structured data |
 | Stripe checkout | $29 AI Governance Toolkit | Live (`buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06`) |
 | Stripe balance | $97.74 pending | Active |
 | Shopify | aethermore-works.myshopify.com | Enabled, products need listing |
@@ -348,7 +348,7 @@ Fibonacci consensus modulates governance thresholds. Trust builds incrementally 
 | PyPI | scbe-aethermoore v3.3.0 | Published |
 | HuggingFace | 4 models, 4 datasets, 2 spaces | Active |
 | YouTube | 11 videos, re-optimized titles | Active |
-| Arena demo | aethermoorgames.com/arena.html | Live |
+| Arena demo | aethermoore.com/arena.html | Live |
 | Android APK | `kindle-app/android/.../app-debug.apk` (66.8 MB) | Built, not published |
 
 ---

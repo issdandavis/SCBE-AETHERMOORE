@@ -59,7 +59,7 @@ Use these URLs by audience:
 - demo / curiosity traffic:
   - `https://issdandavis.github.io/SCBE-AETHERMOORE/demos/index.html`
 - direct buyer traffic:
-  - `https://aethermoorgames.com/`
+  - `https://aethermoore.com/`
 
 ## Hard rule
 

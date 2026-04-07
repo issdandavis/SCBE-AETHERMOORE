@@ -35,7 +35,7 @@ For the current public surface, that hero mechanism should be **null-space signa
 
 ### Medium
 
-1. Canonical domain strategy was split between `aethermoorgames.com` and GitHub Pages.
+1. Canonical domain strategy was split between `aethermoore.com` and GitHub Pages.
 2. The homepage and red-team page behaved like disconnected funnels.
 3. Benchmark proof paths existed in code, but not as one public eval pack.
 4. Legacy docs still contain mojibake / corrupted box drawing and should not be treated as canonical first-contact surfaces.

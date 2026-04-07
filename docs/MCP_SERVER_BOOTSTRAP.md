@@ -32,19 +32,20 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\enable_mcp_servers.ps1
 pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\enable_mcp_servers.ps1 -Servers @(
   "fetch",
   "github",
+  "huggingface",
+  "kaggle",
   "scbe",
   "power-cloud-architect-fetch",
   "power-postman-postman"
 )
 ```
 
-## GitHub MCP server (local container)
+## GitHub MCP server
 
 Workspace `.mcp.json` now includes a `github` MCP entry backed by:
 
-- `ghcr.io/github/github-mcp-server`
-- default mode: read-only (`GITHUB_READ_ONLY=1`)
-- dynamic toolsets enabled (`GITHUB_DYNAMIC_TOOLSETS=1`)
+- `@modelcontextprotocol/server-github`
+- launched via explicit Windows `cmd.exe` + `npx.cmd` paths to avoid `program not found` startup errors
 
 Set a PAT in your environment before starting MCP hosts:
 
@@ -52,7 +53,42 @@ Set a PAT in your environment before starting MCP hosts:
 $env:GITHUB_PAT = "<your_github_pat>"
 ```
 
-Source repo reference: `git@github.com:github/github-mcp-server.git`
+## Hugging Face MCP server
+
+Workspace `.mcp.json` now includes a `huggingface` MCP entry backed by:
+
+- `mcp-remote`
+- remote endpoint: `https://huggingface.co/mcp`
+- auth header: `Authorization: Bearer ${HF_TOKEN}`
+
+For Codex specifically, the live user config should prefer the native HTTP MCP URL:
+
+- `https://huggingface.co/mcp?login`
+
+That matches the installed Hugging Face plugin metadata and avoids the handshake issue seen with the `mcp-remote` wrapper in this host.
+
+Set a token in your environment before starting MCP hosts:
+
+```powershell
+$env:HF_TOKEN = "<your_huggingface_token>"
+```
+
+## Kaggle MCP server
+
+Workspace `.mcp.json` includes a `kaggle` MCP entry backed by:
+
+- `mcp-remote`
+- launched via explicit Windows `cmd.exe` + `npx.cmd -y` paths to avoid interactive `npx` prompts during MCP startup
+- remote endpoint: `https://www.kaggle.com/mcp`
+- auth header: `Authorization: Bearer ${KAGGLE_API_TOKEN}`
+
+Set a token in your environment before starting MCP hosts:
+
+```powershell
+$env:KAGGLE_API_TOKEN = "<your_kaggle_api_token>"
+```
+
+Direct probe note: the Kaggle remote MCP endpoint completed proxy establishment successfully with this launcher shape.
 
 ## SCBE local MCP server
 

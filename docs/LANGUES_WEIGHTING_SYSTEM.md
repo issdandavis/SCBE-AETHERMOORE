@@ -211,7 +211,7 @@ Existing related test surfaces:
 - Layer 6: flux ODE controls breathing intensity via `nu`.
 - Layer 12 coupling should declare regime:
   - wall enforcement (`H(d,R)=R^(d^2)` family),
-  - bounded scoring (`1/(1+d+2*pd)` family),
+  - bounded scoring (`R^((phi*d*)^2)` family),
   - or another explicit formula.
 
 Do not claim one universal harmonic formula across all modules without regime tags.
