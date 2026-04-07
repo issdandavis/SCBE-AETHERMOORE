@@ -1,6 +1,6 @@
 # SCBE-AETHERMOORE
 
-Canonical site: https://aethermoorgames.com/
+Canonical site: https://aethermoore.com/
 Mirror (same content): https://issdandavis.github.io/SCBE-AETHERMOORE/
 Buy Training Vault ($29): https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g
 Book (Amazon KDP): https://www.amazon.com/dp/B0F28PHSPR
@@ -10,31 +10,31 @@ SCBE-AETHERMOORE is a public documentation and product surface for an AI governa
 
 ## Start here
 
-- Home: https://aethermoorgames.com/
+- Home: https://aethermoore.com/
   - Main overview, benchmarks, pricing, core concepts, and product entry points.
-- Articles: https://aethermoorgames.com/articles/index.html
+- Articles: https://aethermoore.com/articles/index.html
   - Public writing: field notes, product maps, benchmark explainers, and bounded theory packets.
-- Network: https://aethermoorgames.com/network.html
+- Network: https://aethermoore.com/network.html
   - External links (Medium, GitHub), ops map, and machine-readable entry points.
-- Demos: https://aethermoorgames.com/demos/index.html
+- Demos: https://aethermoore.com/demos/index.html
   - Story-first demo lab for Hydra, GeoSeal, and public surfaces.
-- Research: https://aethermoorgames.com/research/index.html
+- Research: https://aethermoore.com/research/index.html
   - Benchmarks, theory packets, and active experiment tracks.
-- Product manuals: https://aethermoorgames.com/product-manual/index.html
+- Product manuals: https://aethermoore.com/product-manual/index.html
   - Buyer-facing usage manuals for purchased packages.
-- Delivery + access: https://aethermoorgames.com/product-manual/delivery-and-access.html
+- Delivery + access: https://aethermoore.com/product-manual/delivery-and-access.html
   - What buyers should receive, how access works, and how to recover missing delivery.
-- Support: https://aethermoorgames.com/support.html
+- Support: https://aethermoore.com/support.html
   - Troubleshooting path for delivery, setup, AI drift, and broken-page issues.
-- Sphere Grid (skills vault): https://aethermoorgames.com/research/sphere-grid.html
+- Sphere Grid (skills vault): https://aethermoore.com/research/sphere-grid.html
   - Skill spheres + Sacred Tongues routing map for agent work.
 
 ## Package pages
 
-- AI Governance Toolkit: https://aethermoorgames.com/product-manual/ai-governance-toolkit.html
-- HYDRA Agent Templates: https://aethermoorgames.com/product-manual/hydra-agent-templates.html
-- n8n Workflow Pack: https://aethermoorgames.com/product-manual/n8n-workflow-pack.html
-- Content Spin Engine: https://aethermoorgames.com/product-manual/content-spin-engine.html
+- AI Governance Toolkit: https://aethermoore.com/product-manual/ai-governance-toolkit.html
+- HYDRA Agent Templates: https://aethermoore.com/product-manual/hydra-agent-templates.html
+- n8n Workflow Pack: https://aethermoore.com/product-manual/n8n-workflow-pack.html
+- Content Spin Engine: https://aethermoore.com/product-manual/content-spin-engine.html
 
 ## Public concepts
 
@@ -63,6 +63,6 @@ SCBE-AETHERMOORE is a public documentation and product surface for an AI governa
 
 ## Contact and escalation
 
-- Support email: mailto:aethermoregames@pm.me?subject=SCBE%20Support%20Help
+- Support email: mailto:ai@aethermoore.com?subject=SCBE%20Support%20Help
 - GitHub repo: https://github.com/issdandavis/SCBE-AETHERMOORE
 - Medium: https://medium.com/@issdandavis7795

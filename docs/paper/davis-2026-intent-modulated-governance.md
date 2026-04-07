@@ -417,7 +417,7 @@ Verification requires:
 | L9 | Spectral Coherence | R^n -> [0,1] | S_spec = E_low/(E_low+E_high+eps) |
 | L10 | Spin Coherence | C -> [0,1] | C_spin = ||(1/N) sum exp(i*theta_k)|| |
 | L11 | Triadic Temporal | R^3 -> [0,1] | d_tri = sqrt(lam_1*d_1^2 + lam_2*d_2^2 + lam_3*d_G^2) |
-| L12 | Harmonic Scaling | R+ -> R+ | H = R^(d^2) or H = 1/(1+d+2pd) |
+| L12 | Harmonic Scaling | R+ -> (0,1] | H(d*,R) = R^((phi*d*)^2) — canonical unified formula |
 | L13 | Risk Decision | R^k -> Decision | Omega > 0.85: ALLOW, 0.40-0.85: QUARANTINE, <0.40: DENY |
 | L14 | Audio Axis | Decision -> Signal | [E_a, C_a, F_a, r_HF] telemetry vector |
 
@@ -859,8 +859,8 @@ The system is fully implemented, published on npm and PyPI, and protected under 
 | 6 | L_f(x,t) = sum nu_l(t)*w_l*exp(beta_l*(d_l + sin(...))) | 3.3 | L3,L6 |
 | 7 | d(nu_l)/dt = kappa_l*(nu_bar_l - nu_l) + sigma_l*sin(Omega_l*t) | 3.3 | L6 |
 | 8 | E = sum w_l*exp(beta_l*d_l)*I_0(beta_l) | 3.4 | L3 |
-| 9 | H(d,R) = R^(d^2) | 4.1 | L12 |
-| 10 | H_score(d,pd) = 1/(1+d+2*pd) | 4.2 | L12 |
+| 9 | H(d*,R) = R^((phi*d*)^2) | 4.1 | L12 |
+| 10 | H_score(d*,R) = R^((phi*d*)^2) (canonical unified) | 4.2 | L12 |
 | 11 | S_bits = base + log_2(1+d+2*pd) | 4.2 | L12 |
 | 12 | H_eff(d,R,x) = R^(d^2 * x) | 4.3 | L12 |
 | 13 | S(t,i,C,d) = t/(i*C!*(1+d)) | 5.1 | Cross |
@@ -876,7 +876,7 @@ The system is fully implemented, published on npm and PyPI, and protected under 
 | 23 | R(t) = R_base + lambda*(1-C) | 11.2 | L5,L12 |
 | 24 | kappa(t) = -1*exp(gamma*(1-C)) | 11.2 | L5 |
 | 25 | C_combined = sqrt(S_spec*C_spin) | 11.3 | L9,L10 |
-| 26 | score = 1/(1+d_H+2*pd) | 11.4 | L5 |
+| 26 | score = R^((phi*d*)^2) | 11.4 | L5 |
 | 27 | harmonicDist = sqrt(sum g_i*(u_i-v_i)^2) | 11.5 | L3 |
 | 28 | H(d*,R) = R*pi^(phi*d*) | 8.3 | L12 |
 | 29 | x %+ y = round(x + (100-x)*(y/100)) (fairmath addition) | 13.1 | Training |

@@ -2665,7 +2665,7 @@ The Hamiltonian safety function H(d, pd) = 1 / (1 + d + 2*pd) is the universal s
 | **Concept Block** | Abstract processing unit (PLAN, SENSE, STEER, DECIDE, COORDINATE) with tick/reset/configure lifecycle |
 | **CSTM** | Choice Script Training Matrix -- nursery system for training agents via interactive fiction |
 | **GraduatedKernel** | Portable personality artifact extracted from a trained agent after graduation |
-| **Hamiltonian** | Safety function H(d,pd) = 1/(1+d+2*pd) governing all agent operations |
+| **Hamiltonian** | Safety function H(d*,R) = R^((phi*d*)^2) governing all agent operations |
 | **Polly Pad** | Actuator surface that translates governance decisions into real-world (browser) actions |
 | **Sacred Tongue** | Domain separation protocol (KO, AV, RU, CA, UM, DR) providing isolation between operational domains |
 | **Modality Mask** | Harmonic overtone filter (STRICT, ADAPTIVE, PROBE) controlling governance strictness |

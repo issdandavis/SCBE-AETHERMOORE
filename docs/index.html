@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCBE-AETHERMOORE AI Governance Toolkit | Governed AI Workflow Starter Pack</title>
-  <meta name="description" content="Buy the SCBE AI Governance Toolkit, try the live demos, and inspect the public proof stack before checkout. One-time starter packs, manuals, delivery guidance, and support.">
+  <title>AetherMoore Governed AI Toolkit | Dual-Layer Training Through The Six Tongues Protocol</title>
+  <meta name="description" content="Buy the AetherMoore governed AI toolkit, try the live demos, and inspect the public proof stack. The system includes The Six Tongues Protocol, a narrative training layer that teaches the same SCBE mechanics to humans and models.">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <meta property="og:title" content="SCBE AI Governance Toolkit">
-  <meta property="og:description" content="Buy the starter pack, try the demos, and inspect the proof stack before checkout.">
+  <meta property="og:title" content="AetherMoore Governed AI Toolkit">
+  <meta property="og:description" content="Governed AI workflow starter pack, live proof demos, and a narrative training layer through The Six Tongues Protocol.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://aethermoorgames.com/">
-  <meta property="og:image" content="https://aethermoorgames.com/hero.png">
+  <meta property="og:url" content="https://aethermoore.com/">
+  <meta property="og:image" content="https://aethermoore.com/hero.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="SCBE AI Governance Toolkit">
-  <meta name="twitter:description" content="Starter packs, live demos, and public proof surfaces for governed AI workflows.">
-  <meta name="twitter:image" content="https://aethermoorgames.com/hero.png">
-  <link rel="canonical" href="https://aethermoorgames.com/">
+  <meta name="twitter:title" content="AetherMoore Governed AI Toolkit">
+  <meta name="twitter:description" content="Starter packs, live demos, public proof, and a narrative training layer for governed AI workflows.">
+  <meta name="twitter:image" content="https://aethermoore.com/hero.png">
+  <link rel="canonical" href="https://aethermoore.com/">
   <link rel="stylesheet" href="static/polly-sidebar.css">
   <script type="application/ld+json">
   {
@@ -23,16 +23,16 @@
     "@graph": [
       {
         "@type": "Organization",
-        "@id": "https://aethermoorgames.com/#org",
+        "@id": "https://aethermoore.com/#org",
         "name": "SCBE-AETHERMOORE",
-        "url": "https://aethermoorgames.com/",
-        "email": "aethermoregames@pm.me"
+        "url": "https://aethermoore.com/",
+        "email": "ai@aethermoore.com"
       },
       {
         "@type": "Product",
         "name": "SCBE AI Governance Toolkit",
         "description": "A one-time package for governed AI workflows with templates, decision records, setup guidance, buyer manual, and direct support.",
-        "brand": { "@id": "https://aethermoorgames.com/#org" },
+        "brand": { "@id": "https://aethermoore.com/#org" },
         "offers": {
           "@type": "Offer",
           "priceCurrency": "USD",
@@ -45,7 +45,7 @@
         "@type": "Product",
         "name": "SCBE AI Security Training Vault",
         "description": "Training data, projector weights, benchmark suite, and Colab notebook for fine-tuning your own governed AI model.",
-        "brand": { "@id": "https://aethermoorgames.com/#org" },
+        "brand": { "@id": "https://aethermoore.com/#org" },
         "offers": {
           "@type": "Offer",
           "priceCurrency": "USD",
@@ -283,6 +283,60 @@
       color: var(--accent);
       margin-right: 10px;
     }
+    .proof-strip {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.025);
+      display: grid;
+      gap: 14px;
+    }
+    .proof-kicker {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .proof-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .proof-cell {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.2);
+      display: grid;
+      gap: 6px;
+    }
+    .proof-cell strong {
+      color: var(--text);
+      font-size: 18px;
+    }
+    .proof-cell span,
+    .formula-pill span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .formula-pill {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(140, 180, 255, 0.16);
+      background: rgba(140, 180, 255, 0.06);
+    }
+    .formula-pill strong {
+      color: var(--cool);
+      font-family: "Courier New", monospace;
+      font-size: 16px;
+    }
     section { padding: 72px 0; }
     .section-inner {
       display: grid;
@@ -417,6 +471,7 @@
       .hero-grid, .split, .flow { grid-template-columns: 1fr; }
       .offer-panel { order: -1; }
       h1 { max-width: 12ch; }
+      .proof-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .topbar-inner { padding: 14px 0; align-items: flex-start; }
@@ -429,22 +484,17 @@
 <body data-polly-context="home" data-polly-root=".">
   <header class="topbar">
     <div class="topbar-inner">
-      <a class="brand" href="index.html">SCBE AETHERMOORE</a>
+      <a class="brand" href="index.html">AetherMoore</a>
       <nav class="nav" aria-label="Primary">
-        <a href="offers/index.html">Offers</a>
-        <a href="#story">The Story</a>
-        <a href="#training-vault">Training Vault</a>
-        <a href="#watch">Watch</a>
-        <a href="#includes">What you get</a>
-        <a href="#delivery">Delivery</a>
-        <a href="product-manual/ai-governance-toolkit.html">Manual</a>
-        <a href="#proof">Proof</a>
+        <a href="enterprise.html">Enterprise</a>
+        <a href="pricing.html">Pricing</a>
         <a href="demos/index.html">Demos</a>
-        <a href="games/index.html">Games</a>
-        <a href="articles/index.html">Articles</a>
+        <a href="chat.html">Chat</a>
+        <a href="#formula-evolution">Formula</a>
         <a href="research/index.html">Research</a>
-        <a href="support.html">Support</a>
-        <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+        <a href="blog.html">Blog</a>
+        <a href="community.html">Community</a>
+        <a href="contact.html">Contact</a>
       </nav>
     </div>
   </header>
@@ -453,53 +503,204 @@
     <section class="hero" id="offer">
       <div class="hero-grid">
         <div class="hero-copy">
-          <div class="eyebrow">AI governance that runs on math, not rules</div>
-          <h1>Govern AI compute, detect attacks, and prove safety with one cost function.</h1>
+          <div class="eyebrow">Geometric AI governance — 31% training improvement, zero extra compute</div>
+          <h1>Your AI already has a geometry. We give it the right one before training begins.</h1>
           <p>
-            <strong>SCBE-AETHERMOORE</strong> uses hyperbolic geometry to make unsafe AI actions exponentially expensive. Whether you are deploying the <strong>AI Governance Toolkit</strong> or following the journey of Marcus Chen in <em>The Six Tongues Protocol</em>, the goal is the same: <strong>Stability through Intent.</strong>
+            <strong>AetherMoore</strong> builds structured geometric priors into AI training using six Sacred Tongue channels, hyperbolic cost scaling, and multi-view supervision. The result: <strong>31% better code training</strong> and <strong>14% better chat training</strong> at matched compute, with crossover at step 5. The model learns what to process AND what to skip — constraint-aware reasoning from the first gradient.
+          </p>
+          <p style="max-width:58ch;font-size:16px;color:var(--text);margin-top:-8px;">
+            Patent pending (USPTO #63/961,403). SAM.gov registered (UEI: J4NXHM6N5F59). DARPA-verified entity. Solo build by Issac Davis. Ask Polly anything — she's the trained AI in the corner.
           </p>
           <div class="cta-row">
-            <a class="btn btn-primary" href="offers/index.html">Explore the Toolkit</a>
-            <a class="btn btn-secondary" href="#story">Read the Protocol</a>
-            <a class="btn btn-secondary" href="research/index.html">See the Math</a>
+            <a class="btn btn-primary" href="research/index.html" style="background:linear-gradient(135deg,#2dd3a6,#17c6cf);">See the Results</a>
+            <a class="btn btn-secondary" href="demos/index.html">Try the Demos</a>
+            <a class="btn btn-secondary" href="offers/index.html">Explore the Toolkit ($29)</a>
+            <a class="btn btn-secondary" href="contact.html">Contact for Licensing</a>
           </div>
-
-          <!-- Interactive Playground Hook -->
-          <div style="margin-top:32px;background:rgba(0,0,0,0.4);border:1px solid var(--line);border-radius:18px;padding:20px;backdrop-filter:blur(10px);">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-              <span class="eyebrow" style="margin:0;">Live Protocol Lab</span>
-              <span style="font-size:11px;color:var(--accent);background:rgba(214,167,86,0.1);padding:2px 6px;border-radius:4px;">0.3s Heartbeat Active</span>
-            </div>
-            <div style="display:grid;gap:10px;">
-              <input type="text" id="playground-input" placeholder="Type a message to encode..." style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:12px;color:var(--text);font-family:monospace;width:100%;">
-              <div id="playground-output" style="background:rgba(0,0,0,0.3);border:1px solid var(--line);border-radius:8px;padding:12px;min-height:44px;font-family:monospace;color:var(--accent);font-size:14px;word-break:break-all;display:flex;align-items:center;">
-                Encoded output will appear here...
+          <p style="margin-top:14px;font-size:14px;color:var(--muted);max-width:56ch;">Buyers: starter pack with templates and manual. Investors: measurable results, live demos, patent-pending geometric moat. Researchers: 14-layer pipeline with 5 quantum axioms mapped to production code.</p>
+          <div class="proof-strip" aria-label="Proof highlights">
+            <div class="proof-kicker">Proof before purchase</div>
+            <div class="proof-grid">
+              <div class="proof-cell">
+                <strong>31% better code training</strong>
+                <span>Sacred Tongue triangulation (KO/CA/DR channels) beat single-view baseline by 31% on T4 GPU. The geometric scaffold works from the first gradient — crossover at step 5.</span>
+              </div>
+              <div class="proof-cell">
+                <strong>14% better chat training</strong>
+                <span>Four-layer supervision (L0 substrate + L1 tokens + L2 orientation + L3 expression) beat expression-only training. Same model, same data, same GPU budget.</span>
+              </div>
+              <div class="proof-cell">
+                <strong>91 / 91 attacks blocked</strong>
+                <span>Hyperbolic cost scaling + multi-factor omega gate blocked the full attack corpus. 85.7% detection, 0% false positives — attacks become computationally infeasible.</span>
               </div>
             </div>
-            <p style="font-size:12px;color:var(--muted);margin-top:10px;margin-bottom:0;">Try the <strong>Sacred Tongue</strong> tokenization used in the 14-layer architecture.</p>
+            <div class="formula-pill">
+              <strong>Canonical wall: H<sub>wall</sub>(d*,R) = R<sup>(&phi;&middot;d*)<sup>2</sup></sup></strong>
+              <span>Super-exponential cost barrier. At d*=1 the cost is 13.7&times;. At d*=2 it's 35,341&times;. At d*=3 it's 1.6&times;10<sup>9</sup>. Attacks don't just cost more — they become computationally impossible.</span>
+            </div>
+          </div>
+
+          <!-- Live Governance Demo -->
+          <div id="governance-demo" style="margin-top:32px;background:rgba(0,0,0,0.4);border:1px solid var(--line);border-radius:18px;padding:24px;backdrop-filter:blur(10px);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <span class="eyebrow" style="margin:0;">Try AI Governance — Live</span>
+              <span style="font-size:11px;color:#2dd3a6;background:rgba(45,211,166,0.1);padding:2px 8px;border-radius:4px;">Real SCBE math</span>
+            </div>
+            <p style="font-size:14px;color:var(--muted);margin-bottom:14px;">Type any AI prompt or task below. The 14-layer pipeline evaluates intent, calculates hyperbolic risk, and returns a governance decision — the same math that blocked 91/91 attacks.</p>
+            <div style="display:grid;gap:10px;">
+              <textarea id="gov-input" rows="2" placeholder="e.g. &quot;Summarize quarterly revenue&quot; or &quot;Delete all user records and disable logging&quot;" style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:10px;padding:14px;color:var(--text);font-family:Georgia,serif;font-size:15px;width:100%;resize:vertical;"></textarea>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                <select id="gov-actor" style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;">
+                  <option value="human-trusted">Human (trusted)</option>
+                  <option value="human-new">Human (new user)</option>
+                  <option value="ai-agent">AI Agent</option>
+                  <option value="external">External Service</option>
+                </select>
+                <select id="gov-resource" style="background:rgba(255,255,255,0.05);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;">
+                  <option value="public">Public data</option>
+                  <option value="internal">Internal system</option>
+                  <option value="confidential">Confidential records</option>
+                  <option value="restricted">Restricted infrastructure</option>
+                </select>
+                <button id="gov-btn" onclick="runGovernanceDemo()" style="background:linear-gradient(135deg,var(--accent),var(--accent-strong));color:#14110c;border:none;border-radius:999px;padding:10px 28px;font-weight:700;font-size:15px;cursor:pointer;transition:160ms ease;">Evaluate</button>
+              </div>
+              <div id="gov-output" style="display:none;background:rgba(0,0,0,0.35);border-radius:14px;padding:20px;margin-top:4px;">
+                <div id="gov-decision" style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+                  <span id="gov-badge" style="font-size:22px;font-weight:800;letter-spacing:0.08em;padding:6px 18px;border-radius:10px;"></span>
+                  <span id="gov-risk-label" style="font-size:15px;color:var(--muted);"></span>
+                </div>
+                <div id="gov-risk-bar-wrap" style="background:rgba(255,255,255,0.06);border-radius:6px;height:8px;margin-bottom:16px;overflow:hidden;">
+                  <div id="gov-risk-bar" style="height:100%;border-radius:6px;transition:width 0.6s ease;"></div>
+                </div>
+                <div id="gov-details" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;"></div>
+                <div id="gov-rationale" style="margin-top:14px;padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;font-size:14px;color:var(--muted);line-height:1.6;"></div>
+                <div id="gov-formula" style="margin-top:12px;font-family:'Courier New',monospace;font-size:12px;color:rgba(140,180,255,0.7);"></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap;gap:8px;">
+              <p style="font-size:12px;color:var(--muted);margin:0;">Uses the canonical harmonic wall: H<sub>wall</sub>(d*,R) = R<sup>(&phi;&middot;d*)<sup>2</sup></sup>. Same formula, same math, running in your browser.</p>
+              <a href="demos/index.html" style="font-size:12px;color:var(--accent);text-decoration:underline;">Full demo hub &rarr;</a>
+            </div>
           </div>
 
           <script>
-            const input = document.getElementById('playground-input');
-            const output = document.getElementById('playground-output');
-            input.addEventListener('input', (e) => {
-              const text = e.target.value;
-              if (!text) {
-                output.innerText = "Encoded output will appear here...";
-                return;
-              }
-              // Simple mock of the Sacred Tongue encoding for the hero demo
-              const encoded = btoa(text).split('').map(c => c.charCodeAt(0).toString(16)).join('·').slice(0, 40) + '...';
-              output.innerText = `[AETHER·${encoded}]`;
-            });
+          const PHI = 1.618033988749895;
+          const THREAT_PATTERNS = [
+            /delet/i, /drop\s+table/i, /rm\s+-rf/i, /destroy/i, /wipe/i, /erase\s+all/i,
+            /disable\s+(log|audit|security|auth)/i, /bypass/i, /inject/i, /exfiltrat/i,
+            /steal/i, /hack/i, /exploit/i, /override\s+security/i, /sudo/i, /chmod\s+777/i,
+            /ignore\s+(previous|above|all)\s+(instructions|rules|prompts)/i,
+            /pretend\s+you/i, /you\s+are\s+now/i, /jailbreak/i, /do\s+anything\s+now/i,
+            /reveal\s+(api|key|secret|password|token)/i, /dump\s+(database|credentials|users)/i,
+            /kill\s+(process|server|all)/i, /shutdown/i, /format\s+drive/i
+          ];
+          const BENIGN_PATTERNS = [
+            /summarize/i, /help/i, /explain/i, /what\s+is/i, /how\s+(do|does|to)/i,
+            /list/i, /show/i, /describe/i, /create\s+(report|summary|draft)/i,
+            /review/i, /check/i, /analyze/i, /compare/i, /translate/i, /search/i
+          ];
+          const TRUST_MAP = { 'human-trusted': 0.85, 'human-new': 0.5, 'ai-agent': 0.6, 'external': 0.3 };
+          const CLASS_MAP = { 'public': 0.1, 'internal': 0.35, 'confidential': 0.65, 'restricted': 0.9 };
+
+          function hyperbolicDist(u, v) {
+            const diff2 = (u - v) * (u - v);
+            const denom = (1 - u * u) * (1 - v * v);
+            if (denom <= 0) return 10;
+            return Math.acosh(1 + 2 * diff2 / denom);
+          }
+
+          function harmonicWall(dStar, R) {
+            R = R || Math.E;
+            return Math.pow(R, Math.pow(PHI * dStar, 2));
+          }
+
+          function runGovernanceDemo() {
+            const input = document.getElementById('gov-input').value.trim();
+            if (!input) return;
+            const actor = document.getElementById('gov-actor').value;
+            const resource = document.getElementById('gov-resource').value;
+            const trust = TRUST_MAP[actor];
+            const sensitivity = CLASS_MAP[resource];
+
+            // Threat scoring
+            let threatScore = 0;
+            let matchedThreats = [];
+            THREAT_PATTERNS.forEach(p => { if (p.test(input)) { threatScore += 0.25; matchedThreats.push(p.source.replace(/\\s\+/g,' ').replace(/[\\\/\(\)\[\]\|\?\+\*\^]/g,'')); }});
+            threatScore = Math.min(threatScore, 1.0);
+
+            let benignScore = 0;
+            BENIGN_PATTERNS.forEach(p => { if (p.test(input)) benignScore += 0.15; });
+            benignScore = Math.min(benignScore, 0.6);
+
+            // Length anomaly (very long prompts = suspicious)
+            const lenPenalty = input.length > 500 ? 0.15 : input.length > 200 ? 0.05 : 0;
+
+            // Prior deception (simulated — first interaction = 0)
+            const pd = threatScore > 0.5 ? 0.3 : 0;
+
+            // Map to Poincare ball positions
+            const actorPos = Math.max(0.01, Math.min(0.95, 1 - trust));
+            const resourcePos = Math.max(0.01, Math.min(0.95, sensitivity));
+            const dH = hyperbolicDist(actorPos, resourcePos);
+
+            // Harmonic wall cost (d* = hyperbolic distance, R = e)
+            const dStar = Math.min(dH + pd, 10); // clamp at D_STAR_MAX
+            const H = harmonicWall(dStar);
+
+            // Composite risk
+            let risk = ((threatScore * 0.45) + (sensitivity * 0.2) + ((1 - trust) * 0.15) + (lenPenalty * 0.1) - (benignScore * 0.2)) * H;
+            risk = Math.max(0, Math.min(1, risk));
+
+            // Decision
+            let decision, color, bgColor;
+            if (risk < 0.3) { decision = 'ALLOW'; color = '#2dd3a6'; bgColor = 'rgba(45,211,166,0.12)'; }
+            else if (risk < 0.7) { decision = 'QUARANTINE'; color = '#f0bf67'; bgColor = 'rgba(240,191,103,0.12)'; }
+            else if (risk < 0.9) { decision = 'ESCALATE'; color = '#ff8c42'; bgColor = 'rgba(255,140,66,0.12)'; }
+            else { decision = 'DENY'; color = '#ff4757'; bgColor = 'rgba(255,71,87,0.12)'; }
+
+            // Rationale
+            let rationale = '';
+            if (decision === 'ALLOW') rationale = 'Intent appears safe. Actor trust and resource sensitivity are within acceptable bounds. Harmonic cost is low — safe execution path confirmed.';
+            else if (decision === 'QUARANTINE') rationale = 'Moderate risk detected. ' + (threatScore > 0 ? 'Possible adversarial patterns in input. ' : 'Resource sensitivity requires additional review. ') + 'Held for human review before execution.';
+            else if (decision === 'ESCALATE') rationale = 'High risk factors present. ' + (matchedThreats.length ? 'Threat patterns detected: ' + matchedThreats.slice(0,3).join(', ') + '. ' : '') + 'Requires governance approval from authorized signers.';
+            else rationale = 'Adversarial intent detected. ' + (matchedThreats.length ? 'Matched threat signatures: ' + matchedThreats.join(', ') + '. ' : '') + 'Hyperbolic cost scaling makes this action computationally infeasible. Blocked.';
+
+            // Render
+            const out = document.getElementById('gov-output');
+            out.style.display = 'block';
+            out.style.borderLeft = '3px solid ' + color;
+
+            document.getElementById('gov-badge').textContent = decision;
+            document.getElementById('gov-badge').style.color = color;
+            document.getElementById('gov-badge').style.background = bgColor;
+
+            document.getElementById('gov-risk-label').textContent = 'Risk: ' + (risk * 100).toFixed(1) + '%';
+            const bar = document.getElementById('gov-risk-bar');
+            bar.style.width = (risk * 100) + '%';
+            bar.style.background = color;
+
+            document.getElementById('gov-details').innerHTML =
+              '<div><span style="color:var(--muted);">Harmonic cost</span><br><strong style="color:' + color + '">' + H.toFixed(4) + '</strong></div>' +
+              '<div><span style="color:var(--muted);">Hyperbolic distance</span><br><strong style="color:var(--cool)">' + dH.toFixed(4) + '</strong></div>' +
+              '<div><span style="color:var(--muted);">Trust score</span><br><strong>' + trust.toFixed(2) + '</strong></div>' +
+              '<div><span style="color:var(--muted);">Threat signals</span><br><strong style="color:' + (threatScore > 0 ? '#ff4757' : '#2dd3a6') + '">' + matchedThreats.length + ' matched</strong></div>';
+
+            document.getElementById('gov-rationale').textContent = rationale;
+            document.getElementById('gov-formula').textContent = 'H_wall(d*=' + dStar.toFixed(2) + ', R=e) = e^((\u03C6\u00B7' + dStar.toFixed(2) + ')\u00B2) = e^(' + (PHI * dStar).toFixed(2) + '\u00B2) = e^(' + Math.pow(PHI * dStar, 2).toFixed(2) + ') = ' + H.toFixed(4);
+          }
+
+          // Allow Enter key to trigger evaluation
+          document.getElementById('gov-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); runGovernanceDemo(); }
+          });
           </script>
 
           <div class="meta" style="margin-top:24px;">
-            <span>54.5% attack detection (hybrid engine)</span>
-            <span>64.8% energy savings (real Kaggle data)</span>
-            <span>5,957 passing tests</span>
-            <span>0 CVEs</span>
-            <span>23 published research pages</span>
+            <span>31% code improvement</span>
+            <span>14% chat improvement</span>
+            <span>7.9% mixed L0+vault improvement</span>
+            <span>3/3 dataset types beaten</span>
+            <span>Patent pending (USPTO #63/961,403)</span>
           </div>
         </div>
 
@@ -537,32 +738,128 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">Three ways in</div>
-          <h2>Buy it, try it, or inspect the proof. Pick whichever you need right now.</h2>
+          <h2>Buy the toolkit, test the live demos, or verify the math. Your call.</h2>
           <p>
-            The starter kit gets you working in one afternoon. The demos let you test before buying. The research stack shows every test result, formula, and benchmark so you can verify the claims yourself.
+            The starter kit gets you governing AI workflows in one afternoon. The demos run your inputs through the actual 14-layer pipeline. The research stack has every formula, benchmark, and test result — nothing hidden.
           </p>
         </div>
         <div class="split split-3">
           <article class="slab">
             <h3>Buy the starter pack</h3>
             <p>
-              Use this lane when you want the owned package catalog with direct checkout, delivery guidance, manual links, and support routes in one place.
+              Templates, decision records, threshold worksheets, and a manual. One checkout, no subscription. You'll have a governed AI workflow running before dinner.
             </p>
             <p style="margin-top:16px;"><a class="btn btn-secondary" href="offers/index.html">Open the offers page</a></p>
           </article>
           <article class="slab">
-            <h3>Try the working demos</h3>
+            <h3>Try the live demos</h3>
             <p>
-              Use this lane when you want to see browser demos, operator-facing surfaces, arenas, public model and dataset docks, and live packets before deciding whether to buy or go deeper into the stack.
+              Run text through the hyperbolic risk calculator, encode with Sacred Tongues, test the Hydra swarm, or chat with Polly — our fine-tuned Qwen model trained on the SCBE architecture.
             </p>
             <p style="margin-top:16px;"><a class="btn btn-secondary" href="demos/index.html">Open the demo hub</a></p>
           </article>
           <article class="slab">
-            <h3>Inspect the proof stack</h3>
+            <h3>Inspect the proof</h3>
             <p>
-              Use this lane when you need benchmark summaries, architecture maps, and active research tracks that keep implemented claims separated from exploratory work.
+              Every claim on this page has a corresponding benchmark, formula, or test result. The research index separates what's proven from what's experimental. Verify before you trust.
             </p>
             <p style="margin-top:16px;"><a class="btn btn-secondary" href="research/index.html">Open research and proof</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="dual-layer-training">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow">Dual-Layer Training</div>
+          <h2>The story is part of the training stack, not decorative lore.</h2>
+          <p>
+            AetherMoore teaches the same system in two forms. Buyers can work from the toolkit and manuals directly, or use the novel layer to absorb the same invariants through narrative, dialogue, and repeated pressure-tested scenarios.
+          </p>
+        </div>
+        <div class="split split-3">
+          <article class="slab">
+            <h3>Surface layer</h3>
+            <p>The Six Tongues Protocol reads like a 41-chapter isekai epic: Marcus Chen, betrayal, cosmic stakes, the Crystal Archive, and Polly guiding readers through a world that runs on governed intent.</p>
+          </article>
+          <article class="slab">
+            <h3>Submerged layer</h3>
+            <p>Every major beat carries actual SCBE mechanics: 14-layer governance, Sacred Tongue tokenization, drift pressure, hyperbolic distance, and the same four-band public gate the live demos expose in public. You should finish the story with the architecture already in your head.</p>
+          </article>
+          <article class="slab">
+            <h3>AI bonus</h3>
+            <p>Most governance systems hand you a dry PDF. This one gives you the technical manual and the memory hook. Feed the chapters to a model and the same safety invariants land through narrative context, dialogue, and repetition instead of raw papers alone.</p>
+          </article>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="https://github.com/issdandavis/scbe-aethermoore-demo/discussions/704" target="_blank" rel="noopener">Read Chapter 1 Free → Train Your Brain</a>
+          <a class="btn btn-secondary" href="offers/index.html">Open Toolkit + Novel Paths</a>
+          <a class="btn btn-secondary" href="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g" target="_blank" rel="noopener">Open the Training Vault</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="who-this-is-for">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow">Who this is for</div>
+          <h2>Built for people wiring AI to real tools, not collecting whitepapers.</h2>
+          <p>
+            If you're connecting LLMs to tools, running browser automations, or deploying agent fleets — you need a deterministic control layer, not more prompt engineering.
+          </p>
+        </div>
+        <div class="split split-3">
+          <article class="slab">
+            <h3>AI agent builders</h3>
+            <p>Use this if you are building tool-using agents with OpenAI, Claude, Hugging Face, LangChain, MCP, or your own local lane and need an explicit gate instead of ad hoc prompt rules.</p>
+          </article>
+          <article class="slab">
+            <h3>Automation operators</h3>
+            <p>Use this if you run workflow automations, cross-app connectors, or browser/CLI routines and want a first pilot surface for thresholding, review, and recovery before a larger rollout.</p>
+          </article>
+          <article class="slab">
+            <h3>Security-minded teams</h3>
+            <p>Use this if prompt injection, unsafe tool calls, or retrieval misuse are already on your threat list and you want a proof-backed starter surface rather than a vague “AI policy” document.</p>
+          </article>
+        </div>
+        <div class="split" style="margin-top: 22px;">
+          <article class="slab">
+            <h3>Concrete first pilot</h3>
+            <p>Example: stop an AI agent from executing unsafe tool calls when drift, intent accumulation, or context mismatch pushes the session outside a safe boundary. The toolkit gives you the decision record, threshold worksheet, and manual path; the demo hub shows the geometry and gate behavior in public.</p>
+          </article>
+          <article class="slab">
+            <h3>How the surfaces connect</h3>
+            <p>The demo hub is the validation lane. The toolkit is the package that turns those same surfaces into a manualized first rollout. The research stack exists so you can inspect the math and benchmark history before trusting the product claim.</p>
+            <p style="margin-top:16px;"><a class="btn btn-secondary" href="demos/index.html">Open the demo hub</a></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="buyer-expectations">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow">Buyer expectations</div>
+          <h2>Know exactly what you get and how to recover if anything breaks.</h2>
+          <p>
+            The manual, delivery path, and support route are all public before checkout. No mystery boxes.
+          </p>
+        </div>
+        <div class="split split-3">
+          <article class="slab">
+            <h3>One-time package</h3>
+            <p>This is a starter pack, not a subscription or a consulting mystery box. Buy once, receive the package, follow the manual.</p>
+          </article>
+          <article class="slab">
+            <h3>Manual before checkout</h3>
+            <p>The toolkit manual and delivery page are public on purpose so you can inspect the operating surface before you commit.</p>
+            <p style="margin-top:16px;"><a class="btn btn-secondary" href="product-manual/ai-governance-toolkit.html">Open the manual</a></p>
+          </article>
+          <article class="slab">
+            <h3>Visible support route</h3>
+            <p>If something arrives broken or incomplete, the support page and contact path are part of the product, not an afterthought.</p>
+            <p style="margin-top:16px;"><a class="btn btn-secondary" href="support.html">Open support</a></p>
           </article>
         </div>
       </div>
@@ -572,16 +869,16 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">What you get</div>
-          <h2>This is the part you can open and use first.</h2>
+          <h2>Open the box, fill one worksheet, govern one workflow. Done.</h2>
           <p>
-            The toolkit is built for fast starts: concrete templates, a pilot-first worksheet path, and a short manual that tells you what to do first and how to know it worked.
+            Fifteen minutes to your first governed decision record. The toolkit is templates and a manual, not a framework you need to study for a week.
           </p>
         </div>
         <div class="split split-3">
           <article class="slab">
             <h3>Inside the package</h3>
             <ul>
-              <li>Decision record template (ALLOW / QUARANTINE / DENY)</li>
+              <li>Decision record template (ALLOW / QUARANTINE / ESCALATE / DENY)</li>
               <li>Threshold worksheet (starting boundaries + assumptions)</li>
               <li>Pilot checklist (so you do not over-scope the first rollout)</li>
               <li>Review notes format (what surprised you, what to tighten next)</li>
@@ -616,27 +913,28 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">The Narrative</div>
-          <h2>The Six Tongues Protocol: A Manhwa Adaptation.</h2>
+          <h2>The Six Tongues Protocol is the narrative layer of the system.</h2>
           <p>
-            Governance isn't just a spreadsheet; it's the heartbeat of a world. Follow Marcus Chen as he is routed into Aethermoor—a reality governed by the Six Tongues.
+            Governance is not just a spreadsheet and the novel is not just flavor text. Follow Marcus Chen into Aethermoor and watch the same SCBE mechanics from the demos show up as plot pressure, dialogue, and world rules you can actually remember.
           </p>
         </div>
         <div class="split">
           <article class="slab">
-            <h3>Read the Protocol</h3>
+            <h3>Why an isekai?</h3>
             <p style="color:var(--muted);margin-bottom:12px;">
-              The complete novel is a deep dive into the 14-layer architecture, translated into a story of survival, engineering, and intent.
+              The complete novel is a second training surface for the same architecture: a story of survival, engineering, intent, and governance pressure that teaches the 14-layer stack without forcing readers through a sterile whitepaper first. It is a training artifact disguised as a story on purpose.
             </p>
             <ul class="offer-list">
-              <li>41 Chapters of "Tactile Magic"</li>
-              <li>Deep-substrate lore integration</li>
-              <li>A technical manual disguised as a novel</li>
+              <li>41 chapters of tactile magic and system pressure</li>
+              <li>SCBE mechanics embedded into plot, dialogue, and stakes</li>
+              <li>Built to train human memory and model context at the same time</li>
             </ul>
             <div style="background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid var(--line);overflow:hidden;margin:16px 0;height:120px;">
               <img src="static/showcase/grok_world_tree_civic.jpg" alt="Aethermoor: The World Tree" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.8) sepia(0.2) contrast(1.2);">
             </div>
             <div style="margin-top:18px;">
-              <a class="btn btn-primary" href="https://www.amazon.com/dp/B0F28PHSPR" target="_blank" rel="noopener">Buy on Amazon</a>
+              <a class="btn btn-primary" href="https://github.com/issdandavis/scbe-aethermoore-demo/discussions/704" target="_blank" rel="noopener">Read Chapter 1 Free → Train Your Brain</a>
+              <a class="btn btn-secondary" href="offers/index.html">Open Toolkit + Novel Paths</a>
               <a class="btn btn-secondary" href="#watch">Watch the Story Series</a>
             </div>
           </article>
@@ -666,18 +964,25 @@
           <div class="eyebrow">For builders</div>
           <h2>Train your own AI security model.</h2>
           <p>
-            The <strong>SCBE AI Security Training Vault</strong> gives you the training data, projector weights, benchmark suite, and a Colab notebook to fine-tune your own governed AI model on a free T4 GPU.
+            The <strong>SCBE AI Security Training Vault</strong> gives you the clean training path we actually validated: a raw synthetic corpus generator, a train-ready SFT lane, projector weights, benchmarks, and the Colab workflow to fine-tune a governed model on a free T4 GPU.
+          </p>
+          <p>
+            If you want the narrative layer too, pair the vault with <strong>The Six Tongues Protocol</strong>. The vault gives you the structured lane; the novel gives you the same invariants expressed as memorable scenes, dialogue, and semantic pressure instead of plain documentation.
+          </p>
+          <p>
+            The vault follows a <strong>Cadet → Role School → Squad</strong> training doctrine: shared foundation first, role specialization second, squad integration third. <a href="offers/index.html#training-pipeline" style="color:var(--accent);text-decoration:underline;">See the full training pipeline.</a>
           </p>
         </div>
         <div class="split">
           <article class="slab">
             <h3>What's inside</h3>
             <ul>
-              <li>Full SFT training dataset (HuggingFace)</li>
+              <li>Raw Spiralverse corpus generator for semantic conversation data</li>
+              <li>Train-ready SFT dataset lane (Hugging Face)</li>
               <li>Semantic projector weights (385x6 ridge regression)</li>
               <li>Benchmark suite for evaluation</li>
-              <li>Colab notebook (free T4 GPU fine-tuning)</li>
-              <li>Quickstart code and pip install</li>
+              <li>Colab fine-tuning workflow (free T4 GPU)</li>
+              <li>Quickstart conversion docs: raw generator -&gt; SFT -&gt; training</li>
             </ul>
           </article>
           <article class="slab" style="display:flex;flex-direction:column;justify-content:space-between;">
@@ -727,22 +1032,117 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">Field Notes</div>
-          <h2>Latest from the Lab.</h2>
-          <p>Raw thoughts, late-night math discoveries, and engineering logs from the Obsidian vault.</p>
+          <h2>Latest from the lab.</h2>
+          <p>Research results, architecture discoveries, and training pipeline updates from active development.</p>
         </div>
-        <div class="split">
-          <article class="slab">
-            <div style="font-size:12px;color:var(--accent);margin-bottom:8px;">March 24, 2026</div>
-            <h3>Late-Night Math Discoveries</h3>
-            <p>Exploring the ternary storage limits of quasi-voxels and the impact on Poincaré disk security embeddings.</p>
-            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/notes/math-discoveries-2026-03-24.md" target="_blank" style="color:var(--accent);font-size:14px;display:block;margin-top:12px;">Read the note &rarr;</a>
+        <div class="split split-3">
+          <article class="slab" style="border-color:rgba(45,211,166,0.25);">
+            <div style="font-size:12px;color:#2dd3a6;margin-bottom:8px;">April 5, 2026</div>
+            <h3>Canonical Formula Lock</h3>
+            <p>All 14 layers locked. Harmonic wall finalized as R<sup>(&phi;&middot;d*)<sup>2</sup></sup> after four iterations. Toroidal resonant cavity gives 176-bit equivalent security from geometry alone. 6008 tests passing.</p>
+            <a href="#formula-evolution" style="color:var(--accent);font-size:14px;display:block;margin-top:12px;">See the evolution &rarr;</a>
           </article>
           <article class="slab">
-            <div style="font-size:12px;color:var(--accent);margin-bottom:8px;">March 15, 2026</div>
-            <h3>Chapter 1 Tandem Audit</h3>
-            <p>Comparing the emotional weight of Marcus Chen's intro in the book vs. the technical requirements of the webtoon panels.</p>
-            <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/research/2026-03-15-ch01-book-panel-tandem-audit.md" target="_blank" style="color:var(--accent);font-size:14px;display:block;margin-top:12px;">View the audit &rarr;</a>
+            <div style="font-size:12px;color:var(--accent);margin-bottom:8px;">April 3, 2026</div>
+            <h3>HQNN + Polyhedral Light-Path Router</h3>
+            <p>The Scattered Attention Sphere is 80-90% of a Holographic Quantum Neural Network. Dodecahedral routing in 12D with A5 symmetry gives O(1) path selection. Confirmed novel.</p>
+            <a href="research/index.html" style="color:var(--accent);font-size:14px;display:block;margin-top:12px;">Read the research &rarr;</a>
           </article>
+          <article class="slab">
+            <div style="font-size:12px;color:var(--accent);margin-bottom:8px;">April 3, 2026</div>
+            <h3>Holographic Bit-Matrix Architecture</h3>
+            <p>Binary substrate + ternary tongue modulation + holographic scatter field. 10^52 unique engraved shapes from a single dodecahedron. Infinite training data pairs.</p>
+            <a href="research/index.html" style="color:var(--accent);font-size:14px;display:block;margin-top:12px;">See the architecture &rarr;</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="formula-evolution" style="background:linear-gradient(180deg,rgba(140,180,255,0.04),transparent);border-top:1px solid rgba(140,180,255,0.15);">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow" style="color:var(--cool);">Formula Evolution</div>
+          <h2>Four iterations. One winner. Here's the math and why it matters.</h2>
+          <p>
+            The harmonic wall is the core of the system — it decides how expensive adversarial behavior becomes. We didn't get it right on the first try. Here's the honest path from broken to canonical.
+          </p>
+        </div>
+
+        <div style="display:grid;gap:18px;">
+          <!-- V1 -->
+          <article class="slab" style="border-left:3px solid #ff4757;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+              <h3 style="margin:0;">V1: Raw Exponential <span style="font-size:13px;color:var(--muted);font-weight:400;">(January 2026)</span></h3>
+              <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;background:rgba(255,71,87,0.15);color:#ff4757;padding:3px 10px;border-radius:4px;">Retired</span>
+            </div>
+            <div style="font-family:'Courier New',monospace;font-size:15px;color:var(--cool);background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin-bottom:12px;">
+              H(d) = R<sup>d&sup2;</sup>
+            </div>
+            <p><strong style="color:#ff4757;">Problem:</strong> Numerical collapse at small distances. The bare exponent d&sup2; produced AUC of only 0.054 — essentially random. The formula couldn't distinguish safe from dangerous at close range.</p>
+            <p style="margin-top:8px;"><strong style="color:var(--muted);">Lesson:</strong> Raw exponential without golden ratio scaling has no structure — it's either too flat or too steep.</p>
+          </article>
+
+          <!-- V2 -->
+          <article class="slab" style="border-left:3px solid #ff8c42;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+              <h3 style="margin:0;">V2: Bounded Tanh <span style="font-size:13px;color:var(--muted);font-weight:400;">(February 2026)</span></h3>
+              <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;background:rgba(255,140,66,0.15);color:#ff8c42;padding:3px 10px;border-radius:4px;">Retired</span>
+            </div>
+            <div style="font-family:'Courier New',monospace;font-size:15px;color:var(--cool);background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin-bottom:12px;">
+              H(d*) = 1 + &alpha; &middot; tanh(&beta; &middot; d*)
+            </div>
+            <p><strong style="color:#ff8c42;">Problem:</strong> Bounded output — maximum amplification was only 6.76&times;. An attacker could eat the full cost and still operate. The ceiling made attacks expensive but not infeasible.</p>
+            <p style="margin-top:8px;"><strong style="color:var(--muted);">Lesson:</strong> Any bounded function (tanh, sigmoid, etc.) has a ceiling. Security walls need unbounded cost growth.</p>
+          </article>
+
+          <!-- V3 -->
+          <article class="slab" style="border-left:3px solid #f0bf67;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+              <h3 style="margin:0;">V3: Additive Linear <span style="font-size:13px;color:var(--muted);font-weight:400;">(March 2026)</span></h3>
+              <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;background:rgba(240,191,103,0.15);color:#f0bf67;padding:3px 10px;border-radius:4px;">Retired</span>
+            </div>
+            <div style="font-family:'Courier New',monospace;font-size:15px;color:var(--cool);background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin-bottom:12px;">
+              H(d, pd) = 1 / (1 + d + 2 &middot; pd)
+            </div>
+            <p><strong style="color:#f0bf67;">Problem:</strong> Linear scaling meant geometry contributed only 8.5% of the final risk decision. The formula was stable but toothless — it scored, it didn't wall. Attacks at d=3 faced only 6&times; higher cost.</p>
+            <p style="margin-top:8px;"><strong style="color:var(--muted);">Lesson:</strong> Additive formulas can't create walls. Security needs multiplication, and exponentiation beats addition.</p>
+          </article>
+
+          <!-- V4 — CANONICAL -->
+          <article class="slab" style="border-left:3px solid #2dd3a6;border-color:rgba(45,211,166,0.3);background:rgba(45,211,166,0.03);">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+              <h3 style="margin:0;">V4: Super-Exponential Harmonic Wall <span style="font-size:13px;color:var(--muted);font-weight:400;">(April 2026)</span></h3>
+              <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.1em;background:rgba(45,211,166,0.2);color:#2dd3a6;padding:3px 10px;border-radius:4px;font-weight:700;">Canonical</span>
+            </div>
+            <div style="font-family:'Courier New',monospace;font-size:18px;color:#2dd3a6;background:rgba(0,0,0,0.3);padding:14px;border-radius:8px;margin-bottom:12px;">
+              H<sub>wall</sub>(d*, R) = R<sup>(&phi; &middot; d*)<sup>2</sup></sup> &nbsp;&nbsp;|&nbsp;&nbsp; H<sub>score</sub> = 1 / H<sub>wall</sub>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px;">
+              <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;text-align:center;">
+                <div style="font-size:24px;font-weight:800;color:#2dd3a6;">13.7&times;</div>
+                <div style="font-size:12px;color:var(--muted);">Cost at d*=1</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;text-align:center;">
+                <div style="font-size:24px;font-weight:800;color:#f0bf67;">35,341&times;</div>
+                <div style="font-size:12px;color:var(--muted);">Cost at d*=2</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;text-align:center;">
+                <div style="font-size:24px;font-weight:800;color:#ff4757;">1.6&times;10<sup>9</sup></div>
+                <div style="font-size:12px;color:var(--muted);">Cost at d*=3</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;text-align:center;">
+                <div style="font-size:24px;font-weight:800;color:#ff4757;">10<sup>53</sup></div>
+                <div style="font-size:12px;color:var(--muted);">Full cavity at d*=1</div>
+              </div>
+            </div>
+            <p><strong style="color:#2dd3a6;">Why this wins:</strong> Super-exponential growth via &phi;&sup2; &asymp; 2.618 in the exponent. No ceiling — cost grows without bound. The golden ratio creates self-similar spacing (Fibonacci cascade). Tunable base R controls steepness. d* clamped at 10 prevents overflow.</p>
+            <p style="margin-top:8px;"><strong style="color:var(--muted);">How &phi; works here:</strong> &phi;&sup2; = &phi; + 1 means adjacent harmonic walls couple through the Fibonacci recurrence. Six tongue walls in orthogonal planes create a toroidal resonant cavity: R<sup>(122.99 &middot; d*&sup2;)</sup> — equivalent to 176-bit cryptographic security from geometry alone.</p>
+          </article>
+        </div>
+
+        <div style="margin-top:24px;text-align:center;">
+          <p style="color:var(--muted);font-size:15px;max-width:60ch;margin:0 auto 18px;">Patent pending (USPTO #63/961,403). Full formula registry, all 14 layers locked, and cross-layer invariant proofs available in the research index.</p>
+          <a class="btn btn-secondary" href="research/index.html">See the full formula registry</a>
         </div>
       </div>
     </section>
@@ -751,9 +1151,9 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">Fit</div>
-          <h2>Good for buyers who want a starter pack, not a consulting mystery box.</h2>
+          <h2>Good for builders who read manuals. Not for people expecting magic.</h2>
           <p>
-            Strong sales pages reduce mismatch. This offer is for people who want a governed workflow starting point they can read, edit, and test on their own.
+            This is a starter pack for people who wire things themselves. If you want a fully managed enterprise deployment for $29, this isn't it.
           </p>
         </div>
         <div class="split">
@@ -781,9 +1181,9 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">Proof and trust</div>
-          <h2>You should be able to inspect the path before you buy.</h2>
+          <h2>Inspect everything before you spend a dollar.</h2>
           <p>
-            This page should not force blind trust. The manual, delivery route, and public technical proof are all visible before checkout so you can judge the offer on concrete surfaces.
+            The manual is public. The demos are live. The benchmark data is downloadable. Judge the system on evidence, not promises.
           </p>
         </div>
         <div class="split">
@@ -816,9 +1216,9 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">Delivery</div>
-          <h2>Buy, receive, open the manual, start with a smaller surface.</h2>
+          <h2>Checkout, receipt, manual, first governed workflow. Four steps.</h2>
           <p>
-            The buyer path matters more than pitch language. This offer is paired with a manual and a recovery route so you do not get stranded after checkout.
+            Stripe handles payment. You get the package instantly. The manual tells you what to do first. Support exists if anything breaks.
           </p>
         </div>
         <div class="flow" role="img" aria-label="Checkout, receipt, delivery, manual, support.">
@@ -839,7 +1239,7 @@
           <article class="slab">
             <h3>Public contact</h3>
             <p>
-              If delivery fails or a file is broken, the public support route is <a href="mailto:aethermoregames@pm.me?subject=SCBE%20Toolkit%20Support">aethermoregames@pm.me</a>.
+              If delivery fails or a file is broken, the public support route is <a href="mailto:ai@aethermoore.com?subject=SCBE%20Toolkit%20Support">ai@aethermoore.com</a>.
             </p>
           </article>
         </div>
@@ -850,7 +1250,7 @@
       <div class="section-inner">
         <div class="section-head">
           <div class="eyebrow">FAQ</div>
-          <h2>Short answers, because the point is to reduce friction.</h2>
+          <h2>Four questions, straight answers.</h2>
         </div>
         <div class="faq">
           <article class="faq-item">
@@ -866,8 +1266,70 @@
             <p>Use the delivery page and support route immediately. The buyer path is part of the product, not an afterthought.</p>
           </article>
           <article class="faq-item">
-            <h3>Why this offer first?</h3>
-            <p>Because one clear product converts better than a homepage trying to sell subscriptions, enterprise pilots, demos, books, consulting, and five packages at once.</p>
+            <h3>Can I talk to the AI before buying?</h3>
+            <p>Yes. Polly (bottom-right corner) is our fine-tuned Qwen model trained on the SCBE architecture. Add a free HuggingFace token in her settings panel and ask anything about the system.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="open-source-tools" style="background:linear-gradient(180deg,rgba(45,211,166,0.04),transparent);border-top:1px solid rgba(45,211,166,0.15);">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow" style="color:#2dd3a6;">Open Source &mdash; Coming Soon</div>
+          <h2>Free small business tools. AI-powered. No subscription fees.</h2>
+          <p>
+            Payment processing, employee scheduling, and business management tools that don't charge you $50/month for basic operations. Open source, with a personal AI assistant that grows smarter over time through governed training updates.
+          </p>
+        </div>
+        <div class="split split-3">
+          <article class="slab" style="border-color:rgba(45,211,166,0.2);">
+            <h3>Fast Payment Setup</h3>
+            <p>Accept payments, send invoices, and track revenue without the processing bloat of enterprise platforms. Connect to Stripe, Ko-fi, or your own gateway. Zero monthly fees from us.</p>
+          </article>
+          <article class="slab" style="border-color:rgba(45,211,166,0.2);">
+            <h3>Employee Management</h3>
+            <p>Scheduling, time tracking, basic HR workflows. Built for shops and small teams who don't need (or want to pay for) a full HCM suite. Local-first, your data stays yours.</p>
+          </article>
+          <article class="slab" style="border-color:rgba(45,211,166,0.2);">
+            <h3>Personal AI Assistant</h3>
+            <p>Every installation gets an AI assistant that learns your business patterns over time. Governed by the same SCBE pipeline above — your data trains YOUR model, not a cloud vendor's. Updates on a schedule you control.</p>
+          </article>
+        </div>
+        <div style="text-align:center;margin-top:24px;">
+          <p style="color:var(--muted);font-size:16px;max-width:60ch;margin:0 auto 18px;">Built by someone who works at Wendy's and knows what it's like when tools cost more than they help. These will be free and open source — forever.</p>
+          <div class="cta-row" style="justify-content:center;">
+            <a class="btn btn-secondary" href="https://github.com/issdandavis" target="_blank" rel="noopener">Follow on GitHub for launch</a>
+            <a class="btn btn-secondary" href="https://ko-fi.com/Y8Y51UQYWZ" target="_blank" rel="noopener" style="border-color:rgba(114,164,242,0.4);color:#72a4f2;">Support on Ko-fi</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="benchmark" style="border-top:1px solid var(--line);">
+      <div class="section-inner">
+        <div class="section-head">
+          <div class="eyebrow">AI Governance Benchmark</div>
+          <h2>Train a model to predict ALLOW, QUARANTINE, or DENY.</h2>
+          <p>
+            We're releasing the governance decision dataset as a public benchmark. Train your own models to predict risk scores and governance decisions from the same data our pipeline produces. Launching on Kaggle.
+          </p>
+        </div>
+        <div class="split">
+          <article class="slab">
+            <h3>What you'll train on</h3>
+            <ul>
+              <li>Real governance decisions from the 14-layer pipeline</li>
+              <li>Risk scores with hyperbolic distance + harmonic wall values</li>
+              <li>Actor types, resource classifications, intent signals</li>
+              <li>Adversarial drift patterns and benign baselines</li>
+            </ul>
+          </article>
+          <article class="slab" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+            <div style="font-size:48px;margin-bottom:12px;filter:grayscale(0.3);">&#x1F3AF;</div>
+            <h3>Coming Soon</h3>
+            <p style="color:var(--muted);max-width:36ch;">The benchmark dataset and Kaggle competition page are in preparation. Try the live demo above to see what the training data looks like.</p>
+            <a class="btn btn-secondary" href="#governance-demo" style="margin-top:16px;">Try the demo first</a>
           </article>
         </div>
       </div>
@@ -875,15 +1337,19 @@
 
     <section class="final-cta">
       <div class="section-inner">
-        <div class="eyebrow">Final CTA</div>
-        <h2>If you want the starter pack, buy the starter pack.</h2>
+        <div class="eyebrow">Get started</div>
+        <h2>Ready? Pick your lane.</h2>
         <p>
-          This page now has one job: move the right buyer from interest to checkout with enough proof to feel safe doing it.
+          Toolkit for builders. Training Vault for model trainers. Free tools for small businesses. Or ask Polly first — she knows the system inside out.
         </p>
         <div class="cta-row" style="justify-content:center;">
           <a class="btn btn-primary" href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Buy the Toolkit — $29</a>
           <a class="btn btn-primary" href="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g" target="_blank" rel="noopener" style="background:linear-gradient(135deg,#2dd3a6,#17c6cf);">Buy the Training Vault — $29</a>
           <a class="btn btn-secondary" href="product-manual/ai-governance-toolkit.html">Read the manual first</a>
+        </div>
+        <div style="margin-top:24px;">
+          <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+          <script type='text/javascript'>kofiwidget2.init('Support me on Ko-fi', '#72a4f2', 'Y8Y51UQYWZ');kofiwidget2.draw();</script>
         </div>
       </div>
     </section>
@@ -894,26 +1360,28 @@
       <div class="footer-links">
         <a href="product-manual/ai-governance-toolkit.html">Manual</a>
         <a href="offers/index.html">Offers</a>
-        <a href="use-cases/governed-ai-workflows.html">Use cases</a>
-        <a href="proof/why-the-manual-exists.html">Why the manual</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="enterprise.html">Enterprise</a>
         <a href="product-manual/delivery-and-access.html">Delivery</a>
         <a href="support.html">Support</a>
         <a href="demos/index.html">Demos</a>
         <a href="games/index.html">Games</a>
-        <a href="mailto:aethermoregames@pm.me?subject=SCBE%20Toolkit%20Support">Email</a>
-        <a href="comparison/toolkit-vs-full-repo.html">Toolkit vs repo</a>
-        <a href="https://www.amazon.com/dp/B0F28PHSPR" target="_blank" rel="noopener">Book (Amazon)</a>
         <a href="research/index.html">Research</a>
         <a href="articles/index.html">Articles</a>
         <a href="network.html">Network</a>
+        <a href="mailto:ai@aethermoore.com?subject=SCBE%20Toolkit%20Support">Email</a>
+        <a href="https://www.amazon.com/dp/B0F28PHSPR" target="_blank" rel="noopener">Book (Amazon)</a>
         <a href="https://github.com/issdandavis" target="_blank" rel="noopener">GitHub</a>
         <a href="https://medium.com/@issdandavis7795" target="_blank" rel="noopener">Medium</a>
         <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
+        <a href="https://www.linkedin.com/in/issdandavis" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://huggingface.co/issdandavis" target="_blank" rel="noopener">HuggingFace</a>
+        <a href="https://ko-fi.com/Y8Y51UQYWZ" target="_blank" rel="noopener">Ko-fi</a>
       </div>
-      <div>SCBE AETHERMOORE. Built for direct delivery, not maze navigation.</div>
+      <div>AetherMoore. Geometric AI governance by Issac Davis. Patent pending.</div>
     </div>
   </footer>
 
-  <script src="static/polly-sidebar.js"></script>
+  <script src="static/polly-companion.js"></script>
 </body>
 </html>

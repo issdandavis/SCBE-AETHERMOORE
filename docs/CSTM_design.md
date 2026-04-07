@@ -1532,7 +1532,7 @@ This section maps each SCBE layer (1-14) to its role within the CSTM system. The
 | SCBE Layer | Layer Name | CSTM Component | Role in CSTM |
 |:---:|---|---|---|
 | **L1** | Quantum Entropy Source | DecisionEngine (temperature sampling) | The `temperature` parameter in `DecisionEngine.select()` introduces controlled stochasticity into choices. Higher temperature = more exploratory agent. This maps to L1's role as the entropy source: the randomness that makes each agent's journey unique. During early curriculum phases, temperature is higher (childhood exploration); it decreases as the agent matures (personality stabilization). |
-| **L2** | Hamiltonian Safety Function | HamiltonianTracker | `H(d, pd) = 1/(1+d+2*pd)` is computed at every choice event. `d` is the cosine distance of the agent's personality from the nursery's safety centroid. `pd` is the recent rate of governance-violating choices. The Hamiltonian score is a continuous safety signal: if it drops below threshold, the agent is flagged for review or removal from the cohort. |
+| **L2** | Hamiltonian Safety Function | HamiltonianTracker | `H(d*,R) = R^((phi*d*)^2)` is computed at every choice event. `d*` is the cosine distance of the agent's personality from the nursery's safety centroid. `R > 1` (default `e`) is the exponential base. The Hamiltonian score is a continuous safety signal: if it drops below threshold, the agent is flagged for review or removal from the cohort. |
 | **L3** | 21D Brain State Vector | PersonalityVector | The 21-dimensional personality vector IS the brain state. Every choice applies a drift to this vector. The three cognitive dims, three ethical dims, three social dims, etc. are directly modulated by choice tags. The vector's trajectory over the curriculum IS the agent's developmental arc. |
 | **L4** | Concept Blocks | ConceptBlockMapper | Five concept blocks are activated by telemetry events: DECIDE (choice selection), PLAN (multi-step navigation), SENSE (scene comprehension), STEER (stat optimization), COORDINATE (cooperative scenarios). Each block maps to specific personality dimensions and SCBE layers. |
 | **L5** | Governance Mesh | ConditionEvaluator + GraduationCriteria | Choice conditions enforce local governance rules (e.g., "this option is only available if courage > 0.5"). GraduationCriteria enforce global governance rules (safety thresholds, consistency requirements). Together they form a mesh of constraints the agent must navigate. |
@@ -1672,7 +1672,7 @@ class PlaythroughRecord:
     "dimension_names": ["reasoning", "abstraction", ...]
   },
   "hamiltonian": {
-    "formula": "H(d,pd) = 1/(1+d+2*pd)",
+    "formula": "H(d*,R) = R^((phi*d*)^2)",
     "mean_score": 0.73,
     "min_score": 0.52,
     "final_score": 0.81,

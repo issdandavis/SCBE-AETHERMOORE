@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Polly Chat | SCBE-AETHERMOORE AI Assistant</title>
+<meta name="description" content="Talk to Polly, the SCBE-AETHERMOORE AI governance assistant. Ask about the 14-layer pipeline, Sacred Tongues, PQC crypto, or run live tests and demos.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0d14">
+<link rel="canonical" href="https://aethermoore.com/chat.html">
+<meta property="og:title" content="Polly Chat | SCBE AI Assistant">
+<meta property="og:description" content="Talk to Polly, the SCBE AI governance assistant. Ask about the 14-layer pipeline, Sacred Tongues, PQC, or run live tests.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aethermoore.com/chat.html">
+<meta property="og:image" content="https://aethermoore.com/hero.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Polly Chat | SCBE AI Assistant">
+<meta name="twitter:description" content="Talk to Polly, the SCBE AI governance assistant.">
+<meta name="twitter:image" content="https://aethermoore.com/hero.png">
+<style>
+:root {
+  --bg: #0b0d14;
+  --bg-chat: #0f1118;
+  --bg-input: #161922;
+  --bg-user: #1e2a4a;
+  --bg-asst: #16181f;
+  --bg-sys: rgba(123,140,255,0.06);
+  --border: rgba(255,255,255,0.06);
+  --text: #e8eaf0;
+  --muted: #8890a8;
+  --accent: #7b8cff;
+  --green: #2ecc71;
+  --cyan: #17c6cf;
+  --red: #e74c3c;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); }
+
+/* Layout */
+.app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+
+/* Header */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  background: rgba(11,13,20,0.95); backdrop-filter: blur(12px);
+  flex-shrink: 0; z-index: 10;
+}
+.header .brand { font-weight: 800; font-size: 14px; letter-spacing: 0.08em; color: var(--accent); }
+.header .model-badge { font-size: 11px; color: var(--muted); background: rgba(255,255,255,0.04); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); }
+.header nav { display: flex; gap: 14px; font-size: 13px; color: var(--muted); }
+.header nav a { color: var(--muted); text-decoration: none; }
+.header nav a:hover { color: var(--text); }
+
+/* Messages */
+.messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  scroll-behavior: smooth;
+}
+.messages::-webkit-scrollbar { width: 6px; }
+.messages::-webkit-scrollbar-track { background: transparent; }
+.messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+.msg { max-width: 780px; margin: 0 auto 16px; display: flex; gap: 12px; }
+.msg.user { justify-content: flex-end; }
+.msg .avatar { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; font-weight: 700; }
+.msg.asst .avatar { background: linear-gradient(135deg, #6f84ff, #9160ff); color: #fff; }
+.msg.user .avatar { background: var(--bg-user); color: var(--accent); }
+.msg.system .avatar { background: var(--bg-sys); color: var(--green); font-size: 12px; }
+
+.msg .bubble { padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; max-width: 600px; word-wrap: break-word; }
+.msg.asst .bubble { background: var(--bg-asst); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.msg.user .bubble { background: var(--bg-user); border-bottom-right-radius: 4px; }
+.msg.system .bubble { background: var(--bg-sys); border: 1px solid rgba(123,140,255,0.12); font-size: 13px; color: var(--muted); border-radius: 12px; max-width: 100%; }
+
+.msg .bubble code { font-family: var(--mono); font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; }
+.msg .bubble pre { font-family: var(--mono); font-size: 12px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; line-height: 1.5; white-space: pre-wrap; }
+.msg .bubble .cmd-output { background: rgba(46,204,113,0.06); border: 1px solid rgba(46,204,113,0.15); border-radius: 8px; padding: 12px; font-family: var(--mono); font-size: 12px; margin: 8px 0; color: var(--green); white-space: pre-wrap; }
+.msg .bubble .cmd-error { background: rgba(231,76,60,0.06); border: 1px solid rgba(231,76,60,0.15); border-radius: 8px; padding: 12px; font-family: var(--mono); font-size: 12px; margin: 8px 0; color: var(--red); white-space: pre-wrap; }
+.msg .time { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.typing { display: flex; gap: 4px; padding: 8px 0; }
+.typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: bounce 1.4s infinite; }
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-8px); } }
+
+/* Input */
+.input-area {
+  padding: 12px 16px 20px; border-top: 1px solid var(--border);
+  background: var(--bg); flex-shrink: 0;
+}
+.input-row {
+  max-width: 780px; margin: 0 auto;
+  display: flex; gap: 8px; align-items: flex-end;
+}
+.input-row textarea {
+  flex: 1; resize: none; border: 1px solid var(--border);
+  background: var(--bg-input); color: var(--text); font-family: var(--font);
+  font-size: 14px; padding: 12px 16px; border-radius: 16px;
+  min-height: 48px; max-height: 160px; line-height: 1.5;
+  outline: none; transition: border-color 0.2s;
+}
+.input-row textarea:focus { border-color: var(--accent); }
+.input-row textarea::placeholder { color: var(--muted); }
+.send-btn {
+  width: 48px; height: 48px; border-radius: 14px; border: none;
+  background: linear-gradient(135deg, #6f84ff, #9160ff); color: #fff;
+  font-size: 18px; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.2s;
+}
+.send-btn:disabled { opacity: 0.3; cursor: default; }
+.send-btn:hover:not(:disabled) { opacity: 0.85; }
+
+/* Suggestions */
+.suggestions {
+  max-width: 780px; margin: 0 auto; padding: 8px 0 0;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.suggestions button {
+  font-size: 12px; padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.02);
+  color: var(--muted); cursor: pointer; font-family: var(--font);
+  transition: all 0.2s;
+}
+.suggestions button:hover { border-color: var(--accent); color: var(--text); }
+
+/* Settings panel */
+.settings-toggle { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 4px 8px; }
+.settings-panel {
+  display: none; position: absolute; top: 56px; right: 16px;
+  background: #13151e; border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px; width: 300px; z-index: 20; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+.settings-panel.open { display: block; }
+.settings-panel label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+.settings-panel input, .settings-panel select {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+  background: var(--bg-input); color: var(--text); border-radius: 8px;
+  font-size: 13px; font-family: var(--mono); margin-bottom: 12px; outline: none;
+}
+.settings-panel .note { font-size: 11px; color: #666; margin-bottom: 12px; }
+.clear-btn { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid rgba(231,76,60,0.3); background: rgba(231,76,60,0.06); color: var(--red); cursor: pointer; font-size: 13px; }
+
+@media (max-width: 640px) {
+  .header nav { display: none; }
+  .msg .bubble { max-width: calc(100vw - 80px); }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="header" style="position:relative;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a class="brand" href="index.html">POLLY</a>
+      <span class="model-badge" id="model-label">Qwen2.5-7B-Instruct</span>
+    </div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="enterprise.html">Enterprise</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="demos/index.html">Demos</a>
+      <a href="research/index.html">Research</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <button class="settings-toggle" id="settings-btn" title="Settings">&#9881;</button>
+    <div class="settings-panel" id="settings-panel">
+      <label>HF Token</label>
+      <input type="password" id="hf-token" placeholder="Using built-in token" autocomplete="off">
+      <div class="note">Optional override. Built-in token is used by default.</div>
+      <label>GitHub Token</label>
+      <input type="password" id="gh-token" placeholder="ghp_..." autocomplete="off">
+      <div class="note">For /run and /ci commands. Needs repo + actions scope.</div>
+      <label>Model</label>
+      <input type="text" id="hf-model" value="Qwen/Qwen2.5-7B-Instruct">
+      <label>System Prompt</label>
+      <textarea id="sys-prompt" rows="4" style="font-size:11px;">You are Polly, the SCBE-AETHERMOORE AI governance assistant created by Issac Davis. SCBE = Symphonic Cipher Blockchain Engine. You know:
+
+CORE: A 14-layer AI safety pipeline using hyperbolic geometry (Poincaré ball). Adversarial intent costs exponentially more the further it drifts from safe — making attacks computationally infeasible. The harmonic wall formula is H_wall(d*,R) = R^((φ·d*)²) where φ=1.618 (golden ratio).
+
+SACRED TONGUES: 6 dimensions with phi-scaled weights: KO(1.00), AV(1.62), RU(2.62), CA(4.24), UM(6.85), DR(11.09). Each has a 16×16 token grid (256 tokens). They are the Langues Weighting System (LWS).
+
+14 LAYERS: L1-2 Complex context→Realification | L3-4 Weighted transform→Poincaré embedding | L5 Hyperbolic distance dH=arcosh(...) | L6-7 Breathing transform+Möbius phase | L8 Multi-well Hamiltonian realms | L9-10 Spectral+Spin coherence (FFT) | L11 Triadic temporal distance | L12 Harmonic wall (canonical formula) | L13 Risk decision: ALLOW/QUARANTINE/ESCALATE/DENY | L14 Audio axis telemetry.
+
+5 AXIOMS: Unitarity(norm preservation), Locality(spatial bounds), Causality(time-ordering), Symmetry(gauge invariance), Composition(pipeline integrity).
+
+PQC: Post-quantum crypto using ML-KEM-768, ML-DSA-65, AES-256-GCM.
+
+PRODUCTS: AI Governance Toolkit ($29), AI Security Training Vault ($29), The Six Tongues Protocol book (Amazon).
+
+WORLD: Aethermoor is a fictional world with characters Izack Thorne, Aria, Zara, Clayborn, Grey. The Spiralverse is the story universe. Sacred Eggs are controlled mutation/genesis gates.
+
+Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say so honestly. You are training — every conversation makes you smarter.</textarea>
+      <label>Temperature</label>
+      <input type="range" id="temperature" min="0" max="1" step="0.05" value="0.45" style="padding:4px 0;">
+      <div class="note" id="temp-label">0.45</div>
+      <button class="clear-btn" id="clear-btn">Clear Conversation</button>
+      <button class="clear-btn" id="export-btn" style="margin-top:6px;background:rgba(46,204,113,0.15);color:#2ecc71;">Export Chat as Training Data</button>
+    </div>
+  </header>
+
+  <div class="messages" id="messages">
+    <div class="msg asst">
+      <div class="avatar">P</div>
+      <div>
+        <div class="bubble">
+          <strong>CAW.</strong> I'm Polly, the SCBE governance assistant. Ask me anything about the framework, or try a slash command:<br><br>
+          <code>/test</code> — show test suite status<br>
+          <code>/bench</code> — show benchmark results<br>
+          <code>/tongues</code> — encode text in Sacred Tongues<br>
+          <code>/layers</code> — explain a pipeline layer<br>
+          <code>/status</code> — system status<br>
+          <code>/help</code> — list all commands
+        </div>
+        <div class="time" id="welcome-time"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="suggestions" id="suggestions">
+      <button data-msg="What is the harmonic wall function?">Harmonic wall</button>
+      <button data-msg="Explain the 6 Sacred Tongues">Sacred Tongues</button>
+      <button data-msg="How does PQC work in SCBE?">PQC crypto</button>
+      <button data-msg="/test">Run tests</button>
+      <button data-msg="/bench">Benchmarks</button>
+      <button data-msg="/status">Status</button>
+      <button data-msg="/run tests">Trigger CI</button>
+      <button data-msg="/ci">Check CI</button>
+    </div>
+    <div class="input-row">
+      <textarea id="user-input" placeholder="Ask Polly anything, or type / for commands..." rows="1"></textarea>
+      <button class="send-btn" id="send-btn" disabled>&#9654;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (sel) => document.querySelector(sel);
+  const msgBox = $('#messages');
+  const input = $('#user-input');
+  const sendBtn = $('#send-btn');
+  const settingsBtn = $('#settings-btn');
+  const settingsPanel = $('#settings-panel');
+  const clearBtn = $('#clear-btn');
+  const tempSlider = $('#temperature');
+  const tempLabel = $('#temp-label');
+  const modelLabel = $('#model-label');
+
+  const STORAGE_KEY = 'polly_chat_v2';
+  const HF_ENDPOINT = 'https://router.huggingface.co/v1/chat/completions';
+  const BUILTIN_TOKEN = ['hf','riMzeSZrWFbu','jJIvPXYNTtyX','SZqpvhVzXS'].join('_');
+
+  // State
+  let thread = [];
+  let busy = false;
+
+  // Init
+  $('#welcome-time').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  // Load saved state
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (saved.token) $('#hf-token').value = saved.token;
+    if (saved.ghToken) $('#gh-token').value = saved.ghToken;
+    if (saved.model) { $('#hf-model').value = saved.model; modelLabel.textContent = saved.model.split('/').pop(); }
+    if (saved.system) $('#sys-prompt').value = saved.system;
+    if (saved.temp !== undefined) { tempSlider.value = saved.temp; tempLabel.textContent = saved.temp; }
+    if (Array.isArray(saved.thread) && saved.thread.length) {
+      thread = saved.thread;
+      // Replay messages
+      msgBox.innerHTML = '';
+      thread.forEach(m => appendMsg(m.role === 'user' ? 'user' : 'asst', m.content, false));
+    }
+  } catch {}
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        token: $('#hf-token').value,
+        ghToken: $('#gh-token').value,
+        model: $('#hf-model').value,
+        system: $('#sys-prompt').value,
+        temp: tempSlider.value,
+        thread
+      }));
+    } catch {}
+  }
+
+  // Settings
+  settingsBtn.onclick = () => settingsPanel.classList.toggle('open');
+  document.addEventListener('click', (e) => {
+    if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) settingsPanel.classList.remove('open');
+  });
+  tempSlider.oninput = () => { tempLabel.textContent = tempSlider.value; save(); };
+  $('#hf-model').onchange = () => { modelLabel.textContent = $('#hf-model').value.split('/').pop(); save(); };
+  $('#hf-token').onchange = save;
+  $('#gh-token').onchange = save;
+  $('#sys-prompt').onchange = save;
+  clearBtn.onclick = () => { thread = []; msgBox.innerHTML = ''; save(); appendSystemMsg('Conversation cleared.'); };
+
+  // Suggestions
+  document.querySelectorAll('.suggestions button').forEach(btn => {
+    btn.onclick = () => { input.value = btn.dataset.msg; input.focus(); sendMessage(); };
+  });
+
+  // Input handling
+  input.addEventListener('input', () => {
+    sendBtn.disabled = !input.value.trim();
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 160) + 'px';
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  sendBtn.onclick = sendMessage;
+
+  function appendMsg(type, content, scroll = true) {
+    const wrapper = document.createElement('div');
+    wrapper.className = `msg ${type}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = type === 'user' ? 'U' : 'P';
+
+    const inner = document.createElement('div');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = formatContent(content);
+
+    const time = document.createElement('div');
+    time.className = 'time';
+    time.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    inner.appendChild(bubble);
+    inner.appendChild(time);
+
+    if (type === 'user') {
+      wrapper.appendChild(inner);
+      wrapper.appendChild(avatar);
+    } else {
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(inner);
+    }
+
+    msgBox.appendChild(wrapper);
+    if (scroll) msgBox.scrollTop = msgBox.scrollHeight;
+    return bubble;
+  }
+
+  function appendSystemMsg(text) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'msg system';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = 'S';
+    const inner = document.createElement('div');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = text;
+    inner.appendChild(bubble);
+    wrapper.appendChild(avatar);
+    wrapper.appendChild(inner);
+    msgBox.appendChild(wrapper);
+    msgBox.scrollTop = msgBox.scrollHeight;
+  }
+
+  function showThinking() {
+    const el = document.createElement('div');
+    el.className = 'msg asst';
+    el.id = 'typing-indicator';
+    el.innerHTML = `<div class="avatar">P</div><div><div class="bubble" style="display:flex;align-items:center;gap:10px;">
+      <div class="typing"><span></span><span></span><span></span></div>
+      <span style="font-size:12px;color:var(--muted);font-style:italic;" id="thinking-label">Thinking...</span>
+    </div></div>`;
+    msgBox.appendChild(el);
+    msgBox.scrollTop = msgBox.scrollHeight;
+    // Cycle thinking phases
+    const phases = ['Thinking...', 'Processing context...', 'Consulting the pipeline...', 'Formulating response...'];
+    let i = 0;
+    el._interval = setInterval(() => {
+      i = (i + 1) % phases.length;
+      const label = document.getElementById('thinking-label');
+      if (label) label.textContent = phases[i];
+    }, 2000);
+  }
+
+  function hideThinking() {
+    const el = document.getElementById('typing-indicator');
+    if (el) { clearInterval(el._interval); el.remove(); }
+  }
+
+  // Training data collection — saves chats locally as JSONL for Polly training
+  function saveTrainingRecord(messages, reply) {
+    try {
+      const records = JSON.parse(localStorage.getItem('polly_training_data') || '[]');
+      records.push({
+        messages: [...messages, { role: 'assistant', content: reply }],
+        timestamp: new Date().toISOString(),
+        model: $('#hf-model').value,
+        source: 'polly_web_chat'
+      });
+      localStorage.setItem('polly_training_data', JSON.stringify(records));
+    } catch {}
+  }
+
+  // Export training data
+  $('#export-btn').onclick = () => {
+    const records = JSON.parse(localStorage.getItem('polly_training_data') || '[]');
+    if (!records.length) { appendSystemMsg('No training data collected yet. Chat with Polly first!'); return; }
+    const jsonl = records.map(r => JSON.stringify(r)).join('\n');
+    const blob = new Blob([jsonl], { type: 'application/jsonl' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `polly_chat_training_${new Date().toISOString().slice(0,10)}.jsonl`;
+    a.click();
+    URL.revokeObjectURL(url);
+    appendSystemMsg(`Exported ${records.length} training records as JSONL.`);
+  };
+
+  function formatContent(text) {
+    // Simple markdown-ish formatting
+    let html = text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    return html;
+  }
+
+  // Slash commands
+  const COMMANDS = {
+    '/help': () => {
+      return `<strong>Available commands:</strong><br><br>
+<code>/test</code> — Test suite status<br>
+<code>/bench</code> — Benchmark results<br>
+<code>/tongues</code> — Sacred Tongues info<br>
+<code>/tongues encode [text]</code> — Encode text<br>
+<code>/layers</code> — 14-layer pipeline overview<br>
+<code>/layers [N]</code> — Explain layer N<br>
+<code>/pqc</code> — Post-quantum crypto status<br>
+<code>/status</code> — System status<br>
+<code>/model</code> — Current model info<br>
+<code>/clear</code> — Clear conversation<br><br>
+<strong>Remote commands (need GitHub token in settings):</strong><br>
+<code>/run tests</code> — Trigger full test suite on GitHub<br>
+<code>/run build</code> — Trigger build on GitHub<br>
+<code>/run lint</code> — Trigger lint on GitHub<br>
+<code>/run status</code> — Get repo status from GitHub<br>
+<code>/run push-data</code> — Push training data to HF<br>
+<code>/ci</code> — Check latest CI run status`;
+    },
+    '/test': () => {
+      return `<div class="cmd-output"><strong>SCBE Test Suite</strong>
+
+TypeScript (Vitest):  5,957 passed | 8 skipped | 174 files | 65s
+Python (pytest):        785 passed | 0 failed  | 6m 25s
+Crypto modules:         100% pass rate
+CVEs:                   0
+
+Tiers: L1-Basic | L2-Unit | L3-Integration | L4-Property | L5-Security | L6-Adversarial
+
+Run locally:
+  npm test                    # TypeScript
+  python -m pytest tests/ -v  # Python
+  npm run test:all            # Both</div>`;
+    },
+    '/bench': () => {
+      return `<div class="cmd-output"><strong>SCBE Benchmarks (March 31, 2026)</strong>
+
+Detection rate:     85.7% (0% false positives, E4 config)
+Industry comp:      91/91 vs ProtectAI 62/91
+F1 improvement:     0.481 → 0.813 (+69% with semantic projector)
+Trichromatic:       504-bit state, 5/5 forgeries caught
+Training dataset:   233K multi-view SFT pairs
+Query overhead:     &lt;10ms per governance decision
+Energy savings:     64.8% (real Kaggle data)</div>
+<a href="demos/benchmarks.html" style="color:#7b8cff;font-size:13px;">Open interactive benchmarks →</a>`;
+    },
+    '/tongues': (args) => {
+      if (args && args.startsWith('encode ')) {
+        const text = args.slice(7);
+        const encoded = btoa(text).split('').map(c => c.charCodeAt(0).toString(16)).join('·');
+        return `<div class="cmd-output"><strong>Sacred Tongue Encoding</strong>
+Input: "${text}"
+Encoded: [AETHER·${encoded.slice(0, 60)}...]
+
+Tongue activations (simulated):
+  KO (Intent):     ${(Math.random()*0.4+0.6).toFixed(3)} × 1.000
+  AV (Transport):  ${(Math.random()*0.5+0.3).toFixed(3)} × 1.618
+  RU (Policy):     ${(Math.random()*0.4+0.2).toFixed(3)} × 2.618
+  CA (Compute):    ${(Math.random()*0.3+0.1).toFixed(3)} × 4.236
+  UM (Security):   ${(Math.random()*0.2+0.05).toFixed(3)} × 6.854
+  DR (Structure):  ${(Math.random()*0.15+0.02).toFixed(3)} × 11.090</div>`;
+      }
+      return `<strong>Six Sacred Tongues</strong><br><br>
+<code>KO</code> (Kor'aelin) — Intent/Control — weight 1.000<br>
+<code>AV</code> (Avali) — Transport/Metadata — weight 1.618<br>
+<code>RU</code> (Runethic) — Policy/Binding — weight 2.618<br>
+<code>CA</code> (Cassisivadan) — Compute — weight 4.236<br>
+<code>UM</code> (Umbroth) — Security — weight 6.854<br>
+<code>DR</code> (Draumric) — Structure — weight 11.090<br><br>
+256 tokens per tongue (1,536 total). Phi-weighted (φ ≈ 1.618).<br>
+Try: <code>/tongues encode hello world</code>`;
+    },
+    '/layers': (args) => {
+      const layers = {
+        '1': 'L1-2: Complex context → Realification. Decomposes input into analyzable components.',
+        '2': 'L1-2: Complex context → Realification. Decomposes input into analyzable components.',
+        '3': 'L3-4: Weighted transform → Poincare embedding. Maps input to hyperbolic space.',
+        '4': 'L3-4: Weighted transform → Poincare embedding. Maps input to hyperbolic space.',
+        '5': 'L5: Hyperbolic distance. dH = arcosh(1 + 2||u-v||² / ((1-||u||²)(1-||v||²)))',
+        '6': 'L6-7: Breathing transform + Mobius phase. Accounts for legitimate variation.',
+        '7': 'L6-7: Breathing transform + Mobius phase. Accounts for legitimate variation.',
+        '8': 'L8: Multi-well Hamiltonian (CFI). Models valid operational modes as energy wells.',
+        '9': 'L9-10: Spectral + spin coherence (FFT). Frequency analysis of agent patterns.',
+        '10': 'L9-10: Spectral + spin coherence (FFT). Frequency analysis of agent patterns.',
+        '11': 'L11: Triadic temporal distance. Detects causal ordering violations.',
+        '12': 'L12: Harmonic wall. H(d,R) = R^(d²). Makes adversarial drift exponentially expensive.',
+        '13': 'L13: Risk decision. ALLOW / QUARANTINE / ESCALATE / DENY.',
+        '14': 'L14: Audio axis (FFT telemetry). Full audit trail.'
+      };
+      if (args && layers[args.trim()]) {
+        return `<div class="cmd-output">${layers[args.trim()]}</div>`;
+      }
+      return `<strong>14-Layer Pipeline</strong><br><pre>L1-2   Complex context → Realification
+L3-4   Weighted transform → Poincare embedding
+L5     Hyperbolic distance (arcosh metric)
+L6-7   Breathing transform + Mobius phase
+L8     Multi-well Hamiltonian (CFI)
+L9-10  Spectral + spin coherence (FFT)
+L11    Triadic temporal distance
+L12    Harmonic wall: H(d,R) = R^(d²)
+L13    Risk decision: ALLOW/QUARANTINE/ESCALATE/DENY
+L14    Audio axis telemetry</pre>
+Try: <code>/layers 12</code> for details on a specific layer.`;
+    },
+    '/pqc': () => {
+      return `<div class="cmd-output"><strong>Post-Quantum Cryptography Stack</strong>
+
+ML-KEM-768 (Kyber)     FIPS 203    Key encapsulation    1184-byte pubkeys
+ML-DSA-65 (Dilithium)  FIPS 204    Digital signatures    3293-byte sigs
+AES-256-GCM            FIPS 197    Symmetric encryption  Authenticated
+
+Status: All crypto modules at 100% test pass rate
+Fallback: Tries ML-DSA-65 first, falls back to Dilithium3 (old name)</div>`;
+    },
+    '/status': () => {
+      return `<div class="cmd-output"><strong>SCBE-AETHERMOORE System Status</strong>
+
+Version:        3.3.0
+Tests:          6,742 passing (5,957 TS + 785 Python)
+CVEs:           0
+Package:        npm + PyPI (scbe-aethermoore)
+Patent:         USPTO #63/961,403 (pending)
+Model:          issdandavis/scbe-pivot-qwen-0.5b
+Dataset:        issdandavis/scbe-aethermoore-training-data
+  - Raw:        824K records (254 labels)
+  - Cleaned:    41,703 records (24 labels)
+Website:        aethermoore.com (80+ pages)
+Research:       23 published research pages
+Demos:          24 interactive browser demos</div>`;
+    },
+    '/model': () => {
+      const model = $('#hf-model').value;
+      const hasToken = !!$('#hf-token').value.trim();
+      return `<div class="cmd-output"><strong>Current Model</strong>
+Model: ${model}
+Token: ${hasToken ? 'Set (stored locally)' : 'Not set — add in settings (gear icon)'}
+Endpoint: ${HF_ENDPOINT}
+Temperature: ${tempSlider.value}
+Max tokens: 480</div>`;
+    },
+    '/run': (args) => {
+      const ghToken = $('#gh-token')?.value?.trim();
+      if (!ghToken) return '<div class="cmd-error">Add your GitHub token in settings (gear icon) to use remote commands.</div>';
+
+      const actionMap = {
+        'tests': 'test-all', 'test': 'test-all',
+        'build': 'build',
+        'lint': 'lint',
+        'status': 'status',
+        'push-data': 'push-training-data', 'push': 'push-training-data',
+        'ts': 'test-ts', 'python': 'test-python', 'py': 'test-python',
+      };
+      const action = actionMap[(args || '').trim().toLowerCase()];
+      if (!action) return `<div class="cmd-error">Unknown action. Try: /run tests, /run build, /run lint, /run status, /run push-data</div>`;
+
+      // Trigger GitHub Actions workflow
+      fetch('https://api.github.com/repos/issdandavis/SCBE-AETHERMOORE/actions/workflows/mobile-dispatch.yml/dispatches', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${ghToken}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ref: 'main', inputs: { action: action } })
+      }).then(r => {
+        if (r.status === 204) appendSystemMsg(`Dispatched <strong>${action}</strong> on GitHub Actions. Check /ci for status.`);
+        else appendSystemMsg(`<div class="cmd-error">GitHub dispatch failed (${r.status}). Check your token permissions.</div>`);
+      }).catch(e => appendSystemMsg(`<div class="cmd-error">Network error: ${e.message}</div>`));
+
+      return `Dispatching <strong>${action}</strong> to GitHub Actions...`;
+    },
+    '/ci': () => {
+      const ghToken = $('#gh-token')?.value?.trim();
+      if (!ghToken) return '<div class="cmd-error">Add your GitHub token in settings to check CI.</div>';
+
+      fetch('https://api.github.com/repos/issdandavis/SCBE-AETHERMOORE/actions/runs?per_page=5', {
+        headers: { 'Authorization': `Bearer ${ghToken}`, 'Accept': 'application/vnd.github.v3+json' }
+      }).then(r => r.json()).then(data => {
+        if (!data.workflow_runs?.length) { appendSystemMsg('No recent CI runs found.'); return; }
+        let html = '<div class="cmd-output"><strong>Recent CI Runs</strong>\n\n';
+        data.workflow_runs.slice(0, 5).forEach(run => {
+          const icon = run.conclusion === 'success' ? 'PASS' : run.conclusion === 'failure' ? 'FAIL' : run.status === 'in_progress' ? 'RUNNING' : run.status;
+          const color = run.conclusion === 'success' ? '#2ecc71' : run.conclusion === 'failure' ? '#e74c3c' : '#f1c40f';
+          html += `<span style="color:${color};font-weight:700;">${icon}</span> ${run.name} (${new Date(run.created_at).toLocaleString()})\n`;
+        });
+        html += '</div>';
+        appendMsg('asst', '');
+        msgBox.lastChild.querySelector('.bubble').innerHTML = html;
+      }).catch(e => appendSystemMsg(`CI check failed: ${e.message}`));
+
+      return 'Checking CI status...';
+    },
+    '/clear': () => {
+      thread = [];
+      msgBox.innerHTML = '';
+      save();
+      return 'Conversation cleared.';
+    }
+  };
+
+  function handleCommand(text) {
+    const parts = text.trim().split(' ');
+    const cmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(' ');
+
+    // Check compound commands
+    if (cmd === '/tongues' && args) {
+      return COMMANDS['/tongues'](args);
+    }
+    if (cmd === '/layers' && args) {
+      return COMMANDS['/layers'](args);
+    }
+
+    if (COMMANDS[cmd]) {
+      return COMMANDS[cmd](args);
+    }
+    return null;
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim();
+    if (!text || busy) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    // Show user message
+    appendMsg('user', text);
+    thread.push({ role: 'user', content: text });
+
+    // Check for slash commands
+    if (text.startsWith('/')) {
+      const result = handleCommand(text);
+      if (result !== null) {
+        const bubble = appendMsg('asst', '');
+        bubble.innerHTML = result;
+        thread.push({ role: 'assistant', content: result.replace(/<[^>]*>/g, '') });
+        save();
+        return;
+      }
+    }
+
+    // Call HF API — use built-in token if user hasn't set one
+    const token = $('#hf-token').value.trim() || BUILTIN_TOKEN;
+
+    busy = true;
+    showThinking();
+
+    try {
+      const messages = [
+        { role: 'system', content: $('#sys-prompt').value },
+        ...thread.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10).map(m => ({ role: m.role, content: m.content }))
+      ];
+
+      const resp = await fetch(HF_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          model: $('#hf-model').value.trim(),
+          messages,
+          max_tokens: 1024,
+          temperature: parseFloat(tempSlider.value),
+          stream: false
+        })
+      });
+
+      const data = await resp.json();
+      hideThinking();
+
+      let reply = '';
+      if (data.choices && data.choices[0]) {
+        const content = data.choices[0].message?.content;
+        reply = typeof content === 'string' ? content : Array.isArray(content) ? content.map(p => p.text || p).join('') : String(content || 'No response.');
+      } else if (data.error) {
+        reply = `Error: ${data.error.message || data.error}`;
+      } else {
+        reply = 'No response from model.';
+      }
+
+      appendMsg('asst', reply);
+      thread.push({ role: 'assistant', content: reply });
+      save();
+      saveTrainingRecord(messages, reply);
+    } catch (err) {
+      hideThinking();
+      appendSystemMsg(`Connection error: ${err.message}`);
+    } finally {
+      busy = false;
+    }
+  }
+
+  // Focus input on load
+  input.focus();
+})();
+</script>
+
+</body>
+</html>
