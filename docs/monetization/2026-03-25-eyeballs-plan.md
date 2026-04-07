@@ -11,7 +11,7 @@ The immediate goal is not broad brand awareness. The immediate goal is to create
 ## Current public surfaces
 
 ### 1. Root offer page
-- URL: `https://aethermoorgames.com/`
+- URL: `https://aethermoore.com/`
 - Strength: clear one-product checkout path
 - Weakness: does not show enough proof for skeptical technical traffic
 
@@ -96,7 +96,7 @@ Use for:
 - anything with "buy" in the post
 
 Send them to:
-- root offer page at `https://aethermoorgames.com/`
+- root offer page at `https://aethermoore.com/`
 
 Do not send cold buyer traffic to the docs hub first.
 

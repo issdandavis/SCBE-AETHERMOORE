@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Spiral Engine | SCBE-AETHERMOORE</title>
+<meta name="description" content="Play the Spiral Engine governance sandbox: build leyline networks, route Sacred Tongue packets, and watch live SCBE-style Omega gating respond to your structure choices." />
+<meta property="og:title" content="The Spiral Engine | SCBE-AETHERMOORE" />
+<meta property="og:description" content="An advanced lab sandbox for learning how packet flow, harmonic pressure, and Omega gating interact inside a governed SCBE-style system." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://aethermoore.com/demos/spiral-engine.html" />
+<meta property="og:image" content="https://aethermoore.com/static/showcase/book_cover.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="The Spiral Engine | SCBE-AETHERMOORE" />
+<meta name="twitter:description" content="Build, route, and stress-test a governed packet sandbox inside the AetherMoore demo lab." />
+<link rel="canonical" href="https://aethermoore.com/demos/spiral-engine.html" />
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e1a;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;height:100vh}
+canvas{display:block;cursor:crosshair}
+#ui{position:fixed;top:0;right:0;width:240px;height:100vh;background:rgba(15,23,42,0.95);border-left:1px solid #1e293b;padding:8px;overflow-y:auto;font-size:11px}
+#bar{position:fixed;bottom:0;left:0;right:240px;background:rgba(15,23,42,0.95);border-top:1px solid #1e293b;padding:6px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+#hdr{position:fixed;top:0;left:0;right:240px;background:rgba(15,23,42,0.9);border-bottom:1px solid #1e293b;padding:6px 12px;display:flex;justify-content:space-between;align-items:center;z-index:10}
+.subcopy{margin-top:4px;max-width:560px;color:#94a3b8;font-size:10px;line-height:1.45}
+.navlinks{display:flex;gap:12px;align-items:center;font-size:10px}
+.navlinks a{color:#94a3b8;text-decoration:none}
+.navlinks a:hover{color:#e2e8f0}
+.btn{padding:4px 10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#94a3b8;cursor:pointer;font-size:10px;font-family:monospace}
+.btn:hover{background:#1e293b;color:#e2e8f0}
+.btn.active{background:#7c3aed33;border-color:#7c3aed;color:#a78bfa}
+.metric{margin-bottom:4px}
+.metric .label{color:#64748b;font-size:9px}
+.metric .val{font-family:monospace;font-size:12px}
+.section{background:#1e293b;border-radius:6px;padding:6px;margin-bottom:6px}
+.bar-track{height:4px;background:#0f172a;border-radius:2px;overflow:hidden;margin:2px 0}
+.bar-fill{height:100%;border-radius:2px;transition:width 0.3s}
+#log{font-size:9px;font-family:monospace;color:#94a3b8;max-height:80px;overflow-y:auto;line-height:1.3}
+#toast{position:fixed;top:50%;left:calc(50% - 120px);width:240px;text-align:center;pointer-events:none;z-index:100;opacity:0;transition:opacity 0.3s;font-size:18px;font-weight:700;text-shadow:0 0 20px currentColor}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hdr">
+  <div>
+    <span style="color:#a78bfa;font-weight:700;letter-spacing:2px;font-size:14px">THE SPIRAL ENGINE</span>
+    <span id="scoreDisp" style="color:#64748b;margin-left:8px;font-size:10px"></span>
+    <div class="subcopy">Advanced lab governance sandbox. Build structures, route Sacred Tongue packets, and learn how braid distance, harmonic pressure, and Omega gating behave under stress.</div>
+  </div>
+  <div style="text-align:right">
+    <div class="navlinks">
+      <a href="index.html">Demo Lab</a>
+      <a href="../index.html">Home</a>
+    </div>
+    <div id="statusDisp" style="font-family:monospace;font-weight:700;font-size:12px;margin-top:8px"></div>
+  </div>
+</div>
+<div id="ui"></div>
+<div id="bar"></div>
+<div id="toast"></div>
+
+<script>
+// ═══ SCBE MATH KERNEL ═══
+const PHI=1.618033988749895,PI=Math.PI;
+const{tanh,acosh,log,sqrt,min,max,abs,floor,pow,exp,cos,sin,random,round,atan2}=Math;
+
+function hypDist(a,b){const e=1e-12,n=2*(a-b)*(a-b),d=max(e,(1-a*a)*(1-b*b));return acosh(max(1+e,1+n/d))}
+function proj(v){return tanh(0.15*v)}
+function braidDist(Ti,Tm,Tg,Tp){const p=proj;return hypDist(p(Ti),p(Tm))+hypDist(p(Tm),p(Tg))+hypDist(p(Tg),p(Tp))+hypDist(p(Ti),p(Tg))+hypDist(p(Tm),p(Tp))+hypDist(p(Ti),p(Tp))}
+function xFactor(intent,trust){return min(3,(0.5+intent*0.25)*(1+(1-max(0,min(1,trust)))))}
+function hWall(d,x){return exp(d*d*x*log(1.5))}
+function harmScore(H){return 1/(1+log(max(1,H)))}
+function triadRisk(f,m,g){return pow(max(1e-12,0.3*pow(max(0,f),PHI)+0.5*pow(max(0,m),PHI)+0.2*pow(max(0,g),PHI)),1/PHI)}
+function omegaGate(pqc,harm,drift,tri,spec){const c=v=>max(0,min(1,v));return c(pqc)*c(harm)*c(drift)*c(tri)*c(spec)}
+function piPhiCost(d,R=1){return R*pow(PI,PHI*d)}
+
+// ═══ GAME STATE ═══
+const W=()=>window.innerWidth-240,H2=()=>window.innerHeight;
+let CX,CY,RAD;
+function resize(){CX=W()/2;CY=H2()/2;RAD=min(CX,CY)-40;const cv=document.getElementById('c');cv.width=W();cv.height=H2()}
+
+const TONGUE_COLORS={KO:'#ef4444',AV:'#22d3ee',RU:'#f59e0b',CA:'#a78bfa',UM:'#10b981',DR:'#f472b6'};
+const TONGUE_NAMES={KO:"Kor'aelin",AV:'Avali',RU:'Runethic',CA:'Cassisivadan',UM:'Umbroth',DR:'Draumric'};
+const TONGUES=Object.keys(TONGUE_COLORS);
+
+let tick=0,score=0,compute=120,trust=0.95,coherence=0.9,intent=0.05;
+let structures=[],leylines=[],packets=[],threats=[],particles=[];
+let buildMode=null,leyStart=null,selected=null;
+let mission={name:'Build 3 Leylines',desc:'Connect structures',target:3,stat:'leylines',progress:0,complete:false,num:1};
+let totalPackets=0,gameOver=false,quarantine=false;
+let logs=['The Spiral awakens.'];
+let uid=100;
+
+function discNorm(x,y){return sqrt(x*x+y*y)}
+function canvasToDisc(cx,cy){return{x:(cx-CX)/RAD,y:(cy-CY)/RAD}}
+function discToCanvas(dx,dy){return{x:CX+dx*RAD,y:CY+dy*RAD}}
+
+// ═══ STRUCTURES ═══
+const SDEFS={
+  tongue:{name:'Tongue',icon:'\uD83D\uDD2E',color:'#a78bfa',cost:15,desc:'Tokenizes intent. Boosts spectral.'},
+  pad:{name:'Pad',icon:'\u2699',color:'#22d3ee',cost:12,desc:'Buffs packets. Reduces drift.'},
+  watcher:{name:'Watcher',icon:'\uD83D\uDC41',color:'#f59e0b',cost:20,desc:'Triadic stability. Area coverage.'},
+  egg:{name:'Egg',icon:'\uD83E\uDD5A',color:'#34d399',cost:30,desc:'Trust radius. Genesis beacon.'},
+};
+
+function addStruct(type,dx,dy){
+  const norm=discNorm(dx,dy);
+  if(norm>0.92)return log2('Too close to the wall!');
+  if(structures.find(s=>abs(s.x-dx)<0.06&&abs(s.y-dy)<0.06))return log2('Occupied!');
+  const def=SDEFS[type];
+  const l12=piPhiCost(norm*3,1);
+  const cost=round(def.cost*l12);
+  if(compute<cost)return log2(`Need ${cost} compute! (base ${def.cost} x L12 ${l12.toFixed(1)})`);
+  compute-=cost;
+  const s={id:uid++,type,x:dx,y:dy,tongue:TONGUES[floor(random()*6)]};
+  structures.push(s);
+  spawnParticles(dx,dy,def.color,12);
+  toast(`${def.icon} Built! (-${cost})`,def.color);
+  log2(`${def.icon} ${def.name} placed. L12 cost: x${l12.toFixed(1)}`);
+  if(type==='tongue')updateMission('tongues',1);
+  if(type==='watcher')updateMission('watchers',1);
+}
+
+function addLeyline(fromId,toId){
+  if(leylines.find(l=>(l.from===fromId&&l.to===toId)||(l.from===toId&&l.to===fromId)))return log2('Already connected');
+  if(compute<5)return log2('Need 5 compute');
+  compute-=5;
+  leylines.push({id:uid++,from:fromId,to:toId});
+  toast('\u26A1 Connected!','#818cf8');
+  log2('\u26A1 Leyline built');
+  updateMission('leylines',1);
+}
+
+// ═══ PARTICLES ═══
+function spawnParticles(x,y,color,n){
+  for(let i=0;i<n;i++){
+    const a=random()*PI*2,spd=0.5+random()*2;
+    particles.push({x,y,vx:cos(a)*spd*0.01,vy:sin(a)*spd*0.01,life:30+random()*20,maxLife:50,color,size:2+random()*3});
+  }
+}
+
+function toast(msg,color='#a78bfa'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.color=color;t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',1500);
+}
+
+function log2(msg){logs.push(msg);if(logs.length>12)logs.shift()}
+
+function updateMission(stat,amt){
+  if(mission.complete||mission.stat!==stat)return;
+  mission.progress+=amt;
+  if(mission.progress>=mission.target){
+    mission.complete=true;
+    score+=mission.num*100;
+    compute=min(300,compute+40);
+    trust=min(1,trust+0.05);
+    toast('\u2705 Mission Complete!','#34d399');
+    setTimeout(()=>{
+      mission={name:['Tongue Array','Stability Run','Throughput Rush','Edge Push','Watcher Net'][floor(random()*5)],
+        desc:'Keep building',target:3+mission.num,stat:['tongues','leylines','packets','watchers','leylines'][floor(random()*5)],
+        progress:0,complete:false,num:mission.num+1};
+    },2000);
+  }
+}
+
+// ═══ DERIVED SCBE METRICS ═══
+function getMetrics(){
+  const tCount=structures.filter(s=>s.type==='tongue').length;
+  const pCount=structures.filter(s=>s.type==='pad').length;
+  const wCount=structures.filter(s=>s.type==='watcher').length;
+  const eCount=structures.filter(s=>s.type==='egg').length;
+  const avgN=structures.length?structures.reduce((s,st)=>s+discNorm(st.x,st.y),0)/structures.length:0;
+
+  // Braid inputs: structures HELP. Building near center is rewarded.
+  // Each structure reduces braid by 15%. Center structures reduce more.
+  const centerBonus=structures.length?structures.reduce((s,st)=>s+(1-discNorm(st.x,st.y)),0)/structures.length:0;
+  const structDampen=max(0.05, 1 - structures.length*0.15 - centerBonus*0.2);
+  const Ti=intent*5*structDampen;
+  const Tm=(1-coherence)*2*structDampen;
+  const Tg=(1-trust)*2*structDampen;
+  const Tp=threats.length*1.5*structDampen;
+  const db=braidDist(Ti,Tm,Tg,Tp);
+  const xf=xFactor(intent,trust);
+  const Heff=hWall(db,xf);
+  const harm=harmScore(Heff);
+  const iFast=min(1,threats.length*0.15+intent*0.3);
+  const iMem=min(1,(1-coherence)*0.6+db*0.04);
+  const iGov=min(1,(1-trust)*0.5+mission.num*0.015);
+  const dTri=triadRisk(iFast,iMem,iGov);
+  const driftF=max(0,min(1,1-db*0.02+pCount*0.04+0.3));
+  const triadF=max(0,min(1,1-dTri*0.2+wCount*0.06+0.3));
+  const specF=max(0,min(1,coherence*0.5+0.45+tCount*0.04));
+  const omega=omegaGate(1,harm,driftF,triadF,specF);
+  const status=omega>=0.7?'ALLOW':omega>=0.3?'QUARANTINE':omega>=0.05?'DENY':'EXILE';
+  const statusColor=omega>=0.7?'#34d399':omega>=0.3?'#fbbf24':omega>=0.05?'#f87171':'#dc2626';
+  return{db,xf,Heff,harm,iFast,iMem,iGov,dTri,driftF,triadF,specF,omega,status,statusColor,avgN,tCount,pCount,wCount,eCount};
+}
+
+// ═══ GAME LOOP ═══
+function gameTick(){
+  if(gameOver)return;
+  tick++;
+  const m=getMetrics();
+
+  // Regen
+  compute=min(200,compute+1.5);
+  const hasStructs=structures.length>0;
+  coherence=max(0.3,min(1,coherence+(hasStructs?(m.avgN<0.4?0.003:-0.002):0.001)));
+  trust=max(0.3,min(1,trust+(hasStructs?(m.omega>0.7?0.001:-0.003):0.001)));
+  intent=max(0,intent*0.997-(m.pCount>0?0.002:0));
+
+  // Spawn packets on leylines
+  if(leylines.length>0&&random()<0.3+leylines.length*0.05){
+    const l=leylines[floor(random()*leylines.length)];
+    packets.push({id:uid++,ley:l.id,t:0,speed:0.02,tongue:TONGUES[floor(random()*6)]});
+  }
+
+  // Move packets
+  packets=packets.filter(p=>{
+    p.t+=p.speed*(1/(1+m.Heff*0.1));
+    if(p.t>=1){totalPackets++;updateMission('packets',1);score++;
+      const l=leylines.find(ll=>ll.id===p.ley);
+      if(l){const s=structures.find(st=>st.id===l.to);if(s)spawnParticles(s.x,s.y,TONGUE_COLORS[p.tongue],4);}
+      return false;}
+    return true;
+  });
+
+  // Spawn threats
+  if(tick>60&&random()<0.01+mission.num*0.003){
+    const a=random()*PI*2,r=0.7+random()*0.25;
+    threats.push({id:uid++,x:cos(a)*r,y:sin(a)*r,str:0.3+random()*0.5,age:0});
+  }
+  threats=threats.filter(t=>{t.age++;if(t.age>60){intent=max(0,intent-0.05);return false;}return true;});
+  intent=min(3,intent+threats.length*0.003);
+
+  // Particles
+  particles=particles.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;p.vy+=0.0002;return p.life>0;});
+
+  // Governance
+  // Grace period - no governance failures for first 100 ticks
+  if(tick>100){
+    if(!quarantine&&m.omega<0.3&&m.omega>=0.05){quarantine=true;toast('\u26A0 QUARANTINE','#fbbf24');log2('Omega dropped below 0.3!');}
+    if(m.omega<0.05){gameOver=true;toast('\uD83D\uDD12 EXILE','#ef4444');log2('The Spiral rejects you.');}
+  }
+}
+
+// ═══ RENDER ═══
+function render(){
+  const cv=document.getElementById('c');
+  const ctx=cv.getContext('2d');
+  const m=getMetrics();
+  ctx.clearRect(0,0,cv.width,cv.height);
+
+  // Background gradient
+  const bg=ctx.createRadialGradient(CX,CY,0,CX,CY,RAD);
+  bg.addColorStop(0,'#0c0f1a');bg.addColorStop(0.4,'#111827');bg.addColorStop(0.7,'#1e1b4b');bg.addColorStop(0.9,'#312e81');bg.addColorStop(1,'#4c1d95');
+  ctx.fillStyle=bg;ctx.beginPath();ctx.arc(CX,CY,RAD,0,PI*2);ctx.fill();
+
+  // Rings with cost visualization
+  for(let r=0.1;r<1;r+=0.1){
+    const cost=piPhiCost(r*3,1);
+    ctx.strokeStyle=`rgba(99,102,241,${min(0.15,log(max(1,cost))*0.02)})`;
+    ctx.lineWidth=1+min(3,cost*0.01);
+    ctx.beginPath();ctx.arc(CX,CY,r*RAD,0,PI*2);ctx.stroke();
+  }
+
+  // Safe center glow
+  const cg=ctx.createRadialGradient(CX,CY,0,CX,CY,RAD*0.3);
+  cg.addColorStop(0,'rgba(52,211,153,0.15)');cg.addColorStop(1,'rgba(52,211,153,0)');
+  ctx.fillStyle=cg;ctx.beginPath();ctx.arc(CX,CY,RAD*0.3,0,PI*2);ctx.fill();
+
+  // Leylines with animated flow
+  leylines.forEach(l=>{
+    const sf=structures.find(s=>s.id===l.from),st=structures.find(s=>s.id===l.to);
+    if(!sf||!st)return;
+    const a=discToCanvas(sf.x,sf.y),b=discToCanvas(st.x,st.y);
+    // Glow
+    ctx.strokeStyle='rgba(129,140,248,0.1)';ctx.lineWidth=8;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    // Main line
+    ctx.strokeStyle='rgba(129,140,248,0.6)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    // Flow dots
+    for(let i=0;i<3;i++){
+      const t=((tick*0.02+i*0.33)%1);
+      const fx=a.x+(b.x-a.x)*t,fy=a.y+(b.y-a.y)*t;
+      ctx.fillStyle='rgba(167,139,250,0.4)';ctx.beginPath();ctx.arc(fx,fy,2,0,PI*2);ctx.fill();
+    }
+  });
+
+  // Packets with trail
+  packets.forEach(p=>{
+    const l=leylines.find(ll=>ll.id===p.ley);if(!l)return;
+    const sf=structures.find(s=>s.id===l.from),st=structures.find(s=>s.id===l.to);
+    if(!sf||!st)return;
+    const a=discToCanvas(sf.x,sf.y),b=discToCanvas(st.x,st.y);
+    const px=a.x+(b.x-a.x)*p.t,py=a.y+(b.y-a.y)*p.t;
+    const col=TONGUE_COLORS[p.tongue];
+    // Trail
+    for(let i=1;i<=3;i++){
+      const tt=max(0,p.t-i*0.03);
+      const tx=a.x+(b.x-a.x)*tt,ty=a.y+(b.y-a.y)*tt;
+      ctx.fillStyle=col+'44';ctx.beginPath();ctx.arc(tx,ty,3-i*0.5,0,PI*2);ctx.fill();
+    }
+    // Head
+    ctx.fillStyle=col;ctx.beginPath();ctx.arc(px,py,4,0,PI*2);ctx.fill();
+    ctx.fillStyle=col+'66';ctx.beginPath();ctx.arc(px,py,8,0,PI*2);ctx.fill();
+  });
+
+  // Threats with pulse
+  threats.forEach(t=>{
+    const p=discToCanvas(t.x,t.y);
+    const pulse=1+sin(tick*0.15+t.id)*0.3;
+    ctx.fillStyle=`rgba(239,68,68,${0.2+t.str*0.3})`;ctx.beginPath();ctx.arc(p.x,p.y,8*pulse,0,PI*2);ctx.fill();
+    ctx.strokeStyle='#ef444466';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,14*pulse,0,PI*2);ctx.stroke();
+    // Danger ring
+    ctx.strokeStyle='#ef444422';ctx.lineWidth=0.5;ctx.beginPath();ctx.arc(p.x,p.y,20*pulse,0,PI*2);ctx.stroke();
+  });
+
+  // Structures
+  structures.forEach(s=>{
+    const p=discToCanvas(s.x,s.y);
+    const def=SDEFS[s.type];
+    const isSel=selected===s.id;
+    const isLey=leyStart===s.id;
+
+    // Aura for eggs/watchers
+    if(s.type==='egg'){ctx.fillStyle='rgba(52,211,153,0.04)';ctx.beginPath();ctx.arc(p.x,p.y,45,0,PI*2);ctx.fill();}
+    if(s.type==='watcher'){ctx.strokeStyle='rgba(245,158,11,0.12)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(p.x,p.y,40,0,PI*2);ctx.stroke();ctx.setLineDash([]);}
+
+    // Base
+    ctx.fillStyle=isSel?'#334155':isLey?'#92400e':'#1e293b';
+    ctx.strokeStyle=isSel?def.color:isLey?'#fbbf24':TONGUE_COLORS[s.tongue]+'88';
+    ctx.lineWidth=isSel?2:1;
+    ctx.beginPath();ctx.arc(p.x,p.y,14,0,PI*2);ctx.fill();ctx.stroke();
+
+    // Tongue ring
+    ctx.strokeStyle=TONGUE_COLORS[s.tongue];ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(p.x,p.y,17,0,PI*2);ctx.stroke();
+
+    // Icon
+    ctx.font='14px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#fff';ctx.fillText(def.icon,p.x,p.y);
+
+    // Tongue label
+    ctx.font='bold 7px monospace';ctx.fillStyle=TONGUE_COLORS[s.tongue];
+    ctx.fillText(s.tongue,p.x,p.y+22);
+  });
+
+  // Particles
+  particles.forEach(p=>{
+    const pp=discToCanvas(p.x,p.y);
+    const alpha=p.life/p.maxLife;
+    ctx.fillStyle=p.color+floor(alpha*255).toString(16).padStart(2,'0');
+    ctx.beginPath();ctx.arc(pp.x,pp.y,p.size*alpha,0,PI*2);ctx.fill();
+  });
+
+  // Build preview
+  if(buildMode&&!gameOver){
+    ctx.strokeStyle='rgba(167,139,250,0.3)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+    ctx.beginPath();ctx.arc(CX,CY,RAD*0.3,0,PI*2);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(167,139,250,0.05)';ctx.beginPath();ctx.arc(CX,CY,RAD*0.3,0,PI*2);ctx.fill();
+  }
+
+  // Boundary
+  ctx.strokeStyle=m.omega>0.7?'rgba(167,139,250,0.4)':'rgba(239,68,68,0.4)';
+  ctx.lineWidth=2;ctx.beginPath();ctx.arc(CX,CY,RAD,0,PI*2);ctx.stroke();
+
+  // Quarantine overlay
+  if(quarantine){ctx.fillStyle='rgba(245,158,11,0.06)';ctx.beginPath();ctx.arc(CX,CY,RAD,0,PI*2);ctx.fill();}
+
+  // Update UI
+  updateUI(m);
+}
+
+// ═══ UI UPDATE ═══
+function updateUI(m){
+  document.getElementById('scoreDisp').textContent=`Score: ${score} | Mission #${mission.num} | Packets: ${totalPackets}`;
+  document.getElementById('statusDisp').style.color=m.statusColor;
+  document.getElementById('statusDisp').textContent=`\u03A9=${m.omega.toFixed(3)} ${m.status}`;
+
+  const ui=document.getElementById('ui');
+  ui.innerHTML=`
+    <div class="section">
+      <div class="metric"><div class="label">COMPUTE</div><div class="val" style="color:#fbbf24">${compute.toFixed(0)}</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <div class="metric"><div class="label">Trust</div><div class="val" style="color:${trust>0.6?'#34d399':'#f87171'}">${trust.toFixed(2)}</div></div>
+        <div class="metric"><div class="label">Coherence</div><div class="val" style="color:${coherence>0.5?'#22d3ee':'#f87171'}">${coherence.toFixed(2)}</div></div>
+        <div class="metric"><div class="label">Intent (x)</div><div class="val" style="color:${m.xf>1.5?'#f87171':'#94a3b8'}">${m.xf.toFixed(2)}</div></div>
+        <div class="metric"><div class="label">Threats</div><div class="val" style="color:${threats.length>3?'#f87171':'#94a3b8'}">${threats.length}</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="label" style="margin-bottom:4px">SCBE KERNEL</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;font-size:9px;font-family:monospace">
+        <div><span style="color:#64748b">Braid</span><div style="color:${m.db>2?'#f87171':'#94a3b8'}">${m.db.toFixed(2)}</div></div>
+        <div><span style="color:#64748b">H_eff</span><div style="color:${m.Heff>5?'#f87171':'#94a3b8'}">${m.Heff.toFixed(2)}</div></div>
+        <div><span style="color:#64748b">Harm</span><div>${m.harm.toFixed(3)}</div></div>
+        <div><span style="color:#818cf8">L12</span><div style="color:#818cf8">${piPhiCost(m.avgN*3,1).toFixed(1)}</div></div>
+        <div><span style="color:#64748b">d_tri</span><div>${m.dTri.toFixed(3)}</div></div>
+        <div><span style="color:#64748b">Structs</span><div>${structures.length}</div></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="label" style="margin-bottom:2px">\u03A9 GATE</div>
+      ${[{n:'PQC',v:1,c:'#22d3ee'},{n:'Harm',v:m.harm,c:'#f87171'},{n:'Drift',v:m.driftF,c:'#fbbf24'},{n:'Triad',v:m.triadF,c:'#a78bfa'},{n:'Spec',v:m.specF,c:'#34d399'}].map(f=>`
+        <div style="display:flex;align-items:center;gap:4px;margin:1px 0">
+          <span style="width:30px;font-size:8px;color:#64748b">${f.n}</span>
+          <div class="bar-track" style="flex:1"><div class="bar-fill" style="width:${f.v*100}%;background:${f.c}"></div></div>
+          <span style="font-size:8px;color:${f.c};width:24px;text-align:right;font-family:monospace">${(f.v*100).toFixed(0)}%</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="section">
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:#fbbf24;font-size:10px">\uD83D\uDCCB ${mission.name}</span>
+        <span style="font-size:8px;color:#64748b">#${mission.num}</span>
+      </div>
+      <div style="font-size:9px;color:#94a3b8">${mission.desc}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${min(100,mission.progress/mission.target*100)}%;background:${mission.complete?'#34d399':'#fbbf24'}"></div></div>
+      <div style="font-size:8px;color:#64748b">${mission.progress}/${mission.target}</div>
+    </div>
+    ${quarantine&&!gameOver?`<button class="btn" onclick="resolveQ()" style="width:100%;background:#92400e;color:#fbbf24;border-color:#fbbf24;margin:4px 0">\uD83D\uDD13 Resolve Quarantine (${25+mission.num*5} compute)</button>`:''}
+    ${gameOver?`<div style="text-align:center;padding:12px"><div style="color:#f87171;font-size:14px;font-weight:700">EXILE</div><div style="font-size:10px;color:#94a3b8">Score: ${score}</div><button class="btn" onclick="location.reload()" style="margin-top:6px">Restart</button></div>`:''}
+    <div class="section"><div class="label">LOG</div><div id="log">${logs.map(l=>`<div>${l}</div>`).join('')}</div></div>
+    <div style="margin-top:8px;text-align:center"><a href="../index.html" style="color:#64748b;font-size:9px;text-decoration:none">aethermoore.com</a></div>
+  `;
+}
+
+function resolveQ(){
+  const cost=25+mission.num*5;
+  if(compute<cost)return log2('Need more compute');
+  compute-=cost;quarantine=false;
+  trust=min(1,trust+0.08);coherence=min(1,coherence+0.05);
+  intent=max(0,intent-0.5);
+  threats=threats.slice(0,max(0,threats.length-2));
+  toast('\uD83D\uDD13 Resolved!','#34d399');log2('Quarantine resolved');
+}
+
+// ═══ BUILD BAR ═══
+function updateBar(){
+  const bar=document.getElementById('bar');
+  bar.innerHTML=`
+    <span style="font-size:9px;color:#64748b">BUILD:</span>
+    ${Object.entries(SDEFS).map(([k,d])=>`
+      <button class="btn ${buildMode===k?'active':''}" onclick="setBuild('${k}')">${d.icon} ${d.name} (${d.cost})</button>
+    `).join('')}
+    <button class="btn ${buildMode==='leyline'?'active':''}" onclick="setBuild('leyline')">\u26A1 Leyline (5)</button>
+    <button class="btn" onclick="setBuild(null)">\u2715</button>
+    <span style="font-size:9px;color:#475569;margin-left:auto">Click disc to build. Click structures for leylines.</span>
+  `;
+}
+
+function setBuild(mode){buildMode=buildMode===mode?null:mode;leyStart=null;selected=null;updateBar()}
+
+// ═══ INPUT ═══
+document.getElementById('c').addEventListener('click',function(e){
+  if(gameOver||quarantine)return;
+  const rect=this.getBoundingClientRect();
+  const cx=e.clientX-rect.left,cy=e.clientY-rect.top;
+  const d=canvasToDisc(cx,cy);
+
+  // Click on structure?
+  for(const s of structures){
+    const sp=discToCanvas(s.x,s.y);
+    if(abs(cx-sp.x)<18&&abs(cy-sp.y)<18){
+      if(buildMode==='leyline'){
+        if(leyStart===null){leyStart=s.id;log2('Select second structure...');}
+        else if(leyStart!==s.id){addLeyline(leyStart,s.id);leyStart=null;setBuild(null);}
+        else leyStart=null;
+        return;
+      }
+      selected=selected===s.id?null:s.id;
+      return;
+    }
+  }
+
+  // Place structure
+  if(buildMode&&buildMode!=='leyline'&&discNorm(d.x,d.y)<0.95){
+    addStruct(buildMode,d.x,d.y);
+  }
+});
+
+// ═══ MAIN LOOP ═══
+function loop(){
+  gameTick();
+  render();
+  updateBar();
+  requestAnimationFrame(loop);
+}
+
+window.addEventListener('resize',resize);
+resize();
+updateBar();
+loop();
+</script>
+</body>
+</html>

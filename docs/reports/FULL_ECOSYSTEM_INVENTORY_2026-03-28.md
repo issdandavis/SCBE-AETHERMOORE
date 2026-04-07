@@ -34,7 +34,7 @@
 | Repo | Lang | Purpose |
 |------|------|---------|
 | SCBE-AETHERMOORE | Python/TS | AI governance framework (the core) |
-| issdandavis.github.io | HTML | Website at aethermoorgames.com |
+| issdandavis.github.io | HTML | Website at aethermoore.com |
 
 **Supporting Original Repos**:
 | Repo | Lang | Purpose |
@@ -75,7 +75,7 @@
 - Discussions: 94 threads across 6 categories
 - Releases: 25 (weekly kernel data sync)
 - Gists: 9 (arXiv preprints, Reddit/LessWrong/HN formatted articles)
-- Pages: 2 sites (aethermoorgames.com + SCBE-AETHERMOORE subdomain)
+- Pages: 2 sites (aethermoore.com + SCBE-AETHERMOORE subdomain)
 - Submodules: 13 registered in .gitmodules
 
 ---
@@ -181,7 +181,7 @@ npm exports: main, /harmonic, /symphonic, /crypto, /spiralverse, /tokenizer, /ph
 
 | Platform | URL / Details |
 |----------|--------------|
-| **GitHub Pages** | aethermoorgames.com (custom domain, HTTPS, cert expires 2026-06-14) |
+| **GitHub Pages** | aethermoore.com (custom domain, HTTPS, cert expires 2026-06-14) |
 | **Shopify** | aethermore-works.myshopify.com (8 products, custom theme, dormant — DNS redirected to GH Pages) |
 | **Gumroad** | aetherdavis.gumroad.com (K-12 to GED bridge curriculum) |
 | **Stripe** | Active, $97.74 pending balance, 3 billing plans wired (Starter $49, Growth $149, Enterprise $499/mo) |
@@ -349,7 +349,7 @@ RUNTIME
   |
   v
 PRODUCTS
-  |-- aethermoorgames.com (GitHub Pages)
+  |-- aethermoore.com (GitHub Pages)
   |-- AetherBrowser Mobile (Capacitor APK)
   |-- Shopify store (8 products)
   |-- Gumroad (education)

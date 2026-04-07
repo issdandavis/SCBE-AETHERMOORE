@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SCBE-AETHERMOORE Demo Lab</title>
-  <meta name="description" content="Story-first demos for SCBE-AETHERMOORE, Hydra, GeoSeal, the 14-layer stack, and the manual surfaces that ship with the system." />
+  <title>AetherMoore Demo Lab | Governance, Proof, and Dual-Layer Training</title>
+  <meta name="description" content="Governance-first demos for AetherMoore, Hydra, GeoSeal, benchmark proof, and the dual-layer training path behind The Six Tongues Protocol." />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-  <meta property="og:title" content="SCBE Demo Lab" />
-  <meta property="og:description" content="Story-first demos for Hydra, GeoSeal, CLI surfaces, and the public SCBE site layers." />
+  <meta property="og:title" content="AetherMoore Demo Lab" />
+  <meta property="og:description" content="Governance-first demos for Hydra, GeoSeal, CLI surfaces, benchmark proof, and the narrative training layer." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://issdandavis.github.io/SCBE-AETHERMOORE/demos/index.html" />
-  <meta property="og:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
+  <meta property="og:url" content="https://aethermoore.com/demos/index.html" />
+  <meta property="og:image" content="https://aethermoore.com/static/showcase/book_cover.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="SCBE Demo Lab" />
-  <meta name="twitter:description" content="Story-first demos for Hydra, GeoSeal, CLI surfaces, and public SCBE documentation." />
-  <meta name="twitter:image" content="https://aethermoorgames.com/static/showcase/book_cover.jpg" />
-  <link rel="canonical" href="https://issdandavis.github.io/SCBE-AETHERMOORE/demos/index.html" />
+  <meta name="twitter:title" content="AetherMoore Demo Lab" />
+  <meta name="twitter:description" content="Governance-first demos for Hydra, GeoSeal, CLI surfaces, benchmark proof, and the narrative training layer." />
+  <meta name="twitter:image" content="https://aethermoore.com/static/showcase/book_cover.jpg" />
+  <link rel="canonical" href="https://aethermoore.com/demos/index.html" />
   <link rel="stylesheet" href="../static/polly-sidebar.css" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
@@ -243,6 +243,76 @@
       border-radius: var(--radius-md);
       background: rgba(6, 18, 15, 0.7);
       border: 1px solid rgba(143,255,211,0.08);
+    }
+
+    .threshold-chat-shell {
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(180deg, rgba(7, 21, 18, 0.94), rgba(5, 15, 13, 0.98)),
+        radial-gradient(circle at top right, rgba(109, 216, 255, 0.12), transparent 34%);
+      border: 1px solid rgba(143,255,211,0.12);
+      display: grid;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .threshold-chat-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .threshold-chat-copy {
+      max-width: 60ch;
+    }
+
+    .threshold-chat-title {
+      margin-top: 6px;
+      font-size: clamp(24px, 3.2vw, 34px);
+      line-height: 1.05;
+    }
+
+    .threshold-chat-copy p,
+    .threshold-chat-note {
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 10px 0 0;
+    }
+
+    .threshold-chat-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .threshold-chat-frame {
+      min-height: 620px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(143,255,211,0.1);
+      background: rgba(4, 13, 12, 0.94);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+
+    .lane-proof {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      color: var(--mint);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .lane-proof strong {
+      color: var(--text);
+      font-weight: 600;
     }
 
     .stat-value {
@@ -558,6 +628,10 @@
 
       h1 { font-size: 42px; }
       .lede { font-size: 16px; }
+
+      .threshold-chat-frame {
+        min-height: 700px;
+      }
     }
   </style>
 </head>
@@ -570,12 +644,15 @@
       </div>
       <nav class="nav">
         <a href="../index.html">Home</a>
-        <a href="../articles/index.html">Articles</a>
+        <a href="../enterprise.html">Enterprise</a>
+        <a href="../pricing.html">Pricing</a>
+        <a href="../chat.html">Chat</a>
+        <a href="../tools.html">Tools</a>
+        <a href="../test-suite.html">Tests</a>
         <a href="../research/index.html">Research</a>
-        <a href="../product-manual/index.html">Manuals</a>
-        <a href="../support.html">Support</a>
-        <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a>
-        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a>
+        <a href="../compliance.html">Compliance</a>
+        <a href="../contact.html">Contact</a>
+        <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
       </nav>
     </div>
   </header>
@@ -592,6 +669,25 @@
               <a class="btn btn-primary" href="../product-manual/index.html">Open the manuals</a>
               <a class="btn btn-secondary" href="../support.html">Talk to Polly support</a>
               <a class="btn btn-secondary" href="../articles/index.html">Read the article hub</a>
+            </div>
+            <div class="threshold-chat-shell">
+              <div class="threshold-chat-head">
+                <div class="threshold-chat-copy">
+                  <span class="eyebrow">Embedded operator shell</span>
+                  <h2 class="threshold-chat-title">Ask Polly where to start before you open the swarm lanes.</h2>
+                  <p>The real product is already in the repo, manuals, notes vault, and support stack. This shell is the fastest way to route into Hydra swarm ops, GeoSeal access behavior, the command lane, or the buyer manuals without making you infer the map.</p>
+                </div>
+                <div class="threshold-chat-actions">
+                  <a class="btn btn-secondary" href="../chat.html">Open full chat</a>
+                  <a class="btn btn-secondary" href="small-business-helper.html">Open helper demo</a>
+                </div>
+              </div>
+              <div class="threshold-chat-note">Public-safe rule: GitHub Pages cannot keep a private model token. Bring your own Hugging Face token for direct testing or use a proxy if you want the embedded shell live for buyers.</div>
+              <div class="threshold-chat-frame" id="thresholdChatApp"></div>
+            </div>
+            <div class="lane-proof">
+              <span>Evidence source</span>
+              <strong>Repo + Obsidian vault + Notion hub</strong>
             </div>
           </div>
 
@@ -619,7 +715,7 @@
             <img src="../static/showcase/book_cover.jpg" alt="The Six Tongues Protocol cover" />
             <div class="hero-tag">
               <strong>The Six Tongues Protocol</strong>
-              The book is an entrypoint into the world. It is not the origin of the architecture.
+              The book is a training surface: story on top, governance substrate underneath.
             </div>
           </div>
           <div class="hero-thumbs">
@@ -637,48 +733,130 @@
     </section>
 
     <section>
+      <div class="wrap strip">
+        <div>
+          <div class="eyebrow">Dual-layer training</div>
+          <h2>The novel is not a detour. It is the memory layer for the architecture.</h2>
+        </div>
+        <ul>
+          <li>Surface layer: Marcus, Polly, and Aethermoor make the system legible enough to remember.</li>
+          <li>Submerged layer: every chapter keeps Sacred Tongues, drift, geometry, and governance logic in motion.</li>
+          <li>Buyer layer: demos prove the stack, manuals operationalize it, and the story helps humans and models retain it.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
       <div class="wrap">
         <div class="section-head">
           <div>
-            <span class="eyebrow">Interactive Demos</span>
-            <h2>Try the system right now. No install, no login, no API key.</h2>
+            <span class="eyebrow">Open These First</span>
+            <h2>These are the demo lanes that already prove the product.</h2>
+            <p>Picked from the live repo, the notes vault, and the Notion technical hub. Start here if you want the shortest path from “what is this?” to an actual system surface.</p>
+          </div>
+        </div>
+        <div class="grid-3" style="margin-bottom: 46px;">
+          <a href="governance-gate.html" class="card" style="text-decoration:none; color:inherit; border-color:var(--gold);">
+            <h3 style="color:var(--gold);">Governance Gate</h3>
+            <p><strong>What this proves:</strong> the 14-layer governance path ends in an auditable decision, not a vibe check. This is the clearest first proof of how AetherMoore protects runtime behavior under pressure.</p>
+            <p style="margin-top:12px; color:var(--muted);">Included in the governance manual and buyer proof lane.</p>
+            <span style="color:var(--gold);margin-top:12px;display:block;font-weight:600;">Open gate &rarr;</span>
+          </a>
+          <a href="swarm-formations.html" class="card" style="text-decoration:none; color:inherit; border-color:var(--mint);">
+            <h3 style="color:var(--mint);">Hydra Swarm Ops</h3>
+            <p><strong>What this proves:</strong> governed multi-agent coordination is a live operating surface, not just a diagram. Pair it with the <code>hydra-agent-templates</code> manual when you want the operator story instead of theory talk.</p>
+            <p style="margin-top:12px; color:var(--muted);">Included in the workflow lane and operator docs.</p>
+            <span style="color:var(--mint);margin-top:12px;display:block;font-weight:600;">Open swarm ops &rarr;</span>
+          </a>
+          <a href="risk-calculator.html" class="card" style="text-decoration:none; color:inherit; border-color:var(--aqua);">
+            <h3 style="color:var(--aqua);">GeoSeal Access Field</h3>
+            <p><strong>What this proves:</strong> GeoSeal access behavior is explainable through distance and risk, without exposing private policy weights. This is the easiest buyer-safe math surface on the site.</p>
+            <p style="margin-top:12px; color:var(--muted);">Included in the access-control explanation lane.</p>
+            <span style="color:var(--aqua);margin-top:12px;display:block;font-weight:600;">Open access field &rarr;</span>
+          </a>
+          <a href="tongue-encoder.html" class="card" style="text-decoration:none; color:inherit; border-color:#a29bfe;">
+            <h3 style="color:#a29bfe;">Sacred Tongue Encoder</h3>
+            <p><strong>What this proves:</strong> the language/authentication layer has a machine-facing transport surface, not just lore. Use it to inspect semantic routing before you move into the canon-heavy manuals.</p>
+            <p style="margin-top:12px; color:var(--muted);">Included in the auth and semantic-tokenization lane.</p>
+            <span style="color:#a29bfe;margin-top:12px;display:block;font-weight:600;">Open encoder &rarr;</span>
+          </a>
+          <a href="benchmarks.html" class="card" style="text-decoration:none; color:inherit; border-color:#7de2c2;">
+            <h3 style="color:#7de2c2;">Benchmark Proof</h3>
+            <p><strong>What this proves:</strong> the live proof lane starts with the confirmed 13.97% fixed-compute multiview training gain, then shows the adversarial detection receipts and the fair matched-budget rerun path.</p>
+            <p style="margin-top:12px; color:var(--muted);">Included in the research-proof and evaluation lane.</p>
+            <span style="color:#7de2c2;margin-top:12px;display:block;font-weight:600;">Open proof stack &rarr;</span>
+          </a>
+          <a href="../product-manual/scbe-cli.html" class="card" style="text-decoration:none; color:inherit; border-color:var(--rose);">
+            <h3 style="color:var(--rose);">CLI Command Lane</h3>
+            <p><strong>What this proves:</strong> the product is actually operable. This is where the website hands off to repeatable runtime, recovery, and governed command surfaces.</p>
+            <p style="margin-top:12px; color:var(--muted);">Included in the toolkit manual and delivery lane.</p>
+            <span style="color:var(--rose);margin-top:12px;display:block;font-weight:600;">Open command lane &rarr;</span>
+          </a>
+          <a href="small-business-helper.html" class="card" style="text-decoration:none; color:inherit; border-color:#8fffd3;">
+            <h3 style="color:#8fffd3;">Polly Threshold / Small Business Helper</h3>
+            <p><strong>What this proves:</strong> Polly can guide, triage, and eventually onboard buyers through a governed helper lane. This is the commercial bridge between proof demos and actual use.</p>
+            <p style="margin-top:12px; color:var(--muted);">Included in the support, onboarding, and helper workflow lane.</p>
+            <span style="color:#8fffd3;margin-top:12px;display:block;font-weight:600;">Open helper &rarr;</span>
+          </a>
+        </div>
+
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Advanced Lab</span>
+            <h2>These are secondary technical surfaces once the proof stack already makes sense.</h2>
+            <p>Use these after governance, swarm ops, GeoSeal, benchmarks, and the command lane. They are valuable, but they should not be the first thing a buyer sees. This is where the governed sandbox and BYOK review tools live.</p>
           </div>
         </div>
         <div class="grid-3">
-          <a href="phi-poincare.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #a29bfe;">
-            <h3 style="color:#ffd977;">Phi-Poincare Projection</h3>
-            <p>Hover over golden-ratio shells in the Poincare ball. Build trust with Fibonacci ternary consensus. Watch the cost explode near the boundary.</p>
-            <p style="color:#a29bfe; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
+          <a href="scattered-attention-sphere.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #4af;">
+            <h3 style="color:#4af;">Scattered Attention Sphere</h3>
+            <p>Holographic weight matrix router. Watch a 2D attention matrix fractalize onto a 3D sphere, color-coded by Sacred Tongue. Adjust the phi-wall phase tunnel to filter resonant bits. Interactive 3D with real-time stats.</p>
+            <p style="color:#4af; margin-top:12px; font-weight:600;">Open sphere &rarr;</p>
           </a>
-          <a href="tongue-encoder.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #6c5ce7;">
-            <h3 style="color:#a29bfe;">Sacred Tongue Encoder</h3>
-            <p>Type text, pick a tongue, watch it encode in real time. Decode it back. See the phi-weighted governance cost. All 6 languages, 256 tokens each.</p>
-            <p style="color:#6c5ce7; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
+          <a href="spiral-engine.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #a78bfa;">
+            <h3 style="color:#a78bfa;">Spiral Engine</h3>
+            <p>Play the governance sandbox directly: build leyline networks inside a Poincare disc, route Sacred Tongue packets, manage threat pressure, and watch the live Omega gate react to your structure choices.</p>
+            <p style="color:#a78bfa; margin-top:12px; font-weight:600;">Open Spiral Engine &rarr;</p>
           </a>
-          <a href="risk-calculator.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #6c5ce7;">
-            <h3 style="color:#a29bfe;">Hyperbolic Risk Calculator</h3>
-            <p>Drag sliders to see how H(d,R)=R^(d^2) makes attacks exponentially expensive. Watch the Poincare ball visualization, intent modifiers, and ALLOW/QUARANTINE/DENY decisions.</p>
-            <p style="color:#6c5ce7; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
+          <a href="aether-review.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #7de2c2;">
+            <h3 style="color:#7de2c2;">AetherReview</h3>
+            <p>Bring your own key and run four AI review agents against a spec, paper, code sample, or patent draft. This is an operator-side quality gate, not a first-pass buyer demo.</p>
+            <p style="color:#7de2c2; margin-top:12px; font-weight:600;">Open review lane &rarr;</p>
           </a>
           <a href="aetherbrowser-demo.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #2ecc71;">
             <h3 style="color:#8fffd3;">AetherBrowser Demo</h3>
-            <p>Trust-tiered URL classification, Sacred Tongue chat activation, Fibonacci trust progression, and a simulated red-team benchmark. No server, no API key — runs entirely in your browser.</p>
-            <p style="color:#2ecc71; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
-          </a>
-          <a href="tongue-heatmap.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #8fffd3;">
-            <h3 style="color:#8fffd3;">Tongue Activation Heatmap</h3>
-            <p>Type any text and watch a hexagonal heatmap of 6 Sacred Tongue activations pulse in real time. See harmonic cost, 6D coordinate bars, and live governance decisions.</p>
-            <p style="color:#8fffd3; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
-          </a>
-          <a href="harmonic-wall-3d.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #ffd977;">
-            <h3 style="color:#ffd977;">3D Harmonic Wall</h3>
-            <p>Drag-rotatable 3D surface of H(d,R)=R^(d^2). Watch an attacker dot trace the exponential wall and compare linear, quadratic, and SCBE defense curves.</p>
-            <p style="color:#ffd977; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
+            <p>Trust-tiered browsing, Sacred Tongue activation, and a simulated red-team benchmark. Keep this lower in the stack; it makes more sense after the governance and Hydra lanes.</p>
+            <p style="color:#2ecc71; margin-top:12px; font-weight:600;">Open browser lab &rarr;</p>
           </a>
           <a href="attack-radar.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #6dd8ff;">
             <h3 style="color:#6dd8ff;">Attack Classification Radar</h3>
-            <p>Radar chart comparing SCBE detection across 12 attack categories vs DeBERTa PromptGuard. Toggle semantic projector to see F1 jump from 0.481 to 0.813.</p>
-            <p style="color:#6dd8ff; margin-top:12px; font-weight:600;">Try it now &rarr;</p>
+            <p>Comparison surface for attack-class coverage and semantic projection. Useful as a technical proof, but it belongs after the benchmark and governance story are already clear.</p>
+            <p style="color:#6dd8ff; margin-top:12px; font-weight:600;">Open attack radar &rarr;</p>
+          </a>
+          <a href="temporal-session.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #ffd977;">
+            <h3 style="color:#ffd977;">Temporal Session Lab</h3>
+            <p>Session and temporal-state inspection for operators who need to see how governed state moves over time. This is a lower-level diagnostic lane, not a first proof surface.</p>
+            <p style="color:#ffd977; margin-top:12px; font-weight:600;">Open temporal lab &rarr;</p>
+          </a>
+          <a href="audio-telemetry.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #7de2c2;">
+            <h3 style="color:#7de2c2;">Audio Telemetry</h3>
+            <p>Spectral and audio-axis telemetry for the people who need to inspect signal behavior directly. Useful for advanced validation, but not part of the first buyer route.</p>
+            <p style="color:#7de2c2; margin-top:12px; font-weight:600;">Open audio telemetry &rarr;</p>
+          </a>
+          <a href="phi-poincare.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #a29bfe;">
+            <h3 style="color:#ffd977;">Phi-Poincare Projection</h3>
+            <p>Hover over golden-ratio shells in the Poincare ball and inspect boundary cost growth. Keep this as a math explainer after the GeoSeal and benchmark lanes, not before them.</p>
+            <p style="color:#a29bfe; margin-top:12px; font-weight:600;">Open phi projection &rarr;</p>
+          </a>
+          <a href="tongue-heatmap.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #8fffd3;">
+            <h3 style="color:#8fffd3;">Tongue Activation Heatmap</h3>
+            <p>Type text and watch Sacred Tongue activations pulse in real time. This is a useful diagnostic surface for semantic routing, but it is not the first buyer proof.</p>
+            <p style="color:#8fffd3; margin-top:12px; font-weight:600;">Open heatmap &rarr;</p>
+          </a>
+          <a href="harmonic-wall-3d.html" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #ffd977;">
+            <h3 style="color:#ffd977;">3D Harmonic Wall</h3>
+            <p>Drag the base wall intuition H<sub>base</sub>(d,R)=R^(d^2) surface and compare defense curves in 3D. This belongs in the advanced lab after the GeoSeal and benchmark lanes have already established the public story.</p>
+            <p style="color:#ffd977; margin-top:12px; font-weight:600;">Open wall view &rarr;</p>
           </a>
           <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/discussions/704" class="card" style="text-decoration:none; color:inherit; cursor:pointer; border: 1px solid #1a1a3e;">
             <h3>Read Chapter 1</h3>
@@ -690,24 +868,24 @@
         <div class="section-head" style="margin-top:48px;">
           <div>
             <span class="eyebrow">System Lore & Training</span>
-            <h2>Grounded Research from the Deep Substrate.</h2>
-            <p>Explore the raw Everweave logs and training data that built the Six Tongues Protocol.</p>
+            <h2>Grounded research and the narrative memory layer.</h2>
+            <p>Explore the Everweave logs, training tracks, and chapter surfaces that turned SCBE mechanics into something a human or model can actually retain.</p>
           </div>
         </div>
         <div class="grid-3">
           <a href="../research/index.html#active-tracks" class="card" style="border-color:var(--gold);">
             <h3 style="color:var(--gold);">Everweave Logs</h3>
-            <p>Access the original research tracks: witness, covenant, and sanctuary-building logs from the Notion archive.</p>
+            <p>Access the original research tracks: witness, covenant, and sanctuary-building logs from the Notion archive that fed the architecture before the novel ever wrapped around it.</p>
             <span style="color:var(--gold);margin-top:12px;display:block;font-weight:600;">Open logs &rarr;</span>
           </a>
           <a href="../games/index.html" class="card" style="border-color:var(--rose);">
             <h3 style="color:var(--rose);">Arena Training</h3>
-            <p>AI-playable arenas and public Hugging Face model docks for testing 14-layer governance in real-time.</p>
+            <p>AI-playable arenas and public Hugging Face model docks for testing 14-layer governance in real time after the narrative layer teaches the concepts.</p>
             <span style="color:var(--rose);margin-top:12px;display:block;font-weight:600;">Enter Arena &rarr;</span>
           </a>
           <article class="card">
             <h3>Chapter 1 Canon</h3>
-            <p>Read the foundational text: <em>"The dead deserve a log entry."</em> The exact manuscript used for the Webtoon adaptation.</p>
+            <p>Read the foundational text: <em>"The dead deserve a log entry."</em> It doubles as a chapter-sized training artifact, not just a teaser for the webtoon adaptation.</p>
             <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/content/book/reader-edition/ch01.md" target="_blank" style="color:var(--mint);display:block;margin-top:12px;font-weight:600;">Read Chapter 1 &rarr;</a>
           </article>
           <a href="../research/security-eval-lab.html" class="card" style="border-color:var(--cool);background:rgba(123, 140, 255, 0.05);">
@@ -759,17 +937,17 @@
     <section>
       <div class="wrap quote-band">
         <div class="quote-card">
-          <span class="eyebrow">Polly voice reference</span>
-          <div class="quote">“CAW. You are not lost. You are just early.”</div>
+          <span class="eyebrow">Meet Polly</span>
+          <div class="quote">"CAW. You are not lost. You are just early."</div>
         </div>
         <div class="quote-card">
-          <h2>Polly is the right guide for the support and docs layer.</h2>
-          <p>She is old, precise, amused, and a little dangerous around sloppy thinking. She should sound like an archivist with field experience, not a mascot. Her lane is support, orientation, archive access, and occasional sharp corrections when the user is about to make their own life worse.</p>
+          <h2>Polivara — the Fifth Circle Keeper.</h2>
+          <p>Polly is the AI assistant woven into the SCBE governance framework. She guides you through the archive, answers technical questions about the 14-layer pipeline, and helps with support issues. She speaks like an archivist with field experience — direct, precise, and occasionally sharp.</p>
           <div class="voice-chip-row">
-            <span class="voice-chip">Dry wit</span>
+            <span class="voice-chip">AI governance assistant</span>
             <span class="voice-chip">Archive keeper</span>
-            <span class="voice-chip">Protocol idioms</span>
-            <span class="voice-chip">Helpful, not bubbly</span>
+            <span class="voice-chip">Technical support</span>
+            <span class="voice-chip">Sacred Tongue fluent</span>
           </div>
         </div>
       </div>
@@ -779,28 +957,28 @@
       <div class="wrap">
         <div class="section-head">
           <div>
-            <span class="eyebrow">Visual references already local</span>
-            <h2>Existing art can carry the first public-facing pages.</h2>
-            <p>No need to stall for fresh design passes. There is already enough local material to make the site feel authored instead of empty: cover art, character sheets, infrastructure scenes, and world imagery.</p>
+            <span class="eyebrow">The World of Aethermoor</span>
+            <h2>Where system theory becomes physical place.</h2>
+            <p>The Six Tongues Protocol maps governance architecture to a living world. The cover art, character sheets, and infrastructure scenes are drawn from the same system logic that drives the 14-layer pipeline.</p>
           </div>
         </div>
         <div class="gallery">
           <article class="gallery-card tall">
             <figure>
               <img src="../static/showcase/polly_human_reference_sheet.png" alt="Polly human reference sheet" />
-              <figcaption>Polly reference sheet for support, lore, and future sidebar assistant work.</figcaption>
+              <figcaption>Polly — Fifth Circle Keeper, archive guide, and governance assistant.</figcaption>
             </figure>
           </article>
           <article class="gallery-card">
             <figure>
               <img src="../static/showcase/grok_world_tree_civic.jpg" alt="World tree civic art" />
-              <figcaption>Use for world pages, lore pages, and the collaboration thesis.</figcaption>
+              <figcaption>The World Tree — where collaboration becomes governance architecture.</figcaption>
             </figure>
           </article>
           <article class="gallery-card">
             <figure>
               <img src="../static/showcase/grok_protocol_infrastructure.jpg" alt="Protocol infrastructure art" />
-              <figcaption>Use for architecture portals, Hydra, GeoSeal, and operator docs.</figcaption>
+              <figcaption>Protocol infrastructure — the 14-layer pipeline as physical architecture.</figcaption>
             </figure>
           </article>
         </div>
@@ -811,9 +989,9 @@
       <div class="wrap">
         <div class="section-head">
           <div>
-            <span class="eyebrow">Package surfaces</span>
-            <h2>The paid packages need readable manuals, not lore dumps.</h2>
-            <p>Each package page should explain what ships, how delivery works, how to activate it, where the keys or links arrive, and what to do when setup fails. That is separate from the pages explaining what the system is.</p>
+            <span class="eyebrow">Get started</span>
+            <h2>Packages, manuals, and benchmarks.</h2>
+            <p>Everything you need to start using SCBE: governance toolkits, delivery instructions, CLI docs, and the benchmark suite to verify the claims yourself.</p>
           </div>
         </div>
         <div class="manual-grid">
@@ -832,10 +1010,20 @@
             <p>Polly-guided issue routing for access, AI, CLI, and broken-page problems.</p>
             <span>Get help</span>
           </a>
-          <a class="manual-card" href="https://github.com/issdandavis/SCBE-AETHERMOORE">
-            <h3>Source and proof</h3>
-            <p>Public repo, docs, evidence, benchmarks, and implementation trail.</p>
-            <span>View repo</span>
+          <a class="manual-card" href="benchmarks.html">
+            <h3>Benchmark Suite</h3>
+            <p>Starts with the confirmed 13.97% fixed-compute training win, then moves into the 91-attack security sweep and the matched-budget code rerun path.</p>
+            <span>View benchmarks</span>
+          </a>
+          <a class="manual-card" href="../benchmark-kit.html">
+            <h3>$5 Benchmark Kit</h3>
+            <p>Test your AI in 10 minutes. Attack corpus, scoring rubric, compliance levels. Works with any model.</p>
+            <span>Get the kit</span>
+          </a>
+          <a class="manual-card" href="../pricing.html">
+            <h3>Pricing</h3>
+            <p>Pump API from $49/mo. Governance-as-a-Service from $499/mo. Self-governing AI you can actually afford.</p>
+            <span>View pricing</span>
           </a>
         </div>
       </div>
@@ -843,23 +1031,19 @@
 
     <section>
       <div class="wrap video-shell">
-        <div class="video-panel">
-          <div class="play-badge">
-            <div>
-              <strong>▶</strong>
-              <h3>Hero film slot</h3>
-              <p>A short guided video can sit here later once we generate or edit one that matches the site tone.</p>
-            </div>
+        <div class="video-panel" style="min-height:360px;">
+          <div style="position:relative;width:100%;height:100%;min-height:360px;">
+            <iframe src="https://www.youtube.com/embed/videoseries?list=PL4NrJc8z1YGBSCOM4wYBQw3PJWnJKM7XG" title="SCBE Story Series" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;border-radius:var(--radius-xl);" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen loading="lazy"></iframe>
           </div>
         </div>
         <div class="video-copy">
-          <span class="eyebrow">Video lane</span>
-          <h2>Yes, a generated video can be embedded here.</h2>
-          <p>The right version is not “generic AI promo.” It should be a short, clean atmospheric loop or narrated capsule: archive lights, threshold geometry, Polly, and the operator surfaces. This page is already structured so a later video embed drops in cleanly.</p>
+          <span class="eyebrow">Watch the story</span>
+          <h2>The Six Tongues Protocol — narrated chapter by chapter.</h2>
+          <p>Follow Marcus Chen through Aethermoor as he uncovers the governance system that holds the world together. Each episode carries a layer of the SCBE architecture through narrative so the training sticks after the video ends.</p>
           <div class="cta-row">
-            <a class="btn btn-primary" href="../support.html">Keep the docs moving</a>
-            <a class="btn btn-secondary" href="../index.html#pricing">See product paths</a>
-            <a class="btn btn-secondary" href="../research/history-bible-theory-training.html">Open the theory packet</a>
+            <a class="btn btn-primary" href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">Subscribe on YouTube</a>
+            <a class="btn btn-secondary" href="../chat.html">Talk to Polly</a>
+            <a class="btn btn-secondary" href="../enterprise.html">Enterprise overview</a>
           </div>
         </div>
       </div>
@@ -868,9 +1052,32 @@
 
   <footer class="footer">
     <div class="wrap">
-      <p>SCBE Demo Lab. Built from existing local art, live docs, and the Aethermoor canon lane. Return to <a href="../index.html">home</a>, open the <a href="../product-manual/index.html">manual hub</a>, or go straight to <a href="../support.html">support</a>. <a href="https://www.youtube.com/@id8461" target="_blank" rel="noopener">YouTube</a></p>
+      <p><a href="../index.html">Home</a> &middot; <a href="../enterprise.html">Enterprise</a> &middot; <a href="../pricing.html">Pricing</a> &middot; <a href="index.html">Demos</a> &middot; <a href="../research/index.html">Research</a> &middot; <a href="../contact.html">Contact</a> &middot; <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a> &middot; <a href="https://www.linkedin.com/in/issdandavis" target="_blank">LinkedIn</a> &middot; <a href="https://medium.com/@issdandavis7795" target="_blank">Medium</a> &middot; <a href="https://huggingface.co/issdandavis" target="_blank">HuggingFace</a> &middot; <a href="https://www.youtube.com/@id8461" target="_blank">YouTube</a></p>
+      <p>SCBE AETHERMOORE &middot; Patent Pending USPTO #63/961,403</p>
     </div>
   </footer>
+<script src="../static/polly-hf-chat.js"></script>
 <script src="../static/polly-sidebar.js"></script>
+<script>
+  window.PollyHFChat.mount(document.getElementById("thresholdChatApp"), {
+    title: "Polly Demo Guide",
+    assistantName: "Polly",
+    subtitle: "Start with governance, then swarm ops, GeoSeal, benchmarks, CLI, or the helper lane.",
+    model: "issdandavis/scbe-pivot-qwen-0.5b",
+    storagePrefix: "scbe_demo_threshold_chat",
+    exportSource: "demo_threshold_chat",
+    compact: true,
+    systemPrompt:
+      "You are Polly, the SCBE demo guide for the public proof stack. Route visitors to the right live surface using only what is actually present on the public site. Lead with governance gate, Hydra swarm ops, GeoSeal access-field demos, Sacred Tongue encoding, benchmark proof, the CLI command lane, and the small-business helper. Treat novelty and exploratory math surfaces as advanced lab pages. Be direct, practical, and buyer-aware.",
+    suggestions: [
+      "I want the shortest buyer path. Which three demos should I open first?",
+      "Show me governance first, then the benchmark proof, then the CLI lane.",
+      "I care about GeoSeal and access control. Route me through the right pages.",
+      "I want the helper lane after the proof demos. What order should I use?"
+    ],
+    initialAssistantText:
+      "I route people through the real proof stack on this page. Ask for the first three demos, the governance lane, GeoSeal, benchmarks, CLI, or the helper workflow."
+  });
+</script>
 </body>
 </html>

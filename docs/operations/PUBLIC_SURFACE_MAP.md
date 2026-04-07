@@ -33,7 +33,7 @@ Note:
 
 ## Websites, Landing Pages, And Demos
 
-- Primary commercial/site domain: `https://aethermoorgames.com`
+- Primary commercial/site domain: `https://aethermoore.com`
 - GitHub Pages hub: `https://issdandavis.github.io/SCBE-AETHERMOORE/`
 - GitHub Pages demos index: `https://issdandavis.github.io/SCBE-AETHERMOORE/demos/index.html`
 - GitHub Pages red-team / benchmark page: `https://issdandavis.github.io/SCBE-AETHERMOORE/redteam.html`

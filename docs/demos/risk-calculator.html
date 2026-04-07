@@ -49,8 +49,8 @@ canvas { width: 100%; height: 100%; }
   <p class="subtitle">Drag the sliders to see how the harmonic wall makes attacks exponentially expensive.</p>
 
   <div class="formula">
-    <div class="big">H(d, R) = R<sup>(d<sup>2</sup>)</sup></div>
-    <div class="explain">d = hyperbolic distance from safe center | R = realm radius (default 4.0)</div>
+    <div class="big">H<sub>base</sub>(d, R) = R<sup>(d<sup>2</sup>)</sup></div>
+    <div class="explain">Base wall intuition for the public lab. Live runtime branches may add intent or temporal scaling before final gating.</div>
   </div>
 
   <div class="slider-row">
@@ -86,13 +86,15 @@ canvas { width: 100%; height: 100%; }
 
   <div class="info">
     <strong>What you're seeing:</strong> The Poincare ball visualization shows the agent (dot) moving from the safe center
-    toward the boundary. The harmonic wall (H = R^(d^2)) creates a cost explosion near the edge.
+    toward the boundary. This page visualizes the base wall intuition <code>H<sub>base</sub>(d,R)=R^(d^2)</code> so the cost explosion is easy to inspect.
     <br><br>
     <strong>Intent matters:</strong> Negative intent amplifies the cost via a gamma factor. A hostile agent at d=0.5
     pays much more than a benign agent at the same distance.
     <br><br>
-    <strong>Decision thresholds:</strong><br>
-    ALLOW: cost < 2.0 | QUARANTINE: 2.0-10.0 | ESCALATE: 10.0-1000.0 | DENY: > 1000.0
+    <strong>Public runtime gate:</strong><br>
+    ALLOW: final score &gt; 0.8 | QUARANTINE: 0.5-0.8 | ESCALATE: 0.3-0.5 | DENY: &le; 0.3
+    <br><br>
+    <strong>Lab note:</strong> The cost colors on this page are illustrative wall bands for the visualizer, not the exact public API decision bands.
     <br><br>
     <a href="https://a.co/d/024VowjS">Read the novel</a> |
     <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">View source</a> |

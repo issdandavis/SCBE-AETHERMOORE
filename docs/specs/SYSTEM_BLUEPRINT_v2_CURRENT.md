@@ -11,7 +11,7 @@
 
 | Channel | URL | Status |
 |---------|-----|--------|
-| Website | https://aethermoorgames.com | Live (14 interactive demos) |
+| Website | https://aethermoore.com | Live (14 interactive demos) |
 | npm | `npm install scbe-aethermoore` | v3.3.0 published |
 | PyPI | `pip install scbe-aethermoore` | v3.3.0 published |
 | GitHub | github.com/issdandavis/SCBE-AETHERMOORE | 546K lines, 64 workflows |
@@ -34,7 +34,12 @@ The system originated from 12,596 paragraphs of Everweave (AI D&D) game logs tha
 
 Every AI agent action passes through 14 mathematical transformations. The core innovation: adversarial intent costs exponentially more the further it drifts from safe operation.
 
-### The Formula
+### Public Formula Note
+Public docs and demos use the base wall intuition `H_base(d, R) = R^(d^2)`.
+The live runtime may apply branch-specific multipliers such as intent or temporal accumulation before the final public gate.
+This blueprint shows one such branch explicitly:
+
+### Example Runtime Branch
 ```
 H(d, R, I) = R^((d * gamma_I)^2)
 
@@ -48,6 +53,12 @@ Where:
 At d=0.3 (slightly risky): cost = 1.1x
 At d=0.95 (clearly adversarial): cost = astronomical
 
+### Public Gate Bands
+- `ALLOW` -> `final_score > 0.8`
+- `QUARANTINE` -> `0.5 < final_score <= 0.8`
+- `ESCALATE` -> `0.3 < final_score <= 0.5`
+- `DENY` -> `final_score <= 0.3`
+
 ### Layer Map
 
 | Layer | Function | Implementation |
@@ -59,7 +70,7 @@ At d=0.95 (clearly adversarial): cost = astronomical
 | L8 | Multi-well energy (Hamiltonian CFI) | Trust centers as Gaussian wells |
 | L9-10 | Spectral + spin coherence (FFT) | Frequency analysis + tongue alignment |
 | L11 | Triadic temporal distance | Session suspicion accumulation |
-| L12 | Harmonic wall | H(d,R) = R^(d^2) cost explosion |
+| L12 | Harmonic wall scalar family | Base public intuition `H_base(d,R) = R^(d^2)`; runtime branches may add intent/temporal scaling |
 | L13 | Risk decision | ALLOW / QUARANTINE / ESCALATE / DENY |
 | L14 | Audio telemetry | Sonification of governance decisions |
 

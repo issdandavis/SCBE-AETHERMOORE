@@ -517,7 +517,7 @@ Modern enterprise buyers expect red team reports that are:
 | No hosted API | Deploy SCBE API on Cloud Run with free tier | 1 week | Unlocks SaaS model |
 | No 3-line quickstart | Create `scbe-guard` minimal npm package | 3 days | Developer adoption |
 | No SOC 2 | Start with NIST AI RMF self-assessment (free) | 2 weeks | Enterprise credibility |
-| No pricing page | Add pricing tiers to aethermoorgames.com | 1 day | Revenue conversion |
+| No pricing page | Add pricing tiers to aethermoore.com | 1 day | Revenue conversion |
 | No customer logos | Get 3 pilot users and document case studies | 1 month | Social proof |
 
 ### 8.2 Competitive Advantages to Amplify

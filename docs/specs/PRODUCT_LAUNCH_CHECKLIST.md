@@ -64,8 +64,8 @@
 - [ ] Enable Gumroad analytics
 
 ### Website Integration
-- [ ] Add "Buy Training Vault - $29" button to aethermoorgames.com homepage
-- [ ] Add product page at aethermoorgames.com/training-vault
+- [ ] Add "Buy Training Vault - $29" button to aethermoore.com homepage
+- [ ] Add product page at aethermoore.com/training-vault
 - [ ] Update GitHub README.md with purchase link
 - [ ] Update HuggingFace model cards with purchase link
 - [ ] Add Gumroad embed widget (or direct link)

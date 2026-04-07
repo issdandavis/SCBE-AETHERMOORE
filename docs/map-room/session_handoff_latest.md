@@ -3,7 +3,7 @@ objective: Train Polly chatbot with binary-first orientation stack
 status: in_progress
 phase: 6 — training pipeline + architecture validation
 started: 2026-03-30T06:30:00-07:00
-updated: 2026-03-31T01:00:00-07:00
+updated: 2026-03-31T02:00:00-07:00
 ---
 
 ## Source Re-anchor
@@ -65,23 +65,37 @@ L3 expression:  ~150K+ (99.9%)  — everything else
 - Tongue binary analysis script: `scripts/tongue_binary_analysis.py`
 - GRAND TOTAL SFT: 123,929 pairs (sft/ directory) + 42K mega files (overlap)
 
-## Active: Training Pipeline
-- Merge training data for Kaggle/HuggingFace upload
-- Train Polly on Kaggle free GPU (Qwen2.5-3B + QLoRA)
-- Test pump packet at inference time
-- Verify Sacred Tongues encoding/decoding in trained model
-- Run adversarial detection with null-space signatures
+## Overnight Build Complete (14 commits)
+- 233,179 multi-view SFT pairs built and uploaded to HuggingFace
+  - L0 substrate: ~21K (9%), L1 coordination: ~25K (11%), L2 orientation: ~73K (31%), L3 expression: ~114K (49%)
+- 10,000 dedicated L0/L1 substrate tasks (byte arithmetic, tongue encode/decode)
+- 1,000-bundle pump aquifer built and uploaded (the dantian)
+- 6 Sacred Egg genesis identity rows (first in every training run)
+- 47 eval benchmark tasks generated
+- Kaggle comparison notebook ready (`scripts/train_polly_kaggle_comparison.py`)
+- Interactive pump chat interface (`scripts/polly_chat.py`)
+- Canonical event compiler (`src/polly_pump/compiler.py`)
+- 21 CodeQL fixes (16 high-severity + 5 warnings/notes)
+- 233 tests passing (pump + Sacred Tongues + crypto + Sacred Eggs + null space)
+- All artifacts verified (0 parse errors)
+- HuggingFace dataset README updated
+- Baseline benchmarks captured:
+  - Unified triangulation: 75.8% detection, 13.3% FP
+  - E4 semantic: 85.7% detection, 0% FP
+  - E4 + null space: 100% detection (holdout FP needs tuning)
+
+## Publishing (via PR #897)
+- Website article: https://aethermoore.com/articles/2026-03-31-nightly-roundup.html
+- GitHub Discussion #896: https://github.com/issdandavis/SCBE-AETHERMOORE/discussions/896
+- Bluesky: https://bsky.app/profile/issdandavis.bsky.social/post/3midtijmubb22
+- Blocked: X (auth), Dev.to (key), HF discussion (shell restriction)
+- Publish log: `notes/sessions/2026-03-31-nightly-roundup-publish.md`
 
 ## Next Actions
-1. **Merge + upload** training data to HuggingFace/Kaggle
-2. **Train baseline** Polly (L3 only, no pump) on Kaggle
-3. **Train stack-lite** Polly (L3 + pump packet in system prompt)
-4. **Compare** baseline vs stack-lite on:
-   - route classification
-   - governance posture accuracy
-   - domain drift
-   - in-domain QA
-   - adversarial prompt handling
-5. **Build L0/L1/L2 curriculum** — separate training tasks for each layer
-6. **Canonical event compiler** — normalize every row into multi-view format
-7. **Sacred Egg genesis wrapper** — seed identity before training begins
+1. **Train on Kaggle** — paste `scripts/train_polly_kaggle_comparison.py`, enable GPU, set HF_TOKEN
+2. **Compare** baseline (116K L3) vs stack-lite (233K L0-L3) on route/governance/tongue/drift
+3. **Tune null-space threshold** — holdout FP at 100% needs calibration
+4. **Fix X auth** — app config issue, not missing script
+5. **Fix Dev.to key** — local key unusable
+6. **Process remaining novel pastes** from conversation buffer
+7. **DPO preference pairs** (good vs bad answers)
