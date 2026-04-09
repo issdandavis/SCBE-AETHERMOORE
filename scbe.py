@@ -44,11 +44,11 @@ from typing import Any, Dict, List, Optional, Tuple
 VERSION = "2.0.0"
 REPO_ROOT = Path(__file__).resolve().parent
 FORWARDED_SYSTEM_COMMANDS = {
-    "agent": ["agent"],
     "pollypad": ["pollypad"],
     "doctor": ["doctor"],
     "use": ["use"],
     "config": ["config"],
+    "model": ["model"],
     "colab": ["colab"],
     "flow": ["flow"],
     "workflow": ["workflow"],
@@ -723,6 +723,54 @@ LEGACY_SCRIPTS = {
     "memory": "demo_memory_shard.py",
 }
 
+SYSTEM_AGENT_SUBCOMMANDS = {
+    "bootstrap",
+    "list",
+    "register",
+    "remove",
+    "ping",
+    "call",
+}
+
+
+def _run_legacy_script(command: str, extra_args: List[str]) -> int:
+    script = REPO_ROOT / LEGACY_SCRIPTS[command]
+    if not script.exists():
+        print(f"Legacy script not found: {script}")
+        return 1
+    return subprocess.run([sys.executable, str(script), *extra_args]).returncode
+
+
+def _print_agent_command_help() -> None:
+    print("scbe agent usage")
+    print("  scbe agent")
+    print("      Launch the legacy interactive AI assistant.")
+    print("  scbe agent list|bootstrap|register|remove|ping|call ...")
+    print("      Forward to the system agent registry and orchestration CLI.")
+    print()
+    print("Examples:")
+    print("  scbe agent")
+    print("  scbe agent list")
+    print("  scbe agent bootstrap --force")
+    print('  scbe agent call --all --prompt "Summarize repo health"')
+
+
+def _handle_agent_command(argv: List[str]) -> int:
+    if len(argv) == 2:
+        return _run_legacy_script("agent", [])
+
+    agent_args = argv[2:]
+    first = agent_args[0].lower()
+
+    if first in {"-h", "--help", "help"}:
+        _print_agent_command_help()
+        return 0
+
+    if first in SYSTEM_AGENT_SUBCOMMANDS:
+        return _run_system_cli(["agent", *agent_args])
+
+    return _run_legacy_script("agent", agent_args)
+
 
 # ═══════════════════════════════════════════════════════════════
 # CLI builder
@@ -758,6 +806,8 @@ Legacy (backward compat):
   scbe agent                        AI agent
   scbe demo                         Demo mode
   scbe doctor --json
+  scbe model plan --profile coder-qwen-local --json
+  scbe model train --profile coder-qwen-local
   scbe use studio --firebase-project my-project --github-repo issdandavis/SCBE-AETHERMOORE
   scbe colab list --json
   scbe colab url scbe-finetune-free
@@ -840,6 +890,7 @@ Legacy (backward compat):
     sub.add_parser("doctor", help="Local operator environment checks (forwarded to system CLI)")
     sub.add_parser("use", help="Set active SCBE operator context (forwarded to system CLI)")
     sub.add_parser("config", help="Inspect/update CLI context (forwarded to system CLI)")
+    sub.add_parser("model", help="Config-backed model training lanes (forwarded to system CLI)")
     sub.add_parser("colab", help="Inspect the SCBE Colab notebook lane (forwarded to system CLI)")
     sub.add_parser("pollypad", help="Polly Pad storage + app management (forwarded to system CLI)")
     sub.add_parser("run", help="Governed multi-language runtime (forwarded to system CLI)")
@@ -864,6 +915,9 @@ def main() -> int:
         cli.print_help()
         return 0
 
+    if sys.argv[1] == "agent":
+        return _handle_agent_command(sys.argv)
+
     forwarded = FORWARDED_SYSTEM_COMMANDS.get(sys.argv[1])
     if forwarded is not None:
         return _run_system_cli([*forwarded, *sys.argv[2:]])
@@ -872,12 +926,7 @@ def main() -> int:
 
     # Handle legacy commands
     if len(sys.argv) >= 2 and sys.argv[1] in LEGACY_SCRIPTS:
-        script = REPO_ROOT / LEGACY_SCRIPTS[sys.argv[1]]
-        if script.exists():
-            return subprocess.run([sys.executable, str(script)] + sys.argv[2:]).returncode
-        else:
-            print(f"Legacy script not found: {script}")
-            return 1
+        return _run_legacy_script(sys.argv[1], sys.argv[2:])
 
     args = cli.parse_args()
     if not hasattr(args, "func"):
