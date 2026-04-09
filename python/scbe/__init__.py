@@ -75,3 +75,24 @@ __all__ = [
     "GovernedTask",
     "TaskGateResult",
 ]
+from .atomic_tokenization import AtomicTokenState, Element as AtomicElement
+from .atomic_tokenization import TritVector, element_to_tau, element_to_trit_vector
+from .atomic_tokenization import map_token_to_atomic_state, map_token_to_element
+from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states, fuse_tokens
+from .rhombic_bridge import rhombic_fusion, rhombic_score
+
+__all__ += [
+    "AtomicElement",
+    "AtomicTokenState",
+    "TritVector",
+    "element_to_tau",
+    "element_to_trit_vector",
+    "map_token_to_element",
+    "map_token_to_atomic_state",
+    "FusionParams",
+    "FusionResult",
+    "fuse_atomic_states",
+    "fuse_tokens",
+    "rhombic_fusion",
+    "rhombic_score",
+]

@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/model_trace_record.schema.json",
+  "title": "SCBE Model Trace Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "trace_id",
+    "source_model",
+    "interaction_type",
+    "raw_model_trace",
+    "extracted_structured_record",
+    "verification"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scbe_model_trace_record_v1"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "source_model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "interaction_type": {
+      "type": "string",
+      "enum": [
+        "agentic_dialogue",
+        "chat_export",
+        "markdown_note"
+      ]
+    },
+    "raw_model_trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_corpus",
+        "messages"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "source_corpus": {
+          "type": "string",
+          "minLength": 1
+        },
+        "created_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "role",
+              "content"
+            ],
+            "properties": {
+              "role": {
+                "type": "string",
+                "minLength": 1
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "extracted_structured_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intent_id",
+        "route_id",
+        "route_family",
+        "target_cluster",
+        "source_model",
+        "concept_view",
+        "process_view",
+        "execution_view",
+        "proposed_artifacts",
+        "governance_claims",
+        "triangulation_links",
+        "confidence"
+      ],
+      "properties": {
+        "intent_id": {
+          "type": "string",
+          "minLength": 8
+        },
+        "route_id": {
+          "type": "string",
+          "minLength": 8
+        },
+        "route_family": {
+          "type": "string",
+          "enum": [
+            "agentic_dialogue",
+            "route_expansion",
+            "assistant_critic",
+            "benchmark_trace"
+          ]
+        },
+        "target_cluster": {
+          "type": "string",
+          "minLength": 8
+        },
+        "source_model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "concept_view": {
+          "type": "string"
+        },
+        "process_view": {
+          "type": "string"
+        },
+        "execution_view": {
+          "type": "string"
+        },
+        "proposed_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "governance_claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "claim",
+              "status"
+            ],
+            "properties": {
+              "claim": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ALLOW",
+                  "HOLD",
+                  "DENY",
+                  "UNSPECIFIED"
+                ]
+              }
+            }
+          }
+        },
+        "triangulation_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "linked_ids"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "intent_sibling",
+                  "route_consistency_record"
+                ]
+              },
+              "linked_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "human_verified",
+        "trust_level"
+      ],
+      "properties": {
+        "human_verified": {
+          "type": "boolean"
+        },
+        "trust_level": {
+          "type": "string",
+          "enum": [
+            "raw_model_trace",
+            "extracted_structured_record",
+            "human_verified_record"
+          ]
+        },
+        "reviewer_notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
