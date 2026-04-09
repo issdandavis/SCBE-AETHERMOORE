@@ -200,3 +200,33 @@ def test_scbe_colab_forwards_to_system_cli(monkeypatch) -> None:
             "--json",
         ]
     ]
+
+
+def test_scbe_model_forwards_to_system_cli(monkeypatch) -> None:
+    captured: list[list[str]] = []
+
+    def fake_run(cmd, check=False):  # noqa: ANN001 - monkeypatched subprocess signature
+        captured.append(cmd)
+        return _Result(0)
+
+    monkeypatch.setattr(scbe_cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["scbe", "model", "plan", "--profile", "coder-qwen-local", "--json"],
+    )
+
+    assert scbe_cli.main() == 0
+    assert captured == [
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "scbe-system-cli.py"),
+            "--repo-root",
+            str(ROOT),
+            "model",
+            "plan",
+            "--profile",
+            "coder-qwen-local",
+            "--json",
+        ]
+    ]
