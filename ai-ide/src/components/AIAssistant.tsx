@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, X, Sparkles, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getHfAgent, HfAgentId, parseHfAgentPrompt } from '../data/hfAgentPair';
 
 const API_BASE = 'http://localhost:8100/api';
 
@@ -18,6 +19,8 @@ interface AIAssistantProps {
   activeFileName?: string;
   activeFileContent?: string;
   mode: 'show-me' | 'do-it';
+  hfPairInstalled: boolean;
+  activeHfAgentId: HfAgentId | null;
 }
 
 export const AIAssistant: React.FC<AIAssistantProps> = ({ 
@@ -25,7 +28,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   onClose, 
   activeFileName, 
   activeFileContent,
-  mode 
+  mode,
+  hfPairInstalled,
+  activeHfAgentId,
 }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([
@@ -60,6 +65,23 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     setInput('');
     setIsTyping(true);
 
+    const explicitPromptTarget = parseHfAgentPrompt(userMsg.content);
+    const selectedAgentId = explicitPromptTarget.agentId ?? (hfPairInstalled ? activeHfAgentId : null);
+    const selectedAgent = selectedAgentId ? getHfAgent(selectedAgentId) : null;
+    const routedPrompt = selectedAgent ? explicitPromptTarget.prompt : userMsg.content.trim();
+
+    if (selectedAgent && !routedPrompt) {
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'ai',
+        content: `Add a prompt after @${selectedAgent.id}. Example: @${selectedAgent.id} review this file for failure modes.`,
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, aiMsg]);
+      setIsTyping(false);
+      return;
+    }
+
     // Best-effort: call the local AetherBrowser chat endpoint (Ollama-backed).
     // Falls back to demo responses when the API isn't running.
     try {
@@ -67,9 +89,10 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: userMsg.content,
-          model: 'local',
+          message: selectedAgent ? routedPrompt : userMsg.content,
+          model: selectedAgent ? 'huggingface' : 'local',
           mode,
+          hf_model: selectedAgent?.modelId,
           active_file_name: activeFileName,
           active_file_content: activeFileContent,
         }),
@@ -105,7 +128,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       } else if (lowerInput.includes('security') || lowerInput.includes('test')) {
         response = "Run: `ops tests` in the terminal (requires local API server).";
       } else {
-        response = `Received: "${userMsg.content}".\n\nTo connect this panel to real model calls, start: python scripts/aetherbrowser/api_server.py`;
+        response = selectedAgent
+          ? `Received for ${selectedAgent.label}: "${routedPrompt}".\n\nIf Hugging Face is unavailable, check HF_TOKEN and optionally point HF_CHAT_ROUTER_URL at your own Colab or self-hosted OpenAI-compatible endpoint.`
+          : `Received: "${userMsg.content}".\n\nTo connect this panel to real model calls, start: python scripts/aetherbrowser/api_server.py`;
       }
 
       const aiMsg: Message = {
@@ -140,7 +165,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 <h3 className="font-semibold text-sm text-slate-200">AI Architect</h3>
                 <div className="flex items-center gap-1.5">
                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                   <span className="text-[10px] text-slate-400 uppercase tracking-wider">{mode} Mode</span>
+                   <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+                     {activeHfAgentId ? `${getHfAgent(activeHfAgentId).label} / ` : ''}{mode} Mode
+                   </span>
                 </div>
               </div>
             </div>

@@ -40,8 +40,9 @@ contextBridge.exposeInMainWorld('scbeElectron', {
 // Also expose AI Studio compatibility
 contextBridge.exposeInMainWorld('aistudio', {
   hasSelectedApiKey: async () => {
-    // Check if API key is configured
-    return process.env.GEMINI_API_KEY ? true : false;
+    // Vendor API keys must never be required in the renderer. Model calls are proxied
+    // through the SCBE backend under `/api/...`.
+    return true;
   },
   openSelectKey: async () => {
     // Open key configuration dialog

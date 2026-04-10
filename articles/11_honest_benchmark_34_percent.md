@@ -3,7 +3,7 @@ title: "Why Our AI Safety System Scores 34.5% (And Why That's the Point)"
 published: false
 description: "We deliberately walled off our test data from training and let our system fail honestly. Here's what we learned about the gap between lab accuracy and real-world detection."
 tags: ai, security, machinelearning, testing
-canonical_url: https://aethermoorgames.com/research/military-eval-scale.html
+canonical_url: https://aethermoore.com/research/military-eval-scale.html
 ---
 
 ## The Number Everyone Hides
@@ -97,7 +97,7 @@ We publish the 34.5% because it's real. We publish the gap because it tells us w
 - **Benchmark data**: [Kaggle](https://kaggle.com/datasets/issacizrealdavis/scbe-governance-research-results)
 - **Training pipeline**: [HuggingFace](https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data)
 - **20-category attack generator**: [GitHub](https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/benchmarks/scbe/attacks/generator.py)
-- **Research page**: [Military Eval Scale](https://aethermoorgames.com/research/military-eval-scale.html)
+- **Research page**: [Military Eval Scale](https://aethermoore.com/research/military-eval-scale.html)
 
 ---
 

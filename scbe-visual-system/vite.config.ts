@@ -13,7 +13,15 @@ export default defineConfig(({ mode }) => {
     return {
       server: {
         port: 5173,
-        host: '0.0.0.0',
+        // Security default: do NOT expose the dev server to the network.
+        // This mitigates file-read and traversal classes of vulnerabilities in dev-server surfaces.
+        host: env.SCBE_VITE_HOST || '127.0.0.1',
+        strictPort: true,
+        fs: {
+          strict: true,
+          // Only allow serving files from this project directory.
+          allow: [path.resolve(__dirname, '.')],
+        },
         // Proxy API requests to SCBE Python backend
         proxy: {
           '/api': {
@@ -24,8 +32,6 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.SCBE_VERSION': JSON.stringify('3.0.0'),
       },
       resolve: {

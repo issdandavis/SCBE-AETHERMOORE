@@ -115,7 +115,16 @@ Dimensional flux states:
 ## Environment Variables
 
 ```env
-GEMINI_API_KEY=your_api_key_here
+# IMPORTANT: Do not put vendor API keys in the Vite renderer.
+# Gemini keys are configured on the SCBE API server (FastAPI) only.
+#
+# Server-side (SCBE API):
+#   GEMINI_API_KEY=...
+#   # or GOOGLE_API_KEY=...
+#
+# Client-side (optional, local dev only):
+#   The SCBE API key is sent as `x-api-key` when calling `/api/v1/llm/...`.
+#   By default, the client uses `demo_key_12345` unless you set `localStorage.scbe_api_key`.
 ```
 
 ---

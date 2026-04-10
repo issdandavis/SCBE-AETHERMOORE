@@ -63,6 +63,11 @@ except Exception:
     github_app_router = None
 
 try:
+    from api.darpa_prep.routes import router as darpa_prep_router
+except Exception:
+    darpa_prep_router = None
+
+try:
     from spiralverse_core import EnvelopeCore
 except Exception:
     EnvelopeCore = None
@@ -129,6 +134,10 @@ if billing_router is not None:
 # Include GitHub App webhook router for local/hosted app automation
 if github_app_router is not None:
     app.include_router(github_app_router)
+
+# Include DARPA Prep router for federal opportunity normalization and search
+if darpa_prep_router is not None:
+    app.include_router(darpa_prep_router)
 
 # API Key authentication
 API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)

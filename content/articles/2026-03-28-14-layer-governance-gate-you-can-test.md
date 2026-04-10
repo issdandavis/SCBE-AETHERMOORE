@@ -6,8 +6,8 @@ So I built a public, interactive demo that shows the *shape* of a governance pip
 
 ## Try it
 
-- Live demo: https://aethermoorgames.com/demos/governance-gate.html  
-- Red-team proof surface: https://aethermoorgames.com/redteam.html
+- Live demo: https://aethermoore.com/demos/governance-gate.html  
+- Red-team proof surface: https://aethermoore.com/redteam.html
 
 The demo lets you type any prompt and watch each layer run in sequence. It’s designed to be understandable by a human in one sitting, and inspectable enough to be useful to engineers.
 
@@ -39,8 +39,8 @@ If you want the full implementation truth, the repo is public:
 
 If you don’t want to dig through a full repo and stitch your own starter lane, I also ship a small paid entry point:
 
-- Toolkit offer: https://aethermoorgames.com/
-- Manuals + delivery path: https://aethermoorgames.com/product-manual/index.html
+- Toolkit offer: https://aethermoore.com/
+- Manuals + delivery path: https://aethermoore.com/product-manual/index.html
 
 One payment. One manual. One recovery/support route if anything breaks.
 

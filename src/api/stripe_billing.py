@@ -284,7 +284,11 @@ async def stripe_webhook(request: Request):
     data = event.get("data", {}).get("object", {})
 
     if event_type == "checkout.session.completed":
-        _handle_checkout_completed(data)
+        mode = data.get("mode", "")
+        if mode == "payment":
+            _handle_onetime_purchase(data)
+        else:
+            _handle_checkout_completed(data)
     elif event_type == "customer.subscription.updated":
         _handle_subscription_updated(data)
     elif event_type == "customer.subscription.deleted":
@@ -352,6 +356,162 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
     from src.api.saas_routes import VALID_API_KEYS
 
     VALID_API_KEYS.pop(api_key, None)
+
+
+# ---------------------------------------------------------------------------
+# One-time product purchases (Payment Links)
+# ---------------------------------------------------------------------------
+
+# Map Stripe Payment Link product IDs to delivery info.
+# These correspond to the buy.stripe.com links on the website.
+ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = {
+    # AI Governance Toolkit - $29
+    "toolkit": {
+        "name": "SCBE AI Governance Toolkit",
+        "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
+        "manual_url": "https://aethermoore.com/docs/product-manual/ai-governance-toolkit",
+    },
+    # AI Security Training Vault - $29
+    "vault": {
+        "name": "SCBE AI Security Training Vault",
+        "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
+        "manual_url": "https://aethermoore.com/docs/research/",
+    },
+}
+
+# Purchase log for tracking (in production, use a database)
+PURCHASE_LOG: list = []
+
+
+def _send_delivery_email(to_email: str, product_name: str, download_url: str, manual_url: str) -> bool:
+    """Send product delivery email via SMTP.
+
+    Uses Porkbun email (ai@aethermoore.com) configured in .secrets/email_credentials.txt.
+    Falls back to logging if SMTP is not configured.
+    """
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    smtp_host = os.getenv("SCBE_SMTP_HOST", "smtp.porkbun.com")
+    smtp_port = int(os.getenv("SCBE_SMTP_PORT", "587"))
+    smtp_user = os.getenv("SCBE_SMTP_USER", "ai@aethermoore.com")
+    smtp_pass = os.getenv("SCBE_SMTP_PASS", "")
+
+    subject = f"Your {product_name} is ready"
+    html_body = f"""<html><body style="font-family: Georgia, serif; color: #333; max-width: 600px;">
+<h2 style="color: #d6a756;">Thank you for your purchase!</h2>
+<p>Your <strong>{product_name}</strong> is ready for download.</p>
+<p><a href="{download_url}" style="display:inline-block;padding:12px 24px;background:#d6a756;color:#14110c;
+text-decoration:none;border-radius:6px;font-weight:bold;">Download Your Product</a></p>
+<p><a href="{manual_url}">Read the Manual</a></p>
+<hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+<p style="font-size:14px;color:#888;">
+If you have any questions, reply to this email or reach us at ai@aethermoore.com.<br>
+&mdash; Issac Davis, AetherMoore
+</p>
+</body></html>"""
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"AetherMoore <{smtp_user}>"
+    msg["To"] = to_email
+    msg["Reply-To"] = "ai@aethermoore.com"
+    msg.attach(MIMEText(f"Your {product_name} is ready: {download_url}", "plain"))
+    msg.attach(MIMEText(html_body, "html"))
+
+    if not smtp_pass:
+        # No SMTP configured — log instead
+        import logging
+
+        logging.getLogger("scbe.billing").warning(
+            f"SMTP not configured. Would send delivery to {to_email} for {product_name}. "
+            f"Download: {download_url}"
+        )
+        return False
+
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        return True
+    except Exception as exc:
+        import logging
+
+        logging.getLogger("scbe.billing").error(f"Failed to send delivery email to {to_email}: {exc}")
+        return False
+
+
+def _notify_owner(product_name: str, buyer_email: str, amount_cents: int) -> None:
+    """Forward purchase notification to owner via email forwarding."""
+    _send_delivery_email(
+        to_email="ai@aethermoore.com",  # forwards to issdandavis@gmail.com
+        product_name=f"NEW SALE: {product_name}",
+        download_url=f"Buyer: {buyer_email} | Amount: ${amount_cents / 100:.2f}",
+        manual_url="https://dashboard.stripe.com/payments",
+    )
+
+
+def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
+    """Handle a one-time product purchase from Payment Links."""
+    email = session.get("customer_email") or session.get("customer_details", {}).get("email", "")
+    amount = session.get("amount_total", 0)
+    payment_status = session.get("payment_status", "")
+
+    if payment_status != "paid":
+        return
+
+    # Determine which product was purchased based on amount or metadata
+    metadata = session.get("metadata", {})
+    product_key = metadata.get("scbe_product", "")
+
+    # If no metadata, guess from amount (both are $29 = 2900 cents, so default to toolkit)
+    if not product_key:
+        product_key = "toolkit"
+
+    product = ONETIME_PRODUCTS.get(product_key, ONETIME_PRODUCTS["toolkit"])
+
+    # Log the purchase
+    record = {
+        "session_id": session.get("id", ""),
+        "email": email,
+        "product": product_key,
+        "product_name": product["name"],
+        "amount_cents": amount,
+        "timestamp": int(time.time()),
+    }
+    PURCHASE_LOG.append(record)
+
+    # Save to disk for persistence
+    _persist_purchase(record)
+
+    # Send delivery email to buyer
+    if email:
+        _send_delivery_email(email, product["name"], product["download_url"], product["manual_url"])
+        _notify_owner(product["name"], email, amount)
+
+
+def _persist_purchase(record: Dict[str, Any]) -> None:
+    """Append purchase record to JSONL file."""
+    import json
+    from pathlib import Path
+
+    log_dir = Path(__file__).resolve().parents[2] / "artifacts" / "revenue"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_file = log_dir / "purchases.jsonl"
+
+    try:
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(json.dumps(record) + "\n")
+    except Exception:
+        pass
+
+
+@billing_router.get("/purchases")
+async def list_purchases():
+    """List recent purchases (owner-only, no auth for now)."""
+    return {"status": "ok", "count": len(PURCHASE_LOG), "purchases": PURCHASE_LOG[-20:]}
 
 
 @billing_router.get("/status/{api_key}")
