@@ -69,6 +69,35 @@ def test_flow_plan_writes_packet_and_action_map(tmp_path: Path) -> None:
     assert compiled_summary["training_rows"] >= 2
 
 
+def test_flow_plan_accepts_skill_level_formation_aliases(tmp_path: Path) -> None:
+    aliases = {
+        "hexagonal-ring": "hexagonal",
+        "ring": "concentric",
+        "scatter": "adaptive-scatter",
+    }
+
+    for requested, canonical in aliases.items():
+        output_path = tmp_path / f"{requested}-flow-plan.json"
+        result = _run_cli(
+            "flow",
+            "plan",
+            "--task",
+            f"validate alias {requested}",
+            "--formation",
+            requested,
+            "--workflow-template",
+            "architecture-enhancement",
+            "--output",
+            str(output_path),
+            "--no-action-map",
+        )
+
+        assert result.returncode == 0, result.stderr
+        packet = json.loads(output_path.read_text(encoding="utf-8"))
+        assert packet["formation"]["name"] == canonical
+        assert packet["formation"]["requested_name"] == requested
+
+
 def test_flow_packetize_builds_bounded_work_packets(tmp_path: Path) -> None:
     plan_path = tmp_path / "flow-plan.json"
     plan_action_root = tmp_path / "plan-action-maps"

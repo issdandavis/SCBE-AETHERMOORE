@@ -693,7 +693,26 @@ def _formation_adaptive_scatter(task: str, radius: float = 0.45) -> list[list[fl
     return positions
 
 
+FLOW_FORMATION_ALIASES: dict[str, str] = {
+    "hexagonal": "hexagonal",
+    "hexagonal-ring": "hexagonal",
+    "tetrahedral": "tetrahedral",
+    "concentric": "concentric",
+    "ring": "concentric",
+    "adaptive-scatter": "adaptive-scatter",
+    "scatter": "adaptive-scatter",
+}
+
+
+def _normalize_flow_formation(name: str) -> str:
+    normalized = FLOW_FORMATION_ALIASES.get(str(name).strip().lower())
+    if normalized is None:
+        raise ValueError(f"Unsupported formation '{name}'")
+    return normalized
+
+
 def _formation_positions(name: str, task: str) -> list[list[float]]:
+    name = _normalize_flow_formation(name)
     if name == "hexagonal":
         return _formation_hexagonal()
     if name == "tetrahedral":
@@ -2537,12 +2556,15 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
         print(f"Unknown workflow template '{template_name}'")
         return 2
 
-    agents = _build_flow_agents(args.formation, args.task)
+    requested_formation = args.formation
+    formation = _normalize_flow_formation(requested_formation)
+
+    agents = _build_flow_agents(formation, args.task)
     steps = _build_flow_steps(template_name, args.task, agents)
     fault_tolerance = _flow_fault_tolerance(len(agents))
     quasi_mesh = {
         "mode": "golden-weave",
-        "formation": args.formation,
+        "formation": formation,
         "routing_basis": "six-tongue + quasi-phase cadence",
         "phase_seeds": [agent["frequency"]["phase_seed"] for agent in agents],
     }
@@ -2557,7 +2579,8 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
         "workflow_template": template_name,
         "workflow_summary": FLOW_WORKFLOW_TEMPLATES[template_name]["summary"],
         "formation": {
-            "name": args.formation,
+            "name": formation,
+            "requested_name": requested_formation,
             "agent_count": len(agents),
             "fault_tolerance": fault_tolerance,
         },
@@ -2577,18 +2600,19 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
         start = action_map.start_run(
             action_root,
             task=args.task,
-            summary=f"Planned {template_name} flow in {args.formation} formation.",
+            summary=f"Planned {template_name} flow in {formation} formation.",
             operator="agent.codex",
             lane="system-cli",
             tool="flow-plan",
             command=f"scbe-system flow plan --task {args.task}",
             next_action="validate packet, then assign live work packets",
-            tags=["flow-plan", args.formation, template_name],
+            tags=["flow-plan", formation, template_name],
             skills=FLOW_SKILLS,
             touched_layers=["control-plane", "coordination", "training"],
             artifacts=[_display_path(output_path, repo_root)],
             outputs={
-                "formation": args.formation,
+                "formation": formation,
+                "requested_formation": requested_formation,
                 "workflow_template": template_name,
                 "agent_count": len(agents),
             },
@@ -2598,7 +2622,7 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
                 "quorum": fault_tolerance["minimum_quorum"],
             },
             decisions=[
-                {"key": "formation", "value": args.formation, "rationale": "Doctrine-backed swarm geometry."},
+                {"key": "formation", "value": formation, "rationale": "Doctrine-backed swarm geometry."},
                 {
                     "key": "workflow_template",
                     "value": template_name,
@@ -2652,7 +2676,8 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
     payload = {
         "schema_version": "scbe_flow_plan_result_v1",
         "output_path": _display_path(output_path, repo_root),
-        "formation": args.formation,
+        "formation": formation,
+        "requested_formation": requested_formation,
         "workflow_template": template_name,
         "agent_count": len(agents),
         "step_count": len(steps),
@@ -2660,7 +2685,7 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
     }
     lines = [
         f"Saved flow plan: {output_path}",
-        f"Formation: {args.formation} | template: {template_name} | agents: {len(agents)} | steps: {len(steps)}",
+        f"Formation: {formation} | template: {template_name} | agents: {len(agents)} | steps: {len(steps)}",
     ]
     if flow_packet["action_map"].get("enabled"):
         lines.append(f"Action map: {flow_packet['action_map']['run_id']}")
@@ -4304,8 +4329,8 @@ def build_parser() -> argparse.ArgumentParser:
     flow_plan.add_argument(
         "--formation",
         default="hexagonal",
-        choices=("hexagonal", "tetrahedral", "concentric", "adaptive-scatter"),
-        help="Swarm geometry to use for packet ordering",
+        choices=tuple(sorted(FLOW_FORMATION_ALIASES)),
+        help="Swarm geometry to use for packet ordering (canonical and skill-level aliases accepted)",
     )
     flow_plan.add_argument(
         "--workflow-template",
