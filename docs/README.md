@@ -7,6 +7,7 @@
 - [`DOCS_CATALOG.md`](DOCS_CATALOG.md) - Alphabetical catalog grouped by system part and priority
 - [`security/AETHER_ANTIVIRUS.md`](security/AETHER_ANTIVIRUS.md) - Public overview of the existing antivirus stack
 - [`system/CANONICAL_NAMING_HYDRA_ARMOR_OCTOARMOR_AETHER_ANTIVIRUS.md`](system/CANONICAL_NAMING_HYDRA_ARMOR_OCTOARMOR_AETHER_ANTIVIRUS.md) - Naming lock for HYDRA, Hydra Armor, OctoArmor, and Aether Antivirus
+- [`GITHUB_REMOTE_WORKER.md`](GITHUB_REMOTE_WORKER.md) - Free GitHub Actions remote worker setup and operator usage
 
 ### Operator Quick Lanes (Current)
 
