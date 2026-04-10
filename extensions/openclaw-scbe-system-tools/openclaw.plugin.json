@@ -1,0 +1,34 @@
+{
+  "id": "scbe-system-tools",
+  "name": "SCBE System Tools",
+  "description": "Expose bounded SCBE/HYDRA planning, dispatch, and local hygiene lanes to OpenClaw.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "repoRoot": {
+        "type": "string",
+        "default": "C:/Users/issda/SCBE-AETHERMOORE"
+      },
+      "pythonBin": {
+        "type": "string",
+        "default": "python"
+      },
+      "timeoutMs": {
+        "type": "number",
+        "minimum": 1000,
+        "maximum": 600000,
+        "default": 120000
+      },
+      "defaultProvider": {
+        "type": "string",
+        "enum": ["auto", "local", "hf"],
+        "default": "auto"
+      },
+      "defaultLocalBaseUrl": {
+        "type": "string",
+        "default": "http://localhost:1234/v1"
+      }
+    }
+  }
+}
