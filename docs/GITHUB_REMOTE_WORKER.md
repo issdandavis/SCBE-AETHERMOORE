@@ -48,6 +48,32 @@ or pass `--repo owner/name`.
   --dry-run
 ```
 
+## Built-In Presets
+
+List the built-in presets:
+
+```bash
+.venv/bin/python scripts/system/github_remote_worker.py presets
+```
+
+Dispatch the validated Python smoke slice:
+
+```bash
+.venv/bin/python scripts/system/github_remote_worker.py preset python-smoke --watch
+```
+
+Dispatch the tax sample:
+
+```bash
+.venv/bin/python scripts/system/github_remote_worker.py preset tax-sample --watch
+```
+
+Dispatch the STASM smoke path:
+
+```bash
+.venv/bin/python scripts/system/github_remote_worker.py preset stasm-smoke --watch
+```
+
 ## Dispatch A Real Job
 
 ```bash
