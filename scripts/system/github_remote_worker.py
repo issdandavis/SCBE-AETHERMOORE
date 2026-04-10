@@ -18,6 +18,32 @@ SCRIPT_PATH = Path(__file__).resolve()
 REPO_ROOT = SCRIPT_PATH.parents[2]
 WORKFLOW_NAME = "free-remote-worker.yml"
 DEFAULT_REPO = os.environ.get("SCBE_GITHUB_REMOTE_REPO", "issdandavis/SCBE-AETHERMOORE")
+PRESETS: dict[str, dict[str, str]] = {
+    "python-smoke": {
+        "description": "Run the validated Python smoke slice for browser and constants tests",
+        "task_label": "python-smoke",
+        "command": "python -m pytest tests/aetherbrowser tests/aethermoore_constants",
+        "install_mode": "auto",
+        "working_directory": ".",
+        "artifact_glob": "",
+    },
+    "tax-sample": {
+        "description": "Run the tax CLI sample calculation",
+        "task_label": "tax-sample",
+        "command": "python -m tools.tax.cli calculate --input tools/tax/sample_input.json",
+        "install_mode": "auto",
+        "working_directory": ".",
+        "artifact_glob": "",
+    },
+    "stasm-smoke": {
+        "description": "Assemble and execute the STASM hello world sample",
+        "task_label": "stasm-smoke",
+        "command": "python -m tools.stasm.assembler examples/hello_world.sts /tmp/hello.bin && python -m tools.stvm.vm /tmp/hello.bin",
+        "install_mode": "auto",
+        "working_directory": ".",
+        "artifact_glob": "",
+    },
+}
 
 
 def _run(cmd: list[str], *, capture: bool = False, cwd: Path = REPO_ROOT) -> subprocess.CompletedProcess[str]:
@@ -99,6 +125,27 @@ def _dispatch(args: argparse.Namespace) -> int:
     return 0
 
 
+def _presets(_: argparse.Namespace) -> int:
+    for name, spec in sorted(PRESETS.items()):
+        print(f"{name}: {spec['description']}")
+    return 0
+
+
+def _preset(args: argparse.Namespace) -> int:
+    spec = PRESETS.get(args.preset_name)
+    if spec is None:
+        available = ", ".join(sorted(PRESETS))
+        print(f"Unknown preset: {args.preset_name}. Available presets: {available}", file=sys.stderr)
+        return 2
+
+    args.command = spec["command"]
+    args.task_label = args.task_label or spec["task_label"]
+    args.install_mode = args.install_mode or spec["install_mode"]
+    args.working_directory = args.working_directory or spec["working_directory"]
+    args.artifact_glob = args.artifact_glob if args.artifact_glob is not None else spec["artifact_glob"]
+    return _dispatch(args)
+
+
 def _latest_run(repo: str, branch: str | None = None) -> dict[str, Any]:
     cmd = [
         "gh",
@@ -167,6 +214,27 @@ def build_parser() -> argparse.ArgumentParser:
     dispatch.add_argument("--dry-run", action="store_true", help="Print the gh command instead of dispatching")
     dispatch.set_defaults(handler=_dispatch)
 
+    presets = subparsers.add_parser("presets", help="List built-in remote job presets")
+    presets.set_defaults(handler=_presets)
+
+    preset = subparsers.add_parser("preset", help="Trigger a built-in remote job preset")
+    preset.add_argument("preset_name", choices=sorted(PRESETS), help="Preset to dispatch")
+    preset.add_argument("--repo", default=DEFAULT_REPO, help="GitHub repository in owner/name form")
+    preset.add_argument("--task-label", help="Override the preset task label")
+    preset.add_argument("--python-version", default="3.11", help="Python version for the worker")
+    preset.add_argument(
+        "--install-mode",
+        choices=("auto", "editable", "requirements", "none"),
+        help="Override the preset dependency bootstrap strategy",
+    )
+    preset.add_argument("--working-directory", help="Override the preset working directory relative to repo root")
+    preset.add_argument("--artifact-glob", default=None, help="Override the preset additional artifact glob")
+    preset.add_argument("--ref", help="Git ref or branch to run the workflow on; defaults to the remote repo default branch")
+    preset.add_argument("--watch", action="store_true", help="Watch the dispatched run until completion")
+    preset.add_argument("--poll-seconds", type=int, default=10, help="Polling interval for watch mode")
+    preset.add_argument("--dry-run", action="store_true", help="Print the gh command instead of dispatching")
+    preset.set_defaults(handler=_preset)
+
     status = subparsers.add_parser("status", help="Show the latest remote worker run")
     status.add_argument("--repo", default=DEFAULT_REPO, help="GitHub repository in owner/name form")
     status.add_argument("--branch", help="Filter by branch")
@@ -178,13 +246,15 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    try:
-        resolved = _repo_name(args.repo)
-    except RuntimeError as exc:
-        print(f"GitHub repo lookup failed: {exc}", file=sys.stderr)
-        return 2
-    if resolved != args.repo:
-        print(f"Resolved GitHub repo: {resolved}")
+    repo = getattr(args, "repo", None)
+    if repo is not None:
+        try:
+            resolved = _repo_name(repo)
+        except RuntimeError as exc:
+            print(f"GitHub repo lookup failed: {exc}", file=sys.stderr)
+            return 2
+        if resolved != repo:
+            print(f"Resolved GitHub repo: {resolved}")
     return int(args.handler(args))
 
 
