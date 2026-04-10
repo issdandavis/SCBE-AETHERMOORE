@@ -1,0 +1,99 @@
+{
+  "count": 11389,
+  "excitation": {
+    "mean_max": 4.88,
+    "mean_mean": 2.44,
+    "ground_state_count": 0,
+    "ground_state_pct": 0.0,
+    "max_excited_count": 3123,
+    "max_excited_pct": 27.4
+  },
+  "visual_vector_means": {
+    "ko": 0.0386,
+    "av": 0.0724,
+    "ru": 0.0742,
+    "ca": 0.1969,
+    "um": 0.262,
+    "dr": 0.3558
+  },
+  "acoustic_band_means": {
+    "infrasonic": 0.2688,
+    "audible": 0.43,
+    "ultrasonic": 0.3012
+  },
+  "governance": {
+    "mean_harmonic_cost": 1.2536,
+    "max_harmonic_cost": 1.618
+  },
+  "dominant_tongue_distribution": {
+    "dr": 5669,
+    "um": 3976,
+    "ca": 1678,
+    "ru": 60,
+    "av": 6
+  },
+  "musical_interval_distribution": {
+    "unison": 6582,
+    "major_sixth": 2104,
+    "minor_third": 1606,
+    "perfect_fifth": 853,
+    "perfect_fourth": 142,
+    "minor_seventh": 64,
+    "major_second": 22,
+    "minor_sixth": 14,
+    "major_third": 2
+  },
+  "total_spectral_lines": 52296,
+  "mean_lines_per_record": 4.59,
+  "gallery_ambient": {
+    "autorotation_active_count": 8,
+    "autorotation_active_pct": 0.1,
+    "mean_gallery_energy": 0.2033,
+    "dominant_dead_tone_distribution": {
+      "minor_sixth": 5298,
+      "perfect_fifth": 4216,
+      "minor_seventh": 1875
+    },
+    "mean_blind_spot_proximity": {
+      "perfect_fifth": 0.5007,
+      "minor_sixth": 0.9863,
+      "minor_seventh": 0.8123
+    },
+    "mean_coupling_strength": {
+      "perfect_fifth": 0.1564,
+      "minor_sixth": 0.0806,
+      "minor_seventh": 0.0658
+    }
+  },
+  "dead_tone_fills": {
+    "mean_intensity": {
+      "perfect_fifth": 0.5468,
+      "minor_sixth": 0.6515,
+      "minor_seventh": 0.5246
+    },
+    "mean_error": {
+      "perfect_fifth": 4.5e-05,
+      "minor_sixth": 4.5e-05,
+      "minor_seventh": 4.5e-05
+    }
+  },
+  "echolocation": {
+    "detection_rate": {
+      "perfect_fifth": 100.0,
+      "minor_sixth": 100.0,
+      "minor_seventh": 100.0
+    },
+    "mean_return_amplitude": 0.1972
+  },
+  "realm_triangulation": {
+    "objective_met_count": 9524,
+    "objective_met_pct": 83.6,
+    "path_found_count": 10967,
+    "mean_total_snr_db": 65.3
+  },
+  "sources": {
+    "claude_conversations_sft.jsonl": 2648,
+    "collegiate_curriculum_sft.jsonl": 8741
+  },
+  "total_sft_records": 11389
+}

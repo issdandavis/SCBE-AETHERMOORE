@@ -1,0 +1,210 @@
+name: Weekly HuggingFace Sync Check
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  DATASET_REPO: issdandavis/scbe-aethermoore-training-data
+  MODEL_REPOS: issdandavis/spiralverse-ai-federated-v1,issdandavis/phdm-21d-embedding
+
+jobs:
+  check-hf-drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install huggingface_hub
+
+      - name: Check training data drift
+        id: drift
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python3 - <<'PYEOF'
+          import hashlib, json, os, glob, datetime
+          from pathlib import Path
+
+          try:
+              from huggingface_hub import HfApi, list_repo_files
+          except ImportError:
+              print("::warning::huggingface_hub not available")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                  fh.write("status=error\ndrift_count=0\nnew_count=0\n")
+              exit(0)
+
+          token = os.environ.get("HF_TOKEN", "")
+          api = HfApi(token=token if token else None)
+          dataset_repo = os.environ.get("DATASET_REPO", "")
+          model_repos = [r.strip() for r in os.environ.get("MODEL_REPOS", "").split(",") if r.strip()]
+
+          report = {
+              "scan_date": datetime.date.today().isoformat(),
+              "dataset_repo": dataset_repo,
+              "model_repos": model_repos,
+              "local_training_files": [],
+              "remote_files": [],
+              "drift_detected": [],
+              "new_local_files": [],
+              "repo_accessibility": {},
+          }
+
+          # Hash local training data files
+          local_hashes = {}
+          training_dirs = ["training-data/sft", "training-data", "training/ledgered"]
+          for tdir in training_dirs:
+              for pattern in ["*.jsonl", "*.jsonl.gz", "*.json"]:
+                  for fpath in glob.glob(os.path.join(tdir, pattern)):
+                      rel = fpath.replace("\\", "/")
+                      try:
+                          h = hashlib.sha256(Path(fpath).read_bytes()).hexdigest()[:16]
+                          size_mb = Path(fpath).stat().st_size / (1024 * 1024)
+                          local_hashes[rel] = h
+                          report["local_training_files"].append({
+                              "path": rel,
+                              "hash": h,
+                              "size_mb": round(size_mb, 2),
+                          })
+                      except Exception as e:
+                          print(f"::warning::Could not hash {fpath}: {e}")
+
+          # Check remote dataset repo
+          if dataset_repo:
+              try:
+                  remote_files = list_repo_files(dataset_repo, repo_type="dataset", token=token if token else None)
+                  report["remote_files"] = list(remote_files)
+                  report["repo_accessibility"][dataset_repo] = "accessible"
+
+                  remote_set = set(remote_files)
+                  for local_path, local_hash in local_hashes.items():
+                      basename = os.path.basename(local_path)
+                      if basename not in remote_set and local_path not in remote_set:
+                          report["new_local_files"].append(local_path)
+              except Exception as e:
+                  report["repo_accessibility"][dataset_repo] = f"error: {str(e)[:100]}"
+                  print(f"::warning::Cannot access dataset repo {dataset_repo}: {e}")
+
+          # Check model repos accessibility
+          for mrepo in model_repos:
+              try:
+                  remote_files = list_repo_files(mrepo, repo_type="model", token=token if token else None)
+                  report["repo_accessibility"][mrepo] = f"accessible ({len(remote_files)} files)"
+              except Exception as e:
+                  report["repo_accessibility"][mrepo] = f"error: {str(e)[:100]}"
+
+          # Summary stats
+          drift_count = len(report["drift_detected"])
+          new_count = len(report["new_local_files"])
+          needs_sync = "true" if (new_count > 0 or drift_count > 0) else "false"
+
+          os.makedirs("artifacts/hf-sync", exist_ok=True)
+          with open("artifacts/hf-sync/weekly_drift_report.json", "w") as f:
+              json.dump(report, f, indent=2, default=str)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"drift_count={drift_count}\n")
+              fh.write(f"new_count={new_count}\n")
+              fh.write(f"local_count={len(local_hashes)}\n")
+              fh.write(f"needs_sync={needs_sync}\n")
+          PYEOF
+
+      - name: Upload drift report
+        uses: actions/upload-artifact@v4
+        with:
+          name: hf-drift-weekly
+          path: artifacts/hf-sync/weekly_drift_report.json
+          retention-days: 90
+
+      - name: Create GitHub Issue
+        uses: actions/github-script@v7
+        env:
+          DRIFT: ${{ steps.drift.outputs.drift_count }}
+          NEW: ${{ steps.drift.outputs.new_count }}
+          LOCAL: ${{ steps.drift.outputs.local_count }}
+          NEEDS_SYNC: ${{ steps.drift.outputs.needs_sync }}
+        with:
+          script: |
+            const fs = require('fs');
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `HuggingFace Sync Check - ${today}`;
+            const needsSync = process.env.NEEDS_SYNC === 'true';
+
+            // Close previous weekly issues
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'hf-sync',
+              state: 'open',
+            });
+            for (const issue of existing.data) {
+              if (issue.title.startsWith('HuggingFace Sync Check -') && issue.title !== title) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+            let report = { new_local_files: [], repo_accessibility: {}, local_training_files: [] };
+            try {
+              report = JSON.parse(fs.readFileSync('artifacts/hf-sync/weekly_drift_report.json', 'utf8'));
+            } catch (e) {
+              console.log('Could not read report:', e.message);
+            }
+
+            const statusIcon = needsSync ? 'ACTION NEEDED' : 'IN SYNC';
+            let body = `## Weekly HuggingFace Sync Check\n\n`;
+            body += `**Status:** ${statusIcon}\n\n`;
+            body += `| Metric | Value |\n|--------|-------|\n`;
+            body += `| Local training files | ${process.env.LOCAL} |\n`;
+            body += `| Files needing upload | ${process.env.NEW} |\n`;
+            body += `| Drift detected | ${process.env.DRIFT} |\n\n`;
+
+            // Repo accessibility
+            body += `### Repository Accessibility\n`;
+            for (const [repo, status] of Object.entries(report.repo_accessibility)) {
+              const icon = status.startsWith('accessible') ? 'OK' : 'WARN';
+              body += `- **${repo}**: ${icon} - ${status}\n`;
+            }
+            body += `\n`;
+
+            if (report.new_local_files.length > 0) {
+              body += `### Files Not Yet on HuggingFace\n`;
+              for (const f of report.new_local_files.slice(0, 20)) {
+                body += `- \`${f}\`\n`;
+              }
+              if (report.new_local_files.length > 20) {
+                body += `- *...and ${report.new_local_files.length - 20} more*\n`;
+              }
+              body += `\n`;
+              body += `**To sync:** Run the \`huggingface-sync\` workflow or push manually.\n\n`;
+            }
+
+            body += `---\n*Automated by weekly-hf-sync workflow*`;
+
+            const labels = ['hf-sync', 'automated'];
+            if (needsSync) labels.push('action-needed');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels,
+            });

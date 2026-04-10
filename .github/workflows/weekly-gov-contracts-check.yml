@@ -1,0 +1,187 @@
+name: Weekly Gov Contracts Check
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  scan-sam-gov:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Query SAM.gov for relevant opportunities
+        id: sam_query
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, datetime, urllib.request, urllib.parse, urllib.error
+
+          API_KEY = os.environ.get("SAM_GOV_API_KEY", "")
+          BASE_URL = "https://api.sam.gov/opportunities/v2/search"
+          today = datetime.date.today()
+          posted_from = (today - datetime.timedelta(days=7)).strftime("%m/%d/%Y")
+          posted_to = today.strftime("%m/%d/%Y")
+
+          SEARCH_TERMS = [
+              "AI safety",
+              "artificial intelligence governance",
+              "post-quantum cryptography",
+              "cybersecurity framework",
+              "machine learning security",
+              "AI assurance",
+              "trustworthy AI",
+              "adversarial machine learning",
+          ]
+
+          all_results = []
+          seen_ids = set()
+
+          for term in SEARCH_TERMS:
+              params = {
+                  "postedFrom": posted_from,
+                  "postedTo": posted_to,
+                  "limit": "25",
+                  "offset": "0",
+                  "keywords": term,
+              }
+              if API_KEY:
+                  params["api_key"] = API_KEY
+
+              url = BASE_URL + "?" + urllib.parse.urlencode(params)
+              try:
+                  req = urllib.request.Request(url, headers={"Accept": "application/json"})
+                  with urllib.request.urlopen(req, timeout=30) as resp:
+                      data = json.loads(resp.read().decode("utf-8"))
+
+                  for opp in data.get("opportunitiesData", []):
+                      opp_id = opp.get("noticeId", "")
+                      if opp_id and opp_id not in seen_ids:
+                          seen_ids.add(opp_id)
+                          all_results.append({
+                              "noticeId": opp_id,
+                              "title": opp.get("title", "N/A"),
+                              "solicitationNumber": opp.get("solicitationNumber", "N/A"),
+                              "department": opp.get("department", "N/A"),
+                              "type": opp.get("type", "N/A"),
+                              "postedDate": opp.get("postedDate", "N/A"),
+                              "responseDeadLine": opp.get("responseDeadLine", "N/A"),
+                              "uiLink": opp.get("uiLink", ""),
+                              "matchedKeyword": term,
+                          })
+              except urllib.error.HTTPError as e:
+                  if e.code == 403:
+                      print(f"::warning::SAM.gov API key required or rate limited for: {term}")
+                  else:
+                      print(f"::warning::SAM.gov query failed for '{term}': HTTP {e.code}")
+              except Exception as e:
+                  print(f"::warning::SAM.gov query failed for '{term}': {e}")
+
+          report = {
+              "scan_date": today.isoformat(),
+              "period": f"{posted_from} - {posted_to}",
+              "total_opportunities": len(all_results),
+              "search_terms": SEARCH_TERMS,
+              "opportunities": all_results,
+          }
+
+          os.makedirs("artifacts/gov-contracts", exist_ok=True)
+          report_path = "artifacts/gov-contracts/sam_gov_weekly.json"
+          with open(report_path, "w", encoding="utf-8") as f:
+              json.dump(report, f, indent=2, default=str)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+              fh.write(f"total={len(all_results)}\n")
+
+          print(f"Found {len(all_results)} opportunities across {len(SEARCH_TERMS)} search terms")
+          PYEOF
+
+      - name: Upload SAM.gov report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sam-gov-weekly-report
+          path: artifacts/gov-contracts/sam_gov_weekly.json
+          retention-days: 90
+
+      - name: Create or update GitHub Issue
+        uses: actions/github-script@v7
+        env:
+          TOTAL_OPPS: ${{ steps.sam_query.outputs.total }}
+        with:
+          script: |
+            const fs = require('fs');
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Gov Contracts Scan - ${today}`;
+
+            // Close previous weekly issues
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'gov-contracts',
+              state: 'open',
+            });
+            for (const issue of existing.data) {
+              if (issue.title.startsWith('Gov Contracts Scan -') && issue.title !== title) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+            let reportData = { opportunities: [], total_opportunities: 0 };
+            try {
+              reportData = JSON.parse(fs.readFileSync('artifacts/gov-contracts/sam_gov_weekly.json', 'utf8'));
+            } catch (e) {
+              console.log('Could not read report file:', e.message);
+            }
+
+            const total = reportData.total_opportunities || 0;
+            let body = `## Weekly Government Contracts Scan\n\n`;
+            body += `**Date:** ${today}\n`;
+            body += `**Opportunities Found:** ${total}\n\n`;
+
+            if (total === 0) {
+              body += `No new opportunities matching our search terms were posted this week.\n\n`;
+              body += `### Search Terms\n`;
+              for (const term of (reportData.search_terms || [])) {
+                body += `- ${term}\n`;
+              }
+            } else {
+              body += `### Opportunities\n\n`;
+              body += `| Title | Department | Type | Deadline | Link |\n`;
+              body += `|-------|-----------|------|----------|------|\n`;
+              for (const opp of (reportData.opportunities || []).slice(0, 30)) {
+                const link = opp.uiLink ? `[View](${opp.uiLink})` : 'N/A';
+                const deadline = opp.responseDeadLine || 'N/A';
+                body += `| ${opp.title.slice(0, 60)} | ${opp.department} | ${opp.type} | ${deadline} | ${link} |\n`;
+              }
+              if (total > 30) {
+                body += `\n*Showing 30 of ${total} results. See full report in workflow artifacts.*\n`;
+              }
+            }
+
+            body += `\n---\n*Automated by weekly-gov-contracts-check workflow*`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['gov-contracts', 'automated'],
+            });

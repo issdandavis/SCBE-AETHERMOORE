@@ -1,16 +1,11 @@
 name: 'nightly-ops'
 on:
   workflow_dispatch:
-
-permissions:
-  contents: read
-
+  push:
+    branches: [main]
 jobs:
   orchestrate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      SCBE_MODE: 'ci'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,6 +17,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+    env:
+      SCBE_MODE: 'ci'
       - name: 'Smoke'
         id: step_01_smoke
         shell: bash
@@ -31,8 +28,4 @@ jobs:
         id: step_02_packetize
         shell: bash
         run: |
-          if [ -f artifacts/flow_plans/demo.json ]; then
-            python scbe.py flow packetize --plan artifacts/flow_plans/demo.json
-          else
-            echo "No flow plan found — skipping packetize (expected in CI)"
-          fi
+          python scbe.py flow packetize --plan artifacts/flow_plans/demo.json

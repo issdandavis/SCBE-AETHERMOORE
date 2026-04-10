@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/darpa_prep_opportunity_analysis.schema.json",
+  "title": "DARPA Prep Opportunity Analysis Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "opportunity",
+    "requirements",
+    "compliance_matrix",
+    "readiness_scores",
+    "citations"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scbe_darpa_prep_opportunity_analysis_v1"
+    },
+    "opportunity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "opportunity_id",
+        "source_system",
+        "instrument_type",
+        "title",
+        "agency",
+        "solicitation_number",
+        "submission_path",
+        "deadline"
+      ],
+      "properties": {
+        "opportunity_id": { "type": "string", "minLength": 8 },
+        "source_system": {
+          "type": "string",
+          "enum": ["DARPA", "SAM.gov", "Grants.gov", "agency_portal"]
+        },
+        "instrument_type": {
+          "type": "string",
+          "enum": ["contract", "grant", "cooperative_agreement", "other_transaction", "unknown"]
+        },
+        "title": { "type": "string", "minLength": 1 },
+        "agency": { "type": "string", "minLength": 1 },
+        "solicitation_number": { "type": "string", "minLength": 1 },
+        "submission_path": { "type": "string", "minLength": 1 },
+        "deadline": { "type": "string", "format": "date-time" },
+        "topic_area": { "type": "string" },
+        "security_markers": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirement_id",
+          "category",
+          "priority",
+          "text",
+          "source_section",
+          "citation_ids"
+        ],
+        "properties": {
+          "requirement_id": { "type": "string", "minLength": 8 },
+          "category": {
+            "type": "string",
+            "enum": ["eligibility", "format", "technical", "evaluation", "registration", "budget", "security", "export_control", "submission"]
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "text": { "type": "string", "minLength": 1 },
+          "source_section": { "type": "string", "minLength": 1 },
+          "citation_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "compliance_matrix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirement_id",
+          "status",
+          "evidence_section_ids",
+          "confidence",
+          "review_required"
+        ],
+        "properties": {
+          "requirement_id": { "type": "string", "minLength": 8 },
+          "status": {
+            "type": "string",
+            "enum": ["addressed", "weak", "missing", "contradicted", "not_applicable"]
+          },
+          "evidence_section_ids": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+          "review_required": { "type": "boolean" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "readiness_scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "technical_fit",
+        "completeness",
+        "compliance",
+        "transition_alignment",
+        "teaming_readiness",
+        "submission_readiness",
+        "overall"
+      ],
+      "properties": {
+        "technical_fit": { "$ref": "#/$defs/scoreDimension" },
+        "completeness": { "$ref": "#/$defs/scoreDimension" },
+        "compliance": { "$ref": "#/$defs/scoreDimension" },
+        "transition_alignment": { "$ref": "#/$defs/scoreDimension" },
+        "teaming_readiness": { "$ref": "#/$defs/scoreDimension" },
+        "submission_readiness": { "$ref": "#/$defs/scoreDimension" },
+        "overall": { "$ref": "#/$defs/scoreDimension" }
+      }
+    },
+    "citations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["citation_id", "source_type", "source_ref", "excerpt"],
+        "properties": {
+          "citation_id": { "type": "string", "minLength": 1 },
+          "source_type": {
+            "type": "string",
+            "enum": ["solicitation", "amendment", "award_notice", "agency_guidance", "proposal_draft", "user_capability_data"]
+          },
+          "source_ref": { "type": "string", "minLength": 1 },
+          "excerpt": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "scoreDimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "explanation", "citation_ids"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "explanation": { "type": "string", "minLength": 1 },
+        "citation_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

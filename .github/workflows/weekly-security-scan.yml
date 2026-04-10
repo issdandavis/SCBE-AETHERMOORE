@@ -1,0 +1,274 @@
+name: Weekly Security Scan
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  security-events: write
+
+jobs:
+  secret-scan:
+    name: Secret Scan (check_secrets.py)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run secret scanner
+        id: secrets
+        run: |
+          set +e
+          python scripts/check_secrets.py --all > secrets-report.txt 2>&1
+          EXIT_CODE=$?
+          set -e
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: secrets-report
+          path: secrets-report.txt
+          retention-days: 90
+    outputs:
+      found: ${{ steps.secrets.outputs.found }}
+
+  trivy-scan:
+    name: Trivy Filesystem Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy
+        id: trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'json'
+          output: 'trivy-report.json'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '0'
+      - name: Parse results
+        id: trivy_result
+        if: always()
+        run: |
+          python3 - <<'PYEOF'
+          import json, os
+          from pathlib import Path
+          report = Path("trivy-report.json")
+          critical = high = 0
+          if report.exists():
+              try:
+                  data = json.loads(report.read_text())
+                  for result in data.get("Results", []):
+                      for vuln in result.get("Vulnerabilities", []):
+                          sev = vuln.get("Severity", "").upper()
+                          if sev == "CRITICAL": critical += 1
+                          elif sev == "HIGH": high += 1
+              except Exception as e:
+                  print(f"::warning::Trivy parse error: {e}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"critical={critical}\nhigh={high}\n")
+          PYEOF
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-report
+          path: trivy-report.json
+          retention-days: 90
+    outputs:
+      critical: ${{ steps.trivy_result.outputs.critical }}
+      high: ${{ steps.trivy_result.outputs.high }}
+
+  npm-audit:
+    name: npm Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Run audit
+        id: npm_audit
+        run: |
+          set +e
+          npm audit --json > npm-audit-report.json 2>&1
+          set -e
+      - name: Parse results
+        id: npm_result
+        if: always()
+        run: |
+          python3 - <<'PYEOF'
+          import json, os
+          from pathlib import Path
+          report = Path("npm-audit-report.json")
+          critical = high = 0
+          if report.exists():
+              try:
+                  data = json.loads(report.read_text())
+                  vulns = data.get("metadata", {}).get("vulnerabilities", {})
+                  critical = int(vulns.get("critical", 0) or 0)
+                  high = int(vulns.get("high", 0) or 0)
+              except Exception as e:
+                  print(f"::warning::npm audit parse error: {e}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"critical={critical}\nhigh={high}\n")
+          PYEOF
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          retention-days: 90
+    outputs:
+      critical: ${{ steps.npm_result.outputs.critical }}
+      high: ${{ steps.npm_result.outputs.high }}
+
+  pip-audit:
+    name: pip Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install and audit
+        id: pip_audit
+        run: |
+          pip install pip-audit
+          # Install from requirements.txt if it exists, otherwise scan installed
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt 2>/dev/null || true
+          fi
+          # Also install src/ packages that have setup.py or pyproject.toml
+          for f in src/*/setup.py src/*/pyproject.toml; do
+            if [ -f "$f" ]; then
+              dir=$(dirname "$f")
+              pip install -e "$dir" 2>/dev/null || true
+            fi
+          done
+          set +e
+          pip-audit --format json --output pip-audit-report.json 2>&1
+          EXIT_CODE=$?
+          set -e
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+      - name: Parse results
+        id: pip_result
+        if: always()
+        run: |
+          python3 - <<'PYEOF'
+          import json, os
+          from pathlib import Path
+          report = Path("pip-audit-report.json")
+          vuln_count = 0
+          if report.exists():
+              try:
+                  data = json.loads(report.read_text())
+                  if isinstance(data, list):
+                      vuln_count = sum(1 for d in data if d.get("vulns"))
+                  elif isinstance(data, dict):
+                      vuln_count = sum(1 for d in data.get("dependencies", []) if d.get("vulns"))
+              except Exception as e:
+                  print(f"::warning::pip-audit parse error: {e}")
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"vuln_packages={vuln_count}\n")
+          PYEOF
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+          retention-days: 90
+    outputs:
+      vuln_packages: ${{ steps.pip_result.outputs.vuln_packages }}
+
+  report:
+    name: Create Security Issue
+    needs: [secret-scan, trivy-scan, npm-audit, pip-audit]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      issues: write
+    steps:
+      - name: Create issue
+        uses: actions/github-script@v7
+        env:
+          SECRETS_FOUND: ${{ needs.secret-scan.outputs.found }}
+          TRIVY_CRITICAL: ${{ needs.trivy-scan.outputs.critical }}
+          TRIVY_HIGH: ${{ needs.trivy-scan.outputs.high }}
+          NPM_CRITICAL: ${{ needs.npm-audit.outputs.critical }}
+          NPM_HIGH: ${{ needs.npm-audit.outputs.high }}
+          PIP_VULNS: ${{ needs.pip-audit.outputs.vuln_packages }}
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Security Scan - ${today}`;
+
+            // Close previous
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'security-scan',
+              state: 'open',
+            });
+            for (const issue of existing.data) {
+              if (issue.title.startsWith('Security Scan -') && issue.title !== title) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+            const leaked = process.env.SECRETS_FOUND === 'true';
+            const trivyCrit = parseInt(process.env.TRIVY_CRITICAL || '0');
+            const trivyHigh = parseInt(process.env.TRIVY_HIGH || '0');
+            const npmCrit = parseInt(process.env.NPM_CRITICAL || '0');
+            const npmHigh = parseInt(process.env.NPM_HIGH || '0');
+            const pipVulns = parseInt(process.env.PIP_VULNS || '0');
+
+            const hasCritical = leaked || trivyCrit > 0 || npmCrit > 0;
+            const hasIssues = hasCritical || trivyHigh > 0 || npmHigh > 0 || pipVulns > 0;
+            const status = hasCritical ? 'CRITICAL' : hasIssues ? 'WARNINGS' : 'CLEAN';
+
+            let body = `## Weekly Security Scan\n\n**Status:** ${status}\n\n`;
+            body += `| Scanner | Finding | Count |\n|---------|---------|-------|\n`;
+            body += `| check_secrets.py | Leaked tokens | ${leaked ? 'YES' : 'None'} |\n`;
+            body += `| Trivy | Critical CVEs | ${trivyCrit} |\n`;
+            body += `| Trivy | High CVEs | ${trivyHigh} |\n`;
+            body += `| npm audit | Critical | ${npmCrit} |\n`;
+            body += `| npm audit | High | ${npmHigh} |\n`;
+            body += `| pip-audit | Vulnerable packages | ${pipVulns} |\n\n`;
+
+            if (leaked) {
+              body += `### Secret Leak Detected\nReview the secrets-report artifact immediately.\n\n`;
+            }
+            if (hasCritical) {
+              body += `### Action Required\nCritical issues found. Run \`npm audit fix\` / \`pip-audit --fix\`.\n\n`;
+            }
+            body += `---\n*Automated by weekly-security-scan*`;
+
+            const labels = ['security-scan', 'automated'];
+            if (hasCritical) labels.push('critical');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title, body, labels,
+            });

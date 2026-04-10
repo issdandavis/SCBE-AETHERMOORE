@@ -59,17 +59,23 @@
     }
   },
   "files": [
-    "dist/src",
+    "dist/src/index.js",
+    "dist/src/index.d.ts",
+    "dist/src/harmonic",
+    "dist/src/crypto",
+    "dist/src/symphonic",
+    "dist/src/governance",
+    "dist/src/tokenizer",
+    "dist/src/ai_brain",
+    "dist/src/spectral",
+    "dist/src/spiralverse",
     "bin",
-    "scbe.py",
-    "scripts/scbe-system-cli.py",
-    "scripts/scbe_system_cli.py",
-    "scripts/__init__.py",
     "README.md",
     "LICENSE",
     "examples/npm"
   ],
   "scripts": {
+    "postinstall": "node scripts/patch_vite_windows_safe_realpath.cjs",
     "clean": "rimraf dist",
     "clean:release": "node scripts/npm_prepublish_cleanup.js",
     "build": "npm run clean && npm run build:src",

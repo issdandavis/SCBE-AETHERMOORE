@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/source_registry_record.schema.json",
+  "title": "SCBE Source Registry Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_id",
+    "title",
+    "channel",
+    "authority_class",
+    "access_level",
+    "redistribution_status",
+    "training_status",
+    "organization",
+    "requires_auth",
+    "citation_required",
+    "record_status",
+    "provenance_summary"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scbe_source_registry_record_v1"
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_\\-\\.]{3,128}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "government_opportunity",
+        "government_portal",
+        "research_repository",
+        "academic_paper",
+        "technical_documentation",
+        "internal_note",
+        "funding_registry",
+        "industry_research"
+      ]
+    },
+    "authority_class": {
+      "type": "string",
+      "enum": [
+        "canonical",
+        "operational",
+        "public_surface",
+        "runtime_reference",
+        "exploratory",
+        "historical",
+        "generated"
+      ]
+    },
+    "access_level": {
+      "type": "string",
+      "enum": [
+        "public",
+        "authorized_internal",
+        "restricted"
+      ]
+    },
+    "redistribution_status": {
+      "type": "string",
+      "enum": [
+        "publishable",
+        "internal_only",
+        "unclear",
+        "blocked"
+      ]
+    },
+    "training_status": {
+      "type": "string",
+      "enum": [
+        "allowed_public_training",
+        "internal_training_only",
+        "retrieval_only",
+        "blocked"
+      ]
+    },
+    "organization": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "local_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "notes_vault_path": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "requires_auth": {
+      "type": "boolean"
+    },
+    "citation_required": {
+      "type": "boolean"
+    },
+    "record_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "stale",
+        "archived"
+      ]
+    },
+    "provenance_summary": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
