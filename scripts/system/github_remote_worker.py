@@ -141,7 +141,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Dependency bootstrap strategy",
     )
     dispatch.add_argument("--working-directory", default=".", help="Working directory relative to repo root")
-    dispatch.add_argument("--artifact-glob", default="artifacts/**", help="Additional files or globs to upload")
+    dispatch.add_argument("--artifact-glob", default="", help="Additional files or globs to upload")
     dispatch.add_argument("--ref", help="Git ref or branch to run the workflow on; defaults to the remote repo default branch")
     dispatch.add_argument("--watch", action="store_true", help="Watch the dispatched run until completion")
     dispatch.add_argument("--poll-seconds", type=int, default=10, help="Polling interval for watch mode")
