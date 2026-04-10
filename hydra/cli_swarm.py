@@ -8,7 +8,7 @@ No AI vendor dependency — uses local LLMs or HuggingFace endpoints.
 Usage:
     python -m hydra.cli_swarm "search for SCBE-AETHERMOORE on GitHub"
     python -m hydra.cli_swarm --provider local --base-url http://localhost:1234/v1 "navigate to example.com"
-    python -m hydra.cli_swarm --provider hf --model mistralai/Mistral-7B-Instruct-v0.3 "research quantum cryptography"
+    python -m hydra.cli_swarm --provider hf --model Qwen/Qwen2.5-7B-Instruct "research quantum cryptography"
     python -m hydra.cli_swarm --dry-run "test task"
 """
 

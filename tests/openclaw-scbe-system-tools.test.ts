@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import plugin, {
@@ -8,11 +11,31 @@ import plugin, {
   buildFlowPlanCommand,
   buildLocalGitHygieneCommand,
   buildModelPlanCommand,
+  buildOpenClawHfHandlerBootstrapCommand,
   buildOctoarmsDispatchCommand,
   resolvePluginConfig,
+  extractJsonOutput,
 } from '../extensions/openclaw-scbe-system-tools/index.ts';
 
 describe('openclaw scbe system tools plugin', () => {
+  it('parses full multi-line JSON tool output before falling back to line fragments', () => {
+    const stdout = `{
+  "profile_id": "hf-agentic-handler",
+  "base_model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "target_modules": [
+    "q_proj",
+    "down_proj"
+  ],
+  "total_train_rows": 122579
+}`;
+
+    expect(extractJsonOutput(stdout)).toEqual({
+      profile_id: 'hf-agentic-handler',
+      base_model: 'HuggingFaceTB/SmolLM2-1.7B-Instruct',
+      target_modules: ['q_proj', 'down_proj'],
+      total_train_rows: 122579,
+    });
+  });
   it('registers the expected bounded tool surface', () => {
     const tools: string[] = [];
     plugin.register({
@@ -30,7 +53,21 @@ describe('openclaw scbe system tools plugin', () => {
       'scbe_colab_bridge',
       'scbe_model_plan',
       'scbe_local_git_hygiene',
+      'scbe_openclaw_hf_handler_bootstrap',
     ]);
+  });
+
+  it('ships OpenClaw package metadata that points at the plugin entry', () => {
+    const packagePath = path.resolve('extensions/openclaw-scbe-system-tools/package.json');
+    const pkg = JSON.parse(readFileSync(packagePath, 'utf-8')) as {
+      type?: string;
+      main?: string;
+      openclaw?: { extensions?: string[] };
+    };
+
+    expect(pkg.type).toBe('module');
+    expect(pkg.main).toBe('index.ts');
+    expect(pkg.openclaw?.extensions).toEqual(['./index.ts']);
   });
 
   it('builds flow plan commands with repo-owned artifact paths', () => {
@@ -154,4 +191,42 @@ describe('openclaw scbe system tools plugin', () => {
       '--json',
     ]);
   });
+
+  it('builds the OpenClaw HF handler bootstrap command with repo-owned artifact output', () => {
+    const cfg = resolvePluginConfig({ repoRoot: 'C:/repo', pythonBin: 'python', defaultProvider: 'hf' });
+    const command = buildOpenClawHfHandlerBootstrapCommand(
+      cfg,
+      {
+        profile: 'hf-agentic-handler',
+        lane: 'hydra-swarm',
+        task: 'Verify the HF lane',
+        executeDispatch: true,
+      },
+      '20260410T060000Z',
+    );
+
+    expect(command.command).toBe('python');
+    expect(command.artifactPath).toContain('openclaw-plugin');
+    expect(command.args).toEqual([
+      'scripts/system/openclaw_hf_handler_bootstrap.py',
+      '--json',
+      '--output-path',
+      'artifacts/openclaw-plugin/20260410T060000Z-hf-agentic-handler-bootstrap.json',
+      '--profile',
+      'hf-agentic-handler',
+      '--provider',
+      'hf',
+      '--lane',
+      'hydra-swarm',
+      '--formation',
+      'hexagonal-ring',
+      '--workflow-template',
+      'training-center-loop',
+      '--task',
+      'Verify the HF lane',
+      '--execute-dispatch',
+    ]);
+  });
 });
+
+

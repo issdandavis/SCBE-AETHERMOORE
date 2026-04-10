@@ -94,6 +94,18 @@ function extractLastJson(stdout: string): unknown {
   return null;
 }
 
+export function extractJsonOutput(stdout: string): unknown {
+  const trimmed = stdout.trim();
+  if (!trimmed) {
+    return null;
+  }
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return extractLastJson(trimmed);
+  }
+}
+
 async function runCommand(spec: CommandSpec, cfg: Required<PluginConfig>): Promise<string> {
   try {
     const result = await execFileAsync(spec.command, spec.args, {
@@ -108,7 +120,7 @@ async function runCommand(spec: CommandSpec, cfg: Required<PluginConfig>): Promi
       return artifact;
     }
 
-    const parsed = extractLastJson(result.stdout);
+    const parsed = extractJsonOutput(result.stdout);
     if (parsed !== null) {
       return JSON.stringify(parsed, null, 2);
     }
@@ -387,6 +399,54 @@ export function buildModelPlanCommand(
   };
 }
 
+export function buildOpenClawHfHandlerBootstrapCommand(
+  cfg: Required<PluginConfig>,
+  params: {
+    profile?: string;
+    provider?: Provider;
+    lane?: DispatchLane;
+    formation?: FlowFormation;
+    workflowTemplate?: WorkflowTemplate;
+    task?: string;
+    executeDispatch?: boolean;
+  },
+  stamp: string = makeRunStamp(),
+): CommandSpec {
+  const artifactPath = path.join(
+    cfg.repoRoot,
+    'artifacts',
+    'openclaw-plugin',
+    `${stamp}-${slugify(params.profile || 'hf-agentic-handler')}-bootstrap.json`,
+  );
+  const args = [
+    'scripts/system/openclaw_hf_handler_bootstrap.py',
+    '--json',
+    '--output-path',
+    toRepoRelative(cfg.repoRoot, artifactPath),
+    '--profile',
+    params.profile || 'hf-agentic-handler',
+    '--provider',
+    params.provider || cfg.defaultProvider,
+    '--lane',
+    params.lane || 'hydra-swarm',
+    '--formation',
+    params.formation || 'hexagonal-ring',
+    '--workflow-template',
+    params.workflowTemplate || 'training-center-loop',
+    '--task',
+    params.task || 'Bootstrap the Hugging Face agent handler lane',
+  ];
+  if (params.executeDispatch) {
+    args.push('--execute-dispatch');
+  }
+  return {
+    command: cfg.pythonBin,
+    cwd: cfg.repoRoot,
+    artifactPath,
+    args,
+  };
+}
+
 function createTextResponse(text: string) {
   return { content: [{ type: 'text' as const, text }] };
 }
@@ -580,7 +640,69 @@ const plugin = {
         return createTextResponse(output);
       },
     } as any);
+
+    api.registerTool({
+      name: 'scbe_openclaw_hf_handler_bootstrap',
+      label: 'SCBE OpenClaw HF Handler Bootstrap',
+      description:
+        'Verify the live OpenClaw gateway, confirm the SCBE tool catalog, and inspect the Hugging Face handler profile through the installed plugin lane.',
+      parameters: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          profile: {
+            type: 'string',
+            description: 'Model profile id to inspect. Defaults to hf-agentic-handler.',
+          },
+          provider: { type: 'string', enum: ['auto', 'local', 'hf'] },
+          lane: {
+            type: 'string',
+            enum: [
+              'none',
+              'octoarmor-triage',
+              'hydra-swarm',
+              'browse-evidence',
+              'colab-bridge-status',
+              'colab-bridge-probe',
+            ],
+          },
+          formation: {
+            type: 'string',
+            enum: [
+              'adaptive-scatter',
+              'concentric',
+              'hexagonal',
+              'hexagonal-ring',
+              'ring',
+              'scatter',
+              'tetrahedral',
+            ],
+          },
+          workflowTemplate: {
+            type: 'string',
+            enum: ['architecture-enhancement', 'implementation-loop', 'training-center-loop'],
+          },
+          task: {
+            type: 'string',
+            description: 'Dispatch task to use if executeDispatch is enabled.',
+          },
+          executeDispatch: {
+            type: 'boolean',
+            description:
+              'Also call scbe_octoarms_dispatch through the live gateway after verifying the HF handler profile.',
+          },
+        },
+      },
+      async execute(_toolCallId: string, params: any) {
+        const output = await runCommand(
+          buildOpenClawHfHandlerBootstrapCommand(cfg, params || {}),
+          cfg,
+        );
+        return createTextResponse(output);
+      },
+    } as any);
   },
 };
 
 export default plugin;
+

@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-DEFAULT_HF_MODEL = "HuggingFaceTB/SmolLM2-1.7B-Instruct"
+DEFAULT_HF_MODEL = "Qwen/Qwen2.5-7B-Instruct"
 DEFAULT_LOCAL_MODEL = "local-model"
 LANES = {
     "none",

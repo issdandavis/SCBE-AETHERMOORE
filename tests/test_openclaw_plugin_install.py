@@ -27,6 +27,7 @@ def test_patch_openclaw_config_enables_plugin_and_preserves_existing_entries() -
     patched = MODULE.patch_openclaw_config(
         original,
         repo_root=Path("C:/Users/issda/SCBE-AETHERMOORE"),
+        install_path=Path("C:/Users/issda/.openclaw/extensions/scbe-system-tools"),
         python_bin="python",
         timeout_ms=90000,
         default_provider="hf",
@@ -39,6 +40,13 @@ def test_patch_openclaw_config_enables_plugin_and_preserves_existing_entries() -
     assert patched["plugins"]["entries"][MODULE.PLUGIN_ID]["enabled"] is True
     assert Path(patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["repoRoot"]) == Path(
         "C:/Users/issda/SCBE-AETHERMOORE"
+    )
+    assert patched["plugins"]["installs"][MODULE.PLUGIN_ID]["source"] == "path"
+    assert Path(patched["plugins"]["installs"][MODULE.PLUGIN_ID]["installPath"]) == Path(
+        "C:/Users/issda/.openclaw/extensions/scbe-system-tools"
+    )
+    assert Path(patched["plugins"]["installs"][MODULE.PLUGIN_ID]["spec"]) == Path(
+        "C:/Users/issda/SCBE-AETHERMOORE/extensions/openclaw-scbe-system-tools"
     )
     assert patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["pythonBin"] == "python"
     assert patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["timeoutMs"] == 90000

@@ -53,6 +53,7 @@ def patch_openclaw_config(
     payload: dict[str, Any],
     *,
     repo_root: Path,
+    install_path: Path,
     python_bin: str,
     timeout_ms: int,
     default_provider: str,
@@ -80,6 +81,15 @@ def patch_openclaw_config(
     }
     entries[PLUGIN_ID] = plugin_entry
     plugins["entries"] = entries
+
+    installs = dict(plugins.get("installs") or {})
+    installs[PLUGIN_ID] = {
+        "installPath": str(install_path),
+        "source": "path",
+        "spec": str(repo_root / "extensions" / "openclaw-scbe-system-tools"),
+    }
+    plugins["installs"] = installs
+
     patched["plugins"] = plugins
     return patched
 
@@ -155,6 +165,7 @@ def apply_install(plan: InstallPlan) -> dict[str, Any]:
     patched = patch_openclaw_config(
         current,
         repo_root=repo_root,
+        install_path=destination,
         python_bin=plan.python_bin,
         timeout_ms=plan.timeout_ms,
         default_provider=plan.default_provider,
