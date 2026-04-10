@@ -1,6 +1,6 @@
 # DARPA / SAM.gov Contact and Proposal Status
 
-Last updated: 2026-04-08
+Last updated: 2026-04-09
 Status: working operations summary for federal proposal and registration work
 
 ## Purpose
@@ -21,7 +21,7 @@ Do not store SSN, bank routing, account numbers, or other sensitive registration
 - Solicitation: `DARPA-PA-25-07-02`
 - Program: `CLARA`
 - UEI: `J4NXHM6N5F59`
-- CAGE code: pending in current notes
+- CAGE code: not assigned yet
 - SAM.gov registration: submitted / pending activation in current notes
 - Patent anchor: `USPTO #63/961,403`
 
@@ -81,6 +81,12 @@ These are the unresolved questions repeated across the current DARPA notes:
 4. Can a full CLARA proposal be submitted without a prior accepted abstract?
 5. Does the current proposal timeline still fit the activation window and submission deadline?
 
+## Current Blocking Fact
+
+- As of `2026-04-09`, the CLARA full proposal cannot be treated as submission-ready because no CAGE code has been assigned yet.
+- Portal access exists, but portal access alone is not sufficient.
+- Until activation changes, the CLARA lane should be treated as `blocked pending SAM/CAGE completion or explicit DARPA guidance`.
+
 ## Recommended Call / Check Order
 
 1. Federal Service Desk
@@ -99,7 +105,8 @@ These are the unresolved questions repeated across the current DARPA notes:
 ## Current Next Actions
 
 - [ ] Check SAM.gov activation status for UEI `J4NXHM6N5F59`
-- [ ] Confirm whether a CAGE code has been assigned
+- [x] Confirm whether a CAGE code has been assigned
+- [ ] Re-check CAGE assignment after SAM activation update
 - [ ] Confirm the live submission route for `DARPA-PA-25-07-02`
 - [ ] Verify whether CLARA allows full submission without prior abstract acceptance
 - [ ] Decide go / no-go for CLARA based on registration + submission reality
@@ -114,6 +121,7 @@ These are the unresolved questions repeated across the current DARPA notes:
 - `docs/proposals/DARPA_CLARA/03_WHITE_PAPER_OUTLINE.md`
 - `docs/proposals/DARPA_CLARA/04_TECHNICAL_VOLUME_DRAFT.md`
 - `docs/proposals/DARPA_CLARA/05_COST_WORKBOOK_NOTES.md`
+- `docs/proposals/DARPA_CLARA/07_FULL_PROPOSAL_PORTAL_SUBMISSION_CHECKLIST.md`
 - `docs/proposals/DARPA_CLARA/MORNING_BRIEFING_2026-04-07.md`
 
 ### Supporting research
