@@ -1,0 +1,46 @@
+{
+  "input_records": 2648,
+  "expanded_records": 6093,
+  "total_output": 8741,
+  "expansion_ratio": 3.3,
+  "grade_distribution": {
+    "100": 53,
+    "200": 374,
+    "300": 570,
+    "400": 1292,
+    "500": 359
+  },
+  "stage_distribution": {
+    "CRITIQUE": 1292,
+    "EXPLORATION": 374,
+    "FOUNDATION": 53,
+    "FRONTIER": 359,
+    "SYNTHESIS": 570
+  },
+  "domain_distribution": {
+    "creative_writing": 2066,
+    "philosophy": 890,
+    "interdisciplinary": 417,
+    "general": 409,
+    "engineering": 381,
+    "security": 251,
+    "mathematics": 162,
+    "physics": 150,
+    "computer_science": 68
+  },
+  "expansion": {
+    "convergent": 2221,
+    "opposed": 2221,
+    "orthogonal": 1651,
+    "grade_distribution": {
+      "300": 1140,
+      "400": 3876,
+      "500": 1077
+    },
+    "type_distribution": {
+      "convergent_cross_domain": 2221,
+      "convexly_opposed": 2221,
+      "orthogonal_mapping": 1651
+    }
+  }
+}

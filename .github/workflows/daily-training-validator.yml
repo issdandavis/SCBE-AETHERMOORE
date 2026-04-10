@@ -1,0 +1,151 @@
+name: Daily Training Data Validator
+
+on:
+  schedule:
+    - cron: '30 3 * * *'  # Daily at 3:30 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JSONL files
+        id: validate
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, glob, gzip
+          from pathlib import Path
+
+          results = {
+              "total_files": 0,
+              "total_records": 0,
+              "valid_files": 0,
+              "corrupt_files": [],
+              "empty_files": [],
+              "file_stats": [],
+          }
+
+          patterns = [
+              "training-data/**/*.jsonl",
+              "training-data/**/*.jsonl.gz",
+          ]
+
+          files = []
+          for pat in patterns:
+              files.extend(glob.glob(pat, recursive=True))
+
+          results["total_files"] = len(files)
+
+          for filepath in sorted(files):
+              records = 0
+              errors = 0
+              try:
+                  if filepath.endswith(".gz"):
+                      opener = gzip.open
+                  else:
+                      opener = open
+
+                  with opener(filepath, "rt", encoding="utf-8", errors="ignore") as f:
+                      for line_num, line in enumerate(f, 1):
+                          line = line.strip()
+                          if not line:
+                              continue
+                          try:
+                              json.loads(line)
+                              records += 1
+                          except json.JSONDecodeError:
+                              errors += 1
+                              if errors <= 3:
+                                  print(f"::warning::{filepath}:{line_num} — invalid JSON")
+
+                  if records == 0 and errors == 0:
+                      results["empty_files"].append(filepath)
+                  elif errors > 0:
+                      results["corrupt_files"].append({
+                          "file": filepath,
+                          "valid": records,
+                          "errors": errors,
+                      })
+                  else:
+                      results["valid_files"] += 1
+
+                  results["total_records"] += records
+                  results["file_stats"].append({
+                      "file": filepath,
+                      "records": records,
+                      "errors": errors,
+                  })
+
+              except Exception as e:
+                  results["corrupt_files"].append({
+                      "file": filepath,
+                      "valid": 0,
+                      "errors": str(e),
+                  })
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"total_files={results['total_files']}\n")
+              fh.write(f"total_records={results['total_records']}\n")
+              fh.write(f"valid_files={results['valid_files']}\n")
+              fh.write(f"corrupt_count={len(results['corrupt_files'])}\n")
+              fh.write(f"empty_count={len(results['empty_files'])}\n")
+
+          with open("training-validation.json", "w") as f:
+              json.dump(results, f, indent=2)
+
+          print(f"\n=== Training Data Summary ===")
+          print(f"Files: {results['total_files']}")
+          print(f"Records: {results['total_records']:,}")
+          print(f"Valid: {results['valid_files']}")
+          print(f"Corrupt: {len(results['corrupt_files'])}")
+          print(f"Empty: {len(results['empty_files'])}")
+          PYEOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: training-validation
+          path: training-validation.json
+          retention-days: 30
+
+      - name: Alert on corruption
+        if: steps.validate.outputs.corrupt_count > 0
+        uses: actions/github-script@v7
+        env:
+          TOTAL_FILES: ${{ steps.validate.outputs.total_files }}
+          TOTAL_RECORDS: ${{ steps.validate.outputs.total_records }}
+          CORRUPT: ${{ steps.validate.outputs.corrupt_count }}
+        with:
+          script: |
+            const fs = require('fs');
+            const today = new Date().toISOString().slice(0, 10);
+            let report = {};
+            try { report = JSON.parse(fs.readFileSync('training-validation.json', 'utf8')); } catch {}
+
+            let body = `## Training Data Corruption Detected\n\n`;
+            body += `| Metric | Value |\n|--------|-------|\n`;
+            body += `| Total files | ${process.env.TOTAL_FILES} |\n`;
+            body += `| Total records | ${process.env.TOTAL_RECORDS} |\n`;
+            body += `| Corrupt files | ${process.env.CORRUPT} |\n\n`;
+
+            if (report.corrupt_files) {
+              body += `### Corrupt Files\n`;
+              for (const c of report.corrupt_files) {
+                body += `- \`${c.file}\`: ${c.valid} valid, ${c.errors} errors\n`;
+              }
+            }
+            body += `\n---\n*Automated by daily-training-validator*`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Training Data Issue - ${today}`,
+              body,
+              labels: ['training-data', 'automated'],
+            });

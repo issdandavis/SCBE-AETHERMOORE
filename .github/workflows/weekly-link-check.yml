@@ -1,0 +1,127 @@
+name: Weekly Dead Link Check
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'  # Every Monday at 7 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check markdown links
+        id: links
+        run: |
+          python3 - <<'PYEOF'
+          import re, os, glob
+          from pathlib import Path
+
+          broken = []
+          checked = 0
+
+          # Check internal file references in markdown
+          md_files = glob.glob("**/*.md", recursive=True)
+          skip_dirs = {"node_modules", "dist", ".git", "__pycache__", ".venv", "external"}
+
+          for md_file in md_files:
+              parts = Path(md_file).parts
+              if any(d in skip_dirs for d in parts):
+                  continue
+
+              try:
+                  content = Path(md_file).read_text(encoding="utf-8", errors="ignore")
+              except Exception:
+                  continue
+
+              # Find markdown links: [text](path)
+              links = re.findall(r'\[([^\]]*)\]\(([^)]+)\)', content)
+              for text, href in links:
+                  checked += 1
+                  # Skip external URLs, anchors, and mailto
+                  if href.startswith(('http://', 'https://', '#', 'mailto:')):
+                      continue
+                  # Strip anchor from path
+                  path = href.split('#')[0]
+                  if not path:
+                      continue
+                  # Resolve relative to the markdown file's directory
+                  base = Path(md_file).parent
+                  target = base / path
+                  if not target.exists():
+                      broken.append({
+                          "file": md_file,
+                          "link": href,
+                          "text": text[:50],
+                      })
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"checked={checked}\n")
+              fh.write(f"broken={len(broken)}\n")
+
+          with open("broken-links.txt", "w") as f:
+              if broken:
+                  for b in broken:
+                      f.write(f"{b['file']}: [{b['text']}]({b['link']})\n")
+              else:
+                  f.write("No broken internal links found.\n")
+
+          if broken:
+              print(f"::warning::Found {len(broken)} broken internal links")
+              for b in broken[:20]:
+                  print(f"  {b['file']}: [{b['text']}]({b['link']})")
+          else:
+              print(f"All {checked} internal links valid.")
+          PYEOF
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: broken-links
+          path: broken-links.txt
+          retention-days: 30
+
+      - name: Create issue if broken links found
+        if: steps.links.outputs.broken > 0
+        uses: actions/github-script@v7
+        env:
+          CHECKED: ${{ steps.links.outputs.checked }}
+          BROKEN: ${{ steps.links.outputs.broken }}
+        with:
+          script: |
+            const fs = require('fs');
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Broken Links Report - ${today}`;
+            let report = '';
+            try { report = fs.readFileSync('broken-links.txt', 'utf8'); } catch {}
+
+            // Close previous
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'broken-links',
+              state: 'open',
+            });
+            for (const issue of existing.data) {
+              if (issue.title.startsWith('Broken Links Report -')) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: `## Broken Internal Links\n\nChecked ${process.env.CHECKED} links, found ${process.env.BROKEN} broken.\n\n\`\`\`\n${report.slice(0, 4000)}\n\`\`\`\n\n---\n*Automated by weekly-link-check*`,
+              labels: ['broken-links', 'automated'],
+            });

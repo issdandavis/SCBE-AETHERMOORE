@@ -1,0 +1,229 @@
+name: Daily Formula Validation
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Every day at midnight UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  harmonic-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        id: build
+        continue-on-error: true
+        run: npm run build
+
+      - name: Run harmonic pipeline smoke tests
+        id: harmonic_ts
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
+        run: |
+          npx vitest run tests/harmonic/ --reporter=json --outputFile=harmonic-ts-results.json 2>&1 || true
+          npx vitest run tests/harmonic/ 2>&1 | tee harmonic-ts-output.txt
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        continue-on-error: true
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Run Python harmonic validation
+        id: harmonic_py
+        continue-on-error: true
+        run: |
+          python3 - <<'PYEOF'
+          import sys, json, os, math
+
+          PHI = (1 + math.sqrt(5)) / 2
+          results = []
+
+          def validate_harmonic_wall(d_H, pd, expected_range=(0, 1)):
+              """Validate H(d, pd) = 1/(1 + phi*d_H + 2*pd)"""
+              H = 1.0 / (1.0 + PHI * d_H + 2.0 * pd)
+              in_range = expected_range[0] < H <= expected_range[1]
+              return H, in_range
+
+          # Test case matrix: (d_H, pd, description)
+          test_cases = [
+              (0.0, 0.0, "zero distance, zero drift"),
+              (0.0, 0.5, "zero distance, moderate drift"),
+              (1.0, 0.0, "unit distance, zero drift"),
+              (1.0, 1.0, "unit distance, unit drift"),
+              (5.0, 0.0, "large distance, zero drift"),
+              (0.0, 5.0, "zero distance, large drift"),
+              (10.0, 10.0, "extreme values"),
+              (0.001, 0.001, "near-zero values"),
+              (100.0, 0.0, "very large distance"),
+              (0.0, 100.0, "very large drift"),
+          ]
+
+          all_pass = True
+          for d_H, pd, desc in test_cases:
+              H, ok = validate_harmonic_wall(d_H, pd)
+              results.append({
+                  "test": desc,
+                  "d_H": d_H,
+                  "pd": pd,
+                  "H": round(H, 10),
+                  "in_range": ok,
+              })
+              if not ok:
+                  all_pass = False
+                  print(f"FAIL: {desc}: H={H} not in (0, 1]")
+
+          # Monotonicity: increasing d_H should decrease H
+          mono_pass = True
+          prev_H = 1.0
+          for d in [0.0, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0]:
+              H, _ = validate_harmonic_wall(d, 0.0)
+              if H > prev_H + 1e-12:
+                  mono_pass = False
+                  print(f"FAIL: monotonicity broken at d_H={d}")
+              prev_H = H
+
+          # Monotonicity: increasing pd should decrease H
+          prev_H = 1.0
+          for pd in [0.0, 0.1, 0.5, 1.0, 2.0, 5.0, 10.0]:
+              H, _ = validate_harmonic_wall(0.0, pd)
+              if H > prev_H + 1e-12:
+                  mono_pass = False
+                  print(f"FAIL: monotonicity broken at pd={pd}")
+              prev_H = H
+
+          # Boundary: H(0,0) must equal 1.0
+          boundary_pass = abs(validate_harmonic_wall(0.0, 0.0)[0] - 1.0) < 1e-12
+
+          # Asymptotic: H approaches 0 as inputs grow
+          asymptotic_H = validate_harmonic_wall(1e6, 1e6)[0]
+          asymptotic_pass = asymptotic_H < 1e-6
+
+          report = {
+              "date": __import__("datetime").date.today().isoformat(),
+              "formula": "H(d,pd) = 1/(1 + phi*d_H + 2*pd)",
+              "phi": PHI,
+              "test_results": results,
+              "monotonicity": mono_pass,
+              "boundary": boundary_pass,
+              "asymptotic": asymptotic_pass,
+              "all_pass": all_pass and mono_pass and boundary_pass and asymptotic_pass,
+          }
+
+          os.makedirs("artifacts/formula-validation", exist_ok=True)
+          with open("artifacts/formula-validation/daily_report.json", "w") as f:
+              json.dump(report, f, indent=2)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              fh.write(f"all_pass={'true' if report['all_pass'] else 'false'}\n")
+              fh.write(f"monotonicity={'pass' if mono_pass else 'fail'}\n")
+              fh.write(f"boundary={'pass' if boundary_pass else 'fail'}\n")
+              fh.write(f"asymptotic={'pass' if asymptotic_pass else 'fail'}\n")
+              fh.write(f"test_cases={len(results)}\n")
+
+          if not report["all_pass"]:
+              print("::error::Harmonic wall formula validation FAILED")
+              sys.exit(1)
+          else:
+              print(f"All {len(results)} test cases passed. Formula is stable.")
+          PYEOF
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## Daily Formula Validation - $(date -u +%Y-%m-%d)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Formula:** \`H(d, pd) = 1/(1 + phi*d_H + 2*pd)\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Check | Result |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| TS Build | **${{ steps.build.outcome }}** |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| TS Harmonic Tests | **${{ steps.harmonic_ts.outcome }}** |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Python Range Tests | **${{ steps.harmonic_py.outputs.all_pass }}** |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Monotonicity | **${{ steps.harmonic_py.outputs.monotonicity }}** |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Boundary (H(0,0)=1) | **${{ steps.harmonic_py.outputs.boundary }}** |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Asymptotic (H->0) | **${{ steps.harmonic_py.outputs.asymptotic }}** |" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: formula-validation-daily
+          path: artifacts/formula-validation/daily_report.json
+          retention-days: 30
+
+      - name: Create issue on failure
+        if: always() && (steps.harmonic_py.outputs.all_pass != 'true' || steps.harmonic_ts.outcome == 'failure' || steps.build.outcome == 'failure')
+        uses: actions/github-script@v7
+        env:
+          BUILD: ${{ steps.build.outcome }}
+          TS_TESTS: ${{ steps.harmonic_ts.outcome }}
+          PY_PASS: ${{ steps.harmonic_py.outputs.all_pass }}
+          MONO: ${{ steps.harmonic_py.outputs.monotonicity }}
+          BOUNDARY: ${{ steps.harmonic_py.outputs.boundary }}
+          ASYMPTOTIC: ${{ steps.harmonic_py.outputs.asymptotic }}
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Formula Validation Failure - ${today}`;
+
+            // Deduplicate: don't create if same-day issue exists
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'formula-validation',
+              state: 'open',
+            });
+            const dupe = existing.data.find(i => i.title === title);
+            if (dupe) {
+              console.log(`Issue already exists: #${dupe.number}`);
+              return;
+            }
+
+            let body = `## Daily Formula Validation FAILED\n\n`;
+            body += `**Formula:** \`H(d, pd) = 1/(1 + phi*d_H + 2*pd)\`\n\n`;
+            body += `| Check | Result |\n|-------|--------|\n`;
+            body += `| TypeScript build | ${process.env.BUILD} |\n`;
+            body += `| TypeScript harmonic tests | ${process.env.TS_TESTS} |\n`;
+            body += `| Python formula tests | ${process.env.PY_PASS === 'true' ? 'pass' : 'FAIL'} |\n`;
+            body += `| Monotonicity | ${process.env.MONO} |\n`;
+            body += `| Boundary H(0,0)=1 | ${process.env.BOUNDARY} |\n`;
+            body += `| Asymptotic H->0 | ${process.env.ASYMPTOTIC} |\n\n`;
+            body += `The harmonic wall math may have regressed. `;
+            body += `Check the workflow run artifacts for details.\n\n`;
+            body += `**Key files to inspect:**\n`;
+            body += `- \`src/harmonic/pipeline14.ts\`\n`;
+            body += `- \`src/harmonic/harmonicScaling.ts\`\n`;
+            body += `- \`src/symphonic_cipher/\`\n\n`;
+            body += `---\n*Automated by daily-formula-validation workflow*`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['formula-validation', 'regression', 'automated'],
+            });

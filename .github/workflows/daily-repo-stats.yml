@@ -1,0 +1,111 @@
+name: Daily Repo Stats
+
+on:
+  schedule:
+    - cron: '0 5 * * *'  # Daily at 5 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate stats
+        id: stats
+        run: |
+          python3 - <<'PYEOF'
+          import glob, json, os, gzip
+
+          stats = {}
+
+          # Module counts
+          stats["ts_modules"] = len(glob.glob("src/**/*.ts", recursive=True))
+          stats["py_modules"] = len(glob.glob("src/**/*.py", recursive=True))
+          stats["test_files"] = (
+              len(glob.glob("tests/**/*.test.ts", recursive=True)) +
+              len(glob.glob("tests/**/test_*.py", recursive=True))
+          )
+          stats["workflow_count"] = len(glob.glob(".github/workflows/*.yml"))
+          stats["doc_count"] = len(glob.glob("docs/**/*.md", recursive=True))
+
+          # Training data
+          jsonl_files = glob.glob("training-data/**/*.jsonl", recursive=True)
+          gz_files = glob.glob("training-data/**/*.jsonl.gz", recursive=True)
+          stats["training_files"] = len(jsonl_files) + len(gz_files)
+
+          total_records = 0
+          for f in jsonl_files:
+              try:
+                  with open(f, 'r', encoding='utf-8', errors='ignore') as fh:
+                      total_records += sum(1 for line in fh if line.strip())
+              except Exception:
+                  pass
+          for f in gz_files:
+              try:
+                  with gzip.open(f, 'rt', encoding='utf-8', errors='ignore') as fh:
+                      total_records += sum(1 for line in fh if line.strip())
+              except Exception:
+                  pass
+          stats["training_records"] = total_records
+
+          # Lines of code (rough)
+          ts_lines = 0
+          for f in glob.glob("src/**/*.ts", recursive=True):
+              try:
+                  ts_lines += sum(1 for _ in open(f, encoding='utf-8', errors='ignore'))
+              except Exception:
+                  pass
+          stats["ts_loc"] = ts_lines
+
+          py_lines = 0
+          for f in glob.glob("src/**/*.py", recursive=True):
+              try:
+                  py_lines += sum(1 for _ in open(f, encoding='utf-8', errors='ignore'))
+              except Exception:
+                  pass
+          stats["py_loc"] = py_lines
+
+          # Write badge JSON files
+          os.makedirs("docs/static/badges", exist_ok=True)
+
+          def badge(label, message, color):
+              return {"schemaVersion": 1, "label": label, "message": str(message), "color": color}
+
+          badges = {
+              "modules": badge("modules", f"{stats['ts_modules'] + stats['py_modules']}", "blue"),
+              "tests": badge("tests", f"{stats['test_files']}", "green"),
+              "training": badge("training records", f"{stats['training_records']:,}", "orange"),
+              "loc": badge("lines of code", f"{stats['ts_loc'] + stats['py_loc']:,}", "blueviolet"),
+              "docs": badge("docs", f"{stats['doc_count']}", "informational"),
+              "workflows": badge("CI workflows", f"{stats['workflow_count']}", "brightgreen"),
+          }
+
+          for name, data in badges.items():
+              with open(f"docs/static/badges/{name}.json", "w") as f:
+                  json.dump(data, f)
+
+          # Summary
+          with open("docs/static/badges/stats-summary.json", "w") as f:
+              json.dump(stats, f, indent=2)
+
+          print("=== Repo Stats ===")
+          for k, v in stats.items():
+              print(f"  {k}: {v:,}" if isinstance(v, int) else f"  {k}: {v}")
+          PYEOF
+
+      - name: Commit badge updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/static/badges/ || true
+          if git diff --cached --quiet; then
+            echo "No badge changes"
+          else
+            git commit -m "chore(stats): update daily repo stats badges"
+            git push
+          fi

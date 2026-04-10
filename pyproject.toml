@@ -52,9 +52,8 @@ scbe-code-prism = "code_prism.cli:main"
 py-modules = ["scbe"]
 
 [tool.setuptools.packages.find]
-where = [".", "src"]
+where = ["src"]
 include = [
-    "scripts*",
     "code_prism*",
     "flow_router*",
     "symphonic_cipher*",
@@ -66,10 +65,20 @@ include = [
     "storage*",
 ]
 exclude = [
-    "tests*", "scripts*", "agents*", "training*",
-    # Root-only sub-packages that don't exist under src/ — excluding these
-    # prevents setuptools from failing on mismatched package directories
-    # when using where = [".", "src"].
-    "api.github_app*", "api.billing*", "api.keys*",
+    "tests*",
+    "agents*",
+    "training*",
+    "scripts*",
+    # Test subpackages
+    "*.tests",
+    "*.tests.*",
+    # Excluded submodules
+    "api.github_app*",
+    "api.billing*",
+    "api.keys*",
     "symphonic_cipher.geoseal*",
 ]
+
+[tool.setuptools.package-dir]
+# Root-level package not under src/
+api = "api"
