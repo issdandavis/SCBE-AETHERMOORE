@@ -56,6 +56,7 @@ export interface VerifyResult {
   error?: string;
 }
 
+
 /** Options for signing */
 export interface SignOptions {
   kid?: string;
@@ -144,6 +145,7 @@ function fromBase64Url(s: string): Buffer {
   return Buffer.from(s, 'base64url');
 }
 
+
 /**
  * Create HMAC-SHA256 signature
  */
@@ -182,6 +184,13 @@ function createSignatureData(
   const data = `${version}.${primaryTongue}.${tongue}.${aad}.${payload}.${nonce}.${ts}`;
   return Buffer.from(data, 'utf8');
 }
+
+/**
+ * Create signature data buffer for RWP v2 wire format (ver="2")
+ *
+ * Kept domain-separated per signing tongue while using the v2 envelope fields.
+ * Includes `kid` in the signed transcript when present (empty-string otherwise).
+ */
 
 // ============================================================================
 // Core Functions
@@ -430,6 +439,10 @@ export function suggestPolicy(action: string): PolicyLevel {
   const normalizedAction = action.toLowerCase();
   return ACTION_POLICIES[normalizedAction] ?? 'standard';
 }
+
+export type { RWP2WireEnvelope, RWP2WireSig, RWP2WireTongue, VerifyWireResult } from './rwp_v2_wire';
+export { clearWireNonceCache, signRoundtableV2Wire, verifyRoundtableV2Wire } from './rwp_v2_wire';
+export { generateSyntheticConversationV2Wire } from './data_factory';
 
 // ============================================================================
 // RWP v3.0 Re-exports

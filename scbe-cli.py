@@ -20,6 +20,7 @@ import hmac
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -27,6 +28,14 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 VERSION = "3.1.0"
+
+for _stream_name in ("stdout", "stderr"):
+    _stream = getattr(sys, _stream_name, None)
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
 # Golden ratio for harmonic weighting
 PHI = 1.618033988749895
@@ -118,11 +127,25 @@ def _split_prefixed_token(token: str) -> Tuple[Optional[str], str]:
 def _parse_blend_pattern(pattern_str: str) -> List[Tuple[str, int]]:
     if not pattern_str:
         raise ValueError("Blend pattern is required (e.g., KO:2,AV:1,DR:1)")
+    segments = [seg.strip() for seg in pattern_str.split(",") if seg.strip()]
+    if not segments:
+        raise ValueError("Blend pattern is empty.")
+
     pattern: List[Tuple[str, int]] = []
-    for seg in pattern_str.split(","):
-        seg = seg.strip()
-        if not seg:
-            continue
+    if all(":" not in seg for seg in segments):
+        tongue_order = list(TONGUES.keys())
+        if len(segments) > len(tongue_order):
+            raise ValueError(
+                f"Blend shorthand supports up to {len(tongue_order)} counts: {', '.join(t.upper() for t in tongue_order)}"
+            )
+        for idx, seg in enumerate(segments):
+            count = int(seg)
+            if count <= 0:
+                raise ValueError("Pattern counts must be positive.")
+            pattern.append((tongue_order[idx], count))
+        return pattern
+
+    for seg in segments:
         if ":" not in seg:
             raise ValueError(f"Invalid pattern segment: {seg}")
         tongue_raw, count_raw = seg.split(":", 1)
@@ -1399,19 +1422,11 @@ the encryption because SCBE uses post-quantum primitives!
         if not pattern_str:
             pattern_str = "KO:2,AV:1,RU:1"
 
-        # Parse pattern
-        pattern: List[Tuple[str, int]] = []
         try:
-            for item in pattern_str.split(","):
-                parts = item.strip().split(":")
-                tongue = parts[0].lower()
-                count = int(parts[1]) if len(parts) > 1 else 1
-                if tongue not in TONGUES:
-                    print(f"❌ Unknown tongue in pattern: {tongue}")
-                    return
-                pattern.append((tongue, count))
-        except (ValueError, IndexError):
-            print("❌ Invalid pattern format. Use: TONGUE:COUNT,TONGUE:COUNT,...")
+            pattern = _parse_blend_pattern(pattern_str)
+        except ValueError as exc:
+            print(f"❌ {exc}")
+            print("   Use either KO:2,AV:1,RU:1 or count shorthand like 2,1,1")
             return
 
         print("\nInput format:")
@@ -1452,8 +1467,20 @@ the encryption because SCBE uses post-quantum primitives!
         elapsed = (time.time() - start) * 1000
 
         print(f"\n✓ Blended {len(data)} bytes in {elapsed:.2f}ms")
-        print(f"Pattern: {pattern_str}")
+        normalized_pattern = ",".join(f"{tongue.upper()}:{count}" for tongue, count in pattern)
+        print(f"Pattern: {normalized_pattern}")
         print(f"\nSpell-text:\n{' '.join(tokens)}")
+
+    def cmd_launch_agent(self):
+        """Launch the AI agent from the legacy CLI."""
+        agent_script = REPO_ROOT / "scbe-agent.py"
+        if not agent_script.exists():
+            print("\n❌ AI agent launcher is missing")
+            return
+
+        print("\nForwarding to the SCBE AI agent...")
+        print("Type 'exit' in the agent shell to return here.\n")
+        subprocess.run([sys.executable, str(agent_script)], check=False)
 
     def cmd_unblend(self):
         """Decode blended spell-text (must have tongue prefixes)"""
@@ -1563,8 +1590,13 @@ the encryption because SCBE uses post-quantum primitives!
         print("  blend      - Multi-tongue stripe encoding")
         print("  unblend    - Decode blended spell-text")
 
-        print("\n🤖 AI Providers:")
+        print("\nAI Providers:")
         print("  providers  - Check AI provider configuration")
+
+        print("\nAssistant:")
+        print("  ai         - Launch the SCBE AI agent")
+        print("  agent      - Launch the SCBE AI agent")
+        print("  codex      - Launch the SCBE AI agent")
 
         print("\n📊 System:")
         print("  tutorial   - Interactive tutorial")
@@ -1594,6 +1626,10 @@ the encryption because SCBE uses post-quantum primitives!
             "unblend": self.cmd_unblend,
             # AI Providers
             "providers": self.cmd_providers,
+            # Assistant bridge
+            "ai": self.cmd_launch_agent,
+            "agent": self.cmd_launch_agent,
+            "codex": self.cmd_launch_agent,
             # System
             "tutorial": self.cmd_tutorial,
             "attack": self.cmd_attack_sim,

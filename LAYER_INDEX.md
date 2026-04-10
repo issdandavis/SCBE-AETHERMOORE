@@ -1,7 +1,11 @@
 # SCBE-AETHERMOORE 14-Layer Architecture Index
 
 **Version:** 3.0.0
-**Last Updated:** January 23, 2026
+**Last Updated:** April 8, 2026
+
+> This file is an implementation index, not the formula authority.
+> Canonical formulas live in `docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
+> Current authority order and runtime split live in `CANONICAL_SYSTEM_STATE.md`.
 
 ## Layer Definitions
 
@@ -18,7 +22,7 @@
 | L9 | Spectral Coherence | S_spec = 1 - r_HF | FFT-based pattern stability |
 | L10 | Spin Coherence | C_spin | Mean resultant length |
 | L11 | Triadic Distance | d_tri | Byzantine consensus temporal |
-| L12 | Harmonic Scaling | H(d,pd)=1/(1+d+2*pd) | Bounded safety score |
+| L12 | Harmonic Scaling | H(d*, R) = R^((φ · d*)²) | Canonical harmonic wall |
 | L13 | Decision & Risk | ALLOW/QUARANTINE/DENY | Risk-gated decision gate |
 | L14 | Audio Axis | S_audio | Harmonic + stellar octave mapping |
 
@@ -42,7 +46,7 @@ src/symphonic_cipher/scbe_aethermoore/layers/
     ├── layer_9_spectral_coherence()  # L9: FFT coherence
     ├── layer_10_spin_coherence()     # L10: Phasor alignment
     ├── layer_11_triadic_distance()   # L11: Byzantine consensus
-    ├── layer_12_harmonic_scale()     # L12: bounded score 1/(1+d+2*pd)
+    ├── layer_12_harmonic_scale()     # L12: canonical wall H(d*, R) = R^((φ · d*)²)
     ├── layer_13_decision()           # L13: Risk gating
     └── layer_14_audio_axis()         # L14: Spectral telemetry
 ```
@@ -84,7 +88,7 @@ docs/evidence/
 |---------|-----------|----------|
 | A | Metric Invariance: d_H preserved through transforms | L5, L6, L7 |
 | B | End-to-End Continuity: Smooth map composition | L1-L14 |
-| C | Risk Monotonicity: d_tri ↑ ⟹ H(d,R) ↑ | L11, L12 |
+| C | Risk Monotonicity: d* ↑ ⟹ H(d*,R) ↑ | L8, L12 |
 | D | Diffeomorphism: T_breath, T_phase are diffeomorphisms | L6, L7 |
 
 ---

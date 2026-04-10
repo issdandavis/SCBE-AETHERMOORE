@@ -27,8 +27,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .semantic_antivirus import SemanticAntivirus
-from .web_polly_pad import WebPollyPad, PadMode
-from .navigation_engine import NavigationEngine, PageUnderstanding
+from .web_polly_pad import WebPollyPad, PadMode, ActionType
+from .navigation_engine import NavigationEngine, PageUnderstanding, ResearchQuery
 
 # ---------------------------------------------------------------------------
 #  Task types
@@ -48,6 +48,7 @@ class TaskStatus(str, Enum):
 class TaskType(str, Enum):
     NAVIGATE = "navigate"  # Go to URL, extract info
     RESEARCH = "research"  # Multi-page research task
+    LIVE_RESEARCH = "live_research"  # Mid-task real-time research query
     FORM_FILL = "form_fill"  # Fill and submit forms
     MONITOR = "monitor"  # Watch a page for changes
     POST_CONTENT = "post_content"  # Post to social/CMS/API (Buffer-style)
@@ -134,6 +135,75 @@ class PostJob:
         if self.schedule_at is None:
             return True
         return time.time() >= self.schedule_at
+
+
+class LiveResearchAgent:
+    """
+    Autonomous research agent that answers questions mid-task.
+
+    Invoked when NavigationEngine emits a RESEARCH action. Uses a separate
+    navigation engine with SCIENCE mode to search, verify, and return findings
+    within a time budget.
+
+    Cost-benefit model (matches HexForge SFT training):
+      - time_remaining > 30s → always research (5s for knowledge saves 15s of trial-and-error)
+      - time_remaining < 15s → skip research, act on instinct
+      - 15-30s → research only if failure risk is catastrophic
+    """
+
+    def __init__(self, antivirus: Optional[SemanticAntivirus] = None) -> None:
+        self._antivirus = antivirus or SemanticAntivirus()
+        self._queries_handled = 0
+        self._total_time_spent = 0.0
+        self._cache: Dict[str, str] = {}  # query → result cache
+
+    def should_research(self, time_remaining: float, failure_risk: float = 0.5) -> bool:
+        """Cost-benefit decision: is research worth the time cost?"""
+        if time_remaining > 30.0:
+            return True
+        if time_remaining < 15.0:
+            return False
+        # Between 15-30s: only if failure risk is high (catastrophic)
+        return failure_risk >= 0.7
+
+    def handle_query(self, query: ResearchQuery) -> ResearchQuery:
+        """Process a research query. Returns the query with result populated.
+
+        In the real system, this would invoke a search engine or LLM.
+        Here we implement the governance gate and caching layer.
+        """
+        # Check cache first
+        cache_key = query.query.lower().strip()
+        if cache_key in self._cache:
+            query.result = self._cache[cache_key]
+            query.resolved = True
+            return query
+
+        # Governance scan the query
+        profile = self._antivirus.scan(query.query)
+        if profile.governance_decision == "DENY":
+            query.result = f"[RESEARCH BLOCKED: query failed governance scan — {profile.reasons}]"
+            query.resolved = True
+            return query
+
+        # In production this calls a search API. For now, mark as needing
+        # external resolution (the orchestrator passes to a real search service).
+        self._queries_handled += 1
+        self._total_time_spent += query.time_budget_seconds
+
+        return query
+
+    def cache_result(self, query: str, result: str) -> None:
+        """Cache a research result for future queries."""
+        self._cache[query.lower().strip()] = result
+
+    @property
+    def stats(self) -> Dict[str, Any]:
+        return {
+            "queries_handled": self._queries_handled,
+            "total_time_spent": round(self._total_time_spent, 2),
+            "cache_size": len(self._cache),
+        }
 
 
 class ContentPostingBuffer:
@@ -224,6 +294,7 @@ class AgentOrchestrator:
         self._tasks: Dict[str, WebTask] = {}
         self._engines: Dict[str, NavigationEngine] = {}
         self._posting_buffer = ContentPostingBuffer(self._antivirus)
+        self._research_agent = LiveResearchAgent(self._antivirus)
 
     # -- task management -----------------------------------------------------
 
@@ -289,6 +360,32 @@ class AgentOrchestrator:
             self._complete_task(task_id)
             return None
 
+        # Intercept RESEARCH actions — route through LiveResearchAgent
+        if action.action_type == ActionType.RESEARCH:
+            time_remaining = task.timeout_seconds - elapsed
+            if self._research_agent.should_research(time_remaining):
+                rq = ResearchQuery(
+                    query=action.target,
+                    context=action.data or "",
+                    time_budget_seconds=action.metadata.get("time_budget", 5.0),
+                )
+                rq = self._research_agent.handle_query(rq)
+                # Return action with research metadata so external system can resolve
+                return {
+                    "action_type": "research",
+                    "target": action.target,
+                    "data": action.data,
+                    "timeout_ms": int(rq.time_budget_seconds * 1000),
+                    "metadata": {
+                        **action.metadata,
+                        "research_resolved": rq.resolved,
+                        "research_result": rq.result,
+                        "research_stats": self._research_agent.stats,
+                    },
+                }
+            # Not worth researching — skip and continue
+            return self.step_task(task_id, page)
+
         return {
             "action_type": action.action_type.value,
             "target": action.target,
@@ -296,6 +393,18 @@ class AgentOrchestrator:
             "timeout_ms": action.timeout_ms,
             "metadata": action.metadata,
         }
+
+    def resolve_research(self, task_id: str, query: str, result: str, sources: Optional[List[str]] = None) -> None:
+        """Feed research results back into a task's navigation engine."""
+        engine = self._engines.get(task_id)
+        if not engine:
+            return
+        # Find matching pending query
+        for rq in engine._state.pending_research:
+            if rq.query == query:
+                engine.resolve_research(rq, result, sources)
+                self._research_agent.cache_result(query, result)
+                return
 
     def report_step_result(self, task_id: str, success: bool, error: Optional[str] = None) -> Optional[str]:
         """Report the result of executing a step. Returns recovery strategy or None."""
@@ -388,6 +497,7 @@ class AgentOrchestrator:
         return {
             TaskType.NAVIGATE: "NAVIGATION",
             TaskType.RESEARCH: "SCIENCE",
+            TaskType.LIVE_RESEARCH: "SCIENCE",
             TaskType.FORM_FILL: "ENGINEERING",
             TaskType.MONITOR: "SYSTEMS",
             TaskType.POST_CONTENT: "COMMS",

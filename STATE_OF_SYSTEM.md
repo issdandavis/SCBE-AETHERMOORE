@@ -1,7 +1,10 @@
 # SCBE-AETHERMOORE: State of the System
 
-**Last Updated:** February 2, 2026
+**Last Updated:** April 8, 2026
 **Status:** Operational (Core + CLI + API)
+
+> This file is the current status summary. Formula authority lives in `docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
+> System authority order and repo/runtime split live in `CANONICAL_SYSTEM_STATE.md`.
 
 ---
 
@@ -192,4 +195,4 @@ SCBE-AETHERMOORE/
 
 ---
 
-*This document is the single source of truth for system status.*
+*This document is the current status summary for operational readiness. Use `CANONICAL_SYSTEM_STATE.md` for overall authority order.*
