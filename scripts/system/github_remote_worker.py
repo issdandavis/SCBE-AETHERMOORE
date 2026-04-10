@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -75,12 +76,25 @@ def _dispatch(args: argparse.Namespace) -> int:
         print(" ".join(shlex.quote(part) for part in gh_cmd))
         return 0
 
-    proc = _run(gh_cmd)
+    proc = _run(gh_cmd, capture=True)
     if proc.returncode != 0:
+        if proc.stdout:
+            print(proc.stdout, end="")
+        if proc.stderr:
+            print(proc.stderr, end="", file=sys.stderr)
         return proc.returncode
+
+    combined_output = "".join(part for part in (proc.stdout, proc.stderr) if part)
+    if combined_output:
+        print(combined_output, end="")
+
+    match = re.search(r"/actions/runs/(\d+)", combined_output)
+    run_id = match.group(1) if match else None
 
     print(f"Dispatched {WORKFLOW_NAME} on branch {branch}")
     if args.watch:
+        if run_id:
+            return _watch_run_id(args.repo, run_id, poll_seconds=args.poll_seconds)
         return _watch(args.repo, branch=branch, poll_seconds=args.poll_seconds)
     return 0
 
@@ -111,9 +125,14 @@ def _latest_run(repo: str, branch: str | None = None) -> dict[str, Any]:
 def _watch(repo: str, branch: str | None = None, *, poll_seconds: int = 10) -> int:
     run = _latest_run(repo, branch)
     run_id = str(run["databaseId"])
+    return _watch_run_id(repo, run_id, poll_seconds=poll_seconds)
+
+
+def _watch_run_id(repo: str, run_id: str, *, poll_seconds: int = 10) -> int:
+    run = json.loads(_must(["gh", "run", "view", "-R", repo, run_id, "--json", "databaseId,conclusion,url"]))
     print(f"Watching run {run_id}: {run['url']}")
     watch_proc = _run(["gh", "run", "watch", "-R", repo, run_id, "--interval", str(poll_seconds)])
-    refreshed = _latest_run(repo, branch)
+    refreshed = json.loads(_must(["gh", "run", "view", "-R", repo, run_id, "--json", "databaseId,conclusion,url"]))
     conclusion = refreshed.get("conclusion") or "unknown"
     print(f"Final conclusion: {conclusion}")
     return 0 if conclusion == "success" and watch_proc.returncode == 0 else 1
