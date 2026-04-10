@@ -32,7 +32,7 @@ on:
       artifact_glob:
         description: Additional files or globs to upload
         required: false
-        default: artifacts/**
+        default: ""
   repository_dispatch:
     types:
       - free-remote-worker
@@ -51,7 +51,7 @@ jobs:
       PYTHON_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.python_version || github.event.client_payload.python_version || '3.11' }}
       INSTALL_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.install_mode || github.event.client_payload.install_mode || 'auto' }}
       WORKING_DIRECTORY: ${{ github.event_name == 'workflow_dispatch' && inputs.working_directory || github.event.client_payload.working_directory || '.' }}
-      ARTIFACT_GLOB: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_glob || github.event.client_payload.artifact_glob || 'artifacts/**' }}
+      ARTIFACT_GLOB: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_glob || github.event.client_payload.artifact_glob || '' }}
       ARTIFACT_ROOT: ${{ github.workspace }}/artifacts/remote-worker
     steps:
       - name: Validate payload
