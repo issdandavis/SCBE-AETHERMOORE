@@ -1,31 +1,6 @@
-"""
-SCBE Dual-Core Memory Kernel
-==============================
+"""Kernel primitives for SCBE-AETHERMOORE.
 
-GeoKernel (brainstem) + MemoryLattice (spinal cord)
-with 7 memory layers and quasi-lattice bridge.
+This package contains small, deterministic building blocks used by the Python
+test suite. Keep implementations dependency-light and reproducible.
 """
 
-from src.kernel.dual_core import (
-    DualCoreKernel,
-    GeoKernel,
-    MemoryLattice,
-    MemoryLayer,
-    MemoryEntry,
-    KernelStack,
-    PHDMClassifier,
-    quasi_project,
-    ICO_MATRIX,
-)
-
-__all__ = [
-    "DualCoreKernel",
-    "GeoKernel",
-    "MemoryLattice",
-    "MemoryLayer",
-    "MemoryEntry",
-    "KernelStack",
-    "PHDMClassifier",
-    "quasi_project",
-    "ICO_MATRIX",
-]

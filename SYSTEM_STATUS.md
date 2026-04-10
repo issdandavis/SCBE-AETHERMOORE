@@ -1,8 +1,11 @@
 # SCBE-AETHERMOORE System Status
 
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-04-08
 
-## Overall Health: PRODUCTION READY
+> This file is a historical operational snapshot, not the authority file for formula or release status.
+> See `CANONICAL_SYSTEM_STATE.md` for current authority order, runtime formula, and status language.
+
+## Overall Health: OPERATIONAL / PILOT-READY
 
 | Component | Status | Tests |
 |-----------|--------|-------|
@@ -138,4 +141,4 @@ AI Safety: 13/13 passed (100%)
 
 ## Conclusion
 
-The SCBE-AETHERMOORE system is **production-ready** with all core components verified and deployed. The remaining issues are test infrastructure concerns that do not affect production functionality.
+The SCBE-AETHERMOORE system is **operational and suitable for pilot or proof-of-concept use** with core components verified and deployed. It should not be described as regulated-enterprise-ready or bank-ready without the compliance, support, and hardening work listed above.

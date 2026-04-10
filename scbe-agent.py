@@ -5,6 +5,7 @@ AI-powered coding assistant with web search, code library, and security scanning
 """
 
 import sys
+import argparse
 import json
 import hashlib
 import base64
@@ -15,6 +16,14 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 VERSION = "3.0.0"
+
+for _stream_name in ("stdout", "stderr"):
+    _stream = getattr(sys, _stream_name, None)
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
 
 class SCBEAgent:
@@ -603,6 +612,10 @@ check your code for vulnerabilities!"""
         print("\n📖 AVAILABLE COMMANDS")
         print("=" * 60)
         print("  ask      - Chat with AI assistant about SCBE")
+        print("  ai       - Alias for ask")
+        print("  agent    - Alias for ask")
+        print("  chat     - Alias for ask")
+        print("  codex    - Alias for ask")
         print("  search   - Secure web search with SCBE encryption")
         print("  code     - View code examples (Python & TypeScript)")
         print("  scan     - Scan code for security vulnerabilities")
@@ -624,6 +637,10 @@ check your code for vulnerabilities!"""
 
         commands = {
             "ask": self.cmd_ask,
+            "ai": self.cmd_ask,
+            "agent": self.cmd_ask,
+            "chat": self.cmd_ask,
+            "codex": self.cmd_ask,
             "search": self.cmd_search,
             "code": self.cmd_code,
             "scan": self.cmd_scan,
@@ -656,9 +673,28 @@ check your code for vulnerabilities!"""
                 print(f"\n❌ Error: {str(e)}")
 
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="scbe-agent",
+        description="SCBE-AETHERMOORE AI agent",
+    )
+    parser.add_argument(
+        "mode",
+        nargs="?",
+        default="interactive",
+        choices=["interactive", "help"],
+        help="Launch mode. Defaults to interactive.",
+    )
+    return parser
+
+
 def main():
     """Entry point"""
+    args = build_parser().parse_args()
     agent = SCBEAgent()
+    if args.mode == "help":
+        agent.cmd_help()
+        return
     agent.run()
 
 

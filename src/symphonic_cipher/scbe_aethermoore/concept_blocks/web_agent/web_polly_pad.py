@@ -64,6 +64,7 @@ class ActionType(str, Enum):
     SELECT = "select"
     BACK = "back"
     REFRESH = "refresh"
+    RESEARCH = "research"  # Mid-task web research query
 
 
 class RecoveryStrategy(str, Enum):
@@ -106,6 +107,7 @@ class BrowserAction:
             ActionType.SELECT: 0.4,
             ActionType.BACK: 0.1,
             ActionType.REFRESH: 0.2,
+            ActionType.RESEARCH: 0.35,
         }
         return SENSITIVITY.get(self.action_type, 0.5)
 
@@ -187,6 +189,14 @@ class WebPollyPad:
                 return "DENY", f"URL blocked: {profile.reasons}"
             if profile.governance_decision == "QUARANTINE":
                 return "QUARANTINE", f"URL suspicious: {profile.reasons}"
+
+        # Research query governance — scan the query itself for injection
+        if action.action_type == ActionType.RESEARCH and action.data:
+            profile = self._antivirus.scan(action.data)
+            if profile.governance_decision == "DENY":
+                return "DENY", f"Research query blocked: {profile.reasons}"
+            if profile.governance_decision == "QUARANTINE":
+                return "QUARANTINE", f"Research query suspicious: {profile.reasons}"
 
         # Check action sensitivity vs current session risk
         session_risk = self._antivirus.session_stats["mean_risk"]

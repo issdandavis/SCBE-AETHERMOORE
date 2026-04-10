@@ -69,7 +69,7 @@ PROMOS = {
         "- Post-quantum crypto\n"
         "- Air-gapped sovereign deployment\n"
         "- NIST AI RMF 100% compliant\n\n"
-        "aethermoorgames.com#government"
+        "aethermoore.com#government"
     ),
 }
 

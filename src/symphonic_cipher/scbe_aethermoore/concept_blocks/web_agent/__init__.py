@@ -33,9 +33,11 @@ from .navigation_engine import (
     NavigationEngine,
     NavigationState,
     PageUnderstanding,
+    ResearchQuery,
 )
 from .agent_orchestrator import (
     AgentOrchestrator,
+    LiveResearchAgent,
     WebTask,
     TaskStatus,
     TaskResult,
@@ -73,7 +75,9 @@ __all__ = [
     "NavigationEngine",
     "NavigationState",
     "PageUnderstanding",
+    "ResearchQuery",
     "AgentOrchestrator",
+    "LiveResearchAgent",
     "WebTask",
     "TaskStatus",
     "TaskResult",

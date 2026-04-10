@@ -47,6 +47,22 @@
       "notebook_url": "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24",
       "provider": "notebooklm",
       "updated_at": "2026-03-03T04:47:28Z"
+    },
+    "qwen-local": {
+      "agent_id": "qwen-local",
+      "capabilities": [],
+      "context_file": "notes/agent-memory/local-qwen-coder-context.md",
+      "created_at": "2026-04-09T07:35:41Z",
+      "description": "Local free coding model via Ollama with Obsidian-backed context and memory.",
+      "display_name": "Local Qwen Coder",
+      "enabled": true,
+      "endpoint": "http://127.0.0.1:11434/v1",
+      "memory_log_file": "notes/agent-memory/local-qwen-coder-memory.md",
+      "model": "qwen2.5-coder:7b",
+      "notebook_url": "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24",
+      "provider": "openai-compatible",
+      "system_prompt": "You are my local SCBE-AETHERMOORE coding agent. Be concise, implementation-focused, and precise about files, commands, and verification.",
+      "updated_at": "2026-04-09T07:35:41Z"
     }
   },
   "version": "1.0.0"

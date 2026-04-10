@@ -6,6 +6,7 @@ Runtime reference implementation for the SCBE reconstruction vote:
 
   R_k = sum_i w_i * tau_{i,k}
       + sum_(i,j in E) lambda_{ij} * (chi_i - chi_j)
+      - sum_(i,j in E) gamma * lambda_{ij} * abs(chi_i - chi_j)
       + sum_i rho_i * v_i
 
 The implementation is deterministic and intentionally compact. It is suitable
@@ -30,6 +31,7 @@ from .atomic_tokenization import (
 class FusionParams:
     w_default: float = 1.0
     lambda_default: float = 0.10
+    coherence_default: float = 0.10
     rho_default: float = 0.05
     theta_pos: Dict[Tongue, float] | None = None
     theta_neg: Dict[Tongue, float] | None = None
@@ -46,6 +48,9 @@ class FusionResult:
     tau_hat: Dict[Tongue, int]
     reconstruction_votes: Dict[Tongue, float]
     states: list[AtomicTokenState]
+    signed_edge_tension: float = 0.0
+    coherence_penalty: float = 0.0
+    valence_pressure: float = 0.0
 
     @property
     def elements(self) -> list[Element]:
@@ -79,12 +84,18 @@ def fuse_atomic_states(
     state_list = list(states)
     n = len(state_list)
 
+    if n == 0:
+        raise ValueError("fuse_atomic_states requires at least one atomic state")
+
     weights_norm = _normalize_weights(n, weights, params.w_default)
     valence_weights_norm = _normalize_weights(n, valence_weights, params.rho_default)
     edges_norm = _normalize_edges(n, edges)
     edge_weights = edge_weights or {}
 
     votes: Dict[Tongue, float] = {tongue: 0.0 for tongue in TONGUES}
+    signed_edge_tension = 0.0
+    coherence_penalty = 0.0
+    valence_pressure = 0.0
 
     for index, state in enumerate(state_list):
         wi = weights_norm[index]
@@ -100,13 +111,17 @@ def fuse_atomic_states(
         delta_chi = (
             state_list[i].element.electronegativity - state_list[j].element.electronegativity
         )
+        signed_edge_tension += edge_weight * float(delta_chi)
+        coherence_penalty += params.coherence_default * edge_weight * abs(float(delta_chi))
         for tongue in TONGUES:
             votes[tongue] += edge_weight * float(delta_chi)
+            votes[tongue] -= params.coherence_default * edge_weight * abs(float(delta_chi))
 
     for index, state in enumerate(state_list):
-        valence_pressure = valence_weights_norm[index] * float(state.element.valence)
+        token_valence_pressure = valence_weights_norm[index] * float(state.element.valence)
+        valence_pressure += token_valence_pressure
         for tongue in TONGUES:
-            votes[tongue] += valence_pressure
+            votes[tongue] += token_valence_pressure
 
     tau_hat: Dict[Tongue, int] = {}
     for tongue in TONGUES:
@@ -117,7 +132,14 @@ def fuse_atomic_states(
         else:
             tau_hat[tongue] = 0
 
-    return FusionResult(tau_hat=tau_hat, reconstruction_votes=votes, states=state_list)
+    return FusionResult(
+        tau_hat=tau_hat,
+        reconstruction_votes=votes,
+        states=state_list,
+        signed_edge_tension=signed_edge_tension,
+        coherence_penalty=coherence_penalty,
+        valence_pressure=valence_pressure,
+    )
 
 
 def fuse_tokens(
@@ -144,4 +166,3 @@ def fuse_tokens(
         edges=edges,
     )
     return result.tau_hat, result.reconstruction_votes, result.elements
-

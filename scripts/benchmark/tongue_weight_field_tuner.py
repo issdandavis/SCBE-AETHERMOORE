@@ -138,7 +138,7 @@ TARGET_PROFILES: Dict[str, List[float]] = {
 }
 
 TRAIN_CORPUS: List[Tuple[str, str]] = [
-    ("Deploy 3 agents to scan aethermoorgames.com for vulnerabilities", "hydra_task"),
+    ("Deploy 3 agents to scan aethermoore.com for vulnerabilities", "hydra_task"),
     ("Launch 6 worker agents and route results into the benchmark board", "hydra_task"),
     ("Run the nightly scan on api.aethermoore.net and summarize failures", "hydra_task"),
     ("Open the demo lab and dispatch two crawler agents across the docs site", "hydra_task"),
