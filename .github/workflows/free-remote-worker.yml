@@ -1,0 +1,166 @@
+name: Free Remote Worker
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_label:
+        description: Short label for the remote job
+        required: false
+        default: manual-remote-job
+      command:
+        description: Bash command to run on the GitHub-hosted worker
+        required: true
+        type: string
+      python_version:
+        description: Python version to install on the worker
+        required: false
+        default: "3.11"
+      install_mode:
+        description: Dependency bootstrap strategy
+        required: false
+        default: auto
+        type: choice
+        options:
+          - auto
+          - editable
+          - requirements
+          - none
+      working_directory:
+        description: Working directory relative to repo root
+        required: false
+        default: "."
+      artifact_glob:
+        description: Additional files or globs to upload
+        required: false
+        default: artifacts/**
+  repository_dispatch:
+    types:
+      - free-remote-worker
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  remote-job:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TASK_LABEL: ${{ github.event_name == 'workflow_dispatch' && inputs.task_label || github.event.client_payload.task_label || 'remote-job' }}
+      COMMAND: ${{ github.event_name == 'workflow_dispatch' && inputs.command || github.event.client_payload.command || '' }}
+      PYTHON_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.python_version || github.event.client_payload.python_version || '3.11' }}
+      INSTALL_MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.install_mode || github.event.client_payload.install_mode || 'auto' }}
+      WORKING_DIRECTORY: ${{ github.event_name == 'workflow_dispatch' && inputs.working_directory || github.event.client_payload.working_directory || '.' }}
+      ARTIFACT_GLOB: ${{ github.event_name == 'workflow_dispatch' && inputs.artifact_glob || github.event.client_payload.artifact_glob || 'artifacts/**' }}
+      ARTIFACT_ROOT: ${{ github.workspace }}/artifacts/remote-worker
+    steps:
+      - name: Validate payload
+        run: |
+          if [ -z "${COMMAND}" ]; then
+            echo "COMMAND is required"
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Node.js when package.json exists
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Bootstrap dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+
+          case "${INSTALL_MODE}" in
+            none)
+              echo "Skipping dependency install"
+              ;;
+            editable)
+              python -m pip install -e ".[test]" || python -m pip install -e .
+              ;;
+            requirements)
+              if [ -f requirements.txt ]; then
+                python -m pip install -r requirements.txt
+              else
+                echo "requirements.txt not found"
+                exit 1
+              fi
+              ;;
+            auto)
+              if [ -f requirements.txt ]; then
+                python -m pip install -r requirements.txt || true
+              fi
+              if [ -f pyproject.toml ]; then
+                python -m pip install -e ".[test]" || python -m pip install -e . || true
+              fi
+              if [ -f package-lock.json ]; then
+                npm ci || npm install
+              elif [ -f package.json ]; then
+                npm install
+              fi
+              ;;
+            *)
+              echo "Unknown install mode: ${INSTALL_MODE}"
+              exit 1
+              ;;
+          esac
+
+      - name: Run remote command
+        shell: bash
+        run: |
+          set -u
+          set +e
+          set -o pipefail
+          mkdir -p "${ARTIFACT_ROOT}"
+          {
+            echo "task_label=${TASK_LABEL}"
+            echo "working_directory=${WORKING_DIRECTORY}"
+            echo "python_version=${PYTHON_VERSION}"
+            echo "install_mode=${INSTALL_MODE}"
+            echo "command=${COMMAND}"
+            echo "run_url=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          } > "${ARTIFACT_ROOT}/metadata.txt"
+
+          if ! cd "${WORKING_DIRECTORY}"; then
+            status=$?
+            echo "Failed to enter working directory: ${WORKING_DIRECTORY}" | tee "${ARTIFACT_ROOT}/command.log"
+            echo "${status}" > "${ARTIFACT_ROOT}/exit_code.txt"
+            exit 0
+          fi
+
+          bash -lc "${COMMAND}" 2>&1 | tee "${ARTIFACT_ROOT}/command.log"
+          status=${PIPESTATUS[0]}
+          echo "${status}" > "${ARTIFACT_ROOT}/exit_code.txt"
+          exit 0
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: remote-worker-${{ github.run_id }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            artifacts/remote-worker/**
+            ${{ env.ARTIFACT_GLOB }}
+
+      - name: Fail when command failed
+        if: always()
+        shell: bash
+        run: |
+          status="$(cat artifacts/remote-worker/exit_code.txt)"
+          if [ "${status}" != "0" ]; then
+            echo "Remote command failed with exit code ${status}"
+            exit "${status}"
+          fi
