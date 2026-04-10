@@ -60,6 +60,9 @@ or pass `--repo owner/name`.
 By default this runs on the remote repo default branch. Use `--ref some-branch`
 if you need a specific pushed branch.
 
+The default artifact behavior only uploads `artifacts/remote-worker/**`.
+Pass `--artifact-glob some/path/**` only when you intentionally want more files.
+
 ## Check Latest Status
 
 ```bash
@@ -83,5 +86,7 @@ gh api repos/issdandavis/SCBE-AETHERMOORE/dispatches \
 - `working_directory` is resolved relative to the repo root on the runner.
 - `install_mode=auto` tries `requirements.txt`, editable Python install, and
   `npm install` when relevant files exist.
+- `artifact_glob` is optional. Leave it empty unless you want extra artifacts
+  beyond the remote-worker logs and metadata.
 - If the command fails, the workflow still uploads logs and artifacts, then
   exits nonzero at the end.

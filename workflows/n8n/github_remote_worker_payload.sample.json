@@ -6,6 +6,6 @@
     "python_version": "3.11",
     "install_mode": "auto",
     "working_directory": ".",
-    "artifact_glob": "artifacts/**"
+    "artifact_glob": ""
   }
 }
