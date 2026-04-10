@@ -79,6 +79,7 @@ from .atomic_tokenization import AtomicTokenState, Element as AtomicElement
 from .atomic_tokenization import TritVector, element_to_tau, element_to_trit_vector
 from .atomic_tokenization import map_token_to_atomic_state, map_token_to_element
 from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states, fuse_tokens
+from .ingestion_rights import classify_ingestion_rights_record, get_source_record, load_source_registry
 from .rhombic_bridge import rhombic_fusion, rhombic_score
 
 __all__ += [
@@ -93,6 +94,9 @@ __all__ += [
     "FusionResult",
     "fuse_atomic_states",
     "fuse_tokens",
+    "load_source_registry",
+    "get_source_record",
+    "classify_ingestion_rights_record",
     "rhombic_fusion",
     "rhombic_score",
 ]
