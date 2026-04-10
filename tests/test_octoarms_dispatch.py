@@ -38,3 +38,23 @@ def test_octoarms_dispatch_accepts_skill_level_formation_alias() -> None:
     assert payload["flow"]["formation"] == "hexagonal"
     assert payload["lane"]["name"] == "octoarmor-triage"
     assert payload["lane"]["status"] == "completed"
+
+
+def test_octoarms_dispatch_prefers_qwen_for_hf_triage() -> None:
+    result = _run_dispatch(
+        "--task",
+        "hf model routing regression",
+        "--formation",
+        "hexagonal-ring",
+        "--lane",
+        "octoarmor-triage",
+        "--provider",
+        "hf",
+        "--no-action-map",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["routing"]["recommended_provider"] == "hf"
+    assert payload["routing"]["recommended_model"] == "Qwen/Qwen2.5-7B-Instruct"

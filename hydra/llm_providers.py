@@ -497,7 +497,7 @@ class HuggingFaceProvider(LLMProvider):
 
     def __init__(
         self,
-        model: str = "mistralai/Mistral-7B-Instruct-v0.3",
+        model: str = "Qwen/Qwen2.5-7B-Instruct",
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
     ):
