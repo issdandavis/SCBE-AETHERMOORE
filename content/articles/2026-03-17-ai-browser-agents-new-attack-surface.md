@@ -111,5 +111,5 @@ The agents are doing what you told them to do. The question is whether you've th
 *I'm building SCBE-AETHERMOORE, an AI governance framework that uses hyperbolic geometry to make rogue agent behavior mathematically infeasible. The browser hardening stuff above is part of how we protect agent fleets in production.*
 
 *GitHub: [github.com/issdandavis/SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE-AETHERMOORE)*
-*Website: [aethermoorgames.com](https://aethermoorgames.com)*
+*Website: [aethermoore.com](https://aethermoore.com)*
 *Book: [The Six Tongues Protocol](https://www.amazon.com/dp/B0GSSFQD9G) on Kindle*

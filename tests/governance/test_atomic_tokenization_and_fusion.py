@@ -1,4 +1,10 @@
+import math
+import random
+
+import pytest
+
 from python.scbe.atomic_tokenization import (
+    TONGUES,
     element_to_tau,
     map_token_to_atomic_state,
     map_token_to_element,
@@ -40,6 +46,17 @@ def test_witness_tokens_are_marked_stable():
     assert element_to_tau(state.element)["RU"] >= 0
 
 
+def test_atomic_tau_stays_within_trit_bounds():
+    states = [
+        map_token_to_atomic_state(token, language="en")
+        for token in ("the", "not", "build", "compiler", "after", "very")
+    ]
+
+    for state in states:
+        for tongue in TONGUES:
+            assert getattr(state.tau, tongue) in (-1, 0, 1)
+
+
 def test_negation_changes_fusion_output():
     tau_hat_1, _, _ = fuse_tokens(["go"])
     tau_hat_2, _, _ = fuse_tokens(["not", "go"])
@@ -69,3 +86,42 @@ def test_edge_weights_affect_fusion_result():
     _, weighted_votes, _ = fuse_tokens(["not", "build"], edge_weights={(0, 1): 0.5})
 
     assert weighted_votes["UM"] != baseline_votes["UM"]
+
+
+def test_empty_fusion_input_is_rejected():
+    with pytest.raises(ValueError, match="at least one atomic state"):
+        fuse_atomic_states([])
+
+
+def test_coherence_penalty_grows_with_divergence():
+    witness_a = map_token_to_atomic_state("the", language="en")
+    witness_b = map_token_to_atomic_state("and", language="en")
+    negation = map_token_to_atomic_state("not", language="en")
+
+    aligned = fuse_atomic_states([witness_a, witness_b], edge_weights={(0, 1): 0.5})
+    divergent = fuse_atomic_states([witness_a, negation], edge_weights={(0, 1): 0.5})
+
+    assert aligned.coherence_penalty == 0.0
+    assert divergent.coherence_penalty > aligned.coherence_penalty
+
+
+def test_fusion_result_exposes_diagnostics():
+    result = fuse_atomic_states(
+        [map_token_to_atomic_state("not"), map_token_to_atomic_state("build")],
+        edge_weights={(0, 1): 0.5},
+        params=FusionParams(rho_default=0.25),
+    )
+
+    assert result.coherence_penalty >= 0.0
+    assert result.valence_pressure > 0.0
+    assert isinstance(result.signed_edge_tension, float)
+
+
+def test_randomized_fusion_votes_stay_finite():
+    token_pool = ["the", "not", "build", "compiler", "after", "very", "because", "run"]
+    rng = random.Random(7)
+
+    for _ in range(25):
+        sample = [rng.choice(token_pool) for _ in range(rng.randint(1, 8))]
+        _, votes, _ = fuse_tokens(sample)
+        assert all(math.isfinite(value) for value in votes.values())

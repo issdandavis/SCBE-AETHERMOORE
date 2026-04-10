@@ -1,0 +1,4 @@
+interface:
+  display_name: "SCBE Document Management"
+  short_description: "Consolidate repo docs and keep authority order aligned."
+  default_prompt: "Classify the relevant SCBE docs, identify the authority file, consolidate drift, and leave lower-authority files as clear support or legacy references."

@@ -1,4 +1,6 @@
 
+import { HF_AGENT_PAIR_GUIDE } from './hfAgentPair';
+
 export const SCBE_TEST_SUITE = `SCBE Industry-Grade Test Suite - Above Standard Compliance
 ============================================================
 Military-Grade, Medical AI-to-AI, Financial, and Critical Infrastructure Tests
@@ -376,6 +378,7 @@ export const INITIAL_FILES: FileNode[] = [
         ]
       },
       { id: 'config', name: 'config.json', type: 'file', content: '{ "theme": "dark", "version": "1.0.0" }' },
+      { id: 'hf-agent-pair', name: 'HF_AGENT_PAIR.md', type: 'file', content: HF_AGENT_PAIR_GUIDE },
       { id: 'readme', name: 'README.md', type: 'file', content: '# SCBE-AETHERMOORE Training Lab\\n\\nWelcome to your AI-powered workspace.' },
     ],
   },
