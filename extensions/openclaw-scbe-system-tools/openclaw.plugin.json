@@ -22,12 +22,16 @@
       },
       "defaultProvider": {
         "type": "string",
-        "enum": ["auto", "local", "hf"],
+        "enum": ["auto", "local", "ollama", "hf"],
         "default": "auto"
       },
       "defaultLocalBaseUrl": {
         "type": "string",
         "default": "http://localhost:1234/v1"
+      },
+      "defaultOllamaBaseUrl": {
+        "type": "string",
+        "default": "http://localhost:11434/v1"
       }
     }
   }

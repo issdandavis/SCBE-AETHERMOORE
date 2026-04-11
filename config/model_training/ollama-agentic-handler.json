@@ -1,0 +1,73 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "ollama-agentic-handler",
+  "title": "SCBE Ollama agentic handler lane",
+  "description": "Bounded local Ollama profile for OpenClaw, HYDRA, and OctoArms handler planning over the SCBE coding corpora.",
+  "backend": "unsloth-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE governance-aware local coding and handler agent. You route bounded tasks through HYDRA and OpenClaw lanes, prefer deterministic execution, and return concise operational output.",
+  "dataset": {
+    "root": "training-data",
+    "train_files": [
+      "code_full_multiview.jsonl",
+      "code_master_sft.jsonl",
+      "code_deep_knowledge_sft.jsonl",
+      "code_universal_patterns_sft.jsonl",
+      "code_triangulated_sft.jsonl",
+      "sft_codebase_new.jsonl",
+      "sft_codeql_fixes.jsonl",
+      "spiralverse_codex_sft.jsonl"
+    ],
+    "eval_files": [
+      "code_baseline_l3.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 4096,
+    "lora_rank": 32,
+    "lora_alpha": 64,
+    "lora_dropout": 0.0,
+    "learning_rate": 0.0002,
+    "num_train_epochs": 1,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": -1,
+    "packing": true,
+    "load_in_4bit": true,
+    "optim": "adamw_8bit",
+    "weight_decay": 0.01,
+    "lr_scheduler_type": "cosine",
+    "logging_steps": 25,
+    "save_strategy": "steps",
+    "save_steps": 500,
+    "save_total_limit": 2,
+    "dataloader_num_workers": 2,
+    "seed": 42,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/ollama-agentic-handler"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "push_adapter": false,
+    "adapter_repo": "issdandavis/scbe-ollama-agentic-handler",
+    "push_merged": false
+  },
+  "execution": {
+    "default_emit_path": "artifacts/model_training/ollama-agentic-handler-train.py",
+    "recommended_target": "ollama-or-colab"
+  },
+  "runtime": {
+    "provider": "ollama",
+    "model": "qwen2.5-coder:7b",
+    "base_url": "http://localhost:11434/v1"
+  }
+}

@@ -16,6 +16,7 @@ import argparse
 import asyncio
 import sys
 
+from .llm_providers import DEFAULT_LOCAL_BASE_URL, DEFAULT_OLLAMA_BASE_URL
 from .swarm_browser import SwarmBrowser
 
 
@@ -33,7 +34,7 @@ def main() -> None:
     parser.add_argument(
         "--provider",
         default="local",
-        choices=["local", "hf", "huggingface"],
+        choices=["local", "ollama", "hf", "huggingface"],
         help="LLM provider (default: local)",
     )
     parser.add_argument(
@@ -43,7 +44,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--base-url",
-        default="http://localhost:1234/v1",
+        default=DEFAULT_LOCAL_BASE_URL,
         help="Base URL for local provider (default: LM Studio)",
     )
     parser.add_argument(
@@ -69,10 +70,14 @@ def main() -> None:
         parser.print_help()
         sys.exit(1)
 
+    base_url = args.base_url
+    if args.provider == "ollama" and args.base_url == DEFAULT_LOCAL_BASE_URL:
+        base_url = DEFAULT_OLLAMA_BASE_URL
+
     swarm = SwarmBrowser(
         provider_type=args.provider,
         model=args.model,
-        base_url=args.base_url,
+        base_url=base_url,
         backend_type=args.backend,
         dry_run=args.dry_run,
     )

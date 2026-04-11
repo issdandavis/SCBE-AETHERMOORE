@@ -28,6 +28,7 @@ class InstallPlan:
     timeout_ms: int
     default_provider: str
     default_local_base_url: str
+    default_ollama_base_url: str
     method: str
 
 
@@ -58,6 +59,7 @@ def patch_openclaw_config(
     timeout_ms: int,
     default_provider: str,
     default_local_base_url: str,
+    default_ollama_base_url: str,
 ) -> dict[str, Any]:
     patched = dict(payload)
     plugins = dict(patched.get("plugins") or {})
@@ -78,6 +80,7 @@ def patch_openclaw_config(
         "timeoutMs": timeout_ms,
         "defaultProvider": default_provider,
         "defaultLocalBaseUrl": default_local_base_url,
+        "defaultOllamaBaseUrl": default_ollama_base_url,
     }
     entries[PLUGIN_ID] = plugin_entry
     plugins["entries"] = entries
@@ -102,6 +105,7 @@ def build_install_plan(
     timeout_ms: int,
     default_provider: str,
     default_local_base_url: str,
+    default_ollama_base_url: str,
     method: str,
 ) -> InstallPlan:
     return InstallPlan(
@@ -115,6 +119,7 @@ def build_install_plan(
         timeout_ms=timeout_ms,
         default_provider=default_provider,
         default_local_base_url=default_local_base_url,
+        default_ollama_base_url=default_ollama_base_url,
         method=method,
     )
 
@@ -170,6 +175,7 @@ def apply_install(plan: InstallPlan) -> dict[str, Any]:
         timeout_ms=plan.timeout_ms,
         default_provider=plan.default_provider,
         default_local_base_url=plan.default_local_base_url,
+        default_ollama_base_url=plan.default_ollama_base_url,
     )
     write_json(config_path, patched)
 
@@ -190,8 +196,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--openclaw-home", default=str(Path.home() / ".openclaw"))
     parser.add_argument("--python-bin", default="python")
     parser.add_argument("--timeout-ms", type=int, default=DEFAULT_TIMEOUT_MS)
-    parser.add_argument("--default-provider", choices=["auto", "local", "hf"], default="hf")
+    parser.add_argument("--default-provider", choices=["auto", "local", "ollama", "hf"], default="hf")
     parser.add_argument("--default-local-base-url", default="http://localhost:1234/v1")
+    parser.add_argument("--default-ollama-base-url", default="http://localhost:11434/v1")
     parser.add_argument("--method", choices=["cli", "copy"], default="copy")
     parser.add_argument("--apply", action="store_true", help="Perform the install. Without this flag the script prints the plan only.")
     parser.add_argument("--json", action="store_true", help="Emit JSON to stdout.")
@@ -208,6 +215,7 @@ def main() -> int:
         timeout_ms=args.timeout_ms,
         default_provider=args.default_provider,
         default_local_base_url=args.default_local_base_url,
+        default_ollama_base_url=args.default_ollama_base_url,
         method=args.method,
     )
 

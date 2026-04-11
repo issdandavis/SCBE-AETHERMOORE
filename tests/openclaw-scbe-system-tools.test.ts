@@ -110,6 +110,25 @@ describe('openclaw scbe system tools plugin', () => {
     expect(command.args).toContain('--json');
   });
 
+  it('uses the Ollama base URL when provider=ollama and no explicit baseUrl is supplied', () => {
+    const cfg = resolvePluginConfig({
+      repoRoot: 'C:/repo',
+      pythonBin: 'python',
+      defaultProvider: 'ollama',
+      defaultOllamaBaseUrl: 'http://localhost:11434/v1',
+    });
+    const command = buildOctoarmsDispatchCommand(cfg, {
+      task: 'Test local Ollama handler',
+      lane: 'hydra-swarm',
+      provider: 'ollama',
+      model: 'qwen2.5-coder:7b',
+    });
+
+    const baseUrlIndex = command.args.indexOf('--base-url');
+    expect(baseUrlIndex).toBeGreaterThan(-1);
+    expect(command.args[baseUrlIndex + 1]).toBe('http://localhost:11434/v1');
+  });
+
   it('builds aetherauth commands with repo-owned decision artifacts', () => {
     const cfg = resolvePluginConfig({ repoRoot: 'C:/repo', pythonBin: 'py' });
     const command = buildAetherauthCommand(

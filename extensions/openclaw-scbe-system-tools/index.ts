@@ -9,8 +9,9 @@ export const PLUGIN_ID = 'scbe-system-tools';
 export const DEFAULT_REPO_ROOT = 'C:/Users/issda/SCBE-AETHERMOORE';
 export const DEFAULT_TIMEOUT_MS = 120_000;
 export const DEFAULT_LOCAL_BASE_URL = 'http://localhost:1234/v1';
+export const DEFAULT_OLLAMA_BASE_URL = 'http://localhost:11434/v1';
 
-type Provider = 'auto' | 'local' | 'hf';
+type Provider = 'auto' | 'local' | 'ollama' | 'hf';
 type WorkflowTemplate = 'architecture-enhancement' | 'implementation-loop' | 'training-center-loop';
 type FlowFormation =
   | 'adaptive-scatter'
@@ -37,6 +38,7 @@ type PluginConfig = {
   timeoutMs?: number;
   defaultProvider?: Provider;
   defaultLocalBaseUrl?: string;
+  defaultOllamaBaseUrl?: string;
 };
 
 type CommandSpec = {
@@ -56,6 +58,7 @@ export function resolvePluginConfig(input: PluginConfig | undefined): Required<P
         : DEFAULT_TIMEOUT_MS,
     defaultProvider: input?.defaultProvider || 'auto',
     defaultLocalBaseUrl: input?.defaultLocalBaseUrl?.trim() || DEFAULT_LOCAL_BASE_URL,
+    defaultOllamaBaseUrl: input?.defaultOllamaBaseUrl?.trim() || DEFAULT_OLLAMA_BASE_URL,
   };
 }
 
@@ -197,6 +200,10 @@ export function buildOctoarmsDispatchCommand(
     emitActionMap?: boolean;
   },
 ): CommandSpec {
+  const provider = params.provider || cfg.defaultProvider;
+  const baseUrl =
+    params.baseUrl ||
+    (provider === 'ollama' ? cfg.defaultOllamaBaseUrl : cfg.defaultLocalBaseUrl);
   const args = [
     'scripts/system/octoarms_dispatch.py',
     '--repo-root',
@@ -208,11 +215,11 @@ export function buildOctoarmsDispatchCommand(
     '--workflow-template',
     params.workflowTemplate || 'implementation-loop',
     '--provider',
-    params.provider || cfg.defaultProvider,
+    provider,
     '--backend',
     params.backend || 'playwright',
     '--base-url',
-    params.baseUrl || cfg.defaultLocalBaseUrl,
+    baseUrl,
     '--lane',
     params.lane || 'octoarmor-triage',
     '--bridge-name',
@@ -562,7 +569,7 @@ const plugin = {
             type: 'string',
             enum: ['architecture-enhancement', 'implementation-loop', 'training-center-loop'],
           },
-          provider: { type: 'string', enum: ['auto', 'local', 'hf'] },
+          provider: { type: 'string', enum: ['auto', 'local', 'ollama', 'hf'] },
           model: { type: 'string', description: 'Optional explicit model id, including Hugging Face models.' },
           backend: { type: 'string', enum: ['playwright', 'selenium', 'cdp'] },
           baseUrl: { type: 'string', description: 'Base URL for local model backends.' },
@@ -732,7 +739,7 @@ const plugin = {
             type: 'string',
             description: 'Model profile id to inspect. Defaults to hf-agentic-handler.',
           },
-          provider: { type: 'string', enum: ['auto', 'local', 'hf'] },
+          provider: { type: 'string', enum: ['auto', 'local', 'ollama', 'hf'] },
           lane: {
             type: 'string',
             enum: [
