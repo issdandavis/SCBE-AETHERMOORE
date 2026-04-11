@@ -32,6 +32,7 @@ def test_patch_openclaw_config_enables_plugin_and_preserves_existing_entries() -
         timeout_ms=90000,
         default_provider="hf",
         default_local_base_url="http://localhost:1234/v1",
+        default_ollama_base_url="http://localhost:11434/v1",
     )
 
     assert patched["plugins"]["enabled"] is True
@@ -55,6 +56,10 @@ def test_patch_openclaw_config_enables_plugin_and_preserves_existing_entries() -
         patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["defaultLocalBaseUrl"]
         == "http://localhost:1234/v1"
     )
+    assert (
+        patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["defaultOllamaBaseUrl"]
+        == "http://localhost:11434/v1"
+    )
 
 
 def test_build_install_plan_targets_global_openclaw_home() -> None:
@@ -65,6 +70,7 @@ def test_build_install_plan_targets_global_openclaw_home() -> None:
         timeout_ms=12345,
         default_provider="hf",
         default_local_base_url="http://localhost:1234/v1",
+        default_ollama_base_url="http://localhost:11434/v1",
         method="copy",
     )
 
@@ -74,6 +80,7 @@ def test_build_install_plan_targets_global_openclaw_home() -> None:
     assert plan.timeout_ms == 12345
     assert plan.default_provider == "hf"
     assert plan.default_local_base_url == "http://localhost:1234/v1"
+    assert plan.default_ollama_base_url == "http://localhost:11434/v1"
     assert plan.method == "copy"
 
 

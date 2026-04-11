@@ -9,8 +9,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "src"))
+
+from hydra.llm_providers import DEFAULT_LOCAL_BASE_URL, DEFAULT_OLLAMA_BASE_URL
+
 DEFAULT_HF_MODEL = "Qwen/Qwen2.5-7B-Instruct"
 DEFAULT_LOCAL_MODEL = "local-model"
+DEFAULT_OLLAMA_MODEL = "qwen2.5-coder:7b"
 LANES = {
     "none",
     "octoarmor-triage",
@@ -103,7 +112,14 @@ def _octoarmor_triage(repo_root: Path, task: str, provider: str, model: str | No
     resolved_provider = provider
     if provider == "auto":
         resolved_provider = "local" if complexity == "low" else "hf"
-    resolved_model = model or (DEFAULT_LOCAL_MODEL if resolved_provider == "local" else DEFAULT_HF_MODEL)
+    if model:
+        resolved_model = model
+    elif resolved_provider == "ollama":
+        resolved_model = DEFAULT_OLLAMA_MODEL
+    elif resolved_provider == "local":
+        resolved_model = DEFAULT_LOCAL_MODEL
+    else:
+        resolved_model = DEFAULT_HF_MODEL
     return {
         "complexity": complexity,
         "provider_snapshot": provider_snapshot,
@@ -179,6 +195,8 @@ def _hydra_swarm_run(
     base_url: str,
     dry_run: bool,
 ) -> dict[str, Any]:
+    if provider == "ollama" and base_url == DEFAULT_LOCAL_BASE_URL:
+        base_url = DEFAULT_OLLAMA_BASE_URL
     command = [
         sys.executable,
         "-m",
@@ -190,7 +208,7 @@ def _hydra_swarm_run(
         "--backend",
         backend,
     ]
-    if provider == "local":
+    if provider in {"local", "ollama"}:
         command += ["--base-url", base_url]
     if dry_run:
         command.append("--dry-run")
@@ -254,11 +272,14 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--support-units", type=int, default=0, help="Extra support units per step during packetization")
     parser.add_argument(
-        "--provider", default="auto", choices=["auto", "local", "hf"], help="Execution provider for hydra-swarm runs"
+        "--provider",
+        default="auto",
+        choices=["auto", "local", "ollama", "hf"],
+        help="Execution provider for hydra-swarm runs",
     )
     parser.add_argument("--model", default=None, help="Explicit model name or Hugging Face model id")
     parser.add_argument("--backend", default="playwright", choices=["playwright", "selenium", "cdp"])
-    parser.add_argument("--base-url", default="http://localhost:1234/v1", help="Base URL for local HYDRA provider")
+    parser.add_argument("--base-url", default=DEFAULT_LOCAL_BASE_URL, help="Base URL for local HYDRA provider")
     parser.add_argument("--lane", default="octoarmor-triage", choices=sorted(LANES))
     parser.add_argument("--bridge-name", default="pivot", help="Colab bridge profile name")
     parser.add_argument("--url", default=None, help="URL for browse-evidence lane")
