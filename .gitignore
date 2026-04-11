@@ -202,11 +202,19 @@ backups/
 _staging/
 .grok/
 .clawhub/
+.clawhub/lock.json
 .streamlit/
 .tmp-build/
 notes/.obsidian/
+notes/c/
+notes/Messges Dumps_trainging files/
+notes/System Library/Repository Mirror/
+AETHERMOORE/
 Notes and Dumps. by me/
 colab-*.png
 kaggle-*.png
 import_trace.txt
 polly_iq_results.json
+
+_external/
+external_repos/

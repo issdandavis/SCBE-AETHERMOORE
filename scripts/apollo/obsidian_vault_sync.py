@@ -17,15 +17,18 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
+from itertools import combinations
 from pathlib import Path
-from typing import Dict, List, Set
+from typing import Dict, Iterable, List, Set, Tuple
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-VAULT_PATH = Path(os.environ.get("OBSIDIAN_VAULT", r"C:\Users\issda\Documents\Avalon Files"))
+DEFAULT_VAULT_PATH = ROOT / "notes" if (ROOT / "notes").exists() else Path(r"C:\Users\issda\Documents\Avalon Files")
+VAULT_PATH = Path(os.environ.get("OBSIDIAN_VAULT", str(DEFAULT_VAULT_PATH)))
 CLOUD_TARGETS = [
     Path(r"C:\Users\issda\Dropbox\Obsidian-Sync"),
     Path(r"C:\Users\issda\OneDrive\Obsidian-Sync"),
@@ -39,6 +42,93 @@ WIKI_LINK = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]+)?\]\]")
 HEADING = re.compile(r"^(#{1,6})\s+(.+)$", re.MULTILINE)
 # Tag pattern
 TAG = re.compile(r"#([a-zA-Z][a-zA-Z0-9_/-]+)")
+TOKEN_SPLIT = re.compile(r"[^a-z0-9]+")
+
+PHI = 1.6180339887498949
+TONGUE_ORDER = ("KO", "AV", "RU", "CA", "UM", "DR")
+TONGUE_FULL_NAMES = {
+    "KO": "Kor'aelin",
+    "AV": "Avali",
+    "RU": "Runethic",
+    "CA": "Cassisivadan",
+    "UM": "Umbroth",
+    "DR": "Draumric",
+}
+TONGUE_SECTORS_DEGREES = {
+    "KO": 0.0,
+    "AV": 60.0,
+    "RU": 120.0,
+    "CA": 180.0,
+    "UM": 240.0,
+    "DR": 300.0,
+}
+TONGUE_SECTORS_RADIANS = {
+    tongue: math.radians(degrees) for tongue, degrees in TONGUE_SECTORS_DEGREES.items()
+}
+TONGUE_PHI_WEIGHTS = {
+    "KO": 1.0,
+    "AV": PHI ** 1,
+    "RU": PHI ** 2,
+    "CA": PHI ** 3,
+    "UM": PHI ** 4,
+    "DR": PHI ** 5,
+}
+TONGUE_KEYWORDS = {
+    "KO": ["intent", "purpose", "goal", "governance", "route", "session", "flow", "agent"],
+    "AV": ["context", "metadata", "environment", "condition", "state", "config", "index", "schema"],
+    "RU": ["binding", "relation", "connect", "link", "dependency", "edge", "graph", "couple"],
+    "CA": ["implement", "compute", "code", "algorithm", "function", "execute", "runtime", "calculate"],
+    "UM": ["security", "veil", "hidden", "risk", "threat", "encrypt", "protect", "guard", "attack"],
+    "DR": ["structure", "architecture", "layer", "pipeline", "topology", "framework", "system", "operations"],
+}
+SUBJECT_KEYWORDS = {
+    "agents": ["agent", "swarm", "assistant", "handoff", "crosstalk", "relay"],
+    "architecture": ["architecture", "system", "framework", "layer", "topology", "structure"],
+    "automation": ["automation", "workflow", "orchestration", "job", "pipeline", "scheduler"],
+    "browser": ["browser", "playwright", "chrome", "web", "page", "navigation"],
+    "cryptography": ["cryptography", "crypto", "cipher", "nonce", "encrypt", "decrypt", "signature", "authentication"],
+    "documentation": ["documentation", "doc", "manual", "guide", "tutorial", "readme", "spec"],
+    "governance": ["governance", "policy", "gate", "allow", "deny", "quarantine", "compliance"],
+    "lore": ["lore", "story", "world", "character", "narrative", "webtoon", "manhwa"],
+    "mathematics": ["math", "mathematics", "vector", "tensor", "geometry", "hyperbolic", "proof", "metric"],
+    "mobile": ["android", "mobile", "phone", "tablet", "emulator", "kindle", "ios"],
+    "monetization": ["stripe", "shopify", "checkout", "payment", "revenue", "sales", "product"],
+    "research": ["research", "paper", "arxiv", "benchmark", "experiment", "dataset", "evaluation"],
+    "security": ["security", "risk", "threat", "attack", "secret", "redact", "guard"],
+    "storage": ["storage", "vault", "database", "cache", "bucket", "drive", "s3", "dropbox"],
+    "training": ["training", "fine tune", "finetune", "sft", "jsonl", "corpus", "checkpoint", "eval"],
+}
+TASK_KEYWORDS = {
+    "audit": ["audit", "review", "inspect", "triage", "assess"],
+    "build": ["build", "create", "make", "implement", "assemble"],
+    "capture": ["capture", "collect", "gather", "ingest", "extract"],
+    "deploy": ["deploy", "ship", "release", "launch", "publish"],
+    "document": ["document", "write", "explain", "describe", "summarize"],
+    "repair": ["repair", "fix", "recover", "stabilize", "heal"],
+    "route": ["route", "dispatch", "handoff", "bridge", "relay"],
+    "sync": ["sync", "mirror", "copy", "backup", "promote"],
+    "test": ["test", "verify", "validate", "check", "prove"],
+    "train": ["train", "fine tune", "finetune", "evaluate", "score", "benchmark"],
+}
+RELATION_KEYWORDS = {
+    "bridge": ["bridge", "handoff", "relay", "route", "cross talk", "crosstalk"],
+    "dependency": ["depend", "requires", "upstream", "downstream", "prerequisite"],
+    "evidence": ["evidence", "proof", "artifact", "report", "trace"],
+    "feedback": ["feedback", "review", "score", "critique", "improve"],
+    "governs": ["govern", "policy", "gate", "permit", "block"],
+    "implements": ["implement", "executes", "runs", "powers"],
+    "linked": ["link", "linked", "reference", "connect", "associate"],
+    "maps": ["map", "index", "catalog", "taxonomy"],
+    "mirrors": ["mirror", "replica", "copy", "sync"],
+    "sequence": ["first", "next", "then", "before", "after"],
+}
+GENERIC_LABEL_STOPWORDS = {
+    "the", "and", "for", "with", "from", "into", "root", "notes", "system", "library", "repo", "repository",
+    "files", "docs", "doc", "data", "general", "misc", "miscellaneous", "master", "index",
+}
+MAX_CANDIDATE_BUCKET_SIZE = 200
+SEMANTIC_EDGE_MIN_GRAVITY = 0.2
+NULL_PATH_LIMIT = 64
 
 
 @dataclass
@@ -54,6 +144,158 @@ class VaultNote:
     content_hash: str = ""
     word_count: int = 0
     tongue: str = ""  # classified Sacred Tongue
+    tongue_profile: Dict[str, float] = field(default_factory=dict)
+    primary_weight_phi: float = 0.0
+    semantic_mass_phi: float = 0.0
+    tongue_sector_degrees: float = 0.0
+    tongue_sector_radians: float = 0.0
+    subjects: List[str] = field(default_factory=list)
+    tasks: List[str] = field(default_factory=list)
+    relations: List[str] = field(default_factory=list)
+
+
+def _normalize_text(value: str) -> str:
+    return " ".join(TOKEN_SPLIT.split(value.lower())).strip()
+
+
+def _compile_signal_sources(
+    name: str,
+    folder: str,
+    headings: Iterable[str],
+    tags: Iterable[str],
+    content: str,
+) -> List[Tuple[str, float]]:
+    return [
+        (_normalize_text(name.replace("_", " ").replace("-", " ")), 2.5),
+        (_normalize_text(folder.replace("\\", " ").replace("/", " ")), 1.8),
+        (_normalize_text(" ".join(tags)), 1.6),
+        (_normalize_text(" ".join(headings)), 1.4),
+        (_normalize_text(content[:6000]), 1.0),
+    ]
+
+
+def _keyword_hits(text: str, keywords: Iterable[str]) -> int:
+    return sum(1 for keyword in keywords if keyword in text)
+
+
+def _extract_label_matches(signal_text: str, label_keywords: Dict[str, List[str]]) -> List[str]:
+    labels = []
+    for label, keywords in label_keywords.items():
+        if _keyword_hits(signal_text, keywords):
+            labels.append(label)
+    return sorted(labels)
+
+
+def compute_tongue_profile(
+    name: str,
+    folder: str,
+    headings: Iterable[str],
+    tags: Iterable[str],
+    content: str,
+    primary_tongue: str,
+) -> Dict[str, float]:
+    raw_scores = {tongue: 0.0 for tongue in TONGUE_ORDER}
+    max_phi_weight = max(TONGUE_PHI_WEIGHTS.values())
+    for signal_text, source_weight in _compile_signal_sources(name, folder, headings, tags, content):
+        if not signal_text:
+            continue
+        for tongue, keywords in TONGUE_KEYWORDS.items():
+            raw_scores[tongue] += _keyword_hits(signal_text, keywords) * source_weight * TONGUE_PHI_WEIGHTS[tongue]
+
+    raw_scores[primary_tongue] += max_phi_weight
+    total = sum(raw_scores.values())
+    if total <= 0:
+        return {tongue: round(1.0 / len(TONGUE_ORDER), 6) for tongue in TONGUE_ORDER}
+    return {tongue: round(raw_scores[tongue] / total, 6) for tongue in TONGUE_ORDER}
+
+
+def compute_semantic_mass(tongue_profile: Dict[str, float]) -> float:
+    return round(sum(tongue_profile[tongue] * TONGUE_PHI_WEIGHTS[tongue] for tongue in TONGUE_ORDER), 6)
+
+
+def extract_semantic_labels(
+    name: str,
+    folder: str,
+    headings: Iterable[str],
+    tags: Iterable[str],
+    content: str,
+) -> Tuple[List[str], List[str], List[str]]:
+    signal_text = _normalize_text(" ".join([
+        name.replace("_", " ").replace("-", " "),
+        folder.replace("\\", " ").replace("/", " "),
+        " ".join(tags),
+        " ".join(headings),
+        content[:4000],
+    ]))
+    subject_labels = _extract_label_matches(signal_text, SUBJECT_KEYWORDS)
+    tasks = _extract_label_matches(signal_text, TASK_KEYWORDS)
+    relations = _extract_label_matches(signal_text, RELATION_KEYWORDS)
+    high_signal_tokens = []
+    token_counter = Counter(token for token in signal_text.split() if len(token) >= 4 and token not in GENERIC_LABEL_STOPWORDS)
+    for token, _count in token_counter.most_common(8):
+        if token not in subject_labels:
+            high_signal_tokens.append(token)
+
+    subjects = sorted(set(subject_labels + high_signal_tokens))
+    return subjects, tasks, relations
+
+
+def compute_overlap_score(values_a: Iterable[str], values_b: Iterable[str]) -> float:
+    set_a = set(values_a)
+    set_b = set(values_b)
+    if not set_a and not set_b:
+        return 0.0
+    return len(set_a & set_b) / len(set_a | set_b)
+
+
+def compute_shared_tongue_weight(profile_a: Dict[str, float], profile_b: Dict[str, float]) -> float:
+    return round(
+        sum(min(profile_a[tongue], profile_b[tongue]) * TONGUE_PHI_WEIGHTS[tongue] for tongue in TONGUE_ORDER),
+        6,
+    )
+
+
+def compute_sector_alignment(primary_tongue_a: str, primary_tongue_b: str) -> float:
+    angle_a = TONGUE_SECTORS_RADIANS[primary_tongue_a]
+    angle_b = TONGUE_SECTORS_RADIANS[primary_tongue_b]
+    return round((1.0 + math.cos(angle_a - angle_b)) / 2.0, 6)
+
+
+def compute_semantic_gravity(
+    note_a: VaultNote,
+    note_b: VaultNote,
+    explicit_link: bool = False,
+) -> Dict[str, object]:
+    subject_overlap = compute_overlap_score(note_a.subjects, note_b.subjects)
+    task_overlap = compute_overlap_score(note_a.tasks, note_b.tasks)
+    relation_overlap = compute_overlap_score(note_a.relations, note_b.relations)
+    semantic_overlap = (0.45 * subject_overlap) + (0.30 * task_overlap) + (0.25 * relation_overlap)
+    shared_tongue_weight = compute_shared_tongue_weight(note_a.tongue_profile, note_b.tongue_profile)
+    sector_alignment = compute_sector_alignment(note_a.tongue, note_b.tongue)
+    max_weight = max(TONGUE_PHI_WEIGHTS.values())
+    explicit_bonus = 0.25 if explicit_link else 0.0
+    gravity = round(
+        (semantic_overlap + explicit_bonus)
+        * (1.0 + (shared_tongue_weight / max_weight))
+        * (0.5 + (0.5 * sector_alignment)),
+        6,
+    )
+    return {
+        "subject_overlap": round(subject_overlap, 6),
+        "task_overlap": round(task_overlap, 6),
+        "relation_overlap": round(relation_overlap, 6),
+        "semantic_overlap": round(semantic_overlap, 6),
+        "shared_tongue_weight_phi": shared_tongue_weight,
+        "sector_alignment": sector_alignment,
+        "semantic_gravity": gravity,
+        "shared_subjects": sorted(set(note_a.subjects) & set(note_b.subjects)),
+        "shared_tasks": sorted(set(note_a.tasks) & set(note_b.tasks)),
+        "shared_relations": sorted(set(note_a.relations) & set(note_b.relations)),
+    }
+
+
+def _pair_key(name_a: str, name_b: str) -> Tuple[str, str]:
+    return tuple(sorted((name_a, name_b)))
 
 
 def classify_tongue(name: str, folder: str, content: str) -> str:
@@ -104,6 +346,8 @@ def scan_vault() -> List[VaultNote]:
         words = len(content.split())
         content_hash = hashlib.blake2s(content.encode()[:4096], digest_size=8).hexdigest()
         tongue = classify_tongue(name, folder, content)
+        tongue_profile = compute_tongue_profile(name, folder, headings, tags, content, tongue)
+        subjects, tasks, relations = extract_semantic_labels(name, folder, headings, tags, content)
 
         notes.append(VaultNote(
             path=rel_path,
@@ -116,6 +360,14 @@ def scan_vault() -> List[VaultNote]:
             word_count=words,
             content_hash=content_hash,
             tongue=tongue,
+            tongue_profile=tongue_profile,
+            primary_weight_phi=round(TONGUE_PHI_WEIGHTS[tongue], 6),
+            semantic_mass_phi=compute_semantic_mass(tongue_profile),
+            tongue_sector_degrees=TONGUE_SECTORS_DEGREES[tongue],
+            tongue_sector_radians=round(TONGUE_SECTORS_RADIANS[tongue], 6),
+            subjects=subjects,
+            tasks=tasks,
+            relations=relations,
         ))
 
     # Build incoming links
@@ -126,19 +378,37 @@ def scan_vault() -> List[VaultNote]:
             if target:
                 target.incoming_links.append(note.name)
 
+    for note in notes:
+        if note.outgoing_links or note.incoming_links:
+            note.relations = sorted(set(note.relations) | {"linked"})
+        if note.outgoing_links and note.incoming_links:
+            note.relations = sorted(set(note.relations) | {"bridge"})
+
     return notes
 
 
 def build_graph(notes: List[VaultNote]) -> Dict:
     """Build a knowledge graph from vault notes."""
+    name_map = {note.name: note for note in notes}
+    explicit_target_pairs = set()
+    explicit_connected = set()
     nodes = []
-    edges = []
 
     for note in notes:
         nodes.append({
             "id": note.name,
+            "path": note.path,
             "folder": note.folder,
             "tongue": note.tongue,
+            "tongue_full_name": TONGUE_FULL_NAMES[note.tongue],
+            "tongue_profile": note.tongue_profile,
+            "primary_weight_phi": note.primary_weight_phi,
+            "semantic_mass_phi": note.semantic_mass_phi,
+            "tongue_sector_degrees": note.tongue_sector_degrees,
+            "tongue_sector_radians": note.tongue_sector_radians,
+            "subjects": note.subjects,
+            "tasks": note.tasks,
+            "relations": note.relations,
             "words": note.word_count,
             "headings": len(note.headings),
             "tags": note.tags,
@@ -147,14 +417,140 @@ def build_graph(notes: List[VaultNote]) -> Dict:
         })
 
         for target in note.outgoing_links:
-            edges.append({"source": note.name, "target": target})
+            explicit_connected.add(note.name)
+            explicit_connected.add(target)
+            if target in name_map:
+                explicit_target_pairs.add(_pair_key(note.name, target))
 
-    # Find disconnected notes (no links in or out)
-    connected = set()
-    for e in edges:
-        connected.add(e["source"])
-        connected.add(e["target"])
-    orphans = [n["id"] for n in nodes if n["id"] not in connected]
+    subject_index = defaultdict(list)
+    task_index = defaultdict(list)
+    relation_index = defaultdict(list)
+    for note in notes:
+        for subject in note.subjects:
+            subject_index[subject].append(note.name)
+        for task in note.tasks:
+            task_index[task].append(note.name)
+        for relation in note.relations:
+            relation_index[relation].append(note.name)
+
+    candidate_pairs: Set[Tuple[str, str]] = set(explicit_target_pairs)
+    for index in (subject_index, task_index, relation_index):
+        for names in index.values():
+            unique_names = sorted(set(names))
+            if len(unique_names) < 2 or len(unique_names) > MAX_CANDIDATE_BUCKET_SIZE:
+                continue
+            for pair in combinations(unique_names, 2):
+                candidate_pairs.add(pair)
+
+    pair_metrics: Dict[Tuple[str, str], Dict[str, object]] = {}
+    for source_name, target_name in candidate_pairs:
+        metrics = compute_semantic_gravity(
+            name_map[source_name],
+            name_map[target_name],
+            explicit_link=(source_name, target_name) in explicit_target_pairs,
+        )
+        if metrics["semantic_gravity"] >= SEMANTIC_EDGE_MIN_GRAVITY or (source_name, target_name) in explicit_target_pairs:
+            pair_metrics[(source_name, target_name)] = metrics
+
+    edges = []
+    total_edge_graph = defaultdict(list)
+    for note in notes:
+        for target in note.outgoing_links:
+            edge = {
+                "source": note.name,
+                "target": target,
+                "edge_kind": "explicit_link",
+                "directionality": "directed",
+                "explicit_link": True,
+                "target_exists": target in name_map,
+            }
+            if target in name_map:
+                metrics = pair_metrics.get(_pair_key(note.name, target)) or compute_semantic_gravity(note, name_map[target], explicit_link=True)
+                edge.update(metrics)
+                total_edge_graph[note.name].append(metrics["semantic_gravity"])
+                total_edge_graph[target].append(metrics["semantic_gravity"])
+            else:
+                edge.update({
+                    "subject_overlap": 0.0,
+                    "task_overlap": 0.0,
+                    "relation_overlap": 0.0,
+                    "semantic_overlap": 0.0,
+                    "shared_tongue_weight_phi": 0.0,
+                    "sector_alignment": 0.0,
+                    "semantic_gravity": 0.0,
+                    "shared_subjects": [],
+                    "shared_tasks": [],
+                    "shared_relations": [],
+                })
+            edges.append(edge)
+
+    explicit_edge_keys = {(edge["source"], edge["target"]) for edge in edges}
+    for (source_name, target_name), metrics in sorted(pair_metrics.items()):
+        if (source_name, target_name) in explicit_edge_keys or (target_name, source_name) in explicit_edge_keys:
+            continue
+        semantic_edge = {
+            "source": source_name,
+            "target": target_name,
+            "edge_kind": "semantic_overlap",
+            "directionality": "bidirectional",
+            "explicit_link": False,
+            "target_exists": True,
+        }
+        semantic_edge.update(metrics)
+        edges.append(semantic_edge)
+        total_edge_graph[source_name].append(metrics["semantic_gravity"])
+        total_edge_graph[target_name].append(metrics["semantic_gravity"])
+
+    max_gravity = max((edge["semantic_gravity"] for edge in edges), default=0.0)
+    max_degree = max((len(values) for values in total_edge_graph.values()), default=0)
+    node_null_scores = {}
+    for note in notes:
+        incident = total_edge_graph.get(note.name, [])
+        avg_gravity = (sum(incident) / len(incident)) if incident else 0.0
+        gravity_norm = (avg_gravity / max_gravity) if max_gravity else 0.0
+        degree_norm = (len(incident) / max_degree) if max_degree else 0.0
+        node_null_scores[note.name] = round(degree_norm * (1.0 - gravity_norm), 6)
+
+    for node in nodes:
+        node["null_space_score"] = node_null_scores.get(node["id"], 0.0)
+        node["gravity_degree"] = len(total_edge_graph.get(node["id"], []))
+        node["average_incident_gravity"] = round(
+            (sum(total_edge_graph.get(node["id"], [])) / len(total_edge_graph.get(node["id"], [])))
+            if total_edge_graph.get(node["id"])
+            else 0.0,
+            6,
+        )
+
+    null_space_paths = []
+    if max_gravity and max_degree:
+        for edge in edges:
+            if edge["semantic_gravity"] <= 0:
+                continue
+            source_pressure = len(total_edge_graph.get(edge["source"], [])) / max_degree if max_degree else 0.0
+            target_pressure = len(total_edge_graph.get(edge["target"], [])) / max_degree if max_degree else 0.0
+            gravity_norm = edge["semantic_gravity"] / max_gravity
+            null_flux = round(((source_pressure + target_pressure) / 2.0) * (1.0 - gravity_norm), 6)
+            if null_flux <= 0:
+                continue
+            null_space_paths.append({
+                "source": edge["source"],
+                "target": edge["target"],
+                "edge_kind": edge["edge_kind"],
+                "semantic_gravity": edge["semantic_gravity"],
+                "null_space_flux": null_flux,
+                "source_null_space_score": node_null_scores.get(edge["source"], 0.0),
+                "target_null_space_score": node_null_scores.get(edge["target"], 0.0),
+            })
+        null_space_paths.sort(key=lambda item: item["null_space_flux"], reverse=True)
+        null_space_paths = null_space_paths[:NULL_PATH_LIMIT]
+
+    # Find disconnected notes based on explicit links only for backwards compatibility.
+    orphans = [n["id"] for n in nodes if n["id"] not in explicit_connected]
+    semantic_connected = set()
+    for edge in edges:
+        semantic_connected.add(edge["source"])
+        semantic_connected.add(edge["target"])
+    semantic_orphans = [n["id"] for n in nodes if n["id"] not in semantic_connected]
 
     # Find clusters
     by_folder = defaultdict(list)
@@ -166,11 +562,27 @@ def build_graph(notes: List[VaultNote]) -> Dict:
     return {
         "nodes": nodes,
         "edges": edges,
+        "null_space_paths": null_space_paths,
+        "tongue_weights_phi": {tongue: round(weight, 6) for tongue, weight in TONGUE_PHI_WEIGHTS.items()},
+        "tongue_sectors": {
+            tongue: {
+                "degrees": TONGUE_SECTORS_DEGREES[tongue],
+                "radians": round(TONGUE_SECTORS_RADIANS[tongue], 6),
+                "full_name": TONGUE_FULL_NAMES[tongue],
+            }
+            for tongue in TONGUE_ORDER
+        },
         "stats": {
             "total_notes": len(nodes),
-            "total_links": len(edges),
+            "total_links": sum(1 for edge in edges if edge["edge_kind"] == "explicit_link"),
+            "semantic_links": sum(1 for edge in edges if edge["edge_kind"] == "semantic_overlap"),
+            "total_edges_enriched": len(edges),
             "orphan_notes": orphans,
             "orphan_count": len(orphans),
+            "semantic_orphan_notes": semantic_orphans,
+            "semantic_orphan_count": len(semantic_orphans),
+            "max_semantic_gravity": round(max_gravity, 6),
+            "mean_null_space_score": round(sum(node_null_scores.values()) / len(node_null_scores), 6) if node_null_scores else 0.0,
             "folders": dict(by_folder),
             "tongues": {t: len(v) for t, v in by_tongue.items()},
         },

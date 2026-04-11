@@ -1,3 +1,13 @@
+---
+id: LANGUES001
+references: [SPEC001, TOKENIZER001]
+feeds_into: [HARMONIC001]
+implements: "Phi-Weighted Energy Scaling"
+version_sync: "3.3.0"
+mind_map_node: "BrainState21D > Phi-Weighted Energies"
+state_dims: 6
+---
+
 # Langues Weighting System (LWS)
 
 Status: active reference  

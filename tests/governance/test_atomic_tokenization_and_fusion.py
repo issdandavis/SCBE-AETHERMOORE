@@ -5,6 +5,7 @@ import pytest
 
 from python.scbe.atomic_tokenization import (
     TONGUES,
+    atomic_drift_scale,
     element_to_tau,
     map_token_to_atomic_state,
     map_token_to_element,
@@ -55,6 +56,38 @@ def test_atomic_tau_stays_within_trit_bounds():
     for state in states:
         for tongue in TONGUES:
             assert getattr(state.tau, tongue) in (-1, 0, 1)
+
+
+def test_negative_and_dual_atomic_state_are_exposed():
+    negation = map_token_to_atomic_state("not", language="en")
+    action = map_token_to_atomic_state("build", language="en")
+    witness = map_token_to_atomic_state("the", language="en")
+
+    assert negation.negative_state is True
+    assert negation.dual_state == 1
+    assert action.dual_state == 0
+    assert witness.dual_state is None
+    assert 0.0 < negation.resilience < 1.0
+    assert 0.0 < action.adaptivity < 1.0
+
+
+def test_negative_and_shadow_atoms_drift_more_than_primary_atoms():
+    negation = map_token_to_atomic_state("not", language="en")
+    action = map_token_to_atomic_state("build", language="en")
+
+    neg_drift = atomic_drift_scale(negation, trust_factor=1.0)
+    action_drift = atomic_drift_scale(action, trust_factor=1.0)
+
+    assert neg_drift > action_drift
+
+
+def test_higher_trust_damps_atomic_drift():
+    state = map_token_to_atomic_state("without", language="en")
+
+    low_trust = atomic_drift_scale(state, trust_factor=0.5)
+    high_trust = atomic_drift_scale(state, trust_factor=1.8)
+
+    assert high_trust < low_trust
 
 
 def test_negation_changes_fusion_output():

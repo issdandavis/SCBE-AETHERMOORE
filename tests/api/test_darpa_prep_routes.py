@@ -69,3 +69,28 @@ def test_normalize_route_extracts_requirements() -> None:
     assert len(body["requirements"]) >= 2
     categories = {item["category"] for item in body["requirements"]}
     assert "eligibility" in categories or "submission" in categories
+
+
+def test_darpa_portal_parse_route_returns_structured_opportunities() -> None:
+    app = FastAPI()
+    app.include_router(router)
+    client = TestClient(app)
+    response = client.post(
+        "/v1/opportunities/darpa-portal/parse",
+        json={
+            "source_ref": "https://baa.darpa.mil/Submissions/StartSubmissions.aspx",
+            "raw_text": (
+                "DARPA-PS-26-23: Fleetwood (BTO)\n"
+                "Fleetwood\n"
+                "Proposal Abstract Deadline (ET)\n"
+                "4/13/2026 5:00:00 PM  Full Proposal Final Deadline (ET)\n"
+                "6/4/2026 5:00:00 PM Requires an encouraged Proposal Abstract\n"
+            ),
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["count"] == 1
+    opportunity = body["opportunities"][0]
+    assert opportunity["solicitation_number"] == "DARPA-PS-26-23"
+    assert opportunity["proposal_abstract_encouraged"] is True
