@@ -1,0 +1,37 @@
+{
+  "step_id": "002_playwright_open_colab",
+  "timestamp": "2026-04-11T00:10:00Z",
+  "generation": 0,
+  "parent_ids": [],
+  "what": "Opened governance_gate_live_demo.ipynb in Colab via Playwright MCP and captured full 17-cell accessibility snapshot, confirming notebook identity and exact failure points.",
+  "how": {
+    "tool": "mcp__plugin_playwright_playwright__browser_navigate",
+    "url": "https://colab.research.google.com/github/issdandavis/SCBE-AETHERMOORE/blob/polly-nav-clean/notebooks/governance_gate_live_demo.ipynb",
+    "post_navigate": [
+      "browser_snapshot (captured all 17 cells + page title)",
+      "browser_console_messages (captured 3 errors)"
+    ],
+    "evidence_captured": {
+      "page_title": "SCBE Governance Gate - Live Demo API - Colab",
+      "cell_count": 17,
+      "execution_state": "all cells show [ ] — never run in this browser session",
+      "preview_mode": "GitHub preview (read-only until Copy to Drive or sign-in)"
+    }
+  },
+  "why": {
+    "identity_confirmed": "Page title matches notebook's first markdown cell — this IS the Colab target.",
+    "failure_points_located": [
+      "Cell 4 line ~7: sys.path.insert(0, os.path.join(REPO_DIR, 'src')) — CLAUDE.md warns this triggers symphonic_cipher dual-package collision",
+      "Cell 12 line 1: NGROK_AUTH_TOKEN = '' — blank, ngrok.connect() will ValueError without it"
+    ],
+    "non_failures": [
+      "3 console errors are 401 auth from colab.clients6.google.com (UserInfoService) and play.google.com/log — these are browser-side 'not signed into Google' signals, NOT notebook execution errors",
+      "Imports resolve structurally: src.governance.runtime_gate and src.video.dye_injection both exist on polly-nav-clean with expected symbols"
+    ],
+    "fix_strategy_selected": "Option A: preventive local fix of notebook + commit + push before user re-opens. Two known-broken issues can be fixed deterministically from static analysis without requiring Google sign-in."
+  },
+  "common": {},
+  "wings": {},
+  "next_flight": "003_local_fix_notebook",
+  "fallback_from": null
+}
