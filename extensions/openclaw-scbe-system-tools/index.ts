@@ -29,6 +29,7 @@ type DispatchLane =
   | 'colab-bridge-probe';
 type HygieneAction = 'status' | 'apply' | 'clear';
 type ColabBridgeAction = 'status' | 'env' | 'probe';
+type BrowserBridgeAction = 'status' | 'profiles' | 'start' | 'stop' | 'tabs' | 'snapshot' | 'open';
 
 type PluginConfig = {
   repoRoot?: string;
@@ -447,6 +448,57 @@ export function buildOpenClawHfHandlerBootstrapCommand(
   };
 }
 
+export function buildOpenClawBrowserBridgeCommand(
+  cfg: Required<PluginConfig>,
+  params: {
+    action?: BrowserBridgeAction;
+    profile?: string;
+    targetId?: string;
+    format?: string;
+    limit?: number;
+    mode?: string;
+    url?: string;
+    timeout?: number;
+    configPath?: string;
+  },
+): CommandSpec {
+  const args = [
+    'scripts/system/openclaw_browser_bridge.py',
+    params.action || 'status',
+    '--profile',
+    params.profile || 'openclaw',
+    '--timeout',
+    String(
+      typeof params.timeout === 'number' && Number.isFinite(params.timeout) && params.timeout > 0
+        ? params.timeout
+        : 20,
+    ),
+  ];
+  if (params.targetId) {
+    args.push('--target-id', params.targetId);
+  }
+  if (params.format) {
+    args.push('--format', params.format);
+  }
+  if (typeof params.limit === 'number' && Number.isFinite(params.limit)) {
+    args.push('--limit', String(Math.trunc(params.limit)));
+  }
+  if (params.mode) {
+    args.push('--mode', params.mode);
+  }
+  if (params.url) {
+    args.push('--url', params.url);
+  }
+  if (params.configPath) {
+    args.push('--config-path', params.configPath);
+  }
+  return {
+    command: cfg.pythonBin,
+    cwd: cfg.repoRoot,
+    args,
+  };
+}
+
 function createTextResponse(text: string) {
   return { content: [{ type: 'text' as const, text }] };
 }
@@ -637,6 +689,32 @@ const plugin = {
       },
       async execute(_toolCallId: string, params: any) {
         const output = await runCommand(buildLocalGitHygieneCommand(cfg, params || {}), cfg);
+        return createTextResponse(output);
+      },
+    } as any);
+
+    api.registerTool({
+      name: 'scbe_openclaw_browser',
+      label: 'SCBE OpenClaw Browser Bridge',
+      description:
+        'Use the live OpenClaw browser control service directly when the bundled openclaw browser CLI wrapper hangs.',
+      parameters: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          action: { type: 'string', enum: ['status', 'profiles', 'start', 'stop', 'tabs', 'snapshot', 'open'] },
+          profile: { type: 'string', description: 'Browser profile name. Defaults to openclaw.' },
+          targetId: { type: 'string', description: 'Optional tab target id for snapshot actions.' },
+          format: { type: 'string', description: 'Snapshot format. Defaults to ai.' },
+          limit: { type: 'number', description: 'Optional token/node limit for snapshot responses.' },
+          mode: { type: 'string', description: 'Optional snapshot mode.' },
+          url: { type: 'string', description: 'URL to open when action=open.' },
+          timeout: { type: 'number', description: 'HTTP timeout in seconds.' },
+          configPath: { type: 'string', description: 'Optional explicit OpenClaw config path.' },
+        },
+      },
+      async execute(_toolCallId: string, params: any) {
+        const output = await runCommand(buildOpenClawBrowserBridgeCommand(cfg, params || {}), cfg);
         return createTextResponse(output);
       },
     } as any);

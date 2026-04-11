@@ -11,6 +11,7 @@ import plugin, {
   buildFlowPlanCommand,
   buildLocalGitHygieneCommand,
   buildModelPlanCommand,
+  buildOpenClawBrowserBridgeCommand,
   buildOpenClawHfHandlerBootstrapCommand,
   buildOctoarmsDispatchCommand,
   resolvePluginConfig,
@@ -53,6 +54,7 @@ describe('openclaw scbe system tools plugin', () => {
       'scbe_colab_bridge',
       'scbe_model_plan',
       'scbe_local_git_hygiene',
+      'scbe_openclaw_browser',
       'scbe_openclaw_hf_handler_bootstrap',
     ]);
   });
@@ -225,6 +227,53 @@ describe('openclaw scbe system tools plugin', () => {
       '--task',
       'Verify the HF lane',
       '--execute-dispatch',
+    ]);
+  });
+
+  it('builds the OpenClaw browser bridge command against the repo-owned direct bridge', () => {
+    const cfg = resolvePluginConfig({ repoRoot: 'C:/repo', pythonBin: 'python' });
+    const command = buildOpenClawBrowserBridgeCommand(cfg, {
+      action: 'snapshot',
+      profile: 'openclaw',
+      format: 'ai',
+      limit: 200,
+      mode: 'efficient',
+      timeout: 12,
+    });
+
+    expect(command.command).toBe('python');
+    expect(command.cwd).toBe('C:/repo');
+    expect(command.args).toEqual([
+      'scripts/system/openclaw_browser_bridge.py',
+      'snapshot',
+      '--profile',
+      'openclaw',
+      '--timeout',
+      '12',
+      '--format',
+      'ai',
+      '--limit',
+      '200',
+      '--mode',
+      'efficient',
+    ]);
+  });
+
+  it('builds a browser bridge start command for direct runtime recovery', () => {
+    const cfg = resolvePluginConfig({ repoRoot: 'C:/repo', pythonBin: 'python' });
+    const command = buildOpenClawBrowserBridgeCommand(cfg, {
+      action: 'start',
+      profile: 'openclaw',
+      timeout: 9,
+    });
+
+    expect(command.args).toEqual([
+      'scripts/system/openclaw_browser_bridge.py',
+      'start',
+      '--profile',
+      'openclaw',
+      '--timeout',
+      '9',
     ]);
   });
 });
