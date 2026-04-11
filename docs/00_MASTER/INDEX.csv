@@ -1,0 +1,5 @@
+id,title,type,module,state_dimensions,tags,path
+master-specification-canonical-twenty-one-dimensional-state,Master Specification for Canonical Twenty-One-Dimensional State,specification,canonical-brain-state,"1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21","canonical state,governance,brain state,swarm","docs/MASTER_SPEC_M4_21D.md"
+polyhedral-hamiltonian-dynamic-mesh-brain-architecture,Polyhedral Hamiltonian Dynamic Mesh Brain Architecture,specification,cognitive-geometry,"7,8,9","geometric skull,cognitive containment,hyperbolic geometry","docs/PHDM_BRAIN_ARCHITECTURE.md"
+sacred-tongue-tokenizer-practical-tutorials-and-use-cases,Sacred Tongue Tokenizer Practical Tutorials and Use Cases,tutorial,language-governance,"10,11,12","sacred tongues,spell text transport,canonical compact format","docs/SACRED_TONGUES_TUTORIALS.md"
+training-results-sheet-april-ten-twenty-twenty-six,Training Results Sheet for April Ten Twenty Twenty-Six,evidence,training-evidence,,"training runs,evaluation reports,checkpoints","artifacts/training_reports/training_results_sheet_20260410.md"

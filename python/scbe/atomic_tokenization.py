@@ -20,6 +20,7 @@ trit vector aligned to KO, AV, RU, CA, UM, and DR.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from hashlib import sha256
 from typing import Dict, Literal, Optional, Sequence, Tuple
 
 
@@ -28,6 +29,7 @@ TONGUES: Tuple[Tongue, ...] = ("KO", "AV", "RU", "CA", "UM", "DR")
 
 Language = Optional[str]
 ContextClass = Optional[str]
+DualState = Optional[Literal[0, 1]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,10 +74,17 @@ SemanticClass = Literal[
 class AtomicTokenState:
     token: str
     language: Language
+    code_lane: Optional[str]
     context_class: ContextClass
     semantic_class: SemanticClass
     element: Element
     tau: TritVector
+    negative_state: bool
+    dual_state: DualState
+    band_flag: int
+    resilience: float
+    adaptivity: float
+    trust_baseline: float
 
     @property
     def witness_state(self) -> int:
@@ -198,6 +207,19 @@ CONTEXT_TOKEN_OVERRIDES: Dict[str, Dict[str, SemanticClass]] = {
     },
 }
 
+SEMANTIC_BAND_FLAGS: Dict[SemanticClass, int] = {
+    "INERT_WITNESS": 0,
+    "ENTITY": 1,
+    "ACTION": 2,
+    "NEGATION": 3,
+    "MODIFIER": 3,
+    "RELATION": 3,
+    "TEMPORAL": 3,
+}
+
+PRIMARY_DUAL_CLASSES = {"ACTION", "ENTITY", "TEMPORAL"}
+SHADOW_DUAL_CLASSES = {"NEGATION", "MODIFIER", "RELATION"}
+
 
 def _normalized_token(token: str) -> str:
     return token.strip().lower()
@@ -286,6 +308,97 @@ def trit(value: float, *, pos: float, neg: float) -> int:
     return 0
 
 
+def semantic_band_flag(semantic_class: SemanticClass) -> int:
+    return SEMANTIC_BAND_FLAGS[semantic_class]
+
+
+def is_negative_atomic_state(
+    semantic_class: SemanticClass,
+    element: Element,
+) -> bool:
+    return semantic_class == "NEGATION" or element.electronegativity >= 2.8
+
+
+def infer_dual_state(
+    token: str,
+    semantic_class: SemanticClass,
+    element: Element,
+) -> DualState:
+    if element.witness_stable:
+        return None
+    if semantic_class in PRIMARY_DUAL_CLASSES:
+        return 0
+    if semantic_class in SHADOW_DUAL_CLASSES:
+        return 1
+    digest = sha256(f"{semantic_class}:{token.lower()}".encode("utf-8")).digest()
+    return 0 if digest[0] % 2 == 0 else 1
+
+
+def compute_resilience(
+    semantic_class: SemanticClass,
+    element: Element,
+) -> float:
+    base = 0.25
+    base += min(float(element.period), 4.0) * 0.10
+    base += min(float(element.valence), 4.0) * 0.04
+    if element.witness_stable:
+        base += 0.20
+    if semantic_class in {"RELATION", "TEMPORAL"}:
+        base += 0.08
+    if semantic_class == "NEGATION":
+        base -= 0.06
+    return float(max(0.05, min(0.98, base)))
+
+
+def compute_adaptivity(
+    semantic_class: SemanticClass,
+    element: Element,
+) -> float:
+    base = 0.18
+    base += min(float(element.valence), 4.0) * 0.10
+    base += (float(element.group % 6) / 10.0)
+    if semantic_class in {"RELATION", "MODIFIER", "TEMPORAL"}:
+        base += 0.16
+    if semantic_class == "INERT_WITNESS":
+        base -= 0.08
+    return float(max(0.05, min(0.99, base)))
+
+
+def compute_trust_baseline(
+    semantic_class: SemanticClass,
+    element: Element,
+    *,
+    resilience: float,
+    adaptivity: float,
+) -> float:
+    base = 0.10 + (resilience * 0.55) + (adaptivity * 0.20)
+    if element.witness_stable:
+        base += 0.10
+    if semantic_class == "NEGATION":
+        base -= 0.08
+    return float(max(0.0, min(1.0, base)))
+
+
+def atomic_drift_scale(
+    state: AtomicTokenState,
+    *,
+    base_noise: float = 0.005,
+    trust_factor: float = 1.0,
+) -> float:
+    neg_factor = 1.5 if state.negative_state else 1.0
+    if state.dual_state == 0:
+        dual_multiplier = 0.7
+    elif state.dual_state == 1:
+        dual_multiplier = 1.3
+    else:
+        dual_multiplier = 1.0
+    trust_damping = max(0.3, float(trust_factor))
+    scale = base_noise * neg_factor * dual_multiplier * (1.0 - state.resilience)
+    scale *= max(0.3, 1.0 - (0.35 * state.adaptivity))
+    scale /= trust_damping
+    return float(max(0.0, scale))
+
+
 def element_to_trit_vector(
     element: Element,
     *,
@@ -336,13 +449,31 @@ def map_token_to_atomic_state(
     semantic_class = classify_token_semantic(token, language=language, context_class=context_class)
     element = (element_table or DEFAULT_ELEMENTS)[semantic_class]
     tau = element_to_trit_vector(element, thresholds=thresholds)
+    negative_state = is_negative_atomic_state(semantic_class, element)
+    dual_state = infer_dual_state(token, semantic_class, element)
+    band_flag = semantic_band_flag(semantic_class)
+    resilience = compute_resilience(semantic_class, element)
+    adaptivity = compute_adaptivity(semantic_class, element)
+    trust_baseline = compute_trust_baseline(
+        semantic_class,
+        element,
+        resilience=resilience,
+        adaptivity=adaptivity,
+    )
     return AtomicTokenState(
         token=token,
         language=language,
+        code_lane=None,
         context_class=context_class,
         semantic_class=semantic_class,
         element=element,
         tau=tau,
+        negative_state=negative_state,
+        dual_state=dual_state,
+        band_flag=band_flag,
+        resilience=resilience,
+        adaptivity=adaptivity,
+        trust_baseline=trust_baseline,
     )
 
 
@@ -362,4 +493,3 @@ def tokens_to_tau_sequence(
         ).tau.as_dict()
         for token in tokens
     ]
-

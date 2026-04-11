@@ -4,6 +4,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 from contextlib import redirect_stdout
@@ -14,11 +15,40 @@ from typing import Iterable, List, Sequence
 from .cli_toolkit import CrossTokenizer, Lexicons, TongueTokenizer
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+import numpy as np
+
+from python.scbe.atomic_tokenization import TONGUES as ATOMIC_TONGUES, map_token_to_atomic_state
+from python.scbe.chemical_fusion import FusionParams
+from python.scbe.history_reducer import reduce_atomic_history
+
 DEFAULT_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 DEFAULT_MODES = ("byte", "semantic")
 SAFE_COMMAND_FAMILIES = ("echo", "python-script", "pytest-targeted")
 SAFE_SCRIPT_ROOTS = (REPO_ROOT / "scripts", REPO_ROOT / "tools")
 SAFE_PYTEST_ROOT = REPO_ROOT / "tests"
+ATOMIC_TOKEN_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_.:/-]*|\d+")
+SEMANTIC_CLASS_IDS = {
+    "INERT_WITNESS": 0,
+    "ACTION": 1,
+    "ENTITY": 2,
+    "NEGATION": 3,
+    "MODIFIER": 4,
+    "RELATION": 5,
+    "TEMPORAL": 6,
+}
+FAMILY_ATOMIC_CONTEXT = {
+    "echo": {"language": "en", "context_class": "operator"},
+    "python-script": {"language": None, "context_class": "operator"},
+    "pytest-targeted": {"language": None, "context_class": "safety"},
+}
+FAMILY_GOVERNANCE_PROTOS = {
+    "echo": np.array([0.0, 0.0, 0.25, 0.0, 0.0, 0.0], dtype=float),
+    "python-script": np.array([0.3, 0.2, 0.6, 0.5, 0.1, 0.2], dtype=float),
+    "pytest-targeted": np.array([0.15, 0.35, 0.75, 0.2, -0.1, 0.45], dtype=float),
+}
 
 
 def _is_within(path: Path, root: Path) -> bool:
@@ -31,6 +61,158 @@ def _is_within(path: Path, root: Path) -> bool:
 
 def _canonical_json(data: dict) -> str:
     return json.dumps(data, sort_keys=True, separators=(",", ":"))
+
+
+def _normalize_vector(vector: np.ndarray) -> np.ndarray:
+    max_abs = float(np.max(np.abs(vector))) if vector.size else 0.0
+    if max_abs <= 0.0:
+        return vector.astype(float)
+    return vector.astype(float) / max_abs
+
+
+def _atomicize_arg_token(value: str) -> list[str]:
+    raw = value.strip()
+    if not raw:
+        return []
+    candidate = Path(raw)
+    if candidate.exists():
+        parts = []
+        try:
+            rel = candidate.resolve().relative_to(REPO_ROOT.resolve())
+            parts.extend(rel.parts)
+        except ValueError:
+            parts.extend(candidate.parts[-3:])
+        text = " ".join(parts)
+    else:
+        text = raw
+    return [token.lower() for token in ATOMIC_TOKEN_PATTERN.findall(text)]
+
+
+def _packet_semantic_tokens(packet: dict) -> list[str]:
+    tokens = [packet["family"].replace("-", "_")]
+    argv = packet.get("argv", [])
+    for value in argv[1:]:
+        tokens.extend(_atomicize_arg_token(str(value)))
+    return tokens[:64]
+
+
+def _build_atomic_feature_row(state) -> list[float]:
+    return [
+        state.element.Z,
+        state.element.group,
+        state.element.period,
+        state.element.valence,
+        state.element.electronegativity,
+        state.band_flag,
+        -1 if state.dual_state is None else state.dual_state,
+        0,
+    ]
+
+
+def _build_periodic_view(states) -> np.ndarray:
+    if not states:
+        return np.zeros(6, dtype=float)
+    witness_ratio = sum(1 for state in states if state.element.witness_stable) / len(states)
+    mean_z = sum(state.element.Z for state in states) / len(states)
+    mean_group = sum(state.element.group for state in states) / len(states)
+    mean_period = sum(state.element.period for state in states) / len(states)
+    mean_valence = sum(state.element.valence for state in states) / len(states)
+    mean_chi = sum(state.element.electronegativity for state in states) / len(states)
+    vector = np.array(
+        [
+            (mean_group - 9.5) / 9.5,
+            (mean_period - 2.5) / 2.5,
+            ((mean_z % 7.0) - 3.0) / 3.0,
+            (mean_valence - 2.0) / 2.0,
+            (mean_chi - 2.0) / 2.0,
+            (witness_ratio * 2.0) - 1.0,
+        ],
+        dtype=float,
+    )
+    return np.clip(vector, -1.0, 1.0)
+
+
+def build_atomic_execution_bundle(packet: dict) -> dict:
+    family = packet["family"]
+    tokens = _packet_semantic_tokens(packet)
+    if not tokens:
+        return {
+            "status": "REJECT",
+            "reason": "No semantic tokens were derived from the execution packet.",
+            "tokens": [],
+            "token_count": 0,
+        }
+
+    context = FAMILY_ATOMIC_CONTEXT.get(family, {"language": None, "context_class": "operator"})
+    governance_proto = FAMILY_GOVERNANCE_PROTOS.get(family, np.zeros(6, dtype=float))
+    _, history_result = reduce_atomic_history(
+        tokens,
+        language=context["language"],
+        context_class=context["context_class"],
+        params=FusionParams(rho_default=0.08),
+        governance_proto=governance_proto,
+    )
+    states = history_result.states
+    fusion = history_result.fusion
+    rhombic_energy = history_result.rhombic_energy
+    rhombic_value = history_result.rhombic_score
+    tau_vectors = np.array([state.tau.as_tuple() for state in states], dtype=float)
+    x_vector = np.mean(tau_vectors, axis=0)
+    audio_vector = _normalize_vector(
+        np.array([fusion.reconstruction_votes[tongue] for tongue in ATOMIC_TONGUES], dtype=float)
+    )
+    vision_vector = _build_periodic_view(states)
+
+    if rhombic_value < 0.0002:
+        advisory_status = "REJECT"
+        advisory_reason = "Atomic/rhombic consistency fell below the execution floor."
+    elif rhombic_value < 0.001:
+        advisory_status = "WARN"
+        advisory_reason = "Atomic/rhombic consistency is weak; packet may drift."
+    else:
+        advisory_status = "PASS"
+        advisory_reason = "Atomic/rhombic consistency is stable."
+
+    return {
+        "status": advisory_status,
+        "reason": advisory_reason,
+        "family": family,
+        "language": context["language"],
+        "context_class": context["context_class"],
+        "token_count": len(tokens),
+        "tokens": tokens,
+        "atomic_features": [_build_atomic_feature_row(state) for state in states],
+        "trit_vectors": [list(state.tau.as_tuple()) for state in states],
+        "semantic_classes": [state.semantic_class for state in states],
+        "negative_states": [state.negative_state for state in states],
+        "dual_states": [state.dual_state for state in states],
+        "chemical_fusion": {
+            "tau_hat": fusion.tau_hat,
+            "reconstruction_votes": fusion.reconstruction_votes,
+            "signed_edge_tension": fusion.signed_edge_tension,
+            "coherence_penalty": fusion.coherence_penalty,
+            "valence_pressure": fusion.valence_pressure,
+        },
+        "rhombic": {
+            "energy": rhombic_energy,
+            "score": rhombic_value,
+            "governance_proto": governance_proto.tolist(),
+            "x_vector": x_vector.tolist(),
+            "audio_vector": audio_vector.tolist(),
+            "vision_vector": vision_vector.tolist(),
+        },
+        "history_reducer": {
+            "trust_level": history_result.trust_level,
+            "trust_factor": history_result.trust_factor,
+            "betrayal_delta": history_result.betrayal_delta,
+            "negative_ratio": history_result.negative_ratio,
+            "dual_state": history_result.dual_state,
+            "lane_alignment": history_result.lane_alignment,
+            "drift_norm": history_result.drift_norm,
+            "drift_components": history_result.drift_components,
+            "checkpoint": history_result.checkpoint,
+        },
+    }
 
 
 def _default_witnesses(source_tongue: str) -> List[str]:
@@ -293,11 +475,18 @@ def prove_execution_packet(
         witness_tongues=witness_tongues,
         modes=modes,
     )
+    atomic_bundle = build_atomic_execution_bundle(packet)
+    proof_status = (
+        "PASS"
+        if mesh["convergence_score"] == 1.0 and atomic_bundle["status"] != "REJECT"
+        else "FAIL"
+    )
     return {
-        "status": "PASS" if mesh["convergence_score"] == 1.0 else "FAIL",
+        "status": proof_status,
         "family": packet["family"],
         "packet_sha256": packet["packet_sha256"],
         "transport": mesh,
+        "atomic_precheck": atomic_bundle,
     }
 
 

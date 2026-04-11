@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STISA Atomic Tokenization Dashboard</title>
+<meta name="description" content="Explore how STISA opcode families map into atomic proxy features, Sacred Tongue trit vectors, and a canon-aligned chemical fusion readout.">
+<link rel="canonical" href="https://aethermoore.com/demos/stisa-atomic-tokenization.html">
+<style>
+  :root{--bg:#07111f;--panel:#0f1d31;--line:#243857;--text:#edf3ff;--muted:#95a8c7;--gold:#ffd166;--mint:#77f2c8;--rose:#ff7e9f;--aqua:#6fd7ff;--plus:#6ef3b4;--zero:#8ea2c4;--minus:#ff8a8a}
+  *{box-sizing:border-box} body{margin:0;font:16px/1.5 "Segoe UI",system-ui,sans-serif;background:radial-gradient(circle at top,#122440 0,#07111f 58%);color:var(--text)}
+  a{color:var(--aqua);text-decoration:none}.wrap{max-width:1220px;margin:0 auto;padding:28px 18px 64px}
+  .nav,.hero,.grid,.toolbar,.features,.trits,.fusion{display:grid;gap:16px}.nav{grid-auto-flow:column;justify-content:start;font-size:14px;margin-bottom:18px}
+  .hero{grid-template-columns:1.2fr .8fr;margin-bottom:20px}.grid{grid-template-columns:1fr 1fr}.toolbar{grid-template-columns:1fr 1fr}.features{grid-template-columns:repeat(2,minmax(0,1fr))}.trits{grid-template-columns:repeat(6,minmax(0,1fr))}.fusion{grid-template-columns:1.05fr .95fr}
+  .panel{background:rgba(15,29,49,.88);border:1px solid var(--line);border-radius:20px;padding:18px;backdrop-filter:blur(8px);box-shadow:0 14px 38px rgba(0,0,0,.24)}
+  h1,h2,h3,p{margin:0} h1{font-size:clamp(2rem,4vw,3.6rem);line-height:1.02;margin-bottom:10px} h2{font-size:1.1rem;margin-bottom:8px}.eyebrow{color:var(--gold);text-transform:uppercase;letter-spacing:.18em;font-size:.76rem;font-weight:700;margin-bottom:10px;display:block}
+  .lede{color:#d7e6ff;max-width:65ch}.meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}.chip{padding:7px 11px;border-radius:999px;border:1px solid var(--line);font-size:.84rem;color:var(--muted)}
+  select,input[type=range]{width:100%} select{background:#07111f;color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px} label{display:block;font-size:.86rem;color:var(--muted);margin-bottom:6px}
+  .preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.preset{padding:12px;border-radius:14px;border:1px solid var(--line);background:#091423;color:var(--text);cursor:pointer;text-align:left}.preset.active{border-color:var(--gold);box-shadow:0 0 0 1px rgba(255,209,102,.25) inset}
+  .feature{padding:12px;border-radius:14px;background:#091423;border:1px solid #1a2a45}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.small{font-size:.82rem;color:var(--muted)}.num{font:600 1rem/1.2 Consolas,monospace;color:var(--gold)}
+  pre{margin:0;padding:12px;border-radius:14px;background:#08111d;border:1px solid #1a2a45;color:#d9e6ff;font:14px/1.5 Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+  .trit{padding:12px;border-radius:16px;border:1px solid var(--line);text-align:center;background:#091423}.trit strong{display:block;font-size:1.1rem;margin-bottom:5px}.state{display:inline-block;min-width:42px;padding:6px 10px;border-radius:999px;font:700 1rem/1 Consolas,monospace}.plus{background:rgba(110,243,180,.14);color:var(--plus)}.zero{background:rgba(142,162,196,.15);color:var(--zero)}.minus{background:rgba(255,138,138,.14);color:var(--minus)}
+  .bars{display:grid;gap:10px}.bar{display:grid;grid-template-columns:140px 1fr 52px;gap:10px;align-items:center}.track{height:10px;border-radius:999px;background:#12223a;overflow:hidden}.fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--rose),var(--gold),var(--mint))}
+  .decision{padding:16px;border-radius:16px;font-weight:700}.allow{background:rgba(110,243,180,.12);color:var(--plus)}.quarantine{background:rgba(255,209,102,.12);color:var(--gold)}.deny{background:rgba(255,138,138,.12);color:var(--minus)}
+  @media (max-width:980px){.hero,.grid,.fusion,.toolbar{grid-template-columns:1fr}.trits{grid-template-columns:repeat(3,minmax(0,1fr))}} @media (max-width:640px){.preset-grid,.features,.trits{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="nav"><a href="../index.html">Home</a><a href="index.html">Demos</a><a href="../research/index.html">Research</a><a href="../product-manual/index.html">Manuals</a><a href="tongue-encoder.html">Sacred Tongue Encoder</a><a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a></div>
+
+  <section class="hero">
+    <div class="panel">
+      <span class="eyebrow">STISA Atomic Tokenization Dashboard</span>
+      <h1>Watch opcode families become atomic features, Sacred Tongue trits, and fusion decisions.</h1>
+      <p class="lede">This page turns the STISA opcode rail into a live exploratory surface. The feature sliders are proxy controls for learning and debugging. The trit thresholds and fusion readout are aligned to the local atomic tokenization and chemical fusion logic already present in the repository.</p>
+      <div class="meta"><span class="chip">Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric</span><span class="chip">Eight proxy features</span><span class="chip">Six-channel ternary output</span><span class="chip">Real-time fusion diagnostics</span></div>
+    </div>
+    <div class="panel">
+      <span class="eyebrow">Canonical boundaries</span>
+      <p class="small">The sliders model <strong>atomic proxy features</strong> for learning and inspection. The fusion summary follows the same shape as the repository’s local chemistry and governance routines: signed channel evidence, coherence penalty, valence pressure, fused reconstruction, then final decision.</p>
+      <div class="meta" style="margin-top:16px"><span class="chip">Control family: 0x00</span><span class="chip">Intent family: 0x01</span><span class="chip">Data family: 0x10</span><span class="chip">Operations family: 0x20</span></div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>Opcode preset</h2>
+      <div class="toolbar" style="margin-top:12px">
+        <div>
+          <label for="opcodeSelect">Select opcode family</label>
+          <select id="opcodeSelect"></select>
+        </div>
+        <div>
+          <label>Preset quick picks</label>
+          <div id="presetGrid" class="preset-grid"></div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <h2>Atomic feature vector</h2>
+        <pre id="featureVector"></pre>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Manual feature controls</h2>
+      <div id="featureControls" class="features" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:18px">
+    <h2>Six-channel trit vector</h2>
+    <p class="small" style="margin-bottom:12px">Each Sacred Tongue channel resolves to <strong>plus one</strong>, <strong>zero</strong>, or <strong>minus one</strong> based on the projected scalar score and the local threshold bands.</p>
+    <div id="tritGrid" class="trits"></div>
+  </section>
+
+  <section class="fusion" style="margin-top:18px">
+    <div class="panel">
+      <h2>Chemical fusion simulation</h2>
+      <p class="small" style="margin-bottom:12px">The active token is fused with a stable witness stream and an operator build stream. The display shows continuous reconstruction <code>R</code> before ternary collapse into <code>tau_hat</code>.</p>
+      <div id="fusionBars" class="bars"></div>
+    </div>
+    <div class="panel">
+      <h2>Decision and diagnostics</h2>
+      <div id="decisionBox" class="decision quarantine" style="margin:12px 0 16px"></div>
+      <pre id="diagnostics"></pre>
+    </div>
+  </section>
+</div>
+
+<script>
+const tongues=[{code:"KO",name:"Kor'aelin"},{code:"AV",name:"Avali"},{code:"RU",name:"Runethic"},{code:"CA",name:"Cassisivadan"},{code:"UM",name:"Umbroth"},{code:"DR",name:"Draumric"}];
+const thresholds={KO:[10,-10],AV:[1.5,-1.5],RU:[0.8,-0.8],CA:[1,-1],UM:[0.6,-0.6],DR:[2,-2]};
+const featureConfig=[
+  {key:"Z_proxy",label:"Atomic number proxy",min:1,max:32,step:1},{key:"group_proxy",label:"Group proxy",min:1,max:18,step:1},
+  {key:"period_proxy",label:"Period proxy",min:1,max:7,step:1},{key:"valence_proxy",label:"Valence proxy",min:0,max:8,step:1},
+  {key:"chi_proxy",label:"Electronegativity proxy",min:0,max:4,step:0.1},{key:"band_flag",label:"Band flag",min:0,max:3,step:1},
+  {key:"tongue_id",label:"Tongue identifier",min:0,max:5,step:1},{key:"reserved",label:"Reserved weight",min:0,max:3,step:0.1}
+];
+const presets=[
+  {id:"control",label:"Control (0x00)",values:{Z_proxy:6,group_proxy:3,period_proxy:2,valence_proxy:1,chi_proxy:1.1,band_flag:0,tongue_id:0,reserved:0.4}},
+  {id:"intent",label:"Intent (0x01)",values:{Z_proxy:9,group_proxy:7,period_proxy:2,valence_proxy:3,chi_proxy:1.6,band_flag:0,tongue_id:0,reserved:1.0}},
+  {id:"data",label:"Data (0x10)",values:{Z_proxy:18,group_proxy:14,period_proxy:3,valence_proxy:5,chi_proxy:2.8,band_flag:1,tongue_id:2,reserved:1.3}},
+  {id:"ops",label:"Operations (0x20)",values:{Z_proxy:26,group_proxy:11,period_proxy:4,valence_proxy:6,chi_proxy:2.0,band_flag:2,tongue_id:3,reserved:1.8}}
+];
+const baselineStates=[
+  {trits:{KO:0,AV:1,RU:1,CA:0,UM:0,DR:1},chi:1.8,valence:4,channels:{KO:0,AV:2,RU:1.1,CA:0.2,UM:-0.1,DR:2.2}},
+  {trits:{KO:1,AV:0,RU:0,CA:1,UM:-1,DR:0},chi:2.3,valence:5,channels:{KO:12,AV:0.4,RU:0.5,CA:1.4,UM:-0.9,DR:0.8}}
+];
+let activePreset=presets[0].id;
+const state={...presets[0].values};
+
+const opcodeSelect=document.getElementById("opcodeSelect"),presetGrid=document.getElementById("presetGrid"),featureControls=document.getElementById("featureControls");
+const featureVector=document.getElementById("featureVector"),tritGrid=document.getElementById("tritGrid"),fusionBars=document.getElementById("fusionBars");
+const diagnostics=document.getElementById("diagnostics"),decisionBox=document.getElementById("decisionBox");
+
+function tritValue(score,[hi,lo]){return score>hi?1:score<lo?-1:0;}
+function badgeClass(v){return v>0?"plus":v<0?"minus":"zero";}
+function bandName(v){return ["Control","Data","Operations","Modifier"][v]||"Custom";}
+function tongueName(v){const t=tongues[v]||tongues[0];return `${t.name} (${t.code})`;}
+function format(v){return typeof v==="number"?Number(v).toFixed(v%1===0?0:2):String(v);}
+function deriveChannels(v){return {
+  KO:(v.Z_proxy-16)+(v.band_flag===0?-2:0)+(v.tongue_id===0?1:0),
+  AV:(v.period_proxy-3)+((v.reserved-1.5)*0.35),
+  RU:((v.group_proxy-10)/6)+(v.band_flag===1?0.55:0)+(v.band_flag===2?0.35:0)+(v.reserved>2?0.25:0),
+  CA:(v.valence_proxy-4)+(v.band_flag===2?1:0)+(v.tongue_id===3?0.5:0),
+  UM:(v.chi_proxy-2.2)+(v.band_flag===3?0.5:0)-((v.valence_proxy>6)?0.25:0),
+  DR:(((v.group_proxy+v.period_proxy)/2)-7)+(v.band_flag===0?0.5:0)+(v.tongue_id===5?0.5:0)
+};}
+function deriveTrits(channels){const out={};for(const t of tongues){out[t.code]=tritValue(channels[t.code],thresholds[t.code]);}return out;}
+function fusion(active){
+  const avgChi=(baselineStates[0].chi+baselineStates[1].chi)/2;
+  const signedEdgeTension=(active.chi_proxy-avgChi)*0.22;
+  const coherencePenalty=tongues.reduce((sum,t)=>sum+Math.abs(active.channels[t.code]-((baselineStates[0].channels[t.code]+baselineStates[1].channels[t.code])/2)),0)/tongues.length*0.08;
+  const valencePressure=(active.valence_proxy-4)*0.18;
+  const R={},tauHat={}; let sum=0;
+  for(const t of tongues){
+    const vote=active.trits[t.code]+baselineStates[0].trits[t.code]+baselineStates[1].trits[t.code];
+    R[t.code]=vote+(signedEdgeTension*(t.code==="DR"?1.1:t.code==="UM"?-0.5:0.65))-(coherencePenalty*(t.code==="AV"?1.1:1))+(valencePressure*(t.code==="CA"?1.1:0.55));
+    tauHat[t.code]=R[t.code]>0.5?1:R[t.code]<-0.5?-1:0; sum+=tauHat[t.code];
+  }
+  return {R,tauHat,decision:sum>=2?"Allow":sum<=-2?"Deny":"Quarantine",signedEdgeTension,coherencePenalty,valencePressure,sum};
+}
+function renderPresets(){
+  opcodeSelect.innerHTML=""; presetGrid.innerHTML="";
+  presets.forEach(p=>{
+    const option=document.createElement("option"); option.value=p.id; option.textContent=p.label; opcodeSelect.appendChild(option);
+    const button=document.createElement("button"); button.type="button"; button.className=`preset${p.id===activePreset?" active":""}`; button.textContent=p.label; button.onclick=()=>applyPreset(p.id); presetGrid.appendChild(button);
+  });
+  if(activePreset==="manual"){
+    const manual=document.createElement("option"); manual.value="manual"; manual.textContent="Manual custom mix";
+    opcodeSelect.appendChild(manual);
+  }
+  opcodeSelect.value=activePreset;
+}
+function renderControls(){
+  featureControls.innerHTML="";
+  featureConfig.forEach(cfg=>{
+    const wrap=document.createElement("div");
+    wrap.className="feature";
+    wrap.innerHTML=`<div class="row"><strong>${cfg.label}</strong><span class="num" id="${cfg.key}Value"></span></div><div class="small">${cfg.key==="band_flag"?bandName(state[cfg.key]):cfg.key==="tongue_id"?tongueName(state[cfg.key]):"Live proxy control"}</div><input id="${cfg.key}" type="range" min="${cfg.min}" max="${cfg.max}" step="${cfg.step}" value="${state[cfg.key]}">`;
+    featureControls.appendChild(wrap);
+    wrap.querySelector("input").addEventListener("input",e=>{state[cfg.key]=Number(e.target.value);activePreset="manual";update();});
+  });
+}
+function applyPreset(id){
+  const preset=presets.find(p=>p.id===id); if(!preset) return;
+  activePreset=id; Object.assign(state,preset.values);
+  featureConfig.forEach(cfg=>{const input=document.getElementById(cfg.key); if(input) input.value=state[cfg.key];});
+  update();
+}
+function update(){
+  renderPresets();
+  featureConfig.forEach(cfg=>{
+    const out=document.getElementById(`${cfg.key}Value`); if(out) out.textContent=format(state[cfg.key]);
+    const small=document.getElementById(cfg.key)?.closest(".feature")?.querySelector(".small");
+    if(small && cfg.key==="band_flag") small.textContent=bandName(state[cfg.key]);
+    if(small && cfg.key==="tongue_id") small.textContent=tongueName(state[cfg.key]);
+  });
+  const channels=deriveChannels(state), trits=deriveTrits(channels), fused=fusion({...state,channels,trits});
+  featureVector.textContent=JSON.stringify({...state,band_name:bandName(state.band_flag),tongue_name:tongueName(state.tongue_id)},null,2);
+  tritGrid.innerHTML=tongues.map(t=>`<div class="trit"><div class="small">${t.name}</div><strong>${t.code}</strong><span class="state ${badgeClass(trits[t.code])}">${trits[t.code]>0?"+1":trits[t.code]<0?"-1":"0"}</span><div class="small" style="margin-top:8px">scalar ${channels[t.code].toFixed(2)}</div></div>`).join("");
+  fusionBars.innerHTML=tongues.map(t=>`<div class="bar"><div>${t.name}</div><div class="track"><div class="fill" style="width:${Math.min(100,Math.abs(fused.R[t.code])*18)}%"></div></div><div class="small">${fused.R[t.code].toFixed(2)}</div></div>`).join("");
+  decisionBox.className=`decision ${fused.decision.toLowerCase()}`; decisionBox.textContent=`Final decision: ${fused.decision} | fused trit sum ${fused.sum}`;
+  diagnostics.textContent=JSON.stringify({trit_vector:trits,tau_hat:fused.tauHat,signed_edge_tension:Number(fused.signedEdgeTension.toFixed(3)),coherence_penalty:Number(fused.coherencePenalty.toFixed(3)),valence_pressure:Number(fused.valencePressure.toFixed(3))},null,2);
+}
+
+renderControls(); update(); opcodeSelect.addEventListener("change",e=>applyPreset(e.target.value));
+</script>
+</body>
+</html>
