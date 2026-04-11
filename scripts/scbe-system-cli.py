@@ -3134,6 +3134,68 @@ def cmd_model_plan(args: argparse.Namespace) -> int:
     return _json_result(args, payload, lines)
 
 
+def cmd_model_preflight(args: argparse.Namespace) -> int:
+    module = _load_model_training_module(args.repo_root)
+    if module is None:
+        print("Model training lane is unavailable: scripts/model_training_lane.py is missing.")
+        return 2
+    _, profile_name, profile_dir, profile_path = _model_profile_selection(args)
+    resolved = module.resolve_profile_path(
+        args.repo_root,
+        profile=profile_name,
+        profile_path=profile_path or None,
+        raw_profile_dir=profile_dir or None,
+    )
+    if not resolved.exists():
+        print(f"Model profile not found: {resolved}")
+        return 2
+    payload = module.build_training_preflight(args.repo_root, resolved)
+    decision = payload["decision"]
+    local = payload["local"]
+    lines = [
+        f"Profile: {payload['profile_id']}",
+        f"Execution target: {decision['execution_target']}",
+        f"Recommended target: {payload['recommended_target']}",
+        f"Local ready: {'yes' if local['ready'] else 'no'}",
+        f"Detected VRAM: {local['detected_vram_mb']} MiB",
+        f"HF token ({payload['hub']['token_env']}): {'present' if payload['hub']['token_present'] else 'missing'}",
+    ]
+    if local["blockers"]:
+        lines.append(f"Blockers: {', '.join(local['blockers'])}")
+    if decision["rationale"]:
+        lines.append(f"Why: {', '.join(decision['rationale'])}")
+    toolchain = payload.get("toolchain") or {}
+    if toolchain:
+        lines.append("Toolchain:")
+        python_cfg = toolchain.get("python") or {}
+        hf_cli = toolchain.get("hf_cli") or {}
+        ollama = toolchain.get("ollama") or {}
+        lines.append(f"- python: {python_cfg.get('path', 'missing')}")
+        lines.append(
+            f"- hf-cli: {hf_cli.get('path', 'missing') if hf_cli.get('available') else 'missing'}"
+        )
+        lines.append(
+            f"- ollama: {ollama.get('path', 'missing') if ollama.get('available') else 'missing'}"
+        )
+        lines.append(f"- colab-catalog: {(toolchain.get('colab_catalog') or {}).get('path', 'missing')}")
+        lines.append(
+            f"- model-host-quickcall: {(toolchain.get('model_host_quickcall') or {}).get('path', 'missing')}"
+        )
+        runtime = toolchain.get("runtime") or {}
+        if runtime:
+            lines.append(
+                f"- runtime: {runtime.get('provider', '')} {runtime.get('model', '')} @ {runtime.get('base_url', '')}"
+            )
+    if payload.get("next_steps"):
+        lines.append("Next steps:")
+        for step in payload["next_steps"]:
+            command = " ".join(shlex.quote(str(part)) for part in step.get("command", []))
+            lines.append(f"- {step.get('kind', 'step')}: {step.get('description', '')}")
+            if command:
+                lines.append(f"  {command}")
+    return _json_result(args, payload, lines)
+
+
 def cmd_model_train(args: argparse.Namespace) -> int:
     module = _load_model_training_module(args.repo_root)
     if module is None:
@@ -4243,6 +4305,11 @@ def build_parser() -> argparse.ArgumentParser:
     add_model_profile_flags(model_plan)
     model_plan.set_defaults(func=cmd_model_plan)
 
+    model_preflight = model_sub.add_parser("preflight", help="Check whether a model profile should run locally, on Colab, or on HF Jobs")
+    add_runtime_cli_flags(model_preflight)
+    add_model_profile_flags(model_preflight)
+    model_preflight.set_defaults(func=cmd_model_preflight)
+
     model_train = model_sub.add_parser("train", help="Emit a runnable training script from a profile")
     add_runtime_cli_flags(model_train)
     add_model_profile_flags(model_train)
@@ -4610,3 +4677,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
