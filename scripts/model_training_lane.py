@@ -3,7 +3,13 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
+import os
+import re
+import shutil
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -195,6 +201,358 @@ def build_training_plan(repo_root: Path, profile_path: Path) -> dict[str, Any]:
     }
 
 
+def _dependency_status(name: str) -> dict[str, Any]:
+    spec = importlib.util.find_spec(name)
+    return {
+        "name": name,
+        "available": spec is not None,
+    }
+
+
+def _inspect_torch_runtime() -> dict[str, Any]:
+    try:
+        import torch  # type: ignore
+    except Exception as exc:  # pragma: no cover - import failure depends on environment
+        return {
+            "available": False,
+            "error": str(exc),
+            "cuda_available": False,
+            "device_count": 0,
+            "devices": [],
+            "total_vram_mb": 0,
+        }
+
+    cuda_available = bool(torch.cuda.is_available())
+    devices: list[dict[str, Any]] = []
+    total_vram_mb = 0
+    if cuda_available:
+        for idx in range(int(torch.cuda.device_count())):
+            props = torch.cuda.get_device_properties(idx)
+            total_mb = int(props.total_memory // (1024 * 1024))
+            total_vram_mb += total_mb
+            devices.append(
+                {
+                    "index": idx,
+                    "name": str(props.name),
+                    "total_vram_mb": total_mb,
+                }
+            )
+    return {
+        "available": True,
+        "version": getattr(torch, "__version__", "unknown"),
+        "cuda_available": cuda_available,
+        "device_count": int(torch.cuda.device_count()) if cuda_available else 0,
+        "devices": devices,
+        "total_vram_mb": total_vram_mb,
+    }
+
+
+def _inspect_nvidia_smi() -> dict[str, Any]:
+    exe = shutil.which("nvidia-smi")
+    if not exe:
+        return {"available": False, "devices": []}
+    try:
+        result = subprocess.run(
+            [exe, "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader,nounits"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+    except Exception as exc:  # pragma: no cover - environment dependent
+        return {"available": True, "error": str(exc), "devices": []}
+    if result.returncode != 0:
+        return {
+            "available": True,
+            "returncode": result.returncode,
+            "stderr": result.stderr.strip(),
+            "devices": [],
+        }
+    devices: list[dict[str, Any]] = []
+    for idx, line in enumerate(result.stdout.splitlines()):
+        parts = [part.strip() for part in line.split(",")]
+        if len(parts) < 3:
+            continue
+        name, total_mem, driver_version = parts[:3]
+        total_vram_mb = int(total_mem) if total_mem.isdigit() else 0
+        devices.append(
+            {
+                "index": idx,
+                "name": name,
+                "total_vram_mb": total_vram_mb,
+                "driver_version": driver_version,
+            }
+        )
+    return {
+        "available": True,
+        "devices": devices,
+        "total_vram_mb": sum(device.get("total_vram_mb", 0) for device in devices),
+    }
+
+
+def _estimated_min_local_vram_mb(profile: dict[str, Any]) -> int:
+    execution_cfg = profile.get("execution") or {}
+    explicit = execution_cfg.get("minimum_local_vram_mb")
+    if isinstance(explicit, int) and explicit > 0:
+        return explicit
+    model_name = _coerce_string(profile.get("base_model"), "")
+    match = re.search(r"(\d+(?:\.\d+)?)\s*[bB]", model_name)
+    billions = float(match.group(1)) if match else 7.0
+    if billions <= 3:
+        base = 6144
+    elif billions <= 7:
+        base = 8192
+    elif billions <= 14:
+        base = 16384
+    else:
+        base = 24576
+    load_in_4bit = bool((profile.get("training") or {}).get("load_in_4bit", True))
+    if not load_in_4bit:
+        base = int(base * 1.75)
+    return base
+
+
+def _recommended_actions(
+    repo_root: Path,
+    profile_path: Path,
+    plan: dict[str, Any],
+    execution_target: str,
+) -> list[dict[str, Any]]:
+    cli_script = (repo_root / "scripts" / "scbe-system-cli.py").resolve()
+    emit_path = Path(plan["default_emit_path"])
+    if not emit_path.is_absolute():
+        emit_path = (repo_root / emit_path).resolve()
+
+    actions: list[dict[str, Any]] = [
+        {
+            "kind": "emit-script",
+            "description": "Emit the runnable training script for this profile.",
+            "command": [
+                sys.executable,
+                str(cli_script),
+                "model",
+                "train",
+                "--profile-path",
+                str(profile_path),
+                "--emit-script",
+                str(emit_path),
+                "--json",
+            ],
+        }
+    ]
+
+    if execution_target == "local":
+        actions.append(
+            {
+                "kind": "run-local",
+                "description": "Run the emitted training script on the current machine.",
+                "command": [sys.executable, str(emit_path)],
+            }
+        )
+    elif execution_target == "colab":
+        actions.append(
+            {
+                "kind": "colab-notebook",
+                "description": "Resolve the repo's QLoRA Colab notebook lane for remote training.",
+                "command": [
+                    sys.executable,
+                    str((repo_root / "scripts" / "system" / "colab_workflow_catalog.py").resolve()),
+                    "show",
+                    "qlora",
+                    "--json",
+                ],
+            }
+        )
+    elif execution_target == "hf-jobs":
+        actions.append(
+            {
+                "kind": "hf-host-inventory",
+                "description": "Check the configured Hugging Face host route before dispatching the emitted script.",
+                "command": [
+                    "powershell",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                    str((repo_root / "scripts" / "system" / "model_host_quickcall.ps1").resolve()),
+                    "-Action",
+                    "inventory-hf",
+                ],
+            }
+        )
+    return actions
+
+
+def _toolchain_status(
+    repo_root: Path,
+    profile_path: Path,
+    profile: dict[str, Any],
+    plan: dict[str, Any],
+    execution_target: str,
+) -> dict[str, Any]:
+    emit_path = Path(plan["default_emit_path"])
+    if not emit_path.is_absolute():
+        emit_path = (repo_root / emit_path).resolve()
+
+    catalog_path = (repo_root / "scripts" / "system" / "colab_workflow_catalog.py").resolve()
+    host_quickcall_path = (repo_root / "scripts" / "system" / "model_host_quickcall.ps1").resolve()
+    hf_loop_path = (repo_root / "scripts" / "hf_training_loop.py").resolve()
+    cloud_bootstrap_path = (repo_root / "scripts" / "cloud_bootstrap_train.py").resolve()
+    hf_cli = shutil.which("hf")
+    ollama_cli = shutil.which("ollama")
+
+    toolchain: dict[str, Any] = {
+        "target": execution_target,
+        "python": {
+            "available": bool(sys.executable),
+            "path": sys.executable,
+        },
+        "profile": {
+            "path": str(profile_path),
+            "exists": profile_path.exists(),
+        },
+        "emit_script": {
+            "path": str(emit_path),
+            "parent_exists": emit_path.parent.exists(),
+        },
+        "colab_catalog": {
+            "path": str(catalog_path),
+            "exists": catalog_path.exists(),
+        },
+        "model_host_quickcall": {
+            "path": str(host_quickcall_path),
+            "exists": host_quickcall_path.exists(),
+        },
+        "hf_training_loop": {
+            "path": str(hf_loop_path),
+            "exists": hf_loop_path.exists(),
+        },
+        "cloud_bootstrap_train": {
+            "path": str(cloud_bootstrap_path),
+            "exists": cloud_bootstrap_path.exists(),
+        },
+        "hf_cli": {
+            "available": hf_cli is not None,
+            "path": hf_cli or "",
+        },
+        "ollama": {
+            "available": ollama_cli is not None,
+            "path": ollama_cli or "",
+        },
+    }
+
+    runtime = profile.get("runtime") or {}
+    if isinstance(runtime, dict) and runtime:
+        toolchain["runtime"] = {
+            "provider": _coerce_string(runtime.get("provider"), ""),
+            "model": _coerce_string(runtime.get("model"), ""),
+            "base_url": _coerce_string(runtime.get("base_url"), ""),
+        }
+
+    if execution_target == "colab":
+        qlora_notebook = (repo_root / "notebooks" / "colab_qlora_training.ipynb").resolve()
+        finetune_notebook = (repo_root / "notebooks" / "scbe_finetune_colab.ipynb").resolve()
+        toolchain["colab_notebooks"] = {
+            "qlora": {
+                "path": str(qlora_notebook),
+                "exists": qlora_notebook.exists(),
+            },
+            "finetune": {
+                "path": str(finetune_notebook),
+                "exists": finetune_notebook.exists(),
+            },
+        }
+
+    return toolchain
+
+
+def build_training_preflight(repo_root: Path, profile_path: Path) -> dict[str, Any]:
+    profile = load_profile(profile_path)
+    plan = build_training_plan(repo_root, profile_path)
+
+    dependencies = {
+        name: _dependency_status(name)
+        for name in ("datasets", "transformers", "trl", "unsloth")
+    }
+    torch_runtime = _inspect_torch_runtime()
+    nvidia_smi = _inspect_nvidia_smi()
+    token_env = _coerce_string(profile["hub"].get("token_env"), "HF_TOKEN")
+    token_present = bool(os.environ.get(token_env, ""))
+    minimum_local_vram_mb = _estimated_min_local_vram_mb(profile)
+
+    local_blockers: list[str] = []
+    if plan["missing_files"]:
+        local_blockers.append("dataset-missing")
+    missing_deps = [name for name, status in dependencies.items() if not status["available"]]
+    if missing_deps:
+        local_blockers.extend(f"missing-dependency:{name}" for name in missing_deps)
+    if not torch_runtime.get("available", False):
+        local_blockers.append("torch-unavailable")
+    elif not torch_runtime.get("cuda_available", False):
+        local_blockers.append("cuda-unavailable")
+    detected_vram = int(torch_runtime.get("total_vram_mb") or nvidia_smi.get("total_vram_mb") or 0)
+    if detected_vram and detected_vram < minimum_local_vram_mb:
+        local_blockers.append(f"insufficient-vram:{detected_vram}<{minimum_local_vram_mb}")
+    elif not detected_vram:
+        local_blockers.append("vram-unknown")
+
+    local_ready = not local_blockers
+    hf_ready = bool(token_present and plan["ready"])
+    recommended_target = _coerce_string(profile["execution"].get("recommended_target"), "local")
+    recommended_target_key = recommended_target.lower()
+    prefers_hf = "hf" in recommended_target_key or "huggingface" in recommended_target_key
+    prefers_colab = "colab" in recommended_target_key
+    execution_target = "local"
+    rationale: list[str] = []
+    if local_ready:
+        execution_target = "local"
+        rationale.append("local-environment-meets-profile-requirements")
+    elif prefers_hf and hf_ready:
+        execution_target = "hf-jobs"
+        rationale.append("profile-prefers-hf-and-token-is-present")
+    elif prefers_colab or "local" in recommended_target_key:
+        execution_target = "colab"
+        rationale.append("local-environment-is-underpowered-for-profile")
+    elif hf_ready:
+        execution_target = "hf-jobs"
+        rationale.append("hf-token-present-and-local-environment-not-ready")
+    else:
+        execution_target = "emit-only"
+        rationale.append("profile-can-emit-script-but-runtime-target-is-not-ready")
+    if local_blockers:
+        rationale.extend(local_blockers)
+    if not token_present:
+        rationale.append(f"missing-env:{token_env}")
+
+    return {
+        "schema_version": "scbe_model_preflight_v1",
+        "profile_id": profile["profile_id"],
+        "profile_path": str(profile_path),
+        "backend": profile["backend"],
+        "base_model": profile["base_model"],
+        "plan_ready": plan["ready"],
+        "recommended_target": recommended_target,
+        "minimum_local_vram_mb": minimum_local_vram_mb,
+        "dependencies": dependencies,
+        "torch": torch_runtime,
+        "nvidia_smi": nvidia_smi,
+        "hub": {
+            "token_env": token_env,
+            "token_present": token_present,
+        },
+        "local": {
+            "ready": local_ready,
+            "detected_vram_mb": detected_vram,
+            "blockers": local_blockers,
+        },
+        "decision": {
+            "execution_target": execution_target,
+            "rationale": rationale,
+        },
+        "toolchain": _toolchain_status(repo_root, profile_path, profile, plan, execution_target),
+        "next_steps": _recommended_actions(repo_root, profile_path, plan, execution_target),
+        "plan": plan,
+    }
+
 def _render_training_script(profile: dict[str, Any], plan: dict[str, Any]) -> str:
     profile_json = json.dumps(profile, indent=2, ensure_ascii=True)
     train_files_json = json.dumps([row["path"] for row in plan["train_datasets"] if row["exists"]], indent=2, ensure_ascii=True)
@@ -371,3 +729,5 @@ def emit_training_script(repo_root: Path, profile_path: Path, output_path: Path 
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(_render_training_script(profile, plan), encoding="utf-8")
     return target, plan
+
+
