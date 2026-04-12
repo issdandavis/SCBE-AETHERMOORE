@@ -61,7 +61,6 @@ from src.crypto.crossing_energy import (
     harmonic_cost,
 )
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -92,6 +91,7 @@ C_LIGHT = 3.0e8  # m/s
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class QHOLevel:
     """Quantum harmonic oscillator excitation level for a training record.
@@ -100,12 +100,13 @@ class QHOLevel:
         n = fork_count + energy_bonus
     where energy_bonus = 1 if crossing energy E(p,m) ≥ 2 (high tension).
     """
-    n: int                          # excitation level 0..MAX_N
-    energy: float                   # E_n = ω(n + 1/2) (normalized, ℏ=1)
-    fork_count: int                 # number of polymorphic axes
-    crossing_energy: float          # E(p,m) from dual ternary
-    harmonic_wall_cost: float       # φ^(d²) at mean edge distance
-    is_ground_state: bool           # n == 0
+
+    n: int  # excitation level 0..MAX_N
+    energy: float  # E_n = ω(n + 1/2) (normalized, ℏ=1)
+    fork_count: int  # number of polymorphic axes
+    crossing_energy: float  # E(p,m) from dual ternary
+    harmonic_wall_cost: float  # φ^(d²) at mean edge distance
+    is_ground_state: bool  # n == 0
 
 
 @dataclass
@@ -116,9 +117,10 @@ class VisualFrequencyVector:
     its phi-weight × interference magnitude. Normalized to sum = 1.
     This is the |c_i|² from the superposition |ψ⟩ = Σ c_i|tongue_i⟩.
     """
-    amplitudes: Dict[str, float]    # tongue → |c_i|² (normalized)
-    dominant_tongue: str            # highest amplitude
-    visual_entropy: float           # Shannon entropy of the distribution
+
+    amplitudes: Dict[str, float]  # tongue → |c_i|² (normalized)
+    dominant_tongue: str  # highest amplitude
+    visual_entropy: float  # Shannon entropy of the distribution
 
 
 @dataclass
@@ -130,10 +132,11 @@ class AcousticSignature:
         n high: ultrasonic dominant (fast, excited, Runethic)
         mid n: balanced audible (the human band)
     """
-    infra_weight: float     # [0, 1] — emphasis on slow/IR band
-    audible_weight: float   # [0, 1] — emphasis on human band
-    ultra_weight: float     # [0, 1] — emphasis on fast/UV band
-    base_freq: float        # Hz — fundamental frequency at this n
+
+    infra_weight: float  # [0, 1] — emphasis on slow/IR band
+    audible_weight: float  # [0, 1] — emphasis on human band
+    ultra_weight: float  # [0, 1] — emphasis on fast/UV band
+    base_freq: float  # Hz — fundamental frequency at this n
 
 
 @dataclass
@@ -144,28 +147,31 @@ class QHOBundle:
     QHO level + visual frequency + acoustic signature.
     Everything is derived from existing pipeline functions.
     """
+
     text: str
-    multipath: MultipathRecord           # full polymorphic record
-    qho: QHOLevel                        # excitation level
-    visual: VisualFrequencyVector        # 6-channel tongue photon probs
-    acoustic: AcousticSignature          # 3-band frequency emphasis
-    curriculum_difficulty: float         # normalized 0..1 difficulty score
+    multipath: MultipathRecord  # full polymorphic record
+    qho: QHOLevel  # excitation level
+    visual: VisualFrequencyVector  # 6-channel tongue photon probs
+    acoustic: AcousticSignature  # 3-band frequency emphasis
+    curriculum_difficulty: float  # normalized 0..1 difficulty score
 
 
 @dataclass
 class QHOBatchResult:
     """Batch of QHO-augmented bundles with statistics."""
+
     bundles: List[QHOBundle]
     total_input: int
-    total_output: int                    # after polymorphic expansion
-    mean_n: float                        # average excitation level
-    n_distribution: Dict[int, int]       # how many at each n
+    total_output: int  # after polymorphic expansion
+    mean_n: float  # average excitation level
+    n_distribution: Dict[int, int]  # how many at each n
     mean_difficulty: float
 
 
 # ---------------------------------------------------------------------------
 # QHO level computation
 # ---------------------------------------------------------------------------
+
 
 def compute_qho_level(
     multipath: MultipathRecord,
@@ -200,7 +206,7 @@ def compute_qho_level(
     n = min(fork_count + energy_bonus + proximity_bonus, MAX_N)
 
     # QHO energy: E_n = ω(n + 1/2), normalized with ℏ=1, ω=1
-    energy = (n + 0.5)
+    energy = n + 0.5
 
     # Harmonic wall cost at mean edge distance
     wall_cost = harmonic_cost(mean_edge)
@@ -218,6 +224,7 @@ def compute_qho_level(
 # ---------------------------------------------------------------------------
 # Visual frequency vector
 # ---------------------------------------------------------------------------
+
 
 def compute_visual_frequency(
     signal: TritSignal,
@@ -258,7 +265,7 @@ def compute_visual_frequency(
             amplitudes[inv] = w_inv * (0.5 - 0.5 * score)
         else:
             amplitudes[fwd] = w_fwd * (0.5 + 0.5 * score)  # decreases
-            amplitudes[inv] = w_inv * (0.5 - 0.5 * score)   # increases
+            amplitudes[inv] = w_inv * (0.5 - 0.5 * score)  # increases
 
     # Normalize to probability distribution
     total = sum(amplitudes.values())
@@ -288,6 +295,7 @@ def compute_visual_frequency(
 # ---------------------------------------------------------------------------
 # Acoustic signature
 # ---------------------------------------------------------------------------
+
 
 def compute_acoustic_signature(
     qho_level: QHOLevel,
@@ -332,6 +340,7 @@ def compute_acoustic_signature(
 # Curriculum difficulty
 # ---------------------------------------------------------------------------
 
+
 def compute_difficulty(qho: QHOLevel, gain: float) -> float:
     """Normalized difficulty score [0, 1].
 
@@ -353,6 +362,7 @@ def compute_difficulty(qho: QHOLevel, gain: float) -> float:
 # ---------------------------------------------------------------------------
 # Public API: generate QHO bundle for a single text
 # ---------------------------------------------------------------------------
+
 
 def generate_qho_bundle(
     text: str,
@@ -395,6 +405,7 @@ def generate_qho_bundle(
 # Public API: batch processing
 # ---------------------------------------------------------------------------
 
+
 def generate_qho_batch(
     texts: List[str],
     edge_threshold: float = 0.01,
@@ -402,10 +413,7 @@ def generate_qho_batch(
     threshold: float = 0.3,
 ) -> QHOBatchResult:
     """Generate QHO bundles for a batch of texts."""
-    bundles = [
-        generate_qho_bundle(text, edge_threshold, content_threshold, threshold)
-        for text in texts
-    ]
+    bundles = [generate_qho_bundle(text, edge_threshold, content_threshold, threshold) for text in texts]
 
     # Statistics
     n_dist: Dict[int, int] = {}
@@ -431,6 +439,7 @@ def generate_qho_batch(
 # SFT export: flatten QHO bundles for training
 # ---------------------------------------------------------------------------
 
+
 def flatten_qho_for_sft(bundles: List[QHOBundle]) -> List[Dict]:
     """Flatten QHO bundles into individual SFT-ready dicts.
 
@@ -449,9 +458,7 @@ def flatten_qho_for_sft(bundles: List[QHOBundle]) -> List[Dict]:
             rec["qho_energy"] = round(bundle.qho.energy, 3)
             rec["crossing_energy"] = round(bundle.qho.crossing_energy, 3)
             rec["harmonic_wall_cost"] = round(bundle.qho.harmonic_wall_cost, 6)
-            rec["visual_freq"] = {
-                k: round(v, 4) for k, v in bundle.visual.amplitudes.items()
-            }
+            rec["visual_freq"] = {k: round(v, 4) for k, v in bundle.visual.amplitudes.items()}
             rec["dominant_tongue"] = bundle.visual.dominant_tongue
             rec["visual_entropy"] = round(bundle.visual.visual_entropy, 4)
             rec["acoustic_bands"] = {
@@ -470,6 +477,7 @@ def flatten_qho_for_sft(bundles: List[QHOBundle]) -> List[Dict]:
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
+
 
 def format_qho_report(batch: QHOBatchResult) -> str:
     """Human-readable QHO batch report."""
@@ -497,18 +505,21 @@ def format_qho_report(batch: QHOBatchResult) -> str:
 
     for bundle in batch.bundles[:5]:
         sig = bundle.multipath.primary
-        lines.append(f"    text: \"{bundle.text[:50]}...\"" if len(bundle.text) > 50
-                     else f"    text: \"{bundle.text}\"")
-        lines.append(f"      n={bundle.qho.n}  E={bundle.qho.energy:.1f}  "
-                     f"difficulty={bundle.curriculum_difficulty:.3f}  "
-                     f"label={sig.label}")
-        lines.append(f"      visual: {bundle.visual.dominant_tongue} dominant  "
-                     f"entropy={bundle.visual.visual_entropy:.3f}")
-        lines.append(f"      acoustic: infra={bundle.acoustic.infra_weight:.2f}  "
-                     f"audible={bundle.acoustic.audible_weight:.2f}  "
-                     f"ultra={bundle.acoustic.ultra_weight:.2f}")
-        lines.append(f"      paths={bundle.multipath.path_count}  "
-                     f"gain={bundle.multipath.monty_hall_gain:.3f}")
+        lines.append(f'    text: "{bundle.text[:50]}..."' if len(bundle.text) > 50 else f'    text: "{bundle.text}"')
+        lines.append(
+            f"      n={bundle.qho.n}  E={bundle.qho.energy:.1f}  "
+            f"difficulty={bundle.curriculum_difficulty:.3f}  "
+            f"label={sig.label}"
+        )
+        lines.append(
+            f"      visual: {bundle.visual.dominant_tongue} dominant  " f"entropy={bundle.visual.visual_entropy:.3f}"
+        )
+        lines.append(
+            f"      acoustic: infra={bundle.acoustic.infra_weight:.2f}  "
+            f"audible={bundle.acoustic.audible_weight:.2f}  "
+            f"ultra={bundle.acoustic.ultra_weight:.2f}"
+        )
+        lines.append(f"      paths={bundle.multipath.path_count}  " f"gain={bundle.multipath.monty_hall_gain:.3f}")
         lines.append("")
 
     lines.append("=" * 60)

@@ -19,7 +19,6 @@ from python.scbe.atomic_tokenization import (
 )
 from python.scbe.tongue_code_lanes import CODE_LANE_REGISTRY, KNOWN_CODE_LANES
 
-
 INTENTION_CLASS_MAP: Dict[str, str] = {
     "INERT_WITNESS": "observe",
     "ENTITY": "identify",
@@ -155,10 +154,7 @@ def build_overlay_graph(
     context_class: str | None = "memory",
 ) -> OverlayGraph:
     tokens = _tokenize(text)
-    states = [
-        map_token_to_atomic_state(token, language=language, context_class=context_class)
-        for token in tokens
-    ]
+    states = [map_token_to_atomic_state(token, language=language, context_class=context_class) for token in tokens]
 
     intention_sequence = [_primary_intention(token, state) for token, state in zip(tokens, states)]
     intention_nodes = Counter(intention_sequence)

@@ -80,11 +80,11 @@ TONGUE_BASE_FREQ = {
 #   Take the Hz, double it ~40 times to reach THz range (visible light),
 #   then convert to nanometers. Each tongue lands on a distinct hue.
 TONGUE_COLOR = {
-    "KO": {"nm": 620, "hex": "#FF4500", "name": "orange-red"},    # Intent burns hot
-    "AV": {"nm": 570, "hex": "#CCCC00", "name": "yellow"},        # Wisdom illuminates
-    "RU": {"nm": 510, "hex": "#00CC66", "name": "green"},         # Governance grows
-    "CA": {"nm": 470, "hex": "#0066FF", "name": "blue"},          # Compute is precise
-    "UM": {"nm": 430, "hex": "#6600CC", "name": "violet"},        # Security hides deep
+    "KO": {"nm": 620, "hex": "#FF4500", "name": "orange-red"},  # Intent burns hot
+    "AV": {"nm": 570, "hex": "#CCCC00", "name": "yellow"},  # Wisdom illuminates
+    "RU": {"nm": 510, "hex": "#00CC66", "name": "green"},  # Governance grows
+    "CA": {"nm": 470, "hex": "#0066FF", "name": "blue"},  # Compute is precise
+    "UM": {"nm": 430, "hex": "#6600CC", "name": "violet"},  # Security hides deep
     "DR": {"nm": 550, "hex": "#88CC00", "name": "yellow-green"},  # Structure bridges
 }
 
@@ -256,18 +256,18 @@ class FabricationPoint:
         """
         fv = self.frequency.as_vector()
         return [
-            self.opcode / 255.0,            # [0] normalized opcode
-            self.position / 3.0,            # [1] normalized position
-            fv[0],                          # [2] normalized sound Hz
-            fv[1],                          # [3] normalized color nm
-            fv[2],                          # [4] arousal
-            fv[3],                          # [5] valence
-            fv[4],                          # [6] dominance
-            fv[5],                          # [7] harmonic norm
-            self.grounding,                 # [8] grounding
+            self.opcode / 255.0,  # [0] normalized opcode
+            self.position / 3.0,  # [1] normalized position
+            fv[0],  # [2] normalized sound Hz
+            fv[1],  # [3] normalized color nm
+            fv[2],  # [4] arousal
+            fv[3],  # [5] valence
+            fv[4],  # [6] dominance
+            fv[5],  # [7] harmonic norm
+            self.grounding,  # [8] grounding
             sum(self.audience_vector) / max(len(self.audience_vector), 1),  # [9] audience mean
-            self.emotional_weight,          # [10] path emotional weight
-            fv[6],                          # [11] emotional magnitude
+            self.emotional_weight,  # [10] path emotional weight
+            fv[6],  # [11] emotional magnitude
         ]
 
 

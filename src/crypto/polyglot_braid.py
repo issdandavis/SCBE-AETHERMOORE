@@ -59,13 +59,14 @@ from src.crypto.crossing_energy import (
     GovernanceSummary,
 )
 
-
 # ---------------------------------------------------------------------------
 # Natural Language Registry
 # ---------------------------------------------------------------------------
 
+
 class LanguageFamily(Enum):
     """Major language families relevant to the braid."""
+
     INDO_EUROPEAN = "indo_european"
     SINO_TIBETAN = "sino_tibetan"
     AFRO_ASIATIC = "afro_asiatic"
@@ -90,11 +91,12 @@ class NaturalLanguage:
     - UM (shadow/security): honorific layers, indirection, veiling
     - DR (structure/forge): rigid morphology, agglutinative complexity, SOV order
     """
-    code: str          # ISO 639-1
+
+    code: str  # ISO 639-1
     name: str
     family: LanguageFamily
-    script: str        # primary script name
-    direction: str     # "ltr" or "rtl"
+    script: str  # primary script name
+    direction: str  # "ltr" or "rtl"
     tongue_affinity: Dict[str, float]  # 6D: ko/av/ru/ca/um/dr, each 0.0-1.0
 
     @property
@@ -116,92 +118,137 @@ class NaturalLanguage:
     @property
     def phi_weighted_affinity(self) -> float:
         """Total affinity weighted by phi-scaled tongue weights."""
-        return sum(
-            self.tongue_affinity[t] * TONGUE_WEIGHTS[t]
-            for t in TONGUE_WEIGHTS
-        )
+        return sum(self.tongue_affinity[t] * TONGUE_WEIGHTS[t] for t in TONGUE_WEIGHTS)
 
 
 # The world's major languages mapped to Sacred Tongue affinities
 LANGUAGES: List[NaturalLanguage] = [
     NaturalLanguage(
-        code="en", name="English", family=LanguageFamily.INDO_EUROPEAN,
-        script="Latin", direction="ltr",
+        code="en",
+        name="English",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Latin",
+        direction="ltr",
         tongue_affinity={"ko": 0.7, "av": 0.5, "ru": 0.6, "ca": 0.5, "um": 0.3, "dr": 0.4},
     ),
     NaturalLanguage(
-        code="zh", name="Chinese (Mandarin)", family=LanguageFamily.SINO_TIBETAN,
-        script="Han", direction="ltr",
+        code="zh",
+        name="Chinese (Mandarin)",
+        family=LanguageFamily.SINO_TIBETAN,
+        script="Han",
+        direction="ltr",
         tongue_affinity={"ko": 0.5, "av": 0.8, "ru": 0.4, "ca": 0.9, "um": 0.6, "dr": 0.7},
     ),
     NaturalLanguage(
-        code="es", name="Spanish", family=LanguageFamily.INDO_EUROPEAN,
-        script="Latin", direction="ltr",
+        code="es",
+        name="Spanish",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Latin",
+        direction="ltr",
         tongue_affinity={"ko": 0.8, "av": 0.4, "ru": 0.5, "ca": 0.3, "um": 0.2, "dr": 0.4},
     ),
     NaturalLanguage(
-        code="ar", name="Arabic", family=LanguageFamily.AFRO_ASIATIC,
-        script="Arabic", direction="rtl",
+        code="ar",
+        name="Arabic",
+        family=LanguageFamily.AFRO_ASIATIC,
+        script="Arabic",
+        direction="rtl",
         tongue_affinity={"ko": 0.5, "av": 0.9, "ru": 0.7, "ca": 0.6, "um": 0.8, "dr": 0.5},
     ),
     NaturalLanguage(
-        code="hi", name="Hindi", family=LanguageFamily.INDO_EUROPEAN,
-        script="Devanagari", direction="ltr",
+        code="hi",
+        name="Hindi",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Devanagari",
+        direction="ltr",
         tongue_affinity={"ko": 0.6, "av": 0.8, "ru": 0.5, "ca": 0.4, "um": 0.4, "dr": 0.6},
     ),
     NaturalLanguage(
-        code="fr", name="French", family=LanguageFamily.INDO_EUROPEAN,
-        script="Latin", direction="ltr",
+        code="fr",
+        name="French",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Latin",
+        direction="ltr",
         tongue_affinity={"ko": 0.6, "av": 0.7, "ru": 0.7, "ca": 0.4, "um": 0.5, "dr": 0.3},
     ),
     NaturalLanguage(
-        code="ru", name="Russian", family=LanguageFamily.INDO_EUROPEAN,
-        script="Cyrillic", direction="ltr",
+        code="ru",
+        name="Russian",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Cyrillic",
+        direction="ltr",
         tongue_affinity={"ko": 0.5, "av": 0.4, "ru": 0.8, "ca": 0.5, "um": 0.6, "dr": 0.7},
     ),
     NaturalLanguage(
-        code="ja", name="Japanese", family=LanguageFamily.JAPONIC,
-        script="Kanji/Kana", direction="ltr",
+        code="ja",
+        name="Japanese",
+        family=LanguageFamily.JAPONIC,
+        script="Kanji/Kana",
+        direction="ltr",
         tongue_affinity={"ko": 0.4, "av": 0.6, "ru": 0.5, "ca": 0.7, "um": 0.9, "dr": 0.8},
     ),
     NaturalLanguage(
-        code="ko", name="Korean", family=LanguageFamily.KOREANIC,
-        script="Hangul", direction="ltr",
+        code="ko",
+        name="Korean",
+        family=LanguageFamily.KOREANIC,
+        script="Hangul",
+        direction="ltr",
         tongue_affinity={"ko": 0.9, "av": 0.5, "ru": 0.4, "ca": 0.5, "um": 0.7, "dr": 0.8},
     ),
     NaturalLanguage(
-        code="de", name="German", family=LanguageFamily.INDO_EUROPEAN,
-        script="Latin", direction="ltr",
+        code="de",
+        name="German",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Latin",
+        direction="ltr",
         tongue_affinity={"ko": 0.5, "av": 0.3, "ru": 0.8, "ca": 0.6, "um": 0.3, "dr": 0.9},
     ),
     NaturalLanguage(
-        code="pt", name="Portuguese", family=LanguageFamily.INDO_EUROPEAN,
-        script="Latin", direction="ltr",
+        code="pt",
+        name="Portuguese",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Latin",
+        direction="ltr",
         tongue_affinity={"ko": 0.7, "av": 0.5, "ru": 0.4, "ca": 0.3, "um": 0.3, "dr": 0.4},
     ),
     NaturalLanguage(
-        code="he", name="Hebrew", family=LanguageFamily.AFRO_ASIATIC,
-        script="Hebrew", direction="rtl",
+        code="he",
+        name="Hebrew",
+        family=LanguageFamily.AFRO_ASIATIC,
+        script="Hebrew",
+        direction="rtl",
         tongue_affinity={"ko": 0.4, "av": 0.9, "ru": 0.9, "ca": 0.5, "um": 0.7, "dr": 0.6},
     ),
     NaturalLanguage(
-        code="sa", name="Sanskrit", family=LanguageFamily.INDO_EUROPEAN,
-        script="Devanagari", direction="ltr",
+        code="sa",
+        name="Sanskrit",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Devanagari",
+        direction="ltr",
         tongue_affinity={"ko": 0.3, "av": 1.0, "ru": 0.7, "ca": 0.8, "um": 0.5, "dr": 0.9},
     ),
     NaturalLanguage(
-        code="el", name="Greek", family=LanguageFamily.INDO_EUROPEAN,
-        script="Greek", direction="ltr",
+        code="el",
+        name="Greek",
+        family=LanguageFamily.INDO_EUROPEAN,
+        script="Greek",
+        direction="ltr",
         tongue_affinity={"ko": 0.4, "av": 0.7, "ru": 0.6, "ca": 0.9, "um": 0.4, "dr": 0.5},
     ),
     NaturalLanguage(
-        code="sw", name="Swahili", family=LanguageFamily.NIGER_CONGO,
-        script="Latin", direction="ltr",
+        code="sw",
+        name="Swahili",
+        family=LanguageFamily.NIGER_CONGO,
+        script="Latin",
+        direction="ltr",
         tongue_affinity={"ko": 0.8, "av": 0.4, "ru": 0.5, "ca": 0.3, "um": 0.3, "dr": 0.6},
     ),
     NaturalLanguage(
-        code="tr", name="Turkish", family=LanguageFamily.TURKIC,
-        script="Latin", direction="ltr",
+        code="tr",
+        name="Turkish",
+        family=LanguageFamily.TURKIC,
+        script="Latin",
+        direction="ltr",
         tongue_affinity={"ko": 0.7, "av": 0.4, "ru": 0.5, "ca": 0.4, "um": 0.5, "dr": 0.8},
     ),
 ]
@@ -213,6 +260,7 @@ LANGUAGE_BY_CODE: Dict[str, NaturalLanguage] = {lang.code: lang for lang in LANG
 # Parallel Concept Corpus
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ParallelConcept:
     """The same concept expressed in multiple natural languages.
@@ -221,8 +269,9 @@ class ParallelConcept:
     encode the same meaning in different scripts, the convergence
     points reveal what persists across all human expression.
     """
+
     concept_id: str
-    domain: str          # "greeting", "love", "truth", "creation", etc.
+    domain: str  # "greeting", "love", "truth", "creation", etc.
     translations: Dict[str, str]  # lang_code → text
 
     @property
@@ -507,9 +556,11 @@ PARALLEL_CONCEPTS: List[ParallelConcept] = [
 # Braid Encoding
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BraidStrand:
     """One natural language's encoding through the Sacred Tongue lattice."""
+
     language: NaturalLanguage
     text: str
     polyglot_clusters: List[PolyglotCluster]
@@ -534,6 +585,7 @@ class BraidStrand:
 @dataclass
 class CrossLatticeNode:
     """A point in the cross-lattice where languages intersect."""
+
     concept_id: str
     lang_code: str
     tongue: str
@@ -545,9 +597,10 @@ class CrossLatticeNode:
 @dataclass
 class BraidResult:
     """Full cross-lattice braid for one parallel concept."""
+
     concept: ParallelConcept
     strands: Dict[str, BraidStrand]  # lang_code → strand
-    cross_convergence: List[Dict]     # where do different languages converge?
+    cross_convergence: List[Dict]  # where do different languages converge?
     tongue_distribution: Dict[str, float]  # which tongues dominate overall?
     mean_cross_sync: float
     dark_energy_maps: Dict[str, DarkEnergyMap]
@@ -653,18 +706,20 @@ def _find_cross_convergence(strands: Dict[str, BraidStrand]) -> List[Dict]:
             aff_a = strand_a.language.affinity_vector
             aff_b = strand_b.language.affinity_vector
             dot = sum(a * b for a, b in zip(aff_a, aff_b))
-            norm_a = math.sqrt(sum(a ** 2 for a in aff_a))
-            norm_b = math.sqrt(sum(b ** 2 for b in aff_b))
+            norm_a = math.sqrt(sum(a**2 for a in aff_a))
+            norm_b = math.sqrt(sum(b**2 for b in aff_b))
             affinity_correlation = dot / (norm_a * norm_b) if norm_a > 0 and norm_b > 0 else 0.0
 
-            results.append({
-                "lang_a": code_a,
-                "lang_b": code_b,
-                "sync_convergence": convergence,
-                "affinity_correlation": affinity_correlation,
-                "combined_score": convergence * affinity_correlation,
-                "byte_ratio": strand_a.byte_count / max(strand_b.byte_count, 1),
-            })
+            results.append(
+                {
+                    "lang_a": code_a,
+                    "lang_b": code_b,
+                    "sync_convergence": convergence,
+                    "affinity_correlation": affinity_correlation,
+                    "combined_score": convergence * affinity_correlation,
+                    "byte_ratio": strand_a.byte_count / max(strand_b.byte_count, 1),
+                }
+            )
 
     return results
 
@@ -691,6 +746,7 @@ def _compute_mean_cross_sync(strands: Dict[str, BraidStrand]) -> float:
 # Full Braid: All Concepts
 # ---------------------------------------------------------------------------
 
+
 def weave_all_concepts(
     threshold: float = 0.5,
     concepts: Optional[List[ParallelConcept]] = None,
@@ -698,10 +754,7 @@ def weave_all_concepts(
 ) -> List[BraidResult]:
     """Weave all parallel concepts into cross-lattice braids."""
     concept_list = concepts or PARALLEL_CONCEPTS
-    return [
-        weave_concept(concept, threshold=threshold, languages=languages)
-        for concept in concept_list
-    ]
+    return [weave_concept(concept, threshold=threshold, languages=languages) for concept in concept_list]
 
 
 def braid_summary(results: List[BraidResult]) -> Dict:
@@ -735,7 +788,5 @@ def braid_summary(results: List[BraidResult]) -> Dict:
         "most_convergent_concept": ranked[0].concept.concept_id if ranked else None,
         "least_convergent_concept": ranked[-1].concept.concept_id if ranked else None,
         "tongue_distribution": tongue_totals,
-        "languages_covered": list({
-            code for r in results for code in r.strands
-        }),
+        "languages_covered": list({code for r in results for code in r.strands}),
     }

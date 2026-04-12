@@ -29,10 +29,10 @@ from src.crypto.tri_bundle import (
     _compute_amplitude,
 )
 
-
 # ===================================================================
 # Constants
 # ===================================================================
+
 
 class TestConstants:
     def test_phi_value(self):
@@ -41,11 +41,11 @@ class TestConstants:
     def test_tongue_weights_are_phi_powers(self):
         codes = ["ko", "av", "ru", "ca", "um", "dr"]
         for i, code in enumerate(codes):
-            expected = PHI ** i
+            expected = PHI**i
             assert abs(TONGUE_WEIGHTS[code] - expected) < 1e-6, f"{code} weight wrong"
 
     def test_bundle_scale_is_3_phi_cubed(self):
-        expected = (3 ** PHI) ** 3
+        expected = (3**PHI) ** 3
         assert abs(BUNDLE_SCALE - expected) < 0.01
 
     def test_bundle_scale_approximately_207(self):
@@ -65,6 +65,7 @@ class TestConstants:
 # ===================================================================
 # Trit Logic
 # ===================================================================
+
 
 class TestTrit:
     def test_intent_low_bytes_negative(self):
@@ -92,6 +93,7 @@ class TestTrit:
 # ===================================================================
 # Sub-strands
 # ===================================================================
+
 
 class TestSubStrands:
     def test_light_strand_tuple(self):
@@ -122,6 +124,7 @@ class TestSubStrands:
 # ===================================================================
 # Inner Bundle
 # ===================================================================
+
 
 class TestInnerBundle:
     def test_as_vector_is_9_elements(self):
@@ -185,6 +188,7 @@ class TestInnerBundle:
 # TriBundleCluster
 # ===================================================================
 
+
 class TestTriBundleCluster:
     def test_as_vector_is_27_elements(self):
         cluster = encode_byte(0x42, "ko")
@@ -237,6 +241,7 @@ class TestTriBundleCluster:
 # Encoding functions
 # ===================================================================
 
+
 class TestEncoding:
     def test_encode_byte_all_tongues(self):
         """Every tongue produces a valid cluster for every byte."""
@@ -270,6 +275,7 @@ class TestEncoding:
 # ===================================================================
 # Polyglot encoding
 # ===================================================================
+
 
 class TestPolyglot:
     def test_polyglot_produces_6_clusters_per_position(self):
@@ -313,6 +319,7 @@ class TestPolyglot:
 # Convergence detection
 # ===================================================================
 
+
 class TestConvergence:
     def test_find_convergence_points(self):
         pcs = encode_polyglot_text("love")
@@ -338,14 +345,15 @@ class TestConvergence:
 # Non-commutativity (the key property)
 # ===================================================================
 
+
 class TestNonCommutativity:
     def test_outer_braid_order_matters(self):
         """Swapping Light and Sound bundles changes cluster identity."""
         c = encode_byte(0x42, "ko")
         # Build a cluster with swapped light/sound
         swapped = TriBundleCluster(
-            light=c.sound,   # sound in light's slot
-            sound=c.light,   # light in sound's slot
+            light=c.sound,  # sound in light's slot
+            sound=c.light,  # light in sound's slot
             math=c.math,
             tongue_code="ko",
             position=0,
@@ -363,6 +371,7 @@ class TestNonCommutativity:
 # ===================================================================
 # Integration: E=MC² pipeline sketch
 # ===================================================================
+
 
 class TestIntegration:
     def test_full_pipeline_love_in_all_tongues(self):

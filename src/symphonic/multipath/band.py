@@ -14,7 +14,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, List, Mapping
 
-
 TONGUE_PRIORITY: tuple[str, ...] = ("DR", "RU", "AV", "UM", "KO", "CA")
 TONGUES: tuple[str, ...] = ("KO", "AV", "RU", "CA", "UM", "DR")
 SAFETY_CRITICAL_WRITERS = frozenset({"RU", "CA"})

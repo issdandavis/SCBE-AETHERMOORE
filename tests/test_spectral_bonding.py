@@ -16,7 +16,9 @@ import numpy as np
 import pytest
 
 from src.crypto.spectral_bonding import (
-    PHI, PI, TAU,
+    PHI,
+    PI,
+    TAU,
     ALL_TONGUES,
     BASE_TONGUE_BAND,
     TONGUE_BAND,
@@ -42,10 +44,10 @@ from src.crypto.spectral_bonding import (
     _detect_clusters,
 )
 
-
 # ===================================================================
 # Spectral band geometry
 # ===================================================================
+
 
 class TestSpectralBands:
     """Test that spectral bands are correctly arranged."""
@@ -92,6 +94,7 @@ class TestSpectralBands:
 # Agent phasor creation
 # ===================================================================
 
+
 class TestAgentPhasor:
     """Test agent creation and phasor properties."""
 
@@ -125,6 +128,7 @@ class TestAgentPhasor:
 # Interference and bonding
 # ===================================================================
 
+
 class TestInterference:
     """Test pairwise interference computation."""
 
@@ -132,7 +136,7 @@ class TestInterference:
         """An agent interfering with itself = r^2 (always positive)."""
         a = create_agent("ko")
         interf = compute_interference(a, a)
-        assert abs(interf - a.magnitude ** 2) < 1e-10
+        assert abs(interf - a.magnitude**2) < 1e-10
 
     def test_complement_pair_destructive(self):
         """Complement pairs at base bands should have negative interference."""
@@ -206,6 +210,7 @@ class TestBonds:
 # Field computation
 # ===================================================================
 
+
 class TestField:
     """Test global field computation."""
 
@@ -233,14 +238,13 @@ class TestField:
         agents = {t: create_agent(t) for t in ALL_TONGUES}
         weights = build_lattice_weights(agents)
         field = compute_field(agents, weights)
-        assert field.phase_diversity > 0.1, (
-            f"Initial diversity too low: {field.phase_diversity}"
-        )
+        assert field.phase_diversity > 0.1, f"Initial diversity too low: {field.phase_diversity}"
 
 
 # ===================================================================
 # Kuramoto dynamics
 # ===================================================================
+
 
 class TestKuramoto:
     """Test phase dynamics evolution."""
@@ -256,10 +260,7 @@ class TestKuramoto:
         agents = {t: create_agent(t) for t in ALL_TONGUES}
         weights = build_lattice_weights(agents)
         new_agents = kuramoto_step(agents, weights, rng=np.random.default_rng(0))
-        changed = sum(
-            1 for t in ALL_TONGUES
-            if abs(agents[t].theta - new_agents[t].theta) > 1e-6
-        )
+        changed = sum(1 for t in ALL_TONGUES if abs(agents[t].theta - new_agents[t].theta) > 1e-6)
         assert changed == 6, "All agents should move"
 
     def test_magnitude_stays_positive(self):
@@ -275,6 +276,7 @@ class TestKuramoto:
 # ===================================================================
 # Quasi-polymorphic divergence
 # ===================================================================
+
 
 class TestPolymorphicDivergence:
     """Test edge case perturbation mechanism."""
@@ -293,7 +295,8 @@ class TestPolymorphicDivergence:
         # Manually drift KO far from its band
         ko = agents["ko"]
         drifted = AgentPhasor(
-            tongue="ko", band=ko.band,
+            tongue="ko",
+            band=ko.band,
             theta=ko.band + PI * 0.8,  # 80% drift
             magnitude=ko.magnitude,
             z=ko.magnitude * complex(math.cos(ko.band + PI * 0.8), math.sin(ko.band + PI * 0.8)),
@@ -317,16 +320,20 @@ class TestPolymorphicDivergence:
         # Small drift
         ko_s = agents_small["ko"]
         agents_small["ko"] = AgentPhasor(
-            tongue="ko", band=ko_s.band,
-            theta=ko_s.band + PI * 0.4, magnitude=ko_s.magnitude,
+            tongue="ko",
+            band=ko_s.band,
+            theta=ko_s.band + PI * 0.4,
+            magnitude=ko_s.magnitude,
             z=ko_s.magnitude * complex(math.cos(ko_s.band + PI * 0.4), math.sin(ko_s.band + PI * 0.4)),
         )
 
         # Large drift
         ko_l = agents_large["ko"]
         agents_large["ko"] = AgentPhasor(
-            tongue="ko", band=ko_l.band,
-            theta=ko_l.band + PI * 0.9, magnitude=ko_l.magnitude,
+            tongue="ko",
+            band=ko_l.band,
+            theta=ko_l.band + PI * 0.9,
+            magnitude=ko_l.magnitude,
             z=ko_l.magnitude * complex(math.cos(ko_l.band + PI * 0.9), math.sin(ko_l.band + PI * 0.9)),
         )
 
@@ -336,9 +343,9 @@ class TestPolymorphicDivergence:
             p_small = compute_edge_case_perturbation(agents_small, step, 100, rng)
             p_large = compute_edge_case_perturbation(agents_large, step, 100, rng)
             if abs(p_small["ko"]) > 0.001 and abs(p_large["ko"]) > 0.001:
-                assert abs(p_large["ko"]) > abs(p_small["ko"]), (
-                    f"Large drift {abs(p_large['ko']):.4f} should > small {abs(p_small['ko']):.4f}"
-                )
+                assert abs(p_large["ko"]) > abs(
+                    p_small["ko"]
+                ), f"Large drift {abs(p_large['ko']):.4f} should > small {abs(p_small['ko']):.4f}"
                 return
         # If we can't find a step where both fire, that's ok — they have different periods
         # Just verify the mechanism doesn't crash
@@ -347,6 +354,7 @@ class TestPolymorphicDivergence:
 # ===================================================================
 # Full evolution
 # ===================================================================
+
 
 class TestEvolution:
     """Test complete spectral evolution."""
@@ -402,6 +410,7 @@ class TestEvolutionComparison:
 # ===================================================================
 # Report
 # ===================================================================
+
 
 class TestReport:
     """Test report formatting."""

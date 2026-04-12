@@ -244,39 +244,108 @@ class TurningProgramCase:
 
 def _build_add_program() -> List[int]:
     return [
-        0x05, 0x00, 0x05, 0x00,  # set R0, 5
-        0x05, 0x01, 0x08, 0x00,  # set R1, 8
-        0x10, 0x02, 0x00, 0x01,  # add R2, R0, R1
-        0x07, 0x02, 0x00, 0x00,  # print R2
-        0x01, 0x00, 0x00, 0x00,  # halt
+        0x05,
+        0x00,
+        0x05,
+        0x00,  # set R0, 5
+        0x05,
+        0x01,
+        0x08,
+        0x00,  # set R1, 8
+        0x10,
+        0x02,
+        0x00,
+        0x01,  # add R2, R0, R1
+        0x07,
+        0x02,
+        0x00,
+        0x00,  # print R2
+        0x01,
+        0x00,
+        0x00,
+        0x00,  # halt
     ]
 
 
 def _build_branch_program() -> List[int]:
     return [
-        0x05, 0x00, 0x05, 0x00,  # set R0, 5
-        0x05, 0x01, 0x05, 0x00,  # set R1, 5
-        0x17, 0x02, 0x00, 0x01,  # cmp_eq R2, R0, R1
-        0x03, 0x02, 0x06, 0x00,  # jz R2, pc=6
-        0x05, 0x03, 0x63, 0x00,  # set R3, 99
-        0x07, 0x03, 0x00, 0x00,  # print R3
-        0x01, 0x00, 0x00, 0x00,  # halt
+        0x05,
+        0x00,
+        0x05,
+        0x00,  # set R0, 5
+        0x05,
+        0x01,
+        0x05,
+        0x00,  # set R1, 5
+        0x17,
+        0x02,
+        0x00,
+        0x01,  # cmp_eq R2, R0, R1
+        0x03,
+        0x02,
+        0x06,
+        0x00,  # jz R2, pc=6
+        0x05,
+        0x03,
+        0x63,
+        0x00,  # set R3, 99
+        0x07,
+        0x03,
+        0x00,
+        0x00,  # print R3
+        0x01,
+        0x00,
+        0x00,
+        0x00,  # halt
     ]
 
 
 def _build_fib_program() -> List[int]:
     return [
-        0x05, 0x00, 0x00, 0x00,  # set R0, 0
-        0x05, 0x01, 0x01, 0x00,  # set R1, 1
-        0x05, 0x02, 0x05, 0x00,  # set R2, 5 (iterations)
-        0x05, 0x05, 0x01, 0x00,  # set R5, 1
-        0x10, 0x03, 0x00, 0x01,  # add R3, R0, R1
-        0x06, 0x00, 0x01, 0x00,  # mov R0, R1
-        0x06, 0x01, 0x03, 0x00,  # mov R1, R3
-        0x11, 0x02, 0x02, 0x05,  # sub R2, R2, R5
-        0x04, 0x02, 0x04, 0x00,  # jnz R2, pc=4
-        0x07, 0x01, 0x00, 0x00,  # print R1
-        0x01, 0x00, 0x00, 0x00,  # halt
+        0x05,
+        0x00,
+        0x00,
+        0x00,  # set R0, 0
+        0x05,
+        0x01,
+        0x01,
+        0x00,  # set R1, 1
+        0x05,
+        0x02,
+        0x05,
+        0x00,  # set R2, 5 (iterations)
+        0x05,
+        0x05,
+        0x01,
+        0x00,  # set R5, 1
+        0x10,
+        0x03,
+        0x00,
+        0x01,  # add R3, R0, R1
+        0x06,
+        0x00,
+        0x01,
+        0x00,  # mov R0, R1
+        0x06,
+        0x01,
+        0x03,
+        0x00,  # mov R1, R3
+        0x11,
+        0x02,
+        0x02,
+        0x05,  # sub R2, R2, R5
+        0x04,
+        0x02,
+        0x04,
+        0x00,  # jnz R2, pc=4
+        0x07,
+        0x01,
+        0x00,
+        0x00,  # print R1
+        0x01,
+        0x00,
+        0x00,
+        0x00,  # halt
     ]
 
 
@@ -404,9 +473,7 @@ def run_turning_suite() -> dict:
 def _validate_command_family(family: str) -> str:
     normalized = family.strip().lower()
     if normalized not in SAFE_COMMAND_FAMILIES:
-        raise ValueError(
-            f"Unsupported command family '{family}'. Allowed families: {', '.join(SAFE_COMMAND_FAMILIES)}"
-        )
+        raise ValueError(f"Unsupported command family '{family}'. Allowed families: {', '.join(SAFE_COMMAND_FAMILIES)}")
     return normalized
 
 
@@ -476,11 +543,7 @@ def prove_execution_packet(
         modes=modes,
     )
     atomic_bundle = build_atomic_execution_bundle(packet)
-    proof_status = (
-        "PASS"
-        if mesh["convergence_score"] == 1.0 and atomic_bundle["status"] != "REJECT"
-        else "FAIL"
-    )
+    proof_status = "PASS" if mesh["convergence_score"] == 1.0 and atomic_bundle["status"] != "REJECT" else "FAIL"
     return {
         "status": proof_status,
         "family": packet["family"],

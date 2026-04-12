@@ -39,10 +39,10 @@ from kernel.agentic_sphere_grid import (
 )
 from kernel.scattered_sphere import TONGUE_WEIGHTS, TONGUE_KEYS
 
-
 # ============================================================
 # Enums and Constants
 # ============================================================
+
 
 @pytest.mark.unit
 class TestEnumsAndConstants:
@@ -76,6 +76,7 @@ class TestEnumsAndConstants:
 # SkillNode
 # ============================================================
 
+
 @pytest.mark.unit
 class TestSkillNode:
     def test_effective_cost(self):
@@ -84,8 +85,7 @@ class TestSkillNode:
         assert cost == 10.0 * 1.0 * TONGUE_WEIGHTS["KO"]
 
     def test_effective_cost_with_governance(self):
-        node = SkillNode(id="test", name="Test", tongue="KO",
-                         base_cost=10.0, governance_multiplier=2.0)
+        node = SkillNode(id="test", name="Test", tongue="KO", base_cost=10.0, governance_multiplier=2.0)
         cost = node.effective_cost()
         assert cost == 20.0 * TONGUE_WEIGHTS["KO"]
 
@@ -104,6 +104,7 @@ class TestSkillNode:
 # ============================================================
 # NeedPressure
 # ============================================================
+
 
 @pytest.mark.unit
 class TestNeedPressure:
@@ -140,6 +141,7 @@ class TestNeedPressure:
 # AgentState
 # ============================================================
 
+
 @pytest.mark.unit
 class TestAgentState:
     def test_activation_tier_dormant(self):
@@ -147,9 +149,7 @@ class TestAgentState:
         assert state.activation_tier("nonexistent") == ActivationTier.DORMANT
 
     def test_activation_tier_levels(self):
-        state = AgentState(agent_id="a1", activations={
-            "s1": 0.0, "s2": 0.15, "s3": 0.45, "s4": 0.75, "s5": 0.95
-        })
+        state = AgentState(agent_id="a1", activations={"s1": 0.0, "s2": 0.15, "s3": 0.45, "s4": 0.75, "s5": 0.95})
         assert state.activation_tier("s1") == ActivationTier.DORMANT
         assert state.activation_tier("s2") == ActivationTier.LATENT
         assert state.activation_tier("s3") == ActivationTier.PARTIAL
@@ -183,6 +183,7 @@ class TestAgentState:
 # Skill Catalog
 # ============================================================
 
+
 @pytest.mark.unit
 class TestSkillCatalog:
     def test_catalog_has_skills(self):
@@ -206,6 +207,7 @@ class TestSkillCatalog:
 # ============================================================
 # AgenticSphereGrid Engine
 # ============================================================
+
 
 @pytest.mark.integration
 class TestAgenticSphereGrid:
@@ -316,8 +318,7 @@ class TestComputationalNecessity:
     def test_failure_builds_need_pressure(self):
         grid = AgenticSphereGrid()
         grid.register_agent("a1")
-        result = grid.computational_necessity("a1", "governance_scan", "failure",
-                                               needed_skills=["governance_scan"])
+        result = grid.computational_necessity("a1", "governance_scan", "failure", needed_skills=["governance_scan"])
         assert len(result["need_pressure_applied"]) > 0
 
     def test_unknown_agent(self):

@@ -5,7 +5,7 @@ from typing import Callable, Dict, Iterable, List, Optional, Set, TypeVar
 
 from src.mempalace.rooms import Room
 
-PHI = (1 + 5 ** 0.5) / 2
+PHI = (1 + 5**0.5) / 2
 T = TypeVar("T")
 
 

@@ -92,19 +92,18 @@ from src.crypto.physics_domains import (
 )
 from src.crypto.tri_bundle import PHI
 
-
 # ---------------------------------------------------------------------------
 # Curriculum Level Classification
 # ---------------------------------------------------------------------------
 
 # Level boundaries (curriculum_difficulty ranges)
 LEVEL_BOUNDARIES = {
-    0: (0.0, 0.2),    # Ground State — The Egg
-    1: (0.2, 0.4),    # Single Excitation
-    2: (0.4, 0.6),    # Boundary Detection
-    3: (0.6, 0.8),    # VRS Entry
-    4: (0.8, 0.95),   # Multi-Path Recovery
-    5: (0.95, 1.0),   # Full Lattice Generalization
+    0: (0.0, 0.2),  # Ground State — The Egg
+    1: (0.2, 0.4),  # Single Excitation
+    2: (0.4, 0.6),  # Boundary Detection
+    3: (0.6, 0.8),  # VRS Entry
+    4: (0.8, 0.95),  # Multi-Path Recovery
+    5: (0.95, 1.0),  # Full Lattice Generalization
 }
 
 LEVEL_NAMES = {
@@ -149,8 +148,7 @@ def classify_curriculum_level(
     Level 5: all systems active + high compound intent
     """
     # Level 5: everything active, high compound intent
-    if (in_vrs and has_recovery_paths and swear_word_count > 0
-            and compound_intent > 1.0 and qho_max_n >= 4):
+    if in_vrs and has_recovery_paths and swear_word_count > 0 and compound_intent > 1.0 and qho_max_n >= 4:
         return 5
 
     # Level 4: recovery paths with code lattice
@@ -186,6 +184,7 @@ def curriculum_difficulty_from_level(level: int) -> float:
 # Unified Simulation Bundle
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SimulationBundle:
     """A single text's complete simulation curriculum bundle.
@@ -197,6 +196,7 @@ class SimulationBundle:
 
     Plus curriculum classification metadata.
     """
+
     text: str
     quantum: QuantumFrequencyBundle
     flight: FlightDynamicsState
@@ -355,6 +355,7 @@ class SimulationBundle:
 # Bundle Generator
 # ---------------------------------------------------------------------------
 
+
 def generate_simulation_bundle(
     text: str,
     is_rotorcraft: bool = True,
@@ -422,6 +423,7 @@ def generate_simulation_batch(
 # SFT Record Generation — Level-Appropriate Training Records
 # ---------------------------------------------------------------------------
 
+
 def _level_0_sft(bundle: SimulationBundle) -> str:
     """Level 0: Ground state observation. Just frequency assignment."""
     vis = bundle.visual_vector
@@ -442,10 +444,7 @@ def _level_1_sft(bundle: SimulationBundle) -> str:
     dom = bundle.dominant_tongue
     n_max = bundle.qho_max_n
 
-    tongue_states = ", ".join(
-        f"{t.upper()}=n{qho.states[t].n}" for t in TONGUE_ORDER
-        if qho.states[t].n > 0
-    )
+    tongue_states = ", ".join(f"{t.upper()}=n{qho.states[t].n}" for t in TONGUE_ORDER if qho.states[t].n > 0)
     if not tongue_states:
         tongue_states = "all ground"
 
@@ -478,7 +477,7 @@ def _level_2_sft(bundle: SimulationBundle) -> str:
         if anti_lessons:
             worst = max(anti_lessons, key=lambda l: l.compound_intent)
             swear_detail = (
-                f"Swear word detected: \"{worst.pattern.name}\" "
+                f'Swear word detected: "{worst.pattern.name}" '
                 f"(severity {worst.compound_intent:.2f}). "
                 f"Recovery: {worst.pattern.code_good[:80]}... "
             )
@@ -501,10 +500,7 @@ def _level_3_sft(bundle: SimulationBundle) -> str:
         descent = max(0, -flight.sixdof.w)
         vi = flight.rotor.induced_velocity
         margin = flight.rotor.vrs_margin(descent)
-        vrs_text = (
-            f"in_vrs=true, descent={descent:.1f}m/s, "
-            f"v_i={vi:.1f}m/s, margin={margin:.2f}. "
-        )
+        vrs_text = f"in_vrs=true, descent={descent:.1f}m/s, " f"v_i={vi:.1f}m/s, margin={margin:.2f}. "
     else:
         vrs_text = f"flight_regime={bundle.flight_regime}, "
 
@@ -557,7 +553,7 @@ def _level_4_sft(bundle: SimulationBundle) -> str:
     if bundle.code.lessons:
         top_lesson = max(bundle.code.lessons, key=lambda l: l.compound_intent)
         cross_text = (
-            f"Code lattice: \"{top_lesson.pattern.name}\" "
+            f'Code lattice: "{top_lesson.pattern.name}" '
             f"({top_lesson.pattern.domain}) — "
             f"{top_lesson.pattern.cross_domain[:100]}. "
         )
@@ -565,9 +561,7 @@ def _level_4_sft(bundle: SimulationBundle) -> str:
     # Active coupling phenomena
     phenomena_text = ""
     if bundle.active_phenomena:
-        phenomena_text = (
-            f"Active inter-field couplings: {', '.join(bundle.active_phenomena[:4])}. "
-        )
+        phenomena_text = f"Active inter-field couplings: {', '.join(bundle.active_phenomena[:4])}. "
 
     return (
         f"n={bundle.qho_max_n}, {recovery_text}"
@@ -592,27 +586,18 @@ def _level_5_sft(bundle: SimulationBundle) -> str:
     if flight.recovery_paths:
         best = flight.best_recovery
         if best:
-            recovery_text = (
-                f"{best.recovery_type} recovery "
-                f"(P={best.success_probability:.2f}). "
-            )
+            recovery_text = f"{best.recovery_type} recovery " f"(P={best.success_probability:.2f}). "
 
     # Anti-pattern avoidance
     swear_text = ""
     if code.swear_word_count > 0:
-        swear_text = (
-            f"Anti-patterns avoided ({code.swear_word_count}): "
-            f"explicit recovery paths provided. "
-        )
+        swear_text = f"Anti-patterns avoided ({code.swear_word_count}): " f"explicit recovery paths provided. "
 
     # Cross-domain transfer
     cross_text = ""
     if code.lessons:
         domains = list(code.active_domains)
-        cross_text = (
-            f"Cross-domain transfer active across {len(domains)} domains "
-            f"({', '.join(domains)}). "
-        )
+        cross_text = f"Cross-domain transfer active across {len(domains)} domains " f"({', '.join(domains)}). "
 
     # Energy accounting
     energy_text = (
@@ -625,8 +610,7 @@ def _level_5_sft(bundle: SimulationBundle) -> str:
     physics_text = ""
     if bundle.physics_failure_count > 0:
         physics_text = (
-            f"Physics: {bundle.dominant_physics_field} dominant, "
-            f"{bundle.physics_failure_count} fields failing"
+            f"Physics: {bundle.dominant_physics_field} dominant, " f"{bundle.physics_failure_count} fields failing"
         )
         if bundle.is_cascading:
             physics_text += f", cascade depth {bundle.physics.cascade_depth}"
@@ -671,42 +655,41 @@ def generate_curriculum_sft_records(
 
         # User prompt scales with level
         if level <= 1:
-            user_content = (
-                f"Analyze the quantum frequency profile of this text:\n\n"
-                f"\"{text_excerpt}\""
-            )
+            user_content = f"Analyze the quantum frequency profile of this text:\n\n" f'"{text_excerpt}"'
         elif level <= 3:
             user_content = (
                 f"Analyze the quantum frequency profile and flight dynamics "
                 f"of this text. Flag any anti-patterns:\n\n"
-                f"\"{text_excerpt}\""
+                f'"{text_excerpt}"'
             )
         else:
             user_content = (
                 f"Full simulation analysis: quantum frequency, flight dynamics, "
                 f"VRS status, code lattice anti-patterns, and recovery paths:\n\n"
-                f"\"{text_excerpt}\""
+                f'"{text_excerpt}"'
             )
 
         # Assistant response from level-appropriate generator
         generator = _LEVEL_SFT_GENERATORS[level]
         assistant_content = generator(bundle)
 
-        records.append({
-            "messages": [
-                {"role": "user", "content": user_content},
-                {"role": "assistant", "content": assistant_content},
-            ],
-            "metadata": {
-                "source": "simulation_curriculum_generator",
-                "record_type": "simulation_curriculum",
-                "curriculum_level": level,
-                "curriculum_difficulty": round(bundle.curriculum_difficulty, 4),
-                "compounding_intent": round(bundle.compounding_intent_score, 6),
-                "simulation_bundle": bundle.to_dict(),
-                **flatten_physics_domain_for_sft(bundle.physics),
-            },
-        })
+        records.append(
+            {
+                "messages": [
+                    {"role": "user", "content": user_content},
+                    {"role": "assistant", "content": assistant_content},
+                ],
+                "metadata": {
+                    "source": "simulation_curriculum_generator",
+                    "record_type": "simulation_curriculum",
+                    "curriculum_level": level,
+                    "curriculum_difficulty": round(bundle.curriculum_difficulty, 4),
+                    "compounding_intent": round(bundle.compounding_intent_score, 6),
+                    "simulation_bundle": bundle.to_dict(),
+                    **flatten_physics_domain_for_sft(bundle.physics),
+                },
+            }
+        )
 
     return records
 
@@ -714,6 +697,7 @@ def generate_curriculum_sft_records(
 # ---------------------------------------------------------------------------
 # Batch Summary
 # ---------------------------------------------------------------------------
+
 
 def curriculum_summary(bundles: List[SimulationBundle]) -> dict:
     """Summary statistics for a batch of simulation bundles."""
@@ -752,10 +736,7 @@ def curriculum_summary(bundles: List[SimulationBundle]) -> dict:
 
     return {
         "count": n,
-        "level_distribution": {
-            f"L{k} ({LEVEL_NAMES[k][:30]})": v
-            for k, v in sorted(level_dist.items())
-        },
+        "level_distribution": {f"L{k} ({LEVEL_NAMES[k][:30]})": v for k, v in sorted(level_dist.items())},
         "level_counts": level_dist,
         "compounding_intent": {
             "mean": round(mean_intent, 6),
@@ -775,6 +756,7 @@ def curriculum_summary(bundles: List[SimulationBundle]) -> dict:
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
+
 
 def format_curriculum_report(bundles: List[SimulationBundle]) -> str:
     """Human-readable curriculum report."""
@@ -810,9 +792,7 @@ def format_curriculum_report(bundles: List[SimulationBundle]) -> str:
         count = summary["level_counts"][k]
         pct = round(count / n * 100, 1) if n > 0 else 0
         bar = "#" * int(pct / 2) + "." * (50 - int(pct / 2))
-        lines.append(
-            f"  L{k}: [{bar}] {count:>4} ({pct:>5.1f}%)  {LEVEL_NAMES[k]}"
-        )
+        lines.append(f"  L{k}: [{bar}] {count:>4} ({pct:>5.1f}%)  {LEVEL_NAMES[k]}")
 
     lines.append("")
     lines.append("DOMAIN ACTIVITY:")
@@ -884,10 +864,12 @@ if __name__ == "__main__":
         recovery = len(b.flight.recovery_paths)
         ci = b.compounding_intent_score
 
-        print(f"  L{b.curriculum_level} [{bar}] {regime:>7}  "
-              f"dom={b.dominant_tongue.upper()}  "
-              f"swears={swears}  recovery={recovery}  "
-              f"CI={ci:.6f}")
+        print(
+            f"  L{b.curriculum_level} [{bar}] {regime:>7}  "
+            f"dom={b.dominant_tongue.upper()}  "
+            f"swears={swears}  recovery={recovery}  "
+            f"CI={ci:.6f}"
+        )
         print(f"    {b.level_name}")
         print(f"    text: {b.text[:60]}")
         print()
@@ -900,5 +882,4 @@ if __name__ == "__main__":
     records = generate_curriculum_sft_records(bundles)
     print(f"\nSFT records generated: {len(records)}")
     for rec in records[:3]:
-        print(f"\n  Level {rec['metadata']['curriculum_level']}: "
-              f"{rec['messages'][1]['content'][:100]}...")
+        print(f"\n  Level {rec['metadata']['curriculum_level']}: " f"{rec['messages'][1]['content'][:100]}...")

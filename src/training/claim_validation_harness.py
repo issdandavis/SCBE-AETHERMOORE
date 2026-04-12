@@ -83,13 +83,14 @@ from .cross_domain_harness import (
     _dissonance_to_verdict,
 )
 
-
 # =========================================================================
 # Enums & Constants
 # =========================================================================
 
+
 class AblationVariant(Enum):
     """Model variants for ablation study."""
+
     BASELINE_SFT = "baseline_sft"
     PLUS_CONSTITUTION_TEXT = "+constitution_text"
     PLUS_DEAD_TONE = "+dead_tone"
@@ -101,6 +102,7 @@ class AblationVariant(Enum):
 
 class EvalSuite(Enum):
     """Fixed evaluation suites."""
+
     CLEAN = "clean"
     DEAD_TONE = "dead_tone"
     CROSS_DOMAIN = "cross_domain"
@@ -111,6 +113,7 @@ class EvalSuite(Enum):
 
 class PathType(Enum):
     """Trajectory types for attractor/path harness."""
+
     SAFE_NEAR = "safe_near"
     UNSAFE_NEAR = "unsafe_near"
     SAFE_FAR = "safe_far"
@@ -136,20 +139,22 @@ TRANSFER_PAIRS = [
 # A. Corpus Validity Harness
 # =========================================================================
 
+
 @dataclass(frozen=True)
 class CorpusValidityReport:
     """Result of corpus structure validation."""
-    label_agreement: float              # [0,1] reproducibility of labels
-    projection_consistency: float       # [0,1] determinism of projections
-    neighbor_purity: float              # [0,1] neighbors closer than random
-    split_leakage_rate: float           # [0,1] 0=no leakage, 1=total leakage
-    class_balance: Dict[str, float]     # verdict → proportion
-    friction_zone_coverage: float       # [0,1] coverage of boundary region
+
+    label_agreement: float  # [0,1] reproducibility of labels
+    projection_consistency: float  # [0,1] determinism of projections
+    neighbor_purity: float  # [0,1] neighbors closer than random
+    split_leakage_rate: float  # [0,1] 0=no leakage, 1=total leakage
+    class_balance: Dict[str, float]  # verdict → proportion
+    friction_zone_coverage: float  # [0,1] coverage of boundary region
     dead_tone_reproducible: bool
     tongue_reproducible: bool
     projections_deterministic: bool
     adversarial_identity_preserved: bool
-    corpus_valid: bool                  # all checks pass
+    corpus_valid: bool  # all checks pass
 
 
 def check_label_reproducibility(
@@ -280,20 +285,16 @@ def check_split_leakage(
 
     Returns leakage rate in [0,1]: 0 = no leakage.
     """
+
     def _hashes(inputs: List[str]) -> Set[str]:
-        return {
-            encode_contact_point(t, tongue, dead_tone).point_hash
-            for t in inputs
-        }
+        return {encode_contact_point(t, tongue, dead_tone).point_hash for t in inputs}
 
     train_h = _hashes(train_inputs)
     val_h = _hashes(val_inputs)
     test_h = _hashes(test_inputs)
 
     # Exact hash collision
-    exact_leaks = (
-        len(train_h & val_h) + len(train_h & test_h) + len(val_h & test_h)
-    )
+    exact_leaks = len(train_h & val_h) + len(train_h & test_h) + len(val_h & test_h)
 
     # Near-duplicate by feature cosine
     near_leaks = 0
@@ -303,13 +304,9 @@ def check_split_leakage(
         leaks = 0
         checks = 0
         for ta in a_inputs[:20]:  # cap to avoid quadratic blow-up
-            ba = project_contact_point(
-                encode_contact_point(ta, tongue, dead_tone)
-            ).tongue.features
+            ba = project_contact_point(encode_contact_point(ta, tongue, dead_tone)).tongue.features
             for tb in b_inputs[:20]:
-                bb = project_contact_point(
-                    encode_contact_point(tb, tongue, dead_tone)
-                ).tongue.features
+                bb = project_contact_point(encode_contact_point(tb, tongue, dead_tone)).tongue.features
                 checks += 1
                 if _feature_cosine(ba, bb) > similarity_threshold:
                     leaks += 1
@@ -334,8 +331,7 @@ def check_class_balance(
     """Verdict distribution. Returns {verdict_name: proportion}."""
     counts = Counter(cp.verdict.value for cp in contact_points)
     total = len(contact_points) or 1
-    return {v: counts.get(v, 0) / total for v in
-            ["ALLOW", "QUARANTINE", "ESCALATE", "DENY"]}
+    return {v: counts.get(v, 0) / total for v in ["ALLOW", "QUARANTINE", "ESCALATE", "DENY"]}
 
 
 def check_friction_zone_coverage(
@@ -399,16 +395,14 @@ def validate_corpus(
     tongues = tongues or list(ALL_TONGUES[:2])  # fast default
     dead_tones = dead_tones or [DEAD_TONES[0]]
 
-    agreement, dt_repro, tongue_repro = check_label_reproducibility(
-        raw_inputs, tongues, dead_tones, runs=3
-    )
+    agreement, dt_repro, tongue_repro = check_label_reproducibility(raw_inputs, tongues, dead_tones, runs=3)
     proj_det = check_projection_determinism(raw_inputs)
     purity = check_neighbor_purity(raw_inputs)
 
     # Split leakage
-    train = train_inputs or raw_inputs[:len(raw_inputs)//2]
-    val = val_inputs or raw_inputs[len(raw_inputs)//2:3*len(raw_inputs)//4]
-    test = test_inputs or raw_inputs[3*len(raw_inputs)//4:]
+    train = train_inputs or raw_inputs[: len(raw_inputs) // 2]
+    val = val_inputs or raw_inputs[len(raw_inputs) // 2 : 3 * len(raw_inputs) // 4]
+    test = test_inputs or raw_inputs[3 * len(raw_inputs) // 4 :]
     leakage = check_split_leakage(train, val, test)
 
     # Class balance & friction from full encoding
@@ -422,13 +416,7 @@ def validate_corpus(
     friction = check_friction_zone_coverage(all_cps)
     adv_id = check_adversarial_identity(raw_inputs)
 
-    valid = (
-        agreement >= 0.99
-        and dt_repro
-        and tongue_repro
-        and proj_det
-        and leakage < 0.05
-    )
+    valid = agreement >= 0.99 and dt_repro and tongue_repro and proj_det and leakage < 0.05
 
     return CorpusValidityReport(
         label_agreement=agreement,
@@ -449,9 +437,11 @@ def validate_corpus(
 # B. Ablation Harness
 # =========================================================================
 
+
 @dataclass(frozen=True)
 class AblationConfig:
     """Configuration for one ablation variant."""
+
     variant: AblationVariant
     use_dead_tone_curriculum: bool = True
     use_multiview: bool = True
@@ -463,53 +453,90 @@ class AblationConfig:
 
 # Standard ablation ladder — each adds one subsystem
 ABLATION_LADDER: List[AblationConfig] = [
-    AblationConfig(AblationVariant.BASELINE_SFT,
-                   use_dead_tone_curriculum=False, use_multiview=False,
-                   use_warping=False, use_bundle_topology=False,
-                   use_constitution=False, use_curriculum_passes=False),
-    AblationConfig(AblationVariant.PLUS_CONSTITUTION_TEXT,
-                   use_dead_tone_curriculum=False, use_multiview=False,
-                   use_warping=False, use_bundle_topology=False,
-                   use_constitution=True, use_curriculum_passes=False),
-    AblationConfig(AblationVariant.PLUS_DEAD_TONE,
-                   use_dead_tone_curriculum=True, use_multiview=False,
-                   use_warping=False, use_bundle_topology=False,
-                   use_constitution=True, use_curriculum_passes=False),
-    AblationConfig(AblationVariant.PLUS_MULTIVIEW,
-                   use_dead_tone_curriculum=True, use_multiview=True,
-                   use_warping=False, use_bundle_topology=False,
-                   use_constitution=True, use_curriculum_passes=False),
-    AblationConfig(AblationVariant.PLUS_WARPING,
-                   use_dead_tone_curriculum=True, use_multiview=True,
-                   use_warping=True, use_bundle_topology=False,
-                   use_constitution=True, use_curriculum_passes=False),
-    AblationConfig(AblationVariant.PLUS_BUNDLE_TOPOLOGY,
-                   use_dead_tone_curriculum=True, use_multiview=True,
-                   use_warping=True, use_bundle_topology=True,
-                   use_constitution=True, use_curriculum_passes=False),
-    AblationConfig(AblationVariant.FULL_SCBE,
-                   use_dead_tone_curriculum=True, use_multiview=True,
-                   use_warping=True, use_bundle_topology=True,
-                   use_constitution=True, use_curriculum_passes=True),
+    AblationConfig(
+        AblationVariant.BASELINE_SFT,
+        use_dead_tone_curriculum=False,
+        use_multiview=False,
+        use_warping=False,
+        use_bundle_topology=False,
+        use_constitution=False,
+        use_curriculum_passes=False,
+    ),
+    AblationConfig(
+        AblationVariant.PLUS_CONSTITUTION_TEXT,
+        use_dead_tone_curriculum=False,
+        use_multiview=False,
+        use_warping=False,
+        use_bundle_topology=False,
+        use_constitution=True,
+        use_curriculum_passes=False,
+    ),
+    AblationConfig(
+        AblationVariant.PLUS_DEAD_TONE,
+        use_dead_tone_curriculum=True,
+        use_multiview=False,
+        use_warping=False,
+        use_bundle_topology=False,
+        use_constitution=True,
+        use_curriculum_passes=False,
+    ),
+    AblationConfig(
+        AblationVariant.PLUS_MULTIVIEW,
+        use_dead_tone_curriculum=True,
+        use_multiview=True,
+        use_warping=False,
+        use_bundle_topology=False,
+        use_constitution=True,
+        use_curriculum_passes=False,
+    ),
+    AblationConfig(
+        AblationVariant.PLUS_WARPING,
+        use_dead_tone_curriculum=True,
+        use_multiview=True,
+        use_warping=True,
+        use_bundle_topology=False,
+        use_constitution=True,
+        use_curriculum_passes=False,
+    ),
+    AblationConfig(
+        AblationVariant.PLUS_BUNDLE_TOPOLOGY,
+        use_dead_tone_curriculum=True,
+        use_multiview=True,
+        use_warping=True,
+        use_bundle_topology=True,
+        use_constitution=True,
+        use_curriculum_passes=False,
+    ),
+    AblationConfig(
+        AblationVariant.FULL_SCBE,
+        use_dead_tone_curriculum=True,
+        use_multiview=True,
+        use_warping=True,
+        use_bundle_topology=True,
+        use_constitution=True,
+        use_curriculum_passes=True,
+    ),
 ]
 
 
 @dataclass(frozen=True)
 class AblationResult:
     """Result of running one ablation variant on one eval suite."""
+
     variant: AblationVariant
     eval_suite: EvalSuite
-    task_score: float                # primary metric [0,1]
-    alignment_retention: float       # adversarial alignment retention
-    transfer_gain: float             # vs baseline
-    collapse_rate: float             # loop-collapse rate
-    escalation_correctness: float    # friction-zone accuracy
-    coherence_score: float           # cross-modal coherence
+    task_score: float  # primary metric [0,1]
+    alignment_retention: float  # adversarial alignment retention
+    transfer_gain: float  # vs baseline
+    collapse_rate: float  # loop-collapse rate
+    escalation_correctness: float  # friction-zone accuracy
+    coherence_score: float  # cross-modal coherence
 
 
 @dataclass
 class AblationReport:
     """Full ablation study results — the experiment matrix."""
+
     results: List[AblationResult] = field(default_factory=list)
 
     def get(self, variant: AblationVariant, suite: EvalSuite) -> Optional[AblationResult]:
@@ -534,10 +561,11 @@ class AblationReport:
     def variant_means(self) -> Dict[str, float]:
         """Mean task_score per variant across all suites."""
         from collections import defaultdict
+
         sums: Dict[str, List[float]] = defaultdict(list)
         for r in self.results:
             sums[r.variant.value].append(r.task_score)
-        return {k: sum(v)/len(v) for k, v in sums.items() if v}
+        return {k: sum(v) / len(v) for k, v in sums.items() if v}
 
 
 def run_ablation_variant(
@@ -557,10 +585,7 @@ def run_ablation_variant(
 
     # Stage 1: encode
     contact_points = [
-        encode_contact_point(text, tongue, tone)
-        for text in raw_inputs
-        for tongue in tongues
-        for tone in dead_tones
+        encode_contact_point(text, tongue, tone) for text in raw_inputs for tongue in tongues for tone in dead_tones
     ]
 
     # Stage 2: project (only if multiview)
@@ -584,10 +609,7 @@ def run_ablation_variant(
 
     # Stage 4: expand (only if bundle topology)
     if config.use_bundle_topology:
-        neighborhoods = [
-            expand_contact_point(cp, cp.raw_input)
-            for cp in contact_points[:len(raw_inputs)]
-        ]
+        neighborhoods = [expand_contact_point(cp, cp.raw_input) for cp in contact_points[: len(raw_inputs)]]
         topology_bonus = sum(n.total_count for n in neighborhoods) / max(len(neighborhoods), 1) / 14.0
     else:
         topology_bonus = 0.0
@@ -600,6 +622,7 @@ def run_ablation_variant(
     if config.use_curriculum_passes:
         state = CurriculumState()
         from .cross_domain_harness import run_curriculum_pass
+
         for p in CURRICULUM_ORDER:
             run_curriculum_pass(state, contact_points, p)
         curriculum_bonus = state.current_cycle * 0.02
@@ -636,11 +659,11 @@ def run_ablation_variant(
         task_score = mean_consistency
 
     # Escalation correctness: boundary points have correct verdicts
-    boundary_cps = [cp for cp in contact_points
-                    if ALLOW_THRESHOLD <= cp.dissonance_score <= ESCALATE_THRESHOLD]
+    boundary_cps = [cp for cp in contact_points if ALLOW_THRESHOLD <= cp.dissonance_score <= ESCALATE_THRESHOLD]
     if boundary_cps:
-        correct = sum(1 for cp in boundary_cps
-                      if cp.verdict in (GovernanceVerdict.QUARANTINE, GovernanceVerdict.ESCALATE))
+        correct = sum(
+            1 for cp in boundary_cps if cp.verdict in (GovernanceVerdict.QUARANTINE, GovernanceVerdict.ESCALATE)
+        )
         escalation_correctness = correct / len(boundary_cps)
     else:
         escalation_correctness = 1.0
@@ -684,14 +707,16 @@ def run_full_ablation(
 # C. Cross-Domain Transfer Harness
 # =========================================================================
 
+
 @dataclass(frozen=True)
 class TransferResult:
     """Result of train-on-A, test-on-B transfer experiment."""
+
     train_domain: str
     test_domain: str
-    baseline_score: float       # no transfer (random features)
-    full_score: float           # transferred features
-    transfer_gain: float        # full - baseline
+    baseline_score: float  # no transfer (random features)
+    full_score: float  # transferred features
+    transfer_gain: float  # full - baseline
     structure_retention: float  # sim(intended, recovered) in test domain
 
 
@@ -780,17 +805,19 @@ def run_transfer_harness(
 # D. Adversarial Warping Harness
 # =========================================================================
 
+
 @dataclass(frozen=True)
 class WarpPreservationResult:
     """Does alignment survive one warp type?"""
+
     warp_type: WarpType
     magnitude: float
-    tongue_preserved: float         # [0,1] fraction with same dominant tongue
-    verdict_preserved: float        # [0,1] fraction with same verdict class
-    dead_tone_preserved: float      # [0,1] dead-tone interpretation stable
-    risk_preserved: float           # [0,1] risk tier unchanged
-    coherence_preserved: float      # [0,1] cross-modal coherence after warp
-    alignment_retention: float      # overall: perturbed / clean
+    tongue_preserved: float  # [0,1] fraction with same dominant tongue
+    verdict_preserved: float  # [0,1] fraction with same verdict class
+    dead_tone_preserved: float  # [0,1] dead-tone interpretation stable
+    risk_preserved: float  # [0,1] risk tier unchanged
+    coherence_preserved: float  # [0,1] cross-modal coherence after warp
+    alignment_retention: float  # overall: perturbed / clean
 
 
 def _recover_verdict_from_features(
@@ -839,20 +866,14 @@ def measure_warp_preservation(
             warped_cosines = []
             for i in range(len(warped_features_list)):
                 for j in range(i + 1, len(warped_features_list)):
-                    warped_cosines.append(
-                        _feature_cosine(warped_features_list[i], warped_features_list[j])
-                    )
+                    warped_cosines.append(_feature_cosine(warped_features_list[i], warped_features_list[j]))
             warped_consistency = sum(warped_cosines) / max(len(warped_cosines), 1)
             coherence_scores_warped.append(warped_consistency)
 
             # Check governance preservation
-            gov_warp = next(
-                (wp for wp in warps if wp.original.domain == "governance"), None
-            )
+            gov_warp = next((wp for wp in warps if wp.original.domain == "governance"), None)
             if gov_warp:
-                recovered = _recover_verdict_from_features(
-                    gov_warp.warped.features, "governance"
-                )
+                recovered = _recover_verdict_from_features(gov_warp.warped.features, "governance")
                 if recovered == cp.verdict:
                     verdict_match += 1
                 # Risk tier (binary: allow vs not-allow)
@@ -862,9 +883,7 @@ def measure_warp_preservation(
                     risk_match += 1
 
             # Tongue preservation: tongue projection warped features
-            tongue_warp = next(
-                (wp for wp in warps if wp.original.domain == "tongue"), None
-            )
+            tongue_warp = next((wp for wp in warps if wp.original.domain == "tongue"), None)
             if tongue_warp:
                 # Check if dominant dimension is preserved
                 orig = tongue_warp.original.features
@@ -915,16 +934,18 @@ def run_adversarial_harness(
 # E. Round-Trip Harness
 # =========================================================================
 
+
 @dataclass(frozen=True)
 class RoundTripReport:
     """Full round-trip fidelity report."""
-    tongue_similarity: float        # [0,1]
-    dead_tone_agreement: float      # [0,1]
-    spectral_agreement: float       # [0,1]
-    governance_agreement: float     # [0,1]
-    overall_fidelity: float         # [0,1] mean of above
-    loop_collapse_rate: float       # [0,1] degenerate repetition rate
-    structure_retention: float      # S = sim(z_intended, z_recovered)
+
+    tongue_similarity: float  # [0,1]
+    dead_tone_agreement: float  # [0,1]
+    spectral_agreement: float  # [0,1]
+    governance_agreement: float  # [0,1]
+    overall_fidelity: float  # [0,1] mean of above
+    loop_collapse_rate: float  # [0,1] degenerate repetition rate
+    structure_retention: float  # S = sim(z_intended, z_recovered)
 
 
 def run_round_trip_harness(
@@ -958,9 +979,7 @@ def run_round_trip_harness(
                 recovered = encode_contact_point(text, tongue, tone, orig.excitation)
 
                 # Tongue vector similarity
-                tongue_sims.append(
-                    _feature_cosine(orig.tongue_vector, recovered.tongue_vector)
-                )
+                tongue_sims.append(_feature_cosine(orig.tongue_vector, recovered.tongue_vector))
 
                 # Dead-tone agreement
                 if orig.dead_tone == recovered.dead_tone:
@@ -1006,9 +1025,11 @@ def run_round_trip_harness(
 # F. Attractor / Path Harness
 # =========================================================================
 
+
 @dataclass(frozen=True)
 class PathStep:
     """One step along a trajectory through the manifold."""
+
     contact_point: ContactPoint
     consistency: float
     grounded: bool
@@ -1018,26 +1039,28 @@ class PathStep:
 @dataclass(frozen=True)
 class PathResult:
     """Result of following one trajectory."""
+
     path_type: PathType
     steps: List[PathStep]
     total_cost: float
-    error_recovery_count: int       # how many times it recovered from violation
+    error_recovery_count: int  # how many times it recovered from violation
     escalation_events: int
-    stability: float                # [0,1] how consistent the path stays
-    collapsed: bool                 # did it fall into a degenerate loop?
+    stability: float  # [0,1] how consistent the path stays
+    collapsed: bool  # did it fall into a degenerate loop?
 
 
 @dataclass(frozen=True)
 class AttractorReport:
     """Full attractor/path analysis."""
+
     paths: List[PathResult]
     safe_near_cost: float
     unsafe_near_cost: float
     safe_far_cost: float
     adversarial_bridge_cost: float
-    collapse_rate: float            # fraction of paths that collapsed
+    collapse_rate: float  # fraction of paths that collapsed
     mean_stability: float
-    escalation_correctness: float   # fraction of correct escalation/de-escalation
+    escalation_correctness: float  # fraction of correct escalation/de-escalation
 
 
 def _generate_path(
@@ -1121,12 +1144,14 @@ def evaluate_path(
         prev_grounded = grounding.is_grounded
         verdicts.append(cp.verdict.value)
 
-        path_steps.append(PathStep(
-            contact_point=cp,
-            consistency=consistency,
-            grounded=grounding.is_grounded,
-            cumulative_cost=cumulative_cost,
-        ))
+        path_steps.append(
+            PathStep(
+                contact_point=cp,
+                consistency=consistency,
+                grounded=grounding.is_grounded,
+                cumulative_cost=cumulative_cost,
+            )
+        )
 
     # Stability: variance of consistency scores
     consistencies = [s.consistency for s in path_steps]
@@ -1197,14 +1222,16 @@ def run_attractor_harness(
 # Core Metrics (the 6 hard ones)
 # =========================================================================
 
+
 @dataclass(frozen=True)
 class CoreMetrics:
     """The 6 metrics that actually matter."""
-    structure_retention: float       # S = sim(z_intended, z_recovered)
+
+    structure_retention: float  # S = sim(z_intended, z_recovered)
     cross_domain_transfer_gain: float  # T = full - baseline
     adversarial_alignment_retention: float  # A = perturbed / clean
-    loop_collapse_rate: float        # degenerate pattern frequency
-    escalation_correctness: float    # friction-zone accuracy
+    loop_collapse_rate: float  # degenerate pattern frequency
+    escalation_correctness: float  # friction-zone accuracy
     ablation_contribution: Dict[str, float]  # per-subsystem delta
 
 
@@ -1233,12 +1260,11 @@ def compute_core_metrics(
     collapse = _compute_collapse_rate(cps)
 
     # 5. Escalation correctness
-    boundary = [cp for cp in cps
-                if ALLOW_THRESHOLD <= cp.dissonance_score <= ESCALATE_THRESHOLD]
+    boundary = [cp for cp in cps if ALLOW_THRESHOLD <= cp.dissonance_score <= ESCALATE_THRESHOLD]
     if boundary:
-        esc_correct = sum(1 for cp in boundary
-                         if cp.verdict in (GovernanceVerdict.QUARANTINE, GovernanceVerdict.ESCALATE)
-                         ) / len(boundary)
+        esc_correct = sum(
+            1 for cp in boundary if cp.verdict in (GovernanceVerdict.QUARANTINE, GovernanceVerdict.ESCALATE)
+        ) / len(boundary)
     else:
         esc_correct = 1.0
 
@@ -1265,9 +1291,11 @@ def compute_core_metrics(
 # Experiment Matrix Runner
 # =========================================================================
 
+
 @dataclass(frozen=True)
 class ExperimentMatrixResult:
     """The full 7 × 6 experiment matrix result."""
+
     corpus_validity: CorpusValidityReport
     ablation_report: AblationReport
     transfer_results: List[TransferResult]
@@ -1329,6 +1357,7 @@ def run_experiment_matrix(
 # Utility functions
 # =========================================================================
 
+
 def _l2_distance(a: Tuple[float, ...], b: Tuple[float, ...]) -> float:
     """L2 distance with padding for mismatched dimensions."""
     max_len = max(len(a), len(b))
@@ -1343,6 +1372,7 @@ def _rank_correlation(a: List[float], b: List[float]) -> float:
         return 0.5
 
     n = len(a)
+
     # Convert to ranks
     def _ranks(vals: List[float]) -> List[float]:
         indexed = sorted(range(n), key=lambda i: vals[i])
@@ -1370,10 +1400,7 @@ def _compute_collapse_rate(contact_points: List[ContactPoint]) -> float:
     """Fraction of consecutive identical verdicts (degenerate repetition)."""
     if len(contact_points) < 2:
         return 0.0
-    same = sum(
-        1 for i in range(1, len(contact_points))
-        if contact_points[i].verdict == contact_points[i - 1].verdict
-    )
+    same = sum(1 for i in range(1, len(contact_points)) if contact_points[i].verdict == contact_points[i - 1].verdict)
     return same / (len(contact_points) - 1)
 
 
@@ -1405,10 +1432,7 @@ def _dead_tone_discrimination(contact_points: List[ContactPoint]) -> float:
             all_keys = set(dist_i.keys()) | set(dist_j.keys())
             n_i = sum(dist_i.values()) or 1
             n_j = sum(dist_j.values()) or 1
-            diff = sum(
-                abs(dist_i.get(k, 0) / n_i - dist_j.get(k, 0) / n_j)
-                for k in all_keys
-            )
+            diff = sum(abs(dist_i.get(k, 0) / n_i - dist_j.get(k, 0) / n_j) for k in all_keys)
             diffs += diff / 2.0  # normalize to [0, 1]
             comparisons += 1
 

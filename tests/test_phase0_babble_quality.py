@@ -112,13 +112,13 @@ class TestSchemaIntegrity:
             for field, expected_type in REQUIRED_FIELDS.items():
                 assert field in r, f"Record {i}: missing field '{field}'"
                 if isinstance(expected_type, tuple):
-                    assert isinstance(r[field], expected_type), (
-                        f"Record {i}: field '{field}' type {type(r[field]).__name__}, expected {expected_type}"
-                    )
+                    assert isinstance(
+                        r[field], expected_type
+                    ), f"Record {i}: field '{field}' type {type(r[field]).__name__}, expected {expected_type}"
                 else:
-                    assert isinstance(r[field], expected_type), (
-                        f"Record {i}: field '{field}' type {type(r[field]).__name__}, expected {expected_type.__name__}"
-                    )
+                    assert isinstance(
+                        r[field], expected_type
+                    ), f"Record {i}: field '{field}' type {type(r[field]).__name__}, expected {expected_type.__name__}"
 
     def test_messages_have_three_roles(self, records):
         for i, r in enumerate(records):
@@ -158,8 +158,11 @@ class TestSchemaIntegrity:
 
     def test_axioms_are_strings(self, records):
         valid_axioms = {
-            "A1_unitarity", "A2_locality", "A3_causality",
-            "A4_symmetry", "A5_composition",
+            "A1_unitarity",
+            "A2_locality",
+            "A3_causality",
+            "A4_symmetry",
+            "A5_composition",
         }
         for i, r in enumerate(records):
             for ax in r["axioms"]:
@@ -290,9 +293,9 @@ class TestContentQuality:
     def test_system_message_contains_phase0_marker(self, records):
         for i, r in enumerate(records):
             sys_msg = r["messages"][0]["content"]
-            assert "PHASE-0" in sys_msg or "phase-0" in sys_msg.lower() or "BABY-BABBLE" in sys_msg, (
-                f"Record {i}: system message lacks Phase-0 marker"
-            )
+            assert (
+                "PHASE-0" in sys_msg or "phase-0" in sys_msg.lower() or "BABY-BABBLE" in sys_msg
+            ), f"Record {i}: system message lacks Phase-0 marker"
 
     def test_system_message_contains_tongue_name(self, records):
         tongue_names = {"Kor'aelin", "Avali", "Runethic", "Cassisivadan", "Umbroth", "Draumric"}
@@ -354,9 +357,9 @@ class TestCurriculumStructure:
             group = tier_groups.get(tier_name, [])
             for i, r in enumerate(group):
                 d = r["difficulty"]
-                assert spec["diff_lo"] <= d <= spec["diff_hi"], (
-                    f"Tier {tier_name}, record {i}: difficulty {d} outside [{spec['diff_lo']}, {spec['diff_hi']}]"
-                )
+                assert (
+                    spec["diff_lo"] <= d <= spec["diff_hi"]
+                ), f"Tier {tier_name}, record {i}: difficulty {d} outside [{spec['diff_lo']}, {spec['diff_hi']}]"
 
     def test_early_tiers_have_lower_difficulty(self, tier_groups):
         tier_order = list(TIERS.keys())
@@ -399,9 +402,9 @@ class TestCurriculumStructure:
         if early_layers and late_layers:
             avg_early = statistics.mean(early_layers)
             avg_late = statistics.mean(late_layers)
-            assert avg_early <= avg_late + 2, (
-                f"Early tier avg layers ({avg_early:.1f}) much higher than late tier ({avg_late:.1f})"
-            )
+            assert (
+                avg_early <= avg_late + 2
+            ), f"Early tier avg layers ({avg_early:.1f}) much higher than late tier ({avg_late:.1f})"
 
 
 # ===========================================================================
@@ -513,9 +516,9 @@ class TestCrossFieldConsistency:
             aug = r["augmentation"]
             d = r["difficulty"]
             spec = TIERS[aug]
-            assert spec["diff_lo"] <= d <= spec["diff_hi"], (
-                f"Record {i}: difficulty {d} doesn't match tier {aug} [{spec['diff_lo']}, {spec['diff_hi']}]"
-            )
+            assert (
+                spec["diff_lo"] <= d <= spec["diff_hi"]
+            ), f"Record {i}: difficulty {d} doesn't match tier {aug} [{spec['diff_lo']}, {spec['diff_hi']}]"
 
     def test_source_hash_uniqueness(self, records):
         """Hashes should be unique across records (no collisions at 8-char truncation)."""

@@ -32,10 +32,10 @@ from src.crypto.harmonic_dark_fill import (
     sequence_spectrum,
 )
 
-
 # ===================================================================
 # Constants
 # ===================================================================
+
 
 class TestConstants:
     def test_six_tongues(self):
@@ -72,6 +72,7 @@ class TestConstants:
 # Nodal Surface
 # ===================================================================
 
+
 class TestNodalSurface:
     def test_antisymmetric(self):
         """N(x; n, m) = -N(x; m, n) — antisymmetry under mode swap."""
@@ -102,6 +103,7 @@ class TestNodalSurface:
 # ===================================================================
 # Voice Leading
 # ===================================================================
+
 
 class TestVoiceLeading:
     def test_self_interval_is_unison(self):
@@ -149,6 +151,7 @@ class TestVoiceLeading:
 # Darkness Computation
 # ===================================================================
 
+
 class TestDarkness:
     def test_max_byte_activates_all(self):
         """byte_val=255 should activate all tongues (darkness = 0)."""
@@ -184,6 +187,7 @@ class TestDarkness:
 # ===================================================================
 # HarmonicFill
 # ===================================================================
+
 
 class TestHarmonicFill:
     def _make_fill(self, byte_val=128, tongue="ko", darkness=0.5):
@@ -281,14 +285,20 @@ class TestHarmonicFill:
         """With neighbor phases, audible phase locks to complement."""
         phases = {"dr": 1.0}  # dr is ko's complement
         fill = compute_harmonic_fill(
-            byte_val=128, tongue_code="ko",
-            position=5, total_positions=10,
-            darkness=0.8, neighbor_phases=phases,
+            byte_val=128,
+            tongue_code="ko",
+            position=5,
+            total_positions=10,
+            darkness=0.8,
+            neighbor_phases=phases,
         )
         fill_no_phase = compute_harmonic_fill(
-            byte_val=128, tongue_code="ko",
-            position=5, total_positions=10,
-            darkness=0.8, neighbor_phases=None,
+            byte_val=128,
+            tongue_code="ko",
+            position=5,
+            total_positions=10,
+            darkness=0.8,
+            neighbor_phases=None,
         )
         # Phase should differ when complement provides reference
         assert fill.audible_phase != fill_no_phase.audible_phase
@@ -297,8 +307,10 @@ class TestHarmonicFill:
         """Every tongue generates valid fills."""
         for tc in TONGUE_WEIGHTS:
             fill = compute_harmonic_fill(
-                byte_val=100, tongue_code=tc,
-                position=0, total_positions=1,
+                byte_val=100,
+                tongue_code=tc,
+                position=0,
+                total_positions=1,
                 darkness=0.5,
             )
             assert INFRA_MIN <= fill.infra_freq <= INFRA_MAX
@@ -309,6 +321,7 @@ class TestHarmonicFill:
 # ===================================================================
 # Fill Dark Nodes (sequence)
 # ===================================================================
+
 
 class TestFillDarkNodes:
     def test_fills_every_position(self):
@@ -345,11 +358,15 @@ class TestFillDarkNodes:
 # Upgrade Sound Bundle (integration point)
 # ===================================================================
 
+
 class TestUpgradeSoundBundle:
     def test_returns_three_strands(self):
         a, b, c = upgrade_sound_bundle(
-            byte_val=128, tongue_code="ko",
-            position=0, total_positions=10, darkness=0.5,
+            byte_val=128,
+            tongue_code="ko",
+            position=0,
+            total_positions=10,
+            darkness=0.5,
         )
         assert len(a) == 3
         assert len(b) == 3
@@ -357,24 +374,33 @@ class TestUpgradeSoundBundle:
 
     def test_strand_a_is_audible(self):
         a, b, c = upgrade_sound_bundle(
-            byte_val=128, tongue_code="ko",
-            position=0, total_positions=10, darkness=0.8,
+            byte_val=128,
+            tongue_code="ko",
+            position=0,
+            total_positions=10,
+            darkness=0.8,
         )
         freq, amp, phase = a
         assert AUDIBLE_MIN <= freq <= AUDIBLE_MAX
 
     def test_strand_b_is_infrasonic(self):
         a, b, c = upgrade_sound_bundle(
-            byte_val=128, tongue_code="ko",
-            position=0, total_positions=10, darkness=0.8,
+            byte_val=128,
+            tongue_code="ko",
+            position=0,
+            total_positions=10,
+            darkness=0.8,
         )
         freq, amp, phase = b
         assert INFRA_MIN <= freq <= INFRA_MAX
 
     def test_strand_c_is_ultrasonic(self):
         a, b, c = upgrade_sound_bundle(
-            byte_val=128, tongue_code="ko",
-            position=0, total_positions=10, darkness=0.8,
+            byte_val=128,
+            tongue_code="ko",
+            position=0,
+            total_positions=10,
+            darkness=0.8,
         )
         freq, amp, phase = c
         assert ULTRA_MIN <= freq <= ULTRA_MAX
@@ -383,6 +409,7 @@ class TestUpgradeSoundBundle:
 # ===================================================================
 # Spectrum Snapshot
 # ===================================================================
+
 
 class TestSpectrumSnapshot:
     def test_sequence_spectrum_length(self):
@@ -427,6 +454,7 @@ class TestSpectrumSnapshot:
 # ===================================================================
 # Genesis Simulation: Void → First Light
 # ===================================================================
+
 
 class TestGenesisSim:
     """Test the path from blank (no information) to first light.
@@ -480,8 +508,9 @@ class TestGenesisSim:
             infra_energies.append(snap.total_infra_energy)
         # As data increases, dark fill energy should generally decrease
         # (more tongues activate, less darkness to fill)
-        assert infra_energies[0] >= infra_energies[-1], \
-            f"Void IR energy {infra_energies[0]} should >= full light {infra_energies[-1]}"
+        assert (
+            infra_energies[0] >= infra_energies[-1]
+        ), f"Void IR energy {infra_energies[0]} should >= full light {infra_energies[-1]}"
 
     def test_ir_uv_balance_shifts(self):
         """The IR/UV ratio should shift as information grows.
@@ -520,17 +549,23 @@ class TestGenesisSim:
 # Integration: Dark Fill + Tri-Bundle + Crossing Energy
 # ===================================================================
 
+
 class TestFullIntegration:
     def test_dark_fill_to_tri_bundle_sound(self):
         """Dark fill output plugs directly into tri_bundle InnerBundle."""
         from src.crypto.tri_bundle import InnerBundle
 
         a, b, c = upgrade_sound_bundle(
-            byte_val=128, tongue_code="ko",
-            position=0, total_positions=10, darkness=0.7,
+            byte_val=128,
+            tongue_code="ko",
+            position=0,
+            total_positions=10,
+            darkness=0.7,
         )
         bundle = InnerBundle(
-            strand_a=a, strand_b=b, strand_c=c,
+            strand_a=a,
+            strand_b=b,
+            strand_c=c,
             bundle_type="sound",
         )
         vec = bundle.as_vector()
@@ -548,11 +583,16 @@ class TestFullIntegration:
 
         # Upgraded cluster with dark fill
         a, b, c = upgrade_sound_bundle(
-            byte_val=128, tongue_code="ko",
-            position=0, total_positions=1, darkness=0.7,
+            byte_val=128,
+            tongue_code="ko",
+            position=0,
+            total_positions=1,
+            darkness=0.7,
         )
         upgraded_sound = InnerBundle(
-            strand_a=a, strand_b=b, strand_c=c,
+            strand_a=a,
+            strand_b=b,
+            strand_c=c,
             bundle_type="sound",
         )
         upgraded = TriBundleCluster(
@@ -575,11 +615,16 @@ class TestFullIntegration:
 
         # With dark fill sound
         a, b, c = upgrade_sound_bundle(
-            byte_val=128, tongue_code="ko",
-            position=0, total_positions=1, darkness=0.9,
+            byte_val=128,
+            tongue_code="ko",
+            position=0,
+            total_positions=1,
+            darkness=0.9,
         )
         upgraded_sound = InnerBundle(
-            strand_a=a, strand_b=b, strand_c=c,
+            strand_a=a,
+            strand_b=b,
+            strand_c=c,
             bundle_type="sound",
         )
         upgraded = TriBundleCluster(
@@ -615,12 +660,16 @@ class TestFullIntegration:
             orig = encode_byte(byte_val, "ko", position=i)
             darkness = compute_darkness(byte_val, "ko")
             a, b, c = upgrade_sound_bundle(
-                byte_val=byte_val, tongue_code="ko",
-                position=i, total_positions=len(genesis_bytes),
+                byte_val=byte_val,
+                tongue_code="ko",
+                position=i,
+                total_positions=len(genesis_bytes),
                 darkness=darkness,
             )
             upgraded_sound = InnerBundle(
-                strand_a=a, strand_b=b, strand_c=c,
+                strand_a=a,
+                strand_b=b,
+                strand_c=c,
                 bundle_type="sound",
             )
             cluster = TriBundleCluster(

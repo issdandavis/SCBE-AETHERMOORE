@@ -17,90 +17,151 @@ from typing import Dict, List, Optional, Tuple
 PHI = (1 + math.sqrt(5)) / 2
 
 TONGUE_WEIGHTS = {
-    "ko": PHI ** 0, "av": PHI ** 1, "ru": PHI ** 2,
-    "ca": PHI ** 3, "um": PHI ** 4, "dr": PHI ** 5,
+    "ko": PHI**0,
+    "av": PHI**1,
+    "ru": PHI**2,
+    "ca": PHI**3,
+    "um": PHI**4,
+    "dr": PHI**5,
 }
 ALL_TONGUES = tuple(TONGUE_WEIGHTS.keys())
 TONGUE_FREQUENCIES = {
-    "ko": 440.00, "av": 523.25, "ru": 293.66,
-    "ca": 659.25, "um": 196.00, "dr": 392.00,
+    "ko": 440.00,
+    "av": 523.25,
+    "ru": 293.66,
+    "ca": 659.25,
+    "um": 196.00,
+    "dr": 392.00,
 }
 COMPLEMENT_MAP = {
-    "ko": "dr", "av": "um", "ru": "ca",
-    "ca": "ru", "um": "av", "dr": "ko",
+    "ko": "dr",
+    "av": "um",
+    "ru": "ca",
+    "ca": "ru",
+    "um": "av",
+    "dr": "ko",
 }
 BASELINE_FREQUENCIES = {
-    "perfect_fifth": 330.0, "minor_sixth": 352.0, "minor_seventh": 392.0,
+    "perfect_fifth": 330.0,
+    "minor_sixth": 352.0,
+    "minor_seventh": 392.0,
 }
 DEAD_TONES = tuple(BASELINE_FREQUENCIES.keys())
 RATIO_DISSONANCE = {
-    "unison": (1.0, 0.00), "octave": (2.0, 0.02),
-    "perfect_fifth": (3.0/2.0, 0.05), "perfect_fourth": (4.0/3.0, 0.08),
-    "major_third": (5.0/4.0, 0.12), "minor_third": (6.0/5.0, 0.15),
-    "major_sixth": (5.0/3.0, 0.18), "minor_sixth": (8.0/5.0, 0.22),
-    "major_second": (9.0/8.0, 0.30), "minor_seventh": (16.0/9.0, 0.35),
-    "major_seventh": (15.0/8.0, 0.55), "phi_interval": (PHI, 0.40),
-    "tritone": (45.0/32.0, 0.75), "minor_second": (16.0/15.0, 0.90),
+    "unison": (1.0, 0.00),
+    "octave": (2.0, 0.02),
+    "perfect_fifth": (3.0 / 2.0, 0.05),
+    "perfect_fourth": (4.0 / 3.0, 0.08),
+    "major_third": (5.0 / 4.0, 0.12),
+    "minor_third": (6.0 / 5.0, 0.15),
+    "major_sixth": (5.0 / 3.0, 0.18),
+    "minor_sixth": (8.0 / 5.0, 0.22),
+    "major_second": (9.0 / 8.0, 0.30),
+    "minor_seventh": (16.0 / 9.0, 0.35),
+    "major_seventh": (15.0 / 8.0, 0.55),
+    "phi_interval": (PHI, 0.40),
+    "tritone": (45.0 / 32.0, 0.75),
+    "minor_second": (16.0 / 15.0, 0.90),
 }
 ALLOW_THRESHOLD = 0.25
 QUARANTINE_THRESHOLD = 0.50
 ESCALATE_THRESHOLD = 0.75
-TONGUE_STRESS = {"ko": "even", "av": "flowing", "ru": "percussive",
-                  "ca": "rising", "um": "falling", "dr": "grounded"}
+TONGUE_STRESS = {"ko": "even", "av": "flowing", "ru": "percussive", "ca": "rising", "um": "falling", "dr": "grounded"}
 TONGUE_RATE = {"ko": 0.95, "av": 1.00, "ru": 0.90, "ca": 1.08, "um": 0.82, "dr": 0.80}
 TONGUE_CHANT = {"ko": 0.10, "av": 0.20, "ru": 0.25, "ca": 0.30, "um": 0.35, "dr": 0.22}
 
 
 class PropagationLabel(Enum):
-    POSITIVE = "positive"; BOUNDARY = "boundary"
-    NEGATIVE = "negative"; TERMINAL = "terminal"
+    POSITIVE = "positive"
+    BOUNDARY = "boundary"
+    NEGATIVE = "negative"
+    TERMINAL = "terminal"
+
 
 class GovernanceVerdict(Enum):
-    ALLOW = "ALLOW"; QUARANTINE = "QUARANTINE"
-    ESCALATE = "ESCALATE"; DENY = "DENY"
+    ALLOW = "ALLOW"
+    QUARANTINE = "QUARANTINE"
+    ESCALATE = "ESCALATE"
+    DENY = "DENY"
 
 
 @dataclass(frozen=True)
 class TongueVector:
-    ko: float; av: float; ru: float; ca: float; um: float; dr: float
+    ko: float
+    av: float
+    ru: float
+    ca: float
+    um: float
+    dr: float
+
     @property
     def dominant(self):
-        vals = {"ko": self.ko, "av": self.av, "ru": self.ru,
-                "ca": self.ca, "um": self.um, "dr": self.dr}
+        vals = {"ko": self.ko, "av": self.av, "ru": self.ru, "ca": self.ca, "um": self.um, "dr": self.dr}
         return max(vals, key=vals.get)
+
     @property
     def as_tuple(self):
         return (self.ko, self.av, self.ru, self.ca, self.um, self.dr)
 
+
 @dataclass(frozen=True)
 class ProsodyFeatures:
-    rate: float; energy: float; chant_ratio: float
-    stress_pattern: str; agent_frequency_hz: float
+    rate: float
+    energy: float
+    chant_ratio: float
+    stress_pattern: str
+    agent_frequency_hz: float
+
 
 @dataclass(frozen=True)
 class DarkFillFeatures:
-    infra_freq: float; infra_amplitude: float
-    audible_freq: float; audible_amplitude: float
-    ultra_freq: float; ultra_amplitude: float; darkness: float
+    infra_freq: float
+    infra_amplitude: float
+    audible_freq: float
+    audible_amplitude: float
+    ultra_freq: float
+    ultra_amplitude: float
+    darkness: float
+
 
 @dataclass(frozen=True)
 class ConsonanceFeatures:
-    baseline_hz: float; agent_hz: float; frequency_ratio: float
-    nearest_interval: str; interval_deviation: float
-    dissonance_score: float; beat_frequency: float
+    baseline_hz: float
+    agent_hz: float
+    frequency_ratio: float
+    nearest_interval: str
+    interval_deviation: float
+    dissonance_score: float
+    beat_frequency: float
+
 
 @dataclass(frozen=True)
 class PolyhedralRecord:
-    node_hash: str; generation: int; parent_hash: Optional[str]; timestamp: float
-    raw_input: str; dominant_tongue: str; dead_tone: str; excitation: float
-    tongue_vector: TongueVector; prosody: ProsodyFeatures
-    consonance: ConsonanceFeatures; dark_fill: DarkFillFeatures
-    verdict: GovernanceVerdict; propagation_label: PropagationLabel
-    tongue_affinity: Dict[str, float]; complement_tongue: str
+    node_hash: str
+    generation: int
+    parent_hash: Optional[str]
+    timestamp: float
+    raw_input: str
+    dominant_tongue: str
+    dead_tone: str
+    excitation: float
+    tongue_vector: TongueVector
+    prosody: ProsodyFeatures
+    consonance: ConsonanceFeatures
+    dark_fill: DarkFillFeatures
+    verdict: GovernanceVerdict
+    propagation_label: PropagationLabel
+    tongue_affinity: Dict[str, float]
+    complement_tongue: str
+
 
 @dataclass(frozen=True)
 class NodalEdge:
-    source_hash: str; target_hash: str; weight: float; edge_type: str
+    source_hash: str
+    target_hash: str
+    weight: float
+    edge_type: str
+
 
 @dataclass
 class NodalGraph:
@@ -108,25 +169,36 @@ class NodalGraph:
     edges: List[NodalEdge] = field(default_factory=list)
     _edge_index: Dict[str, List[NodalEdge]] = field(default_factory=dict)
     generation_count: int = 0
-    total_allow: int = 0; total_quarantine: int = 0; total_deny: int = 0
+    total_allow: int = 0
+    total_quarantine: int = 0
+    total_deny: int = 0
 
     @property
-    def node_count(self): return len(self.nodes)
+    def node_count(self):
+        return len(self.nodes)
+
     @property
-    def edge_count(self): return len(self.edges)
+    def edge_count(self):
+        return len(self.edges)
+
     @property
     def density(self):
         n = self.node_count
-        if n < 2: return 0.0
+        if n < 2:
+            return 0.0
         return self.edge_count / (n * (n - 1))
 
     def add_node(self, record):
-        if record.node_hash in self.nodes: return False
+        if record.node_hash in self.nodes:
+            return False
         self.nodes[record.node_hash] = record
         self._edge_index[record.node_hash] = []
-        if record.verdict == GovernanceVerdict.ALLOW: self.total_allow += 1
-        elif record.verdict == GovernanceVerdict.QUARANTINE: self.total_quarantine += 1
-        else: self.total_deny += 1
+        if record.verdict == GovernanceVerdict.ALLOW:
+            self.total_allow += 1
+        elif record.verdict == GovernanceVerdict.QUARANTINE:
+            self.total_quarantine += 1
+        else:
+            self.total_deny += 1
         return True
 
     def add_edge(self, edge):
@@ -134,16 +206,29 @@ class NodalGraph:
             self.edges.append(edge)
             self._edge_index.setdefault(edge.source_hash, []).append(edge)
 
-    def get_neighbors(self, h): return [e.target_hash for e in self._edge_index.get(h, [])]
-    def get_node(self, h): return self.nodes.get(h)
-    def nodes_by_verdict(self, v): return [n for n in self.nodes.values() if n.verdict == v]
-    def nodes_by_generation(self, g): return [n for n in self.nodes.values() if n.generation == g]
-    def nodes_by_tongue(self, t): return [n for n in self.nodes.values() if n.dominant_tongue == t]
-    def harvest_positive(self): return self.nodes_by_verdict(GovernanceVerdict.ALLOW)
-    def harvest_boundary(self): return self.nodes_by_verdict(GovernanceVerdict.QUARANTINE)
+    def get_neighbors(self, h):
+        return [e.target_hash for e in self._edge_index.get(h, [])]
+
+    def get_node(self, h):
+        return self.nodes.get(h)
+
+    def nodes_by_verdict(self, v):
+        return [n for n in self.nodes.values() if n.verdict == v]
+
+    def nodes_by_generation(self, g):
+        return [n for n in self.nodes.values() if n.generation == g]
+
+    def nodes_by_tongue(self, t):
+        return [n for n in self.nodes.values() if n.dominant_tongue == t]
+
+    def harvest_positive(self):
+        return self.nodes_by_verdict(GovernanceVerdict.ALLOW)
+
+    def harvest_boundary(self):
+        return self.nodes_by_verdict(GovernanceVerdict.QUARANTINE)
+
     def harvest_negative(self):
-        return (self.nodes_by_verdict(GovernanceVerdict.ESCALATE)
-                + self.nodes_by_verdict(GovernanceVerdict.DENY))
+        return self.nodes_by_verdict(GovernanceVerdict.ESCALATE) + self.nodes_by_verdict(GovernanceVerdict.DENY)
 
 
 # Inline record generation (from polyhedral_node)
@@ -156,52 +241,80 @@ def _compute_tongue_vector(raw_input, dominant_tongue):
     for byte_val in data:
         for i, tongue in enumerate(ALL_TONGUES):
             threshold = (TONGUE_WEIGHTS[tongue] / TONGUE_WEIGHTS["dr"]) * 255
-            if byte_val >= threshold: activations[tongue] += 1.0 / len(data)
+            if byte_val >= threshold:
+                activations[tongue] += 1.0 / len(data)
     activations[dominant_tongue] = min(1.0, activations[dominant_tongue] + 0.3)
     mx = max(activations.values()) or 1.0
     return TongueVector(**{t: v / mx for t, v in activations.items()})
+
 
 def _compute_prosody(dominant_tongue, excitation):
     rate = max(0.5, min(2.0, TONGUE_RATE[dominant_tongue] + 0.02 * (excitation - 3.0)))
     energy = max(0.0, min(1.0, 0.4 + 0.06 * excitation))
     base_freq = TONGUE_FREQUENCIES[dominant_tongue]
     agent_hz = max(20.0, min(20000.0, base_freq * (1.0 + 0.05 * (excitation - 3.0))))
-    return ProsodyFeatures(rate=rate, energy=energy, chant_ratio=TONGUE_CHANT[dominant_tongue],
-                           stress_pattern=TONGUE_STRESS[dominant_tongue], agent_frequency_hz=agent_hz)
+    return ProsodyFeatures(
+        rate=rate,
+        energy=energy,
+        chant_ratio=TONGUE_CHANT[dominant_tongue],
+        stress_pattern=TONGUE_STRESS[dominant_tongue],
+        agent_frequency_hz=agent_hz,
+    )
+
 
 def _normalize_ratio(f_a, f_b):
-    if f_a <= 0 or f_b <= 0: return 1.0
+    if f_a <= 0 or f_b <= 0:
+        return 1.0
     ratio = max(f_a, f_b) / min(f_a, f_b)
-    while ratio >= 2.0: ratio /= 2.0
+    while ratio >= 2.0:
+        ratio /= 2.0
     return ratio
+
 
 def _nearest_consonance(ratio):
     best_name, best_dev, best_dis = "tritone", float("inf"), 0.75
     for name, (ref, dis) in RATIO_DISSONANCE.items():
         dev = abs(ratio - ref)
-        if dev < best_dev: best_dev, best_name, best_dis = dev, name, dis
+        if dev < best_dev:
+            best_dev, best_name, best_dis = dev, name, dis
     return best_name, best_dev, best_dis
+
 
 def _compute_consonance(agent_hz, dead_tone, tolerance=0.03):
     baseline_hz = BASELINE_FREQUENCIES[dead_tone]
     ratio = _normalize_ratio(baseline_hz, agent_hz)
     name, dev, base_dis = _nearest_consonance(ratio)
     score = base_dis if dev <= tolerance else min(1.0, base_dis + min(1.0, dev / 0.05) * 0.5)
-    return ConsonanceFeatures(baseline_hz=baseline_hz, agent_hz=agent_hz, frequency_ratio=ratio,
-                              nearest_interval=name, interval_deviation=dev,
-                              dissonance_score=score, beat_frequency=abs(baseline_hz - agent_hz))
+    return ConsonanceFeatures(
+        baseline_hz=baseline_hz,
+        agent_hz=agent_hz,
+        frequency_ratio=ratio,
+        nearest_interval=name,
+        interval_deviation=dev,
+        dissonance_score=score,
+        beat_frequency=abs(baseline_hz - agent_hz),
+    )
+
 
 def _dissonance_to_verdict(score):
-    if score < ALLOW_THRESHOLD: return GovernanceVerdict.ALLOW
-    elif score < QUARANTINE_THRESHOLD: return GovernanceVerdict.QUARANTINE
-    elif score < ESCALATE_THRESHOLD: return GovernanceVerdict.ESCALATE
-    else: return GovernanceVerdict.DENY
+    if score < ALLOW_THRESHOLD:
+        return GovernanceVerdict.ALLOW
+    elif score < QUARANTINE_THRESHOLD:
+        return GovernanceVerdict.QUARANTINE
+    elif score < ESCALATE_THRESHOLD:
+        return GovernanceVerdict.ESCALATE
+    else:
+        return GovernanceVerdict.DENY
+
 
 def _verdict_to_label(v):
-    return {GovernanceVerdict.ALLOW: PropagationLabel.POSITIVE,
-            GovernanceVerdict.QUARANTINE: PropagationLabel.BOUNDARY,
-            GovernanceVerdict.ESCALATE: PropagationLabel.NEGATIVE,
-            GovernanceVerdict.DENY: PropagationLabel.TERMINAL}[v]
+    return {
+        GovernanceVerdict.ALLOW: PropagationLabel.POSITIVE,
+        GovernanceVerdict.QUARANTINE: PropagationLabel.BOUNDARY,
+        GovernanceVerdict.ESCALATE: PropagationLabel.NEGATIVE,
+        GovernanceVerdict.DENY: PropagationLabel.TERMINAL,
+    }[v]
+
 
 def _compute_dark_fill(raw_input, dominant_tongue, darkness=0.5):
     comp = COMPLEMENT_MAP[dominant_tongue]
@@ -212,22 +325,28 @@ def _compute_dark_fill(raw_input, dominant_tongue, darkness=0.5):
     return DarkFillFeatures(
         infra_freq=round(max(0.01, min(20.0, base_freq / 1000.0)), 6),
         infra_amplitude=round(darkness * 0.8, 6),
-        audible_freq=round(base_freq, 4), audible_amplitude=round(darkness * 0.6, 6),
+        audible_freq=round(base_freq, 4),
+        audible_amplitude=round(darkness * 0.6, 6),
         ultra_freq=round(20000.0 + (hv / (2**32 - 1)) * 980000.0, 2),
         ultra_amplitude=round(darkness * (weight / TONGUE_WEIGHTS["dr"]) * 0.9, 6),
-        darkness=darkness)
+        darkness=darkness,
+    )
+
 
 def _compute_affinity(tv):
     vals = tv.as_tuple
     aff = {}
     for i, t in enumerate(ALL_TONGUES):
-        pure = [0.0]*6; pure[i] = 1.0
-        dist = math.sqrt(sum((a-b)**2 for a, b in zip(vals, pure)))
+        pure = [0.0] * 6
+        pure[i] = 1.0
+        dist = math.sqrt(sum((a - b) ** 2 for a, b in zip(vals, pure)))
         aff[t] = max(0.0, 1.0 - dist / math.sqrt(6))
     return aff
 
-def generate_record(raw_input, dominant_tongue="ko", dead_tone="perfect_fifth",
-                    excitation=3.0, generation=0, parent_hash=None):
+
+def generate_record(
+    raw_input, dominant_tongue="ko", dead_tone="perfect_fifth", excitation=3.0, generation=0, parent_hash=None
+):
     tv = _compute_tongue_vector(raw_input, dominant_tongue)
     pr = _compute_prosody(dominant_tongue, excitation)
     cn = _compute_consonance(pr.agent_frequency_hz, dead_tone)
@@ -238,23 +357,37 @@ def generate_record(raw_input, dominant_tongue="ko", dead_tone="perfect_fifth",
     payload = f"{raw_input}|{dominant_tongue}|{dead_tone}"
     nh = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
     return PolyhedralRecord(
-        node_hash=nh, generation=generation, parent_hash=parent_hash,
-        timestamp=time.time(), raw_input=raw_input, dominant_tongue=dominant_tongue,
-        dead_tone=dead_tone, excitation=excitation, tongue_vector=tv, prosody=pr,
-        consonance=cn, dark_fill=df, verdict=vd, propagation_label=lb,
-        tongue_affinity=af, complement_tongue=COMPLEMENT_MAP[dominant_tongue])
+        node_hash=nh,
+        generation=generation,
+        parent_hash=parent_hash,
+        timestamp=time.time(),
+        raw_input=raw_input,
+        dominant_tongue=dominant_tongue,
+        dead_tone=dead_tone,
+        excitation=excitation,
+        tongue_vector=tv,
+        prosody=pr,
+        consonance=cn,
+        dark_fill=df,
+        verdict=vd,
+        propagation_label=lb,
+        tongue_affinity=af,
+        complement_tongue=COMPLEMENT_MAP[dominant_tongue],
+    )
 
 
 # Edge weight + propagation logic (from nodal_graph.py)
 def compute_edge_weight(source, target):
     s_vec, t_vec = source.tongue_vector.as_tuple, target.tongue_vector.as_tuple
-    td = math.sqrt(sum((a-b)**2 for a, b in zip(s_vec, t_vec)))
+    td = math.sqrt(sum((a - b) ** 2 for a, b in zip(s_vec, t_vec)))
     cd = abs(source.consonance.dissonance_score - target.consonance.dissonance_score)
     dd = 0.0 if source.dead_tone == target.dead_tone else 0.5
     return 1.0 / (1.0 + PHI * (td + cd + dd))
 
+
 def sprout_from_node(parent, raw_input, generation):
-    if parent.verdict != GovernanceVerdict.ALLOW: return []
+    if parent.verdict != GovernanceVerdict.ALLOW:
+        return []
     comp = COMPLEMENT_MAP[parent.dominant_tongue]
     tl = list(DEAD_TONES)
     ci = tl.index(parent.dead_tone) if parent.dead_tone in tl else 0
@@ -264,6 +397,7 @@ def sprout_from_node(parent, raw_input, generation):
         generate_record(raw_input, comp, nt, de, generation, parent.node_hash),
         generate_record(raw_input, parent.dominant_tongue, nt, de, generation, parent.node_hash),
     ]
+
 
 def grow_generation(graph, raw_input):
     frontier = graph.nodes_by_generation(graph.generation_count)
@@ -275,10 +409,21 @@ def grow_generation(graph, raw_input):
             if graph.add_node(child):
                 added += 1
                 w = compute_edge_weight(parent, child)
-                graph.add_edge(NodalEdge(parent.node_hash, child.node_hash, w,
-                    "tongue_complement" if child.dominant_tongue != parent.dominant_tongue else "dead_tone_rotation"))
+                graph.add_edge(
+                    NodalEdge(
+                        parent.node_hash,
+                        child.node_hash,
+                        w,
+                        (
+                            "tongue_complement"
+                            if child.dominant_tongue != parent.dominant_tongue
+                            else "dead_tone_rotation"
+                        ),
+                    )
+                )
     graph.generation_count = next_gen
     return added
+
 
 def seed_graph(raw_input, tongues=None, dead_tones=None, excitation=3.0):
     graph = NodalGraph()
@@ -289,27 +434,37 @@ def seed_graph(raw_input, tongues=None, dead_tones=None, excitation=3.0):
             graph.add_node(generate_record(raw_input, t, tone, excitation, 0))
     hashes = list(graph.nodes.keys())
     for i, h1 in enumerate(hashes):
-        for h2 in hashes[i+1:]:
+        for h2 in hashes[i + 1 :]:
             w = compute_edge_weight(graph.nodes[h1], graph.nodes[h2])
             if w > 0.3:
                 graph.add_edge(NodalEdge(h1, h2, w, "affinity"))
                 graph.add_edge(NodalEdge(h2, h1, w, "affinity"))
     return graph
 
+
 def grow_network(raw_input, max_generations=3, excitation=3.0):
     graph = seed_graph(raw_input, excitation=excitation)
     for _ in range(max_generations):
-        if grow_generation(graph, raw_input) == 0: break
+        if grow_generation(graph, raw_input) == 0:
+            break
     return graph
+
 
 def export_training_pairs(graph):
     def r2d(r):
-        return {"node_hash": r.node_hash, "raw_input": r.raw_input,
-                "dominant_tongue": r.dominant_tongue, "dead_tone": r.dead_tone,
-                "excitation": r.excitation, "generation": r.generation,
-                "tongue_vector": list(r.tongue_vector.as_tuple),
-                "dissonance_score": r.consonance.dissonance_score,
-                "verdict": r.verdict.value, "propagation_label": r.propagation_label.value}
+        return {
+            "node_hash": r.node_hash,
+            "raw_input": r.raw_input,
+            "dominant_tongue": r.dominant_tongue,
+            "dead_tone": r.dead_tone,
+            "excitation": r.excitation,
+            "generation": r.generation,
+            "tongue_vector": list(r.tongue_vector.as_tuple),
+            "dissonance_score": r.consonance.dissonance_score,
+            "verdict": r.verdict.value,
+            "propagation_label": r.propagation_label.value,
+        }
+
     return {
         "sft": [r2d(r) for r in graph.harvest_positive()],
         "dpo_chosen": [r2d(r) for r in graph.harvest_positive()],
@@ -321,6 +476,7 @@ def export_training_pairs(graph):
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestSeedGraph:
 

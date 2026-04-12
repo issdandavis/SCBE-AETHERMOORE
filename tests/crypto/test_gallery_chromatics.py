@@ -42,10 +42,10 @@ from src.crypto.gallery_chromatics import (
     compute_gallery_color_field,
 )
 
-
 # ---------------------------------------------------------------------------
 # Perpendicular Echo Formula (the seed idea)
 # ---------------------------------------------------------------------------
+
 
 def perp_echo_response(echo_tangent: float, k: float = 1.0, eps: float = 1e-9) -> float:
     """S_perp = -phi * k / (|E(tangent)| + eps)"""
@@ -85,6 +85,7 @@ class TestPerpEchoFormula:
 # Harmonic Number
 # ---------------------------------------------------------------------------
 
+
 class TestFrequencyToHarmonicNumber:
 
     def test_unison_is_zero(self):
@@ -98,7 +99,7 @@ class TestFrequencyToHarmonicNumber:
 
     def test_phi_squared_is_two(self):
         """Ratio phi² → harmonic 2."""
-        h = frequency_to_harmonic_number(PHI ** 2)
+        h = frequency_to_harmonic_number(PHI**2)
         assert abs(h - 2.0) < 1e-10
 
     def test_dead_tones_are_irrational(self):
@@ -126,6 +127,7 @@ class TestFrequencyToHarmonicNumber:
 # ---------------------------------------------------------------------------
 # Polar Mapping
 # ---------------------------------------------------------------------------
+
 
 class TestHarmonicToPolar:
 
@@ -158,6 +160,7 @@ class TestHarmonicToPolar:
 # ---------------------------------------------------------------------------
 # Color Quad Scattering
 # ---------------------------------------------------------------------------
+
 
 class TestScatterColorQuad:
 
@@ -219,6 +222,7 @@ class TestScatterColorQuad:
 # LabColor
 # ---------------------------------------------------------------------------
 
+
 class TestLabColor:
 
     def test_chroma_computation(self):
@@ -247,6 +251,7 @@ class TestLabColor:
 # ---------------------------------------------------------------------------
 # Dead Tone Color Chord
 # ---------------------------------------------------------------------------
+
 
 class TestDeadToneColorChord:
 
@@ -277,10 +282,7 @@ class TestDeadToneColorChord:
         # Same chroma (same harmonic), different hues
         assert abs(chord_ko.mean_chroma - chord_dr.mean_chroma) < 1.0
         # At least one color pair should differ in hue
-        hue_diffs = [
-            abs(a.hue_angle - b.hue_angle)
-            for a, b in zip(chord_ko.colors, chord_dr.colors)
-        ]
+        hue_diffs = [abs(a.hue_angle - b.hue_angle) for a, b in zip(chord_ko.colors, chord_dr.colors)]
         assert max(hue_diffs) > 0.1
 
     def test_serialization(self):
@@ -293,6 +295,7 @@ class TestDeadToneColorChord:
 # ---------------------------------------------------------------------------
 # Full Gallery Color Field (Integration)
 # ---------------------------------------------------------------------------
+
 
 class TestGalleryColorField:
     """Integration tests using mock gallery ambient data."""
@@ -315,56 +318,45 @@ class TestGalleryColorField:
     @staticmethod
     def _mock_coefficients():
         return {
-            "ko": 0.45, "dr": 0.55,  # structure pair
-            "av": 0.50, "um": 0.50,  # stability pair
-            "ru": 0.60, "ca": 0.40,  # creativity pair
+            "ko": 0.45,
+            "dr": 0.55,  # structure pair
+            "av": 0.50,
+            "um": 0.50,  # stability pair
+            "ru": 0.60,
+            "ca": 0.40,  # creativity pair
         }
 
     def test_produces_24_colors(self):
         """2 eyes × 3 tones × 4 colors = 24 total."""
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         assert field.left_iris.color_count == 12
         assert field.right_iris.color_count == 12
 
     def test_left_eye_uses_structure_tongues(self):
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         assert field.left_iris.seed_tongues == LEFT_EYE_TONGUES
         assert field.left_iris.dominant_tongue in LEFT_EYE_TONGUES
 
     def test_right_eye_uses_creativity_tongues(self):
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         assert field.right_iris.seed_tongues == RIGHT_EYE_TONGUES
         assert field.right_iris.dominant_tongue in RIGHT_EYE_TONGUES
 
     def test_cross_eye_coherence_bounded(self):
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         assert 0.0 <= field.cross_eye_coherence <= 1.0
 
     def test_spectral_coverage_bounded(self):
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         assert 0.0 <= field.spectral_coverage <= 1.0
 
     def test_spectral_coverage_reasonable(self):
         """24 colors spread by golden angle should cover >50% of hue wheel."""
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         assert field.spectral_coverage > 0.5
 
     def test_dominant_material_valid(self):
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         assert field.dominant_material in MATERIAL_ORDER
 
     def test_different_ratios_different_colors(self):
@@ -391,14 +383,12 @@ class TestGalleryColorField:
         field1 = compute_gallery_color_field(self._mock_gallery_notes(), coeffs1)
         field2 = compute_gallery_color_field(self._mock_gallery_notes(), coeffs2)
 
-        assert field1.left_iris.dominant_tongue == "dr"   # dr=0.55 > ko=0.45
-        assert field2.left_iris.dominant_tongue == "ko"   # ko=0.9 > dr=0.1
+        assert field1.left_iris.dominant_tongue == "dr"  # dr=0.55 > ko=0.45
+        assert field2.left_iris.dominant_tongue == "ko"  # ko=0.9 > dr=0.1
 
     def test_serialization_complete(self):
         """Full to_dict produces valid nested structure."""
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         d = field.to_dict()
         assert "left_iris" in d
         assert "right_iris" in d
@@ -412,9 +402,7 @@ class TestGalleryColorField:
 
     def test_all_colors_finite(self):
         """No NaN or Inf in any color coordinate."""
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         for iris in (field.left_iris, field.right_iris):
             for chord in iris.chords.values():
                 for color in chord.colors:
@@ -424,9 +412,7 @@ class TestGalleryColorField:
 
     def test_all_lightness_in_range(self):
         """L* stays in [0, 100] for all 24 colors."""
-        field = compute_gallery_color_field(
-            self._mock_gallery_notes(), self._mock_coefficients()
-        )
+        field = compute_gallery_color_field(self._mock_gallery_notes(), self._mock_coefficients())
         for iris in (field.left_iris, field.right_iris):
             for chord in iris.chords.values():
                 for color in chord.colors:
@@ -437,11 +423,13 @@ class TestGalleryColorField:
 # Edge Cases
 # ---------------------------------------------------------------------------
 
+
 class TestEdgeCases:
 
     def test_zero_coefficients(self):
         """All zero coefficients shouldn't crash."""
         from tests.crypto.test_gallery_chromatics import TestGalleryColorField
+
         notes = TestGalleryColorField._mock_gallery_notes()
         coeffs = {t: 0.0 for t in ["ko", "dr", "av", "um", "ru", "ca"]}
         field = compute_gallery_color_field(notes, coeffs)

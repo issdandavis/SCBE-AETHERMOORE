@@ -46,12 +46,12 @@ from src.crypto.multipath_generator import MultiPathRecord
 # Physical Constants (SI, sea-level ISA)
 # ---------------------------------------------------------------------------
 
-RHO_SEA_LEVEL = 1.225          # kg/m³ air density at sea level
-G_ACCEL = 9.80665              # m/s² gravitational acceleration
-GAMMA_AIR = 1.4                # adiabatic index for air
-R_AIR = 287.058                # J/(kg·K) specific gas constant for air
-T_SEA_LEVEL = 288.15           # K standard sea-level temperature
-P_SEA_LEVEL = 101325.0         # Pa standard sea-level pressure
+RHO_SEA_LEVEL = 1.225  # kg/m³ air density at sea level
+G_ACCEL = 9.80665  # m/s² gravitational acceleration
+GAMMA_AIR = 1.4  # adiabatic index for air
+R_AIR = 287.058  # J/(kg·K) specific gas constant for air
+T_SEA_LEVEL = 288.15  # K standard sea-level temperature
+P_SEA_LEVEL = 101325.0  # Pa standard sea-level pressure
 
 # Stall angle (degrees → radians)
 ALPHA_CRIT_DEG = 15.0
@@ -63,15 +63,16 @@ G_LIMIT_NEG = -1.52
 
 # Tongue → control surface mapping
 TONGUE_CONTROL_MAP = {
-    "structure": "elevator",     # pitch control (KO/DR axis)
-    "stability": "aileron",      # roll control (AV/UM axis)
-    "creativity": "rudder",      # yaw control (RU/CA axis)
+    "structure": "elevator",  # pitch control (KO/DR axis)
+    "stability": "aileron",  # roll control (AV/UM axis)
+    "creativity": "rudder",  # yaw control (RU/CA axis)
 }
 
 
 # ---------------------------------------------------------------------------
 # Aerodynamic Coefficients
 # ---------------------------------------------------------------------------
+
 
 def lift_coefficient(alpha_rad: float) -> float:
     """C_L(α) — lift coefficient as function of angle of attack.
@@ -102,27 +103,28 @@ def drag_coefficient(alpha_rad: float, cd0: float = 0.02) -> float:
     cl = lift_coefficient(alpha_rad)
     e_oswald = 0.8
     aspect_ratio = 8.0
-    cd_induced = cl ** 2 / (math.pi * e_oswald * aspect_ratio)
+    cd_induced = cl**2 / (math.pi * e_oswald * aspect_ratio)
     return cd0 + cd_induced
 
 
-def lift_force(velocity: float, alpha_rad: float, wing_area: float,
-               rho: float = RHO_SEA_LEVEL) -> float:
+def lift_force(velocity: float, alpha_rad: float, wing_area: float, rho: float = RHO_SEA_LEVEL) -> float:
     """L = ½ρV²SC_L(α) — lift force in Newtons."""
     cl = lift_coefficient(alpha_rad)
-    return 0.5 * rho * velocity ** 2 * wing_area * cl
+    return 0.5 * rho * velocity**2 * wing_area * cl
 
 
-def drag_force(velocity: float, alpha_rad: float, wing_area: float,
-               rho: float = RHO_SEA_LEVEL, cd0: float = 0.02) -> float:
+def drag_force(
+    velocity: float, alpha_rad: float, wing_area: float, rho: float = RHO_SEA_LEVEL, cd0: float = 0.02
+) -> float:
     """D = ½ρV²SC_D(α) — drag force in Newtons."""
     cd = drag_coefficient(alpha_rad, cd0)
-    return 0.5 * rho * velocity ** 2 * wing_area * cd
+    return 0.5 * rho * velocity**2 * wing_area * cd
 
 
 # ---------------------------------------------------------------------------
 # Atmosphere Model (ISA)
 # ---------------------------------------------------------------------------
+
 
 def isa_density(altitude_m: float) -> float:
     """Air density at altitude (ISA troposphere model, valid to 11km).
@@ -142,6 +144,7 @@ def isa_density(altitude_m: float) -> float:
 # 6-DOF State
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SixDOFState:
     """Six degree-of-freedom rigid body state.
@@ -154,6 +157,7 @@ class SixDOFState:
         stability → roll (φ, p) → aileron
         creativity → yaw (ψ, r) → rudder
     """
+
     # Position (m) — earth-fixed frame
     x: float = 0.0
     y: float = 0.0
@@ -165,9 +169,9 @@ class SixDOFState:
     w: float = 0.0  # vertical (heave)
 
     # Euler angles (rad) — attitude
-    phi: float = 0.0    # roll
+    phi: float = 0.0  # roll
     theta: float = 0.0  # pitch (maps to structure axis)
-    psi: float = 0.0    # yaw
+    psi: float = 0.0  # yaw
 
     # Angular rates (rad/s) — body frame
     p: float = 0.0  # roll rate
@@ -177,7 +181,7 @@ class SixDOFState:
     @property
     def airspeed(self) -> float:
         """True airspeed |V| = √(u² + v² + w²)."""
-        return math.sqrt(self.u ** 2 + self.v ** 2 + self.w ** 2)
+        return math.sqrt(self.u**2 + self.v**2 + self.w**2)
 
     @property
     def angle_of_attack(self) -> float:
@@ -203,7 +207,7 @@ class SixDOFState:
     def dynamic_pressure(self) -> float:
         """q = ½ρV² — dynamic pressure at current altitude."""
         rho = isa_density(max(0, self.z))
-        return 0.5 * rho * self.airspeed ** 2
+        return 0.5 * rho * self.airspeed**2
 
     @property
     def stall_margin(self) -> float:
@@ -245,6 +249,7 @@ class SixDOFState:
 # Rotor Dynamics (Helicopter)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RotorState:
     """Helicopter rotor dynamics state.
@@ -259,19 +264,20 @@ class RotorState:
         Cyclic ← trit deviation (directional control)
         VRS margin ← descent rate vs induced velocity
     """
-    rotor_radius: float = 5.0      # m (typical UH-60)
-    rotor_rpm: float = 258.0       # nominal RPM
+
+    rotor_radius: float = 5.0  # m (typical UH-60)
+    rotor_rpm: float = 258.0  # nominal RPM
     num_blades: int = 4
-    blade_chord: float = 0.53      # m
-    ct: float = 0.0065             # thrust coefficient (typical)
-    collective_deg: float = 10.0   # collective pitch (degrees)
-    cyclic_lat_deg: float = 0.0    # lateral cyclic
-    cyclic_lon_deg: float = 0.0    # longitudinal cyclic
+    blade_chord: float = 0.53  # m
+    ct: float = 0.0065  # thrust coefficient (typical)
+    collective_deg: float = 10.0  # collective pitch (degrees)
+    cyclic_lat_deg: float = 0.0  # lateral cyclic
+    cyclic_lon_deg: float = 0.0  # longitudinal cyclic
 
     @property
     def disk_area(self) -> float:
         """A = πR² — rotor disk area."""
-        return math.pi * self.rotor_radius ** 2
+        return math.pi * self.rotor_radius**2
 
     @property
     def omega(self) -> float:
@@ -286,7 +292,7 @@ class RotorState:
     @property
     def thrust(self) -> float:
         """T = C_T · ρ · A · (ΩR)² — rotor thrust in Newtons."""
-        return self.ct * RHO_SEA_LEVEL * self.disk_area * self.tip_speed ** 2
+        return self.ct * RHO_SEA_LEVEL * self.disk_area * self.tip_speed**2
 
     @property
     def induced_velocity(self) -> float:
@@ -350,6 +356,7 @@ class RotorState:
 # VRS Recovery Paths (Polymorphic Fork → Recovery Selection)
 # ---------------------------------------------------------------------------
 
+
 class RecoveryType:
     STANDARD = "standard"
     VUICHARD = "vuichard"
@@ -403,10 +410,11 @@ class RecoveryPath:
         N forks → N possible recovery sequences
         Monty Hall advantage = probability the "other doors" contain a better path
     """
+
     recovery_type: str
-    success_probability: float     # probability of successful recovery
-    altitude_loss_m: float         # expected altitude loss during recovery
-    time_to_recover_s: float       # expected recovery time
+    success_probability: float  # probability of successful recovery
+    altitude_loss_m: float  # expected altitude loss during recovery
+    time_to_recover_s: float  # expected recovery time
     control_inputs: Dict[str, float] = field(default_factory=dict)
     monty_hall_selected: bool = False  # was this the Monty Hall "switch" choice?
     sacred_tongue_hybrid: Optional[Dict] = None  # Sacred Tongue mapping for this recovery
@@ -415,7 +423,7 @@ class RecoveryPath:
     def severity(self) -> float:
         """Higher = more desperate (more altitude loss, lower success)."""
         if self.success_probability <= 0:
-            return float('inf')
+            return float("inf")
         return self.altitude_loss_m / (self.success_probability * 100)
 
     def to_dict(self) -> dict:
@@ -459,50 +467,56 @@ def compute_recovery_paths(
     std_success = min(0.95, max(0.3, altitude_agl / 200.0))
     if vrs_margin < 0:
         std_success *= max(0.3, 1.0 + vrs_margin)  # deep VRS reduces success
-    paths.append(RecoveryPath(
-        recovery_type=RecoveryType.STANDARD,
-        success_probability=std_success,
-        altitude_loss_m=min(altitude_agl * 0.3, 150.0),
-        time_to_recover_s=4.0 + abs(vrs_margin) * 3.0,
-        control_inputs={
-            "cyclic_forward": 0.7,
-            "collective_down": -0.4,
-            "pedal": 0.0,
-        },
-        sacred_tongue_hybrid=SACRED_TONGUE_HYBRIDS[RecoveryType.STANDARD],
-    ))
+    paths.append(
+        RecoveryPath(
+            recovery_type=RecoveryType.STANDARD,
+            success_probability=std_success,
+            altitude_loss_m=min(altitude_agl * 0.3, 150.0),
+            time_to_recover_s=4.0 + abs(vrs_margin) * 3.0,
+            control_inputs={
+                "cyclic_forward": 0.7,
+                "collective_down": -0.4,
+                "pedal": 0.0,
+            },
+            sacred_tongue_hybrid=SACRED_TONGUE_HYBRIDS[RecoveryType.STANDARD],
+        )
+    )
 
     # Vuichard: lateral cyclic + slight collective increase
     # Faster but less reliable in deep VRS
     vui_success = min(0.90, max(0.4, 0.8 + vrs_margin * 0.3))
-    paths.append(RecoveryPath(
-        recovery_type=RecoveryType.VUICHARD,
-        success_probability=vui_success,
-        altitude_loss_m=min(altitude_agl * 0.15, 80.0),
-        time_to_recover_s=2.5 + abs(vrs_margin) * 2.0,
-        control_inputs={
-            "cyclic_lateral": 0.8,
-            "collective_up": 0.15,
-            "pedal_opposite": 0.3,
-        },
-        sacred_tongue_hybrid=SACRED_TONGUE_HYBRIDS[RecoveryType.VUICHARD],
-    ))
+    paths.append(
+        RecoveryPath(
+            recovery_type=RecoveryType.VUICHARD,
+            success_probability=vui_success,
+            altitude_loss_m=min(altitude_agl * 0.15, 80.0),
+            time_to_recover_s=2.5 + abs(vrs_margin) * 2.0,
+            control_inputs={
+                "cyclic_lateral": 0.8,
+                "collective_up": 0.15,
+                "pedal_opposite": 0.3,
+            },
+            sacred_tongue_hybrid=SACRED_TONGUE_HYBRIDS[RecoveryType.VUICHARD],
+        )
+    )
 
     # Autorotation: full down collective → controlled descent → flare
     # Always available but highest altitude loss
     auto_success = min(0.85, max(0.5, altitude_agl / 300.0))
-    paths.append(RecoveryPath(
-        recovery_type=RecoveryType.AUTOROTATION,
-        success_probability=auto_success,
-        altitude_loss_m=min(altitude_agl * 0.6, 250.0),
-        time_to_recover_s=8.0 + altitude_agl / 100.0,
-        control_inputs={
-            "collective_full_down": -1.0,
-            "cyclic_neutral": 0.0,
-            "flare_altitude_m": max(10, altitude_agl * 0.05),
-        },
-        sacred_tongue_hybrid=SACRED_TONGUE_HYBRIDS[RecoveryType.AUTOROTATION],
-    ))
+    paths.append(
+        RecoveryPath(
+            recovery_type=RecoveryType.AUTOROTATION,
+            success_probability=auto_success,
+            altitude_loss_m=min(altitude_agl * 0.6, 250.0),
+            time_to_recover_s=8.0 + altitude_agl / 100.0,
+            control_inputs={
+                "collective_full_down": -1.0,
+                "cyclic_neutral": 0.0,
+                "flare_altitude_m": max(10, altitude_agl * 0.05),
+            },
+            sacred_tongue_hybrid=SACRED_TONGUE_HYBRIDS[RecoveryType.AUTOROTATION],
+        )
+    )
 
     # Tail rotor failure: creativity-axis dominant
     # ψ̇ = (Q_main - Q_tail) / I_z → uncontrolled yaw
@@ -512,19 +526,21 @@ def compute_recovery_paths(
         trf_success = min(0.80, max(0.35, altitude_agl / 250.0))
         if altitude_agl < 50:
             trf_success *= 0.6  # low altitude = very dangerous
-        paths.append(RecoveryPath(
-            recovery_type=RecoveryType.TAIL_ROTOR_FAILURE,
-            success_probability=trf_success,
-            altitude_loss_m=min(altitude_agl * 0.8, 300.0),
-            time_to_recover_s=10.0 + altitude_agl / 80.0,
-            control_inputs={
-                "collective_reduce": -0.8,
-                "cyclic_forward": 0.6,
-                "pedal_opposite": 1.0,
-                "autorotative_entry": 1.0,
-            },
-            sacred_tongue_hybrid=SACRED_TONGUE_HYBRIDS[RecoveryType.TAIL_ROTOR_FAILURE],
-        ))
+        paths.append(
+            RecoveryPath(
+                recovery_type=RecoveryType.TAIL_ROTOR_FAILURE,
+                success_probability=trf_success,
+                altitude_loss_m=min(altitude_agl * 0.8, 300.0),
+                time_to_recover_s=10.0 + altitude_agl / 80.0,
+                control_inputs={
+                    "collective_reduce": -0.8,
+                    "cyclic_forward": 0.6,
+                    "pedal_opposite": 1.0,
+                    "autorotative_entry": 1.0,
+                },
+                sacred_tongue_hybrid=SACRED_TONGUE_HYBRIDS[RecoveryType.TAIL_ROTOR_FAILURE],
+            )
+        )
 
     # Monty Hall selection: if multipath has forks, the "switch" choice
     # gets the advantage
@@ -540,10 +556,7 @@ def compute_recovery_paths(
             # Mark the best non-obvious path as Monty Hall selected
             paths[0].monty_hall_selected = True
             # Boost its success by the advantage factor
-            paths[0].success_probability = min(
-                0.99,
-                paths[0].success_probability * (1 + advantage * 0.1)
-            )
+            paths[0].success_probability = min(0.99, paths[0].success_probability * (1 + advantage * 0.1))
 
     return paths
 
@@ -551,6 +564,7 @@ def compute_recovery_paths(
 # ---------------------------------------------------------------------------
 # Tail Rotor Failure Dynamics
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class TailRotorState:
@@ -567,11 +581,12 @@ class TailRotorState:
 
     Maps to SCBE creativity axis (yaw = rudder = creativity).
     """
+
     failed: bool = False
-    q_main_nm: float = 0.0          # main rotor torque (N·m)
-    q_tail_nm: float = 0.0          # tail rotor torque (N·m), 0 if failed
-    i_z_kgm2: float = 10000.0      # yaw moment of inertia (kg·m²)
-    yaw_rate_dps: float = 0.0       # current yaw rate (deg/s)
+    q_main_nm: float = 0.0  # main rotor torque (N·m)
+    q_tail_nm: float = 0.0  # tail rotor torque (N·m), 0 if failed
+    i_z_kgm2: float = 10000.0  # yaw moment of inertia (kg·m²)
+    yaw_rate_dps: float = 0.0  # current yaw rate (deg/s)
 
     @property
     def yaw_acceleration_rads2(self) -> float:
@@ -645,6 +660,7 @@ def compute_tail_rotor_state(
 # Pacejka Tire Model (ground operations)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PacejkaTireState:
     """Pacejka 'Magic Formula' tire model for ground operations.
@@ -666,12 +682,13 @@ class PacejkaTireState:
 
     Real coefficients from SAE J2452 / Pacejka "Tire and Vehicle Dynamics".
     """
-    slip: float = 0.0               # slip ratio or angle (rad)
+
+    slip: float = 0.0  # slip ratio or angle (rad)
     normal_load_n: float = 20000.0  # F_z (N) — weight on tire
-    mu_peak: float = 0.85           # peak friction coefficient (dry asphalt)
-    b_stiffness: float = 10.0       # cornering stiffness factor
-    c_shape: float = 1.9            # shape factor (lateral)
-    e_curvature: float = -0.1       # curvature factor
+    mu_peak: float = 0.85  # peak friction coefficient (dry asphalt)
+    b_stiffness: float = 10.0  # cornering stiffness factor
+    c_shape: float = 1.9  # shape factor (lateral)
+    e_curvature: float = -0.1  # curvature factor
 
     @property
     def d_peak_force(self) -> float:
@@ -745,6 +762,7 @@ def compute_pacejka_state(
 # Flight Dynamics State (combines 6-DOF + optional rotor)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FlightDynamicsState:
     """Complete flight dynamics state derived from QHO bundle.
@@ -761,21 +779,22 @@ class FlightDynamicsState:
         Acoustic ultra → max power / afterburner
         Visual vector → 6-gauge instrument panel
     """
+
     sixdof: SixDOFState
     rotor: Optional[RotorState] = None
     tail_rotor: Optional[TailRotorState] = None
     pacejka: Optional[PacejkaTireState] = None
     recovery_paths: List[RecoveryPath] = field(default_factory=list)
-    flight_regime: str = "cruise"    # ground / takeoff / cruise / descent / stall / vrs / tail_rotor_failure
-    power_state: str = "cruise"      # idle / cruise / max
-    envelope_margin: float = 1.0     # 1.0 = center of envelope, 0.0 = at limit
+    flight_regime: str = "cruise"  # ground / takeoff / cruise / descent / stall / vrs / tail_rotor_failure
+    power_state: str = "cruise"  # idle / cruise / max
+    envelope_margin: float = 1.0  # 1.0 = center of envelope, 0.0 = at limit
 
     @property
     def total_energy_j(self) -> float:
         """Total mechanical energy = KE + PE.
         KE = ½mV², PE = mgh (using unit mass for normalization).
         """
-        ke = 0.5 * self.sixdof.airspeed ** 2
+        ke = 0.5 * self.sixdof.airspeed**2
         pe = G_ACCEL * max(0, self.sixdof.altitude)
         return ke + pe
 
@@ -823,6 +842,7 @@ class FlightDynamicsState:
 # QHO → Flight Dynamics Mapper
 # ---------------------------------------------------------------------------
 
+
 def qho_to_flight_state(
     trit: TritSignal,
     multipath: MultiPathRecord,
@@ -846,8 +866,8 @@ def qho_to_flight_state(
     # --- Airspeed from excitation ---
     # n=0 → 30 m/s (stall speed), n=7 → 200 m/s (high speed)
     # V = V_stall + (V_max - V_stall) × (n/7)
-    v_stall = 30.0    # m/s (~58 kt)
-    v_max = 200.0      # m/s (~389 kt)
+    v_stall = 30.0  # m/s (~58 kt)
+    v_max = 200.0  # m/s (~389 kt)
     airspeed = v_stall + (v_max - v_stall) * (mean_excitation / 7.0)
 
     # --- Altitude from max excitation ---
@@ -878,18 +898,26 @@ def qho_to_flight_state(
     # Decompose airspeed into body-frame components
     u = airspeed * math.cos(theta_rad) * math.cos(psi_rad)
     v_body = airspeed * math.sin(psi_rad)  # sideslip from yaw
-    w = airspeed * math.sin(theta_rad)     # AoA from pitch
+    w = airspeed * math.sin(theta_rad)  # AoA from pitch
 
     # Angular rates from trit deviation magnitude (more deviation = more dynamic)
-    q_rate = trit.dev_structure * 2.0   # pitch rate ∝ structure deviation
-    p_rate = trit.dev_stability * 2.0   # roll rate ∝ stability deviation
+    q_rate = trit.dev_structure * 2.0  # pitch rate ∝ structure deviation
+    p_rate = trit.dev_stability * 2.0  # roll rate ∝ stability deviation
     r_rate = trit.dev_creativity * 2.0  # yaw rate ∝ creativity deviation
 
     sixdof = SixDOFState(
-        x=0.0, y=0.0, z=altitude,
-        u=u, v=v_body, w=w,
-        phi=phi_rad, theta=theta_rad, psi=psi_rad,
-        p=p_rate, q=q_rate, r=r_rate,
+        x=0.0,
+        y=0.0,
+        z=altitude,
+        u=u,
+        v=v_body,
+        w=w,
+        phi=phi_rad,
+        theta=theta_rad,
+        psi=psi_rad,
+        p=p_rate,
+        q=q_rate,
+        r=r_rate,
     )
 
     # --- Power state from acoustic bands ---
@@ -925,7 +953,7 @@ def qho_to_flight_state(
         collective = 5.0 + mean_excitation * 1.5  # 5° to 15.5°
 
         # Cyclic from trit deviations
-        cyclic_lat = roll_deg * 0.3   # lateral cyclic ∝ roll demand
+        cyclic_lat = roll_deg * 0.3  # lateral cyclic ∝ roll demand
         cyclic_lon = pitch_deg * 0.3  # longitudinal cyclic ∝ pitch demand
 
         rotor = RotorState(
@@ -990,6 +1018,7 @@ def qho_to_flight_state(
 # SFT Record Generation
 # ---------------------------------------------------------------------------
 
+
 def generate_flight_sft_record(
     text: str,
     flight: FlightDynamicsState,
@@ -999,7 +1028,7 @@ def generate_flight_sft_record(
     sixdof = flight.sixdof
     user_content = (
         f"Analyze the flight dynamics profile of this text:\n\n"
-        f"\"{text[:200]}\"\n\n"
+        f'"{text[:200]}"\n\n'
         f"Determine the flight regime, control state, energy level, "
         f"and any recovery paths."
     )
@@ -1025,8 +1054,7 @@ def generate_flight_sft_record(
                 f"{' [MONTY HALL SWITCH]' if p.monty_hall_selected else ''}"
                 for p in flight.recovery_paths
             )
-            + (f"\nBest path: {best.recovery_type} "
-               f"(severity={best.severity:.3f})" if best else "")
+            + (f"\nBest path: {best.recovery_type} " f"(severity={best.severity:.3f})" if best else "")
         )
 
     rotor_text = ""
@@ -1122,20 +1150,26 @@ if __name__ == "__main__":
         )
 
         s = flight.sixdof
-        print(f"  [{flight.flight_regime:>7}] {flight.power_state:>6}  "
-              f"V={s.airspeed:.0f}m/s  alt={s.altitude:.0f}m  "
-              f"AoA={math.degrees(s.angle_of_attack):.1f}deg  "
-              f"stall={s.stall_margin:.2f}  "
-              f"E={flight.specific_energy:.0f}J/kg")
+        print(
+            f"  [{flight.flight_regime:>7}] {flight.power_state:>6}  "
+            f"V={s.airspeed:.0f}m/s  alt={s.altitude:.0f}m  "
+            f"AoA={math.degrees(s.angle_of_attack):.1f}deg  "
+            f"stall={s.stall_margin:.2f}  "
+            f"E={flight.specific_energy:.0f}J/kg"
+        )
         if flight.rotor:
             r = flight.rotor
-            print(f"    rotor: T={r.thrust:.0f}N  v_i={r.induced_velocity:.1f}m/s  "
-                  f"RPM={r.rotor_rpm:.0f}  coll={r.collective_deg:.1f}deg")
+            print(
+                f"    rotor: T={r.thrust:.0f}N  v_i={r.induced_velocity:.1f}m/s  "
+                f"RPM={r.rotor_rpm:.0f}  coll={r.collective_deg:.1f}deg"
+            )
         if flight.recovery_paths:
             best = flight.best_recovery
-            print(f"    recovery: {len(flight.recovery_paths)} paths, "
-                  f"best={best.recovery_type} P={best.success_probability:.2f}"
-                  f"{' [MH]' if best.monty_hall_selected else ''}")
+            print(
+                f"    recovery: {len(flight.recovery_paths)} paths, "
+                f"best={best.recovery_type} P={best.success_probability:.2f}"
+                f"{' [MH]' if best.monty_hall_selected else ''}"
+            )
         print(f"    text: {text[:60]}")
         print()
 

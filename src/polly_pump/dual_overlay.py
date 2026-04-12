@@ -9,7 +9,6 @@ import numpy as np
 
 from src.harmonic.state21_product_metric import STATE21_DIM, hyperbolic_distance_poincare, parse_state21_v1
 
-
 EPSILON = 1e-10
 
 

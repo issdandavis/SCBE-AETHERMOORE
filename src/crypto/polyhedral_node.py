@@ -50,80 +50,96 @@ TAU = 2.0 * math.pi
 
 # Sacred Tongue phi weights
 TONGUE_WEIGHTS: Dict[str, float] = {
-    "ko": PHI ** 0,   # 1.000
-    "av": PHI ** 1,   # 1.618
-    "ru": PHI ** 2,   # 2.618
-    "ca": PHI ** 3,   # 4.236
-    "um": PHI ** 4,   # 6.854
-    "dr": PHI ** 5,   # 11.090
+    "ko": PHI**0,  # 1.000
+    "av": PHI**1,  # 1.618
+    "ru": PHI**2,  # 2.618
+    "ca": PHI**3,  # 4.236
+    "um": PHI**4,  # 6.854
+    "dr": PHI**5,  # 11.090
 }
 
 ALL_TONGUES = tuple(TONGUE_WEIGHTS.keys())
 
 # Tongue audible frequencies (Hz)
 TONGUE_FREQUENCIES: Dict[str, float] = {
-    "ko": 440.00,   # A4
-    "av": 523.25,   # C5
-    "ru": 293.66,   # D4
-    "ca": 659.25,   # E5
-    "um": 196.00,   # G3
-    "dr": 392.00,   # G4
+    "ko": 440.00,  # A4
+    "av": 523.25,  # C5
+    "ru": 293.66,  # D4
+    "ca": 659.25,  # E5
+    "um": 196.00,  # G3
+    "dr": 392.00,  # G4
 }
 
 # Complement pairs
 COMPLEMENT_MAP: Dict[str, str] = {
-    "ko": "dr", "av": "um", "ru": "ca",
-    "ca": "ru", "um": "av", "dr": "ko",
+    "ko": "dr",
+    "av": "um",
+    "ru": "ca",
+    "ca": "ru",
+    "um": "av",
+    "dr": "ko",
 }
 
 # Dead-tone baselines (Hz)
 BASELINE_FREQUENCIES: Dict[str, float] = {
-    "perfect_fifth":  330.0,
-    "minor_sixth":    352.0,
-    "minor_seventh":  392.0,
+    "perfect_fifth": 330.0,
+    "minor_sixth": 352.0,
+    "minor_seventh": 392.0,
 }
 
 DEAD_TONES = tuple(BASELINE_FREQUENCIES.keys())
 
 # Consonance scoring (from cross_chamber.py)
 RATIO_DISSONANCE = {
-    "unison":         (1.0,           0.00),
-    "octave":         (2.0,           0.02),
-    "perfect_fifth":  (3.0 / 2.0,    0.05),
-    "perfect_fourth": (4.0 / 3.0,    0.08),
-    "major_third":    (5.0 / 4.0,    0.12),
-    "minor_third":    (6.0 / 5.0,    0.15),
-    "major_sixth":    (5.0 / 3.0,    0.18),
-    "minor_sixth":    (8.0 / 5.0,    0.22),
-    "major_second":   (9.0 / 8.0,    0.30),
-    "minor_seventh":  (16.0 / 9.0,   0.35),
-    "major_seventh":  (15.0 / 8.0,   0.55),
-    "phi_interval":   (PHI,           0.40),
-    "tritone":        (45.0 / 32.0,  0.75),
-    "minor_second":   (16.0 / 15.0,  0.90),
+    "unison": (1.0, 0.00),
+    "octave": (2.0, 0.02),
+    "perfect_fifth": (3.0 / 2.0, 0.05),
+    "perfect_fourth": (4.0 / 3.0, 0.08),
+    "major_third": (5.0 / 4.0, 0.12),
+    "minor_third": (6.0 / 5.0, 0.15),
+    "major_sixth": (5.0 / 3.0, 0.18),
+    "minor_sixth": (8.0 / 5.0, 0.22),
+    "major_second": (9.0 / 8.0, 0.30),
+    "minor_seventh": (16.0 / 9.0, 0.35),
+    "major_seventh": (15.0 / 8.0, 0.55),
+    "phi_interval": (PHI, 0.40),
+    "tritone": (45.0 / 32.0, 0.75),
+    "minor_second": (16.0 / 15.0, 0.90),
 }
 
 # Governance thresholds
-ALLOW_THRESHOLD      = 0.25
+ALLOW_THRESHOLD = 0.25
 QUARANTINE_THRESHOLD = 0.50
-ESCALATE_THRESHOLD   = 0.75
+ESCALATE_THRESHOLD = 0.75
 
 # Stress patterns per tongue
 TONGUE_STRESS: Dict[str, str] = {
-    "ko": "even", "av": "flowing", "ru": "percussive",
-    "ca": "rising", "um": "falling", "dr": "grounded",
+    "ko": "even",
+    "av": "flowing",
+    "ru": "percussive",
+    "ca": "rising",
+    "um": "falling",
+    "dr": "grounded",
 }
 
 # Base speech rates per tongue
 TONGUE_RATE: Dict[str, float] = {
-    "ko": 0.95, "av": 1.00, "ru": 0.90,
-    "ca": 1.08, "um": 0.82, "dr": 0.80,
+    "ko": 0.95,
+    "av": 1.00,
+    "ru": 0.90,
+    "ca": 1.08,
+    "um": 0.82,
+    "dr": 0.80,
 }
 
 # Chant ratios per tongue
 TONGUE_CHANT: Dict[str, float] = {
-    "ko": 0.10, "av": 0.20, "ru": 0.25,
-    "ca": 0.30, "um": 0.35, "dr": 0.22,
+    "ko": 0.10,
+    "av": 0.20,
+    "ru": 0.25,
+    "ca": 0.30,
+    "um": 0.35,
+    "dr": 0.22,
 }
 
 
@@ -131,28 +147,32 @@ TONGUE_CHANT: Dict[str, float] = {
 # Enums
 # ---------------------------------------------------------------------------
 
+
 class PropagationLabel(Enum):
     """How a record should be used in training."""
-    POSITIVE   = "positive"    # ALLOW — good example, propagates
-    BOUNDARY   = "boundary"    # QUARANTINE — hard example, stored
-    NEGATIVE   = "negative"    # ESCALATE/DENY — inverted label
-    TERMINAL   = "terminal"    # DENY — no outbound edges
+
+    POSITIVE = "positive"  # ALLOW — good example, propagates
+    BOUNDARY = "boundary"  # QUARANTINE — hard example, stored
+    NEGATIVE = "negative"  # ESCALATE/DENY — inverted label
+    TERMINAL = "terminal"  # DENY — no outbound edges
 
 
 class GovernanceVerdict(Enum):
-    ALLOW      = "ALLOW"
+    ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
-    ESCALATE   = "ESCALATE"
-    DENY       = "DENY"
+    ESCALATE = "ESCALATE"
+    DENY = "DENY"
 
 
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class TongueVector:
     """6D phi-weighted tongue activation vector."""
+
     ko: float
     av: float
     ru: float
@@ -162,8 +182,7 @@ class TongueVector:
 
     @property
     def dominant(self) -> str:
-        vals = {"ko": self.ko, "av": self.av, "ru": self.ru,
-                "ca": self.ca, "um": self.um, "dr": self.dr}
+        vals = {"ko": self.ko, "av": self.av, "ru": self.ru, "ca": self.ca, "um": self.um, "dr": self.dr}
         return max(vals, key=vals.get)
 
     @property
@@ -178,43 +197,44 @@ class TongueVector:
     def phi_weighted_norm(self) -> float:
         """Norm weighted by phi tongue weights."""
         weights = list(TONGUE_WEIGHTS.values())
-        return math.sqrt(sum(
-            (v * w) ** 2 for v, w in zip(self.as_tuple, weights)
-        ))
+        return math.sqrt(sum((v * w) ** 2 for v, w in zip(self.as_tuple, weights)))
 
 
 @dataclass(frozen=True)
 class ProsodyFeatures:
     """Prosodic features derived from tongue + excitation."""
-    rate: float             # speech rate multiplier [0.5, 2.0]
-    energy: float           # [0.0, 1.0]
-    chant_ratio: float      # [0.0, 1.0]
-    stress_pattern: str     # even/flowing/percussive/rising/falling/grounded
+
+    rate: float  # speech rate multiplier [0.5, 2.0]
+    energy: float  # [0.0, 1.0]
+    chant_ratio: float  # [0.0, 1.0]
+    stress_pattern: str  # even/flowing/percussive/rising/falling/grounded
     agent_frequency_hz: float  # tongue base freq modulated by prosody
 
 
 @dataclass(frozen=True)
 class DarkFillFeatures:
     """3-band harmonic dark fill summary for the complement tongue."""
-    infra_freq: float       # Hz (0.01-20)
+
+    infra_freq: float  # Hz (0.01-20)
     infra_amplitude: float
-    audible_freq: float     # Hz (20-20000)
+    audible_freq: float  # Hz (20-20000)
     audible_amplitude: float
-    ultra_freq: float       # Hz (20000-1000000)
+    ultra_freq: float  # Hz (20000-1000000)
     ultra_amplitude: float
-    darkness: float         # [0.0, 1.0] — how inactive the complement is
+    darkness: float  # [0.0, 1.0] — how inactive the complement is
 
 
 @dataclass(frozen=True)
 class ConsonanceFeatures:
     """Cross-chamber consonance analysis."""
+
     baseline_hz: float
     agent_hz: float
-    frequency_ratio: float      # normalized [1.0, 2.0)
+    frequency_ratio: float  # normalized [1.0, 2.0)
     nearest_interval: str
     interval_deviation: float
-    dissonance_score: float     # [0.0, 1.0]
-    beat_frequency: float       # Hz
+    dissonance_score: float  # [0.0, 1.0]
+    beat_frequency: float  # Hz
 
 
 @dataclass(frozen=True)
@@ -224,14 +244,15 @@ class PolyhedralRecord:
     Contains all 14 layer features from a single input.
     This is the fundamental unit of the nodal growth network.
     """
+
     # Identity
-    node_hash: str              # SHA-256 of input + tongue + dead_tone
-    generation: int             # how many hops from the seed node
+    node_hash: str  # SHA-256 of input + tongue + dead_tone
+    generation: int  # how many hops from the seed node
     parent_hash: Optional[str]  # hash of the node that spawned this one
-    timestamp: float            # unix timestamp
+    timestamp: float  # unix timestamp
 
     # Input
-    raw_input: str              # the original text/bytes
+    raw_input: str  # the original text/bytes
     dominant_tongue: str
     dead_tone: str
     excitation: float
@@ -247,13 +268,14 @@ class PolyhedralRecord:
     propagation_label: PropagationLabel
 
     # Edge metadata for graph
-    tongue_affinity: Dict[str, float]   # similarity to each tongue cluster
+    tongue_affinity: Dict[str, float]  # similarity to each tongue cluster
     complement_tongue: str
 
 
 # ---------------------------------------------------------------------------
 # Feature computation functions
 # ---------------------------------------------------------------------------
+
 
 def compute_tongue_vector(raw_input: str, dominant_tongue: str) -> TongueVector:
     """Compute 6D tongue activation from input bytes.
@@ -298,8 +320,11 @@ def compute_prosody(dominant_tongue: str, excitation: float) -> ProsodyFeatures:
     agent_hz = max(20.0, min(20000.0, agent_hz))
 
     return ProsodyFeatures(
-        rate=rate, energy=energy, chant_ratio=chant_ratio,
-        stress_pattern=stress, agent_frequency_hz=agent_hz,
+        rate=rate,
+        energy=energy,
+        chant_ratio=chant_ratio,
+        stress_pattern=stress,
+        agent_frequency_hz=agent_hz,
     )
 
 
@@ -443,6 +468,7 @@ def compute_node_hash(raw_input: str, dominant_tongue: str, dead_tone: str) -> s
 # Public API — generate a polyhedral training record
 # ---------------------------------------------------------------------------
 
+
 def generate_record(
     raw_input: str,
     dominant_tongue: str = "ko",
@@ -511,9 +537,7 @@ def generate_multi_tongue_records(
     This is the 6x multiplier — one text, six polyhedral records.
     """
     return [
-        generate_record(raw_input, tongue, dead_tone, excitation,
-                        generation, parent_hash)
-        for tongue in ALL_TONGUES
+        generate_record(raw_input, tongue, dead_tone, excitation, generation, parent_hash) for tongue in ALL_TONGUES
     ]
 
 
@@ -531,8 +555,14 @@ def generate_full_sweep(
     records = []
     for tongue in ALL_TONGUES:
         for tone in DEAD_TONES:
-            records.append(generate_record(
-                raw_input, tongue, tone, excitation,
-                generation, parent_hash,
-            ))
+            records.append(
+                generate_record(
+                    raw_input,
+                    tongue,
+                    tone,
+                    excitation,
+                    generation,
+                    parent_hash,
+                )
+            )
     return records

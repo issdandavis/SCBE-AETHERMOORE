@@ -27,18 +27,13 @@ def test_ingestion_rights_schema_accepts_minimal_record() -> None:
             "public_training",
             "metadata_extraction",
             "compliance_analysis",
-            "citation_only"
+            "citation_only",
         ],
-        "prohibited_uses": [
-            "autonomous_submission",
-            "legal_advice"
-        ],
-        "handling_rules": [
-            "Preserve citations and provenance for any downstream synthesis."
-        ],
+        "prohibited_uses": ["autonomous_submission", "legal_advice"],
+        "handling_rules": ["Preserve citations and provenance for any downstream synthesis."],
         "reviewed_by": "issdandavis",
         "reviewed_at": "2026-04-09T00:00:00+00:00",
-        "reviewer_notes": "Public API result."
+        "reviewer_notes": "Public API result.",
     }
 
     validator.validate(record)

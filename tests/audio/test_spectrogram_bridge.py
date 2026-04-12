@@ -54,10 +54,10 @@ from src.audio.spectrogram_bridge import (
     GalleryProjection,
 )
 
-
 # ===========================================================================
 # Synthetic Signal Generator
 # ===========================================================================
+
 
 class TestGenerateTestSignal:
     """Verify synthetic signal generation."""
@@ -91,6 +91,7 @@ class TestGenerateTestSignal:
     def test_zero_duration_edge(self):
         """Zero duration produces empty signal; normalization raises on empty array."""
         import pytest
+
         with pytest.raises(ValueError):
             generate_test_signal(duration_sec=0.0)
 
@@ -98,6 +99,7 @@ class TestGenerateTestSignal:
 # ===========================================================================
 # STFT Computation
 # ===========================================================================
+
 
 class TestComputeSTFT:
     """STFT produces correct shapes and non-negative magnitudes."""
@@ -142,6 +144,7 @@ class TestComputeSTFT:
 # Bin to Hz Conversion
 # ===========================================================================
 
+
 class TestBinToHz:
     """FFT bin index → frequency conversion."""
 
@@ -166,6 +169,7 @@ class TestBinToHz:
 # ===========================================================================
 # Tongue Band Energy
 # ===========================================================================
+
 
 class TestTongueBandEnergy:
     """Frequency bands correctly attribute energy to tongues."""
@@ -236,6 +240,7 @@ class TestTongueBandEnergy:
 # Spectral Centroid and HF Ratio
 # ===========================================================================
 
+
 class TestSpectralCentroid:
     """Weighted mean frequency computation."""
 
@@ -283,6 +288,7 @@ class TestHFRatio:
 # ===========================================================================
 # Gallery Projection Functions
 # ===========================================================================
+
 
 class TestFreqToHue:
     """Frequency → hue angle (log scale)."""
@@ -356,6 +362,7 @@ class TestCentroidToLightness:
 # Gallery Projection from Frames
 # ===========================================================================
 
+
 class TestProjectFrameToGallery:
     """Frame → GalleryProjection mapping."""
 
@@ -406,6 +413,7 @@ class TestProjectFrameToGallery:
 # Tongue Material Mapping
 # ===========================================================================
 
+
 class TestTongueMaterialMapping:
     """All 6 tongues have a material assignment."""
 
@@ -422,6 +430,7 @@ class TestTongueMaterialMapping:
 # ===========================================================================
 # Dead Tone Detection
 # ===========================================================================
+
 
 class TestDeadToneDetection:
     """Dead tone frequency ratio detection in spectra."""
@@ -469,6 +478,7 @@ class TestDeadToneDetection:
 # ===========================================================================
 # Cross-Modal Alignment
 # ===========================================================================
+
 
 class TestAudioTextAlignment:
     """Audio ↔ text color field cosine similarity."""
@@ -528,21 +538,32 @@ class TestAudioTextAlignment:
 # SpectrogramAnalysis Properties
 # ===========================================================================
 
+
 class TestSpectrogramAnalysisProperties:
     """Analysis dataclass properties and serialization."""
 
     def test_frame_rate(self):
         a = SpectrogramAnalysis(
-            filename="test.wav", sample_rate=44100, duration_sec=1.0,
-            n_frames=86, fft_size=2048, hop_size=512, frames=[],
+            filename="test.wav",
+            sample_rate=44100,
+            duration_sec=1.0,
+            n_frames=86,
+            fft_size=2048,
+            hop_size=512,
+            frames=[],
         )
         expected = 44100 / 512
         assert abs(a.frame_rate - expected) < 0.1
 
     def test_to_dict_keys(self):
         a = SpectrogramAnalysis(
-            filename="test.wav", sample_rate=44100, duration_sec=1.0,
-            n_frames=86, fft_size=2048, hop_size=512, frames=[],
+            filename="test.wav",
+            sample_rate=44100,
+            duration_sec=1.0,
+            n_frames=86,
+            fft_size=2048,
+            hop_size=512,
+            frames=[],
             tongue_profile={"ko": 0.2, "av": 0.2, "ru": 0.15, "ca": 0.15, "um": 0.15, "dr": 0.15},
             dominant_tongue="ko",
             mean_centroid=1200.0,
@@ -559,6 +580,7 @@ class TestSpectrogramAnalysisProperties:
 # ===========================================================================
 # Integration: Synthetic Signal → Full Pipeline
 # ===========================================================================
+
 
 class TestFullPipelineSynthetic:
     """End-to-end: generate signal → STFT → tongue analysis → gallery projection."""
@@ -640,6 +662,7 @@ class TestFullPipelineSynthetic:
 # Constants Consistency
 # ===========================================================================
 
+
 class TestConstants:
     """Verify constants are consistent and complete."""
 
@@ -650,8 +673,9 @@ class TestConstants:
         """Frequency bands should be contiguous (no gaps)."""
         sorted_bands = sorted(TONGUE_FREQ_BANDS.values(), key=lambda x: x[0])
         for i in range(len(sorted_bands) - 1):
-            assert sorted_bands[i][1] == sorted_bands[i + 1][0], \
-                f"Gap between {sorted_bands[i]} and {sorted_bands[i+1]}"
+            assert (
+                sorted_bands[i][1] == sorted_bands[i + 1][0]
+            ), f"Gap between {sorted_bands[i]} and {sorted_bands[i+1]}"
 
     def test_bands_cover_audible_range(self):
         sorted_bands = sorted(TONGUE_FREQ_BANDS.values(), key=lambda x: x[0])
@@ -661,7 +685,7 @@ class TestConstants:
     def test_dead_tone_ratios_correct(self):
         assert abs(DEAD_TONE_RATIOS["perfect_fifth"] - 1.5) < 0.001
         assert abs(DEAD_TONE_RATIOS["minor_sixth"] - 1.6) < 0.001
-        assert abs(DEAD_TONE_RATIOS["minor_seventh"] - 16.0/9.0) < 0.001
+        assert abs(DEAD_TONE_RATIOS["minor_seventh"] - 16.0 / 9.0) < 0.001
 
     def test_tongue_material_all_six(self):
         assert set(_TONGUE_MATERIAL.keys()) == set(TONGUE_ORDER)

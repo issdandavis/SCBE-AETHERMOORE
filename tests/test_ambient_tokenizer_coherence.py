@@ -17,6 +17,7 @@ Research grounding:
   - Neighborhood preservation across modalities (coherence)
   - Drift = movement in all three spaces simultaneously
 """
+
 from dataclasses import dataclass
 import math
 import pytest
@@ -59,15 +60,11 @@ def sound_dist(a_hz, b_hz):
 
 def coherence_order(reference, near_token, far_token):
     """Returns True if near_token is closer than far_token in all projections."""
-    emb_ok = l2(reference.embedding, near_token.embedding) < l2(
-        reference.embedding, far_token.embedding
-    )
+    emb_ok = l2(reference.embedding, near_token.embedding) < l2(reference.embedding, far_token.embedding)
     col_ok = color_dist(reference.color_rgb, near_token.color_rgb) < color_dist(
         reference.color_rgb, far_token.color_rgb
     )
-    snd_ok = sound_dist(reference.sound_hz, near_token.sound_hz) < sound_dist(
-        reference.sound_hz, far_token.sound_hz
-    )
+    snd_ok = sound_dist(reference.sound_hz, near_token.sound_hz) < sound_dist(reference.sound_hz, far_token.sound_hz)
     return emb_ok and col_ok and snd_ok
 
 
@@ -272,12 +269,8 @@ class TestVersionDriftDetection:
         large = AmbientToken("x", 1, (0.9, 0.9), (240, 240, 240), 880.0, 0.5, 0.0)
 
         assert l2(base.embedding, small.embedding) < l2(base.embedding, large.embedding)
-        assert color_dist(base.color_rgb, small.color_rgb) < color_dist(
-            base.color_rgb, large.color_rgb
-        )
-        assert sound_dist(base.sound_hz, small.sound_hz) < sound_dist(
-            base.sound_hz, large.sound_hz
-        )
+        assert color_dist(base.color_rgb, small.color_rgb) < color_dist(base.color_rgb, large.color_rgb)
+        assert sound_dist(base.sound_hz, small.sound_hz) < sound_dist(base.sound_hz, large.sound_hz)
 
 
 class TestPerpendicularEchoResponse:

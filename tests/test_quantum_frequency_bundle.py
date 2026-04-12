@@ -10,23 +10,36 @@ import pytest
 
 from src.crypto.quantum_frequency_bundle import (
     # Physical constants
-    HBAR, H_PLANCK, C_LIGHT,
+    HBAR,
+    H_PLANCK,
+    C_LIGHT,
     # Tongue mappings
-    TONGUE_WAVELENGTH_NM, TONGUE_CENTRAL_WAVELENGTH,
-    TONGUE_OPTICAL_FREQ, TONGUE_ORDER,
+    TONGUE_WAVELENGTH_NM,
+    TONGUE_CENTRAL_WAVELENGTH,
+    TONGUE_OPTICAL_FREQ,
+    TONGUE_ORDER,
     # QHO structures
-    QHOState, PolychromaticState,
+    QHOState,
+    PolychromaticState,
     AcousticSignature,
     QuantumFrequencyBundle,
     # VRS + Code Lattice
-    VRSState, CodeAntiPattern, CodeLatticeState,
+    VRSState,
+    CodeAntiPattern,
+    CodeLatticeState,
     CODE_ANTI_PATTERNS,
-    compute_vrs_state, compute_code_lattice,
+    compute_vrs_state,
+    compute_code_lattice,
     # Dead tone fills + Echolocation + Realm triangulation
-    DEAD_TONES, DEAD_TONE_GENERATORS,
-    DeadToneFill, compute_dead_tone_fills,
-    EcholocationPing, send_echolocation_pings,
-    RealmSignaturePing, RealmTriangulation, compute_realm_triangulation,
+    DEAD_TONES,
+    DEAD_TONE_GENERATORS,
+    DeadToneFill,
+    compute_dead_tone_fills,
+    EcholocationPing,
+    send_echolocation_pings,
+    RealmSignaturePing,
+    RealmTriangulation,
+    compute_realm_triangulation,
     # Functions
     compute_qho_state,
     compute_acoustic_signature,
@@ -39,14 +52,18 @@ from src.crypto.tri_bundle import PHI, TONGUE_WEIGHTS, TONGUE_FREQUENCIES
 from src.crypto.harmonic_dark_fill import TONGUE_AUDIBLE_FREQ, INTERVALS
 from src.crypto.crossing_energy import DualTernaryPair, harmonic_cost
 from src.crypto.flight_dynamics import (
-    RotorState, RecoveryPath, RecoveryType,
-    TailRotorState, PacejkaTireState, SACRED_TONGUE_HYBRIDS,
+    RotorState,
+    RecoveryPath,
+    RecoveryType,
+    TailRotorState,
+    PacejkaTireState,
+    SACRED_TONGUE_HYBRIDS,
 )
-
 
 # ===================================================================
 # Physical Constants Sanity
 # ===================================================================
+
 
 class TestPhysicalConstants:
     def test_hbar_correct(self):
@@ -66,6 +83,7 @@ class TestPhysicalConstants:
 # ===================================================================
 # Tongue Spectral Mapping
 # ===================================================================
+
 
 class TestTongueSpectralMapping:
     def test_six_tongues_mapped(self):
@@ -107,6 +125,7 @@ class TestTongueSpectralMapping:
 # ===================================================================
 # QHO State
 # ===================================================================
+
 
 class TestQHOState:
     def test_ground_state_energy(self):
@@ -159,9 +178,7 @@ class TestQHOState:
             lo, hi = TONGUE_WAVELENGTH_NM[tongue]
             for n in range(8):
                 state = QHOState(tongue=tongue, n=n, omega=omega, coefficient=0.5)
-                assert lo <= state.wavelength_nm <= hi, (
-                    f"{tongue} n={n}: {state.wavelength_nm} not in [{lo}, {hi}]"
-                )
+                assert lo <= state.wavelength_nm <= hi, f"{tongue} n={n}: {state.wavelength_nm} not in [{lo}, {hi}]"
 
     def test_higher_n_blueshifts(self):
         """Higher excitation → shorter wavelength."""
@@ -174,6 +191,7 @@ class TestQHOState:
 # ===================================================================
 # Polychromatic State
 # ===================================================================
+
 
 class TestPolychromaticState:
     def test_visual_vector_normalized(self):
@@ -221,6 +239,7 @@ class TestPolychromaticState:
 # Acoustic Signature
 # ===================================================================
 
+
 class TestAcousticSignature:
     def test_three_bands_sum_to_one(self):
         bundle = generate_quantum_bundle("Acoustic band normalization")
@@ -237,9 +256,15 @@ class TestAcousticSignature:
 
     def test_dominant_interval_is_named(self):
         bundle = generate_quantum_bundle("Musical interval check")
-        known_intervals = {"unison", "minor_third", "major_third",
-                           "perfect_fourth", "perfect_fifth",
-                           "phi_interval", "octave"}
+        known_intervals = {
+            "unison",
+            "minor_third",
+            "major_third",
+            "perfect_fourth",
+            "perfect_fifth",
+            "phi_interval",
+            "octave",
+        }
         assert bundle.acoustic.dominant_interval in known_intervals
 
     def test_interval_deviation_non_negative(self):
@@ -259,6 +284,7 @@ class TestAcousticSignature:
 # ===================================================================
 # Governance Integration
 # ===================================================================
+
 
 class TestGovernance:
     def test_crossing_pair_valid(self):
@@ -289,6 +315,7 @@ class TestGovernance:
 # Full Bundle
 # ===================================================================
 
+
 class TestQuantumFrequencyBundle:
     def test_bundle_from_text(self):
         bundle = generate_quantum_bundle("A complete bundle test")
@@ -307,9 +334,7 @@ class TestQuantumFrequencyBundle:
         assert isinstance(bundle.is_ground_state, bool)
 
     def test_is_maximally_excited_property(self):
-        bundle = generate_quantum_bundle(
-            "Riemann zeta hypothesis polyhedral confinement sacred tongue"
-        )
+        bundle = generate_quantum_bundle("Riemann zeta hypothesis polyhedral confinement sacred tongue")
         assert isinstance(bundle.is_maximally_excited, bool)
 
     def test_to_dict_complete(self):
@@ -346,6 +371,7 @@ class TestQuantumFrequencyBundle:
 # ===================================================================
 # Batch & Summary
 # ===================================================================
+
 
 class TestBatch:
     def test_batch_generation(self):
@@ -384,6 +410,7 @@ class TestBatch:
 # ===================================================================
 # SFT Records
 # ===================================================================
+
 
 class TestSFTRecords:
     def test_sft_record_structure(self):
@@ -438,6 +465,7 @@ class TestSFTRecords:
 # Physics Integration: E = hv checks
 # ===================================================================
 
+
 class TestPhysicsIntegration:
     def test_e_equals_hv(self):
         """Verify E = h*nu for each tongue's ground state."""
@@ -454,7 +482,7 @@ class TestPhysicsIntegration:
         omega = 2 * math.pi * 440.0
         for n in range(7):
             s_n = QHOState(tongue="ko", n=n, omega=omega, coefficient=0.5)
-            s_n1 = QHOState(tongue="ko", n=n+1, omega=omega, coefficient=0.5)
+            s_n1 = QHOState(tongue="ko", n=n + 1, omega=omega, coefficient=0.5)
             spacing = s_n1.energy - s_n.energy
             expected = HBAR * omega
             assert abs(spacing - expected) < 1e-37
@@ -493,16 +521,27 @@ class TestPhysicsIntegration:
 # Expanded Musical Intervals
 # ===================================================================
 
+
 class TestExpandedIntervals:
     """Verify full chromatic interval set in harmonic_dark_fill."""
 
     def test_all_fourteen_intervals_present(self):
         """Full chromatic set: 14 named intervals."""
         expected = {
-            "unison", "minor_second", "major_second", "minor_third",
-            "major_third", "perfect_fourth", "tritone", "perfect_fifth",
-            "minor_sixth", "phi_interval", "major_sixth", "minor_seventh",
-            "major_seventh", "octave",
+            "unison",
+            "minor_second",
+            "major_second",
+            "minor_third",
+            "major_third",
+            "perfect_fourth",
+            "tritone",
+            "perfect_fifth",
+            "minor_sixth",
+            "phi_interval",
+            "major_sixth",
+            "minor_seventh",
+            "major_seventh",
+            "octave",
         }
         assert set(INTERVALS.keys()) == expected
 
@@ -566,13 +605,14 @@ class TestExpandedIntervals:
 # VRS State Tests
 # ===================================================================
 
+
 class TestVRSState:
     """Test VRS (Vortex Ring State) integration in quantum bundles."""
 
     def test_bundle_has_vrs(self):
         """Every bundle must have a VRSState."""
         bundle = generate_quantum_bundle("Test text for VRS analysis")
-        assert hasattr(bundle, 'vrs')
+        assert hasattr(bundle, "vrs")
         assert isinstance(bundle.vrs, VRSState)
 
     def test_vrs_has_rotor(self):
@@ -622,9 +662,13 @@ class TestVRSState:
         # Create a VRS state directly with safe ratio
         rotor = RotorState(rotor_rpm=258.0)
         vrs = VRSState(
-            in_vrs=False, vrs_margin=1.0, descent_rate_ms=0.0,
+            in_vrs=False,
+            vrs_margin=1.0,
+            descent_rate_ms=0.0,
             induced_velocity_ms=rotor.induced_velocity,
-            rotor=rotor, recovery_paths=[], flight_regime="hover",
+            rotor=rotor,
+            recovery_paths=[],
+            flight_regime="hover",
         )
         assert vrs.power_spike_factor == 1.0
 
@@ -666,9 +710,15 @@ class TestVRSState:
         bundle = generate_quantum_bundle("VRS serialization test")
         d = bundle.vrs.to_dict()
         expected_keys = {
-            "in_vrs", "vrs_margin", "vrs_ratio", "descent_rate_ms",
-            "induced_velocity_ms", "power_spike_factor", "flight_regime",
-            "rotor", "recovery_paths",
+            "in_vrs",
+            "vrs_margin",
+            "vrs_ratio",
+            "descent_rate_ms",
+            "induced_velocity_ms",
+            "power_spike_factor",
+            "flight_regime",
+            "rotor",
+            "recovery_paths",
         }
         assert expected_keys <= set(d.keys())
 
@@ -685,13 +735,14 @@ class TestVRSState:
 # Code Lattice Tests
 # ===================================================================
 
+
 class TestCodeLattice:
     """Test Code Lattice layer (anti-patterns / 'swear words')."""
 
     def test_bundle_has_code_lattice(self):
         """Every bundle must have a CodeLatticeState."""
         bundle = generate_quantum_bundle("Code lattice test text")
-        assert hasattr(bundle, 'code_lattice')
+        assert hasattr(bundle, "code_lattice")
         assert isinstance(bundle.code_lattice, CodeLatticeState)
 
     def test_curriculum_difficulty_bounded(self):
@@ -745,9 +796,7 @@ class TestCodeLattice:
         for text in texts:
             bundle = generate_quantum_bundle(text)
             for ap in bundle.code_lattice.anti_patterns:
-                assert 0 <= ap.severity <= 1.0, (
-                    f"{ap.name} severity {ap.severity} out of [0,1]"
-                )
+                assert 0 <= ap.severity <= 1.0, f"{ap.name} severity {ap.severity} out of [0,1]"
 
     def test_cross_domain_mapping_nonempty(self):
         """Every bundle has a cross-domain mapping string."""
@@ -787,9 +836,13 @@ class TestCodeLattice:
         bundle = generate_quantum_bundle("Code lattice serialization test")
         d = bundle.code_lattice.to_dict()
         expected_keys = {
-            "anti_patterns", "compounding_intent_score",
-            "curriculum_difficulty", "curriculum_level",
-            "cross_domain_mapping", "total_severity", "swear_word_count",
+            "anti_patterns",
+            "compounding_intent_score",
+            "curriculum_difficulty",
+            "curriculum_level",
+            "cross_domain_mapping",
+            "total_severity",
+            "swear_word_count",
         }
         assert expected_keys <= set(d.keys())
 
@@ -810,9 +863,13 @@ class TestCodeLattice:
         # Create a scenario with VRS active
         rotor = RotorState(rotor_rpm=258.0)
         vrs = VRSState(
-            in_vrs=True, vrs_margin=-0.5, descent_rate_ms=15.0,
+            in_vrs=True,
+            vrs_margin=-0.5,
+            descent_rate_ms=15.0,
             induced_velocity_ms=rotor.induced_velocity,
-            rotor=rotor, recovery_paths=[], flight_regime="vrs",
+            rotor=rotor,
+            recovery_paths=[],
+            flight_regime="vrs",
         )
         # Need a QHO state with high excitation
         text = "Extreme boundary collapse with maximum excitation energy"
@@ -829,6 +886,7 @@ class TestCodeLattice:
 # ===================================================================
 # Full Bundle Integration (VRS + Code Lattice + Expanded Intervals)
 # ===================================================================
+
 
 class TestFullBundleIntegration:
     """Integration tests for the complete bundle with all layers."""
@@ -848,18 +906,26 @@ class TestFullBundleIntegration:
         bundle = generate_quantum_bundle("Serialization completeness test")
         d = bundle.to_dict()
         required_keys = {
-            "trit_signal", "multipath", "qho", "acoustic",
-            "vrs", "code_lattice", "governance",
-            "is_ground_state", "is_maximally_excited",
+            "trit_signal",
+            "multipath",
+            "qho",
+            "acoustic",
+            "vrs",
+            "code_lattice",
+            "governance",
+            "is_ground_state",
+            "is_maximally_excited",
         }
         assert required_keys <= set(d.keys()), f"Missing: {required_keys - set(d.keys())}"
 
     def test_sft_records_include_vrs_and_code_lattice(self):
         """SFT records must contain VRS + Code Lattice data."""
-        bundles = generate_quantum_bundle_batch([
-            "SFT record integration test one",
-            "SFT record integration test two",
-        ])
+        bundles = generate_quantum_bundle_batch(
+            [
+                "SFT record integration test one",
+                "SFT record integration test two",
+            ]
+        )
         records = generate_quantum_sft_records(bundles)
         assert len(records) == 2
         for rec in records:
@@ -916,9 +982,7 @@ class TestFullBundleIntegration:
         bundles = generate_quantum_bundle_batch(texts)
         difficulties = [b.code_lattice.curriculum_difficulty for b in bundles]
         # Should have at least 2 distinct difficulty values
-        assert len(set(round(d, 4) for d in difficulties)) >= 2, (
-            f"All difficulties identical: {difficulties}"
-        )
+        assert len(set(round(d, 4) for d in difficulties)) >= 2, f"All difficulties identical: {difficulties}"
 
     def test_bundle_has_tail_rotor(self):
         """Every bundle now includes tail_rotor state."""
@@ -952,9 +1016,7 @@ class TestFullBundleIntegration:
 
     def test_sacred_tongue_hybrids_in_recovery_paths(self):
         """Recovery paths in bundles carry Sacred Tongue hybrid phrases."""
-        bundle = generate_quantum_bundle(
-            "Extreme boundary conditions with polymorphic chaos analysis"
-        )
+        bundle = generate_quantum_bundle("Extreme boundary conditions with polymorphic chaos analysis")
         if bundle.vrs.recovery_paths:
             for rp in bundle.vrs.recovery_paths:
                 assert rp.sacred_tongue_hybrid is not None
@@ -964,6 +1026,7 @@ class TestFullBundleIntegration:
 # ===================================================================
 # Dead Tone Fills (multi-tongue interference)
 # ===================================================================
+
 
 class TestDeadToneFills:
     """Tests for the dead tone fill layer — phi-unreachable intervals
@@ -1028,9 +1091,7 @@ class TestDeadToneFills:
     def test_higher_excitation_more_intensity(self):
         """More excited QHO states should produce higher fill intensity."""
         low = generate_quantum_bundle("a")
-        high = generate_quantum_bundle(
-            "Extreme overloaded polymorphic recursive chaos engine spinning wildly"
-        )
+        high = generate_quantum_bundle("Extreme overloaded polymorphic recursive chaos engine spinning wildly")
         low_avg = sum(f.intensity for f in low.dead_tone_fills) / 3
         high_avg = sum(f.intensity for f in high.dead_tone_fills) / 3
         # Higher excitation → higher or equal intensity
@@ -1070,6 +1131,7 @@ class TestDeadToneFills:
 # ===================================================================
 # Echolocation Pings (active dead-tone probing)
 # ===================================================================
+
 
 class TestEcholocationPings:
     """Tests for the echolocation ping layer — active sonar probing
@@ -1168,6 +1230,7 @@ class TestEcholocationPings:
 # Realm Signature Triangulation (45° truncated waveforms)
 # ===================================================================
 
+
 class TestRealmTriangulation:
     """Tests for the realm triangulation layer — 45° angular distorted
     truncated waveforms for discrete linear path-finding through the
@@ -1217,9 +1280,7 @@ class TestRealmTriangulation:
 
     def test_snr_scales_with_excitation(self):
         """Higher excitation → higher SNR (2 dB per quantum)."""
-        bundle = generate_quantum_bundle(
-            "Extreme polymorphic recursive boundary overflow test"
-        )
+        bundle = generate_quantum_bundle("Extreme polymorphic recursive boundary overflow test")
         for p in bundle.realm_triangulation.pings:
             n = bundle.qho.states[p.realm_tongue].n
             expected_snr = 6.0 + n * 2.0
@@ -1320,9 +1381,13 @@ class TestRealmTriangulation:
 
     def test_summary_includes_new_layers(self):
         """quantum_bundle_summary includes stats for all 3 new layers."""
-        bundles = generate_quantum_bundle_batch([
-            "Summary test one", "Summary test two", "Summary test three",
-        ])
+        bundles = generate_quantum_bundle_batch(
+            [
+                "Summary test one",
+                "Summary test two",
+                "Summary test three",
+            ]
+        )
         s = quantum_bundle_summary(bundles)
         assert "dead_tone_fills" in s
         assert "echolocation" in s

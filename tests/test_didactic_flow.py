@@ -32,10 +32,10 @@ from src.crypto.didactic_flow import (
     CHANNEL_NAMES,
 )
 
-
 # ===================================================================
 # Trit quantization tests
 # ===================================================================
+
 
 class TestTritQuantization:
     """Test that phase angles quantize to trits correctly."""
@@ -77,6 +77,7 @@ class TestTritQuantization:
 # ===================================================================
 # Breathing radius tests
 # ===================================================================
+
 
 class TestBreathingRadius:
     """Test hyperbolic breathing transform."""
@@ -121,6 +122,7 @@ class TestBreathingRadius:
 # ===================================================================
 # Teacher phase tests
 # ===================================================================
+
 
 class TestTeacherPhase:
     """Test teacher phase computation across modes."""
@@ -172,6 +174,7 @@ class TestTeacherPhase:
 # Learner phase tests
 # ===================================================================
 
+
 class TestLearnerPhase:
     """Test learner phase computation."""
 
@@ -199,9 +202,9 @@ class TestLearnerPhase:
             l_late = compute_learner_phase(0.9, t_late, FlowMode.CONSTANT)
             gaps_late.append(abs(t_late.theta[i] - l_late.theta[i]))
 
-        assert sum(gaps_late) < sum(gaps_early), (
-            f"Late gaps {sum(gaps_late):.3f} should be < early {sum(gaps_early):.3f}"
-        )
+        assert sum(gaps_late) < sum(
+            gaps_early
+        ), f"Late gaps {sum(gaps_late):.3f} should be < early {sum(gaps_early):.3f}"
 
     def test_phase_locked_converges_fastest(self):
         """Phase-locked mode should have smallest gap at t=0.8."""
@@ -224,6 +227,7 @@ class TestLearnerPhase:
 # ===================================================================
 # Flow point tests
 # ===================================================================
+
 
 class TestFlowPoint:
     """Test combined flow point computation."""
@@ -255,6 +259,7 @@ class TestFlowPoint:
 # ===================================================================
 # Full flow simulation tests
 # ===================================================================
+
 
 class TestFullFlow:
     """Test complete didactic flow simulation."""
@@ -293,6 +298,7 @@ class TestFullFlow:
 # ===================================================================
 # Mode comparison tests (the core finding)
 # ===================================================================
+
 
 class TestModeOrdering:
     """Test that modes produce the expected pedagogical ordering."""
@@ -340,8 +346,7 @@ class TestModeOrdering:
 
     def test_trit_trajectories_differ(self):
         """Teacher trit trajectories should differ across modes."""
-        trajs = {name: tuple(tuple(t) for t in f.trit_trajectory_teacher)
-                 for name, f in self.flows.items()}
+        trajs = {name: tuple(tuple(t) for t in f.trit_trajectory_teacher) for name, f in self.flows.items()}
         unique = set(trajs.values())
         assert len(unique) >= 3, "Too few unique teacher trajectories"
 
@@ -349,6 +354,7 @@ class TestModeOrdering:
 # ===================================================================
 # Mislabel-as-signal tests
 # ===================================================================
+
 
 class TestMislabelSignal:
     """Mislabeling shows what right labeling missed.
@@ -364,23 +370,19 @@ class TestMislabelSignal:
         # First quarter vs last quarter
         n = len(flow.points)
         early = flow.points[: n // 4]
-        late = flow.points[3 * n // 4:]
+        late = flow.points[3 * n // 4 :]
 
-        early_disagree = sum(
-            1 for p in early
-            for i in range(3)
-            if p.teacher.trit[i] != p.learner.trit[i]
-        ) / (len(early) * 3)
-
-        late_disagree = sum(
-            1 for p in late
-            for i in range(3)
-            if p.teacher.trit[i] != p.learner.trit[i]
-        ) / (len(late) * 3)
-
-        assert late_disagree < early_disagree, (
-            f"Late disagreement {late_disagree:.3f} should < early {early_disagree:.3f}"
+        early_disagree = sum(1 for p in early for i in range(3) if p.teacher.trit[i] != p.learner.trit[i]) / (
+            len(early) * 3
         )
+
+        late_disagree = sum(1 for p in late for i in range(3) if p.teacher.trit[i] != p.learner.trit[i]) / (
+            len(late) * 3
+        )
+
+        assert (
+            late_disagree < early_disagree
+        ), f"Late disagreement {late_disagree:.3f} should < early {early_disagree:.3f}"
 
     def test_breathing_has_highest_disagreement(self):
         """Breathing (Socratic) mode should have highest trit disagreement.
@@ -396,17 +398,13 @@ class TestMislabelSignal:
         flows = run_all_modes()
         disagrees = {}
         for name, flow in flows.items():
-            total = sum(
-                1 for p in flow.points
-                for i in range(3)
-                if p.teacher.trit[i] != p.learner.trit[i]
-            )
+            total = sum(1 for p in flow.points for i in range(3) if p.teacher.trit[i] != p.learner.trit[i])
             disagrees[name] = total / (len(flow.points) * 3)
 
         # Breathing generates most boundary crossings
-        assert disagrees["breathing"] == max(disagrees.values()), (
-            f"Expected breathing to lead disagreement, got: {disagrees}"
-        )
+        assert disagrees["breathing"] == max(
+            disagrees.values()
+        ), f"Expected breathing to lead disagreement, got: {disagrees}"
 
     def test_disagreement_zones_are_zpd_adjacent(self):
         """Points where trits disagree should have moderate phase gaps
@@ -415,9 +413,7 @@ class TestMislabelSignal:
         disagree_gaps = []
         agree_gaps = []
         for p in flow.points:
-            has_disagree = any(
-                p.teacher.trit[i] != p.learner.trit[i] for i in range(3)
-            )
+            has_disagree = any(p.teacher.trit[i] != p.learner.trit[i] for i in range(3))
             if has_disagree:
                 disagree_gaps.append(p.total_gap)
             else:
@@ -443,6 +439,7 @@ class TestMislabelSignal:
 # ===================================================================
 # Report generation tests
 # ===================================================================
+
 
 class TestReport:
     """Test report formatting."""

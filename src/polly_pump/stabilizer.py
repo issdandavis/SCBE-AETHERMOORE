@@ -70,4 +70,3 @@ class PumpStabilizer:
             null_pressure=null_pressure,
             state21_projection=state21_projection,
         )
-

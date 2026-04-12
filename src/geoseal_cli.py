@@ -32,6 +32,7 @@ Usage:
     python -m src.geoseal_cli swarm add --a 2 --b 3 --tongues KO,AV,UM
     python -m src.geoseal_cli seal  "hello world" --tongue KO
 """
+
 from __future__ import annotations
 
 import argparse
@@ -176,12 +177,16 @@ def syntax_check(tongue: str, code: str, timeout: float = 5.0) -> Tuple[bool, st
     Uses real compilers when available, falls back to structural brace-balance check.
     """
     compiler_map: Dict[str, Tuple[Optional[str], Optional[List[str]], Optional[str]]] = {
-        "RU": (shutil.which("rustc"),
-               ["rustc", "--edition=2021", "--crate-type=lib", "-"],
-               f"fn _check() {{ let _ = {code}; }}"),
-        "CA": (shutil.which("gcc"),
-               ["gcc", "-fsyntax-only", "-x", "c", "-"],
-               f"int _check() {{ return (int)({code}); }}"),
+        "RU": (
+            shutil.which("rustc"),
+            ["rustc", "--edition=2021", "--crate-type=lib", "-"],
+            f"fn _check() {{ let _ = {code}; }}",
+        ),
+        "CA": (
+            shutil.which("gcc"),
+            ["gcc", "-fsyntax-only", "-x", "c", "-"],
+            f"int _check() {{ return (int)({code}); }}",
+        ),
         "GO": (shutil.which("go"), None, None),
         "ZI": (shutil.which("zig"), None, None),
     }
@@ -262,6 +267,7 @@ def run_tongue_call(
     tmp_path: Optional[Path] = None
     if mode == "file":
         import tempfile
+
         suffix = ".go" if tongue == "GO" else ".zig"
         fd, tmp_name = tempfile.mkstemp(suffix=suffix, prefix=f"geoseal_{tongue.lower()}_")
         tmp_path = Path(tmp_name)
@@ -396,11 +402,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 def cmd_swarm(args: argparse.Namespace) -> int:
     kv = _parse_kv_args(args.args)
-    tongues = (
-        [t.strip().upper() for t in args.tongues.split(",") if t.strip()]
-        if args.tongues
-        else list(TONGUE_NAMES)
-    )
+    tongues = [t.strip().upper() for t in args.tongues.split(",") if t.strip()] if args.tongues else list(TONGUE_NAMES)
     unknown = [t for t in tongues if t not in ALL_TONGUE_NAMES]
     if unknown:
         print(f"unknown tongues: {unknown}", file=sys.stderr)

@@ -208,4 +208,3 @@ def prove_toroidal_polyhedral_confinement() -> ToroidalPolyhedralProof:
         total_confinement_factor=total_factor,
         verdict="PROVED: irrational winding + independent symmetry constraints yield strong confinement.",
     )
-

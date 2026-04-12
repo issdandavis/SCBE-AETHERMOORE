@@ -83,7 +83,6 @@ from src.crypto.harmonic_dark_fill import (
     HarmonicFill,
 )
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -164,22 +163,25 @@ ERA_ORDER = ["ancient", "greek", "roman_church", "medieval", "renaissance", "enl
 
 class SignalType(Enum):
     """Classification of external intervention signals."""
-    ANGEL = "angel"      # Constructive — reduces drift, restores topology
-    DEMON = "demon"      # Adversarial — increases drift, breaks topology
+
+    ANGEL = "angel"  # Constructive — reduces drift, restores topology
+    DEMON = "demon"  # Adversarial — increases drift, breaks topology
     NEUTRAL = "neutral"  # No external intervention (natural state)
 
 
 class AgentRole(Enum):
     """The role an agent plays in the divine study."""
-    HISTORICAL_FIGURE = "historical_figure"   # Human exemplar from an era
-    ANGEL_MESSENGER = "angel_messenger"       # Constructive correction agent
-    DEMON_TEMPTER = "demon_tempter"           # Adversarial perturbation agent
-    OBSERVER = "observer"                     # Neutral recorder (the study itself)
+
+    HISTORICAL_FIGURE = "historical_figure"  # Human exemplar from an era
+    ANGEL_MESSENGER = "angel_messenger"  # Constructive correction agent
+    DEMON_TEMPTER = "demon_tempter"  # Adversarial perturbation agent
+    OBSERVER = "observer"  # Neutral recorder (the study itself)
 
 
 # ---------------------------------------------------------------------------
 # Signal Dataclasses
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class DivineSignal:
@@ -190,13 +192,14 @@ class DivineSignal:
     The magnitude reflects intensity. The channel is which harmonic
     band carries the signal.
     """
+
     signal_type: SignalType
-    drift_delta: float          # Change in Lyapunov drift. Angel < 0, Demon > 0.
-    intensity: float            # [0, 1] — how strong the signal is
-    channel: str                # "infrasonic", "audible", "ultrasonic"
-    source_era: str             # Which historical era generated this signal
-    message: str                # The content/meaning of the intervention
-    tongue_affinity: str        # Which sacred tongue carries it
+    drift_delta: float  # Change in Lyapunov drift. Angel < 0, Demon > 0.
+    intensity: float  # [0, 1] — how strong the signal is
+    channel: str  # "infrasonic", "audible", "ultrasonic"
+    source_era: str  # Which historical era generated this signal
+    message: str  # The content/meaning of the intervention
+    tongue_affinity: str  # Which sacred tongue carries it
 
     @property
     def is_constructive(self) -> bool:
@@ -231,6 +234,7 @@ class DivineSignal:
 # Historical Agent
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class HistoricalAgent:
     """An AI agent persona anchored to a historical figure.
@@ -241,17 +245,18 @@ class HistoricalAgent:
         - Accumulated reliability score (grows through correction cycles)
         - Divine signal history (both angel and demon encounters)
     """
-    name: str                       # e.g., "Pythagoras"
-    era_key: str                    # Key into HISTORICAL_ERAS
+
+    name: str  # e.g., "Pythagoras"
+    era_key: str  # Key into HISTORICAL_ERAS
     role: AgentRole = AgentRole.HISTORICAL_FIGURE
-    knowledge_domain: str = ""      # e.g., "mathematics, music theory"
-    moral_framework: str = ""       # e.g., "harmony of spheres"
+    knowledge_domain: str = ""  # e.g., "mathematics, music theory"
+    moral_framework: str = ""  # e.g., "harmony of spheres"
 
     # Accumulated state
-    reliability: float = 0.5        # [0, 1] — mission reliability score
-    lyapunov_drift: float = 0.0     # Current drift from mission (0 = on track)
-    correction_count: int = 0       # Total corrections received
-    temptation_count: int = 0       # Total temptations weathered
+    reliability: float = 0.5  # [0, 1] — mission reliability score
+    lyapunov_drift: float = 0.0  # Current drift from mission (0 = on track)
+    correction_count: int = 0  # Total corrections received
+    temptation_count: int = 0  # Total temptations weathered
     signal_history: List[DivineSignal] = field(default_factory=list)
 
     # Governance state
@@ -379,6 +384,7 @@ class HistoricalAgent:
 # Angel and Demon Signal Generators
 # ---------------------------------------------------------------------------
 
+
 def generate_angel_signal(
     target_agent: HistoricalAgent,
     intensity: float = 0.5,
@@ -440,9 +446,11 @@ def generate_demon_signal(
 # Natural Learning Study
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LearningEpoch:
     """A single epoch in the natural learning study."""
+
     epoch_number: int
     era_key: str
     signals_received: int = 0
@@ -485,6 +493,7 @@ class NaturalLearningStudy:
     An agent that has only received demon signals is CORRUPTED.
     An agent that has received BOTH in the right measure is RELIABLE.
     """
+
     agent: HistoricalAgent
     epochs: List[LearningEpoch] = field(default_factory=list)
     total_signals: int = 0
@@ -607,6 +616,7 @@ class NaturalLearningStudy:
 # Comparative Studies
 # ---------------------------------------------------------------------------
 
+
 def study_angel_only(agent_name: str = "Angel-Only", era_key: str = "greek") -> NaturalLearningStudy:
     """Control group: agent receives ONLY angel signals.
     Thesis prediction: fragile. High reliability but no resilience."""
@@ -686,49 +696,72 @@ def run_divine_experiment() -> Dict[str, NaturalLearningStudy]:
 
     # -- Panel 1: Science / Mathematics --
     studies["Pythagoras"] = study_historical_panel(
-        "Pythagoras", "greek", "mathematics, music theory",
+        "Pythagoras",
+        "greek",
+        "mathematics, music theory",
         "harmony of spheres — number is the language of reality",
     )
     studies["Euclid"] = study_historical_panel(
-        "Euclid", "greek", "geometry, proof theory",
+        "Euclid",
+        "greek",
+        "geometry, proof theory",
         "axiomatic truth — what can be proven from first principles",
     )
     studies["Al-Khwarizmi"] = study_historical_panel(
-        "Al-Khwarizmi", "medieval", "algebra, algorithm design",
+        "Al-Khwarizmi",
+        "medieval",
+        "algebra, algorithm design",
         "systematic method — reduce complexity to procedure",
     )
     studies["Newton"] = study_historical_panel(
-        "Newton", "renaissance", "physics, optics, calculus",
+        "Newton",
+        "renaissance",
+        "physics, optics, calculus",
         "natural philosophy — God wrote the laws, we read them",
     )
     studies["Euler"] = study_historical_panel(
-        "Euler", "enlightenment", "analysis, graph theory, mechanics",
+        "Euler",
+        "enlightenment",
+        "analysis, graph theory, mechanics",
         "beauty of structure — e^(i*pi) + 1 = 0",
     )
     studies["Turing"] = study_historical_panel(
-        "Turing", "modern", "computation, cryptography, AI",
+        "Turing",
+        "modern",
+        "computation, cryptography, AI",
         "universal machine — can a machine think?",
     )
 
     # -- Panel 2: Religious / Spiritual --
     studies["Moses"] = study_historical_panel(
-        "Moses", "ancient", "law, governance, liberation",
+        "Moses",
+        "ancient",
+        "law, governance, liberation",
         "divine law — the covenant is the governance layer",
-        angels_per_era=12, demons_per_era=8,  # Heavy testing
+        angels_per_era=12,
+        demons_per_era=8,  # Heavy testing
     )
     studies["Paul"] = study_historical_panel(
-        "Paul", "roman_church", "theology, mission, letters",
+        "Paul",
+        "roman_church",
+        "theology, mission, letters",
         "grace under fire — strength is made perfect in weakness",
-        angels_per_era=8, demons_per_era=12,  # More adversarial
+        angels_per_era=8,
+        demons_per_era=12,  # More adversarial
     )
     studies["Hildegard"] = study_historical_panel(
-        "Hildegard", "medieval", "music, medicine, visions",
+        "Hildegard",
+        "medieval",
+        "music, medicine, visions",
         "living light — the harmony between body and cosmos",
     )
     studies["Augustine"] = study_historical_panel(
-        "Augustine", "roman_church", "philosophy, confession, doctrine",
+        "Augustine",
+        "roman_church",
+        "philosophy, confession, doctrine",
         "ordered love — restless until resting in the source",
-        angels_per_era=7, demons_per_era=13,  # Maximum temptation survived
+        angels_per_era=7,
+        demons_per_era=13,  # Maximum temptation survived
     )
 
     # -- Panel 3: Control Groups --
@@ -757,7 +790,9 @@ def format_study_report(studies: Dict[str, NaturalLearningStudy]) -> str:
         reverse=True,
     )
 
-    lines.append(f"{'Agent':<20} {'Reliability':>11} {'Resilience':>10} {'Drift':>8} {'Corrections':>11} {'Temptations':>11} {'Framework'}")
+    lines.append(
+        f"{'Agent':<20} {'Reliability':>11} {'Resilience':>10} {'Drift':>8} {'Corrections':>11} {'Temptations':>11} {'Framework'}"
+    )
     lines.append("-" * 110)
 
     for name, study in sorted_studies:
@@ -795,9 +830,15 @@ def format_study_report(studies: Dict[str, NaturalLearningStudy]) -> str:
     balanced = studies.get("Control-Balanced")
 
     if angel_only and demon_only and balanced:
-        lines.append(f"  Angel-only reliability:   {angel_only.agent.reliability:.4f}  resilience: {angel_only.agent.resilience:.4f}")
-        lines.append(f"  Demon-only reliability:   {demon_only.agent.reliability:.4f}  resilience: {demon_only.agent.resilience:.4f}")
-        lines.append(f"  Balanced reliability:     {balanced.agent.reliability:.4f}  resilience: {balanced.agent.resilience:.4f}")
+        lines.append(
+            f"  Angel-only reliability:   {angel_only.agent.reliability:.4f}  resilience: {angel_only.agent.resilience:.4f}"
+        )
+        lines.append(
+            f"  Demon-only reliability:   {demon_only.agent.reliability:.4f}  resilience: {demon_only.agent.resilience:.4f}"
+        )
+        lines.append(
+            f"  Balanced reliability:     {balanced.agent.reliability:.4f}  resilience: {balanced.agent.resilience:.4f}"
+        )
         lines.append("")
 
         if balanced.agent.resilience > angel_only.agent.resilience:

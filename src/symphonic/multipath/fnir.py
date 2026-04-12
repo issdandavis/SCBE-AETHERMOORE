@@ -19,43 +19,93 @@ from typing import Any, List, Optional
 
 # --- Effects bitfield ----------------------------------------------------
 class Effect(IntFlag):
-    NONE       = 0
-    MEM_READ   = 1 << 0
-    MEM_WRITE  = 1 << 1
-    IO         = 1 << 2
-    ALLOC      = 1 << 3
-    FREE       = 1 << 4
-    SPAWN      = 1 << 5
-    BLOCK      = 1 << 6   # may suspend / await
-    RAISE      = 1 << 7   # may throw
-    NONDET     = 1 << 8   # nondeterministic
+    NONE = 0
+    MEM_READ = 1 << 0
+    MEM_WRITE = 1 << 1
+    IO = 1 << 2
+    ALLOC = 1 << 3
+    FREE = 1 << 4
+    SPAWN = 1 << 5
+    BLOCK = 1 << 6  # may suspend / await
+    RAISE = 1 << 7  # may throw
+    NONDET = 1 << 8  # nondeterministic
 
 
 # --- Operation vocabulary (exactly 64) -----------------------------------
 class Op(IntEnum):
     # Bind & assign (5)
-    ASSIGN = 0; DECLARE = 1; DESTRUCT = 2; UNPACK = 3; BIND = 4
+    ASSIGN = 0
+    DECLARE = 1
+    DESTRUCT = 2
+    UNPACK = 3
+    BIND = 4
     # Arithmetic (10)
-    ADD = 5; SUB = 6; MUL = 7; DIV = 8; MOD = 9
-    POW = 10; NEG = 11; ABS = 12; FLOOR = 13; CEIL = 14
+    ADD = 5
+    SUB = 6
+    MUL = 7
+    DIV = 8
+    MOD = 9
+    POW = 10
+    NEG = 11
+    ABS = 12
+    FLOOR = 13
+    CEIL = 14
     # Compare & logic (9)
-    EQ = 15; NEQ = 16; LT = 17; GT = 18; LE = 19; GE = 20
-    AND = 21; OR = 22; NOT = 23
+    EQ = 15
+    NEQ = 16
+    LT = 17
+    GT = 18
+    LE = 19
+    GE = 20
+    AND = 21
+    OR = 22
+    NOT = 23
     # Control flow (10)
-    BRANCH = 24; LOOP_WHILE = 25; FOR_EACH = 26; BREAK = 27; CONTINUE = 28
-    RETURN = 29; RAISE = 30; MATCH = 31; TRY_CATCH = 32; YIELD = 33
+    BRANCH = 24
+    LOOP_WHILE = 25
+    FOR_EACH = 26
+    BREAK = 27
+    CONTINUE = 28
+    RETURN = 29
+    RAISE = 30
+    MATCH = 31
+    TRY_CATCH = 32
+    YIELD = 33
     # Function & call (5)
-    CALL = 34; CLOSURE = 35; APPLY = 36; RECURSE = 37; TAILCALL = 38
+    CALL = 34
+    CLOSURE = 35
+    APPLY = 36
+    RECURSE = 37
+    TAILCALL = 38
     # Memory & access (8)
-    ALLOC = 39; FREE = 40; READ = 41; WRITE = 42
-    INDEX_GET = 43; INDEX_SET = 44; FIELD_GET = 45; FIELD_SET = 46
+    ALLOC = 39
+    FREE = 40
+    READ = 41
+    WRITE = 42
+    INDEX_GET = 43
+    INDEX_SET = 44
+    FIELD_GET = 45
+    FIELD_SET = 46
     # Collections (8)
-    MAP = 47; FOLD = 48; FILTER = 49; ZIP = 50
-    CONCAT = 51; LENGTH = 52; SLICE = 53; PUSH = 54
+    MAP = 47
+    FOLD = 48
+    FILTER = 49
+    ZIP = 50
+    CONCAT = 51
+    LENGTH = 52
+    SLICE = 53
+    PUSH = 54
     # Concurrency (6)
-    SPAWN = 55; SEND = 56; RECV = 57; AWAIT = 58; LOCK = 59; ATOMIC = 60
+    SPAWN = 55
+    SEND = 56
+    RECV = 57
+    AWAIT = 58
+    LOCK = 59
+    ATOMIC = 60
     # Type & meta (3)
-    CAST = 61; TYPE_CHECK = 62; DISPATCH = 63
+    CAST = 61
+    TYPE_CHECK = 62
+    DISPATCH = 63
 
 
 assert len(Op) == 64, f"Op vocabulary must be exactly 64, got {len(Op)}"
@@ -64,76 +114,77 @@ assert len(Op) == 64, f"Op vocabulary must be exactly 64, got {len(Op)}"
 # --- Op metadata: arity hint, purity, effects ---------------------------
 @dataclass(frozen=True)
 class OpMeta:
-    arity: int          # -1 = variadic
+    arity: int  # -1 = variadic
     pure: bool
     effects: Effect
 
 
 _E = Effect
 OP_META: dict[Op, OpMeta] = {
-    Op.ASSIGN:     OpMeta( 2, False, _E.MEM_WRITE),
-    Op.DECLARE:    OpMeta( 2, False, _E.ALLOC | _E.MEM_WRITE),
-    Op.DESTRUCT:   OpMeta( 1, False, _E.FREE),
-    Op.UNPACK:     OpMeta(-1, True,  _E.NONE),
-    Op.BIND:       OpMeta( 2, False, _E.MEM_WRITE),
-
-    Op.ADD: OpMeta(2, True, _E.NONE), Op.SUB: OpMeta(2, True, _E.NONE),
-    Op.MUL: OpMeta(2, True, _E.NONE), Op.DIV: OpMeta(2, True, _E.RAISE),
-    Op.MOD: OpMeta(2, True, _E.RAISE), Op.POW: OpMeta(2, True, _E.NONE),
-    Op.NEG: OpMeta(1, True, _E.NONE), Op.ABS: OpMeta(1, True, _E.NONE),
-    Op.FLOOR: OpMeta(1, True, _E.NONE), Op.CEIL: OpMeta(1, True, _E.NONE),
-
-    Op.EQ: OpMeta(2, True, _E.NONE), Op.NEQ: OpMeta(2, True, _E.NONE),
-    Op.LT: OpMeta(2, True, _E.NONE), Op.GT: OpMeta(2, True, _E.NONE),
-    Op.LE: OpMeta(2, True, _E.NONE), Op.GE: OpMeta(2, True, _E.NONE),
-    Op.AND: OpMeta(2, True, _E.NONE), Op.OR: OpMeta(2, True, _E.NONE),
+    Op.ASSIGN: OpMeta(2, False, _E.MEM_WRITE),
+    Op.DECLARE: OpMeta(2, False, _E.ALLOC | _E.MEM_WRITE),
+    Op.DESTRUCT: OpMeta(1, False, _E.FREE),
+    Op.UNPACK: OpMeta(-1, True, _E.NONE),
+    Op.BIND: OpMeta(2, False, _E.MEM_WRITE),
+    Op.ADD: OpMeta(2, True, _E.NONE),
+    Op.SUB: OpMeta(2, True, _E.NONE),
+    Op.MUL: OpMeta(2, True, _E.NONE),
+    Op.DIV: OpMeta(2, True, _E.RAISE),
+    Op.MOD: OpMeta(2, True, _E.RAISE),
+    Op.POW: OpMeta(2, True, _E.NONE),
+    Op.NEG: OpMeta(1, True, _E.NONE),
+    Op.ABS: OpMeta(1, True, _E.NONE),
+    Op.FLOOR: OpMeta(1, True, _E.NONE),
+    Op.CEIL: OpMeta(1, True, _E.NONE),
+    Op.EQ: OpMeta(2, True, _E.NONE),
+    Op.NEQ: OpMeta(2, True, _E.NONE),
+    Op.LT: OpMeta(2, True, _E.NONE),
+    Op.GT: OpMeta(2, True, _E.NONE),
+    Op.LE: OpMeta(2, True, _E.NONE),
+    Op.GE: OpMeta(2, True, _E.NONE),
+    Op.AND: OpMeta(2, True, _E.NONE),
+    Op.OR: OpMeta(2, True, _E.NONE),
     Op.NOT: OpMeta(1, True, _E.NONE),
-
-    Op.BRANCH:     OpMeta(-1, False, _E.NONDET),
-    Op.LOOP_WHILE: OpMeta( 2, False, _E.NONDET | _E.BLOCK),
-    Op.FOR_EACH:   OpMeta( 2, False, _E.MEM_READ),
-    Op.BREAK:      OpMeta( 0, False, _E.NONE),
-    Op.CONTINUE:   OpMeta( 0, False, _E.NONE),
-    Op.RETURN:     OpMeta( 1, False, _E.NONE),
-    Op.RAISE:      OpMeta( 1, False, _E.RAISE),
-    Op.MATCH:      OpMeta(-1, False, _E.NONDET),
-    Op.TRY_CATCH:  OpMeta(-1, False, _E.RAISE),
-    Op.YIELD:      OpMeta( 1, False, _E.BLOCK),
-
-    Op.CALL:     OpMeta(-1, False, _E.IO | _E.MEM_READ | _E.MEM_WRITE),
-    Op.CLOSURE:  OpMeta(-1, True,  _E.ALLOC),
-    Op.APPLY:    OpMeta(-1, False, _E.IO),
-    Op.RECURSE:  OpMeta(-1, False, _E.NONE),
+    Op.BRANCH: OpMeta(-1, False, _E.NONDET),
+    Op.LOOP_WHILE: OpMeta(2, False, _E.NONDET | _E.BLOCK),
+    Op.FOR_EACH: OpMeta(2, False, _E.MEM_READ),
+    Op.BREAK: OpMeta(0, False, _E.NONE),
+    Op.CONTINUE: OpMeta(0, False, _E.NONE),
+    Op.RETURN: OpMeta(1, False, _E.NONE),
+    Op.RAISE: OpMeta(1, False, _E.RAISE),
+    Op.MATCH: OpMeta(-1, False, _E.NONDET),
+    Op.TRY_CATCH: OpMeta(-1, False, _E.RAISE),
+    Op.YIELD: OpMeta(1, False, _E.BLOCK),
+    Op.CALL: OpMeta(-1, False, _E.IO | _E.MEM_READ | _E.MEM_WRITE),
+    Op.CLOSURE: OpMeta(-1, True, _E.ALLOC),
+    Op.APPLY: OpMeta(-1, False, _E.IO),
+    Op.RECURSE: OpMeta(-1, False, _E.NONE),
     Op.TAILCALL: OpMeta(-1, False, _E.NONE),
-
-    Op.ALLOC:     OpMeta( 1, False, _E.ALLOC),
-    Op.FREE:      OpMeta( 1, False, _E.FREE),
-    Op.READ:      OpMeta( 1, True,  _E.MEM_READ),
-    Op.WRITE:     OpMeta( 2, False, _E.MEM_WRITE),
-    Op.INDEX_GET: OpMeta( 2, True,  _E.MEM_READ),
-    Op.INDEX_SET: OpMeta( 3, False, _E.MEM_WRITE),
-    Op.FIELD_GET: OpMeta( 2, True,  _E.MEM_READ),
-    Op.FIELD_SET: OpMeta( 3, False, _E.MEM_WRITE),
-
-    Op.MAP:    OpMeta(2, True,  _E.NONE),
-    Op.FOLD:   OpMeta(3, True,  _E.NONE),
-    Op.FILTER: OpMeta(2, True,  _E.NONE),
-    Op.ZIP:    OpMeta(2, True,  _E.NONE),
-    Op.CONCAT: OpMeta(2, True,  _E.NONE),
-    Op.LENGTH: OpMeta(1, True,  _E.NONE),
-    Op.SLICE:  OpMeta(3, True,  _E.NONE),
-    Op.PUSH:   OpMeta(2, False, _E.MEM_WRITE),
-
-    Op.SPAWN:  OpMeta(-1, False, _E.SPAWN),
-    Op.SEND:   OpMeta( 2, False, _E.IO | _E.BLOCK),
-    Op.RECV:   OpMeta( 1, False, _E.IO | _E.BLOCK),
-    Op.AWAIT:  OpMeta( 1, False, _E.BLOCK),
-    Op.LOCK:   OpMeta( 1, False, _E.BLOCK),
+    Op.ALLOC: OpMeta(1, False, _E.ALLOC),
+    Op.FREE: OpMeta(1, False, _E.FREE),
+    Op.READ: OpMeta(1, True, _E.MEM_READ),
+    Op.WRITE: OpMeta(2, False, _E.MEM_WRITE),
+    Op.INDEX_GET: OpMeta(2, True, _E.MEM_READ),
+    Op.INDEX_SET: OpMeta(3, False, _E.MEM_WRITE),
+    Op.FIELD_GET: OpMeta(2, True, _E.MEM_READ),
+    Op.FIELD_SET: OpMeta(3, False, _E.MEM_WRITE),
+    Op.MAP: OpMeta(2, True, _E.NONE),
+    Op.FOLD: OpMeta(3, True, _E.NONE),
+    Op.FILTER: OpMeta(2, True, _E.NONE),
+    Op.ZIP: OpMeta(2, True, _E.NONE),
+    Op.CONCAT: OpMeta(2, True, _E.NONE),
+    Op.LENGTH: OpMeta(1, True, _E.NONE),
+    Op.SLICE: OpMeta(3, True, _E.NONE),
+    Op.PUSH: OpMeta(2, False, _E.MEM_WRITE),
+    Op.SPAWN: OpMeta(-1, False, _E.SPAWN),
+    Op.SEND: OpMeta(2, False, _E.IO | _E.BLOCK),
+    Op.RECV: OpMeta(1, False, _E.IO | _E.BLOCK),
+    Op.AWAIT: OpMeta(1, False, _E.BLOCK),
+    Op.LOCK: OpMeta(1, False, _E.BLOCK),
     Op.ATOMIC: OpMeta(-1, False, _E.MEM_WRITE),
-
-    Op.CAST:       OpMeta(2, True,  _E.RAISE),
-    Op.TYPE_CHECK: OpMeta(2, True,  _E.NONE),
-    Op.DISPATCH:   OpMeta(-1, False, _E.IO),
+    Op.CAST: OpMeta(2, True, _E.RAISE),
+    Op.TYPE_CHECK: OpMeta(2, True, _E.NONE),
+    Op.DISPATCH: OpMeta(-1, False, _E.IO),
 }
 
 assert len(OP_META) == 64, "OP_META must cover every Op"
@@ -143,7 +194,7 @@ assert len(OP_META) == 64, "OP_META must cover every Op"
 @dataclass
 class FnIR:
     op: Op
-    args: List[Any] = field(default_factory=list)   # FnIR | literal | str
+    args: List[Any] = field(default_factory=list)  # FnIR | literal | str
     children: List["FnIR"] = field(default_factory=list)
     name: Optional[str] = None
 
@@ -173,14 +224,21 @@ class FnIR:
 
 # --- Python AST -> FnIR --------------------------------------------------
 _BINOP = {
-    ast.Add: Op.ADD, ast.Sub: Op.SUB, ast.Mult: Op.MUL,
-    ast.Div: Op.DIV, ast.Mod: Op.MOD, ast.Pow: Op.POW,
+    ast.Add: Op.ADD,
+    ast.Sub: Op.SUB,
+    ast.Mult: Op.MUL,
+    ast.Div: Op.DIV,
+    ast.Mod: Op.MOD,
+    ast.Pow: Op.POW,
     ast.FloorDiv: Op.FLOOR,
 }
 _CMPOP = {
-    ast.Eq: Op.EQ, ast.NotEq: Op.NEQ,
-    ast.Lt: Op.LT, ast.Gt: Op.GT,
-    ast.LtE: Op.LE, ast.GtE: Op.GE,
+    ast.Eq: Op.EQ,
+    ast.NotEq: Op.NEQ,
+    ast.Lt: Op.LT,
+    ast.Gt: Op.GT,
+    ast.LtE: Op.LE,
+    ast.GtE: Op.GE,
 }
 _BOOLOP = {ast.And: Op.AND, ast.Or: Op.OR}
 _UNARYOP = {ast.USub: Op.NEG, ast.Not: Op.NOT}
@@ -195,13 +253,15 @@ class PythonToFnIR(ast.NodeVisitor):
 
     # --- module / function -------------------------------------------
     def visit_Module(self, node: ast.Module) -> FnIR:
-        return FnIR(Op.CLOSURE, name="<module>",
-                    children=[self.visit(s) for s in node.body])
+        return FnIR(Op.CLOSURE, name="<module>", children=[self.visit(s) for s in node.body])
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> FnIR:
-        return FnIR(Op.CLOSURE, name=node.name,
-                    args=[a.arg for a in node.args.args],
-                    children=[self.visit(s) for s in node.body])
+        return FnIR(
+            Op.CLOSURE,
+            name=node.name,
+            args=[a.arg for a in node.args.args],
+            children=[self.visit(s) for s in node.body],
+        )
 
     # --- statements --------------------------------------------------
     def visit_Assign(self, node: ast.Assign) -> FnIR:
@@ -211,46 +271,51 @@ class PythonToFnIR(ast.NodeVisitor):
 
     def visit_AugAssign(self, node: ast.AugAssign) -> FnIR:
         op = _BINOP.get(type(node.op), Op.ADD)
-        return FnIR(Op.ASSIGN,
-                    name=getattr(node.target, "id", "?"),
-                    children=[FnIR(op, children=[self.visit(node.target),
-                                                 self.visit(node.value)])])
+        return FnIR(
+            Op.ASSIGN,
+            name=getattr(node.target, "id", "?"),
+            children=[FnIR(op, children=[self.visit(node.target), self.visit(node.value)])],
+        )
 
     def visit_Return(self, node: ast.Return) -> FnIR:
-        return FnIR(Op.RETURN,
-                    children=[self.visit(node.value)] if node.value else [])
+        return FnIR(Op.RETURN, children=[self.visit(node.value)] if node.value else [])
 
     def visit_If(self, node: ast.If) -> FnIR:
-        return FnIR(Op.BRANCH,
-                    children=[self.visit(node.test),
-                              FnIR(Op.CLOSURE, name="<then>",
-                                   children=[self.visit(s) for s in node.body]),
-                              FnIR(Op.CLOSURE, name="<else>",
-                                   children=[self.visit(s) for s in node.orelse])])
+        return FnIR(
+            Op.BRANCH,
+            children=[
+                self.visit(node.test),
+                FnIR(Op.CLOSURE, name="<then>", children=[self.visit(s) for s in node.body]),
+                FnIR(Op.CLOSURE, name="<else>", children=[self.visit(s) for s in node.orelse]),
+            ],
+        )
 
     def visit_While(self, node: ast.While) -> FnIR:
-        return FnIR(Op.LOOP_WHILE,
-                    children=[self.visit(node.test),
-                              FnIR(Op.CLOSURE, name="<body>",
-                                   children=[self.visit(s) for s in node.body])])
+        return FnIR(
+            Op.LOOP_WHILE,
+            children=[
+                self.visit(node.test),
+                FnIR(Op.CLOSURE, name="<body>", children=[self.visit(s) for s in node.body]),
+            ],
+        )
 
     def visit_For(self, node: ast.For) -> FnIR:
-        return FnIR(Op.FOR_EACH,
-                    name=getattr(node.target, "id", "?"),
-                    children=[self.visit(node.iter),
-                              FnIR(Op.CLOSURE, name="<body>",
-                                   children=[self.visit(s) for s in node.body])])
+        return FnIR(
+            Op.FOR_EACH,
+            name=getattr(node.target, "id", "?"),
+            children=[
+                self.visit(node.iter),
+                FnIR(Op.CLOSURE, name="<body>", children=[self.visit(s) for s in node.body]),
+            ],
+        )
 
     def visit_Raise(self, node: ast.Raise) -> FnIR:
-        return FnIR(Op.RAISE,
-                    children=[self.visit(node.exc)] if node.exc else [])
+        return FnIR(Op.RAISE, children=[self.visit(node.exc)] if node.exc else [])
 
     def visit_Try(self, node: ast.Try) -> FnIR:
-        kids = [FnIR(Op.CLOSURE, name="<try>",
-                     children=[self.visit(s) for s in node.body])]
+        kids = [FnIR(Op.CLOSURE, name="<try>", children=[self.visit(s) for s in node.body])]
         for h in node.handlers:
-            kids.append(FnIR(Op.CLOSURE, name="<except>",
-                             children=[self.visit(s) for s in h.body]))
+            kids.append(FnIR(Op.CLOSURE, name="<except>", children=[self.visit(s) for s in h.body]))
         return FnIR(Op.TRY_CATCH, children=kids)
 
     def visit_Expr(self, node: ast.Expr) -> FnIR:
@@ -271,21 +336,17 @@ class PythonToFnIR(ast.NodeVisitor):
 
     def visit_Compare(self, node: ast.Compare) -> FnIR:
         op = _CMPOP.get(type(node.ops[0]), Op.EQ)
-        return FnIR(op, children=[self.visit(node.left),
-                                  self.visit(node.comparators[0])])
+        return FnIR(op, children=[self.visit(node.left), self.visit(node.comparators[0])])
 
     def visit_Call(self, node: ast.Call) -> FnIR:
         name = getattr(node.func, "id", None) or ast.dump(node.func)
-        return FnIR(Op.CALL, name=name,
-                    children=[self.visit(a) for a in node.args])
+        return FnIR(Op.CALL, name=name, children=[self.visit(a) for a in node.args])
 
     def visit_Subscript(self, node: ast.Subscript) -> FnIR:
-        return FnIR(Op.INDEX_GET,
-                    children=[self.visit(node.value), self.visit(node.slice)])
+        return FnIR(Op.INDEX_GET, children=[self.visit(node.value), self.visit(node.slice)])
 
     def visit_Attribute(self, node: ast.Attribute) -> FnIR:
-        return FnIR(Op.FIELD_GET, name=node.attr,
-                    children=[self.visit(node.value)])
+        return FnIR(Op.FIELD_GET, name=node.attr, children=[self.visit(node.value)])
 
     def visit_Name(self, node: ast.Name) -> FnIR:
         return FnIR(Op.READ, name=node.id)
@@ -294,16 +355,13 @@ class PythonToFnIR(ast.NodeVisitor):
         return FnIR(Op.READ, name=repr(node.value))
 
     def visit_List(self, node: ast.List) -> FnIR:
-        return FnIR(Op.ALLOC, name="list",
-                    children=[self.visit(e) for e in node.elts])
+        return FnIR(Op.ALLOC, name="list", children=[self.visit(e) for e in node.elts])
 
     def visit_Tuple(self, node: ast.Tuple) -> FnIR:
-        return FnIR(Op.ALLOC, name="tuple",
-                    children=[self.visit(e) for e in node.elts])
+        return FnIR(Op.ALLOC, name="tuple", children=[self.visit(e) for e in node.elts])
 
     def visit_Dict(self, node: ast.Dict) -> FnIR:
-        return FnIR(Op.ALLOC, name="dict",
-                    children=[self.visit(v) for v in node.values if v])
+        return FnIR(Op.ALLOC, name="dict", children=[self.visit(v) for v in node.values if v])
 
     def generic_visit(self, node):
         return FnIR(Op.READ, name=type(node).__name__)
@@ -330,16 +388,28 @@ OP_EXAMPLES: dict[Op, dict[str, str]] = {
         "DR": "(+) a b",
     },
     Op.SUB: {
-        "KO": "a - b", "AV": "a - b", "RU": "a - b",
-        "CA": "a - b", "UM": "a - b", "DR": "(-) a b",
+        "KO": "a - b",
+        "AV": "a - b",
+        "RU": "a - b",
+        "CA": "a - b",
+        "UM": "a - b",
+        "DR": "(-) a b",
     },
     Op.MUL: {
-        "KO": "a * b", "AV": "a * b", "RU": "a * b",
-        "CA": "a * b", "UM": "a * b", "DR": "(*) a b",
+        "KO": "a * b",
+        "AV": "a * b",
+        "RU": "a * b",
+        "CA": "a * b",
+        "UM": "a * b",
+        "DR": "(*) a b",
     },
     Op.DIV: {
-        "KO": "a / b", "AV": "a / b", "RU": "a / b",
-        "CA": "a / b", "UM": "a / b", "DR": "div a b",
+        "KO": "a / b",
+        "AV": "a / b",
+        "RU": "a / b",
+        "CA": "a / b",
+        "UM": "a / b",
+        "DR": "div a b",
     },
     Op.ASSIGN: {
         "KO": "x = v",
@@ -390,8 +460,12 @@ OP_EXAMPLES: dict[Op, dict[str, str]] = {
         "DR": "f x y",
     },
     Op.READ: {
-        "KO": "x", "AV": "x", "RU": "x",
-        "CA": "x", "UM": "x", "DR": "x",
+        "KO": "x",
+        "AV": "x",
+        "RU": "x",
+        "CA": "x",
+        "UM": "x",
+        "DR": "x",
     },
     Op.WRITE: {
         "KO": "x = v",
@@ -444,12 +518,22 @@ def example_row(op: Op) -> dict[str, str]:
 # Not a full code generator — a structural renderer that proves the
 # multipath spine actually round-trips: source -> FnIR -> tongue surface.
 
-_BIN_OPS = {Op.ADD, Op.SUB, Op.MUL, Op.DIV, Op.MOD, Op.POW,
-            Op.EQ, Op.NEQ, Op.LT, Op.GT, Op.LE, Op.GE, Op.AND, Op.OR}
+_BIN_OPS = {Op.ADD, Op.SUB, Op.MUL, Op.DIV, Op.MOD, Op.POW, Op.EQ, Op.NEQ, Op.LT, Op.GT, Op.LE, Op.GE, Op.AND, Op.OR}
 _BIN_SYM = {
-    Op.ADD: "+", Op.SUB: "-", Op.MUL: "*", Op.DIV: "/", Op.MOD: "%",
-    Op.POW: "**", Op.EQ: "==", Op.NEQ: "!=", Op.LT: "<", Op.GT: ">",
-    Op.LE: "<=", Op.GE: ">=", Op.AND: "&&", Op.OR: "||",
+    Op.ADD: "+",
+    Op.SUB: "-",
+    Op.MUL: "*",
+    Op.DIV: "/",
+    Op.MOD: "%",
+    Op.POW: "**",
+    Op.EQ: "==",
+    Op.NEQ: "!=",
+    Op.LT: "<",
+    Op.GT: ">",
+    Op.LE: "<=",
+    Op.GE: ">=",
+    Op.AND: "&&",
+    Op.OR: "||",
 }
 
 
@@ -573,6 +657,7 @@ def transpile(src: str, tongue: str = "KO") -> str:
 
 if __name__ == "__main__":
     import json
+
     sample = """
 def fib(n):
     if n < 2:

@@ -34,15 +34,14 @@ from typing import Dict, List, Tuple, Optional
 
 from src.crypto.manifold_mirror import compute_mirror_point, MirrorPoint
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
 # The three complement pairs and their curriculum axes
 TRIT_AXES = [
-    ("ko", "dr", "structure"),   # Build vs Challenge
-    ("av", "um", "stability"),   # Stabilize vs Destabilize
+    ("ko", "dr", "structure"),  # Build vs Challenge
+    ("av", "um", "stability"),  # Stabilize vs Destabilize
     ("ru", "ca", "creativity"),  # Verify vs Create
 ]
 
@@ -56,33 +55,33 @@ DEFAULT_THRESHOLD = 0.3
 
 # Labels for the 27 curriculum states
 TRIT_LABELS = {
-    (+1, +1, +1): "fortify",        # Build + Stabilize + Verify
-    (+1, +1,  0): "consolidate",     # Build + Stabilize + Neutral
-    (+1, +1, -1): "innovate",        # Build + Stabilize + Create
-    (+1,  0, +1): "scaffold",        # Build + Neutral + Verify
-    (+1,  0,  0): "construct",       # Build + Neutral + Neutral
-    (+1,  0, -1): "architect",       # Build + Neutral + Create
-    (+1, -1, +1): "stress_test",     # Build + Destabilize + Verify
-    (+1, -1,  0): "disrupt_build",   # Build + Destabilize + Neutral
-    (+1, -1, -1): "chaos_forge",     # Build + Destabilize + Create
-    ( 0, +1, +1): "anchor",         # Balance + Stabilize + Verify
-    ( 0, +1,  0): "steady_state",   # Balance + Stabilize + Neutral
-    ( 0, +1, -1): "gentle_push",    # Balance + Stabilize + Create
-    ( 0,  0, +1): "witness",        # Balance + Neutral + Verify
-    ( 0,  0,  0): "null_state",     # Balance + Neutral + Neutral (the egg)
-    ( 0,  0, -1): "dream",          # Balance + Neutral + Create
-    ( 0, -1, +1): "challenge",      # Balance + Destabilize + Verify
-    ( 0, -1,  0): "shake",          # Balance + Destabilize + Neutral
-    ( 0, -1, -1): "dissolve",       # Balance + Destabilize + Create
-    (-1, +1, +1): "deconstruct",    # Challenge + Stabilize + Verify
-    (-1, +1,  0): "controlled_demo", # Challenge + Stabilize + Neutral
-    (-1, +1, -1): "phoenix",        # Challenge + Stabilize + Create (die+reborn)
-    (-1,  0, +1): "audit",          # Challenge + Neutral + Verify
-    (-1,  0,  0): "erode",          # Challenge + Neutral + Neutral
-    (-1,  0, -1): "wildcard",       # Challenge + Neutral + Create
-    (-1, -1, +1): "expose",         # Challenge + Destabilize + Verify
-    (-1, -1,  0): "demolish",       # Challenge + Destabilize + Neutral
-    (-1, -1, -1): "void",           # Challenge + Destabilize + Create (total reset)
+    (+1, +1, +1): "fortify",  # Build + Stabilize + Verify
+    (+1, +1, 0): "consolidate",  # Build + Stabilize + Neutral
+    (+1, +1, -1): "innovate",  # Build + Stabilize + Create
+    (+1, 0, +1): "scaffold",  # Build + Neutral + Verify
+    (+1, 0, 0): "construct",  # Build + Neutral + Neutral
+    (+1, 0, -1): "architect",  # Build + Neutral + Create
+    (+1, -1, +1): "stress_test",  # Build + Destabilize + Verify
+    (+1, -1, 0): "disrupt_build",  # Build + Destabilize + Neutral
+    (+1, -1, -1): "chaos_forge",  # Build + Destabilize + Create
+    (0, +1, +1): "anchor",  # Balance + Stabilize + Verify
+    (0, +1, 0): "steady_state",  # Balance + Stabilize + Neutral
+    (0, +1, -1): "gentle_push",  # Balance + Stabilize + Create
+    (0, 0, +1): "witness",  # Balance + Neutral + Verify
+    (0, 0, 0): "null_state",  # Balance + Neutral + Neutral (the egg)
+    (0, 0, -1): "dream",  # Balance + Neutral + Create
+    (0, -1, +1): "challenge",  # Balance + Destabilize + Verify
+    (0, -1, 0): "shake",  # Balance + Destabilize + Neutral
+    (0, -1, -1): "dissolve",  # Balance + Destabilize + Create
+    (-1, +1, +1): "deconstruct",  # Challenge + Stabilize + Verify
+    (-1, +1, 0): "controlled_demo",  # Challenge + Stabilize + Neutral
+    (-1, +1, -1): "phoenix",  # Challenge + Stabilize + Create (die+reborn)
+    (-1, 0, +1): "audit",  # Challenge + Neutral + Verify
+    (-1, 0, 0): "erode",  # Challenge + Neutral + Neutral
+    (-1, 0, -1): "wildcard",  # Challenge + Neutral + Create
+    (-1, -1, +1): "expose",  # Challenge + Destabilize + Verify
+    (-1, -1, 0): "demolish",  # Challenge + Destabilize + Neutral
+    (-1, -1, -1): "void",  # Challenge + Destabilize + Create (total reset)
 }
 
 
@@ -94,15 +93,16 @@ TRIT_LABELS = {
 # ---------------------------------------------------------------------------
 
 GEOMETRIC_BASELINES = {
-    "structure":  +0.72,   # KO/DR mean interference (12-text calibration)
-    "stability":  +0.30,   # AV/UM mean interference (12-text calibration)
-    "creativity": -0.99,   # RU/CA mean interference (12-text calibration)
+    "structure": +0.72,  # KO/DR mean interference (12-text calibration)
+    "stability": +0.30,  # AV/UM mean interference (12-text calibration)
+    "creativity": -0.99,  # RU/CA mean interference (12-text calibration)
 }
 
 
 # ---------------------------------------------------------------------------
 # Core data structure
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class TritSignal:
@@ -119,15 +119,16 @@ class TritSignal:
     Together: 27 geometric states x 27 content states = 729 possible,
     but in practice geometric is fixed at (+1, 0, -1) so 27 content states.
     """
+
     # Geometric trits (tongue mode — nearly constant)
-    t_structure: int    # KO/DR: +1, 0, -1
-    t_stability: int    # AV/UM: +1, 0, -1
-    t_creativity: int   # RU/CA: +1, 0, -1
+    t_structure: int  # KO/DR: +1, 0, -1
+    t_stability: int  # AV/UM: +1, 0, -1
+    t_creativity: int  # RU/CA: +1, 0, -1
 
     # Content trits (deviation from geometric baseline — text-specific)
-    c_structure: int    # KO/DR deviation: +1, 0, -1
-    c_stability: int    # AV/UM deviation: +1, 0, -1
-    c_creativity: int   # RU/CA deviation: +1, 0, -1
+    c_structure: int  # KO/DR deviation: +1, 0, -1
+    c_stability: int  # AV/UM deviation: +1, 0, -1
+    c_creativity: int  # RU/CA deviation: +1, 0, -1
 
     # Raw continuous interference scores
     raw_structure: float
@@ -144,7 +145,7 @@ class TritSignal:
 
     # Edge proximity: how close each axis is to a trit boundary
     # Low values = edge case = polymorphic = high training signal
-    edge_structure: float   # distance to nearest content threshold boundary
+    edge_structure: float  # distance to nearest content threshold boundary
     edge_stability: float
     edge_creativity: float
 
@@ -164,7 +165,7 @@ class TritSignal:
     @property
     def trit_index(self) -> int:
         """Map content trit to 0-26 index. (+1,+1,+1)=0, (-1,-1,-1)=26."""
-        s = 1 - self.c_structure   # +1->0, 0->1, -1->2
+        s = 1 - self.c_structure  # +1->0, 0->1, -1->2
         b = 1 - self.c_stability
         c = 1 - self.c_creativity
         return s * 9 + b * 3 + c
@@ -234,6 +235,7 @@ class TritSignal:
 # Compute trit signal for text
 # ---------------------------------------------------------------------------
 
+
 def _quantize_trit(score: float, threshold: float = DEFAULT_THRESHOLD) -> int:
     """Quantize continuous interference to trit."""
     if score > threshold:
@@ -275,10 +277,7 @@ def compute_trit_signal(
 
     # Edge distance: how far each deviation is from the nearest threshold
     # Thresholds are at +content_threshold and -content_threshold
-    edge_distances = [
-        min(abs(d - content_threshold), abs(d + content_threshold))
-        for d in deviations
-    ]
+    edge_distances = [min(abs(d - content_threshold), abs(d + content_threshold)) for d in deviations]
 
     content_tuple = (content_trits[0], content_trits[1], content_trits[2])
     label = TRIT_LABELS.get(content_tuple, f"unknown_{content_tuple}")
@@ -307,6 +306,7 @@ def compute_trit_signal(
 # ---------------------------------------------------------------------------
 # Batch compute for SFT pipeline
 # ---------------------------------------------------------------------------
+
 
 def compute_trit_batch(
     texts: List[str],
@@ -407,9 +407,11 @@ if __name__ == "__main__":
 
     signals = compute_trit_batch(test_texts)
 
-    print(f"  Geometric mode (fixed): [{signals[0].t_structure:+d}, "
-          f"{signals[0].t_stability:+d}, {signals[0].t_creativity:+d}]  "
-          f"(structure=build, stability=neutral, creativity=create)")
+    print(
+        f"  Geometric mode (fixed): [{signals[0].t_structure:+d}, "
+        f"{signals[0].t_stability:+d}, {signals[0].t_creativity:+d}]  "
+        f"(structure=build, stability=neutral, creativity=create)"
+    )
     print()
     print("  Content trits (text-specific deviation from geometric baseline):")
     print(f"  {'TRIT':8s} {'LABEL':16s} {'DEV_S':>8s} {'DEV_B':>8s} {'DEV_C':>8s}  TEXT")
@@ -418,15 +420,19 @@ if __name__ == "__main__":
     for text, sig in zip(test_texts, signals):
         ct = f"[{sig.c_structure:+d},{sig.c_stability:+d},{sig.c_creativity:+d}]"
         poly = "**POLY**" if sig.is_polymorphic else f"  d={sig.min_edge_distance:.4f}"
-        print(f"  {ct:8s} {sig.label:16s} {sig.dev_structure:+8.4f} "
-              f"{sig.dev_stability:+8.4f} {sig.dev_creativity:+8.4f}  {poly}  {text[:38]}")
+        print(
+            f"  {ct:8s} {sig.label:16s} {sig.dev_structure:+8.4f} "
+            f"{sig.dev_stability:+8.4f} {sig.dev_creativity:+8.4f}  {poly}  {text[:38]}"
+        )
 
     print()
     summary = trit_summary(signals)
     print(f"Content states used: {summary['unique_states']}/27")
-    print(f"Mean deviation: struct={summary['mean_deviation']['structure']:+.4f}  "
-          f"stab={summary['mean_deviation']['stability']:+.4f}  "
-          f"creat={summary['mean_deviation']['creativity']:+.4f}")
+    print(
+        f"Mean deviation: struct={summary['mean_deviation']['structure']:+.4f}  "
+        f"stab={summary['mean_deviation']['stability']:+.4f}  "
+        f"creat={summary['mean_deviation']['creativity']:+.4f}"
+    )
     print()
     print("Curriculum distribution:")
     for label, count in summary["distribution"].items():
@@ -437,6 +443,8 @@ if __name__ == "__main__":
     for axis, counts in summary["content_axis_counts"].items():
         print(f"  {axis:12s}  +1={counts[+1]:2d}  0={counts[0]:2d}  -1={counts[-1]:2d}")
     print()
-    print(f"Polymorphic (edge case) records: {summary['polymorphic_count']}/{len(signals)} "
-          f"({summary['polymorphic_pct']}%)")
+    print(
+        f"Polymorphic (edge case) records: {summary['polymorphic_count']}/{len(signals)} "
+        f"({summary['polymorphic_pct']}%)"
+    )
     print(f"Mean min edge distance: {summary['mean_min_edge_distance']:.6f}")

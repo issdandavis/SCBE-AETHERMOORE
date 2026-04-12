@@ -425,8 +425,7 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
         import logging
 
         logging.getLogger("scbe.billing").warning(
-            f"SMTP not configured. Would send delivery to {to_email} for {product_name}. "
-            f"Download: {download_url}"
+            f"SMTP not configured. Would send delivery to {to_email} for {product_name}. " f"Download: {download_url}"
         )
         return False
 

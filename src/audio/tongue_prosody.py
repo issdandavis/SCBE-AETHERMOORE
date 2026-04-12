@@ -49,16 +49,17 @@ TONGUE_WEIGHTS: Dict[str, float] = {
 
 # Governance decision → character voice mapping (from narrator_voice_system.py)
 DECISION_VOICE_MAP: Dict[str, str] = {
-    "ALLOW": "alexander_thorne",   # warm, unhurried
-    "QUARANTINE": "senna",         # measured, precise
-    "ESCALATE": "polly",           # sharp, no filler
-    "DENY": "bram",                # blunt, short sentences
+    "ALLOW": "alexander_thorne",  # warm, unhurried
+    "QUARANTINE": "senna",  # measured, precise
+    "ESCALATE": "polly",  # sharp, no filler
+    "DENY": "bram",  # blunt, short sentences
 }
 
 
 # ============================================================================
 # Data Structures
 # ============================================================================
+
 
 @dataclass(frozen=True)
 class TongueWeightVector:
@@ -72,8 +73,7 @@ class TongueWeightVector:
     dr: float
 
     def as_dict(self) -> Dict[str, float]:
-        return {"ko": self.ko, "av": self.av, "ru": self.ru,
-                "ca": self.ca, "um": self.um, "dr": self.dr}
+        return {"ko": self.ko, "av": self.av, "ru": self.ru, "ca": self.ca, "um": self.um, "dr": self.dr}
 
     def norm(self) -> float:
         vals = [self.ko, self.av, self.ru, self.ca, self.um, self.dr]
@@ -84,11 +84,11 @@ class TongueWeightVector:
 class ProsodyParams:
     """5D voice parameter output from the tongue-to-prosody mapper."""
 
-    speed: float          # 0.5 - 2.0 (1.0 = normal)
+    speed: float  # 0.5 - 2.0 (1.0 = normal)
     pitch_semitones: float  # relative pitch shift
-    warmth: float         # 0.0 - 1.0
-    breathiness: float    # 0.0 - 1.0
-    cadence: str          # "staccato" | "flowing" | "steady" | "measured" | "grounded"
+    warmth: float  # 0.0 - 1.0
+    breathiness: float  # 0.0 - 1.0
+    cadence: str  # "staccato" | "flowing" | "steady" | "measured" | "grounded"
 
     def validate(self) -> None:
         assert 0.5 <= self.speed <= 2.0
@@ -100,6 +100,7 @@ class ProsodyParams:
 # ============================================================================
 # Core Mapper: 6 tongues → 5 voice params
 # ============================================================================
+
 
 def tongue_to_prosody(
     weights: TongueWeightVector,

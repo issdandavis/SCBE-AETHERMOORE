@@ -31,10 +31,10 @@ from src.crypto.tri_bundle import (
     TriBundleCluster,
 )
 
-
 # ===================================================================
 # DualTernaryPair
 # ===================================================================
+
 
 class TestDualTernaryPair:
     def test_all_9_states_exist(self):
@@ -62,8 +62,7 @@ class TestDualTernaryPair:
 
     def test_energy_half_states(self):
         """E(1,0) = 1, E(0,1) = 1, E(-1,0) = 1, E(0,-1) = 1."""
-        for s in [DualTernaryPair(1, 0), DualTernaryPair(0, 1),
-                  DualTernaryPair(-1, 0), DualTernaryPair(0, -1)]:
+        for s in [DualTernaryPair(1, 0), DualTernaryPair(0, 1), DualTernaryPair(-1, 0), DualTernaryPair(0, -1)]:
             assert s.energy == 1.0
 
     def test_phase_constructive(self):
@@ -103,6 +102,7 @@ class TestDualTernaryPair:
 # Topology
 # ===================================================================
 
+
 class TestTopology:
     def test_self_transition_valid(self):
         """Staying in the same state is always valid."""
@@ -140,6 +140,7 @@ class TestTopology:
 # Phase Deviation
 # ===================================================================
 
+
 class TestPhaseDeviation:
     def test_same_state_zero(self):
         s = DualTernaryPair(0, 0)
@@ -161,6 +162,7 @@ class TestPhaseDeviation:
 # Harmonic Cost
 # ===================================================================
 
+
 class TestHarmonicCost:
     def test_zero_distance_is_one(self):
         assert abs(harmonic_cost(0.0) - 1.0) < 1e-10
@@ -169,7 +171,7 @@ class TestHarmonicCost:
         assert abs(harmonic_cost(1.0) - PHI) < 1e-10
 
     def test_two_distance(self):
-        expected = PHI ** 4  # φ^(2²) = φ⁴
+        expected = PHI**4  # φ^(2²) = φ⁴
         assert abs(harmonic_cost(2.0) - expected) < 1e-6
 
     def test_monotonically_increasing(self):
@@ -202,6 +204,7 @@ class TestHarmonicCost:
 # ===================================================================
 # Crossing Evaluation
 # ===================================================================
+
 
 class TestCrossingEvaluation:
     def test_low_byte_produces_result(self):
@@ -270,6 +273,7 @@ class TestCrossingEvaluation:
 # Sequence Evaluation
 # ===================================================================
 
+
 class TestSequenceEvaluation:
     def test_sequence_length(self):
         clusters = encode_bytes(b"hello", "ko")
@@ -294,6 +298,7 @@ class TestSequenceEvaluation:
 # Polyglot Evaluation
 # ===================================================================
 
+
 class TestPolyglotEvaluation:
     def test_evaluates_all_6_tongues(self):
         pcs = encode_polyglot(b"A")
@@ -312,6 +317,7 @@ class TestPolyglotEvaluation:
 # ===================================================================
 # Governance Summary
 # ===================================================================
+
 
 class TestGovernanceSummary:
     def test_summary_from_sequence(self):
@@ -361,6 +367,7 @@ class TestGovernanceSummary:
 # Integration: Full Pipeline
 # ===================================================================
 
+
 class TestFullPipeline:
     def test_encode_evaluate_summarize(self):
         """Full pipeline: text → tri-bundle → crossing eval → governance."""
@@ -387,11 +394,15 @@ class TestFullPipeline:
     def test_energy_landscape_is_correct(self):
         """Verify the full energy landscape of all 9 states."""
         expected = {
-            (0, 0): 0,    # equilibrium
-            (1, 0): 1, (0, 1): 1, (-1, 0): 1, (0, -1): 1,  # edges
-            (1, -1): 1, (-1, 1): 1,   # destructive
-            (-1, -1): 3,               # negative resonance (same as constructive)
-            (1, 1): 3,                 # constructive (max)
+            (0, 0): 0,  # equilibrium
+            (1, 0): 1,
+            (0, 1): 1,
+            (-1, 0): 1,
+            (0, -1): 1,  # edges
+            (1, -1): 1,
+            (-1, 1): 1,  # destructive
+            (-1, -1): 3,  # negative resonance (same as constructive)
+            (1, 1): 3,  # constructive (max)
         }
         for (p, m), e in expected.items():
             state = DualTernaryPair(p, m)

@@ -34,10 +34,10 @@ from src.crypto.divine_agents import (
 )
 from src.crypto.crossing_energy import Decision, DualTernaryPair
 
-
 # ===================================================================
 # Historical Era Constants
 # ===================================================================
+
 
 class TestHistoricalEras:
     """Verify the historical fact lattice is correctly structured."""
@@ -85,14 +85,14 @@ class TestHistoricalEras:
             current_end = HISTORICAL_ERAS[ERA_ORDER[i]]["range"][1]
             next_start = HISTORICAL_ERAS[ERA_ORDER[i + 1]]["range"][0]
             assert current_end == next_start, (
-                f"Gap between {ERA_ORDER[i]} (ends {current_end}) and "
-                f"{ERA_ORDER[i+1]} (starts {next_start})"
+                f"Gap between {ERA_ORDER[i]} (ends {current_end}) and " f"{ERA_ORDER[i+1]} (starts {next_start})"
             )
 
 
 # ===================================================================
 # Signal Types
 # ===================================================================
+
 
 class TestDivineSignal:
 
@@ -125,34 +125,59 @@ class TestDivineSignal:
     def test_angel_energy_signature_constructive(self):
         """Angel signals produce E(1,1) = 3 * intensity (constructive resonance)."""
         sig = DivineSignal(
-            signal_type=SignalType.ANGEL, drift_delta=-1.0, intensity=1.0,
-            channel="infrasonic", source_era="ancient", message="", tongue_affinity="ko",
+            signal_type=SignalType.ANGEL,
+            drift_delta=-1.0,
+            intensity=1.0,
+            channel="infrasonic",
+            source_era="ancient",
+            message="",
+            tongue_affinity="ko",
         )
         assert abs(sig.energy_signature - 3.0) < 1e-6
 
     def test_demon_energy_signature_destructive(self):
         """Demon signals produce E(1,-1) = 1 * intensity (destructive interference)."""
         sig = DivineSignal(
-            signal_type=SignalType.DEMON, drift_delta=1.0, intensity=1.0,
-            channel="ultrasonic", source_era="ancient", message="", tongue_affinity="ko",
+            signal_type=SignalType.DEMON,
+            drift_delta=1.0,
+            intensity=1.0,
+            channel="ultrasonic",
+            source_era="ancient",
+            message="",
+            tongue_affinity="ko",
         )
         assert abs(sig.energy_signature - 1.0) < 1e-6
 
     def test_neutral_energy_is_zero(self):
         sig = DivineSignal(
-            signal_type=SignalType.NEUTRAL, drift_delta=0.0, intensity=0.0,
-            channel="audible", source_era="modern", message="", tongue_affinity="ko",
+            signal_type=SignalType.NEUTRAL,
+            drift_delta=0.0,
+            intensity=0.0,
+            channel="audible",
+            source_era="modern",
+            message="",
+            tongue_affinity="ko",
         )
         assert sig.energy_signature == 0.0
 
     def test_harmonic_cost_impact_scales_with_drift(self):
         low = DivineSignal(
-            signal_type=SignalType.ANGEL, drift_delta=-0.1, intensity=0.5,
-            channel="infrasonic", source_era="greek", message="", tongue_affinity="av",
+            signal_type=SignalType.ANGEL,
+            drift_delta=-0.1,
+            intensity=0.5,
+            channel="infrasonic",
+            source_era="greek",
+            message="",
+            tongue_affinity="av",
         )
         high = DivineSignal(
-            signal_type=SignalType.DEMON, drift_delta=3.0, intensity=0.5,
-            channel="ultrasonic", source_era="greek", message="", tongue_affinity="av",
+            signal_type=SignalType.DEMON,
+            drift_delta=3.0,
+            intensity=0.5,
+            channel="ultrasonic",
+            source_era="greek",
+            message="",
+            tongue_affinity="av",
         )
         assert high.harmonic_cost_impact > low.harmonic_cost_impact
 
@@ -160,6 +185,7 @@ class TestDivineSignal:
 # ===================================================================
 # Historical Agent
 # ===================================================================
+
 
 class TestHistoricalAgent:
 
@@ -208,8 +234,12 @@ class TestHistoricalAgent:
         initial = agent.reliability
         # Low intensity demon should be ALLOW'd
         signal = DivineSignal(
-            signal_type=SignalType.DEMON, drift_delta=0.01, intensity=0.1,
-            channel="ultrasonic", source_era="greek", message="test",
+            signal_type=SignalType.DEMON,
+            drift_delta=0.01,
+            intensity=0.1,
+            channel="ultrasonic",
+            source_era="greek",
+            message="test",
             tongue_affinity="av",
         )
         decision = agent.receive_signal(signal)
@@ -223,8 +253,12 @@ class TestHistoricalAgent:
         initial = agent.reliability
         # High intensity demon should be DENIED
         signal = DivineSignal(
-            signal_type=SignalType.DEMON, drift_delta=10.0, intensity=1.0,
-            channel="ultrasonic", source_era="greek", message="extreme temptation",
+            signal_type=SignalType.DEMON,
+            drift_delta=10.0,
+            intensity=1.0,
+            channel="ultrasonic",
+            source_era="greek",
+            message="extreme temptation",
             tongue_affinity="av",
         )
         decision = agent.receive_signal(signal)
@@ -256,6 +290,7 @@ class TestHistoricalAgent:
 # ===================================================================
 # Signal Generation
 # ===================================================================
+
 
 class TestSignalGeneration:
 
@@ -317,6 +352,7 @@ class TestSignalGeneration:
 # Natural Learning Study
 # ===================================================================
 
+
 class TestNaturalLearningStudy:
 
     def test_single_epoch(self):
@@ -349,9 +385,18 @@ class TestNaturalLearningStudy:
         study = NaturalLearningStudy(agent=agent)
         study.run_full_history()
         s = study.summary()
-        required = {"agent", "total_signals", "total_corrections", "total_temptations",
-                     "final_reliability", "final_drift", "resilience", "epochs",
-                     "reliability_trajectory", "drift_trajectory"}
+        required = {
+            "agent",
+            "total_signals",
+            "total_corrections",
+            "total_temptations",
+            "final_reliability",
+            "final_drift",
+            "resilience",
+            "epochs",
+            "reliability_trajectory",
+            "drift_trajectory",
+        }
         assert required <= set(s.keys())
 
     def test_epoch_signal_mix_format(self):
@@ -365,6 +410,7 @@ class TestNaturalLearningStudy:
 # ===================================================================
 # Control Group Studies
 # ===================================================================
+
 
 class TestControlGroups:
 
@@ -387,6 +433,7 @@ class TestControlGroups:
 # ===================================================================
 # The Thesis Test — The Core Prediction
 # ===================================================================
+
 
 class TestDivineThesis:
     """The central thesis: balanced correction + adversity produces
@@ -428,15 +475,15 @@ class TestDivineThesis:
         (like Augustine: 7 angels, 13 demons per era) still achieve
         positive reliability."""
         study = study_historical_panel(
-            "Augustine", "roman_church",
+            "Augustine",
+            "roman_church",
             "philosophy, confession",
             "ordered love",
             angels_per_era=7,
             demons_per_era=13,
         )
         assert study.agent.reliability > 0.0, (
-            f"Even heavily tested agents should maintain positive reliability, "
-            f"got {study.agent.reliability:.4f}"
+            f"Even heavily tested agents should maintain positive reliability, " f"got {study.agent.reliability:.4f}"
         )
 
 
@@ -444,15 +491,26 @@ class TestDivineThesis:
 # Full Experiment
 # ===================================================================
 
+
 class TestFullExperiment:
 
     def test_run_divine_experiment(self):
         """The full experiment runs without error and produces all expected agents."""
         studies = run_divine_experiment()
         expected = {
-            "Pythagoras", "Euclid", "Al-Khwarizmi", "Newton", "Euler", "Turing",
-            "Moses", "Paul", "Hildegard", "Augustine",
-            "Control-Angel", "Control-Demon", "Control-Balanced",
+            "Pythagoras",
+            "Euclid",
+            "Al-Khwarizmi",
+            "Newton",
+            "Euler",
+            "Turing",
+            "Moses",
+            "Paul",
+            "Hildegard",
+            "Augustine",
+            "Control-Angel",
+            "Control-Demon",
+            "Control-Balanced",
         }
         assert expected <= set(studies.keys())
 
@@ -469,9 +527,9 @@ class TestFullExperiment:
         studies = run_divine_experiment()
         for name, study in studies.items():
             if name != "Control-Demon":  # Demon-only is expected to degrade
-                assert study.agent.reliability > 0.0, (
-                    f"{name} should have positive reliability, got {study.agent.reliability:.4f}"
-                )
+                assert (
+                    study.agent.reliability > 0.0
+                ), f"{name} should have positive reliability, got {study.agent.reliability:.4f}"
 
     def test_musical_interval_progression(self):
         """Verify the interval ratios decrease through the eras (until octave jump)."""

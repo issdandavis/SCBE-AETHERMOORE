@@ -61,14 +61,19 @@ from tokenizer.sacred_tongues_hf import (
 PHI = 1.618033988749895
 ALL_TONGUES = ["ko", "av", "ru", "ca", "um", "dr"]
 TONGUE_FREQUENCIES = {
-    "ko": 440.0, "av": 523.25, "ru": 329.63,
-    "ca": 659.25, "um": 293.66, "dr": 392.0,
+    "ko": 440.0,
+    "av": 523.25,
+    "ru": 329.63,
+    "ca": 659.25,
+    "um": 293.66,
+    "dr": 392.0,
 }
 
 
 # ============================================================
 # FIXTURES
 # ============================================================
+
 
 @pytest.fixture
 def tokenizer():
@@ -96,6 +101,7 @@ def bridge():
 # 1. BIJECTIVITY & DETERMINISM
 # ============================================================
 
+
 class TestBijectivity:
     """Every byte maps to exactly one token per tongue, and back."""
 
@@ -108,8 +114,7 @@ class TestBijectivity:
                 tokens = tokenizer.encode_bytes(tongue, data)
                 recovered = tokenizer.decode_tokens(tongue, tokens)
                 assert recovered == data, (
-                    f"Tongue {tongue}, byte {byte_val}: "
-                    f"encoded to {tokens}, decoded to {recovered!r}"
+                    f"Tongue {tongue}, byte {byte_val}: " f"encoded to {tokens}, decoded to {recovered!r}"
                 )
 
     @pytest.mark.homebrew
@@ -156,18 +161,15 @@ class TestBijectivity:
             for text in texts:
                 ids = hf_tokenizer.encode(text, tongue=tongue)
                 recovered = hf_tokenizer.decode(ids)
-                assert recovered == text, (
-                    f"Round-trip failed for tongue={tongue}, text={text!r}: "
-                    f"got {recovered!r}"
-                )
+                assert recovered == text, f"Round-trip failed for tongue={tongue}, text={text!r}: " f"got {recovered!r}"
 
     @pytest.mark.unit
     def test_hf_encode_decode_unicode(self, hf_tokenizer):
         """Unicode text round-trips through encode/decode."""
         texts = [
-            "cafe\u0301",          # combining accent
+            "cafe\u0301",  # combining accent
             "\u00e9\u00e8\u00ea",  # accented latin
-            "\u4e16\u754c",        # Chinese (世界)
+            "\u4e16\u754c",  # Chinese (世界)
             "\u0410\u0411\u0412",  # Cyrillic (АБВ)
             "\U0001f525\U0001f30d",  # emoji (🔥🌍)
         ]
@@ -180,6 +182,7 @@ class TestBijectivity:
 # ============================================================
 # 2. VOCABULARY INTEGRITY
 # ============================================================
+
 
 class TestVocabularyIntegrity:
     """No collisions, no gaps, correct sizes."""
@@ -197,9 +200,7 @@ class TestVocabularyIntegrity:
         """Each tongue has exactly 256 unique tokens."""
         for tongue in ALL_TONGUES:
             tokens = set(tokenizer.byte_to_token[tongue])
-            assert len(tokens) == 256, (
-                f"Tongue {tongue} has {len(tokens)} unique tokens, expected 256"
-            )
+            assert len(tokens) == 256, f"Tongue {tongue} has {len(tokens)} unique tokens, expected 256"
 
     @pytest.mark.unit
     def test_no_token_collisions_across_tongues(self, tokenizer):
@@ -221,9 +222,7 @@ class TestVocabularyIntegrity:
     def test_hf_vocab_covers_all_ids(self, hf_tokenizer):
         """Every ID from 0 to TOTAL_VOCAB-1 has a token mapping."""
         for token_id in range(TOTAL_VOCAB):
-            assert token_id in hf_tokenizer.id_to_token, (
-                f"ID {token_id} has no token mapping"
-            )
+            assert token_id in hf_tokenizer.id_to_token, f"ID {token_id} has no token mapping"
 
     @pytest.mark.unit
     def test_hf_vocab_no_gaps(self, hf_tokenizer):
@@ -249,9 +248,7 @@ class TestVocabularyIntegrity:
         expected_offset = NUM_SPECIAL  # 12
         for tongue in ALL_TONGUES:
             actual = hf_tokenizer.tongue_offset[tongue]
-            assert actual == expected_offset, (
-                f"Tongue {tongue} offset: expected {expected_offset}, got {actual}"
-            )
+            assert actual == expected_offset, f"Tongue {tongue} offset: expected {expected_offset}, got {actual}"
             expected_offset += 256
 
     @pytest.mark.unit
@@ -274,22 +271,19 @@ class TestVocabularyIntegrity:
     def test_tongue_spec_no_duplicate_prefixes(self):
         """No duplicate prefixes within a tongue."""
         for tongue_code, spec in TONGUES.items():
-            assert len(set(spec.prefixes)) == 16, (
-                f"{tongue_code} has duplicate prefixes: {spec.prefixes}"
-            )
+            assert len(set(spec.prefixes)) == 16, f"{tongue_code} has duplicate prefixes: {spec.prefixes}"
 
     @pytest.mark.unit
     def test_tongue_spec_no_duplicate_suffixes(self):
         """No duplicate suffixes within a tongue."""
         for tongue_code, spec in TONGUES.items():
-            assert len(set(spec.suffixes)) == 16, (
-                f"{tongue_code} has duplicate suffixes: {spec.suffixes}"
-            )
+            assert len(set(spec.suffixes)) == 16, f"{tongue_code} has duplicate suffixes: {spec.suffixes}"
 
 
 # ============================================================
 # 3. TONGUE ISOLATION
 # ============================================================
+
 
 class TestTongueIsolation:
     """Tongues must not leak into each other."""
@@ -304,9 +298,7 @@ class TestTongueIsolation:
                 tokens_by_tongue[tongue] = token
             # At least some tongues should differ (all 6 differ for most bytes)
             unique_tokens = set(tokens_by_tongue.values())
-            assert len(unique_tokens) > 1, (
-                f"Byte {byte_val} maps to same token in all tongues: {tokens_by_tongue}"
-            )
+            assert len(unique_tokens) > 1, f"Byte {byte_val} maps to same token in all tongues: {tokens_by_tongue}"
 
     @pytest.mark.unit
     def test_cross_tongue_decode_fails(self, tokenizer):
@@ -326,8 +318,7 @@ class TestTongueIsolation:
             offset = hf_tokenizer.tongue_offset[tongue]
             for token_id in ids:
                 assert offset <= token_id < offset + 256, (
-                    f"Tongue {tongue}: ID {token_id} outside range "
-                    f"[{offset}, {offset + 256})"
+                    f"Tongue {tongue}: ID {token_id} outside range " f"[{offset}, {offset + 256})"
                 )
 
     @pytest.mark.unit
@@ -337,14 +328,14 @@ class TestTongueIsolation:
             ids = hf_tokenizer.encode("hello", tongue=tongue, add_special_tokens=True)
             tongue_marker_id = SPECIAL_TOKENS[f"<tongue:{tongue}>"]
             assert tongue_marker_id in ids, (
-                f"Tongue marker <tongue:{tongue}> (ID {tongue_marker_id}) "
-                f"not found in encoded IDs: {ids}"
+                f"Tongue marker <tongue:{tongue}> (ID {tongue_marker_id}) " f"not found in encoded IDs: {ids}"
             )
 
 
 # ============================================================
 # 4. HF INTERFACE CONTRACT
 # ============================================================
+
 
 class TestHFInterfaceContract:
     """The tokenizer must fulfill HuggingFace's expected interface."""
@@ -443,9 +434,7 @@ class TestHFInterfaceContract:
     def test_chat_template_generation_prompt(self, hf_tokenizer):
         """add_generation_prompt appends assistant marker."""
         messages = [{"role": "user", "content": "Hello"}]
-        text = hf_tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
+        text = hf_tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         assert text.endswith("<|assistant|>\n") or "<|assistant|>" in text.split("\n")[-1]
 
     @pytest.mark.unit
@@ -472,9 +461,7 @@ class TestHFInterfaceContract:
         for tongue in ALL_TONGUES:
             original_ids = hf_tokenizer.encode(text, tongue=tongue)
             loaded_ids = loaded.encode(text, tongue=tongue)
-            assert original_ids == loaded_ids, (
-                f"Save/load changed encoding for tongue {tongue}"
-            )
+            assert original_ids == loaded_ids, f"Save/load changed encoding for tongue {tongue}"
 
     @pytest.mark.unit
     def test_saved_config_content(self, hf_tokenizer, tmp_path):
@@ -495,6 +482,7 @@ class TestHFInterfaceContract:
 # ============================================================
 # 5. BRIDGE LAYER GEOMETRY
 # ============================================================
+
 
 class TestBridgeGeometry:
     """The bridge must preserve structure and produce correct shapes."""
@@ -527,9 +515,7 @@ class TestBridgeGeometry:
         ids_b = torch.tensor([[268, 269, 270, 271, 272]])  # AV tokens
         out_a = bridge(ids_a)
         out_b = bridge(ids_b)
-        assert not torch.allclose(out_a, out_b, atol=1e-6), (
-            "Different tongue tokens produced identical bridge output"
-        )
+        assert not torch.allclose(out_a, out_b, atol=1e-6), "Different tongue tokens produced identical bridge output"
 
     @pytest.mark.unit
     def test_bridge_tongue_bias_initialized(self, bridge):
@@ -537,12 +523,8 @@ class TestBridgeGeometry:
         weights = bridge.tongue_bias.weight.detach()
         # Dim 0 should have phi-scaled frequency
         for i in range(6):
-            assert weights[i, 0].abs() > 0.01, (
-                f"Tongue {i} bias dim 0 is near zero — harmonic init failed"
-            )
-            assert weights[i, 1].abs() > 0.01, (
-                f"Tongue {i} bias dim 1 is near zero — frequency init failed"
-            )
+            assert weights[i, 0].abs() > 0.01, f"Tongue {i} bias dim 0 is near zero — harmonic init failed"
+            assert weights[i, 1].abs() > 0.01, f"Tongue {i} bias dim 1 is near zero — frequency init failed"
 
     @pytest.mark.unit
     def test_bridge_phi_scaling_order(self, bridge):
@@ -552,8 +534,7 @@ class TestBridgeGeometry:
         # Phi scaling means values should generally increase
         # (not strictly due to frequency normalization, but the trend should be upward)
         assert dim0_values[-1] > dim0_values[0], (
-            f"Phi scaling not reflected: first={dim0_values[0]:.4f}, "
-            f"last={dim0_values[-1]:.4f}"
+            f"Phi scaling not reflected: first={dim0_values[0]:.4f}, " f"last={dim0_values[-1]:.4f}"
         )
 
     @pytest.mark.unit
@@ -565,9 +546,7 @@ class TestBridgeGeometry:
         ids = torch.tensor([[12, 268, 524, 780, 1036, 1292, 0, 3]])
         tongue_idx = bridge._get_tongue_indices(ids)
         expected = torch.tensor([[0, 1, 2, 3, 4, 5, -1, -1]])
-        assert torch.equal(tongue_idx, expected), (
-            f"Tongue detection wrong: {tongue_idx} != {expected}"
-        )
+        assert torch.equal(tongue_idx, expected), f"Tongue detection wrong: {tongue_idx} != {expected}"
 
     @pytest.mark.unit
     def test_bridge_special_tokens_no_tongue_bias(self, bridge):
@@ -615,14 +594,13 @@ class TestBridgeGeometry:
             out = bridge(ids)
         # LayerNorm output should have reasonable magnitude
         mean_abs = out.abs().mean().item()
-        assert 0.01 < mean_abs < 100.0, (
-            f"Bridge output magnitude suspicious: mean_abs={mean_abs}"
-        )
+        assert 0.01 < mean_abs < 100.0, f"Bridge output magnitude suspicious: mean_abs={mean_abs}"
 
 
 # ============================================================
 # 6. CROSS-MODAL CONSISTENCY
 # ============================================================
+
 
 class TestCrossModalConsistency:
     """Embedding neighborhoods should be preserved across projections."""
@@ -650,12 +628,10 @@ class TestCrossModalConsistency:
             mixed_var = mixed_out.var(dim=0).mean().item()
 
             assert mixed_var > ko_var, (
-                f"Mixed tongue variance ({mixed_var:.6f}) should exceed "
-                f"same-tongue variance ({ko_var:.6f})"
+                f"Mixed tongue variance ({mixed_var:.6f}) should exceed " f"same-tongue variance ({ko_var:.6f})"
             )
             assert mixed_var > dr_var, (
-                f"Mixed tongue variance ({mixed_var:.6f}) should exceed "
-                f"same-tongue variance ({dr_var:.6f})"
+                f"Mixed tongue variance ({mixed_var:.6f}) should exceed " f"same-tongue variance ({dr_var:.6f})"
             )
 
     @pytest.mark.integration
@@ -673,11 +649,9 @@ class TestCrossModalConsistency:
 
         # Check all pairs are distinct
         for i, t1 in enumerate(ALL_TONGUES):
-            for t2 in ALL_TONGUES[i + 1:]:
+            for t2 in ALL_TONGUES[i + 1 :]:
                 dist = (centroids[t1] - centroids[t2]).norm().item()
-                assert dist > 0.01, (
-                    f"Tongue centroids {t1} and {t2} collapsed: dist={dist:.6f}"
-                )
+                assert dist > 0.01, f"Tongue centroids {t1} and {t2} collapsed: dist={dist:.6f}"
 
     @pytest.mark.integration
     def test_harmonic_frequency_ordering_in_bias(self, bridge):
@@ -688,14 +662,15 @@ class TestCrossModalConsistency:
         # UM (293.66) should have smallest, CA (659.25) should have largest
         um_idx = ALL_TONGUES.index("um")
         ca_idx = ALL_TONGUES.index("ca")
-        assert freq_vals[um_idx] < freq_vals[ca_idx], (
-            f"UM freq ({freq_vals[um_idx]:.4f}) should be < CA freq ({freq_vals[ca_idx]:.4f})"
-        )
+        assert (
+            freq_vals[um_idx] < freq_vals[ca_idx]
+        ), f"UM freq ({freq_vals[um_idx]:.4f}) should be < CA freq ({freq_vals[ca_idx]:.4f})"
 
 
 # ============================================================
 # 7. EDGE CASES
 # ============================================================
+
 
 class TestEdgeCases:
     """Boundary conditions and unusual inputs."""
@@ -798,6 +773,7 @@ class TestEdgeCases:
 # 8. DRIFT DETECTION
 # ============================================================
 
+
 class TestDriftDetection:
     """Detect if tokenizer behavior changes between versions."""
 
@@ -821,13 +797,10 @@ class TestDriftDetection:
         for tongue in ALL_TONGUES:
             for b in range(256):
                 token = tokenizer.byte_to_token[tongue][b]
-                assert "'" in token, (
-                    f"Tongue {tongue}, byte {b}: token {token!r} missing apostrophe"
-                )
+                assert "'" in token, f"Tongue {tongue}, byte {b}: token {token!r} missing apostrophe"
                 parts = token.split("'")
                 assert len(parts) == 2, (
-                    f"Tongue {tongue}, byte {b}: token {token!r} has "
-                    f"{len(parts)} parts, expected 2"
+                    f"Tongue {tongue}, byte {b}: token {token!r} has " f"{len(parts)} parts, expected 2"
                 )
                 assert len(parts[0]) > 0, f"Empty prefix in {token!r}"
                 assert len(parts[1]) > 0, f"Empty suffix in {token!r}"
@@ -842,8 +815,7 @@ class TestDriftDetection:
                 expected = f"{spec.prefixes[hi]}'{spec.suffixes[lo]}"
                 actual = tokenizer.byte_to_token[tongue_code][b]
                 assert actual == expected, (
-                    f"Tongue {tongue_code}, byte {b} (0x{b:02X}): "
-                    f"expected {expected!r}, got {actual!r}"
+                    f"Tongue {tongue_code}, byte {b} (0x{b:02X}): " f"expected {expected!r}, got {actual!r}"
                 )
 
     @pytest.mark.unit
@@ -866,9 +838,7 @@ class TestDriftDetection:
 
         # All should differ (different frequencies + different tokens)
         values = list(fingerprints.values())
-        assert len(set(values)) == 6, (
-            f"Expected 6 distinct fingerprints, got {len(set(values))}: {fingerprints}"
-        )
+        assert len(set(values)) == 6, f"Expected 6 distinct fingerprints, got {len(set(values))}: {fingerprints}"
 
     @pytest.mark.unit
     def test_harmonic_fingerprint_bounded(self, tokenizer):
@@ -877,14 +847,13 @@ class TestDriftDetection:
             tokens = tokenizer.encode_bytes(tongue, b"bound test")
             fp = tokenizer.compute_harmonic_fingerprint(tongue, tokens)
             max_freq = TONGUES[tongue].harmonic_frequency
-            assert 0 <= fp <= max_freq, (
-                f"Tongue {tongue}: fingerprint {fp} outside [0, {max_freq}]"
-            )
+            assert 0 <= fp <= max_freq, f"Tongue {tongue}: fingerprint {fp} outside [0, {max_freq}]"
 
 
 # ============================================================
 # 9. ADVERSARIAL INPUTS
 # ============================================================
+
 
 class TestAdversarial:
     """Malformed and adversarial inputs must fail gracefully."""
@@ -970,6 +939,7 @@ class TestAdversarial:
 # 10. PERFORMANCE
 # ============================================================
 
+
 class TestPerformance:
     """Encoding and bridge throughput."""
 
@@ -1029,14 +999,14 @@ class TestPerformance:
         # Should be within 3x of each other (generous for system noise)
         ratio = max(time_start, time_end) / max(min(time_start, time_end), 1e-9)
         assert ratio < 3.0, (
-            f"Lookup time varies too much: byte 0={time_start:.6f}s, "
-            f"byte 255={time_end:.6f}s, ratio={ratio:.1f}"
+            f"Lookup time varies too much: byte 0={time_start:.6f}s, " f"byte 255={time_end:.6f}s, ratio={ratio:.1f}"
         )
 
 
 # ============================================================
 # 11. SINGLETON & MODULE-LEVEL
 # ============================================================
+
 
 class TestModuleLevel:
     """Module-level constants and singleton correctness."""
@@ -1062,9 +1032,7 @@ class TestModuleLevel:
     def test_section_tongues_mapping(self):
         """All RWP section mappings use valid tongue codes."""
         for section, tongue_code in SECTION_TONGUES.items():
-            assert tongue_code in TONGUES, (
-                f"Section {section} maps to unknown tongue {tongue_code}"
-            )
+            assert tongue_code in TONGUES, f"Section {section} maps to unknown tongue {tongue_code}"
 
     @pytest.mark.unit
     def test_section_tongues_completeness(self):
