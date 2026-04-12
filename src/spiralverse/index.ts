@@ -56,7 +56,6 @@ export interface VerifyResult {
   error?: string;
 }
 
-
 /** Options for signing */
 export interface SignOptions {
   kid?: string;
@@ -144,7 +143,6 @@ function toBase64Url(buf: Buffer): string {
 function fromBase64Url(s: string): Buffer {
   return Buffer.from(s, 'base64url');
 }
-
 
 /**
  * Create HMAC-SHA256 signature
@@ -440,7 +438,12 @@ export function suggestPolicy(action: string): PolicyLevel {
   return ACTION_POLICIES[normalizedAction] ?? 'standard';
 }
 
-export type { RWP2WireEnvelope, RWP2WireSig, RWP2WireTongue, VerifyWireResult } from './rwp_v2_wire';
+export type {
+  RWP2WireEnvelope,
+  RWP2WireSig,
+  RWP2WireTongue,
+  VerifyWireResult,
+} from './rwp_v2_wire';
 export { clearWireNonceCache, signRoundtableV2Wire, verifyRoundtableV2Wire } from './rwp_v2_wire';
 export { generateSyntheticConversationV2Wire } from './data_factory';
 

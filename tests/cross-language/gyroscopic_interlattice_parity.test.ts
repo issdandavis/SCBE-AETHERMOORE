@@ -31,7 +31,11 @@ function pyEval(expr: string): string {
   try {
     return execSync(`python ${TMP_SCRIPT}`, { cwd: CWD, encoding: 'utf-8' }).trim();
   } finally {
-    try { unlinkSync(TMP_SCRIPT); } catch { /* ignore */ }
+    try {
+      unlinkSync(TMP_SCRIPT);
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -47,9 +51,7 @@ describe('Gyroscopic Interlattice Cross-Language Parity', () => {
     const couples = allCouplings();
     for (const c of couples) {
       const tsJ = couplingStrength(c.tongueA, c.tongueB);
-      const pyJ = parseFloat(
-        pyEval(`coupling_strength('${c.tongueA}', '${c.tongueB}')`)
-      );
+      const pyJ = parseFloat(pyEval(`coupling_strength('${c.tongueA}', '${c.tongueB}')`));
       // Allow small floating point differences
       if (tsJ > 1e-6) {
         expect(tsJ).toBeCloseTo(pyJ, 6);
