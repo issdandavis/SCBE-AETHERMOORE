@@ -18,7 +18,6 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { sha512 } from '@noble/hashes/sha2.js';
 import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
 import {
   evaluateTrustState,
