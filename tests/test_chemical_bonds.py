@@ -32,10 +32,10 @@ from governance.chemical_bonds import (
     batch_analyze,
 )
 
-
 # ============================================================
 # Constants
 # ============================================================
+
 
 @pytest.mark.unit
 class TestConstants:
@@ -65,6 +65,7 @@ class TestConstants:
 # TongueMolecule construction
 # ============================================================
 
+
 @pytest.mark.unit
 class TestTongueMoleculeConstruction:
     def test_requires_6_coords(self):
@@ -91,6 +92,7 @@ class TestTongueMoleculeConstruction:
 # ============================================================
 # Bond computation
 # ============================================================
+
 
 @pytest.mark.unit
 class TestBonds:
@@ -158,6 +160,7 @@ class TestBonds:
 # Energy, stability, broken
 # ============================================================
 
+
 @pytest.mark.unit
 class TestEnergyStability:
     def test_total_energy_nonnegative(self):
@@ -194,6 +197,7 @@ class TestEnergyStability:
 # Fuzzy membership
 # ============================================================
 
+
 @pytest.mark.unit
 class TestFuzzyMembership:
     def test_fuzzy_safe_high_for_low_energy(self):
@@ -228,6 +232,7 @@ class TestFuzzyMembership:
 # Dominant class
 # ============================================================
 
+
 @pytest.mark.unit
 class TestDominantClass:
     def test_returns_string(self):
@@ -254,6 +259,7 @@ class TestDominantClass:
 # ============================================================
 # MoleculeReport
 # ============================================================
+
 
 @pytest.mark.unit
 class TestMoleculeReport:
@@ -294,6 +300,7 @@ class TestMoleculeReport:
 # batch_analyze
 # ============================================================
 
+
 @pytest.mark.integration
 class TestBatchAnalyze:
     def test_returns_list(self):
@@ -326,6 +333,7 @@ class TestBatchAnalyze:
 # ============================================================
 # Edge cases
 # ============================================================
+
 
 @pytest.mark.unit
 class TestEdgeCases:

@@ -37,7 +37,6 @@ from src.crypto.polymorphic_multipath import (
     format_multipath_report,
 )
 
-
 # ===================================================================
 # Fixtures
 # ===================================================================
@@ -61,6 +60,7 @@ DIVERSE_TEXTS = [
 # ===================================================================
 # Adjacent trit map
 # ===================================================================
+
 
 class TestAdjacentTrit:
     """Verify the trit flip map is consistent."""
@@ -87,6 +87,7 @@ class TestAdjacentTrit:
 # ===================================================================
 # Fork identification
 # ===================================================================
+
 
 class TestForkIdentification:
     """Test that polymorphic axes are correctly identified."""
@@ -137,14 +138,18 @@ class TestForkIdentification:
 # Sibling generation
 # ===================================================================
 
+
 class TestSiblingGeneration:
     """Test combinatorial sibling generation."""
 
     def _make_fork(self, axis: str, idx: int, orig: int, flip: int) -> TritFork:
         return TritFork(
-            axis=axis, axis_index=idx,
-            original_trit=orig, flipped_trit=flip,
-            deviation=0.04, edge_distance=0.005,
+            axis=axis,
+            axis_index=idx,
+            original_trit=orig,
+            flipped_trit=flip,
+            deviation=0.04,
+            edge_distance=0.005,
             boundary_side="upper",
         )
 
@@ -156,8 +161,7 @@ class TestSiblingGeneration:
     def test_one_fork_one_sibling(self):
         """1 fork -> 2^1 - 1 = 1 sibling."""
         sig = compute_trit_signal("one fork test")
-        fork = self._make_fork("structure", 0, sig.c_structure,
-                               0 if sig.c_structure != 0 else +1)
+        fork = self._make_fork("structure", 0, sig.c_structure, 0 if sig.c_structure != 0 else +1)
         siblings = _generate_siblings(sig, [fork])
         assert len(siblings) == 1
         # Sibling should differ on structure axis
@@ -169,10 +173,8 @@ class TestSiblingGeneration:
     def test_two_forks_three_siblings(self):
         """2 forks -> 2^2 - 1 = 3 siblings."""
         sig = compute_trit_signal("two fork test")
-        f1 = self._make_fork("structure", 0, sig.c_structure,
-                             0 if sig.c_structure != 0 else +1)
-        f2 = self._make_fork("creativity", 2, sig.c_creativity,
-                             0 if sig.c_creativity != 0 else -1)
+        f1 = self._make_fork("structure", 0, sig.c_structure, 0 if sig.c_structure != 0 else +1)
+        f2 = self._make_fork("creativity", 2, sig.c_creativity, 0 if sig.c_creativity != 0 else -1)
         siblings = _generate_siblings(sig, [f1, f2])
         assert len(siblings) == 3
         # Should have: flip s only, flip c only, flip both
@@ -203,8 +205,7 @@ class TestSiblingGeneration:
     def test_siblings_differ_from_primary(self):
         """No sibling should have the same trit vector as the primary."""
         sig = compute_trit_signal("differ from primary test")
-        f1 = self._make_fork("structure", 0, sig.c_structure,
-                             0 if sig.c_structure != 0 else +1)
+        f1 = self._make_fork("structure", 0, sig.c_structure, 0 if sig.c_structure != 0 else +1)
         siblings = _generate_siblings(sig, [f1])
         primary_trit = sig.content_vector
         for sib in siblings:
@@ -215,6 +216,7 @@ class TestSiblingGeneration:
 # Fork signature
 # ===================================================================
 
+
 class TestForkSignature:
     """Test compact fork description formatting."""
 
@@ -223,23 +225,36 @@ class TestForkSignature:
 
     def test_single_fork_format(self):
         fork = TritFork(
-            axis="structure", axis_index=0,
-            original_trit=+1, flipped_trit=0,
-            deviation=0.04, edge_distance=0.005,
+            axis="structure",
+            axis_index=0,
+            original_trit=+1,
+            flipped_trit=0,
+            deviation=0.04,
+            edge_distance=0.005,
             boundary_side="upper",
         )
         sig = _fork_signature([fork])
         assert sig == "s:+1->+0"
 
     def test_multi_fork_comma_separated(self):
-        f1 = TritFork(axis="structure", axis_index=0,
-                      original_trit=+1, flipped_trit=0,
-                      deviation=0.04, edge_distance=0.005,
-                      boundary_side="upper")
-        f2 = TritFork(axis="creativity", axis_index=2,
-                      original_trit=-1, flipped_trit=0,
-                      deviation=-0.04, edge_distance=0.005,
-                      boundary_side="lower")
+        f1 = TritFork(
+            axis="structure",
+            axis_index=0,
+            original_trit=+1,
+            flipped_trit=0,
+            deviation=0.04,
+            edge_distance=0.005,
+            boundary_side="upper",
+        )
+        f2 = TritFork(
+            axis="creativity",
+            axis_index=2,
+            original_trit=-1,
+            flipped_trit=0,
+            deviation=-0.04,
+            edge_distance=0.005,
+            boundary_side="lower",
+        )
         sig = _fork_signature([f1, f2])
         assert "s:+1->+0" in sig
         assert "c:-1->+0" in sig
@@ -250,6 +265,7 @@ class TestForkSignature:
 # Monty Hall gain
 # ===================================================================
 
+
 class TestMontyHallGain:
     """Test information gain computation."""
 
@@ -258,26 +274,46 @@ class TestMontyHallGain:
 
     def test_closer_to_boundary_higher_gain(self):
         """A fork at edge_distance=0.001 should have higher gain than 0.008."""
-        close = TritFork(axis="structure", axis_index=0,
-                         original_trit=+1, flipped_trit=0,
-                         deviation=0.049, edge_distance=0.001,
-                         boundary_side="upper")
-        far = TritFork(axis="structure", axis_index=0,
-                       original_trit=+1, flipped_trit=0,
-                       deviation=0.042, edge_distance=0.008,
-                       boundary_side="upper")
+        close = TritFork(
+            axis="structure",
+            axis_index=0,
+            original_trit=+1,
+            flipped_trit=0,
+            deviation=0.049,
+            edge_distance=0.001,
+            boundary_side="upper",
+        )
+        far = TritFork(
+            axis="structure",
+            axis_index=0,
+            original_trit=+1,
+            flipped_trit=0,
+            deviation=0.042,
+            edge_distance=0.008,
+            boundary_side="upper",
+        )
         assert _monty_hall_gain([close]) > _monty_hall_gain([far])
 
     def test_multi_fork_superadditive(self):
         """Two forks should give more gain than either alone."""
-        f1 = TritFork(axis="structure", axis_index=0,
-                      original_trit=+1, flipped_trit=0,
-                      deviation=0.049, edge_distance=0.003,
-                      boundary_side="upper")
-        f2 = TritFork(axis="creativity", axis_index=2,
-                      original_trit=-1, flipped_trit=0,
-                      deviation=-0.048, edge_distance=0.003,
-                      boundary_side="lower")
+        f1 = TritFork(
+            axis="structure",
+            axis_index=0,
+            original_trit=+1,
+            flipped_trit=0,
+            deviation=0.049,
+            edge_distance=0.003,
+            boundary_side="upper",
+        )
+        f2 = TritFork(
+            axis="creativity",
+            axis_index=2,
+            original_trit=-1,
+            flipped_trit=0,
+            deviation=-0.048,
+            edge_distance=0.003,
+            boundary_side="lower",
+        )
         gain_1 = _monty_hall_gain([f1])
         gain_2 = _monty_hall_gain([f2])
         gain_both = _monty_hall_gain([f1, f2])
@@ -287,33 +323,54 @@ class TestMontyHallGain:
     def test_gain_bounded(self):
         """Gain should never exceed 3.0 (cap)."""
         forks = [
-            TritFork(axis="structure", axis_index=0,
-                     original_trit=+1, flipped_trit=0,
-                     deviation=0.05, edge_distance=0.0,
-                     boundary_side="upper"),
-            TritFork(axis="stability", axis_index=1,
-                     original_trit=0, flipped_trit=-1,
-                     deviation=-0.05, edge_distance=0.0,
-                     boundary_side="lower"),
-            TritFork(axis="creativity", axis_index=2,
-                     original_trit=-1, flipped_trit=0,
-                     deviation=-0.05, edge_distance=0.0,
-                     boundary_side="lower"),
+            TritFork(
+                axis="structure",
+                axis_index=0,
+                original_trit=+1,
+                flipped_trit=0,
+                deviation=0.05,
+                edge_distance=0.0,
+                boundary_side="upper",
+            ),
+            TritFork(
+                axis="stability",
+                axis_index=1,
+                original_trit=0,
+                flipped_trit=-1,
+                deviation=-0.05,
+                edge_distance=0.0,
+                boundary_side="lower",
+            ),
+            TritFork(
+                axis="creativity",
+                axis_index=2,
+                original_trit=-1,
+                flipped_trit=0,
+                deviation=-0.05,
+                edge_distance=0.0,
+                boundary_side="lower",
+            ),
         ]
         assert _monty_hall_gain(forks) <= 3.0
 
     def test_gain_positive_for_any_fork(self):
         """Any fork should produce positive gain."""
-        fork = TritFork(axis="structure", axis_index=0,
-                        original_trit=+1, flipped_trit=0,
-                        deviation=0.049, edge_distance=0.005,
-                        boundary_side="upper")
+        fork = TritFork(
+            axis="structure",
+            axis_index=0,
+            original_trit=+1,
+            flipped_trit=0,
+            deviation=0.049,
+            edge_distance=0.005,
+            boundary_side="upper",
+        )
         assert _monty_hall_gain([fork]) > 0.0
 
 
 # ===================================================================
 # Full scoring pipeline
 # ===================================================================
+
 
 class TestScoreAndExpand:
     """Test the complete score-and-expand pipeline."""
@@ -355,6 +412,7 @@ class TestScoreAndExpand:
 # Batch processing
 # ===================================================================
 
+
 class TestBatch:
     """Test batch multi-path generation."""
 
@@ -390,6 +448,7 @@ class TestBatch:
 # Batch with wide threshold (force polymorphism)
 # ===================================================================
 
+
 class TestBatchWideThreshold:
     """Test batch with wide edge threshold to force multi-path generation."""
 
@@ -418,6 +477,7 @@ class TestBatchWideThreshold:
 # SFT flattening
 # ===================================================================
 
+
 class TestFlattenForSFT:
     """Test SFT export flattening."""
 
@@ -434,9 +494,17 @@ class TestFlattenForSFT:
         assert len(primaries) == self.batch.total_input
 
     def test_all_records_have_required_fields(self):
-        required = {"text", "content_trit", "geometric_trit", "label",
-                    "is_primary", "fork_group", "flipped_axes",
-                    "monty_hall_gain", "path_count"}
+        required = {
+            "text",
+            "content_trit",
+            "geometric_trit",
+            "label",
+            "is_primary",
+            "fork_group",
+            "flipped_axes",
+            "monty_hall_gain",
+            "path_count",
+        }
         for rec in self.flat:
             assert required.issubset(set(rec.keys()))
 
@@ -453,6 +521,7 @@ class TestFlattenForSFT:
     def test_fork_groups_link_primary_to_siblings(self):
         """Each fork_group should have exactly one primary."""
         from collections import Counter
+
         groups = {}
         for rec in self.flat:
             gid = rec["fork_group"]
@@ -492,6 +561,7 @@ class TestFlattenForSFT:
 # ===================================================================
 # The Monty Hall insight
 # ===================================================================
+
 
 class TestMontyHallInsight:
     """Test the core insight: boundary records are most informative."""
@@ -537,6 +607,7 @@ class TestMontyHallInsight:
 # ===================================================================
 # Report
 # ===================================================================
+
 
 class TestReport:
     """Test report formatting."""

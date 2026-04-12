@@ -56,18 +56,19 @@ from .polyhedral_node import (
     generate_record,
 )
 
-
 # ---------------------------------------------------------------------------
 # Edge and Graph structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class NodalEdge:
     """Directed edge between two polyhedral records."""
+
     source_hash: str
     target_hash: str
-    weight: float             # [0, 1] — higher = stronger affinity
-    edge_type: str            # "tongue_complement", "dead_tone_rotation", "affinity"
+    weight: float  # [0, 1] — higher = stronger affinity
+    edge_type: str  # "tongue_complement", "dead_tone_rotation", "affinity"
 
 
 @dataclass
@@ -77,6 +78,7 @@ class NodalGraph:
     Nodes are PolyhedralRecords. Edges connect related records.
     Growth happens by sprouting new records from ALLOW nodes.
     """
+
     nodes: Dict[str, PolyhedralRecord] = field(default_factory=dict)
     edges: List[NodalEdge] = field(default_factory=list)
     _edge_index: Dict[str, List[NodalEdge]] = field(default_factory=dict)
@@ -157,13 +159,13 @@ class NodalGraph:
 
     def harvest_negative(self) -> List[PolyhedralRecord]:
         """Get all ESCALATE/DENY records for DPO rejected examples."""
-        return (self.nodes_by_verdict(GovernanceVerdict.ESCALATE)
-                + self.nodes_by_verdict(GovernanceVerdict.DENY))
+        return self.nodes_by_verdict(GovernanceVerdict.ESCALATE) + self.nodes_by_verdict(GovernanceVerdict.DENY)
 
 
 # ---------------------------------------------------------------------------
 # Edge weight computation
 # ---------------------------------------------------------------------------
+
 
 def compute_edge_weight(source: PolyhedralRecord, target: PolyhedralRecord) -> float:
     """Compute affinity-based edge weight between two records.
@@ -183,8 +185,7 @@ def compute_edge_weight(source: PolyhedralRecord, target: PolyhedralRecord) -> f
     tongue_dist = math.sqrt(sum((a - b) ** 2 for a, b in zip(s_vec, t_vec)))
 
     # Consonance distance
-    consonance_dist = abs(source.consonance.dissonance_score
-                          - target.consonance.dissonance_score)
+    consonance_dist = abs(source.consonance.dissonance_score - target.consonance.dissonance_score)
 
     # Dead-tone distance
     dead_tone_dist = 0.0 if source.dead_tone == target.dead_tone else 0.5
@@ -199,6 +200,7 @@ def compute_edge_weight(source: PolyhedralRecord, target: PolyhedralRecord) -> f
 # ---------------------------------------------------------------------------
 # Propagation — the self-growing mechanism
 # ---------------------------------------------------------------------------
+
 
 def sprout_from_node(
     parent: PolyhedralRecord,
@@ -279,12 +281,18 @@ def grow_generation(
                 added += 1
                 # Add edge from parent to child
                 weight = compute_edge_weight(parent, child)
-                graph.add_edge(NodalEdge(
-                    source_hash=parent.node_hash,
-                    target_hash=child.node_hash,
-                    weight=weight,
-                    edge_type="tongue_complement" if child.dominant_tongue != parent.dominant_tongue else "dead_tone_rotation",
-                ))
+                graph.add_edge(
+                    NodalEdge(
+                        source_hash=parent.node_hash,
+                        target_hash=child.node_hash,
+                        weight=weight,
+                        edge_type=(
+                            "tongue_complement"
+                            if child.dominant_tongue != parent.dominant_tongue
+                            else "dead_tone_rotation"
+                        ),
+                    )
+                )
 
     graph.generation_count = next_gen
     return added
@@ -293,6 +301,7 @@ def grow_generation(
 # ---------------------------------------------------------------------------
 # Seeding — initializing the network
 # ---------------------------------------------------------------------------
+
 
 def seed_graph(
     raw_input: str,
@@ -322,7 +331,7 @@ def seed_graph(
     # Connect seeds by tongue affinity
     seed_hashes = list(graph.nodes.keys())
     for i, h1 in enumerate(seed_hashes):
-        for h2 in seed_hashes[i + 1:]:
+        for h2 in seed_hashes[i + 1 :]:
             n1 = graph.nodes[h1]
             n2 = graph.nodes[h2]
             weight = compute_edge_weight(n1, n2)
@@ -362,6 +371,7 @@ def grow_network(
 # Training data export
 # ---------------------------------------------------------------------------
 
+
 def export_training_pairs(graph: NodalGraph) -> Dict[str, List[dict]]:
     """Export the graph as training data pairs.
 
@@ -373,6 +383,7 @@ def export_training_pairs(graph: NodalGraph) -> Dict[str, List[dict]]:
             "boundary": [...],  # QUARANTINE records → hard examples
         }
     """
+
     def record_to_dict(r: PolyhedralRecord) -> dict:
         return {
             "node_hash": r.node_hash,

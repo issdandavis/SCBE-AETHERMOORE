@@ -27,10 +27,10 @@ from src.crypto.manifold_mirror import (
 )
 from src.crypto.harmonic_dark_fill import COMPLEMENT_MAP
 
-
 # ===================================================================
 # Encoding tests
 # ===================================================================
+
 
 class TestEncoding:
     """Test that text encodes to valid Poincare ball points."""
@@ -81,6 +81,7 @@ class TestEncoding:
 # Mirror point tests
 # ===================================================================
 
+
 class TestMirrorPoint:
     """Test individual mirror point computation."""
 
@@ -115,9 +116,7 @@ class TestMirrorPoint:
             for t2 in ALL_TONGUES:
                 if t1 != t2:
                     mp = compute_mirror_point("test text", t1, t2)
-                    assert -2.0 <= mp.interference <= 2.0, (
-                        f"{t1}->{t2}: interference={mp.interference}"
-                    )
+                    assert -2.0 <= mp.interference <= 2.0, f"{t1}->{t2}: interference={mp.interference}"
 
     def test_asymmetry_zero_for_equal_energy(self):
         """When forward and inverse have equal energy, asymmetry should be ~0."""
@@ -129,6 +128,7 @@ class TestMirrorPoint:
 # ===================================================================
 # Three-mode complement pattern
 # ===================================================================
+
 
 class TestComplementModes:
     """Test the three interference modes of complement pairs."""
@@ -142,15 +142,11 @@ class TestComplementModes:
 
     def test_ko_dr_constructive(self):
         """KO<->DR (intent<->structure) should show constructive interference."""
-        assert self.ko_dr.interference > 0.0, (
-            f"KO-DR interference={self.ko_dr.interference:.4f}, expected positive"
-        )
+        assert self.ko_dr.interference > 0.0, f"KO-DR interference={self.ko_dr.interference:.4f}, expected positive"
 
     def test_ru_ca_destructive(self):
         """RU<->CA (truth<->creativity) should show destructive interference."""
-        assert self.ru_ca.interference < 0.0, (
-            f"RU-CA interference={self.ru_ca.interference:.4f}, expected negative"
-        )
+        assert self.ru_ca.interference < 0.0, f"RU-CA interference={self.ru_ca.interference:.4f}, expected negative"
 
     def test_av_um_near_neutral(self):
         """AV<->UM (wisdom<->security) should be closer to neutral than the others."""
@@ -162,24 +158,24 @@ class TestComplementModes:
     def test_ko_dr_deepest_midpoint(self):
         """KO<->DR should have the deepest middle surface (highest radius)."""
         assert self.ko_dr.mid_radius > self.ru_ca.mid_radius, (
-            f"KO-DR r_mid={self.ko_dr.mid_radius:.4f} should > "
-            f"RU-CA r_mid={self.ru_ca.mid_radius:.4f}"
+            f"KO-DR r_mid={self.ko_dr.mid_radius:.4f} should > " f"RU-CA r_mid={self.ru_ca.mid_radius:.4f}"
         )
 
     def test_ru_ca_shallowest_midpoint(self):
         """RU<->CA should have the shallowest middle surface (near origin)."""
         assert self.ru_ca.mid_radius < self.av_um.mid_radius, (
-            f"RU-CA r_mid={self.ru_ca.mid_radius:.4f} should < "
-            f"AV-UM r_mid={self.av_um.mid_radius:.4f}"
+            f"RU-CA r_mid={self.ru_ca.mid_radius:.4f} should < " f"AV-UM r_mid={self.av_um.mid_radius:.4f}"
         )
 
     def test_three_modes_distinct(self):
         """The three complement pairs should have meaningfully different interference."""
-        values = sorted([
-            self.ko_dr.interference,
-            self.av_um.interference,
-            self.ru_ca.interference,
-        ])
+        values = sorted(
+            [
+                self.ko_dr.interference,
+                self.av_um.interference,
+                self.ru_ca.interference,
+            ]
+        )
         # Spread should be > 0.5 (not all clustered together)
         spread = values[-1] - values[0]
         assert spread > 0.5, f"Interference spread too narrow: {spread:.4f}"
@@ -188,6 +184,7 @@ class TestComplementModes:
 # ===================================================================
 # Full experiment tests
 # ===================================================================
+
 
 class TestFullExperiment:
     """Test the complete manifold mirror experiment."""
@@ -227,6 +224,7 @@ class TestFullExperiment:
 # Symmetry tests
 # ===================================================================
 
+
 class TestSymmetry:
     """Test geometric symmetry properties."""
 
@@ -256,6 +254,7 @@ class TestSymmetry:
 # Neural network behavior predictions
 # ===================================================================
 
+
 class TestNeuralPredictions:
     """Tests that validate the neural network behavior predictions
     from the manifold mirror pattern."""
@@ -267,8 +266,7 @@ class TestNeuralPredictions:
         # DR (constructive with KO) should retrieve better than
         # CA (destructive with RU)
         assert result.needle_retrieval["dr"] >= result.needle_retrieval["ca"], (
-            f"DR={result.needle_retrieval['dr']:.4f} should >= "
-            f"CA={result.needle_retrieval['ca']:.4f}"
+            f"DR={result.needle_retrieval['dr']:.4f} should >= " f"CA={result.needle_retrieval['ca']:.4f}"
         )
 
     def test_complement_coherence_exceeds_non_complement(self):

@@ -38,6 +38,7 @@ from src.crypto.trit_curriculum import compute_trit_signal
 # Helper: minimal mock with just the deviation fields that _tongue_deviation reads
 class _MockTrit:
     """Lightweight stand-in for TritSignal with controlled deviations."""
+
     def __init__(self, dev_structure=0.0, dev_stability=0.0, dev_creativity=0.0):
         self.dev_structure = dev_structure
         self.dev_stability = dev_stability
@@ -47,6 +48,7 @@ class _MockTrit:
 # ===================================================================
 # Physics Fields Registry
 # ===================================================================
+
 
 class TestPhysicsFields:
     """Test that all 6 physics fields are well-formed."""
@@ -75,8 +77,12 @@ class TestPhysicsFields:
 
     def test_field_names_are_real_physics(self):
         expected = {
-            "electromagnetism", "fluid_dynamics", "thermodynamics",
-            "quantum_mechanics", "general_relativity", "solid_mechanics",
+            "electromagnetism",
+            "fluid_dynamics",
+            "thermodynamics",
+            "quantum_mechanics",
+            "general_relativity",
+            "solid_mechanics",
         }
         actual = {pf.field_name for pf in PHYSICS_FIELDS.values()}
         assert actual == expected
@@ -99,6 +105,7 @@ class TestPhysicsFields:
 # ===================================================================
 # Coupling Channels
 # ===================================================================
+
 
 class TestCouplingChannels:
     """Test that all 15 coupling channels are well-formed."""
@@ -130,10 +137,7 @@ class TestCouplingChannels:
         assert len(complements) == 3
 
     def test_complement_pairs_correct(self):
-        comp_parents = {
-            ch.parent_tongues for ch in COUPLING_CHANNELS.values()
-            if ch.is_complement
-        }
+        comp_parents = {ch.parent_tongues for ch in COUPLING_CHANNELS.values() if ch.is_complement}
         expected = {("ko", "dr"), ("av", "um"), ("ru", "ca")}
         assert comp_parents == expected
 
@@ -177,19 +181,24 @@ class TestCouplingChannels:
 # Field Activation from Trit Signal
 # ===================================================================
 
+
 class TestFieldActivation:
     """Test that trit signals produce correct field activations."""
 
     def test_low_deviation_no_failure(self):
         trit = _MockTrit(
-            dev_structure=0.01, dev_stability=0.01, dev_creativity=0.01,
+            dev_structure=0.01,
+            dev_stability=0.01,
+            dev_creativity=0.01,
         )
         state = compute_physics_domain_state(trit)
         assert state.failure_count == 0
 
     def test_high_deviation_causes_failure(self):
         trit = _MockTrit(
-            dev_structure=0.14, dev_stability=0.01, dev_creativity=0.01,
+            dev_structure=0.14,
+            dev_stability=0.01,
+            dev_creativity=0.01,
         )
         state = compute_physics_domain_state(trit)
         assert state.failure_count > 0
@@ -213,7 +222,9 @@ class TestFieldActivation:
 
     def test_failure_severity_range(self):
         trit = _MockTrit(
-            dev_structure=0.15, dev_stability=0.15, dev_creativity=0.15,
+            dev_structure=0.15,
+            dev_stability=0.15,
+            dev_creativity=0.15,
         )
         state = compute_physics_domain_state(trit)
         for fa in state.field_activations.values():
@@ -228,7 +239,9 @@ class TestFieldActivation:
     def test_structure_axis_affects_ko_ru_dr(self):
         """High structure deviation should stress KO, RU, DR (structure-axis tongues)."""
         trit = _MockTrit(
-            dev_structure=0.14, dev_stability=0.001, dev_creativity=0.001,
+            dev_structure=0.14,
+            dev_stability=0.001,
+            dev_creativity=0.001,
         )
         state = compute_physics_domain_state(trit)
         structure_tongues = [t for t, pf in PHYSICS_FIELDS.items() if pf.trit_axis == "structure"]
@@ -239,6 +252,7 @@ class TestFieldActivation:
 # ===================================================================
 # Coupling Channel Activation
 # ===================================================================
+
 
 class TestCouplingActivation:
     """Test that coupling channels activate correctly."""
@@ -254,26 +268,30 @@ class TestCouplingActivation:
 
     def test_stressed_couplings_have_failing_parent(self):
         trit = _MockTrit(
-            dev_structure=0.14, dev_stability=0.14, dev_creativity=0.14,
+            dev_structure=0.14,
+            dev_stability=0.14,
+            dev_creativity=0.14,
         )
         state = compute_physics_domain_state(trit)
         for code in state.stressed_couplings:
             ch = COUPLING_CHANNELS[code]
             p1, p2 = ch.parent_tongues
-            assert (state.field_activations[p1].is_failing or
-                    state.field_activations[p2].is_failing)
+            assert state.field_activations[p1].is_failing or state.field_activations[p2].is_failing
 
 
 # ===================================================================
 # Failure Cascades
 # ===================================================================
 
+
 class TestFailureCascades:
     """Test failure cascade propagation."""
 
     def test_no_cascade_when_no_failure(self):
         trit = _MockTrit(
-            dev_structure=0.01, dev_stability=0.01, dev_creativity=0.01,
+            dev_structure=0.01,
+            dev_stability=0.01,
+            dev_creativity=0.01,
         )
         state = compute_physics_domain_state(trit)
         assert not state.is_cascading
@@ -289,7 +307,9 @@ class TestFailureCascades:
         induced = 1.0 * 0.786 > 0.3 → cascade
         """
         trit = _MockTrit(
-            dev_structure=0.15, dev_stability=0.15, dev_creativity=0.15,
+            dev_structure=0.15,
+            dev_stability=0.15,
+            dev_creativity=0.15,
         )
         state = compute_physics_domain_state(trit)
         # All 6 fields fail directly (all axes maxed), so no cascade needed
@@ -298,7 +318,9 @@ class TestFailureCascades:
         # This is actually correct: cascade requires asymmetry.
         # Test the asymmetric case instead:
         trit2 = _MockTrit(
-            dev_structure=0.15, dev_stability=0.15, dev_creativity=0.0,
+            dev_structure=0.15,
+            dev_stability=0.15,
+            dev_creativity=0.0,
         )
         state2 = compute_physics_domain_state(trit2)
         # structure+stability axes at 0.15 → several fields fail
@@ -310,7 +332,9 @@ class TestFailureCascades:
 
     def test_cascade_edges_valid(self):
         trit = _MockTrit(
-            dev_structure=0.15, dev_stability=0.15, dev_creativity=0.01,
+            dev_structure=0.15,
+            dev_stability=0.15,
+            dev_creativity=0.01,
         )
         state = compute_physics_domain_state(trit)
         for edge in state.cascade_edges:
@@ -322,7 +346,9 @@ class TestFailureCascades:
 
     def test_failing_tongues_list(self):
         trit = _MockTrit(
-            dev_structure=0.14, dev_stability=0.01, dev_creativity=0.01,
+            dev_structure=0.14,
+            dev_stability=0.01,
+            dev_creativity=0.01,
         )
         state = compute_physics_domain_state(trit)
         ft = state.failing_tongues
@@ -335,6 +361,7 @@ class TestFailureCascades:
 # ===================================================================
 # Recovery Path Selection
 # ===================================================================
+
 
 class TestRecoveryPaths:
     """Test multi-field recovery path selection."""
@@ -385,6 +412,7 @@ class TestRecoveryPaths:
 # SFT Flattening
 # ===================================================================
 
+
 class TestSFTFlattening:
     """Test SFT record generation from physics domain state."""
 
@@ -394,11 +422,16 @@ class TestSFTFlattening:
         flat = flatten_physics_domain_for_sft(state)
 
         required_keys = [
-            "physics_dominant_field", "physics_dominant_tongue",
-            "physics_active_fields", "physics_active_phenomena",
-            "physics_failure_count", "physics_is_cascading",
-            "physics_cascade_depth", "physics_failing_tongues",
-            "physics_total_field_energy", "physics_stressed_couplings",
+            "physics_dominant_field",
+            "physics_dominant_tongue",
+            "physics_active_fields",
+            "physics_active_phenomena",
+            "physics_failure_count",
+            "physics_is_cascading",
+            "physics_cascade_depth",
+            "physics_failing_tongues",
+            "physics_total_field_energy",
+            "physics_stressed_couplings",
         ]
         for key in required_keys:
             assert key in flat, f"Missing key: {key}"
@@ -418,6 +451,7 @@ class TestSFTFlattening:
 # ===================================================================
 # Report
 # ===================================================================
+
 
 class TestReport:
     """Test report formatting."""
@@ -449,7 +483,9 @@ class TestReport:
 
     def test_report_shows_failures(self):
         trit = _MockTrit(
-            dev_structure=0.15, dev_stability=0.15, dev_creativity=0.15,
+            dev_structure=0.15,
+            dev_stability=0.15,
+            dev_creativity=0.15,
         )
         state = compute_physics_domain_state(trit)
         report = format_physics_domain_report(state)
@@ -459,6 +495,7 @@ class TestReport:
 # ===================================================================
 # to_dict Serialization
 # ===================================================================
+
 
 class TestSerialization:
     """Test that all dataclasses serialize correctly."""
@@ -476,9 +513,12 @@ class TestSerialization:
 
     def test_field_activation_to_dict(self):
         fa = FieldActivation(
-            tongue="ko", field_name="electromagnetism",
-            activation=0.5, deviation=0.08,
-            is_failing=False, failure_severity=0.0,
+            tongue="ko",
+            field_name="electromagnetism",
+            activation=0.5,
+            deviation=0.08,
+            is_failing=False,
+            failure_severity=0.0,
         )
         d = fa.to_dict()
         assert d["tongue"] == "ko"
@@ -487,27 +527,32 @@ class TestSerialization:
 
     def test_different_texts_different_states(self):
         s1 = compute_physics_domain_state(compute_trit_signal("hello world"))
-        s2 = compute_physics_domain_state(compute_trit_signal(
-            "Complex distributed systems with fault tolerance and cryptographic verification"
-        ))
+        s2 = compute_physics_domain_state(
+            compute_trit_signal("Complex distributed systems with fault tolerance and cryptographic verification")
+        )
         d1 = s1.to_dict()
         d2 = s2.to_dict()
         # At minimum, total energy or dominant field should differ
-        assert (d1["total_field_energy"] != d2["total_field_energy"] or
-                d1["dominant_field"] != d2["dominant_field"] or
-                d1["failure_count"] != d2["failure_count"])
+        assert (
+            d1["total_field_energy"] != d2["total_field_energy"]
+            or d1["dominant_field"] != d2["dominant_field"]
+            or d1["failure_count"] != d2["failure_count"]
+        )
 
 
 # ===================================================================
 # Edge Cases
 # ===================================================================
 
+
 class TestEdgeCases:
     """Test boundary conditions and edge cases."""
 
     def test_zero_deviation(self):
         trit = _MockTrit(
-            dev_structure=0.0, dev_stability=0.0, dev_creativity=0.0,
+            dev_structure=0.0,
+            dev_stability=0.0,
+            dev_creativity=0.0,
         )
         state = compute_physics_domain_state(trit)
         assert state.failure_count == 0
@@ -515,7 +560,9 @@ class TestEdgeCases:
 
     def test_exactly_at_threshold(self):
         trit = _MockTrit(
-            dev_structure=FAILURE_THRESHOLD, dev_stability=0.0, dev_creativity=0.0,
+            dev_structure=FAILURE_THRESHOLD,
+            dev_stability=0.0,
+            dev_creativity=0.0,
         )
         state = compute_physics_domain_state(trit)
         # At exactly the threshold: primary = 0.10 * 0.7 = 0.07, secondary = 0 * 0.3 = 0
@@ -525,7 +572,9 @@ class TestEdgeCases:
 
     def test_max_deviation_all_axes(self):
         trit = _MockTrit(
-            dev_structure=0.15, dev_stability=0.15, dev_creativity=0.15,
+            dev_structure=0.15,
+            dev_stability=0.15,
+            dev_creativity=0.15,
         )
         state = compute_physics_domain_state(trit)
         # All fields should be in some state of failure or cascade

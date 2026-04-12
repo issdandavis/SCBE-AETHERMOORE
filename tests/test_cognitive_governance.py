@@ -27,10 +27,10 @@ from cognitive_governance.governance_engine import (
     GovernanceEngine,
 )
 
-
 # ============================================================
 # GovernanceDecision Enum
 # ============================================================
+
 
 @pytest.mark.unit
 class TestGovernanceDecision:
@@ -53,6 +53,7 @@ class TestGovernanceDecision:
 # ============================================================
 # Trust Management
 # ============================================================
+
 
 @pytest.mark.unit
 class TestTrustManagement:
@@ -97,6 +98,7 @@ class TestTrustManagement:
 # ============================================================
 # _decide (score-based decisions)
 # ============================================================
+
 
 @pytest.mark.unit
 class TestDecide:
@@ -159,84 +161,129 @@ class TestDecide:
 # _compute_score
 # ============================================================
 
+
 @pytest.mark.unit
 class TestComputeScore:
     def test_score_bounded_0_1(self):
         engine = GovernanceEngine()
         score = engine._compute_score(
-            safety=1.0, trust=1.0, distance=0.0,
-            phase_alignment=1.0, classification="interior",
-            cost=0.0, sensitivity=0.0,
+            safety=1.0,
+            trust=1.0,
+            distance=0.0,
+            phase_alignment=1.0,
+            classification="interior",
+            cost=0.0,
+            sensitivity=0.0,
         )
         assert 0.0 <= score <= 1.0
 
     def test_exterior_classification_reduces_score(self):
         engine = GovernanceEngine()
         interior = engine._compute_score(
-            safety=0.8, trust=0.8, distance=1.0,
-            phase_alignment=0.5, classification="interior",
-            cost=1.0, sensitivity=0.5,
+            safety=0.8,
+            trust=0.8,
+            distance=1.0,
+            phase_alignment=0.5,
+            classification="interior",
+            cost=1.0,
+            sensitivity=0.5,
         )
         exterior = engine._compute_score(
-            safety=0.8, trust=0.8, distance=1.0,
-            phase_alignment=0.5, classification="exterior",
-            cost=1.0, sensitivity=0.5,
+            safety=0.8,
+            trust=0.8,
+            distance=1.0,
+            phase_alignment=0.5,
+            classification="exterior",
+            cost=1.0,
+            sensitivity=0.5,
         )
         assert exterior < interior
 
     def test_governance_classification_reduces_score(self):
         engine = GovernanceEngine()
         interior = engine._compute_score(
-            safety=0.8, trust=0.8, distance=1.0,
-            phase_alignment=0.5, classification="interior",
-            cost=1.0, sensitivity=0.5,
+            safety=0.8,
+            trust=0.8,
+            distance=1.0,
+            phase_alignment=0.5,
+            classification="interior",
+            cost=1.0,
+            sensitivity=0.5,
         )
         governance = engine._compute_score(
-            safety=0.8, trust=0.8, distance=1.0,
-            phase_alignment=0.5, classification="governance",
-            cost=1.0, sensitivity=0.5,
+            safety=0.8,
+            trust=0.8,
+            distance=1.0,
+            phase_alignment=0.5,
+            classification="governance",
+            cost=1.0,
+            sensitivity=0.5,
         )
         assert governance < interior
 
     def test_higher_trust_higher_score(self):
         engine = GovernanceEngine()
         low_trust = engine._compute_score(
-            safety=0.5, trust=0.1, distance=1.0,
-            phase_alignment=0.0, classification="interior",
-            cost=1.0, sensitivity=0.5,
+            safety=0.5,
+            trust=0.1,
+            distance=1.0,
+            phase_alignment=0.0,
+            classification="interior",
+            cost=1.0,
+            sensitivity=0.5,
         )
         high_trust = engine._compute_score(
-            safety=0.5, trust=0.9, distance=1.0,
-            phase_alignment=0.0, classification="interior",
-            cost=1.0, sensitivity=0.5,
+            safety=0.5,
+            trust=0.9,
+            distance=1.0,
+            phase_alignment=0.0,
+            classification="interior",
+            cost=1.0,
+            sensitivity=0.5,
         )
         assert high_trust > low_trust
 
     def test_higher_distance_lower_score(self):
         engine = GovernanceEngine()
         close = engine._compute_score(
-            safety=0.5, trust=0.5, distance=0.1,
-            phase_alignment=0.0, classification="interior",
-            cost=1.0, sensitivity=0.5,
+            safety=0.5,
+            trust=0.5,
+            distance=0.1,
+            phase_alignment=0.0,
+            classification="interior",
+            cost=1.0,
+            sensitivity=0.5,
         )
         far = engine._compute_score(
-            safety=0.5, trust=0.5, distance=10.0,
-            phase_alignment=0.0, classification="interior",
-            cost=1.0, sensitivity=0.5,
+            safety=0.5,
+            trust=0.5,
+            distance=10.0,
+            phase_alignment=0.0,
+            classification="interior",
+            cost=1.0,
+            sensitivity=0.5,
         )
         assert far < close
 
     def test_higher_sensitivity_lower_score(self):
         engine = GovernanceEngine()
         low_sens = engine._compute_score(
-            safety=0.5, trust=0.5, distance=1.0,
-            phase_alignment=0.0, classification="interior",
-            cost=1.0, sensitivity=0.0,
+            safety=0.5,
+            trust=0.5,
+            distance=1.0,
+            phase_alignment=0.0,
+            classification="interior",
+            cost=1.0,
+            sensitivity=0.0,
         )
         high_sens = engine._compute_score(
-            safety=0.5, trust=0.5, distance=1.0,
-            phase_alignment=0.0, classification="interior",
-            cost=1.0, sensitivity=1.0,
+            safety=0.5,
+            trust=0.5,
+            distance=1.0,
+            phase_alignment=0.0,
+            classification="interior",
+            cost=1.0,
+            sensitivity=1.0,
         )
         assert high_sens < low_sens
 
@@ -244,6 +291,7 @@ class TestComputeScore:
 # ============================================================
 # Trust update from decisions
 # ============================================================
+
 
 @pytest.mark.unit
 class TestTrustUpdate:
@@ -277,6 +325,7 @@ class TestTrustUpdate:
 # ============================================================
 # evaluate (full pipeline, mocks dependencies)
 # ============================================================
+
 
 @pytest.mark.integration
 class TestEvaluate:
@@ -346,14 +395,14 @@ class TestEvaluate:
 
     def test_evaluate_with_context(self):
         engine = self._make_engine()
-        ctx = engine.evaluate("agent-1", "READ", "file.txt",
-                              context={"reason": "testing"})
+        ctx = engine.evaluate("agent-1", "READ", "file.txt", context={"reason": "testing"})
         assert ctx.explanation["context"]["reason"] == "testing"
 
 
 # ============================================================
 # Batch evaluate
 # ============================================================
+
 
 @pytest.mark.integration
 class TestBatchEvaluate:
@@ -403,6 +452,7 @@ TONGUE_KEYS_FALLBACK = ["KO", "AV", "RU", "CA", "UM", "DR"]
 # Agent summary
 # ============================================================
 
+
 @pytest.mark.integration
 class TestAgentSummary:
     def _make_engine(self):
@@ -446,6 +496,7 @@ class TestAgentSummary:
 # ============================================================
 # History management
 # ============================================================
+
 
 @pytest.mark.unit
 class TestHistoryManagement:

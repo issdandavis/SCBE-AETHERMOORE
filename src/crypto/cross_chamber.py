@@ -50,86 +50,92 @@ TAU = 2.0 * math.pi
 
 # Dead-tone baseline frequencies (Hz) — the 3 phi-unreachable intervals
 BASELINE_FREQUENCIES = {
-    "perfect_fifth":  330.0,   # 3:2
-    "minor_sixth":    352.0,   # 8:5
-    "minor_seventh":  392.0,   # 16:9
+    "perfect_fifth": 330.0,  # 3:2
+    "minor_sixth": 352.0,  # 8:5
+    "minor_seventh": 392.0,  # 16:9
 }
 
 # Consonant ratios and their dissonance scores [0=perfect, 1=maximum clash]
 # Based on just intonation + Helmholtz roughness ordering.
 # Score is hand-tuned to match L13 governance thresholds.
 RATIO_DISSONANCE = {
-    "unison":         (1.0,           0.00),
-    "octave":         (2.0,           0.02),
-    "perfect_fifth":  (3.0 / 2.0,    0.05),
-    "perfect_fourth": (4.0 / 3.0,    0.08),
-    "major_third":    (5.0 / 4.0,    0.12),
-    "minor_third":    (6.0 / 5.0,    0.15),
-    "major_sixth":    (5.0 / 3.0,    0.18),
-    "minor_sixth":    (8.0 / 5.0,    0.22),
-    "major_second":   (9.0 / 8.0,    0.30),
-    "minor_seventh":  (16.0 / 9.0,   0.35),
-    "major_seventh":  (15.0 / 8.0,   0.55),
-    "phi_interval":   (PHI,           0.40),  # golden ratio — outside JI lattice
-    "tritone":        (45.0 / 32.0,  0.75),  # devil's interval
-    "minor_second":   (16.0 / 15.0,  0.90),  # maximum roughness
+    "unison": (1.0, 0.00),
+    "octave": (2.0, 0.02),
+    "perfect_fifth": (3.0 / 2.0, 0.05),
+    "perfect_fourth": (4.0 / 3.0, 0.08),
+    "major_third": (5.0 / 4.0, 0.12),
+    "minor_third": (6.0 / 5.0, 0.15),
+    "major_sixth": (5.0 / 3.0, 0.18),
+    "minor_sixth": (8.0 / 5.0, 0.22),
+    "major_second": (9.0 / 8.0, 0.30),
+    "minor_seventh": (16.0 / 9.0, 0.35),
+    "major_seventh": (15.0 / 8.0, 0.55),
+    "phi_interval": (PHI, 0.40),  # golden ratio — outside JI lattice
+    "tritone": (45.0 / 32.0, 0.75),  # devil's interval
+    "minor_second": (16.0 / 15.0, 0.90),  # maximum roughness
 }
 
 # L13 governance thresholds — dissonance score → verdict
-ALLOW_THRESHOLD     = 0.25   # below → ALLOW
+ALLOW_THRESHOLD = 0.25  # below → ALLOW
 QUARANTINE_THRESHOLD = 0.50  # below → QUARANTINE
-ESCALATE_THRESHOLD   = 0.75  # below → ESCALATE
-                              # above → DENY
+ESCALATE_THRESHOLD = 0.75  # below → ESCALATE
+# above → DENY
 
 # Default sample rate and duration for waveform generation
-DEFAULT_SAMPLE_RATE = 8000   # Hz (telephone quality — enough for ratio analysis)
-DEFAULT_DURATION_S  = 0.25   # 250ms — enough for at least one beat cycle
+DEFAULT_SAMPLE_RATE = 8000  # Hz (telephone quality — enough for ratio analysis)
+DEFAULT_DURATION_S = 0.25  # 250ms — enough for at least one beat cycle
 
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
 
+
 class GovernanceVerdict(Enum):
     """L13 risk decision tiers."""
-    ALLOW      = "ALLOW"
+
+    ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
-    ESCALATE   = "ESCALATE"
-    DENY       = "DENY"
+    ESCALATE = "ESCALATE"
+    DENY = "DENY"
 
 
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class SpectralFeatures:
     """FFT-derived features from the superposed waveform."""
-    energy: float           # total signal energy (sum of squared magnitudes)
+
+    energy: float  # total signal energy (sum of squared magnitudes)
     spectral_centroid: float  # weighted center of frequency spectrum (Hz)
-    spectral_flux: float    # rate of spectral change (beat energy)
-    peak_frequency: float   # dominant frequency in combined signal (Hz)
-    beat_frequency: float   # |f_baseline - f_agent| — the interference rate
-    n_peaks: int            # number of significant spectral peaks
+    spectral_flux: float  # rate of spectral change (beat energy)
+    peak_frequency: float  # dominant frequency in combined signal (Hz)
+    beat_frequency: float  # |f_baseline - f_agent| — the interference rate
+    n_peaks: int  # number of significant spectral peaks
 
 
 @dataclass(frozen=True)
 class ConsonanceReport:
     """Full cross-chamber analysis result."""
+
     baseline_hz: float
     agent_hz: float
-    frequency_ratio: float       # normalized to [1.0, 2.0)
-    nearest_interval: str        # name from RATIO_DISSONANCE
-    interval_deviation: float    # how far from the nearest pure ratio
-    dissonance_score: float      # [0.0, 1.0] — the governance input
+    frequency_ratio: float  # normalized to [1.0, 2.0)
+    nearest_interval: str  # name from RATIO_DISSONANCE
+    interval_deviation: float  # how far from the nearest pure ratio
+    dissonance_score: float  # [0.0, 1.0] — the governance input
     spectral: SpectralFeatures
     verdict: GovernanceVerdict
-    dead_tone: str               # which dead tone was used as baseline
+    dead_tone: str  # which dead tone was used as baseline
 
 
 # ---------------------------------------------------------------------------
 # 1. Waveform generation + superposition
 # ---------------------------------------------------------------------------
+
 
 def generate_wave(
     frequency_hz: float,
@@ -143,10 +149,7 @@ def generate_wave(
     Returns a list of sample values (not numpy — pure Python).
     """
     n_samples = int(duration_s * sample_rate)
-    return [
-        amplitude * math.sin(TAU * frequency_hz * (i / sample_rate) + phase)
-        for i in range(n_samples)
-    ]
+    return [amplitude * math.sin(TAU * frequency_hz * (i / sample_rate) + phase) for i in range(n_samples)]
 
 
 def superpose(wave_a: List[float], wave_b: List[float]) -> List[float]:
@@ -161,6 +164,7 @@ def superpose(wave_a: List[float], wave_b: List[float]) -> List[float]:
 # ---------------------------------------------------------------------------
 # 2. Pure-Python DFT + spectral feature extraction
 # ---------------------------------------------------------------------------
+
 
 def dft_magnitudes(signal: List[float]) -> List[float]:
     """Compute DFT magnitude spectrum (positive frequencies only).
@@ -239,6 +243,7 @@ def extract_spectral_features(
 # ---------------------------------------------------------------------------
 # 3. Consonance scoring — ratio → dissonance → verdict
 # ---------------------------------------------------------------------------
+
 
 def normalize_ratio(f_a: float, f_b: float) -> float:
     """Compute the frequency ratio normalized to one octave [1.0, 2.0).
@@ -327,6 +332,7 @@ def dissonance_to_verdict(score: float) -> GovernanceVerdict:
 # Public API — the full cross-chamber state check
 # ---------------------------------------------------------------------------
 
+
 def cross_chamber_check(
     agent_hz: float,
     dead_tone: str = "perfect_fifth",
@@ -398,16 +404,12 @@ def check_all_dead_tones(
     Returns list of 3 ConsonanceReports. The strictest verdict wins
     (highest dissonance across all baselines).
     """
-    return [
-        cross_chamber_check(agent_hz, tone, tolerance)
-        for tone in BASELINE_FREQUENCIES
-    ]
+    return [cross_chamber_check(agent_hz, tone, tolerance) for tone in BASELINE_FREQUENCIES]
 
 
 def strictest_verdict(reports: List[ConsonanceReport]) -> GovernanceVerdict:
     """Return the strictest (most restrictive) verdict from multiple reports."""
-    order = [GovernanceVerdict.ALLOW, GovernanceVerdict.QUARANTINE,
-             GovernanceVerdict.ESCALATE, GovernanceVerdict.DENY]
+    order = [GovernanceVerdict.ALLOW, GovernanceVerdict.QUARANTINE, GovernanceVerdict.ESCALATE, GovernanceVerdict.DENY]
     worst = GovernanceVerdict.ALLOW
     for r in reports:
         if order.index(r.verdict) > order.index(worst):

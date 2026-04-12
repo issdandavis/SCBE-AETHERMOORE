@@ -190,7 +190,9 @@ class SemanticShapeEngraver:
         return vec
 
     def compute_semantic_hash(self, shape: str, engravings: Sequence[Engraving]) -> str:
-        items = sorted((e.surface, e.index, e.tongue, e.symbol, round(e.depth, 6), round(e.rotation, 6)) for e in engravings)
+        items = sorted(
+            (e.surface, e.index, e.tongue, e.symbol, round(e.depth, 6), round(e.rotation, 6)) for e in engravings
+        )
         blob = json.dumps({"shape": shape, "eng": items}, sort_keys=True).encode("utf-8")
         return hashlib.blake2s(blob, digest_size=16).hexdigest()
 
@@ -289,4 +291,3 @@ class SemanticShapeEngraver:
             "discrete_log10": float(math.log10(discrete)),
             "continuous_shapes": float(continuous),
         }
-

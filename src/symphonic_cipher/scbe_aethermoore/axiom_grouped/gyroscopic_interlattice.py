@@ -187,11 +187,7 @@ def evolve_step(
     # Compute all derivatives before updating
     derivs = []
     for sub in sublattices:
-        neighbors = [
-            (s, couple_map[f"{sub.tongue}-{s.tongue}"])
-            for s in sublattices
-            if s.tongue != sub.tongue
-        ]
+        neighbors = [(s, couple_map[f"{sub.tongue}-{s.tongue}"]) for s in sublattices if s.tongue != sub.tongue]
         derivs.append(nash_equation_of_motion(sub, neighbors, omega_plus, omega_minus))
 
     # Apply Euler step
@@ -202,9 +198,7 @@ def evolve_step(
 
 def compute_chern_number(tongue: str, sublattices: list[TongueSublattice]) -> int:
     """Simplified Chern number from bond angle winding."""
-    angle_sum = sum(
-        bond_angle(tongue, s.tongue) for s in sublattices if s.tongue != tongue
-    )
+    angle_sum = sum(bond_angle(tongue, s.tongue) for s in sublattices if s.tongue != tongue)
     return 1 if math.sin(angle_sum) >= 0 else -1
 
 
@@ -269,19 +263,13 @@ def gyroscopic_breathing_factor(
     Convert sublattice precession energy into a breathing factor for L6.
     b = 1 + alpha * (E_kin / E_ref), clamped to [1.0, 2.0].
     """
-    e_kin = sum(
-        (s.state.real**2 + s.state.imag**2) * s.precession_freq
-        for s in sublattices
-    )
+    e_kin = sum((s.state.real**2 + s.state.imag**2) * s.precession_freq for s in sublattices)
     return min(2.0, 1.0 + alpha * (e_kin / max(e_ref, 1e-15)))
 
 
 def per_tongue_breathing_factors(sublattices: list[TongueSublattice]) -> list[float]:
     """Per-tongue breathing factors from individual precession states."""
-    return [
-        min(2.0, 1.0 + (s.state.real**2 + s.state.imag**2) * s.precession_freq)
-        for s in sublattices
-    ]
+    return [min(2.0, 1.0 + (s.state.real**2 + s.state.imag**2) * s.precession_freq) for s in sublattices]
 
 
 def chern_weights(sublattices: list[TongueSublattice], gamma: float = 0.2) -> list[float]:

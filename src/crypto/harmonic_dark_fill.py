@@ -55,23 +55,23 @@ PI = math.pi
 
 # Tongue phi weights
 TONGUE_WEIGHTS: Dict[str, float] = {
-    "ko": PHI ** 0,  # 1.000
-    "av": PHI ** 1,  # 1.618
-    "ru": PHI ** 2,  # 2.618
-    "ca": PHI ** 3,  # 4.236
-    "um": PHI ** 4,  # 6.854
-    "dr": PHI ** 5,  # 11.090
+    "ko": PHI**0,  # 1.000
+    "av": PHI**1,  # 1.618
+    "ru": PHI**2,  # 2.618
+    "ca": PHI**3,  # 4.236
+    "um": PHI**4,  # 6.854
+    "dr": PHI**5,  # 11.090
 }
 
 # Base audible frequencies per tongue (Hz) — musical notes
 # These sit in the "visible" band of the harmonic spectrum
 TONGUE_AUDIBLE_FREQ: Dict[str, float] = {
-    "ko": 440.00,   # A4 — intent/flow
-    "av": 523.25,   # C5 — wisdom/transport
-    "ru": 293.66,   # D4 — binding/governance
-    "ca": 659.25,   # E5 — compute/bitcraft
-    "um": 196.00,   # G3 — security/veil
-    "dr": 392.00,   # G4 — structure/forge
+    "ko": 440.00,  # A4 — intent/flow
+    "av": 523.25,  # C5 — wisdom/transport
+    "ru": 293.66,  # D4 — binding/governance
+    "ca": 659.25,  # E5 — compute/bitcraft
+    "um": 196.00,  # G3 — security/veil
+    "dr": 392.00,  # G4 — structure/forge
 }
 
 # Musical interval ratios (just intonation)
@@ -79,24 +79,24 @@ TONGUE_AUDIBLE_FREQ: Dict[str, float] = {
 # which intervals are reachable (harmonic selection rules).
 INTERVALS = {
     "unison": 1.0,
-    "minor_second": 16.0 / 15.0,      # ~1.067 — maximum dissonance
-    "major_second": 9.0 / 8.0,        # ~1.125 — whole tone
-    "minor_third": 6.0 / 5.0,         # ~1.200 — dark consonance
-    "major_third": 5.0 / 4.0,         # ~1.250 — warm consonance
-    "perfect_fourth": 4.0 / 3.0,      # ~1.333 — inverted fifth, tension
-    "tritone": 45.0 / 32.0,           # ~1.406 — devil's interval
-    "perfect_fifth": 3.0 / 2.0,       # ~1.500 — strongest consonance
-    "minor_sixth": 8.0 / 5.0,         # ~1.600 — inverted major third
-    "phi_interval": PHI,               # ~1.618 — golden ratio
-    "major_sixth": 5.0 / 3.0,         # ~1.667 — inverted minor third
-    "minor_seventh": 16.0 / 9.0,      # ~1.778 — dominant tension
-    "major_seventh": 15.0 / 8.0,      # ~1.875 — leading tone
-    "octave": 2.0,                     # 2:1 — perfect doubling
+    "minor_second": 16.0 / 15.0,  # ~1.067 — maximum dissonance
+    "major_second": 9.0 / 8.0,  # ~1.125 — whole tone
+    "minor_third": 6.0 / 5.0,  # ~1.200 — dark consonance
+    "major_third": 5.0 / 4.0,  # ~1.250 — warm consonance
+    "perfect_fourth": 4.0 / 3.0,  # ~1.333 — inverted fifth, tension
+    "tritone": 45.0 / 32.0,  # ~1.406 — devil's interval
+    "perfect_fifth": 3.0 / 2.0,  # ~1.500 — strongest consonance
+    "minor_sixth": 8.0 / 5.0,  # ~1.600 — inverted major third
+    "phi_interval": PHI,  # ~1.618 — golden ratio
+    "major_sixth": 5.0 / 3.0,  # ~1.667 — inverted minor third
+    "minor_seventh": 16.0 / 9.0,  # ~1.778 — dominant tension
+    "major_seventh": 15.0 / 8.0,  # ~1.875 — leading tone
+    "octave": 2.0,  # 2:1 — perfect doubling
 }
 
 # Frequency band boundaries
-INFRA_MIN = 0.01    # 0.01 Hz — geological-scale rhythms
-INFRA_MAX = 20.0    # 20 Hz — bottom of human hearing
+INFRA_MIN = 0.01  # 0.01 Hz — geological-scale rhythms
+INFRA_MAX = 20.0  # 20 Hz — bottom of human hearing
 AUDIBLE_MIN = 20.0
 AUDIBLE_MAX = 20000.0
 ULTRA_MIN = 20000.0
@@ -118,6 +118,7 @@ COMPLEMENT_MAP: Dict[str, str] = {
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class HarmonicFill:
     """The harmonic fill for a single tongue at a single position.
@@ -125,26 +126,33 @@ class HarmonicFill:
     Contains three frequency bands: infra, audible, ultra.
     Each band has frequency, amplitude, and phase.
     """
+
     # Infrasonic band — slow state / long memory (IR)
-    infra_freq: float       # Hz (0.01 - 20)
+    infra_freq: float  # Hz (0.01 - 20)
     infra_amplitude: float  # [0, 1]
-    infra_phase: float      # radians [0, 2π)
+    infra_phase: float  # radians [0, 2π)
 
     # Audible band — musical intervals (Visible)
-    audible_freq: float     # Hz (20 - 20000)
+    audible_freq: float  # Hz (20 - 20000)
     audible_amplitude: float
     audible_phase: float
 
     # Ultrasonic band — fast state / micro-structure (UV)
-    ultra_freq: float       # Hz (20000 - 1000000)
+    ultra_freq: float  # Hz (20000 - 1000000)
     ultra_amplitude: float
     ultra_phase: float
 
     def as_tuple(self) -> Tuple[float, float, float, float, float, float, float, float, float]:
         return (
-            self.infra_freq, self.infra_amplitude, self.infra_phase,
-            self.audible_freq, self.audible_amplitude, self.audible_phase,
-            self.ultra_freq, self.ultra_amplitude, self.ultra_phase,
+            self.infra_freq,
+            self.infra_amplitude,
+            self.infra_phase,
+            self.audible_freq,
+            self.audible_amplitude,
+            self.audible_phase,
+            self.ultra_freq,
+            self.ultra_amplitude,
+            self.ultra_phase,
         )
 
     def as_sound_strands(self) -> Tuple[
@@ -153,9 +161,9 @@ class HarmonicFill:
         Tuple[float, float, float],
     ]:
         """Pack into the tri-bundle's 3 sound strands:
-            strand_a = audible (the human-perceptible core)
-            strand_b = infrasonic (IR slow-state fill)
-            strand_c = ultrasonic (UV fast-state fill)
+        strand_a = audible (the human-perceptible core)
+        strand_b = infrasonic (IR slow-state fill)
+        strand_c = ultrasonic (UV fast-state fill)
         """
         return (
             (self.audible_freq, self.audible_amplitude, self.audible_phase),
@@ -166,11 +174,7 @@ class HarmonicFill:
     @property
     def total_energy(self) -> float:
         """Sum of squared amplitudes across all bands."""
-        return (
-            self.infra_amplitude ** 2
-            + self.audible_amplitude ** 2
-            + self.ultra_amplitude ** 2
-        )
+        return self.infra_amplitude**2 + self.audible_amplitude**2 + self.ultra_amplitude**2
 
     @property
     def darkness(self) -> float:
@@ -183,6 +187,7 @@ class HarmonicFill:
 # ---------------------------------------------------------------------------
 # Nodal surface from vacuum acoustics
 # ---------------------------------------------------------------------------
+
 
 def nodal_surface_value(x1: float, x2: float, n: float, m: float, L: float = 1.0) -> float:
     """N(x; n, m) = cos(nπx₁/L)cos(mπx₂/L) - cos(mπx₁/L)cos(nπx₂/L)
@@ -197,6 +202,7 @@ def nodal_surface_value(x1: float, x2: float, n: float, m: float, L: float = 1.0
 # ---------------------------------------------------------------------------
 # Voice leading intervals (Tymoczko counterpoint in B3)
 # ---------------------------------------------------------------------------
+
 
 def voice_leading_interval(
     from_tongue: str,
@@ -240,6 +246,7 @@ def nearest_musical_interval(ratio: float) -> Tuple[str, float]:
 # Dark node detection and harmonic fill computation
 # ---------------------------------------------------------------------------
 
+
 def compute_darkness(
     byte_val: int,
     tongue_code: str,
@@ -259,7 +266,7 @@ def compute_darkness(
 
     # Estimate: higher-weight tongues activate at higher byte values
     weight = TONGUE_WEIGHTS[tongue_code]
-    threshold = weight / (PHI ** 5) * 255  # normalized
+    threshold = weight / (PHI**5) * 255  # normalized
     if byte_val >= threshold:
         return 0.0  # active
     return 1.0 - (byte_val / max(threshold, 1.0))
@@ -323,7 +330,7 @@ def compute_harmonic_fill(
     tongue_idx = list(TONGUE_WEIGHTS.keys()).index(tongue_code)
     comp_idx = list(TONGUE_WEIGHTS.keys()).index(complement)
     nodal_val = nodal_surface_value(t, byte_val / 255.0, tongue_idx + 1, comp_idx + 1)
-    audible_freq *= (1.0 + 0.1 * nodal_val)
+    audible_freq *= 1.0 + 0.1 * nodal_val
     audible_freq = max(AUDIBLE_MIN, min(AUDIBLE_MAX, audible_freq))
 
     # Amplitude: darkness-weighted, musical dynamics
@@ -345,7 +352,7 @@ def compute_harmonic_fill(
 
     # Amplitude: darkness-weighted but with phi scaling
     # Higher-weight tongues produce louder ultrasonic (more computational resolution)
-    ultra_amp = darkness * (weight / PHI ** 5) * 0.9
+    ultra_amp = darkness * (weight / PHI**5) * 0.9
 
     # Phase: deterministic from hash (reproducible micro-structure)
     ultra_phase = (hash_val % 1000) / 1000.0 * 2 * PI
@@ -366,6 +373,7 @@ def compute_harmonic_fill(
 # ---------------------------------------------------------------------------
 # Full-sequence dark fill
 # ---------------------------------------------------------------------------
+
 
 def fill_dark_nodes(
     data: bytes,
@@ -421,6 +429,7 @@ def fill_dark_nodes(
 # Integration with tri_bundle.py: upgrade sound strands
 # ---------------------------------------------------------------------------
 
+
 def upgrade_sound_bundle(
     byte_val: int,
     tongue_code: str,
@@ -457,24 +466,26 @@ def upgrade_sound_bundle(
 # Spectrum analysis: the full frequency landscape
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SpectrumSnapshot:
     """The full frequency landscape at a single position across all tongues."""
+
     position: int
     byte_val: int
     fills: Dict[str, HarmonicFill]
 
     @property
     def total_infra_energy(self) -> float:
-        return sum(f.infra_amplitude ** 2 for f in self.fills.values())
+        return sum(f.infra_amplitude**2 for f in self.fills.values())
 
     @property
     def total_audible_energy(self) -> float:
-        return sum(f.audible_amplitude ** 2 for f in self.fills.values())
+        return sum(f.audible_amplitude**2 for f in self.fills.values())
 
     @property
     def total_ultra_energy(self) -> float:
-        return sum(f.ultra_amplitude ** 2 for f in self.fills.values())
+        return sum(f.ultra_amplitude**2 for f in self.fills.values())
 
     @property
     def ir_uv_ratio(self) -> float:
@@ -506,7 +517,4 @@ class SpectrumSnapshot:
 def sequence_spectrum(data: bytes, activations: Optional[List[Dict[str, float]]] = None) -> List[SpectrumSnapshot]:
     """Compute the full frequency spectrum for a byte sequence."""
     fills = fill_dark_nodes(data, activations)
-    return [
-        SpectrumSnapshot(position=i, byte_val=b, fills=fills[i])
-        for i, b in enumerate(data)
-    ]
+    return [SpectrumSnapshot(position=i, byte_val=b, fills=fills[i]) for i, b in enumerate(data)]

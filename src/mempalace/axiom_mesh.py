@@ -9,6 +9,7 @@ bridge nodes connecting dense clusters of notes in a knowledge graph.
 
 No external dependencies: stdlib only, graph is an adjacency dict.
 """
+
 from __future__ import annotations
 
 import math
@@ -24,21 +25,131 @@ _WORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9_-]{2,}")
 
 STOPWORDS: frozenset[str] = frozenset(
     {
-        "the", "and", "for", "with", "that", "this", "from", "are", "but",
-        "not", "you", "all", "any", "can", "has", "have", "was", "were",
-        "what", "when", "where", "which", "who", "why", "how", "one", "two",
-        "three", "out", "use", "used", "using", "its", "their", "there",
-        "then", "than", "into", "over", "some", "also", "just", "like",
-        "only", "such", "more", "most", "been", "being", "those", "these",
-        "would", "could", "should", "about", "after", "before", "because",
-        "each", "every", "get", "got", "had", "here", "let", "make", "made",
-        "many", "may", "might", "much", "must", "need", "now", "off", "our",
-        "own", "per", "see", "set", "shall", "them", "they", "thus", "too",
-        "via", "way", "will", "yet", "your", "new", "non", "true", "false",
-        "none", "null", "src", "test", "tests", "file", "files", "path",
-        "paths", "line", "lines", "note", "notes", "doc", "docs", "code",
-        "text", "list", "dict", "set", "type", "types", "data", "value",
-        "values", "name", "names", "page", "pages", "item", "items",
+        "the",
+        "and",
+        "for",
+        "with",
+        "that",
+        "this",
+        "from",
+        "are",
+        "but",
+        "not",
+        "you",
+        "all",
+        "any",
+        "can",
+        "has",
+        "have",
+        "was",
+        "were",
+        "what",
+        "when",
+        "where",
+        "which",
+        "who",
+        "why",
+        "how",
+        "one",
+        "two",
+        "three",
+        "out",
+        "use",
+        "used",
+        "using",
+        "its",
+        "their",
+        "there",
+        "then",
+        "than",
+        "into",
+        "over",
+        "some",
+        "also",
+        "just",
+        "like",
+        "only",
+        "such",
+        "more",
+        "most",
+        "been",
+        "being",
+        "those",
+        "these",
+        "would",
+        "could",
+        "should",
+        "about",
+        "after",
+        "before",
+        "because",
+        "each",
+        "every",
+        "get",
+        "got",
+        "had",
+        "here",
+        "let",
+        "make",
+        "made",
+        "many",
+        "may",
+        "might",
+        "much",
+        "must",
+        "need",
+        "now",
+        "off",
+        "our",
+        "own",
+        "per",
+        "see",
+        "set",
+        "shall",
+        "them",
+        "they",
+        "thus",
+        "too",
+        "via",
+        "way",
+        "will",
+        "yet",
+        "your",
+        "new",
+        "non",
+        "true",
+        "false",
+        "none",
+        "null",
+        "src",
+        "test",
+        "tests",
+        "file",
+        "files",
+        "path",
+        "paths",
+        "line",
+        "lines",
+        "note",
+        "notes",
+        "doc",
+        "docs",
+        "code",
+        "text",
+        "list",
+        "dict",
+        "set",
+        "type",
+        "types",
+        "data",
+        "value",
+        "values",
+        "name",
+        "names",
+        "page",
+        "pages",
+        "item",
+        "items",
     }
 )
 
@@ -86,11 +197,7 @@ class AxiomMesh:
 
 
 def tokenize(text: str) -> List[str]:
-    return [
-        w.lower()
-        for w in _WORD_RE.findall(text)
-        if w.lower() not in STOPWORDS
-    ]
+    return [w.lower() for w in _WORD_RE.findall(text) if w.lower() not in STOPWORDS]
 
 
 def build_buckets(
@@ -114,9 +221,7 @@ def build_buckets(
             "Training": ["training", "sft", "dataset", "dpo"],
         }
 
-    buckets: Dict[str, BucketProfile] = {
-        name: BucketProfile(name=name) for name in bucket_rules
-    }
+    buckets: Dict[str, BucketProfile] = {name: BucketProfile(name=name) for name in bucket_rules}
 
     for path, rec in index.records.items():
         path_str = str(path).lower()
@@ -154,11 +259,7 @@ def find_convergence_zones(
     for profile in buckets.values():
         for term in profile.term_set(top_k):
             term_bucket_count[term] += 1
-    axioms = [
-        term
-        for term, count in term_bucket_count.most_common()
-        if count >= min_buckets
-    ]
+    axioms = [term for term, count in term_bucket_count.most_common() if count >= min_buckets]
     return axioms
 
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from api.darpa_prep.darpa_portal import parse_darpa_start_submissions
 
-
 SAMPLE_PORTAL_TEXT = """
 Begin a New Submission
 The following is a list of open solicitations to which you may submit.

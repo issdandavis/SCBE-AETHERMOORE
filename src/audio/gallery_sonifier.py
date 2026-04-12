@@ -43,8 +43,8 @@ FREQ_MAX = 4000.0
 DEAD_TONE_ACOUSTIC: Dict[str, Dict] = {
     "perfect_fifth": {
         "base_hz": 330.0,
-        "envelope": "pulse",       # Lotka-Volterra oscillation
-        "pulse_rate_hz": 2.0,      # predator-prey rhythm
+        "envelope": "pulse",  # Lotka-Volterra oscillation
+        "pulse_rate_hz": 2.0,  # predator-prey rhythm
         "reverb": 0.1,
         "delay_ms": 0,
     },
@@ -57,10 +57,10 @@ DEAD_TONE_ACOUSTIC: Dict[str, Dict] = {
     },
     "minor_seventh": {
         "base_hz": 392.0,
-        "envelope": "echo",        # perpendicular echo → literal echo
+        "envelope": "echo",  # perpendicular echo → literal echo
         "pulse_rate_hz": 0.0,
         "reverb": 0.7,
-        "delay_ms": 250,           # quarter-second delay
+        "delay_ms": 250,  # quarter-second delay
     },
 }
 
@@ -85,15 +85,15 @@ MATERIAL_ENVELOPES: Dict[str, Dict] = {
 class AudioParams:
     """Audio parameters derived from a color field point."""
 
-    frequency_hz: float    # from hue
-    amplitude: float       # from chroma (0.0-1.0)
+    frequency_hz: float  # from hue
+    amplitude: float  # from chroma (0.0-1.0)
     attack_ms: int
     decay_ms: int
-    sustain: float         # 0.0-1.0
+    sustain: float  # 0.0-1.0
     release_ms: int
-    reverb: float          # 0.0-1.0
+    reverb: float  # 0.0-1.0
     delay_ms: int
-    pan: float             # -1.0 to 1.0
+    pan: float  # -1.0 to 1.0
 
     def validate(self) -> None:
         assert self.frequency_hz > 0
@@ -113,13 +113,14 @@ class DeadToneSonification:
     pulse_rate_hz: float
     reverb: float
     delay_ms: int
-    colors: tuple          # tuple of LabColor (the 4-color chord)
-    audio_params: tuple    # tuple of AudioParams (one per color)
+    colors: tuple  # tuple of LabColor (the 4-color chord)
+    audio_params: tuple  # tuple of AudioParams (one per color)
 
 
 # ============================================================================
 # Core Functions
 # ============================================================================
+
 
 def hue_to_frequency(hue_degrees: float) -> float:
     """Map hue angle (0-360) to log-scaled frequency.

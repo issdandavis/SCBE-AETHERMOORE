@@ -26,12 +26,13 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from enum import Enum
 
-PHI = (1 + 5 ** 0.5) / 2
+PHI = (1 + 5**0.5) / 2
 
 
 # ============================================================================
 # Enums
 # ============================================================================
+
 
 class RenderMode(Enum):
     PLAIN_SPEECH = 1
@@ -50,15 +51,16 @@ class VoiceRole(Enum):
 # Tongue Profiles — acoustic behavior grammars
 # ============================================================================
 
+
 @dataclass(frozen=True)
 class TongueProfile:
     """Acoustic behavior grammar for a Sacred Tongue."""
 
     name: str
-    syllable_style: str   # balanced, liquid, dense, bright, soft, heavy
-    stress_pattern: str   # even, flowing, percussive, rising, falling, grounded
-    speech_rate: float    # 0.6 - 1.3
-    chant_ratio: float    # 0.0 - 1.0 (how much chant vs speech)
+    syllable_style: str  # balanced, liquid, dense, bright, soft, heavy
+    stress_pattern: str  # even, flowing, percussive, rising, falling, grounded
+    speech_rate: float  # 0.6 - 1.3
+    chant_ratio: float  # 0.0 - 1.0 (how much chant vs speech)
 
     def validate(self) -> None:
         assert 0.6 <= self.speech_rate <= 1.3
@@ -66,18 +68,19 @@ class TongueProfile:
 
 
 PROFILES: Dict[str, TongueProfile] = {
-    "ko": TongueProfile("ko", "balanced",   "even",       0.95, 0.10),
-    "av": TongueProfile("av", "liquid",      "flowing",    1.00, 0.20),
-    "ru": TongueProfile("ru", "dense",       "percussive", 0.90, 0.25),
-    "ca": TongueProfile("ca", "bright",      "rising",     1.08, 0.30),
-    "um": TongueProfile("um", "soft",        "falling",    0.82, 0.35),
-    "dr": TongueProfile("dr", "heavy",       "grounded",   0.80, 0.22),
+    "ko": TongueProfile("ko", "balanced", "even", 0.95, 0.10),
+    "av": TongueProfile("av", "liquid", "flowing", 1.00, 0.20),
+    "ru": TongueProfile("ru", "dense", "percussive", 0.90, 0.25),
+    "ca": TongueProfile("ca", "bright", "rising", 1.08, 0.30),
+    "um": TongueProfile("um", "soft", "falling", 0.82, 0.35),
+    "dr": TongueProfile("dr", "heavy", "grounded", 0.80, 0.22),
 }
 
 
 # ============================================================================
 # Phoneme + Prosody
 # ============================================================================
+
 
 @dataclass(frozen=True)
 class PhonemeToken:
@@ -86,7 +89,7 @@ class PhonemeToken:
     text: str
     ipa: str
     duration_ms: int
-    stress: float         # 0.0 - 1.0
+    stress: float  # 0.0 - 1.0
 
     def validate(self) -> None:
         assert self.text != ""
@@ -98,11 +101,11 @@ class PhonemeToken:
 class ProsodyPlan:
     """Prosodic contour for an utterance."""
 
-    rate: float                 # speech rate multiplier
-    pitch_curve: tuple          # sequence of relative pitch values
-    pause_points: tuple         # indices where pauses occur
-    energy: float               # 0.0 - 1.0
-    chant_ratio: float          # 0.0 = pure speech, 1.0 = pure chant
+    rate: float  # speech rate multiplier
+    pitch_curve: tuple  # sequence of relative pitch values
+    pause_points: tuple  # indices where pauses occur
+    energy: float  # 0.0 - 1.0
+    chant_ratio: float  # 0.0 = pure speech, 1.0 = pure chant
 
     def validate(self) -> None:
         assert 0.5 <= self.rate <= 2.0
@@ -115,14 +118,15 @@ class ProsodyPlan:
 # Voice Layers
 # ============================================================================
 
+
 @dataclass(frozen=True)
 class VoiceLayer:
     """One voice in a choral arrangement."""
 
     role: VoiceRole
     voice_id: str
-    gain: float                   # 0.0 - 1.0
-    pan: float                    # -1.0 (left) to +1.0 (right)
+    gain: float  # 0.0 - 1.0
+    pan: float  # -1.0 (left) to +1.0 (right)
     pitch_shift_semitones: float  # relative to root
 
     def validate(self) -> None:
@@ -134,13 +138,14 @@ class VoiceLayer:
 # Choral Render Plan
 # ============================================================================
 
+
 @dataclass(frozen=True)
 class ChoralRenderPlan:
     """Complete multi-voice rendering instruction."""
 
-    phonemes: tuple               # tuple of PhonemeToken
+    phonemes: tuple  # tuple of PhonemeToken
     prosody: ProsodyPlan
-    voices: tuple                 # tuple of VoiceLayer
+    voices: tuple  # tuple of VoiceLayer
     tongue: str
     mode: RenderMode
 
@@ -156,6 +161,7 @@ class ChoralRenderPlan:
 # ============================================================================
 # Builders
 # ============================================================================
+
 
 def build_prosody(
     tongue: str,
@@ -204,6 +210,7 @@ def build_voice_layers(
     """Build voice layer stack for the given render mode."""
     profile = PROFILES[tongue]
     from .speech_render_plan import TONGUE_PAN
+
     pan = TONGUE_PAN.get(tongue, 0.0)
 
     lead = VoiceLayer(

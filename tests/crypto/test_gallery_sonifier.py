@@ -38,7 +38,7 @@ class LabColor:
 
     @property
     def chroma(self):
-        return math.sqrt(self.a ** 2 + self.b ** 2)
+        return math.sqrt(self.a**2 + self.b**2)
 
     @property
     def hue_degrees(self):
@@ -79,16 +79,22 @@ def color_to_audio(color, material="matte", pan=0.0, reverb=0.0, delay_ms=0):
     amp = chroma_to_amplitude(color.chroma)
     env = material_to_envelope(material)
     return AudioParams(
-        frequency_hz=freq, amplitude=amp,
-        attack_ms=env["attack_ms"], decay_ms=env["decay_ms"],
-        sustain=env["sustain"], release_ms=env["release_ms"],
-        reverb=reverb, delay_ms=delay_ms, pan=pan,
+        frequency_hz=freq,
+        amplitude=amp,
+        attack_ms=env["attack_ms"],
+        decay_ms=env["decay_ms"],
+        sustain=env["sustain"],
+        release_ms=env["release_ms"],
+        reverb=reverb,
+        delay_ms=delay_ms,
+        pan=pan,
     )
 
 
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestHueToFrequency:
 

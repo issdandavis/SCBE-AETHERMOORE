@@ -88,4 +88,3 @@ def compute_anchor_transition(source: ZoomAnchor, target: ZoomAnchor) -> AnchorT
         symbolic_penalty=symbolic_penalty,
         transition_cost=transition_cost,
     )
-

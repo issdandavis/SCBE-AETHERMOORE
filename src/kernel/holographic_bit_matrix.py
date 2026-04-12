@@ -58,7 +58,7 @@ class HolographicBitMatrix:
             self.trit_matrix[:] = 1
         else:
             self.trit_matrix[:] = -1
-            mask = (self.bit_matrix == 1)
+            mask = self.bit_matrix == 1
             self.trit_matrix[mask] = 1
 
         for k in TONGUE_KEYS:
@@ -76,7 +76,7 @@ class HolographicBitMatrix:
             j = (idx * 7 + 3) % self.size
             self.holo_field[i, j] += float(val)
 
-        self.holo_field *= (0.5 + 0.5 * self.bit_matrix.astype(np.float64))
+        self.holo_field *= 0.5 + 0.5 * self.bit_matrix.astype(np.float64)
         if np.any(self.trit_matrix != 0):
             self.holo_field *= np.where(self.trit_matrix == 0, 1.0, self.trit_matrix.astype(np.float64))
 
@@ -176,4 +176,3 @@ def holographic_scatter_pipeline(
         "reconstruction_error": float(err),
         "state": hbm.state(),
     }
-

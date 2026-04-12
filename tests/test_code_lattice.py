@@ -37,10 +37,10 @@ from src.crypto.qho_bundle import (
 )
 from src.crypto.trit_curriculum import TRIT_AXES
 
-
 # ===================================================================
 # Pattern Registry
 # ===================================================================
+
 
 class TestPatternRegistry:
     """Test that the pattern registry is well-formed."""
@@ -91,6 +91,7 @@ class TestPatternRegistry:
 # Tongue-Domain Mapping
 # ===================================================================
 
+
 class TestTongueDomainMapping:
     """Test that all 6 tongues map to coding domains."""
 
@@ -119,44 +120,44 @@ class TestTongueDomainMapping:
         """Complement tongue pairs should map to different domains."""
         pairs = [("ko", "dr"), ("av", "um"), ("ru", "ca")]
         for t1, t2 in pairs:
-            assert TONGUE_DOMAIN[t1] != TONGUE_DOMAIN[t2], (
-                f"{t1} and {t2} map to same domain: {TONGUE_DOMAIN[t1]}"
-            )
+            assert TONGUE_DOMAIN[t1] != TONGUE_DOMAIN[t2], f"{t1} and {t2} map to same domain: {TONGUE_DOMAIN[t1]}"
 
 
 # ===================================================================
 # Pattern Selection
 # ===================================================================
 
+
 class TestPatternSelection:
     """Test that trit signals select appropriate code patterns."""
 
     @pytest.fixture
     def ground_state_qho(self):
-        return QHOLevel(n=0, energy=0.5, fork_count=0,
-                        crossing_energy=0.0, harmonic_wall_cost=1.0,
-                        is_ground_state=True)
+        return QHOLevel(
+            n=0, energy=0.5, fork_count=0, crossing_energy=0.0, harmonic_wall_cost=1.0, is_ground_state=True
+        )
 
     @pytest.fixture
     def excited_qho(self):
-        return QHOLevel(n=5, energy=5.5, fork_count=3,
-                        crossing_energy=2.5, harmonic_wall_cost=3.2,
-                        is_ground_state=False)
+        return QHOLevel(
+            n=5, energy=5.5, fork_count=3, crossing_energy=2.5, harmonic_wall_cost=3.2, is_ground_state=False
+        )
 
     def test_ground_state_gets_only_n0_patterns(self, ground_state_qho):
         """At n=0, only patterns with min_n=0 should appear."""
         from src.crypto.trit_curriculum import compute_trit_signal
+
         signal = compute_trit_signal("simple test text")
         lessons = select_patterns(signal, ground_state_qho, gain=0.0)
         for lesson in lessons:
             assert lesson.pattern.min_n == 0, (
-                f"Pattern {lesson.pattern.name} (min_n={lesson.pattern.min_n}) "
-                f"should not appear at n=0"
+                f"Pattern {lesson.pattern.name} (min_n={lesson.pattern.min_n}) " f"should not appear at n=0"
             )
 
     def test_excited_state_gets_more_patterns(self, ground_state_qho, excited_qho):
         """Higher QHO level should unlock more patterns."""
         from src.crypto.trit_curriculum import compute_trit_signal
+
         signal = compute_trit_signal("test text for comparison")
         ground_lessons = select_patterns(signal, ground_state_qho, gain=0.0)
         excited_lessons = select_patterns(signal, excited_qho, gain=1.5)
@@ -165,6 +166,7 @@ class TestPatternSelection:
     def test_high_gain_increases_compound_intent(self, excited_qho):
         """Higher Monty Hall gain should increase compound intent."""
         from src.crypto.trit_curriculum import compute_trit_signal
+
         signal = compute_trit_signal("boundary test text")
         low_gain = select_patterns(signal, excited_qho, gain=0.1)
         high_gain = select_patterns(signal, excited_qho, gain=2.5)
@@ -177,6 +179,7 @@ class TestPatternSelection:
     def test_no_duplicate_patterns(self, excited_qho):
         """Same pattern should not appear twice in the lesson list."""
         from src.crypto.trit_curriculum import compute_trit_signal
+
         signal = compute_trit_signal("dedup test text")
         lessons = select_patterns(signal, excited_qho, gain=1.0)
         names = [l.pattern.name for l in lessons]
@@ -184,6 +187,7 @@ class TestPatternSelection:
 
     def test_lessons_have_valid_fields(self, excited_qho):
         from src.crypto.trit_curriculum import compute_trit_signal
+
         signal = compute_trit_signal("field validation test")
         lessons = select_patterns(signal, excited_qho, gain=1.0)
         for lesson in lessons:
@@ -195,6 +199,7 @@ class TestPatternSelection:
     def test_sorted_by_compound_intent(self, excited_qho):
         """Lessons should be sorted highest compound intent first."""
         from src.crypto.trit_curriculum import compute_trit_signal
+
         signal = compute_trit_signal("sort order test")
         lessons = select_patterns(signal, excited_qho, gain=1.5)
         if len(lessons) >= 2:
@@ -205,6 +210,7 @@ class TestPatternSelection:
 # ===================================================================
 # Full Bundle Generation
 # ===================================================================
+
 
 class TestCodeLatticeBundle:
     """Test full code lattice bundle generation."""
@@ -242,14 +248,17 @@ class TestCodeLatticeBundle:
         b1 = generate_code_lattice_bundle("Simple hello world program")
         b2 = generate_code_lattice_bundle("Complex distributed systems architecture with fault tolerance")
         # At minimum, the QHO level or lessons should differ
-        assert (b1.qho_bundle.qho.n != b2.qho_bundle.qho.n or
-                len(b1.lessons) != len(b2.lessons) or
-                b1.total_compound_intent != b2.total_compound_intent)
+        assert (
+            b1.qho_bundle.qho.n != b2.qho_bundle.qho.n
+            or len(b1.lessons) != len(b2.lessons)
+            or b1.total_compound_intent != b2.total_compound_intent
+        )
 
 
 # ===================================================================
 # Compound Intent (Understanding, Not Repetition)
 # ===================================================================
+
 
 class TestCompoundIntent:
     """Test that system × learner intent compounds correctly."""
@@ -266,14 +275,15 @@ class TestCompoundIntent:
         """Higher QHO level should produce higher compound intent on same text."""
         # We can't directly control QHO level, but we can verify the math
         from src.crypto.trit_curriculum import compute_trit_signal
+
         signal = compute_trit_signal("compound scaling test")
 
-        low_qho = QHOLevel(n=1, energy=1.5, fork_count=0,
-                           crossing_energy=0.5, harmonic_wall_cost=1.2,
-                           is_ground_state=False)
-        high_qho = QHOLevel(n=5, energy=5.5, fork_count=3,
-                            crossing_energy=2.5, harmonic_wall_cost=5.0,
-                            is_ground_state=False)
+        low_qho = QHOLevel(
+            n=1, energy=1.5, fork_count=0, crossing_energy=0.5, harmonic_wall_cost=1.2, is_ground_state=False
+        )
+        high_qho = QHOLevel(
+            n=5, energy=5.5, fork_count=3, crossing_energy=2.5, harmonic_wall_cost=5.0, is_ground_state=False
+        )
 
         low_lessons = select_patterns(signal, low_qho, gain=1.0)
         high_lessons = select_patterns(signal, high_qho, gain=1.0)
@@ -287,6 +297,7 @@ class TestCompoundIntent:
 # ===================================================================
 # SFT Flattening
 # ===================================================================
+
 
 class TestSFTFlattening:
     """Test SFT record generation from code lattice bundles."""
@@ -346,6 +357,7 @@ class TestSFTFlattening:
 # Report
 # ===================================================================
 
+
 class TestReport:
     """Test report formatting."""
 
@@ -384,35 +396,64 @@ class TestReport:
 # Cross-Domain Mapping
 # ===================================================================
 
+
 class TestCrossDomain:
     """Test that cross-domain analogies are meaningful."""
 
     def test_all_patterns_have_cross_domain(self):
         for p in PATTERN_REGISTRY:
-            assert len(p.cross_domain) > 10, (
-                f"Pattern {p.name} has too-short cross_domain: '{p.cross_domain}'"
-            )
+            assert len(p.cross_domain) > 10, f"Pattern {p.name} has too-short cross_domain: '{p.cross_domain}'"
 
     def test_antipatterns_reference_tongue(self):
         """Anti-pattern cross-domain text should reference Sacred Tongue concepts."""
-        tongue_keywords = ["tongue", "swear", "spell", "lattice", "vortex",
-                          "forge", "shadow", "void", "KO", "AV", "RU",
-                          "CA", "UM", "DR", "binding", "torque", "polyhedral",
-                          "harmonic", "wall", "phi", "boundary", "trit"]
+        tongue_keywords = [
+            "tongue",
+            "swear",
+            "spell",
+            "lattice",
+            "vortex",
+            "forge",
+            "shadow",
+            "void",
+            "KO",
+            "AV",
+            "RU",
+            "CA",
+            "UM",
+            "DR",
+            "binding",
+            "torque",
+            "polyhedral",
+            "harmonic",
+            "wall",
+            "phi",
+            "boundary",
+            "trit",
+        ]
         for p in ALL_ANTIPATTERNS:
             has_keyword = any(kw.lower() in p.cross_domain.lower() for kw in tongue_keywords)
             assert has_keyword, (
-                f"Anti-pattern {p.name} cross_domain doesn't reference tongue concepts: "
-                f"'{p.cross_domain}'"
+                f"Anti-pattern {p.name} cross_domain doesn't reference tongue concepts: " f"'{p.cross_domain}'"
             )
 
     def test_code_examples_are_valid_python_ish(self):
         """Code examples should look like real code (contain at least one keyword)."""
-        code_keywords = ["def ", "class ", "import ", "return ", "if ", "for ",
-                        "try:", "except", "async ", "with ", "assert ", " = ",
-                        "not in ", "**"]
+        code_keywords = [
+            "def ",
+            "class ",
+            "import ",
+            "return ",
+            "if ",
+            "for ",
+            "try:",
+            "except",
+            "async ",
+            "with ",
+            "assert ",
+            " = ",
+            "not in ",
+            "**",
+        ]
         for p in PATTERN_REGISTRY:
             has_keyword = any(kw in p.code_good for kw in code_keywords)
-            assert has_keyword, (
-                f"Pattern {p.name} code_good doesn't look like code: '{p.code_good[:50]}'"
-            )
+            assert has_keyword, f"Pattern {p.name} code_good doesn't look like code: '{p.code_good[:50]}'"

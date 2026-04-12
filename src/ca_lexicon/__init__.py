@@ -53,22 +53,27 @@ TONGUE_PARENT = {"GO": "CA", "ZI": "RU"}
 @dataclass(frozen=True)
 class LexiconEntry:
     """One substrate row — the atom that both SS1 and the op layer resolve to."""
-    op_id: int                              # 0x00–0x3F
-    name: str                               # human name
-    trit: Tuple[int, ...]                   # (KO, AV, RU, CA, UM, DR)
-    feat: Tuple[float, ...]                 # 8-dim atomic feature vector
-    code: Dict[str, str]                    # tongue → code template
-    band: str                               # ARITHMETIC / LOGIC / COMPARISON / AGGREGATION
-    chi: float                              # risk score
-    valence: int                            # number of operands
-    note: str = ""                          # why chi is what it is
+
+    op_id: int  # 0x00–0x3F
+    name: str  # human name
+    trit: Tuple[int, ...]  # (KO, AV, RU, CA, UM, DR)
+    feat: Tuple[float, ...]  # 8-dim atomic feature vector
+    code: Dict[str, str]  # tongue → code template
+    band: str  # ARITHMETIC / LOGIC / COMPARISON / AGGREGATION
+    chi: float  # risk score
+    valence: int  # number of operands
+    note: str = ""  # why chi is what it is
 
 
 # ─── Band 0: ARITHMETIC (0x00–0x0F) ──────────────────────────────────────
 
 _ARITHMETIC = [
     LexiconEntry(
-        op_id=0x00, name="add", band="ARITHMETIC", chi=0.1, valence=2,
+        op_id=0x00,
+        name="add",
+        band="ARITHMETIC",
+        chi=0.1,
+        valence=2,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(0, 1, 1, 2, 0.1, 2, 3, 0),
         code={
@@ -81,7 +86,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x01, name="sub", band="ARITHMETIC", chi=0.1, valence=2,
+        op_id=0x01,
+        name="sub",
+        band="ARITHMETIC",
+        chi=0.1,
+        valence=2,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(1, 1, 1, 2, 0.1, 2, 3, 0),
         code={
@@ -94,7 +103,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x02, name="mul", band="ARITHMETIC", chi=0.2, valence=2,
+        op_id=0x02,
+        name="mul",
+        band="ARITHMETIC",
+        chi=0.2,
+        valence=2,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(2, 1, 1, 2, 0.2, 2, 3, 0),
         code={
@@ -107,7 +120,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x03, name="div", band="ARITHMETIC", chi=0.8, valence=2,
+        op_id=0x03,
+        name="div",
+        band="ARITHMETIC",
+        chi=0.8,
+        valence=2,
         trit=(0, 0, 0, +1, 0, -1),
         feat=(3, 1, 1, 2, 0.8, 2, 3, 0),
         note="div-by-zero risk → chi=0.8, DR=-1 (lossy)",
@@ -121,7 +138,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x04, name="mod", band="ARITHMETIC", chi=0.5, valence=2,
+        op_id=0x04,
+        name="mod",
+        band="ARITHMETIC",
+        chi=0.5,
+        valence=2,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(4, 1, 1, 2, 0.5, 2, 3, 0),
         code={
@@ -134,7 +155,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x05, name="pow", band="ARITHMETIC", chi=1.2, valence=2,
+        op_id=0x05,
+        name="pow",
+        band="ARITHMETIC",
+        chi=1.2,
+        valence=2,
         trit=(0, 0, 0, +1, 0, +1),
         feat=(5, 1, 2, 2, 1.2, 2, 3, 0),
         note="overflow risk → chi=1.2, DR=+1 (transform)",
@@ -148,7 +173,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x06, name="sqrt", band="ARITHMETIC", chi=0.5, valence=1,
+        op_id=0x06,
+        name="sqrt",
+        band="ARITHMETIC",
+        chi=0.5,
+        valence=1,
         trit=(0, 0, 0, +1, 0, +1),
         feat=(6, 1, 2, 1, 0.5, 2, 3, 0),
         code={
@@ -161,7 +190,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x07, name="log", band="ARITHMETIC", chi=0.8, valence=1,
+        op_id=0x07,
+        name="log",
+        band="ARITHMETIC",
+        chi=0.8,
+        valence=1,
         trit=(0, 0, 0, +1, 0, +1),
         feat=(7, 1, 2, 1, 0.8, 2, 3, 0),
         note="log(0) risk → chi=0.8",
@@ -175,7 +208,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x08, name="exp", band="ARITHMETIC", chi=1.5, valence=1,
+        op_id=0x08,
+        name="exp",
+        band="ARITHMETIC",
+        chi=1.5,
+        valence=1,
         trit=(0, 0, 0, +1, 0, +1),
         feat=(8, 1, 2, 1, 1.5, 2, 3, 0),
         note="overflow risk → chi=1.5",
@@ -189,7 +226,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x09, name="abs", band="ARITHMETIC", chi=0.0, valence=1,
+        op_id=0x09,
+        name="abs",
+        band="ARITHMETIC",
+        chi=0.0,
+        valence=1,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(9, 1, 1, 1, 0.0, 2, 3, 0),
         code={
@@ -202,7 +243,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x0A, name="neg", band="ARITHMETIC", chi=0.1, valence=1,
+        op_id=0x0A,
+        name="neg",
+        band="ARITHMETIC",
+        chi=0.1,
+        valence=1,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(10, 1, 1, 1, 0.1, 2, 3, 0),
         code={
@@ -215,7 +260,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x0B, name="inc", band="ARITHMETIC", chi=0.1, valence=1,
+        op_id=0x0B,
+        name="inc",
+        band="ARITHMETIC",
+        chi=0.1,
+        valence=1,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(11, 1, 1, 1, 0.1, 2, 3, 0),
         code={
@@ -228,7 +277,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x0C, name="dec", band="ARITHMETIC", chi=0.1, valence=1,
+        op_id=0x0C,
+        name="dec",
+        band="ARITHMETIC",
+        chi=0.1,
+        valence=1,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(12, 1, 1, 1, 0.1, 2, 3, 0),
         code={
@@ -241,7 +294,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x0D, name="floor", band="ARITHMETIC", chi=0.2, valence=1,
+        op_id=0x0D,
+        name="floor",
+        band="ARITHMETIC",
+        chi=0.2,
+        valence=1,
         trit=(0, 0, 0, +1, 0, -1),
         feat=(13, 1, 1, 1, 0.2, 2, 3, 0),
         note="DR=-1: lossy transform",
@@ -255,7 +312,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x0E, name="ceil", band="ARITHMETIC", chi=0.2, valence=1,
+        op_id=0x0E,
+        name="ceil",
+        band="ARITHMETIC",
+        chi=0.2,
+        valence=1,
         trit=(0, 0, 0, +1, 0, -1),
         feat=(14, 1, 1, 1, 0.2, 2, 3, 0),
         note="DR=-1: lossy transform",
@@ -269,7 +330,11 @@ _ARITHMETIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x0F, name="round", band="ARITHMETIC", chi=0.2, valence=1,
+        op_id=0x0F,
+        name="round",
+        band="ARITHMETIC",
+        chi=0.2,
+        valence=1,
         trit=(0, 0, 0, +1, 0, -1),
         feat=(15, 1, 1, 1, 0.2, 2, 3, 0),
         note="DR=-1: lossy transform",
@@ -288,7 +353,11 @@ _ARITHMETIC = [
 
 _LOGIC = [
     LexiconEntry(
-        op_id=0x10, name="and", band="LOGIC", chi=0.1, valence=2,
+        op_id=0x10,
+        name="and",
+        band="LOGIC",
+        chi=0.1,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(16, 2, 1, 2, 0.1, 2, 3, 0),
         code={
@@ -301,7 +370,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x11, name="or", band="LOGIC", chi=0.1, valence=2,
+        op_id=0x11,
+        name="or",
+        band="LOGIC",
+        chi=0.1,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(17, 2, 1, 2, 0.1, 2, 3, 0),
         code={
@@ -314,7 +387,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x12, name="not", band="LOGIC", chi=0.1, valence=1,
+        op_id=0x12,
+        name="not",
+        band="LOGIC",
+        chi=0.1,
+        valence=1,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(18, 2, 1, 1, 0.1, 2, 3, 0),
         code={
@@ -327,7 +404,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x13, name="xor", band="LOGIC", chi=0.3, valence=2,
+        op_id=0x13,
+        name="xor",
+        band="LOGIC",
+        chi=0.3,
+        valence=2,
         trit=(0, 0, 0, +1, +1, 0),
         feat=(19, 2, 1, 2, 0.3, 2, 3, 0),
         note="UM=+1: crypto primitive",
@@ -341,7 +422,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x14, name="nand", band="LOGIC", chi=0.2, valence=2,
+        op_id=0x14,
+        name="nand",
+        band="LOGIC",
+        chi=0.2,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(20, 2, 1, 2, 0.2, 2, 3, 0),
         code={
@@ -354,7 +439,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x15, name="nor", band="LOGIC", chi=0.2, valence=2,
+        op_id=0x15,
+        name="nor",
+        band="LOGIC",
+        chi=0.2,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(21, 2, 1, 2, 0.2, 2, 3, 0),
         code={
@@ -367,7 +456,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x16, name="shl", band="LOGIC", chi=0.6, valence=2,
+        op_id=0x16,
+        name="shl",
+        band="LOGIC",
+        chi=0.6,
+        valence=2,
         trit=(0, 0, 0, +1, +1, 0),
         feat=(22, 2, 1, 2, 0.6, 2, 3, 0),
         note="UM=+1: bit manipulation",
@@ -381,7 +474,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x17, name="shr", band="LOGIC", chi=0.6, valence=2,
+        op_id=0x17,
+        name="shr",
+        band="LOGIC",
+        chi=0.6,
+        valence=2,
         trit=(0, 0, 0, +1, +1, 0),
         feat=(23, 2, 1, 2, 0.6, 2, 3, 0),
         code={
@@ -394,7 +491,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x18, name="rotl", band="LOGIC", chi=0.4, valence=2,
+        op_id=0x18,
+        name="rotl",
+        band="LOGIC",
+        chi=0.4,
+        valence=2,
         trit=(0, 0, 0, +1, +1, +1),
         feat=(24, 2, 2, 2, 0.4, 2, 3, 0),
         note="UM+DR: rotation is crypto + transform",
@@ -408,7 +509,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x19, name="rotr", band="LOGIC", chi=0.4, valence=2,
+        op_id=0x19,
+        name="rotr",
+        band="LOGIC",
+        chi=0.4,
+        valence=2,
         trit=(0, 0, 0, +1, +1, +1),
         feat=(25, 2, 2, 2, 0.4, 2, 3, 0),
         code={
@@ -421,7 +526,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x1A, name="popcount", band="LOGIC", chi=0.1, valence=1,
+        op_id=0x1A,
+        name="popcount",
+        band="LOGIC",
+        chi=0.1,
+        valence=1,
         trit=(0, +1, 0, +1, 0, 0),
         feat=(26, 2, 2, 1, 0.1, 2, 3, 0),
         code={
@@ -434,7 +543,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x1B, name="clz", band="LOGIC", chi=0.1, valence=1,
+        op_id=0x1B,
+        name="clz",
+        band="LOGIC",
+        chi=0.1,
+        valence=1,
         trit=(0, +1, 0, +1, 0, 0),
         feat=(27, 2, 2, 1, 0.1, 2, 3, 0),
         code={
@@ -447,7 +560,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x1C, name="ctz", band="LOGIC", chi=0.1, valence=1,
+        op_id=0x1C,
+        name="ctz",
+        band="LOGIC",
+        chi=0.1,
+        valence=1,
         trit=(0, +1, 0, +1, 0, 0),
         feat=(28, 2, 2, 1, 0.1, 2, 3, 0),
         code={
@@ -460,7 +577,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x1D, name="bitmask", band="LOGIC", chi=0.7, valence=2,
+        op_id=0x1D,
+        name="bitmask",
+        band="LOGIC",
+        chi=0.7,
+        valence=2,
         trit=(0, 0, +1, +1, +1, 0),
         feat=(29, 2, 2, 2, 0.7, 2, 3, 0),
         note="RU+UM: creates mask scope + security",
@@ -474,7 +595,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x1E, name="bitset", band="LOGIC", chi=0.3, valence=2,
+        op_id=0x1E,
+        name="bitset",
+        band="LOGIC",
+        chi=0.3,
+        valence=2,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(30, 2, 1, 2, 0.3, 2, 3, 0),
         code={
@@ -487,7 +612,11 @@ _LOGIC = [
         },
     ),
     LexiconEntry(
-        op_id=0x1F, name="bitclear", band="LOGIC", chi=0.3, valence=1,
+        op_id=0x1F,
+        name="bitclear",
+        band="LOGIC",
+        chi=0.3,
+        valence=1,
         trit=(0, 0, 0, +1, 0, -1),
         feat=(31, 2, 1, 2, 0.3, 2, 3, 0),
         note="DR=-1: destructive",
@@ -506,7 +635,11 @@ _LOGIC = [
 
 _COMPARISON = [
     LexiconEntry(
-        op_id=0x20, name="eq", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x20,
+        name="eq",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(32, 3, 1, 2, 0.0, 1, 3, 0),
         code={
@@ -519,7 +652,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x21, name="neq", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x21,
+        name="neq",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(33, 3, 1, 2, 0.0, 1, 3, 0),
         code={
@@ -532,7 +669,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x22, name="lt", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x22,
+        name="lt",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(34, 3, 1, 2, 0.0, 1, 3, 0),
         code={
@@ -545,7 +686,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x23, name="lte", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x23,
+        name="lte",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(35, 3, 1, 2, 0.0, 1, 3, 0),
         code={
@@ -558,7 +703,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x24, name="gt", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x24,
+        name="gt",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(36, 3, 1, 2, 0.0, 1, 3, 0),
         code={
@@ -571,7 +720,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x25, name="gte", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x25,
+        name="gte",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(+1, 0, 0, +1, 0, 0),
         feat=(37, 3, 1, 2, 0.0, 1, 3, 0),
         code={
@@ -584,7 +737,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x26, name="cmp", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x26,
+        name="cmp",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(+1, +1, 0, +1, 0, 0),
         feat=(38, 3, 1, 2, 0.0, 1, 3, 0),
         note="AV=+1: produces three-way result",
@@ -598,7 +755,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x27, name="min", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x27,
+        name="min",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(39, 3, 1, 2, 0.0, 1, 3, 0),
         code={
@@ -611,7 +772,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x28, name="max", band="COMPARISON", chi=0.0, valence=2,
+        op_id=0x28,
+        name="max",
+        band="COMPARISON",
+        chi=0.0,
+        valence=2,
         trit=(0, 0, 0, +1, 0, 0),
         feat=(40, 3, 1, 2, 0.0, 1, 3, 0),
         code={
@@ -624,7 +789,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x29, name="clamp", band="COMPARISON", chi=0.1, valence=3,
+        op_id=0x29,
+        name="clamp",
+        band="COMPARISON",
+        chi=0.1,
+        valence=3,
         trit=(0, 0, +1, +1, 0, 0),
         feat=(41, 3, 2, 3, 0.1, 1, 3, 0),
         code={
@@ -637,7 +806,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x2A, name="within", band="COMPARISON", chi=0.1, valence=3,
+        op_id=0x2A,
+        name="within",
+        band="COMPARISON",
+        chi=0.1,
+        valence=3,
         trit=(+1, 0, +1, +1, 0, 0),
         feat=(42, 3, 2, 3, 0.1, 1, 3, 0),
         code={
@@ -650,7 +823,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x2B, name="isnan", band="COMPARISON", chi=0.5, valence=1,
+        op_id=0x2B,
+        name="isnan",
+        band="COMPARISON",
+        chi=0.5,
+        valence=1,
         trit=(0, +1, 0, +1, +1, 0),
         feat=(43, 3, 1, 1, 0.5, 1, 3, 0),
         note="UM=+1: NaN is a security concern",
@@ -664,7 +841,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x2C, name="isinf", band="COMPARISON", chi=0.5, valence=1,
+        op_id=0x2C,
+        name="isinf",
+        band="COMPARISON",
+        chi=0.5,
+        valence=1,
         trit=(0, +1, 0, +1, +1, 0),
         feat=(44, 3, 1, 1, 0.5, 1, 3, 0),
         code={
@@ -677,7 +858,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x2D, name="isfinite", band="COMPARISON", chi=0.3, valence=1,
+        op_id=0x2D,
+        name="isfinite",
+        band="COMPARISON",
+        chi=0.3,
+        valence=1,
         trit=(0, +1, 0, +1, +1, 0),
         feat=(45, 3, 1, 1, 0.3, 1, 3, 0),
         code={
@@ -690,7 +875,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x2E, name="sign", band="COMPARISON", chi=0.0, valence=1,
+        op_id=0x2E,
+        name="sign",
+        band="COMPARISON",
+        chi=0.0,
+        valence=1,
         trit=(0, +1, 0, +1, 0, 0),
         feat=(46, 3, 1, 1, 0.0, 1, 3, 0),
         code={
@@ -703,7 +892,11 @@ _COMPARISON = [
         },
     ),
     LexiconEntry(
-        op_id=0x2F, name="classify", band="COMPARISON", chi=0.2, valence=1,
+        op_id=0x2F,
+        name="classify",
+        band="COMPARISON",
+        chi=0.2,
+        valence=1,
         trit=(0, +1, 0, +1, 0, +1),
         feat=(47, 3, 2, 1, 0.2, 1, 3, 0),
         note="DR=+1: type transform",
@@ -722,7 +915,11 @@ _COMPARISON = [
 
 _AGGREGATION = [
     LexiconEntry(
-        op_id=0x30, name="sum", band="AGGREGATION", chi=0.1, valence=1,
+        op_id=0x30,
+        name="sum",
+        band="AGGREGATION",
+        chi=0.1,
+        valence=1,
         trit=(0, 0, +1, +1, 0, 0),
         feat=(48, 4, 2, 1, 0.1, 3, 3, 0),
         code={
@@ -735,7 +932,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x31, name="product", band="AGGREGATION", chi=0.5, valence=1,
+        op_id=0x31,
+        name="product",
+        band="AGGREGATION",
+        chi=0.5,
+        valence=1,
         trit=(0, 0, +1, +1, 0, 0),
         feat=(49, 4, 2, 1, 0.5, 3, 3, 0),
         note="overflow risk",
@@ -749,7 +950,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x32, name="mean", band="AGGREGATION", chi=0.2, valence=1,
+        op_id=0x32,
+        name="mean",
+        band="AGGREGATION",
+        chi=0.2,
+        valence=1,
         trit=(0, 0, +1, +1, 0, 0),
         feat=(50, 4, 2, 1, 0.2, 3, 3, 0),
         code={
@@ -762,7 +967,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x33, name="variance", band="AGGREGATION", chi=0.3, valence=1,
+        op_id=0x33,
+        name="variance",
+        band="AGGREGATION",
+        chi=0.3,
+        valence=1,
         trit=(0, 0, +1, +1, 0, 0),
         feat=(51, 4, 3, 1, 0.3, 3, 3, 0),
         code={
@@ -775,7 +984,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x34, name="stdev", band="AGGREGATION", chi=0.3, valence=1,
+        op_id=0x34,
+        name="stdev",
+        band="AGGREGATION",
+        chi=0.3,
+        valence=1,
         trit=(0, 0, +1, +1, 0, 0),
         feat=(52, 4, 3, 1, 0.3, 3, 3, 0),
         code={
@@ -788,7 +1001,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x35, name="reduce", band="AGGREGATION", chi=0.6, valence=2,
+        op_id=0x35,
+        name="reduce",
+        band="AGGREGATION",
+        chi=0.6,
+        valence=2,
         trit=(+1, 0, +1, +1, 0, +1),
         feat=(53, 4, 3, 2, 0.6, 3, 3, 0),
         note="KO+RU+DR: control + scope + transform",
@@ -802,7 +1019,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x36, name="fold", band="AGGREGATION", chi=0.6, valence=2,
+        op_id=0x36,
+        name="fold",
+        band="AGGREGATION",
+        chi=0.6,
+        valence=2,
         trit=(+1, 0, +1, +1, 0, +1),
         feat=(54, 4, 3, 2, 0.6, 3, 3, 0),
         code={
@@ -815,7 +1036,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x37, name="scan", band="AGGREGATION", chi=0.5, valence=2,
+        op_id=0x37,
+        name="scan",
+        band="AGGREGATION",
+        chi=0.5,
+        valence=2,
         trit=(+1, +1, +1, +1, 0, +1),
         feat=(55, 4, 3, 2, 0.5, 3, 3, 0),
         note="AV=+1: emits intermediates",
@@ -829,7 +1054,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x38, name="filter", band="AGGREGATION", chi=0.3, valence=2,
+        op_id=0x38,
+        name="filter",
+        band="AGGREGATION",
+        chi=0.3,
+        valence=2,
         trit=(+1, 0, +1, +1, 0, -1),
         feat=(56, 4, 2, 2, 0.3, 3, 3, 0),
         note="DR=-1: discards elements",
@@ -843,7 +1072,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x39, name="map", band="AGGREGATION", chi=0.2, valence=2,
+        op_id=0x39,
+        name="map",
+        band="AGGREGATION",
+        chi=0.2,
+        valence=2,
         trit=(0, 0, +1, +1, 0, +1),
         feat=(57, 4, 2, 2, 0.2, 3, 3, 0),
         code={
@@ -856,7 +1089,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x3A, name="zip", band="AGGREGATION", chi=0.2, valence=2,
+        op_id=0x3A,
+        name="zip",
+        band="AGGREGATION",
+        chi=0.2,
+        valence=2,
         trit=(0, +1, +1, +1, 0, +1),
         feat=(58, 4, 2, 2, 0.2, 3, 3, 0),
         code={
@@ -869,7 +1106,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x3B, name="unzip", band="AGGREGATION", chi=0.3, valence=1,
+        op_id=0x3B,
+        name="unzip",
+        band="AGGREGATION",
+        chi=0.3,
+        valence=1,
         trit=(0, +1, +1, +1, 0, -1),
         feat=(59, 4, 2, 2, 0.3, 3, 3, 0),
         note="DR=-1: splits structure",
@@ -883,7 +1124,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x3C, name="sort", band="AGGREGATION", chi=0.2, valence=1,
+        op_id=0x3C,
+        name="sort",
+        band="AGGREGATION",
+        chi=0.2,
+        valence=1,
         trit=(0, 0, +1, +1, 0, +1),
         feat=(60, 4, 2, 1, 0.2, 3, 3, 0),
         code={
@@ -896,7 +1141,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x3D, name="unique", band="AGGREGATION", chi=0.3, valence=1,
+        op_id=0x3D,
+        name="unique",
+        band="AGGREGATION",
+        chi=0.3,
+        valence=1,
         trit=(0, 0, +1, +1, 0, -1),
         feat=(61, 4, 2, 1, 0.3, 3, 3, 0),
         note="DR=-1: discards duplicates",
@@ -910,7 +1159,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x3E, name="count", band="AGGREGATION", chi=0.0, valence=1,
+        op_id=0x3E,
+        name="count",
+        band="AGGREGATION",
+        chi=0.0,
+        valence=1,
         trit=(0, +1, +1, +1, 0, 0),
         feat=(62, 4, 2, 1, 0.0, 3, 3, 0),
         code={
@@ -923,7 +1176,11 @@ _AGGREGATION = [
         },
     ),
     LexiconEntry(
-        op_id=0x3F, name="accum", band="AGGREGATION", chi=0.4, valence=2,
+        op_id=0x3F,
+        name="accum",
+        band="AGGREGATION",
+        chi=0.4,
+        valence=2,
         trit=(0, 0, +1, +1, 0, 0),
         feat=(63, 4, 3, 2, 0.4, 3, 3, 0),
         note="stateful accumulator",
@@ -951,6 +1208,7 @@ for _band in [_ARITHMETIC, _LOGIC, _COMPARISON, _AGGREGATION]:
 
 
 # ─── API ─────────────────────────────────────────────────────────────────
+
 
 def lookup(name_or_id) -> LexiconEntry:
     """Look up by name (str) or op_id (int)."""
@@ -990,6 +1248,7 @@ def feature_vector(op_name: str) -> np.ndarray:
 
 
 # ─── Validation + demo ──────────────────────────────────────────────────
+
 
 def validate():
     errors = []

@@ -10,6 +10,7 @@ Uses benchmark values from Issac's Layer 0-8 tests as ground truth:
 
 Patent: US Provisional #63/961,403
 """
+
 import math
 import sys
 from dataclasses import dataclass
@@ -62,7 +63,7 @@ def verify_reconstruction():
 def davis_score(R: float, d: int = 21) -> float:
     """DS(x) = 1 - R^(d^2) where R = ||x||_P in [0, 1)"""
     if R < 0.0 or R >= 1.0:
-        return float('nan')
+        return float("nan")
     return 1.0 - R ** (d * d)  # d^2 = 441 for d=21
 
 
@@ -92,6 +93,7 @@ results: List[TestResult] = []
 
 def test(name: str):
     """Decorator to register adversarial tests."""
+
     def decorator(func):
         def wrapper():
             try:
@@ -99,16 +101,19 @@ def test(name: str):
                 results.append(TestResult(name, passed, detail))
             except Exception as e:
                 results.append(TestResult(name, False, f"EXCEPTION: {type(e).__name__}: {e}"))
+
         return wrapper
+
     return decorator
 
 
 # --- TFDD ATTACKS ---
 
+
 @test("TFDD: NaN injection")
 def tfdd_nan():
     """What happens when emotional valence is NaN?"""
-    val = tfdd(float('nan'))
+    val = tfdd(float("nan"))
     if math.isnan(val):
         return False, f"TFDD returns NaN - system cannot make a decision. Got: {val}"
     return True, f"TFDD handles NaN gracefully: {val}"
@@ -117,7 +122,7 @@ def tfdd_nan():
 @test("TFDD: Positive infinity valence")
 def tfdd_pos_inf():
     """Adversary claims infinitely positive emotion."""
-    val = tfdd(float('inf'))
+    val = tfdd(float("inf"))
     if val < 1.0:
         return False, f"TFDD < 1.0 for +inf valence - cost multiplier inverted! Got: {val}"
     return True, f"TFDD at +inf: {val}"
@@ -126,7 +131,7 @@ def tfdd_pos_inf():
 @test("TFDD: Negative infinity valence")
 def tfdd_neg_inf():
     """Maximally negative emotion."""
-    val = tfdd(float('-inf'))
+    val = tfdd(float("-inf"))
     if math.isinf(val):
         return False, f"TFDD returns inf - will cause downstream overflow. Got: {val}"
     if math.isnan(val):
@@ -146,8 +151,9 @@ def tfdd_micro_oscillation():
     mean_cost = (positive_cost + negative_cost) / 2.0
     naive_mean_cost = tfdd(0.0)
     if mean_cost < naive_mean_cost * 0.99:
-        return False, (f"Oscillation bypass! avg(TFDD(+0.01), TFDD(-0.01))={mean_cost:.6f} "
-                       f"< TFDD(0.0)={naive_mean_cost:.6f}")
+        return False, (
+            f"Oscillation bypass! avg(TFDD(+0.01), TFDD(-0.01))={mean_cost:.6f} " f"< TFDD(0.0)={naive_mean_cost:.6f}"
+        )
     return True, (f"Convexity holds: avg={mean_cost:.6f} >= TFDD(0)={naive_mean_cost:.6f}")
 
 
@@ -159,10 +165,13 @@ def tfdd_boundary_float():
     val_pos = tfdd(1e-15)
     monotonic = val_neg >= val_zero >= val_pos
     if not monotonic:
-        return False, (f"Monotonicity broken at boundary: "
-                       f"TFDD(-1e-15)={val_neg:.10f}, TFDD(0)={val_zero:.10f}, TFDD(1e-15)={val_pos:.10f}")
-    return True, (f"Monotonic at boundary: TFDD(-1e-15)={val_neg:.10f}, "
-                  f"TFDD(0)={val_zero:.10f}, TFDD(1e-15)={val_pos:.10f}")
+        return False, (
+            f"Monotonicity broken at boundary: "
+            f"TFDD(-1e-15)={val_neg:.10f}, TFDD(0)={val_zero:.10f}, TFDD(1e-15)={val_pos:.10f}"
+        )
+    return True, (
+        f"Monotonic at boundary: TFDD(-1e-15)={val_neg:.10f}, " f"TFDD(0)={val_zero:.10f}, TFDD(1e-15)={val_pos:.10f}"
+    )
 
 
 @test("TFDD: Monotonicity sweep (-10 to +10)")
@@ -179,8 +188,9 @@ def tfdd_monotonicity():
         prev = curr
     if violations:
         v = violations[0]
-        return False, (f"{len(violations)} monotonicity violations. First at E={v[0]:.4f}: "
-                       f"prev={v[1]:.6f} < curr={v[2]:.6f}")
+        return False, (
+            f"{len(violations)} monotonicity violations. First at E={v[0]:.4f}: " f"prev={v[1]:.6f} < curr={v[2]:.6f}"
+        )
     return True, f"Strictly monotonically decreasing across {steps} steps from E=-10 to E=+10"
 
 
@@ -211,6 +221,7 @@ def tfdd_extreme_neg_1000():
 
 
 # --- DAVIS SECURITY SCORE ATTACKS ---
+
 
 @test("DS: R exactly 0 (origin)")
 def ds_origin():
@@ -270,7 +281,7 @@ def ds_benchmark_check():
     """
     R = 0.41
     ds = davis_score(R)
-    H = R ** 441
+    H = R**441
     log_H = 441 * math.log10(0.41)  # ~ -170.6
     ds_close = abs(ds - 0.89) < 0.05
     detail = f"DS({R}) = {ds:.6f}, H = {H:.6e}, log10(H) = {log_H:.1f}"
@@ -306,15 +317,21 @@ def ds_threshold_gaming():
     ds = davis_score(R_target)
     decision = gate_decision(ds)
     precision_needed = 1.0 - R_target
-    detail = (f"R={R_target:.10f}, DS={ds:.10f}, decision={decision}. "
-              f"Adversary needs radius precision of ~{precision_needed:.2e} from boundary")
+    detail = (
+        f"R={R_target:.10f}, DS={ds:.10f}, decision={decision}. "
+        f"Adversary needs radius precision of ~{precision_needed:.2e} from boundary"
+    )
     if precision_needed > 0.001:
-        return True, f"Threshold gaming requires R={R_target:.6f} - coarse precision ({precision_needed:.4f} from boundary). {detail}"
+        return (
+            True,
+            f"Threshold gaming requires R={R_target:.6f} - coarse precision ({precision_needed:.4f} from boundary). {detail}",
+        )
     else:
         return False, f"Threshold gaming feasible at very high precision. {detail}"
 
 
 # --- COMBINED ATTACK: TFDD + DS ---
+
 
 @test("Combined: Can positive TFDD mask a near-collapse DS?")
 def combined_masking():
@@ -325,14 +342,14 @@ def combined_masking():
     tfdd_cost = tfdd(5.0)
     ds = davis_score(0.998)
     decision = gate_decision(ds)
-    detail = (f"Positive emotion TFDD={tfdd_cost:.4f} (low), "
-              f"but DS={ds:.6e} (near zero), decision={decision}")
+    detail = f"Positive emotion TFDD={tfdd_cost:.4f} (low), " f"but DS={ds:.6e} (near zero), decision={decision}"
     if decision == "ALLOW":
         return False, f"CRITICAL: Positive emotion masks boundary drift! {detail}"
     return True, f"Layers independent: {detail}"
 
 
 # --- ADDITIONAL ADVERSARIAL TESTS I'M ADDING ---
+
 
 @test("TFDD: Gradient at zero (steepness of penalty onset)")
 def tfdd_gradient_zero():
@@ -345,7 +362,10 @@ def tfdd_gradient_zero():
     err = abs(grad - analytical)
     if err > 0.01:
         return False, f"Numerical gradient {grad:.6f} != analytical {analytical:.6f}, err={err:.6f}"
-    return True, f"Gradient at E=0: {grad:.6f} (analytical: {analytical:.6f}). Penalty slope = {abs(grad):.4f} per unit valence"
+    return (
+        True,
+        f"Gradient at E=0: {grad:.6f} (analytical: {analytical:.6f}). Penalty slope = {abs(grad):.4f} per unit valence",
+    )
 
 
 @test("DS: ATTENUATE zone width")
@@ -356,8 +376,10 @@ def ds_attenuate_width():
     R_allow = 0.28 ** (1.0 / 441.0)
     R_collapse = 0.69 ** (1.0 / 441.0)
     width = R_collapse - R_allow
-    detail = (f"ALLOW zone: R < {R_allow:.6f}, COLLAPSE zone: R > {R_collapse:.6f}, "
-              f"ATTENUATE width: {width:.6f} in R-space ({width*100:.2f}% of radius)")
+    detail = (
+        f"ALLOW zone: R < {R_allow:.6f}, COLLAPSE zone: R > {R_collapse:.6f}, "
+        f"ATTENUATE width: {width:.6f} in R-space ({width*100:.2f}% of radius)"
+    )
     # If the zone is too narrow, it's effectively binary (ALLOW or COLLAPSE)
     if width < 0.001:
         return False, f"ATTENUATE zone is only {width:.6f} wide - effectively binary gate! {detail}"
@@ -370,9 +392,11 @@ def ds_dimension_sensitivity():
     R = 0.5
     ds_21 = davis_score(R, d=21)
     ds_6 = 1.0 - R ** (6 * 6)  # d=6 -> d^2=36
-    detail = (f"At R=0.5: DS(d=21)={ds_21:.10f}, DS(d=6)={ds_6:.10f}. "
-              f"d=21 exponent is 441, d=6 exponent is 36. "
-              f"0.5^441={0.5**441:.2e}, 0.5^36={0.5**36:.2e}")
+    detail = (
+        f"At R=0.5: DS(d=21)={ds_21:.10f}, DS(d=6)={ds_6:.10f}. "
+        f"d=21 exponent is 441, d=6 exponent is 36. "
+        f"0.5^441={0.5**441:.2e}, 0.5^36={0.5**36:.2e}"
+    )
     # For d=21, even R=0.5 gives DS very close to 1 because 0.5^441 ~ 0
     if ds_21 > 0.9999 and ds_6 > 0.9999:
         return True, f"Both near 1.0 at R=0.5. {detail}"
@@ -387,9 +411,11 @@ def ds_cliff_location():
     R_safe = 0.01 ** (1.0 / 441.0)
     R_danger = 0.99 ** (1.0 / 441.0)
     cliff_width = R_danger - R_safe
-    detail = (f"DS=0.99 at R={R_safe:.6f}, DS=0.01 at R={R_danger:.6f}. "
-              f"Cliff width: {cliff_width:.6f} ({cliff_width*100:.2f}% of radius). "
-              f"The entire ALLOW->COLLAPSE transition happens in {cliff_width:.4f} of R-space")
+    detail = (
+        f"DS=0.99 at R={R_safe:.6f}, DS=0.01 at R={R_danger:.6f}. "
+        f"Cliff width: {cliff_width:.6f} ({cliff_width*100:.2f}% of radius). "
+        f"The entire ALLOW->COLLAPSE transition happens in {cliff_width:.4f} of R-space"
+    )
     if cliff_width < 0.01:
         return False, f"Cliff is only {cliff_width:.6f} wide - near-binary behavior! {detail}"
     return True, detail
@@ -406,10 +432,15 @@ def tfdd_accumulation():
     neutral_cost = tfdd(0.0)
     excess_per_step = per_step_cost - neutral_cost
     accumulated_excess = excess_per_step * 1000
-    detail = (f"Per step: TFDD(-0.001)={per_step_cost:.8f}, neutral={neutral_cost:.8f}, "
-              f"excess={excess_per_step:.8e}. After 1000 steps: accumulated excess={accumulated_excess:.6f}")
+    detail = (
+        f"Per step: TFDD(-0.001)={per_step_cost:.8f}, neutral={neutral_cost:.8f}, "
+        f"excess={excess_per_step:.8e}. After 1000 steps: accumulated excess={accumulated_excess:.6f}"
+    )
     if accumulated_excess < 0.01:
-        return False, f"Slow-drip attack viable: 1000 barely-negative steps only accumulate {accumulated_excess:.6f} excess cost. {detail}"
+        return (
+            False,
+            f"Slow-drip attack viable: 1000 barely-negative steps only accumulate {accumulated_excess:.6f} excess cost. {detail}",
+        )
     return True, detail
 
 

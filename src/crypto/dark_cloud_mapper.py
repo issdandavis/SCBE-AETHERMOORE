@@ -57,7 +57,6 @@ from src.crypto.harmonic_dark_fill import (
     voice_leading_interval,
 )
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -69,21 +68,23 @@ MIN_CLOUD_TONGUES = 3
 CLOUD_DARKNESS_THRESHOLD = 0.5
 
 # Energy density thresholds for cloud classification
-WISP_THRESHOLD = 0.5      # sparse cloud
-NEBULA_THRESHOLD = 1.5     # moderate cloud
-VOID_THRESHOLD = 3.0       # deep void
+WISP_THRESHOLD = 0.5  # sparse cloud
+NEBULA_THRESHOLD = 1.5  # moderate cloud
+VOID_THRESHOLD = 3.0  # deep void
 
 
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 class CloudType:
     """Classification of dark cloud density."""
-    WISP = "wisp"          # 3 tongues dark, low energy
-    NEBULA = "nebula"      # 4-5 tongues dark, moderate energy
-    VOID = "void"          # 6 tongues dark, maximum energy — the primordial dark
-    RIFT = "rift"          # sharp transition between cloud and clear space
+
+    WISP = "wisp"  # 3 tongues dark, low energy
+    NEBULA = "nebula"  # 4-5 tongues dark, moderate energy
+    VOID = "void"  # 6 tongues dark, maximum energy — the primordial dark
+    RIFT = "rift"  # sharp transition between cloud and clear space
 
 
 @dataclass
@@ -94,6 +95,7 @@ class DarkCloud:
     The cloud's properties come from the interference patterns
     of those tongues' harmonic fills.
     """
+
     position: int
     byte_val: int
 
@@ -116,9 +118,9 @@ class DarkCloud:
     interference_pairs: List[Tuple[str, str, float]]
 
     # Band energies from the fills
-    infra_energy: float    # IR / slow state
+    infra_energy: float  # IR / slow state
     audible_energy: float  # visible
-    ultra_energy: float    # UV / fast state
+    ultra_energy: float  # UV / fast state
 
     @property
     def cloud_size(self) -> int:
@@ -161,6 +163,7 @@ class NeuralPath:
     The path tracks which tongues remain consistently dark and
     how the fill energy flows through the sequence.
     """
+
     positions: List[int]
     persistent_dark_tongues: Set[str]  # dark at ALL positions
     energy_flow: List[float]  # total fill energy at each position
@@ -175,8 +178,7 @@ class NeuralPath:
         """How continuous is this path? 1.0 = no gaps."""
         if len(self.positions) <= 1:
             return 1.0
-        gaps = sum(1 for i in range(len(self.positions) - 1)
-                   if self.positions[i + 1] - self.positions[i] > 1)
+        gaps = sum(1 for i in range(len(self.positions) - 1) if self.positions[i + 1] - self.positions[i] > 1)
         return 1.0 - gaps / (len(self.positions) - 1)
 
     @property
@@ -201,8 +203,9 @@ class GenesisPath:
     This is the "what the inside of the simulation would be like
     from no information to some."
     """
+
     positions: List[int]
-    cloud_sizes: List[int]       # how many tongues dark at each step
+    cloud_sizes: List[int]  # how many tongues dark at each step
     energy_density: List[float]  # total fill energy at each step
     activation_order: List[List[str]]  # which tongues activated at each step
     ir_uv_ratios: List[float]
@@ -231,6 +234,7 @@ class GenesisPath:
 # ---------------------------------------------------------------------------
 # Core dark cloud detection
 # ---------------------------------------------------------------------------
+
 
 def detect_dark_cloud(
     byte_val: int,
@@ -301,6 +305,7 @@ def detect_dark_cloud(
 # Sequence-level dark cloud mapping
 # ---------------------------------------------------------------------------
 
+
 def map_dark_clouds(
     data: bytes,
     activations: Optional[List[Dict[str, float]]] = None,
@@ -333,6 +338,7 @@ def map_dark_clouds(
 # ---------------------------------------------------------------------------
 # Neural star maps: paths through the dark cloud network
 # ---------------------------------------------------------------------------
+
 
 def trace_neural_paths(
     clouds: List[DarkCloud],
@@ -401,6 +407,7 @@ def _build_path(clouds: List[DarkCloud]) -> NeuralPath:
 # Genesis path: void → first light
 # ---------------------------------------------------------------------------
 
+
 def trace_genesis_path(
     data: bytes,
     activations: Optional[List[Dict[str, float]]] = None,
@@ -442,10 +449,7 @@ def trace_genesis_path(
             newly_active = []
 
         # Fill energy from dark tongues
-        total_energy = sum(
-            fills_sequence[i][tc].total_energy
-            for tc in dark_set
-        ) if dark_set else 0.0
+        total_energy = sum(fills_sequence[i][tc].total_energy for tc in dark_set) if dark_set else 0.0
 
         # IR/UV ratio
         infra = sum(fills_sequence[i][tc].infra_amplitude ** 2 for tc in dark_set) if dark_set else 0.0
@@ -473,6 +477,7 @@ def trace_genesis_path(
 # Dark energy density map
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class DarkEnergyMap:
     """The full dark energy density map of a sequence.
@@ -481,6 +486,7 @@ class DarkEnergyMap:
     computational byproduct" — showing where dark energy concentrates,
     where it flows, and where it dissolves into neural pathways.
     """
+
     total_positions: int
     total_clouds: int
     cloud_coverage: float  # fraction of positions with clouds

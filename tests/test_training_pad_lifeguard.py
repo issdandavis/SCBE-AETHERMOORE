@@ -33,10 +33,10 @@ from training_pad.lifeguard import (
     LifeGuard,
 )
 
-
 # ============================================================
 # Severity Enum
 # ============================================================
+
 
 @pytest.mark.unit
 class TestSeverity:
@@ -53,6 +53,7 @@ class TestSeverity:
 # ============================================================
 # LifeGuardNote
 # ============================================================
+
 
 @pytest.mark.unit
 class TestLifeGuardNote:
@@ -82,6 +83,7 @@ class TestLifeGuardNote:
 # Pattern lists
 # ============================================================
 
+
 @pytest.mark.unit
 class TestPatterns:
     def test_security_patterns_exist(self):
@@ -101,6 +103,7 @@ class TestPatterns:
 # ============================================================
 # LifeGuard.observe — security patterns
 # ============================================================
+
 
 @pytest.mark.unit
 class TestObserveSecurity:
@@ -167,6 +170,7 @@ class TestObserveSecurity:
 # LifeGuard.observe — quality patterns
 # ============================================================
 
+
 @pytest.mark.unit
 class TestObserveQuality:
     def test_detects_bare_except(self):
@@ -192,7 +196,7 @@ class TestObserveQuality:
 
     def test_detects_type_equality(self):
         lg = LifeGuard()
-        cell = Cell(code='if type(x) == int:')
+        cell = Cell(code="if type(x) == int:")
         notes = lg.observe(cell)
         lint = [n for n in notes if n.category == "lint"]
         assert len(lint) > 0
@@ -201,6 +205,7 @@ class TestObserveQuality:
 # ============================================================
 # LifeGuard.observe — performance patterns
 # ============================================================
+
 
 @pytest.mark.unit
 class TestObservePerformance:
@@ -223,6 +228,7 @@ class TestObservePerformance:
 # LifeGuard.observe — structure checks
 # ============================================================
 
+
 @pytest.mark.unit
 class TestObserveStructure:
     def test_long_cell_warns(self):
@@ -234,10 +240,7 @@ class TestObserveStructure:
 
     def test_missing_docstring_noted(self):
         lg = LifeGuard()
-        cell = Cell(
-            language="python",
-            code="def calculate(x, y):\n    return x + y"
-        )
+        cell = Cell(language="python", code="def calculate(x, y):\n    return x + y")
         notes = lg.observe(cell)
         style = [n for n in notes if n.category == "style"]
         assert any("docstring" in n.message.lower() for n in style)
@@ -245,10 +248,7 @@ class TestObserveStructure:
     def test_private_function_no_docstring_warning(self):
         """Private functions (def _foo) should not trigger docstring warning."""
         lg = LifeGuard()
-        cell = Cell(
-            language="python",
-            code="def _helper(x):\n    return x + 1"
-        )
+        cell = Cell(language="python", code="def _helper(x):\n    return x + 1")
         notes = lg.observe(cell)
         style = [n for n in notes if "docstring" in n.message.lower()]
         assert len(style) == 0
@@ -270,6 +270,7 @@ class TestObserveStructure:
 # LifeGuard.observe — records feedback on cell
 # ============================================================
 
+
 @pytest.mark.unit
 class TestObserveFeedback:
     def test_feedback_recorded_on_cell(self):
@@ -289,13 +290,16 @@ class TestObserveFeedback:
 # LifeGuard.review_execution
 # ============================================================
 
+
 @pytest.mark.unit
 class TestReviewExecution:
     def test_module_not_found(self):
         lg = LifeGuard()
         cell = Cell(code="import foobar")
         notes = lg.review_execution(
-            cell, stdout="", stderr="ModuleNotFoundError: No module named 'foobar'",
+            cell,
+            stdout="",
+            stderr="ModuleNotFoundError: No module named 'foobar'",
             success=False,
         )
         assert len(notes) > 0
@@ -305,7 +309,9 @@ class TestReviewExecution:
         lg = LifeGuard()
         cell = Cell(code="def foo(")
         notes = lg.review_execution(
-            cell, stdout="", stderr="SyntaxError: unexpected EOF",
+            cell,
+            stdout="",
+            stderr="SyntaxError: unexpected EOF",
             success=False,
         )
         assert len(notes) > 0
@@ -315,7 +321,9 @@ class TestReviewExecution:
         lg = LifeGuard()
         cell = Cell(code="1 + 'a'")
         notes = lg.review_execution(
-            cell, stdout="", stderr="TypeError: unsupported operand",
+            cell,
+            stdout="",
+            stderr="TypeError: unsupported operand",
             success=False,
         )
         assert len(notes) > 0
@@ -324,7 +332,8 @@ class TestReviewExecution:
         lg = LifeGuard()
         cell = Cell(code="print(undefined_var)")
         notes = lg.review_execution(
-            cell, stdout="",
+            cell,
+            stdout="",
             stderr="NameError: name 'undefined_var' is not defined",
             success=False,
         )
@@ -335,7 +344,10 @@ class TestReviewExecution:
         lg = LifeGuard()
         cell = Cell(code="print('x' * 200000)")
         notes = lg.review_execution(
-            cell, stdout="x" * 200_000, stderr="", success=True,
+            cell,
+            stdout="x" * 200_000,
+            stderr="",
+            success=True,
         )
         assert len(notes) > 0
         assert any("large output" in n.message.lower() for n in notes)
@@ -344,7 +356,10 @@ class TestReviewExecution:
         lg = LifeGuard()
         cell = Cell(code="print('hello')")
         notes = lg.review_execution(
-            cell, stdout="hello", stderr="", success=True,
+            cell,
+            stdout="hello",
+            stderr="",
+            success=True,
         )
         assert len(notes) == 0
 
@@ -352,7 +367,9 @@ class TestReviewExecution:
         lg = LifeGuard()
         cell = Cell(code="x")
         notes = lg.review_execution(
-            cell, stdout="", stderr="SomeRandomError: oops",
+            cell,
+            stdout="",
+            stderr="SomeRandomError: oops",
             success=False,
         )
         assert len(notes) == 0
@@ -361,7 +378,8 @@ class TestReviewExecution:
         lg = LifeGuard()
         cell = Cell(code="import foobar")
         lg.review_execution(
-            cell, stdout="",
+            cell,
+            stdout="",
             stderr="ModuleNotFoundError: No module named 'foobar'",
             success=False,
         )
@@ -372,12 +390,15 @@ class TestReviewExecution:
 # Extra patterns
 # ============================================================
 
+
 @pytest.mark.unit
 class TestExtraPatterns:
     def test_custom_pattern_detected(self):
-        lg = LifeGuard(extra_patterns=[
-            (r"DANGEROUS_CALL\(\)", "Custom dangerous call detected", "security"),
-        ])
+        lg = LifeGuard(
+            extra_patterns=[
+                (r"DANGEROUS_CALL\(\)", "Custom dangerous call detected", "security"),
+            ]
+        )
         cell = Cell(code="result = DANGEROUS_CALL()")
         notes = lg.observe(cell)
         assert any("Custom dangerous call" in n.message for n in notes)

@@ -101,9 +101,7 @@ class LifeGuard:
             if func_match:
                 name = func_match.group(1)
                 if not name.startswith("_"):
-                    has_doc = re.search(
-                        r"def\s+" + re.escape(name) + r"\s*\([^)]*\)\s*:\s*\n\s*['\"]{3}", code
-                    )
+                    has_doc = re.search(r"def\s+" + re.escape(name) + r"\s*\([^)]*\)\s*:\s*\n\s*['\"]{3}", code)
                     if not has_doc:
                         notes.append(
                             LifeGuardNote(
@@ -137,7 +135,9 @@ class LifeGuard:
                     )
                 )
             elif "SyntaxError" in stderr:
-                notes.append(LifeGuardNote(category="runtime", severity=Severity.ERROR, message="Syntax error detected."))
+                notes.append(
+                    LifeGuardNote(category="runtime", severity=Severity.ERROR, message="Syntax error detected.")
+                )
             elif "TypeError" in stderr:
                 notes.append(LifeGuardNote(category="runtime", severity=Severity.ERROR, message="Type error detected."))
             elif "NameError" in stderr:
@@ -165,4 +165,3 @@ class LifeGuard:
         for n in notes:
             cell.add_feedback(n.to_dict())
         return notes
-

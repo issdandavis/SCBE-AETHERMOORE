@@ -56,10 +56,10 @@ from src.crypto.world_bundle import (
     _DEFAULT_PHONOLOGY,
 )
 
-
 # ===========================================================================
 # Speech Render Plan
 # ===========================================================================
+
 
 class TestSpeechPlanBuilds:
     """Every tongue produces a valid plan."""
@@ -129,10 +129,7 @@ class TestDistinctDeadTones:
     """Each dead tone maps to a unique pre-tone."""
 
     def test_all_pretones_distinct(self):
-        plans = [
-            build_speech_plan("x", "ko", dt, 3.0)
-            for dt in DEAD_TONE_PRETONES
-        ]
+        plans = [build_speech_plan("x", "ko", dt, 3.0) for dt in DEAD_TONE_PRETONES]
         pretones = {p.pre_tone_hz for p in plans}
         assert len(pretones) == 3
 
@@ -153,6 +150,7 @@ class TestProfileBounds:
 # ===========================================================================
 # Choral Render
 # ===========================================================================
+
 
 class TestTongueAcousticProfiles:
     """All 6 tongues present with valid profiles."""
@@ -262,6 +260,7 @@ class TestChoralPlan:
 # World Bundle
 # ===========================================================================
 
+
 class TestWorldBundleCreation:
     """Default bundle comes with 6 tongue phonologies and 3 render presets."""
 
@@ -355,6 +354,7 @@ class TestCirculation:
     def test_pass_has_timestamp(self):
         bundle = create_default_bundle()
         import time
+
         before = time.time()
         cp = bundle.circulate("ritual", ["ritual"], {}, 0.0)
         after = time.time()
@@ -366,33 +366,48 @@ class TestBundlePopulation:
 
     def test_add_lexicon(self):
         bundle = create_default_bundle()
-        bundle.lexicon["ko"].append(LexiconEntry(
-            tongue="ko", word="kor", ipa="koɹ",
-            meaning="intent", part_of_speech="noun", syllable_count=1,
-        ))
+        bundle.lexicon["ko"].append(
+            LexiconEntry(
+                tongue="ko",
+                word="kor",
+                ipa="koɹ",
+                meaning="intent",
+                part_of_speech="noun",
+                syllable_count=1,
+            )
+        )
         assert bundle.total_vocabulary == 1
 
     def test_add_grammar_rule(self):
         bundle = create_default_bundle()
-        bundle.grammar["ru"].append(GrammarRule(
-            tongue="ru", rule_id="ru_001",
-            description="Subject-Object-Verb order",
-            pattern="SOV", example="ru kor drak",
-        ))
+        bundle.grammar["ru"].append(
+            GrammarRule(
+                tongue="ru",
+                rule_id="ru_001",
+                description="Subject-Object-Verb order",
+                pattern="SOV",
+                example="ru kor drak",
+            )
+        )
         assert bundle.total_rules == 1
 
     def test_add_ontology(self):
         bundle = create_default_bundle()
-        bundle.ontology.append(OntologyEntry(
-            concept_id="C001", name="governance",
-            tongue_affinity="ru", description="rules and policy",
-        ))
+        bundle.ontology.append(
+            OntologyEntry(
+                concept_id="C001",
+                name="governance",
+                tongue_affinity="ru",
+                description="rules and policy",
+            )
+        )
         assert len(bundle.ontology) == 1
 
 
 # ===========================================================================
 # Cross-Module Integration
 # ===========================================================================
+
 
 class TestCrossModuleCoherence:
     """Speech, choral, and world bundle share consistent tongue set."""
@@ -408,7 +423,10 @@ class TestCrossModuleCoherence:
         plan = build_speech_plan("test", "ca", "minor_sixth", 4.0)
         phonemes = [PhonemeToken("t", "t", 100, 0.5) for _ in range(5)]
         choral = build_choral_plan(
-            phonemes, plan.dominant_tongue, plan.excitation, RenderMode.CHORAL_RITUAL,
+            phonemes,
+            plan.dominant_tongue,
+            plan.excitation,
+            RenderMode.CHORAL_RITUAL,
         )
         assert choral.tongue == plan.dominant_tongue
         assert len(choral.voices) == 4

@@ -28,9 +28,9 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # Fix Windows cp1252 encoding (only when running directly, not under pytest)
-if not hasattr(sys, '_called_from_test') and "pytest" not in sys.modules:
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+if not hasattr(sys, "_called_from_test") and "pytest" not in sys.modules:
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 # Resolve project root
 _repo = Path(__file__).resolve().parents[2]
@@ -78,7 +78,7 @@ VERB_OPS = {
     (8, 2): ("MUL", lambda a, b: a * b),
     (8, 3): ("DIV", lambda a, b: a // b if b != 0 else 0),
     (8, 4): ("MOD", lambda a, b: a % b if b != 0 else 0),
-    (8, 5): ("POW", lambda a, b: a ** b),
+    (8, 5): ("POW", lambda a, b: a**b),
     (8, 6): ("NEG", lambda a, b: -a),
     (8, 7): ("ABS", lambda a, b: abs(a)),
     (8, 8): ("INC", lambda a, b: a + 1),
@@ -89,7 +89,6 @@ VERB_OPS = {
     (8, 13): ("OR", lambda a, b: a | b),
     (8, 14): ("XOR", lambda a, b: a ^ b),
     (8, 15): ("NOT", lambda a, b: ~a & 0xFF),
-
     # Comparison (high=9, low=0..15)
     (9, 0): ("EQ", lambda a, b: int(a == b)),
     (9, 1): ("NE", lambda a, b: int(a != b)),
@@ -107,13 +106,12 @@ VERB_OPS = {
     (9, 13): ("EVEN?", lambda a, b: int(a % 2 == 0)),
     (9, 14): ("ODD?", lambda a, b: int(a % 2 == 1)),
     (9, 15): ("BETWEEN?", lambda a, b: int(0 <= a <= b)),
-
     # Assignment / stack (high=10, low=0..15)
-    (10, 0): ("SET", lambda a, b: b),          # a = b
-    (10, 1): ("COPY", lambda a, b: a),         # duplicate
-    (10, 2): ("SWAP", lambda a, b: (b, a)),    # special: returns tuple
+    (10, 0): ("SET", lambda a, b: b),  # a = b
+    (10, 1): ("COPY", lambda a, b: a),  # duplicate
+    (10, 2): ("SWAP", lambda a, b: (b, a)),  # special: returns tuple
     (10, 3): ("CLEAR", lambda a, b: 0),
-    (10, 4): ("LOAD", None),   # memory ops handled by VM
+    (10, 4): ("LOAD", None),  # memory ops handled by VM
     (10, 5): ("STORE", None),
     (10, 6): ("PUSH", None),
     (10, 7): ("POP", None),
@@ -125,16 +123,15 @@ VERB_OPS = {
     (10, 13): ("ROLL", None),
     (10, 14): ("DEPTH", None),
     (10, 15): ("NIP", None),
-
     # I/O (high=11, low=0..15)
-    (11, 0): ("EMIT", None),    # print single value
-    (11, 1): ("PRINT", None),   # print formatted
-    (11, 2): ("READ", None),    # read input
-    (11, 3): ("LOG", None),     # log to trace
+    (11, 0): ("EMIT", None),  # print single value
+    (11, 1): ("PRINT", None),  # print formatted
+    (11, 2): ("READ", None),  # read input
+    (11, 3): ("LOG", None),  # log to trace
     (11, 4): ("SIGNAL", None),  # emit signal
     (11, 5): ("LISTEN", None),  # await signal
-    (11, 6): ("SEND", None),    # send to channel
-    (11, 7): ("RECV", None),    # receive from channel
+    (11, 6): ("SEND", None),  # send to channel
+    (11, 7): ("RECV", None),  # receive from channel
     (11, 8): ("OPEN", None),
     (11, 9): ("CLOSE", None),
     (11, 10): ("FLUSH", None),
@@ -147,11 +144,11 @@ VERB_OPS = {
 
 # Control flow (high nibble 0-3)
 CONTROL_OPS = {
-    (0, 0): "NOP",      # no-op
-    (0, 1): "HALT",     # stop execution
-    (0, 2): "SELF",     # self-reference (pronoun)
-    (0, 3): "OTHER",    # other-reference
-    (1, 0): "IF",       # conditional branch
+    (0, 0): "NOP",  # no-op
+    (0, 1): "HALT",  # stop execution
+    (0, 2): "SELF",  # self-reference (pronoun)
+    (0, 3): "OTHER",  # other-reference
+    (1, 0): "IF",  # conditional branch
     (1, 1): "ELSE",
     (1, 2): "ENDIF",
     (1, 3): "WHILE",
@@ -159,11 +156,11 @@ CONTROL_OPS = {
     (1, 5): "FOR",
     (1, 6): "ENDFOR",
     (1, 7): "BREAK",
-    (2, 0): "CALL",     # subroutine
+    (2, 0): "CALL",  # subroutine
     (2, 1): "RET",
     (2, 2): "LABEL",
     (2, 3): "GOTO",
-    (3, 0): "TRY",      # error handling
+    (3, 0): "TRY",  # error handling
     (3, 1): "CATCH",
     (3, 2): "THROW",
     (3, 3): "FINALLY",
@@ -178,18 +175,18 @@ CONSTANTS = {
     1: 1,
     2: 2,
     3: 3,
-    4: 5,       # fib
-    5: 8,       # fib
-    6: 13,      # fib
-    7: 21,      # fib
-    8: 42,      # answer
+    4: 5,  # fib
+    5: 8,  # fib
+    6: 13,  # fib
+    7: 21,  # fib
+    8: 42,  # answer
     9: 100,
     10: 255,
     11: 256,
     12: 1000,
-    13: 3,      # pi approx integer
-    14: 1,      # phi approx integer
-    15: 2,      # e approx integer
+    13: 3,  # pi approx integer
+    14: 1,  # phi approx integer
+    15: 2,  # e approx integer
 }
 
 
@@ -197,9 +194,11 @@ CONSTANTS = {
 # PART 3: TONGUE VIRTUAL MACHINES — One per paradigm
 # ============================================================
 
+
 @dataclass
 class TongueVM:
     """Minimal virtual machine for Sacred Tongue programs."""
+
     name: str
     tongue_code: str
     registers: Dict[int, int] = field(default_factory=lambda: {i: 0 for i in range(16)})
@@ -293,6 +292,7 @@ def byte_to_token(tongue_code: str, byte_val: int) -> str:
 # ============================================================
 # PART 5: PER-TONGUE EVALUATORS
 # ============================================================
+
 
 def eval_ko_vso(vm: TongueVM, tokens: List[str]) -> Optional[int]:
     """
@@ -390,8 +390,8 @@ def eval_um_osv(vm: TongueVM, tokens: List[str]) -> Optional[int]:
     if len(tokens) < 2:
         return None
 
-    o_hi, o_lo = token_to_nibbles("um", tokens[0])   # destination
-    s_hi, s_lo = token_to_nibbles("um", tokens[1])   # source
+    o_hi, o_lo = token_to_nibbles("um", tokens[0])  # destination
+    s_hi, s_lo = token_to_nibbles("um", tokens[1])  # source
     v_hi, v_lo = token_to_nibbles("um", tokens[2]) if len(tokens) > 2 else (10, 0)  # default SET
 
     src_val = vm.resolve_data(s_hi, s_lo)
@@ -416,8 +416,8 @@ def eval_dr_sov(vm: TongueVM, tokens: List[str]) -> Optional[int]:
     if len(tokens) < 2:
         return None
 
-    s_hi, s_lo = token_to_nibbles("dr", tokens[0])   # target
-    o_hi, o_lo = token_to_nibbles("dr", tokens[1])   # material
+    s_hi, s_lo = token_to_nibbles("dr", tokens[0])  # target
+    o_hi, o_lo = token_to_nibbles("dr", tokens[1])  # material
     v_hi, v_lo = token_to_nibbles("dr", tokens[2]) if len(tokens) > 2 else (8, 0)
 
     target_val = vm.resolve_data(s_hi, s_lo)
@@ -446,14 +446,13 @@ EVALUATORS = {
 # PART 6: PROGRAM BUILDER — Compose tokens into programs
 # ============================================================
 
-def make_instruction(tongue: str, verb_byte: int, subj_byte: int,
-                     obj_byte: int = None) -> List[str]:
+
+def make_instruction(tongue: str, verb_byte: int, subj_byte: int, obj_byte: int = None) -> List[str]:
     """Build a single instruction as a list of tongue tokens."""
     tc = tongue
     tokens = []
 
-    grammar = {"ko": "VSO", "av": "SVO", "ru": "SOV",
-               "ca": "V2", "um": "OSV", "dr": "SOV"}
+    grammar = {"ko": "VSO", "av": "SVO", "ru": "SOV", "ca": "V2", "um": "OSV", "dr": "SOV"}
 
     order = grammar[tc]
     v = byte_to_token(tc, verb_byte)
@@ -465,11 +464,11 @@ def make_instruction(tongue: str, verb_byte: int, subj_byte: int,
     elif order == "SVO":
         tokens = [s, v] + ([o] if o else [])
     elif order == "SOV":
-        tokens = ([s] + ([o] if o else []) + [v])
+        tokens = [s] + ([o] if o else []) + [v]
     elif order == "V2":
-        tokens = ([s, v] + ([o] if o else []))  # context first, then verb
+        tokens = [s, v] + ([o] if o else [])  # context first, then verb
     elif order == "OSV":
-        tokens = ([o, s, v] if o else [s, v])
+        tokens = [o, s, v] if o else [s, v]
 
     return tokens
 
@@ -477,6 +476,7 @@ def make_instruction(tongue: str, verb_byte: int, subj_byte: int,
 # ============================================================
 # PART 7: THE TURING TEST — Prove each tongue computes
 # ============================================================
+
 
 def test_kor_aelin_lisp():
     """
@@ -493,9 +493,9 @@ def test_kor_aelin_lisp():
     vm = TongueVM(name="Kor'aelin", tongue_code="ko")
 
     # Build: ADD literal_5 literal_8
-    verb_byte = 0x80   # high=8(arithmetic), low=0(ADD)
-    subj_byte = 0x55   # high=5(literal), low=5(value 5)
-    obj_byte = 0x58    # high=5(literal), low=8(value 8)
+    verb_byte = 0x80  # high=8(arithmetic), low=0(ADD)
+    subj_byte = 0x55  # high=5(literal), low=5(value 5)
+    obj_byte = 0x58  # high=5(literal), low=8(value 8)
 
     tokens = make_instruction("ko", verb_byte, subj_byte, obj_byte)
     print(f"\n{'='*60}")
@@ -522,9 +522,9 @@ def test_avali_python():
     """
     vm = TongueVM(name="Avali", tongue_code="av")
 
-    subj_byte = 0x57   # high=5(literal), low=7 → value 7
-    verb_byte = 0x82   # high=8(arithmetic), low=2(MUL)
-    obj_byte = 0x53    # high=5(literal), low=3 → value 3
+    subj_byte = 0x57  # high=5(literal), low=7 → value 7
+    verb_byte = 0x82  # high=8(arithmetic), low=2(MUL)
+    obj_byte = 0x53  # high=5(literal), low=3 → value 3
 
     tokens = make_instruction("av", verb_byte, subj_byte, obj_byte)
     print(f"\n{'='*60}")
@@ -551,9 +551,9 @@ def test_runethic_forth():
     """
     vm = TongueVM(name="Runethic", tongue_code="ru")
 
-    subj_byte = 0x5A   # high=5(literal), low=10 → value 10
-    obj_byte = 0x54    # high=5(literal), low=4 → value 4
-    verb_byte = 0x81   # high=8(arithmetic), low=1(SUB)
+    subj_byte = 0x5A  # high=5(literal), low=10 → value 10
+    obj_byte = 0x54  # high=5(literal), low=4 → value 4
+    verb_byte = 0x81  # high=8(arithmetic), low=1(SUB)
 
     tokens = make_instruction("ru", verb_byte, subj_byte, obj_byte)
     print(f"\n{'='*60}")
@@ -575,9 +575,9 @@ def test_cassisivadan_sql():
     """
     vm = TongueVM(name="Cassisivadan", tongue_code="ca")
 
-    ctx_byte = 0x59    # high=5(literal), low=9 → value 9
-    verb_byte = 0x93   # high=9(comparison), low=3(GT)
-    arg_byte = 0x55    # high=5(literal), low=5 → value 5
+    ctx_byte = 0x59  # high=5(literal), low=9 → value 9
+    verb_byte = 0x93  # high=9(comparison), low=3(GT)
+    arg_byte = 0x55  # high=5(literal), low=5 → value 5
 
     tokens = make_instruction("ca", verb_byte, ctx_byte, arg_byte)
     print(f"\n{'='*60}")
@@ -599,9 +599,9 @@ def test_umbroth_asm():
     """
     vm = TongueVM(name="Umbroth", tongue_code="um")
 
-    dest_byte = 0x40   # high=4(register), low=0 → R0
-    src_byte = 0x5D    # high=5(literal), low=13 → value 13
-    verb_byte = 0xA0   # high=10(assignment), low=0(SET)
+    dest_byte = 0x40  # high=4(register), low=0 → R0
+    src_byte = 0x5D  # high=5(literal), low=13 → value 13
+    verb_byte = 0xA0  # high=10(assignment), low=0(SET)
 
     tokens = make_instruction("um", verb_byte, src_byte, dest_byte)
     print(f"\n{'='*60}")
@@ -627,7 +627,7 @@ def test_draumric_make():
 
     target_byte = 0x42  # high=4(register), low=2 → R2
     material_byte = 0x57  # high=5(literal), low=7 → value 7
-    verb_byte = 0x80    # high=8(arithmetic), low=0(ADD)
+    verb_byte = 0x80  # high=8(arithmetic), low=0(ADD)
 
     tokens = make_instruction("dr", verb_byte, target_byte, material_byte)
     print(f"\n{'='*60}")
@@ -645,6 +645,7 @@ def test_draumric_make():
 # PART 8: MULTI-TONGUE PROGRAM — Cross-tongue composition
 # ============================================================
 
+
 def test_cross_tongue_pipeline():
     """
     Prove cross-tongue composition: same computation, 6 representations.
@@ -661,8 +662,8 @@ def test_cross_tongue_pipeline():
         vm = TongueVM(name=TONGUES[tc].name, tongue_code=tc)
 
         verb_byte = 0x80  # ADD
-        a_byte = 0x55     # literal 5
-        b_byte = 0x58     # literal 8
+        a_byte = 0x55  # literal 5
+        b_byte = 0x58  # literal 8
 
         tokens = make_instruction(tc, verb_byte, a_byte, b_byte)
         evaluator = EVALUATORS[tc]
@@ -685,6 +686,7 @@ def test_cross_tongue_pipeline():
 # PART 9: TOKEN ANATOMY DISPLAY
 # ============================================================
 
+
 def display_token_anatomy():
     """Show the full computational anatomy of a single byte across all tongues."""
     print(f"\n{'='*60}")
@@ -698,7 +700,9 @@ def display_token_anatomy():
     for tc in ["ko", "av", "ru", "ca", "um", "dr"]:
         token = byte_to_token(tc, 0x80)
         spec = TONGUES[tc]
-        print(f"  {spec.name:15s}: {token:15s}  (prefix={spec.prefixes[8]}, suffix={spec.suffixes[0]}, freq={spec.harmonic_frequency}Hz)")
+        print(
+            f"  {spec.name:15s}: {token:15s}  (prefix={spec.prefixes[8]}, suffix={spec.suffixes[0]}, freq={spec.harmonic_frequency}Hz)"
+        )
 
     print(f"\n  6 tokens, 1 meaning: ADD")
     print(f"  This is the isomorphism — same operation, 6 phonetic representations")
@@ -738,6 +742,7 @@ def display_instruction_set_summary():
 # PART 10: MULTI-STEP PROGRAM — Fibonacci in Draumric
 # ============================================================
 
+
 def test_fibonacci_draumric():
     """
     Draumric multi-step: Compute Fibonacci(6) = 8
@@ -752,8 +757,8 @@ def test_fibonacci_draumric():
     print(f"{'='*60}")
 
     vm = TongueVM(name="Draumric", tongue_code="dr")
-    vm.registers[0] = 0   # fib_prev
-    vm.registers[1] = 1   # fib_curr
+    vm.registers[0] = 0  # fib_prev
+    vm.registers[1] = 1  # fib_curr
 
     print(f"  Init: R0={vm.registers[0]}, R1={vm.registers[1]}")
 
@@ -772,8 +777,7 @@ def test_fibonacci_draumric():
         r1_token = byte_to_token("dr", 0x41)  # R1
         add_token = byte_to_token("dr", 0x80)  # ADD
 
-        print(f"  Step {i+1}: {r0_token} {r1_token} {add_token}  "
-              f"→ R0({a}) + R1({b}) = {new_val}")
+        print(f"  Step {i+1}: {r0_token} {r1_token} {add_token}  " f"→ R0({a}) + R1({b}) = {new_val}")
 
         vm.registers[0] = vm.registers[1]
         vm.registers[1] = new_val
@@ -787,6 +791,7 @@ def test_fibonacci_draumric():
 # ============================================================
 # PART 11: COMPARISON — Same program, all paradigms
 # ============================================================
+
 
 def test_conditional_cassisivadan():
     """
@@ -803,8 +808,8 @@ def test_conditional_cassisivadan():
         vm.registers[0] = test_val
 
         # Step 1: Compare R0 GT 5
-        r0_token = byte_to_token("ca", 0x40)   # R0
-        gt_token = byte_to_token("ca", 0x93)   # GT
+        r0_token = byte_to_token("ca", 0x40)  # R0
+        gt_token = byte_to_token("ca", 0x93)  # GT
         lit5_token = byte_to_token("ca", 0x55)  # literal 5
 
         cmp_tokens = [r0_token, gt_token, lit5_token]
@@ -831,6 +836,7 @@ def test_conditional_cassisivadan():
 # MAIN — Run all tests
 # ============================================================
 
+
 def run_turing_test():
     """Execute the full Sacred Tongue Turing Test."""
     print("╔══════════════════════════════════════════════════════════╗")
@@ -844,13 +850,13 @@ def run_turing_test():
     display_token_anatomy()
 
     tests = [
-        ("Kor'aelin  (VSO/Lisp)",     test_kor_aelin_lisp),
-        ("Avali      (SVO/Python)",    test_avali_python),
-        ("Runethic   (SOV/Forth)",     test_runethic_forth),
-        ("Cassisivadan (V2/SQL)",      test_cassisivadan_sql),
-        ("Umbroth    (OSV/ASM)",       test_umbroth_asm),
-        ("Draumric   (SOV/Make)",      test_draumric_make),
-        ("Cross-tongue pipeline",      test_cross_tongue_pipeline),
+        ("Kor'aelin  (VSO/Lisp)", test_kor_aelin_lisp),
+        ("Avali      (SVO/Python)", test_avali_python),
+        ("Runethic   (SOV/Forth)", test_runethic_forth),
+        ("Cassisivadan (V2/SQL)", test_cassisivadan_sql),
+        ("Umbroth    (OSV/ASM)", test_umbroth_asm),
+        ("Draumric   (SOV/Make)", test_draumric_make),
+        ("Cross-tongue pipeline", test_cross_tongue_pipeline),
         ("Fibonacci (Draumric multi)", test_fibonacci_draumric),
         ("Conditional (Cassisivadan)", test_conditional_cassisivadan),
     ]

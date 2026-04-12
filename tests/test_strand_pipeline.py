@@ -12,7 +12,6 @@ from src.symphonic.multipath.strand_pipeline import (
     run_pipeline,
 )
 
-
 DEMO_OPS = ["add", "if_", "own", "promise", "matrix", "bind_d"]
 EXPECTED_DOMINANTS = ["CA", "KO", "RU", "AV", "UM", "DR"]
 
@@ -33,6 +32,7 @@ def test_pipeline_produces_all_outputs():
 def test_bitstream_widths_match_dominant_tongue():
     """Each bead's bit length equals its dominant tongue's width."""
     from src.symphonic.multipath.op_binary import TONGUE_WIDTH
+
     ledger = StringLedger()
     r = run_pipeline(DEMO_OPS, ledger)
     for bead, bits in zip(r.strand.beads, r.per_bead_bits):
@@ -73,7 +73,8 @@ def test_rhombic_fires_when_sensors_provided():
     rng = np.random.default_rng(42)
     ledger = StringLedger()
     r = run_pipeline(
-        DEMO_OPS, ledger,
+        DEMO_OPS,
+        ledger,
         audio=rng.normal(size=6),
         vision=rng.normal(size=6),
         governance=rng.normal(size=6),
@@ -113,7 +114,8 @@ def test_pipeline_populates_decision_without_sensors():
 def test_pipeline_populates_decision_with_sensors():
     rng = np.random.default_rng(0)
     r = run_pipeline(
-        DEMO_OPS, StringLedger(),
+        DEMO_OPS,
+        StringLedger(),
         audio=rng.normal(size=6),
         vision=rng.normal(size=6),
         governance=rng.normal(size=6),
@@ -125,6 +127,7 @@ def test_pipeline_populates_decision_with_sensors():
 def test_unknown_op_still_encodes():
     """Silent bead falls back to CA; bitstream still emits CA-width bits."""
     from src.symphonic.multipath.op_binary import TONGUE_WIDTH
+
     ledger = StringLedger()
     r = run_pipeline(["totally_unknown_op"], ledger)
     assert r.strand.beads[0].dominant == "CA"

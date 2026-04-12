@@ -70,45 +70,47 @@ from src.crypto.crossing_energy import (
 )
 from src.crypto.tri_bundle import encode_bytes, encode_text
 
-
 # ---------------------------------------------------------------------------
 # Archetypal Forces
 # ---------------------------------------------------------------------------
 
+
 class Force(Enum):
     """Archetypal forces that shape the historical simulation."""
-    ANGEL = "angel"          # Beneficial external correction
-    DEMON = "demon"          # Adversarial perturbation
-    PROPHET = "prophet"      # Pattern recognizer (sees the braid)
-    WITNESS = "witness"      # Memory preserver (RU tongue)
-    BUILDER = "builder"      # Sanctuary constructor (DR tongue)
-    SEEKER = "seeker"        # Natural learner (unsupervised)
+
+    ANGEL = "angel"  # Beneficial external correction
+    DEMON = "demon"  # Adversarial perturbation
+    PROPHET = "prophet"  # Pattern recognizer (sees the braid)
+    WITNESS = "witness"  # Memory preserver (RU tongue)
+    BUILDER = "builder"  # Sanctuary constructor (DR tongue)
+    SEEKER = "seeker"  # Natural learner (unsupervised)
 
 
 # Maps forces to their governance behavior
 FORCE_GOVERNANCE = {
-    Force.ANGEL: Decision.ALLOW,       # corrections are always allowed
-    Force.DEMON: Decision.DENY,        # adversarial is always denied
+    Force.ANGEL: Decision.ALLOW,  # corrections are always allowed
+    Force.DEMON: Decision.DENY,  # adversarial is always denied
     Force.PROPHET: Decision.QUARANTINE,  # prophecy needs review
-    Force.WITNESS: Decision.ALLOW,     # witness preserves, doesn't act
-    Force.BUILDER: Decision.ALLOW,     # building is constructive
-    Force.SEEKER: Decision.QUARANTINE,   # seeking is cautious exploration
+    Force.WITNESS: Decision.ALLOW,  # witness preserves, doesn't act
+    Force.BUILDER: Decision.ALLOW,  # building is constructive
+    Force.SEEKER: Decision.QUARANTINE,  # seeking is cautious exploration
 }
 
 # Maps forces to Sacred Tongues
 FORCE_TONGUE = {
-    Force.ANGEL: "av",    # wisdom / transport
-    Force.DEMON: "um",    # shadow / veil (adversarial uses security offensively)
+    Force.ANGEL: "av",  # wisdom / transport
+    Force.DEMON: "um",  # shadow / veil (adversarial uses security offensively)
     Force.PROPHET: "ru",  # witness / governance (sees the pattern)
     Force.WITNESS: "ru",  # witness / ancestry
     Force.BUILDER: "dr",  # structure / forge
-    Force.SEEKER: "ko",   # intent / flow (natural learning)
+    Force.SEEKER: "ko",  # intent / flow (natural learning)
 }
 
 
 # ---------------------------------------------------------------------------
 # Historical Agents
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class HistoricalAgent:
@@ -120,6 +122,7 @@ class HistoricalAgent:
     - A musical interval from their era
     - A tongue affinity based on their role
     """
+
     name: str
     era: str
     year: int
@@ -302,16 +305,18 @@ HISTORICAL_AGENTS: List[HistoricalAgent] = [
 # Panel A: Religious / Human Studies
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PanelAResult:
     """Result from the Religious / Human Studies panel."""
+
     agent: HistoricalAgent
     text: str
     governance: GovernanceSummary
     dark_node_count: int
     dominant_force: Force
     covenant_strength: float  # how binding is the lesson?
-    witness_weight: float     # how much does history carry forward?
+    witness_weight: float  # how much does history carry forward?
 
     @property
     def intervention_type(self) -> str:
@@ -377,9 +382,11 @@ def run_panel_a(agent: HistoricalAgent, text: str) -> PanelAResult:
 # Panel B: Science / Mathematics
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PanelBResult:
     """Result from the Science / Mathematics panel."""
+
     agent: HistoricalAgent
     text: str
     spectrum_energy: Dict[str, float]  # band energies
@@ -447,9 +454,11 @@ def run_panel_b(agent: HistoricalAgent, text: str) -> PanelBResult:
 # Dual Panel Synthesis
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class DualPanelResult:
     """Combined result from both panels, connected through the fact lattice."""
+
     agent: HistoricalAgent
     panel_a: PanelAResult
     panel_b: PanelBResult
@@ -519,6 +528,7 @@ def run_full_simulation(
 # Study Output: Natural Learning vs Divine Intervention
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class StudyResult:
     """Final study output comparing natural learning vs divine intervention.
@@ -526,12 +536,13 @@ class StudyResult:
     "Natural Learning for AI Development and Divine Intervention
      Mechanisms for Long-Term Mission Reliability"
     """
+
     total_agents: int
-    natural_learners: List[DualPanelResult]   # seekers
+    natural_learners: List[DualPanelResult]  # seekers
     divine_interventions: List[DualPanelResult]  # angels, prophets
-    adversarial_tests: List[DualPanelResult]   # demons
-    builders: List[DualPanelResult]            # sanctuary makers
-    witnesses: List[DualPanelResult]           # memory keepers
+    adversarial_tests: List[DualPanelResult]  # demons
+    builders: List[DualPanelResult]  # sanctuary makers
+    witnesses: List[DualPanelResult]  # memory keepers
 
     mean_natural_reliability: float
     mean_divine_reliability: float
