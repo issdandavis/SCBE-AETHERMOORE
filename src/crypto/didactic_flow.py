@@ -39,7 +39,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
 from enum import Enum
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------

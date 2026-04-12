@@ -4,7 +4,6 @@ Tests dark cloud detection, neural star maps, genesis paths,
 and the full dark energy density map.
 """
 
-
 from src.crypto.dark_cloud_mapper import (
     CloudType,
     MIN_CLOUD_TONGUES,

@@ -1,6 +1,5 @@
 """Tests for the Tri-Bundle DNA Encoder — 3×3×3 braided signal architecture."""
 
-
 from src.crypto.tri_bundle import (
     PHI,
     BUNDLE_SCALE,

@@ -48,6 +48,24 @@ function run(cmd: string): string {
 
 const maybeDescribe = PYTHON ? describe : describe.skip;
 
+/** Returns true if scbe-cli.py's dependencies (numpy etc.) are importable. */
+function scbeCliDepsAvailable(): boolean {
+  if (!PYTHON) return false;
+  try {
+    execSync(`${PYTHON} scbe-cli.py --help`, {
+      cwd: process.cwd(),
+      encoding: 'utf-8',
+      stdio: 'pipe',
+      timeout: 10000,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const maybeParityDescribe = scbeCliDepsAvailable() ? describe : describe.skip;
+
 maybeDescribe('Unified scbe CLI', () => {
   describe('legacy cli bridge', () => {
     it('reroutes legacy cli ai explain to the modern ai helper', () => {
@@ -209,7 +227,7 @@ maybeDescribe('Unified scbe CLI', () => {
   });
 });
 
-maybeDescribe('Cross-CLI parity', () => {
+maybeParityDescribe('Cross-CLI parity', () => {
   it('scbe and scbe-cli.py produce identical KO tokens', () => {
     const scbeOut = run(`${PYTHON!} scbe.py tongues encode --tongue ko --text "parity"`);
     const cliOut = run(`${PYTHON!} scbe-cli.py encode --tongue ko --text "parity"`);
