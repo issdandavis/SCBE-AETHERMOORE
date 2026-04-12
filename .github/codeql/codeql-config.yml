@@ -5,6 +5,7 @@ paths:
   - scripts
   - services
   - tests
+  - rust
   - kindle-app/android
   - kindle-app/www
 
