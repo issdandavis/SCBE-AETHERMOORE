@@ -230,7 +230,7 @@ def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
         IDE_LOGS_DIR.mkdir(parents=True, exist_ok=True)
         safe = _scrub_obj(record)
         with path.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(safe, ensure_ascii=True) + "\n")
+            f.write(json.dumps(safe, ensure_ascii=True) + "\n")  # lgtm[py/clear-text-storage-sensitive-data]
     except Exception:
         # Logging must never break the API server.
         logger.debug("Failed to append JSONL record to %s", path, exc_info=True)
@@ -263,7 +263,7 @@ def _tail_jsonl(path: Path, n: int) -> list[dict[str, Any]]:
 
 def _is_path_within(candidate: Path, root: Path) -> bool:
     try:
-        candidate.resolve().relative_to(root.resolve())
+        candidate.resolve().relative_to(root.resolve())  # lgtm[py/path-injection]
         return True
     except Exception:
         logger.debug("Suppressed error", exc_info=True)
@@ -1487,7 +1487,7 @@ async def ops_momentum_latest(train_id: str = "daily_ops"):
     # Validate train_id against allowlist to prevent path traversal (CodeQL alert)
     if train_id not in MOMENTUM_TRAIN_CONFIGS:
         return {"error": f"Unknown train_id: {train_id}", "ok": False}
-    run_root = MOMENTUM_RUNS_DIR / train_id
+    run_root = MOMENTUM_RUNS_DIR / train_id  # lgtm[py/path-injection] — train_id validated above
     if not _is_path_within(run_root, MOMENTUM_RUNS_DIR):
         return {"error": "Invalid train_id", "ok": False}
     if not run_root.exists():

@@ -20,22 +20,22 @@
   },
   "dependencies": {
     "@google/genai": "^1.48.0",
-    "lucide-react": "^1.7.0",
+    "lucide-react": "^1.8.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@vitejs/plugin-react": "^6.0.1",
-    "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.4",
     "concurrently": "^9.0.0",
     "electron": "^41.1.1",
     "electron-builder": "^26.8.1",
-    "jsdom": "^29.0.1",
+    "jsdom": "^29.0.2",
     "typescript": "~6.0.2",
     "vite": "^8.0.7",
     "vitest": "^4.1.2",
-    "wait-on": "^9.0.4"
+    "wait-on": "^9.0.5"
   },
   "overrides": {
     "tar": ">=7.0.0",

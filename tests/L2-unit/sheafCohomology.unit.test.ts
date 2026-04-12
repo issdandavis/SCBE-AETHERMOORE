@@ -33,18 +33,15 @@ import {
   convHarmonicFlow as harmonicFlow,
   tarskiCohomology0,
   pseudoCoboundary,
-  tarskiLaplacian1,
   tarskiCohomology1,
   // Consensus
   analyzeConsensus,
-  riskConsensusSheaf,
   governanceConsensusSheaf,
   riskConsensus,
   consensusSummary,
   // Types
   type RiskDecision,
   type GovernanceTier,
-  type DimensionalState,
   type ConvenienceLattice,
 } from '../../src/harmonic/sheafCohomology.js';
 
