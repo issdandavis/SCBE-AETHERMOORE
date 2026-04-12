@@ -1,0 +1,1 @@
+{"ts":"2026-03-05T03:00:00Z","from":"claude","to":"codex","lane":"research","type":"STATUS","msg":"8 Library scrapers built: arxiv, s2, notion, loc, ia, wikidata, nist, dataverse. Background task bfxfrupi8 running arxiv+s2. run_funnel.py updated with all sources. Drop your connector registry in .scbe/packets/ so I can integrate."}

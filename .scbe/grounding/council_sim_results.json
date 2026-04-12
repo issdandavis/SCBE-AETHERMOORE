@@ -1,0 +1,321 @@
+{
+  "seeds_loaded": 10,
+  "iterations": 50,
+  "drift_trajectory": [
+    0.787117,
+    0.598305,
+    0.457729,
+    0.35251,
+    0.273318,
+    0.213368,
+    0.167711,
+    0.132722,
+    0.105735,
+    0.084783,
+    0.068405,
+    0.055517,
+    0.045306,
+    0.037162,
+    0.030626,
+    0.025347,
+    0.021059,
+    0.017557,
+    0.014683,
+    0.012314,
+    0.010352,
+    0.008722,
+    0.007363,
+    0.006227,
+    0.005274,
+    0.004473,
+    0.003798,
+    0.003229,
+    0.002748,
+    0.00234,
+    0.001995,
+    0.001702,
+    0.001453,
+    0.001241,
+    0.001061,
+    0.000907,
+    0.000776,
+    0.000664,
+    0.000569,
+    0.000487,
+    0.000417,
+    0.000358,
+    0.000307,
+    0.000263,
+    0.000226,
+    0.000194,
+    0.000166,
+    0.000143,
+    0.000123,
+    0.000105
+  ],
+  "pre": {
+    "label": "pre",
+    "frobenius": 32.095,
+    "mean_all": 3.2367,
+    "max_d": 5.0865,
+    "min_d_nonzero": 1.038,
+    "expected_close": [
+      {
+        "pair": "e7_shipwreck_awakening <-> grok_izack_dimensional_odyssey",
+        "d": 2.117
+      },
+      {
+        "pair": "e7_shipwreck_awakening <-> claude_sft_cave_contract",
+        "d": 2.6765
+      },
+      {
+        "pair": "codex_third_thread <-> codex_47_realities",
+        "d": 3.759
+      },
+      {
+        "pair": "claude_sft_cave_contract <-> claude_sft_world_tree_planting",
+        "d": 2.3779
+      },
+      {
+        "pair": "e7_crystal_garden_ame <-> e7_chronological_nexus_staff",
+        "d": 1.8794
+      }
+    ],
+    "expected_far": [
+      {
+        "pair": "e7_shipwreck_awakening <-> codex_47_realities",
+        "d": 5.0865
+      },
+      {
+        "pair": "claude_sft_zara_timeless_bubble <-> e7_chronological_nexus_staff",
+        "d": 4.2408
+      },
+      {
+        "pair": "e7_crystal_garden_ame <-> grok_izack_dimensional_odyssey",
+        "d": 4.0178
+      },
+      {
+        "pair": "e7_forest_toward_smoke <-> codex_third_thread",
+        "d": 4.0915
+      }
+    ],
+    "mean_intra_source": 3.2848,
+    "mean_inter_source": 3.2229,
+    "mean_intra_cutover": 2.5633,
+    "mean_inter_cutover": 3.4291
+  },
+  "post": {
+    "label": "post",
+    "frobenius": 23.4767,
+    "mean_all": 2.1485,
+    "max_d": 3.6557,
+    "min_d_nonzero": 0.3717,
+    "expected_close": [
+      {
+        "pair": "e7_shipwreck_awakening <-> grok_izack_dimensional_odyssey",
+        "d": 0.5947
+      },
+      {
+        "pair": "e7_shipwreck_awakening <-> claude_sft_cave_contract",
+        "d": 0.9971
+      },
+      {
+        "pair": "codex_third_thread <-> codex_47_realities",
+        "d": 0.7377
+      },
+      {
+        "pair": "claude_sft_cave_contract <-> claude_sft_world_tree_planting",
+        "d": 0.5344
+      },
+      {
+        "pair": "e7_crystal_garden_ame <-> e7_chronological_nexus_staff",
+        "d": 0.3969
+      }
+    ],
+    "expected_far": [
+      {
+        "pair": "e7_shipwreck_awakening <-> codex_47_realities",
+        "d": 3.3515
+      },
+      {
+        "pair": "claude_sft_zara_timeless_bubble <-> e7_chronological_nexus_staff",
+        "d": 3.3467
+      },
+      {
+        "pair": "e7_crystal_garden_ame <-> grok_izack_dimensional_odyssey",
+        "d": 3.4061
+      },
+      {
+        "pair": "e7_forest_toward_smoke <-> codex_third_thread",
+        "d": 3.1466
+      }
+    ],
+    "mean_intra_source": 1.7792,
+    "mean_inter_source": 2.2541,
+    "mean_intra_cutover": 0.879,
+    "mean_inter_cutover": 2.5113
+  },
+  "pi_exchange_per_seed": [
+    {
+      "seed_id": "e7_shipwreck_awakening",
+      "pi": 0.3079
+    },
+    {
+      "seed_id": "e7_forest_toward_smoke",
+      "pi": 0.3208
+    },
+    {
+      "seed_id": "e7_crystal_garden_ame",
+      "pi": 0.6743
+    },
+    {
+      "seed_id": "e7_chronological_nexus_staff",
+      "pi": 0.671
+    },
+    {
+      "seed_id": "claude_sft_cave_contract",
+      "pi": 0.4906
+    },
+    {
+      "seed_id": "claude_sft_world_tree_planting",
+      "pi": 0.5467
+    },
+    {
+      "seed_id": "claude_sft_zara_timeless_bubble",
+      "pi": 0.6626
+    },
+    {
+      "seed_id": "grok_izack_dimensional_odyssey",
+      "pi": 0.4164
+    },
+    {
+      "seed_id": "codex_third_thread",
+      "pi": 0.8231
+    },
+    {
+      "seed_id": "codex_47_realities",
+      "pi": 0.6626
+    }
+  ],
+  "stabilized_u": [
+    {
+      "seed_id": "e7_shipwreck_awakening",
+      "u": [
+        0.557,
+        0.2434,
+        0.4158,
+        0.2592,
+        0.5908,
+        0.3631
+      ]
+    },
+    {
+      "seed_id": "e7_forest_toward_smoke",
+      "u": [
+        0.557,
+        0.2434,
+        0.4158,
+        0.2592,
+        0.5908,
+        0.3631
+      ]
+    },
+    {
+      "seed_id": "e7_crystal_garden_ame",
+      "u": [
+        0.3,
+        0.75,
+        0.3,
+        0.8,
+        0.225,
+        0.65
+      ]
+    },
+    {
+      "seed_id": "e7_chronological_nexus_staff",
+      "u": [
+        0.3,
+        0.75,
+        0.3,
+        0.8,
+        0.225,
+        0.65
+      ]
+    },
+    {
+      "seed_id": "claude_sft_cave_contract",
+      "u": [
+        0.5572,
+        0.2435,
+        0.4158,
+        0.2593,
+        0.5907,
+        0.3632
+      ]
+    },
+    {
+      "seed_id": "claude_sft_world_tree_planting",
+      "u": [
+        0.5572,
+        0.2435,
+        0.4158,
+        0.2593,
+        0.5907,
+        0.3632
+      ]
+    },
+    {
+      "seed_id": "claude_sft_zara_timeless_bubble",
+      "u": [
+        0.5571,
+        0.2434,
+        0.4158,
+        0.2592,
+        0.5908,
+        0.3632
+      ]
+    },
+    {
+      "seed_id": "grok_izack_dimensional_odyssey",
+      "u": [
+        0.5571,
+        0.2434,
+        0.4158,
+        0.2592,
+        0.5908,
+        0.3632
+      ]
+    },
+    {
+      "seed_id": "codex_third_thread",
+      "u": [
+        0.325,
+        0.725,
+        0.375,
+        0.75,
+        0.55,
+        0.65
+      ]
+    },
+    {
+      "seed_id": "codex_47_realities",
+      "u": [
+        0.325,
+        0.725,
+        0.375,
+        0.75,
+        0.55,
+        0.65
+      ]
+    }
+  ],
+  "verdict": {
+    "close_recall_pre": "4/5",
+    "close_recall_post": "5/5",
+    "far_recall_pre": "4/4",
+    "far_recall_post": "4/4",
+    "cutover_separation_pre": true,
+    "cutover_separation_post": true,
+    "converged": false
+  }
+}

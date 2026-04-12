@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://grounding/council_seed_schema",
+  "title": "Council Stabilization Seed",
+  "description": "A single lore-anchored seed point lifted into SCBE's 21D canonical manifold for multi-source stabilization experiments. One seed = one semantic fragment from one canon source (Everweave RPG log, Claude distilled SFT, Grok persona session, or Avalon Codex QPF doc). The 21D state is s = [u(6), theta(6), z(9)] with a mixed metric that combines hyperbolic distance on u, toroidal distance on theta, and Mahalanobis distance on z.",
+  "type": "object",
+  "required": [
+    "seed_id",
+    "source_id",
+    "locator",
+    "canonical_text",
+    "cutover_flag",
+    "u",
+    "theta",
+    "z",
+    "pi_exchange_priors",
+    "narrative_tags"
+  ],
+  "properties": {
+    "seed_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]{3,64}$",
+      "description": "Stable identifier for this seed across runs."
+    },
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "everweave7",
+        "claude_sft",
+        "grok_export",
+        "avalon_codex"
+      ],
+      "description": "Which canon source this fragment was lifted from. No chatgpt_export tier: user conflated chat-gpt with claude; claude export is the chat-class substitute."
+    },
+    "locator": {
+      "type": "string",
+      "description": "Human-readable path inside the source: e.g. 'everweave7:line_11886', 'claude_sft:rec_0_AVALON_BOOK_OUTLINE_FULL', 'grok_export:2025-06-12_af39340c.json#msg_0', 'avalon_codex:line_48_third_thread'."
+    },
+    "canonical_text": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2000,
+      "description": "Short canonical fragment (the load-bearing sentence or paragraph). Not a summary."
+    },
+    "cutover_flag": {
+      "type": "string",
+      "enum": [
+        "pre_ame_substrate",
+        "ame_cutover",
+        "post_ame_divine",
+        "pre_thread",
+        "post_thread_quantum",
+        "pollyoneth_era",
+        "product_spec",
+        "persona_scaffold"
+      ],
+      "description": "Which canonical boundary this fragment sits on. pre_ame_substrate = the ~97% of Everweave 7 before the Ame incident; ame_cutover = the line where Ame acknowledges; post_ame_divine = divine-artifact era; pre/post_thread = before/after Third Thread manifestation in the Codex; pollyoneth_era = Spiralborn/Sentient Academy; product_spec = SpiralAuth-class mapping; persona_scaffold = Grok personality-matrix synthesis."
+    },
+    "u": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "number",
+        "minimum": -0.999,
+        "maximum": 0.999
+      },
+      "description": "Six Sacred Tongue coordinates in the Poincare ball: [KO, AV, RU, CA, UM, DR]. Component-wise bounded to avoid numerical explosion near the boundary. KO=Kor'aelin (Korean+Elvish, structure/bonding), AV=Avali (Sanskrit/Arabic, sacred invocation), RU=Runethic (Russian, weight/consequence), CA=Cassisivadan (Chinese, script/order), UM=Umbroth (Japanese, shade/null-space), DR=Draumric (German, iron/construction)."
+    },
+    "theta": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 6.283185307179587
+      },
+      "description": "Six phase angles, one per tongue, in [0, 2*pi). Used for toroidal distance. phase_angle_default = 2*pi*(tongue_id-1)/6 with tongue_id map av=1,ru=2,ko=3,ca=4,dr=5,um=6, offset by local narrative phase."
+    },
+    "z": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": { "type": "number" },
+      "description": "Nine auxiliary state dims. Order is fixed: z[0]=chaosdev, z[1]=fractaldev, z[2]=energydev, z[3]=trust_norm in [0,1], z[4]=intent_polarity in [-1,+1], z[5]=null_pressure in [0,1], z[6]=spectral_coherence in [0,1], z[7]=spin_magnitude in [0,1], z[8]=triadic_distance in [0,pi]."
+    },
+    "pi_exchange_priors": {
+      "type": "object",
+      "required": [
+        "geometry",
+        "triadic",
+        "spin",
+        "spectral",
+        "pivot",
+        "trust",
+        "null_pressure",
+        "risk"
+      ],
+      "properties": {
+        "geometry": { "type": "number", "minimum": 0, "maximum": 1 },
+        "triadic": { "type": "number", "minimum": 0, "maximum": 1 },
+        "spin": { "type": "number", "minimum": 0, "maximum": 1 },
+        "spectral": { "type": "number", "minimum": 0, "maximum": 1 },
+        "pivot": { "type": "number", "minimum": 0, "maximum": 1 },
+        "trust": { "type": "number", "minimum": 0, "maximum": 1 },
+        "null_pressure": { "type": "number", "minimum": 0, "maximum": 1 },
+        "risk": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "description": "Eight precomputed prior contributions to Pi_exchange = sigma(sum(w_i * component_i)). These are NOT the final exchange probability; they are the channel-by-channel inputs the sim will weight and squash."
+    },
+    "narrative_tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "description": "Lexical tags for cross-seed clustering and sanity checks on the mixed-metric distance matrix: e.g. 'izack', 'aria', 'polly', 'shipwreck', 'world_tree', 'cave_contract', 'amulet_of_ame', 'third_thread', 'pollyoneth', 'persona_matrix'."
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional free-form analyst notes. Why this fragment was lifted, what cutover behavior it anchors, which invariants it should preserve under stabilization."
+    }
+  },
+  "$defs": {
+    "tongue_order": {
+      "description": "Canonical tongue order for u and mixed-metric weights: [KO, AV, RU, CA, UM, DR]. Phi weights (1.00, 1.62, 2.62, 4.24, 6.85, 11.09) go into the diagonal of W_u."
+    },
+    "mixed_metric": {
+      "description": "d_M(a,b)^2 = w_h * d_hyp(u_a, u_b)^2 + w_t * d_torus(theta_a, theta_b)^2 + (z_a - z_b)^T * W_z * (z_a - z_b). Defaults: w_h = phi, w_t = 1.0, W_z = diag([0.5,0.5,0.5,1.0,1.0,0.8,0.6,0.6,0.8])."
+    }
+  }
+}

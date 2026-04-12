@@ -39,6 +39,7 @@ if str(REPO_ROOT) not in sys.path:
 from python.scbe.atomic_tokenization import TONGUES, map_token_to_atomic_state
 from python.scbe.rhombic_bridge import rhombic_fusion, rhombic_score
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+from src.knowledge.tokenizer_graph.overlay_graphs import build_overlay_graph
 
 DEFAULT_CORPUS_ROOTS = (
     REPO_ROOT / "notes" / "System Library" / "Indexes",
@@ -78,6 +79,12 @@ class ChunkFeatures:
     filename_tokens: Dict[str, int]
     path_tokens: Dict[str, int]
     title_tokens: Dict[str, int]
+    intention_nodes: Dict[str, int]
+    intention_edges: Dict[str, int]
+    policy_nodes: Dict[str, int]
+    policy_edges: Dict[str, int]
+    code_tongue_nodes: Dict[str, int]
+    code_tongue_edges: Dict[str, int]
     semantic_vector: List[float]
     tongue_vector: List[float]
     trust_mean: float
@@ -315,6 +322,7 @@ def build_features(chunks: Sequence[MemoryChunk]) -> List[ChunkFeatures]:
         sacred_token_counts = _sacred_token_counts(chunk.text)
         filename_tokens, path_tokens = _path_feature_counts(chunk)
         title_tokens = _extract_title_tokens(chunk)
+        overlay_graph = build_overlay_graph(chunk.text, context_class="memory")
         _, semantic_vector, tongue_vector, trust_mean = _build_scbe_sidecar(chunk.text)
         features.append(
             ChunkFeatures(
@@ -325,6 +333,12 @@ def build_features(chunks: Sequence[MemoryChunk]) -> List[ChunkFeatures]:
                 filename_tokens=dict(filename_tokens),
                 path_tokens=dict(path_tokens),
                 title_tokens=dict(title_tokens),
+                intention_nodes=dict(overlay_graph.intention_nodes),
+                intention_edges=dict(overlay_graph.intention_edges),
+                policy_nodes=dict(overlay_graph.policy_nodes),
+                policy_edges=dict(overlay_graph.policy_edges),
+                code_tongue_nodes=dict(overlay_graph.code_tongue_nodes),
+                code_tongue_edges=dict(overlay_graph.code_tongue_edges),
                 semantic_vector=semantic_vector.tolist(),
                 tongue_vector=tongue_vector.tolist(),
                 trust_mean=trust_mean,
@@ -417,6 +431,12 @@ def _overlay_score(query: ChunkFeatures, doc: ChunkFeatures, baseline_score: flo
     tongue_cos = _cosine(query.tongue_vector, doc.tongue_vector)
     atomic_cos = _counter_cosine(query.atomic_signature_counts, doc.atomic_signature_counts)
     sacred_cos = _counter_cosine(query.sacred_token_counts, doc.sacred_token_counts)
+    intention_node_cos = _counter_cosine(query.intention_nodes, doc.intention_nodes)
+    intention_edge_cos = _counter_cosine(query.intention_edges, doc.intention_edges)
+    policy_node_cos = _counter_cosine(query.policy_nodes, doc.policy_nodes)
+    policy_edge_cos = _counter_cosine(query.policy_edges, doc.policy_edges)
+    code_tongue_node_cos = _counter_cosine(query.code_tongue_nodes, doc.code_tongue_nodes)
+    code_tongue_edge_cos = _counter_cosine(query.code_tongue_edges, doc.code_tongue_edges)
 
     query_feature = np.asarray(query.semantic_vector + query.tongue_vector, dtype=float)
     doc_feature = np.asarray(doc.semantic_vector + doc.tongue_vector, dtype=float)
@@ -434,11 +454,17 @@ def _overlay_score(query: ChunkFeatures, doc: ChunkFeatures, baseline_score: flo
     trust_bonus = min(query.trust_mean, doc.trust_mean)
     return (
         mempalace_score
-        + (0.18 * semantic_cos)
-        + (0.12 * tongue_cos)
-        + (0.20 * atomic_cos)
-        + (0.20 * sacred_cos)
-        + (0.20 * rhombic)
+        + (0.12 * semantic_cos)
+        + (0.08 * tongue_cos)
+        + (0.14 * atomic_cos)
+        + (0.14 * sacred_cos)
+        + (0.07 * intention_node_cos)
+        + (0.05 * intention_edge_cos)
+        + (0.05 * policy_node_cos)
+        + (0.05 * policy_edge_cos)
+        + (0.05 * code_tongue_node_cos)
+        + (0.05 * code_tongue_edge_cos)
+        + (0.15 * rhombic)
         + (0.05 * trust_bonus)
     )
 

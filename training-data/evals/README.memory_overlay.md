@@ -27,6 +27,10 @@ Benchmark modes:
 - `baseline`: TF-IDF over the verbatim memory substrate
 - `mempalace_style`: baseline + deterministic filename/path/title/phrase rerank
 - `overlay`: mempalace-style rerank + SCBE semantic/tongue/rhombic sidecars
+  plus explicit overlay graphs for:
+  - intention transitions
+  - policy relations
+  - code-language to token-language mappings
 
 Run:
 
