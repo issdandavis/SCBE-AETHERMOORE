@@ -189,9 +189,7 @@ describe('Nash Equation of Motion (First-Order Dynamics)', () => {
   });
 
   it('produces nonzero derivative for nonzero state', () => {
-    const sublattices = TONGUE_LABELS.map((t) =>
-      createSublattice(t, { real: 0.1, imag: 0.05 })
-    );
+    const sublattices = TONGUE_LABELS.map((t) => createSublattice(t, { real: 0.1, imag: 0.05 }));
     const couples = allCouplings();
     const coupleMap = new Map<string, (typeof couples)[0]>();
     for (const c of couples) {
@@ -212,7 +210,10 @@ describe('Nash Equation of Motion (First-Order Dynamics)', () => {
 
   it('evolution preserves finite state (no blow-up for small dt)', () => {
     const sublattices = TONGUE_LABELS.map((t) =>
-      createSublattice(t, { real: 0.1 * Math.cos(TONGUE_PHASES[t]), imag: 0.1 * Math.sin(TONGUE_PHASES[t]) })
+      createSublattice(t, {
+        real: 0.1 * Math.cos(TONGUE_PHASES[t]),
+        imag: 0.1 * Math.sin(TONGUE_PHASES[t]),
+      })
     );
 
     // Evolve 100 steps at dt=0.001
@@ -297,18 +298,14 @@ describe('L6 Bridge — Gyroscopic Breathing Factor', () => {
   });
 
   it('excited lattice produces breathing factor > 1.0', () => {
-    const sublattices = TONGUE_LABELS.map((t) =>
-      createSublattice(t, { real: 0.5, imag: 0.3 })
-    );
+    const sublattices = TONGUE_LABELS.map((t) => createSublattice(t, { real: 0.5, imag: 0.3 }));
     const b = gyroscopicBreathingFactor(sublattices);
     expect(b).toBeGreaterThan(1.0);
   });
 
   it('breathing factor is clamped to [1.0, 2.0]', () => {
     // Very high energy state
-    const sublattices = TONGUE_LABELS.map((t) =>
-      createSublattice(t, { real: 10.0, imag: 10.0 })
-    );
+    const sublattices = TONGUE_LABELS.map((t) => createSublattice(t, { real: 10.0, imag: 10.0 }));
     const b = gyroscopicBreathingFactor(sublattices);
     expect(b).toBeLessThanOrEqual(2.0);
     expect(b).toBeGreaterThanOrEqual(1.0);
@@ -328,9 +325,7 @@ describe('L6 Bridge — Gyroscopic Breathing Factor', () => {
   });
 
   it('per-tongue breathing factors have 6 elements', () => {
-    const sublattices = TONGUE_LABELS.map((t) =>
-      createSublattice(t, { real: 0.1, imag: 0.1 })
-    );
+    const sublattices = TONGUE_LABELS.map((t) => createSublattice(t, { real: 0.1, imag: 0.1 }));
     const factors = perTongueBreathingFactors(sublattices);
     expect(factors).toHaveLength(6);
     for (const f of factors) {
@@ -340,9 +335,7 @@ describe('L6 Bridge — Gyroscopic Breathing Factor', () => {
   });
 
   it('per-tongue KO factor > DR factor for equal amplitudes', () => {
-    const sublattices = TONGUE_LABELS.map((t) =>
-      createSublattice(t, { real: 0.3, imag: 0.2 })
-    );
+    const sublattices = TONGUE_LABELS.map((t) => createSublattice(t, { real: 0.3, imag: 0.2 }));
     const factors = perTongueBreathingFactors(sublattices);
     // KO (index 0) has fastest precession
     expect(factors[0]).toBeGreaterThan(factors[5]); // DR (index 5)

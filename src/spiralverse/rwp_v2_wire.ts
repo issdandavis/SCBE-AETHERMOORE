@@ -118,7 +118,10 @@ function verifySignature(key: Buffer, data: Buffer, signature: string): boolean 
  *
  * Includes `kid` in the transcript when present (empty-string otherwise).
  */
-function createWireSignatureData(env: Omit<RWP2WireEnvelope, 'sigs'>, signingTongue: TongueID): Buffer {
+function createWireSignatureData(
+  env: Omit<RWP2WireEnvelope, 'sigs'>,
+  signingTongue: TongueID
+): Buffer {
   const kid = env.kid ?? '';
   const data = `${env.ver}.${env.tongue}.${signingTongue}.${env.aad}.${env.payload}.${env.nonce}.${env.ts}.${kid}`;
   return Buffer.from(data, 'utf8');
@@ -271,9 +274,13 @@ export function verifyRoundtableV2Wire(
       // allow non-JSON payloads
     }
 
-    return { valid: true, validTongues, payloadBytes, ...(payloadJson !== undefined ? { payload: payloadJson } : {}) };
+    return {
+      valid: true,
+      validTongues,
+      payloadBytes,
+      ...(payloadJson !== undefined ? { payload: payloadJson } : {}),
+    };
   } catch (err) {
     return { valid: false, validTongues, error: err instanceof Error ? err.message : String(err) };
   }
 }
-

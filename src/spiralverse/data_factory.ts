@@ -36,7 +36,7 @@ class XorShift32 {
 
   constructor(seed: number) {
     // avoid zero-state lockup
-    this.state = (seed >>> 0) || 0x6d2b79f5;
+    this.state = seed >>> 0 || 0x6d2b79f5;
   }
 
   nextU32(): number {
@@ -139,7 +139,9 @@ export function generateSyntheticConversationV2Wire(params: {
 
     const vr = verifyRoundtableV2Wire(env, keyring, { policy });
     if (!vr.valid) {
-      throw new Error(`Synthetic envelope failed verification at step ${i}: ${vr.error ?? 'unknown error'}`);
+      throw new Error(
+        `Synthetic envelope failed verification at step ${i}: ${vr.error ?? 'unknown error'}`
+      );
     }
 
     envelopes.push(env);
