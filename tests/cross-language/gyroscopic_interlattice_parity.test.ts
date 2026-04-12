@@ -19,17 +19,19 @@ import {
   allCouplings,
 } from '../../packages/kernel/src/gyroscopicInterlattice.js';
 
-const CWD = 'C:/Users/issda/SCBE-AETHERMOORE';
+const CWD = process.cwd();
 const TMP_SCRIPT = join(CWD, '_tmp_parity_test.py');
 
 /**
  * Run a Python expression and return its output via temp file (avoids shell quoting issues).
  */
+const PYTHON_BIN = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+
 function pyEval(expr: string): string {
   const script = `import sys\nsys.path.insert(0, "src")\nfrom symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import *\nprint(${expr})`;
   writeFileSync(TMP_SCRIPT, script, 'utf-8');
   try {
-    return execSync(`python ${TMP_SCRIPT}`, { cwd: CWD, encoding: 'utf-8' }).trim();
+    return execSync(`${PYTHON_BIN} ${TMP_SCRIPT}`, { cwd: CWD, encoding: 'utf-8' }).trim();
   } finally {
     try {
       unlinkSync(TMP_SCRIPT);
