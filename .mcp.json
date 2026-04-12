@@ -76,6 +76,20 @@
       "env": {
         "KAGGLE_API_TOKEN": "${KAGGLE_API_TOKEN}"
       }
+    },
+    "stripe": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@stripe/mcp",
+        "--tools=all"
+      ],
+      "env": {
+        "STRIPE_SECRET_KEY": "${STRIPE_SECRET_KEY}"
+      }
     }
   }
 }

@@ -62,7 +62,11 @@ def _slugify(text: str) -> str:
 
 
 def _relative_to_repo(path: Path, repo_root: Path) -> str:
-    return str(path.resolve().relative_to(repo_root.resolve())).replace("\\", "/")
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(repo_root.resolve())).replace("\\", "/")
+    except ValueError:
+        return str(resolved).replace("\\", "/")
 
 
 def _run(command: list[str], cwd: Path) -> dict[str, Any]:

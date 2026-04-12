@@ -2,6 +2,23 @@
 
 Place raw exports from operational systems here.
 
+## Cold Archive Note
+
+The largest raw export buckets were moved to cold archive on 2026-04-11:
+
+- `grok_export` -> `C:\Users\issda\OneDrive\SCBE-Archives\training_cold_2026-04-11\grok_export`
+- `claude_export` -> `C:\Users\issda\OneDrive\SCBE-Archives\training_cold_2026-04-11\claude_export`
+
+Reason:
+
+- these are raw upstream archives
+- they are useful for reference and recovery but do not need to occupy the active repo hot path
+
+See:
+
+- `docs/operations/TRAINING_STORAGE_CLASSIFICATION_2026-04-11.md`
+- `docs/operations/REPO_ARCHIVE_OFFLOAD_2026-04-11.md`
+
 ## Supported Inputs
 
 - `airtable/*.jsonl`

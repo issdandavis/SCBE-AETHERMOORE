@@ -1,0 +1,12 @@
+{
+  "name": "scbe-verify",
+  "version": "0.1.0",
+  "description": "Pre-flight dry-run verification agents for the SCBE-AETHERMOORE 14-layer stack. Cube-based cross-language, cross-region, cross-tongue verification.",
+  "author": {
+    "name": "Issac Davis",
+    "email": "issdandavis@gmail.com"
+  },
+  "repository": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "license": "MIT",
+  "keywords": ["scbe", "verification", "dry-run", "rubix-cube", "sacred-tongues", "14-layer", "cross-language"]
+}

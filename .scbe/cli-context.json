@@ -1,0 +1,20 @@
+{
+  "schema_version": "scbe_cli_context_v1",
+  "active_context": "ops",
+  "defaults": {
+    "workflow_dir": ".github/workflows",
+    "n8n_dir": "workflows/n8n"
+  },
+  "contexts": {
+    "studio": {
+      "firebase_project": "scbe-dev",
+      "github_repo": "issdandavis/SCBE-AETHERMOORE",
+      "workflow_dir": ".github/workflows/custom",
+      "hf_entity": "issdandavis"
+    },
+    "ops": {
+      "workflow_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\pytest_temp_root\\session-c8653146\\case-6a298f3b\\gh-workflows",
+      "n8n_dir": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\pytest_temp_root\\session-c8653146\\case-6a298f3b\\n8n"
+    }
+  }
+}

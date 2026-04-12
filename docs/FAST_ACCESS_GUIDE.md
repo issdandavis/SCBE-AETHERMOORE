@@ -8,6 +8,7 @@ Use this first when you want the fastest path to the right command or guide. Old
 
 | Goal | Fastest command | Guide |
 | --- | --- | --- |
+| Resolve local path sprawl | `pwsh -File scripts/system/scbe_nav.ps1 help` | [Local Surface Quick Map](operations/LOCAL_SURFACE_QUICK_MAP.md) |
 | Load the local command center | `.\scripts\install_hydra_quick_aliases.ps1` then `issac-help` | [Control Plane And Command Center](guides/CONTROL_PLANE_AND_COMMAND_CENTER.md) |
 | Check local system health | `hstatus` and `hqueue` | [Control Plane And Command Center](guides/CONTROL_PLANE_AND_COMMAND_CENTER.md) |
 | Use the unified SCBE CLI | `python scripts/scbe-system-cli.py --help` | [Control Plane And Command Center](guides/CONTROL_PLANE_AND_COMMAND_CENTER.md) |
