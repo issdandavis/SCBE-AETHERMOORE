@@ -348,8 +348,9 @@ describe('DTN Bundle Factory', () => {
       expect(factory.totalBundles).toBe(1);
 
       const report = factory.simulate(20);
-      expect(report.delivered.length + report.pending.length + report.expired.length)
-        .toBe(factory.totalBundles);
+      expect(report.delivered.length + report.pending.length + report.expired.length).toBe(
+        factory.totalBundles
+      );
       expect(report.layerTelemetry).toHaveLength(14);
       expect(report.steps).toBe(20);
     });
@@ -364,9 +365,7 @@ describe('DTN Bundle Factory', () => {
       const report = factory.simulate(30);
       expect(report.deliveryRate).toBeGreaterThanOrEqual(0);
       expect(report.deliveryRate).toBeLessThanOrEqual(1);
-      expect(report.delivered.length).toBe(
-        Math.round(report.deliveryRate * factory.totalBundles)
-      );
+      expect(report.delivered.length).toBe(Math.round(report.deliveryRate * factory.totalBundles));
     });
 
     it('survives occlusion and delivers after lift', () => {
@@ -429,7 +428,8 @@ describe('DTN Bundle Factory', () => {
   describe('create', () => {
     it('creates a bundle from raw payload without a fleet task', () => {
       const result = factory.create(
-        'L5', 'L12',
+        'L5',
+        'L12',
         { telemetry: 'coherence_score', value: 0.95 },
         'UM',
         { priority: 'high' }

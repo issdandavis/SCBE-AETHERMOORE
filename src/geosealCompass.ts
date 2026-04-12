@@ -52,12 +52,12 @@ const EPSILON = 1e-8;
 
 /** Sacred Tongue compass bearings (radians, evenly spaced at π/3) */
 export const COMPASS_BEARINGS: Record<string, number> = {
-  KO: 0.0,                    // Kor'aelin — North (Control)
-  AV: Math.PI / 3,            // Avali — NE (Transport)
-  RU: (2 * Math.PI) / 3,      // Runethic — SE (Policy)
-  CA: Math.PI,                 // Cassisivadan — South (Compute)
-  UM: (4 * Math.PI) / 3,      // Umbroth — SW (Privacy)
-  DR: (5 * Math.PI) / 3,      // Draumric — NW (Integrity)
+  KO: 0.0, // Kor'aelin — North (Control)
+  AV: Math.PI / 3, // Avali — NE (Transport)
+  RU: (2 * Math.PI) / 3, // Runethic — SE (Policy)
+  CA: Math.PI, // Cassisivadan — South (Compute)
+  UM: (4 * Math.PI) / 3, // Umbroth — SW (Privacy)
+  DR: (5 * Math.PI) / 3, // Draumric — NW (Integrity)
 };
 
 /** Tongue phi weights (L3 Langues Weighting System) */
@@ -273,7 +273,7 @@ export function tongueAnchorPosition(tongue: string, dimension: number = 6): num
 export function bearingToPosition(
   bearing: CompassBearing,
   radius: number = 0.5,
-  dimension: number = 6,
+  dimension: number = 6
 ): number[] {
   const pos = new Array(dimension).fill(0);
   pos[0] = radius * Math.cos(bearing.angle);
@@ -294,7 +294,7 @@ export function createWaypoint(
   position: number[],
   phase: number | null = null,
   time: number = 0,
-  tongue?: string,
+  tongue?: string
 ): Waypoint {
   // Ensure position is inside the ball
   const safePos = clampToBall([...position], 0.99);
@@ -322,7 +322,7 @@ export function createWaypoint(
 export function createTongueWaypoint(
   tongue: string,
   time: number = 0,
-  dimension: number = 6,
+  dimension: number = 6
 ): Waypoint {
   const bearing = COMPASS_BEARINGS[tongue];
   if (bearing === undefined) throw new Error(`Unknown tongue: ${tongue}`);
@@ -333,7 +333,7 @@ export function createTongueWaypoint(
     tongueAnchorPosition(tongue, dimension),
     bearing,
     time,
-    tongue,
+    tongue
   );
 }
 
@@ -350,11 +350,7 @@ export function createTongueWaypoint(
  * A1: Unitarity — geodesic preserves norm through the manifold.
  * A2: Locality — all points remain inside the ball.
  */
-export function geodesicInterpolate(
-  p: number[],
-  q: number[],
-  steps: number = 5,
-): number[][] {
+export function geodesicInterpolate(p: number[], q: number[], steps: number = 5): number[][] {
   if (steps < 2) return [p, q];
 
   const points: number[][] = [p];
@@ -396,7 +392,7 @@ export function buildSegment(
   from: Waypoint,
   to: Waypoint,
   geodesicResolution: number = 5,
-  perturbationDensity: number = 0.0,
+  perturbationDensity: number = 0.0
 ): RouteSegment {
   const distance = hyperbolicDistance(from.position, to.position);
   const bearing = computeBearing(from.position, to.position);
@@ -407,11 +403,7 @@ export function buildSegment(
   const effectivePD = perturbationDensity + phaseDev * 0.5;
   const govScore = segmentGovernanceScore(distance, effectivePD);
 
-  const geodesicPoints = geodesicInterpolate(
-    from.position,
-    to.position,
-    geodesicResolution,
-  );
+  const geodesicPoints = geodesicInterpolate(from.position, to.position, geodesicResolution);
 
   return {
     from,
@@ -438,13 +430,13 @@ const DEFAULT_MIN_GOVERNANCE = 0.3;
 export function planDirectRoute(
   origin: Waypoint,
   destination: Waypoint,
-  options: RoutePlanOptions = {},
+  options: RoutePlanOptions = {}
 ): Route {
   const segment = buildSegment(
     origin,
     destination,
     options.geodesicResolution ?? 5,
-    options.perturbationDensity ?? 0.0,
+    options.perturbationDensity ?? 0.0
   );
 
   const minGov = options.minGovernanceScore ?? DEFAULT_MIN_GOVERNANCE;
@@ -469,10 +461,7 @@ export function planDirectRoute(
  *
  * A3: Causality — waypoints must be in temporal order.
  */
-export function planRoute(
-  waypoints: Waypoint[],
-  options: RoutePlanOptions = {},
-): Route {
+export function planRoute(waypoints: Waypoint[], options: RoutePlanOptions = {}): Route {
   if (waypoints.length < 2) {
     throw new Error('Route requires at least 2 waypoints');
   }
@@ -522,7 +511,7 @@ export function planRoute(
 export function autoRoute(
   origin: Waypoint,
   destination: Waypoint,
-  options: RoutePlanOptions = {},
+  options: RoutePlanOptions = {}
 ): Route {
   const minGov = options.minGovernanceScore ?? DEFAULT_MIN_GOVERNANCE;
   const maxHops = options.maxHops ?? 14;
@@ -536,9 +525,10 @@ export function autoRoute(
   const bearing = computeBearing(origin.position, destination.position);
 
   // Rank tongues by affinity to the travel direction
-  const rankedTongues = TONGUES
-    .map((t) => ({ tongue: t, affinity: bearing.tongueAffinities[t] }))
-    .sort((a, b) => b.affinity - a.affinity);
+  const rankedTongues = TONGUES.map((t) => ({
+    tongue: t,
+    affinity: bearing.tongueAffinities[t],
+  })).sort((a, b) => b.affinity - a.affinity);
 
   // Build intermediate waypoints through highest-affinity tongues
   // Time is interpolated linearly between origin and destination
@@ -556,7 +546,7 @@ export function autoRoute(
       anchorPos,
       COMPASS_BEARINGS[t],
       origin.time + timeStep * (i + 1),
-      t,
+      t
     );
     intermediates.push(wp);
   }
@@ -625,10 +615,7 @@ function greedyPrune(waypoints: Waypoint[], options: RoutePlanOptions): Waypoint
  *
  * A3: Causality — only forward-time routes are valid.
  */
-export function applyTemporalWindows(
-  route: Route,
-  windows: TemporalWindow[],
-): Route {
+export function applyTemporalWindows(route: Route, windows: TemporalWindow[]): Route {
   const updatedSegments = route.segments.map((seg) => {
     // Check if segment falls within any active window
     const segStart = seg.from.time;
@@ -639,9 +626,7 @@ export function applyTemporalWindows(
       return { ...seg, governanceScore: 0 };
     }
 
-    const validWindow = windows.find(
-      (w) => segStart >= w.openTime && segEnd <= w.closeTime,
-    );
+    const validWindow = windows.find((w) => segStart >= w.openTime && segEnd <= w.closeTime);
 
     if (!validWindow) {
       // No window — segment is not temporally valid
@@ -649,8 +634,7 @@ export function applyTemporalWindows(
     }
 
     // Bonus governance if segment's tongue matches window's resonant tongue
-    const tongueBonus =
-      seg.bearing.dominantTongue === validWindow.resonantTongue ? 0.1 : 0;
+    const tongueBonus = seg.bearing.dominantTongue === validWindow.resonantTongue ? 0.1 : 0;
 
     return {
       ...seg,
@@ -660,8 +644,7 @@ export function applyTemporalWindows(
 
   const minGov = Math.min(...updatedSegments.map((s) => s.governanceScore));
   const avgGov =
-    updatedSegments.reduce((sum, s) => sum + s.governanceScore, 0) /
-    updatedSegments.length;
+    updatedSegments.reduce((sum, s) => sum + s.governanceScore, 0) / updatedSegments.length;
 
   return {
     ...route,
@@ -694,8 +677,7 @@ export function triadicTemporalDistance(route: Route): number {
 
   // Immediate: average phase deviation across segments
   const immediate =
-    route.segments.reduce((sum, s) => sum + s.phaseDeviation, 0) /
-    route.segments.length;
+    route.segments.reduce((sum, s) => sum + s.phaseDeviation, 0) / route.segments.length;
 
   // Medium: variance of governance scores in rolling 3-segment windows
   let medium = 0;

@@ -25,12 +25,7 @@
  *   7. Ledger catches, not just throws
  */
 
-import {
-  FleetAgent,
-  GovernanceTier,
-  TaskPriority,
-  PRIORITY_WEIGHTS,
-} from './types';
+import { FleetAgent, GovernanceTier, TaskPriority, PRIORITY_WEIGHTS } from './types';
 
 // ---------------------------------------------------------------------------
 // Enums & Constants

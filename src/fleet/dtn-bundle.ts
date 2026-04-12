@@ -187,7 +187,7 @@ export function createBundle(
   destination: string,
   payload: unknown,
   tongue: BundleTongue,
-  options: CreateBundleOptions = {},
+  options: CreateBundleOptions = {}
 ): DTNBundle {
   const d_H = options.hyperbolicDistance ?? 0.1;
   const pd = options.perturbationDensity ?? 0.0;
@@ -323,14 +323,20 @@ export interface ContactWindow {
 export class ContactGraph {
   private windows: ContactWindow[] = [];
 
-  addWindow(from: string, to: string, openStep: number, closeStep: number, bandwidth: number): void {
+  addWindow(
+    from: string,
+    to: string,
+    openStep: number,
+    closeStep: number,
+    bandwidth: number
+  ): void {
     this.windows.push({ fromNode: from, toNode: to, openStep, closeStep, bandwidth });
   }
 
   /** Get active windows from a given node at the current step */
   getActiveWindows(fromNode: string, currentStep: number): ContactWindow[] {
     return this.windows.filter(
-      (w) => w.fromNode === fromNode && currentStep >= w.openStep && currentStep <= w.closeStep,
+      (w) => w.fromNode === fromNode && currentStep >= w.openStep && currentStep <= w.closeStep
     );
   }
 
@@ -442,7 +448,7 @@ export class DTNNetworkSimulator {
     to: string,
     openStep: number,
     closeStep: number,
-    bandwidth: number,
+    bandwidth: number
   ): void {
     this.graph.addWindow(from, to, openStep, closeStep, bandwidth);
   }

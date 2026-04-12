@@ -7,7 +7,11 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { randomBytes } from 'crypto';
-import { clearWireNonceCache, generateSyntheticConversationV2Wire, type Keyring } from '../../src/spiralverse';
+import {
+  clearWireNonceCache,
+  generateSyntheticConversationV2Wire,
+  type Keyring,
+} from '../../src/spiralverse';
 
 const testKeyring: Keyring = {
   ko: randomBytes(32),
@@ -64,4 +68,3 @@ describe('generateSyntheticConversationV2Wire', () => {
     expect(a.envelopes).not.toEqual(b.envelopes);
   });
 });
-
