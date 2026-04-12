@@ -1,1 +1,3 @@
-{"click_offset_p95_px": 16.2788, "click_offset_samples": 2, "created_at_utc": "2026-02-21T03:02:59+00:00", "dataset": "scbe_min_browser_telemetry", "decision": "ALLOW", "event_type": "browser.run_headless", "lane": "browser", "objective": "Run safe headless browser task", "precision_markers": [3], "risk": 0.1, "run_id": "53ea6eb9-d73f-492f-8489-3a94ae67c77f", "run_index": 0, "target_ref": "https://example.com", "tool": "browser.run_headless", "trace_hash": "5af502bdbba283bb9633d2587fec8188834b8db1caa1c2d6f4eae7177e99be50"}
+version https://git-lfs.github.com/spec/v1
+oid sha256:6ac97ccb467a46aff7c808207241b7ce0d0c063b2bfb2e33b1ca4ae842d01c6f
+size 529
