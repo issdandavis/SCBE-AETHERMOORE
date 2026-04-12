@@ -6,7 +6,7 @@
  * Tests for KMS/HSM master key retrieval and environment enforcement.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { getMasterKey } from '../../src/crypto/kms.js';
 
 describe('KMS getMasterKey', () => {

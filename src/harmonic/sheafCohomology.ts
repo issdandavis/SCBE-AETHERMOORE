@@ -1819,7 +1819,7 @@ export function createUnitIntervalLattice(n: number): ConvenienceLattice<number>
 /** Build a CellComplex from vertex ID strings and edge pairs */
 export function buildComplex(vertexIds: string[], edges: [string, string][]): CellComplex {
   const vertices: CellVertex[] = vertexIds.map((id) => ({ id }));
-  const cellEdges: CellEdge[] = edges.map(([src, tgt], i) => ({
+  const cellEdges: CellEdge[] = edges.map(([src, tgt], _i) => ({
     id: `e-${src}-${tgt}`,
     source: src,
     target: tgt,
