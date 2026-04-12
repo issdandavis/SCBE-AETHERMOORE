@@ -1,0 +1,9 @@
+{
+  "name": "nonstop",
+  "version": "1.0.0",
+  "description": "Autonomous non-stop working mode with SCBE infrastructure integration",
+  "author": {
+    "name": "Issac Daniel Davis",
+    "email": "issdandavis@gmail.com"
+  }
+}

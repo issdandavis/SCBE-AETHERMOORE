@@ -97,35 +97,21 @@ When ending a session, each agent should:
 
 ---
 
-## Current Project Lanes
+## Project Lane Status — Last updated 2026-04-12
 
-### Manhwa Pipeline (PRIMARY)
-- **Opus lane**: Art Style Bible, character/location catalogs, storyboard tactics, text overlays, strip assembly, Obsidian ledger, FLUX Kontext research
-- **Codex lane**: Prompt compilation, quality gate, v4 beat expansion, generation scripts, emulator testing, LoRA prep, consistency system
-- **Shared artifacts**: `artifacts/webtoon/`, `notes/manhwa-project/`
+| Lane | Status | Notes |
+|------|--------|-------|
+| Manhwa Pipeline | ACTIVE | webtoon gen, panel art, ledger at `notes/manhwa-project/` |
+| Research Paper (Mirror Problem) | COMPLETE | Phase tunnel + attention FFT confirmed. Notes at `round-table/2026-03-19-*` |
+| Nursery Training System | ACTIVE | `training/cstm_nursery.py`, SFT/DPO export, Sacred Egg genesis |
+| AetherBrowser | SHIPPED | PR #544 merged. 74 pytest + 33 Playwright passing |
+| Polly Training (Chatbot) | PENDING | Needs Python 3.12 venv + CUDA wheels. Base model: Qwen2.5-0.5B |
+| M5 Mesh Foundry (SaaS) | ACTIVE | Governed data ingestion product. See `docs/M5_MESH_PRODUCT_SERVICE_BLUEPRINT.md` |
+| DARPA CLARA Proposal | DEADLINE 2026-04-17 | Draft at `notes/federal/DARPA_CLARA_Proposal_Master.md` |
+| HYDRA Experiments | ACTIVE | Queue lease, message flow, formation-to-runtime. See `experiments/experiment-ledger.md` |
+| Infrastructure / Vault | ACTIVE | Obsidian vault organization, memory system, PowerShell profile |
 
-### Research Paper + Mirror Problem (ACTIVE)
-- **Opus lane**: Paper draft (`docs/paper/davis-2026-intent-modulated-governance.md`), formula inventory, sweep runner, Obsidian notes
-- **Codex lane**: Axiom verification, mirror_problem_fft.py, probe_attention_fft.py, Colab GPU runs, nursery runner
-- **Shared artifacts**: `artifacts/attention_fft/`, `notes/round-table/2026-03-19-*`
-
-### Nursery Training System (NEW)
-- **Codex lane**: `training/cstm_nursery.py`, seed story, SFT/DPO export
-- **Opus lane**: ChoiceScript research, fairmath-to-Poincare bridge, paper Section 13
-- **Shared artifacts**: `training-data/hf-digimon-egg/`
-
-### AetherBrowser (SHIPPED)
-- **Opus lane**: Provider health UI, command planner, zone gating, e2e tests (PR #544)
-- **Codex lane**: Provider executor, page analyzer, router enhancements
-- **Status**: 74 pytest + 33 Playwright passing. PR merged.
-
-### SaaS Product
-- **Codex lane**: saas_routes.py, flock shepherd, tenant/flock/task API, valuation research
-- **Opus lane**: Supporting research, documentation
-
-### Infrastructure
-- **Opus lane**: Issac Command Center (PowerShell profile), memory system, Obsidian vault organization
-- **Codex lane**: Phone lane, HF commands, admin-autopilot skill
+_For active ops, see `notes/sessions/` for daily logs and `notes/experiments/experiment-ledger.md` for queued work._
 
 ---
 

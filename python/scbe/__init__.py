@@ -75,3 +75,67 @@ __all__ = [
     "GovernedTask",
     "TaskGateResult",
 ]
+from .atomic_tokenization import AtomicTokenState, Element as AtomicElement
+from .atomic_tokenization import TritVector, atomic_drift_scale, element_to_tau, element_to_trit_vector
+from .atomic_tokenization import map_token_to_atomic_state, map_token_to_element
+from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states, fuse_tokens
+from .ca_opcode_table import (
+    CAOpcodeEntry,
+    OP_TABLE as CA_OP_TABLE,
+    ca_opcode_to_atomic_state,
+    ca_opcodes_to_atomic_states,
+    fuse_ca_opcodes,
+    get_ca_opcode,
+    validate_ca_table,
+)
+from .history_reducer import (
+    FibonacciTrustLadder,
+    HistoryReducerState,
+    HistoryStepResult,
+    reduce_atomic_history,
+    reduce_years,
+)
+from .ingestion_rights import classify_ingestion_rights_record, get_source_record, load_source_registry
+from .rhombic_bridge import rhombic_fusion, rhombic_score
+from .tongue_code_lanes import (
+    CODE_LANE_REGISTRY,
+    classify_code_lane_alignment,
+    default_code_lane_profile,
+    expected_code_lanes,
+)
+
+__all__ += [
+    "AtomicElement",
+    "AtomicTokenState",
+    "TritVector",
+    "atomic_drift_scale",
+    "element_to_tau",
+    "element_to_trit_vector",
+    "map_token_to_element",
+    "map_token_to_atomic_state",
+    "FusionParams",
+    "FusionResult",
+    "fuse_atomic_states",
+    "fuse_tokens",
+    "CAOpcodeEntry",
+    "CA_OP_TABLE",
+    "validate_ca_table",
+    "get_ca_opcode",
+    "ca_opcode_to_atomic_state",
+    "ca_opcodes_to_atomic_states",
+    "fuse_ca_opcodes",
+    "FibonacciTrustLadder",
+    "HistoryReducerState",
+    "HistoryStepResult",
+    "reduce_atomic_history",
+    "reduce_years",
+    "CODE_LANE_REGISTRY",
+    "default_code_lane_profile",
+    "expected_code_lanes",
+    "classify_code_lane_alignment",
+    "load_source_registry",
+    "get_source_record",
+    "classify_ingestion_rights_record",
+    "rhombic_fusion",
+    "rhombic_score",
+]

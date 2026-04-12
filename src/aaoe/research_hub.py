@@ -46,7 +46,7 @@ from .task_monitor import PHI, hyperbolic_distance
 ARXIV_API = "http://export.arxiv.org/api/query"
 ARXIV_ATOM_NS = "{http://www.w3.org/2005/Atom}"
 ARXIV_NS = "{http://arxiv.org/schemas/atom}"
-USER_AGENT = "SCBE-AETHERMOORE-ResearchHub/1.0 (issdandavis7795@aethermoorgames.com)"
+USER_AGENT = "SCBE-AETHERMOORE-ResearchHub/1.0 (issdandavis7795@aethermoore.com)"
 RATE_LIMIT_SECONDS = 3.0
 DEFAULT_OUTPUT_DIR = "training/intake/arxiv_research"
 

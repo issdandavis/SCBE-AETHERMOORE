@@ -20,6 +20,7 @@ import hmac
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -27,6 +28,14 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 VERSION = "3.1.0"
+
+for _stream_name in ("stdout", "stderr"):
+    _stream = getattr(sys, _stream_name, None)
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
 # Golden ratio for harmonic weighting
 PHI = 1.618033988749895
@@ -36,6 +45,13 @@ REPO_ROOT = Path(__file__).resolve().parent
 SRC_PATH = REPO_ROOT / "src"
 if SRC_PATH.exists() and str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
+
+from symphonic_cipher.scbe_aethermoore.turning_lane import (
+    execute_command_family,
+    prepare_execution_packet,
+    prove_execution_packet,
+    run_turning_suite,
+)
 
 # Import Sacred Tongues tokenizer
 try:
@@ -118,11 +134,25 @@ def _split_prefixed_token(token: str) -> Tuple[Optional[str], str]:
 def _parse_blend_pattern(pattern_str: str) -> List[Tuple[str, int]]:
     if not pattern_str:
         raise ValueError("Blend pattern is required (e.g., KO:2,AV:1,DR:1)")
+    segments = [seg.strip() for seg in pattern_str.split(",") if seg.strip()]
+    if not segments:
+        raise ValueError("Blend pattern is empty.")
+
     pattern: List[Tuple[str, int]] = []
-    for seg in pattern_str.split(","):
-        seg = seg.strip()
-        if not seg:
-            continue
+    if all(":" not in seg for seg in segments):
+        tongue_order = list(TONGUES.keys())
+        if len(segments) > len(tongue_order):
+            raise ValueError(
+                f"Blend shorthand supports up to {len(tongue_order)} counts: {', '.join(t.upper() for t in tongue_order)}"
+            )
+        for idx, seg in enumerate(segments):
+            count = int(seg)
+            if count <= 0:
+                raise ValueError("Pattern counts must be positive.")
+            pattern.append((tongue_order[idx], count))
+        return pattern
+
+    for seg in segments:
         if ":" not in seg:
             raise ValueError(f"Invalid pattern segment: {seg}")
         tongue_raw, count_raw = seg.split(":", 1)
@@ -509,6 +539,56 @@ def cmd_selftest(args) -> None:
         raise RuntimeError("GeoSeal encrypt/decrypt failed")
 
     print("selftest ok")
+
+
+def cmd_turning_test(args) -> None:
+    summary = run_turning_suite()
+    print(json.dumps(summary, indent=2, sort_keys=True))
+    if summary["status"] != "PASS":
+        raise RuntimeError("Turning suite failed.")
+
+
+def cmd_turning_exec(args) -> None:
+    packet = prepare_execution_packet(args.family, args.arg or [])
+    proof_modes = ("byte", "semantic") if args.mode == "both" else (args.mode,)
+    witnesses = [entry.strip().upper() for entry in (args.witnesses or "").split(",") if entry.strip()]
+    proof = prove_execution_packet(
+        packet,
+        source_tongue=args.tongue,
+        witness_tongues=witnesses or None,
+        modes=proof_modes,
+    )
+
+    result = {
+        "packet": {
+            "family": packet["family"],
+            "argv": packet["argv"],
+            "cwd": packet["cwd"],
+            "packet_sha256": packet["packet_sha256"],
+        },
+        "proof": proof,
+    }
+
+    if args.seal:
+        packet_env = _geoseal_encrypt(
+            plaintext=packet["packet_text"].encode("utf-8"),
+            key=args.key,
+            context=_parse_context(args.context),
+            features=_parse_features(args.features),
+            embed_context=True,
+            ss1=False,
+        )
+        result["geoseal"] = packet_env
+
+    if args.dry_run:
+        result["status"] = "DRY_RUN"
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return
+
+    execution = execute_command_family(packet, timeout=args.timeout)
+    result["status"] = "EXECUTED"
+    result["execution"] = execution
+    print(json.dumps(result, indent=2, sort_keys=True))
 
 
 SEMVER_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:[-+][0-9A-Za-z.-]+)?$")
@@ -1399,19 +1479,11 @@ the encryption because SCBE uses post-quantum primitives!
         if not pattern_str:
             pattern_str = "KO:2,AV:1,RU:1"
 
-        # Parse pattern
-        pattern: List[Tuple[str, int]] = []
         try:
-            for item in pattern_str.split(","):
-                parts = item.strip().split(":")
-                tongue = parts[0].lower()
-                count = int(parts[1]) if len(parts) > 1 else 1
-                if tongue not in TONGUES:
-                    print(f"❌ Unknown tongue in pattern: {tongue}")
-                    return
-                pattern.append((tongue, count))
-        except (ValueError, IndexError):
-            print("❌ Invalid pattern format. Use: TONGUE:COUNT,TONGUE:COUNT,...")
+            pattern = _parse_blend_pattern(pattern_str)
+        except ValueError as exc:
+            print(f"❌ {exc}")
+            print("   Use either KO:2,AV:1,RU:1 or count shorthand like 2,1,1")
             return
 
         print("\nInput format:")
@@ -1452,8 +1524,20 @@ the encryption because SCBE uses post-quantum primitives!
         elapsed = (time.time() - start) * 1000
 
         print(f"\n✓ Blended {len(data)} bytes in {elapsed:.2f}ms")
-        print(f"Pattern: {pattern_str}")
+        normalized_pattern = ",".join(f"{tongue.upper()}:{count}" for tongue, count in pattern)
+        print(f"Pattern: {normalized_pattern}")
         print(f"\nSpell-text:\n{' '.join(tokens)}")
+
+    def cmd_launch_agent(self):
+        """Launch the AI agent from the legacy CLI."""
+        agent_script = REPO_ROOT / "scbe-agent.py"
+        if not agent_script.exists():
+            print("\n❌ AI agent launcher is missing")
+            return
+
+        print("\nForwarding to the SCBE AI agent...")
+        print("Type 'exit' in the agent shell to return here.\n")
+        subprocess.run([sys.executable, str(agent_script)], check=False)
 
     def cmd_unblend(self):
         """Decode blended spell-text (must have tongue prefixes)"""
@@ -1551,6 +1635,13 @@ the encryption because SCBE uses post-quantum primitives!
         """Display help"""
         print("\n📖 AVAILABLE COMMANDS")
         print("=" * 60)
+        print("\nQuick start examples:")
+        print("  1. tutorial      - guided walkthrough")
+        print("  2. tongues       - see the 6 sacred tongues")
+        print("  3. encode        - turn text into spell-text")
+        print("  4. ai            - jump into the SCBE AI agent")
+        print("  5. exit          - leave the shell")
+
         print("\n🔐 Encryption:")
         print("  encrypt    - Encrypt a message")
         print("  decrypt    - Decrypt a message")
@@ -1563,22 +1654,50 @@ the encryption because SCBE uses post-quantum primitives!
         print("  blend      - Multi-tongue stripe encoding")
         print("  unblend    - Decode blended spell-text")
 
-        print("\n🤖 AI Providers:")
+        print("\nAI Providers:")
         print("  providers  - Check AI provider configuration")
+
+        print("\nAssistant:")
+        print("  ai         - Launch the SCBE AI agent")
+        print("  agent      - Launch the SCBE AI agent")
+        print("  codex      - Launch the SCBE AI agent")
 
         print("\n📊 System:")
         print("  tutorial   - Interactive tutorial")
+        print("  quickstart - Short tour with first commands")
         print("  attack     - Run attack simulation")
         print("  metrics    - Display system metrics")
         print("  help       - Show this help")
         print("  exit       - Exit the CLI")
 
+        print("\nPreferred modern wrapper commands from PowerShell:")
+        print("  .\\scbe ai explain L12")
+        print('  .\\scbe pipeline run --text "test input"')
+        print("  .\\scbe tongues list")
+
+    def cmd_quickstart(self):
+        """Show a minimal quickstart without the full tutorial."""
+        print("\n🚀 QUICKSTART")
+        print("=" * 60)
+        print("Try these in order:")
+        print("  tutorial   - guided explanation of the system")
+        print("  tongues    - see what the 6 sacred tongues are")
+        print("  encode     - convert text into spell-text")
+        print("  decode     - turn spell-text back into text")
+        print("  ai         - open the SCBE AI agent")
+        print()
+        print("If you want the newer command style from PowerShell, use:")
+        print("  .\\scbe ai explain L12")
+        print("  .\\scbe ai lint src/crypto/h_lwe.py")
+        print('  .\\scbe pipeline run --text "test input"')
+
     def run(self):
         """Main CLI loop"""
         self.banner()
-        print("Type 'tutorial' to get started, or 'help' for commands")
+        print("Start with `quickstart`, `tutorial`, or `help`.")
         if TONGUES_AVAILABLE:
             print("Six Sacred Tongues: tongues, encode, decode, xlate, blend, unblend")
+        print("Common first moves: `tongues`, `encode`, `ai`, `providers`, `exit`")
         print()
 
         commands = {
@@ -1594,8 +1713,13 @@ the encryption because SCBE uses post-quantum primitives!
             "unblend": self.cmd_unblend,
             # AI Providers
             "providers": self.cmd_providers,
+            # Assistant bridge
+            "ai": self.cmd_launch_agent,
+            "agent": self.cmd_launch_agent,
+            "codex": self.cmd_launch_agent,
             # System
             "tutorial": self.cmd_tutorial,
+            "quickstart": self.cmd_quickstart,
             "attack": self.cmd_attack_sim,
             "metrics": self.cmd_metrics,
             "help": self.cmd_help,
@@ -1610,10 +1734,14 @@ the encryption because SCBE uses post-quantum primitives!
                     break
                 elif cmd in commands:
                     commands[cmd]()
+                    if cmd not in {"help", "tutorial", "quickstart", "ai", "agent", "codex"}:
+                        print("\nOK — command completed. Type `help` or `quickstart` for the next move.")
                 elif cmd:
-                    print(
-                        f"Unknown command: {cmd}. Type 'help' for available commands."
-                    )
+                    suggestions = difflib.get_close_matches(cmd, list(commands.keys()), n=3, cutoff=0.4)
+                    print(f"Unknown command: {cmd}.")
+                    if suggestions:
+                        print(f"Closest commands: {', '.join(suggestions)}")
+                    print("Type `help` for all commands or `quickstart` for the first useful ones.")
             except KeyboardInterrupt:
                 print("\n\nGoodbye! 👋")
                 break
@@ -1710,6 +1838,31 @@ def build_parser() -> argparse.ArgumentParser:
 
     st = sub.add_parser("selftest", help="Run self-test suite")
     st.set_defaults(func=cmd_selftest)
+
+    turning = sub.add_parser("turning-test", help="Run the hard Sacred Tongues transport/execution stability test")
+    turning.set_defaults(func=cmd_turning_test)
+
+    texec = sub.add_parser("turning-exec", help="Execute an allowlisted command through the tokenizer-backed turning lane")
+    texec.add_argument("--family", required=True, help="Allowlisted command family")
+    texec.add_argument("--arg", action="append", help="Command-family argument (repeatable)")
+    texec.add_argument("--tongue", default="KO", help="Source tongue code used for packetization")
+    texec.add_argument(
+        "--witnesses",
+        help="Comma-separated witness tongues (default: all other tongues)",
+    )
+    texec.add_argument(
+        "--mode",
+        choices=["byte", "semantic", "both"],
+        default="both",
+        help="Transport proof mode",
+    )
+    texec.add_argument("--dry-run", action="store_true", help="Build and prove the packet without executing it")
+    texec.add_argument("--timeout", type=int, default=30, help="Execution timeout in seconds")
+    texec.add_argument("--seal", action="store_true", help="Attach a GeoSeal envelope for the execution packet")
+    texec.add_argument("--key", help="Optional GeoSeal key override")
+    texec.add_argument("--context", help="Comma-separated GeoSeal context vector")
+    texec.add_argument("--features", help="JSON GeoSeal feature map")
+    texec.set_defaults(func=cmd_turning_exec)
 
     validate = sub.add_parser("validate", help="Validate policy pack/profile and emit audit output")
     validate.add_argument("--manifest", default="policies/releases/manifest.json", help="Policy release manifest path")

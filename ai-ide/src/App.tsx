@@ -6,6 +6,15 @@ import { CodeEditor } from './components/CodeEditor';
 import { Terminal } from './components/Terminal';
 import { AIAssistant } from './components/AIAssistant';
 import { INITIAL_FILES, FileNode } from './data/initialFiles';
+import {
+  DEFAULT_HF_AGENT_ID,
+  getHfAgent,
+  HfAgentId,
+  HF_AGENT_PAIR,
+  HF_PAIR_STORAGE_KEY,
+  HF_PAIR_TRAINING_COMMANDS,
+  parseHfPairCommand,
+} from './data/hfAgentPair';
 import { detectLanguage, getLanguagesByCategory, LANGUAGE_MAP } from './utils/languageDetector';
 
 const API_BASE = 'http://localhost:8100/api';
@@ -19,11 +28,14 @@ export default function App() {
     'Multi-Language Support: 40+ programming languages! ✨',
     'Type \"languages\" to see all supported languages.',
     'New here? Type "intro" for a quick tour.',
+    'Try "@hf-pair install" to wire the Hugging Face clone-trooper pair.',
     'Type "help" to see all commands.',
     '----------------------------------------'
   ]);
   const [mode, setMode] = useState<'show-me' | 'do-it'>('show-me');
   const [isAiOpen, setIsAiOpen] = useState(false);
+  const [hfPairInstalled, setHfPairInstalled] = useState(false);
+  const [activeHfAgentId, setActiveHfAgentId] = useState<HfAgentId | null>(null);
 
   // Load README by default on mount
   useEffect(() => {
@@ -33,6 +45,27 @@ export default function App() {
       setActiveFile(readme);
     }
   }, []);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(HF_PAIR_STORAGE_KEY);
+      if (!raw) {
+        return;
+      }
+      const saved = JSON.parse(raw) as { installed?: boolean; activeAgentId?: HfAgentId | null };
+      setHfPairInstalled(Boolean(saved.installed));
+      setActiveHfAgentId(saved.activeAgentId ?? null);
+    } catch {
+      window.localStorage.removeItem(HF_PAIR_STORAGE_KEY);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      HF_PAIR_STORAGE_KEY,
+      JSON.stringify({ installed: hfPairInstalled, activeAgentId: activeHfAgentId })
+    );
+  }, [activeHfAgentId, hfPairInstalled]);
 
   // Helper to find and update a node in the tree
   const updateTree = (nodes: FileNode[], id: string, updater: (node: FileNode) => FileNode): FileNode[] => {
@@ -101,6 +134,76 @@ export default function App() {
 
   const addLog = (msg: string) => {
     setLogs(prev => [...prev, msg]);
+  };
+
+  const logHfStatus = (agentId?: HfAgentId | null, installed = hfPairInstalled) => {
+    const chosenId = agentId ?? activeHfAgentId;
+    addLog(`HF pair installed: ${installed ? 'yes' : 'no'}`);
+    addLog(`Active HF head: ${chosenId ? getHfAgent(chosenId).label : 'none'}`);
+    Object.values(HF_AGENT_PAIR).forEach(agent => {
+      addLog(`- ${agent.label}: ${agent.modelId}`);
+    });
+    addLog('Runtime env: HF_TOKEN required. HF_CHAT_ROUTER_URL can point to the default router or your own OpenAI-compatible free endpoint.');
+    addLog('Free lane: Hugging Face hosted credits are limited. Sustained fallback should be a Colab T4 or self-hosted endpoint.');
+  };
+
+  const handleHfPairCommand = (rawCommand: string): boolean => {
+    const parsed = parseHfPairCommand(rawCommand);
+    if (!parsed) {
+      return false;
+    }
+
+    const targetAgent = parsed.agentId ? getHfAgent(parsed.agentId) : null;
+
+    if (parsed.action === 'help') {
+      addLog('HF AGENT PAIR COMMANDS');
+      addLog('  @hf-pair install   - Install the Hugging Face pair in this IDE');
+      addLog('  @hf-pair status    - Show current pair status');
+      addLog('  @hf-pair train     - Show the bounded training lane');
+      addLog('  @hf-coder launch   - Route the AI panel to the coding head');
+      addLog('  @hf-terminal launch - Route the AI panel to the terminal head');
+      addLog('In the AI panel: @hf-coder <prompt> or @hf-terminal <prompt>');
+      return true;
+    }
+
+    if (parsed.action === 'install') {
+      const defaultAgentId = targetAgent?.id ?? DEFAULT_HF_AGENT_ID;
+      setHfPairInstalled(true);
+      setActiveHfAgentId(defaultAgentId);
+      setIsAiOpen(true);
+      addLog('Installed the Hugging Face agent pair using the Polly Pad / Clone Trooper split.');
+      addLog(`Default launch head: ${getHfAgent(defaultAgentId).label}`);
+      logHfStatus(defaultAgentId, true);
+      return true;
+    }
+
+    if (parsed.action === 'launch' && targetAgent) {
+      if (!hfPairInstalled) {
+        setHfPairInstalled(true);
+        addLog('HF pair was not installed. Installing it now.');
+      }
+      setActiveHfAgentId(targetAgent.id);
+      setIsAiOpen(true);
+      addLog(`Launched ${targetAgent.label}.`);
+      addLog(targetAgent.launchSummary);
+      addLog(`Use @${targetAgent.id} in the AI panel for explicit routing, or just chat while this head is active.`);
+      return true;
+    }
+
+    if (parsed.action === 'status') {
+      logHfStatus();
+      return true;
+    }
+
+    if (parsed.action === 'train') {
+      addLog('HF TRAINING LANE');
+      addLog('Keep governance deterministic. Train only the bounded style / routing layer.');
+      HF_PAIR_TRAINING_COMMANDS.forEach(command => addLog(command));
+      addLog('See HF_AGENT_PAIR.md for the built-in guide and the repo docs/specs/hf_training_lane_for_scbe_agents.md for the full lane.');
+      return true;
+    }
+
+    return false;
   };
 
   const executeFile = (file: FileNode) => {
@@ -173,9 +276,13 @@ export default function App() {
     const command = parts[0].toLowerCase();
     const args = parts.slice(1);
 
+    if (handleHfPairCommand(cmd)) {
+      return;
+    }
+
     // Remote SCBE CLI lane (optional): routes to scripts/aetherbrowser/api_server.py if running.
     // Usage:
-    //   trust aethermoorgames.com
+    //   trust aethermoore.com
     //   vault search "harmonic wall"
     //   ops tests
     //   momentum latest daily_ops
@@ -226,6 +333,11 @@ export default function App() {
       addLog('');
       addLog('--- AI CONTROL ---');
       addLog('  mode [show|do]    - Switch AI mode (Show Me / Do It)');
+      addLog('  @hf-pair install  - Install the HF coder + terminal pair');
+      addLog('  @hf-pair status   - Show HF pair runtime status');
+      addLog('  @hf-pair train    - Show the HF training lane');
+      addLog('  @hf-coder launch  - Launch the coding head in AI panel');
+      addLog('  @hf-terminal launch - Launch the terminal head in AI panel');
       addLog('');
       addLog('--- SCBE (LOCAL API) ---');
       addLog('  trust <url>       - Registry trust classification');
@@ -388,6 +500,8 @@ export default function App() {
             activeFileName={activeFile?.name}
             activeFileContent={activeFile?.content}
             mode={mode}
+            hfPairInstalled={hfPairInstalled}
+            activeHfAgentId={activeHfAgentId}
         />
       }
       onModeChange={handleModeChange}

@@ -1,0 +1,42 @@
+{
+  "name": "scbe-verify",
+  "version": "0.1.0",
+  "description": "Dry-run verification plugin for cross-language, cross-region, and Sacred Tongues preflight checks in SCBE-AETHERMOORE.",
+  "author": {
+    "name": "Issac Davis",
+    "email": "issdandavis@gmail.com",
+    "url": "https://github.com/issdandavis"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "repository": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "license": "MIT",
+  "keywords": [
+    "scbe",
+    "verification",
+    "dry-run",
+    "sacred-tongues",
+    "cross-language",
+    "rubix-cube"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "SCBE Verify",
+    "shortDescription": "Dry-run verification lane for SCBE changes before they land.",
+    "longDescription": "Run cross-language, narrow-region, and Sacred Tongues-oriented preflight verification before shipping non-trivial changes in the SCBE stack.",
+    "developerName": "Issac Davis",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "privacyPolicyURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "termsOfServiceURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "defaultPrompt": [
+      "Run the SCBE dry-run verification lane before shipping this change.",
+      "Inspect the changed surfaces, map them to languages and axes, and emit a preflight verdict.",
+      "Check narrow-region regressions and Sacred Tongues-oriented parity before merge."
+    ],
+    "brandColor": "#7C3AED"
+  }
+}

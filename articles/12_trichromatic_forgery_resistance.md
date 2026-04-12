@@ -3,7 +3,7 @@ title: "504-Bit State Space: How Three Invisible Bands Catch Forged AI Credentia
 published: false
 description: "We added infrared and ultraviolet bands to our AI governance system. An attacker who perfectly matches all visible signals still gets caught 5 out of 5 times. The state space is 10^71 times larger than atoms in the universe."
 tags: ai, security, cryptography, machinelearning
-canonical_url: https://aethermoorgames.com/research/negative-tongue-lattice.html
+canonical_url: https://aethermoore.com/research/negative-tongue-lattice.html
 ---
 
 ## The Problem: Visible Signals Can Be Faked

@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/ingestion_rights_record.schema.json",
+  "title": "SCBE Ingestion Rights Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rights_record_id",
+    "source_id",
+    "artifact_ref",
+    "artifact_type",
+    "access_level",
+    "redistribution_status",
+    "training_status",
+    "verification_status",
+    "allowed_uses",
+    "prohibited_uses",
+    "handling_rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scbe_ingestion_rights_record_v1"
+    },
+    "rights_record_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "source_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_\\-\\.]{3,128}$"
+    },
+    "artifact_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "portal_dump",
+        "pdf",
+        "note",
+        "api_result",
+        "html_page",
+        "chat_trace",
+        "proposal_draft",
+        "solicitation",
+        "award_notice",
+        "guidance",
+        "paper",
+        "dataset"
+      ]
+    },
+    "access_level": {
+      "type": "string",
+      "enum": [
+        "public",
+        "authorized_internal",
+        "restricted"
+      ]
+    },
+    "redistribution_status": {
+      "type": "string",
+      "enum": [
+        "publishable",
+        "internal_only",
+        "unclear",
+        "blocked"
+      ]
+    },
+    "training_status": {
+      "type": "string",
+      "enum": [
+        "allowed_public_training",
+        "internal_training_only",
+        "retrieval_only",
+        "blocked"
+      ]
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "unreviewed",
+        "reviewed",
+        "verified"
+      ]
+    },
+    "allowed_uses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "internal_rag",
+          "internal_training",
+          "public_training",
+          "metadata_extraction",
+          "compliance_analysis",
+          "citation_only"
+        ]
+      }
+    },
+    "prohibited_uses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "public_republication",
+          "external_sharing",
+          "public_training",
+          "autonomous_submission",
+          "legal_advice"
+        ]
+      }
+    },
+    "handling_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "reviewed_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reviewed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reviewer_notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

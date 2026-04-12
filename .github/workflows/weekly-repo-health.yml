@@ -1,0 +1,177 @@
+name: Weekly Repo Health
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 6 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+jobs:
+  repo-health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gather repo health metrics
+        id: health
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PYEOF'
+          import json, os, subprocess, datetime
+
+          def run_cmd(*args, default=""):
+              try:
+                  result = subprocess.run(args, capture_output=True, text=True, timeout=60)
+                  return result.stdout.strip() if result.returncode == 0 else default
+              except Exception:
+                  return default
+
+          today = datetime.date.today()
+          out = {}
+
+          # Count modules, tests, training files
+          import glob
+          ts_files = glob.glob("src/**/*.ts", recursive=True)
+          py_files = glob.glob("src/**/*.py", recursive=True)
+          test_files = glob.glob("tests/**/*.test.ts", recursive=True) + glob.glob("tests/**/test_*.py", recursive=True)
+          jsonl_files = glob.glob("training-data/**/*.jsonl", recursive=True)
+          workflow_files = glob.glob(".github/workflows/*.yml", recursive=True)
+
+          out["ts_modules"] = len(ts_files)
+          out["py_modules"] = len(py_files)
+          out["test_files"] = len(test_files)
+          out["training_files"] = len(jsonl_files)
+          out["workflow_count"] = len(workflow_files)
+          out["scan_date"] = today.isoformat()
+
+          # Count training records
+          total_records = 0
+          for jf in jsonl_files:
+              try:
+                  with open(jf, 'r', encoding='utf-8', errors='ignore') as f:
+                      total_records += sum(1 for line in f if line.strip())
+              except Exception:
+                  pass
+          out["training_records"] = total_records
+
+          # Check open issues and PRs
+          open_issues = run_cmd("gh", "issue", "list", "--state", "open", "--json", "number", "--jq", "length")
+          open_prs = run_cmd("gh", "pr", "list", "--state", "open", "--json", "number", "--jq", "length")
+          out["open_issues"] = int(open_issues) if open_issues.isdigit() else 0
+          out["open_prs"] = int(open_prs) if open_prs.isdigit() else 0
+
+          # Check recent failed workflow runs
+          runs_json = run_cmd("gh", "run", "list", "--limit", "20", "--json", "name,conclusion,createdAt")
+          failed_runs = []
+          if runs_json:
+              try:
+                  runs = json.loads(runs_json)
+                  for r in runs:
+                      if r.get("conclusion") == "failure":
+                          failed_runs.append({"name": r["name"], "date": r.get("createdAt", "")[:10]})
+              except Exception:
+                  pass
+          out["failed_runs"] = failed_runs
+
+          # Disk usage estimate
+          du = run_cmd("du", "-sh", ".", default="? .")
+          out["disk_usage"] = du.split()[0] if du else "?"
+
+          # Write outputs
+          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+              for k, v in out.items():
+                  if isinstance(v, (list, dict)):
+                      continue
+                  fh.write(f"{k}={v}\n")
+
+          os.makedirs("artifacts/repo-health", exist_ok=True)
+          with open("artifacts/repo-health/weekly_report.json", "w") as f:
+              json.dump(out, f, indent=2, default=str)
+          PYEOF
+
+      - name: Upload health report
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-health-weekly
+          path: artifacts/repo-health/weekly_report.json
+          retention-days: 90
+
+      - name: Create GitHub Issue
+        uses: actions/github-script@v7
+        env:
+          TS_MODULES: ${{ steps.health.outputs.ts_modules }}
+          PY_MODULES: ${{ steps.health.outputs.py_modules }}
+          TEST_FILES: ${{ steps.health.outputs.test_files }}
+          TRAINING_FILES: ${{ steps.health.outputs.training_files }}
+          TRAINING_RECORDS: ${{ steps.health.outputs.training_records }}
+          WORKFLOW_COUNT: ${{ steps.health.outputs.workflow_count }}
+          OPEN_ISSUES: ${{ steps.health.outputs.open_issues }}
+          OPEN_PRS: ${{ steps.health.outputs.open_prs }}
+          DISK_USAGE: ${{ steps.health.outputs.disk_usage }}
+        with:
+          script: |
+            const fs = require('fs');
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Repo Health Report - ${today}`;
+
+            // Close previous
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'repo-health',
+              state: 'open',
+            });
+            for (const issue of existing.data) {
+              if (issue.title.startsWith('Repo Health Report -') && issue.title !== title) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+            let report = {};
+            try {
+              report = JSON.parse(fs.readFileSync('artifacts/repo-health/weekly_report.json', 'utf8'));
+            } catch (e) {}
+
+            let body = `## Weekly Repository Health Report\n\n`;
+            body += `| Metric | Count |\n|--------|-------|\n`;
+            body += `| TypeScript modules | ${process.env.TS_MODULES} |\n`;
+            body += `| Python modules | ${process.env.PY_MODULES} |\n`;
+            body += `| Test files | ${process.env.TEST_FILES} |\n`;
+            body += `| Training data files | ${process.env.TRAINING_FILES} |\n`;
+            body += `| Training records | ${process.env.TRAINING_RECORDS} |\n`;
+            body += `| GitHub Actions workflows | ${process.env.WORKFLOW_COUNT} |\n`;
+            body += `| Open issues | ${process.env.OPEN_ISSUES} |\n`;
+            body += `| Open PRs | ${process.env.OPEN_PRS} |\n`;
+            body += `| Disk usage | ${process.env.DISK_USAGE} |\n\n`;
+
+            const failedRuns = (report.failed_runs || []);
+            if (failedRuns.length > 0) {
+              body += `### Recent Failed Workflows\n`;
+              for (const f of failedRuns) {
+                body += `- **${f.name}** — failed ${f.date}\n`;
+              }
+              body += `\n`;
+            } else {
+              body += `All recent workflow runs passed.\n\n`;
+            }
+
+            body += `---\n*Automated by weekly-repo-health workflow*`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['repo-health', 'automated'],
+            });

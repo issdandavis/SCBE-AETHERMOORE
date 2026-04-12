@@ -1,0 +1,44 @@
+{
+  "name": "scbe-local-plugins",
+  "interface": {
+    "displayName": "SCBE Local Plugins"
+  },
+  "plugins": [
+    {
+      "name": "aetherbrowse",
+      "source": {
+        "source": "local",
+        "path": "./plugins/aetherbrowse"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "nonstop",
+      "source": {
+        "source": "local",
+        "path": "./plugins/nonstop"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "scbe-verify",
+      "source": {
+        "source": "local",
+        "path": "./plugins/scbe-verify"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

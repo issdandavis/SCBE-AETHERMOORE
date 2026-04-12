@@ -3,7 +3,7 @@ title: "64.8% Energy Savings: How a Governance Cost Function Doubles as a Comput
 published: false
 description: "The same harmonic cost function that blocks prompt injection also cuts AI compute energy by 64.8%. Tested on real Kaggle microgrid data. Open source."
 tags: ai, energy, sustainability, machinelearning
-canonical_url: https://aethermoorgames.com/research/compute-governor.html
+canonical_url: https://aethermoore.com/research/compute-governor.html
 ---
 
 ## The Accidental Discovery
@@ -82,7 +82,7 @@ The cost function wasn't designed for energy. It was designed for security. The 
 ## Links
 
 - **Full simulation data**: [Kaggle Dataset](https://kaggle.com/datasets/issacizrealdavis/scbe-governance-research-results)
-- **Research page**: [Compute Governor](https://aethermoorgames.com/research/compute-governor.html)
+- **Research page**: [Compute Governor](https://aethermoore.com/research/compute-governor.html)
 - **Source code**: [GitHub](https://github.com/issdandavis/SCBE-AETHERMOORE)
 - **Training data + model**: [HuggingFace](https://huggingface.co/datasets/issdandavis/scbe-aethermoore-training-data)
 

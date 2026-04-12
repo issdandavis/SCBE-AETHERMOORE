@@ -382,3 +382,17 @@ Train the smallest useful thing first:
 - preference tuning only after style is stable
 
 Keep the law deterministic, keep the provenance auditable, and let the learned layer operate only where style and ranking actually benefit from learning.
+
+## Mesh Matrix Alignment
+
+The current HF lane should be treated as the first operational slice of the `M4NMM` mesh, not as a final architecture.
+
+- `HF Coder` = code generator node
+- `HF Terminal` = path planner / terminal operations node
+
+The governing rule stays the same:
+
+- learned heads may generate, route, and summarize
+- SCBE deterministic governance remains the final adjudicator
+
+See `docs/specs/M4NMM_MESH_MATRIX_SPEC.md` for the broader node, matrix, bundle, and scorecard model that this pair should grow into.

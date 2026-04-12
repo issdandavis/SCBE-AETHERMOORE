@@ -148,7 +148,7 @@ The PHDM-21D embedding passes text through a **14-layer security pipeline**:
 ## Links
 
 - **Book**: [The Spiralverse on Amazon](https://www.amazon.com/dp/B0GSSFQD9G) -- The novel that seeded the training data
-- **Website**: [aethermoorgames.com](https://aethermoorgames.com)
+- **Website**: [aethermoore.com](https://aethermoore.com)
 - **GitHub**: [SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE-AETHERMOORE) -- Full framework source
 - **npm**: [scbe-aethermoore](https://www.npmjs.com/package/scbe-aethermoore)
 - **PyPI**: [scbe-aethermoore](https://pypi.org/project/scbe-aethermoore/)
@@ -323,7 +323,7 @@ console.log(`Consensus: ${result.consensusReached}`);
 ## Links
 
 - **Book**: [The Spiralverse on Amazon](https://www.amazon.com/dp/B0GSSFQD9G) -- The novel that seeded the training data
-- **Website**: [aethermoorgames.com](https://aethermoorgames.com)
+- **Website**: [aethermoore.com](https://aethermoore.com)
 - **GitHub**: [SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE-AETHERMOORE) -- Full framework source
 - **npm**: [scbe-aethermoore](https://www.npmjs.com/package/scbe-aethermoore)
 - **PyPI**: [scbe-aethermoore](https://pypi.org/project/scbe-aethermoore/)
@@ -519,7 +519,7 @@ output = cross_tongue_convolve(
 ## Links
 
 - **Book**: [The Spiralverse on Amazon](https://www.amazon.com/dp/B0GSSFQD9G) -- The novel that seeded the Sacred Tongues tokenizer
-- **Website**: [aethermoorgames.com](https://aethermoorgames.com)
+- **Website**: [aethermoore.com](https://aethermoore.com)
 - **GitHub**: [SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE-AETHERMOORE) -- Full framework source
 - **npm**: [scbe-aethermoore](https://www.npmjs.com/package/scbe-aethermoore)
 - **PyPI**: [scbe-aethermoore](https://pypi.org/project/scbe-aethermoore/)
@@ -672,7 +672,7 @@ The framework was born from an unlikely origin: 12,596+ paragraphs of AI-driven 
 ## Links
 
 - **Book**: [The Spiralverse on Amazon](https://www.amazon.com/dp/B0GSSFQD9G) -- The novel that started it all
-- **Website**: [aethermoorgames.com](https://aethermoorgames.com)
+- **Website**: [aethermoore.com](https://aethermoore.com)
 - **GitHub**: [SCBE-AETHERMOORE](https://github.com/issdandavis/SCBE-AETHERMOORE) -- Full framework source
 - **npm**: [scbe-aethermoore](https://www.npmjs.com/package/scbe-aethermoore)
 - **PyPI**: [scbe-aethermoore](https://pypi.org/project/scbe-aethermoore/)

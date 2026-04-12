@@ -49,6 +49,25 @@ function run(cmd: string): string {
 const maybeDescribe = PYTHON ? describe : describe.skip;
 
 maybeDescribe('Unified scbe CLI', () => {
+  describe('legacy cli bridge', () => {
+    it('reroutes legacy cli ai explain to the modern ai helper', () => {
+      const out = run(`${PYTHON!} scbe.py cli ai explain L12`);
+      expect(out).toContain('Routing legacy syntax');
+      expect(out).toContain('Harmonic Wall');
+    });
+
+    it('shows corrective help for legacy cli misuse', () => {
+      try {
+        run(`${PYTHON!} scbe.py cli pipeline run --text "test input"`);
+        expect(true).toBe(false);
+      } catch (e: any) {
+        const output = `${e.stdout?.toString() || ''}${e.stderr?.toString() || ''}`;
+        expect(output).toContain('uses the legacy shell');
+        expect(output).toContain('scbe pipeline run');
+      }
+    });
+  });
+
   describe('selftest', () => {
     it('passes all checks', () => {
       const out = run(`${PYTHON!} scbe.py selftest`);

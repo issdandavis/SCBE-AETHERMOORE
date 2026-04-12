@@ -1621,7 +1621,7 @@ def _cli_command_registry() -> list[dict[str, Any]]:
             "lane": "browse",
             "interop": {"web": True, "python": True, "node": False, "connectors": False},
             "desc": "Classify a URL against trusted_external_sites.json (safe allowlist).",
-            "example": "trust aethermoorgames.com",
+            "example": "trust aethermoore.com",
         },
         {
             "cmd": "vault stats|search <q>|sync",
@@ -1691,7 +1691,7 @@ def _cli_help_text() -> str:
         "  docs show <key>",
         "",
         "Examples:",
-        "  trust aethermoorgames.com",
+        "  trust aethermoore.com",
         '  vault search "phi poincare"',
         "  ops tests",
         "  momentum run daily_ops --execute --max-parallel 3",

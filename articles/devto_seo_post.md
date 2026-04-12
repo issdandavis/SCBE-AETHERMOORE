@@ -3,7 +3,7 @@ title: "How Hyperbolic Geometry Makes AI Attacks Mathematically Impossible"
 published: false
 description: "A 14-layer security pipeline that uses Poincare ball embeddings to create exponential cost scaling for adversarial AI behavior. F1=0.813, zero false positives, patent pending."
 tags: ai, security, machinelearning, opensource
-canonical_url: https://aethermoorgames.com/research/hub.html
+canonical_url: https://aethermoore.com/research/hub.html
 ---
 
 ## The Problem With Rule-Based AI Security
@@ -56,8 +56,8 @@ The key differentiator: because the defense is geometric rather than learned, it
 
 Everything is open source and interactive:
 
-- **[18 Live Demos](https://aethermoorgames.com/demos/)** -- test the governance gate, encode Sacred Tongues, explore hyperbolic distance, visualize embeddings. No signup, no API key.
-- **[Red Team Sandbox](https://aethermoorgames.com/redteam.html)** -- throw 91 attacks at the pipeline. $1 for 60 minutes of access.
+- **[18 Live Demos](https://aethermoore.com/demos/)** -- test the governance gate, encode Sacred Tongues, explore hyperbolic distance, visualize embeddings. No signup, no API key.
+- **[Red Team Sandbox](https://aethermoore.com/redteam.html)** -- throw 91 attacks at the pipeline. $1 for 60 minutes of access.
 - **[npm package](https://www.npmjs.com/package/scbe-aethermoore)** -- `npm install scbe-aethermoore` ships the full 14-layer pipeline.
 - **[PyPI package](https://pypi.org/project/scbe-aethermoore/)** -- `pip install scbe-aethermoore` for Python.
 - **[GitHub](https://github.com/issdandavis/SCBE-AETHERMOORE)** -- 546K+ lines, TypeScript canonical, Python reference.
@@ -73,7 +73,7 @@ A weird vibe code session later, the game logs had become a patent-pending AI go
 
 If you are building AI agents, LLM applications, or multi-model systems, the question is not whether you need governance -- it is whether your governance can survive adversarial pressure. Rule-based approaches cannot. Mathematical approaches can.
 
-The [research hub](https://aethermoorgames.com/research/hub.html) tracks 15 active research tracks. The [product manual](https://aethermoorgames.com/product-manual/) covers integration. The code is open source, the math is public, and the patent is filed.
+The [research hub](https://aethermoore.com/research/hub.html) tracks 15 active research tracks. The [product manual](https://aethermoore.com/product-manual/) covers integration. The code is open source, the math is public, and the patent is filed.
 
 ---
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scbe-aethermoore"
-version = "3.0.0"
+version = "3.3.0"
 description = "Post-quantum hybrid encryption with hyperbolic geometry for AI safety governance"
 readme = "README.md"
 license = {text = "MIT"}

@@ -1,0 +1,11 @@
+{
+  "skill_name": "cross-terminal-messaging",
+  "updated_at_utc": "2026-03-05T20:55:15Z",
+  "local_registry": {
+    "skill_path": "skills/cross-terminal-messaging/SKILL.md",
+    "local_lane_bus": "artifacts/agent_comm/github_lanes/cross_talk.jsonl",
+    "ack_lane_bus": "artifacts/agent_comm/github_lanes/cross_talk_acks.jsonl"
+  },
+  "obsidian_registry_note": "C:\\Users\\issda\\OneDrive\\Documents\\DOCCUMENTS\\A follder\\AI Workspace\\Context\\Skill Registry.md",
+  "external_skill_reference_registry": "external/openclaw/appcast.xml"
+}

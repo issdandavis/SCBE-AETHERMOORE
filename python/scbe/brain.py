@@ -49,6 +49,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+try:
+    from .rhombic_bridge import rhombic_fusion, rhombic_score
+    _HAS_RHOMBIC = True
+except Exception:
+    _HAS_RHOMBIC = False
+
 # Import circuit flow (resolve path relative to this file)
 _circuit_flow_dir = os.path.join(
     os.path.dirname(__file__), "..", "..", "src",
@@ -615,6 +621,34 @@ class AetherBrain:
 
         # 1. Embed to 21D
         x_21d = embed_vector_to_21d(intent_vector, context)
+
+        # Optional: Rhombic fusion bridge (cross-modal consistency gate)
+        #
+        # This is intentionally opt-in via context, so existing pipelines aren't changed
+        # unless the caller provides the needed sensory vectors.
+        if _HAS_RHOMBIC and context.get("enable_rhombic_bridge"):
+            audio_vec = context.get("audio_vector")
+            vision_vec = context.get("vision_vector")
+            if audio_vec is not None and vision_vec is not None:
+                try:
+                    R_diamond = rhombic_fusion(
+                        x=np.asarray(x_21d, dtype=float),
+                        audio=np.asarray(audio_vec, dtype=float),
+                        vision=np.asarray(vision_vec, dtype=float),
+                        governance=np.asarray(x_21d, dtype=float),
+                        k=int(context.get("phase_k", 0)),
+                    )
+                    context["rhombic_R_diamond"] = float(R_diamond)
+                    context["rhombic_score"] = float(rhombic_score(R_diamond))
+
+                    # Optional hard gate (caller-controlled threshold)
+                    thr = context.get("rhombic_gate_threshold")
+                    if thr is not None and R_diamond > float(thr):
+                        return self._fail_to_noise("Rhombic Bridge Mismatch", TrustRing.OUTER, start_time)
+                except Exception as e:
+                    # Fail-closed if caller required rhombic processing
+                    if context.get("rhombic_fail_closed"):
+                        return self._fail_to_noise(f"Rhombic Bridge Error: {e}", TrustRing.OUTER, start_time)
 
         # 2. Early boundary check via Poincaré distance
         ring = self.skull.get_trust_ring(x_21d)

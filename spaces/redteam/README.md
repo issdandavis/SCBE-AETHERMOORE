@@ -19,5 +19,5 @@ Test any prompt against a 14-layer AI governance pipeline using hyperbolic geome
 - Patent pending: USPTO #63/961,403
 
 **Author**: Issac Daniel Davis
-**Website**: [aethermoorgames.com](https://aethermoorgames.com)
+**Website**: [aethermoore.com](https://aethermoore.com)
 **Novel**: [The Six Tongues Protocol ($4.99)](https://a.co/d/024VowjS)

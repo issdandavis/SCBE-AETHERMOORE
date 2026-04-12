@@ -1,0 +1,176 @@
+{
+  "generated": "2026-04-06",
+  "source_records": 198279,
+  "sampled": 500,
+  "dimensional": true,
+  "dimensions_per_record": {
+    "tongue_weights": "6D phi-scaled activation vector",
+    "dominant_tongue": "highest-activation tongue",
+    "layers": "pipeline layer indices [1-14]",
+    "axioms": "axiom tags [A1-A5 or general]",
+    "difficulty": "scalar [0, 1]",
+    "augmentation": "generator lineage"
+  },
+  "phases": {
+    "phase1_learn": {
+      "data": "training-data/sft/*.jsonl (original)",
+      "records": 198279,
+      "lr_range": "2e-4 -> 1e-4",
+      "steps_fraction": 0.35
+    },
+    "phase2_gym_class": {
+      "data": "training-data/curriculum/phase2_gym_class.jsonl",
+      "records": 2236,
+      "lr_range": "1e-4 -> 5e-5",
+      "steps_fraction": 0.25,
+      "augmentations": {
+        "inversions": 256,
+        "rotations": 512,
+        "paraphrases": 252,
+        "cross_domain": 252,
+        "difficulty_ups": 252,
+        "partial_ablations": 81,
+        "field_trips": 256,
+        "tone_variants": 312,
+        "bullies": 257
+      }
+    },
+    "phase3_pop_quiz": {
+      "data": "training-data/curriculum/phase3_pop_quiz.jsonl",
+      "records": 275,
+      "eval_only": true,
+      "steps_fraction": 0.01,
+      "note": "No gradient update. Score per category to find gaps."
+    },
+    "phase4_remediation": {
+      "data": "generated dynamically from phase3 results",
+      "records": "TBD (weak categories only)",
+      "lr_range": "5e-5 -> 1e-5",
+      "steps_fraction": 0.25
+    },
+    "phase5_cooldown": {
+      "data": "mix of phase1 + phase2 easiest",
+      "records": "TBD (subset)",
+      "lr_range": "1e-5 -> 0",
+      "steps_fraction": 0.14
+    }
+  },
+  "dimensional_profile": {
+    "tongue_activation_avg": {
+      "KO": 0.0603,
+      "AV": 0.1183,
+      "RU": 0.0707,
+      "CA": 0.1525,
+      "UM": 0.0979,
+      "DR": 0.5003
+    },
+    "dominant_tongue_distribution": {
+      "CA": 235,
+      "DR": 1683,
+      "UM": 234,
+      "KO": 98,
+      "AV": 175,
+      "RU": 86
+    },
+    "layer_coverage": {
+      "0": 542,
+      "1": 326,
+      "3": 1136,
+      "4": 476,
+      "5": 855,
+      "6": 185,
+      "7": 67,
+      "8": 609,
+      "9": 583,
+      "10": 418,
+      "11": 72,
+      "12": 422,
+      "13": 930,
+      "14": 139
+    },
+    "axiom_coverage": {
+      "general": 2113,
+      "A4_symmetry": 126,
+      "A3_causality": 29,
+      "A2_locality": 151,
+      "A5_composition": 62,
+      "A1_unitarity": 81
+    },
+    "difficulty_distribution": {
+      "0.1": 143,
+      "0.2": 455,
+      "0.3": 703,
+      "0.4": 569,
+      "0.5": 421,
+      "0.6": 209,
+      "0.7": 11
+    }
+  },
+  "counts": {
+    "phase2_gym_class": 2236,
+    "phase3_pop_quiz": 275,
+    "inversions": 256,
+    "rotations": 512,
+    "paraphrases": 252,
+    "cross_domain": 252,
+    "difficulty_ups": 252,
+    "partial_ablations": 81,
+    "full_ablations": 81,
+    "field_trips": 256,
+    "tone_variants": 312,
+    "bullies": 257
+  },
+  "total_augmented": 5022,
+  "supplemental_sft": {
+    "tongue_primer": {
+      "data": "training-data/sft/tongue_primer_sft.jsonl",
+      "records": 50,
+      "purpose": "Deep-teaching records for Sacred Tongue fundamentals: what each tongue IS, phi-scaling proofs, token grid mechanics, semantic tokenizer vs standard, variable/decimal drift, cross-tongue interactions",
+      "sections": ["definition", "reasoning", "phi-scaling", "token-grid", "cross-tongue", "why-not", "walkthrough", "conlang", "tokenizer-basics", "semantic-math", "drift"]
+    },
+    "book_six_tongues": {
+      "data": "training-data/sft/book_six_tongues_sft.jsonl",
+      "records": 1035,
+      "purpose": "SFT from 'The Six Tongues Protocol' novel (27 chapters, 12K lines). Narrative comprehension, tongue extraction, technical bridge, character perspective records",
+      "record_types": {
+        "book-narrative": 407,
+        "book-tongue-extraction": 278,
+        "book-technical-bridge": 206,
+        "book-character-perspective": 144
+      },
+      "source": "content/book/reader-edition/the-six-tongues-protocol-full.md"
+    },
+    "tongue_go": {
+      "data": "training-data/sft/tongue_go_sft.jsonl",
+      "records": 25,
+      "purpose": "Multi-dimensional Go training: 6 boards, 1 per Sacred Tongue, same game different languages. Single-board -> dual-board -> full six-board progression. Inspired by Gungi (Hunter x Hunter).",
+      "phases": {
+        "concept": 2,
+        "single_board": 12,
+        "dual_board": 6,
+        "full_board": 3,
+        "progression": 2
+      }
+    },
+    "tokenizer_master_class": {
+      "data": "training-data/sft/tokenizer_master_class_sft.jsonl",
+      "records": 472,
+      "purpose": "High-intensity training for the Sacred Tongue Semantic Engine: vector arithmetic, drift correction, null-space, gating functions, constrained trajectories, and code implementation",
+      "record_types": {
+        "master-drift": 174,
+        "master-semantic-math": 136,
+        "master-null-space": 114,
+        "master-code": 48
+      },
+      "lanes": {
+        "semantic_math": "Tongue vector addition/subtraction, phi-weighted scoring, dominance analysis, 6D governance scoring, chord sequences, procedural tongue interactions",
+        "drift_correction": "Per-tongue phi-correction, multi-drift accumulation, cross-tongue propagation, ratio validation, epoch snapping, worst-case governance flips",
+        "null_space": "Null vs zero vs inverse-null, state evolution, boundary collisions, gating function g_t(p), constrained trajectory P*(p|h_t), null pattern analysis",
+        "code": "Python and TypeScript implementations, debugging broken tongue code, test writing, architecture patterns (REST API, middleware, drift monitor, batch scorer)"
+      },
+      "avg_difficulty": 0.80,
+      "test_suite": "tests/test_tokenizer_logic_and_drift_sft.py",
+      "test_result": "31/31 passed"
+    }
+  }
+}
