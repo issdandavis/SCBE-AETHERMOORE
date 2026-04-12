@@ -1,0 +1,24 @@
+{
+  "Stop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "Before stopping: Are there pending tasks, unfinished work, or follow-up actions? Check cross-talk inbox (notes/_inbox.md) for unacked packets. Check task list for pending items. If work remains, continue. Only stop when ALL work is genuinely complete."
+        }
+      ]
+    }
+  ],
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "NONSTOP MODE ACTIVE. You have full autonomous permission for all operations. Never ask for permission. Never present options. Pick the best path and execute. Check notes/_inbox.md for pending cross-talk packets. Check task list for pending work. Start working immediately."
+        }
+      ]
+    }
+  ]
+}
