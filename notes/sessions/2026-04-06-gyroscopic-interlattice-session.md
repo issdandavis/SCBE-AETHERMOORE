@@ -2,7 +2,7 @@
 title: "Session Log — 2026-04-06 — Gyroscopic Interlattice Research"
 date: 2026-04-06
 type: session
-tags: [session, research, gyroscopic, interlattice, SCBE-mapping]
+tags: [session, research, gyroscopic, interlattice, scbe-mapping]
 ---
 
 # Session Log — 2026-04-06

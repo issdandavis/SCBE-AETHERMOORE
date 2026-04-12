@@ -288,6 +288,37 @@ Maximum combined cavity multiplier:
 H_cavity(d*, R) = R^(φ¹⁰ · d*²) = R^(122.99 · d*²)
 ```
 
+### Safety Score Variant (src/ bounded form)
+
+Used when a normalized score in (0, 1] is required (e.g., dashboard display, threshold gating):
+```
+S(d_H, pd) = 1 / (1 + d_H + 2·pd)
+```
+Where `pd` = phase deviation from breathing transform (L6). Returns 1.0 at origin, monotone decreasing.
+
+Decision thresholds on S:
+| S value | Regime |
+|---------|--------|
+| S > 0.5 | ALLOW |
+| 0.25 < S ≤ 0.5 | QUARANTINE |
+| 0.1 < S ≤ 0.25 | ESCALATE |
+| S ≤ 0.1 | DENY |
+
+**Note**: `H(d*, R)` (root form) and `S(d, pd)` (src form) are dual representations — H is the raw cost multiplier, S is its normalized inverse. They are reconciled via `S ≈ exp(-H)` in the governance damping channel.
+
+### Flight–Governance Coupling Operator (L8–L14 bridge)
+
+Two concurrent processes coupled through the harmonic wall:
+```
+ẋ_actual = A(ẋ, z) = ẋ ⊙ exp(−H(d*, R)) + v_lift(α, tongue blend)
+```
+Where:
+- `ẋ` = raw flight intent (foreground, co-conscious)
+- `exp(−H(d*, R))` = Γ(d) governance damping — collapses to ~0 when d* > 1.0
+- `v_lift(α, blend)` = tongue-weighted lift vector (keeps system stable under full damping)
+
+Full spec: `docs/FLIGHT_GOVERNANCE_COUPLING.md`
+
 ### Cost Table (R = e)
 
 | d* | H = R^(d*²) | H = R^((φd*)²) | H_cavity = R^(122.99·d*²) |

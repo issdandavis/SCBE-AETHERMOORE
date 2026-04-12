@@ -2,7 +2,7 @@
 title: "Gyroscopic Interacting Magnetic Field Arrays — Interlattice Coupling"
 date: 2026-04-06
 type: theory/discovery
-tags: [gyroscopic, magnetic, interlattice, topological, metamaterial, SCBE-mapping]
+tags: [gyroscopic, magnetic, interlattice, topological, metamaterial, scbe-mapping]
 tongue: UM (Security) + CA (Compute)
 layer: L5-L7 (hyperbolic distance, breathing transform, Mobius phase)
 status: raw-research

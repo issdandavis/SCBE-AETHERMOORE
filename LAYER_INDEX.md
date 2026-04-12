@@ -107,6 +107,27 @@ L1 → L2 → L3 → L4 → L5 (INVARIANT)
 
 ---
 
+## Flight / Governance Coupling Operator (L8–L14 Bridge)
+
+Formal spec defining the two concurrent continuous processes that run across L8–L14:
+
+| Process | Definition | Mode |
+|---------|-----------|------|
+| **Flight** | `ẋ(t) = f_flight(x, e, u)` — enacted, foreground trajectory | Co-conscious |
+| **Governance** | `ż(t) = f_gov(z, x, h, d, c)` — persistent normative field | Non-co-conscious |
+| **Coupling** | `ẋ_actual = A(ẋ, z) = ẋ ⊙ exp(-H(d,R)) + v_lift(α, tongue blend)` | Adjudication |
+
+Where `H(d,R) = R^(d²)` is the superexponential hyperbolic cost (always active, even when silent).
+
+This produces the observed metrics:
+- F1 0.813 via early geometric damping
+- Safety Score 34.5% via high-drag on dissonant tongues
+- 64.8% energy savings via continuous throttling before full trajectory expansion
+
+**Full spec + simulation code:** `docs/FLIGHT_GOVERNANCE_COUPLING.md`
+
+---
+
 ## Post-Quantum Cryptography Integration
 
 The PQC module provides cryptographic primitives used across layers:
