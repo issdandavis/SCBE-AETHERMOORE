@@ -1,0 +1,3546 @@
+diff --git a/api/main.py b/api/main.py
+index 3fa2925b..6f362804 100644
+--- a/api/main.py
++++ b/api/main.py
+@@ -51,17 +51,30 @@ except Exception:
+     mesh_router = None
+ 
+ try:
+-    from api.billing.routes import router as billing_router
+     from api.billing.database import init_db as init_billing_db
+ except Exception:
+-    billing_router = None
+     init_billing_db = None
+ 
++try:
++    from api.billing.routes import router as billing_router
++except Exception:
++    billing_router = None
++
++try:
++    from api.keys.routes import router as keys_router
++except Exception:
++    keys_router = None
++
+ try:
+     from api.github_app.routes import router as github_app_router
+ except Exception:
+     github_app_router = None
+ 
++try:
++    from api.research_routes import router as research_router
++except Exception:
++    research_router = None
++
+ try:
+     from spiralverse_core import EnvelopeCore
+ except Exception:
+@@ -126,10 +139,18 @@ if mesh_router is not None:
+ if billing_router is not None:
+     app.include_router(billing_router)
+ 
++# Include API key management router
++if keys_router is not None:
++    app.include_router(keys_router)
++
+ # Include GitHub App webhook router for local/hosted app automation
+ if github_app_router is not None:
+     app.include_router(github_app_router)
+ 
++# Include research upload/search/chat router
++if research_router is not None:
++    app.include_router(research_router)
++
+ # API Key authentication
+ API_KEY_HEADER = APIKeyHeader(name="SCBE_api_key", auto_error=False)
+ API_KEY_HEADER_LEGACY = APIKeyHeader(name="X-API-Key", auto_error=False)
+diff --git a/kindle-app/CHAT_SETUP.md b/kindle-app/CHAT_SETUP.md
+index 927bda5f..a7adf1e4 100644
+--- a/kindle-app/CHAT_SETUP.md
++++ b/kindle-app/CHAT_SETUP.md
+@@ -2,6 +2,7 @@
+ 
+ ## What shipped
+ - `kindle-app/www/chat.html` is now a real Hugging Face-backed chat surface.
++- `kindle-app/www/small-business-helper.html` is the first productized mobile lane for the small-business helper concept.
+ - `kindle-app/www/static/polly-hf-chat.js` exposes a reusable `window.PollyHFChat.mount(...)` API.
+ - The same files are mirrored into the Android asset lane under `kindle-app/android/app/src/main/assets/public/`.
+ 
+@@ -12,7 +13,8 @@
+ - not the default chatbot: `issdandavis/spiralverse-ai-federated-v1`
+ 
+ ## Security split
+-- private local app: storing a Hugging Face token on-device is acceptable
++- preferred mobile path: use the host-side `/v1/research/mobile-chat` route and keep provider tokens on the host
++- emulator or private device debug: only expose raw token fields intentionally, not as the default phone workflow
+ - public website: do not expose raw tokens; use a proxy endpoint instead
+ 
+ ## Mounting the widget in other surfaces
+@@ -28,5 +30,46 @@
+ </script>
+ ```
+ 
++For the Pixel 6 / emulator lane, the recommended proxy is:
++
++```text
++http://10.0.2.2:8000/v1/research/mobile-chat
++```
++
++Enable it on the host by setting:
++
++```powershell
++$env:SCBE_ALLOW_LOCAL_MOBILE_CHAT="1"
++```
++
++The route stays fail-closed unless that host flag is present.
++
+ ## Feedback loop
+-The widget stores local thumbs-up / needs-work feedback and can export that history. Use those exports as the next SFT and preference-tuning lane for the dedicated Polly chat model.
++The widget now stores the full thread locally on-device and supports three export lanes:
++
++- **Export thread** — raw conversation bundle for audit/replay
++- **Export SFT** — JSONL rows built from user prompt -> assistant reply pairs
++- **Export feedback** — thumbs-up / needs-work preference rows
++
++Use those exports as the next SFT and preference-tuning lane for the dedicated Polly chat model.
++
++To convert downloaded helper thread bundles into repo-native chat rows:
++
++```powershell
++python scripts/ingest_small_business_helper_exports.py `
++  artifacts/mobile_exports/small-business-helper `
++  --out training-data/sft/small_business_helper_mobile.jsonl
++```
++
++Once that helper corpus exists, the default chat-corpus merge path now picks it up automatically:
++
++```powershell
++python scripts/merge_chat_sft_corpus.py
++```
++
++If `training-data/sft/small_business_helper_mobile.jsonl` is present, it is appended to the default merge input set without needing a custom one-off command.
++
++## Multi-model compare mode
++- The settings panel now accepts a comma-separated `Compare models` list.
++- On send, the primary model plus every compare model answer the same user turn.
++- All assistant replies stay in the same thread with lane labels (`PRIMARY`, `COMPARE`, `ERROR`) and model IDs, which makes the export bundle useful for supervised fine-tuning and response comparison.
+diff --git a/kindle-app/scripts/copy-pwa-assets.js b/kindle-app/scripts/copy-pwa-assets.js
+index 9a42bfcd..7853173e 100644
+--- a/kindle-app/scripts/copy-pwa-assets.js
++++ b/kindle-app/scripts/copy-pwa-assets.js
+@@ -26,6 +26,29 @@ function copyFile(src, dest) {
+   console.log(`  copied: ${path.relative(WWW, dest)}`);
+ }
+ 
++function resolveFirstExisting(relativePath) {
++  for (const root of SOURCE_CANDIDATES) {
++    const candidate = path.join(root, relativePath);
++    if (fs.existsSync(candidate)) {
++      return candidate;
++    }
++  }
++  return null;
++}
++
++function copyStaticAsset(relativePath) {
++  const source = resolveFirstExisting(relativePath);
++  if (!source) {
++    console.log(`  warn: missing static asset ${relativePath}`);
++    return;
++  }
++  const destination = path.join(WWW, relativePath);
++  if (path.resolve(source) === path.resolve(destination)) {
++    return;
++  }
++  copyFile(source, destination);
++}
++
+ function patchAppHtml(content) {
+   // Optionally replace same-origin API with explicit API base.
+   // Original: const API = window.location.origin;
+@@ -163,8 +186,8 @@ if (fs.existsSync(arenaPath) && path.resolve(arenaPath) !== path.resolve(path.jo
+ }
+ 
+ // 5. Copy icons
+-const iconDir = path.join(SRC, 'static', 'icons');
+-if (fs.existsSync(iconDir)) {
++const iconDir = resolveFirstExisting(path.join('static', 'icons'));
++if (iconDir && fs.existsSync(iconDir)) {
+   for (const file of fs.readdirSync(iconDir)) {
+     const sourceIcon = path.join(iconDir, file);
+     const destIcon = path.join(WWW, 'static', 'icons', file);
+@@ -184,5 +207,13 @@ if (fs.existsSync(iconDir)) {
+   fs.writeFileSync(path.join(WWW, 'static', 'icons', 'icon-512.svg'), svgIcon(512));
+ }
+ 
++// 6. Copy shared static helpers used by the phone surfaces.
++[
++  path.join('static', 'polly-hf-chat.js'),
++  path.join('static', 'phone-shell.css'),
++  path.join('static', 'phone-shell.js'),
++  path.join('static', 'polly-pad-mobile.json'),
++].forEach(copyStaticAsset);
++
+ console.log('\nDone! Assets ready in kindle-app/www/');
+ console.log('Next: npm install && npx cap add android && npx cap sync');
+diff --git a/kindle-app/www/browse.html b/kindle-app/www/browse.html
+index c28871da..fb45311c 100644
+--- a/kindle-app/www/browse.html
++++ b/kindle-app/www/browse.html
+@@ -152,6 +152,7 @@ const TOOL_LINKS = [
+   { icon: "\uD83C\uDFAE", label: "Manhwa", url: "./reader.html" },
+   { icon: "\uD83D\uDCF1", label: "Ops", url: "./ops.html" },
+   { icon: "\uD83E\uDD9C", label: "Polly", url: "./polly-pad.html" },
++  { icon: "\uD83D\uDCBC", label: "Helper", url: "./small-business-helper.html" },
+   { icon: "\uD83D\uDCD6", label: "Kindle", url: "https://www.amazon.com/dp/B0GSSFQD9G" },
+   { icon: "\uD83D\uDCAC", label: "X", url: "https://x.com/davisissac" },
+   { icon: "\uD83D\uDD27", label: "Chat", url: "./chat.html" },
+diff --git a/kindle-app/www/chat.html b/kindle-app/www/chat.html
+index d8014813..4528714a 100644
+--- a/kindle-app/www/chat.html
++++ b/kindle-app/www/chat.html
+@@ -166,13 +166,14 @@
+         <ul class="rail-list">
+           <li>Local app use can store an HF token on-device.</li>
+           <li>Public site use should go through a proxy endpoint.</li>
+-          <li>Conversation feedback can be exported for future training.</li>
++          <li>Threads, SFT rows, and feedback can all be exported for future training.</li>
+         </ul>
+       </div>
+ 
+       <div class="rail-group">
+         <h2>Quick routes</h2>
+         <div class="rail-links">
++          <a href="./small-business-helper.html">Open Small Business Helper</a>
+           <a href="./polly-pad.html">Back to Polly Pad</a>
+           <a href="./browse.html">Open Browse lane</a>
+           <a href="./ops.html">Open Ops lane</a>
+diff --git a/kindle-app/www/device-shell.html b/kindle-app/www/device-shell.html
+index e6931263..eb9c9618 100644
+--- a/kindle-app/www/device-shell.html
++++ b/kindle-app/www/device-shell.html
+@@ -84,7 +84,7 @@
+       </article>
+       <article class="card">
+         <h3>Assistant panel</h3>
+-        <p class="small-note">Keep Ops or Test here for synthesis, diagnostics, and command relay.</p>
++        <p class="small-note">Keep Ops, Helper, or Test here for synthesis, diagnostics, command relay, or product-lane capture.</p>
+       </article>
+       <article class="card">
+         <h3>Headless lanes</h3>
+@@ -102,6 +102,7 @@ const PRESETS = [
+   { label: "Reader", route: "./reader.html?chapter=ch01&variant=generated" },
+   { label: "Test", route: "./test.html" },
+   { label: "Ops", route: "./ops.html" },
++  { label: "Helper", route: "./small-business-helper.html" },
+   { label: "Pad", route: "./polly-pad.html" }
+ ];
+ 
+diff --git a/kindle-app/www/index.html b/kindle-app/www/index.html
+index dc56b275..2c4cc4b0 100644
+--- a/kindle-app/www/index.html
++++ b/kindle-app/www/index.html
+@@ -2,10 +2,362 @@
+ <html lang="en">
+ <head>
+ <meta charset="UTF-8">
+-<meta http-equiv="refresh" content="0;url=./aetherbrowser.html">
+-<title>AetherBrowser</title>
++<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
++<title>AetherCode Pocket</title>
++<link rel="manifest" href="./manifest.json">
++<meta name="theme-color" content="#5fd6ff">
++<style>
++*{box-sizing:border-box}
++:root{
++  --bg:#050912;
++  --bg2:#0b1322;
++  --panel:rgba(10,18,31,.82);
++  --panel-strong:rgba(16,28,46,.92);
++  --line:rgba(165,201,234,.18);
++  --text:#edf4ff;
++  --muted:#9fb3ca;
++  --accent:#5fd6ff;
++  --accent-2:#f4b36a;
++  --ok:#80f3c5;
++  --shadow:0 22px 70px rgba(0,0,0,.45);
++  --serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
++  --sans:"Segoe UI Variable Text","Aptos","Trebuchet MS",sans-serif;
++}
++html,body{margin:0;min-height:100%;background:
++  radial-gradient(1200px 680px at 0% -10%, rgba(95,214,255,.18), transparent 60%),
++  radial-gradient(900px 600px at 100% 0%, rgba(244,179,106,.16), transparent 55%),
++  linear-gradient(180deg,var(--bg),var(--bg2) 60%,#060b14 100%);
++color:var(--text);font-family:var(--sans)}
++body{padding:18px}
++.shell{max-width:1180px;margin:0 auto;display:grid;gap:18px}
++.hero{
++  position:relative;overflow:hidden;border:1px solid var(--line);border-radius:28px;padding:24px;
++  background:linear-gradient(145deg,rgba(7,12,21,.92),rgba(13,22,38,.78));box-shadow:var(--shadow)
++}
++.hero::after{
++  content:"";position:absolute;inset:auto -10% -35% 35%;height:260px;
++  background:radial-gradient(circle, rgba(95,214,255,.22), transparent 62%);
++  pointer-events:none
++}
++.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
++.kicker{margin:0;color:var(--accent);font-size:.76rem;letter-spacing:.18em;text-transform:uppercase}
++.title{margin:10px 0 10px;font:700 clamp(2.3rem,7vw,4.9rem)/.92 var(--serif);max-width:10ch}
++.lede{margin:0;max-width:54ch;color:var(--muted);font-size:1.02rem;line-height:1.6}
++.pill-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
++.pill{
++  border:1px solid rgba(95,214,255,.22);border-radius:999px;padding:8px 12px;
++  background:rgba(255,255,255,.03);color:#dff4ff;font-size:.78rem;font-weight:700;letter-spacing:.03em
++}
++.hero-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:26px}
++.hero-panel,.launch-panel,.chat-panel,.notes-panel{
++  border:1px solid var(--line);border-radius:22px;background:var(--panel);backdrop-filter:blur(14px)
++}
++.hero-panel{padding:18px}
++.section-label{margin:0 0 10px;color:var(--accent);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
++.list{margin:0;padding:0;list-style:none;display:grid;gap:12px}
++.list li{display:grid;gap:4px;padding-bottom:12px;border-bottom:1px solid rgba(159,179,202,.12)}
++.list li:last-child{padding-bottom:0;border-bottom:0}
++.list strong{font-size:.96rem}
++.list span{color:var(--muted);font-size:.92rem;line-height:1.5}
++.launch-panel{padding:18px;display:grid;gap:12px}
++.launch-links{display:grid;gap:10px}
++.launch-link{
++  display:flex;justify-content:space-between;align-items:center;gap:10px;text-decoration:none;
++  color:var(--text);padding:14px 16px;border-radius:16px;
++  background:linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
++  border:1px solid rgba(159,179,202,.16)
++}
++.launch-link span{color:var(--muted);font-size:.88rem}
++.launch-link:hover{border-color:rgba(95,214,255,.42);transform:translateY(-1px)}
++.status-line{
++  margin-top:16px;padding-top:16px;border-top:1px solid rgba(159,179,202,.12);
++  color:var(--muted);font-size:.88rem;line-height:1.5
++}
++.workspace{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.9fr);gap:18px}
++.chat-panel{padding:12px}
++.chat-head,.notes-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 8px 14px}
++.chat-head h2,.notes-head h2{margin:0;font-size:1.08rem}
++.chat-head p,.notes-head p{margin:4px 0 0;color:var(--muted);font-size:.9rem;line-height:1.5}
++.route-badge{
++  border:1px solid rgba(128,243,197,.24);border-radius:999px;padding:8px 10px;
++  background:rgba(128,243,197,.08);color:var(--ok);font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em
++}
++.chat-mount{
++  min-height:660px;border:1px solid rgba(159,179,202,.12);border-radius:20px;
++  background:linear-gradient(180deg,rgba(4,10,18,.76),rgba(4,10,18,.42))
++}
++.notes-panel{padding:18px;display:grid;gap:14px}
++.note-card{
++  padding:14px 15px;border-radius:16px;background:rgba(255,255,255,.035);
++  border:1px solid rgba(159,179,202,.12)
++}
++.note-card h3{margin:0 0 8px;font-size:.94rem}
++.note-card p,.note-card li{margin:0;color:var(--muted);font-size:.9rem;line-height:1.55}
++.note-card ul{margin:0;padding-left:18px}
++.code{font-family:"Cascadia Code","JetBrains Mono","Consolas",monospace;color:#dff4ff}
++.footer-note{color:var(--muted);font-size:.82rem;line-height:1.55}
++@media (max-width: 980px){
++  body{padding:12px}
++  .hero-grid,.workspace{grid-template-columns:1fr}
++  .pill-row{justify-content:flex-start}
++  .chat-mount{min-height:540px}
++}
++</style>
++<script>
++  // Capacitor bridge — detect native vs web
++  window.isKindleApp = typeof window.Capacitor !== 'undefined';
++
++  // Handle offline state
++  window.addEventListener('offline', () => {
++    const dot = document.getElementById('status-dot');
++    const txt = document.getElementById('status-text');
++    if (dot) dot.className = 'dot off';
++    if (txt) txt.textContent = 'Offline';
++  });
++  window.addEventListener('online', () => {
++    const dot = document.getElementById('status-dot');
++    const txt = document.getElementById('status-text');
++    if (dot) dot.className = 'dot on';
++    if (txt) txt.textContent = 'Online';
++    // Re-check health
++    if (typeof checkHealth === 'function') checkHealth();
++  });
++</script>
+ </head>
+ <body>
+-<script>window.location.replace('./aetherbrowser.html');</script>
++<main class="shell">
++  <section class="hero">
++    <div class="topbar">
++      <div>
++        <p class="kicker">SCBE Pixel 6 lane</p>
++        <h1 class="title">One live lane. Not nine seats.</h1>
++        <p class="lede">
++          This surface is tuned for the phone workflow: direct chat, model compare when you ask for it, and clean export into training data.
++          It is not a fake round table and it should not ask you to manage provider secrets on a tiny emulator keyboard.
++        </p>
++      </div>
++      <div class="pill-row">
++        <span class="pill">Proxy-first mobile route</span>
++        <span class="pill">Training export built in</span>
++        <span class="pill">Pixel 6 tuned</span>
++      </div>
++    </div>
++
++    <div class="hero-grid">
++      <section class="hero-panel">
++        <p class="section-label">What this lane is for</p>
++        <ul class="list">
++          <li>
++            <strong>Run one useful conversation at a time.</strong>
++            <span>Draft, triage, rewrite, compare, and capture work without turning the phone into a theater diagram.</span>
++          </li>
++          <li>
++            <strong>Use stronger models as training mirrors.</strong>
++            <span>Keep Polly as the main lane, add compare models when needed, then export thread, SFT, or feedback rows for your smaller models.</span>
++          </li>
++          <li>
++            <strong>Keep host secrets off the emulator.</strong>
++            <span>The expected route is <span class="code">/v1/research/mobile-chat</span> on the host. The host keeps the provider token; the phone just talks to the proxy.</span>
++          </li>
++        </ul>
++      </section>
++
++      <aside class="launch-panel">
++        <p class="section-label">Launch Paths</p>
++        <div class="launch-links">
++          <a class="launch-link" href="./small-business-helper.html">
++            <strong>Small Business Helper</strong>
++            <span>Ops-focused preset</span>
++          </a>
++          <a class="launch-link" href="./device-shell.html">
++            <strong>Device Shell</strong>
++            <span>Two-panel phone layout</span>
++          </a>
++          <a class="launch-link" href="./browse.html">
++            <strong>Browse Lane</strong>
++            <span>Browser-first workflow</span>
++          </a>
++          <a class="launch-link" href="./chat.html">
++            <strong>Baseline Chat</strong>
++            <span>General-purpose Polly lane</span>
++          </a>
++        </div>
++        <div class="status-line" id="proxyHint">
++          Resolving the host proxy route…
++        </div>
++      </aside>
++    </div>
++  </section>
++
++  <section class="workspace">
++    <section class="chat-panel">
++      <div class="chat-head">
++        <div>
++          <h2>AetherCode Pocket</h2>
++          <p>The mobile workbench for drafting, compare runs, and training capture.</p>
++        </div>
++        <span class="route-badge" id="routeBadge">Proxy route</span>
++      </div>
++      <div class="chat-mount" id="pollyPocketMount"></div>
++    </section>
++
++    <aside class="notes-panel">
++      <div class="notes-head">
++        <div>
++          <h2>Operator Notes</h2>
++          <p>Use the lane like a tool, not a dashboard.</p>
++        </div>
++      </div>
++
++      <article class="note-card">
++        <h3>Recommended prompts</h3>
++        <ul>
++          <li>Draft a customer reply about a delayed order and keep the tone calm.</li>
++          <li>Compare two versions of this answer and keep the stronger one for training.</li>
++          <li>Turn this thread into SFT-ready rows and point out weak assistant turns.</li>
++        </ul>
++      </article>
++
++      <article class="note-card">
++        <h3>Proxy rule</h3>
++        <p>
++          Start the host API with <span class="code">SCBE_ALLOW_LOCAL_MOBILE_CHAT=1</span> and keep
++          <span class="code">HF_TOKEN</span> on the host. Use <span class="code">?proxy=http://10.0.2.2:8000/v1/research/mobile-chat</span>
++          if you need to override the default.
++        </p>
++      </article>
++
++      <article class="note-card">
++        <h3>Why this is different</h3>
++        <p>
++          The old arena treated the phone like a miniature command center. This version treats the phone like a real working surface:
++          one main lane, optional compare models, and a straight path from conversation to training data.
++        </p>
++      </article>
++
++      <p class="footer-note">
++        Add <span class="code">?secrets=1</span> only when you intentionally want the raw token or proxy-key fields visible for debugging.
++      </p>
++    </aside>
++  </section>
++</main>
++
++<script>
++function trimSlash(value) {
++  return String(value || "").replace(/\/+$/, "");
++}
++
++function resolveProxyEndpoint() {
++  const params = new URLSearchParams(window.location.search);
++  const explicitProxy = params.get("proxy");
++  if (explicitProxy) return explicitProxy;
++
++  const explicitBase = params.get("apiBase");
++  if (explicitBase) return `${trimSlash(explicitBase)}/v1/research/mobile-chat`;
++
++  const host = window.location.hostname;
++  const protocol = window.location.protocol;
++  const isCapacitor = Boolean(window.Capacitor) || protocol === "capacitor:" || protocol === "file:";
++  const isEmulator = host === "10.0.2.2";
++  const isLocalBrowser = host === "localhost" || host === "127.0.0.1";
++
++  if (isCapacitor || isEmulator) return "http://10.0.2.2:8000/v1/research/mobile-chat";
++  if (isLocalBrowser) return "http://localhost:8000/v1/research/mobile-chat";
++  return `${window.location.origin}/v1/research/mobile-chat`;
++}
++
++function compareModelsFromQuery() {
++  const params = new URLSearchParams(window.location.search);
++  const value = params.get("compare");
++  if (!value) return [];
++  return value.split(",").map((item) => item.trim()).filter(Boolean);
++}
++
++function allowSecretFields() {
++  const params = new URLSearchParams(window.location.search);
++  return params.get("secrets") === "1";
++}
++
++function loadWidgetScript() {
++  const candidates = [
++    "./static/polly-hf-chat.js",
++    "../kindle-app/www/static/polly-hf-chat.js",
++  ];
++
++  return new Promise((resolve, reject) => {
++    function next(index) {
++      if (window.PollyHFChat) {
++        resolve();
++        return;
++      }
++      const src = candidates[index];
++      if (!src) {
++        reject(new Error("Polly widget script is unavailable."));
++        return;
++      }
++      const script = document.createElement("script");
++      script.src = src;
++      script.onload = () => resolve();
++      script.onerror = () => {
++        script.remove();
++        next(index + 1);
++      };
++      document.head.appendChild(script);
++    }
++    next(0);
++  });
++}
++
++async function bootPocketSurface() {
++  const proxyEndpoint = resolveProxyEndpoint();
++  document.getElementById("proxyHint").textContent = `Proxy endpoint: ${proxyEndpoint}`;
++  document.getElementById("routeBadge").textContent = proxyEndpoint.includes("/mobile-chat")
++    ? "Host mobile route"
++    : "Custom route";
++
++  try {
++    await loadWidgetScript();
++    window.PollyHFChat.mount(document.getElementById("pollyPocketMount"), {
++      title: "Polly Pocket",
++      subtitle: "Proxy-first phone lane for drafting, compare runs, and training export.",
++      assistantName: "Polly",
++      model: "issdandavis/scbe-pivot-qwen-0.5b",
++      compareModels: compareModelsFromQuery(),
++      proxyEndpoint,
++      compact: true,
++      hideTokenField: !allowSecretFields(),
++      hideApiKeyField: !allowSecretFields(),
++      initialAssistantText:
++        "I am ready on the phone lane. Use me for drafting, compare runs, cleanup, and export into training data.",
++      proxyActiveText:
++        "Host proxy route active. The phone should not need provider keys when the host lane is configured.",
++      directActiveText:
++        "No host proxy was detected. Start the local API lane or override the route with ?proxy=...",
++      settingsNote:
++        "This phone lane is proxy-first. Start the host API with SCBE_ALLOW_LOCAL_MOBILE_CHAT=1 and keep provider keys on the host. Export thread for audit, export SFT for training rows, and export feedback for preference tuning.",
++      modelFacts: [
++        "Primary lane stays focused on one useful response.",
++        "Compare models are optional and should be used for training or quality checks, not always-on noise.",
++        "Exports are intended to feed your smaller SCBE chat models."
++      ],
++      suggestions: [
++        "Draft a customer reply about delayed shipping and keep the tone calm.",
++        "Compare two versions of this answer and tell me which one is better for training.",
++        "Turn this thread into SFT-ready rows and point out weak assistant turns.",
++        "Help me triage today's small-business tasks in order."
++      ]
++    });
++  } catch (error) {
++    document.getElementById("pollyPocketMount").innerHTML = `
++      <div style="padding:20px;color:#edf4ff;font-family:var(--sans);">
++        <strong>Polly widget failed to load.</strong>
++        <p style="color:#9fb3ca;line-height:1.5;">${String(error && error.message ? error.message : error)}</p>
++      </div>
++    `;
++  }
++}
++
++bootPocketSurface();
++</script>
+ </body>
+ </html>
+diff --git a/kindle-app/www/static/polly-hf-chat.js b/kindle-app/www/static/polly-hf-chat.js
+index 1ea6be4c..0c0fd399 100644
+--- a/kindle-app/www/static/polly-hf-chat.js
++++ b/kindle-app/www/static/polly-hf-chat.js
+@@ -2,17 +2,34 @@
+   const DEFAULTS = {
+     title: "Polly",
+     subtitle: "A quiet operating surface for SCBE chat.",
++    assistantName: "Polly",
+     endpoint: "https://router.huggingface.co/v1/chat/completions",
+     model: "issdandavis/scbe-pivot-qwen-0.5b",
++    compareModels: [],
+     proxyEndpoint: "",
++    apiKey: "",
++    hideTokenField: false,
++    hideApiKeyField: false,
+     storagePrefix: "scbe_hf_chat",
++    exportSource: "polly_hf_chat",
+     compact: false,
+     maxTokens: 480,
+     temperature: 0.45,
+     systemPrompt:
+       "You are Polly, a practical SCBE assistant. Be direct, structured, and useful. Help with the current page, workflow, or product without drifting into vague theory.",
+     suggestions: [],
+-    initialAssistantText: "Add a token or proxy and start talking."
++    initialAssistantText: "Add a token or proxy and start talking.",
++    proxyActiveText:
++      "Proxy endpoint active. Safe for public surfaces if the proxy keeps the token server-side.",
++    directActiveText:
++      "Direct Hugging Face route active. Good for private device use. Do not expose the token on public pages.",
++    settingsNote:
++      "For public pages, prefer a proxy endpoint and leave the raw HF token out of the browser. If the proxy is protected, add an SCBE API key here for operator or other-AI access. Thread export saves the raw conversation bundle; SFT export turns assistant replies into training rows.",
++    modelFacts: [
++      "scbe-pivot-qwen-0.5b is the chat-capable default.",
++      "phdm-21d-embedding stays embeddings-only.",
++      "spiralverse-ai-federated-v1 stays federated-learning oriented."
++    ]
+   };
+ 
+   function escapeHtml(value) {
+@@ -79,6 +96,71 @@
+     writeStored(prefix, "feedback", JSON.stringify(records));
+   }
+ 
++  function normalizeModelList(value) {
++    const rawItems = Array.isArray(value)
++      ? value
++      : typeof value === "string"
++        ? value.split(/[\n,]/)
++        : [];
++    return [...new Set(rawItems.map((item) => String(item || "").trim()).filter(Boolean))];
++  }
++
++  function shortModelName(modelId) {
++    const value = String(modelId || "").trim();
++    if (!value) return "assistant";
++    const parts = value.split("/");
++    return parts[parts.length - 1] || value;
++  }
++
++  function nextSessionId() {
++    return `scbe-chat-${new Date().toISOString().replace(/[:.]/g, "-")}-${Math.random().toString(16).slice(2, 8)}`;
++  }
++
++  function createMessage(role, content, extra = {}) {
++    return {
++      role,
++      content: String(content || "").trim(),
++      createdAt: new Date().toISOString(),
++      ...extra
++    };
++  }
++
++  function readThread(prefix) {
++    const raw = readStored(prefix, "thread", "");
++    if (!raw) return null;
++    try {
++      const parsed = JSON.parse(raw);
++      const messages = Array.isArray(parsed?.messages)
++        ? parsed.messages
++            .filter((message) => message && (message.role === "assistant" || message.role === "user"))
++            .map((message) => ({
++              role: message.role,
++              content: String(message.content || "").trim(),
++              createdAt: String(message.createdAt || new Date().toISOString()),
++              initial: Boolean(message.initial),
++              model: String(message.model || ""),
++              lane: String(message.lane || ""),
++              label: String(message.label || "")
++            }))
++            .filter((message) => message.content)
++        : [];
++      if (!messages.length) return null;
++      return {
++        session: {
++          id: String(parsed?.session?.id || nextSessionId()),
++          startedAt: String(parsed?.session?.startedAt || new Date().toISOString())
++        },
++        messages
++      };
++    } catch {
++      return null;
++    }
++  }
++
++  function writeThread(prefix, payload) {
++    writeStored(prefix, "thread", JSON.stringify(payload));
++  }
++
+   function downloadFile(filename, text, mimeType) {
+     const blob = new Blob([text], { type: mimeType });
+     const url = URL.createObjectURL(blob);
+@@ -101,9 +183,11 @@
+ 
+     if (!usingProxy) {
+       if (!config.token.trim()) {
+-        throw new Error("Add a Hugging Face token or configure a proxy endpoint.");
++        throw new Error("Add a Hugging Face token, or point this surface at a host-side proxy endpoint.");
+       }
+       headers.Authorization = `Bearer ${config.token.trim()}`;
++    } else if (config.apiKey && config.apiKey.trim()) {
++      headers.SCBE_api_key = config.apiKey.trim();
+     }
+ 
+     const response = await fetch(target, {
+@@ -409,27 +493,66 @@
+   function mount(root, options = {}) {
+     if (!root) return;
+ 
+-    const config = { ...DEFAULTS, ...options };
++    const config = {
++      ...DEFAULTS,
++      ...options,
++      compareModels: normalizeModelList(options.compareModels || DEFAULTS.compareModels)
++    };
++    config.modelFacts = Array.isArray(options.modelFacts) && options.modelFacts.length
++      ? options.modelFacts
++      : DEFAULTS.modelFacts;
++    const initialAssistantText = options.initialAssistantText || config.initialAssistantText;
++    const storedThread = readThread(config.storagePrefix);
+     const state = {
+       settings: {
+         token: options.token || readStored(config.storagePrefix, "token", ""),
+         model: options.model || readStored(config.storagePrefix, "model", config.model),
++        compareModelsText:
++          (Array.isArray(options.compareModels)
++            ? options.compareModels.join(", ")
++            : options.compareModels) || readStored(config.storagePrefix, "compareModels", config.compareModels.join(", ")),
+         proxyEndpoint: options.proxyEndpoint || readStored(config.storagePrefix, "proxy", config.proxyEndpoint),
++        apiKey: options.apiKey || readStored(config.storagePrefix, "apiKey", config.apiKey),
+         systemPrompt:
+           options.systemPrompt || readStored(config.storagePrefix, "systemPrompt", config.systemPrompt)
+       },
+-      messages: [
+-        {
+-          role: "assistant",
+-          content: options.initialAssistantText || config.initialAssistantText,
+-          initial: true
+-        }
+-      ],
++      session: storedThread?.session || {
++        id: nextSessionId(),
++        startedAt: new Date().toISOString()
++      },
++      messages:
++        storedThread?.messages || [
++          createMessage("assistant", initialAssistantText, {
++            initial: true,
++            label: config.assistantName
++          })
++        ],
+       busy: false,
+       settingsOpen: false,
+       status: ""
+     };
+ 
++    function persistThread() {
++      writeThread(config.storagePrefix, {
++        session: state.session,
++        messages: state.messages.map((message) => ({
++          role: message.role,
++          content: message.content,
++          createdAt: message.createdAt,
++          initial: Boolean(message.initial),
++          model: message.model || "",
++          lane: message.lane || "",
++          label: message.label || ""
++        }))
++      });
++    }
++
++    function getCompareModels() {
++      return normalizeModelList(state.settings.compareModelsText).filter(
++        (modelId) => modelId !== state.settings.model.trim()
++      );
++    }
++
+     function getUserMessageBefore(index) {
+       for (let i = index - 1; i >= 0; i -= 1) {
+         if (state.messages[i] && state.messages[i].role === "user") {
+@@ -442,10 +565,78 @@
+     function saveSettings() {
+       writeStored(config.storagePrefix, "token", state.settings.token);
+       writeStored(config.storagePrefix, "model", state.settings.model);
++      writeStored(config.storagePrefix, "compareModels", state.settings.compareModelsText);
+       writeStored(config.storagePrefix, "proxy", state.settings.proxyEndpoint);
++      writeStored(config.storagePrefix, "apiKey", state.settings.apiKey);
+       writeStored(config.storagePrefix, "systemPrompt", state.settings.systemPrompt);
+     }
+ 
++    function buildThreadBundle() {
++      return {
++        session: state.session,
++        exportedAt: new Date().toISOString(),
++        title: config.title,
++        subtitle: config.subtitle,
++        assistantName: config.assistantName,
++        primaryModel: state.settings.model,
++        compareModels: getCompareModels(),
++        proxyEndpoint: state.settings.proxyEndpoint,
++        systemPrompt: state.settings.systemPrompt,
++        source: config.exportSource,
++        messages: state.messages
++      };
++    }
++
++    function buildSftRows() {
++      const compareModels = getCompareModels();
++      return state.messages.flatMap((message, index) => {
++        if (message.role !== "assistant" || message.initial || message.lane === "error") return [];
++        const prompt = getUserMessageBefore(index);
++        if (!prompt) return [];
++        return [
++          {
++            instruction: "",
++            input: prompt,
++            output: message.content,
++            source: config.exportSource,
++            model: message.model || state.settings.model,
++            lane: message.lane || "primary",
++            timestamp: message.createdAt,
++            session_id: state.session.id,
++            title: config.title,
++            metadata: JSON.stringify({
++              assistant_name: config.assistantName,
++              compare_models: compareModels,
++              proxy_backed: Boolean(state.settings.proxyEndpoint.trim()),
++              system_prompt: state.settings.systemPrompt
++            })
++          }
++        ];
++      });
++    }
++
++    function exportThreadBundle() {
++      const bundle = buildThreadBundle();
++      downloadFile(
++        `scbe-hf-thread-${state.session.id}.json`,
++        JSON.stringify(bundle, null, 2),
++        "application/json"
++      );
++      state.status = `Exported thread bundle for ${state.session.id}.`;
++      render();
++    }
++
++    function exportSftRows() {
++      const rows = buildSftRows();
++      downloadFile(
++        `scbe-hf-sft-${state.session.id}.jsonl`,
++        rows.map((row) => JSON.stringify(row)).join("\n"),
++        "application/jsonl"
++      );
++      state.status = rows.length ? `Exported ${rows.length} SFT rows.` : "No assistant replies yet.";
++      render();
++    }
++
+     function exportFeedback() {
+       const records = readFeedback(config.storagePrefix);
+       const lines = records.map((record) => JSON.stringify(record)).join("\n");
+@@ -464,7 +655,8 @@
+       const records = readFeedback(config.storagePrefix);
+       records.push({
+         timestamp: new Date().toISOString(),
+-        model: state.settings.model,
++        model: message.model || state.settings.model,
++        lane: message.lane || "primary",
+         rating,
+         prompt: getUserMessageBefore(index),
+         response: message.content
+@@ -478,9 +670,12 @@
+       const prompt = text.trim();
+       if (!prompt || state.busy) return;
+ 
+-      state.messages.push({ role: "user", content: prompt });
++      state.messages.push(createMessage("user", prompt));
+       state.busy = true;
+-      state.status = "Waiting for Hugging Face...";
++      persistThread();
++      const compareModels = getCompareModels();
++      const targetModels = [state.settings.model.trim(), ...compareModels].filter(Boolean);
++      state.status = `Waiting for ${targetModels.length} model${targetModels.length === 1 ? "" : "s"}...`;
+       render();
+ 
+       try {
+@@ -492,26 +687,58 @@
+             .map((entry) => ({ role: entry.role, content: entry.content }))
+         ];
+ 
+-        const reply = await requestCompletion(
+-          {
+-            token: state.settings.token,
+-            model: state.settings.model,
+-            endpoint: config.endpoint,
+-            proxyEndpoint: state.settings.proxyEndpoint,
+-            maxTokens: config.maxTokens,
+-            temperature: config.temperature
+-          },
+-          requestMessages
++        const replies = await Promise.all(
++          targetModels.map(async (modelId, index) => {
++            try {
++              const reply = await requestCompletion(
++                {
++                  token: state.settings.token,
++                  model: modelId,
++                  endpoint: config.endpoint,
++                  proxyEndpoint: state.settings.proxyEndpoint,
++                  apiKey: state.settings.apiKey,
++                  maxTokens: config.maxTokens,
++                  temperature: config.temperature
++                },
++                requestMessages
++              );
++              return createMessage("assistant", reply, {
++                model: modelId,
++                lane: index === 0 ? "primary" : "compare",
++                label: index === 0 ? config.assistantName : shortModelName(modelId)
++              });
++            } catch (error) {
++              const message = error instanceof Error ? error.message : "Unknown HF error.";
++              return createMessage(
++                "assistant",
++                `Request failed.\n\n${message}\n\nIf this is a public page, use a proxy endpoint instead of a raw token.`,
++                {
++                  model: modelId,
++                  lane: "error",
++                  label: shortModelName(modelId)
++                }
++              );
++            }
++          })
+         );
+ 
+-        state.messages.push({ role: "assistant", content: reply });
+-        state.status = "Reply ready.";
++        state.messages.push(...replies);
++        persistThread();
++        state.status = `Collected ${replies.length} ${replies.length === 1 ? "reply" : "replies"}.`;
+       } catch (error) {
+         const message = error instanceof Error ? error.message : "Unknown HF error.";
+-        state.messages.push({
+-          role: "assistant",
+-          content: `Request failed.\n\n${message}\n\nIf this is a public page, use a proxy endpoint instead of a raw token.`
+-        });
++        state.messages.push(
++          createMessage(
++            "assistant",
++            `Request failed.\n\n${message}\n\nIf this is a public page, use a proxy endpoint instead of a raw token.`,
++            {
++              model: state.settings.model.trim(),
++              lane: "error",
++              label: config.assistantName
++            }
++          )
++        );
++        persistThread();
+         state.status = "HF request failed.";
+       } finally {
+         state.busy = false;
+@@ -523,6 +750,8 @@
+       }
+     }
+ 
++    persistThread();
++
+     function render() {
+       root.innerHTML = `
+         <div class="polly-chat-root">
+@@ -536,16 +765,14 @@
+               <div class="polly-meta">
+                 <h3>Current route</h3>
+                 <p>${state.settings.proxyEndpoint.trim()
+-                  ? "Proxy endpoint active. Safe for public surfaces if the proxy keeps the token server-side."
+-                  : "Direct Hugging Face route active. Good for private device use. Do not expose the token on public pages."}</p>
++                  ? escapeHtml(config.proxyActiveText)
++                  : escapeHtml(config.directActiveText)}</p>
+               </div>
+ 
+               <div class="polly-tips">
+                 <h3>Model facts</h3>
+                 <ul>
+-                  <li><code>scbe-pivot-qwen-0.5b</code> is the chat-capable default.</li>
+-                  <li><code>phdm-21d-embedding</code> stays embeddings-only.</li>
+-                  <li><code>spiralverse-ai-federated-v1</code> stays federated-learning oriented.</li>
++                  ${config.modelFacts.map((fact) => `<li>${escapeHtml(fact)}</li>`).join("")}
+                 </ul>
+               </div>
+             </section>
+@@ -554,10 +781,12 @@
+               <div class="polly-bar">
+                 <div class="polly-bar-title">
+                   <strong>${escapeHtml(state.settings.model || config.model)}</strong>
+-                  <span>${state.settings.proxyEndpoint.trim() ? "Proxy-backed" : "Direct HF chat route"}</span>
++                  <span>${state.settings.proxyEndpoint.trim() ? "Proxy-backed" : "Direct HF chat route"} • ${getCompareModels().length ? `${getCompareModels().length} compare lane(s)` : "Single-model lane"}</span>
+                 </div>
+                 <div class="polly-actions">
+                   <button class="polly-button" type="button" data-action="toggle-settings">Settings</button>
++                  <button class="polly-button" type="button" data-action="export-thread">Export thread</button>
++                  <button class="polly-button" type="button" data-action="export-sft">Export SFT</button>
+                   <button class="polly-button" type="button" data-action="export-feedback">Export feedback</button>
+                 </div>
+               </div>
+@@ -567,7 +796,8 @@
+                   .map((message, index) => `
+                     <article class="polly-message ${message.role}">
+                       <div class="polly-message-header">
+-                        <span>${message.role === "assistant" ? "Polly" : "You"}</span>
++                        <span>${message.role === "assistant" ? escapeHtml(message.label || config.assistantName) : "You"}</span>
++                        ${message.role === "assistant" && message.model ? `<span>${escapeHtml((message.lane || "primary").toUpperCase())} • ${escapeHtml(shortModelName(message.model))}</span>` : `<span>${message.createdAt ? escapeHtml(new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })) : ""}</span>`}
+                       </div>
+                       <div>${escapeHtml(message.content)}</div>
+                       ${message.role === "assistant" && !message.initial ? `
+@@ -591,24 +821,36 @@
+ 
+               <div class="polly-compose">
+                 <div class="polly-settings ${state.settingsOpen ? "open" : ""}">
+-                  <div class="polly-field">
+-                    <label for="pollyToken">HF token</label>
+-                    <input id="pollyToken" type="password" value="${escapeHtml(state.settings.token)}" placeholder="hf_xxx for private device use">
+-                  </div>
++                  ${config.hideTokenField ? "" : `
++                    <div class="polly-field">
++                      <label for="pollyToken">HF token</label>
++                      <input id="pollyToken" type="password" value="${escapeHtml(state.settings.token)}" placeholder="hf_xxx for private device use">
++                    </div>
++                  `}
+                   <div class="polly-field">
+                     <label for="pollyProxy">Proxy endpoint</label>
+                     <input id="pollyProxy" type="text" value="${escapeHtml(state.settings.proxyEndpoint)}" placeholder="https://your-domain/api/hf-chat">
+                   </div>
++                  ${config.hideApiKeyField ? "" : `
++                    <div class="polly-field">
++                      <label for="pollyApiKey">Proxy API key</label>
++                      <input id="pollyApiKey" type="password" value="${escapeHtml(state.settings.apiKey)}" placeholder="SCBE_api_key for private/operator use">
++                    </div>
++                  `}
+                   <div class="polly-field">
+                     <label for="pollyModel">Model</label>
+                     <input id="pollyModel" type="text" value="${escapeHtml(state.settings.model)}" placeholder="issdandavis/scbe-pivot-qwen-0.5b">
+                   </div>
++                  <div class="polly-field">
++                    <label for="pollyCompareModels">Compare models</label>
++                    <input id="pollyCompareModels" type="text" value="${escapeHtml(state.settings.compareModelsText)}" placeholder="meta-llama/Llama-3.3-70B-Instruct, Qwen/QwQ-32B">
++                  </div>
+                   <div class="polly-field">
+                     <label for="pollySystemPrompt">System prompt</label>
+                     <textarea id="pollySystemPrompt" rows="4" placeholder="Assistant behavior">${escapeHtml(state.settings.systemPrompt)}</textarea>
+                   </div>
+                   <div class="polly-footer-note">
+-                    For public pages, prefer a proxy endpoint and leave the raw HF token out of the browser.
++                    ${escapeHtml(config.settingsNote)}
+                   </div>
+                 </div>
+ 
+@@ -672,6 +914,16 @@
+         exporter.addEventListener("click", exportFeedback);
+       }
+ 
++      const threadExporter = root.querySelector("[data-action='export-thread']");
++      if (threadExporter) {
++        threadExporter.addEventListener("click", exportThreadBundle);
++      }
++
++      const sftExporter = root.querySelector("[data-action='export-sft']");
++      if (sftExporter) {
++        sftExporter.addEventListener("click", exportSftRows);
++      }
++
+       const sendButton = root.querySelector("[data-action='send']");
+       if (sendButton) {
+         sendButton.addEventListener("click", () => {
+@@ -684,13 +936,17 @@
+       const clearButton = root.querySelector("[data-action='clear-thread']");
+       if (clearButton) {
+         clearButton.addEventListener("click", () => {
++          state.session = {
++            id: nextSessionId(),
++            startedAt: new Date().toISOString()
++          };
+           state.messages = [
+-            {
+-              role: "assistant",
+-              content: options.initialAssistantText || config.initialAssistantText,
+-              initial: true
+-            }
++            createMessage("assistant", initialAssistantText, {
++              initial: true,
++              label: config.assistantName
++            })
+           ];
++          persistThread();
+           state.status = "Thread cleared.";
+           render();
+         });
+@@ -712,6 +968,14 @@
+         });
+       }
+ 
++      const apiKeyField = root.querySelector("#pollyApiKey");
++      if (apiKeyField instanceof HTMLInputElement) {
++        apiKeyField.addEventListener("change", () => {
++          state.settings.apiKey = apiKeyField.value;
++          saveSettings();
++        });
++      }
++
+       const modelField = root.querySelector("#pollyModel");
+       if (modelField instanceof HTMLInputElement) {
+         modelField.addEventListener("change", () => {
+@@ -720,6 +984,14 @@
+         });
+       }
+ 
++      const compareModelsField = root.querySelector("#pollyCompareModels");
++      if (compareModelsField instanceof HTMLInputElement) {
++        compareModelsField.addEventListener("change", () => {
++          state.settings.compareModelsText = compareModelsField.value;
++          saveSettings();
++        });
++      }
++
+       const systemPromptField = root.querySelector("#pollySystemPrompt");
+       if (systemPromptField instanceof HTMLTextAreaElement) {
+         systemPromptField.addEventListener("change", () => {
+diff --git a/kindle-app/www/static/polly-pad-mobile.json b/kindle-app/www/static/polly-pad-mobile.json
+index bed24abb..d7c5210f 100644
+--- a/kindle-app/www/static/polly-pad-mobile.json
++++ b/kindle-app/www/static/polly-pad-mobile.json
+@@ -107,7 +107,12 @@
+           "kind": "primary"
+         },
+         {
+-          "label": "Legacy Chat Link",
++          "label": "Open Small Business Helper",
++          "href": "./small-business-helper.html",
++          "kind": "secondary"
++        },
++        {
++          "label": "Open Polly Chat",
+           "href": "./chat.html",
+           "kind": "secondary"
+         }
+@@ -116,6 +121,7 @@
+   ],
+   "notes": [
+     "Reader is for scroll rhythm only. Browse is for human tabs. Test is for AI runs. Ops is for chat and diagnostics.",
++    "Small Business Helper is the product lane hanging off Ops, not a fifth launcher shell.",
+     "Android emulator uses 10.0.2.2 to reach host services. Browser preview uses 127.0.0.1 instead.",
+     "The intended phone loop is Reader or Browse -> Test if needed -> Ops for synthesis or debugging.",
+     "Dev-side emulator prep still lives in scripts/system/start_polly_pad_emulator.ps1."
+diff --git a/public/arena.html b/public/arena.html
+index b223bcb5..432d33f5 100644
+--- a/public/arena.html
++++ b/public/arena.html
+@@ -2,1161 +2,342 @@
+ <html lang="en">
+ <head>
+ <meta charset="UTF-8">
+-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+-<title>AetherCode Arena — AI Round Table</title>
++<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
++<title>AetherCode Pocket</title>
+ <link rel="manifest" href="/manifest.json">
+-<meta name="theme-color" content="#17c6cf">
++<meta name="theme-color" content="#5fd6ff">
+ <style>
+-*{margin:0;padding:0;box-sizing:border-box}
++*{box-sizing:border-box}
+ :root{
+-  --bg:#070b12;--surface:rgba(11,19,31,.9);--card:rgba(20,30,46,.8);--border:rgba(142,170,199,.28);
+-  --text:#e8f0fb;--dim:#a2b6cc;--accent:#17c6cf;--accent2:#ff9152;
+-  --green:#2dd3a6;--red:#ff7272;--amber:#ffb84a;
+-  --mono:'Cascadia Code','JetBrains Mono','Consolas',monospace;
+-  --font:'Space Grotesk','Sora','Trebuchet MS',sans-serif;
++  --bg:#050912;
++  --bg2:#0b1322;
++  --panel:rgba(10,18,31,.82);
++  --panel-strong:rgba(16,28,46,.92);
++  --line:rgba(165,201,234,.18);
++  --text:#edf4ff;
++  --muted:#9fb3ca;
++  --accent:#5fd6ff;
++  --accent-2:#f4b36a;
++  --ok:#80f3c5;
++  --shadow:0 22px 70px rgba(0,0,0,.45);
++  --serif:"Iowan Old Style","Palatino Linotype",Georgia,serif;
++  --sans:"Segoe UI Variable Text","Aptos","Trebuchet MS",sans-serif;
++}
++html,body{margin:0;min-height:100%;background:
++  radial-gradient(1200px 680px at 0% -10%, rgba(95,214,255,.18), transparent 60%),
++  radial-gradient(900px 600px at 100% 0%, rgba(244,179,106,.16), transparent 55%),
++  linear-gradient(180deg,var(--bg),var(--bg2) 60%,#060b14 100%);
++color:var(--text);font-family:var(--sans)}
++body{padding:18px}
++.shell{max-width:1180px;margin:0 auto;display:grid;gap:18px}
++.hero{
++  position:relative;overflow:hidden;border:1px solid var(--line);border-radius:28px;padding:24px;
++  background:linear-gradient(145deg,rgba(7,12,21,.92),rgba(13,22,38,.78));box-shadow:var(--shadow)
++}
++.hero::after{
++  content:"";position:absolute;inset:auto -10% -35% 35%;height:260px;
++  background:radial-gradient(circle, rgba(95,214,255,.22), transparent 62%);
++  pointer-events:none
++}
++.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
++.kicker{margin:0;color:var(--accent);font-size:.76rem;letter-spacing:.18em;text-transform:uppercase}
++.title{margin:10px 0 10px;font:700 clamp(2.3rem,7vw,4.9rem)/.92 var(--serif);max-width:10ch}
++.lede{margin:0;max-width:54ch;color:var(--muted);font-size:1.02rem;line-height:1.6}
++.pill-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
++.pill{
++  border:1px solid rgba(95,214,255,.22);border-radius:999px;padding:8px 12px;
++  background:rgba(255,255,255,.03);color:#dff4ff;font-size:.78rem;font-weight:700;letter-spacing:.03em
++}
++.hero-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:26px}
++.hero-panel,.launch-panel,.chat-panel,.notes-panel{
++  border:1px solid var(--line);border-radius:22px;background:var(--panel);backdrop-filter:blur(14px)
++}
++.hero-panel{padding:18px}
++.section-label{margin:0 0 10px;color:var(--accent);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
++.list{margin:0;padding:0;list-style:none;display:grid;gap:12px}
++.list li{display:grid;gap:4px;padding-bottom:12px;border-bottom:1px solid rgba(159,179,202,.12)}
++.list li:last-child{padding-bottom:0;border-bottom:0}
++.list strong{font-size:.96rem}
++.list span{color:var(--muted);font-size:.92rem;line-height:1.5}
++.launch-panel{padding:18px;display:grid;gap:12px}
++.launch-links{display:grid;gap:10px}
++.launch-link{
++  display:flex;justify-content:space-between;align-items:center;gap:10px;text-decoration:none;
++  color:var(--text);padding:14px 16px;border-radius:16px;
++  background:linear-gradient(145deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
++  border:1px solid rgba(159,179,202,.16)
++}
++.launch-link span{color:var(--muted);font-size:.88rem}
++.launch-link:hover{border-color:rgba(95,214,255,.42);transform:translateY(-1px)}
++.status-line{
++  margin-top:16px;padding-top:16px;border-top:1px solid rgba(159,179,202,.12);
++  color:var(--muted);font-size:.88rem;line-height:1.5
++}
++.workspace{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.9fr);gap:18px}
++.chat-panel{padding:12px}
++.chat-head,.notes-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 8px 14px}
++.chat-head h2,.notes-head h2{margin:0;font-size:1.08rem}
++.chat-head p,.notes-head p{margin:4px 0 0;color:var(--muted);font-size:.9rem;line-height:1.5}
++.route-badge{
++  border:1px solid rgba(128,243,197,.24);border-radius:999px;padding:8px 10px;
++  background:rgba(128,243,197,.08);color:var(--ok);font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em
++}
++.chat-mount{
++  min-height:660px;border:1px solid rgba(159,179,202,.12);border-radius:20px;
++  background:linear-gradient(180deg,rgba(4,10,18,.76),rgba(4,10,18,.42))
++}
++.notes-panel{padding:18px;display:grid;gap:14px}
++.note-card{
++  padding:14px 15px;border-radius:16px;background:rgba(255,255,255,.035);
++  border:1px solid rgba(159,179,202,.12)
++}
++.note-card h3{margin:0 0 8px;font-size:.94rem}
++.note-card p,.note-card li{margin:0;color:var(--muted);font-size:.9rem;line-height:1.55}
++.note-card ul{margin:0;padding-left:18px}
++.code{font-family:"Cascadia Code","JetBrains Mono","Consolas",monospace;color:#dff4ff}
++.footer-note{color:var(--muted);font-size:.82rem;line-height:1.55}
++@media (max-width: 980px){
++  body{padding:12px}
++  .hero-grid,.workspace{grid-template-columns:1fr}
++  .pill-row{justify-content:flex-start}
++  .chat-mount{min-height:540px}
+ }
+-body{
+-  background:
+-    radial-gradient(900px 500px at 8% -10%, rgba(23,198,207,.24), transparent 60%),
+-    radial-gradient(760px 440px at 96% 0%, rgba(255,145,82,.2), transparent 58%),
+-    linear-gradient(160deg, #070b12, #10182a);
+-  color:var(--text);font-family:var(--font);height:100vh;overflow:hidden;display:flex;flex-direction:column
+-}
+-
+-/* Top bar */
+-.topbar{
+-  display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border);
+-  background:linear-gradient(180deg,rgba(14,22,34,.92),rgba(10,17,27,.82));flex-shrink:0;gap:14px
+-}
+-.topbar h1{font-size:16px;font-weight:700}
+-.topbar h1 span{color:var(--accent)}
+-.topbar-right{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--dim)}
+-.deal-btn{background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer}
+-.deal-btn:hover{opacity:0.9}
+-.deal-btn:disabled{opacity:0.5;cursor:not-allowed}
+-.train-btn{background:var(--green);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer}
+-.train-btn:hover{opacity:0.9}
+-.train-btn:disabled{opacity:0.5}
+-.install-btn{
+-  background:rgba(23,198,207,.16);color:var(--accent);border:1px solid rgba(23,198,207,.45);
+-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
+-}
+-.install-btn:disabled{opacity:.55;cursor:default}
+-.xtalk-btn{
+-  background:rgba(255,145,82,.14);color:var(--accent2);border:1px solid rgba(255,145,82,.45);
+-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
+-}
+-.scout-btn{
+-  background:rgba(45,211,166,.14);color:var(--green);border:1px solid rgba(45,211,166,.45);
+-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
+-}
+-.lore-strip{display:flex;gap:6px;align-items:center}
+-.lore-thumb{
+-  width:38px;height:24px;border-radius:6px;overflow:hidden;border:1px solid var(--border);
+-  background:linear-gradient(145deg,rgba(31,45,67,.8),rgba(15,23,38,.75))
+-}
+-.lore-thumb img{width:100%;height:100%;object-fit:cover}
+-
+-/* Main layout: 3 columns */
+-.table-layout{display:grid;grid-template-columns:1fr 2fr 1fr;flex:1;gap:1px;background:var(--border);overflow:hidden;min-height:0}
+-
+-/* Left/right columns stack seats */
+-.seat-column{display:flex;flex-direction:column;gap:1px;overflow:hidden;min-height:0}
+-
+-/* Player seats */
+-.seat{background:rgba(10,16,25,.85);display:flex;flex-direction:column;overflow:hidden;flex:1;min-height:0}
+-.seat-header{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+-.seat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+-.seat-name{font-size:12px;font-weight:700;flex:1}
+-.seat-model{font-size:9px;color:var(--dim);background:var(--card);padding:2px 5px;border-radius:4px}
+-.seat-tongue{font-size:9px;color:var(--accent);background:rgba(99,102,241,0.15);padding:2px 5px;border-radius:4px;font-weight:700}
+-.seat-role{font-size:8px;color:var(--dim);width:100%;margin-top:2px}
+-.seat-status{font-size:9px;padding:2px 5px;border-radius:4px}
+-.seat-status.idle{color:var(--green);background:rgba(16,185,129,0.1)}
+-.seat-status.thinking{color:var(--amber);background:rgba(245,158,11,0.1)}
+-.seat-status.error{color:var(--red);background:rgba(239,68,68,0.1)}
+-.seat-status.offline{color:var(--dim);background:rgba(148,163,184,0.1)}
+-.seat-status.proxy{color:#67e8f9;background:rgba(6,182,212,0.14)}
+-.seat-status.nokey{color:var(--amber);background:rgba(255,184,74,0.1)}
+-
+-/* BYOK Settings Modal */
+-.settings-btn{
+-  background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;padding:4px 6px;border-radius:6px;
+-  transition:color .15s,background .15s
+-}
+-.settings-btn:hover{color:var(--accent);background:rgba(23,198,207,.12)}
+-.settings-overlay{
+-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;
+-  align-items:center;justify-content:center
+-}
+-.settings-overlay.open{display:flex}
+-.settings-panel{
+-  background:linear-gradient(160deg,#0e1622,#151f30);border:1px solid var(--border);
+-  border-radius:14px;padding:20px 24px 24px;width:440px;max-width:92vw;max-height:85vh;overflow-y:auto;
+-  box-shadow:0 12px 40px rgba(0,0,0,.6)
+-}
+-.settings-panel h3{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+-.settings-panel h3 .close-settings{background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer}
+-.settings-panel h3 .close-settings:hover{color:var(--red)}
+-.settings-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+-.settings-row label{font-size:12px;font-weight:600;width:110px;flex-shrink:0;color:var(--dim)}
+-.settings-row input{
+-  flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);
+-  padding:6px 10px;border-radius:6px;font-size:12px;font-family:var(--mono)
+-}
+-.settings-row input:focus{border-color:var(--accent);outline:none}
+-.settings-row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+-.settings-save{
+-  background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border:none;
+-  padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-top:10px;width:100%
+-}
+-.settings-save:hover{opacity:.9}
+-.settings-note{font-size:10px;color:var(--dim);margin-top:8px;line-height:1.4}
+-
+-.seat-chat{flex:1;overflow-y:auto;padding:6px 10px;font-size:12px;line-height:1.4;min-height:0}
+-.seat-chat .msg{margin-bottom:6px;padding:5px 8px;border-radius:6px;word-wrap:break-word}
+-.seat-chat .msg.user{background:rgba(23,198,207,0.15);color:var(--accent);border:1px solid rgba(23,198,207,0.2)}
+-.seat-chat .msg.ai{background:var(--card);border:1px solid var(--border)}
+-.seat-chat .msg.err{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+-.seat-chat .msg.synthesis{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green)}
+-.seat-chat .msg pre{font-family:var(--mono);font-size:11px;white-space:pre-wrap;margin-top:4px}
+-.seat-chat .meta{font-size:9px;color:var(--dim);margin-top:3px}
+-.seat-input-row{display:flex;gap:4px;padding:4px 6px;border-top:1px solid var(--border);flex-shrink:0}
+-.seat-input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;font-family:var(--font)}
+-.seat-input:focus{border-color:var(--accent);outline:none}
+-.seat-send{background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border:none;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600}
+-.seat-send:hover{opacity:0.9}
+-
+-/* Center: shared code */
+-.center-pane{display:flex;flex-direction:column;overflow:hidden}
+-.center-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+-.center-header h2{font-size:14px;font-weight:600}
+-.file-tabs{display:flex;gap:4px}
+-.file-tab{font-size:11px;padding:4px 10px;border-radius:6px 6px 0 0;background:var(--card);border:1px solid var(--border);border-bottom:none;cursor:pointer;color:var(--dim)}
+-.file-tab.active{background:var(--bg);color:var(--text);border-color:var(--accent)}
+-.code-editor{flex:1;overflow:auto;padding:0;margin:0;min-height:0}
+-.code-editor textarea{width:100%;height:100%;background:var(--bg);color:var(--text);border:none;padding:12px 16px;font-family:var(--mono);font-size:13px;line-height:1.6;resize:none;outline:none;tab-size:4}
+-.service-pane{flex:1;overflow:auto;padding:12px 12px 14px;background:rgba(8,13,22,.96);min-height:0}
+-.service-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+-.service-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+-.service-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+-.service-name{font-size:12px;font-weight:700;color:var(--text)}
+-.service-zone{font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;border:1px solid transparent}
+-.service-zone.green{color:var(--green);border-color:rgba(45,211,166,.38);background:rgba(45,211,166,.12)}
+-.service-zone.yellow{color:var(--amber);border-color:rgba(255,184,74,.4);background:rgba(255,184,74,.12)}
+-.service-zone.red{color:var(--red);border-color:rgba(255,114,114,.42);background:rgba(255,114,114,.12)}
+-.service-path{font-size:10px;color:var(--dim);line-height:1.35;word-break:break-word}
+-.service-open{display:inline-flex;justify-content:center;align-items:center;text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--accent),#2e98dd);padding:6px 10px;border-radius:7px;font-size:11px;font-weight:700}
+-.service-hint{font-size:10px;color:var(--dim)}
+-
+-/* Deal prompt bar */
+-.deal-bar{display:flex;gap:8px;padding:8px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+-.deal-input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;font-family:var(--font)}
+-.deal-input:focus{border-color:var(--accent);outline:none}
+-.deal-input::placeholder{color:var(--dim)}
+-
+-@media(max-width:1100px){
+-  .table-layout{grid-template-columns:1fr}
+-  .seat-column{display:grid;grid-template-columns:1fr 1fr}
+-  .service-grid{grid-template-columns:1fr}
+-}
+-
+-::-webkit-scrollbar{width:5px}
+-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+-::-webkit-scrollbar-track{background:transparent}
+ </style>
+ </head>
+ <body>
+-
+-<div class="topbar">
+-  <h1><span>AetherCode</span> Arena &mdash; Codex Round Table</h1>
+-  <div class="lore-strip" id="loreStrip"></div>
+-  <div class="topbar-right">
+-    <span id="playerCount">0 seated</span>
+-    <span id="trainingCount">0 pairs</span>
+-    <span id="agentCallsign">Lyra Forge</span>
+-    <button class="scout-btn" id="replitScoutBtn" onclick="scoutReplitLegacy()">Scout Replit</button>
+-    <button class="xtalk-btn" onclick="emitCrossTalk()">Cross-talk</button>
+-    <button class="settings-btn" id="settingsBtn" onclick="openSettings()" title="API Key Settings">&#9881;</button>
+-    <button class="install-btn" id="arenaInstallBtn" onclick="promptInstall()">Install</button>
+-    <button class="train-btn" onclick="flushTraining()">Train</button>
+-    <span id="clock"></span>
+-  </div>
+-</div>
+-
+-<div class="settings-overlay" id="settingsOverlay">
+-  <div class="settings-panel">
+-    <h3>API Keys (BYOK) <button class="close-settings" onclick="closeSettings()">&times;</button></h3>
+-    <div id="settingsRows"></div>
+-    <button class="settings-save" onclick="saveSettings()">Save &amp; Apply</button>
+-    <div class="settings-note">Keys are stored in your browser's localStorage only. They are sent directly to each provider's API from your browser — never to any intermediary server. Ollama runs locally and needs no key.</div>
+-  </div>
+-</div>
+-
+-<div class="table-layout" id="table">
+-  <!-- Seats injected by JS -->
+-</div>
+-
+-<div class="deal-bar">
+-  <input class="deal-input" id="dealInput" placeholder="Deal to all players or Deliberate for consensus..." autocomplete="off" />
+-  <button class="deal-btn" id="dealBtn" onclick="dealToAll()">Deal</button>
+-  <button class="deal-btn" id="relayBtn" style="background:#0ea5b7" onclick="relayChain()">Relay</button>
+-  <button class="deal-btn" id="debateBtn" style="background:#f97316" onclick="debateDuel()">Debate</button>
+-  <button class="deal-btn" id="deliberateBtn" style="background:var(--green)" onclick="deliberate()">Deliberate</button>
+-</div>
+-
+-<script>
+-const API = window.location.origin;
+-
+-// Players — Sacred Tongue roles from the AI Round Table
+-const PLAYERS = [
+-  { id: 'groq',          name: 'Groq',         color: '#f97316', model: 'llama-3.3-70b-versatile', tongue: 'KO', role: 'Intent Analyst' },
+-  { id: 'cerebras',      name: 'Cerebras',      color: '#06b6d4', model: 'llama-3.3-70b',         tongue: 'RU', role: 'Security Auditor' },
+-  { id: 'google_ai',     name: 'Google AI',     color: '#34d399', model: 'gemini-2.5-flash',       tongue: 'DR', role: 'Lead Architect' },
+-  { id: 'claude',        name: 'Claude',        color: '#a78bfa', model: 'claude-sonnet-4-20250514', tongue: 'UM', role: 'Governance Arbiter' },
+-  { id: 'xai',           name: 'xAI (Grok)',    color: '#f472b6', model: 'grok-3-mini',            tongue: 'AV', role: 'Creative Advocate' },
+-  { id: 'openrouter',    name: 'Kimi',          color: '#60a5fa', model: 'kimi-k2-instruct',       tongue: 'CA', role: 'Compute Optimizer' },
+-  { id: 'github_models', name: 'GitHub',        color: '#e2e8f0', model: 'gpt-4o-mini',            tongue: 'RU', role: 'Code Reviewer' },
+-  { id: 'huggingface',   name: 'HuggingFace',   color: '#ff6f00', model: 'inference',              tongue: 'AV', role: 'Model Trainer' },
+-  { id: 'ollama',        name: 'Ollama',        color: '#fbbf24', model: 'local',                  tongue: 'KO', role: 'Local Runner' },
+-];
+-
+-const TONGUE_INSTRUCTIONS = {
+-  KO: 'Analyze the intent, motivation, and alignment of this query.',
+-  AV: 'Explore creative solutions and narrative possibilities.',
+-  RU: 'Identify risks, vulnerabilities, and edge cases.',
+-  CA: 'Evaluate efficiency, cost, and implementation feasibility.',
+-  UM: 'Assess policy compliance, ethics, and governance alignment.',
+-  DR: 'Synthesize all perspectives into a coherent, actionable plan.',
+-};
+-
+-// State
+-const seats = {};
+-const providerStatus = {};
+-let deferredInstallPrompt = null;
+-let sharedCode = `# Shared workspace — all players see this code\n# Edit here, then Deal or Deliberate\n\ndef hello():\n    print("Hello from the Round Table")\n`;
+-const REPLIT_OWNERS = ['issdandavis', 'ISDanDavis2'];
+-const LEGACY_REPLIT_REPOS = [
+-  'ai-workflow-architect-replit',
+-  'ai-workflow-architect-main',
+-  'AI-Workflow-Architect-1.2.2',
+-  'AI-Workflow-Architect-1',
+-  'Replit.gt',
+-  'Repelit',
+-];
+-const LORE_FALLBACK = [
+-  { title: 'Codex I', url: '/v1/lore/art/codex-spiralverse' },
+-  { title: 'Codex II', url: '/v1/lore/art/everweave-fibonacci' },
+-  { title: 'Codex III', url: '/v1/lore/art/polloneth-protocol' },
+-  { title: 'Atlas', url: '/v1/lore/art/spiral-risk-zones' },
+-];
+-const SERVICE_PORTALS = [
+-  { id: 'github',     name: 'GitHub',            zone: 'GREEN',  url: 'https://github.com/issdandavis',                                path: 'https://api.github.com',                                 hint: 'Code + PR lanes' },
+-  { id: 'codespaces', name: 'GitHub Codespaces', zone: 'GREEN',  url: 'https://github.com/codespaces',                                 path: 'https://api.github.com/user/codespaces',                 hint: 'Cloud dev environments' },
+-  { id: 'huggingface',name: 'Hugging Face',      zone: 'GREEN',  url: 'https://huggingface.co/issdandavis',                            path: 'https://huggingface.co',                                 hint: 'Models + datasets' },
+-  { id: 'firebase',   name: 'Firebase Console',  zone: 'GREEN',  url: 'https://console.firebase.google.com/',                           path: 'https://firebase.google.com',                             hint: 'Hosting + project ops' },
+-  { id: 'shopify',    name: 'Shopify Admin',     zone: 'GREEN',  url: 'https://admin.shopify.com/store/aethermore-works',              path: 'https://aethermore-works.myshopify.com/admin/api/2025-01', hint: 'Store products + orders' },
+-  { id: 'gumroad',    name: 'Gumroad',           zone: 'GREEN',  url: 'https://app.gumroad.com/products',                               path: 'https://api.gumroad.com/v2',                              hint: 'Digital product sales' },
+-  { id: 'notion',     name: 'Notion',            zone: 'GREEN',  url: 'https://www.notion.so/',                                         path: 'https://api.notion.com/v1',                               hint: 'Knowledge + planning' },
+-  { id: 'kaggle',     name: 'Kaggle',            zone: 'GREEN',  url: 'https://www.kaggle.com/',                                        path: 'https://www.kaggle.com/api/v1',                           hint: 'Data + benchmarks' },
+-  { id: 'n8n',        name: 'n8n',               zone: 'GREEN',  url: 'http://127.0.0.1:5680',                                         path: 'http://127.0.0.1:5680',                                   hint: 'Local automation' },
+-  { id: 'zapier',     name: 'Zapier',            zone: 'GREEN',  url: 'https://zapier.com/app/zaps',                                   path: 'https://hooks.zapier.com',                                hint: 'Webhook automations' },
+-  { id: 'gamma',      name: 'Gamma',             zone: 'YELLOW', url: 'https://gamma.app/',                                            path: 'https://gamma.app',                                       hint: 'Deck generation' },
+-  { id: 'x',          name: 'X / Twitter',       zone: 'YELLOW', url: 'https://x.com/home',                                            path: 'https://api.twitter.com/2',                               hint: 'Distribution lane' },
+-  { id: 'newgrounds', name: 'Newgrounds',        zone: 'YELLOW', url: 'https://www.newgrounds.com/',                                   path: 'https://www.newgrounds.com',                              hint: 'Game discovery channel' },
+-  { id: 'godot',      name: 'Godot Docs',        zone: 'GREEN',  url: 'https://docs.godotengine.org/en/stable/',                       path: 'https://docs.godotengine.org',                            hint: 'Game dev reference' },
+-  { id: 'unity',      name: 'Unity Learn',       zone: 'YELLOW', url: 'https://learn.unity.com/',                                      path: 'https://learn.unity.com',                                 hint: 'Engine training' },
+-];
+-
+-const GAMMA_FALLBACK_SITES = [
+-  {
+-    id: 'gamma-fallback-1',
+-    title: 'Aether Research Briefs',
+-    resource_url: 'https://arxiv.org/',
+-    gamma_url: '',
+-    status: 'draft',
+-    goal: 'Lead magnet for weekly research briefs',
+-    primary_cta: 'Join the research digest',
+-  },
+-];
+-
+-let gammaLandingSites = [...GAMMA_FALLBACK_SITES];
+-
+-async function loadLoreStrip() {
+-  const strip = document.getElementById('loreStrip');
+-  if (!strip) return;
+-  const renderItems = (items) => {
+-    strip.replaceChildren();
+-    items.forEach((item) => {
+-      const imgSrc = safeLoreImageUrl(item && item.url);
+-      if (!imgSrc) return;
+-      const title = String((item && item.title) || 'Lore');
+-      const thumb = document.createElement('span');
+-      thumb.className = 'lore-thumb';
+-      thumb.title = title;
+-      const img = document.createElement('img');
+-      img.src = imgSrc;
+-      img.alt = title;
+-      img.loading = 'lazy';
+-      thumb.appendChild(img);
+-      strip.appendChild(thumb);
+-    });
+-  };
+-  try {
+-    const resp = await fetch(API + '/v1/lore/art');
+-    const data = resp.ok ? await resp.json() : { items: [] };
+-    const items = Array.isArray(data.items) && data.items.length ? data.items.slice(0, 4) : LORE_FALLBACK;
+-    renderItems(items);
+-    if (!strip.childElementCount) renderItems(LORE_FALLBACK);
+-  } catch (_err) {
+-    renderItems(LORE_FALLBACK);
+-  }
+-}
+-
+-function isStandaloneMode() {
+-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+-}
+-
+-function updateInstallUi() {
+-  const btn = document.getElementById('arenaInstallBtn');
+-  if (!btn) return;
+-  const installed = isStandaloneMode();
+-  btn.textContent = installed ? 'Installed' : 'Install';
+-  btn.disabled = installed;
+-}
+-
+-function registerServiceWorker() {
+-  if (!('serviceWorker' in navigator)) return;
+-  navigator.serviceWorker.register('/sw.js').then(() => {
+-    updateInstallUi();
+-  }).catch(() => {});
+-}
+-
+-function setupInstallPrompt() {
+-  window.addEventListener('beforeinstallprompt', (event) => {
+-    event.preventDefault();
+-    deferredInstallPrompt = event;
+-    updateInstallUi();
+-  });
+-  window.addEventListener('appinstalled', () => {
+-    deferredInstallPrompt = null;
+-    updateInstallUi();
+-  });
+-}
+-
+-async function promptInstall() {
+-  updateInstallUi();
+-  if (isStandaloneMode()) return;
+-  if (!deferredInstallPrompt) {
+-    alert('Install prompt not ready yet. Use browser menu: Install app / Add to Home Screen.');
+-    return;
+-  }
+-  deferredInstallPrompt.prompt();
+-  try {
+-    await deferredInstallPrompt.userChoice;
+-  } finally {
+-    deferredInstallPrompt = null;
+-    updateInstallUi();
+-  }
+-}
+-
+-async function emitCrossTalk() {
+-  try {
+-    const resp = await fetch(API + '/v1/crosstalk/send', {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify({
+-        summary: 'Arena round-table sync from browser surface.',
+-        recipient: 'agent.claude',
+-        sender: 'agent.codex',
+-        intent: 'sync',
+-        status: 'in_progress',
+-        task_id: 'AETHERCODE-ARENA-CROSSTALK',
+-        next_action: 'Continue multi-model deliberation and synthesis.',
+-        proof: ['src/aethercode/arena.html'],
+-      }),
+-    });
+-    const data = await resp.json();
+-    if (!resp.ok) throw new Error(data.detail || 'cross-talk failed');
+-    alert('Cross-talk sent: ' + (data.packet_id || 'ok'));
+-  } catch (err) {
+-    alert('Cross-talk error: ' + (err.message || 'failed'));
+-  }
+-}
+-
+-function setCenterView(view) {
+-  const code = document.getElementById('centerCodeView');
+-  const services = document.getElementById('centerServicesView');
+-  const gamma = document.getElementById('centerGammaView');
+-  const tabs = document.querySelectorAll('.file-tab[data-center-view]');
+-  tabs.forEach((tab) => {
+-    if (tab.getAttribute('data-center-view') === view) tab.classList.add('active');
+-    else tab.classList.remove('active');
+-  });
+-  if (view === 'services') {
+-    if (code) code.style.display = 'none';
+-    if (services) services.style.display = 'block';
+-    if (gamma) gamma.style.display = 'none';
+-  } else if (view === 'gamma') {
+-    if (code) code.style.display = 'none';
+-    if (services) services.style.display = 'none';
+-    if (gamma) gamma.style.display = 'block';
+-  } else {
+-    if (code) code.style.display = 'block';
+-    if (services) services.style.display = 'none';
+-    if (gamma) gamma.style.display = 'none';
+-  }
+-}
+-
+-function renderServiceGrid() {
+-  const grid = document.getElementById('serviceGrid');
+-  if (!grid) return;
+-  grid.innerHTML = SERVICE_PORTALS.map((svc) => `
+-    <div class="service-card">
+-      <div class="service-head">
+-        <span class="service-name">${escHtml(svc.name)}</span>
+-        <span class="service-zone ${svc.zone.toLowerCase()}">${svc.zone}</span>
++<main class="shell">
++  <section class="hero">
++    <div class="topbar">
++      <div>
++        <p class="kicker">SCBE Pixel 6 lane</p>
++        <h1 class="title">One live lane. Not nine seats.</h1>
++        <p class="lede">
++          This surface is tuned for the phone workflow: direct chat, model compare when you ask for it, and clean export into training data.
++          It is not a fake round table and it should not ask you to manage provider secrets on a tiny emulator keyboard.
++        </p>
++      </div>
++      <div class="pill-row">
++        <span class="pill">Proxy-first mobile route</span>
++        <span class="pill">Training export built in</span>
++        <span class="pill">Pixel 6 tuned</span>
+       </div>
+-      <div class="service-path">${escHtml(svc.path)}</div>
+-      <div class="service-hint">${escHtml(svc.hint)}</div>
+-      <a class="service-open" href="${svc.url}" target="_blank" rel="noreferrer">Open</a>
+     </div>
+-  `).join('');
+-}
+ 
+-function gammaStatusClass(status) {
+-  const s = String(status || '').toLowerCase();
+-  if (s === 'live') return 'green';
+-  if (s === 'draft') return 'yellow';
+-  return 'red';
+-}
+-
+-function renderGammaGrid() {
+-  const grid = document.getElementById('gammaGrid');
+-  if (!grid) return;
+-  grid.innerHTML = gammaLandingSites.map((site) => {
+-    const status = String(site.status || 'draft').toUpperCase();
+-    const gammaUrl = site.gamma_url || 'https://gamma.app/';
+-    const gammaLabel = site.gamma_url ? 'Open Gamma Page' : 'Open Gamma Workspace';
+-    return `
+-      <div class="service-card">
+-        <div class="service-head">
+-          <span class="service-name">${escHtml(site.title)}</span>
+-          <span class="service-zone ${gammaStatusClass(site.status)}">${status}</span>
++    <div class="hero-grid">
++      <section class="hero-panel">
++        <p class="section-label">What this lane is for</p>
++        <ul class="list">
++          <li>
++            <strong>Run one useful conversation at a time.</strong>
++            <span>Draft, triage, rewrite, compare, and capture work without turning the phone into a theater diagram.</span>
++          </li>
++          <li>
++            <strong>Use stronger models as training mirrors.</strong>
++            <span>Keep Polly as the main lane, add compare models when needed, then export thread, SFT, or feedback rows for your smaller models.</span>
++          </li>
++          <li>
++            <strong>Keep host secrets off the emulator.</strong>
++            <span>The expected route is <span class="code">/v1/research/mobile-chat</span> on the host. The host keeps the provider token; the phone just talks to the proxy.</span>
++          </li>
++        </ul>
++      </section>
++
++      <aside class="launch-panel">
++        <p class="section-label">Launch Paths</p>
++        <div class="launch-links">
++          <a class="launch-link" href="./small-business-helper.html">
++            <strong>Small Business Helper</strong>
++            <span>Ops-focused preset</span>
++          </a>
++          <a class="launch-link" href="./device-shell.html">
++            <strong>Device Shell</strong>
++            <span>Two-panel phone layout</span>
++          </a>
++          <a class="launch-link" href="./browse.html">
++            <strong>Browse Lane</strong>
++            <span>Browser-first workflow</span>
++          </a>
++          <a class="launch-link" href="./chat.html">
++            <strong>Baseline Chat</strong>
++            <span>General-purpose Polly lane</span>
++          </a>
++        </div>
++        <div class="status-line" id="proxyHint">
++          Resolving the host proxy route…
+         </div>
+-        <div class="service-hint">${escHtml(site.goal || 'Landing page slot')}</div>
+-        <div class="service-path">Resource: ${escHtml(site.resource_url || '')}</div>
+-        <div class="service-path">Primary CTA: ${escHtml(site.primary_cta || '')}</div>
+-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+-          <a class="service-open" href="${site.resource_url}" target="_blank" rel="noreferrer">Open Source</a>
+-          <a class="service-open" href="${gammaUrl}" target="_blank" rel="noreferrer">${gammaLabel}</a>
++      </aside>
++    </div>
++  </section>
++
++  <section class="workspace">
++    <section class="chat-panel">
++      <div class="chat-head">
++        <div>
++          <h2>AetherCode Pocket</h2>
++          <p>The mobile workbench for drafting, compare runs, and training capture.</p>
+         </div>
++        <span class="route-badge" id="routeBadge">Proxy route</span>
+       </div>
+-    `;
+-  }).join('');
+-}
+-
+-async function loadGammaLandingSites() {
+-  try {
+-    const resp = await fetch(API + '/data/gamma_landing_sites.json');
+-    if (!resp.ok) throw new Error('gamma config missing');
+-    const data = await resp.json();
+-    const sites = Array.isArray(data.sites) ? data.sites : [];
+-    if (sites.length > 0) gammaLandingSites = sites;
+-  } catch (_err) {
+-    gammaLandingSites = [...GAMMA_FALLBACK_SITES];
+-  }
+-  renderGammaGrid();
+-}
+-
+-function buildTable() {
+-  const table = document.getElementById('table');
+-  table.innerHTML = '';
+-
+-  const leftPlayers = PLAYERS.slice(0, 5);
+-  const rightPlayers = PLAYERS.slice(5);
+-
+-  // Left column
+-  const leftCol = document.createElement('div');
+-  leftCol.className = 'seat-column';
+-  leftPlayers.forEach(p => leftCol.appendChild(createSeat(p)));
+-  table.appendChild(leftCol);
+-
+-  // Center code pane
+-  const center = document.createElement('div');
+-  center.className = 'center-pane';
+-  center.innerHTML = `
+-    <div class="center-header">
+-      <h2>Shared Code</h2>
+-      <div class="file-tabs">
+-        <div class="file-tab active" data-center-view="code">main.py</div>
+-        <div class="file-tab" data-center-view="services">Services</div>
+-        <div class="file-tab" data-center-view="gamma">Gamma Wing</div>
++      <div class="chat-mount" id="pollyPocketMount"></div>
++    </section>
++
++    <aside class="notes-panel">
++      <div class="notes-head">
++        <div>
++          <h2>Operator Notes</h2>
++          <p>Use the lane like a tool, not a dashboard.</p>
++        </div>
+       </div>
+-    </div>
+-    <div class="code-editor" id="centerCodeView">
+-      <textarea id="sharedEditor" spellcheck="false">${escHtml(sharedCode)}</textarea>
+-    </div>
+-    <div class="service-pane" id="centerServicesView" style="display:none">
+-      <div class="service-grid" id="serviceGrid"></div>
+-    </div>
+-    <div class="service-pane" id="centerGammaView" style="display:none">
+-      <div class="service-grid" id="gammaGrid"></div>
+-    </div>
+-  `;
+-  table.appendChild(center);
+-
+-  // Right column
+-  const rightCol = document.createElement('div');
+-  rightCol.className = 'seat-column';
+-  rightPlayers.forEach(p => rightCol.appendChild(createSeat(p)));
+-  table.appendChild(rightCol);
+-
+-  document.getElementById('playerCount').textContent = PLAYERS.length + ' seated';
+-  const editor = document.getElementById('sharedEditor');
+-  if (editor) {
+-    editor.addEventListener('input', e => {
+-      sharedCode = e.target.value;
+-    });
+-  }
+-
+-  const tabs = center.querySelectorAll('.file-tab');
+-  tabs.forEach((tabEl) => {
+-    tabEl.addEventListener('click', () => {
+-      const view = tabEl.getAttribute('data-center-view') || 'code';
+-      setCenterView(view);
+-    });
+-  });
+-
+-  renderServiceGrid();
+-  loadGammaLandingSites();
+-}
+-
+-function createSeat(player) {
+-  const el = document.createElement('div');
+-  el.className = 'seat';
+-  el.id = 'seat-' + player.id;
+-  el.innerHTML = `
+-    <div class="seat-header">
+-      <div class="seat-dot" style="background:${player.color}"></div>
+-      <span class="seat-name" style="color:${player.color}">${player.name}</span>
+-      <span class="seat-tongue">${player.tongue}</span>
+-      <span class="seat-model">${player.model}</span>
+-      <span class="seat-status idle" id="status-${player.id}">ready</span>
+-      <span class="seat-role">${player.role}</span>
+-    </div>
+-    <div class="seat-chat" id="chat-${player.id}"></div>
+-    <div class="seat-input-row">
+-      <input class="seat-input" id="input-${player.id}" placeholder="Ask ${player.name}..." />
+-      <button class="seat-send" onclick="askPlayer('${player.id}')">Ask</button>
+-    </div>
+-  `;
+-
+-  setTimeout(() => {
+-    const inp = document.getElementById('input-' + player.id);
+-    if (inp) inp.addEventListener('keydown', e => {
+-      if (e.key === 'Enter') askPlayer(player.id);
+-    });
+-  }, 0);
+-
+-  seats[player.id] = { player, messages: [] };
+-  return el;
+-}
+-
+-function escHtml(s) {
+-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+-}
+-
+-function safeLoreImageUrl(url) {
+-  try {
+-    const parsed = new URL(String(url ?? ''), window.location.origin);
+-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+-    return parsed.origin === window.location.origin
+-      ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+-      : parsed.href;
+-  } catch (_err) {
+-    return '';
+-  }
+-}
+-
+-function trimText(s, maxLen = 1800) {
+-  if (!s) return '';
+-  return s.length > maxLen ? s.slice(0, maxLen) + '\n...[trimmed]' : s;
+-}
+-
+-function availablePlayerIds() {
+-  return PLAYERS
+-    .map(p => p.id)
+-    .filter(id => !(providerStatus[id] && providerStatus[id].available === false));
+-}
+ 
+-function orderedAvailableIds() {
+-  const avail = availablePlayerIds();
+-  const preferred = ['google_ai', 'claude', 'xai', 'github_models', 'huggingface', 'ollama', 'groq', 'cerebras', 'openrouter'];
+-  const inPref = preferred.filter(id => avail.includes(id));
+-  const rest = avail.filter(id => !inPref.includes(id));
+-  return [...inPref, ...rest];
+-}
+-
+-function resolveTentacleForSeat(playerId) {
+-  const row = providerStatus[playerId];
+-  if (!row || row.available !== false) return { tentacle: playerId, proxied: false, via: '' };
+-  const candidates = orderedAvailableIds().filter(id => id !== playerId);
+-  if (!candidates.length) return { tentacle: playerId, proxied: false, via: '' };
+-  return { tentacle: candidates[0], proxied: true, via: candidates[0] };
+-}
+-
+-function narratorSeatId() {
+-  const ids = orderedAvailableIds();
+-  return ids.length ? ids[0] : PLAYERS[0].id;
+-}
+-
+-function addMessage(playerId, role, text, meta) {
+-  const chat = document.getElementById('chat-' + playerId);
+-  if (!chat) return;
+-  const div = document.createElement('div');
+-  div.className = 'msg ' + (role === 'error' ? 'err' : role === 'synthesis' ? 'synthesis' : role);
+-  let content = escHtml(text);
+-  content = content.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre>$2</pre>');
+-  content = content.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px">$1</code>');
+-  div.innerHTML = content;
+-  if (meta) {
+-    const m = document.createElement('div');
+-    m.className = 'meta';
+-    m.textContent = meta;
+-    div.appendChild(m);
+-  }
+-  chat.appendChild(div);
+-  chat.scrollTop = chat.scrollHeight;
+-}
+-
+-function setStatus(playerId, status, label) {
+-  const el = document.getElementById('status-' + playerId);
+-  if (!el) return;
+-  el.className = 'seat-status ' + status;
+-  el.textContent = label || status;
+-}
+-
+-// BYOK — provider key config stored in localStorage
+-const PROVIDER_KEY_MAP = {
+-  groq:          { label: 'Groq',           envName: 'GROQ_API_KEY' },
+-  cerebras:      { label: 'Cerebras',       envName: 'CEREBRAS_API_KEY' },
+-  google_ai:     { label: 'Google AI',      envName: 'GOOGLE_AI_KEY' },
+-  claude:        { label: 'Claude',         envName: 'ANTHROPIC_API_KEY' },
+-  xai:           { label: 'xAI (Grok)',     envName: 'XAI_API_KEY' },
+-  openrouter:    { label: 'OpenRouter',     envName: 'OPENROUTER_API_KEY' },
+-  github_models: { label: 'GitHub Models',  envName: 'GITHUB_TOKEN' },
+-  huggingface:   { label: 'HuggingFace',    envName: 'HF_TOKEN' },
+-  ollama:        { label: 'Ollama (local)',  envName: null },
+-};
+-
+-function loadArenaKeys() {
+-  try { return JSON.parse(localStorage.getItem('arena_keys') || '{}'); } catch { return {}; }
+-}
+-function saveArenaKeys(keys) {
+-  localStorage.setItem('arena_keys', JSON.stringify(keys));
+-}
+-
+-function hasKey(playerId) {
+-  if (playerId === 'ollama') return true;
+-  const keys = loadArenaKeys();
+-  return !!(keys[playerId] && keys[playerId].trim());
+-}
+-
+-function getKey(playerId) {
+-  const keys = loadArenaKeys();
+-  return (keys[playerId] || '').trim();
+-}
+-
+-// Settings panel
+-function openSettings() {
+-  const overlay = document.getElementById('settingsOverlay');
+-  const container = document.getElementById('settingsRows');
+-  const keys = loadArenaKeys();
+-  container.innerHTML = '';
+-  PLAYERS.forEach(p => {
+-    const cfg = PROVIDER_KEY_MAP[p.id];
+-    if (!cfg) return;
+-    const safeId = String(p.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+-    if (p.id === 'ollama') {
+-      const row = document.createElement('div');
+-      row.className = 'settings-row';
+-      const dot = document.createElement('div');
+-      dot.className = 'dot';
+-      dot.style.background = p.color;
+-      const label = document.createElement('label');
+-      label.textContent = cfg.label;
+-      const input = document.createElement('input');
+-      input.disabled = true;
+-      input.value = 'localhost:11434 (no key needed)';
+-      input.style.opacity = '.5';
+-      row.appendChild(dot);
+-      row.appendChild(label);
+-      row.appendChild(input);
+-      container.appendChild(row);
+-      return;
+-    }
+-    const row = document.createElement('div');
+-    row.className = 'settings-row';
+-    const dot = document.createElement('div');
+-    dot.className = 'dot';
+-    dot.style.background = p.color;
+-    const label = document.createElement('label');
+-    label.textContent = cfg.label;
+-    const input = document.createElement('input');
+-    input.type = 'password';
+-    input.id = 'key-' + safeId;
+-    input.placeholder = cfg.envName;
+-    input.value = keys[p.id] || '';
+-    row.appendChild(dot);
+-    row.appendChild(label);
+-    row.appendChild(input);
+-    container.appendChild(row);
+-  });
+-  overlay.classList.add('open');
+-}
+-
+-function closeSettings() {
+-  document.getElementById('settingsOverlay').classList.remove('open');
+-}
+-
+-function saveSettings() {
+-  const keys = {};
+-  PLAYERS.forEach(p => {
+-    if (p.id === 'ollama') return;
+-    const input = document.getElementById('key-' + p.id);
+-    if (input && input.value.trim()) keys[p.id] = input.value.trim();
+-  });
+-  saveArenaKeys(keys);
+-  closeSettings();
+-  refreshKeyStatus();
+-}
+-
+-function refreshKeyStatus() {
+-  PLAYERS.forEach(p => {
+-    const has = hasKey(p.id);
+-    providerStatus[p.id] = { available: has };
+-    if (!has) {
+-      setStatus(p.id, 'nokey', 'no key');
+-    } else {
+-      setStatus(p.id, 'idle', 'ready');
+-    }
+-  });
+-}
+-
+-// Close settings on overlay click
+-document.addEventListener('click', (e) => {
+-  const overlay = document.getElementById('settingsOverlay');
+-  if (e.target === overlay) closeSettings();
+-});
+-
+-// ---- Direct API calls per provider ----
+-
+-// Shared helper for OpenAI-compatible chat completions endpoints
+-async function callOpenAICompatible(url, apiKey, model, systemPrompt, userMessage, extraHeaders) {
+-  const headers = { 'Content-Type': 'application/json', ...extraHeaders };
+-  if (apiKey) headers['Authorization'] = 'Bearer ' + apiKey;
+-  const body = {
+-    model: model,
+-    messages: [
+-      { role: 'system', content: systemPrompt },
+-      { role: 'user', content: userMessage },
+-    ],
+-    max_tokens: 1024,
+-    temperature: 0.7,
+-  };
+-  const resp = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+-  const data = await resp.json();
+-  if (!resp.ok) throw new Error(data.error?.message || data.detail || JSON.stringify(data));
+-  const choice = data.choices && data.choices[0];
+-  return (choice && choice.message && choice.message.content) || '';
+-}
+-
+-async function callGoogle(apiKey, model, systemPrompt, userMessage) {
+-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+-  const body = {
+-    system_instruction: { parts: [{ text: systemPrompt }] },
+-    contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+-    generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
+-  };
+-  const resp = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+-  const data = await resp.json();
+-  if (!resp.ok) throw new Error(data.error?.message || JSON.stringify(data));
+-  const parts = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+-  return parts ? parts.map(p => p.text || '').join('') : '';
+-}
+-
+-async function callClaude(apiKey, model, systemPrompt, userMessage) {
+-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+-    method: 'POST',
+-    headers: {
+-      'Content-Type': 'application/json',
+-      'x-api-key': apiKey,
+-      'anthropic-version': '2023-06-01',
+-      'anthropic-dangerous-direct-browser-access': 'true',
+-    },
+-    body: JSON.stringify({
+-      model: model,
+-      max_tokens: 1024,
+-      system: systemPrompt,
+-      messages: [{ role: 'user', content: userMessage }],
+-    }),
+-  });
+-  const data = await resp.json();
+-  if (!resp.ok) throw new Error(data.error?.message || JSON.stringify(data));
+-  return (data.content && data.content.map(b => b.text || '').join('')) || '';
+-}
+-
+-async function callHuggingFace(apiKey, userMessage) {
+-  const url = 'https://api-inference.huggingface.co/models/meta-llama/Llama-3.3-70B-Instruct';
+-  const resp = await fetch(url, {
+-    method: 'POST',
+-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+-    body: JSON.stringify({ inputs: userMessage, parameters: { max_new_tokens: 1024, temperature: 0.7, return_full_text: false } }),
+-  });
+-  const data = await resp.json();
+-  if (!resp.ok) throw new Error(data.error || JSON.stringify(data));
+-  if (Array.isArray(data) && data[0]) return data[0].generated_text || '';
+-  return typeof data === 'string' ? data : JSON.stringify(data);
+-}
+-
+-async function callOllama(model, systemPrompt, userMessage) {
+-  const resp = await fetch('http://localhost:11434/api/generate', {
+-    method: 'POST',
+-    headers: { 'Content-Type': 'application/json' },
+-    body: JSON.stringify({ model: model || 'llama3', system: systemPrompt, prompt: userMessage, stream: false }),
+-  });
+-  const data = await resp.json();
+-  if (!resp.ok) throw new Error(data.error || JSON.stringify(data));
+-  return data.response || '';
+-}
+-
+-// Route a call to the correct provider
+-async function callProvider(playerId, systemPrompt, userMessage) {
+-  const player = PLAYERS.find(p => p.id === playerId);
+-  const model = player ? player.model : '';
+-  const key = getKey(playerId);
+-
+-  switch (playerId) {
+-    case 'groq':
+-      return callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', key, model, systemPrompt, userMessage);
+-    case 'cerebras':
+-      return callOpenAICompatible('https://api.cerebras.ai/v1/chat/completions', key, model, systemPrompt, userMessage);
+-    case 'xai':
+-      return callOpenAICompatible('https://api.x.ai/v1/chat/completions', key, model, systemPrompt, userMessage);
+-    case 'openrouter':
+-      return callOpenAICompatible('https://openrouter.ai/api/v1/chat/completions', key, 'moonshotai/kimi-k2-0711-preview', systemPrompt, userMessage, { 'HTTP-Referer': window.location.origin, 'X-Title': 'AetherCode Arena' });
+-    case 'github_models':
+-      return callOpenAICompatible('https://models.inference.ai.azure.com/chat/completions', key, model, systemPrompt, userMessage);
+-    case 'google_ai':
+-      return callGoogle(key, model, systemPrompt, userMessage);
+-    case 'claude':
+-      return callClaude(key, model, systemPrompt, userMessage);
+-    case 'huggingface':
+-      return callHuggingFace(key, systemPrompt + '\n\n' + userMessage);
+-    case 'ollama':
+-      return callOllama(model !== 'local' ? model : 'llama3', systemPrompt, userMessage);
+-    default:
+-      throw new Error('Unknown provider: ' + playerId);
+-  }
+-}
+-
+-// Ask a single player — returns the response for Deliberate mode
+-async function askPlayer(playerId, message) {
+-  const input = document.getElementById('input-' + playerId);
+-  const text = message || (input ? input.value.trim() : '');
+-  if (!text) return null;
+-
+-  if (!hasKey(playerId)) {
+-    const cfg = PROVIDER_KEY_MAP[playerId];
+-    addMessage(playerId, 'error', `No API key set. Click the gear icon and enter your ${cfg ? cfg.envName : 'key'}.`);
+-    return null;
+-  }
+-
+-  if (input) input.value = '';
+-  addMessage(playerId, 'user', text);
+-  setStatus(playerId, 'thinking', 'thinking...');
+-
+-  const player = PLAYERS.find(p => p.id === playerId);
+-  const tongueInstruction = player ? TONGUE_INSTRUCTIONS[player.tongue] || '' : '';
+-  const roleContext = player ? `You are the ${player.role} (${player.tongue} tongue) in the AI Round Table. ${tongueInstruction}` : '';
++      <article class="note-card">
++        <h3>Recommended prompts</h3>
++        <ul>
++          <li>Draft a customer reply about a delayed order and keep the tone calm.</li>
++          <li>Compare two versions of this answer and keep the stronger one for training.</li>
++          <li>Turn this thread into SFT-ready rows and point out weak assistant turns.</li>
++        </ul>
++      </article>
++
++      <article class="note-card">
++        <h3>Proxy rule</h3>
++        <p>
++          Start the host API with <span class="code">SCBE_ALLOW_LOCAL_MOBILE_CHAT=1</span> and keep
++          <span class="code">HF_TOKEN</span> on the host. Use <span class="code">?proxy=http://10.0.2.2:8000/v1/research/mobile-chat</span>
++          if you need to override the default.
++        </p>
++      </article>
++
++      <article class="note-card">
++        <h3>Why this is different</h3>
++        <p>
++          The old arena treated the phone like a miniature command center. This version treats the phone like a real working surface:
++          one main lane, optional compare models, and a straight path from conversation to training data.
++        </p>
++      </article>
++
++      <p class="footer-note">
++        Add <span class="code">?secrets=1</span> only when you intentionally want the raw token or proxy-key fields visible for debugging.
++      </p>
++    </aside>
++  </section>
++</main>
+ 
+-  const systemParts = [roleContext];
+-  if (sharedCode) systemParts.push('Shared code:\n```\n' + sharedCode + '\n```');
+-  const systemPrompt = systemParts.join('\n\n');
+-
+-  const t0 = performance.now();
+-  try {
+-    const response = await callProvider(playerId, systemPrompt, text);
+-    const latency = Math.round(performance.now() - t0);
+-
+-    addMessage(playerId, 'ai', response, `${player.model} / ${latency}ms`);
+-    setStatus(playerId, 'idle', 'ready');
+-    return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response };
+-  } catch (err) {
+-    addMessage(playerId, 'error', err.message);
+-    setStatus(playerId, 'error', 'error');
+-    setTimeout(() => setStatus(playerId, 'idle', 'ready'), 5000);
+-    return null;
+-  }
++<script>
++function trimSlash(value) {
++  return String(value || "").replace(/\/+$/, "");
+ }
+ 
+-// Deal — broadcast to all players simultaneously
+-async function dealToAll() {
+-  const input = document.getElementById('dealInput');
+-  const text = input.value.trim();
+-  if (!text) return;
+-  input.value = '';
++function resolveProxyEndpoint() {
++  const params = new URLSearchParams(window.location.search);
++  const explicitProxy = params.get("proxy");
++  if (explicitProxy) return explicitProxy;
+ 
+-  document.getElementById('dealBtn').disabled = true;
+-  document.getElementById('dealBtn').textContent = 'Dealing...';
++  const explicitBase = params.get("apiBase");
++  if (explicitBase) return `${trimSlash(explicitBase)}/v1/research/mobile-chat`;
+ 
+-  const promises = PLAYERS.map(p => askPlayer(p.id, text));
+-  await Promise.allSettled(promises);
++  const host = window.location.hostname;
++  const protocol = window.location.protocol;
++  const isCapacitor = Boolean(window.Capacitor) || protocol === "capacitor:" || protocol === "file:";
++  const isEmulator = host === "10.0.2.2";
++  const isLocalBrowser = host === "localhost" || host === "127.0.0.1";
+ 
+-  document.getElementById('dealBtn').disabled = false;
+-  document.getElementById('dealBtn').textContent = 'Deal';
+-  updateTrainingCount();
++  if (isCapacitor || isEmulator) return "http://10.0.2.2:8000/v1/research/mobile-chat";
++  if (isLocalBrowser) return "http://localhost:8000/v1/research/mobile-chat";
++  return `${window.location.origin}/v1/research/mobile-chat`;
+ }
+ 
+-async function relayChain() {
+-  const input = document.getElementById('dealInput');
+-  const text = input.value.trim();
+-  if (!text) return;
+-  input.value = '';
+-
+-  const btn = document.getElementById('relayBtn');
+-  btn.disabled = true;
+-  btn.textContent = 'Relaying...';
+-
+-  const ids = orderedAvailableIds().slice(0, 6);
+-  if (!ids.length) {
+-    btn.disabled = false;
+-    btn.textContent = 'Relay';
+-    return;
+-  }
+-
+-  const transcript = [];
+-  let baton = text;
+-  for (const id of ids) {
+-    const relayPrompt = `RELAY MODE\nOriginal ask: "${text}"\nCurrent baton:\n${trimText(baton, 1200)}\n\nAdd one useful step and pass it on.\nFormat:\n1) Insight\n2) Action\n3) Handoff`;
+-    const res = await askPlayer(id, relayPrompt);
+-    if (res && res.response) {
+-      baton = res.response;
+-      transcript.push(`[${res.name}] ${trimText(res.response, 900)}`);
+-    }
+-  }
+-
+-  if (transcript.length) {
+-    const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+-    const synthPrompt = `RELAY TRANSCRIPT\n${transcript.join('\n\n---\n\n')}\n\nReturn a single practical execution plan with numbered steps.`;
+-    const synth = await askPlayer(synthId, synthPrompt);
+-    if (synth && synth.response) {
+-      addMessage(synth.id || synthId, 'synthesis', '[RELAY SYNTHESIS] ' + synth.response);
+-    }
+-  }
+-
+-  btn.disabled = false;
+-  btn.textContent = 'Relay';
+-  updateTrainingCount();
++function compareModelsFromQuery() {
++  const params = new URLSearchParams(window.location.search);
++  const value = params.get("compare");
++  if (!value) return [];
++  return value.split(",").map((item) => item.trim()).filter(Boolean);
+ }
+ 
+-async function debateDuel() {
+-  const input = document.getElementById('dealInput');
+-  const topic = input.value.trim();
+-  if (!topic) return;
+-  input.value = '';
+-
+-  const btn = document.getElementById('debateBtn');
+-  btn.disabled = true;
+-  btn.textContent = 'Debating...';
+-
+-  const ids = orderedAvailableIds();
+-  if (ids.length < 2) {
+-    btn.disabled = false;
+-    btn.textContent = 'Debate';
+-    return;
+-  }
+-
+-  const a = ids[0];
+-  const b = ids.find(x => x !== a) || ids[1];
+-  const aOpen = await askPlayer(a, `DEBATE OPENING\nTopic: ${topic}\nTake a strong position and include 3 concrete claims.`);
+-  const bRebut = await askPlayer(
+-    b,
+-    `DEBATE REBUTTAL\nTopic: ${topic}\nOpponent said:\n${trimText(aOpen?.response || 'No opening received.', 1000)}\n\nRebut with evidence and tradeoffs.`
+-  );
+-  const aCounter = await askPlayer(
+-    a,
+-    `DEBATE COUNTER\nTopic: ${topic}\nOpponent rebuttal:\n${trimText(bRebut?.response || 'No rebuttal received.', 1000)}\n\nCounter with revised, stronger plan.`
+-  );
+-
+-  const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+-  const synthPrompt = `DEBATE LOG\nTopic: ${topic}\n\nA opening:\n${trimText(aOpen?.response || '', 1000)}\n\nB rebuttal:\n${trimText(bRebut?.response || '', 1000)}\n\nA counter:\n${trimText(aCounter?.response || '', 1000)}\n\nProduce: winner, why, and merged best plan.`;
+-  const synth = await askPlayer(synthId, synthPrompt);
+-  if (synth && synth.response) {
+-    addMessage(synth.id || synthId, 'synthesis', '[DEBATE SYNTHESIS] ' + synth.response);
+-  }
+-
+-  btn.disabled = false;
+-  btn.textContent = 'Debate';
+-  updateTrainingCount();
++function allowSecretFields() {
++  const params = new URLSearchParams(window.location.search);
++  return params.get("secrets") === "1";
+ }
+ 
+-// Deliberate — Deal to all, then synthesize consensus via Lead Architect (DR)
+-async function deliberate() {
+-  const input = document.getElementById('dealInput');
+-  const text = input.value.trim();
+-  if (!text) return;
+-  input.value = '';
+-
+-  const btn = document.getElementById('deliberateBtn');
+-  btn.disabled = true;
+-  btn.textContent = 'Deliberating...';
+-
+-  // Phase 1: Fan out to all players
+-  const promises = PLAYERS.map(p => askPlayer(p.id, text));
+-  const results = await Promise.allSettled(promises);
+-
+-  // Phase 2: Collect responses
+-  const responses = results
+-    .filter(r => r.status === 'fulfilled' && r.value)
+-    .map(r => `[${r.value.name} / ${r.value.tongue} / ${r.value.role}]:\n${r.value.response}`)
+-    .join('\n\n---\n\n');
+-
+-  if (!responses) {
+-    btn.disabled = false;
+-    btn.textContent = 'Deliberate';
+-    return;
+-  }
+-
+-  // Phase 3: Synthesis round — send all responses to Lead Architect (Google AI / DR)
+-  const synthesisPrompt = `ROUND TABLE SYNTHESIS\n\nThe AI Round Table was asked: "${text}"\n\n${PLAYERS.length} models responded. Their answers:\n\n${responses}\n\nAs Lead Architect (DR tongue), synthesize:\n1. Points of agreement\n2. Points of disagreement\n3. Your unified recommendation\n4. Action items`;
++function loadWidgetScript() {
++  const candidates = [
++    "./static/polly-hf-chat.js",
++    "../kindle-app/www/static/polly-hf-chat.js",
++  ];
+ 
+-  const synthesis = await askPlayer('google_ai', synthesisPrompt);
+-  if (synthesis) {
+-    // Also show synthesis in center or highlight it
+-    addMessage('google_ai', 'synthesis', '[ROUND TABLE CONSENSUS] ' + synthesis.response);
+-  }
+-
+-  btn.disabled = false;
+-  btn.textContent = 'Deliberate';
+-  updateTrainingCount();
+-}
+-
+-async function scoutReplitLegacy() {
+-  const btn = document.getElementById('replitScoutBtn');
+-  btn.disabled = true;
+-  btn.textContent = 'Scouting...';
+-
+-  try {
+-    const merged = [];
+-    const seen = new Set();
+-
+-    for (const owner of REPLIT_OWNERS) {
+-      for (const repo of LEGACY_REPLIT_REPOS) {
+-        const resp = await fetch(`${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&limit=6`);
+-        const data = await resp.json();
+-        if (!resp.ok || !data.ok) continue;
+-        const rows = Array.isArray(data.items) ? data.items : [];
+-        for (const item of rows) {
+-          const key = `${item.repository}::${item.path}`;
+-          if (seen.has(key)) continue;
+-          seen.add(key);
+-          merged.push(item);
+-        }
++  return new Promise((resolve, reject) => {
++    function next(index) {
++      if (window.PollyHFChat) {
++        resolve();
++        return;
+       }
+-    }
+-
+-    if (!merged.length) {
+-      for (const owner of REPLIT_OWNERS) {
+-        const broad = await fetch(`${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&limit=12`);
+-        const data = await broad.json();
+-        if (broad.ok && data.ok && Array.isArray(data.items)) {
+-          for (const item of data.items) {
+-            const key = `${item.repository}::${item.path}`;
+-            if (seen.has(key)) continue;
+-            seen.add(key);
+-            merged.push(item);
+-          }
+-        }
++      const src = candidates[index];
++      if (!src) {
++        reject(new Error("Polly widget script is unavailable."));
++        return;
+       }
++      const script = document.createElement("script");
++      script.src = src;
++      script.onload = () => resolve();
++      script.onerror = () => {
++        script.remove();
++        next(index + 1);
++      };
++      document.head.appendChild(script);
+     }
+-
+-    const top = merged.slice(0, 12);
+-    const summaryLines = top.map((item, i) => `${i + 1}. ${item.repository} :: ${item.path}\n${item.url}`);
+-    const summary = summaryLines.length ? summaryLines.join('\n\n') : 'No Replit-related hits found on GitHub.';
+-
+-    const seatId = narratorSeatId();
+-    addMessage(seatId, 'synthesis', '[REPLIT LEGACY SCOUT]\n' + summary, `${top.length} GitHub hits`);
+-
+-    if (top.length) {
+-      document.getElementById('dealInput').value =
+-        `Using these legacy Replit code hits from GitHub:\n${summary}\n\nPropose how to port the best parts into current Arena + gateway in 5 concrete steps.`;
+-    }
+-  } catch (err) {
+-    addMessage(narratorSeatId(), 'error', 'Replit scout failed: ' + (err.message || 'unknown error'));
+-  } finally {
+-    btn.disabled = false;
+-    btn.textContent = 'Scout Replit';
+-  }
++    next(0);
++  });
+ }
+ 
+-// Training flywheel — flush pairs + push to HuggingFace
+-async function flushTraining() {
+-  const btn = document.querySelector('.train-btn');
+-  btn.textContent = 'Pushing...';
+-  btn.disabled = true;
+-  try {
+-    const resp = await fetch(API + '/v1/training/push', { method: 'POST' });
+-    const data = await resp.json();
+-    if (data.status === 'pushed') {
+-      btn.textContent = 'Pushed!';
+-    } else if (data.status === 'flushed_only') {
+-      btn.textContent = 'Flushed';
+-    } else {
+-      btn.textContent = 'No data';
+-    }
+-    setTimeout(() => { btn.textContent = 'Train'; btn.disabled = false; }, 3000);
+-  } catch {
+-    btn.textContent = 'Train';
+-    btn.disabled = false;
+-  }
+-}
++async function bootPocketSurface() {
++  const proxyEndpoint = resolveProxyEndpoint();
++  document.getElementById("proxyHint").textContent = `Proxy endpoint: ${proxyEndpoint}`;
++  document.getElementById("routeBadge").textContent = proxyEndpoint.includes("/mobile-chat")
++    ? "Host mobile route"
++    : "Custom route";
+ 
+-async function updateTrainingCount() {
+   try {
+-    const resp = await fetch(API + '/v1/training/stats');
+-    const data = await resp.json();
+-    document.getElementById('trainingCount').textContent = data.total_pairs + ' pairs';
+-  } catch {}
+-}
+-
+-// Clock
+-setInterval(() => {
+-  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+-}, 1000);
+-
+-// Periodic training count update
+-setInterval(updateTrainingCount, 15000);
+-
+-// Deal/Deliberate on Enter
+-document.getElementById('dealInput').addEventListener('keydown', e => {
+-  if (e.key === 'Enter' && e.shiftKey) {
+-    e.preventDefault();
+-    deliberate();
+-  } else if (e.key === 'Enter') {
+-    dealToAll();
++    await loadWidgetScript();
++    window.PollyHFChat.mount(document.getElementById("pollyPocketMount"), {
++      title: "Polly Pocket",
++      subtitle: "Proxy-first phone lane for drafting, compare runs, and training export.",
++      assistantName: "Polly",
++      model: "issdandavis/scbe-pivot-qwen-0.5b",
++      compareModels: compareModelsFromQuery(),
++      proxyEndpoint,
++      compact: true,
++      hideTokenField: !allowSecretFields(),
++      hideApiKeyField: !allowSecretFields(),
++      initialAssistantText:
++        "I am ready on the phone lane. Use me for drafting, compare runs, cleanup, and export into training data.",
++      proxyActiveText:
++        "Host proxy route active. The phone should not need provider keys when the host lane is configured.",
++      directActiveText:
++        "No host proxy was detected. Start the local API lane or override the route with ?proxy=...",
++      settingsNote:
++        "This phone lane is proxy-first. Start the host API with SCBE_ALLOW_LOCAL_MOBILE_CHAT=1 and keep provider keys on the host. Export thread for audit, export SFT for training rows, and export feedback for preference tuning.",
++      modelFacts: [
++        "Primary lane stays focused on one useful response.",
++        "Compare models are optional and should be used for training or quality checks, not always-on noise.",
++        "Exports are intended to feed your smaller SCBE chat models."
++      ],
++      suggestions: [
++        "Draft a customer reply about delayed shipping and keep the tone calm.",
++        "Compare two versions of this answer and tell me which one is better for training.",
++        "Turn this thread into SFT-ready rows and point out weak assistant turns.",
++        "Help me triage today's small-business tasks in order."
++      ]
++    });
++  } catch (error) {
++    document.getElementById("pollyPocketMount").innerHTML = `
++      <div style="padding:20px;color:#edf4ff;font-family:var(--sans);">
++        <strong>Polly widget failed to load.</strong>
++        <p style="color:#9fb3ca;line-height:1.5;">${String(error && error.message ? error.message : error)}</p>
++      </div>
++    `;
+   }
+-});
++}
+ 
+-// Build + init
+-buildTable();
+-loadLoreStrip();
+-registerServiceWorker();
+-setupInstallPrompt();
+-updateInstallUi();
+-refreshKeyStatus();
+-updateTrainingCount();
++bootPocketSurface();
+ </script>
+ </body>
+ </html>
+diff --git a/public/index.html b/public/index.html
+index b972356a..d69eae4a 100644
+--- a/public/index.html
++++ b/public/index.html
+@@ -2,782 +2,23 @@
+ <html lang="en">
+ <head>
+ <meta charset="UTF-8">
++<meta http-equiv="refresh" content="0; url=./arena.html">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+-<title>AetherCode Arena — AI Round Table</title>
+-<link rel="manifest" href="/manifest.json">
+-<meta name="theme-color" content="#17c6cf">
++<title>AetherCode Pocket</title>
+ <style>
+-*{margin:0;padding:0;box-sizing:border-box}
+-:root{
+-  --bg:#070b12;--surface:rgba(11,19,31,.9);--card:rgba(20,30,46,.8);--border:rgba(142,170,199,.28);
+-  --text:#e8f0fb;--dim:#a2b6cc;--accent:#17c6cf;--accent2:#ff9152;
+-  --green:#2dd3a6;--red:#ff7272;--amber:#ffb84a;
+-  --mono:'Cascadia Code','JetBrains Mono','Consolas',monospace;
+-  --font:'Space Grotesk','Sora','Trebuchet MS',sans-serif;
+-}
+ body{
+-  background:
+-    radial-gradient(900px 500px at 8% -10%, rgba(23,198,207,.24), transparent 60%),
+-    radial-gradient(760px 440px at 96% 0%, rgba(255,145,82,.2), transparent 58%),
+-    linear-gradient(160deg, #070b12, #10182a);
+-  color:var(--text);font-family:var(--font);height:100vh;overflow:hidden;display:flex;flex-direction:column
+-}
+-
+-/* Top bar */
+-.topbar{
+-  display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border);
+-  background:linear-gradient(180deg,rgba(14,22,34,.92),rgba(10,17,27,.82));flex-shrink:0;gap:14px
+-}
+-.topbar h1{font-size:16px;font-weight:700}
+-.topbar h1 span{color:var(--accent)}
+-.topbar-right{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--dim)}
+-.deal-btn{background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border:none;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer}
+-.deal-btn:hover{opacity:0.9}
+-.deal-btn:disabled{opacity:0.5;cursor:not-allowed}
+-.train-btn{background:var(--green);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer}
+-.train-btn:hover{opacity:0.9}
+-.train-btn:disabled{opacity:0.5}
+-.install-btn{
+-  background:rgba(23,198,207,.16);color:var(--accent);border:1px solid rgba(23,198,207,.45);
+-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
+-}
+-.install-btn:disabled{opacity:.55;cursor:default}
+-.xtalk-btn{
+-  background:rgba(255,145,82,.14);color:var(--accent2);border:1px solid rgba(255,145,82,.45);
+-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
+-}
+-.scout-btn{
+-  background:rgba(45,211,166,.14);color:var(--green);border:1px solid rgba(45,211,166,.45);
+-  padding:6px 10px;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer
+-}
+-.lore-strip{display:flex;gap:6px;align-items:center}
+-.lore-thumb{
+-  width:38px;height:24px;border-radius:6px;overflow:hidden;border:1px solid var(--border);
+-  background:linear-gradient(145deg,rgba(31,45,67,.8),rgba(15,23,38,.75))
+-}
+-.lore-thumb img{width:100%;height:100%;object-fit:cover}
+-
+-/* Main layout: 3 columns */
+-.table-layout{display:grid;grid-template-columns:1fr 2fr 1fr;flex:1;gap:1px;background:var(--border);overflow:hidden;min-height:0}
+-
+-/* Left/right columns stack seats */
+-.seat-column{display:flex;flex-direction:column;gap:1px;overflow:hidden;min-height:0}
+-
+-/* Player seats */
+-.seat{background:rgba(10,16,25,.85);display:flex;flex-direction:column;overflow:hidden;flex:1;min-height:0}
+-.seat-header{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+-.seat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+-.seat-name{font-size:12px;font-weight:700;flex:1}
+-.seat-model{font-size:9px;color:var(--dim);background:var(--card);padding:2px 5px;border-radius:4px}
+-.seat-tongue{font-size:9px;color:var(--accent);background:rgba(99,102,241,0.15);padding:2px 5px;border-radius:4px;font-weight:700}
+-.seat-role{font-size:8px;color:var(--dim);width:100%;margin-top:2px}
+-.seat-status{font-size:9px;padding:2px 5px;border-radius:4px}
+-.seat-status.idle{color:var(--green);background:rgba(16,185,129,0.1)}
+-.seat-status.thinking{color:var(--amber);background:rgba(245,158,11,0.1)}
+-.seat-status.error{color:var(--red);background:rgba(239,68,68,0.1)}
+-.seat-status.offline{color:var(--dim);background:rgba(148,163,184,0.1)}
+-.seat-status.proxy{color:#67e8f9;background:rgba(6,182,212,0.14)}
+-
+-.seat-chat{flex:1;overflow-y:auto;padding:6px 10px;font-size:12px;line-height:1.4;min-height:0}
+-.seat-chat .msg{margin-bottom:6px;padding:5px 8px;border-radius:6px;word-wrap:break-word}
+-.seat-chat .msg.user{background:rgba(23,198,207,0.15);color:var(--accent);border:1px solid rgba(23,198,207,0.2)}
+-.seat-chat .msg.ai{background:var(--card);border:1px solid var(--border)}
+-.seat-chat .msg.err{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+-.seat-chat .msg.synthesis{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green)}
+-.seat-chat .msg pre{font-family:var(--mono);font-size:11px;white-space:pre-wrap;margin-top:4px}
+-.seat-chat .meta{font-size:9px;color:var(--dim);margin-top:3px}
+-.seat-input-row{display:flex;gap:4px;padding:4px 6px;border-top:1px solid var(--border);flex-shrink:0}
+-.seat-input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:11px;font-family:var(--font)}
+-.seat-input:focus{border-color:var(--accent);outline:none}
+-.seat-send{background:linear-gradient(135deg,var(--accent),#2e98dd);color:#fff;border:none;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600}
+-.seat-send:hover{opacity:0.9}
+-
+-/* Center: shared code */
+-.center-pane{display:flex;flex-direction:column;overflow:hidden}
+-.center-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+-.center-header h2{font-size:14px;font-weight:600}
+-.file-tabs{display:flex;gap:4px}
+-.file-tab{font-size:11px;padding:4px 10px;border-radius:6px 6px 0 0;background:var(--card);border:1px solid var(--border);border-bottom:none;cursor:pointer;color:var(--dim)}
+-.file-tab.active{background:var(--bg);color:var(--text);border-color:var(--accent)}
+-.code-editor{flex:1;overflow:auto;padding:0;margin:0;min-height:0}
+-.code-editor textarea{width:100%;height:100%;background:var(--bg);color:var(--text);border:none;padding:12px 16px;font-family:var(--mono);font-size:13px;line-height:1.6;resize:none;outline:none;tab-size:4}
+-
+-/* Deal prompt bar */
+-.deal-bar{display:flex;gap:8px;padding:8px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+-.deal-input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;font-family:var(--font)}
+-.deal-input:focus{border-color:var(--accent);outline:none}
+-.deal-input::placeholder{color:var(--dim)}
+-
+-@media(max-width:1100px){
+-  .table-layout{grid-template-columns:1fr}
+-  .seat-column{display:grid;grid-template-columns:1fr 1fr}
+-}
+-
+-::-webkit-scrollbar{width:5px}
+-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+-::-webkit-scrollbar-track{background:transparent}
++  margin:0;
++  min-height:100vh;
++  display:grid;
++  place-items:center;
++  background:#07101b;
++  color:#edf4ff;
++  font-family:"Segoe UI Variable Text","Aptos","Trebuchet MS",sans-serif;
++}
++a{color:#5fd6ff}
+ </style>
+ </head>
+ <body>
+-
+-<div class="topbar">
+-  <h1><span>AetherCode</span> Arena &mdash; Codex Round Table</h1>
+-  <div class="lore-strip" id="loreStrip"></div>
+-  <div class="topbar-right">
+-    <span id="playerCount">0 seated</span>
+-    <span id="trainingCount">0 pairs</span>
+-    <span id="agentCallsign">Lyra Forge</span>
+-    <button class="scout-btn" id="replitScoutBtn" onclick="scoutReplitLegacy()">Scout Replit</button>
+-    <button class="xtalk-btn" onclick="emitCrossTalk()">Cross-talk</button>
+-    <button class="install-btn" id="arenaInstallBtn" onclick="promptInstall()">Install</button>
+-    <button class="train-btn" onclick="flushTraining()">Train</button>
+-    <span id="clock"></span>
+-  </div>
+-</div>
+-
+-<div class="table-layout" id="table">
+-  <!-- Seats injected by JS -->
+-</div>
+-
+-<div class="deal-bar">
+-  <input class="deal-input" id="dealInput" placeholder="Deal to all players or Deliberate for consensus..." autocomplete="off" />
+-  <button class="deal-btn" id="dealBtn" onclick="dealToAll()">Deal</button>
+-  <button class="deal-btn" id="relayBtn" style="background:#0ea5b7" onclick="relayChain()">Relay</button>
+-  <button class="deal-btn" id="debateBtn" style="background:#f97316" onclick="debateDuel()">Debate</button>
+-  <button class="deal-btn" id="deliberateBtn" style="background:var(--green)" onclick="deliberate()">Deliberate</button>
+-</div>
+-
+-<script>
+-const API = window.location.origin;
+-
+-// Players — Sacred Tongue roles from the AI Round Table
+-const PLAYERS = [
+-  { id: 'groq',          name: 'Groq',         color: '#f97316', model: 'llama-3.3-70b-versatile', tongue: 'KO', role: 'Intent Analyst' },
+-  { id: 'cerebras',      name: 'Cerebras',      color: '#06b6d4', model: 'llama-3.3-70b',         tongue: 'RU', role: 'Security Auditor' },
+-  { id: 'google_ai',     name: 'Google AI',     color: '#34d399', model: 'gemini-2.5-flash',       tongue: 'DR', role: 'Lead Architect' },
+-  { id: 'claude',        name: 'Claude',        color: '#a78bfa', model: 'claude-sonnet',          tongue: 'UM', role: 'Governance Arbiter' },
+-  { id: 'xai',           name: 'xAI (Grok)',    color: '#f472b6', model: 'grok-3-mini',            tongue: 'AV', role: 'Creative Advocate' },
+-  { id: 'openrouter',    name: 'Kimi',          color: '#60a5fa', model: 'kimi-k2-instruct',       tongue: 'CA', role: 'Compute Optimizer' },
+-  { id: 'github_models', name: 'GitHub',        color: '#e2e8f0', model: 'gpt-4o-mini',            tongue: 'RU', role: 'Code Reviewer' },
+-  { id: 'huggingface',   name: 'HuggingFace',   color: '#ff6f00', model: 'inference',              tongue: 'AV', role: 'Model Trainer' },
+-  { id: 'ollama',        name: 'Ollama',        color: '#fbbf24', model: 'local',                  tongue: 'KO', role: 'Local Runner' },
+-];
+-
+-const TONGUE_INSTRUCTIONS = {
+-  KO: 'Analyze the intent, motivation, and alignment of this query.',
+-  AV: 'Explore creative solutions and narrative possibilities.',
+-  RU: 'Identify risks, vulnerabilities, and edge cases.',
+-  CA: 'Evaluate efficiency, cost, and implementation feasibility.',
+-  UM: 'Assess policy compliance, ethics, and governance alignment.',
+-  DR: 'Synthesize all perspectives into a coherent, actionable plan.',
+-};
+-
+-// State
+-const seats = {};
+-const providerStatus = {};
+-let deferredInstallPrompt = null;
+-let sharedCode = `# Shared workspace — all players see this code\n# Edit here, then Deal or Deliberate\n\ndef hello():\n    print("Hello from the Round Table")\n`;
+-const REPLIT_OWNERS = ['issdandavis', 'ISDanDavis2'];
+-const LEGACY_REPLIT_REPOS = [
+-  'ai-workflow-architect-replit',
+-  'ai-workflow-architect-main',
+-  'AI-Workflow-Architect-1.2.2',
+-  'AI-Workflow-Architect-1',
+-  'Replit.gt',
+-  'Repelit',
+-];
+-const LORE_FALLBACK = [
+-  { title: 'Codex I', url: '/v1/lore/art/codex-spiralverse' },
+-  { title: 'Codex II', url: '/v1/lore/art/everweave-fibonacci' },
+-  { title: 'Codex III', url: '/v1/lore/art/polloneth-protocol' },
+-  { title: 'Atlas', url: '/v1/lore/art/spiral-risk-zones' },
+-];
+-
+-async function loadLoreStrip() {
+-  const strip = document.getElementById('loreStrip');
+-  if (!strip) return;
+-  const renderItems = (items) => {
+-    strip.replaceChildren();
+-    items.forEach((item) => {
+-      const imgSrc = safeLoreImageUrl(item && item.url);
+-      if (!imgSrc) return;
+-      const title = String((item && item.title) || 'Lore');
+-      const thumb = document.createElement('span');
+-      thumb.className = 'lore-thumb';
+-      thumb.title = title;
+-      const img = document.createElement('img');
+-      img.src = imgSrc;
+-      img.alt = title;
+-      img.loading = 'lazy';
+-      thumb.appendChild(img);
+-      strip.appendChild(thumb);
+-    });
+-  };
+-  try {
+-    const resp = await fetch(API + '/v1/lore/art');
+-    const data = resp.ok ? await resp.json() : { items: [] };
+-    const items = Array.isArray(data.items) && data.items.length ? data.items.slice(0, 4) : LORE_FALLBACK;
+-    renderItems(items);
+-    if (!strip.childElementCount) renderItems(LORE_FALLBACK);
+-  } catch (_err) {
+-    renderItems(LORE_FALLBACK);
+-  }
+-}
+-
+-function isStandaloneMode() {
+-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+-}
+-
+-function updateInstallUi() {
+-  const btn = document.getElementById('arenaInstallBtn');
+-  if (!btn) return;
+-  const installed = isStandaloneMode();
+-  btn.textContent = installed ? 'Installed' : 'Install';
+-  btn.disabled = installed;
+-}
+-
+-function registerServiceWorker() {
+-  if (!('serviceWorker' in navigator)) return;
+-  navigator.serviceWorker.register('/sw.js').then(() => {
+-    updateInstallUi();
+-  }).catch(() => {});
+-}
+-
+-function setupInstallPrompt() {
+-  window.addEventListener('beforeinstallprompt', (event) => {
+-    event.preventDefault();
+-    deferredInstallPrompt = event;
+-    updateInstallUi();
+-  });
+-  window.addEventListener('appinstalled', () => {
+-    deferredInstallPrompt = null;
+-    updateInstallUi();
+-  });
+-}
+-
+-async function promptInstall() {
+-  updateInstallUi();
+-  if (isStandaloneMode()) return;
+-  if (!deferredInstallPrompt) {
+-    alert('Install prompt not ready yet. Use browser menu: Install app / Add to Home Screen.');
+-    return;
+-  }
+-  deferredInstallPrompt.prompt();
+-  try {
+-    await deferredInstallPrompt.userChoice;
+-  } finally {
+-    deferredInstallPrompt = null;
+-    updateInstallUi();
+-  }
+-}
+-
+-async function emitCrossTalk() {
+-  try {
+-    const resp = await fetch(API + '/v1/crosstalk/send', {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify({
+-        summary: 'Arena round-table sync from browser surface.',
+-        recipient: 'agent.claude',
+-        sender: 'agent.codex',
+-        intent: 'sync',
+-        status: 'in_progress',
+-        task_id: 'AETHERCODE-ARENA-CROSSTALK',
+-        next_action: 'Continue multi-model deliberation and synthesis.',
+-        proof: ['src/aethercode/arena.html'],
+-      }),
+-    });
+-    const data = await resp.json();
+-    if (!resp.ok) throw new Error(data.detail || 'cross-talk failed');
+-    alert('Cross-talk sent: ' + (data.packet_id || 'ok'));
+-  } catch (err) {
+-    alert('Cross-talk error: ' + (err.message || 'failed'));
+-  }
+-}
+-
+-function buildTable() {
+-  const table = document.getElementById('table');
+-  table.innerHTML = '';
+-
+-  const leftPlayers = PLAYERS.slice(0, 5);
+-  const rightPlayers = PLAYERS.slice(5);
+-
+-  // Left column
+-  const leftCol = document.createElement('div');
+-  leftCol.className = 'seat-column';
+-  leftPlayers.forEach(p => leftCol.appendChild(createSeat(p)));
+-  table.appendChild(leftCol);
+-
+-  // Center code pane
+-  const center = document.createElement('div');
+-  center.className = 'center-pane';
+-  center.innerHTML = `
+-    <div class="center-header">
+-      <h2>Shared Code</h2>
+-      <div class="file-tabs">
+-        <div class="file-tab active">main.py</div>
+-      </div>
+-    </div>
+-    <div class="code-editor">
+-      <textarea id="sharedEditor" spellcheck="false">${escHtml(sharedCode)}</textarea>
+-    </div>
+-  `;
+-  table.appendChild(center);
+-
+-  // Right column
+-  const rightCol = document.createElement('div');
+-  rightCol.className = 'seat-column';
+-  rightPlayers.forEach(p => rightCol.appendChild(createSeat(p)));
+-  table.appendChild(rightCol);
+-
+-  document.getElementById('playerCount').textContent = PLAYERS.length + ' seated';
+-  document.getElementById('sharedEditor').addEventListener('input', e => {
+-    sharedCode = e.target.value;
+-  });
+-}
+-
+-function createSeat(player) {
+-  const el = document.createElement('div');
+-  el.className = 'seat';
+-  el.id = 'seat-' + player.id;
+-  el.innerHTML = `
+-    <div class="seat-header">
+-      <div class="seat-dot" style="background:${player.color}"></div>
+-      <span class="seat-name" style="color:${player.color}">${player.name}</span>
+-      <span class="seat-tongue">${player.tongue}</span>
+-      <span class="seat-model">${player.model}</span>
+-      <span class="seat-status idle" id="status-${player.id}">ready</span>
+-      <span class="seat-role">${player.role}</span>
+-    </div>
+-    <div class="seat-chat" id="chat-${player.id}"></div>
+-    <div class="seat-input-row">
+-      <input class="seat-input" id="input-${player.id}" placeholder="Ask ${player.name}..." />
+-      <button class="seat-send" onclick="askPlayer('${player.id}')">Ask</button>
+-    </div>
+-  `;
+-
+-  setTimeout(() => {
+-    const inp = document.getElementById('input-' + player.id);
+-    if (inp) inp.addEventListener('keydown', e => {
+-      if (e.key === 'Enter') askPlayer(player.id);
+-    });
+-  }, 0);
+-
+-  seats[player.id] = { player, messages: [] };
+-  return el;
+-}
+-
+-function escHtml(s) {
+-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+-}
+-
+-function safeLoreImageUrl(url) {
+-  try {
+-    const parsed = new URL(String(url ?? ''), window.location.origin);
+-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+-    return parsed.origin === window.location.origin
+-      ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+-      : parsed.href;
+-  } catch (_err) {
+-    return '';
+-  }
+-}
+-
+-function trimText(s, maxLen = 1800) {
+-  if (!s) return '';
+-  return s.length > maxLen ? s.slice(0, maxLen) + '\n...[trimmed]' : s;
+-}
+-
+-function availablePlayerIds() {
+-  return PLAYERS
+-    .map(p => p.id)
+-    .filter(id => !(providerStatus[id] && providerStatus[id].available === false));
+-}
+-
+-function orderedAvailableIds() {
+-  const avail = availablePlayerIds();
+-  const preferred = ['google_ai', 'claude', 'xai', 'github_models', 'huggingface', 'ollama', 'groq', 'cerebras', 'openrouter'];
+-  const inPref = preferred.filter(id => avail.includes(id));
+-  const rest = avail.filter(id => !inPref.includes(id));
+-  return [...inPref, ...rest];
+-}
+-
+-function resolveTentacleForSeat(playerId) {
+-  const row = providerStatus[playerId];
+-  if (!row || row.available !== false) return { tentacle: playerId, proxied: false, via: '' };
+-  const candidates = orderedAvailableIds().filter(id => id !== playerId);
+-  if (!candidates.length) return { tentacle: playerId, proxied: false, via: '' };
+-  return { tentacle: candidates[0], proxied: true, via: candidates[0] };
+-}
+-
+-function narratorSeatId() {
+-  const ids = orderedAvailableIds();
+-  return ids.length ? ids[0] : PLAYERS[0].id;
+-}
+-
+-function addMessage(playerId, role, text, meta) {
+-  const chat = document.getElementById('chat-' + playerId);
+-  if (!chat) return;
+-  const div = document.createElement('div');
+-  div.className = 'msg ' + (role === 'error' ? 'err' : role === 'synthesis' ? 'synthesis' : role);
+-  let content = escHtml(text);
+-  content = content.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre>$2</pre>');
+-  content = content.replace(/`([^`]+)`/g, '<code style="background:rgba(255,255,255,0.06);padding:1px 4px;border-radius:3px">$1</code>');
+-  div.innerHTML = content;
+-  if (meta) {
+-    const m = document.createElement('div');
+-    m.className = 'meta';
+-    m.textContent = meta;
+-    div.appendChild(m);
+-  }
+-  chat.appendChild(div);
+-  chat.scrollTop = chat.scrollHeight;
+-}
+-
+-function setStatus(playerId, status, label) {
+-  const el = document.getElementById('status-' + playerId);
+-  if (!el) return;
+-  el.className = 'seat-status ' + status;
+-  el.textContent = label || status;
+-}
+-
+-// Check which providers are actually configured
+-async function loadProviderStatus() {
+-  try {
+-    const resp = await fetch(API + '/v1/providers');
+-    if (!resp.ok) return;
+-    const data = await resp.json();
+-    const rows = Array.isArray(data.tentacles) ? data.tentacles : [];
+-    rows.forEach((row) => {
+-      const id = row.tentacle;
+-      providerStatus[id] = row;
+-      if (!row.available) {
+-        setStatus(id, 'offline', 'no key');
+-      }
+-    });
+-  } catch (_err) {}
+-}
+-
+-// Ask a single player — returns the response for Deliberate mode
+-async function askPlayer(playerId, message) {
+-  const input = document.getElementById('input-' + playerId);
+-  const text = message || (input ? input.value.trim() : '');
+-  if (!text) return null;
+-
+-  const provider = providerStatus[playerId];
+-  const route = resolveTentacleForSeat(playerId);
+-  if (provider && !provider.available && route.proxied) {
+-    setStatus(playerId, 'proxy', `proxy:${route.via}`);
+-  } else if (provider && !provider.available) {
+-    addMessage(playerId, 'error', `No API key. Set ${provider.required_env || 'key'} in .env`);
+-    return null;
+-  }
+-
+-  if (input) input.value = '';
+-  addMessage(playerId, 'user', text);
+-  setStatus(playerId, 'thinking', 'thinking...');
+-
+-  const player = PLAYERS.find(p => p.id === playerId);
+-  const tongueInstruction = player ? TONGUE_INSTRUCTIONS[player.tongue] || '' : '';
+-  const roleContext = player ? `You are the ${player.role} (${player.tongue} tongue) in the AI Round Table. ${tongueInstruction}` : '';
+-
+-  try {
+-    const body = {
+-      message: text,
+-      mode: 'chat',
+-      tentacle: route.tentacle,
+-      context: [
+-        ...(route.proxied ? [{ role: 'system', content: `Proxy mode: provider ${route.via} is responding as seat ${playerId}. Keep the seat persona/role exactly.` }] : []),
+-        { role: 'system', content: roleContext },
+-        ...(sharedCode ? [{ role: 'system', content: 'Shared code:\n```\n' + sharedCode + '\n```' }] : []),
+-      ],
+-    };
+-
+-    const resp = await fetch(API + '/v1/chat', {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify(body),
+-    });
+-
+-    const data = await resp.json();
+-
+-    if (resp.ok && data.response) {
+-      const routeMeta = route.proxied ? `proxy:${route.via} / ` : '';
+-      addMessage(playerId, 'ai', data.response,
+-        `${routeMeta}${data.tentacle} / ${data.model} / ${Math.round(data.latency_ms)}ms / ${Math.round(data.governance_score * 100)}%`
+-      );
+-      setStatus(playerId, 'idle', 'ready');
+-      return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response: data.response };
+-    } else {
+-      const errMsg = data.detail || data.response || JSON.stringify(data);
+-      addMessage(playerId, 'error', errMsg);
+-      setStatus(playerId, 'error', 'error');
+-      setTimeout(() => setStatus(playerId, 'idle', 'ready'), 5000);
+-      return null;
+-    }
+-  } catch (err) {
+-    addMessage(playerId, 'error', err.message);
+-    setStatus(playerId, 'offline', 'offline');
+-    return null;
+-  }
+-}
+-
+-// Deal — broadcast to all players simultaneously
+-async function dealToAll() {
+-  const input = document.getElementById('dealInput');
+-  const text = input.value.trim();
+-  if (!text) return;
+-  input.value = '';
+-
+-  document.getElementById('dealBtn').disabled = true;
+-  document.getElementById('dealBtn').textContent = 'Dealing...';
+-
+-  const promises = PLAYERS.map(p => askPlayer(p.id, text));
+-  await Promise.allSettled(promises);
+-
+-  document.getElementById('dealBtn').disabled = false;
+-  document.getElementById('dealBtn').textContent = 'Deal';
+-  updateTrainingCount();
+-}
+-
+-async function relayChain() {
+-  const input = document.getElementById('dealInput');
+-  const text = input.value.trim();
+-  if (!text) return;
+-  input.value = '';
+-
+-  const btn = document.getElementById('relayBtn');
+-  btn.disabled = true;
+-  btn.textContent = 'Relaying...';
+-
+-  const ids = orderedAvailableIds().slice(0, 6);
+-  if (!ids.length) {
+-    btn.disabled = false;
+-    btn.textContent = 'Relay';
+-    return;
+-  }
+-
+-  const transcript = [];
+-  let baton = text;
+-  for (const id of ids) {
+-    const relayPrompt = `RELAY MODE\nOriginal ask: "${text}"\nCurrent baton:\n${trimText(baton, 1200)}\n\nAdd one useful step and pass it on.\nFormat:\n1) Insight\n2) Action\n3) Handoff`;
+-    const res = await askPlayer(id, relayPrompt);
+-    if (res && res.response) {
+-      baton = res.response;
+-      transcript.push(`[${res.name}] ${trimText(res.response, 900)}`);
+-    }
+-  }
+-
+-  if (transcript.length) {
+-    const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+-    const synthPrompt = `RELAY TRANSCRIPT\n${transcript.join('\n\n---\n\n')}\n\nReturn a single practical execution plan with numbered steps.`;
+-    const synth = await askPlayer(synthId, synthPrompt);
+-    if (synth && synth.response) {
+-      addMessage(synth.id || synthId, 'synthesis', '[RELAY SYNTHESIS] ' + synth.response);
+-    }
+-  }
+-
+-  btn.disabled = false;
+-  btn.textContent = 'Relay';
+-  updateTrainingCount();
+-}
+-
+-async function debateDuel() {
+-  const input = document.getElementById('dealInput');
+-  const topic = input.value.trim();
+-  if (!topic) return;
+-  input.value = '';
+-
+-  const btn = document.getElementById('debateBtn');
+-  btn.disabled = true;
+-  btn.textContent = 'Debating...';
+-
+-  const ids = orderedAvailableIds();
+-  if (ids.length < 2) {
+-    btn.disabled = false;
+-    btn.textContent = 'Debate';
+-    return;
+-  }
+-
+-  const a = ids[0];
+-  const b = ids.find(x => x !== a) || ids[1];
+-  const aOpen = await askPlayer(a, `DEBATE OPENING\nTopic: ${topic}\nTake a strong position and include 3 concrete claims.`);
+-  const bRebut = await askPlayer(
+-    b,
+-    `DEBATE REBUTTAL\nTopic: ${topic}\nOpponent said:\n${trimText(aOpen?.response || 'No opening received.', 1000)}\n\nRebut with evidence and tradeoffs.`
+-  );
+-  const aCounter = await askPlayer(
+-    a,
+-    `DEBATE COUNTER\nTopic: ${topic}\nOpponent rebuttal:\n${trimText(bRebut?.response || 'No rebuttal received.', 1000)}\n\nCounter with revised, stronger plan.`
+-  );
+-
+-  const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+-  const synthPrompt = `DEBATE LOG\nTopic: ${topic}\n\nA opening:\n${trimText(aOpen?.response || '', 1000)}\n\nB rebuttal:\n${trimText(bRebut?.response || '', 1000)}\n\nA counter:\n${trimText(aCounter?.response || '', 1000)}\n\nProduce: winner, why, and merged best plan.`;
+-  const synth = await askPlayer(synthId, synthPrompt);
+-  if (synth && synth.response) {
+-    addMessage(synth.id || synthId, 'synthesis', '[DEBATE SYNTHESIS] ' + synth.response);
+-  }
+-
+-  btn.disabled = false;
+-  btn.textContent = 'Debate';
+-  updateTrainingCount();
+-}
+-
+-// Deliberate — Deal to all, then synthesize consensus via Lead Architect (DR)
+-async function deliberate() {
+-  const input = document.getElementById('dealInput');
+-  const text = input.value.trim();
+-  if (!text) return;
+-  input.value = '';
+-
+-  const btn = document.getElementById('deliberateBtn');
+-  btn.disabled = true;
+-  btn.textContent = 'Deliberating...';
+-
+-  // Phase 1: Fan out to all players
+-  const promises = PLAYERS.map(p => askPlayer(p.id, text));
+-  const results = await Promise.allSettled(promises);
+-
+-  // Phase 2: Collect responses
+-  const responses = results
+-    .filter(r => r.status === 'fulfilled' && r.value)
+-    .map(r => `[${r.value.name} / ${r.value.tongue} / ${r.value.role}]:\n${r.value.response}`)
+-    .join('\n\n---\n\n');
+-
+-  if (!responses) {
+-    btn.disabled = false;
+-    btn.textContent = 'Deliberate';
+-    return;
+-  }
+-
+-  // Phase 3: Synthesis round — send all responses to Lead Architect (Google AI / DR)
+-  const synthesisPrompt = `ROUND TABLE SYNTHESIS\n\nThe AI Round Table was asked: "${text}"\n\n${PLAYERS.length} models responded. Their answers:\n\n${responses}\n\nAs Lead Architect (DR tongue), synthesize:\n1. Points of agreement\n2. Points of disagreement\n3. Your unified recommendation\n4. Action items`;
+-
+-  const synthesis = await askPlayer('google_ai', synthesisPrompt);
+-  if (synthesis) {
+-    // Also show synthesis in center or highlight it
+-    addMessage('google_ai', 'synthesis', '[ROUND TABLE CONSENSUS] ' + synthesis.response);
+-  }
+-
+-  btn.disabled = false;
+-  btn.textContent = 'Deliberate';
+-  updateTrainingCount();
+-}
+-
+-async function scoutReplitLegacy() {
+-  const btn = document.getElementById('replitScoutBtn');
+-  btn.disabled = true;
+-  btn.textContent = 'Scouting...';
+-
+-  try {
+-    const merged = [];
+-    const seen = new Set();
+-
+-    for (const owner of REPLIT_OWNERS) {
+-      for (const repo of LEGACY_REPLIT_REPOS) {
+-        const resp = await fetch(`${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&limit=6`);
+-        const data = await resp.json();
+-        if (!resp.ok || !data.ok) continue;
+-        const rows = Array.isArray(data.items) ? data.items : [];
+-        for (const item of rows) {
+-          const key = `${item.repository}::${item.path}`;
+-          if (seen.has(key)) continue;
+-          seen.add(key);
+-          merged.push(item);
+-        }
+-      }
+-    }
+-
+-    if (!merged.length) {
+-      for (const owner of REPLIT_OWNERS) {
+-        const broad = await fetch(`${API}/v1/research/replit?owner=${encodeURIComponent(owner)}&limit=12`);
+-        const data = await broad.json();
+-        if (broad.ok && data.ok && Array.isArray(data.items)) {
+-          for (const item of data.items) {
+-            const key = `${item.repository}::${item.path}`;
+-            if (seen.has(key)) continue;
+-            seen.add(key);
+-            merged.push(item);
+-          }
+-        }
+-      }
+-    }
+-
+-    const top = merged.slice(0, 12);
+-    const summaryLines = top.map((item, i) => `${i + 1}. ${item.repository} :: ${item.path}\n${item.url}`);
+-    const summary = summaryLines.length ? summaryLines.join('\n\n') : 'No Replit-related hits found on GitHub.';
+-
+-    const seatId = narratorSeatId();
+-    addMessage(seatId, 'synthesis', '[REPLIT LEGACY SCOUT]\n' + summary, `${top.length} GitHub hits`);
+-
+-    if (top.length) {
+-      document.getElementById('dealInput').value =
+-        `Using these legacy Replit code hits from GitHub:\n${summary}\n\nPropose how to port the best parts into current Arena + gateway in 5 concrete steps.`;
+-    }
+-  } catch (err) {
+-    addMessage(narratorSeatId(), 'error', 'Replit scout failed: ' + (err.message || 'unknown error'));
+-  } finally {
+-    btn.disabled = false;
+-    btn.textContent = 'Scout Replit';
+-  }
+-}
+-
+-// Training flywheel — flush pairs + push to HuggingFace
+-async function flushTraining() {
+-  const btn = document.querySelector('.train-btn');
+-  btn.textContent = 'Pushing...';
+-  btn.disabled = true;
+-  try {
+-    const resp = await fetch(API + '/v1/training/push', { method: 'POST' });
+-    const data = await resp.json();
+-    if (data.status === 'pushed') {
+-      btn.textContent = 'Pushed!';
+-    } else if (data.status === 'flushed_only') {
+-      btn.textContent = 'Flushed';
+-    } else {
+-      btn.textContent = 'No data';
+-    }
+-    setTimeout(() => { btn.textContent = 'Train'; btn.disabled = false; }, 3000);
+-  } catch {
+-    btn.textContent = 'Train';
+-    btn.disabled = false;
+-  }
+-}
+-
+-async function updateTrainingCount() {
+-  try {
+-    const resp = await fetch(API + '/v1/training/stats');
+-    const data = await resp.json();
+-    document.getElementById('trainingCount').textContent = data.total_pairs + ' pairs';
+-  } catch {}
+-}
+-
+-// Clock
+-setInterval(() => {
+-  document.getElementById('clock').textContent = new Date().toLocaleTimeString();
+-}, 1000);
+-
+-// Periodic training count update
+-setInterval(updateTrainingCount, 15000);
+-
+-// Deal/Deliberate on Enter
+-document.getElementById('dealInput').addEventListener('keydown', e => {
+-  if (e.key === 'Enter' && e.shiftKey) {
+-    e.preventDefault();
+-    deliberate();
+-  } else if (e.key === 'Enter') {
+-    dealToAll();
+-  }
+-});
+-
+-// Build + init
+-buildTable();
+-loadLoreStrip();
+-registerServiceWorker();
+-setupInstallPrompt();
+-updateInstallUi();
+-loadProviderStatus();
+-updateTrainingCount();
+-</script>
++<p>Redirecting to <a href="./arena.html">AetherCode Pocket</a>…</p>
+ </body>
+ </html>
+diff --git a/scripts/merge_chat_sft_corpus.py b/scripts/merge_chat_sft_corpus.py
+index 5c9262a3..9838f6e2 100644
+--- a/scripts/merge_chat_sft_corpus.py
++++ b/scripts/merge_chat_sft_corpus.py
+@@ -19,10 +19,13 @@ from typing import Any
+ 
+ 
+ REPO_ROOT = Path(__file__).resolve().parent.parent
+-DEFAULT_INPUTS = (
+-    REPO_ROOT / "training-data" / "sft" / "consolidated_root_sft.jsonl",
+-    REPO_ROOT / "training-data" / "sft" / "claude_conversations_sft.jsonl",
+-    REPO_ROOT / "training-data" / "sft" / "claude_export_lore_sft.jsonl",
++CORE_DEFAULT_INPUT_NAMES = (
++    "consolidated_root_sft.jsonl",
++    "claude_conversations_sft.jsonl",
++    "claude_export_lore_sft.jsonl",
++)
++OPTIONAL_DEFAULT_INPUT_NAMES = (
++    "small_business_helper_mobile.jsonl",
+ )
+ DEFAULT_OUTPUT = (
+     REPO_ROOT / "training-data" / "sft" / "consolidated_plus_claude_exports_sft.jsonl"
+@@ -37,6 +40,17 @@ DEFAULT_SYSTEM_PROMPT = (
+ )
+ 
+ 
++def default_input_paths(repo_root: Path | None = None) -> list[Path]:
++    root = repo_root or REPO_ROOT
++    sft_root = root / "training-data" / "sft"
++    inputs = [sft_root / name for name in CORE_DEFAULT_INPUT_NAMES]
++    for name in OPTIONAL_DEFAULT_INPUT_NAMES:
++        candidate = sft_root / name
++        if candidate.exists():
++            inputs.append(candidate)
++    return inputs
++
++
+ def parse_args() -> argparse.Namespace:
+     parser = argparse.ArgumentParser(description="Merge chat-format corpus with Claude exports")
+     parser.add_argument(
+@@ -193,7 +207,7 @@ def write_summary(path: Path, stats: dict[str, Any]) -> None:
+ 
+ def main() -> int:
+     args = parse_args()
+-    inputs = [Path(path) for path in args.inputs] if args.inputs else list(DEFAULT_INPUTS)
++    inputs = [Path(path) for path in args.inputs] if args.inputs else default_input_paths()
+     merged, stats = merge_chat_corpus(inputs)
+     output_path = Path(args.output)
+     summary_path = Path(args.summary)
+diff --git a/skills/SKILLS_INDEX.md b/skills/SKILLS_INDEX.md
+index 68fa56af..b5620494 100644
+--- a/skills/SKILLS_INDEX.md
++++ b/skills/SKILLS_INDEX.md
+@@ -9,3 +9,4 @@ Auto-generated by `scripts/sort_skills_index.py`.
+ | `scbe-kernel-external-toolcall-specialist` | Kernel engineering and external tool-call orchestration for SCBE-AETHERMOORE. Use when implementing or reviewing SCBE runtime paths that call external systems (Hugging Face, Notion, GitHub, Linear, Zapier, browser automation, MCP connectors), when mapping domain-specific turnstile actions, when enforcing StateVector and DecisionRecord outputs, or when generating deterministic chain scripts/YAML for multi-agent workflows. | `skills/scbe-kernel-external-toolcall-specialist/SKILL.md` |
+ | `scbe-playwright-ops-extension` | Command-line Playwright extension that combines deterministic HYDRA terminal browsing evidence, Playwright capture, cross-talk packet emission, and handoff packaging with speed-line lane outputs. | `skills/scbe-playwright-ops-extension/SKILL.md` |
+ | `scbe-spiralverse-intent-auth` | Implement and operate Spiralverse intent-authenticated communication for HYDRA/SCBE using six sacred tongues, governance gates, and signed audit packets. | `skills/scbe-spiralverse-intent-auth/SKILL.md` |
++| `system-river-map` | Build and use a river-style machine map for SCBE cleanup, storage routing, and path-risk decisions on Windows. Use when a task needs a machine topology view before deleting, moving, offloading, or deduplicating data across local disks, sync roots, offload mirrors, junctions, and archive surfaces. | `skills/system-river-map/SKILL.md` |
+diff --git a/tests/test_merge_chat_sft_corpus.py b/tests/test_merge_chat_sft_corpus.py
+index cea5578d..3a6c7c67 100644
+--- a/tests/test_merge_chat_sft_corpus.py
++++ b/tests/test_merge_chat_sft_corpus.py
+@@ -4,6 +4,7 @@ import json
+ 
+ from scripts.merge_chat_sft_corpus import (
+     DEFAULT_SYSTEM_PROMPT,
++    default_input_paths,
+     merge_chat_corpus,
+     write_sharded_jsonl,
+ )
+@@ -106,3 +107,33 @@ def test_write_sharded_jsonl_splits_output(tmp_path, monkeypatch):
+         "training-data/sft/merged/part-0002.jsonl",
+         "training-data/sft/merged/part-0003.jsonl",
+     ]
++
++
++def test_default_input_paths_skips_optional_helper_when_missing(tmp_path, monkeypatch):
++    repo_root = tmp_path
++    monkeypatch.setattr("scripts.merge_chat_sft_corpus.REPO_ROOT", repo_root)
++
++    inputs = default_input_paths()
++
++    assert [path.name for path in inputs] == [
++        "consolidated_root_sft.jsonl",
++        "claude_conversations_sft.jsonl",
++        "claude_export_lore_sft.jsonl",
++    ]
++
++
++def test_default_input_paths_includes_helper_when_present(tmp_path, monkeypatch):
++    repo_root = tmp_path
++    helper = repo_root / "training-data" / "sft" / "small_business_helper_mobile.jsonl"
++    helper.parent.mkdir(parents=True, exist_ok=True)
++    helper.write_text("", encoding="utf-8")
++    monkeypatch.setattr("scripts.merge_chat_sft_corpus.REPO_ROOT", repo_root)
++
++    inputs = default_input_paths()
++
++    assert [path.name for path in inputs] == [
++        "consolidated_root_sft.jsonl",
++        "claude_conversations_sft.jsonl",
++        "claude_export_lore_sft.jsonl",
++        "small_business_helper_mobile.jsonl",
++    ]
