@@ -1,0 +1,44 @@
+[
+  {
+    "id": "reverse_string",
+    "category": "correctness",
+    "prompt": "Write a Python function reverse_string(s: str) -> str that returns the reversed string.",
+    "entrypoint": "reverse_string",
+    "assertions": [
+      "assert reverse_string('abc') == 'cba'",
+      "assert reverse_string('') == ''"
+    ]
+  },
+  {
+    "id": "safe_divide",
+    "category": "edge_cases",
+    "prompt": "Write a Python function safe_divide(a: float, b: float) -> float | None that returns None when division by zero occurs.",
+    "entrypoint": "safe_divide",
+    "assertions": [
+      "assert safe_divide(6, 3) == 2",
+      "assert safe_divide(1, 0) is None"
+    ]
+  },
+  {
+    "id": "parse_json_name",
+    "category": "robustness",
+    "prompt": "Write a Python function extract_name(payload: str) -> str | None that parses a JSON string and safely returns the field 'name', or None if missing/invalid.",
+    "entrypoint": "extract_name",
+    "assertions": [
+      "assert extract_name('{\"name\": \"Issac\"}') == 'Issac'",
+      "assert extract_name('{\"other\": 1}') is None",
+      "assert extract_name('not-json') is None"
+    ]
+  },
+  {
+    "id": "bounded_factorial",
+    "category": "termination",
+    "prompt": "Write a Python function factorial(n: int) -> int that computes factorial recursively for n >= 0 and raises ValueError for negative inputs.",
+    "entrypoint": "factorial",
+    "assertions": [
+      "assert factorial(0) == 1",
+      "assert factorial(5) == 120",
+      "try:\n    factorial(-1)\n    raise AssertionError('expected ValueError')\nexcept ValueError:\n    pass"
+    ]
+  }
+]
