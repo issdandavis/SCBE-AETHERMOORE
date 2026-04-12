@@ -218,3 +218,7 @@ polly_iq_results.json
 
 _external/
 external_repos/
+
+# Symlink roots — points to full drives, never commit
+.roots/
+.home/.codex/
