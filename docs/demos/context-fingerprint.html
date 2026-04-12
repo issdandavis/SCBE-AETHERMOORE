@@ -208,6 +208,8 @@ function drawRadar(activations) {
   });
 }
 
+const _escHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 function drawWordCloud(wordMap, words) {
   const container = document.getElementById('wordCloud');
   const seen = new Set();
@@ -216,7 +218,7 @@ function drawWordCloud(wordMap, words) {
     seen.add(w);
     const t = wordMap[w];
     const i = TONGUES.indexOf(t);
-    return `<span class="word-tag" style="background:${COLORS[i]}22;color:${COLORS[i]};border:1px solid ${COLORS[i]}44">${w}<sup style="font-size:9px;opacity:0.6">${TONGUE_DOMAINS[t] || t}</sup></span>`;
+    return `<span class="word-tag" style="background:${COLORS[i]}22;color:${COLORS[i]};border:1px solid ${COLORS[i]}44">${_escHtml(w)}<sup style="font-size:9px;opacity:0.6">${_escHtml(TONGUE_DOMAINS[t] || t)}</sup></span>`;
   }).join('');
 }
 
