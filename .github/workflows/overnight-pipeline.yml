@@ -22,13 +22,27 @@ permissions:
 
 jobs:
   # ═══════════════════════════════════════════════════════════
+  # TIER 1-GATES: Reusable gate checks (parallel with validate)
+  # Absorbed from: scbe-gates.yml
+  # ═══════════════════════════════════════════════════════════
+  tier-1-gates:
+    uses: ./.github/workflows/scbe-reusable-gates.yml
+    with:
+      node-version: '20'
+      python-version: '3.11'
+
+  # ═══════════════════════════════════════════════════════════
   # TIER 1: Validate (5 min) — Lint, type check, basic sanity
+  # Absorbed from: nightly-ops.yml, cli-nightly-ops.yml, daily_ops.yml
   # ═══════════════════════════════════════════════════════════
   tier-1-validate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      SCBE_MODE: 'ci'
     outputs:
       status: ${{ steps.validate.outcome }}
+      vm_status: ${{ steps.vm-health.outputs.status }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,6 +64,27 @@ jobs:
       - name: Install Node deps
         continue-on-error: true
         run: npm ci
+
+      - name: SCBE selftest
+        continue-on-error: true
+        run: python scbe.py selftest
+
+      - name: SCBE doctor
+        continue-on-error: true
+        run: python scbe.py doctor --json
+
+      - name: VM bridge health check
+        id: vm-health
+        continue-on-error: true
+        run: |
+          RESPONSE=$(curl -s --connect-timeout 10 "http://34.134.99.90:8001/health" 2>&1) || true
+          if echo "$RESPONSE" | grep -q '"healthy"'; then
+            echo "status=healthy" >> $GITHUB_OUTPUT
+            echo "VM is healthy"
+          else
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            echo "::warning::VM health check failed: $RESPONSE"
+          fi
 
       - name: Validate
         id: validate
@@ -89,9 +124,10 @@ jobs:
 
   # ═══════════════════════════════════════════════════════════
   # TIER 2: Test (30 min) — Full pytest, property tests
+  # Absorbed from: daily_ops.yml training-data-push count step
   # ═══════════════════════════════════════════════════════════
   tier-2-test:
-    needs: tier-1-validate
+    needs: [tier-1-validate, tier-1-gates]
     if: ${{ always() && (inputs.tier == 'tier-2-test' || inputs.tier == 'tier-3-security' || inputs.tier == 'tier-4-build' || inputs.tier == 'full' || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -147,7 +183,9 @@ jobs:
           retention-days: 7
 
   # ═══════════════════════════════════════════════════════════
-  # TIER 3: Security (60 min) — Adversarial attacks, SCBE validation
+  # TIER 3: Security + Analysis — Adversarial attacks, arXiv sweep,
+  #          governance scan
+  # Absorbed from: daily_ops.yml (arxiv-research, governance-scan)
   # ═══════════════════════════════════════════════════════════
   tier-3-security:
     needs: tier-2-test
@@ -210,6 +248,33 @@ jobs:
             echo "::error::Tier 3 Security: $SECURITY_FAILURES suite(s) failed — security gate violated"
             exit 1
           fi
+
+      - name: arXiv research sweep
+        continue-on-error: true
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -c "
+          import sys, json
+          sys.path.insert(0, '.')
+          try:
+              from src.aaoe.research_hub import ResearchHub
+              hub = ResearchHub()
+              result = hub.daily_research_sweep()
+              print(json.dumps(result, indent=2))
+          except Exception as e:
+              print(f'Research sweep skipped: {e}')
+          " 2>&1 | tee -a artifacts/tier3_security_results.txt
+
+      - name: Governance scan (VM bridge)
+        continue-on-error: true
+        run: |
+          RESULT=$(curl -s --connect-timeout 10 \
+            -X POST "http://34.134.99.90:8001/v1/governance/scan" \
+            -H "Content-Type: application/json" \
+            -d '{"content":"overnight governance check","context":"github_actions_overnight"}' \
+            2>&1) || true
+          echo "Governance scan: $RESULT" | tee -a artifacts/tier3_security_results.txt
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -486,17 +551,19 @@ jobs:
   # SUMMARY: Collect all results
   # ═══════════════════════════════════════════════════════════
   summary:
-    needs: [tier-1-validate, tier-2-test, tier-3-security, tier-4-build, tier-5-training, tier-6-colab]
+    needs: [tier-1-gates, tier-1-validate, tier-2-test, tier-3-security, tier-4-build, tier-5-training, tier-6-colab]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Pipeline summary
         run: |
-          echo "╔══════════════════════════════════════════╗"
+          echo "╔═════════════════════════════��════════════╗"
           echo "║  SCBE Overnight Pipeline — Complete      ║"
           echo "╠══════════════════════════════════════════╣"
+          echo "║  Tier 1 (Gates):     ${{ needs.tier-1-gates.result }}"
           echo "║  Tier 1 (Validate):  ${{ needs.tier-1-validate.result }}"
+          echo "║  VM Status:          ${{ needs.tier-1-validate.outputs.vm_status }}"
           echo "║  Tier 2 (Test):      ${{ needs.tier-2-test.result }}"
           echo "║  Tier 3 (Security):  ${{ needs.tier-3-security.result }}"
           echo "║  Tier 4 (Build):     ${{ needs.tier-4-build.result }}"
