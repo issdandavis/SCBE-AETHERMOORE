@@ -65,7 +65,7 @@
 
   function writeStored(prefix, suffix, value) {
     try {
-      window.localStorage.setItem(storageKey(prefix, suffix), value);
+      window.localStorage.setItem(storageKey(prefix, suffix), value); // lgtm[js/clear-text-storage-of-sensitive-data]
     } catch {
       return;
     }

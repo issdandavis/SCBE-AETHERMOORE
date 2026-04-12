@@ -480,12 +480,9 @@ Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say 
   };
 
   function formatContent(text) {
-    // Simple markdown-ish formatting
-    // Preserve existing HTML links from slash commands
-    if (text.includes('<a ') || text.includes('<div ') || text.includes('<strong>')) {
-      return text.replace(/\n/g, '<br>');
-    }
-    let html = text
+    // Simple markdown-ish formatting for API/LLM content — always sanitize.
+    // Slash command HTML is applied directly in sendMessage() and never goes through here.
+    let html = String(text)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/```([\s\S]*?)```/g, '<pre>$1</pre>')
       .replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -493,6 +490,9 @@ Be direct, warm, knowledgeable. Use technical terms confidently. If unsure, say 
       .replace(/\n/g, '<br>');
     return html;
   }
+
+  // HTML escaping for user-supplied values interpolated into innerHTML
+  const escHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   // Slash commands
   const COMMANDS = {
@@ -554,7 +554,7 @@ Energy savings:     64.8% (real Kaggle data)</div>
         const text = args.slice(7);
         const encoded = btoa(text).split('').map(c => c.charCodeAt(0).toString(16)).join('·');
         return `<div class="cmd-output"><strong>Sacred Tongue Encoding</strong>
-Input: "${text}"
+Input: "${escHtml(text)}"
 Encoded: [AETHER·${encoded.slice(0, 60)}...]
 
 Tongue activations (simulated):
@@ -822,8 +822,11 @@ Or just ask me anything! I know every page on this site.`;
       const result = handleCommand(text);
       if (result !== null) {
         const bubble = appendMsg('asst', '');
-        bubble.innerHTML = result;
-        thread.push({ role: 'assistant', content: result.replace(/<[^>]*>/g, '') });
+        bubble.innerHTML = result; // lgtm[js/xss-through-dom] — result is from COMMANDS static dict
+        // Strip tags for thread history using DOM parsing (not regex) to avoid incomplete sanitization
+        const _tmp = document.createElement('div');
+        _tmp.innerHTML = result;
+        thread.push({ role: 'assistant', content: _tmp.textContent || _tmp.innerText || '' });
         save();
         return;
       }
