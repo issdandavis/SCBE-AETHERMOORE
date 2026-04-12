@@ -36,6 +36,18 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
+# Load .secrets/env.local for SMTP + Stripe credentials (local dev only)
+_secrets_env = os.path.join(os.path.dirname(__file__), "../../.secrets/env.local")
+if os.path.isfile(_secrets_env):
+    with open(_secrets_env) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _, _v = _line.partition("=")
+                _k, _v = _k.strip(), _v.strip()
+                if _k and _v and _k not in os.environ:
+                    os.environ[_k] = _v
+
 from src.scbe_14layer_reference import scbe_14layer_pipeline
 from src.crypto.rwp_v3 import RWPv3Protocol, RWPEnvelope
 from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
@@ -44,6 +56,8 @@ from src.api.saas_routes import saas_router
 from src.api.stripe_billing import billing_router
 
 from src.api.compute_routes import compute_router
+from src.api.search_routes import search_router
+from src.api.llm_routes import llm_router
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -97,6 +111,12 @@ app.include_router(billing_router)
 
 # Energy-aware compute authorization — SCBE Sentinel core product.
 app.include_router(compute_router)
+
+# AetherSearch — governed geometric search with tongue-aware ranking.
+app.include_router(search_router)
+
+# LLM proxy routes (Gemini, etc.) — server-side only (never expose vendor keys to clients).
+app.include_router(llm_router)
 
 # ============================================================================
 # RATE LIMITING

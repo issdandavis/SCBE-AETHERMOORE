@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/training_package_manifest.schema.json",
+  "title": "SCBE Training Package Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "package_id",
+    "package_name",
+    "created_at_utc",
+    "package_dir",
+    "counts",
+    "inputs",
+    "staged",
+    "outputs"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scbe_training_package_manifest_v1"
+    },
+    "package_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "package_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "package_dir": {
+      "type": "string",
+      "minLength": 1
+    },
+    "notes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_files",
+        "sft_files",
+        "sft_rows",
+        "route_consistency_files",
+        "route_consistency_rows",
+        "model_trace_files",
+        "model_trace_rows",
+        "rights_files",
+        "rights_rows"
+      ],
+      "properties": {
+        "source_files": { "type": "integer", "minimum": 0 },
+        "sft_files": { "type": "integer", "minimum": 0 },
+        "sft_rows": { "type": "integer", "minimum": 0 },
+        "route_consistency_files": { "type": "integer", "minimum": 0 },
+        "route_consistency_rows": { "type": "integer", "minimum": 0 },
+        "model_trace_files": { "type": "integer", "minimum": 0 },
+        "model_trace_rows": { "type": "integer", "minimum": 0 },
+        "rights_files": { "type": "integer", "minimum": 0 },
+        "rights_rows": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "raw_sources",
+        "normalized"
+      ],
+      "properties": {
+        "raw_sources": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "normalized": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sft",
+            "route_consistency",
+            "model_traces",
+            "rights"
+          ],
+          "properties": {
+            "sft": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "route_consistency": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "model_traces": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "rights": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "staged": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_files",
+        "normalized_files"
+      ],
+      "properties": {
+        "source_files": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/stagedFile" }
+        },
+        "normalized_files": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sft",
+            "route_consistency",
+            "model_traces",
+            "rights"
+          ],
+          "properties": {
+            "sft": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/stagedFile" }
+            },
+            "route_consistency": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/stagedFile" }
+            },
+            "model_traces": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/stagedFile" }
+            },
+            "rights": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/stagedFile" }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "merged_sft",
+        "merged_route_consistency",
+        "merged_model_traces",
+        "merged_rights",
+        "report",
+        "archive"
+      ],
+      "properties": {
+        "merged_sft": { "type": ["string", "null"] },
+        "merged_route_consistency": { "type": ["string", "null"] },
+        "merged_model_traces": { "type": ["string", "null"] },
+        "merged_rights": { "type": ["string", "null"] },
+        "report": { "type": "string", "minLength": 1 },
+        "archive": { "type": ["string", "null"] }
+      }
+    }
+  },
+  "$defs": {
+    "stagedFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "original_path",
+        "staged_path",
+        "size_bytes",
+        "sha256"
+      ],
+      "properties": {
+        "original_path": { "type": "string", "minLength": 1 },
+        "staged_path": { "type": "string", "minLength": 1 },
+        "size_bytes": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "minLength": 32 },
+        "record_count": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    }
+  }
+}

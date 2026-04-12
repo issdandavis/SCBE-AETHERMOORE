@@ -179,6 +179,31 @@ All records are normalized to these core fields:
 
 Some files use `instruction` instead of `prompt` as the input field. The merge script normalizes everything to `prompt`/`response`.
 
+## Portable Training Packages
+
+For reusable packaging, build a contained training package instead of hand-copying loose files. The package builder stages raw sources, validates canonical record lanes, emits merged JSONL entrypoints, and can zip the result for reuse or handoff.
+
+Example:
+
+```powershell
+python scripts/build_training_package.py `
+  --package-name "gov-research-pack" `
+  --source "notes\\agent-memory\\2026-04-09-gov-research-and-funding-memory.md" `
+  --sft "training\\sft_records\\*.jsonl" `
+  --route-records "training-data\\route_consistency\\*.jsonl" `
+  --model-traces "training-data\\model_traces\\**\\*.jsonl" `
+  --rights-records "training\\ingest\\ingestion_rights_records.jsonl" `
+  --archive
+```
+
+Package output goes under `training-data/packages/<package-id>/` and contains:
+
+- `sources/` for staged raw inputs
+- `normalized/` for staged and merged JSONL lanes
+- `manifest.json` for counts and provenance
+- `package_report.md` for quick inspection
+- optional `.zip` archive for portable reuse
+
 ### Additional Fields (file-dependent)
 
 | Field | Appears In | Description |

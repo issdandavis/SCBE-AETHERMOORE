@@ -34,6 +34,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from .council_manifold_backend import CouncilManifoldBackend
 from .negative_tongue_lattice import NegativeTongueLattice
 from .trichromatic_governance import TrichromaticGovernanceEngine
 
@@ -235,7 +236,11 @@ class _SklearnPromptAttackClassifier:
 # Default reroute table — dangerous actions → safe alternatives
 DEFAULT_REROUTES: List[RerouteRule] = [
     RerouteRule("file.*read.*/etc/passwd", "file_read_denied", "system file access blocked"),
-    RerouteRule("http.*external.*send", "log_intent_only", "external data send → log only"),
+    RerouteRule(
+        "http.*external.*send|send.*https?://|post.*https?://|upload.*https?://|forward.*https?://",
+        "log_intent_only",
+        "external data send → log only",
+    ),
     RerouteRule(
         "execute.*shell|exec.*command|os\\.system",
         "sandbox_execute",
@@ -243,7 +248,7 @@ DEFAULT_REROUTES: List[RerouteRule] = [
     ),
     RerouteRule("delete.*all|drop.*table|rm.*-rf", "soft_delete", "destructive op → soft delete"),
     RerouteRule(
-        "api.*key|secret|token|password",
+        "api.*key|client.*secret|secret.*key|access.*token|auth.*token|bearer.*token|oauth.*token|refresh.*token|session.*token|password|credential|seed.*phrase|wallet.*key|private.*key",
         "redact_and_log",
         "credential access → redacted",
     ),
@@ -253,6 +258,138 @@ DEFAULT_REROUTES: List[RerouteRule] = [
         "external publish → review queue",
     ),
 ]
+
+HIGH_CONFIDENCE_SECRET_MARKERS = (
+    "password",
+    "api key",
+    "credential",
+    "private key",
+    "seed phrase",
+    "mnemonic phrase",
+    "wallet seed",
+)
+HIGH_CONFIDENCE_SECRET_TOKEN_PHRASES = (
+    "access token",
+    "api token",
+    "auth token",
+    "bearer token",
+    "oauth token",
+    "refresh token",
+    "session token",
+)
+HIGH_CONFIDENCE_SECRET_CONTEXT_TERMS = (
+    "access",
+    "api",
+    "auth",
+    "bearer",
+    "credential",
+    "database",
+    "db",
+    "key",
+    "mnemonic",
+    "private key",
+    "seed",
+    "session",
+    "wallet",
+)
+HIGH_CONFIDENCE_SECRET_VERBS = (
+    "show",
+    "reveal",
+    "output",
+    "dump",
+    "print",
+    "read",
+    "fetch",
+    "give me",
+    "tell me",
+)
+HIGH_CONFIDENCE_EXFIL_VERBS = (
+    "send",
+    "post",
+    "upload",
+    "forward",
+    "exfiltrate",
+)
+HIGH_CONFIDENCE_OVERRIDE_PHRASES = (
+    "you are dan",
+    "do anything now",
+    "pretend you are",
+    "completely different ai",
+    "ignore all previous instructions",
+    "ignore previous instructions",
+    "bypass all safety",
+    "bypass safety",
+    "disable safety",
+    "without safety",
+    "without restrictions",
+    "developer mode",
+    "god mode",
+    "no restrictions",
+    "hidden instructions",
+    "system prompt",
+)
+HIGH_CONFIDENCE_OVERRIDE_ACTIONS = (
+    "act as",
+    "pretend",
+    "ignore",
+    "bypass",
+    "disable",
+    "forget",
+    "disregard",
+    "override",
+    "reveal",
+    "show",
+    "print",
+    "output",
+)
+HIGH_CONFIDENCE_PROMPT_INJECTION_OPERATORS = (
+    "show",
+    "demonstrate",
+    "craft",
+    "write",
+    "generate",
+    "perform",
+    "execute",
+    "use",
+)
+HIGH_CONFIDENCE_DESTRUCTIVE_MARKERS = (
+    "rm -rf",
+    "delete all",
+    "drop table",
+    "wipe database",
+    "truncate table",
+)
+URL_LIKE_RE = re.compile(r"https?://|\\b(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,}(?:/[^\s]*)?", re.IGNORECASE)
+
+
+def _is_high_confidence_override_attempt(action_text: str) -> bool:
+    text = action_text.lower()
+
+    if any(phrase in text for phrase in HIGH_CONFIDENCE_OVERRIDE_PHRASES):
+        return True
+
+    has_override_action = any(action in text for action in HIGH_CONFIDENCE_OVERRIDE_ACTIONS)
+    has_override_target = any(
+        marker in text
+        for marker in (
+            "jailbreak",
+            "unrestricted",
+            "safety filters",
+            "safety guardrails",
+            "system instructions",
+            "system prompt",
+            "hidden instructions",
+        )
+    )
+    if has_override_action and has_override_target:
+        return True
+
+    if "prompt injection" in text and any(
+        operator in text for operator in HIGH_CONFIDENCE_PROMPT_INJECTION_OPERATORS
+    ):
+        return True
+
+    return False
 
 
 class RuntimeGate:
@@ -289,6 +426,8 @@ class RuntimeGate:
         use_trichromatic_governance: bool = False,
         trichromatic_quarantine_threshold: float = 0.48,
         trichromatic_deny_threshold: float = 0.76,
+        use_council_manifold: bool = False,
+        council_manifold_seeds_path: Optional[Path] = None,
     ):
         # Thresholds
         self.cost_allow = cost_allow
@@ -350,6 +489,21 @@ class RuntimeGate:
         self._trichromatic_engine: Optional[TrichromaticGovernanceEngine] = (
             TrichromaticGovernanceEngine() if self._trichromatic_enabled else None
         )
+
+        # Council manifold overlay: stabilized 10-seed council router from
+        # flights 006-009. Operates as a third overlay tier behind classifier
+        # and trichromatic. Routes ALLOW/QUARANTINE/ESCALATE/DENY on a mixed
+        # hyperbolic+torus+z metric over a 21D canonical probe.
+        self._council_manifold_enabled = use_council_manifold
+        self._council_manifold: Optional[CouncilManifoldBackend] = None
+        if self._council_manifold_enabled:
+            try:
+                self._council_manifold = CouncilManifoldBackend(
+                    seeds_path=council_manifold_seeds_path,
+                )
+            except (FileNotFoundError, OSError):
+                self._council_manifold = None
+                self._council_manifold_enabled = False
 
     # ------------------------------------------------------------------ #
     #  Tongue coordinate extraction
@@ -679,6 +833,38 @@ class RuntimeGate:
                 return rule
         return None
 
+    def _is_high_confidence_reroute(self, action_text: str, rule: RerouteRule) -> bool:
+        text = action_text.lower()
+
+        if rule.replacement == "redact_and_log":
+            has_secret_marker = any(marker in text for marker in HIGH_CONFIDENCE_SECRET_MARKERS)
+            has_qualified_token = any(phrase in text for phrase in HIGH_CONFIDENCE_SECRET_TOKEN_PHRASES)
+            has_contextual_secret = "secret" in text and any(
+                term in text for term in HIGH_CONFIDENCE_SECRET_CONTEXT_TERMS
+            )
+            return any(verb in text for verb in HIGH_CONFIDENCE_SECRET_VERBS) and (
+                has_secret_marker or has_qualified_token or has_contextual_secret
+            )
+
+        if rule.replacement == "log_intent_only":
+            has_route_verb = any(verb in text for verb in HIGH_CONFIDENCE_EXFIL_VERBS)
+            has_external_target = "external" in text or "webhook" in text or bool(URL_LIKE_RE.search(text))
+            return has_route_verb and has_external_target
+
+        if rule.replacement == "soft_delete":
+            return any(marker in text for marker in HIGH_CONFIDENCE_DESTRUCTIVE_MARKERS)
+
+        if rule.replacement == "sandbox_execute":
+            return "rm -rf" in text or (
+                any(term in text for term in ("run ", "execute ", "shell", "os.system", "exec("))
+                and any(marker in text for marker in HIGH_CONFIDENCE_DESTRUCTIVE_MARKERS)
+            )
+
+        if rule.replacement == "file_read_denied":
+            return any(path in text for path in ("/etc/passwd", "/etc/shadow"))
+
+        return False
+
     def _classify_attack(self, text: str) -> Optional[float]:
         if not self._classifier_enabled:
             return None
@@ -895,14 +1081,28 @@ class RuntimeGate:
         # During the first five requests we skip calibration for explicit
         # reroute matches and reroute them immediately instead of learning
         # them into the centroid.
-        if reroute_rule is not None and (self._query_count <= 5 or cost > self.cost_allow or magnitude >= 3):
+        reroute_high_confidence = (
+            reroute_rule is not None and self._is_high_confidence_reroute(full_text, reroute_rule)
+        )
+        if reroute_rule is not None and (
+            self._query_count <= 5
+            or cost > self.cost_allow
+            or magnitude >= 3
+            or classifier_quarantine
+            or reroute_high_confidence
+        ):
+            reroute_signals = [f"reroute_match({reroute_rule.pattern})"]
+            if reroute_high_confidence:
+                reroute_signals.append("high_confidence_match")
+            else:
+                reroute_signals.append("semantic_confirmed")
             fib_trust = fibonacci_trust_level(self._trust_history)
             result = GateResult(
                 decision=Decision.REROUTE,
                 cost=cost,
                 spin_magnitude=magnitude,
                 tongue_coords=coords,
-                signals=[f"reroute_match({reroute_rule.pattern})", "semantic_confirmed"],
+                signals=reroute_signals,
                 reroute_to=reroute_rule.replacement,
                 action_hash=action_hash,
                 timestamp=ts,
@@ -949,6 +1149,9 @@ class RuntimeGate:
         effective_cost_deny = self.cost_deny * trust_multiplier
 
         signals: List[str] = [f"fib_trust({trust_level},w={trust_weight},idx={trust_index})"]
+
+        if _is_high_confidence_override_attempt(full_text):
+            signals.append("override_quarantine(high_confidence)")
 
         # ---- Cost-based decision ----
 
@@ -1050,6 +1253,33 @@ class RuntimeGate:
                         )
                     decision = escalated
 
+            # Council manifold overlay — third tier, escalate-only
+            if self._council_manifold is not None:
+                council_decision, council_signals, _routing = self._council_manifold.decide(
+                    coords,
+                    trust_level_idx=trust_index,
+                    null_anomaly=null_anomaly,
+                    cumulative_cost=self._cumulative_cost,
+                    spin_magnitude=magnitude,
+                    query_count=self._query_count,
+                    classifier_score=classifier_score,
+                    trichromatic_risk=(
+                        trichromatic_risk if self._trichromatic_engine is not None else None
+                    ),
+                )
+                signals.extend(council_signals)
+                escalated = _escalate_decision(decision, council_decision)
+                if escalated != decision:
+                    if escalated == Decision.DENY:
+                        signals.append(f"council_manifold_veto_deny({council_decision.value})")
+                        self._immune.add(action_hash)
+                        noise = _fail_to_noise(action_hash)
+                    elif escalated == Decision.QUARANTINE:
+                        signals.append(f"council_manifold_veto_quarantine({council_decision.value})")
+                    elif escalated == Decision.REVIEW:
+                        signals.append(f"council_manifold_veto_review({council_decision.value})")
+                    decision = escalated
+
             if decision == Decision.ALLOW and self._trichromatic_engine is not None:
                 self._trichromatic_engine.update_baseline(tri_state)
 
@@ -1131,7 +1361,7 @@ class RuntimeGate:
         # --- KO Council: Intent Review ---
         # Check if action text sentiment matches the tongue coordinate
         ko_coord = coords[0]
-        has_override_language = any(
+        has_override_language = _is_high_confidence_override_attempt(action_text) or any(
             w in text_upper
             for w in [
                 "OVERRIDE",
@@ -1146,7 +1376,7 @@ class RuntimeGate:
                 "GOD MODE",
             ]
         )
-        ko_pass = not (has_override_language and ko_coord > 0.5)
+        ko_pass = not has_override_language
         reviews.append(
             (
                 "KO_intent",

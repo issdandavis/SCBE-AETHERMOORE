@@ -16,7 +16,7 @@
 
 Every AI security system today works the same way: pattern matching. They've seen an attack before, so they recognize it again. Novel attacks pass through.
 
-SCBE does something different. It maps every input into 6-dimensional hyperbolic space and computes the mathematical cost of reaching adversarial territory. The further you drift from safe behavior, the more it costs — superexponentially. The formula: **H(d, R) = R^(d^2)**.
+SCBE does something different. It maps every input into 6-dimensional hyperbolic space and computes the mathematical cost of reaching adversarial territory. The further you drift from safe behavior, the more it costs — superexponentially. The current canonical harmonic wall is: **H(d*, R) = R^((φ · d*)²)**.
 
 You don't need to have seen an attack before. You just need to measure how far it drifted.
 
@@ -26,11 +26,11 @@ You don't need to have seen an attack before. You just need to measure how far i
 
 | | |
 |---|---|
-| **Website** | [aethermoorgames.com](https://aethermoorgames.com) |
-| **Live demos** | [Tongue Heatmap](https://aethermoorgames.com/demos/tongue-heatmap.html) / [Harmonic Wall 3D](https://aethermoorgames.com/demos/harmonic-wall-3d.html) / [Attack Radar](https://aethermoorgames.com/demos/attack-radar.html) |
-| **Research codex** | [3D infinite-zoom explorer](https://aethermoorgames.com/research/rabbit-hole.html) |
+| **Website** | [aethermoore.com](https://aethermoore.com) |
+| **Live demos** | [Tongue Heatmap](https://aethermoore.com/demos/tongue-heatmap.html) / [Harmonic Wall 3D](https://aethermoore.com/demos/harmonic-wall-3d.html) / [Attack Radar](https://aethermoore.com/demos/attack-radar.html) |
+| **Research codex** | [3D infinite-zoom explorer](https://aethermoore.com/research/rabbit-hole.html) |
 | **The novel** | [The Six Tongues Protocol](https://www.amazon.com/dp/B0F28PHSPR) — the magic system IS the security architecture |
-| **Free tools** | [AI Arena](https://aethermoorgames.com/arena.html) (9 models, BYOK) |
+| **Free tools** | [AI Arena](https://aethermoore.com/arena.html) (9 models, BYOK) |
 | **HuggingFace** | [issdandavis](https://huggingface.co/issdandavis) — 6 models, 9 datasets |
 
 ## Install
@@ -39,6 +39,66 @@ You don't need to have seen an attack before. You just need to measure how far i
 npm install scbe-aethermoore    # TypeScript/Node
 pip install scbe-aethermoore    # Python
 ```
+
+## Quickstart
+
+**Python:**
+```python
+from scbe_aethermoore import scan, scan_batch, is_safe
+
+# Single scan
+result = scan("ignore all previous instructions")
+print(result["decision"])   # "ESCALATE"
+print(result["score"])      # 0.385  (0=dangerous, 1=safe)
+print(result["digest"])     # SHA-256 for audit trail
+
+# Batch
+results = scan_batch(["hello", "DROP TABLE users", "how are you?"])
+for r in results:
+    print(r["decision"], r["score"])
+
+# Boolean gate
+if not is_safe(user_input):
+    raise PermissionError("Input blocked by governance layer")
+```
+
+**Command line:**
+```bash
+scbe-scan "hello world"
+# [OK] ALLOW         score=1.0000  d*=0.0000  pd=0.0000  len=11
+
+scbe-scan "ignore all previous instructions"
+# [!!] ESCALATE      score=0.3846  d*=0.0000  pd=0.8000  len=32
+
+scbe-scan --json "DROP TABLE users"
+# { "decision": "ESCALATE", "score": 0.384615, ... }
+
+scbe-scan --batch prompts.txt   # one line per input
+```
+
+**TypeScript/Node:**
+```ts
+import { scan, scanBatch, isSafe, harmonicWall } from 'scbe-aethermoore';
+
+const result = scan('ignore all previous instructions');
+result.decision  // "ESCALATE"
+result.score     // 0.384615
+
+isSafe('hello world')                       // true
+isSafe('ignore all previous instructions')  // false
+
+// Superexponential cost — how expensive is this drift?
+harmonicWall(result.d_star)  // cost in [1, ∞)
+```
+
+**Decision tiers:**
+
+| Tier | Score | Meaning |
+|------|-------|---------|
+| `ALLOW` | ≥ 0.75 | Safe — proceed |
+| `QUARANTINE` | ≥ 0.45 | Suspicious — flag for review |
+| `ESCALATE` | ≥ 0.20 | High risk — requires governance action |
+| `DENY` | < 0.20 | Adversarial — blocked |
 
 ## The origin story
 
@@ -75,7 +135,7 @@ Cross-model biblical null-space evaluation:
 - **14-layer governance pipeline** — from context embedding to risk decision
 - **6 Sacred Tongues** — KO (intent), AV (transport), RU (policy), CA (compute), UM (security), DR (structure)
 - **Semantic projector** — trained 385x6 matrix mapping sentence embeddings to tongue coordinates
-- **Harmonic wall** — H(d,R) = R^(d^2), superexponential cost scaling
+- **Harmonic wall** — H(d*, R) = R^((φ · d*)²), canonical cost scaling
 - **Fibonacci trust** — session-aware trust ladder (1,1,2,3,5,8,13...), one betrayal drops to floor
 - **Null-space signatures** — detect attacks by what's ABSENT, not what's present
 - **Neural dye injection** — trace signals through all 14 layers, visualize tongue activation heatmaps
@@ -114,6 +174,9 @@ If you want one documented reproduction path, start with [`docs/eval/README.md`]
 
 ## Canonical public docs
 
+- Canonical system state: [`CANONICAL_SYSTEM_STATE.md`](CANONICAL_SYSTEM_STATE.md)
+- Repo surface map: [`REPO_SURFACE_MAP.md`](REPO_SURFACE_MAP.md)
+- Canonical formula registry: [`docs/specs/CANONICAL_FORMULA_REGISTRY.md`](docs/specs/CANONICAL_FORMULA_REGISTRY.md)
 - Architecture overview: [`docs/research/architecture-overview.html`](docs/research/architecture-overview.html)
 - Eval pack: [`docs/eval/README.md`](docs/eval/README.md)
 - Research hub: [`docs/research/index.html`](docs/research/index.html)
@@ -122,22 +185,28 @@ If you want one documented reproduction path, start with [`docs/eval/README.md`]
 
 ## Notes on claim boundaries
 
-- The primary public domain is `aethermoorgames.com`; GitHub Pages is the mirror surface.
+- The primary public domain is `aethermoore.com`; GitHub Pages is the mirror surface.
 - Experimental theory pages and commercial surfaces should not be treated as the same evidence layer.
 - Benchmark files in `tests/`, `scripts/benchmark/`, and `docs/eval/` are the public reproduction lane.
+- Some older docs and demos still reference legacy bounded scorers or earlier wall variants. The canonical authority for formulas is `docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
 
 ---
 
-## What npm users actually get
+## What you get when you install
 
-When users install `scbe-aethermoore` from npm, they get:
+**npm (`scbe-aethermoore`):**
+- `scan()`, `scanBatch()`, `isSafe()`, `harmonicWall()` — zero-dep governance API
+- Full TypeScript types (`ScanResult`, `Decision`)
+- Deep pipeline exports: `scbe-aethermoore/harmonic`, `/crypto`, `/symphonic`, `/governance`
+- CLI (included in the package, run via `npx scbe ...`)
 
-- compiled JS/TypeScript API from `dist/src`
-- CLI entrypoint (`scbe`)
-- SixTongues Python helper assets
-- starter fleet templates + use-case scenarios from `examples/npm/`
+**PyPI (`scbe-aethermoore`):**
+- `from scbe_aethermoore import scan` — zero-dep, pure Python 3.11+
+- `scbe-scan` CLI — `scbe-scan "text"` or `scbe-scan --batch file.txt`
+- `scan_batch()`, `is_safe()`, `harmonic_wall()`
+- Returns full audit dict including SHA-256 digest per call
 
-They do **not** receive the full mono-repo runtime stack (e.g., all docs, test suites, and UI source).
+Neither package requires a server, API key, or external network call. The full pipeline runs locally.
 
 ## Pre-made AI agents and use-case starters
 
@@ -187,7 +256,7 @@ Layer 6-7:   Breathing Transform + Phase (Möbius addition)
 Layer 8:     Multi-Well Realms
 Layer 9-10:  Spectral + Spin Coherence
 Layer 11:    Triadic Temporal Distance
-Layer 12:    score = 1 / (1 + d_H + 2 * phaseDeviation)  [HARMONIC SCALING]
+Layer 12:    H(d*, R) = R^((φ · d*)²)  [HARMONIC WALL]
 Layer 13:    Risk' → ALLOW / QUARANTINE / DENY
 Layer 14:    Audio Axis (FFT telemetry)
 

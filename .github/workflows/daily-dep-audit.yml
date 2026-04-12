@@ -1,0 +1,115 @@
+name: Daily Dependency Audit
+
+on:
+  schedule:
+    - cron: '0 4 * * *'  # Daily at 4 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  npm-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Audit
+        id: audit
+        run: |
+          set +e
+          npm audit --json > npm-audit.json 2>&1
+          set -e
+          python3 - <<'PYEOF'
+          import json, os
+          from pathlib import Path
+          data = json.loads(Path("npm-audit.json").read_text()) if Path("npm-audit.json").exists() else {}
+          vulns = data.get("metadata", {}).get("vulnerabilities", {})
+          c = int(vulns.get("critical", 0) or 0)
+          h = int(vulns.get("high", 0) or 0)
+          m = int(vulns.get("moderate", 0) or 0)
+          total = c + h + m
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"critical={c}\nhigh={h}\nmoderate={m}\ntotal={total}\n")
+          PYEOF
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-daily
+          path: npm-audit.json
+          retention-days: 30
+    outputs:
+      critical: ${{ steps.audit.outputs.critical }}
+      high: ${{ steps.audit.outputs.high }}
+      total: ${{ steps.audit.outputs.total }}
+
+  pip-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit
+        id: audit
+        run: |
+          pip install pip-audit
+          if [ -f requirements.txt ]; then pip install -r requirements.txt 2>/dev/null || true; fi
+          set +e
+          pip-audit --format json --output pip-audit.json 2>&1
+          EXIT_CODE=$?
+          set -e
+          python3 - <<'PYEOF'
+          import json, os
+          from pathlib import Path
+          report = Path("pip-audit.json")
+          count = 0
+          if report.exists():
+              try:
+                  data = json.loads(report.read_text())
+                  if isinstance(data, list):
+                      count = sum(1 for d in data if d.get("vulns"))
+                  elif isinstance(data, dict):
+                      count = sum(1 for d in data.get("dependencies", []) if d.get("vulns"))
+              except Exception:
+                  pass
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"vuln_packages={count}\n")
+          PYEOF
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-daily
+          path: pip-audit.json
+          retention-days: 30
+    outputs:
+      vuln_packages: ${{ steps.audit.outputs.vuln_packages }}
+
+  alert:
+    needs: [npm-audit, pip-audit]
+    if: always() && (needs.npm-audit.outputs.critical > 0 || needs.pip-audit.outputs.vuln_packages > 0)
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create alert
+        uses: actions/github-script@v7
+        env:
+          NPM_CRIT: ${{ needs.npm-audit.outputs.critical }}
+          NPM_HIGH: ${{ needs.npm-audit.outputs.high }}
+          NPM_TOTAL: ${{ needs.npm-audit.outputs.total }}
+          PIP_VULNS: ${{ needs.pip-audit.outputs.vuln_packages }}
+        with:
+          script: |
+            const today = new Date().toISOString().slice(0, 10);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Dependency Vulnerabilities - ${today}`,
+              body: `## Daily Dependency Audit\n\n| Package Manager | Critical | High | Total |\n|---|---|---|---|\n| npm | ${process.env.NPM_CRIT} | ${process.env.NPM_HIGH} | ${process.env.NPM_TOTAL} |\n| pip | — | — | ${process.env.PIP_VULNS} vulnerable |\n\nRun \`npm audit fix\` and \`pip-audit --fix\` to resolve.\n\n---\n*Automated by daily-dep-audit*`,
+              labels: ['dependencies', 'automated'],
+            });

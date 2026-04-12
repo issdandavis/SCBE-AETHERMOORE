@@ -1,5 +1,5 @@
 # Architecture Overview
-This document serves as a critical, living template designed to equip agents with a rapid and comprehensive understanding of the codebase's architecture, enabling efficient navigation and effective contribution from day one.
+This document is a working architecture map, not the final formula authority. For canonical runtime state and formula precedence, read `CANONICAL_SYSTEM_STATE.md` and `docs/specs/CANONICAL_FORMULA_REGISTRY.md` first.
 
 ## 1. Project Structure
 
@@ -127,7 +127,7 @@ SCBE-AETHERMOORE/
 
 **Name:** Hyperbolic Geometry Security Pipeline
 
-**Description:** The core mathematical engine that processes inputs through 14 sequential transformations using hyperbolic geometry in the Poincaré ball model. Each layer adds security properties.
+**Description:** The core mathematical engine that processes inputs through 14 sequential transformations using hyperbolic geometry in the Poincaré ball model. Each layer adds security properties. Layer-level formulas in this file are descriptive only; the canonical formula source is `docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
 
 **Technologies:** TypeScript, Python (NumPy)
 
@@ -143,7 +143,7 @@ SCBE-AETHERMOORE/
 9. Spectral Coherence - Frequency analysis
 10. Spin Coherence - Quantum-inspired coherence
 11. Triadic Temporal - Time-based validation
-12. Harmonic Wall - Harmonic boundary enforcement
+12. Harmonic Wall - canonical wall `H(d*, R) = R^((φ · d*)²)`
 13. Composite Risk - Risk aggregation
 14. Audio Axis - Final output encoding
 
@@ -323,7 +323,7 @@ uvicorn api.main:app --reload
 
 **Primary Contact:** Issac Daniel Davis (issdandavis@gmail.com)
 
-**Date of Last Update:** 2026-01-28
+**Date of Last Update:** 2026-04-08
 
 ## 11. Glossary / Acronyms
 

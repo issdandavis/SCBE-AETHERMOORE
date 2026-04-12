@@ -22,8 +22,8 @@
 ### Phases
 | Phase | Duration | Focus | Metrics |
 |-------|----------|-------|---------|
-| **Phase 1** (Base) | ~12 months | Feasibility Study | Inferencing only |
-| **Phase 2** (Option) | ~12 months | Proof of Concept | Inferencing + Training |
+| **Phase 1** (Base) | See solicitation / amendments | Feasibility Study | Inferencing only |
+| **Phase 2** (Option) | See solicitation / amendments | Proof of Concept | Inferencing + Training |
 
 ### Funding
 - Total cap: $2,000,000 per performer (Phase 1 + Phase 2 combined)
@@ -124,6 +124,19 @@ These are what DARPA evaluates performers on:
 | Classification | UNCLASSIFIED |
 
 **Note**: Check the actual solicitation on SAM.gov for exact page limits. Standard DARPA PAs vary (typically 15-25 pages for Volume 1).
+
+---
+
+## Draft Artifacts in This Repo (Proposal Build Inputs)
+
+Use these as the source-of-truth building blocks for the submission PDFs:
+
+- Technical Volume draft (v1): `docs/proposals/DARPA_CLARA/04_TECHNICAL_VOLUME_DRAFT.md`
+- White paper outline: `docs/proposals/DARPA_CLARA/03_WHITE_PAPER_OUTLINE.md`
+- 1-page abstract: `docs/proposals/DARPA_CLARA/CLARA_ABSTRACT_1page.md`
+- Detailed abstract: `docs/proposals/DARPA_CLARA/CLARA_ABSTRACT_v1.md`
+- Morning ops checklist: `docs/proposals/DARPA_CLARA/MORNING_BRIEFING_2026-04-07.md`
+- Outreach drafts: `docs/darpa/JHA_OUTREACH_DRAFT.md`, `docs/darpa/I2O_BAA_ABSTRACT_DRAFT.md`, `docs/darpa/MATHBAC_TEAMING_PROFILE.md`
 
 ---
 

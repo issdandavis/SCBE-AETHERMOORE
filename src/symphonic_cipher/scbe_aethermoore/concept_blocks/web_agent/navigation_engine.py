@@ -137,6 +137,19 @@ class URLGraph:
 
 
 @dataclass
+class ResearchQuery:
+    """A mid-navigation research query with time budget."""
+
+    query: str
+    context: str = ""
+    time_budget_seconds: float = 5.0
+    sources: List[str] = field(default_factory=list)
+    result: Optional[str] = None
+    resolved: bool = False
+    created_at: float = field(default_factory=time.time)
+
+
+@dataclass
 class NavigationState:
     """Current state of the navigation engine."""
 
@@ -150,6 +163,11 @@ class NavigationState:
     max_steps: int = 100
     errors_total: int = 0
     start_time: float = field(default_factory=time.time)
+    # Research state
+    pending_research: List[ResearchQuery] = field(default_factory=list)
+    completed_research: List[ResearchQuery] = field(default_factory=list)
+    research_time_spent: float = 0.0
+    research_budget_seconds: float = 30.0  # Total research budget per task
 
     @property
     def is_at_goal(self) -> bool:
@@ -213,6 +231,61 @@ class NavigationEngine:
         self._state.goal_url = goal_url
         self._state.goal_description = goal_description
 
+    # -- research mid-navigation ---------------------------------------------
+
+    def request_research(self, query: str, context: str = "", time_budget: float = 5.0) -> ResearchQuery:
+        """Queue a research query to be executed during navigation."""
+        rq = ResearchQuery(query=query, context=context, time_budget_seconds=time_budget)
+        self._state.pending_research.append(rq)
+        return rq
+
+    def resolve_research(self, query: ResearchQuery, result: str, sources: Optional[List[str]] = None) -> None:
+        """Resolve a pending research query with results."""
+        query.result = result
+        query.sources = sources or []
+        query.resolved = True
+        if query in self._state.pending_research:
+            self._state.pending_research.remove(query)
+        self._state.completed_research.append(query)
+        self._state.research_time_spent += query.time_budget_seconds
+
+    @property
+    def has_research_budget(self) -> bool:
+        return self._state.research_time_spent < self._state.research_budget_seconds
+
+    def _should_research(self, page: PageUnderstanding) -> Optional[ResearchQuery]:
+        """Detect if current page state warrants a research query.
+
+        Triggers research when:
+        1. Page type is unclassified and we have no route
+        2. We've hit repeated errors (3+) suggesting we don't understand the page
+        3. There are pending research queries waiting
+        """
+        # Serve pending queries first
+        if self._state.pending_research:
+            return self._state.pending_research[0]
+
+        if not self.has_research_budget:
+            return None
+
+        # Unknown page with no route — research what this page is
+        if page.page_type == "unknown" and not self._state.planned_route:
+            return ResearchQuery(
+                query=f"What type of page is {page.url}? How to navigate from here to {self._state.goal_description or self._state.goal_url}",
+                context=f"Title: {page.title}. Content preview: {page.text_summary[:200]}",
+                time_budget_seconds=3.0,
+            )
+
+        # Repeated errors — research the obstacle
+        if self._state.errors_total >= 3 and self._state.errors_total % 3 == 0:
+            return ResearchQuery(
+                query=f"Navigation blocked at {page.url}. {self._state.errors_total} errors. How to proceed?",
+                context=f"Goal: {self._state.goal_description}. Page type: {page.page_type}",
+                time_budget_seconds=4.0,
+            )
+
+        return None
+
     def observe_page(self, page: PageUnderstanding) -> None:
         """Feed current page observation into the engine."""
         self._state.current_url = page.url
@@ -236,6 +309,29 @@ class NavigationEngine:
 
         # SENSE: estimate where we are relative to goal
         self._estimate_progress()
+
+        # RESEARCH: check if we need to research before continuing
+        research_need = self._should_research(page)
+        if research_need and self.has_research_budget:
+            # Emit a RESEARCH action — the orchestrator will handle the query
+            action = BrowserAction(
+                action_type=ActionType.RESEARCH,
+                target=research_need.query,
+                data=research_need.context,
+                metadata={
+                    "time_budget": research_need.time_budget_seconds,
+                    "research_spent": self._state.research_time_spent,
+                    "research_budget": self._state.research_budget_seconds,
+                },
+            )
+            # Track as pending if not already there
+            if research_need not in self._state.pending_research:
+                self._state.pending_research.append(research_need)
+            action, decision = self._pad.prepare_action(action)
+            if decision != "DENY":
+                self._state.steps_taken += 1
+                return action
+            # Research denied by governance — continue without it
 
         # PLAN: find route if we don't have one or we've drifted
         if not self._state.planned_route or self._is_off_route():

@@ -15,6 +15,7 @@ Features:
 
 import asyncio
 import json
+import sys
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
@@ -22,6 +23,27 @@ from enum import Enum
 import uuid
 
 from .llm_providers import LLMProvider, LLMResponse, create_provider, HYDRA_SYSTEM_PROMPT
+
+
+def _safe_console_print(text: str) -> None:
+    """Print text without letting console encoding issues break head connection."""
+    try:
+        print(text)
+        return
+    except UnicodeEncodeError:
+        pass
+
+    sanitized = text.encode("ascii", errors="replace").decode("ascii")
+    stream = getattr(sys, "stdout", None)
+    if stream is not None:
+        try:
+            stream.write(sanitized + ("" if sanitized.endswith("\n") else "\n"))
+            stream.flush()
+            return
+        except Exception:
+            pass
+
+    print(sanitized.encode("ascii", errors="replace").decode("ascii"))
 
 
 class AIType(str, Enum):
@@ -239,7 +261,7 @@ class HydraHead:
 
             self.status = HeadStatus.CONNECTED
 
-            print(f"""
+            _safe_console_print(f"""
 ╔════════════════════════════════════════════════════════════════╗
 ║  HYDRA HEAD CONNECTED                                          ║
 ╠════════════════════════════════════════════════════════════════╣

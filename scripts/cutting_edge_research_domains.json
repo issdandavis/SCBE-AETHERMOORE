@@ -1,0 +1,150 @@
+{
+  "domains": [
+    {
+      "id": "multi_agent_coordination",
+      "arxiv_categories": ["cs.MA", "cs.AI", "cs.DC"],
+      "search_terms": ["multi-agent coordination", "agent communication protocol", "Byzantine fault tolerance agents"],
+      "skills": [
+        "scbe-ai-to-ai-communication", "scbe-claude-crosstalk-workflow", "scbe-session-crosstalk-manager",
+        "scbe-crosstalk-reliability", "multi-agent-orchestrator", "multi-agent-review-gate",
+        "agent-handoff-packager", "scbe-overwatch-relay-swarm", "octoarms-hydra-model-swarm"
+      ]
+    },
+    {
+      "id": "autonomous_web_agents",
+      "arxiv_categories": ["cs.AI", "cs.IR", "cs.CL"],
+      "search_terms": ["autonomous web agent", "browser automation AI", "web navigation agent safety"],
+      "skills": [
+        "aetherbrowser-operator", "aetherbrowser-arxiv-nav", "aetherbrowser-github-nav",
+        "aetherbrowser-huggingface-nav", "aetherbrowser-notion-nav", "aetherbrowser-shopify-nav",
+        "hydra-node-terminal-browsing", "scbe-browser-sidepanel-ops", "playwright"
+      ]
+    },
+    {
+      "id": "ai_safety_governance",
+      "arxiv_categories": ["cs.AI", "cs.CR", "cs.CY"],
+      "search_terms": ["AI governance framework", "safety guardrails LLM", "adversarial robustness certification"],
+      "skills": [
+        "scbe-context-full-test-suite", "scbe-experimental-research-safe-integration",
+        "scbe-system-engine", "scbe-universal-synthesis", "plan-check-gate",
+        "scbe-spiralverse-intent-auth", "scbe-codebase-orienter"
+      ]
+    },
+    {
+      "id": "federated_model_training",
+      "arxiv_categories": ["cs.LG", "cs.DC", "cs.AI"],
+      "search_terms": ["federated fine-tuning", "SFT multi-agent", "distributed model training governance"],
+      "skills": [
+        "hugging-face-model-trainer", "hugging-face-datasets", "hugging-face-cli",
+        "hf-publish-workflow", "scbe-colab-training-ops", "scbe-n8n-colab-bridge"
+      ]
+    },
+    {
+      "id": "knowledge_graph_rag",
+      "arxiv_categories": ["cs.IR", "cs.CL", "cs.AI"],
+      "search_terms": ["knowledge graph retrieval augmented generation", "structured knowledge base AI", "ontology-driven RAG"],
+      "skills": [
+        "notion", "notion-hf-curator", "notion-knowledge-capture", "notion-meeting-intelligence",
+        "notion-research-documentation", "notion-spec-to-implementation",
+        "obsidian", "obsidian-vault-ops", "scbe-world-anvil-lore-rag-7th-tongue"
+      ]
+    },
+    {
+      "id": "geometric_security",
+      "arxiv_categories": ["cs.CR", "math.DG", "cs.AI"],
+      "search_terms": ["hyperbolic geometry security", "Poincare ball adversarial", "geometric deep learning safety"],
+      "skills": [
+        "hydra-clawbot-synthesis", "polyhedral-workflow-mesh", "scbe-langues-semantic-tokenizer",
+        "scbe-meridian-flush"
+      ]
+    },
+    {
+      "id": "workflow_orchestration",
+      "arxiv_categories": ["cs.SE", "cs.DC", "cs.AI"],
+      "search_terms": ["AI workflow orchestration", "CI/CD autonomous agents", "self-healing deployment pipeline"],
+      "skills": [
+        "scbe-workflow-cultivation", "scbe-internet-workflow-synthesis", "scbe-connector-health-check",
+        "development-flow-loop", "scbe-gh-powershell-workflow", "scbe-docker-workflow",
+        "scbe-github-systems", "scbe-github-sweep-sorter", "scbe-gitlab-pond-integration",
+        "gh-fix-ci", "gh-address-comments", "scbe-npm-prepublish-autopublish",
+        "scbe-github-pages-funnel-builder"
+      ]
+    },
+    {
+      "id": "content_generation_publishing",
+      "arxiv_categories": ["cs.CL", "cs.MM", "cs.AI"],
+      "search_terms": ["automated content generation", "multi-platform publishing AI", "AI research dissemination"],
+      "skills": [
+        "article-posting-ops", "scbe-research-publishing-autopilot", "scbe-website-system-loop",
+        "scbe-voice-render-verification", "youtube-sync-review-ops", "video-source-verification",
+        "telegram-bot-maker"
+      ]
+    },
+    {
+      "id": "creative_ai_narrative",
+      "arxiv_categories": ["cs.CL", "cs.AI", "cs.MM"],
+      "search_terms": ["AI narrative generation", "interactive fiction AI", "computational creativity storytelling"],
+      "skills": [
+        "issac-story-engine", "novel-editor-flow", "book-manuscript-edit", "book-publication-ops",
+        "aethermoor-lore", "speed-line-delivery", "scbe-manhwa-anchor-sheets",
+        "scbe-manhwa-video-picture-research", "scbe-webtoon-book-conversion",
+        "multi-model-animation-studio-notes"
+      ]
+    },
+    {
+      "id": "ai_commerce_monetization",
+      "arxiv_categories": ["cs.AI", "cs.CE", "econ.GN"],
+      "search_terms": ["AI product monetization", "autonomous commerce agent", "AI-driven business automation"],
+      "skills": [
+        "scbe-monetization-thought-to-cash", "scbe-shopify-money-flow", "scbe-checkout-launch-ops",
+        "scbe-offer-fulfillment-ops", "profit-autopilot", "gumroad-upload-management",
+        "shopify-management-ops", "scbe-marketing-outreach-runbook",
+        "scbe-government-contract-intelligence"
+      ]
+    },
+    {
+      "id": "mobile_edge_computing",
+      "arxiv_categories": ["cs.DC", "cs.NI", "cs.AI"],
+      "search_terms": ["edge AI agent", "mobile computing autonomous", "device-cloud AI orchestration"],
+      "skills": [
+        "aether-phone-lane-ops", "scbe-pocket-phone", "kindle-app-delivery",
+        "kindle-app-ops", "kindle-tablet-ui-review"
+      ]
+    },
+    {
+      "id": "self_improving_systems",
+      "arxiv_categories": ["cs.AI", "cs.SE", "cs.LG"],
+      "search_terms": ["self-improving AI system", "meta-learning agent", "autonomous skill acquisition"],
+      "skills": [
+        "scbe-self-improvement-skill-management", "skill-synthesis", "skill-update",
+        "hydra-deep-research-self-healing", "system-river-map", "scbe-session-corkscrew",
+        "local-first-system-hygiene", "scbe-admin-autopilot", "scbe-admin-pages-app-synthesis"
+      ]
+    },
+    {
+      "id": "frontend_design_systems",
+      "arxiv_categories": ["cs.HC", "cs.SE", "cs.AI"],
+      "search_terms": ["AI-assisted UI generation", "design system automation", "human-computer interaction AI"],
+      "skills": [
+        "frontend-skill", "figma", "figma-implement-design", "living-codex-browser-builder",
+        "scbe-demo-lab-builder", "screenshot", "scbe-api-key-local-mirror"
+      ]
+    },
+    {
+      "id": "game_ai_simulation",
+      "arxiv_categories": ["cs.AI", "cs.GT", "cs.MA"],
+      "search_terms": ["game AI agent", "simulation-based training", "game theory multi-agent"],
+      "skills": [
+        "game-dev", "high-school-explainer"
+      ]
+    },
+    {
+      "id": "secure_credential_systems",
+      "arxiv_categories": ["cs.CR", "cs.AI"],
+      "search_terms": ["decentralized identity AI", "post-quantum credential", "zero-knowledge agent authentication"],
+      "skills": [
+        "scbe-ai2ai-kindle-research", "surgical-dirty-tree-review"
+      ]
+    }
+  ]
+}

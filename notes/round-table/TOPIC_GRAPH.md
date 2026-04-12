@@ -12,16 +12,16 @@ Each concept listed with its home note(s) and the cluster it belongs to.
 
 ### Cluster A: Mirror / Reflection / Differential
 
-| Concept | Home Note(s) | Shorthand |
-|---------|-------------|-----------|
-| Mirror Problem | `2026-03-18-mirror-problem-and-introspection-architecture` | A1 |
-| Mirror Differential Telemetry | `2026-03-19-mirror-differential-telemetry-and-riemann-attempt` | A2 |
-| Mirror Health Score | `2026-03-19-mirror-differential-math-verification` | A3 |
-| Whole-Mirror M_w | `2026-03-19-mirror-differential-math-verification` | A4 |
-| Edge-Mirror M_e (Mobius) | `2026-03-19-mirror-differential-math-verification` | A5 |
-| Thermal Mirror Probe | `2026-03-19-thermal-mirror-probe-results` | A6 |
-| Riemann xi(s) Decomposition | `2026-03-19-mirror-differential-telemetry-and-riemann-attempt` | A7 |
-| Decimal Drift Hypothesis | `2026-03-18-mirror-problem-and-introspection-architecture` | A8 |
+| Concept                       | Home Note(s)                                                   | Shorthand |
+| ----------------------------- | -------------------------------------------------------------- | --------- |
+| Mirror Problem                | `2026-03-18-mirror-problem-and-introspection-architecture`     | A1        |
+| Mirror Differential Telemetry | `2026-03-19-mirror-differential-telemetry-and-riemann-attempt` | A2        |
+| Mirror Health Score           | `2026-03-19-mirror-differential-math-verification`             | A3        |
+| Whole-Mirror M_w              | `2026-03-19-mirror-differential-math-verification`             | A4        |
+| Edge-Mirror M_e (Mobius)      | `2026-03-19-mirror-differential-math-verification`             | A5        |
+| Thermal Mirror Probe          | `2026-03-19-thermal-mirror-probe-results`                      | A6        |
+| Riemann xi(s) Decomposition   | `2026-03-19-mirror-differential-telemetry-and-riemann-attempt` | A7        |
+| Decimal Drift Hypothesis      | `2026-03-18-mirror-problem-and-introspection-architecture`     | A8        |
 
 ### Cluster B: Spectral / FFT / Attention Probing
 

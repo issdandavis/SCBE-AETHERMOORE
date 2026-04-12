@@ -88,6 +88,7 @@ _TONGUES_MODULE = None
 _ACTION_MAP_MODULE = None
 _COLAB_CATALOG_MODULE = None
 _REPO_ORDERING_MODULE = None
+_MODEL_TRAINING_MODULE = None
 
 FLOW_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 FLOW_SKILLS = [
@@ -471,6 +472,23 @@ def _load_repo_ordering_module(repo_root: Path):
     return module
 
 
+def _load_model_training_module(repo_root: Path):
+    global _MODEL_TRAINING_MODULE
+    if _MODEL_TRAINING_MODULE is not None:
+        return _MODEL_TRAINING_MODULE
+    module_path = repo_root / "scripts" / "model_training_lane.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("scbe_model_training_lane_runtime", module_path)
+    if not spec or not spec.loader:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    _MODEL_TRAINING_MODULE = module
+    return module
+
+
 def _tongue_attestation(repo_root: Path, tongue: str, payload: bytes, max_tokens: int = 6) -> str:
     module = _load_tongues_module(repo_root)
     if module is None:
@@ -675,7 +693,26 @@ def _formation_adaptive_scatter(task: str, radius: float = 0.45) -> list[list[fl
     return positions
 
 
+FLOW_FORMATION_ALIASES: dict[str, str] = {
+    "hexagonal": "hexagonal",
+    "hexagonal-ring": "hexagonal",
+    "tetrahedral": "tetrahedral",
+    "concentric": "concentric",
+    "ring": "concentric",
+    "adaptive-scatter": "adaptive-scatter",
+    "scatter": "adaptive-scatter",
+}
+
+
+def _normalize_flow_formation(name: str) -> str:
+    normalized = FLOW_FORMATION_ALIASES.get(str(name).strip().lower())
+    if normalized is None:
+        raise ValueError(f"Unsupported formation '{name}'")
+    return normalized
+
+
 def _formation_positions(name: str, task: str) -> list[list[float]]:
+    name = _normalize_flow_formation(name)
     if name == "hexagonal":
         return _formation_hexagonal()
     if name == "tetrahedral":
@@ -1484,6 +1521,9 @@ def _new_agent_entry(
     model: str | None = None,
     endpoint: str | None = None,
     notebook_url: str | None = None,
+    system_prompt: str | None = None,
+    context_file: str | None = None,
+    memory_log_file: str | None = None,
 ) -> dict:
     entry = {
         "agent_id": agent_id,
@@ -1503,6 +1543,12 @@ def _new_agent_entry(
         entry["endpoint"] = endpoint
     if notebook_url:
         entry["notebook_url"] = notebook_url
+    if system_prompt:
+        entry["system_prompt"] = system_prompt
+    if context_file:
+        entry["context_file"] = context_file
+    if memory_log_file:
+        entry["memory_log_file"] = memory_log_file
     return entry
 
 
@@ -1565,24 +1611,97 @@ def _resolve_agent_api_key(agent: dict, env_cache: dict[str, str]) -> tuple[str 
         env_var = (
             "ANTHROPIC_API_KEY"
             if provider == "anthropic"
-            else "OPENAI_API_KEY" if provider == "openai" else "GOOGLE_API_KEY" if provider == "gemini" else None
+            else "OPENAI_API_KEY" if provider in {"openai", "openai-compatible"} else "GOOGLE_API_KEY" if provider == "gemini" else None
         )
     if not env_var:
         return None, None
     return os.environ.get(env_var) or env_cache.get(env_var), env_var
 
 
-def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: dict[str, str], max_tokens: int) -> dict:
+def _resolve_agent_file_path(repo_root: Path, raw_path: str | None) -> Path | None:
+    if not raw_path:
+        return None
+    candidate = Path(str(raw_path).strip()).expanduser()
+    if not str(candidate):
+        return None
+    if not candidate.is_absolute():
+        candidate = repo_root / candidate
+    return candidate.resolve(strict=False)
+
+
+def _load_agent_context(agent: dict, repo_root: Path, max_chars: int = 12_000) -> str:
+    context_path = _resolve_agent_file_path(repo_root, agent.get("context_file"))
+    if context_path is None or not context_path.exists() or not context_path.is_file():
+        return ""
+    text = context_path.read_text(encoding="utf-8", errors="ignore").strip()
+    if len(text) <= max_chars:
+        return text
+    return text[-max_chars:]
+
+
+def _build_agent_messages(agent: dict, prompt: str, repo_root: Path) -> list[dict[str, str]]:
+    system_prompt = (
+        agent.get("system_prompt")
+        or "You are an SCBE-AETHERMOORE coordination agent. Keep answers concrete, concise, and implementation-focused."
+    )
+    context_text = _load_agent_context(agent, repo_root)
+    user_prompt = prompt
+    if context_text:
+        user_prompt = (
+            "Persistent context from Obsidian memory note:\n"
+            f"{context_text}\n\n"
+            "Current user turn:\n"
+            f"{prompt}"
+        )
+    return [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+
+
+def _append_agent_memory_log(agent: dict, repo_root: Path, prompt: str, response: str) -> str | None:
+    memory_path = _resolve_agent_file_path(repo_root, agent.get("memory_log_file"))
+    if memory_path is None:
+        return None
+    memory_path.parent.mkdir(parents=True, exist_ok=True)
+    stamped = _now_iso()
+    block = (
+        f"\n## Cycle {stamped}\n"
+        f"### User\n{_redact_sensitive_text(prompt).strip()}\n\n"
+        f"### Agent\n{_redact_sensitive_text(response).strip()}\n"
+    )
+    with memory_path.open("a", encoding="utf-8") as handle:
+        handle.write(block)
+    return str(memory_path)
+
+
+def _normalize_chat_completions_endpoint(agent: dict) -> str:
+    endpoint = str(agent.get("endpoint") or "").strip()
+    if not endpoint:
+        return "https://api.openai.com/v1/chat/completions"
+    if endpoint.endswith("/chat/completions"):
+        return endpoint
+    return endpoint.rstrip("/") + "/chat/completions"
+
+
+def _call_openai_agent(
+    agent: dict,
+    prompt: str,
+    output_dir: Path,
+    env_cache: dict[str, str],
+    max_tokens: int,
+    repo_root: Path,
+) -> dict:
     provider = (agent.get("provider") or "openai").lower()
-    if provider != "openai":
+    if provider not in {"openai", "openai-compatible", ""}:
         return {
             "ok": False,
             "agent_id": agent.get("agent_id"),
             "provider": provider,
-            "error": f"OpenAI REST path is only for openai provider, got {provider}",
+            "error": f"OpenAI-compatible REST path only supports openai/openai-compatible providers, got {provider}",
         }
     api_key, env_key = _resolve_agent_api_key(agent, env_cache)
-    if not api_key:
+    if provider == "openai" and not api_key:
         return {
             "ok": False,
             "agent_id": agent.get("agent_id"),
@@ -1590,20 +1709,16 @@ def _call_openai_agent(agent: dict, prompt: str, output_dir: Path, env_cache: di
             "error": f"Missing API key. Set {env_key or 'OPENAI_API_KEY'} and retry.",
         }
     model = agent.get("model") or "gpt-4o-mini"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
+    headers = {"Content-Type": "application/json"}
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
     payload = {
         "model": model,
-        "messages": [
-            {"role": "system", "content": "You are an SCBE-AETHERMOORE coordination agent."},
-            {"role": "user", "content": prompt},
-        ],
+        "messages": _build_agent_messages(agent, prompt, repo_root),
         "max_tokens": max_tokens,
     }
     req = Request(
-        "https://api.openai.com/v1/chat/completions",
+        _normalize_chat_completions_endpoint(agent),
         data=json.dumps(payload).encode("utf-8"),
         headers=headers,
         method="POST",
@@ -1651,17 +1766,24 @@ def _write_agent_call_result(output_dir: Path, agent_id: str, result: dict) -> s
     return str(path)
 
 
-def _route_agent_call(agent: dict, prompt: str, output_dir: Path, env_cache: dict[str, str], max_tokens: int) -> dict:
+def _route_agent_call(
+    agent: dict,
+    prompt: str,
+    output_dir: Path,
+    env_cache: dict[str, str],
+    max_tokens: int,
+    repo_root: Path,
+) -> dict:
     provider = (agent.get("provider") or "").lower()
     if provider in {"openai", "openai-compatible", ""}:
-        return _call_openai_agent(agent, prompt, output_dir, env_cache, max_tokens)
+        return _call_openai_agent(agent, prompt, output_dir, env_cache, max_tokens, repo_root)
     if provider in {"notebooklm", "notebooklm-web", "notebooklm-ui"}:
         return _notebooklm_fallback(agent, prompt, output_dir)
     return {
         "ok": False,
         "agent_id": agent.get("agent_id"),
         "provider": provider or "unknown",
-        "error": f"Unsupported provider '{provider}'. Supported providers: openai, notebooklm.",
+        "error": f"Unsupported provider '{provider}'. Supported providers: openai, openai-compatible, notebooklm.",
     }
 
 
@@ -2196,6 +2318,28 @@ def cmd_agent_list(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_agent_overview(args: argparse.Namespace) -> int:
+    registry = _load_agent_registry(_agent_registry_path(args.repo_root))
+    agents = registry.get("agents", {})
+
+    if agents:
+        print("SCBE system agent registry")
+        print(f"Registered agents: {len(agents)}")
+        print('Run `scbe agent list` to inspect entries or `scbe agent call --all --prompt "..."` to invoke them.')
+        print()
+        return cmd_agent_list(args)
+
+    print("No system agents are registered yet.")
+    print("Bootstrap a default registry with:")
+    print("  scbe agent bootstrap")
+    print()
+    print("Useful next commands:")
+    print("  scbe agent list")
+    print("  scbe agent register --agent-id codex-alt --provider openai --api-key-env OPENAI_API_KEY")
+    print('  scbe agent call --all --prompt "Summarize repo health"')
+    return 0
+
+
 def cmd_agent_remove(args: argparse.Namespace) -> int:
     registry_path = _agent_registry_path(args.repo_root)
     registry = _load_agent_registry(registry_path)
@@ -2215,7 +2359,7 @@ def cmd_agent_register(args: argparse.Namespace) -> int:
 
     registry_path = _agent_registry_path(args.repo_root)
     registry = _load_agent_registry(registry_path)
-    providers = {"openai", "notebooklm"}
+    providers = {"openai", "openai-compatible", "notebooklm"}
     if args.provider not in providers:
         print(f"Unsupported provider '{args.provider}'. Use {', '.join(sorted(providers))}")
         return 2
@@ -2233,6 +2377,9 @@ def cmd_agent_register(args: argparse.Namespace) -> int:
         model=args.model,
         endpoint=args.endpoint,
         notebook_url=args.notebook_url,
+        system_prompt=args.system_prompt,
+        context_file=args.context_file,
+        memory_log_file=args.memory_log_file,
     )
     if capabilities:
         entry["capabilities"] = capabilities
@@ -2271,6 +2418,7 @@ def cmd_agent_ping(args: argparse.Namespace) -> int:
             out_dir,
             env_cache,
             args.max_tokens,
+            args.repo_root,
         )
         output_path = _write_agent_call_result(out_dir, f"{aid}_ping", result)
         result["output_path"] = output_path
@@ -2318,7 +2466,7 @@ def cmd_agent_call(args: argparse.Namespace) -> int:
             summary["agents"][aid] = {"ok": False, "error": "agent disabled"}
             summary["failed"] += 1
             continue
-        result = _route_agent_call(entry, prompt, out_dir, env_cache, args.max_tokens)
+        result = _route_agent_call(entry, prompt, out_dir, env_cache, args.max_tokens, args.repo_root)
         result["agent_id"] = aid
         result_path = _write_agent_call_result(out_dir, aid, result)
         result["output_path"] = result_path
@@ -2344,6 +2492,63 @@ def cmd_agent_call(args: argparse.Namespace) -> int:
     return 0 if summary["failed"] == 0 else 1
 
 
+def cmd_agent_cycle(args: argparse.Namespace) -> int:
+    registry = _load_agent_registry(_agent_registry_path(args.repo_root))
+    env_cache = _read_env_file(args.repo_root)
+    entry = registry.get("agents", {}).get(args.agent_id)
+    if not entry:
+        print(f"Unknown agent '{args.agent_id}'")
+        return 2
+    if not entry.get("enabled", True):
+        print(f"Agent '{args.agent_id}' is disabled")
+        return 2
+
+    out_dir = Path(args.output_dir)
+
+    def run_turn(turn_prompt: str) -> int:
+        result = _route_agent_call(entry, turn_prompt, out_dir, env_cache, args.max_tokens, args.repo_root)
+        result["agent_id"] = args.agent_id
+        result_path = _write_agent_call_result(out_dir, f"{args.agent_id}_cycle", result)
+        print(f"\n[{args.agent_id}] {'OK' if result.get('ok') else 'FAIL'}")
+        print(f"Saved: {result_path}")
+        if args.show_context:
+            context_path = _resolve_agent_file_path(args.repo_root, entry.get("context_file"))
+            print(f"Context: {context_path if context_path else '(none)'}")
+        if result.get("ok"):
+            content = str(result.get("content") or "").strip()
+            if content:
+                print()
+                print(content)
+            if args.append_memory:
+                log_path = _append_agent_memory_log(entry, args.repo_root, turn_prompt, content)
+                if log_path:
+                    print(f"\nMemory log updated: {log_path}")
+            return 0
+        print(result.get("error", "unknown error"))
+        return 1
+
+    if args.interactive:
+        print(f"Interactive manual cycle for {args.agent_id}. Type 'exit' to stop.")
+        while True:
+            try:
+                turn_prompt = input("you> ").strip()
+            except EOFError:
+                break
+            if not turn_prompt or turn_prompt.lower() in {"exit", "quit"}:
+                break
+            run_turn(turn_prompt)
+        return 0
+
+    if args.prompt_file:
+        prompt = Path(args.prompt_file).read_text(encoding="utf-8")
+    else:
+        prompt = args.prompt
+    if not prompt:
+        print("Missing prompt. Provide --prompt, --prompt-file, or --interactive.")
+        return 2
+    return run_turn(prompt)
+
+
 def cmd_flow_plan(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
     template_name = args.workflow_template
@@ -2351,12 +2556,15 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
         print(f"Unknown workflow template '{template_name}'")
         return 2
 
-    agents = _build_flow_agents(args.formation, args.task)
+    requested_formation = args.formation
+    formation = _normalize_flow_formation(requested_formation)
+
+    agents = _build_flow_agents(formation, args.task)
     steps = _build_flow_steps(template_name, args.task, agents)
     fault_tolerance = _flow_fault_tolerance(len(agents))
     quasi_mesh = {
         "mode": "golden-weave",
-        "formation": args.formation,
+        "formation": formation,
         "routing_basis": "six-tongue + quasi-phase cadence",
         "phase_seeds": [agent["frequency"]["phase_seed"] for agent in agents],
     }
@@ -2371,7 +2579,8 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
         "workflow_template": template_name,
         "workflow_summary": FLOW_WORKFLOW_TEMPLATES[template_name]["summary"],
         "formation": {
-            "name": args.formation,
+            "name": formation,
+            "requested_name": requested_formation,
             "agent_count": len(agents),
             "fault_tolerance": fault_tolerance,
         },
@@ -2391,18 +2600,19 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
         start = action_map.start_run(
             action_root,
             task=args.task,
-            summary=f"Planned {template_name} flow in {args.formation} formation.",
+            summary=f"Planned {template_name} flow in {formation} formation.",
             operator="agent.codex",
             lane="system-cli",
             tool="flow-plan",
             command=f"scbe-system flow plan --task {args.task}",
             next_action="validate packet, then assign live work packets",
-            tags=["flow-plan", args.formation, template_name],
+            tags=["flow-plan", formation, template_name],
             skills=FLOW_SKILLS,
             touched_layers=["control-plane", "coordination", "training"],
             artifacts=[_display_path(output_path, repo_root)],
             outputs={
-                "formation": args.formation,
+                "formation": formation,
+                "requested_formation": requested_formation,
                 "workflow_template": template_name,
                 "agent_count": len(agents),
             },
@@ -2412,7 +2622,7 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
                 "quorum": fault_tolerance["minimum_quorum"],
             },
             decisions=[
-                {"key": "formation", "value": args.formation, "rationale": "Doctrine-backed swarm geometry."},
+                {"key": "formation", "value": formation, "rationale": "Doctrine-backed swarm geometry."},
                 {
                     "key": "workflow_template",
                     "value": template_name,
@@ -2466,7 +2676,8 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
     payload = {
         "schema_version": "scbe_flow_plan_result_v1",
         "output_path": _display_path(output_path, repo_root),
-        "formation": args.formation,
+        "formation": formation,
+        "requested_formation": requested_formation,
         "workflow_template": template_name,
         "agent_count": len(agents),
         "step_count": len(steps),
@@ -2474,7 +2685,7 @@ def cmd_flow_plan(args: argparse.Namespace) -> int:
     }
     lines = [
         f"Saved flow plan: {output_path}",
-        f"Formation: {args.formation} | template: {template_name} | agents: {len(agents)} | steps: {len(steps)}",
+        f"Formation: {formation} | template: {template_name} | agents: {len(agents)} | steps: {len(steps)}",
     ]
     if flow_packet["action_map"].get("enabled"):
         lines.append(f"Action map: {flow_packet['action_map']['run_id']}")
@@ -2828,6 +3039,208 @@ def cmd_use(args: argparse.Namespace) -> int:
     ]
     for key in sorted(current):
         lines.append(f"{key}: {current[key]}")
+    return _json_result(args, payload, lines)
+
+
+def _model_profile_selection(args: argparse.Namespace) -> tuple[Path, str, str, str]:
+    config_path = _context_config_path(args.repo_root, getattr(args, "config_path", None))
+    config = _load_cli_context(config_path)
+    defaults = dict(config.get("defaults") or {})
+    active_context = safe_text(config.get("active_context"))
+    context_payload = dict((config.get("contexts") or {}).get(active_context) or {}) if active_context else {}
+    profile_name = (
+        safe_text(getattr(args, "profile", ""))
+        or safe_text(context_payload.get("model_profile"))
+        or safe_text(defaults.get("model_profile"))
+        or "coder-qwen-local"
+    )
+    profile_dir = safe_text(getattr(args, "profile_dir", "")) or safe_text(context_payload.get("model_profile_dir")) or safe_text(defaults.get("model_profile_dir"))
+    profile_path = safe_text(getattr(args, "profile_path", ""))
+    return config_path, profile_name, profile_dir, profile_path
+
+
+def cmd_model_list(args: argparse.Namespace) -> int:
+    module = _load_model_training_module(args.repo_root)
+    if module is None:
+        print("Model training lane is unavailable: scripts/model_training_lane.py is missing.")
+        return 2
+    _, _, profile_dir, _ = _model_profile_selection(args)
+    profiles = module.list_profiles(args.repo_root, profile_dir or None)
+    payload = {
+        "schema_version": "scbe_model_profile_index_v1",
+        "profile_dir": str(module.profile_dir(args.repo_root, profile_dir or None)),
+        "profiles": profiles,
+    }
+    lines = [f"Profile dir: {payload['profile_dir']}"]
+    if not profiles:
+        lines.append("No model profiles found.")
+    else:
+        for item in profiles:
+            lines.append(f"{item['profile_id']}: {item['title']} ({item['path']})")
+    return _json_result(args, payload, lines)
+
+
+def cmd_model_show_config(args: argparse.Namespace) -> int:
+    module = _load_model_training_module(args.repo_root)
+    if module is None:
+        print("Model training lane is unavailable: scripts/model_training_lane.py is missing.")
+        return 2
+    _, profile_name, profile_dir, profile_path = _model_profile_selection(args)
+    resolved = module.resolve_profile_path(
+        args.repo_root,
+        profile=profile_name,
+        profile_path=profile_path or None,
+        raw_profile_dir=profile_dir or None,
+    )
+    if not resolved.exists():
+        print(f"Model profile not found: {resolved}")
+        return 2
+    profile = module.load_profile(resolved)
+    payload = {
+        "schema_version": "scbe_model_profile_v1",
+        "profile_path": str(resolved),
+        "profile": profile,
+    }
+    lines = [f"Profile: {resolved}", json.dumps(profile, indent=2, ensure_ascii=True)]
+    return _json_result(args, payload, lines)
+
+
+def cmd_model_plan(args: argparse.Namespace) -> int:
+    module = _load_model_training_module(args.repo_root)
+    if module is None:
+        print("Model training lane is unavailable: scripts/model_training_lane.py is missing.")
+        return 2
+    _, profile_name, profile_dir, profile_path = _model_profile_selection(args)
+    resolved = module.resolve_profile_path(
+        args.repo_root,
+        profile=profile_name,
+        profile_path=profile_path or None,
+        raw_profile_dir=profile_dir or None,
+    )
+    if not resolved.exists():
+        print(f"Model profile not found: {resolved}")
+        return 2
+    payload = module.build_training_plan(args.repo_root, resolved)
+    lines = [
+        f"Profile: {payload['profile_id']}",
+        f"Base model: {payload['base_model']}",
+        f"Train files: {payload['train_file_count']} ({payload['total_train_rows']} rows)",
+        f"Eval files: {payload['eval_file_count']} ({payload['total_eval_rows']} rows)",
+        f"Ready: {'yes' if payload['ready'] else 'no'}",
+        f"Emit script: {payload['default_emit_path']}",
+    ]
+    if payload["missing_files"]:
+        lines.append(f"Missing: {', '.join(payload['missing_files'])}")
+    return _json_result(args, payload, lines)
+
+
+def cmd_model_preflight(args: argparse.Namespace) -> int:
+    module = _load_model_training_module(args.repo_root)
+    if module is None:
+        print("Model training lane is unavailable: scripts/model_training_lane.py is missing.")
+        return 2
+    _, profile_name, profile_dir, profile_path = _model_profile_selection(args)
+    resolved = module.resolve_profile_path(
+        args.repo_root,
+        profile=profile_name,
+        profile_path=profile_path or None,
+        raw_profile_dir=profile_dir or None,
+    )
+    if not resolved.exists():
+        print(f"Model profile not found: {resolved}")
+        return 2
+    payload = module.build_training_preflight(args.repo_root, resolved)
+    decision = payload["decision"]
+    local = payload["local"]
+    lines = [
+        f"Profile: {payload['profile_id']}",
+        f"Execution target: {decision['execution_target']}",
+        f"Recommended target: {payload['recommended_target']}",
+        f"Local ready: {'yes' if local['ready'] else 'no'}",
+        f"Detected VRAM: {local['detected_vram_mb']} MiB",
+        f"HF token ({payload['hub']['token_env']}): {'present' if payload['hub']['token_present'] else 'missing'}",
+    ]
+    if local["blockers"]:
+        lines.append(f"Blockers: {', '.join(local['blockers'])}")
+    if decision["rationale"]:
+        lines.append(f"Why: {', '.join(decision['rationale'])}")
+    toolchain = payload.get("toolchain") or {}
+    if toolchain:
+        lines.append("Toolchain:")
+        python_cfg = toolchain.get("python") or {}
+        hf_cli = toolchain.get("hf_cli") or {}
+        ollama = toolchain.get("ollama") or {}
+        lines.append(f"- python: {python_cfg.get('path', 'missing')}")
+        lines.append(
+            f"- hf-cli: {hf_cli.get('path', 'missing') if hf_cli.get('available') else 'missing'}"
+        )
+        lines.append(
+            f"- ollama: {ollama.get('path', 'missing') if ollama.get('available') else 'missing'}"
+        )
+        lines.append(f"- colab-catalog: {(toolchain.get('colab_catalog') or {}).get('path', 'missing')}")
+        lines.append(
+            f"- model-host-quickcall: {(toolchain.get('model_host_quickcall') or {}).get('path', 'missing')}"
+        )
+        runtime = toolchain.get("runtime") or {}
+        if runtime:
+            lines.append(
+                f"- runtime: {runtime.get('provider', '')} {runtime.get('model', '')} @ {runtime.get('base_url', '')}"
+            )
+    if payload.get("next_steps"):
+        lines.append("Next steps:")
+        for step in payload["next_steps"]:
+            command = " ".join(shlex.quote(str(part)) for part in step.get("command", []))
+            lines.append(f"- {step.get('kind', 'step')}: {step.get('description', '')}")
+            if command:
+                lines.append(f"  {command}")
+    return _json_result(args, payload, lines)
+
+
+def cmd_model_train(args: argparse.Namespace) -> int:
+    module = _load_model_training_module(args.repo_root)
+    if module is None:
+        print("Model training lane is unavailable: scripts/model_training_lane.py is missing.")
+        return 2
+    _, profile_name, profile_dir, profile_path = _model_profile_selection(args)
+    resolved = module.resolve_profile_path(
+        args.repo_root,
+        profile=profile_name,
+        profile_path=profile_path or None,
+        raw_profile_dir=profile_dir or None,
+    )
+    if not resolved.exists():
+        print(f"Model profile not found: {resolved}")
+        return 2
+    emit_path = Path(args.emit_script) if args.emit_script else None
+    if emit_path is not None and not emit_path.is_absolute():
+        emit_path = (args.repo_root / emit_path).resolve()
+    script_path, plan = module.emit_training_script(args.repo_root, resolved, emit_path)
+    payload = {
+        "schema_version": "scbe_model_train_v1",
+        "executed": False,
+        "script_path": str(script_path),
+        "plan": plan,
+        "command": [sys.executable, str(script_path)],
+    }
+    if args.execute:
+        result = subprocess.run([sys.executable, str(script_path)], check=False)
+        payload["executed"] = True
+        payload["returncode"] = result.returncode
+        lines = [
+            f"Script: {script_path}",
+            f"Executed: yes",
+            f"Return code: {result.returncode}",
+        ]
+        _json_result(args, payload, lines)
+        return int(result.returncode)
+    lines = [
+        f"Script: {script_path}",
+        f"Profile: {plan['profile_id']}",
+        f"Train rows: {plan['total_train_rows']}",
+        f"Run next: {sys.executable} {script_path}",
+    ]
+    if plan["missing_files"]:
+        lines.append(f"Missing: {', '.join(plan['missing_files'])}")
     return _json_result(args, payload, lines)
 
 
@@ -3774,7 +4187,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     agent = sub.add_parser("agent", help="Manage and call Squad AI agents")
     add_runtime_cli_flags(agent)
-    agent_sub = agent.add_subparsers(dest="agent_cmd", required=True)
+    agent.set_defaults(func=cmd_agent_overview)
+    agent_sub = agent.add_subparsers(dest="agent_cmd", required=False)
     a_boot = agent_sub.add_parser("bootstrap", help="Create or refresh default agent registry")
     a_boot.add_argument("--append", action="store_true", help="Add defaults while keeping existing agents")
     a_boot.add_argument("--force", action="store_true", help="Replace existing registry before bootstrapping")
@@ -3792,7 +4206,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     a_reg = agent_sub.add_parser("register", help="Register or update one squad agent")
     a_reg.add_argument("--agent-id", required=True)
-    a_reg.add_argument("--provider", required=True, choices=("openai", "notebooklm"))
+    a_reg.add_argument("--provider", required=True, choices=("openai", "openai-compatible", "notebooklm"))
     a_reg.add_argument("--display-name")
     a_reg.add_argument("--description")
     a_reg.add_argument("--api-key-env", default="")
@@ -3800,6 +4214,9 @@ def build_parser() -> argparse.ArgumentParser:
     a_reg.add_argument("--endpoint", default="")
     a_reg.add_argument("--notebook-url", default=DEFAULT_NOTEBOOKLM_URL)
     a_reg.add_argument("--capabilities", default="")
+    a_reg.add_argument("--system-prompt", default="")
+    a_reg.add_argument("--context-file", default="")
+    a_reg.add_argument("--memory-log-file", default="")
     a_reg.set_defaults(func=cmd_agent_register)
 
     a_rm = agent_sub.add_parser("remove", help="Remove a squad agent")
@@ -3821,6 +4238,17 @@ def build_parser() -> argparse.ArgumentParser:
     a_call.add_argument("--max-tokens", type=int, default=420)
     a_call.add_argument("--show-output", action="store_true", help="Print successful model output")
     a_call.set_defaults(func=cmd_agent_call)
+
+    a_cycle = agent_sub.add_parser("cycle", help="Run a manual coding/research cycle with optional Obsidian context")
+    a_cycle.add_argument("--agent-id", required=True)
+    a_cycle.add_argument("--prompt", default="")
+    a_cycle.add_argument("--prompt-file")
+    a_cycle.add_argument("--interactive", action="store_true", help="Open a manual turn-by-turn loop")
+    a_cycle.add_argument("--output-dir", default="artifacts/agent_calls")
+    a_cycle.add_argument("--max-tokens", type=int, default=420)
+    a_cycle.add_argument("--append-memory", action="store_true", help="Append each turn to the agent memory log file")
+    a_cycle.add_argument("--show-context", action="store_true", help="Print which context file is being loaded")
+    a_cycle.set_defaults(func=cmd_agent_cycle)
 
     doctor = sub.add_parser("doctor", help="Check local CLI/operator environment")
     add_runtime_cli_flags(doctor)
@@ -3852,6 +4280,42 @@ def build_parser() -> argparse.ArgumentParser:
     config_set.add_argument("key")
     config_set.add_argument("value")
     config_set.set_defaults(func=cmd_config_set)
+
+    model = sub.add_parser("model", help="Config-backed model training lanes")
+    add_runtime_cli_flags(model)
+    model_sub = model.add_subparsers(dest="model_cmd", required=True)
+
+    def add_model_profile_flags(p: argparse.ArgumentParser) -> None:
+        p.add_argument("--profile", default="", help="Profile id (defaults to the active CLI context model_profile)")
+        p.add_argument("--profile-path", default="", help="Explicit profile JSON path")
+        p.add_argument("--profile-dir", default="", help="Directory containing model profiles")
+
+    model_list = model_sub.add_parser("list", help="List available model training profiles")
+    add_runtime_cli_flags(model_list)
+    model_list.add_argument("--profile-dir", default="", help="Directory containing model profiles")
+    model_list.set_defaults(func=cmd_model_list)
+
+    model_show = model_sub.add_parser("show-config", help="Show one model training profile")
+    add_runtime_cli_flags(model_show)
+    add_model_profile_flags(model_show)
+    model_show.set_defaults(func=cmd_model_show_config)
+
+    model_plan = model_sub.add_parser("plan", help="Inspect datasets and the derived training plan for a profile")
+    add_runtime_cli_flags(model_plan)
+    add_model_profile_flags(model_plan)
+    model_plan.set_defaults(func=cmd_model_plan)
+
+    model_preflight = model_sub.add_parser("preflight", help="Check whether a model profile should run locally, on Colab, or on HF Jobs")
+    add_runtime_cli_flags(model_preflight)
+    add_model_profile_flags(model_preflight)
+    model_preflight.set_defaults(func=cmd_model_preflight)
+
+    model_train = model_sub.add_parser("train", help="Emit a runnable training script from a profile")
+    add_runtime_cli_flags(model_train)
+    add_model_profile_flags(model_train)
+    model_train.add_argument("--emit-script", default="", help="Path for the generated training script")
+    model_train.add_argument("--execute", action="store_true", help="Execute the generated training script immediately")
+    model_train.set_defaults(func=cmd_model_train)
 
     workflow = sub.add_parser("workflow", help="Generate GitHub + n8-style multistep workflow assets")
     add_runtime_cli_flags(workflow)
@@ -3932,8 +4396,8 @@ def build_parser() -> argparse.ArgumentParser:
     flow_plan.add_argument(
         "--formation",
         default="hexagonal",
-        choices=("hexagonal", "tetrahedral", "concentric", "adaptive-scatter"),
-        help="Swarm geometry to use for packet ordering",
+        choices=tuple(sorted(FLOW_FORMATION_ALIASES)),
+        help="Swarm geometry to use for packet ordering (canonical and skill-level aliases accepted)",
     )
     flow_plan.add_argument(
         "--workflow-template",
@@ -4213,3 +4677,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

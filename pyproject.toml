@@ -44,6 +44,7 @@ Issues = "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
 
 [project.scripts]
 scbe = "scbe:main"
+scbe-scan = "scbe_aethermoore.__main__:main"
 scbe-system = "scripts.scbe_system_cli:main"
 scbe-convert-to-sft = "symphonic_cipher.scbe_aethermoore.convert_to_sft:main"
 scbe-code-prism = "code_prism.cli:main"
@@ -52,9 +53,9 @@ scbe-code-prism = "code_prism.cli:main"
 py-modules = ["scbe"]
 
 [tool.setuptools.packages.find]
-where = [".", "src"]
+where = ["src"]
 include = [
-    "scripts*",
+    "scbe_aethermoore*",
     "code_prism*",
     "flow_router*",
     "symphonic_cipher*",
@@ -66,10 +67,20 @@ include = [
     "storage*",
 ]
 exclude = [
-    "tests*", "scripts*", "agents*", "training*",
-    # Root-only sub-packages that don't exist under src/ — excluding these
-    # prevents setuptools from failing on mismatched package directories
-    # when using where = [".", "src"].
-    "api.github_app*", "api.billing*", "api.keys*",
+    "tests*",
+    "agents*",
+    "training*",
+    "scripts*",
+    # Test subpackages
+    "*.tests",
+    "*.tests.*",
+    # Excluded submodules
+    "api.github_app*",
+    "api.billing*",
+    "api.keys*",
     "symphonic_cipher.geoseal*",
 ]
+
+[tool.setuptools.package-dir]
+# Root-level package not under src/
+api = "api"

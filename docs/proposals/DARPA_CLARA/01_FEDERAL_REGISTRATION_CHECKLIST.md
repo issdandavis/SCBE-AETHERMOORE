@@ -7,6 +7,15 @@
 
 ---
 
+## CURRENT STATUS (fill in before submission)
+Record current truth here so the rest of this checklist stays evergreen. Avoid storing sensitive data (SSN/bank routing/account numbers) in this repo.
+
+- **UEI**: J4NXHM6N5F59 (known)
+- **SAM.gov entity registration**: [ ] Not started  [ ] In progress  [ ] Submitted (pending activation)  [ ] Active
+- **CAGE code**: [ ] Not assigned  [ ] Assigned (when SAM is Active)
+- **DARPAConnect account**: [ ] Not created  [ ] Created
+- **Submission portal for this solicitation**: [ ] Verified (record where/how you submit)
+
 ## CRITICAL PATH (Do These First — They Have Lead Times)
 
 ### Step 1: Get a UEI (Unique Entity Identifier)
@@ -24,7 +33,7 @@
      - Entity type: Individual / Sole Proprietor
      - EIN or SSN (for sole proprietors, SSN is acceptable)
   5. The system will assign a UEI immediately or within 1-2 days
-- **STATUS**: [ ] NOT STARTED
+- **STATUS**: [x] UEI known (J4NXHM6N5F59)
 
 ### Step 2: Complete SAM.gov Entity Registration
 - **What**: Full registration in the System for Award Management
@@ -44,7 +53,7 @@
   4. IRS validates your TIN — this is the slow part (up to 10 days)
   5. Once validated, a CAGE code is automatically assigned
 - **IMPORTANT**: Start this IMMEDIATELY. If IRS validation takes the full 10 days, that's April 7 — cutting it close for April 17 deadline.
-- **STATUS**: [ ] NOT STARTED
+- **STATUS**: [ ] Verify current status (do not assume)
 
 ### Step 3: CAGE Code (Automatic with SAM.gov)
 - **What**: Commercial and Government Entity code. Assigned by DLA (Defense Logistics Agency).
@@ -58,7 +67,7 @@
 - **Where**: https://login.gov
 - **Time**: Immediate
 - **Action**: Create account with your email, set up MFA (authenticator app preferred)
-- **STATUS**: [ ] NOT STARTED
+- **STATUS**: [ ] Verify current status
 
 ---
 
@@ -85,7 +94,7 @@
 - **Where**: https://darpaconnect.us
 - **Time**: Immediate
 - **Action**: Register, fill in profile, mark interest in I2O and DSO programs
-- **STATUS**: [ ] NOT STARTED
+- **STATUS**: [ ] Verify current status
 
 ### Step 6: Submission Portal Access
 - **What**: DARPA uses different portals depending on solicitation
@@ -179,9 +188,9 @@ If SAM.gov registration does not complete by April 17:
 
 ### Section 7: Core Data — Financial Information (EFT)
 - [ ] Accept credit cards: **No**
-- [ ] Account type: **Checking** (Cash App routing/account)
-- [ ] Routing number: **TYPE YOURSELF**
-- [ ] Account number: **TYPE YOURSELF**
+- [ ] Account type: Checking
+- [ ] Routing number: **DO NOT STORE IN REPO**
+- [ ] Account number: **DO NOT STORE IN REPO**
 - [ ] Remittance address: Same as physical
 
 ### Section 8: Core Data — Executive Compensation
@@ -199,7 +208,7 @@ If SAM.gov registration does not complete by April 17:
 - [ ] PSC codes: Optional — skip for now
 
 ### Section 11: Assertions — Size Metrics
-- [ ] Annual receipts: Enter your gross revenue (from W-2 + any 1099: ~$24,340 from TY2025)
+- [ ] Annual receipts: Enter your gross receipts for the most recent tax year (do not store amounts in this repo)
 - [ ] Number of employees: **1**
 
 ### Section 12: Assertions — Disaster Response
@@ -239,13 +248,13 @@ Most of these are straightforward No's for a new sole proprietor:
 
 ## CHECKLIST SUMMARY
 
-- [x] Login.gov account created (Mar 27)
-- [x] Login.gov connected to SAM.gov (Mar 27, 8:57 PM)
-- [ ] SAM.gov UEI requested
-- [ ] SAM.gov entity registration submitted (all 16 sections above)
+- [ ] Login.gov account created
+- [ ] Login.gov connected to SAM.gov
+- [x] SAM.gov UEI known (J4NXHM6N5F59)
+- [ ] SAM.gov entity registration submitted (all 16 sections above) — verify status
 - [ ] NAICS codes selected (primary: 541715)
 - [ ] CAGE code received (automatic with SAM.gov)
 - [ ] DARPAConnect account created
 - [ ] Submission portal access confirmed
 - [ ] Full solicitation downloaded from SAM.gov
-- [ ] Bank account info ready for EFT setup (Cash App routing/account)
+- [ ] Bank account info ready for EFT setup (do not store in repo)

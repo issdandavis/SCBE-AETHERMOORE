@@ -1,0 +1,242 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/route_consistency_record.schema.json",
+  "title": "SCBE Route Consistency Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "intent_id",
+    "route_id",
+    "route_family",
+    "target_cluster",
+    "source_corpus",
+    "input",
+    "route_metadata",
+    "atomic_features",
+    "triangulation_links",
+    "labels"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scbe_route_consistency_record_v1"
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "intent_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "route_id": {
+      "type": "string",
+      "minLength": 8
+    },
+    "route_family": {
+      "type": "string",
+      "enum": [
+        "multi_turn_conversation",
+        "instruction_projection",
+        "prompt_completion_projection"
+      ]
+    },
+    "target_cluster": {
+      "type": "string",
+      "minLength": 8
+    },
+    "source_corpus": {
+      "type": "string",
+      "minLength": 1
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "language"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "route_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tongue",
+        "layer",
+        "view",
+        "governance"
+      ],
+      "properties": {
+        "tongue": {
+          "type": "string",
+          "enum": [
+            "KO",
+            "AV",
+            "RU",
+            "CA",
+            "UM",
+            "DR"
+          ]
+        },
+        "layer": {
+          "type": "string",
+          "pattern": "^L(?:[1-9]|1[0-4])$"
+        },
+        "view": {
+          "type": "string",
+          "enum": [
+            "openai_chat",
+            "instruction_response",
+            "prompt_completion"
+          ]
+        },
+        "governance": {
+          "type": "string",
+          "enum": [
+            "ALLOW",
+            "HOLD",
+            "DENY"
+          ]
+        }
+      }
+    },
+    "atomic_features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tokens",
+        "elements",
+        "trits"
+      ],
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "symbol",
+              "Z",
+              "group",
+              "period",
+              "valence",
+              "electronegativity",
+              "witness_stable"
+            ],
+            "properties": {
+              "symbol": {
+                "type": "string"
+              },
+              "Z": {
+                "type": "integer"
+              },
+              "group": {
+                "type": "integer"
+              },
+              "period": {
+                "type": "integer"
+              },
+              "valence": {
+                "type": "integer"
+              },
+              "electronegativity": {
+                "type": "number"
+              },
+              "witness_stable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "trits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "KO",
+              "AV",
+              "RU",
+              "CA",
+              "UM",
+              "DR"
+            ],
+            "properties": {
+              "KO": { "type": "integer", "enum": [-1, 0, 1] },
+              "AV": { "type": "integer", "enum": [-1, 0, 1] },
+              "RU": { "type": "integer", "enum": [-1, 0, 1] },
+              "CA": { "type": "integer", "enum": [-1, 0, 1] },
+              "UM": { "type": "integer", "enum": [-1, 0, 1] },
+              "DR": { "type": "integer", "enum": [-1, 0, 1] }
+            }
+          }
+        }
+      }
+    },
+    "triangulation_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "linked_record_ids"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "semantic_process_execution"
+            ]
+          },
+          "linked_record_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_behavior",
+        "expected_outcome",
+        "passes_governance"
+      ],
+      "properties": {
+        "target_behavior": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_outcome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "passes_governance": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

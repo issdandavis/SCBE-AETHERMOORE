@@ -1,0 +1,68 @@
+{
+  "_format": {
+    "version": "1.0",
+    "description": "Looping records for flight-path task tracking. Not strings, not logs — structured divergent records that compress on merge and keep differences as wings.",
+    "fields": {
+      "step_id": "unique id, e.g. 001_slug",
+      "timestamp": "ISO-8601",
+      "generation": "merge generation, 0 for first flight, +1 per merge",
+      "parent_ids": "list of step_ids this record merged from; empty for first flights",
+      "what": "one-line summary of the successful step",
+      "how": "method, tools, commands, files touched",
+      "why": "reason, evidence, causal link to goal",
+      "common": "fields shared with parents (empty on first flight; populated on merge by intersecting parent fields)",
+      "wings": {
+        "description": "divergent branches; each wing is a named object holding fields that differ across merged parents",
+        "layout": "{ left: {...}, right: {...}, ... }"
+      },
+      "next_flight": "pointer to next expected step_id (may be null)",
+      "fallback_from": "pointer to a predecessor if this record is a retry/rewound flight"
+    },
+    "merge_rule": "merge(a, b) -> new record r where r.common = intersect(a.fields, b.fields), r.wings = { a: diff(a, r.common), b: diff(b, r.common) }, r.parent_ids = [a.step_id, b.step_id], r.generation = max(a.generation, b.generation) + 1. Identical fields compress into common; divergent fields keep flying as wings."
+  },
+  "step_id": "001_diagnose_colab_target",
+  "timestamp": "2026-04-11T00:00:00Z",
+  "generation": 0,
+  "parent_ids": [],
+  "what": "Identified governance_gate_live_demo.ipynb as the leading Colab target and verified its core imports resolve on current branch polly-nav-clean.",
+  "how": {
+    "reads": [
+      "notebooks/governance_gate_live_demo.ipynb (first 120 lines)",
+      "artifacts/training_reports/training_results_sheet_20260410.md",
+      "src/mempalace/cli.py",
+      "src/mempalace/__init__.py",
+      "src/geoseal_cli.py",
+      "tests/mempalace/test_vault_link.py",
+      ".claude/agents/dry-run-specialist.md"
+    ],
+    "checks": [
+      "ls src/governance/ src/video/ -> runtime_gate.py (55841 bytes, Apr 6 19:49) and dye_injection.py (23096 bytes, Apr 6 19:03) both present",
+      "grep class RuntimeGate|def evaluate|TONGUES|_text_to_coords|_spin in src/governance/runtime_gate.py -> TONGUES L51, class RuntimeGate L258, _text_to_coords L608, _spin L631, evaluate L714",
+      "find src -name 'dye_injection*' -> src/video/dye_injection.py confirmed"
+    ],
+    "branch": "polly-nav-clean",
+    "candidate_notebook": "notebooks/governance_gate_live_demo.ipynb",
+    "candidate_bytes": 18826,
+    "candidate_mtime": "2026-04-06T23:41:00Z"
+  },
+  "why": {
+    "newest": "governance_gate_live_demo.ipynb is the newest Colab notebook on polly-nav-clean (newer than polly_curriculum_colab.ipynb at Apr 6 21:28 and the 15 older notebooks).",
+    "imports_resolve": "Its two critical imports (src.governance.runtime_gate and src.video.dye_injection) both exist on current branch with expected class/function signatures.",
+    "never_executed": "artifacts/training_reports/training_results_sheet_20260410.md lists NO Colab runs — only Kaggle and local runs — so Colab has never executed successfully, consistent with user saying 'fix the collab'.",
+    "runtime_failure_hypotheses": [
+      "sys.path.insert(0, 'src/') causes symphonic_cipher dual-package collision per CLAUDE.md warning",
+      "NGROK_AUTH_TOKEN = '' is blank and user must provide",
+      "sentence-transformers model download failure in ephemeral Colab runtime",
+      "uvicorn thread launch conflicts with Jupyter kernel event loop",
+      "pyngrok not bundled in default Colab and pip install fails on version pin"
+    ]
+  },
+  "common": {},
+  "wings": {},
+  "next_flight": "002_playwright_open_colab",
+  "fallback_from": null,
+  "open_questions": [
+    "Is governance_gate_live_demo.ipynb the notebook the user means by 'the collab', or do they mean the canonical training lane (notebooks/scbe_canonical_training_lane_colab.ipynb) that exists on feat/polly-navigation-demos but NOT on polly-nav-clean?",
+    "Which specific error have they seen — is it an import error, a runtime error, a Colab-side compile error, or a network/ngrok error?"
+  ]
+}

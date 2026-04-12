@@ -1,0 +1,44 @@
+{
+  "total_lore_records": 41470,
+  "total_pairs_generated": 13296,
+  "conversion_rate_pct": 32.1,
+  "unique_concepts": 20,
+  "concept_counts": {
+    "physical_constants": 6625,
+    "database_storage": 5916,
+    "network_routing": 5688,
+    "build_system": 5126,
+    "token_encoding": 3247,
+    "graph_traversal": 3077,
+    "function_definition": 2787,
+    "encryption_envelope": 2415,
+    "agent_swarm": 2231,
+    "prediction_inference": 2094,
+    "governance_policy": 2086,
+    "error_recovery": 1460,
+    "firewall_acl": 1363,
+    "adversarial_test": 1261,
+    "protocol_handshake": 1068,
+    "digital_signature": 969,
+    "data_transformation": 938,
+    "api_call": 602,
+    "deterministic_computation": 408,
+    "tongue_encoding": 115
+  },
+  "tongue_distribution": {
+    "ru": 4551,
+    "dr": 3228,
+    "av": 2172,
+    "ko": 1688,
+    "um": 986,
+    "ca": 671
+  },
+  "governance_distribution": {
+    "ALLOW": 8254,
+    "QUARANTINE": 378,
+    "ESCALATE": 1291,
+    "DENY": 3373
+  },
+  "output_file": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\lore_code_pairs_sft.jsonl",
+  "dedup_count": 20714
+}

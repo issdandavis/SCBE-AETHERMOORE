@@ -2,18 +2,52 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import { GoogleGenAI, Tool, Type } from "@google/genai";
+import { Tool, Type } from "@google/genai";
 
 // Always use 'riftrunner' below. Do not change this model name. 
 export const MODEL_NAME = "riftrunner"; 
 
 /**
- * Creates a fresh instance of the GenAI client.
- * GUIDELINE: Create a new GoogleGenAI instance right before making an API call 
- * to ensure it always uses the most up-to-date API key from the dialog.
+ * IMPORTANT SECURITY NOTE
+ * -----------------------
+ * Do NOT instantiate vendor SDK clients (Gemini, etc.) in the Vite renderer.
+ * Never ship third-party API keys to the browser bundle.
+ *
+ * All model calls are proxied through the SCBE backend under `/api/v1/llm/...`.
  */
 export const getAiClient = () => {
-    return new GoogleGenAI({ apiKey: process.env.API_KEY });
+    return {
+        models: {
+            generateContent: async (args: {
+                model: string;
+                contents: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }>;
+                config?: { tools?: Tool[]; temperature?: number };
+            }): Promise<{ text: string }> => {
+                const apiKey = localStorage.getItem('scbe_api_key') || 'demo_key_12345';
+                const res = await fetch('/api/v1/llm/gemini/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                    },
+                    body: JSON.stringify({
+                        model: args.model,
+                        contents: args.contents,
+                        temperature: args.config?.temperature ?? 0.2,
+                    }),
+                });
+
+                if (!res.ok) {
+                    const body = await res.json().catch(() => ({}));
+                    const detail = body?.detail ? `: ${body.detail}` : '';
+                    throw new Error(`SCBE Gemini proxy error (${res.status})${detail}`);
+                }
+
+                const body = await res.json();
+                return { text: body?.text || '[empty response]' };
+            },
+        },
+    };
 };
 
 export const HOME_TOOLS: Tool[] = [

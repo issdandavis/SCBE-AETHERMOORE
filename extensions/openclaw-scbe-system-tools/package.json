@@ -1,0 +1,17 @@
+{
+  "name": "@scbe/openclaw-scbe-system-tools",
+  "version": "0.1.0",
+  "description": "SCBE/HYDRA tool surface for OpenClaw",
+  "type": "module",
+  "main": "index.ts",
+  "files": [
+    "index.ts",
+    "openclaw.plugin.json",
+    "package.json"
+  ],
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

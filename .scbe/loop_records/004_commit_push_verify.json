@@ -1,0 +1,82 @@
+{
+  "step_id": "004_commit_push_verify",
+  "timestamp": "2026-04-11T00:30:00Z",
+  "generation": 0,
+  "parent_ids": [],
+  "what": "Committed notebook fix + loop records 001-003 as commit 96b500b1 on polly-nav-clean, pushed to origin, reloaded Colab GitHub-preview via Playwright, confirmed both Cell 4 and Cell 12 render the fixed content in the public preview path.",
+  "how": {
+    "git": {
+      "branch": "polly-nav-clean",
+      "commit": "96b500b1",
+      "commit_subject": "fix(notebooks): stabilize governance gate colab live demo",
+      "files_staged": [
+        "notebooks/governance_gate_live_demo.ipynb",
+        ".scbe/loop_records/001_diagnose_colab_target.json",
+        ".scbe/loop_records/002_playwright_open_colab.json",
+        ".scbe/loop_records/003_local_fix_notebook.json"
+      ],
+      "stage_strategy": "specific paths (NOT git add -A) to avoid sweeping ~20 other WIP files in the working tree",
+      "diff_stats": "4 files, 182 insertions, 2 deletions",
+      "notebook_diff": "exactly 2 insertions + 2 deletions (the two edited cells)",
+      "push_range": "837c164b..96b500b1",
+      "push_target": "origin/polly-nav-clean",
+      "push_result": "ok"
+    },
+    "playwright": {
+      "tool": "mcp__plugin_playwright_playwright__browser_navigate + browser_snapshot",
+      "url": "https://colab.research.google.com/github/issdandavis/SCBE-AETHERMOORE/blob/polly-nav-clean/notebooks/governance_gate_live_demo.ipynb",
+      "page_title": "SCBE Governance Gate - Live Demo API - Colab",
+      "snapshot_confirmed": {
+        "cell_4_rendered_lines": [
+          "REPO_DIR = \"/content/SCBE-AETHERMOORE\"",
+          "BRANCH = \"polly-nav-clean\"",
+          "!git clone --depth 1 -b {BRANCH} https://github.com/issdandavis/SCBE-AETHERMOORE.git {REPO_DIR}",
+          "!cd {REPO_DIR} && git fetch origin {BRANCH} && git checkout {BRANCH} && git pull origin {BRANCH}",
+          "# CLAUDE.md warns that sys.path.insert(0, 'src/') causes a dual-package collision",
+          "if REPO_DIR not in sys.path:",
+          "    sys.path.insert(0, REPO_DIR)",
+          "print('Python path configured (root-only, collision-safe).')"
+        ],
+        "cell_12_rendered_lines": [
+          "# NGROK AUTH TOKEN",
+          "# Preferred: add NGROK_AUTH_TOKEN as a Colab secret (left sidebar, key icon)",
+          "NGROK_AUTH_TOKEN = \"\"  # <-- fallback only; prefer Colab secrets",
+          "try:",
+          "    from google.colab import userdata",
+          "    _secret = userdata.get(\"NGROK_AUTH_TOKEN\")",
+          "if not NGROK_AUTH_TOKEN:",
+          "    raise RuntimeError(...)",
+          "ngrok.set_auth_token(NGROK_AUTH_TOKEN)"
+        ]
+      },
+      "console_errors": [
+        "401 UserInfoService from colab.clients6.google.com",
+        "401 from play.google.com/log"
+      ],
+      "console_error_classification": "browser-side 'not signed into Google' signals, IDENTICAL to loop record 002, NOT notebook execution errors"
+    }
+  },
+  "why": {
+    "commit_scope_reason": "Working tree has ~20 other files in flight (docs, tests, training scripts, skills). git add -A would entangle the notebook fix with unrelated work and make the commit hard to revert or cherry-pick. Specific-path staging keeps this commit surgical.",
+    "push_purpose": "The Colab URL https://colab.research.google.com/github/.../blob/polly-nav-clean/... serves whatever is currently on the polly-nav-clean branch. Until the push lands, the user's browser sees the OLD broken notebook. Pushing closes the static-vs-runtime drift window for any future Colab visitor.",
+    "playwright_verify_reason": "File-on-disk correctness does NOT prove the fix is visible through the public preview. GitHub caches, CDN latency, and branch protection could all silently eat the change. A Playwright snapshot against the live Colab URL is the only way to prove end-to-end: local fix -> commit -> push -> GitHub -> Colab GitHub-preview -> visible.",
+    "design_principle": "Every successful flight is recorded as a structured JSON record (not a string), with what/how/why separated. When a future flight returns to this task and diverges, the merge rule compresses identical fields into common and keeps differences as wings. This record is generation 0 (first flight) so common and wings are empty."
+  },
+  "common": {},
+  "wings": {},
+  "next_flight": null,
+  "fallback_from": null,
+  "pipeline_closed": {
+    "stages": [
+      "local fix (003)",
+      "JSON reparse ok (003)",
+      "loop record written (003)",
+      "commit 96b500b1 (004)",
+      "push to origin (004)",
+      "GitHub sees new commit (004)",
+      "Colab GitHub-preview reloads fixed content (004)",
+      "Playwright snapshot verifies fix visible (004)"
+    ],
+    "verdict": "end-to-end success"
+  }
+}

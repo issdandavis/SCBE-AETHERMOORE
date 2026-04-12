@@ -1,0 +1,75 @@
+{
+  "step_id": "003_local_fix_notebook",
+  "timestamp": "2026-04-11T00:20:00Z",
+  "generation": 0,
+  "parent_ids": [],
+  "what": "Applied two preventive fixes to governance_gate_live_demo.ipynb via NotebookEdit: branch-pinned shallow clone + removed src/ path collision (cell 4), Colab-secret-aware ngrok token loader with RuntimeError guard (cell 12). Notebook JSON reparses clean at 18 cells nbformat 4.5.",
+  "how": {
+    "tool": "NotebookEdit",
+    "file": "notebooks/governance_gate_live_demo.ipynb",
+    "cells_edited": [
+      {
+        "index": 4,
+        "cell_id": "77n9nr4elfs",
+        "cell_type": "code",
+        "step_title": "Step 2: Clone the SCBE-AETHERMOORE Repository",
+        "before_bytes": "~500",
+        "after_bytes": 866,
+        "deltas": [
+          "added BRANCH = 'polly-nav-clean' constant",
+          "changed git clone to --depth 1 -b {BRANCH} (shallow + branch-pinned)",
+          "changed git pull to fetch+checkout+pull on {BRANCH} (idempotent re-runs stay on branch)",
+          "REMOVED sys.path.insert(0, os.path.join(REPO_DIR, 'src'))",
+          "added idempotence guard: if REPO_DIR not in sys.path",
+          "added explanatory comment citing CLAUDE.md dual-package collision warning"
+        ]
+      },
+      {
+        "index": 12,
+        "cell_id": "32s7f69hvi2",
+        "cell_type": "code",
+        "step_title": "Step 6: Configure ngrok and Start the Server",
+        "before_bytes": "~2000",
+        "after_bytes": 2260,
+        "deltas": [
+          "added 'from google.colab import userdata' with try/except fallback",
+          "added userdata.get('NGROK_AUTH_TOKEN') to prefer Colab secrets over inline",
+          "added RuntimeError raise when NGROK_AUTH_TOKEN is still empty after secret + inline",
+          "made ngrok.set_auth_token(NGROK_AUTH_TOKEN) unconditional (empty case now raises)"
+        ]
+      }
+    ],
+    "validation": {
+      "json_reparse": "ok",
+      "cell_count": 18,
+      "nbformat": "4.5",
+      "cell_4_checks": {
+        "branch_pin": true,
+        "shallow_clone": true,
+        "src_path_removed": true,
+        "idempotence_guard": true,
+        "claude_md_citation": true
+      },
+      "cell_12_checks": {
+        "colab_userdata_import": true,
+        "userdata_get_ngrok": true,
+        "runtime_error_on_empty": true,
+        "unconditional_set_auth": true
+      }
+    }
+  },
+  "why": {
+    "cell_4_reason": "CLAUDE.md explicitly warns that sys.path.insert(0, 'src/') triggers a dual-package collision between root/symphonic_cipher (H=R^(d**2), exponential cost multiplier) and src/symphonic_cipher (H=1/(1+d+2*pd), bounded safety score). On Colab this would pick src/ first and silently use the wrong math. Root-only path still resolves 'from src.governance.runtime_gate import ...' correctly because the root IS on the path. Branch-pinning to polly-nav-clean makes Colab see the same code that the user is viewing in the GitHub preview, which closes the static-vs-runtime drift window.",
+    "cell_12_reason": "The original cell had NGROK_AUTH_TOKEN = '' with no guard, so pyngrok would silently ValueError on ngrok.connect() deep in the startup thread, leaving the user with an unbound tunnel URL and no clear signal about why. The new flow (a) prefers Colab secrets (which is the least-leak path for a long-lived token), (b) falls back to the inline string if secrets are unavailable (for users not using secrets), and (c) raises RuntimeError with an actionable message naming both paths if both are empty. This turns a silent mystery failure into a loud, fixable error.",
+    "design_principle": "preventive static fix over reactive runtime fix. Both issues are deterministically identifiable from the notebook source + CLAUDE.md without needing a live Colab run. Fixing them before the user re-opens the notebook means the first Colab pass succeeds instead of surfacing a cryptic import collision or an empty-token crash.",
+    "not_fixed_yet": [
+      "sentence-transformers model download is network-dependent and cannot be made deterministic from static analysis",
+      "uvicorn threading in Jupyter kernel is already handled by nest_asyncio.apply() in the existing code",
+      "pyngrok pip install pin is already handled by the Step 1 pip install cell"
+    ]
+  },
+  "common": {},
+  "wings": {},
+  "next_flight": "004_commit_push_fix",
+  "fallback_from": null
+}

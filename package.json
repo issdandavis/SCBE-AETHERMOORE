@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "3.3.0",
+  "version": "4.0.1",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -59,17 +59,23 @@
     }
   },
   "files": [
-    "dist/src",
+    "dist/src/index.js",
+    "dist/src/index.d.ts",
+    "dist/src/harmonic",
+    "dist/src/crypto",
+    "dist/src/symphonic",
+    "dist/src/governance",
+    "dist/src/tokenizer",
+    "dist/src/ai_brain",
+    "dist/src/spectral",
+    "dist/src/spiralverse",
     "bin",
-    "scbe.py",
-    "scripts/scbe-system-cli.py",
-    "scripts/scbe_system_cli.py",
-    "scripts/__init__.py",
     "README.md",
     "LICENSE",
     "examples/npm"
   ],
   "scripts": {
+    "postinstall": "node scripts/patch_vite_windows_safe_realpath.cjs",
     "clean": "rimraf dist",
     "clean:release": "node scripts/npm_prepublish_cleanup.js",
     "build": "npm run clean && npm run build:src",

@@ -37,6 +37,8 @@ HYDRA_SYSTEM_PROMPT = (
 )
 
 _RETRY_DELAYS = [1.0, 2.0, 4.0]  # seconds for exponential back-off
+DEFAULT_LOCAL_BASE_URL = "http://localhost:1234/v1"
+DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434/v1"
 
 
 # ---------------------------------------------------------------------------
@@ -497,7 +499,7 @@ class HuggingFaceProvider(LLMProvider):
 
     def __init__(
         self,
-        model: str = "mistralai/Mistral-7B-Instruct-v0.3",
+        model: str = "Qwen/Qwen2.5-7B-Instruct",
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
     ):
@@ -609,13 +611,14 @@ class LocalProvider(LLMProvider):
         pip install openai
 
     Defaults to http://localhost:1234/v1 which is the LM Studio default.
+    For Ollama's OpenAI-compatible surface, use http://localhost:11434/v1.
     No API key is required by default (uses "local" as a placeholder).
     """
 
     def __init__(
         self,
         model: str = "local-model",
-        base_url: str = "http://localhost:1234/v1",
+        base_url: str = DEFAULT_LOCAL_BASE_URL,
         api_key: str = "local",
     ):
         try:
@@ -815,6 +818,7 @@ _PROVIDER_MAP: Dict[str, type] = {
     "huggingface": HuggingFaceProvider,
     "hf": HuggingFaceProvider,
     "local": LocalProvider,
+    "ollama": LocalProvider,
 }
 
 
@@ -842,6 +846,7 @@ def create_provider(
         >>> provider = create_provider("claude")
         >>> provider = create_provider("gpt", model="gpt-4-turbo")
         >>> provider = create_provider("local", base_url="http://gpu-box:5000/v1")
+        >>> provider = create_provider("ollama", model="qwen2.5-coder:7b", base_url=DEFAULT_OLLAMA_BASE_URL)
     """
     key = ai_type.strip().lower()
     cls = _PROVIDER_MAP.get(key)

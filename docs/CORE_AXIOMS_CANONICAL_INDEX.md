@@ -1,3 +1,13 @@
+---
+id: AXIOMS001
+references: [SPEC001, PHDM001]
+feeds_into: [HARMONIC001, AXIOMS001]
+governs_layers: [L1, L2, L3, L4, L5, L7, L8, L9, L10, L11, L12, L13, L14]
+version_sync: "3.3.0"
+mind_map_node: "CoreModules > Governance"
+state_dims: 5
+---
+
 # Core Axioms Canonical Index
 
 Last updated: February 19, 2026

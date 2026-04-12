@@ -1,0 +1,71 @@
+# Include essential files
+include LICENSE
+include README.md
+include pyproject.toml
+include scbe.py
+
+# Include only the packages we actually ship
+recursive-include src/code_prism *.py
+recursive-include src/crypto *.py
+recursive-include src/flow_router *.py
+recursive-include src/harmonic *.py
+recursive-include src/minimal *.py
+recursive-include src/spiralverse *.py
+recursive-include src/storage *.py
+recursive-include src/symphonic_cipher *.py
+recursive-include api *.py
+recursive-exclude api/billing *
+recursive-exclude api/github_app *
+recursive-exclude api/keys *
+
+# Exclude test files that sneak in
+recursive-exclude src/symphonic_cipher/tests *
+
+# Exclude everything that should not ship in sdist
+prune tests
+prune training
+prune training-data
+prune agents
+prune scripts
+prune docs
+prune config
+prune hydra
+prune k8s
+prune deploy
+prune demos
+prune examples
+prune content
+prune artifacts
+prune notes
+prune notebooks
+prune sealed_blobs
+prune external
+prune plugins
+prune skills
+prune tools
+prune ui
+prune electron
+prune mcp
+prune rust
+prune visual_system
+prune _staging
+prune exports
+prune packages
+prune workflows
+
+# Exclude non-Python files from src
+recursive-exclude src *.ts *.js *.map *.d.ts *.json *.yaml *.yml *.md
+recursive-exclude * __pycache__ *.py[cod] *.so *.egg-info
+
+# Exclude dev/build files
+exclude .gitignore
+exclude .prettierrc
+exclude tsconfig*.json
+exclude vitest.config.ts
+exclude pytest.ini
+exclude Dockerfile*
+exclude docker-compose*
+exclude render.yaml
+exclude .npmignore
+exclude package.json
+exclude package-lock.json

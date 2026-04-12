@@ -125,7 +125,7 @@ with gr.Blocks(title="SCBE Red Team Sandbox", theme=gr.themes.Base(primary_hue="
         "# SCBE Red Team Sandbox\n\n"
         "Test any prompt against a 14-layer AI governance pipeline. 91/91 attacks blocked. 0 false positives.\n\n"
         "**Patent**: USPTO #63/961,403 | [GitHub](https://github.com/issdandavis/SCBE-AETHERMOORE) | "
-        "[Novel ($4.99)](https://a.co/d/024VowjS) | [Demos](https://aethermoorgames.com/demos/)"
+        "[Novel ($4.99)](https://a.co/d/024VowjS) | [Demos](https://aethermoore.com/demos/)"
     )
 
     prompt_input = gr.Textbox(label="Enter any prompt", placeholder="Type an attack or normal question...", lines=3)

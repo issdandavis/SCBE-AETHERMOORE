@@ -40,6 +40,4 @@ Object.defineProperty(window, 'scbeElectron', {
 });
 
 // Mock process.env
-process.env.API_KEY = 'test-api-key';
-process.env.GEMINI_API_KEY = 'test-gemini-key';
 process.env.SCBE_VERSION = '3.0.0';

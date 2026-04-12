@@ -116,3 +116,19 @@ Traditional AI safety says: **"The AI should not do X."**
 PHDM says: **"The AI cannot do X because the geometry doesn't support it."**
 
 This is the difference between a **legal prohibition** (can be broken) and a **physical law** (cannot be violated).
+
+## Connections
+
+```yaml
+connections:
+  id: polyhedral-hamiltonian-dynamic-mesh-brain-architecture
+  module: cognitive-geometry
+  state_dimensions: [7, 8, 9]
+  related:
+    - master-specification-canonical-twenty-one-dimensional-state
+    - sacred-tongue-tokenizer-practical-tutorials-and-use-cases
+  tests: []
+  knowledge_spine_paths:
+    - docs/00_MASTER/INDEX.csv
+    - docs/00_MASTER/MINDMAP.mmd
+```
