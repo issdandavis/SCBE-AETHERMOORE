@@ -23,10 +23,10 @@ from src.crypto.polyglot_braid import (
 )
 from src.crypto.tri_bundle import TONGUE_WEIGHTS, PHI
 
-
 # ===================================================================
 # Language Registry
 # ===================================================================
+
 
 class TestLanguageRegistry:
     def test_sixteen_languages(self):
@@ -113,6 +113,7 @@ class TestLanguageRegistry:
 # Parallel Concepts
 # ===================================================================
 
+
 class TestParallelConcepts:
     def test_twelve_concepts(self):
         assert len(PARALLEL_CONCEPTS) == 12
@@ -149,6 +150,7 @@ class TestParallelConcepts:
 # ===================================================================
 # Strand Encoding
 # ===================================================================
+
 
 class TestStrandEncoding:
     def test_encode_english_strand(self):
@@ -187,6 +189,7 @@ class TestStrandEncoding:
 # ===================================================================
 # Concept Weaving
 # ===================================================================
+
 
 class TestConceptWeaving:
     def test_weave_single_concept(self):
@@ -251,6 +254,7 @@ class TestConceptWeaving:
 # Cross-Convergence Properties
 # ===================================================================
 
+
 class TestCrossConvergence:
     def test_related_languages_higher_affinity(self):
         """Languages from same family should have higher affinity correlation."""
@@ -258,14 +262,8 @@ class TestCrossConvergence:
         result = weave_concept(concept, languages=["en", "fr", "de", "zh", "ja"])
 
         # Find en-fr (same family) vs en-zh (different family)
-        en_fr = next(
-            cc for cc in result.cross_convergence
-            if set([cc["lang_a"], cc["lang_b"]]) == {"en", "fr"}
-        )
-        en_zh = next(
-            cc for cc in result.cross_convergence
-            if set([cc["lang_a"], cc["lang_b"]]) == {"en", "zh"}
-        )
+        en_fr = next(cc for cc in result.cross_convergence if set([cc["lang_a"], cc["lang_b"]]) == {"en", "fr"})
+        en_zh = next(cc for cc in result.cross_convergence if set([cc["lang_a"], cc["lang_b"]]) == {"en", "zh"})
         # Indo-European siblings should correlate higher than IE vs Sino-Tibetan
         assert en_fr["affinity_correlation"] > 0
 
@@ -273,10 +271,7 @@ class TestCrossConvergence:
         """RTL (Arabic, Hebrew) and LTR languages both produce valid braids."""
         concept = next(c for c in PARALLEL_CONCEPTS if c.concept_id == "peace")
         result = weave_concept(concept, languages=["en", "ar", "he", "zh"])
-        assert all(
-            s.byte_count > 0 and s.mean_sync >= 0
-            for s in result.strands.values()
-        )
+        assert all(s.byte_count > 0 and s.mean_sync >= 0 for s in result.strands.values())
 
     def test_same_script_languages_comparable(self):
         """Languages sharing Latin script should have comparable byte patterns."""
@@ -291,6 +286,7 @@ class TestCrossConvergence:
 # ===================================================================
 # Full Braid Pipeline
 # ===================================================================
+
 
 class TestFullBraid:
     def test_weave_all_concepts(self):
@@ -339,6 +335,7 @@ class TestFullBraid:
 # Integration: The Full Alphabet in English AND Greek
 # ===================================================================
 
+
 class TestFullAlphabet:
     """Test like Issac: full alphabet in English AND Greek."""
 
@@ -354,10 +351,7 @@ class TestFullAlphabet:
 
     def test_creation_concepts_have_hebrew_greek(self):
         """Creation-domain concepts must include Hebrew and Greek."""
-        creation_concepts = [
-            c for c in PARALLEL_CONCEPTS
-            if c.domain == "creation"
-        ]
+        creation_concepts = [c for c in PARALLEL_CONCEPTS if c.domain == "creation"]
         for concept in creation_concepts:
             assert "he" in concept.translations
             assert "el" in concept.translations

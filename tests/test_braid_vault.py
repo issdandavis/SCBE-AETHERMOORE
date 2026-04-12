@@ -4,6 +4,7 @@ Covers: braid word operations, dual hashing, strand initialization,
 crossing mechanics, vault CRUD, key rotation, TTL expiry, and
 the non-commutativity property that gives topological security.
 """
+
 from __future__ import annotations
 
 import time
@@ -28,8 +29,8 @@ from src.crypto.braid_vault import (
     create_vault_deterministic,
 )
 
-
 # ── Dual Hash Primitives ─────────────────────────────────────────────────
+
 
 class TestDualPrimitives:
     def test_h_a_produces_32_bytes(self):
@@ -64,6 +65,7 @@ class TestDualPrimitives:
 
 # ── Braid Strands ────────────────────────────────────────────────────────
 
+
 class TestBraidStrand:
     def test_from_seed_produces_dual_channels(self):
         s = BraidStrand.from_seed(b"seed")
@@ -88,6 +90,7 @@ class TestBraidStrand:
 
 
 # ── Tongue Pair Initialization ───────────────────────────────────────────
+
 
 class TestStrandInit:
     def test_init_produces_three_strands(self):
@@ -118,6 +121,7 @@ class TestStrandInit:
 
 
 # ── Braid Crossings ─────────────────────────────────────────────────────
+
 
 class TestBraidCrossings:
     def test_sigma1_changes_state(self):
@@ -176,6 +180,7 @@ class TestBraidCrossings:
 
 # ── Braid Words ──────────────────────────────────────────────────────────
 
+
 class TestBraidWord:
     def test_generate_has_correct_length(self):
         w = BraidWord.generate(8)
@@ -192,10 +197,12 @@ class TestBraidWord:
         assert len(w.inverse()) == 10
 
     def test_inverse_reverses_and_flips(self):
-        w = BraidWord(crossings=[
-            BraidCrossing.SIGMA_1,
-            BraidCrossing.SIGMA_2,
-        ])
+        w = BraidWord(
+            crossings=[
+                BraidCrossing.SIGMA_1,
+                BraidCrossing.SIGMA_2,
+            ]
+        )
         inv = w.inverse()
         assert inv.crossings == [
             BraidCrossing.SIGMA_2_INV,
@@ -224,6 +231,7 @@ class TestBraidWord:
 
 # ── Finalization ─────────────────────────────────────────────────────────
 
+
 class TestFinalization:
     def test_finalize_produces_32_bytes(self):
         strands = _init_strands(b"fin")
@@ -237,11 +245,10 @@ class TestFinalization:
 
 # ── Vault CRUD ───────────────────────────────────────────────────────────
 
+
 class TestVaultCRUD:
     def setup_method(self):
-        self.vault = create_vault_deterministic(
-            "test-passphrase", "s1.s2.s1.s2.s1.s2"
-        )
+        self.vault = create_vault_deterministic("test-passphrase", "s1.s2.s1.s2.s1.s2")
 
     def test_store_and_retrieve(self):
         secret = b"my_api_key_12345"
@@ -303,6 +310,7 @@ class TestVaultCRUD:
 
 # ── TTL / Expiry ─────────────────────────────────────────────────────────
 
+
 class TestVaultTTL:
     def test_ttl_not_expired(self):
         vault = create_vault_deterministic("ttl", "s1.s2")
@@ -323,6 +331,7 @@ class TestVaultTTL:
 
 
 # ── Key Rotation ─────────────────────────────────────────────────────────
+
 
 class TestKeyRotation:
     def test_rotate_preserves_secret(self):
@@ -353,6 +362,7 @@ class TestKeyRotation:
 
 # ── Braid Verification ──────────────────────────────────────────────────
 
+
 class TestBraidVerification:
     def test_correct_braid_verifies(self):
         vault = create_vault_deterministic("verify", "s1.s2.s1i.s2i")
@@ -368,6 +378,7 @@ class TestBraidVerification:
 
 
 # ── Strand Fingerprints ─────────────────────────────────────────────────
+
 
 class TestStrandFingerprints:
     def test_fingerprints_are_three_hex_strings(self):
@@ -386,6 +397,7 @@ class TestStrandFingerprints:
 
 # ── Audit Log ────────────────────────────────────────────────────────────
 
+
 class TestAuditLog:
     def test_operations_logged(self):
         vault = create_vault_deterministic("audit", "s1.s2")
@@ -403,6 +415,7 @@ class TestAuditLog:
 
 
 # ── Convenience Constructors ─────────────────────────────────────────────
+
 
 class TestConstructors:
     def test_create_vault_works(self):
@@ -428,6 +441,7 @@ class TestConstructors:
 
 
 # ── Full Integration: Store-Rotate-Retrieve Cycle ────────────────────────
+
 
 class TestIntegration:
     def test_full_lifecycle(self):

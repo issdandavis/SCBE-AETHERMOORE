@@ -35,10 +35,10 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-
 # ---------------------------------------------------------------------------
 # Dual hash primitives
 # ---------------------------------------------------------------------------
+
 
 def _h_a(data: bytes) -> bytes:
     """Primary primitive: SHA3-256."""
@@ -77,9 +77,11 @@ def _rotate_left(data: bytes, n: int) -> bytes:
 # Braid strand and crossing operations
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BraidStrand:
     """One strand carrying dual-hashed state."""
+
     h_a: bytes  # SHA3-256 channel
     h_b: bytes  # BLAKE2b channel
 
@@ -101,8 +103,9 @@ class BraidStrand:
 
 class BraidCrossing(Enum):
     """B_3 generators and their inverses."""
-    SIGMA_1 = "s1"       # strand 0 over strand 1
-    SIGMA_2 = "s2"       # strand 1 over strand 2
+
+    SIGMA_1 = "s1"  # strand 0 over strand 1
+    SIGMA_2 = "s2"  # strand 1 over strand 2
     SIGMA_1_INV = "s1i"  # strand 0 under strand 1
     SIGMA_2_INV = "s2i"  # strand 1 under strand 2
 
@@ -111,9 +114,7 @@ class BraidCrossing(Enum):
 # This is NOT commutative: sigma_1 * sigma_2 != sigma_2 * sigma_1
 
 
-def _apply_crossing(
-    strands: List[BraidStrand], crossing: BraidCrossing
-) -> List[BraidStrand]:
+def _apply_crossing(strands: List[BraidStrand], crossing: BraidCrossing) -> List[BraidStrand]:
     """Apply a single braid crossing to the 3-strand state.
 
     Crossing mixes the two involved strands non-commutatively:
@@ -178,6 +179,7 @@ def _apply_crossing(
 # Braid word — the topological key
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BraidWord:
     """A sequence of crossings forming the vault's combination.
@@ -186,6 +188,7 @@ class BraidWord:
     final state. Without it, you'd need to solve the conjugacy problem
     in B_3 to recover the crossing sequence from the final state.
     """
+
     crossings: List[BraidCrossing] = field(default_factory=list)
 
     def __len__(self) -> int:
@@ -268,12 +271,14 @@ def _finalize(strands: List[BraidStrand]) -> bytes:
 # Vault entry — what gets stored
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class VaultEntry:
     """A single secret stored in the braid vault."""
+
     entry_id: str
-    ciphertext: bytes       # XOR(secret, derived_key)
-    salt: bytes             # random salt mixed into derivation
+    ciphertext: bytes  # XOR(secret, derived_key)
+    salt: bytes  # random salt mixed into derivation
     created_at: float
     expires_at: Optional[float] = None
     tongue_affinity: str = "KO"  # primary tongue for this entry
@@ -289,6 +294,7 @@ class VaultEntry:
 # ---------------------------------------------------------------------------
 # The Braid Vault
 # ---------------------------------------------------------------------------
+
 
 class BraidVault:
     """Braided dual-primitive key vault.
@@ -376,7 +382,7 @@ class BraidVault:
         plaintext = _xor_bytes(entry.ciphertext, key)
         # Extract original length from 4-byte header
         secret_len = struct.unpack(">I", plaintext[:4])[0]
-        secret = plaintext[4:4 + secret_len]
+        secret = plaintext[4 : 4 + secret_len]
         self._log("retrieve", entry_id)
         return secret
 
@@ -412,11 +418,7 @@ class BraidVault:
             self.store(
                 entry_id=eid,
                 secret=secret,
-                ttl_seconds=(
-                    old_entry.expires_at - time.time()
-                    if old_entry.expires_at
-                    else None
-                ),
+                ttl_seconds=(old_entry.expires_at - time.time() if old_entry.expires_at else None),
                 tongue_affinity=old_entry.tongue_affinity,
                 metadata=old_entry.metadata,
             )
@@ -446,10 +448,7 @@ class BraidVault:
 
     def strand_fingerprints(self) -> List[str]:
         """Return hex fingerprints of the 3 derived strands (for audit)."""
-        return [
-            hashlib.sha256(s.as_bytes()).hexdigest()[:16]
-            for s in self._derived_strands
-        ]
+        return [hashlib.sha256(s.as_bytes()).hexdigest()[:16] for s in self._derived_strands]
 
     @property
     def braid_length(self) -> int:
@@ -464,9 +463,7 @@ class BraidVault:
         blocks = []
         counter = 0
         while len(b"".join(blocks)) < length:
-            block = hmac.new(
-                key, struct.pack(">I", counter), hashlib.sha3_256
-            ).digest()
+            block = hmac.new(key, struct.pack(">I", counter), hashlib.sha3_256).digest()
             blocks.append(block)
             counter += 1
         return b"".join(blocks)[:length]
@@ -478,18 +475,21 @@ class BraidVault:
             self._log("auto_purge", eid)
 
     def _log(self, action: str, entry_id: str) -> None:
-        self._audit_log.append({
-            "action": action,
-            "entry_id": entry_id,
-            "timestamp": time.time(),
-            "braid_len": len(self._braid_key),
-            "entry_count": len(self._entries),
-        })
+        self._audit_log.append(
+            {
+                "action": action,
+                "entry_id": entry_id,
+                "timestamp": time.time(),
+                "braid_len": len(self._braid_key),
+                "entry_count": len(self._entries),
+            }
+        )
 
 
 # ---------------------------------------------------------------------------
 # Convenience constructors
 # ---------------------------------------------------------------------------
+
 
 def create_vault(passphrase: str, braid_length: int = 12) -> BraidVault:
     """Create a new vault from a passphrase with random braid key."""
@@ -498,9 +498,7 @@ def create_vault(passphrase: str, braid_length: int = 12) -> BraidVault:
     return BraidVault(master_seed=master_seed, braid_key=braid_key)
 
 
-def create_vault_deterministic(
-    passphrase: str, braid_word: str
-) -> BraidVault:
+def create_vault_deterministic(passphrase: str, braid_word: str) -> BraidVault:
     """Create a vault with a known braid word (for testing/recovery)."""
     master_seed = _h_a(passphrase.encode("utf-8"))
     braid_key = BraidWord.decode(braid_word)

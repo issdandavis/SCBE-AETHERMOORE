@@ -61,12 +61,8 @@ def _get_meili():
             pass  # Index may already exist
 
         index = _meili_client.index(MEILI_INDEX)
-        index.update_filterable_attributes(
-            ["dominant_tongue", "governance_tier", "source"]
-        )
-        index.update_sortable_attributes(
-            ["harmonic_distance", "friction_magnitude", "phi_weight", "indexed_at"]
-        )
+        index.update_filterable_attributes(["dominant_tongue", "governance_tier", "source"])
+        index.update_sortable_attributes(["harmonic_distance", "friction_magnitude", "phi_weight", "indexed_at"])
         index.update_searchable_attributes(["title", "content"])
 
         return _meili_client
@@ -92,23 +88,16 @@ _memory_index: Dict[str, Dict[str, Any]] = {}
 
 class SearchQuery(BaseModel):
     query: str = Field(..., description="Search query text")
-    tongue_filter: Optional[str] = Field(
-        None, description="Filter by dominant tongue (KO/AV/RU/CA/UM/DR)"
-    )
-    governance_filter: Optional[List[str]] = Field(
-        None, description="Allowed governance tiers (default: ALLOW only)"
-    )
+    tongue_filter: Optional[str] = Field(None, description="Filter by dominant tongue (KO/AV/RU/CA/UM/DR)")
+    governance_filter: Optional[List[str]] = Field(None, description="Allowed governance tiers (default: ALLOW only)")
     limit: int = Field(20, ge=1, le=100, description="Max results")
     tongue_boost: float = Field(
-        0.3, ge=0.0, le=1.0,
-        description="Weight of tongue-affinity boost in ranking (0=off, 1=dominant)"
+        0.3, ge=0.0, le=1.0, description="Weight of tongue-affinity boost in ranking (0=off, 1=dominant)"
     )
 
 
 class IndexRequest(BaseModel):
-    documents: List[Dict[str, str]] = Field(
-        ..., description="List of {title, content, url?, source?, id?} documents"
-    )
+    documents: List[Dict[str, str]] = Field(..., description="List of {title, content, url?, source?, id?} documents")
 
 
 class EnrichRequest(BaseModel):

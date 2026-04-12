@@ -5,14 +5,23 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 CLI = ROOT / "scripts" / "scbe-system-cli.py"
 
 
 def test_repo_ships_hf_agentic_handler_profile() -> None:
     result = subprocess.run(
-        [sys.executable, str(CLI), "--repo-root", str(ROOT), "model", "show-config", "--profile", "hf-agentic-handler", "--json"],
+        [
+            sys.executable,
+            str(CLI),
+            "--repo-root",
+            str(ROOT),
+            "model",
+            "show-config",
+            "--profile",
+            "hf-agentic-handler",
+            "--json",
+        ],
         capture_output=True,
         text=True,
         timeout=30,

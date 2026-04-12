@@ -36,10 +36,10 @@ from training.topological_loss import (
     topological_training_step,
 )
 
-
 # ============================================================
 # Symmetry group generators
 # ============================================================
+
 
 @pytest.mark.unit
 class TestSymmetryGenerators:
@@ -121,6 +121,7 @@ class TestSymmetryGenerators:
 # Friction Laplacian
 # ============================================================
 
+
 @pytest.mark.unit
 class TestNaturalFrequency:
     def test_positive_for_all_polyhedra(self):
@@ -177,6 +178,7 @@ class TestFrictionLaplacianConstruction:
 # TopologicalLossConfig
 # ============================================================
 
+
 @pytest.mark.unit
 class TestTopologicalLossConfig:
     def test_defaults(self):
@@ -196,6 +198,7 @@ class TestTopologicalLossConfig:
 # ============================================================
 # TopologicalLoss (numpy)
 # ============================================================
+
 
 @pytest.mark.unit
 class TestTopologicalLoss:
@@ -288,6 +291,7 @@ class TestTopologicalLoss:
 # Generator alignment loss
 # ============================================================
 
+
 @pytest.mark.unit
 class TestGeneratorAlignmentLoss:
     def test_aligned_matrix_low_distance(self):
@@ -319,6 +323,7 @@ class TestGeneratorAlignmentLoss:
 # Topological training step
 # ============================================================
 
+
 @pytest.mark.integration
 class TestTopologicalTrainingStep:
     def test_returns_full_breakdown(self):
@@ -337,8 +342,11 @@ class TestTopologicalTrainingStep:
             task_loss=0.3,
             h_predicted=0.99,
             polyhedral_distances={
-                "tetrahedron": 0.01, "cube": 0.02, "octahedron": 0.01,
-                "dodecahedron": 0.03, "icosahedron": 0.02,
+                "tetrahedron": 0.01,
+                "cube": 0.02,
+                "octahedron": 0.01,
+                "dodecahedron": 0.03,
+                "icosahedron": 0.02,
             },
             phase_deviation=0.0,
         )
@@ -349,8 +357,11 @@ class TestTopologicalTrainingStep:
             task_loss=0.3,
             h_predicted=0.1,
             polyhedral_distances={
-                "tetrahedron": 5.0, "cube": 5.0, "octahedron": 5.0,
-                "dodecahedron": 5.0, "icosahedron": 5.0,
+                "tetrahedron": 5.0,
+                "cube": 5.0,
+                "octahedron": 5.0,
+                "dodecahedron": 5.0,
+                "icosahedron": 5.0,
             },
             phase_deviation=10.0,
         )

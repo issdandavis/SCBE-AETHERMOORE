@@ -48,15 +48,19 @@ from src.crypto.geo_seal import (
     hyperbolic_distance,
     hyperbolic_midpoint,
 )
+
+
 def _get_mirror_shift():
     """Lazy import to break circular dependency through scbe_aethermoore.__init__."""
     from src.symphonic_cipher.scbe_aethermoore.ai_brain.mirror_shift import mirror_shift
+
     return mirror_shift
 
 
 # ---------------------------------------------------------------------------
 # Log-normalize (shared with third_thread.py — same dynamic range problem)
 # ---------------------------------------------------------------------------
+
 
 def _log_normalize(vec: tuple) -> list:
     """Log-normalize to compress frequency magnitudes."""
@@ -67,6 +71,7 @@ def _log_normalize(vec: tuple) -> list:
 # Core: encode text -> Poincaré ball point
 # ---------------------------------------------------------------------------
 
+
 def _tongue_baseline(tongue: str) -> np.ndarray:
     """Compute the tongue's baseline signature using a neutral reference text.
 
@@ -75,14 +80,9 @@ def _tongue_baseline(tongue: str) -> np.ndarray:
     """
     ref = b"aaaaaaaaaaaaaaaa"  # 16 neutral bytes
     clusters = encode_bytes(ref, tongue)
-    vectors = [
-        _log_normalize(c.sound.as_vector() + c.light.as_vector())
-        for c in clusters
-    ]
-    return np.array([
-        sum(v[d] for v in vectors) / len(vectors)
-        for d in range(len(vectors[0]))
-    ])
+    vectors = [_log_normalize(c.sound.as_vector() + c.light.as_vector()) for c in clusters]
+    return np.array([sum(v[d] for v in vectors) / len(vectors) for d in range(len(vectors[0]))])
+
 
 # Cache baselines
 _BASELINES: Dict[str, np.ndarray] = {}
@@ -115,10 +115,7 @@ def _encode_to_poincare(text: str, tongue: str) -> np.ndarray:
         return np.zeros(18)
 
     # Full cluster vectors: sound + light (18 dims)
-    vectors = [
-        np.array(_log_normalize(c.sound.as_vector() + c.light.as_vector()))
-        for c in clusters
-    ]
+    vectors = [np.array(_log_normalize(c.sound.as_vector() + c.light.as_vector())) for c in clusters]
 
     mean_vec = sum(vectors) / len(vectors)
 
@@ -149,22 +146,24 @@ def _encode_to_poincare(text: str, tongue: str) -> np.ndarray:
 # Single tongue-pair mirror computation
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class MirrorPoint:
     """A single point on the middle surface."""
+
     tongue_fwd: str
     tongue_inv: str
-    p_fwd: np.ndarray        # Forward orientation (compression)
-    p_inv: np.ndarray        # Inverse orientation (retrieval, negated)
-    p_mid: np.ndarray        # Geodesic midpoint
-    mid_radius: float        # ||p_mid|| — distance from origin to middle surface
+    p_fwd: np.ndarray  # Forward orientation (compression)
+    p_inv: np.ndarray  # Inverse orientation (retrieval, negated)
+    p_mid: np.ndarray  # Geodesic midpoint
+    mid_radius: float  # ||p_mid|| — distance from origin to middle surface
     fwd_on_surface: np.ndarray  # Forward projected onto middle sphere
     inv_on_surface: np.ndarray  # Inverse projected onto middle sphere
-    angular_gap: float        # Angular distance between projections on surface
-    energy_fwd: float         # Energy of forward projection
-    energy_inv: float         # Energy of inverse projection
-    asymmetry: float          # Energy imbalance on the surface
-    interference: float       # Constructive (+) vs destructive (-) interference
+    angular_gap: float  # Angular distance between projections on surface
+    energy_fwd: float  # Energy of forward projection
+    energy_inv: float  # Energy of inverse projection
+    asymmetry: float  # Energy imbalance on the surface
+    interference: float  # Constructive (+) vs destructive (-) interference
 
 
 def compute_mirror_point(
@@ -206,8 +205,8 @@ def compute_mirror_point(
         angular_gap = math.pi  # maximally separated
 
     # Energy on surface
-    energy_fwd = float(np.sum(fwd_on_surface ** 2))
-    energy_inv = float(np.sum(inv_on_surface ** 2))
+    energy_fwd = float(np.sum(fwd_on_surface**2))
+    energy_inv = float(np.sum(inv_on_surface**2))
     total_energy = energy_fwd + energy_inv + 1e-12
     asymmetry = abs(energy_fwd - energy_inv) / total_energy
 
@@ -236,12 +235,14 @@ def compute_mirror_point(
 # Full experiment: all tongue pairs × test texts
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ManifoldMirrorResult:
     """Results of the full manifold mirror experiment."""
+
     points: List[MirrorPoint]
-    complement_points: List[MirrorPoint]     # Only complement pairs
-    non_complement_points: List[MirrorPoint] # Non-complement pairs
+    complement_points: List[MirrorPoint]  # Only complement pairs
+    non_complement_points: List[MirrorPoint]  # Non-complement pairs
     mean_complement_gap: float
     mean_non_complement_gap: float
     mean_complement_interference: float
@@ -250,7 +251,7 @@ class ManifoldMirrorResult:
     mean_non_complement_radius: float
     complement_asymmetry: float
     non_complement_asymmetry: float
-    needle_retrieval: Dict[str, float]       # Per-tongue needle recovery score
+    needle_retrieval: Dict[str, float]  # Per-tongue needle recovery score
 
 
 # The needle for our haystack test
@@ -357,6 +358,7 @@ def run_manifold_mirror(
 # Report
 # ---------------------------------------------------------------------------
 
+
 def format_mirror_report(result: ManifoldMirrorResult) -> str:
     """Format the manifold mirror experiment results."""
     lines = []
@@ -374,10 +376,18 @@ def format_mirror_report(result: ManifoldMirrorResult) -> str:
     lines.append("COMPLEMENT vs NON-COMPLEMENT PAIRS")
     lines.append("-" * 80)
     lines.append(f"                        {'Complement':>14}  {'Non-Complement':>14}  {'Ratio':>8}")
-    lines.append(f"  Angular gap (rad):    {result.mean_complement_gap:>14.4f}  {result.mean_non_complement_gap:>14.4f}  {result.mean_complement_gap / (result.mean_non_complement_gap + 1e-12):>8.3f}")
-    lines.append(f"  Interference:         {result.mean_complement_interference:>14.4f}  {result.mean_non_complement_interference:>14.4f}  {result.mean_complement_interference / (result.mean_non_complement_interference + 1e-12):>8.3f}")
-    lines.append(f"  Mid-surface radius:   {result.mean_complement_radius:>14.4f}  {result.mean_non_complement_radius:>14.4f}  {result.mean_complement_radius / (result.mean_non_complement_radius + 1e-12):>8.3f}")
-    lines.append(f"  Energy asymmetry:     {result.complement_asymmetry:>14.4f}  {result.non_complement_asymmetry:>14.4f}")
+    lines.append(
+        f"  Angular gap (rad):    {result.mean_complement_gap:>14.4f}  {result.mean_non_complement_gap:>14.4f}  {result.mean_complement_gap / (result.mean_non_complement_gap + 1e-12):>8.3f}"
+    )
+    lines.append(
+        f"  Interference:         {result.mean_complement_interference:>14.4f}  {result.mean_non_complement_interference:>14.4f}  {result.mean_complement_interference / (result.mean_non_complement_interference + 1e-12):>8.3f}"
+    )
+    lines.append(
+        f"  Mid-surface radius:   {result.mean_complement_radius:>14.4f}  {result.mean_non_complement_radius:>14.4f}  {result.mean_complement_radius / (result.mean_non_complement_radius + 1e-12):>8.3f}"
+    )
+    lines.append(
+        f"  Energy asymmetry:     {result.complement_asymmetry:>14.4f}  {result.non_complement_asymmetry:>14.4f}"
+    )
     lines.append("")
 
     # Individual complement pairs
@@ -418,8 +428,7 @@ def format_mirror_report(result: ManifoldMirrorResult) -> str:
                 row += "     ·"
             else:
                 mp = next(
-                    (p for p in result.points
-                     if p.tongue_fwd == t_fwd and p.tongue_inv == t_inv),
+                    (p for p in result.points if p.tongue_fwd == t_fwd and p.tongue_inv == t_inv),
                     None,
                 )
                 if mp:
@@ -487,17 +496,19 @@ def format_mirror_report(result: ManifoldMirrorResult) -> str:
 # COMBO 1: Multi-text interference — same tongue pair, different texts
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TextInterference:
     """How two different texts interfere on the same tongue mirror."""
+
     text_a: str
     text_b: str
     tongue_fwd: str
     tongue_inv: str
-    angular_separation: float   # How far apart the texts land on the surface
-    cross_interference: float   # Dot product of their surface projections
-    radius_diff: float          # How different their mid-surface depths are
-    fidelity: float             # Cosine between their forward encodings
+    angular_separation: float  # How far apart the texts land on the surface
+    cross_interference: float  # Dot product of their surface projections
+    radius_diff: float  # How different their mid-surface depths are
+    fidelity: float  # Cosine between their forward encodings
 
 
 def compute_text_interference(
@@ -538,8 +549,10 @@ def compute_text_interference(
         fidelity = 0.0
 
     return TextInterference(
-        text_a=text_a, text_b=text_b,
-        tongue_fwd=tongue_fwd, tongue_inv=tongue_inv,
+        text_a=text_a,
+        text_b=text_b,
+        tongue_fwd=tongue_fwd,
+        tongue_inv=tongue_inv,
         angular_separation=angular_sep,
         cross_interference=cross_interf,
         radius_diff=r_diff,
@@ -551,22 +564,25 @@ def compute_text_interference(
 # COMBO 2: Triple mirror — 3 tongues meet at a centroid
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TripleMirror:
     """Three tongues mirrored onto their centroid surface."""
+
     tongues: Tuple[str, str, str]
     points: Tuple[np.ndarray, np.ndarray, np.ndarray]  # 3 Poincare points
-    centroid: np.ndarray           # Geodesic centroid of the 3 points
+    centroid: np.ndarray  # Geodesic centroid of the 3 points
     centroid_radius: float
-    triangle_area: float           # Hyperbolic triangle area (angular defect)
+    triangle_area: float  # Hyperbolic triangle area (angular defect)
     pairwise_gaps: Tuple[float, float, float]  # 3 angular gaps between pairs
-    total_interference: float      # Sum of all 3 pairwise interferences
-    mode: str                      # "convergent" / "divergent" / "mixed"
+    total_interference: float  # Sum of all 3 pairwise interferences
+    mode: str  # "convergent" / "divergent" / "mixed"
 
 
 def _hyperbolic_triangle_area(p1, p2, p3) -> float:
     """Approximate hyperbolic triangle area via angular defect.
     In hyperbolic space: area = pi - (a1 + a2 + a3) where ai are interior angles."""
+
     # Use Euclidean angles as approximation for small triangles
     def _angle_at(vertex, a, b):
         va = a - vertex
@@ -618,7 +634,7 @@ def compute_triple_mirror(
     # Total interference: sum of pairwise dot products
     total_energy = float(np.sum(pa**2) + np.sum(pb**2) + np.sum(pc**2)) + 1e-12
     total_interf = float(np.dot(pa, pb) + np.dot(pb, pc) + np.dot(pa, pc))
-    total_interf /= (total_energy / 3 + 1e-12)
+    total_interf /= total_energy / 3 + 1e-12
 
     # Mode classification
     if total_interf > 0.3:
@@ -644,15 +660,17 @@ def compute_triple_mirror(
 # COMBO 3: Chain mirror — round-trip A->B->C->A
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ChainMirror:
     """A round-trip chain through 3+ tongues."""
-    chain: List[str]               # Tongue sequence
-    legs: List[MirrorPoint]        # Mirror point per leg
-    total_angular_drift: float     # Sum of angular gaps around the chain
-    round_trip_distance: float     # Hyperbolic distance from start to end
-    holonomy: float                # Angular rotation after full loop (geometric phase)
-    is_closed: bool                # Did we return close to start?
+
+    chain: List[str]  # Tongue sequence
+    legs: List[MirrorPoint]  # Mirror point per leg
+    total_angular_drift: float  # Sum of angular gaps around the chain
+    round_trip_distance: float  # Hyperbolic distance from start to end
+    holonomy: float  # Angular rotation after full loop (geometric phase)
+    is_closed: bool  # Did we return close to start?
 
 
 def compute_chain_mirror(
@@ -704,17 +722,19 @@ def compute_chain_mirror(
 # COMBO 4: Stacked mirrors — same text at multiple depths
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class StackedMirror:
     """Same tongue pair, but encoding at different byte-depths of the text."""
+
     tongue_fwd: str
     tongue_inv: str
-    depths: List[int]              # Byte counts used
-    radii: List[float]             # Mid-surface radius at each depth
-    interferences: List[float]     # Interference at each depth
-    gaps: List[float]              # Angular gap at each depth
-    convergence_depth: int         # Depth where interference stabilizes
-    is_monotonic: bool             # Does radius grow monotonically with depth?
+    depths: List[int]  # Byte counts used
+    radii: List[float]  # Mid-surface radius at each depth
+    interferences: List[float]  # Interference at each depth
+    gaps: List[float]  # Angular gap at each depth
+    convergence_depth: int  # Depth where interference stabilizes
+    is_monotonic: bool  # Does radius grow monotonically with depth?
 
 
 def compute_stacked_mirror(
@@ -773,9 +793,11 @@ def compute_stacked_mirror(
 # COMBO 5: Cross-text braid — N texts x M tongue pairs
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class BraidCombo:
     """Full cross-product: multiple texts x multiple tongue pairs."""
+
     texts: List[str]
     tongue_pairs: List[Tuple[str, str]]
     # matrix[text_idx][pair_idx] = MirrorPoint
@@ -819,11 +841,16 @@ def compute_braid_combo(
     if tongue_pairs is None:
         # All complement pairs + selected non-complement
         tongue_pairs = [
-            ("ko", "dr"), ("dr", "ko"),  # complement
-            ("av", "um"), ("um", "av"),  # complement
-            ("ru", "ca"), ("ca", "ru"),  # complement
-            ("ko", "av"), ("av", "dr"),  # non-complement: adjacent
-            ("ko", "ca"), ("ru", "um"),  # non-complement: cross
+            ("ko", "dr"),
+            ("dr", "ko"),  # complement
+            ("av", "um"),
+            ("um", "av"),  # complement
+            ("ru", "ca"),
+            ("ca", "ru"),  # complement
+            ("ko", "av"),
+            ("av", "dr"),  # non-complement: adjacent
+            ("ko", "ca"),
+            ("ru", "um"),  # non-complement: cross
         ]
 
     matrix: List[List[MirrorPoint]] = []
@@ -866,6 +893,7 @@ def compute_braid_combo(
 # ---------------------------------------------------------------------------
 # Combined report for all combos
 # ---------------------------------------------------------------------------
+
 
 def format_combo_report(
     text_interfs: List[TextInterference],
@@ -943,11 +971,7 @@ def format_combo_report(
     lines.append("-" * 80)
     for sm in stacked:
         mono = "MONO" if sm.is_monotonic else "NON-MONO"
-        lines.append(
-            f"  {sm.tongue_fwd}->{sm.tongue_inv}  "
-            f"conv_depth={sm.convergence_depth}  "
-            f"[{mono}]"
-        )
+        lines.append(f"  {sm.tongue_fwd}->{sm.tongue_inv}  " f"conv_depth={sm.convergence_depth}  " f"[{mono}]")
         for i, d in enumerate(sm.depths):
             bar_len = int(abs(sm.interferences[i]) * 20)
             sign = "+" if sm.interferences[i] > 0 else "-"
@@ -1036,10 +1060,10 @@ def run_all_combos(
 
     # COMBO 1: Text interference — same pair, different texts
     text_pairs = [
-        (TEXT_CORPUS[0], TEXT_CORPUS[3]),   # lore vs technical
-        (TEXT_CORPUS[0], TEXT_CORPUS[6]),   # lore vs emotional
-        (TEXT_CORPUS[3], TEXT_CORPUS[9]),   # technical vs abstract
-        (TEXT_CORPUS[6], TEXT_CORPUS[8]),   # emotional vs emotional
+        (TEXT_CORPUS[0], TEXT_CORPUS[3]),  # lore vs technical
+        (TEXT_CORPUS[0], TEXT_CORPUS[6]),  # lore vs emotional
+        (TEXT_CORPUS[3], TEXT_CORPUS[9]),  # technical vs abstract
+        (TEXT_CORPUS[6], TEXT_CORPUS[8]),  # emotional vs emotional
         (TEXT_CORPUS[1], TEXT_CORPUS[11]),  # lore vs abstract
     ]
     text_interfs = []
@@ -1049,17 +1073,18 @@ def run_all_combos(
 
     # COMBO 2: Triple mirrors — all C(6,3) = 20 triples
     from itertools import combinations
+
     triples = []
     for combo in combinations(ALL_TONGUES, 3):
         triples.append(compute_triple_mirror(text, combo[0], combo[1], combo[2]))
 
     # COMBO 3: Chain mirrors — complement cycles + arbitrary loops
     chains = [
-        compute_chain_mirror(text, ["ko", "dr"]),           # 2-chain complement
-        compute_chain_mirror(text, ["av", "um"]),           # 2-chain complement
-        compute_chain_mirror(text, ["ru", "ca"]),           # 2-chain complement
-        compute_chain_mirror(text, ["ko", "av", "ru"]),     # 3-chain: all left-side
-        compute_chain_mirror(text, ["dr", "um", "ca"]),     # 3-chain: all right-side
+        compute_chain_mirror(text, ["ko", "dr"]),  # 2-chain complement
+        compute_chain_mirror(text, ["av", "um"]),  # 2-chain complement
+        compute_chain_mirror(text, ["ru", "ca"]),  # 2-chain complement
+        compute_chain_mirror(text, ["ko", "av", "ru"]),  # 3-chain: all left-side
+        compute_chain_mirror(text, ["dr", "um", "ca"]),  # 3-chain: all right-side
         compute_chain_mirror(text, ["ko", "av", "ru", "ca", "um", "dr"]),  # full 6-chain
         compute_chain_mirror(text, ["ko", "ca", "av", "dr", "ru", "um"]),  # cross pattern
         compute_chain_mirror(text, ["ko", "um", "ru", "dr", "av", "ca"]),  # interleaved

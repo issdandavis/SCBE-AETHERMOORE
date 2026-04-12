@@ -66,10 +66,10 @@ from src.crypto.quantum_frequency_bundle import (
     compute_acoustic_signature,
 )
 
-
 # ===========================================================================
 # Test Physical Constants
 # ===========================================================================
+
 
 class TestPhysicalConstants:
     """Verify physical constants match ICAO / NIST values."""
@@ -97,6 +97,7 @@ class TestPhysicalConstants:
 # ===========================================================================
 # Test Aerodynamic Coefficients
 # ===========================================================================
+
 
 class TestAerodynamicCoefficients:
     """Verify lift and drag coefficient equations."""
@@ -162,6 +163,7 @@ class TestAerodynamicCoefficients:
 # Test Lift and Drag Forces
 # ===========================================================================
 
+
 class TestForces:
     """Verify force equations: L = ½ρV²SC_L, D = ½ρV²SC_D."""
 
@@ -197,6 +199,7 @@ class TestForces:
 # Test ISA Atmosphere
 # ===========================================================================
 
+
 class TestAtmosphere:
     """Verify ISA troposphere density model."""
 
@@ -226,6 +229,7 @@ class TestAtmosphere:
 # ===========================================================================
 # Test 6-DOF State
 # ===========================================================================
+
 
 class TestSixDOFState:
     """Verify 6-DOF rigid body state properties."""
@@ -295,6 +299,7 @@ class TestSixDOFState:
 # Test Rotor Dynamics
 # ===========================================================================
 
+
 class TestRotorState:
     """Verify helicopter rotor dynamics equations."""
 
@@ -318,7 +323,7 @@ class TestRotorState:
     def test_thrust_equation(self):
         """T = C_T · ρ · A · (ΩR)²."""
         r = RotorState(rotor_radius=5.0, rotor_rpm=258, ct=0.0065)
-        expected = 0.0065 * RHO_SEA_LEVEL * r.disk_area * r.tip_speed ** 2
+        expected = 0.0065 * RHO_SEA_LEVEL * r.disk_area * r.tip_speed**2
         assert abs(r.thrust - expected) < 0.01
 
     def test_induced_velocity(self):
@@ -371,6 +376,7 @@ class TestRotorState:
 # ===========================================================================
 # Test Recovery Paths
 # ===========================================================================
+
 
 class TestRecoveryPaths:
     """Verify VRS recovery path generation."""
@@ -426,7 +432,9 @@ class TestRecoveryPaths:
         mp = compute_multipath(trit)
         if mp.forks:
             paths = compute_recovery_paths(
-                vrs_margin=0.0, altitude_agl=500, multipath=mp,
+                vrs_margin=0.0,
+                altitude_agl=500,
+                multipath=mp,
             )
             mh_selected = [p for p in paths if p.monty_hall_selected]
             assert len(mh_selected) >= 1
@@ -449,6 +457,7 @@ class TestRecoveryPaths:
 # Test QHO → Flight Dynamics Mapping
 # ===========================================================================
 
+
 class TestQHOToFlightMapping:
     """Verify the quantum-to-flight bridge function."""
 
@@ -458,7 +467,8 @@ class TestQHOToFlightMapping:
         qho = compute_qho_state(text, trit, mp)
         acoustic = compute_acoustic_signature(qho)
         return qho_to_flight_state(
-            trit=trit, multipath=mp,
+            trit=trit,
+            multipath=mp,
             mean_excitation=qho.mean_excitation,
             max_excitation=qho.max_excitation,
             acoustic_infra=acoustic.infrasonic_power,
@@ -483,7 +493,9 @@ class TestQHOToFlightMapping:
     def test_higher_excitation_higher_speed(self):
         """Higher QHO excitation → more kinetic energy → higher airspeed."""
         f1 = self._make_flight("a")  # minimal text
-        f2 = self._make_flight("The extraordinary polymorphic boundary fractures into multiple divergent quantum-entangled crystallographic pathological extreme excitation")
+        f2 = self._make_flight(
+            "The extraordinary polymorphic boundary fractures into multiple divergent quantum-entangled crystallographic pathological extreme excitation"
+        )
         # f2 likely has higher excitation → higher speed
         # (may not always hold due to hash-based affinity, so check energy instead)
         assert f2.total_energy_j >= 0  # at minimum, energy is non-negative
@@ -527,6 +539,7 @@ class TestQHOToFlightMapping:
 # Test Flight Dynamics State
 # ===========================================================================
 
+
 class TestFlightDynamicsState:
     """Verify FlightDynamicsState properties."""
 
@@ -568,6 +581,7 @@ class TestFlightDynamicsState:
 # Test SFT Record Generation
 # ===========================================================================
 
+
 class TestSFTRecords:
     """Verify flight dynamics SFT record structure."""
 
@@ -577,7 +591,8 @@ class TestSFTRecords:
         qho = compute_qho_state("test flight text", trit, mp)
         acoustic = compute_acoustic_signature(qho)
         flight = qho_to_flight_state(
-            trit=trit, multipath=mp,
+            trit=trit,
+            multipath=mp,
             mean_excitation=qho.mean_excitation,
             max_excitation=qho.max_excitation,
             acoustic_infra=acoustic.infrasonic_power,
@@ -599,7 +614,8 @@ class TestSFTRecords:
         qho = compute_qho_state("test", trit, mp)
         acoustic = compute_acoustic_signature(qho)
         flight = qho_to_flight_state(
-            trit=trit, multipath=mp,
+            trit=trit,
+            multipath=mp,
             mean_excitation=qho.mean_excitation,
             max_excitation=qho.max_excitation,
             acoustic_infra=acoustic.infrasonic_power,
@@ -613,6 +629,7 @@ class TestSFTRecords:
 # ===========================================================================
 # Test Physics Integration (cross-domain verification)
 # ===========================================================================
+
 
 class TestPhysicsIntegration:
     """Cross-domain physics consistency checks."""
@@ -673,13 +690,18 @@ class TestPhysicsIntegration:
 # Sacred Tongue Hybrid Mappings
 # ===========================================================================
 
+
 class TestSacredTongueHybrids:
     """Sacred Tongue hybrid mappings on recovery paths."""
 
     def test_all_recovery_types_have_hybrids(self):
         """Every RecoveryType has a Sacred Tongue hybrid mapping."""
-        for rt in [RecoveryType.STANDARD, RecoveryType.VUICHARD,
-                   RecoveryType.AUTOROTATION, RecoveryType.TAIL_ROTOR_FAILURE]:
+        for rt in [
+            RecoveryType.STANDARD,
+            RecoveryType.VUICHARD,
+            RecoveryType.AUTOROTATION,
+            RecoveryType.TAIL_ROTOR_FAILURE,
+        ]:
             assert rt in SACRED_TONGUE_HYBRIDS
 
     def test_hybrid_has_required_fields(self):
@@ -750,6 +772,7 @@ class TestSacredTongueHybrids:
 # Tail Rotor Failure Dynamics
 # ===========================================================================
 
+
 class TestTailRotorFailure:
     """Tail rotor failure physics: yaw dynamics ψ̇ = (Q_main - Q_tail) / I_z."""
 
@@ -760,16 +783,12 @@ class TestTailRotorFailure:
 
     def test_yaw_acceleration_total_failure(self):
         """Total failure: Q_tail=0, ψ̈ = Q_main/I_z."""
-        trs = TailRotorState(
-            failed=True, q_main_nm=10000.0, q_tail_nm=0.0, i_z_kgm2=10000.0
-        )
+        trs = TailRotorState(failed=True, q_main_nm=10000.0, q_tail_nm=0.0, i_z_kgm2=10000.0)
         assert abs(trs.yaw_acceleration_rads2 - 1.0) < 1e-6  # 10000/10000
 
     def test_yaw_acceleration_normal_ops(self):
         """Normal ops: Q_tail ≈ Q_main, near-zero yaw acceleration."""
-        trs = TailRotorState(
-            failed=False, q_main_nm=10000.0, q_tail_nm=9500.0, i_z_kgm2=10000.0
-        )
+        trs = TailRotorState(failed=False, q_main_nm=10000.0, q_tail_nm=9500.0, i_z_kgm2=10000.0)
         assert abs(trs.yaw_acceleration_rads2) < 0.1
 
     def test_controllable_at_low_yaw_rate(self):
@@ -808,10 +827,7 @@ class TestTailRotorFailure:
         assert trs.q_tail_nm < trs.q_main_nm  # 95% compensation
 
     def test_to_dict_serialization(self):
-        trs = TailRotorState(
-            failed=True, q_main_nm=5000, q_tail_nm=0,
-            i_z_kgm2=10000, yaw_rate_dps=45.0
-        )
+        trs = TailRotorState(failed=True, q_main_nm=5000, q_tail_nm=0, i_z_kgm2=10000, yaw_rate_dps=45.0)
         d = trs.to_dict()
         assert d["failed"] is True
         assert d["net_torque_nm"] == 5000.0
@@ -823,16 +839,12 @@ class TestTailRotorFailure:
 
     def test_tail_rotor_recovery_path_generated(self):
         """When tail_rotor_failed=True, a TAIL_ROTOR_FAILURE path is included."""
-        paths = compute_recovery_paths(
-            vrs_margin=0.5, altitude_agl=500, tail_rotor_failed=True
-        )
+        paths = compute_recovery_paths(vrs_margin=0.5, altitude_agl=500, tail_rotor_failed=True)
         types = [p.recovery_type for p in paths]
         assert RecoveryType.TAIL_ROTOR_FAILURE in types
 
     def test_tail_rotor_path_has_correct_controls(self):
-        paths = compute_recovery_paths(
-            vrs_margin=0.5, altitude_agl=500, tail_rotor_failed=True
-        )
+        paths = compute_recovery_paths(vrs_margin=0.5, altitude_agl=500, tail_rotor_failed=True)
         trf = [p for p in paths if p.recovery_type == RecoveryType.TAIL_ROTOR_FAILURE][0]
         assert "collective_reduce" in trf.control_inputs
         assert "cyclic_forward" in trf.control_inputs
@@ -841,12 +853,8 @@ class TestTailRotorFailure:
 
     def test_low_altitude_reduces_success(self):
         """Low altitude tail rotor failure has lower success probability."""
-        paths_high = compute_recovery_paths(
-            vrs_margin=0.5, altitude_agl=500, tail_rotor_failed=True
-        )
-        paths_low = compute_recovery_paths(
-            vrs_margin=0.5, altitude_agl=30, tail_rotor_failed=True
-        )
+        paths_high = compute_recovery_paths(vrs_margin=0.5, altitude_agl=500, tail_rotor_failed=True)
+        paths_low = compute_recovery_paths(vrs_margin=0.5, altitude_agl=30, tail_rotor_failed=True)
         trf_high = [p for p in paths_high if p.recovery_type == RecoveryType.TAIL_ROTOR_FAILURE][0]
         trf_low = [p for p in paths_low if p.recovery_type == RecoveryType.TAIL_ROTOR_FAILURE][0]
         assert trf_low.success_probability < trf_high.success_probability
@@ -861,6 +869,7 @@ class TestTailRotorFailure:
 # ===========================================================================
 # Pacejka Tire Model
 # ===========================================================================
+
 
 class TestPacejkaTireModel:
     """Pacejka 'Magic Formula': F = D·sin(C·arctan(B·s - E·(B·s - arctan(B·s))))."""

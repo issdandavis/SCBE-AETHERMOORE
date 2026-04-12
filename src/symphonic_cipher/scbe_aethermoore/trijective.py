@@ -26,7 +26,6 @@ from typing import Dict, List, Optional, Tuple
 
 from .cli_toolkit import CrossTokenizer, Lexicons, TongueTokenizer
 
-
 TWO_PI = 2 * math.pi
 
 # Canonical witness pairs. Each anchor has two phase-distant partners so the
@@ -47,24 +46,18 @@ class TrijectiveReport:
     w1: str
     w2: str
     source_bytes_hex: str
-    leg1_ok: bool              # anchor -> w1 -> anchor
-    leg2_ok: bool              # anchor -> w2 -> anchor
-    leg3_ok: bool              # w1 <-> w2
-    phase_closure: float       # sum of phase deltas mod 2*pi
-    weight_closure: float      # product of weight ratios
+    leg1_ok: bool  # anchor -> w1 -> anchor
+    leg2_ok: bool  # anchor -> w2 -> anchor
+    leg3_ok: bool  # w1 <-> w2
+    phase_closure: float  # sum of phase deltas mod 2*pi
+    weight_closure: float  # product of weight ratios
     phase_ok: bool
     weight_ok: bool
     notes: List[str] = field(default_factory=list)
 
     @property
     def valid(self) -> bool:
-        return (
-            self.leg1_ok
-            and self.leg2_ok
-            and self.leg3_ok
-            and self.phase_ok
-            and self.weight_ok
-        )
+        return self.leg1_ok and self.leg2_ok and self.leg3_ok and self.phase_ok and self.weight_ok
 
     def to_dict(self) -> dict:
         return {
@@ -150,10 +143,7 @@ class TrijectiveValidator:
 
         phase_closure = self._phase_triangle(anchor, w1, w2)
         weight_closure = self._weight_triangle(anchor, w1, w2)
-        phase_ok = (
-            abs(phase_closure) < self.phase_tol
-            or abs(phase_closure - TWO_PI) < self.phase_tol
-        )
+        phase_ok = abs(phase_closure) < self.phase_tol or abs(phase_closure - TWO_PI) < self.phase_tol
         weight_ok = abs(weight_closure - 1.0) < self.weight_tol
 
         return TrijectiveReport(
@@ -190,13 +180,13 @@ class TrijectiveValidator:
 # byte trijective only.
 
 SEMANTIC_VERBS: Dict[str, Dict[str, str]] = {
-    "seal":    {"KO": "ko'sil",  "AV": "av'mor",  "RU": "ru'kin",  "CA": "ca'shu",  "UM": "um'zai",  "DR": "dr'okt"},
-    "unseal":  {"KO": "ko'sul",  "AV": "av'mer",  "RU": "ru'kon",  "CA": "ca'she",  "UM": "um'zei",  "DR": "dr'okl"},
-    "tok":     {"KO": "ko'tok",  "AV": "av'tak",  "RU": "ru'tik",  "CA": "ca'tuk",  "UM": "um'tek",  "DR": "dr'tok"},
-    "exec":    {"KO": "ko'exe",  "AV": "av'eks",  "RU": "ru'eky",  "CA": "ca'exo",  "UM": "um'exa",  "DR": "dr'exi"},
-    "status":  {"KO": "ko'sta",  "AV": "av'sti",  "RU": "ru'sto",  "CA": "ca'ste",  "UM": "um'stu",  "DR": "dr'sty"},
-    "ask":     {"KO": "ko'asq",  "AV": "av'asa",  "RU": "ru'ask",  "CA": "ca'asu",  "UM": "um'asi",  "DR": "dr'asy"},
-    "help":    {"KO": "ko'hlp",  "AV": "av'hel",  "RU": "ru'hlp",  "CA": "ca'hlu",  "UM": "um'hla",  "DR": "dr'hli"},
+    "seal": {"KO": "ko'sil", "AV": "av'mor", "RU": "ru'kin", "CA": "ca'shu", "UM": "um'zai", "DR": "dr'okt"},
+    "unseal": {"KO": "ko'sul", "AV": "av'mer", "RU": "ru'kon", "CA": "ca'she", "UM": "um'zei", "DR": "dr'okl"},
+    "tok": {"KO": "ko'tok", "AV": "av'tak", "RU": "ru'tik", "CA": "ca'tuk", "UM": "um'tek", "DR": "dr'tok"},
+    "exec": {"KO": "ko'exe", "AV": "av'eks", "RU": "ru'eky", "CA": "ca'exo", "UM": "um'exa", "DR": "dr'exi"},
+    "status": {"KO": "ko'sta", "AV": "av'sti", "RU": "ru'sto", "CA": "ca'ste", "UM": "um'stu", "DR": "dr'sty"},
+    "ask": {"KO": "ko'asq", "AV": "av'asa", "RU": "ru'ask", "CA": "ca'asu", "UM": "um'asi", "DR": "dr'asy"},
+    "help": {"KO": "ko'hlp", "AV": "av'hel", "RU": "ru'hlp", "CA": "ca'hlu", "UM": "um'hla", "DR": "dr'hli"},
 }
 
 

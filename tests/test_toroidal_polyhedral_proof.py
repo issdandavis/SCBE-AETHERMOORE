@@ -36,10 +36,10 @@ from proofs.toroidal_polyhedral_proof import (
     prove_toroidal_polyhedral_confinement,
 )
 
-
 # ============================================================
 # Constants
 # ============================================================
+
 
 @pytest.mark.unit
 class TestConstants:
@@ -51,7 +51,7 @@ class TestConstants:
 
     def test_phi_identity(self):
         """phi^2 = phi + 1 (defining equation)."""
-        assert abs(PHI ** 2 - PHI - 1) < 1e-10
+        assert abs(PHI**2 - PHI - 1) < 1e-10
 
     def test_platonic_groups_count(self):
         assert len(PLATONIC_GROUPS) == 5
@@ -66,10 +66,8 @@ class TestConstants:
     def test_tongue_weights_phi_scaling(self):
         tongues = list(TONGUE_WEIGHTS.keys())
         for i, tongue in enumerate(tongues):
-            expected = PHI ** i
-            assert abs(TONGUE_WEIGHTS[tongue] - expected) < 1e-10, (
-                f"{tongue} weight should be phi^{i} = {expected}"
-            )
+            expected = PHI**i
+            assert abs(TONGUE_WEIGHTS[tongue] - expected) < 1e-10, f"{tongue} weight should be phi^{i} = {expected}"
 
     def test_tongue_weights_all_irrational_ratios(self):
         """All cross-tongue ratios are phi-powers, hence irrational."""
@@ -92,6 +90,7 @@ class TestConstants:
 # Claim 1: phi-winding never closes
 # ============================================================
 
+
 @pytest.mark.unit
 class TestPhiWinding:
     def test_winding_returns_result(self):
@@ -110,9 +109,7 @@ class TestPhiWinding:
     def test_winding_density_high(self):
         """After enough cycles, the winding should cover most of the torus."""
         result = prove_phi_winding_never_closes(max_cycles=50_000)
-        assert result.winding_density > 0.90, (
-            f"Expected density > 0.9, got {result.winding_density}"
-        )
+        assert result.winding_density > 0.90, f"Expected density > 0.9, got {result.winding_density}"
 
     def test_hurwitz_bound_positive(self):
         result = prove_phi_winding_never_closes(max_cycles=1000)
@@ -128,6 +125,7 @@ class TestPhiWinding:
 # ============================================================
 # Claim 1b: Rational vs Irrational comparison
 # ============================================================
+
 
 @pytest.mark.unit
 class TestRationalComparison:
@@ -153,6 +151,7 @@ class TestRationalComparison:
 # ============================================================
 # Claim 2: Polyhedral constraints multiply
 # ============================================================
+
 
 @pytest.mark.unit
 class TestConstraintsMultiply:
@@ -187,6 +186,7 @@ class TestConstraintsMultiply:
 # ============================================================
 # Hyperbolic distance and harmonic wall
 # ============================================================
+
 
 @pytest.mark.unit
 class TestPoincaréDistance:
@@ -277,6 +277,7 @@ class TestTrustTier:
 # Claim 3: Exponential cost scaling
 # ============================================================
 
+
 @pytest.mark.unit
 class TestExponentialCost:
     def test_returns_cost_result(self):
@@ -311,6 +312,7 @@ class TestExponentialCost:
 # Claim 4: Legitimate user O(1) navigation
 # ============================================================
 
+
 @pytest.mark.unit
 class TestLegitimateNavigation:
     def test_legitimate_is_allowed(self):
@@ -338,6 +340,7 @@ class TestLegitimateNavigation:
 # ============================================================
 # Composite proof
 # ============================================================
+
 
 @pytest.mark.integration
 class TestCompositeProof:

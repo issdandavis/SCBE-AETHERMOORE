@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping, Sequence
 
-
 TONGUE_ORDER = ("KO", "AV", "RU", "CA", "UM", "DR")
 
 
@@ -84,4 +83,3 @@ class PumpPacket:
 
     def active_tongues(self, threshold: float = 0.12) -> int:
         return sum(1 for value in self.tongue_profile if value >= threshold)
-

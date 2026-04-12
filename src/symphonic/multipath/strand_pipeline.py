@@ -63,7 +63,7 @@ class StringLedger:
     def effective_cost(self, op: str, tongue: str) -> float:
         base = float(TONGUE_WIDTH[tongue])
         w = self.path_width(op, tongue)
-        return base / (PHI ** w)
+        return base / (PHI**w)
 
 
 # --- Bead-local bit encoding ---------------------------------------------
@@ -109,12 +109,7 @@ def _rhombic_fusion(
     e12 = float(np.linalg.norm(a - v) ** 2)
 
     phase = float((-1.0 / phi) ** (k % 3))
-    return float(
-        alpha * (e01 + e02)
-        + beta * (e13 + e23)
-        + gamma * e12
-        + eta * phase * e12
-    )
+    return float(alpha * (e01 + e02) + beta * (e13 + e23) + gamma * e12 + eta * phase * e12)
 
 
 # --- Pipeline result + driver --------------------------------------------
@@ -185,9 +180,7 @@ def run_pipeline(
         x_accum /= float(len(strand.beads))
 
     bitstream = "".join(per_bead_bits)
-    ledger_cost = float(
-        sum(ledger.effective_cost(b.op_name, b.dominant) for b in strand.beads)
-    )
+    ledger_cost = float(sum(ledger.effective_cost(b.op_name, b.dominant) for b in strand.beads))
 
     result = PipelineResult(
         strand=strand,
@@ -199,7 +192,11 @@ def run_pipeline(
 
     if audio is not None and vision is not None and governance is not None:
         R = _rhombic_fusion(
-            x_accum, audio, vision, governance, k=phase_k,
+            x_accum,
+            audio,
+            vision,
+            governance,
+            k=phase_k,
         )
         result.rhombic_R = R
         result.rhombic_score = float(np.exp(-R))
@@ -228,7 +225,8 @@ if __name__ == "__main__":
     print("\n=== with sensors ===")
     rng = np.random.default_rng(0)
     r3 = run_pipeline(
-        demo_ops, ledger,
+        demo_ops,
+        ledger,
         audio=rng.normal(size=6),
         vision=rng.normal(size=6),
         governance=rng.normal(size=6),

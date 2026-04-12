@@ -16,41 +16,41 @@ PHI = (1 + math.sqrt(5)) / 2
 TAU = 2.0 * math.pi
 
 BASELINE_FREQUENCIES = {
-    "perfect_fifth":  330.0,
-    "minor_sixth":    352.0,
-    "minor_seventh":  392.0,
+    "perfect_fifth": 330.0,
+    "minor_sixth": 352.0,
+    "minor_seventh": 392.0,
 }
 
 RATIO_DISSONANCE = {
-    "unison":         (1.0,           0.00),
-    "octave":         (2.0,           0.02),
-    "perfect_fifth":  (3.0 / 2.0,    0.05),
-    "perfect_fourth": (4.0 / 3.0,    0.08),
-    "major_third":    (5.0 / 4.0,    0.12),
-    "minor_third":    (6.0 / 5.0,    0.15),
-    "major_sixth":    (5.0 / 3.0,    0.18),
-    "minor_sixth":    (8.0 / 5.0,    0.22),
-    "major_second":   (9.0 / 8.0,    0.30),
-    "minor_seventh":  (16.0 / 9.0,   0.35),
-    "major_seventh":  (15.0 / 8.0,   0.55),
-    "phi_interval":   (PHI,           0.40),
-    "tritone":        (45.0 / 32.0,  0.75),
-    "minor_second":   (16.0 / 15.0,  0.90),
+    "unison": (1.0, 0.00),
+    "octave": (2.0, 0.02),
+    "perfect_fifth": (3.0 / 2.0, 0.05),
+    "perfect_fourth": (4.0 / 3.0, 0.08),
+    "major_third": (5.0 / 4.0, 0.12),
+    "minor_third": (6.0 / 5.0, 0.15),
+    "major_sixth": (5.0 / 3.0, 0.18),
+    "minor_sixth": (8.0 / 5.0, 0.22),
+    "major_second": (9.0 / 8.0, 0.30),
+    "minor_seventh": (16.0 / 9.0, 0.35),
+    "major_seventh": (15.0 / 8.0, 0.55),
+    "phi_interval": (PHI, 0.40),
+    "tritone": (45.0 / 32.0, 0.75),
+    "minor_second": (16.0 / 15.0, 0.90),
 }
 
-ALLOW_THRESHOLD     = 0.25
+ALLOW_THRESHOLD = 0.25
 QUARANTINE_THRESHOLD = 0.50
-ESCALATE_THRESHOLD   = 0.75
+ESCALATE_THRESHOLD = 0.75
 
 DEFAULT_SAMPLE_RATE = 8000
-DEFAULT_DURATION_S  = 0.25
+DEFAULT_DURATION_S = 0.25
 
 
 class GovernanceVerdict(Enum):
-    ALLOW      = "ALLOW"
+    ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
-    ESCALATE   = "ESCALATE"
-    DENY       = "DENY"
+    ESCALATE = "ESCALATE"
+    DENY = "DENY"
 
 
 @dataclass(frozen=True)
@@ -76,13 +76,11 @@ class ConsonanceReport:
     dead_tone: str
 
 
-def generate_wave(frequency_hz, duration_s=DEFAULT_DURATION_S,
-                  sample_rate=DEFAULT_SAMPLE_RATE, amplitude=1.0, phase=0.0):
+def generate_wave(
+    frequency_hz, duration_s=DEFAULT_DURATION_S, sample_rate=DEFAULT_SAMPLE_RATE, amplitude=1.0, phase=0.0
+):
     n_samples = int(duration_s * sample_rate)
-    return [
-        amplitude * math.sin(TAU * frequency_hz * (i / sample_rate) + phase)
-        for i in range(n_samples)
-    ]
+    return [amplitude * math.sin(TAU * frequency_hz * (i / sample_rate) + phase) for i in range(n_samples)]
 
 
 def superpose(wave_a, wave_b):
@@ -105,8 +103,7 @@ def dft_magnitudes(signal):
     return magnitudes
 
 
-def extract_spectral_features(combined, baseline_hz, agent_hz,
-                               sample_rate=DEFAULT_SAMPLE_RATE):
+def extract_spectral_features(combined, baseline_hz, agent_hz, sample_rate=DEFAULT_SAMPLE_RATE):
     mags = dft_magnitudes(combined)
     n_bins = len(mags)
     if n_bins == 0:
@@ -132,8 +129,12 @@ def extract_spectral_features(combined, baseline_hz, agent_hz,
     n_peaks = sum(1 for m in mags if m > threshold) if max_mag > 0 else 0
 
     return SpectralFeatures(
-        energy=energy, spectral_centroid=centroid, spectral_flux=spectral_flux,
-        peak_frequency=peak_frequency, beat_frequency=beat_frequency, n_peaks=n_peaks,
+        energy=energy,
+        spectral_centroid=centroid,
+        spectral_flux=spectral_flux,
+        peak_frequency=peak_frequency,
+        beat_frequency=beat_frequency,
+        n_peaks=n_peaks,
     )
 
 
@@ -181,8 +182,9 @@ def dissonance_to_verdict(score):
         return GovernanceVerdict.DENY
 
 
-def cross_chamber_check(agent_hz, dead_tone="perfect_fifth", tolerance=0.03,
-                         duration_s=DEFAULT_DURATION_S, sample_rate=DEFAULT_SAMPLE_RATE):
+def cross_chamber_check(
+    agent_hz, dead_tone="perfect_fifth", tolerance=0.03, duration_s=DEFAULT_DURATION_S, sample_rate=DEFAULT_SAMPLE_RATE
+):
     baseline_hz = BASELINE_FREQUENCIES[dead_tone]
     wave_root = generate_wave(baseline_hz, duration_s, sample_rate)
     wave_agent = generate_wave(agent_hz, duration_s, sample_rate)
@@ -192,21 +194,24 @@ def cross_chamber_check(agent_hz, dead_tone="perfect_fifth", tolerance=0.03,
     interval_name, deviation, dissonance = compute_dissonance(ratio, tolerance)
     verdict = dissonance_to_verdict(dissonance)
     return ConsonanceReport(
-        baseline_hz=baseline_hz, agent_hz=agent_hz, frequency_ratio=ratio,
-        nearest_interval=interval_name, interval_deviation=deviation,
-        dissonance_score=dissonance, spectral=spectral, verdict=verdict,
+        baseline_hz=baseline_hz,
+        agent_hz=agent_hz,
+        frequency_ratio=ratio,
+        nearest_interval=interval_name,
+        interval_deviation=deviation,
+        dissonance_score=dissonance,
+        spectral=spectral,
+        verdict=verdict,
         dead_tone=dead_tone,
     )
 
 
 def check_all_dead_tones(agent_hz, tolerance=0.03):
-    return [cross_chamber_check(agent_hz, tone, tolerance)
-            for tone in BASELINE_FREQUENCIES]
+    return [cross_chamber_check(agent_hz, tone, tolerance) for tone in BASELINE_FREQUENCIES]
 
 
 def strictest_verdict(reports):
-    order = [GovernanceVerdict.ALLOW, GovernanceVerdict.QUARANTINE,
-             GovernanceVerdict.ESCALATE, GovernanceVerdict.DENY]
+    order = [GovernanceVerdict.ALLOW, GovernanceVerdict.QUARANTINE, GovernanceVerdict.ESCALATE, GovernanceVerdict.DENY]
     worst = GovernanceVerdict.ALLOW
     for r in reports:
         if order.index(r.verdict) > order.index(worst):
@@ -217,6 +222,7 @@ def strictest_verdict(reports):
 # ---------------------------------------------------------------------------
 # Tests — full alphabet of consonance and dissonance
 # ---------------------------------------------------------------------------
+
 
 class TestNormalizeRatio:
 
@@ -307,8 +313,7 @@ class TestComputeDissonance:
 
     def test_consonant_intervals_below_quarantine(self):
         """Unison, octave, P5, P4, M3, m3 should all be safe-ish."""
-        safe_intervals = ["unison", "octave", "perfect_fifth", "perfect_fourth",
-                          "major_third", "minor_third"]
+        safe_intervals = ["unison", "octave", "perfect_fifth", "perfect_fourth", "major_third", "minor_third"]
         for name in safe_intervals:
             ratio, _ = RATIO_DISSONANCE[name]
             _, _, score = compute_dissonance(ratio)
@@ -558,12 +563,12 @@ class TestConsonanceMonotonicity:
 
     def test_dissonance_ordering(self):
         ordered_intervals = [
-            ("unison",         1.0),
-            ("perfect_fifth",  3.0 / 2.0),
-            ("major_third",    5.0 / 4.0),
-            ("minor_sixth",    8.0 / 5.0),
-            ("tritone",        45.0 / 32.0),
-            ("minor_second",   16.0 / 15.0),
+            ("unison", 1.0),
+            ("perfect_fifth", 3.0 / 2.0),
+            ("major_third", 5.0 / 4.0),
+            ("minor_sixth", 8.0 / 5.0),
+            ("tritone", 45.0 / 32.0),
+            ("minor_second", 16.0 / 15.0),
         ]
         scores = []
         for name, ratio in ordered_intervals:
@@ -572,9 +577,9 @@ class TestConsonanceMonotonicity:
 
         # Each score should be >= the previous
         for i in range(1, len(scores)):
-            assert scores[i][1] >= scores[i - 1][1], (
-                f"{scores[i][0]}({scores[i][1]}) < {scores[i-1][0]}({scores[i-1][1]})"
-            )
+            assert (
+                scores[i][1] >= scores[i - 1][1]
+            ), f"{scores[i][0]}({scores[i][1]}) < {scores[i-1][0]}({scores[i-1][1]})"
 
 
 class TestPhiInterval:
@@ -614,8 +619,12 @@ class TestEdgeCases:
     def test_all_tongue_audible_frequencies(self):
         """Every Sacred Tongue base frequency produces a valid report."""
         tongue_freqs = {
-            "ko": 440.00, "av": 523.25, "ru": 293.66,
-            "ca": 659.25, "um": 196.00, "dr": 392.00,
+            "ko": 440.00,
+            "av": 523.25,
+            "ru": 293.66,
+            "ca": 659.25,
+            "um": 196.00,
+            "dr": 392.00,
         }
         for tongue, freq in tongue_freqs.items():
             for tone in BASELINE_FREQUENCIES:

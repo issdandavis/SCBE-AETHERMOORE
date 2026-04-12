@@ -25,38 +25,110 @@ TONGUE_ID = 0
 
 OPS = [
     # Bind (0x00-0x0F)
-    "bind", "unpack", "destructure", "lambda", "closure", "scope", "capture", "alias",
-    "rebind", "shadow", "freeze", "thaw", "ref", "deref", "swap", "ident",
+    "bind",
+    "unpack",
+    "destructure",
+    "lambda",
+    "closure",
+    "scope",
+    "capture",
+    "alias",
+    "rebind",
+    "shadow",
+    "freeze",
+    "thaw",
+    "ref",
+    "deref",
+    "swap",
+    "ident",
     # Control (0x10-0x1F)
-    "if_", "elif_", "else_", "while_", "for_", "break_", "continue_", "pass_",
-    "return_", "yield_", "raise_", "try_", "except_", "finally_", "with_", "match_",
+    "if_",
+    "elif_",
+    "else_",
+    "while_",
+    "for_",
+    "break_",
+    "continue_",
+    "pass_",
+    "return_",
+    "yield_",
+    "raise_",
+    "try_",
+    "except_",
+    "finally_",
+    "with_",
+    "match_",
     # Iter (0x20-0x2F)
-    "iter", "next", "range", "enumerate", "zip", "map_", "filter_", "take",
-    "drop", "chain", "flatten", "group", "partition", "slice", "step", "reverse",
+    "iter",
+    "next",
+    "range",
+    "enumerate",
+    "zip",
+    "map_",
+    "filter_",
+    "take",
+    "drop",
+    "chain",
+    "flatten",
+    "group",
+    "partition",
+    "slice",
+    "step",
+    "reverse",
     # Introspect (0x30-0x3F)
-    "type_", "isinstance_", "hasattr_", "getattr_", "setattr_", "delattr_", "dir_", "vars_",
-    "callable_", "len_", "repr_", "str_", "hash_", "id_", "eq_", "copy_",
+    "type_",
+    "isinstance_",
+    "hasattr_",
+    "getattr_",
+    "setattr_",
+    "delattr_",
+    "dir_",
+    "vars_",
+    "callable_",
+    "len_",
+    "repr_",
+    "str_",
+    "hash_",
+    "id_",
+    "eq_",
+    "copy_",
 ]
 
 BANDS = [
-    ("BIND",       0x00, 0x0F, 1, 1),
-    ("CONTROL",    0x10, 0x1F, 2, 2),
-    ("ITER",       0x20, 0x2F, 2, 3),
+    ("BIND", 0x00, 0x0F, 1, 1),
+    ("CONTROL", 0x10, 0x1F, 2, 2),
+    ("ITER", 0x20, 0x2F, 2, 3),
     ("INTROSPECT", 0x30, 0x3F, 3, 4),
 ]
 
 # Ops that negate / invert a downstream channel
 NEG_OPS = {
-    "thaw", "swap", "break_", "continue_", "raise_", "except_",
-    "filter_", "drop", "partition", "reverse",
-    "delattr_", "eq_",  # eq can yield False = negative signal
+    "thaw",
+    "swap",
+    "break_",
+    "continue_",
+    "raise_",
+    "except_",
+    "filter_",
+    "drop",
+    "partition",
+    "reverse",
+    "delattr_",
+    "eq_",  # eq can yield False = negative signal
 }
 
 # Ops whose semantics carry dual (branching) state
 DUAL_OPS = {
-    "if_", "elif_", "else_", "try_", "match_",
-    "partition", "group",
-    "isinstance_", "hasattr_", "callable_",
+    "if_",
+    "elif_",
+    "else_",
+    "try_",
+    "match_",
+    "partition",
+    "group",
+    "isinstance_",
+    "hasattr_",
+    "callable_",
 }
 
 
@@ -67,32 +139,68 @@ def _polarity(op: str) -> Tuple[int, int, int, int, int, int]:
     Other channels: +1 active, 0 witness/read, -1 blocking.
     """
     # Bind ops: active on KO (self), witness others, DR locks bindings
-    if op in {"bind", "unpack", "destructure", "lambda", "closure",
-              "scope", "capture", "alias", "rebind", "shadow",
-              "freeze", "ref", "ident"}:
+    if op in {
+        "bind",
+        "unpack",
+        "destructure",
+        "lambda",
+        "closure",
+        "scope",
+        "capture",
+        "alias",
+        "rebind",
+        "shadow",
+        "freeze",
+        "ref",
+        "ident",
+    }:
         return (+1, +1, +1, 0, +1, +1)
     if op in {"thaw", "deref", "swap"}:
-        return (+1, +1, -1, 0, +1, -1)   # inverts RU ownership + DR lock
+        return (+1, +1, -1, 0, +1, -1)  # inverts RU ownership + DR lock
 
     # Control ops: active on KO + DR (causality)
-    if op in {"if_", "elif_", "else_", "while_", "for_", "return_",
-              "yield_", "with_", "match_"}:
+    if op in {"if_", "elif_", "else_", "while_", "for_", "return_", "yield_", "with_", "match_"}:
         return (+1, +1, 0, 0, +1, +1)
     if op in {"break_", "continue_", "pass_"}:
         return (+1, 0, 0, 0, +1, -1)
     if op in {"raise_", "try_", "except_", "finally_"}:
-        return (+1, +1, -1, 0, +1, -1)   # exceptions invert RU+DR
+        return (+1, +1, -1, 0, +1, -1)  # exceptions invert RU+DR
 
     # Iter ops: active across collection tongues (AV+CA arrays)
-    if op in {"iter", "next", "range", "enumerate", "zip", "map_",
-              "take", "chain", "flatten", "group", "slice", "step"}:
+    if op in {
+        "iter",
+        "next",
+        "range",
+        "enumerate",
+        "zip",
+        "map_",
+        "take",
+        "chain",
+        "flatten",
+        "group",
+        "slice",
+        "step",
+    }:
         return (+1, +1, 0, +1, +1, +1)
     if op in {"filter_", "drop", "partition", "reverse"}:
         return (+1, +1, 0, +1, +1, -1)
 
     # Introspect ops: read-mostly, witness everything
-    if op in {"type_", "isinstance_", "hasattr_", "getattr_", "dir_", "vars_",
-              "callable_", "len_", "repr_", "str_", "hash_", "id_", "copy_"}:
+    if op in {
+        "type_",
+        "isinstance_",
+        "hasattr_",
+        "getattr_",
+        "dir_",
+        "vars_",
+        "callable_",
+        "len_",
+        "repr_",
+        "str_",
+        "hash_",
+        "id_",
+        "copy_",
+    }:
         return (+1, +1, 0, 0, 0, 0)
     if op in {"setattr_", "delattr_", "eq_"}:
         return (+1, +1, -1, 0, 0, -1)

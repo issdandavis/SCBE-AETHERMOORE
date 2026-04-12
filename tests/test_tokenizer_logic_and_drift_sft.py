@@ -146,20 +146,16 @@ class TestPhiCorrectionMath:
         """
         for n in range(1, 6):
             # Consecutive ratio = phi
-            ratio = PHI ** n / PHI ** (n - 1)
-            assert math.isclose(ratio, PHI, rel_tol=1e-12), (
-                f"phi^{n}/phi^{n-1} = {ratio}, expected phi"
-            )
+            ratio = PHI**n / PHI ** (n - 1)
+            assert math.isclose(ratio, PHI, rel_tol=1e-12), f"phi^{n}/phi^{n-1} = {ratio}, expected phi"
             # Strict hierarchy
-            assert PHI ** n > PHI ** (n - 1)
+            assert PHI**n > PHI ** (n - 1)
 
         # Fibonacci recurrence: phi^(n+2) = phi^(n+1) + phi^n
         for n in range(0, 4):
             lhs = PHI ** (n + 2)
-            rhs = PHI ** (n + 1) + PHI ** n
-            assert math.isclose(lhs, rhs, rel_tol=1e-12), (
-                f"phi^{n+2} ({lhs}) should equal phi^{n+1} + phi^{n} ({rhs})"
-            )
+            rhs = PHI ** (n + 1) + PHI**n
+            assert math.isclose(lhs, rhs, rel_tol=1e-12), f"phi^{n+2} ({lhs}) should equal phi^{n+1} + phi^{n} ({rhs})"
 
     def test_snapping_to_grid(self):
         """Phi-corrected value should round to 4 decimal places for stable grid."""
@@ -174,9 +170,9 @@ class TestPhiCorrectionMath:
         drifted = initial + drift
         corrected = drifted - (drift / PHI)
 
-        assert initial < corrected < drifted, (
-            f"Corrected {corrected} should be between initial {initial} and drifted {drifted}"
-        )
+        assert (
+            initial < corrected < drifted
+        ), f"Corrected {corrected} should be between initial {initial} and drifted {drifted}"
 
 
 # ──────────────────────────────────────────
@@ -241,9 +237,7 @@ class TestContentQuality:
             "Kor'aelin preserved the original intent of trust continuity. "
             "Cassisivadan executed the numerical correction."
         )
-        has_roles = any(
-            name in text for name in CANONICAL_TONGUES.values()
-        )
+        has_roles = any(name in text for name in CANONICAL_TONGUES.values())
         assert has_roles
 
     def test_no_decorative_only_answer(self):
@@ -309,9 +303,7 @@ class TestVariableState:
 
         error_before = abs(drifted - initial)
         error_after = abs(corrected - initial)
-        assert error_after < error_before, (
-            f"Correction should reduce error: {error_after} should be < {error_before}"
-        )
+        assert error_after < error_before, f"Correction should reduce error: {error_after} should be < {error_before}"
 
     def test_multiple_drift_events_accumulate(self):
         """Multiple drifts without correction accumulate error."""
@@ -331,12 +323,12 @@ class TestVariableState:
         drifted_weights = [1.001, 1.619, 2.620, 4.238, 6.856, 11.092]
 
         # Epoch snap: recompute from phi
-        snapped = [PHI ** i for i in range(6)]
+        snapped = [PHI**i for i in range(6)]
 
         # Verify snap is exact
         for i, (d, s) in enumerate(zip(drifted_weights, snapped)):
             assert d != s, f"Weight {i} should have drifted"
-            assert math.isclose(s, PHI ** i, rel_tol=1e-15), f"Snapped weight {i} should be exact phi^{i}"
+            assert math.isclose(s, PHI**i, rel_tol=1e-15), f"Snapped weight {i} should be exact phi^{i}"
 
 
 # ──────────────────────────────────────────
@@ -412,9 +404,7 @@ class TestGeneratedFile:
         for i, rec in enumerate(records):
             full_text = json.dumps(rec)
             for wrong in WRONG_NAMES:
-                assert wrong not in full_text, (
-                    f"Record {i} contains wrong tongue name '{wrong}'"
-                )
+                assert wrong not in full_text, f"Record {i} contains wrong tongue name '{wrong}'"
 
     def test_all_canonical_names_used(self, records):
         all_text = " ".join(json.dumps(r) for r in records)
@@ -428,11 +418,12 @@ class TestGeneratedFile:
         math (not debugging or architecture patterns) should have numbers.
         """
         drift_records = [
-            r for r in records
+            r
+            for r in records
             if "drift" in extract_role_text(r, "user").lower()
-               and "bug report" not in extract_role_text(r, "user").lower()
-               and "implement" not in extract_role_text(r, "user").lower()
-               and "design:" not in extract_role_text(r, "user").lower()
+            and "bug report" not in extract_role_text(r, "user").lower()
+            and "implement" not in extract_role_text(r, "user").lower()
+            and "design:" not in extract_role_text(r, "user").lower()
         ]
         for i, rec in enumerate(drift_records):
             assistant_text = extract_role_text(rec, "assistant")

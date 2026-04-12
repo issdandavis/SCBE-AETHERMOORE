@@ -51,12 +51,12 @@ PHI = 1.618033988749895
 # Tongue → frequency band mapping (Hz)
 # Each tongue "owns" a frequency range based on its acoustic character
 TONGUE_FREQ_BANDS: Dict[str, Tuple[float, float]] = {
-    "dr": (20.0,    150.0),    # earthquake, sub-bass, grounded
-    "um": (150.0,   400.0),    # wind hum, low resonance, shadow
-    "ru": (400.0,   1000.0),   # water flow, mid authority, governance
-    "ko": (1000.0,  2500.0),   # fire crackle, voice clarity, intent
-    "av": (2500.0,  6000.0),   # bird song, overtones, wisdom
-    "ca": (6000.0,  20000.0),  # electrical hiss, precision, compute
+    "dr": (20.0, 150.0),  # earthquake, sub-bass, grounded
+    "um": (150.0, 400.0),  # wind hum, low resonance, shadow
+    "ru": (400.0, 1000.0),  # water flow, mid authority, governance
+    "ko": (1000.0, 2500.0),  # fire crackle, voice clarity, intent
+    "av": (2500.0, 6000.0),  # bird song, overtones, wisdom
+    "ca": (6000.0, 20000.0),  # electrical hiss, precision, compute
 }
 
 # Gallery sonifier frequency range (must match gallery_sonifier.py)
@@ -76,22 +76,25 @@ TONGUE_ORDER = ("ko", "av", "ru", "ca", "um", "dr")
 # Data Structures
 # ============================================================================
 
+
 @dataclass
 class SpectrogramFrame:
     """One time-slice of the spectrogram, projected onto tongue space."""
+
     time_sec: float
-    frequencies: np.ndarray       # frequency bin centers (Hz)
-    magnitudes: np.ndarray        # magnitude per bin (linear)
-    tongue_energies: Dict[str, float]   # energy per tongue band
+    frequencies: np.ndarray  # frequency bin centers (Hz)
+    magnitudes: np.ndarray  # magnitude per bin (linear)
+    tongue_energies: Dict[str, float]  # energy per tongue band
     dominant_tongue: str
     total_energy: float
-    spectral_centroid: float      # weighted mean frequency (Hz)
-    hf_ratio: float               # fraction of energy above 2500 Hz
+    spectral_centroid: float  # weighted mean frequency (Hz)
+    hf_ratio: float  # fraction of energy above 2500 Hz
 
 
 @dataclass
 class SpectrogramAnalysis:
     """Full spectrogram analysis of an audio file."""
+
     filename: str
     sample_rate: int
     duration_sec: float
@@ -131,17 +134,19 @@ class GalleryProjection:
 
     Maps frequency → hue (0-360), amplitude → chroma, tongue → material band.
     """
+
     time_sec: float
-    hue_degrees: float          # dominant frequency mapped to hue
-    chroma: float               # energy mapped to chroma [0, 130]
-    lightness: float            # spectral centroid mapped to L* [0, 100]
-    tongue: str                 # dominant tongue for this frame
-    material: str               # material band from tongue character
+    hue_degrees: float  # dominant frequency mapped to hue
+    chroma: float  # energy mapped to chroma [0, 130]
+    lightness: float  # spectral centroid mapped to L* [0, 100]
+    tongue: str  # dominant tongue for this frame
+    material: str  # material band from tongue character
 
 
 # ============================================================================
 # Core Functions
 # ============================================================================
+
 
 def load_wav(filepath: str) -> Tuple[int, np.ndarray]:
     """Load a WAV file, return (sample_rate, mono_signal).
@@ -198,7 +203,7 @@ def compute_stft(
 
     for i in range(n_frames):
         start = i * hop_size
-        frame = padded[start:start + fft_size] * win
+        frame = padded[start : start + fft_size] * win
         spectrum = sp_fft.rfft(frame)
         magnitudes[i] = np.abs(spectrum)
 
@@ -218,7 +223,7 @@ def tongue_band_energy(
 
     Returns dict of tongue → normalized energy [0, 1].
     """
-    total = float(np.sum(magnitudes ** 2)) + 1e-12
+    total = float(np.sum(magnitudes**2)) + 1e-12
     energies = {}
 
     for tongue, (lo, hi) in TONGUE_FREQ_BANDS.items():
@@ -237,7 +242,7 @@ def spectral_centroid(magnitudes: np.ndarray, frequencies_hz: np.ndarray) -> flo
 
 def hf_ratio(magnitudes: np.ndarray, frequencies_hz: np.ndarray, cutoff: float = 2500.0) -> float:
     """Fraction of energy above cutoff frequency."""
-    total = float(np.sum(magnitudes ** 2)) + 1e-12
+    total = float(np.sum(magnitudes**2)) + 1e-12
     hf_mask = frequencies_hz >= cutoff
     hf_energy = float(np.sum(magnitudes[hf_mask] ** 2))
     return hf_energy / total
@@ -246,6 +251,7 @@ def hf_ratio(magnitudes: np.ndarray, frequencies_hz: np.ndarray, cutoff: float =
 # ============================================================================
 # Analysis Pipeline
 # ============================================================================
+
 
 def analyze_audio(
     filepath: str,
@@ -280,20 +286,22 @@ def analyze_audio(
 
         t_energies = tongue_band_energy(frame_mag, freq_hz)
         dominant = max(t_energies, key=t_energies.get)
-        total_e = float(np.sum(frame_mag ** 2))
+        total_e = float(np.sum(frame_mag**2))
         centroid = spectral_centroid(frame_mag, freq_hz)
         hfr = hf_ratio(frame_mag, freq_hz)
 
-        frames.append(SpectrogramFrame(
-            time_sec=time_sec,
-            frequencies=freq_hz,
-            magnitudes=frame_mag,
-            tongue_energies=t_energies,
-            dominant_tongue=dominant,
-            total_energy=total_e,
-            spectral_centroid=centroid,
-            hf_ratio=hfr,
-        ))
+        frames.append(
+            SpectrogramFrame(
+                time_sec=time_sec,
+                frequencies=freq_hz,
+                magnitudes=frame_mag,
+                tongue_energies=t_energies,
+                dominant_tongue=dominant,
+                total_energy=total_e,
+                spectral_centroid=centroid,
+                hf_ratio=hfr,
+            )
+        )
 
         for t in TONGUE_ORDER:
             agg_tongue[t] += t_energies[t]
@@ -329,12 +337,12 @@ def analyze_audio(
 
 # Tongue → material band mapping (consistent with gallery_chromatics.py)
 _TONGUE_MATERIAL: Dict[str, str] = {
-    "dr": "matte",         # heavy, grounded → dark, low chroma
-    "um": "matte",         # shadow → dark
-    "ru": "metallic",      # governance → structured, warm
-    "ko": "fluorescent",   # intent → bright, green-shifted
-    "av": "fluorescent",   # wisdom → bright, airy
-    "ca": "neon",          # compute → max chroma, saturated
+    "dr": "matte",  # heavy, grounded → dark, low chroma
+    "um": "matte",  # shadow → dark
+    "ru": "metallic",  # governance → structured, warm
+    "ko": "fluorescent",  # intent → bright, green-shifted
+    "av": "fluorescent",  # wisdom → bright, airy
+    "ca": "neon",  # compute → max chroma, saturated
 }
 
 
@@ -409,6 +417,7 @@ def project_analysis_to_gallery(
 # Synthetic Test Signal Generator (for testing without real WAV files)
 # ============================================================================
 
+
 def generate_test_signal(
     duration_sec: float = 1.0,
     sample_rate: int = 44100,
@@ -452,9 +461,9 @@ def generate_test_signal(
 
 # Dead tone target ratios (phi-unreachable intervals)
 DEAD_TONE_RATIOS = {
-    "perfect_fifth": 3.0 / 2.0,    # 1.500
-    "minor_sixth": 8.0 / 5.0,      # 1.600
-    "minor_seventh": 16.0 / 9.0,   # 1.778
+    "perfect_fifth": 3.0 / 2.0,  # 1.500
+    "minor_sixth": 8.0 / 5.0,  # 1.600
+    "minor_seventh": 16.0 / 9.0,  # 1.778
 }
 
 
@@ -515,8 +524,7 @@ def detect_dead_tones_in_spectrum(
 
 def detect_dead_tones_aggregate(analysis: SpectrogramAnalysis) -> Dict[str, float]:
     """Detect dead tones across all frames, return max strength per tone."""
-    freq_hz = bin_to_hz(np.arange(analysis.fft_size // 2 + 1),
-                        analysis.sample_rate, analysis.fft_size)
+    freq_hz = bin_to_hz(np.arange(analysis.fft_size // 2 + 1), analysis.sample_rate, analysis.fft_size)
 
     agg = {name: 0.0 for name in DEAD_TONE_RATIOS}
     for frame in analysis.frames:
@@ -530,6 +538,7 @@ def detect_dead_tones_aggregate(analysis: SpectrogramAnalysis) -> Dict[str, floa
 # ============================================================================
 # Cross-Modal Alignment: Audio ↔ Text Color Field
 # ============================================================================
+
 
 def audio_text_alignment(
     audio_analysis: SpectrogramAnalysis,
@@ -581,6 +590,7 @@ def audio_text_alignment(
 # Sound Vault Batch Processor
 # ============================================================================
 
+
 def analyze_sound_vault(
     vault_dir: str,
     pattern: str = "*.wav",
@@ -613,26 +623,28 @@ def analyze_sound_vault(
             # Classify material from spectral shape
             mean_hf = analysis.mean_hf_ratio
             if mean_hf > 0.4:
-                material = "neon"          # bright, high-frequency dominated
+                material = "neon"  # bright, high-frequency dominated
             elif mean_hf > 0.2:
-                material = "fluorescent"   # presence-heavy
+                material = "fluorescent"  # presence-heavy
             elif mean_hf < 0.05:
-                material = "matte"         # sub-bass dominated
+                material = "matte"  # sub-bass dominated
             else:
-                material = "metallic"      # broadband
+                material = "metallic"  # broadband
 
-            results.append({
-                "file": wav_path.name,
-                "duration_s": round(analysis.duration_sec, 2),
-                "sample_rate": analysis.sample_rate,
-                "n_frames": analysis.n_frames,
-                "tongue_profile": {k: round(v, 4) for k, v in analysis.tongue_profile.items()},
-                "dominant_tongue": analysis.dominant_tongue,
-                "mean_centroid_hz": round(analysis.mean_centroid, 1),
-                "material": material,
-                "dead_tones": {k: round(v, 4) for k, v in dead_tones.items()},
-                "n_projections": len(projections),
-            })
+            results.append(
+                {
+                    "file": wav_path.name,
+                    "duration_s": round(analysis.duration_sec, 2),
+                    "sample_rate": analysis.sample_rate,
+                    "n_frames": analysis.n_frames,
+                    "tongue_profile": {k: round(v, 4) for k, v in analysis.tongue_profile.items()},
+                    "dominant_tongue": analysis.dominant_tongue,
+                    "mean_centroid_hz": round(analysis.mean_centroid, 1),
+                    "material": material,
+                    "dead_tones": {k: round(v, 4) for k, v in dead_tones.items()},
+                    "n_projections": len(projections),
+                }
+            )
         except Exception as e:
             results.append({"file": wav_path.name, "error": str(e)})
 

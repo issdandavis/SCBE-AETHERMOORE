@@ -34,9 +34,7 @@ def fake_vault(tmp_path: Path) -> Path:
     for tongue, dirname in TONGUE_TO_SPHERE_DIR.items():
         tdir = sphere / dirname
         tdir.mkdir(parents=True)
-        (tdir / f"{tongue.lower()}_intro.md").write_text(
-            f"# {tongue} tongue anchor note\n", encoding="utf-8"
-        )
+        (tdir / f"{tongue.lower()}_intro.md").write_text(f"# {tongue} tongue anchor note\n", encoding="utf-8")
     quarantine = root / "_quarantine" / "should_be_ignored"
     quarantine.mkdir(parents=True)
     (quarantine / "junk.md").write_text("should not appear\n", encoding="utf-8")
@@ -111,18 +109,10 @@ def test_tokenize_removes_stopwords():
 def test_build_buckets_and_axioms(tmp_path: Path):
     root = tmp_path / "mini"
     root.mkdir()
-    (root / "scbe_note.md").write_text(
-        "harmonic wall poincare axiom governance stack\n", encoding="utf-8"
-    )
-    (root / "phdm_note.md").write_text(
-        "polyhedral axiom governance stack 21d\n", encoding="utf-8"
-    )
-    (root / "hydra_note.md").write_text(
-        "swarm axiom governance stack spine\n", encoding="utf-8"
-    )
-    (root / "lore_note.md").write_text(
-        "spiralverse axiom governance stack aethermoor\n", encoding="utf-8"
-    )
+    (root / "scbe_note.md").write_text("harmonic wall poincare axiom governance stack\n", encoding="utf-8")
+    (root / "phdm_note.md").write_text("polyhedral axiom governance stack 21d\n", encoding="utf-8")
+    (root / "hydra_note.md").write_text("swarm axiom governance stack spine\n", encoding="utf-8")
+    (root / "lore_note.md").write_text("spiralverse axiom governance stack aethermoor\n", encoding="utf-8")
     idx = VaultIndex(root=root).scan()
     buckets = build_buckets(idx)
     assert buckets["SCBE"].note_count >= 1
@@ -168,18 +158,10 @@ def test_stats_report_has_tongue_section(fake_vault: Path, tmp_path: Path):
 def test_build_axiom_mesh_end_to_end(tmp_path: Path):
     root = tmp_path / "mesh"
     root.mkdir()
-    (root / "scbe_a.md").write_text(
-        "harmonic governance axiom convergence\n", encoding="utf-8"
-    )
-    (root / "scbe_b.md").write_text(
-        "harmonic governance axiom resonance\n", encoding="utf-8"
-    )
-    (root / "phdm_a.md").write_text(
-        "polyhedral governance axiom convergence\n", encoding="utf-8"
-    )
-    (root / "hydra_a.md").write_text(
-        "swarm governance axiom convergence\n", encoding="utf-8"
-    )
+    (root / "scbe_a.md").write_text("harmonic governance axiom convergence\n", encoding="utf-8")
+    (root / "scbe_b.md").write_text("harmonic governance axiom resonance\n", encoding="utf-8")
+    (root / "phdm_a.md").write_text("polyhedral governance axiom convergence\n", encoding="utf-8")
+    (root / "hydra_a.md").write_text("swarm governance axiom convergence\n", encoding="utf-8")
     idx = VaultIndex(root=root).scan()
     mesh = build_axiom_mesh(idx, convergence_min_buckets=2)
     assert mesh.axioms, "axiom list must not be empty"

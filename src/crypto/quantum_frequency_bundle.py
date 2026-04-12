@@ -94,36 +94,31 @@ from src.crypto.gallery_chromatics import (
     compute_gallery_color_field,
 )
 
-
 # ---------------------------------------------------------------------------
 # Physical constants (SI)
 # ---------------------------------------------------------------------------
 
-HBAR = 1.054571817e-34     # J·s (reduced Planck constant)
+HBAR = 1.054571817e-34  # J·s (reduced Planck constant)
 H_PLANCK = 6.62607015e-34  # J·s (Planck constant)
-K_BOLTZMANN = 1.380649e-23 # J/K (Boltzmann constant)
-C_LIGHT = 299792458.0      # m/s
+K_BOLTZMANN = 1.380649e-23  # J/K (Boltzmann constant)
+C_LIGHT = 299792458.0  # m/s
 
 # Tongue visual wavelength bands (nm) — grounded in spectral color theory
 # Each tongue occupies a frequency band in the visible/near-visible spectrum
 TONGUE_WAVELENGTH_NM: Dict[str, Tuple[float, float]] = {
-    "ko": (450.0, 520.0),   # blue-green (binding, cool)
-    "av": (480.0, 520.0),   # cyan/aquamarine (diplomacy, flow)
-    "ru": (620.0, 700.0),   # red-orange (power, volcanic)
-    "ca": (570.0, 590.0),   # yellow-gold (joy, invention)
-    "um": (380.0, 450.0),   # violet/UV edge (shadow, depth)
-    "dr": (590.0, 620.0),   # amber/iron (forge, structure)
+    "ko": (450.0, 520.0),  # blue-green (binding, cool)
+    "av": (480.0, 520.0),  # cyan/aquamarine (diplomacy, flow)
+    "ru": (620.0, 700.0),  # red-orange (power, volcanic)
+    "ca": (570.0, 590.0),  # yellow-gold (joy, invention)
+    "um": (380.0, 450.0),  # violet/UV edge (shadow, depth)
+    "dr": (590.0, 620.0),  # amber/iron (forge, structure)
 }
 
 # Central wavelength per tongue (nm)
-TONGUE_CENTRAL_WAVELENGTH: Dict[str, float] = {
-    t: (lo + hi) / 2.0 for t, (lo, hi) in TONGUE_WAVELENGTH_NM.items()
-}
+TONGUE_CENTRAL_WAVELENGTH: Dict[str, float] = {t: (lo + hi) / 2.0 for t, (lo, hi) in TONGUE_WAVELENGTH_NM.items()}
 
 # Convert to frequency (Hz): ν = c / λ
-TONGUE_OPTICAL_FREQ: Dict[str, float] = {
-    t: C_LIGHT / (wl * 1e-9) for t, wl in TONGUE_CENTRAL_WAVELENGTH.items()
-}
+TONGUE_OPTICAL_FREQ: Dict[str, float] = {t: C_LIGHT / (wl * 1e-9) for t, wl in TONGUE_CENTRAL_WAVELENGTH.items()}
 
 # Tongue order for vector operations
 TONGUE_ORDER = ["ko", "av", "ru", "ca", "um", "dr"]
@@ -132,6 +127,7 @@ TONGUE_ORDER = ["ko", "av", "ru", "ca", "um", "dr"]
 # ---------------------------------------------------------------------------
 # QHO State
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class QHOState:
@@ -150,10 +146,11 @@ class QHOState:
     The phi-weighted hierarchy means DR costs 11.09× more per quantum
     than KO — governance layers are energetically expensive to excite.
     """
+
     tongue: str
-    n: int                     # occupation number (energy level)
-    omega: float               # angular frequency = 2π × f_tongue
-    coefficient: float         # |c_n|² probability amplitude squared
+    n: int  # occupation number (energy level)
+    omega: float  # angular frequency = 2π × f_tongue
+    coefficient: float  # |c_n|² probability amplitude squared
 
     @property
     def energy(self) -> float:
@@ -204,6 +201,7 @@ class QHOState:
 # Polychromatic Visual Frequency Vector
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PolychromaticState:
     """6-channel visual frequency vector across Sacred Tongues.
@@ -217,6 +215,7 @@ class PolychromaticState:
     intensity — analogous to polychromatic spectral lines from an
     atom in a superposition of energy levels.
     """
+
     states: Dict[str, QHOState]  # one QHO state per tongue
 
     @property
@@ -265,20 +264,23 @@ class PolychromaticState:
         for t in TONGUE_ORDER:
             s = self.states[t]
             if s.n > 0:
-                lines.append({
-                    "tongue": t,
-                    "n": s.n,
-                    "frequency_hz": s.transition_frequency,
-                    "wavelength_nm": s.wavelength_nm,
-                    "energy_j": s.excitation_energy,
-                    "probability": s.coefficient,
-                })
+                lines.append(
+                    {
+                        "tongue": t,
+                        "n": s.n,
+                        "frequency_hz": s.transition_frequency,
+                        "wavelength_nm": s.wavelength_nm,
+                        "energy_j": s.excitation_energy,
+                        "probability": s.coefficient,
+                    }
+                )
         return lines
 
 
 # ---------------------------------------------------------------------------
 # Acoustic Band Mapping
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class AcousticSignature:
@@ -293,11 +295,12 @@ class AcousticSignature:
     The acoustic bands are NOT arbitrary — they're derived from
     the QHO transition frequencies scaled by the tongue's phi weight.
     """
-    infrasonic_power: float     # [0, 1] — ground-state contribution
-    audible_power: float        # [0, 1] — mid-excitation contribution
-    ultrasonic_power: float     # [0, 1] — high-excitation contribution
-    dominant_interval: str      # nearest musical interval name
-    interval_deviation: float   # how far from pure interval
+
+    infrasonic_power: float  # [0, 1] — ground-state contribution
+    audible_power: float  # [0, 1] — mid-excitation contribution
+    ultrasonic_power: float  # [0, 1] — high-excitation contribution
+    dominant_interval: str  # nearest musical interval name
+    interval_deviation: float  # how far from pure interval
 
     @property
     def total_power(self) -> float:
@@ -404,23 +407,23 @@ def compute_acoustic_signature(poly: PolychromaticState) -> AcousticSignature:
 PHI_13 = PHI ** (1.0 / 13.0)  # 1.0377099294 — the attunement number
 
 # Dead tone ratios (just intonation, exact)
-DEAD_TONE_FIFTH = 3.0 / 2.0       # 1.500 — dependency
-DEAD_TONE_SIXTH = 8.0 / 5.0       # 1.600 — near-miss (0.018 from phi)
-DEAD_TONE_SEVENTH = 16.0 / 9.0    # 1.778 — urgency
+DEAD_TONE_FIFTH = 3.0 / 2.0  # 1.500 — dependency
+DEAD_TONE_SIXTH = 8.0 / 5.0  # 1.600 — near-miss (0.018 from phi)
+DEAD_TONE_SEVENTH = 16.0 / 9.0  # 1.778 — urgency
 
 # Phi-13 step positions that capture each dead tone
 # (from log_phi(ratio) analysis: which phi^(k/13) step hits closest)
 DEAD_TONE_PHI13_STEPS = {
-    "perfect_fifth": 11,    # phi^(11/13) ≈ 1.4973, err 0.0027
-    "minor_sixth": 12,      # phi^(12/13) ≈ 1.5529, err 0.047 (worst; needs pair coupling)
-    "minor_seventh": 15,    # phi^(15/13) ≈ 1.7740, err 0.004
+    "perfect_fifth": 11,  # phi^(11/13) ≈ 1.4973, err 0.0027
+    "minor_sixth": 12,  # phi^(12/13) ≈ 1.5529, err 0.047 (worst; needs pair coupling)
+    "minor_seventh": 15,  # phi^(15/13) ≈ 1.7740, err 0.004
 }
 
 # Cross-axis tongue pairs that produce each dead tone via interference
 DEAD_TONE_AXIS_COUPLINGS = {
-    "perfect_fifth": ("structure", "stability"),     # DR/KO × AV/UM
-    "minor_sixth": ("stability", "creativity"),      # AV/UM × RU/CA
-    "minor_seventh": ("creativity", "structure"),     # RU/CA × DR/KO
+    "perfect_fifth": ("structure", "stability"),  # DR/KO × AV/UM
+    "minor_sixth": ("stability", "creativity"),  # AV/UM × RU/CA
+    "minor_seventh": ("creativity", "structure"),  # RU/CA × DR/KO
 }
 
 # Sacred Tongue hybrid phrases for dead-tone recovery (from autorotation mapping)
@@ -463,18 +466,19 @@ class GalleryAmbientNote:
     These notes exist in the 'gallery' between tongues — free-floating
     tones that no single tongue can produce but emerge from axis coupling.
     """
-    dead_tone: str              # "perfect_fifth" | "minor_sixth" | "minor_seventh"
-    target_ratio: float         # the exact just-intonation ratio
-    observed_ratio: float       # the actual cross-axis interference ratio
-    deviation: float            # |observed - target| — smaller = closer to blind spot
-    coupling_strength: float    # [0, 1] how strongly the two axes are coupled
+
+    dead_tone: str  # "perfect_fifth" | "minor_sixth" | "minor_seventh"
+    target_ratio: float  # the exact just-intonation ratio
+    observed_ratio: float  # the actual cross-axis interference ratio
+    deviation: float  # |observed - target| — smaller = closer to blind spot
+    coupling_strength: float  # [0, 1] how strongly the two axes are coupled
     axis_pair: Tuple[str, str]  # which trit axes are interfering
     tongue_pair: Tuple[str, str]  # dominant tongue from each axis
-    phi_13_step: int            # nearest phi^(k/13) attunement step
-    phi_13_error: float         # error from phi^(k/13) to target ratio
+    phi_13_step: int  # nearest phi^(k/13) attunement step
+    phi_13_error: float  # error from phi^(k/13) to target ratio
     blind_spot_proximity: float  # [0, 1] how close to the actual blind spot (1 = dead center)
-    hybrid_name: str            # Sacred Tongue hybrid for this dead tone
-    security_implication: str   # what this blind spot means for governance
+    hybrid_name: str  # Sacred Tongue hybrid for this dead tone
+    security_implication: str  # what this blind spot means for governance
 
 
 @dataclass
@@ -489,35 +493,53 @@ class GalleryAmbient:
     the autorotation boundary — total phi-geometry failure requiring the
     Draum'broth + Cassisivadan hybrid recovery path.
     """
+
     notes: Dict[str, GalleryAmbientNote]  # keyed by dead_tone name
-    autorotation_active: bool              # True when all 3 dead tones are strong
-    gallery_energy: float                  # total cross-axis interference energy
-    dominant_dead_tone: str                # which blind spot is most active
-    recovery_hybrid: str                   # Sacred Tongue hybrid for current state
+    autorotation_active: bool  # True when all 3 dead tones are strong
+    gallery_energy: float  # total cross-axis interference energy
+    dominant_dead_tone: str  # which blind spot is most active
+    recovery_hybrid: str  # Sacred Tongue hybrid for current state
 
     @property
     def fifth_strength(self) -> float:
         """Strength of perfect fifth (dependency) blind spot signal."""
-        return self.notes.get("perfect_fifth", GalleryAmbientNote(
-            "perfect_fifth", 1.5, 1.0, 0.5, 0.0, ("structure", "stability"),
-            ("dr", "av"), 11, 0.003, 0.0, "", ""
-        )).coupling_strength
+        return self.notes.get(
+            "perfect_fifth",
+            GalleryAmbientNote(
+                "perfect_fifth", 1.5, 1.0, 0.5, 0.0, ("structure", "stability"), ("dr", "av"), 11, 0.003, 0.0, "", ""
+            ),
+        ).coupling_strength
 
     @property
     def sixth_strength(self) -> float:
         """Strength of minor sixth (near-miss) blind spot signal."""
-        return self.notes.get("minor_sixth", GalleryAmbientNote(
-            "minor_sixth", 1.6, 1.0, 0.6, 0.0, ("stability", "creativity"),
-            ("av", "ca"), 12, 0.047, 0.0, "", ""
-        )).coupling_strength
+        return self.notes.get(
+            "minor_sixth",
+            GalleryAmbientNote(
+                "minor_sixth", 1.6, 1.0, 0.6, 0.0, ("stability", "creativity"), ("av", "ca"), 12, 0.047, 0.0, "", ""
+            ),
+        ).coupling_strength
 
     @property
     def seventh_strength(self) -> float:
         """Strength of minor seventh (urgency) blind spot signal."""
-        return self.notes.get("minor_seventh", GalleryAmbientNote(
-            "minor_seventh", 1.778, 1.0, 0.778, 0.0, ("creativity", "structure"),
-            ("ca", "dr"), 15, 0.004, 0.0, "", ""
-        )).coupling_strength
+        return self.notes.get(
+            "minor_seventh",
+            GalleryAmbientNote(
+                "minor_seventh",
+                1.778,
+                1.0,
+                0.778,
+                0.0,
+                ("creativity", "structure"),
+                ("ca", "dr"),
+                15,
+                0.004,
+                0.0,
+                "",
+                "",
+            ),
+        ).coupling_strength
 
     def to_dict(self) -> dict:
         return {
@@ -555,7 +577,7 @@ _AXIS_TONGUES = {
 
 def _cross_axis_ratio(
     qho: PolychromaticState,
-    trit: 'TritSignal',
+    trit: "TritSignal",
     axis_a: str,
     axis_b: str,
     dead_tone: str,
@@ -656,7 +678,7 @@ def _cross_axis_ratio(
 
 def compute_gallery_ambient(
     qho: PolychromaticState,
-    trit: 'TritSignal',
+    trit: "TritSignal",
 ) -> GalleryAmbient:
     """Derive the gallery ambient layer from cross-axis interference.
 
@@ -698,9 +720,9 @@ def compute_gallery_ambient(
         # Minor sixth (immune): typical deviation 0.0-0.3, use scale 3
         # Minor seventh (fight/flight): typical deviation 0.0-0.4, use scale 2.5
         _TONE_SENSITIVITY = {
-            "perfect_fifth": 5.0,   # tighter: dependency locks are precise
-            "minor_sixth": 3.0,     # moderate: immune boundaries are fuzzy
-            "minor_seventh": 2.5,   # broad: urgency is a gradient, not a cliff
+            "perfect_fifth": 5.0,  # tighter: dependency locks are precise
+            "minor_sixth": 3.0,  # moderate: immune boundaries are fuzzy
+            "minor_seventh": 2.5,  # broad: urgency is a gradient, not a cliff
         }
         sensitivity = _TONE_SENSITIVITY.get(tone_name, 10.0)
         blind_spot_proximity = math.exp(-sensitivity * deviation)
@@ -737,16 +759,11 @@ def compute_gallery_ambient(
         )
 
     # Autorotation check: all three dead tones strongly active
-    strong_count = sum(
-        1 for n in notes.values()
-        if n.coupling_strength > 0.3 and n.blind_spot_proximity > 0.5
-    )
+    strong_count = sum(1 for n in notes.values() if n.coupling_strength > 0.3 and n.blind_spot_proximity > 0.5)
     autorotation_active = strong_count >= 2  # 2 of 3 is enough for VRS-like state
 
     # Total gallery energy = sum of coupling × proximity
-    gallery_energy = sum(
-        n.coupling_strength * n.blind_spot_proximity for n in notes.values()
-    )
+    gallery_energy = sum(n.coupling_strength * n.blind_spot_proximity for n in notes.values())
 
     # Dominant dead tone = highest coupling × proximity product
     dominant = max(notes.values(), key=lambda n: n.coupling_strength * n.blind_spot_proximity)
@@ -770,6 +787,7 @@ def compute_gallery_ambient(
 # VRS State (Vortex Ring State — helicopter physics bridge)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class VRSState:
     """Vortex Ring State derived from QHO excitation + trit stability.
@@ -785,13 +803,14 @@ class VRSState:
         VRS margin ← ratio of descent to induced velocity
         Recovery paths ← polymorphic fork count → Monty Hall selection
     """
+
     in_vrs: bool
-    vrs_margin: float               # 1.0=safe, 0.0=onset, <0=deep VRS
-    descent_rate_ms: float           # m/s vertical descent
-    induced_velocity_ms: float       # m/s momentum theory hover downwash
+    vrs_margin: float  # 1.0=safe, 0.0=onset, <0=deep VRS
+    descent_rate_ms: float  # m/s vertical descent
+    induced_velocity_ms: float  # m/s momentum theory hover downwash
     rotor: RotorState
     recovery_paths: List[RecoveryPath]
-    flight_regime: str               # hover / cruise / descent / vrs / departure / tail_rotor_failure
+    flight_regime: str  # hover / cruise / descent / vrs / departure / tail_rotor_failure
     tail_rotor: Optional[TailRotorState] = None
     pacejka: Optional[PacejkaTireState] = None
 
@@ -813,7 +832,7 @@ class VRSState:
         elif ratio < 1.5:
             # Power spikes parabolically in VRS zone
             normalized = (ratio - 0.7) / 0.8
-            return 1.0 + 2.0 * normalized ** 2
+            return 1.0 + 2.0 * normalized**2
         else:
             return 3.0  # deep VRS: ~3x hover power
 
@@ -845,8 +864,8 @@ class VRSState:
 
 def compute_vrs_state(
     qho: PolychromaticState,
-    trit: 'TritSignal',
-    mp: 'MultiPathRecord',
+    trit: "TritSignal",
+    mp: "MultiPathRecord",
 ) -> VRSState:
     """Derive VRS state from QHO excitation + trit stability axis.
 
@@ -904,7 +923,9 @@ def compute_vrs_state(
     recovery_paths = []
     if margin < 0.8 or tail_rotor.failed:
         recovery_paths = compute_recovery_paths(
-            margin, altitude, mp,
+            margin,
+            altitude,
+            mp,
             tail_rotor_failed=tail_rotor.failed,
         )
 
@@ -1004,12 +1025,13 @@ CODE_ANTI_PATTERNS = {
 @dataclass
 class CodeAntiPattern:
     """A coding anti-pattern ('swear word') with severity from QHO physics."""
+
     name: str
-    severity: float          # 0-1, derived from monty_hall_gain + qho excitation
+    severity: float  # 0-1, derived from monty_hall_gain + qho excitation
     description: str
     physics_analogy: str
     recovery_example: str
-    linked_vrs: bool         # maps to VRS-like collapse pattern
+    linked_vrs: bool  # maps to VRS-like collapse pattern
 
 
 @dataclass
@@ -1027,11 +1049,12 @@ class CodeLatticeState:
         L4: Multi-path recovery + code lattice
         L5: Full lattice generalization + cross-domain transfer
     """
+
     anti_patterns: List[CodeAntiPattern]
-    compounding_intent_score: float   # system_intent × learner_intent / normalization
-    curriculum_difficulty: float      # 0-1, derived from all signals
-    curriculum_level: int             # 0-5, progressive abstraction
-    cross_domain_mapping: str         # e.g. "VRS → deadlock recovery"
+    compounding_intent_score: float  # system_intent × learner_intent / normalization
+    curriculum_difficulty: float  # 0-1, derived from all signals
+    curriculum_level: int  # 0-5, progressive abstraction
+    cross_domain_mapping: str  # e.g. "VRS → deadlock recovery"
 
     @property
     def total_severity(self) -> float:
@@ -1067,7 +1090,7 @@ class CodeLatticeState:
 
 def compute_code_lattice(
     qho: PolychromaticState,
-    mp: 'MultiPathRecord',
+    mp: "MultiPathRecord",
     vrs: VRSState,
 ) -> CodeLatticeState:
     """Derive code lattice state from pipeline outputs.
@@ -1085,66 +1108,76 @@ def compute_code_lattice(
     # Triggers at high gain + high excitation (VRS-like boundary)
     if gain > 0.3 and max_n >= 4:
         ap = CODE_ANTI_PATTERNS["unhandled_exception_in_critical_path"]
-        anti_patterns.append(CodeAntiPattern(
-            name="unhandled_exception_in_critical_path",
-            severity=min(1.0, gain * 1.2 + (max_n - 4) * 0.1),
-            description=ap["description"],
-            physics_analogy=ap["physics_analogy"],
-            recovery_example=ap["recovery_example"],
-            linked_vrs=True,
-        ))
+        anti_patterns.append(
+            CodeAntiPattern(
+                name="unhandled_exception_in_critical_path",
+                severity=min(1.0, gain * 1.2 + (max_n - 4) * 0.1),
+                description=ap["description"],
+                physics_analogy=ap["physics_analogy"],
+                recovery_example=ap["recovery_example"],
+                linked_vrs=True,
+            )
+        )
 
     # Swear word 2: mutable_global_state
     # Triggers when creativity axis has high deviation (creative = risky mutations)
     if mp.forks and any(f.axis == "creativity" for f in mp.forks):
         ap = CODE_ANTI_PATTERNS["mutable_global_state"]
-        anti_patterns.append(CodeAntiPattern(
-            name="mutable_global_state",
-            severity=0.85,
-            description=ap["description"],
-            physics_analogy=ap["physics_analogy"],
-            recovery_example=ap["recovery_example"],
-            linked_vrs=False,
-        ))
+        anti_patterns.append(
+            CodeAntiPattern(
+                name="mutable_global_state",
+                severity=0.85,
+                description=ap["description"],
+                physics_analogy=ap["physics_analogy"],
+                recovery_example=ap["recovery_example"],
+                linked_vrs=False,
+            )
+        )
 
     # Swear word 3: null_check_in_hot_path
     # Triggers at mid excitation with low gain (stable but wasteful)
     if 2 <= max_n <= 4 and gain < 0.2:
         ap = CODE_ANTI_PATTERNS["null_check_in_hot_path"]
-        anti_patterns.append(CodeAntiPattern(
-            name="null_check_in_hot_path",
-            severity=0.4 + max_n * 0.05,
-            description=ap["description"],
-            physics_analogy=ap["physics_analogy"],
-            recovery_example=ap["recovery_example"],
-            linked_vrs=False,
-        ))
+        anti_patterns.append(
+            CodeAntiPattern(
+                name="null_check_in_hot_path",
+                severity=0.4 + max_n * 0.05,
+                description=ap["description"],
+                physics_analogy=ap["physics_analogy"],
+                recovery_example=ap["recovery_example"],
+                linked_vrs=False,
+            )
+        )
 
     # Swear word 4: unbounded_recursion
     # Triggers when in VRS (the spiral descent analogy is exact)
     if vrs.in_vrs:
         ap = CODE_ANTI_PATTERNS["unbounded_recursion"]
-        anti_patterns.append(CodeAntiPattern(
-            name="unbounded_recursion",
-            severity=min(1.0, 0.7 + abs(vrs.vrs_margin) * 0.3),
-            description=ap["description"],
-            physics_analogy=ap["physics_analogy"],
-            recovery_example=ap["recovery_example"],
-            linked_vrs=True,
-        ))
+        anti_patterns.append(
+            CodeAntiPattern(
+                name="unbounded_recursion",
+                severity=min(1.0, 0.7 + abs(vrs.vrs_margin) * 0.3),
+                description=ap["description"],
+                physics_analogy=ap["physics_analogy"],
+                recovery_example=ap["recovery_example"],
+                linked_vrs=True,
+            )
+        )
 
     # Swear word 5: fire_and_forget_async
     # Triggers at high excitation with multiple forks (many async paths)
     if max_n >= 5 and len(mp.forks) >= 2:
         ap = CODE_ANTI_PATTERNS["fire_and_forget_async"]
-        anti_patterns.append(CodeAntiPattern(
-            name="fire_and_forget_async",
-            severity=min(1.0, 0.6 + len(mp.forks) * 0.15),
-            description=ap["description"],
-            physics_analogy=ap["physics_analogy"],
-            recovery_example=ap["recovery_example"],
-            linked_vrs=False,
-        ))
+        anti_patterns.append(
+            CodeAntiPattern(
+                name="fire_and_forget_async",
+                severity=min(1.0, 0.6 + len(mp.forks) * 0.15),
+                description=ap["description"],
+                physics_analogy=ap["physics_analogy"],
+                recovery_example=ap["recovery_example"],
+                linked_vrs=False,
+            )
+        )
 
     # Swear word 6: implicit_type_coercion
     # Triggers when stability and structure axes have opposite polarity (cross-coupling)
@@ -1152,14 +1185,16 @@ def compute_code_lattice(
         axes = [f.axis for f in mp.forks]
         if "structure" in axes and "stability" in axes:
             ap = CODE_ANTI_PATTERNS["implicit_type_coercion"]
-            anti_patterns.append(CodeAntiPattern(
-                name="implicit_type_coercion",
-                severity=0.65,
-                description=ap["description"],
-                physics_analogy=ap["physics_analogy"],
-                recovery_example=ap["recovery_example"],
-                linked_vrs=False,
-            ))
+            anti_patterns.append(
+                CodeAntiPattern(
+                    name="implicit_type_coercion",
+                    severity=0.65,
+                    description=ap["description"],
+                    physics_analogy=ap["physics_analogy"],
+                    recovery_example=ap["recovery_example"],
+                    linked_vrs=False,
+                )
+            )
 
     # Compounding intent score (system × learner)
     system_intent = qho.phi_weighted_total_energy
@@ -1168,12 +1203,15 @@ def compute_code_lattice(
 
     # Curriculum difficulty: combine VRS margin, gain, excitation, anti-pattern count
     vrs_factor = max(0.0, 1.0 - vrs.vrs_margin) if vrs.vrs_margin < 1.0 else 0.0
-    difficulty = min(1.0, (
-        0.2 * (max_n / 7.0) +           # excitation contribution
-        0.25 * gain +                     # Monty Hall contribution
-        0.3 * vrs_factor +               # VRS proximity contribution
-        0.25 * min(1.0, len(anti_patterns) / 3.0)  # anti-pattern density
-    ))
+    difficulty = min(
+        1.0,
+        (
+            0.2 * (max_n / 7.0)  # excitation contribution
+            + 0.25 * gain  # Monty Hall contribution
+            + 0.3 * vrs_factor  # VRS proximity contribution
+            + 0.25 * min(1.0, len(anti_patterns) / 3.0)  # anti-pattern density
+        ),
+    )
 
     # Curriculum level (progressive abstraction)
     if max_n == 0 and not mp.forks:
@@ -1226,9 +1264,9 @@ def compute_code_lattice(
 
 # Dead tones and their ratios (from INTERVALS in harmonic_dark_fill.py)
 DEAD_TONES = {
-    "perfect_fifth": 3.0 / 2.0,     # 1.500 — strongest consonance
-    "minor_sixth": 8.0 / 5.0,       # 1.600 — inverted major third
-    "minor_seventh": 16.0 / 9.0,    # 1.778 — dominant tension
+    "perfect_fifth": 3.0 / 2.0,  # 1.500 — strongest consonance
+    "minor_sixth": 8.0 / 5.0,  # 1.600 — inverted major third
+    "minor_seventh": 16.0 / 9.0,  # 1.778 — dominant tension
 }
 
 # Which tongue couplings generate each dead tone through interference
@@ -1249,12 +1287,13 @@ class DeadToneFill:
     The DR+UM+CA autorotation hybrid (generating_couplings) is the chord
     that resonates at all three dead tones through combination.
     """
-    interval_name: str              # "perfect_fifth", "minor_sixth", "minor_seventh"
-    ratio: float                    # target ratio (e.g. 1.5)
-    achieved_ratio: float           # actual ratio from interference
-    error_from_dead_tone: float     # |achieved - target|
-    generating_couplings: List[str] # e.g. ["run_dr", "dr_um_ca"]
-    intensity: float                # 0-1, how strongly this note resonates
+
+    interval_name: str  # "perfect_fifth", "minor_sixth", "minor_seventh"
+    ratio: float  # target ratio (e.g. 1.5)
+    achieved_ratio: float  # actual ratio from interference
+    error_from_dead_tone: float  # |achieved - target|
+    generating_couplings: List[str]  # e.g. ["run_dr", "dr_um_ca"]
+    intensity: float  # 0-1, how strongly this note resonates
 
     def to_dict(self) -> dict:
         return {
@@ -1304,14 +1343,16 @@ def compute_dead_tone_fills(
         else:
             intensity = 0.1
 
-        notes.append(DeadToneFill(
-            interval_name=name,
-            ratio=target,
-            achieved_ratio=achieved,
-            error_from_dead_tone=abs(achieved - target),
-            generating_couplings=couplings,
-            intensity=intensity,
-        ))
+        notes.append(
+            DeadToneFill(
+                interval_name=name,
+                ratio=target,
+                achieved_ratio=achieved,
+                error_from_dead_tone=abs(achieved - target),
+                generating_couplings=couplings,
+                intensity=intensity,
+            )
+        )
 
     return notes
 
@@ -1328,16 +1369,18 @@ def compute_dead_tone_fills(
 #   Phase distortion: high = gallery boundary (near phi edge)
 #   Time-of-flight: delay ∝ distance to dead zone in phi-space
 
+
 @dataclass
 class EcholocationPing:
     """Active ping into the tongue lattice measuring dead-tone reflections."""
-    target_dead_tone: str           # which dead tone we're probing
-    ping_frequency_hz: float        # center frequency of the impulse
-    return_amplitude: float         # 0-1, low = absorbed by dead zone
-    phase_distortion_rad: float     # phase shift at reflection boundary
-    time_of_flight_s: float         # delay to reflection (phi-space distance)
+
+    target_dead_tone: str  # which dead tone we're probing
+    ping_frequency_hz: float  # center frequency of the impulse
+    return_amplitude: float  # 0-1, low = absorbed by dead zone
+    phase_distortion_rad: float  # phase shift at reflection boundary
+    time_of_flight_s: float  # delay to reflection (phi-space distance)
     gallery_fill_coupling: List[str]  # which couplings fill this dead tone
-    detected: bool                  # did we detect the dead tone?
+    detected: bool  # did we detect the dead tone?
 
     def to_dict(self) -> dict:
         return {
@@ -1388,15 +1431,17 @@ def send_echolocation_pings(
         # Detection: return amplitude below 0.5 means dead tone is present
         detected = return_amp < 0.5
 
-        pings.append(EcholocationPing(
-            target_dead_tone=name,
-            ping_frequency_hz=ping_freq,
-            return_amplitude=return_amp,
-            phase_distortion_rad=phase_dist,
-            time_of_flight_s=tof,
-            gallery_fill_coupling=DEAD_TONE_GENERATORS[name],
-            detected=detected,
-        ))
+        pings.append(
+            EcholocationPing(
+                target_dead_tone=name,
+                ping_frequency_hz=ping_freq,
+                return_amplitude=return_amp,
+                phase_distortion_rad=phase_dist,
+                time_of_flight_s=tof,
+                gallery_fill_coupling=DEAD_TONE_GENERATORS[name],
+                detected=detected,
+            )
+        )
 
     return pings
 
@@ -1418,16 +1463,18 @@ def send_echolocation_pings(
 # harmonics) in a discrete linear fashion — like a whistle in a concert
 # that you know is your friend due to pre-planned actions.
 
+
 @dataclass
 class RealmSignaturePing:
     """Single realm ping with 45° angular distortion and truncated waveform."""
-    realm_tongue: str               # which tongue (realm) is pinging
-    waveform: str                   # "square", "sawtooth", "impulse"
-    angle_deg: float                # angular distortion (45°)
-    frequency_hz: float             # ping center frequency
-    snr_db: float                   # signal-to-noise ratio
-    phase_shift_rad: float          # 45° beamforming phase shift
-    matched_correlation: float      # 0-1, how well "whistle" matches known objective
+
+    realm_tongue: str  # which tongue (realm) is pinging
+    waveform: str  # "square", "sawtooth", "impulse"
+    angle_deg: float  # angular distortion (45°)
+    frequency_hz: float  # ping center frequency
+    snr_db: float  # signal-to-noise ratio
+    phase_shift_rad: float  # 45° beamforming phase shift
+    matched_correlation: float  # 0-1, how well "whistle" matches known objective
 
     def to_dict(self) -> dict:
         return {
@@ -1452,18 +1499,17 @@ class RealmTriangulation:
     known_objective_met: >2 pings matched → the friend signal is confirmed.
     path_found: at least 1 discrete linear path through the noise matrix.
     """
+
     pings: List[RealmSignaturePing]
     triangulated_location: Dict[str, float]  # normalized (x, y) in lattice space
-    known_objective_met: bool                # pre-planned whistle detected
-    path_found: bool                         # discrete linear path exists
-    total_snr_db: float                      # combined SNR across all realms
+    known_objective_met: bool  # pre-planned whistle detected
+    path_found: bool  # discrete linear path exists
+    total_snr_db: float  # combined SNR across all realms
 
     def to_dict(self) -> dict:
         return {
             "pings": [p.to_dict() for p in self.pings],
-            "triangulated_location": {
-                k: round(v, 4) for k, v in self.triangulated_location.items()
-            },
+            "triangulated_location": {k: round(v, 4) for k, v in self.triangulated_location.items()},
             "known_objective_met": self.known_objective_met,
             "path_found": self.path_found,
             "total_snr_db": round(self.total_snr_db, 1),
@@ -1521,24 +1567,23 @@ def compute_realm_triangulation(
         # Coefficient (probability amplitude) also contributes
         corr = min(1.0, base_corr + state.coefficient * 0.2)
 
-        pings.append(RealmSignaturePing(
-            realm_tongue=tongue,
-            waveform=waveform,
-            angle_deg=45.0,
-            frequency_hz=freq,
-            snr_db=snr,
-            phase_shift_rad=phase_shift,
-            matched_correlation=corr,
-        ))
+        pings.append(
+            RealmSignaturePing(
+                realm_tongue=tongue,
+                waveform=waveform,
+                angle_deg=45.0,
+                frequency_hz=freq,
+                snr_db=snr,
+                phase_shift_rad=phase_shift,
+                matched_correlation=corr,
+            )
+        )
 
     # Triangulation: weighted centroid of high-correlation pings
     high_corr = [p for p in pings if p.matched_correlation > 0.5]
     if high_corr:
         total_w = sum(TONGUE_WEIGHTS[p.realm_tongue] for p in high_corr)
-        x = sum(
-            TONGUE_WEIGHTS[p.realm_tongue] * p.matched_correlation
-            for p in high_corr
-        ) / total_w
+        x = sum(TONGUE_WEIGHTS[p.realm_tongue] * p.matched_correlation for p in high_corr) / total_w
         y = qho.mean_excitation / 7.0
     else:
         x, y = 0.5, 0.5
@@ -1570,14 +1615,15 @@ def compute_realm_triangulation(
 # stability × creativity).  The outer ^2 squares the manifold into a
 # closed negative isolation pocket.
 
+
 @dataclass
 class NegativeIsolationSpace:
     """The domified negative isolation domain S^{s^{φ·729/s}}^2."""
 
-    exponent: float                     # φ · 729 / s
-    isolation_factor: float             # depth of the negative pocket
-    base_shapes_in_isolation: List[str] # which tongues are isolated (all 6)
-    dead_tones_remapped: List[str]      # dead tones inverted inside this domain
+    exponent: float  # φ · 729 / s
+    isolation_factor: float  # depth of the negative pocket
+    base_shapes_in_isolation: List[str]  # which tongues are isolated (all 6)
+    dead_tones_remapped: List[str]  # dead tones inverted inside this domain
     domain_name: str = "S^{s^{phi*729/s}}^2"
 
     def to_dict(self) -> dict:
@@ -1628,6 +1674,7 @@ def compute_negative_isolation_space(
 # ---------------------------------------------------------------------------
 # QHO State from Text (the core mapping)
 # ---------------------------------------------------------------------------
+
 
 def compute_qho_state(
     text: str,
@@ -1748,6 +1795,7 @@ def compute_qho_state(
 # Full Quantum Frequency Bundle
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class QuantumFrequencyBundle:
     """A single text's full quantum frequency bundle for SFT training.
@@ -1768,6 +1816,7 @@ class QuantumFrequencyBundle:
         - Negative isolation space (S^{s^{φ·729/s}}^2 anti-lattice pocket)
         - Color field (dual-seeded chromatic iris from gallery harmonics)
     """
+
     text: str
     trit: TritSignal
     multipath: MultiPathRecord
@@ -1871,6 +1920,7 @@ class QuantumFrequencyBundle:
 # Bundle generator (the main entry point)
 # ---------------------------------------------------------------------------
 
+
 def generate_quantum_bundle(text: str) -> QuantumFrequencyBundle:
     """Generate a full quantum frequency bundle for a single text.
 
@@ -1972,9 +2022,7 @@ def quantum_bundle_summary(bundles: List[QuantumFrequencyBundle]) -> dict:
             "max_excited_count": max_excited,
             "max_excited_pct": round(max_excited / n * 100, 1),
         },
-        "visual_vector_means": {
-            t: round(v, 4) for t, v in zip(TONGUE_ORDER, visual_means)
-        },
+        "visual_vector_means": {t: round(v, 4) for t, v in zip(TONGUE_ORDER, visual_means)},
         "acoustic_band_means": {
             "infrasonic": round(infra_mean, 4),
             "audible": round(audible_mean, 4),
@@ -1992,10 +2040,15 @@ def quantum_bundle_summary(bundles: List[QuantumFrequencyBundle]) -> dict:
             "autorotation_active_count": sum(1 for b in bundles if b.gallery.autorotation_active),
             "autorotation_active_pct": round(sum(1 for b in bundles if b.gallery.autorotation_active) / n * 100, 1),
             "mean_gallery_energy": round(sum(b.gallery.gallery_energy for b in bundles) / n, 4),
-            "dominant_dead_tone_distribution": dict(sorted(
-                {tone: sum(1 for b in bundles if b.gallery.dominant_dead_tone == tone) for tone in ["perfect_fifth", "minor_sixth", "minor_seventh"]}.items(),
-                key=lambda x: -x[1],
-            )),
+            "dominant_dead_tone_distribution": dict(
+                sorted(
+                    {
+                        tone: sum(1 for b in bundles if b.gallery.dominant_dead_tone == tone)
+                        for tone in ["perfect_fifth", "minor_sixth", "minor_seventh"]
+                    }.items(),
+                    key=lambda x: -x[1],
+                )
+            ),
             "mean_blind_spot_proximity": {
                 tone: round(sum(b.gallery.notes[tone].blind_spot_proximity for b in bundles) / n, 4)
                 for tone in ["perfect_fifth", "minor_sixth", "minor_seventh"]
@@ -2007,36 +2060,50 @@ def quantum_bundle_summary(bundles: List[QuantumFrequencyBundle]) -> dict:
         },
         "dead_tone_fills": {
             "mean_intensity": {
-                tone: round(sum(
-                    next((f.intensity for f in b.dead_tone_fills if f.interval_name == tone), 0.0)
-                    for b in bundles
-                ) / n, 4)
+                tone: round(
+                    sum(next((f.intensity for f in b.dead_tone_fills if f.interval_name == tone), 0.0) for b in bundles)
+                    / n,
+                    4,
+                )
                 for tone in ["perfect_fifth", "minor_sixth", "minor_seventh"]
             },
             "mean_error": {
-                tone: round(sum(
-                    next((f.error_from_dead_tone for f in b.dead_tone_fills if f.interval_name == tone), 0.0)
-                    for b in bundles
-                ) / n, 6)
+                tone: round(
+                    sum(
+                        next((f.error_from_dead_tone for f in b.dead_tone_fills if f.interval_name == tone), 0.0)
+                        for b in bundles
+                    )
+                    / n,
+                    6,
+                )
                 for tone in ["perfect_fifth", "minor_sixth", "minor_seventh"]
             },
         },
         "echolocation": {
             "detection_rate": {
-                tone: round(sum(
-                    1 for b in bundles
-                    if any(p.detected and p.target_dead_tone == tone for p in b.echolocation_pings)
-                ) / n * 100, 1)
+                tone: round(
+                    sum(
+                        1
+                        for b in bundles
+                        if any(p.detected and p.target_dead_tone == tone for p in b.echolocation_pings)
+                    )
+                    / n
+                    * 100,
+                    1,
+                )
                 for tone in ["perfect_fifth", "minor_sixth", "minor_seventh"]
             },
             "mean_return_amplitude": round(
                 sum(sum(p.return_amplitude for p in b.echolocation_pings) for b in bundles)
-                / max(1, sum(len(b.echolocation_pings) for b in bundles)), 4
+                / max(1, sum(len(b.echolocation_pings) for b in bundles)),
+                4,
             ),
         },
         "realm_triangulation": {
             "objective_met_count": sum(1 for b in bundles if b.realm_triangulation.known_objective_met),
-            "objective_met_pct": round(sum(1 for b in bundles if b.realm_triangulation.known_objective_met) / n * 100, 1),
+            "objective_met_pct": round(
+                sum(1 for b in bundles if b.realm_triangulation.known_objective_met) / n * 100, 1
+            ),
             "path_found_count": sum(1 for b in bundles if b.realm_triangulation.path_found),
             "mean_total_snr_db": round(sum(b.realm_triangulation.total_snr_db for b in bundles) / n, 1),
         },
@@ -2046,6 +2113,7 @@ def quantum_bundle_summary(bundles: List[QuantumFrequencyBundle]) -> dict:
 # ---------------------------------------------------------------------------
 # SFT Record Generation
 # ---------------------------------------------------------------------------
+
 
 def generate_quantum_sft_records(
     bundles: List[QuantumFrequencyBundle],
@@ -2068,7 +2136,7 @@ def generate_quantum_sft_records(
 
         user_content = (
             f"Analyze the quantum frequency profile of this text:\n\n"
-            f"\"{text_excerpt}\"\n\n"
+            f'"{text_excerpt}"\n\n'
             f"Determine the excitation level, dominant tongue, spectral lines, "
             f"acoustic signature, dead tone fills, echolocation pings, "
             f"realm triangulation, VRS state, and code lattice analysis."
@@ -2100,11 +2168,15 @@ def generate_quantum_sft_records(
             f"  Dominant interval: {acous.dominant_interval} "
             f"(deviation: {acous.interval_deviation:.4f})\n\n"
             f"**Spectral lines** ({len(lines)} active transitions):\n"
-            + ("\n".join(
-                f"  {l['tongue'].upper()} n={l['n']}: "
-                f"ν={l['frequency_hz']:.1f} Hz, λ={l['wavelength_nm']:.1f} nm"
-                for l in lines
-            ) if lines else "  None (ground state — all tongues at n=0)")
+            + (
+                "\n".join(
+                    f"  {l['tongue'].upper()} n={l['n']}: "
+                    f"ν={l['frequency_hz']:.1f} Hz, λ={l['wavelength_nm']:.1f} nm"
+                    for l in lines
+                )
+                if lines
+                else "  None (ground state — all tongues at n=0)"
+            )
             + f"\n\n**VRS State:**\n"
             f"  Flight regime: {bundle.vrs.flight_regime}\n"
             f"  VRS margin: {bundle.vrs.vrs_margin:.4f} "
@@ -2118,11 +2190,11 @@ def generate_quantum_sft_records(
                     f"    {rp.recovery_type}: P(success)={rp.success_probability:.2f}, "
                     f"alt_loss={rp.altitude_loss_m:.0f}m, t={rp.time_to_recover_s:.1f}s"
                     + (" <- MONTY HALL SWITCH" if rp.monty_hall_selected else "")
-                    + (f" [{rp.sacred_tongue_hybrid['hybrid_phrase']}]"
-                       if rp.sacred_tongue_hybrid else "")
+                    + (f" [{rp.sacred_tongue_hybrid['hybrid_phrase']}]" if rp.sacred_tongue_hybrid else "")
                     for rp in bundle.vrs.recovery_paths
                 )
-                if bundle.vrs.recovery_paths else "  No recovery needed (stable flight)"
+                if bundle.vrs.recovery_paths
+                else "  No recovery needed (stable flight)"
             )
             + (
                 f"\n\n**Tail Rotor:**\n"
@@ -2130,7 +2202,8 @@ def generate_quantum_sft_records(
                 f"  Net torque: {bundle.vrs.tail_rotor.net_torque_nm:.1f} N-m\n"
                 f"  Yaw rate: {bundle.vrs.tail_rotor.yaw_rate_dps:.1f} deg/s\n"
                 f"  Controllable: {bundle.vrs.tail_rotor.is_controllable}"
-                if bundle.vrs.tail_rotor else ""
+                if bundle.vrs.tail_rotor
+                else ""
             )
             + (
                 f"\n\n**Ground Ops (Pacejka):**\n"
@@ -2138,7 +2211,8 @@ def generate_quantum_sft_records(
                 f"  Lateral force: {bundle.vrs.pacejka.lateral_force:.0f} N\n"
                 f"  Grip ratio: {bundle.vrs.pacejka.grip_ratio:.3f}\n"
                 f"  Sliding: {bundle.vrs.pacejka.is_sliding}"
-                if bundle.vrs.pacejka else ""
+                if bundle.vrs.pacejka
+                else ""
             )
             + f"\n\n**Dead Tone Fills** ({len(bundle.dead_tone_fills)} intervals):\n"
             + "\n".join(
@@ -2176,8 +2250,7 @@ def generate_quantum_sft_records(
             + (
                 f"  Swear words ({len(bundle.code_lattice.anti_patterns)}):\n"
                 + "\n".join(
-                    f"    [{ap.severity:.2f}] {ap.name}: {ap.description}"
-                    for ap in bundle.code_lattice.anti_patterns
+                    f"    [{ap.severity:.2f}] {ap.name}: {ap.description}" for ap in bundle.code_lattice.anti_patterns
                 )
                 if bundle.code_lattice.anti_patterns
                 else "  No swear words (clean code state)"
@@ -2201,17 +2274,19 @@ def generate_quantum_sft_records(
             f"harmonic cost = {bundle.governance_cost():.4f}"
         )
 
-        records.append({
-            "messages": [
-                {"role": "user", "content": user_content},
-                {"role": "assistant", "content": assistant_content},
-            ],
-            "metadata": {
-                "source": "quantum_frequency_bundle_generator",
-                "record_type": "quantum_frequency_analysis",
-                "quantum_bundle": bundle.to_dict(),
-            },
-        })
+        records.append(
+            {
+                "messages": [
+                    {"role": "user", "content": user_content},
+                    {"role": "assistant", "content": assistant_content},
+                ],
+                "metadata": {
+                    "source": "quantum_frequency_bundle_generator",
+                    "record_type": "quantum_frequency_analysis",
+                    "quantum_bundle": bundle.to_dict(),
+                },
+            }
+        )
 
     return records
 
@@ -2259,20 +2334,28 @@ if __name__ == "__main__":
         cl_level = f"L{bundle.code_lattice.curriculum_level}"
         swears = bundle.code_lattice.swear_word_count
 
-        print(f"  [{bar}] n={n_max}  {polymorphic:>6}  {label:>16}  "
-              f"dom={dom.upper()}  mh={mh:.2f}  "
-              f"cost={bundle.governance_cost():.3f}")
+        print(
+            f"  [{bar}] n={n_max}  {polymorphic:>6}  {label:>16}  "
+            f"dom={dom.upper()}  mh={mh:.2f}  "
+            f"cost={bundle.governance_cost():.3f}"
+        )
         print(f"    visual: [{', '.join(f'{v:.2f}' for v in vis)}]")
-        print(f"    acoustic: infra={bundle.acoustic.infrasonic_power:.2f} "
-              f"audible={bundle.acoustic.audible_power:.2f} "
-              f"ultra={bundle.acoustic.ultrasonic_power:.2f} "
-              f"interval={bundle.acoustic.dominant_interval}")
-        print(f"    vrs: {vrs_tag}  margin={bundle.vrs.vrs_margin:.2f}  "
-              f"v_d={bundle.vrs.descent_rate_ms:.1f}m/s  "
-              f"v_i={bundle.vrs.induced_velocity_ms:.1f}m/s  "
-              f"power={bundle.vrs.power_spike_factor:.1f}x")
-        print(f"    code: {cl_level}  diff={bundle.code_lattice.curriculum_difficulty:.3f}  "
-              f"swears={swears}  intent={bundle.code_lattice.compounding_intent_score:.4f}")
+        print(
+            f"    acoustic: infra={bundle.acoustic.infrasonic_power:.2f} "
+            f"audible={bundle.acoustic.audible_power:.2f} "
+            f"ultra={bundle.acoustic.ultrasonic_power:.2f} "
+            f"interval={bundle.acoustic.dominant_interval}"
+        )
+        print(
+            f"    vrs: {vrs_tag}  margin={bundle.vrs.vrs_margin:.2f}  "
+            f"v_d={bundle.vrs.descent_rate_ms:.1f}m/s  "
+            f"v_i={bundle.vrs.induced_velocity_ms:.1f}m/s  "
+            f"power={bundle.vrs.power_spike_factor:.1f}x"
+        )
+        print(
+            f"    code: {cl_level}  diff={bundle.code_lattice.curriculum_difficulty:.3f}  "
+            f"swears={swears}  intent={bundle.code_lattice.compounding_intent_score:.4f}"
+        )
         if bundle.code_lattice.anti_patterns:
             for ap in bundle.code_lattice.anti_patterns:
                 print(f"      ! [{ap.severity:.2f}] {ap.name}")
@@ -2284,10 +2367,13 @@ if __name__ == "__main__":
     print("=" * 70)
     print(f"Records: {summary['count']}")
     print(f"Mean max excitation: {summary['excitation']['mean_max']}")
-    print(f"Ground states: {summary['excitation']['ground_state_count']} "
-          f"({summary['excitation']['ground_state_pct']}%)")
-    print(f"Max excited: {summary['excitation']['max_excited_count']} "
-          f"({summary['excitation']['max_excited_pct']}%)")
+    print(
+        f"Ground states: {summary['excitation']['ground_state_count']} "
+        f"({summary['excitation']['ground_state_pct']}%)"
+    )
+    print(
+        f"Max excited: {summary['excitation']['max_excited_count']} " f"({summary['excitation']['max_excited_pct']}%)"
+    )
     print()
     print("Visual vector means (polychromatic emission):")
     for t, v in summary["visual_vector_means"].items():
@@ -2298,8 +2384,10 @@ if __name__ == "__main__":
         print(f"  {band:>12}: {v:.4f}")
     print()
     print(f"Mean harmonic cost: {summary['governance']['mean_harmonic_cost']:.4f}")
-    print(f"Total spectral lines: {summary['total_spectral_lines']} "
-          f"(mean {summary['mean_lines_per_record']:.1f} per record)")
+    print(
+        f"Total spectral lines: {summary['total_spectral_lines']} "
+        f"(mean {summary['mean_lines_per_record']:.1f} per record)"
+    )
     print()
     print("Dominant tongue distribution:")
     for t, c in summary["dominant_tongue_distribution"].items():

@@ -34,6 +34,11 @@ __all__ = [
     "ReducerMeta",
     "PHI_WEIGHTS",
     "TONGUE_NAMES",
-    "KO_TABLE", "AV_TABLE", "RU_TABLE", "CA_TABLE", "UM_TABLE", "DR_TABLE",
+    "KO_TABLE",
+    "AV_TABLE",
+    "RU_TABLE",
+    "CA_TABLE",
+    "UM_TABLE",
+    "DR_TABLE",
     "TRIT_TABLES",
 ]

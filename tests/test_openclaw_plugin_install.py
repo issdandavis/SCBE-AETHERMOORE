@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 import subprocess
 
-
 MODULE_PATH = Path(__file__).resolve().parents[1] / "scripts" / "system" / "install_openclaw_scbe_plugin.py"
 SPEC = importlib.util.spec_from_file_location("install_openclaw_scbe_plugin", MODULE_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -53,12 +52,10 @@ def test_patch_openclaw_config_enables_plugin_and_preserves_existing_entries() -
     assert patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["timeoutMs"] == 90000
     assert patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["defaultProvider"] == "hf"
     assert (
-        patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["defaultLocalBaseUrl"]
-        == "http://localhost:1234/v1"
+        patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["defaultLocalBaseUrl"] == "http://localhost:1234/v1"
     )
     assert (
-        patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["defaultOllamaBaseUrl"]
-        == "http://localhost:11434/v1"
+        patched["plugins"]["entries"][MODULE.PLUGIN_ID]["config"]["defaultOllamaBaseUrl"] == "http://localhost:11434/v1"
     )
 
 
@@ -92,7 +89,11 @@ def test_cli_install_plugin_uses_supported_subprocess_kwargs(monkeypatch) -> Non
         captured["kwargs"] = kwargs
         return subprocess.CompletedProcess(args=args[0], returncode=0, stdout="", stderr="")
 
-    monkeypatch.setattr(MODULE.shutil, "which", lambda name: "C:/Users/test/AppData/Roaming/npm/openclaw.cmd" if name == "openclaw.cmd" else None)
+    monkeypatch.setattr(
+        MODULE.shutil,
+        "which",
+        lambda name: "C:/Users/test/AppData/Roaming/npm/openclaw.cmd" if name == "openclaw.cmd" else None,
+    )
     monkeypatch.setattr(MODULE.subprocess, "run", fake_run)
     MODULE.cli_install_plugin(Path("C:/Users/issda/SCBE-AETHERMOORE/extensions/openclaw-scbe-system-tools"))
 

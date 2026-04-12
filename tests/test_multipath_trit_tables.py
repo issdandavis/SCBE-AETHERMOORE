@@ -5,10 +5,14 @@ from __future__ import annotations
 import pytest
 
 from src.symphonic.multipath import (
-    KO_TABLE, AV_TABLE, RU_TABLE, UM_TABLE, DR_TABLE, TRIT_TABLES,
+    KO_TABLE,
+    AV_TABLE,
+    RU_TABLE,
+    UM_TABLE,
+    DR_TABLE,
+    TRIT_TABLES,
 )
 from src.symphonic.multipath import trit_table_CA as ca_module
-
 
 NEW_TABLES = [
     ("KO", KO_TABLE, 0),

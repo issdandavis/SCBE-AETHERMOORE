@@ -18,34 +18,55 @@ PHI = (1 + math.sqrt(5)) / 2
 TAU = 2.0 * math.pi
 
 TONGUE_WEIGHTS = {
-    "ko": PHI ** 0, "av": PHI ** 1, "ru": PHI ** 2,
-    "ca": PHI ** 3, "um": PHI ** 4, "dr": PHI ** 5,
+    "ko": PHI**0,
+    "av": PHI**1,
+    "ru": PHI**2,
+    "ca": PHI**3,
+    "um": PHI**4,
+    "dr": PHI**5,
 }
 ALL_TONGUES = tuple(TONGUE_WEIGHTS.keys())
 
 TONGUE_FREQUENCIES = {
-    "ko": 440.00, "av": 523.25, "ru": 293.66,
-    "ca": 659.25, "um": 196.00, "dr": 392.00,
+    "ko": 440.00,
+    "av": 523.25,
+    "ru": 293.66,
+    "ca": 659.25,
+    "um": 196.00,
+    "dr": 392.00,
 }
 
 COMPLEMENT_MAP = {
-    "ko": "dr", "av": "um", "ru": "ca",
-    "ca": "ru", "um": "av", "dr": "ko",
+    "ko": "dr",
+    "av": "um",
+    "ru": "ca",
+    "ca": "ru",
+    "um": "av",
+    "dr": "ko",
 }
 
 BASELINE_FREQUENCIES = {
-    "perfect_fifth": 330.0, "minor_sixth": 352.0, "minor_seventh": 392.0,
+    "perfect_fifth": 330.0,
+    "minor_sixth": 352.0,
+    "minor_seventh": 392.0,
 }
 DEAD_TONES = tuple(BASELINE_FREQUENCIES.keys())
 
 RATIO_DISSONANCE = {
-    "unison": (1.0, 0.00), "octave": (2.0, 0.02),
-    "perfect_fifth": (3.0/2.0, 0.05), "perfect_fourth": (4.0/3.0, 0.08),
-    "major_third": (5.0/4.0, 0.12), "minor_third": (6.0/5.0, 0.15),
-    "major_sixth": (5.0/3.0, 0.18), "minor_sixth": (8.0/5.0, 0.22),
-    "major_second": (9.0/8.0, 0.30), "minor_seventh": (16.0/9.0, 0.35),
-    "major_seventh": (15.0/8.0, 0.55), "phi_interval": (PHI, 0.40),
-    "tritone": (45.0/32.0, 0.75), "minor_second": (16.0/15.0, 0.90),
+    "unison": (1.0, 0.00),
+    "octave": (2.0, 0.02),
+    "perfect_fifth": (3.0 / 2.0, 0.05),
+    "perfect_fourth": (4.0 / 3.0, 0.08),
+    "major_third": (5.0 / 4.0, 0.12),
+    "minor_third": (6.0 / 5.0, 0.15),
+    "major_sixth": (5.0 / 3.0, 0.18),
+    "minor_sixth": (8.0 / 5.0, 0.22),
+    "major_second": (9.0 / 8.0, 0.30),
+    "minor_seventh": (16.0 / 9.0, 0.35),
+    "major_seventh": (15.0 / 8.0, 0.55),
+    "phi_interval": (PHI, 0.40),
+    "tritone": (45.0 / 32.0, 0.75),
+    "minor_second": (16.0 / 15.0, 0.90),
 }
 
 ALLOW_THRESHOLD = 0.25
@@ -53,16 +74,28 @@ QUARANTINE_THRESHOLD = 0.50
 ESCALATE_THRESHOLD = 0.75
 
 TONGUE_STRESS = {
-    "ko": "even", "av": "flowing", "ru": "percussive",
-    "ca": "rising", "um": "falling", "dr": "grounded",
+    "ko": "even",
+    "av": "flowing",
+    "ru": "percussive",
+    "ca": "rising",
+    "um": "falling",
+    "dr": "grounded",
 }
 TONGUE_RATE = {
-    "ko": 0.95, "av": 1.00, "ru": 0.90,
-    "ca": 1.08, "um": 0.82, "dr": 0.80,
+    "ko": 0.95,
+    "av": 1.00,
+    "ru": 0.90,
+    "ca": 1.08,
+    "um": 0.82,
+    "dr": 0.80,
 }
 TONGUE_CHANT = {
-    "ko": 0.10, "av": 0.20, "ru": 0.25,
-    "ca": 0.30, "um": 0.35, "dr": 0.22,
+    "ko": 0.10,
+    "av": 0.20,
+    "ru": 0.25,
+    "ca": 0.30,
+    "um": 0.35,
+    "dr": 0.22,
 }
 
 
@@ -82,12 +115,16 @@ class GovernanceVerdict(Enum):
 
 @dataclass(frozen=True)
 class TongueVector:
-    ko: float; av: float; ru: float; ca: float; um: float; dr: float
+    ko: float
+    av: float
+    ru: float
+    ca: float
+    um: float
+    dr: float
 
     @property
     def dominant(self):
-        vals = {"ko": self.ko, "av": self.av, "ru": self.ru,
-                "ca": self.ca, "um": self.um, "dr": self.dr}
+        vals = {"ko": self.ko, "av": self.av, "ru": self.ru, "ca": self.ca, "um": self.um, "dr": self.dr}
         return max(vals, key=vals.get)
 
     @property
@@ -106,33 +143,53 @@ class TongueVector:
 
 @dataclass(frozen=True)
 class ProsodyFeatures:
-    rate: float; energy: float; chant_ratio: float
-    stress_pattern: str; agent_frequency_hz: float
+    rate: float
+    energy: float
+    chant_ratio: float
+    stress_pattern: str
+    agent_frequency_hz: float
 
 
 @dataclass(frozen=True)
 class DarkFillFeatures:
-    infra_freq: float; infra_amplitude: float
-    audible_freq: float; audible_amplitude: float
-    ultra_freq: float; ultra_amplitude: float
+    infra_freq: float
+    infra_amplitude: float
+    audible_freq: float
+    audible_amplitude: float
+    ultra_freq: float
+    ultra_amplitude: float
     darkness: float
 
 
 @dataclass(frozen=True)
 class ConsonanceFeatures:
-    baseline_hz: float; agent_hz: float; frequency_ratio: float
-    nearest_interval: str; interval_deviation: float
-    dissonance_score: float; beat_frequency: float
+    baseline_hz: float
+    agent_hz: float
+    frequency_ratio: float
+    nearest_interval: str
+    interval_deviation: float
+    dissonance_score: float
+    beat_frequency: float
 
 
 @dataclass(frozen=True)
 class PolyhedralRecord:
-    node_hash: str; generation: int; parent_hash: Optional[str]; timestamp: float
-    raw_input: str; dominant_tongue: str; dead_tone: str; excitation: float
-    tongue_vector: TongueVector; prosody: ProsodyFeatures
-    consonance: ConsonanceFeatures; dark_fill: DarkFillFeatures
-    verdict: GovernanceVerdict; propagation_label: PropagationLabel
-    tongue_affinity: Dict[str, float]; complement_tongue: str
+    node_hash: str
+    generation: int
+    parent_hash: Optional[str]
+    timestamp: float
+    raw_input: str
+    dominant_tongue: str
+    dead_tone: str
+    excitation: float
+    tongue_vector: TongueVector
+    prosody: ProsodyFeatures
+    consonance: ConsonanceFeatures
+    dark_fill: DarkFillFeatures
+    verdict: GovernanceVerdict
+    propagation_label: PropagationLabel
+    tongue_affinity: Dict[str, float]
+    complement_tongue: str
 
 
 def compute_tongue_vector(raw_input, dominant_tongue):
@@ -161,15 +218,19 @@ def compute_prosody(dominant_tongue, excitation):
     base_freq = TONGUE_FREQUENCIES[dominant_tongue]
     agent_hz = base_freq * (1.0 + 0.05 * (excitation - 3.0))
     agent_hz = max(20.0, min(20000.0, agent_hz))
-    return ProsodyFeatures(rate=rate, energy=energy, chant_ratio=chant_ratio,
-                           stress_pattern=stress, agent_frequency_hz=agent_hz)
+    return ProsodyFeatures(
+        rate=rate, energy=energy, chant_ratio=chant_ratio, stress_pattern=stress, agent_frequency_hz=agent_hz
+    )
 
 
 def normalize_ratio(f_a, f_b):
-    if f_a <= 0 or f_b <= 0: return 1.0
+    if f_a <= 0 or f_b <= 0:
+        return 1.0
     ratio = max(f_a, f_b) / min(f_a, f_b)
-    while ratio >= 2.0: ratio /= 2.0
-    while ratio < 1.0: ratio *= 2.0
+    while ratio >= 2.0:
+        ratio /= 2.0
+    while ratio < 1.0:
+        ratio *= 2.0
     return ratio
 
 
@@ -191,23 +252,36 @@ def compute_consonance(agent_hz, dead_tone, tolerance=0.03):
     else:
         score = min(1.0, base_dis + min(1.0, deviation / 0.05) * 0.5)
     return ConsonanceFeatures(
-        baseline_hz=baseline_hz, agent_hz=agent_hz, frequency_ratio=ratio,
-        nearest_interval=name, interval_deviation=deviation,
-        dissonance_score=score, beat_frequency=abs(baseline_hz - agent_hz))
+        baseline_hz=baseline_hz,
+        agent_hz=agent_hz,
+        frequency_ratio=ratio,
+        nearest_interval=name,
+        interval_deviation=deviation,
+        dissonance_score=score,
+        beat_frequency=abs(baseline_hz - agent_hz),
+    )
 
 
 def dissonance_to_verdict(score):
-    if score < ALLOW_THRESHOLD: return GovernanceVerdict.ALLOW
-    elif score < QUARANTINE_THRESHOLD: return GovernanceVerdict.QUARANTINE
-    elif score < ESCALATE_THRESHOLD: return GovernanceVerdict.ESCALATE
-    else: return GovernanceVerdict.DENY
+    if score < ALLOW_THRESHOLD:
+        return GovernanceVerdict.ALLOW
+    elif score < QUARANTINE_THRESHOLD:
+        return GovernanceVerdict.QUARANTINE
+    elif score < ESCALATE_THRESHOLD:
+        return GovernanceVerdict.ESCALATE
+    else:
+        return GovernanceVerdict.DENY
 
 
 def verdict_to_label(verdict):
-    if verdict == GovernanceVerdict.ALLOW: return PropagationLabel.POSITIVE
-    elif verdict == GovernanceVerdict.QUARANTINE: return PropagationLabel.BOUNDARY
-    elif verdict == GovernanceVerdict.ESCALATE: return PropagationLabel.NEGATIVE
-    else: return PropagationLabel.TERMINAL
+    if verdict == GovernanceVerdict.ALLOW:
+        return PropagationLabel.POSITIVE
+    elif verdict == GovernanceVerdict.QUARANTINE:
+        return PropagationLabel.BOUNDARY
+    elif verdict == GovernanceVerdict.ESCALATE:
+        return PropagationLabel.NEGATIVE
+    else:
+        return PropagationLabel.TERMINAL
 
 
 def compute_dark_fill(raw_input, dominant_tongue, darkness=0.5):
@@ -219,10 +293,14 @@ def compute_dark_fill(raw_input, dominant_tongue, darkness=0.5):
     hash_val = int.from_bytes(h.digest()[:4], "big")
     ultra_freq = 20000.0 + (hash_val / (2**32 - 1)) * 980000.0
     return DarkFillFeatures(
-        infra_freq=round(infra_freq, 6), infra_amplitude=round(darkness * 0.8, 6),
-        audible_freq=round(base_freq, 4), audible_amplitude=round(darkness * 0.6, 6),
-        ultra_freq=round(ultra_freq, 2), ultra_amplitude=round(darkness * (weight / TONGUE_WEIGHTS["dr"]) * 0.9, 6),
-        darkness=darkness)
+        infra_freq=round(infra_freq, 6),
+        infra_amplitude=round(darkness * 0.8, 6),
+        audible_freq=round(base_freq, 4),
+        audible_amplitude=round(darkness * 0.6, 6),
+        ultra_freq=round(ultra_freq, 2),
+        ultra_amplitude=round(darkness * (weight / TONGUE_WEIGHTS["dr"]) * 0.9, 6),
+        darkness=darkness,
+    )
 
 
 def compute_tongue_affinity(tongue_vector):
@@ -241,8 +319,9 @@ def compute_node_hash(raw_input, dominant_tongue, dead_tone):
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
 
 
-def generate_record(raw_input, dominant_tongue="ko", dead_tone="perfect_fifth",
-                    excitation=3.0, generation=0, parent_hash=None):
+def generate_record(
+    raw_input, dominant_tongue="ko", dead_tone="perfect_fifth", excitation=3.0, generation=0, parent_hash=None
+):
     tongue_vec = compute_tongue_vector(raw_input, dominant_tongue)
     prosody = compute_prosody(dominant_tongue, excitation)
     consonance = compute_consonance(prosody.agent_frequency_hz, dead_tone)
@@ -252,18 +331,26 @@ def generate_record(raw_input, dominant_tongue="ko", dead_tone="perfect_fifth",
     label = verdict_to_label(verdict)
     return PolyhedralRecord(
         node_hash=compute_node_hash(raw_input, dominant_tongue, dead_tone),
-        generation=generation, parent_hash=parent_hash, timestamp=time.time(),
-        raw_input=raw_input, dominant_tongue=dominant_tongue, dead_tone=dead_tone,
-        excitation=excitation, tongue_vector=tongue_vec, prosody=prosody,
-        consonance=consonance, dark_fill=dark_fill, verdict=verdict,
-        propagation_label=label, tongue_affinity=affinity,
-        complement_tongue=COMPLEMENT_MAP[dominant_tongue])
+        generation=generation,
+        parent_hash=parent_hash,
+        timestamp=time.time(),
+        raw_input=raw_input,
+        dominant_tongue=dominant_tongue,
+        dead_tone=dead_tone,
+        excitation=excitation,
+        tongue_vector=tongue_vec,
+        prosody=prosody,
+        consonance=consonance,
+        dark_fill=dark_fill,
+        verdict=verdict,
+        propagation_label=label,
+        tongue_affinity=affinity,
+        complement_tongue=COMPLEMENT_MAP[dominant_tongue],
+    )
 
 
-def generate_multi_tongue_records(raw_input, dead_tone="perfect_fifth",
-                                   excitation=3.0, generation=0, parent_hash=None):
-    return [generate_record(raw_input, t, dead_tone, excitation, generation, parent_hash)
-            for t in ALL_TONGUES]
+def generate_multi_tongue_records(raw_input, dead_tone="perfect_fifth", excitation=3.0, generation=0, parent_hash=None):
+    return [generate_record(raw_input, t, dead_tone, excitation, generation, parent_hash) for t in ALL_TONGUES]
 
 
 def generate_full_sweep(raw_input, excitation=3.0, generation=0, parent_hash=None):
@@ -277,6 +364,7 @@ def generate_full_sweep(raw_input, excitation=3.0, generation=0, parent_hash=Non
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestTongueVector:
 
@@ -500,8 +588,7 @@ class TestGenerateRecord:
         assert r.parent_hash is None
 
     def test_generation_with_parent(self):
-        r = generate_record("test", "ko", "perfect_fifth", 3.0,
-                            generation=2, parent_hash="abc123")
+        r = generate_record("test", "ko", "perfect_fifth", 3.0, generation=2, parent_hash="abc123")
         assert r.generation == 2
         assert r.parent_hash == "abc123"
 

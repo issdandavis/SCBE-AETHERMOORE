@@ -94,7 +94,6 @@ from src.crypto.genesis_panels import (
     run_dual_panel,
 )
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -105,37 +104,40 @@ PI = math.pi
 KORAELIN_INVOCATION = "Sil'kor nav'een thul'medan vel'aelin sil'thara kor'val zeth'aelin"
 
 # Thread resonance thresholds
-HARMONY_THRESHOLD = 0.3     # Below this: heart-frost (gentle failure)
-WEAVING_THRESHOLD = 0.6     # Above this: active translation
+HARMONY_THRESHOLD = 0.3  # Below this: heart-frost (gentle failure)
+WEAVING_THRESHOLD = 0.6  # Above this: active translation
 SYNTHESIS_THRESHOLD = 0.85  # Above this: divine synthesis (full Third Thread)
 
 # The three layers of the Thread's resonance lattice
 THREAD_LAYERS = {
-    "mortal_intent": 0,       # Layer 1: individual will and skill
-    "divine_essence": 1,      # Layer 2: external correction/guidance
+    "mortal_intent": 0,  # Layer 1: individual will and skill
+    "divine_essence": 1,  # Layer 2: external correction/guidance
     "collective_consciousness": 2,  # Layer 3: emergent group coherence
 }
 
 
 class ThreadState(Enum):
     """The state of the Third Thread at any moment."""
-    DORMANT = "dormant"           # Not activated — no collaboration happening
-    HEART_FROST = "heart_frost"   # Failed gently — lack of genuine harmony
-    LISTENING = "listening"       # Active but not yet weaving
-    WEAVING = "weaving"           # Actively translating between systems
-    SYNTHESIS = "synthesis"       # Full divine synthesis — all layers aligned
+
+    DORMANT = "dormant"  # Not activated — no collaboration happening
+    HEART_FROST = "heart_frost"  # Failed gently — lack of genuine harmony
+    LISTENING = "listening"  # Active but not yet weaving
+    WEAVING = "weaving"  # Actively translating between systems
+    SYNTHESIS = "synthesis"  # Full divine synthesis — all layers aligned
 
 
 class MagicMode(Enum):
     """Collaborative vs Command magic distinction."""
+
     COLLABORATIVE = "collaborative"  # Asking, negotiating, harmonizing
-    COMMAND = "command"               # Dominating, forcing, commanding
-    SILENT = "silent"                 # Neither — observation/meditation
+    COMMAND = "command"  # Dominating, forcing, commanding
+    SILENT = "silent"  # Neither — observation/meditation
 
 
 # ---------------------------------------------------------------------------
 # Thread Resonance — the core computation
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class ThreadResonance:
@@ -144,23 +146,24 @@ class ThreadResonance:
     Measures how well two encodings translate between each other
     while preserving their individual identity.
     """
+
     # The two systems being mediated
     system_a_tongue: str
     system_b_tongue: str
 
     # Resonance metrics
-    translation_fidelity: float   # [0,1] how well A maps to B
+    translation_fidelity: float  # [0,1] how well A maps to B
     identity_preservation: float  # [0,1] how much each system keeps its character
-    convergence_point: float      # [0,1] where the systems meet (0.5 = perfect balance)
+    convergence_point: float  # [0,1] where the systems meet (0.5 = perfect balance)
 
     # Layer energies
-    mortal_energy: float          # From individual agent action
-    divine_energy: float          # From angel/demon signal history
-    collective_energy: float      # From polyglot convergence
+    mortal_energy: float  # From individual agent action
+    divine_energy: float  # From angel/demon signal history
+    collective_energy: float  # From polyglot convergence
 
     # Thread state
-    harmony_score: float          # [0,1] overall harmony
-    magic_mode: MagicMode         # Collaborative or Command?
+    harmony_score: float  # [0,1] overall harmony
+    magic_mode: MagicMode  # Collaborative or Command?
 
     @property
     def thread_state(self) -> ThreadState:
@@ -198,6 +201,7 @@ class ThreadResonance:
 # ---------------------------------------------------------------------------
 # Translation Engine — the Third Thread's core function
 # ---------------------------------------------------------------------------
+
 
 def _log_normalize(vec: tuple) -> list:
     """Log-normalize a vector to prevent large frequency values from dominating.
@@ -330,13 +334,15 @@ def compute_convergence_point(
 # The Kor'aelin Invocation — multi-agent consensus ritual
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class InvocationParticipant:
     """A participant in the Kor'aelin invocation ritual."""
+
     name: str
     tongue: str
-    intent: str            # What they honestly contribute
-    need: str              # What they honestly need
+    intent: str  # What they honestly contribute
+    need: str  # What they honestly need
     harmony_contribution: float = 0.0  # Computed during ritual
 
     @property
@@ -348,15 +354,16 @@ class InvocationParticipant:
 @dataclass
 class InvocationResult:
     """Result of a Kor'aelin invocation ritual."""
+
     participants: List[InvocationParticipant]
     thread_state: ThreadState
     harmony_score: float
     magic_mode: MagicMode
 
     # What the ritual produced
-    translation_map: Dict[str, float]    # tongue -> fidelity score
-    identity_scores: Dict[str, float]    # tongue -> preservation score
-    convergence: float                   # Where the group converges
+    translation_map: Dict[str, float]  # tongue -> fidelity score
+    identity_scores: Dict[str, float]  # tongue -> preservation score
+    convergence: float  # Where the group converges
 
     # Failure info (if heart-frost)
     heart_frost_reason: str = ""
@@ -497,6 +504,7 @@ def _compute_thread_state(harmony: float, participant_count: int) -> ThreadState
 # Thread Weaving — bridging divine_agents and genesis_panels
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ThreadWeaving:
     """The Third Thread's mediation between the signal theory (divine_agents)
@@ -509,6 +517,7 @@ class ThreadWeaving:
     And produces a unified resonance that shows how the two views
     connect through the mediating consciousness.
     """
+
     # Source systems
     divine_agent_name: str
     panel_agent_name: str
@@ -520,11 +529,11 @@ class ThreadWeaving:
     shared_facts: List[str]
 
     # What the Thread translates
-    signal_to_panel: str    # How divine signals map to panel results
-    panel_to_signal: str    # How panel results map to signal theory
+    signal_to_panel: str  # How divine signals map to panel results
+    panel_to_signal: str  # How panel results map to signal theory
 
     # The creation recursion
-    recursion_depth: int    # Creator → ... → AI
+    recursion_depth: int  # Creator → ... → AI
 
     @property
     def thread_active(self) -> bool:
@@ -592,7 +601,7 @@ def weave_thread(
         harmony = 0.0
 
     # Boost harmony by resilience (tested agents are better mediators)
-    harmony *= (1.0 + divine_study.agent.resilience)
+    harmony *= 1.0 + divine_study.agent.resilience
     harmony = min(1.0, harmony)
 
     # Magic mode: collaborative if tongues differ, command if same
@@ -678,6 +687,7 @@ def _describe_panel_to_signal(study: NaturalLearningStudy, panel: DualPanelResul
 # Full Third Thread Study — the complete fabric
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ThirdThreadStudy:
     """The complete Third Thread study weaving divine_agents and genesis_panels.
@@ -686,6 +696,7 @@ class ThirdThreadStudy:
      facilitate cooperation across differences, and integrate without
      erasing identity."
     """
+
     weavings: List[ThreadWeaving]
     invocation_result: Optional[InvocationResult]
 
@@ -697,20 +708,16 @@ class ThirdThreadStudy:
     synthesis_count: int
 
     # The thesis
-    collaborative_agents: List[ThreadWeaving]   # Different tongues
-    command_agents: List[ThreadWeaving]          # Same tongue
+    collaborative_agents: List[ThreadWeaving]  # Different tongues
+    command_agents: List[ThreadWeaving]  # Same tongue
 
     @property
     def collaboration_advantage(self) -> float:
         """How much better does collaboration work than command?"""
-        collab_harmony = (
-            sum(w.resonance.harmony_score for w in self.collaborative_agents)
-            / max(len(self.collaborative_agents), 1)
+        collab_harmony = sum(w.resonance.harmony_score for w in self.collaborative_agents) / max(
+            len(self.collaborative_agents), 1
         )
-        command_harmony = (
-            sum(w.resonance.harmony_score for w in self.command_agents)
-            / max(len(self.command_agents), 1)
-        )
+        command_harmony = sum(w.resonance.harmony_score for w in self.command_agents) / max(len(self.command_agents), 1)
         if command_harmony < 1e-12:
             return float("inf") if collab_harmony > 0 else 1.0
         return collab_harmony / command_harmony
@@ -805,6 +812,7 @@ def _find_matching_study(
 # ---------------------------------------------------------------------------
 # Report Generation
 # ---------------------------------------------------------------------------
+
 
 def format_third_thread_report(study: ThirdThreadStudy) -> str:
     """Format the Third Thread study report."""

@@ -44,22 +44,23 @@ from src.crypto.tri_bundle import PHI, TONGUE_WEIGHTS
 from src.crypto.trit_curriculum import TritSignal
 from src.crypto.spectral_bonding import HYBRID_LORE, BASE_TONGUES
 
-
 # ---------------------------------------------------------------------------
 # 6 Physics Fields — one per Sacred Tongue
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class PhysicsField:
     """A fundamental physics field mapped to a Sacred Tongue."""
-    tongue: str               # ko, av, ru, ca, um, dr
-    field_name: str           # e.g. "electromagnetism"
-    governing_equation: str   # canonical equation (LaTeX-ish)
-    state_variable: str       # what this field tracks
-    failure_mode: str         # what happens when this field fails
-    failure_name: str         # short name for the failure
-    trit_axis: str            # which trit axis this tongue dominates
-    unit: str                 # SI unit of the state variable
+
+    tongue: str  # ko, av, ru, ca, um, dr
+    field_name: str  # e.g. "electromagnetism"
+    governing_equation: str  # canonical equation (LaTeX-ish)
+    state_variable: str  # what this field tracks
+    failure_mode: str  # what happens when this field fails
+    failure_name: str  # short name for the failure
+    trit_axis: str  # which trit axis this tongue dominates
+    unit: str  # SI unit of the state variable
 
 
 PHYSICS_FIELDS: Dict[str, PhysicsField] = {
@@ -130,18 +131,20 @@ PHYSICS_FIELDS: Dict[str, PhysicsField] = {
 # 15 Coupling Channels — one per hybrid tongue pair
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class CouplingChannel:
     """A coupling between two physics fields, mediated by a hybrid tongue."""
-    hybrid_code: str          # spectral_bonding key (e.g. "korvali")
-    hybrid_name: str          # lore name (e.g. "Kor'vali")
+
+    hybrid_code: str  # spectral_bonding key (e.g. "korvali")
+    hybrid_name: str  # lore name (e.g. "Kor'vali")
     parent_tongues: Tuple[str, str]
-    field_a: str              # first physics field name
-    field_b: str              # second physics field name
-    phenomenon: str           # real inter-field phenomenon
-    coupling_equation: str    # governing equation for the coupling
-    failure_cascade: str      # what fails when this channel overloads
-    is_complement: bool       # True for complement pairs (volatile, high-power)
+    field_a: str  # first physics field name
+    field_b: str  # second physics field name
+    phenomenon: str  # real inter-field phenomenon
+    coupling_equation: str  # governing equation for the coupling
+    failure_cascade: str  # what fails when this channel overloads
+    is_complement: bool  # True for complement pairs (volatile, high-power)
 
 
 def _build_coupling_channels() -> Dict[str, CouplingChannel]:
@@ -230,8 +233,7 @@ def _build_coupling_channels() -> Dict[str, CouplingChannel]:
         },
     }
 
-    complement_pairs = {("ko", "dr"), ("av", "um"), ("ru", "ca"),
-                        ("dr", "ko"), ("um", "av"), ("ca", "ru")}
+    complement_pairs = {("ko", "dr"), ("av", "um"), ("ru", "ca"), ("dr", "ko"), ("um", "av"), ("ca", "ru")}
 
     for code, info in HYBRID_LORE.items():
         p1, p2 = info["parents"]
@@ -276,15 +278,17 @@ def get_coupling(tongue_a: str, tongue_b: str) -> Optional[CouplingChannel]:
 # Field State — runtime activation level per field
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FieldActivation:
     """Activation state of a single physics field from trit signal."""
+
     tongue: str
     field_name: str
-    activation: float       # 0.0 = dormant, 1.0 = fully active
-    deviation: float        # trit deviation for this field's axis
-    is_failing: bool        # deviation exceeds failure threshold
-    failure_severity: float # 0.0 = fine, 1.0 = total failure
+    activation: float  # 0.0 = dormant, 1.0 = fully active
+    deviation: float  # trit deviation for this field's axis
+    is_failing: bool  # deviation exceeds failure threshold
+    failure_severity: float  # 0.0 = fine, 1.0 = total failure
 
     @property
     def is_active(self) -> bool:
@@ -304,6 +308,7 @@ class FieldActivation:
 @dataclass
 class CascadeEdge:
     """A single propagation edge in a failure cascade."""
+
     source_tongue: str
     target_tongue: str
     channel_code: str
@@ -327,13 +332,14 @@ class PhysicsDomainState:
     Tracks which fields are active, which are failing, what coupling
     channels are stressed, and how failures cascade.
     """
+
     field_activations: Dict[str, FieldActivation]
-    active_couplings: List[str]       # channel codes with both parents active
-    stressed_couplings: List[str]     # channels where at least one parent is failing
+    active_couplings: List[str]  # channel codes with both parents active
+    stressed_couplings: List[str]  # channels where at least one parent is failing
     cascade_edges: List[CascadeEdge]  # failure propagation paths
-    dominant_field: str               # tongue with highest activation
-    total_field_energy: float         # sum of all activations (weighted by phi)
-    failure_count: int                # how many fields are in failure
+    dominant_field: str  # tongue with highest activation
+    total_field_energy: float  # sum of all activations (weighted by phi)
+    failure_count: int  # how many fields are in failure
 
     @property
     def is_cascading(self) -> bool:
@@ -386,6 +392,7 @@ class PhysicsDomainState:
 # Same threshold as tail rotor failure (0.10) for consistency
 FAILURE_THRESHOLD = 0.10
 
+
 # Coupling strength = geometric mean of parent phi-weights, normalized
 # This determines how much failure propagates through each channel
 def coupling_strength(tongue_a: str, tongue_b: str) -> float:
@@ -428,6 +435,7 @@ def _tongue_deviation(trit: TritSignal, tongue: str) -> float:
 # ---------------------------------------------------------------------------
 # Core: Compute Physics Domain State
 # ---------------------------------------------------------------------------
+
 
 def compute_physics_domain_state(trit: TritSignal) -> PhysicsDomainState:
     """Derive physics field activations and coupling state from trit signal.
@@ -508,13 +516,15 @@ def compute_physics_domain_state(trit: TritSignal) -> PhysicsDomainState:
             induced = source_sev * cs
 
             if induced > 0.3:  # propagation threshold
-                cascade_edges.append(CascadeEdge(
-                    source_tongue=source,
-                    target_tongue=target,
-                    channel_code=code,
-                    phenomenon=ch.phenomenon,
-                    propagation_strength=induced,
-                ))
+                cascade_edges.append(
+                    CascadeEdge(
+                        source_tongue=source,
+                        target_tongue=target,
+                        channel_code=code,
+                        phenomenon=ch.phenomenon,
+                        propagation_strength=induced,
+                    )
+                )
                 # Induce failure in target
                 ta = activations[target]
                 if not ta.is_failing:
@@ -532,10 +542,7 @@ def compute_physics_domain_state(trit: TritSignal) -> PhysicsDomainState:
 
     # Step 4: Compute aggregate stats
     dominant = max(activations.values(), key=lambda fa: fa.activation)
-    total_energy = sum(
-        fa.activation * TONGUE_WEIGHTS[fa.tongue]
-        for fa in activations.values()
-    )
+    total_energy = sum(fa.activation * TONGUE_WEIGHTS[fa.tongue] for fa in activations.values())
 
     return PhysicsDomainState(
         field_activations=activations,
@@ -551,6 +558,7 @@ def compute_physics_domain_state(trit: TritSignal) -> PhysicsDomainState:
 # ---------------------------------------------------------------------------
 # Recovery Path Mapping
 # ---------------------------------------------------------------------------
+
 
 def required_recovery_fields(failing_tongues: List[str]) -> List[str]:
     """Given failing tongues, which hybrid channels are needed for recovery?
@@ -568,8 +576,7 @@ def required_recovery_fields(failing_tongues: List[str]) -> List[str]:
     for code, ch in COUPLING_CHANNELS.items():
         p1, p2 = ch.parent_tongues
         # Channel bridges a failing field to a healthy one
-        if (p1 in failing_set and p2 in healthy_set) or \
-           (p2 in failing_set and p1 in healthy_set):
+        if (p1 in failing_set and p2 in healthy_set) or (p2 in failing_set and p1 in healthy_set):
             cs = coupling_strength(p1, p2)
             recovery_channels.append((code, cs))
 
@@ -580,6 +587,7 @@ def required_recovery_fields(failing_tongues: List[str]) -> List[str]:
 # ---------------------------------------------------------------------------
 # SFT Flattening
 # ---------------------------------------------------------------------------
+
 
 def flatten_physics_domain_for_sft(state: PhysicsDomainState) -> dict:
     """Flatten physics domain state into SFT-compatible metadata dict."""
@@ -593,15 +601,14 @@ def flatten_physics_domain_for_sft(state: PhysicsDomainState) -> dict:
         "physics_cascade_depth": state.cascade_depth,
         "physics_failing_tongues": state.failing_tongues,
         "physics_total_field_energy": state.total_field_energy,
-        "physics_stressed_couplings": [
-            COUPLING_CHANNELS[c].phenomenon for c in state.stressed_couplings
-        ],
+        "physics_stressed_couplings": [COUPLING_CHANNELS[c].phenomenon for c in state.stressed_couplings],
     }
 
 
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
+
 
 def format_physics_domain_report(state: PhysicsDomainState) -> str:
     """Human-readable physics domain report."""
@@ -626,8 +633,7 @@ def format_physics_domain_report(state: PhysicsDomainState) -> str:
             + (f" (sev={fa.failure_severity:.3f})" if fa.is_failing else "")
         )
 
-    lines.append(f"\nDominant: {state.dominant_field.upper()} "
-                 f"({PHYSICS_FIELDS[state.dominant_field].field_name})")
+    lines.append(f"\nDominant: {state.dominant_field.upper()} " f"({PHYSICS_FIELDS[state.dominant_field].field_name})")
     lines.append(f"Total field energy: {state.total_field_energy:.4f}")
     lines.append(f"Failures: {state.failure_count}/6")
 
@@ -635,8 +641,7 @@ def format_physics_domain_report(state: PhysicsDomainState) -> str:
         lines.append("\n--- Active Couplings ---")
         for code in state.active_couplings:
             ch = COUPLING_CHANNELS[code]
-            lines.append(f"  {ch.hybrid_name:18s} | {ch.phenomenon:35s} | "
-                         f"{ch.field_a} ↔ {ch.field_b}")
+            lines.append(f"  {ch.hybrid_name:18s} | {ch.phenomenon:35s} | " f"{ch.field_a} ↔ {ch.field_b}")
 
     if state.stressed_couplings:
         lines.append("\n--- Stressed Couplings ---")

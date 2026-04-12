@@ -14,10 +14,13 @@ from src.symphonic.multipath.group_alignment import (
     CANONICAL_ORDER,
 )
 from src.symphonic.multipath import (
-    KO_TABLE, AV_TABLE, RU_TABLE, UM_TABLE, DR_TABLE,
+    KO_TABLE,
+    AV_TABLE,
+    RU_TABLE,
+    UM_TABLE,
+    DR_TABLE,
 )
 from src.symphonic.multipath import trit_table_CA as _ca_module
-
 
 # Semantic-home expectations per op. Each key is an op name drawn
 # from ONE tongue's vocabulary; the value is the tongue we expect
@@ -51,9 +54,7 @@ def test_strand_emergence_on_demo():
 @pytest.mark.parametrize("op,expected", list(EXPECTED_DOMINANT.items()))
 def test_organic_dominance_per_op(op, expected):
     strand = extrude_strand([op])
-    assert strand.beads[0].dominant == expected, (
-        f"{op} resolved to {strand.beads[0].dominant}, expected {expected}"
-    )
+    assert strand.beads[0].dominant == expected, f"{op} resolved to {strand.beads[0].dominant}, expected {expected}"
 
 
 def test_full_vocab_coverage():
@@ -68,6 +69,4 @@ def test_full_vocab_coverage():
     non_silent = sum(1 for b in strand.beads if b.phi_cost > 0)
     # Cross-tongue lookup is sparse but every op is native to at least
     # one table, so every bead must light up.
-    assert non_silent == len(all_ops), (
-        f"{len(all_ops) - non_silent} silent beads among native ops"
-    )
+    assert non_silent == len(all_ops), f"{len(all_ops) - non_silent} silent beads among native ops"

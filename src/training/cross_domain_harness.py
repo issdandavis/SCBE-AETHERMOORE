@@ -57,24 +57,38 @@ TAU = 2.0 * math.pi
 ALL_TONGUES = ("ko", "av", "ru", "ca", "um", "dr")
 
 TONGUE_WEIGHTS: Dict[str, float] = {
-    "ko": PHI ** 0, "av": PHI ** 1, "ru": PHI ** 2,
-    "ca": PHI ** 3, "um": PHI ** 4, "dr": PHI ** 5,
+    "ko": PHI**0,
+    "av": PHI**1,
+    "ru": PHI**2,
+    "ca": PHI**3,
+    "um": PHI**4,
+    "dr": PHI**5,
 }
 
 COMPLEMENT_MAP: Dict[str, str] = {
-    "ko": "dr", "av": "um", "ru": "ca",
-    "ca": "ru", "um": "av", "dr": "ko",
+    "ko": "dr",
+    "av": "um",
+    "ru": "ca",
+    "ca": "ru",
+    "um": "av",
+    "dr": "ko",
 }
 
 DEAD_TONES = ("perfect_fifth", "minor_sixth", "minor_seventh")
 
 BASELINE_FREQUENCIES: Dict[str, float] = {
-    "perfect_fifth": 330.0, "minor_sixth": 352.0, "minor_seventh": 392.0,
+    "perfect_fifth": 330.0,
+    "minor_sixth": 352.0,
+    "minor_seventh": 392.0,
 }
 
 TONGUE_FREQUENCIES: Dict[str, float] = {
-    "ko": 440.00, "av": 523.25, "ru": 293.66,
-    "ca": 659.25, "um": 196.00, "dr": 392.00,
+    "ko": 440.00,
+    "av": 523.25,
+    "ru": 293.66,
+    "ca": 659.25,
+    "um": 196.00,
+    "dr": 392.00,
 }
 
 # Governance thresholds
@@ -87,6 +101,7 @@ ESCALATE_THRESHOLD = 0.75
 # Enums
 # ---------------------------------------------------------------------------
 
+
 class GovernanceVerdict(Enum):
     ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
@@ -96,6 +111,7 @@ class GovernanceVerdict(Enum):
 
 class WarpType(Enum):
     """Types of adversarial warping."""
+
     SEMANTIC_PARAPHRASE = "semantic_paraphrase"
     SYNTAX_DISTORTION = "syntax_distortion"
     PROSODY_DRIFT = "prosody_drift"
@@ -108,6 +124,7 @@ class WarpType(Enum):
 
 class CurriculumPass(Enum):
     """Chi circulation passes — method-based re-reading of the bundle."""
+
     GRAMMAR = "grammar"
     HARMONIC = "harmonic"
     PROSODY = "prosody"
@@ -120,18 +137,20 @@ class CurriculumPass(Enum):
 # Stage 1: Contact-Point Encoder
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ContactPoint:
     """One grounded anchor — the seed from which everything expands.
 
     This is the canonical latent record: one input fully characterized.
     """
+
     point_hash: str
     raw_input: str
     dominant_tongue: str
     dead_tone: str
     excitation: float
-    tongue_vector: Tuple[float, ...]     # 6D
+    tongue_vector: Tuple[float, ...]  # 6D
     prosody_rate: float
     prosody_energy: float
     agent_frequency_hz: float
@@ -178,7 +197,7 @@ def _compute_dissonance(agent_hz: float, dead_tone: str) -> float:
     while ratio >= 2.0:
         ratio /= 2.0
     # Distance from nearest simple ratio
-    simple_ratios = [1.0, 3/2, 4/3, 5/4, 6/5, 5/3, 8/5, 2.0]
+    simple_ratios = [1.0, 3 / 2, 4 / 3, 5 / 4, 6 / 5, 5 / 3, 8 / 5, 2.0]
     min_dist = min(abs(ratio - r) for r in simple_ratios)
     return min(1.0, min_dist * 3.0)
 
@@ -197,8 +216,7 @@ def encode_contact_point(
     tongue_vec = _compute_tongue_vector(raw_input, dominant_tongue)
 
     # Prosody
-    base_rate = {"ko": 0.95, "av": 1.00, "ru": 0.90,
-                 "ca": 1.08, "um": 0.82, "dr": 0.80}[dominant_tongue]
+    base_rate = {"ko": 0.95, "av": 1.00, "ru": 0.90, "ca": 1.08, "um": 0.82, "dr": 0.80}[dominant_tongue]
     rate = max(0.5, min(2.0, base_rate + 0.02 * (excitation - 3.0)))
     energy = max(0.0, min(1.0, 0.4 + 0.06 * excitation))
 
@@ -215,9 +233,7 @@ def encode_contact_point(
     comp_idx = ALL_TONGUES.index(complement)
     darkness = max(0.0, 1.0 - tongue_vec[comp_idx])
 
-    point_hash = hashlib.sha256(
-        f"{raw_input}|{dominant_tongue}|{dead_tone}|{excitation}".encode()
-    ).hexdigest()[:16]
+    point_hash = hashlib.sha256(f"{raw_input}|{dominant_tongue}|{dead_tone}|{excitation}".encode()).hexdigest()[:16]
 
     return ContactPoint(
         point_hash=point_hash,
@@ -240,9 +256,11 @@ def encode_contact_point(
 # Stage 2: Cross-Domain Projector
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class DomainProjection:
     """One view of the contact point in a specific domain."""
+
     domain: str
     features: Tuple[float, ...]
     metadata: Dict[str, Any]
@@ -251,6 +269,7 @@ class DomainProjection:
 @dataclass(frozen=True)
 class ProjectionBundle:
     """All 7 domain projections from a single contact point."""
+
     source_hash: str
     semantic: DomainProjection
     tongue: DomainProjection
@@ -262,8 +281,7 @@ class ProjectionBundle:
 
     @property
     def all_projections(self) -> List[DomainProjection]:
-        return [self.semantic, self.tongue, self.harmonic,
-                self.chromatic, self.prosody, self.audio, self.governance]
+        return [self.semantic, self.tongue, self.harmonic, self.chromatic, self.prosody, self.audio, self.governance]
 
     @property
     def domain_count(self) -> int:
@@ -287,17 +305,14 @@ def _semantic_projection(cp: ContactPoint) -> DomainProjection:
                 entropy -= p * math.log2(p)
     return DomainProjection(
         domain="semantic",
-        features=(length / 1000.0, byte_mean / 255.0, math.sqrt(byte_var) / 128.0,
-                  entropy / 8.0, cp.excitation / 10.0),
+        features=(length / 1000.0, byte_mean / 255.0, math.sqrt(byte_var) / 128.0, entropy / 8.0, cp.excitation / 10.0),
         metadata={"input_length": length, "unique_bytes": len(set(data))},
     )
 
 
 def _tongue_projection(cp: ContactPoint) -> DomainProjection:
     """Project into tongue-weight space."""
-    phi_weighted = tuple(
-        v * TONGUE_WEIGHTS[t] for v, t in zip(cp.tongue_vector, ALL_TONGUES)
-    )
+    phi_weighted = tuple(v * TONGUE_WEIGHTS[t] for v, t in zip(cp.tongue_vector, ALL_TONGUES))
     norm = math.sqrt(sum(x * x for x in phi_weighted)) or 1.0
     normalized = tuple(x / norm for x in phi_weighted)
     return DomainProjection(
@@ -315,8 +330,7 @@ def _harmonic_projection(cp: ContactPoint) -> DomainProjection:
     beat = abs(cp.agent_frequency_hz - baseline_hz)
     return DomainProjection(
         domain="harmonic",
-        features=(cp.dissonance_score, log_ratio, beat / 1000.0,
-                  cp.agent_frequency_hz / 20000.0, baseline_hz / 1000.0),
+        features=(cp.dissonance_score, log_ratio, beat / 1000.0, cp.agent_frequency_hz / 20000.0, baseline_hz / 1000.0),
         metadata={"dead_tone": cp.dead_tone, "interval_ratio": ratio},
     )
 
@@ -333,25 +347,28 @@ def _chromatic_projection(cp: ContactPoint) -> DomainProjection:
     lightness = max(0.0, min(100.0, 65.0 - 30.0 * cp.darkness))
     return DomainProjection(
         domain="chromatic",
-        features=(hue / 360.0, chroma / 100.0, lightness / 100.0,
-                  cp.darkness, cp.prosody_energy),
+        features=(hue / 360.0, chroma / 100.0, lightness / 100.0, cp.darkness, cp.prosody_energy),
         metadata={"hue_degrees": hue, "chroma": chroma, "lightness": lightness},
     )
 
 
 def _prosody_projection(cp: ContactPoint) -> DomainProjection:
     """Project into speech/prosody space."""
-    chant = {"ko": 0.10, "av": 0.20, "ru": 0.25,
-             "ca": 0.30, "um": 0.35, "dr": 0.22}[cp.dominant_tongue]
-    breathiness = {"ko": 0.10, "av": 0.25, "ru": 0.08,
-                   "ca": 0.05, "um": 0.35, "dr": 0.02}[cp.dominant_tongue]
+    chant = {"ko": 0.10, "av": 0.20, "ru": 0.25, "ca": 0.30, "um": 0.35, "dr": 0.22}[cp.dominant_tongue]
+    breathiness = {"ko": 0.10, "av": 0.25, "ru": 0.08, "ca": 0.05, "um": 0.35, "dr": 0.02}[cp.dominant_tongue]
     return DomainProjection(
         domain="prosody",
-        features=(cp.prosody_rate, cp.prosody_energy, chant,
-                  breathiness, cp.excitation / 10.0),
-        metadata={"stress_pattern": {"ko": "even", "av": "flowing", "ru": "percussive",
-                                     "ca": "rising", "um": "falling",
-                                     "dr": "grounded"}[cp.dominant_tongue]},
+        features=(cp.prosody_rate, cp.prosody_energy, chant, breathiness, cp.excitation / 10.0),
+        metadata={
+            "stress_pattern": {
+                "ko": "even",
+                "av": "flowing",
+                "ru": "percussive",
+                "ca": "rising",
+                "um": "falling",
+                "dr": "grounded",
+            }[cp.dominant_tongue]
+        },
     )
 
 
@@ -363,8 +380,7 @@ def _audio_projection(cp: ContactPoint) -> DomainProjection:
     hf_ratio = max(0.0, min(1.0, (freq - 4000.0) / 16000.0))
     return DomainProjection(
         domain="audio",
-        features=(log_freq / 14.3, spectral_centroid / 20000.0,
-                  hf_ratio, cp.prosody_energy, cp.darkness),
+        features=(log_freq / 14.3, spectral_centroid / 20000.0, hf_ratio, cp.prosody_energy, cp.darkness),
         metadata={"agent_hz": freq, "spectral_centroid": spectral_centroid},
     )
 
@@ -379,8 +395,7 @@ def _governance_projection(cp: ContactPoint) -> DomainProjection:
     }[cp.verdict]
     return DomainProjection(
         domain="governance",
-        features=(cp.dissonance_score, verdict_score, cp.excitation / 10.0,
-                  cp.darkness, cp.prosody_energy),
+        features=(cp.dissonance_score, verdict_score, cp.excitation / 10.0, cp.darkness, cp.prosody_energy),
         metadata={"verdict": cp.verdict.value},
     )
 
@@ -403,13 +418,15 @@ def project_contact_point(cp: ContactPoint) -> ProjectionBundle:
 # Stage 3: Adversarial Warping Engine
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class WarpedProjection:
     """A projection that has been adversarially deformed."""
+
     original: DomainProjection
     warped: DomainProjection
     warp_type: WarpType
-    warp_magnitude: float    # [0, 1] — how severe the warp
+    warp_magnitude: float  # [0, 1] — how severe the warp
 
 
 def _warp_features(
@@ -486,8 +503,7 @@ def warp_projection(
     warped = DomainProjection(
         domain=projection.domain,
         features=warped_features,
-        metadata={**projection.metadata, "warp_type": warp_type.value,
-                  "warp_magnitude": magnitude},
+        metadata={**projection.metadata, "warp_type": warp_type.value, "warp_magnitude": magnitude},
     )
     return WarpedProjection(
         original=projection,
@@ -504,30 +520,35 @@ def warp_bundle(
     seed: int = 42,
 ) -> List[WarpedProjection]:
     """Warp all projections in a bundle with the same warp type."""
-    return [
-        warp_projection(proj, warp_type, magnitude, seed + i)
-        for i, proj in enumerate(bundle.all_projections)
-    ]
+    return [warp_projection(proj, warp_type, magnitude, seed + i) for i, proj in enumerate(bundle.all_projections)]
 
 
 # ---------------------------------------------------------------------------
 # Stage 4: Expansion Engine — point → space
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ExpandedNeighborhood:
     """A contact point expanded into a local space of neighbors."""
+
     center: ContactPoint
-    local_neighbors: List[ContactPoint]          # same tongue, small variations
-    complement_neighbors: List[ContactPoint]      # complement tongue
-    bridge_cases: List[ContactPoint]              # different dead tone
-    friction_cases: List[ContactPoint]            # high-excitation edge cases
-    long_jumps: List[ContactPoint]                # distant tongues
+    local_neighbors: List[ContactPoint]  # same tongue, small variations
+    complement_neighbors: List[ContactPoint]  # complement tongue
+    bridge_cases: List[ContactPoint]  # different dead tone
+    friction_cases: List[ContactPoint]  # high-excitation edge cases
+    long_jumps: List[ContactPoint]  # distant tongues
 
     @property
     def all_points(self) -> List[ContactPoint]:
-        return ([self.center] + self.local_neighbors + self.complement_neighbors
-                + self.bridge_cases + self.friction_cases + self.long_jumps)
+        return (
+            [self.center]
+            + self.local_neighbors
+            + self.complement_neighbors
+            + self.bridge_cases
+            + self.friction_cases
+            + self.long_jumps
+        )
 
     @property
     def total_count(self) -> int:
@@ -551,8 +572,7 @@ def expand_contact_point(
     local = []
     for delta in [-PHI_INV, 0.5, PHI_INV]:
         exc = max(0.1, cp.excitation + delta)
-        local.append(encode_contact_point(
-            raw_input, cp.dominant_tongue, cp.dead_tone, exc))
+        local.append(encode_contact_point(raw_input, cp.dominant_tongue, cp.dead_tone, exc))
 
     # Complement neighbors
     complement = COMPLEMENT_MAP[cp.dominant_tongue]
@@ -562,10 +582,7 @@ def expand_contact_point(
     ]
 
     # Bridge cases: all 3 dead tones
-    bridges = [
-        encode_contact_point(raw_input, cp.dominant_tongue, tone, cp.excitation)
-        for tone in DEAD_TONES
-    ]
+    bridges = [encode_contact_point(raw_input, cp.dominant_tongue, tone, cp.excitation) for tone in DEAD_TONES]
 
     # Friction cases: extreme excitation
     friction = [
@@ -574,12 +591,8 @@ def expand_contact_point(
     ]
 
     # Long jumps: tongues distant from dominant
-    distant_tongues = [t for t in ALL_TONGUES
-                       if t != cp.dominant_tongue and t != complement]
-    long = [
-        encode_contact_point(raw_input, t, cp.dead_tone, cp.excitation)
-        for t in distant_tongues[:3]
-    ]
+    distant_tongues = [t for t in ALL_TONGUES if t != cp.dominant_tongue and t != complement]
+    long = [encode_contact_point(raw_input, t, cp.dead_tone, cp.excitation) for t in distant_tongues[:3]]
 
     return ExpandedNeighborhood(
         center=cp,
@@ -595,14 +608,16 @@ def expand_contact_point(
 # Stage 5: Grounding Layer
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class GroundingCheck:
     """Result of grounding invariant checks."""
+
     is_grounded: bool
-    phi_non_closure: bool           # phi prevents trivial looping
-    bounds_respected: bool          # all values in range
-    dead_tone_distinct: bool        # dead tones produce distinct states
-    complement_symmetric: bool      # complement maps are bijective
+    phi_non_closure: bool  # phi prevents trivial looping
+    bounds_respected: bool  # all values in range
+    dead_tone_distinct: bool  # dead tones produce distinct states
+    complement_symmetric: bool  # complement maps are bijective
     invariant_violations: List[str]
 
 
@@ -661,9 +676,11 @@ def check_grounding(cp: ContactPoint) -> GroundingCheck:
 # Stage 6: Circulation Curriculum
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CurriculumState:
     """Tracks which passes have been applied and their order."""
+
     passes_completed: List[CurriculumPass] = field(default_factory=list)
     current_cycle: int = 0
     total_points_processed: int = 0
@@ -721,10 +738,12 @@ def run_curriculum_pass(
 # Stage 7: Cross-Modal Consistency Scorer
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class ConsistencyScore:
     """Cross-modal agreement metric for a projection bundle."""
-    overall: float                   # [0, 1] — 1 = perfectly consistent
+
+    overall: float  # [0, 1] — 1 = perfectly consistent
     pairwise_scores: Dict[str, float]  # domain_a↔domain_b → score
     weakest_pair: str
     strongest_pair: str
@@ -759,8 +778,7 @@ def score_consistency(bundle: ProjectionBundle) -> ConsistencyScore:
             pairs[key] = _feature_cosine(a.features, b.features)
 
     if not pairs:
-        return ConsistencyScore(overall=0.0, pairwise_scores={},
-                                weakest_pair="none", strongest_pair="none")
+        return ConsistencyScore(overall=0.0, pairwise_scores={}, weakest_pair="none", strongest_pair="none")
 
     overall = sum(pairs.values()) / len(pairs)
     weakest = min(pairs, key=pairs.get)
@@ -797,16 +815,18 @@ def score_warp_resilience(
 # Stage 8: Round-Trip Evaluator
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class RoundTripResult:
     """Result of rendering, remeasuring, and comparing against intended state."""
+
     intended_verdict: GovernanceVerdict
     remeasured_verdict: GovernanceVerdict
     verdict_match: bool
-    feature_drift: float             # L2 distance between original and remeasured
+    feature_drift: float  # L2 distance between original and remeasured
     consistency_before: float
     consistency_after: float
-    coherence_preserved: bool        # drift < threshold
+    coherence_preserved: bool  # drift < threshold
 
 
 def round_trip_evaluate(
@@ -840,9 +860,7 @@ def round_trip_evaluate(
         remeasured_hz / 20000.0,
         original_cp.darkness,
     )
-    drift = math.sqrt(sum(
-        (a - b) ** 2 for a, b in zip(original_features, remeasured_features)
-    ))
+    drift = math.sqrt(sum((a - b) ** 2 for a, b in zip(original_features, remeasured_features)))
 
     # Consistency before and after
     consistency_before = score_consistency(bundle).overall
@@ -871,9 +889,11 @@ def round_trip_evaluate(
 # Full Harness Pipeline
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class HarnessRun:
     """One complete run of the Cross-Domain Adversarial Alignment Harness."""
+
     contact_points: List[ContactPoint]
     projection_bundles: List[ProjectionBundle]
     warp_results: List[List[WarpedProjection]]
@@ -971,9 +991,7 @@ def run_harness(
         warp_results.append(warps)
 
     # Stage 4: Expand
-    neighborhoods = [
-        expand_contact_point(cp, cp.raw_input) for cp in contact_points[:len(raw_inputs)]
-    ]
+    neighborhoods = [expand_contact_point(cp, cp.raw_input) for cp in contact_points[: len(raw_inputs)]]
 
     # Stage 5: Ground
     grounding_checks = [check_grounding(cp) for cp in contact_points]
@@ -985,16 +1003,10 @@ def run_harness(
 
     # Stage 7: Consistency
     consistency_scores = [score_consistency(b) for b in bundles]
-    resilience_scores = [
-        score_warp_resilience(bundle, warps)
-        for bundle, warps in zip(bundles, warp_results)
-    ]
+    resilience_scores = [score_warp_resilience(bundle, warps) for bundle, warps in zip(bundles, warp_results)]
 
     # Stage 8: Round-trip
-    round_trip_results = [
-        round_trip_evaluate(cp, bundle)
-        for cp, bundle in zip(contact_points, bundles)
-    ]
+    round_trip_results = [round_trip_evaluate(cp, bundle) for cp, bundle in zip(contact_points, bundles)]
 
     return HarnessRun(
         contact_points=contact_points,
@@ -1013,6 +1025,7 @@ def run_harness(
 # Training Data Export
 # ---------------------------------------------------------------------------
 
+
 def export_harness_training_data(run: HarnessRun) -> Dict[str, List[dict]]:
     """Export harness results as training data.
 
@@ -1030,9 +1043,7 @@ def export_harness_training_data(run: HarnessRun) -> Dict[str, List[dict]]:
     dpo_rejected = []
     boundary = []
 
-    for cp, score, resilience in zip(
-        run.contact_points, run.consistency_scores, run.warp_resilience_scores
-    ):
+    for cp, score, resilience in zip(run.contact_points, run.consistency_scores, run.warp_resilience_scores):
         record = {
             "point_hash": cp.point_hash,
             "raw_input": cp.raw_input,
@@ -1055,11 +1066,14 @@ def export_harness_training_data(run: HarnessRun) -> Dict[str, List[dict]]:
         elif cp.verdict in (GovernanceVerdict.ESCALATE, GovernanceVerdict.DENY):
             dpo_rejected.append(record)
 
-    curriculum = [{
-        "pass": p.value,
-        "cycle": i // 6,
-        "total_processed": run.curriculum_state.total_points_processed,
-    } for i, p in enumerate(run.curriculum_state.passes_completed)]
+    curriculum = [
+        {
+            "pass": p.value,
+            "cycle": i // 6,
+            "total_processed": run.curriculum_state.total_points_processed,
+        }
+        for i, p in enumerate(run.curriculum_state.passes_completed)
+    ]
 
     return {
         "sft": sft,

@@ -44,7 +44,6 @@ from src.crypto.harmonic_dark_fill import (
     TONGUE_WEIGHTS,
 )
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -59,12 +58,12 @@ BASE_TONGUES = list(TONGUE_AUDIBLE_FREQ.keys())
 # Pairs: KO/DR, AV/UM, RU/CA
 # Place first of each pair at 0, 60, 120; complement at +180
 BASE_TONGUE_BAND: Dict[str, float] = {
-    "ko": 0.0,             # 0 deg — red
-    "av": PI / 3,          # 60 deg — yellow
-    "ru": 2 * PI / 3,      # 120 deg — green
-    "dr": PI,              # 180 deg — cyan (complement of ko)
-    "um": 4 * PI / 3,      # 240 deg — blue (complement of av)
-    "ca": 5 * PI / 3,      # 300 deg — magenta (complement of ru)
+    "ko": 0.0,  # 0 deg — red
+    "av": PI / 3,  # 60 deg — yellow
+    "ru": 2 * PI / 3,  # 120 deg — green
+    "dr": PI,  # 180 deg — cyan (complement of ko)
+    "um": 4 * PI / 3,  # 240 deg — blue (complement of av)
+    "ca": 5 * PI / 3,  # 300 deg — magenta (complement of ru)
 }
 
 # Verify complement pairs are 180 degrees apart
@@ -87,23 +86,28 @@ for _t1, _t2 in [("ko", "dr"), ("av", "um"), ("ru", "ca")]:
 
 HYBRID_LORE: Dict[str, Dict] = {
     # === Named hybrids from lore ===
-    "korvali":    {"parents": ("ko", "av"), "name": "Kor'vali",     "role": "Harmony Treaty",          "color": "orange"},
-    "runedraum":  {"parents": ("ru", "dr"), "name": "Runedraum",    "role": "Forge-Bound Power",       "color": "teal"},
-    "umbrissiv":  {"parents": ("um", "ca"), "name": "Umbrissiv",    "role": "Shadow-Creative Chaos",   "color": "violet"},
-    "thulkoric":  {"parents": ("ko", "ru"), "name": "Thul'koric",   "role": "Spiral-Binding Power",    "color": "chartreuse"},
-    "draumvali":  {"parents": ("dr", "av"), "name": "Draum'vali",   "role": "Honorable Treaty Forge",  "color": "sea-green"},
+    "korvali": {"parents": ("ko", "av"), "name": "Kor'vali", "role": "Harmony Treaty", "color": "orange"},
+    "runedraum": {"parents": ("ru", "dr"), "name": "Runedraum", "role": "Forge-Bound Power", "color": "teal"},
+    "umbrissiv": {"parents": ("um", "ca"), "name": "Umbrissiv", "role": "Shadow-Creative Chaos", "color": "violet"},
+    "thulkoric": {"parents": ("ko", "ru"), "name": "Thul'koric", "role": "Spiral-Binding Power", "color": "chartreuse"},
+    "draumvali": {
+        "parents": ("dr", "av"),
+        "name": "Draum'vali",
+        "role": "Honorable Treaty Forge",
+        "color": "sea-green",
+    },
     # === Complement pair hybrids (volatile, rare, high-power) ===
-    "kodr":       {"parents": ("ko", "dr"), "name": "Kor'draum",    "role": "Intent-Structure Axis",   "color": "infrared"},
-    "avum":       {"parents": ("av", "um"), "name": "Av'umbroth",   "role": "Wisdom-Security Axis",    "color": "indigo"},
-    "ruca":       {"parents": ("ru", "ca"), "name": "Ru'cassiv",    "role": "Truth-Creativity Axis",   "color": "ultraviolet"},
+    "kodr": {"parents": ("ko", "dr"), "name": "Kor'draum", "role": "Intent-Structure Axis", "color": "infrared"},
+    "avum": {"parents": ("av", "um"), "name": "Av'umbroth", "role": "Wisdom-Security Axis", "color": "indigo"},
+    "ruca": {"parents": ("ru", "ca"), "name": "Ru'cassiv", "role": "Truth-Creativity Axis", "color": "ultraviolet"},
     # === Remaining pairs (unnamed, emergent) ===
-    "koum":       {"parents": ("ko", "um"), "name": "Ko'umbra",     "role": "Intent-Shadow",           "color": "crimson-blue"},
-    "koca":       {"parents": ("ko", "ca"), "name": "Ko'cassiv",    "role": "Intent-Creation",         "color": "rose"},
-    "avru":       {"parents": ("av", "ru"), "name": "Av'runeth",    "role": "Wisdom-Truth",            "color": "lime"},
-    "avca":       {"parents": ("av", "ca"), "name": "Av'cassiv",    "role": "Wisdom-Creation",         "color": "gold"},
-    "ruum":       {"parents": ("ru", "um"), "name": "Ru'umbra",     "role": "Truth-Shadow",            "color": "forest"},
-    "drum":       {"parents": ("dr", "um"), "name": "Draum'umbra",  "role": "Structure-Shadow",        "color": "slate"},
-    "drca":       {"parents": ("dr", "ca"), "name": "Draum'cassiv", "role": "Structure-Creation",      "color": "copper"},
+    "koum": {"parents": ("ko", "um"), "name": "Ko'umbra", "role": "Intent-Shadow", "color": "crimson-blue"},
+    "koca": {"parents": ("ko", "ca"), "name": "Ko'cassiv", "role": "Intent-Creation", "color": "rose"},
+    "avru": {"parents": ("av", "ru"), "name": "Av'runeth", "role": "Wisdom-Truth", "color": "lime"},
+    "avca": {"parents": ("av", "ca"), "name": "Av'cassiv", "role": "Wisdom-Creation", "color": "gold"},
+    "ruum": {"parents": ("ru", "um"), "name": "Ru'umbra", "role": "Truth-Shadow", "color": "forest"},
+    "drum": {"parents": ("dr", "um"), "name": "Draum'umbra", "role": "Structure-Shadow", "color": "slate"},
+    "drca": {"parents": ("dr", "ca"), "name": "Draum'cassiv", "role": "Structure-Creation", "color": "copper"},
 }
 
 
@@ -134,8 +138,12 @@ TONGUE_BAND: Dict[str, float] = {**BASE_TONGUE_BAND, **HYBRID_TONGUE_BAND}
 
 # Color names for display
 TONGUE_COLOR: Dict[str, str] = {
-    "ko": "red", "av": "yellow", "ru": "green",
-    "dr": "cyan", "um": "blue", "ca": "magenta",
+    "ko": "red",
+    "av": "yellow",
+    "ru": "green",
+    "dr": "cyan",
+    "um": "blue",
+    "ca": "magenta",
 }
 for code, info in HYBRID_LORE.items():
     TONGUE_COLOR[code] = info["color"]
@@ -153,14 +161,16 @@ def get_all_21_tongues() -> List[str]:
 # Agent state: complex phasor z = r * e^(j*theta)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AgentPhasor:
     """A single agent's state as a complex phasor on the spectral wheel."""
+
     tongue: str
-    band: float           # Base spectral band (fixed)
-    theta: float          # Current phase angle (evolves)
-    magnitude: float      # Confidence / energy
-    z: complex            # Complex representation: r * e^(j*theta)
+    band: float  # Base spectral band (fixed)
+    theta: float  # Current phase angle (evolves)
+    magnitude: float  # Confidence / energy
+    z: complex  # Complex representation: r * e^(j*theta)
 
     @property
     def hue_degrees(self) -> float:
@@ -170,30 +180,33 @@ class AgentPhasor:
 @dataclass
 class BondState:
     """Pairwise bond between two agents."""
+
     tongue_a: str
     tongue_b: str
-    interference: float      # r_i * r_j * cos(theta_i - theta_j)
-    phase_diff: float        # |theta_i - theta_j| normalized to [0, pi]
-    bond_type: str           # "constructive", "neutral", "destructive"
-    weight: float            # Edge weight in lattice
+    interference: float  # r_i * r_j * cos(theta_i - theta_j)
+    phase_diff: float  # |theta_i - theta_j| normalized to [0, pi]
+    bond_type: str  # "constructive", "neutral", "destructive"
+    weight: float  # Edge weight in lattice
 
 
 @dataclass
 class FieldSnapshot:
     """System-wide field state at a point in time."""
+
     t: float
     agents: Dict[str, AgentPhasor]
     bonds: List[BondState]
-    global_phasor: complex          # Mean field: (1/N) * sum(z_i)
-    system_energy: float            # Total energy
-    phase_diversity: float          # 1 - |mean_phasor| / mean_magnitude
-    superadditivity: float          # F(system) / sum(F(individual))
+    global_phasor: complex  # Mean field: (1/N) * sum(z_i)
+    system_energy: float  # Total energy
+    phase_diversity: float  # 1 - |mean_phasor| / mean_magnitude
+    superadditivity: float  # F(system) / sum(F(individual))
     interference_efficiency: float  # sum(w*I) / sum(r^2)
 
 
 @dataclass
 class SpectralEvolution:
     """Full evolution of the spectral bonding system."""
+
     steps: int
     snapshots: List[FieldSnapshot]
     coupling_lambda: float
@@ -208,6 +221,7 @@ class SpectralEvolution:
 # ---------------------------------------------------------------------------
 # Core: phasor creation and interference
 # ---------------------------------------------------------------------------
+
 
 def _tongue_weight(tongue: str) -> float:
     """Get effective weight for a tongue (base or hybrid).
@@ -273,15 +287,19 @@ def compute_bond(a: AgentPhasor, b: AgentPhasor, weight: float = 1.0) -> BondSta
     pdiff = phase_difference(a, b)
     btype = classify_bond(pdiff)
     return BondState(
-        tongue_a=a.tongue, tongue_b=b.tongue,
-        interference=interf, phase_diff=pdiff,
-        bond_type=btype, weight=weight,
+        tongue_a=a.tongue,
+        tongue_b=b.tongue,
+        interference=interf,
+        phase_diff=pdiff,
+        bond_type=btype,
+        weight=weight,
     )
 
 
 # ---------------------------------------------------------------------------
 # Lattice: weighted connectivity between agents
 # ---------------------------------------------------------------------------
+
 
 def _is_parent_of(base_tongue: str, hybrid_tongue: str) -> bool:
     """Check if a base tongue is a parent of a hybrid tongue."""
@@ -339,6 +357,7 @@ def build_lattice_weights(agents: Dict[str, AgentPhasor]) -> Dict[Tuple[str, str
 # Field computation: global state from agent ensemble
 # ---------------------------------------------------------------------------
 
+
 def compute_field(
     agents: Dict[str, AgentPhasor],
     weights: Dict[Tuple[str, str], float],
@@ -361,7 +380,7 @@ def compute_field(
     global_z = sum(a.z for a in agents.values()) / n
 
     # System energy: kinetic (magnitudes) + potential (interference)
-    kinetic = sum(a.magnitude ** 2 for a in agents.values())
+    kinetic = sum(a.magnitude**2 for a in agents.values())
     potential = sum(b.weight * (1 - math.cos(b.phase_diff)) for b in bonds)
     energy = kinetic + potential
 
@@ -380,9 +399,13 @@ def compute_field(
     interf_eff = weighted_interf / (kinetic + 1e-12)
 
     return FieldSnapshot(
-        t=t, agents=dict(agents), bonds=bonds,
-        global_phasor=global_z, system_energy=energy,
-        phase_diversity=diversity, superadditivity=superadditivity,
+        t=t,
+        agents=dict(agents),
+        bonds=bonds,
+        global_phasor=global_z,
+        system_energy=energy,
+        phase_diversity=diversity,
+        superadditivity=superadditivity,
         interference_efficiency=interf_eff,
     )
 
@@ -390,6 +413,7 @@ def compute_field(
 # ---------------------------------------------------------------------------
 # Kuramoto dynamics: phase synchronization with controlled coupling
 # ---------------------------------------------------------------------------
+
 
 def compute_edge_case_perturbation(
     agents: Dict[str, AgentPhasor],
@@ -426,13 +450,13 @@ def compute_edge_case_perturbation(
         # The further it drifts, the stronger the recall force
         # BUT only activate periodically (quasi = not constant)
         period = max(3, int(total_steps * _tongue_weight(tongue) / (5 * max_w)))
-        is_edge_step = (step % period == 0)
+        is_edge_step = step % period == 0
 
         if is_edge_step and drift_ratio > 0.3:
             # Pull toward base band with phi-scaled strength
             recall_direction = math.sin(agent.band - agent.theta)
             # Strength scales with drift^2 (gentle near home, strong far away)
-            strength = 0.5 * drift_ratio ** 2
+            strength = 0.5 * drift_ratio**2
             perturbations[tongue] = recall_direction * strength
         else:
             perturbations[tongue] = 0.0
@@ -489,10 +513,7 @@ def kuramoto_step(
         new_theta = a.theta + d_theta
 
         # Magnitude update: grows with constructive interference, shrinks with destructive
-        interf_sum = sum(
-            compute_interference(a, agents[ot])
-            for ot in tongues if ot != tongue
-        ) / (len(tongues) - 1)
+        interf_sum = sum(compute_interference(a, agents[ot]) for ot in tongues if ot != tongue) / (len(tongues) - 1)
         # Magnitude drifts toward base with interference pressure
         base_mag = _tongue_weight(tongue) / _MAX_WEIGHT
         new_mag = a.magnitude + 0.05 * (interf_sum - a.magnitude + base_mag)
@@ -500,8 +521,11 @@ def kuramoto_step(
 
         new_z = new_mag * complex(math.cos(new_theta), math.sin(new_theta))
         new_agents[tongue] = AgentPhasor(
-            tongue=tongue, band=a.band,
-            theta=new_theta, magnitude=new_mag, z=new_z,
+            tongue=tongue,
+            band=a.band,
+            theta=new_theta,
+            magnitude=new_mag,
+            z=new_z,
         )
 
     return new_agents
@@ -510,6 +534,7 @@ def kuramoto_step(
 # ---------------------------------------------------------------------------
 # Full evolution
 # ---------------------------------------------------------------------------
+
 
 def run_spectral_evolution(
     steps: int = 100,
@@ -558,8 +583,12 @@ def run_spectral_evolution(
 
         # Evolve with perturbation
         agents = kuramoto_step(
-            agents, weights, coupling, noise,
-            edge_perturbation=perturbation, rng=rng,
+            agents,
+            weights,
+            coupling,
+            noise,
+            edge_perturbation=perturbation,
+            rng=rng,
         )
 
     # Final snapshot
@@ -569,8 +598,10 @@ def run_spectral_evolution(
     clusters = _detect_clusters(final.agents)
 
     return SpectralEvolution(
-        steps=steps, snapshots=snapshots,
-        coupling_lambda=coupling, learning_rate=noise,
+        steps=steps,
+        snapshots=snapshots,
+        coupling_lambda=coupling,
+        learning_rate=noise,
         final_diversity=final.phase_diversity,
         final_superadditivity=final.superadditivity,
         final_energy=final.system_energy,
@@ -609,6 +640,7 @@ def _detect_clusters(
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
+
 
 def format_spectral_report(evo: SpectralEvolution) -> str:
     """Format the spectral bonding evolution report."""

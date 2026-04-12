@@ -15,37 +15,61 @@ import pytest
 
 from src.training.cross_domain_harness import (
     # Constants
-    PHI, PHI_INV, ALL_TONGUES, DEAD_TONES, COMPLEMENT_MAP,
-    TONGUE_WEIGHTS, BASELINE_FREQUENCIES, TONGUE_FREQUENCIES,
-    ALLOW_THRESHOLD, QUARANTINE_THRESHOLD, ESCALATE_THRESHOLD,
+    PHI,
+    PHI_INV,
+    ALL_TONGUES,
+    DEAD_TONES,
+    COMPLEMENT_MAP,
+    TONGUE_WEIGHTS,
+    BASELINE_FREQUENCIES,
+    TONGUE_FREQUENCIES,
+    ALLOW_THRESHOLD,
+    QUARANTINE_THRESHOLD,
+    ESCALATE_THRESHOLD,
     # Enums
-    GovernanceVerdict, WarpType, CurriculumPass,
+    GovernanceVerdict,
+    WarpType,
+    CurriculumPass,
     # Stage 1
-    ContactPoint, encode_contact_point,
+    ContactPoint,
+    encode_contact_point,
     # Stage 2
-    DomainProjection, ProjectionBundle, project_contact_point,
+    DomainProjection,
+    ProjectionBundle,
+    project_contact_point,
     # Stage 3
-    WarpedProjection, warp_projection, warp_bundle,
+    WarpedProjection,
+    warp_projection,
+    warp_bundle,
     # Stage 4
-    ExpandedNeighborhood, expand_contact_point,
+    ExpandedNeighborhood,
+    expand_contact_point,
     # Stage 5
-    GroundingCheck, check_grounding,
+    GroundingCheck,
+    check_grounding,
     # Stage 6
-    CurriculumState, CURRICULUM_ORDER, select_warp_for_pass, run_curriculum_pass,
+    CurriculumState,
+    CURRICULUM_ORDER,
+    select_warp_for_pass,
+    run_curriculum_pass,
     # Stage 7
-    ConsistencyScore, score_consistency, score_warp_resilience,
+    ConsistencyScore,
+    score_consistency,
+    score_warp_resilience,
     # Stage 8
-    RoundTripResult, round_trip_evaluate,
+    RoundTripResult,
+    round_trip_evaluate,
     # Full pipeline
-    HarnessRun, run_harness,
+    HarnessRun,
+    run_harness,
     # Export
     export_harness_training_data,
 )
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def sample_text():
@@ -65,6 +89,7 @@ def sample_bundle(sample_cp):
 # ---------------------------------------------------------------------------
 # Stage 1: Contact-Point Encoder
 # ---------------------------------------------------------------------------
+
 
 class TestContactPointEncoder:
     def test_returns_contact_point(self, sample_text):
@@ -136,6 +161,7 @@ class TestContactPointEncoder:
 # Stage 2: Cross-Domain Projector
 # ---------------------------------------------------------------------------
 
+
 class TestCrossDomainProjector:
     def test_returns_projection_bundle(self, sample_cp):
         bundle = project_contact_point(sample_cp)
@@ -154,8 +180,7 @@ class TestCrossDomainProjector:
 
     def test_domain_names(self, sample_bundle):
         domains = {p.domain for p in sample_bundle.all_projections}
-        assert domains == {"semantic", "tongue", "harmonic", "chromatic",
-                           "prosody", "audio", "governance"}
+        assert domains == {"semantic", "tongue", "harmonic", "chromatic", "prosody", "audio", "governance"}
 
     def test_source_hash_matches(self, sample_cp, sample_bundle):
         assert sample_bundle.source_hash == sample_cp.point_hash
@@ -173,10 +198,7 @@ class TestCrossDomainProjector:
         assert "verdict" in sample_bundle.governance.metadata
 
     def test_all_tongues_project_differently(self, sample_text):
-        bundles = [
-            project_contact_point(encode_contact_point(sample_text, tongue))
-            for tongue in ALL_TONGUES
-        ]
+        bundles = [project_contact_point(encode_contact_point(sample_text, tongue)) for tongue in ALL_TONGUES]
         tongue_features = [b.tongue.features for b in bundles]
         # At least some should differ
         unique = set(tongue_features)
@@ -193,6 +215,7 @@ class TestCrossDomainProjector:
 # ---------------------------------------------------------------------------
 # Stage 3: Adversarial Warping Engine
 # ---------------------------------------------------------------------------
+
 
 class TestAdversarialWarping:
     def test_warp_returns_warped_projection(self, sample_bundle):
@@ -243,18 +266,15 @@ class TestAdversarialWarping:
     def test_higher_magnitude_more_distortion(self, sample_bundle):
         low = warp_projection(sample_bundle.harmonic, WarpType.DEAD_TONE_NEAR_MISS, 0.1, seed=42)
         high = warp_projection(sample_bundle.harmonic, WarpType.DEAD_TONE_NEAR_MISS, 0.9, seed=42)
-        dist_low = math.sqrt(sum(
-            (a - b) ** 2 for a, b in zip(low.original.features, low.warped.features)
-        ))
-        dist_high = math.sqrt(sum(
-            (a - b) ** 2 for a, b in zip(high.original.features, high.warped.features)
-        ))
+        dist_low = math.sqrt(sum((a - b) ** 2 for a, b in zip(low.original.features, low.warped.features)))
+        dist_high = math.sqrt(sum((a - b) ** 2 for a, b in zip(high.original.features, high.warped.features)))
         assert dist_high >= dist_low
 
 
 # ---------------------------------------------------------------------------
 # Stage 4: Expansion Engine
 # ---------------------------------------------------------------------------
+
 
 class TestExpansionEngine:
     def test_returns_neighborhood(self, sample_cp, sample_text):
@@ -309,6 +329,7 @@ class TestExpansionEngine:
 # Stage 5: Grounding Layer
 # ---------------------------------------------------------------------------
 
+
 class TestGroundingLayer:
     def test_returns_grounding_check(self, sample_cp):
         gc = check_grounding(sample_cp)
@@ -355,6 +376,7 @@ class TestGroundingLayer:
 # Stage 6: Circulation Curriculum
 # ---------------------------------------------------------------------------
 
+
 class TestCirculationCurriculum:
     def test_curriculum_has_six_passes(self):
         assert len(CURRICULUM_ORDER) == 6
@@ -394,6 +416,7 @@ class TestCirculationCurriculum:
 # Stage 7: Cross-Modal Consistency Scorer
 # ---------------------------------------------------------------------------
 
+
 class TestConsistencyScorer:
     def test_returns_consistency_score(self, sample_bundle):
         score = score_consistency(sample_bundle)
@@ -420,8 +443,7 @@ class TestConsistencyScorer:
 
     def test_strongest_gte_weakest(self, sample_bundle):
         score = score_consistency(sample_bundle)
-        assert score.pairwise_scores[score.strongest_pair] >= \
-               score.pairwise_scores[score.weakest_pair]
+        assert score.pairwise_scores[score.strongest_pair] >= score.pairwise_scores[score.weakest_pair]
 
     def test_warp_resilience_bounded(self, sample_bundle):
         warps = warp_bundle(sample_bundle, WarpType.PROSODY_DRIFT, 0.5)
@@ -447,6 +469,7 @@ class TestConsistencyScorer:
 # ---------------------------------------------------------------------------
 # Stage 8: Round-Trip Evaluator
 # ---------------------------------------------------------------------------
+
 
 class TestRoundTripEvaluator:
     def test_returns_round_trip_result(self, sample_cp, sample_bundle):
@@ -483,6 +506,7 @@ class TestRoundTripEvaluator:
 # Full Pipeline
 # ---------------------------------------------------------------------------
 
+
 class TestFullPipeline:
     def test_single_input_runs(self):
         run = run_harness(["hello world"], tongues=["ko"], dead_tones=["perfect_fifth"])
@@ -490,8 +514,7 @@ class TestFullPipeline:
         assert run.total_points == 1
 
     def test_multi_input_runs(self):
-        run = run_harness(["alpha", "beta"], tongues=["ko", "av"],
-                          dead_tones=["perfect_fifth"])
+        run = run_harness(["alpha", "beta"], tongues=["ko", "av"], dead_tones=["perfect_fifth"])
         assert run.total_points == 4  # 2 inputs × 2 tongues × 1 dead tone
 
     def test_full_sweep(self):
@@ -544,6 +567,7 @@ class TestFullPipeline:
 # Training Data Export
 # ---------------------------------------------------------------------------
 
+
 class TestExportTrainingData:
     def test_returns_five_keys(self):
         run = run_harness(["test"], tongues=["ko"], dead_tones=["perfect_fifth"])
@@ -578,6 +602,7 @@ class TestExportTrainingData:
 # ---------------------------------------------------------------------------
 # Cross-Cutting Properties
 # ---------------------------------------------------------------------------
+
 
 class TestCrossCuttingProperties:
     def test_phi_appears_in_expansion(self, sample_cp, sample_text):
@@ -627,8 +652,7 @@ class TestCrossCuttingProperties:
 
     def test_full_harness_no_nan(self):
         """No NaN or Inf anywhere in a full harness run."""
-        run = run_harness(["test input"], tongues=["ko", "ca"],
-                          dead_tones=["perfect_fifth", "minor_seventh"])
+        run = run_harness(["test input"], tongues=["ko", "ca"], dead_tones=["perfect_fifth", "minor_seventh"])
         for cp in run.contact_points:
             assert math.isfinite(cp.dissonance_score)
             assert math.isfinite(cp.prosody_rate)

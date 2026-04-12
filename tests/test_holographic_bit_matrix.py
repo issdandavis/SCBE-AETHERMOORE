@@ -33,10 +33,10 @@ from kernel.holographic_bit_matrix import (
     holographic_scatter_pipeline,
 )
 
-
 # ============================================================
 # Construction and bit substrate
 # ============================================================
+
 
 @pytest.mark.unit
 class TestBitSubstrate:
@@ -86,6 +86,7 @@ class TestBitSubstrate:
 # Tongue modulation
 # ============================================================
 
+
 @pytest.mark.unit
 class TestTongueModulation:
     def test_active_tongues_get_positive_trit(self):
@@ -128,6 +129,7 @@ class TestTongueModulation:
 # Encode / Decode
 # ============================================================
 
+
 @pytest.mark.unit
 class TestEncodeDecode:
     def test_encode_populates_holo_field(self):
@@ -164,6 +166,7 @@ class TestEncodeDecode:
 # ============================================================
 # MERA Compression
 # ============================================================
+
 
 @pytest.mark.unit
 class TestMERACompression:
@@ -212,6 +215,7 @@ class TestMERACompression:
 # Combined field and weight matrix
 # ============================================================
 
+
 @pytest.mark.unit
 class TestCombinedField:
     def test_combine_shape(self):
@@ -240,6 +244,7 @@ class TestCombinedField:
 # ============================================================
 # Governance cost and harmonic wall
 # ============================================================
+
 
 @pytest.mark.unit
 class TestGovernance:
@@ -288,6 +293,7 @@ class TestGovernance:
 # State inspection
 # ============================================================
 
+
 @pytest.mark.unit
 class TestState:
     def test_state_returns_holostate(self):
@@ -331,6 +337,7 @@ class TestState:
 # Reconstruction error
 # ============================================================
 
+
 @pytest.mark.unit
 class TestReconstructionError:
     def test_zero_signal_zero_error(self):
@@ -361,6 +368,7 @@ class TestReconstructionError:
 # ============================================================
 # holographic_scatter_pipeline
 # ============================================================
+
 
 @pytest.mark.integration
 class TestHolographicScatterPipeline:

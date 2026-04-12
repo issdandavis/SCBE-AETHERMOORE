@@ -19,7 +19,7 @@ both phases coexist, neither wins.
 
 import math
 
-PHI = (1 + 5 ** 0.5) / 2
+PHI = (1 + 5**0.5) / 2
 
 
 def phi_eff(theta: float) -> float:
@@ -58,7 +58,7 @@ def run(x0: float, x1: float, theta_fn, n_steps: int):
 # to every other tongue: same eigenvalue, same amplitude, same engine,
 # only the phase position differs.
 
-GOLDEN_ANGLE = 2 * math.pi / (PHI ** 2)  # ~= 2.3998 rad ~= 137.508 deg
+GOLDEN_ANGLE = 2 * math.pi / (PHI**2)  # ~= 2.3998 rad ~= 137.508 deg
 
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")  # Kor'aelin..Draumric
 

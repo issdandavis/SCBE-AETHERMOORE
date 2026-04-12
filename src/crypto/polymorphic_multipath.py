@@ -62,7 +62,6 @@ from src.crypto.trit_curriculum import (
     _quantize_trit,
 )
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -81,10 +80,10 @@ MAX_POLY_AXES = 3
 # When near the -threshold boundary, the trit is either -1 or 0
 # We always flip to the adjacent trit (not the opposite)
 ADJACENT_TRIT = {
-    (+1, "upper"):  0,   # near +threshold from above -> could be 0
-    ( 0, "upper"): +1,   # near +threshold from below -> could be +1
-    ( 0, "lower"): -1,   # near -threshold from above -> could be -1
-    (-1, "lower"):  0,   # near -threshold from below -> could be 0
+    (+1, "upper"): 0,  # near +threshold from above -> could be 0
+    (0, "upper"): +1,  # near +threshold from below -> could be +1
+    (0, "lower"): -1,  # near -threshold from above -> could be -1
+    (-1, "lower"): 0,  # near -threshold from below -> could be 0
 }
 
 
@@ -92,19 +91,21 @@ ADJACENT_TRIT = {
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TritFork:
     """A single alternative trit assignment for a polymorphic axis.
 
     Represents the "other door" in the Monty Hall analogy.
     """
-    axis: str                    # "structure", "stability", or "creativity"
-    axis_index: int              # 0, 1, or 2
-    original_trit: int           # the trit that was chosen
-    flipped_trit: int            # the trit on the other side of the boundary
-    deviation: float             # raw deviation value (how close to boundary)
-    edge_distance: float         # distance to the threshold boundary
-    boundary_side: str           # "upper" (+threshold) or "lower" (-threshold)
+
+    axis: str  # "structure", "stability", or "creativity"
+    axis_index: int  # 0, 1, or 2
+    original_trit: int  # the trit that was chosen
+    flipped_trit: int  # the trit on the other side of the boundary
+    deviation: float  # raw deviation value (how close to boundary)
+    edge_distance: float  # distance to the threshold boundary
+    boundary_side: str  # "upper" (+threshold) or "lower" (-threshold)
 
 
 @dataclass
@@ -115,30 +116,33 @@ class MultipathRecord:
     Siblings are alternative trit assignments for boundary-adjacent axes.
     Each sibling is a different "door" in the Monty Hall space.
     """
-    text: str                           # original text
-    primary: TritSignal                 # original trit signal
-    forks: List[TritFork]               # which axes are polymorphic and how
-    siblings: List[Dict]                # alternative trit + label combos
-    path_count: int                     # total number of paths (1 + len(siblings))
-    fork_signature: str                 # compact descriptor like "s:+1->0,c:-1->0"
-    monty_hall_gain: float              # information gain from seeing alternatives
+
+    text: str  # original text
+    primary: TritSignal  # original trit signal
+    forks: List[TritFork]  # which axes are polymorphic and how
+    siblings: List[Dict]  # alternative trit + label combos
+    path_count: int  # total number of paths (1 + len(siblings))
+    fork_signature: str  # compact descriptor like "s:+1->0,c:-1->0"
+    monty_hall_gain: float  # information gain from seeing alternatives
 
 
 @dataclass
 class MultipathBatch:
     """Results of multi-path generation on a batch of texts."""
-    total_input: int                    # number of input texts
-    total_output: int                   # total records after expansion
-    expansion_ratio: float              # output / input
-    polymorphic_count: int              # inputs that generated siblings
-    records: List[MultipathRecord]      # all multipath records
-    axis_fork_counts: Dict[str, int]    # how many forks per axis
-    path_distribution: Dict[int, int]   # how many records have N paths
+
+    total_input: int  # number of input texts
+    total_output: int  # total records after expansion
+    expansion_ratio: float  # output / input
+    polymorphic_count: int  # inputs that generated siblings
+    records: List[MultipathRecord]  # all multipath records
+    axis_fork_counts: Dict[str, int]  # how many forks per axis
+    path_distribution: Dict[int, int]  # how many records have N paths
 
 
 # ---------------------------------------------------------------------------
 # Core: identify forks
 # ---------------------------------------------------------------------------
+
 
 def _identify_forks(
     signal: TritSignal,
@@ -154,8 +158,8 @@ def _identify_forks(
     forks = []
 
     axis_data = [
-        ("structure",  0, signal.c_structure, signal.dev_structure, signal.edge_structure),
-        ("stability",  1, signal.c_stability, signal.dev_stability, signal.edge_stability),
+        ("structure", 0, signal.c_structure, signal.dev_structure, signal.edge_structure),
+        ("stability", 1, signal.c_stability, signal.dev_stability, signal.edge_stability),
         ("creativity", 2, signal.c_creativity, signal.dev_creativity, signal.edge_creativity),
     ]
 
@@ -180,15 +184,17 @@ def _identify_forks(
             # This shouldn't happen with consistent thresholds, but handle it
             flipped = 0
 
-        forks.append(TritFork(
-            axis=axis_name,
-            axis_index=axis_idx,
-            original_trit=trit_val,
-            flipped_trit=flipped,
-            deviation=deviation,
-            edge_distance=edge_dist,
-            boundary_side=boundary_side,
-        ))
+        forks.append(
+            TritFork(
+                axis=axis_name,
+                axis_index=axis_idx,
+                original_trit=trit_val,
+                flipped_trit=flipped,
+                deviation=deviation,
+                edge_distance=edge_dist,
+                boundary_side=boundary_side,
+            )
+        )
 
     return forks
 
@@ -196,6 +202,7 @@ def _identify_forks(
 # ---------------------------------------------------------------------------
 # Core: generate sibling paths
 # ---------------------------------------------------------------------------
+
 
 def _generate_siblings(
     signal: TritSignal,
@@ -230,12 +237,14 @@ def _generate_siblings(
             new_tuple = (new_trit[0], new_trit[1], new_trit[2])
             label = TRIT_LABELS.get(new_tuple, f"unknown_{new_tuple}")
 
-            siblings.append({
-                "content_trit": new_tuple,
-                "label": label,
-                "flipped_axes": flipped_axes,
-                "distance_from_primary": len(combo),
-            })
+            siblings.append(
+                {
+                    "content_trit": new_tuple,
+                    "label": label,
+                    "flipped_axes": flipped_axes,
+                    "distance_from_primary": len(combo),
+                }
+            )
 
     return siblings
 
@@ -284,7 +293,7 @@ def _monty_hall_gain(forks: List[TritFork]) -> float:
     # This gives superadditive information for multi-axis forks
     combined = 1.0
     for g in per_axis_gains:
-        combined *= (1.0 + g)
+        combined *= 1.0 + g
     combined -= 1.0
 
     return min(combined, 3.0)  # cap at 3.0 (3 axes max)
@@ -293,6 +302,7 @@ def _monty_hall_gain(forks: List[TritFork]) -> float:
 # ---------------------------------------------------------------------------
 # Public API: score and expand a single text
 # ---------------------------------------------------------------------------
+
 
 def score_and_expand(
     text: str,
@@ -329,6 +339,7 @@ def score_and_expand(
 # Public API: batch processing
 # ---------------------------------------------------------------------------
 
+
 def score_and_expand_batch(
     texts: List[str],
     edge_threshold: float = DEFAULT_EDGE_THRESHOLD,
@@ -339,10 +350,7 @@ def score_and_expand_batch(
 
     Returns summary statistics and all expanded records.
     """
-    records = [
-        score_and_expand(t, edge_threshold, content_threshold, threshold)
-        for t in texts
-    ]
+    records = [score_and_expand(t, edge_threshold, content_threshold, threshold) for t in texts]
 
     total_output = sum(r.path_count for r in records)
     poly_count = sum(1 for r in records if r.path_count > 1)
@@ -373,6 +381,7 @@ def score_and_expand_batch(
 # SFT export: flatten multipath records for training
 # ---------------------------------------------------------------------------
 
+
 def flatten_for_sft(
     records: List[MultipathRecord],
 ) -> List[Dict]:
@@ -394,42 +403,46 @@ def flatten_for_sft(
         group_id = id(rec)  # unique per record in this batch
 
         # Primary record
-        flat.append({
-            "text": rec.text,
-            "content_trit": list(rec.primary.content_vector),
-            "geometric_trit": list(rec.primary.trit_vector),
-            "label": rec.primary.label,
-            "is_primary": True,
-            "fork_group": group_id,
-            "flipped_axes": [],
-            "monty_hall_gain": round(rec.monty_hall_gain, 4),
-            "path_count": rec.path_count,
-            "edge_distance": {
-                "structure": round(rec.primary.edge_structure, 6),
-                "stability": round(rec.primary.edge_stability, 6),
-                "creativity": round(rec.primary.edge_creativity, 6),
-            },
-            "raw_scores": {
-                "structure": round(rec.primary.raw_structure, 4),
-                "stability": round(rec.primary.raw_stability, 4),
-                "creativity": round(rec.primary.raw_creativity, 4),
-            },
-        })
+        flat.append(
+            {
+                "text": rec.text,
+                "content_trit": list(rec.primary.content_vector),
+                "geometric_trit": list(rec.primary.trit_vector),
+                "label": rec.primary.label,
+                "is_primary": True,
+                "fork_group": group_id,
+                "flipped_axes": [],
+                "monty_hall_gain": round(rec.monty_hall_gain, 4),
+                "path_count": rec.path_count,
+                "edge_distance": {
+                    "structure": round(rec.primary.edge_structure, 6),
+                    "stability": round(rec.primary.edge_stability, 6),
+                    "creativity": round(rec.primary.edge_creativity, 6),
+                },
+                "raw_scores": {
+                    "structure": round(rec.primary.raw_structure, 4),
+                    "stability": round(rec.primary.raw_stability, 4),
+                    "creativity": round(rec.primary.raw_creativity, 4),
+                },
+            }
+        )
 
         # Sibling records
         for sib in rec.siblings:
-            flat.append({
-                "text": rec.text,
-                "content_trit": list(sib["content_trit"]),
-                "geometric_trit": list(rec.primary.trit_vector),
-                "label": sib["label"],
-                "is_primary": False,
-                "fork_group": group_id,
-                "flipped_axes": sib["flipped_axes"],
-                "monty_hall_gain": round(rec.monty_hall_gain, 4),
-                "path_count": rec.path_count,
-                "distance_from_primary": sib["distance_from_primary"],
-            })
+            flat.append(
+                {
+                    "text": rec.text,
+                    "content_trit": list(sib["content_trit"]),
+                    "geometric_trit": list(rec.primary.trit_vector),
+                    "label": sib["label"],
+                    "is_primary": False,
+                    "fork_group": group_id,
+                    "flipped_axes": sib["flipped_axes"],
+                    "monty_hall_gain": round(rec.monty_hall_gain, 4),
+                    "path_count": rec.path_count,
+                    "distance_from_primary": sib["distance_from_primary"],
+                }
+            )
 
     return flat
 
@@ -437,6 +450,7 @@ def flatten_for_sft(
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
+
 
 def format_multipath_report(batch: MultipathBatch) -> str:
     """Human-readable report of multi-path generation results."""
@@ -448,8 +462,10 @@ def format_multipath_report(batch: MultipathBatch) -> str:
     lines.append(f"  Input records:      {batch.total_input}")
     lines.append(f"  Output records:     {batch.total_output}")
     lines.append(f"  Expansion ratio:    {batch.expansion_ratio:.2f}x")
-    lines.append(f"  Polymorphic inputs: {batch.polymorphic_count} "
-                 f"({batch.polymorphic_count / max(batch.total_input, 1) * 100:.1f}%)")
+    lines.append(
+        f"  Polymorphic inputs: {batch.polymorphic_count} "
+        f"({batch.polymorphic_count / max(batch.total_input, 1) * 100:.1f}%)"
+    )
     lines.append("")
 
     # Path distribution

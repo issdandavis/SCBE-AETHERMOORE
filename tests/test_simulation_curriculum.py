@@ -44,10 +44,10 @@ from src.crypto.code_lattice import (
     ALL_ANTIPATTERNS,
 )
 
-
 # ===================================================================
 # Level Classification
 # ===================================================================
+
 
 class TestLevelClassification:
     """Test that physics state maps to correct curriculum levels."""
@@ -55,90 +55,130 @@ class TestLevelClassification:
     def test_level_0_ground_state(self):
         """n=0, no forks, no swear words → Level 0."""
         level = classify_curriculum_level(
-            qho_max_n=0, has_forks=False, monty_hall_gain=0.0,
-            swear_word_count=0, in_vrs=False,
-            has_recovery_paths=False, compound_intent=0.0,
+            qho_max_n=0,
+            has_forks=False,
+            monty_hall_gain=0.0,
+            swear_word_count=0,
+            in_vrs=False,
+            has_recovery_paths=False,
+            compound_intent=0.0,
         )
         assert level == 0
 
     def test_level_1_low_excitation(self):
         """n=1-2, no forks → Level 1."""
         level = classify_curriculum_level(
-            qho_max_n=2, has_forks=False, monty_hall_gain=0.0,
-            swear_word_count=0, in_vrs=False,
-            has_recovery_paths=False, compound_intent=0.0,
+            qho_max_n=2,
+            has_forks=False,
+            monty_hall_gain=0.0,
+            swear_word_count=0,
+            in_vrs=False,
+            has_recovery_paths=False,
+            compound_intent=0.0,
         )
         assert level == 1
 
     def test_level_2_forks_present(self):
         """Forks with gain → Level 2."""
         level = classify_curriculum_level(
-            qho_max_n=2, has_forks=True, monty_hall_gain=0.5,
-            swear_word_count=0, in_vrs=False,
-            has_recovery_paths=False, compound_intent=0.0,
+            qho_max_n=2,
+            has_forks=True,
+            monty_hall_gain=0.5,
+            swear_word_count=0,
+            in_vrs=False,
+            has_recovery_paths=False,
+            compound_intent=0.0,
         )
         assert level == 2
 
     def test_level_3_high_excitation(self):
         """n≥4 → Level 3."""
         level = classify_curriculum_level(
-            qho_max_n=5, has_forks=False, monty_hall_gain=0.0,
-            swear_word_count=0, in_vrs=False,
-            has_recovery_paths=False, compound_intent=0.0,
+            qho_max_n=5,
+            has_forks=False,
+            monty_hall_gain=0.0,
+            swear_word_count=0,
+            in_vrs=False,
+            has_recovery_paths=False,
+            compound_intent=0.0,
         )
         assert level == 3
 
     def test_level_3_vrs_entry(self):
         """VRS active → Level 3 minimum."""
         level = classify_curriculum_level(
-            qho_max_n=2, has_forks=False, monty_hall_gain=0.0,
-            swear_word_count=0, in_vrs=True,
-            has_recovery_paths=False, compound_intent=0.0,
+            qho_max_n=2,
+            has_forks=False,
+            monty_hall_gain=0.0,
+            swear_word_count=0,
+            in_vrs=True,
+            has_recovery_paths=False,
+            compound_intent=0.0,
         )
         assert level == 3
 
     def test_level_4_recovery_with_swears(self):
         """Recovery paths + swear words + n≥3 → Level 4."""
         level = classify_curriculum_level(
-            qho_max_n=4, has_forks=True, monty_hall_gain=0.5,
-            swear_word_count=2, in_vrs=False,
-            has_recovery_paths=True, compound_intent=0.5,
+            qho_max_n=4,
+            has_forks=True,
+            monty_hall_gain=0.5,
+            swear_word_count=2,
+            in_vrs=False,
+            has_recovery_paths=True,
+            compound_intent=0.5,
         )
         assert level == 4
 
     def test_level_5_full_lattice(self):
         """All systems active + high compound intent → Level 5."""
         level = classify_curriculum_level(
-            qho_max_n=6, has_forks=True, monty_hall_gain=0.8,
-            swear_word_count=3, in_vrs=True,
-            has_recovery_paths=True, compound_intent=2.0,
+            qho_max_n=6,
+            has_forks=True,
+            monty_hall_gain=0.8,
+            swear_word_count=3,
+            in_vrs=True,
+            has_recovery_paths=True,
+            compound_intent=2.0,
         )
         assert level == 5
 
     def test_level_5_requires_vrs(self):
         """Without VRS, can't reach Level 5."""
         level = classify_curriculum_level(
-            qho_max_n=6, has_forks=True, monty_hall_gain=0.8,
-            swear_word_count=3, in_vrs=False,
-            has_recovery_paths=True, compound_intent=2.0,
+            qho_max_n=6,
+            has_forks=True,
+            monty_hall_gain=0.8,
+            swear_word_count=3,
+            in_vrs=False,
+            has_recovery_paths=True,
+            compound_intent=2.0,
         )
         assert level < 5
 
     def test_level_5_requires_swear_words(self):
         """Without swear words, can't reach Level 5."""
         level = classify_curriculum_level(
-            qho_max_n=6, has_forks=True, monty_hall_gain=0.8,
-            swear_word_count=0, in_vrs=True,
-            has_recovery_paths=True, compound_intent=2.0,
+            qho_max_n=6,
+            has_forks=True,
+            monty_hall_gain=0.8,
+            swear_word_count=0,
+            in_vrs=True,
+            has_recovery_paths=True,
+            compound_intent=2.0,
         )
         assert level < 5
 
     def test_level_5_requires_high_compound(self):
         """Without high compound intent, can't reach Level 5."""
         level = classify_curriculum_level(
-            qho_max_n=6, has_forks=True, monty_hall_gain=0.8,
-            swear_word_count=3, in_vrs=True,
-            has_recovery_paths=True, compound_intent=0.5,
+            qho_max_n=6,
+            has_forks=True,
+            monty_hall_gain=0.8,
+            swear_word_count=3,
+            in_vrs=True,
+            has_recovery_paths=True,
+            compound_intent=0.5,
         )
         assert level < 5
 
@@ -165,6 +205,7 @@ class TestLevelClassification:
 # ===================================================================
 # Level Metadata
 # ===================================================================
+
 
 class TestLevelMetadata:
     """Test level boundaries, names, and descriptions."""
@@ -204,6 +245,7 @@ class TestLevelMetadata:
 # ===================================================================
 # Simulation Bundle Creation
 # ===================================================================
+
 
 class TestSimulationBundle:
     """Test unified bundle generation."""
@@ -250,14 +292,13 @@ class TestSimulationBundle:
 # Derived Properties
 # ===================================================================
 
+
 class TestDerivedProperties:
     """Test that derived properties are correct."""
 
     @pytest.fixture
     def bundle(self):
-        return generate_simulation_bundle(
-            "A rich test text with enough complexity to trigger multiple systems"
-        )
+        return generate_simulation_bundle("A rich test text with enough complexity to trigger multiple systems")
 
     def test_qho_max_n_from_quantum(self, bundle):
         assert bundle.qho_max_n == bundle.quantum.qho.max_excitation
@@ -294,6 +335,7 @@ class TestDerivedProperties:
 # Compounding Intent
 # ===================================================================
 
+
 class TestCompoundingIntent:
     """Test that system × learner intent compounds correctly."""
 
@@ -324,6 +366,7 @@ class TestCompoundingIntent:
 # ===================================================================
 # to_dict Serialization
 # ===================================================================
+
 
 class TestSerialization:
     """Test that to_dict produces complete serialization."""
@@ -361,6 +404,7 @@ class TestSerialization:
 # ===================================================================
 # Batch Generation
 # ===================================================================
+
 
 class TestBatchGeneration:
     """Test batch bundle generation."""
@@ -401,6 +445,7 @@ class TestBatchGeneration:
 # ===================================================================
 # SFT Record Generation
 # ===================================================================
+
 
 class TestSFTRecords:
     """Test SFT training record generation."""
@@ -492,6 +537,7 @@ class TestSFTRecords:
 # Summary Statistics
 # ===================================================================
 
+
 class TestSummary:
     """Test batch summary statistics."""
 
@@ -540,6 +586,7 @@ class TestSummary:
 # ===================================================================
 # Report Formatting
 # ===================================================================
+
 
 class TestReport:
     """Test human-readable report output."""
@@ -590,6 +637,7 @@ class TestReport:
 # Cross-Level Properties
 # ===================================================================
 
+
 class TestCrossLevelProperties:
     """Test properties that should hold across curriculum levels."""
 
@@ -598,7 +646,10 @@ class TestCrossLevelProperties:
         # Generate a large enough sample
         texts = [
             # Short/simple
-            "Hi", "Yes", "No", "Ok",
+            "Hi",
+            "Yes",
+            "No",
+            "Ok",
             # Medium
             "The cat sat on the mat in the corner of the room",
             "Gradient descent optimizes the loss function iteratively",
@@ -627,14 +678,15 @@ class TestCrossLevelProperties:
             # (but not strictly — individual texts vary)
             if b.curriculum_level >= 4:
                 assert systems_active >= 2, (
-                    f"Level {b.curriculum_level} should have ≥2 active systems, "
-                    f"got {systems_active}"
+                    f"Level {b.curriculum_level} should have ≥2 active systems, " f"got {systems_active}"
                 )
 
     def test_difficulty_matches_level(self):
         """curriculum_difficulty should be in the correct level's range."""
         texts = [
-            "Test one", "Test two longer", "Test three even longer with more detail",
+            "Test one",
+            "Test two longer",
+            "Test three even longer with more detail",
         ]
         for b in generate_simulation_batch(texts):
             lo, hi = LEVEL_BOUNDARIES[b.curriculum_level]
@@ -655,6 +707,7 @@ class TestCrossLevelProperties:
 # ===================================================================
 # Edge Cases
 # ===================================================================
+
 
 class TestEdgeCases:
     """Test edge cases and boundary conditions."""

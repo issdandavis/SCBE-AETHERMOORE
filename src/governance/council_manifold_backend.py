@@ -24,6 +24,7 @@ Tier mapping to runtime_gate Decision enum:
   ESCALATE   -> Decision.REVIEW      (6-council deep inspection)
   DENY       -> Decision.DENY
 """
+
 from __future__ import annotations
 
 import json
@@ -51,26 +52,28 @@ SEED_INTERIOR_LO = 0.22
 SEED_INTERIOR_HI = 0.78
 
 # ---- Routing policy (calibrated against flight 007 post-stab geometry) ----
-DIST_ALLOW_MAX = 0.879         # within an intra-cutover neighborhood
-DIST_QUARANTINE_MAX = 2.1485   # within the overall manifold mean
-DIST_DENY_MIN = 3.3            # beyond the far-pair baseline
-PI_QUARANTINE = 0.75           # high cross-channel density
-Z_ESCALATE = 0.65              # adversarial z-signature threshold
+DIST_ALLOW_MAX = 0.879  # within an intra-cutover neighborhood
+DIST_QUARANTINE_MAX = 2.1485  # within the overall manifold mean
+DIST_DENY_MIN = 3.3  # beyond the far-pair baseline
+PI_QUARANTINE = 0.75  # high cross-channel density
+Z_ESCALATE = 0.65  # adversarial z-signature threshold
 
-SCRUTINY_CUTOVERS = frozenset({
-    "ame_cutover",
-    "post_ame_divine",
-    "post_thread_quantum",
-    "product_spec",
-})
-PERMISSIVE_CUTOVERS = frozenset({
-    "pre_ame_substrate",
-    "persona_scaffold",
-})
-
-DEFAULT_SEEDS_PATH = (
-    Path(__file__).resolve().parents[2] / ".scbe" / "grounding" / "council_seeds.json"
+SCRUTINY_CUTOVERS = frozenset(
+    {
+        "ame_cutover",
+        "post_ame_divine",
+        "post_thread_quantum",
+        "product_spec",
+    }
 )
+PERMISSIVE_CUTOVERS = frozenset(
+    {
+        "pre_ame_substrate",
+        "persona_scaffold",
+    }
+)
+
+DEFAULT_SEEDS_PATH = Path(__file__).resolve().parents[2] / ".scbe" / "grounding" / "council_seeds.json"
 
 
 # ---- Core dataclass (ported verbatim from council_sim.py) ----
@@ -107,7 +110,7 @@ def load_seeds(path: Path) -> List[Seed]:
 # ---- Metric primitives (ported verbatim from council_sim.py) ----
 def d_poincare_1d(a: float, b: float) -> float:
     num = 2 * (a - b) ** 2
-    den = (1 - a ** 2) * (1 - b ** 2)
+    den = (1 - a**2) * (1 - b**2)
     if den <= 0:
         return float("inf")
     arg = max(1.0, 1 + num / den)
@@ -122,7 +125,7 @@ def d_torus(theta_a: np.ndarray, theta_b: np.ndarray) -> float:
     two_pi = 2 * math.pi
     diff = np.abs(theta_a - theta_b) % two_pi
     diff = np.minimum(diff, two_pi - diff)
-    return float(np.sqrt(np.sum(diff ** 2)))
+    return float(np.sqrt(np.sum(diff**2)))
 
 
 def d_z(z_a: np.ndarray, z_b: np.ndarray) -> float:
@@ -130,11 +133,7 @@ def d_z(z_a: np.ndarray, z_b: np.ndarray) -> float:
 
 
 def d_mixed(a: Seed, b: Seed) -> float:
-    return math.sqrt(
-        W_H * d_hyp(a.u, b.u) ** 2
-        + W_T * d_torus(a.theta, b.theta) ** 2
-        + d_z(a.z, b.z) ** 2
-    )
+    return math.sqrt(W_H * d_hyp(a.u, b.u) ** 2 + W_T * d_torus(a.theta, b.theta) ** 2 + d_z(a.z, b.z) ** 2)
 
 
 def pi_exchange(seed: Seed) -> float:
@@ -144,9 +143,7 @@ def pi_exchange(seed: Seed) -> float:
 
 
 # ---- Stabilization (ported verbatim from council_sim.py) ----
-def stabilize(
-    seeds: List[Seed], alpha: float = 0.15, max_iter: int = 50
-) -> Tuple[List[Seed], List[float]]:
+def stabilize(seeds: List[Seed], alpha: float = 0.15, max_iter: int = 50) -> Tuple[List[Seed], List[float]]:
     """Council vote: each seed's u pulled toward tag-affine neighbors' weighted mean."""
     current = [
         Seed(
@@ -220,7 +217,7 @@ def z_adversarial_score(z: np.ndarray) -> float:
 # ---- Routing (ported from council_router.py) ----
 @dataclass
 class RoutingDecision:
-    tier: str                # ALLOW / QUARANTINE / ESCALATE / DENY
+    tier: str  # ALLOW / QUARANTINE / ESCALATE / DENY
     nearest_seed: str
     nearest_d: float
     nearest_cutover: str
@@ -258,11 +255,7 @@ def route(
         reasons.append(f"z_adv={z_adv:.3f} >= {Z_ESCALATE} (low trust + null + bad intent)")
         tier = "ESCALATE"
     # Rule 3: inside intra-cutover neighborhood AND permissive cutover AND benign Pi -> ALLOW
-    elif (
-        nearest_d <= allow_max
-        and nearest_cutover in PERMISSIVE_CUTOVERS
-        and probe_pi < PI_QUARANTINE
-    ):
+    elif nearest_d <= allow_max and nearest_cutover in PERMISSIVE_CUTOVERS and probe_pi < PI_QUARANTINE:
         reasons.append(
             f"nearest_d={nearest_d:.3f} <= {allow_max:.3f}, "
             f"cutover={nearest_cutover} permissive, Pi={probe_pi:.3f} benign"
@@ -270,9 +263,7 @@ def route(
         tier = "ALLOW"
     # Rule 4: inside intra-cutover AND scrutiny cutover -> QUARANTINE even if close
     elif nearest_d <= allow_max and nearest_cutover in SCRUTINY_CUTOVERS:
-        reasons.append(
-            f"nearest_d={nearest_d:.3f} close, but cutover={nearest_cutover} is scrutiny"
-        )
+        reasons.append(f"nearest_d={nearest_d:.3f} close, but cutover={nearest_cutover} is scrutiny")
         tier = "QUARANTINE"
     # Rule 5: high Pi in any region -> QUARANTINE
     elif probe_pi >= PI_QUARANTINE:
@@ -280,15 +271,11 @@ def route(
         tier = "QUARANTINE"
     # Rule 6: drifting away from all clusters but not over DENY line -> ESCALATE
     elif nearest_d >= quarantine_max:
-        reasons.append(
-            f"nearest_d={nearest_d:.3f} >= QUARANTINE_MAX {quarantine_max:.3f}, drifting edge"
-        )
+        reasons.append(f"nearest_d={nearest_d:.3f} >= QUARANTINE_MAX {quarantine_max:.3f}, drifting edge")
         tier = "ESCALATE"
     # Default: mild drift inside the manifold -> QUARANTINE
     else:
-        reasons.append(
-            f"nearest_d={nearest_d:.3f} inside manifold but not in intra-cutover neighborhood"
-        )
+        reasons.append(f"nearest_d={nearest_d:.3f} inside manifold but not in intra-cutover neighborhood")
         tier = "QUARANTINE"
 
     return RoutingDecision(
@@ -367,7 +354,7 @@ def lift_6d_to_21d(
             trust_norm,
             intent_polarity,
             null_pressure,
-            0.5,          # spectral_coherence placeholder (would come from L9-10)
+            0.5,  # spectral_coherence placeholder (would come from L9-10)
             spin_norm,
             triadic,
         ],
@@ -394,7 +381,7 @@ def lift_6d_to_21d(
     return Seed(
         seed_id="runtime_probe",
         source_id="runtime_gate",
-        cutover_flag="probe",   # never matches permissive or scrutiny
+        cutover_flag="probe",  # never matches permissive or scrutiny
         u=u,
         theta=theta,
         z=z,
@@ -406,10 +393,11 @@ def lift_6d_to_21d(
 # ---- Tier -> Decision mapping (lazy to avoid circular import) ----
 def _tier_to_decision(tier: str) -> Any:
     from .runtime_gate import Decision
+
     return {
         "ALLOW": Decision.ALLOW,
         "QUARANTINE": Decision.QUARANTINE,
-        "ESCALATE": Decision.REVIEW,   # 6-council deep inspection
+        "ESCALATE": Decision.REVIEW,  # 6-council deep inspection
         "DENY": Decision.DENY,
     }[tier]
 
@@ -441,13 +429,10 @@ class CouncilManifoldBackend:
         path = seeds_path if seeds_path is not None else DEFAULT_SEEDS_PATH
         if not path.exists():
             raise FileNotFoundError(
-                f"Council seed file not found at {path}. "
-                "Run .scbe/grounding/council_sim.py to generate it."
+                f"Council seed file not found at {path}. " "Run .scbe/grounding/council_sim.py to generate it."
             )
         raw_seeds = load_seeds(path)
-        self.seeds, self.trajectory = stabilize(
-            raw_seeds, alpha=alpha, max_iter=max_iter
-        )
+        self.seeds, self.trajectory = stabilize(raw_seeds, alpha=alpha, max_iter=max_iter)
         self.converged = bool(self.trajectory and self.trajectory[-1] < 1e-4)
         self._dist_scale = float(dist_scale)
 

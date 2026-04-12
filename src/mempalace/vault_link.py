@@ -261,11 +261,7 @@ def link_rooms_to_notes(
 
 def room_tongue_profile(room: Room) -> Dict[str, int]:
     """Return {tongue_name: trit} for every active tongue of a room."""
-    return {
-        name: room.entry.trit[i]
-        for i, name in enumerate(TONGUE_NAMES)
-        if room.entry.trit[i] != 0
-    }
+    return {name: room.entry.trit[i] for i, name in enumerate(TONGUE_NAMES) if room.entry.trit[i] != 0}
 
 
 def vault_stats(index: VaultIndex) -> Dict[str, object]:

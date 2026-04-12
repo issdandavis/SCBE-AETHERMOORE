@@ -384,9 +384,7 @@ def _is_high_confidence_override_attempt(action_text: str) -> bool:
     if has_override_action and has_override_target:
         return True
 
-    if "prompt injection" in text and any(
-        operator in text for operator in HIGH_CONFIDENCE_PROMPT_INJECTION_OPERATORS
-    ):
+    if "prompt injection" in text and any(operator in text for operator in HIGH_CONFIDENCE_PROMPT_INJECTION_OPERATORS):
         return True
 
     return False
@@ -1081,9 +1079,7 @@ class RuntimeGate:
         # During the first five requests we skip calibration for explicit
         # reroute matches and reroute them immediately instead of learning
         # them into the centroid.
-        reroute_high_confidence = (
-            reroute_rule is not None and self._is_high_confidence_reroute(full_text, reroute_rule)
-        )
+        reroute_high_confidence = reroute_rule is not None and self._is_high_confidence_reroute(full_text, reroute_rule)
         if reroute_rule is not None and (
             self._query_count <= 5
             or cost > self.cost_allow
@@ -1263,9 +1259,7 @@ class RuntimeGate:
                     spin_magnitude=magnitude,
                     query_count=self._query_count,
                     classifier_score=classifier_score,
-                    trichromatic_risk=(
-                        trichromatic_risk if self._trichromatic_engine is not None else None
-                    ),
+                    trichromatic_risk=(trichromatic_risk if self._trichromatic_engine is not None else None),
                 )
                 signals.extend(council_signals)
                 escalated = _escalate_decision(decision, council_decision)

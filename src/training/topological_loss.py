@@ -272,4 +272,3 @@ def topological_training_step(
         "h_true": float(h_true),
         "gamma": float(cfg.gamma),
     }
-

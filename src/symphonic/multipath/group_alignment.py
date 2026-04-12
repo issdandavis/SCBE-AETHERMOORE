@@ -41,7 +41,6 @@ from .trit_table_RU import TABLE as RU_TABLE
 from .trit_table_UM import TABLE as UM_TABLE
 from .trit_table_DR import TABLE as DR_TABLE
 
-
 # Stage 4 recast order: most -> least ownership information.
 PROMOTION_ORDER: Tuple[str, ...] = ("DR", "RU", "AV", "UM", "KO", "CA")
 
@@ -57,8 +56,11 @@ def _trit_matrix_for(tongue: str) -> np.ndarray:
     if tongue == "CA":
         return _ca_trit_matrix()
     return {
-        "KO": KO_TABLE, "AV": AV_TABLE, "RU": RU_TABLE,
-        "UM": UM_TABLE, "DR": DR_TABLE,
+        "KO": KO_TABLE,
+        "AV": AV_TABLE,
+        "RU": RU_TABLE,
+        "UM": UM_TABLE,
+        "DR": DR_TABLE,
     }[tongue].trit_matrix
 
 
@@ -70,7 +72,7 @@ def channel_profile(tongue: str) -> np.ndarray:
     across the whole op vocabulary. Negative blocks count as activity.
     """
     m = _trit_matrix_for(tongue).astype(np.int32)
-    return np.sum(np.abs(m), axis=0)   # shape (6,)
+    return np.sum(np.abs(m), axis=0)  # shape (6,)
 
 
 def all_profiles(order: Sequence[str] = CANONICAL_ORDER) -> np.ndarray:
@@ -97,9 +99,7 @@ def kink_magnitudes(line: np.ndarray) -> np.ndarray:
     return np.sum(np.abs(line), axis=1)
 
 
-def flat_segments(
-    line: np.ndarray, order: Sequence[str] = PROMOTION_ORDER
-) -> List[Tuple[str, str, int]]:
+def flat_segments(line: np.ndarray, order: Sequence[str] = PROMOTION_ORDER) -> List[Tuple[str, str, int]]:
     """Adjacent pairs with zero delta on at least one channel.
 
     Returns (a, b, shared_channels) triples. "Shared" = channel where
@@ -125,11 +125,7 @@ def kink_points(
     Larger magnitude = stronger group boundary.
     """
     mags = kink_magnitudes(line)
-    return [
-        (order[i], order[i + 1], int(mags[i]))
-        for i in range(len(mags))
-        if mags[i] >= min_magnitude
-    ]
+    return [(order[i], order[i + 1], int(mags[i])) for i in range(len(mags)) if mags[i] >= min_magnitude]
 
 
 # --- 3. Interoperability matrix -----------------------------------------
@@ -155,11 +151,12 @@ class StrandBead:
     the 6 co-activation magnitudes, the dominant tongue (organic
     winner), and the phi-weighted composite cost.
     """
-    op_index: int                          # position in input op sequence
-    op_name: str                           # the op (assumed shared vocab surface form)
-    coactivation: np.ndarray               # shape (6,), float
-    dominant: str                          # winning tongue name
-    phi_cost: float                        # phi-weighted composite
+
+    op_index: int  # position in input op sequence
+    op_name: str  # the op (assumed shared vocab surface form)
+    coactivation: np.ndarray  # shape (6,), float
+    dominant: str  # winning tongue name
+    phi_cost: float  # phi-weighted composite
     tongue_order: Tuple[str, ...] = CANONICAL_ORDER
 
     def to_tuple(self) -> Tuple:
@@ -175,6 +172,7 @@ class StrandBead:
 @dataclass
 class Strand:
     """The extruded rich token sequence. Read it like DNA."""
+
     beads: List[StrandBead] = field(default_factory=list)
     tongue_order: Tuple[str, ...] = CANONICAL_ORDER
 
@@ -198,22 +196,21 @@ class Strand:
             new_co = b.coactivation[perm]
             idx = int(np.argmax(new_co))
             phi = float(new_co[idx] * PHI_WEIGHTS[idx])
-            new_beads.append(StrandBead(
-                op_index=b.op_index,
-                op_name=b.op_name,
-                coactivation=new_co,
-                dominant=new_order[idx],
-                phi_cost=phi,
-                tongue_order=tuple(new_order),
-            ))
+            new_beads.append(
+                StrandBead(
+                    op_index=b.op_index,
+                    op_name=b.op_name,
+                    coactivation=new_co,
+                    dominant=new_order[idx],
+                    phi_cost=phi,
+                    tongue_order=tuple(new_order),
+                )
+            )
         return Strand(beads=new_beads, tongue_order=tuple(new_order))
 
     def as_rich_tokens(self) -> List[str]:
         """Human-readable token stream. One string per bead."""
-        return [
-            f"{b.op_name}@{b.dominant}[{b.phi_cost:.3f}]"
-            for b in self.beads
-        ]
+        return [f"{b.op_name}@{b.dominant}[{b.phi_cost:.3f}]" for b in self.beads]
 
 
 def _lookup_trit_row(tongue: str, op: str) -> np.ndarray | None:
@@ -230,8 +227,11 @@ def _lookup_trit_row(tongue: str, op: str) -> np.ndarray | None:
             return None
         return _ca_trit_matrix()[ids[op]].astype(np.int32)
     table: TritTable = {
-        "KO": KO_TABLE, "AV": AV_TABLE, "RU": RU_TABLE,
-        "UM": UM_TABLE, "DR": DR_TABLE,
+        "KO": KO_TABLE,
+        "AV": AV_TABLE,
+        "RU": RU_TABLE,
+        "UM": UM_TABLE,
+        "DR": DR_TABLE,
     }[tongue]
     if op not in table.op_id:
         return None
@@ -260,19 +260,21 @@ def extrude_strand(ops: Sequence[str]) -> Strand:
                 coact[ch] = float(np.sum(np.abs(row)))
         phi_scaled = coact * np.asarray(PHI_WEIGHTS, dtype=np.float64)
         if float(np.sum(phi_scaled)) == 0.0:
-            dominant = "CA"   # silent -> fall back to raw-compute tongue
+            dominant = "CA"  # silent -> fall back to raw-compute tongue
             phi_cost = 0.0
         else:
             dom_idx = int(np.argmax(phi_scaled))
             dominant = CANONICAL_ORDER[dom_idx]
             phi_cost = float(phi_scaled[dom_idx])
-        beads.append(StrandBead(
-            op_index=idx,
-            op_name=op,
-            coactivation=coact,
-            dominant=dominant,
-            phi_cost=phi_cost,
-        ))
+        beads.append(
+            StrandBead(
+                op_index=idx,
+                op_name=op,
+                coactivation=coact,
+                dominant=dominant,
+                phi_cost=phi_cost,
+            )
+        )
     return Strand(beads=beads)
 
 

@@ -36,14 +36,14 @@ EPS = 1e-12
 # Tongue order and phi weights
 TONGUE_CODES = ["ko", "av", "ru", "ca", "um", "dr"]
 TONGUE_NAMES = [
-    "Kor'aelin",    # Intent/Command (code: Korvath)
-    "Avali",        # Wisdom/Routing (code: Avhari)
-    "Runethic",     # Governance/Entropy (code: Runeveil)
-    "Cassisivadan", # Compute/Logic (code: Caelith)
-    "Umbroth",      # Security/Defense (code: Umbraex)
-    "Draumric",     # Structure/Architecture (code: Draethis)
+    "Kor'aelin",  # Intent/Command (code: Korvath)
+    "Avali",  # Wisdom/Routing (code: Avhari)
+    "Runethic",  # Governance/Entropy (code: Runeveil)
+    "Cassisivadan",  # Compute/Logic (code: Caelith)
+    "Umbroth",  # Security/Defense (code: Umbraex)
+    "Draumric",  # Structure/Architecture (code: Draethis)
 ]
-PHI_WEIGHTS = [PHI ** i for i in range(6)]  # [1.0, 1.618, 2.618, 4.236, 6.854, 11.09]
+PHI_WEIGHTS = [PHI**i for i in range(6)]  # [1.0, 1.618, 2.618, 4.236, 6.854, 11.09]
 
 # Musical interval ratios for the SOUND braid
 MUSICAL_INTERVALS = {
@@ -68,25 +68,28 @@ BASE_FREQ = 440.0 * (PHI - 1)  # ~272 Hz — near middle C but phi-offset
 @dataclass(frozen=True)
 class LightStrand:
     """LIGHT braid: what IS (presence/absence/data)."""
-    raw_byte: int           # L0: 0-255, the raw data
-    tongue_token: str       # L1: bijective tongue token string
+
+    raw_byte: int  # L0: 0-255, the raw data
+    tongue_token: str  # L1: bijective tongue token string
     orientation: Tuple[float, ...]  # L2: 6-element tongue activation vector
 
 
 @dataclass(frozen=True)
 class SoundStrand:
     """SOUND braid: what RESONATES (harmonic fill for dark nodes)."""
-    nodal_freq: float       # S0: frequency from nodal surface equation
-    octave_map: float       # S1: phi-scaled octave transposition
-    phase_angle: float      # S2: wave phase at this position (radians)
+
+    nodal_freq: float  # S0: frequency from nodal surface equation
+    octave_map: float  # S1: phi-scaled octave transposition
+    phase_angle: float  # S2: wave phase at this position (radians)
 
 
 @dataclass(frozen=True)
 class IntentStrand:
     """INTENT braid: which WAY (polarity/direction)."""
-    primary_trit: int       # I0: {-1, 0, +1}
-    mirror_trit: int        # I1: {-1, 0, +1}
-    governance: int         # I2: {-1, 0, +1} = DENY / QUARANTINE / ALLOW
+
+    primary_trit: int  # I0: {-1, 0, +1}
+    mirror_trit: int  # I1: {-1, 0, +1}
+    governance: int  # I2: {-1, 0, +1} = DENY / QUARANTINE / ALLOW
 
 
 @dataclass(frozen=True)
@@ -96,6 +99,7 @@ class TriBraidCodon:
     Contains all 9 sub-strands (3 per braid).
     The codon is the fundamental unit of the encoding.
     """
+
     light: LightStrand
     sound: SoundStrand
     intent: IntentStrand
@@ -121,11 +125,7 @@ class TriBraidCodon:
 
         (primary+1)*9 + (mirror+1)*3 + (governance+1)
         """
-        return (
-            (self.intent.primary_trit + 1) * 9
-            + (self.intent.mirror_trit + 1) * 3
-            + (self.intent.governance + 1)
-        )
+        return (self.intent.primary_trit + 1) * 9 + (self.intent.mirror_trit + 1) * 3 + (self.intent.governance + 1)
 
     @property
     def phi_density(self) -> float:
@@ -133,10 +133,7 @@ class TriBraidCodon:
 
         Based on which tongues are active (orientation > threshold).
         """
-        active_weight = sum(
-            w for w, a in zip(PHI_WEIGHTS, self.light.orientation)
-            if a > 0.1
-        )
+        active_weight = sum(w for w, a in zip(PHI_WEIGHTS, self.light.orientation) if a > 0.1)
         total_weight = sum(PHI_WEIGHTS)
         return active_weight / total_weight if total_weight > 0 else 0.0
 
@@ -148,6 +145,7 @@ class DigichainCluster:
     Identity depends on composition of inner braided matrices,
     not just the sequence of codons.
     """
+
     codons: List[TriBraidCodon]
     braid_crossings: int = 0  # Number of braid strand crossings
 
@@ -170,7 +168,7 @@ class DigichainCluster:
     @property
     def effective_states(self) -> float:
         """Phi-scaled effective state count: (3^phi)^3 per position."""
-        return (3 ** PHI) ** 3  # ~148.8
+        return (3**PHI) ** 3  # ~148.8
 
     @property
     def dark_node_ratio(self) -> float:
@@ -211,10 +209,7 @@ def nodal_frequency(position_index: int, tongue_index: int, total_positions: int
     x = (position_index + 0.5) / L
 
     # Nodal surface value determines frequency deviation
-    nodal_val = (
-        math.cos(n * PI * x) * math.cos(m * PI * x)
-        - math.cos(m * PI * x) * math.cos(n * PI * x * PHI)
-    )
+    nodal_val = math.cos(n * PI * x) * math.cos(m * PI * x) - math.cos(m * PI * x) * math.cos(n * PI * x * PHI)
 
     # Map nodal value to frequency via phi-scaled base
     freq = BASE_FREQ * PHI_WEIGHTS[tongue_index] * (1.0 + 0.5 * nodal_val)
@@ -305,9 +300,7 @@ def compute_intent_trits(
         return (0, 0, gov_trit)
 
     # Compute activation deltas
-    deltas = [
-        a - p for a, p in zip(activation_vector, prev_activation)
-    ]
+    deltas = [a - p for a, p in zip(activation_vector, prev_activation)]
 
     # Primary trit: phi-weighted sum of deltas
     weighted_delta = sum(d * w for d, w in zip(deltas, PHI_WEIGHTS))
@@ -393,9 +386,7 @@ def encode_byte_to_codon(
     )
 
     # INTENT braid
-    p_trit, m_trit, g_trit = compute_intent_trits(
-        activation_vector, prev_activation, governance_posture
-    )
+    p_trit, m_trit, g_trit = compute_intent_trits(activation_vector, prev_activation, governance_posture)
 
     intent = IntentStrand(
         primary_trit=p_trit,
@@ -441,10 +432,7 @@ def encode_sequence_to_cluster(
             activation = tuple(activation_fn(b, i))
         else:
             # Default: single tongue active at phi-weighted level
-            activation = tuple(
-                PHI_WEIGHTS[j] / PHI_WEIGHTS[5] if j == tongue_idx else 0.0
-                for j in range(6)
-            )
+            activation = tuple(PHI_WEIGHTS[j] / PHI_WEIGHTS[5] if j == tongue_idx else 0.0 for j in range(6))
 
         codon = encode_byte_to_codon(
             raw_byte=b,
@@ -483,6 +471,7 @@ class HexaCodon:
     6 tongue encodings, each with their own LIGHT/SOUND/INTENT,
     braided together.
     """
+
     tongue_codons: Dict[str, TriBraidCodon]  # keyed by tongue code
 
     @property
@@ -510,10 +499,7 @@ class HexaCodon:
     @property
     def sound_energy(self) -> float:
         """Total harmonic energy at this position (louder when darker)."""
-        return sum(
-            c.sound.nodal_freq * (1.0 - sum(c.light.orientation) / 6.0)
-            for c in self.tongue_codons.values()
-        )
+        return sum(c.sound.nodal_freq * (1.0 - sum(c.light.orientation) / 6.0) for c in self.tongue_codons.values())
 
     def composite_27_state(self) -> int:
         """Aggregate intent across all tongues into a single 27-state index."""
@@ -592,7 +578,7 @@ def phi_braid_density(n_strands: int = 3, depth: int = 3) -> float:
     This is the number of distinguishable states per cluster position
     when phi-scaling is applied to the braid density.
     """
-    return (n_strands ** PHI) ** depth
+    return (n_strands**PHI) ** depth
 
 
 def cluster_information_density(cluster: DigichainCluster) -> Dict[str, float]:
@@ -618,10 +604,7 @@ def cluster_information_density(cluster: DigichainCluster) -> Dict[str, float]:
         }
 
     dark_codons = [c for c in cluster.codons if c.phi_density < 0.3]
-    sound_in_dark = (
-        sum(c.sound.nodal_freq for c in dark_codons) / len(dark_codons)
-        if dark_codons else 0.0
-    )
+    sound_in_dark = sum(c.sound.nodal_freq for c in dark_codons) / len(dark_codons) if dark_codons else 0.0
 
     return {
         "flat_states": 27.0,

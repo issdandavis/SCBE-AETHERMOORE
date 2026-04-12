@@ -27,17 +27,20 @@ from src.crypto.harmonic_dark_fill import (
     compute_darkness,
 )
 
-
 # ===================================================================
 # Dark Cloud Detection
 # ===================================================================
+
 
 class TestDarkCloudDetection:
     def test_void_byte_forms_cloud(self):
         """Byte 0x00 should have many dark tongues → cloud forms."""
         fills = fill_dark_nodes(b"\x00")[0]
         cloud = detect_dark_cloud(
-            byte_val=0, position=0, total_positions=1, fills=fills,
+            byte_val=0,
+            position=0,
+            total_positions=1,
+            fills=fills,
         )
         # At byte 0, many tongues should be dark
         assert cloud is not None
@@ -46,7 +49,10 @@ class TestDarkCloudDetection:
         """Byte 0xFF activates most tongues → fewer dark → may not form cloud."""
         fills = fill_dark_nodes(b"\xff")[0]
         cloud = detect_dark_cloud(
-            byte_val=255, position=0, total_positions=1, fills=fills,
+            byte_val=255,
+            position=0,
+            total_positions=1,
+            fills=fills,
         )
         # At 255, most tongues active, so cloud might not form or be small
         if cloud is not None:
@@ -55,7 +61,10 @@ class TestDarkCloudDetection:
     def test_cloud_has_required_fields(self):
         fills = fill_dark_nodes(b"\x00")[0]
         cloud = detect_dark_cloud(
-            byte_val=0, position=0, total_positions=1, fills=fills,
+            byte_val=0,
+            position=0,
+            total_positions=1,
+            fills=fills,
         )
         if cloud is not None:
             assert cloud.position == 0
@@ -68,7 +77,10 @@ class TestDarkCloudDetection:
         """Void byte with all tongues dark should be VOID type."""
         fills = fill_dark_nodes(b"\x00")[0]
         cloud = detect_dark_cloud(
-            byte_val=0, position=0, total_positions=1, fills=fills,
+            byte_val=0,
+            position=0,
+            total_positions=1,
+            fills=fills,
         )
         if cloud is not None and cloud.cloud_size == 6:
             assert cloud.cloud_type == CloudType.VOID
@@ -78,8 +90,11 @@ class TestDarkCloudDetection:
         act = {tc: 0.0 for tc in TONGUE_WEIGHTS}
         fills = fill_dark_nodes(b"\x80", [act])[0]
         cloud = detect_dark_cloud(
-            byte_val=0x80, position=0, total_positions=1,
-            fills=fills, activation_vector=act,
+            byte_val=0x80,
+            position=0,
+            total_positions=1,
+            fills=fills,
+            activation_vector=act,
         )
         assert cloud is not None
         assert cloud.cloud_size == 6
@@ -90,8 +105,11 @@ class TestDarkCloudDetection:
         act = {tc: 1.0 for tc in TONGUE_WEIGHTS}
         fills = fill_dark_nodes(b"\x80", [act])[0]
         cloud = detect_dark_cloud(
-            byte_val=0x80, position=0, total_positions=1,
-            fills=fills, activation_vector=act,
+            byte_val=0x80,
+            position=0,
+            total_positions=1,
+            fills=fills,
+            activation_vector=act,
         )
         assert cloud is None
 
@@ -100,8 +118,11 @@ class TestDarkCloudDetection:
         act = {"ko": 1.0, "av": 1.0, "ru": 1.0, "ca": 0.0, "um": 0.0, "dr": 0.0}
         fills = fill_dark_nodes(b"\x80", [act])[0]
         cloud = detect_dark_cloud(
-            byte_val=0x80, position=0, total_positions=1,
-            fills=fills, activation_vector=act,
+            byte_val=0x80,
+            position=0,
+            total_positions=1,
+            fills=fills,
+            activation_vector=act,
         )
         assert cloud is not None
         assert cloud.cloud_size == 3
@@ -110,7 +131,10 @@ class TestDarkCloudDetection:
     def test_density_positive(self):
         fills = fill_dark_nodes(b"\x00")[0]
         cloud = detect_dark_cloud(
-            byte_val=0, position=0, total_positions=1, fills=fills,
+            byte_val=0,
+            position=0,
+            total_positions=1,
+            fills=fills,
         )
         if cloud is not None:
             assert cloud.density >= 0
@@ -120,8 +144,11 @@ class TestDarkCloudDetection:
         act = {tc: 0.0 for tc in TONGUE_WEIGHTS}
         fills = fill_dark_nodes(b"\x80", [act])[0]
         cloud = detect_dark_cloud(
-            byte_val=0x80, position=0, total_positions=1,
-            fills=fills, activation_vector=act,
+            byte_val=0x80,
+            position=0,
+            total_positions=1,
+            fills=fills,
+            activation_vector=act,
         )
         assert cloud is not None
         # C(6,2) = 15 pairs for 6 dark tongues
@@ -132,8 +159,11 @@ class TestDarkCloudDetection:
         act = {tc: 0.0 for tc in TONGUE_WEIGHTS}
         fills = fill_dark_nodes(b"\x80", [act])[0]
         cloud = detect_dark_cloud(
-            byte_val=0x80, position=0, total_positions=1,
-            fills=fills, activation_vector=act,
+            byte_val=0x80,
+            position=0,
+            total_positions=1,
+            fills=fills,
+            activation_vector=act,
         )
         assert cloud is not None
         comp_pairs = cloud.complement_pairs_in_cloud
@@ -142,7 +172,10 @@ class TestDarkCloudDetection:
     def test_ir_uv_ratio(self):
         fills = fill_dark_nodes(b"\x00")[0]
         cloud = detect_dark_cloud(
-            byte_val=0, position=0, total_positions=1, fills=fills,
+            byte_val=0,
+            position=0,
+            total_positions=1,
+            fills=fills,
         )
         if cloud is not None:
             assert cloud.ir_uv_ratio > 0
@@ -151,6 +184,7 @@ class TestDarkCloudDetection:
 # ===================================================================
 # Sequence-Level Cloud Mapping
 # ===================================================================
+
 
 class TestMapDarkClouds:
     def test_low_byte_sequence_has_clouds(self):
@@ -182,6 +216,7 @@ class TestMapDarkClouds:
 # ===================================================================
 # Neural Star Maps
 # ===================================================================
+
 
 class TestNeuralPaths:
     def test_connected_clouds_form_path(self):
@@ -248,6 +283,7 @@ class TestNeuralPaths:
 # Genesis Path
 # ===================================================================
 
+
 class TestGenesisPath:
     def test_genesis_from_void(self):
         """Genesis starting from all zeros."""
@@ -312,6 +348,7 @@ class TestGenesisPath:
 # Dark Energy Map
 # ===================================================================
 
+
 class TestDarkEnergyMap:
     def test_void_sequence_map(self):
         """All-zero sequence should be mostly void."""
@@ -371,6 +408,7 @@ class TestDarkEnergyMap:
 # Integration: Genesis Narrative
 # ===================================================================
 
+
 class TestGenesisNarrative:
     """The full creation narrative through the dark cloud mapper.
 
@@ -414,8 +452,7 @@ class TestGenesisNarrative:
         assert genesis.energy_density[0] > 0, "Void should have dark energy"
 
         # 2. Light dissolves clouds (energy decreases)
-        assert genesis.energy_density[0] >= genesis.energy_density[-1], \
-            "Dark energy should decrease as data arrives"
+        assert genesis.energy_density[0] >= genesis.energy_density[-1], "Dark energy should decrease as data arrives"
 
         # 3. Neural paths form
         assert dem.neural_paths >= 0

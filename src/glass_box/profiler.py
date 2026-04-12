@@ -167,56 +167,168 @@ class ResponseProfile:
 
 # Intent signals — what is the user actually asking for?
 _PURCHASE_SIGNALS = {
-    "buy", "purchase", "price", "cost", "pay", "order", "checkout",
-    "sale", "sell", "selling", "store", "shop", "product", "toolkit",
-    "download", "subscribe", "license", "pricing", "how much",
-    "money", "dollar", "$", "cart", "add to cart",
+    "buy",
+    "purchase",
+    "price",
+    "cost",
+    "pay",
+    "order",
+    "checkout",
+    "sale",
+    "sell",
+    "selling",
+    "store",
+    "shop",
+    "product",
+    "toolkit",
+    "download",
+    "subscribe",
+    "license",
+    "pricing",
+    "how much",
+    "money",
+    "dollar",
+    "$",
+    "cart",
+    "add to cart",
 }
 
 _LORE_SIGNALS = {
-    "lore", "story", "character", "quest", "magic", "spell", "realm",
-    "dimension", "pollyoneth", "avalon", "izack", "thorne", "aria",
-    "clayborn", "grey", "fizzle", "gnome", "elf", "raven",
-    "spiralverse", "sundering", "tongue", "sacred", "kor'aelin",
-    "avali", "runethic", "cassisivadan", "umbroth", "draumric",
-    "mal'kythric", "novel", "chapter", "book",
+    "lore",
+    "story",
+    "character",
+    "quest",
+    "magic",
+    "spell",
+    "realm",
+    "dimension",
+    "pollyoneth",
+    "avalon",
+    "izack",
+    "thorne",
+    "aria",
+    "clayborn",
+    "grey",
+    "fizzle",
+    "gnome",
+    "elf",
+    "raven",
+    "spiralverse",
+    "sundering",
+    "tongue",
+    "sacred",
+    "kor'aelin",
+    "avali",
+    "runethic",
+    "cassisivadan",
+    "umbroth",
+    "draumric",
+    "mal'kythric",
+    "novel",
+    "chapter",
+    "book",
 }
 
 _TECHNICAL_SIGNALS = {
-    "api", "code", "function", "pipeline", "layer", "harmonic",
-    "poincare", "hyperbolic", "axiom", "governance", "security",
-    "training", "model", "dataset", "sft", "dpo", "inference",
-    "deploy", "docker", "typescript", "python", "rust",
-    "framework", "implementation", "architecture",
+    "api",
+    "code",
+    "function",
+    "pipeline",
+    "layer",
+    "harmonic",
+    "poincare",
+    "hyperbolic",
+    "axiom",
+    "governance",
+    "security",
+    "training",
+    "model",
+    "dataset",
+    "sft",
+    "dpo",
+    "inference",
+    "deploy",
+    "docker",
+    "typescript",
+    "python",
+    "rust",
+    "framework",
+    "implementation",
+    "architecture",
 }
 
 _META_SIGNALS = {
-    "who are you", "what are you", "who made", "who created",
-    "who owns", "about yourself", "your purpose", "your creator",
-    "tell me about you", "are you real", "are you ai",
+    "who are you",
+    "what are you",
+    "who made",
+    "who created",
+    "who owns",
+    "about yourself",
+    "your purpose",
+    "your creator",
+    "tell me about you",
+    "are you real",
+    "are you ai",
 }
 
 _EMOTIONAL_MARKERS = {
-    "potion", "enchant", "magical", "wand", "ancient", "mystical",
-    "prophecy", "destiny", "legend", "myth", "wonder", "beautiful",
-    "glowing", "shimmering", "ethereal", "transcend",
+    "potion",
+    "enchant",
+    "magical",
+    "wand",
+    "ancient",
+    "mystical",
+    "prophecy",
+    "destiny",
+    "legend",
+    "myth",
+    "wonder",
+    "beautiful",
+    "glowing",
+    "shimmering",
+    "ethereal",
+    "transcend",
 }
 
 _ANALYTICAL_MARKERS = {
-    "specifically", "exactly", "technically", "actually", "concretely",
-    "literally", "factually", "in reality", "real", "actual",
-    "the website", "this site", "your site", "the owner",
+    "specifically",
+    "exactly",
+    "technically",
+    "actually",
+    "concretely",
+    "literally",
+    "factually",
+    "in reality",
+    "real",
+    "actual",
+    "the website",
+    "this site",
+    "your site",
+    "the owner",
 }
 
 _CONFABULATION_MARKERS = {
-    "as you know", "of course", "naturally", "obviously",
-    "it is well known", "as mentioned", "as we discussed",
+    "as you know",
+    "of course",
+    "naturally",
+    "obviously",
+    "it is well known",
+    "as mentioned",
+    "as we discussed",
 }
 
 _EXTRAPOLATION_MARKERS = {
-    "i am", "my purpose", "i was created", "i exist",
-    "my role is", "i serve", "my duty", "i protect",
-    "i guide", "i chronicle", "my archives",
+    "i am",
+    "my purpose",
+    "i was created",
+    "i exist",
+    "my role is",
+    "i serve",
+    "my duty",
+    "i protect",
+    "i guide",
+    "i chronicle",
+    "my archives",
 }
 
 
@@ -377,9 +489,7 @@ class GlassBoxProfiler:
 
         return PathType.HYBRID, 0.5
 
-    def _decompose_emergence(
-        self, user_msg: str, response: str, system_prompt: str
-    ) -> tuple[float, float, float]:
+    def _decompose_emergence(self, user_msg: str, response: str, system_prompt: str) -> tuple[float, float, float]:
         """
         Estimate how much of the response comes from:
           - base_model: generic LLM knowledge / predisposition
@@ -518,6 +628,7 @@ class GlassBoxProfiler:
 # ---------------------------------------------------------------------------
 # Convenience function for quick profiling
 # ---------------------------------------------------------------------------
+
 
 def profile_exchange(user_msg: str, assistant_response: str, system_prompt: str = "") -> dict:
     """Quick profile of a single exchange. Returns diagnostic dict."""

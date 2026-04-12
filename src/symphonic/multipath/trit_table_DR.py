@@ -24,47 +24,130 @@ TONGUE_ID = 5
 
 OPS = [
     # Pure (0x00-0x0F)
-    "let_d", "letrec", "lambda_d", "apply", "compose", "curry", "uncurry", "flip_",
-    "id_d", "const_d", "fix_", "church", "pair_d", "fst_", "snd_", "either_",
+    "let_d",
+    "letrec",
+    "lambda_d",
+    "apply",
+    "compose",
+    "curry",
+    "uncurry",
+    "flip_",
+    "id_d",
+    "const_d",
+    "fix_",
+    "church",
+    "pair_d",
+    "fst_",
+    "snd_",
+    "either_",
     # Monad (0x10-0x1F)
-    "bind_d", "return_d", "do_", "pure_", "ap_", "fmap_", "join_", "lift",
-    "mplus", "mzero", "guard_", "when_", "unless_", "sequence_d", "mapm", "foldm",
+    "bind_d",
+    "return_d",
+    "do_",
+    "pure_",
+    "ap_",
+    "fmap_",
+    "join_",
+    "lift",
+    "mplus",
+    "mzero",
+    "guard_",
+    "when_",
+    "unless_",
+    "sequence_d",
+    "mapm",
+    "foldm",
     # Effect (0x20-0x2F)
-    "io_", "ref_d", "st_", "mvar", "tvar", "exception_d", "throw_", "handle_",
-    "bracket", "finally", "mask_", "async_d", "par_", "unsafe_io", "perform", "forever",
+    "io_",
+    "ref_d",
+    "st_",
+    "mvar",
+    "tvar",
+    "exception_d",
+    "throw_",
+    "handle_",
+    "bracket",
+    "finally",
+    "mask_",
+    "async_d",
+    "par_",
+    "unsafe_io",
+    "perform",
+    "forever",
     # Lazy (0x30-0x3F)
-    "thunk", "force_", "seq_", "deepseq", "strict", "bang", "whnf", "nf_",
-    "memo", "stream_d", "fold", "unfold", "take_d", "drop_d", "iter_d", "cycle_",
+    "thunk",
+    "force_",
+    "seq_",
+    "deepseq",
+    "strict",
+    "bang",
+    "whnf",
+    "nf_",
+    "memo",
+    "stream_d",
+    "fold",
+    "unfold",
+    "take_d",
+    "drop_d",
+    "iter_d",
+    "cycle_",
 ]
 
 BANDS = [
-    ("PURE",   0x00, 0x0F, 1, 1),
-    ("MONAD",  0x10, 0x1F, 2, 2),
+    ("PURE", 0x00, 0x0F, 1, 1),
+    ("MONAD", 0x10, 0x1F, 2, 2),
     ("EFFECT", 0x20, 0x2F, 2, 3),
-    ("LAZY",   0x30, 0x3F, 3, 4),
+    ("LAZY", 0x30, 0x3F, 3, 4),
 ]
 
 NEG_OPS = {
     "flip_",
-    "mzero", "unless_",
-    "exception_d", "throw_", "unsafe_io",
+    "mzero",
+    "unless_",
+    "exception_d",
+    "throw_",
+    "unsafe_io",
     "drop_",
 }
 
 DUAL_OPS = {
-    "either_", "fix_",
-    "bind_d", "do_", "ap_", "mplus", "guard_",
-    "handle_", "bracket", "mask_", "async_d",
-    "thunk", "strict", "memo", "stream_d", "unfold",
+    "either_",
+    "fix_",
+    "bind_d",
+    "do_",
+    "ap_",
+    "mplus",
+    "guard_",
+    "handle_",
+    "bracket",
+    "mask_",
+    "async_d",
+    "thunk",
+    "strict",
+    "memo",
+    "stream_d",
+    "unfold",
 }
 
 
 def _polarity(op: str) -> Tuple[int, int, int, int, int, int]:
     """(KO, AV, RU, CA, UM, DR) polarity — DR home forced +1 by factory."""
     # Pure ops: witness-mostly across all channels (referential transparency)
-    if op in {"let_d", "letrec", "lambda_d", "apply", "compose",
-              "curry", "uncurry", "id_d", "const_d", "church",
-              "pair_d", "fst_", "snd_"}:
+    if op in {
+        "let_d",
+        "letrec",
+        "lambda_d",
+        "apply",
+        "compose",
+        "curry",
+        "uncurry",
+        "id_d",
+        "const_d",
+        "church",
+        "pair_d",
+        "fst_",
+        "snd_",
+    }:
         return (+1, +1, 0, 0, 0, +1)
     if op in {"flip_"}:
         return (+1, +1, 0, 0, +1, -1)
@@ -72,8 +155,7 @@ def _polarity(op: str) -> Tuple[int, int, int, int, int, int]:
         return (+1, +1, 0, 0, +1, +1)
 
     # Monad ops: active on KO (intent/sequencing) + DR
-    if op in {"bind_d", "return_d", "do_", "pure_", "ap_",
-              "fmap_", "join_", "lift", "sequence_d", "mapm", "foldm"}:
+    if op in {"bind_d", "return_d", "do_", "pure_", "ap_", "fmap_", "join_", "lift", "sequence_d", "mapm", "foldm"}:
         return (+1, +1, +1, 0, 0, +1)
     if op in {"mplus", "guard_", "when_"}:
         return (+1, +1, 0, 0, +1, +1)
@@ -81,21 +163,46 @@ def _polarity(op: str) -> Tuple[int, int, int, int, int, int]:
         return (+1, +1, 0, 0, +1, -1)
 
     # Effect ops: active on CA (execution) — the IO/ST boundary
-    if op in {"io_", "ref_d", "st_", "mvar", "tvar",
-              "bracket", "finally", "mask_", "async_d",
-              "par_", "perform", "forever"}:
+    if op in {
+        "io_",
+        "ref_d",
+        "st_",
+        "mvar",
+        "tvar",
+        "bracket",
+        "finally",
+        "mask_",
+        "async_d",
+        "par_",
+        "perform",
+        "forever",
+    }:
         return (+1, +1, +1, +1, +1, +1)
     if op in {"exception_d", "throw_"}:
         return (+1, +1, -1, +1, +1, -1)
     if op in {"handle_"}:
         return (+1, +1, +1, +1, +1, +1)
     if op in {"unsafe_io"}:
-        return (+1, 0, -1, +1, -1, -1)   # escape hatch
+        return (+1, 0, -1, +1, -1, -1)  # escape hatch
 
     # Lazy ops: active on UM (stability/suppression) + DR
-    if op in {"thunk", "force_", "seq_", "deepseq", "strict",
-              "bang", "whnf", "nf_", "memo", "stream_d",
-              "fold", "unfold", "take_d", "iter_d", "cycle_"}:
+    if op in {
+        "thunk",
+        "force_",
+        "seq_",
+        "deepseq",
+        "strict",
+        "bang",
+        "whnf",
+        "nf_",
+        "memo",
+        "stream_d",
+        "fold",
+        "unfold",
+        "take_d",
+        "iter_d",
+        "cycle_",
+    }:
         return (+1, +1, 0, +1, +1, +1)
     if op in {"drop_d"}:
         return (+1, +1, 0, +1, +1, -1)

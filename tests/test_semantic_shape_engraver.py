@@ -36,10 +36,10 @@ from kernel.semantic_shape_engraver import (
     ENRICHED_LOG,
 )
 
-
 # ============================================================
 # Constants
 # ============================================================
+
 
 @pytest.mark.unit
 class TestConstants:
@@ -56,7 +56,7 @@ class TestConstants:
     def test_tongue_weights_phi_scaled(self):
         keys = list(TONGUES.keys())
         for i, key in enumerate(keys):
-            assert abs(TONGUES[key]["weight"] - PHI ** i) < 1e-10
+            assert abs(TONGUES[key]["weight"] - PHI**i) < 1e-10
 
     def test_personality_axes_count(self):
         assert len(PERSONALITY_AXES) == 8
@@ -89,10 +89,11 @@ class TestConstants:
 # select_shape
 # ============================================================
 
+
 @pytest.mark.unit
 class TestSelectShape:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_trivial_returns_tetrahedron(self):
@@ -131,10 +132,11 @@ class TestSelectShape:
 # assign_tongue_faces
 # ============================================================
 
+
 @pytest.mark.unit
 class TestAssignTongueFaces:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_single_tongue_gets_all_faces(self):
@@ -175,10 +177,11 @@ class TestAssignTongueFaces:
 # engrave_faces
 # ============================================================
 
+
 @pytest.mark.unit
 class TestEngraveFaces:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_creates_face_engravings(self):
@@ -227,10 +230,11 @@ class TestEngraveFaces:
 # compute_personality_vector
 # ============================================================
 
+
 @pytest.mark.unit
 class TestPersonalityVector:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_base_values_at_0_5(self):
@@ -244,17 +248,13 @@ class TestPersonalityVector:
         assert vector["T"] > 0.5
 
     def test_all_tongues_active(self):
-        vector = self.engraver.compute_personality_vector(
-            ["KO", "AV", "RU", "CA", "UM", "DR"], codex=1
-        )
+        vector = self.engraver.compute_personality_vector(["KO", "AV", "RU", "CA", "UM", "DR"], codex=1)
         # All axes should be defined
         assert len(vector) == 8
 
     def test_clamped_to_0_1(self):
         """Even with all tongues active, values stay in [0, 1]."""
-        vector = self.engraver.compute_personality_vector(
-            ["KO", "AV", "RU", "CA", "UM", "DR"], codex=1
-        )
+        vector = self.engraver.compute_personality_vector(["KO", "AV", "RU", "CA", "UM", "DR"], codex=1)
         for axis, val in vector.items():
             assert 0.0 <= val <= 1.0
 
@@ -271,10 +271,11 @@ class TestPersonalityVector:
 # compute_semantic_hash
 # ============================================================
 
+
 @pytest.mark.unit
 class TestSemanticHash:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_same_inputs_same_hash(self):
@@ -315,10 +316,11 @@ class TestSemanticHash:
 # select_codex
 # ============================================================
 
+
 @pytest.mark.unit
 class TestSelectCodex:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_ko_av_selects_founder(self):
@@ -347,10 +349,11 @@ class TestSelectCodex:
 # Full engrave pipeline
 # ============================================================
 
+
 @pytest.mark.integration
 class TestEngravePipeline:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_engrave_returns_engraved_shape(self):
@@ -388,10 +391,11 @@ class TestEngravePipeline:
 # enrich_training_record
 # ============================================================
 
+
 @pytest.mark.integration
 class TestEnrichTrainingRecord:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_returns_record_dict(self):
@@ -409,7 +413,8 @@ class TestEnrichTrainingRecord:
         m = mock_open()
         with patch("builtins.open", m):
             record = self.engraver.enrich_training_record(
-                instruction="test", output="out",
+                instruction="test",
+                output="out",
                 active_tongues=["KO", "CA"],
             )
         assert "shape" in record
@@ -421,7 +426,8 @@ class TestEnrichTrainingRecord:
         m = mock_open()
         with patch("builtins.open", m):
             record = self.engraver.enrich_training_record(
-                instruction="test", output="out",
+                instruction="test",
+                output="out",
                 active_tongues=["KO"],
             )
         assert "codex_archetype" in record
@@ -452,7 +458,8 @@ class TestEnrichTrainingRecord:
         m = mock_open()
         with patch("builtins.open", m):
             self.engraver.enrich_training_record(
-                instruction="test", output="out",
+                instruction="test",
+                output="out",
                 active_tongues=["KO"],
             )
         m.assert_called_once()
@@ -465,7 +472,8 @@ class TestEnrichTrainingRecord:
         m = mock_open()
         with patch("builtins.open", m):
             record = self.engraver.enrich_training_record(
-                instruction="test", output="out",
+                instruction="test",
+                output="out",
                 active_tongues=["KO"],  # 5 null tongues
             )
         assert record["view_type"] == "null-heavy"
@@ -474,7 +482,8 @@ class TestEnrichTrainingRecord:
         m = mock_open()
         with patch("builtins.open", m):
             record = self.engraver.enrich_training_record(
-                instruction="test", output="out",
+                instruction="test",
+                output="out",
                 active_tongues=["KO", "AV", "RU"],  # 3 null tongues
             )
         assert record["view_type"] == "partial"
@@ -484,10 +493,11 @@ class TestEnrichTrainingRecord:
 # compute_shape_space_size
 # ============================================================
 
+
 @pytest.mark.unit
 class TestShapeSpaceSize:
     def setup_method(self):
-        with patch.object(Path, 'mkdir', return_value=None):
+        with patch.object(Path, "mkdir", return_value=None):
             self.engraver = SemanticShapeEngraver()
 
     def test_returns_dict(self):
@@ -497,7 +507,7 @@ class TestShapeSpaceSize:
     def test_tetrahedron_space(self):
         result = self.engraver.compute_shape_space_size("tetrahedron")
         # 6^4 * 8^4 * 7^6 = 1296 * 4096 * 117649
-        expected = (6 ** 4) * (8 ** 4) * (7 ** 6)
+        expected = (6**4) * (8**4) * (7**6)
         assert result["discrete_shapes"] == expected
 
     def test_log10_correct(self):

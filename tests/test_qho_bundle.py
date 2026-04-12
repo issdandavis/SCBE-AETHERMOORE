@@ -36,10 +36,10 @@ from src.crypto.qho_bundle import (
 from src.crypto.trit_curriculum import TritSignal, TRIT_AXES, compute_trit_signal
 from src.crypto.polymorphic_multipath import score_and_expand
 
-
 # ===================================================================
 # QHO Level Computation
 # ===================================================================
+
 
 class TestQHOLevel:
     """Test excitation level derivation."""
@@ -106,6 +106,7 @@ class TestQHOLevel:
 # Visual Frequency Vector
 # ===================================================================
 
+
 class TestVisualFrequency:
     """Test 6-channel polychromatic vector."""
 
@@ -158,40 +159,44 @@ class TestVisualFrequency:
 # Acoustic Signature
 # ===================================================================
 
+
 class TestAcousticSignature:
     """Test 3-band frequency emphasis."""
 
     def test_weights_sum_to_one(self):
         """Band weights should be normalized."""
-        qho = QHOLevel(n=3, energy=3.5, fork_count=2,
-                       crossing_energy=1.0, harmonic_wall_cost=1.0,
-                       is_ground_state=False)
+        qho = QHOLevel(
+            n=3, energy=3.5, fork_count=2, crossing_energy=1.0, harmonic_wall_cost=1.0, is_ground_state=False
+        )
         acoustic = compute_acoustic_signature(qho)
         total = acoustic.infra_weight + acoustic.audible_weight + acoustic.ultra_weight
         assert abs(total - 1.0) < 1e-10
 
     def test_ground_state_infra_dominant(self):
         """n=0 should have infrasonic emphasis."""
-        qho = QHOLevel(n=0, energy=0.5, fork_count=0,
-                       crossing_energy=0.0, harmonic_wall_cost=1.0,
-                       is_ground_state=True)
+        qho = QHOLevel(n=0, energy=0.5, fork_count=0, crossing_energy=0.0, harmonic_wall_cost=1.0, is_ground_state=True)
         acoustic = compute_acoustic_signature(qho)
         assert acoustic.infra_weight > acoustic.ultra_weight
 
     def test_excited_state_ultra_dominant(self):
         """High n should have ultrasonic emphasis."""
-        qho = QHOLevel(n=MAX_N, energy=MAX_N + 0.5, fork_count=3,
-                       crossing_energy=3.0, harmonic_wall_cost=2.0,
-                       is_ground_state=False)
+        qho = QHOLevel(
+            n=MAX_N,
+            energy=MAX_N + 0.5,
+            fork_count=3,
+            crossing_energy=3.0,
+            harmonic_wall_cost=2.0,
+            is_ground_state=False,
+        )
         acoustic = compute_acoustic_signature(qho)
         assert acoustic.ultra_weight > acoustic.infra_weight
 
     def test_audible_always_present(self):
         """Audible band should always have significant weight."""
         for n in range(MAX_N + 1):
-            qho = QHOLevel(n=n, energy=n + 0.5, fork_count=0,
-                           crossing_energy=0.0, harmonic_wall_cost=1.0,
-                           is_ground_state=(n == 0))
+            qho = QHOLevel(
+                n=n, energy=n + 0.5, fork_count=0, crossing_energy=0.0, harmonic_wall_cost=1.0, is_ground_state=(n == 0)
+            )
             acoustic = compute_acoustic_signature(qho)
             assert acoustic.audible_weight >= 0.25  # always anchored
 
@@ -199,9 +204,9 @@ class TestAcousticSignature:
         """Base frequency should increase with excitation level."""
         freqs = []
         for n in range(MAX_N + 1):
-            qho = QHOLevel(n=n, energy=n + 0.5, fork_count=0,
-                           crossing_energy=0.0, harmonic_wall_cost=1.0,
-                           is_ground_state=(n == 0))
+            qho = QHOLevel(
+                n=n, energy=n + 0.5, fork_count=0, crossing_energy=0.0, harmonic_wall_cost=1.0, is_ground_state=(n == 0)
+            )
             acoustic = compute_acoustic_signature(qho)
             freqs.append(acoustic.base_freq)
         # Should be strictly increasing
@@ -211,9 +216,9 @@ class TestAcousticSignature:
     def test_base_freq_formula(self):
         """f_n = ω × (n + 1/2)."""
         for n in range(MAX_N + 1):
-            qho = QHOLevel(n=n, energy=n + 0.5, fork_count=0,
-                           crossing_energy=0.0, harmonic_wall_cost=1.0,
-                           is_ground_state=(n == 0))
+            qho = QHOLevel(
+                n=n, energy=n + 0.5, fork_count=0, crossing_energy=0.0, harmonic_wall_cost=1.0, is_ground_state=(n == 0)
+            )
             acoustic = compute_acoustic_signature(qho)
             expected = OMEGA_BASE * (n + 0.5)
             assert abs(acoustic.base_freq - expected) < 0.01
@@ -222,6 +227,7 @@ class TestAcousticSignature:
 # ===================================================================
 # Curriculum Difficulty
 # ===================================================================
+
 
 class TestDifficulty:
     """Test difficulty scoring."""
@@ -240,17 +246,20 @@ class TestDifficulty:
 
     def test_ground_state_low_difficulty(self):
         """n=0 with no gain should have low difficulty."""
-        qho = QHOLevel(n=0, energy=0.5, fork_count=0,
-                       crossing_energy=0.0, harmonic_wall_cost=1.0,
-                       is_ground_state=True)
+        qho = QHOLevel(n=0, energy=0.5, fork_count=0, crossing_energy=0.0, harmonic_wall_cost=1.0, is_ground_state=True)
         d = compute_difficulty(qho, gain=0.0)
         assert d < 0.1  # very easy
 
     def test_max_excitation_high_difficulty(self):
         """Max n with max gain and max energy should be high difficulty."""
-        qho = QHOLevel(n=MAX_N, energy=MAX_N + 0.5, fork_count=3,
-                       crossing_energy=3.0, harmonic_wall_cost=100.0,
-                       is_ground_state=False)
+        qho = QHOLevel(
+            n=MAX_N,
+            energy=MAX_N + 0.5,
+            fork_count=3,
+            crossing_energy=3.0,
+            harmonic_wall_cost=100.0,
+            is_ground_state=False,
+        )
         d = compute_difficulty(qho, gain=3.0)
         assert d > 0.8  # very hard
 
@@ -258,9 +267,9 @@ class TestDifficulty:
         """Higher n should give higher difficulty (all else equal)."""
         difficulties = []
         for n in range(MAX_N + 1):
-            qho = QHOLevel(n=n, energy=n + 0.5, fork_count=0,
-                           crossing_energy=0.0, harmonic_wall_cost=1.0,
-                           is_ground_state=(n == 0))
+            qho = QHOLevel(
+                n=n, energy=n + 0.5, fork_count=0, crossing_energy=0.0, harmonic_wall_cost=1.0, is_ground_state=(n == 0)
+            )
             difficulties.append(compute_difficulty(qho, gain=0.0))
         for i in range(1, len(difficulties)):
             assert difficulties[i] >= difficulties[i - 1]
@@ -269,6 +278,7 @@ class TestDifficulty:
 # ===================================================================
 # Bundle Generation (Single)
 # ===================================================================
+
 
 class TestQHOBundle:
     """Test single-text QHO bundle generation."""
@@ -305,6 +315,7 @@ class TestQHOBundle:
 # ===================================================================
 # Batch Processing
 # ===================================================================
+
 
 class TestQHOBatch:
     """Test batch QHO bundle generation."""
@@ -348,6 +359,7 @@ class TestQHOBatch:
 # ===================================================================
 # SFT Flattening
 # ===================================================================
+
 
 class TestFlattenQHO:
     """Test SFT export with QHO metadata."""
@@ -413,6 +425,7 @@ class TestFlattenQHO:
 # Report
 # ===================================================================
 
+
 class TestReport:
     """Test report formatting."""
 
@@ -441,6 +454,7 @@ class TestReport:
 # ===================================================================
 # Constants
 # ===================================================================
+
 
 class TestConstants:
     """Test module constants are sensible."""

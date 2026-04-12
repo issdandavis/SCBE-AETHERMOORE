@@ -24,6 +24,7 @@ PHI = 1.618033988749895
 # Minimal inline copies for self-contained testing
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LexiconEntry:
     tongue: str
@@ -117,8 +118,10 @@ class WorldBundle:
         output_str = json.dumps(output, default=str, sort_keys=True)
         output_hash = hashlib.sha256(output_str.encode()).hexdigest()[:16]
         cp = CirculationPass(
-            method=method, timestamp=time.time(),
-            sections_touched=sections, output_hash=output_hash,
+            method=method,
+            timestamp=time.time(),
+            sections_touched=sections,
+            output_hash=output_hash,
             alignment_delta=max(-1.0, min(1.0, alignment_delta)),
         )
         self.passes.append(cp)
@@ -158,6 +161,7 @@ def create_default_bundle():
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestDefaultBundle:
 
@@ -292,9 +296,7 @@ class TestVocabularyAddition:
 
     def test_adding_words_increases_count(self):
         b = create_default_bundle()
-        b.lexicon["ko"].append(
-            LexiconEntry("ko", "kor", "koɹ", "intent", "noun", 1)
-        )
+        b.lexicon["ko"].append(LexiconEntry("ko", "kor", "koɹ", "intent", "noun", 1))
         assert b.total_vocabulary == 1
 
     def test_multiple_tongues_accumulate(self):

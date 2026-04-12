@@ -62,27 +62,26 @@ from src.crypto.qho_bundle import (
 )
 from src.crypto.harmonic_dark_fill import PHI
 
-
 # ---------------------------------------------------------------------------
 # Constants: Tongue -> Coding Domain
 # ---------------------------------------------------------------------------
 
 TONGUE_DOMAIN: Dict[str, str] = {
-    "ko": "intent",        # naming, documentation, API design
-    "av": "flow",          # async, data pipelines, transport
-    "ru": "governance",    # auth, access control, security
-    "ca": "compute",       # algorithms, data structures, optimization
-    "um": "edge_cases",    # error handling, edge cases, hidden state
-    "dr": "structure",     # types, modularity, architecture
+    "ko": "intent",  # naming, documentation, API design
+    "av": "flow",  # async, data pipelines, transport
+    "ru": "governance",  # auth, access control, security
+    "ca": "compute",  # algorithms, data structures, optimization
+    "um": "edge_cases",  # error handling, edge cases, hidden state
+    "dr": "structure",  # types, modularity, architecture
 }
 
 DOMAIN_DESCRIPTION: Dict[str, str] = {
-    "intent":      "Naming clarity, documentation, API contract design",
-    "flow":        "Async patterns, data pipelines, message passing",
-    "governance":  "Authentication, authorization, security boundaries",
-    "compute":     "Algorithm efficiency, data structures, resource management",
-    "edge_cases":  "Error handling, boundary conditions, failure modes",
-    "structure":   "Type safety, modularity, dependency management",
+    "intent": "Naming clarity, documentation, API contract design",
+    "flow": "Async patterns, data pipelines, message passing",
+    "governance": "Authentication, authorization, security boundaries",
+    "compute": "Algorithm efficiency, data structures, resource management",
+    "edge_cases": "Error handling, boundary conditions, failure modes",
+    "structure": "Type safety, modularity, dependency management",
 }
 
 
@@ -90,18 +89,20 @@ DOMAIN_DESCRIPTION: Dict[str, str] = {
 # Pattern Registry: Good patterns and "swear words" per domain per level
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class CodePattern:
     """A coding pattern -- good or anti-pattern -- with cross-domain analogy."""
+
     name: str
-    domain: str                 # which tongue domain
-    is_antipattern: bool        # True = "swear word"
-    min_n: int                  # minimum QHO level to encounter this
-    description: str            # what it is (understanding, not memorization)
-    why: str                    # WHY it matters (the compounding insight)
-    code_good: str              # the correct way
-    code_bad: str               # the anti-pattern way (empty if good-only)
-    cross_domain: str           # maps to physics/lore analogy
+    domain: str  # which tongue domain
+    is_antipattern: bool  # True = "swear word"
+    min_n: int  # minimum QHO level to encounter this
+    description: str  # what it is (understanding, not memorization)
+    why: str  # WHY it matters (the compounding insight)
+    code_good: str  # the correct way
+    code_bad: str  # the anti-pattern way (empty if good-only)
+    cross_domain: str  # maps to physics/lore analogy
 
 
 # The registry. Each pattern has a minimum QHO level (curriculum difficulty).
@@ -139,13 +140,11 @@ PATTERN_REGISTRY: List[CodePattern] = [
         min_n=2,
         description="Docstrings as contracts: inputs, outputs, invariants, not implementation",
         why="Documentation that describes HOW ages. Documentation that describes WHAT persists.",
-        code_good='def transfer(src: Account, dst: Account, amount: Decimal) -> Receipt:\n'
-                  '    """Move funds between accounts. Raises InsufficientFunds if src < amount."""',
-        code_bad='def transfer(src, dst, amount):\n'
-                 '    # transfers money',
+        code_good="def transfer(src: Account, dst: Account, amount: Decimal) -> Receipt:\n"
+        '    """Move funds between accounts. Raises InsufficientFunds if src < amount."""',
+        code_bad="def transfer(src, dst, amount):\n" "    # transfers money",
         cross_domain="Sacred Egg shell inscription: states what WILL hatch, not how the egg was laid.",
     ),
-
     # ── AV / Flow (n=1+) ────────────────────────────────────────────────
     CodePattern(
         name="structured_async",
@@ -154,9 +153,7 @@ PATTERN_REGISTRY: List[CodePattern] = [
         min_n=1,
         description="Async operations with structured concurrency: clear start, join, cancel",
         why="Unstructured concurrency leaks tasks like unclosed file handles leak memory.",
-        code_good="async with TaskGroup() as tg:\n"
-                  "    tg.create_task(fetch_a())\n"
-                  "    tg.create_task(fetch_b())",
+        code_good="async with TaskGroup() as tg:\n" "    tg.create_task(fetch_a())\n" "    tg.create_task(fetch_b())",
         code_bad="asyncio.create_task(fetch_a())  # fire and forget, who cancels this?",
         cross_domain="AV diplomacy: every message needs a sender, a receiver, and a handshake.",
     ),
@@ -182,7 +179,6 @@ PATTERN_REGISTRY: List[CodePattern] = [
         code_bad="balance = await get_balance()  # another task modifies balance HERE\nawait set_balance(balance - amount)",
         cross_domain="Two tongues casting on the same target without coordination. Spell collision.",
     ),
-
     # ── RU / Governance (n=2+) ──────────────────────────────────────────
     CodePattern(
         name="auth_boundary",
@@ -217,7 +213,6 @@ PATTERN_REGISTRY: List[CodePattern] = [
         code_bad="def admin_action(user):\n    user.role = Role.ADMIN  # 'temporary' escalation\n    ...",
         cross_domain="Breaking the harmonic wall: d* should make this cost R^((phi*d*)^2), not zero.",
     ),
-
     # ── CA / Compute (n=1+) ─────────────────────────────────────────────
     CodePattern(
         name="right_data_structure",
@@ -252,7 +247,6 @@ PATTERN_REGISTRY: List[CodePattern] = [
         code_bad="f = open(path)\ndata = f.read()\n# f.close() never reached if exception above",
         cross_domain="Energy leak in the polyhedral cavity: each unclosed face bleeds heat until collapse.",
     ),
-
     # ── UM / Edge Cases (n=0+) ──────────────────────────────────────────
     CodePattern(
         name="explicit_error_handling",
@@ -287,7 +281,6 @@ PATTERN_REGISTRY: List[CodePattern] = [
         code_bad="def divide(a, b):\n    return a / b if b else 0  # silently returns 0 for division by zero",
         cross_domain="Trit boundary without a fork: the model saw one side, believed it was the only side.",
     ),
-
     # ── DR / Structure (n=2+) ───────────────────────────────────────────
     CodePattern(
         name="single_responsibility",
@@ -340,6 +333,7 @@ PATTERN_REGISTRY: List[CodePattern] = [
 # Quick lookup structures
 # ---------------------------------------------------------------------------
 
+
 def _patterns_by_domain() -> Dict[str, List[CodePattern]]:
     """Group patterns by domain for fast lookup."""
     result: Dict[str, List[CodePattern]] = {}
@@ -347,9 +341,11 @@ def _patterns_by_domain() -> Dict[str, List[CodePattern]]:
         result.setdefault(p.domain, []).append(p)
     return result
 
+
 def _antipatterns() -> List[CodePattern]:
     """All swear words."""
     return [p for p in PATTERN_REGISTRY if p.is_antipattern]
+
 
 def _good_patterns() -> List[CodePattern]:
     """All good patterns."""
@@ -365,14 +361,16 @@ ALL_GOOD_PATTERNS = _good_patterns()
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CodeLesson:
     """A single code pattern matched to a training text by the trit signal."""
+
     pattern: CodePattern
-    relevance: float           # 0..1 how strongly this text triggers this pattern
-    compound_intent: float     # system_intent * learner_intent (the compounding score)
-    tongue: str                # which tongue activated this
-    axis: str                  # which trit axis triggered it
+    relevance: float  # 0..1 how strongly this text triggers this pattern
+    compound_intent: float  # system_intent * learner_intent (the compounding score)
+    tongue: str  # which tongue activated this
+    axis: str  # which trit axis triggered it
 
 
 @dataclass
@@ -382,16 +380,18 @@ class CodeLatticeBundle:
     The AI sees: text + trit + forks + QHO level + code patterns + cross-domain.
     Understanding compounds because each lesson has WHY + analogy, not just WHAT.
     """
+
     qho_bundle: QHOBundle
     lessons: List[CodeLesson]
-    total_compound_intent: float    # sum of all lesson compound intents
-    active_domains: List[str]       # which tongue domains are teaching
-    swear_word_count: int           # how many anti-patterns detected
+    total_compound_intent: float  # sum of all lesson compound intents
+    active_domains: List[str]  # which tongue domains are teaching
+    swear_word_count: int  # how many anti-patterns detected
 
 
 # ---------------------------------------------------------------------------
 # Pattern selection: trit signal -> which code patterns to teach
 # ---------------------------------------------------------------------------
+
 
 def select_patterns(
     signal: TritSignal,
@@ -416,8 +416,8 @@ def select_patterns(
 
     # Map axes to tongue pairs and their domains
     axis_domains = [
-        ("structure",  signal.c_structure,  signal.edge_structure,  "ko", "dr"),
-        ("stability",  signal.c_stability,  signal.edge_stability,  "av", "um"),
+        ("structure", signal.c_structure, signal.edge_structure, "ko", "dr"),
+        ("stability", signal.c_stability, signal.edge_stability, "av", "um"),
         ("creativity", signal.c_creativity, signal.edge_creativity, "ru", "ca"),
     ]
 
@@ -455,13 +455,15 @@ def select_patterns(
             learner_intent = gain * (1.0 + relevance)
             compound = system_intent * learner_intent
 
-            lessons.append(CodeLesson(
-                pattern=pattern,
-                relevance=round(relevance, 4),
-                compound_intent=round(compound, 4),
-                tongue=active_tongue,
-                axis=axis_name,
-            ))
+            lessons.append(
+                CodeLesson(
+                    pattern=pattern,
+                    relevance=round(relevance, 4),
+                    compound_intent=round(compound, 4),
+                    tongue=active_tongue,
+                    axis=axis_name,
+                )
+            )
 
     # Sort by compound intent (highest first) and deduplicate by pattern name
     seen = set()
@@ -477,6 +479,7 @@ def select_patterns(
 # ---------------------------------------------------------------------------
 # Public API: generate Code Lattice bundle
 # ---------------------------------------------------------------------------
+
 
 def generate_code_lattice_bundle(
     text: str,
@@ -498,9 +501,7 @@ def generate_code_lattice_bundle(
         4. WHY the pattern matters (understanding)
         5. Cross-domain analogy (physics/lore/code bridge)
     """
-    qho_bundle = generate_qho_bundle(
-        text, edge_threshold, content_threshold, threshold
-    )
+    qho_bundle = generate_qho_bundle(text, edge_threshold, content_threshold, threshold)
 
     lessons = select_patterns(
         signal=qho_bundle.multipath.primary,
@@ -524,6 +525,7 @@ def generate_code_lattice_bundle(
 # ---------------------------------------------------------------------------
 # SFT export: flatten for training
 # ---------------------------------------------------------------------------
+
 
 def flatten_code_lattice_for_sft(
     bundles: List[CodeLatticeBundle],
@@ -585,6 +587,7 @@ def flatten_code_lattice_for_sft(
 # Report
 # ---------------------------------------------------------------------------
 
+
 def format_code_lattice_report(bundles: List[CodeLatticeBundle]) -> str:
     """Human-readable code lattice report."""
     lines = [
@@ -600,13 +603,15 @@ def format_code_lattice_report(bundles: List[CodeLatticeBundle]) -> str:
     total_swears = sum(b.swear_word_count for b in bundles)
     total_compound = sum(b.total_compound_intent for b in bundles)
 
-    lines.extend([
-        f"  Total lessons:        {total_lessons}",
-        f"  Swear words detected: {total_swears}",
-        f"  Total compound intent:{total_compound:.2f}",
-        "",
-        "  Domain Activity:",
-    ])
+    lines.extend(
+        [
+            f"  Total lessons:        {total_lessons}",
+            f"  Swear words detected: {total_swears}",
+            f"  Total compound intent:{total_compound:.2f}",
+            "",
+            "  Domain Activity:",
+        ]
+    )
 
     domain_counts: Dict[str, int] = {}
     for b in bundles:
@@ -624,15 +629,19 @@ def format_code_lattice_report(bundles: List[CodeLatticeBundle]) -> str:
         text = bundle.qho_bundle.text
         text_short = text[:50] + "..." if len(text) > 50 else text
         lines.append(f'    text: "{text_short}"')
-        lines.append(f"      QHO n={bundle.qho_bundle.qho.n}  "
-                     f"difficulty={bundle.qho_bundle.curriculum_difficulty:.3f}  "
-                     f"compound={bundle.total_compound_intent:.2f}")
+        lines.append(
+            f"      QHO n={bundle.qho_bundle.qho.n}  "
+            f"difficulty={bundle.qho_bundle.curriculum_difficulty:.3f}  "
+            f"compound={bundle.total_compound_intent:.2f}"
+        )
 
         for lesson in bundle.lessons[:3]:
             marker = "XX" if lesson.pattern.is_antipattern else "OK"
-            lines.append(f"      [{marker}] {lesson.pattern.name} "
-                         f"({lesson.tongue}/{lesson.axis}) "
-                         f"relevance={lesson.relevance:.2f}")
+            lines.append(
+                f"      [{marker}] {lesson.pattern.name} "
+                f"({lesson.tongue}/{lesson.axis}) "
+                f"relevance={lesson.relevance:.2f}"
+            )
             lines.append(f"           {lesson.pattern.description[:70]}")
             lines.append(f"           -> {lesson.pattern.cross_domain[:70]}")
 

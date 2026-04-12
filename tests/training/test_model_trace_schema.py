@@ -20,8 +20,8 @@ def test_model_trace_schema_accepts_minimal_record() -> None:
             "source_corpus": "training-data/grok_trace.jsonl",
             "messages": [
                 {"role": "user", "content": "Plan the route consistency schema."},
-                {"role": "assistant", "content": "1. Add schema\n2. Add builder\n3. Add tests"}
-            ]
+                {"role": "assistant", "content": "1. Add schema\n2. Add builder\n3. Add tests"},
+            ],
         },
         "extracted_structured_record": {
             "intent_id": "intent_12345678",
@@ -35,11 +35,8 @@ def test_model_trace_schema_accepts_minimal_record() -> None:
             "proposed_artifacts": ["schemas/model_trace_record.schema.json"],
             "governance_claims": [{"claim": "verification pending", "status": "UNSPECIFIED"}],
             "triangulation_links": [],
-            "confidence": 0.42
+            "confidence": 0.42,
         },
-        "verification": {
-            "human_verified": False,
-            "trust_level": "raw_model_trace"
-        }
+        "verification": {"human_verified": False, "trust_level": "raw_model_trace"},
     }
     validator.validate(record)

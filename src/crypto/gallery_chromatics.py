@@ -48,26 +48,26 @@ TAU = 2.0 * math.pi
 
 # Dead tone target ratios
 DEAD_TONE_RATIOS = {
-    "perfect_fifth": 3.0 / 2.0,    # 1.500
-    "minor_sixth": 8.0 / 5.0,      # 1.600
-    "minor_seventh": 16.0 / 9.0,   # 1.778
+    "perfect_fifth": 3.0 / 2.0,  # 1.500
+    "minor_sixth": 8.0 / 5.0,  # 1.600
+    "minor_seventh": 16.0 / 9.0,  # 1.778
 }
 
 # Sacred Tongue phase offsets (radians) — phi-scaled angular rotation
 # Each tongue rotates the 4-color set by this amount on the a*b* plane
 TONGUE_PHASE_OFFSETS = {
-    "ko": 0.0,                          # origin — intent
-    "av": TAU / PHI,                     # ~3.883 rad — wisdom
-    "ru": TAU / (PHI ** 2),              # ~2.399 rad — binding
-    "ca": TAU / (PHI ** 3),              # ~1.483 rad — invention
-    "um": TAU / (PHI ** 4),              # ~0.917 rad — shadow
-    "dr": TAU / (PHI ** 5),              # ~0.566 rad — structure
+    "ko": 0.0,  # origin — intent
+    "av": TAU / PHI,  # ~3.883 rad — wisdom
+    "ru": TAU / (PHI**2),  # ~2.399 rad — binding
+    "ca": TAU / (PHI**3),  # ~1.483 rad — invention
+    "um": TAU / (PHI**4),  # ~0.917 rad — shadow
+    "dr": TAU / (PHI**5),  # ~0.566 rad — structure
 }
 
 # Tongue groupings for dual-eye seeding
-LEFT_EYE_TONGUES = ("ko", "dr")      # structure/form eye
-RIGHT_EYE_TONGUES = ("ru", "ca")     # creativity/novelty eye
-BRIDGE_TONGUES = ("av", "um")         # stability bridge (shared)
+LEFT_EYE_TONGUES = ("ko", "dr")  # structure/form eye
+RIGHT_EYE_TONGUES = ("ru", "ca")  # creativity/novelty eye
+BRIDGE_TONGUES = ("av", "um")  # stability bridge (shared)
 
 # Material band properties (L* modifier, chroma scale, hue shift)
 MATERIAL_BANDS = {
@@ -83,18 +83,20 @@ MATERIAL_ORDER = ["matte", "fluorescent", "neon", "metallic"]
 # CIELAB Color
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class LabColor:
     """CIELAB color with material band annotation."""
-    L: float        # lightness [0, 100]
-    a: float        # green(-) to red(+) [-128, 128]
-    b: float        # blue(-) to yellow(+) [-128, 128]
-    material: str   # "matte", "fluorescent", "neon", "metallic"
+
+    L: float  # lightness [0, 100]
+    a: float  # green(-) to red(+) [-128, 128]
+    b: float  # blue(-) to yellow(+) [-128, 128]
+    material: str  # "matte", "fluorescent", "neon", "metallic"
 
     @property
     def chroma(self) -> float:
         """Perceptual colorfulness: C* = sqrt(a² + b²)"""
-        return math.sqrt(self.a ** 2 + self.b ** 2)
+        return math.sqrt(self.a**2 + self.b**2)
 
     @property
     def hue_angle(self) -> float:
@@ -121,6 +123,7 @@ class LabColor:
 # ---------------------------------------------------------------------------
 # Harmonic-to-Color Mapping
 # ---------------------------------------------------------------------------
+
 
 def frequency_to_harmonic_number(ratio: float) -> float:
     """Convert a frequency ratio to a continuous harmonic number.
@@ -196,13 +199,15 @@ def scatter_color_quad(
 # Dead Tone Color Chord
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class DeadToneColorChord:
     """4-color chord for a single dead tone, as seen by one tongue."""
-    dead_tone: str              # "perfect_fifth" | "minor_sixth" | "minor_seventh"
-    tongue: str                 # which tongue's phase was used
-    harmonic_number: float      # log-phi harmonic position
-    colors: List[LabColor]      # 4 colors (matte, fluorescent, neon, metallic)
+
+    dead_tone: str  # "perfect_fifth" | "minor_sixth" | "minor_seventh"
+    tongue: str  # which tongue's phase was used
+    harmonic_number: float  # log-phi harmonic position
+    colors: List[LabColor]  # 4 colors (matte, fluorescent, neon, metallic)
 
     @property
     def mean_chroma(self) -> float:
@@ -234,6 +239,7 @@ class DeadToneColorChord:
 # Iris (one eye's view of all 3 dead tones)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ChromaticIris:
     """One eye's complete color field — 3 dead tones × 4 colors = 12 points.
@@ -242,11 +248,12 @@ class ChromaticIris:
     QHO coefficient dominates the phase rotation, while the secondary
     tongue adds a sub-rotation to each material band.
     """
-    eye: str                            # "left" or "right"
-    seed_tongues: Tuple[str, str]       # which tongues seed this eye
-    dominant_tongue: str                # which tongue has higher activation
+
+    eye: str  # "left" or "right"
+    seed_tongues: Tuple[str, str]  # which tongues seed this eye
+    dominant_tongue: str  # which tongue has higher activation
     chords: Dict[str, DeadToneColorChord]  # 3 dead tone chords
-    bridge_phase: float                 # stability bridge contribution
+    bridge_phase: float  # stability bridge contribution
 
     @property
     def total_chroma(self) -> float:
@@ -272,6 +279,7 @@ class ChromaticIris:
 # Gallery Color Field (dual eyes)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GalleryColorField:
     """Dual-seeded chromatic perception of the gallery ambient layer.
@@ -282,11 +290,12 @@ class GalleryColorField:
 
     The field contains 24 total color points (2 eyes × 3 tones × 4 colors).
     """
+
     left_iris: ChromaticIris
     right_iris: ChromaticIris
-    cross_eye_coherence: float      # how aligned are the two irises [0, 1]
-    dominant_material: str          # which material band has most chroma
-    spectral_coverage: float        # fraction of hue wheel covered [0, 1]
+    cross_eye_coherence: float  # how aligned are the two irises [0, 1]
+    dominant_material: str  # which material band has most chroma
+    spectral_coverage: float  # fraction of hue wheel covered [0, 1]
 
     def to_dict(self) -> dict:
         return {
@@ -301,6 +310,7 @@ class GalleryColorField:
 # ---------------------------------------------------------------------------
 # Core Computation
 # ---------------------------------------------------------------------------
+
 
 def _build_iris(
     eye_name: str,
@@ -360,7 +370,7 @@ def _build_iris(
 
 
 def compute_gallery_color_field(
-    gallery_notes: Dict[str, 'GalleryAmbientNote'],
+    gallery_notes: Dict[str, "GalleryAmbientNote"],
     tongue_coefficients: Dict[str, float],
 ) -> GalleryColorField:
     """Compute the dual-seeded chromatic field from gallery ambient data.
@@ -375,10 +385,7 @@ def compute_gallery_color_field(
         GalleryColorField with 24 color points across 2 irises
     """
     # Extract observed ratios from gallery notes
-    dead_tone_ratios = {
-        name: note.observed_ratio
-        for name, note in gallery_notes.items()
-    }
+    dead_tone_ratios = {name: note.observed_ratio for name, note in gallery_notes.items()}
 
     # Bridge phase from stability tongues (AV, UM)
     av_phase = TONGUE_PHASE_OFFSETS["av"] * tongue_coefficients.get("av", 0.5)
@@ -386,18 +393,16 @@ def compute_gallery_color_field(
     bridge_phase = (av_phase + um_phase) / 2.0
 
     # Build both irises
-    left = _build_iris("left", LEFT_EYE_TONGUES, tongue_coefficients,
-                       dead_tone_ratios, bridge_phase)
-    right = _build_iris("right", RIGHT_EYE_TONGUES, tongue_coefficients,
-                        dead_tone_ratios, bridge_phase)
+    left = _build_iris("left", LEFT_EYE_TONGUES, tongue_coefficients, dead_tone_ratios, bridge_phase)
+    right = _build_iris("right", RIGHT_EYE_TONGUES, tongue_coefficients, dead_tone_ratios, bridge_phase)
 
     # Cross-eye coherence: how similar are the two irises' chroma patterns?
     left_chromas = [left.chords[t].mean_chroma for t in DEAD_TONE_RATIOS]
     right_chromas = [right.chords[t].mean_chroma for t in DEAD_TONE_RATIOS]
     # Cosine similarity of chroma vectors
     dot = sum(l * r for l, r in zip(left_chromas, right_chromas))
-    mag_l = math.sqrt(sum(x ** 2 for x in left_chromas)) or 1e-9
-    mag_r = math.sqrt(sum(x ** 2 for x in right_chromas)) or 1e-9
+    mag_l = math.sqrt(sum(x**2 for x in left_chromas)) or 1e-9
+    mag_r = math.sqrt(sum(x**2 for x in right_chromas)) or 1e-9
     coherence = max(0.0, min(1.0, dot / (mag_l * mag_r)))
 
     # Dominant material: which material band has highest total chroma?

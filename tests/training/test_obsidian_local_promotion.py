@@ -12,7 +12,6 @@ from scripts.obsidian_local_promotion import (
     write_trace_records,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TRACE_SCHEMA = REPO_ROOT / "schemas" / "model_trace_record.schema.json"
 ROUTE_SCHEMA = REPO_ROOT / "schemas" / "route_consistency_record.schema.json"
@@ -93,11 +92,17 @@ ALLOW once reviewed.
 
     assert result["promoted_count"] == 1
 
-    verified_rows = [json.loads(line) for line in (tmp_path / "verified_traces.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    verified_rows = [
+        json.loads(line)
+        for line in (tmp_path / "verified_traces.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    ]
     assert verified_rows[0]["verification"]["human_verified"] is True
     assert verified_rows[0]["verification"]["trust_level"] == "human_verified_record"
 
-    route_rows = [json.loads(line) for line in (tmp_path / "route_records.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    route_rows = [
+        json.loads(line) for line in (tmp_path / "route_records.jsonl").read_text(encoding="utf-8").splitlines() if line
+    ]
     assert len(route_rows) == 1
     assert route_rows[0]["route_metadata"]["tongue"] == "CA"
     assert route_rows[0]["input"]["language"] == "python"

@@ -13,6 +13,7 @@ from pathlib import Path
 
 # We test via the generator functions directly
 import sys
+
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -33,10 +34,10 @@ from src.crypto.sacred_tongues import TONGUES, TongueSpec
 from src.crypto.tri_bundle import TONGUE_WEIGHTS, PHI
 from src.crypto.harmonic_dark_fill import TONGUE_AUDIBLE_FREQ
 
-
 # ===================================================================
 # Full Name Policy — NEVER abbreviate the conlangs
 # ===================================================================
+
 
 class TestFullNamePolicy:
     """Sacred Tongues must always use full names, never abbreviations."""
@@ -72,6 +73,7 @@ class TestFullNamePolicy:
 # ===================================================================
 # Grammar Lessons
 # ===================================================================
+
 
 class TestGrammarLessons:
     @pytest.fixture
@@ -153,6 +155,7 @@ class TestGrammarLessons:
 # Lullaby Records
 # ===================================================================
 
+
 class TestLullabies:
     @pytest.fixture
     def lullabies(self):
@@ -216,6 +219,7 @@ class TestLullabies:
 # Story Lessons
 # ===================================================================
 
+
 class TestStoryLessons:
     @pytest.fixture
     def lessons(self):
@@ -268,10 +272,11 @@ class TestStoryLessons:
             assert name in content
 
     def test_story_lessons_have_pre_tokenizer_exercise(self, lessons):
-        single_tongue = [r for r in lessons
-                         if STORY_TONGUE_MAP.get(
-                             r["metadata"]["concept_id"].replace("story_", "") + ".md"
-                         ) is not None]
+        single_tongue = [
+            r
+            for r in lessons
+            if STORY_TONGUE_MAP.get(r["metadata"]["concept_id"].replace("story_", "") + ".md") is not None
+        ]
         for r in single_tongue:
             content = r["messages"][2]["content"]
             # Should mention pre-tokenizer exercise or the full tongue pipeline
@@ -282,6 +287,7 @@ class TestStoryLessons:
 # ===================================================================
 # Tongue Comparisons
 # ===================================================================
+
 
 class TestTongueComparisons:
     @pytest.fixture
@@ -327,6 +333,7 @@ class TestTongueComparisons:
 # ===================================================================
 # Pipeline Order
 # ===================================================================
+
 
 class TestPipelineOrder:
     @pytest.fixture
@@ -386,6 +393,7 @@ class TestPipelineOrder:
 # Record Format
 # ===================================================================
 
+
 class TestRecordFormat:
     def test_make_record_structure(self):
         messages = [
@@ -418,6 +426,7 @@ class TestRecordFormat:
 # ===================================================================
 # Integration: Full Pipeline
 # ===================================================================
+
 
 class TestFullPipeline:
     """Run the full generator and verify the complete output."""
@@ -469,21 +478,20 @@ class TestFullPipeline:
         """No assistant message should use standalone abbreviations for tongues."""
         # Check that full names appear and bare abbreviations don't serve as labels
         bare_patterns = [
-            "the KO tongue", "the AV tongue", "the RU tongue",
-            "the CA tongue", "the UM tongue", "the DR tongue",
+            "the KO tongue",
+            "the AV tongue",
+            "the RU tongue",
+            "the CA tongue",
+            "the UM tongue",
+            "the DR tongue",
         ]
         for r in all_records:
             content = r["messages"][2]["content"]
             for pattern in bare_patterns:
-                assert pattern not in content, (
-                    f"Found abbreviation '{pattern}' in {r['metadata']['concept_id']}"
-                )
+                assert pattern not in content, f"Found abbreviation '{pattern}' in {r['metadata']['concept_id']}"
 
     def test_every_tongue_covered(self, all_records):
         """Every tongue should appear in at least one record's assistant content."""
         for name in TONGUE_FULL_NAMES.values():
-            found = any(
-                name in r["messages"][2]["content"]
-                for r in all_records
-            )
+            found = any(name in r["messages"][2]["content"] for r in all_records)
             assert found, f"{name} not found in any record"

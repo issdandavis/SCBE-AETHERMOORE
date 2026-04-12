@@ -23,4 +23,3 @@ class Cell:
 
     def add_feedback(self, note: dict) -> None:
         self.feedback.append(note)
-

@@ -50,12 +50,14 @@ PHI = 1.618033988749895
 # Bundle Sections
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class OntologyEntry:
     """One concept in the world ontology."""
+
     concept_id: str
     name: str
-    tongue_affinity: str       # primary tongue
+    tongue_affinity: str  # primary tongue
     description: str
     relations: List[str] = field(default_factory=list)  # related concept_ids
 
@@ -63,40 +65,44 @@ class OntologyEntry:
 @dataclass
 class LexiconEntry:
     """One word in a tongue's vocabulary."""
+
     tongue: str
     word: str
     ipa: str
     meaning: str
-    part_of_speech: str        # "noun" | "verb" | "adj" | "particle" | "ritual"
+    part_of_speech: str  # "noun" | "verb" | "adj" | "particle" | "ritual"
     syllable_count: int
 
 
 @dataclass
 class GrammarRule:
     """One grammar rule for a tongue."""
+
     tongue: str
     rule_id: str
     description: str
-    pattern: str               # structural pattern (e.g., "SOV", "VSO")
+    pattern: str  # structural pattern (e.g., "SOV", "VSO")
     example: str
 
 
 @dataclass
 class PhonologyProfile:
     """Phonological constraints for a tongue."""
+
     tongue: str
-    allowed_onsets: List[str]      # consonant clusters that can start syllables
-    allowed_codas: List[str]       # consonant clusters that can end syllables
-    vowel_inventory: List[str]     # available vowels
-    max_syllable_weight: int       # max morae per syllable
-    stress_rule: str               # "initial" | "penultimate" | "final" | "weight-based"
+    allowed_onsets: List[str]  # consonant clusters that can start syllables
+    allowed_codas: List[str]  # consonant clusters that can end syllables
+    vowel_inventory: List[str]  # available vowels
+    max_syllable_weight: int  # max morae per syllable
+    stress_rule: str  # "initial" | "penultimate" | "final" | "weight-based"
 
 
 @dataclass
 class RenderPreset:
     """Pre-configured TTS/choral render settings."""
+
     name: str
-    mode: str                  # "speech" | "speech_song" | "choral_ritual"
+    mode: str  # "speech" | "speech_song" | "choral_ritual"
     voice_count: int
     chant_ratio: float
     base_rate: float
@@ -106,6 +112,7 @@ class RenderPreset:
 # ---------------------------------------------------------------------------
 # Circulation Pass
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class CirculationPass:
@@ -119,11 +126,12 @@ class CirculationPass:
       - "ritual": focus on state transitions and ceremonies
       - "integration": cross-section coherence check
     """
+
     method: str
     timestamp: float
     sections_touched: List[str]
-    output_hash: str           # hash of what was generated
-    alignment_delta: float     # how much alignment improved [-1, 1]
+    output_hash: str  # hash of what was generated
+    alignment_delta: float  # how much alignment improved [-1, 1]
 
     @property
     def age_seconds(self) -> float:
@@ -134,6 +142,7 @@ class CirculationPass:
 # World Bundle
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class WorldBundle:
     """The compact canonical training bundle.
@@ -143,6 +152,7 @@ class WorldBundle:
     re-read through different circulation methods, with each pass
     strengthening internal alignment.
     """
+
     version: str = "1.0.0"
 
     # Core sections
@@ -223,10 +233,7 @@ class WorldBundle:
             "total_rules": self.total_rules,
             "circulation_count": self.circulation_count,
             "alignment_score": round(self.alignment_score, 4),
-            "render_presets": [
-                {"name": p.name, "mode": p.mode, "voices": p.voice_count}
-                for p in self.render_presets
-            ],
+            "render_presets": [{"name": p.name, "mode": p.mode, "voices": p.voice_count} for p in self.render_presets],
             "sections": {
                 "ontology": len(self.ontology),
                 "lexicon": {k: len(v) for k, v in self.lexicon.items()},
@@ -293,9 +300,9 @@ _DEFAULT_PHONOLOGY: Dict[str, PhonologyProfile] = {
 }
 
 _DEFAULT_RENDER_PRESETS = [
-    RenderPreset("speech",        "speech",         1, 0.0,  1.0,  "Plain spoken TTS"),
-    RenderPreset("speech_song",   "speech_song",    2, 0.4,  0.9,  "Speech with harmonic backing"),
-    RenderPreset("choral_ritual", "choral_ritual",  4, 0.8,  0.75, "Full multi-voice choral render"),
+    RenderPreset("speech", "speech", 1, 0.0, 1.0, "Plain spoken TTS"),
+    RenderPreset("speech_song", "speech_song", 2, 0.4, 0.9, "Speech with harmonic backing"),
+    RenderPreset("choral_ritual", "choral_ritual", 4, 0.8, 0.75, "Full multi-voice choral render"),
 ]
 
 

@@ -54,22 +54,22 @@ PHI = (1 + math.sqrt(5)) / 2  # 1.6180339887...
 
 # Phi-scaled tongue weights
 TONGUE_WEIGHTS: Dict[str, float] = {
-    "ko": PHI ** 0,  # 1.000
-    "av": PHI ** 1,  # 1.618
-    "ru": PHI ** 2,  # 2.618
-    "ca": PHI ** 3,  # 4.236
-    "um": PHI ** 4,  # 6.854
-    "dr": PHI ** 5,  # 11.090
+    "ko": PHI**0,  # 1.000
+    "av": PHI**1,  # 1.618
+    "ru": PHI**2,  # 2.618
+    "ca": PHI**3,  # 4.236
+    "um": PHI**4,  # 6.854
+    "dr": PHI**5,  # 11.090
 }
 
 # Harmonic frequencies per tongue (Hz)
 TONGUE_FREQUENCIES: Dict[str, float] = {
-    "ko": 440.00,   # A4 — intent/flow
-    "av": 523.25,   # C5 — wisdom/metadata
-    "ru": 293.66,   # D4 — binding/structure
-    "ca": 659.25,   # E5 — bitcraft/compute
-    "um": 196.00,   # G3 — security/veil
-    "dr": 392.00,   # G4 — architecture/forge
+    "ko": 440.00,  # A4 — intent/flow
+    "av": 523.25,  # C5 — wisdom/metadata
+    "ru": 293.66,  # D4 — binding/structure
+    "ca": 659.25,  # E5 — bitcraft/compute
+    "um": 196.00,  # G3 — security/veil
+    "dr": 392.00,  # G4 — architecture/forge
 }
 
 # Tongue pair mappings for braid strands (same as braid_vault.py)
@@ -80,12 +80,13 @@ TONGUE_PAIRS = [
 ]
 
 # Scaling constant: (3^φ)³
-BUNDLE_SCALE = (3 ** PHI) ** 3  # ≈ 162.07
+BUNDLE_SCALE = (3**PHI) ** 3  # ≈ 162.07
 
 
 # ---------------------------------------------------------------------------
 # Trit
 # ---------------------------------------------------------------------------
+
 
 class Trit(IntEnum):
     MINUS = -1
@@ -97,12 +98,14 @@ class Trit(IntEnum):
 # Sub-strand dataclasses
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class LightStrand:
     """Binary/data channel — what IS."""
-    presence: int       # 0 or 1
-    weight: float       # phi-scaled tongue weight
-    intent: Trit        # governance polarity
+
+    presence: int  # 0 or 1
+    weight: float  # phi-scaled tongue weight
+    intent: Trit  # governance polarity
 
     def as_tuple(self) -> Tuple[float, float, float]:
         return (float(self.presence), self.weight, float(self.intent))
@@ -111,9 +114,10 @@ class LightStrand:
 @dataclass(frozen=True)
 class SoundStrand:
     """Audio/harmonic channel — fills the dark zones."""
-    frequency: float    # Hz
-    amplitude: float    # [0, 1] activation strength
-    phase: float        # [0, 2π) harmonic phase angle
+
+    frequency: float  # Hz
+    amplitude: float  # [0, 1] activation strength
+    phase: float  # [0, 2π) harmonic phase angle
 
     def as_tuple(self) -> Tuple[float, float, float]:
         return (self.frequency, self.amplitude, self.phase)
@@ -122,9 +126,10 @@ class SoundStrand:
 @dataclass(frozen=True)
 class MathStrand:
     """Discrete calculation channel — structural skeleton."""
-    value: float        # computed metric
-    operation: int      # hash of operation that produced this
-    result: Trit        # convergence: +1 converged, 0 partial, -1 diverged
+
+    value: float  # computed metric
+    operation: int  # hash of operation that produced this
+    result: Trit  # convergence: +1 converged, 0 partial, -1 diverged
 
     def as_tuple(self) -> Tuple[float, float, float]:
         return (self.value, float(self.operation), float(self.result))
@@ -134,9 +139,11 @@ class MathStrand:
 # Bundle (3 strands braided)
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class InnerBundle:
     """A bundle of 3 strands. Represents one of: Light, Sound, Math."""
+
     strand_a: Tuple[float, float, float]
     strand_b: Tuple[float, float, float]
     strand_c: Tuple[float, float, float]
@@ -165,6 +172,7 @@ class InnerBundle:
 # Tri-Bundle Cluster (3 bundles braided together)
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class TriBundleCluster:
     """A (3^φ)³ dense cluster — 3 inner bundles braided into one identity.
@@ -173,6 +181,7 @@ class TriBundleCluster:
     matrices, not just the values. Different orderings of the same
     data produce different clusters (non-commutativity).
     """
+
     light: InnerBundle
     sound: InnerBundle
     math: InnerBundle
@@ -245,6 +254,7 @@ class TriBundleCluster:
 # Encoding: text → tri-bundle clusters
 # ---------------------------------------------------------------------------
 
+
 def _compute_phase(byte_val: int, freq: float, position: int) -> float:
     """Compute harmonic phase angle for a byte at a position.
 
@@ -297,11 +307,11 @@ def _intent_from_byte(byte_val: int) -> Trit:
 def _convergence_trit(math_val: float) -> Trit:
     """Did the math converge, diverge, or stay neutral?"""
     if math_val < 1.0:
-        return Trit.PLUS   # converged (close to origin)
+        return Trit.PLUS  # converged (close to origin)
     elif math_val > 3.0:
         return Trit.MINUS  # diverged (far from origin)
     else:
-        return Trit.ZERO   # neutral zone
+        return Trit.ZERO  # neutral zone
 
 
 def encode_byte(
@@ -388,6 +398,7 @@ def encode_text(text: str, tongue_code: str) -> List[TriBundleCluster]:
 # Cross-tongue encoding: all 6 tongues simultaneously
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PolyglotCluster:
     """All 6 tongue encodings of a single byte position.
@@ -396,6 +407,7 @@ class PolyglotCluster:
     The synchronization score tells you how aligned the tongues are
     at this position (the "lights syncing up").
     """
+
     position: int
     byte_val: int
     clusters: Dict[str, TriBundleCluster]
@@ -405,7 +417,7 @@ class PolyglotCluster:
         codes = list(self.clusters.keys())
         result = {}
         for i, c1 in enumerate(codes):
-            for c2 in codes[i + 1:]:
+            for c2 in codes[i + 1 :]:
                 v1 = self.clusters[c1].as_vector()
                 v2 = self.clusters[c2].as_vector()
                 # Cosine similarity
@@ -461,16 +473,12 @@ def encode_polyglot(data: bytes) -> List[PolyglotCluster]:
             dark = compute_darkness(b, tc)
             if dark < 0.5:  # active enough to contribute phase
                 freq = TONGUE_FREQUENCIES[tc]
-                neighbor_phases[tc] = (
-                    2.0 * math.pi * freq * i / 1000.0 + b * math.pi / 128.0
-                ) % (2.0 * math.pi)
+                neighbor_phases[tc] = (2.0 * math.pi * freq * i / 1000.0 + b * math.pi / 128.0) % (2.0 * math.pi)
 
         # Pass 2: encode with full context
         clusters = {}
         for tongue_code in TONGUE_WEIGHTS:
-            clusters[tongue_code] = encode_byte(
-                b, tongue_code, i, total, neighbor_phases
-            )
+            clusters[tongue_code] = encode_byte(b, tongue_code, i, total, neighbor_phases)
         result.append(PolyglotCluster(position=i, byte_val=b, clusters=clusters))
 
     return result
@@ -484,6 +492,7 @@ def encode_polyglot_text(text: str) -> List[PolyglotCluster]:
 # ---------------------------------------------------------------------------
 # Convergence detection: find the "lights syncing up"
 # ---------------------------------------------------------------------------
+
 
 def find_convergence_points(
     clusters: List[PolyglotCluster],

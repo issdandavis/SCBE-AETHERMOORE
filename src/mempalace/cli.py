@@ -10,6 +10,7 @@ can review duplicate clusters and lattice stats without touching notes.
     python -m src.mempalace.cli link   --cache .scbe/vault_index.json
     python -m src.mempalace.cli axioms --cache .scbe/vault_index.json --out notes/_reports
 """
+
 from __future__ import annotations
 
 import argparse
@@ -111,8 +112,7 @@ def cmd_axioms(args: argparse.Namespace) -> int:
     lines.append("## Buckets")
     lines.append("")
     for name, profile in mesh.buckets.items():
-        lines.append(f"- **{name}**: {profile.note_count} notes, "
-                     f"{len(profile.term_counts)} distinct terms")
+        lines.append(f"- **{name}**: {profile.note_count} notes, " f"{len(profile.term_counts)} distinct terms")
     lines.append("")
     lines.append("## Top axioms (cross-layer invariants)")
     lines.append("")

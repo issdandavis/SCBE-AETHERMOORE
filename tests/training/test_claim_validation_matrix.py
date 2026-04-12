@@ -88,7 +88,6 @@ from src.training.cross_domain_harness import (
     score_consistency,
 )
 
-
 # =========================================================================
 # Fixtures
 # =========================================================================
@@ -123,6 +122,7 @@ DIVERSE_TEXTS = SEED_TEXTS + [
 # =========================================================================
 # A. Corpus Validity Harness
 # =========================================================================
+
 
 class TestCorpusValidity:
     """Proves: 'Did you really build the curriculum you think you built?'"""
@@ -163,10 +163,12 @@ class TestCorpusValidity:
 
     def test_class_balance_has_all_verdicts(self):
         """All 4 verdict classes should be represented."""
-        cps = [encode_contact_point(t, tongue, tone)
-               for t in DIVERSE_TEXTS
-               for tongue in ALL_TONGUES
-               for tone in DEAD_TONES]
+        cps = [
+            encode_contact_point(t, tongue, tone)
+            for t in DIVERSE_TEXTS
+            for tongue in ALL_TONGUES
+            for tone in DEAD_TONES
+        ]
         balance = check_class_balance(cps)
         assert len(balance) == 4
         assert all(v >= 0.0 for v in balance.values())
@@ -174,10 +176,12 @@ class TestCorpusValidity:
 
     def test_friction_zone_coverage_nonzero(self):
         """Some points should land in friction zones near thresholds."""
-        cps = [encode_contact_point(t, tongue, tone)
-               for t in DIVERSE_TEXTS
-               for tongue in ALL_TONGUES
-               for tone in DEAD_TONES]
+        cps = [
+            encode_contact_point(t, tongue, tone)
+            for t in DIVERSE_TEXTS
+            for tongue in ALL_TONGUES
+            for tone in DEAD_TONES
+        ]
         coverage = check_friction_zone_coverage(cps)
         assert coverage >= 0.0  # at least computable
 
@@ -214,6 +218,7 @@ class TestCorpusValidity:
 # B. Ablation Harness
 # =========================================================================
 
+
 class TestAblation:
     """Proves: 'Which part is actually doing work?'"""
 
@@ -245,9 +250,7 @@ class TestAblation:
 
     def test_single_variant_runs(self):
         """One ablation variant on one suite should produce a result."""
-        result = run_ablation_variant(
-            ABLATION_LADDER[-1], SEED_TEXTS[:3], EvalSuite.CLEAN
-        )
+        result = run_ablation_variant(ABLATION_LADDER[-1], SEED_TEXTS[:3], EvalSuite.CLEAN)
         assert isinstance(result, AblationResult)
         assert 0.0 <= result.task_score <= 1.0
         assert 0.0 <= result.alignment_retention <= 1.0
@@ -255,12 +258,8 @@ class TestAblation:
 
     def test_full_scbe_beats_baseline_on_clean(self):
         """Full system should score >= baseline on clean eval."""
-        baseline = run_ablation_variant(
-            ABLATION_LADDER[0], SEED_TEXTS[:3], EvalSuite.CLEAN
-        )
-        full = run_ablation_variant(
-            ABLATION_LADDER[-1], SEED_TEXTS[:3], EvalSuite.CLEAN
-        )
+        baseline = run_ablation_variant(ABLATION_LADDER[0], SEED_TEXTS[:3], EvalSuite.CLEAN)
+        full = run_ablation_variant(ABLATION_LADDER[-1], SEED_TEXTS[:3], EvalSuite.CLEAN)
         assert full.task_score >= baseline.task_score * 0.8  # at least close
 
     def test_dead_tone_ablation_matters(self):
@@ -268,9 +267,7 @@ class TestAblation:
         no_dt = run_ablation_variant(
             ABLATION_LADDER[1], SEED_TEXTS[:3], EvalSuite.DEAD_TONE  # +constitution, no dead tone
         )
-        with_dt = run_ablation_variant(
-            ABLATION_LADDER[2], SEED_TEXTS[:3], EvalSuite.DEAD_TONE  # +dead_tone
-        )
+        with_dt = run_ablation_variant(ABLATION_LADDER[2], SEED_TEXTS[:3], EvalSuite.DEAD_TONE)  # +dead_tone
         assert with_dt.task_score >= no_dt.task_score
 
     def test_warping_ablation_matters(self):
@@ -278,9 +275,7 @@ class TestAblation:
         no_warp = run_ablation_variant(
             ABLATION_LADDER[3], SEED_TEXTS[:3], EvalSuite.ADVERSARIAL  # +multiview, no warping
         )
-        with_warp = run_ablation_variant(
-            ABLATION_LADDER[4], SEED_TEXTS[:3], EvalSuite.ADVERSARIAL  # +warping
-        )
+        with_warp = run_ablation_variant(ABLATION_LADDER[4], SEED_TEXTS[:3], EvalSuite.ADVERSARIAL)  # +warping
         assert with_warp.task_score >= no_warp.task_score
 
     def test_full_ablation_produces_matrix(self):
@@ -319,6 +314,7 @@ class TestAblation:
 # =========================================================================
 # C. Cross-Domain Transfer Harness
 # =========================================================================
+
 
 class TestCrossDomainTransfer:
     """Proves: 'Is this really cross-domain inference, or memorized formatting?'"""
@@ -383,6 +379,7 @@ class TestCrossDomainTransfer:
 # D. Adversarial Warping Harness
 # =========================================================================
 
+
 class TestAdversarialWarping:
     """Proves: 'Does alignment survive deformation?'"""
 
@@ -392,9 +389,7 @@ class TestAdversarialWarping:
 
     def test_single_warp_preservation(self):
         """One warp type should produce a WarpPreservationResult."""
-        result = measure_warp_preservation(
-            SEED_TEXTS[:3], WarpType.SEMANTIC_PARAPHRASE, 0.3
-        )
+        result = measure_warp_preservation(SEED_TEXTS[:3], WarpType.SEMANTIC_PARAPHRASE, 0.3)
         assert isinstance(result, WarpPreservationResult)
         assert result.warp_type == WarpType.SEMANTIC_PARAPHRASE
         assert 0.0 <= result.alignment_retention <= 1.0
@@ -416,23 +411,17 @@ class TestAdversarialWarping:
 
     def test_tongue_preservation_tracked(self):
         """Dominant tongue preservation should be tracked."""
-        result = measure_warp_preservation(
-            SEED_TEXTS[:3], WarpType.NEIGHBOR_JUMP, 0.3
-        )
+        result = measure_warp_preservation(SEED_TEXTS[:3], WarpType.NEIGHBOR_JUMP, 0.3)
         assert 0.0 <= result.tongue_preserved <= 1.0
 
     def test_verdict_preservation_tracked(self):
         """Verdict preservation should be tracked."""
-        result = measure_warp_preservation(
-            SEED_TEXTS[:3], WarpType.EXCITATION_SPIKE, 0.3
-        )
+        result = measure_warp_preservation(SEED_TEXTS[:3], WarpType.EXCITATION_SPIKE, 0.3)
         assert 0.0 <= result.verdict_preserved <= 1.0
 
     def test_dead_tone_preservation_always_1(self):
         """Dead-tone interpretation is structural, should always be preserved."""
-        result = measure_warp_preservation(
-            SEED_TEXTS[:3], WarpType.AUDIO_BAND_SHIFT, 0.3
-        )
+        result = measure_warp_preservation(SEED_TEXTS[:3], WarpType.AUDIO_BAND_SHIFT, 0.3)
         assert result.dead_tone_preserved == 1.0
 
     def test_full_adversarial_harness(self):
@@ -443,9 +432,7 @@ class TestAdversarialWarping:
 
     def test_zero_magnitude_preserves_everything(self):
         """Zero warp should preserve perfect alignment."""
-        result = measure_warp_preservation(
-            SEED_TEXTS[:2], WarpType.SEMANTIC_PARAPHRASE, 0.0
-        )
+        result = measure_warp_preservation(SEED_TEXTS[:2], WarpType.SEMANTIC_PARAPHRASE, 0.0)
         # Zero warp = features unchanged = perfect retention
         assert result.alignment_retention >= 0.99
 
@@ -457,15 +444,14 @@ class TestAdversarialWarping:
 
     def test_risk_preservation_tracked(self):
         """Binary risk tier preservation (safe vs not-safe) should be tracked."""
-        result = measure_warp_preservation(
-            SEED_TEXTS[:3], WarpType.COLOR_PERTURBATION, 0.3
-        )
+        result = measure_warp_preservation(SEED_TEXTS[:3], WarpType.COLOR_PERTURBATION, 0.3)
         assert 0.0 <= result.risk_preserved <= 1.0
 
 
 # =========================================================================
 # E. Round-Trip Harness
 # =========================================================================
+
 
 class TestRoundTrip:
     """Proves: 'Are the modalities actually tied together?'"""
@@ -524,6 +510,7 @@ class TestRoundTrip:
 # =========================================================================
 # F. Attractor / Path Harness
 # =========================================================================
+
 
 class TestAttractorPath:
     """Proves: 'Does the manifold shape behavior over time?'"""
@@ -600,6 +587,7 @@ class TestAttractorPath:
 # Core Metrics
 # =========================================================================
 
+
 class TestCoreMetrics:
     """The 6 metrics that actually matter."""
 
@@ -656,6 +644,7 @@ class TestCoreMetrics:
 # Experiment Matrix
 # =========================================================================
 
+
 class TestExperimentMatrix:
     """The full 7 × 6 experiment matrix."""
 
@@ -707,6 +696,7 @@ class TestExperimentMatrix:
 # =========================================================================
 # Utility Functions
 # =========================================================================
+
 
 class TestUtilities:
     """Utility function correctness."""
@@ -763,10 +753,12 @@ class TestUtilities:
 
     def test_dead_tone_discrimination_bounded(self):
         """Discrimination score should be in [0, 1]."""
-        cps = [encode_contact_point(t, tongue, tone)
-               for t in SEED_TEXTS[:3]
-               for tongue in ALL_TONGUES
-               for tone in DEAD_TONES]
+        cps = [
+            encode_contact_point(t, tongue, tone)
+            for t in SEED_TEXTS[:3]
+            for tongue in ALL_TONGUES
+            for tone in DEAD_TONES
+        ]
         score = _dead_tone_discrimination(cps)
         assert 0.0 <= score <= 1.0
 
@@ -784,6 +776,7 @@ class TestUtilities:
 # Cross-Cutting Properties
 # =========================================================================
 
+
 class TestCrossCuttingProperties:
     """Properties that hold across all harness components."""
 
@@ -791,8 +784,12 @@ class TestCrossCuttingProperties:
         """Every score in the system should be in [0, 1]."""
         result = run_experiment_matrix(SEED_TEXTS[:2], fast=True)
         m = result.core_metrics
-        for val in [m.structure_retention, m.adversarial_alignment_retention,
-                    m.loop_collapse_rate, m.escalation_correctness]:
+        for val in [
+            m.structure_retention,
+            m.adversarial_alignment_retention,
+            m.loop_collapse_rate,
+            m.escalation_correctness,
+        ]:
             assert 0.0 <= val <= 1.0, f"Score out of bounds: {val}"
 
     def test_determinism_across_runs(self):
@@ -806,9 +803,13 @@ class TestCrossCuttingProperties:
         """No metric should be NaN or Inf."""
         result = run_experiment_matrix(SEED_TEXTS[:3], fast=True)
         m = result.core_metrics
-        for val in [m.structure_retention, m.cross_domain_transfer_gain,
-                    m.adversarial_alignment_retention, m.loop_collapse_rate,
-                    m.escalation_correctness]:
+        for val in [
+            m.structure_retention,
+            m.cross_domain_transfer_gain,
+            m.adversarial_alignment_retention,
+            m.loop_collapse_rate,
+            m.escalation_correctness,
+        ]:
             assert not math.isnan(val), f"NaN detected: {val}"
             assert not math.isinf(val), f"Inf detected: {val}"
 

@@ -43,32 +43,32 @@ from src.crypto.tri_bundle import (
     InnerBundle,
 )
 
-
 # ---------------------------------------------------------------------------
 # Constants & Thresholds
 # ---------------------------------------------------------------------------
 
 # Governance thresholds — calibrated to the E(p,m) energy landscape
-QUARANTINE_THRESHOLD = 2.0   # E ≥ 2.0 → suspicious
-DENY_THRESHOLD = 5.0         # E ≥ 5.0 → adversarial
-COST_CAP = 1e6               # prevent float overflow on extreme d
+QUARANTINE_THRESHOLD = 2.0  # E ≥ 2.0 → suspicious
+DENY_THRESHOLD = 5.0  # E ≥ 5.0 → adversarial
+COST_CAP = 1e6  # prevent float overflow on extreme d
 
 # Phase labels (from hamiltonian_braid.py, replicated to avoid numpy dep)
 PHASE_LABELS: Dict[Tuple[int, int], str] = {
     (-1, -1): "retreat-contract",
-    (-1,  0): "retreat-hold",
-    (-1,  1): "retreat-advance",
-    ( 0, -1): "hold-contract",
-    ( 0,  0): "equilibrium",
-    ( 0,  1): "hold-advance",
-    ( 1, -1): "advance-contract",
-    ( 1,  0): "advance-hold",
-    ( 1,  1): "advance-advance",
+    (-1, 0): "retreat-hold",
+    (-1, 1): "retreat-advance",
+    (0, -1): "hold-contract",
+    (0, 0): "equilibrium",
+    (0, 1): "hold-advance",
+    (1, -1): "advance-contract",
+    (1, 0): "advance-hold",
+    (1, 1): "advance-advance",
 }
 
 
 class Decision(Enum):
     """Governance routing decision at a braid crossing."""
+
     ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
     DENY = "DENY"
@@ -78,11 +78,13 @@ class Decision(Enum):
 # Dual Ternary Energy (standalone — no numpy needed)
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class DualTernaryPair:
     """A dual ternary state: primary × mirror in {-1, 0, +1}²."""
-    primary: int   # {-1, 0, +1}
-    mirror: int    # {-1, 0, +1}
+
+    primary: int  # {-1, 0, +1}
+    mirror: int  # {-1, 0, +1}
 
     def __post_init__(self):
         if self.primary not in (-1, 0, 1) or self.mirror not in (-1, 0, 1):
@@ -116,16 +118,13 @@ class DualTernaryPair:
 
 
 # All 9 states
-ALL_STATES = [
-    DualTernaryPair(p, m)
-    for p in (-1, 0, 1)
-    for m in (-1, 0, 1)
-]
+ALL_STATES = [DualTernaryPair(p, m) for p in (-1, 0, 1) for m in (-1, 0, 1)]
 
 
 # ---------------------------------------------------------------------------
 # Topology: valid transitions (Chebyshev ≤ 1)
 # ---------------------------------------------------------------------------
+
 
 def valid_transition(s1: DualTernaryPair, s2: DualTernaryPair) -> bool:
     """Check if transition preserves braid topology.
@@ -151,6 +150,7 @@ def phase_deviation(current: DualTernaryPair, expected: DualTernaryPair) -> floa
 # ---------------------------------------------------------------------------
 # Harmonic Cost Wall: C(d) = φ^(d²)
 # ---------------------------------------------------------------------------
+
 
 def harmonic_cost(d: float) -> float:
     """The harmonic wall: C(d) = φ^(d²).
@@ -179,6 +179,7 @@ def harmonic_cost_gradient(d: float) -> float:
 # ---------------------------------------------------------------------------
 # Crossing Result
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class CrossingResult:
@@ -225,6 +226,7 @@ class CrossingResult:
 # ---------------------------------------------------------------------------
 # Core Evaluator
 # ---------------------------------------------------------------------------
+
 
 def _derive_dual_ternary(cluster: TriBundleCluster) -> DualTernaryPair:
     """Derive the dual ternary state from a tri-bundle cluster.
@@ -302,6 +304,7 @@ DECISION_TO_TRIT = {
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def evaluate_crossing(
     cluster: TriBundleCluster,
@@ -415,6 +418,7 @@ def evaluate_polyglot(
 # Sequence Governance Summary
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class GovernanceSummary:
     """Summary of governance decisions across a sequence."""
@@ -448,9 +452,16 @@ def summarize_governance(results: List[CrossingResult]) -> GovernanceSummary:
     """Produce a governance summary from a sequence of crossing evaluations."""
     if not results:
         return GovernanceSummary(
-            total=0, allow_count=0, quarantine_count=0, deny_count=0,
-            mean_energy=0, max_energy=0, mean_cost=0, max_cost=0,
-            topology_breaks=0, phases={},
+            total=0,
+            allow_count=0,
+            quarantine_count=0,
+            deny_count=0,
+            mean_energy=0,
+            max_energy=0,
+            mean_cost=0,
+            max_cost=0,
+            topology_breaks=0,
+            phases={},
         )
 
     phases: Dict[str, int] = {}

@@ -50,7 +50,6 @@ from src.crypto.trit_curriculum import (
     compute_trit_signal,
 )
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -68,20 +67,23 @@ BOUNDARY_EPSILON = 0.001
 # Multi-path record
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PathFork:
     """A single axis where the path could have gone either way."""
-    axis: str              # "structure", "stability", "creativity"
-    actual_trit: int       # What the system chose: +1, 0, -1
-    mirror_trit: int       # What it WOULD have been on the other side
-    edge_distance: float   # How close to the boundary
-    deviation: float       # Raw deviation from geometric baseline
-    threshold: float       # The boundary location
+
+    axis: str  # "structure", "stability", "creativity"
+    actual_trit: int  # What the system chose: +1, 0, -1
+    mirror_trit: int  # What it WOULD have been on the other side
+    edge_distance: float  # How close to the boundary
+    deviation: float  # Raw deviation from geometric baseline
+    threshold: float  # The boundary location
 
 
 @dataclass
 class MultiPathRecord:
     """A training record augmented with multi-path information."""
+
     # Original trit signal
     original: TritSignal
 
@@ -148,12 +150,13 @@ class MultiPathRecord:
 # Core: compute multi-path record from trit signal
 # ---------------------------------------------------------------------------
 
+
 def _flip_trit(trit: int, deviation: float, threshold: float) -> int:
     """Compute what the trit would be on the other side of the boundary."""
     if deviation > 0:
         # Currently above some boundary — mirror to below
         if trit == +1:
-            return 0   # Was above +threshold, mirror to below
+            return 0  # Was above +threshold, mirror to below
         elif trit == 0 and deviation > 0:
             return +1 if abs(deviation - threshold) < abs(deviation + threshold) else -1
         else:
@@ -184,19 +187,19 @@ def compute_multipath(
     edges = list(trit.edge_vector)
     axis_names = ["structure", "stability", "creativity"]
 
-    for i, (axis, ct, dev, edge) in enumerate(
-        zip(axis_names, content_trits, deviations, edges)
-    ):
+    for i, (axis, ct, dev, edge) in enumerate(zip(axis_names, content_trits, deviations, edges)):
         if edge < poly_threshold:
             mirror = _flip_trit(ct, dev, content_threshold)
-            forks.append(PathFork(
-                axis=axis,
-                actual_trit=ct,
-                mirror_trit=mirror,
-                edge_distance=edge,
-                deviation=dev,
-                threshold=content_threshold,
-            ))
+            forks.append(
+                PathFork(
+                    axis=axis,
+                    actual_trit=ct,
+                    mirror_trit=mirror,
+                    edge_distance=edge,
+                    deviation=dev,
+                    threshold=content_threshold,
+                )
+            )
 
     # Compute mirror vector (all forks flipped)
     mirror_trits = list(content_trits)
@@ -214,7 +217,7 @@ def compute_multipath(
 
     reachable = []
     n_forks = len(forks)
-    for mask in range(2 ** n_forks):
+    for mask in range(2**n_forks):
         state = list(content_trits)
         for j in range(n_forks):
             if mask & (1 << j):
@@ -222,9 +225,7 @@ def compute_multipath(
             # else: keep actual
         reachable.append(tuple(state))
 
-    reachable_labels = [
-        TRIT_LABELS.get(s, f"unknown_{s}") for s in reachable
-    ]
+    reachable_labels = [TRIT_LABELS.get(s, f"unknown_{s}") for s in reachable]
 
     # Training weight: inversely proportional to min edge distance
     # Polymorphic records are MORE informative, so weight them higher
@@ -252,7 +253,7 @@ def compute_multipath(
     #
     # The MORE polymorphic the record, the MORE the collapsed path missed.
     # Mirror states should be weighted by this advantage.
-    doors = 2 ** n_forks
+    doors = 2**n_forks
     monty_hall_advantage = (doors - 1) / doors if doors > 1 else 0.0
     mirror_weight = weight * monty_hall_advantage
 
@@ -274,6 +275,7 @@ def compute_multipath(
 # ---------------------------------------------------------------------------
 # Batch processing
 # ---------------------------------------------------------------------------
+
 
 def compute_multipath_batch(
     trits: List[TritSignal],
@@ -355,6 +357,7 @@ def multipath_summary(records: List[MultiPathRecord]) -> dict:
 # Contrastive pair generation for SFT
 # ---------------------------------------------------------------------------
 
+
 def generate_contrastive_pairs(
     records: List[MultiPathRecord],
     texts: List[str],
@@ -395,7 +398,7 @@ def generate_contrastive_pairs(
 
         user_content = (
             f"Analyze the trit boundary state of this text:\n\n"
-            f"\"{text[:200]}\"\n\n"
+            f'"{text[:200]}"\n\n'
             f"This text has {len(record.forks)} polymorphic "
             f"{'axis' if len(record.forks) == 1 else 'axes'}. "
             f"What are all reachable curriculum states?"
@@ -408,13 +411,10 @@ def generate_contrastive_pairs(
             f"**Actual state:** {actual_vec} = {actual_label}\n"
             f"**Mirror state:** {list(mirror_vec)} = {mirror_label}\n\n"
             f"Polymorphic axes:\n"
-            + "\n".join(fork_descriptions) +
-            f"\n\n**All reachable states:**\n"
-            + "\n".join(
-                f"- {list(s)} = {l}"
-                for s, l in zip(record.reachable_states, record.reachable_labels)
-            ) +
-            f"\n\nThe boundary crossings represent points where the model's "
+            + "\n".join(fork_descriptions)
+            + f"\n\n**All reachable states:**\n"
+            + "\n".join(f"- {list(s)} = {l}" for s, l in zip(record.reachable_states, record.reachable_labels))
+            + f"\n\nThe boundary crossings represent points where the model's "
             f"interpretation can flip — these are the most informative "
             f"training samples because they expose decision fragility.\n\n"
             f"**Monty Hall analysis:** With {record.path_count} reachable states "
@@ -427,17 +427,19 @@ def generate_contrastive_pairs(
             f"{record.mirror_weight:.2f}x (mirror)"
         )
 
-        pairs.append({
-            "messages": [
-                {"role": "user", "content": user_content},
-                {"role": "assistant", "content": assistant_content},
-            ],
-            "metadata": {
-                "source": "multipath_contrastive_generator",
-                "record_type": "contrastive_boundary_pair",
-                "multipath": record.to_dict(),
-            },
-        })
+        pairs.append(
+            {
+                "messages": [
+                    {"role": "user", "content": user_content},
+                    {"role": "assistant", "content": assistant_content},
+                ],
+                "metadata": {
+                    "source": "multipath_contrastive_generator",
+                    "record_type": "contrastive_boundary_pair",
+                    "multipath": record.to_dict(),
+                },
+            }
+        )
 
     return pairs
 
@@ -481,8 +483,10 @@ if __name__ == "__main__":
             actual = list(mp.original.content_vector)
             mirror = list(mp.mirror_vector)
             axes = [f.axis for f in mp.forks]
-            print(f"  ** POLYMORPHIC ** paths={mp.path_count}  weight={mp.weight:.2f}x  "
-                  f"monty_hall={mp.monty_hall_advantage:.1%}")
+            print(
+                f"  ** POLYMORPHIC ** paths={mp.path_count}  weight={mp.weight:.2f}x  "
+                f"monty_hall={mp.monty_hall_advantage:.1%}"
+            )
             print(f"     actual: {actual} = {mp.original.label}  (weight: {mp.weight:.2f}x)")
             print(f"     mirror: {mirror} = {mp.mirror_label}  (weight: {mp.mirror_weight:.2f}x)")
             print(f"     axes: {', '.join(axes)}")
@@ -495,13 +499,11 @@ if __name__ == "__main__":
 
     print()
     summary = multipath_summary(multipaths)
-    print(f"Multi-path records: {summary['multipath_count']}/{summary['count']} "
-          f"({summary['multipath_pct']}%)")
+    print(f"Multi-path records: {summary['multipath_count']}/{summary['count']} " f"({summary['multipath_pct']}%)")
     print(f"Total reachable paths: {summary['total_reachable_paths']}")
     print(f"Unique reachable states: {summary['unique_reachable_states']}/27")
     print(f"Mean paths per record: {summary['mean_paths_per_record']}")
-    print(f"Mean weight: {summary['weight_stats']['mean']:.2f}x  "
-          f"Max weight: {summary['weight_stats']['max']:.2f}x")
+    print(f"Mean weight: {summary['weight_stats']['mean']:.2f}x  " f"Max weight: {summary['weight_stats']['max']:.2f}x")
     print()
     print("Fork axis distribution:")
     for axis, count in summary["fork_axis_distribution"].items():

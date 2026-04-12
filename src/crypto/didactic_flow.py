@@ -48,7 +48,6 @@ from src.crypto.manifold_mirror import (
 from src.crypto.harmonic_dark_fill import COMPLEMENT_MAP
 from src.crypto.h_lwe import exp_map_zero, log_map_zero, project_to_ball
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -72,42 +71,47 @@ CHANNEL_NAMES = {
 
 class FlowMode(str, Enum):
     """How the didactic flow modulates over time."""
-    CONSTANT = "constant"       # Fixed pace lecture
-    BREATHING = "breathing"     # Socratic compress/expand
+
+    CONSTANT = "constant"  # Fixed pace lecture
+    BREATHING = "breathing"  # Socratic compress/expand
     PHASE_LOCKED = "phase_locked"  # Tutor tracks student
-    INVERSE = "inverse"         # Adversarial/challenge
+    INVERSE = "inverse"  # Adversarial/challenge
 
 
 # ---------------------------------------------------------------------------
 # Core: Phase state at a point in time
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PhaseState:
     """The teaching/learning phase at a moment in time."""
-    t: float                    # Time parameter [0, 1]
-    beta: float                 # Breathing parameter (< 1 = simplify, > 1 = complexify)
+
+    t: float  # Time parameter [0, 1]
+    beta: float  # Breathing parameter (< 1 = simplify, > 1 = complexify)
     theta: Tuple[float, float, float]  # Phase angles per channel (KO/DR, AV/UM, RU/CA)
     trit: Tuple[int, int, int]  # Quantized trit state per channel
-    radius: float               # Distance from origin (0 = simple, 1 = complex)
-    energy: float               # Total flow energy at this point
+    radius: float  # Distance from origin (0 = simple, 1 = complex)
+    energy: float  # Total flow energy at this point
 
 
 @dataclass
 class FlowPoint:
     """A single point in the didactic flow: teacher + learner + gap."""
+
     t: float
     teacher: PhaseState
     learner: PhaseState
     phase_gap: Tuple[float, float, float]  # Per-channel phase difference
-    total_gap: float                       # Combined gap magnitude
-    zpd_score: float                       # Zone of proximal development [0, 1]
-    mastery: float                         # How close to in-phase [0, 1]
+    total_gap: float  # Combined gap magnitude
+    zpd_score: float  # Zone of proximal development [0, 1]
+    mastery: float  # How close to in-phase [0, 1]
 
 
 @dataclass
 class DidacticFlow:
     """Complete didactic flow trajectory."""
+
     mode: FlowMode
     steps: int
     points: List[FlowPoint]
@@ -124,6 +128,7 @@ class DidacticFlow:
 # Phase computation
 # ---------------------------------------------------------------------------
 
+
 def _trit_from_angle(theta: float) -> int:
     """Quantize a phase angle to trit {-1, 0, +1}.
 
@@ -137,11 +142,11 @@ def _trit_from_angle(theta: float) -> int:
     theta = ((theta + PI) % (2 * PI)) - PI
 
     if abs(theta) < PI / 4:
-        return 1   # constructive
+        return 1  # constructive
     elif abs(theta) > 3 * PI / 4:
         return -1  # destructive
     else:
-        return 0   # neutral
+        return 0  # neutral
 
 
 def _breathing_radius(t: float, beta: float) -> float:
@@ -174,7 +179,7 @@ def compute_teacher_phase(
     """
     # Base phase rates (phi-irrational so they never repeat)
     rate_structure = PHI
-    rate_stability = PHI ** 2
+    rate_stability = PHI**2
     rate_truth = PHI + 1
 
     if mode == FlowMode.CONSTANT:
@@ -221,8 +226,12 @@ def compute_teacher_phase(
     energy = radius**2 * sum(abs(th) for th in thetas) / (3 * PI)
 
     return PhaseState(
-        t=t, beta=beta, theta=thetas, trit=trits,
-        radius=radius, energy=energy,
+        t=t,
+        beta=beta,
+        theta=thetas,
+        trit=trits,
+        radius=radius,
+        energy=energy,
     )
 
 
@@ -287,14 +296,19 @@ def compute_learner_phase(
     energy = radius**2 * sum(abs(th) for th in thetas) / (3 * PI)
 
     return PhaseState(
-        t=t, beta=base_beta, theta=thetas, trit=trits,
-        radius=radius, energy=energy,
+        t=t,
+        beta=base_beta,
+        theta=thetas,
+        trit=trits,
+        radius=radius,
+        energy=energy,
     )
 
 
 # ---------------------------------------------------------------------------
 # Flow computation
 # ---------------------------------------------------------------------------
+
 
 def compute_flow_point(
     t: float,
@@ -400,6 +414,7 @@ def run_didactic_flow(
 # Compare all four flow modes
 # ---------------------------------------------------------------------------
 
+
 def run_all_modes(
     learning_rate: float = 0.7,
     steps: int = 48,
@@ -408,7 +423,9 @@ def run_all_modes(
     results = {}
     for mode in FlowMode:
         results[mode.value] = run_didactic_flow(
-            mode=mode, steps=steps, learning_rate=learning_rate,
+            mode=mode,
+            steps=steps,
+            learning_rate=learning_rate,
         )
     return results
 
@@ -416,6 +433,7 @@ def run_all_modes(
 # ---------------------------------------------------------------------------
 # Report
 # ---------------------------------------------------------------------------
+
 
 def format_flow_report(flows: Dict[str, DidacticFlow]) -> str:
     """Format a comparative report of all flow modes."""

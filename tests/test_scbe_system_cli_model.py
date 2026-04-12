@@ -140,7 +140,9 @@ def _load_training_lane_module():
     return module
 
 
-def test_build_training_preflight_recommends_non_local_when_runtime_is_missing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_build_training_preflight_recommends_non_local_when_runtime_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     module = _load_training_lane_module()
     dataset_root = tmp_path / "datasets"
     _write_jsonl(
@@ -184,7 +186,11 @@ def test_build_training_preflight_recommends_non_local_when_runtime_is_missing(t
     monkeypatch.setattr(
         module,
         "_inspect_nvidia_smi",
-        lambda: {"available": True, "devices": [{"index": 0, "name": "Tiny GPU", "total_vram_mb": 4096}], "total_vram_mb": 4096},
+        lambda: {
+            "available": True,
+            "devices": [{"index": 0, "name": "Tiny GPU", "total_vram_mb": 4096}],
+            "total_vram_mb": 4096,
+        },
     )
     monkeypatch.delenv("HF_TOKEN", raising=False)
 

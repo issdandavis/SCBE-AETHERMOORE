@@ -21,4 +21,3 @@ def test_rhombic_fusion_spikes_on_mismatch():
     R_good = rhombic_fusion(x=x, audio=audio, vision=audio, governance=governance, k=0)
     R_bad = rhombic_fusion(x=x, audio=audio, vision=vision, governance=governance, k=0)
     assert R_bad > R_good
-

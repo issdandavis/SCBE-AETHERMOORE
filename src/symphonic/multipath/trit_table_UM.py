@@ -24,64 +24,157 @@ TONGUE_ID = 4
 
 OPS = [
     # Dispatch (0x00-0x0F)
-    "func", "multi", "where_u", "specialize", "invoke", "method", "signature", "abstract_t",
-    "concrete", "subtype", "supertype", "union_t", "typevar", "promote", "convert", "cast",
+    "func",
+    "multi",
+    "where_u",
+    "specialize",
+    "invoke",
+    "method",
+    "signature",
+    "abstract_t",
+    "concrete",
+    "subtype",
+    "supertype",
+    "union_t",
+    "typevar",
+    "promote",
+    "convert",
+    "cast",
     # Numeric (0x10-0x1F)
-    "int_", "float_", "complex_", "rational", "bignum", "irrational", "bool_u", "char_u",
-    "prec", "round_", "floor_", "ceil_", "trunc_", "sign_", "abs_", "hypot",
+    "int_",
+    "float_",
+    "complex_",
+    "rational",
+    "bignum",
+    "irrational",
+    "bool_u",
+    "char_u",
+    "prec",
+    "round_",
+    "floor_",
+    "ceil_",
+    "trunc_",
+    "sign_",
+    "abs_",
+    "hypot",
     # Array (0x20-0x2F)
-    "matrix", "vector", "tensor", "broadcast", "dot_", "cross_", "outer", "kron",
-    "reshape", "transpose", "reduce_", "scan_", "axis", "stack_", "split_u", "view_",
+    "matrix",
+    "vector",
+    "tensor",
+    "broadcast",
+    "dot_",
+    "cross_",
+    "outer",
+    "kron",
+    "reshape",
+    "transpose",
+    "reduce_",
+    "scan_",
+    "axis",
+    "stack_",
+    "split_u",
+    "view_",
     # Science (0x30-0x3F)
-    "diff_", "integ", "solve_", "fft_", "eig", "svd", "qr_", "lu_",
-    "norm_", "det_", "inv_", "rand_", "stat", "corr", "fit_", "optimize",
+    "diff_",
+    "integ",
+    "solve_",
+    "fft_",
+    "eig",
+    "svd",
+    "qr_",
+    "lu_",
+    "norm_",
+    "det_",
+    "inv_",
+    "rand_",
+    "stat",
+    "corr",
+    "fit_",
+    "optimize",
 ]
 
 BANDS = [
     ("DISPATCH", 0x00, 0x0F, 1, 1),
-    ("NUMERIC",  0x10, 0x1F, 2, 2),
-    ("ARRAY",    0x20, 0x2F, 2, 3),
-    ("SCIENCE",  0x30, 0x3F, 3, 4),
+    ("NUMERIC", 0x10, 0x1F, 2, 2),
+    ("ARRAY", 0x20, 0x2F, 2, 3),
+    ("SCIENCE", 0x30, 0x3F, 3, 4),
 ]
 
 NEG_OPS = {
-    "cast", "trunc_",
+    "cast",
+    "trunc_",
     "split_u",
-    "diff_", "inv_",
+    "diff_",
+    "inv_",
 }
 
 DUAL_OPS = {
-    "multi", "specialize", "promote", "convert",
-    "abstract_t", "subtype", "supertype", "union_t", "typevar",
-    "broadcast", "reduce_", "scan_",
-    "solve_", "eig", "svd", "optimize",
+    "multi",
+    "specialize",
+    "promote",
+    "convert",
+    "abstract_t",
+    "subtype",
+    "supertype",
+    "union_t",
+    "typevar",
+    "broadcast",
+    "reduce_",
+    "scan_",
+    "solve_",
+    "eig",
+    "svd",
+    "optimize",
 }
 
 
 def _polarity(op: str) -> Tuple[int, int, int, int, int, int]:
     """(KO, AV, RU, CA, UM, DR) polarity — UM home forced +1 by factory."""
     # Dispatch ops: active on AV (type) + DR (lock)
-    if op in {"func", "multi", "where_u", "specialize", "invoke",
-              "method", "signature", "promote", "convert"}:
+    if op in {"func", "multi", "where_u", "specialize", "invoke", "method", "signature", "promote", "convert"}:
         return (+1, +1, 0, 0, +1, +1)
-    if op in {"abstract_t", "concrete", "subtype", "supertype",
-              "union_t", "typevar"}:
+    if op in {"abstract_t", "concrete", "subtype", "supertype", "union_t", "typevar"}:
         return (0, +1, 0, 0, +1, +1)
     if op in {"cast"}:
         return (+1, +1, -1, +1, +1, -1)
 
     # Numeric ops: active on CA (execution)
-    if op in {"int_", "float_", "complex_", "rational", "bignum",
-              "irrational", "bool_u", "char_u", "prec",
-              "round_", "floor_", "ceil_", "sign_", "abs_", "hypot"}:
+    if op in {
+        "int_",
+        "float_",
+        "complex_",
+        "rational",
+        "bignum",
+        "irrational",
+        "bool_u",
+        "char_u",
+        "prec",
+        "round_",
+        "floor_",
+        "ceil_",
+        "sign_",
+        "abs_",
+        "hypot",
+    }:
         return (0, +1, 0, +1, +1, +1)
     if op in {"trunc_"}:
         return (0, +1, 0, +1, +1, -1)
 
     # Array ops: active on CA + cross-coupling via broadcast
-    if op in {"matrix", "vector", "tensor", "dot_", "cross_",
-              "outer", "kron", "reshape", "transpose", "axis",
-              "stack_", "view_"}:
+    if op in {
+        "matrix",
+        "vector",
+        "tensor",
+        "dot_",
+        "cross_",
+        "outer",
+        "kron",
+        "reshape",
+        "transpose",
+        "axis",
+        "stack_",
+        "view_",
+    }:
         return (+1, +1, +1, +1, +1, +1)
     if op in {"broadcast", "reduce_", "scan_"}:
         return (+1, +1, 0, +1, +1, +1)
@@ -89,9 +182,22 @@ def _polarity(op: str) -> Tuple[int, int, int, int, int, int]:
         return (+1, +1, 0, +1, +1, -1)
 
     # Science ops: active across all channels (heavy compute)
-    if op in {"integ", "solve_", "fft_", "eig", "svd", "qr_",
-              "lu_", "norm_", "det_", "rand_", "stat", "corr",
-              "fit_", "optimize"}:
+    if op in {
+        "integ",
+        "solve_",
+        "fft_",
+        "eig",
+        "svd",
+        "qr_",
+        "lu_",
+        "norm_",
+        "det_",
+        "rand_",
+        "stat",
+        "corr",
+        "fit_",
+        "optimize",
+    }:
         return (+1, +1, +1, +1, +1, +1)
     if op in {"diff_", "inv_"}:
         return (+1, +1, 0, +1, +1, -1)

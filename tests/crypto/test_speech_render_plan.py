@@ -13,7 +13,7 @@ from typing import Optional, Dict
 # Inline copy of the module under test (avoids conftest import chain)
 # ---------------------------------------------------------------------------
 
-PHI = (1 + 5 ** 0.5) / 2
+PHI = (1 + 5**0.5) / 2
 
 DEAD_TONE_PRETONES: Dict[str, float] = {
     "perfect_fifth": 330.0,
@@ -22,17 +22,21 @@ DEAD_TONE_PRETONES: Dict[str, float] = {
 }
 
 TONGUE_PAN: Dict[str, float] = {
-    "ko": -0.6, "dr": -0.4, "av": 0.0,
-    "um":  0.0, "ru":  0.4, "ca": 0.6,
+    "ko": -0.6,
+    "dr": -0.4,
+    "av": 0.0,
+    "um": 0.0,
+    "ru": 0.4,
+    "ca": 0.6,
 }
 
 _BASE_PROFILES: Dict[str, tuple] = {
-    "ko": ("alloy",  0.95,  0.0, 0.50, 0.10, 140),
-    "av": ("verse",  1.00,  1.0, 0.45, 0.25, 120),
-    "ru": ("ember",  0.92, -1.5, 0.75, 0.08, 160),
-    "ca": ("aria",   1.08,  2.0, 0.65, 0.05, 100),
-    "um": ("shade",  0.85, -2.0, 0.30, 0.35, 180),
-    "dr": ("stone",  0.80, -3.0, 0.70, 0.02, 200),
+    "ko": ("alloy", 0.95, 0.0, 0.50, 0.10, 140),
+    "av": ("verse", 1.00, 1.0, 0.45, 0.25, 120),
+    "ru": ("ember", 0.92, -1.5, 0.75, 0.08, 160),
+    "ca": ("aria", 1.08, 2.0, 0.65, 0.05, 100),
+    "um": ("shade", 0.85, -2.0, 0.30, 0.35, 180),
+    "dr": ("stone", 0.80, -3.0, 0.70, 0.02, 200),
 }
 
 ALL_TONGUES = frozenset(_BASE_PROFILES.keys())
@@ -66,13 +70,20 @@ def build_speech_plan(text, dominant_tongue, dead_tone, excitation):
     rate = max(0.7, min(1.3, base_rate + 0.03 * (excitation - 3.0)))
     energy = max(0.0, min(1.0, base_energy + 0.04 * excitation))
     profile = TongueVoiceProfile(
-        tongue=dominant_tongue, voice_name=voice_name, rate=rate,
-        pitch_semitones=pitch, energy=energy,
-        breathiness=breathiness, pause_ms=pause,
+        tongue=dominant_tongue,
+        voice_name=voice_name,
+        rate=rate,
+        pitch_semitones=pitch,
+        energy=energy,
+        breathiness=breathiness,
+        pause_ms=pause,
     )
     return SpeechRenderPlan(
-        text=text, dominant_tongue=dominant_tongue, dead_tone=dead_tone,
-        excitation=excitation, profile=profile,
+        text=text,
+        dominant_tongue=dominant_tongue,
+        dead_tone=dead_tone,
+        excitation=excitation,
+        profile=profile,
         pre_tone_hz=DEAD_TONE_PRETONES.get(dead_tone),
         stereo_pan=TONGUE_PAN[dominant_tongue],
     )
@@ -81,6 +92,7 @@ def build_speech_plan(text, dominant_tongue, dead_tone, excitation):
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestBuildSpeechPlan:
 

@@ -22,6 +22,7 @@ import torch.nn as nn
 
 # Resolve Sacred Tongues from crypto module
 import sys
+
 _repo_root = Path(__file__).resolve().parents[2]
 if str(_repo_root / "src") not in sys.path:
     sys.path.insert(0, str(_repo_root / "src"))
@@ -31,7 +32,6 @@ from crypto.sacred_tongues import (
     SacredTongueTokenizer,
     TongueSpec,
 )
-
 
 # ============================================================
 # SPECIAL TOKENS
@@ -60,6 +60,7 @@ TOTAL_VOCAB = NUM_SPECIAL + (NUM_TONGUES * TOKENS_PER_TONGUE)  # 12 + 1536 = 154
 # ============================================================
 # HF-COMPATIBLE TOKENIZER
 # ============================================================
+
 
 class SacredTonguesHFTokenizer:
     """
@@ -242,6 +243,7 @@ class SacredTonguesHFTokenizer:
 # APPROACH 1: VOCAB REPLACEMENT — Resize embeddings for Sacred Tongues
 # ============================================================
 
+
 def replace_model_tokenizer(
     model: nn.Module,
     old_vocab_size: int = 151936,  # Qwen2.5 default
@@ -285,6 +287,7 @@ def replace_model_tokenizer(
 # ============================================================
 # APPROACH 2: BRIDGE LAYER — SCBE tokenizer → learned projection → model
 # ============================================================
+
 
 class SacredTongueBridge(nn.Module):
     """
@@ -334,9 +337,7 @@ class SacredTongueBridge(nn.Module):
         )
 
         # Tongue ID offset table for detecting tongue from token ID
-        self._tongue_starts = torch.tensor(
-            [NUM_SPECIAL + i * 256 for i in range(num_tongues)]
-        )
+        self._tongue_starts = torch.tensor([NUM_SPECIAL + i * 256 for i in range(num_tongues)])
 
         self._init_harmonic_weights()
 

@@ -105,10 +105,10 @@ from src.crypto.gallery_chromatics import (
     BRIDGE_TONGUES,
 )
 
-
 # ===========================================================================
 # Helpers
 # ===========================================================================
+
 
 def _make_phonemes(text: str, n: int = 6) -> list:
     """Create a phoneme sequence for testing."""
@@ -153,6 +153,7 @@ def _run_spectrogram_pipeline(freq_hz: float):
 # ===========================================================================
 # Fixture 1: Calm Governance ALLOW Decision
 # ===========================================================================
+
 
 class TestGoldenPathCalm:
     """
@@ -245,6 +246,7 @@ class TestGoldenPathCalm:
 # Fixture 2: Dead-Tone Minor Sixth Event
 # ===========================================================================
 
+
 class TestGoldenPathMinorSixth:
     """
     Scenario: Minor sixth dead tone detected (immune response cross-product).
@@ -300,6 +302,7 @@ class TestGoldenPathMinorSixth:
 # ===========================================================================
 # Fixture 3: Minor Seventh Perpendicular Echo
 # ===========================================================================
+
 
 class TestGoldenPathMinorSeventh:
     """
@@ -359,6 +362,7 @@ class TestGoldenPathMinorSeventh:
 # ===========================================================================
 # Fixture 4: Autorotation / Multi-Tone Broadband
 # ===========================================================================
+
 
 class TestGoldenPathAutorotation:
     """
@@ -428,6 +432,7 @@ class TestGoldenPathAutorotation:
 # Fixture 5: Conlang Choral Ritual Utterance
 # ===========================================================================
 
+
 class TestGoldenPathChoralRitual:
     """
     Scenario: Full choral ritual in DR tongue (architecture, heavy syllables).
@@ -475,10 +480,10 @@ class TestGoldenPathChoralRitual:
     def test_ritual_circulation_alignment(self):
         bundle = create_default_bundle()
         # Ritual circulation should boost alignment
-        bundle.circulate("ritual", ["phonology", "grammar", "prosody"],
-                         {"tongue": "dr", "mode": "choral_ritual", "voices": 4}, 0.3)
-        bundle.circulate("integration", ["all"],
-                         {"coherence_check": True}, 0.15)
+        bundle.circulate(
+            "ritual", ["phonology", "grammar", "prosody"], {"tongue": "dr", "mode": "choral_ritual", "voices": 4}, 0.3
+        )
+        bundle.circulate("integration", ["all"], {"coherence_check": True}, 0.15)
         assert bundle.alignment_score > 0.2
 
     def test_spectrogram_dr_band(self):
@@ -495,7 +500,9 @@ class TestGoldenPathChoralRitual:
         # 2. Choral plan
         phonemes = _make_phonemes("draethis", 8)
         choral = build_choral_plan(
-            phonemes, plan.dominant_tongue, plan.excitation,
+            phonemes,
+            plan.dominant_tongue,
+            plan.excitation,
             RenderMode.CHORAL_RITUAL,
         )
         assert choral.tongue == "dr"
@@ -513,13 +520,18 @@ class TestGoldenPathChoralRitual:
 
         # 5. World bundle records the pass
         bundle = create_default_bundle()
-        cp = bundle.circulate("ritual", ["all"], {
-            "tongue": plan.dominant_tongue,
-            "voices": len(choral.voices),
-            "dead_tone": plan.dead_tone,
-            "envelope": son.envelope,
-            "spectrogram_tongue": proj.tongue,
-        }, 0.25)
+        cp = bundle.circulate(
+            "ritual",
+            ["all"],
+            {
+                "tongue": plan.dominant_tongue,
+                "voices": len(choral.voices),
+                "dead_tone": plan.dead_tone,
+                "envelope": son.envelope,
+                "spectrogram_tongue": proj.tongue,
+            },
+            0.25,
+        )
         assert bundle.alignment_score > 0
         assert len(cp.output_hash) == 16
 
@@ -527,6 +539,7 @@ class TestGoldenPathChoralRitual:
 # ===========================================================================
 # Cross-Fixture: Drift Detection
 # ===========================================================================
+
 
 class TestDriftDetection:
     """Snapshot-style checks to catch global meaning drift."""
@@ -541,12 +554,12 @@ class TestDriftDetection:
 
     def test_tongue_pan_layout_stable(self):
         """Stereo layout should never change."""
-        assert TONGUE_PAN["ko"] < 0    # left
-        assert TONGUE_PAN["dr"] < 0    # left
-        assert TONGUE_PAN["av"] == 0   # center
-        assert TONGUE_PAN["um"] == 0   # center
-        assert TONGUE_PAN["ru"] > 0    # right
-        assert TONGUE_PAN["ca"] > 0    # right
+        assert TONGUE_PAN["ko"] < 0  # left
+        assert TONGUE_PAN["dr"] < 0  # left
+        assert TONGUE_PAN["av"] == 0  # center
+        assert TONGUE_PAN["um"] == 0  # center
+        assert TONGUE_PAN["ru"] > 0  # right
+        assert TONGUE_PAN["ca"] > 0  # right
 
     def test_tongue_frequency_bands_stable(self):
         """Band boundaries should never change."""
@@ -560,8 +573,12 @@ class TestDriftDetection:
     def test_material_mapping_stable(self):
         """Tongue→material mapping should never change."""
         assert _TONGUE_MATERIAL == {
-            "dr": "matte", "um": "matte", "ru": "metallic",
-            "ko": "fluorescent", "av": "fluorescent", "ca": "neon",
+            "dr": "matte",
+            "um": "matte",
+            "ru": "metallic",
+            "ko": "fluorescent",
+            "av": "fluorescent",
+            "ca": "neon",
         }
 
     def test_dead_tone_acoustic_signatures_stable(self):
@@ -605,8 +622,7 @@ class TestDriftDetection:
             reconstructed = hue_to_frequency(hue)
             # Allow 5% error due to clamping at boundaries
             if 100 <= freq <= 4000:
-                assert abs(reconstructed - freq) / freq < 0.05, \
-                    f"Roundtrip failed: {freq} → {hue}° → {reconstructed}"
+                assert abs(reconstructed - freq) / freq < 0.05, f"Roundtrip failed: {freq} → {hue}° → {reconstructed}"
 
     def test_cross_module_tongue_sets_identical(self):
         """Every module uses the exact same 6 tongues."""
@@ -688,8 +704,7 @@ class TestStellarOctaveIntegration:
             if lo <= freq <= hi:
                 matched = True
                 break
-        assert matched or (20.0 <= freq <= 20000.0), \
-            f"Transposed sun freq {freq} not in any tongue band"
+        assert matched or (20.0 <= freq <= 20000.0), f"Transposed sun freq {freq} not in any tongue band"
 
     def test_octave_preserves_interval_ratios(self):
         """Octave doubling must not change interval relationships."""
@@ -775,9 +790,9 @@ class TestDarkFillIntegration:
     def test_dead_tone_intervals_present(self):
         """The 3 dead tone ratios must exist in the interval vocabulary."""
         names = set(INTERVALS.keys())
-        assert "perfect_fifth" in names   # 3:2
-        assert "minor_sixth" in names     # 8:5
-        assert "minor_seventh" in names   # 16:9
+        assert "perfect_fifth" in names  # 3:2
+        assert "minor_sixth" in names  # 8:5
+        assert "minor_seventh" in names  # 16:9
 
     def test_dead_tone_ratio_values_match_sonifier(self):
         """Dark fill interval ratios must match gallery_sonifier dead tone ratios."""
@@ -825,8 +840,7 @@ class TestStellarDarkFillBridge:
         Verify the connection: stellar × 2^n should reach into the infra band."""
         result = self.som.transpose(0.003, target_freq=1.0)
         # Target ~1 Hz is in the infrasonic band
-        assert INFRA_MIN <= result.human_freq <= INFRA_MAX or \
-            result.human_freq > INFRA_MAX  # may overshoot slightly
+        assert INFRA_MIN <= result.human_freq <= INFRA_MAX or result.human_freq > INFRA_MAX  # may overshoot slightly
 
     def test_audible_range_agreement(self):
         """stellar_octave_mapping and harmonic_dark_fill must agree on audible range."""
@@ -837,8 +851,7 @@ class TestStellarDarkFillBridge:
         """Each tongue's dark fill base frequency should be audible and
         reasonably near its spectrogram bridge attribution band."""
         for tongue, base_hz in TONGUE_AUDIBLE_FREQ.items():
-            assert DF_AUDIBLE_MIN <= base_hz <= DF_AUDIBLE_MAX, \
-                f"{tongue} base {base_hz} Hz not in audible range"
+            assert DF_AUDIBLE_MIN <= base_hz <= DF_AUDIBLE_MAX, f"{tongue} base {base_hz} Hz not in audible range"
 
     def test_full_ladder_continuity(self):
         """The full frequency ladder must have no gaps:

@@ -172,7 +172,9 @@ class PolyhedralFlowRouter:
     def __init__(self, *, max_hops: int = 5):
         self.max_hops = int(max_hops)
 
-    def route(self, tongue: str, *, seed: Optional[int] = None, friction_penalty: bool = False) -> List[Dict[str, object]]:
+    def route(
+        self, tongue: str, *, seed: Optional[int] = None, friction_penalty: bool = False
+    ) -> List[Dict[str, object]]:
         tongue = str(tongue)
         if tongue not in TONGUE_WEIGHTS:
             raise ValueError(f"Unknown tongue: {tongue}")
@@ -333,4 +335,3 @@ def generate_flow_training_pairs(*, n_pairs: int = 12) -> List[Dict[str, object]
         tongue = tongues[i % len(tongues)]
         pairs.append(generate_hash_training_pair(tongue, seed=i))
     return pairs
-

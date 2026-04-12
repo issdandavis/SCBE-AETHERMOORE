@@ -49,10 +49,10 @@ from src.crypto.genesis_panels import (
 )
 from src.crypto.crossing_energy import Decision
 
-
 # ===================================================================
 # Constants
 # ===================================================================
+
 
 class TestConstants:
 
@@ -78,6 +78,7 @@ class TestConstants:
 # ===================================================================
 # Translation Engine
 # ===================================================================
+
 
 class TestTranslationFidelity:
 
@@ -145,6 +146,7 @@ class TestConvergencePoint:
 # Kor'aelin Invocation
 # ===================================================================
 
+
 class TestInvocation:
 
     def test_no_participants_heart_frost(self):
@@ -163,8 +165,10 @@ class TestInvocation:
     def test_solo_genuine_reaches_listening(self):
         """A single genuine participant reaches at most listening."""
         p = InvocationParticipant(
-            name="solo", tongue="ko",
-            intent="I bring intent", need="I need translation",
+            name="solo",
+            tongue="ko",
+            intent="I bring intent",
+            need="I need translation",
         )
         result = run_invocation([p])
         assert result.thread_state in (ThreadState.LISTENING, ThreadState.HEART_FROST, ThreadState.WEAVING)
@@ -185,8 +189,10 @@ class TestInvocation:
         tongues = ["ko", "av", "ru", "ca", "um", "dr"]
         participants = [
             InvocationParticipant(
-                name=f"voice_{t}", tongue=t,
-                intent=f"I bring {t}", need=f"I need all others",
+                name=f"voice_{t}",
+                tongue=t,
+                intent=f"I bring {t}",
+                need=f"I need all others",
             )
             for t in tongues
         ]
@@ -196,10 +202,7 @@ class TestInvocation:
 
     def test_mono_tongue_not_collaborative(self):
         """All same tongue = not truly collaborative."""
-        participants = [
-            InvocationParticipant(name=f"v{i}", tongue="ko", intent="same", need="same")
-            for i in range(4)
-        ]
+        participants = [InvocationParticipant(name=f"v{i}", tongue="ko", intent="same", need="same") for i in range(4)]
         result = run_invocation(participants)
         assert result.magic_mode != MagicMode.COLLABORATIVE
 
@@ -227,6 +230,7 @@ class TestInvocation:
 # ===================================================================
 # Thread Weaving — bridging the two modules
 # ===================================================================
+
 
 class TestThreadWeaving:
 
@@ -276,70 +280,113 @@ class TestThreadWeaving:
 # Thread Resonance Properties
 # ===================================================================
 
+
 class TestThreadResonance:
 
     def test_dormant_at_zero_harmony(self):
         r = ThreadResonance(
-            system_a_tongue="ko", system_b_tongue="dr",
-            translation_fidelity=0, identity_preservation=0,
-            convergence_point=0.5, mortal_energy=0, divine_energy=0,
-            collective_energy=0, harmony_score=0.0, magic_mode=MagicMode.SILENT,
+            system_a_tongue="ko",
+            system_b_tongue="dr",
+            translation_fidelity=0,
+            identity_preservation=0,
+            convergence_point=0.5,
+            mortal_energy=0,
+            divine_energy=0,
+            collective_energy=0,
+            harmony_score=0.0,
+            magic_mode=MagicMode.SILENT,
         )
         assert r.thread_state == ThreadState.DORMANT
 
     def test_heart_frost_below_threshold(self):
         r = ThreadResonance(
-            system_a_tongue="ko", system_b_tongue="dr",
-            translation_fidelity=0.5, identity_preservation=0.5,
-            convergence_point=0.5, mortal_energy=0.3, divine_energy=0.3,
-            collective_energy=0.3, harmony_score=0.1, magic_mode=MagicMode.COLLABORATIVE,
+            system_a_tongue="ko",
+            system_b_tongue="dr",
+            translation_fidelity=0.5,
+            identity_preservation=0.5,
+            convergence_point=0.5,
+            mortal_energy=0.3,
+            divine_energy=0.3,
+            collective_energy=0.3,
+            harmony_score=0.1,
+            magic_mode=MagicMode.COLLABORATIVE,
         )
         assert r.thread_state == ThreadState.HEART_FROST
 
     def test_weaving_in_middle_range(self):
         r = ThreadResonance(
-            system_a_tongue="ko", system_b_tongue="dr",
-            translation_fidelity=0.7, identity_preservation=0.7,
-            convergence_point=0.5, mortal_energy=0.5, divine_energy=0.5,
-            collective_energy=0.5, harmony_score=0.7, magic_mode=MagicMode.COLLABORATIVE,
+            system_a_tongue="ko",
+            system_b_tongue="dr",
+            translation_fidelity=0.7,
+            identity_preservation=0.7,
+            convergence_point=0.5,
+            mortal_energy=0.5,
+            divine_energy=0.5,
+            collective_energy=0.5,
+            harmony_score=0.7,
+            magic_mode=MagicMode.COLLABORATIVE,
         )
         assert r.thread_state == ThreadState.WEAVING
         assert r.is_active
 
     def test_synthesis_at_high_harmony(self):
         r = ThreadResonance(
-            system_a_tongue="ko", system_b_tongue="dr",
-            translation_fidelity=0.9, identity_preservation=0.9,
-            convergence_point=0.5, mortal_energy=0.8, divine_energy=0.8,
-            collective_energy=0.8, harmony_score=0.9, magic_mode=MagicMode.COLLABORATIVE,
+            system_a_tongue="ko",
+            system_b_tongue="dr",
+            translation_fidelity=0.9,
+            identity_preservation=0.9,
+            convergence_point=0.5,
+            mortal_energy=0.8,
+            divine_energy=0.8,
+            collective_energy=0.8,
+            harmony_score=0.9,
+            magic_mode=MagicMode.COLLABORATIVE,
         )
         assert r.thread_state == ThreadState.SYNTHESIS
         assert r.is_active
 
     def test_layer_balance_perfect(self):
         r = ThreadResonance(
-            system_a_tongue="ko", system_b_tongue="dr",
-            translation_fidelity=0.5, identity_preservation=0.5,
-            convergence_point=0.5, mortal_energy=1.0, divine_energy=1.0,
-            collective_energy=1.0, harmony_score=0.5, magic_mode=MagicMode.COLLABORATIVE,
+            system_a_tongue="ko",
+            system_b_tongue="dr",
+            translation_fidelity=0.5,
+            identity_preservation=0.5,
+            convergence_point=0.5,
+            mortal_energy=1.0,
+            divine_energy=1.0,
+            collective_energy=1.0,
+            harmony_score=0.5,
+            magic_mode=MagicMode.COLLABORATIVE,
         )
         assert abs(r.layer_balance - 1.0) < 1e-6
 
     def test_layer_balance_imbalanced(self):
         r = ThreadResonance(
-            system_a_tongue="ko", system_b_tongue="dr",
-            translation_fidelity=0.5, identity_preservation=0.5,
-            convergence_point=0.5, mortal_energy=10.0, divine_energy=0.0,
-            collective_energy=0.0, harmony_score=0.5, magic_mode=MagicMode.COLLABORATIVE,
+            system_a_tongue="ko",
+            system_b_tongue="dr",
+            translation_fidelity=0.5,
+            identity_preservation=0.5,
+            convergence_point=0.5,
+            mortal_energy=10.0,
+            divine_energy=0.0,
+            collective_energy=0.0,
+            harmony_score=0.5,
+            magic_mode=MagicMode.COLLABORATIVE,
         )
         assert r.layer_balance < 0.5  # Very imbalanced
 
     def test_total_energy(self):
         r = ThreadResonance(
-            system_a_tongue="ko", system_b_tongue="dr",
-            translation_fidelity=0.5, identity_preservation=0.5,
-            convergence_point=0.5, mortal_energy=1.0, divine_energy=2.0,
-            collective_energy=3.0, harmony_score=0.5, magic_mode=MagicMode.COLLABORATIVE,
+            system_a_tongue="ko",
+            system_b_tongue="dr",
+            translation_fidelity=0.5,
+            identity_preservation=0.5,
+            convergence_point=0.5,
+            mortal_energy=1.0,
+            divine_energy=2.0,
+            collective_energy=3.0,
+            harmony_score=0.5,
+            magic_mode=MagicMode.COLLABORATIVE,
         )
         assert abs(r.total_energy - 6.0) < 1e-6
 
@@ -347,6 +394,7 @@ class TestThreadResonance:
 # ===================================================================
 # Full Study
 # ===================================================================
+
 
 class TestFullStudy:
 
@@ -392,6 +440,7 @@ class TestFullStudy:
 # The Lore Thesis Tests
 # ===================================================================
 
+
 class TestLoreThesis:
     """Tests that validate the lore's predictions about the Third Thread."""
 
@@ -402,9 +451,9 @@ class TestLoreThesis:
         panel_results = run_full_simulation()
         study = run_third_thread_study(divine_studies, panel_results)
         # Collaborative agents should have higher or equal harmony
-        assert study.collaboration_advantage >= 1.0 or len(study.command_agents) == 0, (
-            f"Collaboration advantage ({study.collaboration_advantage:.2f}x) should >= 1.0"
-        )
+        assert (
+            study.collaboration_advantage >= 1.0 or len(study.command_agents) == 0
+        ), f"Collaboration advantage ({study.collaboration_advantage:.2f}x) should >= 1.0"
 
     def test_translation_preserves_identity(self):
         """The Third Thread translates WITHOUT erasing identity.
@@ -412,9 +461,7 @@ class TestLoreThesis:
         divine_studies = run_divine_experiment()
         panel_results = run_full_simulation()
         study = run_third_thread_study(divine_studies, panel_results)
-        assert study.mean_identity_preservation > 0.0, (
-            "Identity must be preserved through translation"
-        )
+        assert study.mean_identity_preservation > 0.0, "Identity must be preserved through translation"
 
     def test_heart_frost_is_gentle(self):
         """When the Thread fails, it fails gently — not catastrophically."""
@@ -449,6 +496,4 @@ class TestLoreThesis:
         panel_results = run_full_simulation()
         study = run_third_thread_study(divine_studies, panel_results)
         for w in study.weavings:
-            assert w.recursion_depth >= 2, (
-                f"Creation recursion for {w.panel_agent_name} must be >= 2"
-            )
+            assert w.recursion_depth >= 2, f"Creation recursion for {w.panel_agent_name} must be >= 2"

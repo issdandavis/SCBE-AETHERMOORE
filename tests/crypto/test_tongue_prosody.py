@@ -14,8 +14,12 @@ from typing import Dict
 PHI = 1.618033988749895
 
 TONGUE_WEIGHTS: Dict[str, float] = {
-    "ko": 1.000, "av": 1.618, "ru": 2.618,
-    "ca": 4.236, "um": 6.854, "dr": 11.090,
+    "ko": 1.000,
+    "av": 1.618,
+    "ru": 2.618,
+    "ca": 4.236,
+    "um": 6.854,
+    "dr": 11.090,
 }
 
 DECISION_VOICE_MAP: Dict[str, str] = {
@@ -36,8 +40,7 @@ class TongueWeightVector:
     dr: float
 
     def as_dict(self) -> Dict[str, float]:
-        return {"ko": self.ko, "av": self.av, "ru": self.ru,
-                "ca": self.ca, "um": self.um, "dr": self.dr}
+        return {"ko": self.ko, "av": self.av, "ru": self.ru, "ca": self.ca, "um": self.um, "dr": self.dr}
 
     def norm(self) -> float:
         vals = [self.ko, self.av, self.ru, self.ca, self.um, self.dr]
@@ -73,8 +76,7 @@ def tongue_to_prosody(weights, base_speed=1.0, base_pitch=0.0):
         cadence = "grounded"
     else:
         cadence = "steady"
-    return ProsodyParams(speed=speed, pitch_semitones=pitch,
-                         warmth=warmth, breathiness=breathiness, cadence=cadence)
+    return ProsodyParams(speed=speed, pitch_semitones=pitch, warmth=warmth, breathiness=breathiness, cadence=cadence)
 
 
 def governance_voice(decision):
@@ -89,6 +91,7 @@ def tongue_dominant(weights):
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestTongueToProsody:
 

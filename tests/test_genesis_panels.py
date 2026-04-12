@@ -27,10 +27,10 @@ from src.crypto.genesis_panels import (
 from src.crypto.crossing_energy import Decision
 from src.crypto.harmonic_dark_fill import PHI, INTERVALS
 
-
 # ===================================================================
 # Constants and Enums
 # ===================================================================
+
 
 class TestForceEnum:
     def test_six_forces(self):
@@ -66,6 +66,7 @@ class TestForceEnum:
 # Historical Agents
 # ===================================================================
 
+
 class TestHistoricalAgents:
     def test_eight_agents(self):
         assert len(HISTORICAL_AGENTS) == 8
@@ -73,8 +74,14 @@ class TestHistoricalAgents:
     def test_agent_names(self):
         names = {a.name for a in HISTORICAL_AGENTS}
         expected = {
-            "Moses", "Pythagoras", "David", "Hildegard of Bingen",
-            "Al-Kindi", "Bach", "Ramanujan", "Adversary",
+            "Moses",
+            "Pythagoras",
+            "David",
+            "Hildegard of Bingen",
+            "Al-Kindi",
+            "Bach",
+            "Ramanujan",
+            "Adversary",
         }
         assert names == expected
 
@@ -134,6 +141,7 @@ class TestHistoricalAgents:
 # ===================================================================
 # Panel A: Religious / Human Studies
 # ===================================================================
+
 
 class TestPanelA:
     def test_run_panel_a_returns_result(self):
@@ -198,6 +206,7 @@ class TestPanelA:
 # Panel B: Science / Mathematics
 # ===================================================================
 
+
 class TestPanelB:
     def test_run_panel_b_returns_result(self):
         agent = HISTORICAL_AGENTS[1]  # Pythagoras
@@ -254,13 +263,13 @@ class TestPanelB:
             result = run_panel_b(agent, "test")
             ms = result.mathematical_structure
             valid_prefixes = ["golden_ratio", "near_phi", "binary_doubling", "rational_"]
-            assert any(ms.startswith(p) for p in valid_prefixes), \
-                f"{agent.name}: unexpected math structure '{ms}'"
+            assert any(ms.startswith(p) for p in valid_prefixes), f"{agent.name}: unexpected math structure '{ms}'"
 
 
 # ===================================================================
 # Dual Panel Synthesis
 # ===================================================================
+
 
 class TestDualPanel:
     def test_run_dual_panel_returns_result(self):
@@ -302,13 +311,16 @@ class TestDualPanel:
         r1 = run_dual_panel(moses, moses.reliability_lesson)
         r2 = run_dual_panel(adversary, adversary.reliability_lesson)
         # Different forces, tongues, intervals → different scores
-        assert r1.reliability_score != r2.reliability_score or \
-               r1.intervention_effectiveness != r2.intervention_effectiveness
+        assert (
+            r1.reliability_score != r2.reliability_score
+            or r1.intervention_effectiveness != r2.intervention_effectiveness
+        )
 
 
 # ===================================================================
 # Full Simulation
 # ===================================================================
+
 
 class TestFullSimulation:
     def test_runs_all_eight_agents(self):
@@ -344,6 +356,7 @@ class TestFullSimulation:
 # ===================================================================
 # Study Compilation
 # ===================================================================
+
 
 class TestStudyCompilation:
     @pytest.fixture
@@ -414,6 +427,7 @@ class TestStudyCompilation:
 # Integration: The Full Genesis Study
 # ===================================================================
 
+
 class TestGenesisStudy:
     """End-to-end: run the full simulation and verify the study makes sense."""
 
@@ -429,15 +443,19 @@ class TestGenesisStudy:
     def test_different_texts_different_study(self):
         """Custom texts should produce different study metrics."""
         default_study = compile_study(run_full_simulation())
-        custom_study = compile_study(run_full_simulation(texts={
-            "Moses": "In the beginning God created the heavens and the earth",
-            "Adversary": "Did God really say you shall not eat?",
-        }))
+        custom_study = compile_study(
+            run_full_simulation(
+                texts={
+                    "Moses": "In the beginning God created the heavens and the earth",
+                    "Adversary": "Did God really say you shall not eat?",
+                }
+            )
+        )
         # At least some metrics should differ
-        assert (default_study.mean_natural_reliability !=
-                custom_study.mean_natural_reliability or
-                default_study.mean_divine_reliability !=
-                custom_study.mean_divine_reliability)
+        assert (
+            default_study.mean_natural_reliability != custom_study.mean_natural_reliability
+            or default_study.mean_divine_reliability != custom_study.mean_divine_reliability
+        )
 
     def test_hebrew_english_greek_agents(self):
         """Run agents with different scripts — the fact lattice connects them."""

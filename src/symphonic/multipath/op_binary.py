@@ -39,8 +39,7 @@ from typing import Dict, Tuple
 
 from .fnir import Op
 
-
-PHI = (1 + 5 ** 0.5) / 2
+PHI = (1 + 5**0.5) / 2
 
 # Stage 4 trit-arbiter recast walks tongues from most → least ownership
 # information so the recast resolves toward the tongue with the strongest
@@ -55,15 +54,20 @@ TONGUE_PROMOTION_ORDER: tuple[str, ...] = ("DR", "RU", "AV", "UM", "KO", "CA")
 
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 TONGUE_WIDTH: Dict[str, int] = {
-    "KO": 6, "AV": 7, "RU": 8, "CA": 6, "UM": 7, "DR": 8,
+    "KO": 6,
+    "AV": 7,
+    "RU": 8,
+    "CA": 6,
+    "UM": 7,
+    "DR": 8,
 }
 TONGUE_PREFIX: Dict[str, str] = {
-    "KO": "",       # no prefix, raw 6-bit
-    "AV": "1",      # type-tag bit
-    "RU": "11",     # ownership-tag prefix
-    "CA": "",       # raw 6-bit
-    "UM": "0",      # dispatch-tag bit
-    "DR": "10",     # purity / monad prefix
+    "KO": "",  # no prefix, raw 6-bit
+    "AV": "1",  # type-tag bit
+    "RU": "11",  # ownership-tag prefix
+    "CA": "",  # raw 6-bit
+    "UM": "0",  # dispatch-tag bit
+    "DR": "10",  # purity / monad prefix
 }
 
 
@@ -77,9 +81,7 @@ def _base_bits(op: Op, tongue: str) -> str:
 
 
 # Frozen base table — every (op, tongue) -> initial bitstring.
-OP_BINARY: Dict[Tuple[Op, str], str] = {
-    (op, t): _base_bits(op, t) for op in Op for t in TONGUES
-}
+OP_BINARY: Dict[Tuple[Op, str], str] = {(op, t): _base_bits(op, t) for op in Op for t in TONGUES}
 
 
 # --- Sustained-interaction ledger ----------------------------------------
@@ -95,9 +97,9 @@ class UsageLedger:
 
     width: Dict[Tuple[Op, str], float] = field(default_factory=dict)
     interactions: int = 0
-    decay: float = 0.997           # per-tick passive decay
-    growth: float = 1.0            # additive bump on activation
-    remap_every: int = 256         # re-mod cadence
+    decay: float = 0.997  # per-tick passive decay
+    growth: float = 1.0  # additive bump on activation
+    remap_every: int = 256  # re-mod cadence
     remap_count: int = 0
 
     def _key(self, op: Op, tongue: str) -> Tuple[Op, str]:
@@ -130,7 +132,7 @@ class UsageLedger:
         """
         base = float(TONGUE_WIDTH[tongue])
         w = self.path_width(op, tongue)
-        return base / (PHI ** w)
+        return base / (PHI**w)
 
     def total_cost(self, ops: list[tuple[Op, str]]) -> float:
         return sum(self.effective_cost(o, t) for o, t in ops)
@@ -192,15 +194,13 @@ if __name__ == "__main__":
     ledger = UsageLedger(growth=1.5, decay=0.999)
 
     print("op sequence:", [o.name for o in seq])
-    print(f"\n{'tick':<6}{'KO bits':<10}{'KO cost':<12}"
-          f"{'DR bits':<10}{'DR cost':<12}")
+    print(f"\n{'tick':<6}{'KO bits':<10}{'KO cost':<12}" f"{'DR bits':<10}{'DR cost':<12}")
     for tick in range(1, 9):
         bits_ko = encode_stream(seq, "KO", ledger=ledger)
         bits_dr = encode_stream(seq, "DR", ledger=ledger)
         cost_ko = ledger.total_cost([(o, "KO") for o in seq])
         cost_dr = ledger.total_cost([(o, "DR") for o in seq])
-        print(f"{tick:<6}{len(bits_ko):<10}{cost_ko:<12.3f}"
-              f"{len(bits_dr):<10}{cost_dr:<12.3f}")
+        print(f"{tick:<6}{len(bits_ko):<10}{cost_ko:<12.3f}" f"{len(bits_dr):<10}{cost_dr:<12.3f}")
 
     print(f"\ninteractions: {ledger.interactions}")
     print(f"remaps fired: {ledger.remap_count}")
@@ -210,5 +210,4 @@ if __name__ == "__main__":
         key=lambda kv: -kv[1],
     )[:5]
     for op, w in ko_paths:
-        print(f"  {op.name:<12} width={w:.3f}  "
-              f"cost={ledger.effective_cost(op, 'KO'):.3f}")
+        print(f"  {op.name:<12} width={w:.3f}  " f"cost={ledger.effective_cost(op, 'KO'):.3f}")

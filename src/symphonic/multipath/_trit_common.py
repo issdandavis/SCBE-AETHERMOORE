@@ -22,7 +22,6 @@ from typing import Callable, Dict, List, Tuple
 
 import numpy as np
 
-
 PATENT_REF = "US Provisional #63/961,403"
 TONGUE_NAMES = ("KO", "AV", "RU", "CA", "UM", "DR")
 TONGUE_FULL = {
@@ -67,8 +66,8 @@ class TritTable:
     ops: List[str]
     bands: List[Tuple[str, int, int, int, int]]
     op_id: Dict[str, int]
-    trit_matrix: np.ndarray   # (64, 6) int8
-    feat_matrix: np.ndarray   # (64, 8) float32
+    trit_matrix: np.ndarray  # (64, 6) int8
+    feat_matrix: np.ndarray  # (64, 8) float32
     reducer_meta: Dict[str, ReducerMeta]
 
     def lookup(self, op: str) -> Tuple[np.ndarray, np.ndarray, ReducerMeta]:
@@ -96,9 +95,7 @@ class TritTable:
         results: Dict[str, bool] = {}
 
         # A1 Unitarity: home channel always +1
-        results["A1_unitarity"] = bool(
-            np.all(self.trit_matrix[:, self.tongue_id] == 1)
-        )
+        results["A1_unitarity"] = bool(np.all(self.trit_matrix[:, self.tongue_id] == 1))
 
         # A2 Locality: feature rows match band/group
         a2 = True
@@ -133,9 +130,7 @@ class TritTable:
         results["all_pass"] = all(v for k, v in results.items() if k != "all_pass")
         return results
 
-    def collision_report(
-        self, ops_a: List[str], ops_b: List[str], channel: int = 0
-    ) -> Dict[str, int]:
+    def collision_report(self, ops_a: List[str], ops_b: List[str], channel: int = 0) -> Dict[str, int]:
         a = self.trit_stream(ops_a)[:, channel]
         b = self.trit_stream(ops_b)[:, channel]
         n = min(len(a), len(b))
@@ -154,9 +149,7 @@ class TritTable:
         full = TONGUE_FULL[self.tongue]
         print(f"{full} ({self.tongue}) trit table   patent: {PATENT_REF}")
         print(
-            f"{'id':<5}{'op':<14}{'band':<14}"
-            f"{'trit (KO AV RU CA UM DR)':<28}"
-            f"{'neg':<5}{'dual':<5}{'drift':<8}"
+            f"{'id':<5}{'op':<14}{'band':<14}" f"{'trit (KO AV RU CA UM DR)':<28}" f"{'neg':<5}{'dual':<5}{'drift':<8}"
         )
         for i, op in enumerate(self.ops):
             band_name, _, _ = self.band_for(i)
@@ -215,15 +208,22 @@ def build_trit_table(
         valence = (i % 8) + 1
         chi = 0.10 + 0.02 * (i % 16)
         feat[i] = (
-            float(i + 1), float(group), float(period), float(valence),
-            float(chi), float(band), float(tongue_id), 0.0,
+            float(i + 1),
+            float(group),
+            float(period),
+            float(valence),
+            float(chi),
+            float(band),
+            float(tongue_id),
+            0.0,
         )
 
     reducer: Dict[str, ReducerMeta] = {}
     for i, op in enumerate(ops):
         drift = float(np.linalg.norm(trit[i].astype(np.float32))) / 6.0
         reducer[op] = ReducerMeta(
-            op=op, op_id=i,
+            op=op,
+            op_id=i,
             negative_state=op in neg_ops,
             dual_state=op in dual_ops,
             drift_norm=drift,

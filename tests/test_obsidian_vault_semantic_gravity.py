@@ -112,7 +112,9 @@ def test_semantic_gravity_is_symmetric_and_monotonic_with_overlap() -> None:
     assert explicit_metrics["semantic_gravity"] > weak_metrics["semantic_gravity"]
 
 
-def test_build_graph_preserves_legacy_stats_and_emits_semantic_fields(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_build_graph_preserves_legacy_stats_and_emits_semantic_fields(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     architecture_dir = tmp_path / "Architecture"
     langues_dir = tmp_path / "Langues"
     research_dir = tmp_path / "Research"

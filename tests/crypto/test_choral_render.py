@@ -12,7 +12,7 @@ from enum import Enum
 # Inline module under test
 # ---------------------------------------------------------------------------
 
-PHI = (1 + 5 ** 0.5) / 2
+PHI = (1 + 5**0.5) / 2
 
 
 class RenderMode(Enum):
@@ -38,12 +38,12 @@ class TongueProfile:
 
 
 PROFILES: Dict[str, TongueProfile] = {
-    "ko": TongueProfile("ko", "balanced",   "even",       0.95, 0.10),
-    "av": TongueProfile("av", "liquid",      "flowing",    1.00, 0.20),
-    "ru": TongueProfile("ru", "dense",       "percussive", 0.90, 0.25),
-    "ca": TongueProfile("ca", "bright",      "rising",     1.08, 0.30),
-    "um": TongueProfile("um", "soft",        "falling",    0.82, 0.35),
-    "dr": TongueProfile("dr", "heavy",       "grounded",   0.80, 0.22),
+    "ko": TongueProfile("ko", "balanced", "even", 0.95, 0.10),
+    "av": TongueProfile("av", "liquid", "flowing", 1.00, 0.20),
+    "ru": TongueProfile("ru", "dense", "percussive", 0.90, 0.25),
+    "ca": TongueProfile("ca", "bright", "rising", 1.08, 0.30),
+    "um": TongueProfile("um", "soft", "falling", 0.82, 0.35),
+    "dr": TongueProfile("dr", "heavy", "grounded", 0.80, 0.22),
 }
 
 
@@ -91,8 +91,9 @@ def build_prosody(tongue, excitation, n_phonemes):
     step = 5 if profile.syllable_style in ("balanced", "liquid") else 4
     pauses = tuple(i for i in range(step, n_phonemes, step))
     energy = max(0.0, min(1.0, 0.4 + 0.06 * excitation))
-    return ProsodyPlan(rate=rate, pitch_curve=curve, pause_points=pauses,
-                       energy=energy, chant_ratio=profile.chant_ratio)
+    return ProsodyPlan(
+        rate=rate, pitch_curve=curve, pause_points=pauses, energy=energy, chant_ratio=profile.chant_ratio
+    )
 
 
 TONGUE_PAN = {"ko": -0.6, "dr": -0.4, "av": 0.0, "um": 0.0, "ru": 0.4, "ca": 0.6}
@@ -114,6 +115,7 @@ def build_voice_layers(tongue, mode):
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestTongueProfiles:
 

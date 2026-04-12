@@ -45,10 +45,10 @@ from symphonic_cipher.scbe_aethermoore.axiom_grouped.polyhedral_flow import (
     generate_flow_training_pairs,
 )
 
-
 # ============================================================
 # Polyhedra data integrity
 # ============================================================
+
 
 @pytest.mark.unit
 class TestPolyhedraData:
@@ -67,9 +67,7 @@ class TestPolyhedraData:
         """Platonic solids have Euler characteristic 2 (V - E + F = 2)."""
         for p in POLYHEDRA:
             if p.family == "platonic":
-                assert p.vertices - p.edges + p.faces == 2, (
-                    f"{p.name}: V-E+F = {p.vertices - p.edges + p.faces} != 2"
-                )
+                assert p.vertices - p.edges + p.faces == 2, f"{p.name}: V-E+F = {p.vertices - p.edges + p.faces} != 2"
 
     def test_toroidal_euler_zero(self):
         """Toroidal polyhedra have Euler characteristic 0."""
@@ -95,9 +93,7 @@ class TestPolyhedraData:
         """If i is adjacent to j, then j should be adjacent to i."""
         for i, neighbors in FLOW_ADJACENCY.items():
             for j in neighbors:
-                assert i in FLOW_ADJACENCY[j], (
-                    f"Asymmetric adjacency: {i} -> {j} but not {j} -> {i}"
-                )
+                assert i in FLOW_ADJACENCY[j], f"Asymmetric adjacency: {i} -> {j} but not {j} -> {i}"
 
     def test_no_self_loops(self):
         for i, neighbors in FLOW_ADJACENCY.items():
@@ -107,6 +103,7 @@ class TestPolyhedraData:
 # ============================================================
 # Fibonacci spin
 # ============================================================
+
 
 @pytest.mark.unit
 class TestFibonacciSpin:
@@ -154,6 +151,7 @@ class TestFibonacciPhase:
 # Fibonacci LFSR
 # ============================================================
 
+
 @pytest.mark.unit
 class TestFibonacciLFSR:
     def test_default_8bit(self):
@@ -196,6 +194,7 @@ class TestFibonacciLFSR:
 # Dual spin
 # ============================================================
 
+
 @pytest.mark.unit
 class TestDualSpin:
     def test_spin_returns_bits(self):
@@ -234,6 +233,7 @@ class TestDualSpin:
 # Polyhedral flow router
 # ============================================================
 
+
 @pytest.mark.unit
 class TestPolyhedralFlowRouter:
     def test_route_returns_path(self):
@@ -264,9 +264,19 @@ class TestPolyhedralFlowRouter:
     def test_route_has_required_keys(self):
         router = PolyhedralFlowRouter()
         path = router.route("KO")
-        required = {"hop", "polyhedron", "poly_index", "zone", "family",
-                     "depth", "phi_weight", "ternary_state", "fibonacci_phase",
-                     "faces", "euler_chi"}
+        required = {
+            "hop",
+            "polyhedron",
+            "poly_index",
+            "zone",
+            "family",
+            "depth",
+            "phi_weight",
+            "ternary_state",
+            "fibonacci_phase",
+            "faces",
+            "euler_chi",
+        }
         for hop in path:
             assert required.issubset(set(hop.keys()))
 
@@ -294,6 +304,7 @@ class TestPolyhedralFlowRouter:
 # ============================================================
 # Composite harmonic wall
 # ============================================================
+
 
 @pytest.mark.unit
 class TestCompositeHarmonicWall:
@@ -338,6 +349,7 @@ class TestCompositeHarmonicWall:
 # Poincaré distance (scalar form)
 # ============================================================
 
+
 @pytest.mark.unit
 class TestPoincaréDistanceScalar:
     def test_same_point_zero(self):
@@ -356,6 +368,7 @@ class TestPoincaréDistanceScalar:
 # ============================================================
 # Flow confinement evaluation
 # ============================================================
+
 
 @pytest.mark.integration
 class TestFlowConfinement:
@@ -377,6 +390,7 @@ class TestFlowConfinement:
 # ============================================================
 # Polyhedral friction
 # ============================================================
+
 
 @pytest.mark.unit
 class TestPolyhedralFriction:
@@ -440,6 +454,7 @@ class TestFrictionLaplacian:
 # Geometric training signal
 # ============================================================
 
+
 @pytest.mark.unit
 class TestGeometricTrainingSignal:
     def test_returns_dict(self):
@@ -470,6 +485,7 @@ class TestGeometricTrainingSignal:
 # ============================================================
 # Training pair generation
 # ============================================================
+
 
 @pytest.mark.integration
 class TestTrainingPairGeneration:
