@@ -1,0 +1,41 @@
+{
+  "name": "aetherbrowse",
+  "version": "0.1.0",
+  "description": "Full development and operations toolkit for the AetherBrowse governed AI browser",
+  "author": {
+    "name": "Issac Davis",
+    "email": "issdandavis@gmail.com",
+    "url": "https://github.com/issdandavis"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "repository": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "license": "MIT",
+  "keywords": [
+    "browser",
+    "governance",
+    "aetherbrowse",
+    "hydra-armor",
+    "playwright"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AetherBrowse",
+    "shortDescription": "Governed browser stack with Playwright worker, runtime server, and Electron shell.",
+    "longDescription": "Operate the AetherBrowse browser system through its governed runtime, Playwright execution worker, and Electron shell lanes for research, browsing, and browser-side operations.",
+    "developerName": "Issac Davis",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "privacyPolicyURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "termsOfServiceURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "defaultPrompt": [
+      "Operate the AetherBrowse browser lane for a web task.",
+      "Start the AetherBrowse runtime and Playwright worker.",
+      "Inspect the governed browser stack and its logs."
+    ],
+    "brandColor": "#1D4ED8"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "nonstop",
+  "version": "1.0.0",
+  "description": "Autonomous non-stop working mode with SCBE infrastructure integration",
+  "author": {
+    "name": "Issac Daniel Davis",
+    "email": "issdandavis@gmail.com",
+    "url": "https://github.com/issdandavis"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "repository": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+  "license": "MIT",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "Nonstop",
+    "shortDescription": "Autonomous work mode for SCBE loops and long-running execution.",
+    "longDescription": "Run SCBE-oriented nonstop work loops with autonomous execution patterns, persistent task flow, and infrastructure-aware work mode support.",
+    "developerName": "Issac Davis",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "privacyPolicyURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "termsOfServiceURL": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "defaultPrompt": [
+      "Run a nonstop autonomous work loop for this task.",
+      "Inspect the nonstop plugin skills and hooks.",
+      "Use nonstop mode to keep work moving without idle gaps."
+    ],
+    "brandColor": "#0F766E"
+  }
+}
