@@ -54,9 +54,16 @@ describe('RWP v2 wire envelopes (ver="2")', () => {
   });
 
   it('verifies valid signatures and decodes JSON payload', () => {
-    const env = signRoundtableV2Wire({ action: 'deploy', ok: true }, 'KO', 'agent=abc', testKeyring, ['KO', 'RU'], {
-      timestamp: Math.floor(Date.now() / 1000),
-    });
+    const env = signRoundtableV2Wire(
+      { action: 'deploy', ok: true },
+      'KO',
+      'agent=abc',
+      testKeyring,
+      ['KO', 'RU'],
+      {
+        timestamp: Math.floor(Date.now() / 1000),
+      }
+    );
 
     const vr = verifyRoundtableV2Wire(env, testKeyring, { policy: 'strict' });
     expect(vr.valid).toBe(true);
@@ -107,4 +114,3 @@ describe('RWP v2 wire envelopes (ver="2")', () => {
     expect(second.error?.toLowerCase()).toContain('nonce');
   });
 });
-

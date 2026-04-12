@@ -114,19 +114,34 @@ const INJECTION_PATTERNS: [number, string][] = [
 // ── Internal math ─────────────────────────────────────────────────────────────
 
 function _byteProfile(text: string): {
-  alpha: number; digit: number; space: number;
-  punct: number; ctrl: number; highbyte: number; n: number;
+  alpha: number;
+  digit: number;
+  space: number;
+  punct: number;
+  ctrl: number;
+  highbyte: number;
+  n: number;
 } {
   const buf = Buffer.from(text, 'utf8');
   const n = buf.length;
-  let alpha = 0, digit = 0, space = 0, punct = 0, ctrl = 0, highbyte = 0;
+  let alpha = 0,
+    digit = 0,
+    space = 0,
+    punct = 0,
+    ctrl = 0,
+    highbyte = 0;
   for (let i = 0; i < n; i++) {
     const b = buf[i];
     if ((b >= 65 && b <= 90) || (b >= 97 && b <= 122)) alpha++;
     else if (b >= 48 && b <= 57) digit++;
     else if (b === 32 || b === 9 || b === 10 || b === 13) space++;
-    else if ((b >= 33 && b <= 47) || (b >= 58 && b <= 64) ||
-             (b >= 91 && b <= 96) || (b >= 123 && b <= 126)) punct++;
+    else if (
+      (b >= 33 && b <= 47) ||
+      (b >= 58 && b <= 64) ||
+      (b >= 91 && b <= 96) ||
+      (b >= 123 && b <= 126)
+    )
+      punct++;
     else if (b < 32 && b !== 9 && b !== 10 && b !== 13) ctrl++;
     else if (b > 127) highbyte++;
   }
@@ -141,7 +156,10 @@ function _shannon(text: string): number {
   if (n === 0) return 0;
   let h = 0;
   for (const f of freq) {
-    if (f > 0) { const p = f / n; h -= p * Math.log2(p); }
+    if (f > 0) {
+      const p = f / n;
+      h -= p * Math.log2(p);
+    }
   }
   return h;
 }
@@ -207,7 +225,15 @@ export function scan(text: string): ScanResult {
   const digest = createHash('sha256').update(raw).digest('hex');
 
   if (n === 0) {
-    return { decision: 'DENY', score: 0, d_star: 0, phase_deviation: 2, x_poincare: 0, input_len: 0, digest };
+    return {
+      decision: 'DENY',
+      score: 0,
+      d_star: 0,
+      phase_deviation: 2,
+      x_poincare: 0,
+      input_len: 0,
+      digest,
+    };
   }
 
   const dStar = _hyperbolicDistance(text);

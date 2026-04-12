@@ -235,11 +235,7 @@ export interface PipelineNetworkConfig {
  * Occlusion can be scheduled to simulate context blackouts at specific layers.
  */
 export function createPipelineNetwork(config: PipelineNetworkConfig = {}): DTNNetworkSimulator {
-  const {
-    storeCapacity = 500,
-    bandwidth = 10,
-    skipConnections = true,
-  } = config;
+  const { storeCapacity = 500, bandwidth = 10, skipConnections = true } = config;
 
   const sim = new DTNNetworkSimulator();
 
@@ -253,7 +249,8 @@ export function createPipelineNetwork(config: PipelineNetworkConfig = {}): DTNNe
     sim.addContactWindow(
       PIPELINE_LAYERS[i],
       PIPELINE_LAYERS[i + 1],
-      1, 10000, // Open for 10000 steps
+      1,
+      10000, // Open for 10000 steps
       bandwidth
     );
   }
@@ -414,7 +411,15 @@ export class DTNBundleFactory {
     // Check if fragmentation needed
     if (payloadStr.length > this.config.fragmentThreshold) {
       return this.fragmentTask(
-        task, source, destination, tongue, priority, d_H, pd, assumptions, contingencies
+        task,
+        source,
+        destination,
+        tongue,
+        priority,
+        d_H,
+        pd,
+        assumptions,
+        contingencies
       );
     }
 
@@ -500,7 +505,10 @@ export class DTNBundleFactory {
 
     // Sort by priority (critical first)
     const priorityOrder: Record<TaskPriority, number> = {
-      critical: 0, high: 1, medium: 2, low: 3,
+      critical: 0,
+      high: 1,
+      medium: 2,
+      low: 3,
     };
     const sorted = [...tasks].sort(
       (a, b) => (priorityOrder[a.priority] ?? 2) - (priorityOrder[b.priority] ?? 2)
@@ -607,9 +615,7 @@ export class DTNBundleFactory {
       expired,
       corrupted,
       layerTelemetry: this.pipeline.getNodeTelemetry(),
-      deliveryRate: this.allBundles.length > 0
-        ? delivered.length / this.allBundles.length
-        : 0,
+      deliveryRate: this.allBundles.length > 0 ? delivered.length / this.allBundles.length : 0,
       steps,
     };
   }
@@ -652,7 +658,7 @@ export class DTNBundleFactory {
     d_H: number,
     pd: number,
     assumptions: string[],
-    contingencies: string[],
+    contingencies: string[]
   ): BundleFactoryResult {
     const payloadStr = JSON.stringify(task.input);
     const chunks: string[] = [];
@@ -730,10 +736,10 @@ export class DTNBundleFactory {
     // Skip connections: L1→L5, L5→L12, L8→L13
     let current = srcIdx;
     const skips: Array<[number, number]> = [
-      [0, 4],   // L1 → L5
-      [4, 11],  // L5 → L12
-      [7, 12],  // L8 → L13
-      [0, 12],  // L1 → L13 (emergency)
+      [0, 4], // L1 → L5
+      [4, 11], // L5 → L12
+      [7, 12], // L8 → L13
+      [0, 12], // L1 → L13 (emergency)
     ];
 
     while (current < dstIdx) {

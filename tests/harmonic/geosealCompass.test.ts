@@ -240,7 +240,7 @@ describe('GeoSeal Compass — Route Planning', () => {
 
   it('multi-hop route through all 6 tongues', () => {
     const waypoints = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'].map((t, i) =>
-      createTongueWaypoint(t, i, DIM),
+      createTongueWaypoint(t, i, DIM)
     );
     const route = planRoute(waypoints);
     expect(route.segments).toHaveLength(5);
@@ -312,7 +312,7 @@ describe('GeoSeal Compass — Temporal Windows', () => {
     // The original and filtered should differ if tongue matches
     // Either way, the filtered score should be >= original
     expect(filtered.segments[0].governanceScore).toBeGreaterThanOrEqual(
-      route.segments[0].governanceScore,
+      route.segments[0].governanceScore
     );
   });
 });
@@ -323,9 +323,7 @@ describe('GeoSeal Compass — Temporal Windows', () => {
 
 describe('GeoSeal Compass — Triadic Temporal Distance', () => {
   it('triadic distance is non-negative', () => {
-    const waypoints = ['KO', 'AV', 'RU', 'CA'].map((t, i) =>
-      createTongueWaypoint(t, i, DIM),
-    );
+    const waypoints = ['KO', 'AV', 'RU', 'CA'].map((t, i) => createTongueWaypoint(t, i, DIM));
     const route = planRoute(waypoints);
     const d = triadicTemporalDistance(route);
     expect(d).toBeGreaterThanOrEqual(0);

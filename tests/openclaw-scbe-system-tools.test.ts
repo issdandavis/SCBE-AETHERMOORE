@@ -82,7 +82,7 @@ describe('openclaw scbe system tools plugin', () => {
         workflowTemplate: 'training-center-loop',
         emitActionMap: false,
       },
-      '20260410T050000Z',
+      '20260410T050000Z'
     );
 
     expect(command.command).toBe('py');
@@ -96,7 +96,11 @@ describe('openclaw scbe system tools plugin', () => {
   });
 
   it('defaults octoarms dispatch to dry-run and supports hf provider selection', () => {
-    const cfg = resolvePluginConfig({ repoRoot: 'C:/repo', pythonBin: 'python', defaultProvider: 'hf' });
+    const cfg = resolvePluginConfig({
+      repoRoot: 'C:/repo',
+      pythonBin: 'python',
+      defaultProvider: 'hf',
+    });
     const command = buildOctoarmsDispatchCommand(cfg, {
       task: 'Test Hugging Face agent handler',
       lane: 'hydra-swarm',
@@ -138,7 +142,7 @@ describe('openclaw scbe system tools plugin', () => {
         contextJson: '{"task":"test"}',
         contextVector: '1,0,0,0,0,0',
       },
-      '20260410T050100Z',
+      '20260410T050100Z'
     );
 
     expect(command.command).toBe('py');
@@ -214,7 +218,11 @@ describe('openclaw scbe system tools plugin', () => {
   });
 
   it('builds the OpenClaw HF handler bootstrap command with repo-owned artifact output', () => {
-    const cfg = resolvePluginConfig({ repoRoot: 'C:/repo', pythonBin: 'python', defaultProvider: 'hf' });
+    const cfg = resolvePluginConfig({
+      repoRoot: 'C:/repo',
+      pythonBin: 'python',
+      defaultProvider: 'hf',
+    });
     const command = buildOpenClawHfHandlerBootstrapCommand(
       cfg,
       {
@@ -223,7 +231,7 @@ describe('openclaw scbe system tools plugin', () => {
         task: 'Verify the HF lane',
         executeDispatch: true,
       },
-      '20260410T060000Z',
+      '20260410T060000Z'
     );
 
     expect(command.command).toBe('python');
@@ -296,5 +304,3 @@ describe('openclaw scbe system tools plugin', () => {
     ]);
   });
 });
-
-
