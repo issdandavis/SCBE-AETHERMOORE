@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
@@ -30,7 +30,6 @@ if str(_repo_root / "src") not in sys.path:
 from crypto.sacred_tongues import (
     TONGUES,
     SacredTongueTokenizer,
-    TongueSpec,
 )
 
 # ============================================================
@@ -131,7 +130,7 @@ class SacredTonguesHFTokenizer:
     def decode(self, ids: List[int], skip_special_tokens: bool = True) -> str:
         """Decode token IDs → text."""
         raw_bytes = []
-        current_tongue = self.default_tongue
+        _current_tongue = self.default_tongue
 
         for token_id in ids:
             # Skip specials
@@ -141,7 +140,7 @@ class SacredTonguesHFTokenizer:
                 # Detect tongue switch
                 for code in self.TONGUE_ORDER:
                     if token_id == SPECIAL_TOKENS.get(f"<tongue:{code}>"):
-                        current_tongue = code
+                        _current_tongue = code
                 continue
 
             # Find which tongue this belongs to

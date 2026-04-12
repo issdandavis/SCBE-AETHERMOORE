@@ -22,8 +22,8 @@ Each Sacred Tongue contributes acoustic behavior constraints:
 """
 
 import math
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from dataclasses import dataclass
+from typing import List, Dict
 from enum import Enum
 
 PHI = (1 + 5**0.5) / 2
@@ -208,7 +208,7 @@ def build_voice_layers(
     mode: RenderMode,
 ) -> tuple:
     """Build voice layer stack for the given render mode."""
-    profile = PROFILES[tongue]
+    _profile = PROFILES[tongue]
     from .speech_render_plan import TONGUE_PAN
 
     pan = TONGUE_PAN.get(tongue, 0.0)

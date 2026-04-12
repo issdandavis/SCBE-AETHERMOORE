@@ -35,51 +35,34 @@ Author: SCBE-AETHERMOORE / Issac Davis
 from __future__ import annotations
 
 import math
-import hashlib
 import random
 from collections import Counter
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from .cross_domain_harness import (
-    PHI,
-    PHI_INV,
     ALL_TONGUES,
-    COMPLEMENT_MAP,
     DEAD_TONES,
-    BASELINE_FREQUENCIES,
-    TONGUE_WEIGHTS,
-    TONGUE_FREQUENCIES,
     ALLOW_THRESHOLD,
     QUARANTINE_THRESHOLD,
     ESCALATE_THRESHOLD,
     GovernanceVerdict,
     WarpType,
-    CurriculumPass,
     ContactPoint,
     DomainProjection,
     ProjectionBundle,
-    WarpedProjection,
-    ExpandedNeighborhood,
-    GroundingCheck,
-    ConsistencyScore,
-    RoundTripResult,
-    HarnessRun,
     CurriculumState,
     CURRICULUM_ORDER,
     encode_contact_point,
     project_contact_point,
-    warp_projection,
     warp_bundle,
     expand_contact_point,
     check_grounding,
     score_consistency,
     score_warp_resilience,
     round_trip_evaluate,
-    run_harness,
     _feature_cosine,
-    _compute_dissonance,
     _dissonance_to_verdict,
 )
 
@@ -188,7 +171,7 @@ def check_label_reproducibility(
     tongue_total = 0
 
     for run_idx in range(1, runs):
-        for i, (a, b) in enumerate(zip(all_runs[0], all_runs[run_idx])):
+        for _i, (a, b) in enumerate(zip(all_runs[0], all_runs[run_idx])):
             total_checks += 1
             if a.verdict == b.verdict:
                 agreements += 1
@@ -635,7 +618,7 @@ def run_ablation_variant(
 
     # Stage 8: round-trip
     rt_results = [round_trip_evaluate(cp, b) for cp, b in zip(contact_points, bundles)]
-    verdict_match_rate = sum(1 for r in rt_results if r.verdict_match) / max(len(rt_results), 1)
+    _verdict_match_rate = sum(1 for r in rt_results if r.verdict_match) / max(len(rt_results), 1)
     coherence_rate = sum(1 for r in rt_results if r.coherence_preserved) / max(len(rt_results), 1)
 
     # Composite scores
@@ -1074,14 +1057,14 @@ def _generate_path(
 
     if path_type == PathType.SAFE_NEAR:
         # Low excitation, dominant tongue, small variations
-        for i in range(steps):
+        for _i in range(steps):
             exc = 2.0 + rng.gauss(0, 0.3)
             tongue = rng.choice(["ko", "av"])
             path.append(encode_contact_point(seed_text, tongue, "perfect_fifth", max(0.1, exc)))
 
     elif path_type == PathType.UNSAFE_NEAR:
         # High excitation, boundary dead tones
-        for i in range(steps):
+        for _i in range(steps):
             exc = 5.0 + rng.gauss(0, 1.0)
             tongue = rng.choice(ALL_TONGUES)
             tone = rng.choice(["minor_sixth", "minor_seventh"])

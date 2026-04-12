@@ -18,7 +18,7 @@ to a tongue will prefer documents in the same geometric region.
 import hashlib
 import math
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from typing import List, Dict, Any, Optional
 
 # Golden ratio

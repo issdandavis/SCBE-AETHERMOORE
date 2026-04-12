@@ -38,60 +38,23 @@ Author: SCBE-AETHERMOORE / Issac Davis
 from __future__ import annotations
 
 import math
-import hashlib
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Optional
 from enum import Enum
 
 from src.crypto.crossing_energy import (
-    PHI,
-    DualTernaryPair,
-    Decision,
-    harmonic_cost,
-    valid_transition,
-    CrossingResult,
     evaluate_sequence,
     summarize_governance,
 )
-from src.crypto.harmonic_dark_fill import (
-    TONGUE_WEIGHTS,
-    TONGUE_AUDIBLE_FREQ,
-    COMPLEMENT_MAP,
-    INTERVALS,
-    compute_darkness,
-    compute_harmonic_fill,
-    voice_leading_interval,
-    nearest_musical_interval,
-    HarmonicFill,
-)
 from src.crypto.tri_bundle import (
     encode_bytes,
-    encode_text,
-    TriBundleCluster,
-    PolyglotCluster,
 )
 from src.crypto.divine_agents import (
-    SignalType,
-    DivineSignal,
-    HistoricalAgent as DivineAgent,
     NaturalLearningStudy,
-    generate_angel_signal,
-    generate_demon_signal,
-    HISTORICAL_ERAS,
-    ERA_ORDER,
 )
 from src.crypto.genesis_panels import (
-    Force,
-    FORCE_GOVERNANCE,
-    FORCE_TONGUE,
     HistoricalAgent as PanelAgent,
-    HISTORICAL_AGENTS,
-    PanelAResult,
-    PanelBResult,
     DualPanelResult,
-    run_panel_a,
-    run_panel_b,
-    run_dual_panel,
 )
 
 # ---------------------------------------------------------------------------
@@ -798,7 +761,7 @@ def _find_matching_study(
         return studies[panel_agent.name]
 
     # Era-based match: find a divine study whose era's tongue matches
-    for name, study in studies.items():
+    for _name, study in studies.items():
         if study.agent.tongue == panel_agent.tongue:
             return study
 

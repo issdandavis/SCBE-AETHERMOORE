@@ -43,10 +43,7 @@ from __future__ import annotations
 
 import hashlib
 import math
-import sys
-import os
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Sequence
 
 __version__ = "3.3.0"
 __author__ = "Issac Daniel Davis"

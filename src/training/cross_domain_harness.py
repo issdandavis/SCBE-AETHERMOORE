@@ -168,7 +168,7 @@ def _compute_tongue_vector(raw_input: str, dominant_tongue: str) -> Tuple[float,
         activations[dominant_tongue] = 1.0
     else:
         for byte_val in data:
-            for i, tongue in enumerate(ALL_TONGUES):
+            for _i, tongue in enumerate(ALL_TONGUES):
                 threshold = (TONGUE_WEIGHTS[tongue] / TONGUE_WEIGHTS["dr"]) * 255
                 if byte_val >= threshold:
                     activations[tongue] += 1.0 / len(data)

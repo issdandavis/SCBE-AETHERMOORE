@@ -36,14 +36,13 @@ from __future__ import annotations
 import hashlib
 import math
 import struct
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import IntEnum
 from typing import Dict, List, Optional, Tuple
 
 from src.crypto.harmonic_dark_fill import (
     compute_darkness,
     upgrade_sound_bundle,
-    fill_dark_nodes,
 )
 
 # ---------------------------------------------------------------------------
@@ -334,7 +333,7 @@ def encode_byte(
     Amplitude is INVERSE of activation: sound is LOUDEST where light is DARKEST.
     """
     weight = TONGUE_WEIGHTS[tongue_code]
-    freq = TONGUE_FREQUENCIES[tongue_code]
+    _freq = TONGUE_FREQUENCIES[tongue_code]
 
     # LIGHT bundle (what IS)
     presence = 1 if byte_val > 0 else 0

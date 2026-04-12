@@ -17,7 +17,6 @@ Covers:
 """
 
 import math
-import pytest
 import sys
 
 sys.path.insert(0, ".")
@@ -27,15 +26,11 @@ from src.crypto.gallery_chromatics import (
     TAU,
     TONGUE_PHASE_OFFSETS,
     MATERIAL_ORDER,
-    MATERIAL_BANDS,
     LEFT_EYE_TONGUES,
     RIGHT_EYE_TONGUES,
-    BRIDGE_TONGUES,
     DEAD_TONE_RATIOS,
     LabColor,
     DeadToneColorChord,
-    ChromaticIris,
-    GalleryColorField,
     frequency_to_harmonic_number,
     harmonic_to_polar,
     scatter_color_quad,

@@ -3,9 +3,6 @@
 Self-contained: no heavy imports. Can run standalone or via pytest.
 """
 
-import math
-import sys
-from pathlib import Path
 from dataclasses import dataclass
 from typing import Optional, Dict
 

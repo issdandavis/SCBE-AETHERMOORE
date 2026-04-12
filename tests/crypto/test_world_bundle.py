@@ -4,18 +4,15 @@ Self-contained: imports directly from src/crypto/world_bundle.py
 via sys.path to avoid conftest chain.
 """
 
-import sys
-import math
 import hashlib
 import json
 import time
-from pathlib import Path
 
 # Direct import avoidance: inline the key structures
 # We test the *properties* of the bundle, not the import chain
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Dict, List
 
 PHI = 1.618033988749895
 

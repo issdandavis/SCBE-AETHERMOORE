@@ -21,7 +21,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from training.topological_loss import (
     PHI,
-    PHI_INV,
     tetrahedral_generators_A4,
     octahedral_generators_S4,
     icosahedral_generators_A5,
@@ -29,7 +28,6 @@ from training.topological_loss import (
     FrictionLaplacian,
     _natural_frequency,
     _PHDM_POLYHEDRA,
-    _FLOW_ADJACENCY,
     build_default_friction_laplacian,
     TopologicalLossConfig,
     TopologicalLoss,
@@ -112,7 +110,7 @@ class TestSymmetryGenerators:
 
     def test_symmetry_generators_registry(self):
         assert set(SYMMETRY_GENERATORS.keys()) == {"A4", "S4", "A5"}
-        for key, fn in SYMMETRY_GENERATORS.items():
+        for _key, fn in SYMMETRY_GENERATORS.items():
             gens = fn()
             assert len(gens) >= 2
 

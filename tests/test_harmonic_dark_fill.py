@@ -4,8 +4,6 @@ Tests the full frequency landscape: infrasonic (IR), audible (visible),
 ultrasonic (UV) bands filling the dark zones of the tri-bundle.
 """
 
-import math
-import pytest
 
 from src.crypto.harmonic_dark_fill import (
     PHI,
@@ -20,8 +18,6 @@ from src.crypto.harmonic_dark_fill import (
     ULTRA_MIN,
     ULTRA_MAX,
     COMPLEMENT_MAP,
-    HarmonicFill,
-    SpectrumSnapshot,
     nodal_surface_value,
     voice_leading_interval,
     nearest_musical_interval,

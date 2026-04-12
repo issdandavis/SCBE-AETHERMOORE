@@ -35,18 +35,10 @@ The three complement pairs provide three independent phase channels:
 from __future__ import annotations
 
 import math
-import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
 from enum import Enum
 
-from src.crypto.manifold_mirror import (
-    _encode_to_poincare,
-    compute_mirror_point,
-    ALL_TONGUES,
-)
-from src.crypto.harmonic_dark_fill import COMPLEMENT_MAP
-from src.crypto.h_lwe import exp_map_zero, log_map_zero, project_to_ball
 
 # ---------------------------------------------------------------------------
 # Constants

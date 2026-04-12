@@ -394,7 +394,7 @@ def generate_semantic_math() -> int:
             weighted = sum(vals[c] * TONGUE_WEIGHTS[c] for c in TONGUE_CODES)
             chord_text += (
                 f"**Step {i + 1}: {action}**\n"
-                f"  Chord: [{', '.join(f'{TONGUES[c]['full']}={vals[c]}' for c in TONGUE_CODES)}]\n"
+                f"  Chord: [{', '.join(TONGUES[c]['full'] + '=' + str(vals[c]) for c in TONGUE_CODES)}]\n"
                 f"  Weighted: {weighted:.3f}\n\n"
             )
 
@@ -749,7 +749,7 @@ def generate_null_space() -> int:
         t = TONGUES[code]
         # Generate a sequence of state transitions
         states = ["null"]
-        for step in range(random.randint(3, 6)):
+        for _step in range(random.randint(3, 6)):
             prev = states[-1]
             if prev == "null":
                 states.append(random.choice(["active", "inv_null"]))

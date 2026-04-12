@@ -15,18 +15,10 @@ import pytest
 
 from src.training.cross_domain_harness import (
     # Constants
-    PHI,
     PHI_INV,
     ALL_TONGUES,
     DEAD_TONES,
     COMPLEMENT_MAP,
-    TONGUE_WEIGHTS,
-    BASELINE_FREQUENCIES,
-    TONGUE_FREQUENCIES,
-    ALLOW_THRESHOLD,
-    QUARANTINE_THRESHOLD,
-    ESCALATE_THRESHOLD,
-    # Enums
     GovernanceVerdict,
     WarpType,
     CurriculumPass,
@@ -34,7 +26,6 @@ from src.training.cross_domain_harness import (
     ContactPoint,
     encode_contact_point,
     # Stage 2
-    DomainProjection,
     ProjectionBundle,
     project_contact_point,
     # Stage 3

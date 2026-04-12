@@ -760,7 +760,7 @@ def generate_quiz_set(records: list[dict], quiz_fraction: float = 0.08) -> tuple
     train = []
     quiz = []
 
-    for cat, cat_records in by_category.items():
+    for _cat, cat_records in by_category.items():
         random.shuffle(cat_records)
         n_quiz = max(1, int(len(cat_records) * quiz_fraction))
         quiz.extend(cat_records[:n_quiz])

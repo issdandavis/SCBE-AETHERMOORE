@@ -3,7 +3,6 @@ import json
 import scripts.system.openclaw_browser_bridge as bridge
 from scripts.system.openclaw_browser_bridge import (
     ensure_browser_running,
-    get_status,
     load_openclaw_config,
     resolve_auth_headers,
     resolve_browser_base_url,

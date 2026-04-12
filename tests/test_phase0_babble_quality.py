@@ -19,10 +19,8 @@ Follows the "test the full alphabet in English AND Greek" philosophy.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import math
-import os
 import statistics
 from collections import Counter
 from pathlib import Path

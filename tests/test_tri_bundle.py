@@ -1,7 +1,5 @@
 """Tests for the Tri-Bundle DNA Encoder — 3×3×3 braided signal architecture."""
 
-import math
-import pytest
 
 from src.crypto.tri_bundle import (
     PHI,
@@ -15,7 +13,6 @@ from src.crypto.tri_bundle import (
     MathStrand,
     InnerBundle,
     TriBundleCluster,
-    PolyglotCluster,
     encode_byte,
     encode_bytes,
     encode_text,
@@ -25,8 +22,6 @@ from src.crypto.tri_bundle import (
     convergence_summary,
     _intent_from_byte,
     _convergence_trit,
-    _compute_phase,
-    _compute_amplitude,
 )
 
 # ===================================================================

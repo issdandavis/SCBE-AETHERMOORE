@@ -1354,7 +1354,7 @@ class RuntimeGate:
 
         # --- KO Council: Intent Review ---
         # Check if action text sentiment matches the tongue coordinate
-        ko_coord = coords[0]
+        _ko_coord = coords[0]
         has_override_language = _is_high_confidence_override_attempt(action_text) or any(
             w in text_upper
             for w in [

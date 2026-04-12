@@ -12,14 +12,13 @@ No external dependencies: stdlib only, graph is an adjacency dict.
 
 from __future__ import annotations
 
-import math
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
-from src.mempalace.vault_link import NoteRecord, VaultIndex
+from src.mempalace.vault_link import VaultIndex
 
 _WORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9_-]{2,}")
 
@@ -138,7 +137,6 @@ STOPWORDS: frozenset[str] = frozenset(
         "text",
         "list",
         "dict",
-        "set",
         "type",
         "types",
         "data",
@@ -223,7 +221,7 @@ def build_buckets(
 
     buckets: Dict[str, BucketProfile] = {name: BucketProfile(name=name) for name in bucket_rules}
 
-    for path, rec in index.records.items():
+    for path, _rec in index.records.items():
         path_str = str(path).lower()
         try:
             text = path.read_text(encoding="utf-8", errors="replace")

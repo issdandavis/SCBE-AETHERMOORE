@@ -21,12 +21,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from symphonic_cipher.scbe_aethermoore.axiom_grouped.polyhedral_flow import (
     PHI,
-    PHI_INV,
-    FIB_SEQUENCE,
     TONGUE_WEIGHTS,
     POLYHEDRA,
     FLOW_ADJACENCY,
-    Polyhedron,
     fibonacci_spin,
     fibonacci_phase,
     FibonacciLFSR,

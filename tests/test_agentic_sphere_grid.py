@@ -10,29 +10,22 @@ Covers:
 """
 
 import sys
-import time
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
-import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from kernel.agentic_sphere_grid import (
     SkillDomain,
     ActivationTier,
-    GovernanceVerdict,
     ARCHETYPES,
     AP_REWARDS,
-    DECAY_RATE,
-    ACTIVATION_FLOOR,
     NEED_PRESSURE_PER_FAILURE,
     NEED_PRESSURE_TRIGGER,
     SkillNode,
     NeedPressure,
     AgentState,
-    HodgeCombo,
     HODGE_PAIRS,
     SKILL_CATALOG,
     AgenticSphereGrid,

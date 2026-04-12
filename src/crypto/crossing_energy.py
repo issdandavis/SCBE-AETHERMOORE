@@ -40,7 +40,6 @@ from src.crypto.tri_bundle import (
     Trit,
     TriBundleCluster,
     PolyglotCluster,
-    InnerBundle,
 )
 
 # ---------------------------------------------------------------------------

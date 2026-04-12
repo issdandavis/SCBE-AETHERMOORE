@@ -17,10 +17,9 @@ import sys
 import math
 import json
 from pathlib import Path
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import patch, mock_open
 
 import pytest
-import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -33,7 +32,6 @@ from kernel.semantic_shape_engraver import (
     Engraving,
     EngravedShape,
     SemanticShapeEngraver,
-    ENRICHED_LOG,
 )
 
 # ============================================================
@@ -47,7 +45,7 @@ class TestConstants:
         assert len(TONGUES) == 6
 
     def test_tongues_have_required_keys(self):
-        for name, info in TONGUES.items():
+        for _name, info in TONGUES.items():
             assert "weight" in info
             assert "domain" in info
             assert "color" in info
@@ -65,7 +63,7 @@ class TestConstants:
         assert len(CODEX_ARCHETYPES) == 7
 
     def test_codex_archetypes_have_tongues(self):
-        for idx, codex in CODEX_ARCHETYPES.items():
+        for _idx, codex in CODEX_ARCHETYPES.items():
             assert "tongues" in codex
             assert "name" in codex
             assert "null" in codex
@@ -239,7 +237,7 @@ class TestPersonalityVector:
 
     def test_base_values_at_0_5(self):
         vector = self.engraver.compute_personality_vector([], codex=1)
-        for axis, val in vector.items():
+        for _axis, val in vector.items():
             assert val == 0.5
 
     def test_ko_boosts_focus_and_tenacity(self):
@@ -255,7 +253,7 @@ class TestPersonalityVector:
     def test_clamped_to_0_1(self):
         """Even with all tongues active, values stay in [0, 1]."""
         vector = self.engraver.compute_personality_vector(["KO", "AV", "RU", "CA", "UM", "DR"], codex=1)
-        for axis, val in vector.items():
+        for _axis, val in vector.items():
             assert 0.0 <= val <= 1.0
 
     def test_um_reduces_empathy(self):
