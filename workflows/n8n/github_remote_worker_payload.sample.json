@@ -1,0 +1,11 @@
+{
+  "event_type": "free-remote-worker",
+  "client_payload": {
+    "task_label": "remote-pytest-slice",
+    "command": "python -m pytest tests/aetherbrowser tests/aethermoore_constants",
+    "python_version": "3.11",
+    "install_mode": "auto",
+    "working_directory": ".",
+    "artifact_glob": ""
+  }
+}

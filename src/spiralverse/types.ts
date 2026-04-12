@@ -25,6 +25,7 @@ export type PolicyLevel = 'standard' | 'strict' | 'secret' | 'critical';
  *
  * @template T - Payload type (must be JSON-serializable)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface RWP2MultiEnvelope<T = Record<string, unknown>> {
   /** Protocol version (always "2.1") */
   ver: '2.1';

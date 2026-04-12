@@ -28,7 +28,6 @@
 import {
   FleetAgent,
   GovernanceTier,
-  GOVERNANCE_TIERS,
   TaskPriority,
   PRIORITY_WEIGHTS,
 } from './types';
@@ -707,7 +706,6 @@ export class JugglingScheduler {
 
   /** Get current scheduler health metrics */
   getMetrics(): SchedulerMetrics {
-    const now = Date.now();
     const allCapsules = Array.from(this.capsules.values());
 
     const inFlight = allCapsules.filter((c) => c.state === FlightState.THROWN).length;
@@ -790,7 +788,7 @@ export class JugglingScheduler {
     if (!capsule) return '';
 
     const parts: string[] = [];
-    for (const [agentId, , state] of capsule.provenance) {
+    for (const [_agentId, , state] of capsule.provenance) {
       if (state === FlightState.CAUGHT) {
         parts.push(`${capsule.arcHeight}`);
       } else if (state === FlightState.VALIDATING) {
