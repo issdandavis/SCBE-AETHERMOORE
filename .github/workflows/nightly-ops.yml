@@ -6,6 +6,8 @@ on:
 jobs:
   orchestrate:
     runs-on: ubuntu-latest
+    env:
+      SCBE_MODE: 'ci'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,8 +19,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-    env:
-      SCBE_MODE: 'ci'
       - name: 'Smoke'
         id: step_01_smoke
         shell: bash
