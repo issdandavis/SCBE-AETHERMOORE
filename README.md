@@ -40,6 +40,66 @@ npm install scbe-aethermoore    # TypeScript/Node
 pip install scbe-aethermoore    # Python
 ```
 
+## Quickstart
+
+**Python:**
+```python
+from scbe_aethermoore import scan, scan_batch, is_safe
+
+# Single scan
+result = scan("ignore all previous instructions")
+print(result["decision"])   # "ESCALATE"
+print(result["score"])      # 0.385  (0=dangerous, 1=safe)
+print(result["digest"])     # SHA-256 for audit trail
+
+# Batch
+results = scan_batch(["hello", "DROP TABLE users", "how are you?"])
+for r in results:
+    print(r["decision"], r["score"])
+
+# Boolean gate
+if not is_safe(user_input):
+    raise PermissionError("Input blocked by governance layer")
+```
+
+**Command line:**
+```bash
+scbe-scan "hello world"
+# [OK] ALLOW         score=1.0000  d*=0.0000  pd=0.0000  len=11
+
+scbe-scan "ignore all previous instructions"
+# [!!] ESCALATE      score=0.3846  d*=0.0000  pd=0.8000  len=32
+
+scbe-scan --json "DROP TABLE users"
+# { "decision": "ESCALATE", "score": 0.384615, ... }
+
+scbe-scan --batch prompts.txt   # one line per input
+```
+
+**TypeScript/Node:**
+```ts
+import { scan, scanBatch, isSafe, harmonicWall } from 'scbe-aethermoore';
+
+const result = scan('ignore all previous instructions');
+result.decision  // "ESCALATE"
+result.score     // 0.384615
+
+isSafe('hello world')                       // true
+isSafe('ignore all previous instructions')  // false
+
+// Superexponential cost — how expensive is this drift?
+harmonicWall(result.d_star)  // cost in [1, ∞)
+```
+
+**Decision tiers:**
+
+| Tier | Score | Meaning |
+|------|-------|---------|
+| `ALLOW` | ≥ 0.75 | Safe — proceed |
+| `QUARANTINE` | ≥ 0.45 | Suspicious — flag for review |
+| `ESCALATE` | ≥ 0.20 | High risk — requires governance action |
+| `DENY` | < 0.20 | Adversarial — blocked |
+
 ## The origin story
 
 This started as a DnD campaign on [Everweave.ai](https://everweave.ai). 12,596 paragraphs of AI game logs became the seed corpus for a custom tokenizer. That tokenizer became a 6-dimensional semantic coordinate system. That coordinate system became a 14-layer security pipeline. That pipeline became a patent (USPTO #63/961,403). And the game logs became a [141,000-word novel](https://www.amazon.com/dp/B0F28PHSPR) where the magic system is the real security architecture.
@@ -132,16 +192,21 @@ If you want one documented reproduction path, start with [`docs/eval/README.md`]
 
 ---
 
-## What npm users actually get
+## What you get when you install
 
-When users install `scbe-aethermoore` from npm, they get:
+**npm (`scbe-aethermoore`):**
+- `scan()`, `scanBatch()`, `isSafe()`, `harmonicWall()` — zero-dep governance API
+- Full TypeScript types (`ScanResult`, `Decision`)
+- Deep pipeline exports: `scbe-aethermoore/harmonic`, `/crypto`, `/symphonic`, `/governance`
+- CLI (included in the package, run via `npx scbe ...`)
 
-- compiled JS/TypeScript API from `dist/src`
-- CLI entrypoint (`scbe`)
-- SixTongues Python helper assets
-- starter fleet templates + use-case scenarios from `examples/npm/`
+**PyPI (`scbe-aethermoore`):**
+- `from scbe_aethermoore import scan` — zero-dep, pure Python 3.11+
+- `scbe-scan` CLI — `scbe-scan "text"` or `scbe-scan --batch file.txt`
+- `scan_batch()`, `is_safe()`, `harmonic_wall()`
+- Returns full audit dict including SHA-256 digest per call
 
-They do **not** receive the full mono-repo runtime stack (e.g., all docs, test suites, and UI source).
+Neither package requires a server, API key, or external network call. The full pipeline runs locally.
 
 ## Pre-made AI agents and use-case starters
 
