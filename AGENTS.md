@@ -172,3 +172,32 @@ python scripts/apollo/video_review.py review-all
 Review scores: title (structure, length, searchability), description (depth, links, hashtags),
 transcript (speaking rate, vocabulary richness, technical density), tags (count, brand coverage).
 Reports saved to `artifacts/apollo/video_reviews/`.
+
+## Cursor Cloud specific instructions
+
+### Services overview
+
+| Service | Start command | Port | Notes |
+|---------|--------------|------|-------|
+| **FastAPI (core API)** | `SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. python3 -m uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000` | 8000 | Main governance/compute API |
+| **Gateway (Express)** | `npm run gateway:build && npm run gateway:serve` | 8080 | TypeScript API gateway (requires build first) |
+
+### Key gotchas
+
+- **`python3` not `python`**: The VM has `python3` on PATH but not `python`. Always use `python3` or `python3 -m ...`.
+- **`~/.local/bin` on PATH**: pip installs (pytest, uvicorn, black, flake8) go to `~/.local/bin`. The update script ensures this is on PATH via `~/.bashrc`.
+- **`SCBE_FORCE_SKIP_LIBOQS=1`**: Always set this when running Python tests or the FastAPI server, since liboqs C bindings are not installed.
+- **`PYTHONPATH`**: Set `PYTHONPATH=.` for pytest and `PYTHONPATH=src:.` for using `scbe_aethermoore` package imports directly.
+- **Pre-existing test failures**: ~28 TS test failures (in `tests/hydra/swarm_governance.test.ts`) and ~51 Python collection errors (missing `agents/`, `hydra/` modules not in this checkout) are pre-existing. Do not count these as regressions.
+- **Python test collection errors**: Many tests under `tests/` import from `hydra.*`, `agents.*`, `experiments.*`, `doc_verifier` which only have placeholder READMEs in this checkout. These tests cannot be collected and should be ignored with `--ignore`.
+- **Scan API "hello world"**: `PYTHONPATH=src:. python3 -c "from scbe_aethermoore import scan; print(scan('hello world'))"` — verifies the core pipeline works.
+
+### Build, lint, test commands (see also CLAUDE.md)
+
+Standard commands per `CLAUDE.md` "Pre-Push Verification" section. Quick reference:
+```bash
+npm run build && npm run lint && npm test          # TypeScript
+SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. python3 -m pytest tests/ -v --ignore=tests/node_modules -x  # Python (will hit collection errors on agents/hydra modules)
+flake8 --max-line-length 120 src/ tests/           # Python lint
+black --check --target-version py311 --line-length 120 src/ tests/  # Python format check
+```
