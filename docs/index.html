@@ -480,6 +480,117 @@
       .hero { padding-top: 72px; }
       .btn { width: 100%; }
     }
+    /* ── Research Ticker ───────────────────────────────────────────── */
+    .rticker {
+      background: rgba(7, 10, 16, 0.97);
+      border-bottom: 1px solid rgba(214, 167, 86, 0.14);
+      display: flex;
+      align-items: stretch;
+      height: 28px;
+      overflow: hidden;
+      font-size: 10.5px;
+      letter-spacing: 0.01em;
+      font-family: "JetBrains Mono", "Fira Code", "Courier New", monospace;
+      position: sticky;
+      top: 68px;
+      z-index: 19;
+    }
+    .rticker-label {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 8.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      border-right: 1px solid rgba(255, 255, 255, 0.07);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .rticker-markets {
+      display: flex;
+      align-items: stretch;
+      border-right: 1px solid rgba(255, 255, 255, 0.07);
+      flex-shrink: 0;
+    }
+    .rticker-mkt {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 9px;
+      white-space: nowrap;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 10px;
+    }
+    .rticker-mkt .sym { color: #5a6578; font-size: 8.5px; text-transform: uppercase; }
+    .rticker-mkt .pr { color: var(--text); font-weight: 600; }
+    .rticker-mkt .ch { font-size: 9px; }
+    .rticker-mkt .ch.up { color: #2dd3a6; }
+    .rticker-mkt .ch.dn { color: #f06565; }
+    .rticker-mkt .ch.flat { color: #5a6578; }
+    .rticker-news {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    .rticker-track {
+      display: flex;
+      gap: 36px;
+      align-items: center;
+      white-space: nowrap;
+      animation: rticker-scroll 90s linear infinite;
+      will-change: transform;
+      padding-left: 16px;
+    }
+    .rticker-track:hover { animation-play-state: paused; }
+    @keyframes rticker-scroll {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .rticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #7a8494;
+      text-decoration: none;
+      transition: color 0.15s;
+      flex-shrink: 0;
+    }
+    .rticker-item:hover { color: var(--text); }
+    .rtk-badge {
+      font-size: 7.5px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      flex-shrink: 0;
+    }
+    .rtk-hn       { background: rgba(255,102,0,0.18); color: #ff8833; border: 1px solid rgba(255,102,0,0.3); }
+    .rtk-arxiv    { background: rgba(45,211,166,0.12); color: #2dd3a6; border: 1px solid rgba(45,211,166,0.25); }
+    .rtk-reddit   { background: rgba(255,69,0,0.15); color: #ff7755; border: 1px solid rgba(255,69,0,0.28); }
+    .rtk-darpa    { background: rgba(74,158,255,0.12); color: #5ba8ff; border: 1px solid rgba(74,158,255,0.25); }
+    .rtk-sam      { background: rgba(90,200,100,0.12); color: #5dc872; border: 1px solid rgba(90,200,100,0.25); }
+    /* international outlets */
+    .rtk-bbc      { background: rgba(187,0,0,0.14); color: #ff5555; border: 1px solid rgba(187,0,0,0.28); }
+    .rtk-aje      { background: rgba(200,155,0,0.14); color: #d4a417; border: 1px solid rgba(200,155,0,0.28); }
+    .rtk-dw       { background: rgba(0,100,210,0.14); color: #4aa0ff; border: 1px solid rgba(0,100,210,0.28); }
+    .rtk-f24      { background: rgba(0,80,190,0.14); color: #4488ee; border: 1px solid rgba(0,80,190,0.28); }
+    .rtk-nhk      { background: rgba(200,0,0,0.14); color: #ff4444; border: 1px solid rgba(200,0,0,0.28); }
+    .rtk-toi      { background: rgba(255,140,0,0.14); color: #f09010; border: 1px solid rgba(255,140,0,0.28); }
+    .rtk-cgtn     { background: rgba(170,0,0,0.14); color: #dd3333; border: 1px solid rgba(170,0,0,0.28); }
+    .rtk-gdelt    { background: rgba(140,80,240,0.14); color: #a060f0; border: 1px solid rgba(140,80,240,0.28); }
+    .rtk-gnews    { background: rgba(66,133,244,0.14); color: #4d97ff; border: 1px solid rgba(66,133,244,0.28); }
+    .rtk-guardian { background: rgba(0,160,150,0.14); color: #00c4ba; border: 1px solid rgba(0,160,150,0.28); }
+    .rtk-newsdata { background: rgba(100,180,100,0.14); color: #78c878; border: 1px solid rgba(100,180,100,0.28); }
+    .rtk-worldnews{ background: rgba(190,50,210,0.14); color: #d050d8; border: 1px solid rgba(190,50,210,0.28); }
+    @media (max-width: 640px) {
+      .rticker-markets { display: none; }
+      .rticker-label { display: none; }
+    }
   </style>
 </head>
 <body data-polly-context="home" data-polly-root=".">
@@ -499,6 +610,22 @@
       </nav>
     </div>
   </header>
+
+  <!-- ░░ Research Ticker ░░ feeds from /research-feed.json (GH Actions: HN + arXiv + Reddit + DARPA) -->
+  <div class="rticker" id="research-ticker" role="marquee" aria-label="Live AI research feed">
+    <div class="rticker-label">◈ feed</div>
+    <div class="rticker-markets" id="rticker-markets">
+      <div class="rticker-mkt"><span class="sym">SPY</span>&thinsp;<span class="pr" id="mk-SPY">—</span>&thinsp;<span class="ch flat" id="mk-SPY-c"></span></div>
+      <div class="rticker-mkt"><span class="sym">QQQ</span>&thinsp;<span class="pr" id="mk-QQQ">—</span>&thinsp;<span class="ch flat" id="mk-QQQ-c"></span></div>
+      <div class="rticker-mkt"><span class="sym">NVDA</span>&thinsp;<span class="pr" id="mk-NVDA">—</span>&thinsp;<span class="ch flat" id="mk-NVDA-c"></span></div>
+      <div class="rticker-mkt"><span class="sym">BTC</span>&thinsp;<span class="pr" id="mk-BTC">—</span>&thinsp;<span class="ch flat" id="mk-BTC-c"></span></div>
+    </div>
+    <div class="rticker-news" id="rticker-news">
+      <div class="rticker-track" id="rticker-track">
+        <span class="rticker-item" style="color:#3a4050">Fetching research feed…</span>
+      </div>
+    </div>
+  </div>
 
   <main>
     <section class="hero" id="offer">
@@ -1384,5 +1511,105 @@
   </footer>
 
   <script src="static/polly-companion.js"></script>
+  <script>
+  /* ── Research Ticker ─────────────────────────────────────────────────────
+     Reads /research-feed.json (generated hourly by research-feed.yml GH Action).
+     Sources: HackerNews · arXiv · Reddit · DARPA/SAM.gov · BBC · AJE · DW · France24 ·
+              NHK · ToI · CGTN · GDELT (65+ langs) · Google News regional  +  market snapshots.
+     No browser-side API keys. 5-minute browser poll.
+  ──────────────────────────────────────────────────────────────────────── */
+  (function () {
+    var FEED = './research-feed.json';
+    var POLL = 5 * 60 * 1000;
+
+    var BADGE = {
+      // original sources
+      hn:          ['rtk-hn',       'HN'],
+      arxiv:       ['rtk-arxiv',    'arXiv'],
+      reddit:      ['rtk-reddit',   'Reddit'],
+      darpa:       ['rtk-darpa',    'DARPA'],
+      sam:         ['rtk-sam',      'SAM'],
+      // EU / UK
+      bbc:         ['rtk-bbc',      'BBC'],
+      dw:          ['rtk-dw',       'DW'],
+      f24:         ['rtk-f24',      'F24'],
+      guardian:    ['rtk-guardian', 'Guardian'],
+      'gnews-eu':  ['rtk-gnews',    'EU'],
+      // Middle East
+      aje:         ['rtk-aje',      'AJE'],
+      'gnews-me':  ['rtk-gnews',    'ME'],
+      // Asia
+      nhk:         ['rtk-nhk',      'NHK'],
+      toi:         ['rtk-toi',      'ToI'],
+      cgtn:        ['rtk-cgtn',     'CGTN'],
+      'gnews-asia':['rtk-gnews',    'Asia'],
+      'gnews-jp':  ['rtk-gnews',    'JP'],
+      // Africa
+      'gnews-af':  ['rtk-gnews',    'Africa'],
+      // Latin America
+      'gnews-latam':['rtk-gnews',   'LatAm'],
+      // Global
+      gdelt:       ['rtk-gdelt',    'GDELT'],
+      newsdata:    ['rtk-newsdata', 'Newsdata'],
+      worldnews:   ['rtk-worldnews','WorldNews'],
+    };
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function renderNews(items) {
+      var track = document.getElementById('rticker-track');
+      if (!track || !items || !items.length) return;
+      // Duplicate list so CSS infinite-scroll never shows a gap
+      var all = items.concat(items);
+      var html = all.map(function (it) {
+        var src = it.source || 'hn';
+        var meta = BADGE[src] || BADGE.hn;
+        var badge = '<span class="rtk-badge ' + meta[0] + '">' + meta[1] + '</span>';
+        return '<a class="rticker-item" href="' + esc(it.url || '#') + '" target="_blank" rel="noopener noreferrer">'
+          + badge + ' ' + esc(it.title) + '</a>';
+      }).join('');
+      track.innerHTML = html;
+    }
+
+    function renderMarkets(mkts) {
+      if (!mkts) return;
+      var syms = ['SPY','QQQ','NVDA','BTC'];
+      syms.forEach(function (sym) {
+        var d = mkts[sym];
+        if (!d || !d.price) return;
+        var pe = document.getElementById('mk-' + sym);
+        var ce = document.getElementById('mk-' + sym + '-c');
+        if (pe) {
+          pe.textContent = sym === 'BTC'
+            ? '$' + Math.round(d.price).toLocaleString()
+            : '$' + d.price.toFixed(2);
+        }
+        if (ce && d.chg != null) {
+          var sign = d.chg >= 0 ? '+' : '';
+          ce.textContent = sign + d.chg.toFixed(2) + '%';
+          ce.className = 'ch ' + (d.chg > 0.05 ? 'up' : d.chg < -0.05 ? 'dn' : 'flat');
+        }
+      });
+    }
+
+    function loadFeed() {
+      fetch(FEED + '?_=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (!data) return;
+          renderNews(data.items);
+          renderMarkets(data.markets);
+        })
+        .catch(function (e) { console.warn('[ticker]', e); });
+    }
+
+    loadFeed();
+    setInterval(loadFeed, POLL);
+  })();
+  </script>
 </body>
 </html>
