@@ -1,0 +1,129 @@
+{
+  "generated": "2026-04-17T07:36:38.254696+00:00",
+  "count": 21,
+  "items": [
+    {
+      "title": "Claude Opus 4.7",
+      "url": "https://www.anthropic.com/news/claude-opus-4-7",
+      "source": "hn"
+    },
+    {
+      "title": "Show HN: SPICE simulation → oscilloscope → verification with Claude Code",
+      "url": "https://lucasgerads.com/blog/lecroy-mcp-spice-demo/",
+      "source": "hn"
+    },
+    {
+      "title": "Guy builds AI driven hardware hacker arm from duct tape, old cam and CNC machine",
+      "url": "https://github.com/gainsec/autoprober",
+      "source": "hn"
+    },
+    {
+      "title": "Android CLI: Build Android apps 3x faster using any agent",
+      "url": "https://android-developers.googleblog.com/2026/04/build-android-apps-3x-faster-using-any-agent.html",
+      "source": "hn"
+    },
+    {
+      "title": "Substrate AI Is Hiring Harness Engineers",
+      "url": "https://www.ycombinator.com/companies/substrate/jobs/QJU9023-harness-engineer",
+      "source": "hn"
+    },
+    {
+      "title": "Cloudflare's AI Platform: an inference layer designed for agents",
+      "url": "https://blog.cloudflare.com/ai-platform/",
+      "source": "hn"
+    },
+    {
+      "title": "The beginning of scarcity in AI",
+      "url": "https://tomtunguz.com/ai-compute-crisis-2026/",
+      "source": "hn"
+    },
+    {
+      "title": "GPT‑Rosalind for life sciences research",
+      "url": "https://openai.com/index/introducing-gpt-rosalind/",
+      "source": "hn"
+    },
+    {
+      "title": "NuHF Claw: A Risk Constrained Cognitive Agent Framework for Human Centered Procedure Support in Digital Nuclear Control ",
+      "url": "https://arxiv.org/abs/2604.14160",
+      "source": "arxiv"
+    },
+    {
+      "title": "The Devil Is in Gradient Entanglement: Energy-Aware Gradient Coordinator for Robust Generalized Category Discovery",
+      "url": "https://arxiv.org/abs/2604.14176",
+      "source": "arxiv"
+    },
+    {
+      "title": "Simulating Human Cognition: Heartbeat-Driven Autonomous Thinking Activity Scheduling for LLM-based AI systems",
+      "url": "https://arxiv.org/abs/2604.14178",
+      "source": "arxiv"
+    },
+    {
+      "title": "MixAtlas: Uncertainty-aware Data Mixture Optimization for Multimodal LLM Midtraining",
+      "url": "https://arxiv.org/abs/2604.14198",
+      "source": "arxiv"
+    },
+    {
+      "title": "Portfolio Optimization Proxies under Label Scarcity and Regime Shifts via Bayesian and Deterministic Students under Semi",
+      "url": "https://arxiv.org/abs/2604.14206",
+      "source": "arxiv"
+    },
+    {
+      "title": "Towards Verified and Targeted Explanations through Formal Methods",
+      "url": "https://arxiv.org/abs/2604.14209",
+      "source": "arxiv"
+    },
+    {
+      "title": "Fun-TSG: A Function-Driven Multivariate Time Series Generator with Variable-Level Anomaly Labeling",
+      "url": "https://arxiv.org/abs/2604.14221",
+      "source": "arxiv"
+    },
+    {
+      "title": "Shapley Value-Guided Adaptive Ensemble Learning for Explainable Financial Fraud Detection with U.S. Regulatory Complianc",
+      "url": "https://arxiv.org/abs/2604.14231",
+      "source": "arxiv"
+    },
+    {
+      "title": "Failure to Reproduce Modern Paper Claims [D]",
+      "url": "https://www.reddit.com/r/MachineLearning/comments/1sml5fo/failure_to_reproduce_modern_paper_claims_d/",
+      "source": "reddit"
+    },
+    {
+      "title": "Peter Thiel, Co-founder of Palantir, sh*ts himself when asked but the use of his AI in the Gaza Genocide",
+      "url": "https://www.reddit.com/r/artificial/comments/1snf4ol/peter_thiel_cofounder_of_palantir_shts_himself/",
+      "source": "reddit"
+    },
+    {
+      "title": "Alex Karp, Co-founder of Palantir, refers to those killed in the Gaza Genocide due to his AI as “useful idiots” and “mos",
+      "url": "https://www.reddit.com/r/artificial/comments/1snfwa7/alex_karp_cofounder_of_palantir_refers_to_those/",
+      "source": "reddit"
+    },
+    {
+      "title": "Qwen 3.6-35B - A3B Opensource Launched.",
+      "url": "https://www.reddit.com/r/artificial/comments/1sn4wcs/qwen_3635b_a3b_opensource_launched/",
+      "source": "reddit"
+    },
+    {
+      "title": "Best Local LLMs - Apr 2026",
+      "url": "https://www.reddit.com/r/LocalLLaMA/comments/1sknx6n/best_local_llms_apr_2026/",
+      "source": "reddit"
+    }
+  ],
+  "markets": {
+    "SPY": {
+      "price": 701.66,
+      "chg": 0.25
+    },
+    "QQQ": {
+      "price": 640.47,
+      "chg": 0.48
+    },
+    "NVDA": {
+      "price": 198.35,
+      "chg": -0.26
+    },
+    "BTC": {
+      "price": 75010.25,
+      "chg": -0.19
+    }
+  }
+}
