@@ -1,0 +1,55 @@
+name: Research Feed
+
+on:
+  schedule:
+    - cron: "10 * * * *" # every hour at :10 past
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/research-feed.yml"
+      - "scripts/system/generate_research_feed.py"
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install deps
+        run: pip install requests cryptography --quiet
+
+      - name: Generate research-feed.json
+        env:
+          SAM_GOV_API_KEY: ${{ secrets.SAM_GOV_API_KEY }}
+          GUARDIAN_API_KEY: ${{ secrets.GUARDIAN_API_KEY }}
+          NEWSDATA_API_KEY: ${{ secrets.NEWSDATA_API_KEY }}
+          WORLDNEWS_API_KEY: ${{ secrets.WORLDNEWS_API_KEY }}
+        run: python scripts/system/generate_research_feed.py
+
+      - name: Run SCBE news pipeline (geo → tokenize → hash → egg → encrypt → sign)
+        env:
+          SCBE_FORCE_SKIP_LIBOQS: "1"
+          PYTHONPATH: "."
+        run: python scripts/system/news_pipeline.py
+
+      - name: Commit updated feed and pipeline outputs
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(feed): update research-feed.json + pipeline SFT [skip ci]"
+          file_pattern: >
+            docs/research-feed.json
+            docs/research-pipeline.json
+            training-data/news-pipeline/records/*.jsonl
+            training-data/news-pipeline/sft/*.jsonl
+          branch: main
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
