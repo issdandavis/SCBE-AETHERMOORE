@@ -127,6 +127,7 @@ def test_main_writes_summary_with_braid_flag(monkeypatch, tmp_path):
     monkeypatch.setattr(news_pipeline, "SUMMARY_PATH", summary_path)
     monkeypatch.setattr(news_pipeline, "RECORDS_DIR", records_dir)
     monkeypatch.setattr(news_pipeline, "SFT_DIR", sft_dir)
+    monkeypatch.setattr(news_pipeline, "REPO_ROOT", tmp_path)
 
     news_pipeline.main()
 

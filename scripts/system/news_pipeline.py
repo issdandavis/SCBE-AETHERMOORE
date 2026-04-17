@@ -1019,8 +1019,8 @@ def main() -> None:
         "crypto_tier": CRYPTO_TIER,
         "tokenizer_source": _TOKENIZER_SOURCE,
         "tongue_coverage": list(TONGUE_PHI_WEIGHTS.keys()),
-        "records_file": str(records_path.relative_to(REPO_ROOT)),
-        "sft_file": str(sft_path.relative_to(REPO_ROOT)),
+        "records_file": records_path.relative_to(REPO_ROOT).as_posix(),
+        "sft_file": sft_path.relative_to(REPO_ROOT).as_posix(),
         "pipeline_stages": [
             "raw", "geotagged", "tokenized", "hashed", "egged", "encrypted", "signed"
         ],
