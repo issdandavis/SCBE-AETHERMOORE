@@ -101,6 +101,39 @@ ROUNDS = {
         "base_model": "Qwen/Qwen2.5-0.5B-Instruct",
         "epochs": 2,
     },
+    "prime-r7": {
+        "desc": "Multi-lang forge r7 — 14K instruction+relational+glucose pairs, 1.5B",
+        "files": [
+            "r7_instruction.jsonl",
+            "r8_relational.jsonl",
+            "r7_glucose_quiz.jsonl",
+        ],
+        "hf_repo": "issdandavis/polly-prime-r7-qwen-1.5b",
+        "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+        "epochs": 2,
+    },
+    "r8": {
+        "desc": "r8 — 137K coding + tokenizer + spiral seal, 1.5B Coder",
+        "files": [
+            "code_master_sft.jsonl",
+            "code_triangulated_sft.jsonl",
+            "code_multiview_sft.jsonl",
+            "lore_code_pairs_sft.jsonl",
+            "tokenizer_master_class_sft.jsonl",
+            "rosetta_code_primitives_sft.jsonl",
+            "grok_code_sft.jsonl",
+            "tongue_curriculum_v2.jsonl",
+            "conlang_first_sft.jsonl",
+            "tongue_primer_sft.jsonl",
+            "universal_code_primitives_sft.jsonl",
+            "code_brushes_sft.jsonl",
+            "code_flow_sft.jsonl",
+            "stage7_tongue_bundles.jsonl",
+        ],
+        "hf_repo": "issdandavis/polly-r8-qwen-0.5b",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 2,
+    },
     "full-3b": {
         "desc": "Full 3B model — all data, big GPU",
         "files": "__ALL__",
@@ -130,7 +163,7 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
     if "3B" in config["base_model"]:
         batch_size, grad_accum, max_len = 4, 4, 1024
     else:
-        batch_size, grad_accum, max_len = 8, 4, 512
+        batch_size, grad_accum, max_len = 4, 8, 256
 
     kernel_config = json.dumps({
         "round": round_name,
@@ -303,7 +336,7 @@ def main():
           python scripts/kaggle_auto/launch.py --round all --poll
         """),
     )
-    parser.add_argument("--round", choices=list(ROUNDS.keys()) + ["all"])
+    parser.add_argument("--round", choices=list(ROUNDS.keys()) + ["all"], metavar="ROUND")
     parser.add_argument("--gpu", choices=list(GPU_CONFIGS.keys()), default="t4")
     parser.add_argument("--poll", action="store_true", help="Wait for completion")
     parser.add_argument("--poll-interval", type=int, default=120, help="Seconds between polls")

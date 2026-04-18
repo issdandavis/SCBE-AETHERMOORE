@@ -442,7 +442,9 @@ def _liboqs_available() -> bool:
             base / "lib" / "liboqs.dylib",
             base / "lib64" / "liboqs.dylib",
             base / "bin" / "liboqs.dll",
+            base / "bin" / "oqs.dll",  # Windows: liboqs 0.15.0 installs as oqs.dll
             base / "lib" / "liboqs.dll",
+            base / "lib" / "oqs.dll",
             Path("/usr/local/lib/liboqs.so"),
             Path("/usr/local/lib/liboqs.dylib"),
             Path("/usr/lib/liboqs.so"),

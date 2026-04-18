@@ -12,21 +12,17 @@ Validates:
 8. Batch statistics
 """
 
-import math
 import pytest
 
 from src.crypto.trit_curriculum import (
     TritSignal,
     TRIT_LABELS,
     compute_trit_signal,
-    DEFAULT_THRESHOLD,
 )
 from src.crypto.polymorphic_multipath import (
-    DEFAULT_EDGE_THRESHOLD,
     ADJACENT_TRIT,
     TritFork,
     MultipathRecord,
-    MultipathBatch,
     _identify_forks,
     _generate_siblings,
     _fork_signature,
@@ -520,7 +516,6 @@ class TestFlattenForSFT:
 
     def test_fork_groups_link_primary_to_siblings(self):
         """Each fork_group should have exactly one primary."""
-        from collections import Counter
 
         groups = {}
         for rec in self.flat:
@@ -552,7 +547,7 @@ class TestFlattenForSFT:
             else:
                 groups[gid]["sibling_trits"].append(tuple(rec["content_trit"]))
 
-        for gid, data in groups.items():
+        for _gid, data in groups.items():
             if data["primary_trit"] is not None:
                 for sib_trit in data["sibling_trits"]:
                     assert sib_trit != data["primary_trit"]

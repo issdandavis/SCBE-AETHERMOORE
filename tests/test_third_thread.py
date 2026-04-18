@@ -6,13 +6,11 @@ Verifies the fabric between divine_agents.py and genesis_panels.py.
 
 import sys
 import os
-import math
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.crypto.third_thread import (
-    PHI,
     KORAELIN_INVOCATION,
     HARMONY_THRESHOLD,
     WEAVING_THRESHOLD,
@@ -22,9 +20,6 @@ from src.crypto.third_thread import (
     MagicMode,
     ThreadResonance,
     InvocationParticipant,
-    InvocationResult,
-    ThreadWeaving,
-    ThirdThreadStudy,
     compute_translation_fidelity,
     compute_identity_preservation,
     compute_convergence_point,
@@ -34,20 +29,14 @@ from src.crypto.third_thread import (
     format_third_thread_report,
 )
 from src.crypto.divine_agents import (
-    HistoricalAgent as DivineAgent,
-    NaturalLearningStudy,
     study_balanced,
-    study_angel_only,
-    study_demon_only,
     run_divine_experiment,
 )
 from src.crypto.genesis_panels import (
-    Force,
     HISTORICAL_AGENTS,
     run_dual_panel,
     run_full_simulation,
 )
-from src.crypto.crossing_energy import Decision
 
 # ===================================================================
 # Constants

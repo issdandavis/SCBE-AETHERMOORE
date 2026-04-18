@@ -5,7 +5,6 @@ Panel B (Science/Mathematics), dual-panel synthesis, full simulation,
 and the compiled study output.
 """
 
-import math
 import pytest
 
 from src.crypto.genesis_panels import (
@@ -13,11 +12,9 @@ from src.crypto.genesis_panels import (
     FORCE_GOVERNANCE,
     FORCE_TONGUE,
     HISTORICAL_AGENTS,
-    HistoricalAgent,
     PanelAResult,
     PanelBResult,
     DualPanelResult,
-    StudyResult,
     run_panel_a,
     run_panel_b,
     run_dual_panel,
@@ -25,7 +22,6 @@ from src.crypto.genesis_panels import (
     compile_study,
 )
 from src.crypto.crossing_energy import Decision
-from src.crypto.harmonic_dark_fill import PHI, INTERVALS
 
 # ===================================================================
 # Constants and Enums

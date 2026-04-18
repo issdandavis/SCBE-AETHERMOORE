@@ -40,6 +40,9 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger("research-funnel")
 
+# Sentinel for "not provided" — distinguishes explicit None from omitted argument.
+_UNSET: object = object()
+
 # ── Project root detection ────────────────────────────────────────────
 
 
@@ -89,17 +92,19 @@ class ResearchFunnel:
     def __init__(
         self,
         intake_dir: Optional[Path] = None,
-        notion_token: Optional[str] = None,
-        notion_parent_id: Optional[str] = None,
-        hf_token: Optional[str] = None,
+        notion_token: object = _UNSET,
+        notion_parent_id: object = _UNSET,
+        hf_token: object = _UNSET,
         hf_repo: Optional[str] = None,
     ):
         self.intake_dir = intake_dir or INTAKE_DIR
         self.intake_dir.mkdir(parents=True, exist_ok=True)
 
-        self.notion_token = notion_token or os.getenv("NOTION_TOKEN")
-        self.notion_parent_id = notion_parent_id or os.getenv("NOTION_HUB_PAGE_ID")
-        self.hf_token = hf_token or os.getenv("HF_TOKEN")
+        # Use env var only when the argument is *not provided* (sentinel).
+        # Passing None explicitly means "no token / skip this backend".
+        self.notion_token = os.getenv("NOTION_TOKEN") if notion_token is _UNSET else notion_token
+        self.notion_parent_id = os.getenv("NOTION_HUB_PAGE_ID") if notion_parent_id is _UNSET else notion_parent_id
+        self.hf_token = os.getenv("HF_TOKEN") if hf_token is _UNSET else hf_token
         self.hf_repo = hf_repo or os.getenv("HF_DATASET_REPO", "issdandavis/scbe-aethermoore-training-data")
 
     # ── Main entry point ──────────────────────────────────────────────

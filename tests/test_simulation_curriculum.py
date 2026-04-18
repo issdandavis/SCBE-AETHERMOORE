@@ -12,7 +12,6 @@ Validates:
 8. Cross-level properties: higher levels have more active systems
 """
 
-import math
 import pytest
 
 from src.crypto.simulation_curriculum import (
@@ -30,18 +29,12 @@ from src.crypto.simulation_curriculum import (
 )
 from src.crypto.quantum_frequency_bundle import (
     QuantumFrequencyBundle,
-    generate_quantum_bundle,
-    TONGUE_ORDER,
 )
 from src.crypto.flight_dynamics import (
     FlightDynamicsState,
-    RecoveryPath,
-    RecoveryType,
 )
 from src.crypto.code_lattice import (
     CodeLatticeBundle,
-    PATTERN_REGISTRY,
-    ALL_ANTIPATTERNS,
 )
 
 # ===================================================================

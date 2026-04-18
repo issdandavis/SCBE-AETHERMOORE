@@ -628,7 +628,7 @@ def gen_chemistry() -> list[dict]:
             {"topic": "chemistry", "subtopic": "balancing"}))
 
     # pH and solutions (500)
-    for i in range(500):
+    for _i in range(500):
         conc = 10 ** (-random.randint(1, 13))
         ph = -math.log10(conc)
         records.append(rec(SCIENCE_SYSTEM,

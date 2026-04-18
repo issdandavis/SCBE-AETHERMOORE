@@ -1,0 +1,29 @@
+{
+  "generated": "2026-04-17T08:51:04.793825+00:00",
+  "feed_generated": "2026-04-17T07:36:38.254696+00:00",
+  "items_processed": 21,
+  "sft_pairs_generated": 168,
+  "errors": 0,
+  "crypto_tier": "liboqs",
+  "tokenizer_source": "src.crypto.sacred_tongues",
+  "tongue_coverage": [
+    "KO",
+    "AV",
+    "RU",
+    "CA",
+    "UM",
+    "DR"
+  ],
+  "records_file": "training-data\\news-pipeline\\records\\2026-04-17.jsonl",
+  "sft_file": "training-data\\news-pipeline\\sft\\2026-04-17.jsonl",
+  "pipeline_stages": [
+    "raw",
+    "geotagged",
+    "tokenized",
+    "hashed",
+    "egged",
+    "encrypted",
+    "signed"
+  ],
+  "braid_available": true
+}

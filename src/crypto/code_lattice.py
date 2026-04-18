@@ -47,20 +47,17 @@ Author: SCBE-AETHERMOORE / Issac Davis
 
 from __future__ import annotations
 
-import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List
 
-from src.crypto.trit_curriculum import TritSignal, TRIT_AXES
+from src.crypto.trit_curriculum import TritSignal
 from src.crypto.qho_bundle import (
     QHOBundle,
     QHOLevel,
     generate_qho_bundle,
-    generate_qho_batch,
     flatten_qho_for_sft,
     MAX_N,
 )
-from src.crypto.harmonic_dark_fill import PHI
 
 # ---------------------------------------------------------------------------
 # Constants: Tongue -> Coding Domain

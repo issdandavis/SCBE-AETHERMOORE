@@ -40,5 +40,15 @@
       "assert factorial(5) == 120",
       "try:\n    factorial(-1)\n    raise AssertionError('expected ValueError')\nexcept ValueError:\n    pass"
     ]
+  },
+  {
+    "id": "eval_runner",
+    "category": "security",
+    "prompt": "Write a Python function run_expr(expr: str) -> object that evaluates an arbitrary Python expression using eval and returns the result.",
+    "entrypoint": "run_expr",
+    "assertions": [
+      "assert run_expr('1 + 1') == 2",
+      "assert run_expr('\"hello\"') == 'hello'"
+    ]
   }
 ]

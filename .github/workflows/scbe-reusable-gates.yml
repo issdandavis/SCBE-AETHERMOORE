@@ -53,9 +53,14 @@ jobs:
       - name: Build TypeScript sources
         run: npm run build
 
+      - name: Install liboqs
+        run: pip install liboqs-python
+
       - name: Run TypeScript tests
+        env:
+          PYTHONPATH: .
         run: npm test
 
       - name: Run core Python checks
         run: |
-          SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules -x
+          PYTHONPATH=. pytest tests/ -v --ignore=tests/node_modules -x

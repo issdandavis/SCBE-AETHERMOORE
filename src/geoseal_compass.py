@@ -30,8 +30,8 @@ Axioms:
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Optional
 
 from src.geoseal import hyperbolic_distance, phase_deviation, clamp_to_ball
 

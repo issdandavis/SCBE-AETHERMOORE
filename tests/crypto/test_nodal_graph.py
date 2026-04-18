@@ -8,7 +8,7 @@ import hashlib
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Inline constants + types (mirrors polyhedral_node + nodal_graph)
@@ -239,7 +239,7 @@ def _compute_tongue_vector(raw_input, dominant_tongue):
         activations[dominant_tongue] = 1.0
         return TongueVector(**activations)
     for byte_val in data:
-        for i, tongue in enumerate(ALL_TONGUES):
+        for _i, tongue in enumerate(ALL_TONGUES):
             threshold = (TONGUE_WEIGHTS[tongue] / TONGUE_WEIGHTS["dr"]) * 255
             if byte_val >= threshold:
                 activations[tongue] += 1.0 / len(data)

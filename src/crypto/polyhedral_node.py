@@ -37,7 +37,7 @@ from __future__ import annotations
 import hashlib
 import math
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
 
@@ -291,7 +291,7 @@ def compute_tongue_vector(raw_input: str, dominant_tongue: str) -> TongueVector:
         return TongueVector(**activations)
 
     for byte_val in data:
-        for i, tongue in enumerate(ALL_TONGUES):
+        for _i, tongue in enumerate(ALL_TONGUES):
             threshold = (TONGUE_WEIGHTS[tongue] / TONGUE_WEIGHTS["dr"]) * 255
             if byte_val >= threshold:
                 activations[tongue] += 1.0 / len(data)

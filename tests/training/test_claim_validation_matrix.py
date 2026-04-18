@@ -14,7 +14,6 @@ Test classes mirror the 6 harness components + core metrics + experiment matrix.
 """
 
 import math
-import pytest
 
 from src.training.claim_validation_harness import (
     # Enums
@@ -35,7 +34,6 @@ from src.training.claim_validation_harness import (
     check_adversarial_identity,
     validate_corpus,
     # B. Ablation
-    AblationConfig,
     AblationResult,
     AblationReport,
     run_ablation_variant,
@@ -52,8 +50,6 @@ from src.training.claim_validation_harness import (
     RoundTripReport,
     run_round_trip_harness,
     # F. Attractor/Path
-    PathStep,
-    PathResult,
     AttractorReport,
     evaluate_path,
     run_attractor_harness,
@@ -76,16 +72,9 @@ from src.training.cross_domain_harness import (
     ALL_TONGUES,
     DEAD_TONES,
     COMPLEMENT_MAP,
-    GovernanceVerdict,
     WarpType,
-    CurriculumPass,
-    ContactPoint,
     encode_contact_point,
     project_contact_point,
-    warp_bundle,
-    expand_contact_point,
-    check_grounding,
-    score_consistency,
 )
 
 # =========================================================================

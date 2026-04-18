@@ -26,8 +26,8 @@ Usage:
     rust_code = emit_code("div", "RU", lhs="x", rhs="y")
 """
 
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, Tuple
 import numpy as np
 
 # ─── Constants ────────────────────────────────────────────────────────────
@@ -1257,7 +1257,7 @@ def validate():
     ids = sorted(LEXICON.keys())
     if ids != list(range(64)):
         errors.append(f"ID range broken")
-    for eid, entry in LEXICON.items():
+    for _eid, entry in LEXICON.items():
         if entry.trit[3] != 1:
             errors.append(f"{entry.name}: CA channel must be +1")
         if len(entry.code) != 6:

@@ -12,7 +12,10 @@ pytest-hypothesis>=0.1.0
 httpx>=0.27.0
 requests>=2.32.0
 # Post-Quantum Cryptography
-liboqs-python==0.14.1
+# Local: install from main to match native liboqs 0.15.0:
+#   pip install git+https://github.com/open-quantum-safe/liboqs-python.git@main
+# CI: uses SCBE_FORCE_SKIP_LIBOQS=1 until Docker ships liboqs 0.15.0
+liboqs-python==0.14.1  # PyPI pin for CI; local uses main branch (0.14.0 bindings, 0.15.0 native)
 # python-oqs is currently unavailable in PyPI CI environments; install separately if needed for local PQC workflows.
 pycryptodome>=3.20.0
 argon2-cffi>=23.1.0

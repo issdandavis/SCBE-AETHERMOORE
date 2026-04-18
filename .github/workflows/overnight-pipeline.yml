@@ -40,6 +40,7 @@ jobs:
     timeout-minutes: 15
     env:
       SCBE_MODE: 'ci'
+      PYTHONPATH: '.'
     outputs:
       status: ${{ steps.validate.outcome }}
       vm_status: ${{ steps.vm-health.outputs.status }}
@@ -131,6 +132,8 @@ jobs:
     if: ${{ always() && (inputs.tier == 'tier-2-test' || inputs.tier == 'tier-3-security' || inputs.tier == 'tier-4-build' || inputs.tier == 'full' || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      PYTHONPATH: '.'
     outputs:
       test-passed: ${{ steps.test.outputs.passed }}
     steps:
@@ -192,6 +195,8 @@ jobs:
     if: ${{ always() && (inputs.tier == 'tier-3-security' || inputs.tier == 'tier-4-build' || inputs.tier == 'full' || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    env:
+      PYTHONPATH: '.'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -221,13 +226,13 @@ jobs:
           SECURITY_FAILURES=0
 
           echo "=== SCBE Adversarial Tests ==="
-          if ! python -m pytest tests/adversarial/ -v --tb=short 2>&1 | tee artifacts/tier3_security_results.txt; then
+          if ! python -m pytest tests/adversarial/ -v --tb=short --ignore=tests/node_modules 2>&1 | tee artifacts/tier3_security_results.txt; then
             echo "::error::Adversarial tests FAILED"
             SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
           fi
 
           echo "=== HYDRA spine + ledger ==="
-          if ! python -m pytest tests/hydra/ -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+          if ! python -m pytest tests/hydra/ -v --tb=short --ignore=tests/node_modules 2>&1 | tee -a artifacts/tier3_security_results.txt; then
             echo "::error::HYDRA tests FAILED"
             SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
           fi
@@ -239,7 +244,7 @@ jobs:
           fi
 
           echo "=== Manifold validation ==="
-          if ! python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+          if ! python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short --ignore=tests/node_modules 2>&1 | tee -a artifacts/tier3_security_results.txt; then
             echo "::error::Manifold validation tests FAILED"
             SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
           fi
@@ -291,6 +296,8 @@ jobs:
     if: ${{ always() && (inputs.tier == 'tier-4-build' || inputs.tier == 'full' || github.event_name == 'schedule') }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      PYTHONPATH: '.'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

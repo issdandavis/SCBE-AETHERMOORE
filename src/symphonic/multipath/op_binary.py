@@ -33,7 +33,6 @@ is being used. Inverse complexity: more use -> simpler encoding.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, field
 from typing import Dict, Tuple
 

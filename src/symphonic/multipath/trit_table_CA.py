@@ -199,7 +199,7 @@ for op in ("sort", "unique"):
 # --- Atomic feature matrix (64, 8) ---------------------------------------
 # [Z_proxy, group, period, valence, chi, band, tongue_id, reserved]
 FEAT_MATRIX = np.zeros((64, 8), dtype=np.float32)
-for i, op in enumerate(CA_OPS):
+for i, _op in enumerate(CA_OPS):
     _, band, group = _band_for(i)
     period = (i // 16) + 1
     valence = (i % 8) + 1

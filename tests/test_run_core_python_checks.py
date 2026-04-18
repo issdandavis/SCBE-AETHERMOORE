@@ -23,5 +23,5 @@ def test_summary_payload_records_repo_settings():
     payload = summary_payload(command)
 
     assert payload["command"] == command
-    assert payload["env"]["SCBE_FORCE_SKIP_LIBOQS"] == "1"
+    assert payload["env"]["PYTHONPATH"]
     assert payload["optional_ignores"] == list(OPTIONAL_TEST_IGNORES)

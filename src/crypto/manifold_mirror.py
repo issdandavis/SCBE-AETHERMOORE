@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import math
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
 
 from src.crypto.tri_bundle import encode_bytes
@@ -39,10 +39,7 @@ from src.crypto.harmonic_dark_fill import (
 ALL_TONGUES = list(TONGUE_AUDIBLE_FREQ.keys())  # ko, av, ru, ca, um, dr
 from src.crypto.h_lwe import (
     exp_map_zero,
-    log_map_zero,
-    mobius_add,
     mobius_neg,
-    project_to_ball,
 )
 from src.crypto.geo_seal import (
     hyperbolic_distance,
@@ -989,7 +986,7 @@ def format_combo_report(
     lines.append("-" * 80)
 
     # Header
-    pair_labels = [f"{a}->{b}" for a, b in braid.tongue_pairs]
+    _pair_labels = [f"{a}->{b}" for a, b in braid.tongue_pairs]
     lines.append("  Mean interference by pair:")
     for label, mean_i in sorted(braid.pair_mean_interference.items(), key=lambda x: -x[1]):
         sign = "+" if mean_i > 0 else ""
@@ -1005,7 +1002,7 @@ def format_combo_report(
     lines.append("  Heat map (interference):")
     # Compact header
     hdr = "  " + " " * 12
-    for j, (a, b) in enumerate(braid.tongue_pairs[:8]):
+    for _j, (a, b) in enumerate(braid.tongue_pairs[:8]):
         hdr += f" {a[:2]}{b[:2]:>2}"
     lines.append(hdr)
     for i, text in enumerate(braid.texts):

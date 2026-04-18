@@ -6,7 +6,6 @@ Self-contained: no heavy imports. Tests the full alphabet of consonance/dissonan
 import math
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Tuple
 
 # ---------------------------------------------------------------------------
 # Inline module under test (mirrors src/crypto/cross_chamber.py)
@@ -626,7 +625,7 @@ class TestEdgeCases:
             "um": 196.00,
             "dr": 392.00,
         }
-        for tongue, freq in tongue_freqs.items():
+        for _tongue, freq in tongue_freqs.items():
             for tone in BASELINE_FREQUENCIES:
                 r = cross_chamber_check(freq, tone)
                 assert isinstance(r, ConsonanceReport)

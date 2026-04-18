@@ -31,7 +31,6 @@ from src.audio.spectrogram_bridge import (
     GALLERY_FREQ_MIN,
     GALLERY_FREQ_MAX,
     DEFAULT_FFT_SIZE,
-    DEFAULT_HOP_SIZE,
     DEAD_TONE_RATIOS,
     _TONGUE_MATERIAL,
     # Core functions
@@ -44,14 +43,12 @@ from src.audio.spectrogram_bridge import (
     energy_to_chroma,
     centroid_to_lightness,
     project_frame_to_gallery,
-    project_analysis_to_gallery,
     generate_test_signal,
     detect_dead_tones_in_spectrum,
     audio_text_alignment,
     # Data structures
     SpectrogramFrame,
     SpectrogramAnalysis,
-    GalleryProjection,
 )
 
 # ===========================================================================

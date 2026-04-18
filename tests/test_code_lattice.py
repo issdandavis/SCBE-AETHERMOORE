@@ -12,7 +12,6 @@ Validates:
 8. Report formatting includes all required sections
 """
 
-import math
 import pytest
 
 from src.crypto.code_lattice import (
@@ -22,8 +21,6 @@ from src.crypto.code_lattice import (
     PATTERNS_BY_DOMAIN,
     ALL_ANTIPATTERNS,
     ALL_GOOD_PATTERNS,
-    CodePattern,
-    CodeLesson,
     CodeLatticeBundle,
     select_patterns,
     generate_code_lattice_bundle,
@@ -33,9 +30,7 @@ from src.crypto.code_lattice import (
 from src.crypto.qho_bundle import (
     QHOLevel,
     MAX_N,
-    generate_qho_bundle,
 )
-from src.crypto.trit_curriculum import TRIT_AXES
 
 # ===================================================================
 # Pattern Registry

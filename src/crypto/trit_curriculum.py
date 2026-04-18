@@ -28,9 +28,8 @@ score preserves the continuous signal.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 
 from src.crypto.manifold_mirror import compute_mirror_point, MirrorPoint
 

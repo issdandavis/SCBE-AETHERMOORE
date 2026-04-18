@@ -5,7 +5,6 @@ Self-contained: no heavy imports.
 
 import math
 from dataclasses import dataclass
-from typing import Dict, List
 
 # ---------------------------------------------------------------------------
 # Inline module under test
@@ -252,7 +251,7 @@ class TestSonifyDeadTone:
 
     def test_all_dead_tones_produce_audio(self):
         c = LabColor(50.0, 30.0, 40.0)
-        for tone_name, sig in DEAD_TONE_ACOUSTIC.items():
+        for _tone_name, sig in DEAD_TONE_ACOUSTIC.items():
             a = color_to_audio(c, reverb=sig["reverb"], delay_ms=sig["delay_ms"])
             assert a.frequency_hz > 0
             assert 0.0 <= a.amplitude <= 1.0

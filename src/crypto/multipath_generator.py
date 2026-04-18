@@ -37,17 +37,12 @@ We're making the model aware of its own decision fragility.
 
 from __future__ import annotations
 
-import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Tuple, Optional
+from dataclasses import dataclass
+from typing import List, Tuple
 
 from src.crypto.trit_curriculum import (
     TritSignal,
     TRIT_LABELS,
-    TRIT_AXES,
-    GEOMETRIC_BASELINES,
-    DEFAULT_THRESHOLD,
-    compute_trit_signal,
 )
 
 # ---------------------------------------------------------------------------
@@ -187,7 +182,7 @@ def compute_multipath(
     edges = list(trit.edge_vector)
     axis_names = ["structure", "stability", "creativity"]
 
-    for i, (axis, ct, dev, edge) in enumerate(zip(axis_names, content_trits, deviations, edges)):
+    for _i, (axis, ct, dev, edge) in enumerate(zip(axis_names, content_trits, deviations, edges)):
         if edge < poly_threshold:
             mirror = _flip_trit(ct, dev, content_threshold)
             forks.append(

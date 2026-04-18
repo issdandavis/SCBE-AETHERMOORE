@@ -49,17 +49,14 @@ from __future__ import annotations
 
 import math
 import itertools
-from dataclasses import dataclass, field
-from typing import Dict, List, Tuple, Optional, Set
+from dataclasses import dataclass
+from typing import Dict, List
 
 from src.crypto.trit_curriculum import (
     TritSignal,
     TRIT_LABELS,
-    TRIT_AXES,
     DEFAULT_THRESHOLD,
-    GEOMETRIC_BASELINES,
     compute_trit_signal,
-    _quantize_trit,
 )
 
 # ---------------------------------------------------------------------------

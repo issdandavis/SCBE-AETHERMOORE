@@ -50,17 +50,12 @@ Author: SCBE-AETHERMOORE / Issac Davis
 
 from __future__ import annotations
 
-import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List, Optional
 
 from src.crypto.quantum_frequency_bundle import (
     QuantumFrequencyBundle,
-    PolychromaticState,
-    AcousticSignature,
     generate_quantum_bundle,
-    compute_qho_state,
-    compute_acoustic_signature,
     TONGUE_ORDER,
 )
 from src.crypto.flight_dynamics import (
@@ -70,17 +65,7 @@ from src.crypto.flight_dynamics import (
 )
 from src.crypto.code_lattice import (
     CodeLatticeBundle,
-    CodeLesson,
     generate_code_lattice_bundle,
-    flatten_code_lattice_for_sft,
-)
-from src.crypto.trit_curriculum import (
-    TritSignal,
-    compute_trit_signal,
-)
-from src.crypto.multipath_generator import (
-    MultiPathRecord,
-    compute_multipath,
 )
 from src.crypto.physics_domains import (
     PhysicsDomainState,
@@ -90,7 +75,6 @@ from src.crypto.physics_domains import (
     COUPLING_CHANNELS,
     required_recovery_fields,
 )
-from src.crypto.tri_bundle import PHI
 
 # ---------------------------------------------------------------------------
 # Curriculum Level Classification
@@ -534,7 +518,7 @@ def _level_4_sft(bundle: SimulationBundle) -> str:
     """Level 4: Multi-path recovery + full code lattice."""
     flight = bundle.flight
     paths = flight.recovery_paths
-    best = flight.best_recovery
+    _best = flight.best_recovery
 
     recovery_text = ""
     if paths:
@@ -572,7 +556,7 @@ def _level_4_sft(bundle: SimulationBundle) -> str:
 
 def _level_5_sft(bundle: SimulationBundle) -> str:
     """Level 5: Full lattice generalization — physics = magic = code."""
-    qho = bundle.quantum.qho
+    _qho = bundle.quantum.qho
     flight = bundle.flight
     code = bundle.code
 
@@ -801,7 +785,7 @@ def format_curriculum_report(bundles: List[SimulationBundle]) -> str:
 
     lines.append("")
     lines.append("PER-BUNDLE DETAIL:")
-    for i, b in enumerate(bundles[:20]):  # cap at 20 for readability
+    for _i, b in enumerate(bundles[:20]):  # cap at 20 for readability
         regime = b.flight_regime
         n_max = b.qho_max_n
         swears = b.swear_word_count

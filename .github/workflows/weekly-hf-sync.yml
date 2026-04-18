@@ -21,6 +21,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          lfs: true
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -71,8 +72,12 @@ jobs:
                   for fpath in glob.glob(os.path.join(tdir, pattern)):
                       rel = fpath.replace("\\", "/")
                       try:
-                          h = hashlib.sha256(Path(fpath).read_bytes()).hexdigest()[:16]
-                          size_mb = Path(fpath).stat().st_size / (1024 * 1024)
+                          raw = Path(fpath).read_bytes()
+                          # Skip Git LFS pointer stubs — not actual training data
+                          if raw.startswith(b"version https://git-lfs.github.com"):
+                              continue
+                          h = hashlib.sha256(raw).hexdigest()[:16]
+                          size_mb = len(raw) / (1024 * 1024)
                           local_hashes[rel] = h
                           report["local_training_files"].append({
                               "path": rel,

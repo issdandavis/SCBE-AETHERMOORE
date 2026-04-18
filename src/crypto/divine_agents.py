@@ -59,10 +59,9 @@ Author: SCBE-AETHERMOORE / Issac Davis
 from __future__ import annotations
 
 import math
-import hashlib
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 from src.crypto.crossing_energy import (
     PHI,
@@ -77,7 +76,6 @@ from src.crypto.harmonic_dark_fill import (
     TONGUE_WEIGHTS,
     TONGUE_AUDIBLE_FREQ,
     COMPLEMENT_MAP,
-    INTERVALS,
     compute_darkness,
     compute_harmonic_fill,
     HarmonicFill,

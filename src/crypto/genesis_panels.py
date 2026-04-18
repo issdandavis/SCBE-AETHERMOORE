@@ -38,28 +38,19 @@ Author: SCBE-AETHERMOORE / Issac Davis
 from __future__ import annotations
 
 import math
-import hashlib
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Set
+from dataclasses import dataclass
+from typing import Dict, List, Optional
 from enum import Enum
 
 from src.crypto.harmonic_dark_fill import (
     PHI,
-    PI,
     TONGUE_WEIGHTS,
-    TONGUE_AUDIBLE_FREQ,
     INTERVALS,
-    voice_leading_interval,
-    nearest_musical_interval,
     compute_darkness,
-    compute_harmonic_fill,
     sequence_spectrum,
 )
 from src.crypto.dark_cloud_mapper import (
-    map_dark_clouds,
     trace_genesis_path,
-    build_dark_energy_map,
-    DarkCloud,
     GenesisPath,
 )
 from src.crypto.crossing_energy import (
@@ -68,7 +59,7 @@ from src.crypto.crossing_energy import (
     Decision,
     GovernanceSummary,
 )
-from src.crypto.tri_bundle import encode_bytes, encode_text
+from src.crypto.tri_bundle import encode_bytes
 
 # ---------------------------------------------------------------------------
 # Archetypal Forces

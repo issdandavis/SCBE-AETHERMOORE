@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 if "training.auto_marker" not in sys.modules:
     sys.modules["training.auto_marker"] = MagicMock()
 
-from training_pad.cell import Cell, CellStatus
+from training_pad.cell import Cell
 from training_pad.lifeguard import (
     Severity,
     LifeGuardNote,

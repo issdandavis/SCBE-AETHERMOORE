@@ -25,7 +25,7 @@ import sys
 import io
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 # Fix Windows cp1252 encoding (only when running directly, not under pytest)
 if not hasattr(sys, "_called_from_test") and "pytest" not in sys.modules:

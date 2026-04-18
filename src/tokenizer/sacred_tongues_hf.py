@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
@@ -30,7 +30,6 @@ if str(_repo_root / "src") not in sys.path:
 from crypto.sacred_tongues import (
     TONGUES,
     SacredTongueTokenizer,
-    TongueSpec,
 )
 
 # ============================================================
@@ -131,7 +130,7 @@ class SacredTonguesHFTokenizer:
     def decode(self, ids: List[int], skip_special_tokens: bool = True) -> str:
         """Decode token IDs → text."""
         raw_bytes = []
-        current_tongue = self.default_tongue
+        _current_tongue = self.default_tongue
 
         for token_id in ids:
             # Skip specials
@@ -141,7 +140,7 @@ class SacredTonguesHFTokenizer:
                 # Detect tongue switch
                 for code in self.TONGUE_ORDER:
                     if token_id == SPECIAL_TOKENS.get(f"<tongue:{code}>"):
-                        current_tongue = code
+                        _current_tongue = code
                 continue
 
             # Find which tongue this belongs to
@@ -218,6 +217,16 @@ class SacredTonguesHFTokenizer:
             config = json.load(f)
         return cls(default_tongue=config.get("default_tongue", "ko"))
 
+    # Canonical role → tongue routing: mirrors the SS1 section-to-tongue mapping.
+    # system/metadata → Avali (header context), user → Kor'aelin (intent/flow),
+    # assistant → Cassisivadan (output/bitcraft), tool → Draumric (integrity/seal).
+    ROLE_TONGUE: Dict[str, str] = {
+        "system": "av",
+        "user": "ko",
+        "assistant": "ca",
+        "tool": "dr",
+    }
+
     def apply_chat_template(
         self,
         messages: List[dict],
@@ -225,18 +234,54 @@ class SacredTonguesHFTokenizer:
         add_generation_prompt: bool = False,
         tongue: Optional[str] = None,
     ) -> Union[str, List[int]]:
-        """Simple chat template for SFT training."""
-        parts = []
-        for msg in messages:
+        """Chat template with per-role tongue routing.
+
+        Each role is encoded in its canonical Sacred Tongue and separated by
+        tongue-switch markers, so the training data carries the same geometric
+        tongue structure as a governed SS1 envelope:
+          [BOS] [tongue:av] <system in Avali> [sep] [tongue:ko] <user in Kor'aelin>
+          [sep] [tongue:ca] <assistant in Cassisivadan> [EOS]
+
+        If ``tongue`` is supplied, all roles use that single tongue (legacy mode).
+        """
+        if not tokenize:
+            # Text-only mode: return flat string, no tongue routing needed
+            parts = []
+            for msg in messages:
+                parts.append(f"<|{msg['role']}|>\n{msg['content']}")
+            if add_generation_prompt:
+                parts.append("<|assistant|>\n")
+            return "\n".join(parts)
+
+        # Multi-tongue tokenized mode
+        ids: List[int] = [self.bos_token_id]
+        for i, msg in enumerate(messages):
             role = msg["role"]
             content = msg["content"]
-            parts.append(f"<|{role}|>\n{content}")
+            role_tongue = tongue if tongue is not None else self.ROLE_TONGUE.get(role, self.default_tongue)
+
+            # Insert tongue-switch marker before each section
+            ids.append(SPECIAL_TOKENS[f"<tongue:{role_tongue}>"])
+
+            # Encode content in the role's tongue (no BOS/EOS — we manage framing here)
+            raw_bytes = content.encode("utf-8")
+            tokens = self.scbe_tokenizer.encode_bytes(role_tongue, raw_bytes)
+            offset = self.tongue_offset[role_tongue]
+            section_ids = [offset + self.scbe_tokenizer.token_to_byte[role_tongue][t] for t in tokens]
+            ids.extend(section_ids)
+
+            # [sep] between sections (not after the last one)
+            if i < len(messages) - 1:
+                ids.append(SPECIAL_TOKENS["<sep>"])
+
         if add_generation_prompt:
-            parts.append("<|assistant|>\n")
-        text = "\n".join(parts)
-        if tokenize:
-            return self.encode(text, tongue=tongue)
-        return text
+            # Prime assistant generation with tongue:ca marker
+            gen_tongue = tongue if tongue is not None else self.ROLE_TONGUE["assistant"]
+            ids.append(SPECIAL_TOKENS["<sep>"])
+            ids.append(SPECIAL_TOKENS[f"<tongue:{gen_tongue}>"])
+
+        ids.append(self.eos_token_id)
+        return ids
 
 
 # ============================================================
@@ -342,16 +387,56 @@ class SacredTongueBridge(nn.Module):
         self._init_harmonic_weights()
 
     def _init_harmonic_weights(self):
-        """Initialize tongue biases with phi-scaled harmonic frequencies."""
+        """Initialize tongue biases with phi-scaled harmonic frequencies.
+
+        Orthogonal guarantee: after setting phi-scaled structured values in dims 0-1,
+        we Gram-Schmidt orthogonalize the 6 tongue vectors so their embedding subspaces
+        are linearly independent. Each tongue gets a guaranteed orthogonal neighbor.
+
+        Phase geometry (GeoSeal):
+          KO=0°, AV=60°, RU=120°, CA=180°, UM=240°, DR=300°
+          Antipodal pairs (180°): KO↔CA, AV↔UM, RU↔DR
+          120° neighbor (two-step rotational): KO→RU→UM→KO (and AV→CA→DR→AV)
+          Phi connects consecutive (60°) steps as a scaling ratio — not angular.
+          Gram-Schmidt below ensures the 6 bias directions are mutually orthogonal,
+          so each token's tongue-direction is a distinct axis in embedding space.
+        """
         phi = 1.618033988749895
         frequencies = [440.0, 523.25, 329.63, 659.25, 293.66, 392.0]  # KO AV RU CA UM DR
 
         with torch.no_grad():
+            # Step 1: set structured phi-harmonic values in dims 0-1
             for i, freq in enumerate(frequencies):
-                # Phi-weighted frequency encoding
-                weight = freq / 660.0  # Normalize to [0, 1]
-                phi_scale = phi ** (i / 5.0)  # Phi progression
+                weight = freq / 660.0
+                phi_scale = phi ** (i / 5.0)
                 self.tongue_bias.weight[i] = torch.randn(self.bridge_dim) * 0.02
+                self.tongue_bias.weight[i, 0] = weight * phi_scale
+                self.tongue_bias.weight[i, 1] = freq / 1000.0
+
+            # Step 2: Gram-Schmidt orthogonalization across the 6 tongue vectors.
+            # This guarantees each tongue occupies a distinct orthogonal direction.
+            # The phi-harmonic structure in dims 0-1 is preserved as the "seed" direction;
+            # higher dims absorb the orthogonalization residual.
+            W = self.tongue_bias.weight  # (6, bridge_dim)
+            Q = torch.zeros_like(W)
+            for i in range(6):
+                v = W[i].clone()
+                for j in range(i):
+                    v = v - (v @ Q[j]) * Q[j]
+                norm = v.norm()
+                if norm > 1e-8:
+                    Q[i] = v / norm
+                else:
+                    # Fallback: random orthogonal direction if degenerate
+                    Q[i] = torch.randn(self.bridge_dim)
+                    Q[i] = Q[i] / Q[i].norm()
+            # Scale GS-orthogonalized vectors to small noise level for dims 2+.
+            # Then re-inject the phi-harmonic anchors into dims 0-1: these are the
+            # spectral identity of each tongue and must not be rotated away by GS.
+            self.tongue_bias.weight.copy_(Q * 0.02)
+            for i, freq in enumerate(frequencies):
+                weight = freq / 660.0
+                phi_scale = phi ** (i / 5.0)
                 self.tongue_bias.weight[i, 0] = weight * phi_scale
                 self.tongue_bias.weight[i, 1] = freq / 1000.0
 

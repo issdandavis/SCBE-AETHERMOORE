@@ -13,16 +13,12 @@ Validates:
 9. Report formatting includes all sections
 """
 
-import math
 import pytest
 
 from src.crypto.physics_domains import (
     PHYSICS_FIELDS,
     COUPLING_CHANNELS,
-    CouplingChannel,
     FieldActivation,
-    PhysicsDomainState,
-    PhysicsField,
     FAILURE_THRESHOLD,
     compute_physics_domain_state,
     coupling_strength,
@@ -162,7 +158,7 @@ class TestCouplingChannels:
         assert abs(s1 - s2) < 1e-10
 
     def test_coupling_strength_range(self):
-        for code, ch in COUPLING_CHANNELS.items():
+        for _code, ch in COUPLING_CHANNELS.items():
             cs = coupling_strength(ch.parent_tongues[0], ch.parent_tongues[1])
             assert 0.0 < cs <= 1.0
 

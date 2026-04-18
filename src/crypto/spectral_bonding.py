@@ -34,9 +34,8 @@ from __future__ import annotations
 
 import math
 import numpy as np
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Tuple, Optional
-from enum import Enum
 
 from src.crypto.harmonic_dark_fill import (
     COMPLEMENT_MAP,
@@ -702,7 +701,7 @@ def format_spectral_report(evo: SpectralEvolution) -> str:
     lines.append("  Phase trajectories (sector: R=red Y=yel G=grn C=cyn B=blu M=mag):")
     sector_chars = "RYGCBM"
     for tongue in ALL_TONGUES:
-        color_char = TONGUE_COLOR[tongue][0].upper()
+        _color_char = TONGUE_COLOR[tongue][0].upper()
         traj = "    " + tongue.upper() + ": "
         for snap in evo.snapshots:
             a = snap.agents[tongue]

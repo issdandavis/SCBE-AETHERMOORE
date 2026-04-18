@@ -19,13 +19,8 @@ from src.crypto.manifold_mirror import (
     compute_mirror_point,
     run_manifold_mirror,
     format_mirror_report,
-    MirrorPoint,
-    ManifoldMirrorResult,
-    NEEDLE_TEXT,
-    HAYSTACK_TEXTS,
     ALL_TONGUES,
 )
-from src.crypto.harmonic_dark_fill import COMPLEMENT_MAP
 
 # ===================================================================
 # Encoding tests

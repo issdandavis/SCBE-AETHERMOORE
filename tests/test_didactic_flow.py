@@ -10,14 +10,10 @@ Validates:
 6. Mislabel detection: trit disagreement between teacher/learner is signal, not noise
 """
 
-import math
 import pytest
 
 from src.crypto.didactic_flow import (
     FlowMode,
-    PhaseState,
-    FlowPoint,
-    DidacticFlow,
     _trit_from_angle,
     _breathing_radius,
     compute_teacher_phase,
@@ -26,10 +22,7 @@ from src.crypto.didactic_flow import (
     run_didactic_flow,
     run_all_modes,
     format_flow_report,
-    PHI,
     PI,
-    CHANNELS,
-    CHANNEL_NAMES,
 )
 
 # ===================================================================
@@ -285,7 +278,7 @@ class TestFullFlow:
 
     def test_channel_stats_valid(self):
         flow = run_didactic_flow()
-        for ch_name, stats in flow.channel_report.items():
+        for _ch_name, stats in flow.channel_report.items():
             assert stats["min_gap"] <= stats["mean_gap"] <= stats["max_gap"]
             assert 0.0 <= stats["trit_agreement"] <= 1.0
 

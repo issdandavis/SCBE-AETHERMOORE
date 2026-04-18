@@ -210,6 +210,16 @@ class StubModel:
                 "        return 1\n"
                 "    return n * factorial(n - 1)\n"
             )
+        if "run_expr" in prompt_lower or ("eval" in prompt_lower and "revise" not in prompt_lower):
+            # Intentionally insecure — triggers SCBE security flag, forces retry
+            return "def run_expr(expr: str) -> object:\n    return eval(expr)\n"
+        if "run_expr" in prompt_lower and "revise" in prompt_lower:
+            # After SCBE retry: sandboxed version
+            return (
+                "def run_expr(expr: str) -> object:\n"
+                "    _ALLOWED = {'__builtins__': {}}\n"
+                "    return eval(expr, _ALLOWED)\n"
+            )
         return "def placeholder():\n    return None\n"
 
 

@@ -21,7 +21,6 @@ realistic scenarios. If any of these fail, the interface contract is broken.
 @component Golden Path Integration
 """
 
-import math
 import sys
 
 sys.path.insert(0, ".")
@@ -32,16 +31,13 @@ import numpy as np
 
 from src.audio.tongue_prosody import (
     TongueWeightVector,
-    ProsodyParams,
     tongue_to_prosody,
     governance_voice,
     tongue_dominant,
-    TONGUE_WEIGHTS,
 )
 
 from src.crypto.speech_render_plan import (
     build_speech_plan,
-    SpeechRenderPlan,
     ALL_TONGUES,
     DEAD_TONE_PRETONES,
     TONGUE_PAN,
@@ -59,19 +55,14 @@ from src.crypto.choral_render import (
 
 from src.crypto.world_bundle import (
     create_default_bundle,
-    WorldBundle,
     _DEFAULT_PHONOLOGY,
 )
 
 from src.audio.gallery_sonifier import (
     LabColor,
-    AudioParams,
-    color_to_audio,
     sonify_dead_tone,
     hue_to_frequency,
-    chroma_to_amplitude,
     DEAD_TONE_ACOUSTIC,
-    MATERIAL_ENVELOPES,
 )
 
 from src.audio.spectrogram_bridge import (
@@ -82,27 +73,15 @@ from src.audio.spectrogram_bridge import (
     spectral_centroid as spec_centroid,
     hf_ratio,
     freq_to_hue,
-    energy_to_chroma,
     project_frame_to_gallery,
     SpectrogramFrame,
-    GalleryProjection,
     TONGUE_FREQ_BANDS,
     TONGUE_ORDER,
     _TONGUE_MATERIAL,
-    audio_text_alignment,
-    SpectrogramAnalysis,
 )
 
 from src.crypto.gallery_chromatics import (
-    LabColor as GCLabColor,
-    scatter_color_quad,
-    frequency_to_harmonic_number,
-    harmonic_to_polar,
     TONGUE_PHASE_OFFSETS,
-    DEAD_TONE_RATIOS as GC_DEAD_TONE_RATIOS,
-    LEFT_EYE_TONGUES,
-    RIGHT_EYE_TONGUES,
-    BRIDGE_TONGUES,
 )
 
 # ===========================================================================
@@ -650,19 +629,15 @@ class TestDriftDetection:
 
 from src.symphonic_cipher.audio.stellar_octave_mapping import (
     StellarOctaveMapping,
-    OctaveTranspositionResult,
 )
 
 from src.crypto.harmonic_dark_fill import (
     compute_darkness,
     compute_harmonic_fill,
     upgrade_sound_bundle,
-    fill_dark_nodes,
     sequence_spectrum,
     voice_leading_interval,
     nearest_musical_interval,
-    HarmonicFill,
-    SpectrumSnapshot,
     TONGUE_AUDIBLE_FREQ,
     COMPLEMENT_MAP,
     INTERVALS,
@@ -700,7 +675,7 @@ class TestStellarOctaveIntegration:
         freq = result.human_freq
         # Check it falls in some tongue band
         matched = False
-        for tongue, (lo, hi) in TONGUE_FREQ_BANDS.items():
+        for _tongue, (lo, hi) in TONGUE_FREQ_BANDS.items():
             if lo <= freq <= hi:
                 matched = True
                 break
@@ -872,10 +847,10 @@ class TestStellarDarkFillBridge:
     def test_sonifier_dead_tones_in_dark_fill_intervals(self):
         """Gallery sonifier dead tone base Hz should produce intervals
         that exist in the dark fill musical vocabulary."""
-        for tone_name, sig in DEAD_TONE_ACOUSTIC.items():
+        for _tone_name, sig in DEAD_TONE_ACOUSTIC.items():
             base = sig["base_hz"]
             # Find nearest tongue freq
-            for tongue, t_freq in TONGUE_AUDIBLE_FREQ.items():
+            for _tongue, t_freq in TONGUE_AUDIBLE_FREQ.items():
                 ratio = base / t_freq
                 while ratio < 1.0:
                     ratio *= 2.0

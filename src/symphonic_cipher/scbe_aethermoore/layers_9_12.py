@@ -218,6 +218,134 @@ def compute_spin_coherence(phases: np.ndarray) -> SpinAnalysis:
     )
 
 
+# =============================================================================
+# LAYER 10 EXTENSION: 47D SPIN COHERENCE
+# Full coupling metric tensor — M⁴⁷ manifold derivation (2026-04-13)
+# notes/theory/47d-manifold-derivation.md + Grok cross-validation
+# =============================================================================
+
+
+def compute_47d_phases(
+    tongue_phases: np.ndarray,
+    psi: np.ndarray = None,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Expand 6 base tongue phases to all 47 M⁴⁷ coordinates with correct
+    coupling metric tensor weights.
+
+    M⁴⁷ = ℝ⁶(real) ⊕ ℝ¹⁵(pairs C(6,2)) ⊕ ℝ²⁰(triples C(6,3)) ⊕ ℝ⁶(self-imaginary)
+
+    Flat metric (Section I of derivation):
+      ds²_flat = Σ φ^(2l) dθ_l²
+               + Σ_{l<m} φ^(l+m) dc_lm²
+               + Σ_{l<m<n} φ^(l+m+n) dc_lmn²
+               + Σ φ^(2l) dψ_l²
+
+    Coupling coordinates (Section II):
+      c_lm  = cos(θ_l - θ_m) · exp(-|ψ_l - ψ_m|)   [pairwise — phase-locking]
+      c_lmn = sin(θ_l + θ_m - 2θ_n) · tanh(ψ_l + ψ_m + ψ_n)  [Berry phase]
+
+    Metric weights:
+      Real tongue l:    w_l   = φ^(2l)        (6 terms)
+      Pair {l,m}:       w_lm  = φ^(l+m)       (15 terms — product of tongue weights)
+      Triple {l,m,n}:   w_lmn = φ^(l+m+n)     (20 terms — max φ^12 for {3,4,5})
+      Self-imaginary l: w_ψl  = φ^(2l)        (6 terms)
+
+    Args:
+        tongue_phases: (6,) base phase angles θ_l [radians]
+        psi:           (6,) self-imaginary DOF ψ_l [radians]. If None, derived
+                       as tongue_phases + π/2 (orthogonal internal rotation).
+
+    Returns:
+        phases_47:  (47,) effective phase angles for spin coherence
+        weights_47: (47,) metric tensor weights W_I (unnormalized)
+    """
+    if tongue_phases.shape[0] != 6:
+        raise ValueError(f"Expected 6 tongue phases, got {tongue_phases.shape[0]}")
+
+    if psi is None:
+        psi = tongue_phases + np.pi / 2.0  # orthogonal internal rotation DOF
+
+    phases_47: list = []
+    weights_47: list = []
+
+    # --- 6 real tongue dimensions: w_l = φ^(2l) ---
+    for l in range(6):
+        phases_47.append(tongue_phases[l])
+        weights_47.append(PHI ** (2 * l))
+
+    # --- 15 pair coupling dimensions C(6,2): w_lm = φ^(l+m) ---
+    for l in range(6):
+        for m in range(l + 1, 6):
+            # Coupling coordinate: c_lm = cos(θ_l - θ_m) · exp(-|ψ_l - ψ_m|)
+            # Phase for spin coherence: relative tongue phase θ_l - θ_m
+            # Amplitude damping: exp(-|ψ_l - ψ_m|) — coherent spins couple stronger
+            damping = np.exp(-abs(psi[l] - psi[m]))
+            phases_47.append(tongue_phases[l] - tongue_phases[m])
+            weights_47.append(PHI ** (l + m) * damping)
+
+    # --- 20 triple coupling dimensions C(6,3): w_lmn = φ^(l+m+n) ---
+    for l in range(6):
+        for m in range(l + 1, 6):
+            for n in range(m + 1, 6):
+                # Berry phase: θ_l + θ_m - 2θ_n (triangular geometric phase)
+                # Amplitude: tanh(ψ_l + ψ_m + ψ_n) — bounded 3-body spin coupling
+                amplitude = np.tanh(abs(psi[l] + psi[m] + psi[n]))
+                phases_47.append(tongue_phases[l] + tongue_phases[m] - 2 * tongue_phases[n])
+                weights_47.append(PHI ** (l + m + n) * amplitude)
+
+    # --- 6 self-imaginary dimensions: w_ψl = φ^(2l) ---
+    for l in range(6):
+        phases_47.append(psi[l])
+        weights_47.append(PHI ** (2 * l))
+
+    return np.array(phases_47, dtype=np.float64), np.array(weights_47, dtype=np.float64)
+
+
+def compute_spin_coherence_47d(
+    tongue_phases: np.ndarray,
+    psi: np.ndarray = None,
+) -> SpinAnalysis:
+    """
+    Layer 10 (47D): Weighted spin coherence across the full M⁴⁷ manifold.
+
+    C_spin_47 = |Σ_k W_k · e^{iφ_k}| / Σ_k W_k
+
+    Uses the full coupling metric tensor from the 47D manifold derivation:
+    pair weights φ^(l+m) damped by spin coherence exp(-|ψ_l-ψ_m|);
+    triple weights φ^(l+m+n) modulated by Berry phase tanh(ψ_l+ψ_m+ψ_n).
+
+    The highest-order triple {3,4,5} (Cassisivadan/Umbroth/Draumric) has
+    weight φ^12 ≈ 321.99 — disrupting it incurs the largest metric penalty,
+    forming the outer bound of the Harmonic Wall.
+
+    Args:
+        tongue_phases: (6,) base phase for each Sacred Tongue [radians]
+        psi:           (6,) self-imaginary DOF. If None, derived as θ + π/2.
+
+    Returns:
+        SpinAnalysis — drop-in compatible with compute_spin_coherence
+    """
+    phases_47, weights_47 = compute_47d_phases(tongue_phases, psi)
+
+    # Weighted mean phasor across all 47 coordinates
+    phasors = np.exp(1j * phases_47)
+    w_sum = weights_47.sum()
+    mean_phasor = np.dot(weights_47, phasors) / w_sum
+
+    c_spin = float(np.abs(mean_phasor))
+    mean_phase = float(np.angle(mean_phasor))
+    phase_variance = 1.0 - c_spin
+    alignment_vector = (float(np.real(mean_phasor)), float(np.imag(mean_phasor)))
+
+    return SpinAnalysis(
+        c_spin=float(np.clip(c_spin, 0, 1)),
+        mean_phase=mean_phase,
+        phase_variance=phase_variance,
+        alignment_vector=alignment_vector,
+    )
+
+
 def compute_spin_from_signal(signal: np.ndarray, hop_size: int = 256) -> SpinAnalysis:
     """
     Extract phase information from signal and compute spin coherence.

@@ -10,7 +10,6 @@ Validates the four claims of the Toroidal Polyhedral Confinement proof:
 """
 
 import sys
-import math
 from pathlib import Path
 
 import pytest

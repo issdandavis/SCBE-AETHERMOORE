@@ -69,7 +69,6 @@ def build_pytest_command(
 def build_environment() -> dict[str, str]:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(REPO_ROOT)
-    env.setdefault("SCBE_FORCE_SKIP_LIBOQS", "1")
     return env
 
 
@@ -80,7 +79,6 @@ def summary_payload(command: list[str]) -> dict[str, object]:
         "optional_ignores": list(OPTIONAL_TEST_IGNORES),
         "env": {
             "PYTHONPATH": str(REPO_ROOT),
-            "SCBE_FORCE_SKIP_LIBOQS": "1",
         },
     }
 
