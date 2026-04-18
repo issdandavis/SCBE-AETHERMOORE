@@ -7,7 +7,6 @@ from typing import Any, Iterable
 
 import numpy as np
 
-
 GridLike = Iterable[Iterable[int]]
 
 

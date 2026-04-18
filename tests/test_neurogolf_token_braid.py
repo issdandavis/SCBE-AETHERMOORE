@@ -456,9 +456,7 @@ def test_detect_threat_impostor_triggers_deny():
     # High Thread 1+2 + random Thread 3 → DENY at default thresholds
     fake_tg_scores = [(best_family, 0.85)]
     verdict = detect_threat(task_pkt, fake_tg_scores, {best_family: family_pkt})
-    assert verdict.action == "DENY", (
-        f"Expected DENY, got {verdict.action} (pqc_score={verdict.pqc_score:.4f})"
-    )
+    assert verdict.action == "DENY", f"Expected DENY, got {verdict.action} (pqc_score={verdict.pqc_score:.4f})"
     assert verdict.impostor_confidence > 0.0
 
 

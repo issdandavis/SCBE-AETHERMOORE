@@ -58,13 +58,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 PHI = 1.618033988749895
 
 
 # =============================================================================
 # GYRO CORE LAYER
 # =============================================================================
+
 
 class GyroCoreLayer(nn.Module):
     """
@@ -104,9 +104,7 @@ class GyroCoreLayer(nn.Module):
         # Per-pair phase offset (D/2 learnable offsets — gives each pair a home angle)
         # These are the "fixed points on each end" of the bridge
         n_pairs = hidden_dim // 2
-        self.pair_offsets = nn.Parameter(
-            torch.linspace(0, 2 * math.pi, n_pairs)  # evenly spread around circle
-        )
+        self.pair_offsets = nn.Parameter(torch.linspace(0, 2 * math.pi, n_pairs))  # evenly spread around circle
 
         # Learnable scale on the rotation (starts at 1, can grow or shrink)
         self.rotation_scale = nn.Parameter(torch.ones(1))
@@ -138,16 +136,16 @@ class GyroCoreLayer(nn.Module):
         # Apply Givens rotation to each pair
         # x_even = x[:, :, 0::2], x_odd = x[:, :, 1::2]  shape (B, S, n_pairs)
         x_even = x[:, :, 0::2]
-        x_odd  = x[:, :, 1::2]
+        x_odd = x[:, :, 1::2]
 
         # Handle odd hidden_dim: truncate extra dim if needed
         if x_even.shape[-1] > n_pairs:
             x_even = x_even[:, :, :n_pairs]
-            x_odd  = x_odd[:, :, :n_pairs]
+            x_odd = x_odd[:, :, :n_pairs]
 
         # Givens: [cos -sin; sin cos] applied to [x_even; x_odd]
         x_even_rot = cos_t * x_even - sin_t * x_odd
-        x_odd_rot  = sin_t * x_even + cos_t * x_odd
+        x_odd_rot = sin_t * x_even + cos_t * x_odd
 
         # Reassemble
         x_rot = torch.zeros_like(x)
@@ -161,6 +159,7 @@ class GyroCoreLayer(nn.Module):
 # =============================================================================
 # SPHERE GRID SAMPLE ORDERING
 # =============================================================================
+
 
 def compute_tongue_profile_unit(profile: List[float]) -> torch.Tensor:
     """Normalize a 6D tongue profile to the unit sphere."""
@@ -195,12 +194,12 @@ def great_circle_spiral_order(
     like the bridge swaying: sometimes KO is north, sometimes AV, etc.
     """
     safe_poles = [
-        torch.tensor([1,0,0,0,0,0], dtype=torch.float32),  # KO — epoch 0
-        torch.tensor([0,1,0,0,0,0], dtype=torch.float32),  # AV — epoch 1
-        torch.tensor([0,0,1,0,0,0], dtype=torch.float32),  # RU — epoch 2
-        torch.tensor([0,0,0,1,0,0], dtype=torch.float32),  # CA — epoch 3
-        torch.tensor([0,0,0,0,1,0], dtype=torch.float32),  # UM — epoch 4
-        torch.tensor([0,0,0,0,0,1], dtype=torch.float32),  # DR — epoch 5 (adversarial)
+        torch.tensor([1, 0, 0, 0, 0, 0], dtype=torch.float32),  # KO — epoch 0
+        torch.tensor([0, 1, 0, 0, 0, 0], dtype=torch.float32),  # AV — epoch 1
+        torch.tensor([0, 0, 1, 0, 0, 0], dtype=torch.float32),  # RU — epoch 2
+        torch.tensor([0, 0, 0, 1, 0, 0], dtype=torch.float32),  # CA — epoch 3
+        torch.tensor([0, 0, 0, 0, 1, 0], dtype=torch.float32),  # UM — epoch 4
+        torch.tensor([0, 0, 0, 0, 0, 1], dtype=torch.float32),  # DR — epoch 5 (adversarial)
     ]
     pole = safe_poles[epoch_offset % 6]
 
@@ -218,6 +217,7 @@ def great_circle_spiral_order(
 # =============================================================================
 # ROTATING DUAL LOSS
 # =============================================================================
+
 
 def rotating_alpha(step: int, rotation_period: int = 200) -> float:
     """
@@ -264,6 +264,7 @@ def dual_loss(
 # =============================================================================
 # GOVERNANCE LOSS FROM HIDDEN STATE
 # =============================================================================
+
 
 class GovernanceLoss(nn.Module):
     """
@@ -319,6 +320,7 @@ class GovernanceLoss(nn.Module):
 # PATCHING INTO GPT-2 MODEL
 # =============================================================================
 
+
 def patch_model_with_gyro_core(model: nn.Module, hidden_dim: int = 384) -> nn.Module:
     """
     Insert a GyroCoreLayer between transformer blocks 3 and 4 (center of 6 layers).
@@ -373,16 +375,16 @@ class GyroPatchedModel(nn.Module):
 
         # Embed
         hidden = transformer.wte(input_ids)
-        if hasattr(transformer, 'wpe'):
+        if hasattr(transformer, "wpe"):
             position_ids = torch.arange(input_ids.shape[1], device=input_ids.device).unsqueeze(0)
             hidden = hidden + transformer.wpe(position_ids)
         hidden = transformer.drop(hidden)
 
         # Build causal mask
-        past_key_values = kwargs.get('past_key_values', None)
+        past_key_values = kwargs.get("past_key_values", None)
 
         # First half: blocks 0..insert_after_layer
-        for i, block in enumerate(transformer.h[:self.insert_after_layer + 1]):
+        for i, block in enumerate(transformer.h[: self.insert_after_layer + 1]):
             outputs = block(hidden, attention_mask=attention_mask)
             hidden = outputs[0]
 
@@ -390,7 +392,7 @@ class GyroPatchedModel(nn.Module):
         hidden = self.gyro(hidden)
 
         # Second half: blocks insert_after_layer+1..end
-        for block in transformer.h[self.insert_after_layer + 1:]:
+        for block in transformer.h[self.insert_after_layer + 1 :]:
             outputs = block(hidden, attention_mask=attention_mask)
             hidden = outputs[0]
 
@@ -417,6 +419,7 @@ class GyroPatchedModel(nn.Module):
 
         # Standard HF output: return loss + logits
         from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
+
         return CausalLMOutputWithCrossAttentions(
             loss=lm_loss,
             logits=logits,
@@ -425,21 +428,26 @@ class GyroPatchedModel(nn.Module):
     def save_pretrained(self, path: str, **kwargs):
         """Save base model + gyro core separately."""
         import os, json
+
         os.makedirs(path, exist_ok=True)
         self.base_model.save_pretrained(path, **kwargs)
         torch.save(self.gyro.state_dict(), os.path.join(path, "gyro_core.pt"))
         torch.save(self.gov_loss_fn.state_dict(), os.path.join(path, "gov_loss.pt"))
         with open(os.path.join(path, "gyro_config.json"), "w") as f:
-            json.dump({
-                "insert_after_layer": self.insert_after_layer,
-                "hidden_dim": self.gyro.hidden_dim,
-                "phi_scale": self.gyro.phi_scale,
-            }, f)
+            json.dump(
+                {
+                    "insert_after_layer": self.insert_after_layer,
+                    "hidden_dim": self.gyro.hidden_dim,
+                    "phi_scale": self.gyro.phi_scale,
+                },
+                f,
+            )
 
     @classmethod
     def load_pretrained(cls, path: str, base_model_cls=None) -> "GyroPatchedModel":
         import json
         from transformers import GPT2LMHeadModel
+
         base_cls = base_model_cls or GPT2LMHeadModel
         base = base_cls.from_pretrained(path)
         with open(f"{path}/gyro_config.json") as f:

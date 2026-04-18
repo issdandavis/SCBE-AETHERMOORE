@@ -69,9 +69,7 @@ class TriadicAnchor:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-_ALL_TRIPLETS: tuple[tuple[int, int, int], ...] = tuple(
-    (i, j, k) for i, j, k in itertools.combinations(range(6), 3)
-)
+_ALL_TRIPLETS: tuple[tuple[int, int, int], ...] = tuple((i, j, k) for i, j, k in itertools.combinations(range(6), 3))
 
 
 def _topology_per_example(task: ARCTask) -> list[np.ndarray]:
@@ -169,9 +167,7 @@ def extract_anchors(task: ARCTask, min_stability: float = 0.8) -> list[TriadicAn
             continue
 
         # Coupling strength: mean absolute value across examples
-        strength = float(
-            np.mean([abs(float(topo_vecs[e][a])) for e in range(n) for a in axes])
-        )
+        strength = float(np.mean([abs(float(topo_vecs[e][a])) for e in range(n) for a in axes]))
 
         anchors.append(
             TriadicAnchor(
@@ -212,11 +208,7 @@ def _anchor_match_score(family: str, anchors: list[TriadicAnchor]) -> float:
         # Exact sign match
         exact = sum(1 for a, b in zip(family_pattern, task_pattern) if a == b)
         # Partial: at least same non-zero polarity on active axes
-        partial = sum(
-            1
-            for a, b in zip(family_pattern, task_pattern)
-            if a != 0 and b != 0 and a == b
-        )
+        partial = sum(1 for a, b in zip(family_pattern, task_pattern) if a != 0 and b != 0 and a == b)
 
         match_ratio = (exact * 1.0 + partial * 0.5) / 3.0
         score += weight * match_ratio

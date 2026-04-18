@@ -24,15 +24,14 @@ from __future__ import annotations
 from hashlib import shake_128
 from typing import NamedTuple
 
-
 # ---------------------------------------------------------------------------
 # FORS-style tree parameters (mirrors SLH-DSA SHAKE-128S internal structure)
 # ---------------------------------------------------------------------------
 
-_TREE_FANOUT: int = 4   # children per internal node
-_TREE_DEPTH: int = 2    # levels below root → 4^2 = 16 leaves
-_LEAF_DIGEST: int = 4   # bytes per leaf/internal hash
-_ROOT_DIGEST: int = 8   # root expanded wider for better discrimination
+_TREE_FANOUT: int = 4  # children per internal node
+_TREE_DEPTH: int = 2  # levels below root → 4^2 = 16 leaves
+_LEAF_DIGEST: int = 4  # bytes per leaf/internal hash
+_ROOT_DIGEST: int = 8  # root expanded wider for better discrimination
 
 
 # ---------------------------------------------------------------------------
@@ -115,11 +114,11 @@ def pqc_thread_score(task_packet: bytes, family_packet: bytes) -> float:
 class ThreatVerdict(NamedTuple):
     """Result of cross-thread impostor detection."""
 
-    impostor_confidence: float   # 0.0 = clean, 1.0 = confirmed threat
-    best_family: str             # top-ranked family from Threads 1+2
-    token_geometric_score: float # combined Thread 1+2 score
-    pqc_score: float             # Thread 3 score
-    action: str                  # ALLOW | QUARANTINE | DENY
+    impostor_confidence: float  # 0.0 = clean, 1.0 = confirmed threat
+    best_family: str  # top-ranked family from Threads 1+2
+    token_geometric_score: float  # combined Thread 1+2 score
+    pqc_score: float  # Thread 3 score
+    action: str  # ALLOW | QUARANTINE | DENY
 
 
 def detect_threat(

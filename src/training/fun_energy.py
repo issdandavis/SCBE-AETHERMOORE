@@ -78,10 +78,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 # =============================================================================
 # GOVERNANCE TIER — phase-gate mapping for kinetic modes
 # =============================================================================
+
 
 class GovernanceTier(str, Enum):
     """
@@ -105,32 +105,33 @@ class GovernanceTier(str, Enum):
                  more than it recovers with near-zero value. A large loss spike
                  signals halt / human intervention. NOT a normal training state.
     """
-    ALLOW      = "ALLOW"
+
+    ALLOW = "ALLOW"
     QUARANTINE = "QUARANTINE"
-    ESCALATE   = "ESCALATE"
-    OVERSIGHT  = "OVERSIGHT"
+    ESCALATE = "ESCALATE"
+    OVERSIGHT = "OVERSIGHT"
 
 
 # Map from kinetic mode string → default governance tier (primary signal)
 _MODE_TO_TIER: Dict[str, GovernanceTier] = {
     "trickle": GovernanceTier.ALLOW,
-    "burst":   GovernanceTier.QUARANTINE,
-    "echo":    GovernanceTier.ESCALATE,
+    "burst": GovernanceTier.QUARANTINE,
+    "echo": GovernanceTier.ESCALATE,
 }
 
 # Loss scale factors per tier
 TIER_LOSS_SCALE: Dict[GovernanceTier, float] = {
-    GovernanceTier.ALLOW:      1.0,
-    GovernanceTier.QUARANTINE: 1.0,    # governance penalty added separately
-    GovernanceTier.ESCALATE:   0.18,   # clamped to P_RECOVER — watchful, not suppressed
-    GovernanceTier.OVERSIGHT:  5.0,    # large spike — halt signal
+    GovernanceTier.ALLOW: 1.0,
+    GovernanceTier.QUARANTINE: 1.0,  # governance penalty added separately
+    GovernanceTier.ESCALATE: 0.18,  # clamped to P_RECOVER — watchful, not suppressed
+    GovernanceTier.OVERSIGHT: 5.0,  # large spike — halt signal
 }
 
 # Governance penalty weight added during QUARANTINE bursts
 QUARANTINE_GOV_PENALTY_WEIGHT = 0.25
 
 # Oversight collapse trigger: F below floor for N consecutive steps
-OVERSIGHT_F_FLOOR   = 0.05
+OVERSIGHT_F_FLOOR = 0.05
 OVERSIGHT_MIN_STEPS = 3
 
 
@@ -142,10 +143,10 @@ PHI = 1.618033988749895
 N_LAYERS = 14
 
 # Fixed normalized budget (sums to 1.0)
-P_BUDGET  = 1.0
-P_BASE    = 0.10   # steady trickle
-P_BURST   = 0.72   # burst peak amplitude
-P_RECOVER = 0.18   # echo recovery window
+P_BUDGET = 1.0
+P_BASE = 0.10  # steady trickle
+P_BURST = 0.72  # burst peak amplitude
+P_RECOVER = 0.18  # echo recovery window
 
 
 def composite_gate(
@@ -191,7 +192,7 @@ def composite_gate(
         return GovernanceTier.OVERSIGHT
 
     # Hysteresis adjustment to V thresholds
-    v_low_threshold  = 0.25 if prev_tier == GovernanceTier.ALLOW else 0.30
+    v_low_threshold = 0.25 if prev_tier == GovernanceTier.ALLOW else 0.30
     v_high_threshold = 0.70 if prev_tier == GovernanceTier.OVERSIGHT else 0.80
 
     # "Novelty phase" vs "divergence" distinction:
@@ -208,8 +209,8 @@ def composite_gate(
     # not value generation. Only OVERSIGHT or F-collapse can push it higher.
     # V thresholds are halved in echo mode to avoid false OVERSIGHT.
     if mode_tier == GovernanceTier.ESCALATE:
-        v_low_threshold  *= 0.50   # ~0.13 — only flag true collapse
-        v_high_threshold *= 0.70   # ~0.56 — attainable in echo
+        v_low_threshold *= 0.50  # ~0.13 — only flag true collapse
+        v_high_threshold *= 0.70  # ~0.56 — attainable in echo
 
     # Signal-inferred tier (independent of mode)
     if V < v_low_threshold or net_cost > 0.65:
@@ -223,21 +224,18 @@ def composite_gate(
         signal_tier = mode_tier
     elif novelty_phase:
         # Novelty: one step above mode (watchful but not blocking)
-        _order = [GovernanceTier.ALLOW, GovernanceTier.QUARANTINE,
-                  GovernanceTier.ESCALATE, GovernanceTier.OVERSIGHT]
+        _order = [GovernanceTier.ALLOW, GovernanceTier.QUARANTINE, GovernanceTier.ESCALATE, GovernanceTier.OVERSIGHT]
         idx = _order.index(mode_tier)
         signal_tier = _order[min(idx + 1, len(_order) - 1)]
     else:
         # Low coherence AND unhealthy signal: established divergence, escalate
-        _order = [GovernanceTier.ALLOW, GovernanceTier.QUARANTINE,
-                  GovernanceTier.ESCALATE, GovernanceTier.OVERSIGHT]
+        _order = [GovernanceTier.ALLOW, GovernanceTier.QUARANTINE, GovernanceTier.ESCALATE, GovernanceTier.OVERSIGHT]
         idx = _order.index(mode_tier)
         signal_tier = _order[min(idx + 1, len(_order) - 1)]
 
     # Take the WORSE tier of mode vs signal (never downgrade beyond mode)
-    _order = [GovernanceTier.ALLOW, GovernanceTier.QUARANTINE,
-              GovernanceTier.ESCALATE, GovernanceTier.OVERSIGHT]
-    mode_idx   = _order.index(mode_tier)
+    _order = [GovernanceTier.ALLOW, GovernanceTier.QUARANTINE, GovernanceTier.ESCALATE, GovernanceTier.OVERSIGHT]
+    mode_idx = _order.index(mode_tier)
     signal_idx = _order.index(signal_tier)
 
     # ECHO mode safeguard: already at ESCALATE, which is "watchful but not blocking".
@@ -265,23 +263,23 @@ class SystemConstraints:
     Training should NOT run at full power — it should feel like a stream with
     occasional pulses, not a constant flood.
     """
-    p_budget:         float = P_BUDGET   # total envelope (normalized = 1.0)
-    p_base:           float = P_BASE     # low-KE steady engagement
-    p_burst:          float = P_BURST    # burst peak (above base)
-    p_recover:        float = P_RECOVER  # reserved for echo window
-    burst_threshold:  float = 0.55       # fun-potential to trigger burst
-    burst_width:      int   = 8          # steps for burst envelope (Gaussian halfwidth)
-    propagation_delay: float = 0.5       # steps per layer for travelling wave
-    echo_decay_len:   float = 4.0        # layers over which echo decays
-    n_layers:         int   = N_LAYERS
-    phi_burst_spacing: bool = True        # space bursts at phi-harmonic intervals
+
+    p_budget: float = P_BUDGET  # total envelope (normalized = 1.0)
+    p_base: float = P_BASE  # low-KE steady engagement
+    p_burst: float = P_BURST  # burst peak (above base)
+    p_recover: float = P_RECOVER  # reserved for echo window
+    burst_threshold: float = 0.55  # fun-potential to trigger burst
+    burst_width: int = 8  # steps for burst envelope (Gaussian halfwidth)
+    propagation_delay: float = 0.5  # steps per layer for travelling wave
+    echo_decay_len: float = 4.0  # layers over which echo decays
+    n_layers: int = N_LAYERS
+    phi_burst_spacing: bool = True  # space bursts at phi-harmonic intervals
 
     def __post_init__(self):
         total = self.p_base + self.p_burst + self.p_recover
         if abs(total - self.p_budget) > 1e-6:
             raise ValueError(
-                f"p_base+p_burst+p_recover = {total:.4f} != p_budget {self.p_budget}. "
-                "Budget must close."
+                f"p_base+p_burst+p_recover = {total:.4f} != p_budget {self.p_budget}. " "Budget must close."
             )
 
 
@@ -289,18 +287,20 @@ class SystemConstraints:
 # PHASE MEMORY — established frequency/phase patterns per layer
 # =============================================================================
 
+
 @dataclass
 class LayerPhase:
     """
     Running phase estimate for one pipeline layer.
     Tracks the dominant frequency content from previous pulses.
     """
-    layer_idx:   int
-    phase:       float = 0.0        # current dominant phase angle (radians)
-    frequency:   float = 0.0        # dominant frequency (normalized 0..1)
-    amplitude:   float = 0.0        # established amplitude (grows with use)
-    n_hits:      int   = 0          # how many pulses have touched this layer
-    coherence:   float = 0.0        # rolling coherence with incoming pulses
+
+    layer_idx: int
+    phase: float = 0.0  # current dominant phase angle (radians)
+    frequency: float = 0.0  # dominant frequency (normalized 0..1)
+    amplitude: float = 0.0  # established amplitude (grows with use)
+    n_hits: int = 0  # how many pulses have touched this layer
+    coherence: float = 0.0  # rolling coherence with incoming pulses
 
 
 class PhaseMemory:
@@ -311,11 +311,10 @@ class PhaseMemory:
 
     def __init__(self, n_layers: int = N_LAYERS, decay: float = 0.95):
         self.n_layers = n_layers
-        self.decay    = decay   # exponential decay for old phase info
+        self.decay = decay  # exponential decay for old phase info
         self.layers: List[LayerPhase] = [LayerPhase(layer_idx=i) for i in range(n_layers)]
 
-    def update(self, layer_idx: int, incoming_phase: float, incoming_freq: float,
-               pulse_amplitude: float) -> float:
+    def update(self, layer_idx: int, incoming_phase: float, incoming_freq: float, pulse_amplitude: float) -> float:
         """
         Update layer phase from an incoming pulse. Returns coherence [0,1].
 
@@ -333,11 +332,11 @@ class PhaseMemory:
             coherence = phase_align * freq_match
 
         # Exponential moving average update
-        lp.phase     = self.decay * lp.phase     + (1-self.decay) * incoming_phase
-        lp.frequency = self.decay * lp.frequency + (1-self.decay) * incoming_freq
-        lp.amplitude = self.decay * lp.amplitude + (1-self.decay) * pulse_amplitude
-        lp.coherence = self.decay * lp.coherence + (1-self.decay) * coherence
-        lp.n_hits   += 1
+        lp.phase = self.decay * lp.phase + (1 - self.decay) * incoming_phase
+        lp.frequency = self.decay * lp.frequency + (1 - self.decay) * incoming_freq
+        lp.amplitude = self.decay * lp.amplitude + (1 - self.decay) * pulse_amplitude
+        lp.coherence = self.decay * lp.coherence + (1 - self.decay) * coherence
+        lp.n_hits += 1
 
         return coherence
 
@@ -353,15 +352,17 @@ class PhaseMemory:
 # ECHOLATION ENGINE — forward pulse + echo computation
 # =============================================================================
 
+
 @dataclass
 class EchoEvent:
     """One returned echo from a specific layer."""
-    origin_layer:  int
-    echo_layer:    int     # which layer reflected it
-    amplitude:     float   # echo amplitude (attenuated forward pulse)
-    phase_shift:   float   # phase shift from reflection (carries layer info)
-    coherence:     float   # coherence at hit point
-    energy:        float   # total recovered energy from this echo
+
+    origin_layer: int
+    echo_layer: int  # which layer reflected it
+    amplitude: float  # echo amplitude (attenuated forward pulse)
+    phase_shift: float  # phase shift from reflection (carries layer info)
+    coherence: float  # coherence at hit point
+    energy: float  # total recovered energy from this echo
 
 
 class EcholationEngine:
@@ -385,15 +386,15 @@ class EcholationEngine:
     """
 
     def __init__(self, constraints: SystemConstraints, phase_memory: PhaseMemory):
-        self.C  = constraints
+        self.C = constraints
         self.pm = phase_memory
 
     def fire_pulse(
         self,
         pulse_frequency: float,
-        pulse_phase:     float,
+        pulse_phase: float,
         pulse_amplitude: float,
-        origin_layer:    int = 0,
+        origin_layer: int = 0,
     ) -> Tuple[List[EchoEvent], float]:
         """
         Fire a pulse from origin_layer through all subsequent layers.
@@ -425,7 +426,7 @@ class EcholationEngine:
             # Frequency shift: coherent → no shift; incoherent → shifted by phi ratio
             # (reverse frequency mapping — the echo tells you what phase the layer holds)
             freq_shift = (1.0 - coherence) * (pulse_frequency * (PHI - 1.0))
-            echo_freq  = pulse_frequency + freq_shift
+            echo_freq = pulse_frequency + freq_shift
 
             # Energy from this echo
             # Resonance bonus: if echo_freq is close to pulse_frequency → standing wave
@@ -455,19 +456,20 @@ class EcholationEngine:
 # KINETIC SCHEDULER — controls burst/trickle flow pattern
 # =============================================================================
 
+
 @dataclass
 class SchedulerState:
-    step:              int   = 0
-    fun_potential:     float = 0.0    # accumulated potential (triggers burst)
-    mode:              str   = "trickle"   # "trickle" | "burst" | "echo"
-    burst_step:        int   = 0      # step within current burst
-    next_burst_step:   int   = 20     # next scheduled burst (phi-spaced)
-    burst_count:       int   = 0      # total bursts fired
-    last_R:            float = 0.0    # last recovered energy
-    last_F:            float = 0.0    # last fun quotient
-    oversight_count:   int   = 0      # consecutive steps with F < OVERSIGHT_F_FLOOR
-    oversight_active:  bool  = False  # True when F-collapse triggered
-    tier:              str   = "ALLOW"  # current governance tier string
+    step: int = 0
+    fun_potential: float = 0.0  # accumulated potential (triggers burst)
+    mode: str = "trickle"  # "trickle" | "burst" | "echo"
+    burst_step: int = 0  # step within current burst
+    next_burst_step: int = 20  # next scheduled burst (phi-spaced)
+    burst_count: int = 0  # total bursts fired
+    last_R: float = 0.0  # last recovered energy
+    last_F: float = 0.0  # last fun quotient
+    oversight_count: int = 0  # consecutive steps with F < OVERSIGHT_F_FLOOR
+    oversight_active: bool = False  # True when F-collapse triggered
+    tier: str = "ALLOW"  # current governance tier string
 
 
 class KineticScheduler:
@@ -488,10 +490,10 @@ class KineticScheduler:
     """
 
     def __init__(self, constraints: SystemConstraints):
-        self.C     = constraints
+        self.C = constraints
         self.state = SchedulerState()
-        self._burst_interval = 20   # base interval (steps between bursts)
-        self._echo_steps     = 4    # steps in echo recovery mode
+        self._burst_interval = 20  # base interval (steps between bursts)
+        self._echo_steps = 4  # steps in echo recovery mode
 
     def current_power(self) -> float:
         """Return normalized power level for this step [0, P_budget]."""
@@ -501,8 +503,8 @@ class KineticScheduler:
         elif s.mode == "burst":
             # Gaussian envelope over burst_width steps
             t_center = self.C.burst_width / 2.0
-            t_rel    = s.burst_step - t_center
-            envelope = math.exp(-(t_rel / (self.C.burst_width / 3.0)) ** 2)
+            t_rel = s.burst_step - t_center
+            envelope = math.exp(-((t_rel / (self.C.burst_width / 3.0)) ** 2))
             return self.C.p_base + (self.C.p_burst - self.C.p_base) * envelope
         elif s.mode == "echo":
             return self.C.p_recover / self._echo_steps
@@ -518,8 +520,8 @@ class KineticScheduler:
         Returns updated state (mode, power, tier, oversight_active, etc.)
         """
         s = self.state
-        s.step   += 1
-        s.last_F  = fun_score
+        s.step += 1
+        s.last_F = fun_score
 
         # --- Oversight collapse check (any mode) ---
         if fun_score < OVERSIGHT_F_FLOOR:
@@ -531,24 +533,24 @@ class KineticScheduler:
 
         # --- Mode state machine ---
         if s.mode == "trickle":
-            potential_gain  = 0.05 * fun_score * (1.0 + value)
+            potential_gain = 0.05 * fun_score * (1.0 + value)
             s.fun_potential = min(1.0, s.fun_potential + potential_gain)
             if s.fun_potential >= self.C.burst_threshold:
-                s.mode       = "burst"
+                s.mode = "burst"
                 s.burst_step = 0
                 s.burst_count += 1
 
         elif s.mode == "burst":
             s.burst_step += 1
             if s.burst_step >= self.C.burst_width:
-                s.mode       = "echo"
+                s.mode = "echo"
                 s.burst_step = 0
 
         elif s.mode == "echo":
             s.burst_step += 1
             if s.burst_step >= self._echo_steps:
-                s.mode          = "trickle"
-                s.burst_step    = 0
+                s.mode = "trickle"
+                s.burst_step = 0
                 s.fun_potential = 0.0
                 if self.C.phi_burst_spacing:
                     self._burst_interval = int(self._burst_interval * PHI)
@@ -562,6 +564,7 @@ class KineticScheduler:
 # =============================================================================
 # FUN ENERGY QUOTIENT LOSS
 # =============================================================================
+
 
 class FunEnergyLoss(nn.Module):
     """
@@ -590,21 +593,21 @@ class FunEnergyLoss(nn.Module):
 
     def __init__(
         self,
-        hidden_dim:   int               = 384,
-        constraints:  SystemConstraints = None,
-        fun_weight:   float             = 0.15,
-        burst_freq:   float             = 0.25,   # phi-harmonic base frequency
-        exec_alpha:   float             = 0.4,    # blend weight for execution ground truth
+        hidden_dim: int = 384,
+        constraints: SystemConstraints = None,
+        fun_weight: float = 0.15,
+        burst_freq: float = 0.25,  # phi-harmonic base frequency
+        exec_alpha: float = 0.4,  # blend weight for execution ground truth
     ):
         super().__init__()
-        self.C          = constraints or SystemConstraints()
+        self.C = constraints or SystemConstraints()
         self.fun_weight = fun_weight
         self.burst_freq = burst_freq
-        self._exec_alpha = exec_alpha             # V_grounded = (1-α)*V_learned + α*v_signal
+        self._exec_alpha = exec_alpha  # V_grounded = (1-α)*V_learned + α*v_signal
 
         # Learnable head: hidden state → (value_score, phi_mass_factor)
         self.value_head = nn.Linear(hidden_dim, 1)
-        self.cost_head  = nn.Linear(hidden_dim, 1)
+        self.cost_head = nn.Linear(hidden_dim, 1)
 
         # Phi-weight vector (tongue governance costs)
         phi_weights = torch.tensor([1.00, 1.62, 2.62, 4.24, 6.85, 11.09])
@@ -612,8 +615,8 @@ class FunEnergyLoss(nn.Module):
 
         # Phase memory and echolation engine
         self.phase_memory = PhaseMemory(n_layers=self.C.n_layers)
-        self.echo_engine  = EcholationEngine(self.C, self.phase_memory)
-        self.scheduler    = KineticScheduler(self.C)
+        self.echo_engine = EcholationEngine(self.C, self.phase_memory)
+        self.scheduler = KineticScheduler(self.C)
 
         # Running baseline for governance improvement delta
         self._baseline_V: float = 0.5
@@ -633,7 +636,7 @@ class FunEnergyLoss(nn.Module):
         exec_alpha=0.4 → 40% execution ground truth, 60% learned (default)
         exec_alpha=1.0 → pure execution signal (no learned contribution)
         """
-        V = torch.sigmoid(self.value_head(h)).squeeze(-1)   # (B,)
+        V = torch.sigmoid(self.value_head(h)).squeeze(-1)  # (B,)
         if execution_signal is not None and self._exec_alpha > 0.0:
             exec_t = torch.full_like(V, float(execution_signal))
             V = (1.0 - self._exec_alpha) * V + self._exec_alpha * exec_t
@@ -647,7 +650,7 @@ class FunEnergyLoss(nn.Module):
         Capped at p_budget.
         """
         phi_factor = torch.sigmoid(self.cost_head(h)).squeeze(-1)  # (B,) in (0,1)
-        C = p_current * (0.5 + phi_factor)                          # (B,) in [0, p_budget]
+        C = p_current * (0.5 + phi_factor)  # (B,) in [0, p_budget]
         return C.clamp(max=self.C.p_budget)
 
     def _compute_R(self, p_current: float) -> float:
@@ -658,10 +661,10 @@ class FunEnergyLoss(nn.Module):
         Returns scalar R (mean recovered energy across layers).
         """
         # Pulse frequency: phi-scaled harmonic of base frequency
-        step   = self.scheduler.state.step
-        freq   = self.burst_freq * (PHI ** (step % self.C.n_layers / self.C.n_layers))
-        freq   = freq % 1.0   # keep normalized
-        phase  = (2.0 * math.pi * step / self.C.n_layers) % (2.0 * math.pi)
+        step = self.scheduler.state.step
+        freq = self.burst_freq * (PHI ** (step % self.C.n_layers / self.C.n_layers))
+        freq = freq % 1.0  # keep normalized
+        phase = (2.0 * math.pi * step / self.C.n_layers) % (2.0 * math.pi)
 
         _, R = self.echo_engine.fire_pulse(
             pulse_frequency=freq,
@@ -673,8 +676,8 @@ class FunEnergyLoss(nn.Module):
 
     def fun_quotient(
         self,
-        V: torch.Tensor,   # (B,)
-        C: torch.Tensor,   # (B,)
+        V: torch.Tensor,  # (B,)
+        C: torch.Tensor,  # (B,)
         R: float,
     ) -> torch.Tensor:
         """
@@ -698,10 +701,10 @@ class FunEnergyLoss(nn.Module):
 
     def forward(
         self,
-        hidden_states:    torch.Tensor,                # (B, S, D)
-        step:             int = 0,
-        execution_signal: Optional[float]  = None,    # v_signal from ExecutionFeedback (0..1)
-        atomic_profile:   Optional[object] = None,    # AtomicCodeProfile from ExecutionFeedback
+        hidden_states: torch.Tensor,  # (B, S, D)
+        step: int = 0,
+        execution_signal: Optional[float] = None,  # v_signal from ExecutionFeedback (0..1)
+        atomic_profile: Optional[object] = None,  # AtomicCodeProfile from ExecutionFeedback
     ) -> Tuple[torch.Tensor, dict]:
         """
         Compute fun energy loss and diagnostics.
@@ -728,14 +731,14 @@ class FunEnergyLoss(nn.Module):
         # Compute value (optionally anchored by execution ground truth), cost, echo recovery
         V = self._compute_V(h, execution_signal=execution_signal)  # (B,)
         C = self._compute_C(h, p_current)  # (B,)
-        R = self._compute_R(p_current)     # scalar
+        R = self._compute_R(p_current)  # scalar
 
         # Fun quotient
-        F  = self.fun_quotient(V, C, R)    # (B,)
-        mean_F     = F.mean()
+        F = self.fun_quotient(V, C, R)  # (B,)
+        mean_F = F.mean()
         fun_scalar = mean_F.item()
         val_scalar = V.mean().item()
-        net_cost   = (C.mean() - R).item()
+        net_cost = (C.mean() - R).item()
 
         # Base fun loss
         base_loss = self.fun_weight * (-torch.log(mean_F + 1e-8))
@@ -751,7 +754,7 @@ class FunEnergyLoss(nn.Module):
         # tau_quality is a pre-execution semantic quality signal: high DR/CA tokens
         # (formal structure, compute) push coherence up; high RU/negation push it down.
         base_coherence = self.phase_memory.mean_coherence()
-        tau_quality    = atomic_profile.tau_quality if atomic_profile is not None else None
+        tau_quality = atomic_profile.tau_quality if atomic_profile is not None else None
         if tau_quality is not None:
             # 70% phase memory coherence, 30% atomic semantic quality
             blended_coherence = 0.70 * base_coherence + 0.30 * tau_quality
@@ -759,18 +762,18 @@ class FunEnergyLoss(nn.Module):
             blended_coherence = base_coherence
 
         tier = composite_gate(
-            V              = val_scalar,
-            coherence      = blended_coherence,
-            net_cost       = net_cost,
-            mode_tier      = mode_tier,
-            oversight_active = state.oversight_active,
-            prev_tier      = prev_tier,
+            V=val_scalar,
+            coherence=blended_coherence,
+            net_cost=net_cost,
+            mode_tier=mode_tier,
+            oversight_active=state.oversight_active,
+            prev_tier=prev_tier,
         )
-        state.tier = tier.value   # persist on scheduler state
+        state.tier = tier.value  # persist on scheduler state
 
         # --- Tier-scaled loss ---
         scale = TIER_LOSS_SCALE[tier]
-        loss  = base_loss * scale
+        loss = base_loss * scale
 
         # QUARANTINE: add governance penalty (cost above budget penalized)
         if tier == GovernanceTier.QUARANTINE:
@@ -787,25 +790,25 @@ class FunEnergyLoss(nn.Module):
         self._baseline_V = 0.95 * self._baseline_V + 0.05 * val_scalar
 
         info = {
-            "fun/F":               fun_scalar,
-            "fun/V":               val_scalar,
-            "fun/C":               C.mean().item(),
-            "fun/R":               R,
-            "fun/net_cost":        net_cost,
-            "fun/p_current":       p_current,
-            "fun/mode":            state.mode,
-            "fun/tier":            tier.value,
-            "fun/tier_scale":      scale,
-            "fun/burst_count":     state.burst_count,
-            "fun/potential":       state.fun_potential,
-            "fun/mean_coherence":  base_coherence,
+            "fun/F": fun_scalar,
+            "fun/V": val_scalar,
+            "fun/C": C.mean().item(),
+            "fun/R": R,
+            "fun/net_cost": net_cost,
+            "fun/p_current": p_current,
+            "fun/mode": state.mode,
+            "fun/tier": tier.value,
+            "fun/tier_scale": scale,
+            "fun/burst_count": state.burst_count,
+            "fun/potential": state.fun_potential,
+            "fun/mean_coherence": base_coherence,
             "fun/blended_coherence": blended_coherence,
             "fun/oversight_count": state.oversight_count,
             "fun/oversight_active": state.oversight_active,
             # Execution feedback fields (None when not grounded)
-            "fun/exec_v_signal":   execution_signal,
-            "fun/exec_alpha":      self._exec_alpha if execution_signal is not None else None,
-            "fun/tau_quality":     tau_quality,
+            "fun/exec_v_signal": execution_signal,
+            "fun/exec_alpha": self._exec_alpha if execution_signal is not None else None,
+            "fun/tau_quality": tau_quality,
         }
 
         return loss, info
@@ -814,6 +817,7 @@ class FunEnergyLoss(nn.Module):
 # =============================================================================
 # BURST TRAINER MIXIN
 # =============================================================================
+
 
 class BurstTrainerMixin:
     """
@@ -848,8 +852,8 @@ class BurstTrainerMixin:
         self,
         model,
         inputs,
-        sonar_loss_fn,        # callable: (model, inputs) -> sonar_loss
-        gov_loss_fn=None,     # callable: (model, inputs) -> gov_loss (optional)
+        sonar_loss_fn,  # callable: (model, inputs) -> sonar_loss
+        gov_loss_fn=None,  # callable: (model, inputs) -> gov_loss (optional)
         return_outputs=False,
         rotation_alpha: float = 0.5,
     ) -> torch.Tensor:
@@ -861,7 +865,7 @@ class BurstTrainerMixin:
           ECHO:    fun only (no sonar, no gov — just update phase memory)
         """
         mode = self.burst_mode()
-        fun  = self._get_fun_module()
+        fun = self._get_fun_module()
 
         if mode == "trickle":
             # Cheap: sonar only, scaled down by P_base
@@ -871,15 +875,15 @@ class BurstTrainerMixin:
         elif mode == "burst":
             # Full power: rotating dual + fun quotient
             sonar_loss = sonar_loss_fn(model, inputs)
-            gov_loss   = gov_loss_fn(model, inputs) if gov_loss_fn else torch.zeros(1)
-            rotated    = rotation_alpha * sonar_loss + (1.0 - rotation_alpha) * gov_loss
+            gov_loss = gov_loss_fn(model, inputs) if gov_loss_fn else torch.zeros(1)
+            rotated = rotation_alpha * sonar_loss + (1.0 - rotation_alpha) * gov_loss
 
             if fun is not None:
                 # Need hidden states for fun — re-run forward if needed
                 outputs = model(**inputs, output_hidden_states=True)
-                hs      = outputs.hidden_states[-1]   # last layer
-                step    = getattr(self, "state", None)
-                step_n  = step.global_step if step else 0
+                hs = outputs.hidden_states[-1]  # last layer
+                step = getattr(self, "state", None)
+                step_n = step.global_step if step else 0
                 fun_loss, fun_info = fun(hs, step=step_n)
                 total = rotated + fun_loss
             else:
@@ -891,10 +895,10 @@ class BurstTrainerMixin:
             # Echo recovery: only advance phase memory, no gradient on sonar
             if fun is not None:
                 outputs = model(**inputs, output_hidden_states=True)
-                hs      = outputs.hidden_states[-1]
-                step_n  = getattr(getattr(self, "state", None), "global_step", 0)
+                hs = outputs.hidden_states[-1]
+                step_n = getattr(getattr(self, "state", None), "global_step", 0)
                 fun_loss, _ = fun(hs, step=step_n)
-                return fun_loss * P_RECOVER   # very small loss, mostly for memory update
+                return fun_loss * P_RECOVER  # very small loss, mostly for memory update
             return torch.zeros(1, requires_grad=True)
 
         # Fallback
@@ -905,17 +909,18 @@ class BurstTrainerMixin:
 # PULSE VISUALIZER — for demo / diagnostics
 # =============================================================================
 
+
 def visualize_pulse_pattern(
-    n_steps:     int = 100,
+    n_steps: int = 100,
     constraints: SystemConstraints = None,
 ) -> List[dict]:
     """
     Simulate the burst/trickle pattern for n_steps without a real model.
     Returns list of per-step dicts for plotting.
     """
-    C         = constraints or SystemConstraints()
-    pm        = PhaseMemory(n_layers=C.n_layers)
-    echo_eng  = EcholationEngine(C, pm)
+    C = constraints or SystemConstraints()
+    pm = PhaseMemory(n_layers=C.n_layers)
+    echo_eng = EcholationEngine(C, pm)
     scheduler = KineticScheduler(C)
 
     records = []
@@ -927,20 +932,21 @@ def visualize_pulse_pattern(
         p = scheduler.current_power()
 
         # Simulate a pulse at current power
-        freq  = 0.25 * (PHI ** (step % C.n_layers / C.n_layers)) % 1.0
+        freq = 0.25 * (PHI ** (step % C.n_layers / C.n_layers)) % 1.0
         phase = (2.0 * math.pi * step / C.n_layers) % (2.0 * math.pi)
-        _, R  = echo_eng.fire_pulse(freq, phase, p)
+        _, R = echo_eng.fire_pulse(freq, phase, p)
 
         # Synthetic V: random task value in [0.3, 0.9]
         import random
+
         V = 0.3 + 0.6 * random.random()
 
         # Net cost and fun quotient
         # Floor at 1% of P_base (same as FunEnergyLoss.fun_quotient)
-        C_cost   = p * 0.8
+        C_cost = p * 0.8
         eps_floor = max(1e-4, C.p_base * 0.01)
-        net      = max(C_cost - R, eps_floor)
-        F        = min(V / net, 20.0)   # cap at F_MAX
+        net = max(C_cost - R, eps_floor)
+        F = min(V / net, 20.0)  # cap at F_MAX
 
         state = scheduler.step(F, V)
 
@@ -956,21 +962,23 @@ def visualize_pulse_pattern(
         )
         prev_tier = tier
 
-        records.append({
-            "step":      step,
-            "mode":      state.mode,
-            "tier":      tier.value,
-            "power":     p,
-            "V":         round(V, 3),
-            "C":         round(C_cost, 4),
-            "R":         round(R, 4),
-            "net":       round(net, 4),
-            "F":         round(F, 3),
-            "mean_coh":  round(pm.mean_coherence(), 3),
-            "potential": round(state.fun_potential, 3),
-            "bursts":    state.burst_count,
-            "oversight": state.oversight_active,
-        })
+        records.append(
+            {
+                "step": step,
+                "mode": state.mode,
+                "tier": tier.value,
+                "power": p,
+                "V": round(V, 3),
+                "C": round(C_cost, 4),
+                "R": round(R, 4),
+                "net": round(net, 4),
+                "F": round(F, 3),
+                "mean_coh": round(pm.mean_coherence(), 3),
+                "potential": round(state.fun_potential, 3),
+                "bursts": state.burst_count,
+                "oversight": state.oversight_active,
+            }
+        )
 
     return records
 
@@ -997,8 +1005,10 @@ if __name__ == "__main__":
     print()
 
     # Show power profile
-    print(f"{'Step':>4}  {'Mode':<7}  {'Tier':<12}  {'Power':>6}  {'V':>5}  "
-          f"{'C':>6}  {'R':>6}  {'F':>6}  {'Coh':>5}  {'Pot':>5}")
+    print(
+        f"{'Step':>4}  {'Mode':<7}  {'Tier':<12}  {'Power':>6}  {'V':>5}  "
+        f"{'C':>6}  {'R':>6}  {'F':>6}  {'Coh':>5}  {'Pot':>5}"
+    )
     print("-" * 80)
 
     burst_steps = []
@@ -1013,9 +1023,11 @@ if __name__ == "__main__":
             flag = " ~echo~"
         if r.get("oversight"):
             flag = " [OVERSIGHT]"
-        print(f"{r['step']:>4}  {mode_str:<7}  {tier_str:<12}  {r['power']:>6.3f}  "
-              f"{r['V']:>5.3f}  {r['C']:>6.4f}  {r['R']:>6.4f}  {r['F']:>6.2f}  "
-              f"{r['mean_coh']:>5.3f}  {r['potential']:>5.3f}{flag}")
+        print(
+            f"{r['step']:>4}  {mode_str:<7}  {tier_str:<12}  {r['power']:>6.3f}  "
+            f"{r['V']:>5.3f}  {r['C']:>6.4f}  {r['R']:>6.4f}  {r['F']:>6.2f}  "
+            f"{r['mean_coh']:>5.3f}  {r['potential']:>5.3f}{flag}"
+        )
 
     print()
     print(f"Burst steps: {burst_steps}")
@@ -1025,8 +1037,8 @@ if __name__ == "__main__":
     # Budget accounting
     total_energy = sum(r["power"] for r in records)
     trickle_energy = sum(r["power"] for r in records if r["mode"] == "trickle")
-    burst_energy   = sum(r["power"] for r in records if r["mode"] == "burst")
-    echo_energy    = sum(r["power"] for r in records if r["mode"] == "echo")
+    burst_energy = sum(r["power"] for r in records if r["mode"] == "burst")
+    echo_energy = sum(r["power"] for r in records if r["mode"] == "echo")
     print()
     print("Energy budget breakdown:")
     print(f"  Trickle:  {trickle_energy:.3f}  ({100*trickle_energy/total_energy:.1f}%)")
@@ -1054,5 +1066,7 @@ if __name__ == "__main__":
         fake_h = torch.randn(B, S, D)
         _, inf = fun_module(fake_h, step=i + 1)
         tiers.append(inf["fun/tier"])
-        print(f"  step {i + 1}: mode={inf['fun/mode']:<7}  tier={inf['fun/tier']:<12}  "
-              f"F={inf['fun/F']:.3f}  scale={inf['fun/tier_scale']:.2f}")
+        print(
+            f"  step {i + 1}: mode={inf['fun/mode']:<7}  tier={inf['fun/tier']:<12}  "
+            f"F={inf['fun/F']:.3f}  scale={inf['fun/tier_scale']:.2f}"
+        )

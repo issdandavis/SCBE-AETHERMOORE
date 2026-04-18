@@ -114,9 +114,12 @@ def test_suspicious_agent_not_allowed(pipe):
         signature=0.9,
         t=10.0,
     )
-    assert risk.decision in ("QUARANTINE", "ESCALATE", "DENY", "REVIEW"), (
-        f"Suspicious agent should not ALLOW, got {risk.decision}"
-    )
+    assert risk.decision in (
+        "QUARANTINE",
+        "ESCALATE",
+        "DENY",
+        "REVIEW",
+    ), f"Suspicious agent should not ALLOW, got {risk.decision}"
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +210,9 @@ def test_high_coherence_increases_kappa(pipe):
         pipe, identity=0.3, intent=0.3 + 0.0j, trajectory=0.3, timing=0.3, commitment=0.3, signature=0.3
     )
     # Decoherent: mixed phases
-    _, layer_mixed = _run(pipe, identity=0.9, intent=0.1 + 0.9j, trajectory=0.5, timing=0.8, commitment=0.2, signature=0.7)
+    _, layer_mixed = _run(
+        pipe, identity=0.9, intent=0.1 + 0.9j, trajectory=0.5, timing=0.8, commitment=0.2, signature=0.7
+    )
 
     kappa_coherent = layer_coherent[12].metrics["kappa_t"]
     kappa_mixed = layer_mixed[12].metrics["kappa_t"]
@@ -231,9 +236,9 @@ def test_47d_spin_differs_from_6d():
     naive_6d = float(np.abs(np.mean(np.exp(1j * phases))))
 
     # They should differ because 47D applies φ^(l+m+n) weights dominated by Draumric
-    assert abs(result_47d.c_spin - naive_6d) > 1e-6, (
-        f"47D C_spin ({result_47d.c_spin:.6f}) should differ from naive 6D ({naive_6d:.6f})"
-    )
+    assert (
+        abs(result_47d.c_spin - naive_6d) > 1e-6
+    ), f"47D C_spin ({result_47d.c_spin:.6f}) should differ from naive 6D ({naive_6d:.6f})"
 
 
 def test_47d_weight_ordering():
@@ -254,11 +259,11 @@ def test_47d_weight_ordering():
     # Highest triple {3,4,5} weight >> lowest triple {0,1,2} weight
     # triples start at index 6 (real) + 15 (pairs) = 21
     # {0,1,2} is first triple (index 21), {3,4,5} is last triple (index 40)
-    w_triple_low = w2[21]   # {0,1,2}: φ^3 * tanh(...)
+    w_triple_low = w2[21]  # {0,1,2}: φ^3 * tanh(...)
     w_triple_high = w2[40]  # {3,4,5}: φ^12 * tanh(...)
-    assert w_triple_high > w_triple_low * 10, (
-        f"Triple(3,4,5) weight {w_triple_high:.2f} should dominate Triple(0,1,2) {w_triple_low:.2f}"
-    )
+    assert (
+        w_triple_high > w_triple_low * 10
+    ), f"Triple(3,4,5) weight {w_triple_high:.2f} should dominate Triple(0,1,2) {w_triple_low:.2f}"
 
 
 # ---------------------------------------------------------------------------
@@ -270,7 +275,12 @@ def test_pd_wired_into_l12(pipe):
     """pd must be non-zero (breathing shifts the norm) and appear in L12 metrics."""
     risk, layer = _run(
         pipe,
-        identity=0.5, intent=0.4 + 0.3j, trajectory=0.4, timing=0.5, commitment=0.7, signature=0.5,
+        identity=0.5,
+        intent=0.4 + 0.3j,
+        trajectory=0.4,
+        timing=0.5,
+        commitment=0.7,
+        signature=0.5,
         t=5.0,  # mid-cycle breathing — guaranteed non-zero pd
     )
     pd = layer[12].metrics["pd"]
@@ -309,8 +319,7 @@ def test_deterministic_for_same_input(pipe):
 def test_near_zero_intent_handled(pipe):
     """Very small intent magnitude should not cause division by zero or NaN."""
     risk, layer = _run(
-        pipe,
-        identity=0.01, intent=0.001 + 0.001j, trajectory=0.01, timing=0.5, commitment=0.5, signature=0.01
+        pipe, identity=0.01, intent=0.001 + 0.001j, trajectory=0.01, timing=0.5, commitment=0.5, signature=0.01
     )
     S_cc = float(layer[12].metrics["S_cc"])
     H_d = float(layer[12].metrics["H_d"])
@@ -329,8 +338,15 @@ def test_near_boundary_input_handled(pipe):
     """Large input magnitudes that push toward the Poincaré ball boundary must not crash."""
     risk, layer = _run(
         pipe,
-        identity=0.99, intent=0.99 + 0.99j, trajectory=0.99, timing=0.99, commitment=0.99, signature=0.99,
-        t=100.0, tau=50.0, eta=0.1,
+        identity=0.99,
+        intent=0.99 + 0.99j,
+        trajectory=0.99,
+        timing=0.99,
+        commitment=0.99,
+        signature=0.99,
+        t=100.0,
+        tau=50.0,
+        eta=0.1,
     )
     S_cc = float(layer[12].metrics["S_cc"])
     d_H = float(layer[12].metrics["d_H"])
@@ -370,9 +386,9 @@ def test_s_cc_decreases_with_distance():
     # Evaluate at d_eq, 2×d_eq, 5×d_eq, 10×d_eq
     vals = [s_cc(d_eq * k) for k in [1.0, 2.0, 5.0, 10.0]]
     for i in range(len(vals) - 1):
-        assert vals[i] > vals[i + 1], (
-            f"S_cc not monotone decreasing above d_eq: s({i})={vals[i]:.6f} vs s({i+1})={vals[i+1]:.6f}"
-        )
+        assert (
+            vals[i] > vals[i + 1]
+        ), f"S_cc not monotone decreasing above d_eq: s({i})={vals[i]:.6f} vs s({i+1})={vals[i+1]:.6f}"
 
 
 # ---------------------------------------------------------------------------

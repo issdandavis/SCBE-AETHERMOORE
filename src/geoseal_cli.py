@@ -81,9 +81,9 @@ TONGUE_PHI_WEIGHTS: Dict[str, float] = {
 }
 
 # phi-wall tier thresholds (phi^0.5, phi^1.0, phi^1.5)
-_TIER_ALLOW = PHI**0.5       # 1.272
+_TIER_ALLOW = PHI**0.5  # 1.272
 _TIER_QUARANTINE = PHI**1.0  # 1.618
-_TIER_ESCALATE = PHI**1.5    # 2.058
+_TIER_ESCALATE = PHI**1.5  # 2.058
 
 
 def phi_wall_cost(chi: float, tongue: str, R: float = 5.0) -> float:
@@ -779,7 +779,7 @@ def cmd_arc(args: argparse.Namespace) -> int:
 
     # GeoSeal stamp — use UM tongue (Julia/math) for ARC since it is symbolic reasoning
     tongue = "UM"
-    chi = 0.15   # ARC synthesis is structured, low-risk
+    chi = 0.15  # ARC synthesis is structured, low-risk
     phi_cost = phi_wall_cost(chi, tongue)
     tier = phi_wall_tier(phi_cost)
     seal_payload = f"{task.task_id}:{solution.family}"
@@ -820,6 +820,7 @@ def cmd_arc(args: argparse.Namespace) -> int:
     if args.onnx:
         try:
             from src.neurogolf.onnx_emit import export_program_onnx
+
             onnx_path = Path(args.onnx_out or f"{task.task_id}.onnx")
             export_program_onnx(solution.program, onnx_path)
             print(f"onnx={onnx_path}")
@@ -987,10 +988,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_seal.add_argument("payload")
     p_seal.add_argument("--op", default=None)
     p_seal.add_argument("--tongue", default="KO")
-    p_seal.add_argument("--phi-cost", type=float, default=0.0, dest="phi_cost",
-                        help="phi-wall cost to bind into seal (use agent-reported value to re-verify)")
-    p_seal.add_argument("--tier", default="ALLOW",
-                        help="Governance tier to bind into seal (ALLOW/QUARANTINE/ESCALATE/DENY)")
+    p_seal.add_argument(
+        "--phi-cost",
+        type=float,
+        default=0.0,
+        dest="phi_cost",
+        help="phi-wall cost to bind into seal (use agent-reported value to re-verify)",
+    )
+    p_seal.add_argument(
+        "--tier", default="ALLOW", help="Governance tier to bind into seal (ALLOW/QUARANTINE/ESCALATE/DENY)"
+    )
     p_seal.set_defaults(func=cmd_seal)
 
     p_verify = sub.add_parser("verify", help="Verify a GeoSeal signature")
@@ -998,18 +1005,24 @@ def build_parser() -> argparse.ArgumentParser:
     p_verify.add_argument("payload")
     p_verify.add_argument("--op", default=None)
     p_verify.add_argument("--tongue", default="KO")
-    p_verify.add_argument("--phi-cost", type=float, default=0.0, dest="phi_cost",
-                          help="phi-wall cost embedded in the seal (must match what was used when sealing)")
-    p_verify.add_argument("--tier", default="ALLOW",
-                          help="Governance tier embedded in the seal (must match)")
+    p_verify.add_argument(
+        "--phi-cost",
+        type=float,
+        default=0.0,
+        dest="phi_cost",
+        help="phi-wall cost embedded in the seal (must match what was used when sealing)",
+    )
+    p_verify.add_argument("--tier", default="ALLOW", help="Governance tier embedded in the seal (must match)")
     p_verify.set_defaults(func=cmd_verify)
 
     p_agent = sub.add_parser("agent", help="Route a coding task via Polly + GeoSeal")
     p_agent.add_argument("task", help="Natural language coding task")
     p_agent.add_argument("--tongue", default=None, help="Force tongue (KO/AV/RU/CA/UM/DR)")
     p_agent.add_argument(
-        "--provider", default=None, choices=["local", "hf", "claude"],
-        help="Force inference provider (default: local->hf->claude)"
+        "--provider",
+        default=None,
+        choices=["local", "hf", "claude"],
+        help="Force inference provider (default: local->hf->claude)",
     )
     p_agent.add_argument("--max-tokens", type=int, default=1024, dest="max_tokens")
     p_agent.add_argument("--no-ledger", action="store_true", help="Skip SFT log")

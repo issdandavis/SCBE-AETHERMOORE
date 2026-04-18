@@ -175,12 +175,7 @@ def _execute_sym_complete_180_frames(grid_np: np.ndarray) -> np.ndarray:
         for r, c in frame:
             for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
                 nr, nc = r + dr, c + dc
-                if (
-                    r_min <= nr <= r_max
-                    and c_min <= nc <= c_max
-                    and (nr, nc) not in frame
-                    and grid_np[nr, nc] != 8
-                ):
+                if r_min <= nr <= r_max and c_min <= nc <= c_max and (nr, nc) not in frame and grid_np[nr, nc] != 8:
                     if (nr, nc) not in interior:
                         seeds.append((nr, nc))
                         interior.add((nr, nc))
@@ -634,12 +629,7 @@ def _anchor_fill_find_clusters(grid_list: list[list[int]], val: int) -> list[fro
                     seen.add((cr, cc))
                     for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                         nr, nc = cr + dr, cc + dc
-                        if (
-                            0 <= nr < rows
-                            and 0 <= nc < cols
-                            and grid_list[nr][nc] == val
-                            and (nr, nc) not in cl
-                        ):
+                        if 0 <= nr < rows and 0 <= nc < cols and grid_list[nr][nc] == val and (nr, nc) not in cl:
                             q.append((nr, nc))
                 clusters.append(frozenset(cl))
     return clusters
@@ -652,9 +642,7 @@ def _anchor_fill_normalize(cells: frozenset[tuple[int, int]]) -> frozenset[tuple
     return frozenset((r - mr, c - mc) for r, c in lst)
 
 
-def _anchor_fill_apply_tr(
-    cells: list[tuple[int, int]], flip: bool, rot: int
-) -> list[tuple[int, int]]:
+def _anchor_fill_apply_tr(cells: list[tuple[int, int]], flip: bool, rot: int) -> list[tuple[int, int]]:
     cur = [(r, -c) for r, c in cells] if flip else list(cells)
     if rot == 0:
         return cur
@@ -684,9 +672,7 @@ def _execute_anchor_fill_brute(grid_np: np.ndarray) -> np.ndarray:
     grid_list = grid_np.tolist()
     rows, cols = len(grid_list), len(grid_list[0])
 
-    four_all = frozenset(
-        (r, c) for r in range(rows) for c in range(cols) if grid_list[r][c] == 4
-    )
+    four_all = frozenset((r, c) for r in range(rows) for c in range(cols) if grid_list[r][c] == 4)
     six_clusters = _anchor_fill_find_clusters(grid_list, 6)
     multi_6s = [cl for cl in six_clusters if len(cl) > 1]
 
@@ -696,11 +682,7 @@ def _execute_anchor_fill_brute(grid_np: np.ndarray) -> np.ndarray:
     anchor: frozenset[tuple[int, int]] | None = None
     all_adjacent: list[frozenset[tuple[int, int]]] = []
     for mc in multi_6s:
-        adj = frozenset(
-            (r + dr, c + dc)
-            for r, c in mc
-            for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]
-        )
+        adj = frozenset((r + dr, c + dc) for r, c in mc for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)])
         if adj & four_all:
             all_adjacent.append(mc)
             if anchor is None:
@@ -737,31 +719,21 @@ def _execute_anchor_fill_brute(grid_np: np.ndarray) -> np.ndarray:
                     ap = frozenset((tl_r + dr, tl_c + dc) for dr, dc in new_anch)
                     fp = frozenset((tl_r + dr, tl_c + dc) for dr, dc in new_4)
 
-                    if not all(
-                        0 <= r < rows and 0 <= c < cols and grid_list[r][c] == 6
-                        for r, c in ap
-                    ):
+                    if not all(0 <= r < rows and 0 <= c < cols and grid_list[r][c] == 6 for r, c in ap):
                         continue
 
                     if any(ap == adj for adj in all_adjacent):
                         continue
 
-                    fig = frozenset(
-                        (r, c) for r, c in fp if 0 <= r < rows and 0 <= c < cols
-                    )
+                    fig = frozenset((r, c) for r, c in fp if 0 <= r < rows and 0 <= c < cols)
                     if not all(grid_list[r][c] not in (4, 6) for r, c in fig):
                         continue
 
                     if not fig:
                         continue
 
-                    miss_g = frozenset(
-                        (tl_r + dr, tl_c + dc) for dr, dc in missing_norm
-                    )
-                    if not all(
-                        0 <= r < rows and 0 <= c < cols and grid_list[r][c] == 6
-                        for r, c in miss_g
-                    ):
+                    miss_g = frozenset((tl_r + dr, tl_c + dc) for dr, dc in missing_norm)
+                    if not all(0 <= r < rows and 0 <= c < cols and grid_list[r][c] == 6 for r, c in miss_g):
                         continue
 
                     for r, c in fig:
@@ -1098,9 +1070,7 @@ def _execute_tile_mirror_2x2_v2(grid_np: np.ndarray) -> np.ndarray:
     tr = np.flipud(grid_np)
     bl = np.fliplr(grid_np)
     br = grid_np
-    return np.concatenate(
-        [np.concatenate([tl, tr], axis=1), np.concatenate([bl, br], axis=1)], axis=0
-    )
+    return np.concatenate([np.concatenate([tl, tr], axis=1), np.concatenate([bl, br], axis=1)], axis=0)
 
 
 def _execute_tile_rotate_ccw_2x2(grid_np: np.ndarray) -> np.ndarray:
@@ -1109,9 +1079,7 @@ def _execute_tile_rotate_ccw_2x2(grid_np: np.ndarray) -> np.ndarray:
     tr = np.rot90(grid_np, 1)
     bl = np.rot90(grid_np, 2)
     br = np.rot90(grid_np, 3)
-    return np.concatenate(
-        [np.concatenate([tl, tr], axis=1), np.concatenate([bl, br], axis=1)], axis=0
-    )
+    return np.concatenate([np.concatenate([tl, tr], axis=1), np.concatenate([bl, br], axis=1)], axis=0)
 
 
 def _execute_invert_tile_2x2(grid_np: np.ndarray) -> np.ndarray:
@@ -1507,12 +1475,10 @@ def execute_program(grid: np.ndarray, program: StraightLineProgram) -> np.ndarra
             tr = np.fliplr(out)
             bl = np.flipud(out)
             br = np.flipud(np.fliplr(out))
-            out = np.concatenate(
-                [np.concatenate([tl, tr], axis=1), np.concatenate([bl, br], axis=1)], axis=0
-            )
+            out = np.concatenate([np.concatenate([tl, tr], axis=1), np.concatenate([bl, br], axis=1)], axis=0)
             continue
         if step.op in ("gravity_up", "gravity_down", "gravity_left", "gravity_right"):
-            direction = step.op[len("gravity_"):]
+            direction = step.op[len("gravity_") :]
             h, w = out.shape
             result = np.zeros_like(out)
             if direction == "up":
@@ -1659,9 +1625,7 @@ def execute_program(grid: np.ndarray, program: StraightLineProgram) -> np.ndarra
             tr = np.fliplr(out.T)  # rot90 CW
             bl = np.flipud(out.T)  # rot90 CCW
             br = np.flipud(np.fliplr(out))  # rot180
-            out = np.concatenate(
-                [np.concatenate([tl, tr], axis=1), np.concatenate([bl, br], axis=1)], axis=0
-            )
+            out = np.concatenate([np.concatenate([tl, tr], axis=1), np.concatenate([bl, br], axis=1)], axis=0)
             continue
         if step.op == "fill_enclosed":
             fill_color = int(step.args["fill_color"])
@@ -1891,11 +1855,7 @@ def _infer_trichromatic_component_color_mapping(
     ranked_src = sorted(src_components, key=lambda c: (-c.area, c.label))
     for src_component in ranked_src:
         key = (src_component.area, src_component.bbox)
-        candidates = [
-            component
-            for component in dst_by_shape.get(key, [])
-            if component.label not in used_dst_labels
-        ]
+        candidates = [component for component in dst_by_shape.get(key, []) if component.label not in used_dst_labels]
         if len(candidates) != 1:
             continue
 
@@ -1969,8 +1929,7 @@ def _infer_color_remap_corridor(task: ARCTask) -> ColorRemapCorridor | None:
     if exact_mapping is None:
         return None
     if not all(
-        np.array_equal(_apply_color_remap(example.input, exact_mapping), example.output)
-        for example in task.train
+        np.array_equal(_apply_color_remap(example.input, exact_mapping), example.output) for example in task.train
     ):
         return None
     return corridor
@@ -2028,16 +1987,11 @@ def _infer_shift_then_color_remap(task: ARCTask) -> tuple[int, int, dict[int, in
         return None
     first = task.train[0]
     for shift_x, shift_y in _candidate_shifts(first):
-        shifted_pairs = [
-            (apply_shift(example.input, shift_x, shift_y), example.output)
-            for example in task.train
-        ]
+        shifted_pairs = [(apply_shift(example.input, shift_x, shift_y), example.output) for example in task.train]
         mapping = _merge_mappings(_infer_color_mapping(src, dst) for src, dst in shifted_pairs)
         if mapping is None:
             continue
-        if all(
-            np.array_equal(_apply_color_remap(src, mapping), dst) for src, dst in shifted_pairs
-        ):
+        if all(np.array_equal(_apply_color_remap(src, mapping), dst) for src, dst in shifted_pairs):
             return shift_x, shift_y, mapping
     return None
 
@@ -2247,9 +2201,7 @@ def _infer_orientation_then_color_remap(task: ARCTask) -> tuple[str, dict[int, i
             mapping = _merge_mappings(_infer_color_mapping(src, dst) for src, dst in oriented_pairs)
             if mapping is None:
                 continue
-            if all(
-                np.array_equal(_apply_color_remap(src, mapping), dst) for src, dst in oriented_pairs
-            ):
+            if all(np.array_equal(_apply_color_remap(src, mapping), dst) for src, dst in oriented_pairs):
                 return name, mapping
     # Shape-changing rotations
     for name, fn in _rotation_candidates().items():
@@ -2259,9 +2211,7 @@ def _infer_orientation_then_color_remap(task: ARCTask) -> tuple[str, dict[int, i
         mapping = _merge_mappings(_infer_color_mapping(src, dst) for src, dst in oriented_pairs)
         if mapping is None:
             continue
-        if all(
-            np.array_equal(_apply_color_remap(src, mapping), dst) for src, dst in oriented_pairs
-        ):
+        if all(np.array_equal(_apply_color_remap(src, mapping), dst) for src, dst in oriented_pairs):
             return name, mapping
     return None
 
@@ -2476,10 +2426,7 @@ def _infer_gravity(task: ARCTask) -> str | None:
     if not _all_same_shape(task.train):
         return None
     for direction in ("up", "down", "left", "right"):
-        if all(
-            np.array_equal(_apply_gravity(example.input, direction), example.output)
-            for example in task.train
-        ):
+        if all(np.array_equal(_apply_gravity(example.input, direction), example.output) for example in task.train):
             return direction
     return None
 
@@ -2489,10 +2436,7 @@ def _infer_sym_complete(task: ARCTask) -> str | None:
     if not _all_same_shape(task.train):
         return None
     for axis, flip_fn in (("x", np.fliplr), ("y", np.flipud)):
-        if all(
-            np.array_equal(np.where(ex.input != 0, ex.input, flip_fn(ex.input)), ex.output)
-            for ex in task.train
-        ):
+        if all(np.array_equal(np.where(ex.input != 0, ex.input, flip_fn(ex.input)), ex.output) for ex in task.train):
             return axis
     return None
 
@@ -2645,11 +2589,7 @@ def _apply_panel_consensus_tile(grid: np.ndarray) -> np.ndarray | None:
     if panel_h <= 1 or panel_w <= 1:
         return None
 
-    panels = [
-        grid[r0 : r1 + 1, c0 : c1 + 1]
-        for r0, r1 in row_groups
-        for c0, c1 in col_groups
-    ]
+    panels = [grid[r0 : r1 + 1, c0 : c1 + 1] for r0, r1 in row_groups for c0, c1 in col_groups]
     if not panels:
         return None
     if any(panel.shape != (panel_h, panel_w) for panel in panels):
@@ -2812,12 +2752,14 @@ def _infer_paint_border(task: ARCTask) -> int | None:
         if not np.array_equal(inp[1:-1, 1:-1], out[1:-1, 1:-1]):
             return None
         # All border cells in output must share the same color
-        border_out = np.concatenate([
-            out[0, :].ravel(),
-            out[-1, :].ravel(),
-            out[1:-1, 0].ravel(),
-            out[1:-1, -1].ravel(),
-        ])
+        border_out = np.concatenate(
+            [
+                out[0, :].ravel(),
+                out[-1, :].ravel(),
+                out[1:-1, 0].ravel(),
+                out[1:-1, -1].ravel(),
+            ]
+        )
         colors = np.unique(border_out)
         if len(colors) != 1:
             return None
@@ -2827,12 +2769,14 @@ def _infer_paint_border(task: ARCTask) -> int | None:
         elif border_color != bc:
             return None
         # Guard: at least one border cell must have changed (rule out identity)
-        border_inp = np.concatenate([
-            inp[0, :].ravel(),
-            inp[-1, :].ravel(),
-            inp[1:-1, 0].ravel(),
-            inp[1:-1, -1].ravel(),
-        ])
+        border_inp = np.concatenate(
+            [
+                inp[0, :].ravel(),
+                inp[-1, :].ravel(),
+                inp[1:-1, 0].ravel(),
+                inp[1:-1, -1].ravel(),
+            ]
+        )
         if np.array_equal(border_inp, border_out):
             return None
     return border_color
@@ -2982,12 +2926,11 @@ def _infer_select_single_color_crop_orient(task: ARCTask) -> SynthesizedSolution
                 steps=(
                     IRStep(op="select", args={"mode": "single_color", "color": color}),
                     IRStep(op="crop", args={}),
-                ) + orient_steps,
+                )
+                + orient_steps,
             )
             if _program_matches_train(task, program):
-                return SynthesizedSolution(
-                    program=program, family="select_single_color_crop_orient"
-                )
+                return SynthesizedSolution(program=program, family="select_single_color_crop_orient")
     return None
 
 
@@ -3046,9 +2989,7 @@ def _solve_family(
 
     if family == "tile_self_complement":
         if _infer_tile_self_complement(task):
-            return SynthesizedSolution(
-                program=make_tile_self_complement_program(), family="tile_self_complement"
-            )
+            return SynthesizedSolution(program=make_tile_self_complement_program(), family="tile_self_complement")
         return None
 
     if family == "tile_mirror_2x2":
@@ -3201,9 +3142,7 @@ def _solve_family(
             upscale_cc = _infer_upscale_color_count(task)
             cache["upscale_color_count"] = upscale_cc
         if upscale_cc:
-            return SynthesizedSolution(
-                program=make_upscale_color_count_program(), family="upscale_color_count"
-            )
+            return SynthesizedSolution(program=make_upscale_color_count_program(), family="upscale_color_count")
         return None
 
     if family == "crop_bbox":
@@ -3221,9 +3160,7 @@ def _solve_family(
             orient_name = _infer_crop_then_orient(task)
             cache["crop_then_orient"] = orient_name
         if orient_name is not None and f"crop_then_{orient_name}" == family:
-            return SynthesizedSolution(
-                program=make_crop_then_orient_program(orient_name), family=family
-            )
+            return SynthesizedSolution(program=make_crop_then_orient_program(orient_name), family=family)
         return None
 
     if family in {"gravity_up", "gravity_down", "gravity_left", "gravity_right"}:
@@ -3353,9 +3290,7 @@ def _solve_family(
             cache["extract_panel"] = ep
         if ep is not None:
             rp, cp, ri, ci = ep
-            return SynthesizedSolution(
-                program=make_extract_panel_program(rp, cp, ri, ci), family="extract_panel"
-            )
+            return SynthesizedSolution(program=make_extract_panel_program(rp, cp, ri, ci), family="extract_panel")
         return None
 
     if family == "extract_half_longer":
@@ -3364,9 +3299,7 @@ def _solve_family(
             ehl = _infer_extract_half_longer(task)
             cache["extract_half_longer"] = ehl
         if ehl:
-            return SynthesizedSolution(
-                program=make_extract_half_longer_program(), family="extract_half_longer"
-            )
+            return SynthesizedSolution(program=make_extract_half_longer_program(), family="extract_half_longer")
         return None
 
     if family == "select_single_color_crop":
@@ -3639,7 +3572,7 @@ def _solve_bespoke_downscale_max(task: ARCTask) -> SynthesizedSolution | None:
     target_shapes = set(ex.output.shape for ex in task.train)
     if len(target_shapes) != 1:
         return None
-    (target_h, target_w) = target_shapes.pop()
+    target_h, target_w = target_shapes.pop()
     for ex in task.train:
         ih, iw = ex.input.shape
         if ih <= target_h or iw <= target_w:
@@ -3721,7 +3654,7 @@ def _solve_bespoke_downscale_majority(task: ARCTask) -> SynthesizedSolution | No
     target_shapes = set(ex.output.shape for ex in task.train)
     if len(target_shapes) != 1:
         return None
-    (target_h, target_w) = target_shapes.pop()
+    target_h, target_w = target_shapes.pop()
     for ex in task.train:
         ih, iw = ex.input.shape
         if ih <= target_h or iw <= target_w:
@@ -3741,8 +3674,8 @@ def _solve_bespoke_border_repeat_edge(task: ARCTask) -> SynthesizedSolution | No
         oh, ow = ex.output.shape
         if oh <= ih or ow <= iw:
             return None
-        pad_h = (oh - ih)
-        pad_w = (ow - iw)
+        pad_h = oh - ih
+        pad_w = ow - iw
         if pad_h % 2 != 0 or pad_w % 2 != 0:
             return None
         if pad_h != pad_w:
@@ -3821,7 +3754,7 @@ def _solve_bespoke_downscale_all_nonzero(task: ARCTask) -> SynthesizedSolution |
     target_shapes = set(ex.output.shape for ex in task.train)
     if len(target_shapes) != 1:
         return None
-    (target_h, target_w) = target_shapes.pop()
+    target_h, target_w = target_shapes.pop()
     for ex in task.train:
         ih, iw = ex.input.shape
         if ih <= target_h or iw <= target_w:
@@ -4128,6 +4061,4 @@ def synthesize_program(task: ARCTask) -> SynthesizedSolution:
         if solution is not None:
             return solution
 
-    raise ValueError(
-        f"Could not synthesize a restricted straight-line program for task '{task.task_id}'"
-    )
+    raise ValueError(f"Could not synthesize a restricted straight-line program for task '{task.task_id}'")

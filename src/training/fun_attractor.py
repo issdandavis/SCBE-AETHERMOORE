@@ -50,7 +50,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 PHI_WEIGHTS = torch.tensor([1.00, 1.62, 2.62, 4.24, 6.85, 11.09])
 TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 
@@ -59,6 +58,7 @@ TONGUE_NAMES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 # BUILD ATTRACTOR SET: cross-tongue interstitial points (outside pure axes)
 # Only pairs/triples that include KO (0) or AV (1) — governance-safe blends
 # =============================================================================
+
 
 def _build_fun_attractors() -> torch.Tensor:
     """
@@ -78,7 +78,7 @@ def _build_fun_attractors() -> torch.Tensor:
 
     # Pairs containing KO (idx 0) or AV (idx 1) — 9 pairs
     for i, j in combinations(range(n), 2):
-        if i == 0 or i == 1:   # must include KO or AV
+        if i == 0 or i == 1:  # must include KO or AV
             c = torch.zeros(n)
             c[i] = 0.5
             c[j] = 0.5
@@ -86,14 +86,14 @@ def _build_fun_attractors() -> torch.Tensor:
 
     # Triples containing KO (idx 0) — 10 triples
     for i, j, k in combinations(range(n), 3):
-        if i == 0:   # must include KO
+        if i == 0:  # must include KO
             c = torch.zeros(n)
-            c[i] = 1/3
-            c[j] = 1/3
-            c[k] = 1/3
+            c[i] = 1 / 3
+            c[j] = 1 / 3
+            c[k] = 1 / 3
             centers.append(c)
 
-    return torch.stack(centers)   # (N, 6)
+    return torch.stack(centers)  # (N, 6)
 
 
 # Pre-computed attractor centers: (N, 6)
@@ -103,6 +103,7 @@ FUN_ATTRACTORS = _build_fun_attractors()
 # =============================================================================
 # FUN ATTRACTOR LOSS
 # =============================================================================
+
 
 class FunAttractorLoss(nn.Module):
     """
@@ -153,13 +154,13 @@ class FunAttractorLoss(nn.Module):
           fun_score = max_a(score_a)
         """
         # Expand for broadcasting: (B, 1, 6) vs (1, N, 6)
-        p = profile.unsqueeze(1)                   # (B, 1, 6)
-        a = self.attractors.unsqueeze(0)           # (1, N, 6)
-        diff = p - a                               # (B, N, 6)
-        dist_sq = (diff ** 2).sum(dim=-1)          # (B, N)
+        p = profile.unsqueeze(1)  # (B, 1, 6)
+        a = self.attractors.unsqueeze(0)  # (1, N, 6)
+        diff = p - a  # (B, N, 6)
+        dist_sq = (diff**2).sum(dim=-1)  # (B, N)
 
         # Gaussian kernel per attractor
-        k = torch.exp(-dist_sq / (2 * self.sigma ** 2))  # (B, N)
+        k = torch.exp(-dist_sq / (2 * self.sigma**2))  # (B, N)
 
         # Max across attractors (closest well wins)
         score, _ = k.max(dim=-1)  # (B,)
@@ -191,6 +192,7 @@ class FunAttractorLoss(nn.Module):
 # =============================================================================
 # TRIPLE-ANCHOR DUAL LOSS (sonar + governance + fun)
 # =============================================================================
+
 
 def triple_loss(
     sonar_loss: torch.Tensor,
@@ -254,8 +256,8 @@ if __name__ == "__main__":
         ("KO+AV blend (fun zone)", [0.5, 0.5, 0.0, 0.0, 0.0, 0.0]),
         ("KO+RU blend (fun zone)", [0.5, 0.0, 0.5, 0.0, 0.0, 0.0]),
         ("DR-dominant (adversarial)", [0.01, 0.01, 0.01, 0.01, 0.01, 0.95]),
-        ("Uniform", [1/6] * 6),
-        ("KO+AV+RU triple", [1/3, 1/3, 1/3, 0.0, 0.0, 0.0]),
+        ("Uniform", [1 / 6] * 6),
+        ("KO+AV+RU triple", [1 / 3, 1 / 3, 1 / 3, 0.0, 0.0, 0.0]),
     ]
 
     print("Fun score at test profiles (sigma=0.15):")

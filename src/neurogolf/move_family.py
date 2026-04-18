@@ -26,7 +26,6 @@ import numpy as np
 from .arc_io import ARCTask
 from .ir import IRStep, StraightLineProgram
 
-
 # ---------------------------------------------------------------------------
 # Move dataclass
 # ---------------------------------------------------------------------------
@@ -293,13 +292,15 @@ _register(
 _register(
     Move(
         name="upscale_color_count",
-        forward=lambda g: np.repeat(
-            np.repeat(g, max(1, len(set(int(v) for v in np.unique(g)) - {0})), axis=0),
-            max(1, len(set(int(v) for v in np.unique(g)) - {0})),
-            axis=1,
-        )
-        if len(set(int(v) for v in np.unique(g)) - {0}) >= 2
-        else g,
+        forward=lambda g: (
+            np.repeat(
+                np.repeat(g, max(1, len(set(int(v) for v in np.unique(g)) - {0})), axis=0),
+                max(1, len(set(int(v) for v in np.unique(g)) - {0})),
+                axis=1,
+            )
+            if len(set(int(v) for v in np.unique(g)) - {0}) >= 2
+            else g
+        ),
         inverse_name=None,
         cost=0.5,
         topology_vector=(1.0, 0.3, 0.5, 0.6, 0.7, 0.2),
@@ -500,9 +501,22 @@ _register(
         cost=0.5,
         topology_vector=(0.0, 0.0, 1.0, 0.7, 0.3, 0.0),
         ternary=(0, 0, 1, 1, 0, 0),
-        compose_with=("crop", "flip_x", "flip_y", "transpose", "rotate_cw", "rotate_ccw",
-                      "rotate_180", "gravity_up", "gravity_down", "gravity_left", "gravity_right",
-                      "paste_center", "paste_tile", "paste_stamp"),
+        compose_with=(
+            "crop",
+            "flip_x",
+            "flip_y",
+            "transpose",
+            "rotate_cw",
+            "rotate_ccw",
+            "rotate_180",
+            "gravity_up",
+            "gravity_down",
+            "gravity_left",
+            "gravity_right",
+            "paste_center",
+            "paste_tile",
+            "paste_stamp",
+        ),
         ir_steps=(IRStep(op="select", args={"mode": "dominant_color"}),),
     )
 )
@@ -515,9 +529,22 @@ _register(
         cost=0.6,
         topology_vector=(0.5, 0.0, 0.5, 0.9, 0.4, 0.0),
         ternary=(1, 0, 1, 1, 0, 0),
-        compose_with=("crop", "flip_x", "flip_y", "transpose", "rotate_cw", "rotate_ccw",
-                      "rotate_180", "gravity_up", "gravity_down", "gravity_left", "gravity_right",
-                      "paste_center", "paste_tile", "paste_stamp"),
+        compose_with=(
+            "crop",
+            "flip_x",
+            "flip_y",
+            "transpose",
+            "rotate_cw",
+            "rotate_ccw",
+            "rotate_180",
+            "gravity_up",
+            "gravity_down",
+            "gravity_left",
+            "gravity_right",
+            "paste_center",
+            "paste_tile",
+            "paste_stamp",
+        ),
         ir_steps=(IRStep(op="select", args={"mode": "largest_cc"}),),
     )
 )
@@ -530,9 +557,22 @@ _register(
         cost=0.5,
         topology_vector=(0.0, 0.0, 1.0, 0.6, 0.2, 0.0),
         ternary=(0, 0, 1, 1, 0, 0),
-        compose_with=("crop", "flip_x", "flip_y", "transpose", "rotate_cw", "rotate_ccw",
-                      "rotate_180", "gravity_up", "gravity_down", "gravity_left", "gravity_right",
-                      "paste_center", "paste_tile", "paste_stamp"),
+        compose_with=(
+            "crop",
+            "flip_x",
+            "flip_y",
+            "transpose",
+            "rotate_cw",
+            "rotate_ccw",
+            "rotate_180",
+            "gravity_up",
+            "gravity_down",
+            "gravity_left",
+            "gravity_right",
+            "paste_center",
+            "paste_tile",
+            "paste_stamp",
+        ),
         ir_steps=(IRStep(op="select", args={"mode": "minority_color"}),),
     )
 )
@@ -583,12 +623,7 @@ def _foreground_objects(grid: Grid) -> tuple[np.ndarray, list[tuple[int, tuple[i
                 rr, cc = stack.pop()
                 coords.append((rr, cc))
                 for nr, nc in ((rr - 1, cc), (rr + 1, cc), (rr, cc - 1), (rr, cc + 1)):
-                    if (
-                        0 <= nr < h
-                        and 0 <= nc < w
-                        and int(grid[nr, nc]) != 0
-                        and labels[nr, nc] == 0
-                    ):
+                    if 0 <= nr < h and 0 <= nc < w and int(grid[nr, nc]) != 0 and labels[nr, nc] == 0:
                         labels[nr, nc] = next_label
                         stack.append((nr, nc))
             rows = [r for r, _ in coords]
@@ -633,9 +668,22 @@ _register(
         cost=0.6,
         topology_vector=(0.5, 0.0, 0.5, 0.9, 0.4, 0.0),
         ternary=(1, 0, 1, 1, 0, 0),
-        compose_with=("crop", "flip_x", "flip_y", "transpose", "rotate_cw", "rotate_ccw",
-                      "rotate_180", "gravity_up", "gravity_down", "gravity_left", "gravity_right",
-                      "paste_center", "paste_tile", "paste_stamp"),
+        compose_with=(
+            "crop",
+            "flip_x",
+            "flip_y",
+            "transpose",
+            "rotate_cw",
+            "rotate_ccw",
+            "rotate_180",
+            "gravity_up",
+            "gravity_down",
+            "gravity_left",
+            "gravity_right",
+            "paste_center",
+            "paste_tile",
+            "paste_stamp",
+        ),
         ir_steps=(IRStep(op="select", args={"mode": "smallest_cc"}),),
     )
 )
@@ -648,9 +696,22 @@ _register(
         cost=0.5,
         topology_vector=(0.0, 0.0, 1.0, 0.6, 0.3, 0.0),
         ternary=(0, 0, 1, 1, 0, 0),
-        compose_with=("crop", "flip_x", "flip_y", "transpose", "rotate_cw", "rotate_ccw",
-                      "rotate_180", "gravity_up", "gravity_down", "gravity_left", "gravity_right",
-                      "paste_center", "paste_tile", "paste_stamp"),
+        compose_with=(
+            "crop",
+            "flip_x",
+            "flip_y",
+            "transpose",
+            "rotate_cw",
+            "rotate_ccw",
+            "rotate_180",
+            "gravity_up",
+            "gravity_down",
+            "gravity_left",
+            "gravity_right",
+            "paste_center",
+            "paste_tile",
+            "paste_stamp",
+        ),
         ir_steps=(IRStep(op="select", args={"mode": "second_color"}),),
     )
 )
@@ -663,8 +724,7 @@ _register(
         cost=0.7,
         topology_vector=(0.7, 0.0, 0.2, 1.0, 0.5, 0.0),
         ternary=(1, 0, 0, 1, 0, 0),
-        compose_with=("crop", "flip_x", "flip_y", "transpose", "rotate_cw", "rotate_ccw",
-                      "rotate_180"),
+        compose_with=("crop", "flip_x", "flip_y", "transpose", "rotate_cw", "rotate_ccw", "rotate_180"),
         ir_steps=(IRStep(op="select", args={"mode": "unique_object"}),),
     )
 )
@@ -848,10 +908,7 @@ def prefilter_moves(
     forced_move_names: tuple[str, ...] = (),
 ) -> list[Move]:
     """Return top-k moves ranked by cosine similarity to the task topology vector."""
-    scored = [
-        (move, _cosine(task_topology_vec, move.as_topology()) / move.cost)
-        for move in MOVE_REGISTRY.values()
-    ]
+    scored = [(move, _cosine(task_topology_vec, move.as_topology()) / move.cost) for move in MOVE_REGISTRY.values()]
     scored.sort(key=lambda x: -x[1])
     selected = [move for move, _ in scored[:top_k]]
     seen = {move.name for move in selected}

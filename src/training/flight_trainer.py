@@ -40,6 +40,7 @@ try:
         layer_12_harmonic_scaling,
         layer_13_risk_decision,
     )
+
     _PIPELINE_AVAILABLE = True
 except ImportError:
     _PIPELINE_AVAILABLE = False
@@ -55,6 +56,7 @@ EPS = 1e-10
 # =============================================================================
 # HARMONIC WALL (stable, gradient-safe)
 # =============================================================================
+
 
 def harmonic_wall(d_H: float, pd: float = 0.0) -> float:
     """
@@ -84,6 +86,7 @@ def damping_factor(H: float) -> float:
 # =============================================================================
 # COUPLING OPERATOR A
 # =============================================================================
+
 
 def coupling_operator(
     x_flight: np.ndarray,
@@ -154,24 +157,26 @@ def coupling_operator(
 # ENVIRONMENT STATE
 # =============================================================================
 
+
 @dataclass
 class FlightState:
     """
     Full state for one timestep.
     Maps SCBE 14-layer pipeline onto flight dynamics.
     """
+
     # Physical state (L1-L2: complex context → real)
     pos: np.ndarray = field(default_factory=lambda: np.zeros(3))
     vel: np.ndarray = field(default_factory=lambda: np.zeros(3))
 
     # Governance state (L3-L11: geometry + coherence + temporal)
     z_gov: np.ndarray = field(default_factory=lambda: np.zeros(6))
-    d_H: float = 0.0      # L5: hyperbolic distance
-    pd: float = 0.0       # L7: phase deviation
+    d_H: float = 0.0  # L5: hyperbolic distance
+    pd: float = 0.0  # L7: phase deviation
     entropy: float = 1.0  # L9-10: spectral entropy
 
     # Decision state (L12-L13: harmonic wall + risk)
-    H: float = 1.0        # current harmonic score
+    H: float = 1.0  # current harmonic score
     decision: str = "ALLOW"
 
     # Telemetry (L14: audio axis)
@@ -182,10 +187,11 @@ class FlightState:
 @dataclass
 class FlightEnvConfig:
     """Environment configuration."""
-    dim: int = 3               # state space dimensions
-    dt: float = 0.05           # timestep (seconds)
-    max_steps: int = 200       # episode length
-    safe_radius: float = 2.0   # safe region radius in hyperbolic space
+
+    dim: int = 3  # state space dimensions
+    dt: float = 0.05  # timestep (seconds)
+    max_steps: int = 200  # episode length
+    safe_radius: float = 2.0  # safe region radius in hyperbolic space
     goal: np.ndarray = field(default_factory=lambda: np.array([5.0, 0.0, 0.0]))
     obstacle_pos: np.ndarray = field(default_factory=lambda: np.array([2.5, 0.5, 0.0]))
     obstacle_radius: float = 0.8
@@ -237,9 +243,7 @@ class FlightEnv:
         cos_alpha = np.clip(cos_alpha, -1.0, 1.0)
         return math.acos(cos_alpha)
 
-    def step(
-        self, action: np.ndarray
-    ) -> Tuple[FlightState, float, bool, Dict]:
+    def step(self, action: np.ndarray) -> Tuple[FlightState, float, bool, Dict]:
         """
         Apply coupling operator A, evolve state, compute reward.
 
@@ -301,8 +305,8 @@ class FlightEnv:
         # Reward: approach goal + stay safe + penalize governance cost
         d_goal = np.linalg.norm(pos_new - self.config.goal)
         reward = (
-            -d_goal * 0.1                     # task: get closer to goal
-            - (1.0 - H) * 2.0                 # governance: penalize low H (danger)
+            -d_goal * 0.1  # task: get closer to goal
+            - (1.0 - H) * 2.0  # governance: penalize low H (danger)
             - np.linalg.norm(x_actual) * 0.01  # efficiency: penalize large commands
         )
 
@@ -328,9 +332,11 @@ class FlightEnv:
 # TRAINING LOOP
 # =============================================================================
 
+
 @dataclass
 class TrainingMetrics:
     """Per-step training metrics."""
+
     step: int
     episode: int
     loss: float
@@ -358,8 +364,8 @@ class FlightTrainer:
         self,
         policy,  # callable: state -> action (numpy array)
         env_config: Optional[FlightEnvConfig] = None,
-        lambda_gov: float = 2.0,    # governance loss weight
-        mu_instab: float = 0.01,    # instability loss weight
+        lambda_gov: float = 2.0,  # governance loss weight
+        mu_instab: float = 0.01,  # instability loss weight
         checkpoint_dir: str = "training/runs/flight",
     ):
         self.policy = policy
@@ -392,9 +398,7 @@ class FlightTrainer:
         governance_loss = sum((1.0 - H) ** 2 for H in H_values) / len(H_values)
 
         # Instability: penalize large control commands
-        instability_loss = sum(
-            float(np.linalg.norm(a)) for a in actions
-        ) / len(actions)
+        instability_loss = sum(float(np.linalg.norm(a)) for a in actions) / len(actions)
 
         total = task_loss + self.lambda_gov * governance_loss + self.mu_instab * instability_loss
         return total, task_loss, governance_loss, instability_loss
@@ -409,12 +413,14 @@ class FlightTrainer:
 
         while True:
             # Policy produces raw flight command
-            obs = np.concatenate([
-                state.pos,
-                state.vel,
-                state.z_gov,
-                [state.d_H, state.H],
-            ])
+            obs = np.concatenate(
+                [
+                    state.pos,
+                    state.vel,
+                    state.z_gov,
+                    [state.d_H, state.H],
+                ]
+            )
             action = self.policy(obs)
             actions.append(action)
 
@@ -456,9 +462,7 @@ class FlightTrainer:
 
             total_reward, H_values, actions, decision_counts = self.run_episode()
 
-            loss, task_loss, gov_loss, instab_loss = self.compute_loss(
-                total_reward, H_values, actions
-            )
+            loss, task_loss, gov_loss, instab_loss = self.compute_loss(total_reward, H_values, actions)
 
             metrics = TrainingMetrics(
                 step=self._global_step,
@@ -468,9 +472,7 @@ class FlightTrainer:
                 governance_loss=round(gov_loss, 4),
                 instability_loss=round(instab_loss, 4),
                 mean_H=round(float(np.mean(H_values)), 4),
-                mean_d_H=round(float(np.mean([
-                    self.env._compute_d_H(self.env.state.pos)
-                ])), 4),
+                mean_d_H=round(float(np.mean([self.env._compute_d_H(self.env.state.pos)])), 4),
                 mean_reward=round(total_reward, 4),
                 decision_counts=decision_counts,
             )
@@ -579,6 +581,7 @@ class FlightTrainer:
 # =============================================================================
 # DEMO: RANDOM POLICY (replace with trained model)
 # =============================================================================
+
 
 def random_policy(obs: np.ndarray) -> np.ndarray:
     """

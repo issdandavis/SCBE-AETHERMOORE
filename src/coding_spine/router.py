@@ -46,11 +46,11 @@ PHI = (1 + 5**0.5) / 2
 
 # Phi-scaled weights per tongue (same as LWS)
 TONGUE_PHI_WEIGHTS: Dict[str, float] = {
-    "KO": 1.000,   # Kor'aelin  — Python
-    "AV": 1.618,   # Avali      — TypeScript
-    "RU": 2.618,   # Runethic   — Rust
-    "CA": 4.236,   # Cassisivadan — C / symbolic
-    "UM": 6.854,   # Umbroth      — Julia
+    "KO": 1.000,  # Kor'aelin  — Python
+    "AV": 1.618,  # Avali      — TypeScript
+    "RU": 2.618,  # Runethic   — Rust
+    "CA": 4.236,  # Cassisivadan — C / symbolic
+    "UM": 6.854,  # Umbroth      — Julia
     "DR": 11.090,  # Draumric     — Haskell
 }
 
@@ -85,13 +85,13 @@ _LANGUAGE_KEYWORDS: Dict[str, list[str]] = {
 
 @dataclass
 class RouteResult:
-    tongue: str                        # e.g. "RU"
-    language: str                      # e.g. "Rust"
-    full_name: str                     # e.g. "Runethic"
-    phi_weight: float                  # e.g. 2.618
-    confidence: float                  # 0.0 – 1.0
-    trit_scores: Dict[str, float]      # raw aggregated scores per tongue
-    override_keyword: Optional[str]    # set if a keyword forced the choice
+    tongue: str  # e.g. "RU"
+    language: str  # e.g. "Rust"
+    full_name: str  # e.g. "Runethic"
+    phi_weight: float  # e.g. 2.618
+    confidence: float  # 0.0 – 1.0
+    trit_scores: Dict[str, float]  # raw aggregated scores per tongue
+    override_keyword: Optional[str]  # set if a keyword forced the choice
     token_states: list[AtomicTokenState]  # atomic state for each token
 
 

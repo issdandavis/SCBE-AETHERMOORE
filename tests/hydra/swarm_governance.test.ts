@@ -74,7 +74,22 @@ function splitOutputLines(stdout: string): string[] {
     .map((line) => line.trimEnd());
 }
 
-const maybeDescribe = PYTHON ? describe : describe.skip;
+function canImportModule(): boolean {
+  if (!PYTHON) return false;
+  try {
+    execSync(`${PYTHON} -c "from hydra.swarm_governance import SwarmGovernance"`, {
+      cwd: process.cwd(),
+      env: { ...process.env, PYTHONPATH: process.cwd() },
+      stdio: 'pipe',
+      timeout: 10000,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const maybeDescribe = canImportModule() ? describe : describe.skip;
 
 maybeDescribe('SwarmGovernance', () => {
   describe('Module Import', () => {

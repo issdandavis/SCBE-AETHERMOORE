@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-
 ALLOWED_PRIMITIVES = frozenset(
     {
         "color_remap",
@@ -131,9 +130,7 @@ def make_shift_program(shift_x: int, shift_y: int) -> StraightLineProgram:
     )
 
 
-def make_shift_color_remap_program(
-    shift_x: int, shift_y: int, mapping: dict[int, int]
-) -> StraightLineProgram:
+def make_shift_color_remap_program(shift_x: int, shift_y: int, mapping: dict[int, int]) -> StraightLineProgram:
     return StraightLineProgram(
         name="shift_then_color_remap",
         steps=(
@@ -167,9 +164,7 @@ def make_copy_color_program(color: int, shift_x: int, shift_y: int) -> StraightL
     )
 
 
-def make_multi_shift_color_program(
-    color_shifts: list[tuple[int, int, int]]
-) -> StraightLineProgram:
+def make_multi_shift_color_program(color_shifts: list[tuple[int, int, int]]) -> StraightLineProgram:
     return StraightLineProgram(
         name="multi_shift_color",
         steps=tuple(
@@ -387,9 +382,7 @@ def make_rotation_color_remap_program(rotation: str, mapping: dict[int, int]) ->
     )
 
 
-def make_orientation_color_remap_program(
-    orientation: str, mapping: dict[int, int]
-) -> StraightLineProgram:
+def make_orientation_color_remap_program(orientation: str, mapping: dict[int, int]) -> StraightLineProgram:
     if orientation not in {"flip_x", "flip_y", "transpose"}:
         raise ValueError(f"Unsupported orientation primitive '{orientation}'")
     return StraightLineProgram(
@@ -433,9 +426,7 @@ def make_v_concat_flip_program() -> StraightLineProgram:
     )
 
 
-def make_extract_panel_program(
-    r_panels: int, c_panels: int, r_idx: int, c_idx: int
-) -> StraightLineProgram:
+def make_extract_panel_program(r_panels: int, c_panels: int, r_idx: int, c_idx: int) -> StraightLineProgram:
     """Extract one panel from a regular panel-grid layout."""
     return StraightLineProgram(
         name="extract_panel",

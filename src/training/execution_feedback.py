@@ -82,12 +82,12 @@ _NEUTRAL_TAU: Dict[str, float] = {t: 0.333 for t in TONGUES}
 # for code. DR (formal/structural), CA (compute/algo), KO (control/dispatch)
 # are positive; UM (security/adversarial) and RU (entropy/chaos) are neutral.
 _TAU_QUALITY_WEIGHTS: Dict[str, float] = {
-    "KO": 0.20,   # control flow, dispatch — structural positive
-    "AV": 0.10,   # transport, relay — mild positive
+    "KO": 0.20,  # control flow, dispatch — structural positive
+    "AV": 0.10,  # transport, relay — mild positive
     "RU": -0.05,  # entropy, chaos — slight negative (more negation-like)
-    "CA": 0.25,   # compute, algorithm — strong positive
-    "UM": 0.05,   # security/governance — neutral to mild positive
-    "DR": 0.30,   # formal structure, proof — strongest positive
+    "CA": 0.25,  # compute, algorithm — strong positive
+    "UM": 0.05,  # security/governance — neutral to mild positive
+    "DR": 0.30,  # formal structure, proof — strongest positive
 }
 
 
@@ -117,13 +117,13 @@ class AtomicCodeProfile:
 
     def to_dict(self) -> dict:
         return {
-            "atomic/tau_quality":    round(self.tau_quality, 4),
-            "atomic/action_ratio":   round(self.action_ratio, 4),
+            "atomic/tau_quality": round(self.tau_quality, 4),
+            "atomic/action_ratio": round(self.action_ratio, 4),
             "atomic/negation_ratio": round(self.negation_ratio, 4),
             "atomic/relation_ratio": round(self.relation_ratio, 4),
-            "atomic/trust_mean":     round(self.trust_mean, 4),
+            "atomic/trust_mean": round(self.trust_mean, 4),
             "atomic/resilience_mean": round(self.resilience_mean, 4),
-            "atomic/n_tokens":       self.n_tokens,
+            "atomic/n_tokens": self.n_tokens,
             **{f"atomic/tau_{t.lower()}": round(self.tau_mean.get(t, 0.0), 4) for t in TONGUES},
         }
 
@@ -171,6 +171,7 @@ def _extract_code_tokens(code: str) -> List[str]:
 # Atomic profile computation
 # ---------------------------------------------------------------------------
 
+
 def compute_atomic_profile(code: str, context_class: str = "operator") -> AtomicCodeProfile:
     """
     Run the atomic tokenizer over code tokens and aggregate into an AtomicCodeProfile.
@@ -186,10 +187,7 @@ def compute_atomic_profile(code: str, context_class: str = "operator") -> Atomic
         return AtomicCodeProfile()
 
     # Get full AtomicTokenState per token (not just tau)
-    states = [
-        map_token_to_atomic_state(tok, context_class=context_class)
-        for tok in tokens
-    ]
+    states = [map_token_to_atomic_state(tok, context_class=context_class) for tok in tokens]
 
     n = len(states)
 
@@ -206,10 +204,10 @@ def compute_atomic_profile(code: str, context_class: str = "operator") -> Atomic
     # raw_quality is in approximately [-0.65, 0.85] — normalize to (0, 1)
     tau_quality = float(max(0.0, min(1.0, (raw_quality + 0.65) / 1.50)))
 
-    action_ratio   = sum(1 for s in states if s.semantic_class == "ACTION") / n
+    action_ratio = sum(1 for s in states if s.semantic_class == "ACTION") / n
     negation_ratio = sum(1 for s in states if s.semantic_class == "NEGATION") / n
     relation_ratio = sum(1 for s in states if s.semantic_class == "RELATION") / n
-    trust_mean     = sum(s.trust_baseline for s in states) / n
+    trust_mean = sum(s.trust_baseline for s in states) / n
     resilience_mean = sum(s.resilience for s in states) / n
 
     return AtomicCodeProfile(
@@ -229,10 +227,20 @@ def compute_atomic_profile(code: str, context_class: str = "operator") -> Atomic
 # ---------------------------------------------------------------------------
 
 # Blocked import prefixes — prevent code from touching network/OS
-_BLOCKED_IMPORTS = frozenset([
-    "socket", "urllib", "requests", "http", "ftplib", "smtplib",
-    "subprocess", "os.system", "shutil.rmtree", "ctypes",
-])
+_BLOCKED_IMPORTS = frozenset(
+    [
+        "socket",
+        "urllib",
+        "requests",
+        "http",
+        "ftplib",
+        "smtplib",
+        "subprocess",
+        "os.system",
+        "shutil.rmtree",
+        "ctypes",
+    ]
+)
 
 _BLOCKED_PATTERN = re.compile(
     r"\b(import\s+(" + "|".join(re.escape(b) for b in _BLOCKED_IMPORTS) + r"))",
@@ -339,11 +347,11 @@ def run_code_sandbox(
         # Failed — partial credit if assertion error (code ran but test failed)
         # vs syntax error (code couldn't even parse)
         if "AssertionError" in stderr:
-            v_signal = 0.25   # partial — code ran but assertions failed
+            v_signal = 0.25  # partial — code ran but assertions failed
         elif "SyntaxError" in stderr:
-            v_signal = 0.05   # very low — didn't even parse
+            v_signal = 0.05  # very low — didn't even parse
         else:
-            v_signal = 0.10   # generic runtime error
+            v_signal = 0.10  # generic runtime error
         passed = False
 
     return ExecutionResult(
@@ -396,7 +404,7 @@ class ExecutionFeedback:
         exec_alpha: float = 0.4,
         python_exe: Optional[str] = None,
     ):
-        self.timeout_s  = timeout_s
+        self.timeout_s = timeout_s
         self.exec_alpha = exec_alpha
         self.python_exe = python_exe or sys.executable
 
@@ -452,8 +460,8 @@ class ExecutionFeedback:
 
     def stats(self) -> dict:
         return {
-            "exec/total_runs":    self._total_runs,
-            "exec/pass_rate":     round(self.pass_rate, 4),
-            "exec/mean_v":        round(self.mean_v, 4),
+            "exec/total_runs": self._total_runs,
+            "exec/pass_rate": round(self.pass_rate, 4),
+            "exec/mean_v": round(self.mean_v, 4),
             "exec/timeout_count": self._timeout_count,
         }

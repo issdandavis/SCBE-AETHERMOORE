@@ -118,11 +118,7 @@ def get_rwp_pqc_governance_status() -> Dict[str, Any]:
 
     return {
         "tier": 1 if OQS_AVAILABLE else 3,
-        "proof": (
-            "native_quantum_resistant"
-            if OQS_AVAILABLE
-            else "deterministic_classical_fallback"
-        ),
+        "proof": ("native_quantum_resistant" if OQS_AVAILABLE else "deterministic_classical_fallback"),
         "backend": "liboqs" if OQS_AVAILABLE else "stub (SHA-256/HMAC simulation)",
         "quantum_resistant": OQS_AVAILABLE,
         "liboqs_available": OQS_AVAILABLE,
@@ -132,6 +128,7 @@ def get_rwp_pqc_governance_status() -> Dict[str, Any]:
         "sig_algorithm": _SIG_ALG,
         "hash_sig_algorithm": _HASH_SIG_ALG,
     }
+
 
 # ============================================================
 # RFC 9106 ARGON2ID PARAMETERS (Production-grade)

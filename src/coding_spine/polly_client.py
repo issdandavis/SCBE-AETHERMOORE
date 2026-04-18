@@ -33,8 +33,7 @@ _HF_MODEL_ID = "issdandavis/polly-r8-merged-qwen-1.5b"
 _CLAUDE_MODEL = "claude-sonnet-4-6"
 
 # System prompt template — filled with tongue/language at call time
-_SYSTEM_TEMPLATE = textwrap.dedent(
-    """\
+_SYSTEM_TEMPLATE = textwrap.dedent("""\
     You are Polly, an expert {language} code generation assistant.
     You operate under the SCBE governance framework using the {tongue_name} Sacred Tongue.
 
@@ -44,8 +43,7 @@ _SYSTEM_TEMPLATE = textwrap.dedent(
     - Write idiomatic, production-quality {language}.
     - Include only necessary imports/use declarations.
     - Never add placeholder comments like "# TODO" unless they were in the task.
-    """
-)
+    """)
 
 # Strip markdown code fences from model output
 _FENCE_RE = re.compile(r"```[a-zA-Z0-9_+-]*\n?(.*?)```", re.DOTALL)
@@ -53,10 +51,10 @@ _FENCE_RE = re.compile(r"```[a-zA-Z0-9_+-]*\n?(.*?)```", re.DOTALL)
 
 @dataclass
 class GenerateResult:
-    code: str                          # Extracted code (fences stripped)
-    raw: str                           # Full model output
-    provider: str                      # "local", "hf", "claude"
-    model: str                         # Model ID / path used
+    code: str  # Extracted code (fences stripped)
+    raw: str  # Full model output
+    provider: str  # "local", "hf", "claude"
+    model: str  # Model ID / path used
     language: str
     tongue: str
     prompt_tokens: int = 0
@@ -81,6 +79,7 @@ def _build_system(language: str, tongue: str, tongue_name: str) -> str:
 # Provider 1 — Local Polly via transformers
 # ---------------------------------------------------------------------------
 
+
 def _generate_local(
     task: str,
     system: str,
@@ -97,9 +96,7 @@ def _generate_local(
         {"role": "system", "content": system},
         {"role": "user", "content": task},
     ]
-    prompt_str = tok.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+    prompt_str = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     prompt_ids = tok(prompt_str, return_tensors="pt").input_ids
     prompt_len = prompt_ids.shape[-1]
 
@@ -109,14 +106,14 @@ def _generate_local(
         tokenizer=tok,
         device_map="auto",
         max_new_tokens=max_new_tokens,
-        do_sample=False,            # deterministic
+        do_sample=False,  # deterministic
         temperature=None,
         top_p=None,
     )
     out = pipe(prompt_str)[0]["generated_text"]
     # Strip the prompt prefix
     if out.startswith(prompt_str):
-        out = out[len(prompt_str):]
+        out = out[len(prompt_str) :]
     completion_len = len(tok(out).input_ids)
     return out.strip(), prompt_len, completion_len
 
@@ -124,6 +121,7 @@ def _generate_local(
 # ---------------------------------------------------------------------------
 # Provider 2 — HF Inference API
 # ---------------------------------------------------------------------------
+
 
 def _generate_hf(
     task: str,
@@ -165,7 +163,7 @@ def _generate_hf(
     raw = resp if isinstance(resp, str) else str(resp)
     # Strip prompt echo if present
     if raw.startswith(prompt_str):
-        raw = raw[len(prompt_str):]
+        raw = raw[len(prompt_str) :]
     # Strip stop token
     if "<|im_end|>" in raw:
         raw = raw[: raw.index("<|im_end|>")]
@@ -175,6 +173,7 @@ def _generate_hf(
 # ---------------------------------------------------------------------------
 # Provider 3 — Claude API fallback
 # ---------------------------------------------------------------------------
+
 
 def _generate_claude(
     task: str,
@@ -201,6 +200,7 @@ def _generate_claude(
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def generate(
     task: str,
     *,
@@ -220,10 +220,7 @@ def generate(
     errors: list[str] = []
 
     providers = (
-        [force_provider] if force_provider
-        else (
-            ["local"] if _LOCAL_MODEL_PATH.exists() else []
-        ) + ["hf", "claude"]
+        [force_provider] if force_provider else (["local"] if _LOCAL_MODEL_PATH.exists() else []) + ["hf", "claude"]
     )
 
     for provider in providers:

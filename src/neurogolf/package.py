@@ -8,10 +8,7 @@ def _uses_external_data(src: Path) -> bool:
     import onnx
 
     model = onnx.load(str(src), load_external_data=False)
-    return any(
-        any(field.key == "location" for field in tensor.external_data)
-        for tensor in model.graph.initializer
-    )
+    return any(any(field.key == "location" for field in tensor.external_data) for tensor in model.graph.initializer)
 
 
 def canonical_task_filename(task_id: str) -> str:

@@ -19,7 +19,6 @@ from src.ca_lexicon import lookup
 
 from .router import RouteResult, route_task
 
-
 _OP_PATTERNS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("add", (" add ", "sum", "plus", "combine")),
     ("sub", ("subtract", "minus", "difference")),
@@ -108,4 +107,3 @@ def infer_semantic_ir(task: str, *, force_tongue: Optional[str] = None) -> Seman
 
 def equivalent_ir(left: SemanticIR, right: SemanticIR) -> bool:
     return left.signature == right.signature
-

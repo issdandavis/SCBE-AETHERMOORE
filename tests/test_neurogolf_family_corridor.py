@@ -99,9 +99,7 @@ def test_color_remap_corridor_can_use_trichromatic_fallback(tmp_path, monkeypatc
     task_path.write_text(
         json.dumps(
             {
-                "train": [
-                    {"input": [[1, 1, 0, 2], [1, 1, 0, 2]], "output": [[3, 3, 0, 4], [3, 3, 0, 4]]}
-                ],
+                "train": [{"input": [[1, 1, 0, 2], [1, 1, 0, 2]], "output": [[3, 3, 0, 4], [3, 3, 0, 4]]}],
                 "test": [{"input": [[1, 0, 2]]}],
             }
         ),
@@ -159,6 +157,7 @@ def test_upscale_corridor_pure_upscale(tmp_path):
 
 def test_upscale_corridor_with_color_remap(tmp_path):
     """Upscale + consistent recolor → corridor carries the remap."""
+
     def remap(grid, mapping):
         return [[mapping.get(v, v) for v in row] for row in grid]
 
@@ -181,6 +180,7 @@ def test_upscale_corridor_with_color_remap(tmp_path):
 
 def test_upscale_corridor_conflict_returns_none(tmp_path):
     """Inconsistent recolor across examples → None."""
+
     def remap(grid, mapping):
         return [[mapping.get(v, v) for v in row] for row in grid]
 

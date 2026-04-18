@@ -46,13 +46,14 @@ TONGUE_LABELS = ["KO", "AV", "RU", "CA", "UM", "DR"]
 BALL_DIM = 6
 
 # Default visibility and query thresholds
-DEFAULT_EPSILON_SEE = 1.5      # d_H distance at which band becomes "visible"
-DEFAULT_EPSILON_QUERY = 0.8    # d_H distance at which query fires
+DEFAULT_EPSILON_SEE = 1.5  # d_H distance at which band becomes "visible"
+DEFAULT_EPSILON_QUERY = 0.8  # d_H distance at which query fires
 
 
 # ---------------------------------------------------------------------------
 # Poincaré Ball Metric (canonical, matches Layer 5)
 # ---------------------------------------------------------------------------
+
 
 def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-12) -> float:
     """
@@ -67,7 +68,7 @@ def hyperbolic_distance(u: np.ndarray, v: np.ndarray, eps: float = 1e-12) -> flo
     denom = (1.0 - uu) * (1.0 - vv)
     denom = max(denom, eps)
     arg = 1.0 + 2.0 * uv_sq / denom
-    arg = max(arg, 1.0 + eps)           # arccosh domain guard
+    arg = max(arg, 1.0 + eps)  # arccosh domain guard
     return math.acosh(arg)
 
 
@@ -82,6 +83,7 @@ def poincare_project(x: np.ndarray, eps: float = 1e-5) -> np.ndarray:
 # ---------------------------------------------------------------------------
 # Non-Fixed Poincaré Sampler (prerequisite for OSB training)
 # ---------------------------------------------------------------------------
+
 
 def sample_poincare_point(
     dim: int = BALL_DIM,
@@ -128,6 +130,7 @@ def sample_training_pair(
 # Orthogonal Stability Band
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class OrthogonalStabilityBand:
     """
@@ -142,9 +145,10 @@ class OrthogonalStabilityBand:
         retriever   : callable(query: str) -> str — fetches actual content
         content_hash: fingerprint of last retrieved content (for cache check)
     """
+
     anchor: np.ndarray
     label: str
-    tongue: str = "DR"                    # DR = highest governance weight
+    tongue: str = "DR"  # DR = highest governance weight
     epsilon_see: float = DEFAULT_EPSILON_SEE
     epsilon_query: float = DEFAULT_EPSILON_QUERY
     retriever: Optional[Callable[[str], str]] = None
@@ -182,6 +186,7 @@ class OrthogonalStabilityBand:
 # ---------------------------------------------------------------------------
 # Band Proximity Detector
 # ---------------------------------------------------------------------------
+
 
 class BandProximityDetector:
     """
@@ -228,6 +233,7 @@ class BandProximityDetector:
 # Query Formulator
 # ---------------------------------------------------------------------------
 
+
 class QueryFormulator:
     """
     Maps (current_state, band_signature) → query string.
@@ -264,7 +270,7 @@ class QueryFormulator:
             direction /= norm
 
         # Tongue-weighted dominant axis
-        weighted = direction * TONGUE_WEIGHTS[:len(direction)]
+        weighted = direction * TONGUE_WEIGHTS[: len(direction)]
         dominant_idx = int(np.argmax(np.abs(weighted)))
         dominant_tongue = TONGUE_LABELS[dominant_idx] if dominant_idx < 6 else "DR"
 
@@ -278,6 +284,7 @@ class QueryFormulator:
 # ---------------------------------------------------------------------------
 # Retrieval Integration Operator
 # ---------------------------------------------------------------------------
+
 
 def integrate_retrieval(
     x: np.ndarray,
@@ -305,11 +312,11 @@ def integrate_retrieval(
     content_vec = _content_to_vector(retrieved_content, dim)
 
     # Scale by band's tongue weight (DR-band content has highest influence)
-    tongue_scale = band.tongue_weight() / TONGUE_WEIGHTS[-1]   # normalize to DR=1.0
+    tongue_scale = band.tongue_weight() / TONGUE_WEIGHTS[-1]  # normalize to DR=1.0
 
     # Distance-weighted integration (closer = stronger update)
     d = band.distance_from(x)
-    distance_weight = math.exp(-d)   # exponential decay
+    distance_weight = math.exp(-d)  # exponential decay
 
     alpha = integration_strength * tongue_scale * distance_weight
 
@@ -333,23 +340,25 @@ def _content_to_vector(content: str, dim: int) -> np.ndarray:
     norm = np.linalg.norm(vec)
     if norm > 1e-8:
         vec /= norm
-    return poincare_project(vec * 0.5)   # keep well inside ball
+    return poincare_project(vec * 0.5)  # keep well inside ball
 
 
 # ---------------------------------------------------------------------------
 # Full OSB Pipeline (detector + formulator + retrieve + integrate)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class OSBPipelineResult:
     """Result of one OSB pipeline pass."""
+
     x_in: np.ndarray
     x_out: np.ndarray
     visible_bands: List[str]
     queried_bands: List[str]
     queries_fired: List[str]
     retrieved_content: List[str]
-    d_H_changes: List[float]           # d_H to each queried band before/after
+    d_H_changes: List[float]  # d_H to each queried band before/after
     governance_score: float
 
 
@@ -388,7 +397,7 @@ class OSBPipeline:
 
         # Harmonic wall governance score at current position
         d_origin = hyperbolic_distance(x, np.zeros(len(x)))
-        pd = 0.0   # perturbation density (wired from L11 in full pipeline)
+        pd = 0.0  # perturbation density (wired from L11 in full pipeline)
         H_score = 1.0 / (1.0 + PHI * d_origin + 2.0 * pd)
 
         for band in scan["query"]:
@@ -399,11 +408,9 @@ class OSBPipeline:
             content = band.retrieve(query) or f"[stub:{band.label}]"
             retrieved.append(content)
 
-            x_current = integrate_retrieval(
-                x_current, content, band, self.z_gov
-            )
+            x_current = integrate_retrieval(x_current, content, band, self.z_gov)
             d_after = band.distance_from(x_current)
-            d_H_changes.append(d_before - d_after)   # positive = moved closer
+            d_H_changes.append(d_before - d_after)  # positive = moved closer
 
         return OSBPipelineResult(
             x_in=x,
@@ -420,6 +427,7 @@ class OSBPipeline:
 # ---------------------------------------------------------------------------
 # SFT Training Pair Generator
 # ---------------------------------------------------------------------------
+
 
 def generate_osb_training_pairs(
     bands: List[OrthogonalStabilityBand],
@@ -444,10 +452,9 @@ def generate_osb_training_pairs(
     n_boundary = int(n_pairs * 0.75)
     n_center = n_pairs - n_boundary
 
-    configs = (
-        [{"radial_alpha": 5.0, "radial_beta": 2.0}] * n_boundary +   # near boundary
-        [{"radial_alpha": 2.0, "radial_beta": 8.0}] * n_center        # near center
-    )
+    configs = [{"radial_alpha": 5.0, "radial_beta": 2.0}] * n_boundary + [  # near boundary
+        {"radial_alpha": 2.0, "radial_beta": 8.0}
+    ] * n_center  # near center
 
     for cfg in configs:
         x = sample_poincare_point(dim, **cfg)
@@ -457,24 +464,26 @@ def generate_osb_training_pairs(
         visible_str = ", ".join(result.visible_bands) or "none"
         query_str = "; ".join(result.queries_fired) or "no query triggered"
 
-        pairs.append({
-            "x": x.tolist(),
-            "norm_x": float(np.linalg.norm(x)),
-            "d_origin": float(hyperbolic_distance(x, np.zeros(dim))),
-            "proximity_vector": d_vec.tolist(),
-            "visible_bands": result.visible_bands,
-            "queried_bands": result.queried_bands,
-            "queries_fired": result.queries_fired,
-            "governance_score": result.governance_score,
-            "d_H_changes": result.d_H_changes,
-            "sft_prompt": (
-                f"State vector x has ||x||={np.linalg.norm(x):.4f} "
-                f"(d_H from origin: {result.governance_score:.4f}). "
-                f"Visible OSBs: {visible_str}. "
-                f"What queries should fire?"
-            ),
-            "sft_response": query_str,
-        })
+        pairs.append(
+            {
+                "x": x.tolist(),
+                "norm_x": float(np.linalg.norm(x)),
+                "d_origin": float(hyperbolic_distance(x, np.zeros(dim))),
+                "proximity_vector": d_vec.tolist(),
+                "visible_bands": result.visible_bands,
+                "queried_bands": result.queried_bands,
+                "queries_fired": result.queries_fired,
+                "governance_score": result.governance_score,
+                "d_H_changes": result.d_H_changes,
+                "sft_prompt": (
+                    f"State vector x has ||x||={np.linalg.norm(x):.4f} "
+                    f"(d_H from origin: {result.governance_score:.4f}). "
+                    f"Visible OSBs: {visible_str}. "
+                    f"What queries should fire?"
+                ),
+                "sft_response": query_str,
+            }
+        )
 
     return pairs
 
@@ -521,7 +530,7 @@ if __name__ == "__main__":
     ]
 
     # Run one pipeline pass
-    x_test = sample_poincare_point(radial_alpha=5.0, radial_beta=2.0)   # near boundary
+    x_test = sample_poincare_point(radial_alpha=5.0, radial_beta=2.0)  # near boundary
     pipeline = OSBPipeline(bands)
     result = pipeline.run(x_test)
 

@@ -184,9 +184,7 @@ def export_program_onnx(
         )
     except ModuleNotFoundError as exc:  # pragma: no cover - environment-specific
         if exc.name == "onnxscript":
-            raise RuntimeError(
-                "ONNX export requires the 'onnxscript' package in this environment"
-            ) from exc
+            raise RuntimeError("ONNX export requires the 'onnxscript' package in this environment") from exc
         raise
 
     sidecar_path = output_path.with_name(output_path.name + ".data")

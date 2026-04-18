@@ -141,52 +141,28 @@ FAMILY_TOPOLOGIES: dict[str, FamilyTopology] = {
     "crop_bbox": FamilyTopology("crop_bbox", (0.8, 0.0, 0.0, 0.9, 0.5, 0.0), 0.7, (1, 0, 0, 1, 0, 0)),
     "crop": FamilyTopology("crop", (0.8, 0.0, 0.0, 0.9, 0.5, 0.0), 0.7, (1, 0, 0, 1, 0, 0)),
     "gravity_up": FamilyTopology("gravity_up", (0.0, 1.0, 0.0, 0.1, 0.3, 0.0), 0.3, (0, 1, 0, 0, 0, 0)),
-    "gravity_down": FamilyTopology(
-        "gravity_down", (0.0, 1.0, 0.0, 0.1, 0.3, 0.0), 0.3, (0, 1, 0, 0, 0, 0)
-    ),
-    "gravity_left": FamilyTopology(
-        "gravity_left", (0.0, 1.0, 0.0, 0.1, 0.3, 0.0), 0.3, (0, 1, 0, 0, 0, 0)
-    ),
-    "gravity_right": FamilyTopology(
-        "gravity_right", (0.0, 1.0, 0.0, 0.1, 0.3, 0.0), 0.3, (0, 1, 0, 0, 0, 0)
-    ),
-    "sym_complete_x": FamilyTopology(
-        "sym_complete_x", (0.0, 1.0, 0.0, 0.0, 0.5, 0.4), 0.4, (0, 1, 0, 0, 1, 1)
-    ),
-    "sym_complete_y": FamilyTopology(
-        "sym_complete_y", (0.0, 1.0, 0.0, 0.0, 0.5, 0.4), 0.4, (0, 1, 0, 0, 1, 1)
-    ),
+    "gravity_down": FamilyTopology("gravity_down", (0.0, 1.0, 0.0, 0.1, 0.3, 0.0), 0.3, (0, 1, 0, 0, 0, 0)),
+    "gravity_left": FamilyTopology("gravity_left", (0.0, 1.0, 0.0, 0.1, 0.3, 0.0), 0.3, (0, 1, 0, 0, 0, 0)),
+    "gravity_right": FamilyTopology("gravity_right", (0.0, 1.0, 0.0, 0.1, 0.3, 0.0), 0.3, (0, 1, 0, 0, 0, 0)),
+    "sym_complete_x": FamilyTopology("sym_complete_x", (0.0, 1.0, 0.0, 0.0, 0.5, 0.4), 0.4, (0, 1, 0, 0, 1, 1)),
+    "sym_complete_y": FamilyTopology("sym_complete_y", (0.0, 1.0, 0.0, 0.0, 0.5, 0.4), 0.4, (0, 1, 0, 0, 1, 1)),
     # --- object-level / layout families ---
     # fill_enclosed: same-shape, topology-driven (enclosed region detection), color secondary
-    "fill_enclosed": FamilyTopology(
-        "fill_enclosed", (0.1, 0.0, 0.5, 0.7, 0.9, 0.0), 0.70, (0, 0, 1, 1, 1, 0)
-    ),
+    "fill_enclosed": FamilyTopology("fill_enclosed", (0.1, 0.0, 0.5, 0.7, 0.9, 0.0), 0.70, (0, 0, 1, 1, 1, 0)),
     # paint_border: same-shape, color primary (uniform border recolor), scope secondary
-    "paint_border": FamilyTopology(
-        "paint_border", (0.0, 0.0, 0.5, 0.5, 0.4, 0.0), 0.50, (0, 0, 1, 1, 0, 0)
-    ),
+    "paint_border": FamilyTopology("paint_border", (0.0, 0.0, 0.5, 0.5, 0.4, 0.0), 0.50, (0, 0, 1, 1, 0, 0)),
     # h_concat_flip: shape-expanding (doubles width), motion via mirror symmetry
-    "h_concat_flip": FamilyTopology(
-        "h_concat_flip", (0.8, 0.7, 0.0, 0.7, 0.6, 0.3), 0.75, (1, 1, 0, 1, 1, 0)
-    ),
+    "h_concat_flip": FamilyTopology("h_concat_flip", (0.8, 0.7, 0.0, 0.7, 0.6, 0.3), 0.75, (1, 1, 0, 1, 1, 0)),
     # v_concat_flip: same as h_concat_flip but vertical
-    "v_concat_flip": FamilyTopology(
-        "v_concat_flip", (0.8, 0.7, 0.0, 0.7, 0.6, 0.3), 0.75, (1, 1, 0, 1, 1, 0)
-    ),
+    "v_concat_flip": FamilyTopology("v_concat_flip", (0.8, 0.7, 0.0, 0.7, 0.6, 0.3), 0.75, (1, 1, 0, 1, 1, 0)),
     # extract_panel: shape-reducing, scope-isolating (panel from grid layout)
-    "extract_panel": FamilyTopology(
-        "extract_panel", (0.9, 0.0, 0.0, 1.0, 0.5, 0.0), 0.75, (1, 0, 0, 1, 0, 0)
-    ),
+    "extract_panel": FamilyTopology("extract_panel", (0.9, 0.0, 0.0, 1.0, 0.5, 0.0), 0.75, (1, 0, 0, 1, 0, 0)),
     # extract_half_longer: shape-reducing, scope-isolating (half along longer axis)
     "extract_half_longer": FamilyTopology(
         "extract_half_longer", (0.9, 0.0, 0.0, 0.8, 0.2, 0.0), 0.60, (1, 0, 0, 1, 0, 0)
     ),
-    "crop_then_flip_x": FamilyTopology(
-        "crop_then_flip_x", (0.9, 1.0, 0.0, 0.9, 0.3, 0.1), 0.6, (1, 1, 0, 1, 0, 0)
-    ),
-    "crop_then_flip_y": FamilyTopology(
-        "crop_then_flip_y", (0.9, 1.0, 0.0, 0.9, 0.3, 0.1), 0.6, (1, 1, 0, 1, 0, 0)
-    ),
+    "crop_then_flip_x": FamilyTopology("crop_then_flip_x", (0.9, 1.0, 0.0, 0.9, 0.3, 0.1), 0.6, (1, 1, 0, 1, 0, 0)),
+    "crop_then_flip_y": FamilyTopology("crop_then_flip_y", (0.9, 1.0, 0.0, 0.9, 0.3, 0.1), 0.6, (1, 1, 0, 1, 0, 0)),
     "crop_then_transpose": FamilyTopology(
         "crop_then_transpose", (1.0, 1.0, 0.0, 0.9, 0.3, 0.1), 0.6, (1, 1, 0, 1, 0, 0)
     ),
@@ -247,15 +223,11 @@ FAMILY_TOPOLOGIES: dict[str, FamilyTopology] = {
     "select_dominant_color": FamilyTopology(
         "select_dominant_color", (0.1, 0.0, 0.4, 0.9, 0.2, 0.0), 0.5, (0, 0, 1, 1, 0, 0)
     ),
-    "select_largest_cc": FamilyTopology(
-        "select_largest_cc", (0.5, 0.0, 0.2, 0.9, 0.4, 0.0), 0.6, (1, 0, 0, 1, 0, 0)
-    ),
+    "select_largest_cc": FamilyTopology("select_largest_cc", (0.5, 0.0, 0.2, 0.9, 0.4, 0.0), 0.6, (1, 0, 0, 1, 0, 0)),
     "select_minority_color": FamilyTopology(
         "select_minority_color", (0.0, 0.0, 0.3, 0.8, 0.1, 0.0), 0.4, (0, 0, 1, 1, 0, 0)
     ),
-    "select_then_crop": FamilyTopology(
-        "select_then_crop", (0.8, 0.0, 0.3, 1.0, 0.4, 0.0), 0.65, (1, 0, 0, 1, 0, 0)
-    ),
+    "select_then_crop": FamilyTopology("select_then_crop", (0.8, 0.0, 0.3, 1.0, 0.4, 0.0), 0.65, (1, 0, 0, 1, 0, 0)),
     "select_then_gravity_down": FamilyTopology(
         "select_then_gravity_down", (0.1, 0.5, 0.2, 0.9, 0.3, 0.0), 0.55, (0, 1, 0, 1, 0, 0)
     ),
@@ -265,15 +237,9 @@ FAMILY_TOPOLOGIES: dict[str, FamilyTopology] = {
     # --- paste families ---
     # paste_center: scope high (object-level), composition high (canvas restructuring)
     # motion moderate (content moves to center)
-    "paste_center": FamilyTopology(
-        "paste_center", (0.5, 0.5, 0.0, 0.9, 0.3, 0.7), 0.6, (1, 1, 0, 1, 0, 1)
-    ),
-    "paste_tile": FamilyTopology(
-        "paste_tile", (0.8, 0.2, 0.0, 0.7, 0.9, 0.8), 0.7, (1, 0, 0, 1, 1, 1)
-    ),
-    "paste_stamp": FamilyTopology(
-        "paste_stamp", (0.6, 0.3, 0.0, 0.8, 0.8, 0.9), 0.65, (1, 0, 0, 1, 1, 1)
-    ),
+    "paste_center": FamilyTopology("paste_center", (0.5, 0.5, 0.0, 0.9, 0.3, 0.7), 0.6, (1, 1, 0, 1, 0, 1)),
+    "paste_tile": FamilyTopology("paste_tile", (0.8, 0.2, 0.0, 0.7, 0.9, 0.8), 0.7, (1, 0, 0, 1, 1, 1)),
+    "paste_stamp": FamilyTopology("paste_stamp", (0.6, 0.3, 0.0, 0.8, 0.8, 0.9), 0.65, (1, 0, 0, 1, 1, 1)),
     # compound: select then paste (common 2-step patterns)
     "select_dominant_color+paste_center": FamilyTopology(
         "select_dominant_color+paste_center", (0.5, 0.5, 0.3, 1.0, 0.3, 0.7), 0.65, (1, 1, 0, 1, 0, 1)
@@ -460,8 +426,7 @@ def _cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 def rank_families_by_lattice(task: ARCTask) -> list[str]:
     task_vec = task_topology(task)
     scored = [
-        (family, _cosine_similarity(task_vec, topology.as_array()))
-        for family, topology in FAMILY_TOPOLOGIES.items()
+        (family, _cosine_similarity(task_vec, topology.as_array())) for family, topology in FAMILY_TOPOLOGIES.items()
     ]
     scored.sort(
         key=lambda item: (

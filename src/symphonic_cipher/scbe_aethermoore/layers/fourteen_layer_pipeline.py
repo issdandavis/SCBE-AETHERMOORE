@@ -882,7 +882,7 @@ class FourteenLayerPipeline:
         if _USE_47D_SPIN:
             # θ_l = angle(c[l]) — tongue phase from L1 complex context
             # ψ_l = imag(c[l])  — self-imaginary DOF (internal rotation per tongue)
-            tongue_phases = np.angle(c)   # (6,) radians
+            tongue_phases = np.angle(c)  # (6,) radians
             psi = np.imag(c).astype(np.float64)  # (6,) self-imaginary DOF
             spin_result = _spin_coherence_47d(tongue_phases, psi)
             C_spin = spin_result.c_spin  # [0,1]

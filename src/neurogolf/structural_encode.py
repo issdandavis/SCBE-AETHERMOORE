@@ -9,7 +9,6 @@ from crypto.geo_seal import ContextVector, hyperbolic_distance
 
 from .components import ConnectedComponent, connected_components
 
-
 _TOKENIZER = SacredTongueTokenizer(TONGUES)
 _TONGUE_ORDER = ("ko", "av", "ru", "ca", "um", "dr")
 

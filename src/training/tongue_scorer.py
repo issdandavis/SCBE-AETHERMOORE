@@ -52,6 +52,7 @@ except Exception:
     def _ss1_encode_bytes(data: bytes, tongue_code: str = "ko") -> str:  # type: ignore[misc]
         return ""
 
+
 # ---------------------------------------------------------------------------
 # Tongue configuration
 # ---------------------------------------------------------------------------
@@ -85,52 +86,159 @@ PHI_WEIGHTS: Dict[str, float] = {
 
 TONGUE_DOMAINS: Dict[str, List[Tuple[str, float]]] = {
     "KO": [  # Kor'aelin — command, task, orchestration
-        ("command", 2.0), ("dispatch", 2.0), ("orchestrat", 2.0), ("coordinat", 1.5),
-        ("task", 1.2), ("routin", 1.5), ("schedul", 1.5), ("manag", 1.0),
-        ("direct", 1.0), ("assign", 1.2), ("delegat", 1.5), ("control", 1.2),
-        ("instruction", 1.0), ("agent", 0.8), ("fleet", 1.5), ("swarm", 1.5),
+        ("command", 2.0),
+        ("dispatch", 2.0),
+        ("orchestrat", 2.0),
+        ("coordinat", 1.5),
+        ("task", 1.2),
+        ("routin", 1.5),
+        ("schedul", 1.5),
+        ("manag", 1.0),
+        ("direct", 1.0),
+        ("assign", 1.2),
+        ("delegat", 1.5),
+        ("control", 1.2),
+        ("instruction", 1.0),
+        ("agent", 0.8),
+        ("fleet", 1.5),
+        ("swarm", 1.5),
     ],
     "AV": [  # Avali — transport, communication, signal
-        ("transport", 2.0), ("communicat", 2.0), ("signal", 1.5), ("transmit", 2.0),
-        ("broadcast", 1.5), ("relay", 2.0), ("protocol", 1.5), ("network", 1.2),
-        ("message", 1.2), ("channel", 1.5), ("bandwidth", 1.5), ("latency", 1.5),
-        ("navigat", 1.5), ("routing", 1.2), ("packet", 1.5), ("semantic", 1.0),
-        ("rate", 1.0), ("distortion", 1.5), ("compress", 1.2), ("encod", 1.0),
+        ("transport", 2.0),
+        ("communicat", 2.0),
+        ("signal", 1.5),
+        ("transmit", 2.0),
+        ("broadcast", 1.5),
+        ("relay", 2.0),
+        ("protocol", 1.5),
+        ("network", 1.2),
+        ("message", 1.2),
+        ("channel", 1.5),
+        ("bandwidth", 1.5),
+        ("latency", 1.5),
+        ("navigat", 1.5),
+        ("routing", 1.2),
+        ("packet", 1.5),
+        ("semantic", 1.0),
+        ("rate", 1.0),
+        ("distortion", 1.5),
+        ("compress", 1.2),
+        ("encod", 1.0),
     ],
     "RU": [  # Runethic — entropy, chaos, hypothesis, stochastic
-        ("entropy", 2.0), ("stochastic", 2.0), ("random", 1.5), ("chaos", 2.0),
-        ("hypothes", 2.0), ("probabili", 1.5), ("uncertain", 1.5), ("noise", 1.2),
-        ("diffusion", 1.5), ("variational", 2.0), ("bayesian", 2.0), ("sampli", 1.2),
-        ("distribut", 1.0), ("divergen", 1.5), ("exploit", 1.0), ("explor", 1.5),
-        ("generative", 1.2), ("latent", 1.5), ("inference", 1.2),
+        ("entropy", 2.0),
+        ("stochastic", 2.0),
+        ("random", 1.5),
+        ("chaos", 2.0),
+        ("hypothes", 2.0),
+        ("probabili", 1.5),
+        ("uncertain", 1.5),
+        ("noise", 1.2),
+        ("diffusion", 1.5),
+        ("variational", 2.0),
+        ("bayesian", 2.0),
+        ("sampli", 1.2),
+        ("distribut", 1.0),
+        ("divergen", 1.5),
+        ("exploit", 1.0),
+        ("explor", 1.5),
+        ("generative", 1.2),
+        ("latent", 1.5),
+        ("inference", 1.2),
     ],
     "CA": [  # Cassisivadan — compute, code, math, algorithms, training
-        ("comput", 1.5), ("algorithm", 2.0), ("code", 1.5), ("program", 1.5),
-        ("train", 1.2), ("learning", 1.0), ("neural", 2.0), ("model", 0.8),
-        ("matrix", 2.0), ("vector", 1.5), ("tensor", 2.0), ("gradient", 2.0),
-        ("optim", 1.5), ("loss", 1.2), ("function", 1.0), ("embed", 1.5),
-        ("represent", 1.2), ("dimensi", 1.2), ("transform", 1.0), ("layer", 0.8),
-        ("architectur", 1.0), ("parameter", 1.2), ("weight", 0.8), ("backprop", 2.0),
-        ("converg", 1.5), ("epoch", 1.5), ("batch", 1.2), ("inference", 1.0),
-        ("fine-tun", 2.0), ("finetun", 2.0), ("llm", 2.0), ("language model", 2.0),
+        ("comput", 1.5),
+        ("algorithm", 2.0),
+        ("code", 1.5),
+        ("program", 1.5),
+        ("train", 1.2),
+        ("learning", 1.0),
+        ("neural", 2.0),
+        ("model", 0.8),
+        ("matrix", 2.0),
+        ("vector", 1.5),
+        ("tensor", 2.0),
+        ("gradient", 2.0),
+        ("optim", 1.5),
+        ("loss", 1.2),
+        ("function", 1.0),
+        ("embed", 1.5),
+        ("represent", 1.2),
+        ("dimensi", 1.2),
+        ("transform", 1.0),
+        ("layer", 0.8),
+        ("architectur", 1.0),
+        ("parameter", 1.2),
+        ("weight", 0.8),
+        ("backprop", 2.0),
+        ("converg", 1.5),
+        ("epoch", 1.5),
+        ("batch", 1.2),
+        ("inference", 1.0),
+        ("fine-tun", 2.0),
+        ("finetun", 2.0),
+        ("llm", 2.0),
+        ("language model", 2.0),
     ],
     "UM": [  # Umbroth — security, adversarial, defense, governance, safety
-        ("secur", 1.5), ("adversari", 2.0), ("attack", 1.5), ("defense", 1.5),
-        ("threat", 1.5), ("protect", 1.2), ("govern", 2.0), ("safe", 1.2),
-        ("robust", 1.5), ("certif", 1.5), ("verif", 1.2), ("audit", 1.5),
-        ("privacy", 1.5), ("trust", 1.2), ("align", 1.5), ("misalign", 2.0),
-        ("manipul", 1.5), ("poison", 2.0), ("jailbreak", 2.0), ("harmful", 1.5),
-        ("bias", 1.2), ("fairness", 1.2), ("interpretab", 1.5), ("explainab", 1.5),
-        ("risk", 1.2), ("hazard", 1.5), ("compliance", 1.5), ("red team", 2.0),
+        ("secur", 1.5),
+        ("adversari", 2.0),
+        ("attack", 1.5),
+        ("defense", 1.5),
+        ("threat", 1.5),
+        ("protect", 1.2),
+        ("govern", 2.0),
+        ("safe", 1.2),
+        ("robust", 1.5),
+        ("certif", 1.5),
+        ("verif", 1.2),
+        ("audit", 1.5),
+        ("privacy", 1.5),
+        ("trust", 1.2),
+        ("align", 1.5),
+        ("misalign", 2.0),
+        ("manipul", 1.5),
+        ("poison", 2.0),
+        ("jailbreak", 2.0),
+        ("harmful", 1.5),
+        ("bias", 1.2),
+        ("fairness", 1.2),
+        ("interpretab", 1.5),
+        ("explainab", 1.5),
+        ("risk", 1.2),
+        ("hazard", 1.5),
+        ("compliance", 1.5),
+        ("red team", 2.0),
     ],
     "DR": [  # Draumric — structure, architecture, formal, proof, specification
-        ("structur", 1.5), ("architectur", 1.5), ("formal", 2.0), ("proof", 2.0),
-        ("theorem", 2.0), ("axiom", 2.0), ("specif", 1.5), ("document", 1.2),
-        ("geometric", 2.0), ("topolog", 2.0), ("manifold", 2.0), ("hyperbolic", 2.0),
-        ("poincar", 2.0), ("riemannian", 2.0), ("equivarian", 2.0), ("symmetr", 1.5),
-        ("invariant", 2.0), ("graph", 1.2), ("hierarch", 1.5), ("composit", 1.5),
-        ("abstract", 1.2), ("categor", 1.5), ("lattice", 1.5), ("polyhedra", 2.0),
-        ("boundar", 1.2), ("constraint", 1.2), ("compact", 1.2), ("convex", 1.5),
+        ("structur", 1.5),
+        ("architectur", 1.5),
+        ("formal", 2.0),
+        ("proof", 2.0),
+        ("theorem", 2.0),
+        ("axiom", 2.0),
+        ("specif", 1.5),
+        ("document", 1.2),
+        ("geometric", 2.0),
+        ("topolog", 2.0),
+        ("manifold", 2.0),
+        ("hyperbolic", 2.0),
+        ("poincar", 2.0),
+        ("riemannian", 2.0),
+        ("equivarian", 2.0),
+        ("symmetr", 1.5),
+        ("invariant", 2.0),
+        ("graph", 1.2),
+        ("hierarch", 1.5),
+        ("composit", 1.5),
+        ("abstract", 1.2),
+        ("categor", 1.5),
+        ("lattice", 1.5),
+        ("polyhedra", 2.0),
+        ("boundar", 1.2),
+        ("constraint", 1.2),
+        ("compact", 1.2),
+        ("convex", 1.5),
     ],
 }
 
@@ -164,16 +272,16 @@ def _infer_governance(text: str) -> str:
 # ---------------------------------------------------------------------------
 
 TEMPORAL_TO_TONGUE: Dict[str, str] = {
-    "INCP": "KO",   # inception — Kor'aelin aspect marker (command to begin)
-    "PROG": "RU",   # progressive/ongoing — Runethic imperfective (entropic flow)
-    "PERF": "DR",   # perfective/completed — Draumric closure (structure solidified)
+    "INCP": "KO",  # inception — Kor'aelin aspect marker (command to begin)
+    "PROG": "RU",  # progressive/ongoing — Runethic imperfective (entropic flow)
+    "PERF": "DR",  # perfective/completed — Draumric closure (structure solidified)
     "PROSP": "AV",  # prospective — Avali intentional future (signal dispatched)
 }
 
 INTENT_TO_TONGUE: Dict[str, str] = {
-    "VOLI": "KO",   # volitional — Kor'aelin (willed command)
+    "VOLI": "KO",  # volitional — Kor'aelin (willed command)
     "REACT": "RU",  # reactive — Runethic (entropy response)
-    "EMRG": "UM",   # emergent — Umbroth (governance escalation)
+    "EMRG": "UM",  # emergent — Umbroth (governance escalation)
     "RECUR": "CA",  # recursive — Cassisivadan (algorithmic recursion)
 }
 
@@ -182,18 +290,19 @@ INTENT_TO_TONGUE: Dict[str, str] = {
 # Scorer
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TongueProfile:
     """L2 Orientation Packet — output of TongueScorer."""
 
-    raw: Dict[str, float]           # raw activation scores per tongue
-    weighted: Dict[str, float]      # phi-weighted activations
-    activation: Dict[str, float]    # normalized [0, 1] per tongue
-    null_pattern: Dict[str, bool]   # True = tongue is absent (activation < threshold)
-    primary: str                    # dominant tongue
-    secondary: List[str]            # tongues with activation > 0.2
-    governance: str                 # ALLOW / QUARANTINE / ESCALATE / DENY
-    domain_hint: str                # routing label
+    raw: Dict[str, float]  # raw activation scores per tongue
+    weighted: Dict[str, float]  # phi-weighted activations
+    activation: Dict[str, float]  # normalized [0, 1] per tongue
+    null_pattern: Dict[str, bool]  # True = tongue is absent (activation < threshold)
+    primary: str  # dominant tongue
+    secondary: List[str]  # tongues with activation > 0.2
+    governance: str  # ALLOW / QUARANTINE / ESCALATE / DENY
+    domain_hint: str  # routing label
 
     # Optional conlang hints from phrase_well context
     temporal_tongue: Optional[str] = None
@@ -203,9 +312,7 @@ class TongueProfile:
 
     def to_header(self) -> str:
         """Render the L2 orientation packet as a text header for prepending to training pairs."""
-        profile_str = " ".join(
-            f"{t}:{self.activation[t]:.2f}" for t in TONGUE_NAMES
-        )
+        profile_str = " ".join(f"{t}:{self.activation[t]:.2f}" for t in TONGUE_NAMES)
         null_str = " ".join(t for t in TONGUE_NAMES if self.null_pattern[t]) or "none"
         secondary_str = " ".join(self.secondary) if self.secondary else "none"
 
@@ -226,12 +333,12 @@ class TongueProfile:
     def to_dict(self) -> dict:
         """Structured metadata for JSONL fields (full L2 orientation packet)."""
         return {
-            "primary_tongue":    self.primary,
+            "primary_tongue": self.primary,
             "secondary_tongues": self.secondary,
             "tongue_activation": self.activation,
-            "null_pattern":      {k: v for k, v in self.null_pattern.items() if v},
-            "governance":        self.governance,
-            "domain_hint":       self.domain_hint,
+            "null_pattern": {k: v for k, v in self.null_pattern.items() if v},
+            "governance": self.governance,
+            "domain_hint": self.domain_hint,
         }
 
     def to_binary_fields(self, text: str) -> dict:
@@ -269,14 +376,14 @@ class TongueProfile:
         null_vec = [1 if self.null_pattern[t] else 0 for t in TONGUE_NAMES]
 
         return {
-            "bytes_b64":    b64,
-            "tongue":       primary_code,
-            "ss1_encoded":  ss1_encoded,   # full L1 encoding — lossless bijection
-            "ss1_tokens":   ss1_tokens,    # first 64 tokens (summary)
+            "bytes_b64": b64,
+            "tongue": primary_code,
+            "ss1_encoded": ss1_encoded,  # full L1 encoding — lossless bijection
+            "ss1_tokens": ss1_tokens,  # first 64 tokens (summary)
             "tongue_profile": tongue_profile,
             "null_pattern": null_vec,
-            "governance":   self.governance,
-            "domain":       self.domain_hint,
+            "governance": self.governance,
+            "domain": self.domain_hint,
         }
 
 
@@ -351,10 +458,7 @@ class TongueScorer:
         primary = max(TONGUE_NAMES, key=lambda t: activation[t])
 
         # Secondary = above 0.2 threshold, excluding primary
-        secondary = [
-            t for t in TONGUE_NAMES
-            if activation[t] >= 0.20 and t != primary
-        ]
+        secondary = [t for t in TONGUE_NAMES if activation[t] >= 0.20 and t != primary]
 
         # Governance posture from content
         governance = _infer_governance(text)
@@ -457,8 +561,11 @@ QUERY_LAYER_MAP: Dict[str, List[str]] = {
 
 def get_layer_alignment(query_label: str) -> List[str]:
     """Return the 3 most relevant SCBE layers for a query label."""
-    return QUERY_LAYER_MAP.get(query_label, [
-        "L5 (hyperbolic distance d_H)",
-        "L12 (harmonic wall H(d,pd))",
-        "L13 (governance tier gate)",
-    ])
+    return QUERY_LAYER_MAP.get(
+        query_label,
+        [
+            "L5 (hyperbolic distance d_H)",
+            "L12 (harmonic wall H(d,pd))",
+            "L13 (governance tier gate)",
+        ],
+    )

@@ -305,7 +305,10 @@ def _harmonic_verify(
         bin_idx = int(np.argmin(np.abs(freqs - f_i)))
         actual_freq = float(freqs[bin_idx])
         if abs(actual_freq - f_i) > EPS_F:
-            return False, f"missing peak at {f_i:.1f}Hz (nearest: {actual_freq:.1f}Hz, deviation {abs(actual_freq-f_i):.2f}Hz > {EPS_F}Hz)"
+            return (
+                False,
+                f"missing peak at {f_i:.1f}Hz (nearest: {actual_freq:.1f}Hz, deviation {abs(actual_freq-f_i):.2f}Hz > {EPS_F}Hz)",
+            )
 
         # Check 1/h amplitude pattern (relative to fundamental bin)
         fundamental_mag = fft_mag[bin_idx]

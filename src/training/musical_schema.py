@@ -66,7 +66,6 @@ from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional
 import json
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -84,25 +83,42 @@ MOTIFS = {
 }
 
 CADENCES = {
-    "full":        "complete resolution — function done, test passes, state closed",
-    "half":        "partial resolution — milestone reached, more pending",
-    "deceptive":   "expected resolution -> redirect (error caught -> repair)",
+    "full": "complete resolution — function done, test passes, state closed",
+    "half": "partial resolution — milestone reached, more pending",
+    "deceptive": "expected resolution -> redirect (error caught -> repair)",
     "interrupted": "closure interrupted by new dependency or async event",
-    "plagal":      "confirmation after resolution (assert after return)",
+    "plagal": "confirmation after resolution (assert after return)",
 }
 
 ACTION_TYPES = [
-    "define_func", "define_class", "define_var",
-    "call", "call_method", "call_builtin",
-    "assign", "augmented_assign",
-    "return", "yield", "raise",
-    "if_branch", "else_branch",
-    "loop_start", "loop_body", "loop_end",
-    "try_start", "except_handler", "finally_block",
-    "import", "from_import",
-    "assert", "type_check",
-    "comment_intent", "comment_why",
-    "plan_step", "validate_step", "refactor_step",
+    "define_func",
+    "define_class",
+    "define_var",
+    "call",
+    "call_method",
+    "call_builtin",
+    "assign",
+    "augmented_assign",
+    "return",
+    "yield",
+    "raise",
+    "if_branch",
+    "else_branch",
+    "loop_start",
+    "loop_body",
+    "loop_end",
+    "try_start",
+    "except_handler",
+    "finally_block",
+    "import",
+    "from_import",
+    "assert",
+    "type_check",
+    "comment_intent",
+    "comment_why",
+    "plan_step",
+    "validate_step",
+    "refactor_step",
 ]
 
 # Beat stress weights (1=downbeat, 2=upbeat, 3=off-beat, 4=weak)
@@ -112,6 +128,7 @@ BEAT_STRESS = {1: 1.0, 2: 0.5, 3: 0.7, 4: 0.3}
 # =============================================================================
 # DATACLASS
 # =============================================================================
+
 
 @dataclass
 class MusicalAction:
@@ -125,31 +142,31 @@ class MusicalAction:
     """
 
     # --- Identity ---
-    action_type: str                     # from ACTION_TYPES
-    voice: str                           # PLANNER | IMPLEMENTER | VALIDATOR | REFACTORER
-    label: str = ""                      # human-readable description (e.g. "define sort_list")
+    action_type: str  # from ACTION_TYPES
+    voice: str  # PLANNER | IMPLEMENTER | VALIDATOR | REFACTORER
+    label: str = ""  # human-readable description (e.g. "define sort_list")
 
     # --- Temporal ---
-    onset: int = 0                       # step index in the sequence
-    duration: int = 1                    # token-budget this action consumes (1 = atomic)
-    bar: int = 1                         # which phrase bar this falls in
-    beat: int = 1                        # beat within bar (1-4 for 4/4 meter)
-    stress: float = 1.0                  # importance weight (downbeat=1.0, weak=0.3)
+    onset: int = 0  # step index in the sequence
+    duration: int = 1  # token-budget this action consumes (1 = atomic)
+    bar: int = 1  # which phrase bar this falls in
+    beat: int = 1  # beat within bar (1-4 for 4/4 meter)
+    stress: float = 1.0  # importance weight (downbeat=1.0, weak=0.3)
 
     # --- Relational ---
-    motif_id: Optional[str] = None       # None if novel; "motif_A" etc. if recurring
-    motif_instance: int = 1              # which instance of this motif (1=first, 2=variation...)
-    interval: int = 0                    # conceptual distance from prior action (0=adjacent)
+    motif_id: Optional[str] = None  # None if novel; "motif_A" etc. if recurring
+    motif_instance: int = 1  # which instance of this motif (1=first, 2=variation...)
+    interval: int = 0  # conceptual distance from prior action (0=adjacent)
 
     # --- Harmonic ---
-    consonance: float = 1.0             # compatibility with neighbors [0,1]
-    resolution: float = 0.0            # how much this closes open dependencies [0,1]
-    tension_before: float = 0.0        # unresolved deps before this action
-    tension_after: float = 0.0         # unresolved deps after this action (tension delta)
+    consonance: float = 1.0  # compatibility with neighbors [0,1]
+    resolution: float = 0.0  # how much this closes open dependencies [0,1]
+    tension_before: float = 0.0  # unresolved deps before this action
+    tension_after: float = 0.0  # unresolved deps after this action (tension delta)
 
     # --- Cadence ---
     cadence_type: Optional[str] = None  # None | "full" | "half" | "deceptive" | ...
-    is_cadence_point: bool = False       # True if this is a resolution point
+    is_cadence_point: bool = False  # True if this is a resolution point
 
     def to_notation(self) -> str:
         """
@@ -186,11 +203,12 @@ class Phrase:
     One bar/measure of code actions.
     Analogous to a musical phrase — a bounded procedural unit.
     """
+
     bar: int
-    meter: str = "4/4"                  # "4/4" standard, "3/4" for tight loops, "6/8" for pipelines
-    voice_lead: str = "IMPLEMENTER"     # which voice carries the main action this bar
+    meter: str = "4/4"  # "4/4" standard, "3/4" for tight loops, "6/8" for pipelines
+    voice_lead: str = "IMPLEMENTER"  # which voice carries the main action this bar
     actions: List[MusicalAction] = field(default_factory=list)
-    motif_id: Optional[str] = None      # if the whole bar instantiates one motif
+    motif_id: Optional[str] = None  # if the whole bar instantiates one motif
 
     def to_notation(self) -> str:
         lines = [f"[BAR {self.bar} | meter={self.meter} | lead={self.voice_lead}]"]
@@ -214,10 +232,11 @@ class Section:
     One logical unit: function body, test, agent task, class method.
     A sequence of Phrases.
     """
+
     name: str
-    section_type: str                   # "function" | "test" | "plan" | "class_method" | "agent_task"
+    section_type: str  # "function" | "test" | "plan" | "class_method" | "agent_task"
     meter: str = "4/4"
-    key_motif: Optional[str] = None     # dominant motif of this section
+    key_motif: Optional[str] = None  # dominant motif of this section
     phrases: List[Phrase] = field(default_factory=list)
 
     def to_notation(self) -> str:
@@ -236,6 +255,7 @@ class Section:
 # =============================================================================
 # ANNOTATION HELPERS
 # =============================================================================
+
 
 def stress_for_beat(beat: int) -> float:
     """Standard 4/4 beat stress."""
@@ -263,11 +283,11 @@ def consonance_for_pair(action_a: str, action_b: str) -> float:
     }
     # Low consonance: problematic sequences
     LOW = {
-        ("return", "assign"),        # assigning after return = unreachable
-        ("raise", "assign"),         # same
-        ("loop_end", "loop_body"),   # body after end = wrong order
+        ("return", "assign"),  # assigning after return = unreachable
+        ("raise", "assign"),  # same
+        ("loop_end", "loop_body"),  # body after end = wrong order
         ("except_handler", "try_start"),  # handler before try = wrong order
-        ("return", "call"),          # call after return = unreachable
+        ("return", "call"),  # call after return = unreachable
     }
 
     pair = (action_a, action_b)
@@ -282,15 +302,15 @@ def consonance_for_pair(action_a: str, action_b: str) -> float:
 def detect_motif(actions: List[str]) -> Optional[str]:
     """Heuristic motif detection from a sequence of action types."""
     if "define_func" in actions and "return" in actions and "if_branch" not in actions:
-        return "motif_A"   # define-then-return
+        return "motif_A"  # define-then-return
     if actions and actions[0] in ("if_branch", "assert") and "return" in actions:
-        return "motif_B"   # guard-then-execute
+        return "motif_B"  # guard-then-execute
     if "loop_start" in actions and "augmented_assign" in actions:
-        return "motif_C"   # collect-then-emit
+        return "motif_C"  # collect-then-emit
     if actions.count("call_builtin") >= 2 or actions.count("call_method") >= 2:
-        return "motif_D"   # transform-chain
+        return "motif_D"  # transform-chain
     if "try_start" in actions and "except_handler" in actions:
-        return "motif_E"   # error-then-recover
+        return "motif_E"  # error-then-recover
     return None
 
 
@@ -318,6 +338,7 @@ def tension_from_actions(actions: List[MusicalAction]) -> List[float]:
 # EXAMPLE: ANNOTATE A SIMPLE SORT FUNCTION
 # =============================================================================
 
+
 def example_sort_section() -> Section:
     """
     Build an annotated Section for a simple sort function.
@@ -326,99 +347,181 @@ def example_sort_section() -> Section:
     # Bar 1: PLANNER sets up the structure (meter: plan has 4 beats)
     plan_actions = [
         MusicalAction(
-            action_type="plan_step", voice="PLANNER",
+            action_type="plan_step",
+            voice="PLANNER",
             label="announce: sort_list function",
-            bar=1, beat=1, stress=1.0, onset=0,
-            consonance=1.0, tension_before=0.0, tension_after=0.0,
+            bar=1,
+            beat=1,
+            stress=1.0,
+            onset=0,
+            consonance=1.0,
+            tension_before=0.0,
+            tension_after=0.0,
         ),
         MusicalAction(
-            action_type="plan_step", voice="PLANNER",
+            action_type="plan_step",
+            voice="PLANNER",
             label="args: lst, key=None, reverse=False",
-            bar=1, beat=2, stress=0.5, onset=1,
-            consonance=0.95, tension_before=0.0, tension_after=0.0,
+            bar=1,
+            beat=2,
+            stress=0.5,
+            onset=1,
+            consonance=0.95,
+            tension_before=0.0,
+            tension_after=0.0,
         ),
         MusicalAction(
-            action_type="plan_step", voice="PLANNER",
+            action_type="plan_step",
+            voice="PLANNER",
             label="body: guard empty -> return; else sort -> return",
-            bar=1, beat=3, stress=0.7, onset=2, interval=1,
-            motif_id="motif_B", motif_instance=1,
-            consonance=0.9, tension_before=0.0, tension_after=0.5,
+            bar=1,
+            beat=3,
+            stress=0.7,
+            onset=2,
+            interval=1,
+            motif_id="motif_B",
+            motif_instance=1,
+            consonance=0.9,
+            tension_before=0.0,
+            tension_after=0.5,
         ),
         MusicalAction(
-            action_type="plan_step", voice="PLANNER",
+            action_type="plan_step",
+            voice="PLANNER",
             label="cadence: half (plan closed, impl pending)",
-            bar=1, beat=4, stress=0.3, onset=3,
-            consonance=0.95, tension_before=0.5, tension_after=0.5,
-            is_cadence_point=True, cadence_type="half", resolution=0.4,
+            bar=1,
+            beat=4,
+            stress=0.3,
+            onset=3,
+            consonance=0.95,
+            tension_before=0.5,
+            tension_after=0.5,
+            is_cadence_point=True,
+            cadence_type="half",
+            resolution=0.4,
         ),
     ]
-    phrase1 = Phrase(bar=1, meter="4/4", voice_lead="PLANNER",
-                     actions=plan_actions, motif_id="motif_B")
+    phrase1 = Phrase(bar=1, meter="4/4", voice_lead="PLANNER", actions=plan_actions, motif_id="motif_B")
 
     # Bar 2: IMPLEMENTER fills in the body
     impl_actions = [
         MusicalAction(
-            action_type="define_func", voice="IMPLEMENTER",
+            action_type="define_func",
+            voice="IMPLEMENTER",
             label="def sort_list(lst, key=None, reverse=False)",
-            bar=2, beat=1, stress=1.0, onset=4, interval=2,
-            motif_id="motif_B", motif_instance=1,
-            consonance=0.95, tension_before=0.5, tension_after=1.0,
+            bar=2,
+            beat=1,
+            stress=1.0,
+            onset=4,
+            interval=2,
+            motif_id="motif_B",
+            motif_instance=1,
+            consonance=0.95,
+            tension_before=0.5,
+            tension_after=1.0,
         ),
         MusicalAction(
-            action_type="if_branch", voice="IMPLEMENTER",
+            action_type="if_branch",
+            voice="IMPLEMENTER",
             label="if not lst: return []",
-            bar=2, beat=2, stress=0.8, onset=5,
-            consonance=0.9, tension_before=1.0, tension_after=1.5,
+            bar=2,
+            beat=2,
+            stress=0.8,
+            onset=5,
+            consonance=0.9,
+            tension_before=1.0,
+            tension_after=1.5,
         ),
         MusicalAction(
-            action_type="return", voice="IMPLEMENTER",
+            action_type="return",
+            voice="IMPLEMENTER",
             label="return sorted(lst, key=key, reverse=reverse)",
-            bar=2, beat=3, stress=0.9, onset=6,
-            motif_id="motif_A", motif_instance=1,
-            consonance=0.95, tension_before=1.5, tension_after=0.5,
+            bar=2,
+            beat=3,
+            stress=0.9,
+            onset=6,
+            motif_id="motif_A",
+            motif_instance=1,
+            consonance=0.95,
+            tension_before=1.5,
+            tension_after=0.5,
         ),
         MusicalAction(
-            action_type="return", voice="IMPLEMENTER",
+            action_type="return",
+            voice="IMPLEMENTER",
             label="full cadence: function body complete",
-            bar=2, beat=4, stress=1.0, onset=7,
-            consonance=1.0, tension_before=0.5, tension_after=0.0,
-            is_cadence_point=True, cadence_type="full", resolution=1.0,
+            bar=2,
+            beat=4,
+            stress=1.0,
+            onset=7,
+            consonance=1.0,
+            tension_before=0.5,
+            tension_after=0.0,
+            is_cadence_point=True,
+            cadence_type="full",
+            resolution=1.0,
         ),
     ]
-    phrase2 = Phrase(bar=2, meter="4/4", voice_lead="IMPLEMENTER",
-                     actions=impl_actions, motif_id="motif_B")
+    phrase2 = Phrase(bar=2, meter="4/4", voice_lead="IMPLEMENTER", actions=impl_actions, motif_id="motif_B")
 
     # Bar 3: VALIDATOR confirms
     val_actions = [
         MusicalAction(
-            action_type="assert", voice="VALIDATOR",
+            action_type="assert",
+            voice="VALIDATOR",
             label="assert sort_list([3,1,2]) == [1,2,3]",
-            bar=3, beat=1, stress=1.0, onset=8, interval=1,
-            consonance=1.0, tension_before=0.0, tension_after=0.0,
+            bar=3,
+            beat=1,
+            stress=1.0,
+            onset=8,
+            interval=1,
+            consonance=1.0,
+            tension_before=0.0,
+            tension_after=0.0,
         ),
         MusicalAction(
-            action_type="assert", voice="VALIDATOR",
+            action_type="assert",
+            voice="VALIDATOR",
             label="assert sort_list([]) == []   # guard case",
-            bar=3, beat=2, stress=0.8, onset=9,
-            motif_id="motif_B", motif_instance=2,  # guard pattern again
-            consonance=0.95, tension_before=0.0, tension_after=0.0,
+            bar=3,
+            beat=2,
+            stress=0.8,
+            onset=9,
+            motif_id="motif_B",
+            motif_instance=2,  # guard pattern again
+            consonance=0.95,
+            tension_before=0.0,
+            tension_after=0.0,
         ),
         MusicalAction(
-            action_type="assert", voice="VALIDATOR",
+            action_type="assert",
+            voice="VALIDATOR",
             label="assert sort_list([1], reverse=True) == [1]  # singleton",
-            bar=3, beat=3, stress=0.7, onset=10,
-            consonance=0.9, tension_before=0.0, tension_after=0.0,
+            bar=3,
+            beat=3,
+            stress=0.7,
+            onset=10,
+            consonance=0.9,
+            tension_before=0.0,
+            tension_after=0.0,
         ),
         MusicalAction(
-            action_type="validate_step", voice="VALIDATOR",
+            action_type="validate_step",
+            voice="VALIDATOR",
             label="plagal cadence: all assertions passed",
-            bar=3, beat=4, stress=0.5, onset=11,
-            consonance=1.0, tension_before=0.0, tension_after=0.0,
-            is_cadence_point=True, cadence_type="plagal", resolution=1.0,
+            bar=3,
+            beat=4,
+            stress=0.5,
+            onset=11,
+            consonance=1.0,
+            tension_before=0.0,
+            tension_after=0.0,
+            is_cadence_point=True,
+            cadence_type="plagal",
+            resolution=1.0,
         ),
     ]
-    phrase3 = Phrase(bar=3, meter="4/4", voice_lead="VALIDATOR",
-                     actions=val_actions)
+    phrase3 = Phrase(bar=3, meter="4/4", voice_lead="VALIDATOR", actions=val_actions)
 
     return Section(
         name="sort_list",
@@ -432,6 +535,7 @@ def example_sort_section() -> Section:
 # =============================================================================
 # SERIALIZATION
 # =============================================================================
+
 
 def section_to_jsonl_record(section: Section) -> dict:
     """Convert a Section to a JSONL training record (text field)."""

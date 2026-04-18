@@ -57,21 +57,24 @@ from itertools import combinations
 from typing import Dict, List, Optional, Tuple
 import math
 
-
 # =============================================================================
 # CONTEXT VECTOR: 10D structural fingerprint for a phrase occurrence
 # =============================================================================
 
-VOICE_IDX   = {"PLANNER": 0, "IMPLEMENTER": 1, "VALIDATOR": 2, "REFACTORER": 3}
-MOTIF_IDX   = {"motif_A": 0, "motif_B": 1, "motif_C": 2, "motif_D": 3,
-                "motif_E": 4, "motif_F": 5, "motif_G": 6, None: -1}
-CADENCE_IDX = {"full": 0, "half": 1, "deceptive": 2, "interrupted": 3,
-                "plagal": 4, None: -1}
-AFFECT_IDX  = {
-    "INITIATION": 0, "ANTICIPATION": 1, "RECOGNITION": 2, "ENGAGEMENT": 3,
-    "URGENCY": 4, "ALARM": 5, "RELIEF": 6, "SATISFACTION": 7,
+VOICE_IDX = {"PLANNER": 0, "IMPLEMENTER": 1, "VALIDATOR": 2, "REFACTORER": 3}
+MOTIF_IDX = {"motif_A": 0, "motif_B": 1, "motif_C": 2, "motif_D": 3, "motif_E": 4, "motif_F": 5, "motif_G": 6, None: -1}
+CADENCE_IDX = {"full": 0, "half": 1, "deceptive": 2, "interrupted": 3, "plagal": 4, None: -1}
+AFFECT_IDX = {
+    "INITIATION": 0,
+    "ANTICIPATION": 1,
+    "RECOGNITION": 2,
+    "ENGAGEMENT": 3,
+    "URGENCY": 4,
+    "ALARM": 5,
+    "RELIEF": 6,
+    "SATISFACTION": 7,
 }
-TRIT_IDX    = {-1: 0, 0: 1, 1: 2}
+TRIT_IDX = {-1: 0, 0: 1, 1: 2}
 
 # Conlang bridge: temporal aspect (when / how far along)
 # Inherited from Sacred Tongue grammatical roots:
@@ -80,7 +83,7 @@ TRIT_IDX    = {-1: 0, 0: 1, 1: 2}
 #   PERF  — perfective, completed/closed     (Runethic perfective)
 #   PROSP — prospective, about to happen     (Avali intentional future)
 TEMPORAL_IDX = {"INCP": 0, "PROG": 1, "PERF": 2, "PROSP": 3}
-TEMPORAL_DEFAULT = "PROG"   # most steps are in-progress
+TEMPORAL_DEFAULT = "PROG"  # most steps are in-progress
 
 # Conlang bridge: intent marker (why / who decided)
 # Inherited from Sacred Tongue grammatical roots:
@@ -89,23 +92,24 @@ TEMPORAL_DEFAULT = "PROG"   # most steps are in-progress
 #   EMRG  — emergent, arose without plan     (Avali passive voice)
 #   RECUR — recursive, intentional repeat    (Draumric iterative)
 INTENT_IDX = {"VOLI": 0, "REACT": 1, "EMRG": 2, "RECUR": 3}
-INTENT_DEFAULT = "VOLI"     # most deliberate code acts are volitional
+INTENT_DEFAULT = "VOLI"  # most deliberate code acts are volitional
 
 
 @dataclass
 class PhraseContext:
     """One occurrence of a phrase in a specific structural context."""
-    voice: str                          # PLANNER / IMPLEMENTER / VALIDATOR / REFACTORER
-    motif_id: Optional[str]             # motif_A ... motif_G or None
-    cadence_type: Optional[str]         # full / half / deceptive / ... or None
-    affect: str                         # SATISFACTION, URGENCY, etc.
-    trit: int                           # -1 / 0 / +1
-    tier: str                           # ALLOW / QUARANTINE / ESCALATE / DENY
-    tension_delta: float                # tension_after - tension_before
-    task_type: str                      # e.g. "consonant_arc", "motif_reuse"
-    example_code: str                   # surrounding code snippet
-    temporal_aspect: str = "PROG"       # INCP / PROG / PERF / PROSP
-    intent_marker: str  = "VOLI"        # VOLI / REACT / EMRG / RECUR
+
+    voice: str  # PLANNER / IMPLEMENTER / VALIDATOR / REFACTORER
+    motif_id: Optional[str]  # motif_A ... motif_G or None
+    cadence_type: Optional[str]  # full / half / deceptive / ... or None
+    affect: str  # SATISFACTION, URGENCY, etc.
+    trit: int  # -1 / 0 / +1
+    tier: str  # ALLOW / QUARANTINE / ESCALATE / DENY
+    tension_delta: float  # tension_after - tension_before
+    task_type: str  # e.g. "consonant_arc", "motif_reuse"
+    example_code: str  # surrounding code snippet
+    temporal_aspect: str = "PROG"  # INCP / PROG / PERF / PROSP
+    intent_marker: str = "VOLI"  # VOLI / REACT / EMRG / RECUR
 
     def to_vector(self) -> List[float]:
         """
@@ -131,12 +135,12 @@ class PhraseContext:
         v[4] = 1.0 if self.motif_id is not None else 0.0
         v[5] = 1.0 if self.cadence_type is not None else 0.0
         ai = AFFECT_IDX.get(self.affect, 0)
-        v[6] = ai / 7.0                          # normalized affect index
-        v[7] = (self.trit + 1) / 2.0             # -1->0, 0->0.5, +1->1.0
+        v[6] = ai / 7.0  # normalized affect index
+        v[7] = (self.trit + 1) / 2.0  # -1->0, 0->0.5, +1->1.0
         ti = TEMPORAL_IDX.get(self.temporal_aspect, 0)
-        v[8] = ti / 3.0                          # INCP=0.0, PROG=0.33, PERF=0.67, PROSP=1.0
+        v[8] = ti / 3.0  # INCP=0.0, PROG=0.33, PERF=0.67, PROSP=1.0
         ii = INTENT_IDX.get(self.intent_marker, 0)
-        v[9] = ii / 3.0                          # VOLI=0.0, REACT=0.33, EMRG=0.67, RECUR=1.0
+        v[9] = ii / 3.0  # VOLI=0.0, REACT=0.33, EMRG=0.67, RECUR=1.0
         return v
 
 
@@ -145,7 +149,7 @@ def _dot(a: List[float], b: List[float]) -> float:
 
 
 def _norm(v: List[float]) -> float:
-    return math.sqrt(sum(x ** 2 for x in v))
+    return math.sqrt(sum(x**2 for x in v))
 
 
 def cosine_similarity(a: List[float], b: List[float]) -> float:
@@ -174,9 +178,11 @@ def angular_spread(contexts: List[PhraseContext]) -> float:
 # PHRASE WELL
 # =============================================================================
 
+
 @dataclass
 class PhraseWell:
     """A semantic gravity well around a surface phrase."""
+
     phrase: str
     contexts: List[PhraseContext] = field(default_factory=list)
 
@@ -258,10 +264,7 @@ class PhraseWell:
         for i, ctx in enumerate(self.contexts):
             letter = chr(ord("A") + i)
             cadence_str = f", Cadence: {ctx.cadence_type}" if ctx.cadence_type else ""
-            lines.append(
-                f"CONTEXT {letter} -- Voice: {ctx.voice}, "
-                f"Motif: {ctx.motif_id or 'none'}{cadence_str}"
-            )
+            lines.append(f"CONTEXT {letter} -- Voice: {ctx.voice}, " f"Motif: {ctx.motif_id or 'none'}{cadence_str}")
             # Bridge words: conlang grammar layer — temporal aspect + intent
             lines.append(f"  [{ctx.temporal_aspect}  {ctx.intent_marker}]")
             lines.append(f"  Task type: {ctx.task_type}")
@@ -313,6 +316,7 @@ class PhraseWell:
 # =============================================================================
 # WELL MINER — scan a corpus and extract phrase wells
 # =============================================================================
+
 
 class PhraseWellMiner:
     """
@@ -377,63 +381,98 @@ if __name__ == "__main__":
 
     RETURN_CONTEXTS = [
         PhraseContext(
-            voice="IMPLEMENTER", motif_id="motif_A", cadence_type="full",
-            affect="SATISFACTION", trit=1, tier="ALLOW", tension_delta=-0.5,
+            voice="IMPLEMENTER",
+            motif_id="motif_A",
+            cadence_type="full",
+            affect="SATISFACTION",
+            trit=1,
+            tier="ALLOW",
+            tension_delta=-0.5,
             task_type="consonant_arc",
             example_code="def compute(x): ...; return result",
-            temporal_aspect="PERF",   # completed — the function is done
-            intent_marker="VOLI",     # deliberate: the implementer chose to return here
+            temporal_aspect="PERF",  # completed — the function is done
+            intent_marker="VOLI",  # deliberate: the implementer chose to return here
         ),
         PhraseContext(
-            voice="VALIDATOR", motif_id="motif_B", cadence_type="half",
-            affect="URGENCY", trit=-1, tier="QUARANTINE", tension_delta=1.5,
+            voice="VALIDATOR",
+            motif_id="motif_B",
+            cadence_type="half",
+            affect="URGENCY",
+            trit=-1,
+            tier="QUARANTINE",
+            tension_delta=1.5,
             task_type="dissonant_arc",
             example_code="if not valid: return None",
-            temporal_aspect="INCP",   # inception — short-circuits at first sign of bad state
-            intent_marker="REACT",    # reactive: guard triggered by external condition
+            temporal_aspect="INCP",  # inception — short-circuits at first sign of bad state
+            intent_marker="REACT",  # reactive: guard triggered by external condition
         ),
         PhraseContext(
-            voice="REFACTORER", motif_id="motif_D", cadence_type=None,
-            affect="RECOGNITION", trit=1, tier="ALLOW", tension_delta=0.0,
+            voice="REFACTORER",
+            motif_id="motif_D",
+            cadence_type=None,
+            affect="RECOGNITION",
+            trit=1,
+            tier="ALLOW",
+            tension_delta=0.0,
             task_type="motif_reuse",
             example_code="return transform(map(fn, items))",
-            temporal_aspect="PROG",   # progressive — transform chain ongoing
-            intent_marker="RECUR",    # recursive: intentional motif repetition
+            temporal_aspect="PROG",  # progressive — transform chain ongoing
+            intent_marker="RECUR",  # recursive: intentional motif repetition
         ),
         PhraseContext(
-            voice="PLANNER", motif_id=None, cadence_type="plagal",
-            affect="RELIEF", trit=0, tier="ALLOW", tension_delta=-1.0,
+            voice="PLANNER",
+            motif_id=None,
+            cadence_type="plagal",
+            affect="RELIEF",
+            trit=0,
+            tier="ALLOW",
+            tension_delta=-1.0,
             task_type="tension_spiral",
             example_code="return self._fallback()",
             temporal_aspect="PROSP",  # prospective — fallback was planned ahead of time
-            intent_marker="EMRG",     # emergent: the need for fallback arose, wasn't forced
+            intent_marker="EMRG",  # emergent: the need for fallback arose, wasn't forced
         ),
     ]
 
     IF_CONTEXTS = [
         PhraseContext(
-            voice="VALIDATOR", motif_id="motif_B", cadence_type="half",
-            affect="URGENCY", trit=-1, tier="QUARANTINE", tension_delta=2.0,
+            voice="VALIDATOR",
+            motif_id="motif_B",
+            cadence_type="half",
+            affect="URGENCY",
+            trit=-1,
+            tier="QUARANTINE",
+            tension_delta=2.0,
             task_type="dissonant_arc",
             example_code="if x is None: raise ValueError",
-            temporal_aspect="INCP",   # inception — guard at entry boundary
-            intent_marker="REACT",    # reactive: value was None from outside
+            temporal_aspect="INCP",  # inception — guard at entry boundary
+            intent_marker="REACT",  # reactive: value was None from outside
         ),
         PhraseContext(
-            voice="PLANNER", motif_id="motif_G", cadence_type=None,
-            affect="ANTICIPATION", trit=0, tier="ALLOW", tension_delta=0.5,
+            voice="PLANNER",
+            motif_id="motif_G",
+            cadence_type=None,
+            affect="ANTICIPATION",
+            trit=0,
+            tier="ALLOW",
+            tension_delta=0.5,
             task_type="tension_spiral",
             example_code="if len(stack) == 0: return base_case",
             temporal_aspect="PROSP",  # prospective — planner anticipated the empty case
-            intent_marker="VOLI",     # volitional: deliberate base-case design
+            intent_marker="VOLI",  # volitional: deliberate base-case design
         ),
         PhraseContext(
-            voice="REFACTORER", motif_id="motif_D", cadence_type="deceptive",
-            affect="ALARM", trit=-1, tier="ESCALATE", tension_delta=3.0,
+            voice="REFACTORER",
+            motif_id="motif_D",
+            cadence_type="deceptive",
+            affect="ALARM",
+            trit=-1,
+            tier="ESCALATE",
+            tension_delta=3.0,
             task_type="full_section_dense",
             example_code="if condition: x = transform(x) else: x = fallback(x)",
-            temporal_aspect="PROG",   # progressive — mid-transform, not resolved yet
-            intent_marker="EMRG",     # emergent: the branching need wasn't planned
+            temporal_aspect="PROG",  # progressive — mid-transform, not resolved yet
+            intent_marker="EMRG",  # emergent: the branching need wasn't planned
         ),
     ]
 
@@ -443,18 +482,38 @@ if __name__ == "__main__":
         miner.add("if", ctx)
 
     # Shallow phrase (won't make it past min_contexts — same voice/temporal/intent = low spread)
-    miner.add("x", PhraseContext(
-        voice="IMPLEMENTER", motif_id="motif_A", cadence_type=None,
-        affect="INITIATION", trit=0, tier="ALLOW", tension_delta=0.0,
-        task_type="consonant_arc", example_code="x = compute()",
-        temporal_aspect="INCP", intent_marker="VOLI",
-    ))
-    miner.add("x", PhraseContext(
-        voice="IMPLEMENTER", motif_id="motif_A", cadence_type=None,
-        affect="RECOGNITION", trit=1, tier="ALLOW", tension_delta=-0.2,
-        task_type="consonant_arc", example_code="x = x + 1",
-        temporal_aspect="PROG", intent_marker="VOLI",
-    ))
+    miner.add(
+        "x",
+        PhraseContext(
+            voice="IMPLEMENTER",
+            motif_id="motif_A",
+            cadence_type=None,
+            affect="INITIATION",
+            trit=0,
+            tier="ALLOW",
+            tension_delta=0.0,
+            task_type="consonant_arc",
+            example_code="x = compute()",
+            temporal_aspect="INCP",
+            intent_marker="VOLI",
+        ),
+    )
+    miner.add(
+        "x",
+        PhraseContext(
+            voice="IMPLEMENTER",
+            motif_id="motif_A",
+            cadence_type=None,
+            affect="RECOGNITION",
+            trit=1,
+            tier="ALLOW",
+            tension_delta=-0.2,
+            task_type="consonant_arc",
+            example_code="x = x + 1",
+            temporal_aspect="PROG",
+            intent_marker="VOLI",
+        ),
+    )
 
     print(miner.report())
     print()

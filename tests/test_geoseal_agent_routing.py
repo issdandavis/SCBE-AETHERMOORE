@@ -44,10 +44,10 @@ from src.geoseal_cli import (
     verify_seal,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _route(task: str, tongue: str | None = None) -> RouteResult:
     return route_task(task, force_tongue=tongue)
@@ -57,40 +57,44 @@ def _route(task: str, tongue: str | None = None) -> RouteResult:
 # 1. Keyword routing — all 6 tongues reachable
 # ---------------------------------------------------------------------------
 
+
 class TestKeywordRouting:
     """Each Sacred Tongue must be reachable via its canonical keywords."""
 
-    @pytest.mark.parametrize("task,expected_tongue", [
-        # Kor'aelin / Python
-        ("write a fibonacci function in python",        "KO"),
-        ("build a fastapi endpoint with pydantic",      "KO"),
-        ("use pandas to aggregate a dataframe",         "KO"),
-        ("pytest fixture for database testing",         "KO"),
-        # Avali / TypeScript
-        ("write a react component with useState hook",  "AV"),
-        ("parse JSON and call an API in typescript",    "AV"),
-        ("create a node.js express route handler",      "AV"),
-        ("npm package with tsx export",                 "AV"),
-        # Runethic / Rust
-        ("implement a thread-safe queue in rust",       "RU"),
-        ("use tokio async runtime with cargo",          "RU"),
-        ("explain rust ownership and lifetimes",        "RU"),
-        ("unsafe ffi binding with borrow checker",      "RU"),
-        # Cassisivadan / C / symbolic
-        ("write a c function using gcc and cmake",      "CA"),
-        ("symbolic differentiation of a polynomial",   "CA"),
-        ("mathematica expression for eigenvalues",      "CA"),
-        # Umbroth / Julia
-        ("solve a differential equation in julia",      "UM"),
-        ("optimize a dataframes pipeline in julia",     "UM"),
-        ("train a flux model in julia",                 "UM"),
-        ("pkg instantiate for a julia project",         "UM"),
-        # Draumric / Haskell
-        ("write a haskell monadic parser",              "DR"),
-        ("functors and applicatives in haskell",        "DR"),
-        ("cabal project with ghc",                      "DR"),
-        ("build a parser combinator in haskell",        "DR"),
-    ])
+    @pytest.mark.parametrize(
+        "task,expected_tongue",
+        [
+            # Kor'aelin / Python
+            ("write a fibonacci function in python", "KO"),
+            ("build a fastapi endpoint with pydantic", "KO"),
+            ("use pandas to aggregate a dataframe", "KO"),
+            ("pytest fixture for database testing", "KO"),
+            # Avali / TypeScript
+            ("write a react component with useState hook", "AV"),
+            ("parse JSON and call an API in typescript", "AV"),
+            ("create a node.js express route handler", "AV"),
+            ("npm package with tsx export", "AV"),
+            # Runethic / Rust
+            ("implement a thread-safe queue in rust", "RU"),
+            ("use tokio async runtime with cargo", "RU"),
+            ("explain rust ownership and lifetimes", "RU"),
+            ("unsafe ffi binding with borrow checker", "RU"),
+            # Cassisivadan / C / symbolic
+            ("write a c function using gcc and cmake", "CA"),
+            ("symbolic differentiation of a polynomial", "CA"),
+            ("mathematica expression for eigenvalues", "CA"),
+            # Umbroth / Julia
+            ("solve a differential equation in julia", "UM"),
+            ("optimize a dataframes pipeline in julia", "UM"),
+            ("train a flux model in julia", "UM"),
+            ("pkg instantiate for a julia project", "UM"),
+            # Draumric / Haskell
+            ("write a haskell monadic parser", "DR"),
+            ("functors and applicatives in haskell", "DR"),
+            ("cabal project with ghc", "DR"),
+            ("build a parser combinator in haskell", "DR"),
+        ],
+    )
     def test_keyword_routes_to_correct_tongue(self, task: str, expected_tongue: str):
         r = _route(task)
         assert r.tongue == expected_tongue, (
@@ -124,6 +128,7 @@ class TestKeywordRouting:
 # 2. Force-tongue override
 # ---------------------------------------------------------------------------
 
+
 class TestForceTongue:
     """--tongue flag must override routing for any of the 6 tongues."""
 
@@ -147,6 +152,7 @@ class TestForceTongue:
 # 3. Determinism — same task always produces same route
 # ---------------------------------------------------------------------------
 
+
 class TestDeterminism:
     """Routing must be deterministic: identical input → identical output."""
 
@@ -164,7 +170,7 @@ class TestDeterminism:
     def test_routing_is_deterministic(self, task: str):
         results = [_route(task) for _ in range(5)]
         tongues = [r.tongue for r in results]
-        confs   = [r.confidence for r in results]
+        confs = [r.confidence for r in results]
         assert len(set(tongues)) == 1, f"Non-deterministic routing for: {task!r} → {tongues}"
         assert len(set(confs)) == 1
 
@@ -178,6 +184,7 @@ class TestDeterminism:
 # ---------------------------------------------------------------------------
 # 4. Trit fallback routing (no keyword)
 # ---------------------------------------------------------------------------
+
 
 class TestTritFallback:
     """Tasks with no language keywords must still produce a valid route via trit aggregation."""
@@ -212,6 +219,7 @@ class TestTritFallback:
 # 5. Governance — phi-wall cost and tier properties
 # ---------------------------------------------------------------------------
 
+
 class TestGovernance:
     """phi-wall costs and tiers must satisfy mathematical invariants."""
 
@@ -220,11 +228,11 @@ class TestGovernance:
     def test_phi_weight_ordering(self):
         """Phi weights must increase monotonically: KO < AV < RU < CA < UM < DR."""
         from src.geoseal_cli import TONGUE_PHI_WEIGHTS
+
         weights = [TONGUE_PHI_WEIGHTS[t] for t in self.TONGUES]
         for i in range(len(weights) - 1):
             assert weights[i] < weights[i + 1], (
-                f"Weight ordering violated: {self.TONGUES[i]}={weights[i]} "
-                f">= {self.TONGUES[i+1]}={weights[i+1]}"
+                f"Weight ordering violated: {self.TONGUES[i]}={weights[i]} " f">= {self.TONGUES[i+1]}={weights[i+1]}"
             )
 
     @pytest.mark.parametrize("tongue", ["KO", "AV", "RU", "CA", "UM", "DR"])
@@ -239,18 +247,21 @@ class TestGovernance:
             for i in range(len(costs) - 1):
                 assert costs[i] <= costs[i + 1], f"Cost not monotone for {tongue}"
 
-    @pytest.mark.parametrize("tongue,chi,expected_tier", [
-        ("KO", 0.0,  "ALLOW"),
-        ("KO", 0.5,  "ALLOW"),
-        ("KO", 1.0,  "ALLOW"),    # KO is lightest tongue
-        ("DR", 2.0,  "DENY"),     # DR at chi=2.0 exceeds phi^1.5 threshold
-    ])
+    @pytest.mark.parametrize(
+        "tongue,chi,expected_tier",
+        [
+            ("KO", 0.0, "ALLOW"),
+            ("KO", 0.5, "ALLOW"),
+            ("KO", 1.0, "ALLOW"),  # KO is lightest tongue
+            ("DR", 2.0, "DENY"),  # DR at chi=2.0 exceeds phi^1.5 threshold
+        ],
+    )
     def test_tier_thresholds(self, tongue: str, chi: float, expected_tier: str):
         cost = phi_wall_cost(chi, tongue)
         tier = phi_wall_tier(cost)
-        assert tier == expected_tier, (
-            f"phi_wall_cost({chi}, {tongue}) = {cost:.4f} → tier={tier}, expected {expected_tier}"
-        )
+        assert (
+            tier == expected_tier
+        ), f"phi_wall_cost({chi}, {tongue}) = {cost:.4f} → tier={tier}, expected {expected_tier}"
 
     @pytest.mark.parametrize("tongue", ["KO", "AV", "RU", "CA", "UM", "DR"])
     def test_trust_score_in_unit_interval(self, tongue: str):
@@ -264,11 +275,11 @@ class TestGovernance:
 # 6. GeoSeal — seal correctness and tamper-detection
 # ---------------------------------------------------------------------------
 
+
 class TestGeoSeal:
     """GeoSeal stamps must be deterministic and tamper-evident."""
 
-    def _seal(self, op="agent", tongue="KO", code="print('hi')",
-              payload="test", cost=1.0, tier="ALLOW") -> str:
+    def _seal(self, op="agent", tongue="KO", code="print('hi')", payload="test", cost=1.0, tier="ALLOW") -> str:
         return compute_seal(op, tongue, code, payload, cost, tier)
 
     def test_seal_is_deterministic(self):
@@ -314,6 +325,7 @@ class TestGeoSeal:
 # 7. Bijection stress test — simple to complex
 # ---------------------------------------------------------------------------
 
+
 class TestBijectionStress:
     """Full route→seal pipeline must be bijective: distinct tasks → distinct seals."""
 
@@ -353,9 +365,8 @@ class TestBijectionStress:
 
     def _check_bijection(self, tasks: list[str]):
         seals = [self._seal_for_task(t) for t in tasks]
-        assert len(seals) == len(set(seals)), (
-            f"Seal collision detected in task set:\n" +
-            "\n".join(f"  {t} -> {s[:16]}..." for t, s in zip(tasks, seals))
+        assert len(seals) == len(set(seals)), f"Seal collision detected in task set:\n" + "\n".join(
+            f"  {t} -> {s[:16]}..." for t, s in zip(tasks, seals)
         )
 
     def test_bijection_simple(self):
@@ -381,13 +392,15 @@ class TestBijectionStress:
 # 8. CLI smoke tests (no inference)
 # ---------------------------------------------------------------------------
 
+
 class TestCLISmoke:
     """Verify the CLI parses and routes without calling inference providers."""
 
     def _run(self, *args: str) -> tuple[int, str, str]:
         result = subprocess.run(
             [sys.executable, "-m", "src.geoseal_cli", *args],
-            capture_output=True, text=True,
+            capture_output=True,
+            text=True,
             cwd=str(_REPO_ROOT),
             env={**__import__("os").environ, "PYTHONPATH": str(_REPO_ROOT)},
         )
@@ -453,6 +466,7 @@ class TestCLISmoke:
 # 9. ARC lane — routing arc tasks uses Umbroth (symbolic/math tongue)
 # ---------------------------------------------------------------------------
 
+
 class TestARCLane:
     """ARC synthesis must use Umbroth tongue (symbolic reasoning) + ALLOW tier."""
 
@@ -472,9 +486,7 @@ class TestARCLane:
             r = route_task(task)
             # Both CA and UM are acceptable for symbolic/math grid work
             # KO is also fine if the trit system picks it
-            assert r.tongue in {"KO", "CA", "UM"}, (
-                f"ARC task routed to unexpected tongue {r.tongue}: {task!r}"
-            )
+            assert r.tongue in {"KO", "CA", "UM"}, f"ARC task routed to unexpected tongue {r.tongue}: {task!r}"
 
     def test_arc_synthesis_and_seal(self, tmp_path):
         """Full arc solve → seal pipeline on a real task JSON."""
@@ -497,13 +509,10 @@ class TestARCLane:
         solution = synthesize_program(task)
 
         # Verify training accuracy
-        correct = sum(
-            1 for ex in task.train
-            if np.array_equal(execute_program(ex.input, solution.program), ex.output)
-        )
-        assert correct == len(task.train), (
-            f"Expected 100% train acc, got {correct}/{len(task.train)} for family={solution.family}"
-        )
+        correct = sum(1 for ex in task.train if np.array_equal(execute_program(ex.input, solution.program), ex.output))
+        assert correct == len(
+            task.train
+        ), f"Expected 100% train acc, got {correct}/{len(task.train)} for family={solution.family}"
 
         # GeoSeal the result
         tongue = "UM"
@@ -518,6 +527,7 @@ class TestARCLane:
 # ---------------------------------------------------------------------------
 # 10. Shared semantic IR — dual-strand convergence on common ops
 # ---------------------------------------------------------------------------
+
 
 class TestSharedSemanticIR:
     def test_cross_language_add_converges(self):

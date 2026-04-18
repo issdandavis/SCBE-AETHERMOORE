@@ -67,33 +67,40 @@ MAX_R = 27.42
 
 # Affect 3-bit codes (for compact encoding)
 AFFECT_CODES = {
-    "INITIATION":   "000",
+    "INITIATION": "000",
     "ANTICIPATION": "001",
-    "RECOGNITION":  "010",
-    "ENGAGEMENT":   "011",
-    "URGENCY":      "100",
-    "ALARM":        "101",
-    "RELIEF":       "110",
+    "RECOGNITION": "010",
+    "ENGAGEMENT": "011",
+    "URGENCY": "100",
+    "ALARM": "101",
+    "RELIEF": "110",
     "SATISFACTION": "111",
 }
 
+
 # Governance tier from d_H
 def _tier(d: float) -> str:
-    if d < 0.30:  return "ALLOW"
-    if d < 0.55:  return "QUARANTINE"
-    if d < 0.75:  return "ESCALATE"
+    if d < 0.30:
+        return "ALLOW"
+    if d < 0.55:
+        return "QUARANTINE"
+    if d < 0.75:
+        return "ESCALATE"
     return "DENY"
+
 
 _PHI = 1.6180339887
 
+
 def _cost(d: float, R: float = 5.0) -> float:
     """H(d,R) = phi^d / (1 + e^-R) — golden ratio exponential, sigmoid-gated."""
-    return (_PHI ** d) / (1.0 + math.exp(-R))
+    return (_PHI**d) / (1.0 + math.exp(-R))
 
 
 # =============================================================================
 # DENSE TOKEN
 # =============================================================================
+
 
 @dataclass
 class DenseToken:
@@ -105,11 +112,11 @@ class DenseToken:
     """
 
     # Identity
-    token: str                          # surface token string
-    position: int = 0                   # position in sequence
+    token: str  # surface token string
+    position: int = 0  # position in sequence
 
     # L0: Sacred Tongue
-    tongue_idx: int = 0                 # 0=KO 1=AV 2=RU 3=CA 4=UM 5=DR
+    tongue_idx: int = 0  # 0=KO 1=AV 2=RU 3=CA 4=UM 5=DR
     phi_weight: float = 1.00
 
     # L1: Musical
@@ -119,11 +126,11 @@ class DenseToken:
     voice: str = "IMPLEMENTER"
     motif_id: Optional[str] = None
     motif_instance: int = 1
-    is_motif_first: bool = True         # True=new instance, False=repeat
+    is_motif_first: bool = True  # True=new instance, False=repeat
 
     # L2: Trit
-    trit: int = 0                       # -1 / 0 / +1
-    r_contribution: float = 0.0        # this token's contribution to R
+    trit: int = 0  # -1 / 0 / +1
+    r_contribution: float = 0.0  # this token's contribution to R
 
     # L3: Hyperbolic
     d_H: float = 0.0
@@ -132,7 +139,7 @@ class DenseToken:
 
     # L4: Affect
     affect: str = "INITIATION"
-    salience: str = "MEDIUM"           # HIGH / MEDIUM / LOW
+    salience: str = "MEDIUM"  # HIGH / MEDIUM / LOW
 
     # L5: Cadence / Tension
     tension_before: float = 0.0
@@ -152,7 +159,12 @@ class DenseToken:
             f"[T{self.position}] token={self.token!r}",
             f"  L0: tongue={tongue}({tongue_full}) phi={self.phi_weight:.2f} slot={self.tongue_idx}",
             f"  L1: bar={self.bar} beat={self.beat} stress={self.stress:.1f} "
-            f"voice={self.voice}" + (f" motif={self.motif_id}[{self.motif_instance}]{'*' if not self.is_motif_first else ''}" if self.motif_id else ""),
+            f"voice={self.voice}"
+            + (
+                f" motif={self.motif_id}[{self.motif_instance}]{'*' if not self.is_motif_first else ''}"
+                if self.motif_id
+                else ""
+            ),
             f"  L2: trit={trit_str} R_contrib={self.r_contribution:.2f}",
             f"  L3: d_H={self.d_H:.3f} tier={self.tier} cost={self.h_cost:.3f}",
             f"  L4: affect={self.affect}({affect_bits}) salience={self.salience}",
@@ -172,6 +184,7 @@ class DenseToken:
 # =============================================================================
 # DENSE RECORD
 # =============================================================================
+
 
 @dataclass
 class DenseRecord:
@@ -196,10 +209,7 @@ class DenseRecord:
 
         mean_d = sum(t.d_H for t in self.tokens) / n
         peak_tension = max(t.tension_after for t in self.tokens)
-        mean_consonance_proxy = sum(
-            1.0 if t.trit == 1 else (0.5 if t.trit == 0 else 0.0)
-            for t in self.tokens
-        ) / n
+        mean_consonance_proxy = sum(1.0 if t.trit == 1 else (0.5 if t.trit == 0 else 0.0) for t in self.tokens) / n
         cadence_events = [t for t in self.tokens if t.is_cadence]
         affect_counts: Dict[str, int] = {}
         for t in self.tokens:
@@ -248,42 +258,37 @@ class DenseRecord:
 # Action type → affect mapping
 _ACTION_AFFECT: Dict[str, str] = {
     # INITIATION: something new begins
-    "define_func":    "INITIATION",
-    "define_class":   "INITIATION",
-    "plan_step":      "INITIATION",
-    "loop_start":     "INITIATION",
-    "try_start":      "INITIATION",
-    "import":         "INITIATION",
-
+    "define_func": "INITIATION",
+    "define_class": "INITIATION",
+    "plan_step": "INITIATION",
+    "loop_start": "INITIATION",
+    "try_start": "INITIATION",
+    "import": "INITIATION",
     # ANTICIPATION: arc open, outcome pending
-    "call":           "ANTICIPATION",
-    "call_method":    "ANTICIPATION",
-    "call_builtin":   "ANTICIPATION",
-    "if_branch":      "ANTICIPATION",
-    "define_var":     "ANTICIPATION",
-
+    "call": "ANTICIPATION",
+    "call_method": "ANTICIPATION",
+    "call_builtin": "ANTICIPATION",
+    "if_branch": "ANTICIPATION",
+    "define_var": "ANTICIPATION",
     # RELIEF: partial resolution
-    "assign":         "RELIEF",
+    "assign": "RELIEF",
     "augmented_assign": "RELIEF",
-    "loop_end":       "RELIEF",
-
+    "loop_end": "RELIEF",
     # SATISFACTION: full resolution
-    "return":         "SATISFACTION",
-    "validate_step":  "SATISFACTION",
-    "assert":         "SATISFACTION",
-
+    "return": "SATISFACTION",
+    "validate_step": "SATISFACTION",
+    "assert": "SATISFACTION",
     # ALARM: structural problems
-    "raise":          "ALARM",
-    "type_check":     "ANTICIPATION",  # checking = watchful
-
+    "raise": "ALARM",
+    "type_check": "ANTICIPATION",  # checking = watchful
     # ENGAGEMENT: transformation
-    "refactor_step":  "ENGAGEMENT",
-    "from_import":    "ENGAGEMENT",
-
+    "refactor_step": "ENGAGEMENT",
+    "from_import": "ENGAGEMENT",
     # RECOGNITION: review/confirm
     "comment_intent": "RECOGNITION",
-    "comment_why":    "RECOGNITION",
+    "comment_why": "RECOGNITION",
 }
+
 
 # Dissonance detected → override to ALARM
 def affect_for_token(
@@ -332,6 +337,7 @@ def affect_for_token(
 # Map a (token_string, context) to a fully-coded DenseToken
 # =============================================================================
 
+
 def encode_token(
     token: str,
     position: int,
@@ -371,11 +377,11 @@ def encode_token(
     # L2: trit from consonance + tension direction
     tension_delta = tension_after - tension_before
     if consonance < 0.5 or tension_delta >= 2.0:
-        trit = -1   # dissonant
+        trit = -1  # dissonant
     elif consonance >= 0.85 and tension_delta <= 0:
-        trit = 1    # consonant, resolving or neutral
+        trit = 1  # consonant, resolving or neutral
     else:
-        trit = 0    # neutral
+        trit = 0  # neutral
 
     r_contribution = trit * phi_weight if trit != 0 else 0.0
 
@@ -385,9 +391,7 @@ def encode_token(
     h_cost = _cost(d_H)
 
     # L4: affect
-    affect, salience = affect_for_token(
-        action_type, consonance, motif_id, is_motif_first, tension_delta
-    )
+    affect, salience = affect_for_token(action_type, consonance, motif_id, is_motif_first, tension_delta)
     # Override salience for cadence events
     if is_cadence and cadence_type == "full":
         affect = "SATISFACTION"
@@ -435,36 +439,45 @@ def encode_token(
 
 if __name__ == "__main__":
     import sys, io
+
     # Force UTF-8 output on Windows
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
     # Encode a simple guard-then-return function (motif_B)
     tokens_data = [
         # (token, bar, beat, voice, action_type, consonance, tension_before, tension_after, motif_id, is_first)
-        ("def",         1, 1, "IMPLEMENTER", "define_func",  1.0, 0.0, 0.5, "motif_B", True),
-        ("guard_fn",    1, 2, "IMPLEMENTER", "define_func",  0.95, 0.5, 0.5, "motif_B", True),
-        ("if",          1, 3, "IMPLEMENTER", "if_branch",    0.90, 0.5, 1.5, "motif_B", True),
-        ("not",         1, 3, "IMPLEMENTER", "if_branch",    0.90, 1.5, 1.5, None, True),
-        ("lst",         1, 3, "IMPLEMENTER", "define_var",   0.90, 1.5, 1.5, None, True),
-        ("return",      1, 4, "IMPLEMENTER", "return",       0.95, 1.5, 0.5, "motif_B", True),
-        ("sorted",      2, 1, "IMPLEMENTER", "call_builtin", 0.95, 0.5, 1.0, "motif_D", True),
-        ("lst",         2, 2, "IMPLEMENTER", "define_var",   0.95, 1.0, 1.0, None, True),
-        ("return",      2, 4, "IMPLEMENTER", "return",       1.0,  1.0, 0.0, "motif_A", True),
+        ("def", 1, 1, "IMPLEMENTER", "define_func", 1.0, 0.0, 0.5, "motif_B", True),
+        ("guard_fn", 1, 2, "IMPLEMENTER", "define_func", 0.95, 0.5, 0.5, "motif_B", True),
+        ("if", 1, 3, "IMPLEMENTER", "if_branch", 0.90, 0.5, 1.5, "motif_B", True),
+        ("not", 1, 3, "IMPLEMENTER", "if_branch", 0.90, 1.5, 1.5, None, True),
+        ("lst", 1, 3, "IMPLEMENTER", "define_var", 0.90, 1.5, 1.5, None, True),
+        ("return", 1, 4, "IMPLEMENTER", "return", 0.95, 1.5, 0.5, "motif_B", True),
+        ("sorted", 2, 1, "IMPLEMENTER", "call_builtin", 0.95, 0.5, 1.0, "motif_D", True),
+        ("lst", 2, 2, "IMPLEMENTER", "define_var", 0.95, 1.0, 1.0, None, True),
+        ("return", 2, 4, "IMPLEMENTER", "return", 1.0, 1.0, 0.0, "motif_A", True),
     ]
 
     record = DenseRecord(name="guard_fn", section_type="function")
     for i, (tok, bar, beat, voice, action, consonance, t_before, t_after, motif, is_first) in enumerate(tokens_data):
-        is_cad = (i == len(tokens_data) - 1)
-        record.tokens.append(encode_token(
-            token=tok, position=i,
-            bar=bar, beat=beat, voice=voice,
-            motif_id=motif, is_motif_first=is_first,
-            consonance=consonance,
-            tension_before=t_before, tension_after=t_after,
-            is_cadence=is_cad, cadence_type="full" if is_cad else None,
-            resolution=1.0 if is_cad else 0.0,
-            action_type=action,
-        ))
+        is_cad = i == len(tokens_data) - 1
+        record.tokens.append(
+            encode_token(
+                token=tok,
+                position=i,
+                bar=bar,
+                beat=beat,
+                voice=voice,
+                motif_id=motif,
+                is_motif_first=is_first,
+                consonance=consonance,
+                tension_before=t_before,
+                tension_after=t_after,
+                is_cadence=is_cad,
+                cadence_type="full" if is_cad else None,
+                resolution=1.0 if is_cad else 0.0,
+                action_type=action,
+            )
+        )
 
     print("=== FULL NOTATION ===")
     print(record.to_notation())

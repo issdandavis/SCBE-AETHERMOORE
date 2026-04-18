@@ -10,7 +10,6 @@ from .arc_io import ARCTask
 from .family_lattice import AXES, FAMILY_TOPOLOGIES, FLAT_FAMILY_ORDER, task_topology
 from .pqc_braid_thread import ThreatVerdict, detect_threat, pqc_thread_score
 
-
 BRAID_TONGUES = ("CA", "UM", "DR")
 
 # Phi weights per tongue (KO=1.0 baseline, DR=11.09 most sensitive).
@@ -106,7 +105,9 @@ def family_trit_voxel(family: str) -> TritVoxel:
     return TritVoxel.from_triad(family_sig.triad)
 
 
-def family_token_braid_signatures(tongues: tuple[str, ...] = BRAID_TONGUES) -> dict[str, dict[str, TokenBraidSignature]]:
+def family_token_braid_signatures(
+    tongues: tuple[str, ...] = BRAID_TONGUES,
+) -> dict[str, dict[str, TokenBraidSignature]]:
     out: dict[str, dict[str, TokenBraidSignature]] = {}
     for family in FAMILY_TOPOLOGIES:
         packet = _family_packet(family)
@@ -127,8 +128,7 @@ FAMILY_BRAID_SIGNATURES = family_token_braid_signatures()
 
 # Thread 3: pre-built PQC fingerprints for each family (built once at import)
 FAMILY_PQC_PACKETS: dict[str, bytes] = {
-    family: next(iter(FAMILY_BRAID_SIGNATURES[family].values())).packet
-    for family in FAMILY_TOPOLOGIES
+    family: next(iter(FAMILY_BRAID_SIGNATURES[family].values())).packet for family in FAMILY_TOPOLOGIES
 }
 
 
@@ -182,7 +182,9 @@ def _triad_alignment(task_triad_vec: tuple[int, ...], family: str) -> float:
     return _trit_voxel_alignment(task_voxel, family_trit_voxel(family))
 
 
-def _harmonic_alignment(task_tokens_by_tongue: dict[str, tuple[str, ...]], family: str, tongues: tuple[str, ...]) -> float:
+def _harmonic_alignment(
+    task_tokens_by_tongue: dict[str, tuple[str, ...]], family: str, tongues: tuple[str, ...]
+) -> float:
     score = 0.0
     for tongue in tongues:
         tokenizer_tongue = _tokenizer_code(tongue)
@@ -216,11 +218,11 @@ def _token_braid_scores(task: ARCTask, tongues: tuple[str, ...] = BRAID_TONGUES)
         # Thread 3: PQC hash-tree fingerprint (FIPS 205 FORS-style Merkle tree)
         pqc_score = pqc_thread_score(task_packet_bytes, FAMILY_PQC_PACKETS[family])
         score = (
-            0.25 * token_score       # Thread 1 — tongue braid
+            0.25 * token_score  # Thread 1 — tongue braid
             + 0.10 * harmonic_score  # Thread 1 — harmonic fingerprint
-            + 0.25 * packet_score    # Thread 2 — geometry
-            + 0.20 * triad_score     # Thread 2 — TritVoxel
-            + 0.15 * pqc_score       # Thread 3 — PQC proof
+            + 0.25 * packet_score  # Thread 2 — geometry
+            + 0.20 * triad_score  # Thread 2 — TritVoxel
+            + 0.15 * pqc_score  # Thread 3 — PQC proof
             + 0.05 * topology.charge
         )
         scored.append((family, score))
@@ -261,9 +263,7 @@ def tongue_null_axes(task: ARCTask, base_threshold: float = 0.10) -> dict[str, f
     topo = task_topology(task)
     result: dict[str, frozenset[int]] = {}
     for tongue, phi in _TONGUE_PHI_WEIGHTS.items():
-        null = frozenset(
-            i for i, v in enumerate(topo) if float(v) * phi < base_threshold
-        )
+        null = frozenset(i for i, v in enumerate(topo) if float(v) * phi < base_threshold)
         result[tongue] = null
     return result
 

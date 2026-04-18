@@ -8,6 +8,7 @@ This classifier is a lightweight prefilter that reorders solver family candidate
 so that families aligned with the dominant pressure axis are tried first. It uses
 only per-example grid statistics — no 14-layer pipeline overhead.
 """
+
 from __future__ import annotations
 
 from typing import Literal
@@ -15,7 +16,6 @@ from typing import Literal
 import numpy as np
 
 from .arc_io import ARCTask
-
 
 # ---------------------------------------------------------------------------
 # Axis vectors from arc_14layer_pressure_probe.py — 12D, aligned with the
@@ -48,54 +48,60 @@ _AXIS_LABELS: tuple[str, str, str] = ("shape-led", "phase-led", "growth-led")
 # Solver family groupings per axis
 # ---------------------------------------------------------------------------
 
-_SHAPE_FAMILIES: frozenset[str] = frozenset({
-    "flip_x",
-    "flip_y",
-    "transpose",
-    "rotate_cw",
-    "rotate_ccw",
-    "rotate_180",
-    "sym_complete_x",
-    "sym_complete_y",
-    "crop_then_flip_x",
-    "crop_then_flip_y",
-    "crop_then_transpose",
-    "crop_then_rotate_cw",
-    "crop_then_rotate_ccw",
-    "crop_then_rotate_180",
-    "tile_mirror_2x2",
-    "tile_rotate_2x2",
-    "h_concat_flip",
-    "v_concat_flip",
-    "connect_aligned_pairs",
-})
+_SHAPE_FAMILIES: frozenset[str] = frozenset(
+    {
+        "flip_x",
+        "flip_y",
+        "transpose",
+        "rotate_cw",
+        "rotate_ccw",
+        "rotate_180",
+        "sym_complete_x",
+        "sym_complete_y",
+        "crop_then_flip_x",
+        "crop_then_flip_y",
+        "crop_then_transpose",
+        "crop_then_rotate_cw",
+        "crop_then_rotate_ccw",
+        "crop_then_rotate_180",
+        "tile_mirror_2x2",
+        "tile_rotate_2x2",
+        "h_concat_flip",
+        "v_concat_flip",
+        "connect_aligned_pairs",
+    }
+)
 
-_PHASE_FAMILIES: frozenset[str] = frozenset({
-    "color_remap",
-    "corner_legend_row_swap",
-    "shift_then_color_remap",
-    "flip_x_then_color_remap",
-    "flip_y_then_color_remap",
-    "transpose_then_color_remap",
-    "rotate_cw_then_color_remap",
-    "rotate_ccw_then_color_remap",
-    "rotate_180_then_color_remap",
-    "upscale_then_color_remap",
-})
+_PHASE_FAMILIES: frozenset[str] = frozenset(
+    {
+        "color_remap",
+        "corner_legend_row_swap",
+        "shift_then_color_remap",
+        "flip_x_then_color_remap",
+        "flip_y_then_color_remap",
+        "transpose_then_color_remap",
+        "rotate_cw_then_color_remap",
+        "rotate_ccw_then_color_remap",
+        "rotate_180_then_color_remap",
+        "upscale_then_color_remap",
+    }
+)
 
-_GROWTH_FAMILIES: frozenset[str] = frozenset({
-    "tile",
-    "tile_self",
-    "tile_self_complement",
-    "panel_consensus_tile",
-    "upscale",
-    "upscale_color_count",
-    "extract_panel",
-    "extract_half_longer",
-    "crop_bbox",
-    "fill_enclosed",
-    "paint_border",
-})
+_GROWTH_FAMILIES: frozenset[str] = frozenset(
+    {
+        "tile",
+        "tile_self",
+        "tile_self_complement",
+        "panel_consensus_tile",
+        "upscale",
+        "upscale_color_count",
+        "extract_panel",
+        "extract_half_longer",
+        "crop_bbox",
+        "fill_enclosed",
+        "paint_border",
+    }
+)
 
 
 # ---------------------------------------------------------------------------
@@ -151,12 +157,7 @@ def _component_count_fast(grid: np.ndarray) -> int:
             while stack:
                 rr, cc = stack.pop()
                 for nr, nc in ((rr - 1, cc), (rr + 1, cc), (rr, cc - 1), (rr, cc + 1)):
-                    if (
-                        0 <= nr < h
-                        and 0 <= nc < w
-                        and not visited[nr, nc]
-                        and int(grid[nr, nc]) == color
-                    ):
+                    if 0 <= nr < h and 0 <= nc < w and not visited[nr, nc] and int(grid[nr, nc]) == color:
                         visited[nr, nc] = True
                         stack.append((nr, nc))
     return count

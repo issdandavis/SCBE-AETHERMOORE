@@ -8,7 +8,6 @@ from onnx import TensorProto
 
 from .cost import NetworkCost, conv2d_macs, score_from_total_cost, tensor_nbytes
 
-
 BANNED_OPS = frozenset({"Loop", "Scan", "NonZero", "Unique", "Script", "Function"})
 MAX_ONNX_BYTES = 1_440_000
 
@@ -56,9 +55,7 @@ def validate_submission_model(path: str | Path) -> ValidationReport:
     model_path = Path(path)
     file_size = model_path.stat().st_size
     if file_size > MAX_ONNX_BYTES:
-        raise ValueError(
-            f"ONNX file {model_path} exceeds NeuroGolf size cap: {file_size} > {MAX_ONNX_BYTES}"
-        )
+        raise ValueError(f"ONNX file {model_path} exceeds NeuroGolf size cap: {file_size} > {MAX_ONNX_BYTES}")
 
     model = onnx.load(str(model_path), load_external_data=False)
     op_types = tuple(node.op_type for node in model.graph.node)

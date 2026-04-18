@@ -29,6 +29,7 @@ import pytest
 
 # Make sure imports resolve from repo root
 import sys, os
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.crypto.harmonic_cipher import (
@@ -56,7 +57,6 @@ from src.crypto.harmonic_cipher import (
     seal,
     unseal,
 )
-
 
 # ============================================================
 # Fixtures
@@ -96,6 +96,7 @@ def empty_ids() -> List[int]:
 # Key Derivation
 # ============================================================
 
+
 class TestKeyDerivation:
     def test_derive_message_key_deterministic(self, k_master):
         k1 = derive_message_key(k_master, NONCE)
@@ -108,7 +109,7 @@ class TestKeyDerivation:
         assert k1 != k2
 
     def test_derive_message_key_different_master(self):
-        nonce = b"\xAB" * 12
+        nonce = b"\xab" * 12
         k1 = derive_message_key(b"key-a" * 7, nonce)
         k2 = derive_message_key(b"key-b" * 7, nonce)
         assert k1 != k2
@@ -127,6 +128,7 @@ class TestKeyDerivation:
 # ============================================================
 # Feistel Permutation
 # ============================================================
+
 
 class TestFeistelPermutation:
     def test_round_trip_even_length(self, k_msg, small_ids):
@@ -185,6 +187,7 @@ class TestFeistelPermutation:
 # ============================================================
 # Harmonic Synthesis
 # ============================================================
+
 
 class TestHarmonicSynthesis:
     def test_output_shape(self, small_ids):
@@ -251,14 +254,13 @@ class TestHarmonicSynthesis:
         peak_bin = int(np.argmax(fft_mag))
         peak_freq = float(freqs[peak_bin])
 
-        assert abs(peak_freq - f_expected) < 5.0, (
-            f"Peak at {peak_freq:.1f}Hz, expected {f_expected:.1f}Hz"
-        )
+        assert abs(peak_freq - f_expected) < 5.0, f"Peak at {peak_freq:.1f}Hz, expected {f_expected:.1f}Hz"
 
 
 # ============================================================
 # Harmonic Verification (internal)
 # ============================================================
+
 
 class TestHarmonicVerify:
     def test_self_consistent(self, small_ids):
@@ -289,6 +291,7 @@ class TestHarmonicVerify:
 # ============================================================
 # Envelope: Build + Verify
 # ============================================================
+
 
 class TestEnvelopeBuildVerify:
     def test_build_returns_envelope(self, k_master, small_ids):
@@ -334,6 +337,7 @@ class TestEnvelopeBuildVerify:
 # MAC Tamper Detection
 # ============================================================
 
+
 class TestMACTamperDetection:
     def test_tamper_payload_fails_mac(self, k_master):
         j = seal(k_master, b"integrity test", tongue="ko", modality=Modality.PROBE)
@@ -378,6 +382,7 @@ class TestMACTamperDetection:
 # Replay Detection
 # ============================================================
 
+
 class TestReplayDetection:
     def test_fresh_envelope_passes(self, k_master):
         j = seal(k_master, b"fresh", tongue="ko", modality=Modality.PROBE)
@@ -391,6 +396,7 @@ class TestReplayDetection:
         d["header"]["ts"] = int((time.time() - 125) * 1000)
         # Must recompute sig after changing ts (otherwise MAC fails first)
         from src.crypto.harmonic_cipher import _canonical_string, envelope_from_dict, _aad_canonical
+
         env_bad = envelope_from_dict(d)
         env_bad.sig = ""  # clear old sig
         canonical = _canonical_string(env_bad)
@@ -405,6 +411,7 @@ class TestReplayDetection:
         d_final["header"]["ts"] = int((time.time() - 125) * 1000)
 
         from src.crypto.harmonic_cipher import verify_envelope
+
         result = verify_envelope(envelope_from_dict(d_final), k_master, tau_max_s=60, harmonic_check=False)
         # Note: MAC will likely fail because ts in canonical doesn't match d_final ts
         # The important thing is that the result is not valid
@@ -415,6 +422,7 @@ class TestReplayDetection:
 # ============================================================
 # FFT Peak Extraction
 # ============================================================
+
 
 class TestFFTPeakExtraction:
     def test_extract_single_token_id(self):
@@ -448,6 +456,7 @@ class TestFFTPeakExtraction:
 # Modality Mask Correctness
 # ============================================================
 
+
 class TestModalityMasks:
     def test_strict_mask(self):
         assert MODALITY_MASKS[Modality.STRICT] == [1, 3, 5]
@@ -475,6 +484,7 @@ class TestModalityMasks:
 # Edge Cases
 # ============================================================
 
+
 class TestEdgeCases:
     def test_seal_empty_data(self, k_master):
         """Sealing empty bytes should produce a valid envelope that unseals cleanly."""
@@ -484,7 +494,7 @@ class TestEdgeCases:
         assert result.token_ids == []
 
     def test_seal_single_byte(self, k_master):
-        j = seal(k_master, b"\xFF", tongue="ko", modality=Modality.PROBE)
+        j = seal(k_master, b"\xff", tongue="ko", modality=Modality.PROBE)
         result = unseal(k_master, j, harmonic_check=False)
         assert result.valid
         assert result.token_ids == [0xFF]
