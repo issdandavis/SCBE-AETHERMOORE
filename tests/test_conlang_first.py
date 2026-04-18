@@ -28,7 +28,9 @@ from scripts.generate_conlang_first_sft import (
     generate_tongue_comparison_records,
     generate_pipeline_order_record,
 )
-from src.crypto.sacred_tongues import TONGUES
+from src.crypto.sacred_tongues import TONGUES, TongueSpec
+from src.crypto.tri_bundle import TONGUE_WEIGHTS, PHI
+from src.crypto.harmonic_dark_fill import TONGUE_AUDIBLE_FREQ
 
 # ===================================================================
 # Full Name Policy — NEVER abbreviate the conlangs

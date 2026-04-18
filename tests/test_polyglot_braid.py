@@ -15,7 +15,7 @@ from src.crypto.polyglot_braid import (
     weave_all_concepts,
     braid_summary,
 )
-from src.crypto.tri_bundle import TONGUE_WEIGHTS
+from src.crypto.tri_bundle import TONGUE_WEIGHTS, PHI
 
 # ===================================================================
 # Language Registry

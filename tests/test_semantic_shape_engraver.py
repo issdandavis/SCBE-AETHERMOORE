@@ -253,7 +253,7 @@ class TestPersonalityVector:
     def test_clamped_to_0_1(self):
         """Even with all tongues active, values stay in [0, 1]."""
         vector = self.engraver.compute_personality_vector(["KO", "AV", "RU", "CA", "UM", "DR"], codex=1)
-        for _axis, val in vector.items():
+        for axis, val in vector.items():
             assert 0.0 <= val <= 1.0
 
     def test_um_reduces_empathy(self):

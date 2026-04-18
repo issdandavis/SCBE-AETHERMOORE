@@ -31,6 +31,7 @@ from src.crypto.qho_bundle import (
     QHOLevel,
     MAX_N,
 )
+from src.crypto.trit_curriculum import TRIT_AXES
 
 # ===================================================================
 # Pattern Registry

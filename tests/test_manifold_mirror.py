@@ -21,6 +21,7 @@ from src.crypto.manifold_mirror import (
     format_mirror_report,
     ALL_TONGUES,
 )
+from src.crypto.harmonic_dark_fill import COMPLEMENT_MAP
 
 # ===================================================================
 # Encoding tests

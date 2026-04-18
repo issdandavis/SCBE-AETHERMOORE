@@ -22,6 +22,7 @@ from src.crypto.genesis_panels import (
     compile_study,
 )
 from src.crypto.crossing_energy import Decision
+from src.crypto.harmonic_dark_fill import PHI, INTERVALS
 
 # ===================================================================
 # Constants and Enums

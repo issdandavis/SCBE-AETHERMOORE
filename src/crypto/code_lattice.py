@@ -58,6 +58,7 @@ from src.crypto.qho_bundle import (
     flatten_qho_for_sft,
     MAX_N,
 )
+from src.crypto.harmonic_dark_fill import PHI
 
 # ---------------------------------------------------------------------------
 # Constants: Tongue -> Coding Domain
