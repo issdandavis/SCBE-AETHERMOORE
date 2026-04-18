@@ -52,7 +52,7 @@ Dual-loss rotating weight:
 from __future__ import annotations
 
 import math
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import torch
 import torch.nn as nn
@@ -380,11 +380,8 @@ class GyroPatchedModel(nn.Module):
             hidden = hidden + transformer.wpe(position_ids)
         hidden = transformer.drop(hidden)
 
-        # Build causal mask
-        past_key_values = kwargs.get("past_key_values", None)
-
         # First half: blocks 0..insert_after_layer
-        for i, block in enumerate(transformer.h[: self.insert_after_layer + 1]):
+        for _i, block in enumerate(transformer.h[: self.insert_after_layer + 1]):
             outputs = block(hidden, attention_mask=attention_mask)
             hidden = outputs[0]
 

@@ -44,11 +44,6 @@ from src.crypto.dark_cloud_mapper import (
     build_dark_energy_map,
     DarkEnergyMap,
 )
-from src.crypto.crossing_energy import (
-    evaluate_sequence,
-    summarize_governance,
-    GovernanceSummary,
-)
 
 # ---------------------------------------------------------------------------
 # Natural Language Registry

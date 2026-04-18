@@ -31,7 +31,6 @@ Phi-weights (from LWS): KO=1.000, AV=1.618, RU=2.618, CA=4.236, UM=6.854, DR=11.
 from __future__ import annotations
 
 import base64
-import math
 import re
 import sys
 from dataclasses import dataclass, field

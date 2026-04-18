@@ -35,15 +35,11 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 # SCBE pipeline imports
-try:
-    from src.symphonic_cipher.scbe_aethermoore.layers.fourteen_layer_pipeline import (
-        layer_12_harmonic_scaling,
-        layer_13_risk_decision,
-    )
+import importlib.util
 
-    _PIPELINE_AVAILABLE = True
-except ImportError:
-    _PIPELINE_AVAILABLE = False
+_PIPELINE_AVAILABLE = (
+    importlib.util.find_spec("src.symphonic_cipher.scbe_aethermoore.layers.fourteen_layer_pipeline") is not None
+)
 
 # Sacred Tongues phi-weights: KO=1.00, AV=1.62, RU=2.62, CA=4.24, UM=6.85, DR=11.09
 TONGUE_WEIGHTS = np.array([1.00, 1.62, 2.62, 4.24, 6.85, 11.09])
@@ -127,7 +123,6 @@ def coupling_operator(
     # Angle of attack: how aligned is the trajectory with the danger direction?
     # If alpha not provided, use magnitude as proxy
     if alpha is None:
-        speed = np.linalg.norm(x_flight) + EPS
         alpha = math.pi / 4  # default: 45 degrees
 
     # Lift magnitude: maximal when flying parallel to constraint (sin(alpha)=1)

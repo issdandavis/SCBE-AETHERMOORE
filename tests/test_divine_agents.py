@@ -28,7 +28,7 @@ from src.crypto.divine_agents import (
     run_divine_experiment,
     format_study_report,
 )
-from src.crypto.crossing_energy import Decision, DualTernaryPair
+from src.crypto.crossing_energy import Decision
 
 # ===================================================================
 # Historical Era Constants

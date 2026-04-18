@@ -37,7 +37,6 @@ from src.crypto.genesis_panels import (
     run_dual_panel,
     run_full_simulation,
 )
-from src.crypto.crossing_energy import Decision
 
 # ===================================================================
 # Constants

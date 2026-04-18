@@ -46,7 +46,7 @@ import textwrap
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 # ---------------------------------------------------------------------------
 # Atomic tokenizer import (from python/scbe/atomic_tokenization.py)
@@ -57,7 +57,6 @@ try:
         sys.path.insert(0, str(_REPO_ROOT))
     from python.scbe.atomic_tokenization import (
         TONGUES,
-        TritVector,
         map_token_to_atomic_state,
         tokens_to_tau_sequence,
     )

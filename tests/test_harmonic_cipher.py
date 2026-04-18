@@ -36,14 +36,12 @@ from src.crypto.harmonic_cipher import (
     BASE_F,
     DELTA_F,
     FEISTEL_ROUNDS,
-    H_MAX,
     MODALITY_MASKS,
     NYQUIST,
     SAMPLE_RATE,
     T_SEC,
     HarmonicEnvelope,
     Modality,
-    VerificationResult,
     _extract_ids_from_audio,
     _harmonic_verify,
     _round_subkey,
@@ -395,7 +393,7 @@ class TestReplayDetection:
         # Set timestamp 2 minutes in the past (> 60s replay window)
         d["header"]["ts"] = int((time.time() - 125) * 1000)
         # Must recompute sig after changing ts (otherwise MAC fails first)
-        from src.crypto.harmonic_cipher import _canonical_string, envelope_from_dict, _aad_canonical
+        from src.crypto.harmonic_cipher import _canonical_string, envelope_from_dict
 
         env_bad = envelope_from_dict(d)
         env_bad.sig = ""  # clear old sig

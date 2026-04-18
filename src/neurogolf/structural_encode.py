@@ -84,7 +84,7 @@ def _token_ids_from_tongue_bytes(tongue_bytes: np.ndarray) -> np.ndarray:
     """Translate lane-local bytes into fixed tokenizer IDs."""
 
     out = np.empty_like(tongue_bytes, dtype=np.int64)
-    for lane, tongue in enumerate(_TONGUE_ORDER):
+    for lane, _tongue in enumerate(_TONGUE_ORDER):
         offset = lane * 256
         out[lane] = offset + tongue_bytes[lane].astype(np.int64)
     return out

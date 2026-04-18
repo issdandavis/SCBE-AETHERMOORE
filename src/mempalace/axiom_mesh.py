@@ -137,7 +137,6 @@ STOPWORDS: frozenset[str] = frozenset(
         "text",
         "list",
         "dict",
-        "set",
         "type",
         "types",
         "data",

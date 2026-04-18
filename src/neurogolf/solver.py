@@ -84,6 +84,7 @@ from .ir import (
     make_bg_cluster_fill_program,
     make_diagonal_fill_program,
     make_local_rule_3x3_program,
+    make_local_rule_crossdist_program,
 )
 
 
@@ -867,7 +868,6 @@ def _execute_panel_complement_fill(grid_np: np.ndarray) -> np.ndarray:
 
 def _execute_grid_select_min_colors(grid_np: np.ndarray) -> np.ndarray:
     """Extract grid cells separated by uniform-color dividers, return cell with fewest non-bg colors."""
-    from collections import Counter  # noqa: PLC0415
 
     h, w = grid_np.shape
     div_color = None
@@ -1311,6 +1311,48 @@ def _execute_local_rule_3x3(grid_np: np.ndarray, rules_serialized: list) -> np.n
                     else:
                         nbr.append(-1)
             key = tuple(nbr)
+            if key in table:
+                out[r, c] = table[key]
+    return out
+
+
+def _crossdist_key(grid_np: np.ndarray, r: int, c: int) -> tuple[int, ...]:
+    """Build a cross-scan key: (center, L_color, L_dist, R_color, R_dist, U_color, U_dist, D_color, D_dist)."""
+    h, w = grid_np.shape
+    center = int(grid_np[r, c])
+    left, ld = -1, 0
+    for cc in range(c - 1, -1, -1):
+        if grid_np[r, cc] != 0:
+            left, ld = int(grid_np[r, cc]), c - cc
+            break
+    right, rd = -1, 0
+    for cc in range(c + 1, w):
+        if grid_np[r, cc] != 0:
+            right, rd = int(grid_np[r, cc]), cc - c
+            break
+    up, ud = -1, 0
+    for rr in range(r - 1, -1, -1):
+        if grid_np[rr, c] != 0:
+            up, ud = int(grid_np[rr, c]), r - rr
+            break
+    down, dd = -1, 0
+    for rr in range(r + 1, h):
+        if grid_np[rr, c] != 0:
+            down, dd = int(grid_np[rr, c]), rr - r
+            break
+    return (center, left, ld, right, rd, up, ud, down, dd)
+
+
+def _execute_local_rule_crossdist(grid_np: np.ndarray, rules_serialized: list) -> np.ndarray:
+    """Apply a learned cross-scan CA rule (nearest non-zero color+dist in 4 directions)."""
+    h, w = grid_np.shape
+    table: dict[tuple[int, ...], int] = {}
+    for key_list, val in rules_serialized:
+        table[tuple(key_list)] = val
+    out = grid_np.copy()
+    for r in range(h):
+        for c in range(w):
+            key = _crossdist_key(grid_np, r, c)
             if key in table:
                 out[r, c] = table[key]
     return out
@@ -1769,6 +1811,9 @@ def execute_program(grid: np.ndarray, program: StraightLineProgram) -> np.ndarra
             continue
         if step.op == "local_rule_3x3":
             out = _execute_local_rule_3x3(out, step.args["rules"])
+            continue
+        if step.op == "local_rule_crossdist":
+            out = _execute_local_rule_crossdist(out, step.args["rules"])
             continue
         raise NotImplementedError(f"Execution for primitive '{step.op}' is not implemented")
     return out
@@ -3435,7 +3480,6 @@ def _solve_bespoke_79369cc6(task: ARCTask) -> SynthesizedSolution | None:
 
     Validates on training examples before returning, so this is safe to call for any task.
     """
-    from .ir import make_anchor_fill_brute_program  # noqa: PLC0415
 
     program = make_anchor_fill_brute_program()
     if _program_matches_train(task, program):
@@ -3915,6 +3959,32 @@ def _solve_bespoke_local_rule_3x3(task: ARCTask) -> SynthesizedSolution | None:
     return None
 
 
+def _solve_bespoke_local_rule_crossdist(task: ARCTask) -> SynthesizedSolution | None:
+    """Learn a cross-scan CA rule: nearest non-zero color+distance in 4 cardinal directions."""
+    if not _all_same_shape(task.train):
+        return None
+    table: dict[tuple[int, ...], int] = {}
+    for ex in task.train:
+        inp = np.asarray(ex.input, dtype=np.int64)
+        outp = np.asarray(ex.output, dtype=np.int64)
+        h, w = inp.shape
+        for r in range(h):
+            for c in range(w):
+                key = _crossdist_key(inp, r, c)
+                val = int(outp[r, c])
+                if key in table and table[key] != val:
+                    return None  # inconsistent
+                table[key] = val
+    # Only store rules where output differs from center (key[0])
+    changing = [[list(k), v] for k, v in table.items() if v != k[0]]
+    if not changing:
+        return None
+    program = make_local_rule_crossdist_program(changing)
+    if _program_matches_train(task, program):
+        return SynthesizedSolution(program=program, family="local_rule_crossdist")
+    return None
+
+
 def synthesize_program(task: ARCTask) -> SynthesizedSolution:
     # --- Phase -1: bespoke task-specific solvers (fastest, checked first) ---
     bespoke = _solve_bespoke_79369cc6(task)
@@ -4034,6 +4104,10 @@ def synthesize_program(task: ARCTask) -> SynthesizedSolution:
         return bespoke
 
     bespoke = _solve_bespoke_local_rule_3x3(task)
+    if bespoke is not None:
+        return bespoke
+
+    bespoke = _solve_bespoke_local_rule_crossdist(task)
     if bespoke is not None:
         return bespoke
 

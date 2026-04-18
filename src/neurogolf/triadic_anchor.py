@@ -30,7 +30,7 @@ import numpy as np
 
 from .arc_io import ARCTask
 from .family_lattice import AXES, FAMILY_TOPOLOGIES, FLAT_FAMILY_ORDER, task_topology
-from .token_braid import BRAID_TONGUES, task_triad
+from .token_braid import task_triad
 
 PHI = (1 + math.sqrt(5)) / 2
 

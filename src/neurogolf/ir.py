@@ -82,6 +82,7 @@ ALLOWED_PRIMITIVES = frozenset(
         "bg_cluster_fill",
         "diagonal_fill",
         "local_rule_3x3",
+        "local_rule_crossdist",
     }
 )
 
@@ -739,4 +740,16 @@ def make_local_rule_3x3_program(rules: list) -> StraightLineProgram:
     return StraightLineProgram(
         name="local_rule_3x3",
         steps=(IRStep(op="local_rule_3x3", args={"rules": rules}),),
+    )
+
+
+def make_local_rule_crossdist_program(rules: list) -> StraightLineProgram:
+    """Cross-scan CA: nearest non-zero color+distance in 4 cardinal directions.
+
+    Key per cell: [center, L_color, L_dist, R_color, R_dist, U_color, U_dist, D_color, D_dist].
+    rules: list of [[key_9_ints], output_value] pairs (only changing cells).
+    """
+    return StraightLineProgram(
+        name="local_rule_crossdist",
+        steps=(IRStep(op="local_rule_crossdist", args={"rules": rules}),),
     )

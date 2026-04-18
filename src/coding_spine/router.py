@@ -38,7 +38,6 @@ if _python_path not in sys.path:
 from scbe.atomic_tokenization import (
     TONGUES,
     AtomicTokenState,
-    TritVector,
     map_token_to_atomic_state,
 )
 

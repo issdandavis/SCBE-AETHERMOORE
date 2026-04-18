@@ -8,7 +8,6 @@ import pytest
 from neurogolf.arc_io import load_arc_task
 from neurogolf.family_corridor import (
     ColorRemapCorridor,
-    UpscaleCorridor,
     intersect_color_remap_corridors,
 )
 from neurogolf.solver import (

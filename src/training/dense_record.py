@@ -230,7 +230,6 @@ class DenseRecord:
 
     def to_training_text(self) -> str:
         """Compact format for actual training (less verbose than full notation)."""
-        n = len(self.tokens)
         surface = " ".join(t.token for t in self.tokens)
         lines = [f"[DENSE:{self.name}] surface={surface!r}"]
         for t in self.tokens:

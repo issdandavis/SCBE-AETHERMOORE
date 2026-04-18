@@ -59,7 +59,7 @@ from src.crypto.crossing_energy import (
     Decision,
     GovernanceSummary,
 )
-from src.crypto.tri_bundle import encode_bytes, encode_text
+from src.crypto.tri_bundle import encode_bytes
 
 # ---------------------------------------------------------------------------
 # Archetypal Forces

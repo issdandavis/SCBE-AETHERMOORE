@@ -75,7 +75,6 @@ from src.crypto.physics_domains import (
     COUPLING_CHANNELS,
     required_recovery_fields,
 )
-from src.crypto.tri_bundle import PHI
 
 # ---------------------------------------------------------------------------
 # Curriculum Level Classification

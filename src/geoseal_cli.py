@@ -745,7 +745,6 @@ def cmd_arc(args: argparse.Namespace) -> int:
             sys.path.insert(0, _src_path)
         from src.neurogolf.arc_io import load_arc_task
         from src.neurogolf.solver import synthesize_program, execute_program
-        from src.neurogolf.cost import score_from_total_cost
     except ImportError as exc:
         print(f"neurogolf not available: {exc}", file=sys.stderr)
         return 2

@@ -516,7 +516,6 @@ class TestFlattenForSFT:
 
     def test_fork_groups_link_primary_to_siblings(self):
         """Each fork_group should have exactly one primary."""
-        from collections import Counter
 
         groups = {}
         for rec in self.flat:

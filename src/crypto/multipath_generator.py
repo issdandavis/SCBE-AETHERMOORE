@@ -182,7 +182,7 @@ def compute_multipath(
     edges = list(trit.edge_vector)
     axis_names = ["structure", "stability", "creativity"]
 
-    for i, (axis, ct, dev, edge) in enumerate(zip(axis_names, content_trits, deviations, edges)):
+    for _i, (axis, ct, dev, edge) in enumerate(zip(axis_names, content_trits, deviations, edges)):
         if edge < poly_threshold:
             mirror = _flip_trit(ct, dev, content_threshold)
             forks.append(

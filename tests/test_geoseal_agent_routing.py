@@ -16,7 +16,6 @@ Does NOT test inference (no LLM calls) — pure routing, governance, and CLI.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import subprocess
 import sys
@@ -36,7 +35,6 @@ from src.coding_spine.router import (
 )
 from src.coding_spine.shared_ir import equivalent_ir, infer_semantic_ir
 from src.geoseal_cli import (
-    PHI,
     compute_seal,
     phi_wall_cost,
     phi_wall_tier,

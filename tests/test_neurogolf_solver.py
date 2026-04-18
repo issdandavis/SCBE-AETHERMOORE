@@ -7,7 +7,7 @@ import numpy as np
 
 from neurogolf.arc_io import load_arc_task
 from neurogolf.family_lattice import task_topology
-from neurogolf.move_family import MOVE_REGISTRY, prefilter_moves, solve_by_move_algebra
+from neurogolf.move_family import prefilter_moves, solve_by_move_algebra
 from neurogolf.solver import execute_program, synthesize_program
 
 

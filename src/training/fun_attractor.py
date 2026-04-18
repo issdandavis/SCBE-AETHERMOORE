@@ -44,7 +44,7 @@ from __future__ import annotations
 
 import math
 from itertools import combinations
-from typing import List, Optional, Tuple
+from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -238,7 +238,7 @@ if __name__ == "__main__":
 
     print()
     print("Governance cost at each attractor center:")
-    for i, center in enumerate(FUN_ATTRACTORS):
+    for _i, center in enumerate(FUN_ATTRACTORS):
         phi_w = PHI_WEIGHTS
         d = (center * phi_w).sum() / 27.42
         R = 5.0
