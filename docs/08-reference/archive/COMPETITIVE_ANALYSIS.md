@@ -60,7 +60,7 @@
 | PQC (ML-KEM-768, ML-DSA-65) | ✅ Done | Post-quantum ready                      |
 | AES-256-GCM                 | ✅ Done | Real encryption with HMAC fallback      |
 | Sacred Tongues              | ✅ Done | 6 tongues, 256 tokens each              |
-| API tests                   | ✅ Done | 700+ tests, all passing                 |
+| API tests                   | ✅ Done | 1,150+ tests, 98.3% passing             |
 | 14-Layer Architecture       | ✅ Done | Complete security stack                 |
 
 ---

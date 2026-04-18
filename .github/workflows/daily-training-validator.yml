@@ -15,6 +15,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Validate JSONL files
         id: validate
@@ -53,10 +55,16 @@ jobs:
                       opener = open
 
                   with opener(filepath, "rt", encoding="utf-8", errors="ignore") as f:
+                      first_line = ""
                       for line_num, line in enumerate(f, 1):
                           line = line.strip()
                           if not line:
                               continue
+                          if line_num == 1:
+                              first_line = line
+                          # Skip Git LFS pointer files — not corruption
+                          if first_line.startswith("version https://git-lfs.github.com"):
+                              break
                           try:
                               json.loads(line)
                               records += 1

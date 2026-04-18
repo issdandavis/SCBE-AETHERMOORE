@@ -52,8 +52,9 @@ class TestConstants:
         assert INFRA_MAX == AUDIBLE_MIN
         assert AUDIBLE_MAX == ULTRA_MIN
 
-    def test_seven_musical_intervals(self):
-        assert len(INTERVALS) == 7
+    def test_chromatic_musical_intervals(self):
+        # Full chromatic set: 14 intervals (unison through octave + phi_interval)
+        assert len(INTERVALS) == 14
         assert "phi_interval" in INTERVALS
         assert abs(INTERVALS["phi_interval"] - PHI) < 1e-10
 

@@ -29,6 +29,14 @@ from dataclasses import dataclass
 from typing import Tuple, List, Dict, Any
 from enum import Enum
 
+# 47D spin coherence — full M⁴⁷ manifold (pair + triple coupling phases)
+try:
+    from ..layers_9_12 import compute_spin_coherence_47d as _spin_coherence_47d
+
+    _USE_47D_SPIN = True
+except ImportError:
+    _USE_47D_SPIN = False
+
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -707,14 +715,51 @@ class FourteenLayerPipeline:
         R: float = R_BASE,
         theta_1: float = THETA_1,
         theta_2: float = THETA_2,
+        kappa_base: float = 0.1,
+        boundary_threshold: float = 0.999,
     ):
         self.alpha = alpha
         self.R = R
         self.theta_1 = theta_1
         self.theta_2 = theta_2
+        self.kappa_base = kappa_base  # Cauchy Core repulsion strength (L12 Form C)
+        # boundary_threshold: L4 norm above this → automatic boundary quarantine.
+        # With ALPHA_EMBED=0.99, typical inputs embed to norm ~0.989-0.990.
+        # Default 0.999 catches only extreme outliers; set lower for tighter enforcement.
+        self.boundary_threshold = boundary_threshold
         self.realm_centers = None
         self.langues_metric = None
         self.layer_states: List[PipelineState] = []
+
+    def calibrate(self, safe_profiles: List[Dict[str, Any]]) -> None:
+        """Establish realm centers from known-safe agent profiles.
+
+        Runs each profile through L1→L4 (pre-breathing) to capture the
+        Poincaré embedding of safe operating states. L6/L7 are isometries
+        so d_H in the pre-L6 space equals d_H in the post-L7 space —
+        calibrating here gives time-invariant realm distances.
+
+        Args:
+            safe_profiles: List of dicts with keys:
+                identity, intent, trajectory, timing, commitment, signature.
+        """
+        centers = []
+        for profile in safe_profiles:
+            c = layer_1_complex_context(
+                identity=profile["identity"],
+                intent=profile["intent"],
+                trajectory=profile["trajectory"],
+                timing=profile["timing"],
+                commitment=profile["commitment"],
+                signature=profile["signature"],
+            )
+            x = layer_2_realify(c)
+            if self.langues_metric is None:
+                self.langues_metric = build_langues_metric(len(x))
+            xw = layer_3_weighted(x, self.langues_metric)
+            u_cal = layer_4_poincare(xw, self.alpha)
+            centers.append(u_cal)
+        self.realm_centers = centers
 
     def process(
         self,
@@ -762,7 +807,7 @@ class FourteenLayerPipeline:
 
         # Layer 4: Poincaré Embedding
         u = layer_4_poincare(x_weighted, self.alpha)
-        boundary = layer_4_boundary_scan(u)
+        boundary = layer_4_boundary_scan(u, boundary_threshold=self.boundary_threshold)
         self._record(
             4,
             "Poincaré Embedding",
@@ -774,14 +819,24 @@ class FourteenLayerPipeline:
             },
         )
 
-        # Layer 5: Hyperbolic Distance (if reference provided)
+        # Layer 5: Hyperbolic Distance vs reference state
+        # If no ref_u supplied: use realm center 0 (calibrated safe baseline) when
+        # available, else fall back to origin.  Using the calibration center means
+        # d_H ≈ 0 for a safe-profile input and is large for adversarial inputs,
+        # giving L12 H_d a meaningful governance signal without requiring the caller
+        # to always pass ref_u explicitly.
         if ref_u is None:
-            ref_u = np.zeros_like(u)
+            if self.realm_centers is not None:
+                ref_u = self.realm_centers[0]
+            else:
+                ref_u = np.zeros_like(u)
         d_H = layer_5_hyperbolic_distance(u, ref_u)
         self._record(5, "Hyperbolic Distance", d_H, {"d_H": d_H})
 
         # Layer 6: Breathing Transform
         u_breath = layer_6_breathing(u, t)
+        # pd = phase deviation — norm shift induced by breathing (feeds L12 Cauchy Core)
+        pd = abs(np.linalg.norm(u_breath) - np.linalg.norm(u))
         self._record(
             6,
             "Breathing Transform",
@@ -789,6 +844,7 @@ class FourteenLayerPipeline:
             {
                 "breathing_factor": breathing_factor(t),
                 "norm_change": np.linalg.norm(u_breath) - np.linalg.norm(u),
+                "pd": pd,
             },
         )
 
@@ -807,9 +863,12 @@ class FourteenLayerPipeline:
         )
 
         # Layer 8: Multi-Well Realms
+        # Compare against pre-L6 embedding u: L6/L7 are hyperbolic isometries so
+        # d_H(u, center) = d_H(u_phase, T_phase(center)) — using u keeps realm
+        # distances time-invariant and matches what calibrate() stores.
         if self.realm_centers is None:
-            self.realm_centers = generate_realm_centers(len(u_phase))
-        d_star, realm_idx = layer_8_multi_well(u_phase, self.realm_centers)
+            self.realm_centers = generate_realm_centers(len(u))
+        d_star, realm_idx = layer_8_multi_well(u, self.realm_centers)
         if boundary["boundary_quarantine"] > 0.5:
             # Enforce stricter denial geometry when state approaches ball edge.
             d_star = max(d_star, self.theta_2 + 0.1)
@@ -819,20 +878,61 @@ class FourteenLayerPipeline:
         S_spec = layer_9_spectral_coherence(x)
         self._record(9, "Spectral Coherence", S_spec, {"S_spec": S_spec})
 
-        # Layer 10: Spin Coherence
-        C_spin = layer_10_spin_coherence(q)
-        self._record(10, "Spin Coherence", C_spin, {"C_spin": C_spin})
+        # Layer 10: Spin Coherence — 47D if available, else legacy 6D from q
+        if _USE_47D_SPIN:
+            # θ_l = angle(c[l]) — tongue phase from L1 complex context
+            # ψ_l = imag(c[l])  — self-imaginary DOF (internal rotation per tongue)
+            tongue_phases = np.angle(c)   # (6,) radians
+            psi = np.imag(c).astype(np.float64)  # (6,) self-imaginary DOF
+            spin_result = _spin_coherence_47d(tongue_phases, psi)
+            C_spin = spin_result.c_spin  # [0,1]
+            coherence = 0.5 * (S_spec + C_spin)
+            self._record(
+                10,
+                "Spin Coherence (47D)",
+                C_spin,
+                {
+                    "C_spin": C_spin,
+                    "mean_phase": spin_result.mean_phase,
+                    "phase_variance": spin_result.phase_variance,
+                    "47d": True,
+                },
+            )
+        else:
+            C_spin_raw = layer_10_spin_coherence(q)
+            C_spin = (C_spin_raw + 1) / 2  # map [-1,1] → [0,1]
+            coherence = 0.5 * (S_spec + C_spin)
+            self._record(10, "Spin Coherence", C_spin_raw, {"C_spin": C_spin_raw, "47d": False})
 
-        # Combined coherence
-        coherence = 0.5 * (S_spec + (C_spin + 1) / 2)  # Map C_spin to [0,1]
+        # κ(t) — Cauchy Core repulsion strength, feeds L12 Form C
+        # High C_spin → tongues coherent → κ↑ → stronger repulsion → tongues separate
+        kappa_t = self.kappa_base * (1.0 + C_spin)
 
         # Layer 11: Triadic Distance
         d_tri = layer_11_triadic_distance(u_phase, ref_u, tau, ref_tau, eta, ref_eta, q, ref_q)
         self._record(11, "Triadic Distance", d_tri, {"d_tri": d_tri})
 
         # Layer 12: Harmonic Scaling
-        H_d = layer_12_harmonic_scaling(d_tri)
-        self._record(12, "Harmonic Scaling", H_d, {"H_d": H_d, "d²": d_tri**2})
+        # Form B (base): S = 1/(1 + d_tri + 2*pd)  — bounded safety score
+        H_d = layer_12_harmonic_scaling(d_tri, pd)
+        # Form C (Cauchy Core): S_cc = 1/(1 + φ*d_H + 2*pd + κ(t)/d_H)
+        # κ/d_H → ∞ as d_H→0 (white hole repulsion prevents singularity collapse)
+        # κ/d_H → 0 as d_H→∞ (standard harmonic wall resumes)
+        d_H_safe = max(d_H, EPS)
+        S_cc = 1.0 / (1.0 + PHI * d_H_safe + 2.0 * pd + kappa_t / d_H_safe)
+        self._record(
+            12,
+            "Harmonic Scaling",
+            H_d,
+            {
+                "H_d": H_d,
+                "S_cc": S_cc,
+                "kappa_t": kappa_t,
+                "d_H": d_H,
+                "pd": pd,
+                "d_eq": float(np.sqrt(kappa_t / PHI)),  # equilibrium orbit d*
+            },
+        )
 
         # Layer 13: Decision & Risk
         risk = layer_13_decision(d_star, H_d, coherence, realm_idx, self.theta_1, self.theta_2)

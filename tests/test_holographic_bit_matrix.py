@@ -24,6 +24,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from kernel.holographic_bit_matrix import (
+    PHI,
     TONGUE_WEIGHTS,
     TONGUE_KEYS,
     HoloState,
@@ -274,16 +275,16 @@ class TestGovernance:
         hbm.modulate_tongues(["KO", "CA"])
         h1 = hbm.harmonic_wall(1.0)
         h2 = hbm.harmonic_wall(2.0)
-        assert h2 > h1  # R^(d^2), R>1 means larger d = larger wall
+        assert h2 > h1  # R^((phi*d)^2), R>1 means larger d = larger wall
 
     def test_harmonic_wall_formula(self):
         hbm = HolographicBitMatrix(size=8)
         hbm.modulate_tongues(["KO"])  # cost = 1.0
-        # H = max(cost, 1.0)^(d^2) = 1.0^(1) = 1.0
+        # H = max(cost, 1.0)^((phi*d)^2) = 1.0^(phi^2) = 1.0
         assert hbm.harmonic_wall(1.0) == 1.0
         hbm.modulate_tongues(["KO", "CA"])
         r = hbm.governance_cost()
-        expected = r ** (2.0 * 2.0)  # d=2, d^2=4
+        expected = r ** ((PHI * 2.0) ** 2)  # canonical Layer 12 formula
         assert abs(hbm.harmonic_wall(2.0) - expected) < 1e-6
 
 

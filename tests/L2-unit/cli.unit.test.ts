@@ -43,20 +43,22 @@ function run(cmd: string): string {
     cwd: process.cwd(),
     encoding: 'utf-8',
     timeout: 15000,
+    env: { ...process.env, PYTHONPATH: process.cwd() },
   }).trim();
 }
 
 const maybeDescribe = PYTHON ? describe : describe.skip;
 
-/** Returns true if scbe-cli.py's dependencies (numpy etc.) are importable. */
+/** Returns true if scbe-cli.py can run a real encode command end-to-end. */
 function scbeCliDepsAvailable(): boolean {
   if (!PYTHON) return false;
   try {
-    execSync(`${PYTHON} scbe-cli.py --help`, {
+    execSync(`${PYTHON} scbe-cli.py encode --tongue ko --text "test"`, {
       cwd: process.cwd(),
       encoding: 'utf-8',
       stdio: 'pipe',
       timeout: 10000,
+      env: { ...process.env, PYTHONPATH: process.cwd() },
     });
     return true;
   } catch {

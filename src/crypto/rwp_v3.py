@@ -24,6 +24,11 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 import json
 
+try:
+    from .pqc_liboqs import get_pqc_governance_status as _shared_pqc_governance_status
+except ImportError:
+    _shared_pqc_governance_status = None
+
 # Crypto primitives
 try:
     from argon2.low_level import Type as Argon2Type, hash_secret_raw
@@ -73,10 +78,60 @@ def _select_sig_algorithm() -> str:
     return "ML-DSA-65" if "ML-DSA-65" in enabled else "Dilithium3"
 
 
+def _select_hash_sig_algorithm() -> str:
+    """FIPS 205 SLH-DSA hash-based signature selector.
+
+    3rd NIST PQC type — orthogonal security assumption to ML-KEM and ML-DSA.
+    Fallback chain: SLH_DSA_PURE_SHAKE_128S → SPHINCS+-SHAKE-128s-simple.
+    """
+    if not OQS_AVAILABLE:
+        return "SLH-DSA-SHAKE-128s"
+    enabled = oqs.get_enabled_sig_mechanisms()
+    for candidate in (
+        "SLH_DSA_PURE_SHAKE_128S",
+        "SLH-DSA-SHAKE-128s",
+        "SPHINCS+-SHAKE-128s-simple",
+        "SPHINCS+-shake-128s-simple",
+    ):
+        if candidate in enabled:
+            return candidate
+    return "SLH-DSA-SHAKE-128s"
+
+
 _KEM_ALG = _select_kem_algorithm()
 _SIG_ALG = _select_sig_algorithm()
+_HASH_SIG_ALG = _select_hash_sig_algorithm()  # FIPS 205 hash-based sig
 
 from .sacred_tongues import SACRED_TONGUE_TOKENIZER
+
+
+def get_rwp_pqc_governance_status() -> Dict[str, Any]:
+    """Return the PQC proof ladder state visible to RWP governance checks.
+
+    Tier semantics:
+    1. Native `liboqs` backend (quantum-resistant)
+    2. Pure-Python PQC backend (quantum-resistant)
+    3. Deterministic classical fallback (not quantum-resistant)
+    """
+    if _shared_pqc_governance_status is not None:
+        return _shared_pqc_governance_status()
+
+    return {
+        "tier": 1 if OQS_AVAILABLE else 3,
+        "proof": (
+            "native_quantum_resistant"
+            if OQS_AVAILABLE
+            else "deterministic_classical_fallback"
+        ),
+        "backend": "liboqs" if OQS_AVAILABLE else "stub (SHA-256/HMAC simulation)",
+        "quantum_resistant": OQS_AVAILABLE,
+        "liboqs_available": OQS_AVAILABLE,
+        "pure_pqc_available": False,
+        "force_skip_liboqs": _FORCE_SKIP_LIBOQS,
+        "kem_algorithm": _KEM_ALG,
+        "sig_algorithm": _SIG_ALG,
+        "hash_sig_algorithm": _HASH_SIG_ALG,
+    }
 
 # ============================================================
 # RFC 9106 ARGON2ID PARAMETERS (Production-grade)

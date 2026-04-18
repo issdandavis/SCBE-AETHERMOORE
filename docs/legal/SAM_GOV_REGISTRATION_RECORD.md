@@ -1,8 +1,10 @@
 # SAM.gov Registration Record — ISSAC D DAVIS
 
 **Date Submitted**: April 3, 2026
+**Date Activated**: April 13, 2026
 **UEI**: J4NXHM6N5F59
-**Status**: Submitted (pending IRS verification, 2-5 business days)
+**CAGE**: 1EXD5
+**Status**: ACTIVE
 
 ---
 
@@ -11,7 +13,7 @@
 - **Address**: 2361 E 5th Ave, Port Angeles, WA 98362-9014 USA
 - **Entity Type**: Sole Proprietor
 - **Purpose**: All Awards
-- **CAGE/NCAGE**: Pending (assigned after activation)
+- **CAGE/NCAGE**: 1EXD5 (assigned 2026-04-13)
 
 ## NAICS Codes
 - **541715** (PRIMARY) — R&D in Physical, Engineering, and Life Sciences

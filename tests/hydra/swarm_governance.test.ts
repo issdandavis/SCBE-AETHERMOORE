@@ -47,7 +47,10 @@ async function runPython(
   code: string
 ): Promise<{ stdout: string; stderr: string; exitCode: number }> {
   return new Promise((resolve) => {
-    const proc = spawn(PYTHON || 'python', ['-c', code]);
+    const proc = spawn(PYTHON || 'python', ['-c', code], {
+      cwd: process.cwd(),
+      env: { ...process.env, PYTHONPATH: process.cwd() },
+    });
     let stdout = '';
     let stderr = '';
 

@@ -1,6 +1,6 @@
-# SCBE-AETHERMOORE System CLI Guide
+# Sacred Tongues Governance System Command-Line Guide
 
-This CLI is the operational control point for the production system tools that were added for
+This command-line interface is the operational control point for the production system tools that were added for
 self-improvement, notion/pipeline drift review, web intelligence, and lightweight antivirus checks.
 
 ## Entry Point
@@ -15,14 +15,14 @@ For the unified front door, the top-level `scbe` launcher now forwards key syste
 
 ```bash
 python scbe pollypad list
-python scbe run --language python --code "print('SCBE runtime')"
+python scbe run --language python --code "print('governed runtime')"
 ```
 
 ## Commands
 
 ### `tongues ...`
 
-Pass-through to `six-tongues-cli.py` (tokenizer + GeoSeal toolkit).
+Pass-through to `six-tongues-cli.py` (tokenizer and GeoSeal toolkit).
 
 ```bash
 python scripts/scbe-system-cli.py tongues encode --tongue KO --in input.bin
@@ -33,7 +33,7 @@ python scripts/scbe-system-cli.py tongues geoseal-encrypt --context "[0.2,-0.3,0
 python scripts/scbe-system-cli.py tongues selftest
 ```
 
-This command gives you the "core protocol CLI" from your technical spec.
+This command gives you the governed tokenizer and geometry surface from the technical spec.
 
 ### `notion-gap`
 
@@ -128,7 +128,7 @@ Pads are stored under `.scbe/polly-pads/<agent-id>/`:
 
 ### `runtime run` (Governed polyglot execution)
 
-Run inline code, controlled files, or installed Polly Pad apps under an allowlisted runtime with SCBE execution metadata.
+Run inline code, controlled files, or installed Polly Pad apps under an allowlisted runtime with governed execution metadata.
 
 ```bash
 # Run inline Python
@@ -144,11 +144,11 @@ python scripts/scbe-system-cli.py runtime run --agent-id agent-001 --app-name "s
 Notes:
 - Direct runtime support is built in for `python`, `javascript`, `typescript`, `powershell`, `bash`, and `cmd`.
 - Additional languages can be introduced through Polly Pad app entrypoints, which keeps custom runtimes explicit and auditable.
-- Each run writes a JSON artifact under `artifacts/runtime_runs/` with command/source metadata, Sacred Tongue label, and lexicon attestation.
+- Each run writes a JSON artifact under `artifacts/runtime_runs/` with command and source metadata, Sacred Tongue label, and lexicon attestation.
 
 ### `agent` (Squad Orchestration)
 
-Create and use a small AI squad from the CLI. This is the "call my agents like Codex" path.
+Create and use a small agent squad from the command line. This is the "call my agents like Codex" path.
 
 ```bash
 # Bootstrap default squad (Codex + NotebookLM)
@@ -172,7 +172,7 @@ python scripts/scbe-system-cli.py agent ping --max-tokens 64
 # Run one agent with prompt text
 python scripts/scbe-system-cli.py agent call \
   --agent-id codex \
-  --prompt "Give a 3-step plan to harden an API endpoint against replay risk."
+  --prompt "Give a 3-step plan to harden an application interface endpoint against replay risk."
 
 # Broadcast to all enabled agents and save artifacts
 python scripts/scbe-system-cli.py agent call --all --show-output --output-dir artifacts/agent_calls
@@ -191,7 +191,7 @@ Notes:
 ## Mapping to Your Notes + Workflow
 
 - The `notion-gap` + `self-improve` path is the implementation of your **notion-to-pipeline gap triage**.
-- `tongues` is the concrete CLI for the **Six Tongues + GeoSeal** spec.
+- `tongues` is the concrete command-line surface for the **Six Tongues + GeoSeal** spec.
 - `web` and `antivirus` provide the **agentic tool layer** for environment-scope automation and safety triage.
 - `status` aligns with the `.scbe/next-coder-marker.md` handoff flow.
 - `pollypad` aligns with your “Kindle for AI” concept (agent-local note/books/app bundle with manifest).

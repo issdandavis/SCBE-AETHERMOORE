@@ -1,0 +1,187 @@
+# SCBE-AETHERMOORE Project Structure
+
+> **File Tag System**: All source files include a header with `@layer`, `@module`, and `@component` tags for navigation.
+
+---
+
+## Directory Layout
+
+```
+SCBE-AETHERMOORE/
+├── api/                          # REST API (FastAPI)
+├── src/                          # TypeScript core
+│   ├── crypto/                   # Cryptographic primitives
+│   ├── fleet/                    # Fleet orchestration
+│   ├── harmonic/                 # 14-Layer Pipeline (CORE)
+│   ├── network/                  # Network security (SpaceTor, Combat routing)
+│   ├── spectral/                 # Spectral coherence
+│   ├── spiralverse/              # Spiralverse protocol
+│   └── symphonic/                # Symphonic cipher (TypeScript)
+│
+├── tests/                        # Test suites (1k+ tests)
+│   ├── harmonic/                 # Layer tests
+│   ├── enterprise/               # Compliance tests
+│   ├── network/                  # Network tests
+│   └── spiralverse/              # RWP tests
+│
+├── dashboard/                    # Real-time monitoring UI
+├── demos/                        # Demo scripts
+├── docs/                         # Documentation
+│   ├── images/                   # Architecture diagrams
+│   ├── guides/                   # User guides
+│   └── reference/                # Technical reference
+│
+├── scripts/                      # Build & deployment scripts
+│   ├── windows/                  # Windows batch files
+│   └── unix/                     # Unix shell scripts
+│
+├── config/                       # Configuration files
+└── .github/workflows/            # CI/CD pipelines
+```
+
+---
+
+## 14-Layer Pipeline Reference
+
+| Layer | File | Function | Description |
+|-------|------|----------|-------------|
+| **Layer 1** | `src/harmonic/pipeline14.ts` | `layer1ComplexState` | Context → Complex vector (amplitude + phase) |
+| **Layer 2** | `src/harmonic/pipeline14.ts` | `layer2Realification` | ℂᴰ → ℝ²ᴰ isometric embedding |
+| **Layer 3** | `src/harmonic/pipeline14.ts` | `layer3WeightedTransform` | SPD metric weighting (φ^k) |
+| **Layer 4** | `src/harmonic/pipeline14.ts` | `layer4PoincareEmbedding` | Map to Poincaré ball (‖u‖ < 1) |
+| **Layer 5** | `src/harmonic/hyperbolic.ts` | `hyperbolicDistance` | d_ℍ(u,v) via arcosh formula |
+| **Layer 6** | `src/harmonic/pipeline14.ts` | `layer6BreathingTransform` | Temporal modulation (diffeomorphism) |
+| **Layer 7** | `src/harmonic/hyperbolic.ts` | `mobiusAddition` | Möbius isometry (gyrovector) |
+| **Layer 8** | `src/harmonic/pipeline14.ts` | `layer8RealmDistance` | Min distance to trusted realm centers |
+| **Layer 9** | `src/harmonic/pipeline14.ts` | `layer9SpectralCoherence` | FFT-based pattern stability |
+| **Layer 10** | `src/harmonic/pipeline14.ts` | `layer10SpinCoherence` | Phase alignment measure |
+| **Layer 11** | `src/harmonic/pipeline14.ts` | `layer11TriadicTemporal` | Multi-timescale aggregation |
+| **Layer 12** | `src/harmonic/harmonicScaling.ts` | `harmonicScale` | Risk amplifier: H(d,R) = φᵈ / (1 + e⁻ᴿ) |
+| **Layer 13** | `src/harmonic/pipeline14.ts` | `layer13RiskDecision` | ALLOW / QUARANTINE / DENY |
+| **Layer 14** | `src/harmonic/audioAxis.ts` | `computeAudioAxisFeatures` | Hilbert transform telemetry |
+
+---
+
+## Key Components
+
+### Core Engine (`src/harmonic/`)
+- `pipeline14.ts` - Complete 14-layer pipeline
+- `hyperbolic.ts` - Poincaré ball operations
+- `harmonicScaling.ts` - Risk amplification
+- `sacredTongues.ts` - 6×256 vocabulary tokenizer
+- `phdm.ts` - Polyhedral Hamiltonian Defense Manifold (L8)
+
+### Cryptography (`src/crypto/`)
+- `envelope.ts` - Sealed envelope (AES-256-GCM)
+- `kms.ts` - Key management (HKDF)
+- `replayGuard.ts` - Nonce/Bloom filter protection
+- `pqc.ts` - Post-quantum (ML-KEM-768, ML-DSA-65)
+
+### Fleet Management (`src/fleet/`)
+- `redis-orchestrator.ts` - Multi-agent coordination
+- `index.ts` - Fleet exports
+
+### API (`api/`)
+- `main.py` - FastAPI server (6 endpoints)
+- WebSocket `/ws/dashboard` for real-time streaming
+
+---
+
+## File Tag Convention
+
+All source files should include a header block:
+
+```typescript
+/**
+ * @file hyperbolic.ts
+ * @module harmonic/hyperbolic
+ * @layer Layer 5, Layer 7
+ * @component Poincaré Ball Operations
+ * @version 3.0.0
+ */
+```
+
+```python
+"""
+@file: main.py
+@module: api
+@component: REST API Server
+@version: 3.0.0
+"""
+```
+
+---
+
+## Test Categories
+
+| Category | Directory | Tests | Coverage |
+|----------|-----------|-------|----------|
+| Hyperbolic Geometry | `tests/harmonic/` | ~180 | Poincaré, Möbius, boundaries |
+| Harmonic Pipeline | `tests/harmonic/` | ~120 | 14-layer, scaling, CFI |
+| Enterprise Compliance | `tests/enterprise/` | ~100 | FIPS 140-3, SOC 2 |
+| Spectral Coherence | `tests/spectral/` | ~80 | FFT, phase alignment |
+| Network Security | `tests/network/` | ~70 | Combat routing, trust |
+| Crypto & Envelope | `tests/` | ~60 | Nonce, tamper detection |
+| Integration | `tests/spiralverse/` | ~82 | RWP policy, acceptance |
+
+---
+
+## Canonical Implementations
+
+The project maintains implementations in both TypeScript and Python. This table documents which version is **canonical** (source of truth) vs **reference** (derived/validation).
+
+| Module | Canonical | Reference | Notes |
+|--------|-----------|-----------|-------|
+| **14-Layer Pipeline** | TypeScript (`src/harmonic/`) | Python (`src/scbe_14layer_reference.py`) | TS is production; Python for research validation |
+| **Symphonic Cipher** | TypeScript (`src/symphonic/`) | Python (`src/symphonic_cipher/`) | TS is production; Python for prototyping |
+| **Hyperbolic Geometry** | TypeScript (`src/harmonic/hyperbolic.ts`) | Python (`src/harmonic_py/`) | TS is production |
+| **Cryptographic Envelope** | TypeScript (`src/crypto/`) | N/A | TypeScript only |
+| **REST API** | Python (`api/main.py`) | N/A | FastAPI server |
+| **Fleet Orchestration** | TypeScript (`src/fleet/`) | N/A | TypeScript only |
+
+### Guidelines for Dual Implementations
+
+1. **Changes**: Always update the canonical version first
+2. **Testing**: Cross-language tests in `tests/cross-language/` validate parity
+3. **Versioning**: Both versions must declare the same `@version` tag
+4. **Divergence**: Document any intentional differences in code comments
+
+---
+
+## Quick Commands
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run specific layer tests
+npm test -- tests/harmonic/hyperbolic.test.ts
+
+# Type checking
+npm run typecheck
+
+# Check for circular dependencies
+npm run check:circular
+
+# Generate dependency graph (requires graphviz)
+npm run check:deps
+
+# Run Python demo
+python demo_memory_shard.py
+
+# Start API server
+python -m uvicorn api.main:app --reload
+
+# Build TypeScript
+npm run build
+
+# Generate proof pack
+./scripts/make_proof_pack.sh
+```
+
+---
+
+_Last updated: February 2026_

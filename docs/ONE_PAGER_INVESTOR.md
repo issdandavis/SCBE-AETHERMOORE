@@ -15,10 +15,10 @@ AI agents are proliferating, but there's no standard way to govern what they can
 
 | Metric | Value |
 |--------|-------|
-| Code | 31,500+ lines |
-| Tests | 96% passing |
-| Patents | 6 ready to file |
-| Market | $15B+ TAM |
+| Code | 50,000+ lines (TypeScript + Python) |
+| Tests | 1,150+ passing (98.3% pass rate) |
+| Patent | USPTO Provisional #63/961,403 (47 claims) |
+| Market | $18.6B TAM (2026) → $78.3B (2030) |
 
 ---
 
@@ -57,6 +57,19 @@ AI agents are proliferating, but there's no standard way to govern what they can
 
 ---
 
+### M&A Comps
+Four AI security companies acquired for $1.38B combined (2024-2025). None had PQC or mathematical proofs. $392M+ in agentic AI security funding announced in Q1 2026 alone.
+
+---
+
+### SAM.gov
+- UEI: J4NXHM6N5F59
+- CAGE: 1EXD5
+- Status: ACTIVE
+
+---
+
 ### Contact
-Isaac Davis - Creator/CTO
+Isaac Davis — Creator/CTO
+aethermoregames@pm.me | aethermoore.com
 *Demo and technical due diligence available upon request*

@@ -68,8 +68,14 @@ class SCBEContextEncoder:
     def apply_langues_weighting(self, x: np.ndarray) -> np.ndarray:
         """
         Layer 3: Apply Langues metric weighting (diagonal approximation).
+        Weights follow the phi-scaled tongue hierarchy: KO=φ^0 … DR=φ^5.
+        Each tongue's real and imaginary components carry equal weight.
         """
-        weights = np.array([1.0, 1.1, 1.25, 1.33, 1.5, 1.66] * 2)
+        _phi = 1.618033988749895
+        # KO=1.00, AV=1.618, RU=2.618, CA=4.236, UM=6.854, DR=11.090
+        tongue_weights = np.array([_phi**i for i in range(6)])
+        # 12D: real parts first (6), then imaginary parts (6)
+        weights = np.concatenate([tongue_weights, tongue_weights])
         return weights[: len(x)] * x
 
     def embed_to_poincare_ball(self, x_weighted: np.ndarray, alpha: float = 1.5) -> np.ndarray:
