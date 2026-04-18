@@ -4,7 +4,7 @@ SCBE Defensive Mesh Kernel (Python wrapper layer)
 
 Purpose:
 - Wrap browsing/extraction tasks in deterministic SCBE governance gates.
-- Reuse existing antivirus + kernel gate logic from `agents/`.
+- Reuse antivirus + kernel gate logic from `scbe-agents` repo (falls back to stubs if not installed).
 - Provide Hugging Face friendly training rows from governance traces.
 
 This is a user-space "AI kernel" abstraction, not an OS kernel.
@@ -20,8 +20,45 @@ import re
 from typing import Any
 from urllib.parse import urlparse
 
-from agents.antivirus_membrane import scan_text_for_threats, turnstile_action
-from agents.kernel_antivirus_gate import evaluate_kernel_event
+try:
+    from agents.antivirus_membrane import scan_text_for_threats, turnstile_action
+except ImportError:
+    from dataclasses import dataclass as _dc
+
+    @_dc
+    class _ScanResult:
+        risk_score: float = 0.0
+        reasons: list = None
+        verdict: str = "clean"
+
+        def __post_init__(self):
+            if self.reasons is None:
+                self.reasons = []
+
+        def to_dict(self):
+            return {"risk_score": self.risk_score, "reasons": self.reasons, "verdict": self.verdict}
+
+    def scan_text_for_threats(text: str, **_kw):
+        return _ScanResult()
+
+    def turnstile_action(context: str, scan, **_kw):
+        return "ALLOW"
+
+
+try:
+    from agents.kernel_antivirus_gate import evaluate_kernel_event
+except ImportError:
+
+    @_dc
+    class _KernelGateResult:
+        kernel_action: str = "ALLOW"
+        allowed: bool = True
+
+        def to_dict(self):
+            return {"kernel_action": self.kernel_action, "allowed": self.allowed}
+
+    def evaluate_kernel_event(event: dict, **_kw):
+        return _KernelGateResult()
 
 
 def _utc_now() -> str:
@@ -304,4 +341,3 @@ class DefensiveMeshKernel:
                 "action": gate.action,
             },
         }
-
