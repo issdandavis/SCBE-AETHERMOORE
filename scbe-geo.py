@@ -330,7 +330,7 @@ def verb_do(args: List[str]) -> int:
         print(c_info("running trijective unit test..."))
         r = subprocess.run(
             [sys.executable, "-m", "pytest", "tests/test_trijective.py", "-v"],
-            cwd=REPO_ROOT, env={**os.environ, "SCBE_FORCE_SKIP_LIBOQS": "1"},
+            cwd=REPO_ROOT,
         )
         return r.returncode
     print(c_err(f"unknown action: {action}"))
