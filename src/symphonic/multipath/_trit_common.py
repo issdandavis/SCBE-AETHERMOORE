@@ -202,7 +202,7 @@ def build_trit_table(
                 return name, band, group
         raise ValueError(f"op_id {i} out of range")
 
-    for i, op in enumerate(ops):
+    for i, _op in enumerate(ops):
         _, band, group = _band_for(i)
         period = (i // 16) + 1
         valence = (i % 8) + 1

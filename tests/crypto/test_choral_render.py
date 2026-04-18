@@ -5,7 +5,7 @@ Self-contained: no heavy imports.
 
 import math
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict
 from enum import Enum
 
 # ---------------------------------------------------------------------------

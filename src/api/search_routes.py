@@ -19,7 +19,7 @@ import time
 import logging
 from typing import List, Optional, Dict, Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from src.api.search_enrichment import (
@@ -28,8 +28,6 @@ from src.api.search_enrichment import (
     compute_tongue_profile,
     tongue_boost_score,
     TONGUE_ORDER,
-    TONGUE_WEIGHTS,
-    EnrichedDocument,
 )
 
 logger = logging.getLogger("scbe.search")
@@ -195,7 +193,7 @@ async def search_query(req: SearchQuery):
     else:
         # In-memory fallback — simple substring match
         query_lower = req.query.lower()
-        for doc_id, doc in _memory_index.items():
+        for _doc_id, doc in _memory_index.items():
             if doc.get("governance_tier") not in allowed_tiers:
                 continue
             if req.tongue_filter and doc.get("dominant_tongue") != req.tongue_filter:

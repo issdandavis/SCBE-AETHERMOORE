@@ -29,32 +29,19 @@ Author: SCBE-AETHERMOORE / Issac Davis
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Dict, List
 
 from src.crypto.trit_curriculum import (
     TritSignal,
-    TRIT_LABELS,
-    TRIT_AXES,
-    compute_trit_signal,
 )
 from src.crypto.polymorphic_multipath import (
     MultipathRecord,
-    MultipathBatch,
     score_and_expand,
-    score_and_expand_batch,
     flatten_for_sft,
 )
 from src.crypto.harmonic_dark_fill import (
-    PHI,
     TONGUE_WEIGHTS,
-    TONGUE_AUDIBLE_FREQ,
-    INFRA_MIN,
-    INFRA_MAX,
-    AUDIBLE_MIN,
-    ULTRA_MIN,
-    ULTRA_MAX,
-    HarmonicFill,
 )
 from src.crypto.crossing_energy import (
     DualTernaryPair,

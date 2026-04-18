@@ -4,17 +4,9 @@ Tests dark cloud detection, neural star maps, genesis paths,
 and the full dark energy density map.
 """
 
-import math
-import pytest
-
 from src.crypto.dark_cloud_mapper import (
     CloudType,
-    DarkCloud,
-    NeuralPath,
-    GenesisPath,
-    DarkEnergyMap,
     MIN_CLOUD_TONGUES,
-    CLOUD_DARKNESS_THRESHOLD,
     detect_dark_cloud,
     map_dark_clouds,
     trace_neural_paths,
@@ -24,7 +16,6 @@ from src.crypto.dark_cloud_mapper import (
 from src.crypto.harmonic_dark_fill import (
     TONGUE_WEIGHTS,
     fill_dark_nodes,
-    compute_darkness,
 )
 
 # ===================================================================

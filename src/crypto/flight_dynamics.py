@@ -36,9 +36,8 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
-from src.crypto.tri_bundle import PHI, TONGUE_WEIGHTS, TONGUE_FREQUENCIES
 from src.crypto.trit_curriculum import TritSignal
 from src.crypto.multipath_generator import MultiPathRecord
 
@@ -545,7 +544,7 @@ def compute_recovery_paths(
     # Monty Hall selection: if multipath has forks, the "switch" choice
     # gets the advantage
     if multipath and multipath.forks:
-        n_forks = len(multipath.forks)
+        _n_forks = len(multipath.forks)
         advantage = multipath.monty_hall_advantage
         # Sort by severity (lowest = best)
         paths.sort(key=lambda p: p.severity)

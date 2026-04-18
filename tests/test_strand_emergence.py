@@ -11,7 +11,6 @@ import pytest
 from src.symphonic.multipath.group_alignment import (
     extrude_strand,
     PROMOTION_ORDER,
-    CANONICAL_ORDER,
 )
 from src.symphonic.multipath import (
     KO_TABLE,

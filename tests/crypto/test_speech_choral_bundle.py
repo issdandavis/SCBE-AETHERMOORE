@@ -15,43 +15,30 @@ Covers:
     - Phonology profiles per tongue
 """
 
-import math
 import sys
 
 sys.path.insert(0, ".")
 
 from src.crypto.speech_render_plan import (
     build_speech_plan,
-    TongueVoiceProfile,
-    SpeechRenderPlan,
     DEAD_TONE_PRETONES,
-    TONGUE_PAN,
     ALL_TONGUES,
-    _BASE_PROFILES,
 )
 
 from src.crypto.choral_render import (
     PROFILES as CHORAL_PROFILES,
-    TongueProfile,
     PhonemeToken,
-    ProsodyPlan,
-    VoiceLayer,
     VoiceRole,
     RenderMode,
-    ChoralRenderPlan,
     build_prosody,
     build_voice_layers,
     build_choral_plan,
 )
 
 from src.crypto.world_bundle import (
-    WorldBundle,
     OntologyEntry,
     LexiconEntry,
     GrammarRule,
-    PhonologyProfile,
-    RenderPreset,
-    CirculationPass,
     create_default_bundle,
     _DEFAULT_PHONOLOGY,
 )

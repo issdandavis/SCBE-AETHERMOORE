@@ -14,7 +14,7 @@ Patent: US Provisional #63/961,403
 import math
 import sys
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List
 
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 

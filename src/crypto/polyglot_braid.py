@@ -29,34 +29,20 @@ Author: SCBE-AETHERMOORE / Issac Davis
 from __future__ import annotations
 
 import math
-import hashlib
-import json
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple, Set
+from dataclasses import dataclass
+from typing import Dict, List, Optional, Tuple
 from enum import Enum
 
 from src.crypto.tri_bundle import (
-    PHI,
     TONGUE_WEIGHTS,
-    encode_polyglot,
     encode_polyglot_text,
     find_convergence_points,
     convergence_summary,
     PolyglotCluster,
 )
-from src.crypto.harmonic_dark_fill import (
-    TONGUE_AUDIBLE_FREQ,
-    sequence_spectrum,
-    voice_leading_interval,
-)
 from src.crypto.dark_cloud_mapper import (
     build_dark_energy_map,
     DarkEnergyMap,
-)
-from src.crypto.crossing_energy import (
-    evaluate_sequence,
-    summarize_governance,
-    GovernanceSummary,
 )
 
 # ---------------------------------------------------------------------------

@@ -17,6 +17,7 @@ try:
         RWPEnvelope,
         rwp_encrypt_message,
         rwp_decrypt_message,
+        get_rwp_pqc_governance_status,
         ARGON2_PARAMS,
         ARGON2_AVAILABLE,
         CHACHA_AVAILABLE,
@@ -295,6 +296,29 @@ class TestArgon2Parameters:
     def test_salt_length_is_16_bytes(self):
         """Salt should be 128 bits."""
         assert ARGON2_PARAMS["salt_len"] == 16
+
+
+class TestRWPGovernanceStatus:
+    """Tests for governance-visible PQC proof ladder state."""
+
+    def test_rwp_governance_status_has_required_fields(self):
+        """RWP should expose the shared governance status packet."""
+        status = get_rwp_pqc_governance_status()
+        assert "tier" in status
+        assert "proof" in status
+        assert "backend" in status
+        assert "quantum_resistant" in status
+        assert "kem_algorithm" in status
+        assert "sig_algorithm" in status
+
+    def test_rwp_governance_status_matches_local_oqs_availability(self):
+        """Local OQS availability should match the reported QR status."""
+        status = get_rwp_pqc_governance_status()
+        if OQS_AVAILABLE:
+            assert status["tier"] in {1, 2}
+            assert status["quantum_resistant"] is True
+        else:
+            assert status["quantum_resistant"] is False or status["tier"] in {2, 3}
 
 
 @pytest.mark.skipif(not OQS_AVAILABLE, reason="liboqs not installed")

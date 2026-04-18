@@ -19,17 +19,40 @@ import {
   allCouplings,
 } from '../../packages/kernel/src/gyroscopicInterlattice.js';
 
-const CWD = 'C:/Users/issda/SCBE-AETHERMOORE';
+const CWD = process.cwd();
 const TMP_SCRIPT = join(CWD, '_tmp_parity_test.py');
 
 /**
  * Run a Python expression and return its output via temp file (avoids shell quoting issues).
  */
+const PYTHON_BIN = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+
+/** Check if Python + numpy + gyroscopic_interlattice are importable (skipped in Node-only CI). */
+function pythonDepsAvailable(): boolean {
+  try {
+    execSync(
+      `${PYTHON_BIN} -c "import numpy; from symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import TONGUE_RADII"`,
+      {
+        cwd: CWD,
+        encoding: 'utf-8',
+        stdio: 'pipe',
+        timeout: 10000,
+        env: { ...process.env, PYTHONPATH: `${CWD}/src` },
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const maybeDescribe = pythonDepsAvailable() ? describe : describe.skip;
+
 function pyEval(expr: string): string {
   const script = `import sys\nsys.path.insert(0, "src")\nfrom symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import *\nprint(${expr})`;
   writeFileSync(TMP_SCRIPT, script, 'utf-8');
   try {
-    return execSync(`python ${TMP_SCRIPT}`, { cwd: CWD, encoding: 'utf-8' }).trim();
+    return execSync(`${PYTHON_BIN} ${TMP_SCRIPT}`, { cwd: CWD, encoding: 'utf-8' }).trim();
   } finally {
     try {
       unlinkSync(TMP_SCRIPT);
@@ -39,7 +62,7 @@ function pyEval(expr: string): string {
   }
 }
 
-describe('Gyroscopic Interlattice Cross-Language Parity', () => {
+maybeDescribe('Gyroscopic Interlattice Cross-Language Parity', () => {
   it('tongue radii match between TS and Python', () => {
     for (const tongue of TONGUE_LABELS) {
       const pyRadius = parseFloat(pyEval(`TONGUE_RADII['${tongue}']`));

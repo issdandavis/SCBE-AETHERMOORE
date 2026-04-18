@@ -37,10 +37,10 @@ Author: SCBE-AETHERMOORE / Issac Davis
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Tuple
 
-from src.crypto.tri_bundle import PHI, TONGUE_WEIGHTS
+from src.crypto.tri_bundle import TONGUE_WEIGHTS
 from src.crypto.trit_curriculum import TritSignal
 from src.crypto.spectral_bonding import HYBRID_LORE, BASE_TONGUES
 

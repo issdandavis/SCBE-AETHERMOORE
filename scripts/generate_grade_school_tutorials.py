@@ -512,7 +512,7 @@ def generate_records() -> list[dict]:
                 f"Every letter of '{lesson['key_word']}' becomes a {t['name']} word:\n"
             )
 
-            for i, b in enumerate(keyword_bytes[:8]):
+            for _i, b in enumerate(keyword_bytes[:8]):
                 char = chr(b) if 32 <= b < 127 else f"0x{b:02x}"
                 tongue_response += f"  '{char}' (byte {b}) = **{tongue_word(tongue_key, b)}**\n"
 

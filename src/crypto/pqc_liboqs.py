@@ -89,8 +89,32 @@ def _select_sig_algorithm() -> str:
     return "ML-DSA-65"
 
 
+def _select_hash_sig_algorithm() -> str:
+    """Select the best available hash-based signature algorithm (FIPS 205 / SLH-DSA).
+
+    Hash-based signatures are the 3rd NIST PQC type alongside lattice-based
+    KEM (FIPS 203 ML-KEM-768) and lattice-based DSA (FIPS 204 ML-DSA-65).
+    Security assumptions are orthogonal — breaking one does not break the others.
+    Fallback chain: SLH-DSA-SHAKE-128S → SPHINCS+-SHAKE-128s-simple → None.
+    """
+    if not LIBOQS_AVAILABLE:
+        return "SLH-DSA-SHAKE-128s"
+    enabled = oqs.get_enabled_sig_mechanisms()
+    # FIPS 205 pure (no prehash) SHAKE-128 small parameter set — fastest verify
+    for candidate in (
+        "SLH_DSA_PURE_SHAKE_128S",
+        "SLH-DSA-SHAKE-128s",
+        "SPHINCS+-SHAKE-128s-simple",
+        "SPHINCS+-shake-128s-simple",
+    ):
+        if candidate in enabled:
+            return candidate
+    return "SLH-DSA-SHAKE-128s"
+
+
 _KEM_ALG = _select_kem_algorithm()
 _SIG_ALG = _select_sig_algorithm()  # noqa: F841 — available for external import
+_HASH_SIG_ALG = _select_hash_sig_algorithm()  # noqa: F841 — FIPS 205 hash-based sig
 
 
 def _enabled_signature_mechanisms() -> set[str]:
@@ -117,11 +141,54 @@ def is_liboqs_available() -> bool:
     return LIBOQS_AVAILABLE
 
 
+def get_pqc_proof_tier() -> int:
+    """Return the active PQC proof tier.
+
+    Tier 1: native liboqs ML-KEM/ML-DSA
+    Tier 2: pure-Python ML-KEM/ML-DSA
+    Tier 3: deterministic HMAC/SHA simulation fallback
+    """
+    if LIBOQS_AVAILABLE:
+        return 1
+    if PURE_PQC_AVAILABLE:
+        return 2
+    return 3
+
+
 def get_pqc_backend() -> str:
     """Get the current PQC backend being used."""
     if LIBOQS_AVAILABLE:
         return f"liboqs ({_LIBOQS_VERSION})"
+    if PURE_PQC_AVAILABLE:
+        return "pure-python (kyber-py/dilithium-py)"
     return "stub (SHA-256/HMAC simulation)"
+
+
+def get_pqc_governance_status() -> dict[str, object]:
+    """Return governance-facing status for the active PQC proof ladder."""
+    tier = get_pqc_proof_tier()
+    if tier == 1:
+        proof = "native_quantum_resistant"
+        quantum_resistant = True
+    elif tier == 2:
+        proof = "pure_python_quantum_resistant"
+        quantum_resistant = True
+    else:
+        proof = "deterministic_classical_fallback"
+        quantum_resistant = False
+
+    return {
+        "tier": tier,
+        "proof": proof,
+        "backend": get_pqc_backend(),
+        "quantum_resistant": quantum_resistant,
+        "liboqs_available": LIBOQS_AVAILABLE,
+        "pure_pqc_available": PURE_PQC_AVAILABLE,
+        "force_skip_liboqs": _FORCE_SKIP_LIBOQS,
+        "kem_algorithm": _KEM_ALG,
+        "sig_algorithm": (_select_mldsa_algorithm() or "ML-DSA-65") if LIBOQS_AVAILABLE else "ML-DSA-65",
+        "hash_sig_algorithm": _HASH_SIG_ALG,
+    }
 
 
 @dataclass

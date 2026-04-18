@@ -20,7 +20,7 @@ if str(REPO_ROOT) not in sys.path:
 
 import numpy as np
 
-from python.scbe.atomic_tokenization import TONGUES as ATOMIC_TONGUES, map_token_to_atomic_state
+from python.scbe.atomic_tokenization import TONGUES as ATOMIC_TONGUES
 from python.scbe.chemical_fusion import FusionParams
 from python.scbe.history_reducer import reduce_atomic_history
 

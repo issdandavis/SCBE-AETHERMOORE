@@ -23,12 +23,8 @@ from src.crypto.spectral_bonding import (
     BASE_TONGUE_BAND,
     TONGUE_BAND,
     TONGUE_COLOR,
-    COMPLEMENT_MAP,
     HYBRID_LORE,
     AgentPhasor,
-    BondState,
-    FieldSnapshot,
-    SpectralEvolution,
     create_agent,
     compute_interference,
     phase_difference,
@@ -41,7 +37,6 @@ from src.crypto.spectral_bonding import (
     run_spectral_evolution,
     format_spectral_report,
     get_all_21_tongues,
-    _detect_clusters,
 )
 
 # ===================================================================

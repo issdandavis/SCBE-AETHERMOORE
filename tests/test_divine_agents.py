@@ -7,8 +7,6 @@ Divine Intervention Mechanisms for Long-term Mission Reliability.
 
 import sys
 import os
-import math
-import pytest
 
 # Ensure project root is on path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -18,10 +16,8 @@ from src.crypto.divine_agents import (
     HISTORICAL_ERAS,
     ERA_ORDER,
     SignalType,
-    AgentRole,
     DivineSignal,
     HistoricalAgent,
-    LearningEpoch,
     NaturalLearningStudy,
     generate_angel_signal,
     generate_demon_signal,
@@ -32,7 +28,7 @@ from src.crypto.divine_agents import (
     run_divine_experiment,
     format_study_report,
 )
-from src.crypto.crossing_energy import Decision, DualTernaryPair
+from src.crypto.crossing_energy import Decision
 
 # ===================================================================
 # Historical Era Constants
@@ -377,7 +373,7 @@ class TestNaturalLearningStudy:
         study.run_full_history()
         traj = study.reliability_trajectory()
         assert len(traj) == 7
-        for era_name, rel in traj:
+        for _era_name, rel in traj:
             assert 0.0 <= rel <= 1.0
 
     def test_summary_has_required_keys(self):

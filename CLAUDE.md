@@ -84,14 +84,14 @@ Run these checks locally before pushing to avoid CI failures:
 npm run build && npm run lint && npm test
 
 # 2. Python: exact CI command (runs pytest with -x, stops on first failure)
-SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. python -m pytest tests/ -v --ignore=tests/node_modules -x
+PYTHONPATH=. python -m pytest tests/ -v --ignore=tests/node_modules -x
 
 # 3. Python formatting (must pass in CI)
 black --check --target-version py311 --line-length 120 src/ tests/ hydra/
 flake8 --max-line-length 120 src/ tests/ hydra/
 
 # Quick smoke test (just the fast Python tests, ~5s)
-SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. python -m pytest tests/ -x -q \
+PYTHONPATH=. python -m pytest tests/ -x -q \
   --ignore=tests/node_modules \
   --ignore=tests/aetherbrowser/test_integration.py \
   --ignore=tests/aetherbrowser/test_red_zone_integration.py \
@@ -100,7 +100,7 @@ SCBE_FORCE_SKIP_LIBOQS=1 PYTHONPATH=. python -m pytest tests/ -x -q \
 
 ### CI Gotchas
 
-- **`SCBE_FORCE_SKIP_LIBOQS=1`**: Required in CI because `liboqs-python` C bindings may not be available. Always use this flag when running pytest locally if liboqs is not installed.
+- **`SCBE_FORCE_SKIP_LIBOQS`**: No longer needed — `liboqs-python` (0.14.1) and `liboqs` C lib (0.15.0) are installed. The env var still exists as a fallback in source code for environments without C bindings, but should not be set by default.
 - **`PYTHONPATH=.`**: CI sets this so `import src.foo` and `import symphonic_cipher` resolve correctly.
 - **Hanging tests**: `test_integration.py` and `test_red_zone_integration.py` in `tests/aetherbrowser/` require Playwright browsers installed. They hang if browsers aren't present. Safe to `--ignore` locally.
 - **Optional provider SDKs**: Tests in `tests/aetherbrowser/test_provider_executor.py` require `openai` and `huggingface_hub` packages (listed in `requirements.txt`). Install with `pip install -r requirements.txt`.

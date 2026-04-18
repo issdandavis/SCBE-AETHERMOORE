@@ -35,14 +35,12 @@ from __future__ import annotations
 
 import hashlib
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 from src.crypto.trit_curriculum import (
     TritSignal,
     compute_trit_signal,
-    TRIT_LABELS,
-    GEOMETRIC_BASELINES,
 )
 from src.crypto.multipath_generator import (
     MultiPathRecord,
@@ -51,24 +49,12 @@ from src.crypto.multipath_generator import (
 )
 from src.crypto.harmonic_dark_fill import (
     TONGUE_AUDIBLE_FREQ,
-    COMPLEMENT_MAP,
-    INTERVALS,
-    HarmonicFill,
-    compute_harmonic_fill,
-    compute_darkness,
     voice_leading_interval,
     nearest_musical_interval,
-    INFRA_MIN,
-    INFRA_MAX,
-    AUDIBLE_MIN,
-    AUDIBLE_MAX,
-    ULTRA_MIN,
-    ULTRA_MAX,
 )
 from src.crypto.crossing_energy import (
     DualTernaryPair,
     harmonic_cost,
-    phase_deviation,
 )
 from src.crypto.tri_bundle import (
     PHI,
@@ -78,16 +64,11 @@ from src.crypto.tri_bundle import (
 from src.crypto.flight_dynamics import (
     RotorState,
     RecoveryPath,
-    RecoveryType,
     TailRotorState,
     PacejkaTireState,
-    SACRED_TONGUE_HYBRIDS,
     compute_recovery_paths,
     compute_tail_rotor_state,
     compute_pacejka_state,
-    isa_density,
-    RHO_SEA_LEVEL,
-    G_ACCEL,
 )
 from src.crypto.gallery_chromatics import (
     GalleryColorField,
@@ -1100,7 +1081,7 @@ def compute_code_lattice(
     """
     gain = mp.monty_hall_advantage
     max_n = qho.max_excitation
-    mean_n = qho.mean_excitation
+    _mean_n = qho.mean_excitation
 
     anti_patterns = []
 
@@ -1757,12 +1738,12 @@ def compute_qho_state(
     # Compute probability amplitudes (|c_t|²)
     # Based on tongue activation from text bytes
     text_bytes = text.encode("utf-8")[:64]
-    byte_sum = sum(text_bytes) if text_bytes else 1
+    _byte_sum = sum(text_bytes) if text_bytes else 1
 
     def byte_affinity(tongue: str) -> float:
         """Text-derived affinity for this tongue."""
         w = TONGUE_WEIGHTS[tongue]
-        freq = TONGUE_FREQUENCIES[tongue]
+        _freq = TONGUE_FREQUENCIES[tongue]
         # Hash-based deterministic affinity
         h = int(hashlib.md5((tongue + text[:32]).encode()).hexdigest()[:8], 16)
         raw = (h % 1000) / 1000.0 * w

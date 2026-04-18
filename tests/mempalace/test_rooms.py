@@ -6,7 +6,6 @@ import pytest
 
 from src.ca_lexicon import LEXICON
 from src.mempalace import (
-    Room,
     build_palace,
     fold_walk,
     settle,

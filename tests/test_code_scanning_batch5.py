@@ -54,7 +54,7 @@ def test_ai_bridge_write_log_uses_allowlisted_root_and_safe_filename(tmp_path, m
     )
 
     assert log_path.exists()
-    assert log_path.is_relative_to(tmp_path)
+    assert log_path.is_relative_to(tmp_path.resolve())
     assert ".." not in log_path.name
     assert ":" not in log_path.name
     assert "gpt_4o_preview" in log_path.name

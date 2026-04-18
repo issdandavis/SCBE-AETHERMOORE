@@ -282,7 +282,8 @@ def main() -> None:
         shutil.rmtree(merged_path)
         print(f"Deleted: {merged_path}")
         import psutil
-        print(f"C: free after cleanup: {psutil.disk_usage('C:\\\\').free/1e9:.1f} GB")
+        drive = "C:\\"
+        print(f"C: free after cleanup: {psutil.disk_usage(drive).free/1e9:.1f} GB")
 
 
 if __name__ == "__main__":

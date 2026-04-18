@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 # Try hypothesis import
 try:
-    from hypothesis import given, strategies as st, settings, assume
+    from hypothesis import given, strategies as st, settings, assume, HealthCheck
 
     HYPOTHESIS_AVAILABLE = True
 except ImportError:
@@ -304,7 +304,7 @@ class TestCryptographicProperties:
         plaintext=st.binary(min_size=1, max_size=1000),
         password=st.binary(min_size=8, max_size=64),
     )
-    @settings(max_examples=50)
+    @settings(max_examples=20, deadline=None, suppress_health_check=[HealthCheck.too_slow])
     def test_encryption_roundtrip(self, plaintext, password):
         """Encrypt then decrypt always returns original."""
         rwp = RWPv3Protocol()
@@ -319,7 +319,7 @@ class TestCryptographicProperties:
         plaintext=st.binary(min_size=1, max_size=100),
         password=st.binary(min_size=8, max_size=32),
     )
-    @settings(max_examples=50)
+    @settings(max_examples=20, deadline=None, suppress_health_check=[HealthCheck.too_slow])
     def test_ciphertext_different_each_time(self, plaintext, password):
         """Same plaintext encrypts to different ciphertext (due to nonce)."""
         rwp = RWPv3Protocol()

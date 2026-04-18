@@ -70,8 +70,31 @@ def _select_sig_algorithm() -> str:
     return "ML-DSA-65"
 
 
+def _select_hash_sig_algorithm() -> str:
+    """Select the best available hash-based signature algorithm (FIPS 205 / SLH-DSA).
+
+    Hash-based signatures are the 3rd NIST PQC type alongside lattice-based
+    KEM (FIPS 203 ML-KEM-768) and lattice-based DSA (FIPS 204 ML-DSA-65).
+    Security assumptions are orthogonal — breaking one does not break the others.
+    Fallback chain: SLH-DSA-SHAKE-128S → SPHINCS+-SHAKE-128s-simple → None.
+    """
+    if not _LIBOQS_AVAILABLE:
+        return "SLH-DSA-SHAKE-128s"
+    enabled = _oqs.get_enabled_sig_mechanisms()
+    for candidate in (
+        "SLH_DSA_PURE_SHAKE_128S",
+        "SLH-DSA-SHAKE-128s",
+        "SPHINCS+-SHAKE-128s-simple",
+        "SPHINCS+-shake-128s-simple",
+    ):
+        if candidate in enabled:
+            return candidate
+    return "SLH-DSA-SHAKE-128s"
+
+
 _KEM_ALG = _select_kem_algorithm()
 _SIG_ALG = _select_sig_algorithm()
+_HASH_SIG_ALG = _select_hash_sig_algorithm()  # FIPS 205 hash-based sig
 
 
 class PQCBackend(Enum):

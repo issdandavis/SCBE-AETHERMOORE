@@ -42,16 +42,14 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional
 
 from .polyhedral_node import (
     PHI,
     ALL_TONGUES,
     DEAD_TONES,
     COMPLEMENT_MAP,
-    TONGUE_WEIGHTS,
     GovernanceVerdict,
-    PropagationLabel,
     PolyhedralRecord,
     generate_record,
 )

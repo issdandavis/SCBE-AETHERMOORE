@@ -12,7 +12,6 @@ Validates:
 8. Edge cases: ground state, max excitation, empty text
 """
 
-import math
 import pytest
 
 from src.crypto.qho_bundle import (
@@ -20,10 +19,6 @@ from src.crypto.qho_bundle import (
     OMEGA_BASE,
     TONGUE_WAVELENGTH,
     QHOLevel,
-    VisualFrequencyVector,
-    AcousticSignature,
-    QHOBundle,
-    QHOBatchResult,
     compute_qho_level,
     compute_visual_frequency,
     compute_acoustic_signature,
@@ -33,7 +28,7 @@ from src.crypto.qho_bundle import (
     flatten_qho_for_sft,
     format_qho_report,
 )
-from src.crypto.trit_curriculum import TritSignal, TRIT_AXES, compute_trit_signal
+from src.crypto.trit_curriculum import compute_trit_signal
 from src.crypto.polymorphic_multipath import score_and_expand
 
 # ===================================================================

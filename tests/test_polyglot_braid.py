@@ -4,13 +4,7 @@ Tests language registry, parallel concepts, braid encoding,
 cross-convergence detection, and the full weave pipeline.
 """
 
-import math
-import pytest
-
 from src.crypto.polyglot_braid import (
-    LanguageFamily,
-    NaturalLanguage,
-    ParallelConcept,
     BraidStrand,
     BraidResult,
     LANGUAGES,
@@ -21,7 +15,7 @@ from src.crypto.polyglot_braid import (
     weave_all_concepts,
     braid_summary,
 )
-from src.crypto.tri_bundle import TONGUE_WEIGHTS, PHI
+from src.crypto.tri_bundle import TONGUE_WEIGHTS
 
 # ===================================================================
 # Language Registry
@@ -278,7 +272,7 @@ class TestCrossConvergence:
         concept = PARALLEL_CONCEPTS[0]
         result = weave_concept(concept, languages=["en", "es", "fr", "de", "pt"])
         # All Latin script — byte ranges should be similar (ASCII-ish)
-        for code, strand in result.strands.items():
+        for code, _strand in result.strands.items():
             lang = LANGUAGE_BY_CODE[code]
             assert lang.script == "Latin"
 

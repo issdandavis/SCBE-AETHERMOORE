@@ -18,8 +18,6 @@ import sys
 import time
 from pathlib import Path
 
-import pytest
-
 ROOT = Path(__file__).resolve().parents[1]
 for candidate in (ROOT, ROOT / "src"):
     if candidate.exists() and str(candidate) not in sys.path:
@@ -28,7 +26,6 @@ for candidate in (ROOT, ROOT / "src"):
 from src.symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.semantic_antivirus import (
     ContentVerdict,
     SemanticAntivirus,
-    ThreatProfile,
     PROMPT_INJECTION_PATTERNS,
     MALWARE_PATTERNS,
 )
@@ -41,7 +38,6 @@ from src.symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.web_polly_pa
 )
 from src.symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.navigation_engine import (
     NavigationEngine,
-    NavigationState,
     PageUnderstanding,
     ResearchQuery,
     URLGraph,
@@ -52,7 +48,6 @@ from src.symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.agent_orches
     WebTask,
     TaskType,
     TaskStatus,
-    TaskResult,
     ContentPostingBuffer,
 )
 

@@ -23,6 +23,7 @@ It is intentionally read-only in spirit:
 ## Scope
 
 - [[Transport Tokenizer - SS1 and Sacred Tongues]]
+- [[Tokenizer Construction History and Lock]]
 - [[Atomic Op Features - 8 Vector]]
 - [[Adaptive Routing - Op Binary]]
 - [[Spiral Ring - Temporal Geometry]]

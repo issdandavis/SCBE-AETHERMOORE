@@ -1,6 +1,5 @@
 """Tests for the Crossing Energy Evaluator — governance at braid intersections."""
 
-import math
 import pytest
 
 from src.crypto.crossing_energy import (
@@ -9,7 +8,6 @@ from src.crypto.crossing_energy import (
     ALL_STATES,
     Decision,
     CrossingResult,
-    GovernanceSummary,
     valid_transition,
     valid_neighbors,
     phase_deviation,
@@ -19,8 +17,6 @@ from src.crypto.crossing_energy import (
     evaluate_sequence,
     evaluate_polyglot,
     summarize_governance,
-    QUARANTINE_THRESHOLD,
-    DENY_THRESHOLD,
     DECISION_TO_TRIT,
 )
 from src.crypto.tri_bundle import (
@@ -28,7 +24,6 @@ from src.crypto.tri_bundle import (
     encode_byte,
     encode_bytes,
     encode_polyglot,
-    TriBundleCluster,
 )
 
 # ===================================================================

@@ -36,24 +36,16 @@ Author: SCBE-AETHERMOORE / Issac Davis
 
 from __future__ import annotations
 
-import math
-import hashlib
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Set, Tuple
 from itertools import combinations
 
 from src.crypto.harmonic_dark_fill import (
-    PHI,
-    PI,
     TONGUE_WEIGHTS,
-    TONGUE_AUDIBLE_FREQ,
     COMPLEMENT_MAP,
     HarmonicFill,
-    SpectrumSnapshot,
     compute_darkness,
-    compute_harmonic_fill,
     fill_dark_nodes,
-    sequence_spectrum,
     voice_leading_interval,
 )
 
