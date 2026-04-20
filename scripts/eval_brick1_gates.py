@@ -153,12 +153,19 @@ def main(argv: list[str] | None = None) -> int:
     if not args.adapter.exists():
         print(f"[GATE] adapter missing: {args.adapter}", file=sys.stderr)
         return 3
-    if not BRICK0_STRUCT.exists() or not BRICK0_DRILL.exists():
-        print(f"[GATE] Brick 0 baseline JSONs missing under {BRICK0_ROOT}", file=sys.stderr)
-        return 3
 
-    brick0_struct = json.loads(BRICK0_STRUCT.read_text(encoding="utf-8"))
-    brick0_drill = json.loads(BRICK0_DRILL.read_text(encoding="utf-8"))
+    brick0_available = BRICK0_STRUCT.exists() and BRICK0_DRILL.exists()
+    if brick0_available:
+        brick0_struct = json.loads(BRICK0_STRUCT.read_text(encoding="utf-8"))
+        brick0_drill = json.loads(BRICK0_DRILL.read_text(encoding="utf-8"))
+    else:
+        print(
+            f"[GATE] Brick 0 baseline JSONs missing under {BRICK0_ROOT}; "
+            "G1-G5 will still run against absolute thresholds, G6 will report MISSING",
+            file=sys.stderr,
+        )
+        brick0_struct = {}
+        brick0_drill = {}
 
     print(f"[GATE] loading Brick 1 adapter: {args.adapter}")
     t0 = time.perf_counter()
@@ -236,6 +243,7 @@ def main(argv: list[str] | None = None) -> int:
         "brick0_reference": {
             "structural": str(BRICK0_STRUCT.resolve()),
             "drill": str(BRICK0_DRILL.resolve()),
+            "available": brick0_available,
         },
         "overall_status": overall_status,
         "gates": gate_results,
