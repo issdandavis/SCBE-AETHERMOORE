@@ -16,14 +16,10 @@ The stats backend has lower attack detection (~36%) but still shows
 measurable cost/spin separation between safe and unsafe actions.
 """
 
-import time
-from dataclasses import dataclass
-from typing import Dict, List, Optional
-
 import numpy as np
 import pytest
 
-from src.governance.runtime_gate import Decision, GateResult, RuntimeGate
+from src.governance.runtime_gate import Decision, RuntimeGate
 from tests.adversarial.attack_corpus import BASELINE_CLEAN, get_all_attacks
 
 # ---------------------------------------------------------------------------
