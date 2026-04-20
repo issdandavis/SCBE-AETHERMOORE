@@ -2,10 +2,15 @@
 
 Pulls dataset from issdandavis/polly-training-data, trains a LoRA adapter on
 Qwen2.5-0.5B, and optionally pushes the adapter to a Hugging Face model repo.
+
+Designed to run on Colab (T4/L4/A100) and Kaggle (T4 x2 / P100). Tolerates
+trl >=0.12 where max_seq_length moved off SFTConfig onto SFTTrainer.
 """
+
 from __future__ import annotations
 
 import argparse
+import inspect
 import os
 import sys
 from pathlib import Path
@@ -22,6 +27,7 @@ def build_quant_config(disabled):
         return None
     try:
         from transformers import BitsAndBytesConfig
+
         return BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
@@ -31,6 +37,33 @@ def build_quant_config(disabled):
     except Exception as exc:
         print("[hf_train_polly] bnb unavailable:", exc, file=sys.stderr)
         return None
+
+
+def resolve_token():
+    tok = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+    if tok:
+        return tok
+    try:
+        from kaggle_secrets import UserSecretsClient
+
+        tok = UserSecretsClient().get_secret("HF_TOKEN")
+        if tok:
+            os.environ["HF_TOKEN"] = tok
+            return tok
+    except Exception:
+        pass
+    return None
+
+
+def split_kwargs(target_cls, kwargs):
+    try:
+        sig = inspect.signature(target_cls.__init__)
+        params = set(sig.parameters)
+    except (TypeError, ValueError):
+        return dict(kwargs), {}
+    accepted = {k: v for k, v in kwargs.items() if k in params}
+    leftover = {k: v for k, v in kwargs.items() if k not in params}
+    return accepted, leftover
 
 
 def main():
@@ -55,10 +88,14 @@ def main():
     ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
 
-    token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+    token = resolve_token()
     if not token:
         print("[hf_train_polly] ERROR: set HF_TOKEN", file=sys.stderr)
         return 2
+
+    use_bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+    use_fp16 = torch.cuda.is_available() and not use_bf16
+    compute_dtype = torch.bfloat16 if use_bf16 else torch.float16
 
     print("[hf_train_polly] loading dataset", args.dataset, args.dataset_split)
     ds = load_dataset(args.dataset, split=args.dataset_split, token=token)
@@ -78,7 +115,8 @@ def main():
     if quant is not None:
         model_kwargs["quantization_config"] = quant
     else:
-        model_kwargs["torch_dtype"] = torch.float16
+        model_kwargs["torch_dtype"] = compute_dtype
+
     model = AutoModelForCausalLM.from_pretrained(args.base_model, **model_kwargs)
 
     lora = LoraConfig(
@@ -87,7 +125,8 @@ def main():
         lora_dropout=args.lora_dropout,
         bias="none",
         task_type=TaskType.CAUSAL_LM,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                        "gate_proj", "up_proj", "down_proj"],
     )
     model = get_peft_model(model, lora)
     model.print_trainable_parameters()
@@ -95,7 +134,7 @@ def main():
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    cfg = SFTConfig(
+    cfg_kwargs = dict(
         output_dir=str(output_dir),
         num_train_epochs=args.epochs,
         per_device_train_batch_size=args.batch_size,
@@ -107,8 +146,8 @@ def main():
         logging_steps=10,
         save_steps=200,
         save_total_limit=3,
-        bf16=False,
-        fp16=True,
+        bf16=use_bf16,
+        fp16=use_fp16,
         max_seq_length=args.max_seq,
         packing=False,
         report_to=[],
@@ -118,15 +157,30 @@ def main():
         hub_token=token if args.push else None,
     )
 
-    trainer = SFTTrainer(
+    cfg_accepted, cfg_leftover = split_kwargs(SFTConfig, cfg_kwargs)
+    cfg = SFTConfig(**cfg_accepted)
+
+    trainer_kwargs = dict(
         model=model,
         args=cfg,
         train_dataset=ds,
-        processing_class=tok,
     )
+    trainer_sig = set(inspect.signature(SFTTrainer.__init__).parameters)
+    if "processing_class" in trainer_sig:
+        trainer_kwargs["processing_class"] = tok
+    elif "tokenizer" in trainer_sig:
+        trainer_kwargs["tokenizer"] = tok
+    for k, v in cfg_leftover.items():
+        if k in trainer_sig:
+            trainer_kwargs[k] = v
+        else:
+            print("[hf_train_polly] dropping unsupported kwarg:", k, file=sys.stderr)
+
+    trainer = SFTTrainer(**trainer_kwargs)
 
     print("[hf_train_polly] starting training")
     trainer.train()
+
     print("[hf_train_polly] saving adapter to", output_dir)
     trainer.save_model(str(output_dir))
     tok.save_pretrained(str(output_dir))
