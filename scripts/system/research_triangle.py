@@ -40,10 +40,10 @@ import os
 import re
 import sys
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Tuple
 from urllib.parse import quote_plus
 from urllib.request import urlopen, Request
 from urllib.error import URLError
@@ -187,10 +187,8 @@ class ArxivClient:
         def _clean(s: str) -> str:
             # Normalize whitespace and fix mojibake from mixed encoding
             s = s.replace("\n", " ").strip()
-            try:
-                return s.encode("latin-1").decode("utf-8")
-            except (UnicodeEncodeError, UnicodeDecodeError):
-                return s
+            repaired = s.encode("latin-1", errors="ignore").decode("utf-8", errors="ignore").strip()
+            return repaired or s
 
         papers = []
         for entry in root.findall("atom:entry", self.NS):
@@ -304,7 +302,8 @@ def _encode_ss1(text: str, primary_tongue: str) -> str:
         from packages.sixtongues.sixtongues import encode_bytes
         raw = text.encode("utf-8", errors="replace")
         return encode_bytes(raw, tongue_code=primary_tongue.lower())
-    except Exception:
+    except (ImportError, LookupError, UnicodeError, ValueError) as exc:
+        print(f"[WARN] SS1 encoding unavailable for {primary_tongue}: {exc}", file=sys.stderr)
         return ""
 
 
