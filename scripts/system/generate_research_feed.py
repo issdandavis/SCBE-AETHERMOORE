@@ -117,8 +117,8 @@ def hn_top(n: int = 8) -> list[dict]:
                 }
             )
             time.sleep(0.08)
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"[HN] Story {story_id} failed: {exc}")
     return items
 
 
@@ -469,7 +469,6 @@ def worldnews_api(n: int = 6) -> list[dict]:
         ).json()
         items = []
         for art in resp.get("news", [])[:n]:
-            country = art.get("publish_date", "")[:2]
             items.append(
                 {
                     "title": art.get("title", "")[:120],

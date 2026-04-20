@@ -30,13 +30,15 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from .council_manifold_backend import CouncilManifoldBackend
 from .negative_tongue_lattice import NegativeTongueLattice
 from .trichromatic_governance import TrichromaticGovernanceEngine
+
+if TYPE_CHECKING:
+    from .council_manifold_backend import CouncilManifoldBackend
 
 try:
     from primitives.phi_poincare import (
@@ -496,6 +498,8 @@ class RuntimeGate:
         self._council_manifold: Optional[CouncilManifoldBackend] = None
         if self._council_manifold_enabled:
             try:
+                from .council_manifold_backend import CouncilManifoldBackend
+
                 self._council_manifold = CouncilManifoldBackend(
                     seeds_path=council_manifold_seeds_path,
                 )
