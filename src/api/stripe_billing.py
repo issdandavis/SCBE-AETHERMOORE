@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import logging
 import os
 import secrets
 import time
@@ -71,10 +72,17 @@ BILLING_CUSTOMERS: Dict[str, Dict[str, Any]] = {}
 # API keys issued via billing (api_key -> {customer_id, plan, tenant_id, ...})
 BILLING_API_KEYS: Dict[str, Dict[str, Any]] = {}
 
+LOGGER = logging.getLogger("scbe.billing")
+
 
 # ---------------------------------------------------------------------------
-# Stripe HTTP helpers (no SDK dependency — just urllib)
+# Stripe HTTP helpers (no SDK dependency - just urllib)
 # ---------------------------------------------------------------------------
+
+
+def _safe_for_log(value: object) -> str:
+    """Collapse control characters before emitting user-controlled values to logs."""
+    return str(value).replace("\r", "\\r").replace("\n", "\\n")
 
 
 def _stripe_key() -> str:
@@ -421,11 +429,12 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
     msg.attach(MIMEText(html_body, "html"))
 
     if not smtp_pass:
-        # No SMTP configured — log instead
-        import logging
-
-        logging.getLogger("scbe.billing").warning(
-            f"SMTP not configured. Would send delivery to {to_email} for {product_name}. " f"Download: {download_url}"
+        # No SMTP configured - log instead
+        LOGGER.warning(
+            "SMTP not configured. Would send delivery to %s for %s. Download: %s",
+            _safe_for_log(to_email),
+            _safe_for_log(product_name),
+            _safe_for_log(download_url),
         )
         return False
 
@@ -436,9 +445,11 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
             server.send_message(msg)
         return True
     except Exception as exc:
-        import logging
-
-        logging.getLogger("scbe.billing").error(f"Failed to send delivery email to {to_email}: {exc}")
+        LOGGER.error(
+            "Failed to send delivery email to %s: %s",
+            _safe_for_log(to_email),
+            _safe_for_log(exc),
+        )
         return False
 
 
@@ -503,8 +514,12 @@ def _persist_purchase(record: Dict[str, Any]) -> None:
     try:
         with open(log_file, "a", encoding="utf-8") as f:
             f.write(json.dumps(record) + "\n")
-    except Exception:
-        pass
+    except OSError as exc:
+        LOGGER.warning(
+            "Failed to persist purchase record to %s: %s",
+            _safe_for_log(log_file),
+            _safe_for_log(exc),
+        )
 
 
 @billing_router.get("/purchases")
