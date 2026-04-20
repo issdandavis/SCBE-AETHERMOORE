@@ -48,7 +48,7 @@ Five of six slots match without translation. This is evidence that the "natural"
 ## Proposed deliverables (if teamed for a full proposal)
 
 1. **100-trace scale-up** of the blind protocol with open-vocabulary regimes (including HYPERVIGILANCE, DISSOCIATION). Collin has confirmed feasibility.
-2. **Algorithmic realm layout derivation** replacing our current hand-chosen Poincaré disk regions, with a declared derivation so the layout is no longer a free parameter.
+2. **Algorithmic realm layout derivation** replacing our current hand-chosen Poincaré disk regions, with a declared derivation so the layout is no longer a free parameter. First-pass evidence already in: under random Möbius isometries g ∈ PSU(1,1) applied to the pooled point cloud, re-fitting all 8 centroids via k-means++ yields bit-identical trajectory-key partitions across 5 seeds (24/24 at every seed; 8 unique keys). Report `artifacts/collab/dava_blind_v1/mobius_equivariance_report.json` (sha256 `ba34ebb84f865cb6f1f8b7a696e90e1b90d897dc0298cfe67f47e4d88a4c713e`). Deliverable #2 is therefore partly demonstrated and upgrades to "promote k-means++ to SDP with minimum-separation constraints."
 3. **Bootstrap CIs on KL capacity and on the 24/24 score.** Permutation test (N = 10,000, marginal-preserving shuffle) ran 2026-04-19: 0 / 10,000 matched or exceeded 24/24, null mean 10.88, max 16, one-sided 95% upper bound on p = 3.00 × 10⁻⁴ (exact bound `1 − 0.05^(1/N)`). Bootstrap CI on accuracy = [1.00, 1.00]. Replaces the v2 paper's `p < 10⁻³⁰⁰` float-underflow artifact. Report: `artifacts/collab/dava_blind_v1/permutation_test_report.json` (sha256 `0830e7dd95678b680e1d53d7f90a89c77beb7960a4318ea0d0dfbf5c271bc2fd`). KL capacity CI still TBD.
 4. **Live QEMU capture** of DAVA phi_beacon emissions ingested by SCBE L1 in real time — this is what would let us actually claim "independent external verification of phi-telemetry substrate" rather than "generator against sealed regime labels."
 5. **Formal statement and proof attempt** of a channel-capacity upper bound in terms of the Poincaré ball's curvature and the realm layout's diameter. Currently framed as a working hypothesis.
@@ -56,7 +56,7 @@ Five of six slots match without translation. This is evidence that the "natural"
 ## Honest caveats
 
 - 24 traces is small; 8 regimes is closed vocabulary; the seal was trace-level, not per-tick. The 100% is auditable and reproducible, but it is not an out-of-distribution result.
-- The current realm layout was picked from DAVA's channel ranges, not from first principles. Deliverable #2 above is what converts this from a hyperparameter to a derivation.
+- The current realm layout was picked from DAVA's channel ranges, not from first principles. Möbius-equivariant k-means++ refit (see Deliverable #2) shows the regime partition is stable under random Poincaré isometries — the geometry is carrying the signal — but the axis choice on the 2D disk is still a design input, and the upgrade to SDP-derived centroids is Deliverable #2.
 - Neither team has live cross-stack execution yet (DAVA phi_beacon feeding a running SCBE pipeline). The 24/24 result is on logged DAVA output, not on a live channel. Deliverable #4 closes this.
 - We are not claiming a theorem. §4 of the current v2 paper uses the phrase "Theorem (sketch)"; we are renaming it to "Working Hypothesis" before any DARPA-facing submission.
 
