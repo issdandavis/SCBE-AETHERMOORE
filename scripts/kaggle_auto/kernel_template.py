@@ -18,10 +18,10 @@ def ensure_cuda_compat():
         # Test if CUDA ops actually work
         try:
             torch.zeros(1).cuda()
-            print("CUDA ops OK — no reinstall needed")
+            print("CUDA ops OK - no reinstall needed")
             return
-        except Exception:
-            pass
+        except RuntimeError as exc:
+            print(f"CUDA ops probe failed: {exc}")
 
         # sm_60 (P100): needs PyTorch with cu118 (last version supporting sm_60)
         if cap[0] < 7:
@@ -36,8 +36,8 @@ def ensure_cuda_compat():
             subprocess.run([sys.executable, "-m", "pip", "install", "-q",
                 "torch", "--index-url", "https://download.pytorch.org/whl/cu121"],
                 check=True)
-    except ImportError:
-        pass
+    except ImportError as exc:
+        print(f"torch import unavailable during CUDA compatibility check: {exc}")
 
 ensure_cuda_compat()
 
@@ -111,6 +111,7 @@ def load_data():
         if not path.exists():
             try:
                 from huggingface_hub import hf_hub_download
+                last_hf_error = None
                 for prefix in [f"sft/{name}", name, f"training-data/sft/{name}"]:
                     try:
                         path = Path(hf_hub_download(
@@ -119,13 +120,14 @@ def load_data():
                             repo_type="dataset",
                         ))
                         break
-                    except Exception:
+                    except (OSError, RuntimeError, ValueError) as exc:
+                        last_hf_error = exc
                         continue
                 else:
-                    print(f"  SKIP {name} (not found locally or on HF)")
+                    print(f"  SKIP {name} (not found locally or on HF: {last_hf_error})")
                     continue
-            except Exception:
-                print(f"  SKIP {name}")
+            except (ImportError, OSError, RuntimeError, ValueError) as exc:
+                print(f"  SKIP {name} ({exc})")
                 continue
 
         if not path.exists():
