@@ -11,14 +11,14 @@ Tests:
 7. Neighbor-count-based pixel value
 8. Fill bg with nearest fg color
 """
-import json, sys, os, numpy as np
+import sys, numpy as np
 from pathlib import Path
 from collections import Counter, deque
 
 sys.path.insert(0, "C:/Users/issda/SCBE-AETHERMOORE/src")
 sys.path.insert(0, "C:/Users/issda/SCBE-AETHERMOORE")
 
-from neurogolf.arc_io import load_arc_task, ARCTask
+from neurogolf.arc_io import load_arc_task
 from neurogolf.solver import synthesize_program, execute_program
 
 # Load tasks
