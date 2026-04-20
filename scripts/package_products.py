@@ -146,8 +146,8 @@ def _count_jsonl_records(path: Path) -> int:
             for line in f:
                 if line.strip():
                     count += 1
-    except Exception:
-        pass
+    except OSError as exc:
+        print(f"[WARN] Failed to count records in {path}: {exc}", file=sys.stderr)
     return count
 
 
