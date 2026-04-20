@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-import onnx
+import pytest
+
+onnx = pytest.importorskip("onnx")
+pytest.importorskip("torch")
+pytest.importorskip("onnxscript")
 from onnx import TensorProto, helper
 
 from neurogolf.ir import make_multi_shift_color_program
