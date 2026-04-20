@@ -11,6 +11,7 @@ hypothesis>=6.100.0
 pytest-hypothesis>=0.1.0
 httpx>=0.27.0
 requests>=2.32.0
+jsonschema>=4.23.0
 # Post-Quantum Cryptography
 # Local: install from main to match native liboqs 0.15.0:
 #   pip install git+https://github.com/open-quantum-safe/liboqs-python.git@main
@@ -41,4 +42,3 @@ lxml>=5.0.0
 
 # Optional: Visualization (for extended demos)
 # matplotlib>=3.5.0
-
