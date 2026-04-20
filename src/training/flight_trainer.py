@@ -132,7 +132,7 @@ def coupling_operator(
     if dim >= 2:
         # Rotate flight vector 90 degrees for lift direction
         lift_dir = np.zeros(dim)
-        lift_dir[0] = -x_flight[1] if dim > 1 else 0.0
+        lift_dir[0] = -x_flight[1]
         lift_dir[1] = x_flight[0]
         norm = np.linalg.norm(lift_dir) + EPS
         lift_dir = lift_dir / norm
