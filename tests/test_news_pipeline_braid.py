@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import json
 
 from scripts.system import news_pipeline, pipeline_to_hf
@@ -136,3 +137,17 @@ def test_main_writes_summary_with_braid_flag(monkeypatch, tmp_path):
     assert summary["sft_pairs_generated"] == 8
     assert summary["crypto_tier"] == "hmac-only"
     assert summary["braid_available"] is True
+
+
+def test_load_oqs_gracefully_handles_system_exit(monkeypatch):
+    monkeypatch.setattr(news_pipeline, "_FORCE_SKIP", False)
+
+    real_import = builtins.__import__
+
+    def _boom(name, *args, **kwargs):
+        if name == "oqs":
+            raise SystemExit(1)
+        return real_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", _boom)
+    assert news_pipeline._load_oqs() is None
