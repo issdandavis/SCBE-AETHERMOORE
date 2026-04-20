@@ -197,8 +197,8 @@ def export_program_onnx(
             )
             if not uses_external_data:
                 sidecar_path.unlink()
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"[onnx_emit] Skipping sidecar cleanup verification for {output_path}: {exc}", file=sys.stderr)
     return output_path
 
 
