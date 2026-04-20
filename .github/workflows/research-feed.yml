@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - uses: actions/checkout@v4
@@ -35,21 +36,32 @@ jobs:
           WORLDNEWS_API_KEY: ${{ secrets.WORLDNEWS_API_KEY }}
         run: python scripts/system/generate_research_feed.py
 
-      - name: Run SCBE news pipeline (geo → tokenize → hash → egg → encrypt → sign)
+      - name: Run SCBE news pipeline (geo -> tokenize -> hash -> egg -> encrypt -> sign)
         env:
           SCBE_FORCE_SKIP_LIBOQS: "1"
           PYTHONPATH: "."
         run: python scripts/system/news_pipeline.py
 
-      - name: Commit updated feed and pipeline outputs
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Create PR for updated feed and pipeline outputs
+        uses: peter-evans/create-pull-request@v7
         with:
           commit_message: "chore(feed): update research-feed.json + pipeline SFT [skip ci]"
+          branch: automation/research-feed
+          delete-branch: true
+          title: "chore(feed): update research feed outputs"
+          body: |
+            Automated update from the Research Feed workflow.
+
+            This PR refreshes:
+            - `docs/research-feed.json`
+            - `docs/research-pipeline.json`
+            - `training-data/news-pipeline/records/*.jsonl`
+            - `training-data/news-pipeline/sft/*.jsonl`
           file_pattern: >
             docs/research-feed.json
             docs/research-pipeline.json
             training-data/news-pipeline/records/*.jsonl
             training-data/news-pipeline/sft/*.jsonl
-          branch: main
           commit_user_name: github-actions[bot]
           commit_user_email: github-actions[bot]@users.noreply.github.com
+
