@@ -188,10 +188,9 @@ class ArxivClient:
             # Normalize whitespace and fix mojibake from mixed encoding
             s = s.replace("\n", " ").strip()
             try:
-                s = s.encode("latin-1").decode("utf-8")
+                return s.encode("latin-1").decode("utf-8")
             except (UnicodeEncodeError, UnicodeDecodeError):
-                pass
-            return s
+                return s
 
         papers = []
         for entry in root.findall("atom:entry", self.NS):

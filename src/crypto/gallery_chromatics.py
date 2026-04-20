@@ -34,10 +34,11 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import Dict, List, Protocol, Tuple
 
-if TYPE_CHECKING:
-    from src.crypto.quantum_frequency_bundle import GalleryAmbientNote
+
+class SupportsObservedRatio(Protocol):
+    observed_ratio: float
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -370,7 +371,7 @@ def _build_iris(
 
 
 def compute_gallery_color_field(
-    gallery_notes: Dict[str, "GalleryAmbientNote"],
+    gallery_notes: Dict[str, SupportsObservedRatio],
     tongue_coefficients: Dict[str, float],
 ) -> GalleryColorField:
     """Compute the dual-seeded chromatic field from gallery ambient data.

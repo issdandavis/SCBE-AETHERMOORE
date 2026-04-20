@@ -31,12 +31,9 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-
-if TYPE_CHECKING:
-    from .runtime_gate import Decision
 
 # ---- Constants (from council_seed_schema $defs.mixed_metric) ----
 PHI = (1 + math.sqrt(5)) / 2
