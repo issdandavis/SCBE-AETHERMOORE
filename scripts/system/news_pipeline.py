@@ -250,14 +250,20 @@ def tongue_decode(tokens: list[str], tongue: str = "KO") -> bytes:
 
 _FORCE_SKIP = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {"1", "true", "yes"}
 
-LIBOQS_AVAILABLE = False
-if not _FORCE_SKIP:
+def _load_oqs():
+    """Attempt to import oqs without letting liboqs bootstrap abort importers."""
+    if _FORCE_SKIP:
+        return None
     try:
-        import oqs  # type: ignore  # noqa: F401
+        import oqs  # type: ignore
 
-        LIBOQS_AVAILABLE = True
-    except Exception:
-        pass
+        return oqs
+    except BaseException:
+        return None
+
+
+_OQS_MODULE = _load_oqs()
+LIBOQS_AVAILABLE = _OQS_MODULE is not None
 
 CRYPTOGRAPHY_AVAILABLE = False
 try:
@@ -549,7 +555,9 @@ def stage_encrypt(egged: dict) -> dict:
 
     if LIBOQS_AVAILABLE:
         try:
-            import oqs  # type: ignore
+            oqs = _load_oqs()
+            if oqs is None:
+                raise RuntimeError("oqs unavailable")
 
             with oqs.KeyEncapsulation("ML-KEM-768") as kem:
                 pub = kem.generate_keypair()
@@ -564,7 +572,7 @@ def stage_encrypt(egged: dict) -> dict:
                         "kem_ct_len": len(ciphertext_kem),
                     }
                 )
-        except Exception:
+        except BaseException:
             nonce_hex, ct_hex, tag_hex = _encrypt_hmac_only(plaintext, key_material)
             kem_meta["tier"] = "hmac-fallback"
     elif CRYPTOGRAPHY_AVAILABLE:
@@ -612,7 +620,9 @@ def stage_sign(encrypted: dict) -> dict:
 
     if LIBOQS_AVAILABLE:
         try:
-            import oqs  # type: ignore
+            oqs = _load_oqs()
+            if oqs is None:
+                raise RuntimeError("oqs unavailable")
 
             alg = "ML-DSA-65"
             try:
@@ -625,7 +635,7 @@ def stage_sign(encrypted: dict) -> dict:
                         "sig_len": len(signature),
                         "pk_len": len(pub),
                     }
-            except Exception:
+            except BaseException:
                 alg = "Dilithium3"
                 with oqs.Signature(alg) as signer:
                     pub = signer.generate_keypair()
@@ -636,7 +646,7 @@ def stage_sign(encrypted: dict) -> dict:
                         "sig_len": len(signature),
                         "pk_len": len(pub),
                     }
-        except Exception as exc:
+        except BaseException as exc:
             sig_meta = {
                 "algorithm": "HMAC-SHA256-fallback",
                 "signature": _hmac256(_CHAIN_KEY, blob),
