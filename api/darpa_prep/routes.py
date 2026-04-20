@@ -5,8 +5,11 @@ from typing import List
 from fastapi import APIRouter, HTTPException, Query
 
 from .client import SamGovClient, extract_requirement_candidates
+from .darpa_portal import parse_darpa_start_submissions
 from .models import (
     Citation,
+    DarpaPortalParseRequest,
+    DarpaPortalParseResponse,
     NormalizeOpportunityRequest,
     NormalizeOpportunityResponse,
     RequirementRecord,
@@ -86,4 +89,18 @@ async def normalize_opportunity(request: NormalizeOpportunityRequest):
         )
 
     return NormalizeOpportunityResponse(opportunity=opportunity, requirements=requirements, citations=citations)
+
+
+@router.post("/darpa-portal/parse", response_model=DarpaPortalParseResponse)
+async def parse_darpa_portal(request: DarpaPortalParseRequest):
+    if not request.raw_text.strip():
+        raise HTTPException(status_code=400, detail="raw_text must be non-empty")
+    opportunities, citations = parse_darpa_start_submissions(
+        request.raw_text, source_ref=request.source_ref
+    )
+    return DarpaPortalParseResponse(
+        count=len(opportunities),
+        opportunities=opportunities,
+        citations=citations,
+    )
 
