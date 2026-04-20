@@ -30,15 +30,12 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
 from .negative_tongue_lattice import NegativeTongueLattice
 from .trichromatic_governance import TrichromaticGovernanceEngine
-
-if TYPE_CHECKING:
-    from .council_manifold_backend import CouncilManifoldBackend
 
 try:
     from primitives.phi_poincare import (
