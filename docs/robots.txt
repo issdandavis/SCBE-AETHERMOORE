@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aethermoore.com/sitemap.xml
