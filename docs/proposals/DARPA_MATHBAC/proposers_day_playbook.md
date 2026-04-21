@@ -1,9 +1,12 @@
 # MATHBAC Proposers Day — Execution Playbook
 
 **Date:** 2026-04-21
+**Time:** 11:00 AM – 2:00 PM ET (8:00 AM – 11:00 AM PT)
+**Format:** Virtual webcast (link arrives 24–48h pre-event from MATHBAC@darpa.mil)
 **Program:** DARPA-SN-26-59 (MATHBAC TA1)
 **PM:** Yannis Kevrekidis
 **Your role:** SCBE-AETHERMOORE sole author · Joint with Collin Hoag (DAVA)
+**Work status:** Called out of Wendy's shift 2026-04-20. Full 3-hour block clear.
 
 ---
 
