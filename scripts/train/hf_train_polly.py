@@ -4,7 +4,9 @@ Pulls dataset from issdandavis/polly-training-data, trains a LoRA adapter on
 Qwen2.5-0.5B, and optionally pushes the adapter to a Hugging Face model repo.
 
 Designed to run on Colab (T4/L4/A100) and Kaggle (T4 x2 / P100). Tolerates
-trl >=0.12 where max_seq_length moved off SFTConfig onto SFTTrainer.
+trl >=0.12 where max_seq_length moved off SFTConfig onto SFTTrainer. Forces
+single-GPU placement in multi-GPU environments (e.g. Kaggle T4 x2) to avoid
+DataParallel device-split errors with LoRA training.
 """
 
 from __future__ import annotations
@@ -14,6 +16,13 @@ import inspect
 import os
 import sys
 from pathlib import Path
+
+# Pin to a single visible GPU before importing torch, unless the user already
+# set CUDA_VISIBLE_DEVICES. This avoids HF Trainer auto-wrapping the model in
+# torch.nn.DataParallel across multiple GPUs (which doesn't work with
+# device_map-sharded PEFT models).
+if "CUDA_VISIBLE_DEVICES" not in os.environ:
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import torch
 from datasets import load_dataset
@@ -111,7 +120,10 @@ def main():
         tok.pad_token = tok.eos_token
 
     quant = build_quant_config(args.no_quant)
-    model_kwargs = {"token": token, "device_map": "auto"}
+    # Pin the whole model to cuda:0. With CUDA_VISIBLE_DEVICES=0 set at top,
+    # device_map={"":0} keeps every parameter on one device and avoids the
+    # DataParallel multi-device split error.
+    model_kwargs = {"token": token, "device_map": {"": 0} if torch.cuda.is_available() else "cpu"}
     if quant is not None:
         model_kwargs["quantization_config"] = quant
     else:
