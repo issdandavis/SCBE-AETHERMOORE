@@ -1304,6 +1304,33 @@ async def vault_sync():
 # =========================================================================== #
 
 
+class ContactFormPayload(BaseModel):
+    name: str
+    email: str
+    subject: str
+    message: str
+    page: Optional[str] = None
+
+
+@app.post("/api/contact")
+async def contact_submit(payload: ContactFormPayload):
+    """Receive contact form submissions from the website and notify via email."""
+    try:
+        from scripts.system.email_service import send_contact_notification
+        result = send_contact_notification(
+            name=payload.name,
+            email=payload.email,
+            subject=payload.subject,
+            message=payload.message,
+            page=payload.page,
+        )
+        if result["ok"]:
+            return {"ok": True, "message": "Message sent. We usually reply within 24 hours."}
+        return {"ok": False, "error": result.get("error", "Email delivery failed")}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
 @app.post("/api/ops/check-email")
 async def ops_check_email():
     """Run the Apollo email reader and return classified digests."""
