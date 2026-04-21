@@ -10,21 +10,20 @@ Refresh website content to reflect recent milestones and add a free, offline-cap
 - Phase plan + decision log + this handoff.
 - Iter 1 (SHA `af236ccb`): milestones section + offline corpus chatbot landed on origin.
 - Iter 2 (SHA `9911f6e4`): slash commands (/nav, /search, /help, /sections) + DuckDuckGo instant-answer + freeform intent parser; polly-sidebar.css restored.
-- Iter 3: HF Space source at `space/scbe-chat/` (app.py, requirements.txt, README.md, Dockerfile). Deploy is owner-only (no autonomous HF push).
+- Iter 3 (SHA `3882f146`): HF Space source at `space/scbe-chat/` (app.py, requirements.txt, README.md, Dockerfile). Deploy is owner-only (no autonomous HF push).
+- Iter 4 (SHA `6297cd6d`): a11y (aria-label send/input, aria-expanded launcher, Ctrl+/ global, Esc-to-close, focus-on-open), `docs/CHATBOT_SETUP.md`, corpus bumped to v2 with 59 passages.
 
 ## In progress
-- Iter 3 pending push/verify/log, then iter 4 (polish).
+- 4-iteration website loop CLOSED. No website iter pending.
 
 ## Blocked
 - Owner call still pending on `docs/members/` PIN-gate (discard vs redesign).
 - HF Space deployment deferred to owner (no autonomous HF deploy from this session).
 
 ## Next actions (resume here)
-1. Read `docs/index.html` around the existing CTA strip to find a clean insertion point for the milestones block.
-2. Write `docs/chatbot-corpus.json`.
-3. Patch `docs/static/polly-companion.js` with offline fallback.
-4. Add milestones HTML block to `docs/index.html`.
-5. Commit + push + `scripts/agents/log.sh "iter 1: ..."`.
+1. Owner decision on HF Space deploy (create `issdandavis/scbe-polly-chat`, paste `space/scbe-chat/`, set `HF_TOKEN` secret).
+2. Owner decision on `docs/members/` PIN-gate (discard vs redesign) - still never committed.
+3. Outside this loop: MATHBAC punch-list continues (DRAFT_POST_CALL, DRAFT_COLLIN_ASKS, BAAT registration, v2 teaming signature 2026-04-29, abstract 2026-04-30, full proposal 2026-06-16).
 
 ## Files changed (this run)
 - ADDED: `docs/map-room/phase_plan.md`
