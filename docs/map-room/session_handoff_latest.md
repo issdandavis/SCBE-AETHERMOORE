@@ -8,9 +8,11 @@ Refresh website content to reflect recent milestones and add a free, offline-cap
 - Ground-truth check on website members-lane claim: falsified (4 SHAs fictional, PR #1123 is email-triage not members).
 - Three MATHBAC artifacts written to `docs/proposals/DARPA_MATHBAC/` (timeline, Collin asks, demo readiness).
 - Phase plan + decision log + this handoff.
+- Iter 1 (SHA `af236ccb`): milestones section + offline corpus chatbot landed on origin.
+- Iter 2: slash commands (/nav, /search, /help, /sections) + DuckDuckGo instant-answer + freeform intent parser.
 
 ## In progress
-- Iter 1: milestones section + offline corpus chatbot.
+- Iter 2 pending push/verify/log, then iter 3.
 
 ## Blocked
 - Owner call still pending on `docs/members/` PIN-gate (discard vs redesign).
