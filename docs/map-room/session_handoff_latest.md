@@ -14,6 +14,9 @@ Refresh website content to reflect recent milestones and add a free, offline-cap
 - Iter 4 (SHA `6297cd6d`): a11y (aria-label send/input, aria-expanded launcher, Ctrl+/ global, Esc-to-close, focus-on-open), `docs/CHATBOT_SETUP.md`, corpus bumped to v2 with 59 passages.
 - Iter 5 (SHA `5485f6d8`): favicon.svg (fixes existing 404), sitemap.xml (index + chat), robots.txt (allow all, link sitemap), favicon wired into chat.html.
 - Iter 6 (SHA `7b10d36d`): brand hero.svg (1200x630, phi rings, tagline); swapped og:image, twitter:image, and offer-hero `<img>` from the missing hero.png to hero.svg.
+- Iter 7 (SHA `7d276ffe`): nav bar + hero CTA link hygiene (15 broken internal links fixed). Enterprise/Contact→mailto, Pricing→#choose-path, Demos/Research/Community→public GitHub surfaces, Blog→Medium, Members removed (owner-pending), Toolkit→Stripe.
+- Iter 8 (SHA `4289cdf9`): full link hygiene sweep — 25+ additional broken internal links in footer, buyer slabs, deep section CTAs, and in-body anchor refs resolved to existing anchors, Stripe links, GitHub repo, or mailto. Zero broken internal links remaining on docs/index.html.
+- Iter 9 (SHA `604a3cc3`): milestones copy refresh — MATHBAC card updated (Proposers Day attended 2026-04-21, teaming 2026-04-29, abstract 2026-04-30); stale "AetherBrowser in flight" card swapped for live "Polly sidebar chat · offline mode live" milestone.
 
 ## In progress
 - Website polish loop open. Any further polish lands as iter N+1, one commit each, push/verify/log.
