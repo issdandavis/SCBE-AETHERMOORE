@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="AetherMoore Governed AI Toolkit">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0d12"/>
+      <stop offset="100%" stop-color="#141a2a"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7aa2ff"/>
+      <stop offset="100%" stop-color="#b07aff"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.5" r="0.55">
+      <stop offset="0%" stop-color="#7aa2ff" stop-opacity="0.35"/>
+      <stop offset="70%" stop-color="#7aa2ff" stop-opacity="0.0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g transform="translate(935 315)" fill="none" stroke="url(#ring)" stroke-width="3" opacity="0.85">
+    <circle r="240"/>
+    <circle r="148"/>
+    <circle r="92"/>
+    <circle r="57"/>
+    <circle r="35"/>
+    <circle r="22"/>
+  </g>
+  <g transform="translate(935 315)" stroke="url(#ring)" stroke-width="3" stroke-linecap="round" opacity="0.75">
+    <line x1="-260" y1="0" x2="260" y2="0"/>
+    <line x1="0" y1="-260" x2="0" y2="260"/>
+  </g>
+  <g font-family="Segoe UI, Inter, system-ui, sans-serif" fill="#f4f6fb">
+    <text x="90" y="200" font-size="64" font-weight="700" letter-spacing="-1">AetherMoore</text>
+    <text x="90" y="260" font-size="38" font-weight="400" fill="#b6c0d9">Governed AI Toolkit</text>
+    <text x="90" y="360" font-size="24" fill="#9aa7c2">Hyperbolic geometry. Six tongues.</text>
+    <text x="90" y="392" font-size="24" fill="#9aa7c2">Exponential cost for adversarial intent.</text>
+    <text x="90" y="500" font-size="20" fill="#7b86a3">aethermoore.com &#183; Issac Davis &#183; SAM.gov J4NXHM6N5F59</text>
+  </g>
+</svg>
