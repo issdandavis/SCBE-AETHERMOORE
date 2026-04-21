@@ -6,7 +6,8 @@ Qwen2.5-0.5B, and optionally pushes the adapter to a Hugging Face model repo.
 Designed to run on Colab (T4/L4/A100) and Kaggle (T4 x2 / P100). Tolerates
 trl >=0.12 where max_seq_length moved off SFTConfig onto SFTTrainer. Forces
 single-GPU placement in multi-GPU environments (e.g. Kaggle T4 x2) to avoid
-DataParallel device-split errors with LoRA training.
+DataParallel device-split errors with LoRA training. Auto-creates the target
+HF model repo if missing so Colab --push works the first time.
 """
 
 from __future__ import annotations
@@ -26,22 +27,23 @@ if "CUDA_VISIBLE_DEVICES" not in os.environ:
 
 import torch
 from datasets import load_dataset
+from huggingface_hub import HfApi
 from peft import LoraConfig, TaskType, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import SFTConfig, SFTTrainer
 
 
-def build_quant_config(disabled):
-    if disabled:
+def build_quant_config(no_quant: bool):
+    if no_quant:
         return None
     try:
         from transformers import BitsAndBytesConfig
 
         return BitsAndBytesConfig(
             load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_compute_dtype=torch.bfloat16,
             bnb_4bit_use_double_quant=True,
+            bnb_4bit_quant_type="nf4",
         )
     except Exception as exc:
         print("[hf_train_polly] bnb unavailable:", exc, file=sys.stderr)
@@ -61,6 +63,15 @@ def resolve_token():
             return tok
     except Exception:
         pass
+    try:
+        from google.colab import userdata  # type: ignore
+
+        tok = userdata.get("HF_TOKEN")
+        if tok:
+            os.environ["HF_TOKEN"] = tok
+            return tok
+    except Exception:
+        pass
     return None
 
 
@@ -73,6 +84,24 @@ def split_kwargs(target_cls, kwargs):
     accepted = {k: v for k, v in kwargs.items() if k in params}
     leftover = {k: v for k, v in kwargs.items() if k not in params}
     return accepted, leftover
+
+
+def ensure_repo(repo_id: str, token: str, private: bool = True) -> None:
+    api = HfApi(token=token)
+    try:
+        api.repo_info(repo_id, repo_type="model")
+        print("[hf_train_polly] repo exists:", repo_id)
+        return
+    except Exception:
+        pass
+    print("[hf_train_polly] creating repo:", repo_id)
+    api.create_repo(
+        repo_id=repo_id,
+        repo_type="model",
+        private=private,
+        exist_ok=True,
+        token=token,
+    )
 
 
 def main():
@@ -94,6 +123,8 @@ def main():
     ap.add_argument("--max-grad-norm", type=float, default=1.0)
     ap.add_argument("--no-quant", action="store_true")
     ap.add_argument("--push", action="store_true")
+    ap.add_argument("--private", action="store_true", default=True)
+    ap.add_argument("--public", dest="private", action="store_false")
     ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
 
@@ -101,6 +132,12 @@ def main():
     if not token:
         print("[hf_train_polly] ERROR: set HF_TOKEN", file=sys.stderr)
         return 2
+
+    if args.push:
+        try:
+            ensure_repo(args.output_repo, token, private=args.private)
+        except Exception as exc:
+            print("[hf_train_polly] WARN: could not ensure repo:", exc, file=sys.stderr)
 
     use_bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
     use_fp16 = torch.cuda.is_available() and not use_bf16
@@ -167,9 +204,11 @@ def main():
         push_to_hub=args.push,
         hub_model_id=args.output_repo if args.push else None,
         hub_token=token if args.push else None,
+        hub_private_repo=args.private if args.push else None,
     )
 
     cfg_accepted, cfg_leftover = split_kwargs(SFTConfig, cfg_kwargs)
+    cfg_leftover = {k: v for k, v in cfg_leftover.items() if v is not None}
     cfg = SFTConfig(**cfg_accepted)
 
     trainer_kwargs = dict(
@@ -199,7 +238,34 @@ def main():
 
     if args.push:
         print("[hf_train_polly] pushing to hub:", args.output_repo)
-        trainer.push_to_hub()
+        pushed = False
+        try:
+            trainer.push_to_hub()
+            pushed = True
+        except Exception as exc:
+            print("[hf_train_polly] trainer.push_to_hub failed:", exc, file=sys.stderr)
+        if not pushed:
+            try:
+                model.push_to_hub(args.output_repo, token=token, private=args.private)
+                tok.push_to_hub(args.output_repo, token=token, private=args.private)
+                pushed = True
+            except Exception as exc:
+                print("[hf_train_polly] model.push_to_hub failed:", exc, file=sys.stderr)
+        if not pushed:
+            try:
+                api = HfApi(token=token)
+                api.upload_folder(
+                    folder_path=str(output_dir),
+                    repo_id=args.output_repo,
+                    repo_type="model",
+                    token=token,
+                )
+                pushed = True
+            except Exception as exc:
+                print("[hf_train_polly] upload_folder failed:", exc, file=sys.stderr)
+        if not pushed:
+            print("[hf_train_polly] ERROR: all push attempts failed", file=sys.stderr)
+            return 3
 
     print("[hf_train_polly] done")
     return 0
