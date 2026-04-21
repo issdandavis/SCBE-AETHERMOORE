@@ -5,8 +5,9 @@
     "What does SCBE actually improve in model training?",
     "Explain the hyperbolic cost wall in plain English.",
     "What shipped in April 2026?",
-    "How is The Six Tongues Protocol book different from the technical manual?",
-    "Teach me coding through the Sacred Tongue route for a Python function.",
+    "/nav milestones",
+    "/search hyperbolic geometry AI safety",
+    "/help",
   ];
 
   let CORPUS_CACHE = null;
@@ -306,6 +307,178 @@
     );
   }
 
+  const NAV_MAP = {
+    top: "offer",
+    home: "offer",
+    offer: "offer",
+    hero: "offer",
+    "governance demo": "governance-demo",
+    demo: "governance-demo",
+    demos: "governance-demo",
+    integrations: "integration-stack",
+    "integration stack": "integration-stack",
+    milestones: "recent-milestones",
+    "recent milestones": "recent-milestones",
+    recent: "recent-milestones",
+    updates: "recent-milestones",
+    "news": "recent-milestones",
+    paths: "choose-path",
+    "choose path": "choose-path",
+    "choose your path": "choose-path",
+    training: "dual-layer-training",
+    "dual layer": "dual-layer-training",
+    "dual-layer training": "dual-layer-training",
+    audience: "who-this-is-for",
+    "who is this for": "who-this-is-for",
+    "who this is for": "who-this-is-for",
+    expectations: "buyer-expectations",
+    "buyer expectations": "buyer-expectations",
+    includes: "includes",
+    "what's included": "includes",
+    "whats included": "includes",
+    story: "story",
+    lore: "story",
+    vault: "training-vault",
+    "training vault": "training-vault",
+    watch: "watch",
+    videos: "watch",
+    "field notes": "field-notes",
+    notes: "field-notes",
+    formula: "formula-evolution",
+    formulas: "formula-evolution",
+    math: "formula-evolution",
+    "formula evolution": "formula-evolution",
+    fit: "fit",
+    proof: "proof",
+    delivery: "delivery",
+    faq: "faq",
+    questions: "faq",
+    "open source": "open-source-tools",
+    "open-source tools": "open-source-tools",
+    tools: "open-source-tools",
+    benchmark: "benchmark",
+    benchmarks: "benchmark",
+  };
+
+  function resolveNavTarget(raw) {
+    const key = String(raw || "").toLowerCase().trim();
+    if (!key) return null;
+    if (NAV_MAP[key]) return NAV_MAP[key];
+    if (document.getElementById(key)) return key;
+    for (const alias of Object.keys(NAV_MAP)) {
+      if (key.includes(alias)) return NAV_MAP[alias];
+    }
+    return null;
+  }
+
+  function parseCommand(message) {
+    const trimmed = String(message || "").trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith("/")) {
+      const match = trimmed.match(/^\/(\w+)(?:\s+(.+))?$/);
+      if (!match) return null;
+      const verb = match[1].toLowerCase();
+      const rest = (match[2] || "").trim();
+      if (verb === "help" || verb === "h") return { type: "help" };
+      if (verb === "nav" || verb === "go" || verb === "goto") return { type: "nav", query: rest };
+      if (verb === "search" || verb === "web" || verb === "lookup") return { type: "search", query: rest };
+      if (verb === "sections" || verb === "list") return { type: "sections" };
+      return null;
+    }
+    const lower = trimmed.toLowerCase();
+    const navIntent = lower.match(/^(?:take me to|go to|jump to|scroll to|show me|open)\s+(?:the\s+)?(.+?)\s*(?:section|part|page)?\s*[?!.]*$/);
+    if (navIntent) return { type: "nav", query: navIntent[1] };
+    const searchIntent = lower.match(/^(?:search(?:\s+(?:for|the\s+web\s+for))?|look\s+up|web\s+search(?:\s+for)?|find\s+(?:me\s+)?(?:info\s+on\s+)?)\s+(.+?)\s*[?!.]*$/);
+    if (searchIntent) return { type: "search", query: searchIntent[1] };
+    return null;
+  }
+
+  function listSectionsHtml() {
+    const seen = new Set();
+    const rows = [];
+    for (const [alias, id] of Object.entries(NAV_MAP)) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      rows.push(`<li><code>/nav ${escapeHtml(alias)}</code> &rarr; <code>#${escapeHtml(id)}</code></li>`);
+    }
+    return `<p>Jumpable sections:</p><ul class="polly-list">${rows.join("")}</ul>`;
+  }
+
+  function helpHtml() {
+    return (
+      "<p><strong>Polly commands:</strong></p>" +
+      "<ul class=\"polly-list\">" +
+      "<li><code>/nav &lt;section&gt;</code> &mdash; jump to a page section (e.g. <code>/nav milestones</code>)</li>" +
+      "<li><code>/search &lt;query&gt;</code> &mdash; DuckDuckGo instant answer (free, no key)</li>" +
+      "<li><code>/sections</code> &mdash; list all jumpable sections</li>" +
+      "<li><code>/help</code> &mdash; this help</li>" +
+      "</ul>" +
+      "<p>Freeform also works: <em>take me to demos</em>, <em>search for hyperbolic geometry</em>.</p>"
+    );
+  }
+
+  async function ddgSearch(query) {
+    const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1&t=aethermoore-polly`;
+    try {
+      const res = await fetch(url, { headers: { Accept: "application/json" } });
+      if (!res.ok) return { ok: false, error: `DDG status ${res.status}` };
+      const data = await res.json();
+      return { ok: true, data };
+    } catch (err) {
+      return { ok: false, error: (err && err.message) || "network error" };
+    }
+  }
+
+  function renderDdgResult(query, data) {
+    const bits = [];
+    if (data.AbstractText) {
+      bits.push(`<p><strong>${escapeHtml(data.Heading || query)}</strong></p>`);
+      bits.push(`<p>${escapeHtml(data.AbstractText)}</p>`);
+      if (data.AbstractURL) {
+        bits.push(
+          `<p><a class="polly-link" href="${escapeHtml(data.AbstractURL)}" target="_blank" rel="noopener">` +
+            `${escapeHtml(data.AbstractSource || "Source")}</a></p>`
+        );
+      }
+    } else if (data.Answer) {
+      bits.push(`<p><strong>${escapeHtml(data.Heading || query)}</strong></p>`);
+      bits.push(`<p>${escapeHtml(data.Answer)}</p>`);
+    } else if (data.Definition) {
+      bits.push(`<p><strong>${escapeHtml(data.Heading || query)}</strong></p>`);
+      bits.push(`<p>${escapeHtml(data.Definition)}</p>`);
+      if (data.DefinitionURL) {
+        bits.push(
+          `<p><a class="polly-link" href="${escapeHtml(data.DefinitionURL)}" target="_blank" rel="noopener">` +
+            `${escapeHtml(data.DefinitionSource || "Source")}</a></p>`
+        );
+      }
+    }
+    const related = Array.isArray(data.RelatedTopics) ? data.RelatedTopics.slice(0, 5) : [];
+    if (related.length) {
+      const items = related
+        .map((t) => {
+          if (!t) return "";
+          if (t.Text && t.FirstURL) {
+            return `<li><a class="polly-link" href="${escapeHtml(t.FirstURL)}" target="_blank" rel="noopener">${escapeHtml(t.Text)}</a></li>`;
+          }
+          if (t.Name && Array.isArray(t.Topics)) {
+            return `<li><em>${escapeHtml(t.Name)}</em></li>`;
+          }
+          return "";
+        })
+        .filter(Boolean)
+        .join("");
+      if (items) bits.push(`<p><strong>Related:</strong></p><ul class="polly-list">${items}</ul>`);
+    }
+    if (!bits.length) {
+      bits.push(
+        `<p>DuckDuckGo had no instant answer for <em>${escapeHtml(query)}</em>. ` +
+          `<a class="polly-link" href="https://duckduckgo.com/?q=${encodeURIComponent(query)}" target="_blank" rel="noopener">Open full results</a>.</p>`
+      );
+    }
+    return bits.join("");
+  }
+
   function attach(shell) {
     const panel = shell.querySelector(".polly-panel");
     const thread = shell.querySelector('[data-role="thread"]');
@@ -334,12 +507,100 @@
       );
     };
 
+    const runNav = (rawQuery) => {
+      const target = resolveNavTarget(rawQuery);
+      if (!target) {
+        addMessage(
+          thread,
+          "assistant",
+          `<p>I could not resolve <em>${escapeHtml(rawQuery)}</em> to a section. Try <code>/sections</code> to see what is jumpable.</p>`,
+          chip("Nav", "offline")
+        );
+        return;
+      }
+      const el = document.getElementById(target);
+      if (!el) {
+        addMessage(
+          thread,
+          "assistant",
+          `<p>Section <code>#${escapeHtml(target)}</code> is not on this page. Try from the homepage.</p>`,
+          chip("Nav", "offline")
+        );
+        return;
+      }
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      try {
+        history.replaceState(null, "", `#${target}`);
+      } catch (_) {
+        window.location.hash = `#${target}`;
+      }
+      addMessage(
+        thread,
+        "assistant",
+        `<p>Jumped to <code>#${escapeHtml(target)}</code>.</p>`,
+        `${chip("Nav", "trusted")}${chip(target, "science")}`
+      );
+    };
+
+    const runSearch = async (query) => {
+      if (!query) {
+        addMessage(thread, "assistant", "<p>Usage: <code>/search &lt;query&gt;</code></p>", chip("Search", "offline"));
+        return;
+      }
+      addMessage(thread, "system", `<p>Searching DuckDuckGo for <em>${escapeHtml(query)}</em>...</p>`, chip("Web", "science"));
+      const pending = thread.lastElementChild;
+      const result = await ddgSearch(query);
+      if (pending) pending.remove();
+      if (!result.ok) {
+        addMessage(
+          thread,
+          "assistant",
+          `<p>DuckDuckGo request failed (${escapeHtml(result.error)}). ` +
+            `<a class="polly-link" href="https://duckduckgo.com/?q=${encodeURIComponent(query)}" target="_blank" rel="noopener">Open full results</a>.</p>`,
+          chip("Search", "offline")
+        );
+        return;
+      }
+      addMessage(thread, "assistant", renderDdgResult(query, result.data), `${chip("DuckDuckGo", "trusted")}${chip("instant", "science")}`);
+    };
+
+    const handleCommand = async (cmd) => {
+      if (cmd.type === "help") {
+        addMessage(thread, "assistant", helpHtml(), chip("Help", "science"));
+        return true;
+      }
+      if (cmd.type === "sections") {
+        addMessage(thread, "assistant", listSectionsHtml(), chip("Sections", "science"));
+        return true;
+      }
+      if (cmd.type === "nav") {
+        runNav(cmd.query);
+        return true;
+      }
+      if (cmd.type === "search") {
+        await runSearch(cmd.query);
+        return true;
+      }
+      return false;
+    };
+
     const submit = async () => {
       const message = input.value.trim();
       if (!message) return;
       input.value = "";
       sendBtn.disabled = true;
       addMessage(thread, "user", markdownToHtml(message));
+
+      const cmd = parseCommand(message);
+      if (cmd) {
+        try {
+          await handleCommand(cmd);
+        } finally {
+          sendBtn.disabled = false;
+        }
+        return;
+      }
+
       addMessage(thread, "system", "<p>Routing question...</p>", chip("Thinking", "science"));
       const thinkingNode = thread.lastElementChild;
 
