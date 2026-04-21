@@ -9,10 +9,11 @@ Refresh website content to reflect recent milestones and add a free, offline-cap
 - Three MATHBAC artifacts written to `docs/proposals/DARPA_MATHBAC/` (timeline, Collin asks, demo readiness).
 - Phase plan + decision log + this handoff.
 - Iter 1 (SHA `af236ccb`): milestones section + offline corpus chatbot landed on origin.
-- Iter 2: slash commands (/nav, /search, /help, /sections) + DuckDuckGo instant-answer + freeform intent parser.
+- Iter 2 (SHA `9911f6e4`): slash commands (/nav, /search, /help, /sections) + DuckDuckGo instant-answer + freeform intent parser; polly-sidebar.css restored.
+- Iter 3: HF Space source at `space/scbe-chat/` (app.py, requirements.txt, README.md, Dockerfile). Deploy is owner-only (no autonomous HF push).
 
 ## In progress
-- Iter 2 pending push/verify/log, then iter 3.
+- Iter 3 pending push/verify/log, then iter 4 (polish).
 
 ## Blocked
 - Owner call still pending on `docs/members/` PIN-gate (discard vs redesign).
