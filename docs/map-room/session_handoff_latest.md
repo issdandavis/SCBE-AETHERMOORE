@@ -12,9 +12,11 @@ Refresh website content to reflect recent milestones and add a free, offline-cap
 - Iter 2 (SHA `9911f6e4`): slash commands (/nav, /search, /help, /sections) + DuckDuckGo instant-answer + freeform intent parser; polly-sidebar.css restored.
 - Iter 3 (SHA `3882f146`): HF Space source at `space/scbe-chat/` (app.py, requirements.txt, README.md, Dockerfile). Deploy is owner-only (no autonomous HF push).
 - Iter 4 (SHA `6297cd6d`): a11y (aria-label send/input, aria-expanded launcher, Ctrl+/ global, Esc-to-close, focus-on-open), `docs/CHATBOT_SETUP.md`, corpus bumped to v2 with 59 passages.
+- Iter 5 (SHA `5485f6d8`): favicon.svg (fixes existing 404), sitemap.xml (index + chat), robots.txt (allow all, link sitemap), favicon wired into chat.html.
+- Iter 6 (SHA `7b10d36d`): brand hero.svg (1200x630, phi rings, tagline); swapped og:image, twitter:image, and offer-hero `<img>` from the missing hero.png to hero.svg.
 
 ## In progress
-- 4-iteration website loop CLOSED. No website iter pending.
+- Website polish loop open. Any further polish lands as iter N+1, one commit each, push/verify/log.
 
 ## Blocked
 - Owner call still pending on `docs/members/` PIN-gate (discard vs redesign).
