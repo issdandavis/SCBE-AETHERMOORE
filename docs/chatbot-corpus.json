@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "updated": "2026-04-21",
+  "passages": [
+    {
+      "id": "mathbac-proposal-spine",
+      "title": "DARPA MATHBAC Proposal Spine",
+      "path": "docs/proposals/DARPA_MATHBAC/",
+      "tags": ["mathbac", "darpa", "proposal", "ta1"],
+      "excerpt": "SCBE is submitting to DARPA-SN-26-59 (MATHBAC). Full proposal due 2026-06-16. TA1 track locked: strictly inside, with cost, scope, and deliverables bounded. Lead thesis: geometric upper bound verified under seal. Joint partnership with Collin Walter / DAVA active."
+    },
+    {
+      "id": "harmonic-wall-formula",
+      "title": "Harmonic Wall Formula",
+      "path": "docs/LAYER_INDEX.md",
+      "tags": ["math", "harmonic", "security", "formula"],
+      "excerpt": "The canonical harmonic wall is H_wall(d*, R) = R^((phi * d*)^2). At d*=1 the cost multiplier is 13.7x. At d*=2 it is 35,341x. At d*=3 it is 1.6 * 10^9. Adversarial drift is super-exponentially costly, which is why attacks become computationally infeasible rather than just expensive."
+    },
+    {
+      "id": "14-layer-pipeline",
+      "title": "The 14-Layer SCBE Security Pipeline",
+      "path": "docs/SYSTEM_ARCHITECTURE.md",
+      "tags": ["architecture", "pipeline", "layers"],
+      "excerpt": "SCBE runs input through fourteen layers: L1-2 complex context and realification, L3-4 weighted transform and Poincare embedding, L5 hyperbolic distance, L6-7 breathing transform and Mobius phase, L8 multi-well Hamiltonian CFI, L9-10 spectral and spin coherence, L11 triadic temporal distance, L12 harmonic wall, L13 risk decision (ALLOW/QUARANTINE/ESCALATE/DENY), L14 audio-axis telemetry."
+    },
+    {
+      "id": "sacred-tongues",
+      "title": "The Six Sacred Tongues",
+      "path": "docs/LANGUES_WEIGHTING_SYSTEM.md",
+      "tags": ["tongues", "langues", "weights", "phi"],
+      "excerpt": "Six sacred tongues weight meaning on a golden-ratio ladder: Kor'aelin (KO) 1.00, Avali (AV) 1.62, Runethic (RU) 2.62, Cassivadan (CA) 4.24, Umbroth (UM) 6.85, Draumric (DR) 11.09. Each tongue is a 16x16 token grid, 256 tokens per language. The spread is phi-scaled so weighted distance behaves like a true metric."
+    },
+    {
+      "id": "47d-complex-manifold",
+      "title": "47D Complex Manifold",
+      "path": "memory/discovery_47d_complex_manifold.md",
+      "tags": ["47d", "manifold", "realities", "tongues"],
+      "excerpt": "The operating space is 47-dimensional: 6 real tongues, plus C(6,2)=15 pair interactions, plus C(6,3)=20 triple interactions, plus 6 self-imaginary axes. 6+15+20+6=47. The count matches the 47 realities of the Spiralverse lore. The dimension count is combinatorially inevitable given the 6-tongue base, not designed."
+    },
+    {
+      "id": "toroidal-polyhedral-confinement",
+      "title": "Toroidal Polyhedral Confinement",
+      "path": "memory/discovery_toroidal_polyhedral_confinement.md",
+      "tags": ["confinement", "hashing", "geometry", "phi", "platonic"],
+      "excerpt": "Toroidal Polyhedral Confinement replaces discrete SHA-style hashing with a continuous geometric lock: phi-winding around a torus intersected with 5 Platonic solid constraints. It is MitM-immune because intermediate states are not valid positions on the surface. Proven 2026-04-04."
+    },
+    {
+      "id": "phi-toroidal-resonant-cavity",
+      "title": "Phi Toroidal Resonant Cavity",
+      "path": "memory/discovery_phi_toroidal_resonant_cavity.md",
+      "tags": ["resonance", "toroid", "cavity", "phi"],
+      "excerpt": "Six phi-scaled walls in orthogonal planes form a self-reinforcing toroidal wave-interference cavity. Combined attacker cost scales as R^(122.99 * d*^2) from geometry alone, before any cryptographic primitive is added. The cavity turns layout into key material."
+    },
+    {
+      "id": "brick3-sacred-tongues-drill",
+      "title": "Brick3 Sacred-Tongues Drill Complete",
+      "path": "memory/project_brick3_complete.md",
+      "tags": ["training", "brick3", "drill", "tongues"],
+      "excerpt": "Brick3 drill_langues_full ran 500 steps warm-started from brick2. Eval loss 0.3965, token accuracy 93.16%, plateau at step 350. Pure local run; TRL 0.28 API churn pinned in requirements.brick.txt. Proves the Sacred-Tongues signal trains into the model without regression."
+    },
+    {
+      "id": "drill-v5-langues-full",
+      "title": "Drill v5 Langues Full",
+      "path": "memory/project_drill_v4_state.md",
+      "tags": ["drill", "v5", "dataset", "training"],
+      "excerpt": "Drill v5 holds 2630 rows, 91.8% structural, 0 failures. Foreground-ready. A QA invariance lane was added with 150 rows at 100%. SFT exports live at training-data/sft/drill_langues_full_{all,train,holdout}.sft.jsonl."
+    },
+    {
+      "id": "six-tongues-protocol-book",
+      "title": "The Six Tongues Protocol (Book)",
+      "path": "memory/reference_six_tongues_book.md",
+      "tags": ["book", "kdp", "lore", "prior-art"],
+      "excerpt": "The Six Tongues Protocol is a published KDP ebook and paperback (ASIN B0GSSFQD9G). The 150K-word isekai novel is timestamped prior art for the Langues/Sacred Tongues system: in-world, the magic IS the protocol architecture."
+    },
+    {
+      "id": "aetherbrowser-rebuild",
+      "title": "AetherBrowser Rebuild",
+      "path": "memory/project_aetherbrowser_rebuild.md",
+      "tags": ["aetherbrowser", "agents", "browser"],
+      "excerpt": "AetherBrowser is an AI-native browser with curated self-hosted training sites, multiple entry points, and cross-threshold governance. Rebuild is scheduled for the weekend after SAM.gov registration settled."
+    },
+    {
+      "id": "sam-gov-active",
+      "title": "SAM.gov Registration Active",
+      "path": "memory/user_sam_registration.md",
+      "tags": ["sam.gov", "contracting", "uei", "cage"],
+      "excerpt": "SAM.gov registration is ACTIVE as of 2026-04-13. UEI J4NXHM6N5F59, CAGE 1EXD5. Sole proprietor, minority-owned Black American. SAM API operational for contract ingest. Satisfies DIBBS/DLA prerequisite."
+    },
+    {
+      "id": "dibbs-dla-contracting",
+      "title": "DIBBS / DLA Contracting",
+      "path": "memory/reference_dibbs.md",
+      "tags": ["dibbs", "dla", "contracting"],
+      "excerpt": "DIBBS is the DLA Internet Bid Board System (dibbs.bsm.mil) used for federal supply contracting. SCBE applied 2026-04-21 using active SAM.gov registration. Collin's contract channel for defense-adjacent lanes."
+    },
+    {
+      "id": "quantum-axiom-mesh",
+      "title": "Quantum Axiom Mesh (A1-A5)",
+      "path": "docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+      "tags": ["axioms", "math", "invariants"],
+      "excerpt": "Five axioms span the 14 layers: A1 Unitarity (L2, L4, L7 norm preservation), A2 Locality (L3, L8 spatial bounds), A3 Causality (L6, L11, L13 time-ordering), A4 Symmetry (L5, L9, L10, L12 gauge invariance), A5 Composition (L1, L14 pipeline integrity)."
+    },
+    {
+      "id": "risk-decision-tiers",
+      "title": "L13 Risk Decision Tiers",
+      "path": "docs/LAYER_INDEX.md",
+      "tags": ["l13", "risk", "decision", "governance"],
+      "excerpt": "Layer 13 maps the harmonic wall score to one of four tiers: ALLOW (safe operation), QUARANTINE (suspicious, needs review), ESCALATE (high risk, requires governance), DENY (adversarial, blocked). Swarm consensus + BFT makes the decision survivable under individual-agent compromise."
+    },
+    {
+      "id": "dual-revenue-model",
+      "title": "Dual Revenue Model",
+      "path": "memory/project_dual_revenue_model.md",
+      "tags": ["revenue", "product", "saas"],
+      "excerpt": "SCBE sells on two surfaces simultaneously: (1) governed models (subscription) where the customer uses a pre-trained model whose safety is provable, and (2) the governance layer itself (SaaS/API) that wraps the customer's own model. Two distinct products, not one."
+    },
+    {
+      "id": "m5-mesh-foundry",
+      "title": "M5 Mesh Foundry (Sellable)",
+      "path": "docs/M5_MESH_PRODUCT_SERVICE_BLUEPRINT.md",
+      "tags": ["m5", "product", "foundry", "ingestion"],
+      "excerpt": "M5 Mesh Foundry is the current sellable product: governance-aware data ingestion and intelligence ops. Three offers: Launch Pack (implementation + first governed dataset), Monthly Ops (managed ingestion), Enterprise License (dedicated deployment, optional blockchain notarization)."
+    },
+    {
+      "id": "m6-geoseed-rnd",
+      "title": "M6 GeoSeed / SphereMesh (R&D)",
+      "path": "docs/M6_SEED_MULTI_NODAL_NETWORK_SPEC.md",
+      "tags": ["m6", "geoseed", "spheremesh", "research"],
+      "excerpt": "M6 SphereMesh is a 6-seed, 6-tongue multi-nodal geometric model on the 14-layer stack. Seeds KO/AV/RU/CA/UM/DR. 14-layer dressing and governance stamps. Sacred Eggs as a controlled mutation/genesis gate. 21D canonical state lift for decision consistency."
+    },
+    {
+      "id": "hydra-orchestration",
+      "title": "HYDRA Orchestration",
+      "path": "docs/hydra/ARCHITECTURE.md",
+      "tags": ["hydra", "orchestration", "agents"],
+      "excerpt": "HYDRA is the central orchestrator: Spine routes work, Heads specialize, Limbs execute, Ledger records, BFT consensus makes decisions under partial compromise. 40+ Python modules coordinate the fleet of agents across the stack."
+    },
+    {
+      "id": "juggling-scheduler",
+      "title": "Juggling Scheduler",
+      "path": "docs/JUGGLING_SCHEDULER.md",
+      "tags": ["scheduler", "fleet", "physics"],
+      "excerpt": "The Juggling Scheduler models task coordination as physical juggling: balls=TaskCapsules, hands=AgentSlots, throws=handoffs, arcs=deadline windows, drops=failures. Seven rules govern safe handoff, including never throwing to an unready hand and catching at the ledger, not at the throw."
+    },
+    {
+      "id": "red-blue-arena",
+      "title": "Red/Blue Arena",
+      "path": "docs/RED_BLUE_ARENA.md",
+      "tags": ["security", "adversarial", "arena"],
+      "excerpt": "The Red/Blue Arena runs model-vs-model adversarial simulations against the SCBE governance pipeline. Red team strategies include mimicry, edge-walking, origin-camping, oscillation, and midpoint attacks. Provider-agnostic: local, Anthropic, HuggingFace, OpenAI, xAI."
+    },
+    {
+      "id": "sacred-eggs",
+      "title": "Sacred Eggs: Controlled Genesis",
+      "path": "memory/discovery_sacred_egg_developmental_psychology.md",
+      "tags": ["sacred-eggs", "genesis", "credentials"],
+      "excerpt": "Sacred Eggs are ontological anchors, treated as living credentials rather than static tokens. Mother Avion serves as flock governor with phoenix rotation and clutch limits. Hatch=birth, tongue=native language, ritual=school type, credits=grades, PE=shell integrity."
+    },
+    {
+      "id": "fun-energy-training",
+      "title": "Fun Energy Training Gate",
+      "path": "memory/project_fun_energy_training.md",
+      "tags": ["fun-energy", "training", "governance"],
+      "excerpt": "Fun Energy F = V / (C - R) gates training throughput. Tiers ALLOW / QUARANTINE / ESCALATE / OVERSIGHT compose with the harmonic wall. V is the value of what the model is doing, C is cognitive cost, R is routine. Low F = rote work, flag for substitution."
+    },
+    {
+      "id": "gyroscopic-interlattice",
+      "title": "Gyroscopic Interlattice",
+      "path": "memory/discovery_gyroscopic_interlattice.md",
+      "tags": ["gyroscopic", "interlattice", "chern", "physics"],
+      "excerpt": "Phi-spacing is lattice distortion that controls Chern numbers. Tongue boundaries act as interlattice coupling zones. Gyro-gyro interlattice is an unpublished physics gap where the SCBE layout has a natural claim."
+    },
+    {
+      "id": "saturn-ring-stabilizer",
+      "title": "Saturn Ring Post-Breach Stabilizer",
+      "path": "memory/project_saturn_ring_stabilizer.md",
+      "tags": ["stabilizer", "resilience", "lyapunov"],
+      "excerpt": "Post-breach energy stabilization: capture state, redistribute via phi bridges, convert the breach into precession rather than collapse. Lyapunov, Control Barrier Functions, and port-Hamiltonian dynamics all map onto existing SCBE structures."
+    }
+  ]
+}
