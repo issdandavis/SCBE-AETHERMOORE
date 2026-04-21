@@ -164,7 +164,7 @@
     }
 
     shell.innerHTML = `
-      <button class="polly-launcher" type="button" aria-label="Open Polly chat">Polly</button>
+      <button class="polly-launcher" type="button" aria-label="Open Polly chat (Ctrl+/)" aria-expanded="false" title="Open Polly (Ctrl+/)">Polly</button>
       ${panelMarkup(false)}
     `;
     return shell;
@@ -192,10 +192,10 @@
         <div class="polly-thread" data-role="thread"></div>
         <div class="polly-starters" data-role="starters"></div>
         <div class="polly-composer">
-          <textarea class="polly-input" data-role="input" placeholder="Ask about lore, SCBE science, or ask Polly to teach coding through Sacred Tongues and shared IR."></textarea>
+          <textarea class="polly-input" data-role="input" aria-label="Message Polly. Use /help for commands. Enter to send, Shift+Enter for newline." placeholder="Ask lore, SCBE science, coding, or /help for commands."></textarea>
           <div class="polly-actions">
             <div class="polly-hint">Shift+Enter for a new line.</div>
-            <button class="polly-send" data-role="send" type="button">Send</button>
+            <button class="polly-send" data-role="send" type="button" aria-label="Send message">Send</button>
           </div>
         </div>
       </div>
@@ -667,21 +667,45 @@
       }
     });
 
+    const setOpen = (open) => {
+      shell.dataset.open = open ? "true" : "false";
+      if (launcher) launcher.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) {
+        setTimeout(() => {
+          try { input.focus(); } catch (_) { /* noop */ }
+        }, 50);
+      }
+    };
+
     if (launcher) {
       launcher.addEventListener("click", () => {
-        shell.dataset.open = shell.dataset.open === "true" ? "false" : "true";
+        setOpen(shell.dataset.open !== "true");
       });
     }
     if (closeBtn) {
-      closeBtn.addEventListener("click", () => {
-        shell.dataset.open = "false";
-      });
+      closeBtn.addEventListener("click", () => setOpen(false));
     }
     if (settingsBtn) {
       settingsBtn.addEventListener("click", () => {
         shell.dataset.settings = shell.dataset.settings === "true" ? "false" : "true";
       });
     }
+
+    document.addEventListener("keydown", (event) => {
+      const isSlashToggle = (event.ctrlKey || event.metaKey) && event.key === "/";
+      if (isSlashToggle) {
+        event.preventDefault();
+        setOpen(shell.dataset.open !== "true");
+        return;
+      }
+      if (event.key === "Escape" && shell.dataset.open === "true") {
+        const tag = (document.activeElement && document.activeElement.tagName) || "";
+        if (tag === "TEXTAREA" || tag === "INPUT") {
+          if (document.activeElement && document.activeElement.value) return;
+        }
+        setOpen(false);
+      }
+    });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
