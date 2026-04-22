@@ -9,6 +9,7 @@ Focus areas:
 5. Conditional color replacement
 6. Horizontal/vertical line fill between objects
 """
+
 import sys, numpy as np
 from pathlib import Path
 from collections import Counter, deque
@@ -41,6 +42,7 @@ for tid, task in tasks.items():
 
 print(f"Unsolved: {len(unsolved_ids)}")
 
+
 def print_grid(g, label=""):
     """Print small grid with color symbols."""
     if label:
@@ -48,6 +50,7 @@ def print_grid(g, label=""):
     for r in range(g.shape[0]):
         row = " ".join(str(int(g[r, c])) for c in range(g.shape[1]))
         print(f"    {row}")
+
 
 def cc_labels_color(grid, target_color):
     """Label CCs of a specific color."""
@@ -63,12 +66,13 @@ def cc_labels_color(grid, target_color):
             labels[r, c] = lid
             while q:
                 cr, cc_ = q.popleft()
-                for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nr, nc = cr+dr, cc_+dc
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = cr + dr, cc_ + dc
                     if 0 <= nr < h and 0 <= nc < w and labels[nr, nc] == 0 and grid[nr, nc] == target_color:
                         labels[nr, nc] = lid
                         q.append((nr, nc))
     return labels, lid
+
 
 # ── Visualize specific tasks ──
 print("\n=== Visualize aa300dc3 ===")
@@ -83,8 +87,8 @@ if "aa300dc3" in tasks:
         for r, c in zip(*np.where(diff)):
             h, w = ex.input.shape
             neigh = []
-            for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                nr, nc = r+dr, c+dc
+            for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nr, nc = r + dr, c + dc
                 if 0 <= nr < h and 0 <= nc < w:
                     neigh.append(int(ex.input[nr, nc]))
             print(f"    ({r},{c}): inp={ex.input[r,c]} -> out={ex.output[r,c]}, neighbors={neigh}")
@@ -99,6 +103,7 @@ if "d37a1ef5" in tasks:
         diff = ex.input != ex.output
         # What enclosed cells did NOT change?
         from neurogolf.solver import _flood_reachable_background
+
         reachable = _flood_reachable_background(ex.input)
         enclosed = (ex.input == 0) & ~reachable
         unchanged_enclosed = enclosed & ~diff
@@ -141,7 +146,7 @@ for task in unsolved_tasks:
         touches_border = False
         positions = np.argwhere(mask)
         for r, c in positions:
-            if r == 0 or r == h-1 or c == 0 or c == w-1:
+            if r == 0 or r == h - 1 or c == 0 or c == w - 1:
                 touches_border = True
                 break
         if touches_border:
@@ -153,14 +158,13 @@ for task in unsolved_tasks:
             # Find the boundary color (most common non-zero neighbor)
             boundary_colors = Counter()
             for r, c in positions:
-                for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nr, nc = r+dr, c+dc
+                for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    nr, nc = r + dr, c + dc
                     if 0 <= nr < h and 0 <= nc < w and inp[nr, nc] != 0:
                         boundary_colors[int(inp[nr, nc])] += 1
             if boundary_colors:
                 # Does the fill color equal the boundary color?
                 fill_c = int(out_colors[0])
-                most_common_boundary = boundary_colors.most_common(1)[0][0]
                 test_out[mask] = fill_c
                 any_fill = True
 
@@ -169,26 +173,28 @@ for task in unsolved_tasks:
         match = True
         for ex in task.train:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = ex.input.shape
             t = ex.input.copy()
             bl, nb = cc_labels_color(ex.input, 0)
             for lid in range(1, nb + 1):
                 m = bl == lid
                 positions = np.argwhere(m)
-                touches = any(r == 0 or r == h2-1 or c == 0 or c == w2-1 for r, c in positions)
+                touches = any(r == 0 or r == h2 - 1 or c == 0 or c == w2 - 1 for r, c in positions)
                 if touches:
                     continue
                 bc = Counter()
                 for r, c in positions:
-                    for dr, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                        nr, nc = r+dr, c+dc
+                    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                        nr, nc = r + dr, c + dc
                         if 0 <= nr < h2 and 0 <= nc < w2 and ex.input[nr, nc] != 0:
                             bc[int(ex.input[nr, nc])] += 1
                 if bc:
                     t[m] = bc.most_common(1)[0][0]
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             per_region_hits.append(task.task_id)
 
@@ -218,8 +224,8 @@ for task in unsolved_tasks:
         continue
 
     # Try all possible shifts
-    for try_dr in range(-h+1, h):
-        for try_dc in range(-w+1, w):
+    for try_dr in range(-h + 1, h):
+        for try_dc in range(-w + 1, w):
             if try_dr == 0 and try_dc == 0:
                 continue
             test = np.zeros_like(inp)
@@ -236,7 +242,8 @@ for task in unsolved_tasks:
                 match = True
                 for ex in task.train[1:]:
                     if ex.input.shape != ex.output.shape:
-                        match = False; break
+                        match = False
+                        break
                     h2, w2 = ex.input.shape
                     t = np.zeros_like(ex.input)
                     for r2, c2 in np.argwhere(ex.input != 0):
@@ -244,9 +251,11 @@ for task in unsolved_tasks:
                         if 0 <= nr2 < h2 and 0 <= nc2 < w2:
                             t[nr2, nc2] = ex.input[r2, c2]
                         else:
-                            match = False; break
+                            match = False
+                            break
                     if not match or not np.array_equal(t, ex.output):
-                        match = False; break
+                        match = False
+                        break
                 if match:
                     translate_hits.append((task.task_id, try_dr, try_dc))
                 break  # found a shift that works
@@ -306,28 +315,29 @@ for task in unsolved_tasks:
             cols = list(np.where(inp[r, :] == color)[0])
             if len(cols) >= 2:
                 for i in range(len(cols) - 1):
-                    c1, c2 = cols[i], cols[i+1]
+                    c1, c2 = cols[i], cols[i + 1]
                     # Check only bg between
-                    all_bg = all(inp[r, cc] == 0 for cc in range(c1+1, c2))
+                    all_bg = all(inp[r, cc] == 0 for cc in range(c1 + 1, c2))
                     if all_bg and c2 - c1 > 1:
-                        for cc in range(c1+1, c2):
+                        for cc in range(c1 + 1, c2):
                             test_out[r, cc] = color
         # Vertical
         for c in range(w):
             rows = list(np.where(inp[:, c] == color)[0])
             if len(rows) >= 2:
                 for i in range(len(rows) - 1):
-                    r1, r2 = rows[i], rows[i+1]
-                    all_bg = all(inp[rr, c] == 0 for rr in range(r1+1, r2))
+                    r1, r2 = rows[i], rows[i + 1]
+                    all_bg = all(inp[rr, c] == 0 for rr in range(r1 + 1, r2))
                     if all_bg and r2 - r1 > 1:
-                        for rr in range(r1+1, r2):
+                        for rr in range(r1 + 1, r2):
                             test_out[rr, c] = color
 
     if np.array_equal(test_out, out):
         match = True
         for ex in task.train[1:]:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             h2, w2 = ex.input.shape
             t = ex.input.copy()
             for color in range(1, 10):
@@ -335,20 +345,21 @@ for task in unsolved_tasks:
                     cols = list(np.where(ex.input[r, :] == color)[0])
                     if len(cols) >= 2:
                         for i in range(len(cols) - 1):
-                            c1, c2 = cols[i], cols[i+1]
-                            if all(ex.input[r, cc] == 0 for cc in range(c1+1, c2)) and c2 - c1 > 1:
-                                for cc in range(c1+1, c2):
+                            c1, c2 = cols[i], cols[i + 1]
+                            if all(ex.input[r, cc] == 0 for cc in range(c1 + 1, c2)) and c2 - c1 > 1:
+                                for cc in range(c1 + 1, c2):
                                     t[r, cc] = color
                 for c in range(w2):
                     rows = list(np.where(ex.input[:, c] == color)[0])
                     if len(rows) >= 2:
                         for i in range(len(rows) - 1):
-                            r1, r2 = rows[i], rows[i+1]
-                            if all(ex.input[rr, c] == 0 for rr in range(r1+1, r2)) and r2 - r1 > 1:
-                                for rr in range(r1+1, r2):
+                            r1, r2 = rows[i], rows[i + 1]
+                            if all(ex.input[rr, c] == 0 for rr in range(r1 + 1, r2)) and r2 - r1 > 1:
+                                for rr in range(r1 + 1, r2):
                                     t[rr, c] = color
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             line_connect_hits.append(task.task_id)
 
@@ -374,7 +385,8 @@ for task in unsolved_tasks:
             continue
         out_at = np.unique(out[mask])
         if len(out_at) != 1:
-            valid = False; break
+            valid = False
+            break
         mapping[color] = int(out_at[0])
     if not valid:
         continue
@@ -385,12 +397,14 @@ for task in unsolved_tasks:
     match = True
     for ex in task.train:
         if ex.input.shape != ex.output.shape:
-            match = False; break
+            match = False
+            break
         t = ex.input.copy()
         for src, dst in mapping.items():
             t[ex.input == src] = dst
         if not np.array_equal(t, ex.output):
-            match = False; break
+            match = False
+            break
     if match:
         color_replace_hits.append((task.task_id, mapping))
 
@@ -418,12 +432,14 @@ for task in unsolved_tasks:
         match = True
         for ex in task.train[1:]:
             if ex.input.shape != ex.output.shape:
-                match = False; break
+                match = False
+                break
             t = ex.input.copy()
             t[ex.input == a] = b
             t[ex.input == b] = a
             if not np.array_equal(t, ex.output):
-                match = False; break
+                match = False
+                break
         if match:
             invert_hits.append((task.task_id, a, b))
 
@@ -447,14 +463,14 @@ for task in unsolved_tasks:
         continue
 
     # Check if border is all one color
-    border = np.concatenate([inp[0,:], inp[-1,:], inp[1:-1,0], inp[1:-1,-1]])
+    border = np.concatenate([inp[0, :], inp[-1, :], inp[1:-1, 0], inp[1:-1, -1]])
     border_colors = np.unique(border)
     if len(border_colors) != 1:
         continue
     bc = int(border_colors[0])
 
     # Check if border is preserved in output
-    border_out = np.concatenate([out[0,:], out[-1,:], out[1:-1,0], out[1:-1,-1]])
+    border_out = np.concatenate([out[0, :], out[-1, :], out[1:-1, 0], out[1:-1, -1]])
     if not np.array_equal(border, border_out):
         continue
 

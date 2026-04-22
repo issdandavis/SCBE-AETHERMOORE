@@ -34,7 +34,9 @@ except ImportError:  # Optional ONNX dependency for validation-only workflows.
     ValidationReport = None  # type: ignore[assignment]
     validate_submission_model = None  # type: ignore[assignment]
 else:
-    __all__.extend([
-        "ValidationReport",
-        "validate_submission_model",
-    ])
+    __all__.extend(
+        [
+            "ValidationReport",
+            "validate_submission_model",
+        ]
+    )

@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -89,6 +90,7 @@ AGENTIC_EMPLOYEES = {
 # LLM Classification (Gemini fallback to local heuristic)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TriageResult:
     msg_id: str
@@ -104,6 +106,21 @@ class TriageResult:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+def _email_fingerprint(value: str) -> str:
+    """Stable short hash for email metadata that should not be logged in clear text."""
+    return hashlib.sha256(value.strip().lower().encode("utf-8")).hexdigest()[:12]
+
+
+def _safe_triage_payload(triage: TriageResult) -> dict:
+    """Redact sender and subject before writing triage details to queue storage."""
+    payload = asdict(triage)
+    payload["sender_hash"] = _email_fingerprint(triage.sender)
+    payload["subject_hash"] = _email_fingerprint(triage.subject)
+    payload["sender"] = "[redacted]"
+    payload["subject"] = f"[redacted:{len(triage.subject)}]"
+    return payload
+
+
 def classify_with_llm(sender: str, subject: str, body: str, api_key: Optional[str] = None) -> dict:
     """Use Gemini to classify email intent and route to agentic employee.
 
@@ -115,12 +132,12 @@ def classify_with_llm(sender: str, subject: str, body: str, api_key: Optional[st
 
     try:
         import google.generativeai as genai
+
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel("gemini-1.5-flash")
 
         agent_descriptions = "\n".join(
-            f"- {k}: handles {', '.join(v['handles'])}"
-            for k, v in AGENTIC_EMPLOYEES.items()
+            f"- {k}: handles {', '.join(v['handles'])}" for k, v in AGENTIC_EMPLOYEES.items()
         )
 
         prompt = f"""You are an email triage specialist for SCBE-AETHERMOORE, an AI governance company.
@@ -192,6 +209,7 @@ def classify_heuristic(sender: str, subject: str, body: str) -> dict:
 # Triage Runner
 # ---------------------------------------------------------------------------
 
+
 def run_triage(dry_run: bool = False, days: int = 1, auto_reply: bool = False) -> list[TriageResult]:
     """Run agentic triage on recent emails.
 
@@ -260,16 +278,16 @@ def _dispatch_to_queue(triage: TriageResult):
             """,
             (
                 build_task_id(),
-                f"Email: {triage.subject[:80]}",
+                f"Email triage [{_email_fingerprint(triage.subject)}]",
                 triage.summary,
                 f"email.{triage.agent}",
                 _urgency_to_priority(triage.urgency),
                 "queued",
                 agent["role"],
-                triage.sender,
+                f"sender:{_email_fingerprint(triage.sender)}",
                 json.dumps(["inbox", triage.agent]),
                 json.dumps([]),
-                json.dumps(asdict(triage)),
+                json.dumps(_safe_triage_payload(triage)),
                 json.dumps({"queue": triage.agent, "action": triage.action}),
                 f"Agentic triage: {triage.agent} | confidence: {triage.confidence:.2f}",
                 True,
@@ -295,6 +313,7 @@ def _urgency_to_priority(urgency: str) -> int:
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
+
 
 def main():
     parser = argparse.ArgumentParser(description="Agentic Email Triage for SCBE-AETHERMOORE")

@@ -55,14 +55,10 @@ try:
     _REPO_ROOT = Path(__file__).resolve().parents[2]
     if str(_REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(_REPO_ROOT))
-    from python.scbe.atomic_tokenization import (
-        TONGUES,
-        map_token_to_atomic_state,
-        tokens_to_tau_sequence,
-    )
+    from python.scbe.atomic_tokenization import TONGUES, map_token_to_atomic_state, tokens_to_tau_sequence
 
     _ATOMIC_AVAILABLE = True
-except Exception as _e:
+except Exception:
     _ATOMIC_AVAILABLE = False
     TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 
@@ -75,8 +71,6 @@ except Exception as _e:
 # ---------------------------------------------------------------------------
 
 _ZERO_TAU: Dict[str, float] = {t: 0.0 for t in TONGUES}
-_NEUTRAL_TAU: Dict[str, float] = {t: 0.333 for t in TONGUES}
-
 # Semantic quality weights: which tongue channels carry positive structure signal
 # for code. DR (formal/structural), CA (compute/algo), KO (control/dispatch)
 # are positive; UM (security/adversarial) and RU (entropy/chaos) are neutral.

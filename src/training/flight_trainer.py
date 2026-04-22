@@ -445,7 +445,7 @@ class FlightTrainer:
           4. Log metrics
           5. Save checkpoint at intervals
         """
-        print(f"\nSCBE Flight Training")
+        print("\nSCBE Flight Training")
         print(f"  Episodes: {episodes}")
         print(f"  Lambda (governance): {self.lambda_gov}")
         print(f"  Mu (instability): {self.mu_instab}")
