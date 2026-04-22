@@ -263,8 +263,9 @@ def _tail_jsonl(path: Path, n: int) -> list[dict[str, Any]]:
 
 def _is_path_within(candidate: Path, root: Path) -> bool:
     try:
-        candidate.resolve().relative_to(root.resolve())  # lgtm[py/path-injection]
-        return True
+        candidate_resolved = candidate.resolve(strict=False)
+        root_resolved = root.resolve(strict=False)
+        return os.path.commonpath([str(candidate_resolved), str(root_resolved)]) == str(root_resolved)
     except Exception:
         logger.debug("Suppressed error", exc_info=True)
         return False

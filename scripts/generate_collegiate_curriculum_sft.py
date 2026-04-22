@@ -30,12 +30,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
-import re
 import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -285,7 +283,7 @@ def classify_grade(text: str) -> GradeAssignment:
         intent = CURRICULUM_STAGES["FRONTIER"]["intent"]
 
     # Confidence: how many markers actually hit vs total possible
-    max_possible = sum(len(m) for m in COMPLEXITY_MARKERS.values())
+    sum(len(m) for m in COMPLEXITY_MARKERS.values())
     total_hits = sum(hits.values())
     confidence = min(1.0, total_hits / 5.0)  # 5+ hits = confident
 
@@ -418,7 +416,7 @@ def generate_opposed_view(
 
     primary_domain = grade.domains[0]
     h = int(hashlib.md5((record_hash + "opposed").encode()).hexdigest(), 16)
-    template = OPPOSED_ANGLES[h % len(OPPOSED_ANGLES)]
+    OPPOSED_ANGLES[h % len(OPPOSED_ANGLES)]
 
     topic_excerpt = text[:120].strip()
     stage_verbs = CURRICULUM_STAGES[grade.stage]["verb"]

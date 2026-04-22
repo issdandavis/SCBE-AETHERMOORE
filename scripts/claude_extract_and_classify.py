@@ -13,13 +13,10 @@ Usage:
 """
 
 import json
-import os
 import sys
 import re
-import time
 import math
 from pathlib import Path
-from datetime import datetime
 
 # -------------------------------------------------------------------
 # Paths
@@ -219,7 +216,7 @@ def extract():
             conlang_score = score_text(combined_lower, CONLANG_MARKERS)
 
             # Conlang title boost
-            has_conlang_title = any(w in title_lower for w in CONLANG_TITLE_WORDS)
+            any(w in title_lower for w in CONLANG_TITLE_WORDS)
 
             conv_data = {
                 "id": uuid,

@@ -26,9 +26,8 @@ import math
 import random
 import sys
 from dataclasses import dataclass
-from itertools import combinations, permutations
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -307,7 +306,7 @@ def gen_resource_race(count: int) -> List[GameRecord]:
 
     for _ in range(count):
         tongue = random.choice(TONGUES)
-        squad = random.sample(TONGUES, 4)
+        random.sample(TONGUES, 4)
 
         # EASY: split 10 coins among 3 players, each coin gives 1 point
         coins = 10
@@ -852,7 +851,7 @@ def gen_pattern_lock(count: int) -> List[GameRecord]:
         fib = [a, b]
         for _ in range(6):
             fib.append(fib[-1] + fib[-2])
-        ratio = fib[-1] / fib[-2]
+        fib[-1] / fib[-2]
         records.append(GameRecord(
             game="pattern-lock", system=sys_msg,
             user=f"Sequence: {fib[:6]}. "

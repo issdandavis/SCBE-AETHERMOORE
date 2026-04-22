@@ -14,13 +14,9 @@ Usage:
 """
 
 import json
-import os
 import sys
-import re
-import hashlib
 import time
 from pathlib import Path
-from datetime import datetime
 
 # -------------------------------------------------------------------
 # Paths
@@ -131,13 +127,10 @@ def extract():
 
     with open(GROK_JSON, "rb") as f:
         # We need to accumulate each conversation as we stream
-        current_conv = None
-        current_responses = []
-        in_conversation = False
+        pass
 
         # Use ijson items to get complete conversation objects
         # But 260MB may still be too much — let's use a chunked approach
-        pass
 
     # Fallback: use chunked reading with json
     # Read the file in a streaming way using ijson.items

@@ -51,7 +51,7 @@ def resolve_token():
             os.environ["HF_TOKEN"] = tok
             return tok
     except Exception:
-        pass
+        return None
     return None
 
 

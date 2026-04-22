@@ -662,11 +662,10 @@ class TestVRSState:
             "Boundary conditions determine the entire solution space",
             "Critical transitions occur at phase boundaries where order breaks down",
         ] * 5  # repeat to increase chance of finding boundary case
-        found_recovery = False
         for text in texts:
             bundle = generate_quantum_bundle(text)
             if bundle.vrs.recovery_paths:
-                found_recovery = True
+                pass
                 # Must have standard, vuichard, and autorotation
                 types = {rp.recovery_type for rp in bundle.vrs.recovery_paths}
                 assert RecoveryType.STANDARD in types

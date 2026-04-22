@@ -37,8 +37,6 @@ import {
   hyperbolicDistance,
   exponentialMap,
   logarithmicMap,
-  mobiusAdd,
-  projectToBall,
   clampToBall,
   phaseDeviation,
 } from './harmonic/hyperbolic.js';

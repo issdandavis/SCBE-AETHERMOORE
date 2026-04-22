@@ -532,7 +532,7 @@ def test_avali_python():
 
     # Decode actual tokens
     s_tok = byte_to_token("av", subj_byte)
-    v_tok = byte_to_token("av", verb_byte)
+    byte_to_token("av", verb_byte)
     o_tok = byte_to_token("av", obj_byte)
     print(f"  Decoded: {s_tok}.{VERB_OPS[(8,2)][0]}({o_tok}) = 7 * 3")
 

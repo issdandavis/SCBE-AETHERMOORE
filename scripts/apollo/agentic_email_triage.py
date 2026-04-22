@@ -283,9 +283,9 @@ def _dispatch_to_queue(triage: TriageResult):
         )
         conn.commit()
         conn.close()
-        print(f"  → Dispatched to {agent['name']} (priority {_urgency_to_priority(triage.urgency)})")
+        print(f"  → Dispatch recorded (priority {_urgency_to_priority(triage.urgency)})")
     except Exception as e:
-        print(f"  → Dispatch failed: {e}")
+        print(f"  → Dispatch failed: {type(e).__name__}")
 
 
 def _urgency_to_priority(urgency: str) -> int:
@@ -315,10 +315,10 @@ def main():
     print(f"\nTriage complete. {len(results)} emails processed.\n")
     for r in results:
         agent = AGENTIC_EMPLOYEES.get(r.agent, {})
-        print(f"  [{r.urgency.upper()}] {agent.get('name', r.agent)} | {r.subject[:60]}")
+        print(f"  [{r.urgency.upper()}] {agent.get('name', r.agent)} | subject length={len(r.subject)}")
         print(f"           confidence: {r.confidence:.2f} | action: {r.action}")
         if r.draft_reply:
-            print(f"           draft: {r.draft_reply[:120]}...")
+            print(f"           draft prepared ({len(r.draft_reply)} chars)")
         print()
 
     if args.output:

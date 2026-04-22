@@ -244,7 +244,7 @@ class TestSonifyDeadTone:
         assert a.delay_ms == 250
 
     def test_stereo_spread(self):
-        colors = [LabColor(50.0, 10.0, 10.0)] * 4
+        [LabColor(50.0, 10.0, 10.0)] * 4
         pans = [-0.5 + i * (1.0 / 3) for i in range(4)]
         assert pans[0] < 0
         assert pans[-1] > 0

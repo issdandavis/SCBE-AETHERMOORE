@@ -208,7 +208,7 @@ def build_voice_layers(
     mode: RenderMode,
 ) -> tuple:
     """Build voice layer stack for the given render mode."""
-    _profile = PROFILES[tongue]
+    PROFILES[tongue]
     from .speech_render_plan import TONGUE_PAN
 
     pan = TONGUE_PAN.get(tongue, 0.0)

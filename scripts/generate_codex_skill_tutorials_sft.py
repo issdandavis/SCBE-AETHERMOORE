@@ -17,7 +17,6 @@ Output: training-data/sft/codex_skill_tutorials_{tier}.jsonl
 import json
 import os
 import glob
-from pathlib import Path
 from datetime import datetime
 
 CODEX_SKILLS_DIR = os.path.expanduser("~/.codex/skills")
@@ -92,7 +91,7 @@ def categorize_skill(name):
 def make_10th_grade_instructions(skill):
     """Generate 10th-grade-level tutorial questions."""
     name_clean = skill["name"].replace("-", " ").replace("scbe ", "").title()
-    cat = categorize_skill(skill["name"])
+    categorize_skill(skill["name"])
     pairs = []
 
     # What is it?
@@ -119,7 +118,7 @@ def make_10th_grade_instructions(skill):
 def make_college_instructions(skill):
     """Generate college-level tutorial questions."""
     name_clean = skill["name"].replace("-", " ").replace("scbe ", "").title()
-    cat = categorize_skill(skill["name"])
+    categorize_skill(skill["name"])
     pairs = []
 
     pairs.append({
@@ -143,7 +142,7 @@ def make_college_instructions(skill):
 def make_cutting_edge_instructions(skill):
     """Generate research-grade questions."""
     name_clean = skill["name"].replace("-", " ").replace("scbe ", "").title()
-    cat = categorize_skill(skill["name"])
+    categorize_skill(skill["name"])
     pairs = []
 
     pairs.append({

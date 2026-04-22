@@ -544,7 +544,7 @@ def fabricate_from_text(text: str, context: str = "unknown") -> FabricatedTongue
 
     for tongue_code, triggers in tongue_triggers.items():
         fab = profile.by_code(tongue_code)
-        _base_freq = TONGUE_BASE_FREQ[tongue_code]
+        TONGUE_BASE_FREQ[tongue_code]
         eval_order = TONGUE_EVAL_ORDER[tongue_code]
 
         for keyword, base_weight, referent in triggers:

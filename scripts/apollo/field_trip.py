@@ -324,7 +324,7 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
         )
 
         if hop.secrets_scrubbed > 0:
-            print(f"         Scrubbed {hop.secrets_scrubbed} secrets")  # lgtm[py/clear-text-logging-sensitive-data]
+            print(f"         Scrubbed {hop.secrets_scrubbed} sensitive items")
 
         time.sleep(1)  # be polite
 

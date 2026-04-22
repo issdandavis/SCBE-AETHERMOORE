@@ -62,7 +62,7 @@ import random
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -323,8 +323,8 @@ def gen_grab_and_hold(count: int) -> List[ForgeRecord]:
     for _ in range(count):
         t = random.choice(TONGUES)
         elem_idx = random.randint(0, 5)
-        elem = ELEMENTS[t][elem_idx]
-        opp = _opposite(t)
+        ELEMENTS[t][elem_idx]
+        _opposite(t)
 
         # Apprentice: grab from own sector
         records.append(ForgeRecord(
@@ -526,7 +526,7 @@ def _assembly_plan(compound: dict) -> str:
 def _stuck_element_response(compound: dict, stuck_tongue: str) -> str:
     recipe = compound["recipe"]
     neighbors = [_neighbor(stuck_tongue, 1), _neighbor(stuck_tongue, -1)]
-    available_neighbors = [n for n in neighbors if n in recipe]
+    [n for n in neighbors if n in recipe]
 
     return (
         f"Option 1: VIBRATE. {ARM_NAMES[stuck_tongue]} oscillates their grip rapidly — "
@@ -1008,7 +1008,7 @@ def gen_web_research(count: int) -> List[ForgeRecord]:
         ))
 
         # Master: research with conflicting sources
-        alt_t = _opposite(t)
+        _opposite(t)
         records.append(ForgeRecord(
             category="research", system=SYS_RESEARCH,
             user=f"Research agent found TWO conflicting answers about '{scenario['unknown']}': "

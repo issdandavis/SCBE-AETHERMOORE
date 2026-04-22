@@ -1074,7 +1074,7 @@ def compute_code_lattice(
     """
     gain = mp.monty_hall_advantage
     max_n = qho.max_excitation
-    _mean_n = qho.mean_excitation
+    qho.mean_excitation
 
     anti_patterns = []
 
@@ -1731,12 +1731,12 @@ def compute_qho_state(
     # Compute probability amplitudes (|c_t|²)
     # Based on tongue activation from text bytes
     text_bytes = text.encode("utf-8")[:64]
-    _byte_sum = sum(text_bytes) if text_bytes else 1
+    sum(text_bytes) if text_bytes else 1
 
     def byte_affinity(tongue: str) -> float:
         """Text-derived affinity for this tongue."""
         w = TONGUE_WEIGHTS[tongue]
-        _freq = TONGUE_FREQUENCIES[tongue]
+        TONGUE_FREQUENCIES[tongue]
         # Hash-based deterministic affinity
         h = int(hashlib.md5((tongue + text[:32]).encode()).hexdigest()[:8], 16)
         raw = (h % 1000) / 1000.0 * w

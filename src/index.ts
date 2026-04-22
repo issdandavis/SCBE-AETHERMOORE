@@ -193,7 +193,7 @@ function _semanticPenalty(lower: string): number {
   return Math.min(total, 2.0);
 }
 
-function _phaseDeviation(text: string, dStar: number): number {
+function _phaseDeviation(text: string): number {
   const { digit, ctrl, n } = _byteProfile(text);
   let pd = (ctrl / n) * 5.0;
   if (n > 10 && digit / n > 0.45) pd += 0.25;
@@ -237,7 +237,7 @@ export function scan(text: string): ScanResult {
   }
 
   const dStar = _hyperbolicDistance(text);
-  const pd = _phaseDeviation(text, dStar);
+  const pd = _phaseDeviation(text);
   const hEff = 1.0 / (1.0 + dStar + 2.0 * pd);
 
   let decision: Decision;

@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import {
@@ -30,8 +30,9 @@ const PYTHON_BIN = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'py
 /** Check if Python + numpy + gyroscopic_interlattice are importable (skipped in Node-only CI). */
 function pythonDepsAvailable(): boolean {
   try {
-    execSync(
-      `${PYTHON_BIN} -c "import numpy; from symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import TONGUE_RADII"`,
+    execFileSync(
+      PYTHON_BIN,
+      ['-c', 'import numpy; from symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import TONGUE_RADII'],
       {
         cwd: CWD,
         encoding: 'utf-8',
@@ -52,7 +53,7 @@ function pyEval(expr: string): string {
   const script = `import sys\nsys.path.insert(0, "src")\nfrom symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import *\nprint(${expr})`;
   writeFileSync(TMP_SCRIPT, script, 'utf-8');
   try {
-    return execSync(`${PYTHON_BIN} ${TMP_SCRIPT}`, { cwd: CWD, encoding: 'utf-8' }).trim();
+    return execFileSync(PYTHON_BIN, [TMP_SCRIPT], { cwd: CWD, encoding: 'utf-8' }).trim();
   } finally {
     try {
       unlinkSync(TMP_SCRIPT);

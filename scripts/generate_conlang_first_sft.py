@@ -23,8 +23,6 @@ Usage:
 
 import json
 import sys
-import os
-import math
 import hashlib
 from pathlib import Path
 from datetime import datetime, timezone
@@ -35,15 +33,8 @@ sys.path.insert(0, str(ROOT))
 
 from src.crypto.sacred_tongues import (
     TONGUES,
-    TongueSpec,
-    KOR_AELIN,
-    AVALI,
-    RUNETHIC,
-    CASSISIVADAN,
-    UMBROTH,
-    DRAUMRIC,
 )
-from src.crypto.tri_bundle import TONGUE_WEIGHTS, PHI
+from src.crypto.tri_bundle import TONGUE_WEIGHTS
 from src.crypto.harmonic_dark_fill import (
     TONGUE_AUDIBLE_FREQ,
     INTERVALS,
@@ -436,7 +427,7 @@ def generate_lullaby_records() -> list:
     # --- Lullaby 3: Per-tongue bedtime phrases ---
     for code, spec in TONGUES.items():
         full_name = TONGUE_FULL_NAMES[code]
-        freq = TONGUE_AUDIBLE_FREQ[code]
+        TONGUE_AUDIBLE_FREQ[code]
         note = TONGUE_MUSICAL_NOTES[code]
 
         # Build a "goodnight" phrase from each tongue's vocabulary

@@ -130,7 +130,7 @@ class SacredTonguesHFTokenizer:
     def decode(self, ids: List[int], skip_special_tokens: bool = True) -> str:
         """Decode token IDs → text."""
         raw_bytes = []
-        _current_tongue = self.default_tongue
+        self.default_tongue
 
         for token_id in ids:
             # Skip specials
@@ -140,7 +140,7 @@ class SacredTonguesHFTokenizer:
                 # Detect tongue switch
                 for code in self.TONGUE_ORDER:
                     if token_id == SPECIAL_TOKENS.get(f"<tongue:{code}>"):
-                        _current_tongue = code
+                        pass
                 continue
 
             # Find which tongue this belongs to

@@ -153,7 +153,7 @@ def generate_semantic_math() -> int:
             t1, t2 = TONGUES[c1], TONGUES[c2]
             a1 = round(random.uniform(0.3, 0.9), 4)
             a2 = round(random.uniform(0.3, 0.9), 4)
-            combined = round(min(a1 + a2, 1.0), 4)
+            round(min(a1 + a2, 1.0), 4)
             w1, w2 = TONGUE_WEIGHTS[c1], TONGUE_WEIGHTS[c2]
             weighted_sum = round(a1 * w1 + a2 * w2, 4)
 

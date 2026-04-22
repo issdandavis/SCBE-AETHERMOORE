@@ -32,10 +32,8 @@ import argparse
 import json
 import logging
 import os
-import sys
 import time
 from pathlib import Path
-from dataclasses import dataclass, field, asdict
 from typing import Optional
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
@@ -355,7 +353,7 @@ def train_group(
 def evaluate_group(group_name: str, adapter_dir: Path):
     """Run eval prompts against a trained adapter and save results."""
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    from transformers import AutoTokenizer, BitsAndBytesConfig
     from peft import AutoPeftModelForCausalLM
 
     adapter_path = adapter_dir / "final_adapter"

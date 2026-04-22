@@ -120,7 +120,7 @@ class TestAerodynamicCoefficients:
     def test_cl_max_near_stall(self):
         """C_L_max occurs near α_crit."""
         cl_at_stall = lift_coefficient(ALPHA_CRIT_RAD)
-        cl_before = lift_coefficient(ALPHA_CRIT_RAD - math.radians(1))
+        lift_coefficient(ALPHA_CRIT_RAD - math.radians(1))
         # At stall should be near max
         assert cl_at_stall > 1.0  # typical C_L_max > 1.0
 

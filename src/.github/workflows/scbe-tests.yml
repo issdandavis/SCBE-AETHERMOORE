@@ -115,6 +115,8 @@ jobs:
 
   harmonic-scaling:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -137,6 +139,8 @@ jobs:
 
   core-cipher:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository

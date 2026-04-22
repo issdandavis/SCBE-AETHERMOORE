@@ -180,7 +180,7 @@ def gen_architecture(record):
     paths = extract_paths(content)
     cmds = extract_commands(content)
     headers = extract_headers(content)
-    bullets = extract_bullets(content)
+    extract_bullets(content)
 
     ti = CAT_PRIMARY_TONGUES.get(cat, [0, 1])
     t1, t2 = TONGUES[ti[0]], TONGUES[ti[1]]
@@ -242,11 +242,11 @@ def gen_integration(record):
     skill = skill_title(record['skill_source'])
     cat = record['category']
     content = record.get('skill_content', '')
-    seed = record['skill_source'] + 'integ'
+    record['skill_source'] + 'integ'
 
-    desc = first_paragraph(content)
+    first_paragraph(content)
     paths = extract_paths(content)
-    cmds = extract_commands(content)
+    extract_commands(content)
     bullets = extract_bullets(content)
 
     ti = CAT_PRIMARY_TONGUES.get(cat, [0, 1])
@@ -295,7 +295,7 @@ def gen_comparison(record):
 
     desc = first_paragraph(content)
     paths = extract_paths(content)
-    bullets = extract_bullets(content)
+    extract_bullets(content)
 
     tools = TRAD_TOOLS.get(cat, TRAD_TOOLS['general'])
     h1 = int(hashlib.md5((seed + 'tool1').encode()).hexdigest(), 16) % len(tools)

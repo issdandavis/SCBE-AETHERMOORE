@@ -20,6 +20,13 @@ USER = os.environ["PM_USER"]
 PW = os.environ["PM_PW"]
 
 
+def _safe_logout(client: imaplib.IMAP4) -> None:
+    try:
+        client.logout()
+    except imaplib.IMAP4.error:
+        return
+
+
 def main() -> int:
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
@@ -50,10 +57,7 @@ def main() -> int:
             print(f"REFS:  {refs[:200]}{'...' if len(refs) > 200 else ''}")
             print(f"REFS_FULL_LEN: {len(refs)}")
     finally:
-        try:
-            m.logout()
-        except Exception:
-            pass
+        _safe_logout(m)
     return 0
 
 

@@ -21,7 +21,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import sys
 from pathlib import Path
@@ -98,8 +97,8 @@ def create_webhook(url: str):
 
     print(f"\nWebhook created successfully!")
     print(f"  ID:     {endpoint.id}")
-    print(f"  URL:    {endpoint.url}")
-    print(f"  Secret: {endpoint.secret}")
+    print("  URL:    [configured]")
+    print("  Secret: [stored only]")
     print(f"  Events: {', '.join(WEBHOOK_EVENTS)}")
     print()
 
@@ -116,14 +115,13 @@ def create_webhook(url: str):
                 else:
                     new_lines.append(line)
             env_file.write_text("\n".join(new_lines) + "\n")
-            print(f"Updated .secrets/env.local with webhook secret.")
+            print("Updated .secrets/env.local with webhook secret.")
         else:
             with open(env_file, "a") as f:
                 f.write(f"\n# Stripe Webhook Secret (auto-generated)\nSTRIPE_WEBHOOK_SECRET={endpoint.secret}\n")
-            print(f"Appended webhook secret to .secrets/env.local")
+            print("Appended webhook secret to .secrets/env.local")
     else:
-        print(f"\nAdd this to your .secrets/env.local:")
-        print(f"  STRIPE_WEBHOOK_SECRET={endpoint.secret}")
+        print("\nAdd STRIPE_WEBHOOK_SECRET to your .secrets/env.local from the stored endpoint secret.")
 
 
 def delete_webhook(webhook_id: str):

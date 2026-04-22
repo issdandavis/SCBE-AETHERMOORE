@@ -25,7 +25,6 @@ from peft import PeftModel
 from pydantic import BaseModel
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-import argparse as _argparse
 
 # Detect which model size to serve (set via --model flag or MODEL_SIZE env var)
 _MODEL_SIZE = os.environ.get("MODEL_SIZE", "360m")

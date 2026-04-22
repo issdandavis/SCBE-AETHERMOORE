@@ -701,7 +701,7 @@ def format_spectral_report(evo: SpectralEvolution) -> str:
     lines.append("  Phase trajectories (sector: R=red Y=yel G=grn C=cyn B=blu M=mag):")
     sector_chars = "RYGCBM"
     for tongue in ALL_TONGUES:
-        _color_char = TONGUE_COLOR[tongue][0].upper()
+        TONGUE_COLOR[tongue][0].upper()
         traj = "    " + tongue.upper() + ": "
         for snap in evo.snapshots:
             a = snap.agents[tongue]

@@ -5,7 +5,6 @@ Covers first 8 domains (64 records) with REAL arXiv papers.
 """
 import json
 import copy
-from datetime import datetime
 
 # Load stubs
 with open("training-data/sft/cutting_edge_research_provenance_stubs.jsonl") as f:

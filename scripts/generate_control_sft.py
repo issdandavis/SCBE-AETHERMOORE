@@ -17,7 +17,6 @@ from __future__ import annotations
 import json
 import math
 import random
-import sys
 from fractions import Fraction
 from pathlib import Path
 
@@ -123,7 +122,7 @@ def gen_algebra() -> list[dict]:
     for _ in range(700):
         r1, r2 = random.randint(-10, 10), random.randint(-10, 10)
         a, b, c = 1, -(r1 + r2), r1 * r2
-        disc = b * b - 4 * a * c
+        b * b - 4 * a * c
         records.append(rec(MATH_SYSTEM,
             f"Find the roots of x² + {b}x + {c} = 0",
             f"Using the quadratic formula or factoring:\n"
@@ -444,7 +443,7 @@ def gen_logic() -> list[dict]:
         age_now = random.randint(5, 50)
         years = random.randint(1, 20)
         ratio = random.randint(2, 5)
-        parent_age = ratio * age_now - (ratio - 1) * years if random.random() < 0.5 else age_now + random.randint(15, 35)
+        ratio * age_now - (ratio - 1) * years if random.random() < 0.5 else age_now + random.randint(15, 35)
         records.append(rec(LOGIC_SYSTEM,
             f"Alice is {age_now} years old. In {years} years, she will be {age_now + years}. "
             f"How old was she {years} years ago?",

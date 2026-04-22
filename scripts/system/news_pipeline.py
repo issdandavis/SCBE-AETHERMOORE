@@ -258,7 +258,7 @@ def _load_oqs():
         import oqs  # type: ignore
 
         return oqs
-    except BaseException:
+    except Exception:
         return None
 
 
@@ -572,7 +572,7 @@ def stage_encrypt(egged: dict) -> dict:
                         "kem_ct_len": len(ciphertext_kem),
                     }
                 )
-        except BaseException:
+        except Exception:
             nonce_hex, ct_hex, tag_hex = _encrypt_hmac_only(plaintext, key_material)
             kem_meta["tier"] = "hmac-fallback"
     elif CRYPTOGRAPHY_AVAILABLE:
@@ -635,7 +635,7 @@ def stage_sign(encrypted: dict) -> dict:
                         "sig_len": len(signature),
                         "pk_len": len(pub),
                     }
-            except BaseException:
+            except Exception:
                 alg = "Dilithium3"
                 with oqs.Signature(alg) as signer:
                     pub = signer.generate_keypair()
@@ -646,7 +646,7 @@ def stage_sign(encrypted: dict) -> dict:
                         "sig_len": len(signature),
                         "pk_len": len(pub),
                     }
-        except BaseException as exc:
+        except Exception as exc:
             sig_meta = {
                 "algorithm": "HMAC-SHA256-fallback",
                 "signature": _hmac256(_CHAIN_KEY, blob),

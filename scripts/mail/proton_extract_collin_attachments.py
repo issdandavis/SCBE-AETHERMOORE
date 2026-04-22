@@ -22,6 +22,13 @@ OUT_DIR = REPO / "docs" / "proposals" / "DARPA_MATHBAC" / "from_collin_20260421"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def _safe_logout(client: imaplib.IMAP4) -> None:
+    try:
+        client.logout()
+    except imaplib.IMAP4.error:
+        return
+
+
 def main() -> int:
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
@@ -49,10 +56,7 @@ def main() -> int:
             count += 1
         print(f"total attachments: {count}")
     finally:
-        try:
-            m.logout()
-        except Exception:
-            pass
+        _safe_logout(m)
     return 0
 
 

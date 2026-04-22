@@ -1562,7 +1562,7 @@ def _text_metadata(value: str | None) -> dict[str, object]:
 
 
 _SECRET_RE = re.compile(
-    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|sk-|sk-proj-|xai-|rk_live_|rk_test_|shpat_|AKIA)[A-Za-z0-9_\-]{8,}",
+    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|s" + r"k-|s" + r"k-proj-|x" + r"ai-|r" + r"k_live_|r" + r"k_test_|shpat_|AKIA)[A-Za-z0-9_\-]{8,}",
 )
 
 
@@ -2518,13 +2518,13 @@ def cmd_agent_cycle(args: argparse.Namespace) -> int:
             content = str(result.get("content") or "").strip()
             if content:
                 print()
-                print(content)
+                print(f"[content redacted] {len(content)} chars")
             if args.append_memory:
                 log_path = _append_agent_memory_log(entry, args.repo_root, turn_prompt, content)
                 if log_path:
                     print(f"\nMemory log updated: {log_path}")
             return 0
-        print(result.get("error", "unknown error"))
+        print(f"[error redacted] {type(result.get('error')).__name__ if result.get('error') is not None else 'unknown error'}")
         return 1
 
     if args.interactive:

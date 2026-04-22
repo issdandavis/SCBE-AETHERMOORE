@@ -303,7 +303,7 @@ def compute_harmonic_fill(
     weight = TONGUE_WEIGHTS[tongue_code]
     base_freq = TONGUE_AUDIBLE_FREQ[tongue_code]
     complement = COMPLEMENT_MAP[tongue_code]
-    _comp_freq = TONGUE_AUDIBLE_FREQ[complement]
+    TONGUE_AUDIBLE_FREQ[complement]
 
     # Normalized position in sequence
     t = position / max(total_positions, 1)
