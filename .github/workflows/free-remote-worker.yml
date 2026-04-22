@@ -99,10 +99,10 @@ jobs:
               ;;
             auto)
               if [ -f requirements.txt ]; then
-                python -m pip install -r requirements.txt || true
+                python -m pip install -r requirements.txt
               fi
               if [ -f pyproject.toml ]; then
-                python -m pip install -e ".[test]" || python -m pip install -e . || true
+                python -m pip install -e ".[test]" || python -m pip install -e .
               fi
               if [ -f package-lock.json ]; then
                 npm ci || npm install

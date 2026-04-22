@@ -39,7 +39,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - name: Run tests with coverage
-        run: npx vitest run --coverage || true
+        run: npx vitest run --coverage
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -65,7 +65,7 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: '.'
-        run: python -m pytest tests/ -v --timeout=120 --tb=short -q 2>&1 | head -200 || true
+        run: python -m pytest tests/ -v --timeout=120 --tb=short -q
 
   build:
     name: Build Check
@@ -95,9 +95,9 @@ jobs:
           python-version: '3.11'
       - run: npm ci
       - name: TS lint
-        run: npx prettier --check "src/**/*.ts" "tests/**/*.ts" || true
+        run: npx prettier --check "src/**/*.ts" "tests/**/*.ts"
       - name: Python lint
         run: |
           pip install black ruff
-          black --check --target-version py311 --line-length 120 src/ tests/ || true
-          ruff check --config ruff.toml || true
+          black --check --target-version py311 --line-length 120 src/ tests/
+          ruff check --config ruff.toml

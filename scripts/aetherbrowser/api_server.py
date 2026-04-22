@@ -1328,7 +1328,8 @@ async def contact_submit(payload: ContactFormPayload):
             return {"ok": True, "message": "Message sent. We usually reply within 24 hours."}
         return {"ok": False, "error": result.get("error", "Email delivery failed")}
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        logger.warning("Contact form error: %s", e)
+        return {"ok": False, "error": "Unable to send message. Please try again later."}
 
 
 @app.post("/api/ops/check-email")
@@ -2063,7 +2064,8 @@ async def polly_chat(payload: PollyChatPayload):
         result = await chat(payload.message, payload.context)
         return {"ok": True, "data": result}
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        logger.warning("Polly chat error: %s", e)
+        return {"ok": False, "error": "Chat service temporarily unavailable."}
 
 
 @app.post("/v1/polly/respond")
@@ -2074,7 +2076,8 @@ async def polly_respond(payload: PollyRespondPayload):
         result = await respond(payload.text, payload.context, payload.intent)
         return {"ok": True, "data": result}
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        logger.warning("Polly respond error: %s", e)
+        return {"ok": False, "error": "Response service temporarily unavailable."}
 
 
 @app.get("/v1/polly/context")
@@ -2085,7 +2088,8 @@ async def polly_context():
         result = await get_context()
         return {"ok": True, "data": result}
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        logger.warning("Polly context error: %s", e)
+        return {"ok": False, "error": "Context service temporarily unavailable."}
 
 
 @app.post("/v1/polly/search")
@@ -2096,7 +2100,8 @@ async def polly_search(payload: PollySearchPayload):
         result = await search(payload.query)
         return {"ok": True, "data": result}
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        logger.warning("Polly search error: %s", e)
+        return {"ok": False, "error": "Search service temporarily unavailable."}
 
 
 @app.post("/v1/polly/delegate")
@@ -2107,7 +2112,8 @@ async def polly_delegate(payload: PollyDelegatePayload):
         result = await delegate(payload.text)
         return {"ok": True, "data": result}
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        logger.warning("Polly delegate error: %s", e)
+        return {"ok": False, "error": "Delegation service temporarily unavailable."}
 
 
 # =========================================================================== #
