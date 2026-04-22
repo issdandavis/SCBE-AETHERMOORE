@@ -43,7 +43,7 @@ def seed_from_anchors(dry_run: bool = False):
         output = rec.get("output", "")
         meta = rec.get("metadata", {})
         category = meta.get("category", "general")
-        audience = meta.get("audience", "customer")
+        meta.get("audience", "customer")
 
         doc = enrich_document(
             title=instruction,

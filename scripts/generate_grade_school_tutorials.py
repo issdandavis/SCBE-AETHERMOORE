@@ -324,7 +324,7 @@ def content_hash(text: str) -> str:
 
 def make_tongue_greeting(tongue_key: str) -> str:
     """A short greeting/intro phrase in the given tongue."""
-    t = TONGUES[tongue_key]
+    TONGUES[tongue_key]
     w1 = tongue_word(tongue_key, 0x00)  # first word
     w2 = tongue_word(tongue_key, 0x10)  # second prefix family
     w3 = tongue_word(tongue_key, 0x42)  # a middle word

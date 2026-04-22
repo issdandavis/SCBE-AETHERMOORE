@@ -448,7 +448,7 @@ class BraidVault:
 
     def strand_fingerprints(self) -> List[str]:
         """Return hex fingerprints of the 3 derived strands (for audit)."""
-        return [hashlib.sha256(s.as_bytes()).hexdigest()[:16] for s in self._derived_strands]
+        return [hashlib.sha3_256(s.as_bytes()).hexdigest()[:16] for s in self._derived_strands]
 
     @property
     def braid_length(self) -> int:

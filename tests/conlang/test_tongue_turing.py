@@ -71,6 +71,14 @@ def _is_negative(a, b):
     return int(a < 0)
 
 
+def _is_even(a, b):
+    return int(a % 2 == 0)
+
+
+def _is_odd(a, b):
+    return int(a % 2 == 1)
+
+
 # ============================================================
 # PART 2: VERB OPCODES — The 64 operations (high nibbles 8-11)
 # ============================================================
@@ -111,8 +119,8 @@ VERB_OPS = {
     (9, 10): ("ZERO?", lambda a, b: int(a == 0)),
     (9, 11): ("POS?", _is_positive),
     (9, 12): ("NEG?", _is_negative),
-    (9, 13): ("EVEN?", lambda a, b: int(a % 2 == 0)),
-    (9, 14): ("ODD?", lambda a, b: int(a % 2 == 1)),
+    (9, 13): ("EVEN?", _is_even),
+    (9, 14): ("ODD?", _is_odd),
     (9, 15): ("BETWEEN?", lambda a, b: int(0 <= a <= b)),
     # Assignment / stack (high=10, low=0..15)
     (10, 0): ("SET", lambda a, b: b),  # a = b

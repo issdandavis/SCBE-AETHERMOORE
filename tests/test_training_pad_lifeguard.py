@@ -276,13 +276,13 @@ class TestObserveFeedback:
     def test_feedback_recorded_on_cell(self):
         lg = LifeGuard()
         cell = Cell(code="eval(x)")
-        notes = lg.observe(cell)
+        lg.observe(cell)
         assert len(cell.feedback) > 0
 
     def test_clean_code_no_feedback(self):
         lg = LifeGuard()
         cell = Cell(code="x = 1")
-        notes = lg.observe(cell)
+        lg.observe(cell)
         assert len(cell.feedback) == 0
 
 

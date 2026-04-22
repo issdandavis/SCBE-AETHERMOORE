@@ -37,7 +37,7 @@ import hashlib
 import math
 from dataclasses import dataclass
 from importlib import import_module
-from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Dict, List, Optional, Tuple
 
 from src.crypto.trit_curriculum import (
     TritSignal,
@@ -62,14 +62,6 @@ from src.crypto.tri_bundle import (
     TONGUE_WEIGHTS,
     TONGUE_FREQUENCIES,
 )
-
-if TYPE_CHECKING:
-    from src.crypto.flight_dynamics import (
-        PacejkaTireState,
-        RecoveryPath,
-        RotorState,
-        TailRotorState,
-    )
 
 # ---------------------------------------------------------------------------
 # Physical constants (SI)

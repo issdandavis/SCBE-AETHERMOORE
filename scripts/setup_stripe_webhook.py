@@ -52,6 +52,12 @@ WEBHOOK_EVENTS = [
 ]
 
 
+def _redact_secret(secret: str) -> str:
+    if len(secret) <= 8:
+        return "[redacted]"
+    return f"{secret[:4]}...{secret[-4:]}"
+
+
 def get_stripe_key() -> str:
     key = os.getenv("STRIPE_SECRET_KEY", "").strip()
     if not key:
@@ -98,7 +104,7 @@ def create_webhook(url: str):
     print(f"\nWebhook created successfully!")
     print(f"  ID:     {endpoint.id}")
     print(f"  URL:    {endpoint.url}")
-    print(f"  Secret: {endpoint.secret}")
+    print(f"  Secret: {_redact_secret(endpoint.secret)}")
     print(f"  Events: {', '.join(WEBHOOK_EVENTS)}")
     print()
 
@@ -115,14 +121,14 @@ def create_webhook(url: str):
                 else:
                     new_lines.append(line)
             env_file.write_text("\n".join(new_lines) + "\n")
-            print(f"Updated .secrets/env.local with webhook secret.")
+            print("Updated .secrets/env.local with webhook secret.")
         else:
             with open(env_file, "a") as f:
                 f.write(f"\n# Stripe Webhook Secret (auto-generated)\nSTRIPE_WEBHOOK_SECRET={endpoint.secret}\n")
             print(f"Appended webhook secret to .secrets/env.local")
     else:
         print(f"\nAdd this to your .secrets/env.local:")
-        print(f"  STRIPE_WEBHOOK_SECRET={endpoint.secret}")
+        print("  STRIPE_WEBHOOK_SECRET=[redacted]")
 
 
 def delete_webhook(webhook_id: str):

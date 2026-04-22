@@ -18,8 +18,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import shutil
 import subprocess
 import sys
 import time
@@ -149,6 +147,12 @@ GPU_CONFIGS = {
     "none": {"accelerator": "none", "isGpuEnabled": False},
 }
 
+# ARC submission kernel slug
+ARC_KERNEL_SLUG = "arc-neurogolf-submit"
+ARC_SUBMISSION_TEMPLATE = Path(__file__).parent / "arc_submission_kernel.py"
+ARC_NEUROGOLF_DATASET = f"{KAGGLE_USER}/scbe-neurogolf-solver"
+ARC_COMPETITION = "arc-prize-2026"
+
 
 # ============================================================
 # KERNEL SCRIPT GENERATOR
@@ -206,6 +210,37 @@ def create_kernel_dir(round_name: str, config: dict, gpu: str) -> Path:
         "enable_internet": True,
         "dataset_sources": [KAGGLE_DATASET],
         "competition_sources": [],
+        "kernel_sources": [],
+    }
+    (kernel_dir / "kernel-metadata.json").write_text(
+        json.dumps(meta, indent=2), encoding="utf-8"
+    )
+
+    return kernel_dir
+
+
+def create_arc_kernel_dir(gpu: str) -> Path:
+    """Create a Kaggle kernel directory for ARC Prize submission."""
+    kernel_dir = REPO_ROOT / "artifacts" / "kaggle_kernels" / ARC_KERNEL_SLUG
+    kernel_dir.mkdir(parents=True, exist_ok=True)
+
+    # Copy the ARC submission script
+    script = ARC_SUBMISSION_TEMPLATE.read_text(encoding="utf-8")
+    (kernel_dir / "script.py").write_text(script, encoding="utf-8")
+
+    # Write kernel-metadata.json
+    gpu_conf = GPU_CONFIGS.get(gpu, GPU_CONFIGS["none"])
+    meta = {
+        "id": f"{KAGGLE_USER}/{ARC_KERNEL_SLUG}",
+        "title": "ARC NeuroGolf Solver — SCBE",
+        "code_file": "script.py",
+        "language": "python",
+        "kernel_type": "script",
+        "is_private": True,
+        "enable_gpu": gpu_conf.get("isGpuEnabled", False),
+        "enable_internet": False,
+        "dataset_sources": [ARC_NEUROGOLF_DATASET],
+        "competition_sources": [ARC_COMPETITION],
         "kernel_sources": [],
     }
     (kernel_dir / "kernel-metadata.json").write_text(
@@ -342,14 +377,48 @@ def main():
     parser.add_argument("--poll-interval", type=int, default=120, help="Seconds between polls")
     parser.add_argument("--status", action="store_true", help="Show running kernel status")
     parser.add_argument("--pull", action="store_true", help="Download output from completed kernel")
+    parser.add_argument("--arc-submit", action="store_true", help="Push ARC Prize submission kernel")
     args = parser.parse_args()
 
     if args.status:
         list_running()
         return
 
+    # ---- ARC submission mode ----
+    if args.arc_submit:
+        print(f"\n{'='*60}")
+        print("ARC PRIZE SUBMISSION — NeuroGolf Solver")
+        print(f"{'='*60}\n")
+
+        kernel_dir = create_arc_kernel_dir(args.gpu)
+        print(f"Kernel dir: {kernel_dir}")
+
+        if not push_kernel(kernel_dir):
+            print("FAILED to push ARC kernel")
+            sys.exit(1)
+
+        print(f"Kernel pushed: kaggle.com/code/{KAGGLE_USER}/{ARC_KERNEL_SLUG}")
+
+        if args.poll:
+            status = poll_until_done(ARC_KERNEL_SLUG, interval=args.poll_interval)
+            if status == "complete":
+                dest = pull_output(ARC_KERNEL_SLUG)
+                print(f"Output at: {dest}")
+                # Check for submission.json
+                sub = dest / "submission.json"
+                if sub.exists():
+                    data = json.loads(sub.read_text(encoding="utf-8"))
+                    print(f"submission.json: {len(data)} tasks")
+                else:
+                    print("WARNING: submission.json not found in output")
+        else:
+            print(f"\nKernel running. Check status with:")
+            print(f"  python scripts/kaggle_auto/launch.py --status")
+            print(f"  kaggle kernels status {KAGGLE_USER}/{ARC_KERNEL_SLUG}")
+        return
+
     if not args.round:
-        parser.error("--round is required (unless using --status)")
+        parser.error("--round is required (unless using --status or --arc-submit)")
 
     if args.pull:
         slug = f"polly-auto-{args.round}"

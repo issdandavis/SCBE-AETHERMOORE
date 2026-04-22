@@ -13,8 +13,10 @@ Default port: 8100
 from __future__ import annotations
 
 import asyncio
-from collections import deque
+import configparser
+from collections import Counter, defaultdict, deque
 import datetime
+import math
 import json
 import logging
 import os
@@ -22,15 +24,19 @@ import re
 import shlex
 import subprocess
 import sys
+import threading
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
@@ -50,9 +56,19 @@ IDE_CLI_LOG = IDE_LOGS_DIR / "cli.jsonl"
 KNOWLEDGE_SEARCH_ROOTS: tuple[Path, ...] = (ROOT / "notes", ROOT / "docs")
 KNOWLEDGE_SUFFIXES = {".md", ".txt", ".html"}
 DEFAULT_OLLAMA_MODEL = os.environ.get("AETHERBOT_OLLAMA_MODEL", "issdandavis7795/AetherBot").strip()
-DEFAULT_HF_CHAT_MODEL = os.environ.get("AETHERBOT_HF_MODEL", "").strip() or os.environ.get("HF_CHAT_MODEL", "").strip()
+DEFAULT_HF_CHAT_MODEL = (
+    os.environ.get("AETHERBOT_HF_MODEL", "").strip()
+    or os.environ.get("HF_CHAT_MODEL", "").strip()
+    or os.environ.get("SCBE_HF_MODEL", "").strip()
+    or "Qwen/Qwen2.5-7B-Instruct"
+)
 HF_CHAT_ROUTER_URL = os.environ.get("HF_CHAT_ROUTER_URL", "https://router.huggingface.co/v1/chat/completions").strip()
 SAFE_VAULT_ROOT = (ROOT / "notes").resolve()
+GIT_CONFIG_PATH = ROOT / ".git" / "config"
+PUBLIC_DIR = ROOT / "public"
+PUBLIC_INDEX = PUBLIC_DIR / "index.html"
+DOCS_DIR = ROOT / "docs"
+DOCS_INDEX = DOCS_DIR / "index.html"
 
 MOMENTUM_TRAIN_CONFIGS: dict[str, Path] = {
     "daily_ops": WORKFLOWS_DIR / "daily_ops_train.json",
@@ -67,6 +83,25 @@ CLI_DOCS_REGISTRY: dict[str, Path] = {
     "aetherbrowser-search-mesh": ROOT / "docs" / "specs" / "aetherbrowser_search_mesh.md",
     "aetherbrowser-first-runbook": ROOT / "docs" / "operations" / "aetherbrowser_browser_first_runbook.md",
 }
+
+ARENA_PROVIDER_REGISTRY: dict[str, dict[str, str]] = {
+    "groq": {"model": "llama-3.3-70b-versatile", "env": "GROQ_API_KEY", "provider": "remote"},
+    "cerebras": {"model": "llama-3.3-70b", "env": "CEREBRAS_API_KEY", "provider": "remote"},
+    "google_ai": {"model": "gemini-2.5-flash", "env": "GEMINI_API_KEY", "provider": "remote"},
+    "claude": {"model": "claude-sonnet", "env": "ANTHROPIC_API_KEY", "provider": "remote"},
+    "xai": {"model": "grok-3-mini", "env": "XAI_API_KEY", "provider": "remote"},
+    "openrouter": {"model": "kimi-k2-instruct", "env": "OPENROUTER_API_KEY", "provider": "remote"},
+    "github_models": {"model": "gpt-4o-mini", "env": "GITHUB_TOKEN", "provider": "remote"},
+    "huggingface": {"model": DEFAULT_HF_CHAT_MODEL or "inference", "env": "HF_TOKEN", "provider": "huggingface"},
+    "ollama": {"model": DEFAULT_OLLAMA_MODEL or "local", "env": "OLLAMA", "provider": "local"},
+}
+
+LORE_ART_ITEMS: list[dict[str, str]] = [
+    {"slug": "codex-spiralverse", "title": "Codex I"},
+    {"slug": "everweave-fibonacci", "title": "Codex II"},
+    {"slug": "polloneth-protocol", "title": "Codex III"},
+    {"slug": "spiral-risk-zones", "title": "Atlas"},
+]
 
 # Add project root + src to path so we can import SCBE modules
 sys.path.insert(0, str(ROOT))
@@ -228,8 +263,12 @@ def _scrub_obj(obj: Any) -> Any:
 def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
     try:
         IDE_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+        safe_path = path.resolve(strict=False)
+        if not _is_path_within(safe_path, IDE_LOGS_DIR):
+            logger.warning("Rejected IDE log path outside allowed directory: %s", path.name)
+            return
         safe = _scrub_obj(record)
-        with path.open("a", encoding="utf-8") as f:
+        with safe_path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(safe, ensure_ascii=True) + "\n")  # lgtm[py/clear-text-storage-sensitive-data]
     except Exception:
         # Logging must never break the API server.
@@ -296,6 +335,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if PUBLIC_DIR.exists():
+    static_dir = PUBLIC_DIR / "static"
+    if static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="aetherbrowser-static")
+
+if DOCS_DIR.exists():
+    docs_static_dir = DOCS_DIR / "static"
+    if docs_static_dir.exists():
+        app.mount("/site/static", StaticFiles(directory=str(docs_static_dir)), name="docs-static")
 
 
 # =========================================================================== #
@@ -454,6 +503,251 @@ SEARCH_STOPWORDS = {
     "your",
 }
 
+LORE_CHAT_SIGNALS = {
+    "aethermoore",
+    "lore",
+    "story",
+    "chapter",
+    "character",
+    "polly",
+    "spiralverse",
+    "realm",
+    "magic",
+    "quest",
+    "book",
+    "archive",
+    "world",
+    "canon",
+    "novel",
+    "tongue",
+}
+
+SCIENCE_CHAT_SIGNALS = {
+    "scbe",
+    "science",
+    "math",
+    "governance",
+    "training",
+    "model",
+    "dataset",
+    "hyperbolic",
+    "geometry",
+    "security",
+    "benchmark",
+    "pipeline",
+    "architecture",
+    "implementation",
+    "ollama",
+    "hugging",
+    "github",
+    "tokenizer",
+}
+
+CHAT_DOMAIN_SEEDS: dict[str, tuple[str, ...]] = {
+    "lore": ("aethermoore", "spiralverse", "polly", "six tongues protocol", "canon"),
+    "science": ("scbe", "hyperbolic", "governance", "training", "architecture"),
+}
+
+PUBLIC_CHAT_SOURCE_HINTS: dict[str, tuple[str, ...]] = {
+    "lore": (
+        "docs/index.html",
+        "docs/SPIRALVERSE_GAME_DESIGN_BIBLE.md",
+        "docs/CONCEPTS.md",
+        "docs/README.md",
+    ),
+    "science": (
+        "README.md",
+        "docs/index.html",
+        "docs/SCBE_SYSTEM_OVERVIEW.md",
+        "docs/ARCHITECTURE.md",
+        "docs/DEMOS.md",
+        "docs/specs/LAYER_MATH_COMPRESSED.md",
+    ),
+}
+
+RAG_CHUNK_TARGET_CHARS = 900
+RAG_CHUNK_OVERLAP_CHARS = 180
+RAG_MAX_CHUNKS_PER_FILE = 24
+RAG_DEFAULT_TOP_K = 6
+RAG_INDEX_LOCK = threading.Lock()
+RAG_INDEX_CACHE: dict[str, dict[str, Any]] = {}
+RAG_SHARED_SOURCE_HINTS: tuple[str, ...] = (
+    "README.md",
+    "docs/README.md",
+    "docs/index.html",
+    "docs/ARCHITECTURE.md",
+    "docs/SCBE_SYSTEM_OVERVIEW.md",
+    "docs/DEMOS.md",
+    "docs/CONCEPTS.md",
+    "docs/SPIRALVERSE_GAME_DESIGN_BIBLE.md",
+    "docs/specs/LAYER_MATH_COMPRESSED.md",
+)
+RAG_PINNED_INTERNAL_SOURCE_HINTS: tuple[str, ...] = (
+    "docs/SCBE_SYSTEM_CLI.md",
+    "notes/sphere-grid/teach.md",
+    "notes/sphere-grid/agents/teacher.md",
+    "notes/theory/2026-04-05-training-pair-taxonomy.md",
+    "notes/System Library/Tokenizer Vault/Tokenizer Construction History and Lock.md",
+    "notes/System Library/Tokenizer Vault/Transport Tokenizer - SS1 and Sacred Tongues.md",
+    "notes/System Library/Tokenizer Vault/Tokenizer Vault Index.md",
+    "notes/System Library/Indexes/Tokenizer Sacred Eggs Canonical Reference.md",
+    "notes/System Library/Indexes/MemPalace SCBE Memory Augmentation.md",
+    "src/crypto/sacred_tongues.py",
+    "python/scbe/atomic_tokenization.py",
+    "python/scbe/tongue_code_lanes.py",
+    "src/ca_lexicon/__init__.py",
+    "src/crypto/geo_seal.py",
+    "src/geoseal.py",
+)
+RAG_TOPIC_PROFILES: dict[str, dict[str, tuple[str, ...] | set[str]]] = {
+    "coding": {
+        "keywords": {
+            "code",
+            "coding",
+            "program",
+            "programming",
+            "developer",
+            "function",
+            "class",
+            "bug",
+            "debug",
+            "algorithm",
+            "teach",
+            "learn",
+            "tutorial",
+            "python",
+            "typescript",
+            "rust",
+            "julia",
+            "haskell",
+            "c ",
+            "c++",
+            "javascript",
+        },
+        "sources": (
+            "notes/sphere-grid/teach.md",
+            "notes/sphere-grid/agents/teacher.md",
+            "notes/theory/2026-04-05-training-pair-taxonomy.md",
+            "notes/System Library/Tokenizer Vault/Tokenizer Construction History and Lock.md",
+            "notes/System Library/Indexes/Tokenizer Sacred Eggs Canonical Reference.md",
+            "notes/System Library/Tokenizer Vault/Transport Tokenizer - SS1 and Sacred Tongues.md",
+            "src/coding_spine/router.py",
+            "src/coding_spine/shared_ir.py",
+            "src/geoseal_cli.py",
+            "src/symphonic/tongue_lang_map.py",
+            "docs/SCBE_SYSTEM_CLI.md",
+        ),
+    },
+    "tokenizer": {
+        "keywords": {
+            "tokenizer",
+            "tokenizers",
+            "sacred",
+            "tongues",
+            "ss1",
+            "atomic",
+            "bijective",
+            "transport",
+            "code",
+            "braid",
+            "lexicon",
+            "ca_lexicon",
+            "julia",
+            "haskell",
+            "typescript",
+            "zig",
+            "go",
+        },
+        "sources": (
+            "notes/System Library/Tokenizer Vault/Tokenizer Construction History and Lock.md",
+            "notes/System Library/Tokenizer Vault/Transport Tokenizer - SS1 and Sacred Tongues.md",
+            "notes/System Library/Tokenizer Vault/Tokenizer Vault Index.md",
+            "notes/System Library/Indexes/Tokenizer Sacred Eggs Canonical Reference.md",
+            "notes/System Library/Indexes/MemPalace SCBE Memory Augmentation.md",
+            "src/crypto/sacred_tongues.py",
+            "python/scbe/atomic_tokenization.py",
+            "python/scbe/tongue_code_lanes.py",
+            "src/ca_lexicon/__init__.py",
+            "docs/SCBE_SYSTEM_CLI.md",
+        ),
+    },
+    "geoseal": {
+        "keywords": {
+            "geoseal",
+            "hyperbolic",
+            "poincare",
+            "immune",
+            "swarm",
+            "context",
+            "vector",
+            "suspicion",
+            "quarantine",
+            "security",
+            "phase",
+        },
+        "sources": (
+            "src/crypto/geo_seal.py",
+            "src/geoseal.py",
+            "docs/SCBE_SYSTEM_CLI.md",
+            "notes/System Library/Indexes/MemPalace SCBE Memory Augmentation.md",
+        ),
+    },
+    "memory": {
+        "keywords": {
+            "memory",
+            "mempalace",
+            "verbatim",
+            "rerank",
+            "retrieval",
+            "recall",
+            "mrr",
+            "sacred egg",
+            "sacred eggs",
+            "trust ladder",
+            "rhombic",
+            "history reducer",
+            "knowledge graph",
+            "chroma",
+        },
+        "sources": (
+            "notes/System Library/Indexes/MemPalace SCBE Memory Augmentation.md",
+            "python/scbe/atomic_tokenization.py",
+            "python/scbe/history_reducer.py",
+            "python/scbe/rhombic_bridge.py",
+            "src/symphonic_cipher/scbe_aethermoore/sacred_egg_integrator.py",
+            "docs/01-architecture/sacred-eggs-systems-model.md",
+        ),
+    },
+    "arc_solver": {
+        "keywords": {
+            "arc",
+            "agi",
+            "neurogolf",
+            "solver",
+            "primitive",
+            "loo",
+            "grid",
+            "beam",
+            "shoot",
+            "apply",
+            "connected component",
+            "cc",
+            "ir",
+            "onnx",
+            "task",
+        },
+        "sources": (
+            "notes/ARC Solver Dashboard.md",
+            "notes/Research Index.md",
+            "docs/neurogolf-system-readiness.md",
+            "src/neurogolf/solver.py",
+            "src/neurogolf/ir.py",
+            "src/neurogolf/arc_io.py",
+            "src/geoseal_cli.py",
+        ),
+    },
+}
+
 
 class ChatRequest(BaseModel):
     message: str
@@ -531,6 +825,48 @@ def _knowledge_files() -> list[Path]:
     return files
 
 
+def _rag_scope_files(domain: Optional[str] = None, public_only: bool = False) -> list[Path]:
+    files: list[Path] = []
+    seen: set[str] = set()
+    selected = list(RAG_SHARED_SOURCE_HINTS)
+    if domain:
+        selected.extend(PUBLIC_CHAT_SOURCE_HINTS.get(domain, ()))
+    if not public_only:
+        selected.extend(RAG_PINNED_INTERNAL_SOURCE_HINTS)
+
+    for relative in selected:
+        path = (ROOT / relative).resolve()
+        key = str(path).lower()
+        if key in seen or not path.exists() or not path.is_file():
+            continue
+        seen.add(key)
+        files.append(path)
+
+    if public_only:
+        return files
+
+    for path in _knowledge_files():
+        key = str(path.resolve()).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        files.append(path)
+    return files
+
+
+def _resolve_rag_hint_files(relatives: list[str]) -> list[Path]:
+    files: list[Path] = []
+    seen: set[str] = set()
+    for relative in relatives:
+        path = (ROOT / relative).resolve()
+        key = str(path).lower()
+        if key in seen or not path.exists() or not path.is_file():
+            continue
+        seen.add(key)
+        files.append(path)
+    return files
+
+
 def _public_source_url(path: Path) -> Optional[str]:
     try:
         relative = path.relative_to(ROOT / "docs")
@@ -556,48 +892,474 @@ def _build_snippet(text: str, terms: list[str], max_chars: int = 320) -> str:
     return snippet
 
 
-def _search_local_knowledge(query: str, max_sources: int = 6) -> list[dict[str, Any]]:
-    query_text = (query or "").strip()
-    if not query_text:
+def _chunk_text(text: str, target_chars: int = RAG_CHUNK_TARGET_CHARS, overlap_chars: int = RAG_CHUNK_OVERLAP_CHARS) -> list[str]:
+    normalized = _normalize_text_blob(text)
+    if not normalized:
         return []
-    query_lower = query_text.lower()
-    terms = _query_terms(query_text)
-    results: list[dict[str, Any]] = []
-    for path in _knowledge_files():
+
+    paragraphs = [part.strip() for part in re.split(r"\n\s*\n", text) if part.strip()]
+    if len(paragraphs) <= 1:
+        paragraphs = re.split(r"(?<=[.!?])\s+", normalized)
+
+    chunks: list[str] = []
+    current = ""
+    for piece in paragraphs:
+        clean_piece = _normalize_text_blob(piece)
+        if not clean_piece:
+            continue
+        candidate = clean_piece if not current else f"{current} {clean_piece}"
+        if len(candidate) <= target_chars:
+            current = candidate
+            continue
+        if current:
+            chunks.append(current.strip())
+        if len(clean_piece) <= target_chars:
+            current = clean_piece
+            continue
+        start = 0
+        while start < len(clean_piece):
+            end = min(start + target_chars, len(clean_piece))
+            chunk = clean_piece[start:end].strip()
+            if chunk:
+                chunks.append(chunk)
+            if end >= len(clean_piece):
+                break
+            start = max(end - overlap_chars, start + 1)
+        current = ""
+
+    if current.strip():
+        chunks.append(current.strip())
+
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for chunk in chunks:
+        key = chunk[:160].lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(chunk)
+        if len(deduped) >= RAG_MAX_CHUNKS_PER_FILE:
+            break
+    return deduped
+
+
+def _tokenize_for_rag(text: str) -> list[str]:
+    return _query_terms(text)
+
+
+def _rag_scope_signature(files: list[Path]) -> str:
+    parts: list[str] = []
+    for path in files:
+        try:
+            stat = path.stat()
+            rel = str(path.relative_to(ROOT)).replace("\\", "/")
+            parts.append(f"{rel}:{int(stat.st_mtime)}:{stat.st_size}")
+        except OSError:
+            logger.debug("Suppressed error", exc_info=True)
+            continue
+    return "|".join(parts)
+
+
+def _build_rag_index(scope_key: str, files: list[Path]) -> dict[str, Any]:
+    signature = _rag_scope_signature(files)
+    with RAG_INDEX_LOCK:
+        cached = RAG_INDEX_CACHE.get(scope_key)
+        if cached and cached.get("signature") == signature:
+            return cached
+
+    chunks: list[dict[str, Any]] = []
+    doc_freq: dict[str, int] = defaultdict(int)
+    for path in files:
         try:
             raw = path.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             logger.debug("Suppressed error", exc_info=True)
             continue
-        normalized = _normalize_text_blob(raw)
-        if not normalized:
+        public_url = _public_source_url(path)
+        rel_path = str(path.relative_to(ROOT)).replace("\\", "/")
+        title = path.stem.replace("-", " ").replace("_", " ")
+        for chunk_index, chunk_text in enumerate(_chunk_text(raw), start=1):
+            tokens = _tokenize_for_rag(chunk_text)
+            if not tokens:
+                continue
+            token_counts = Counter(tokens)
+            unique_terms = set(token_counts)
+            for term in unique_terms:
+                doc_freq[term] += 1
+            chunks.append(
+                {
+                    "title": title,
+                    "path": rel_path,
+                    "public_url": public_url,
+                    "chunk_id": f"{rel_path}#chunk-{chunk_index}",
+                    "chunk_index": chunk_index,
+                    "text": chunk_text,
+                    "tokens": token_counts,
+                    "length": sum(token_counts.values()),
+                }
+            )
+
+    total_docs = max(len(chunks), 1)
+    avg_len = sum(chunk["length"] for chunk in chunks) / total_docs if chunks else 0.0
+    index = {
+        "scope_key": scope_key,
+        "signature": signature,
+        "built_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "files_indexed": len(files),
+        "chunk_count": len(chunks),
+        "avg_chunk_length": round(avg_len, 3),
+        "doc_freq": dict(doc_freq),
+        "chunks": chunks,
+    }
+    with RAG_INDEX_LOCK:
+        RAG_INDEX_CACHE[scope_key] = index
+    return index
+
+
+def _rag_domain_bonus(domain: Optional[str], text: str) -> float:
+    if not domain or domain == "hybrid":
+        return 0.0
+    keywords = LORE_CHAT_SIGNALS if domain == "lore" else SCIENCE_CHAT_SIGNALS
+    hits = _keyword_hit_count(text, keywords)
+    return min(hits * 0.35, 2.0)
+
+
+def _rag_query_profiles(query_text: str) -> list[str]:
+    lowered = query_text.lower()
+    active: list[str] = []
+    for profile_name, profile in RAG_TOPIC_PROFILES.items():
+        keywords = profile.get("keywords", set())
+        if any(keyword in lowered for keyword in keywords):
+            active.append(profile_name)
+    return active
+
+
+def _rag_topic_bonus(text: str, active_profiles: list[str]) -> float:
+    if not active_profiles:
+        return 0.0
+    total = 0.0
+    lowered = text.lower()
+    for profile_name in active_profiles:
+        profile = RAG_TOPIC_PROFILES.get(profile_name, {})
+        keywords = profile.get("keywords", set())
+        hits = sum(1 for keyword in keywords if keyword in lowered)
+        total += min(hits * 0.45, 3.0)
+        for relative in profile.get("sources", ()):
+            if relative.lower() in lowered:
+                total += 4.0
+    return min(total, 6.0)
+
+
+def _rag_search(
+    query: str,
+    max_sources: int = RAG_DEFAULT_TOP_K,
+    *,
+    domain: Optional[str] = None,
+    public_only: bool = False,
+) -> dict[str, Any]:
+    query_text = (query or "").strip()
+    if not query_text:
+        return {"results": [], "index": {"files_indexed": 0, "chunk_count": 0}}
+
+    query_terms = _tokenize_for_rag(query_text)
+    active_profiles = _rag_query_profiles(query_text)
+    if active_profiles and not public_only:
+        selected = list(RAG_SHARED_SOURCE_HINTS)
+        if domain and domain != "hybrid":
+            selected.extend(PUBLIC_CHAT_SOURCE_HINTS.get(domain, ()))
+        selected.extend(RAG_PINNED_INTERNAL_SOURCE_HINTS)
+        for profile_name in active_profiles:
+            selected.extend(RAG_TOPIC_PROFILES[profile_name].get("sources", ()))
+        files = _resolve_rag_hint_files(selected)
+        scope_key = f"focused:{domain or 'all'}:{'+'.join(sorted(active_profiles))}"
+    else:
+        files = _rag_scope_files(domain=domain if domain != "hybrid" else None, public_only=public_only)
+        scope_key = f"{'public' if public_only else 'full'}:{domain or 'all'}"
+    index = _build_rag_index(scope_key, files)
+    if domain and domain != "hybrid":
+        query_terms.extend(term for term in CHAT_DOMAIN_SEEDS.get(domain, ()) if term not in query_terms)
+    for profile_name in active_profiles:
+        for term in RAG_TOPIC_PROFILES[profile_name].get("keywords", set()):
+            if term not in query_terms:
+                query_terms.append(term)
+    if not query_terms:
+        return {"results": [], "index": index}
+
+    chunk_count = max(index.get("chunk_count", 0), 1)
+    avg_len = float(index.get("avg_chunk_length", 0.0) or 1.0)
+    doc_freq = index.get("doc_freq", {})
+    scored_chunks: list[dict[str, Any]] = []
+
+    for chunk in index.get("chunks", []):
+        token_counts: Counter[str] = chunk["tokens"]
+        score = 0.0
+        for term in query_terms:
+            tf = token_counts.get(term, 0)
+            if not tf:
+                continue
+            df = int(doc_freq.get(term, 0))
+            idf = math.log(1.0 + ((chunk_count - df + 0.5) / (df + 0.5)))
+            denom = tf + 1.2 * (1 - 0.75 + 0.75 * (chunk["length"] / avg_len))
+            score += idf * ((tf * (1.2 + 1)) / denom)
+        if score <= 0.0:
             continue
-        haystack = normalized.lower()
-        path_text = str(path.relative_to(ROOT)).replace("\\", "/").lower()
-        score = 0
-        if query_lower in haystack:
-            score += 8
-        if query_lower in path_text:
-            score += 8
-        for term in terms:
-            if term in path_text:
-                score += 4
-            hits = haystack.count(term)
-            if hits:
-                score += min(hits, 5)
-        if score <= 0:
-            continue
-        results.append(
+        if query_text.lower() in chunk["text"].lower():
+            score += 3.0
+        score += _rag_domain_bonus(domain, f"{chunk['title']} {chunk['path']} {chunk['text']}")
+        score += _rag_topic_bonus(f"{chunk['title']} {chunk['path']} {chunk['text']}", active_profiles)
+        scored_chunks.append(
             {
-                "title": path.stem.replace("-", " ").replace("_", " "),
-                "path": str(path.relative_to(ROOT)).replace("\\", "/"),
-                "excerpt": _build_snippet(normalized, terms or [query_lower]),
-                "score": score,
-                "public_url": _public_source_url(path),
+                "title": chunk["title"],
+                "path": chunk["path"],
+                "excerpt": _build_snippet(chunk["text"], query_terms, max_chars=220),
+                "score": round(score, 4),
+                "public_url": chunk["public_url"],
+                "chunk_id": chunk["chunk_id"],
+                "chunk_index": chunk["chunk_index"],
             }
         )
-    results.sort(key=lambda item: (-int(item["score"]), item["path"]))
-    return results[: max(1, min(int(max_sources), 8))]
+
+    scored_chunks.sort(key=lambda item: (-float(item["score"]), str(item["path"]), int(item["chunk_index"])))
+    return {
+        "results": scored_chunks[: max(1, min(int(max_sources), 12))],
+        "active_profiles": active_profiles,
+        "index": {
+            "scope_key": index["scope_key"],
+            "built_at": index["built_at"],
+            "files_indexed": index["files_indexed"],
+            "chunk_count": index["chunk_count"],
+            "avg_chunk_length": index["avg_chunk_length"],
+        },
+    }
+
+
+def _rag_topics_catalog() -> list[dict[str, Any]]:
+    catalog: list[dict[str, Any]] = []
+    for name, profile in sorted(RAG_TOPIC_PROFILES.items(), key=lambda item: item[0]):
+        keywords = sorted(str(keyword) for keyword in profile.get("keywords", set()))
+        sources = [str(relative) for relative in profile.get("sources", ())]
+        catalog.append(
+            {
+                "name": name,
+                "keywords": keywords,
+                "keyword_count": len(keywords),
+                "source_count": len(sources),
+                "sources": sources,
+            }
+        )
+    return catalog
+
+
+def _chat_should_use_internal_rag(message: str, mode: Optional[str]) -> bool:
+    active_profiles = _rag_query_profiles(message)
+    if not active_profiles:
+        return False
+    normalized_mode = (mode or "").strip().lower()
+    return normalized_mode in {"public-site", "chat", "science", "lore", "hybrid", ""}
+
+
+def _search_local_knowledge(query: str, max_sources: int = 6) -> list[dict[str, Any]]:
+    return _rag_search(query, max_sources=max_sources).get("results", [])
+
+
+def _keyword_hit_count(text: str, keywords: set[str]) -> int:
+    lower = text.lower()
+    return sum(1 for keyword in keywords if keyword in lower)
+
+
+def _classify_chat_domain(
+    message: str,
+    context: Optional[list[dict[str, Any]]] = None,
+    mode: Optional[str] = None,
+    requested_domain: Optional[str] = None,
+) -> tuple[str, dict[str, float]]:
+    forced = (requested_domain or mode or "").strip().lower()
+    if forced in {"lore", "science", "hybrid"}:
+        return forced, {"lore": 1.0 if forced == "lore" else 0.0, "science": 1.0 if forced == "science" else 0.0}
+
+    combined_parts = [message]
+    for entry in context or []:
+        if isinstance(entry, dict):
+            combined_parts.append(str(entry.get("content", "")))
+    combined = "\n".join(part for part in combined_parts if part).lower()
+
+    lore_hits = _keyword_hit_count(combined, LORE_CHAT_SIGNALS)
+    science_hits = _keyword_hit_count(combined, SCIENCE_CHAT_SIGNALS)
+    lore_score = round(min(lore_hits / 6.0, 1.0), 4)
+    science_score = round(min(science_hits / 6.0, 1.0), 4)
+
+    if lore_hits and science_hits:
+        if abs(lore_hits - science_hits) <= 1:
+            return "hybrid", {"lore": lore_score, "science": science_score}
+        if lore_hits > science_hits:
+            return "lore", {"lore": lore_score, "science": science_score}
+        return "science", {"lore": lore_score, "science": science_score}
+    if lore_hits:
+        return "lore", {"lore": lore_score, "science": science_score}
+    return "science", {"lore": lore_score, "science": science_score}
+
+
+def _score_source_for_domain(source: dict[str, Any], domain: str) -> int:
+    text = " ".join(
+        [
+            str(source.get("title", "")),
+            str(source.get("path", "")),
+            str(source.get("excerpt", "")),
+        ]
+    ).lower()
+    keywords = LORE_CHAT_SIGNALS if domain == "lore" else SCIENCE_CHAT_SIGNALS
+    return _keyword_hit_count(text, keywords)
+
+
+def _chat_candidate_files(domain: str) -> list[Path]:
+    candidates: list[Path] = []
+    selected = PUBLIC_CHAT_SOURCE_HINTS.get(domain, ()) + PUBLIC_CHAT_SOURCE_HINTS.get("science", ())
+    seen: set[str] = set()
+    for relative in selected:
+        path = (ROOT / relative).resolve()
+        key = str(path).lower()
+        if key in seen or not path.exists() or not path.is_file():
+            continue
+        seen.add(key)
+        candidates.append(path)
+    return candidates
+
+
+def _chat_sources(question: str, domain: str, max_sources: int = 5) -> list[dict[str, Any]]:
+    query_text = (question or "").strip()
+    if not query_text:
+        return []
+    result = _rag_search(query_text, max_sources=max_sources, domain=domain, public_only=True)
+    ranked = result.get("results", [])
+    ranked.sort(
+        key=lambda source: (
+            -_score_source_for_domain(source, domain),
+            -float(source.get("score", 0)),
+            str(source.get("path", "")),
+        )
+    )
+    return ranked[: max(1, min(max_sources, 4))]
+
+
+def _chat_instruction_for_domain(domain: str) -> str:
+    if domain == "lore":
+        return (
+            "You are Polly, the archive keeper for AetherMoore lore. Answer with canon-aware worldbuilding language when it helps, "
+            "but do not invent events, character history, or rules that are not supported by the evidence packet."
+        )
+    if domain == "hybrid":
+        return (
+            "You are Polly for both AetherMoore lore and SCBE science. Separate fictional canon from technical claims explicitly. "
+            "Use short labeled sections when the answer spans both domains."
+        )
+    return (
+        "You are Polly for SCBE-AETHERMOORE science and systems. Answer concretely, separate proven results from proposals, "
+        "and prefer implementation details, metrics, and source-backed explanations."
+    )
+
+
+def _coding_spine_packet(question: str, active_profiles: list[str]) -> Optional[dict[str, Any]]:
+    if "coding" not in active_profiles:
+        return None
+    try:
+        from src.coding_spine.router import route_task
+        from src.coding_spine.shared_ir import infer_semantic_ir
+        from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+    except Exception:
+        logger.debug("Coding spine packet unavailable", exc_info=True)
+        return None
+
+    try:
+        route = route_task(question)
+        semantic_ir = infer_semantic_ir(question)
+        ss2_packet = SACRED_TONGUE_TOKENIZER.encode_text_ss2(route.tongue.lower(), question)
+    except Exception:
+        logger.debug("Coding spine routing failed", exc_info=True)
+        return None
+
+    return {
+        "tongue": route.tongue,
+        "tongue_name": route.full_name,
+        "language": route.language,
+        "confidence": route.confidence,
+        "override_keyword": route.override_keyword,
+        "semantic_ir": semantic_ir.to_dict(),
+        "ss2": ss2_packet.to_dict(),
+    }
+
+
+def _chat_grounding_prompt(
+    question: str,
+    domain: str,
+    context: list[dict[str, Any]],
+    sources: list[dict[str, Any]],
+    active_profiles: Optional[list[str]] = None,
+    coding_spine: Optional[dict[str, Any]] = None,
+) -> str:
+    evidence_lines: list[str] = []
+    if sources:
+        for index, source in enumerate(sources[:2], start=1):
+            evidence_lines.append(
+                f"[S{index}] {source['path']}\nTitle: {source['title']}\nExcerpt: {source['excerpt']}"
+            )
+    else:
+        evidence_lines.append("[S0] No direct local evidence was found.")
+
+    context_lines: list[str] = []
+    for entry in context:
+        if not isinstance(entry, dict):
+            continue
+        role = str(entry.get("role", "context")).strip().upper() or "CONTEXT"
+        content = str(entry.get("content", "")).strip()
+        if not content:
+            continue
+        if len(content) > 2000:
+            content = content[:2000] + "\n...[TRUNCATED]..."
+        context_lines.append(f"{role}:\n{content}")
+
+    coding_tutor = bool(coding_spine and active_profiles and "coding" in active_profiles)
+    coding_lines: list[str] = []
+    if coding_tutor and coding_spine:
+        semantic_ir = coding_spine.get("semantic_ir", {})
+        coding_lines = [
+            "Coding Spine Packet:",
+            f"- Sacred Tongue route: {coding_spine.get('tongue_name')} ({coding_spine.get('tongue')})",
+            f"- Target language: {coding_spine.get('language')}",
+            f"- Route confidence: {coding_spine.get('confidence')}",
+            f"- Semantic IR signature: {semantic_ir.get('signature', 'freeform')}",
+        ]
+        if coding_spine.get("override_keyword"):
+            coding_lines.append(f"- Keyword override: {coding_spine.get('override_keyword')}")
+
+    rules = [
+        "- Cite support inline as [S1], [S2], etc.",
+        "- If support is missing, say so directly.",
+        "- Never blur lore canon and SCBE science into one unsupported claim.",
+        "- Stay concise, useful, and specific.",
+    ]
+    if coding_tutor:
+        rules.extend(
+            [
+                "- Teach through the SCBE coding spine, not generic coding advice.",
+                "- Explain the Sacred Tongue route and why that coding lane fits the task.",
+                "- Use a short progression: concept, route, worked steps, then code.",
+                "- Prefer small examples and avoid dumping large code unless the user asks.",
+            ]
+        )
+
+    return (
+        "You are the public AetherMoore website assistant.\n"
+        f"Detected domain: {domain}\n"
+        f"Instruction: {_chat_instruction_for_domain(domain)}\n"
+        "Rules:\n"
+        f"{chr(10).join(rules)}\n\n"
+        f"{chr(10).join(context_lines)}\n\n"
+        f"{chr(10).join(coding_lines)}\n\n"
+        "Evidence Packet:\n"
+        f"{chr(10).join(evidence_lines)}\n\n"
+        f"User question:\n{question}\n\n"
+        "Answer:"
+    ).strip()
 
 
 def _mode_guidance(mode: str) -> str:
@@ -661,7 +1423,7 @@ def _call_local_ollama(prompt: str, model_id: Optional[str] = None) -> dict[str,
     except Exception:
         logger.debug("Suppressed error", exc_info=True)
         return {"ok": False, "error": "requests is not available for Ollama calls"}
-    chosen_model = (model_id or DEFAULT_OLLAMA_MODEL).strip()
+    chosen_model = (_resolve_ollama_model(model_id) or DEFAULT_OLLAMA_MODEL).strip()
     try:
         response = _req.post(
             "http://localhost:11434/api/generate",
@@ -734,6 +1496,635 @@ def _provider_response(provider: str, prompt: str, hf_model: Optional[str] = Non
     if provider_key == "huggingface":
         return _call_huggingface_chat(prompt, model_id=hf_model)
     return {"ok": False, "error": f"Unknown provider: {provider_key}"}
+
+
+def _ollama_healthcheck() -> bool:
+    request = urllib.request.Request("http://127.0.0.1:11434/api/tags", method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=2.0) as response:
+            return response.status == 200
+    except Exception:
+        logger.debug("Ollama health check failed", exc_info=True)
+        return False
+
+
+def _ollama_tags_payload() -> dict[str, Any]:
+    request = urllib.request.Request("http://127.0.0.1:11434/api/tags", method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=3.0) as response:
+            if response.status != 200:
+                return {}
+            payload = json.loads(response.read().decode("utf-8"))
+            return payload if isinstance(payload, dict) else {}
+    except Exception:
+        logger.debug("Ollama tags fetch failed", exc_info=True)
+        return {}
+
+
+def _installed_ollama_models() -> list[str]:
+    payload = _ollama_tags_payload()
+    rows = payload.get("models", [])
+    models: list[str] = []
+    if not isinstance(rows, list):
+        return models
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        name = str(row.get("name") or row.get("model") or "").strip()
+        if not name:
+            continue
+        models.append(name)
+    return models
+
+
+def _resolve_ollama_model(requested: Optional[str] = None) -> str:
+    wanted = (requested or "").strip()
+    installed = _installed_ollama_models()
+    if wanted:
+        if wanted in installed:
+            return wanted
+        if ":" not in wanted:
+            for candidate in installed:
+                if candidate.split(":", 1)[0] == wanted:
+                    return candidate
+
+    default = DEFAULT_OLLAMA_MODEL.strip()
+    if default:
+        if default in installed:
+            return default
+        if ":" not in default:
+            for candidate in installed:
+                if candidate.split(":", 1)[0] == default:
+                    return candidate
+
+    preferred = [
+        "qwen2.5-coder:7b",
+        "qwen2.5-coder",
+        "qwen2.5",
+        "llama3.2",
+        "llama3.1",
+        "mistral",
+    ]
+    for name in preferred:
+        for candidate in installed:
+            if candidate == name or candidate.startswith(name + ":") or candidate.split(":", 1)[0] == name:
+                return candidate
+
+    for candidate in installed:
+        if ":cloud" not in candidate:
+            return candidate
+    return installed[0] if installed else default
+
+
+def _arena_provider_rows() -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    ollama_ready = _ollama_healthcheck()
+    for tentacle, meta in ARENA_PROVIDER_REGISTRY.items():
+        provider_type = meta["provider"]
+        model_name = meta["model"]
+        if provider_type == "local":
+            available = ollama_ready
+            model_name = _resolve_ollama_model() or model_name
+        elif provider_type == "huggingface":
+            available = bool(os.environ.get("HF_TOKEN", "").strip() and DEFAULT_HF_CHAT_MODEL)
+        else:
+            available = bool(os.environ.get(meta["env"], "").strip())
+        rows.append(
+            {
+                "tentacle": tentacle,
+                "available": available,
+                "model": model_name,
+                "required_env": meta["env"],
+            }
+        )
+    return rows
+
+
+def _compat_context_prompt(context: list[dict[str, Any]], message: str, mode: Optional[str] = None) -> str:
+    blocks: list[str] = []
+    if mode:
+        blocks.append(f"MODE: {mode}")
+    for entry in context:
+        if not isinstance(entry, dict):
+            continue
+        role = str(entry.get("role", "context")).strip().upper() or "CONTEXT"
+        content = str(entry.get("content", "")).strip()
+        if not content:
+            continue
+        if len(content) > 12000:
+            content = content[:12000] + "\n...[TRUNCATED]..."
+        blocks.append(f"{role}:\n{content}")
+    blocks.append(f"USER:\n{message}\n\nASSISTANT:")
+    return "\n\n".join(blocks)
+
+
+def _load_git_repo_links() -> list[dict[str, str]]:
+    if not GIT_CONFIG_PATH.exists():
+        return []
+
+    parser = configparser.ConfigParser()
+    try:
+        parser.read(GIT_CONFIG_PATH, encoding="utf-8")
+    except Exception:
+        logger.debug("Failed to parse git config", exc_info=True)
+        return []
+
+    links: list[dict[str, str]] = []
+    for section in parser.sections():
+        url = parser.get(section, "url", fallback="").strip()
+        if not url:
+            continue
+
+        owner = ""
+        repo = ""
+        if url.startswith("git@github.com:"):
+            slug = url.split("git@github.com:", 1)[1]
+        elif "github.com/" in url:
+            slug = url.split("github.com/", 1)[1]
+        else:
+            continue
+        slug = slug.removesuffix(".git").strip("/")
+        if "/" not in slug:
+            continue
+        owner, repo = slug.split("/", 1)
+
+        local_path = "."
+        if section.startswith('submodule "'):
+            local_path = section[len('submodule "') : -1]
+
+        links.append(
+            {
+                "owner": owner,
+                "repo": repo,
+                "url": f"https://github.com/{owner}/{repo}",
+                "local_path": local_path,
+            }
+        )
+    return links
+
+
+def _repo_highlight_items(local_root: Path, repo_label: str, base_url: str, limit: int) -> list[dict[str, str]]:
+    candidates = [
+        "README.md",
+        "package.json",
+        "public/index.html",
+        "scripts/aetherbrowser/api_server.py",
+        "src/aetherbrowser/serve.py",
+    ]
+    items: list[dict[str, str]] = []
+    for rel in candidates:
+        path = local_root / rel
+        if not path.exists():
+            continue
+        items.append(
+            {
+                "repository": repo_label,
+                "path": rel.replace("\\", "/"),
+                "url": f"{base_url}/blob/main/{rel.replace(os.sep, '/')}",
+            }
+        )
+        if len(items) >= limit:
+            return items
+
+    for path in sorted(local_root.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in {".md", ".py", ".ts", ".js", ".json", ".html"}:
+            continue
+        rel = str(path.relative_to(local_root)).replace("\\", "/")
+        if any(item["path"] == rel for item in items):
+            continue
+        items.append({"repository": repo_label, "path": rel, "url": f"{base_url}/blob/main/{rel}"})
+        if len(items) >= limit:
+            break
+    return items
+
+
+def _local_repo_search(owner: str, repo: Optional[str], limit: int) -> list[dict[str, str]]:
+    items: list[dict[str, str]] = []
+    repo_query = (repo or "").strip().lower()
+    for entry in _load_git_repo_links():
+        if owner and entry["owner"].lower() != owner.lower():
+            continue
+        if repo_query and repo_query not in entry["repo"].lower():
+            continue
+        local_root = ROOT if entry["local_path"] == "." else ROOT / entry["local_path"]
+        if local_root.exists():
+            items.extend(
+                _repo_highlight_items(
+                    local_root,
+                    f"{entry['owner']}/{entry['repo']}",
+                    entry["url"],
+                    max(1, limit - len(items)),
+                )
+            )
+        else:
+            items.append(
+                {
+                    "repository": f"{entry['owner']}/{entry['repo']}",
+                    "path": entry["local_path"],
+                    "url": entry["url"],
+                }
+            )
+        if len(items) >= limit:
+            break
+    return items[:limit]
+
+
+def _repo_branch_name() -> str:
+    result = _run_subprocess(["git", "branch", "--show-current"], timeout=5)
+    branch = (result.get("stdout") or "").strip()
+    return branch or "unknown"
+
+
+class ArenaCompatChatRequest(BaseModel):
+    message: str
+    tentacle: str = "ollama"
+    mode: Optional[str] = None
+    context: list[dict[str, Any]] = []
+    hf_model: Optional[str] = None
+    domain: Optional[str] = None
+
+
+class RagQueryRequest(BaseModel):
+    query: str
+    max_sources: int = RAG_DEFAULT_TOP_K
+    domain: Optional[str] = None
+    public_only: bool = False
+
+
+class CrossTalkSendRequest(BaseModel):
+    summary: str
+    recipient: str
+    sender: str = "agent.codex"
+    intent: str = "sync"
+    status: str = "in_progress"
+    task_id: str = "AETHERCODE-SPACEPORT"
+    next_action: str = ""
+    proof: list[str] = []
+
+
+@app.get("/v1/providers")
+async def arena_compat_providers():
+    return {"tentacles": _arena_provider_rows()}
+
+
+@app.get("/v1/rag/status")
+async def arena_rag_status(
+    domain: Optional[str] = Query(None, description="Optional domain scope: lore or science"),
+    public_only: bool = Query(False, description="Restrict the index to public website sources only"),
+):
+    normalized_domain = (domain or "").strip().lower() or None
+    if normalized_domain not in {None, "lore", "science", "hybrid"}:
+        raise HTTPException(status_code=400, detail="domain must be one of lore, science, or hybrid")
+    scoped_domain = None if normalized_domain == "hybrid" else normalized_domain
+    files = _rag_scope_files(domain=scoped_domain, public_only=public_only)
+    scope_key = f"{'public' if public_only else 'full'}:{scoped_domain or 'all'}"
+    index = await asyncio.to_thread(_build_rag_index, scope_key, files)
+    return {
+        "ok": True,
+        "rag": {
+            "enabled": True,
+            "scope_key": index["scope_key"],
+            "built_at": index["built_at"],
+            "files_indexed": index["files_indexed"],
+            "chunk_count": index["chunk_count"],
+            "avg_chunk_length": index["avg_chunk_length"],
+            "public_only": public_only,
+            "domain": normalized_domain or "all",
+            "topics": _rag_topics_catalog(),
+        },
+    }
+
+
+@app.get("/v1/rag/topics")
+async def arena_rag_topics():
+    return {
+        "ok": True,
+        "topics": _rag_topics_catalog(),
+    }
+
+
+@app.post("/v1/rag/query")
+async def arena_rag_query(req: RagQueryRequest):
+    query = (req.query or "").strip()
+    if not query:
+        raise HTTPException(status_code=400, detail="query is required")
+    normalized_domain = (req.domain or "").strip().lower() or None
+    if normalized_domain not in {None, "lore", "science", "hybrid"}:
+        raise HTTPException(status_code=400, detail="domain must be one of lore, science, or hybrid")
+    scoped_domain = None if normalized_domain == "hybrid" else normalized_domain
+    result = await asyncio.to_thread(
+        _rag_search,
+        query,
+        max(1, min(int(req.max_sources), 12)),
+        domain=scoped_domain,
+        public_only=bool(req.public_only),
+    )
+    return {
+        "ok": True,
+        "query": query,
+        "domain": normalized_domain or "all",
+        "public_only": bool(req.public_only),
+        "active_profiles": result.get("active_profiles", []),
+        "sources": result.get("results", []),
+        "source_count": len(result.get("results", [])),
+        "index": result.get("index", {}),
+    }
+
+
+@app.post("/v1/chat")
+async def arena_compat_chat(req: ArenaCompatChatRequest):
+    tentacle = (req.tentacle or "ollama").strip().lower()
+    provider_meta = ARENA_PROVIDER_REGISTRY.get(tentacle)
+    if not provider_meta:
+        return {"detail": f"Unknown tentacle '{tentacle}'", "tentacle": tentacle}
+
+    provider_kind = provider_meta["provider"]
+    if provider_kind not in {"local", "huggingface"}:
+        return {
+            "detail": f"Tentacle '{tentacle}' is not wired into the local spaceport backend yet.",
+            "tentacle": tentacle,
+        }
+
+    domain, domain_scores = _classify_chat_domain(req.message, req.context, req.mode, req.domain)
+    rag_public_only = not _chat_should_use_internal_rag(req.message, req.mode)
+    rag_result = await asyncio.to_thread(
+        _rag_search,
+        req.message,
+        5,
+        domain=domain if domain != "hybrid" else None,
+        public_only=rag_public_only,
+    )
+    sources = rag_result.get("results", [])
+    active_profiles = rag_result.get("active_profiles", [])
+    coding_spine = await asyncio.to_thread(_coding_spine_packet, req.message, active_profiles)
+    prompt = _chat_grounding_prompt(
+        req.message,
+        domain,
+        req.context,
+        sources,
+        active_profiles=active_profiles,
+        coding_spine=coding_spine,
+    )
+    t0 = datetime.datetime.now(datetime.timezone.utc)
+    gate = _get_gate()
+    decision = "ALLOW"
+    cost = 0.0
+    if gate is not None:
+        try:
+            gate_result = gate.evaluate(req.message)
+            decision = gate_result.decision.value
+            cost = round(gate_result.cost, 4)
+        except Exception:
+            logger.debug("Compatibility chat gate failed", exc_info=True)
+
+    if decision == "DENY":
+        return {
+            "detail": f"Denied by governance gate (cost={cost}).",
+            "tentacle": tentacle,
+            "governance_score": 0.0,
+            "latency_ms": 0,
+        }
+
+    model_result = await asyncio.to_thread(_provider_response, provider_kind, prompt, req.hf_model)
+    latency_ms = int((datetime.datetime.now(datetime.timezone.utc) - t0).total_seconds() * 1000)
+    if not model_result.get("ok"):
+        fallback = _grounded_fallback_answer(req.message, domain, sources)
+        return {
+            "detail": model_result.get("error", "provider unavailable"),
+            "response": fallback,
+            "tentacle": tentacle,
+            "model": provider_meta["model"],
+            "latency_ms": latency_ms,
+            "governance_score": 0.0,
+            "domain": domain,
+            "domain_scores": domain_scores,
+            "active_profiles": active_profiles,
+            "coding_spine": coding_spine,
+            "sources": sources,
+            "rag": {"enabled": True, "public_only": rag_public_only, "index": rag_result.get("index", {})},
+        }
+    return {
+        "response": str(model_result.get("text", "")),
+        "tentacle": tentacle,
+        "model": str(model_result.get("model") or provider_meta["model"]),
+        "latency_ms": latency_ms,
+        "governance_score": max(0.0, 1.0 - min(cost, 1.0)),
+        "domain": domain,
+        "domain_scores": domain_scores,
+        "active_profiles": active_profiles,
+        "coding_spine": coding_spine,
+        "sources": sources,
+        "rag": {"enabled": True, "public_only": rag_public_only, "index": rag_result.get("index", {})},
+    }
+
+
+@app.get("/v1/training/stats")
+async def arena_training_stats():
+    total_rows = len(_tail_jsonl(IDE_CHAT_LOG, 5000))
+    return {"total_pairs": total_rows}
+
+
+@app.post("/v1/training/push")
+async def arena_training_push():
+    total_rows = len(_tail_jsonl(IDE_CHAT_LOG, 5000))
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out_dir = ROOT / "artifacts" / "ai_ide_logs"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / "arena_training_flush_latest.json"
+    payload = {
+        "timestamp_utc": stamp,
+        "pairs_flushed": total_rows,
+        "hf_ready": bool(os.environ.get("HF_TOKEN", "").strip()),
+    }
+    out_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return {
+        "status": "flushed_only" if total_rows else "no_data",
+        "pairs_flushed": total_rows,
+        "artifact": str(out_path.relative_to(ROOT)).replace("\\", "/"),
+    }
+
+
+@app.get("/v1/lore/art")
+async def arena_lore_art_index():
+    return {
+        "items": [
+            {"title": item["title"], "url": f"/v1/lore/art/{item['slug']}"}
+            for item in LORE_ART_ITEMS
+        ]
+    }
+
+
+@app.get("/v1/lore/art/{slug}")
+async def arena_lore_art_image(slug: str):
+    item = next((row for row in LORE_ART_ITEMS if row["slug"] == slug), None)
+    if item is None:
+        svg = (
+            "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 720 420'>"
+            "<rect width='720' height='420' fill='#0b1220'/>"
+            "<text x='50%' y='50%' fill='#17c6cf' font-size='34' text-anchor='middle' dominant-baseline='middle'>"
+            "Lore Panel Missing"
+            "</text></svg>"
+        )
+        return Response(content=svg, media_type="image/svg+xml")
+
+    title = item["title"]
+    subtitle = slug.replace("-", " ").title()
+    svg = f"""
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#07111d"/>
+      <stop offset="50%" stop-color="#14233a"/>
+      <stop offset="100%" stop-color="#2a1730"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="420" fill="url(#bg)"/>
+  <circle cx="140" cy="100" r="120" fill="rgba(23,198,207,0.18)"/>
+  <circle cx="590" cy="320" r="140" fill="rgba(255,145,82,0.18)"/>
+  <text x="60" y="160" fill="#17c6cf" font-size="52" font-family="Verdana" font-weight="700">{title}</text>
+  <text x="60" y="210" fill="#e8f0fb" font-size="28" font-family="Verdana">{subtitle}</text>
+  <text x="60" y="285" fill="#a2b6cc" font-size="20" font-family="Verdana">AetherCode Spaceport lore surface</text>
+  <text x="60" y="320" fill="#a2b6cc" font-size="20" font-family="Verdana">GitHub-grounded local browser lane</text>
+</svg>
+""".strip()
+    return Response(content=svg, media_type="image/svg+xml")
+
+
+@app.post("/v1/crosstalk/send")
+async def arena_crosstalk_send(req: CrossTalkSendRequest):
+    try:
+        from scripts.system.crosstalk_relay import emit_packet
+    except Exception:
+        logger.exception("Cross-talk relay import failed")
+        return {"detail": "Cross-talk relay unavailable"}
+
+    result = await asyncio.to_thread(
+        emit_packet,
+        sender=req.sender,
+        recipient=req.recipient,
+        intent=req.intent,
+        task_id=req.task_id,
+        summary=req.summary,
+        status=req.status,
+        proof=req.proof,
+        next_action=req.next_action,
+    )
+    packet = result.get("packet", {}) if isinstance(result, dict) else {}
+    return {
+        "ok": bool(result.get("ok")) if isinstance(result, dict) else False,
+        "packet_id": packet.get("packet_id"),
+        "delivery": result.get("delivery", {}) if isinstance(result, dict) else {},
+    }
+
+
+@app.get("/v1/research/replit")
+async def arena_replit_research(
+    owner: str = Query(..., description="GitHub owner"),
+    repo: Optional[str] = Query(None, description="Optional repository name filter"),
+    limit: int = Query(6, ge=1, le=24),
+):
+    items = _local_repo_search(owner, repo, limit)
+    return {"ok": True, "items": items, "owner": owner, "repo": repo}
+
+
+@app.get("/v1/spaceport/status")
+async def arena_spaceport_status():
+    repo_links = _load_git_repo_links()
+    origin = next((entry for entry in repo_links if entry["local_path"] == "."), None)
+    repo_url = origin["url"] if origin else ""
+    repo_name = origin["repo"] if origin else ROOT.name
+    provider_rows = {row["tentacle"]: row for row in _arena_provider_rows()}
+    rag_index = await asyncio.to_thread(_build_rag_index, "public:all", _rag_scope_files(public_only=True))
+    return {
+        "ok": True,
+        "repo": {
+            "name": repo_name,
+            "branch": _repo_branch_name(),
+            "url": repo_url,
+            "connected": bool(repo_url),
+        },
+        "backends": {
+            "huggingface": {
+                "connected": bool(provider_rows.get("huggingface", {}).get("available")),
+                "model": provider_rows.get("huggingface", {}).get("model"),
+            },
+            "ollama": {
+                "connected": bool(provider_rows.get("ollama", {}).get("available")),
+                "model": provider_rows.get("ollama", {}).get("model"),
+            },
+            "rag": {
+                "enabled": True,
+                "scope_key": rag_index["scope_key"],
+                "files_indexed": rag_index["files_indexed"],
+                "chunk_count": rag_index["chunk_count"],
+                "built_at": rag_index["built_at"],
+                "topics": _rag_topics_catalog(),
+            },
+        },
+    }
+
+
+def _public_file_response(requested_path: str) -> FileResponse:
+    candidate = (PUBLIC_DIR / requested_path).resolve()
+    if not PUBLIC_DIR.exists() or not _is_path_within(candidate, PUBLIC_DIR) or not candidate.is_file():
+        raise FileNotFoundError(requested_path)
+    return FileResponse(candidate)
+
+
+def _docs_file_response(requested_path: str) -> FileResponse:
+    candidate = (DOCS_DIR / requested_path).resolve()
+    if not DOCS_DIR.exists() or not _is_path_within(candidate, DOCS_DIR) or not candidate.is_file():
+        raise FileNotFoundError(requested_path)
+    return FileResponse(candidate)
+
+
+@app.get("/")
+async def serve_aetherbrowser_index():
+    if not PUBLIC_INDEX.exists():
+        raise HTTPException(status_code=404, detail="public/index.html is missing")
+    return FileResponse(PUBLIC_INDEX)
+
+
+@app.get("/manifest.json")
+async def serve_manifest():
+    return _public_file_response("manifest.json")
+
+
+@app.get("/sw.js")
+async def serve_service_worker():
+    return _public_file_response("sw.js")
+
+
+@app.get("/{page_name}")
+async def serve_public_page(page_name: str):
+    if page_name == "site":
+        if not DOCS_INDEX.exists():
+            raise HTTPException(status_code=404, detail="docs/index.html is missing")
+        return FileResponse(DOCS_INDEX)
+    if page_name.startswith(("api", "v1")):
+        raise HTTPException(status_code=404, detail="Not found")
+    try:
+        return _public_file_response(page_name)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Not found")
+
+
+@app.get("/site")
+@app.get("/site/")
+async def serve_docs_index():
+    if not DOCS_INDEX.exists():
+        raise HTTPException(status_code=404, detail="docs/index.html is missing")
+    return FileResponse(DOCS_INDEX)
+
+
+@app.get("/site/{site_path:path}")
+async def serve_docs_page(site_path: str):
+    try:
+        return _docs_file_response(site_path)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Not found")
 
 
 @app.post("/api/chat")
@@ -845,7 +2236,8 @@ async def fact_check(req: FactCheckRequest):
 
     mode = (req.mode or "fact-check").strip().lower()
     provider = (req.provider or "grounded").strip().lower()
-    sources = await asyncio.to_thread(_search_local_knowledge, question, req.max_sources)
+    rag_result = await asyncio.to_thread(_rag_search, question, req.max_sources, domain=None, public_only=False)
+    sources = rag_result.get("results", [])
     grounding_prompt = _grounding_prompt(question, mode, sources)
     answer = _grounded_fallback_answer(question, mode, sources)
     provider_meta: dict[str, Any] = {"provider": provider, "status": "grounded-only"}
@@ -920,6 +2312,7 @@ async def fact_check(req: FactCheckRequest):
         "provider_meta": provider_meta,
         "sources": sources,
         "source_count": len(sources),
+        "rag": {"enabled": True, "index": rag_result.get("index", {})},
         "governance_decision": decision,
         "trust_level": trust_level,
         "cost": cost,

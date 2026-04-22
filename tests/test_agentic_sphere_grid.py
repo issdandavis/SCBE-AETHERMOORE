@@ -325,7 +325,7 @@ class TestTeaching:
     def test_teach_successful(self):
         grid = AgenticSphereGrid()
         teacher = grid.register_agent("teacher", "builder")
-        student = grid.register_agent("student")
+        grid.register_agent("student")
         teacher.activations["code_gen"] = 0.95  # mastered
 
         result = grid.teach("teacher", "student", "code_gen")

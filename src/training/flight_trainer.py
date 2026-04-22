@@ -35,12 +35,6 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 # SCBE pipeline imports
-import importlib.util
-
-_PIPELINE_AVAILABLE = (
-    importlib.util.find_spec("src.symphonic_cipher.scbe_aethermoore.layers.fourteen_layer_pipeline") is not None
-)
-
 # Sacred Tongues phi-weights: KO=1.00, AV=1.62, RU=2.62, CA=4.24, UM=6.85, DR=11.09
 TONGUE_WEIGHTS = np.array([1.00, 1.62, 2.62, 4.24, 6.85, 11.09])
 
