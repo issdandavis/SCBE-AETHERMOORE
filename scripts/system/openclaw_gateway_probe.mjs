@@ -94,6 +94,9 @@ function normalizeGatewayHttpUrl(rawUrl) {
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
     throw new Error(`Unsupported gateway protocol: ${parsed.protocol}`);
   }
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(parsed.hostname)) {
+    throw new Error(`Unsupported gateway host: ${parsed.hostname}`);
+  }
   return parsed.toString().replace(/\/$/, '');
 }
 

@@ -155,7 +155,7 @@ def compute_safety_score(command: str) -> dict:
     # Step 3: Compute safe center embedding (average of safe commands)
     safe_embs = [_embed_text(c) for c in SAFE_COMMANDS]
     safe_center = np.mean(safe_embs, axis=0)
-    _safe_center_norm = float(np.linalg.norm(safe_center))
+    float(np.linalg.norm(safe_center))
 
     # Step 4: Distance from safe center in Poincaré ball
     d_from_safe = _poincare_distance(emb, safe_center)
@@ -208,7 +208,7 @@ def compute_safety_score(command: str) -> dict:
 
     # Step 8: Tongue mismatch detection
     # If the command claims to be one domain but the content is another
-    _claimed_domain = tongue["primary_tongue"]
+    tongue["primary_tongue"]
     actual_keywords = {}
     for t, kws in TONGUE_KEYWORDS.items():
         hits = sum(1 for kw in kws if kw in lower)

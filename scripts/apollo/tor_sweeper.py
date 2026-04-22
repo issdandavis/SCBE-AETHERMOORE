@@ -248,10 +248,10 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
                 continue
             trust = tier_data.get("trust", "?")
             sites = tier_data.get("sites", [])
-            print(f"  [{trust:12s}] configured tier ({len(sites)} sites)")
+            print(f"  [tier] configured tier ({len(sites)} sites)")
             for site in sites:
                 print("    - site entry available")
-                print(f"      Value tier: {site.get('value', '?')}")
+                print("      Value tier metadata available")
             print()
 
         return results
@@ -268,7 +268,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
 
         trust = tier_data.get("trust", "?")
         sites = tier_data.get("sites", [])
-        print(f"  [{trust:12s}] configured tier")
+        print("  [tier] configured tier")
 
         for site in sites:
             clearnet = site.get("clearnet", "")
@@ -284,7 +284,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
 
                 decision = result["governance_decision"]
                 symbol = {"QUARANTINE": "Q", "DENY": "X", "ALLOW": "OK"}
-                print(f"[{symbol.get(decision, '?')}] content received ({result['content_length']}B)")
+                print("[" + symbol.get(decision, "?") + "] content received")
 
                 results.append(result)
                 time.sleep(2)  # be polite

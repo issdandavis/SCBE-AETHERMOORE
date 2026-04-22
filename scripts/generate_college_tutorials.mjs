@@ -144,8 +144,6 @@ function genArchitecture(rec) {
   const paths = extractPaths(content);
   const cmds = extractCommands(content);
   const headers = extractHeaders(content);
-  const bullets = extractBullets(content);
-
   const ti = CAT_TONGUES[cat] || CAT_TONGUES.general;
   const t1 = TONGUES[ti[0]], t2 = TONGUES[ti[1]];
   const layers = CAT_LAYERS[cat] || CAT_LAYERS.general;

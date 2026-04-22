@@ -87,7 +87,6 @@ RUNTIME_EXTENSION_ALIASES = {
 }
 _TONGUES_MODULE = None
 _ACTION_MAP_MODULE = None
-_COLAB_CATALOG_MODULE = None
 
 FLOW_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 FLOW_SKILLS = [
@@ -438,9 +437,12 @@ def _load_action_map_module(repo_root: Path):
 
 
 def _load_colab_catalog_module(repo_root: Path):
-    global _COLAB_CATALOG_MODULE
-    if _COLAB_CATALOG_MODULE is not None:
-        return _COLAB_CATALOG_MODULE
+    return _load_colab_catalog_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=1)
+def _load_colab_catalog_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "scripts" / "system" / "colab_workflow_catalog.py"
     if not module_path.exists():
         return None
@@ -450,7 +452,6 @@ def _load_colab_catalog_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _COLAB_CATALOG_MODULE = module
     return module
 
 
@@ -2524,13 +2525,13 @@ def cmd_agent_cycle(args: argparse.Namespace) -> int:
             content = str(result.get("content") or "").strip()
             if content:
                 print()
-                print(_redact_sensitive_text(content))
+                print(f"Content available ({len(content)} chars). See saved result file for details.")
             if args.append_memory:
                 log_path = _append_agent_memory_log(entry, args.repo_root, turn_prompt, content)
                 if log_path:
                     print(f"\nMemory log updated: {log_path}")
             return 0
-        print(_redact_sensitive_text(str(result.get("error", "unknown error"))))
+        print("Agent cycle failed. See saved result file for redacted error details.")
         return 1
 
     if args.interactive:
@@ -3620,7 +3621,7 @@ def _gh_pulse_payload() -> dict[str, object]:
             total = ci_pass_count + ci_fail_count
             ci_pass_rate = (ci_pass_count / total * 100.0) if total else 0.0
         except (json.JSONDecodeError, TypeError, ValueError):
-            pass
+            ci_pass_rate = 0.0
     return {
         "generated_at": _now_iso(),
         "commit_count": commit_count,

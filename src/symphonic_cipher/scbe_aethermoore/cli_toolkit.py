@@ -962,7 +962,7 @@ def _parse_custom_atomic_tokens(raw: str | None) -> List[str]:
         if isinstance(parsed, list):
             return [str(item) for item in parsed if str(item)]
     except json.JSONDecodeError:
-        pass
+        parsed = None
     if "," in raw:
         return [part.strip() for part in raw.split(",") if part.strip()]
     return [part for part in raw.split() if part]

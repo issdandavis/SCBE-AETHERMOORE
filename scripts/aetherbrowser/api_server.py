@@ -16,9 +16,10 @@ import asyncio
 import configparser
 from collections import Counter, defaultdict, deque
 import datetime
-import math
+import hashlib
 import json
 import logging
+import math
 import os
 import re
 import shlex
@@ -30,7 +31,8 @@ import urllib.parse
 import urllib.request
 import uuid
 from fnmatch import fnmatch
-from pathlib import Path
+from functools import lru_cache
+from pathlib import Path, PurePosixPath
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Query
@@ -260,14 +262,34 @@ def _scrub_obj(obj: Any) -> Any:
     return obj
 
 
+def _storage_safe_text(value: str) -> dict[str, Any]:
+    text = _scrub_text(str(value))
+    return {
+        "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "length": len(text),
+    }
+
+
+def _storage_safe_obj(obj: Any) -> Any:
+    if obj is None:
+        return None
+    if isinstance(obj, str):
+        return _storage_safe_text(obj)
+    if isinstance(obj, list):
+        return [_storage_safe_obj(x) for x in obj]
+    if isinstance(obj, dict):
+        return {str(k): _storage_safe_obj(v) for k, v in obj.items()}
+    return obj
+
+
 def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
     try:
         IDE_LOGS_DIR.mkdir(parents=True, exist_ok=True)
         safe_name = Path(path.name).name
         safe_path = (IDE_LOGS_DIR / safe_name).resolve(strict=False)
-        safe = _scrub_obj(record)
+        safe = _storage_safe_obj(record)
         with safe_path.open("a", encoding="utf-8") as f:
-            f.write(json.dumps(safe, ensure_ascii=True) + "\n")  # lgtm[py/clear-text-storage-sensitive-data]
+            f.write(json.dumps(safe, ensure_ascii=True) + "\n")
     except Exception:
         # Logging must never break the API server.
         logger.debug("Failed to append JSONL record to %s", path, exc_info=True)
@@ -2079,18 +2101,32 @@ def _docs_file_response(requested_path: str) -> FileResponse:
 
 
 def _safe_http_slug(value: str) -> str:
-    return value.split("?", 1)[0].split("#", 1)[0].strip("/")
+    parsed = urllib.parse.urlparse(value if "://" in value else f"https://placeholder/{value.lstrip('/')}")
+    return parsed.path.strip("/")
+
+
+@lru_cache(maxsize=4)
+def _allowed_relative_paths(root: str) -> frozenset[str]:
+    root_path = Path(root)
+    if not root_path.exists():
+        return frozenset()
+    return frozenset(
+        path.relative_to(root_path).as_posix()
+        for path in root_path.rglob("*")
+        if path.is_file()
+    )
 
 
 def _resolve_safe_relative_file(root: Path, requested_path: str) -> Path:
     if not root.exists():
         raise FileNotFoundError(requested_path)
-    rel_path = Path(Path(requested_path).as_posix().lstrip("/"))
-    if rel_path.is_absolute() or any(part == ".." for part in rel_path.parts):
+    rel_path = PurePosixPath(str(requested_path).lstrip("/"))
+    safe_rel = rel_path.as_posix()
+    if rel_path.is_absolute() or any(part in {"", ".."} for part in rel_path.parts):
         raise FileNotFoundError(requested_path)
-    candidate = (root / rel_path).resolve(strict=False)
-    if not _is_path_within(candidate, root):
+    if safe_rel not in _allowed_relative_paths(str(root.resolve(strict=False))):
         raise FileNotFoundError(requested_path)
+    candidate = (root / safe_rel).resolve(strict=False)
     return candidate
 
 
@@ -2891,10 +2927,13 @@ async def ops_momentum_run(req: MomentumRunRequest = MomentumRunRequest()):
 @app.get("/api/ops/momentum/latest")
 async def ops_momentum_latest(train_id: str = "daily_ops"):
     """Return the latest Momentum Train state.json summary (no execution)."""
-    # Validate train_id against allowlist to prevent path traversal (CodeQL alert)
-    if train_id not in MOMENTUM_TRAIN_CONFIGS:
+    momentum_run_roots = {
+        name: (MOMENTUM_RUNS_DIR / cfg_path.stem).resolve(strict=False)
+        for name, cfg_path in MOMENTUM_TRAIN_CONFIGS.items()
+    }
+    run_root = momentum_run_roots.get(train_id)
+    if run_root is None:
         return {"error": f"Unknown train_id: {train_id}", "ok": False}
-    run_root = MOMENTUM_RUNS_DIR / train_id  # lgtm[py/path-injection] — train_id validated above
     if not _is_path_within(run_root, MOMENTUM_RUNS_DIR):
         return {"error": "Invalid train_id", "ok": False}
     if not run_root.exists():

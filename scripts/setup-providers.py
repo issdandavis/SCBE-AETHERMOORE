@@ -156,7 +156,6 @@ def check_status():
             _masked = key[:8] + "..." + key[-4:] if len(key) > 12 else "***"
         else:
             status = "○ Not set"
-            masked = ""
 
         print(f"{info['name']:<20} {status:<15} {model}")
 

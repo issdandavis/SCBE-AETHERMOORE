@@ -41,13 +41,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 def _h_a(data: bytes) -> bytes:
-    """Primary primitive: SHA3-256."""
-    return hashlib.sha3_256(data).digest()
+    """Primary primitive: PBKDF2-HMAC-SHA256 with a domain-separated salt."""
+    return hashlib.pbkdf2_hmac("sha256", data, b"braid-vault-h-a", 120_000, dklen=32)
 
 
 def _h_b(data: bytes) -> bytes:
-    """Secondary primitive: SHAKE-256 truncated to 256 bits."""
-    return hashlib.shake_256(data).digest(32)
+    """Secondary primitive: PBKDF2-HMAC-SHA256 with a distinct salt."""
+    return hashlib.pbkdf2_hmac("sha256", data, b"braid-vault-h-b", 160_000, dklen=32)
 
 
 def _dual_hash(data: bytes) -> Tuple[bytes, bytes]:

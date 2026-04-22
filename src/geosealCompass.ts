@@ -37,8 +37,6 @@ import {
   hyperbolicDistance,
   exponentialMap,
   logarithmicMap,
-  mobiusAdd,
-  projectToBall,
   clampToBall,
   phaseDeviation,
 } from './harmonic/hyperbolic.js';
@@ -513,7 +511,6 @@ export function autoRoute(
   destination: Waypoint,
   options: RoutePlanOptions = {}
 ): Route {
-  const minGov = options.minGovernanceScore ?? DEFAULT_MIN_GOVERNANCE;
   const maxHops = options.maxHops ?? 14;
   const dim = origin.position.length;
 

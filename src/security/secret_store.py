@@ -19,7 +19,6 @@ import os
 import re
 from pathlib import Path
 from typing import Any
-from ctypes import wintypes
 
 try:
     from cryptography.fernet import Fernet, InvalidToken
@@ -188,7 +187,7 @@ def _get_fernet() -> Fernet | None:
 def _dpapi_encrypt(value: str) -> str:
     class DATA_BLOB(ctypes.Structure):
         _fields_ = [
-            ("cbData", wintypes.DWORD),
+            ("cbData", ctypes.wintypes.DWORD),
             ("pbData", ctypes.POINTER(ctypes.c_byte)),
         ]
 
@@ -222,7 +221,7 @@ def _dpapi_encrypt(value: str) -> str:
 def _dpapi_decrypt(ciphertext: str) -> str:
     class DATA_BLOB(ctypes.Structure):
         _fields_ = [
-            ("cbData", wintypes.DWORD),
+            ("cbData", ctypes.wintypes.DWORD),
             ("pbData", ctypes.POINTER(ctypes.c_byte)),
         ]
 
