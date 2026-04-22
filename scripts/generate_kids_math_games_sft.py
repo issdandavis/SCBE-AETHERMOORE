@@ -340,8 +340,8 @@ def gen_resource_race(count: int) -> List[GameRecord]:
                       f"All to Player A (x{mults[0]}): {budget} x {mults[0]} = {greedy_score} points.\n"
                       f"Even split ({budget // 3} each): "
                       f"{budget // 3}x{mults[0]} + {budget // 3}x{mults[1]} + {budget // 3}x{mults[2]} = "
-                      f"{(budget // 3) * sum(mults)} points.\n"
-                      f"Greedy wins: {greedy_score} vs {(budget // 3) * sum(mults)}.\n"
+                      f"{even_score} points.\n"
+                      f"Greedy wins: {greedy_score} vs {even_score}.\n"
                       f"In optimization, when resources are interchangeable and one target dominates, "
                       f"concentrate everything there.",
             difficulty="medium", concept="allocation", tongue=tongue,

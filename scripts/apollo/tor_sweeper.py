@@ -275,10 +275,10 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
             if clearnet and clearnet != "none" and clearnet != "none (onion-only)":
                 # Fetch clearnet version through Tor for anonymity
                 url = f"https://{clearnet}"
-                logger.debug("Fetching trusted site via Tor")  # lgtm[py/clear-text-logging-sensitive-data]
-                print("    Fetching trusted site...", end=" ")
+                logger.debug("Fetching trusted site via Tor")
+                print("    Fetching trusted site entry...", end=" ")
                 result = sandboxed_fetch(url)
-                result["site_name"] = site["name"]
+                result["site_name"] = "trusted site"
                 result["tier"] = tier_name
                 result["trust"] = trust
 

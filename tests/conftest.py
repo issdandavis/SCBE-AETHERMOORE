@@ -53,7 +53,7 @@ if getattr(_sc_check, "_VARIANT", None) != "src":
             del sys.modules[_k]
     import importlib as _il
 
-    _sc_check = _il.import_module("symphonic_cipher")
+    _il.import_module("symphonic_cipher")
 del _sc_check
 
 # Keep pytest temp factories inside the repo workspace so Windows temp ACL issues
@@ -481,7 +481,7 @@ def _cryptography_available() -> bool:
         from cryptography.fernet import Fernet  # noqa: F401
 
         return True
-    except BaseException:
+    except Exception:
         return False
 
 

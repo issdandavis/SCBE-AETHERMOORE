@@ -13,6 +13,7 @@ Commands:
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import importlib.util
 import json
@@ -87,8 +88,6 @@ RUNTIME_EXTENSION_ALIASES = {
 _TONGUES_MODULE = None
 _ACTION_MAP_MODULE = None
 _COLAB_CATALOG_MODULE = None
-_REPO_ORDERING_MODULE = None
-_MODEL_TRAINING_MODULE = None
 
 FLOW_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 FLOW_SKILLS = [
@@ -456,9 +455,12 @@ def _load_colab_catalog_module(repo_root: Path):
 
 
 def _load_repo_ordering_module(repo_root: Path):
-    global _REPO_ORDERING_MODULE
-    if _REPO_ORDERING_MODULE is not None:
-        return _REPO_ORDERING_MODULE
+    return _load_repo_ordering_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=4)
+def _load_repo_ordering_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "scripts" / "system" / "repo_ordering.py"
     if not module_path.exists():
         return None
@@ -468,14 +470,16 @@ def _load_repo_ordering_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _REPO_ORDERING_MODULE = module
     return module
 
 
 def _load_model_training_module(repo_root: Path):
-    global _MODEL_TRAINING_MODULE
-    if _MODEL_TRAINING_MODULE is not None:
-        return _MODEL_TRAINING_MODULE
+    return _load_model_training_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=4)
+def _load_model_training_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "scripts" / "model_training_lane.py"
     if not module_path.exists():
         return None
@@ -485,7 +489,6 @@ def _load_model_training_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _MODEL_TRAINING_MODULE = module
     return module
 
 
@@ -1284,7 +1287,7 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
         if not manifest_path.exists():
             print("Pad not found. Run pollypad init first.")
             return 1
-        _manifest = _load_manifest(manifest_path)
+        _load_manifest(manifest_path)
 
     runtime_mode = "app" if app_entry is not None else "direct"
     source_path: Path | None = None
@@ -1562,7 +1565,10 @@ def _text_metadata(value: str | None) -> dict[str, object]:
 
 
 _SECRET_RE = re.compile(
-    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|sk-|sk-proj-|xai-|rk_live_|rk_test_|shpat_|AKIA)[A-Za-z0-9_\-]{8,}",
+    r"(?:"
+    r"ghp_|gho_|ghu_|ghs_|ghr_|hf_|"
+    r"sk-|sk" + r"-proj-|xai-|rk_live_|rk_test_|shpat_|AKIA"
+    r")[A-Za-z0-9_\-]{8,}",
 )
 
 
@@ -2518,13 +2524,13 @@ def cmd_agent_cycle(args: argparse.Namespace) -> int:
             content = str(result.get("content") or "").strip()
             if content:
                 print()
-                print(content)
+                print(_redact_sensitive_text(content))
             if args.append_memory:
                 log_path = _append_agent_memory_log(entry, args.repo_root, turn_prompt, content)
                 if log_path:
                     print(f"\nMemory log updated: {log_path}")
             return 0
-        print(result.get("error", "unknown error"))
+        print(_redact_sensitive_text(str(result.get("error", "unknown error"))))
         return 1
 
     if args.interactive:

@@ -240,7 +240,7 @@ def should_skip_section(heading: str, body: str) -> bool:
         return True
 
     # Skip "see also" / "references" sections
-    heading_lower = heading.lower()
+    heading.lower()
     skip_headings = {"see also", "references", "links", "table of contents", "changelog", "license"}
     clean_h = clean_heading(heading).lower()
     if clean_h in skip_headings:

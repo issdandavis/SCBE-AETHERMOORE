@@ -180,8 +180,7 @@ def main():
         print(text[:300])
         return
 
-    redacted_handle = handle[:4] + "***" if len(handle) > 4 else "***"
-    print(f"Logging in as {redacted_handle}...")  # lgtm[py/clear-text-logging-sensitive-data]
+    print("Logging in with configured Bluesky credentials...")
     try:
         token, did = bsky_login(handle, password)
     except Exception:
@@ -198,8 +197,7 @@ def main():
     uri = resp.get("uri", "")
     # Convert AT URI to web URL
     rkey = uri.split("/")[-1] if "/" in uri else ""
-    web_url = f"https://bsky.app/profile/{handle}/post/{rkey}"
-    print(f"POSTED: {web_url}")  # lgtm[py/clear-text-logging-sensitive-data]
+    print("POSTED: record created")
 
 
 if __name__ == "__main__":

@@ -26,14 +26,27 @@ import hmac
 import json
 import math
 import os
+import re
+import statistics
 import struct
 import sys
 import time
+from pathlib import Path
 from typing import Dict, List, Tuple, Iterable
 
 # ---------- Constants ----------
 
 MAX_PAYLOAD_BYTES = 16 * 1024 * 1024  # 16 MiB safety limit
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_ARC_EVAL_DIR = _REPO_ROOT / "artifacts" / "arc-data" / "ARC-AGI-master" / "data" / "evaluation"
+_TASK_BALL_TARGET_REPORT = _REPO_ROOT / "artifacts" / "task_ball_target_report.json"
+_REPO_SRC = _REPO_ROOT / "src"
+
+# Some NeuroGolf modules still import sibling packages as top-level modules
+# (for example `crypto.sacred_tongues`), so expose the repo `src` root when
+# this CLI is executed as `python -m src.symphonic_cipher...`.
+if str(_REPO_SRC) not in sys.path:
+    sys.path.insert(0, str(_REPO_SRC))
 
 # ---------- Core lexicon & tokenizer ----------
 
@@ -846,6 +859,422 @@ def split_for_mldsa(seed: bytes) -> bytes:
     return seed[:32]
 
 
+# ---------- Semantic / atomic trace helpers ----------
+
+
+def _infer_code_lane(tokens: List[str]) -> str:
+    joined = " ".join(tok.lower() for tok in tokens)
+    if any(marker in joined for marker in ("def ", "class ", "return", "import ")):
+        return "python"
+    if any(marker in joined for marker in ("function ", "const ", "let ", "=>")):
+        return "javascript"
+    if any(marker in joined for marker in ("select ", "from ", "where ", "join ")):
+        return "sql"
+    return "prose"
+
+
+def _atomic_trace_summary(tokens: List[str], language: str | None, context_class: str | None) -> dict:
+    from python.scbe.history_reducer import reduce_atomic_history
+
+    inferred_lane = _infer_code_lane(tokens)
+    _history_state, step = reduce_atomic_history(
+        tokens,
+        language=language,
+        context_class=context_class,
+    )
+    semantic_hist: Dict[str, int] = {}
+    resilience: List[float] = []
+    adaptivity: List[float] = []
+    trust_baselines: List[float] = []
+    band_flags: List[int] = []
+    witness_states: List[int] = []
+    tau_mass: List[float] = []
+
+    for state in step.states:
+        semantic_hist[state.semantic_class] = semantic_hist.get(state.semantic_class, 0) + 1
+        resilience.append(float(state.resilience))
+        adaptivity.append(float(state.adaptivity))
+        trust_baselines.append(float(state.trust_baseline))
+        band_flags.append(int(state.band_flag))
+        witness_states.append(int(state.witness_state))
+        tau_mass.append(float(sum(abs(int(v)) for v in state.tau.as_tuple())))
+
+    return {
+        "token_count": len(tokens),
+        "inferred_lane": inferred_lane,
+        "semantic_histogram": semantic_hist,
+        "mean_resilience": round(statistics.fmean(resilience), 6) if resilience else 0.0,
+        "mean_adaptivity": round(statistics.fmean(adaptivity), 6) if adaptivity else 0.0,
+        "mean_trust_baseline": round(statistics.fmean(trust_baselines), 6) if trust_baselines else 0.0,
+        "mean_tau_mass": round(statistics.fmean(tau_mass), 6) if tau_mass else 0.0,
+        "band_flag_histogram": {str(flag): band_flags.count(flag) for flag in sorted(set(band_flags))},
+        "witness_histogram": {str(flag): witness_states.count(flag) for flag in sorted(set(witness_states))},
+        "fusion": {
+            "tau_hat": dict(step.fusion.tau_hat),
+            "reconstruction_votes": {str(k): round(float(v), 6) for k, v in step.fusion.reconstruction_votes.items()},
+            "signed_edge_tension": round(float(step.fusion.signed_edge_tension), 6),
+            "coherence_penalty": round(float(step.fusion.coherence_penalty), 6),
+            "valence_pressure": round(float(step.fusion.valence_pressure), 6),
+        },
+        "rhombic": {
+            "score": round(float(step.rhombic_score), 6),
+            "energy": round(float(step.rhombic_energy), 6),
+        },
+        "trust": {
+            "trust_level": round(float(step.trust_level), 6),
+            "trust_factor": round(float(step.trust_factor), 6),
+            "betrayal_delta": round(float(step.betrayal_delta), 6),
+            "negative_ratio": round(float(step.negative_ratio), 6),
+        },
+        "lane_alignment": step.lane_alignment,
+        "drift": {
+            "norm": round(float(step.drift_norm), 6),
+            "components": [
+                {
+                    "token": row["token"],
+                    "negative_state": bool(row["negative_state"]),
+                    "dual_state": int(row["dual_state"]),
+                    "drift_scale": round(float(row["drift_scale"]), 6),
+                    "drift_norm": round(float(row["drift_norm"]), 6),
+                }
+                for row in step.drift_components
+            ],
+        },
+        "checkpoint": step.checkpoint,
+    }
+
+
+_ATOMIC_WORD_TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_'\-]*")
+_ATOMIC_MATH_TOKEN_RE = re.compile(r"(?:\d+\.\d+|\d+|[A-Za-z_]+|==|!=|<=|>=|->|=>|[-+*/^=(){}\[\],.:;<>%])")
+_ATOMIC_CHEM_TOKEN_RE = re.compile(r"(?:[A-Z][a-z]?\d*|\d+\.\d+|\d+|->|=>|\+|=|\(|\)|\[|\]|,|[a-zA-Z_]+)")
+_ATOMIC_INT_TOKEN_RE = re.compile(r"[-+]?\d+")
+
+
+def _decode_payload_text(payload: bytes) -> str:
+    return payload.decode("utf-8", errors="replace")
+
+
+def _parse_custom_atomic_tokens(raw: str | None) -> List[str]:
+    if not raw:
+        return []
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, list):
+            return [str(item) for item in parsed if str(item)]
+    except json.JSONDecodeError:
+        pass
+    if "," in raw:
+        return [part.strip() for part in raw.split(",") if part.strip()]
+    return [part for part in raw.split() if part]
+
+
+def _variant_tokens_for_payload(
+    payload: bytes,
+    *,
+    text: str | None,
+    variant: str,
+    custom_tokens: List[str] | None,
+) -> List[str]:
+    custom_tokens = custom_tokens or []
+    if variant == "bytes":
+        return [f"0x{b:02x}" for b in payload]
+    if variant == "custom":
+        return list(custom_tokens)
+
+    source = text if text is not None else _decode_payload_text(payload)
+    if variant == "words":
+        return _ATOMIC_WORD_TOKEN_RE.findall(source)
+    if variant == "math":
+        return _ATOMIC_MATH_TOKEN_RE.findall(source)
+    if variant == "chemistry":
+        return _ATOMIC_CHEM_TOKEN_RE.findall(source)
+    if variant == "integers":
+        return _ATOMIC_INT_TOKEN_RE.findall(source)
+    raise ValueError(f"Unsupported atomic variant: {variant}")
+
+
+def _bijective_atomic_trace(
+    tokens: List[str],
+    *,
+    variant: str,
+    language: str | None,
+    context_class: str | None,
+    top_k: int,
+) -> dict:
+    from python.scbe.atomic_tokenization import map_token_to_atomic_state
+
+    semantic_hist: Dict[str, int] = {}
+    element_hist: Dict[str, int] = {}
+    band_hist: Dict[str, int] = {}
+    witness_hist: Dict[str, int] = {}
+    dual_hist: Dict[str, int] = {}
+    resilience: List[float] = []
+    adaptivity: List[float] = []
+    trust_baselines: List[float] = []
+    tau_mass: List[float] = []
+    negative_count = 0
+    states_preview: List[dict] = []
+
+    for idx, token in enumerate(tokens):
+        state = map_token_to_atomic_state(
+            token,
+            language=language,
+            context_class=context_class,
+        )
+        semantic_hist[state.semantic_class] = semantic_hist.get(state.semantic_class, 0) + 1
+        element_hist[state.element.symbol] = element_hist.get(state.element.symbol, 0) + 1
+        band_hist[str(state.band_flag)] = band_hist.get(str(state.band_flag), 0) + 1
+        witness_hist[str(state.witness_state)] = witness_hist.get(str(state.witness_state), 0) + 1
+        dual_key = "none" if state.dual_state is None else str(state.dual_state)
+        dual_hist[dual_key] = dual_hist.get(dual_key, 0) + 1
+        resilience.append(float(state.resilience))
+        adaptivity.append(float(state.adaptivity))
+        trust_baselines.append(float(state.trust_baseline))
+        tau_mass.append(float(sum(abs(int(v)) for v in state.tau.as_tuple())))
+        negative_count += int(bool(state.negative_state))
+        if idx < top_k:
+            states_preview.append(
+                {
+                    "token": token,
+                    "semantic_class": state.semantic_class,
+                    "element": state.element.symbol,
+                    "tau": state.tau.as_dict(),
+                    "negative_state": bool(state.negative_state),
+                    "dual_state": state.dual_state,
+                    "band_flag": int(state.band_flag),
+                    "witness_state": int(state.witness_state),
+                    "resilience": round(float(state.resilience), 6),
+                    "adaptivity": round(float(state.adaptivity), 6),
+                    "trust_baseline": round(float(state.trust_baseline), 6),
+                }
+            )
+
+    count = len(tokens)
+    return {
+        "variant": variant,
+        "token_count": count,
+        "tokens_preview": tokens[: min(top_k, count)],
+        "states_preview": states_preview,
+        "semantic_histogram": semantic_hist,
+        "element_histogram": element_hist,
+        "band_flag_histogram": band_hist,
+        "witness_histogram": witness_hist,
+        "dual_state_histogram": dual_hist,
+        "negative_ratio": round(float(negative_count / count), 6) if count else 0.0,
+        "mean_resilience": round(statistics.fmean(resilience), 6) if resilience else 0.0,
+        "mean_adaptivity": round(statistics.fmean(adaptivity), 6) if adaptivity else 0.0,
+        "mean_trust_baseline": round(statistics.fmean(trust_baselines), 6) if trust_baselines else 0.0,
+        "mean_tau_mass": round(statistics.fmean(tau_mass), 6) if tau_mass else 0.0,
+    }
+
+
+def _build_bijective_atomic_variants(
+    payload: bytes,
+    *,
+    text: str | None,
+    variants: List[str],
+    custom_tokens: List[str] | None,
+    language: str | None,
+    context_class: str | None,
+    top_k: int,
+) -> dict:
+    built: Dict[str, dict] = {}
+    for variant in variants:
+        tokens = _variant_tokens_for_payload(
+            payload,
+            text=text,
+            variant=variant,
+            custom_tokens=custom_tokens,
+        )
+        built[variant] = _bijective_atomic_trace(
+            tokens,
+            variant=variant,
+            language=language,
+            context_class=context_class,
+            top_k=top_k,
+        )
+    return {"variants": built}
+
+
+def _sacred_transport_trace(
+    payload: bytes,
+    lex: Lexicons,
+    language: str | None,
+    context_class: str | None,
+    *,
+    top_k: int = 16,
+    atomic_variants: List[str] | None = None,
+    atomic_custom_tokens: List[str] | None = None,
+) -> dict:
+    from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+
+    tok = TongueTokenizer(lex)
+    per_tongue: Dict[str, dict] = {}
+    harmonic_values: Dict[str, float] = {}
+    for tongue in TONGUES:
+        tokens = tok.encode_bytes(tongue, payload)
+        fingerprint = float(SACRED_TONGUE_TOKENIZER.compute_harmonic_fingerprint(tongue.lower(), list(tokens)))
+        harmonic_values[tongue] = fingerprint
+        per_tongue[tongue] = {
+            "token_count": len(tokens),
+            "tokens_preview": tokens[: min(top_k, len(tokens))],
+            "harmonic_fingerprint": round(fingerprint, 6),
+            "atomic_summary": _atomic_trace_summary(tokens, language=language, context_class=context_class),
+        }
+    harmonic_spread = max(harmonic_values.values()) - min(harmonic_values.values()) if harmonic_values else 0.0
+    variants = atomic_variants or ["words"]
+    return {
+        "payload_bytes": len(payload),
+        "transport_layers": per_tongue,
+        "harmonic_spread": round(float(harmonic_spread), 6),
+        "bijective_atomic": _build_bijective_atomic_variants(
+            payload,
+            text=_decode_payload_text(payload),
+            variants=variants,
+            custom_tokens=atomic_custom_tokens,
+            language=language,
+            context_class=context_class,
+            top_k=top_k,
+        ),
+    }
+
+
+def _load_task_ball_database() -> dict[str, dict]:
+    if not _TASK_BALL_TARGET_REPORT.exists():
+        return {}
+    report = json.loads(_TASK_BALL_TARGET_REPORT.read_text(encoding="utf-8"))
+    out: Dict[str, dict] = {}
+    for row in report.get("ranked_targets", []):
+        task_id = row.get("task_id")
+        if task_id and task_id not in out:
+            out[task_id] = row
+    return out
+
+
+def _load_arc_task_from_args(task_id: str | None, task_json: str | None):
+    from src.neurogolf.arc_io import load_arc_task
+
+    if bool(task_id) == bool(task_json):
+        raise ValueError("Provide exactly one of --task-id or --task-json")
+    if task_id:
+        task_path = _ARC_EVAL_DIR / f"{task_id}.json"
+        if not task_path.exists():
+            raise FileNotFoundError(f"ARC task not found: {task_path}")
+        return load_arc_task(task_path)
+    task_path = Path(task_json)
+    if not task_path.exists():
+        raise FileNotFoundError(f"ARC task json not found: {task_path}")
+    return load_arc_task(task_path)
+
+
+def _arc_task_trace(
+    task_id: str | None,
+    task_json: str | None,
+    top_k: int,
+    *,
+    atomic_variants: List[str] | None = None,
+    atomic_custom_tokens: List[str] | None = None,
+) -> dict:
+    from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+    from src.neurogolf.token_braid import _ALL_TONGUES, null_space_report, task_packet, task_tokens
+
+    task = _load_arc_task_from_args(task_id, task_json)
+    packet = task_packet(task)
+    target_db = _load_task_ball_database()
+    corridor = target_db.get(task.task_id, {})
+    harmonic: Dict[str, float] = {}
+    layers: Dict[str, dict] = {}
+
+    for tongue in _ALL_TONGUES:
+        tokens = list(task_tokens(task, tongue))
+        fp = float(SACRED_TONGUE_TOKENIZER.compute_harmonic_fingerprint(tongue.lower(), tokens))
+        harmonic[tongue] = fp
+        layers[tongue] = {
+            "token_count": len(tokens),
+            "tokens_preview": tokens[: min(top_k, len(tokens))],
+            "harmonic_fingerprint": round(fp, 6),
+            "atomic_summary": _atomic_trace_summary(tokens, language=None, context_class="arc_task"),
+        }
+
+    harmonic_spread = max(harmonic.values()) - min(harmonic.values()) if harmonic else 0.0
+    variants = atomic_variants or ["words"]
+    return {
+        "task_id": task.task_id,
+        "packet_len": len(packet),
+        "packet_b64": base64.b64encode(packet).decode("ascii"),
+        "harmonic_spread": round(float(harmonic_spread), 6),
+        "transport_layers": layers,
+        "bijective_atomic": _build_bijective_atomic_variants(
+            packet,
+            text=None,
+            variants=variants,
+            custom_tokens=atomic_custom_tokens,
+            language=None,
+            context_class="arc_task",
+            top_k=top_k,
+        ),
+        "nullspace": null_space_report(task),
+        "task_ball_corridor": (
+            {
+                "closest_solved_task": corridor.get("closest_solved_task"),
+                "closest_solved_family": corridor.get("closest_solved_family"),
+                "closest_distance": corridor.get("closest_distance"),
+                "projection": corridor.get("projection"),
+                "dominant_void": corridor.get("dominant_void"),
+                "stripe_signature": corridor.get("stripe_signature"),
+            }
+            if corridor
+            else {}
+        ),
+    }
+
+
+def _read_trace_payload(args) -> bytes:
+    if args.text is not None:
+        return args.text.encode("utf-8")
+    if args.infile:
+        return Path(args.infile).read_bytes()
+    return sys.stdin.buffer.read()
+
+
+def cmd_geoseal_trace(args):
+    lex = load_lexicons(args.lexicons)
+    atomic_variants = getattr(args, "atomic_variant", None) or ["words"]
+    atomic_custom_tokens = _parse_custom_atomic_tokens(getattr(args, "atomic_custom_tokens", None))
+    task_id = getattr(args, "task_id", None)
+    task_json = getattr(args, "task_json", None)
+    if task_id or task_json:
+        out = {
+            "mode": "arc_task",
+            "trace": _arc_task_trace(
+                task_id,
+                task_json,
+                max(1, int(args.top_k)),
+                atomic_variants=atomic_variants,
+                atomic_custom_tokens=atomic_custom_tokens,
+            ),
+        }
+    else:
+        payload = _read_trace_payload(args)
+        out = {
+            "mode": "payload",
+            "trace": _sacred_transport_trace(
+                payload,
+                lex,
+                args.language,
+                args.context_class,
+                top_k=max(1, int(args.top_k)),
+                atomic_variants=atomic_variants,
+                atomic_custom_tokens=atomic_custom_tokens,
+            ),
+        }
+    rendered = json.dumps(out, indent=2, ensure_ascii=False)
+    if args.outfile:
+        Path(args.outfile).write_text(rendered, encoding="utf-8")
+    else:
+        print(rendered)
+
+
 # ---------- CLI ----------
 
 
@@ -982,7 +1411,8 @@ def cmd_gendec(args):
 
 
 def cmd_egg_create(args):
-    from .sacred_egg_integrator import SacredEggIntegrator
+    integrator_module = importlib.import_module(f"{__package__}.sacred_egg_integrator")
+    SacredEggIntegrator = integrator_module.SacredEggIntegrator
 
     lex = Lexicons()
     tok = TongueTokenizer(lex)
@@ -1011,7 +1441,8 @@ def cmd_egg_create(args):
 
 
 def cmd_egg_hatch(args):
-    from .sacred_egg_integrator import SacredEggIntegrator
+    integrator_module = importlib.import_module(f"{__package__}.sacred_egg_integrator")
+    SacredEggIntegrator = integrator_module.SacredEggIntegrator
 
     lex = load_lexicons(getattr(args, "lexicons", None))
     tok = TongueTokenizer(lex)
@@ -1047,7 +1478,8 @@ def cmd_egg_hatch(args):
 
 
 def cmd_egg_paint(args):
-    from .sacred_egg_integrator import SacredEggIntegrator
+    integrator_module = importlib.import_module(f"{__package__}.sacred_egg_integrator")
+    SacredEggIntegrator = integrator_module.SacredEggIntegrator
 
     lex = Lexicons()
     tok = TongueTokenizer(lex)
@@ -1296,6 +1728,31 @@ def build_cli():
     ge.add_argument("--dsa-key", required=True)
     ge.add_argument("--plaintext-b64")
     ge.set_defaults(func=cmd_gencore)
+
+    gt = sub.add_parser(
+        "geoseal-trace",
+        help="Trace Sacred Tongues transport layers, atomic summaries, and ARC solve corridors",
+    )
+    gt.add_argument("--text", help="UTF-8 text payload to trace")
+    gt.add_argument("--in", dest="infile", help="Binary payload file to trace")
+    gt.add_argument("--out", dest="outfile", help="Write JSON trace to file instead of stdout")
+    gt.add_argument("--language", help="Optional language code for atomic semantic overrides")
+    gt.add_argument("--context-class", default="operator", help="Atomic tokenizer context class")
+    gt.add_argument("--task-id", help="ARC evaluation task id to trace against solved corridors")
+    gt.add_argument("--task-json", help="Path to an ARC task JSON file")
+    gt.add_argument("--top-k", type=int, default=8, help="How many preview tokens to include per layer")
+    gt.add_argument(
+        "--atomic-variant",
+        action="append",
+        choices=["words", "math", "chemistry", "integers", "bytes", "custom"],
+        help="Direct bijective atomic tokenizer variant to include; repeat to trace multiple variants",
+    )
+    gt.add_argument(
+        "--atomic-custom-tokens",
+        help="Comma-separated custom tokens for the custom atomic variant",
+    )
+    gt.add_argument("--lexicons")
+    gt.set_defaults(func=cmd_geoseal_trace)
 
     gd = sub.add_parser("geoseal-decrypt")
     gd.add_argument("--context", required=True)

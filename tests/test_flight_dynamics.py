@@ -652,8 +652,6 @@ class TestPhysicsIntegration:
     def test_thrust_equals_weight_in_hover(self):
         """In hover, T = mg. Check rotor produces realistic thrust."""
         r = RotorState(rotor_radius=5.0, rotor_rpm=258, ct=0.0065)
-        # Typical UH-60 mass ≈ 7000 kg
-        weight_7t = 7000 * G_ACCEL  # ~68,600 N
         # Our default CT gives roughly this order of magnitude
         assert r.thrust > 0
         # Thrust should be in same order of magnitude as a helicopter

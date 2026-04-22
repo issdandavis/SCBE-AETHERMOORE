@@ -362,11 +362,11 @@ async def search_health():
                 "meili_status": health.get("status", "unknown"),
                 "index": MEILI_INDEX,
             }
-        except Exception as e:
+        except Exception:
             return {
                 "status": "degraded",
                 "backend": "memory_fallback",
-                "meili_error": str(e),
+                "meili_error": "meilisearch unavailable",
                 "memory_docs": len(_memory_index),
             }
 

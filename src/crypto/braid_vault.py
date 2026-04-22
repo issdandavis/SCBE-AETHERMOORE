@@ -46,8 +46,8 @@ def _h_a(data: bytes) -> bytes:
 
 
 def _h_b(data: bytes) -> bytes:
-    """Secondary primitive: BLAKE2b-256."""
-    return hashlib.blake2b(data, digest_size=32).digest()
+    """Secondary primitive: SHAKE-256 truncated to 256 bits."""
+    return hashlib.shake_256(data).digest(32)
 
 
 def _dual_hash(data: bytes) -> Tuple[bytes, bytes]:

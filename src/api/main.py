@@ -538,9 +538,7 @@ def _sign_connector_payload(payload: Dict[str, Any]) -> tuple[str, str]:
     signing_key = os.getenv("SCBE_CONNECTOR_SIGNING_KEY", "").encode("utf-8")
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     if not signing_key:
-        import logging
-
-        logging.getLogger("scbe.api").warning("SCBE_CONNECTOR_SIGNING_KEY not set — connector payloads are unsigned")
+        logger.warning("SCBE_CONNECTOR_SIGNING_KEY not set — connector payloads are unsigned")
         return ts, ""
     sig = hmac.new(signing_key, ts.encode("utf-8") + b"." + body, hashlib.sha256).hexdigest()
     return ts, sig

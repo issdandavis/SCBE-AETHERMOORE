@@ -263,10 +263,8 @@ def _scrub_obj(obj: Any) -> Any:
 def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
     try:
         IDE_LOGS_DIR.mkdir(parents=True, exist_ok=True)
-        safe_path = path.resolve(strict=False)
-        if not _is_path_within(safe_path, IDE_LOGS_DIR):
-            logger.warning("Rejected IDE log path outside allowed directory: %s", path.name)
-            return
+        safe_name = Path(path.name).name
+        safe_path = (IDE_LOGS_DIR / safe_name).resolve(strict=False)
         safe = _scrub_obj(record)
         with safe_path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(safe, ensure_ascii=True) + "\n")  # lgtm[py/clear-text-storage-sensitive-data]
@@ -1643,7 +1641,7 @@ def _load_git_repo_links() -> list[dict[str, str]]:
             slug = url.split("github.com/", 1)[1]
         else:
             continue
-        slug = slug.split("?", 1)[0].split("#", 1)[0].removesuffix(".git").strip("/")
+        slug = _safe_http_slug(slug).removesuffix(".git")
         if "/" not in slug:
             continue
         owner, repo = slug.split("/", 1)
@@ -2067,23 +2065,33 @@ async def arena_spaceport_status():
 
 
 def _public_file_response(requested_path: str) -> FileResponse:
-    safe_rel = Path(requested_path).as_posix().lstrip("/")
-    if safe_rel.startswith("..") or "/../" in f"/{safe_rel}/":
-        raise FileNotFoundError(requested_path)
-    candidate = (PUBLIC_DIR / safe_rel).resolve()
-    if not PUBLIC_DIR.exists() or not _is_path_within(candidate, PUBLIC_DIR) or not candidate.is_file():
+    candidate = _resolve_safe_relative_file(PUBLIC_DIR, requested_path)
+    if not candidate.is_file():
         raise FileNotFoundError(requested_path)
     return FileResponse(candidate)
 
 
 def _docs_file_response(requested_path: str) -> FileResponse:
-    safe_rel = Path(requested_path).as_posix().lstrip("/")
-    if safe_rel.startswith("..") or "/../" in f"/{safe_rel}/":
-        raise FileNotFoundError(requested_path)
-    candidate = (DOCS_DIR / safe_rel).resolve()
-    if not DOCS_DIR.exists() or not _is_path_within(candidate, DOCS_DIR) or not candidate.is_file():
+    candidate = _resolve_safe_relative_file(DOCS_DIR, requested_path)
+    if not candidate.is_file():
         raise FileNotFoundError(requested_path)
     return FileResponse(candidate)
+
+
+def _safe_http_slug(value: str) -> str:
+    return value.split("?", 1)[0].split("#", 1)[0].strip("/")
+
+
+def _resolve_safe_relative_file(root: Path, requested_path: str) -> Path:
+    if not root.exists():
+        raise FileNotFoundError(requested_path)
+    rel_path = Path(Path(requested_path).as_posix().lstrip("/"))
+    if rel_path.is_absolute() or any(part == ".." for part in rel_path.parts):
+        raise FileNotFoundError(requested_path)
+    candidate = (root / rel_path).resolve(strict=False)
+    if not _is_path_within(candidate, root):
+        raise FileNotFoundError(requested_path)
+    return candidate
 
 
 @app.get("/")

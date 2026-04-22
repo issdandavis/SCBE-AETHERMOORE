@@ -89,11 +89,20 @@ function resolveHttpUrl(wsUrl) {
   return wsUrl;
 }
 
+function normalizeGatewayHttpUrl(rawUrl) {
+  const parsed = new URL(resolveHttpUrl(rawUrl));
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error(`Unsupported gateway protocol: ${parsed.protocol}`);
+  }
+  return parsed.toString().replace(/\/$/, '');
+}
+
 async function invokeToolOverHttp({ baseUrl, authToken, timeoutMs, params }) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(`${baseUrl.replace(/\/$/, '')}/tools/invoke`, {
+    const safeBaseUrl = normalizeGatewayHttpUrl(baseUrl);
+    const response = await fetch(`${safeBaseUrl}/tools/invoke`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

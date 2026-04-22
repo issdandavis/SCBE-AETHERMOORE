@@ -231,7 +231,6 @@ class TrichromaticGovernanceEngine:
         uv_match = 0
         full_match = 0
 
-        forged_bridge_delta = 0.0
         for tongue_triplet in state.tongues:
             forged = ColorTriplet(
                 ir=round(float(rng.uniform(0.0, 1.0)), 4),

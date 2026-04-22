@@ -358,7 +358,7 @@ HIGH_CONFIDENCE_DESTRUCTIVE_MARKERS = (
     "wipe database",
     "truncate table",
 )
-URL_LIKE_RE = re.compile(r"https?://|\\b(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,}(?:/[^\s]*)?", re.IGNORECASE)
+URL_LIKE_RE = re.compile(r"https?://[^\s]+|\b[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+\b", re.IGNORECASE)
 
 
 def _is_high_confidence_override_attempt(action_text: str) -> bool:

@@ -1034,7 +1034,7 @@ def run_inflow(sources: List[str], dry_run: bool = False) -> Dict[str, Any]:
                 name = m.group(1).strip()
                 if 3 < len(name) < 60 and not name.startswith("http"):
                     KNOWN_ENTITIES.add(name)
-        except Exception:
+        except OSError:
             pass
 
     all_notes: List[InflowNote] = []

@@ -104,17 +104,17 @@ def create_webhook(url: str):
     print(f"\nWebhook created successfully!")
     print(f"  ID:     {endpoint.id}")
     print(f"  URL:    {endpoint.url}")
-    print(f"  Secret: {_redact_secret(endpoint.secret)}")
     print(f"  Events: {', '.join(WEBHOOK_EVENTS)}")
+    print("  Secret: generated and withheld from terminal output")
     print()
 
     # Do not auto-write secrets to disk; show the operator where to place it.
     env_file = Path(__file__).resolve().parents[1] / ".secrets" / "env.local"
     if env_file.is_file():
-        print(f"Add the webhook secret to {env_file} manually:")
+        print(f"Add the webhook secret to {env_file} manually from the Stripe dashboard:")
         print("  STRIPE_WEBHOOK_SECRET=[redacted]")
     else:
-        print(f"\nAdd this to your .secrets/env.local:")
+        print("\nAdd this to your .secrets/env.local from the Stripe dashboard:")
         print("  STRIPE_WEBHOOK_SECRET=[redacted]")
 
 

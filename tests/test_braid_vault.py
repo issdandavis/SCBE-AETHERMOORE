@@ -318,7 +318,7 @@ class TestVaultTTL:
 
     def test_ttl_expired(self):
         vault = create_vault_deterministic("ttl", "s1.s2")
-        entry = vault.store("stale", b"dead", ttl_seconds=0.001)
+        vault.store("stale", b"dead", ttl_seconds=0.001)
         time.sleep(0.01)
         assert vault.retrieve("stale") is None
 
