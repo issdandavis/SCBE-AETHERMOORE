@@ -14,10 +14,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
 import sys
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 from pathlib import Path
 from typing import Optional
 
@@ -152,7 +155,7 @@ Classify this email. Respond ONLY with valid JSON in this exact format:
             text = text.split("```")[1].split("```")[0].strip()
         return json.loads(text)
     except Exception as e:
-        print(f"[LLM classification failed: {e}] — falling back to heuristic")
+        logger.warning("LLM classification failed — falling back to heuristic")
         return classify_heuristic(sender, subject, body)
 
 
@@ -283,9 +286,9 @@ def _dispatch_to_queue(triage: TriageResult):
         )
         conn.commit()
         conn.close()
-        print(f"  → Dispatched to {agent['name']} (priority {_urgency_to_priority(triage.urgency)})")
+        logger.info("Dispatched to %s (priority %s)", agent['name'], _urgency_to_priority(triage.urgency))
     except Exception as e:
-        print(f"  → Dispatch failed: {e}")
+        logger.warning("Dispatch failed: %s", e)
 
 
 def _urgency_to_priority(urgency: str) -> int:
@@ -315,10 +318,12 @@ def main():
     print(f"\nTriage complete. {len(results)} emails processed.\n")
     for r in results:
         agent = AGENTIC_EMPLOYEES.get(r.agent, {})
-        print(f"  [{r.urgency.upper()}] {agent.get('name', r.agent)} | {r.subject[:60]}")
-        print(f"           confidence: {r.confidence:.2f} | action: {r.action}")
+        # Log sensitive details at DEBUG level; only show summary in CLI output
+        logger.debug("Triage result: agent=%s urgency=%s subject=%s", agent.get('name', r.agent), r.urgency, r.subject)
+        print(f"  [{r.urgency.upper()}] {agent.get('name', r.agent)} | action: {r.action}")
+        print(f"           confidence: {r.confidence:.2f}")
         if r.draft_reply:
-            print(f"           draft: {r.draft_reply[:120]}...")
+            logger.debug("Draft reply generated for agent %s", r.agent)
         print()
 
     if args.output:

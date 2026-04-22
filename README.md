@@ -146,7 +146,7 @@ Cross-model biblical null-space evaluation:
 
 ## Eval and reproduction
 
-- Eval pack: [`docs/eval/README.md`](docs/eval/README.md)
+- Eval pack: see `tests/` and `scripts/benchmark/` for reproduction suites
 - Benchmark runner: `python -m benchmarks.scbe.run_all --synthetic-only --scbe-coords semantic`
 - Dye injection: `python src/video/dye_injection.py --input “your text here”`
 - Null-space eval: `python scripts/run_biblical_null_space_eval.py --provider ollama --model llama3.2`
@@ -170,25 +170,22 @@ pytest tests/adversarial/test_adversarial_benchmark.py -v
 python scripts/benchmark/scbe_vs_industry.py
 ```
 
-If you want one documented reproduction path, start with [`docs/eval/README.md`](docs/eval/README.md).
+If you want one documented reproduction path, start with `pytest tests/ -v` and `python scripts/benchmark/scbe_vs_industry.py`.
 
 ## Canonical public docs
 
 - Canonical system state: [`CANONICAL_SYSTEM_STATE.md`](CANONICAL_SYSTEM_STATE.md)
 - Repo surface map: [`REPO_SURFACE_MAP.md`](REPO_SURFACE_MAP.md)
-- Canonical formula registry: [`docs/specs/CANONICAL_FORMULA_REGISTRY.md`](docs/specs/CANONICAL_FORMULA_REGISTRY.md)
-- Architecture overview: [`docs/research/architecture-overview.html`](docs/research/architecture-overview.html)
-- Eval pack: [`docs/eval/README.md`](docs/eval/README.md)
-- Research hub: [`docs/research/index.html`](docs/research/index.html)
-- System blueprint v2: [`docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md`](docs/specs/SYSTEM_BLUEPRINT_v2_CURRENT.md)
-- Review + cleanup report: [`docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md`](docs/reports/SYSTEM_SURFACE_REVIEW_2026-03-26.md)
+- Architecture overview: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- Research hub: [`docs/README.md`](docs/README.md)
+- Review + cleanup report: [`docs/REPO_AUDIT.md`](docs/REPO_AUDIT.md)
 
 ## Notes on claim boundaries
 
 - The primary public domain is `aethermoore.com`; GitHub Pages is the mirror surface.
 - Experimental theory pages and commercial surfaces should not be treated as the same evidence layer.
-- Benchmark files in `tests/`, `scripts/benchmark/`, and `docs/eval/` are the public reproduction lane.
-- Some older docs and demos still reference legacy bounded scorers or earlier wall variants. The canonical authority for formulas is `docs/specs/CANONICAL_FORMULA_REGISTRY.md`.
+- Benchmark files in `tests/` and `scripts/benchmark/` are the public reproduction lane.
+- Some older docs and demos still reference legacy bounded scorers or earlier wall variants.
 
 ---
 

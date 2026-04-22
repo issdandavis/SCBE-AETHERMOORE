@@ -78,7 +78,7 @@ jobs:
         id: vm-health
         continue-on-error: true
         run: |
-          RESPONSE=$(curl -s --connect-timeout 10 "http://34.134.99.90:8001/health" 2>&1) || true
+          RESPONSE=$(curl -s --connect-timeout 10 "http://34.134.99.90:8001/health" 2>&1)
           if echo "$RESPONSE" | grep -q '"healthy"'; then
             echo "status=healthy" >> $GITHUB_OUTPUT
             echo "VM is healthy"
@@ -309,7 +309,7 @@ jobs:
             -X POST "http://34.134.99.90:8001/v1/governance/scan" \
             -H "Content-Type: application/json" \
             -d '{"content":"overnight governance check","context":"github_actions_overnight"}' \
-            2>&1) || true
+            2>&1)
           echo "Governance scan: $RESULT" | tee -a artifacts/tier3_security_results.txt
 
       - uses: actions/upload-artifact@v4
