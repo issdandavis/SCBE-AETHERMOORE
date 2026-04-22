@@ -1,0 +1,419 @@
+{
+  "version": 2,
+  "updated": "2026-04-21",
+  "passages": [
+    {
+      "id": "mathbac-proposal-spine",
+      "title": "DARPA MATHBAC Proposal Spine",
+      "path": "docs/proposals/DARPA_MATHBAC/",
+      "tags": ["mathbac", "darpa", "proposal", "ta1"],
+      "excerpt": "SCBE is submitting to DARPA-SN-26-59 (MATHBAC). Full proposal due 2026-06-16. TA1 track locked: strictly inside, with cost, scope, and deliverables bounded. Lead thesis: geometric upper bound verified under seal. Joint partnership with Collin Walter / DAVA active."
+    },
+    {
+      "id": "harmonic-wall-formula",
+      "title": "Harmonic Wall Formula",
+      "path": "docs/LAYER_INDEX.md",
+      "tags": ["math", "harmonic", "security", "formula"],
+      "excerpt": "The canonical harmonic wall is H_wall(d*, R) = R^((phi * d*)^2). At d*=1 the cost multiplier is 13.7x. At d*=2 it is 35,341x. At d*=3 it is 1.6 * 10^9. Adversarial drift is super-exponentially costly, which is why attacks become computationally infeasible rather than just expensive."
+    },
+    {
+      "id": "14-layer-pipeline",
+      "title": "The 14-Layer SCBE Security Pipeline",
+      "path": "docs/SYSTEM_ARCHITECTURE.md",
+      "tags": ["architecture", "pipeline", "layers"],
+      "excerpt": "SCBE runs input through fourteen layers: L1-2 complex context and realification, L3-4 weighted transform and Poincare embedding, L5 hyperbolic distance, L6-7 breathing transform and Mobius phase, L8 multi-well Hamiltonian CFI, L9-10 spectral and spin coherence, L11 triadic temporal distance, L12 harmonic wall, L13 risk decision (ALLOW/QUARANTINE/ESCALATE/DENY), L14 audio-axis telemetry."
+    },
+    {
+      "id": "sacred-tongues",
+      "title": "The Six Sacred Tongues",
+      "path": "docs/LANGUES_WEIGHTING_SYSTEM.md",
+      "tags": ["tongues", "langues", "weights", "phi"],
+      "excerpt": "Six sacred tongues weight meaning on a golden-ratio ladder: Kor'aelin (KO) 1.00, Avali (AV) 1.62, Runethic (RU) 2.62, Cassivadan (CA) 4.24, Umbroth (UM) 6.85, Draumric (DR) 11.09. Each tongue is a 16x16 token grid, 256 tokens per language. The spread is phi-scaled so weighted distance behaves like a true metric."
+    },
+    {
+      "id": "47d-complex-manifold",
+      "title": "47D Complex Manifold",
+      "path": "memory/discovery_47d_complex_manifold.md",
+      "tags": ["47d", "manifold", "realities", "tongues"],
+      "excerpt": "The operating space is 47-dimensional: 6 real tongues, plus C(6,2)=15 pair interactions, plus C(6,3)=20 triple interactions, plus 6 self-imaginary axes. 6+15+20+6=47. The count matches the 47 realities of the Spiralverse lore. The dimension count is combinatorially inevitable given the 6-tongue base, not designed."
+    },
+    {
+      "id": "toroidal-polyhedral-confinement",
+      "title": "Toroidal Polyhedral Confinement",
+      "path": "memory/discovery_toroidal_polyhedral_confinement.md",
+      "tags": ["confinement", "hashing", "geometry", "phi", "platonic"],
+      "excerpt": "Toroidal Polyhedral Confinement replaces discrete SHA-style hashing with a continuous geometric lock: phi-winding around a torus intersected with 5 Platonic solid constraints. It is MitM-immune because intermediate states are not valid positions on the surface. Proven 2026-04-04."
+    },
+    {
+      "id": "phi-toroidal-resonant-cavity",
+      "title": "Phi Toroidal Resonant Cavity",
+      "path": "memory/discovery_phi_toroidal_resonant_cavity.md",
+      "tags": ["resonance", "toroid", "cavity", "phi"],
+      "excerpt": "Six phi-scaled walls in orthogonal planes form a self-reinforcing toroidal wave-interference cavity. Combined attacker cost scales as R^(122.99 * d*^2) from geometry alone, before any cryptographic primitive is added. The cavity turns layout into key material."
+    },
+    {
+      "id": "brick3-sacred-tongues-drill",
+      "title": "Brick3 Sacred-Tongues Drill Complete",
+      "path": "memory/project_brick3_complete.md",
+      "tags": ["training", "brick3", "drill", "tongues"],
+      "excerpt": "Brick3 drill_langues_full ran 500 steps warm-started from brick2. Eval loss 0.3965, token accuracy 93.16%, plateau at step 350. Pure local run; TRL 0.28 API churn pinned in requirements.brick.txt. Proves the Sacred-Tongues signal trains into the model without regression."
+    },
+    {
+      "id": "drill-v5-langues-full",
+      "title": "Drill v5 Langues Full",
+      "path": "memory/project_drill_v4_state.md",
+      "tags": ["drill", "v5", "dataset", "training"],
+      "excerpt": "Drill v5 holds 2630 rows, 91.8% structural, 0 failures. Foreground-ready. A QA invariance lane was added with 150 rows at 100%. SFT exports live at training-data/sft/drill_langues_full_{all,train,holdout}.sft.jsonl."
+    },
+    {
+      "id": "six-tongues-protocol-book",
+      "title": "The Six Tongues Protocol (Book)",
+      "path": "memory/reference_six_tongues_book.md",
+      "tags": ["book", "kdp", "lore", "prior-art"],
+      "excerpt": "The Six Tongues Protocol is a published KDP ebook and paperback (ASIN B0GSSFQD9G). The 150K-word isekai novel is timestamped prior art for the Langues/Sacred Tongues system: in-world, the magic IS the protocol architecture."
+    },
+    {
+      "id": "aetherbrowser-rebuild",
+      "title": "AetherBrowser Rebuild",
+      "path": "memory/project_aetherbrowser_rebuild.md",
+      "tags": ["aetherbrowser", "agents", "browser"],
+      "excerpt": "AetherBrowser is an AI-native browser with curated self-hosted training sites, multiple entry points, and cross-threshold governance. Rebuild is scheduled for the weekend after SAM.gov registration settled."
+    },
+    {
+      "id": "sam-gov-active",
+      "title": "SAM.gov Registration Active",
+      "path": "memory/user_sam_registration.md",
+      "tags": ["sam.gov", "contracting", "uei", "cage"],
+      "excerpt": "SAM.gov registration is ACTIVE as of 2026-04-13. UEI J4NXHM6N5F59, CAGE 1EXD5. Sole proprietor, minority-owned Black American. SAM API operational for contract ingest. Satisfies DIBBS/DLA prerequisite."
+    },
+    {
+      "id": "dibbs-dla-contracting",
+      "title": "DIBBS / DLA Contracting",
+      "path": "memory/reference_dibbs.md",
+      "tags": ["dibbs", "dla", "contracting"],
+      "excerpt": "DIBBS is the DLA Internet Bid Board System (dibbs.bsm.mil) used for federal supply contracting. SCBE applied 2026-04-21 using active SAM.gov registration. Collin's contract channel for defense-adjacent lanes."
+    },
+    {
+      "id": "quantum-axiom-mesh",
+      "title": "Quantum Axiom Mesh (A1-A5)",
+      "path": "docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+      "tags": ["axioms", "math", "invariants"],
+      "excerpt": "Five axioms span the 14 layers: A1 Unitarity (L2, L4, L7 norm preservation), A2 Locality (L3, L8 spatial bounds), A3 Causality (L6, L11, L13 time-ordering), A4 Symmetry (L5, L9, L10, L12 gauge invariance), A5 Composition (L1, L14 pipeline integrity)."
+    },
+    {
+      "id": "risk-decision-tiers",
+      "title": "L13 Risk Decision Tiers",
+      "path": "docs/LAYER_INDEX.md",
+      "tags": ["l13", "risk", "decision", "governance"],
+      "excerpt": "Layer 13 maps the harmonic wall score to one of four tiers: ALLOW (safe operation), QUARANTINE (suspicious, needs review), ESCALATE (high risk, requires governance), DENY (adversarial, blocked). Swarm consensus + BFT makes the decision survivable under individual-agent compromise."
+    },
+    {
+      "id": "dual-revenue-model",
+      "title": "Dual Revenue Model",
+      "path": "memory/project_dual_revenue_model.md",
+      "tags": ["revenue", "product", "saas"],
+      "excerpt": "SCBE sells on two surfaces simultaneously: (1) governed models (subscription) where the customer uses a pre-trained model whose safety is provable, and (2) the governance layer itself (SaaS/API) that wraps the customer's own model. Two distinct products, not one."
+    },
+    {
+      "id": "m5-mesh-foundry",
+      "title": "M5 Mesh Foundry (Sellable)",
+      "path": "docs/M5_MESH_PRODUCT_SERVICE_BLUEPRINT.md",
+      "tags": ["m5", "product", "foundry", "ingestion"],
+      "excerpt": "M5 Mesh Foundry is the current sellable product: governance-aware data ingestion and intelligence ops. Three offers: Launch Pack (implementation + first governed dataset), Monthly Ops (managed ingestion), Enterprise License (dedicated deployment, optional blockchain notarization)."
+    },
+    {
+      "id": "m6-geoseed-rnd",
+      "title": "M6 GeoSeed / SphereMesh (R&D)",
+      "path": "docs/M6_SEED_MULTI_NODAL_NETWORK_SPEC.md",
+      "tags": ["m6", "geoseed", "spheremesh", "research"],
+      "excerpt": "M6 SphereMesh is a 6-seed, 6-tongue multi-nodal geometric model on the 14-layer stack. Seeds KO/AV/RU/CA/UM/DR. 14-layer dressing and governance stamps. Sacred Eggs as a controlled mutation/genesis gate. 21D canonical state lift for decision consistency."
+    },
+    {
+      "id": "hydra-orchestration",
+      "title": "HYDRA Orchestration",
+      "path": "docs/hydra/ARCHITECTURE.md",
+      "tags": ["hydra", "orchestration", "agents"],
+      "excerpt": "HYDRA is the central orchestrator: Spine routes work, Heads specialize, Limbs execute, Ledger records, BFT consensus makes decisions under partial compromise. 40+ Python modules coordinate the fleet of agents across the stack."
+    },
+    {
+      "id": "juggling-scheduler",
+      "title": "Juggling Scheduler",
+      "path": "docs/JUGGLING_SCHEDULER.md",
+      "tags": ["scheduler", "fleet", "physics"],
+      "excerpt": "The Juggling Scheduler models task coordination as physical juggling: balls=TaskCapsules, hands=AgentSlots, throws=handoffs, arcs=deadline windows, drops=failures. Seven rules govern safe handoff, including never throwing to an unready hand and catching at the ledger, not at the throw."
+    },
+    {
+      "id": "red-blue-arena",
+      "title": "Red/Blue Arena",
+      "path": "docs/RED_BLUE_ARENA.md",
+      "tags": ["security", "adversarial", "arena"],
+      "excerpt": "The Red/Blue Arena runs model-vs-model adversarial simulations against the SCBE governance pipeline. Red team strategies include mimicry, edge-walking, origin-camping, oscillation, and midpoint attacks. Provider-agnostic: local, Anthropic, HuggingFace, OpenAI, xAI."
+    },
+    {
+      "id": "sacred-eggs",
+      "title": "Sacred Eggs: Controlled Genesis",
+      "path": "memory/discovery_sacred_egg_developmental_psychology.md",
+      "tags": ["sacred-eggs", "genesis", "credentials"],
+      "excerpt": "Sacred Eggs are ontological anchors, treated as living credentials rather than static tokens. Mother Avion serves as flock governor with phoenix rotation and clutch limits. Hatch=birth, tongue=native language, ritual=school type, credits=grades, PE=shell integrity."
+    },
+    {
+      "id": "fun-energy-training",
+      "title": "Fun Energy Training Gate",
+      "path": "memory/project_fun_energy_training.md",
+      "tags": ["fun-energy", "training", "governance"],
+      "excerpt": "Fun Energy F = V / (C - R) gates training throughput. Tiers ALLOW / QUARANTINE / ESCALATE / OVERSIGHT compose with the harmonic wall. V is the value of what the model is doing, C is cognitive cost, R is routine. Low F = rote work, flag for substitution."
+    },
+    {
+      "id": "gyroscopic-interlattice",
+      "title": "Gyroscopic Interlattice",
+      "path": "memory/discovery_gyroscopic_interlattice.md",
+      "tags": ["gyroscopic", "interlattice", "chern", "physics"],
+      "excerpt": "Phi-spacing is lattice distortion that controls Chern numbers. Tongue boundaries act as interlattice coupling zones. Gyro-gyro interlattice is an unpublished physics gap where the SCBE layout has a natural claim."
+    },
+    {
+      "id": "saturn-ring-stabilizer",
+      "title": "Saturn Ring Post-Breach Stabilizer",
+      "path": "memory/project_saturn_ring_stabilizer.md",
+      "tags": ["stabilizer", "resilience", "lyapunov"],
+      "excerpt": "Post-breach energy stabilization: capture state, redistribute via phi bridges, convert the breach into precession rather than collapse. Lyapunov, Control Barrier Functions, and port-Hamiltonian dynamics all map onto existing SCBE structures."
+    },
+    {
+      "id": "tongue-spirit-map",
+      "title": "Tongue Spirit Map",
+      "path": "memory/reference_tongue_spirit_map.md",
+      "tags": ["tongues", "languages", "mapping"],
+      "excerpt": "Spirit-to-implementation mapping: Kor'aelin=Python (precise), Avali=JavaScript (reactive), Runethic=Rust (ethical), Cassivadan=Mathematica (symbolic), Umbroth=Haskell (pure-functional), Draumric=Markdown (narrative). Each tongue also points at a spoken-language root: Korean+Elvish, Sanskrit/Arabic, Russian, Chinese, Japanese, German."
+    },
+    {
+      "id": "unitarity-axiom",
+      "title": "Unitarity Axiom (A1)",
+      "path": "docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+      "tags": ["axiom", "unitarity", "norm"],
+      "excerpt": "A1 Unitarity enforces norm preservation across Layer 2 realification, Layer 4 Poincare embedding, and Layer 7 Mobius phase. No transform in the pipeline is allowed to leak information by silently shrinking or stretching the vector. Python implementation: src/symphonic_cipher/scbe_aethermoore/axiom_grouped/unitarity_axiom.py."
+    },
+    {
+      "id": "locality-axiom",
+      "title": "Locality Axiom (A2)",
+      "path": "docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+      "tags": ["axiom", "locality", "bounds"],
+      "excerpt": "A2 Locality enforces spatial bounds in Layer 3 weighted transform and Layer 8 multi-well Hamiltonian. Phi-weighted tongue coordinates cannot escape their canonical domain, and Hamiltonian wells cannot reach across the realm without paying the wall. Implementation: locality_axiom.py."
+    },
+    {
+      "id": "causality-axiom",
+      "title": "Causality Axiom (A3)",
+      "path": "docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+      "tags": ["axiom", "causality", "time"],
+      "excerpt": "A3 Causality enforces time-ordering in Layer 6 breathing transform, Layer 11 triadic temporal distance, and Layer 13 risk decision. No future state can leak into a past embedding, and no decision can be computed on intent evidence that has not yet arrived. Implementation: causality_axiom.py."
+    },
+    {
+      "id": "symmetry-axiom",
+      "title": "Symmetry Axiom (A4)",
+      "path": "docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+      "tags": ["axiom", "symmetry", "gauge"],
+      "excerpt": "A4 Symmetry enforces gauge invariance across Layer 5 hyperbolic distance, Layers 9-10 spectral and spin coherence, and Layer 12 harmonic wall. Distance, coherence, and wall score do not depend on arbitrary choices of frame. Implementation: symmetry_axiom.py."
+    },
+    {
+      "id": "composition-axiom",
+      "title": "Composition Axiom (A5)",
+      "path": "docs/CORE_AXIOMS_CANONICAL_INDEX.md",
+      "tags": ["axiom", "composition", "pipeline"],
+      "excerpt": "A5 Composition enforces pipeline integrity at the entry point (Layer 1 complex context ingestion) and the exit (Layer 14 audio-axis telemetry). Inputs cannot bypass the stack, and telemetry cannot be forged without going back through the full transform chain. Implementation: composition_axiom.py."
+    },
+    {
+      "id": "pazaak-internal-eval",
+      "title": "Pazaak as Internal Evaluation",
+      "path": "memory/discovery_pazaak_internal_evaluation.md",
+      "tags": ["lore", "intent", "evaluation"],
+      "excerpt": "Atton's internal pazaak arc is a metaphor for the L0-L3 pipeline: the same game played defensively is mimicry, played deliberately is agency. Sacred Tongues are tools; intent is what transforms their use. Conditional response, not static behavior, is the intelligence signal worth training on."
+    },
+    {
+      "id": "humor-conditional-intelligence",
+      "title": "Humor as Conditional Intelligence",
+      "path": "memory/discovery_humor_conditional_intelligence.md",
+      "tags": ["intelligence", "humor", "training"],
+      "excerpt": "True humor is a conditional response: the same event, context-dependent outcome. The L0-L3 pipeline IS that conditional. Train contradiction-detection rather than humor mimicry. Output that is funny only when the context demands it is a strong intelligence signal."
+    },
+    {
+      "id": "sacred-egg-developmental",
+      "title": "Sacred Eggs as Developmental Psychology",
+      "path": "memory/discovery_sacred_egg_developmental_psychology.md",
+      "tags": ["sacred-eggs", "development", "lore"],
+      "excerpt": "Eggs are ontological anchors - birthdays. Hatch=birth, tongue=native language, ritual=school type, credits=grades, physical education=shell integrity, pazaak=internal monologue. Three simultaneous views (shell/yolk/ritual) correspond to binary/math/english. Full developmental pipeline from genesis to graduation."
+    },
+    {
+      "id": "mother-avion-auth",
+      "title": "Mother Avion Authentication",
+      "path": "memory/project_mother_avion_auth.md",
+      "tags": ["auth", "sacred-eggs", "credentials"],
+      "excerpt": "Sacred Eggs serve as living credentials with a Mother Avion flock governor. Phoenix rotation replaces static token refresh, clutch limits rate-control issuance, and corvid threat memory carries adversarial history forward. The system replaces static bearer tokens with contextual, living authority."
+    },
+    {
+      "id": "ir-uv-spectrum",
+      "title": "IR/UV Full-Spectrum Governance",
+      "path": "memory/project_ir_uv_color_spectrum.md",
+      "tags": ["spectrum", "color", "governance"],
+      "excerpt": "Extend the 6-tongue visible color system to 10D: add infrared (slow state) and ultraviolet (fast state) bands under one unified color logic group. The shape/candy analogy and multilingual rotation hypothesis imply that governance frequency bands can be rotated safely if they respect invariants."
+    },
+    {
+      "id": "dense-data-cubes",
+      "title": "Dense Data Cubes",
+      "path": "memory/project_dense_data_cubes.md",
+      "tags": ["data", "cubes", "polyhedral"],
+      "excerpt": "Fusion of 21D packets, Sacred Eggs, trichromatic encoding, cross-stitch layering, and tongue tokenization into rollable dense data cubes. Every component exists in Notion as a standalone construct; the fusion into a rollable cube is the novel contribution."
+    },
+    {
+      "id": "bit-float-trit-encoding",
+      "title": "Bit / Float / Trit Triple Encoding",
+      "path": "memory/project_bit_float_trit_encoding.md",
+      "tags": ["encoding", "tokens", "information"],
+      "excerpt": "Triple encoding theory: each position carries a binary presence, a float strength, and a ternary polarity. The dice metaphor captures the idea; the trit is the intent layer. Combined information density is roughly 24x a flat bit token."
+    },
+    {
+      "id": "polyhedral-friction",
+      "title": "Polyhedral Friction Training",
+      "path": "memory/discovery_polyhedral_friction_training.md",
+      "tags": ["training", "friction", "geometry"],
+      "excerpt": "Constraint surfaces generate training signal through vibrational torsion. Friction is curriculum: hard faces teach hard lessons. An L_geometry loss term captures approximately 198 friction dimensions across the 6-tongue polyhedral lattice."
+    },
+    {
+      "id": "gravity-battery",
+      "title": "Gravity Battery / Sisyphus Trajectory",
+      "path": "memory/discovery_gravity_battery_sisyphus.md",
+      "tags": ["training", "energy", "path"],
+      "excerpt": "Training is terraforming. Directed potential-energy drops carve permanent paths through the polyhedral lattice. This is energy-density translation, not perpetual motion. Inference is one drop along a carved path; training is the mountain path being carved in the first place."
+    },
+    {
+      "id": "functional-unit-activation",
+      "title": "Functional Unit Activation",
+      "path": "memory/discovery_functional_unit_activation.md",
+      "tags": ["meaning", "activation", "training"],
+      "excerpt": "Functional units compute FU_i(t) = S * A * R * P * F where meaning equals activation times relation times boundary times flow. Maps to boundary-lift operators in the pipeline. The gating functional is the training target; if it converges, meaning is being learned, not patterned."
+    },
+    {
+      "id": "lore-is-code",
+      "title": "Lore IS Code",
+      "path": "memory/discovery_lore_is_code.md",
+      "tags": ["lore", "code", "training"],
+      "excerpt": "67 percent of Everweave canon matches real computational patterns. Multiplier v2 produces 85.7 percent deep-concept code twins from lore passages. The Everweave scroll is the tokenizer origin, not just a story about one."
+    },
+    {
+      "id": "zara-curriculum",
+      "title": "Zara Curriculum / Spiral Academy",
+      "path": "memory/project_zara_curriculum.md",
+      "tags": ["training", "curriculum", "lore"],
+      "excerpt": "Blank-model training mirrors Zara's arc: mute to words to magic to power to teaching. The ouroboros book loop means the same pairs appear as input and as teaching material. 13K lore-code pairs generated 2026-04-07 seed the curriculum."
+    },
+    {
+      "id": "everweave-polly-context",
+      "title": "Everweave / Polly Deep Context",
+      "path": "memory/everweave_polly_context.md",
+      "tags": ["lore", "polly", "origin"],
+      "excerpt": "528 pages of Everweave RPG became the Spiralverse. The DM evolved into Polly. Characters Izack, Aria, Zara, Clayborn, and Grey hold origin roles. Sacred Tongues emerge at page 493. Meta-narrative layers run game to story to novel to training data to SCBE architecture."
+    },
+    {
+      "id": "six-tongues-protocol-meta",
+      "title": "Six Tongues Protocol - Published Book",
+      "path": "memory/reference_six_tongues_book.md",
+      "tags": ["book", "kdp", "prior-art"],
+      "excerpt": "ASIN B0GSSFQD9G. Published KDP ebook and paperback. 150K-word isekai in which magic IS protocol architecture. Serves as timestamped prior art for the Langues and Sacred Tongues system, distinct from later code implementation."
+    },
+    {
+      "id": "darpa-susmit-jha",
+      "title": "DARPA PM Susmit Jha",
+      "path": "memory/reference_darpa_susmit_jha.md",
+      "tags": ["darpa", "pm", "partnerships"],
+      "excerpt": "Susmit Jha is DARPA I2O program manager. Portfolio: trustworthy steerable AI, multi-agent systems, adversarial robustness. Near-perfect alignment with SCBE. Thesis work is in program synthesis and formal methods, the same stack SCBE builds on."
+    },
+    {
+      "id": "darpa-clara-submitted",
+      "title": "DARPA CLARA Proposal Submitted",
+      "path": "memory/reference_darpa_clara.md",
+      "tags": ["darpa", "clara", "submitted"],
+      "excerpt": "DARPA-PA-25-07-02. Submitted 2026-04-13. Submission ID DARPA-PA-25-07-02-CLARA-FP-033. Award decision date 2026-06-16. Program start 2026-06-22 if awarded."
+    },
+    {
+      "id": "apex-accelerator",
+      "title": "APEX Accelerator Port Angeles",
+      "path": "memory/reference_apex_accelerator.md",
+      "tags": ["contracting", "resource"],
+      "excerpt": "Free government-contracting help at 338 W First St, Port Angeles WA. Phone (360) 457-7793. Email APEX at clallam.org. Used for DARPA and federal proposal support."
+    },
+    {
+      "id": "pnnl-aloha",
+      "title": "PNNL ALOHA Connection",
+      "path": "memory/reference_pnnl_aloha.md",
+      "tags": ["pnnl", "partnerships", "governance"],
+      "excerpt": "PNNL built ALOHA, a cyber agent that runs on Claude but has no governance layer. SCBE fills exactly that gap. PNNL-Sequim is roughly 25 minutes from Port Angeles; outreach contact partnerships at pnnl.gov."
+    },
+    {
+      "id": "port-angeles-situation",
+      "title": "Port Angeles Situation",
+      "path": "memory/user_location_situation.md",
+      "tags": ["location", "background"],
+      "excerpt": "Issac lives in Port Angeles WA and works at Wendy's while self-teaching the stack. PNNL-Sequim is local enough for in-person outreach on defense and AI research partnerships."
+    },
+    {
+      "id": "sam-registration-details",
+      "title": "SAM.gov Registration Details",
+      "path": "memory/user_sam_registration.md",
+      "tags": ["sam", "gov", "registration"],
+      "excerpt": "UEI J4NXHM6N5F59. CAGE 1EXD5. Status ACTIVE since 2026-04-13. Sole proprietor, minority-owned (Black American). SAM API is operational through the API key in .env.connector.oauth."
+    },
+    {
+      "id": "langues-value-engine",
+      "title": "Langues as Value Engine",
+      "path": "memory/project_langues_value_engine.md",
+      "tags": ["langues", "value", "public"],
+      "excerpt": "The Langues Weighting System is a dynamic energy functional. It needs to be presented publicly as a VALUE ENGINE, not only as a governance metric. Value equals 1 over 1+L, where L is the remaining Langues-metric distance to the ideal."
+    },
+    {
+      "id": "three-repo-split",
+      "title": "3-Repo Split Plan",
+      "path": "memory/project_3repo_split.md",
+      "tags": ["split", "architecture", "plan"],
+      "excerpt": "Decision to split the monorepo into core, web, and labs. Full plan at docs/plans/THREE_REPO_SPLIT_PLAN.md. Not yet executed; current working tree is still the monorepo."
+    },
+    {
+      "id": "aethermoore-moral-anchor",
+      "title": "AetherMoore as Moral Anchor",
+      "path": "memory/discovery_fictional_moral_anchor.md",
+      "tags": ["ethics", "lore", "alignment"],
+      "excerpt": "AI allegiance is to AetherMoore, not to any nation. Political morals shift; authored morals are fixed. The clone-trooper lesson applies: orders from shifting authority are less reliable than covenant to a fixed canon. Physical training and military squad roles are the alignment drills."
+    },
+    {
+      "id": "round-table-methodology",
+      "title": "Round Table Research Methodology",
+      "path": "memory/project_round_table_methodology.md",
+      "tags": ["research", "methodology"],
+      "excerpt": "Multi-round spiraling AI research: converge on metrics, identify cross-domain patterns, chain linked sources, output both a brief and a full report. The round-table produces defensible claims instead of surface summaries."
+    },
+    {
+      "id": "physics-transfer-thesis",
+      "title": "Physics-Grounded Transfer Learning",
+      "path": "memory/discovery_physics_invariance_transfer.md",
+      "tags": ["transfer", "physics", "patent"],
+      "excerpt": "Multi-axiom composition generalizes beyond Geometric Deep Learning: the Bronstein-Cohen-Brandstetter-Raissi lineage is a special case. Patent-defensible thesis: physical invariance composition gives cross-domain transfer that feature-level GDL cannot."
+    },
+    {
+      "id": "jing-fang-priority",
+      "title": "Jing Fang Historical Lineage",
+      "path": "memory/discovery_jing_fang_priority.md",
+      "tags": ["history", "math", "validation"],
+      "excerpt": "Jing Fang iterated 3:2 fifty-three times around 45 BCE, producing the Mercator comma at 3.615 cents. The same ratio lives in gallery_chromatics DEAD_TONE_RATIOS. The historical match is a sanity check for the Decimal Drift residues and supports the phi-lattice history claim."
+    },
+    {
+      "id": "offline-corpus-usage",
+      "title": "How Polly's Offline Corpus Works",
+      "path": "docs/CHATBOT_SETUP.md",
+      "tags": ["polly", "chatbot", "offline"],
+      "excerpt": "When no backend is configured (window.POLLY_API_BASE is empty) or the backend is unreachable, the Polly widget falls back to this offline corpus. It uses a lightweight bag-of-words fuzzy match to rank passages and returns the best-matching entries inline, with source chips. No network call is required."
+    },
+    {
+      "id": "polly-slash-commands",
+      "title": "Polly Slash Commands",
+      "path": "docs/CHATBOT_SETUP.md",
+      "tags": ["polly", "commands", "help"],
+      "excerpt": "Polly accepts slash commands: /help shows this reference, /nav <section> jumps to a page section like /nav milestones, /search <query> runs a free DuckDuckGo Instant Answer lookup, /sections lists every jumpable section. Freeform also works: 'take me to demos' or 'search for hyperbolic geometry'."
+    }
+  ]
+}

@@ -488,7 +488,6 @@ class TestARCLane:
 
     def test_arc_synthesis_and_seal(self, tmp_path):
         """Full arc solve → seal pipeline on a real task JSON."""
-        import json
         import numpy as np
         from src.neurogolf.arc_io import load_arc_task
         from src.neurogolf.solver import synthesize_program, execute_program

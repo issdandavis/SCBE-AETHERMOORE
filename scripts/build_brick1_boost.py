@@ -37,7 +37,6 @@ AV_FACTOR = 1
 def stage_of(row: dict) -> str | None:
     m = row.get("map")
     k = row.get("kind")
-    t = row.get("tongue")
     txt = row.get("text", "") or ""
 
     if m == "transport_atomic" and k in {"reaction_predict", "reaction_stability"}:

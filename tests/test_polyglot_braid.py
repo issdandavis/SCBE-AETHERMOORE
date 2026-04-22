@@ -272,7 +272,7 @@ class TestCrossConvergence:
         concept = PARALLEL_CONCEPTS[0]
         result = weave_concept(concept, languages=["en", "es", "fr", "de", "pt"])
         # All Latin script — byte ranges should be similar (ASCII-ish)
-        for code, _strand in result.strands.items():
+        for code in result.strands:
             lang = LANGUAGE_BY_CODE[code]
             assert lang.script == "Latin"
 

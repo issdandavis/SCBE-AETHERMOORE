@@ -61,19 +61,6 @@ from src.crypto.tri_bundle import (
     TONGUE_WEIGHTS,
     TONGUE_FREQUENCIES,
 )
-from src.crypto.flight_dynamics import (
-    RotorState,
-    RecoveryPath,
-    TailRotorState,
-    PacejkaTireState,
-    compute_recovery_paths,
-    compute_tail_rotor_state,
-    compute_pacejka_state,
-)
-from src.crypto.gallery_chromatics import (
-    GalleryColorField,
-    compute_gallery_color_field,
-)
 
 # ---------------------------------------------------------------------------
 # Physical constants (SI)
@@ -858,6 +845,12 @@ def compute_vrs_state(
     """
     mean_n = qho.mean_excitation
     max_n = qho.max_excitation
+    from src.crypto.flight_dynamics import (
+        RotorState,
+        compute_pacejka_state,
+        compute_recovery_paths,
+        compute_tail_rotor_state,
+    )
 
     # Rotor RPM from mean excitation: idle=200, max=320 RPM
     rpm = 200.0 + mean_n * 17.14  # scales 0-7 to 200-320
@@ -1920,6 +1913,7 @@ def generate_quantum_bundle(text: str) -> QuantumFrequencyBundle:
     neg_isolation = compute_negative_isolation_space(qho, echo, triangulation)
     vrs = compute_vrs_state(qho, trit, mp)
     code_lattice = compute_code_lattice(qho, mp, vrs)
+    from src.crypto.gallery_chromatics import compute_gallery_color_field
 
     # Dual-seeded chromatic iris from gallery harmonics
     tongue_coefficients = {t: qho.states[t].coefficient for t in TONGUE_ORDER}

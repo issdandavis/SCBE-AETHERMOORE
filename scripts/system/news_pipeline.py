@@ -179,7 +179,7 @@ try:
 
     _BRAID_AVAILABLE = True
 except Exception:
-    pass
+    _BRAID_AVAILABLE = False
 
 
 def _braid_score(payload: bytes, tongue: str) -> dict | None:
@@ -272,7 +272,7 @@ try:
 
     CRYPTOGRAPHY_AVAILABLE = True
 except Exception:
-    pass
+    CRYPTOGRAPHY_AVAILABLE = False
 
 CRYPTO_TIER = "liboqs" if LIBOQS_AVAILABLE else ("cryptography" if CRYPTOGRAPHY_AVAILABLE else "hmac-only")
 

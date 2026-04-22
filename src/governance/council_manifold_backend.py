@@ -31,12 +31,9 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-
-if TYPE_CHECKING:
-    from .runtime_gate import Decision
 
 # ---- Constants (from council_seed_schema $defs.mixed_metric) ----
 PHI = (1 + math.sqrt(5)) / 2
@@ -390,18 +387,6 @@ def lift_6d_to_21d(
     )
 
 
-# ---- Tier -> Decision mapping (lazy to avoid circular import) ----
-def _tier_to_decision(tier: str) -> Any:
-    from .runtime_gate import Decision
-
-    return {
-        "ALLOW": Decision.ALLOW,
-        "QUARANTINE": Decision.QUARANTINE,
-        "ESCALATE": Decision.REVIEW,  # 6-council deep inspection
-        "DENY": Decision.DENY,
-    }[tier]
-
-
 # ---- Public backend class ----
 class CouncilManifoldBackend:
     """Stabilized council manifold as a runtime_gate overlay backend.
@@ -447,9 +432,9 @@ class CouncilManifoldBackend:
         query_count: int = 0,
         classifier_score: Optional[float] = None,
         trichromatic_risk: Optional[float] = None,
-    ) -> Tuple[Decision, List[str], RoutingDecision]:
+    ) -> Tuple[str, List[str], RoutingDecision]:
         """Lift 6D coords to 21D, route against the stabilized manifold,
-        and return (Decision, signals, routing_detail)."""
+        and return (tier, signals, routing_detail)."""
         probe = lift_6d_to_21d(
             tongue_coords,
             trust_level_idx=trust_level_idx,
@@ -461,8 +446,6 @@ class CouncilManifoldBackend:
             trichromatic_risk=trichromatic_risk,
         )
         routing = route(probe, self.seeds, dist_scale=self._dist_scale)
-        decision = _tier_to_decision(routing.tier)
-
         signals: List[str] = [
             f"council_manifold_tier={routing.tier}",
             f"council_manifold_nearest={routing.nearest_seed}",
@@ -470,4 +453,4 @@ class CouncilManifoldBackend:
             f"council_manifold_z_adv={routing.z_adv:.3f}",
         ]
         signals.extend(f"council_manifold_reason:{r}" for r in routing.reasons)
-        return decision, signals, routing
+        return routing.tier, signals, routing
