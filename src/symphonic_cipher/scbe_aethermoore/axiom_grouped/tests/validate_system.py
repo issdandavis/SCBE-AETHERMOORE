@@ -66,7 +66,6 @@ class SCBEValidator:
         """L1: Complex context should be bounded."""
         # c(t) ∈ ℂ^D with |z_j| ≤ 1 (normalized)
         D = 6
-        max_norm_sq = D * 1.0  # noqa: F841  Each |z_j|² ≤ 1
         return True, f"Norm² bounded by D={D} when amplitudes normalized to [0,1]"
 
     def _check_l2_isometry(self) -> Tuple[bool, str]:

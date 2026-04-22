@@ -85,8 +85,6 @@ RUNTIME_EXTENSION_ALIASES = {
     ".cmd": "cmd",
     ".bat": "cmd",
 }
-_TONGUES_MODULE = None
-
 FLOW_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 FLOW_SKILLS = [
     "multi-agent-orchestrator",
@@ -402,9 +400,12 @@ def _resolve_runtime_argv_prefix(language: str) -> list[str]:
 
 
 def _load_tongues_module(repo_root: Path):
-    global _TONGUES_MODULE
-    if _TONGUES_MODULE is not None:
-        return _TONGUES_MODULE
+    return _load_tongues_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=1)
+def _load_tongues_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "six-tongues-cli.py"
     if not module_path.exists():
         return None
@@ -414,7 +415,6 @@ def _load_tongues_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _TONGUES_MODULE = module
     return module
 
 
