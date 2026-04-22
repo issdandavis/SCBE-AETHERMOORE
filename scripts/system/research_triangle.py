@@ -170,7 +170,6 @@ class ArxivClient:
     NS   = {"atom": "http://www.w3.org/2005/Atom"}
 
     def fetch(self, query: str, max_results: int = 10, days_back: int = 180) -> List[dict]:
-        since = (datetime.now(timezone.utc) - timedelta(days=days_back)).strftime("%Y%m%d")
         # arXiv search: title+abstract, restrict to cs.AI cs.LG cs.CR stat.ML
         full_q = f"({query}) AND (cat:cs.AI OR cat:cs.LG OR cat:cs.CR OR cat:stat.ML)"
         qs = f"search_query={quote_plus(full_q)}&start=0&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"

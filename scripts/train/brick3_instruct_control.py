@@ -20,7 +20,6 @@ Artifacts land at artifacts/training/brick3_instruct_control/.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 import torch

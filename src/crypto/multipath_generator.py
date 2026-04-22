@@ -152,7 +152,7 @@ def _flip_trit(trit: int, deviation: float, threshold: float) -> int:
         # Currently above some boundary — mirror to below
         if trit == +1:
             return 0  # Was above +threshold, mirror to below
-        elif trit == 0 and deviation > 0:
+        elif trit == 0:
             return +1 if abs(deviation - threshold) < abs(deviation + threshold) else -1
         else:
             return 0
@@ -160,7 +160,7 @@ def _flip_trit(trit: int, deviation: float, threshold: float) -> int:
         # Currently below some boundary — mirror to above
         if trit == -1:
             return 0
-        elif trit == 0 and deviation < 0:
+        elif trit == 0:
             return -1 if abs(deviation + threshold) < abs(deviation - threshold) else +1
         else:
             return 0
