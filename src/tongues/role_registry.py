@@ -25,12 +25,8 @@ AUTHORITY_FILES: dict[RoleName, tuple[str, ...]] = {
         "python/scbe/tongue_code_lanes.py",
         "notes/System Library/Repository Mirror/docs/specs/TONGUE_ISOMORPHISM_PROOF.md",
     ),
-    "runtime_emission": (
-        "src/ca_lexicon/__init__.py",
-    ),
-    "spirit_narrative": (
-        "memory + docs",
-    ),
+    "runtime_emission": ("src/ca_lexicon/__init__.py",),
+    "spirit_narrative": ("memory + docs",),
 }
 
 PARADIGM_ISOMORPHISM_MAP: dict[str, str] = {

@@ -40,6 +40,7 @@ from typing import Dict, List, Protocol, Tuple
 class SupportsObservedRatio(Protocol):
     observed_ratio: float
 
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
