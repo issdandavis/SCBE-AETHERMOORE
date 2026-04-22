@@ -113,7 +113,7 @@ def scan_file(path: Path) -> list[tuple[str, int, str]]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Scan repo for leaked secrets.")
     parser.add_argument("--all", action="store_true", help="Scan all tracked files (default behaviour).")
-    args = parser.parse_args()
+    parser.parse_args()
 
     files = get_tracked_files()
     total_hits = 0

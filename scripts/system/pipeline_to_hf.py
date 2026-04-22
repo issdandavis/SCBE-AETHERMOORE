@@ -44,13 +44,13 @@ def load_sft_pairs() -> list[dict]:
     pairs = []
     for jsonl_file in sorted(SFT_DIR.glob("*.jsonl")):
         with jsonl_file.open(encoding="utf-8") as f:
-            for line in f:
+            for line_no, line in enumerate(f, start=1):
                 line = line.strip()
                 if line:
                     try:
                         pairs.append(json.loads(line))
-                    except json.JSONDecodeError:
-                        pass
+                    except json.JSONDecodeError as exc:
+                        print(f"[pipeline_to_hf] Skipping malformed JSON at {jsonl_file}:{line_no}: {exc}", file=sys.stderr)
     return pairs
 
 

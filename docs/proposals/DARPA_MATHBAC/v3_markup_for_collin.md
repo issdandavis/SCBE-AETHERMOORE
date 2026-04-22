@@ -29,7 +29,23 @@ Collin — I ran the v2 draft against what I can actually defend under DARPA-sty
 
 **Proposed:** Add a bootstrap CI (resample segments with replacement, ≥ 1,000 bootstrap samples) and report as "1.958 bits/tick [CI_low, CI_high]." If the CI is tight, that's a stronger claim; if it's wide, we learn something about the estimator.
 
-**Why:** A point estimate this close to the theoretical ceiling begs the question "how close is it actually?" A reviewer will not trust the 97.9% without a CI. Also: specify the binning / quantile-center procedure used to estimate the transition probabilities; it matters for reproducibility.
+**Status 2026-04-19 — bootstrap CI ran, K_active mismatch surfaced.** Bootstrap CI on the committed segmentation bundle (`segmentation_committed.json`, sha256 `dab56a6832548f22821d737f7f4f7434f6d9f0c9165ed375baf57963673e64d8`), N = 10,000 trace-level resamples with replacement, Laplace α = 1.0 smoothing, seed 20260419:
+
+| resolution | K_active | ceiling log₂(K) | point estimate | bootstrap median | 95% CI | % of ceiling |
+|---|---|---|---|---|---|---|
+| realm  | 3 | 1.585 | 1.5761 | 1.5762 | [1.5718, 1.5799] | 99.4% |
+| regime | 8 | 3.000 | 2.9818 | 2.9815 | [2.5709, 2.9835] | 99.4% |
+
+Report: `artifacts/collab/dava_blind_v1/kl_capacity_ci_report.json` (sha256 `138d3cf9d00b16153fe4e9e50ec5ec152d4ac5ede47959cad8f5d381f4f2d4d5`).
+
+**Reconciliation needed before §3.4 can cite a CI.** The v2 paper's 1.958 bits/tick against a log₂(4) = 2.000 ceiling does not match either resolution in the committed bundle. Only 3 of 8 cataloged realms (R_CORE_QUIET, R_CORE_ACTIVE, R_CONN_LOW) are active in the segmentation — the other 5 realms have zero ticks — and all 8 regimes (SCBE_R00–R07) are active. Two reads:
+
+1. The v2 number was computed on a different segmentation resolution (e.g., a 4-bin coarse-graining of the 8 realms that we don't have source for). Share the v2 computation code and I'll re-run the bootstrap at that resolution.
+2. The v2 number pooled realm + something else (e.g., tier or breath phase) to reach 4 effective states. Same ask — share the binning and we re-run.
+
+**Proposed v3 text:** "Under the phi-quantile Poincaré embedding, the regime-transition Markov chain has channel capacity [point estimate] bits/tick, bootstrap 95% CI [low, high] over N = 10,000 trace-level resamples of the blind protocol, which is [%]% of the log₂([K_active]) = [ceiling] bit/tick maximum-entropy ceiling under [resolution]-level segmentation (K_active = [K])." Fill in from the table once the K_active question is resolved.
+
+**Why:** A point estimate this close to the theoretical ceiling begs the question "how close is it actually?" A reviewer will not trust the 97.9% without a CI. Also: specify the binning / quantile-center procedure used to estimate the transition probabilities; it matters for reproducibility — the K_active discrepancy above is a live example of that reproducibility cost.
 
 ## 4. §4 — "Theorem (sketch)"
 

@@ -489,7 +489,6 @@ class TestQHOToFlightMapping:
 
     def test_higher_excitation_higher_speed(self):
         """Higher QHO excitation → more kinetic energy → higher airspeed."""
-        f1 = self._make_flight("a")  # minimal text
         f2 = self._make_flight(
             "The extraordinary polymorphic boundary fractures into multiple divergent quantum-entangled crystallographic pathological extreme excitation"
         )

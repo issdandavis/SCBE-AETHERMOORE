@@ -42,7 +42,6 @@ def _parse_rss(text: str, source: str, region: str, n: int = 6) -> list[dict]:
     items: list[dict] = []
     try:
         root = ET.fromstring(text)
-        ns = {"atom": "http://www.w3.org/2005/Atom"}
         # RSS 2.0
         for item in root.iter("item"):
             if len(items) >= n:
@@ -117,8 +116,8 @@ def hn_top(n: int = 8) -> list[dict]:
                 }
             )
             time.sleep(0.08)
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"[HN] Story {story_id} failed: {exc}")
     return items
 
 
@@ -467,17 +466,15 @@ def worldnews_api(n: int = 6) -> list[dict]:
             headers={"User-Agent": UA},
             timeout=TIMEOUT,
         ).json()
-        items = []
-        for art in resp.get("news", [])[:n]:
-            country = art.get("publish_date", "")[:2]
-            items.append(
-                {
-                    "title": art.get("title", "")[:120],
-                    "url": art.get("url", "#"),
-                    "source": "worldnews",
-                    "region": "global",
-                }
-            )
+        items = [
+            {
+                "title": art.get("title", "")[:120],
+                "url": art.get("url", "#"),
+                "source": "worldnews",
+                "region": "global",
+            }
+            for art in resp.get("news", [])[:n]
+        ]
         return items
     except Exception as exc:
         print(f"[WorldNews] Failed: {exc}")

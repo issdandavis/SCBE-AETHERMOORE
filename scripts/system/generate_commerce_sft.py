@@ -23,6 +23,7 @@ import json
 import math
 import os
 import random
+import sys
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -641,8 +642,11 @@ def load_stripe_haggle(path: str) -> list[tuple]:
                     )
 
                 results.append((profile, prompt, response, english))
-            except Exception:
-                pass
+            except (KeyError, TypeError, ValueError) as exc:
+                print(
+                    f"[WARN] Failed to convert haggle row for {profile.name}: {exc}",
+                    file=sys.stderr,
+                )
 
     print(f"  Stripe haggle classification: {dict(outcome_counts)}")
     return results

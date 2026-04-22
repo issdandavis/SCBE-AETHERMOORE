@@ -34,7 +34,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
-from .council_manifold_backend import CouncilManifoldBackend
 from .negative_tongue_lattice import NegativeTongueLattice
 from .trichromatic_governance import TrichromaticGovernanceEngine
 
@@ -496,12 +495,23 @@ class RuntimeGate:
         self._council_manifold: Optional[CouncilManifoldBackend] = None
         if self._council_manifold_enabled:
             try:
+                from .council_manifold_backend import CouncilManifoldBackend
+
                 self._council_manifold = CouncilManifoldBackend(
                     seeds_path=council_manifold_seeds_path,
                 )
             except (FileNotFoundError, OSError):
                 self._council_manifold = None
                 self._council_manifold_enabled = False
+
+    @staticmethod
+    def _map_council_tier(tier: str) -> "Decision":
+        return {
+            "ALLOW": Decision.ALLOW,
+            "QUARANTINE": Decision.QUARANTINE,
+            "ESCALATE": Decision.REVIEW,
+            "DENY": Decision.DENY,
+        }[tier]
 
     # ------------------------------------------------------------------ #
     #  Tongue coordinate extraction
@@ -1251,7 +1261,7 @@ class RuntimeGate:
 
             # Council manifold overlay — third tier, escalate-only
             if self._council_manifold is not None:
-                council_decision, council_signals, _routing = self._council_manifold.decide(
+                council_tier, council_signals, _routing = self._council_manifold.decide(
                     coords,
                     trust_level_idx=trust_index,
                     null_anomaly=null_anomaly,
@@ -1261,6 +1271,7 @@ class RuntimeGate:
                     classifier_score=classifier_score,
                     trichromatic_risk=(trichromatic_risk if self._trichromatic_engine is not None else None),
                 )
+                council_decision = self._map_council_tier(council_tier)
                 signals.extend(council_signals)
                 escalated = _escalate_decision(decision, council_decision)
                 if escalated != decision:

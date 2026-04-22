@@ -412,7 +412,7 @@ def run_all_modes(
 ) -> Dict[str, DidacticFlow]:
     """Run all four didactic flow modes and return results."""
     results = {}
-    for mode in FlowMode:
+    for mode in tuple(FlowMode):
         results[mode.value] = run_didactic_flow(
             mode=mode,
             steps=steps,
