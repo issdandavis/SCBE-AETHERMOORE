@@ -30,12 +30,14 @@ If you do not know where to start, use this order:
 
 1. `START_HERE.md`
 2. `README.md`
-3. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
-4. `CANONICAL_SYSTEM_STATE.md`
-5. `package.json`
-6. `src/api/main.py`
-7. `api/main.py`
-8. `scripts/`
+3. `docs/PRODUCT_QUICKSTART.md`
+4. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
+5. `CANONICAL_SYSTEM_STATE.md`
+6. `package.json`
+7. `scripts/system/start_aetherbrowser_extension_service.mjs`
+8. `scripts/verify_aetherbrowser_extension_service.py`
+9. `src/api/main.py`
+10. `api/main.py`
 
 ## Active Lanes
 
@@ -73,6 +75,7 @@ Use this lane when the task is about running a user-facing API, SaaS behavior, s
 
 Use this lane when the task is about making the repository clone experience clearer, reducing root confusion, or deciding what belongs in product, platform, research, or archive.
 
+- `docs/PRODUCT_QUICKSTART.md`
 - `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
 - `config/repo_consolidation_inventory.json`
 - `README.md`
@@ -236,6 +239,14 @@ Decide which of these should be ignored, archived, mirrored, or extracted later.
 Do **not** start with repo splitting.
 
 ## Commands To Use Next
+
+### Product quickstart
+
+```powershell
+npm install
+npm run aetherbrowser:service:start
+npm run aetherbrowser:service:verify
+```
 
 ### TypeScript package lane
 

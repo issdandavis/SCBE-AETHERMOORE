@@ -11,6 +11,7 @@ Long-form documentation belongs under `docs/`. Code directories should stay impl
 ## Start Here
 
 - New to the repo: [START_HERE.md](START_HERE.md)
+- Product-first quickstart: [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
 - Current authority order: [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
 - Consolidation authority: [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
 - Root authority keep set: [docs/specs/ROOT_AUTHORITY_KEEP_SET.md](docs/specs/ROOT_AUTHORITY_KEEP_SET.md)
@@ -33,6 +34,7 @@ The repo is not being split into more GitHub repositories. The current strategy 
 
 If you want the nearest thing to the real product surface, start with the browser-and-local-API lane:
 
+- [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
 - `public/`
 - `app/`
 - `api/`
@@ -71,6 +73,10 @@ pip install scbe-aethermoore
 ```
 
 ## Quickstart
+
+For the official product-first run path, use [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md).
+
+The install and package examples below are secondary public entrypoints.
 
 Python:
 

@@ -9,10 +9,11 @@ Do not start by browsing the root at random.
 If you are new here, use this order:
 
 1. [README.md](README.md)
-2. [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
-3. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
-4. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
-5. [config/repo_consolidation_inventory.json](config/repo_consolidation_inventory.json)
+2. [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
+3. [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
+4. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
+5. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
+6. [config/repo_consolidation_inventory.json](config/repo_consolidation_inventory.json)
 
 ## What To Expect
 
@@ -45,8 +46,9 @@ The shared platform that supports that lane currently lives mainly in:
 Open these first:
 
 1. [README.md](README.md)
-2. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
-3. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
+2. [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
+3. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
+4. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
 
 ## If You Want Canonical Definitions
 

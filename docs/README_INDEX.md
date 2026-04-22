@@ -10,11 +10,12 @@ For the cleanest reading order, prefer:
 
 1. `README.md`
 2. `START_HERE.md`
-3. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
-4. `CANONICAL_SYSTEM_STATE.md`
-5. `docs/specs/SCBE_CANONICAL_CONSTANTS.md`
-6. `SPEC.md`
-7. `CONCEPTS.md`
+3. `docs/PRODUCT_QUICKSTART.md`
+4. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
+5. `CANONICAL_SYSTEM_STATE.md`
+6. `docs/specs/SCBE_CANONICAL_CONSTANTS.md`
+7. `SPEC.md`
+8. `CONCEPTS.md`
 
 These are the safest files to treat as routing or definition surfaces.
 
@@ -22,6 +23,7 @@ These are the safest files to treat as routing or definition surfaces.
 
 After the canonical files above, use:
 
+- `docs/PRODUCT_QUICKSTART.md`
 - `docs/REPO_SURFACE_MAP.md`
 - `docs/evidence/EVIDENCE_24_24.md`
 - `docs/LAYER_INDEX.md`
