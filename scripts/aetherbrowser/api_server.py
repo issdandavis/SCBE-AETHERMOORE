@@ -2034,6 +2034,83 @@ _cli_jobs: dict[str, dict[str, Any]] = {}
 
 
 # =========================================================================== #
+#  Polly — AI Assistant Endpoints
+# =========================================================================== #
+
+from pydantic import BaseModel
+
+class PollyChatPayload(BaseModel):
+    message: str
+    context: Optional[str] = "site"
+
+class PollyRespondPayload(BaseModel):
+    text: str
+    context: Optional[str] = "site"
+    intent: Optional[str] = ""
+
+class PollySearchPayload(BaseModel):
+    query: str
+
+class PollyDelegatePayload(BaseModel):
+    text: str
+
+
+@app.post("/v1/polly/chat")
+async def polly_chat(payload: PollyChatPayload):
+    """Main chat endpoint for Polly sidebar."""
+    try:
+        from scripts.system.polly_service import chat
+        result = await chat(payload.message, payload.context)
+        return {"ok": True, "data": result}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/v1/polly/respond")
+async def polly_respond(payload: PollyRespondPayload):
+    """Alternative response endpoint for Polly."""
+    try:
+        from scripts.system.polly_service import respond
+        result = await respond(payload.text, payload.context, payload.intent)
+        return {"ok": True, "data": result}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.get("/v1/polly/context")
+async def polly_context():
+    """Return backend capabilities."""
+    try:
+        from scripts.system.polly_service import get_context
+        result = await get_context()
+        return {"ok": True, "data": result}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/v1/polly/search")
+async def polly_search(payload: PollySearchPayload):
+    """Search proxy for Polly."""
+    try:
+        from scripts.system.polly_service import search
+        result = await search(payload.query)
+        return {"ok": True, "data": result}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+@app.post("/v1/polly/delegate")
+async def polly_delegate(payload: PollyDelegatePayload):
+    """Delegation endpoint for Polly."""
+    try:
+        from scripts.system.polly_service import delegate
+        result = await delegate(payload.text)
+        return {"ok": True, "data": result}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# =========================================================================== #
 #  Entry point
 # =========================================================================== #
 
