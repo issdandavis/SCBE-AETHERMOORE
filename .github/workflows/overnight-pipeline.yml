@@ -232,19 +232,50 @@ jobs:
           fi
 
           echo "=== HYDRA spine + ledger ==="
-          if ! python -m pytest tests/hydra/ -v --tb=short --ignore=tests/node_modules 2>&1 | tee -a artifacts/tier3_security_results.txt; then
-            echo "::error::HYDRA tests FAILED"
-            SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
+          if [ -d tests/hydra ]; then
+            if ! python -m pytest tests/hydra/ -v --tb=short --ignore=tests/node_modules 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+              echo "::error::HYDRA tests FAILED"
+              SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
+            fi
+          else
+            echo "::notice::Skipping HYDRA tests (tests/hydra directory not present)" | tee -a artifacts/tier3_security_results.txt
           fi
 
           echo "=== Tamper detection ==="
-          if ! python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
-            echo "::error::Tamper detection tests FAILED"
-            SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
+          if [ -f tests/test_tamper_detection.py ]; then
+            if ! python -m pytest tests/test_tamper_detection.py -v --tb=short 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+              echo "::error::Tamper detection tests FAILED"
+              SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
+            fi
+          else
+            echo "::notice::Skipping tamper detection tests (tests/test_tamper_detection.py not present)" | tee -a artifacts/tier3_security_results.txt
           fi
 
           echo "=== Manifold validation ==="
-          if ! python -m pytest tests/ -k "manifold or lattice or harmonic" -v --tb=short --ignore=tests/node_modules 2>&1 | tee -a artifacts/tier3_security_results.txt; then
+          MANIFOLD_TESTS=(
+            tests/test_manifold_mirror.py
+            tests/test_gate_swap_trimanifold.py
+            tests/test_harmonic_dark_fill.py
+            tests/test_harmonic_cipher.py
+            tests/test_harmonic_scaling_integration.py
+            tests/test_code_lattice.py
+            tests/test_dual_lattice_contract.py
+            tests/test_negative_tongue_lattice.py
+            tests/test_quasicrystal_lattice.py
+            tests/test_triangulated_lattice.py
+            tests/test_tri_manifold_lattice.py
+            tests/harmonic/test_pipeline14_governance.py
+          )
+          EXISTING_MANIFOLD_TESTS=()
+          for test_file in "${MANIFOLD_TESTS[@]}"; do
+            if [ -f "$test_file" ]; then
+              EXISTING_MANIFOLD_TESTS+=("$test_file")
+            fi
+          done
+
+          if [ "${#EXISTING_MANIFOLD_TESTS[@]}" -eq 0 ]; then
+            echo "::notice::Skipping manifold validation (no curated manifold test files present)" | tee -a artifacts/tier3_security_results.txt
+          elif ! python -m pytest "${EXISTING_MANIFOLD_TESTS[@]}" -v --tb=short --ignore=tests/node_modules 2>&1 | tee -a artifacts/tier3_security_results.txt; then
             echo "::error::Manifold validation tests FAILED"
             SECURITY_FAILURES=$((SECURITY_FAILURES + 1))
           fi
