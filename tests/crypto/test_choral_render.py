@@ -103,13 +103,13 @@ def build_voice_layers(tongue, mode):
     pan = TONGUE_PAN.get(tongue, 0.0)
     lead = VoiceLayer(VoiceRole.LEAD, f"{tongue}_lead", 0.9, pan, 0.0)
     if mode == RenderMode.PLAIN_SPEECH:
-        return (lead,)
+        return [lead]
     shadow = VoiceLayer(VoiceRole.SHADOW, f"{tongue}_shadow", 0.3, pan * 0.5, -0.5)
     if mode == RenderMode.SPEECH_SONG:
-        return (lead, shadow)
+        return [lead, shadow]
     drone = VoiceLayer(VoiceRole.DRONE, f"{tongue}_drone", 0.2, 0.0, -12.0)
     harmony = VoiceLayer(VoiceRole.HARMONY, f"{tongue}_harmony", 0.25, -pan, 7.0)
-    return (lead, shadow, drone, harmony)
+    return [lead, shadow, drone, harmony]
 
 
 # ---------------------------------------------------------------------------

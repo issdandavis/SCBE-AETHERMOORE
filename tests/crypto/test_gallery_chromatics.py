@@ -423,8 +423,6 @@ class TestEdgeCases:
 
     def test_zero_coefficients(self):
         """All zero coefficients shouldn't crash."""
-        from tests.crypto.test_gallery_chromatics import TestGalleryColorField
-
         notes = TestGalleryColorField._mock_gallery_notes()
         coeffs = {t: 0.0 for t in ["ko", "dr", "av", "um", "ru", "ca"]}
         field = compute_gallery_color_field(notes, coeffs)

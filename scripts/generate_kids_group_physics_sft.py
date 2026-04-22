@@ -40,7 +40,7 @@ import random
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -711,7 +711,7 @@ def gen_tongue_twisters(count: int) -> List[GameRecord]:
         # Neighbor tongues in compass order
         idx = TONGUES.index(tongue)
         left = TONGUES[(idx - 1) % 6]
-        right = TONGUES[(idx + 1) % 6]
+        TONGUES[(idx + 1) % 6]
         opposite = TONGUES[(idx + 3) % 6]
 
         records.append(GameRecord(

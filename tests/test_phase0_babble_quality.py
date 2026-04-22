@@ -579,7 +579,7 @@ class TestEdgeCases:
                         json.loads(content)
                         pytest.fail(f"Record {i}: message content is a JSON object, not text")
                     except json.JSONDecodeError:
-                        pass
+                        continue
 
     def test_no_extremely_long_single_tokens(self, records):
         """No single 'word' should be absurdly long (suggests corruption)."""
