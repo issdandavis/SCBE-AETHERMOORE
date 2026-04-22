@@ -29,6 +29,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import importlib.util
 import json
 import math
 import os
@@ -172,9 +173,7 @@ try:
     if _repo_str not in sys.path:
         sys.path.insert(0, _repo_str)
     from src.spiralverse.semantic_atomic_braid import (  # type: ignore
-        BraidAlignmentReport,
         evaluate_semantic_atomic_braid,
-        sample_ops_for_tongue,
     )
 
     _BRAID_AVAILABLE = True
@@ -258,7 +257,7 @@ def _load_oqs():
         import oqs  # type: ignore
 
         return oqs
-    except BaseException:
+    except Exception:
         return None
 
 
@@ -267,10 +266,10 @@ LIBOQS_AVAILABLE = _OQS_MODULE is not None
 
 CRYPTOGRAPHY_AVAILABLE = False
 try:
-    from cryptography.hazmat.primitives.ciphers.aead import AESGCM  # type: ignore  # noqa: F401
-    from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey  # type: ignore  # noqa: F401
-
-    CRYPTOGRAPHY_AVAILABLE = True
+    CRYPTOGRAPHY_AVAILABLE = (
+        importlib.util.find_spec("cryptography.hazmat.primitives.ciphers.aead") is not None
+        and importlib.util.find_spec("cryptography.hazmat.primitives.asymmetric.x25519") is not None
+    )
 except Exception:
     CRYPTOGRAPHY_AVAILABLE = False
 
@@ -572,7 +571,7 @@ def stage_encrypt(egged: dict) -> dict:
                         "kem_ct_len": len(ciphertext_kem),
                     }
                 )
-        except BaseException:
+        except Exception:
             nonce_hex, ct_hex, tag_hex = _encrypt_hmac_only(plaintext, key_material)
             kem_meta["tier"] = "hmac-fallback"
     elif CRYPTOGRAPHY_AVAILABLE:

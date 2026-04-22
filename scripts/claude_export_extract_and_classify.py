@@ -14,9 +14,9 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
 import sys
 import time
+from contextlib import ExitStack
 from pathlib import Path
 
 # -------------------------------------------------------------------
@@ -270,7 +270,7 @@ def classify():
     """Classify conversations using keyword scoring."""
     if not INDEX_FILE.exists():
         print("ERROR: No index file. Run 'extract' first.")
-        return
+        return []
 
     with open(INDEX_FILE, encoding="utf-8") as f:
         index = json.load(f)
@@ -340,113 +340,102 @@ def convert():
 
     SFT_DIR.mkdir(parents=True, exist_ok=True)
 
-    outputs = {
-        "fiction": open(SFT_FICTION, "w", encoding="utf-8"),
-        "technical": open(SFT_TECHNICAL, "w", encoding="utf-8"),
-        "conlang": open(SFT_CONLANG, "w", encoding="utf-8"),
-        "meta": open(SFT_META, "w", encoding="utf-8"),
-    }
-    combined_f = open(SFT_COMBINED, "w", encoding="utf-8")
-    counts = {k: 0 for k in outputs}
+    counts: dict[str, int] = {}
     total = 0
+    with ExitStack() as stack:
+        outputs = {
+            "fiction": stack.enter_context(open(SFT_FICTION, "w", encoding="utf-8")),
+            "technical": stack.enter_context(open(SFT_TECHNICAL, "w", encoding="utf-8")),
+            "conlang": stack.enter_context(open(SFT_CONLANG, "w", encoding="utf-8")),
+            "meta": stack.enter_context(open(SFT_META, "w", encoding="utf-8")),
+        }
+        combined_f = stack.enter_context(open(SFT_COMBINED, "w", encoding="utf-8"))
+        counts = {k: 0 for k in outputs}
 
-    for entry in classified:
-        conv_file = CONV_DIR / entry["file"]
-        if not conv_file.exists():
-            continue
-
-        with open(conv_file, encoding="utf-8") as f:
-            conv_data = json.load(f)
-
-        messages = conv_data.get("messages", [])
-        category = entry.get("category", "meta")
-        title = entry.get("title", "Untitled")
-        created = entry.get("created", "")
-
-        # Convert message pairs into SFT records
-        i = 0
-        while i < len(messages):
-            if messages[i]["role"] != "user":
-                i += 1
+        for entry in classified:
+            conv_file = CONV_DIR / entry["file"]
+            if not conv_file.exists():
                 continue
 
-            user_msg = messages[i]["content"]
+            with open(conv_file, encoding="utf-8") as f:
+                conv_data = json.load(f)
 
-            # Find assistant response
-            j = i + 1
-            while j < len(messages) and messages[j]["role"] != "assistant":
-                j += 1
+            messages = conv_data.get("messages", [])
+            category = entry.get("category", "meta")
+            title = entry.get("title", "Untitled")
+            created = entry.get("created", "")
 
-            if j >= len(messages):
-                break
+            i = 0
+            while i < len(messages):
+                if messages[i]["role"] != "user":
+                    i += 1
+                    continue
 
-            asst_msg = messages[j]["content"]
+                user_msg = messages[i]["content"]
+                j = i + 1
+                while j < len(messages) and messages[j]["role"] != "assistant":
+                    j += 1
 
-            # Skip very short exchanges
-            if len(user_msg) < 30 and len(asst_msg) < 30:
+                if j >= len(messages):
+                    break
+
+                asst_msg = messages[j]["content"]
+                if len(user_msg) < 30 and len(asst_msg) < 30:
+                    i = j + 1
+                    continue
+
+                context_msgs = []
+                for k in range(max(0, i - 2), i):
+                    role = messages[k]["role"]
+                    content = messages[k]["content"][:500]
+                    context_msgs.append({"role": role, "content": content})
+
+                system_content = "You are Polly, the SCBE-AETHERMOORE AI assistant. "
+                if category == "fiction":
+                    system_content += "You are discussing Spiralverse lore, worldbuilding, and creative writing."
+                elif category == "conlang":
+                    system_content += "You are discussing the Six Sacred Tongues constructed language system and its applications."
+                elif category == "technical":
+                    system_content += "You are discussing SCBE technical architecture, hyperbolic geometry, and AI safety."
+                else:
+                    system_content += "You are helping with development, debugging, and project management."
+
+                sft_messages = [{"role": "system", "content": system_content}]
+                sft_messages.extend(context_msgs)
+                sft_messages.append({"role": "user", "content": user_msg})
+                sft_messages.append({"role": "assistant", "content": asst_msg})
+
+                combined_text = user_msg + " " + asst_msg
+                tongue_weights = detect_tongues(combined_text)
+                dominant = max(tongue_weights, key=tongue_weights.get)
+                difficulty = estimate_difficulty(combined_text, category)
+                layers = detect_layers(combined_text)
+
+                record = {
+                    "messages": sft_messages,
+                    "metadata": {
+                        "source": "claude_export",
+                        "conversation_id": entry.get("id", ""),
+                        "conversation_title": title,
+                        "date": created,
+                        "category": category,
+                        "tongue_weights": tongue_weights,
+                        "dominant_tongue": dominant,
+                        "difficulty": difficulty,
+                        "layers": layers,
+                        "pair_index": counts.get(category, 0),
+                    },
+                }
+
+                line = json.dumps(record, ensure_ascii=False)
+
+                if category in outputs:
+                    outputs[category].write(line + "\n")
+                    counts[category] = counts.get(category, 0) + 1
+
+                combined_f.write(line + "\n")
+                total += 1
                 i = j + 1
-                continue
-
-            # Context from prior messages (up to 2)
-            context_msgs = []
-            for k in range(max(0, i - 2), i):
-                role = messages[k]["role"]
-                content = messages[k]["content"][:500]
-                context_msgs.append({"role": role, "content": content})
-
-            # System message
-            system_content = "You are Polly, the SCBE-AETHERMOORE AI assistant. "
-            if category == "fiction":
-                system_content += "You are discussing Spiralverse lore, worldbuilding, and creative writing."
-            elif category == "conlang":
-                system_content += "You are discussing the Six Sacred Tongues constructed language system and its applications."
-            elif category == "technical":
-                system_content += "You are discussing SCBE technical architecture, hyperbolic geometry, and AI safety."
-            else:
-                system_content += "You are helping with development, debugging, and project management."
-
-            sft_messages = [{"role": "system", "content": system_content}]
-            sft_messages.extend(context_msgs)
-            sft_messages.append({"role": "user", "content": user_msg})
-            sft_messages.append({"role": "assistant", "content": asst_msg})
-
-            # Metadata
-            combined_text = user_msg + " " + asst_msg
-            tongue_weights = detect_tongues(combined_text)
-            dominant = max(tongue_weights, key=tongue_weights.get)
-            difficulty = estimate_difficulty(combined_text, category)
-            layers = detect_layers(combined_text)
-
-            record = {
-                "messages": sft_messages,
-                "metadata": {
-                    "source": "claude_export",
-                    "conversation_id": entry.get("id", ""),
-                    "conversation_title": title,
-                    "date": created,
-                    "category": category,
-                    "tongue_weights": tongue_weights,
-                    "dominant_tongue": dominant,
-                    "difficulty": difficulty,
-                    "layers": layers,
-                    "pair_index": counts.get(category, 0),
-                },
-            }
-
-            line = json.dumps(record, ensure_ascii=False)
-
-            if category in outputs:
-                outputs[category].write(line + "\n")
-                counts[category] = counts.get(category, 0) + 1
-
-            combined_f.write(line + "\n")
-            total += 1
-
-            i = j + 1
-
-    for fh in outputs.values():
-        fh.close()
-    combined_f.close()
 
     print(f"\nSFT conversion complete:")
     print(f"  Total records: {total}")

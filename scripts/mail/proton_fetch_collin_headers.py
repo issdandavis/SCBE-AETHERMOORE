@@ -6,6 +6,7 @@ import email.policy
 import imaplib
 import os
 import ssl
+import sys
 from email.message import EmailMessage
 
 from dotenv import load_dotenv
@@ -52,8 +53,8 @@ def main() -> int:
     finally:
         try:
             m.logout()
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"logout failed: {exc}", file=sys.stderr)
     return 0
 
 

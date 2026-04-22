@@ -1201,7 +1201,7 @@ def flesh_out(response: str, record: dict, target_min: int = 150) -> str:
     extras = []
 
     # Add detail about what it specifically handles from skill_content
-    if concepts and words < target_min:
+    if concepts:
         concept_strs = [c.lower() for c in concepts[:4] if len(c) > 5 and not c.startswith("`")]
         if concept_strs:
             extras.append(
