@@ -98,6 +98,13 @@ training/ingest/doc_chunks.jsonl
 training/ledgered/*.jsonl
 training/sft_records/*.jsonl
 
+# Local-only correspondence, signed packet staging, and machine sync state
+docs/proposals/DARPA_MATHBAC/from_collin_20260421_kernel/
+docs/proposals/DARPA_MATHBAC/signed/
+scripts/mail/
+training/ingest/latest_local_cloud_sync.txt
+training/ingest/local_cloud_sync_state.json
+
 # Pytest temp artifacts (any location)
 **/pytest_tmp/
 **/.pytest_tmp/
