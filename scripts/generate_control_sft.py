@@ -122,12 +122,13 @@ def gen_algebra() -> list[dict]:
     for _ in range(700):
         r1, r2 = random.randint(-10, 10), random.randint(-10, 10)
         a, b, c = 1, -(r1 + r2), r1 * r2
-        b * b - 4 * a * c
+        discriminant = b * b - 4 * a * c
         records.append(rec(MATH_SYSTEM,
             f"Find the roots of x² + {b}x + {c} = 0",
             f"Using the quadratic formula or factoring:\n"
             f"x² + {b}x + {c} = (x - {r1})(x - {r2}) = 0\n"
-            f"x = {r1} or x = {r2}",
+            f"x = {r1} or x = {r2}\n"
+            f"Discriminant = {discriminant}.",
             {"topic": "algebra", "subtopic": "quadratic"}))
 
     # Systems of equations (500)

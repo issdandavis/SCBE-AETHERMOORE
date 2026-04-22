@@ -1643,7 +1643,7 @@ def _load_git_repo_links() -> list[dict[str, str]]:
             slug = url.split("github.com/", 1)[1]
         else:
             continue
-        slug = slug.removesuffix(".git").strip("/")
+        slug = slug.split("?", 1)[0].split("#", 1)[0].removesuffix(".git").strip("/")
         if "/" not in slug:
             continue
         owner, repo = slug.split("/", 1)
@@ -2067,14 +2067,20 @@ async def arena_spaceport_status():
 
 
 def _public_file_response(requested_path: str) -> FileResponse:
-    candidate = (PUBLIC_DIR / requested_path).resolve()
+    safe_rel = Path(requested_path).as_posix().lstrip("/")
+    if safe_rel.startswith("..") or "/../" in f"/{safe_rel}/":
+        raise FileNotFoundError(requested_path)
+    candidate = (PUBLIC_DIR / safe_rel).resolve()
     if not PUBLIC_DIR.exists() or not _is_path_within(candidate, PUBLIC_DIR) or not candidate.is_file():
         raise FileNotFoundError(requested_path)
     return FileResponse(candidate)
 
 
 def _docs_file_response(requested_path: str) -> FileResponse:
-    candidate = (DOCS_DIR / requested_path).resolve()
+    safe_rel = Path(requested_path).as_posix().lstrip("/")
+    if safe_rel.startswith("..") or "/../" in f"/{safe_rel}/":
+        raise FileNotFoundError(requested_path)
+    candidate = (DOCS_DIR / safe_rel).resolve()
     if not DOCS_DIR.exists() or not _is_path_within(candidate, DOCS_DIR) or not candidate.is_file():
         raise FileNotFoundError(requested_path)
     return FileResponse(candidate)

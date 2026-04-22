@@ -108,24 +108,11 @@ def create_webhook(url: str):
     print(f"  Events: {', '.join(WEBHOOK_EVENTS)}")
     print()
 
-    # Update .secrets/env.local with the webhook secret
+    # Do not auto-write secrets to disk; show the operator where to place it.
     env_file = Path(__file__).resolve().parents[1] / ".secrets" / "env.local"
     if env_file.is_file():
-        content = env_file.read_text()
-        if "STRIPE_WEBHOOK_SECRET=" in content:
-            lines = content.splitlines()
-            new_lines = []
-            for line in lines:
-                if line.strip().startswith("STRIPE_WEBHOOK_SECRET="):
-                    new_lines.append(f"STRIPE_WEBHOOK_SECRET={endpoint.secret}")
-                else:
-                    new_lines.append(line)
-            env_file.write_text("\n".join(new_lines) + "\n")
-            print("Updated .secrets/env.local with webhook secret.")
-        else:
-            with open(env_file, "a") as f:
-                f.write(f"\n# Stripe Webhook Secret (auto-generated)\nSTRIPE_WEBHOOK_SECRET={endpoint.secret}\n")
-            print(f"Appended webhook secret to .secrets/env.local")
+        print(f"Add the webhook secret to {env_file} manually:")
+        print("  STRIPE_WEBHOOK_SECRET=[redacted]")
     else:
         print(f"\nAdd this to your .secrets/env.local:")
         print("  STRIPE_WEBHOOK_SECRET=[redacted]")

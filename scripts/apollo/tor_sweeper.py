@@ -248,7 +248,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
                 continue
             trust = tier_data.get("trust", "?")
             sites = tier_data.get("sites", [])
-            print(f"  [{trust:12s}] {tier_name} ({len(sites)} sites)")  # lgtm[py/clear-text-logging-sensitive-data]
+            print(f"  [{trust:12s}] configured tier ({len(sites)} sites)")
             for site in sites:
                 print("    - site entry available")
                 print(f"      Value tier: {site.get('value', '?')}")
@@ -268,7 +268,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
 
         trust = tier_data.get("trust", "?")
         sites = tier_data.get("sites", [])
-        print(f"  [{trust:12s}] {tier_name}")  # lgtm[py/clear-text-logging-sensitive-data]
+        print(f"  [{trust:12s}] configured tier")
 
         for site in sites:
             clearnet = site.get("clearnet", "")

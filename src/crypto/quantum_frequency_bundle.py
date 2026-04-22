@@ -1313,9 +1313,11 @@ def compute_dead_tone_fills(
 
         if participating:
             mean_n = sum(qho.states[t].n for t in participating) / len(participating)
-            intensity = min(1.0, mean_n / 4.0)  # n=4+ → full intensity
+            overall_mean_n = sum(state.n for state in qho.states.values()) / max(1, len(qho.states))
+            intensity = min(1.0, max(mean_n, overall_mean_n) / 4.0)  # n=4+ → full intensity
         else:
-            intensity = 0.1
+            overall_mean_n = sum(state.n for state in qho.states.values()) / max(1, len(qho.states))
+            intensity = max(0.1, min(1.0, overall_mean_n / 4.0))
 
         notes.append(
             DeadToneFill(

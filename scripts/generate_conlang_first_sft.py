@@ -427,7 +427,7 @@ def generate_lullaby_records() -> list:
     # --- Lullaby 3: Per-tongue bedtime phrases ---
     for code, spec in TONGUES.items():
         full_name = TONGUE_FULL_NAMES[code]
-        TONGUE_AUDIBLE_FREQ[code]
+        audible_hz = TONGUE_AUDIBLE_FREQ[code]
         note = TONGUE_MUSICAL_NOTES[code]
 
         # Build a "goodnight" phrase from each tongue's vocabulary
@@ -457,7 +457,7 @@ def generate_lullaby_records() -> list:
             + f"\n\n"
             f"Notice how {full_name} sounds even at rest — the prefixes "
             f"carry the weight of {TONGUE_DOMAINS[code].split(',')[0]}, "
-            f"and the suffixes soften them into sleep."
+            f"and the suffixes soften them into sleep. Its resting resonance is about {audible_hz:.1f} Hz."
         )
 
         records.append(make_record(

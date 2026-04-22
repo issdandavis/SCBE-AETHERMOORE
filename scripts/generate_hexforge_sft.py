@@ -323,18 +323,19 @@ def gen_grab_and_hold(count: int) -> List[ForgeRecord]:
     for _ in range(count):
         t = random.choice(TONGUES)
         elem_idx = random.randint(0, 5)
-        ELEMENTS[t][elem_idx]
-        _opposite(t)
+        elem_name = ELEMENTS[t][elem_idx]
+        opposite = _opposite(t)
 
         # Apprentice: grab from own sector
         records.append(ForgeRecord(
             category="grab", system=SYS_GRAB,
-            user=f"{_arm(t)} needs to grab {_elem(t, elem_idx)} floating in the {TONGUE_COLORS[t]} sector. "
+            user=f"{_arm(t)} needs to grab {elem_name} floating in the {TONGUE_COLORS[t]} sector. "
                  f"It's drifting slowly to the right. How?",
             assistant=f"Reach to where it WILL BE, not where it is now. In zero-G, objects keep moving. "
                       f"Approach from the side — if you reach straight at it, you'll push it away. "
                       f"Close your grip gently. A hard grab sends vibrations that shake nearby elements loose. "
-                      f"Once held, pull it toward center SLOWLY — fast pulls spin you both.",
+                      f"Once held, pull it toward center SLOWLY — fast pulls spin you both. "
+                      f"If it slips free, reset with the {opposite} arm instead of lunging.",
             tier="apprentice", tongue=t,
             tags=["own-sector", "drift-prediction"],
         ))
