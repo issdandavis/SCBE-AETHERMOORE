@@ -14,7 +14,7 @@ try:
     settings.register_profile("enterprise", max_examples=100, deadline=None, verbosity=Verbosity.verbose)
     settings.load_profile("enterprise")
 except ImportError:
-    pass
+    settings = None
 
 
 @pytest.fixture(scope="session")

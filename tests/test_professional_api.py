@@ -31,8 +31,9 @@ except ImportError:
 
 # Check for argon2-cffi (required by RWPv3Protocol / seal-memory)
 try:
-    import argon2  # noqa: F401
+    import argon2
 
+    assert hasattr(argon2, "PasswordHasher")
     ARGON2_AVAILABLE = True
 except ImportError:
     ARGON2_AVAILABLE = False

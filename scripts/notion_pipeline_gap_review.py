@@ -379,7 +379,7 @@ def _evaluate_metadata(metadata: Dict[str, Any], tasks: List[Dict[str, Any]]) ->
                     )
                 )
         except Exception:
-            age_days = None
+            metadata["export_age_days"] = None
 
 
 def _build_summary(

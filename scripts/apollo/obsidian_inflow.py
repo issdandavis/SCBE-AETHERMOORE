@@ -655,11 +655,11 @@ def inflow_lore_bible() -> List[InflowNote]:
             char_match = re.match(r"\*\*(.+?)\*\*\s*--\s*(.*)", line)
             if char_match:
                 char_name = char_match.group(1).strip()
-                char_match.group(2).strip()
+                char_summary = char_match.group(2).strip()
                 all_character_names.add(char_name)
 
                 # Collect the full character description (may span multiple lines)
-                [line]
+                current_body_lines.append(char_summary or line)
                 continue
 
         current_body_lines.append(line)

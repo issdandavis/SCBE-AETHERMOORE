@@ -38,7 +38,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import pytest
 
 try:
-    from cryptography.fernet import Fernet  # noqa: F401
+    from cryptography.fernet import Fernet
+
+    assert callable(Fernet)
 except Exception:
     pytest.skip(
         "cryptography package not functional (cffi backend missing)",
@@ -650,13 +652,15 @@ class TestMedicalAICommunication:
         # Create sealed data with one patient, try to receive with different
         sealed = channel.send_phi(b"test", MedicalDataType.DIAGNOSTIC, "PAT-001")
 
+        failed = False
         try:
             # This will fail due to AAD mismatch (different patient hash)
             channel.receive_phi(sealed, MedicalDataType.DIAGNOSTIC, "PAT-002")
         except Exception:
-            audit = channel.get_audit_trail()
+            failed = True
 
         audit = channel.get_audit_trail()
+        assert failed
         assert any(a["outcome"] == "FAILURE" for a in audit)
 
     def test_119_patient_id_hashed_in_aad(self):

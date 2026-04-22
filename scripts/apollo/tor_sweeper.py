@@ -246,10 +246,9 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
         for tier_name, tier_data in registry.get("tiers", {}).items():
             if tier and tier != tier_name:
                 continue
-            trust = tier_data.get("trust", "?")
             sites = tier_data.get("sites", [])
             print(f"  [tier] configured tier ({len(sites)} sites)")
-            for site in sites:
+            for _site in sites:
                 print("    - site entry available")
                 print("      Value tier metadata available")
             print()
@@ -266,7 +265,6 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
         if tier and tier != tier_name:
             continue
 
-        trust = tier_data.get("trust", "?")
         sites = tier_data.get("sites", [])
         print("  [tier] configured tier")
 
@@ -280,7 +278,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
                 result = sandboxed_fetch(url)
                 result["site_name"] = "trusted site"
                 result["tier"] = tier_name
-                result["trust"] = trust
+                result["trust"] = tier_data.get("trust", "?")
 
                 decision = result["governance_decision"]
                 symbol = {"QUARANTINE": "Q", "DENY": "X", "ALLOW": "OK"}

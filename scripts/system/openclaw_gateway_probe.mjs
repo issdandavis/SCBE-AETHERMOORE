@@ -101,31 +101,11 @@ function normalizeGatewayHttpUrl(rawUrl) {
 }
 
 async function invokeToolOverHttp({ baseUrl, authToken, timeoutMs, params }) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const safeBaseUrl = normalizeGatewayHttpUrl(baseUrl);
-    const response = await fetch(`${safeBaseUrl}/tools/invoke`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`
-      },
-      body: JSON.stringify(params ?? {}),
-      signal: controller.signal
-    });
-    const payload = await response.json().catch(() => ({
-      ok: false,
-      error: { type: 'invalid_response', message: 'non-JSON response from /tools/invoke' }
-    }));
-    if (!response.ok) {
-      const message = payload?.error?.message ?? `HTTP ${response.status}`;
-      throw new Error(message);
-    }
-    return { hello: { transport: 'http', path: '/tools/invoke' }, response: payload };
-  } finally {
-    clearTimeout(timeout);
-  }
+  void authToken;
+  void params;
+  void timeoutMs;
+  normalizeGatewayHttpUrl(baseUrl);
+  throw new Error('Direct HTTP tool invocation is disabled; use the gateway websocket client path instead.');
 }
 
 async function main() {

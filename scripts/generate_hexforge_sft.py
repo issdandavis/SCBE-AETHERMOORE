@@ -384,9 +384,6 @@ def gen_cross_handoff(count: int) -> List[ForgeRecord]:
         sender = random.choice(TONGUES)
         receiver = random.choice([t for t in TONGUES if t != sender])
         elem_idx = random.randint(0, 5)
-        dist = min(abs(TONGUES.index(sender) - TONGUES.index(receiver)),
-                   6 - abs(TONGUES.index(sender) - TONGUES.index(receiver)))
-
         # Apprentice: neighbor handoff
         nbr = _neighbor(sender)
         records.append(ForgeRecord(

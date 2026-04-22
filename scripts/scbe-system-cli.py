@@ -86,7 +86,6 @@ RUNTIME_EXTENSION_ALIASES = {
     ".bat": "cmd",
 }
 _TONGUES_MODULE = None
-_ACTION_MAP_MODULE = None
 
 FLOW_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 FLOW_SKILLS = [
@@ -420,9 +419,12 @@ def _load_tongues_module(repo_root: Path):
 
 
 def _load_action_map_module(repo_root: Path):
-    global _ACTION_MAP_MODULE
-    if _ACTION_MAP_MODULE is not None:
-        return _ACTION_MAP_MODULE
+    return _load_action_map_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=1)
+def _load_action_map_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "src" / "training" / "action_map_protocol.py"
     if not module_path.exists():
         return None
@@ -432,7 +434,6 @@ def _load_action_map_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _ACTION_MAP_MODULE = module
     return module
 
 

@@ -282,12 +282,22 @@ def _storage_safe_obj(obj: Any) -> Any:
     return obj
 
 
+def _storage_safe_envelope(record: dict[str, Any]) -> dict[str, Any]:
+    safe_record = _storage_safe_obj(record)
+    serialized = json.dumps(safe_record, sort_keys=True, ensure_ascii=True)
+    return {
+        "record_sha256": hashlib.sha256(serialized.encode("utf-8")).hexdigest(),
+        "record_length": len(serialized),
+        "top_level_keys": sorted(str(key) for key in record.keys()),
+    }
+
+
 def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
     try:
         IDE_LOGS_DIR.mkdir(parents=True, exist_ok=True)
         safe_name = Path(path.name).name
         safe_path = (IDE_LOGS_DIR / safe_name).resolve(strict=False)
-        safe = _storage_safe_obj(record)
+        safe = _storage_safe_envelope(record)
         with safe_path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(safe, ensure_ascii=True) + "\n")
     except Exception:
@@ -1659,9 +1669,12 @@ def _load_git_repo_links() -> list[dict[str, str]]:
         repo = ""
         if url.startswith("git@github.com:"):
             slug = url.split("git@github.com:", 1)[1]
-        elif "github.com/" in url:
-            slug = url.split("github.com/", 1)[1]
         else:
+            parsed_url = urllib.parse.urlparse(url)
+            if parsed_url.hostname != "github.com":
+                continue
+            slug = parsed_url.path.lstrip("/")
+        if not slug:
             continue
         slug = _safe_http_slug(slug).removesuffix(".git")
         if "/" not in slug:
@@ -2124,9 +2137,11 @@ def _resolve_safe_relative_file(root: Path, requested_path: str) -> Path:
     safe_rel = rel_path.as_posix()
     if rel_path.is_absolute() or any(part in {"", ".."} for part in rel_path.parts):
         raise FileNotFoundError(requested_path)
-    if safe_rel not in _allowed_relative_paths(str(root.resolve(strict=False))):
+    allowed_paths = _allowed_relative_paths(str(root.resolve(strict=False)))
+    matches = [allowed for allowed in allowed_paths if allowed == safe_rel]
+    if not matches:
         raise FileNotFoundError(requested_path)
-    candidate = (root / safe_rel).resolve(strict=False)
+    candidate = (root / matches[0]).resolve(strict=False)
     return candidate
 
 
