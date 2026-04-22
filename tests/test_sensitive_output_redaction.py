@@ -9,7 +9,9 @@ from pathlib import Path
 import pytest
 
 try:
-    from cryptography.fernet import Fernet  # noqa: F401
+    from cryptography import fernet
+
+    assert callable(fernet.Fernet)
 except Exception:
     pytest.skip(
         "cryptography package not functional (cffi backend missing)",

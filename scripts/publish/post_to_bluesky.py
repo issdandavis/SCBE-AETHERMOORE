@@ -189,14 +189,11 @@ def main():
         sys.exit(1)
     print(f"Posting ({len(text[:300])} chars)...")
     try:
-        resp = bsky_post(token, did, text)
+        bsky_post(token, did, text)
     except Exception:
         # Catch broadly to prevent token leakage in stack traces
         print("Post failed. Check your network connection and credentials.")
         sys.exit(1)
-    uri = resp.get("uri", "")
-    # Convert AT URI to web URL
-    rkey = uri.split("/")[-1] if "/" in uri else ""
     print("POSTED: record created")
 
 

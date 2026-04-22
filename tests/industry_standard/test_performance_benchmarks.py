@@ -422,7 +422,7 @@ class TestPQCBenchmarks:
 
         for _ in range(n_trials):
             start = time.perf_counter()
-            pk, sk = pqc_core.generate_mlkem768_keypair()
+            pqc_core.generate_mlkem768_keypair()
             elapsed = time.perf_counter() - start
             times.append(elapsed * 1000)
 

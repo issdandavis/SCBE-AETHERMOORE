@@ -248,7 +248,7 @@ def sweep(tier: Optional[str] = None) -> List[dict]:
                 continue
             sites = tier_data.get("sites", [])
             print(f"  [tier] configured tier ({len(sites)} sites)")
-            for _site in sites:
+            for _ in sites:
                 print("    - site entry available")
                 print("      Value tier metadata available")
             print()

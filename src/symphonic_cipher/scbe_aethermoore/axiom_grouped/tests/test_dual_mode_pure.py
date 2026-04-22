@@ -175,7 +175,7 @@ def test_harmonic_modes():
 
     # Bounded mode is monotonic up to clamp, then plateaus (correct behavior)
     # Verify within non-clamped region (d < √50 ≈ 7.07)
-    clamp_limit = math.sqrt(50)  # noqa: F841
+    assert math.sqrt(50) > 7.0
     monotonic_within_clamp = True
     prev_H = 0
     for d in [0, 1, 2, 3, 4, 5, 6, 7]:

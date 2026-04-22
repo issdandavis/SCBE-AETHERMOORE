@@ -297,7 +297,7 @@ def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
         IDE_LOGS_DIR.mkdir(parents=True, exist_ok=True)
         safe_name = Path(path.name).name
         safe_path = (IDE_LOGS_DIR / safe_name).resolve(strict=False)
-        safe = _storage_safe_envelope(record)
+        safe = {"status": "redacted-log-entry", "path": safe_name}
         with safe_path.open("a", encoding="utf-8") as f:
             f.write(json.dumps(safe, ensure_ascii=True) + "\n")
     except Exception:

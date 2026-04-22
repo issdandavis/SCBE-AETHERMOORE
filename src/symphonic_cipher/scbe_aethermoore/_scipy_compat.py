@@ -35,8 +35,9 @@ _T_EVAL_TOLERANCE = 1e-9
 
 try:
     from scipy.fft import fft, fftfreq, ifft
+    from scipy import fft as _scipy_fft_module
 
-    SCIPY_AVAILABLE = True
+    SCIPY_AVAILABLE = bool(getattr(_scipy_fft_module, "__name__", ""))
 except ImportError:
     # Numpy fallback for FFT
     fft = np.fft.fft

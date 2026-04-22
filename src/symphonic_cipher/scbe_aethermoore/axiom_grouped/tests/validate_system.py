@@ -194,7 +194,6 @@ class SCBEValidator:
     def _check_l10_bounds(self) -> Tuple[bool, str]:
         """L10: Spin coherence in [0,1]."""
         # C_spin = |mean(unit vectors)| ≤ 1
-        M = 5  # noqa: F841
         # Aligned case
         C_aligned = 1.0  # All same direction
         # Random case

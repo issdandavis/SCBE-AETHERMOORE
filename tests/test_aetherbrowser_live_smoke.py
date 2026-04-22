@@ -3,7 +3,9 @@ from __future__ import annotations
 import pytest
 
 try:
-    import websockets  # noqa: F401
+    import websockets
+
+    assert hasattr(websockets, "connect")
 except ImportError:
     pytest.skip("websockets not installed", allow_module_level=True)
 

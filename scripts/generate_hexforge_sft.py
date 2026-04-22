@@ -389,14 +389,14 @@ def gen_cross_handoff(count: int) -> List[ForgeRecord]:
         records.append(ForgeRecord(
             category="handoff", system=SYS_PASS,
             user=f"{ARM_NAMES[sender]} has {_elem(sender, elem_idx)} and needs to pass it to {ARM_NAMES[nbr]}. "
-                 f"They're neighbors (60 degrees apart). How?",
+                 f"They're neighbors (60 degrees apart), and {ARM_NAMES[receiver]} is covering the outer lane. How?",
             assistant=f"Short pass! {ARM_NAMES[sender]} extends toward the boundary between their sectors. "
                       f"{ARM_NAMES[nbr]} reaches to meet. "
                       f"The handoff point is the MIDPOINT between their anchor positions. "
                       f"Release and grab must happen at the SAME moment — "
                       f"in zero-G, an uncaught element drifts immediately. "
                       f"Call: '{ARM_NAMES[sender]}: passing {ELEMENTS[sender][elem_idx]}, 3... 2... 1... release!' "
-                      f"'{ARM_NAMES[nbr]}: caught!'",
+                      f"'{ARM_NAMES[nbr]}: caught! {ARM_NAMES[receiver]} keep the relay lane clear.'",
             tier="apprentice", tongue=sender,
             tags=["neighbor-pass", "timing"],
         ))
