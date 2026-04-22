@@ -37,12 +37,12 @@ jobs:
             git fetch origin "$BRANCH"
             git checkout "$BRANCH"
 
-            git merge origin/main --no-commit --no-ff 2>/dev/null || true
+            git merge origin/main --no-commit --no-ff 2>/dev/null
 
             CONFLICTS=$(git diff --name-only --diff-filter=U 2>/dev/null)
             if [ -z "$CONFLICTS" ]; then
               echo "No actual conflicts in PR #$PR"
-              git merge --abort 2>/dev/null || true
+              git merge --abort 2>/dev/null
               git checkout main
               continue
             fi

@@ -35,7 +35,7 @@ jobs:
         if: steps.build.outcome == 'success'
         continue-on-error: true
         run: |
-          npx vitest run tests/harmonic/ --reporter=json --outputFile=harmonic-ts-results.json 2>&1 || true
+          npx vitest run tests/harmonic/ --reporter=json --outputFile=harmonic-ts-results.json 2>&1
           npx vitest run tests/harmonic/ 2>&1 | tee harmonic-ts-output.txt
           echo "exit_code=$?" >> "$GITHUB_OUTPUT"
 

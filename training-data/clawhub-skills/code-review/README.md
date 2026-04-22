@@ -70,10 +70,10 @@ cp -r ~/.ai-skills/skills/testing/code-review ~/.claude/skills/code-review
 
 ## Related Skills
 
-- [clean-code](../clean-code/) — Coding standards that reviews enforce
-- [quality-gates](../quality-gates/) — Automated quality checkpoints in CI/CD
-- [testing-patterns](../testing-patterns/) — Testing standards to check during review
+- [security-auditor](../security-auditor/) — Security-focused code review patterns
+- [security-scanner](../security-scanner/) — Automated security scanning standards
+- [git-workflow](../git-workflow/) — Git workflow and merge quality checks
 
 ---
 
-Part of the [Testing](..) skill category.
+Part of the clawhub skills collection.
