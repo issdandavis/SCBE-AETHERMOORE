@@ -38,7 +38,6 @@ from .layer_13 import (
 try:
     from ...spiralverse.hive_memory import (
         MemoryBlock,
-        MemoryTier,
         MemoryEvictionEngine,
     )
 
@@ -53,12 +52,6 @@ except ImportError:
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
-
-    class MemoryTier(Enum):
-        HOT = "hot"
-        WARM = "warm"
-        COLD = "cold"
-
 
 # =============================================================================
 # CONSTANTS

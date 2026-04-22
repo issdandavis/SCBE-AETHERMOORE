@@ -851,7 +851,7 @@ def gen_pattern_lock(count: int) -> List[GameRecord]:
         fib = [a, b]
         for _ in range(6):
             fib.append(fib[-1] + fib[-2])
-        fib[-1] / fib[-2]
+        ratio = fib[-1] / fib[-2]
         records.append(GameRecord(
             game="pattern-lock", system=sys_msg,
             user=f"Sequence: {fib[:6]}. "
@@ -862,6 +862,7 @@ def gen_pattern_lock(count: int) -> List[GameRecord]:
                       f"Ratio of consecutive terms:\n" +
                       "\n".join(f"  {fib[i+1]}/{fib[i]} = {fib[i+1]/fib[i]:.4f}" for i in range(len(fib)-1)) +
                       f"\n\nConverges to φ (phi) = {PHI:.6f} — the golden ratio!\n"
+                      f"Latest ratio here is {ratio:.4f}.\n"
                       f"No matter what you start with (except 0,0), the ratio ALWAYS converges to phi. "
                       f"This is why SCBE uses phi for tongue weights — "
                       f"it's the universe's most natural growth constant.",

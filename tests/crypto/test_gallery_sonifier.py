@@ -37,7 +37,7 @@ class LabColor:
 
     @property
     def chroma(self):
-        return math.sqrt(self.a**2 + self.b**2)
+        return math.hypot(self.a, self.b)
 
     @property
     def hue_degrees(self):

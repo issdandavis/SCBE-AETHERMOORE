@@ -303,7 +303,7 @@ def compute_harmonic_fill(
     weight = TONGUE_WEIGHTS[tongue_code]
     base_freq = TONGUE_AUDIBLE_FREQ[tongue_code]
     complement = COMPLEMENT_MAP[tongue_code]
-    TONGUE_AUDIBLE_FREQ[complement]
+    complement_freq = TONGUE_AUDIBLE_FREQ[complement]
 
     # Normalized position in sequence
     t = position / max(total_positions, 1)
@@ -324,6 +324,7 @@ def compute_harmonic_fill(
     # When a tongue is dark, the COMPLEMENT tongue provides the fill frequency
     # through the voice leading interval
     interval_ratio = voice_leading_interval(tongue_code, complement)
+    interval_ratio *= complement_freq / max(base_freq, 1.0)
     audible_freq = base_freq * interval_ratio
 
     # Modulate by nodal surface — creates standing wave patterns

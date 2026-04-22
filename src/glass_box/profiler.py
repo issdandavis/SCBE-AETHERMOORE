@@ -570,7 +570,6 @@ class GlassBoxProfiler:
         # Detect the specific failure: user asked real question, got fiction answer
         user_is_customer = profile.audience == AudienceType.CUSTOMER
         response_is_fiction = profile.cluster == ClusterRegion.FICTION
-        _path_is_emotional = profile.path_type == PathType.EMOTIONAL
 
         if user_is_customer and response_is_fiction:
             diagnosis["failure_detected"] = True

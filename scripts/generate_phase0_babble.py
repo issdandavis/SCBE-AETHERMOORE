@@ -406,13 +406,13 @@ def gen_translation(tokenizer: SacredTongueTokenizer, count: int) -> List[Babble
         source_tokens = tokenizer.encode_bytes(source_tongue, raw_bytes)
         target_tokens = tokenizer.encode_bytes(target_tongue, raw_bytes)
 
-        TONGUE_FULL_NAMES[source_tongue]
+        src_name = TONGUE_FULL_NAMES[source_tongue]
         tgt_name = TONGUE_FULL_NAMES[target_tongue]
 
         records.append(
             BabbleRecord(
                 system=_system_prompt(source_tongue, difficulty),
-                user=f"Say in {tgt_name}: {' '.join(source_tokens)}",
+                user=f"Translate from {src_name} into {tgt_name}: {' '.join(source_tokens)}",
                 assistant=" ".join(target_tokens),
                 tongue=source_tongue,
                 difficulty=difficulty,

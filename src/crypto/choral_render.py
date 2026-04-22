@@ -208,7 +208,7 @@ def build_voice_layers(
     mode: RenderMode,
 ) -> tuple:
     """Build voice layer stack for the given render mode."""
-    PROFILES[tongue]
+    profile = PROFILES[tongue]
     from .speech_render_plan import TONGUE_PAN
 
     pan = TONGUE_PAN.get(tongue, 0.0)
@@ -216,7 +216,7 @@ def build_voice_layers(
     lead = VoiceLayer(
         role=VoiceRole.LEAD,
         voice_id=f"{tongue}_lead",
-        gain=0.9,
+        gain=0.9 + 0.02 * max(profile.brightness - 1.0, 0.0),
         pan=pan,
         pitch_shift_semitones=0.0,
     )

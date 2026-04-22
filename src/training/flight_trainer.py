@@ -43,7 +43,6 @@ _PIPELINE_AVAILABLE = (
 
 # Sacred Tongues phi-weights: KO=1.00, AV=1.62, RU=2.62, CA=4.24, UM=6.85, DR=11.09
 TONGUE_WEIGHTS = np.array([1.00, 1.62, 2.62, 4.24, 6.85, 11.09])
-TONGUE_BLEND = TONGUE_WEIGHTS / TONGUE_WEIGHTS.sum()  # normalized
 
 PHI = (1 + math.sqrt(5)) / 2
 EPS = 1e-10
@@ -116,7 +115,7 @@ def coupling_operator(
     # --- Lift arm: contextual support from Sacred Tongues blend ---
     # Blend z_gov through tongue weights to get directional support
     if len(z_gov) >= 6:
-        tongue_projection = np.dot(TONGUE_BLEND, z_gov[:6])
+        tongue_projection = np.dot(TONGUE_WEIGHTS / TONGUE_WEIGHTS.sum(), z_gov[:6])
     else:
         tongue_projection = np.mean(z_gov)
 

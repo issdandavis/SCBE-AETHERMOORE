@@ -63,6 +63,14 @@ def nibble_category(high: int) -> str:
     raise ValueError(f"Invalid high nibble: {high}")
 
 
+def _is_positive(a, b):
+    return int(a > 0)
+
+
+def _is_negative(a, b):
+    return int(a < 0)
+
+
 # ============================================================
 # PART 2: VERB OPCODES — The 64 operations (high nibbles 8-11)
 # ============================================================
@@ -101,8 +109,8 @@ VERB_OPS = {
     (9, 8): ("CLAMP", lambda a, b: max(0, min(a, b))),
     (9, 9): ("SIGN", lambda a, b: (a > 0) - (a < 0)),
     (9, 10): ("ZERO?", lambda a, b: int(a == 0)),
-    (9, 11): ("POS?", lambda a, b: int(a > 0)),
-    (9, 12): ("NEG?", lambda a, b: int(a < 0)),
+    (9, 11): ("POS?", _is_positive),
+    (9, 12): ("NEG?", _is_negative),
     (9, 13): ("EVEN?", lambda a, b: int(a % 2 == 0)),
     (9, 14): ("ODD?", lambda a, b: int(a % 2 == 1)),
     (9, 15): ("BETWEEN?", lambda a, b: int(0 <= a <= b)),

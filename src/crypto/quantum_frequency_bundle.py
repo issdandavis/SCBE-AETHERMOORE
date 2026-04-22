@@ -36,7 +36,8 @@ from __future__ import annotations
 import hashlib
 import math
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from importlib import import_module
+from typing import Dict, List, Optional, Tuple, TYPE_CHECKING
 
 from src.crypto.trit_curriculum import (
     TritSignal,
@@ -61,6 +62,14 @@ from src.crypto.tri_bundle import (
     TONGUE_WEIGHTS,
     TONGUE_FREQUENCIES,
 )
+
+if TYPE_CHECKING:
+    from src.crypto.flight_dynamics import (
+        PacejkaTireState,
+        RecoveryPath,
+        RotorState,
+        TailRotorState,
+    )
 
 # ---------------------------------------------------------------------------
 # Physical constants (SI)
@@ -845,12 +854,11 @@ def compute_vrs_state(
     """
     mean_n = qho.mean_excitation
     max_n = qho.max_excitation
-    from src.crypto.flight_dynamics import (
-        RotorState,
-        compute_pacejka_state,
-        compute_recovery_paths,
-        compute_tail_rotor_state,
-    )
+    flight_dynamics = import_module("src.crypto.flight_dynamics")
+    RotorState = flight_dynamics.RotorState
+    compute_pacejka_state = flight_dynamics.compute_pacejka_state
+    compute_recovery_paths = flight_dynamics.compute_recovery_paths
+    compute_tail_rotor_state = flight_dynamics.compute_tail_rotor_state
 
     # Rotor RPM from mean excitation: idle=200, max=320 RPM
     rpm = 200.0 + mean_n * 17.14  # scales 0-7 to 200-320
@@ -1731,15 +1739,16 @@ def compute_qho_state(
     # Compute probability amplitudes (|c_t|²)
     # Based on tongue activation from text bytes
     text_bytes = text.encode("utf-8")[:64]
-    sum(text_bytes) if text_bytes else 1
+    byte_sum = sum(text_bytes) if text_bytes else 1
 
     def byte_affinity(tongue: str) -> float:
         """Text-derived affinity for this tongue."""
         w = TONGUE_WEIGHTS[tongue]
-        TONGUE_FREQUENCIES[tongue]
+        base_frequency = TONGUE_FREQUENCIES[tongue]
         # Hash-based deterministic affinity
         h = int(hashlib.md5((tongue + text[:32]).encode()).hexdigest()[:8], 16)
         raw = (h % 1000) / 1000.0 * w
+        raw *= 1.0 + (base_frequency / (base_frequency + byte_sum))
         return raw
 
     affinities = {t: byte_affinity(t) for t in TONGUE_ORDER}
