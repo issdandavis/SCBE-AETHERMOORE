@@ -22,7 +22,7 @@ pycryptodome>=3.20.0
 argon2-cffi>=23.1.0
 
 # API Server
-fastapi>=0.109.0
+fastapi>=0.115.0
 uvicorn[standard]>=0.27.0
 pydantic>=2.6.0
 python-multipart>=0.0.9
