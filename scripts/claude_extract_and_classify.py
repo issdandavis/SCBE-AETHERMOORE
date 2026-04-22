@@ -16,7 +16,6 @@ import json
 import sys
 import re
 import math
-from contextlib import ExitStack
 from pathlib import Path
 
 # -------------------------------------------------------------------
@@ -361,11 +360,20 @@ def convert():
     }
     counts = {cat: 0 for cat in cat_files}
     total = 0
-    with ExitStack() as stack:
-        combined_handle = stack.enter_context(open(SFT_COMBINED, "w", encoding="utf-8"))
+    with (
+        open(SFT_FICTION, "w", encoding="utf-8") as fiction_f,
+        open(SFT_CONLANG, "w", encoding="utf-8") as conlang_f,
+        open(SFT_CODE, "w", encoding="utf-8") as code_f,
+        open(SFT_TECHNICAL, "w", encoding="utf-8") as technical_f,
+        open(SFT_META, "w", encoding="utf-8") as meta_f,
+        open(SFT_COMBINED, "w", encoding="utf-8") as combined_handle,
+    ):
         cat_handles = {
-            cat: stack.enter_context(open(path, "w", encoding="utf-8"))
-            for cat, path in cat_files.items()
+            "fiction": fiction_f,
+            "conlang": conlang_f,
+            "code": code_f,
+            "technical": technical_f,
+            "meta": meta_f,
         }
 
         for entry in index:

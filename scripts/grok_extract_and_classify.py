@@ -16,7 +16,6 @@ Usage:
 import json
 import sys
 import time
-from contextlib import ExitStack
 from pathlib import Path
 
 # -------------------------------------------------------------------
@@ -394,15 +393,21 @@ def convert():
     # Output file handles
     counts: dict[str, int] = {}
     total = 0
-    with ExitStack() as stack:
+    with (
+        open(SFT_FICTION, "w", encoding="utf-8") as fiction_f,
+        open(SFT_TECHNICAL, "w", encoding="utf-8") as technical_f,
+        open(SFT_CONLANG, "w", encoding="utf-8") as conlang_f,
+        open(SFT_CODE, "w", encoding="utf-8") as code_f,
+        open(SFT_META, "w", encoding="utf-8") as meta_f,
+        open(SFT_COMBINED, "w", encoding="utf-8") as combined,
+    ):
         outputs = {
-            "fiction": stack.enter_context(open(SFT_FICTION, "w", encoding="utf-8")),
-            "technical": stack.enter_context(open(SFT_TECHNICAL, "w", encoding="utf-8")),
-            "conlang": stack.enter_context(open(SFT_CONLANG, "w", encoding="utf-8")),
-            "code": stack.enter_context(open(SFT_CODE, "w", encoding="utf-8")),
-            "meta": stack.enter_context(open(SFT_META, "w", encoding="utf-8")),
+            "fiction": fiction_f,
+            "technical": technical_f,
+            "conlang": conlang_f,
+            "code": code_f,
+            "meta": meta_f,
         }
-        combined = stack.enter_context(open(SFT_COMBINED, "w", encoding="utf-8"))
         counts = {k: 0 for k in outputs}
 
         for entry in classified:
