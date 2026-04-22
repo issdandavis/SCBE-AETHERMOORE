@@ -358,92 +358,82 @@ def convert():
         "technical": SFT_TECHNICAL,
         "meta": SFT_META,
     }
+    for path in [*cat_files.values(), SFT_COMBINED]:
+        path.write_text("", encoding="utf-8")
+
     counts = {cat: 0 for cat in cat_files}
     total = 0
-    with (
-        open(SFT_FICTION, "w", encoding="utf-8") as fiction_f,
-        open(SFT_CONLANG, "w", encoding="utf-8") as conlang_f,
-        open(SFT_CODE, "w", encoding="utf-8") as code_f,
-        open(SFT_TECHNICAL, "w", encoding="utf-8") as technical_f,
-        open(SFT_META, "w", encoding="utf-8") as meta_f,
-        open(SFT_COMBINED, "w", encoding="utf-8") as combined_handle,
-    ):
-        cat_handles = {
-            "fiction": fiction_f,
-            "conlang": conlang_f,
-            "code": code_f,
-            "technical": technical_f,
-            "meta": meta_f,
-        }
 
-        for entry in index:
-            cat = entry.get("category", "meta")
-            conv_file = CONV_DIR / entry["file"]
-            if not conv_file.exists():
-                continue
+    for entry in index:
+        cat = entry.get("category", "meta")
+        conv_file = CONV_DIR / entry["file"]
+        if not conv_file.exists():
+            continue
 
-            with open(conv_file, "r", encoding="utf-8") as f:
-                conv = json.load(f)
+        with open(conv_file, "r", encoding="utf-8") as f:
+            conv = json.load(f)
 
-            messages = conv.get("messages", [])
-            title = conv.get("title", "") or "(untitled)"
+        messages = conv.get("messages", [])
+        title = conv.get("title", "") or "(untitled)"
 
-            combined_text = " ".join(m["content"] for m in messages).lower()
-            tongue_weights = detect_tongues(combined_text)
-            dominant_tongue = max(tongue_weights, key=tongue_weights.get) if any(v > 0 for v in tongue_weights.values()) else "DR"
-            code_blocks = entry.get("code_blocks", 0)
-            difficulty = estimate_difficulty(combined_text, code_blocks)
-            layers = detect_layers(combined_text)
+        combined_text = " ".join(m["content"] for m in messages).lower()
+        tongue_weights = detect_tongues(combined_text)
+        dominant_tongue = max(tongue_weights, key=tongue_weights.get) if any(v > 0 for v in tongue_weights.values()) else "DR"
+        code_blocks = entry.get("code_blocks", 0)
+        difficulty = estimate_difficulty(combined_text, code_blocks)
+        layers = detect_layers(combined_text)
 
-            pair_index = 0
-            i = 0
-            while i < len(messages) - 1:
-                if messages[i]["role"] == "user" and messages[i + 1]["role"] == "assistant":
-                    user_text = messages[i]["content"].strip()
-                    assistant_text = messages[i + 1]["content"].strip()
+        pair_index = 0
+        i = 0
+        while i < len(messages) - 1:
+            if messages[i]["role"] == "user" and messages[i + 1]["role"] == "assistant":
+                user_text = messages[i]["content"].strip()
+                assistant_text = messages[i + 1]["content"].strip()
 
-                    if len(user_text) < 10 or len(assistant_text) < 50:
-                        i += 1
-                        continue
-
-                    context_parts = []
-                    for j in range(max(0, i - 2), i):
-                        role_label = "User" if messages[j]["role"] == "user" else "Assistant"
-                        snippet = messages[j]["content"][:500]
-                        context_parts.append(f"[Prior {role_label}]: {snippet}")
-                    context_msg = "\n".join(context_parts) if context_parts else ""
-
-                    sft_messages = [{"role": "system", "content": SYSTEM_MESSAGES[cat]}]
-                    if context_msg:
-                        sft_messages.append({"role": "system", "content": f"Conversation context:\n{context_msg}"})
-                    sft_messages.append({"role": "user", "content": user_text})
-                    sft_messages.append({"role": "assistant", "content": assistant_text})
-
-                    record = {
-                        "messages": sft_messages,
-                        "metadata": {
-                            "source": "claude_export",
-                            "conversation_id": entry["id"],
-                            "conversation_title": title,
-                            "date": entry.get("created", ""),
-                            "category": cat,
-                            "tongue_weights": tongue_weights,
-                            "dominant_tongue": dominant_tongue,
-                            "difficulty": difficulty,
-                            "layers": layers,
-                            "pair_index": pair_index,
-                        },
-                    }
-
-                    line = json.dumps(record, ensure_ascii=False) + "\n"
-                    cat_handles[cat].write(line)
-                    combined_handle.write(line)
-                    counts[cat] += 1
-                    total += 1
-                    pair_index += 1
-                    i += 2
-                else:
+                if len(user_text) < 10 or len(assistant_text) < 50:
                     i += 1
+                    continue
+
+                context_parts = []
+                for j in range(max(0, i - 2), i):
+                    role_label = "User" if messages[j]["role"] == "user" else "Assistant"
+                    snippet = messages[j]["content"][:500]
+                    context_parts.append(f"[Prior {role_label}]: {snippet}")
+                context_msg = "\n".join(context_parts) if context_parts else ""
+
+                sft_messages = [{"role": "system", "content": SYSTEM_MESSAGES[cat]}]
+                if context_msg:
+                    sft_messages.append({"role": "system", "content": f"Conversation context:\n{context_msg}"})
+                sft_messages.append({"role": "user", "content": user_text})
+                sft_messages.append({"role": "assistant", "content": assistant_text})
+
+                record = {
+                    "messages": sft_messages,
+                    "metadata": {
+                        "source": "claude_export",
+                        "conversation_id": entry["id"],
+                        "conversation_title": title,
+                        "date": entry.get("created", ""),
+                        "category": cat,
+                        "tongue_weights": tongue_weights,
+                        "dominant_tongue": dominant_tongue,
+                        "difficulty": difficulty,
+                        "layers": layers,
+                        "pair_index": pair_index,
+                    },
+                }
+
+                line = json.dumps(record, ensure_ascii=False) + "\n"
+                with open(cat_files[cat], "a", encoding="utf-8") as cat_f:
+                    cat_f.write(line)
+                with open(SFT_COMBINED, "a", encoding="utf-8") as combined_f:
+                    combined_f.write(line)
+                counts[cat] += 1
+                total += 1
+                pair_index += 1
+                i += 2
+            else:
+                i += 1
 
     print(f"SFT conversion complete:")
     for cat, count in sorted(counts.items(), key=lambda x: -x[1]):
