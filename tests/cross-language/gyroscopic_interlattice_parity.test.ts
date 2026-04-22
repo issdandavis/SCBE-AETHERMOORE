@@ -32,7 +32,10 @@ function pythonDepsAvailable(): boolean {
   try {
     execFileSync(
       PYTHON_BIN,
-      ['-c', 'import numpy; from symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import TONGUE_RADII'],
+      [
+        '-c',
+        'import numpy; from symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import TONGUE_RADII',
+      ],
       {
         cwd: CWD,
         encoding: 'utf-8',
