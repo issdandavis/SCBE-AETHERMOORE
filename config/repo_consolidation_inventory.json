@@ -1,0 +1,134 @@
+{
+  "version": "2026-04-22",
+  "policy": {
+    "mode": "single-monorepo-consolidation",
+    "zones": [
+      "product",
+      "platform",
+      "research",
+      "archive"
+    ]
+  },
+  "authority_docs": {
+    "root_entrypoint": "README.md",
+    "supporting_refs": [
+      "README_INDEX.md",
+      "REPO_SURFACE_MAP.md",
+      "STRUCTURE.md",
+      "ARCHITECTURE.md",
+      "STATE_OF_SYSTEM.md",
+      "SCBE_SYSTEM_OVERVIEW.md"
+    ],
+    "consolidation_spec": "docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md"
+  },
+  "recommended_primary_lane": {
+    "name": "browser-and-local-api-product-lane",
+    "current_surfaces": [
+      "public",
+      "app",
+      "api",
+      "products",
+      "scripts/aetherbrowser"
+    ],
+    "platform_dependencies": [
+      "src/tokenizer",
+      "src/tongues",
+      "src/coding_spine",
+      "src/governance",
+      "src/crypto",
+      "src/geoseal_cli.py",
+      "python/scbe"
+    ]
+  },
+  "root_classification": {
+    "product": [
+      "app",
+      "api",
+      "products",
+      "public",
+      "services",
+      "ui",
+      "dashboard",
+      "kindle-app",
+      "aether-browser",
+      "aetherbrowse"
+    ],
+    "platform": [
+      "src",
+      "python",
+      "packages",
+      "schemas",
+      "config",
+      "extensions",
+      "mcp",
+      "plugins",
+      "skills",
+      "tools"
+    ],
+    "research": [
+      "agents",
+      "articles",
+      "benchmarks",
+      "content",
+      "data",
+      "deliverables",
+      "demo",
+      "demos",
+      "docs",
+      "examples",
+      "experimental",
+      "experiments",
+      "game",
+      "hydra",
+      "lexicons",
+      "models",
+      "notebooks",
+      "notes",
+      "paper",
+      "phdm-21d-embedding",
+      "physics_sim",
+      "policies",
+      "proto",
+      "prototype",
+      "references",
+      "research",
+      "rust",
+      "scripts",
+      "space",
+      "spaces",
+      "spiral-word-app",
+      "spiralverse-protocol",
+      "symphonic_cipher",
+      "test-install",
+      "tests",
+      "training",
+      "training-data",
+      "training-runs",
+      "workflows"
+    ],
+    "archive": [
+      "_external",
+      "artifacts",
+      "automation",
+      "aws",
+      "backups",
+      "build",
+      "dist",
+      "docs-build-smoke",
+      "exports",
+      "external",
+      "external_repos",
+      "logs",
+      "Microsoft",
+      "Notes and Dumps. by me",
+      "ok",
+      "output",
+      "sealed_blobs"
+    ]
+  },
+  "notes": [
+    "This inventory is a first-pass authority map, not a move manifest.",
+    "The immediate goal is repo legibility and product-first boot clarity.",
+    "Existing src-level package extraction plans remain valid but are subordinate to this higher-level boundary plan."
+  ]
+}
