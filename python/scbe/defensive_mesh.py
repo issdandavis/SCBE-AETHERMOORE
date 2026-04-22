@@ -23,9 +23,8 @@ from urllib.parse import urlparse
 try:
     from agents.antivirus_membrane import scan_text_for_threats, turnstile_action
 except ImportError:
-    from dataclasses import dataclass as _dc
 
-    @_dc
+    @dataclass
     class _ScanResult:
         risk_score: float = 0.0
         reasons: list = None
@@ -49,7 +48,7 @@ try:
     from agents.kernel_antivirus_gate import evaluate_kernel_event
 except ImportError:
 
-    @_dc
+    @dataclass
     class _KernelGateResult:
         kernel_action: str = "ALLOW"
         allowed: bool = True

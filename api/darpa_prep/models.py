@@ -70,3 +70,32 @@ class SamGovSearchResponse(BaseModel):
     count: int
     opportunities: List[SamGovSearchResult]
 
+
+class DarpaPortalOpportunityRecord(BaseModel):
+    opportunity_id: str
+    title: str
+    solicitation_number: str
+    office_code: str
+    submission_path: str
+    solicitation_url: Optional[str] = None
+    proposal_abstract_encouraged: bool = False
+    proposal_abstract_required: bool = False
+    available_submission_types: List[str] = Field(default_factory=list)
+    executive_summary_deadline: Optional[str] = None
+    proposal_abstract_deadline: Optional[str] = None
+    full_proposal_initial_close_deadline: Optional[str] = None
+    full_proposal_final_deadline: Optional[str] = None
+
+
+class DarpaPortalParseRequest(BaseModel):
+    raw_text: str = Field(..., description="Raw Start Submissions page text")
+    source_ref: Optional[str] = Field(
+        default=None, description="Canonical URL for the solicitation source"
+    )
+
+
+class DarpaPortalParseResponse(BaseModel):
+    count: int
+    opportunities: List[DarpaPortalOpportunityRecord]
+    citations: List[Citation]
+
