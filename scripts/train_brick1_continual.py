@@ -22,6 +22,10 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.train.tongue_table_run_support import resolve_best_available_adapter
 
 REPLAY = REPO_ROOT / "data" / "tongue_drill" / "drill_langues_full.jsonl"
 BOOST = REPO_ROOT / "data" / "tongue_drill" / "brick1_boost.jsonl"
@@ -96,6 +100,25 @@ def launch_training(mix_stats: dict) -> int:
     return subprocess.call(cmd, cwd=str(REPO_ROOT))
 
 
+def verify_and_eval(output_dir: Path) -> int:
+    resolution = resolve_best_available_adapter(output_dir)
+    if resolution is None:
+        raise SystemExit(
+            f"Brick 1 training exited without any recoverable adapter under: {output_dir}"
+        )
+    final_adapter = resolution.adapter_dir
+    print(f"[BRICK1] using adapter from {resolution.source}: {final_adapter}")
+
+    gate_cmd = [
+        sys.executable,
+        "scripts/eval_brick1_gates.py",
+        "--adapter",
+        str(final_adapter.relative_to(REPO_ROOT)),
+    ]
+    print("[BRICK1] gate eval:", " ".join(gate_cmd))
+    return subprocess.call(gate_cmd, cwd=str(REPO_ROOT))
+
+
 def main() -> int:
     if not REPLAY.exists():
         raise SystemExit(f"Replay source missing: {REPLAY}")
@@ -113,7 +136,10 @@ def main() -> int:
     stats = build_mix()
     print(f"[BRICK1] mix built: {stats}")
 
-    return launch_training(stats)
+    train_code = launch_training(stats)
+    if train_code != 0:
+        return train_code
+    return verify_and_eval(OUTPUT)
 
 
 if __name__ == "__main__":

@@ -38,6 +38,13 @@ NOTEBOOKS: list[dict[str, Any]] = [
         "summary": "QLoRA training notebook for compact Colab model adaptation.",
     },
     {
+        "name": "coder-code-primaries",
+        "aliases": ["code-primaries", "coder-primaries", "coding-primaries", "code-qlora"],
+        "path": "notebooks/coder_qwen_code_primaries_colab.ipynb",
+        "category": "training",
+        "summary": "QLoRA notebook for the SCBE coding-primaries lane across Python, JavaScript, Rust, Mathematica, Haskell, and Markdown.",
+    },
+    {
         "name": "aethermoor-finetune",
         "aliases": ["aethermoor", "aethermoor-finetune", "game-finetune"],
         "path": "notebooks/colab_aethermoor_finetune.ipynb",
