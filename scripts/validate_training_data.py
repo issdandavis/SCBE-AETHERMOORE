@@ -29,6 +29,15 @@ TONGUE_KEYS = ["KO", "AV", "RU", "CA", "UM", "DR"]
 def load_jsonl(path: Path) -> list[dict]:
     records = []
     with open(path, encoding="utf-8") as f:
+        first_line = f.readline()
+        # Skip Git LFS pointer files — they are not actual JSONL content
+        if first_line.startswith("version https://git-lfs.github.com/spec/"):
+            return [{"_git_lfs_pointer": True, "path": str(path)}]
+        if first_line.strip():
+            try:
+                records.append(json.loads(first_line))
+            except json.JSONDecodeError:
+                records.append({"_parse_error": True})
         for line in f:
             line = line.strip()
             if line:
@@ -55,6 +64,8 @@ def validate_schema(records: list[dict]) -> dict:
     }
 
     for r in records:
+        if r.get("_git_lfs_pointer"):
+            continue
         if r.get("_parse_error"):
             results["parse_errors"] += 1
             continue
@@ -268,6 +279,7 @@ def main():
         "mega_tetris_enriched_sft.jsonl": ROOT / "training-data" / "mega_tetris_enriched_sft.jsonl",
     }
 
+    records = []
     for name, path in files.items():
         if not path.exists():
             print(f"\n  SKIP: {name} not found")
@@ -355,7 +367,7 @@ def main():
     report = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "files_validated": list(files.keys()),
-        "records_total": len(records) if records else 0,
+        "records_total": len(records),
     }
     report_path = ROOT / "artifacts" / "training_validation_report.json"
     report_path.parent.mkdir(parents=True, exist_ok=True)
