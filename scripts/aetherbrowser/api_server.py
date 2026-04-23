@@ -2043,11 +2043,13 @@ from pydantic import BaseModel
 class PollyChatPayload(BaseModel):
     message: str
     context: Optional[str] = "site"
+    thinking: Optional[bool] = False
 
 class PollyRespondPayload(BaseModel):
     text: str
     context: Optional[str] = "site"
     intent: Optional[str] = ""
+    thinking: Optional[bool] = False
 
 class PollySearchPayload(BaseModel):
     query: str
@@ -2055,13 +2057,22 @@ class PollySearchPayload(BaseModel):
 class PollyDelegatePayload(BaseModel):
     text: str
 
+class PollyEmailPayload(BaseModel):
+    to: str
+    subject: str
+    body: str
+
+class PollySlackPayload(BaseModel):
+    message: str
+    channel: Optional[str] = None
+
 
 @app.post("/v1/polly/chat")
 async def polly_chat(payload: PollyChatPayload):
-    """Main chat endpoint for Polly sidebar."""
+    """Main chat endpoint for Polly sidebar. Supports thinking mode."""
     try:
         from scripts.system.polly_service import chat
-        result = await chat(payload.message, payload.context)
+        result = await chat(payload.message, payload.context, thinking=payload.thinking)
         return {"ok": True, "data": result}
     except Exception as e:
         logger.warning("Polly chat error: %s", e)
@@ -2073,7 +2084,7 @@ async def polly_respond(payload: PollyRespondPayload):
     """Alternative response endpoint for Polly."""
     try:
         from scripts.system.polly_service import respond
-        result = await respond(payload.text, payload.context, payload.intent)
+        result = await respond(payload.text, payload.context, payload.intent, thinking=payload.thinking)
         return {"ok": True, "data": result}
     except Exception as e:
         logger.warning("Polly respond error: %s", e)
@@ -2082,7 +2093,7 @@ async def polly_respond(payload: PollyRespondPayload):
 
 @app.get("/v1/polly/context")
 async def polly_context():
-    """Return backend capabilities."""
+    """Return backend capabilities and service status."""
     try:
         from scripts.system.polly_service import get_context
         result = await get_context()
@@ -2094,11 +2105,11 @@ async def polly_context():
 
 @app.post("/v1/polly/search")
 async def polly_search(payload: PollySearchPayload):
-    """Search proxy for Polly."""
+    """Real web search via Tavily + intent fallback."""
     try:
         from scripts.system.polly_service import search
         result = await search(payload.query)
-        return {"ok": True, "data": result}
+        return result
     except Exception as e:
         logger.warning("Polly search error: %s", e)
         return {"ok": False, "error": "Search service temporarily unavailable."}
@@ -2106,7 +2117,7 @@ async def polly_search(payload: PollySearchPayload):
 
 @app.post("/v1/polly/delegate")
 async def polly_delegate(payload: PollyDelegatePayload):
-    """Delegation endpoint for Polly."""
+    """Delegation endpoint — routes to appropriate handler."""
     try:
         from scripts.system.polly_service import delegate
         result = await delegate(payload.text)
@@ -2114,6 +2125,30 @@ async def polly_delegate(payload: PollyDelegatePayload):
     except Exception as e:
         logger.warning("Polly delegate error: %s", e)
         return {"ok": False, "error": "Delegation service temporarily unavailable."}
+
+
+@app.post("/v1/polly/email")
+async def polly_email(payload: PollyEmailPayload):
+    """Send email from Polly chat via Proton SMTP."""
+    try:
+        from scripts.system.polly_service import send_email_from_chat
+        result = await send_email_from_chat(payload.to, payload.subject, payload.body)
+        return {"ok": result["ok"], "data": result}
+    except Exception as e:
+        logger.warning("Polly email error: %s", e)
+        return {"ok": False, "error": "Email service temporarily unavailable."}
+
+
+@app.post("/v1/polly/slack")
+async def polly_slack(payload: PollySlackPayload):
+    """Send Slack notification from Polly chat."""
+    try:
+        from scripts.system.polly_service import notify_slack
+        result = await notify_slack(payload.message, payload.channel)
+        return {"ok": result["ok"], "data": result}
+    except Exception as e:
+        logger.warning("Polly slack error: %s", e)
+        return {"ok": False, "error": "Slack service temporarily unavailable."}
 
 
 # =========================================================================== #
