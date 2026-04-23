@@ -1,9 +1,6 @@
-{
-  "id": "base-audit",
-  "version": "1.0.0",
-  "controls": {
-    "immutable_logs": true,
-    "log_retention_days": 400,
-    "tamper_evidence": "sha256"
-  }
-}
+id: base-audit
+version: 1.0.0
+controls:
+  immutable_logs: true
+  log_retention_days: 400
+  tamper_evidence: sha256
