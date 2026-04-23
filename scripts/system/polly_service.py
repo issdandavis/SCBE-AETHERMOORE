@@ -150,35 +150,81 @@ def classify_intent(text: str) -> tuple[str, dict]:
 #  Gemini LLM Integration
 # ---------------------------------------------------------------------------
 
-GEMINI_API_KEY = _env_get("GEMINI_API_KEY", "")
+# Multi-provider LLM support
+LLM_CONFIGS = [
+    ("GEMINI_API_KEY", "gemini-1.5-flash", "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}", "google"),
+    ("OPENAI_API_KEY", "gpt-4o-mini", "https://api.openai.com/v1/chat/completions", "openai"),
+    ("GROQ_API_KEY", "llama-3.1-8b-instant", "https://api.groq.com/openai/v1/chat/completions", "openai"),
+    ("ANTHROPIC_API_KEY", "claude-3-haiku-20240307", "https://api.anthropic.com/v1/messages", "anthropic"),
+]
 
-async def _gemini_generate(
+async def _llm_generate(
     system_prompt: str,
     user_text: str,
-    model: str = "gemini-1.5-flash",
     max_tokens: int = 400,
     temperature: float = 0.4,
-) -> Optional[str]:
-    """Generate text using Gemini API."""
-    if not GEMINI_API_KEY:
-        return None
-    try:
-        import httpx
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
-        payload = {
-            "systemInstruction": {"parts": [{"text": system_prompt}]},
-            "contents": [{"role": "user", "parts": [{"text": user_text}]}],
-            "generationConfig": {"maxOutputTokens": max_tokens, "temperature": temperature},
-        }
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            resp = await client.post(url, json=payload)
-            if resp.status_code != 200:
-                return None
-            data = resp.json()
-            text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-            return text.strip() if text else None
-    except Exception:
-        return None
+) -> Optional[tuple[str, str]]:
+    """Try multiple LLM providers until one works. Returns (text, provider_name)."""
+    import httpx
+
+    for env_key, model, url_template, provider_type in LLM_CONFIGS:
+        api_key = _env_get(env_key, "")
+        if not api_key:
+            continue
+
+        try:
+            url = url_template.format(model=model, key=api_key) if "{key}" in url_template else url_template
+            headers = {"Content-Type": "application/json"}
+            payload: dict[str, Any] = {}
+
+            if provider_type == "google":
+                payload = {
+                    "systemInstruction": {"parts": [{"text": system_prompt}]},
+                    "contents": [{"role": "user", "parts": [{"text": user_text}]}],
+                    "generationConfig": {"maxOutputTokens": max_tokens, "temperature": temperature},
+                }
+            elif provider_type == "openai":
+                headers["Authorization"] = f"Bearer {api_key}"
+                payload = {
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_text},
+                    ],
+                    "max_tokens": max_tokens,
+                    "temperature": temperature,
+                }
+            elif provider_type == "anthropic":
+                headers["x-api-key"] = api_key
+                headers["anthropic-version"] = "2023-06-01"
+                payload = {
+                    "model": model,
+                    "max_tokens": max_tokens,
+                    "temperature": temperature,
+                    "system": system_prompt,
+                    "messages": [{"role": "user", "content": user_text}],
+                }
+
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                resp = await client.post(url, headers=headers, json=payload)
+                if resp.status_code != 200:
+                    continue
+                data = resp.json()
+
+                text = ""
+                if provider_type == "google":
+                    text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                elif provider_type == "openai":
+                    text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                elif provider_type == "anthropic":
+                    text = data.get("content", [{}])[0].get("text", "")
+
+                if text:
+                    return text.strip(), provider_type
+        except Exception:
+            continue
+
+    return None
 
 
 async def generate_response(message: str, thinking: bool = False) -> dict:
@@ -207,15 +253,16 @@ If the user asks you to send an email, schedule something, or notify someone, sa
 If you don't know something, say "I don't have that" — never invent.
 """
 
-    llm_text = await _gemini_generate(system, message, max_tokens=800 if thinking else 400)
+    llm_result = await _llm_generate(system, message, max_tokens=800 if thinking else 400)
 
-    if llm_text:
+    if llm_result:
+        llm_text, provider = llm_result
         return {
             "response": llm_text,
             "intent": intent_key,
             "route": route,
             "enhanced": True,
-            "model": "gemini-1.5-flash",
+            "model": provider,
         }
 
     # Fallback to deterministic response
@@ -347,10 +394,13 @@ async def get_context() -> dict:
     return {
         "capabilities": ["chat", "search", "route", "delegate", "email", "slack", "thinking"],
         "version": "2.0.0",
-        "model": "gemini-1.5-flash+deterministic-fallback",
+        "model": "multi-llm+deterministic-fallback",
         "lore_hash": hash(POLLY_LORE) & 0xFFFFFFFF,
         "services": {
-            "gemini": bool(GEMINI_API_KEY),
+            "gemini": bool(_env_get("GEMINI_API_KEY")),
+            "openai": bool(_env_get("OPENAI_API_KEY")),
+            "groq": bool(_env_get("GROQ_API_KEY")),
+            "anthropic": bool(_env_get("ANTHROPIC_API_KEY")),
             "tavily": bool(TAVILY_API_KEY),
             "slack": bool(SLACK_WEBHOOK_URL),
             "email": True,
