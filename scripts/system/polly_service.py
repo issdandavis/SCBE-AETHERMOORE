@@ -1,16 +1,15 @@
 """Polly Service — Route-first AI assistant backend for aethermoore.com.
 
-Handles chat, search, delegation, and context for the Polly sidebar assistant.
-Falls back to keyword-based deterministic responses when no LLM is available.
+Handles chat, search, delegation, email, Slack, and deep reasoning for the Polly sidebar.
+Uses Gemini as the primary reasoning engine with deterministic keyword fallback.
 """
 
 from __future__ import annotations
 
 import json
 import os
-import random
 import re
-from dataclasses import dataclass, field
+import urllib.parse
 from typing import Any, Dict, List, Optional
 
 
@@ -22,8 +21,7 @@ def _env_get(key: str, default: str = "") -> str:
 #  Lore & Knowledge Base
 # ---------------------------------------------------------------------------
 
-POLLY_LORE = """
-You are Polly, the route-first operator for SCBE-AETHERMOORE (aethermoore.com).
+POLLY_LORE = """You are Polly, the route-first operator for SCBE-AETHERMOORE (aethermoore.com).
 Your first job is to identify intent and point people to the correct surface before adding extra reasoning.
 
 CRITICAL RULE: Only recommend products that are listed below. NEVER invent products, prices, features, or URLs.
@@ -63,7 +61,7 @@ C. AI Red Team as a Service — $5-50K/engagement. Page: /red-team.html
 
 
 # ---------------------------------------------------------------------------
-#  Intent Classification (Deterministic)
+#  Intent Classification (Deterministic Fallback)
 # ---------------------------------------------------------------------------
 
 INTENT_PATTERNS = {
@@ -138,12 +136,10 @@ INTENT_PATTERNS = {
 def classify_intent(text: str) -> tuple[str, dict]:
     """Classify user text into an intent. Returns (intent_key, intent_data)."""
     text_lower = text.lower().strip()
-
     for intent_key, data in INTENT_PATTERNS.items():
         for pattern in data["patterns"]:
             if re.search(pattern, text_lower):
                 return intent_key, data
-
     return "unknown", {
         "response": "I'm not sure I understood. I can help with pricing, products, support, research, or point you to the right page. What are you looking for?",
         "route": "/assistant.html",
@@ -151,33 +147,30 @@ def classify_intent(text: str) -> tuple[str, dict]:
 
 
 # ---------------------------------------------------------------------------
-#  LLM Enhancement (Gemini)
+#  Gemini LLM Integration
 # ---------------------------------------------------------------------------
 
-async def enhance_with_gemini(user_text: str, intent: str, route: str) -> Optional[str]:
-    """Use Gemini to enhance the response if API key is available."""
-    api_key = _env_get("GEMINI_API_KEY", "")
-    if not api_key:
-        return None
+GEMINI_API_KEY = _env_get("GEMINI_API_KEY", "")
 
+async def _gemini_generate(
+    system_prompt: str,
+    user_text: str,
+    model: str = "gemini-1.5-flash",
+    max_tokens: int = 400,
+    temperature: float = 0.4,
+) -> Optional[str]:
+    """Generate text using Gemini API."""
+    if not GEMINI_API_KEY:
+        return None
     try:
         import httpx
-
-        prompt = f"""You are Polly, a helpful and concise assistant for SCBE-AETHERMOORE (an AI governance company).
-
-User message: {user_text}
-Detected intent: {intent}
-Suggested route: {route}
-
-Respond in 1-2 sentences. Be direct, plain-spoken, and operational. Never use hype or marketing language. If you don't know something, say so."""
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
         payload = {
-            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-            "generationConfig": {"maxOutputTokens": 200, "temperature": 0.3},
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{"role": "user", "parts": [{"text": user_text}]}],
+            "generationConfig": {"maxOutputTokens": max_tokens, "temperature": temperature},
         }
-
-        async with httpx.AsyncClient(timeout=10.0) as client:
+        async with httpx.AsyncClient(timeout=20.0) as client:
             resp = await client.post(url, json=payload)
             if resp.status_code != 200:
                 return None
@@ -188,55 +181,200 @@ Respond in 1-2 sentences. Be direct, plain-spoken, and operational. Never use hy
         return None
 
 
-# ---------------------------------------------------------------------------
-#  Main Service Functions
-# ---------------------------------------------------------------------------
-
-async def chat(message: str, context: str = "site") -> dict:
-    """Handle a chat message and return a response."""
+async def generate_response(message: str, thinking: bool = False) -> dict:
+    """Primary response generator using Gemini with lore grounding."""
     intent_key, intent_data = classify_intent(message)
+    route = intent_data.get("route", "/assistant.html")
 
-    # Try Gemini enhancement
-    enhanced = await enhance_with_gemini(message, intent_key, intent_data.get("route", ""))
-    response_text = enhanced or intent_data["response"]
+    mode_label = "DEEP THINKING" if thinking else "STANDARD"
+    mode_instruction = (
+        "Think step by step. Analyze the user's request carefully, identify the domain, then provide a thorough, well-reasoned response. Use 2-4 paragraphs."
+        if thinking else
+        "Be concise and direct. Route first, explain second. Use 1-2 sentences for simple questions, 1 short paragraph for complex ones."
+    )
+    system = f"""{POLLY_LORE}
 
+You are operating in {mode_label} mode.
+{mode_instruction}
+
+You have access to:
+- Web search (Tavily)
+- Email sending (Proton SMTP to issac@aethermoorgames.com)
+- Slack notifications
+- Site routing and product knowledge
+
+If the user asks you to send an email, schedule something, or notify someone, say you can do it and ask for the details you need.
+If you don't know something, say "I don't have that" — never invent.
+"""
+
+    llm_text = await _gemini_generate(system, message, max_tokens=800 if thinking else 400)
+
+    if llm_text:
+        return {
+            "response": llm_text,
+            "intent": intent_key,
+            "route": route,
+            "enhanced": True,
+            "model": "gemini-1.5-flash",
+        }
+
+    # Fallback to deterministic response
     return {
-        "response": response_text,
+        "response": intent_data["response"],
         "intent": intent_key,
-        "route": intent_data.get("route", "/assistant.html"),
-        "context": context,
-        "enhanced": enhanced is not None,
+        "route": route,
+        "enhanced": False,
+        "model": "deterministic",
     }
 
 
-async def respond(text: str, context: str = "site", intent: str = "") -> dict:
+# ---------------------------------------------------------------------------
+#  Web Search (Tavily)
+# ---------------------------------------------------------------------------
+
+TAVILY_API_KEY = _env_get("TAVILY_API_KEY", "")
+
+async def web_search(query: str, max_results: int = 5) -> dict:
+    """Search the web using Tavily API (free tier: 1000 req/month)."""
+    if not TAVILY_API_KEY:
+        return {"query": query, "results": [], "error": "TAVILY_API_KEY not configured"}
+
+    try:
+        import httpx
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                "https://api.tavily.com/search",
+                json={
+                    "api_key": TAVILY_API_KEY,
+                    "query": query,
+                    "search_depth": "basic",
+                    "max_results": max_results,
+                    "include_answer": True,
+                },
+            )
+            if resp.status_code != 200:
+                return {"query": query, "results": [], "error": f"Tavily HTTP {resp.status_code}"}
+
+            data = resp.json()
+            results = []
+            for r in data.get("results", []):
+                results.append({
+                    "title": r.get("title", ""),
+                    "url": r.get("url", ""),
+                    "snippet": r.get("content", "")[:300],
+                })
+
+            return {
+                "query": query,
+                "answer": data.get("answer", ""),
+                "results": results,
+                "source": "tavily",
+            }
+    except Exception as e:
+        return {"query": query, "results": [], "error": str(e)}
+
+
+# ---------------------------------------------------------------------------
+#  Email via Proton SMTP
+# ---------------------------------------------------------------------------
+
+async def send_email_from_chat(to: str, subject: str, body: str) -> dict:
+    """Send an email using the existing Proton SMTP service."""
+    try:
+        from scripts.system.email_service import send_contact_notification
+        result = send_contact_notification(
+            name="Polly Assistant",
+            email=to,
+            subject=subject,
+            message=body,
+            page="polly-chat",
+        )
+        return {"ok": result["ok"], "message": result.get("message", "Sent"), "error": result.get("error")}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ---------------------------------------------------------------------------
+#  Slack Webhook
+# ---------------------------------------------------------------------------
+
+SLACK_WEBHOOK_URL = _env_get("SLACK_WEBHOOK_URL", "")
+
+async def notify_slack(message: str, channel: Optional[str] = None) -> dict:
+    """Send a notification to Slack via webhook."""
+    if not SLACK_WEBHOOK_URL:
+        return {"ok": False, "error": "SLACK_WEBHOOK_URL not configured"}
+
+    try:
+        import httpx
+        payload = {"text": f"🤖 Polly: {message}"}
+        if channel:
+            payload["channel"] = channel
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(SLACK_WEBHOOK_URL, json=payload)
+            if resp.status_code == 200:
+                return {"ok": True, "message": "Slack notification sent"}
+            return {"ok": False, "error": f"Slack HTTP {resp.status_code}: {resp.text}"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ---------------------------------------------------------------------------
+#  Legacy Service Interface (API-compatible)
+# ---------------------------------------------------------------------------
+
+async def chat(message: str, context: str = "site", thinking: bool = False) -> dict:
+    """Handle a chat message and return a response."""
+    result = await generate_response(message, thinking=thinking)
+    result["context"] = context
+    return result
+
+
+async def respond(text: str, context: str = "site", intent: str = "", thinking: bool = False) -> dict:
     """Alternative response endpoint (used by some Polly clients)."""
-    result = await chat(text, context)
+    result = await chat(text, context, thinking=thinking)
     return {
         "text": result["response"],
         "intent": result["intent"],
         "route": result["route"],
+        "enhanced": result.get("enhanced", False),
     }
 
 
 async def get_context() -> dict:
     """Return backend capabilities and context."""
     return {
-        "capabilities": ["chat", "search", "route", "delegate"],
-        "version": "1.0.0",
-        "model": "deterministic+gemini-fallback",
+        "capabilities": ["chat", "search", "route", "delegate", "email", "slack", "thinking"],
+        "version": "2.0.0",
+        "model": "gemini-1.5-flash+deterministic-fallback",
         "lore_hash": hash(POLLY_LORE) & 0xFFFFFFFF,
+        "services": {
+            "gemini": bool(GEMINI_API_KEY),
+            "tavily": bool(TAVILY_API_KEY),
+            "slack": bool(SLACK_WEBHOOK_URL),
+            "email": True,
+        },
     }
 
 
 async def search(query: str) -> dict:
-    """Simple search proxy — returns intent-classified results."""
+    """Search proxy — uses Tavily if available, falls back to intent routing."""
+    tavily_result = await web_search(query)
+    if tavily_result.get("results"):
+        return {"ok": True, "data": tavily_result}
+
+    # Fallback to intent-classified results
     intent_key, intent_data = classify_intent(query)
     return {
-        "query": query,
-        "intent": intent_key,
-        "route": intent_data.get("route", ""),
-        "results": [{"title": intent_data.get("response", "")[:80], "url": intent_data.get("route", "")}],
+        "ok": True,
+        "data": {
+            "query": query,
+            "intent": intent_key,
+            "route": intent_data.get("route", ""),
+            "results": [{"title": intent_data.get("response", "")[:80], "url": intent_data.get("route", "")}],
+            "source": "intent",
+        },
     }
 
 
