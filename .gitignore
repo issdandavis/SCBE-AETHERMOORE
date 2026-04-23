@@ -88,6 +88,7 @@ training-data/**/*.jsonl
 # ...except the live news-pipeline output (committed by GH Actions hourly)
 !training-data/news-pipeline/records/*.jsonl
 !training-data/news-pipeline/sft/*.jsonl
+!training-data/agentic_coding/*.jsonl
 training-data/**/*.jsonl.gz
 training-data/sft_combined*.jsonl
 training-data/sft_*_regen*.jsonl

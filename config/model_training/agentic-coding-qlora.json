@@ -1,0 +1,119 @@
+{
+  "model_name_or_path": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "output_dir": "training/runs/agentic-coding-qlora",
+  "dataset_dir": "training-data/agentic_coding",
+  "dataset_name": "combined_agentic",
+  "template": "qwen",
+  "cutoff_len": 8192,
+  "max_samples": null,
+  "overwrite_cache": true,
+  "preprocessing_num_workers": 4,
+  "finetuning_type": "lora",
+  "lora_target": "all",
+  "lora_rank": 16,
+  "lora_alpha": 32,
+  "lora_dropout": 0.05,
+  "use_rslora": false,
+  "use_dora": false,
+  "quantization_bit": 4,
+  "quantization_method": "bitsandbytes",
+  "stage": "sft",
+  "do_train": true,
+  "num_train_epochs": 3.0,
+  "learning_rate": 2e-4,
+  "lr_scheduler_type": "cosine",
+  "warmup_ratio": 0.05,
+  "per_device_train_batch_size": 1,
+  "gradient_accumulation_steps": 8,
+  "save_steps": 100,
+  "logging_steps": 10,
+  "eval_steps": 100,
+  "val_size": 0.05,
+  "load_best_model_at_end": true,
+  "plot_loss": true,
+  "bf16": true,
+  "flash_attn": "fa2",
+  "use_unsloth": true,
+  "report_to": "none",
+  "seed": 42,
+  "neat_packing": true,
+  "train_on_prompt": false,
+  "mask_history": true,
+  "additional_target": ["embed_tokens", "lm_head"],
+  "new_special_tokens": [
+    "<tool_call>",
+    "</tool_call>",
+    "<tool_result>",
+    "</tool_result>",
+    "<think>",
+    "</think>",
+    "<observe>",
+    "</observe>",
+    "<plan>",
+    "</plan>",
+    "<governance>",
+    "</governance>",
+    "<execute>",
+    "</execute>",
+    "<error>",
+    "</error>",
+    "<recover>",
+    "</recover>",
+    "<finish>",
+    "</finish>",
+    "<read_file>",
+    "</read_file>",
+    "<apply_diff>",
+    "</apply_diff>",
+    "<terminal>",
+    "</terminal>",
+    "<browser>",
+    "</browser>"
+  ],
+  "dataset_config": {
+    "sft_from_skills": {
+      "path": "training-data/agentic_coding/from_skills.jsonl",
+      "weight": 1.0
+    },
+    "seed_trajectories": {
+      "path": "training-data/agentic_coding/seed_dataset.jsonl",
+      "weight": 2.0
+    },
+    "open_datasets": {
+      "path": "training-data/agentic_coding/*_scbe.jsonl",
+      "weight": 1.5
+    },
+    "aetherbrowse_sessions": {
+      "path": "training-data/agentic_coding/sessions/*.jsonl",
+      "weight": 3.0
+    }
+  },
+  "curriculum": {
+    "phase1_learn": {
+      "data": ["sft_from_skills", "seed_trajectories"],
+      "epochs": 1,
+      "lr": 2e-4,
+      "description": "Learn atomic skills and seed trajectories"
+    },
+    "phase2_gym": {
+      "data": ["open_datasets"],
+      "epochs": 1,
+      "lr": 1e-4,
+      "description": "Train on diverse open dataset trajectories"
+    },
+    "phase3_remediation": {
+      "data": ["aetherbrowse_sessions"],
+      "epochs": 1,
+      "lr": 5e-5,
+      "description": "Fine-tune on real verified AetherBrowse sessions"
+    }
+  },
+  "scbe_specific": {
+    "tongue_embedding_dim": 6,
+    "layer_count": 14,
+    "process_reward_layers": [3, 7, 12],
+    "governance_threshold": 0.7,
+    "use_sacred_tongue_system_prompt": true,
+    "use_layer_aware_loss_masking": true
+  }
+}
