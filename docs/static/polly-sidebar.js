@@ -26,6 +26,7 @@
 
   var MEMORY_KEY = "pollyV2Memory";
   var MAX_MEMORY = 100; // max stored turns
+  var STATUS_REFRESH_MS = 30000; // 30-second service status poll interval
 
   // -------------------------------------------------------------------------
   // Utilities
@@ -434,7 +435,13 @@
 
     // Status bar
     refreshStatus(statusBar);
-    var statusInterval = setInterval(function () { refreshStatus(statusBar); }, 30000);
+    var statusInterval = null;
+
+    function startStatusPoll() {
+      if (statusInterval) clearInterval(statusInterval);
+      statusInterval = setInterval(function () { refreshStatus(statusBar); }, STATUS_REFRESH_MS);
+    }
+    startStatusPoll();
 
     // Welcome message
     addMsg(
@@ -522,9 +529,11 @@
       if (launcher) launcher.setAttribute("aria-expanded", open ? "true" : "false");
       if (panel) panel.setAttribute("aria-hidden", open ? "false" : "true");
       if (open) {
+        refreshStatus(statusBar);
+        startStatusPoll();
         setTimeout(function () { try { input.focus(); } catch (_) {} }, 50);
       } else {
-        clearInterval(statusInterval);
+        if (statusInterval) { clearInterval(statusInterval); statusInterval = null; }
       }
     };
 

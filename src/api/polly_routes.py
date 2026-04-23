@@ -28,18 +28,32 @@ logger = logging.getLogger("scbe.api.polly")
 polly_router = APIRouter(prefix="/v1/polly", tags=["polly"])
 
 # ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+MAX_HISTORY_TURNS = 6
+MAX_SEARCH_RESULTS = 5
+DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+
+# ---------------------------------------------------------------------------
 # Environment helpers
 # ---------------------------------------------------------------------------
 
-ENV_FILE = os.path.join(os.path.dirname(__file__), "../../config/connector_oauth/.env.connector.oauth")
+from pathlib import Path
+
+_DEFAULT_ENV_FILE = Path(__file__).parent.parent.parent / "config" / "connector_oauth" / ".env.connector.oauth"
+ENV_FILE = os.environ.get("POLLY_ENV_FILE") or str(_DEFAULT_ENV_FILE)
 _env_loaded = False
+import threading
+_env_lock = threading.Lock()
 
 
 def _load_env() -> None:
     global _env_loaded
-    if _env_loaded:
-        return
-    _env_loaded = True
+    with _env_lock:
+        if _env_loaded:
+            return
+        _env_loaded = True
     if os.path.isfile(ENV_FILE):
         with open(ENV_FILE) as fh:
             for line in fh:
@@ -253,11 +267,13 @@ async def _gemini_chat(message: str, history: List[ChatMessage], page_context: O
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY not set")
 
+    gemini_model = os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
+
     try:
         import google.generativeai as genai  # type: ignore[import-untyped]
 
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel(gemini_model)
 
         system = (
             "You are Polly, the AI assistant for SCBE-AETHERMOORE — an AI safety and governance "
@@ -268,7 +284,7 @@ async def _gemini_chat(message: str, history: List[ChatMessage], page_context: O
             system += f"\n\nPage context: {page_context}"
 
         parts = [system]
-        for msg in history[-6:]:
+        for msg in history[-MAX_HISTORY_TURNS:]:
             parts.append(f"{msg.role.upper()}: {msg.content}")
         parts.append(f"USER: {message}")
         parts.append("ASSISTANT (think step-by-step):")
@@ -319,7 +335,7 @@ async def polly_chat(req: ChatRequest) -> ChatResponse:
                 response=text,
                 route="gemini-thinking",
                 thinking=True,
-                model="gemini-1.5-flash",
+                model=os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL),
                 ts=int(time.time()),
             )
         except RuntimeError as exc:
@@ -364,7 +380,7 @@ async def polly_search(req: SearchRequest) -> SearchResponse:
                     url=r.get("url", ""),
                     excerpt=r.get("content", "")[:300],
                 )
-                for r in raw_results[:5]
+                for r in raw_results[:MAX_SEARCH_RESULTS]
             ]
             return SearchResponse(results=results, source="tavily", query=query, ts=int(time.time()))
         except (HTTPError, URLError, Exception) as exc:
