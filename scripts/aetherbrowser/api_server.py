@@ -2067,6 +2067,39 @@ class PollySlackPayload(BaseModel):
     channel: Optional[str] = None
 
 
+class PollyCallPayload(BaseModel):
+    phone: str
+    name: Optional[str] = ""
+
+
+@app.post("/v1/polly/call")
+async def polly_call(payload: PollyCallPayload):
+    """Click-to-call via Twilio. Connects visitor to business number."""
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID", "")
+    auth_token = os.environ.get("TWILIO_AUTH_TOKEN", "")
+    twilio_number = os.environ.get("TWILIO_PHONE_NUMBER", "")
+    business_number = os.environ.get("BUSINESS_PHONE_NUMBER", "")
+
+    if not all([account_sid, auth_token, twilio_number, business_number]):
+        logger.warning("Twilio not configured — missing credentials")
+        return {"ok": False, "error": "Phone service not yet configured. Email issac@aethermoorgames.com instead."}
+
+    try:
+        from twilio.rest import Client
+        client = Client(account_sid, auth_token)
+        twiml = f'<Response><Dial>{business_number}</Dial></Response>'
+        call = client.calls.create(
+            to=payload.phone,
+            from_=twilio_number,
+            twiml=twiml
+        )
+        logger.info("Twilio call initiated: %s to %s", call.sid, payload.phone)
+        return {"ok": True, "data": {"call_sid": call.sid, "status": call.status}}
+    except Exception as e:
+        logger.warning("Twilio call error: %s", e)
+        return {"ok": False, "error": "Could not place call. Please try again or email us."}
+
+
 @app.post("/v1/polly/chat")
 async def polly_chat(payload: PollyChatPayload):
     """Main chat endpoint for Polly sidebar. Supports thinking mode."""
