@@ -13,9 +13,10 @@ FastAPI implementation with:
 Run: uvicorn src.api.main:app --reload
 """
 
-from fastapi import FastAPI, HTTPException, Header, Depends, Request, Query
+from fastapi import FastAPI, HTTPException, Depends, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict, Any
 import json
@@ -36,17 +37,28 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
-# Load .secrets/env.local for SMTP + Stripe credentials (local dev only)
-_secrets_env = os.path.join(os.path.dirname(__file__), "../../.secrets/env.local")
-if os.path.isfile(_secrets_env):
-    with open(_secrets_env) as _f:
-        for _line in _f:
-            _line = _line.strip()
-            if _line and not _line.startswith("#") and "=" in _line:
-                _k, _, _v = _line.partition("=")
-                _k, _v = _k.strip(), _v.strip()
-                if _k and _v and _k not in os.environ:
-                    os.environ[_k] = _v
+def _load_local_env_if_explicitly_enabled() -> None:
+    """Load local secret env file only when explicitly enabled for dev."""
+    allow_local_secrets = os.getenv("SCBE_LOAD_LOCAL_SECRETS", "").strip().lower()
+    if allow_local_secrets not in {"1", "true", "yes", "on"}:
+        return
+
+    secrets_env = os.path.join(os.path.dirname(__file__), "../../.secrets/env.local")
+    if not os.path.isfile(secrets_env):
+        logger.warning("SCBE_LOAD_LOCAL_SECRETS is enabled but %s was not found", secrets_env)
+        return
+
+    with open(secrets_env, encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, _, value = line.partition("=")
+                key, value = key.strip(), value.strip()
+                if key and value and key not in os.environ:
+                    os.environ[key] = value
+
+
+_load_local_env_if_explicitly_enabled()
 
 from src.scbe_14layer_reference import scbe_14layer_pipeline
 from src.crypto.rwp_v3 import RWPv3Protocol, RWPEnvelope
@@ -54,6 +66,9 @@ from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.api.saas_routes import saas_router
 from src.api.stripe_billing import billing_router
+from src.contracts.operation_panel import resolve_source_to_operation_panel
+from src.contracts.system_cards import build_system_deck, play_system_card
+from src.contracts.runtime_contract import inspect_runtime_packet
 
 from src.api.compute_routes import compute_router
 from src.api.search_routes import search_router
@@ -93,7 +108,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "x-api-key"],
+    allow_headers=["Content-Type", "Authorization", "x-api-key", "SCBE_api_key"],
 )
 
 # Include HYDRA router
@@ -252,6 +267,113 @@ class SimulateAttackRequest(BaseModel):
     position: List[int] = Field(..., min_length=6, max_length=6)
     agent: str = Field(default="malicious_bot")
     context: str = Field(default="untrusted")
+
+
+class RuntimeInspectRequest(BaseModel):
+    language: str = Field(..., min_length=1, max_length=64, description="Source language")
+    content: str = Field(..., min_length=1, max_length=64000, description="Source content")
+    source_name: str = Field(default="<memory>", max_length=512, description="Optional source label")
+
+
+class RuntimeSystemCardsRequest(RuntimeInspectRequest):
+    include_extended: bool = Field(default=False, description="Include GO/ZI overlays when building the deck")
+    deck_size: int = Field(default=10, ge=4, le=32, description="Maximum cards in the bounded deck")
+
+
+class RuntimePlayCardRequest(RuntimeSystemCardsRequest):
+    card: str = Field(..., min_length=1, max_length=128, description="Card selector to resolve and play")
+
+
+class PollyChatMessage(BaseModel):
+    role: str = Field(default="system")
+    content: str = Field(default="")
+
+
+class PollyChatRequest(BaseModel):
+    message: str = Field(..., min_length=1, max_length=16000)
+    tentacle: str = Field(default="local", max_length=64)
+    mode: str = Field(default="local-polypad", max_length=128)
+    context: List[PollyChatMessage] = Field(default_factory=list)
+
+
+def _build_runtime_deck_payload(
+    *,
+    language: str,
+    content: str,
+    source_name: str,
+    include_extended: bool,
+    deck_size: int,
+) -> dict[str, Any]:
+    resolution = resolve_source_to_operation_panel(
+        content,
+        language=language,
+        source_name=source_name,
+        include_extended=include_extended,
+    )
+    deck = build_system_deck(
+        resolution,
+        include_extended=include_extended,
+        deck_size=deck_size,
+    )
+    return {
+        "resolution": resolution,
+        "deck": deck,
+    }
+
+
+def _looks_like_code_prompt(message: str) -> bool:
+    lowered = message.lower()
+    return any(
+        token in lowered
+        for token in ("def ", "return ", "class ", "function ", "lambda ", "system card", "play-card", "code-packet")
+    ) or any(op in message for op in ("+", "-", "*", "/", "==", "!=", "<", ">"))
+
+
+def _polly_local_chat_response(message: str) -> dict[str, Any]:
+    if _looks_like_code_prompt(message):
+        payload = _build_runtime_deck_payload(
+            language="python",
+            content=message,
+            source_name="polly_pad_local_request.py",
+            include_extended=False,
+            deck_size=10,
+        )
+        deck = payload["deck"]
+        anchor = deck["cards"][0]
+        response = (
+            "Local Polly Pad routed this through the GeoSeal system-card plane. "
+            f"Anchor card is `{anchor['card_id']}` and the bounded deck has {len(deck['cards'])} cards. "
+            "Use `/runtime/system-cards` or `geoseal play-card` to resolve a specific move."
+        )
+        return {
+            "response": response,
+            "domain": "science",
+            "tentacle": "local",
+            "model": "polly-local-control-plane",
+            "active_profiles": ["polly", "scbe-coding", "system-cards"],
+            "coding_spine": {
+                "tongue": deck["resolution"]["route_tongue"],
+                "language": payload["resolution"]["runtime_packet"]["lane_language"],
+                "operator_signature": deck["resolution"]["operator_signature"],
+            },
+            "deck": deck,
+            "sources": [],
+        }
+    return {
+        "response": (
+            "Polly Pad local mode is online. "
+            "For coding tasks, send code or ask for a system-card deck and GeoSeal will route it through the bounded control plane."
+        ),
+        "domain": "hybrid",
+        "tentacle": "local",
+        "model": "polly-local-control-plane",
+        "active_profiles": ["polly", "local", "offline"],
+        "coding_spine": {
+            "tongue": "KO",
+            "language": "python",
+        },
+        "sources": [],
+    }
 
 
 class GoalPriority(str, Enum):
@@ -413,16 +535,24 @@ CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
 from src.api.auth_config import VALID_API_KEYS
 
 
-async def verify_api_key(x_api_key: str = Header(...)):
+API_KEY_HEADER = APIKeyHeader(name="x-api-key", auto_error=False)
+API_KEY_HEADER_LEGACY = APIKeyHeader(name="SCBE_api_key", auto_error=False)
+
+
+async def verify_api_key(
+    api_key: str | None = Depends(API_KEY_HEADER),
+    api_key_legacy: str | None = Depends(API_KEY_HEADER_LEGACY),
+):
     """Verify API key and return user identifier."""
-    if x_api_key not in VALID_API_KEYS:
+    resolved_key = api_key or api_key_legacy
+    if not resolved_key or resolved_key not in VALID_API_KEYS:
         raise HTTPException(401, "Invalid API key")
 
     # Check rate limit
-    if not rate_limiter.is_allowed(x_api_key):
+    if not rate_limiter.is_allowed(resolved_key):
         raise HTTPException(429, "Rate limit exceeded (100 req/min)")
 
-    return VALID_API_KEYS[x_api_key]
+    return VALID_API_KEYS[resolved_key]
 
 
 # ============================================================================
@@ -972,6 +1102,133 @@ async def governance_check(
         raise HTTPException(500, "Governance check failed")
 
 
+@app.post("/runtime/inspect", tags=["Runtime"])
+async def runtime_inspect(request: RuntimeInspectRequest, user: str = Depends(verify_api_key)):
+    """
+    ## Runtime Inspect
+
+    Produce the shared tokenizer-to-spine runtime contract for one source payload.
+    """
+    try:
+        contract = inspect_runtime_packet(
+            {
+                "language": request.language,
+                "content": request.content,
+                "source_name": request.source_name,
+            }
+        )
+        return {
+            "status": "ok",
+            "data": contract,
+        }
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("runtime inspect failed")
+        raise HTTPException(500, "Runtime inspect failed")
+
+
+@app.post("/runtime/system-cards", tags=["Runtime"])
+async def runtime_system_cards(request: RuntimeSystemCardsRequest, user: str = Depends(verify_api_key)):
+    """
+    ## Runtime System Cards
+
+    Resolve a source payload to the bounded system-card deck.
+    """
+    try:
+        payload = _build_runtime_deck_payload(
+            language=request.language,
+            content=request.content,
+            source_name=request.source_name,
+            include_extended=bool(request.include_extended),
+            deck_size=int(request.deck_size),
+        )
+        return {"status": "ok", "data": payload}
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("runtime system cards failed")
+        raise HTTPException(500, "Runtime system cards failed")
+
+
+@app.post("/runtime/play-card", tags=["Runtime"])
+async def runtime_play_card(request: RuntimePlayCardRequest, user: str = Depends(verify_api_key)):
+    """
+    ## Runtime Play Card
+
+    Build the bounded deck and resolve one selected card.
+    """
+    try:
+        payload = _build_runtime_deck_payload(
+            language=request.language,
+            content=request.content,
+            source_name=request.source_name,
+            include_extended=bool(request.include_extended),
+            deck_size=int(request.deck_size),
+        )
+        result = play_system_card(payload["deck"], request.card)
+        return {
+            "status": "ok",
+            "data": {
+                "resolution": payload["resolution"],
+                "deck_version": payload["deck"]["version"],
+                "result": result,
+            },
+        }
+    except KeyError:
+        raise HTTPException(404, f"unknown card: {request.card}")
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("runtime play card failed")
+        raise HTTPException(500, "Runtime play card failed")
+
+
+@app.get("/v1/spaceport/status", tags=["Polly Pad"])
+async def polly_pad_spaceport_status():
+    """
+    ## Polly Pad Spaceport Status
+
+    Local status endpoint for Polly Pad widget/runtime clients.
+    """
+    return {
+        "status": "ok",
+        "data": {
+            "online": True,
+            "assistant": "polly-local-control-plane",
+            "lanes": {
+                "runtime_inspect": True,
+                "system_cards": True,
+                "play_card": True,
+                "local_chat": True,
+            },
+            "api_base_hint": "http://127.0.0.1:8002",
+        },
+    }
+
+
+@app.post("/v1/chat", tags=["Polly Pad"])
+async def polly_pad_local_chat(request: PollyChatRequest):
+    """
+    ## Polly Pad Local Chat
+
+    Minimal local Polly Pad lane that can surface bounded coding decks.
+    """
+    try:
+        return _polly_local_chat_response(request.message)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("polly local chat failed")
+        raise HTTPException(500, "Polly local chat failed")
+
+
 @app.post("/simulate-attack", tags=["Demo"])
 async def simulate_attack(request: SimulateAttackRequest):
     """
@@ -1338,6 +1595,7 @@ async def advance_mobile_goal(
 
 
 @app.get("/health", tags=["System"])
+@app.get("/v1/health", tags=["System"])
 async def health():
     """
     ## Health Check
