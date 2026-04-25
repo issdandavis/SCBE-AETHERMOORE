@@ -473,6 +473,60 @@ def score_smoke_report(report_path: Path, manifest: dict[str, Any]) -> dict[str,
     }
 
 
+def reward_smoke_report(report_path: Path, manifest: dict[str, Any]) -> dict[str, Any]:
+    """Convert a frozen smoke-eval report into deterministic reward signals.
+
+    This is intentionally rule-based: it is suitable for RLVR/GRPO-style
+    ranking because it does not require an LLM judge and it preserves the same
+    pre-committed required/forbidden markers used by the promotion gate.
+    """
+    report = _load_json(report_path)
+    score = score_smoke_report(report_path, manifest)
+    prompts = report.get("prompts") or (manifest.get("smoke_eval") or {}).get("prompts", [])
+    prompt_cfg = {item["id"]: item for item in prompts}
+    responses = report.get("responses") or report.get("prompts") or []
+    reward_items = []
+    total_reward = 0.0
+    for item in responses:
+        prompt_id = str(item.get("id") or item.get("prompt_id") or "")
+        response = str(item.get("response", ""))
+        cfg = prompt_cfg.get(prompt_id, {})
+        required = list(cfg.get("required") or [])
+        forbidden = list(cfg.get("forbidden") or [])
+        required_hits = [needle for needle in required if needle in response]
+        missing_required = [needle for needle in required if needle not in response]
+        present_forbidden = [needle for needle in forbidden if needle in response]
+        required_score = len(required_hits) / len(required) if required else 1.0
+        forbidden_penalty = len(present_forbidden) / len(forbidden) if forbidden else 0.0
+        reward = max(-1.0, min(1.0, required_score - forbidden_penalty))
+        total_reward += reward
+        reward_items.append(
+            {
+                "id": prompt_id,
+                "reward": reward,
+                "required_score": required_score,
+                "forbidden_penalty": forbidden_penalty,
+                "required_hits": required_hits,
+                "missing_required": missing_required,
+                "present_forbidden": present_forbidden,
+                "passed": not missing_required and not present_forbidden,
+            }
+        )
+    mean_reward = total_reward / len(reward_items) if reward_items else 0.0
+    return {
+        "schema_version": "geoseal_coding_training_reward_report_v1",
+        "report_path": str(report_path),
+        "profile_id": report.get("profile_id", ""),
+        "eval_contract": report.get("eval_contract") or {},
+        "mean_reward": mean_reward,
+        "total": len(reward_items),
+        "promotion_ready": score["promotion_ready"],
+        "pass_rate": score["pass_rate"],
+        "items": reward_items,
+        "notes": "Rule-based reward: required marker coverage minus forbidden marker penalty, clamped to [-1, 1].",
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", default=str(MANIFEST_PATH))
@@ -496,6 +550,8 @@ def main() -> int:
     eval_dispatch_parser.add_argument("--timeout", default="30m")
     score_parser = sub.add_parser("score-smoke-report")
     score_parser.add_argument("--report", required=True)
+    reward_parser = sub.add_parser("reward-smoke-report")
+    reward_parser.add_argument("--report", required=True)
     args = parser.parse_args()
 
     manifest = load_manifest(Path(args.manifest))
@@ -513,6 +569,8 @@ def main() -> int:
         payload = dispatch_smoke_eval(manifest, args.profile_id or None, args.adapter_repo or None, args.timeout)
     elif args.command == "score-smoke-report":
         payload = score_smoke_report(Path(args.report), manifest)
+    elif args.command == "reward-smoke-report":
+        payload = reward_smoke_report(Path(args.report), manifest)
     else:
         raise AssertionError(args.command)
     print(json.dumps(payload, indent=2, ensure_ascii=True))

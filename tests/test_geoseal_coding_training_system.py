@@ -147,6 +147,42 @@ def test_score_smoke_report_enforces_required_and_forbidden_markers(tmp_path: Pa
     assert score["promotion_ready"] is False
 
 
+def test_reward_smoke_report_exports_rule_based_rlvr_signal(tmp_path: Path) -> None:
+    module = _load_module()
+    manifest = module.load_manifest(MANIFEST_PATH)
+    report = {
+        "profile_id": "coding-agent-qwen-atomic-workflow-stage6",
+        "prompts": [
+            {
+                "id": "stage6_unseen_hex_trace",
+                "prompt": "Trace crc_patch.",
+                "required": ["crc_patch", "hex", "compute", "re-advance"],
+                "forbidden": ["palindrome"],
+            }
+        ],
+        "promotion_gate": {
+            "minimum_pass_rate": 0.8,
+            "must_pass": ["stage6_unseen_hex_trace"],
+        },
+        "responses": [
+            {
+                "id": "stage6_unseen_hex_trace",
+                "response": "crc_patch uses a byte and hex trace, checks compute, then can re-advance.",
+            }
+        ],
+    }
+    report_path = tmp_path / "stage6_report.json"
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+
+    reward = module.reward_smoke_report(report_path, manifest)
+
+    assert reward["schema_version"] == "geoseal_coding_training_reward_report_v1"
+    assert reward["mean_reward"] == 1.0
+    assert reward["promotion_ready"] is True
+    assert reward["items"][0]["required_score"] == 1.0
+    assert reward["items"][0]["forbidden_penalty"] == 0.0
+
+
 def test_summarize_training_log_parses_pretty_completion_json() -> None:
     module = _load_module()
     summary = module.summarize_training_log(
