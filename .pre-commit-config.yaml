@@ -1,0 +1,26 @@
+repos:
+  - repo: local
+    hooks:
+      - id: scbe-secret-scan
+        name: SCBE secret scan
+        entry: python scripts/check_secrets.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: scbe-repo-cleanliness-audit
+        name: SCBE repo cleanliness audit
+        entry: python scripts/system/repo_cleanliness_audit.py --max-dirty 250 --max-unclassified 0
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [manual]
+
+      - id: scbe-release-cleanliness-audit
+        name: SCBE release cleanliness audit
+        entry: python scripts/system/repo_cleanliness_audit.py --max-dirty 0 --max-unclassified 0
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [manual]
