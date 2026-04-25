@@ -12,7 +12,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def test_npm_geoseal_bin_is_declared() -> None:
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
-    assert package["bin"]["geoseal"] == "./bin/geoseal.cjs"
+    assert package["bin"]["geoseal"] in {"bin/geoseal.cjs", "./bin/geoseal.cjs"}
+    assert package["bin"]["scbe-geoseal"] in {"bin/geoseal.cjs", "./bin/geoseal.cjs"}
     assert (ROOT / "bin" / "geoseal.cjs").exists()
 
 

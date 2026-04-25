@@ -6,8 +6,8 @@
   "license": "MIT",
   "type": "commonjs",
   "bin": {
-    "geoseal": "./bin/geoseal.cjs",
-    "scbe-geoseal": "./bin/geoseal.cjs"
+    "geoseal": "bin/geoseal.cjs",
+    "scbe-geoseal": "bin/geoseal.cjs"
   },
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
