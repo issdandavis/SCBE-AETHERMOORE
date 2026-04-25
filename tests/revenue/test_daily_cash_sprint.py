@@ -57,3 +57,35 @@ def test_daily_cash_sprint_continuous_advances_to_next_task(tmp_path: Path) -> N
     state = json.loads(state_path.read_text(encoding="utf-8"))
     assert [task["state"] for task in state["tasks"][:2]] == ["DONE", "DONE"]
     assert state["tasks"][2]["state"] == "PENDING"
+
+
+def test_daily_cash_sprint_cycles_when_complete(tmp_path: Path) -> None:
+    state_path = tmp_path / "state.json"
+
+    first = run_continuous(
+        offer_id="local_ai_command_center_setup",
+        minutes=20,
+        out_root=tmp_path,
+        state_path=state_path,
+        max_steps=6,
+        reset=True,
+    )
+    assert first["completed_count"] == 6
+    assert first["remaining_count"] == 0
+
+    second = run_continuous(
+        offer_id="local_ai_command_center_setup",
+        minutes=20,
+        out_root=tmp_path,
+        state_path=state_path,
+        max_steps=1,
+        cycle_when_complete=True,
+    )
+    assert second["cycle_index"] == 1
+    assert second["completed_count"] == 1
+    assert second["remaining_count"] == 5
+
+    state = json.loads(state_path.read_text(encoding="utf-8"))
+    assert state["cycle_history"][0]["completed_count"] == 6
+    assert state["tasks"][0]["state"] == "DONE"
+    assert state["tasks"][1]["state"] == "PENDING"

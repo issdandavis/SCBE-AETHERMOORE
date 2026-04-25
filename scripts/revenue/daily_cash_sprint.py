@@ -343,6 +343,8 @@ def _initial_state(*, offer_id: str, minutes: int, out_root: Path) -> dict[str, 
         "offer_id": offer_id,
         "minutes": minutes,
         "out_root": str(out_root),
+        "cycle_index": 0,
+        "cycle_history": [],
         "cursor": 0,
         "completed_count": 0,
         "blocked_count": 0,
@@ -411,6 +413,25 @@ def _write_state(state_path: Path, state: dict[str, object]) -> None:
     state_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
+def _cycle_state(state: dict[str, object], *, offer_id: str, minutes: int, out_root: Path) -> dict[str, object]:
+    tasks = state.get("tasks", [])
+    assert isinstance(tasks, list)
+    cycle_history = state.setdefault("cycle_history", [])
+    assert isinstance(cycle_history, list)
+    cycle_history.append(
+        {
+            "cycle_index": int(state.get("cycle_index", 0)),
+            "closed_at_utc": _now_utc(),
+            "completed_count": sum(1 for task in tasks if task.get("state") == "DONE"),
+            "blocked_count": sum(1 for task in tasks if task.get("state") == "BLOCKED"),
+        }
+    )
+    next_state = _initial_state(offer_id=offer_id, minutes=minutes, out_root=out_root)
+    next_state["cycle_index"] = int(state.get("cycle_index", 0)) + 1
+    next_state["cycle_history"] = cycle_history[-25:]
+    return next_state
+
+
 def _record(task: dict[str, object], state: StateName, result: dict[str, object]) -> None:
     task["state"] = state
     task["attempts"] = int(task.get("attempts", 0)) + 1
@@ -474,6 +495,7 @@ def run_continuous(
     state_path: Path,
     max_steps: int,
     reset: bool = False,
+    cycle_when_complete: bool = False,
 ) -> dict[str, object]:
     state = _load_or_create_state(
         state_path=state_path,
@@ -488,7 +510,14 @@ def run_continuous(
     for _ in range(max_steps):
         next_task = next((task for task in tasks if task.get("state") == "PENDING"), None)
         if not next_task:
-            break
+            if cycle_when_complete and not any(task.get("state") == "BLOCKED" for task in tasks):
+                state = _cycle_state(state, offer_id=offer_id, minutes=minutes, out_root=out_root)
+                tasks = state["tasks"]
+                assert isinstance(tasks, list)
+                _write_state(state_path, state)
+                next_task = next((task for task in tasks if task.get("state") == "PENDING"), None)
+            if not next_task:
+                break
         next_task["state"] = "RUNNING"
         _write_state(state_path, state)
         final_state, result = _run_task(next_task, offer_id=offer_id, minutes=minutes, out_root=out_root)
@@ -504,6 +533,7 @@ def run_continuous(
     _write_state(state_path, state)
     return {
         "state_path": _safe_rel(state_path),
+        "cycle_index": state.get("cycle_index", 0),
         "completed_count": state["completed_count"],
         "blocked_count": state["blocked_count"],
         "remaining_count": sum(1 for task in tasks if task.get("state") == "PENDING"),
@@ -520,6 +550,11 @@ def main() -> int:
     parser.add_argument("--max-steps", type=int, default=1, help="Maximum continuous tasks to advance this invocation.")
     parser.add_argument("--reset-state", action="store_true", help="Start the continuous state machine over.")
     parser.add_argument(
+        "--cycle-when-complete",
+        action="store_true",
+        help="When all tasks are done, start the next cycle instead of stopping.",
+    )
+    parser.add_argument(
         "--state-path",
         default=str(OUT_ROOT / "continuous_state.json"),
         help="Persistent continuous state file.",
@@ -534,6 +569,7 @@ def main() -> int:
             state_path=Path(args.state_path),
             max_steps=args.max_steps,
             reset=args.reset_state,
+            cycle_when_complete=args.cycle_when_complete,
         )
         print(json.dumps(result, indent=2))
         return 1 if int(result["blocked_count"]) else 0

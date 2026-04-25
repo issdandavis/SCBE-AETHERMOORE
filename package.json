@@ -98,6 +98,7 @@
     "training:geoseal-coder": "python scripts/system/geoseal_coding_training_system.py",
     "cash:sprint": "python scripts/revenue/daily_cash_sprint.py",
     "cash:sprint:run": "python scripts/revenue/daily_cash_sprint.py --continuous",
+    "cash:sprint:watch": "python scripts/revenue/daily_cash_sprint.py --continuous --cycle-when-complete --max-steps 1",
     "feature:explore": "python scripts/explore_scbe_feature_space.py",
     "eval:legacy:hf": "python scripts/run_legacy_hf_eval.py",
     "probe:attention:fft": "python scripts/probe_attention_fft.py",
