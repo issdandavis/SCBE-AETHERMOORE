@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scbe-aethermoore"
-version = "3.3.0"
+version = "4.0.2"
 description = "Hyperbolic Geometry AI Safety Framework with 14-Layer Architecture"
 readme = "README.md"
 license = "MIT"
