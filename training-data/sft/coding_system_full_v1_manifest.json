@@ -1,0 +1,62 @@
+{
+  "schema_version": "coding_system_full_v1_manifest",
+  "generated_at_utc": "2026-04-25T08:29:18.118738+00:00",
+  "outputs": {
+    "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\coding_system_full_v1_train.sft.jsonl",
+    "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\coding_system_full_v1_holdout.sft.jsonl"
+  },
+  "counts": {
+    "train": 48,
+    "holdout": 8,
+    "total": 56
+  },
+  "concepts": [
+    "add",
+    "guard_divide",
+    "map_square",
+    "retry_packet",
+    "budget_fallback",
+    "hash_route",
+    "parse_flag",
+    "test_assert"
+  ],
+  "primaries": {
+    "KO": {
+      "full_name": "Kor'aelin",
+      "language": "python",
+      "mode": "Ionian",
+      "domain": "intent_command"
+    },
+    "AV": {
+      "full_name": "Avali",
+      "language": "typescript",
+      "mode": "Lydian",
+      "domain": "wisdom_knowledge"
+    },
+    "RU": {
+      "full_name": "Runethic",
+      "language": "rust",
+      "mode": "Dorian",
+      "domain": "governance_entropy"
+    },
+    "CA": {
+      "full_name": "Cassisivadan",
+      "language": "c",
+      "mode": "Mixolydian",
+      "domain": "compute_logic"
+    },
+    "UM": {
+      "full_name": "Umbroth",
+      "language": "julia",
+      "mode": "Aeolian",
+      "domain": "security_defense"
+    },
+    "DR": {
+      "full_name": "Draumric",
+      "language": "haskell",
+      "mode": "Phrygian",
+      "domain": "structure_architecture"
+    }
+  },
+  "boundary": "Coding is the primary training target. Music theory, atomic tokenization, binary transport, and structural chemistry workflow evidence are separate aligned lanes."
+}

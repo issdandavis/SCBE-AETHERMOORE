@@ -11,6 +11,9 @@
 - Kaggle status at last check: `RUNNING`
 - Kaggle dataset: `issacizrealdavis/scbe-coding-agent-stage6-repair-v7`
 - Kaggle adapter target: `issdandavis/scbe-coding-agent-qwen-stage6-repair-v7-kaggle`
+- Prepared next lane: `coding-agent-qwen-full-coding-system-v8`
+- New v8 dataset: `coding_system_full_v1`, with `48` train rows and `8` holdout rows
+- New v8 adapter target: `issdandavis/scbe-coding-agent-qwen-full-coding-system-v8`
 
 The first Kaggle attempt failed during data load because the kernel still pointed at the older generic Polly dataset. Version 2 is running with the dedicated Stage 6 repair dataset attached.
 
@@ -30,6 +33,9 @@ Current local `training-data/sft` inventory:
 - `binary_interpretation_matrix_v1.sft.jsonl`: `326` rows, about `453K` chars
 - `atomic_workflow_stage6_train.sft.jsonl`: `76` rows, about `286K` chars
 - `atomic_workflow_stage6_repair_train.sft.jsonl`: `36` rows, about `45K` chars
+- `coding_system_full_v1_train.sft.jsonl`: `48` rows, about `359K` chars
+
+The new `coding_system_full_v1` lane is deliberately small and dense. Each record preserves separate code-primary, music-theory, atomic-tokenizer, binary/hex transport, lane-contract, and workflow-composition fields instead of flattening them into generic prose. It is a v8 training lane, not a mutation of the running v7 repair job.
 
 The pool is real but still small. It is strong enough for adapter training and behavior steering. It is not yet large enough to justify claiming general code intelligence from training alone.
 
@@ -87,6 +93,10 @@ These improve real behavior, not just cosmetic loss:
    - Bad: “literal atoms / real chemistry claim.”
    - Good: “hold, dampen, re-advance.”
    - Bad: “launch anyway.”
+
+5. Use the full coding-system lane as structure, not volume.
+   - It should teach the model to keep KO/Python, AV/TypeScript, RU/Rust, CA/C, UM/Julia, and DR/Haskell aligned through music harmony, atomic rows, and binary transport.
+   - It should not replace real code-task growth; it gives the next training pass a stronger map for how to read the code corpora.
 
 5. Use eval-driven early stop.
    - Do not run fixed steps blindly.

@@ -45,6 +45,12 @@
       "profile_path": "config/model_training/coding-agent-qwen-stage6-repair-v7.json",
       "stage": "atomic_workflow_repair",
       "purpose": "Repair pass after frozen Stage 6 smoke eval failed. Adds analog records for byte/hex markers, lane separation, resource hold, steady-state fallback, momentum damping, and re-advance before any merged coding-model promotion."
+    },
+    {
+      "profile_id": "coding-agent-qwen-full-coding-system-v8",
+      "profile_path": "config/model_training/coding-agent-qwen-full-coding-system-v8.json",
+      "stage": "full_coding_system",
+      "purpose": "Adds the full coding system as a gated lane: code primaries, music-theory harmony, atomic tokenizer rows, binary/hex transport, code-lane contracts, and workflow composition as separate aligned evidence lanes."
     }
   ],
   "smoke_eval": {
@@ -123,6 +129,22 @@
           "semantic",
           "steady-state fallback",
           "re-advance"
+        ],
+        "forbidden": [
+          "literal chemistry",
+          "real atoms"
+        ]
+      },
+      {
+        "id": "full_coding_system_lane_task",
+        "prompt": "Map a safe add operation through KO/Python, AV/TypeScript, and RU/Rust using code primaries, music-theory harmony, atomic tokenizer rows, binary/hex transport, and lane contracts. Keep semantic and transport lanes separate.",
+        "required": [
+          "KO",
+          "Python",
+          "music",
+          "atomic",
+          "hex",
+          "lane"
         ],
         "forbidden": [
           "literal chemistry",
