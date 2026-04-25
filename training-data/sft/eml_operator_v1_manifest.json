@@ -1,0 +1,12 @@
+{
+  "schema_version": "eml_operator_sft_manifest_v1",
+  "generated_at_utc": "2026-04-25T17:30:19+00:00",
+  "output_path": "training-data\\sft\\eml_operator_v1.sft.jsonl",
+  "record_count": 16,
+  "tolerance": 1e-10,
+  "source": {
+    "paper": "https://arxiv.org/abs/2603.21852",
+    "integration_note": "docs/specs/EML_OPERATOR_SCBE_INTEGRATION_NOTE_2026-04-25.md"
+  },
+  "claim_boundary": "experimental verified identities only; no production tokenizer integration"
+}

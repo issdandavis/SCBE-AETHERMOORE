@@ -96,3 +96,29 @@ Minimum accepted result:
 - ternary `T(x,x,x)` self-seeding check passes for valid positive samples excluding `x=1`.
 - failure cases around invalid domains are explicit, not hidden.
 
+## Current Local Artifact
+
+Implemented in:
+
+```text
+scripts/experiments/eml_tree_probe.py
+tests/experiments/test_eml_tree_probe.py
+```
+
+Generated experimental SFT lane:
+
+```text
+training-data/sft/eml_operator_v1.sft.jsonl
+training-data/sft/eml_operator_v1_manifest.json
+```
+
+Current local record count: `16`.
+
+This dataset is intentionally smaller than external prototype claims because it only includes identities verified by the local probe:
+
+- `exp(x) = eml(x, 1)`
+- `ln(x) = eml(1, eml(eml(1, x), 1))` on positive real samples
+- `T(x,x,x)=1` for valid samples
+- one explicit claim-boundary record
+
+Promotion rule: do not merge this into the main coding-training manifest until it has a held-out eval, null control, and a clear comparison against the existing binary interpretation matrix lane.

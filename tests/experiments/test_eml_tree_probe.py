@@ -4,7 +4,15 @@ import cmath
 
 import pytest
 
-from scripts.experiments.eml_tree_probe import EXP_TREE, LN_TREE, evaluate, run_probe, ternary_candidate
+from scripts.experiments.eml_tree_probe import (
+    EXP_TREE,
+    LN_TREE,
+    build_sft_records,
+    evaluate,
+    run_probe,
+    ternary_candidate,
+    write_sft_dataset,
+)
 
 
 def test_exp_tree_matches_cmath_exp() -> None:
@@ -33,3 +41,21 @@ def test_probe_report_passes_and_keeps_boundary_note() -> None:
     assert result["max_abs_error"] <= 1e-10
     assert "boundary_note" in result["source"]
 
+
+def test_sft_records_use_scbe_message_shape() -> None:
+    records = build_sft_records()
+    assert len(records) == 16
+    assert {record["track"] for record in records} == {"geoseal_coding_eml_operator_substrate"}
+    assert all([message["role"] for message in record["messages"]] == ["system", "user", "assistant"] for record in records)
+    assert "Do not claim unrestricted" in records[-1]["messages"][-1]["content"]
+
+
+def test_write_sft_dataset_outputs_jsonl_and_manifest(tmp_path) -> None:
+    output = tmp_path / "eml_operator_v1.sft.jsonl"
+    manifest_path = tmp_path / "eml_operator_v1_manifest.json"
+    manifest = write_sft_dataset(output, manifest_path)
+
+    assert manifest["record_count"] == 16
+    assert output.exists()
+    assert manifest_path.exists()
+    assert len(output.read_text(encoding="utf-8").strip().splitlines()) == 16

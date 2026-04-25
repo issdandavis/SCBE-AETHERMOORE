@@ -12,6 +12,7 @@ import argparse
 import cmath
 import json
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
@@ -63,6 +64,11 @@ def node(left: EMLTree, right: EMLTree) -> EMLTree:
 EXP_TREE = node(VAR, ONE)
 LN_TREE = node(ONE, node(node(ONE, VAR), ONE))
 
+SYSTEM_PROMPT = (
+    "You are an SCBE-AETHERMOORE GeoSeal coding agent. Treat EML/T operator records as experimental, "
+    "source-bounded symbolic computation traces. Preserve the formula, domain boundary, and verification result."
+)
+
 
 def evaluate(tree: EMLTree, x: complex) -> complex:
     if tree.kind == "one":
@@ -78,6 +84,10 @@ def _error(actual: complex, expected: complex) -> float:
     return abs(actual - expected)
 
 
+def _complex_json(value: complex) -> list[float]:
+    return [value.real, value.imag]
+
+
 def run_probe(samples: list[complex] | None = None, tolerance: float = 1e-10) -> dict[str, Any]:
     real_samples = samples or [0.25 + 0j, 0.5 + 0j, 2 + 0j, 3.5 + 0j]
     complex_samples = real_samples + [0.5 + 0.25j, 1.5 - 0.75j]
@@ -88,9 +98,9 @@ def run_probe(samples: list[complex] | None = None, tolerance: float = 1e-10) ->
         expected = cmath.exp(sample)
         exp_rows.append(
             {
-                "x": [sample.real, sample.imag],
-                "actual": [actual.real, actual.imag],
-                "expected": [expected.real, expected.imag],
+                "x": _complex_json(sample),
+                "actual": _complex_json(actual),
+                "expected": _complex_json(expected),
                 "abs_error": _error(actual, expected),
             }
         )
@@ -101,9 +111,9 @@ def run_probe(samples: list[complex] | None = None, tolerance: float = 1e-10) ->
         expected = cmath.log(sample)
         ln_rows.append(
             {
-                "x": [sample.real, sample.imag],
-                "actual": [actual.real, actual.imag],
-                "expected": [expected.real, expected.imag],
+                "x": _complex_json(sample),
+                "actual": _complex_json(actual),
+                "expected": _complex_json(expected),
                 "abs_error": _error(actual, expected),
             }
         )
@@ -113,8 +123,8 @@ def run_probe(samples: list[complex] | None = None, tolerance: float = 1e-10) ->
         actual = ternary_candidate(sample, sample, sample)
         ternary_rows.append(
             {
-                "x": [sample.real, sample.imag],
-                "actual": [actual.real, actual.imag],
+                "x": _complex_json(sample),
+                "actual": _complex_json(actual),
                 "expected": [1.0, 0.0],
                 "abs_error": _error(actual, 1 + 0j),
             }
@@ -142,11 +152,131 @@ def run_probe(samples: list[complex] | None = None, tolerance: float = 1e-10) ->
     }
 
 
+def _sft_record(record_id: str, instruction: str, response: str, metadata: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": record_id,
+        "source": "eml_tree_probe.py",
+        "track": "geoseal_coding_eml_operator_substrate",
+        "source_type": "verified_experiment",
+        "quality": "experimental_reference",
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": instruction},
+            {"role": "assistant", "content": response},
+        ],
+        "metadata": metadata,
+    }
+
+
+def build_sft_records(tolerance: float = 1e-10) -> list[dict[str, Any]]:
+    probe = run_probe(tolerance=tolerance)
+    records: list[dict[str, Any]] = []
+
+    for idx, row in enumerate(probe["checks"]["exp_x"], start=1):
+        records.append(
+            _sft_record(
+                f"eml_operator_v1_exp_{idx:02d}",
+                "Construct exp(x) using only the EML operator and the constant 1. Include the verified numeric trace.",
+                (
+                    "Identity: exp(x) = eml(x, 1).\n"
+                    f"Input x={row['x']}.\n"
+                    f"Expected exp(x)={row['expected']}.\n"
+                    f"EML output={row['actual']}.\n"
+                    f"Absolute error={row['abs_error']}."
+                ),
+                {"function": "exp", "tree": probe["trees"]["exp_x"], "check": row},
+            )
+        )
+
+    for idx, row in enumerate(probe["checks"]["ln_x"], start=1):
+        records.append(
+            _sft_record(
+                f"eml_operator_v1_ln_{idx:02d}",
+                "Construct ln(x) using only the EML operator and the constant 1. Include the positive-real domain boundary.",
+                (
+                    "Identity: ln(x) = eml(1, eml(eml(1, x), 1)) for this tested positive-real lane.\n"
+                    f"Input x={row['x']}.\n"
+                    f"Expected ln(x)={row['expected']}.\n"
+                    f"EML output={row['actual']}.\n"
+                    f"Absolute error={row['abs_error']}."
+                ),
+                {"function": "ln", "tree": probe["trees"]["ln_x"], "check": row, "domain": "positive real samples"},
+            )
+        )
+
+    for idx, row in enumerate(probe["checks"]["ternary_self_seed"], start=1):
+        records.append(
+            _sft_record(
+                f"eml_operator_v1_ternary_seed_{idx:02d}",
+                "Verify the ternary candidate self-seeding identity T(x,x,x)=1 without claiming universality.",
+                (
+                    "Candidate: T(x,y,z) = (exp(x) / ln(x)) * (ln(z) / exp(y)).\n"
+                    "Verified boundary: T(x,x,x)=1 wherever the expression is defined.\n"
+                    f"Input x={row['x']}.\n"
+                    f"T output={row['actual']}.\n"
+                    f"Absolute error={row['abs_error']}.\n"
+                    "This record does not prove T is universal."
+                ),
+                {"function": "ternary_self_seed", "check": row, "claim_boundary": "self-seed only"},
+            )
+        )
+
+    records.append(
+        _sft_record(
+            "eml_operator_v1_boundary",
+            "State the safe claim boundary for SCBE EML/T operator training records.",
+            (
+                "Safe claim: EML plus the constant 1 constructively generates the scientific-calculator "
+                "elementary-function basis studied in Odrzywolek 2026. The ternary T candidate is only verified "
+                "here for T(x,x,x)=1 on valid inputs. Do not claim unrestricted elementary-function universality "
+                "or production tokenizer behavior from this experimental probe."
+            ),
+            {
+                "paper": "https://arxiv.org/abs/2603.21852",
+                "critique_boundary": "https://www.stylewarning.com/posts/not-all-elementary/",
+            },
+        )
+    )
+    return records
+
+
+def write_sft_dataset(output_path: Path, manifest_path: Path, tolerance: float = 1e-10) -> dict[str, Any]:
+    records = build_sft_records(tolerance=tolerance)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8", newline="\n") as handle:
+        for record in records:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    manifest = {
+        "schema_version": "eml_operator_sft_manifest_v1",
+        "generated_at_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        "output_path": str(output_path),
+        "record_count": len(records),
+        "tolerance": tolerance,
+        "source": {
+            "paper": "https://arxiv.org/abs/2603.21852",
+            "integration_note": "docs/specs/EML_OPERATOR_SCBE_INTEGRATION_NOTE_2026-04-25.md",
+        },
+        "claim_boundary": "experimental verified identities only; no production tokenizer integration",
+    }
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    return manifest
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run the isolated EML tree probe.")
     parser.add_argument("--out", default="", help="Optional JSON output path.")
+    parser.add_argument("--sft-output", default="", help="Optional JSONL SFT output path.")
+    parser.add_argument("--sft-manifest", default="", help="Optional SFT manifest path.")
     parser.add_argument("--tolerance", type=float, default=1e-10)
     args = parser.parse_args()
+
+    if args.sft_output:
+        manifest_path = Path(args.sft_manifest) if args.sft_manifest else Path(args.sft_output).with_suffix(".manifest.json")
+        manifest = write_sft_dataset(Path(args.sft_output), manifest_path, tolerance=args.tolerance)
+        print(json.dumps(manifest, indent=2))
+        return 0
 
     result = run_probe(tolerance=args.tolerance)
     payload = json.dumps(result, indent=2)
@@ -161,4 +291,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
