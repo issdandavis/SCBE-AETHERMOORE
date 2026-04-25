@@ -23,6 +23,7 @@ Authority:
 | Python package | `pass` | `python -m build --sdist --wheel --outdir artifacts/pypi-dist`, `python scripts/pypi_dist_guard.py --dist-dir artifacts/pypi-dist` |
 | GitHub Pages / docs | `pass` | `python scripts/system/verify_docs_publish_surface.py --root docs --require index.html --require support.html --require redteam.html` |
 | CLI / operator tooling | `pass` | `python scripts/scbe-system-cli.py --repo-root . agentbus run ... --json` |
+| Competitive wedge | `pass` | `python scripts/benchmark/agentbus_competitive_wedge.py --run-id release-wedge-20260425` |
 
 ## Release Objects Out Of Scope
 
@@ -48,8 +49,33 @@ Authority:
 | PyPI guard | 0 | 486 | `artifacts/release-evidence/20260425T145633/pypi-guard.log` |
 | docs publish surface | 0 | 355 | `artifacts/release-evidence/20260425T145633/docs-publish-surface.log` |
 | agent-bus user smoke | 0 | 1128 | `artifacts/release-evidence/20260425T145633/agentbus-user-smoke.log` |
+| competitive wedge benchmark | 0 | not captured in release-evidence run | `artifacts/benchmarks/agentbus_competitive_wedge/release-wedge-20260425/report.json` |
 
 ## Smoke Details
+
+### Competitive Wedge
+
+Command:
+
+```powershell
+python scripts/benchmark/agentbus_competitive_wedge.py --run-id release-wedge-20260425
+```
+
+Result:
+
+- Decision: `PASS`
+- Direct baseline average: `0.2727`
+- SCBE agent-bus average: `1.0`
+- Absolute lift: `0.7273`
+- Relative lift: `266.7%`
+- Bus wins: `5 / 5`
+- Report: `artifacts/benchmarks/agentbus_competitive_wedge/release-wedge-20260425/report.json`
+
+Claim boundary:
+
+- Supports releasing the agent-bus as a governed local workflow surface.
+- Does not prove that SCBE generates better code than frontier coding agents.
+- Next benchmark must use real patch tasks and compare passed tests, edit quality, and time-to-fix.
 
 ### npm Package
 

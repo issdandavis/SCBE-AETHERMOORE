@@ -2703,6 +2703,8 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         "schema_version": "scbe_agentbus_user_run_v1",
         "generated_at": _now_iso(),
         "series_id": series_id,
+        "privacy": args.privacy,
+        "budget_cents": args.budget_cents,
         "task": {"sha256": hashlib.sha256(args.task.encode("utf-8")).hexdigest(), "chars": len(args.task)},
         "operation_shape": round_packet.get("operation_shape"),
         "selected_provider": round_packet.get("selected_provider"),
