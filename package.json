@@ -37,6 +37,11 @@
       "import": "./dist/src/spiralverse/index.js",
       "require": "./dist/src/spiralverse/index.js"
     },
+    "./spiralauth": {
+      "types": "./dist/src/spiralauth/index.d.ts",
+      "import": "./dist/src/spiralauth/index.js",
+      "require": "./dist/src/spiralauth/index.js"
+    },
     "./tokenizer": {
       "types": "./dist/src/tokenizer/index.d.ts",
       "import": "./dist/src/tokenizer/index.js",
