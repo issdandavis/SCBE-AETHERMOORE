@@ -147,6 +147,7 @@ ROUNDS = {
         ],
         "hf_repo": "issdandavis/scbe-coding-agent-qwen-stage6-repair-v7-kaggle",
         "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
         "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
         "epochs": 1,
         "batch_size": 1,
@@ -210,6 +211,7 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
         "grad_accum": grad_accum,
         "max_length": max_len,
         "hf_dataset_repo": config.get("hf_dataset_repo", HF_DATASET),
+        "kaggle_dataset": config.get("kaggle_dataset", KAGGLE_DATASET),
         "max_steps": config.get("max_steps", -1),
         "learning_rate": config.get("learning_rate", 2e-4),
         "max_records": config.get("max_records", 10000),
@@ -236,6 +238,8 @@ def create_kernel_dir(round_name: str, config: dict, gpu: str) -> Path:
     script = generate_kernel_script(round_name, config)
     (kernel_dir / "script.py").write_text(script, encoding="utf-8")
 
+    dataset_sources = [config.get("kaggle_dataset", KAGGLE_DATASET)]
+
     # Write kernel-metadata.json
     meta = {
         "id": f"{KAGGLE_USER}/{kernel_slug}",
@@ -246,7 +250,7 @@ def create_kernel_dir(round_name: str, config: dict, gpu: str) -> Path:
         "is_private": True,
         "enable_gpu": gpu != "none",
         "enable_internet": True,
-        "dataset_sources": [KAGGLE_DATASET],
+        "dataset_sources": dataset_sources,
         "competition_sources": [],
         "kernel_sources": [],
     }

@@ -69,6 +69,7 @@ BATCH_SIZE = CFG["batch_size"]
 GRAD_ACCUM = CFG["grad_accum"]
 MAX_LEN = CFG["max_length"]
 HF_DATASET_REPO = CFG.get("hf_dataset_repo", "issdandavis/scbe-aethermoore-training-data")
+KAGGLE_DATASET_SLUG = CFG.get("kaggle_dataset", "issacizrealdavis/scbe-polly-training-data").split("/")[-1]
 MAX_STEPS = int(CFG.get("max_steps", -1))
 LEARNING_RATE = float(CFG.get("learning_rate", 2e-4))
 MAX_RECORDS = int(CFG.get("max_records", 10000))
@@ -102,7 +103,7 @@ if not PUSH:
 # ---- Data Loading ----
 def load_data():
     records = []
-    kaggle_dir = Path("/kaggle/input/scbe-polly-training-data")
+    kaggle_dir = Path("/kaggle/input") / KAGGLE_DATASET_SLUG
 
     files = FILE_LIST
     if files == "__ALL__":

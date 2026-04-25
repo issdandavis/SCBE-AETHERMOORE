@@ -30,6 +30,7 @@ def test_geoseal_stage6_repair_round_targets_profile_dataset_and_repo() -> None:
 
     assert config["base_model"] == "Qwen/Qwen2.5-Coder-0.5B-Instruct"
     assert config["hf_dataset_repo"] == "issdandavis/scbe-coding-agent-sft-stage6-repair-v7"
+    assert config["kaggle_dataset"] == "issacizrealdavis/scbe-coding-agent-stage6-repair-v7"
     assert config["hf_repo"] == "issdandavis/scbe-coding-agent-qwen-stage6-repair-v7-kaggle"
     assert "atomic_workflow_stage6_repair_train.sft.jsonl" in config["files"]
 
@@ -41,6 +42,7 @@ def test_generated_kernel_config_preserves_t4_safe_stage6_settings() -> None:
     payload = _extract_kernel_config(script)
 
     assert payload["hf_dataset_repo"] == "issdandavis/scbe-coding-agent-sft-stage6-repair-v7"
+    assert payload["kaggle_dataset"] == "issacizrealdavis/scbe-coding-agent-stage6-repair-v7"
     assert payload["batch_size"] == 1
     assert payload["grad_accum"] == 16
     assert payload["max_length"] == 768
