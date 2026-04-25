@@ -1,3 +1,7 @@
+import json
+import subprocess
+import sys
+
 from src.tokenizer.accelerator_routing import (
     AcceleratorProviderProfile,
     AcceleratorTaskPacket,
@@ -81,3 +85,43 @@ def test_simulation_reports_precision_mismatch_for_high_precision_task() -> None
 
     assert "precision_mismatch" in sim["failure_modes"]
     assert sim["predicted_precision_loss"] > 0
+
+
+def test_lightweight_accelerator_route_script_emits_auditable_route() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/system/accelerator_route.py",
+            "--task-id",
+            "vision_patch",
+            "--workload",
+            "nonlinear_inference",
+            "--matmul-fraction",
+            "0.72",
+            "--nonlinear-op-fraction",
+            "0.82",
+            "--precision-required-bits",
+            "16",
+            "--branching-density",
+            "0.05",
+            "--memory-access-density",
+            "0.10",
+            "--latency-budget-ms",
+            "80",
+            "--energy-budget-j",
+            "1.0",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    route = json.loads(result.stdout)
+    assert route["schema_version"] == "accelerator_route_decision_v1"
+    assert route["decision"] == "PHOTONIC_NPU"
+    assert route["simulation"]["schema_version"] == "photonic_accelerator_simulation_v1"
+    assert route["simulation"]["fit"]["task"]["task_id"] == "vision_patch"
+    assert route["audit"]["provider_neutral"] is True
+    assert route["audit"]["hardware_claim"] == "simulated"

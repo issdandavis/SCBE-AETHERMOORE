@@ -181,7 +181,8 @@ def _decision_reason(decision: str, score: float, failure_modes: list[str]) -> s
     if decision == "PHOTONIC_NPU":
         return f"fit_score={score:.3f}; no simulated failure modes"
     if decision == "PHOTONIC_NPU_WITH_VERIFY":
-        return f"fit_score={score:.3f}; requires verification for {','.join(failure_modes)}"
+        target = ",".join(failure_modes) if failure_modes else "partial_fit"
+        return f"fit_score={score:.3f}; requires verification for {target}"
     if decision == "HOLD":
         return f"fit_score={score:.3f}; budget failure {','.join(failure_modes)}"
     return f"fit_score={score:.3f}; fallback due to {','.join(failure_modes) or 'low_fit'}"
