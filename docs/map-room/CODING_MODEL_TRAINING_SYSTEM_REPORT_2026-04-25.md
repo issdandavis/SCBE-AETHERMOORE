@@ -14,8 +14,11 @@
 - Prepared next lane: `coding-agent-qwen-full-coding-system-v8`
 - New v8 dataset: `coding_system_full_v1`, with `48` train rows and `8` holdout rows
 - New v8 adapter target: `issdandavis/scbe-coding-agent-qwen-full-coding-system-v8`
+- Current v8 Hugging Face job: `69ec82d9d2c8bd8662bcd602`
 
 The first Kaggle attempt failed during data load because the kernel still pointed at the older generic Polly dataset. Version 2 is running with the dedicated Stage 6 repair dataset attached.
+
+An earlier v8 job, `69ec7bc4d70108f37acde319`, was cancelled after the `test_assert` samples were made self-contained for executable benchmark checks. The current v8 job above uses the corrected dataset.
 
 ## Training Assets
 
@@ -36,6 +39,21 @@ Current local `training-data/sft` inventory:
 - `coding_system_full_v1_train.sft.jsonl`: `48` rows, about `359K` chars
 
 The new `coding_system_full_v1` lane is deliberately small and dense. Each record preserves separate code-primary, music-theory, atomic-tokenizer, binary/hex transport, lane-contract, and workflow-composition fields instead of flattening them into generic prose. It is a v8 training lane, not a mutation of the running v7 repair job.
+
+## Industry-Style Benchmark Gate
+
+Local benchmark harness:
+
+- `scripts/benchmark/coding_system_industry_benchmark.py`
+- Latest artifact: `artifacts/benchmarks/coding_system_full_v1/coding-system-industry-benchmark-20260425T090217Z.json`
+- Decision: `PASS`
+- Records checked: `56`
+- Single-primary records: `48`
+- Cross-primary roundabout records: `8`
+- HumanEval/MBPP-style executable Python checks: `8/8`
+- Full lane pass: `true`
+
+This is a dataset/system readiness gate. It validates executable Python behavior, byte/hex/hash integrity, music-mode coverage, all six code primaries, atomic-tokenizer row presence, boundary language, and roundabout lane coverage. It is not a public HumanEval, MBPP, or SWE-bench leaderboard result for the trained adapter.
 
 The pool is real but still small. It is strong enough for adapter training and behavior steering. It is not yet large enough to justify claiming general code intelligence from training alone.
 

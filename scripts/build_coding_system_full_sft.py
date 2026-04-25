@@ -230,12 +230,12 @@ CONCEPTS: tuple[Concept, ...] = (
         "test_assert",
         ("proof", "compute"),
         {
-            "KO": "def test_add():\n    assert add(2, 3) == 5\n",
-            "AV": "export function testAdd(): void {\n  if (add(2, 3) !== 5) throw new Error(\"add failed\");\n}\n",
-            "RU": "#[test]\nfn test_add() {\n    assert_eq!(add(2, 3), 5);\n}\n",
-            "CA": "void test_add(void) {\n    assert(add(2, 3) == 5);\n}\n",
-            "UM": "function test_add()\n    @assert add(2, 3) == 5\nend\n",
-            "DR": "testAdd :: Bool\ntestAdd = add 2 3 == 5\n",
+            "KO": "def add(a, b):\n    return a + b\n\ndef test_add():\n    assert add(2, 3) == 5\n",
+            "AV": "export function add(a: number, b: number): number {\n  return a + b;\n}\n\nexport function testAdd(): void {\n  if (add(2, 3) !== 5) throw new Error(\"add failed\");\n}\n",
+            "RU": "fn add(a: i32, b: i32) -> i32 {\n    a + b\n}\n\n#[test]\nfn test_add() {\n    assert_eq!(add(2, 3), 5);\n}\n",
+            "CA": "int add(int a, int b) {\n    return a + b;\n}\n\nvoid test_add(void) {\n    assert(add(2, 3) == 5);\n}\n",
+            "UM": "add(a, b) = a + b\n\nfunction test_add()\n    @assert add(2, 3) == 5\nend\n",
+            "DR": "add :: Int -> Int -> Int\nadd a b = a + b\n\ntestAdd :: Bool\ntestAdd = add 2 3 == 5\n",
         },
     ),
 )
