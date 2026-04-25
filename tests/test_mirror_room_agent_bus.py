@@ -165,3 +165,31 @@ def test_custom_local_provider_is_discovered(tmp_path: Path, monkeypatch) -> Non
     local_coder = next(player for player in players if player.provider == "local-coder")
     assert local_coder.privacy == "local"
     assert "coding" in local_coder.strengths
+
+
+def test_operation_command_braids_topological_shape_into_round(
+    tmp_path: Path, monkeypatch
+) -> None:
+    module = _load_module()
+    config = _router_config(tmp_path / "router.json")
+    monkeypatch.setenv("OPENAI_API_KEY", "test")
+
+    result = module.schedule_match_round(
+        task="run a shaped operation",
+        task_type="coding",
+        series_id="shape-braid",
+        round_index=1,
+        privacy="local_only",
+        budget_cents=0,
+        output_root=tmp_path / "mirror",
+        config_path=config,
+        operation_command="korah aelin dahru",
+    )
+
+    shape = result["operation_shape"]
+    assert shape["schema_version"] == "mirror-room-operation-shape-v1"
+    assert shape["root_value"] == 12026
+    assert shape["floating_point_policy"] == "forbidden for consensus signatures"
+    assert len(shape["signature_binary"]) == 64
+    assert [token["id"] for token in shape["tokens"]] == [0, 1, 2]
+    assert "korah aelin dahru" not in json.dumps(result)

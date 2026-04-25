@@ -13,12 +13,18 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from src.tokenizer.topological_operator_tree import operator_signature_packet
+
 DEFAULT_ROUTER_CONFIG = (
     REPO_ROOT / "config" / "governance" / "terminal_ai_router_profiles.json"
 )
@@ -47,6 +53,31 @@ def _utc_now() -> str:
 
 def _sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
+
+
+def _operation_shape(command: str | None) -> dict[str, Any] | None:
+    if not command:
+        return None
+    packet = operator_signature_packet(command)
+    return {
+        "schema_version": "mirror-room-operation-shape-v1",
+        "command_sha256": _sha256_text(command),
+        "command_chars": len(command),
+        "operator_schema": packet["schema_version"],
+        "purpose": packet["purpose"],
+        "floating_point_policy": packet["floating_point_policy"],
+        "root_value": packet["root_value"],
+        "signature_hex": packet["signature"]["hex"],
+        "signature_binary": packet["signature"]["binary"],
+        "tokens": [
+            {
+                "index": token["index"],
+                "id": token["id"],
+                "field_value": token["field_value"],
+            }
+            for token in packet["tokens"]
+        ],
+    }
 
 
 def _load_json(path: Path, default: Any) -> Any:
@@ -273,6 +304,7 @@ def schedule_match_round(
     max_players: int = 1,
     output_root: Path = DEFAULT_OUTPUT_ROOT,
     config_path: Path = DEFAULT_ROUTER_CONFIG,
+    operation_command: str | None = None,
 ) -> dict[str, Any]:
     players = discover_players(config_path)
     history = _load_series_history(output_root, series_id)
@@ -304,6 +336,7 @@ def schedule_match_round(
         "round_index": round_index,
         "created_at_utc": _utc_now(),
         "task": {"sha256": _sha256_text(task), "chars": len(task), "type": task_type},
+        "operation_shape": _operation_shape(operation_command),
         "selected_provider": selected.provider,
         "primary_bus": [
             {
@@ -370,6 +403,11 @@ def main() -> int:
     parser.add_argument("--max-players", type=int, default=1)
     parser.add_argument("--output-root", default=str(DEFAULT_OUTPUT_ROOT))
     parser.add_argument("--config", default=str(DEFAULT_ROUTER_CONFIG))
+    parser.add_argument(
+        "--operation-command",
+        default=None,
+        help="Optional deterministic operation text to braid into the round as a T-tree shape",
+    )
     args = parser.parse_args()
     result = schedule_match_round(
         task=args.task,
@@ -381,6 +419,7 @@ def main() -> int:
         max_players=args.max_players,
         output_root=Path(args.output_root),
         config_path=Path(args.config),
+        operation_command=args.operation_command,
     )
     print(json.dumps(result, indent=2, ensure_ascii=True))
     return 0

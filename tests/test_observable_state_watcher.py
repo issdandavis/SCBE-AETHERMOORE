@@ -31,6 +31,10 @@ def test_watcher_builds_three_lanes_without_raw_prompt_or_file_content(
             {
                 "selected_provider": "offline",
                 "task": {"sha256": "a" * 64, "chars": 29, "type": "coding"},
+                "operation_shape": {
+                    "root_value": 12026,
+                    "signature_binary": "1" * 64,
+                },
                 "primary_bus": [
                     {
                         "provider": "offline",
@@ -100,6 +104,7 @@ def test_watcher_builds_three_lanes_without_raw_prompt_or_file_content(
 
     assert set(state["lanes"]) == {"action", "live_text", "packet_state"}
     assert state["lanes"]["action"]["selected_provider"] == "offline"
+    assert state["lanes"]["action"]["operation_shape"]["root_value"] == 12026
     assert state["lanes"]["live_text"]["events"][0]["text_sha256_prefix"] == "c" * 16
     assert (
         state["lanes"]["packet_state"]["file_packets"][0]["sha256_binary"]

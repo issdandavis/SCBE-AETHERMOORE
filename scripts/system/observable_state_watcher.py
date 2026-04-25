@@ -107,6 +107,7 @@ def _action_lane(round_packet: dict[str, Any]) -> dict[str, Any]:
     return {
         "selected_provider": round_packet.get("selected_provider"),
         "task": round_packet.get("task", {}),
+        "operation_shape": round_packet.get("operation_shape"),
         "primary": [
             {
                 "provider": item.get("provider"),
