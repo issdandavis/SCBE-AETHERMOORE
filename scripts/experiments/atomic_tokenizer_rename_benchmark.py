@@ -809,6 +809,7 @@ def workflow_training_records(
     chemistry_feature = make_binary_hex_chemistry_feature(table, hex_lookup, mode=mode)
     semantic_feature = make_atomic_semantic_overlay_feature()
     flow_feature = make_operational_flow_feature()
+    geometry_feature = make_layered_geometry_semantic_feature()
     records: list[dict[str, Any]] = []
     for sample, source in zip(samples, sources):
         records.append(
@@ -831,6 +832,10 @@ def workflow_training_records(
                     "flow_reinforcement": {
                         "mapping": "source text -> operational control and syntax shape",
                         "feature": flow_feature(source),
+                    },
+                    "layered_geometry_semantic": {
+                        "mapping": "source token -> stable outer hull family plus packed inner context metrics",
+                        "feature": geometry_feature(source),
                     },
                 },
                 "workflow_chain": workflow_chain_string(
@@ -936,6 +941,100 @@ def _normalize_features(features: list[dict[str, float]], keys: list[str]) -> li
         {key: (feature.get(key, 0.0) - means[key]) / stdevs[key] for key in keys}
         for feature in features
     ]
+
+
+SITUATION_PROFILES: dict[str, dict[str, float]] = {
+    "recovery_default": {
+        "leave_primary_out": 0.55,
+        "renamed": 0.20,
+        "shuffle_margin": 0.20,
+        "geometry_bonus": 0.00,
+        "flow_bonus": 0.00,
+        "drop_penalty": 0.15,
+        "uncontrolled_penalty": 0.12,
+    },
+    "geometry_context": {
+        "leave_primary_out": 0.42,
+        "renamed": 0.14,
+        "shuffle_margin": 0.18,
+        "geometry_bonus": 0.08,
+        "flow_bonus": 0.03,
+        "drop_penalty": 0.12,
+        "uncontrolled_penalty": 0.12,
+    },
+    "low_resource_route": {
+        "leave_primary_out": 0.38,
+        "renamed": 0.18,
+        "shuffle_margin": 0.18,
+        "geometry_bonus": 0.03,
+        "flow_bonus": 0.08,
+        "drop_penalty": 0.18,
+        "uncontrolled_penalty": 0.16,
+    },
+}
+
+
+def _situational_lane_selection(
+    summary: list[dict[str, Any]],
+    leave_primary_out_summary: list[dict[str, Any]],
+    label_shuffle_control: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Select a primary lane per situation from measured lane evidence."""
+
+    summary_by_feature = {row["feature"]: row for row in summary}
+    lpo_by_feature = {row["feature"]: row for row in leave_primary_out_summary}
+    selections: dict[str, Any] = {}
+    for profile_name, weights in SITUATION_PROFILES.items():
+        scored: list[dict[str, Any]] = []
+        for feature, lpo_row in lpo_by_feature.items():
+            summary_row = summary_by_feature.get(feature, {})
+            control = label_shuffle_control.get(feature)
+            observed = float(lpo_row["accuracy"])
+            renamed = float(summary_row.get("renamed", 0.0))
+            drop = max(0.0, float(lpo_row.get("drop_from_renamed", 0.0)))
+            has_control = control is not None
+            passes_control = bool(control and control["risk"] == "passes shuffle control")
+            null_p95 = float(control.get("null_p95", 0.0)) if control else 0.0
+            shuffle_margin = max(0.0, observed - null_p95) if passes_control else 0.0
+            geometry_bonus = 1.0 if "geometry" in feature else 0.0
+            flow_bonus = 1.0 if "flow" in feature else 0.0
+            score = (
+                weights["leave_primary_out"] * observed
+                + weights["renamed"] * renamed
+                + weights["shuffle_margin"] * shuffle_margin
+                + weights["geometry_bonus"] * geometry_bonus
+                + weights["flow_bonus"] * flow_bonus
+                - weights["drop_penalty"] * drop
+                - weights["uncontrolled_penalty"] * (0.0 if has_control else 1.0)
+            )
+            scored.append(
+                {
+                    "feature": feature,
+                    "score": score,
+                    "leave_primary_out": observed,
+                    "renamed": renamed,
+                    "shuffle_margin": shuffle_margin,
+                    "passes_shuffle_control": passes_control,
+                    "has_shuffle_control": has_control,
+                    "drop_from_renamed": drop,
+                    "geometry_bonus_applied": bool(geometry_bonus),
+                    "flow_bonus_applied": bool(flow_bonus),
+                }
+            )
+        scored.sort(key=lambda row: row["score"], reverse=True)
+        selections[profile_name] = {
+            "primary_lane": scored[0]["feature"],
+            "formula_weights": weights,
+            "ranked_lanes": scored,
+        }
+    return {
+        "version": "situational-lane-selection-v1",
+        "rule": (
+            "primary lane is selected per situation by weighted leave-primary-out recovery, renamed recovery, "
+            "shuffle-null margin, situation bonuses, and penalties for drop/uncontrolled lanes"
+        ),
+        "profiles": selections,
+    }
 
 
 def _percentile(values: list[float], q: float) -> float:
@@ -1523,6 +1622,11 @@ def run(
         leave_primary_out_summary,
         key=lambda row: (row["accuracy"], -row["drop_from_renamed"]),
     )
+    situational_lane_selection = _situational_lane_selection(
+        summary,
+        leave_primary_out_summary,
+        label_shuffle_control,
+    )
     selected_control = label_shuffle_control.get(selected_lane["feature"])
     if selected_control and selected_control["risk"] == "passes shuffle control":
         training_status = "candidate"
@@ -1587,6 +1691,7 @@ def run(
             "fallback_rule": "select the best validated lane per task instead of forcing chemistry, semantics, and flow into one vector",
             "selected_lane": selected_lane["feature"],
         },
+        "situational_lane_selection": situational_lane_selection,
         "layered_geometry_probe": asdict(geometry_feature.geometry_probe),  # type: ignore[attr-defined]
         "summary": summary,
         "evaluations": evaluations,

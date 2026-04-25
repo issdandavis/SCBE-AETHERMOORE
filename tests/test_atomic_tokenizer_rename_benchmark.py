@@ -65,6 +65,7 @@ def test_semantic_chemistry_workflow_export_has_dual_lanes(
     assert '"schema_version": "semantic_chemistry_workflow_v1"' in first
     assert '"chemistry_actual"' in first
     assert '"semantic_overlay"' in first
+    assert '"layered_geometry_semantic"' in first
     assert '"workflow_chain"' in first
 
 
@@ -93,6 +94,22 @@ def test_layered_geometry_lane_is_reported_with_zero_loss_probe(rename_report: d
     assert probe["passed"] is True
     assert probe["aggregate"]["avg_semantic_loss"] == 0.0
     assert probe["aggregate"]["fit_score_lift"] > 0.0
+
+
+def test_situational_lane_selection_uses_formula_by_need(rename_report: dict) -> None:
+    selection = rename_report["situational_lane_selection"]
+    profiles = selection["profiles"]
+
+    assert selection["version"] == "situational-lane-selection-v1"
+    assert profiles["recovery_default"]["primary_lane"] == "dual_lane_chemistry_semantic_hex"
+    assert profiles["geometry_context"]["primary_lane"] == "reinforced_chemistry_semantic_flow_geometry_hex"
+    assert profiles["low_resource_route"]["primary_lane"] in {
+        "reinforced_chemistry_semantic_flow_hex",
+        "reinforced_chemistry_semantic_flow_geometry_hex",
+    }
+    geometry_top = profiles["geometry_context"]["ranked_lanes"][0]
+    assert geometry_top["geometry_bonus_applied"] is True
+    assert geometry_top["has_shuffle_control"] is True
 
 
 def test_within_primary_diagnostic_is_explicit_for_singleton_corpus(
