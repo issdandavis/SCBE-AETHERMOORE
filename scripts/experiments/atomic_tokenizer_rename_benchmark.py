@@ -18,7 +18,7 @@ import random
 import re
 import sys
 from collections import Counter, defaultdict
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from hashlib import sha256
 from itertools import combinations
@@ -38,6 +38,12 @@ from scripts.mathbac_cross_primary_atomic import (
     _l2_squared,
     _per_concept_accuracy,
     loo_nearest_concept,
+)
+from scripts.experiments.layered_geometry_semantic_packing import (
+    DEFAULT_FEATURES as GEOMETRY_DEFAULT_FEATURES,
+    build_benchmark as build_layered_geometry_benchmark,
+    evaluate_shape as evaluate_geometry_shape,
+    optimize_token_shape,
 )
 from python.scbe.atomic_tokenization import map_token_to_atomic_state
 
@@ -489,6 +495,91 @@ def make_atomic_semantic_overlay_feature() -> Callable[[str], dict[str, float]]:
     def feature(text: str) -> dict[str, float]:
         return _default_atomic_feature(text)
 
+    return feature
+
+
+GEOMETRY_TOKEN_FAMILIES = ("CALLABLE", "CONTROL_FLOW", "DATA_SYMBOL", "GOVERNANCE_GATE")
+GEOMETRY_OUTER_SIDES = {
+    "CALLABLE": 6,
+    "CONTROL_FLOW": 8,
+    "DATA_SYMBOL": 5,
+    "GOVERNANCE_GATE": 7,
+}
+
+
+def _geometry_family_for_token(token: str, state_semantic_class: str) -> str:
+    lowered = token.lower()
+    if lowered in CODE_FLOW_KEYWORDS or state_semantic_class in {"RELATION", "TEMPORAL"}:
+        return "CONTROL_FLOW"
+    if lowered in {"allow", "deny", "quarantine", "escalate", "policy", "audit", "risk", "guard"}:
+        return "GOVERNANCE_GATE"
+    if state_semantic_class == "ACTION":
+        return "CALLABLE"
+    return "DATA_SYMBOL"
+
+
+def make_layered_geometry_semantic_feature() -> Callable[[str], dict[str, float]]:
+    """Layered geometry lane: stable outer token hull plus packed inner context.
+
+    This feature does not claim geometry is semantics. It converts the current
+    tokenizer's semantic class into an outer hull family, then adds bounded
+    packing metrics from the independent geometry probe.
+    """
+
+    shape_reports = {
+        family: evaluate_geometry_shape(
+            optimize_token_shape(
+                family,
+                GEOMETRY_OUTER_SIDES[family],
+                GEOMETRY_DEFAULT_FEATURES[family],
+            )
+        )
+        for family in GEOMETRY_TOKEN_FAMILIES
+    }
+    keys = (
+        [f"geom_family_{family}" for family in GEOMETRY_TOKEN_FAMILIES]
+        + [
+            "geom_token_count_log",
+            "geom_mean_fit_score",
+            "geom_mean_semantic_loss",
+            "geom_mean_utilization",
+            "geom_mean_octave_links",
+            "geom_mean_collision_count",
+            "geom_mean_boundary_violations",
+            "geom_control_to_callable_ratio",
+            "geom_governance_to_data_ratio",
+        ]
+    )
+
+    def feature(text: str) -> dict[str, float]:
+        result = {key: 0.0 for key in keys}
+        tokens = TOKEN_PATTERN.findall(text)
+        if not tokens:
+            return result
+        families: list[str] = []
+        for token in tokens:
+            state = map_token_to_atomic_state(token, language="en", context_class="operator")
+            family = _geometry_family_for_token(token, state.semantic_class)
+            families.append(family)
+        n = float(len(families))
+        counts = Counter(families)
+        for family, count in counts.items():
+            result[f"geom_family_{family}"] = count / n
+        result["geom_token_count_log"] = math.log1p(n)
+        result["geom_mean_fit_score"] = sum(shape_reports[family].fit_score for family in families) / n
+        result["geom_mean_semantic_loss"] = sum(shape_reports[family].semantic_loss for family in families) / n
+        result["geom_mean_utilization"] = sum(shape_reports[family].utilization for family in families) / n
+        result["geom_mean_octave_links"] = sum(shape_reports[family].octave_link_count for family in families) / n
+        result["geom_mean_collision_count"] = sum(shape_reports[family].collision_count for family in families) / n
+        result["geom_mean_boundary_violations"] = sum(
+            shape_reports[family].boundary_violation_count for family in families
+        ) / n
+        result["geom_control_to_callable_ratio"] = counts["CONTROL_FLOW"] / max(1.0, float(counts["CALLABLE"]))
+        result["geom_governance_to_data_ratio"] = counts["GOVERNANCE_GATE"] / max(1.0, float(counts["DATA_SYMBOL"]))
+        return result
+
+    feature.keys = keys  # type: ignore[attr-defined]
+    feature.geometry_probe = build_layered_geometry_benchmark()  # type: ignore[attr-defined]
     return feature
 
 
@@ -1279,6 +1370,7 @@ def run(
     )
     flow_feature = make_operational_flow_feature()
     semantic_overlay_feature = make_atomic_semantic_overlay_feature()
+    geometry_feature = make_layered_geometry_semantic_feature()
     dual_lane_feature = combine_feature_heads(
         [
             ("chemistry", chemistry_feature, 1.0),
@@ -1292,14 +1384,24 @@ def run(
             ("flow", flow_feature, 0.75),
         ]
     )
+    geometry_reinforced_feature = combine_feature_heads(
+        [
+            ("chemistry", chemistry_feature, 1.0),
+            ("semantic", semantic_overlay_feature, 0.35),
+            ("flow", flow_feature, 0.75),
+            ("geometry", geometry_feature, 0.60),
+        ]
+    )
     feature_fns: dict[str, Callable[[str], dict[str, float]]] = {
         "atomic_current": _default_atomic_feature,
         f"byte_periodic_{byte_map_mode}": byte_feature,
         f"chemistry_actual_{byte_map_mode}": chemistry_feature,
         "semantic_overlay_current": semantic_overlay_feature,
         "flow_reinforcement": flow_feature,
+        "layered_geometry_semantic": geometry_feature,
         f"dual_lane_chemistry_semantic_{byte_map_mode}": dual_lane_feature,
         f"reinforced_chemistry_semantic_flow_{byte_map_mode}": reinforced_feature,
+        f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}": geometry_reinforced_feature,
     }
 
     evaluations = {
@@ -1323,6 +1425,10 @@ def run(
             "baseline": _evaluate(samples, original_sources, flow_feature, feature_name="flow_reinforcement"),
             "renamed": _evaluate(samples, renamed_sources, flow_feature, feature_name="flow_reinforcement"),
         },
+        "layered_geometry_semantic": {
+            "baseline": _evaluate(samples, original_sources, geometry_feature, feature_name="layered_geometry_semantic"),
+            "renamed": _evaluate(samples, renamed_sources, geometry_feature, feature_name="layered_geometry_semantic"),
+        },
         f"dual_lane_chemistry_semantic_{byte_map_mode}": {
             "baseline": _evaluate(samples, original_sources, dual_lane_feature, feature_name=f"dual_lane_chemistry_semantic_{byte_map_mode}"),
             "renamed": _evaluate(samples, renamed_sources, dual_lane_feature, feature_name=f"dual_lane_chemistry_semantic_{byte_map_mode}"),
@@ -1330,6 +1436,10 @@ def run(
         f"reinforced_chemistry_semantic_flow_{byte_map_mode}": {
             "baseline": _evaluate(samples, original_sources, reinforced_feature, feature_name=f"reinforced_chemistry_semantic_flow_{byte_map_mode}"),
             "renamed": _evaluate(samples, renamed_sources, reinforced_feature, feature_name=f"reinforced_chemistry_semantic_flow_{byte_map_mode}"),
+        },
+        f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}": {
+            "baseline": _evaluate(samples, original_sources, geometry_reinforced_feature, feature_name=f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}"),
+            "renamed": _evaluate(samples, renamed_sources, geometry_reinforced_feature, feature_name=f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}"),
         },
     }
     leave_primary_out = {
@@ -1345,8 +1455,10 @@ def run(
         name: feature_fns[name]
         for name in (
             f"chemistry_actual_{byte_map_mode}",
+            "layered_geometry_semantic",
             f"dual_lane_chemistry_semantic_{byte_map_mode}",
             f"reinforced_chemistry_semantic_flow_{byte_map_mode}",
+            f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}",
         )
     }
     label_shuffle_control = _label_shuffle_control(
@@ -1471,9 +1583,11 @@ def run(
             "chemistry_actual": "byte -> Binary Interpretation Matrix hex/binary row -> periodic element trace",
             "semantic_overlay": "current atomic tokenizer feature head; kept separate because it collapses most code identifiers",
             "flow_reinforcement": "rename-stable operational syntax and control-flow shape features; only promoted if its own eval improves the task",
+            "layered_geometry_semantic": "stable outer token hull plus inner packed context metrics; promoted only if leave-primary-out and shuffle-null controls hold",
             "fallback_rule": "select the best validated lane per task instead of forcing chemistry, semantics, and flow into one vector",
             "selected_lane": selected_lane["feature"],
         },
+        "layered_geometry_probe": asdict(geometry_feature.geometry_probe),  # type: ignore[attr-defined]
         "summary": summary,
         "evaluations": evaluations,
         "leave_primary_out": leave_primary_out,

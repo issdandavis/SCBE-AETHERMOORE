@@ -71,14 +71,28 @@ def test_semantic_chemistry_workflow_export_has_dual_lanes(
 def test_label_shuffle_control_gates_training_export(rename_report: dict) -> None:
     controls = rename_report["label_shuffle_control"]
     dual = controls["dual_lane_chemistry_semantic_hex"]
+    geometry = controls["layered_geometry_semantic"]
 
     assert dual["shuffle_runs"] == 8
     assert len(dual["distribution"]) == 8
     assert len(dual["iteration_seeds"]) == 8
+    assert geometry["shuffle_runs"] == 8
+    assert len(geometry["distribution"]) == 8
     assert dual["marginal_counts_preserved"] is True
     assert 0.0 <= dual["empirical_p"] <= 1.0
     assert dual["histogram"]
     assert rename_report["workflow_training_records"]["status"] in {"candidate", "hold"}
+
+
+def test_layered_geometry_lane_is_reported_with_zero_loss_probe(rename_report: dict) -> None:
+    assert "layered_geometry_semantic" in rename_report["evaluations"]
+    assert "reinforced_chemistry_semantic_flow_geometry_hex" in rename_report["evaluations"]
+    assert rename_report["lane_model"]["layered_geometry_semantic"].startswith("stable outer token hull")
+
+    probe = rename_report["layered_geometry_probe"]
+    assert probe["passed"] is True
+    assert probe["aggregate"]["avg_semantic_loss"] == 0.0
+    assert probe["aggregate"]["fit_score_lift"] > 0.0
 
 
 def test_within_primary_diagnostic_is_explicit_for_singleton_corpus(
