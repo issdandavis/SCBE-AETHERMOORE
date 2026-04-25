@@ -97,6 +97,7 @@ from .history_reducer import (
 )
 from .ingestion_rights import classify_ingestion_rights_record, get_source_record, load_source_registry
 from .rhombic_bridge import rhombic_fusion, rhombic_score
+from .semantic_gate import SemanticBlendPolicy, SemanticGateRecord, SemanticSignal, evaluate_semantic_gate
 from .tongue_code_lanes import (
     CODE_LANE_REGISTRY,
     classify_code_lane_alignment,
@@ -138,4 +139,8 @@ __all__ += [
     "classify_ingestion_rights_record",
     "rhombic_fusion",
     "rhombic_score",
+    "SemanticSignal",
+    "SemanticBlendPolicy",
+    "SemanticGateRecord",
+    "evaluate_semantic_gate",
 ]
