@@ -1,0 +1,105 @@
+{
+  "schema_version": "scbe_dataset_regularization_v1",
+  "title": "SCBE dataset purpose buckets and regularization policy",
+  "generated_from": "scripts/training_dataset_inventory.py",
+  "core_rule": "Do not flat-merge all corpora. Merge inside purpose buckets, dedupe inside the bucket, keep eval and holdout frozen, and promote each bucket through its own gate.",
+  "model_sets": {
+    "coding_model": {
+      "purpose": "Build the coding model first: code primaries, binary transport, GeoSeal command recall, music-theory harmony, atomic workflow, and verified coding lane contracts.",
+      "destination": "training-data/regularized/coding_model/",
+      "preferred_profiles": [
+        "config/model_training/coding-agent-qwen-full-coding-system-v8.json",
+        "config/model_training/coding-agent-qwen-stage6-repair-v7.json",
+        "config/model_training/coding-agent-qwen-command-harmony-v5.json"
+      ],
+      "merge_strategy": "weighted_sft_with_holdout_kept_separate",
+      "weight": 1.0,
+      "eval_gate": "coding_system_industry_benchmark plus frozen Stage 6 eval contract",
+      "promotion_rule": "Promote only when coding lane benchmark passes and held-out Stage 6 prompts remain compliant."
+    },
+    "aligned_foundations": {
+      "purpose": "Preserve shared substrate across math, English, Sacred Tongues, binary packet framing, chemistry-structure templates, and coding lanes.",
+      "destination": "training-data/regularized/aligned_foundations/",
+      "preferred_profiles": [
+        "config/model_training/aligned-foundations-qwen-primary.json",
+        "config/model_training/chemistry-qwen-primary.json"
+      ],
+      "merge_strategy": "paired_multirepresentation_records",
+      "weight": 0.9,
+      "eval_gate": "cross-lane concept preservation and packet compliance",
+      "promotion_rule": "Promote only if a concept survives representation transfer without collapsing lane boundaries."
+    },
+    "operator_agent_bus": {
+      "purpose": "Teach runnable CLI/operator behavior: command recall, Apollo collection, browser/operator traces, cash sprint state, and agent bus routing.",
+      "destination": "training-data/regularized/operator_agent_bus/",
+      "preferred_profiles": [
+        "config/model_training/ollama-agentic-handler.json",
+        "config/model_training/hf-agentic-handler.json"
+      ],
+      "merge_strategy": "tool_trace_sft_plus_command_recall",
+      "weight": 0.7,
+      "eval_gate": "CLI command recall and governed route smoke tests",
+      "promotion_rule": "Promote only when exact commands run or fail closed with an auditable reason."
+    },
+    "governance_security": {
+      "purpose": "Teach governance, route decisions, null-space confidence, code governance, PQC/hyperbolic controls, and adversarial rejection.",
+      "destination": "training-data/regularized/governance_security/",
+      "preferred_profiles": [],
+      "merge_strategy": "security_sft_with_quarantine_audit",
+      "weight": 0.8,
+      "eval_gate": "governance decision and invalid-input regression tests",
+      "promotion_rule": "Promote only after anomaly audit and boundary/invalid-input tests pass."
+    },
+    "commerce_product": {
+      "purpose": "Teach revenue workflows separately from the coding core: offers, checkout, fulfillment, tax, Gumroad, Stripe, and funnel operations.",
+      "destination": "training-data/regularized/commerce_product/",
+      "preferred_profiles": [],
+      "merge_strategy": "offer_ops_sft_with_secret_sweep",
+      "weight": 0.55,
+      "eval_gate": "checkout and fulfillment workflow smoke tests",
+      "promotion_rule": "Promote only after secret sweep and live/test payment-mode separation."
+    },
+    "research_bridge": {
+      "purpose": "Teach source-grounded research extraction, paper/video claims, and citation-backed technical synthesis.",
+      "destination": "training-data/regularized/research_bridge/",
+      "preferred_profiles": [],
+      "merge_strategy": "source_grounded_records_only",
+      "weight": 0.5,
+      "eval_gate": "source citation and claim verification",
+      "promotion_rule": "Promote only when records include source identity and falsifiable claim text."
+    },
+    "story_lore": {
+      "purpose": "Teach Aethermoor/Spiralverse lore and style without contaminating the coding model unless records are explicit lore-code paired examples.",
+      "destination": "training-data/regularized/story_lore/",
+      "preferred_profiles": [],
+      "merge_strategy": "keep_out_of_coder_unless_explicit_lore_code_pair",
+      "weight": 0.35,
+      "eval_gate": "style and canon eval, not coding eval",
+      "promotion_rule": "Never merge into coding_model unless the record has an explicit code-primary pair and passes code-lane validation."
+    },
+    "uncategorized": {
+      "purpose": "Quarantine for files that need classification before any training run.",
+      "destination": "training-data/regularized/quarantine/",
+      "preferred_profiles": [],
+      "merge_strategy": "inspect_before_training",
+      "weight": 0.0,
+      "eval_gate": "manual classification required",
+      "promotion_rule": "No training use until classified and schema-adapted."
+    }
+  },
+  "regularization_steps": [
+    "Inventory local, Kaggle, Hugging Face, and cloud-synced surfaces before training.",
+    "Resolve Git LFS pointer files with git lfs pull or remote recovery before counting them as training data.",
+    "Normalize every trainable record to messages plus metadata, or instruction/response plus metadata.",
+    "Add source_path, source_sha256, dataset_family, purpose, split, quality, stage, and dedupe_key metadata.",
+    "Deduplicate exact text inside each purpose bucket before any weighted merge.",
+    "Freeze eval and holdout splits by source or concept; do not randomly split across duplicate source families.",
+    "Run anomaly/secret audit before upload to Hugging Face, Kaggle, or Colab.",
+    "Train staged mixtures instead of one mega corpus: seed, command harmony, binary/token transport, coding primaries, agentic tool loops, then verifier/RL-style tasks."
+  ],
+  "frontier_model_lessons": {
+    "deepseek_v3": "Use staged high-quality data plus SFT/RL and stable training instrumentation; architecture efficiency does not replace curation.",
+    "deepseek_r1": "Use verifiable reward tasks for math/code/STEM and distill validated reasoning patterns after they pass objective checks.",
+    "kimi_k2": "Use large-scale agentic data synthesis and environment interaction for coding-agent behavior rather than static completion data alone."
+  }
+}
