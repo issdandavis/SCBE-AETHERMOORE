@@ -47,6 +47,21 @@ const simpleHash = (str) => {
   return Math.abs(hash);
 };
 
+const hmacHex = async (secret, message) => {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, enc.encode(message));
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+};
+
 const permuteTokens = (ids, secret) => {
   const result = [...ids];
   for (let r = 0; r < 4; r++) {
@@ -83,7 +98,7 @@ function SpiralAuthDemo() {
     const perMsgKey = simpleHash(secret + '-' + nonce);
     const permuted = permuteTokens(tokenIds, perMsgKey);
     const canonical = 'v3.KO.' + modality + '.' + ts + '.' + nonce + '.' + permuted.join(',');
-    const sig = simpleHash(canonical).toString(16).padStart(8, '0');
+    const sig = await hmacHex(secret, canonical);
     setEnvelope({ header: { ver: '3', tongue: 'KO', modality, ts, nonce }, payload: { original: tokenIds, permuted }, sig });
     setStep(7); await new Promise(r => setTimeout(r, 400));
     setVerified(true); setProcessing(false);
@@ -170,13 +185,21 @@ function SpiralAuthDemo() {
             </div>
             {step >= 5 && <button onClick={playAudio} disabled={audioPlaying} style={{ width:'100%', padding:'0.75rem', marginBottom:'1rem', background:'transparent', border:'1px solid ' + mc + '66', borderRadius:'6px', color:mc, cursor:audioPlaying?'not-allowed':'pointer', fontSize:'0.75rem' }}>{audioPlaying ? '\u266A PLAYING...' : '\u266A PLAY AUDIO SIGNATURE'}</button>}
             {envelope && <div style={{ background:'rgba(0,0,0,0.5)', border:'1px solid ' + (verified?mc:'rgba(255,255,255,0.1)'), borderRadius:'8px', padding:'1rem', boxShadow:verified?'0 0 20px ' + mc + '44':'none' }}>
-              <div style={{ fontSize:'0.65rem', color:'#888', marginBottom:'0.5rem' }}>SIGNED ENVELOPE</div>
+              <div style={{ fontSize:'0.65rem', color:'#888', marginBottom:'0.5rem' }}>SIGNED INTENT ENVELOPE</div>
               <pre style={{ fontSize:'0.7rem', color:'#aaa', margin:0, whiteSpace:'pre-wrap', wordBreak:'break-all' }}>{s(envelope)}</pre>
               {verified && <div style={{ marginTop:'1rem', padding:'0.5rem', background:mc + '22', borderRadius:'4px', textAlign:'center', color:mc, fontSize:'0.75rem', fontWeight:600 }}>{'\u2713'} SIGNATURE VERIFIED</div>}
             </div>}
           </div>
         </div>
         <div style={{ marginTop:'2rem', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.05)', borderRadius:'8px', padding:'1rem' }}>
+          <h3 style={{ fontSize:'0.7rem', color:'#666', letterSpacing:'0.2em', marginBottom:'1rem' }}>SECURITY BOUNDARY</h3>
+          <p style={{ color:'#999', fontSize:'0.75rem', lineHeight:1.6 }}>
+            The private lexicon, modality flag, token permutation, and harmonic/audio fingerprint are intent evidence.
+            The cryptographic security boundary is the keyed HMAC over the canonical envelope, plus nonce/timestamp replay controls in the production SDK.
+            This demo does not claim a conlang is encryption; it shows how intent can be bound into normal authentication.
+          </p>
+        </div>
+        <div style={{ marginTop:'1rem', background:'rgba(0,0,0,0.3)', border:'1px solid rgba(255,255,255,0.05)', borderRadius:'8px', padding:'1rem' }}>
           <h3 style={{ fontSize:'0.7rem', color:'#666', letterSpacing:'0.2em', marginBottom:'1rem' }}>PRIVATE LEXICON (KOR'AELIN)</h3>
           <div style={{ display:'flex', flexWrap:'wrap', gap:'1rem' }}>
             {Object.entries(DICTIONARY).map(([word, { meaning, glyph }]) => <div key={word} style={{ padding:'0.5rem 0.75rem', background:'rgba(255,255,255,0.02)', borderRadius:'4px', fontSize:'0.75rem' }}>
