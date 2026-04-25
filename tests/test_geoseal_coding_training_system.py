@@ -34,6 +34,16 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     assert stage6["exists"] is True
 
 
+def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:
+    profile = json.loads((ROOT / "config" / "model_training" / "coding-agent-qwen-atomic-workflow-stage6.json").read_text())
+    training = profile["training"]
+
+    assert training["max_seq_length"] <= 768
+    assert training["batch_size"] == 1
+    assert training["gradient_accumulation_steps"] >= 16
+    assert training["gradient_checkpointing"] is True
+
+
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     manifest = module.load_manifest(MANIFEST_PATH)
