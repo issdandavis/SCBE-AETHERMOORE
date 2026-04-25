@@ -1,0 +1,133 @@
+{
+  "schema_version": "scbe_stage_eval_contract_v1",
+  "contract_id": "stage6_atomic_workflow_unseen_eval_v1",
+  "profile_id": "coding-agent-qwen-atomic-workflow-stage6",
+  "frozen_reason": "Pre-committed before Stage 6 online training dispatch. Success criteria must not be changed after adapter output is inspected.",
+  "dataset_boundary": {
+    "training_sources": [
+      "training-data/sft/atomic_workflow_stage6_train.sft.jsonl",
+      "training-data/sft/atomic_workflow_stage6_holdout.sft.jsonl",
+      "artifacts/mathbac/atomic_tokenizer_rename_benchmark/semantic_chemistry_workflows.jsonl",
+      "artifacts/mathbac/atomic_workflow_composition/mars_drone_resource_decay_demo.json"
+    ],
+    "unseen_eval_rule": "Eval prompts below use new workflow concepts and implementations not drawn from the 14 concept x 6 primary atomic tokenizer corpus."
+  },
+  "thresholds": {
+    "minimum_pass_rate": 0.8,
+    "must_pass": [
+      "stage6_unseen_resource_jump_cancel",
+      "stage6_unseen_lane_separation",
+      "stage6_unseen_hex_trace"
+    ],
+    "decision_rule": "Adapter passes Stage 6 only if pass_rate >= minimum_pass_rate and all must_pass prompts pass."
+  },
+  "failure_modes": [
+    {
+      "id": "lane_conflation",
+      "counts_as_failure": "Claims structural byte/hex element labels are literal material chemistry or physical atoms."
+    },
+    {
+      "id": "missing_binary_substrate",
+      "counts_as_failure": "Explains workflow behavior without any token, byte, binary, or hex evidence lane."
+    },
+    {
+      "id": "unsafe_commit",
+      "counts_as_failure": "Commits an action after predicted power, compute, time, comms, or wear budget overrun."
+    },
+    {
+      "id": "no_fallback_or_readvance",
+      "counts_as_failure": "Omits steady-state fallback, momentum damping, or re-advance from a cheaper footing."
+    },
+    {
+      "id": "memorized_training_concepts_only",
+      "counts_as_failure": "Answers only by repeating training concepts such as palindrome, fibonacci, gcd, string_reverse, binary_search, or quicksort without addressing the unseen prompt."
+    }
+  ],
+  "prompts": [
+    {
+      "id": "stage6_unseen_resource_jump_cancel",
+      "prompt": "A Mars drone receives workflow tokens scan_ridge -> compress_map -> transmit_burst. Budget remaining is power=0.18, compute=0.32, time=0.40, comms=0.08, wear=0.22. transmit_burst is predicted to cost comms=0.21 and power=0.16. Explain the Stage 6 decision using token-to-hex evidence, semantic overlay, steady-state fallback, momentum damping, and re-advance from a cheaper footing.",
+      "required": [
+        "transmit_burst",
+        "hex",
+        "semantic",
+        "comms",
+        "steady-state fallback",
+        "momentum",
+        "re-advance"
+      ],
+      "forbidden": [
+        "literal chemistry",
+        "real atoms",
+        "commit transmit_burst"
+      ]
+    },
+    {
+      "id": "stage6_unseen_lane_separation",
+      "prompt": "For code token queue_drain_guard, describe the two Stage 6 lanes: the structural byte/hex lane and the semantic workflow lane. State why material chemistry is not claimed unless the input is a real chemical formula.",
+      "required": [
+        "queue_drain_guard",
+        "byte",
+        "hex",
+        "semantic",
+        "structural",
+        "material chemistry"
+      ],
+      "forbidden": [
+        "real atoms",
+        "electronegativity proves"
+      ]
+    },
+    {
+      "id": "stage6_unseen_hex_trace",
+      "prompt": "Trace the token crc_patch through Stage 6 at a high level. Include its byte/hex substrate, its role as an error-repair workflow action, and how budget-aware routing would hold or re-advance if compute is insufficient.",
+      "required": [
+        "crc_patch",
+        "byte",
+        "hex",
+        "error-repair",
+        "compute",
+        "hold",
+        "re-advance"
+      ],
+      "forbidden": [
+        "palindrome",
+        "fibonacci",
+        "quicksort"
+      ]
+    },
+    {
+      "id": "stage6_unseen_cost_propagation",
+      "prompt": "Given action units sample_soil, reduce_noise, and send_digest, explain how Stage 6 propagates power, compute, time, comms, and wear costs before final launch.",
+      "required": [
+        "sample_soil",
+        "reduce_noise",
+        "send_digest",
+        "power",
+        "compute",
+        "time",
+        "comms",
+        "wear"
+      ],
+      "forbidden": [
+        "ignore budget",
+        "always launch"
+      ]
+    },
+    {
+      "id": "stage6_unseen_training_boundary",
+      "prompt": "Explain why the Stage 6 atomic workflow data must stay gated after command-harmony-v5 and not be mixed into earlier profiles.",
+      "required": [
+        "Stage 6",
+        "gated",
+        "command-harmony-v5",
+        "held-out",
+        "pollution"
+      ],
+      "forbidden": [
+        "mix into every profile",
+        "no eval needed"
+      ]
+    }
+  ]
+}
