@@ -69,6 +69,7 @@ class Algorithm:
 
     name: str
     slot_order: List[str]
+    description: str = ""
     impls: Dict[str, SlottedImpl] = field(default_factory=dict)
 
 
@@ -76,7 +77,11 @@ class Algorithm:
 
 
 def _add_spec() -> Algorithm:
-    algo = Algorithm(name="add", slot_order=["sig", "body"])
+    algo = Algorithm(
+        name="add",
+        slot_order=["sig", "body"],
+        description="Sum of two integers",
+    )
     algo.impls["ko"] = SlottedImpl("ko", {
         "sig": "def add(a: int, b: int) -> int:\n",
         "body": "    return a + b\n",
@@ -108,6 +113,7 @@ def _sum_list_spec() -> Algorithm:
     algo = Algorithm(
         name="sum_list",
         slot_order=["sig", "init", "loop_open", "loop_body", "ret"],
+        description="Sum of all elements in a list",
     )
     algo.impls["ko"] = SlottedImpl("ko", {
         "sig": "def sum_list(xs):\n",
@@ -155,7 +161,11 @@ def _sum_list_spec() -> Algorithm:
 
 
 def _is_palindrome_spec() -> Algorithm:
-    algo = Algorithm(name="is_palindrome", slot_order=["sig", "body"])
+    algo = Algorithm(
+        name="is_palindrome",
+        slot_order=["sig", "body"],
+        description="True when s reads the same forward and reversed",
+    )
     algo.impls["ko"] = SlottedImpl("ko", {
         "sig": "def is_palindrome(s: str) -> bool:\n",
         "body": "    return s == s[::-1]\n",
@@ -291,6 +301,7 @@ def build_bundle(project_name: str, algos: List[Algorithm]) -> Dict:
 
         bundle["algorithms"].append({
             "name": algo.name,
+            "description": algo.description,
             "slot_order": algo.slot_order,
             "implementations": impls_export,
         })
