@@ -1,0 +1,48 @@
+{
+  "schema_version": "scbe_darpa_agent_bus_transfer_sources_v1",
+  "generated_at": "2026-04-26",
+  "scope": "Public official source map for improving SCBE agent-bus assurance, evaluation, training, and DARPA proposal framing.",
+  "safety_boundary": "Software architecture transfer only; excludes weaponization, targeting, tactical deployment, evasion, and physical drone operation guidance.",
+  "sources": [
+    {
+      "program": "DARPA Assured Autonomy",
+      "url": "https://www.darpa.mil/research/programs/assured-autonomy",
+      "transfer": "Continual assurance for learning-enabled workflows."
+    },
+    {
+      "program": "DARPA CyPhER Forge",
+      "url": "https://www.darpa.mil/research/programs/cypher-forge",
+      "transfer": "Digital twin mission rehearsal plus AI test agent concepts."
+    },
+    {
+      "program": "DARPA CASTLE",
+      "url": "https://www.darpa.mil/research/programs/cyber-agents-for-security-testing-and-learning-environments",
+      "transfer": "Repeatable defensive agent training environments and benchmark datasets."
+    },
+    {
+      "program": "DARPA EMHAT",
+      "url": "https://www.darpa.mil/research/programs/exploratory-models-of-human-ai-teams",
+      "transfer": "Human-AI team digital twins and behavioral evaluation."
+    },
+    {
+      "program": "DARPA RACER",
+      "url": "https://www.darpa.mil/research/programs/robotic-autonomy-in-complex-environments-with-resiliency",
+      "transfer": "Repeated develop-test cycles under complex conditions."
+    },
+    {
+      "program": "DARPA HACMS",
+      "url": "https://www.darpa.mil/news/resources/case-studies/hacms",
+      "transfer": "High-assurance parsers, formal methods, partitioning, and least privilege."
+    },
+    {
+      "program": "DARPA AIxCC",
+      "url": "https://www.darpa.mil/research/programs/ai-cyber",
+      "transfer": "Cyber reasoning, open-source repair, and challenge-style evaluation."
+    },
+    {
+      "program": "DARPA SABER",
+      "url": "https://www.darpa.mil/research/programs/saber-securing-artificial-intelligence",
+      "transfer": "Operational AI red-team assessment and robustness under distribution shift."
+    }
+  ]
+}

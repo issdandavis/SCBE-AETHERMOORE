@@ -1,0 +1,40 @@
+{
+  "schema_version": "scbe_hardware_security_envelope_v1",
+  "generated_at": "2026-04-26",
+  "purpose": "Defensive hardware-security envelope for SCBE agent-bus, HYDRA, and autonomy-adjacent proposal work.",
+  "required_for_high_risk": [
+    "asset_id",
+    "risk_class",
+    "hbom_path",
+    "sbom_path",
+    "firmware_version",
+    "firmware_signature_verified",
+    "secure_boot_required",
+    "measured_boot_required",
+    "tpm_or_root_of_trust",
+    "attestation_path",
+    "maintenance_baseline_path",
+    "last_acceptance_test"
+  ],
+  "recommended_controls": [
+    "hardware bill of materials",
+    "software bill of materials",
+    "cryptographic bill of materials",
+    "Trusted Platform Module 2.0 or equivalent hardware root of trust",
+    "secure boot",
+    "measured boot",
+    "signed firmware update",
+    "firmware recovery path",
+    "acceptance testing",
+    "runtime integrity telemetry",
+    "maintenance baseline",
+    "supply-chain provenance"
+  ],
+  "feature_branches": [
+    "feat/hardware-security-envelope",
+    "feat/hardware-bom-registry",
+    "feat/firmware-integrity-gate",
+    "feat/tpm-attestation-import",
+    "feat/hardware-lifecycle-scoreboard"
+  ]
+}
