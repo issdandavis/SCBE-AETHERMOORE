@@ -1,0 +1,12 @@
+{
+  "schema_version": "blc_time_placement_v1",
+  "record_count": 3,
+  "output": "training-data\\sft\\blc_time_placement_v1.sft.jsonl",
+  "surfaces": [
+    "de_bruijn",
+    "blc_bits",
+    "binary",
+    "hex",
+    "placements"
+  ]
+}
