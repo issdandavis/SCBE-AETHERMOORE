@@ -544,7 +544,7 @@ def compute_recovery_paths(
     # Monty Hall selection: if multipath has forks, the "switch" choice
     # gets the advantage
     if multipath and multipath.forks:
-        _n_forks = len(multipath.forks)
+        len(multipath.forks)
         advantage = multipath.monty_hall_advantage
         # Sort by severity (lowest = best)
         paths.sort(key=lambda p: p.severity)

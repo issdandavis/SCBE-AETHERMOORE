@@ -32,10 +32,8 @@ import argparse
 import json
 import logging
 import os
-import sys
 import time
 from pathlib import Path
-from dataclasses import dataclass, field, asdict
 from typing import Optional
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
@@ -221,7 +219,7 @@ def train_group(
         }
         with open(str(out / "stats.json"), "w") as f:
             json.dump(stats, f, indent=2)
-        return
+        return False
 
     dataset = Dataset.from_list(records)
     split = dataset.train_test_split(test_size=0.05, seed=42)

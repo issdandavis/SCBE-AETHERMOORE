@@ -5,9 +5,7 @@ message pairs, filters for quality, and outputs SCBE-formatted SFT records.
 """
 import json
 import os
-import sys
 from pathlib import Path
-from datetime import datetime
 
 
 SESSION_DIR = Path(os.path.expanduser("~")) / ".claude" / "projects" / "C--Users-issda-SCBE-AETHERMOORE"

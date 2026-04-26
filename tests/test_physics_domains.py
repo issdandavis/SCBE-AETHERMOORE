@@ -307,7 +307,7 @@ class TestFailureCascades:
             dev_stability=0.15,
             dev_creativity=0.15,
         )
-        state = compute_physics_domain_state(trit)
+        compute_physics_domain_state(trit)
         # All 6 fields fail directly (all axes maxed), so no cascade needed
         # (cascade only happens when a healthy field gets induced to fail)
         # All fields already failing → nothing to cascade TO.

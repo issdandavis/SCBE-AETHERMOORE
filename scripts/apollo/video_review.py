@@ -152,8 +152,8 @@ def score_description(description: str) -> tuple[int, list, list]:
             if parsed.scheme in ("http", "https") and parsed.netloc and "\x00" not in w:
                 score += 1  # has links
                 break
-        except Exception:
-            pass
+        except ValueError:
+            continue
 
     if "#" in description:
         score += 1  # has hashtags

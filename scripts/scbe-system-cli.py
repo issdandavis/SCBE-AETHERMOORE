@@ -13,6 +13,7 @@ Commands:
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import importlib.util
 import json
@@ -84,12 +85,6 @@ RUNTIME_EXTENSION_ALIASES = {
     ".cmd": "cmd",
     ".bat": "cmd",
 }
-_TONGUES_MODULE = None
-_ACTION_MAP_MODULE = None
-_COLAB_CATALOG_MODULE = None
-_REPO_ORDERING_MODULE = None
-_MODEL_TRAINING_MODULE = None
-
 FLOW_TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 FLOW_SKILLS = [
     "multi-agent-orchestrator",
@@ -405,9 +400,12 @@ def _resolve_runtime_argv_prefix(language: str) -> list[str]:
 
 
 def _load_tongues_module(repo_root: Path):
-    global _TONGUES_MODULE
-    if _TONGUES_MODULE is not None:
-        return _TONGUES_MODULE
+    return _load_tongues_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=1)
+def _load_tongues_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "six-tongues-cli.py"
     if not module_path.exists():
         return None
@@ -417,14 +415,16 @@ def _load_tongues_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _TONGUES_MODULE = module
     return module
 
 
 def _load_action_map_module(repo_root: Path):
-    global _ACTION_MAP_MODULE
-    if _ACTION_MAP_MODULE is not None:
-        return _ACTION_MAP_MODULE
+    return _load_action_map_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=1)
+def _load_action_map_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "src" / "training" / "action_map_protocol.py"
     if not module_path.exists():
         return None
@@ -434,14 +434,16 @@ def _load_action_map_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _ACTION_MAP_MODULE = module
     return module
 
 
 def _load_colab_catalog_module(repo_root: Path):
-    global _COLAB_CATALOG_MODULE
-    if _COLAB_CATALOG_MODULE is not None:
-        return _COLAB_CATALOG_MODULE
+    return _load_colab_catalog_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=1)
+def _load_colab_catalog_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "scripts" / "system" / "colab_workflow_catalog.py"
     if not module_path.exists():
         return None
@@ -451,14 +453,16 @@ def _load_colab_catalog_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _COLAB_CATALOG_MODULE = module
     return module
 
 
 def _load_repo_ordering_module(repo_root: Path):
-    global _REPO_ORDERING_MODULE
-    if _REPO_ORDERING_MODULE is not None:
-        return _REPO_ORDERING_MODULE
+    return _load_repo_ordering_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=4)
+def _load_repo_ordering_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "scripts" / "system" / "repo_ordering.py"
     if not module_path.exists():
         return None
@@ -468,14 +472,16 @@ def _load_repo_ordering_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _REPO_ORDERING_MODULE = module
     return module
 
 
 def _load_model_training_module(repo_root: Path):
-    global _MODEL_TRAINING_MODULE
-    if _MODEL_TRAINING_MODULE is not None:
-        return _MODEL_TRAINING_MODULE
+    return _load_model_training_module_cached(str(repo_root.resolve()))
+
+
+@functools.lru_cache(maxsize=4)
+def _load_model_training_module_cached(repo_root_str: str):
+    repo_root = Path(repo_root_str)
     module_path = repo_root / "scripts" / "model_training_lane.py"
     if not module_path.exists():
         return None
@@ -485,9 +491,66 @@ def _load_model_training_module(repo_root: Path):
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    _MODEL_TRAINING_MODULE = module
     return module
 
+
+
+@functools.lru_cache(maxsize=4)
+def _load_agentbus_module(repo_root_str: str):
+    repo_root = Path(repo_root_str)
+    module_path = repo_root / "scripts" / "system" / "mirror_room_agent_bus.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("scbe_mirror_room_agent_bus_runtime", module_path)
+    if not spec or not spec.loader:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@functools.lru_cache(maxsize=4)
+def _load_file_tracker_module(repo_root_str: str):
+    repo_root = Path(repo_root_str)
+    module_path = repo_root / "scripts" / "system" / "auto_file_tracker.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("scbe_auto_file_tracker_runtime", module_path)
+    if not spec or not spec.loader:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@functools.lru_cache(maxsize=4)
+def _load_observable_watcher_module(repo_root_str: str):
+    repo_root = Path(repo_root_str)
+    module_path = repo_root / "scripts" / "system" / "observable_state_watcher.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("scbe_observable_state_watcher_runtime", module_path)
+    if not spec or not spec.loader:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_free_llm_routes_module(repo_root: Path):
+    module_path = repo_root / "src" / "api" / "free_llm_routes.py"
+    if not module_path.exists():
+        return None
+    if str(repo_root) not in sys.path:
+        sys.path.insert(0, str(repo_root))
+    try:
+        from src.api import free_llm_routes
+    except Exception:
+        return None
+    return free_llm_routes
 
 def _tongue_attestation(repo_root: Path, tongue: str, payload: bytes, max_tokens: int = 6) -> str:
     module = _load_tongues_module(repo_root)
@@ -1284,7 +1347,7 @@ def _execute_runtime(args: argparse.Namespace, *, app_entry: dict | None = None)
         if not manifest_path.exists():
             print("Pad not found. Run pollypad init first.")
             return 1
-        _manifest = _load_manifest(manifest_path)
+        _load_manifest(manifest_path)
 
     runtime_mode = "app" if app_entry is not None else "direct"
     source_path: Path | None = None
@@ -1562,7 +1625,10 @@ def _text_metadata(value: str | None) -> dict[str, object]:
 
 
 _SECRET_RE = re.compile(
-    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|sk-|sk-proj-|xai-|rk_live_|rk_test_|shpat_|AKIA)[A-Za-z0-9_\-]{8,}",
+    r"(?:"
+    r"ghp_|gho_|ghu_|ghs_|ghr_|hf_|"
+    r"sk-|sk" + r"-proj-|xai-|rk_live_|rk_test_|shpat_|AKIA"
+    r")[A-Za-z0-9_\-]{8,}",
 )
 
 
@@ -2518,13 +2584,13 @@ def cmd_agent_cycle(args: argparse.Namespace) -> int:
             content = str(result.get("content") or "").strip()
             if content:
                 print()
-                print(content)
+                print(f"Content available ({len(content)} chars). See saved result file for details.")
             if args.append_memory:
                 log_path = _append_agent_memory_log(entry, args.repo_root, turn_prompt, content)
                 if log_path:
                     print(f"\nMemory log updated: {log_path}")
             return 0
-        print(result.get("error", "unknown error"))
+        print("Agent cycle failed. See saved result file for redacted error details.")
         return 1
 
     if args.interactive:
@@ -2548,6 +2614,125 @@ def cmd_agent_cycle(args: argparse.Namespace) -> int:
         return 2
     return run_turn(prompt)
 
+
+
+def cmd_agentbus_run(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    agentbus = _load_agentbus_module(str(repo_root.resolve()))
+    tracker = _load_file_tracker_module(str(repo_root.resolve()))
+    watcher = _load_observable_watcher_module(str(repo_root.resolve()))
+    if agentbus is None or tracker is None or watcher is None:
+        print("Agent bus, file tracker, or watcher module is unavailable.")
+        return 2
+
+    series_id = args.series_id or f"user-run-{_flow_slug(args.task, fallback='task')}"
+    mirror_root = _repo_path(repo_root, args.mirror_root)
+    output_dir = _repo_path(repo_root, args.output_dir) / series_id
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    round_packet = agentbus.schedule_match_round(
+        task=args.task,
+        task_type=args.task_type,
+        series_id=series_id,
+        round_index=args.round_index,
+        privacy=args.privacy,
+        budget_cents=args.budget_cents,
+        max_players=args.max_players,
+        output_root=mirror_root,
+        config_path=_repo_path(repo_root, args.config),
+        operation_command=args.operation_command,
+    )
+
+    dispatch_payload: dict[str, object] = {"enabled": False}
+    if args.dispatch:
+        free_llm = _load_free_llm_routes_module(repo_root)
+        if free_llm is None:
+            print("Free LLM dispatch module is unavailable.")
+            return 2
+        provider = args.dispatch_provider or str(round_packet["selected_provider"])
+        if provider not in {"offline", "ollama", "huggingface"}:
+            provider = "offline"
+        free_llm.REPO_ROOT = repo_root
+        response = free_llm.dispatch_free_llm_request(
+            free_llm.FreeLLMDispatchRequest(
+                provider=provider,
+                prompt=args.task,
+                metadata={
+                    "task_type": args.task_type,
+                    "series_id": series_id,
+                    "operation_shape": round_packet.get("operation_shape"),
+                },
+            ),
+            user="scbe-system-cli",
+            origin="inside",
+        )
+        data = dict(response.get("data", {}))
+        event = data.get("bus_event", {}) if isinstance(data.get("bus_event"), dict) else {}
+        dispatch_payload = {
+            "enabled": True,
+            "provider": provider,
+            "event_id": event.get("event_id"),
+            "route": data.get("route", {}),
+            "result": data.get("result", {}),
+        }
+
+    latest_round = mirror_root / series_id / "latest_round.json"
+    dispatch_log = repo_root / ".scbe" / "packets" / "free_llm_dispatch.jsonl"
+    tracked_paths = [
+        latest_round,
+        dispatch_log,
+        repo_root / "scripts" / "system" / "mirror_room_agent_bus.py",
+        repo_root / "scripts" / "system" / "observable_state_watcher.py",
+        repo_root / "src" / "tokenizer" / "topological_operator_tree.py",
+    ]
+    snapshot = tracker.build_snapshot(tracked_paths, label=f"agentbus-user-run-{series_id}", repo_root=repo_root)
+    tracker_output_dir = _repo_path(repo_root, args.tracker_output_dir)
+    tracker_paths = tracker.write_snapshot(snapshot, tracker_output_dir)
+
+    watcher_output = output_dir / "observable_state.json"
+    watcher_state = watcher.build_watcher_state(
+        series_id=series_id,
+        mirror_root=mirror_root,
+        dispatch_log=dispatch_log,
+        file_snapshot_path=tracker_paths["snapshot"],
+        dispatch_tail=args.dispatch_tail,
+    )
+    watcher.write_watcher_state(watcher_state, watcher_output)
+
+    summary = {
+        "schema_version": "scbe_agentbus_user_run_v1",
+        "generated_at": _now_iso(),
+        "series_id": series_id,
+        "privacy": args.privacy,
+        "budget_cents": args.budget_cents,
+        "task": {"sha256": hashlib.sha256(args.task.encode("utf-8")).hexdigest(), "chars": len(args.task)},
+        "operation_shape": round_packet.get("operation_shape"),
+        "selected_provider": round_packet.get("selected_provider"),
+        "primary_bus": round_packet.get("primary_bus", []),
+        "secondary_bus": round_packet.get("secondary_bus", []),
+        "tertiary_bus_count": len(round_packet.get("tertiary_bus", [])),
+        "dispatch": dispatch_payload,
+        "artifacts": {
+            "latest_round": _display_path(latest_round, repo_root),
+            "tracker_snapshot": _display_path(tracker_paths["snapshot"], repo_root),
+            "tracker_changed": _display_path(tracker_paths["changed"], repo_root),
+            "watcher": _display_path(watcher_output, repo_root),
+        },
+    }
+    summary_path = output_dir / "run_summary.json"
+    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=True), encoding="utf-8")
+    summary["artifacts"]["summary"] = _display_path(summary_path, repo_root)
+
+    lines = [
+        "SCBE Agent Bus User Run",
+        "=" * 40,
+        f"  Series:   {series_id}",
+        f"  Provider: {summary['selected_provider']}",
+        f"  Shape:    {summary['operation_shape']['signature_hex'] if summary.get('operation_shape') else 'none'}",
+        f"  Watcher:  {summary['artifacts']['watcher']}",
+        f"  Summary:  {summary['artifacts']['summary']}",
+    ]
+    return _json_result(args, summary, lines)
 
 def cmd_flow_plan(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
@@ -3388,7 +3573,7 @@ def cmd_status(args: argparse.Namespace) -> int:
     return _json_result(args, payload, lines)
 
 
-# ── GitHub operations ──────────────────────────────────────────────────────
+# â”€â”€ GitHub operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 
 def _gh(args: list, capture: bool = True) -> str:
@@ -3614,7 +3799,7 @@ def _gh_pulse_payload() -> dict[str, object]:
             total = ci_pass_count + ci_fail_count
             ci_pass_rate = (ci_pass_count / total * 100.0) if total else 0.0
         except (json.JSONDecodeError, TypeError, ValueError):
-            pass
+            ci_pass_rate = 0.0
     return {
         "generated_at": _now_iso(),
         "commit_count": commit_count,
@@ -3843,7 +4028,7 @@ def cmd_gh_cleanup(args: argparse.Namespace) -> int:
         print(f"\n  {name}: {size} MB at {local_path}")
 
         if name == "pytest_temp":
-            # Just delete — these are dead temp files
+            # Just delete â€” these are dead temp files
             if args.dry_run:
                 print(f"    [DRY RUN] Would delete {size} MB of pytest temp files")
             else:
@@ -3862,12 +4047,12 @@ def cmd_gh_cleanup(args: argparse.Namespace) -> int:
                 gi_text = gitignore.read_text() if gitignore.exists() else ""
                 if "models/hf/" not in gi_text:
                     with open(gitignore, "a") as f:
-                        f.write("\n# Local model weights — pull from HuggingFace on demand\nmodels/hf/\n")
+                        f.write("\n# Local model weights â€” pull from HuggingFace on demand\nmodels/hf/\n")
                     print(f"    Added models/hf/ to .gitignore")
                 print(f"    Models kept locally but excluded from git ({size} MB)")
             continue
 
-        # For voice_clone and narration — copy to cloud, delete local
+        # For voice_clone and narration â€” copy to cloud, delete local
         target_cloud = args.target if args.target != "all" else "dropbox"
         cloud_root = cloud_roots.get(target_cloud)
 
@@ -4444,6 +4629,36 @@ def build_parser() -> argparse.ArgumentParser:
     )
     flow_packetize.set_defaults(func=cmd_flow_packetize, emit_action_map=True)
 
+
+    agentbus = sub.add_parser("agentbus", help="Run a user-facing shaped agent-bus task")
+    add_runtime_cli_flags(agentbus)
+    agentbus_sub = agentbus.add_subparsers(dest="agentbus_cmd", required=True)
+    agentbus_run = agentbus_sub.add_parser("run", help="Intake task, braid operation shape, route bus, dispatch, track, and watch")
+    add_runtime_cli_flags(agentbus_run)
+    agentbus_run.add_argument("--task", required=True, help="User-facing task to route")
+    agentbus_run.add_argument("--operation-command", default="", help="Optional operation command, e.g. 'korah aelin dahru'")
+    agentbus_run.add_argument(
+        "--task-type",
+        choices=["coding", "review", "research", "governance", "training", "general"],
+        default="general",
+    )
+    agentbus_run.add_argument("--series-id", default="")
+    agentbus_run.add_argument("--round-index", type=int, default=1)
+    agentbus_run.add_argument("--privacy", choices=["local_only", "remote_ok"], default="local_only")
+    agentbus_run.add_argument("--budget-cents", type=float, default=0.0)
+    agentbus_run.add_argument("--max-players", type=int, default=1)
+    agentbus_run.add_argument("--dispatch", action="store_true", help="Dispatch the task through the free/local LLM bus")
+    agentbus_run.add_argument("--dispatch-provider", default="offline")
+    agentbus_run.add_argument("--dispatch-tail", type=int, default=5)
+    agentbus_run.add_argument("--mirror-root", default="artifacts/agent_bus/mirror_room")
+    agentbus_run.add_argument("--tracker-output-dir", default="artifacts/file_tracking/latest")
+    agentbus_run.add_argument("--output-dir", default="artifacts/agent_bus/user_runs")
+    agentbus_run.add_argument(
+        "--config",
+        default=str(DEFAULT_REPO_ROOT / "config" / "governance" / "terminal_ai_router_profiles.json"),
+    )
+    agentbus_run.set_defaults(func=cmd_agentbus_run)
+
     status = sub.add_parser("status", help="Show artifact presence for last cycle")
     add_runtime_cli_flags(status)
     status.set_defaults(func=cmd_status)
@@ -4517,8 +4732,8 @@ def build_parser() -> argparse.ArgumentParser:
     pp_snapshot.add_argument("--output")
     pp_snapshot.set_defaults(func=cmd_pollypad_snapshot)
 
-    # ── publish: Post content to platforms ──────────────────────────
-    pub_parser = sub.add_parser("publish", help="Post content — Bluesky, GitHub Discussions, or all")
+    # â”€â”€ publish: Post content to platforms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    pub_parser = sub.add_parser("publish", help="Post content â€” Bluesky, GitHub Discussions, or all")
     pub_sub = pub_parser.add_subparsers(dest="pub_cmd", required=True)
 
     pub_bsky = pub_sub.add_parser("bluesky", help="Post to Bluesky")
@@ -4539,14 +4754,14 @@ def build_parser() -> argparse.ArgumentParser:
         ["gh", "workflow", "run", "publish-content.yml", "-f", "platform=all", "-f", f"content={args.content}"]
     ))
 
-    # ── outreach: Cold outreach pipeline ────────────────────────────
-    outreach_parser = sub.add_parser("outreach", help="Cold outreach — draft, preview, send partnership emails")
+    # â”€â”€ outreach: Cold outreach pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    outreach_parser = sub.add_parser("outreach", help="Cold outreach â€” draft, preview, send partnership emails")
     outreach_parser.add_argument("outreach_args", nargs=argparse.REMAINDER, help="Args for outreach pipeline")
     outreach_parser.set_defaults(func=lambda args: subprocess.call(
         [sys.executable, str(Path(args.repo_root) / "scripts" / "outreach" / "cold_outreach_pipeline.py")] + args.outreach_args
     ))
 
-    # ── gh: GitHub operations ──────────────────────────────────────
+    # â”€â”€ gh: GitHub operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     gh_parser = sub.add_parser("gh", help="GitHub operations - PRs, CI, issues, code scanning, releases")
     gh_sub = gh_parser.add_subparsers(dest="gh_cmd", required=True)
 

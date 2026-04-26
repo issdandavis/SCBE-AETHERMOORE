@@ -239,13 +239,16 @@ def test_phdm():
 
     # Check sub-dimensions
     hyp = emb[:6]  # Hyperbolic
-    _phase = emb[6:12]  # Phase
-    _flux = emb[12:15]  # Flux
-    _audit = emb[15:21]  # Audit
+    phase = emb[6:12]  # Phase
+    flux = emb[12:15]  # Flux
+    audit = emb[15:21]  # Audit
 
     # Hyperbolic part should be in Poincare ball
     hyp_norm = float(np.linalg.norm(hyp))
     in_ball = hyp_norm < 1.0
+    assert phase.size == 6
+    assert flux.size == 3
+    assert audit.size == 6
 
     # Harmonic wall cost
     hw_cost = ball.harmonic_wall_cost(hyp_norm, d=14)

@@ -132,9 +132,9 @@ class TestTeacherPhase:
 
     def test_modes_produce_different_thetas(self):
         """Different modes should give different phase angles at t=0.5."""
-        phases = {mode: compute_teacher_phase(0.5, mode) for mode in FlowMode}
+        phases = {mode: compute_teacher_phase(0.5, mode) for mode in tuple(FlowMode)}
         # At least some pairs should differ
-        thetas = {mode: phases[mode].theta for mode in FlowMode}
+        thetas = {mode: phases[mode].theta for mode in tuple(FlowMode)}
         unique = set(thetas.values())
         assert len(unique) >= 3, f"Too few unique theta sets: {len(unique)}"
 
@@ -211,7 +211,7 @@ class TestLearnerPhase:
     def test_inverse_converges_slowest(self):
         """Inverse mode should have largest gap."""
         gaps = {}
-        for mode in FlowMode:
+        for mode in tuple(FlowMode):
             fp = compute_flow_point(0.8, mode)
             gaps[mode] = fp.total_gap
         assert gaps[FlowMode.INVERSE] == max(gaps.values())
@@ -236,7 +236,7 @@ class TestFlowPoint:
 
     def test_zpd_bounded(self):
         for t in [0.0, 0.25, 0.5, 0.75, 1.0]:
-            for mode in FlowMode:
+            for mode in tuple(FlowMode):
                 fp = compute_flow_point(t, mode)
                 assert 0.0 <= fp.zpd_score <= 1.0, f"t={t}, {mode}: zpd={fp.zpd_score}"
 
@@ -447,7 +447,7 @@ class TestReport:
     def test_report_contains_all_modes(self):
         flows = run_all_modes(steps=12)
         report = format_flow_report(flows)
-        for mode in FlowMode:
+        for mode in tuple(FlowMode):
             assert mode.value.upper() in report
 
     def test_report_contains_channel_data(self):

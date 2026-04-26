@@ -313,7 +313,7 @@ class SCBE14LayersSuite:
 
         # Test 2: Weights sum to 1 (validated internally)
         try:
-            d_tri = layer_11_triadic_temporal(0.1, 0.2, 0.3, lambda1=0.33, lambda2=0.33, lambda3=0.34)
+            layer_11_triadic_temporal(0.1, 0.2, 0.3, lambda1=0.33, lambda2=0.33, lambda3=0.34)
             self.assert_test(True, "Weights sum to 1 validation passes")
         except AssertionError:
             self.assert_test(False, "Weights sum to 1 validation passes")

@@ -1,0 +1,35 @@
+{
+  "schema_version": "binary_interpretation_matrix_sft_manifest_v1",
+  "generated_at_utc": "2026-04-25T17:57:03.957569+00:00",
+  "workbook_path": "C:\\Users\\issda\\Downloads\\binary_interpretation_matrix.xlsx",
+  "output_path": "training-data\\sft\\binary_interpretation_matrix_v1.sft.jsonl",
+  "record_count": 482,
+  "sheet_counts": {
+    "Cover": 14,
+    "Binary-Decimal-Hex": 64,
+    "Bit Position Values": 16,
+    "ASCII Table": 95,
+    "Bitwise Operations": 36,
+    "Powers of 2": 14,
+    "Two's Complement": 12,
+    "IEEE 754 Floating Point": 19,
+    "CIDR Subnetting": 11,
+    "UTF-8 Encoding": 12,
+    "Signed vs Unsigned": 11,
+    "Endianness": 5,
+    "Binary Arithmetic": 19,
+    "Biological Encoding": 25,
+    "Natural Computation": 26,
+    "Periodic Table Mapping": 64,
+    "Information Theory": 8,
+    "Error Correction Codes": 8,
+    "Feature Space Encoding": 15,
+    "Quantum Computing Basics": 8
+  },
+  "training_use": [
+    "binary-first coding substrate",
+    "numeric representation grounding",
+    "GeoSeal code generation and route execution explanations",
+    "cross-language low-level semantics"
+  ]
+}

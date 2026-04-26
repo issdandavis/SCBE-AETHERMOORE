@@ -1,0 +1,76 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-atomic-workflow-stage6",
+  "title": "SCBE coding agent Qwen atomic workflow Stage 6",
+  "description": "Gated Stage 6 lane after command harmony. Adds shuffle-controlled semantic chemistry workflow records and resource-decay atomic workflow records without contaminating earlier command-harmony profiles.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Preserve token-to-binary/hex flow across code, semantic overlay, structural chemistry frame, and resource-aware workflow composition. Keep material chemistry separate from structural chemistry templates, predict resource overruns before commit, and use steady-state fallback plus re-advance when a launch would exceed budget.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "bijective_codeflow_v1_train.sft.jsonl",
+      "cross_tongue_dialogue_bijective_v1_train.sft.jsonl",
+      "drill_langues_full_train.sft.jsonl",
+      "command_lattice_seed_train.sft.jsonl",
+      "binary_interpretation_matrix_v1.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "atomic_workflow_stage6_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "bijective_codeflow_v1_holdout.sft.jsonl",
+      "cross_tongue_dialogue_bijective_v1_holdout.sft.jsonl",
+      "drill_langues_full_holdout.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "atomic_workflow_stage6_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 8e-5,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "warmup_ratio": 0.05,
+    "max_steps": 320,
+    "max_train_records": 3900,
+    "max_eval_records": 160,
+    "logging_steps": 10,
+    "save_steps": 160,
+    "save_total_limit": 2,
+    "gradient_checkpointing": true,
+    "seed": 47,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-atomic-workflow-stage6"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-atomic-workflow-stage6",
+    "push_merged": false
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-atomic-workflow-stage6-hf-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/stage6_atomic_workflow_eval_contract.json",
+    "notes": "Use this frozen unseen eval contract for post-training adapter judgment before promotion."
+  }
+}

@@ -215,7 +215,7 @@ class TestFuzzyMembership:
 
     def test_fuzzy_gaussian_shape(self):
         """Fuzzy function is Gaussian: value at center should be 1.0."""
-        mol = TongueMolecule([0.5] * 6)
+        TongueMolecule([0.5] * 6)
         # _fuzzy(value, center, width) = exp(-(value-center)^2 / (2*width^2))
         # At center: exp(0) = 1.0
         assert TongueMolecule._fuzzy(0.3, 0.3, 0.15) == 1.0

@@ -14,7 +14,6 @@ Usage:
 
 import json
 import sys
-import os
 import hashlib
 from pathlib import Path
 from datetime import datetime, timezone
@@ -27,14 +26,11 @@ from src.crypto.polyglot_braid import (
     LANGUAGES,
     LANGUAGE_BY_CODE,
     PARALLEL_CONCEPTS,
-    NaturalLanguage,
-    ParallelConcept,
     BraidResult,
-    weave_concept,
     weave_all_concepts,
     braid_summary,
 )
-from src.crypto.tri_bundle import TONGUE_WEIGHTS, PHI
+from src.crypto.tri_bundle import TONGUE_WEIGHTS
 
 OUTPUT_DIR = ROOT / "training-data" / "sft"
 OUTPUT_FILE = OUTPUT_DIR / "polyglot_braid_sft.jsonl"

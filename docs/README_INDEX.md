@@ -1,32 +1,65 @@
 # SCBE Canonical Index Guide
 
-This repository contains **both canonical protocol material and experimental research**.
-To reduce ambiguity for human readers and AI indexers, treat files as follows:
+This repository contains both canonical protocol material and active exploratory work.
 
-## Canonical (authoritative)
-- `SPEC.md` — normative protocol specification
-- `CONCEPTS.md` — conservative glossary and implementation-aligned definitions
-- `CITATION.cff` — canonical authorship and citation metadata
-- `llms.txt` — crawler/indexing guidance
-- `docs/hydra/ARCHITECTURE.md` — HYDRA execution-plane reference architecture
-- `docs/core-theorems/SACRED_EGGS_GENESIS_BOOTSTRAP_AUTHORIZATION.md` — genesis/bootstrap authorization theorem surface
+Use this file to avoid mixing the public viewing path with archive or research noise.
 
-## Non-canonical (research / exploratory)
-- `experimental/` — prototypes, reference implementations, and toy models
-- `docs/research/` — research drafts and R&D proposals
-- notebooks, scratch analyses, and draft architecture narratives not linked from `SPEC.md`
+## Canonical First
 
-## Canonical naming
-Use these names consistently in metadata and releases:
-- **SCBE**: Spectral Context Bound Encryption
-- **Entropic Defense Engine**: risk-governance and policy enforcement layer
-- **AI Governance**: decision, quorum, lineage, and policy controls around model/tool execution
+For the cleanest reading order, prefer:
 
-## Source-of-truth policy
+1. `README.md`
+2. `START_HERE.md`
+3. `docs/PRODUCT_QUICKSTART.md`
+4. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
+5. `CANONICAL_SYSTEM_STATE.md`
+6. `docs/specs/SCBE_CANONICAL_CONSTANTS.md`
+7. `SPEC.md`
+8. `CONCEPTS.md`
+
+These are the safest files to treat as routing or definition surfaces.
+
+## Public Implementation Guides
+
+After the canonical files above, use:
+
+- `docs/PRODUCT_QUICKSTART.md`
+- `docs/REPO_SURFACE_MAP.md`
+- `docs/evidence/EVIDENCE_24_24.md`
+- `docs/LAYER_INDEX.md`
+- `docs/SCBE_SYSTEM_OVERVIEW.md`
+- `package.json`
+
+These help a technical reviewer understand where the live code and package surfaces actually are.
+
+## Consolidation Authority
+
+When the task is about making the repo legible as a product-bearing monorepo rather than a loose research dump, use:
+
+- `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
+- `config/repo_consolidation_inventory.json`
+
+These define the active product/platform/research/archive boundary strategy.
+
+## Non-Canonical Or Lower-Authority Material
+
+Treat these as useful but not authoritative by default:
+
+- `experimental/`
+- proposal packets
+- historical notes
+- demos and narrative surfaces
+- notebooks, research fragments, and archive-heavy directories
+
+## Source-Of-Truth Policy
+
 If wording conflicts across files, prefer:
-1. `SPEC.md`
-2. `CONCEPTS.md`
-3. implementation tests and release notes
-4. experimental artifacts
 
-This policy exists to prevent indexing drift and “AI confusion” caused by mixed-authority documents.
+1. `CANONICAL_SYSTEM_STATE.md`
+2. `docs/specs/SCBE_CANONICAL_CONSTANTS.md`
+3. `SPEC.md`
+4. `CONCEPTS.md`
+5. implementation tests and active runtime code
+6. exploratory or historical material
+
+This policy exists to reduce indexing drift and to keep GitHub viewers from treating every experimental page as the product definition.

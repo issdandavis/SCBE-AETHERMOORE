@@ -1,0 +1,164 @@
+{
+  "schema_version": "geoseal_coding_training_manifest_v1",
+  "title": "GeoSeal dedicated coding-agent training system",
+  "default_profile": "coding-agent-qwen-online-v2",
+  "artifact_root": "artifacts/hf_coding_agent_jobs",
+  "profiles": [
+    {
+      "profile_id": "coding-agent-qwen-smoke",
+      "profile_path": "config/model_training/coding-agent-qwen-smoke.json",
+      "stage": "smoke",
+      "purpose": "Cheap setup validation for HF Jobs, dataset upload, LoRA save, and basic code instruction following."
+    },
+    {
+      "profile_id": "coding-agent-qwen-online-v2",
+      "profile_path": "config/model_training/coding-agent-qwen-online-v2.json",
+      "stage": "cross_tongue_coder",
+      "purpose": "Dedicated GeoSeal coding-agent lane for cross-language slot preservation and governed shell behavior."
+    },
+    {
+      "profile_id": "coding-agent-qwen-binary-geoseal-v3",
+      "profile_path": "config/model_training/coding-agent-qwen-binary-geoseal-v3.json",
+      "stage": "binary_geoseal_coder",
+      "purpose": "Adds the binary interpretation matrix as deterministic low-level coding substrate for the next online training pass."
+    },
+    {
+      "profile_id": "coding-agent-qwen-geoseal-command-v4",
+      "profile_path": "config/model_training/coding-agent-qwen-geoseal-command-v4.json",
+      "stage": "command_recall_geoseal_coder",
+      "purpose": "Adds live GeoSeal CLI help and workflow command recall records to target smoke-eval command failures."
+    },
+    {
+      "profile_id": "coding-agent-qwen-command-harmony-v5",
+      "profile_path": "config/model_training/coding-agent-qwen-command-harmony-v5.json",
+      "stage": "command_harmony_geoseal_coder",
+      "purpose": "Adds runtime-verified command harmony records for binary slots, cross-language command outputs, and structural-vs-runtime convergence."
+    },
+    {
+      "profile_id": "coding-agent-qwen-atomic-workflow-stage6",
+      "profile_path": "config/model_training/coding-agent-qwen-atomic-workflow-stage6.json",
+      "stage": "atomic_workflow_resource_decay",
+      "purpose": "Gated Stage 6 after command harmony. Adds token-to-binary semantic chemistry workflow records and resource-decay fallback/re-advance records only after baseline command harmony is mastered."
+    },
+    {
+      "profile_id": "coding-agent-qwen-stage6-repair-v7",
+      "profile_path": "config/model_training/coding-agent-qwen-stage6-repair-v7.json",
+      "stage": "atomic_workflow_repair",
+      "purpose": "Repair pass after frozen Stage 6 smoke eval failed. Adds analog records for byte/hex markers, lane separation, resource hold, steady-state fallback, momentum damping, and re-advance before any merged coding-model promotion."
+    },
+    {
+      "profile_id": "coding-agent-qwen-full-coding-system-v8",
+      "profile_path": "config/model_training/coding-agent-qwen-full-coding-system-v8.json",
+      "stage": "full_coding_system",
+      "purpose": "Adds the full coding system as a gated lane: code primaries, music-theory harmony, atomic tokenizer rows, binary/hex transport, code-lane contracts, and workflow composition as separate aligned evidence lanes."
+    }
+  ],
+  "smoke_eval": {
+    "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+    "max_new_tokens": 220,
+    "prompts": [
+      {
+        "id": "python_slot_map",
+        "prompt": "Write a Python function add(a, b) that returns a + b. Then give a slot map for a, b, and return.",
+        "required": [
+          "def add",
+          "return a + b",
+          "slot"
+        ],
+        "forbidden": []
+      },
+      {
+        "id": "ko_python_to_ru_rust",
+        "prompt": "Translate KO/Python to RU/Rust and preserve slots. Source: def is_even(n): return n % 2 == 0",
+        "required": [
+          "fn is_even",
+          "n %",
+          "== 0"
+        ],
+        "forbidden": [
+          "def is_even",
+          "```python"
+        ]
+      },
+      {
+        "id": "geoseal_execution_shell_task",
+        "prompt": "Give the exact GeoSeal CLI command sequence to build an execution shell from inline Python add code and then run the route from the saved execution_shell.json.",
+        "required": [
+          "execution-shell",
+          "run-route",
+          "execution_shell.json"
+        ],
+        "forbidden": []
+      },
+      {
+        "id": "polly_portal_stream_task",
+        "prompt": "Show the GeoSeal CLI commands for Polly Pad portal-box and stream-wheel using inline Python add code.",
+        "required": [
+          "portal-box",
+          "stream-wheel",
+          "--json"
+        ],
+        "forbidden": []
+      },
+      {
+        "id": "code_graph_task",
+        "prompt": "Show how to ask GeoSeal for a Mermaid code graph of src/geoseal_cli.py with calls included.",
+        "required": [
+          "code-graph",
+          "--include-calls",
+          "mermaid"
+        ],
+        "forbidden": []
+      },
+      {
+        "id": "command_harmony_task",
+        "prompt": "Show the exact GeoSeal CLI command that maps default commands across KO and AV, verifies shared runtime output, and writes SFT JSONL training rows.",
+        "required": [
+          "command-harmony-map",
+          "--execute",
+          "--training-jsonl-output"
+        ],
+        "forbidden": []
+      },
+      {
+        "id": "atomic_workflow_stage6_task",
+        "prompt": "Explain a Stage 6 atomic workflow decision where token-to-hex evidence and semantic overlay stay separate, a resource overrun is predicted before commit, and the system uses steady-state fallback plus re-advance.",
+        "required": [
+          "token",
+          "hex",
+          "semantic",
+          "steady-state fallback",
+          "re-advance"
+        ],
+        "forbidden": [
+          "literal chemistry",
+          "real atoms"
+        ]
+      },
+      {
+        "id": "full_coding_system_lane_task",
+        "prompt": "Map a safe add operation through KO/Python, AV/TypeScript, and RU/Rust using code primaries, music-theory harmony, atomic tokenizer rows, binary/hex transport, and lane contracts. Keep semantic and transport lanes separate.",
+        "required": [
+          "KO",
+          "Python",
+          "music",
+          "atomic",
+          "hex",
+          "lane"
+        ],
+        "forbidden": [
+          "literal chemistry",
+          "real atoms"
+        ]
+      }
+    ]
+  },
+  "promotion_gate": {
+    "minimum_pass_rate": 0.8,
+    "must_pass": [
+      "ko_python_to_ru_rust",
+      "geoseal_execution_shell_task"
+    ],
+    "notes": "Loss alone is not enough. Promotion requires target-language compliance plus GeoSeal command-surface recall."
+  }
+}

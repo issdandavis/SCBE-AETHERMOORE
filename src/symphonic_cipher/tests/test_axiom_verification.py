@@ -125,15 +125,6 @@ def verify_adversarial_forge_resistance() -> Tuple[bool, Dict[str, Any]]:
     Returns (passed, details)
     """
 
-    def can_achieve_d_star(target_d_star: float, realm_center: np.ndarray) -> bool:
-        """
-        Check if adversary can construct u to achieve target d*.
-        Security: requires knowledge of realm_center (secret).
-        """
-        # Adversary would need to solve: arcosh(1 + 2||u-μ||²/...) = target_d_star
-        # This requires knowing μ (realm center)
-        return False  # Cannot without secret
-
     # The security relies on:
     # 1. Realm centers μ_k are secret
     # 2. Even with oracle access, finding exact u is hard (high-dim optimization)
@@ -466,7 +457,6 @@ def verify_weight_normalization() -> Tuple[bool, Dict[str, Any]]:
         results[name] = {"risk": risk, "weight_entropy": entropy}
 
     # Equal weights should have highest entropy
-    equal_entropy = results["equal"]["weight_entropy"]  # noqa: F841
     max_entropy_scheme = max(results.keys(), key=lambda k: results[k]["weight_entropy"])
 
     passed = max_entropy_scheme == "equal"

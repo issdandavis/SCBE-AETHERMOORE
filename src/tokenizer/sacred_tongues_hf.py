@@ -19,6 +19,9 @@ from typing import Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
+from tokenizers import Tokenizer
+from tokenizers.models import WordLevel
+from tokenizers.pre_tokenizers import WhitespaceSplit
 
 # Resolve Sacred Tongues from crypto module
 import sys
@@ -130,17 +133,12 @@ class SacredTonguesHFTokenizer:
     def decode(self, ids: List[int], skip_special_tokens: bool = True) -> str:
         """Decode token IDs → text."""
         raw_bytes = []
-        _current_tongue = self.default_tongue
 
         for token_id in ids:
             # Skip specials
             if token_id < NUM_SPECIAL:
                 if not skip_special_tokens:
                     raw_bytes.append(self.id_to_token.get(token_id, ""))
-                # Detect tongue switch
-                for code in self.TONGUE_ORDER:
-                    if token_id == SPECIAL_TOKENS.get(f"<tongue:{code}>"):
-                        _current_tongue = code
                 continue
 
             # Find which tongue this belongs to
@@ -193,6 +191,18 @@ class SacredTonguesHFTokenizer:
     def get_vocab(self) -> Dict[str, int]:
         return dict(self.token_to_id)
 
+    def _build_serializable_tokenizer(self) -> Tokenizer:
+        """Build a deterministic tokenizers-compatible view of Sacred Tongues.
+
+        The serialized tokenizer is a whitespace-delimited Sacred-token reader.
+        Raw text still flows through the Python bijective SS1 encoder; this JSON
+        artifact exists for downstream tooling like drift gates that need a
+        stable, machine-readable vocabulary contract.
+        """
+        tokenizer = Tokenizer(WordLevel(vocab=self.token_to_id, unk_token="<unk>"))
+        tokenizer.pre_tokenizer = WhitespaceSplit()
+        return tokenizer
+
     def save_pretrained(self, save_dir: str) -> None:
         """Save tokenizer config for HF compatibility."""
         os.makedirs(save_dir, exist_ok=True)
@@ -209,6 +219,8 @@ class SacredTonguesHFTokenizer:
         # Save vocab
         with open(os.path.join(save_dir, "vocab.json"), "w") as f:
             json.dump(self.token_to_id, f, indent=2)
+
+        self._build_serializable_tokenizer().save(os.path.join(save_dir, "tokenizer.json"))
 
     @classmethod
     def from_pretrained(cls, load_dir: str) -> "SacredTonguesHFTokenizer":

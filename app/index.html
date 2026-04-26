@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="scbe-api-base" content="">
   <title>SCBE-AETHERMOORE Control Center</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -178,7 +179,25 @@
   </main>
 
   <script>
-    const API_URL = 'http://localhost:3000';
+    function resolveApiBase() {
+      const params = new URLSearchParams(window.location.search);
+      const queryBase = params.get('api');
+      if (queryBase) return queryBase.replace(/\/$/, '');
+
+      const windowBase = window.SCBE_APP_CONFIG && window.SCBE_APP_CONFIG.apiBase;
+      if (windowBase) return String(windowBase).replace(/\/$/, '');
+
+      const metaBase = document.querySelector('meta[name="scbe-api-base"]')?.content;
+      if (metaBase) return metaBase.replace(/\/$/, '');
+
+      if (window.location.protocol === 'file:') {
+        return 'http://127.0.0.1:3000';
+      }
+
+      return window.location.origin.replace(/\/$/, '');
+    }
+
+    const API_URL = resolveApiBase();
     let stats = { decisions: 0, allowed: 0, quarantine: 0, denied: 0 };
 
     // Check connection

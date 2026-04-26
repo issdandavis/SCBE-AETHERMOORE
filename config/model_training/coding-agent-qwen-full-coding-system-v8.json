@@ -1,0 +1,80 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-full-coding-system-v8",
+  "title": "SCBE coding agent Qwen full coding system v8",
+  "description": "Full coding-system lane after Stage 6 repair. Adds code-primary, music-theory harmony, atomic tokenizer, binary/hex transport, lane-contract, and workflow-composition records as separate aligned evidence lanes.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Coding is the primary build target. Preserve code-primary semantics, music-theory harmony, atomic tokenizer rows, binary/hex transport, code lane contracts, and workflow-composition evidence as separate aligned lanes. Keep material chemistry separate from structural chemistry templates, predict resource overruns before commit, and use steady-state fallback plus re-advance when a launch would exceed budget.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "bijective_codeflow_v1_train.sft.jsonl",
+      "cross_tongue_dialogue_bijective_v1_train.sft.jsonl",
+      "drill_langues_full_train.sft.jsonl",
+      "command_lattice_seed_train.sft.jsonl",
+      "binary_interpretation_matrix_v1.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "atomic_workflow_stage6_train.sft.jsonl",
+      "atomic_workflow_stage6_repair_train.sft.jsonl",
+      "coding_system_full_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "bijective_codeflow_v1_holdout.sft.jsonl",
+      "cross_tongue_dialogue_bijective_v1_holdout.sft.jsonl",
+      "drill_langues_full_holdout.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "atomic_workflow_stage6_holdout.sft.jsonl",
+      "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+      "coding_system_full_v1_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 896,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 7e-5,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "warmup_ratio": 0.05,
+    "max_steps": 420,
+    "max_train_records": 4200,
+    "max_eval_records": 220,
+    "logging_steps": 10,
+    "save_steps": 210,
+    "save_total_limit": 2,
+    "gradient_checkpointing": true,
+    "seed": 59,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-full-coding-system-v8"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-full-coding-system-v8",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-full-coding-system-v8",
+    "push_merged": false
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-full-coding-system-v8-hf-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/stage6_atomic_workflow_eval_contract.json",
+    "notes": "Run the frozen Stage 6 eval plus coding-system lane checks before merged-model promotion."
+  }
+}

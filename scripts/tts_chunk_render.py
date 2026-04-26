@@ -33,14 +33,13 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from src.crypto.quantum_frequency_bundle import generate_quantum_bundle, TONGUE_ORDER
-from src.crypto.speech_render_plan import build_speech_plan, SpeechRenderPlan
+from src.crypto.speech_render_plan import build_speech_plan
 from src.crypto.choral_render import (
     PhonemeToken,
     RenderMode,
     build_choral_plan,
-    ChoralRenderPlan,
 )
-from src.audio.tongue_prosody import TongueWeightVector, tongue_to_prosody, ProsodyParams
+from src.audio.tongue_prosody import TongueWeightVector, tongue_to_prosody
 
 
 # ---------------------------------------------------------------------------

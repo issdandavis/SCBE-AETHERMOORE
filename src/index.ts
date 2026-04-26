@@ -322,10 +322,11 @@ export const DENY = 'DENY' as const;
 import * as symphonic from './symphonic/index.js';
 import * as crypto from './crypto/index.js';
 import * as spiralverse from './spiralverse/index.js';
+import * as spiralauth from './spiralauth/index.js';
 import * as ai_brain from './ai_brain/index.js';
 import * as governance from './governance/index.js';
 import * as securityEngine from './security-engine/index.js';
-export { symphonic, crypto, spiralverse, ai_brain, governance, securityEngine };
+export { symphonic, crypto, spiralverse, spiralauth, ai_brain, governance, securityEngine };
 
 // Core Crypto Exports (also available at top level)
 export * from './crypto/envelope.js';
@@ -335,6 +336,9 @@ export * from './crypto/kms.js';
 export * from './crypto/nonceManager.js';
 export * from './crypto/replayGuard.js';
 export * from './crypto/bloom.js';
+
+// SpiralAuth Exports
+export * from './spiralauth/index.js';
 
 // Metrics Exports
 export * from './metrics/telemetry.js';

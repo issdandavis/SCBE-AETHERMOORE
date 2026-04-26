@@ -618,7 +618,7 @@ def run_ablation_variant(
 
     # Stage 8: round-trip
     rt_results = [round_trip_evaluate(cp, b) for cp, b in zip(contact_points, bundles)]
-    _verdict_match_rate = sum(1 for r in rt_results if r.verdict_match) / max(len(rt_results), 1)
+    sum(1 for r in rt_results if r.verdict_match) / max(len(rt_results), 1)
     coherence_rate = sum(1 for r in rt_results if r.coherence_preserved) / max(len(rt_results), 1)
 
     # Composite scores

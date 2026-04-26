@@ -1,7 +1,9 @@
 import pytest
 
 try:
-    import stripe  # noqa: F401
+    import stripe
+
+    assert hasattr(stripe, "checkout")
 except ImportError:
     pytest.skip("stripe not installed", allow_module_level=True)
 

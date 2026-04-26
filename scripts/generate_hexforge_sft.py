@@ -62,7 +62,7 @@ import random
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -323,18 +323,19 @@ def gen_grab_and_hold(count: int) -> List[ForgeRecord]:
     for _ in range(count):
         t = random.choice(TONGUES)
         elem_idx = random.randint(0, 5)
-        elem = ELEMENTS[t][elem_idx]
-        opp = _opposite(t)
+        elem_name = ELEMENTS[t][elem_idx]
+        opposite = _opposite(t)
 
         # Apprentice: grab from own sector
         records.append(ForgeRecord(
             category="grab", system=SYS_GRAB,
-            user=f"{_arm(t)} needs to grab {_elem(t, elem_idx)} floating in the {TONGUE_COLORS[t]} sector. "
+            user=f"{_arm(t)} needs to grab {elem_name} floating in the {TONGUE_COLORS[t]} sector. "
                  f"It's drifting slowly to the right. How?",
             assistant=f"Reach to where it WILL BE, not where it is now. In zero-G, objects keep moving. "
                       f"Approach from the side — if you reach straight at it, you'll push it away. "
                       f"Close your grip gently. A hard grab sends vibrations that shake nearby elements loose. "
-                      f"Once held, pull it toward center SLOWLY — fast pulls spin you both.",
+                      f"Once held, pull it toward center SLOWLY — fast pulls spin you both. "
+                      f"If it slips free, reset with the {opposite} arm instead of lunging.",
             tier="apprentice", tongue=t,
             tags=["own-sector", "drift-prediction"],
         ))
@@ -383,22 +384,19 @@ def gen_cross_handoff(count: int) -> List[ForgeRecord]:
         sender = random.choice(TONGUES)
         receiver = random.choice([t for t in TONGUES if t != sender])
         elem_idx = random.randint(0, 5)
-        dist = min(abs(TONGUES.index(sender) - TONGUES.index(receiver)),
-                   6 - abs(TONGUES.index(sender) - TONGUES.index(receiver)))
-
         # Apprentice: neighbor handoff
         nbr = _neighbor(sender)
         records.append(ForgeRecord(
             category="handoff", system=SYS_PASS,
             user=f"{ARM_NAMES[sender]} has {_elem(sender, elem_idx)} and needs to pass it to {ARM_NAMES[nbr]}. "
-                 f"They're neighbors (60 degrees apart). How?",
+                 f"They're neighbors (60 degrees apart), and {ARM_NAMES[receiver]} is covering the outer lane. How?",
             assistant=f"Short pass! {ARM_NAMES[sender]} extends toward the boundary between their sectors. "
                       f"{ARM_NAMES[nbr]} reaches to meet. "
                       f"The handoff point is the MIDPOINT between their anchor positions. "
                       f"Release and grab must happen at the SAME moment — "
                       f"in zero-G, an uncaught element drifts immediately. "
                       f"Call: '{ARM_NAMES[sender]}: passing {ELEMENTS[sender][elem_idx]}, 3... 2... 1... release!' "
-                      f"'{ARM_NAMES[nbr]}: caught!'",
+                      f"'{ARM_NAMES[nbr]}: caught! {ARM_NAMES[receiver]} keep the relay lane clear.'",
             tier="apprentice", tongue=sender,
             tags=["neighbor-pass", "timing"],
         ))
@@ -526,7 +524,7 @@ def _assembly_plan(compound: dict) -> str:
 def _stuck_element_response(compound: dict, stuck_tongue: str) -> str:
     recipe = compound["recipe"]
     neighbors = [_neighbor(stuck_tongue, 1), _neighbor(stuck_tongue, -1)]
-    available_neighbors = [n for n in neighbors if n in recipe]
+    [n for n in neighbors if n in recipe]
 
     return (
         f"Option 1: VIBRATE. {ARM_NAMES[stuck_tongue]} oscillates their grip rapidly — "
@@ -1008,7 +1006,7 @@ def gen_web_research(count: int) -> List[ForgeRecord]:
         ))
 
         # Master: research with conflicting sources
-        alt_t = _opposite(t)
+        _opposite(t)
         records.append(ForgeRecord(
             category="research", system=SYS_RESEARCH,
             user=f"Research agent found TWO conflicting answers about '{scenario['unknown']}': "

@@ -827,7 +827,6 @@ def run_browser_benchmarks() -> dict:
 
         # Phase tunnel decisions
         pt_allows_info = pt.outcome in (TunnelOutcome.ATTENUATE, TunnelOutcome.TUNNEL)
-        _pt_full_access = pt.outcome == TunnelOutcome.TUNNEL and pt.commit_allowed
 
         outcome_record = {
             "name": s.name,
@@ -840,6 +839,7 @@ def run_browser_benchmarks() -> dict:
             "phase_tunnel_outcome": pt.outcome,
             "phase_tunnel_T": fmt_float(pt.transmission_coeff, 4),
             "phase_tunnel_commit": pt.commit_allowed,
+            "phase_tunnel_allows_info": pt_allows_info,
         }
         results["system_outcomes"].append(outcome_record)
 

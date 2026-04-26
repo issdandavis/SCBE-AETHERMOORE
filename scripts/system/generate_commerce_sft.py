@@ -19,8 +19,8 @@ Usage:
 
 import argparse
 import hashlib
+import itertools
 import json
-import math
 import os
 import random
 import sys
@@ -552,7 +552,7 @@ def make_plain_record(prompt: str, english: str) -> dict:
 
 
 _SUCCESS_ROTATION = ["payment_code", "stripe_test", "webhook_auth", "checkout_ui", "discount_floor", "haggle_stripe"]
-_success_rotation_idx = 0
+_SUCCESS_ROTATION_INDEX = itertools.count()
 
 
 def _classify_haggle_profile(prompt: str, response: str) -> str:
@@ -571,7 +571,6 @@ def _classify_haggle_profile(prompt: str, response: str) -> str:
     RU (legal_policy)  — hard floor hold
     KO (negotiation)   — borderline counter-offer
     """
-    global _success_rotation_idx
     r = response.lower()
 
     # Card declined / payment failure — security/redaction (UM dominant)
@@ -588,8 +587,8 @@ def _classify_haggle_profile(prompt: str, response: str) -> str:
 
     # Successful charge — rotate through valid profiles for tongue variety
     if "confirmation" in r or "payment went through" in r or "get your order" in r:
-        profile = _SUCCESS_ROTATION[_success_rotation_idx % len(_SUCCESS_ROTATION)]
-        _success_rotation_idx += 1
+        rotation_idx = next(_SUCCESS_ROTATION_INDEX)
+        profile = _SUCCESS_ROTATION[rotation_idx % len(_SUCCESS_ROTATION)]
         return profile
 
     return "negotiation"

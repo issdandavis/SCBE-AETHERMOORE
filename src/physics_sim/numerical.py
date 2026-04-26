@@ -386,7 +386,6 @@ def bisection(f: ScalarFunc, a: float, b: float, tol: float = 1e-10, max_iter: i
 
         if fa * fc < 0:
             b = c
-            fb = fc
         else:
             a = c
             fa = fc

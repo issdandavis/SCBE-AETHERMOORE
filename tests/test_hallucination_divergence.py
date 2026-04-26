@@ -43,9 +43,9 @@ import pytest
 # ---------------------------------------------------------------------------
 
 try:
-    import sentence_transformers  # noqa: F401
+    import sentence_transformers
 
-    _HAS_SENTENCE_TRANSFORMERS = True
+    _HAS_SENTENCE_TRANSFORMERS = bool(getattr(sentence_transformers, "__version__", ""))
 except ImportError:
     _HAS_SENTENCE_TRANSFORMERS = False
 
@@ -500,10 +500,9 @@ def _welch_t_test(group_a: List[float], group_b: List[float]) -> Tuple[float, fl
     # Welch-Satterthwaite degrees of freedom
     num = (var_a / na + var_b / nb) ** 2
     den = (var_a / na) ** 2 / (na - 1) + (var_b / nb) ** 2 / (nb - 1)
-    if den < 1e-12:
-        _df = na + nb - 2  # noqa: F841
-    else:
-        _df = num / den  # noqa: F841
+    degrees_freedom = (na + nb - 2) if den < 1e-12 else (num / den)
+    if degrees_freedom <= 0:
+        return float(t_stat), 1.0
 
     # Approximate two-tailed p-value using the normal approximation
     # (good enough for df > 5, which we always have)

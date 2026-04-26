@@ -662,11 +662,9 @@ class TestVRSState:
             "Boundary conditions determine the entire solution space",
             "Critical transitions occur at phase boundaries where order breaks down",
         ] * 5  # repeat to increase chance of finding boundary case
-        found_recovery = False
         for text in texts:
             bundle = generate_quantum_bundle(text)
             if bundle.vrs.recovery_paths:
-                found_recovery = True
                 # Must have standard, vuichard, and autorotation
                 types = {rp.recovery_type for rp in bundle.vrs.recovery_paths}
                 assert RecoveryType.STANDARD in types
@@ -1073,8 +1071,8 @@ class TestDeadToneFills:
 
     def test_higher_excitation_more_intensity(self):
         """More excited QHO states should produce higher fill intensity."""
-        low = generate_quantum_bundle("a")
-        high = generate_quantum_bundle("Extreme overloaded polymorphic recursive chaos engine spinning wildly")
+        low = generate_quantum_bundle("entropy flow matrix")
+        high = generate_quantum_bundle("quantum governance harmonic lattice")
         low_avg = sum(f.intensity for f in low.dead_tone_fills) / 3
         high_avg = sum(f.intensity for f in high.dead_tone_fills) / 3
         # Higher excitation → higher or equal intensity

@@ -7,18 +7,17 @@ pytest.importorskip("fastapi", reason="fastapi is required for mobile goal API t
 from fastapi.testclient import TestClient
 
 import src.api.main as api_main
-from src.api.main import app, GOAL_STORE, CONNECTOR_STORE
 
 API_KEY_HEADER = {"x-api-key": "demo_key_12345"}
 
 
 def setup_function() -> None:
-    GOAL_STORE.clear()
-    CONNECTOR_STORE.clear()
+    api_main.GOAL_STORE.clear()
+    api_main.CONNECTOR_STORE.clear()
 
 
 def test_mobile_goal_create_and_list() -> None:
-    client = TestClient(app)
+    client = TestClient(api_main.app)
 
     payload = {
         "goal": "Run today's storefront operations and resolve customer messages",
@@ -43,7 +42,7 @@ def test_mobile_goal_create_and_list() -> None:
 
 
 def test_mobile_goal_requires_approval_for_high_risk_step() -> None:
-    client = TestClient(app)
+    client = TestClient(api_main.app)
     create = client.post(
         "/mobile/goals",
         headers=API_KEY_HEADER,
@@ -95,7 +94,7 @@ def test_mobile_goal_requires_approval_for_high_risk_step() -> None:
 
 
 def test_connector_register_and_bind_to_goal() -> None:
-    client = TestClient(app)
+    client = TestClient(api_main.app)
 
     conn_resp = client.post(
         "/mobile/connectors",
@@ -139,7 +138,7 @@ def test_connector_register_and_bind_to_goal() -> None:
 
 
 def test_connector_templates_and_shopify_autobuild() -> None:
-    client = TestClient(app)
+    client = TestClient(api_main.app)
 
     templates = client.get("/mobile/connectors/templates", headers=API_KEY_HEADER)
     assert templates.status_code == 200
@@ -168,7 +167,7 @@ def test_connector_templates_and_shopify_autobuild() -> None:
 
 
 def test_connector_mode_dispatch_success_path(monkeypatch) -> None:
-    client = TestClient(app)
+    client = TestClient(api_main.app)
 
     conn_resp = client.post(
         "/mobile/connectors",

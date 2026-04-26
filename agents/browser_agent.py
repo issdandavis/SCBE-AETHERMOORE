@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 # =============================================================================
 
 SCBE_API_URL = os.getenv("SCBE_API_URL", "http://127.0.0.1:8080")
-SCBE_API_KEY = os.getenv("SCBE_API_KEY", "test-key-12345")
+SCBE_API_KEY = os.getenv("SCBE_API_KEY", "")
 
 # Action sensitivity levels (higher = stricter governance)
 ACTION_SENSITIVITY = {
@@ -132,17 +132,31 @@ class SCBEClient:
         self.session = requests.Session()
         self.session.headers.update({
             "Content-Type": "application/json",
-            "SCBE_api_key": self.api_key,
+            "x-api-key": self.api_key,
         })
+
+    def _candidate_paths(self, *paths: str) -> List[str]:
+        candidates: List[str] = []
+        for path in paths:
+            normalized = path if path.startswith("/") else f"/{path}"
+            versioned = normalized if normalized.startswith("/v1/") else f"/v1{normalized}"
+            for candidate in (versioned, normalized):
+                if candidate not in candidates:
+                    candidates.append(candidate)
+        return candidates
 
     def health_check(self) -> bool:
         """Check if SCBE API is available."""
-        try:
-            resp = self.session.get(f"{self.api_url}/v1/health", timeout=5)
-            return resp.status_code == 200 and resp.json().get("status") == "healthy"
-        except Exception as e:
-            print(f"[SCBE] Health check failed: {e}")
-            return False
+        last_error: Optional[Exception] = None
+        for path in self._candidate_paths("/health"):
+            try:
+                resp = self.session.get(f"{self.api_url}{path}", timeout=5)
+                if resp.status_code == 200 and resp.json().get("status") == "healthy":
+                    return True
+            except Exception as exc:
+                last_error = exc
+        print(f"[SCBE] Health check failed: {last_error or 'no healthy endpoint responded'}")
+        return False
 
     def authorize(
         self,
@@ -163,32 +177,34 @@ class SCBEClient:
             }
         }
 
-        try:
-            resp = self.session.post(
-                f"{self.api_url}/v1/authorize",
-                json=payload,
-                timeout=10
-            )
-            resp.raise_for_status()
-            data = resp.json()
+        last_error: Optional[Exception] = None
+        for path in self._candidate_paths("/authorize"):
+            try:
+                resp = self.session.post(
+                    f"{self.api_url}{path}",
+                    json=payload,
+                    timeout=10
+                )
+                resp.raise_for_status()
+                data = resp.json()
 
-            return GovernanceResult(
-                decision=Decision(data["decision"]),
-                decision_id=data["decision_id"],
-                score=data["score"],
-                explanation=data["explanation"],
-                token=data.get("token"),
-                expires_at=data.get("expires_at")
-            )
-        except requests.exceptions.RequestException as e:
-            print(f"[SCBE] Authorization failed: {e}")
-            # Fail-safe: DENY on API failure
-            return GovernanceResult(
-                decision=Decision.DENY,
-                decision_id="error",
-                score=0.0,
-                explanation={"error": str(e)}
-            )
+                return GovernanceResult(
+                    decision=Decision(data["decision"]),
+                    decision_id=data["decision_id"],
+                    score=data["score"],
+                    explanation=data["explanation"],
+                    token=data.get("token"),
+                    expires_at=data.get("expires_at")
+                )
+            except requests.exceptions.RequestException as exc:
+                last_error = exc
+        print(f"[SCBE] Authorization failed: {last_error}")
+        return GovernanceResult(
+            decision=Decision.DENY,
+            decision_id="error",
+            score=0.0,
+            explanation={"error": str(last_error) if last_error else "authorization endpoint unavailable"}
+        )
 
     def roundtable(
         self,
@@ -234,20 +250,22 @@ class SCBEClient:
             "initial_trust": initial_trust
         }
 
-        try:
-            resp = self.session.post(
-                f"{self.api_url}/v1/agents",
-                json=payload,
-                timeout=10
-            )
-            if resp.status_code == 409:
-                # Agent already exists
-                return {"agent_id": agent_id, "status": "exists"}
-            resp.raise_for_status()
-            return resp.json()
-        except requests.exceptions.RequestException as e:
-            print(f"[SCBE] Agent registration failed: {e}")
-            return {"error": str(e)}
+        last_error: Optional[Exception] = None
+        for path in self._candidate_paths("/agents"):
+            try:
+                resp = self.session.post(
+                    f"{self.api_url}{path}",
+                    json=payload,
+                    timeout=10
+                )
+                if resp.status_code == 409:
+                    return {"agent_id": agent_id, "status": "exists"}
+                resp.raise_for_status()
+                return resp.json()
+            except requests.exceptions.RequestException as exc:
+                last_error = exc
+        print(f"[SCBE] Agent registration failed: {last_error}")
+        return {"error": str(last_error) if last_error else "registration endpoint unavailable"}
 
 
 # =============================================================================
@@ -389,6 +407,9 @@ class SCBEBrowserAgent:
     def _initialize(self):
         """Initialize the agent with SCBE."""
         print(f"[AGENT] Initializing {self.agent_name} ({self.agent_id})")
+
+        if not self.scbe.api_key:
+            raise RuntimeError("SCBE_API_KEY is required for browser agent startup")
 
         # Check API health
         if not self.scbe.health_check():

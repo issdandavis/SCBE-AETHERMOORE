@@ -100,7 +100,7 @@ def load_kaggle_data(max_samples: int = 10000) -> List[Dict[str, Any]]:
         # Fallback: try kaggle CLI
         try:
             import subprocess
-            result = subprocess.run(
+            subprocess.run(
                 ["kaggle", "datasets", "download", "-d", KAGGLE_DATASET, "-p",
                  str(ARTIFACTS_DIR / "kaggle_downloads"), "--unzip"],
                 capture_output=True, text=True, timeout=120,

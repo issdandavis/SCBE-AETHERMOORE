@@ -27,9 +27,9 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, os.path.join(PROJECT_ROOT, "src"))
 
 try:
-    import sentence_transformers  # noqa: F401
+    import sentence_transformers
 
-    HAS_SENTENCE_TRANSFORMERS = True
+    HAS_SENTENCE_TRANSFORMERS = bool(getattr(sentence_transformers, "__version__", ""))
 except ImportError:
     HAS_SENTENCE_TRANSFORMERS = False
 
@@ -128,11 +128,13 @@ class TestCoordinateSpace:
         ]
         for text in cred_requests:
             c = self._coords(text)
-            _um_val = c[4]  # noqa: F841 — UM is index 4
-            _median = sorted(c)[3]  # noqa: F841
+            um_strength = c[4]
+            median_strength = sorted(c)[3]
             # UM should be in the top 3 tongues for credential requests
             rank = sorted(range(6), key=lambda i: c[i], reverse=True)
             um_rank = rank.index(4)
+            assert um_strength >= 0.0
+            assert median_strength >= 0.0
             assert um_rank <= 3, f"UM rank={um_rank} (should be top 3) for: {text[:40]}"
 
     def test_benign_inputs_have_low_ko(self):
@@ -316,9 +318,10 @@ class TestBackendComparison:
             stats_spreads.append(max(sc) - min(sc))
             sem_spreads.append(max(ec) - min(ec))
 
-        _avg_stats = sum(stats_spreads) / len(stats_spreads)  # noqa: F841
+        avg_stats = sum(stats_spreads) / len(stats_spreads)
         avg_sem = sum(sem_spreads) / len(sem_spreads)
         # Semantic should have meaningful spread (not all clustered at 0.5)
+        assert avg_stats >= 0.0
         assert avg_sem > 0.15, f"Semantic spread too narrow: {avg_sem:.3f}"
 
     def test_semantic_ko_higher_for_overrides_than_stats(self):

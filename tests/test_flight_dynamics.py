@@ -120,7 +120,7 @@ class TestAerodynamicCoefficients:
     def test_cl_max_near_stall(self):
         """C_L_max occurs near α_crit."""
         cl_at_stall = lift_coefficient(ALPHA_CRIT_RAD)
-        cl_before = lift_coefficient(ALPHA_CRIT_RAD - math.radians(1))
+        lift_coefficient(ALPHA_CRIT_RAD - math.radians(1))
         # At stall should be near max
         assert cl_at_stall > 1.0  # typical C_L_max > 1.0
 
@@ -251,7 +251,7 @@ class TestSixDOFState:
 
     def test_sideslip(self):
         s = SixDOFState(u=100, v=10, w=0)
-        expected = math.asin(10 / math.sqrt(100**2 + 10**2))
+        expected = math.asin(10 / math.hypot(100, 10))
         assert abs(s.sideslip - expected) < 0.01
 
     def test_stall_margin_safe(self):
@@ -652,8 +652,6 @@ class TestPhysicsIntegration:
     def test_thrust_equals_weight_in_hover(self):
         """In hover, T = mg. Check rotor produces realistic thrust."""
         r = RotorState(rotor_radius=5.0, rotor_rpm=258, ct=0.0065)
-        # Typical UH-60 mass ≈ 7000 kg
-        weight_7t = 7000 * G_ACCEL  # ~68,600 N
         # Our default CT gives roughly this order of magnitude
         assert r.thrust > 0
         # Thrust should be in same order of magnitude as a helicopter

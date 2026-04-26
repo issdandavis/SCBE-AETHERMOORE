@@ -1,0 +1,7 @@
+interface:
+  display_name: "SCBE Aligned Foundations"
+  short_description: "Stage aligned tokenizer-native training lanes"
+  default_prompt: "Use $scbe-aligned-foundations to build or audit the aligned foundations, chemistry, and coding-primitives training lanes."
+
+policy:
+  allow_implicit_invocation: true

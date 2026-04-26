@@ -169,7 +169,7 @@ def convert_to_gguf(merged_path: Path, adapter_name: str, model_key: str) -> Pat
     gguf_q4_path = gguf_dir / f"{adapter_name}-{model_key}-q4_k_m.gguf"
 
     print(f"\nConverting to GGUF (f16)...")
-    result = subprocess.run(
+    subprocess.run(
         [sys.executable, str(convert_script), str(merged_path), "--outfile", str(gguf_f16_path), "--outtype", "f16"],
         check=True,
     )
@@ -215,7 +215,7 @@ PARAMETER num_ctx 4096
     print(f"\nModelfile written: {modelfile_path}")
 
     print(f"Creating Ollama model: {ollama_name}")
-    result = subprocess.run(
+    subprocess.run(
         ["ollama", "create", ollama_name, "-f", str(modelfile_path)],
         check=True,
     )

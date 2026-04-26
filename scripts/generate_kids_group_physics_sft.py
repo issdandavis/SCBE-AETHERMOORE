@@ -40,7 +40,7 @@ import random
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -718,9 +718,11 @@ def gen_tongue_twisters(count: int) -> List[GameRecord]:
             game="tongue-twisters", system=sys_msg,
             user=f"{_name(tongue)} speaks {TONGUE_NAMES[tongue]}. "
                  f"Who sounds most similar — {_name(left)} ({TONGUE_NAMES[left]}) "
-                 f"or {_name(opposite)} ({TONGUE_NAMES[opposite]})?",
+                 f"or {_name(opposite)} ({TONGUE_NAMES[opposite]})? "
+                 f"The other near neighbor is {_name(right)} ({TONGUE_NAMES[right]}).",
             assistant=f"{_name(left)}! Neighboring tongues share sounds — they're close on the compass. "
-                      f"{TONGUE_NAMES[tongue]} and {TONGUE_NAMES[left]} are only 60 degrees apart. "
+                      f"{TONGUE_NAMES[tongue]} and {TONGUE_NAMES[left]} are only 60 degrees apart, "
+                      f"just like {TONGUE_NAMES[tongue]} and {TONGUE_NAMES[right]}. "
                       f"{TONGUE_NAMES[opposite]} is 180 degrees away — completely opposite. "
                       f"Like colors: {TONGUE_COLORS[tongue]} is closer to {TONGUE_COLORS[left]} "
                       f"than to {TONGUE_COLORS[opposite]}.",

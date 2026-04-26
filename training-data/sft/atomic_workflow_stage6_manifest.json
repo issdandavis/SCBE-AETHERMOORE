@@ -1,0 +1,20 @@
+{
+  "schema_version": "atomic_workflow_stage6_manifest_v1",
+  "generated_at_utc": "2026-04-25T06:18:26.537680+00:00",
+  "sources": {
+    "semantic_workflows": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\mathbac\\atomic_tokenizer_rename_benchmark\\semantic_chemistry_workflows.jsonl",
+    "resource_decay_demo": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\mathbac\\atomic_workflow_composition\\mars_drone_resource_decay_demo.json"
+  },
+  "outputs": {
+    "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_train.sft.jsonl",
+    "eval": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_holdout.sft.jsonl"
+  },
+  "counts": {
+    "semantic_workflow": 84,
+    "resource_decay": 5,
+    "train": 76,
+    "eval": 13,
+    "total": 89
+  },
+  "training_rule": "Stage 6 only; do not mix into earlier coding-agent profiles before promotion."
+}

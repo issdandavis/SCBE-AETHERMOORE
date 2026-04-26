@@ -14,9 +14,6 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
-import sys
-import time
 from pathlib import Path
 
 # -------------------------------------------------------------------
@@ -270,7 +267,7 @@ def classify():
     """Classify conversations using keyword scoring."""
     if not INDEX_FILE.exists():
         print("ERROR: No index file. Run 'extract' first.")
-        return
+        return []
 
     with open(INDEX_FILE, encoding="utf-8") as f:
         index = json.load(f)
@@ -340,14 +337,16 @@ def convert():
 
     SFT_DIR.mkdir(parents=True, exist_ok=True)
 
-    outputs = {
-        "fiction": open(SFT_FICTION, "w", encoding="utf-8"),
-        "technical": open(SFT_TECHNICAL, "w", encoding="utf-8"),
-        "conlang": open(SFT_CONLANG, "w", encoding="utf-8"),
-        "meta": open(SFT_META, "w", encoding="utf-8"),
+    output_paths = {
+        "fiction": SFT_FICTION,
+        "technical": SFT_TECHNICAL,
+        "conlang": SFT_CONLANG,
+        "meta": SFT_META,
     }
-    combined_f = open(SFT_COMBINED, "w", encoding="utf-8")
-    counts = {k: 0 for k in outputs}
+    for path in [*output_paths.values(), SFT_COMBINED]:
+        path.write_text("", encoding="utf-8")
+
+    counts: dict[str, int] = {k: 0 for k in output_paths}
     total = 0
 
     for entry in classified:
@@ -363,7 +362,6 @@ def convert():
         title = entry.get("title", "Untitled")
         created = entry.get("created", "")
 
-        # Convert message pairs into SFT records
         i = 0
         while i < len(messages):
             if messages[i]["role"] != "user":
@@ -371,8 +369,6 @@ def convert():
                 continue
 
             user_msg = messages[i]["content"]
-
-            # Find assistant response
             j = i + 1
             while j < len(messages) and messages[j]["role"] != "assistant":
                 j += 1
@@ -381,20 +377,16 @@ def convert():
                 break
 
             asst_msg = messages[j]["content"]
-
-            # Skip very short exchanges
             if len(user_msg) < 30 and len(asst_msg) < 30:
                 i = j + 1
                 continue
 
-            # Context from prior messages (up to 2)
             context_msgs = []
             for k in range(max(0, i - 2), i):
                 role = messages[k]["role"]
                 content = messages[k]["content"][:500]
                 context_msgs.append({"role": role, "content": content})
 
-            # System message
             system_content = "You are Polly, the SCBE-AETHERMOORE AI assistant. "
             if category == "fiction":
                 system_content += "You are discussing Spiralverse lore, worldbuilding, and creative writing."
@@ -410,7 +402,6 @@ def convert():
             sft_messages.append({"role": "user", "content": user_msg})
             sft_messages.append({"role": "assistant", "content": asst_msg})
 
-            # Metadata
             combined_text = user_msg + " " + asst_msg
             tongue_weights = detect_tongues(combined_text)
             dominant = max(tongue_weights, key=tongue_weights.get)
@@ -433,20 +424,17 @@ def convert():
                 },
             }
 
-            line = json.dumps(record, ensure_ascii=False)
+            line = json.dumps(record, ensure_ascii=False) + "\n"
 
-            if category in outputs:
-                outputs[category].write(line + "\n")
+            if category in output_paths:
+                with open(output_paths[category], "a", encoding="utf-8") as out_f:
+                    out_f.write(line)
                 counts[category] = counts.get(category, 0) + 1
 
-            combined_f.write(line + "\n")
+            with open(SFT_COMBINED, "a", encoding="utf-8") as combined_f:
+                combined_f.write(line)
             total += 1
-
             i = j + 1
-
-    for fh in outputs.values():
-        fh.close()
-    combined_f.close()
 
     print(f"\nSFT conversion complete:")
     print(f"  Total records: {total}")

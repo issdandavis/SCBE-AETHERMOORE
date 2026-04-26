@@ -41,13 +41,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 def _h_a(data: bytes) -> bytes:
-    """Primary primitive: SHA3-256."""
-    return hashlib.sha3_256(data).digest()
+    """Primary primitive: PBKDF2-HMAC-SHA256 with a domain-separated salt."""
+    return hashlib.pbkdf2_hmac("sha256", data, b"braid-vault-h-a", 120_000, dklen=32)
 
 
 def _h_b(data: bytes) -> bytes:
-    """Secondary primitive: BLAKE2b-256."""
-    return hashlib.blake2b(data, digest_size=32).digest()
+    """Secondary primitive: PBKDF2-HMAC-SHA256 with a distinct salt."""
+    return hashlib.pbkdf2_hmac("sha256", data, b"braid-vault-h-b", 160_000, dklen=32)
 
 
 def _dual_hash(data: bytes) -> Tuple[bytes, bytes]:
@@ -448,7 +448,7 @@ class BraidVault:
 
     def strand_fingerprints(self) -> List[str]:
         """Return hex fingerprints of the 3 derived strands (for audit)."""
-        return [hashlib.sha256(s.as_bytes()).hexdigest()[:16] for s in self._derived_strands]
+        return [hashlib.sha3_256(s.as_bytes()).hexdigest()[:16] for s in self._derived_strands]
 
     @property
     def braid_length(self) -> int:

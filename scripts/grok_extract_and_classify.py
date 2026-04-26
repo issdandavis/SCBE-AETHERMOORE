@@ -14,13 +14,9 @@ Usage:
 """
 
 import json
-import os
 import sys
-import re
-import hashlib
 import time
 from pathlib import Path
-from datetime import datetime
 
 # -------------------------------------------------------------------
 # Paths
@@ -128,16 +124,6 @@ def extract():
     CONV_DIR.mkdir(parents=True, exist_ok=True)
     index = []
     conv_count = 0
-
-    with open(GROK_JSON, "rb") as f:
-        # We need to accumulate each conversation as we stream
-        current_conv = None
-        current_responses = []
-        in_conversation = False
-
-        # Use ijson items to get complete conversation objects
-        # But 260MB may still be too much — let's use a chunked approach
-        pass
 
     # Fallback: use chunked reading with json
     # Read the file in a streaming way using ijson.items
@@ -386,7 +372,7 @@ def convert():
 
             if is_conlang:
                 entry["category"] = "conlang"
-            elif cb >= 20 or cb >= 50:
+            elif cb >= 20:
                 entry["category"] = "code"
             elif ts > fs * 1.5:
                 entry["category"] = "technical"
@@ -405,15 +391,17 @@ def convert():
     SFT_CODE = SFT_DIR / "grok_code_sft.jsonl"
 
     # Output file handles
-    outputs = {
-        "fiction": open(SFT_FICTION, "w", encoding="utf-8"),
-        "technical": open(SFT_TECHNICAL, "w", encoding="utf-8"),
-        "conlang": open(SFT_CONLANG, "w", encoding="utf-8"),
-        "code": open(SFT_CODE, "w", encoding="utf-8"),
-        "meta": open(SFT_META, "w", encoding="utf-8"),
+    output_paths = {
+        "fiction": SFT_FICTION,
+        "technical": SFT_TECHNICAL,
+        "conlang": SFT_CONLANG,
+        "code": SFT_CODE,
+        "meta": SFT_META,
     }
-    combined = open(SFT_COMBINED, "w", encoding="utf-8")
-    counts = {k: 0 for k in outputs}
+    for path in [*output_paths.values(), SFT_COMBINED]:
+        path.write_text("", encoding="utf-8")
+
+    counts: dict[str, int] = {k: 0 for k in output_paths}
     total = 0
 
     for entry in classified:
@@ -429,18 +417,13 @@ def convert():
         title = entry.get("title", "Untitled")
         created = entry.get("created", "")
 
-        # Convert message pairs into SFT records
-        # Strategy: sliding window of (user, assistant) pairs with context
         i = 0
         while i < len(messages):
-            # Find next user message
             if messages[i]["role"] != "user":
                 i += 1
                 continue
 
             user_msg = messages[i]["content"]
-
-            # Find the assistant response
             j = i + 1
             while j < len(messages) and messages[j]["role"] != "assistant":
                 j += 1
@@ -449,24 +432,17 @@ def convert():
                 break
 
             asst_msg = messages[j]["content"]
-
-            # Skip very short exchanges (< 50 chars each)
             if len(user_msg) < 50 and len(asst_msg) < 50:
                 i = j + 1
                 continue
 
-            # Build context from up to 2 prior messages
             context_msgs = []
             for k in range(max(0, i - 2), i):
                 role = messages[k]["role"]
-                content = messages[k]["content"][:500]  # Truncate context
+                content = messages[k]["content"][:500]
                 context_msgs.append({"role": role, "content": content})
 
-            # Build SFT record
-            sft_messages = []
-
-            # System message with metadata
-            system_content = f"You are Polly, the SCBE-AETHERMOORE AI assistant. "
+            system_content = "You are Polly, the SCBE-AETHERMOORE AI assistant. "
             if category == "fiction":
                 system_content += "You are discussing Spiralverse lore, worldbuilding, and creative writing."
             elif category == "conlang":
@@ -478,23 +454,15 @@ def convert():
             else:
                 system_content += "You are helping with development, debugging, and project management."
 
-            sft_messages.append({"role": "system", "content": system_content})
-
-            # Add context if available
-            for cm in context_msgs:
-                sft_messages.append(cm)
-
-            # Add the actual pair
+            sft_messages = [{"role": "system", "content": system_content}]
+            sft_messages.extend(context_msgs)
             sft_messages.append({"role": "user", "content": user_msg})
             sft_messages.append({"role": "assistant", "content": asst_msg})
 
-            # Detect tongue activations from combined text
             combined_text = user_msg + " " + asst_msg
             tongue_weights = detect_tongues(combined_text)
             dominant = max(tongue_weights, key=tongue_weights.get)
             difficulty = estimate_difficulty(combined_text)
-
-            # Detect relevant layers
             layers = detect_layers(combined_text)
 
             record = {
@@ -513,23 +481,17 @@ def convert():
                 },
             }
 
-            line = json.dumps(record, ensure_ascii=False)
+            line = json.dumps(record, ensure_ascii=False) + "\n"
 
-            # Write to category file
-            if category in outputs:
-                outputs[category].write(line + "\n")
+            if category in output_paths:
+                with open(output_paths[category], "a", encoding="utf-8") as out_f:
+                    out_f.write(line)
                 counts[category] = counts.get(category, 0) + 1
 
-            # Write to combined
-            combined.write(line + "\n")
+            with open(SFT_COMBINED, "a", encoding="utf-8") as combined_f:
+                combined_f.write(line)
             total += 1
-
             i = j + 1
-
-    # Close files
-    for f in outputs.values():
-        f.close()
-    combined.close()
 
     print(f"\nSFT conversion complete:")
     print(f"  Total records: {total}")

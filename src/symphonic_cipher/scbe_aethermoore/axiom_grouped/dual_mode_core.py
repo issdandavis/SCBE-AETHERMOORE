@@ -292,9 +292,6 @@ def calculate_risk_dual_mode(
     Returns:
         DualModeRiskResult with both calculations
     """
-    if config is None:
-        config = DualModeConfig()
-
     # A12: Base Risk (weighted sum of coherence failures)
     R_base = 0.2 * (1 - C_spin) + 0.2 * (1 - S_spec) + 0.2 * (1 - tau) + 0.2 * (1 - S_audio) + 0.2 * np.tanh(d_star)
 

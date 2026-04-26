@@ -30,11 +30,10 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import os
 import re
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -121,7 +120,6 @@ def run_code_checks(code: str, assertions: List[str]) -> CodeCheckResult:
 
     try:
         ast.parse(code)
-        syntax_ok = True
     except SyntaxError as exc:
         return CodeCheckResult(
             syntax_ok=False,
@@ -134,7 +132,6 @@ def run_code_checks(code: str, assertions: List[str]) -> CodeCheckResult:
     scope: Dict[str, Any] = {"__builtins__": SAFE_BUILTINS}
     try:
         exec(code, scope, scope)
-        exec_ok = True
     except Exception as exc:
         return CodeCheckResult(
             syntax_ok=True,
@@ -147,7 +144,6 @@ def run_code_checks(code: str, assertions: List[str]) -> CodeCheckResult:
     try:
         for assertion in assertions:
             exec(assertion, scope, scope)
-        tests_passed = True
     except Exception as exc:
         return CodeCheckResult(
             syntax_ok=True,

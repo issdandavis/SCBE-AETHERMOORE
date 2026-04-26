@@ -13,13 +13,10 @@ Usage:
 """
 
 import json
-import os
 import sys
 import re
-import time
 import math
 from pathlib import Path
-from datetime import datetime
 
 # -------------------------------------------------------------------
 # Paths
@@ -219,7 +216,7 @@ def extract():
             conlang_score = score_text(combined_lower, CONLANG_MARKERS)
 
             # Conlang title boost
-            has_conlang_title = any(w in title_lower for w in CONLANG_TITLE_WORDS)
+            any(w in title_lower for w in CONLANG_TITLE_WORDS)
 
             conv_data = {
                 "id": uuid,
@@ -361,10 +358,8 @@ def convert():
         "technical": SFT_TECHNICAL,
         "meta": SFT_META,
     }
-    cat_handles = {}
-    combined_handle = open(SFT_COMBINED, "w", encoding="utf-8")
-    for cat, path in cat_files.items():
-        cat_handles[cat] = open(path, "w", encoding="utf-8")
+    for path in [*cat_files.values(), SFT_COMBINED]:
+        path.write_text("", encoding="utf-8")
 
     counts = {cat: 0 for cat in cat_files}
     total = 0
@@ -381,7 +376,6 @@ def convert():
         messages = conv.get("messages", [])
         title = conv.get("title", "") or "(untitled)"
 
-        # Build text for tongue detection
         combined_text = " ".join(m["content"] for m in messages).lower()
         tongue_weights = detect_tongues(combined_text)
         dominant_tongue = max(tongue_weights, key=tongue_weights.get) if any(v > 0 for v in tongue_weights.values()) else "DR"
@@ -389,7 +383,6 @@ def convert():
         difficulty = estimate_difficulty(combined_text, code_blocks)
         layers = detect_layers(combined_text)
 
-        # Generate SFT pairs from consecutive user/assistant turns
         pair_index = 0
         i = 0
         while i < len(messages) - 1:
@@ -401,7 +394,6 @@ def convert():
                     i += 1
                     continue
 
-                # Build context from prior messages (up to 2)
                 context_parts = []
                 for j in range(max(0, i - 2), i):
                     role_label = "User" if messages[j]["role"] == "user" else "Assistant"
@@ -432,19 +424,16 @@ def convert():
                 }
 
                 line = json.dumps(record, ensure_ascii=False) + "\n"
-                cat_handles[cat].write(line)
-                combined_handle.write(line)
+                with open(cat_files[cat], "a", encoding="utf-8") as cat_f:
+                    cat_f.write(line)
+                with open(SFT_COMBINED, "a", encoding="utf-8") as combined_f:
+                    combined_f.write(line)
                 counts[cat] += 1
                 total += 1
                 pair_index += 1
                 i += 2
             else:
                 i += 1
-
-    # Close all handles
-    for h in cat_handles.values():
-        h.close()
-    combined_handle.close()
 
     print(f"SFT conversion complete:")
     for cat, count in sorted(counts.items(), key=lambda x: -x[1]):

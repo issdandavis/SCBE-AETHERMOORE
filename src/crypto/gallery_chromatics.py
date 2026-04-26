@@ -97,8 +97,8 @@ class LabColor:
 
     @property
     def chroma(self) -> float:
-        """Perceptual colorfulness: C* = sqrt(a² + b²)"""
-        return math.sqrt(self.a**2 + self.b**2)
+        """Perceptual colorfulness: C* = hypot(a, b)"""
+        return math.hypot(self.a, self.b)
 
     @property
     def hue_angle(self) -> float:
@@ -403,8 +403,8 @@ def compute_gallery_color_field(
     right_chromas = [right.chords[t].mean_chroma for t in DEAD_TONE_RATIOS]
     # Cosine similarity of chroma vectors
     dot = sum(l * r for l, r in zip(left_chromas, right_chromas))
-    mag_l = math.sqrt(sum(x**2 for x in left_chromas)) or 1e-9
-    mag_r = math.sqrt(sum(x**2 for x in right_chromas)) or 1e-9
+    mag_l = math.hypot(*left_chromas) or 1e-9
+    mag_r = math.hypot(*right_chromas) or 1e-9
     coherence = max(0.0, min(1.0, dot / (mag_l * mag_r)))
 
     # Dominant material: which material band has highest total chroma?

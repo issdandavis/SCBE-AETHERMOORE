@@ -9,8 +9,10 @@ from pathlib import Path
 import pytest
 
 try:
-    from cryptography.fernet import Fernet  # noqa: F401
-except BaseException:
+    from cryptography import fernet
+
+    assert callable(fernet.Fernet)
+except Exception:
     pytest.skip(
         "cryptography package not functional (cffi backend missing)",
         allow_module_level=True,
@@ -21,8 +23,23 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-src_module = sys.modules.setdefault("src", types.ModuleType("src"))
-security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
+
+def _ensure_security_package() -> types.ModuleType:
+    src_module = sys.modules.get("src")
+    if src_module is None or not hasattr(src_module, "__path__"):
+        src_module = types.ModuleType("src")
+        src_module.__path__ = [str(REPO_ROOT / "src")]
+        sys.modules["src"] = src_module
+    security_module = sys.modules.get("src.security")
+    if security_module is None or not hasattr(security_module, "__path__"):
+        security_module = types.ModuleType("src.security")
+        security_module.__path__ = [str(REPO_ROOT / "src" / "security")]
+        sys.modules["src.security"] = security_module
+        src_module.security = security_module
+    return security_module
+
+
+_ensure_security_package()
 # Load the real secret_store module by file path so its utility functions
 # (redact, fingerprint, etc.) are available, but override get/set to avoid
 # touching real credential files during tests.
@@ -33,11 +50,7 @@ _ss_mod = importlib.util.module_from_spec(_ss_spec)
 _ss_spec.loader.exec_module(_ss_mod)
 _ss_mod.get_secret = lambda key, default="": default
 _ss_mod.set_secret = lambda key, value, note="", tongue=None: None
-src_module = sys.modules.setdefault("src", types.ModuleType("src"))
-security_module = sys.modules.setdefault("src.security", types.ModuleType("src.security"))
 sys.modules["src.security.secret_store"] = _ss_mod
-src_module.security = security_module
-src_module.security = security_module
 
 
 def _load_module(name: str, relative_path: str):

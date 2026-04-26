@@ -161,7 +161,7 @@ def _extract_hourly_profiles_from_kaggle(df: Any) -> List[Dict[str, float]]:
     load_col = _find_col(df, ["grid_load_demand", "load_demand", "demand"])
 
     # Global averages for scaling
-    solar_global_mean = df[solar_col].mean() if solar_col else 50.0
+    df[solar_col].mean() if solar_col else 50.0
 
     profiles = []
     for hour in range(24):

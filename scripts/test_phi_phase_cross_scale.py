@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from src.symphonic.phi_phase import run, PHI
+from src.symphonic.phi_phase import run
 
 
 def stats(name, history):

@@ -111,9 +111,13 @@ class StoryGraph:
         if stats is None:
             return list(scene.choices)
         # Lazy import to avoid circular dep
-        from .story_engine import ConditionEvaluator
+        import importlib
 
-        evaluator = ConditionEvaluator()
+        evaluator_class = getattr(
+            importlib.import_module(f"{__package__}.story_engine"),
+            "ConditionEvaluator",
+        )
+        evaluator = evaluator_class()
         return [c for c in scene.choices if c.condition is None or evaluator.evaluate(c.condition, stats)]
 
     def total_scenes(self) -> int:

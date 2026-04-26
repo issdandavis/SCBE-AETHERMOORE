@@ -61,8 +61,8 @@ def resolve_token():
         if tok:
             os.environ["HF_TOKEN"] = tok
             return tok
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[hf_train_polly] kaggle secrets unavailable: {exc}", file=sys.stderr)
     try:
         from google.colab import userdata  # type: ignore
 

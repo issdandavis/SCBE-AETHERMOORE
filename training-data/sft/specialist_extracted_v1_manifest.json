@@ -1,0 +1,18 @@
+{
+  "schema_version": "scbe_specialist_training_extraction_manifest_v1",
+  "generated_at_utc": "2026-04-26T00:40:49.026826+00:00",
+  "outputs": {
+    "operator_train": "training-data/sft/operator_agent_bus_extracted_v1_train.sft.jsonl",
+    "operator_eval": "training-data/sft/operator_agent_bus_extracted_v1_eval.sft.jsonl",
+    "research_train": "training-data/sft/research_bridge_source_grounded_v1_train.sft.jsonl",
+    "research_eval": "training-data/sft/research_bridge_source_grounded_v1_eval.sft.jsonl",
+    "governance_eval": "training-data/sft/governance_security_boundary_eval_v1.sft.jsonl"
+  },
+  "counts": {
+    "operator_train": 24,
+    "operator_eval": 3,
+    "research_train": 118,
+    "research_eval": 20,
+    "governance_eval": 101
+  }
+}

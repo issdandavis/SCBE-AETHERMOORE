@@ -9,20 +9,14 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
+
+const PYTHON_CANDIDATES = process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
 
 function resolvePython(): string | null {
-  const envPython = process.env.PYTHON_BIN?.trim();
-  const candidates = [
-    envPython,
-    process.platform === 'win32' ? 'python' : 'python3',
-    'python3',
-    'python',
-  ].filter((v): v is string => Boolean(v && v.length > 0));
-
-  for (const candidate of candidates) {
+  for (const candidate of PYTHON_CANDIDATES) {
     try {
-      execSync(`${candidate} --version`, {
+      execFileSync(candidate, ['--version'], {
         cwd: process.cwd(),
         encoding: 'utf-8',
         stdio: 'pipe',
@@ -38,8 +32,8 @@ function resolvePython(): string | null {
 
 const PYTHON = resolvePython();
 
-function run(cmd: string): string {
-  return execSync(cmd, {
+function run(args: string[]): string {
+  return execFileSync(PYTHON!, args, {
     cwd: process.cwd(),
     encoding: 'utf-8',
     timeout: 15000,
@@ -53,7 +47,7 @@ const maybeDescribe = PYTHON ? describe : describe.skip;
 function scbeCliDepsAvailable(): boolean {
   if (!PYTHON) return false;
   try {
-    execSync(`${PYTHON} scbe-cli.py encode --tongue ko --text "test"`, {
+    execFileSync(PYTHON, ['scbe-cli.py', 'encode', '--tongue', 'ko', '--text', 'test'], {
       cwd: process.cwd(),
       encoding: 'utf-8',
       stdio: 'pipe',
@@ -71,14 +65,14 @@ const maybeParityDescribe = scbeCliDepsAvailable() ? describe : describe.skip;
 maybeDescribe('Unified scbe CLI', () => {
   describe('legacy cli bridge', () => {
     it('reroutes legacy cli ai explain to the modern ai helper', () => {
-      const out = run(`${PYTHON!} scbe.py cli ai explain L12`);
+      const out = run(['scbe.py', 'cli', 'ai', 'explain', 'L12']);
       expect(out).toContain('Routing legacy syntax');
       expect(out).toContain('Harmonic Wall');
     });
 
     it('shows corrective help for legacy cli misuse', () => {
       try {
-        run(`${PYTHON!} scbe.py cli pipeline run --text "test input"`);
+        run(['scbe.py', 'cli', 'pipeline', 'run', '--text', 'test input']);
         expect(true).toBe(false);
       } catch (e: any) {
         const output = `${e.stdout?.toString() || ''}${e.stderr?.toString() || ''}`;
@@ -90,35 +84,42 @@ maybeDescribe('Unified scbe CLI', () => {
 
   describe('selftest', () => {
     it('passes all checks', () => {
-      const out = run(`${PYTHON!} scbe.py selftest`);
+      const out = run(['scbe.py', 'selftest']);
       expect(out).toContain('selftest OK');
     });
   });
 
   describe('tongues encode', () => {
     it('encodes text to KO tokens', () => {
-      const out = run(`${PYTHON!} scbe.py tongues encode --tongue ko --text "hello"`);
+      const out = run(['scbe.py', 'tongues', 'encode', '--tongue', 'ko', '--text', 'hello']);
       // h=0x68=6*16+8 → prefix[6]=nav, suffix[8]=or → nav'or
       expect(out).toContain("nav'or");
     });
 
     it('accepts lowercase tongue codes', () => {
-      const out = run(`${PYTHON!} scbe.py tongues encode --tongue av --text "a"`);
+      const out = run(['scbe.py', 'tongues', 'encode', '--tongue', 'av', '--text', 'a']);
       // 'a'=0x61=6*16+1 → prefix[6]=nurel, suffix[1]=e → nurel'e
       expect(out).toBe("nurel'e");
     });
 
     it('accepts uppercase tongue codes', () => {
-      const out = run(`${PYTHON!} scbe.py tongues encode --tongue RU --text "a"`);
+      const out = run(['scbe.py', 'tongues', 'encode', '--tongue', 'RU', '--text', 'a']);
       expect(out).toBeTruthy();
     });
   });
 
   describe('tongues decode', () => {
     it('decodes tokens back to text', () => {
-      const out = run(
-        `${PYTHON!} scbe.py tongues decode --tongue ko --as-text --text "nav'or nav'uu nav'un nav'un nav'esh"`
-      );
+      const out = run([
+        'scbe.py',
+        'tongues',
+        'decode',
+        '--tongue',
+        'ko',
+        '--as-text',
+        '--text',
+        "nav'or nav'uu nav'un nav'un nav'esh",
+      ]);
       expect(out).toBe('hello');
     });
   });
@@ -127,11 +128,9 @@ maybeDescribe('Unified scbe CLI', () => {
     for (const tongue of ['KO', 'AV', 'RU', 'CA', 'UM', 'DR']) {
       it(`${tongue}: encode then decode recovers original`, () => {
         const encoded = run(
-          `${PYTHON!} scbe.py tongues encode --tongue ${tongue} --text "roundtrip test 123"`
+          ['scbe.py', 'tongues', 'encode', '--tongue', tongue, '--text', 'roundtrip test 123']
         );
-        const decoded = run(
-          `${PYTHON!} scbe.py tongues decode --tongue ${tongue} --as-text --text "${encoded}"`
-        );
+        const decoded = run(['scbe.py', 'tongues', 'decode', '--tongue', tongue, '--as-text', '--text', encoded]);
         expect(decoded).toBe('roundtrip test 123');
       });
     }
@@ -139,7 +138,7 @@ maybeDescribe('Unified scbe CLI', () => {
 
   describe('tongues list', () => {
     it('shows all 6 tongues', () => {
-      const out = run(`${PYTHON!} scbe.py tongues list`);
+      const out = run(['scbe.py', 'tongues', 'list']);
       expect(out).toContain('KO');
       expect(out).toContain('AV');
       expect(out).toContain('RU');
@@ -153,12 +152,12 @@ maybeDescribe('Unified scbe CLI', () => {
 
   describe('pipeline run', () => {
     it('returns a valid decision', () => {
-      const out = run(`${PYTHON!} scbe.py pipeline run --text "test input"`);
+      const out = run(['scbe.py', 'pipeline', 'run', '--text', 'test input']);
       expect(out).toMatch(/Decision:\s+(ALLOW|QUARANTINE|ESCALATE|DENY)/);
     });
 
     it('returns JSON when --json flag is set', () => {
-      const out = run(`${PYTHON!} scbe.py pipeline run --json --text "test"`);
+      const out = run(['scbe.py', 'pipeline', 'run', '--json', '--text', 'test']);
       const parsed = JSON.parse(out);
       expect(parsed).toHaveProperty('H_eff');
       expect(parsed).toHaveProperty('decision');
@@ -168,30 +167,30 @@ maybeDescribe('Unified scbe CLI', () => {
 
   describe('ai explain', () => {
     it('explains a layer by number', () => {
-      const out = run(`${PYTHON!} scbe.py ai explain L12`);
+      const out = run(['scbe.py', 'ai', 'explain', 'L12']);
       expect(out).toContain('Harmonic Wall');
     });
 
     it('finds layers by concept name', () => {
-      const out = run(`${PYTHON!} scbe.py ai explain breathing`);
+      const out = run(['scbe.py', 'ai', 'explain', 'breathing']);
       expect(out).toContain('L6');
     });
   });
 
   describe('ai lint', () => {
     it('lints a Python file', () => {
-      const out = run(`${PYTHON!} scbe.py ai lint src/crypto/h_lwe.py`);
+      const out = run(['scbe.py', 'ai', 'lint', 'src/crypto/h_lwe.py']);
       expect(out).toContain('Compiles: OK');
     });
 
     it('lints a TypeScript file', () => {
-      const out = run(`${PYTHON!} scbe.py ai lint src/harmonic/mmx.ts`);
+      const out = run(['scbe.py', 'ai', 'lint', 'src/harmonic/mmx.ts']);
       expect(out).toContain('Header: yes');
     });
 
     it('reports error for missing file', () => {
       try {
-        run(`${PYTHON!} scbe.py ai lint nonexistent_file.py`);
+        run(['scbe.py', 'ai', 'lint', 'nonexistent_file.py']);
         // If it didn't throw, the output should contain Error
         expect(true).toBe(false); // should not reach
       } catch (e: any) {
@@ -203,7 +202,7 @@ maybeDescribe('Unified scbe CLI', () => {
 
   describe('ai review', () => {
     it('reviews a file with metrics', () => {
-      const out = run(`${PYTHON!} scbe.py ai review src/crypto/h_lwe.py`);
+      const out = run(['scbe.py', 'ai', 'review', 'src/crypto/h_lwe.py']);
       expect(out).toContain('code');
       expect(out).toContain('Functions');
       expect(out).toContain('Classes');
@@ -212,7 +211,7 @@ maybeDescribe('Unified scbe CLI', () => {
 
   describe('ai check', () => {
     it('runs combined lint+review', () => {
-      const out = run(`${PYTHON!} scbe.py ai check src/crypto/h_lwe.py`);
+      const out = run(['scbe.py', 'ai', 'check', 'src/crypto/h_lwe.py']);
       expect(out).toContain('===');
       expect(out).toContain('code');
     });
@@ -220,7 +219,7 @@ maybeDescribe('Unified scbe CLI', () => {
 
   describe('status', () => {
     it('shows project stats', () => {
-      const out = run(`${PYTHON!} scbe.py status`);
+      const out = run(['scbe.py', 'status']);
       expect(out).toContain('SCBE-AETHERMOORE');
       expect(out).toContain('TypeScript');
       expect(out).toContain('Python');
@@ -231,22 +230,22 @@ maybeDescribe('Unified scbe CLI', () => {
 
 maybeParityDescribe('Cross-CLI parity', () => {
   it('scbe and scbe-cli.py produce identical KO tokens', () => {
-    const scbeOut = run(`${PYTHON!} scbe.py tongues encode --tongue ko --text "parity"`);
-    const cliOut = run(`${PYTHON!} scbe-cli.py encode --tongue ko --text "parity"`);
+    const scbeOut = run(['scbe.py', 'tongues', 'encode', '--tongue', 'ko', '--text', 'parity']);
+    const cliOut = run(['scbe-cli.py', 'encode', '--tongue', 'ko', '--text', 'parity']);
     expect(scbeOut).toBe(cliOut);
   });
 
   it('scbe and six-tongues-cli.py produce identical KO tokens', () => {
-    const scbeOut = run(`${PYTHON!} scbe.py tongues encode --tongue ko --text "parity"`);
-    const sixOut = run(`${PYTHON!} six-tongues-cli.py encode --tongue KO --text "parity"`);
+    const scbeOut = run(['scbe.py', 'tongues', 'encode', '--tongue', 'ko', '--text', 'parity']);
+    const sixOut = run(['six-tongues-cli.py', 'encode', '--tongue', 'KO', '--text', 'parity']);
     expect(scbeOut).toBe(sixOut);
   });
 
   it('all 3 CLIs decode identically', () => {
-    const tokens = run(`${PYTHON!} scbe.py tongues encode --tongue ko --text "three way"`);
-    const d1 = run(`${PYTHON!} scbe.py tongues decode --tongue ko --as-text --text "${tokens}"`);
-    const d2 = run(`${PYTHON!} scbe-cli.py decode --tongue ko --as-text --text "${tokens}"`);
-    const d3 = run(`${PYTHON!} six-tongues-cli.py decode --tongue KO --as-text --text "${tokens}"`);
+    const tokens = run(['scbe.py', 'tongues', 'encode', '--tongue', 'ko', '--text', 'three way']);
+    const d1 = run(['scbe.py', 'tongues', 'decode', '--tongue', 'ko', '--as-text', '--text', tokens]);
+    const d2 = run(['scbe-cli.py', 'decode', '--tongue', 'ko', '--as-text', '--text', tokens]);
+    const d3 = run(['six-tongues-cli.py', 'decode', '--tongue', 'KO', '--as-text', '--text', tokens]);
     expect(d1).toBe('three way');
     expect(d2).toBe('three way');
     expect(d3).toBe('three way');
