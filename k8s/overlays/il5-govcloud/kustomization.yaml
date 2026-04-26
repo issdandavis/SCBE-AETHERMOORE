@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../namespace.yaml
+  - ../../deployment.yaml
+  - ../../service.yaml
+  - ../../agent-manifests
+  - namespace-scbe-training.yaml
+  - networkpolicy-default-deny.yaml
+  - resource-quota-limits.yaml
+
+commonLabels:
+  scbe.aethermoore/profile: il5-govcloud-stub
+  scbe.aethermoore/governance: enabled
+
+patches:
+  - path: deployment-governance-annotations.yaml
+  - path: namespace-hardening.yaml

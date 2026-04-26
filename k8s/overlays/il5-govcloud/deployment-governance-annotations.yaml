@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scbe-aethermoore
+  namespace: scbe-aethermoore
+  annotations:
+    scbe.aethermoore/governance-pipeline: "14-layer-runtime"
+    scbe.aethermoore/audit-boundary: "controlled-govcloud-stub"
+    scbe.aethermoore/lineage-required: "true"
+spec:
+  template:
+    metadata:
+      annotations:
+        scbe.aethermoore/decision-envelope-required: "true"
+        scbe.aethermoore/runtime-audit-required: "true"
+        scbe.aethermoore/secrets-source: "external-secrets-required-before-live"
+

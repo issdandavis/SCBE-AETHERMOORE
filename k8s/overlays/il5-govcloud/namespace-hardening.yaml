@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scbe-aethermoore
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    scbe.aethermoore/data-boundary: controlled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scbe-agents
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    scbe.aethermoore/data-boundary: controlled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: scbe-training
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+    scbe.aethermoore/data-boundary: controlled
+

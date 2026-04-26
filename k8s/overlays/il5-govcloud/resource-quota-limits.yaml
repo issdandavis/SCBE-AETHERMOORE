@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: scbe-runtime-quota
+  namespace: scbe-aethermoore
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: 8Gi
+    limits.cpu: "8"
+    limits.memory: 16Gi
+    pods: "12"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: scbe-runtime-defaults
+  namespace: scbe-aethermoore
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: 1Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: scbe-agent-quota
+  namespace: scbe-agents
+spec:
+  hard:
+    requests.cpu: "8"
+    requests.memory: 16Gi
+    limits.cpu: "16"
+    limits.memory: 32Gi
+    pods: "32"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: scbe-agent-defaults
+  namespace: scbe-agents
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: 1Gi
+      defaultRequest:
+        cpu: 250m
+        memory: 256Mi
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: scbe-training-quota
+  namespace: scbe-training
+spec:
+  hard:
+    requests.cpu: "16"
+    requests.memory: 64Gi
+    limits.cpu: "32"
+    limits.memory: 128Gi
+    pods: "16"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: scbe-training-defaults
+  namespace: scbe-training
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "2"
+        memory: 4Gi
+      defaultRequest:
+        cpu: 500m
+        memory: 1Gi
+
