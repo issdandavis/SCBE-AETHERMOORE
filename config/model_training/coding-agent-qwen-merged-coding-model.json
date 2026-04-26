@@ -49,6 +49,14 @@
       "profile_id": "coding-agent-qwen-command-harmony-v5",
       "adapter_repo": "issdandavis/scbe-coding-agent-qwen-command-harmony-v5",
       "reason": "Repo was not found on Hugging Face during 2026-04-25 setup. Train or publish this adapter before adding it to the merge."
+    },
+    {
+      "profile_id": "bijective-tongue-coder-v1",
+      "adapter_repo": "issdandavis/scbe-bijective-tongue-coder-qwen-kaggle-v1",
+      "local_adapter_dir": "artifacts/kaggle_output/polly-auto-bijective-tongue-coder-v1/polly-bijective-tongue-coder-v1",
+      "verdict_path": "artifacts/model_evals/frozen/bijective-tongue-coder-v1_verdict.md",
+      "status": "promotion_negative",
+      "reason": "Frozen eval on 2026-04-26 showed strong in-distribution gain but worse aggregate perplexity than base and catastrophic OOD forgetting on aligned_foundations, command_lattice_seed, governance_security_boundary, and stage6 repair. Keep only as quarantined router-only specialist unless retrained with regularization/mix and re-evaluated."
     }
   ],
   "pre_merge_gates": {

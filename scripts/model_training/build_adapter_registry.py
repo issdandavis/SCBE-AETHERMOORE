@@ -243,6 +243,25 @@ def write_outputs(registry: dict[str, Any], output: Path) -> None:
             f"{len(adapter.get('local_adapters') or [])} | {len(adapter.get('eval_reports') or [])} | "
             f"{adapter['promotion']['merge_eligible']} |"
         )
+    blocked = registry.get("blocked_adapters") or []
+    if blocked:
+        lines.extend(
+            [
+                "",
+                "## Blocked / Quarantined Adapters",
+                "",
+                "| Profile | Repo | Status | Reason |",
+                "| --- | --- | --- | --- |",
+            ]
+        )
+        for adapter in blocked:
+            reason = str(adapter.get("reason") or "").replace("\n", " ")
+            if len(reason) > 240:
+                reason = reason[:237] + "..."
+            lines.append(
+                f"| `{adapter.get('profile_id', '')}` | `{adapter.get('adapter_repo', '')}` | "
+                f"`{adapter.get('status', 'blocked')}` | {reason} |"
+            )
     output.with_suffix(".md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
