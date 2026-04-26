@@ -206,6 +206,7 @@ def collect_run_reviews(roots: tuple[str, ...] = RUN_SCAN_ROOTS) -> list[dict[st
         review = {
             "path": repo_rel(path),
             "purpose": classify_purpose(str(path), root_payload),
+            "decision": root_payload.get("decision") if isinstance(root_payload.get("decision"), str) else None,
             "metric_count": len(signals),
             "metrics": [
                 {"name": s.name, "value": s.value, "kind": s.kind, "json_path": s.json_path}
@@ -248,6 +249,9 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
         if not runs:
             missing_metrics = True
             blockers.append("no measurable run artifacts")
+        hold_runs = [run for run in runs if str(run.get("decision", "")).upper() == "HOLD"]
+        if hold_runs and in_merge_plan:
+            blockers.append(f"explicit HOLD eval artifact: {hold_runs[0]['path']}")
         status = "promote_candidate" if not blockers and top_score > 0 else "blocked"
         if not in_merge_plan and top_score > 0:
             status = "sidecar_signal_not_in_merge"
@@ -270,6 +274,7 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
                     "quality_signal": run["quality_signal"],
                     "loss_signal": run["loss_signal"],
                     "metric_count": run["metric_count"],
+                    "decision": run.get("decision"),
                 }
                 for run in runs[:8]
             ],
@@ -280,6 +285,10 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
 def recommend_action(purpose: str, status: str, blockers: list[str]) -> str:
     if status == "promote_candidate":
         return "train or keep specialist adapter, then run its frozen eval before weighted adapter merge"
+    if any(blocker.startswith("explicit HOLD eval artifact") for blocker in blockers):
+        if purpose == "governance_security":
+            return "repair false-positive pressure in governance eval data, rerun governance_security_eval, and promote only after PASS"
+        return "resolve the explicit HOLD eval artifact before adapter promotion"
     if "no regularized train records" in blockers:
         if purpose == "operator_agent_bus":
             return "extract runnable command traces from agent bus, helpdesk loop, Apollo, and browser logs into messages records"

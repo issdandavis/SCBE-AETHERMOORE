@@ -88,6 +88,36 @@ def test_gain_board_promotes_bucket_with_eval_and_metrics() -> None:
     assert board["coding_model"]["top_promotion_score"] == 77.0
 
 
+def test_gain_board_blocks_explicit_hold_eval_artifact() -> None:
+    review = _load(REVIEW_PATH, "review_training_runs_hold_test")
+    plan = {
+        "specialists": [
+            {
+                "purpose": "governance_security",
+                "train_records": 10,
+                "eval_records": 2,
+            }
+        ]
+    }
+    reviews = [
+        {
+            "purpose": "governance_security",
+            "path": "artifacts/benchmarks/governance_security_eval/report.json",
+            "promotion_score": 100.0,
+            "quality_signal": 1.0,
+            "loss_signal": None,
+            "metric_count": 3,
+            "decision": "HOLD",
+        }
+    ]
+
+    board = review.build_gain_board(reviews, plan)
+
+    assert board["governance_security"]["status"] == "needs_eval_gate"
+    assert "explicit HOLD eval artifact" in board["governance_security"]["blockers"][0]
+    assert "false-positive" in board["governance_security"]["recommended_action"]
+
+
 def test_specialist_bucket_readiness_scores_valid_bucket(tmp_path: Path) -> None:
     readiness = _load(READINESS_PATH, "specialist_bucket_readiness_test")
     train_path = tmp_path / "train.jsonl"
