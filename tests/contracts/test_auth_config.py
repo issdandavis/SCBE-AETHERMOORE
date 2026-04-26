@@ -38,3 +38,21 @@ def test_load_api_keys_prefers_explicit_json(monkeypatch) -> None:
     auth_config = _reload_auth_config()
     assert auth_config.load_api_keys() == {"ship-key": "captain"}
 
+
+def test_load_api_keys_accepts_pair_format(monkeypatch) -> None:
+    monkeypatch.setenv("SCBE_API_KEYS", "ship-key:captain,pilot-key:pilot")
+    monkeypatch.setenv("SCBE_ALLOW_DEMO_KEYS", "1")
+
+    auth_config = _reload_auth_config()
+    assert auth_config.load_api_keys() == {
+        "ship-key": "captain",
+        "pilot-key": "pilot",
+    }
+
+
+def test_load_api_keys_accepts_single_raw_key(monkeypatch) -> None:
+    monkeypatch.setenv("SCBE_API_KEYS", "ship-key")
+    monkeypatch.setenv("SCBE_ALLOW_DEMO_KEYS", "1")
+
+    auth_config = _reload_auth_config()
+    assert auth_config.load_api_keys() == {"ship-key": "scbe_owner"}
