@@ -21,6 +21,7 @@ from urllib import parse, request
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_DIR = ROOT / "artifacts" / "proton_mail" / "dibbs"
 DEFAULT_DRAFT = ARTIFACT_DIR / "dibbs_address_verification_reminder_20260427.md"
+DEFAULT_TELEGRAM_MESSAGE = ROOT / "artifacts" / "telegram_alerts" / "dibbs_address_verification_reminder_20260427.txt"
 
 DEFAULT_TO = "issdandavis7795@gmail.com"
 DEFAULT_CC = "issac@aethermoorgames.com"
@@ -49,6 +50,13 @@ SMS_BODY = (
     "privately. Do not post the code publicly."
 )
 
+TELEGRAM_BODY = """DIBBS reminder: check the physical-address verification postcard on Monday 2026-04-27.
+
+If it arrived: send/read the verification number privately.
+If it did not arrive: record status as not arrived and check again the next mail day.
+
+Do not post the code in public docs, public repos, or public chats."""
+
 
 def write_email_draft(path: Path, to_email: str, cc_email: str, subject: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -57,6 +65,12 @@ def write_email_draft(path: Path, to_email: str, cc_email: str, subject: str) ->
         content += f"Cc: {cc_email}\n"
     content += f"\n{REMINDER_BODY}\n"
     path.write_text(content, encoding="utf-8")
+    return path
+
+
+def write_telegram_message(path: Path) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(TELEGRAM_BODY + "\n", encoding="utf-8")
     return path
 
 
@@ -90,7 +104,9 @@ def send_twilio_sms(to_number: str, body: str) -> dict[str, object]:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Stage or send a DIBBS postcard reminder.")
     parser.add_argument("--write-email-draft", action="store_true", help="Write the Proton Bridge draft file.")
+    parser.add_argument("--write-telegram-message", action="store_true", help="Write a Telegram-safe message file.")
     parser.add_argument("--draft-path", default=str(DEFAULT_DRAFT), help="Output draft path.")
+    parser.add_argument("--telegram-message-path", default=str(DEFAULT_TELEGRAM_MESSAGE), help="Output Telegram message path.")
     parser.add_argument("--to-email", default=DEFAULT_TO)
     parser.add_argument("--cc-email", default=DEFAULT_CC)
     parser.add_argument("--subject", default=DEFAULT_SUBJECT)
@@ -104,6 +120,10 @@ def main() -> int:
         path = write_email_draft(Path(args.draft_path), args.to_email, args.cc_email, args.subject)
         actions.append(f"email_draft={path}")
 
+    if args.write_telegram_message:
+        path = write_telegram_message(Path(args.telegram_message_path))
+        actions.append(f"telegram_message={path}")
+
     if args.send_sms:
         to_number = os.getenv(args.sms_to_env, "").strip()
         if not to_number:
@@ -112,7 +132,7 @@ def main() -> int:
         actions.append(f"twilio_sms={json.dumps(result, sort_keys=True)}")
 
     if not actions:
-        print("No mutation requested. Use --write-email-draft or --send-sms.")
+        print("No mutation requested. Use --write-email-draft, --write-telegram-message, or --send-sms.")
         print(f"Default check date: 2026-04-27; today argument: {args.today}")
         print("SMS recipient should be supplied through DIBBS_HELPER_PHONE, not committed.")
         return 0
