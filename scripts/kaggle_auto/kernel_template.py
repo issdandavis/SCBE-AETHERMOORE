@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
-"""Auto-generated Kaggle kernel — SCBE Polly Training.
+"""Auto-generated Kaggle kernel - SCBE Polly Training.
 Config is injected via the KERNEL_CONFIG dict at the top."""
 
 import subprocess, sys, json, os
+
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+os.environ.setdefault("PYTHONUTF8", "1")
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # Detect GPU compute capability and install matching PyTorch
 # P100 = sm_60, T4 = sm_75, A100 = sm_80
@@ -25,14 +32,14 @@ def ensure_cuda_compat():
 
         # sm_60 (P100): needs PyTorch with cu118 (last version supporting sm_60)
         if cap[0] < 7:
-            print(f"sm_{cap[0]}{cap[1]} not supported by current torch — reinstalling with cu118 (supports sm_60+)...")
+            print(f"sm_{cap[0]}{cap[1]} not supported by current torch - reinstalling with cu118 (supports sm_60+)...")
             subprocess.run([sys.executable, "-m", "pip", "install", "-q",
                 "torch==2.1.2", "torchvision", "torchaudio",
                 "--index-url", "https://download.pytorch.org/whl/cu118"],
                 check=True)
-            print("Reinstalled torch 2.1.2+cu118 — P100 now supported")
+            print("Reinstalled torch 2.1.2+cu118 - P100 now supported")
         else:
-            print(f"sm_{cap[0]}{cap[1]} should work — reinstalling latest cu121...")
+            print(f"sm_{cap[0]}{cap[1]} should work - reinstalling latest cu121...")
             subprocess.run([sys.executable, "-m", "pip", "install", "-q",
                 "torch", "--index-url", "https://download.pytorch.org/whl/cu121"],
                 check=True)
@@ -63,6 +70,7 @@ BASE_MODEL = CFG["base_model"]
 HF_REPO = CFG["hf_repo"]
 ROUND = CFG["round"]
 FILE_LIST = CFG["files"]
+EVAL_FILE_LIST = CFG.get("eval_files", [])
 OUTPUT_DIR = f"/kaggle/working/polly-{ROUND}"
 EPOCHS = CFG["epochs"]
 BATCH_SIZE = CFG["batch_size"]
@@ -97,15 +105,14 @@ if not PUSH:
         print("HF authenticated via env var")
         PUSH = True
     else:
-        print("No HF auth -- local save only")
+        print("No HF auth - local save only")
 
 
 # ---- Data Loading ----
-def load_data():
+def _normalize_records_from_files(files, split_name):
     records = []
     kaggle_dir = Path("/kaggle/input") / KAGGLE_DATASET_SLUG
 
-    files = FILE_LIST
     if files == "__ALL__":
         if kaggle_dir.exists():
             files = sorted(f.name for f in kaggle_dir.glob("*.jsonl"))
@@ -115,6 +122,10 @@ def load_data():
 
     for name in files:
         path = kaggle_dir / name
+        if not path.exists() and Path("/kaggle/input").exists():
+            matches = list(Path("/kaggle/input").glob(f"**/{name}"))
+            if matches:
+                path = matches[0]
         if not path.exists():
             try:
                 from huggingface_hub import hf_hub_download
@@ -170,7 +181,13 @@ def load_data():
             if rec:
                 records.append(rec)
                 count += 1
-        print(f"  LOAD {name}: {count} records")
+        print(f"  LOAD {split_name} {name}: {count} records")
+
+    return records
+
+
+def load_data():
+    records = _normalize_records_from_files(FILE_LIST, "train")
 
     print(f"\nTotal: {len(records)} training records")
     if not records:
@@ -186,6 +203,17 @@ def load_data():
         records = _random.sample(records, _max_records)
         print(f"Sampled {_max_records} records ({'GPU' if _use_gpu else 'CPU-tiny'} mode)")
 
+    return Dataset.from_list(records)
+
+
+def load_eval_data():
+    if not EVAL_FILE_LIST:
+        return None
+    records = _normalize_records_from_files(EVAL_FILE_LIST, "eval")
+    print(f"\nTotal: {len(records)} eval records")
+    if not records:
+        print("WARNING: Eval files configured but no eval records loaded")
+        return None
     return Dataset.from_list(records)
 
 
@@ -216,14 +244,15 @@ if torch.cuda.is_available():
     print(f"VRAM: {vram:.1f} GB")
     print(f"Compute: {props.major}.{props.minor}")
     if props.major < 7:
-        print("WARNING: GPU compute < 7.0 — may have compatibility issues")
+        print("WARNING: GPU compute < 7.0 - may have compatibility issues")
         print("Falling back to CPU-safe torch operations")
 else:
     print("WARNING: No GPU")
 
 write_status("loading_data")
 dataset = load_data()
-write_status("data_loaded", {"num_records": len(dataset)})
+eval_dataset = load_eval_data()
+write_status("data_loaded", {"num_records": len(dataset), "eval_records": len(eval_dataset) if eval_dataset is not None else 0})
 
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, use_fast=True)
 if tokenizer.pad_token is None:
@@ -234,7 +263,7 @@ compute_cap = torch.cuda.get_device_capability(0) if torch.cuda.is_available() e
 compute_dtype = torch.bfloat16 if has_bf16 else torch.float16
 
 # Kaggle randomly assigns P100 (sm_60) or T4 (sm_75).
-# P100's PyTorch build lacks sm_60 kernels — CUDA ops segfault.
+# P100's PyTorch build lacks sm_60 kernels - CUDA ops segfault.
 # For sm_60: fall back to CPU (0.5B model trains fine on CPU with small datasets).
 # For sm_70+: use 4-bit NF4 quantization via bitsandbytes.
 use_gpu = torch.cuda.is_available() and compute_cap[0] >= 7
@@ -250,11 +279,11 @@ if use_gpu:
     load_kwargs = {"quantization_config": quant_config, "torch_dtype": compute_dtype, "device_map": "auto"}
 else:
     if torch.cuda.is_available():
-        print(f"GPU sm_{compute_cap[0]}{compute_cap[1]} not supported — falling back to CPU tiny-run (200 records, 1 epoch)")
+        print(f"GPU sm_{compute_cap[0]}{compute_cap[1]} not supported - falling back to CPU tiny-run (200 records, 1 epoch)")
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
         torch.cuda.is_available = lambda: False
     else:
-        print("No GPU — CPU tiny-run (200 records, 1 epoch)")
+        print("No GPU - CPU tiny-run (200 records, 1 epoch)")
     # CPU tiny-run: override epochs to 1, dataset already capped at 200
     EPOCHS = 1
     quant_config = None
@@ -290,7 +319,7 @@ else:
     use_bf16 = has_bf16
 
 trainer = SFTTrainer(
-    model=model, processing_class=tokenizer, train_dataset=dataset,
+    model=model, processing_class=tokenizer, train_dataset=dataset, eval_dataset=eval_dataset,
     args=SFTConfig(
         output_dir=OUTPUT_DIR,
         hub_model_id=HF_REPO,
@@ -305,6 +334,8 @@ trainer = SFTTrainer(
         max_grad_norm=0.3,
         lr_scheduler_type="cosine",
         logging_steps=10,
+        eval_strategy="steps" if eval_dataset is not None else "no",
+        eval_steps=30,
         save_strategy="epoch",
         save_total_limit=2,
         max_length=MAX_LEN,

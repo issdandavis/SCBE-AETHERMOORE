@@ -87,6 +87,18 @@ As of this consolidation pass:
 - Kaggle `polly-auto-dsl-syn-v2`: still running; promotion/eval blocked until completion.
 - HF Jobs from 2026-04-26 show errors/cancellations on several attempts; do not assume the HF v7 run is good until logs and output artifacts are verified.
 
+## HF Failure Analysis
+
+Actual HF job logs show three separate failure classes:
+
+| Failure class | Evidence | Fix in next run |
+|---|---|---|
+| Remote dataset path mismatch | Job `69edbf7cd70108f37acdfd30` loaded zero records because it requested `sft/<file>` paths while most files in `issdandavis/scbe-coding-agent-sft-stage6-repair-v7` live at repo root. | New launcher preflights exact required files before GPU launch. New v8 run uses `issdandavis/scbe-training-regularized-20260426` and exact `regularized/coding_model/...` paths. |
+| Unicode/charmap log failure | Earlier failed jobs emitted `charmap codec can't encode characters`, caused by non-ASCII script/log text being replayed through a Windows codepage path. | New runner keeps comments/log lines ASCII-safe and reconfigures stdout/stderr as UTF-8 with replacement. |
+| Timeout / oversized broad run | One l4x1 attempt timed out after dependency install/model setup/training. The broad v7 file list mixed multiple objectives and had no eval gate. | New v8 run is narrower: regularized coding bucket only, 120 max steps, 4h timeout, eval every 30 steps. |
+
+Adjacent reasoning: the broad v7 run was trying to make one adapter learn too many lanes at once. That increases runtime, makes failure diagnosis muddy, and risks capability interference. The corrected path is to train a focused `coding_model` adapter first, then train/helper-route aligned foundations and governance as separate bodies before any merge.
+
 ## Next Steps
 
 1. Wait for `dsl-syn-v2` to complete, pull artifacts, and generate a training report.
@@ -94,3 +106,43 @@ As of this consolidation pass:
 3. Push only passing adapters to Hugging Face, excluding optimizer/checkpoint junk.
 4. Rebuild adapter registry and run LoRA drift analysis.
 5. Promote route-first dual-node behavior before any full weighted merge.
+
+## New Run Prepared
+
+New scripts:
+
+- `scripts/hf_jobs/train_regularized_coding_v8.py`
+- `scripts/hf_jobs/launch_regularized_coding_v8.py`
+
+Dataset:
+
+- `issdandavis/scbe-training-regularized-20260426`
+
+Remote files:
+
+- `regularized/coding_model/coding_model_train.regularized.jsonl`
+- `regularized/coding_model/coding_model_eval.regularized.jsonl`
+
+Preflight result:
+
+```text
+Preflight OK: issdandavis/scbe-training-regularized-20260426 has 2 required files.
+```
+
+HF Jobs launch result:
+
+```text
+402 Payment Required: pre-paid credit balance is insufficient.
+```
+
+This was a billing/credits block before job start, not a training-code failure.
+
+Kaggle fallback:
+
+- Round: `regularized-coding-v8`
+- Kernel: `issacizrealdavis/polly-auto-regularized-coding-v8`
+- Launch time: 2026-04-26
+- Status after launch: `RUNNING`
+- Rationale: use the free Kaggle T4 lane while HF Jobs credits are blocked.
+
+Kaggle readiness now checks both local Kaggle dataset mirrors and the configured Hugging Face dataset repo, so HF-hosted regularized files do not falsely block terminal-driven launches.
