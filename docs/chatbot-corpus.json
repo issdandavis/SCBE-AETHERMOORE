@@ -7,7 +7,7 @@
       "title": "DARPA MATHBAC Proposal Spine",
       "path": "docs/proposals/DARPA_MATHBAC/",
       "tags": ["mathbac", "darpa", "proposal", "ta1"],
-      "excerpt": "SCBE is submitting to DARPA-SN-26-59 (MATHBAC). Full proposal due 2026-06-16. TA1 track locked: strictly inside, with cost, scope, and deliverables bounded. Lead thesis: geometric upper bound verified under seal. Joint partnership with Collin Walter / DAVA active."
+      "excerpt": "SCBE is submitting to DARPA-SN-26-59 (MATHBAC). Full proposal due 2026-06-16. TA1 track locked: strictly inside, with cost, scope, and deliverables bounded. Lead thesis: geometric upper bound verified under seal. Subcontractor teaming with Hoags Inc. (Collin Hoag, DAVA) countersigned 2026-04-23; load-bearing evidence is internal TS↔Python parity, with the third-party stack as corroborating witness."
     },
     {
       "id": "harmonic-wall-formula",
