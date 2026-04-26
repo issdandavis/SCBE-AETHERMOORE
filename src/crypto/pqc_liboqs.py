@@ -44,8 +44,13 @@ if not _FORCE_SKIP_LIBOQS:
 
         LIBOQS_AVAILABLE = True
         _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
-    except Exception:
+    except BaseException as exc:
+        if isinstance(exc, KeyboardInterrupt):
+            raise
         # oqs may be installed without shared libs; treat as unavailable and fall back.
+        # Some liboqs-python builds raise SystemExit during import when the shared
+        # library bootstrap fails; CI must still collect tests and use the lower
+        # proof tier instead of aborting pytest collection.
         LIBOQS_AVAILABLE = False
         _LIBOQS_VERSION = None
 else:
