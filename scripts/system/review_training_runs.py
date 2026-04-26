@@ -83,6 +83,10 @@ def repo_rel(path: Path) -> str:
 
 
 def classify_purpose(path_text: str, payload: dict[str, Any] | None = None) -> str:
+    if payload:
+        explicit_purpose = payload.get("purpose")
+        if isinstance(explicit_purpose, str) and explicit_purpose in {purpose for purpose, _ in PURPOSE_HINTS}:
+            return explicit_purpose
     text = path_text.lower().replace("\\", "/")
     if payload:
         for key in ("purpose", "profile_id", "run_id", "title", "name", "merge_id", "dataset", "base_model"):
@@ -194,6 +198,8 @@ def collect_run_reviews(roots: tuple[str, ...] = RUN_SCAN_ROOTS) -> list[dict[st
         if not isinstance(payload, (dict, list)):
             continue
         root_payload = payload if isinstance(payload, dict) else {}
+        if isinstance(root_payload.get("reports"), dict) and path.name.lower() in {"summary.json", "index.json"}:
+            continue
         signals = extract_metric_signals(payload)
         if not signals and path.suffix.lower() != ".ipynb":
             continue

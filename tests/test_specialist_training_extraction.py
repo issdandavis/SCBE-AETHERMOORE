@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EXTRACTOR_PATH = ROOT / "scripts" / "system" / "extract_specialist_training_records.py"
 REVIEW_PATH = ROOT / "scripts" / "system" / "review_training_runs.py"
+READINESS_PATH = ROOT / "scripts" / "benchmark" / "specialist_bucket_readiness.py"
 
 
 def _load(path: Path, name: str):
@@ -85,3 +86,32 @@ def test_gain_board_promotes_bucket_with_eval_and_metrics() -> None:
 
     assert board["coding_model"]["status"] == "promote_candidate"
     assert board["coding_model"]["top_promotion_score"] == 77.0
+
+
+def test_specialist_bucket_readiness_scores_valid_bucket(tmp_path: Path) -> None:
+    readiness = _load(READINESS_PATH, "specialist_bucket_readiness_test")
+    train_path = tmp_path / "train.jsonl"
+    eval_path = tmp_path / "eval.jsonl"
+    manifest_path = tmp_path / "manifest.json"
+
+    def row(idx: int, split: str) -> dict:
+        return {
+            "messages": [
+                {"role": "user", "content": f"request {idx}"},
+                {"role": "assistant", "content": f"response {idx}"},
+            ],
+            "metadata": {
+                "source_path": f"source/{split}/{idx}.json",
+                "dedupe_key": f"{split}-{idx}",
+            },
+        }
+
+    train_path.write_text("\n".join(json.dumps(row(i, "train")) for i in range(10)) + "\n", encoding="utf-8")
+    eval_path.write_text("\n".join(json.dumps(row(i, "eval")) for i in range(3)) + "\n", encoding="utf-8")
+    manifest = {"outputs": {"train": str(train_path), "eval": str(eval_path), "manifest": str(manifest_path)}}
+
+    report = readiness.benchmark_bucket("operator_agent_bus", manifest)
+
+    assert report["decision"] == "PASS"
+    assert report["readiness_score"] == 1.0
+    assert report["train_eval_overlap_count"] == 0
