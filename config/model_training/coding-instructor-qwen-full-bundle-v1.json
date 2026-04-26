@@ -1,0 +1,87 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-instructor-qwen-full-bundle-v1",
+  "title": "SCBE coding instructor Qwen full bundle v1",
+  "description": "Coding-only instructor lane for long-horizon teaching, checklist reasoning, checks-and-balances, bundle explanation, eval planning, and promotion decisions. This is paired with the coding-agent execution lane; it should not replace the fast coding agent.",
+  "backend": "unsloth-qlora",
+  "base_model": "Qwen/Qwen2.5-7B-Instruct",
+  "system_prompt": "You are the SCBE-AETHERMOORE coding instructor. Your job is long-horizon coding-system reasoning: teach the bundle, keep checklists, explain invariants, plan tests, identify regression risk, decide what is learned versus merely built, and coordinate checks and balances. Do not act as the fast patching agent. Keep coding as the only active domain; exclude lore, art, marketing, and unrelated physical-service operations.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "aligned_foundations_train.sft.jsonl",
+      "drill_langues_full_train.sft.jsonl",
+      "bijective_codeflow_v1_train.sft.jsonl",
+      "binary_interpretation_matrix_v1.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "atomic_workflow_stage6_train.sft.jsonl",
+      "atomic_workflow_stage6_repair_train.sft.jsonl",
+      "coding_system_full_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "aligned_foundations_holdout.sft.jsonl",
+      "drill_langues_full_holdout.sft.jsonl",
+      "bijective_codeflow_v1_holdout.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "atomic_workflow_stage6_holdout.sft.jsonl",
+      "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+      "coding_system_full_v1_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 4096,
+    "lora_rank": 32,
+    "lora_alpha": 64,
+    "lora_dropout": 0.0,
+    "learning_rate": 0.00018,
+    "num_train_epochs": 1,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": -1,
+    "packing": true,
+    "load_in_4bit": true,
+    "optim": "adamw_8bit",
+    "weight_decay": 0.01,
+    "lr_scheduler_type": "cosine",
+    "logging_steps": 25,
+    "save_strategy": "steps",
+    "save_steps": 100,
+    "save_total_limit": 2,
+    "dataloader_num_workers": 2,
+    "seed": 61,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-instructor-qwen-full-bundle-v1"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-instructor-qwen-full-bundle-v1",
+    "push_merged": false
+  },
+  "execution": {
+    "default_emit_path": "artifacts/model_training/coding-instructor-qwen-full-bundle-v1-train.py",
+    "recommended_target": "colab"
+  },
+  "evaluation": {
+    "role": "instructor",
+    "must_pass": [
+      "explain every coding bundle component without mixing in non-coding domains",
+      "produce a correct learned-vs-built checklist",
+      "plan base-vs-adapter evals for coding agent",
+      "identify long-horizon regression and deployment risks",
+      "preserve checks-and-balances before promotion"
+    ],
+    "paired_profile": "coding-agent-qwen-full-coding-system-v8"
+  }
+}

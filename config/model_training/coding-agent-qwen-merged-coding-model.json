@@ -34,6 +34,14 @@
       "adapter_repo": "issdandavis/scbe-coding-agent-qwen-atomic-workflow-stage6",
       "weight": 0.4,
       "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-dsl-synthesis-v1",
+      "stage": "dsl_synthesis_v1",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-dsl-synthesis-v1",
+      "weight": 0.0,
+      "required": false,
+      "promotion_pending": "v8 eval suite (executable accuracy + stage6 regression + frozen perplexity) on bijective_dsl_v1_holdout"
     }
   ],
   "blocked_adapters": [

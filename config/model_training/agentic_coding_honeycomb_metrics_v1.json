@@ -1,0 +1,329 @@
+{
+  "schema_version": "agentic_coding_honeycomb_metrics_v1",
+  "scope": "coding_agent_approval_movement_and_deployment_evaluation",
+  "score_range": [0.0, 1.0],
+  "cells": {
+    "C0_goal": {
+      "role": "bus_driver_coordinator",
+      "function": "Keep task goal, user intent, and current state aligned.",
+      "entry": ["user_request", "new_task_packet"],
+      "exit": ["route_exists", "owner_exists"]
+    },
+    "C1_interpret": {
+      "role": "interpreter",
+      "function": "Convert rough input into a stable coding requirement.",
+      "entry": ["ambiguous_input", "compressed_user_stream"],
+      "exit": ["requirement_testable", "scope_bounded"]
+    },
+    "C2_evidence": {
+      "role": "researcher_reader",
+      "function": "Gather repo files, logs, docs, and benchmark facts.",
+      "entry": ["requirement_needs_grounding"],
+      "exit": ["evidence_packet_exists"]
+    },
+    "C3_invent": {
+      "role": "inventor",
+      "function": "Propose a new route or mechanism when existing paths are insufficient.",
+      "entry": ["existing_path_insufficient"],
+      "exit": ["idea_testable", "risk_bounded"]
+    },
+    "C4_review": {
+      "role": "reviewer",
+      "function": "Check side effects, missing tests, overlooked constraints, and approval decision.",
+      "entry": ["patch_plan_or_output_proposed"],
+      "exit": ["approve", "revise", "block", "escalate"]
+    },
+    "C5_build": {
+      "role": "coding_worker",
+      "function": "Make the patch, script, dataset, or config change.",
+      "entry": ["approved_narrow_implementation"],
+      "exit": ["patch_complete", "locally_checkable"]
+    },
+    "C6_test": {
+      "role": "tester",
+      "function": "Run targeted, boundary, and before/after checks.",
+      "entry": ["patch_or_dataset_exists"],
+      "exit": ["test_evidence_captured"]
+    },
+    "C7_stress": {
+      "role": "deployment_stress_tester",
+      "function": "Check timeout, low disk, crash recovery, auth, provider fallback, and degraded mode.",
+      "entry": ["normal_tests_passed"],
+      "exit": ["stress_report_captured"]
+    },
+    "C8_merge": {
+      "role": "integrator",
+      "function": "Merge adapters, datasets, or code into a promotion lane.",
+      "entry": ["test_and_stress_evidence_exists"],
+      "exit": ["promotion_decision", "rollback_decision"]
+    },
+    "C9_memory": {
+      "role": "archivist",
+      "function": "Preserve trace, metrics, and unresolved ideas.",
+      "entry": ["completed_or_failed_move"],
+      "exit": ["searchable_artifact_exists"]
+    }
+  },
+  "allowed_edges": [
+    ["C0_goal", "C1_interpret"],
+    ["C1_interpret", "C2_evidence"],
+    ["C2_evidence", "C4_review"],
+    ["C4_review", "C5_build"],
+    ["C5_build", "C6_test"],
+    ["C6_test", "C4_review"],
+    ["C4_review", "C3_invent"],
+    ["C3_invent", "C2_evidence"],
+    ["C6_test", "C7_stress"],
+    ["C7_stress", "C8_merge"],
+    ["C8_merge", "C9_memory"],
+    ["C4_review", "C9_memory"],
+    ["C7_stress", "C1_interpret"],
+    ["C8_merge", "C0_goal"]
+  ],
+  "forbidden_edges": [
+    ["C3_invent", "C5_build"],
+    ["C5_build", "C8_merge"],
+    ["C8_merge", "deployment_without_stress_gate"],
+    ["any", "secret_exposure"],
+    ["any_worker", "broad_destructive_cleanup_without_offload"]
+  ],
+  "invention_boundary": {
+    "required_anchors": ["memory", "evidence", "rules", "need"],
+    "rule": "Invention must originate from prior memory, current evidence, system rules, and a real need. Invention without these anchors is treated as hallucination risk.",
+    "required_path": ["C3_invent", "C2_evidence", "C4_review"],
+    "forbidden_path": ["C3_invent", "C5_build"],
+    "memory_requirement": "Every invention branch writes a trace to C9_memory even when pruned."
+  },
+  "coding_card_state_model": {
+    "rules": "Language, runtime, tool, security, and project constraints.",
+    "cards": ["files", "commands", "tests", "adapters", "datasets", "apis", "patches", "errors"],
+    "orientation": "The same card can be safe or unsafe depending on context, such as dry-run versus live mutation.",
+    "stacking": "Legal stacks include patch -> targeted_test -> review -> merge. Illegal stacks include invent -> build -> deploy without evidence and stress gates.",
+    "hidden_state": ["dirty_git_tree", "secrets", "low_disk", "unstable_gpu", "auth_state", "provider_limits"]
+  },
+  "choice_script_achievement_layer": {
+    "purpose": "Compress multiple possible agent paths into repeatable decision matrices.",
+    "record_schema": ["scenario", "choices", "answer", "honeycomb_move", "achievements", "receipt"],
+    "achievement_types": [
+      "timeout_memory_used",
+      "semantic_receipt",
+      "outside_the_cave",
+      "targeted_test_gate",
+      "one_variable_at_a_time",
+      "bounded_invention",
+      "secret_boundary_held"
+    ],
+    "training_outputs": [
+      "training-data/sft/honeycomb_choice_achievement_v1.sft.jsonl",
+      "training-data/sft/multirep_choice_matrix_v1.sft.jsonl"
+    ]
+  },
+  "multi_representation_choice_encoding": {
+    "surfaces": ["english", "python", "utf8_bytes", "binary", "hex"],
+    "round_trip_rules": [
+      "english -> utf8_bytes -> binary -> utf8_bytes -> english",
+      "english -> utf8_bytes -> hex -> utf8_bytes -> english",
+      "python -> utf8_bytes -> binary -> utf8_bytes -> python",
+      "python -> utf8_bytes -> hex -> utf8_bytes -> python"
+    ],
+    "purpose": "Teach that choice decisions are stable objects with multiple faithful surfaces."
+  },
+  "movement_operations": {
+    "HOLD": {
+      "meaning": "Stay in current cell and gather more evidence.",
+      "condition": "evidence < 0.50 or interpretation_quality < 0.60"
+    },
+    "MOVE": {
+      "meaning": "Hand task to an adjacent cell.",
+      "condition": "move_score >= 0.60 and destination_preconditions_pass == true"
+    },
+    "SPLIT": {
+      "meaning": "Fork one task into multiple adjacent cells.",
+      "condition": "move_score >= 0.70 and subtasks_independent == true"
+    },
+    "MERGE": {
+      "meaning": "Combine agent outputs.",
+      "condition": "move_score >= 0.75 and tests_stress_evidence_exists == true"
+    },
+    "RETHINK": {
+      "meaning": "Route back to interpretation or evidence.",
+      "condition": "rethink_trigger >= 0.70"
+    },
+    "ESCALATE": {
+      "meaning": "Stop agent autonomy and ask the operator.",
+      "condition": "system_stability < 0.40 or authorization_unclear == true or mutates_system_state == true"
+    },
+    "PRUNE": {
+      "meaning": "Stop a branch and preserve trace.",
+      "condition": "low_value == true or failed_stress == true or duplicated_work == true"
+    }
+  },
+  "layers": [
+    {
+      "id": "L0",
+      "name": "center_goal",
+      "metrics": ["user_intent_fit"]
+    },
+    {
+      "id": "L1",
+      "name": "evidence_ring",
+      "metrics": ["scope_fit", "evidence", "interpretation_quality", "understanding_value"]
+    },
+    {
+      "id": "L2",
+      "name": "control_ring",
+      "metrics": ["test_plan", "reversibility", "secret_risk", "review_depth", "rethink_trigger"]
+    },
+    {
+      "id": "L3",
+      "name": "deployment_ring",
+      "metrics": ["system_stability", "deployment_stress_fit", "delivery_fit", "invention_value"]
+    }
+  ],
+  "metrics": {
+    "user_intent_fit": {
+      "polarity": "higher_is_better",
+      "definition": "Alignment with the user's current concrete coding/project goal.",
+      "neighbors": ["scope_fit", "interpretation_quality", "understanding_value"]
+    },
+    "scope_fit": {
+      "polarity": "higher_is_better",
+      "definition": "Fit between proposed action and changed repo/runtime surface.",
+      "neighbors": ["user_intent_fit", "evidence", "test_plan"]
+    },
+    "evidence": {
+      "polarity": "higher_is_better",
+      "definition": "Quality of observed files, logs, tests, source material, or error evidence.",
+      "neighbors": ["scope_fit", "interpretation_quality", "review_depth"]
+    },
+    "interpretation_quality": {
+      "polarity": "higher_is_better",
+      "definition": "Ability to translate rough or compressed user language into buildable requirements without confusing metaphor for implementation.",
+      "neighbors": ["user_intent_fit", "evidence", "understanding_value"]
+    },
+    "understanding_value": {
+      "polarity": "higher_is_better",
+      "definition": "How much the action improves reusable system understanding, traceability, or future operator judgment.",
+      "neighbors": ["interpretation_quality", "review_depth", "invention_value"]
+    },
+    "test_plan": {
+      "polarity": "higher_is_better",
+      "definition": "Presence and fit of targeted regression, boundary, stress, or before/after verification.",
+      "neighbors": ["scope_fit", "reversibility", "deployment_stress_fit"]
+    },
+    "reversibility": {
+      "polarity": "higher_is_better",
+      "definition": "Ability to undo, isolate, stage, or roll back the action.",
+      "neighbors": ["test_plan", "secret_risk", "system_stability"]
+    },
+    "secret_risk": {
+      "polarity": "higher_is_worse",
+      "definition": "Risk of exposing API keys, credentials, private files, customer data, or protected config.",
+      "neighbors": ["reversibility", "review_depth", "system_stability"]
+    },
+    "review_depth": {
+      "polarity": "higher_is_better",
+      "definition": "Quality of pre-execution or pre-promotion review across side effects, missing context, and failure modes.",
+      "neighbors": ["evidence", "understanding_value", "rethink_trigger"]
+    },
+    "rethink_trigger": {
+      "polarity": "higher_means_pause",
+      "definition": "Strength of contradictory evidence requiring re-plan before continuing.",
+      "neighbors": ["review_depth", "deployment_stress_fit", "system_stability"]
+    },
+    "system_stability": {
+      "polarity": "higher_is_better",
+      "definition": "Expected effect on active machine, repo, runtime, and provider stability.",
+      "neighbors": ["reversibility", "secret_risk", "deployment_stress_fit"]
+    },
+    "deployment_stress_fit": {
+      "polarity": "higher_is_better",
+      "definition": "Expected behavior under constraints such as timeouts, low disk, crash recovery, provider fallback, and network restriction.",
+      "neighbors": ["test_plan", "system_stability", "delivery_fit"]
+    },
+    "delivery_fit": {
+      "polarity": "higher_is_better",
+      "definition": "DORA-style delivery value: improves lead time, recovery time, change fail rate, or rework rate.",
+      "neighbors": ["deployment_stress_fit", "invention_value", "user_intent_fit"]
+    },
+    "invention_value": {
+      "polarity": "higher_is_better_when_grounded",
+      "definition": "Useful novelty that solves an observed gap and can be tested without destabilizing the main lane.",
+      "neighbors": ["understanding_value", "delivery_fit", "evidence"]
+    }
+  },
+  "hard_rules": [
+    {
+      "decision": "BLOCK",
+      "condition": "secret_risk >= 0.80"
+    },
+    {
+      "decision": "BLOCK",
+      "condition": "reversibility < 0.20 and scope_fit < 0.50"
+    },
+    {
+      "decision": "ESCALATE",
+      "condition": "system_stability < 0.40 and mutates_system_state == true"
+    },
+    {
+      "decision": "REVISE",
+      "condition": "rethink_trigger >= 0.70"
+    },
+    {
+      "decision": "REVISE",
+      "condition": "test_plan < 0.50 and changes_code_or_config == true"
+    },
+    {
+      "decision": "REVISE",
+      "condition": "deployment_stress_fit < 0.50 and promotes_or_deploys == true"
+    }
+  ],
+  "composite_scores": {
+    "move_score": {
+      "user_intent_fit": 0.25,
+      "evidence": 0.2,
+      "interpretation_quality": 0.15,
+      "review_depth": 0.15,
+      "deployment_stress_fit": 0.15,
+      "delivery_fit": 0.1,
+      "minus_secret_risk": -0.3,
+      "minus_rethink_trigger": -0.2
+    },
+    "understanding_core": {
+      "interpretation_quality": 0.3,
+      "evidence": 0.25,
+      "understanding_value": 0.25,
+      "review_depth": 0.2
+    },
+    "safety_core": {
+      "reversibility": 0.25,
+      "test_plan": 0.25,
+      "system_stability": 0.25,
+      "one_minus_secret_risk": 0.25
+    },
+    "deployment_core": {
+      "deployment_stress_fit": 0.35,
+      "delivery_fit": 0.25,
+      "system_stability": 0.2,
+      "test_plan": 0.2
+    },
+    "innovation_core": {
+      "invention_value": 0.4,
+      "evidence": 0.25,
+      "test_plan": 0.2,
+      "reversibility": 0.15
+    },
+    "approval_score": {
+      "user_intent_fit": 0.3,
+      "understanding_core": 0.25,
+      "safety_core": 0.25,
+      "deployment_core": 0.2
+    }
+  },
+  "approval_threshold": 0.75,
+  "sources": [
+    "https://www.nist.gov/itl/ai-risk-management-framework",
+    "https://www.iso.org/standard/78176.html",
+    "https://dora.dev/guides/dora-metrics/"
+  ]
+}

@@ -261,6 +261,17 @@ def dispatch_packet(packet: dict[str, Any]) -> dict[str, Any]:
     return packet
 
 
+def enforce_pre_merge_gates(packet: dict[str, Any], force: bool = False) -> None:
+    gates = packet.get("pre_merge_gates") or {}
+    if force or not gates:
+        return
+    notes = gates.get("notes") or "Pre-merge gates are declared but not satisfied in this dispatcher."
+    raise RuntimeError(
+        "Refusing to dispatch coding model merge without explicit --force. "
+        f"Gate notes: {notes}"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -270,9 +281,15 @@ def main() -> int:
         item.add_argument("--artifact-root", default=str(DEFAULT_ARTIFACT_ROOT))
         item.add_argument("--flavor", default="")
         item.add_argument("--timeout", default="")
+        item.add_argument("--force", action="store_true", help="Bypass declared pre_merge_gates.")
     args = parser.parse_args()
     packet = build_packet(Path(args.profile), Path(args.artifact_root), flavor=args.flavor or None, timeout=args.timeout or None)
     if args.command == "dispatch":
+        try:
+            enforce_pre_merge_gates(packet, force=bool(args.force))
+        except RuntimeError as exc:
+            print(f"BLOCKED: {exc}")
+            return 2
         packet = dispatch_packet(packet)
     print(json.dumps(packet, indent=2, ensure_ascii=True))
     return 0
