@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from zipfile import ZipFile
 
-import onnx
+import pytest
+
+onnx = pytest.importorskip("onnx")
+pytest.importorskip("torch")
+pytest.importorskip("onnxscript")
 
 from neurogolf.ir import (
     make_copy_color_program,
@@ -40,6 +44,17 @@ def test_build_submission_zip_with_exported_program(tmp_path):
 
     with ZipFile(zip_path) as zf:
         assert zf.namelist() == ["task001.onnx"]
+
+
+def test_build_submission_zip_rejects_noncanonical_arc_hash(tmp_path):
+    onnx_path = tmp_path / "task001.onnx"
+    zip_path = tmp_path / "submission.zip"
+    program = make_shift_color_remap_program(shift_x=1, shift_y=0, mapping={1: 7})
+
+    export_program_onnx(program, onnx_path)
+
+    with pytest.raises(ValueError, match="canonical competition key"):
+        build_submission_zip({"136b0064": onnx_path}, zip_path)
 
 
 def test_export_program_onnx_for_flip_then_remap(tmp_path):

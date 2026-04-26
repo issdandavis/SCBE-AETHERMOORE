@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   stats:
@@ -98,7 +99,14 @@ jobs:
               print(f"  {k}: {v:,}" if isinstance(v, int) else f"  {k}: {v}")
           PYEOF
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
+      - uses: peter-evans/create-pull-request@v7
         with:
-          commit_message: "chore(stats): update daily repo stats badges"
-          file_pattern: "docs/static/badges/"
+          add-paths: "docs/static/badges/"
+          branch: "automation/daily-repo-stats"
+          commit-message: "chore(stats): update daily repo stats badges"
+          title: "chore(stats): update daily repo stats badges"
+          body: |
+            Automated daily repo stats badge refresh.
+
+            This workflow updates the generated badge JSON files under `docs/static/badges/`
+            through a pull request so it complies with branch protection on `main`.

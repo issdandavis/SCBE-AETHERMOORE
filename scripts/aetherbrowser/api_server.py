@@ -2762,6 +2762,34 @@ async def vault_sync():
 # =========================================================================== #
 
 
+class ContactFormPayload(BaseModel):
+    name: str
+    email: str
+    subject: str
+    message: str
+    page: Optional[str] = None
+
+
+@app.post("/api/contact")
+async def contact_submit(payload: ContactFormPayload):
+    """Receive contact form submissions from the website and notify via email."""
+    try:
+        from scripts.system.email_service import send_contact_notification
+        result = send_contact_notification(
+            name=payload.name,
+            email=payload.email,
+            subject=payload.subject,
+            message=payload.message,
+            page=payload.page,
+        )
+        if result["ok"]:
+            return {"ok": True, "message": "Message sent. We usually reply within 24 hours."}
+        return {"ok": False, "error": result.get("error", "Email delivery failed")}
+    except Exception as e:
+        logger.warning("Contact form error: %s", e)
+        return {"ok": False, "error": "Unable to send message. Please try again later."}
+
+
 @app.post("/api/ops/check-email")
 async def ops_check_email():
     """Run the Apollo email reader and return classified digests."""
@@ -3465,6 +3493,156 @@ async def ide_logs_tail(kind: str = Query("chat"), n: int = Query(50, ge=1, le=5
 
 # In-memory job store (safe commands only). Not persisted.
 _cli_jobs: dict[str, dict[str, Any]] = {}
+
+
+# =========================================================================== #
+#  Polly — AI Assistant Endpoints
+# =========================================================================== #
+
+from pydantic import BaseModel
+
+class PollyChatPayload(BaseModel):
+    message: str
+    context: Optional[str] = "site"
+    thinking: Optional[bool] = False
+
+class PollyRespondPayload(BaseModel):
+    text: str
+    context: Optional[str] = "site"
+    intent: Optional[str] = ""
+    thinking: Optional[bool] = False
+
+class PollySearchPayload(BaseModel):
+    query: str
+
+class PollyDelegatePayload(BaseModel):
+    text: str
+
+class PollyEmailPayload(BaseModel):
+    to: str
+    subject: str
+    body: str
+
+class PollySlackPayload(BaseModel):
+    message: str
+    channel: Optional[str] = None
+
+
+class PollyCallPayload(BaseModel):
+    phone: str
+    name: Optional[str] = ""
+
+
+@app.post("/v1/polly/call")
+async def polly_call(payload: PollyCallPayload):
+    """Click-to-call via Twilio. Connects visitor to business number."""
+    account_sid = os.environ.get("TWILIO_ACCOUNT_SID", "")
+    auth_token = os.environ.get("TWILIO_AUTH_TOKEN", "")
+    twilio_number = os.environ.get("TWILIO_PHONE_NUMBER", "")
+    business_number = os.environ.get("BUSINESS_PHONE_NUMBER", "")
+
+    if not all([account_sid, auth_token, twilio_number, business_number]):
+        logger.warning("Twilio not configured — missing credentials")
+        return {"ok": False, "error": "Phone service not yet configured. Email issac@aethermoorgames.com instead."}
+
+    try:
+        from twilio.rest import Client
+        client = Client(account_sid, auth_token)
+        twiml = f'<Response><Dial>{business_number}</Dial></Response>'
+        call = client.calls.create(
+            to=payload.phone,
+            from_=twilio_number,
+            twiml=twiml
+        )
+        logger.info("Twilio call initiated: %s to %s", call.sid, payload.phone)
+        return {"ok": True, "data": {"call_sid": call.sid, "status": call.status}}
+    except Exception as e:
+        logger.warning("Twilio call error: %s", e)
+        return {"ok": False, "error": "Could not place call. Please try again or email us."}
+
+
+@app.post("/v1/polly/chat")
+async def polly_chat(payload: PollyChatPayload):
+    """Main chat endpoint for Polly sidebar. Supports thinking mode."""
+    try:
+        from scripts.system.polly_service import chat
+        result = await chat(payload.message, payload.context, thinking=payload.thinking)
+        return {"ok": True, "data": result}
+    except Exception as e:
+        logger.warning("Polly chat error: %s", e)
+        return {"ok": False, "error": "Chat service temporarily unavailable."}
+
+
+@app.post("/v1/polly/respond")
+async def polly_respond(payload: PollyRespondPayload):
+    """Alternative response endpoint for Polly."""
+    try:
+        from scripts.system.polly_service import respond
+        result = await respond(payload.text, payload.context, payload.intent, thinking=payload.thinking)
+        return {"ok": True, "data": result}
+    except Exception as e:
+        logger.warning("Polly respond error: %s", e)
+        return {"ok": False, "error": "Response service temporarily unavailable."}
+
+
+@app.get("/v1/polly/context")
+async def polly_context():
+    """Return backend capabilities and service status."""
+    try:
+        from scripts.system.polly_service import get_context
+        result = await get_context()
+        return {"ok": True, "data": result}
+    except Exception as e:
+        logger.warning("Polly context error: %s", e)
+        return {"ok": False, "error": "Context service temporarily unavailable."}
+
+
+@app.post("/v1/polly/search")
+async def polly_search(payload: PollySearchPayload):
+    """Real web search via Tavily + intent fallback."""
+    try:
+        from scripts.system.polly_service import search
+        result = await search(payload.query)
+        return result
+    except Exception as e:
+        logger.warning("Polly search error: %s", e)
+        return {"ok": False, "error": "Search service temporarily unavailable."}
+
+
+@app.post("/v1/polly/delegate")
+async def polly_delegate(payload: PollyDelegatePayload):
+    """Delegation endpoint — routes to appropriate handler."""
+    try:
+        from scripts.system.polly_service import delegate
+        result = await delegate(payload.text)
+        return {"ok": True, "data": result}
+    except Exception as e:
+        logger.warning("Polly delegate error: %s", e)
+        return {"ok": False, "error": "Delegation service temporarily unavailable."}
+
+
+@app.post("/v1/polly/email")
+async def polly_email(payload: PollyEmailPayload):
+    """Send email from Polly chat via Proton SMTP."""
+    try:
+        from scripts.system.polly_service import send_email_from_chat
+        result = await send_email_from_chat(payload.to, payload.subject, payload.body)
+        return {"ok": result["ok"], "data": result}
+    except Exception as e:
+        logger.warning("Polly email error: %s", e)
+        return {"ok": False, "error": "Email service temporarily unavailable."}
+
+
+@app.post("/v1/polly/slack")
+async def polly_slack(payload: PollySlackPayload):
+    """Send Slack notification from Polly chat."""
+    try:
+        from scripts.system.polly_service import notify_slack
+        result = await notify_slack(payload.message, payload.channel)
+        return {"ok": result["ok"], "data": result}
+    except Exception as e:
+        logger.warning("Polly slack error: %s", e)
+        return {"ok": False, "error": "Slack service temporarily unavailable."}
 
 
 # =========================================================================== #

@@ -28,14 +28,14 @@ from pathlib import Path
 
 import pytest
 
+torch = pytest.importorskip("torch")
+
 # Ensure src/ is importable
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT / "src"))
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
-
-import torch
 
 from crypto.sacred_tongues import (
     TONGUES,
@@ -450,6 +450,7 @@ class TestHFInterfaceContract:
         # Verify files exist
         assert (Path(save_dir) / "tokenizer_config.json").exists()
         assert (Path(save_dir) / "vocab.json").exists()
+        assert (Path(save_dir) / "tokenizer.json").exists()
 
         # Load and verify identical behavior
         loaded = SacredTonguesHFTokenizer.from_pretrained(save_dir)

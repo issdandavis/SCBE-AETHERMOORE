@@ -7,7 +7,6 @@ from .ir import StraightLineProgram
 from .onnx_emit import export_program_onnx
 from .solver import SynthesizedSolution, execute_program, synthesize_program
 from .structural_encode import StructuralEncoding, encode_grid_structurally
-from .validate import ValidationReport, validate_submission_model
 
 __all__ = [
     "ARCExample",
@@ -27,6 +26,17 @@ __all__ = [
     "score_from_total_cost",
     "synthesize_program",
     "SynthesizedSolution",
-    "ValidationReport",
-    "validate_submission_model",
 ]
+
+try:
+    from .validate import ValidationReport, validate_submission_model
+except ImportError:  # Optional ONNX dependency for validation-only workflows.
+    ValidationReport = None  # type: ignore[assignment]
+    validate_submission_model = None  # type: ignore[assignment]
+else:
+    __all__.extend(
+        [
+            "ValidationReport",
+            "validate_submission_model",
+        ]
+    )
