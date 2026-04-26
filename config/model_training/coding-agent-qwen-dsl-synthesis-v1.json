@@ -1,0 +1,80 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-dsl-synthesis-v1",
+  "title": "SCBE coding agent Qwen DSL synthesis v1",
+  "description": "L_dsl_synthesis Step 3 lane. Adds bijective_dsl_v1 program-emission training shape (8 SCBE primitives: tongue_shift, phi_weight, mobius_phase, breath, compose, vote, well_select, seal) on top of the v7 stage6-repair dataset mix. Teaches inter-tongue program emission (Hodel/icecuber pattern) without removing existing direct-generation lanes. Train script does not yet support adapter warm-start, so this is a fresh LoRA on base with v7 mix expanded to absorb +939 DSL rows.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Preserve token-to-binary/hex flow across code, semantic overlay, structural chemistry frame, and resource-aware workflow composition. Keep material chemistry separate from structural chemistry templates, predict resource overruns before commit, and use steady-state fallback plus re-advance when a launch would exceed budget. When asked to emit a DSL program, use only the 8 SCBE primitives: tongue_shift, phi_weight, mobius_phase, breath, compose, vote, well_select, seal. Programs are sequences of primitive calls, one per line, depth at most 3 from the demonstrated synthesis budget.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "bijective_codeflow_v1_train.sft.jsonl",
+      "cross_tongue_dialogue_bijective_v1_train.sft.jsonl",
+      "drill_langues_full_train.sft.jsonl",
+      "command_lattice_seed_train.sft.jsonl",
+      "binary_interpretation_matrix_v1.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "atomic_workflow_stage6_train.sft.jsonl",
+      "atomic_workflow_stage6_repair_train.sft.jsonl",
+      "bijective_dsl_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "bijective_codeflow_v1_holdout.sft.jsonl",
+      "cross_tongue_dialogue_bijective_v1_holdout.sft.jsonl",
+      "drill_langues_full_holdout.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "atomic_workflow_stage6_holdout.sft.jsonl",
+      "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+      "bijective_dsl_v1_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 1024,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 5e-5,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "warmup_ratio": 0.05,
+    "max_steps": 460,
+    "max_train_records": 4900,
+    "max_eval_records": 240,
+    "logging_steps": 10,
+    "save_steps": 230,
+    "save_total_limit": 2,
+    "gradient_checkpointing": true,
+    "seed": 61,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-dsl-synthesis-v1"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-dsl-synthesis-v1",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-dsl-synthesis-v1",
+    "push_merged": false
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "l4x1",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-dsl-synthesis-v1-hf-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/dsl_synthesis_v1_eval_contract.json",
+    "notes": "Two evaluation contracts apply. (1) Stage 6 frozen contract at config/model_training/stage6_atomic_workflow_eval_contract.json must continue to pass to confirm no regression on existing capability. (2) DSL synthesis contract requires executable_accuracy >= 0.50 on bijective_dsl_v1_holdout (per L_dsl_synthesis Step 4 acceptance gate)."
+  }
+}

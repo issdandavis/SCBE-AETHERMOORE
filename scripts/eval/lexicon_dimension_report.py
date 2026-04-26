@@ -7,9 +7,13 @@ Reads the three places the tongue->language pairing currently lives:
   3. experiments/bijective_2tongue_build/run_full_braid.py:OPERATIONAL
      and the 'Spirit' column in its module docstring          (operational/spirit maps)
 
+It also drift-checks the 8-name DSL primitive set sourced from
+`python/scbe/dsl/primitives.py:PRIMITIVE_TABLE` against an embedded reference
+(see L_dsl_synthesis Phase 2).
+
 Emits a phase/weight/bridge table as JSON + MD and exits non-zero if the
-canon doc, SFT manifests, or embedded canonical reference disagree without
-an explicit --allow-drift override.
+canon doc, SFT manifests, embedded canonical reference, or DSL primitive set
+disagree without an explicit --allow-drift override.
 
 Operational and spirit maps are EXPECTED to differ from canon; those
 differences are reported but do not fail the gate.
@@ -35,8 +39,23 @@ ROOT = Path(__file__).resolve().parents[2]
 CANON_DOC = ROOT / "docs" / "TONGUE_CODING_LANGUAGE_MAP.md"
 BRAID_FILE = ROOT / "experiments" / "bijective_2tongue_build" / "run_full_braid.py"
 SFT_DIR = ROOT / "training-data" / "sft"
+DSL_PRIMITIVES_FILE = ROOT / "python" / "scbe" / "dsl" / "primitives.py"
 
 TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
+
+# Canonical DSL primitive set (L_dsl_synthesis Phase 2). If the
+# PRIMITIVE_TABLE in python/scbe/dsl/primitives.py drifts away from this
+# set, the gate fails — bump deliberately when adding/removing a primitive.
+DSL_PRIMITIVES_REFERENCE = frozenset({
+    "tongue_shift",
+    "phi_weight",
+    "mobius_phase",
+    "breath",
+    "compose",
+    "vote",
+    "well_select",
+    "seal",
+})
 
 # Embedded canonical reference. If the canon doc edits drift away from this
 # the gate fails — bump this constant deliberately when the canon truly moves.
@@ -143,6 +162,56 @@ def parse_braid(path: Path) -> tuple[dict[str, dict], dict[str, str]]:
         if m:
             spirit[m.group("tongue")] = m.group("spirit").strip().lower()
     return operational, spirit
+
+
+DSL_PRIMITIVE_KEY_RE = re.compile(r'^\s*"([a-z_]+)"\s*:', re.MULTILINE)
+
+
+def parse_dsl_primitives(path: Path) -> set[str]:
+    """Pull the keys of PRIMITIVE_TABLE from primitives.py without importing it.
+
+    Regex-based on purpose: this gate must not require numpy or any SCBE
+    runtime to be importable just to verify name drift.
+    """
+    if not path.exists():
+        raise FileNotFoundError(f"DSL primitives file missing: {path}")
+    text = path.read_text(encoding="utf-8")
+    marker = "PRIMITIVE_TABLE"
+    idx = text.find(marker)
+    if idx < 0:
+        return set()
+    open_brace = text.find("{", idx)
+    close_brace = text.find("}", open_brace)
+    if open_brace < 0 or close_brace < 0:
+        return set()
+    block = text[open_brace : close_brace + 1]
+    return set(DSL_PRIMITIVE_KEY_RE.findall(block))
+
+
+def diff_dsl_primitives(found: set[str], findings: list[DriftFinding]) -> None:
+    expected = DSL_PRIMITIVES_REFERENCE
+    for missing in sorted(expected - found):
+        findings.append(
+            DriftFinding(
+                severity="fail",
+                source="dsl_primitives",
+                tongue="-",
+                expected=missing,
+                found="<missing>",
+                detail=f"PRIMITIVE_TABLE is missing canonical primitive {missing!r}",
+            )
+        )
+    for extra in sorted(found - expected):
+        findings.append(
+            DriftFinding(
+                severity="fail",
+                source="dsl_primitives",
+                tongue="-",
+                expected="<not in reference>",
+                found=extra,
+                detail=f"PRIMITIVE_TABLE has unexpected primitive {extra!r}; bump DSL_PRIMITIVES_REFERENCE deliberately",
+            )
+        )
 
 
 def parse_sft_manifests(sft_dir: Path) -> list[tuple[Path, dict[str, str]]]:
@@ -287,6 +356,16 @@ def render_md(payload: dict) -> str:
             f"{r['bridge_label'] or '-'} |"
         )
     lines.append("")
+    if "dsl_primitives" in payload:
+        dsl = payload["dsl_primitives"]
+        lines.append("## DSL primitives")
+        lines.append("")
+        lines.append(f"Source: `{dsl['source']}`")
+        lines.append("")
+        lines.append(f"- Reference (8): {', '.join(dsl['reference'])}")
+        lines.append(f"- Found ({len(dsl['found'])}): {', '.join(dsl['found']) if dsl['found'] else '<none>'}")
+        lines.append("")
+
     fail = payload["fail_count"]
     warn = payload["warn_count"]
     lines.append(f"**Drift findings**: {fail} fail, {warn} warn")
@@ -343,8 +422,16 @@ def main() -> int:
         rel = path.relative_to(ROOT).as_posix()
         diff_against_canon(f"sft:{rel}", mapping, "fail", findings)
 
+    dsl_primitives_found = parse_dsl_primitives(DSL_PRIMITIVES_FILE)
+    diff_dsl_primitives(dsl_primitives_found, findings)
+
     rows = build_rows(operational, spirit, sft_manifests)
     payload = render_json(rows, findings)
+    payload["dsl_primitives"] = {
+        "source": str(DSL_PRIMITIVES_FILE.relative_to(ROOT)),
+        "reference": sorted(DSL_PRIMITIVES_REFERENCE),
+        "found": sorted(dsl_primitives_found),
+    }
 
     out_dir = args.output_root
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -361,6 +448,7 @@ def main() -> int:
         print("=== Lexicon Dimension Report ===")
         print(f"Canon doc:    {CANON_DOC.relative_to(ROOT)}")
         print(f"Operational:  {BRAID_FILE.relative_to(ROOT)}")
+        print(f"DSL prims:    {DSL_PRIMITIVES_FILE.relative_to(ROOT)} ({len(dsl_primitives_found)} found, {len(DSL_PRIMITIVES_REFERENCE)} expected)")
         print(f"SFT manifests checked: {len(sft_manifests)}")
         print()
         print(
