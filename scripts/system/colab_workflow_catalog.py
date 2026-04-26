@@ -45,6 +45,13 @@ NOTEBOOKS: list[dict[str, Any]] = [
         "summary": "QLoRA notebook for the SCBE coding-primaries lane across Python, JavaScript, Rust, Mathematica, Haskell, and Markdown.",
     },
     {
+        "name": "operator-specialty",
+        "aliases": ["operator", "operator-coder", "agentic-operator", "operator-specialty-v1"],
+        "path": "artifacts/colab/operator_agentic_coder_specialty_v1.ipynb",
+        "category": "training",
+        "summary": "Generated Colab lane for agentic-operator coding, command recall, T/EML reasoning, and honeycomb choice records.",
+    },
+    {
         "name": "aethermoor-finetune",
         "aliases": ["aethermoor", "aethermoor-finetune", "game-finetune"],
         "path": "notebooks/colab_aethermoor_finetune.ipynb",

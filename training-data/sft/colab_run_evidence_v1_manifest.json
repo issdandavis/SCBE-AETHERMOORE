@@ -1,0 +1,30 @@
+{
+  "counts": {
+    "execute_result": 4,
+    "execute_status": 5,
+    "handoff": 4,
+    "handoff_error": 2,
+    "run_packet": 17,
+    "service_log": 3,
+    "smoke": 3,
+    "worker_session": 2
+  },
+  "counts_by_classification": {
+    "browser_verified_notebook": 3,
+    "browser_worker_blocked": 2,
+    "browser_worker_verified": 2,
+    "handoff_live": 3,
+    "handoff_ready": 1,
+    "run_packet": 17,
+    "runtime_allocation_only": 4,
+    "service_error": 2,
+    "service_result_dump": 1,
+    "status_receipt": 5
+  },
+  "generated_at_utc": "2026-04-26T21:11:02Z",
+  "output": "training-data\\sft\\colab_run_evidence_v1.sft.jsonl",
+  "promotion_evidence_count": 0,
+  "record_count": 40,
+  "schema_version": "scbe_sft_manifest_v1",
+  "source_report": "artifacts\\training_reports\\colab_saved_runs_inventory_20260426.json"
+}

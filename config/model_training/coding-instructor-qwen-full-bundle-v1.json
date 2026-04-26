@@ -17,7 +17,8 @@
       "geoseal_command_harmony_v1.sft.jsonl",
       "atomic_workflow_stage6_train.sft.jsonl",
       "atomic_workflow_stage6_repair_train.sft.jsonl",
-      "coding_system_full_v1_train.sft.jsonl"
+      "coding_system_full_v1_train.sft.jsonl",
+      "colab_run_evidence_v1.sft.jsonl"
     ],
     "eval_files": [
       "aligned_foundations_holdout.sft.jsonl",

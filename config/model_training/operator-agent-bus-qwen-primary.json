@@ -9,7 +9,8 @@
   "dataset": {
     "root": "training-data/sft",
     "train_files": [
-      "operator_agent_bus_extracted_v1_train.sft.jsonl"
+      "operator_agent_bus_extracted_v1_train.sft.jsonl",
+      "colab_run_evidence_v1.sft.jsonl"
     ],
     "eval_files": [
       "operator_agent_bus_extracted_v1_eval.sft.jsonl"

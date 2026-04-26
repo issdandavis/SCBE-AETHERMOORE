@@ -70,6 +70,7 @@ FILES = [
     "t_operator_v1.sft.jsonl",
     "eml_operator_v1.sft.jsonl",
     "operator_agent_bus_extracted_v1_train.sft.jsonl",
+    "colab_run_evidence_v1.sft.jsonl",
     "aligned_foundations_train.sft.jsonl",
     # --- command lattice + geoseal commands ---
     "command_lattice_seed_train.sft.jsonl",
