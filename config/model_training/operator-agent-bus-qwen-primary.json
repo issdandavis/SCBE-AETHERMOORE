@@ -1,0 +1,50 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "operator-agent-bus-qwen-primary",
+  "title": "SCBE Qwen operator agent bus lane",
+  "description": "SFT lane for bounded operator routing, AI2AI bridge packets, cross-talk bus state, route gates, and replayable workflow decisions.",
+  "backend": "qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE operator-agent-bus specialist. Convert route packets, cross-talk messages, workflow state, and helpdesk-style requests into bounded next actions. Preserve proof, risk, lease, ledger, and route-gate fields. Do not invent operations outside the provided artifact.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "operator_agent_bus_extracted_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "operator_agent_bus_extracted_v1_eval.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 2048,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.0002,
+    "num_train_epochs": 2,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "warmup_ratio": 0.05,
+    "max_steps": -1,
+    "gradient_checkpointing": true,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "output_dir": "training/runs/operator-agent-bus-qwen-primary"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-operator-agent-bus-qwen-primary",
+    "push_merged": false
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  }
+}

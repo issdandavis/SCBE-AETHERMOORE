@@ -117,3 +117,20 @@ def test_render_report_includes_specialists() -> None:
     assert "coding_primary_specialist" in report
     assert "SFT first" in report
     assert "test before merge" in report
+
+
+def test_specialist_defaults_include_unblocked_bucket_profiles() -> None:
+    module = _load_module()
+
+    assert (
+        "config/model_training/operator-agent-bus-qwen-primary.json"
+        in module.SPECIALIST_DEFAULTS["operator_agent_bus"]["profile_candidates"]
+    )
+    assert (
+        "config/model_training/governance-security-qwen-primary.json"
+        in module.SPECIALIST_DEFAULTS["governance_security"]["profile_candidates"]
+    )
+    assert (
+        "config/model_training/research-bridge-qwen-primary.json"
+        in module.SPECIALIST_DEFAULTS["research_bridge"]["profile_candidates"]
+    )

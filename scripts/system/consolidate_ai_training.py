@@ -64,6 +64,7 @@ SPECIALIST_DEFAULTS: dict[str, dict[str, Any]] = {
         "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
         "method_order": ["SFT", "tool_trace_eval", "DPO_optional"],
         "profile_candidates": [
+            "config/model_training/operator-agent-bus-qwen-primary.json",
             "config/model_training/ollama-agentic-handler.json",
             "config/model_training/hf-agentic-handler.json",
         ],
@@ -74,7 +75,9 @@ SPECIALIST_DEFAULTS: dict[str, dict[str, Any]] = {
         "specialist_id": "governance_security_specialist",
         "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
         "method_order": ["SFT", "adversarial_eval", "DPO_optional"],
-        "profile_candidates": [],
+        "profile_candidates": [
+            "config/model_training/governance-security-qwen-primary.json",
+        ],
         "merge_weight": 0.14,
         "promotion_gate": "ALLOW/QUARANTINE/ESCALATE/DENY plus invalid-input regression tests",
     },
@@ -82,7 +85,9 @@ SPECIALIST_DEFAULTS: dict[str, dict[str, Any]] = {
         "specialist_id": "source_grounded_research_specialist",
         "base_model": "Qwen/Qwen2.5-7B-Instruct",
         "method_order": ["SFT", "citation_eval", "GRPO_optional_verifiable_claims"],
-        "profile_candidates": [],
+        "profile_candidates": [
+            "config/model_training/research-bridge-qwen-primary.json",
+        ],
         "merge_weight": 0.10,
         "promotion_gate": "source identity, falsifiable claim text, and citation-backed synthesis",
     },
