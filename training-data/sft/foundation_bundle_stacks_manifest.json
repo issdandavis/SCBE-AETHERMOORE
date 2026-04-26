@@ -1,0 +1,71 @@
+{
+  "schema_version": "foundation_bundle_stacks_manifest_v1",
+  "outputs": {
+    "train": "training-data\\sft\\foundation_bundle_stacks_train.sft.jsonl",
+    "eval": "training-data\\sft\\foundation_bundle_stacks_holdout.sft.jsonl"
+  },
+  "counts": {
+    "train": 32,
+    "holdout": 10,
+    "total": 42
+  },
+  "stacks": [
+    "dense_semantic",
+    "mathematical",
+    "statistical",
+    "resonance",
+    "chemical",
+    "coding"
+  ],
+  "actions": [
+    "validate_input",
+    "transform_state",
+    "test_receipt",
+    "quarantine_drift",
+    "merge_evidence",
+    "route_agent"
+  ],
+  "tongues": [
+    {
+      "abbr": "KO",
+      "full_name": "Kor'aelin",
+      "duty": "intent"
+    },
+    {
+      "abbr": "AV",
+      "full_name": "Avali",
+      "duty": "context"
+    },
+    {
+      "abbr": "RU",
+      "full_name": "Runethic",
+      "duty": "relation"
+    },
+    {
+      "abbr": "CA",
+      "full_name": "Cassisivadan",
+      "duty": "implementation"
+    },
+    {
+      "abbr": "UM",
+      "full_name": "Umbroth",
+      "duty": "veil"
+    },
+    {
+      "abbr": "DR",
+      "full_name": "Draumric",
+      "duty": "structure"
+    },
+    {
+      "abbr": "SE",
+      "full_name": "Seventh Binding Tongue",
+      "duty": "known_unknown_binding"
+    }
+  ],
+  "invariants": [
+    "binary and hex decode to the same source_text",
+    "stack identity survives group binding",
+    "known state and unknown state remain explicitly separated",
+    "route labels are preserved across all surfaces"
+  ]
+}

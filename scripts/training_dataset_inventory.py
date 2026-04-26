@@ -86,6 +86,8 @@ PURPOSE_RULES: tuple[tuple[str, tuple[str, ...]], ...] = (
         "aligned_foundations",
         (
             "aligned_foundations",
+            "foundation_bundle",
+            "foundation_bundle_stacks",
             "chemistry_primary",
             "tongue",
             "tongues",

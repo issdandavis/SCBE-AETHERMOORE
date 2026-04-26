@@ -10,12 +10,14 @@
     "root": "training-data/sft",
     "train_files": [
       "aligned_foundations_train.sft.jsonl",
+      "foundation_bundle_stacks_train.sft.jsonl",
       "chemistry_primary_train.sft.jsonl",
       "bijective_codeflow_v1_train.sft.jsonl",
       "drill_langues_full_train.sft.jsonl"
     ],
     "eval_files": [
       "aligned_foundations_holdout.sft.jsonl",
+      "foundation_bundle_stacks_holdout.sft.jsonl",
       "chemistry_primary_holdout.sft.jsonl",
       "bijective_codeflow_v1_holdout.sft.jsonl",
       "drill_langues_full_holdout.sft.jsonl"

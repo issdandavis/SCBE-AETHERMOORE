@@ -31,7 +31,7 @@ foreach ($p in @('coding_model','aligned_foundations','operator_agent_bus','gove
 | Bucket | Train | Eval | Source files | Duplicates removed | Status |
 |---|---:|---:|---:|---:|---|
 | `coding_model` | 2,755 | 140 | 22 | 1,068 | Ready for gated training |
-| `aligned_foundations` | 1,143 | 57 | 9 | 6,071 | Ready for gated training |
+| `aligned_foundations` | 1,175 | 67 | 11 | 6,071 | Ready for gated training |
 | `operator_agent_bus` | 48 | 3 | 3 | 12 | Ready, but small |
 | `governance_security` | 59 | 101 | 2 | 0 | Ready, eval-heavy |
 | `research_bridge` | 84 | 19 | 2 | 35 | Ready, source-grounded |
@@ -51,6 +51,8 @@ These are ignored artifact outputs; treat this document as the Git-visible ledge
 `coding_model` is the main action body. It should learn code primaries, binary transport, GeoSeal command recall, EML/T operators, bijective codeflow, command lattice, and approval metrics.
 
 `aligned_foundations` is the long-horizon instructor body. It should preserve cross-representation concepts: math, English, Sacred Tongues, binary packet framing, chemistry templates, and layer/tongue identity.
+
+`foundation_bundle_stacks` is the final cross-stack gate surface inside `aligned_foundations`. It binds dense semantic, mathematical, statistical, resonance, chemical, and coding surfaces to binary/hex transport and a seventh binding tongue for known/unknown state separation.
 
 `operator_agent_bus` is the tool-use dispatcher. It should learn exact commands, route state, Apollo/email collection patterns, and fail-closed operator behavior.
 
@@ -77,6 +79,31 @@ The merge path should be route-first, merge-later:
 6. Merge only adapters that preserve at least 95 percent of their solo executable performance and pass governance regression.
 
 This matches the "Earth and Moon" design: one model body does the primary work, the helper body stabilizes review, memory, research, and governance.
+
+## Foundation Bundle Gate
+
+New generated lane:
+
+- Builder: `scripts/build_foundation_bundle_stacks_sft.py`
+- Gate: `scripts/eval/score_foundation_bundle_gate.py`
+- Train output: `training-data/sft/foundation_bundle_stacks_train.sft.jsonl`
+- Holdout output: `training-data/sft/foundation_bundle_stacks_holdout.sft.jsonl`
+- Manifest: `training-data/sft/foundation_bundle_stacks_manifest.json`
+
+Coverage:
+
+- Stacks: `dense_semantic`, `mathematical`, `statistical`, `resonance`, `chemical`, `coding`, `foundation_bundle`
+- Actions: `validate_input`, `transform_state`, `test_receipt`, `quarantine_drift`, `merge_evidence`, `route_agent`
+- Tongues: `KO`, `AV`, `RU`, `CA`, `UM`, `DR`, `SE`
+- Transport: binary and hex round-trip to the same `source_text`
+
+Gate result:
+
+```text
+foundation_bundle_stacks_v1: pass=true, records=42, train=32, holdout=10, errors=0
+```
+
+The aligned-foundations profile now includes the bundle train/holdout pair so future instructor/foundation runs consume this final cross-stack test surface.
 
 ## Current Training Run State
 
@@ -122,6 +149,12 @@ Remote files:
 
 - `regularized/coding_model/coding_model_train.regularized.jsonl`
 - `regularized/coding_model/coding_model_eval.regularized.jsonl`
+- `sft/foundation_bundle_stacks_train.sft.jsonl`
+- `sft/foundation_bundle_stacks_holdout.sft.jsonl`
+- `sft/foundation_bundle_stacks_manifest.json`
+- `regularized/aligned_foundations/aligned_foundations_train.regularized.jsonl`
+- `regularized/aligned_foundations/aligned_foundations_eval.regularized.jsonl`
+- `regularized/aligned_foundations/aligned_foundations_manifest.json`
 
 Preflight result:
 
