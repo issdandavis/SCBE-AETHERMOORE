@@ -12,7 +12,7 @@ This is a user-space "AI kernel" abstraction, not an OS kernel.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, dataclass as _dc, field
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -23,8 +23,6 @@ from urllib.parse import urlparse
 try:
     from agents.antivirus_membrane import scan_text_for_threats, turnstile_action
 except ImportError:
-    from dataclasses import dataclass as _dc
-
     @_dc
     class _ScanResult:
         risk_score: float = 0.0
