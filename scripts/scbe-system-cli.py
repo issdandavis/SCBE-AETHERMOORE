@@ -511,6 +511,21 @@ def _load_agentbus_module(repo_root_str: str):
 
 
 @functools.lru_cache(maxsize=4)
+def _load_agentbus_rehearsal_gate_module(repo_root_str: str):
+    repo_root = Path(repo_root_str)
+    module_path = repo_root / "scripts" / "system" / "agentbus_rehearsal_gate.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("scbe_agentbus_rehearsal_gate_runtime", module_path)
+    if not spec or not spec.loader:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@functools.lru_cache(maxsize=4)
 def _load_file_tracker_module(repo_root_str: str):
     repo_root = Path(repo_root_str)
     module_path = repo_root / "scripts" / "system" / "auto_file_tracker.py"
@@ -2705,13 +2720,20 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         "series_id": series_id,
         "privacy": args.privacy,
         "budget_cents": args.budget_cents,
-        "task": {"sha256": hashlib.sha256(args.task.encode("utf-8")).hexdigest(), "chars": len(args.task)},
+        "task": {
+            "sha256": hashlib.sha256(args.task.encode("utf-8")).hexdigest(),
+            "chars": len(args.task),
+            "type": args.task_type,
+        },
         "operation_shape": round_packet.get("operation_shape"),
         "selected_provider": round_packet.get("selected_provider"),
         "primary_bus": round_packet.get("primary_bus", []),
         "secondary_bus": round_packet.get("secondary_bus", []),
         "tertiary_bus_count": len(round_packet.get("tertiary_bus", [])),
+        "mirror_room": round_packet.get("mirror_room", {}),
         "dispatch": dispatch_payload,
+        "telemetry": {"path": args.telemetry_path} if args.telemetry_path else {},
+        "abort_condition": args.abort_condition,
         "artifacts": {
             "latest_round": _display_path(latest_round, repo_root),
             "tracker_snapshot": _display_path(tracker_paths["snapshot"], repo_root),
@@ -2719,6 +2741,26 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
             "watcher": _display_path(watcher_output, repo_root),
         },
     }
+
+    if args.rehearsal_gate or args.strict_rehearsal_gate:
+        rehearsal_gate = _load_agentbus_rehearsal_gate_module(str(repo_root.resolve()))
+        if rehearsal_gate is None:
+            print("Agent bus rehearsal gate module is unavailable.")
+            return 2
+        gate_report = rehearsal_gate.evaluate_rehearsal_gate(
+            summary,
+            strict=bool(args.strict_rehearsal_gate),
+            budget_cents=args.budget_cents,
+        )
+        gate_output = output_dir / "rehearsal_gate.json"
+        gate_output.write_text(json.dumps(gate_report, indent=2, ensure_ascii=True), encoding="utf-8")
+        summary["rehearsal_gate"] = {
+            "status": gate_report["status"],
+            "failure_count": gate_report["failure_count"],
+            "warning_count": gate_report["warning_count"],
+        }
+        summary["artifacts"]["rehearsal_gate"] = _display_path(gate_output, repo_root)
+
     summary_path = output_dir / "run_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=True), encoding="utf-8")
     summary["artifacts"]["summary"] = _display_path(summary_path, repo_root)
@@ -2730,6 +2772,7 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         f"  Provider: {summary['selected_provider']}",
         f"  Shape:    {summary['operation_shape']['signature_hex'] if summary.get('operation_shape') else 'none'}",
         f"  Watcher:  {summary['artifacts']['watcher']}",
+        f"  Gate:     {summary.get('rehearsal_gate', {}).get('status', 'not-run')}",
         f"  Summary:  {summary['artifacts']['summary']}",
     ]
     return _json_result(args, summary, lines)
@@ -4650,6 +4693,32 @@ def build_parser() -> argparse.ArgumentParser:
     agentbus_run.add_argument("--dispatch", action="store_true", help="Dispatch the task through the free/local LLM bus")
     agentbus_run.add_argument("--dispatch-provider", default="offline")
     agentbus_run.add_argument("--dispatch-tail", type=int, default=5)
+    agentbus_run.add_argument(
+        "--rehearsal-gate",
+        action="store_true",
+        help="Write a mission rehearsal gate report beside the run summary (default)",
+    )
+    agentbus_run.add_argument(
+        "--no-rehearsal-gate",
+        dest="rehearsal_gate",
+        action="store_false",
+        help="Skip the default mission rehearsal gate report",
+    )
+    agentbus_run.add_argument(
+        "--strict-rehearsal-gate",
+        action="store_true",
+        help="Require operation shape, telemetry, and abort rule in the rehearsal gate",
+    )
+    agentbus_run.add_argument(
+        "--telemetry-path",
+        default="",
+        help="Telemetry artifact path for strict/remote rehearsal-gate checks",
+    )
+    agentbus_run.add_argument(
+        "--abort-condition",
+        default="",
+        help="Abort condition for strict/remote rehearsal-gate checks",
+    )
     agentbus_run.add_argument("--mirror-root", default="artifacts/agent_bus/mirror_room")
     agentbus_run.add_argument("--tracker-output-dir", default="artifacts/file_tracking/latest")
     agentbus_run.add_argument("--output-dir", default="artifacts/agent_bus/user_runs")
@@ -4657,7 +4726,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--config",
         default=str(DEFAULT_REPO_ROOT / "config" / "governance" / "terminal_ai_router_profiles.json"),
     )
-    agentbus_run.set_defaults(func=cmd_agentbus_run)
+    agentbus_run.set_defaults(func=cmd_agentbus_run, rehearsal_gate=True)
 
     status = sub.add_parser("status", help="Show artifact presence for last cycle")
     add_runtime_cli_flags(status)

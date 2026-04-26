@@ -1,0 +1,76 @@
+{
+  "schema_version": "scbe_agent_bus_feature_branches_v1",
+  "generated_at": "2026-04-26",
+  "purpose": "Routeable roadmap for improving the SCBE agent bus into a durable, observable, gated, and trainable coordination layer.",
+  "research_principles": [
+    "durable checkpointing for long-running workflows",
+    "explicit workflows for well-defined processes",
+    "guardrails and tripwires before side effects",
+    "trace spans for agent runs, tool calls, guardrails, and handoffs",
+    "queue groups and no-responder feedback for scalable worker movement",
+    "graceful cancellation and cleanup",
+    "lane-specific scoring instead of one global metric"
+  ],
+  "branches": [
+    {
+      "branch": "feat/agentbus-default-rehearsal-gate",
+      "priority": 1,
+      "value": "Make every bus run produce readiness labels and block ungoverned remote/live dispatch.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-mission-envelope",
+      "priority": 2,
+      "value": "Turn tasks into auditable mission packets with expected outputs, rollback, lease, and risk class.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-simulation-mode",
+      "priority": 3,
+      "value": "Generate cheap dry-run artifacts and training data without provider calls or file mutation.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-trace-spans",
+      "priority": 4,
+      "value": "Make bus failures diagnosable through traceable route, gate, dispatch, watcher, and handoff spans.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-scoreboard-routing",
+      "priority": 5,
+      "value": "Route by measured outcome, cost, latency, and failure mode instead of static provider strengths only.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-human-approval-tripwires",
+      "priority": 6,
+      "value": "Pause before risky side effects and convert denied actions into help-desk fix plans.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-result-judges",
+      "priority": 7,
+      "value": "Evaluate each lane by the right metric: executable tests, citations, governance gates, or frozen evals.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-training-exporter",
+      "priority": 8,
+      "value": "Export bus traces and gate outcomes into regularized SFT and multiple-choice datasets.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-durable-checkpoints",
+      "priority": 9,
+      "value": "Resume long-running bus work without duplicating side effects or losing state.",
+      "status": "planned"
+    },
+    {
+      "branch": "feat/agentbus-queue-groups",
+      "priority": 10,
+      "value": "Scale worker movement with capability queues, leases, no-responder state, and fair distribution.",
+      "status": "planned"
+    }
+  ]
+}

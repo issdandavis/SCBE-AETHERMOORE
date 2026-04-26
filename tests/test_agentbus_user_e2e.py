@@ -52,9 +52,11 @@ def test_user_cli_agentbus_run_shapes_dispatch_tracks_and_watches() -> None:
     assert payload["dispatch"]["enabled"] is True
     assert payload["dispatch"]["provider"] == "offline"
     assert payload["dispatch"]["event_id"]
+    assert payload["rehearsal_gate"]["status"] == "pass"
     assert (ROOT / payload["artifacts"]["latest_round"]).exists()
     assert (ROOT / payload["artifacts"]["watcher"]).exists()
     assert (ROOT / payload["artifacts"]["summary"]).exists()
+    assert (ROOT / payload["artifacts"]["rehearsal_gate"]).exists()
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
