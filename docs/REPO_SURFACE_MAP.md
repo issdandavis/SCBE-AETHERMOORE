@@ -1,6 +1,6 @@
 # SCBE-AETHERMOORE Repo Surface Map
 
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-04-21
 
 ## Purpose
 
@@ -28,12 +28,16 @@ That is why the repo feels bigger than a normal app repo. It is currently doing 
 
 If you do not know where to start, use this order:
 
-1. `CANONICAL_SYSTEM_STATE.md`
+1. `START_HERE.md`
 2. `README.md`
-3. `package.json`
-4. `src/api/main.py`
-5. `api/main.py`
-6. `scripts/`
+3. `docs/PRODUCT_QUICKSTART.md`
+4. `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
+5. `CANONICAL_SYSTEM_STATE.md`
+6. `package.json`
+7. `scripts/system/start_aetherbrowser_extension_service.mjs`
+8. `scripts/verify_aetherbrowser_extension_service.py`
+9. `src/api/main.py`
+10. `api/main.py`
 
 ## Active Lanes
 
@@ -46,7 +50,17 @@ Use this lane when the task is about the 14-layer system, formula behavior, cryp
 - `src/crypto/`
 - `src/governance/`
 - `src/tokenizer/`
-- `docs/specs/CANONICAL_FORMULA_REGISTRY.md`
+- `docs/specs/SCBE_CANONICAL_CONSTANTS.md`
+
+### Evidence Surface
+
+Use this lane when the task is about sealed-blind proof points, reviewer-facing empirical claims, or the shortest path to the current 24/24 result.
+
+- `docs/evidence/EVIDENCE_24_24.md`
+- `docs/specs/SCBE_TECHNICAL_PACKET_v1.md`
+- `artifacts/collab/dava_blind_v1/RESULT.md`
+- `artifacts/collab/dava_blind_v1/permutation_test_report.json`
+- `artifacts/collab/dava_blind_v1/kl_capacity_ci_report.json`
 
 ### 2. Product / MVP Runtime
 
@@ -56,6 +70,16 @@ Use this lane when the task is about running a user-facing API, SaaS behavior, s
 - `src/api/search_routes.py`
 - `src/api/llm_routes.py`
 - `src/api/stripe_billing.py`
+
+### Product-First Monorepo Boundary
+
+Use this lane when the task is about making the repository clone experience clearer, reducing root confusion, or deciding what belongs in product, platform, research, or archive.
+
+- `docs/PRODUCT_QUICKSTART.md`
+- `docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md`
+- `config/repo_consolidation_inventory.json`
+- `README.md`
+- `START_HERE.md`
 
 ### 3. Governance API
 
@@ -77,23 +101,36 @@ Use this lane when the task is about how the system is actually driven locally.
 
 ### 5. Federal Funding / Proposal Surface
 
-Use this lane when the task is about DARPA, SAM.gov, APEX, grant/proposal readiness, submission contacts, or federal go/no-go decisions.
+Use this lane when the task is about DARPA, SAM.gov, DIBBS, DLA supplier access, APEX, grant/proposal readiness, submission contacts, or federal go/no-go decisions.
 
-- `docs/operations/DARPA_SAM_GOV_CONTACTS_AND_PROPOSAL_STATUS.md`
-- `notes/DARPA_CLARA_Proposal_Master.md`
+- `docs/operations/DIBBS_DLA_OPERATING_MODEL.md`
+- `docs/operations/DIBBS_REGISTRATION_AND_FOLLOW_UP.md`
+- `docs/business/DIBBS_MONETIZATION_MAP.md`
+- `docs/legal/SAM_GOV_REGISTRATION_RECORD.md`
+- `notes/federal/DARPA_CLARA_Proposal_Master.md`
 - `docs/proposals/DARPA_CLARA/`
-- `docs/research/DARPA_AI_SECURITY_PROGRAMS_2026.md`
-- `docs/research/FUNDING_OPPORTUNITIES_2026.md`
+- `docs/proposals/DARPA_MATHBAC/sam_gov_attachments/`
+- `docs/proposals/DARPA_MATHBAC/proposers_day_playbook.md`
 
 ### 6. Document Management Surface
 
 Use this lane when the task is about document authority, note consolidation, repo drift cleanup, or deciding whether a file is canonical, operational, public, exploratory, historical, or generated.
 
-- `docs/operations/DOCUMENT_MANAGEMENT_OPERATING_MODEL.md`
-- `docs/operations/REPO_CLEANUP_INVENTORY.md`
+- `START_HERE.md`
 - `CANONICAL_SYSTEM_STATE.md`
-- `REPO_SURFACE_MAP.md`
+- `docs/README_INDEX.md`
+- `docs/CLEANUP_NOTES.md`
+- `docs/REPO_SURFACE_MAP.md`
 - `skills/scbe-document-management/SKILL.md`
+
+### 7. Internal Agent Coordination Surface
+
+Use this lane when the task is about internal-only agent updates, non-secret handoff notes, back-of-house website changes, or guardrails meant for future agents rather than operators.
+
+- `.agents/back_of_house/README.md`
+- `.agents/back_of_house/AGENT_CHANGE_LOG.md`
+- `.agents/back_of_house/updates.jsonl`
+- `.agents/plugins/plugins/aetherbrowse/skills/scbe-ops-manager/references/cross-talk-packet-templates.md`
 
 ## Generated / Noisy Zones
 
@@ -202,6 +239,14 @@ Decide which of these should be ignored, archived, mirrored, or extracted later.
 Do **not** start with repo splitting.
 
 ## Commands To Use Next
+
+### Product quickstart
+
+```powershell
+npm install
+npm run aetherbrowser:service:start
+npm run aetherbrowser:service:verify
+```
 
 ### TypeScript package lane
 

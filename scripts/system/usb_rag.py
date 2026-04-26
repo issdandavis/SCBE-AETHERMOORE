@@ -9,8 +9,6 @@ Usage:
   python scripts/system/usb_rag.py add <path>       # add a specific file
 """
 
-import sys
-import os
 import sqlite3
 import hashlib
 import datetime

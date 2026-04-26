@@ -342,7 +342,7 @@ class TestSFTFlattening:
     def test_record_count_matches_lessons(self, sample_bundles):
         """Each lesson produces one record (or one base record if no lessons)."""
         records = flatten_code_lattice_for_sft(sample_bundles)
-        expected = sum(max(len(b.lessons), 1) for b in sample_bundles)
+        sum(max(len(b.lessons), 1) for b in sample_bundles)
         # Records come from lessons (1 per lesson) or base (1 if no lessons)
         # Allow some slack for bundles with lessons expanding multipath
         assert len(records) >= len(sample_bundles)

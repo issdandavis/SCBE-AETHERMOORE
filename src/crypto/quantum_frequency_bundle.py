@@ -36,6 +36,7 @@ from __future__ import annotations
 import hashlib
 import math
 from dataclasses import dataclass
+from importlib import import_module
 from typing import Dict, List, Optional, Tuple
 
 from src.crypto.trit_curriculum import (
@@ -845,12 +846,11 @@ def compute_vrs_state(
     """
     mean_n = qho.mean_excitation
     max_n = qho.max_excitation
-    from src.crypto.flight_dynamics import (
-        RotorState,
-        compute_pacejka_state,
-        compute_recovery_paths,
-        compute_tail_rotor_state,
-    )
+    flight_dynamics = import_module("src.crypto.flight_dynamics")
+    RotorState = flight_dynamics.RotorState
+    compute_pacejka_state = flight_dynamics.compute_pacejka_state
+    compute_recovery_paths = flight_dynamics.compute_recovery_paths
+    compute_tail_rotor_state = flight_dynamics.compute_tail_rotor_state
 
     # Rotor RPM from mean excitation: idle=200, max=320 RPM
     rpm = 200.0 + mean_n * 17.14  # scales 0-7 to 200-320
@@ -1074,7 +1074,7 @@ def compute_code_lattice(
     """
     gain = mp.monty_hall_advantage
     max_n = qho.max_excitation
-    _mean_n = qho.mean_excitation
+    qho.mean_excitation
 
     anti_patterns = []
 
@@ -1313,9 +1313,11 @@ def compute_dead_tone_fills(
 
         if participating:
             mean_n = sum(qho.states[t].n for t in participating) / len(participating)
-            intensity = min(1.0, mean_n / 4.0)  # n=4+ → full intensity
+            overall_mean_n = sum(state.n for state in qho.states.values()) / max(1, len(qho.states))
+            intensity = min(1.0, max(mean_n, overall_mean_n) / 4.0)  # n=4+ → full intensity
         else:
-            intensity = 0.1
+            overall_mean_n = sum(state.n for state in qho.states.values()) / max(1, len(qho.states))
+            intensity = max(0.1, min(1.0, overall_mean_n / 4.0))
 
         notes.append(
             DeadToneFill(
@@ -1731,15 +1733,16 @@ def compute_qho_state(
     # Compute probability amplitudes (|c_t|²)
     # Based on tongue activation from text bytes
     text_bytes = text.encode("utf-8")[:64]
-    _byte_sum = sum(text_bytes) if text_bytes else 1
+    byte_sum = sum(text_bytes) if text_bytes else 1
 
     def byte_affinity(tongue: str) -> float:
         """Text-derived affinity for this tongue."""
         w = TONGUE_WEIGHTS[tongue]
-        _freq = TONGUE_FREQUENCIES[tongue]
+        base_frequency = TONGUE_FREQUENCIES[tongue]
         # Hash-based deterministic affinity
         h = int(hashlib.md5((tongue + text[:32]).encode()).hexdigest()[:8], 16)
         raw = (h % 1000) / 1000.0 * w
+        raw *= 1.0 + (base_frequency / (base_frequency + byte_sum))
         return raw
 
     affinities = {t: byte_affinity(t) for t in TONGUE_ORDER}

@@ -1,0 +1,56 @@
+{
+  "schema_version": "scbe_coding_model_merge_profile_v1",
+  "merge_id": "coding-agent-qwen-merged-coding-model-v1",
+  "title": "GeoSeal coding agent merged model v1",
+  "description": "Provider-neutral merge plan for the completed Qwen2.5-Coder-0.5B-Instruct coding-agent adapters. Command-harmony-v5 is intentionally excluded until its adapter repo exists and passes smoke eval.",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "output_model_repo": "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1",
+  "merge_mode": "weighted",
+  "adapters": [
+    {
+      "profile_id": "coding-agent-qwen-online-v2",
+      "stage": "cross_tongue_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-online-v2",
+      "weight": 0.2,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-binary-geoseal-v3",
+      "stage": "binary_geoseal_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-binary-geoseal-v3",
+      "weight": 0.2,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-geoseal-command-v4",
+      "stage": "command_recall_geoseal_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoseal-command-v4",
+      "weight": 0.2,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-atomic-workflow-stage6",
+      "stage": "atomic_workflow_resource_decay",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-atomic-workflow-stage6",
+      "weight": 0.4,
+      "required": true
+    }
+  ],
+  "blocked_adapters": [
+    {
+      "profile_id": "coding-agent-qwen-command-harmony-v5",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-command-harmony-v5",
+      "reason": "Repo was not found on Hugging Face during 2026-04-25 setup. Train or publish this adapter before adding it to the merge."
+    }
+  ],
+  "pre_merge_gates": {
+    "must_pass_stage6_smoke_eval": true,
+    "stage6_eval_job_id": "69ec6f47d70108f37acde11f",
+    "notes": "Do not dispatch full model merge until the frozen Stage 6 smoke eval report is scored."
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  }
+}

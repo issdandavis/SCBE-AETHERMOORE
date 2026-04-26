@@ -518,7 +518,6 @@ def _level_4_sft(bundle: SimulationBundle) -> str:
     """Level 4: Multi-path recovery + full code lattice."""
     flight = bundle.flight
     paths = flight.recovery_paths
-    _best = flight.best_recovery
 
     recovery_text = ""
     if paths:
@@ -556,7 +555,6 @@ def _level_4_sft(bundle: SimulationBundle) -> str:
 
 def _level_5_sft(bundle: SimulationBundle) -> str:
     """Level 5: Full lattice generalization — physics = magic = code."""
-    _qho = bundle.quantum.qho
     flight = bundle.flight
     code = bundle.code
 

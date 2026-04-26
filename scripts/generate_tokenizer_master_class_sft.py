@@ -153,7 +153,7 @@ def generate_semantic_math() -> int:
             t1, t2 = TONGUES[c1], TONGUES[c2]
             a1 = round(random.uniform(0.3, 0.9), 4)
             a2 = round(random.uniform(0.3, 0.9), 4)
-            combined = round(min(a1 + a2, 1.0), 4)
+            round(min(a1 + a2, 1.0), 4)
             w1, w2 = TONGUE_WEIGHTS[c1], TONGUE_WEIGHTS[c2]
             weighted_sum = round(a1 * w1 + a2 * w2, 4)
 
@@ -280,7 +280,7 @@ def generate_semantic_math() -> int:
             f"**{analysis_type.title()}:** This request carries {projected:.3f} units of "
             f"{t['domain'].lower()} weight. "
             f"{'This is a dominant signal -- route to specialized review.' if projected > 3.0 else ''}"
-            f"{'Moderate signal -- flag but allow.' if 1.0 < projected <= 3.0 else ''}"
+            f"{'Moderate signal -- flag but allow.' if projected > 1.0 else ''}"
             f"{'Low signal -- no special routing needed.' if projected <= 1.0 else ''}",
             balanced_scores(code), 0.65, "master-semantic-math",
             ["master-class", "semantic-math", "projection", f"tongue-{code}"])
@@ -864,7 +864,7 @@ def generate_null_space() -> int:
             f"g_t(p) = sigma({logit:.4f}) = {g}\n\n"
             f"**Interpretation:** Gate admission = {g:.1%}. "
             f"{'Path is ADMITTED -- all field conditions satisfied.' if g > 0.6 else ''}"
-            f"{'Path is MARGINAL -- some field conditions are weak.' if 0.3 < g <= 0.6 else ''}"
+            f"{'Path is MARGINAL -- some field conditions are weak.' if g > 0.3 else ''}"
             f"{'Path is BLOCKED -- field conditions insufficient.' if g <= 0.3 else ''}\n\n"
             f"{'The weakest gate is ' + min(gate_tongues, key=lambda k: gate_tongues[k][2]) + ' -- strengthen that tongue to improve admission.' if g < 0.6 else ''}",
 

@@ -38,7 +38,10 @@ class _StubClient:
 def _client(monkeypatch) -> TestClient:
     app = FastAPI()
     app.include_router(router)
-    monkeypatch.setattr(routes_module, "SamGovClient", lambda: _StubClient())
+    def _stub_client_factory():
+        return _StubClient()
+
+    monkeypatch.setattr(routes_module, "SamGovClient", _stub_client_factory)
     return TestClient(app)
 
 

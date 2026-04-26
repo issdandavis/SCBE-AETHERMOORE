@@ -43,7 +43,6 @@ import {
   predicatePath,
   predicateQuorum,
   getRingLevel,
-  RING_BOUNDARIES,
 } from './sacredEggs.js';
 
 // ═══════════════════════════════════════════════════════════════

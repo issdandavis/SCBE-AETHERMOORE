@@ -23,20 +23,14 @@ import type { FleetTask, GovernanceTier, TaskPriority } from './types.js';
 import type { MessagePriority } from './crawl-message-bus.js';
 import type { NodeState } from './node-kernel.js';
 import {
-  BundleStore,
   BundleTongue,
-  ContactGraph,
   DTNBundle,
   DTNNetworkSimulator,
-  DTNRelayNode,
-  FECBlock,
   RelayTelemetry,
   createBundle,
 } from './dtn-bundle.js';
 
 // ──────────────── Constants ────────────────
-
-const PHI = (1 + Math.sqrt(5)) / 2;
 
 /** Map fleet GovernanceTier to DTN BundleTongue */
 const TIER_TO_TONGUE: Record<GovernanceTier, BundleTongue> = {

@@ -160,7 +160,6 @@ for task in unsolved_tasks:
             if boundary_colors:
                 # Does the fill color equal the boundary color?
                 fill_c = int(out_colors[0])
-                most_common_boundary = boundary_colors.most_common(1)[0][0]
                 test_out[mask] = fill_c
                 any_fill = True
 

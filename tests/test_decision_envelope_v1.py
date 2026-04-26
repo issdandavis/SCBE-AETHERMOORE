@@ -5,7 +5,9 @@ import hashlib
 import pytest
 
 try:
-    import google.protobuf  # noqa: F401
+    import google.protobuf
+
+    assert hasattr(google.protobuf, "__version__")
 except ImportError:
     pytest.skip("google.protobuf not installed", allow_module_level=True)
 

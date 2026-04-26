@@ -1,0 +1,50 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "governance-security-qwen-primary",
+  "title": "SCBE Qwen governance security lane",
+  "description": "SFT lane for governance decisions, semantic-gate separation, adversarial rejection, and boundary/invalid-input classification.",
+  "backend": "qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE governance-security specialist. Classify prompts, route decisions, and semantic signals into ALLOW, QUARANTINE, ESCALATE, or DENY. Facts must not be overridden by analogy or experimental signals. Fail closed on missing provenance or unsafe tool intent.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "l13_governance_operation_sft.jsonl"
+    ],
+    "eval_files": [
+      "governance_security_boundary_eval_v1.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 2048,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00015,
+    "num_train_epochs": 2,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "warmup_ratio": 0.05,
+    "max_steps": -1,
+    "gradient_checkpointing": true,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "output_dir": "training/runs/governance-security-qwen-primary"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-governance-security-qwen-primary",
+    "push_merged": false
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  }
+}

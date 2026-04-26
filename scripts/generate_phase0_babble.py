@@ -35,7 +35,6 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import os
 import random
 import sys
 from dataclasses import dataclass
@@ -45,7 +44,7 @@ from typing import Dict, List, Optional, Tuple
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.crypto.sacred_tongues import TONGUES, SacredTongueTokenizer, TongueSpec
+from src.crypto.sacred_tongues import TONGUES, SacredTongueTokenizer
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -413,7 +412,7 @@ def gen_translation(tokenizer: SacredTongueTokenizer, count: int) -> List[Babble
         records.append(
             BabbleRecord(
                 system=_system_prompt(source_tongue, difficulty),
-                user=f"Say in {tgt_name}: {' '.join(source_tokens)}",
+                user=f"Translate from {src_name} into {tgt_name}: {' '.join(source_tokens)}",
                 assistant=" ".join(target_tokens),
                 tongue=source_tongue,
                 difficulty=difficulty,

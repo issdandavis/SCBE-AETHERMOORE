@@ -23,7 +23,9 @@ except ImportError:
     pytest.skip("numpy not installed", allow_module_level=True)
 
 try:
-    import scipy  # noqa: F401
+    import scipy
+
+    assert hasattr(scipy, "__version__")
 except ImportError:
     pytest.skip("scipy not installed", allow_module_level=True)
 

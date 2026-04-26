@@ -12,6 +12,7 @@ Provides:
 from __future__ import annotations
 
 import base64
+import ctypes
 import hashlib
 import json
 import os
@@ -184,12 +185,9 @@ def _get_fernet() -> Fernet | None:
 
 
 def _dpapi_encrypt(value: str) -> str:
-    import ctypes
-    from ctypes import wintypes
-
     class DATA_BLOB(ctypes.Structure):
         _fields_ = [
-            ("cbData", wintypes.DWORD),
+            ("cbData", ctypes.wintypes.DWORD),
             ("pbData", ctypes.POINTER(ctypes.c_byte)),
         ]
 
@@ -221,12 +219,9 @@ def _dpapi_encrypt(value: str) -> str:
 
 
 def _dpapi_decrypt(ciphertext: str) -> str:
-    import ctypes
-    from ctypes import wintypes
-
     class DATA_BLOB(ctypes.Structure):
         _fields_ = [
-            ("cbData", wintypes.DWORD),
+            ("cbData", ctypes.wintypes.DWORD),
             ("pbData", ctypes.POINTER(ctypes.c_byte)),
         ]
 

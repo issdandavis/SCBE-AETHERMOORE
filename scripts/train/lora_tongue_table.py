@@ -83,6 +83,40 @@ def _safe_slug(value: str) -> str:
     return cleaned or "run"
 
 
+def _looks_like_hf_network_error(exc: Exception) -> bool:
+    text = str(exc)
+    return any(
+        marker in text
+        for marker in (
+            "ConnectError",
+            "access a socket",
+            "ConnectionError",
+            "ReadTimeout",
+            "Temporary failure in name resolution",
+        )
+    )
+
+
+def _hf_from_pretrained_cached(loader, model_id: str, **kwargs):
+    try:
+        return loader.from_pretrained(model_id, **kwargs)
+    except Exception as exc:
+        if not _looks_like_hf_network_error(exc):
+            raise
+        print(f"[HF] network blocked for {model_id}; retrying from local cache")
+        try:
+            from huggingface_hub import snapshot_download
+        except Exception:
+            cached_kwargs = dict(kwargs)
+            cached_kwargs["local_files_only"] = True
+            return loader.from_pretrained(model_id, **cached_kwargs)
+
+        local_snapshot = snapshot_download(repo_id=model_id, local_files_only=True)
+        cached_kwargs = dict(kwargs)
+        cached_kwargs.pop("local_files_only", None)
+        return loader.from_pretrained(local_snapshot, **cached_kwargs)
+
+
 def _mirror_tree(src: Path, dst: Path) -> None:
     if not src.exists():
         return
@@ -484,11 +518,13 @@ def main():
             )
 
     print(f"Loading base model: {args.base_model}")
-    tokenizer = AutoTokenizer.from_pretrained(args.base_model)
+    tokenizer = _hf_from_pretrained_cached(AutoTokenizer, args.base_model)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        args.base_model, torch_dtype=torch.float16
+    model = _hf_from_pretrained_cached(
+        AutoModelForCausalLM,
+        args.base_model,
+        torch_dtype=torch.float16,
     )
     if torch.cuda.is_available():
         model = model.to("cuda")

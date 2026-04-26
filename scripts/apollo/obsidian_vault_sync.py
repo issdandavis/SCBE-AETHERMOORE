@@ -744,7 +744,7 @@ def sync_to_cloud():
         target.mkdir(parents=True, exist_ok=True)
         # Use robocopy on Windows for efficient sync
         import subprocess
-        _result = subprocess.run(
+        subprocess.run(
             ["robocopy", str(VAULT_PATH), str(target), "/MIR", "/XD", ".obsidian", "/NFL", "/NDL", "/NJH", "/NJS"],
             capture_output=True, text=True
         )

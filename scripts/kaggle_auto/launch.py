@@ -18,8 +18,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-import shutil
 import subprocess
 import sys
 import time
@@ -134,6 +132,34 @@ ROUNDS = {
         "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
         "epochs": 2,
     },
+    "geoseal-stage6-repair-v7": {
+        "desc": "GeoSeal coding-agent Stage 6 repair v7 — byte/hex, lane separation, fallback, re-advance",
+        "files": [
+            "bijective_codeflow_v1_train.sft.jsonl",
+            "cross_tongue_dialogue_bijective_v1_train.sft.jsonl",
+            "drill_langues_full_train.sft.jsonl",
+            "command_lattice_seed_train.sft.jsonl",
+            "binary_interpretation_matrix_v1.sft.jsonl",
+            "geoseal_command_recall_v1.sft.jsonl",
+            "geoseal_command_harmony_v1.sft.jsonl",
+            "atomic_workflow_stage6_train.sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+        ],
+        "hf_repo": "issdandavis/scbe-coding-agent-qwen-stage6-repair-v7-kaggle",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 768,
+        "max_steps": 360,
+        "learning_rate": 8e-5,
+        "max_records": 3950,
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "lora_dropout": 0.05,
+    },
     "full-3b": {
         "desc": "Full 3B model — all data, big GPU",
         "files": "__ALL__",
@@ -149,6 +175,12 @@ GPU_CONFIGS = {
     "none": {"accelerator": "none", "isGpuEnabled": False},
 }
 
+# ARC submission kernel slug
+ARC_KERNEL_SLUG = "arc-neurogolf-submit"
+ARC_SUBMISSION_TEMPLATE = Path(__file__).parent / "arc_submission_kernel.py"
+ARC_NEUROGOLF_DATASET = f"{KAGGLE_USER}/scbe-neurogolf-solver"
+ARC_COMPETITION = "arc-prize-2026"
+
 
 # ============================================================
 # KERNEL SCRIPT GENERATOR
@@ -160,7 +192,11 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
     """Generate kernel script by injecting config into template."""
 
     # Determine batch size based on model size
-    if "3B" in config["base_model"]:
+    if "batch_size" in config and "grad_accum" in config and "max_length" in config:
+        batch_size = int(config["batch_size"])
+        grad_accum = int(config["grad_accum"])
+        max_len = int(config["max_length"])
+    elif "3B" in config["base_model"]:
         batch_size, grad_accum, max_len = 4, 4, 1024
     else:
         batch_size, grad_accum, max_len = 4, 8, 256
@@ -174,6 +210,14 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
         "batch_size": batch_size,
         "grad_accum": grad_accum,
         "max_length": max_len,
+        "hf_dataset_repo": config.get("hf_dataset_repo", HF_DATASET),
+        "kaggle_dataset": config.get("kaggle_dataset", KAGGLE_DATASET),
+        "max_steps": config.get("max_steps", -1),
+        "learning_rate": config.get("learning_rate", 2e-4),
+        "max_records": config.get("max_records", 10000),
+        "lora_r": config.get("lora_r", 16),
+        "lora_alpha": config.get("lora_alpha", 32),
+        "lora_dropout": config.get("lora_dropout", 0.05),
     })
 
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -194,6 +238,8 @@ def create_kernel_dir(round_name: str, config: dict, gpu: str) -> Path:
     script = generate_kernel_script(round_name, config)
     (kernel_dir / "script.py").write_text(script, encoding="utf-8")
 
+    dataset_sources = [config.get("kaggle_dataset", KAGGLE_DATASET)]
+
     # Write kernel-metadata.json
     meta = {
         "id": f"{KAGGLE_USER}/{kernel_slug}",
@@ -204,8 +250,39 @@ def create_kernel_dir(round_name: str, config: dict, gpu: str) -> Path:
         "is_private": True,
         "enable_gpu": gpu != "none",
         "enable_internet": True,
-        "dataset_sources": [KAGGLE_DATASET],
+        "dataset_sources": dataset_sources,
         "competition_sources": [],
+        "kernel_sources": [],
+    }
+    (kernel_dir / "kernel-metadata.json").write_text(
+        json.dumps(meta, indent=2), encoding="utf-8"
+    )
+
+    return kernel_dir
+
+
+def create_arc_kernel_dir(gpu: str) -> Path:
+    """Create a Kaggle kernel directory for ARC Prize submission."""
+    kernel_dir = REPO_ROOT / "artifacts" / "kaggle_kernels" / ARC_KERNEL_SLUG
+    kernel_dir.mkdir(parents=True, exist_ok=True)
+
+    # Copy the ARC submission script
+    script = ARC_SUBMISSION_TEMPLATE.read_text(encoding="utf-8")
+    (kernel_dir / "script.py").write_text(script, encoding="utf-8")
+
+    # Write kernel-metadata.json
+    gpu_conf = GPU_CONFIGS.get(gpu, GPU_CONFIGS["none"])
+    meta = {
+        "id": f"{KAGGLE_USER}/{ARC_KERNEL_SLUG}",
+        "title": "ARC NeuroGolf Solver — SCBE",
+        "code_file": "script.py",
+        "language": "python",
+        "kernel_type": "script",
+        "is_private": True,
+        "enable_gpu": gpu_conf.get("isGpuEnabled", False),
+        "enable_internet": False,
+        "dataset_sources": [ARC_NEUROGOLF_DATASET],
+        "competition_sources": [ARC_COMPETITION],
         "kernel_sources": [],
     }
     (kernel_dir / "kernel-metadata.json").write_text(
@@ -342,14 +419,48 @@ def main():
     parser.add_argument("--poll-interval", type=int, default=120, help="Seconds between polls")
     parser.add_argument("--status", action="store_true", help="Show running kernel status")
     parser.add_argument("--pull", action="store_true", help="Download output from completed kernel")
+    parser.add_argument("--arc-submit", action="store_true", help="Push ARC Prize submission kernel")
     args = parser.parse_args()
 
     if args.status:
         list_running()
         return
 
+    # ---- ARC submission mode ----
+    if args.arc_submit:
+        print(f"\n{'='*60}")
+        print("ARC PRIZE SUBMISSION — NeuroGolf Solver")
+        print(f"{'='*60}\n")
+
+        kernel_dir = create_arc_kernel_dir(args.gpu)
+        print(f"Kernel dir: {kernel_dir}")
+
+        if not push_kernel(kernel_dir):
+            print("FAILED to push ARC kernel")
+            sys.exit(1)
+
+        print(f"Kernel pushed: kaggle.com/code/{KAGGLE_USER}/{ARC_KERNEL_SLUG}")
+
+        if args.poll:
+            status = poll_until_done(ARC_KERNEL_SLUG, interval=args.poll_interval)
+            if status == "complete":
+                dest = pull_output(ARC_KERNEL_SLUG)
+                print(f"Output at: {dest}")
+                # Check for submission.json
+                sub = dest / "submission.json"
+                if sub.exists():
+                    data = json.loads(sub.read_text(encoding="utf-8"))
+                    print(f"submission.json: {len(data)} tasks")
+                else:
+                    print("WARNING: submission.json not found in output")
+        else:
+            print(f"\nKernel running. Check status with:")
+            print(f"  python scripts/kaggle_auto/launch.py --status")
+            print(f"  kaggle kernels status {KAGGLE_USER}/{ARC_KERNEL_SLUG}")
+        return
+
     if not args.round:
-        parser.error("--round is required (unless using --status)")
+        parser.error("--round is required (unless using --status or --arc-submit)")
 
     if args.pull:
         slug = f"polly-auto-{args.round}"

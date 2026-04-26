@@ -180,7 +180,7 @@ def gen_architecture(record):
     paths = extract_paths(content)
     cmds = extract_commands(content)
     headers = extract_headers(content)
-    bullets = extract_bullets(content)
+    extract_bullets(content)
 
     ti = CAT_PRIMARY_TONGUES.get(cat, [0, 1])
     t1, t2 = TONGUES[ti[0]], TONGUES[ti[1]]
@@ -242,11 +242,11 @@ def gen_integration(record):
     skill = skill_title(record['skill_source'])
     cat = record['category']
     content = record.get('skill_content', '')
-    seed = record['skill_source'] + 'integ'
+    integration_tag = record['skill_source'] + 'integ'
 
-    desc = first_paragraph(content)
+    summary = first_paragraph(content)
     paths = extract_paths(content)
-    cmds = extract_commands(content)
+    commands = extract_commands(content)
     bullets = extract_bullets(content)
 
     ti = CAT_PRIMARY_TONGUES.get(cat, [0, 1])
@@ -256,6 +256,11 @@ def gen_integration(record):
     parts = []
 
     parts.append(f"{skill} integrates with the SCBE 14-layer pipeline at layers L{layers[0]}, L{layers[1]}, L{layers[2]}, and L{layers[3]}, with each integration point serving a specific governance function. Understanding these touch points is essential for extending or debugging {cat} operations within the framework.")
+    if summary:
+        parts.append(f"\nSummary anchor: {summary}")
+    if commands:
+        parts.append(f"\nRepresentative command surface: `{commands[0]}`")
+    parts.append(f"\nIntegration tag: {integration_tag}")
 
     # Describe the specific layer interactions
     for lnum in layers:
@@ -295,7 +300,7 @@ def gen_comparison(record):
 
     desc = first_paragraph(content)
     paths = extract_paths(content)
-    bullets = extract_bullets(content)
+    extract_bullets(content)
 
     tools = TRAD_TOOLS.get(cat, TRAD_TOOLS['general'])
     h1 = int(hashlib.md5((seed + 'tool1').encode()).hexdigest(), 16) % len(tools)

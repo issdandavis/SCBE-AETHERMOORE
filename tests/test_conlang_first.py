@@ -448,7 +448,7 @@ class TestFullPipeline:
             assert parsed["messages"] == r["messages"]
 
     def test_no_duplicate_concept_ids(self, all_records):
-        ids = [r["metadata"]["concept_id"] for r in all_records]
+        [r["metadata"]["concept_id"] for r in all_records]
         # concept_ids can repeat across record_types, but combo should be unique
         combos = [(r["metadata"]["concept_id"], r["metadata"]["record_type"]) for r in all_records]
         assert len(combos) == len(set(combos))

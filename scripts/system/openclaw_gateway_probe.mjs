@@ -89,31 +89,23 @@ function resolveHttpUrl(wsUrl) {
   return wsUrl;
 }
 
-async function invokeToolOverHttp({ baseUrl, authToken, timeoutMs, params }) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(`${baseUrl.replace(/\/$/, '')}/tools/invoke`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`
-      },
-      body: JSON.stringify(params ?? {}),
-      signal: controller.signal
-    });
-    const payload = await response.json().catch(() => ({
-      ok: false,
-      error: { type: 'invalid_response', message: 'non-JSON response from /tools/invoke' }
-    }));
-    if (!response.ok) {
-      const message = payload?.error?.message ?? `HTTP ${response.status}`;
-      throw new Error(message);
-    }
-    return { hello: { transport: 'http', path: '/tools/invoke' }, response: payload };
-  } finally {
-    clearTimeout(timeout);
+function normalizeGatewayHttpUrl(rawUrl) {
+  const parsed = new URL(resolveHttpUrl(rawUrl));
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    throw new Error(`Unsupported gateway protocol: ${parsed.protocol}`);
   }
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(parsed.hostname)) {
+    throw new Error(`Unsupported gateway host: ${parsed.hostname}`);
+  }
+  return parsed.toString().replace(/\/$/, '');
+}
+
+async function invokeToolOverHttp({ baseUrl, authToken, timeoutMs, params }) {
+  void authToken;
+  void params;
+  void timeoutMs;
+  normalizeGatewayHttpUrl(baseUrl);
+  throw new Error('Direct HTTP tool invocation is disabled; use the gateway websocket client path instead.');
 }
 
 async function main() {

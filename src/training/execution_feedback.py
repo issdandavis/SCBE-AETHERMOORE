@@ -58,7 +58,6 @@ try:
     from python.scbe.atomic_tokenization import (
         TONGUES,
         map_token_to_atomic_state,
-        tokens_to_tau_sequence,
     )
 
     _ATOMIC_AVAILABLE = True
@@ -66,16 +65,12 @@ except Exception as _e:
     _ATOMIC_AVAILABLE = False
     TONGUES = ("KO", "AV", "RU", "CA", "UM", "DR")
 
-    def tokens_to_tau_sequence(tokens, **kw):  # type: ignore[misc]
-        return []
-
 
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
 _ZERO_TAU: Dict[str, float] = {t: 0.0 for t in TONGUES}
-_NEUTRAL_TAU: Dict[str, float] = {t: 0.333 for t in TONGUES}
 
 # Semantic quality weights: which tongue channels carry positive structure signal
 # for code. DR (formal/structural), CA (compute/algo), KO (control/dispatch)

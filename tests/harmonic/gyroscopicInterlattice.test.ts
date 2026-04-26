@@ -24,7 +24,6 @@ import {
   couplingStrength,
   bondAngle,
   phaseFactor,
-  createCouple,
   allCouplings,
   nashEquationOfMotion,
   evolveStep,

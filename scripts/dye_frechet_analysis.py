@@ -210,8 +210,8 @@ def isolate_variables(
 
     nat_cost_mean = np.mean(nat_costs) if nat_costs else 0
     ind_cost_mean = np.mean(ind_costs) if ind_costs else 0
-    nat_radius_mean = np.mean(nat_radii) if nat_radii else 0
-    ind_radius_mean = np.mean(ind_radii) if ind_radii else 0
+    np.mean(nat_radii) if nat_radii else 0
+    np.mean(ind_radii) if ind_radii else 0
 
     # MATH signals: deterministic, predictable from formulas
     cost_ratio = ind_cost_mean / (nat_cost_mean + 1e-8)

@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { writeFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import {
@@ -21,17 +21,40 @@ import {
 
 const CWD = process.cwd();
 const TMP_SCRIPT = join(CWD, '_tmp_parity_test.py');
+const PYTHON_CANDIDATES = process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
 
 /**
  * Run a Python expression and return its output via temp file (avoids shell quoting issues).
  */
-const PYTHON_BIN = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+function resolvePython(): string | null {
+  for (const candidate of PYTHON_CANDIDATES) {
+    try {
+      execFileSync(candidate, ['--version'], {
+        cwd: CWD,
+        encoding: 'utf-8',
+        stdio: 'pipe',
+        timeout: 5000,
+      });
+      return candidate;
+    } catch {
+      // try next candidate
+    }
+  }
+  return null;
+}
+
+const PYTHON_BIN = resolvePython();
 
 /** Check if Python + numpy + gyroscopic_interlattice are importable (skipped in Node-only CI). */
 function pythonDepsAvailable(): boolean {
+  if (!PYTHON_BIN) return false;
   try {
-    execSync(
-      `${PYTHON_BIN} -c "import numpy; from symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import TONGUE_RADII"`,
+    execFileSync(
+      PYTHON_BIN,
+      [
+        '-c',
+        'import numpy; from symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import TONGUE_RADII',
+      ],
       {
         cwd: CWD,
         encoding: 'utf-8',
@@ -49,10 +72,13 @@ function pythonDepsAvailable(): boolean {
 const maybeDescribe = pythonDepsAvailable() ? describe : describe.skip;
 
 function pyEval(expr: string): string {
+  if (!PYTHON_BIN) {
+    throw new Error('Python not available');
+  }
   const script = `import sys\nsys.path.insert(0, "src")\nfrom symphonic_cipher.scbe_aethermoore.axiom_grouped.gyroscopic_interlattice import *\nprint(${expr})`;
   writeFileSync(TMP_SCRIPT, script, 'utf-8');
   try {
-    return execSync(`${PYTHON_BIN} ${TMP_SCRIPT}`, { cwd: CWD, encoding: 'utf-8' }).trim();
+    return execFileSync(PYTHON_BIN, [TMP_SCRIPT], { cwd: CWD, encoding: 'utf-8' }).trim();
   } finally {
     try {
       unlinkSync(TMP_SCRIPT);

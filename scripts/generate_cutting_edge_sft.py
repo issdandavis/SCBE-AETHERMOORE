@@ -450,7 +450,7 @@ The 14-layer pipeline with 5 quantum axioms provides defense-in-depth that no si
 def generate_response(record):
     inst = record["instruction"]
     seed = deterministic_seed(record)
-    rng = random.Random(seed)
+    random.Random(seed)
     cat = record.get("category", "general")
     skill = record["skill_source"]
     skill_name = skill.replace("-", " ").title()
@@ -577,7 +577,6 @@ def main():
     print(f"Below 300 words: {short}, Above 800 words: {long_}")
 
     # Diversity check
-    from collections import Counter
     def jaccard(a, b):
         sa = set(a.lower().split())
         sb = set(b.lower().split())

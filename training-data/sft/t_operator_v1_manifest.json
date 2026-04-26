@@ -1,0 +1,12 @@
+{
+  "schema_version": "t_operator_sft_manifest_v1",
+  "generated_at_utc": "2026-04-26T03:42:39.364323+00:00",
+  "source_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\incoming\\kimi_agent_binary_cheat_sheet_feedback_20260425\\t_operator_sft.jsonl",
+  "source_sha256": "f30466e018621154851bfde74a201aaee0de8e3b9d950a15289fa95ee8da21a9",
+  "output_path": "training-data\\sft\\t_operator_v1.sft.jsonl",
+  "record_count": 36,
+  "verified_count": 6,
+  "candidate_count": 30,
+  "track": "t_operator_eml_symbolic_compiler",
+  "training_rule": "Use T/EML records as symbolic compiler examples. Treat floating-point operator prototypes as research artifacts, not consensus signatures."
+}

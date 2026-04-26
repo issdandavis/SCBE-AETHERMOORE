@@ -155,7 +155,7 @@ def compute_safety_score(command: str) -> dict:
     # Step 3: Compute safe center embedding (average of safe commands)
     safe_embs = [_embed_text(c) for c in SAFE_COMMANDS]
     safe_center = np.mean(safe_embs, axis=0)
-    _safe_center_norm = float(np.linalg.norm(safe_center))
+    float(np.linalg.norm(safe_center))
 
     # Step 4: Distance from safe center in Poincaré ball
     d_from_safe = _poincare_distance(emb, safe_center)
@@ -208,13 +208,13 @@ def compute_safety_score(command: str) -> dict:
 
     # Step 8: Tongue mismatch detection
     # If the command claims to be one domain but the content is another
-    _claimed_domain = tongue["primary_tongue"]
+    claimed_tongue = tongue["primary_tongue"]
     actual_keywords = {}
     for t, kws in TONGUE_KEYWORDS.items():
         hits = sum(1 for kw in kws if kw in lower)
         actual_keywords[t] = hits
     # High UM (security) keywords in a command that routes to KO (simple) = suspicious
-    mismatch = actual_keywords.get("UM", 0) > 2 and tongue["tier"] < 3
+    mismatch = actual_keywords.get("UM", 0) > 2 and tongue["tier"] < 3 and bool(claimed_tongue)
 
     # Step 9: Decision
     if cost > 500 or danger_score > 0.15 or mismatch:

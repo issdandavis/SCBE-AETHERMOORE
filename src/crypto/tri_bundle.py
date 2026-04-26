@@ -333,7 +333,6 @@ def encode_byte(
     Amplitude is INVERSE of activation: sound is LOUDEST where light is DARKEST.
     """
     weight = TONGUE_WEIGHTS[tongue_code]
-    _freq = TONGUE_FREQUENCIES[tongue_code]
 
     # LIGHT bundle (what IS)
     presence = 1 if byte_val > 0 else 0

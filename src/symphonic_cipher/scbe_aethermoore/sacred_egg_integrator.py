@@ -28,6 +28,7 @@ import base64
 import copy
 import dataclasses
 import hashlib
+import importlib
 import json
 import os
 from typing import TYPE_CHECKING, Dict, List, Optional
@@ -38,9 +39,7 @@ if TYPE_CHECKING:
 
 def _cli_toolkit():
     """Lazy-load cli_toolkit to avoid import cycles with CLI entrypoints."""
-    from . import cli_toolkit
-
-    return cli_toolkit
+    return importlib.import_module(f"{__package__}.cli_toolkit")
 
 
 # Ring ordering for ring_descent validation

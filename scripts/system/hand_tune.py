@@ -20,7 +20,6 @@ Usage:
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -128,7 +127,7 @@ def load_scbe_examples(jsonl_path: str) -> list[dict]:
                 if "messages" in ex:
                     examples.append({"messages": ex["messages"]})
             except json.JSONDecodeError:
-                pass
+                continue
     return examples
 
 

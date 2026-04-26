@@ -4,7 +4,7 @@
  * @module tests/security-engine/redblue-arena
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   Team,
   UnitRole,
@@ -19,7 +19,6 @@ import {
 } from '../../src/security-engine/redblue-arena';
 import { SecurityDecision } from '../../src/security-engine/context-engine';
 import type {
-  ArenaConfig,
   ArenaPayload,
   TeamMove,
   StrategyAdapter,
@@ -204,7 +203,6 @@ describe('judgeRound', () => {
 describe('LocalRedStrategy', () => {
   it('should cycle through attack catalog', async () => {
     const strategy = new LocalRedStrategy();
-    const surfaces: Surface[] = [];
 
     for (let i = 0; i < 10; i++) {
       const move = await strategy.generate({
@@ -289,8 +287,7 @@ describe('RedBlueArena', () => {
     const arena = new RedBlueArena({ rounds: 10 });
     const record = await arena.runMatch();
 
-    const surfaces = record.rounds.map((r) => r.surface);
-    const unique = new Set(surfaces);
+    const unique = new Set(record.rounds.map((r) => r.surface));
     expect(unique.size).toBe(5); // all surfaces used
   });
 

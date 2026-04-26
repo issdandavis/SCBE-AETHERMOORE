@@ -23,8 +23,13 @@ _DEMO_KEYS: Dict[str, str] = {
 }
 
 
+def _env_flag(name: str) -> bool:
+    value = os.environ.get(name, "")
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def load_api_keys() -> Dict[str, str]:
-    """Load API keys from environment or fall back to demo keys in dev/test."""
+    """Load API keys from environment or explicit demo keys for local/test use."""
     env_keys = os.environ.get("SCBE_API_KEYS")
     if env_keys:
         try:
@@ -34,15 +39,15 @@ def load_api_keys() -> Dict[str, str]:
         except (json.JSONDecodeError, TypeError):
             logger.warning("SCBE_API_KEYS is set but not valid JSON; ignoring")
 
-    scbe_env = os.environ.get("SCBE_ENV", os.environ.get("NODE_ENV", "development"))
-    if scbe_env in ("development", "test"):
-        logger.debug("Using demo API keys (SCBE_ENV=%s)", scbe_env)
+    scbe_env = os.environ.get("SCBE_ENV", os.environ.get("NODE_ENV", "production"))
+    if _env_flag("SCBE_ALLOW_DEMO_KEYS"):
+        logger.warning("Using explicit demo API keys (SCBE_ENV=%s)", scbe_env)
         return dict(_DEMO_KEYS)
 
     logger.warning(
         "No SCBE_API_KEYS configured and SCBE_ENV=%s; "
         "API authentication will reject all requests. "
-        "Set SCBE_API_KEYS or use SCBE_ENV=development for demo keys.",
+        "Set SCBE_API_KEYS or SCBE_ALLOW_DEMO_KEYS=1 for local demo keys.",
         scbe_env,
     )
     return {}

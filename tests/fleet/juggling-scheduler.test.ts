@@ -8,17 +8,14 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import {
   FlightState,
   JugglingScheduler,
-  TaskCapsule,
-  AgentSlot,
   createCapsule,
   assignmentScore,
   recoverability,
   selectArcHeight,
   agentSlotFromFleet,
-  DEFAULT_SCORE_WEIGHTS,
   MAX_RETRIES,
-  PHASE_DRIFT_THRESHOLD,
 } from '../../src/fleet/juggling-scheduler';
+import type { TaskCapsule, AgentSlot } from '../../src/fleet/juggling-scheduler';
 import type { FleetAgent, GovernanceTier } from '../../src/fleet/types';
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,18 @@
+{
+  "schema_version": "aligned_foundations_manifest_v1",
+  "train_file": "training-data\\sft\\aligned_foundations_train.sft.jsonl",
+  "eval_file": "training-data\\sft\\aligned_foundations_holdout.sft.jsonl",
+  "counts": {
+    "train": 46,
+    "holdout": 15,
+    "total": 61
+  },
+  "categories": {
+    "alphabet": 26,
+    "numbers": 16,
+    "tongues": 6,
+    "layers": 5,
+    "risk_tiers": 4,
+    "chemistry": 4
+  }
+}

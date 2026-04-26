@@ -68,7 +68,14 @@ EPOCHS = CFG["epochs"]
 BATCH_SIZE = CFG["batch_size"]
 GRAD_ACCUM = CFG["grad_accum"]
 MAX_LEN = CFG["max_length"]
-HF_DATASET_REPO = "issdandavis/scbe-aethermoore-training-data"
+HF_DATASET_REPO = CFG.get("hf_dataset_repo", "issdandavis/scbe-aethermoore-training-data")
+KAGGLE_DATASET_SLUG = CFG.get("kaggle_dataset", "issacizrealdavis/scbe-polly-training-data").split("/")[-1]
+MAX_STEPS = int(CFG.get("max_steps", -1))
+LEARNING_RATE = float(CFG.get("learning_rate", 2e-4))
+MAX_RECORDS = int(CFG.get("max_records", 10000))
+LORA_R = int(CFG.get("lora_r", 16))
+LORA_ALPHA = int(CFG.get("lora_alpha", 32))
+LORA_DROPOUT = float(CFG.get("lora_dropout", 0.05))
 
 # ---- Auth ----
 PUSH = False
@@ -96,7 +103,7 @@ if not PUSH:
 # ---- Data Loading ----
 def load_data():
     records = []
-    kaggle_dir = Path("/kaggle/input/scbe-polly-training-data")
+    kaggle_dir = Path("/kaggle/input") / KAGGLE_DATASET_SLUG
 
     files = FILE_LIST
     if files == "__ALL__":
@@ -173,7 +180,7 @@ def load_data():
     # Cap dataset size to prevent OOM and timeout on CPU fallback
     import random as _random
     _use_gpu = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 7
-    _max_records = 10000 if _use_gpu else 200  # CPU: tiny run, finishes in ~30min
+    _max_records = MAX_RECORDS if _use_gpu else min(MAX_RECORDS, 200)  # CPU: tiny run, finishes in ~30min
     if len(records) > _max_records:
         _random.seed(42)
         records = _random.sample(records, _max_records)
@@ -261,7 +268,7 @@ if quant_config is not None:
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 
 model = get_peft_model(model, LoraConfig(
-    r=16, lora_alpha=32, lora_dropout=0.05, bias="none",
+    r=LORA_R, lora_alpha=LORA_ALPHA, lora_dropout=LORA_DROPOUT, bias="none",
     task_type="CAUSAL_LM",
     target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
 ))
@@ -288,10 +295,11 @@ trainer = SFTTrainer(
         output_dir=OUTPUT_DIR,
         hub_model_id=HF_REPO,
         push_to_hub=PUSH,
-        learning_rate=2e-4,
+        learning_rate=LEARNING_RATE,
         per_device_train_batch_size=effective_batch,
         gradient_accumulation_steps=GRAD_ACCUM,
         num_train_epochs=EPOCHS,
+        max_steps=MAX_STEPS,
         warmup_ratio=0.03,
         weight_decay=0.01,
         max_grad_norm=0.3,

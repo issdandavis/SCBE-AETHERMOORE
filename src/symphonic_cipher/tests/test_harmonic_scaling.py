@@ -1800,7 +1800,6 @@ class TestGrandUnifiedSymphonicCipher:
         modes = np.array([1, 1, 0, 1, 1, 1])  # Dimension 2 frozen
         guscf = GrandUnifiedSymphonicCipher(n_dims=6, dimension_modes=modes)
 
-        theta_origin = np.zeros(6)  # noqa: F841
         theta_violate = np.array([0.0, 0.0, 1.0, 0.0, 0.0, 0.0])  # Only moves frozen dim
         r = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
 

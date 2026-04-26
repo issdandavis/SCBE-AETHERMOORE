@@ -257,7 +257,6 @@ class TestCrossConvergence:
 
         # Find en-fr (same family) vs en-zh (different family)
         en_fr = next(cc for cc in result.cross_convergence if set([cc["lang_a"], cc["lang_b"]]) == {"en", "fr"})
-        en_zh = next(cc for cc in result.cross_convergence if set([cc["lang_a"], cc["lang_b"]]) == {"en", "zh"})
         # Indo-European siblings should correlate higher than IE vs Sino-Tibetan
         assert en_fr["affinity_correlation"] > 0
 

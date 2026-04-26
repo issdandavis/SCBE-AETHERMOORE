@@ -664,7 +664,7 @@ class TestStellarOctaveIntegration:
     def test_all_stellar_bodies_reach_audible(self):
         """Every cataloged stellar body must reach audible via octave doubling."""
         for body, freq in self.som.STELLAR_FREQUENCIES.items():
-            result = self.som.transpose(freq)
+            self.som.transpose(freq)
             # Some may overshoot; stellar_pulse_protocol corrects
             protocol = self.som.stellar_pulse_protocol(body)
             assert protocol["is_audible"], f"{body} protocol not audible"

@@ -405,7 +405,7 @@ def _upload_thumbnail(token: str, video_id: str, thumb_path: Path) -> bool:
     req.add_header("Content-Type", content_type)
 
     try:
-        _resp = urllib.request.urlopen(req, context=ctx, timeout=30)
+        urllib.request.urlopen(req, context=ctx, timeout=30)
         print(f"  Thumbnail uploaded successfully")
         return True
     except urllib.error.HTTPError as e:

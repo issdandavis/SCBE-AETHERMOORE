@@ -62,7 +62,7 @@ def find_obsidian_vaults(root_dirs: Optional[List[str]] = None, max_depth: int =
                             config = json.load(f)
                         name = config.get("vaultName", name)
                     except (json.JSONDecodeError, OSError):
-                        pass
+                        config = {}
 
                 vaults.append(
                     {

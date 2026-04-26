@@ -27,8 +27,10 @@ import math
 import pytest
 
 try:
-    from cryptography.fernet import Fernet  # noqa: F401
-except BaseException:
+    from cryptography import fernet
+
+    assert callable(fernet.Fernet)
+except Exception:
     pytest.skip(
         "cryptography package not functional (cffi backend missing)",
         allow_module_level=True,

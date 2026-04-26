@@ -147,14 +147,6 @@ def _gravity(direction: str) -> Callable[[Grid], Grid]:
     return _apply
 
 
-_GRAVITY_INVERSES = {
-    "gravity_up": "gravity_down",
-    "gravity_down": "gravity_up",
-    "gravity_left": "gravity_right",
-    "gravity_right": "gravity_left",
-}
-
-
 def _make_gravity_move(direction: str) -> Move:
     op = f"gravity_{direction}"
     inv_dir = {"up": "down", "down": "up", "left": "right", "right": "left"}[direction]

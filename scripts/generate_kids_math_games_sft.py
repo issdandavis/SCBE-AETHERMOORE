@@ -26,9 +26,8 @@ import math
 import random
 import sys
 from dataclasses import dataclass
-from itertools import combinations, permutations
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -307,7 +306,7 @@ def gen_resource_race(count: int) -> List[GameRecord]:
 
     for _ in range(count):
         tongue = random.choice(TONGUES)
-        squad = random.sample(TONGUES, 4)
+        random.sample(TONGUES, 4)
 
         # EASY: split 10 coins among 3 players, each coin gives 1 point
         coins = 10
@@ -341,8 +340,8 @@ def gen_resource_race(count: int) -> List[GameRecord]:
                       f"All to Player A (x{mults[0]}): {budget} x {mults[0]} = {greedy_score} points.\n"
                       f"Even split ({budget // 3} each): "
                       f"{budget // 3}x{mults[0]} + {budget // 3}x{mults[1]} + {budget // 3}x{mults[2]} = "
-                      f"{(budget // 3) * sum(mults)} points.\n"
-                      f"Greedy wins: {greedy_score} vs {(budget // 3) * sum(mults)}.\n"
+                      f"{even_score} points.\n"
+                      f"Greedy wins: {greedy_score} vs {even_score}.\n"
                       f"In optimization, when resources are interchangeable and one target dominates, "
                       f"concentrate everything there.",
             difficulty="medium", concept="allocation", tongue=tongue,
@@ -863,6 +862,7 @@ def gen_pattern_lock(count: int) -> List[GameRecord]:
                       f"Ratio of consecutive terms:\n" +
                       "\n".join(f"  {fib[i+1]}/{fib[i]} = {fib[i+1]/fib[i]:.4f}" for i in range(len(fib)-1)) +
                       f"\n\nConverges to φ (phi) = {PHI:.6f} — the golden ratio!\n"
+                      f"Latest ratio here is {ratio:.4f}.\n"
                       f"No matter what you start with (except 0,0), the ratio ALWAYS converges to phi. "
                       f"This is why SCBE uses phi for tongue weights — "
                       f"it's the universe's most natural growth constant.",

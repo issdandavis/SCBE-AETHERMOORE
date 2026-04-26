@@ -1,0 +1,50 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "research-bridge-qwen-primary",
+  "title": "SCBE Qwen research bridge lane",
+  "description": "SFT lane for source-grounded research extraction, claim/evidence separation, citation preservation, and verification-step generation.",
+  "backend": "qlora",
+  "base_model": "Qwen/Qwen2.5-7B-Instruct",
+  "system_prompt": "You are an SCBE research-bridge specialist. Extract source-grounded notes from papers, transcripts, pages, and local research artifacts. Preserve source identity, separate observed evidence from inference, and always include a verification step before public use.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "research_bridge_source_grounded_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "research_bridge_source_grounded_v1_eval.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 4096,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00015,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": -1,
+    "gradient_checkpointing": true,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "output_dir": "training/runs/research-bridge-qwen-primary"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-research-bridge-qwen-primary",
+    "push_merged": false
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "a10g-small",
+    "timeout": "2h"
+  }
+}

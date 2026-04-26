@@ -118,7 +118,7 @@ def create_browser(
     governed: bool = True,
     agent_id: str = "governed-browser-001",
     scbe_url: str = "http://127.0.0.1:8080",
-    scbe_key: str = "test-key-12345",
+    scbe_key: str = "",
     **backend_kwargs
 ) -> GovernedBrowser:
     """

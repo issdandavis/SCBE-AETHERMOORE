@@ -26,14 +26,6 @@ function patchFile(filePath) {
     return { patched: false, reason: "already_patched" };
   }
 
-  const replacement =
-    [
-      "// SPAWN_EPERM_WORKAROUND: wrap net use exec to avoid spawn EPERM on locked-down Windows",
-      "try {",
-      needle,
-    ].join("\n") +
-    src.split(needle)[1].split("\n").slice(0, 0).join("\n");
-
   // Replace only the first occurrence of the exec call with the try-wrapped version,
   // and add a catch that falls back to native realpath.
   const patched = src.replace(

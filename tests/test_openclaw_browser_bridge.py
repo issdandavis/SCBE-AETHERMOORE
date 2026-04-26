@@ -1,6 +1,6 @@
 import json
 
-import scripts.system.openclaw_browser_bridge as bridge
+from scripts.system import openclaw_browser_bridge as bridge
 from scripts.system.openclaw_browser_bridge import (
     ensure_browser_running,
     load_openclaw_config,

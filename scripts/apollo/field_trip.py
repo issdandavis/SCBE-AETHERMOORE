@@ -320,11 +320,11 @@ def run_field_trip(route_name: str = "standard") -> FieldTripReport:
         # exit_ip is already redacted by get_exit_ip()
         print(
             f"         [{gov_sym.get(hop.governance, '??')}] {hop.title[:50]} | "
-            f"{hop.content_length}B | {hop.latency_ms}ms | exit:{hop.exit_ip}"
+            f"{hop.content_length}B | {hop.latency_ms}ms | exit:[REDACTED]"
         )
 
         if hop.secrets_scrubbed > 0:
-            print(f"         Scrubbed {hop.secrets_scrubbed} secrets")  # lgtm[py/clear-text-logging-sensitive-data]
+            print("         Sensitive items were scrubbed before storage")
 
         time.sleep(1)  # be polite
 

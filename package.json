@@ -1,15 +1,15 @@
 {
   "name": "scbe-aethermoore",
-  "version": "4.0.1",
+  "version": "4.0.3",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
   "type": "commonjs",
-  "main": "./dist/src/index.js",
   "bin": {
-    "scbe": "./bin/scbe.cjs",
-    "scbe-system": "./bin/scbe-system.cjs"
+    "geoseal": "bin/geoseal.cjs",
+    "scbe-geoseal": "bin/geoseal.cjs"
   },
+  "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
@@ -37,6 +37,11 @@
       "import": "./dist/src/spiralverse/index.js",
       "require": "./dist/src/spiralverse/index.js"
     },
+    "./spiralauth": {
+      "types": "./dist/src/spiralauth/index.d.ts",
+      "import": "./dist/src/spiralauth/index.js",
+      "require": "./dist/src/spiralauth/index.js"
+    },
     "./tokenizer": {
       "types": "./dist/src/tokenizer/index.d.ts",
       "import": "./dist/src/tokenizer/index.js",
@@ -59,27 +64,18 @@
     }
   },
   "files": [
-    "dist/src/index.js",
-    "dist/src/index.d.ts",
-    "dist/src/harmonic",
-    "dist/src/crypto",
-    "dist/src/symphonic",
-    "dist/src/governance",
-    "dist/src/tokenizer",
-    "dist/src/ai_brain",
-    "dist/src/spectral",
-    "dist/src/spiralverse",
     "bin",
+    "dist/src",
+    "dist/packages",
     "README.md",
     "LICENSE",
     "examples/npm"
   ],
   "scripts": {
-    "postinstall": "node scripts/patch_vite_windows_safe_realpath.cjs",
     "clean": "rimraf dist",
     "clean:release": "node scripts/npm_prepublish_cleanup.js",
     "build": "npm run clean && npm run build:src",
-    "build:src": "tsc -p tsconfig.json",
+    "build:src": "tsc -p tsconfig.json && node scripts/write_root_index_dts.mjs",
     "build:watch": "tsc -p tsconfig.json --watch",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -93,12 +89,22 @@
     "format:python": "black src/ tests/",
     "lint": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "lint:python": "flake8 src/ tests/",
+    "docs:format": "python scripts/format_doc_markdown.py docs/specs docs/proposals --write",
+    "docs:check": "python scripts/format_doc_markdown.py docs/specs docs/proposals --check",
     "cli": "python scbe-cli.py",
     "codeprism:build": "python scripts/code_prism_build.py",
     "codeprism:mesh": "python scripts/code_prism_build.py --mesh",
     "connector:health": "python scripts/connector_health_check.py",
     "scbe:bootstrap": "node scripts/scbe_bootstrap.mjs",
     "system:cli": "python scripts/scbe-system-cli.py",
+    "training:terminal": "python scripts/system/training_terminal.py",
+    "training:merge-adapters": "python scripts/system/merge_lora_adapters.py",
+    "training:dispatch-coding-agent": "python scripts/system/dispatch_coding_agent_hf_job.py",
+    "training:geoseal-coder": "python scripts/system/geoseal_coding_training_system.py",
+    "cash:sprint": "python scripts/revenue/daily_cash_sprint.py",
+    "cash:sprint:run": "python scripts/revenue/daily_cash_sprint.py --continuous",
+    "cash:sprint:watch": "python scripts/revenue/daily_cash_sprint.py --continuous --cycle-when-complete --max-steps 1",
+    "feature:explore": "python scripts/explore_scbe_feature_space.py",
     "eval:legacy:hf": "python scripts/run_legacy_hf_eval.py",
     "probe:attention:fft": "python scripts/probe_attention_fft.py",
     "probe:attention:fft:live": "python scripts/run_attention_fft_probe.py",
@@ -128,6 +134,8 @@
     "publish:prepare": "npm run clean:release && npm run build",
     "publish:pack:json": "node -e \"require('fs').mkdirSync('artifacts/npm-pack',{recursive:true})\" && npm pack --dry-run --json --ignore-scripts --cache ./.npm-cache > artifacts/npm-pack/pack.json",
     "publish:check:strict": "npm run publish:pack:json && node scripts/npm_pack_guard.js --pack-json artifacts/npm-pack/pack.json",
+    "publish:pypi:build": "python -m build --sdist --wheel --outdir artifacts/pypi-dist",
+    "publish:pypi:check": "python scripts/pypi_dist_guard.py --dist-dir artifacts/pypi-dist",
     "prepublishOnly": "npm run publish:prepare",
     "prepack": "npm run publish:check:strict",
     "package": "npm pack",
@@ -167,8 +175,6 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.1013.0",
-    "@aws-sdk/client-s3": "^3.1013.0",
     "@modelcontextprotocol/sdk": "^1.26.0",
     "@noble/hashes": "^2.0.1",
     "@noble/post-quantum": "^0.6.0",
@@ -193,6 +199,7 @@
     "ws": "^8.20.0"
   },
   "overrides": {
+    "fast-xml-parser": "^5.7.1",
     "typescript": "^6.0.2"
   }
 }

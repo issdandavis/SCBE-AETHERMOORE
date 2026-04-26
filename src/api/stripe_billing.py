@@ -504,9 +504,6 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
 
 def _persist_purchase(record: Dict[str, Any]) -> None:
     """Append purchase record to JSONL file."""
-    import json
-    from pathlib import Path
-
     log_dir = Path(__file__).resolve().parents[2] / "artifacts" / "revenue"
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "purchases.jsonl"

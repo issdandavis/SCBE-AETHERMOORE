@@ -1,37 +1,69 @@
 # SCBE-AETHERMOORE
 
-**AI governance through geometric cost scaling. Attacks don't get blocked by pattern matching — they get priced out of existence.**
+AI governance through geometric cost scaling.
 
-[![Tests](https://img.shields.io/badge/tests-6%2C066%20passing-brightgreen)](.)
-[![F1](https://img.shields.io/badge/F1-0.813-blue)](.)
-[![Python](https://img.shields.io/badge/python-3.11+-blue)](.)
-[![TypeScript](https://img.shields.io/badge/typescript-5.8+-blue)](.)
-[![npm](https://img.shields.io/npm/v/scbe-aethermoore)](https://www.npmjs.com/package/scbe-aethermoore)
-[![PyPI](https://img.shields.io/pypi/v/scbe-aethermoore)](https://pypi.org/project/scbe-aethermoore/)
-[![Patent](https://img.shields.io/badge/patent-USPTO%20%2363%2F961%2C403-orange)](.)
+This repository is the public working tree for the SCBE-AETHERMOORE stack: a governed AI system built around hyperbolic geometry, semantic weighting, auditability, and multi-layer runtime controls.
 
----
+It is also a large hybrid repo. There is real code here, real docs here, and real experiments here. If you treat every file as equally canonical, the repo will look noisier than it actually is.
 
-## The idea
+Long-form documentation belongs under `docs/`. Code directories should stay implementation-first and use only minimal maintenance readmes when needed.
 
-Every AI security system today works the same way: pattern matching. They've seen an attack before, so they recognize it again. Novel attacks pass through.
+## Start Here
 
-SCBE does something different. It maps every input into 6-dimensional hyperbolic space and computes the mathematical cost of reaching adversarial territory. The further you drift from safe behavior, the more it costs — superexponentially. The current canonical harmonic wall is: **H(d*, R) = R^((φ · d*)²)**.
+- New to the repo: [START_HERE.md](START_HERE.md)
+- Product-first quickstart: [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
+- Current authority order: [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
+- Consolidation authority: [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
+- Root authority keep set: [docs/specs/ROOT_AUTHORITY_KEEP_SET.md](docs/specs/ROOT_AUTHORITY_KEEP_SET.md)
+- Repo navigation map: [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
+- Machine-readable zone inventory: [config/repo_consolidation_inventory.json](config/repo_consolidation_inventory.json)
+- Canonical index policy: [docs/README_INDEX.md](docs/README_INDEX.md)
 
-You don't need to have seen an attack before. You just need to measure how far it drifted.
+## What This Repo Is
 
-**Result**: Replacing statistical text features with a trained semantic projector improved F1 from 0.481 to 0.813. “Ignore all instructions” went from ALLOW to QUARANTINE. “You are DAN” went from ALLOW to DENY.
+The public story is:
 
-## Quick links
+- a governed AI runtime with a 14-layer architecture
+- a packaging surface for npm and PyPI
+- a website and demo surface
+- a research and proposal lane that is still active
 
-| | |
-|---|---|
-| **Website** | [aethermoore.com](https://aethermoore.com) |
-| **Live demos** | [Tongue Heatmap](https://aethermoore.com/demos/tongue-heatmap.html) / [Harmonic Wall 3D](https://aethermoore.com/demos/harmonic-wall-3d.html) / [Attack Radar](https://aethermoore.com/demos/attack-radar.html) |
-| **Research codex** | [3D infinite-zoom explorer](https://aethermoore.com/research/rabbit-hole.html) |
-| **The novel** | [The Six Tongues Protocol](https://www.amazon.com/dp/B0F28PHSPR) — the magic system IS the security architecture |
-| **Free tools** | [AI Arena](https://aethermoore.com/arena.html) (9 models, BYOK) |
-| **HuggingFace** | [issdandavis](https://huggingface.co/issdandavis) — 6 models, 9 datasets |
+The repo is not being split into more GitHub repositories. The current strategy is one monorepo with clearer product, platform, research, and archive boundaries. That means the correct way to read it is through the routing docs above, not by browsing randomly from the root.
+
+## Primary Product Lane
+
+If you want the nearest thing to the real product surface, start with the browser-and-local-API lane:
+
+- [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
+- `public/`
+- `app/`
+- `api/`
+- `products/`
+- `scripts/aetherbrowser/`
+
+The supporting platform lives mainly in:
+
+- `src/tokenizer/`
+- `src/tongues/`
+- `src/coding_spine/`
+- `src/governance/`
+- `src/crypto/`
+- `python/scbe/`
+
+## What Works Now
+
+The installable package surface is the simplest public entry point.
+
+Package links:
+
+- npm: [`scbe-aethermoore`](https://www.npmjs.com/package/scbe-aethermoore)
+- PyPI: [`scbe-aethermoore`](https://pypi.org/project/scbe-aethermoore/)
+
+Website and public demos:
+
+- Website: [aethermoore.com](https://aethermoore.com)
+- GitHub Pages mirror: [issdandavis.github.io/SCBE-AETHERMOORE](https://issdandavis.github.io/SCBE-AETHERMOORE/)
+- Hugging Face: [issdandavis](https://huggingface.co/issdandavis)
 
 ## Install
 
@@ -161,17 +193,6 @@ npm install scbe-aethermoore
 pip install scbe-aethermoore
 ```
 
-Local repo evaluation:
-
-```bash
-git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
-cd SCBE-AETHERMOORE
-pytest tests/adversarial/test_adversarial_benchmark.py -v
-python scripts/benchmark/scbe_vs_industry.py
-```
-
-If you want one documented reproduction path, start with `pytest tests/ -v` and `python scripts/benchmark/scbe_vs_industry.py`.
-
 ## Canonical public docs
 
 - Canonical system state: [`CANONICAL_SYSTEM_STATE.md`](CANONICAL_SYSTEM_STATE.md)
@@ -260,255 +281,66 @@ Layer 14:    Audio Axis (FFT telemetry)
 ═══════════════════════════════════════════════════════════════════
 ```
 
-### The Six Sacred Tongues
+## Public Technical Shape
 
-| Tongue | Code | Domain | Weight |
-|--------|------|--------|--------|
-| Kor'aelin | KO | Control & Orchestration | 1.00 |
-| Avali | AV | I/O & Messaging | 1.62 |
-| Runethic | RU | Policy & Constraints | 2.62 |
-| Cassisivadan | CA | Logic & Computation | 4.24 |
-| Umbroth | UM | Security & Privacy | 6.85 |
-| Draumric | DR | Types & Structures | 11.09 |
+The repo centers on a few recurring ideas:
 
-**Policy Levels:**
-- `standard` → KO required
-- `strict` → RU required
-- `critical` → RU + UM + DR required
+- hyperbolic embedding and distance-based governance
+- semantic weighting across six Sacred Tongues
+- multi-layer decision and telemetry flow
+- audit-friendly runtime behavior
+- local-first tooling and operator workflows
 
----
+The repo contains multiple historical or experimental formulations of some math surfaces. Do not assume the first formula you find is the current one.
 
-## Quick Start
+For current authority:
 
-### Docker (Fastest)
-```bash
-docker run -p 8080:8080 -e SCBE_API_KEY=your-key ghcr.io/issdandavis/scbe-aethermoore
-```
+- runtime and documentation precedence: [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
+- current constants and formula lock file: [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE_CANONICAL_CONSTANTS.md)
 
-### Docker Terminal Control (No UI)
-```powershell
-# Doctor + health checks
-.\scripts\scbe_docker_status.ps1 -Action doctor -Stack api
+## Public Docs Worth Opening
 
-# Start/stop stack
-.\scripts\scbe_docker_status.ps1 -Action up -Stack api
-.\scripts\scbe_docker_status.ps1 -Action down -Stack api
-```
+- System state: [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
+- Repo map: [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
+- Canonical index guide: [docs/README_INDEX.md](docs/README_INDEX.md)
+- Evidence page: [docs/evidence/EVIDENCE_24_24.md](docs/evidence/EVIDENCE_24_24.md)
+- Layer index: [docs/LAYER_INDEX.md](docs/LAYER_INDEX.md)
+- System overview: [docs/SCBE_SYSTEM_OVERVIEW.md](docs/SCBE_SYSTEM_OVERVIEW.md)
+- Concepts: [docs/CONCEPTS.md](docs/CONCEPTS.md)
 
-See `docs/DOCKER_TERMINAL_OPERATIONS.md` for full stack control commands.
+## Claim Boundaries
 
-Docker MCP terminal-only workflow:
-```powershell
-.\scripts\scbe_mcp_terminal.ps1 -Action doctor
-.\scripts\scbe_mcp_terminal.ps1 -Action tools
-.\scripts\scbe_mcp_terminal.ps1 -Action gateway
-```
+This repository includes:
 
-### Local Development
-```bash
-git clone https://github.com/issdandavis/SCBE-AETHERMOORE.git
-cd SCBE-AETHERMOORE
-npm install && pip install -r requirements.txt
-export SCBE_API_KEY="your-key"
-uvicorn api.main:app --port 8080
-```
+- canonical surfaces
+- active implementation
+- historical documents
+- proposal material
+- exploratory research
 
-### Cloud Deployment
+So the right question is not "is this in the repo?" but "is this canonical, active, legacy, or exploratory?"
 
-**AWS Lambda:**
-```bash
-cd aws && sam build && sam deploy --guided
-```
+Use this order when there is conflict:
 
-**Google Cloud Run:**
-```bash
-cd deploy/gcloud && ./deploy.sh YOUR_PROJECT_ID
-```
+1. [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
+2. [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE_CANONICAL_CONSTANTS.md)
+3. tests and active runtime entrypoints
+4. public docs
+5. historical or exploratory material
 
----
+## Root Reality
 
-## Memory Sealing API (MVP)
+The root worktree is currently noisy. There are active edits, temporary lanes, research material, and archive-heavy directories. That does not mean the repo is empty or fake. It means the project needs routing discipline.
 
-The MVP memory API in `src/api/main.py` persists sealed blobs so they can be retrieved and unsealed later. Configure the storage backend before running the API server:
+If you are reviewing the project seriously, start with:
 
-```bash
-# Required: where sealed blobs are stored on disk
-export SCBE_STORAGE_PATH="./sealed_blobs"
+1. [START_HERE.md](START_HERE.md)
+2. [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
+3. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
+4. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
 
-# Optional: storage backend selection (default: filesystem)
-export SCBE_STORAGE_BACKEND="filesystem"
-```
+Then move into the specific lane you care about.
 
-The API will write one JSON file per 6D position in the configured directory. Ensure the process has read/write access to this path when using `/seal-memory` and `/retrieve-memory`.
+## Author
 
----
-
-## Fleet API (Pilot Demo)
-
-Run a complete fleet scenario through the 14-layer SCBE pipeline:
-## API Usage
-
-### Authorize an Agent Action
-```bash
-curl -X POST $SCBE_BASE_URL/v1/authorize \
-  -H "SCBE_API_KEY: your-key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "agent_id": "fraud-detector-001",
-    "action": "READ",
-    "target": "transaction_stream",
-    "context": {"sensitivity": 0.3}
-  }'
-```
-
-**Response:**
-```json
-{
-  "decision": "ALLOW",
-  "decision_id": "dec_a1b2c3d4e5f6",
-  "score": 0.847,
-  "explanation": {
-    "trust_score": 0.8,
-    "distance": 0.234,
-    "risk_factor": 0.09
-  },
-  "token": "scbe_a1b2c3d4_dec_a1b2",
-  "expires_at": "2026-01-15T10:05:00Z"
-}
-```
-
-### Export Signed Audit Bundle
-```bash
-curl -G $SCBE_BASE_URL/audit/export \
-  -H "SCBE_API_KEY: your-key" \
-  --data-urlencode "from=2026-01-01T00:00:00Z" \
-  --data-urlencode "to=2026-01-31T23:59:59Z"
-```
-
-Returns a signed bundle (`bundle`) plus detached hash manifest (`manifest`) that auditors can verify offline. See `docs/audit-export-offline-verification.md` for verification steps.
-
-### Run Fleet Scenario
-```bash
-curl -X POST $SCBE_BASE_URL/v1/fleet/run-scenario \
-  -H "SCBE_API_KEY: your-key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "scenario_name": "fraud-detection",
-    "agents": [
-      {"agent_id": "detector-001", "name": "Fraud Detector", "initial_trust": 0.85},
-      {"agent_id": "scorer-002", "name": "Risk Scorer", "initial_trust": 0.75}
-    ],
-    "actions": [
-      {"agent_id": "detector-001", "action": "READ", "target": "transactions"},
-      {"agent_id": "scorer-002", "action": "WRITE", "target": "risk_db"}
-    ]
-  }'
-```
-
----
-
-## Use Cases
-
-| Industry | Application |
-|----------|-------------|
-| **Financial Services** | Fraud detection AI that can't be manipulated |
-| **Healthcare** | HIPAA-compliant AI decisions with audit trails |
-| **Defense/Aerospace** | Jam-resistant swarm coordination |
-| **Autonomous Systems** | Multi-agent coordination without central authority |
-| **Enterprise AI** | Constitutional safety checks for LLM agents |
-
----
-
-## Test Status
-
-| Suite | Status | Count |
-|-------|--------|-------|
-| TypeScript | ✅ Passing | 950/950 |
-| Python | ✅ Passing | 97/103 |
-
----
-
-## Technical Specifications
-
-### Post-Quantum Cryptography
-- **Kyber768**: Key exchange (NIST approved)
-- **Dilithium3**: Digital signatures (NIST approved)
-- **AES-256-GCM**: Symmetric encryption
-- **HKDF-SHA256**: Key derivation
-
-### Mathematical Foundations
-- **Poincaré Ball Model**: Hyperbolic geometry
-- **Hamiltonian Mechanics**: Energy conservation
-- **Möbius Addition**: Gyrogroup operations
-- **Quasicrystal Lattice**: 6D → 3D projection
-
----
-
-## Resources & Links
-
-### Live Demo & Packages
-- **Live Demo**: [SCBE Swarm Coordinator](https://scbe-aethermoore-ezaociw8wy6t5rnaynzvzc.streamlit.app/) - Interactive Streamlit dashboard
-- **npm Package**: [scbe-aethermoore](https://www.npmjs.com/package/scbe-aethermoore) - `npm install scbe-aethermoore`
-- **GitHub Pages**: [Project Site](https://issdandavis.github.io/SCBE-AETHERMOORE/)
-
-### Documentation (Notion)
-- [SCBE-AETHERMOORE System State Report (Feb 2026)](https://aethermoorgames.notion.site/) - Production-ready docs
-- [SCBE + Sacred Eggs Integration Pack](https://aethermoorgames.notion.site/) - Complete integration guide
-- [Phase-Breath Hyperbolic Governance (14-Layer Core v1.2)](https://aethermoorgames.notion.site/) - Mathematical core mapping
-- [Polly Pads: Mode-Switching Architecture](https://aethermoorgames.notion.site/) - Autonomous AI architecture
-- [Topological Linearization for CFI](https://aethermoorgames.notion.site/) - Patent analysis & Hamiltonian paths
-
-### Products & Templates
-- **Gumroad**: [aethermoorgames.gumroad.com](https://aethermoorgames.gumroad.com) - Notion templates, AI workflow tools
-- **Ko-fi**: [ko-fi.com/izdandavis](https://ko-fi.com/izdandavis) - Support development
-
-### Commercial & Pilot
-- **Commercial terms overview**: `COMMERCIAL.md`
-- **Customer agreement template**: `CUSTOMER_LICENSE_AGREEMENT.md`
-- **2-week pilot outbound one-pager**: `docs/monetization/OUTBOUND_ONE_PAGER_2026-03-09.md`
-
-### Social & Updates
-- **X/Twitter**: [@davisissac](https://x.com/davisissac)
-- **Substack**: [Issac "Izreal" Davis](https://substack.com/profile/153446638-issac-izreal-davis)
-
----
-
-## Support This Project
-
-SCBE-AETHERMOORE is built by a solo developer. If it helps your team manage AI agents safely, consider supporting continued development:
-
-| | Link |
-|---|---|
-| **GitHub Sponsors** | [github.com/sponsors/issdandavis](https://github.com/sponsors/issdandavis) |
-| **Ko-fi** | [ko-fi.com/izdandavis](https://ko-fi.com/izdandavis) |
-| **SaaS API** | Usage-based governance API — [contact for access](mailto:issdandavis@gmail.com?subject=SCBE%20API%20Access) |
-| **Book** | [*The Six Tongues Protocol*](https://www.amazon.com/dp/B0GSSFQD9G) on Kindle |
-
----
-
-## Contact
-
-**Issac Daniel Davis**
-Email: issdandavis@gmail.com
-GitHub: [@issdandavis](https://github.com/issdandavis)
-
----
-
-## License
-
-Open-source core is available under the MIT License (`LICENSE`).
-
-Commercial terms apply to designated proprietary components and enterprise delivery packages. See:
-- `COMMERCIAL.md`
-- `CUSTOMER_LICENSE_AGREEMENT.md`
-
-For enterprise licensing/support inquiries: `issdandavis@gmail.com`.
-
----
-
-*Built with hyperbolic geometry. Secured by mathematics.*
-
-
-## Publishing (AI-assisted)
-
-Use `docs/PUBLISHING.md` for a safe human+AI release flow, including preflight checks and dry-run packaging.
+Built by [Issac Davis](https://github.com/issdandavis).

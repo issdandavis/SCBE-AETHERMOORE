@@ -1,0 +1,63 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coder-qwen-code-primaries",
+  "title": "SCBE Qwen coder code primaries lane",
+  "description": "Config-backed QLoRA lane for Sacred-Tongues coding primaries, centered on bijective codeflow and language drill corpora that exist in training-data/sft.",
+  "backend": "unsloth-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE governance-aware coding assistant. You understand the Six Sacred Tongues as coding primaries: Kor'aelin/Python, Avali/JavaScript, Runethic/Rust, Cassisivadan/Mathematica, Umbroth/Haskell, and Draumric/Markdown. Preserve slot alignment, bijective edit propagation, and concise reasoning while writing clean code.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "bijective_codeflow_v1_train.sft.jsonl",
+      "drill_langues_full_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "bijective_codeflow_v1_holdout.sft.jsonl",
+      "drill_langues_full_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 4096,
+    "lora_rank": 32,
+    "lora_alpha": 64,
+    "lora_dropout": 0.0,
+    "learning_rate": 0.0002,
+    "num_train_epochs": 1,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": -1,
+    "packing": true,
+    "load_in_4bit": true,
+    "optim": "adamw_8bit",
+    "weight_decay": 0.01,
+    "lr_scheduler_type": "cosine",
+    "logging_steps": 25,
+    "save_strategy": "steps",
+    "save_steps": 100,
+    "save_total_limit": 2,
+    "dataloader_num_workers": 2,
+    "seed": 42,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coder-qwen-code-primaries"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "push_adapter": false,
+    "adapter_repo": "issdandavis/scbe-coder-qwen-code-primaries",
+    "push_merged": false
+  },
+  "execution": {
+    "default_emit_path": "artifacts/model_training/coder-qwen-code-primaries-train.py",
+    "recommended_target": "local-gpu-or-colab"
+  }
+}

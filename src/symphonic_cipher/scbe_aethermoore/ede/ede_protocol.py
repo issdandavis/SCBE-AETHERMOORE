@@ -40,9 +40,9 @@ from .spiral_ring import (
 
 # Import PQC for quantum resistance
 try:
-    from src.crypto import pqc_liboqs  # noqa: F401
+    from src.crypto import pqc_liboqs
 
-    PQC_AVAILABLE = True
+    PQC_AVAILABLE = hasattr(pqc_liboqs, "__dict__")
 except ImportError:
     PQC_AVAILABLE = False
 

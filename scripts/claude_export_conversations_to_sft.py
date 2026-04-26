@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
 import re
 import sys
 import zipfile
@@ -39,7 +38,6 @@ sys.path.insert(0, str(ROOT))
 
 from src.crypto.tri_bundle import (
     TONGUE_WEIGHTS,
-    PHI,
     encode_bytes,
 )
 from src.crypto.trit_curriculum import compute_trit_signal, trit_distribution

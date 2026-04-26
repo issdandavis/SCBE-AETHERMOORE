@@ -40,10 +40,8 @@ def _load_module(relative_path: str, module_name: str, extra_paths: list[Path] |
     finally:
         # Remove temporary paths so they don't shadow packages in src/
         for p in added:
-            try:
+            if p in sys.path:
                 sys.path.remove(p)
-            except ValueError:
-                pass
         # Restore original governance module if we cleared it
         for k, v in saved_mods.items():
             sys.modules.pop(k, None)  # remove spiral-word-app's governance
@@ -126,9 +124,7 @@ def test_spiralword_public_ai_errors_are_generic() -> None:
         assert result == "[ERROR] Provider boom failed"
         assert payload == {"status": "error", "message": "AI provider request failed"}
     finally:
-        try:
+        if spiralword_dir in sys.path:
             sys.path.remove(spiralword_dir)
-        except ValueError:
-            pass
         # Remove the non-package governance so it doesn't break later imports.
         sys.modules.pop("governance", None)

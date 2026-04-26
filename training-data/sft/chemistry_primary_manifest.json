@@ -1,0 +1,70 @@
+{
+  "schema_version": "chemistry_primary_manifest_v1",
+  "sources": {
+    "train": "training-data\\sft\\drill_langues_full_train.sft.jsonl",
+    "eval": "training-data\\sft\\drill_langues_full_holdout.sft.jsonl"
+  },
+  "outputs": {
+    "train": "training-data\\sft\\chemistry_primary_train.sft.jsonl",
+    "eval": "training-data\\sft\\chemistry_primary_holdout.sft.jsonl"
+  },
+  "selection_rule": {
+    "include_maps": [
+      "transport_atomic"
+    ],
+    "support_maps": [
+      "atomic_semantic"
+    ],
+    "support_kinds": [
+      "state",
+      "rationale"
+    ]
+  },
+  "train_summary": {
+    "count": 1551,
+    "maps": {
+      "atomic_semantic": 56,
+      "transport_atomic": 1495
+    },
+    "kinds": {
+      "atomic_semantic::rationale": 26,
+      "atomic_semantic::state": 30,
+      "transport_atomic::rationale": 29,
+      "transport_atomic::reaction_predict": 490,
+      "transport_atomic::reaction_stability": 480,
+      "transport_atomic::reaction_template": 470,
+      "transport_atomic::transport": 26
+    },
+    "tongues": {
+      "AV": 270,
+      "CA": 256,
+      "DR": 239,
+      "KO": 250,
+      "RU": 274,
+      "UM": 262
+    }
+  },
+  "eval_summary": {
+    "count": 189,
+    "maps": {
+      "atomic_semantic": 4,
+      "transport_atomic": 185
+    },
+    "kinds": {
+      "atomic_semantic::rationale": 4,
+      "transport_atomic::rationale": 1,
+      "transport_atomic::reaction_predict": 50,
+      "transport_atomic::reaction_stability": 60,
+      "transport_atomic::reaction_template": 70,
+      "transport_atomic::transport": 4
+    },
+    "tongues": {
+      "AV": 20,
+      "CA": 34,
+      "DR": 51,
+      "KO": 40,
+      "RU": 16,
+      "UM": 28
+    }
+  }
+}

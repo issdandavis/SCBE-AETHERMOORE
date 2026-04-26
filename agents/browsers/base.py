@@ -172,7 +172,7 @@ class GovernedBrowser:
         backend: BrowserBackend,
         agent_id: str = "governed-browser-001",
         scbe_url: str = "http://127.0.0.1:8080",
-        scbe_key: str = "test-key-12345",
+        scbe_key: str = "",
         auto_escalate: bool = True,
         initial_trust: float = 0.7
     ):
@@ -196,41 +196,57 @@ class GovernedBrowser:
         """Initialize the governed browser."""
         import aiohttp
 
+        if not self.scbe_key:
+            raise RuntimeError("SCBE_API_KEY is required for governed browser startup")
+
         # Create HTTP session
         self._session = aiohttp.ClientSession(
             headers={
                 "Content-Type": "application/json",
-                "SCBE_api_key": self.scbe_key
+                "x-api-key": self.scbe_key
             }
         )
 
         # Check SCBE API
-        try:
-            async with self._session.get(f"{self.scbe_url}/v1/health") as resp:
-                if resp.status != 200:
-                    print(f"[SCBE] API not healthy: {resp.status}")
-                    return False
-                data = await resp.json()
-                print(f"[SCBE] Connected: {data['status']}")
-        except Exception as e:
-            print(f"[SCBE] Connection failed: {e}")
+        health_ok = False
+        last_error: Optional[Exception] = None
+        for path in ("/v1/health", "/health"):
+            try:
+                async with self._session.get(f"{self.scbe_url}{path}") as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        print(f"[SCBE] Connected: {data['status']}")
+                        health_ok = True
+                        break
+                    last_error = RuntimeError(f"status {resp.status} from {path}")
+            except Exception as exc:
+                last_error = exc
+        if not health_ok:
+            print(f"[SCBE] Connection failed: {last_error}")
             return False
 
         # Register agent
-        try:
-            async with self._session.post(
-                f"{self.scbe_url}/v1/agents",
-                json={
-                    "agent_id": self.agent_id,
-                    "name": f"GovernedBrowser-{self.backend.name}",
-                    "role": "browser_automation",
-                    "initial_trust": self.initial_trust
-                }
-            ) as resp:
-                data = await resp.json()
-                print(f"[SCBE] Agent registered: {self.agent_id}")
-        except Exception as e:
-            print(f"[SCBE] Agent registration: {e}")
+        last_register_error: Optional[Exception] = None
+        for path in ("/v1/agents", "/agents"):
+            try:
+                async with self._session.post(
+                    f"{self.scbe_url}{path}",
+                    json={
+                        "agent_id": self.agent_id,
+                        "name": f"GovernedBrowser-{self.backend.name}",
+                        "role": "browser_automation",
+                        "initial_trust": self.initial_trust
+                    }
+                ) as resp:
+                    if resp.status < 400:
+                        print(f"[SCBE] Agent registered: {self.agent_id}")
+                        last_register_error = None
+                        break
+                    last_register_error = RuntimeError(f"status {resp.status} from {path}")
+            except Exception as exc:
+                last_register_error = exc
+        if last_register_error is not None:
+            print(f"[SCBE] Agent registration: {last_register_error}")
 
         # Initialize backend
         try:

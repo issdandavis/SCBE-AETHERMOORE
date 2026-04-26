@@ -41,7 +41,6 @@ def _safe_load_yaml(path: Path) -> Dict[str, Any]:
     except Exception:
         # Minimal parser fallback for key paths we need.
         data: Dict[str, Any] = {}
-        _current = ""
         in_fine_tune = False
         in_streams = False
         streams: List[Dict[str, Any]] = []
@@ -53,7 +52,6 @@ def _safe_load_yaml(path: Path) -> Dict[str, Any]:
                 continue
             if re.match(r"^[A-Za-z_][A-Za-z0-9_-]*:\s*$", line):
                 key = line[:-1]
-                _current = key
                 if key == "fine_tune":
                     data[key] = {}
                     in_fine_tune = True
@@ -381,7 +379,7 @@ def _evaluate_metadata(metadata: Dict[str, Any], tasks: List[Dict[str, Any]]) ->
                     )
                 )
         except Exception:
-            pass
+            metadata["export_age_days"] = None
 
 
 def _build_summary(

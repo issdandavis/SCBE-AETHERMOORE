@@ -1322,7 +1322,7 @@ body::before {
 
         <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
           <button class="btn btn-sm" onclick="AetherBrowser.setCli('vault stats')">vault stats</button>
-          <button class="btn btn-sm" onclick="AetherBrowser.setCli('vault search \"phi poincare\"')">vault search</button>
+          <button class="btn btn-sm" onclick="AetherBrowser.setCli('vault search &quot;phi poincare&quot;')">vault search</button>
           <button class="btn btn-sm" onclick="AetherBrowser.setCli('ops tests')">ops tests</button>
           <button class="btn btn-sm" onclick="AetherBrowser.setCli('momentum latest daily_ops')">momentum latest</button>
           <button class="btn btn-sm" onclick="AetherBrowser.setCli('docs list')">docs list</button>
@@ -1743,6 +1743,7 @@ window.AetherBrowser = (function() {
       var trustLevel = data.trust_level || 'PROVISIONAL';
       var fibVal = data.fibonacci_value || state.fibTrust;
       var govDecision = data.governance_decision || 'ALLOW';
+      updateStatusBar(trustLevel);
 
       assistantMsg.textContent = data.response;
       var assistantMeta = document.createElement('div');

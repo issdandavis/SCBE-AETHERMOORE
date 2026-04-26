@@ -461,7 +461,7 @@ class TestDivineThesis:
 
     def test_demon_only_drifts_most(self):
         """Pure adversity causes maximum drift."""
-        angel = study_angel_only()
+        study_angel_only()
         demon = study_demon_only()
         balanced = study_balanced()
         assert abs(demon.agent.lyapunov_drift) >= abs(balanced.agent.lyapunov_drift)

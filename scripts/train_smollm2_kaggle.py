@@ -26,7 +26,6 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Optional
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 log = logging.getLogger("smollm2_train")

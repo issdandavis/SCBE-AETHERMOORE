@@ -5,8 +5,6 @@ Reads stubs, fills in responses, strips skill_content/sample_packets, writes out
 """
 import json
 import re
-import sys
-import os
 
 INPUT = r"C:\Users\issda\SCBE-AETHERMOORE\training-data\sft\codex_skill_tutorials_10th_grade_stubs.jsonl"
 OUTPUT = r"C:\Users\issda\SCBE-AETHERMOORE\training-data\sft\codex_skill_tutorials_10th_grade.jsonl"
@@ -113,11 +111,11 @@ def generate_what_is_response(record: dict) -> str:
     name = clean_skill_name(record.get("skill_source", ""))
     desc = record.get("skill_description", "")
     content = record.get("skill_content", "") or ""
-    sample = record.get("sample_packets", "") or ""
+    record.get("sample_packets", "") or ""
     category = record.get("category", "general")
     analogy = get_category_analogy(category)
     concepts = extract_key_concepts(content)
-    use_cases = extract_use_cases(content)
+    extract_use_cases(content)
 
     # Build response based on what we have
     response_parts = []
@@ -364,11 +362,11 @@ def generate_step_by_step_response(record: dict) -> str:
     """Generate step-by-step walkthrough with analogy."""
     name = clean_skill_name(record.get("skill_source", ""))
     content = record.get("skill_content", "") or ""
-    sample = record.get("sample_packets", "") or ""
+    record.get("sample_packets", "") or ""
     category = record.get("category", "general")
-    analogy = get_category_analogy(category)
-    steps = extract_steps(content)
-    concepts = extract_key_concepts(content)
+    get_category_analogy(category)
+    extract_steps(content)
+    extract_key_concepts(content)
 
     response_parts = []
 
@@ -521,8 +519,8 @@ def generate_three_situations_response(record: dict) -> str:
     """Generate 'three situations' response."""
     name = clean_skill_name(record.get("skill_source", ""))
     content = record.get("skill_content", "") or ""
-    sample = record.get("sample_packets", "") or ""
-    category = record.get("category", "general")
+    record.get("sample_packets", "") or ""
+    record.get("category", "general")
     use_cases = extract_use_cases(content)
 
     response_parts = [f"Here are three real situations where you would need {name}:\n"]
@@ -1165,7 +1163,7 @@ def generate_lease_response(record: dict) -> str:
 
 def generate_generic_crosstalk_response(record: dict) -> str:
     """Fallback for unclassified crosstalk tutorial questions."""
-    instruction = record.get("instruction", "")
+    record.get("instruction", "")
     return (
         f"Great question! Let me break this down in simple terms.\n\n"
         "In the SCBE system, AI agents work together like a team of students on a group project. "
@@ -1194,14 +1192,14 @@ def flesh_out(response: str, record: dict, target_min: int = 150) -> str:
 
     name = clean_skill_name(record.get("skill_source", ""))
     category = record.get("category", "general")
-    desc = record.get("skill_description", "")
+    record.get("skill_description", "")
     content = record.get("skill_content", "") or ""
     concepts = extract_key_concepts(content)
 
     extras = []
 
     # Add detail about what it specifically handles from skill_content
-    if concepts and words < target_min:
+    if concepts:
         concept_strs = [c.lower() for c in concepts[:4] if len(c) > 5 and not c.startswith("`")]
         if concept_strs:
             extras.append(

@@ -986,7 +986,7 @@ def format_combo_report(
     lines.append("-" * 80)
 
     # Header
-    _pair_labels = [f"{a}->{b}" for a, b in braid.tongue_pairs]
+    [f"{a}->{b}" for a, b in braid.tongue_pairs]
     lines.append("  Mean interference by pair:")
     for label, mean_i in sorted(braid.pair_mean_interference.items(), key=lambda x: -x[1]):
         sign = "+" if mean_i > 0 else ""

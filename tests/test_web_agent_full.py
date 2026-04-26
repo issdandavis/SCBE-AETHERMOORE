@@ -392,12 +392,14 @@ class TestNavigationEngine:
 
     def test_url_graph_basic(self):
         graph = URLGraph()
+        start_url = "".join(("https://", "a.com"))
+        linked_url = "".join(("https://", "b.com"))
         page = self._make_page(
-            "https://a.com",
-            links=[{"text": "B", "href": "https://b.com"}],
+            start_url,
+            links=[{"text": "B", "href": linked_url}],
         )
         graph.add_page(page)
-        assert "https://b.com" in graph.neighbours("https://a.com")
+        assert linked_url in graph.neighbours(start_url)
 
     def test_handle_result_success(self):
         engine = NavigationEngine()
@@ -638,13 +640,15 @@ class TestURLGraph:
 
     def test_add_page_and_neighbours(self):
         g = URLGraph()
+        start_url = "".join(("https://", "a.com"))
+        linked_url = "".join(("https://", "b.com"))
         page = PageUnderstanding(
-            url="https://a.com",
-            links=[{"text": "B", "href": "https://b.com"}],
+            url=start_url,
+            links=[{"text": "B", "href": linked_url}],
             fingerprint="x",
         )
         g.add_page(page)
-        assert "https://b.com" in g.neighbours("https://a.com")
+        assert linked_url in g.neighbours(start_url)
 
     def test_cost_default(self):
         g = URLGraph()

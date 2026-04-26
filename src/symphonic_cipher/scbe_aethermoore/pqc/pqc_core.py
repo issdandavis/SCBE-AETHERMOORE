@@ -94,9 +94,6 @@ def _select_hash_sig_algorithm() -> str:
 
 _KEM_ALG = _select_kem_algorithm()
 _SIG_ALG = _select_sig_algorithm()
-_HASH_SIG_ALG = _select_hash_sig_algorithm()  # FIPS 205 hash-based sig
-
-
 class PQCBackend(Enum):
     """Available PQC backends."""
 

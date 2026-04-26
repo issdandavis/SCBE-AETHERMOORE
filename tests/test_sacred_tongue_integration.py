@@ -106,8 +106,9 @@ class TestSacredTongueTokenizer:
 
 # Check for argon2-cffi (required by RWP v3.0 at runtime)
 try:
-    import argon2  # noqa: F401
+    import argon2
 
+    assert hasattr(argon2, "PasswordHasher")
     _ARGON2_AVAILABLE = True
 except ImportError:
     _ARGON2_AVAILABLE = False
@@ -413,8 +414,9 @@ class TestProperties:
 
 # Check if pytest-benchmark is available
 try:
-    import pytest_benchmark  # noqa: F401
+    import pytest_benchmark
 
+    assert hasattr(pytest_benchmark, "__name__")
     BENCHMARK_AVAILABLE = True
 except ImportError:
     BENCHMARK_AVAILABLE = False

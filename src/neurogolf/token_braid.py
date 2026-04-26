@@ -247,9 +247,6 @@ def rank_families_by_token_braid(task: ARCTask, tongues: tuple[str, ...] = BRAID
 # Cross-tongue null space analysis
 # ---------------------------------------------------------------------------
 
-_ALL_TONGUES: tuple[str, ...] = tuple(_TONGUE_PHI_WEIGHTS)
-
-
 def tongue_null_axes(task: ARCTask, base_threshold: float = 0.10) -> dict[str, frozenset[int]]:
     """Return per-tongue null axis sets.
 

@@ -44,7 +44,7 @@ if not _FORCE_SKIP_LIBOQS:
 
         LIBOQS_AVAILABLE = True
         _LIBOQS_VERSION = getattr(oqs, "__version__", "unknown")
-    except BaseException:
+    except Exception:
         # oqs may be installed without shared libs; treat as unavailable and fall back.
         LIBOQS_AVAILABLE = False
         _LIBOQS_VERSION = None

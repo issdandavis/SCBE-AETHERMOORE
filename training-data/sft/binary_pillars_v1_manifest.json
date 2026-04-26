@@ -1,0 +1,24 @@
+{
+  "schema_version": "binary_pillars_manifest_v1",
+  "generated_at_utc": "2026-04-26T03:36:03.099542+00:00",
+  "output_path": "training-data\\sft\\binary_pillars_v1.sft.jsonl",
+  "record_count": 39,
+  "pillars": [
+    "binary",
+    "music",
+    "atomic",
+    "code"
+  ],
+  "languages": [
+    "python",
+    "typescript",
+    "c",
+    "rust"
+  ],
+  "record_groups": {
+    "nibbles": 16,
+    "bytes": 19,
+    "logic_pairs": 4
+  },
+  "training_rule": "Binary is the trunk; music and atomic mappings are reference lattices; code is the executable target."
+}

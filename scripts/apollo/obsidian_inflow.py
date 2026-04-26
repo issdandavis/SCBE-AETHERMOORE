@@ -554,7 +554,7 @@ def inflow_training() -> List[InflowNote]:
 
             # Look for category, topic, or concept fields
             category = record.get("category", "")
-            tongue = record.get("tongue", "")
+            record.get("tongue", "")
             instruction = record.get("instruction", "")
 
             if category and len(category) > 3:
@@ -655,11 +655,11 @@ def inflow_lore_bible() -> List[InflowNote]:
             char_match = re.match(r"\*\*(.+?)\*\*\s*--\s*(.*)", line)
             if char_match:
                 char_name = char_match.group(1).strip()
-                char_desc = char_match.group(2).strip()
+                char_summary = char_match.group(2).strip()
                 all_character_names.add(char_name)
 
                 # Collect the full character description (may span multiple lines)
-                char_body_lines = [line]
+                current_body_lines.append(char_summary or line)
                 continue
 
         current_body_lines.append(line)
@@ -1034,8 +1034,8 @@ def run_inflow(sources: List[str], dry_run: bool = False) -> Dict[str, Any]:
                 name = m.group(1).strip()
                 if 3 < len(name) < 60 and not name.startswith("http"):
                     KNOWN_ENTITIES.add(name)
-        except Exception:
-            pass
+        except OSError:
+            KNOWN_ENTITIES.discard("")
 
     all_notes: List[InflowNote] = []
 

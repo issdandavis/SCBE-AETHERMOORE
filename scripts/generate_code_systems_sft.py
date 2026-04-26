@@ -15,7 +15,6 @@ from __future__ import annotations
 import ast
 import json
 import re
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -449,7 +448,7 @@ def generate_universal_primitives() -> list[dict]:
     matched = 0
     for py_key, (py_path, py_snip) in py_names.items():
         if py_key in ts_normalized:
-            ts_orig, (ts_path, ts_snip) = ts_normalized[py_key]
+            _, (ts_path, ts_snip) = ts_normalized[py_key]
             user_q = (
                 f"Show the cross-language implementation of `{py_key}` "
                 f"in both TypeScript and Python."

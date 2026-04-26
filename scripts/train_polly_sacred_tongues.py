@@ -25,12 +25,11 @@ import sys
 from pathlib import Path
 
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset as TorchDataset
-from datasets import Dataset, load_dataset
+from datasets import load_dataset
 from huggingface_hub import login
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 
 # Add src/ to path for Sacred Tongues imports
 REPO_ROOT = Path(__file__).resolve().parents[1]

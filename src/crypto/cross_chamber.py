@@ -182,7 +182,7 @@ def dft_magnitudes(signal: List[float]) -> List[float]:
             angle = TAU * k * t / n
             re += signal[t] * math.cos(angle)
             im -= signal[t] * math.sin(angle)
-        magnitudes.append(math.sqrt(re * re + im * im) / n)
+        magnitudes.append(math.hypot(re, im) / n)
     return magnitudes
 
 
