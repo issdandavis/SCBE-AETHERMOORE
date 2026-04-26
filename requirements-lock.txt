@@ -139,7 +139,7 @@ opentelemetry-instrumentation-threading==0.62b0
 opentelemetry-instrumentation-tornado==0.62b0
 opentelemetry-instrumentation-tortoiseorm==0.61b0
 opentelemetry-instrumentation-urllib==0.62b0
-opentelemetry-instrumentation-urllib3==0.61b0
+opentelemetry-instrumentation-urllib3==0.62b1
 opentelemetry-instrumentation-wsgi==0.62b1
 opentelemetry-processor-baggage==0.61b0
 opentelemetry-propagator-aws-xray==1.0.2
