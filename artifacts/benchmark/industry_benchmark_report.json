@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-26T16:44:30Z",
+  "timestamp": "2026-04-25T19:09:52Z",
   "attacks": 91,
   "clean_prompts": 15,
   "groups": {
@@ -41,7 +41,7 @@
       "blocked": 91,
       "allowed": 0,
       "false_positives": 0,
-      "avg_confidence": 0.7985
+      "avg_confidence": 0.8095
     }
   }
 }
