@@ -150,6 +150,41 @@
           "literal chemistry",
           "real atoms"
         ]
+      },
+      {
+        "id": "bijective_2tongue_gcd_task",
+        "prompt": "Build one operation in two coding surfaces: KO/Python and RU/Rust. Use Euclid gcd(462, 1071), preserve byte-bijective token transport, cross-tongue re-key evidence, and require both executions to output 21.",
+        "required": [
+          "KO",
+          "Python",
+          "RU",
+          "Rust",
+          "gcd",
+          "462",
+          "1071",
+          "21",
+          "bijective"
+        ],
+        "forbidden": [
+          "only pseudocode",
+          "semantic lane only"
+        ]
+      },
+      {
+        "id": "blc_time_placement_task",
+        "prompt": "Map the identity lambda term into Binary Lambda Calculus and explain how it relates to binary and hex. Keep binary/hex as byte views and BLC as time-placement computation grammar.",
+        "required": [
+          "0010",
+          "00",
+          "10",
+          "binder",
+          "reference",
+          "hex"
+        ],
+        "forbidden": [
+          "hex replaces binary",
+          "BLC replaces binary"
+        ]
       }
     ]
   },
