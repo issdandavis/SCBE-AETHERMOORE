@@ -226,7 +226,13 @@ def _connect_smtp(config: BridgeConfig) -> smtplib.SMTP:
     if not config.has_credentials:
         raise RuntimeError("Bridge credentials are required. Set PROTON_BRIDGE_USERNAME and PROTON_BRIDGE_PASSWORD.")
     client = smtplib.SMTP(config.host, config.smtp_port, timeout=10)
-    client.starttls(context=ssl.create_default_context())
+    if config.host in {"127.0.0.1", "localhost", "::1"}:
+        # Proton Bridge presents a local self-signed certificate. Keep strict
+        # verification for remote SMTP hosts, but allow the local loopback hop.
+        tls_context = ssl._create_unverified_context()
+    else:
+        tls_context = ssl.create_default_context()
+    client.starttls(context=tls_context)
     client.login(config.username, config.password)
     return client
 
@@ -553,12 +559,60 @@ def sweep_messages(config: BridgeConfig, folder: str, limit: int) -> dict[str, A
 
 
 
-def send_mail(config: BridgeConfig, to: str, subject: str, body: str, execute: bool) -> dict[str, Any]:
+def _attach_files(message: EmailMessage, attachments: list[Path]) -> list[str]:
+    attached: list[str] = []
+    for path in attachments:
+        resolved = path.resolve()
+        if not resolved.exists() or not resolved.is_file():
+            raise FileNotFoundError(f"Attachment not found: {path}")
+        data = resolved.read_bytes()
+        message.add_attachment(
+            data,
+            maintype="application",
+            subtype="octet-stream",
+            filename=resolved.name,
+        )
+        attached.append(str(resolved.relative_to(REPO_ROOT) if resolved.is_relative_to(REPO_ROOT) else resolved))
+    return attached
+
+
+def _parse_staged_draft(path: Path) -> tuple[str, str, str, str]:
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines()
+    if len(lines) < 2 or not lines[0].startswith("To: ") or not lines[1].startswith("Subject: "):
+        raise ValueError("Draft must start with 'To: ...' and 'Subject: ...' lines.")
+    to = lines[0].removeprefix("To: ").strip()
+    subject = lines[1].removeprefix("Subject: ").strip()
+    body_start = 2
+    cc = ""
+    if body_start < len(lines) and lines[body_start].startswith("Cc: "):
+        cc = lines[body_start].removeprefix("Cc: ").strip()
+        body_start += 1
+    while body_start < len(lines) and not lines[body_start].strip():
+        body_start += 1
+    body = "\n".join(lines[body_start:]).strip() + "\n"
+    return to, subject, cc, body
+
+
+def send_mail(
+    config: BridgeConfig,
+    to: str,
+    subject: str,
+    body: str,
+    execute: bool,
+    cc: str = "",
+    from_email: str = "",
+    attachments: list[Path] | None = None,
+) -> dict[str, Any]:
     message = EmailMessage()
-    message["From"] = config.username
+    sender = from_email.strip() or config.username
+    message["From"] = sender
     message["To"] = to
+    if cc:
+        message["Cc"] = cc
     message["Subject"] = subject
     message.set_content(body)
+    attached = _attach_files(message, attachments or [])
     status = "dry_run"
     if execute:
         with _connect_smtp(config) as client:
@@ -568,18 +622,24 @@ def send_mail(config: BridgeConfig, to: str, subject: str, body: str, execute: b
         "send_mail",
         {
             "to": to,
+            "cc": cc,
+            "from_email": sender,
             "subject": subject,
             "execute": execute,
             "status": status,
+            "attachments": attached,
         },
     )
     return {
         "schema_version": "proton_mail_bridge_send_v1",
         "generated_at": _now_iso(),
         "to": to,
+        "cc": cc,
+        "from_email": sender,
         "subject": subject,
         "execute": execute,
         "status": status,
+        "attachments": attached,
         "lines": [f"Send status: {status} -> {to}"],
     }
 
@@ -661,7 +721,38 @@ def cmd_send(args: argparse.Namespace) -> int:
         body = Path(args.body_file).read_text(encoding="utf-8")
     if not body:
         raise SystemExit("Provide --body or --body-file.")
-    return _emit(send_mail(load_config(), args.to, args.subject, body, execute=args.execute), args.json)
+    attachments = [Path(item) for item in args.attach]
+    return _emit(
+        send_mail(
+            load_config(),
+            args.to,
+            args.subject,
+            body,
+            execute=args.execute,
+            cc=args.cc,
+            from_email=args.from_email,
+            attachments=attachments,
+        ),
+        args.json,
+    )
+
+
+def cmd_send_draft(args: argparse.Namespace) -> int:
+    to, subject, cc, body = _parse_staged_draft(Path(args.draft_file))
+    attachments = [Path(item) for item in args.attach]
+    return _emit(
+        send_mail(
+            load_config(),
+            to,
+            subject,
+            body,
+            execute=args.execute,
+            cc=cc,
+            from_email=args.from_email,
+            attachments=attachments,
+        ),
+        args.json,
+    )
 
 
 def cmd_store_credentials(args: argparse.Namespace) -> int:
@@ -719,11 +810,25 @@ def build_parser() -> argparse.ArgumentParser:
     send_cmd = sub.add_parser("send", help="Send a mail via Proton Bridge SMTP; dry-run unless --execute is set")
     add_common_flags(send_cmd)
     send_cmd.add_argument("--to", required=True)
+    send_cmd.add_argument("--cc", default="")
+    send_cmd.add_argument("--from-email", default="")
     send_cmd.add_argument("--subject", required=True)
     send_cmd.add_argument("--body", default="")
     send_cmd.add_argument("--body-file", default="")
+    send_cmd.add_argument("--attach", action="append", default=[], help="Attach a file; may be repeated")
     send_cmd.add_argument("--execute", action="store_true", help="Actually send the mail")
     send_cmd.set_defaults(func=cmd_send)
+
+    send_draft_cmd = sub.add_parser(
+        "send-draft",
+        help="Send a staged markdown draft that starts with To/Subject headers; dry-run unless --execute is set",
+    )
+    add_common_flags(send_draft_cmd)
+    send_draft_cmd.add_argument("--draft-file", required=True)
+    send_draft_cmd.add_argument("--from-email", default="")
+    send_draft_cmd.add_argument("--attach", action="append", default=[], help="Attach a file; may be repeated")
+    send_draft_cmd.add_argument("--execute", action="store_true", help="Actually send the mail")
+    send_draft_cmd.set_defaults(func=cmd_send_draft)
     return parser
 
 
