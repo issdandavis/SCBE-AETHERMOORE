@@ -116,9 +116,19 @@ PYTHONPATH=. python -m pytest tests/test_cross_tongue_project_builder.py -v
 - Not an executor. Semantic agreement (do all six tongues compute the same answer?) is covered by `experiments/bijective_2tongue_build/run_all_six.py`, which executes where toolchains exist (`python`/`node`/`rustc`/`runghc`/`wolframscript`) and treats DR as narrative.
 - Not a publication target. This is internal infrastructure for cross-language project work and as a substrate for future training data exporters.
 
-## Next Steps (Backlog, Not Built)
+## Next Steps
+
+### Landed
+
+- **Training-data emitter** (`scripts/emit_cross_tongue_sft.py`, `tests/test_emit_cross_tongue_sft.py`).
+  Reads a sealed bundle and emits SFT rows in the `bijective_codeflow_v1` schema:
+  one `translate_one` row per ordered (src, dst) tongue pair (90 rows for
+  `arithmetic_basics`: 3 algos × 6 × 5) plus one `identify` row per (algo,
+  tongue) (18 rows). Refuses to emit from a non-green bundle. Output:
+  `training-data/sft/cross_tongue_<project>.sft.jsonl`.
+
+### Backlog (Not Built)
 
 - **Executor wiring.** Optionally run each tongue's source where the toolchain is present and bundle the stdout / status into the proof block. This brings L4 (semantic agreement) into the same bundle.
 - **More project specs.** `arithmetic_basics` is the first; future projects can add string algorithms, tree traversals, small DSL primitives.
-- **Training-data emitter.** Each bundle is a candidate for SFT pairs in the bijective_codeflow_v* lane: take any two tongues from a bundle, format as a `translate_one` pair.
 - **Slot-edit propagation.** Given a slot edit in one tongue, generate the candidate edit in the other five, validate L1+L2+L3 hold post-edit, emit the diff bundle.
