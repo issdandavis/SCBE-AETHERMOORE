@@ -238,12 +238,16 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
             blockers.append("no regularized train records")
         if eval_records <= 0 and in_merge_plan:
             blockers.append("no frozen eval records")
+        missing_metrics = False
         if not runs:
+            missing_metrics = True
             blockers.append("no measurable run artifacts")
         status = "promote_candidate" if not blockers and top_score > 0 else "blocked"
         if not in_merge_plan and top_score > 0:
             status = "sidecar_signal_not_in_merge"
             blockers.append("not part of active specialist merge plan")
+        if in_merge_plan and missing_metrics and train_records > 0 and eval_records > 0:
+            status = "ready_needs_benchmark"
         if blockers and top_score > 0 and train_records > 0:
             status = "needs_eval_gate"
         board[purpose] = {
