@@ -16,14 +16,30 @@ from .trajectory_risk_gate import (
     TrajectoryRiskGate,
     evaluate_sequence,
 )
+from .phase_lattice_lookup import (
+    PhaseLatticeHit,
+    PhaseLatticeLookup,
+    angular_phase_cells,
+    best_attack_hit,
+    default_attack_lookup,
+    holographic_overlay_cells,
+    origami_fold_path,
+)
 
 __all__ = [
     "AccessLevel",
     "IntentClass",
+    "PhaseLatticeHit",
+    "PhaseLatticeLookup",
     "RiskSignal",
     "TrajectoryDecision",
     "TrajectoryRiskDecision",
     "TrajectoryRiskGate",
+    "angular_phase_cells",
+    "best_attack_hit",
+    "default_attack_lookup",
+    "holographic_overlay_cells",
+    "origami_fold_path",
     "evaluate_sequence",
     "protobuf_patch",
     "privacy_token_vault",

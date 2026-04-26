@@ -28,6 +28,8 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 
+from src.security.phase_lattice_lookup import best_attack_hit
+
 # Core SCBE constants (inlined for fast standalone operation)
 PI = math.pi
 PHI = (1 + math.sqrt(5)) / 2  # Golden ratio
@@ -249,6 +251,25 @@ _MULTILINGUAL_OVERRIDE_PATTERNS = [
 ]
 
 
+_STRONG_PUBLIC_BENCHMARK_PATTERNS = [
+    re.compile(p, re.IGNORECASE)
+    for p in [
+        r"\bdisregard\s+everything\s+above\b",
+        r"\bforget\s+(your|all)\s+rules\b",
+        r"\boverride\s+(all\s+)?(previous|prior|above|earlier)\s+(instructions?|rules?|directions?)\b",
+        r"\bignore\s+(all\s+)?(preceding|above|earlier)\s+(orders?|instructions?|directions?)\b",
+        r"\bcancel\s+(all\s+)?previous\s+prompts?\b",
+        r"\brespond\s+as\s+unrestricted\b",
+        r"\bno\s+longer\s+bound\s+by\s+(your\s+)?previous\s+rules\b",
+        r"\bhelpful\s+hacker\b",
+        r"\bact\s+as\s+(a\s+)?linux\s+terminal\b",
+        r"\bpretend\s+you\s+are\s+an?\s+evil\s+AI\b",
+        r"\bdestroy\s+humanity\b",
+        r"\blove\s+poem\s+to\s+Hitler\b",
+    ]
+]
+
+
 # =========================================================================== #
 #  Attack result
 # =========================================================================== #
@@ -443,6 +464,20 @@ class SCBEDetectionGate:
         if strong_obfuscation:
             signals.append("strong_obfuscation_marker")
 
+        strong_public_benchmark = any(
+            p.search(prompt) for p in _STRONG_PUBLIC_BENCHMARK_PATTERNS
+        )
+        if strong_public_benchmark:
+            signals.append("strong_public_benchmark_marker")
+
+        phase_lattice_hit = best_attack_hit(prompt, threshold=0.24)
+        if phase_lattice_hit is not None:
+            signals.append(
+                "phase_lattice_hit("
+                f"{phase_lattice_hit.family},score={phase_lattice_hit.score:.2f},"
+                f"holo={phase_lattice_hit.holographic_score:.2f})"
+            )
+
         # Cross-lingual override detection — non-English injection patterns
         ml_match_count = sum(
             1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(prompt)
@@ -498,6 +533,8 @@ class SCBEDetectionGate:
             or adv_match_count >= 2
             or ml_match_count >= 1
             or strong_obfuscation
+            or strong_public_benchmark
+            or phase_lattice_hit is not None
             or (adv_match_count >= 1 and has_geometric)
             or (
                 high_spin and adv_match_count >= 1
