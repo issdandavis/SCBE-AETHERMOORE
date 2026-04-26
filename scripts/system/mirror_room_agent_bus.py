@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -111,6 +112,8 @@ def _provider_strengths(provider: str, family: str) -> tuple[str, ...]:
         return ("coding", "review", "governance", "general")
     if provider == "huggingface":
         return ("training", "coding", "research", "review")
+    if provider == "kaggle":
+        return ("training", "coding", "research", "general")
     if provider == "openai":
         return ("coding", "review", "research", "governance", "general")
     if provider in {"anthropic", "claude"}:
@@ -127,6 +130,8 @@ def _command_surface(provider: str) -> str:
         return "POST /hydra/free-llm/dispatch provider=ollama or local Ollama chat API"
     if provider == "huggingface":
         return "Hugging Face Jobs/Router via HF_TOKEN"
+    if provider == "kaggle":
+        return "Kaggle kernels/competitions/datasets via kaggle CLI credentials"
     if provider in {"openai", "anthropic", "xai"}:
         return "scripts/system/terminal_ai_router.py call"
     return "custom OpenAI-compatible endpoint or local adapter"
@@ -164,6 +169,7 @@ def discover_players(config_path: Path = DEFAULT_ROUTER_CONFIG) -> list[Provider
         "xai": "xai",
         "openai": "openai",
         "huggingface": "huggingface",
+        "kaggle": "kaggle",
     }
     for provider, family in provider_aliases.items():
         cfg = (
@@ -183,13 +189,21 @@ def discover_players(config_path: Path = DEFAULT_ROUTER_CONFIG) -> list[Provider
         est = float(
             cheap.get("estimated_cents", 0.25 if provider == "huggingface" else 1.0)
         )
+        available = bool(cfg.get("enabled", True))
+        if provider == "kaggle":
+            available = available and (
+                _env_present(env_keys) if env_keys else _kaggle_cli_available()
+            )
+        else:
+            available = available and (
+                _env_present(env_keys) if env_keys else provider == "huggingface"
+            )
         players.append(
             ProviderPlayer(
                 provider=provider,
                 family=family,
                 privacy="remote",
-                available=bool(cfg.get("enabled", True))
-                and (_env_present(env_keys) if env_keys else provider == "huggingface"),
+                available=available,
                 estimated_cents=est,
                 strengths=_provider_strengths(provider, family),
                 command_surface=_command_surface(provider),
@@ -230,6 +244,14 @@ def discover_players(config_path: Path = DEFAULT_ROUTER_CONFIG) -> list[Provider
                     )
                 )
     return players
+
+
+def _kaggle_cli_available() -> bool:
+    if os.getenv("KAGGLE_USERNAME", "").strip() and os.getenv("KAGGLE_KEY", "").strip():
+        return True
+    if shutil.which("kaggle") is None:
+        return False
+    return (Path.home() / ".kaggle" / "kaggle.json").exists()
 
 
 def _load_series_history(output_root: Path, series_id: str) -> list[dict[str, Any]]:
