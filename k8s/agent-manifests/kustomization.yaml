@@ -32,10 +32,11 @@ configMapGenerator:
       - AUDIT_LOG_ENABLED=true
       - HSM_INTEGRATION=true
 
-commonLabels:
-  app.kubernetes.io/name: scbe-aethermoore
-  app.kubernetes.io/version: "3.0.0"
-  app.kubernetes.io/component: agent-system
+labels:
+  - pairs:
+      app.kubernetes.io/name: scbe-aethermoore
+      app.kubernetes.io/version: "3.0.0"
+      app.kubernetes.io/component: agent-system
 
 images:
   - name: scbe/agent
