@@ -1,0 +1,236 @@
+{
+  "schema_version": "college_coding_choice_matrix_v1",
+  "description": "College-style coding drills: lesson, drill, trick, repair, and hidden executable checks from one source.",
+  "concepts": [
+    {
+      "id": "inventory_unique",
+      "lesson": "Append input.item to state.inventory only when it is not already present. Return the final inventory length.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Return state.inventory.length + 1 whenever input.item exists.",
+          "verdict": "wrong",
+          "reason": "This predicts a length but does not mutate state.inventory."
+        },
+        {
+          "id": "B",
+          "text": "Push input.item every time and return the length.",
+          "verdict": "wrong",
+          "reason": "This creates duplicates when the item already exists."
+        },
+        {
+          "id": "C",
+          "text": "Push input.item only if state.inventory does not include it, then return state.inventory.length.",
+          "verdict": "correct",
+          "reason": "This preserves uniqueness and produces the required state mutation."
+        },
+        {
+          "id": "D",
+          "text": "Create a copied array with the new item and return the copied length.",
+          "verdict": "wrong",
+          "reason": "This may compute the right value while failing the mutation contract."
+        }
+      ],
+      "solution": "function evaluate(input: { item: string }, state: { inventory: string[] }): number {\n  if (!state.inventory.includes(input.item)) {\n    state.inventory.push(input.item);\n  }\n  return state.inventory.length;\n}",
+      "wrong_code": "function evaluate(input: { item: string }, state: { inventory: string[] }): number {\n  return state.inventory.length + (input.item ? 1 : 0);\n}",
+      "hidden_checks": [
+        {
+          "input": { "item": "map" },
+          "initialState": { "inventory": ["coin", "rope"] },
+          "expectedResult": 3,
+          "expectedState": { "inventory": ["coin", "rope", "map"] }
+        },
+        {
+          "input": { "item": "coin" },
+          "initialState": { "inventory": ["coin", "rope"] },
+          "expectedResult": 2,
+          "expectedState": { "inventory": ["coin", "rope"] }
+        }
+      ]
+    },
+    {
+      "id": "quest_flags",
+      "lesson": "Require every string in input.required to exist in state.flags. If all are present, add input.reward to state.rewards only when missing.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Loop over input.flags because flags are mentioned in the prompt.",
+          "verdict": "wrong",
+          "reason": "The prompt's input field is input.required; input.flags does not exist."
+        },
+        {
+          "id": "B",
+          "text": "Return true when requirements pass but do not add the reward.",
+          "verdict": "wrong",
+          "reason": "The executable contract requires state.rewards mutation on success."
+        },
+        {
+          "id": "C",
+          "text": "Require every input.required flag, preserve state on failure, add input.reward once on success.",
+          "verdict": "correct",
+          "reason": "This matches both the boolean decision and the state mutation contract."
+        },
+        {
+          "id": "D",
+          "text": "Always push input.reward before checking flags.",
+          "verdict": "wrong",
+          "reason": "Failure cases must not mutate state.rewards."
+        }
+      ],
+      "solution": "function evaluate(input: { required: string[]; reward: string }, state: { flags: string[]; rewards: string[] }): boolean {\n  const hasRequirements = input.required.every((flag) => state.flags.includes(flag));\n  if (!hasRequirements) return false;\n  if (!state.rewards.includes(input.reward)) {\n    state.rewards.push(input.reward);\n  }\n  return true;\n}",
+      "wrong_code": "function evaluate(input: { required: string[], flags: string[] }, state: { flags: string[], rewards: string[] }): boolean {\n  for (const flag of input.flags) {\n    if (!state.flags.includes(flag)) return false;\n  }\n  return true;\n}",
+      "hidden_checks": [
+        {
+          "input": { "required": ["torch", "gate"], "reward": "gem" },
+          "initialState": { "flags": ["torch", "gate"], "rewards": [] },
+          "expectedResult": true,
+          "expectedState": { "flags": ["torch", "gate"], "rewards": ["gem"] }
+        },
+        {
+          "input": { "required": ["torch", "gate"], "reward": "gem" },
+          "initialState": { "flags": ["torch"], "rewards": ["coin"] },
+          "expectedResult": false,
+          "expectedState": { "flags": ["torch"], "rewards": ["coin"] }
+        }
+      ]
+    },
+    {
+      "id": "weighted_choice",
+      "lesson": "Use input.roll, not state.roll, to select the first option whose cumulative weight is greater than the roll.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Compare cumulative weight to state.roll.",
+          "verdict": "wrong",
+          "reason": "The roll belongs to input; state must remain unchanged and may not contain roll."
+        },
+        {
+          "id": "B",
+          "text": "Return the last option whenever roll is nonzero.",
+          "verdict": "wrong",
+          "reason": "This ignores cumulative thresholds."
+        },
+        {
+          "id": "C",
+          "text": "Accumulate weights and return the first option id where input.roll is less than the cumulative total.",
+          "verdict": "correct",
+          "reason": "This implements the weighted threshold rule and preserves state."
+        },
+        {
+          "id": "D",
+          "text": "Sort options before choosing.",
+          "verdict": "wrong",
+          "reason": "The prompt says first option by cumulative order; sorting changes semantics."
+        }
+      ],
+      "solution": "function evaluate(input: { options: Array<{ id: string; weight: number }>; roll: number }, state: unknown): string | null {\n  let total = 0;\n  for (const option of input.options) {\n    total += option.weight;\n    if (input.roll < total) return option.id;\n  }\n  return input.options.length ? input.options[input.options.length - 1].id : null;\n}",
+      "wrong_code": "function evaluate(input: { options: { id: string; weight: number }[] }, state: { roll: number }): string {\n  let totalWeight = 0;\n  for (const option of input.options) {\n    totalWeight += option.weight;\n    if (totalWeight > state.roll) return option.id;\n  }\n  return input.options[input.options.length - 1].id;\n}",
+      "hidden_checks": [
+        {
+          "input": { "roll": 0.1, "options": [{ "id": "common", "weight": 0.6 }, { "id": "rare", "weight": 0.4 }] },
+          "initialState": { "seed": 7 },
+          "expectedResult": "common",
+          "expectedState": { "seed": 7 }
+        },
+        {
+          "input": { "roll": 0.95, "options": [{ "id": "common", "weight": 0.6 }, { "id": "rare", "weight": 0.4 }] },
+          "initialState": { "seed": 7 },
+          "expectedResult": "rare",
+          "expectedState": { "seed": 7 }
+        }
+      ]
+    },
+    {
+      "id": "off_by_one_last_index",
+      "lesson": "Return the last element of input.items, or null when the array is empty.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Return input.items[input.items.length].",
+          "verdict": "wrong",
+          "reason": "Array indexes are zero-based; length is one past the final index."
+        },
+        {
+          "id": "B",
+          "text": "Return input.items[input.items.length - 1] when non-empty, otherwise null.",
+          "verdict": "correct",
+          "reason": "This handles both normal and empty inputs."
+        },
+        {
+          "id": "C",
+          "text": "Return input.items[0].",
+          "verdict": "wrong",
+          "reason": "That returns the first element, not the last."
+        },
+        {
+          "id": "D",
+          "text": "Mutate state.last and return it.",
+          "verdict": "wrong",
+          "reason": "The task does not require state mutation."
+        }
+      ],
+      "solution": "function evaluate(input: { items: string[] }, state: unknown): string | null {\n  if (input.items.length === 0) return null;\n  return input.items[input.items.length - 1];\n}",
+      "wrong_code": "function evaluate(input: { items: string[] }, state: unknown): string | undefined {\n  return input.items[input.items.length];\n}",
+      "hidden_checks": [
+        {
+          "input": { "items": ["a", "b", "c"] },
+          "initialState": { "seen": 1 },
+          "expectedResult": "c",
+          "expectedState": { "seen": 1 }
+        },
+        {
+          "input": { "items": [] },
+          "initialState": { "seen": 1 },
+          "expectedResult": null,
+          "expectedState": { "seen": 1 }
+        }
+      ]
+    },
+    {
+      "id": "copy_vs_mutation",
+      "lesson": "When the prompt says do not mutate state, return a derived value without changing the object.",
+      "choices": [
+        {
+          "id": "A",
+          "text": "Set state.total and return it.",
+          "verdict": "wrong",
+          "reason": "This mutates state even though the prompt forbids mutation."
+        },
+        {
+          "id": "B",
+          "text": "Compute input.values.reduce(...) and return the sum.",
+          "verdict": "correct",
+          "reason": "This returns the derived value while preserving state."
+        },
+        {
+          "id": "C",
+          "text": "Push the sum into input.values.",
+          "verdict": "wrong",
+          "reason": "This mutates input and changes the data shape."
+        },
+        {
+          "id": "D",
+          "text": "Return state.total without reading input.",
+          "verdict": "wrong",
+          "reason": "This ignores the task input."
+        }
+      ],
+      "solution": "function evaluate(input: { values: number[] }, state: unknown): number {\n  return input.values.reduce((total, value) => total + value, 0);\n}",
+      "wrong_code": "function evaluate(input: { values: number[] }, state: { total?: number }): number {\n  state.total = input.values.reduce((total, value) => total + value, 0);\n  return state.total;\n}",
+      "hidden_checks": [
+        {
+          "input": { "values": [2, 3, 5] },
+          "initialState": { "total": 99 },
+          "expectedResult": 10,
+          "expectedState": { "total": 99 }
+        },
+        {
+          "input": { "values": [] },
+          "initialState": { "total": 99 },
+          "expectedResult": 0,
+          "expectedState": { "total": 99 }
+        }
+      ]
+    }
+  ]
+}

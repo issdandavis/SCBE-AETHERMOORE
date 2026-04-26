@@ -1,0 +1,21 @@
+{
+  "schema_version": "honeycomb_choice_achievement_v1",
+  "record_count": 6,
+  "output": "training-data\\sft\\honeycomb_choice_achievement_v1.sft.jsonl",
+  "concepts": [
+    "Add a language lane only when needed",
+    "Cross-language semantic receipt",
+    "Invention boundary",
+    "Rethink after failed run",
+    "Secret boundary",
+    "Test gate before merge"
+  ],
+  "lanes": [
+    "bijective_codeflow",
+    "coding_model",
+    "governance_security",
+    "honeycomb_invention",
+    "operator_agent_bus",
+    "polyglot_braid"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "multirep_choice_matrix_v1",
+  "record_count": 3,
+  "output": "training-data\\sft\\multirep_choice_matrix_v1.sft.jsonl",
+  "surfaces": [
+    "english",
+    "python",
+    "utf8_bytes",
+    "binary",
+    "hex"
+  ]
+}

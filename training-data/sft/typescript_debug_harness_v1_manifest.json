@@ -1,0 +1,12 @@
+{
+  "schema_version": "typescript_debug_harness_v1",
+  "record_count": 12,
+  "output": "training-data/sft/typescript_debug_harness_v1.sft.jsonl",
+  "statuses": [
+    "generation_gold",
+    "passed",
+    "repair_gold",
+    "runtime_error",
+    "timeout"
+  ]
+}

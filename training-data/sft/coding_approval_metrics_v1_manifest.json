@@ -1,0 +1,11 @@
+{
+  "schema_version": "coding_approval_metrics_v1",
+  "record_count": 16,
+  "output": "training-data\\sft\\coding_approval_metrics_v1.sft.jsonl",
+  "decisions": [
+    "APPROVE",
+    "BLOCK",
+    "ESCALATE",
+    "REVISE"
+  ]
+}

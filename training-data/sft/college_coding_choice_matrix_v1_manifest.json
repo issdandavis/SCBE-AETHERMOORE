@@ -1,0 +1,22 @@
+{
+  "schema_version": "college_coding_choice_matrix_v1",
+  "record_count": 35,
+  "eval_task_count": 5,
+  "output": "training-data\\sft\\college_coding_choice_matrix_v1.sft.jsonl",
+  "eval_output": "config\\training\\coding_agent_benchmarks\\college_choice_eval_tasks_v1.json",
+  "candidate_output": "config\\training\\coding_agent_benchmarks\\college_choice_candidate_template_v1.json",
+  "concepts": [
+    "inventory_unique",
+    "quest_flags",
+    "weighted_choice",
+    "off_by_one_last_index",
+    "copy_vs_mutation"
+  ],
+  "record_types": [
+    "binary_hex_prompt_map",
+    "generation_gold",
+    "multiple_choice_boundary",
+    "repair_gold",
+    "trick_rejection"
+  ]
+}
