@@ -349,6 +349,29 @@ ROUNDS = {
         "lora_alpha": 32,
         "lora_dropout": 0.05,
     },
+    "aligned-foundations-helper-v1": {
+        "desc": "Aligned foundations helper v1 - cross-stack instructor body with foundation bundle gate",
+        "files": [
+            "regularized/aligned_foundations/aligned_foundations_train.regularized.jsonl",
+        ],
+        "eval_files": [
+            "regularized/aligned_foundations/aligned_foundations_eval.regularized.jsonl",
+        ],
+        "hf_repo": "issdandavis/scbe-aligned-foundations-helper-qwen-kaggle-v1",
+        "hf_dataset_repo": "issdandavis/scbe-training-regularized-20260426",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-7B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 1024,
+        "max_steps": 160,
+        "learning_rate": 8e-5,
+        "max_records": 1175,
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "lora_dropout": 0.05,
+    },
 }
 
 

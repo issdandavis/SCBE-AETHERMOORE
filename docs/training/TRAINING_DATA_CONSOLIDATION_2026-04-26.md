@@ -179,3 +179,36 @@ Kaggle fallback:
 - Rationale: use the free Kaggle T4 lane while HF Jobs credits are blocked.
 
 Kaggle readiness now checks both local Kaggle dataset mirrors and the configured Hugging Face dataset repo, so HF-hosted regularized files do not falsely block terminal-driven launches.
+
+## Next Helper Run Staged
+
+Round:
+
+- `aligned-foundations-helper-v1`
+
+Purpose:
+
+- Train the helper/instructor body against the refreshed `aligned_foundations` bucket.
+- Include the new foundation-bundle final gate surface.
+- Preserve cross-stack concepts before any adapter merge.
+
+Dataset files:
+
+- `regularized/aligned_foundations/aligned_foundations_train.regularized.jsonl`
+- `regularized/aligned_foundations/aligned_foundations_eval.regularized.jsonl`
+
+Target output:
+
+- `issdandavis/scbe-aligned-foundations-helper-qwen-kaggle-v1`
+
+Launch command when a Kaggle GPU slot opens:
+
+```powershell
+python scripts/kaggle_auto/launch.py --round aligned-foundations-helper-v1 --gpu t4
+```
+
+Preflight command:
+
+```powershell
+python scripts/kaggle_auto/launch.py --round aligned-foundations-helper-v1 --gpu t4 --ready
+```
