@@ -29,6 +29,12 @@ This overlay adds:
 - Resource quotas and default container limits.
 - Governance annotations for lineage, decision-envelope enforcement, and audit expectations.
 
+The overlay can be rendered locally without creating cloud resources:
+
+```powershell
+kubectl kustomize --load-restrictor LoadRestrictionsNone k8s/overlays/il5-govcloud
+```
+
 ## Why This Matters
 
 This gives reviewers a concrete path from the current local-first and cloud-ready repo into a controlled deployment model. It separates what is already implemented from what still requires an authorized environment, cloud-prime support, and compliance validation.
@@ -58,4 +64,3 @@ A low-risk pilot should deploy one SCBE API/runtime service, one limited agent l
 ## Boundary Statement
 
 SCBE-AETHERMOORE provides the technical runtime, agent-fleet structure, training/evaluation pipeline, and governance hooks. A prime contractor or authorized government cloud environment would provide the accredited boundary, compliance operations, and production authority to operate.
-

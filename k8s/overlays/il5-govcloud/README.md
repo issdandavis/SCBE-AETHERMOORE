@@ -30,7 +30,8 @@ Use this layer to show how the current SCBE-AETHERMOORE Kubernetes surfaces can 
 This overlay exists to make the deployment path concrete for RFI and prime-sub conversations. Before live deployment, the next gate is a real cluster dry-run plus admission-policy review:
 
 ```powershell
-kubectl kustomize k8s/overlays/il5-govcloud
+kubectl kustomize --load-restrictor LoadRestrictionsNone k8s/overlays/il5-govcloud
 kubectl apply --dry-run=server -k k8s/overlays/il5-govcloud
 ```
 
+The render command is local-only and does not create cloud resources. The `apply --dry-run=server` command requires an existing cluster connection, so do not run it unless a no-cost/local cluster or approved target cluster is available.

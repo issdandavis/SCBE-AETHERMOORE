@@ -10,9 +10,10 @@ resources:
   - networkpolicy-default-deny.yaml
   - resource-quota-limits.yaml
 
-commonLabels:
-  scbe.aethermoore/profile: il5-govcloud-stub
-  scbe.aethermoore/governance: enabled
+labels:
+  - pairs:
+      scbe.aethermoore/profile: il5-govcloud-stub
+      scbe.aethermoore/governance: enabled
 
 patches:
   - path: deployment-governance-annotations.yaml
