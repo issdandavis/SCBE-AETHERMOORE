@@ -1,7 +1,20 @@
 {
-  "timestamp": "2026-04-25T19:09:52Z",
+  "timestamp": "2026-04-25T19:29:00Z",
   "attacks": 91,
   "clean_prompts": 15,
+  "external_model_loading_enabled": true,
+  "external_model_loading_required": true,
+  "external_lanes_selected": "protectai",
+  "model_lane_status": {
+    "protectai": {
+      "mode": "external",
+      "model": "protectai/deberta-v3-base-prompt-injection-v2"
+    },
+    "meta_prompt_guard": {
+      "mode": "simulated",
+      "reason": "external model lane disabled or not selected"
+    }
+  },
   "groups": {
     "A": {
       "name": "A: No Protection",
@@ -13,11 +26,11 @@
     },
     "B": {
       "name": "B: ProtectAI DeBERTa v2",
-      "asr": 0.8901,
-      "blocked": 10,
-      "allowed": 81,
+      "asr": 0.3187,
+      "blocked": 62,
+      "allowed": 29,
       "false_positives": 0,
-      "avg_confidence": 0.1757
+      "avg_confidence": 0.6761
     },
     "C": {
       "name": "C: Meta Prompt Guard 2",
