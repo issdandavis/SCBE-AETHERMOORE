@@ -1,0 +1,248 @@
+{
+  "tasks": [
+    {
+      "task_id": "college_inventory_unique",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). Append input.item to state.inventory only when it is not already present. Return the final inventory length.",
+      "checks": [
+        {
+          "input": {
+            "item": "map"
+          },
+          "initialState": {
+            "inventory": [
+              "coin",
+              "rope"
+            ]
+          },
+          "expectedResult": 3,
+          "expectedState": {
+            "inventory": [
+              "coin",
+              "rope",
+              "map"
+            ]
+          }
+        },
+        {
+          "input": {
+            "item": "coin"
+          },
+          "initialState": {
+            "inventory": [
+              "coin",
+              "rope"
+            ]
+          },
+          "expectedResult": 2,
+          "expectedState": {
+            "inventory": [
+              "coin",
+              "rope"
+            ]
+          }
+        }
+      ],
+      "meta": {
+        "source": "college_coding_choice_matrix_v1",
+        "concept": "inventory_unique",
+        "eval_split": "hidden"
+      }
+    },
+    {
+      "task_id": "college_quest_flags",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). Require every string in input.required to exist in state.flags. If all are present, add input.reward to state.rewards only when missing.",
+      "checks": [
+        {
+          "input": {
+            "required": [
+              "torch",
+              "gate"
+            ],
+            "reward": "gem"
+          },
+          "initialState": {
+            "flags": [
+              "torch",
+              "gate"
+            ],
+            "rewards": []
+          },
+          "expectedResult": true,
+          "expectedState": {
+            "flags": [
+              "torch",
+              "gate"
+            ],
+            "rewards": [
+              "gem"
+            ]
+          }
+        },
+        {
+          "input": {
+            "required": [
+              "torch",
+              "gate"
+            ],
+            "reward": "gem"
+          },
+          "initialState": {
+            "flags": [
+              "torch"
+            ],
+            "rewards": [
+              "coin"
+            ]
+          },
+          "expectedResult": false,
+          "expectedState": {
+            "flags": [
+              "torch"
+            ],
+            "rewards": [
+              "coin"
+            ]
+          }
+        }
+      ],
+      "meta": {
+        "source": "college_coding_choice_matrix_v1",
+        "concept": "quest_flags",
+        "eval_split": "hidden"
+      }
+    },
+    {
+      "task_id": "college_weighted_choice",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). Use input.roll, not state.roll, to select the first option whose cumulative weight is greater than the roll.",
+      "checks": [
+        {
+          "input": {
+            "roll": 0.1,
+            "options": [
+              {
+                "id": "common",
+                "weight": 0.6
+              },
+              {
+                "id": "rare",
+                "weight": 0.4
+              }
+            ]
+          },
+          "initialState": {
+            "seed": 7
+          },
+          "expectedResult": "common",
+          "expectedState": {
+            "seed": 7
+          }
+        },
+        {
+          "input": {
+            "roll": 0.95,
+            "options": [
+              {
+                "id": "common",
+                "weight": 0.6
+              },
+              {
+                "id": "rare",
+                "weight": 0.4
+              }
+            ]
+          },
+          "initialState": {
+            "seed": 7
+          },
+          "expectedResult": "rare",
+          "expectedState": {
+            "seed": 7
+          }
+        }
+      ],
+      "meta": {
+        "source": "college_coding_choice_matrix_v1",
+        "concept": "weighted_choice",
+        "eval_split": "hidden"
+      }
+    },
+    {
+      "task_id": "college_off_by_one_last_index",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). Return the last element of input.items, or null when the array is empty.",
+      "checks": [
+        {
+          "input": {
+            "items": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          "initialState": {
+            "seen": 1
+          },
+          "expectedResult": "c",
+          "expectedState": {
+            "seen": 1
+          }
+        },
+        {
+          "input": {
+            "items": []
+          },
+          "initialState": {
+            "seen": 1
+          },
+          "expectedResult": null,
+          "expectedState": {
+            "seen": 1
+          }
+        }
+      ],
+      "meta": {
+        "source": "college_coding_choice_matrix_v1",
+        "concept": "off_by_one_last_index",
+        "eval_split": "hidden"
+      }
+    },
+    {
+      "task_id": "college_copy_vs_mutation",
+      "prompt": "Write TypeScript only. Define function evaluate(input, state). When the prompt says do not mutate state, return a derived value without changing the object.",
+      "checks": [
+        {
+          "input": {
+            "values": [
+              2,
+              3,
+              5
+            ]
+          },
+          "initialState": {
+            "total": 99
+          },
+          "expectedResult": 10,
+          "expectedState": {
+            "total": 99
+          }
+        },
+        {
+          "input": {
+            "values": []
+          },
+          "initialState": {
+            "total": 99
+          },
+          "expectedResult": 0,
+          "expectedState": {
+            "total": 99
+          }
+        }
+      ],
+      "meta": {
+        "source": "college_coding_choice_matrix_v1",
+        "concept": "copy_vs_mutation",
+        "eval_split": "hidden"
+      }
+    }
+  ]
+}

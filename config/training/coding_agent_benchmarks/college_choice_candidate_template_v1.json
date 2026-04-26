@@ -1,0 +1,14 @@
+{
+  "candidates": [
+    {
+      "name": "college-choice-gold-template",
+      "tasks": {
+        "college_inventory_unique": "function evaluate(input: { item: string }, state: { inventory: string[] }): number {\n  if (!state.inventory.includes(input.item)) {\n    state.inventory.push(input.item);\n  }\n  return state.inventory.length;\n}",
+        "college_quest_flags": "function evaluate(input: { required: string[]; reward: string }, state: { flags: string[]; rewards: string[] }): boolean {\n  const hasRequirements = input.required.every((flag) => state.flags.includes(flag));\n  if (!hasRequirements) return false;\n  if (!state.rewards.includes(input.reward)) {\n    state.rewards.push(input.reward);\n  }\n  return true;\n}",
+        "college_weighted_choice": "function evaluate(input: { options: Array<{ id: string; weight: number }>; roll: number }, state: unknown): string | null {\n  let total = 0;\n  for (const option of input.options) {\n    total += option.weight;\n    if (input.roll < total) return option.id;\n  }\n  return input.options.length ? input.options[input.options.length - 1].id : null;\n}",
+        "college_off_by_one_last_index": "function evaluate(input: { items: string[] }, state: unknown): string | null {\n  if (input.items.length === 0) return null;\n  return input.items[input.items.length - 1];\n}",
+        "college_copy_vs_mutation": "function evaluate(input: { values: number[] }, state: unknown): number {\n  return input.values.reduce((total, value) => total + value, 0);\n}"
+      }
+    }
+  ]
+}
