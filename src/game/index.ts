@@ -140,3 +140,15 @@ export type {
   FineTuneJob,
   AdventureSession,
 } from './trainingPipeline.js';
+
+// TypeScript debug harness (code proposal → runtime receipt → training/eval)
+export {
+  runTypeScriptDebugScenario,
+  receiptToSftPair,
+} from './typescriptDebugHarness.js';
+export type {
+  DebugReceiptStatus,
+  DebugScenario,
+  StateChange,
+  DebugReceipt,
+} from './typescriptDebugHarness.js';
