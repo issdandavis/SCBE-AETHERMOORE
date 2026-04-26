@@ -107,6 +107,19 @@ axioms:
       - "src/ai_brain/unified-kernel.ts"
       - "src/symphonic_cipher/scbe_aethermoore/axiom_grouped/unitarity_axiom.py"
 
+  - id: A8
+    name: Public Method Resilience
+    statement: "The method may be public; security must still hold through protected keys, authority, state, and tamper-evident verification."
+    enforce:
+      - "no_security_by_obscurity"
+      - "public_protocol_private_authority"
+      - "tamper_evident_triplet_ledger"
+      - "red_team_method_exposed_score"
+    mapped_modules:
+      - "scripts/system/message_triplet_ledger.py"
+      - "scripts/eval/public_method_resilience_score.py"
+      - "docs/specs/CENTAUR_MESSAGE_ROUTING_BUS_GOVERNANCE_2026-04-26.md"
+
 formula_regimes:
   - id: FR1
     name: WALL_ENFORCEMENT

@@ -23,6 +23,25 @@ If SCBE cannot keep its agents constrained, auditable, recoverable, and aligned 
 
 The horse metaphor is useful operationally: AI workers can carry force, speed, and pattern recognition, but the bus must provide the reins, tack, arena gates, and handler logs.
 
+## Security Axiom A8: Public Method Resilience
+
+SCBE follows the Kerckhoffs-style rule:
+
+> The method may be public; security must still hold through protected keys, authority, state, and tamper-evident verification.
+
+This becomes a red-team game metric:
+
+- pass if the protocol remains secure when the attacker knows the envelope, gates, triplet ledger format, and tokenizer contract;
+- fail if security depends on hiding the algorithm;
+- fail hard if an inbound message can become direct execution;
+- score higher when keys, authority checks, receipt/ACKs, replay protection, dual tokenizer verification, and tamper-evident triplets all hold.
+
+Evaluator:
+
+```powershell
+python scripts/eval/public_method_resilience_score.py --json '{"controls":{"method_public":true,"keys_private":true,"authority_checked":true,"tamper_evident_ledger":true,"dual_tokenizer_verification":true,"ack_or_receipt_required":true,"replay_or_duplicate_protection":true,"red_team_method_exposed_tested":true}}'
+```
+
 ## Public Interface, Proprietary Depth
 
 The public surface should expose enough to prove the bus is useful and safe:
