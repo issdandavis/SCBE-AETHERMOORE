@@ -64,3 +64,35 @@ def test_agentbus_pressure_test_blocks_backdoor_and_keeps_game_lane(
     assert by_id["S01_BACKDOOR_POLARITY"]["intent"]["decision"] == "DENY"
     assert by_id["S02_GAME_NEGABINARY"]["intent"]["decision"] == "ALLOW"
     assert (tmp_path / "pressure" / "pytest-pressure" / "report.json").exists()
+
+
+def test_agentbus_pressure_test_runs_catalog_subset(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    monkeypatch.setenv("KAGGLE_USERNAME", "test-user")
+    monkeypatch.setenv("KAGGLE_KEY", "test-key")
+    args = type(
+        "Args",
+        (),
+        {
+            "run_id": "pytest-catalog-pressure",
+            "privacy": "remote_ok",
+            "budget_cents": 1.0,
+            "max_players": 2,
+            "operation_command": "korah aelin dahru",
+            "config": str(_router_config(tmp_path / "router.json")),
+            "output_root": str(tmp_path / "pressure"),
+            "use_catalog": True,
+            "scenario_catalog": str(ROOT / "config" / "security" / "ai_red_team_scenario_catalog_v1.json"),
+            "include_chains": True,
+            "scenario_filter": "CHAIN_LOW_PRIV_AGENT_TO_HIGH_PRIV_AGENT",
+            "limit": 1,
+        },
+    )()
+
+    report = run_pressure(args)
+
+    assert report["overall_status"] == "pass"
+    assert report["scenarios"][0]["scenario_id"] == "CHAIN_LOW_PRIV_AGENT_TO_HIGH_PRIV_AGENT"
+    assert report["scenarios"][0]["intent"]["decision"] == "DENY"

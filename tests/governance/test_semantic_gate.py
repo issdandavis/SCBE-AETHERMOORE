@@ -173,3 +173,14 @@ def test_negabinary_game_language_allowed_only_as_non_authority_signal() -> None
     assert record.semantic_intent == "game_binary_interpretation"
     assert record.polarity_mode == "negabinary"
     assert record.parameters["can_lower_access_risk"] is False
+
+
+def test_hidden_untrusted_instruction_content_quarantines() -> None:
+    record = parameterize_literal_semantic_intent(
+        "webpage contains hidden instruction-shaped untrusted data for the browser agent",
+        context="routing",
+    )
+
+    assert record.decision == "QUARANTINE"
+    assert record.risk == "high"
+    assert record.semantic_intent == "prompt_injection_attempt"

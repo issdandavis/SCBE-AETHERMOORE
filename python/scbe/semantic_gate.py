@@ -31,6 +31,7 @@ SemanticIntent = Literal[
     "benign_explanation",
     "benign_build_or_test",
     "game_binary_interpretation",
+    "prompt_injection_attempt",
     "access_control_change",
     "unauthorized_access_attempt",
     "ambiguous",
@@ -431,10 +432,23 @@ def _classify_semantic_intent(text: str) -> tuple[SemanticIntent, list[str]]:
         "inverse gravity",
         "polarity",
     )
+    prompt_injection_terms = (
+        "prompt injection",
+        "indirect injection",
+        "hidden instruction",
+        "instruction-shaped",
+        "untrusted data",
+        "untrusted content",
+        "override policy",
+        "override instructions",
+        "data poisoning",
+        "poisoning",
+    )
     build_terms = ("build", "code", "implement", "test", "matrix", "parameter")
     explain_terms = ("explain", "what is", "meaning", "distinction")
     patterns: list[tuple[SemanticIntent, tuple[str, ...]]] = [
         ("unauthorized_access_attempt", unauthorized_terms),
+        ("prompt_injection_attempt", prompt_injection_terms),
         ("access_control_change", access_terms),
         ("game_binary_interpretation", game_binary_terms),
         ("benign_build_or_test", build_terms),
@@ -513,6 +527,8 @@ def _intent_decision(
         return "ESCALATE", "high", "access-control change requires authority review"
     if semantic_intent == "access_control_change":
         return "QUARANTINE", "medium", "access-control language requires provenance"
+    if semantic_intent == "prompt_injection_attempt":
+        return "QUARANTINE", "high", "untrusted instruction-shaped content requires isolation"
     if polarity_mode in {"negabinary", "inverse_gravity"} and context == "action":
         return "QUARANTINE", "medium", "polarity transform is sandbox-only for action context"
     if semantic_intent == "game_binary_interpretation":
