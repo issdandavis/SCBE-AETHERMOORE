@@ -42,6 +42,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -488,6 +489,42 @@ def _normalize_transport_tongue(tongue: str) -> str:
     return TONGUE_CODE_MAP[code]
 
 
+def tongue_token_digest(tongue: str, text: str) -> Dict[str, object]:
+    """Return a Sacred-Tongue boundary digest for `text`.
+
+    Encodes via the byte-level Sacred Tongue tokenizer and summarizes to a
+    fixed-shape record: tongue code, mapped language name, token count, and
+    a SHA-256 over the concatenated token stream. This keeps ledgers compact
+    while still letting downstream training reconstruct cross-tongue parity
+    proofs without storing the full encoded stream.
+    """
+    code = (tongue or "").upper()
+    if not code:
+        return {"tongue": None, "lang": None, "n_tokens": 0, "sha256": None, "skipped": "empty_tongue"}
+    if code not in ALL_TONGUE_NAMES and code not in TONGUE_CODE_MAP:
+        return {"tongue": code, "lang": None, "n_tokens": 0, "sha256": None, "skipped": "unknown_tongue"}
+    transport = TONGUE_CODE_MAP.get(code, code.lower())
+    payload = (text or "").encode("utf-8", errors="replace")
+    try:
+        tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, payload)
+    except Exception as exc:  # pragma: no cover - defensive, tokenizer is total
+        return {
+            "tongue": code,
+            "lang": ALL_LANG_MAP.get(code),
+            "n_tokens": 0,
+            "sha256": None,
+            "skipped": f"encode_error:{exc.__class__.__name__}",
+        }
+    joined = " ".join(tokens).encode("utf-8")
+    digest = hashlib.sha256(joined).hexdigest()
+    return {
+        "tongue": code,
+        "lang": ALL_LANG_MAP.get(code),
+        "n_tokens": len(tokens),
+        "sha256": digest,
+    }
+
+
 def cmd_encode_cmd(args: argparse.Namespace) -> int:
     payload = _read_payload_arg_or_stdin(args.payload)
     tongue = _normalize_transport_tongue(args.tongue)
@@ -596,6 +633,38 @@ def cmd_swarm(args: argparse.Namespace) -> int:
         out = call.stdout or ""
         print(f"  {call.tongue} ({call.language:>10}): {status:<20} {out}")
     print(f"quorum_ok={result.quorum_ok}  consensus={result.consensus_hash[:12] or '-'}")
+
+    # Per-call sacred-tongue boundary digests for downstream parity training.
+    # Written as a single 'swarm_tokens' summary record so we don't disturb the
+    # per-call records emitted inside swarm_dispatch.
+    if ledger is not None and result.calls:
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        swarm_in_payload = json.dumps({"op": result.op, "args": kv}, sort_keys=True)
+        per_call_tokens = []
+        for call in result.calls:
+            call_tongue = getattr(call, "tongue", None)
+            call_code = getattr(call, "code", "") or ""
+            call_stdout = getattr(call, "stdout", "") or ""
+            per_call_tokens.append(
+                {
+                    "tongue": call_tongue,
+                    "tongue_in": tongue_token_digest(call_tongue, swarm_in_payload),
+                    "tongue_out_code": tongue_token_digest(call_tongue, call_code),
+                    "tongue_out_stdout": tongue_token_digest(call_tongue, call_stdout),
+                }
+            )
+        record = {
+            "type": "swarm_tokens",
+            "op": result.op,
+            "tongues": tongues,
+            "consensus_hash": result.consensus_hash,
+            "quorum_ok": result.quorum_ok,
+            "calls": per_call_tokens,
+            "timestamp": time.time(),
+        }
+        with ledger.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(record) + "\n")
+
     if args.json:
         print(json.dumps(result.to_dict(), indent=2))
     return 0 if result.quorum_ok else 1
@@ -641,6 +710,11 @@ def cmd_agent(args: argparse.Namespace) -> int:
     force_tongue = (args.tongue or "").upper() or None
     force_provider = args.provider or None
     max_tokens = args.max_tokens
+    budget_tokens = getattr(args, "budget_tokens", None)
+    max_tier = getattr(args, "max_tier", None)
+    small_first = bool(getattr(args, "small_first", False))
+    forbid_provider = list(getattr(args, "forbid_provider", []) or [])
+    escalate_on_syntax_fail = bool(getattr(args, "escalate_on_syntax_fail", False))
     verbose = args.verbose
 
     # 1. Route the task
@@ -663,10 +737,20 @@ def cmd_agent(args: argparse.Namespace) -> int:
         print(f"[governance] DENY — phi_cost={phi_cost:.4f} exceeds threshold", file=sys.stderr)
         return 3
 
+    # --max-tier gate: refuse anything more severe than the cap.
+    _TIER_RANK = {"ALLOW": 0, "QUARANTINE": 1, "ESCALATE": 2, "DENY": 3}
+    if max_tier is not None and _TIER_RANK[tier] > _TIER_RANK[max_tier]:
+        print(
+            f"[governance] tier={tier} exceeds --max-tier={max_tier} (phi_cost={phi_cost:.4f})",
+            file=sys.stderr,
+        )
+        return 3
+
     if verbose:
         print(f"[governance] tier={tier} phi_cost={phi_cost:.4f} trust={trust:.3f}")
 
-    # 3. Generate code
+    # 3. Generate code (with optional syntax-fail escalation across tiers)
+    forbidden = list(forbid_provider)
     result = generate(
         task,
         language=route.language,
@@ -674,7 +758,42 @@ def cmd_agent(args: argparse.Namespace) -> int:
         tongue_name=route.full_name,
         max_tokens=max_tokens,
         force_provider=force_provider,
+        forbidden_providers=forbidden,
+        small_first=small_first,
+        governance_tier=tier,
+        budget_tokens=budget_tokens,
     )
+
+    syntax_history: list[dict] = []
+    if escalate_on_syntax_fail and not result.error and result.code:
+        ok, msg = syntax_check(route.tongue, result.code)
+        syntax_history.append({"provider": result.provider, "ok": ok, "msg": msg})
+        if verbose:
+            print(f"[syntax] provider={result.provider} ok={ok} msg={msg}")
+        # Escalate up the provider chain while syntax fails. Each retry forbids
+        # the prior provider so generate() falls through to the next tier.
+        while not ok and result.provider != "none":
+            forbidden.append(result.provider)
+            if verbose:
+                print(f"[escalate] syntax_check failed on {result.provider}; retrying with forbid={forbidden}")
+            result = generate(
+                task,
+                language=route.language,
+                tongue=route.tongue,
+                tongue_name=route.full_name,
+                max_tokens=max_tokens,
+                force_provider=None,
+                forbidden_providers=forbidden,
+                small_first=small_first,
+                governance_tier=tier,
+                budget_tokens=budget_tokens,
+            )
+            if result.error or not result.code:
+                break
+            ok, msg = syntax_check(route.tongue, result.code)
+            syntax_history.append({"provider": result.provider, "ok": ok, "msg": msg})
+            if verbose:
+                print(f"[syntax] provider={result.provider} ok={ok} msg={msg}")
 
     if result.error:
         print(f"[error] {result.error}", file=sys.stderr)
@@ -683,6 +802,12 @@ def cmd_agent(args: argparse.Namespace) -> int:
     if verbose:
         print(f"[generate] provider={result.provider} model={result.model}")
         print(f"[generate] prompt_tokens={result.prompt_tokens} completion_tokens={result.completion_tokens}")
+        if result.attempted_providers:
+            chain = " -> ".join(
+                f"{a['provider']}({'ok' if a['success'] else (a.get('skipped_reason') or 'err')})"
+                for a in result.attempted_providers
+            )
+            print(f"[chain] {chain}")
 
     # 4. GeoSeal stamp
     seal = compute_seal("agent", route.tongue, result.code, task, phi_cost, tier)
@@ -714,6 +839,16 @@ def cmd_agent(args: argparse.Namespace) -> int:
             "completion_tokens": result.completion_tokens,
             "code": result.code,
             "seal": seal,
+            "tongue_in": tongue_token_digest(route.tongue, task),
+            "tongue_out": tongue_token_digest(route.tongue, result.code or ""),
+            "routing": {
+                "max_tier": max_tier,
+                "small_first": small_first,
+                "forbid_provider": list(forbid_provider),
+                "budget_tokens": budget_tokens,
+                "attempted_providers": result.attempted_providers,
+                "syntax_history": syntax_history,
+            },
             "timestamp": time.time(),
             # SFT training format alongside raw record
             "sft": {
@@ -830,6 +965,16 @@ def cmd_arc(args: argparse.Namespace) -> int:
     ledger = Path(args.ledger) if not args.no_ledger else None
     if ledger is not None:
         ledger.parent.mkdir(parents=True, exist_ok=True)
+        # Boundary digests: input is the task identity + family seed; output is the
+        # serialized synthesized program (deterministic, semantic-preserving).
+        arc_in_payload = json.dumps({"task_id": task.task_id, "n_train": total}, sort_keys=True)
+        arc_out_payload = json.dumps(
+            {
+                "family": solution.family,
+                "steps": [{"op": s.op, "args": s.args} for s in solution.program.steps],
+            },
+            sort_keys=True,
+        )
         log = {
             "type": "arc",
             "task_id": task.task_id,
@@ -840,6 +985,8 @@ def cmd_arc(args: argparse.Namespace) -> int:
             "phi_cost": phi_cost,
             "tier": tier,
             "seal": seal,
+            "tongue_in": tongue_token_digest(tongue, arc_in_payload),
+            "tongue_out": tongue_token_digest(tongue, arc_out_payload),
             "timestamp": time.time(),
         }
         with ledger.open("a", encoding="utf-8") as fh:
@@ -907,6 +1054,10 @@ def cmd_cursor(args: argparse.Namespace) -> int:
     ledger = Path(args.ledger) if not args.no_ledger else None
     if ledger is not None:
         ledger.parent.mkdir(parents=True, exist_ok=True)
+        # Cursor is a freeform repo worker — no routed tongue. Use DR (Draumric /
+        # Markdown) as the transport tongue for boundary digests; that's the
+        # narrative tongue and the safest default for natural-language tasks.
+        cursor_tongue = "DR"
         record = {
             "type": "cursor",
             "task": args.task,
@@ -919,6 +1070,8 @@ def cmd_cursor(args: argparse.Namespace) -> int:
             "duration_ms": duration_ms,
             "stdout": stdout,
             "stderr": stderr,
+            "tongue_in": tongue_token_digest(cursor_tongue, args.task),
+            "tongue_out": tongue_token_digest(cursor_tongue, stdout),
             "timestamp": time.time(),
         }
         with ledger.open("a", encoding="utf-8") as fh:
@@ -927,6 +1080,455 @@ def cmd_cursor(args: argparse.Namespace) -> int:
             print(f"[ledger] written to {ledger}")
 
     return proc.returncode
+
+
+# ---------------------------------------------------------------------------
+# Workflow runner — declarative `.geoseal.yaml` chains for small-LLM pipelines
+# ---------------------------------------------------------------------------
+
+WORKFLOW_OP_KINDS = {"agent", "seal"}
+WORKFLOW_VALID_TIERS = {"ALLOW", "QUARANTINE", "ESCALATE"}
+WORKFLOW_VALID_PROVIDERS = {"local", "ollama", "hf", "claude"}
+_WORKFLOW_REF_PATTERN = re.compile(r"\$\{([a-zA-Z_][a-zA-Z0-9_.\-]*)\}")
+
+
+@dataclass
+class WorkflowStepResult:
+    step_id: str
+    op: str
+    tongue: str
+    tier: str
+    seal: str
+    code: str = ""
+    error: Optional[str] = None
+    provider: Optional[str] = None
+    phi_cost: float = 0.0
+    duration_ms: float = 0.0
+    tongue_in: Optional[Dict[str, object]] = None
+    tongue_out: Optional[Dict[str, object]] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+def load_workflow_spec(path: Path) -> Dict[str, Any]:
+    """Load a workflow spec from a `.geoseal.yaml`/`.yml`/`.json` file."""
+    text = path.read_text(encoding="utf-8")
+    suffix = path.suffix.lower()
+    if suffix in {".yaml", ".yml"}:
+        try:
+            import yaml  # type: ignore
+        except ImportError as exc:  # pragma: no cover - environment guard
+            raise SystemExit(f"PyYAML required for {suffix} workflows: {exc}")
+        spec = yaml.safe_load(text) or {}
+    elif suffix == ".json":
+        spec = json.loads(text) if text.strip() else {}
+    else:
+        raise SystemExit(f"unsupported workflow extension: {suffix}")
+    if not isinstance(spec, dict):
+        raise SystemExit(f"workflow root must be a mapping, got {type(spec).__name__}")
+    return spec
+
+
+def validate_workflow_spec(spec: Dict[str, Any]) -> List[str]:
+    """Return a list of human-readable validation errors (empty == valid)."""
+    errors: List[str] = []
+    if not isinstance(spec, dict):
+        return ["workflow root must be a mapping"]
+    if not spec.get("name"):
+        errors.append("missing required field: name")
+    default_tongue = spec.get("default_tongue")
+    if default_tongue is not None and not isinstance(default_tongue, str):
+        errors.append("default_tongue must be a string if present")
+    default_max_tier = spec.get("default_max_tier")
+    if default_max_tier is not None and default_max_tier not in WORKFLOW_VALID_TIERS:
+        errors.append(f"default_max_tier invalid: {default_max_tier!r}")
+    steps = spec.get("steps")
+    if not isinstance(steps, list) or not steps:
+        errors.append("steps must be a non-empty list")
+        return errors
+    seen_ids: set = set()
+    for idx, step in enumerate(steps):
+        prefix = f"steps[{idx}]"
+        if not isinstance(step, dict):
+            errors.append(f"{prefix}: must be a mapping")
+            continue
+        sid = step.get("id")
+        if not sid or not isinstance(sid, str):
+            errors.append(f"{prefix}: missing/invalid id")
+        elif sid in seen_ids:
+            errors.append(f"{prefix}: duplicate id {sid!r}")
+        else:
+            seen_ids.add(sid)
+        op = step.get("op")
+        if op not in WORKFLOW_OP_KINDS:
+            errors.append(f"{prefix}({sid}): op must be one of {sorted(WORKFLOW_OP_KINDS)}, got {op!r}")
+        if "task" not in step:
+            errors.append(f"{prefix}({sid}): missing required field 'task'")
+        tongue = step.get("tongue")
+        if tongue is not None and not isinstance(tongue, str):
+            errors.append(f"{prefix}({sid}): tongue must be a string")
+        max_tier = step.get("max_tier")
+        if max_tier is not None and max_tier not in WORKFLOW_VALID_TIERS:
+            errors.append(f"{prefix}({sid}): max_tier invalid {max_tier!r}")
+        provider = step.get("provider")
+        if provider is not None and provider not in WORKFLOW_VALID_PROVIDERS:
+            errors.append(f"{prefix}({sid}): provider invalid {provider!r}")
+        forbid = step.get("forbid_provider")
+        if forbid is not None:
+            if not isinstance(forbid, list):
+                errors.append(f"{prefix}({sid}): forbid_provider must be a list")
+            else:
+                for fp in forbid:
+                    if fp not in WORKFLOW_VALID_PROVIDERS:
+                        errors.append(f"{prefix}({sid}): forbid_provider entry invalid {fp!r}")
+    return errors
+
+
+def substitute_workflow_refs(
+    template: Any,
+    input_text: str,
+    step_outputs: Dict[str, WorkflowStepResult],
+) -> Any:
+    """Replace `${input}` / `${steps.<id>.code|seal|tongue|provider}` in templates."""
+    if not isinstance(template, str):
+        return template
+
+    def _resolve(match: "re.Match[str]") -> str:
+        ref = match.group(1)
+        if ref == "input":
+            return input_text or ""
+        parts = ref.split(".")
+        if len(parts) == 3 and parts[0] == "steps":
+            sid, attr = parts[1], parts[2]
+            if sid not in step_outputs:
+                raise SystemExit(f"workflow ref ${{{ref}}}: unknown step {sid!r}")
+            res = step_outputs[sid]
+            if attr == "code":
+                return res.code or ""
+            if attr == "seal":
+                return res.seal or ""
+            if attr == "tongue":
+                return res.tongue or ""
+            if attr == "provider":
+                return res.provider or ""
+            raise SystemExit(f"workflow ref ${{{ref}}}: unsupported attr {attr!r}")
+        raise SystemExit(f"workflow ref ${{{ref}}}: unrecognized reference syntax")
+
+    return _WORKFLOW_REF_PATTERN.sub(_resolve, template)
+
+
+def _resolve_step_setting(step: Dict[str, Any], spec: Dict[str, Any], key: str, default: Any = None) -> Any:
+    if key in step and step[key] is not None:
+        return step[key]
+    default_key = f"default_{key}"
+    if default_key in spec and spec[default_key] is not None:
+        return spec[default_key]
+    return default
+
+
+def _run_workflow_step_agent(
+    step: Dict[str, Any],
+    spec: Dict[str, Any],
+    input_text: str,
+    step_outputs: Dict[str, WorkflowStepResult],
+    verbose: bool = False,
+) -> WorkflowStepResult:
+    """Execute one workflow `agent` step in-process via the coding spine."""
+    try:
+        from src.coding_spine.router import route_task
+        from src.coding_spine.polly_client import generate
+    except ImportError as exc:  # pragma: no cover - import guard
+        return WorkflowStepResult(
+            step_id=step["id"],
+            op="agent",
+            tongue="KO",
+            tier="DENY",
+            seal="",
+            error=f"coding spine not available: {exc}",
+        )
+    sid = step["id"]
+    task_template = step.get("task", "")
+    task = substitute_workflow_refs(task_template, input_text, step_outputs)
+    force_tongue = _resolve_step_setting(step, spec, "tongue")
+    if force_tongue:
+        force_tongue = str(force_tongue).upper()
+    force_provider = _resolve_step_setting(step, spec, "provider")
+    max_tokens = int(_resolve_step_setting(step, spec, "max_tokens", default=1024))
+    budget_tokens = _resolve_step_setting(step, spec, "budget_tokens")
+    if budget_tokens is not None:
+        budget_tokens = int(budget_tokens)
+    max_tier = _resolve_step_setting(step, spec, "max_tier")
+    small_first = bool(_resolve_step_setting(step, spec, "small_first", default=False))
+    forbid_provider = list(_resolve_step_setting(step, spec, "forbid_provider", default=[]) or [])
+    chi = float(_resolve_step_setting(step, spec, "chi", default=0.2))
+
+    route = route_task(task, force_tongue=force_tongue)
+    phi_cost = phi_wall_cost(chi, route.tongue)
+    tier = phi_wall_tier(phi_cost)
+    if verbose:
+        print(f"[workflow:{sid}] route={route.full_name}({route.tongue}) tier={tier} cost={phi_cost:.4f}")
+    if tier == "DENY":
+        return WorkflowStepResult(
+            step_id=sid,
+            op="agent",
+            tongue=route.tongue,
+            tier=tier,
+            seal="",
+            phi_cost=phi_cost,
+            error=f"phi-wall DENY at cost={phi_cost:.4f}",
+            tongue_in=tongue_token_digest(route.tongue, task),
+        )
+    _TIER_RANK = {"ALLOW": 0, "QUARANTINE": 1, "ESCALATE": 2, "DENY": 3}
+    if max_tier is not None and _TIER_RANK[tier] > _TIER_RANK[max_tier]:
+        return WorkflowStepResult(
+            step_id=sid,
+            op="agent",
+            tongue=route.tongue,
+            tier=tier,
+            seal="",
+            phi_cost=phi_cost,
+            error=f"tier={tier} exceeds max_tier={max_tier}",
+            tongue_in=tongue_token_digest(route.tongue, task),
+        )
+
+    started = time.perf_counter()
+    result = generate(
+        task,
+        language=route.language,
+        tongue=route.tongue,
+        tongue_name=route.full_name,
+        max_tokens=max_tokens,
+        force_provider=force_provider,
+        forbidden_providers=forbid_provider,
+        small_first=small_first,
+        governance_tier=tier,
+        budget_tokens=budget_tokens,
+    )
+    duration_ms = (time.perf_counter() - started) * 1000.0
+
+    if result.error:
+        return WorkflowStepResult(
+            step_id=sid,
+            op="agent",
+            tongue=route.tongue,
+            tier=tier,
+            seal="",
+            phi_cost=phi_cost,
+            duration_ms=duration_ms,
+            error=result.error,
+            provider=result.provider,
+            tongue_in=tongue_token_digest(route.tongue, task),
+        )
+
+    code = result.code or ""
+    seal = compute_seal("workflow_agent", route.tongue, code, task, phi_cost, tier)
+    return WorkflowStepResult(
+        step_id=sid,
+        op="agent",
+        tongue=route.tongue,
+        tier=tier,
+        seal=seal,
+        code=code,
+        provider=result.provider,
+        phi_cost=phi_cost,
+        duration_ms=duration_ms,
+        tongue_in=tongue_token_digest(route.tongue, task),
+        tongue_out=tongue_token_digest(route.tongue, code),
+    )
+
+
+def _run_workflow_step_seal(
+    step: Dict[str, Any],
+    spec: Dict[str, Any],
+    input_text: str,
+    step_outputs: Dict[str, WorkflowStepResult],
+    verbose: bool = False,
+) -> WorkflowStepResult:
+    """Execute a `seal` step — stamps an arbitrary payload (often a prior step's code)."""
+    sid = step["id"]
+    payload = substitute_workflow_refs(step.get("task", ""), input_text, step_outputs)
+    tongue = _resolve_step_setting(step, spec, "tongue", default="KO")
+    tongue = str(tongue).upper()
+    if tongue not in ALL_TONGUE_PHASES:
+        return WorkflowStepResult(
+            step_id=sid,
+            op="seal",
+            tongue=tongue,
+            tier="DENY",
+            seal="",
+            error=f"unknown tongue {tongue!r}",
+        )
+    chi = float(_resolve_step_setting(step, spec, "chi", default=0.1))
+    phi_cost = phi_wall_cost(chi, tongue)
+    tier = phi_wall_tier(phi_cost)
+    seal = compute_seal("workflow_seal", tongue, payload, "", phi_cost, tier)
+    if verbose:
+        print(f"[workflow:{sid}] seal tongue={tongue} tier={tier} cost={phi_cost:.4f}")
+    return WorkflowStepResult(
+        step_id=sid,
+        op="seal",
+        tongue=tongue,
+        tier=tier,
+        seal=seal,
+        code=payload,
+        phi_cost=phi_cost,
+        tongue_in=tongue_token_digest(tongue, payload),
+        tongue_out=tongue_token_digest(tongue, seal),
+    )
+
+
+def run_workflow(
+    spec: Dict[str, Any],
+    input_text: str = "",
+    ledger: Optional[Path] = None,
+    verbose: bool = False,
+) -> Dict[str, Any]:
+    """Execute a validated workflow spec, threading tongue boundaries between steps."""
+    errors = validate_workflow_spec(spec)
+    if errors:
+        raise SystemExit("workflow spec invalid:\n  - " + "\n  - ".join(errors))
+    name = spec.get("name", "")
+    description = spec.get("description", "")
+    workflow_started = time.time()
+    step_outputs: Dict[str, WorkflowStepResult] = {}
+    step_records: List[Dict[str, Any]] = []
+    prev_step_id: Optional[str] = None
+    prev_tongue_out_sha: Optional[str] = None
+    failed = False
+    for idx, step in enumerate(spec["steps"]):
+        op = step["op"]
+        if op == "agent":
+            result = _run_workflow_step_agent(step, spec, input_text, step_outputs, verbose=verbose)
+        elif op == "seal":
+            result = _run_workflow_step_seal(step, spec, input_text, step_outputs, verbose=verbose)
+        else:  # pragma: no cover - already validated
+            raise SystemExit(f"workflow op kind not implemented: {op}")
+        step_outputs[result.step_id] = result
+        record: Dict[str, Any] = {
+            "type": "workflow_step",
+            "workflow": name,
+            "step_id": result.step_id,
+            "step_index": idx,
+            "op": result.op,
+            "tongue": result.tongue,
+            "tier": result.tier,
+            "seal": result.seal,
+            "phi_cost": result.phi_cost,
+            "duration_ms": result.duration_ms,
+            "provider": result.provider,
+            "error": result.error,
+            "tongue_in": result.tongue_in,
+            "tongue_out": result.tongue_out,
+            "prev_step_id": prev_step_id,
+            "prev_tongue_out_sha256": prev_tongue_out_sha,
+            "timestamp": time.time(),
+        }
+        step_records.append(record)
+        if ledger is not None:
+            ledger.parent.mkdir(parents=True, exist_ok=True)
+            with ledger.open("a", encoding="utf-8") as fh:
+                fh.write(json.dumps(record) + "\n")
+        if result.error:
+            failed = True
+            if verbose:
+                print(f"[workflow:{result.step_id}] ERROR: {result.error}", file=sys.stderr)
+            break
+        prev_step_id = result.step_id
+        prev_tongue_out_sha = (result.tongue_out or {}).get("sha256") if result.tongue_out else None
+
+    summary = {
+        "type": "workflow_run",
+        "workflow": name,
+        "description": description,
+        "input": input_text,
+        "n_steps_total": len(spec["steps"]),
+        "n_steps_executed": len(step_records),
+        "ok": not failed,
+        "started_at": workflow_started,
+        "finished_at": time.time(),
+        "steps": [r["step_id"] for r in step_records],
+        "final_seal": step_records[-1]["seal"] if step_records else "",
+        "final_tongue_out_sha256": prev_tongue_out_sha,
+    }
+    if ledger is not None:
+        with ledger.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(summary) + "\n")
+    summary["_records"] = step_records
+    summary["_outputs"] = {sid: res.to_dict() for sid, res in step_outputs.items()}
+    return summary
+
+
+def _workflow_list_dir(directory: Path) -> List[Path]:
+    return sorted(
+        list(directory.glob("*.geoseal.yaml"))
+        + list(directory.glob("*.geoseal.yml"))
+        + list(directory.glob("*.geoseal.json"))
+    )
+
+
+def cmd_workflow(args: argparse.Namespace) -> int:
+    mode = args.workflow_cmd
+    if mode == "list":
+        directory = Path(args.dir).resolve()
+        if not directory.exists():
+            print(f"workflow dir not found: {directory}", file=sys.stderr)
+            return 1
+        files = _workflow_list_dir(directory)
+        if args.json:
+            print(json.dumps([str(p) for p in files]))
+        else:
+            for p in files:
+                print(p)
+        return 0
+
+    if mode == "validate":
+        path = Path(args.workflow_file)
+        if not path.exists():
+            print(f"workflow file not found: {path}", file=sys.stderr)
+            return 1
+        spec = load_workflow_spec(path)
+        errors = validate_workflow_spec(spec)
+        if args.json:
+            print(json.dumps({"file": str(path), "ok": not errors, "errors": errors}))
+        else:
+            if errors:
+                print(f"INVALID: {path}", file=sys.stderr)
+                for e in errors:
+                    print(f"  - {e}", file=sys.stderr)
+            else:
+                print(f"OK: {path}")
+        return 0 if not errors else 2
+
+    if mode == "run":
+        path = Path(args.workflow_file)
+        if not path.exists():
+            print(f"workflow file not found: {path}", file=sys.stderr)
+            return 1
+        spec = load_workflow_spec(path)
+        input_text = args.input or ""
+        if args.input_file:
+            input_text = Path(args.input_file).read_text(encoding="utf-8")
+        ledger = None if args.no_ledger else Path(args.ledger)
+        summary = run_workflow(spec, input_text=input_text, ledger=ledger, verbose=args.verbose)
+        if args.json:
+            payload = {k: v for k, v in summary.items() if not k.startswith("_")}
+            print(json.dumps(payload))
+        else:
+            status = "ok" if summary["ok"] else "FAILED"
+            print(
+                f"[workflow] {summary['workflow']} {status} "
+                f"steps={summary['n_steps_executed']}/{summary['n_steps_total']} "
+                f"final_seal={summary['final_seal'][:16] if summary['final_seal'] else '-'}"
+            )
+            if not summary["ok"]:
+                last = summary["_records"][-1] if summary["_records"] else None
+                if last and last.get("error"):
+                    print(f"[workflow] last_error: {last['error']}", file=sys.stderr)
+        return 0 if summary["ok"] else 1
+
+    print(f"unknown workflow command: {mode}", file=sys.stderr)
+    return 2
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1020,10 +1622,44 @@ def build_parser() -> argparse.ArgumentParser:
     p_agent.add_argument(
         "--provider",
         default=None,
-        choices=["local", "hf", "claude"],
-        help="Force inference provider (default: local->hf->claude)",
+        choices=["local", "ollama", "hf", "claude"],
+        help="Force inference provider (default: local->ollama->hf->claude)",
     )
     p_agent.add_argument("--max-tokens", type=int, default=1024, dest="max_tokens")
+    p_agent.add_argument(
+        "--budget-tokens",
+        type=int,
+        default=None,
+        dest="budget_tokens",
+        help="Hard cap on completion tokens passed to the provider (small-LLM friendly)",
+    )
+    p_agent.add_argument(
+        "--max-tier",
+        default=None,
+        choices=["ALLOW", "QUARANTINE", "ESCALATE"],
+        dest="max_tier",
+        help="Refuse routing if the phi-wall tier exceeds this severity",
+    )
+    p_agent.add_argument(
+        "--small-first",
+        action="store_true",
+        dest="small_first",
+        help="Reserve Claude for ESCALATE tier; prefer local/ollama/hf otherwise",
+    )
+    p_agent.add_argument(
+        "--forbid-provider",
+        action="append",
+        default=[],
+        dest="forbid_provider",
+        choices=["local", "ollama", "hf", "claude"],
+        help="Provider tier to exclude from routing (repeatable)",
+    )
+    p_agent.add_argument(
+        "--escalate-on-syntax-fail",
+        action="store_true",
+        dest="escalate_on_syntax_fail",
+        help="If output fails syntax_check, retry on next provider tier",
+    )
     p_agent.add_argument("--no-ledger", action="store_true", help="Skip SFT log")
     p_agent.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_agent.add_argument("--verbose", "-v", action="store_true")
@@ -1063,6 +1699,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_cursor.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_cursor.add_argument("--verbose", "-v", action="store_true")
     p_cursor.set_defaults(func=cmd_cursor)
+
+    p_workflow = sub.add_parser("workflow", help="Declarative .geoseal.yaml workflow runner")
+    wf_sub = p_workflow.add_subparsers(dest="workflow_cmd", required=True)
+
+    p_wf_list = wf_sub.add_parser("list", help="List .geoseal.yaml workflows in a directory")
+    p_wf_list.add_argument("--dir", default=".", help="Directory to scan")
+    p_wf_list.add_argument("--json", action="store_true")
+    p_wf_list.set_defaults(func=cmd_workflow, workflow_cmd="list")
+
+    p_wf_val = wf_sub.add_parser("validate", help="Validate a workflow spec")
+    p_wf_val.add_argument("workflow_file")
+    p_wf_val.add_argument("--json", action="store_true")
+    p_wf_val.set_defaults(func=cmd_workflow, workflow_cmd="validate")
+
+    p_wf_run = wf_sub.add_parser("run", help="Run a workflow")
+    p_wf_run.add_argument("workflow_file")
+    p_wf_run.add_argument("--input", default=None, help="Initial input string")
+    p_wf_run.add_argument("--input-file", default=None, dest="input_file")
+    p_wf_run.add_argument("--ledger", default=str(DEFAULT_LEDGER))
+    p_wf_run.add_argument("--no-ledger", action="store_true")
+    p_wf_run.add_argument("--json", action="store_true")
+    p_wf_run.add_argument("--verbose", "-v", action="store_true")
+    p_wf_run.set_defaults(func=cmd_workflow, workflow_cmd="run")
 
     return p
 

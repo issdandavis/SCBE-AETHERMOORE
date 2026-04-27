@@ -1,0 +1,131 @@
+{
+  "schema_version": "scbe_ai_development_system_improvements_v1",
+  "generated_date": "2026-04-27",
+  "core_rule": "Do not flatten training lanes before they independently prove useful. Improve orchestration, context, eval, and routing first.",
+  "no_quantization": true,
+  "research_sources": [
+    {
+      "name": "Cursor Project Rules",
+      "url": "https://docs.cursor.com/context/rules",
+      "finding": "Use versioned project rules in .cursor/rules as persistent scoped context."
+    },
+    {
+      "name": "Cursor Background Agents",
+      "url": "https://docs.cursor.com/background-agents",
+      "finding": "Background agents work asynchronously in isolated remote environments and separate branches, but auto-run increases exfiltration risk."
+    },
+    {
+      "name": "Cursor Custom Modes",
+      "url": "https://docs.cursor.com/agent/custom-modes",
+      "finding": "Different modes should map to task type: read-only planning, focused edits, autonomous refactors, or specialized workflows."
+    },
+    {
+      "name": "Continue Config and Context Providers",
+      "url": "https://docs.continue.dev/reference",
+      "finding": "Model routing, context providers, prompts, and rules can be declaratively configured."
+    },
+    {
+      "name": "Aider Docs",
+      "url": "https://aider.chat/docs/",
+      "finding": "Repo-map and architect/edit separation are useful patterns for local-first coding workflows."
+    },
+    {
+      "name": "Anthropic Multi-Agent Research System",
+      "url": "https://www.anthropic.com/engineering/built-multi-agent-research-system",
+      "finding": "Use lead-agent plus specialized worker agents; improve tool ergonomics and measure task-completion impact."
+    },
+    {
+      "name": "OpenAI Codex",
+      "url": "https://openai.com/index/introducing-codex/",
+      "finding": "Parallel cloud tasks in isolated environments work best with repo instructions and review before integration."
+    },
+    {
+      "name": "GitHub Copilot Custom Agents",
+      "url": "https://docs.github.com/en/copilot/concepts/agents/copilot-cli/about-custom-agents",
+      "finding": "Specialized agents should have explicit behavior, expertise, and workflow boundaries."
+    }
+  ],
+  "feature_branches": [
+    {
+      "id": "F1",
+      "name": "cursor_project_rules_and_environment",
+      "status": "started",
+      "goal": "Make Cursor useful as a side-agent without letting it flatten training lanes or promote models.",
+      "repo_artifacts": [
+        ".cursor/rules/scbe-nonflattened-agent-system.mdc",
+        ".cursor/environment.json"
+      ],
+      "acceptance_gate": "Cursor opens repo with SCBE rules visible and safe tasks available."
+    },
+    {
+      "id": "F2",
+      "name": "training_run_ledger_as_control_plane",
+      "status": "started",
+      "goal": "Use the run ledger to decide whether artifacts become eval evidence, repair rows, ops data, or merge-readiness evidence.",
+      "repo_artifacts": [
+        "scripts/system/build_ai_training_run_ledger.py",
+        "artifacts/training_run_ledger/latest/ledger.md"
+      ],
+      "acceptance_gate": "npm run training:run-ledger completes and lists platform-split work order."
+    },
+    {
+      "id": "F3",
+      "name": "agent_packet_ownership_contracts",
+      "status": "started",
+      "goal": "Generate small work packets with owner, allowed paths, blocked paths, tests, and return format for Cursor/Codex/Claude lanes.",
+      "repo_artifacts": [
+        "config/system/agent_work_packet_template_v1.json"
+      ],
+      "acceptance_gate": "A packet can be assigned without risking shared-file collisions."
+    },
+    {
+      "id": "F4",
+      "name": "context_provider_index",
+      "status": "planned",
+      "goal": "Build a repo-local index of exact context packs for training, proposals, browser ops, and model evals.",
+      "acceptance_gate": "Agents retrieve exact file pointers instead of broad searching."
+    },
+    {
+      "id": "F5",
+      "name": "non_quantized_route_first_model_board",
+      "status": "planned",
+      "goal": "Track route candidates separately from merge candidates and block quantized consolidation.",
+      "acceptance_gate": "Every adapter has route status, eval status, and merge status as separate fields."
+    },
+    {
+      "id": "F6",
+      "name": "failure_to_repair_data_miner",
+      "status": "planned",
+      "goal": "Convert failed executable outputs into targeted repair SFT rows with provenance.",
+      "acceptance_gate": "Each failed category emits train/holdout repair rows and updates the ledger."
+    },
+    {
+      "id": "F7",
+      "name": "colab_interaction_to_operator_sft",
+      "status": "planned",
+      "goal": "Convert Colab verification/blocker receipts into operator-agent-bus training examples.",
+      "acceptance_gate": "Colab receipts become runnable command SFT records, not vague notes."
+    },
+    {
+      "id": "F8",
+      "name": "local_oss_agent_adapter",
+      "status": "planned",
+      "goal": "Add Ollama/Continue/Aider-compatible local model routing for worst-case free-agent workflows.",
+      "acceptance_gate": "A local model can handle a bounded packet and return a validated diff or diagnosis."
+    },
+    {
+      "id": "F9",
+      "name": "agent_config_lint_gate",
+      "status": "planned",
+      "goal": "Validate .cursor, AGENTS.md, Copilot, Codex, MCP, and VS Code task configs for stale or contradictory instructions.",
+      "acceptance_gate": "CI/local task flags broken agent config before agents silently ignore rules."
+    },
+    {
+      "id": "F10",
+      "name": "tool_ergonomics_metrics",
+      "status": "planned",
+      "goal": "Measure whether better tool descriptions, tasks, and packet templates reduce agent failure time.",
+      "acceptance_gate": "Each repeated agent failure category has a before/after metric."
+    }
+  ]
+}

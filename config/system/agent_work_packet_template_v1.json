@@ -1,0 +1,74 @@
+{
+  "schema_version": "scbe_agent_work_packet_v1",
+  "purpose": "Assign bounded work to Cursor, Codex, Claude, local OSS agents, or other helpers without flattening training lanes or colliding on shared files.",
+  "defaults": {
+    "no_external_send": true,
+    "no_external_launch": true,
+    "no_model_promotion": true,
+    "no_quantization": true,
+    "route_before_merge": true,
+    "preserve_specialist_lanes": true
+  },
+  "required_fields": [
+    "task_id",
+    "owner_role",
+    "goal",
+    "lane",
+    "inputs",
+    "allowed_paths",
+    "blocked_paths",
+    "dependencies",
+    "commands_or_tools",
+    "done_criteria",
+    "return_format"
+  ],
+  "lane_values": [
+    "coding_model",
+    "dsl_synthesis",
+    "bijective_tongue",
+    "binary_hex",
+    "operator_agent_bus",
+    "governance_security",
+    "aligned_foundations",
+    "research_bridge",
+    "proposal_ops",
+    "system_ops"
+  ],
+  "template": {
+    "task_id": "PACKET-YYYYMMDD-001",
+    "owner_role": "cursor_side_agent",
+    "goal": "One sentence describing the bounded outcome.",
+    "lane": "coding_model",
+    "inputs": [
+      "Exact file paths, reports, or ledger rows the agent should use."
+    ],
+    "allowed_paths": [
+      "docs/operations/",
+      "tests/"
+    ],
+    "blocked_paths": [
+      "config/connector_oauth/",
+      "artifacts/proton_mail/",
+      "training-data/sft/*_holdout*.jsonl"
+    ],
+    "dependencies": [
+      "Run npm run training:run-ledger first if the task depends on current run state."
+    ],
+    "commands_or_tools": [
+      "npm run training:run-ledger"
+    ],
+    "done_criteria": [
+      "Changed paths are listed.",
+      "Verification command and result are included.",
+      "Training data, eval data, routing, and merge impacts are explicitly stated.",
+      "No launch, publish, send, model promotion, quantization, or broad merge was performed."
+    ],
+    "return_format": {
+      "changed_paths": [],
+      "verification": [],
+      "lane_impact": "none | training_data | eval_data | routing | merge_logic | docs_only",
+      "risks": [],
+      "next_packet_recommendation": ""
+    }
+  }
+}
