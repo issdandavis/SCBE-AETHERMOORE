@@ -57,7 +57,7 @@ import torch
 from datasets import Dataset, load_dataset
 from huggingface_hub import login
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, EarlyStoppingCallback
 from trl import SFTConfig, SFTTrainer
 from pathlib import Path
 
@@ -84,6 +84,8 @@ MAX_RECORDS = int(CFG.get("max_records", 10000))
 LORA_R = int(CFG.get("lora_r", 16))
 LORA_ALPHA = int(CFG.get("lora_alpha", 32))
 LORA_DROPOUT = float(CFG.get("lora_dropout", 0.05))
+EARLY_STOPPING_PATIENCE = int(CFG.get("early_stopping_patience", 3))
+EARLY_STOPPING_THRESHOLD = float(CFG.get("early_stopping_threshold", 0.0))
 
 # ---- Auth ----
 PUSH = False
@@ -353,6 +355,18 @@ trainer = SFTTrainer(
         gradient_checkpointing_kwargs={"use_reentrant": False},
     ),
 )
+
+if eval_dataset is not None and EARLY_STOPPING_PATIENCE > 0:
+    trainer.add_callback(
+        EarlyStoppingCallback(
+            early_stopping_patience=EARLY_STOPPING_PATIENCE,
+            early_stopping_threshold=EARLY_STOPPING_THRESHOLD,
+        )
+    )
+    print(
+        f"EarlyStopping armed: patience={EARLY_STOPPING_PATIENCE}, "
+        f"threshold={EARLY_STOPPING_THRESHOLD}, monitoring eval_loss"
+    )
 
 write_status("training")
 train_result = trainer.train()
