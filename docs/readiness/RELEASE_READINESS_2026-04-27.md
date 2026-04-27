@@ -60,7 +60,7 @@ No PyPI upload was run.
 
 ## Docker
 
-Readiness: local build not verified in this pass.
+Readiness: local build not verified in this pass; remote build path added after local storage constraint was confirmed.
 
 Command:
 
@@ -71,10 +71,25 @@ npm run docker:doctor:api
 Result:
 
 - Blocked locally because Docker Desktop / Docker Engine is not reachable.
+- Local blocker is expected on this machine because Docker is not set up and there is not enough local disk headroom.
+
+Remote fallback:
+
+```powershell
+npm run docker:remote:api
+```
+
+This dispatches the `Remote Docker Build` GitHub Actions workflow. It builds `Dockerfile.api` on a GitHub-hosted runner and runs the API health smoke test without using local disk. It does not push an image by default.
+
+Optional GHCR push, only when explicitly wanted:
+
+```powershell
+npm run docker:remote:api:push
+```
 
 Packaging note:
 
-- `Dockerfile.api` remains the safer production-facing container path.
+- `Dockerfile.api` remains the safer production-facing container path and is now the remote-build target.
 - The root `Dockerfile` still contains `npm run build || true`, which can hide TypeScript build failures. This should be removed or split into an explicit best-effort development image before treating the root image as release-grade.
 
 ## GitHub Pages

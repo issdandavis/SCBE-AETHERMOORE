@@ -1,0 +1,51 @@
+# Keep Docker build contexts small and secret-safe.
+.git
+.github
+.codex_tmp
+.pytest_cache
+.hypothesis
+.mypy_cache
+.ruff_cache
+.npm-cache
+node_modules
+dist
+build
+src/build
+src/*.egg-info
+*.egg-info
+__pycache__
+*.pyc
+*.pyo
+
+# Local/generated artifacts.
+artifacts
+training/runs
+training-data
+notebooks
+notes
+exports
+_staging
+sealed_blobs
+external
+external_repos
+experiments
+
+# Secrets and local config.
+.env
+.env.*
+!.env.example
+config/connector_oauth
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Non-container product surfaces.
+docs
+coverage
+htmlcov
+*.log
+*.zip
+*.tar
+*.tar.gz
+*.tgz
