@@ -1,8 +1,8 @@
 {
-  "generated": "2026-04-27T12:51:22.854984+00:00",
-  "feed_generated": "2026-04-27T12:51:22.612779+00:00",
-  "items_processed": 58,
-  "sft_pairs_generated": 406,
+  "generated": "2026-04-27T13:51:09.652663+00:00",
+  "feed_generated": "2026-04-27T13:51:09.472548+00:00",
+  "items_processed": 69,
+  "sft_pairs_generated": 483,
   "errors": 0,
   "crypto_tier": "cryptography",
   "tokenizer_source": "src.crypto.sacred_tongues",
