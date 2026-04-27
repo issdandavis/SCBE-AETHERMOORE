@@ -43,6 +43,7 @@ import json
 import math
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -66,6 +67,9 @@ from src.ca_lexicon import (
     trit_vector,
 )
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+from src.contracts.operation_panel import resolve_source_to_operation_panel
+from src.contracts.runtime_contract import inspect_runtime_packet
+from src.contracts.system_cards import build_system_deck, play_system_card
 
 PHI = (1 + 5**0.5) / 2
 
@@ -687,6 +691,169 @@ def cmd_verify(args: argparse.Namespace) -> int:
     ok = verify_seal(args.seal, args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier)
     print("OK" if ok else "MISMATCH")
     return 0 if ok else 1
+
+
+def _build_portal_box_payload(
+    *,
+    language: str,
+    content: str,
+    source_name: str = "<memory>",
+    include_extended: bool = False,
+    deck_size: int = 10,
+    branch_width: int = 1,
+) -> Dict[str, Any]:
+    resolution = resolve_source_to_operation_panel(
+        content,
+        language=language,
+        source_name=source_name,
+        include_extended=include_extended,
+    )
+    deck = build_system_deck(
+        resolution,
+        source_text=content,
+        source_name=source_name,
+        include_extended=include_extended,
+        deck_size=deck_size,
+    )
+    route_packet = dict(resolution["runtime_packet"])
+    return {
+        "version": "geoseal-polly-portal-box-v1",
+        "branch_width": branch_width,
+        "shell_contract": {
+            "schema_version": "geoseal-shell-contract-v1",
+            "route_packet": route_packet,
+            "operator_signature": resolution["operator_signature"],
+        },
+        "deck": deck,
+    }
+
+
+def _build_stream_wheel_payload(portal_payload: Dict[str, Any]) -> Dict[str, Any]:
+    cards = portal_payload.get("deck", {}).get("cards", [])
+    return {
+        "version": "geoseal-polly-stream-wheel-v1",
+        "portal_box_version": portal_payload.get("version"),
+        "wheel": [
+            {
+                "index": idx,
+                "card_id": card.get("card_id"),
+                "kind": card.get("kind"),
+                "route_tongue": card.get("route_tongue"),
+            }
+            for idx, card in enumerate(cards)
+        ],
+        "shell_contract": portal_payload.get("shell_contract", {}),
+    }
+
+
+def _build_execution_shell_payload(
+    *,
+    language: str,
+    content: str,
+    source_name: str = "<memory>",
+    include_extended: bool = False,
+    deck_size: int = 10,
+    branch_width: int = 1,
+) -> Dict[str, Any]:
+    portal_payload = _build_portal_box_payload(
+        language=language,
+        content=content,
+        source_name=source_name,
+        include_extended=include_extended,
+        deck_size=deck_size,
+        branch_width=branch_width,
+    )
+    return {
+        "version": "geoseal-execution-shell-v1",
+        "portal_box": portal_payload,
+        "route_packet": portal_payload["shell_contract"]["route_packet"],
+    }
+
+
+def _execute_execution_shell_payload(
+    shell_payload: Dict[str, Any],
+    *,
+    timeout: float = 10.0,
+    tongue: Optional[str] = None,
+) -> Dict[str, Any]:
+    route_packet = shell_payload.get("route_packet") or {}
+    command_key = str(route_packet.get("command_key") or "identity")
+    route_tongue = (tongue or route_packet.get("route_tongue") or "KO").upper()
+    args = {"a": "4", "b": "6"}
+    try:
+        lookup(command_key)
+    except Exception:
+        return {
+            "ok": False,
+            "route_packet": route_packet,
+            "error": f"unsupported command_key: {command_key}",
+        }
+    call = run_tongue_call(command_key, route_tongue, args, execute=True, timeout=timeout)
+    return {
+        "ok": bool(call.ran and call.returncode == 0),
+        "route_packet": route_packet,
+        "execution": call.to_dict(),
+    }
+
+
+def cmd_portal_box(args: argparse.Namespace) -> int:
+    payload = _build_portal_box_payload(
+        language=args.language,
+        content=args.content,
+        source_name=args.source_name,
+        include_extended=args.include_extended,
+        deck_size=args.deck_size,
+        branch_width=args.branch_width,
+    )
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0
+
+
+def cmd_stream_wheel(args: argparse.Namespace) -> int:
+    portal = _build_portal_box_payload(
+        language=args.language,
+        content=args.content,
+        source_name=args.source_name,
+        include_extended=args.include_extended,
+        deck_size=args.deck_size,
+        branch_width=args.branch_width,
+    )
+    print(json.dumps(_build_stream_wheel_payload(portal), indent=2 if not args.json else None))
+    return 0
+
+
+def cmd_inspect_runtime(args: argparse.Namespace) -> int:
+    payload = inspect_runtime_packet(
+        {
+            "language": args.language,
+            "content": args.content,
+            "source_name": args.source_name,
+        }
+    )
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0
+
+
+def cmd_run_route(args: argparse.Namespace) -> int:
+    shell_payload = _build_execution_shell_payload(
+        language=args.language,
+        content=args.content,
+        source_name=args.source_name,
+        include_extended=args.include_extended,
+        deck_size=args.deck_size,
+        branch_width=args.branch_width,
+    )
+    result = _execute_execution_shell_payload(shell_payload, timeout=args.timeout, tongue=args.tongue)
+    print(json.dumps(result, indent=2 if not args.json else None))
+    return 0 if result.get("ok") else 1
+
+
+def cmd_shell(args: argparse.Namespace) -> int:
+    """Run one nested GeoSeal command string through the same parser."""
+    nested = shlex.split(args.command, posix=False)
+    if nested and nested[0] in {"geoseal", "python", "py"}:
+        nested = nested[1:]
+    return main(nested)
 
 
 def cmd_agent(args: argparse.Namespace) -> int:
@@ -1615,6 +1782,37 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_verify.add_argument("--tier", default="ALLOW", help="Governance tier embedded in the seal (must match)")
     p_verify.set_defaults(func=cmd_verify)
+
+    def add_runtime_source_args(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument("--language", required=True)
+        parser.add_argument("--content", required=True)
+        parser.add_argument("--source-name", default="<memory>", dest="source_name")
+        parser.add_argument("--include-extended", action="store_true", dest="include_extended")
+        parser.add_argument("--deck-size", type=int, default=10, dest="deck_size")
+        parser.add_argument("--branch-width", type=int, default=1, dest="branch_width")
+        parser.add_argument("--json", action="store_true")
+
+    p_portal = sub.add_parser("portal-box", help="Build a GeoSeal portal-box payload")
+    add_runtime_source_args(p_portal)
+    p_portal.set_defaults(func=cmd_portal_box)
+
+    p_stream = sub.add_parser("stream-wheel", help="Build a GeoSeal stream-wheel payload")
+    add_runtime_source_args(p_stream)
+    p_stream.set_defaults(func=cmd_stream_wheel)
+
+    p_inspect = sub.add_parser("inspect", help="Inspect runtime routing packet")
+    add_runtime_source_args(p_inspect)
+    p_inspect.set_defaults(func=cmd_inspect_runtime)
+
+    p_run_route = sub.add_parser("run-route", help="Build and execute a GeoSeal route")
+    add_runtime_source_args(p_run_route)
+    p_run_route.add_argument("--timeout", type=float, default=10.0)
+    p_run_route.add_argument("--tongue", default=None)
+    p_run_route.set_defaults(func=cmd_run_route)
+
+    p_shell = sub.add_parser("shell", help="Execute a nested GeoSeal shell command")
+    p_shell.add_argument("--command", required=True)
+    p_shell.set_defaults(func=cmd_shell)
 
     p_agent = sub.add_parser("agent", help="Route a coding task via Polly + GeoSeal")
     p_agent.add_argument("task", help="Natural language coding task")
