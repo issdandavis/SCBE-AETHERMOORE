@@ -1,0 +1,82 @@
+name: Browser Research
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: 'Research query'
+        required: true
+        type: string
+      max_sources:
+        description: 'Max sources to check'
+        required: false
+        default: '5'
+        type: string
+      follow_links:
+        description: 'Follow promising links for deeper research'
+        required: false
+        default: 'false'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    name: Run Browser Research
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright fastapi uvicorn pydantic
+          python -m playwright install chromium
+          pip install -r requirements.txt || true
+
+      - name: Run research
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m agents.browser_tools research '{
+            "query": "${{ inputs.query }}",
+            "max_sources": ${{ inputs.max_sources }},
+            "follow_links": ${{ inputs.follow_links }}
+          }' | tee artifacts/research-report.json
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: research-report
+          path: artifacts/research-report.json
+          retention-days: 30
+
+      - name: Comment summary
+        if: always()
+        run: |
+          echo "## Research: ${{ inputs.query }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python -c "
+          import json, sys
+          try:
+              r = json.load(open('artifacts/research-report.json'))
+              print(f'**Sources**: {r[\"sources_checked\"]} checked')
+              print(f'**Findings**: {len(r[\"findings\"])}')
+              print(f'**Words read**: {r[\"total_words_read\"]:,}')
+              print(f'**Duration**: {r[\"duration_seconds\"]:.1f}s')
+              print()
+              print(r.get('summary', ''))
+              print()
+              for i, f in enumerate(r['findings'][:5], 1):
+                  print(f'{i}. [{f[\"title\"]}]({f[\"source_url\"]}) ({f[\"confidence\"]:.0%})')
+          except Exception as e:
+              print(f'Error: {e}')
+          " >> $GITHUB_STEP_SUMMARY
