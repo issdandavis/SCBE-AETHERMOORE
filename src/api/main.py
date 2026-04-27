@@ -91,6 +91,7 @@ from src.api.compute_routes import compute_router
 from src.api.search_routes import search_router
 from src.api.llm_routes import llm_router
 from src.api.polly_routes import polly_router
+from src.api.free_llm_routes import free_llm_router
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -156,6 +157,9 @@ app.include_router(llm_router)
 
 # Polly v2 — public assistant chat, search, email, slack, and context endpoints.
 app.include_router(polly_router)
+
+# Free LLM dispatch — Ollama, HuggingFace, offline fallback.
+app.include_router(free_llm_router)
 
 # ============================================================================
 # RATE LIMITING

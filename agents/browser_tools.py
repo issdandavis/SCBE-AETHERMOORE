@@ -284,6 +284,66 @@ async def monitor_sites(args: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Agent Bus tools (search + scrape + free LLM)
+# ---------------------------------------------------------------------------
+
+_bus = None
+
+
+async def _get_bus():
+    global _bus
+    if _bus is None:
+        from agents.agent_bus import AgentBus
+        _bus = AgentBus()
+        await _bus.start(headless=True)
+    return _bus
+
+
+@tool(
+    name="ask",
+    description="Answer a question using web research + free LLM (HuggingFace/Ollama). Searches the web, scrapes relevant pages, sends context to a free model.",
+    parameters={
+        "question": {"type": "string", "description": "The question to answer"},
+        "search_first": {"type": "boolean", "description": "Search web for context first (default true)"},
+    },
+)
+async def bus_ask(args: Dict[str, Any]) -> Dict[str, Any]:
+    bus = await _get_bus()
+    return await bus.ask(
+        args["question"],
+        search_first=args.get("search_first", True),
+    )
+
+
+@tool(
+    name="search_and_summarize",
+    description="Search the web for a topic, scrape results, and summarize with a free LLM.",
+    parameters={
+        "query": {"type": "string", "description": "Topic to research and summarize"},
+        "max_sources": {"type": "integer", "description": "Max sources (default 5)"},
+    },
+)
+async def bus_summarize(args: Dict[str, Any]) -> Dict[str, Any]:
+    bus = await _get_bus()
+    return await bus.search_and_summarize(
+        args["query"],
+        max_sources=args.get("max_sources", 5),
+    )
+
+
+@tool(
+    name="analyze_page",
+    description="Scrape a web page and analyze its content with a free LLM. Returns structured analysis.",
+    parameters={
+        "url": {"type": "string", "description": "URL to analyze"},
+    },
+)
+async def bus_analyze(args: Dict[str, Any]) -> Dict[str, Any]:
+    bus = await _get_bus()
+    return await bus.analyze_page(args["url"])
+
+
+# ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
 

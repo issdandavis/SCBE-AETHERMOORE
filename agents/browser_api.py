@@ -209,6 +209,67 @@ async def workflow_scrape(
 
 
 # ---------------------------------------------------------------------------
+# Agent Bus endpoints (search + scrape + free LLM)
+# ---------------------------------------------------------------------------
+
+@app.post("/bus/ask")
+async def bus_ask(
+    request: Request,
+    x_api_key: Optional[str] = Header(None),
+):
+    """
+    Ask a question. Searches the web, scrapes context, answers with free LLM.
+    Accepts: {"question": "What is post-quantum cryptography?"}
+    """
+    _check_auth(x_api_key)
+    body = await request.json()
+    question = body.get("question")
+    if not question:
+        raise HTTPException(status_code=400, detail="question is required")
+    return await call_tool("ask", {
+        "question": question,
+        "search_first": body.get("search_first", True),
+    })
+
+
+@app.post("/bus/summarize")
+async def bus_summarize(
+    request: Request,
+    x_api_key: Optional[str] = Header(None),
+):
+    """
+    Search and summarize a topic with free LLM.
+    Accepts: {"query": "topic", "max_sources": 5}
+    """
+    _check_auth(x_api_key)
+    body = await request.json()
+    query = body.get("query")
+    if not query:
+        raise HTTPException(status_code=400, detail="query is required")
+    return await call_tool("search_and_summarize", {
+        "query": query,
+        "max_sources": body.get("max_sources", 5),
+    })
+
+
+@app.post("/bus/analyze")
+async def bus_analyze(
+    request: Request,
+    x_api_key: Optional[str] = Header(None),
+):
+    """
+    Scrape and analyze a page with free LLM.
+    Accepts: {"url": "https://..."}
+    """
+    _check_auth(x_api_key)
+    body = await request.json()
+    url = body.get("url")
+    if not url:
+        raise HTTPException(status_code=400, detail="url is required")
+    return await call_tool("analyze_page", {"url": url})
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
