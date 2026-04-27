@@ -290,7 +290,7 @@ def _thought_field_cost_retro(
     total_energy_cost = 0.0
     total_risk_cost = 0.0
 
-    for index, chain in enumerate(chains):
+    for _index, chain in enumerate(chains):
         distance_cost = float(chain.get("distance") or 0.0)
         drift_cost = abs(float(chain.get("delta", {}).get("z") or 0.0))
         recovery_cost = float(chain.get("torsion_proxy") or 0.0) * 0.2

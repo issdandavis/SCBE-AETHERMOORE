@@ -21,6 +21,7 @@ logger = logging.getLogger("scbe.agents.research_agent")
 @dataclass
 class ResearchFinding:
     """A single finding from research."""
+
     source_url: str
     title: str
     relevant_text: str
@@ -31,6 +32,7 @@ class ResearchFinding:
 @dataclass
 class ResearchReport:
     """Structured output from a research task."""
+
     query: str
     findings: List[ResearchFinding] = field(default_factory=list)
     sources_checked: int = 0
@@ -46,16 +48,21 @@ class ResearchReport:
         lines = [f"# Research: {self.query}", ""]
         if self.summary:
             lines += [self.summary, ""]
-        lines += [f"**Sources**: {self.sources_checked} checked, "
-                  f"{len(self.findings)} relevant findings, "
-                  f"{self.total_words_read:,} words read in {self.duration_seconds:.1f}s", ""]
+        lines += [
+            f"**Sources**: {self.sources_checked} checked, "
+            f"{len(self.findings)} relevant findings, "
+            f"{self.total_words_read:,} words read in {self.duration_seconds:.1f}s",
+            "",
+        ]
         for i, f in enumerate(self.findings, 1):
             lines += [
                 f"## {i}. {f.title}",
                 f"**Source**: {f.source_url}",
                 f"**Confidence**: {f.confidence:.0%}",
                 f"**Tags**: {', '.join(f.tags)}" if f.tags else "",
-                "", f.relevant_text[:1000], ""
+                "",
+                f.relevant_text[:1000],
+                "",
             ]
         if self.errors:
             lines += ["## Errors", ""] + [f"- {e}" for e in self.errors]
@@ -147,13 +154,15 @@ class ResearchAgent:
             # Tag by content type
             tags = self._auto_tag(page)
 
-            report.findings.append(ResearchFinding(
-                source_url=page.url,
-                title=page.title,
-                relevant_text=relevant_text,
-                confidence=min(1.0, score),
-                tags=tags,
-            ))
+            report.findings.append(
+                ResearchFinding(
+                    source_url=page.url,
+                    title=page.title,
+                    relevant_text=relevant_text,
+                    confidence=min(1.0, score),
+                    tags=tags,
+                )
+            )
 
         # Step 3: Follow links for depth (if enabled and findings are thin)
         if follow_links and len(report.findings) < 3 and self.max_depth > 0:
@@ -167,13 +176,15 @@ class ResearchAgent:
                         continue
                     score = self._score_relevance(page, query_terms)
                     if score >= self.relevance_threshold:
-                        report.findings.append(ResearchFinding(
-                            source_url=page.url,
-                            title=page.title,
-                            relevant_text=self._extract_relevant_passage(page.text, query_terms),
-                            confidence=min(1.0, score),
-                            tags=self._auto_tag(page) + ["followed-link"],
-                        ))
+                        report.findings.append(
+                            ResearchFinding(
+                                source_url=page.url,
+                                title=page.title,
+                                relevant_text=self._extract_relevant_passage(page.text, query_terms),
+                                confidence=min(1.0, score),
+                                tags=self._auto_tag(page) + ["followed-link"],
+                            )
+                        )
                 except Exception as exc:
                     report.errors.append(f"Follow link {url}: {exc}")
 
@@ -185,7 +196,10 @@ class ResearchAgent:
 
         logger.info(
             "Research '%s': %d findings from %d sources in %.1fs",
-            query, len(report.findings), report.sources_checked, report.duration_seconds,
+            query,
+            len(report.findings),
+            report.sources_checked,
+            report.duration_seconds,
         )
         return report
 
@@ -216,9 +230,9 @@ class ResearchAgent:
                 "title": page.title,
                 "word_count": page.word_count,
                 "relevance": round(score, 2),
-                "key_points": [h["text"] for h in page.headings if any(
-                    t in h["text"].lower() for t in topic_terms
-                )][:5],
+                "key_points": [h["text"] for h in page.headings if any(t in h["text"].lower() for t in topic_terms)][
+                    :5
+                ],
                 "text_preview": self._extract_relevant_passage(page.text, topic_terms)[:500],
             }
             comparison["sources"].append(source)
@@ -226,6 +240,7 @@ class ResearchAgent:
 
         # Find common themes (headings appearing in multiple sources)
         from collections import Counter
+
         heading_words = Counter()
         for h in all_headings:
             for w in h.split():
@@ -245,9 +260,7 @@ class ResearchAgent:
         Quick read of multiple sites. Returns structured summaries.
         Good for dashboards and monitoring workflows.
         """
-        pages = await self.scraper.scrape_many(
-            urls, extract_text=extract_text, delay_ms=300
-        )
+        pages = await self.scraper.scrape_many(urls, extract_text=extract_text, delay_ms=300)
         return [p.summary() for p in pages]
 
     # -- internal scoring ----------------------------------------------------
@@ -324,7 +337,6 @@ class ResearchAgent:
         """Auto-tag a page by content type."""
         tags = []
         url = page.url.lower()
-        text = (page.text or "").lower()
 
         if "arxiv.org" in url:
             tags.append("academic")

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import os
 
 
 def _reload_auth_config():
