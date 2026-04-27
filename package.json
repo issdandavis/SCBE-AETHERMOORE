@@ -61,12 +61,19 @@
       "types": "./dist/src/governance/index.d.ts",
       "import": "./dist/src/governance/index.js",
       "require": "./dist/src/governance/index.js"
-    }
+    },
+    "./browser": {
+      "types": "./dist/src/browser/index.d.ts",
+      "import": "./dist/src/browser/index.js",
+      "require": "./dist/src/browser/index.js"
+    },
+    "./browser/extension": "./src/extension/manifest.json"
   },
   "files": [
     "bin",
     "dist/src",
     "dist/packages",
+    "src/extension",
     "README.md",
     "LICENSE",
     "examples/npm"

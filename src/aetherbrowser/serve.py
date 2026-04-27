@@ -156,6 +156,11 @@ async def _handle_command(ws: WebSocket, msg: dict) -> None:
         routing_preferences=routing_preferences,
         auto_cascade=auto_cascade,
     )
+    # A4: force RED gate on high-risk actions even if keyword heuristics missed
+    if plan.risk_tier == "high" and not plan.approval_required:
+        import dataclasses
+        plan = dataclasses.replace(plan, approval_required=True, review_zone="RED")
+
     assignments = plan.assignments
     squad.set_state(TongueRole.KO, AgentState.WORKING, model=plan.provider)
     await ws.send_json(feed.agent_status(Agent.KO, "working", model=plan.provider))
