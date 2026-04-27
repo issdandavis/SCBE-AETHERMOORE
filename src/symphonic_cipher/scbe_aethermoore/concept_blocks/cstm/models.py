@@ -113,10 +113,7 @@ class StoryGraph:
         # Lazy import to avoid circular dep
         import importlib
 
-        evaluator_class = getattr(
-            importlib.import_module(f"{__package__}.story_engine"),
-            "ConditionEvaluator",
-        )
+        evaluator_class = importlib.import_module(f"{__package__}.story_engine").ConditionEvaluator
         evaluator = evaluator_class()
         return [c for c in scene.choices if c.condition is None or evaluator.evaluate(c.condition, stats)]
 
