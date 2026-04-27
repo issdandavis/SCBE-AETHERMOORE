@@ -1,5 +1,16 @@
 # SCBE Production Pack Changelog
 
+## [4.0.2] - 2026-04-24
+
+### Changed
+
+- Aligned **npm** (`package.json`) and **PyPI** (`pyproject.toml`, `src/pyproject.toml`) package versions to `4.0.2` for a unified release.
+
+### Fixed
+
+- `tests/aetherbrowser/test_red_zone_integration.py`: avoid embedding the red-zone fixture title in the stubbed HuggingFace command text so a stray `download` token no longer forces a zone gate; set a dummy `HF_TOKEN` in-test so the router can select the HuggingFace provider while the lane remains stubbed.
+- `src/aetherbrowser/serve.py`: on WebSocket handler errors, send a JSON error to the client instead of only logging, so clients do not block forever on an empty read.
+
 ## [3.3.0] - 2026-03-24
 
 ### Added
