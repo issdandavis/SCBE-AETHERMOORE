@@ -69,6 +69,16 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
+      - name: Install liboqs C library
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq astyle cmake gcc ninja-build libssl-dev
+          git clone --depth 1 --branch 0.12.0 https://github.com/open-quantum-safe/liboqs.git /tmp/liboqs
+          cmake -S /tmp/liboqs -B /tmp/liboqs/build -GNinja -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr
+          ninja -C /tmp/liboqs/build
+          sudo ninja -C /tmp/liboqs/build install
+          sudo ldconfig
+
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
