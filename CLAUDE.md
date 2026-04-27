@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Property Testing** | fast-check (TS), Hypothesis (Python) |
 | **API** | FastAPI + Uvicorn (Python), Express 5 (TypeScript) |
 | **TypeScript** | ^6.0.2, target ES2022, CommonJS (`ignoreDeprecations: "6.0"`) |
-| **Package Version** | 3.3.0 (npm + PyPI synced) |
+| **Package Version** | 4.0.3 (npm + PyPI synced) |
 | **Package Entry** | `./dist/src/index.js` |
 
 ## Common Commands
