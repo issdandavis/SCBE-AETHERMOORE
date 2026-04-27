@@ -1,5 +1,5 @@
 /**
- * SCBE-AETHERMOORE v3.3.0
+ * SCBE-AETHERMOORE v4.0.3
  * Hyperbolic Geometry AI Safety & Governance Framework — 14-Layer Pipeline
  *
  * Patent Pending: USPTO #63/961,403

@@ -111,14 +111,15 @@ export function tokenizeCommand(
   return { tokenIds, tokenMeanings, unknownTokens };
 }
 
-export function canonicalSpiralAuthEnvelope(
-  envelope: Omit<SpiralAuthEnvelope, 'mac'>
-): string {
+export function canonicalSpiralAuthEnvelope(envelope: Omit<SpiralAuthEnvelope, 'mac'>): string {
   return canonicalize(envelope);
 }
 
 export function signSpiralAuthCommand(params: SpiralAuthSignParams): SpiralAuthEnvelope {
-  const { tokenIds, tokenMeanings, unknownTokens } = tokenizeCommand(params.command, params.lexicon);
+  const { tokenIds, tokenMeanings, unknownTokens } = tokenizeCommand(
+    params.command,
+    params.lexicon
+  );
   if (unknownTokens.length > 0) {
     throw new Error(`unknown command tokens: ${unknownTokens.join(',')}`);
   }
