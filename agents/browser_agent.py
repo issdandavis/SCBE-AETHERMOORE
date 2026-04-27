@@ -384,12 +384,14 @@ class SCBEBrowserAgent:
         agent_id: str = "browser-agent-001",
         agent_name: str = "SCBE Browser Agent",
         initial_trust: float = 0.7,
-        auto_escalate: bool = True
+        auto_escalate: bool = True,
+        runtime=None,
     ):
         self.agent_id = agent_id
         self.agent_name = agent_name
         self.initial_trust = initial_trust
         self.auto_escalate = auto_escalate
+        self.runtime = runtime  # PlaywrightRuntime instance or None for dry-run
 
         # Initialize components
         self.scbe = SCBEClient()
@@ -514,8 +516,11 @@ class SCBEBrowserAgent:
                 "result": result,
                 "timestamp": datetime.now(timezone.utc).isoformat()
             })
-            # In quarantine mode, we might still execute with extra logging
-            can_execute = True  # Execute but monitored
+            # Only auto-execute quarantined actions on low-risk domains
+            domain_risk = self._get_domain_risk(action.target)
+            can_execute = domain_risk < 0.5
+            if not can_execute:
+                print(f"         [QUARANTINE-BLOCKED] Domain risk {domain_risk:.2f} too high for auto-execute")
 
         elif result.needs_escalation:
             if self.auto_escalate:
@@ -563,8 +568,9 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Navigating to: {url}")
-            # In real implementation, this would use browser automation
-            # e.g., selenium, playwright, or Chrome DevTools Protocol
+            if self.runtime:
+                import asyncio
+                asyncio.get_event_loop().run_until_complete(self.runtime.navigate(url))
             return True
         return False
 
@@ -580,6 +586,9 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Clicking: {selector}")
+            if self.runtime:
+                import asyncio
+                asyncio.get_event_loop().run_until_complete(self.runtime.click(selector))
             return True
         return False
 
@@ -598,6 +607,9 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Typing into: {selector}")
+            if self.runtime:
+                import asyncio
+                asyncio.get_event_loop().run_until_complete(self.runtime.type_text(selector, text))
             return True
         return False
 
@@ -613,6 +625,9 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Submitting form: {form_selector}")
+            if self.runtime:
+                import asyncio
+                asyncio.get_event_loop().run_until_complete(self.runtime.submit_form(form_selector))
             return True
         return False
 
@@ -648,6 +663,9 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Executing script (hash: {script_hash})")
+            if self.runtime:
+                import asyncio
+                asyncio.get_event_loop().run_until_complete(self.runtime.evaluate(script))
             return True
         return False
 
