@@ -351,8 +351,8 @@
           '<div class="polly-title-row">' +
             '<div class="polly-title">Polly v2</div>' +
             '<div style="display:flex;gap:6px;align-items:center;">' +
-              '<button class="polly-close" type="button" data-role="toggle-think" aria-label="Toggle thinking mode" title="Thinking mode (uses Gemini)">💡</button>' +
-              '<button class="polly-close" type="button" data-role="toggle-settings" aria-label="Settings">&#9881;</button>' +
+              '<button class="polly-icon-btn" type="button" data-role="toggle-think" aria-label="Toggle thinking mode" title="Thinking mode (uses Gemini)">💡</button>' +
+              '<button class="polly-icon-btn" type="button" data-role="toggle-settings" aria-label="Settings">&#9881;</button>' +
               '<button class="polly-close" type="button" data-role="close" aria-label="Close">&times;</button>' +
             "</div>" +
           "</div>" +

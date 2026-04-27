@@ -17,7 +17,9 @@ import time
 from email.message import EmailMessage
 from typing import Any, Dict, List, Optional
 from urllib import request as urlrequest
+import asyncio
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote_plus
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
@@ -34,6 +36,15 @@ polly_router = APIRouter(prefix="/v1/polly", tags=["polly"])
 MAX_HISTORY_TURNS = 6
 MAX_SEARCH_RESULTS = 5
 DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+
+# Allowed recipient domains for the email relay.  Override via
+# POLLY_EMAIL_ALLOWLIST (comma-separated domains) in the environment.
+_EMAIL_ALLOWLIST_ENV = os.getenv("POLLY_EMAIL_ALLOWLIST", "").strip()
+EMAIL_ALLOWED_DOMAINS: set[str] = (
+    {d.strip().lower() for d in _EMAIL_ALLOWLIST_ENV.split(",") if d.strip()}
+    if _EMAIL_ALLOWLIST_ENV
+    else {"aethermoore.com", "scbe.dev"}
+)
 
 # ---------------------------------------------------------------------------
 # Environment helpers
@@ -53,17 +64,17 @@ def _load_env() -> None:
     with _env_lock:
         if _env_loaded:
             return
+        if os.path.isfile(ENV_FILE):
+            with open(ENV_FILE) as fh:
+                for line in fh:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, _, v = line.partition("=")
+                        k = k.strip()
+                        v = v.strip().strip("\"'")
+                        if k and v:
+                            os.environ.setdefault(k, v)
         _env_loaded = True
-    if os.path.isfile(ENV_FILE):
-        with open(ENV_FILE) as fh:
-            for line in fh:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    k, _, v = line.partition("=")
-                    k = k.strip()
-                    v = v.strip().strip("\"'")
-                    if k and v:
-                        os.environ.setdefault(k, v)
 
 
 def _gemini_key() -> Optional[str]:
@@ -391,7 +402,7 @@ async def polly_search(req: SearchRequest) -> SearchResponse:
         results=[
             SearchResult(
                 title=f"Search: {query}",
-                url=f"https://duckduckgo.com/?q={query.replace(' ', '+')}",
+                url=f"https://duckduckgo.com/?q={quote_plus(query)}",
                 excerpt=(
                     "No Tavily API key is configured. Click the link to search DuckDuckGo directly, "
                     "or add TAVILY_API_KEY to the server environment."
@@ -411,7 +422,15 @@ async def polly_email(req: EmailRequest) -> EmailResponse:
 
     Requires ``PROTONMAIL_SMTP_USER`` and ``PROTONMAIL_SMTP_TOKEN`` environment
     variables (loaded from config/connector_oauth/.env.connector.oauth).
+
+    Recipients are restricted to domains in ``EMAIL_ALLOWED_DOMAINS``
+    (override via ``POLLY_EMAIL_ALLOWLIST`` env var, comma-separated).
     """
+    # A4: recipient allowlist — prevent open relay
+    recipient_domain = req.to.rsplit("@", 1)[-1].lower()
+    if recipient_domain not in EMAIL_ALLOWED_DOMAINS:
+        return EmailResponse(ok=False, error=f"Recipient domain '{recipient_domain}' not in allowlist")
+
     user = _smtp_user()
     password = _smtp_pass()
     if not user or not password:
@@ -425,13 +444,17 @@ async def polly_email(req: EmailRequest) -> EmailResponse:
         msg["Reply-To"] = req.reply_to
     msg.set_content(req.body)
 
-    try:
+    def _send() -> str:
         context = ssl.create_default_context()
         with smtplib.SMTP(_smtp_host(), _smtp_port(), timeout=30) as server:
             server.starttls(context=context)
             server.login(user, password)
             server.send_message(msg)
-        return EmailResponse(ok=True, message_id=msg.get("Message-ID") or "sent")
+        return msg.get("Message-ID") or "sent"
+
+    try:
+        mid = await asyncio.to_thread(_send)
+        return EmailResponse(ok=True, message_id=mid)
     except Exception as exc:
         logger.exception("Polly email send failed")
         return EmailResponse(ok=False, error=str(exc))
