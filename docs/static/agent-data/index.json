@@ -1,4 +1,10 @@
 {
-  "updated": "2026-04-27T07:00:00Z",
-  "tasks": {}
+  "updated": "2026-04-27T14:49:53Z",
+  "tasks": {
+    "monitor": {
+      "file": "latest-monitor.json",
+      "updated": "2026-04-27T14:49:53Z",
+      "preview": "{'sites': [{'url': 'https://aethermoore.com/SCBE-AETHERMOORE/', 'title': 'AetherMoore Governed AI Toolkit | Dual-Layer Training Through The Six Tongues Protocol', 'description': 'Buy the AetherMoore g"
+    }
+  }
 }
