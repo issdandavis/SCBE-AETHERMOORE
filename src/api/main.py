@@ -73,6 +73,7 @@ from src.contracts.runtime_contract import inspect_runtime_packet
 from src.api.compute_routes import compute_router
 from src.api.search_routes import search_router
 from src.api.llm_routes import llm_router
+from src.api.polly_routes import polly_router
 
 try:
     from src.api.mesh_routes import mesh_router
@@ -102,6 +103,9 @@ _allowed_origins = (
         "http://127.0.0.1:3000",
         "http://127.0.0.1:8000",
         "https://aethermore-works.myshopify.com",
+        "https://api.aethermoore.com",
+        "https://aethermoore.com",
+        "https://issdandavis.github.io",
     ]
 )
 app.add_middleware(
@@ -132,6 +136,9 @@ app.include_router(search_router)
 
 # LLM proxy routes (Gemini, etc.) — server-side only (never expose vendor keys to clients).
 app.include_router(llm_router)
+
+# Polly v2 — public assistant chat, search, email, slack, and context endpoints.
+app.include_router(polly_router)
 
 # ============================================================================
 # RATE LIMITING

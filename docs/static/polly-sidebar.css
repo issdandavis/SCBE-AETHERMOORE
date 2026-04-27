@@ -74,12 +74,16 @@
   line-height: 1.45;
 }
 
-.polly-close {
+.polly-close,
+.polly-icon-btn {
   border: 0;
   background: transparent;
   color: #b2bac7;
   cursor: pointer;
   font-size: 18px;
+}
+.polly-icon-btn:hover {
+  color: #e2e8f0;
 }
 
 .polly-statusbar,
