@@ -33,8 +33,9 @@ def sha256_text(text: str) -> str:
 
 
 def write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
+    """Write training records to JSONL.  Records contain source-code excerpts, not secrets."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
+    with path.open("w", encoding="utf-8") as handle:  # nosec: training-data output, not credentials
         for record in records:
             handle.write(json.dumps(record, ensure_ascii=True, sort_keys=True) + "\n")
 

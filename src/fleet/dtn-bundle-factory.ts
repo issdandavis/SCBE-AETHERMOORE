@@ -21,7 +21,6 @@
 
 import type { FleetTask, GovernanceTier, TaskPriority } from './types.js';
 import type { MessagePriority } from './crawl-message-bus.js';
-import type { NodeState } from './node-kernel.js';
 import {
   BundleTongue,
   DTNBundle,
