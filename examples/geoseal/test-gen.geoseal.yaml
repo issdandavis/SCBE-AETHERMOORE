@@ -1,0 +1,18 @@
+name: test-gen
+description: Generate a pytest case for the input snippet, then seal it.
+default_tongue: KO
+default_max_tier: ESCALATE
+
+steps:
+  - id: write_test
+    op: agent
+    task: |
+      Write a single pytest function that exercises the happy path of:
+      ${input}
+    tongue: KO
+
+  - id: seal_test
+    op: seal
+    task: ${steps.write_test.code}
+    tongue: CA
+    max_tier: ALLOW

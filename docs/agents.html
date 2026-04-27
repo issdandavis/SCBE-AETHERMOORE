@@ -30,6 +30,10 @@
     }
     .trigger-form button { background: #238636; border-color: #238636; cursor: pointer; color: #fff; }
     .trigger-form button:hover { background: #2ea043; }
+    .empty-state { background: #161b22; border: 1px dashed #3d444d; border-radius: 8px; padding: 1.25rem; color: #8b949e; line-height: 1.6; }
+    .empty-state strong { color: #e6edf3; }
+    .empty-state a { color: #58a6ff; text-decoration: none; }
+    .empty-state ul { margin: 0.75rem 0 0 1.25rem; }
   </style>
 </head>
 <body>
@@ -66,7 +70,7 @@
         var index = await resp.json();
 
         if (!index.tasks || Object.keys(index.tasks).length === 0) {
-          container.innerHTML = '<p>No agent results yet. Trigger a task above or wait for the scheduled run.</p>';
+          container.innerHTML = emptyState(index.updated);
           return;
         }
 
@@ -86,8 +90,20 @@
           loadTask(task, info.file);
         }
       } catch (e) {
-        container.innerHTML = '<p>No agent data published yet. The Agent Router runs every 6 hours or on demand.</p>';
+        container.innerHTML = emptyState(null);
       }
+    }
+
+    function emptyState(updated) {
+      return '<div class="empty-state">'
+        + '<strong>Agent Router is installed; no public task results are published yet.</strong>'
+        + '<p>This page is wired to <code>static/agent-data/index.json</code>. When the router writes task outputs, this dashboard will render them automatically.</p>'
+        + '<ul>'
+        + '<li>Data status: ' + (updated ? 'index last touched ' + updated : 'no readable data index') + '</li>'
+        + '<li>Run path: <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/agent-router.yml" target="_blank" rel="noopener">GitHub Actions Agent Router</a></li>'
+        + '<li>Safe behavior: empty data is shown as pending, not as a broken dashboard.</li>'
+        + '</ul>'
+        + '</div>';
     }
 
     async function loadTask(task, file) {
