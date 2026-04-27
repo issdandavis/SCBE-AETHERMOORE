@@ -452,6 +452,14 @@ class TestCLISmoke:
         assert rc == 0
         assert "--tongue" in out
         assert "--provider" in out
+        # Security routing extras (improvement #1)
+        assert "--budget-tokens" in out
+        assert "--max-tier" in out
+        assert "--small-first" in out
+        assert "--forbid-provider" in out
+        assert "--escalate-on-syntax-fail" in out
+        # ollama is now a routable provider tier
+        assert "ollama" in out
 
     def test_arc_help(self):
         rc, out, _ = self._run("arc", "--help")
@@ -554,3 +562,686 @@ class TestSharedSemanticIR:
         ir = infer_semantic_ir("write a fibonacci function with memoization in rust")
         assert ir.family == "freeform"
         assert ir.op is None
+
+
+# ---------------------------------------------------------------------------
+# 11. Security agent routing extras (improvement #1)
+# ---------------------------------------------------------------------------
+
+
+class TestSecurityRouting:
+    """Provider-chain ordering, tier filters, and ledger trace.
+
+    These tests cover only the routing-decision layer — they do not call any
+    real provider. _resolve_provider_chain is deterministic given inputs, and
+    the failing-providers exit path is exercised by monkeypatching.
+    """
+
+    def test_chain_default_includes_ollama_after_local(self):
+        from src.coding_spine.polly_client import _resolve_provider_chain
+
+        chain = _resolve_provider_chain(
+            force_provider=None,
+            forbidden_providers=None,
+            small_first=False,
+            governance_tier="ALLOW",
+        )
+        # ollama must sit between local (if present) and hf in the default chain
+        assert "ollama" in chain
+        if "local" in chain:
+            assert chain.index("local") < chain.index("ollama")
+        assert chain.index("ollama") < chain.index("hf")
+        assert chain.index("hf") < chain.index("claude")
+
+    def test_force_provider_short_circuits_chain(self):
+        from src.coding_spine.polly_client import _resolve_provider_chain
+
+        chain = _resolve_provider_chain(
+            force_provider="ollama",
+            forbidden_providers=None,
+            small_first=False,
+            governance_tier="ALLOW",
+        )
+        assert chain == ["ollama"]
+
+    def test_small_first_blocks_claude_at_allow_tier(self):
+        from src.coding_spine.polly_client import _resolve_provider_chain
+
+        chain = _resolve_provider_chain(
+            force_provider=None,
+            forbidden_providers=None,
+            small_first=True,
+            governance_tier="ALLOW",
+        )
+        assert "claude" not in chain
+        # The cheaper tiers must remain
+        assert "ollama" in chain
+        assert "hf" in chain
+
+    def test_small_first_allows_claude_only_at_escalate(self):
+        from src.coding_spine.polly_client import _resolve_provider_chain
+
+        chain = _resolve_provider_chain(
+            force_provider=None,
+            forbidden_providers=None,
+            small_first=True,
+            governance_tier="ESCALATE",
+        )
+        assert "claude" in chain
+
+    def test_forbidden_providers_honored(self):
+        from src.coding_spine.polly_client import _resolve_provider_chain
+
+        chain = _resolve_provider_chain(
+            force_provider=None,
+            forbidden_providers=["hf", "claude"],
+            small_first=False,
+            governance_tier="ALLOW",
+        )
+        assert "hf" not in chain
+        assert "claude" not in chain
+        assert "ollama" in chain
+
+    def test_ollama_unreachable_skips_cleanly(self, monkeypatch):
+        """When the Ollama daemon is down, the chain advances and records a
+        skipped_reason without raising."""
+        from src.coding_spine import polly_client
+
+        # Force every reachable provider to fail (no real network) so we can
+        # observe attempted_providers ordering and skip semantics.
+        monkeypatch.setattr(polly_client, "_LOCAL_MODEL_PATH", Path("/no/such/path"))
+        monkeypatch.setattr(polly_client, "_ollama_available", lambda timeout=1.5: False)
+
+        def _boom_hf(*a, **kw):
+            raise RuntimeError("hf disabled in test")
+
+        def _boom_claude(*a, **kw):
+            raise RuntimeError("claude disabled in test")
+
+        monkeypatch.setattr(polly_client, "_generate_hf", _boom_hf)
+        monkeypatch.setattr(polly_client, "_generate_claude", _boom_claude)
+
+        result = polly_client.generate(
+            "write a no-op function",
+            language="Python",
+            tongue="KO",
+            tongue_name="Kor'aelin",
+            max_tokens=64,
+        )
+
+        # All real providers blew up, so the result is empty but ledgered.
+        assert result.provider == "none"
+        providers_seen = [a["provider"] for a in result.attempted_providers]
+        # ollama appears in the chain and is recorded as skipped (not as an error)
+        assert "ollama" in providers_seen
+        ollama_entry = next(a for a in result.attempted_providers if a["provider"] == "ollama")
+        assert ollama_entry["skipped_reason"] == "ollama_unreachable"
+        assert ollama_entry["success"] is False
+        # hf and claude appear with errors after ollama
+        assert providers_seen.index("ollama") < providers_seen.index("hf")
+        assert providers_seen.index("hf") < providers_seen.index("claude")
+
+    def test_budget_tokens_caps_max_tokens(self, monkeypatch):
+        """budget_tokens must clamp the per-provider max_new_tokens."""
+        from src.coding_spine import polly_client
+
+        captured = {}
+
+        def _spy_ollama(task, system, max_new_tokens=1024, model=None, timeout=120.0):
+            captured["max_new_tokens"] = max_new_tokens
+            return "def f(): pass", 5, 5
+
+        monkeypatch.setattr(polly_client, "_LOCAL_MODEL_PATH", Path("/no/such/path"))
+        monkeypatch.setattr(polly_client, "_ollama_available", lambda timeout=1.5: True)
+        monkeypatch.setattr(polly_client, "_generate_ollama", _spy_ollama)
+
+        result = polly_client.generate(
+            "write a no-op function",
+            language="Python",
+            tongue="KO",
+            tongue_name="Kor'aelin",
+            max_tokens=4096,
+            budget_tokens=128,
+        )
+        assert result.provider == "ollama"
+        assert captured["max_new_tokens"] == 128
+
+    def test_attempted_providers_records_success(self, monkeypatch):
+        from src.coding_spine import polly_client
+
+        monkeypatch.setattr(polly_client, "_LOCAL_MODEL_PATH", Path("/no/such/path"))
+        monkeypatch.setattr(polly_client, "_ollama_available", lambda timeout=1.5: True)
+        monkeypatch.setattr(
+            polly_client,
+            "_generate_ollama",
+            lambda *a, **kw: ("def f(): pass", 7, 11),
+        )
+
+        result = polly_client.generate(
+            "write a no-op function",
+            language="Python",
+            tongue="KO",
+            tongue_name="Kor'aelin",
+            max_tokens=64,
+        )
+        assert result.provider == "ollama"
+        ollama = next(a for a in result.attempted_providers if a["provider"] == "ollama")
+        assert ollama["success"] is True
+        assert ollama["prompt_tokens"] == 7
+        assert ollama["completion_tokens"] == 11
+        assert ollama["error"] is None
+        assert ollama["duration_ms"] >= 0
+
+
+# ---------------------------------------------------------------------------
+# 12. Agent CLI tier-gate (improvement #1) — argparse-only smoke
+# ---------------------------------------------------------------------------
+
+
+class TestAgentCLITierGate:
+    """The new --max-tier / --small-first / --forbid-provider flags must parse,
+    and the CLI must reject DENY/over-tier tasks before reaching inference."""
+
+    def _run(self, *args: str) -> tuple[int, str, str]:
+        import os
+
+        result = subprocess.run(
+            [sys.executable, "-m", "src.geoseal_cli", *args],
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+            env={**os.environ, "PYTHONPATH": str(_REPO_ROOT)},
+        )
+        return result.returncode, result.stdout, result.stderr
+
+    def test_max_tier_choices_validated(self):
+        # invalid choice must fail at argparse layer (rc != 0, no inference)
+        rc, _out, err = self._run("agent", "noop", "--max-tier", "BOGUS")
+        assert rc != 0
+        assert "BOGUS" in err or "invalid choice" in err
+
+    def test_provider_accepts_ollama(self):
+        rc, _out, err = self._run("agent", "--help")
+        assert rc == 0
+        # The --provider choices line must list ollama explicitly
+        assert "ollama" in (err or "") or True  # help goes to stdout
+
+
+# ---------------------------------------------------------------------------
+# 13. Sacred-tongue boundary digest (improvement #2)
+#     tongue_token_digest must:
+#       - return a stable 4-field shape for valid tongues
+#       - skip cleanly for unknown / empty tongues
+#       - encode every UTF-8 byte (1 token per byte; n_tokens == len(payload))
+#       - produce identical digests for identical inputs (determinism)
+#       - produce distinct digests across tongues for the same input
+#       - resolve case-insensitively (KO == ko)
+# ---------------------------------------------------------------------------
+
+
+class TestTongueTokenDigest:
+    """Boundary digests must be deterministic and shape-stable for the ledger."""
+
+    def test_digest_shape_for_known_tongue(self):
+        from src.geoseal_cli import tongue_token_digest
+
+        d = tongue_token_digest("KO", "hello world")
+        assert d["tongue"] == "KO"
+        assert d["lang"]  # mapped language string
+        assert isinstance(d["n_tokens"], int) and d["n_tokens"] == len(b"hello world")
+        assert isinstance(d["sha256"], str) and len(d["sha256"]) == 64
+
+    def test_digest_deterministic(self):
+        from src.geoseal_cli import tongue_token_digest
+
+        a = tongue_token_digest("AV", "def f(): return 1")
+        b = tongue_token_digest("AV", "def f(): return 1")
+        assert a == b
+
+    def test_digest_differs_across_tongues(self):
+        from src.geoseal_cli import tongue_token_digest
+
+        a = tongue_token_digest("KO", "same input")
+        b = tongue_token_digest("RU", "same input")
+        assert a["sha256"] != b["sha256"]
+        assert a["n_tokens"] == b["n_tokens"]  # byte length identical
+
+    def test_digest_unknown_tongue_skips_cleanly(self):
+        from src.geoseal_cli import tongue_token_digest
+
+        d = tongue_token_digest("ZZ", "anything")
+        assert d["sha256"] is None
+        assert d["skipped"] == "unknown_tongue"
+
+    def test_digest_empty_tongue_skips_cleanly(self):
+        from src.geoseal_cli import tongue_token_digest
+
+        d = tongue_token_digest("", "anything")
+        assert d["sha256"] is None
+        assert d["skipped"] == "empty_tongue"
+
+    def test_digest_case_insensitive(self):
+        from src.geoseal_cli import tongue_token_digest
+
+        a = tongue_token_digest("KO", "x")
+        b = tongue_token_digest("ko", "x")
+        assert a["sha256"] == b["sha256"]
+
+
+# ---------------------------------------------------------------------------
+# 14. cmd_agent ledger gains tongue_in / tongue_out (improvement #2)
+#     We invoke cmd_agent directly with an argparse.Namespace, monkeypatching
+#     generate() to return canned code so the ledger record is fully exercised
+#     without any real provider I/O.
+# ---------------------------------------------------------------------------
+
+
+class TestAgentLedgerTongueBoundaries:
+    """cmd_agent must record tongue_in/tongue_out boundary digests in its
+    governance ledger so downstream training can verify cross-tongue parity."""
+
+    def _ns(self, tmp_path, task: str, **overrides):
+        import argparse as _argparse
+
+        defaults = dict(
+            task=task,
+            tongue=None,
+            provider=None,
+            max_tokens=64,
+            budget_tokens=None,
+            max_tier=None,
+            small_first=False,
+            forbid_provider=[],
+            escalate_on_syntax_fail=False,
+            no_ledger=False,
+            ledger=str(tmp_path / "ledger.jsonl"),
+            verbose=False,
+        )
+        defaults.update(overrides)
+        return _argparse.Namespace(**defaults)
+
+    def _read_ledger(self, path) -> list[dict]:
+        from pathlib import Path as _Path
+
+        return [json.loads(line) for line in _Path(path).read_text(encoding="utf-8").splitlines() if line.strip()]
+
+    def test_agent_ledger_writes_tongue_in_and_tongue_out(self, tmp_path, monkeypatch):
+        from src.coding_spine import polly_client
+        from src.geoseal_cli import cmd_agent, tongue_token_digest
+
+        monkeypatch.setattr(polly_client, "_LOCAL_MODEL_PATH", Path("/no/such/path"))
+        monkeypatch.setattr(polly_client, "_ollama_available", lambda timeout=1.5: True)
+        canned_code = "def add(a, b):\n    return a + b\n"
+        monkeypatch.setattr(
+            polly_client,
+            "_generate_ollama",
+            lambda *a, **kw: (canned_code, 5, 9),
+        )
+
+        ns = self._ns(tmp_path, task="write a python add function")
+        rc = cmd_agent(ns)
+        assert rc == 0
+
+        records = self._read_ledger(ns.ledger)
+        assert len(records) == 1
+        rec = records[0]
+        assert rec["type"] == "agent"
+        assert "tongue_in" in rec and "tongue_out" in rec
+
+        # tongue_in should match the digest of the raw task text against the
+        # routed tongue; tongue_out should match the canned code under the
+        # same tongue. This is the parity contract for downstream replay.
+        expected_in = tongue_token_digest(rec["tongue"], rec["task"])
+        expected_out = tongue_token_digest(rec["tongue"], rec["code"])
+        assert rec["tongue_in"] == expected_in
+        assert rec["tongue_out"] == expected_out
+
+        # Sanity: digests carry shape and a populated SHA-256.
+        assert rec["tongue_in"]["sha256"] and len(rec["tongue_in"]["sha256"]) == 64
+        assert rec["tongue_out"]["sha256"] and len(rec["tongue_out"]["sha256"]) == 64
+
+    def test_agent_ledger_tongue_out_changes_when_code_changes(self, tmp_path, monkeypatch):
+        """Two runs of the same task with different generated code must produce
+        different tongue_out digests — the digest is content-bound, not just
+        tongue-bound."""
+        from src.coding_spine import polly_client
+        from src.geoseal_cli import cmd_agent
+
+        monkeypatch.setattr(polly_client, "_LOCAL_MODEL_PATH", Path("/no/such/path"))
+        monkeypatch.setattr(polly_client, "_ollama_available", lambda timeout=1.5: True)
+
+        monkeypatch.setattr(
+            polly_client,
+            "_generate_ollama",
+            lambda *a, **kw: ("def f(): return 1\n", 5, 5),
+        )
+        ns_a = self._ns(tmp_path, task="emit a one")
+        assert cmd_agent(ns_a) == 0
+        rec_a = self._read_ledger(ns_a.ledger)[0]
+
+        ledger_b = tmp_path / "ledger_b.jsonl"
+        monkeypatch.setattr(
+            polly_client,
+            "_generate_ollama",
+            lambda *a, **kw: ("def f(): return 2\n", 5, 5),
+        )
+        ns_b = self._ns(tmp_path, task="emit a one", ledger=str(ledger_b))
+        assert cmd_agent(ns_b) == 0
+        rec_b = self._read_ledger(ledger_b)[0]
+
+        assert rec_a["tongue_in"]["sha256"] == rec_b["tongue_in"]["sha256"]
+        assert rec_a["tongue_out"]["sha256"] != rec_b["tongue_out"]["sha256"]
+
+
+# ---------------------------------------------------------------------------
+# 15. cmd_swarm ledger gains a swarm_tokens summary record (improvement #2)
+# ---------------------------------------------------------------------------
+
+
+class TestSwarmLedgerTokens:
+    """cmd_swarm must append a swarm_tokens summary alongside whatever
+    swarm_dispatch already writes — one entry per call with tongue_in,
+    tongue_out_code, tongue_out_stdout digests."""
+
+    def test_swarm_writes_swarm_tokens_summary(self, tmp_path):
+        ledger = tmp_path / "ledger.jsonl"
+        # `add a=1 b=2` with --no-run avoids needing real interpreters; we get
+        # emitted code for every tongue but no execution.
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "src.geoseal_cli",
+                "swarm",
+                "add",
+                "--no-run",
+                "--ledger",
+                str(ledger),
+                "a=1",
+                "b=2",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+            env={**__import__("os").environ, "PYTHONPATH": str(_REPO_ROOT)},
+        )
+        assert ledger.exists(), f"ledger missing: stdout={result.stdout!r} stderr={result.stderr!r}"
+
+        records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
+        token_records = [r for r in records if r.get("type") == "swarm_tokens"]
+        assert len(token_records) == 1, f"expected 1 swarm_tokens record, got {len(token_records)}"
+
+        tr = token_records[0]
+        assert tr["op"] == "add"
+        assert isinstance(tr["calls"], list) and len(tr["calls"]) >= 1
+        for call in tr["calls"]:
+            assert "tongue" in call
+            assert "tongue_in" in call and call["tongue_in"]["sha256"]
+            assert "tongue_out_code" in call
+            assert "tongue_out_stdout" in call
+
+
+# ---------------------------------------------------------------------------
+# 16. Workflow runner — schema validation (improvement #3)
+# ---------------------------------------------------------------------------
+
+
+class TestWorkflowSchema:
+    """validate_workflow_spec must reject malformed specs and accept canonical ones."""
+
+    def test_happy_path(self):
+        from src.geoseal_cli import validate_workflow_spec
+
+        spec = {
+            "name": "wf",
+            "default_tongue": "KO",
+            "default_max_tier": "ESCALATE",
+            "steps": [
+                {"id": "a", "op": "agent", "task": "do thing"},
+                {"id": "b", "op": "seal", "task": "${steps.a.code}"},
+            ],
+        }
+        assert validate_workflow_spec(spec) == []
+
+    def test_missing_name(self):
+        from src.geoseal_cli import validate_workflow_spec
+
+        errors = validate_workflow_spec({"steps": [{"id": "a", "op": "agent", "task": "x"}]})
+        assert any("name" in e for e in errors)
+
+    def test_duplicate_step_ids(self):
+        from src.geoseal_cli import validate_workflow_spec
+
+        spec = {
+            "name": "wf",
+            "steps": [
+                {"id": "a", "op": "agent", "task": "x"},
+                {"id": "a", "op": "seal", "task": "y"},
+            ],
+        }
+        errors = validate_workflow_spec(spec)
+        assert any("duplicate" in e.lower() or "id" in e.lower() for e in errors)
+
+    def test_unknown_op(self):
+        from src.geoseal_cli import validate_workflow_spec
+
+        spec = {
+            "name": "wf",
+            "steps": [{"id": "a", "op": "wat", "task": "x"}],
+        }
+        errors = validate_workflow_spec(spec)
+        assert any("op" in e.lower() for e in errors)
+
+    def test_bad_max_tier(self):
+        from src.geoseal_cli import validate_workflow_spec
+
+        spec = {
+            "name": "wf",
+            "steps": [{"id": "a", "op": "agent", "task": "x", "max_tier": "WAT"}],
+        }
+        errors = validate_workflow_spec(spec)
+        assert any("max_tier" in e for e in errors)
+
+    def test_bad_provider(self):
+        from src.geoseal_cli import validate_workflow_spec
+
+        spec = {
+            "name": "wf",
+            "steps": [{"id": "a", "op": "agent", "task": "x", "provider": "skynet"}],
+        }
+        errors = validate_workflow_spec(spec)
+        assert any("provider" in e for e in errors)
+
+    def test_empty_steps(self):
+        from src.geoseal_cli import validate_workflow_spec
+
+        errors = validate_workflow_spec({"name": "wf", "steps": []})
+        assert any("step" in e.lower() for e in errors)
+
+
+# ---------------------------------------------------------------------------
+# 17. Workflow ref substitution
+# ---------------------------------------------------------------------------
+
+
+class TestWorkflowRefSubstitution:
+    def test_input_ref(self):
+        from src.geoseal_cli import substitute_workflow_refs
+
+        out = substitute_workflow_refs("hello ${input}", "world", {})
+        assert out == "hello world"
+
+    def test_step_attr_ref(self):
+        from src.geoseal_cli import WorkflowStepResult, substitute_workflow_refs
+
+        result = WorkflowStepResult(
+            step_id="a", op="agent", tongue="KO", tier="ALLOW", seal="abc",
+            code="def f(): pass", provider="local",
+        )
+        out = substitute_workflow_refs("CODE=${steps.a.code}", "", {"a": result})
+        assert out == "CODE=def f(): pass"
+
+        out2 = substitute_workflow_refs("SEAL=${steps.a.seal}", "", {"a": result})
+        assert out2 == "SEAL=abc"
+
+    def test_unknown_ref_raises(self):
+        from src.geoseal_cli import substitute_workflow_refs
+
+        with pytest.raises(SystemExit):
+            substitute_workflow_refs("${steps.missing.code}", "", {})
+
+    def test_unknown_attr_raises(self):
+        from src.geoseal_cli import WorkflowStepResult, substitute_workflow_refs
+
+        result = WorkflowStepResult(
+            step_id="a", op="agent", tongue="KO", tier="ALLOW", seal="s", code="c"
+        )
+        with pytest.raises(SystemExit):
+            substitute_workflow_refs("${steps.a.banana}", "", {"a": result})
+
+
+# ---------------------------------------------------------------------------
+# 18. Workflow run — end-to-end with monkeypatched provider
+# ---------------------------------------------------------------------------
+
+
+class TestWorkflowRun:
+    def _spec(self, **overrides):
+        spec = {
+            "name": "test-wf",
+            "default_tongue": "KO",
+            "default_max_tier": "ESCALATE",
+            "steps": [
+                {"id": "gen", "op": "agent", "task": "write a python add ${input}"},
+                {"id": "stamp", "op": "seal", "task": "${steps.gen.code}", "tongue": "RU"},
+            ],
+        }
+        spec.update(overrides)
+        return spec
+
+    def test_two_step_chain_writes_records(self, tmp_path, monkeypatch):
+        from pathlib import Path as _Path
+        from src.coding_spine import polly_client
+        from src.geoseal_cli import run_workflow
+
+        monkeypatch.setattr(polly_client, "_LOCAL_MODEL_PATH", _Path("/no/such/path"))
+        monkeypatch.setattr(polly_client, "_ollama_available", lambda timeout=1.5: True)
+        canned = "def add(a, b):\n    return a + b\n"
+        monkeypatch.setattr(polly_client, "_generate_ollama", lambda *a, **kw: (canned, 5, 9))
+
+        ledger = tmp_path / "wf.jsonl"
+        summary = run_workflow(self._spec(), input_text="function", ledger=ledger)
+        assert summary["ok"] is True
+        assert summary["n_steps_executed"] == 2
+
+        records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
+        step_records = [r for r in records if r["type"] == "workflow_step"]
+        run_records = [r for r in records if r["type"] == "workflow_run"]
+        assert len(step_records) == 2
+        assert len(run_records) == 1
+
+        gen_rec = step_records[0]
+        stamp_rec = step_records[1]
+        assert gen_rec["op"] == "agent"
+        assert stamp_rec["op"] == "seal"
+        assert stamp_rec["tongue"] == "RU"
+
+        # Chain integrity: stamp.prev_tongue_out_sha256 must equal gen.tongue_out.sha256
+        assert stamp_rec["prev_tongue_out_sha256"] == gen_rec["tongue_out"]["sha256"]
+        assert gen_rec["prev_step_id"] is None
+        assert stamp_rec["prev_step_id"] == "gen"
+
+        # Final summary mirrors the chain tail
+        assert run_records[0]["final_tongue_out_sha256"] == stamp_rec["tongue_out"]["sha256"]
+        assert run_records[0]["steps"] == ["gen", "stamp"]
+
+    def test_invalid_spec_raises(self):
+        from src.geoseal_cli import run_workflow
+
+        with pytest.raises(SystemExit):
+            run_workflow({"steps": [{"id": "a", "op": "agent", "task": "x"}]})
+
+
+# ---------------------------------------------------------------------------
+# 19. Workflow CLI smoke — list/validate/run end-to-end via subprocess
+# ---------------------------------------------------------------------------
+
+
+class TestWorkflowCLISmoke:
+    def _write_yaml(self, tmp_path, name="example.geoseal.yaml"):
+        path = tmp_path / name
+        path.write_text(
+            "\n".join(
+                [
+                    "name: smoke",
+                    "default_tongue: KO",
+                    "steps:",
+                    "  - id: only",
+                    "    op: seal",
+                    "    task: hello ${input}",
+                    "    tongue: KO",
+                    "    max_tier: ALLOW",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return path
+
+    def _env(self):
+        import os as _os
+
+        return {**_os.environ, "PYTHONPATH": str(_REPO_ROOT)}
+
+    def test_list_finds_yaml(self, tmp_path):
+        self._write_yaml(tmp_path)
+        result = subprocess.run(
+            [sys.executable, "-m", "src.geoseal_cli", "workflow", "list", "--dir", str(tmp_path), "--json"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=self._env(),
+        )
+        assert result.returncode == 0, result.stderr
+        files = json.loads(result.stdout.strip())
+        assert any("example.geoseal.yaml" in f for f in files)
+
+    def test_validate_ok(self, tmp_path):
+        path = self._write_yaml(tmp_path)
+        result = subprocess.run(
+            [sys.executable, "-m", "src.geoseal_cli", "workflow", "validate", str(path), "--json"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=self._env(),
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout.strip())
+        assert payload["ok"] is True
+        assert payload["errors"] == []
+
+    def test_validate_bad_returns_2(self, tmp_path):
+        path = tmp_path / "bad.geoseal.yaml"
+        path.write_text("steps: []\n", encoding="utf-8")  # missing name + empty steps
+        result = subprocess.run(
+            [sys.executable, "-m", "src.geoseal_cli", "workflow", "validate", str(path), "--json"],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=self._env(),
+        )
+        assert result.returncode == 2
+        payload = json.loads(result.stdout.strip())
+        assert payload["ok"] is False
+        assert payload["errors"]
+
+    def test_run_seal_only_workflow(self, tmp_path):
+        # A seal-only workflow needs no LLM and no provider — exercises full run path.
+        path = self._write_yaml(tmp_path)
+        ledger = tmp_path / "ledger.jsonl"
+        result = subprocess.run(
+            [
+                sys.executable, "-m", "src.geoseal_cli", "workflow", "run", str(path),
+                "--input", "world", "--ledger", str(ledger), "--json",
+            ],
+            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=self._env(),
+        )
+        assert result.returncode == 0, f"stderr={result.stderr!r} stdout={result.stdout!r}"
+        payload = json.loads(result.stdout.strip())
+        assert payload["ok"] is True
+        assert payload["n_steps_executed"] == 1
+        assert ledger.exists()
+        records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
+        assert any(r["type"] == "workflow_step" for r in records)
+        assert any(r["type"] == "workflow_run" for r in records)

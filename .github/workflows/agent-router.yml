@@ -29,6 +29,7 @@ permissions:
   contents: write
   pages: write
   pull-requests: write
+  id-token: write
 
 concurrency:
   group: agent-router
@@ -151,6 +152,21 @@ jobs:
             json.dump(index, fh, indent=2)
           print(f'Index: {len(index[\"tasks\"])} tasks')
           "
+
+      - name: Setup Pages
+        if: steps.task.outputs.publish == 'true'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: steps.task.outputs.publish == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+      - name: Deploy Pages data
+        if: steps.task.outputs.publish == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
 
       - name: Commit and push results via PR
         if: steps.task.outputs.publish == 'true'

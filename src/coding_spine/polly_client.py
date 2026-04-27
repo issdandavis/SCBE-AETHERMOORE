@@ -19,9 +19,13 @@ Usage:
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import textwrap
+import time
+import urllib.error
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
@@ -31,6 +35,17 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 _LOCAL_MODEL_PATH = _REPO_ROOT / "artifacts" / "merged" / "polly-r8-merged-1.5b"
 _HF_MODEL_ID = "issdandavis/polly-r8-merged-qwen-1.5b"
 _CLAUDE_MODEL = "claude-sonnet-4-6"
+
+# Ollama defaults — override via OLLAMA_HOST / OLLAMA_MODEL env vars
+_OLLAMA_HOST_DEFAULT = "http://localhost:11434"
+_OLLAMA_MODEL_DEFAULT = "qwen2.5-coder:1.5b"
+_OLLAMA_HEALTH_TIMEOUT = 1.5  # seconds — short so chain advances fast when down
+
+# Ordered list of provider tiers (cheapest/safest first).
+PROVIDER_TIERS = ("local", "ollama", "hf", "claude")
+
+# Governance tiers in ascending severity (lower index = more permissive).
+_GOVERNANCE_TIERS = ("ALLOW", "QUARANTINE", "ESCALATE", "DENY")
 
 # System prompt template — filled with tongue/language at call time
 _SYSTEM_TEMPLATE = textwrap.dedent("""\
@@ -53,7 +68,7 @@ _FENCE_RE = re.compile(r"```[a-zA-Z0-9_+-]*\n?(.*?)```", re.DOTALL)
 class GenerateResult:
     code: str  # Extracted code (fences stripped)
     raw: str  # Full model output
-    provider: str  # "local", "hf", "claude"
+    provider: str  # "local", "ollama", "hf", "claude", "none"
     model: str  # Model ID / path used
     language: str
     tongue: str
@@ -61,6 +76,10 @@ class GenerateResult:
     completion_tokens: int = 0
     error: Optional[str] = None
     extra: dict = field(default_factory=dict)
+    # Ordered ledger of provider attempts (success or failure). Each entry:
+    # {provider, model, duration_ms, prompt_tokens, completion_tokens,
+    #  error (str|None), success (bool), skipped_reason (str|None)}
+    attempted_providers: list[dict] = field(default_factory=list)
 
 
 def _strip_fences(text: str) -> str:
@@ -119,7 +138,65 @@ def _generate_local(
 
 
 # ---------------------------------------------------------------------------
-# Provider 2 — HF Inference API
+# Provider 2 — Ollama (local HTTP, zero-cost)
+# ---------------------------------------------------------------------------
+
+
+def _ollama_host() -> str:
+    return os.environ.get("OLLAMA_HOST", _OLLAMA_HOST_DEFAULT).rstrip("/")
+
+
+def _ollama_model() -> str:
+    return os.environ.get("OLLAMA_MODEL", _OLLAMA_MODEL_DEFAULT)
+
+
+def _ollama_available(timeout: float = _OLLAMA_HEALTH_TIMEOUT) -> bool:
+    """Return True if the Ollama server responds to GET /api/tags."""
+    try:
+        req = urllib.request.Request(_ollama_host() + "/api/tags", method="GET")
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return 200 <= resp.status < 300
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError):
+        return False
+
+
+def _generate_ollama(
+    task: str,
+    system: str,
+    max_new_tokens: int = 1024,
+    model: Optional[str] = None,
+    timeout: float = 120.0,
+) -> tuple[str, int, int]:
+    """POST /api/chat to a local Ollama daemon. Returns (raw, prompt_tok, completion_tok)."""
+    model = model or _ollama_model()
+    body = {
+        "model": model,
+        "stream": False,
+        "messages": [
+            {"role": "system", "content": system},
+            {"role": "user", "content": task},
+        ],
+        "options": {
+            "num_predict": max_new_tokens,
+            "temperature": 0.1,
+        },
+    }
+    req = urllib.request.Request(
+        _ollama_host() + "/api/chat",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        payload = json.loads(resp.read().decode("utf-8"))
+    raw = (payload.get("message") or {}).get("content", "") or ""
+    pt = int(payload.get("prompt_eval_count", 0) or 0)
+    ct = int(payload.get("eval_count", 0) or 0)
+    return raw.strip(), pt, ct
+
+
+# ---------------------------------------------------------------------------
+# Provider 3 — HF Inference API
 # ---------------------------------------------------------------------------
 
 
@@ -171,7 +248,7 @@ def _generate_hf(
 
 
 # ---------------------------------------------------------------------------
-# Provider 3 — Claude API fallback
+# Provider 4 — Claude API fallback
 # ---------------------------------------------------------------------------
 
 
@@ -201,6 +278,41 @@ def _generate_claude(
 # ---------------------------------------------------------------------------
 
 
+def _provider_model(provider: str) -> str:
+    if provider == "local":
+        return str(_LOCAL_MODEL_PATH)
+    if provider == "ollama":
+        return _ollama_model()
+    if provider == "hf":
+        return _HF_MODEL_ID
+    if provider == "claude":
+        return _CLAUDE_MODEL
+    return provider
+
+
+def _resolve_provider_chain(
+    force_provider: Optional[str],
+    forbidden_providers: Optional[list[str]],
+    small_first: bool,
+    governance_tier: Optional[str],
+) -> list[str]:
+    """Build the ordered provider chain, honoring force/forbid/small-first."""
+    if force_provider:
+        chain = [force_provider]
+    else:
+        chain = []
+        if _LOCAL_MODEL_PATH.exists():
+            chain.append("local")
+        chain.extend(["ollama", "hf", "claude"])
+
+    forbid = set(forbidden_providers or [])
+    if small_first and (governance_tier or "ALLOW") != "ESCALATE":
+        # In small-first mode, Claude is reserved for ESCALATE-tier work
+        forbid.add("claude")
+
+    return [p for p in chain if p not in forbid]
+
+
 def generate(
     task: str,
     *,
@@ -208,64 +320,95 @@ def generate(
     tongue: str = "KO",
     tongue_name: str = "Kor'aelin",
     max_tokens: int = 1024,
-    force_provider: Optional[str] = None,  # "local" | "hf" | "claude"
+    force_provider: Optional[str] = None,  # "local" | "ollama" | "hf" | "claude"
+    forbidden_providers: Optional[list[str]] = None,
+    small_first: bool = False,
+    governance_tier: Optional[str] = None,
+    budget_tokens: Optional[int] = None,
 ) -> GenerateResult:
     """
     Generate code for `task` in `language`.
 
-    Provider priority: local → hf → claude (unless force_provider is set).
-    Falls back automatically on ImportError or runtime error.
+    Provider priority: local → ollama → hf → claude (unless force_provider is set).
+    Falls back automatically on ImportError or runtime error. Each attempt — including
+    skipped tiers — is recorded in `result.attempted_providers` so callers (geoseal CLI,
+    workflows, ledger) can replay the routing decision.
+
+    Parameters:
+        forbidden_providers: tiers the caller refuses to use (e.g. ["claude"]).
+        small_first: if True, Claude is only reachable when governance_tier == "ESCALATE".
+        governance_tier: the phi-wall tier of the caller, used by small_first.
+        budget_tokens: cap on max_tokens passed downstream (min(budget_tokens, max_tokens)).
     """
     system = _build_system(language, tongue, tongue_name)
+    if budget_tokens is not None:
+        max_tokens = min(max_tokens, max(16, int(budget_tokens)))
     errors: list[str] = []
+    attempts: list[dict] = []
 
-    providers = (
-        [force_provider] if force_provider else (["local"] if _LOCAL_MODEL_PATH.exists() else []) + ["hf", "claude"]
+    providers = _resolve_provider_chain(
+        force_provider=force_provider,
+        forbidden_providers=forbidden_providers,
+        small_first=small_first,
+        governance_tier=governance_tier,
     )
 
+    def _record(provider: str, started: float, **fields) -> dict:
+        entry = {
+            "provider": provider,
+            "model": _provider_model(provider),
+            "duration_ms": round((time.time() - started) * 1000.0, 2),
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "error": None,
+            "success": False,
+            "skipped_reason": None,
+        }
+        entry.update(fields)
+        attempts.append(entry)
+        return entry
+
     for provider in providers:
+        started = time.time()
         try:
+            if provider == "ollama" and not _ollama_available():
+                _record(provider, started, skipped_reason="ollama_unreachable")
+                continue
+
             if provider == "local":
                 raw, pt, ct = _generate_local(task, system, max_new_tokens=max_tokens)
-                return GenerateResult(
-                    code=_strip_fences(raw),
-                    raw=raw,
-                    provider="local",
-                    model=str(_LOCAL_MODEL_PATH),
-                    language=language,
-                    tongue=tongue,
-                    prompt_tokens=pt,
-                    completion_tokens=ct,
-                )
-
+            elif provider == "ollama":
+                raw, pt, ct = _generate_ollama(task, system, max_new_tokens=max_tokens)
             elif provider == "hf":
                 raw, pt, ct = _generate_hf(task, system, max_new_tokens=max_tokens)
-                return GenerateResult(
-                    code=_strip_fences(raw),
-                    raw=raw,
-                    provider="hf",
-                    model=_HF_MODEL_ID,
-                    language=language,
-                    tongue=tongue,
-                    prompt_tokens=pt,
-                    completion_tokens=ct,
-                )
-
             elif provider == "claude":
                 raw, pt, ct = _generate_claude(task, system, max_tokens=max_tokens)
-                return GenerateResult(
-                    code=_strip_fences(raw),
-                    raw=raw,
-                    provider="claude",
-                    model=_CLAUDE_MODEL,
-                    language=language,
-                    tongue=tongue,
-                    prompt_tokens=pt,
-                    completion_tokens=ct,
-                )
+            else:
+                _record(provider, started, error=f"unknown provider: {provider}")
+                continue
+
+            _record(
+                provider,
+                started,
+                prompt_tokens=pt,
+                completion_tokens=ct,
+                success=True,
+            )
+            return GenerateResult(
+                code=_strip_fences(raw),
+                raw=raw,
+                provider=provider,
+                model=_provider_model(provider),
+                language=language,
+                tongue=tongue,
+                prompt_tokens=pt,
+                completion_tokens=ct,
+                attempted_providers=attempts,
+            )
 
         except Exception as exc:
             errors.append(f"{provider}: {exc}")
+            _record(provider, started, error=str(exc))
             continue
 
     # All providers failed
@@ -276,7 +419,8 @@ def generate(
         model="none",
         language=language,
         tongue=tongue,
-        error="; ".join(errors),
+        error="; ".join(errors) if errors else "no_providers_available",
+        attempted_providers=attempts,
     )
 
 

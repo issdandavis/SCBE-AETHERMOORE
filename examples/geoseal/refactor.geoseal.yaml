@@ -1,0 +1,23 @@
+name: refactor-snippet
+description: |
+  Two-step workflow: route a refactor task to the small-LLM coding spine,
+  then re-seal the result under a different sacred tongue for audit chaining.
+default_tongue: KO
+default_max_tier: ESCALATE
+
+steps:
+  - id: refactor
+    op: agent
+    task: |
+      Refactor the following Python snippet for clarity. Do not change behavior.
+      Input:
+      ${input}
+    tongue: KO
+    max_tier: ESCALATE
+    forbid_provider: []
+
+  - id: reseal
+    op: seal
+    task: ${steps.refactor.code}
+    tongue: RU
+    max_tier: ALLOW

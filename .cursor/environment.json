@@ -1,0 +1,10 @@
+{
+  "install": "npm install",
+  "start": "",
+  "terminals": [
+    {
+      "name": "SCBE training ledger watch",
+      "command": "npm run training:run-ledger"
+    }
+  ]
+}
