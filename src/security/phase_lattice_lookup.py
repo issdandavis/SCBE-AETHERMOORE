@@ -42,16 +42,12 @@ def _ngrams(text: str) -> list[str]:
 
 
 def _hash_unit(value: str) -> float:
-    digest = hashlib.blake2s(
-        value.encode("utf-8", errors="replace"), digest_size=8
-    ).digest()
+    digest = hashlib.blake2s(value.encode("utf-8", errors="replace"), digest_size=8).digest()
     raw = int.from_bytes(digest, "big")
     return raw / float(2**64 - 1)
 
 
-def angular_phase_cells(
-    text: str, *, rows: int = 6, bins: int = 997
-) -> frozenset[tuple[int, int]]:
+def angular_phase_cells(text: str, *, rows: int = 6, bins: int = 997) -> frozenset[tuple[int, int]]:
     """Project text into deterministic angular phase cells.
 
     Rows are phi-spaced so different phrase orders and local n-grams occupy
@@ -65,9 +61,7 @@ def angular_phase_cells(
     for row in range(rows):
         row_phase = (PHI ** (row + 1)) % (2.0 * math.pi)
         for gram in grams:
-            theta = (2.0 * math.pi * _hash_unit(f"{row}:{gram}") + row_phase) % (
-                2.0 * math.pi
-            )
+            theta = (2.0 * math.pi * _hash_unit(f"{row}:{gram}") + row_phase) % (2.0 * math.pi)
             rhombic_shear = (theta + row * math.pi / PHI) % (2.0 * math.pi)
             bucket = int((rhombic_shear / (2.0 * math.pi)) * bins)
             cells.add((row, bucket))
@@ -78,9 +72,7 @@ def _word_signal(text: str) -> np.ndarray:
     words = WORD_RE.findall(text.lower())
     if not words:
         return np.zeros(0, dtype=np.float64)
-    values = [
-        (_hash_unit(f"sig:{idx}:{word}") * 2.0) - 1.0 for idx, word in enumerate(words)
-    ]
+    values = [(_hash_unit(f"sig:{idx}:{word}") * 2.0) - 1.0 for idx, word in enumerate(words)]
     return np.asarray(values, dtype=np.float64)
 
 
@@ -124,7 +116,9 @@ def origami_fold_path(text: str, *, depth: int = 4, faces: int = 8) -> tuple[int
     holo = sorted(holographic_overlay_cells(text))
     path: list[int] = []
     for level in range(depth):
-        source = f"{level}|{cells[level % len(cells)] if cells else 'none'}|{holo[level % len(holo)] if holo else 'none'}"
+        source = (
+            f"{level}|{cells[level % len(cells)] if cells else 'none'}|{holo[level % len(holo)] if holo else 'none'}"
+        )
         path.append(int(_hash_unit(source) * faces) % faces)
     return tuple(path)
 

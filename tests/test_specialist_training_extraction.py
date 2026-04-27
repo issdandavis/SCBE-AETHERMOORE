@@ -5,7 +5,6 @@ import json
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 EXTRACTOR_PATH = ROOT / "scripts" / "system" / "extract_specialist_training_records.py"
 REVIEW_PATH = ROOT / "scripts" / "system" / "review_training_runs.py"

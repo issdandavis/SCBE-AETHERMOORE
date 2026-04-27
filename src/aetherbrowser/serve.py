@@ -159,6 +159,7 @@ async def _handle_command(ws: WebSocket, msg: dict) -> None:
     # A4: force RED gate on high-risk actions even if keyword heuristics missed
     if plan.risk_tier == "high" and not plan.approval_required:
         import dataclasses
+
         plan = dataclasses.replace(plan, approval_required=True, review_zone="RED")
 
     assignments = plan.assignments

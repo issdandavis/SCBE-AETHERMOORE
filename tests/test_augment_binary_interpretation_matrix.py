@@ -29,4 +29,3 @@ def test_augment_binary_interpretation_matrix_adds_five_sheets(tmp_path: Path) -
     assert periodic.max_row == 65
     assert periodic["A1"].value == "Bucket"
     assert periodic["L2"].value.startswith("byte_to_element_index")
-

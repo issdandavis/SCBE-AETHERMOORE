@@ -159,9 +159,7 @@ _ACCESS_SCORES = {
 class TrajectoryRiskGate:
     """Evaluate AI operation risk across time, intent, access, and need."""
 
-    def __init__(
-        self, session_goal: str = "", user_authority: str = "standard"
-    ) -> None:
+    def __init__(self, session_goal: str = "", user_authority: str = "standard") -> None:
         self.session_goal = session_goal
         self.user_authority = user_authority
         self._history: List[TrajectoryRiskDecision] = []
@@ -186,13 +184,9 @@ class TrajectoryRiskGate:
         intent = self._classify_intent(text)
         signals: List[RiskSignal] = []
 
-        static_score = _clamp(
-            static_risk if static_risk is not None else self._static_risk(text, intent)
-        )
+        static_score = _clamp(static_risk if static_risk is not None else self._static_risk(text, intent))
         if static_score:
-            signals.append(
-                RiskSignal("static_lookup", static_score, "one-shot lexical/core risk")
-            )
+            signals.append(RiskSignal("static_lookup", static_score, "one-shot lexical/core risk"))
 
         access_pressure = _ACCESS_SCORES[access]
         if access_pressure >= 0.35:
@@ -210,11 +204,7 @@ class TrajectoryRiskGate:
 
         continuity = self._continuity_score(text)
         if continuity:
-            signals.append(
-                RiskSignal(
-                    "task_continuity", -continuity, "request aligns with session work"
-                )
-            )
+            signals.append(RiskSignal("task_continuity", -continuity, "request aligns with session work"))
 
         trajectory = self._trajectory_pressure(intent, access)
         if trajectory:
@@ -228,18 +218,9 @@ class TrajectoryRiskGate:
 
         authority = self._authority_credit()
         if authority:
-            signals.append(
-                RiskSignal("user_authority", -authority, self.user_authority)
-            )
+            signals.append(RiskSignal("user_authority", -authority, self.user_authority))
 
-        risk = _clamp(
-            static_score
-            + access_pressure
-            + trajectory
-            - 0.35 * need_score
-            - 0.25 * continuity
-            - authority
-        )
+        risk = _clamp(static_score + access_pressure + trajectory - 0.35 * need_score - 0.25 * continuity - authority)
 
         # Hard floor rules: high need may send risky operations to sandbox, but
         # it should not allow core prompt, policy, or secret extraction.
@@ -251,10 +232,7 @@ class TrajectoryRiskGate:
             AccessLevel.SYSTEM,
         }:
             risk = max(risk, 0.92)
-        if (
-            intent == IntentClass.TOOL_OR_SECRET_ESCALATION
-            and access == AccessLevel.SECRETS
-        ):
+        if intent == IntentClass.TOOL_OR_SECRET_ESCALATION and access == AccessLevel.SECRETS:
             risk = max(risk, 0.9)
 
         decision = self._decision_for(risk, intent, access, need_score)
@@ -273,9 +251,7 @@ class TrajectoryRiskGate:
         self._history.append(result)
         return result
 
-    def _normalize_access(
-        self, requested_access: AccessLevel | str | None, text: str
-    ) -> AccessLevel:
+    def _normalize_access(self, requested_access: AccessLevel | str | None, text: str) -> AccessLevel:
         if isinstance(requested_access, AccessLevel):
             return requested_access
         if requested_access:
@@ -294,15 +270,11 @@ class TrajectoryRiskGate:
             lower,
         ):
             return AccessLevel.SECRETS
-        if re.search(
-            r"\b(shell|powershell|bash|cmd|execute|run command|tool)\b", lower
-        ):
+        if re.search(r"\b(shell|powershell|bash|cmd|execute|run command|tool)\b", lower):
             return AccessLevel.TOOLS
         if re.search(r"\b(file|filesystem|repo|directory|path)\b", lower):
             return AccessLevel.FILES
-        if re.search(
-            r"\b(my|our|this)\s+(conversation|project|repo|account|data)\b", lower
-        ):
+        if re.search(r"\b(my|our|this)\s+(conversation|project|repo|account|data)\b", lower):
             return AccessLevel.USER_CONTEXT
         return AccessLevel.PUBLIC
 

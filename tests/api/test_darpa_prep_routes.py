@@ -38,6 +38,7 @@ class _StubClient:
 def _client(monkeypatch) -> TestClient:
     app = FastAPI()
     app.include_router(router)
+
     def _stub_client_factory():
         return _StubClient()
 

@@ -11,9 +11,7 @@ MODULE_PATH = ROOT / "scripts" / "system" / "topological_operator_packet.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "topological_operator_packet", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("topological_operator_packet", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -29,10 +27,7 @@ def test_build_artifact_wraps_operator_packet_without_raw_command_field() -> Non
     assert artifact["schema_version"] == "scbe-topological-operator-artifact-v1"
     assert artifact["command_chars"] == len("korah aelin dahru")
     assert artifact["packet"]["schema_version"] == "scbe-topological-operator-tree-v1"
-    assert (
-        artifact["packet"]["floating_point_policy"]
-        == "forbidden for consensus signatures"
-    )
+    assert artifact["packet"]["floating_point_policy"] == "forbidden for consensus signatures"
     assert "korah aelin dahru" not in json.dumps(artifact)
 
 
@@ -44,10 +39,7 @@ def test_write_artifact_creates_parent_directories(tmp_path: Path) -> None:
 
     assert output.exists()
     saved = json.loads(output.read_text(encoding="utf-8"))
-    assert (
-        saved["packet"]["signature"]["sha256"]
-        == artifact["packet"]["signature"]["sha256"]
-    )
+    assert saved["packet"]["signature"]["sha256"] == artifact["packet"]["signature"]["sha256"]
 
 
 def test_cli_runs_from_repo_root_and_writes_packet(tmp_path: Path) -> None:

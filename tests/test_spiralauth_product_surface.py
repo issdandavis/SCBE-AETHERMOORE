@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -15,9 +14,7 @@ def test_spiralauth_demo_uses_real_browser_hmac_and_boundary_copy() -> None:
 
 
 def test_spiralauth_package_states_ai_operations_boundary() -> None:
-    doc = (ROOT / "docs" / "product-delivery" / "SPIRALAUTH_SELLABLE_PACKAGE.md").read_text(
-        encoding="utf-8"
-    )
+    doc = (ROOT / "docs" / "product-delivery" / "SPIRALAUTH_SELLABLE_PACKAGE.md").read_text(encoding="utf-8")
 
     assert "It does not replace the SCBE security stack" in doc
     assert "Sacred Eggs and the separate authorization/security systems remain responsible" in doc

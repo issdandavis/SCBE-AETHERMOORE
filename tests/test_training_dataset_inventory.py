@@ -5,7 +5,6 @@ import json
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "training_dataset_inventory.py"
 
@@ -34,7 +33,9 @@ def test_jsonl_stats_and_regularization_status(tmp_path: Path) -> None:
     path.write_text(
         "\n".join(
             [
-                json.dumps({"instruction": "Explain add.", "response": "Use a deterministic add function.", "metadata": {}}),
+                json.dumps(
+                    {"instruction": "Explain add.", "response": "Use a deterministic add function.", "metadata": {}}
+                ),
                 json.dumps({"instruction": "Explain guard.", "response": "Reject divide by zero.", "metadata": {}}),
             ]
         )

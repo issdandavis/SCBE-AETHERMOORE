@@ -46,7 +46,9 @@ def test_sft_records_use_scbe_message_shape() -> None:
     records = build_sft_records()
     assert len(records) == 16
     assert {record["track"] for record in records} == {"geoseal_coding_eml_operator_substrate"}
-    assert all([message["role"] for message in record["messages"]] == ["system", "user", "assistant"] for record in records)
+    assert all(
+        [message["role"] for message in record["messages"]] == ["system", "user", "assistant"] for record in records
+    )
     assert "Do not claim unrestricted" in records[-1]["messages"][-1]["content"]
 
 

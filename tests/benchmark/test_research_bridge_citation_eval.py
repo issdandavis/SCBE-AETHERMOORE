@@ -5,7 +5,6 @@ import json
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "research_bridge_citation_eval.py"
 
@@ -26,7 +25,7 @@ def _row(source_path: str, assistant: dict, *, url: str = "https://arxiv.org/abs
         "Title: [2410.01706] Sable: a Performant, Efficient and Scalable Sequence Model for MARL\n"
         f"URL: {url}\n"
         "Snippet:\n"
-        "{\"ok\": true, \"url\": \"https://arxiv.org/abs/2410.01706\", \"title\": \"[2410.01706] Sable\"}"
+        '{"ok": true, "url": "https://arxiv.org/abs/2410.01706", "title": "[2410.01706] Sable"}'
     )
     return {
         "messages": [

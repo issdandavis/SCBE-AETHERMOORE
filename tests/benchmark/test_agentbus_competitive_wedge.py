@@ -9,9 +9,7 @@ MODULE_PATH = ROOT / "scripts" / "benchmark" / "agentbus_competitive_wedge.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "agentbus_competitive_wedge", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("agentbus_competitive_wedge", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
