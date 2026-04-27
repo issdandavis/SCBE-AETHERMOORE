@@ -1,0 +1,66 @@
+{
+  "schema_version": "bijective_dsl_v4_holdout_v1",
+  "generated_at_utc": "2026-04-27T05:50:22.977393+00:00",
+  "inputs": {
+    "v1_holdout": "training-data/sft/bijective_dsl_v1_holdout.sft.jsonl",
+    "repair_train": "training-data/sft/contract_repair_v1_train.sft.jsonl",
+    "repair_holdout": "training-data/sft/contract_repair_v1_holdout.sft.jsonl",
+    "parametric_holdout": "training-data/sft/dsl_b2b_parametric_v1_holdout.sft.jsonl"
+  },
+  "construction": {
+    "step_1": "Drop 28 source_holdout_idxs consumed by contract_repair_v1.",
+    "step_2": "Deterministic subsample translate_one to honor 15% cap.",
+    "step_3": "Union with dsl_b2b_parametric_v1_holdout (14 records).",
+    "subsample_seed": 314159265,
+    "translate_one_cap_pct": 0.15
+  },
+  "counts": {
+    "v1_holdout_total": 106,
+    "repair_idxs_dropped": 28,
+    "remaining_after_repair": 78,
+    "translate_one_in_remaining": 33,
+    "translate_one_kept": 10,
+    "translate_one_dropped": 23,
+    "parametric_added": 14,
+    "final_total": 69
+  },
+  "by_category_final": {
+    "identify": 6,
+    "edit_slot_one": 3,
+    "edit_slot_all": 7,
+    "align": 11,
+    "translate_all": 8,
+    "governance_tag": 8,
+    "dialogue": 8,
+    "translate_one": 10,
+    "multiline_edit": 8
+  },
+  "translate_one_final": {
+    "count": 10,
+    "pct": 0.1449,
+    "cap_pct": 0.15,
+    "within_cap": true
+  },
+  "floor_check": {
+    "working_minimum_per_category": 3,
+    "floor_bearing_categories": [
+      "align",
+      "dialogue",
+      "edit_slot_all",
+      "edit_slot_one",
+      "governance_tag",
+      "identify",
+      "multiline_edit",
+      "translate_all",
+      "translate_one"
+    ],
+    "violations": {},
+    "violation_count": 0
+  },
+  "output": {
+    "path": "training-data/sft/bijective_dsl_v4_holdout.sft.jsonl",
+    "sha256": "ace75c2118b59771396fb23df07236aeab6ec323ceeede95ad2c86bb12959d52"
+  },
+  "verdict": "PASS",
+  "notes": "v4_holdout = v1_holdout MINUS 28 repair-source idxs UNION parametric holdout, with translate_one subsampled deterministically to honor the 15% cap. v5 frozen-eval MUST consume this file (never v1_holdout) to avoid prompt leakage."
+}

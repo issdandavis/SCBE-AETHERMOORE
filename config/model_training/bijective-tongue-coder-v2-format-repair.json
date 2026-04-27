@@ -1,0 +1,116 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "bijective-tongue-coder-v2-format-repair",
+  "title": "Bijective Tongue Coder v2 - format repair",
+  "description": "Format-repair round addressing v51 contract collapse (0/106 unparseable_output on bijective_dsl_v1_holdout - all 106 outputs emitted ```language code blocks instead of the well_select(...) / tongue_shift(...) contract grammar). Root cause: v51's training file list excluded bijective_dsl_v1_train.sft.jsonl - the file that carries the contract grammar. This round re-introduces it as PRIMARY contract source (939 rows) and oversamples contract_repair_v2_train via the kernel v5 repair-lane sampler at 4x. Trained from base, not warm-started, because kernel_template.py has no LoRA adapter load path. Boundary: v1_holdout is BURNED (contract_repair_v2 was mined from it); evaluation uses bijective_dsl_v4_holdout (boundary-clean - 0 idx overlap audited).",
+  "backend": "kaggle-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE bijective Sacred-Tongue coder. Emit DSL programs in the canonical contract grammar: lead with well_select(<WELL>) and, when crossing tongues, tongue_shift(<SRC> -> <DST>). Wells include IDENTIFIED, MULTILINE, TRANSLATED, TRANSLATED_ALL, ALIGNED, GOVERNANCE, EDIT_ALL_BODY, EDIT_LOOP_BODY. Tongues are the six Sacred Tongues KO/AV/RU/CA/UM/DR. Code blocks come AFTER the contract header, never instead of it.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "bijective_dsl_v1_train.sft.jsonl",
+      "contract_repair_v2_train.sft.jsonl",
+      "bijective_codeflow_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "bijective_dsl_v4_holdout.sft.jsonl",
+      "contract_repair_v2_holdout.sft.jsonl"
+    ],
+    "repair_lane_files": [
+      "contract_repair_v2_train.sft.jsonl"
+    ],
+    "repair_lane_weight": 4.0
+  },
+  "training": {
+    "max_seq_length": 768,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.1,
+    "learning_rate": 5e-5,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "warmup_ratio": 0.05,
+    "max_steps": 120,
+    "max_train_records": 1100,
+    "max_eval_records": 80,
+    "logging_steps": 10,
+    "save_steps": 30,
+    "eval_steps": 30,
+    "early_stopping_patience": 3,
+    "early_stopping_threshold": 0.0,
+    "gradient_checkpointing": true,
+    "seed": 53,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/bijective-tongue-coder-v2-format-repair"
+  },
+  "contract_eval": {
+    "enabled": true,
+    "eval_steps": 30,
+    "notes": "v5 kernel lever - in-training contract-grammar accuracy on the eval set. Read by kernel_template.py via CFG.contract_eval_enabled / contract_eval_steps."
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+    "push_adapter": false,
+    "adapter_repo": "issdandavis/scbe-bijective-tongue-coder-format-repair-qwen-kaggle",
+    "push_merged": false,
+    "notes": "push_adapter:false until promotion gate clears (executable_accuracy >= 0.50 on bijective_dsl_v4_holdout, stage6_regression no-regression vs base, frozen_perplexity <= base)."
+  },
+  "execution": {
+    "recommended_target": "kaggle",
+    "kaggle_round": "bijective-tongue-coder-v2-format-repair",
+    "gpu": "t4x2",
+    "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+    "default_emit_path": "artifacts/kaggle_kernels/polly-auto-bijective-tongue-coder-v2-format-repair/script.py"
+  },
+  "evaluation": {
+    "promotion_gate": {
+      "dsl_executable": {
+        "report_path": "artifacts/dsl_eval_reports/polly-bijective-tongue-coder-v2-format-repair_executable_accuracy.json",
+        "holdout": "training-data/sft/bijective_dsl_v4_holdout.sft.jsonl",
+        "min_executable_accuracy": 0.50,
+        "category_floors": {
+          "translate_one": 0.40,
+          "translate_all": 0.40,
+          "identify": 0.40,
+          "edit_slot_one": 0.30,
+          "edit_slot_all": 0.30,
+          "align": 0.30,
+          "governance_tag": 0.30,
+          "multiline_edit": 0.30,
+          "dialogue": 0.30
+        }
+      },
+      "stage6_regression": {
+        "report_path": "artifacts/dsl_eval_reports/polly-bijective-tongue-coder-v2-format-repair_stage6_regression.json",
+        "min_pass_rate": 0.80,
+        "must_pass_all": true
+      },
+      "frozen_perplexity": {
+        "report_path": "artifacts/model_evals/frozen/polly-bijective-tongue-coder-v2-format-repair/report.json",
+        "max_perplexity_vs_base": 1.10,
+        "notes": "Allow up to 10% degradation vs base perplexity since contract grammar focus may slightly elevate ppl on broad eval."
+      }
+    },
+    "boundary_policy": {
+      "burned_holdouts": [
+        "training-data/sft/bijective_dsl_v1_holdout.sft.jsonl"
+      ],
+      "evaluation_holdout": "training-data/sft/bijective_dsl_v4_holdout.sft.jsonl",
+      "audited_overlap_idx_count": 0,
+      "audit_note": "v4_holdout uses dsl_synthesised_from key not source_holdout_idx; idx-based overlap with contract_repair_v2 corpus is 0."
+    },
+    "contract_path": "config/model_training/stage6_atomic_workflow_eval_contract.json",
+    "notes": "Standing rule per discovery_regularization_solves_ppl_not_contract.md - executable promotion gate is required evidence; training metrics alone are not promotion evidence."
+  }
+}

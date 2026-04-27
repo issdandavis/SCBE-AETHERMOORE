@@ -1,0 +1,40 @@
+{
+  "schema_version": "contract_repair_manifest_v1",
+  "generated_at_utc": "2026-04-27T09:31:20.738478+00:00",
+  "source_reports": [
+    "artifacts/dsl_eval_reports/polly-bijective-tongue-coder-v2-format-repair_executable_accuracy.json"
+  ],
+  "source_holdout": "training-data/sft/bijective_dsl_v4_holdout.sft.jsonl",
+  "outputs": {
+    "train": "training-data/sft/contract_repair_v3_train.sft.jsonl",
+    "holdout": "training-data/sft/contract_repair_v3_holdout.sft.jsonl"
+  },
+  "counts": {
+    "total": 24,
+    "train": 18,
+    "holdout": 6,
+    "by_category": {
+      "identify": 6,
+      "edit_slot_one": 3,
+      "edit_slot_all": 4,
+      "align": 3,
+      "translate_all": 4,
+      "governance_tag": 4
+    },
+    "by_repair_label": {
+      "unparseable_output": 24
+    },
+    "by_round": {
+      "C:/Users/issda/SCBE-AETHERMOORE/artifacts/kaggle_output/polly-auto-bijective-coder-v2-fmt-repair/polly-bijective-tongue-coder-v2-format-repair": {
+        "identify": 6,
+        "edit_slot_one": 3,
+        "edit_slot_all": 4,
+        "align": 3,
+        "translate_all": 4,
+        "governance_tag": 4
+      }
+    }
+  },
+  "boundary": "Source rows are bijective_dsl_v1_holdout. v5 frozen-eval MUST use a different holdout (e.g. bijective_dsl_v4_holdout per v4 spec Lever B-2a) to avoid prompt leakage.",
+  "notes": "Records pulled from sample_diagnostics arrays only (cap 24 per report). predicted_wrong is truncated to 160 chars by the source scorer; full assistant target is taken from the holdout, not the truncated 'expected' field."
+}

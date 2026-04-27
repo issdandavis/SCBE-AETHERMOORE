@@ -2,10 +2,12 @@
   "schema_version": "scbe_coding_model_merge_profile_v1",
   "merge_id": "coding-agent-qwen-merged-coding-model-v1",
   "title": "GeoSeal coding agent merged model v1",
-  "description": "Provider-neutral merge plan for the completed Qwen2.5-Coder-0.5B-Instruct coding-agent adapters. Command-harmony-v5 is intentionally excluded until its adapter repo exists and passes smoke eval.",
+  "description": "Provider-neutral, remote-first merge plan for the completed Qwen2.5-Coder-0.5B-Instruct coding-agent adapters. Command-harmony-v5 is intentionally excluded until its adapter repo exists and passes smoke eval.",
   "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
   "output_model_repo": "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1",
   "merge_mode": "weighted",
+  "merge_combination_type": "dare_ties",
+  "merge_density": 0.53,
   "adapters": [
     {
       "profile_id": "coding-agent-qwen-online-v2",
@@ -66,7 +68,7 @@
   },
   "execution": {
     "recommended_target": "hf-jobs",
-    "hf_flavor": "t4-small",
-    "timeout": "1h"
+    "hf_flavor": "l4x1",
+    "timeout": "2h"
   }
 }

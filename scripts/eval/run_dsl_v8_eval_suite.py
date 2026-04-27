@@ -103,6 +103,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dsl-limit", type=int, default=0, help="Limit DSL holdout rows; 0 = full holdout.")
     parser.add_argument("--frozen-per-file-limit", type=int, default=2)
     parser.add_argument("--max-new-tokens", type=int, default=96)
+    parser.add_argument("--no-4bit", action="store_true", help="Disable 4-bit quantization for frozen perplexity.")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
@@ -158,6 +159,8 @@ def main() -> int:
             ],
         ),
     ]
+    if args.no_4bit:
+        commands[2][1].append("--no-4bit")
     if args.dsl_limit:
         commands[0][1].extend(["--limit", str(args.dsl_limit)])
 

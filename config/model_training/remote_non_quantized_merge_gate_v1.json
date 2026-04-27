@@ -1,0 +1,82 @@
+{
+  "schema_version": "scbe_remote_non_quantized_merge_gate_v1",
+  "policy_id": "remote-non-quantized-merge-gate-v1",
+  "purpose": "Keep merge, eval, and candidate full-model work off the local PC unless explicitly approved.",
+  "execution_policy": {
+    "local_allowed": [
+      "metadata_inventory",
+      "adapter_registry_refresh",
+      "drift_report_on_small_local_adapters",
+      "dry_run_plan",
+      "kaggle_or_hf_status_check",
+      "remote_dispatch"
+    ],
+    "local_blocked": [
+      "full_model_merge",
+      "full_holdout_generation_eval",
+      "multi_adapter_gpu_load",
+      "quantized_merge",
+      "merge_and_unload"
+    ],
+    "remote_targets": [
+      "huggingface_jobs_l4x1",
+      "huggingface_jobs_a10g-small",
+      "kaggle_t4",
+      "colab_l4_or_t4"
+    ]
+  },
+  "merge_policy": {
+    "default": "route_first",
+    "candidate_merge_only": true,
+    "quantization_allowed": false,
+    "allowed_candidate_methods": [
+      "ties",
+      "dare_ties",
+      "cat"
+    ],
+    "blocked_candidate_methods": [
+      "linear_when_sign_conflict_high",
+      "destructive_merge_before_gates"
+    ],
+    "linear_allowed_only_if": {
+      "max_sign_conflict_rate": 0.1,
+      "min_avg_cosine": 0.25
+    },
+    "dare_ties_default": {
+      "density": 0.53,
+      "lambda": 1.0,
+      "reason": "Use only as a remote candidate when adapter deltas conflict and routing latency forces one artifact."
+    }
+  },
+  "promotion_gates": {
+    "required_for_route": [
+      "frozen_perplexity_pass",
+      "functional_benchmark_present"
+    ],
+    "required_for_merge_candidate": [
+      "frozen_perplexity_pass",
+      "dsl_executable_pass",
+      "stage6_regression_pass",
+      "functional_benchmark_pass",
+      "drift_not_route_only_conflict_high"
+    ],
+    "quarantine_decisions": [
+      "QUARANTINE_STRUCTURED_BEHAVIOR",
+      "QUARANTINE_OOD_OR_PPL",
+      "PROMOTION_BLOCKED"
+    ]
+  },
+  "self_training_policy": {
+    "model_generated_data_allowed": true,
+    "requires_verifier_receipt": true,
+    "passing_outputs_go_to": "training-data/sft/generated_verified/",
+    "failing_outputs_go_to": "training-data/sft/generated_repairs/",
+    "required_verifiers": [
+      "byte_round_trip",
+      "dsl_executable",
+      "stage6_regression",
+      "functional_coding_benchmark",
+      "duplicate_filter"
+    ]
+  }
+}

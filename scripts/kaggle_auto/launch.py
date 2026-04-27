@@ -274,6 +274,110 @@ ROUNDS = {
         "early_stopping_patience": 3,
         "early_stopping_threshold": 0.0,
     },
+    "bijective-tongue-coder-v2-format-repair": {
+        "desc": (
+            "Format-repair round for v51 contract collapse (0/106 unparseable_output, "
+            "all 106 holdout rows emitted ```language code blocks instead of "
+            "well_select(...) / tongue_shift(...) contract grammar). Root cause: v51's "
+            "files list excluded bijective_dsl_v1_train.sft.jsonl - the file that "
+            "carries the contract grammar. This round re-introduces it as PRIMARY "
+            "contract source (939 rows) and oversamples contract_repair_v2_train via "
+            "the kernel v5 repair-lane sampler (4x weight). From-base, not warm-start "
+            "(kernel has no LoRA-load path). Eval against bijective_dsl_v4_holdout "
+            "(boundary-clean: 0 idx overlap with contract_repair_v2 corpus). "
+            "See artifacts/training_reports/bijective_tongue_coder_v2_format_repair_PLAN.md."
+        ),
+        "files": [
+            # PRIMARY contract source - has well_select/tongue_shift grammar baked in
+            "bijective_dsl_v1_train.sft.jsonl",        # 939 rows
+            # Repair lane (oversampled via repair_lane_files / repair_lane_weight)
+            "contract_repair_v2_train.sft.jsonl",      #  35 rows  -> 4x = 140 effective
+            # Generalization slice - in-distribution code transport
+            "bijective_codeflow_v1_train.sft.jsonl",   # subsampled via max_records
+        ],
+        "eval_files": [
+            "bijective_dsl_v4_holdout.sft.jsonl",      #  69 rows  boundary-clean evaluator
+            "contract_repair_v2_holdout.sft.jsonl",    #  11 rows  repair-specific sanity
+        ],
+        # v5 contract-aware levers
+        "repair_lane_files": ["contract_repair_v2_train.sft.jsonl"],
+        "repair_lane_weight": 4.0,
+        "contract_eval_enabled": True,
+        "contract_eval_steps": 30,
+        "hf_repo": "issdandavis/scbe-bijective-tongue-coder-format-repair-qwen-kaggle",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 768,
+        "max_steps": 120,
+        "learning_rate": 5e-5,
+        "max_records": 1100,
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "lora_dropout": 0.1,
+        "early_stopping_patience": 3,
+        "early_stopping_threshold": 0.0,
+        "slug_override": "polly-auto-bijective-coder-v2-fmt-repair",
+        "title_override": "Polly Auto bijective-coder-v2-fmt-repair",
+    },
+    "bijective-tongue-coder-v3": {
+        "desc": (
+            "v3 retry of the format-repair round after v2-format-repair was undermined "
+            "by a Kaggle GPU lottery (P100 sm_60 instead of T4 sm_75) that tripped the "
+            "kernel's silent CPU-fallback path (200 records / 30 steps / 0/25 contract "
+            "parseable). v3 fixes that with require_gpu=True (hard-fail RuntimeError on "
+            "sub-sm_70 so Kaggle re-queues), raises contract_eval_steps from 30 to 60 so "
+            "the readout fires post-warmup, and consumes contract_repair_v3_train mined "
+            "from v2-format-repair's failure log on bijective_dsl_v4_holdout. "
+            "BOUNDARY NOTE: v3 train rows now include 18 idx from v4_holdout (24 mined, "
+            "stratified split). v3 frozen-eval CANNOT use bijective_dsl_v4_holdout as a "
+            "clean anchor; build a NEW holdout (bijective_dsl_v5_holdout) before "
+            "promoting v3 adapter. From-base, not warm-start (kernel has no LoRA-load). "
+            "See artifacts/training_reports/bijective_tongue_coder_v3_PLAN.md."
+        ),
+        "files": [
+            # PRIMARY contract source - has well_select/tongue_shift grammar baked in
+            "bijective_dsl_v1_train.sft.jsonl",        # 939 rows
+            # Repair lane v3 - mined from v2-format-repair sample_diagnostics
+            "contract_repair_v3_train.sft.jsonl",      #  18 rows  -> 4x = 72 effective
+            # Generalization slice - in-distribution code transport
+            "bijective_codeflow_v1_train.sft.jsonl",   # subsampled via max_records
+        ],
+        "eval_files": [
+            # NOTE: v4_holdout is BURNED for v3 promotion eval (18 of its rows are now
+            # in v3 train). Used here only as inline contract-eval slice for live signal.
+            "bijective_dsl_v4_holdout.sft.jsonl",      #  69 rows
+            "contract_repair_v3_holdout.sft.jsonl",    #   6 rows  repair-specific sanity
+        ],
+        # v5 contract-aware levers
+        "repair_lane_files": ["contract_repair_v3_train.sft.jsonl"],
+        "repair_lane_weight": 4.0,
+        "contract_eval_enabled": True,
+        "contract_eval_steps": 60,
+        # v3-only: hard-fail on sub-sm_70 instead of silent CPU fallback
+        "require_gpu": True,
+        "hf_repo": "issdandavis/scbe-bijective-tongue-coder-v3-qwen-kaggle",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 768,
+        "max_steps": 120,
+        "learning_rate": 5e-5,
+        "max_records": 1100,
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "lora_dropout": 0.1,
+        "early_stopping_patience": 3,
+        "early_stopping_threshold": 0.0,
+        "slug_override": "polly-auto-bijective-coder-v3",
+        "title_override": "Polly Auto bijective-coder-v3",
+    },
     "binary-hex-lane-v1": {
         "desc": "Binary/hex lane - low-level substrate, bytes, ASCII, IEEE 754, and pillars",
         "files": [
@@ -520,7 +624,7 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
     else:
         batch_size, grad_accum, max_len = 4, 8, 256
 
-    kernel_config = json.dumps({
+    kernel_cfg_dict = {
         "round": round_name,
         "base_model": config["base_model"],
         "hf_repo": config["hf_repo"],
@@ -542,7 +646,22 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
         "early_stopping_threshold": config.get("early_stopping_threshold", 0.0),
         "eval_steps": config.get("eval_steps", 30),
         "save_steps": config.get("save_steps", 30),
-    })
+    }
+
+    # v5 contract-aware levers (kernel reads via CFG.get with safe defaults)
+    for lever in (
+        "repair_lane_files",
+        "repair_lane_weight",
+        "selector_token_weight",
+        "weighted_ce_token_ids",
+        "contract_eval_enabled",
+        "contract_eval_steps",
+        "require_gpu",
+    ):
+        if lever in config:
+            kernel_cfg_dict[lever] = config[lever]
+
+    kernel_config = json.dumps(kernel_cfg_dict)
 
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
     return template.replace('"__INJECT_CONFIG_HERE__"', f"'{kernel_config}'")

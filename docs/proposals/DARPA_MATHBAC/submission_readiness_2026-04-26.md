@@ -9,25 +9,39 @@
 | Item | Status | Evidence / path |
 |---|---|---|
 | Abstract draft | Ready for review | `artifacts/mathbac/MATHBAC_ABSTRACT_DRAFT_v1_2026-04-26.md` |
-| Abstract PDF | Rendered locally | `artifacts/mathbac/MATHBAC_ABSTRACT_v1.pdf` |
+| Abstract PDF | Rendered locally, 2 pages after 2026-04-27 compression | `artifacts/mathbac/MATHBAC_ABSTRACT_v1.pdf` |
 | Email body | Drafted, not sent | `artifacts/mathbac/MATHBAC_ABSTRACT_EMAIL_DRAFT_2026-04-26.md` |
 | Visual appendix | Drafted locally | `artifacts/mathbac/MATHBAC_VISUAL_APPENDIX_2026-04-26.md` |
+| Official PA / Attachment A / Attachment B downloads | Downloaded from public SAM resources API | `artifacts/mathbac/sam_pa_26_05_attachments/` |
+| Rules and visual inspection report | Drafted | `artifacts/mathbac/MATHBAC_RULES_AND_VISUAL_INSPECTION_2026-04-27.md` |
+| Attachment B compliant packet | Rendered: cover sheet + 2-page body | `artifacts/mathbac/MATHBAC_ABSTRACT_ATTACHMENT_B_PACKET_v1.pdf` |
+| Attachment A summary slide draft | Drafted | `artifacts/mathbac/MATHBAC_ATTACHMENT_A_SUMMARY_SLIDE_DRAFT_2026-04-27.md` |
+| Attachment A filled slide | Filled from official template; zip/text audit passed | `artifacts/mathbac/MATHBAC_Attachment_A_Abstract_Summary_Slide_v1.pptx` |
+| Attachment A text audit | Extracted slide text | `artifacts/mathbac/MATHBAC_Attachment_A_Abstract_Summary_Slide_v1_TEXT_AUDIT.txt` |
 | CLARA status | Submitted / pending review | `DARPA-PA-25-07-02-CLARA-FP-033`, finalized 2026-04-13 08:04 PM ET |
 | BAAT account | User says account exists | Needs no new account action unless portal access fails |
 
 ## Blocking Items Before Send
 
-- [ ] Verify official abstract channel from PA-26-05 attachments.
-- [ ] Confirm whether abstract is email-only, BAAT upload, or both.
-- [ ] Confirm subject line, attachment naming, and page-limit language.
-- [ ] Strip internal checklist from the abstract before transmission.
-- [ ] Visually inspect the final PDF after any diagram or formatting changes.
+- [x] Verify official PA / Attachment B rule source from downloaded SAM attachments.
+- [x] Confirm page and format requirements: mandatory Attachment B template, Attachment A slide required, PDF or Word, English, Letter paper, 1-inch margins, 12-point minimum except 8/10-point figures/tables/charts, abstract body max 2 pages.
+- [x] Confirm rule-level submission route: BAAT per DARPA proposer instructions.
+- [x] Probe BAAT public endpoint. *(2026-04-27: `https://baa.darpa.mil/` and `/Public/SecurityAgreement` reachable; returns DoD Notice and Consent Banner.)*
+- [ ] Verify BAAT upload path in the user's authenticated session.
+- [ ] Confirm whether BAAT accepts PDF only or PDF plus Word for Attachment B.
+- [x] Complete Attachment A Abstract Summary Slide. Filled file: `artifacts/mathbac/MATHBAC_Attachment_A_Abstract_Summary_Slide_v1.pptx`.
+- [ ] Visually inspect filled Attachment A slide in PowerPoint/Google Slides. Terminal zip/text audit passed, but no local PowerPoint/LibreOffice renderer is available in shell.
+- [x] Fill exact mailing address and telephone on Attachment B cover sheet. *(2026-04-27: 2361 E Ryan Drive, Port Angeles, WA 98362; 360-808-0876.)*
+- [x] Strip internal checklist from the abstract before transmission.
+- [x] Strip public partner-artifact naming from the active abstract and full proposal; active packet now references only the Hoags independent Rust kernel as a supplementary witness.
+- [x] Re-render and page-count the final PDF after 2026-04-27 formatting changes: abstract 2 pages, full proposal 21 pages.
+- [ ] Visually inspect the final PDF after any later diagram or formatting changes.
 - [ ] Save send receipt or portal receipt into the private proposal packet.
 
 ## Claim Discipline
 
-- Proven: sealed-blind recovery, KL capacity estimates, bit-identical equivariance, and two-stack convergence under the named harnesses.
-- Observed: structured protocol behavior across the current SCBE/DAVA surfaces.
+- Proven: sealed-blind recovery, KL capacity estimates, bit-identical equivariance, and internal TypeScript/Python cross-language parity under the named harnesses.
+- Observed: structured protocol behavior across the current SCBE surfaces and supplementary Hoags independent Rust-kernel witness.
 - Hypothesis: geometric cost scaling and broader cross-domain transfer.
 - Forbidden framing: "proved universally," "general AI safety solved," or any claim that the current harness covers all agentic systems.
 
@@ -60,12 +74,12 @@ flowchart TB
     A[Existing harnesses] --> B[Sealed-blind boundary recovery]
     A --> C[KL channel capacity]
     A --> D["Mobius / PSU(1,1) equivariance"]
-    A --> E[Two-stack convergence]
+    A --> E[Supplementary independent-kernel witness]
     B --> B1[24 / 24 labels, p <= 3e-4]
     C --> C1[Realm: 1.5761 b/t, 99.4% of log2 3]
     C --> C2[Regime: 2.9818 b/t, 99.4% of log2 8]
     D --> D1["Bit-identical k-means++"]
-    E --> E1["DAVA/Rust x SCBE/Python on 5-of-6 surface"]
+    E --> E1["Hoags Rust kernel x SCBE/Python on 5-of-6 surface"]
     B1 --> F[TA1 claim: protocol geometry is measurable]
     C1 --> F
     C2 --> F

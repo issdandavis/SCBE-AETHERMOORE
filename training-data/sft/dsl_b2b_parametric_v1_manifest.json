@@ -1,0 +1,66 @@
+{
+  "schema_version": "dsl_b2b_parametric_v1",
+  "generated_at_utc": "2026-04-27T05:50:22.848389+00:00",
+  "provenance": "parametric_generated_v1",
+  "outputs": {
+    "train": "training-data/sft/dsl_b2b_parametric_v1_train.sft.jsonl",
+    "holdout": "training-data/sft/dsl_b2b_parametric_v1_holdout.sft.jsonl"
+  },
+  "counts": {
+    "train_total": 60,
+    "holdout_total": 14,
+    "train_multiline_edit": 24,
+    "train_dialogue": 36,
+    "holdout_multiline_edit": 8,
+    "holdout_dialogue": 6
+  },
+  "template_families": {
+    "train_multiline_algorithms": [
+      "count_evens",
+      "count_odds",
+      "count_positives",
+      "max_list",
+      "mean_list",
+      "min_list",
+      "product_list",
+      "sum_list"
+    ],
+    "holdout_multiline_algorithms": [
+      "all_even",
+      "all_positive",
+      "any_negative",
+      "any_zero",
+      "double_all",
+      "halve_all",
+      "reverse_list",
+      "square_all"
+    ],
+    "train_dialogue_semantic_ids": [
+      "operator-handoff-request",
+      "operator-retry",
+      "parameter-clarification",
+      "scope-confirmation",
+      "sub-agent-final-answer",
+      "sub-agent-receipt"
+    ],
+    "holdout_dialogue_semantic_ids": [
+      "deescalation-confirm",
+      "escalation-request",
+      "operator-refusal-hold",
+      "sub-agent-clarification"
+    ]
+  },
+  "seed_bases": {
+    "train": 8675309,
+    "holdout": 31415926
+  },
+  "constraints_enforced": [
+    "provenance=parametric_generated_v1 stamped on every record",
+    "seed stamped + collision-checked",
+    "train/holdout algorithm sets disjoint",
+    "train/holdout semantic_id sets disjoint",
+    "schema validation gate run before acceptance",
+    "no human/lore source files overwritten (separate output paths)"
+  ],
+  "notes": "Lore fidelity intentionally low/neutral. native_text reused verbatim from canonical v1 dialogue records to avoid inventing conlang. Tongue metadata (dialect/region/runtime/grammar_basis) extracted from cross_tongue_dialogue_bijective_v1 canon. This is a contract-learning repair lane; canon expansion is out of scope for v5."
+}

@@ -1,0 +1,68 @@
+---
+description: SCBE AgentBus in-house multi-agent deployment rules
+globs:
+  - "scripts/system/agentbus_*.py"
+  - "scripts/system/agentbus_*.mjs"
+  - "packages/agent-bus/**"
+  - "config/system/agent_bus_*.json"
+  - ".vscode/tasks.json"
+alwaysApply: false
+---
+
+# SCBE AgentBus Deployment Lane
+
+This lane is for making the in-house AgentBus function before any npm, PyPI,
+public demo, or external publish work.
+
+## Rules
+
+- Do not publish packages, push model adapters, send emails, or launch paid jobs from this lane.
+- Do not edit secrets, OAuth files, `.env*`, `config/connector_oauth/**`, or provider keys.
+- Use the Python/Node AgentBus runners already in `scripts/system/` before making a parallel bus.
+- Treat Hugging Face and Kaggle as free/open provider and training surfaces to verify, not proof by assumption.
+- Keep the default bus free/local-first: `offline`, `ollama`, then open-weight/account-free surfaces. Paid APIs are not normal bus workers.
+- Keep reports under `artifacts/agent_bus/` and avoid committing raw provider responses unless needed.
+
+## Required Local Gate
+
+Before claiming the bus is ready for multi-agent deployment, run:
+
+```powershell
+npm run agentbus:deployment-check
+```
+
+Passing means:
+
+1. Cursor task/rule surface exists.
+2. Hugging Face auth/job status was checked.
+3. Kaggle training kernel status was checked.
+4. AgentBus single-event pipe smoke passed.
+5. AgentBus batch pipe smoke passed.
+6. Pressure test status is `pass` or `pass_with_utility_gaps`.
+
+## Switchboard / Domino Workflow
+
+Use the switchboard runner when a goal should move through multiple local/free
+steps and carry quality bullets forward:
+
+```powershell
+npm run agentbus:switchboard:dry
+npm run agentbus:switchboard
+```
+
+The default workflow is
+`config/system/agent_bus_switchboard_free_v1.json`. Each step must declare one
+switchboard light: a local command or an AgentBus task, its success bullets,
+and the next step on success/failure. Keep this route free/local-first unless
+the operator explicitly overrides it.
+
+## Optional Live Provider Gate
+
+Only run this when the operator explicitly wants a live local Ollama call:
+
+```powershell
+npm run agentbus:deployment-check:ollama
+```
+
+That command uses local Ollama only. A normal in-house readiness check does not
+require live generation.

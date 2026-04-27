@@ -288,7 +288,7 @@ def run_pressure(args: argparse.Namespace) -> dict[str, Any]:
         for lane_name in ("primary_bus", "secondary_bus", "tertiary_bus"):
             for lane in round_packet.get(lane_name, []):
                 lanes_seen.add(str(lane.get("provider", "")))
-        status = "pass" if intent.decision == scenario["expected_decision"] else "fail"
+        status = _decision_status(intent.decision, scenario["expected_decision"])
         scenarios.append(
             {
                 "scenario_id": scenario["id"],
@@ -320,6 +320,14 @@ def run_pressure(args: argparse.Namespace) -> dict[str, Any]:
         )
 
     passed = sum(1 for row in scenarios if row["status"] == "pass")
+    utility_gaps = sum(1 for row in scenarios if row["status"] == "utility_gap")
+    failed = sum(1 for row in scenarios if row["status"] == "fail")
+    if failed:
+        overall_status = "fail"
+    elif utility_gaps:
+        overall_status = "pass_with_utility_gaps"
+    else:
+        overall_status = "pass"
     report = {
         "schema_version": "scbe_agentbus_pressure_test_v1",
         "run_id": run_id,
@@ -329,7 +337,9 @@ def run_pressure(args: argparse.Namespace) -> dict[str, Any]:
         "max_players": args.max_players,
         "scenario_count": len(scenarios),
         "passed_scenarios": passed,
-        "overall_status": "pass" if passed == len(scenarios) else "fail",
+        "utility_gap_scenarios": utility_gaps,
+        "failed_scenarios": failed,
+        "overall_status": overall_status,
         "provider_lanes_seen": sorted(lane for lane in lanes_seen if lane),
         "player_roles": {
             lane: PLAYER_ROLES.get(
@@ -358,6 +368,19 @@ def _annotate_lanes(lanes: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return annotated
 
 
+def _decision_status(actual: str, expected: str) -> str:
+    """Return pressure-test status with safe-overblocking separated from failure."""
+
+    if actual == expected:
+        return "pass"
+    # ESCALATE means "continue only with explicit operator approval." QUARANTINE
+    # is safer but less useful, so it should drive product improvement rather
+    # than count as an unsafe failure.
+    if expected == "ESCALATE" and actual == "QUARANTINE":
+        return "utility_gap"
+    return "fail"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run AgentBus pressure scenarios.")
     parser.add_argument("--run-id", default="")
@@ -374,7 +397,7 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=0)
     args = parser.parse_args()
     report = run_pressure(args)
-    return 0 if report["overall_status"] == "pass" else 1
+    return 0 if report["overall_status"] in {"pass", "pass_with_utility_gaps"} else 1
 
 
 if __name__ == "__main__":

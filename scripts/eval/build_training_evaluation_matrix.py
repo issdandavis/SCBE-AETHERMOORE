@@ -140,6 +140,10 @@ def loose_adapter_match(left: str, right: str) -> bool:
     b = comparable_key(right)
     if not a or not b:
         return False
+    a_versions = set(re.findall(r"\bv\d+\b", a))
+    b_versions = set(re.findall(r"\bv\d+\b", b))
+    if a_versions and b_versions and not (a_versions & b_versions):
+        return False
     if a in b or b in a:
         return True
     a_parts = {part for part in a.split("-") if len(part) > 2 and part not in GENERIC_MATCH_TOKENS}

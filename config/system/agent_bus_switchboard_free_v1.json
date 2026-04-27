@@ -1,0 +1,81 @@
+{
+  "schema_version": "scbe_agent_bus_switchboard_v1",
+  "workflow_id": "free-distributed-agentbus-quality-loop",
+  "description": "Free/local-first domino workflow: each switchboard step routes through local tools or AgentBus, adds compact bullets, then triggers the next step.",
+  "policy": {
+    "privacy": "local_only",
+    "budget_cents": 0,
+    "dispatch_provider": "offline",
+    "paid_providers": "disabled",
+    "allowed_live_provider": "ollama"
+  },
+  "start": "deployment_check",
+  "steps": [
+    {
+      "id": "deployment_check",
+      "title": "Check the free/local bus field",
+      "kind": "command",
+      "command": [
+        "npm",
+        "run",
+        "agentbus:deployment-check"
+      ],
+      "success_bullets": [
+        "Verified the local/free provider field before routing work.",
+        "Confirmed whether offline, Ollama, Hugging Face, and Kaggle surfaces are usable."
+      ],
+      "next_on_success": "scope_route",
+      "next_on_failure": "repair_route"
+    },
+    {
+      "id": "scope_route",
+      "title": "Route the goal into a bounded work packet",
+      "kind": "agentbus",
+      "task_type": "coding",
+      "task": "Turn the current user goal into a bounded free/local AgentBus work packet. Preserve prior bullets, identify the next concrete file/tool surface, and avoid paid model APIs.",
+      "success_bullets": [
+        "Converted the goal into a bounded AgentBus work packet.",
+        "Kept provider policy free/local-first."
+      ],
+      "next_on_success": "review_route",
+      "next_on_failure": "repair_route"
+    },
+    {
+      "id": "review_route",
+      "title": "Review the packet for failure modes",
+      "kind": "agentbus",
+      "task_type": "review",
+      "task": "Review the prior work packet for missing tests, unsafe routing, unclear outputs, and utility gaps. Return only concrete improvement bullets.",
+      "success_bullets": [
+        "Reviewed the route for tests, safety, utility, and handoff gaps."
+      ],
+      "next_on_success": "training_capture",
+      "next_on_failure": "repair_route"
+    },
+    {
+      "id": "training_capture",
+      "title": "Capture the run as training/evaluation material",
+      "kind": "agentbus",
+      "task_type": "training",
+      "task": "Convert the prior route and review bullets into training/evaluation material for the operator_agent_bus lane. Keep it as metadata and next-action bullets, not raw secrets.",
+      "success_bullets": [
+        "Captured the run shape as operator-agent-bus training/evaluation material.",
+        "Preserved compact receipts instead of raw sensitive text."
+      ],
+      "next_on_success": "",
+      "next_on_failure": "repair_route"
+    },
+    {
+      "id": "repair_route",
+      "title": "Fallback repair route",
+      "kind": "agentbus",
+      "task_type": "governance",
+      "task": "A previous switchboard step failed. Produce a local-only repair plan with the failed step id, likely cause, and smallest next command to restore the domino chain.",
+      "success_bullets": [
+        "Generated a local-only repair plan for the failed switchboard step."
+      ],
+      "next_on_success": "",
+      "next_on_failure": ""
+    }
+  ]
+}

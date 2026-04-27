@@ -102,6 +102,7 @@
     "training:watch": "python scripts/system/training_watch_report.py",
     "training:watch:dsl": "python scripts/system/training_watch_report.py --focus-hf-job 69eec858d70108f37ace0514",
     "training:merge-adapters": "python scripts/system/merge_lora_adapters.py",
+    "training:merge-remote-plan": "python scripts/system/plan_remote_non_quantized_merge.py",
     "training:dispatch-coding-agent": "python scripts/system/dispatch_coding_agent_hf_job.py",
     "training:geoseal-coder": "python scripts/system/geoseal_coding_training_system.py",
     "cash:sprint": "python scripts/revenue/daily_cash_sprint.py",
@@ -172,7 +173,11 @@
     "xops:dryrun": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json --dry-run",
     "xops:run": "node scripts/system/x_ops_queue_runner.mjs --queue workflows/n8n/x_ops_queue.sample.json",
     "skills:bridge": "node scripts/system/scbe_skill_tool_bridge.mjs --action quick",
-    "skills:bridge:full": "node scripts/system/scbe_skill_tool_bridge.mjs --action full"
+    "skills:bridge:full": "node scripts/system/scbe_skill_tool_bridge.mjs --action full",
+    "agentbus:deployment-check": "python scripts/system/agentbus_deployment_check.py",
+    "agentbus:deployment-check:ollama": "python scripts/system/agentbus_deployment_check.py --live-ollama-smoke",
+    "agentbus:switchboard": "python scripts/system/agentbus_switchboard_runner.py",
+    "agentbus:switchboard:dry": "python scripts/system/agentbus_switchboard_runner.py --dry-run"
   },
   "keywords": [
     "cryptography",

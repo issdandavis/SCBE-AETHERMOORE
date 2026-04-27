@@ -68,6 +68,8 @@ def build_packet(profile_path: Path, artifact_root: Path, flavor: str | None = N
         "base_model": profile["base_model"],
         "output_model_repo": profile["output_model_repo"],
         "merge_mode": profile.get("merge_mode", "weighted"),
+        "merge_combination_type": profile.get("merge_combination_type", profile.get("combination_type", "linear")),
+        "merge_density": profile.get("merge_density"),
         "adapters": profile["adapters"],
         "blocked_adapters": profile.get("blocked_adapters", []),
         "pre_merge_gates": profile.get("pre_merge_gates", {}),
@@ -88,6 +90,8 @@ def build_packet(profile_path: Path, artifact_root: Path, flavor: str | None = N
                 f"- Base model: `{packet['base_model']}`",
                 f"- Output model repo: `{packet['output_model_repo']}`",
                 f"- Mode: `{packet['merge_mode']}`",
+                f"- Combination type: `{packet['merge_combination_type']}`",
+                f"- Density: `{packet['merge_density']}`",
                 "",
                 "## Dispatch",
                 "",
@@ -165,7 +169,16 @@ def _weighted_merge(base, token: str):
     if not hasattr(model, "add_weighted_adapter"):
         raise RuntimeError("Installed PEFT does not support add_weighted_adapter.")
     weights = [float(item["weight"]) for item in adapters]
-    model.add_weighted_adapter(names, weights, adapter_name="scbe_coding_merged", combination_type="linear")
+    merge_kwargs = {{
+        "adapter_names": names,
+        "weights": weights,
+        "adapter_name": "scbe_coding_merged",
+        "combination_type": str(PACKET.get("merge_combination_type") or "linear"),
+    }}
+    density = PACKET.get("merge_density")
+    if density is not None:
+        merge_kwargs["density"] = float(density)
+    model.add_weighted_adapter(**merge_kwargs)
     model.set_adapter("scbe_coding_merged")
     return model.merge_and_unload()
 
@@ -201,6 +214,8 @@ def main() -> None:
         "base_model": PACKET["base_model"],
         "output_model_repo": output_repo,
         "merge_mode": mode,
+        "merge_combination_type": PACKET.get("merge_combination_type", "linear"),
+        "merge_density": PACKET.get("merge_density"),
         "adapters": PACKET["adapters"],
         "blocked_adapters": PACKET.get("blocked_adapters", []),
     }}

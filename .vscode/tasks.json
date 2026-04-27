@@ -272,6 +272,47 @@
         "reveal": "always",
         "panel": "shared"
       }
+    },
+    {
+      "label": "SCBE: AgentBus Deployment Check",
+      "type": "shell",
+      "command": "npm run agentbus:deployment-check",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "SCBE: AgentBus Deployment Check Ollama Smoke",
+      "type": "shell",
+      "command": "npm run agentbus:deployment-check:ollama",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      }
+    },
+    {
+      "label": "SCBE: AgentBus Switchboard Dry Run",
+      "type": "shell",
+      "command": "npm run agentbus:switchboard:dry",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "SCBE: AgentBus Switchboard",
+      "type": "shell",
+      "command": "npm run agentbus:switchboard",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
     }
   ]
 }
