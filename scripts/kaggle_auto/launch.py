@@ -215,6 +215,64 @@ ROUNDS = {
         "lora_alpha": 64,
         "lora_dropout": 0.05,
     },
+    "bijective-tongue-coder-v2": {
+        "desc": (
+            "Regularized bijective-tongue coder retrain. v1 was promotion-negative "
+            "(overfit on drill_langues_full + catastrophic OOD forgetting). v2 drops "
+            "drill_langues, adds 14.4% targeted anchor mix from v1's worst-regression "
+            "OOD distributions, lowers LoRA capacity (r=8/alpha=16), raises dropout "
+            "(0.1), and caps effective epochs at ~1.5. See artifacts/training_reports/"
+            "bijective_tongue_coder_v2_PLAN.md for design rationale and promotion gate."
+        ),
+        "files": [
+            # In-distribution (bijective lane) - 1336 rows / 85.6% of pool
+            "bijective_codeflow_v1_train.sft.jsonl",
+            "coding_system_full_v1_train.sft.jsonl",
+            "cross_tongue_arithmetic_basics.sft.jsonl",
+            "cross_tongue_string_basics.sft.jsonl",
+            "cross_tongue_dialogue_bijective_v1_train.sft.jsonl",
+            "tongue_name_pairing_sft.jsonl",
+            # Anchor pool (counters worst-regression OOD) - 225 rows / 14.4% of pool
+            "aligned_foundations_train.sft.jsonl",
+            "atomic_workflow_stage6_train.sft.jsonl",
+            "l13_governance_operation_sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+            "command_lattice_seed_train.sft.jsonl",
+            "governance_deep_v2.jsonl",
+            # NB: drill_langues_full deliberately excluded - dominated v1 (67.9% of pool)
+            # NB: governance_security_boundary_eval_v1 deliberately excluded - eval-only
+        ],
+        # OOD-weighted in-training eval set. Tracks v1's worst-regression vectors so
+        # EarlyStoppingCallback halts when OOD eval_loss stops improving (the failure
+        # mode that produced v1's +803%/+559%/+299% holdout regressions). 154 rows.
+        # governance_security_boundary_eval_v1 is held out of this set so the post-
+        # promotion frozen-eval gate remains a clean unseen check.
+        "eval_files": [
+            "bijective_codeflow_v1_holdout.sft.jsonl",            # 104 rows  in-dist sanity
+            "aligned_foundations_holdout.sft.jsonl",              #  15 rows  v1 +803%
+            "atomic_workflow_stage6_repair_holdout.sft.jsonl",    #  10 rows  v1 +299%
+            "atomic_workflow_stage6_holdout.sft.jsonl",           #  13 rows  v1 +136%
+            "command_lattice_seed_holdout.sft.jsonl",             #   2 rows  v1 +559%
+            "coding_system_full_v1_holdout.sft.jsonl",            #   8 rows  in-dist
+            "cross_tongue_dialogue_bijective_v1_holdout.sft.jsonl", # 2 rows  in-dist
+        ],
+        "hf_repo": "issdandavis/scbe-bijective-tongue-coder-qwen-kaggle-v2",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 768,
+        "max_steps": 150,
+        "learning_rate": 5e-5,
+        "max_records": 1700,
+        "lora_r": 8,
+        "lora_alpha": 16,
+        "lora_dropout": 0.1,
+        "early_stopping_patience": 3,
+        "early_stopping_threshold": 0.0,
+    },
     "binary-hex-lane-v1": {
         "desc": "Binary/hex lane - low-level substrate, bytes, ASCII, IEEE 754, and pillars",
         "files": [
@@ -270,11 +328,16 @@ ROUNDS = {
             "coding_approval_metrics_v1.sft.jsonl",
             "honeycomb_choice_achievement_v1.sft.jsonl",
             "college_coding_choice_matrix_v1.sft.jsonl",
+            "functional_coding_benchmark_repairs_v1.sft.jsonl",
             "typescript_debug_harness_v1.sft.jsonl",
-            "governance_security_boundary_eval_v1.sft.jsonl",
             "operator_agent_bus_extracted_v1_train.sft.jsonl",
             "colab_run_evidence_v1.sft.jsonl",
             "atomic_workflow_stage6_repair_train.sft.jsonl",
+        ],
+        "eval_files": [
+            "functional_coding_benchmark_repairs_v1_eval.sft.jsonl",
+            "governance_security_boundary_eval_v1.sft.jsonl",
+            "operator_agent_bus_extracted_v1_eval.sft.jsonl",
         ],
         "hf_repo": "issdandavis/scbe-coding-approval-metrics-qwen-kaggle-v2",
         "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
