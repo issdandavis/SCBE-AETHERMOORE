@@ -66,9 +66,26 @@ from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.api.saas_routes import saas_router
 from src.api.stripe_billing import billing_router
-from src.contracts.operation_panel import resolve_source_to_operation_panel
-from src.contracts.system_cards import build_system_deck, play_system_card
-from src.contracts.runtime_contract import inspect_runtime_packet
+try:
+    from src.contracts.operation_panel import resolve_source_to_operation_panel
+    from src.contracts.system_cards import build_system_deck, play_system_card
+    from src.contracts.runtime_contract import inspect_runtime_packet
+    _CONTRACTS_AVAILABLE = True
+except ImportError:
+    _CONTRACTS_AVAILABLE = False
+    logger.warning("src.contracts not available — operation panel / system cards endpoints disabled")
+
+    def resolve_source_to_operation_panel(*a, **kw):
+        raise HTTPException(status_code=501, detail="contracts module not installed")
+
+    def build_system_deck(*a, **kw):
+        raise HTTPException(status_code=501, detail="contracts module not installed")
+
+    def play_system_card(*a, **kw):
+        raise HTTPException(status_code=501, detail="contracts module not installed")
+
+    def inspect_runtime_packet(*a, **kw):
+        raise HTTPException(status_code=501, detail="contracts module not installed")
 
 from src.api.compute_routes import compute_router
 from src.api.search_routes import search_router
