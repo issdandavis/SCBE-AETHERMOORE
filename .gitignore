@@ -234,3 +234,11 @@ external_repos/
 # Symlink roots — points to full drives, never commit
 .roots/
 .home/.codex/
+
+# Compiled artifacts from cross-tongue experiments — never commit binaries
+experiments/**/__pycache__/
+experiments/**/*.exe
+experiments/**/*.pdb
+experiments/**/*.dll
+experiments/**/*.so
+experiments/**/*.dylib
