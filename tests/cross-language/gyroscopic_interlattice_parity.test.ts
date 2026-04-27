@@ -21,7 +21,8 @@ import {
 
 const CWD = process.cwd();
 const TMP_SCRIPT = join(CWD, '_tmp_parity_test.py');
-const PYTHON_CANDIDATES = process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
+const PYTHON_CANDIDATES =
+  process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
 
 /**
  * Run a Python expression and return its output via temp file (avoids shell quoting issues).

@@ -11,7 +11,8 @@
 import { describe, it, expect } from 'vitest';
 import { execFileSync } from 'child_process';
 
-const PYTHON_CANDIDATES = process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
+const PYTHON_CANDIDATES =
+  process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
 
 function resolvePython(): string | null {
   for (const candidate of PYTHON_CANDIDATES) {
@@ -127,10 +128,25 @@ maybeDescribe('Unified scbe CLI', () => {
   describe('tongues roundtrip', () => {
     for (const tongue of ['KO', 'AV', 'RU', 'CA', 'UM', 'DR']) {
       it(`${tongue}: encode then decode recovers original`, () => {
-        const encoded = run(
-          ['scbe.py', 'tongues', 'encode', '--tongue', tongue, '--text', 'roundtrip test 123']
-        );
-        const decoded = run(['scbe.py', 'tongues', 'decode', '--tongue', tongue, '--as-text', '--text', encoded]);
+        const encoded = run([
+          'scbe.py',
+          'tongues',
+          'encode',
+          '--tongue',
+          tongue,
+          '--text',
+          'roundtrip test 123',
+        ]);
+        const decoded = run([
+          'scbe.py',
+          'tongues',
+          'decode',
+          '--tongue',
+          tongue,
+          '--as-text',
+          '--text',
+          encoded,
+        ]);
         expect(decoded).toBe('roundtrip test 123');
       });
     }
@@ -243,9 +259,26 @@ maybeParityDescribe('Cross-CLI parity', () => {
 
   it('all 3 CLIs decode identically', () => {
     const tokens = run(['scbe.py', 'tongues', 'encode', '--tongue', 'ko', '--text', 'three way']);
-    const d1 = run(['scbe.py', 'tongues', 'decode', '--tongue', 'ko', '--as-text', '--text', tokens]);
+    const d1 = run([
+      'scbe.py',
+      'tongues',
+      'decode',
+      '--tongue',
+      'ko',
+      '--as-text',
+      '--text',
+      tokens,
+    ]);
     const d2 = run(['scbe-cli.py', 'decode', '--tongue', 'ko', '--as-text', '--text', tokens]);
-    const d3 = run(['six-tongues-cli.py', 'decode', '--tongue', 'KO', '--as-text', '--text', tokens]);
+    const d3 = run([
+      'six-tongues-cli.py',
+      'decode',
+      '--tongue',
+      'KO',
+      '--as-text',
+      '--text',
+      tokens,
+    ]);
     expect(d1).toBe('three way');
     expect(d2).toBe('three way');
     expect(d3).toBe('three way');
