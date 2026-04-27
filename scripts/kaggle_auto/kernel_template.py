@@ -336,8 +336,12 @@ trainer = SFTTrainer(
         logging_steps=10,
         eval_strategy="steps" if eval_dataset is not None else "no",
         eval_steps=30,
-        save_strategy="epoch",
-        save_total_limit=2,
+        save_strategy="steps" if eval_dataset is not None else "epoch",
+        save_steps=30 if eval_dataset is not None else 500,
+        save_total_limit=3,
+        load_best_model_at_end=eval_dataset is not None,
+        metric_for_best_model="eval_loss" if eval_dataset is not None else None,
+        greater_is_better=False if eval_dataset is not None else None,
         max_length=MAX_LEN,
         packing=False,
         dataset_num_proc=1,
@@ -351,16 +355,45 @@ trainer = SFTTrainer(
 )
 
 write_status("training")
-trainer.train()
+train_result = trainer.train()
 write_status("saving")
 trainer.save_model()
 print(f"\nSaved to {OUTPUT_DIR}")
+
+history_payload = {
+    "round": ROUND,
+    "base_model": BASE_MODEL,
+    "hf_repo": HF_REPO,
+    "train_records": len(dataset),
+    "eval_records": len(eval_dataset) if eval_dataset is not None else 0,
+    "best_model_checkpoint": getattr(trainer.state, "best_model_checkpoint", None),
+    "best_metric": getattr(trainer.state, "best_metric", None),
+    "global_step": getattr(trainer.state, "global_step", None),
+    "train_metrics": getattr(train_result, "metrics", {}),
+    "log_history": getattr(trainer.state, "log_history", []),
+}
+with open("/kaggle/working/TRAINING_HISTORY.json", "w", encoding="utf-8") as f:
+    json.dump(history_payload, f, indent=2)
+print("Wrote TRAINING_HISTORY.json")
 
 if PUSH:
     trainer.push_to_hub()
     print(f"Pushed to {HF_REPO}")
 
-with open("/kaggle/working/DONE.json", "w") as f:
-    json.dump({"round": ROUND, "status": "complete", "hf_repo": HF_REPO, "push": PUSH}, f)
+with open("/kaggle/working/DONE.json", "w", encoding="utf-8") as f:
+    json.dump(
+        {
+            "round": ROUND,
+            "status": "complete",
+            "hf_repo": HF_REPO,
+            "push": PUSH,
+            "best_model_checkpoint": history_payload["best_model_checkpoint"],
+            "best_metric": history_payload["best_metric"],
+            "global_step": history_payload["global_step"],
+            "train_records": history_payload["train_records"],
+            "eval_records": history_payload["eval_records"],
+        },
+        f,
+    )
 
 print("=== TRAINING COMPLETE ===")
