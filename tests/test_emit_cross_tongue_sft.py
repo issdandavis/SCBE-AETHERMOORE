@@ -5,6 +5,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -23,19 +25,22 @@ sys.modules["_emit_cross_tongue_sft_under_test"] = emitter
 _SPEC.loader.exec_module(emitter)
 
 
-def _bundle() -> dict:
-    return builder.build_bundle(
-        "arithmetic_basics",
-        builder.PROJECT_SPECS["arithmetic_basics"],
-    )
+def _bundle(project: str = "arithmetic_basics") -> dict:
+    return builder.build_bundle(project, builder.PROJECT_SPECS[project])
 
 
-def test_emit_pairs_counts_translate_and_identify_rows() -> None:
-    rows = emitter.emit_pairs(_bundle())
+@pytest.mark.parametrize("project", sorted(builder.PROJECT_SPECS.keys()))
+def test_emit_pairs_counts_translate_and_identify_rows(project: str) -> None:
+    bundle = _bundle(project)
+    rows = emitter.emit_pairs(bundle)
 
-    assert len(rows) == 108
-    assert sum(1 for row in rows if row["meta"]["task"] == "translate_one") == 90
-    assert sum(1 for row in rows if row["meta"]["task"] == "identify") == 18
+    n_algos = len(bundle["algorithms"])
+    n_tongues = 6
+    expected_translate = n_algos * n_tongues * (n_tongues - 1)
+    expected_identify = n_algos * n_tongues
+    assert len(rows) == expected_translate + expected_identify
+    assert sum(1 for row in rows if row["meta"]["task"] == "translate_one") == expected_translate
+    assert sum(1 for row in rows if row["meta"]["task"] == "identify") == expected_identify
 
 
 def test_translate_rows_preserve_slot_map_and_tongues() -> None:

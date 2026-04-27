@@ -193,8 +193,126 @@ def _is_palindrome_spec() -> Algorithm:
     return algo
 
 
+def _reverse_str_spec() -> Algorithm:
+    algo = Algorithm(
+        name="reverse_str",
+        slot_order=["sig", "body"],
+        description="Return the input string with characters in reverse order",
+    )
+    algo.impls["ko"] = SlottedImpl("ko", {
+        "sig": "def reverse_str(s: str) -> str:\n",
+        "body": "    return s[::-1]\n",
+    })
+    algo.impls["av"] = SlottedImpl("av", {
+        "sig": "function reverseStr(s) {\n",
+        "body": "  return s.split('').reverse().join('');\n}\n",
+    })
+    algo.impls["ru"] = SlottedImpl("ru", {
+        "sig": "fn reverse_str(s: &str) -> String {\n",
+        "body": "    s.chars().rev().collect()\n}\n",
+    })
+    algo.impls["ca"] = SlottedImpl("ca", {
+        "sig": "reverseStr[s_String] := \n",
+        "body": "  StringReverse[s];\n",
+    })
+    algo.impls["um"] = SlottedImpl("um", {
+        "sig": "reverseStr :: String -> String\n",
+        "body": "reverseStr s = reverse s\n",
+    })
+    algo.impls["dr"] = SlottedImpl("dr", {
+        "sig": "## reverse_str(s)\n",
+        "body": "Return s with characters in reverse order.\n",
+    })
+    return algo
+
+
+def _length_of_spec() -> Algorithm:
+    algo = Algorithm(
+        name="length_of",
+        slot_order=["sig", "body"],
+        description="Number of characters in the input string",
+    )
+    algo.impls["ko"] = SlottedImpl("ko", {
+        "sig": "def length_of(s: str) -> int:\n",
+        "body": "    return len(s)\n",
+    })
+    algo.impls["av"] = SlottedImpl("av", {
+        "sig": "function lengthOf(s) {\n",
+        "body": "  return s.length;\n}\n",
+    })
+    algo.impls["ru"] = SlottedImpl("ru", {
+        "sig": "fn length_of(s: &str) -> usize {\n",
+        "body": "    s.chars().count()\n}\n",
+    })
+    algo.impls["ca"] = SlottedImpl("ca", {
+        "sig": "lengthOf[s_String] := \n",
+        "body": "  StringLength[s];\n",
+    })
+    algo.impls["um"] = SlottedImpl("um", {
+        "sig": "lengthOf :: String -> Int\n",
+        "body": "lengthOf s = length s\n",
+    })
+    algo.impls["dr"] = SlottedImpl("dr", {
+        "sig": "## length_of(s)\n",
+        "body": "Return the number of characters in s.\n",
+    })
+    return algo
+
+
+def _count_char_spec() -> Algorithm:
+    algo = Algorithm(
+        name="count_char",
+        slot_order=["sig", "init", "loop_open", "loop_body", "ret"],
+        description="Count occurrences of character c in string s",
+    )
+    algo.impls["ko"] = SlottedImpl("ko", {
+        "sig": "def count_char(s: str, c: str) -> int:\n",
+        "init": "    total = 0\n",
+        "loop_open": "    for ch in s:\n",
+        "loop_body": "        if ch == c:\n            total += 1\n",
+        "ret": "    return total\n",
+    })
+    algo.impls["av"] = SlottedImpl("av", {
+        "sig": "function countChar(s, c) {\n",
+        "init": "  let total = 0;\n",
+        "loop_open": "  for (const ch of s) {\n",
+        "loop_body": "    if (ch === c) total += 1;\n",
+        "ret": "  }\n  return total;\n}\n",
+    })
+    algo.impls["ru"] = SlottedImpl("ru", {
+        "sig": "fn count_char(s: &str, c: char) -> usize {\n",
+        "init": "    let mut total: usize = 0;\n",
+        "loop_open": "    for ch in s.chars() {\n",
+        "loop_body": "        if ch == c { total += 1; }\n",
+        "ret": "    }\n    total\n}\n",
+    })
+    algo.impls["ca"] = SlottedImpl("ca", {
+        "sig": "countChar[s_String, c_String] := Module[{total},\n",
+        "init": "  total = 0;\n",
+        "loop_open": "  Do[\n",
+        "loop_body": "    If[StringPart[s, i] === c, total = total + 1],\n",
+        "ret": "    {i, 1, StringLength[s]}]; total]\n",
+    })
+    algo.impls["um"] = SlottedImpl("um", {
+        "sig": "countChar :: Char -> String -> Int\n",
+        "init": "countChar c s = go 0 s where\n",
+        "loop_open": "  go acc [] = acc\n",
+        "loop_body": "  go acc (x:xs) = go (if x == c then acc + 1 else acc) xs\n",
+        "ret": "-- tail-recursive accumulator returns count\n",
+    })
+    algo.impls["dr"] = SlottedImpl("dr", {
+        "sig": "## count_char(s, c)\n",
+        "init": "Start with total = 0.\n",
+        "loop_open": "For each character ch in s:\n",
+        "loop_body": "  if ch equals c, add 1 to total.\n",
+        "ret": "Return total.\n",
+    })
+    return algo
+
+
 PROJECT_SPECS: Dict[str, List[Algorithm]] = {
     "arithmetic_basics": [_add_spec(), _sum_list_spec(), _is_palindrome_spec()],
+    "string_basics": [_reverse_str_spec(), _length_of_spec(), _count_char_spec()],
 }
 
 

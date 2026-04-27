@@ -22,10 +22,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import build_cross_tongue_project as builder  # noqa: E402
 
 
-@pytest.fixture(scope="module")
-def bundle():
-    algos = builder.PROJECT_SPECS["arithmetic_basics"]
-    return builder.build_bundle("arithmetic_basics", algos)
+@pytest.fixture(scope="module", params=sorted(builder.PROJECT_SPECS.keys()))
+def bundle(request):
+    project = request.param
+    algos = builder.PROJECT_SPECS[project]
+    return builder.build_bundle(project, algos)
 
 
 def test_summary_all_green(bundle):
@@ -93,4 +94,5 @@ def test_write_bundle_round_trip(tmp_path, bundle):
     assert bundle_path.exists()
     loaded = json.loads(bundle_path.read_text(encoding="utf-8"))
     assert loaded["summary"]["all_green"]
-    assert loaded["project"] == "arithmetic_basics"
+    assert loaded["project"] == bundle["project"]
+    assert loaded["project"] in builder.PROJECT_SPECS
