@@ -116,15 +116,20 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             msg_type = msg.get("type")
-
-            if msg_type == MsgType.COMMAND.value:
-                await _handle_command(ws, msg)
-            elif msg_type == MsgType.PAGE_CONTEXT.value:
-                await _handle_page_context(ws, msg)
-            elif msg_type == MsgType.ZONE_RESPONSE.value:
-                await _handle_zone_response(ws, msg)
-            else:
-                await ws.send_json(feed.error(f"Unhandled message type: {msg_type}"))
+            try:
+                if msg_type == MsgType.COMMAND.value:
+                    await _handle_command(ws, msg)
+                elif msg_type == MsgType.PAGE_CONTEXT.value:
+                    await _handle_page_context(ws, msg)
+                elif msg_type == MsgType.ZONE_RESPONSE.value:
+                    await _handle_zone_response(ws, msg)
+                else:
+                    await ws.send_json(feed.error(f"Unhandled message type: {msg_type}"))
+            except Exception as handler_exc:
+                # A4: never drop the client on handler failure — return JSON so tests/clients
+                # do not block forever on receive_json waiting for a reply.
+                logger.error("WebSocket handler error: %s", handler_exc, exc_info=True)
+                await ws.send_json(feed.error(f"Request failed: {handler_exc}"))
 
     except WebSocketDisconnect:
         pending_zone_requests.clear()
