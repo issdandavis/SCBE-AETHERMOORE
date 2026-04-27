@@ -95,6 +95,7 @@
     "codeprism:build": "python scripts/code_prism_build.py",
     "codeprism:mesh": "python scripts/code_prism_build.py --mesh",
     "connector:health": "python scripts/connector_health_check.py",
+    "repo:shape": "python scripts/system/report_repo_surface_shape.py",
     "scbe:bootstrap": "node scripts/scbe_bootstrap.mjs",
     "system:cli": "python scripts/scbe-system-cli.py",
     "training:terminal": "python scripts/system/training_terminal.py",

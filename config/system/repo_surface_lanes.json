@@ -1,0 +1,168 @@
+{
+  "schema": "scbe_repo_surface_lanes_v1",
+  "lanes": {
+    "core": {
+      "description": "Stable source, package, schemas, protocol, and test surfaces.",
+      "paths": [
+        "src",
+        "python",
+        "api",
+        "rust",
+        "packages",
+        "schemas",
+        "proto",
+        "tests",
+        "symphonic_cipher"
+      ]
+    },
+    "training": {
+      "description": "Datasets, model-training launchers, notebooks, adapters, benchmarks, and evals.",
+      "paths": [
+        "training",
+        "training-data",
+        "training-runs",
+        "notebooks",
+        "benchmarks",
+        ".benchmarks",
+        "models",
+        "my-local-model"
+      ]
+    },
+    "ops": {
+      "description": "Operator workflows, automation, deployment, services, connectors, and local control surfaces.",
+      "paths": [
+        ".agents",
+        ".cursor",
+        ".devcontainer",
+        ".github",
+        ".vscode",
+        "agents",
+        "automation",
+        "aws",
+        "bin",
+        "config",
+        "deploy",
+        "k8s",
+        "mcp",
+        "policies",
+        "scripts",
+        "services",
+        "skills",
+        "tools",
+        "workflows"
+      ]
+    },
+    "proposal": {
+      "description": "Grant, contract, legal, evidence, research, and publication support surfaces.",
+      "paths": [
+        "articles",
+        "content",
+        "deliverables",
+        "docs",
+        "exports",
+        "legal",
+        "notes",
+        "paper",
+        "references",
+        "sealed_blobs"
+      ]
+    },
+    "product": {
+      "description": "User-facing apps, demos, browser, game, website, and revenue surfaces.",
+      "paths": [
+        "aether-browser",
+        "aetherbrowse",
+        "ai-ide",
+        "app",
+        "apps",
+        "assets",
+        "conference-app",
+        "dashboard",
+        "demo",
+        "demos",
+        "desktop",
+        "extensions",
+        "game",
+        "kindle-app",
+        "products",
+        "public",
+        "scbe-aethermoore",
+        "scbe-visual-system",
+        "shopify",
+        "space",
+        "spaces",
+        "spiral-word-app",
+        "spiralverse-protocol",
+        "ui"
+      ]
+    },
+    "research": {
+      "description": "Experimental research, simulations, external comparisons, and active prototypes.",
+      "paths": [
+        "_external",
+        "AETHERMOORE",
+        "data",
+        "experimental",
+        "experiments",
+        "external",
+        "external_repos",
+        "hydra",
+        "lexicons",
+        "phdm-21d-embedding",
+        "physics_sim",
+        "plugins",
+        "prototype",
+        "scbe_aethermoore.egg-info"
+      ]
+    },
+    "archive": {
+      "description": "Old, cold, or imported material that should not be treated as active code without revalidation.",
+      "paths": [
+        "archive",
+        "backups",
+        "docs-build-local",
+        "docs-build-smoke",
+        "examples",
+        "ok",
+        "test-install"
+      ]
+    },
+    "generated": {
+      "description": "Build outputs, caches, logs, local temporary files, and generated artifacts.",
+      "paths": [
+        ".cache",
+        ".codex_tmp",
+        ".hypothesis",
+        ".npm-cache",
+        ".playwright-cli",
+        ".playwright-mcp",
+        ".pytest_cache",
+        ".pytest_tmp_hallpass_review",
+        ".tmp-build",
+        ".venv-garak",
+        "artifacts",
+        "build",
+        "dist",
+        "logs",
+        "node_modules",
+        "output"
+      ]
+    },
+    "private": {
+      "description": "Local-only or sensitive state. Never publish or move without explicit review.",
+      "paths": [
+        ".claude",
+        ".clawhub",
+        ".firebase",
+        ".grok",
+        ".home",
+        ".roots",
+        ".scbe",
+        ".secrets",
+        ".streamlit",
+        "Microsoft",
+        "Notes and Dumps. by me"
+      ]
+    }
+  }
+}
