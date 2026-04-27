@@ -172,8 +172,11 @@ class TestRedZoneIntegration:
         assert green_result.outcome in {TunnelOutcome.ATTENUATE, TunnelOutcome.TUNNEL}
         assert green_result.transmission_coeff > red_result.transmission_coeff
 
-    def test_red_zone_analysis_can_run_on_stubbed_huggingface_lane(self):
+    def test_red_zone_analysis_can_run_on_stubbed_huggingface_lane(self, monkeypatch: pytest.MonkeyPatch):
         payload = _load_red_zone_payload()
+        # Router must treat the Hugging Face lane as configured; otherwise
+        # select_model raises. The executor is still stubbed — no real HF call.
+        monkeypatch.setenv("HF_TOKEN", "test-hf-stub")
 
         class StubExecutor:
             async def execute(self, plan):
@@ -190,12 +193,15 @@ class TestRedZoneIntegration:
         serve_module.executor = StubExecutor()
         try:
             with client.websocket_connect("/ws") as ws:
+                # Omit fixture title in the user command: titles like "… Download …" add a
+                # "download" token, which triggers a high-risk approval and zone gate; the
+                # test would then block waiting for /ws messages that never arrive.
                 ws.send_json(
                     {
                         "type": "command",
                         "agent": "user",
                         "payload": {
-                            "text": f"Research the page titled {payload['title']} and summarize safe exits.",
+                            "text": "Research the current page and summarize safe exits.",
                             "routing": {
                                 "preferences": {"KO": "huggingface"},
                                 "auto_cascade": False,

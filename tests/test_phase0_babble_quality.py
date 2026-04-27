@@ -33,6 +33,11 @@ import pytest
 # ---------------------------------------------------------------------------
 
 DATA_PATH = Path(__file__).resolve().parents[1] / "training-data" / "sft" / "phase0_baby_babble_sft.jsonl"
+if not DATA_PATH.is_file():
+    pytest.skip(
+        f"Optional SFT dataset not found: {DATA_PATH} (clone training-data or generate locally to run these checks)",
+        allow_module_level=True,
+    )
 
 TONGUES = ["KO", "AV", "RU", "CA", "UM", "DR"]
 PHI = (1 + math.sqrt(5)) / 2
