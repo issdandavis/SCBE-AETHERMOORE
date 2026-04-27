@@ -40,6 +40,30 @@ LANE_HINTS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("stage6_repair", ("stage6", "repair", "atomic_workflow")),
     ("operator_bus", ("operator", "agent_bus", "bus")),
 )
+GENERIC_MATCH_TOKENS = {
+    "adapter",
+    "agent",
+    "artifacts",
+    "auto",
+    "coding",
+    "hfjobs",
+    "issdandavis",
+    "kaggle",
+    "model",
+    "output",
+    "polly",
+    "qwen",
+    "scbe",
+    "the",
+    "v1",
+    "v2",
+    "v3",
+    "v4",
+    "v5",
+    "v6",
+    "v7",
+    "v8",
+}
 
 
 @dataclass
@@ -118,9 +142,15 @@ def loose_adapter_match(left: str, right: str) -> bool:
         return False
     if a in b or b in a:
         return True
-    a_parts = {part for part in a.split("-") if len(part) > 2}
-    b_parts = {part for part in b.split("-") if len(part) > 2}
-    return len(a_parts & b_parts) >= 4
+    a_parts = {part for part in a.split("-") if len(part) > 2 and part not in GENERIC_MATCH_TOKENS}
+    b_parts = {part for part in b.split("-") if len(part) > 2 and part not in GENERIC_MATCH_TOKENS}
+    overlap = a_parts & b_parts
+    if len(overlap) < 3:
+        return False
+    # Avoid matching two unrelated adapters just because they share broad
+    # project/model words. At least one distinctive token must be lane-specific.
+    distinctive = {"approval", "bijective", "dsl", "geoseal", "regularized", "repair", "stage6", "synthesis", "tongue"}
+    return bool(overlap & distinctive)
 
 
 def status_from_bool(value: Any) -> str:
