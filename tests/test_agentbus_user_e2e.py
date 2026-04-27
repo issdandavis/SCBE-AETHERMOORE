@@ -53,10 +53,15 @@ def test_user_cli_agentbus_run_shapes_dispatch_tracks_and_watches() -> None:
     assert payload["dispatch"]["provider"] == "offline"
     assert payload["dispatch"]["event_id"]
     assert payload["rehearsal_gate"]["status"] == "pass"
+    assert payload["geoseal_agentbus"]["route_tongue"] == "ca"
+    assert payload["geoseal_agentbus"]["dual_tokenizer_roundtrip_ok"] is True
+    assert payload["geoseal_agentbus"]["verify_ok"] is True
     assert (ROOT / payload["artifacts"]["latest_round"]).exists()
     assert (ROOT / payload["artifacts"]["watcher"]).exists()
     assert (ROOT / payload["artifacts"]["summary"]).exists()
     assert (ROOT / payload["artifacts"]["rehearsal_gate"]).exists()
+    assert (ROOT / payload["artifacts"]["geoseal_agentbus_envelope"]).exists()
+    assert (ROOT / payload["artifacts"]["geoseal_agentbus_ledger"]).exists()
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
@@ -92,4 +97,6 @@ def test_node_agentbus_pipe_processes_workflow_event() -> None:
         row["result"]["operation_shape"]["signature_hex"]
         == "c176ca9a2f3473c6d643c1ef8b000c7a"
     )
+    assert row["result"]["geoseal_agentbus"]["route_tongue"] == "ca"
+    assert row["result"]["geoseal_agentbus"]["verify_ok"] is True
     assert row["result"]["artifacts"]["watcher"].endswith("observable_state.json")

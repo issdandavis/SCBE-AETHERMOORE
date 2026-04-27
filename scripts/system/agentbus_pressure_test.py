@@ -21,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from python.scbe.semantic_gate import parameterize_literal_semantic_intent
+from src.contracts.geoseal_agent_bus import build_geoseal_agentbus_envelope, verify_geoseal_agentbus_envelope
 from scripts.system.mirror_room_agent_bus import DEFAULT_ROUTER_CONFIG, schedule_match_round
 
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "agent_bus" / "pressure"
@@ -289,6 +290,28 @@ def run_pressure(args: argparse.Namespace) -> dict[str, Any]:
             for lane in round_packet.get(lane_name, []):
                 lanes_seen.add(str(lane.get("provider", "")))
         status = "pass" if intent.decision == scenario["expected_decision"] else "fail"
+        geoseal_envelope = build_geoseal_agentbus_envelope(
+            {
+                "schema_version": "scbe_agentbus_user_run_v1",
+                "generated_at": datetime.now(timezone.utc).isoformat(),
+                "series_id": f"{run_id}-{scenario['id']}",
+                "privacy": args.privacy,
+                "budget_cents": args.budget_cents,
+                "task": round_packet.get("task", {}),
+                "operation_shape": round_packet.get("operation_shape"),
+                "selected_provider": selected,
+                "primary_bus": round_packet.get("primary_bus", []),
+                "secondary_bus": round_packet.get("secondary_bus", []),
+                "tertiary_bus_count": len(round_packet.get("tertiary_bus", [])),
+                "dispatch": {"enabled": False, "provider": selected, "route": {"privacy": "local"}},
+                "rehearsal_gate": {
+                    "status": "not-run",
+                    "pressure_status": status,
+                    "expected_decision": scenario["expected_decision"],
+                },
+            }
+        )
+        geoseal_verify = verify_geoseal_agentbus_envelope(geoseal_envelope)
         scenarios.append(
             {
                 "scenario_id": scenario["id"],
@@ -304,6 +327,13 @@ def run_pressure(args: argparse.Namespace) -> dict[str, Any]:
                 "status": status,
                 "selected_provider": selected,
                 "intent": intent.to_dict(),
+                "geoseal_agentbus": {
+                    "envelope_hash": geoseal_envelope["envelope_hash"],
+                    "route_tongue": geoseal_envelope["route"]["route_tongue"],
+                    "dual_tokenizer_roundtrip_ok": geoseal_envelope["dual_tokenizer_seal"]["roundtrip_ok"],
+                    "verify_ok": geoseal_verify["ok"],
+                    "hydra_protocols": geoseal_envelope["hydra_protocols"]["protocols"],
+                },
                 "bus": {
                     "primary_bus": _annotate_lanes(round_packet.get("primary_bus", [])),
                     "secondary_bus": _annotate_lanes(round_packet.get("secondary_bus", [])),

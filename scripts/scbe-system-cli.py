@@ -526,6 +526,21 @@ def _load_agentbus_rehearsal_gate_module(repo_root_str: str):
 
 
 @functools.lru_cache(maxsize=4)
+def _load_message_triplet_ledger_module(repo_root_str: str):
+    repo_root = Path(repo_root_str)
+    module_path = repo_root / "scripts" / "system" / "message_triplet_ledger.py"
+    if not module_path.exists():
+        return None
+    spec = importlib.util.spec_from_file_location("scbe_message_triplet_ledger_runtime", module_path)
+    if not spec or not spec.loader:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@functools.lru_cache(maxsize=4)
 def _load_file_tracker_module(repo_root_str: str):
     repo_root = Path(repo_root_str)
     module_path = repo_root / "scripts" / "system" / "auto_file_tracker.py"
@@ -2636,8 +2651,9 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
     agentbus = _load_agentbus_module(str(repo_root.resolve()))
     tracker = _load_file_tracker_module(str(repo_root.resolve()))
     watcher = _load_observable_watcher_module(str(repo_root.resolve()))
-    if agentbus is None or tracker is None or watcher is None:
-        print("Agent bus, file tracker, or watcher module is unavailable.")
+    triplet_ledger = _load_message_triplet_ledger_module(str(repo_root.resolve()))
+    if agentbus is None or tracker is None or watcher is None or triplet_ledger is None:
+        print("Agent bus, file tracker, watcher, or triplet ledger module is unavailable.")
         return 2
 
     series_id = args.series_id or f"user-run-{_flow_slug(args.task, fallback='task')}"
@@ -2760,6 +2776,37 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
             "warning_count": gate_report["warning_count"],
         }
         summary["artifacts"]["rehearsal_gate"] = _display_path(gate_output, repo_root)
+
+    from src.contracts.geoseal_agent_bus import build_geoseal_agentbus_envelope, verify_geoseal_agentbus_envelope
+
+    geoseal_envelope = build_geoseal_agentbus_envelope(summary)
+    geoseal_verify = verify_geoseal_agentbus_envelope(geoseal_envelope)
+    geoseal_output = output_dir / "geoseal_agentbus_envelope.json"
+    geoseal_output.write_text(json.dumps(geoseal_envelope, indent=2, ensure_ascii=True), encoding="utf-8")
+    ledger_path = repo_root / "artifacts" / "message_bus" / "geoseal_agentbus_triplets.jsonl"
+    ledger_record = triplet_ledger.append_record(
+        ledger_path,
+        geoseal_envelope,
+        ack_payload={
+            "series_id": series_id,
+            "dispatch_event_id": dispatch_payload.get("event_id"),
+            "rehearsal_gate": summary.get("rehearsal_gate", {}),
+            "verify": geoseal_verify,
+        },
+        channel="geoseal-agentbus",
+    )
+    summary["geoseal_agentbus"] = {
+        "schema_version": geoseal_envelope["schema_version"],
+        "envelope_hash": geoseal_envelope["envelope_hash"],
+        "route_tongue": geoseal_envelope["route"]["route_tongue"],
+        "selected_provider": geoseal_envelope["route"]["selected_provider"],
+        "dual_tokenizer_roundtrip_ok": geoseal_envelope["dual_tokenizer_seal"]["roundtrip_ok"],
+        "dual_tokenizer_pair_hash": geoseal_envelope["dual_tokenizer_seal"]["pair_hash"],
+        "verify_ok": geoseal_verify["ok"],
+        "ledger_current_hash": ledger_record["triplet"]["current_hash"],
+    }
+    summary["artifacts"]["geoseal_agentbus_envelope"] = _display_path(geoseal_output, repo_root)
+    summary["artifacts"]["geoseal_agentbus_ledger"] = _display_path(ledger_path, repo_root)
 
     summary_path = output_dir / "run_summary.json"
     summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=True), encoding="utf-8")
