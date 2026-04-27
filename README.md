@@ -303,7 +303,7 @@ For current authority:
 - System state: [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
 - Repo map: [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
 - Canonical index guide: [docs/README_INDEX.md](docs/README_INDEX.md)
-- Evidence page: [docs/evidence/EVIDENCE_24_24.md](docs/evidence/EVIDENCE_24_24.md)
+- Release: [v4.0.3](https://github.com/issdandavis/SCBE-AETHERMOORE/releases/tag/v4.0.3)
 - Layer index: [docs/LAYER_INDEX.md](docs/LAYER_INDEX.md)
 - System overview: [docs/SCBE_SYSTEM_OVERVIEW.md](docs/SCBE_SYSTEM_OVERVIEW.md)
 - Concepts: [docs/CONCEPTS.md](docs/CONCEPTS.md)
