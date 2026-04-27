@@ -45,6 +45,8 @@ npm run training:kaggle:approval-v2:launch
 
 Launch only when GPU slots are free and the ready check reports no missing local or uploaded dataset files.
 
+`dsl-synthesis-v3-fast` is the bounded retry for the failed DSL lane. The previous `dsl-syn-v2` run exceeded Kaggle's wall-clock limit because it was too large and fell back to CPU. Use the v3 fast ready/launch tasks instead of relaunching v2.
+
 ## Known Current Verdict
 
 The fresh HF v7 adapter improved frozen perplexity but failed the executable coding gate. Do not promote or merge it unless a later benchmark report reverses that verdict.

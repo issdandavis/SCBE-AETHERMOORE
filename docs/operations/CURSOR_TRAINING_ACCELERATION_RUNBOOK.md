@@ -33,6 +33,12 @@ Recommended order for the active training lane:
 3. `SCBE: Kaggle Approval V2 Pattern Score`
 4. `SCBE: Kaggle Approval V2 Launch` only when the ready check says slots are free
 
+Recommended order for the failed DSL lane:
+
+1. `SCBE: Kaggle DSL V3 Fast Ready`
+2. `SCBE: Kaggle Active Status`
+3. `SCBE: Kaggle DSL V3 Fast Launch` only when a GPU slot is free
+
 Recommended order for adapter review:
 
 1. `SCBE: Frozen Eval Fresh HF v7`
@@ -57,3 +63,5 @@ Codex should keep ownership of:
 Do not edit `.env*`, `config/connector_oauth/**`, OAuth files, Proton/Gmail credentials, HF tokens, or generated caches.
 
 Do not merge adapters from perplexity alone. The functional benchmark gate is required because the latest v7 run improved frozen perplexity but regressed executable coding behavior.
+
+Do not relaunch `dsl-synthesis-v1` / `polly-auto-dsl-syn-v2` unchanged. It exceeded Kaggle wall-clock after falling back to CPU. Use `dsl-synthesis-v3-fast`, which is bounded and eval-gated.

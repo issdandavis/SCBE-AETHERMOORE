@@ -396,6 +396,41 @@ ROUNDS = {
         "lora_dropout": 0.05,
         "slug_override": "polly-auto-dsl-syn-v2",
     },
+    "dsl-synthesis-v3-fast": {
+        "desc": "L_dsl_synthesis fast bounded repair - finishes inside Kaggle wall clock with eval gate",
+        "files": [
+            "bijective_dsl_v1_train.sft.jsonl",
+            "bijective_codeflow_v1_train.sft.jsonl",
+            "cross_tongue_dialogue_bijective_v1_train.sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+            "command_lattice_seed_train.sft.jsonl",
+            "binary_interpretation_matrix_v1.sft.jsonl",
+        ],
+        "eval_files": [
+            "bijective_dsl_v1_holdout.sft.jsonl",
+            "functional_coding_benchmark_repairs_v1_eval.sft.jsonl",
+            "operator_agent_bus_extracted_v1_eval.sft.jsonl",
+        ],
+        "hf_repo": "issdandavis/scbe-coding-agent-qwen-dsl-synthesis-v3-fast-kaggle",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-dsl-synthesis-v1",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 512,
+        "max_steps": 90,
+        "learning_rate": 5e-5,
+        "max_records": 1500,
+        "lora_r": 8,
+        "lora_alpha": 16,
+        "lora_dropout": 0.1,
+        "early_stopping_patience": 2,
+        "early_stopping_threshold": 0.0,
+        "eval_steps": 10,
+        "save_steps": 10,
+        "slug_override": "polly-auto-dsl-syn-v3-fast",
+    },
     "regularized-coding-v8": {
         "desc": "Regularized coding model v8 - focused coding bucket with frozen eval",
         "files": [
@@ -502,6 +537,10 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
         "lora_r": config.get("lora_r", 16),
         "lora_alpha": config.get("lora_alpha", 32),
         "lora_dropout": config.get("lora_dropout", 0.05),
+        "early_stopping_patience": config.get("early_stopping_patience", 3),
+        "early_stopping_threshold": config.get("early_stopping_threshold", 0.0),
+        "eval_steps": config.get("eval_steps", 30),
+        "save_steps": config.get("save_steps", 30),
     })
 
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -576,11 +615,15 @@ def create_arc_kernel_dir(gpu: str) -> Path:
     return kernel_dir
 
 
-def push_kernel(kernel_dir: Path) -> bool:
+def push_kernel(kernel_dir: Path, gpu: str = "none") -> bool:
     """Push kernel to Kaggle."""
     print(f"Pushing kernel from {kernel_dir}...")
+    cmd = ["kaggle", "kernels", "push", "-p", str(kernel_dir)]
+    accelerator = GPU_CONFIGS.get(gpu, GPU_CONFIGS["none"]).get("accelerator")
+    if accelerator and accelerator != "none":
+        cmd.extend(["--accelerator", accelerator])
     result = subprocess.run(
-        ["kaggle", "kernels", "push", "-p", str(kernel_dir)],
+        cmd,
         capture_output=True, text=True,
     )
     print(result.stdout)
@@ -843,7 +886,7 @@ def main():
         kernel_dir = create_arc_kernel_dir(args.gpu)
         print(f"Kernel dir: {kernel_dir}")
 
-        if not push_kernel(kernel_dir):
+        if not push_kernel(kernel_dir, args.gpu):
             print("FAILED to push ARC kernel")
             sys.exit(1)
 
@@ -921,7 +964,7 @@ def main():
                 continue
 
         # Push to Kaggle
-        if not push_kernel(kernel_dir):
+        if not push_kernel(kernel_dir, args.gpu):
             print(f"FAILED to push {round_name} — skipping")
             continue
 

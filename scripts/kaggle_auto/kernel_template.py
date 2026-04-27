@@ -86,6 +86,8 @@ LORA_ALPHA = int(CFG.get("lora_alpha", 32))
 LORA_DROPOUT = float(CFG.get("lora_dropout", 0.05))
 EARLY_STOPPING_PATIENCE = int(CFG.get("early_stopping_patience", 3))
 EARLY_STOPPING_THRESHOLD = float(CFG.get("early_stopping_threshold", 0.0))
+EVAL_STEPS = int(CFG.get("eval_steps", 30))
+SAVE_STEPS = int(CFG.get("save_steps", EVAL_STEPS))
 
 # ---- Auth ----
 PUSH = False
@@ -286,8 +288,13 @@ else:
         torch.cuda.is_available = lambda: False
     else:
         print("No GPU - CPU tiny-run (200 records, 1 epoch)")
-    # CPU tiny-run: override epochs to 1, dataset already capped at 200
+    # CPU tiny-run: override epochs and steps so a bad GPU assignment cannot
+    # consume the full Kaggle wall-clock limit.
     EPOCHS = 1
+    if MAX_STEPS < 0:
+        MAX_STEPS = 30
+    else:
+        MAX_STEPS = min(MAX_STEPS, 30)
     quant_config = None
     compute_dtype = torch.float32
     load_kwargs = {"torch_dtype": torch.float32, "device_map": "cpu"}
@@ -315,7 +322,7 @@ if not use_gpu:
     # CPU mode: smaller batch, no mixed precision, no gradient checkpointing
     effective_batch = 2
     use_grad_ckpt = False
-    print(f"CPU mode: batch_size={effective_batch}, fp32, no gradient checkpointing")
+    print(f"CPU mode: batch_size={effective_batch}, max_steps={MAX_STEPS}, fp32, no gradient checkpointing")
 else:
     use_fp16 = not has_bf16
     use_bf16 = has_bf16
@@ -337,9 +344,9 @@ trainer = SFTTrainer(
         lr_scheduler_type="cosine",
         logging_steps=10,
         eval_strategy="steps" if eval_dataset is not None else "no",
-        eval_steps=30,
+        eval_steps=EVAL_STEPS,
         save_strategy="steps" if eval_dataset is not None else "epoch",
-        save_steps=30 if eval_dataset is not None else 500,
+        save_steps=SAVE_STEPS if eval_dataset is not None else 500,
         save_total_limit=3,
         load_best_model_at_end=eval_dataset is not None,
         metric_for_best_model="eval_loss" if eval_dataset is not None else None,
