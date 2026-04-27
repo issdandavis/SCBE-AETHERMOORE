@@ -353,6 +353,11 @@ ROUNDS = {
         "lora_r": 16,
         "lora_alpha": 32,
         "lora_dropout": 0.05,
+        # Kaggle CLI currently rejects creating this fresh slug with
+        # "Notebook not found". Reuse the existing v1 notebook shell while
+        # keeping the injected round config and HF output repo as v2.
+        "slug_override": "polly-auto-coding-approval-metrics-v1",
+        "title_override": "Polly Auto: coding-approval-metrics-v1",
     },
     "full-3b": {
         "desc": "Full 3B model - all data, big GPU",
@@ -522,7 +527,7 @@ def create_kernel_dir(round_name: str, config: dict, gpu: str) -> Path:
     # Write kernel-metadata.json
     meta = {
         "id": f"{KAGGLE_USER}/{kernel_slug}",
-        "title": f"Polly Auto: {round_name}",
+        "title": config.get("title_override") or f"Polly Auto: {round_name}",
         "code_file": "script.py",
         "language": "python",
         "kernel_type": "script",

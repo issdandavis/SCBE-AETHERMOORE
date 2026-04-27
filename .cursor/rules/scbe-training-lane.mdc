@@ -1,0 +1,50 @@
+---
+description: SCBE training and evaluation lane rules for Cursor agents
+globs:
+  - "scripts/**/*.py"
+  - "training-data/**/*.jsonl"
+  - "config/model_training/**/*.json"
+  - ".vscode/tasks.json"
+alwaysApply: true
+---
+
+# SCBE Training Lane
+
+Work in small, isolated patches. Do not edit unrelated dirty files.
+
+Never edit secrets, mail credentials, OAuth files, `.env*`, `config/connector_oauth/**`, or generated caches. Treat `artifacts/` and `training/runs/` as generated outputs unless the user explicitly asks for report review or packaging.
+
+Use existing repo commands before inventing new wrappers. Prefer targeted validation over broad monorepo validation.
+
+## Promotion Gate
+
+Training loss, token accuracy, and frozen perplexity are not enough for model promotion.
+
+A coding adapter is only promotion-eligible after:
+
+1. Dataset JSONL validates.
+2. Kaggle/HF pattern score is clean.
+3. Frozen eval beats BASE on the same holdout slices.
+4. Functional coding benchmark passes.
+5. Gate passes with `--min-pass-rate 0.85 --beat-base`.
+6. Routing is considered before merge.
+
+Do not recommend weighted adapter merge when routing would preserve lane behavior with lower risk.
+
+## Current Hot Lane
+
+`coding-approval-metrics-v2` is the current repair lane for executable coding behavior.
+
+Use:
+
+```powershell
+npm run training:kaggle:approval-v2:ready
+npm run training:kaggle:patterns -- --round coding-approval-metrics-v2
+npm run training:kaggle:approval-v2:launch
+```
+
+Launch only when GPU slots are free and the ready check reports no missing local or uploaded dataset files.
+
+## Known Current Verdict
+
+The fresh HF v7 adapter improved frozen perplexity but failed the executable coding gate. Do not promote or merge it unless a later benchmark report reverses that verdict.
