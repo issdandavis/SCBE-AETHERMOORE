@@ -155,6 +155,8 @@
     "docker:down:api": "node ./scripts/scbe_docker_status.mjs --Action down --Stack api",
     "docker:down:unified": "node ./scripts/scbe_docker_status.mjs --Action down --Stack unified",
     "docker:status:all": "node ./scripts/scbe_docker_status.mjs --InspectStacks",
+    "docker:remote:api": "gh workflow run docker-remote-build.yml -f image_target=api -f push_image=false -f run_smoke=true",
+    "docker:remote:api:push": "gh workflow run docker-remote-build.yml -f image_target=api -f push_image=true -f run_smoke=true",
     "mcp:doctor": "node ./scripts/scbe_mcp_terminal.mjs --Action doctor",
     "mcp:servers": "node ./scripts/scbe_mcp_terminal.mjs --Action servers",
     "mcp:tools": "node ./scripts/scbe_mcp_terminal.mjs --Action tools",
