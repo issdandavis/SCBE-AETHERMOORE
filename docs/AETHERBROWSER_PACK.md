@@ -99,6 +99,83 @@ OctoArmorRouter scores task complexity (LOW/MEDIUM/HIGH) and selects provider by
 
 Auto-cascade: if the selected provider fails, falls back through the chain.
 
+## Chrome Remote Desktop — Multi-Display Access
+
+One service, multiple machines. `RemoteDisplayManager` drives Chrome Remote Desktop
+sessions via Playwright, giving governed agents access to remote displays.
+
+```python
+from agents.remote_display import RemoteDisplayManager
+
+mgr = RemoteDisplayManager()
+await mgr.launch(headless=False, user_data_dir="~/.config/google-chrome")
+
+# Connect to multiple machines
+await mgr.connect_display("gpu-box", pin="123456")
+await mgr.connect_display("build-server", pin="654321")
+
+# Each display has its own isolated context
+await mgr.click("gpu-box", 500, 300)              # click at pixel coords
+await mgr.type_text("gpu-box", "nvidia-smi\n")     # type on remote
+await mgr.send_keys("build-server", "Control+c")   # send hotkeys
+
+# Screenshot all connected displays at once
+shots = await mgr.screenshot_all(path_prefix="artifacts/displays")
+
+# Broadcast to all displays
+await mgr.broadcast_keys("Control+l")  # focus address bar everywhere
+await mgr.broadcast_text("https://example.com\n")
+
+await mgr.close()
+```
+
+### How it works
+
+Each remote display runs in a separate Playwright BrowserContext. The manager:
+1. Navigates to `remotedesktop.google.com/access`
+2. Selects the target machine (by host ID or first available)
+3. Enters the PIN
+4. Waits for the CRD canvas element to appear
+5. Maps pixel coordinates from remote-display space to canvas element space
+6. Relays mouse/keyboard events through Playwright's input API
+7. Screenshots are captured from the CRD canvas element
+
+### From PlaywrightRuntime (single-agent integration)
+
+```python
+from agents.playwright_runtime import PlaywrightRuntime
+
+rt = PlaywrightRuntime()
+await rt.launch(headless=False)
+
+# Local browsing
+await rt.navigate("https://example.com")
+
+# Open a remote display alongside local browsing
+await rt.open_remote_display("gpu-box", pin="123456")
+await rt.remote_type("gpu-box", "python train.py\n")
+shot = await rt.remote_screenshot("gpu-box")
+
+# Both local and remote displays active simultaneously
+print(rt.current_url)           # local page URL
+print(rt.remote_display_names)  # ["gpu-box"]
+```
+
+### Governance
+
+Remote display actions flow through the same governance layer as local actions.
+When used with `SCBEBrowserAgent(runtime=rt)`, every `navigate/click/type` is
+governed. Remote displays inherit the zone gate system — banking domains accessed
+through CRD are still RED-gated.
+
+### Requirements
+
+- Google account signed into Chrome Remote Desktop on both machines
+- CRD host installed on target machines
+- `user_data_dir` pointing to a Chrome profile with active Google sign-in
+  (avoids re-authentication on each launch)
+- Playwright with Chromium: `pip install playwright && python -m playwright install chromium`
+
 ## What does NOT ship
 
 - Training data, SFT pairs, model weights
