@@ -37,4 +37,3 @@ def test_load_api_keys_prefers_explicit_json(monkeypatch) -> None:
 
     auth_config = _reload_auth_config()
     assert auth_config.load_api_keys() == {"ship-key": "captain"}
-

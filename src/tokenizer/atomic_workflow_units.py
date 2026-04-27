@@ -275,7 +275,9 @@ def _readvance_unit(original_unit: dict[str, Any], *, momentum: float) -> dict[s
         explicit_role = "measure"
         cost_factor = 0.65
     unit = build_atomic_workflow_unit(token, explicit_role=explicit_role)
-    unit["resource_cost"] = _scale_cost(unit["resource_cost"], max(0.25, cost_factor * (1.0 - min(momentum, 0.9) * 0.25)))
+    unit["resource_cost"] = _scale_cost(
+        unit["resource_cost"], max(0.25, cost_factor * (1.0 - min(momentum, 0.9) * 0.25))
+    )
     unit["fallback_kind"] = "readvance_from_better_footing"
     unit["original_unit"] = original_unit
     unit["momentum_inherited"] = round(momentum, 6)

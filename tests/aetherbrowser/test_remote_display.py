@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 def test_import():
     """RemoteDisplayManager can be imported."""
     from agents.remote_display import RemoteDisplayManager
+
     mgr = RemoteDisplayManager()
     assert mgr.display_names == []
     assert mgr.connected_displays == []
@@ -92,4 +93,5 @@ def test_playwright_runtime_remote_not_open():
     rt = PlaywrightRuntime()
     with pytest.raises(RuntimeError, match="No remote displays"):
         import asyncio
+
         asyncio.get_event_loop().run_until_complete(rt.remote_screenshot("test"))

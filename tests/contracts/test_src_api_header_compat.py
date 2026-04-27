@@ -24,4 +24,3 @@ def test_src_verify_api_key_rejects_missing_headers(monkeypatch) -> None:
     with pytest.raises(HTTPException) as exc_info:
         asyncio.run(api_main.verify_api_key(api_key=None, api_key_legacy=None))
     assert exc_info.value.status_code == 401
-

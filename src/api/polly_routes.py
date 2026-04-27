@@ -56,6 +56,7 @@ _DEFAULT_ENV_FILE = Path(__file__).parent.parent.parent / "config" / "connector_
 ENV_FILE = os.environ.get("POLLY_ENV_FILE") or str(_DEFAULT_ENV_FILE)
 _env_loaded = False
 import threading
+
 _env_lock = threading.Lock()
 
 
@@ -284,8 +285,10 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
     try:
         payload = json.dumps({"model": ollama_model, "prompt": prompt, "stream": False}).encode()
         req = urlrequest.Request(
-            f"{ollama_url}/api/generate", data=payload,
-            headers={"Content-Type": "application/json"}, method="POST",
+            f"{ollama_url}/api/generate",
+            data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST",
         )
         with urlrequest.urlopen(req, timeout=30) as resp:
             data = json.loads(resp.read())
@@ -301,6 +304,7 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
     if hf_token:
         try:
             from huggingface_hub import InferenceClient
+
             client = InferenceClient(model=hf_model, token=hf_token)
             resp = client.chat_completion(
                 messages=[{"role": "user", "content": prompt[:4000]}],
@@ -460,18 +464,26 @@ async def polly_search(req: SearchRequest) -> SearchResponse:
 
         ddg_results: list[SearchResult] = []
         if ddg_data.get("AbstractURL"):
-            ddg_results.append(SearchResult(
-                title=ddg_data.get("Heading", query),
-                url=ddg_data["AbstractURL"],
-                excerpt=ddg_data.get("Abstract", "")[:300],
-            ))
+            ddg_results.append(
+                SearchResult(
+                    title=ddg_data.get("Heading", query),
+                    url=ddg_data["AbstractURL"],
+                    excerpt=ddg_data.get("Abstract", "")[:300],
+                )
+            )
         for topic in ddg_data.get("RelatedTopics", []):
-            if isinstance(topic, dict) and topic.get("FirstURL") and not topic["FirstURL"].startswith("https://duckduckgo.com/c/"):
-                ddg_results.append(SearchResult(
-                    title=topic.get("Text", "")[:100],
-                    url=topic["FirstURL"],
-                    excerpt=topic.get("Text", "")[:300],
-                ))
+            if (
+                isinstance(topic, dict)
+                and topic.get("FirstURL")
+                and not topic["FirstURL"].startswith("https://duckduckgo.com/c/")
+            ):
+                ddg_results.append(
+                    SearchResult(
+                        title=topic.get("Text", "")[:100],
+                        url=topic["FirstURL"],
+                        excerpt=topic.get("Text", "")[:300],
+                    )
+                )
             if len(ddg_results) >= MAX_SEARCH_RESULTS:
                 break
         if ddg_results:

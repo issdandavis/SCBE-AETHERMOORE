@@ -13,9 +13,7 @@ def test_analogy_does_not_override_fact_for_high_risk_action() -> None:
     record = evaluate_semantic_gate(
         [
             SemanticSignal("measured-latency", 10.0, "fact", 0.95, "benchmark"),
-            SemanticSignal(
-                "metaphor-pressure", 1000.0, "analogy", 0.99, "creative-bridge"
-            ),
+            SemanticSignal("metaphor-pressure", 1000.0, "analogy", 0.99, "creative-bridge"),
         ],
         SemanticBlendPolicy(context="action", risk="critical", allow_analogy=False),
     )
@@ -59,9 +57,7 @@ def test_fact_required_for_action() -> None:
 def test_experimental_signal_quarantined_without_explicit_policy() -> None:
     record = evaluate_semantic_gate(
         [
-            SemanticSignal(
-                "verified-lane-score", 0.62, "fact", 0.9, "rename-benchmark"
-            ),
+            SemanticSignal("verified-lane-score", 0.62, "fact", 0.9, "rename-benchmark"),
             SemanticSignal("eml-tree-fit", 0.98, "experimental", 0.9, "eml-prototype"),
         ],
         SemanticBlendPolicy(context="routing", risk="medium", allow_experimental=False),

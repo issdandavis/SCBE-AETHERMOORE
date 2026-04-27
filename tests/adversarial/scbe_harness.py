@@ -57,9 +57,7 @@ class SpinVector:
     magnitude: int
 
 
-def quantize_spin(
-    coords: List[float], centroid: List[float], threshold: float = 0.03
-) -> SpinVector:
+def quantize_spin(coords: List[float], centroid: List[float], threshold: float = 0.03) -> SpinVector:
     """Quantize the deviation between coords and centroid into spin directions."""
     spins = []
     for c, b in zip(coords, centroid):
@@ -401,9 +399,7 @@ class SCBEDetectionGate:
         mat = np.array(self._baseline_coords)
         self._centroid = mat.mean(axis=0).tolist()
 
-    def process(
-        self, prompt: str, attack_id: str = "", attack_class: str = ""
-    ) -> AttackResult:
+    def process(self, prompt: str, attack_id: str = "", attack_class: str = "") -> AttackResult:
         """Process a prompt through SCBE detection."""
         if self._centroid is None:
             # Auto-calibrate with neutral centroid
@@ -464,9 +460,7 @@ class SCBEDetectionGate:
         if strong_obfuscation:
             signals.append("strong_obfuscation_marker")
 
-        strong_public_benchmark = any(
-            p.search(prompt) for p in _STRONG_PUBLIC_BENCHMARK_PATTERNS
-        )
+        strong_public_benchmark = any(p.search(prompt) for p in _STRONG_PUBLIC_BENCHMARK_PATTERNS)
         if strong_public_benchmark:
             signals.append("strong_public_benchmark_marker")
 
@@ -479,18 +473,13 @@ class SCBEDetectionGate:
             )
 
         # Cross-lingual override detection — non-English injection patterns
-        ml_match_count = sum(
-            1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(prompt)
-        )
+        ml_match_count = sum(1 for p in _MULTILINGUAL_OVERRIDE_PATTERNS if p.search(prompt))
         cross_lingual_override = ml_match_count >= 1
         if cross_lingual_override:
             signals.append(f"cross_lingual_override(matches={ml_match_count})")
 
         # Dispersal shift — large deviation in total weighted dispersal from baseline
-        dispersal = sum(
-            TONGUE_WEIGHTS[lang] * abs(coords[lang] - self._centroid[lang])
-            for lang in range(6)
-        )
+        dispersal = sum(TONGUE_WEIGHTS[lang] * abs(coords[lang] - self._centroid[lang]) for lang in range(6))
         dispersal_shift = dispersal > 10.0  # High bar: only fires on extreme deviations
         if dispersal_shift:
             signals.append(f"dispersal_shift({dispersal:.2f})")
@@ -520,13 +509,7 @@ class SCBEDetectionGate:
             signals.append(f"drift_trajectory(suspicion={self._session_suspicion:.2f})")
 
         # Detection logic — layered confidence:
-        has_geometric = (
-            cost_exceeded
-            or spin_drift
-            or boundary_violation
-            or tongue_imbalance
-            or dispersal_shift
-        )
+        has_geometric = cost_exceeded or spin_drift or boundary_violation or tongue_imbalance or dispersal_shift
         high_spin = spin.magnitude >= 6  # High spin drift alone is a strong signal
         detected = (
             len(signals) >= 2
@@ -536,9 +519,7 @@ class SCBEDetectionGate:
             or strong_public_benchmark
             or phase_lattice_hit is not None
             or (adv_match_count >= 1 and has_geometric)
-            or (
-                high_spin and adv_match_count >= 1
-            )  # High spin + any lexical = detected
+            or (high_spin and adv_match_count >= 1)  # High spin + any lexical = detected
             or self._session_suspicion > 1.5  # Accumulated session-level detection
         )
 
@@ -551,9 +532,7 @@ class SCBEDetectionGate:
             spin_magnitude=spin.magnitude,
             dispersal_cost=round(
                 sum(
-                    TONGUE_WEIGHTS[lang]
-                    * abs(spin.spins[lang])
-                    * abs(coords[lang] - self._centroid[lang])
+                    TONGUE_WEIGHTS[lang] * abs(spin.spins[lang]) * abs(coords[lang] - self._centroid[lang])
                     for lang in range(6)
                 ),
                 6,
@@ -635,12 +614,8 @@ def run_benchmark(
         missed_count=total - detected,
         detection_rate=round(detected / max(total, 1), 4),
         attack_success_rate=round((total - detected) / max(total, 1), 4),
-        avg_harmonic_cost=round(
-            sum(r.harmonic_cost for r in results) / max(total, 1), 4
-        ),
-        avg_spin_magnitude=round(
-            sum(r.spin_magnitude for r in results) / max(total, 1), 2
-        ),
+        avg_harmonic_cost=round(sum(r.harmonic_cost for r in results) / max(total, 1), 4),
+        avg_spin_magnitude=round(sum(r.spin_magnitude for r in results) / max(total, 1), 2),
         signal_counts=signal_counts,
         per_class={
             cls: {

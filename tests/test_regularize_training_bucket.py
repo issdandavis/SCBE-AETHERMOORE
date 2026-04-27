@@ -5,7 +5,6 @@ import json
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "regularize_training_bucket.py"
 
@@ -47,7 +46,9 @@ def test_build_bucket_dedupes_and_preserves_eval(tmp_path: Path) -> None:
     holdout = tmp_path / "coding_holdout.jsonl"
     record = {"messages": [{"role": "user", "content": "Add."}, {"role": "assistant", "content": "Use +."}]}
     train.write_text(json.dumps(record) + "\n" + json.dumps(record) + "\n", encoding="utf-8")
-    holdout.write_text(json.dumps({"instruction": "Guard divide.", "response": "Check denominator."}) + "\n", encoding="utf-8")
+    holdout.write_text(
+        json.dumps({"instruction": "Guard divide.", "response": "Check denominator."}) + "\n", encoding="utf-8"
+    )
     inventory = tmp_path / "inventory.json"
     inventory.write_text(
         json.dumps(

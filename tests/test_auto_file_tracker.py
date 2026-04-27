@@ -22,9 +22,7 @@ def _load_module():
 def test_snapshot_tracks_hash_without_copying_file_contents(tmp_path: Path) -> None:
     module = _load_module()
     tracked = tmp_path / "tracked.txt"
-    tracked.write_text(
-        "secret-ish content that must not enter packets", encoding="utf-8"
-    )
+    tracked.write_text("secret-ish content that must not enter packets", encoding="utf-8")
 
     snapshot = module.build_snapshot([tracked], label="unit", repo_root=tmp_path)
 
@@ -51,9 +49,7 @@ def test_snapshot_uses_formation_route_tuple(tmp_path: Path) -> None:
         delivery_class="interactive_reliable",
     )
 
-    snapshot = module.build_snapshot(
-        [tracked], label="route-test", route=route, repo_root=tmp_path
-    )
+    snapshot = module.build_snapshot([tracked], label="route-test", route=route, repo_root=tmp_path)
 
     assert snapshot["route"]["tuple"] == [
         "agent.bus.verify",
@@ -70,9 +66,7 @@ def test_snapshot_marks_missing_files(tmp_path: Path) -> None:
     module = _load_module()
     missing = tmp_path / "missing.md"
 
-    snapshot = module.build_snapshot(
-        [missing], label="missing-test", repo_root=tmp_path
-    )
+    snapshot = module.build_snapshot([missing], label="missing-test", repo_root=tmp_path)
 
     assert snapshot["summary"]["tracked"] == 1
     assert snapshot["summary"]["exists"] == 0

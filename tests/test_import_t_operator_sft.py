@@ -26,9 +26,7 @@ def test_import_t_operator_sft_converts_kimi_rows_to_messages_format(tmp_path) -
     )
 
     payload = import_dataset(source, output, manifest)
-    rows = [
-        json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()
-    ]
+    rows = [json.loads(line) for line in output.read_text(encoding="utf-8").splitlines()]
 
     assert payload["record_count"] == 1
     assert payload["verified_count"] == 1

@@ -86,8 +86,5 @@ def test_node_agentbus_pipe_processes_workflow_event() -> None:
     assert row["schema_version"] == "scbe-agentbus-pipe-result-v1"
     assert row["ok"] is True
     assert row["event"]["series_id"] == "pytest-agentbus-pipe-e2e"
-    assert (
-        row["result"]["operation_shape"]["signature_hex"]
-        == "c176ca9a2f3473c6d643c1ef8b000c7a"
-    )
+    assert row["result"]["operation_shape"]["signature_hex"] == "c176ca9a2f3473c6d643c1ef8b000c7a"
     assert row["result"]["artifacts"]["watcher"].endswith("observable_state.json")

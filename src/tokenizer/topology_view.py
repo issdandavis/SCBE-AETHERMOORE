@@ -185,10 +185,14 @@ def _active_command_bindings(packet: dict[str, Any], keyboard_command_map: list[
         if band and band in band_hints:
             score += 2.0
             reasons.append("band_hint")
-        if phase_operation.startswith("comparison:") and "comparison_gate" in packet.get("semantic_expression", {}).get("quarks", []):
+        if phase_operation.startswith("comparison:") and "comparison_gate" in packet.get("semantic_expression", {}).get(
+            "quarks", []
+        ):
             score += 1.5
             reasons.append("comparison_quark")
-        if phase_operation.startswith("arithmetic:") and "arithmetic_transform" in packet.get("semantic_expression", {}).get("quarks", []):
+        if phase_operation.startswith("arithmetic:") and "arithmetic_transform" in packet.get(
+            "semantic_expression", {}
+        ).get("quarks", []):
             score += 1.5
             reasons.append("arithmetic_quark")
 
@@ -312,7 +316,9 @@ def _thought_field_cost_retro(
                 "time_cost": round(time_cost, 6),
                 "energy_cost": round(energy_cost, 6),
                 "risk_cost": round(risk_cost, 6),
-                "segment_total_cost": round(distance_cost + drift_cost + recovery_cost + time_cost + energy_cost + risk_cost, 6),
+                "segment_total_cost": round(
+                    distance_cost + drift_cost + recovery_cost + time_cost + energy_cost + risk_cost, 6
+                ),
             }
         )
 
@@ -538,7 +544,9 @@ def build_topology_view(packet: dict[str, Any], *, max_binary_nodes: int = 32) -
                     "metadata": braille_by_index[index],
                 }
             )
-            edges.append({"source": f"binary_group:{index}", "target": braille_id, "relation": "projects_to_braille_cell"})
+            edges.append(
+                {"source": f"binary_group:{index}", "target": braille_id, "relation": "projects_to_braille_cell"}
+            )
         if index in harmonic_by_index:
             spiral_id = f"spiral:{index}"
             nodes.append(
@@ -743,7 +751,7 @@ def topology_to_mermaid(topology: dict[str, Any]) -> str:
 
 
 def topology_to_dot(topology: dict[str, Any]) -> str:
-    lines = ["digraph SCBETopologyView {", '  rankdir=LR;', '  node [shape=hexagon];']
+    lines = ["digraph SCBETopologyView {", "  rankdir=LR;", "  node [shape=hexagon];"]
     for polygon in topology.get("polygons", []):
         node_id = _safe_id(str(polygon["id"]))
         label = f"{polygon.get('token', 'token')}::{polygon.get('compass_sector', 'axis')}"

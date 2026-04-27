@@ -10,9 +10,7 @@ MODULE_PATH = ROOT / "scripts" / "system" / "observable_state_watcher.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "observable_state_watcher", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("observable_state_watcher", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -51,9 +49,7 @@ def test_watcher_builds_three_lanes_without_raw_prompt_or_file_content(
                         "watch_policy": "observe",
                     }
                 ],
-                "tertiary_bus": [
-                    {"provider": "openai", "role": "rest", "reason": "remote blocked"}
-                ],
+                "tertiary_bus": [{"provider": "openai", "role": "rest", "reason": "remote blocked"}],
             }
         ),
         encoding="utf-8",
@@ -106,10 +102,7 @@ def test_watcher_builds_three_lanes_without_raw_prompt_or_file_content(
     assert state["lanes"]["action"]["selected_provider"] == "offline"
     assert state["lanes"]["action"]["operation_shape"]["root_value"] == 12026
     assert state["lanes"]["live_text"]["events"][0]["text_sha256_prefix"] == "c" * 16
-    assert (
-        state["lanes"]["packet_state"]["file_packets"][0]["sha256_binary"]
-        == "1101" * 12
-    )
+    assert state["lanes"]["packet_state"]["file_packets"][0]["sha256_binary"] == "1101" * 12
     dumped = json.dumps(state)
     assert "hidden chain-of-thought" in dumped
     assert "raw file contents" in dumped
@@ -134,7 +127,4 @@ def test_write_watcher_state_creates_output_file(tmp_path: Path) -> None:
     output = module.write_watcher_state(state, tmp_path / "watcher.json")
 
     assert output.exists()
-    assert (
-        json.loads(output.read_text(encoding="utf-8"))["schema_version"]
-        == "scbe-observable-state-watcher-v1"
-    )
+    assert json.loads(output.read_text(encoding="utf-8"))["schema_version"] == "scbe-observable-state-watcher-v1"

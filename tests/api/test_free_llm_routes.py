@@ -25,9 +25,7 @@ def test_free_llm_provider_registry_lists_default_open_lanes(
     monkeypatch.delenv("HF_TOKEN", raising=False)
     client = _client(monkeypatch)
 
-    response = client.get(
-        "/hydra/free-llm/providers", headers={"x-api-key": "test-key"}
-    )
+    response = client.get("/hydra/free-llm/providers", headers={"x-api-key": "test-key"})
 
     assert response.status_code == 200
     registry = response.json()["data"]
@@ -69,15 +67,11 @@ def test_free_llm_dispatch_offline_returns_deterministic_local_result(
     assert saved["event_id"] == data["bus_event"]["event_id"]
 
 
-def test_free_llm_internal_dispatch_marks_inside_bus_origin(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+def test_free_llm_internal_dispatch_marks_inside_bus_origin(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     monkeypatch.setattr(free_llm_routes, "REPO_ROOT", tmp_path)
 
     response = free_llm_routes.dispatch_free_llm_request(
-        free_llm_routes.FreeLLMDispatchRequest(
-            provider="offline", prompt="internal build task"
-        ),
+        free_llm_routes.FreeLLMDispatchRequest(provider="offline", prompt="internal build task"),
         user="hydra",
         origin="inside",
     )
@@ -89,9 +83,7 @@ def test_free_llm_internal_dispatch_marks_inside_bus_origin(
     assert "internal build task" not in json.dumps(data["bus_event"])
 
 
-def test_free_llm_bus_handles_real_geoseal_publish_readiness_task(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+def test_free_llm_bus_handles_real_geoseal_publish_readiness_task(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     monkeypatch.setattr(free_llm_routes, "REPO_ROOT", tmp_path)
     prompt = (
         "Inspect GeoSeal CLI publish readiness: verify bin/geoseal.cjs, "
@@ -125,9 +117,7 @@ def test_free_llm_bus_handles_real_geoseal_publish_readiness_task(
     assert saved["route"]["provider"] == "offline"
 
 
-def test_free_llm_dispatch_dry_run_routes_to_requested_provider(
-    monkeypatch: pytest.MonkeyPatch, tmp_path
-) -> None:
+def test_free_llm_dispatch_dry_run_routes_to_requested_provider(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
     monkeypatch.setattr(free_llm_routes, "REPO_ROOT", tmp_path)
     client = _client(monkeypatch)
 
@@ -193,9 +183,7 @@ def test_free_llm_custom_local_provider_from_env(
     )
     client = _client(monkeypatch)
 
-    response = client.get(
-        "/hydra/free-llm/providers", headers={"x-api-key": "test-key"}
-    )
+    response = client.get("/hydra/free-llm/providers", headers={"x-api-key": "test-key"})
 
     assert response.status_code == 200
     provider = response.json()["data"]["providers"]["my-local-ai"]

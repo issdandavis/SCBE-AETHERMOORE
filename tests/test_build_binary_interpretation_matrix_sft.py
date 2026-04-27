@@ -7,7 +7,6 @@ from pathlib import Path
 
 from openpyxl import Workbook
 
-
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "build_binary_interpretation_matrix_sft.py"
 

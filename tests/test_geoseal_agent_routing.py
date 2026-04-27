@@ -1075,8 +1075,13 @@ class TestWorkflowRefSubstitution:
         from src.geoseal_cli import WorkflowStepResult, substitute_workflow_refs
 
         result = WorkflowStepResult(
-            step_id="a", op="agent", tongue="KO", tier="ALLOW", seal="abc",
-            code="def f(): pass", provider="local",
+            step_id="a",
+            op="agent",
+            tongue="KO",
+            tier="ALLOW",
+            seal="abc",
+            code="def f(): pass",
+            provider="local",
         )
         out = substitute_workflow_refs("CODE=${steps.a.code}", "", {"a": result})
         assert out == "CODE=def f(): pass"
@@ -1093,9 +1098,7 @@ class TestWorkflowRefSubstitution:
     def test_unknown_attr_raises(self):
         from src.geoseal_cli import WorkflowStepResult, substitute_workflow_refs
 
-        result = WorkflowStepResult(
-            step_id="a", op="agent", tongue="KO", tier="ALLOW", seal="s", code="c"
-        )
+        result = WorkflowStepResult(step_id="a", op="agent", tongue="KO", tier="ALLOW", seal="s", code="c")
         with pytest.raises(SystemExit):
             substitute_workflow_refs("${steps.a.banana}", "", {"a": result})
 
@@ -1197,7 +1200,10 @@ class TestWorkflowCLISmoke:
         self._write_yaml(tmp_path)
         result = subprocess.run(
             [sys.executable, "-m", "src.geoseal_cli", "workflow", "list", "--dir", str(tmp_path), "--json"],
-            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=self._env(),
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+            env=self._env(),
         )
         assert result.returncode == 0, result.stderr
         files = json.loads(result.stdout.strip())
@@ -1207,7 +1213,10 @@ class TestWorkflowCLISmoke:
         path = self._write_yaml(tmp_path)
         result = subprocess.run(
             [sys.executable, "-m", "src.geoseal_cli", "workflow", "validate", str(path), "--json"],
-            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=self._env(),
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+            env=self._env(),
         )
         assert result.returncode == 0, result.stderr
         payload = json.loads(result.stdout.strip())
@@ -1219,7 +1228,10 @@ class TestWorkflowCLISmoke:
         path.write_text("steps: []\n", encoding="utf-8")  # missing name + empty steps
         result = subprocess.run(
             [sys.executable, "-m", "src.geoseal_cli", "workflow", "validate", str(path), "--json"],
-            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=self._env(),
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+            env=self._env(),
         )
         assert result.returncode == 2
         payload = json.loads(result.stdout.strip())
@@ -1232,10 +1244,22 @@ class TestWorkflowCLISmoke:
         ledger = tmp_path / "ledger.jsonl"
         result = subprocess.run(
             [
-                sys.executable, "-m", "src.geoseal_cli", "workflow", "run", str(path),
-                "--input", "world", "--ledger", str(ledger), "--json",
+                sys.executable,
+                "-m",
+                "src.geoseal_cli",
+                "workflow",
+                "run",
+                str(path),
+                "--input",
+                "world",
+                "--ledger",
+                str(ledger),
+                "--json",
             ],
-            capture_output=True, text=True, cwd=str(_REPO_ROOT), env=self._env(),
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+            env=self._env(),
         )
         assert result.returncode == 0, f"stderr={result.stderr!r} stdout={result.stdout!r}"
         payload = json.loads(result.stdout.strip())

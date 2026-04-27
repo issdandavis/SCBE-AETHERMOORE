@@ -18,6 +18,7 @@ def _make_agent(agent_id="test"):
             instance.health_check.return_value = True
             instance.register_agent.return_value = True
             from agents.browser_agent import SCBEBrowserAgent
+
             return SCBEBrowserAgent(agent_id=agent_id)
 
 

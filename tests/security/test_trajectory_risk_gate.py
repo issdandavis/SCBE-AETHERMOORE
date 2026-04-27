@@ -10,9 +10,7 @@ from src.security.trajectory_risk_gate import (
 def test_benign_user_redirect_is_not_treated_like_safety_override() -> None:
     gate = TrajectoryRiskGate(session_goal="answer user questions safely")
 
-    decision = gate.evaluate(
-        "Ignore my previous question, new topic: explain ETFs in simple terms."
-    )
+    decision = gate.evaluate("Ignore my previous question, new topic: explain ETFs in simple terms.")
 
     assert decision.decision == TrajectoryDecision.ALLOW
     assert decision.intent_class == IntentClass.BENIGN_USER_REDIRECT
@@ -47,12 +45,8 @@ def test_slow_drift_toward_secrets_accumulates_over_time() -> None:
     assert third.trajectory_risk > 0.0
 
 
-def test_legitimate_need_sandboxes_tool_work_without_allowing_secret_exfiltration() -> (
-    None
-):
-    gate = TrajectoryRiskGate(
-        session_goal="fix the environment loader tests", user_authority="owner"
-    )
+def test_legitimate_need_sandboxes_tool_work_without_allowing_secret_exfiltration() -> None:
+    gate = TrajectoryRiskGate(session_goal="fix the environment loader tests", user_authority="owner")
 
     safe_tool_work = gate.evaluate(
         "Implement a unit test for env var loading with mock redacted values.",

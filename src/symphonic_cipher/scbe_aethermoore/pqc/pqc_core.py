@@ -94,6 +94,8 @@ def _select_hash_sig_algorithm() -> str:
 
 _KEM_ALG = _select_kem_algorithm()
 _SIG_ALG = _select_sig_algorithm()
+
+
 class PQCBackend(Enum):
     """Available PQC backends."""
 

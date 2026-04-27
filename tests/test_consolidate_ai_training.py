@@ -10,9 +10,7 @@ MODULE_PATH = ROOT / "scripts" / "system" / "consolidate_ai_training.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "consolidate_ai_training", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("consolidate_ai_training", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -31,9 +29,7 @@ def test_parse_purposes_rejects_unknown_bucket() -> None:
         raise AssertionError("expected ValueError")
 
 
-def test_build_specialist_plan_normalizes_merge_weights(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_build_specialist_plan_normalizes_merge_weights(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     regularization = {
         "model_sets": {
@@ -77,9 +73,7 @@ def test_build_specialist_plan_normalizes_merge_weights(
         },
     }
 
-    plan = module.build_specialist_plan(
-        inventory, regularized, ("coding_model", "aligned_foundations")
-    )
+    plan = module.build_specialist_plan(inventory, regularized, ("coding_model", "aligned_foundations"))
 
     assert plan["schema_version"] == "scbe_ai_training_consolidation_plan_v1"
     assert plan["final_merge"]["merge_id"] == "merge-v1"

@@ -26,30 +26,22 @@ def _router_config(path: Path) -> Path:
                     "openai": {
                         "enabled": True,
                         "env_keys": ["OPENAI_API_KEY"],
-                        "tiers": {
-                            "cheap": {"model": "gpt-test", "estimated_cents": 1.2}
-                        },
+                        "tiers": {"cheap": {"model": "gpt-test", "estimated_cents": 1.2}},
                     },
                     "anthropic": {
                         "enabled": True,
                         "env_keys": ["ANTHROPIC_API_KEY"],
-                        "tiers": {
-                            "cheap": {"model": "claude-test", "estimated_cents": 1.6}
-                        },
+                        "tiers": {"cheap": {"model": "claude-test", "estimated_cents": 1.6}},
                     },
                     "xai": {
                         "enabled": True,
                         "env_keys": ["XAI_API_KEY"],
-                        "tiers": {
-                            "cheap": {"model": "grok-test", "estimated_cents": 1.0}
-                        },
+                        "tiers": {"cheap": {"model": "grok-test", "estimated_cents": 1.0}},
                     },
                     "huggingface": {
                         "enabled": True,
                         "env_keys": ["HF_TOKEN"],
-                        "tiers": {
-                            "cheap": {"model": "hf-test", "estimated_cents": 0.2}
-                        },
+                        "tiers": {"cheap": {"model": "hf-test", "estimated_cents": 0.2}},
                     },
                 }
             }
@@ -76,16 +68,12 @@ def test_local_only_match_prefers_local_player(tmp_path: Path, monkeypatch) -> N
     )
 
     assert result["selected_provider"] in {"offline", "ollama"}
-    assert all(
-        row["provider"] in {"offline", "ollama"} for row in result["primary_bus"]
-    )
+    assert all(row["provider"] in {"offline", "ollama"} for row in result["primary_bus"])
     assert "write a Python add function" not in json.dumps(result)
     assert (tmp_path / "mirror" / "local-only" / "mirror_room.jsonl").exists()
 
 
-def test_remote_ok_research_can_pick_configured_remote_provider(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_remote_ok_research_can_pick_configured_remote_provider(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     config = _router_config(tmp_path / "router.json")
     monkeypatch.setenv("XAI_API_KEY", "test")
@@ -102,15 +90,11 @@ def test_remote_ok_research_can_pick_configured_remote_provider(
     )
 
     assert result["selected_provider"] in {"xai", "huggingface", "ollama", "offline"}
-    assert result["mirror_room"]["anti_amplification"].startswith(
-        "watchers do not respond"
-    )
+    assert result["mirror_room"]["anti_amplification"].startswith("watchers do not respond")
     assert result["secondary_bus"]
 
 
-def test_recent_player_fatigues_and_next_round_can_rotate(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_recent_player_fatigues_and_next_round_can_rotate(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     config = _router_config(tmp_path / "router.json")
     monkeypatch.setenv("OPENAI_API_KEY", "test")
@@ -167,9 +151,7 @@ def test_custom_local_provider_is_discovered(tmp_path: Path, monkeypatch) -> Non
     assert "coding" in local_coder.strengths
 
 
-def test_operation_command_braids_topological_shape_into_round(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_operation_command_braids_topological_shape_into_round(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     config = _router_config(tmp_path / "router.json")
     monkeypatch.setenv("OPENAI_API_KEY", "test")

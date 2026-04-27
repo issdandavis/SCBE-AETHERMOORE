@@ -9,5 +9,4 @@ def test_app_index_does_not_hardcode_localhost_api() -> None:
 
     assert "const API_URL = 'http://localhost:3000';" not in content
     assert "resolveApiBase()" in content
-    assert "meta name=\"scbe-api-base\"" in content
-
+    assert 'meta name="scbe-api-base"' in content
