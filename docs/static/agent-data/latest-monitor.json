@@ -106,11 +106,38 @@
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
       "description": "",
-      "word_count": 597,
+      "word_count": 618,
       "headings": [],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Pgbackrest is no longer being maintained (github.com/pgbackrest)250 points by c0l0 3 hours ago  | hide | 112\u00a0comments2.Show HN: OSS Agent I built topped the TerminalBench on Gemini-3-flash-preview (github.com/dirac-run)98 points by GodelNumbering 2 hours ago  | hide | 31\u00a0comments3.4TB of voice samples just stolen from 40k AI contractors at Mercor (oravys.com)123 points by Oravys 4 hours ago  | hide | 35\u00a0comments4.Fully Featured ..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Microsoft and OpenAI end their exclusive and revenue-sharing deal (bloomberg.com)466 points by helsinkiandrew 5 hours ago  | hide | 391\u00a0comments2.Open-Source KiCad PCBs for Common Arduino, ESP32, RP2040 Boards (github.com/hanqaqa)39 points by Hanqaqa 50 minutes ago  | hide | discuss3.GitHub is having issues now (githubstatus.com)57 points by SenHeng 52 minutes ago  | hide | 17\u00a0comments4.\u201cWhy not just use Lean?\u201d (lawrencecpaulson..."
+    },
+    {
+      "url": "https://arxiv.org/list/cs.AI/recent",
+      "title": "Artificial Intelligence",
+      "description": "",
+      "word_count": 2309,
+      "headings": [
+        {
+          "level": 2,
+          "text": "quick links"
+        },
+        {
+          "level": 1,
+          "text": "Artificial Intelligence"
+        },
+        {
+          "level": 2,
+          "text": "Authors and titles for recent submissions"
+        },
+        {
+          "level": 3,
+          "text": "Mon, 27 Apr 2026 (showing first 50 of 92 entries )"
+        }
+      ],
+      "link_count": 570,
+      "table_count": 0,
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n        \n          Thu, 23 Apr 2026\n        \n      \n        \n          Wed, 22 Apr 2026\n        \n      \n        \n          Tue, 21 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1195 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1151-1195\n\n    \n    Showing up to 50 entries p..."
     }
   ]
 }
