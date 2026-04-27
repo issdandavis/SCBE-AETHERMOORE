@@ -23,13 +23,27 @@ except ImportError:
 
 
 class PlaywrightRuntime:
-    """Async Playwright wrapper for governed browser agents."""
+    """
+    Async Playwright wrapper for governed browser agents.
+
+    Supports both local browsing and remote display access via
+    Chrome Remote Desktop. For multi-display use:
+
+        from agents.remote_display import RemoteDisplayManager
+        mgr = RemoteDisplayManager()
+        await mgr.launch()
+        await mgr.connect_display("gpu-box", pin="123456")
+
+    Or use PlaywrightRuntime.open_remote_display() for single remote access
+    alongside local browsing.
+    """
 
     def __init__(self) -> None:
         self._pw: Any = None
         self._browser: Optional[Browser] = None
         self._context: Optional[BrowserContext] = None
         self._page: Optional[Page] = None
+        self._remote_displays: dict = {}  # name → RemoteDisplayManager reference
 
     # -- lifecycle -----------------------------------------------------------
 
@@ -136,6 +150,70 @@ class PlaywrightRuntime:
     async def wait_for_selector(self, selector: str, *, timeout: int = 10_000) -> None:
         self._require_page()
         await self._page.wait_for_selector(selector, timeout=timeout)
+
+    # -- remote display integration ------------------------------------------
+
+    async def open_remote_display(
+        self,
+        name: str,
+        *,
+        host_id: Optional[str] = None,
+        pin: Optional[str] = None,
+        resolution: tuple = (1920, 1080),
+    ) -> Any:
+        """
+        Open a Chrome Remote Desktop session as an additional display.
+
+        Returns a DisplayHandle from RemoteDisplayManager. The remote display
+        runs in its own BrowserContext, isolated from local browsing.
+
+        Args:
+            name: Human-readable name (e.g. "gpu-box")
+            host_id: CRD host ID (optional — uses first available if None)
+            pin: CRD PIN (optional — waits for manual entry if None)
+            resolution: Remote display resolution
+        """
+        from agents.remote_display import RemoteDisplayManager
+
+        if not hasattr(self, "_display_mgr") or self._display_mgr is None:
+            self._display_mgr = RemoteDisplayManager()
+            self._display_mgr._pw = self._pw
+            self._display_mgr._browser = self._browser
+
+        handle = await self._display_mgr.connect_display(
+            name, host_id=host_id, pin=pin, resolution=resolution,
+        )
+        self._remote_displays[name] = handle
+        logger.info("Remote display '%s' opened via PlaywrightRuntime", name)
+        return handle
+
+    async def remote_screenshot(self, name: str, *, path: Optional[str] = None) -> bytes:
+        """Take a screenshot of a remote display by name."""
+        if not hasattr(self, "_display_mgr") or self._display_mgr is None:
+            raise RuntimeError(f"No remote displays open — call open_remote_display() first")
+        return await self._display_mgr.screenshot(name, path=path)
+
+    async def remote_click(self, name: str, x: int, y: int) -> None:
+        """Click at pixel coordinates on a remote display."""
+        if not hasattr(self, "_display_mgr") or self._display_mgr is None:
+            raise RuntimeError(f"No remote displays open")
+        await self._display_mgr.click(name, x, y)
+
+    async def remote_type(self, name: str, text: str) -> None:
+        """Type text on a remote display."""
+        if not hasattr(self, "_display_mgr") or self._display_mgr is None:
+            raise RuntimeError(f"No remote displays open")
+        await self._display_mgr.type_text(name, text)
+
+    async def remote_keys(self, name: str, keys: str) -> None:
+        """Send key combination to a remote display."""
+        if not hasattr(self, "_display_mgr") or self._display_mgr is None:
+            raise RuntimeError(f"No remote displays open")
+        await self._display_mgr.send_keys(name, keys)
+
+    @property
+    def remote_display_names(self) -> list:
+        return list(self._remote_displays.keys())
 
     # -- internal ------------------------------------------------------------
 
