@@ -434,6 +434,8 @@ ROUNDS = {
         "max_sample_multiplier": 6.0,
         "repair_lane_files": ["contract_repair_v3_train.sft.jsonl"],
         "repair_lane_weight": 4.0,
+        "contract_eval_slice": 8,
+        "contract_eval_max_new_tokens": 64,
         "early_stopping_patience": 2,
         "early_stopping_threshold": 0.0,
         "eval_steps": 10,
@@ -557,6 +559,8 @@ def generate_kernel_script(round_name: str, config: dict) -> str:
         "max_sample_multiplier": config.get("max_sample_multiplier", 6.0),
         "repair_lane_files": config.get("repair_lane_files", []),
         "repair_lane_weight": config.get("repair_lane_weight", 1.0),
+        "contract_eval_slice": config.get("contract_eval_slice", 0),
+        "contract_eval_max_new_tokens": config.get("contract_eval_max_new_tokens", 64),
     })
 
     template = TEMPLATE_PATH.read_text(encoding="utf-8")

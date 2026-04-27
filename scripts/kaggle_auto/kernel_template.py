@@ -58,7 +58,7 @@ import torch
 from datasets import Dataset, load_dataset
 from huggingface_hub import login
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, EarlyStoppingCallback
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, EarlyStoppingCallback, TrainerCallback
 from trl import SFTConfig, SFTTrainer
 from pathlib import Path
 
@@ -96,6 +96,8 @@ DSL_PRIMITIVE_TOKEN_WEIGHT = float(CFG.get("dsl_primitive_token_weight", SELECTO
 MAX_SAMPLE_MULTIPLIER = float(CFG.get("max_sample_multiplier", 6.0))
 REPAIR_LANE_FILES = set(CFG.get("repair_lane_files", []))
 REPAIR_LANE_WEIGHT = float(CFG.get("repair_lane_weight", 1.0))
+CONTRACT_EVAL_SLICE = int(CFG.get("contract_eval_slice", 0))
+CONTRACT_EVAL_MAX_NEW_TOKENS = int(CFG.get("contract_eval_max_new_tokens", 64))
 
 # ---- Auth ----
 PUSH = False
@@ -289,6 +291,19 @@ dataset = load_data()
 eval_dataset = load_eval_data()
 write_status("data_loaded", {"num_records": len(dataset), "eval_records": len(eval_dataset) if eval_dataset is not None else 0})
 
+# Snapshot per-row sample weights BEFORE SFTTrainer prunes unknown columns.
+# Index alignment: dataset row order is preserved through tokenization, so SAMPLE_WEIGHTS[i] tracks dataset[i].
+if "_sample_weight" in dataset.column_names:
+    SAMPLE_WEIGHTS = [float(w) for w in dataset["_sample_weight"]]
+    _NONUNIFORM = any(abs(w - 1.0) > 1e-9 for w in SAMPLE_WEIGHTS)
+else:
+    SAMPLE_WEIGHTS = None
+    _NONUNIFORM = False
+print(
+    f"Sample-weight snapshot: n={len(SAMPLE_WEIGHTS) if SAMPLE_WEIGHTS else 0}, "
+    f"nonuniform={_NONUNIFORM}, repair_lane_weight={REPAIR_LANE_WEIGHT}"
+)
+
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, use_fast=True)
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
@@ -414,7 +429,46 @@ else:
 
 
 class WeightedDslSFTTrainer(SFTTrainer):
-    """Token-weighted CE for parser-critical DSL contract tokens."""
+    """Token-weighted CE for parser-critical DSL contract tokens.
+
+    Also wires a `WeightedRandomSampler` keyed off `_sample_weight` (snapshot in `SAMPLE_WEIGHTS`)
+    so repair-lane / category-balance weights actually influence the dataloader. The sampler is a
+    no-op when every weight is 1.0; otherwise it samples with replacement weighted by the snapshot.
+    """
+
+    def _get_train_sampler(self, train_dataset=None):
+        if SAMPLE_WEIGHTS is None or not _NONUNIFORM:
+            return super()._get_train_sampler(train_dataset)
+        # SAMPLE_WEIGHTS is a pre-tokenization snapshot in original row order. It only
+        # remains aligned with the trainer's train_dataset when TRL preserves order
+        # (packing=False, shuffle_dataset=False). If either is enabled, the snapshot is
+        # silently misaligned — fall back to the default sampler with a loud warning.
+        if getattr(self.args, "packing", False):
+            print(
+                "[WeightedDslSFTTrainer] packing=True changes row count; "
+                "WeightedRandomSampler disabled to preserve correctness"
+            )
+            return super()._get_train_sampler(train_dataset)
+        if getattr(self.args, "shuffle_dataset", False):
+            print(
+                "[WeightedDslSFTTrainer] shuffle_dataset=True reorders rows post-snapshot; "
+                "WeightedRandomSampler disabled to preserve correctness"
+            )
+            return super()._get_train_sampler(train_dataset)
+        active_dataset = train_dataset if train_dataset is not None else self.train_dataset
+        n = len(active_dataset)
+        if len(SAMPLE_WEIGHTS) != n:
+            print(
+                f"[WeightedDslSFTTrainer] sample-weight length mismatch ({len(SAMPLE_WEIGHTS)} vs {n}); "
+                "falling back to default sampler"
+            )
+            return super()._get_train_sampler(train_dataset)
+        weights = torch.as_tensor(SAMPLE_WEIGHTS, dtype=torch.double)
+        print(
+            f"[WeightedDslSFTTrainer] WeightedRandomSampler active: n={n}, "
+            f"min_w={float(weights.min()):.3f}, max_w={float(weights.max()):.3f}"
+        )
+        return torch.utils.data.WeightedRandomSampler(weights=weights, num_samples=n, replacement=True)
 
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.get("labels")
@@ -459,9 +513,80 @@ class WeightedDslSFTTrainer(SFTTrainer):
         return (loss, outputs) if return_outputs else loss
 
 
+CONTRACT_RE = re.compile(r"well_select\(\s*[A-Z][A-Z0-9_]*\s*\)")
+
+
+class ContractEvalCallback(TrainerCallback):
+    """Surface contract-collapse risk by sampling generations on a slice of eval_dataset.
+
+    Reports `contract_pass_rate` (fraction of generations matching `well_select(SELECTOR)`) at every
+    evaluation step. PPL-clean adapters can still collapse to prose; this callback catches that
+    failure mode early instead of only at the post-train executable gate.
+    """
+
+    def __init__(self, eval_dataset, tokenizer, n_slice, max_new_tokens):
+        self.eval_dataset = eval_dataset
+        self.tokenizer = tokenizer
+        self.n_slice = min(n_slice, len(eval_dataset)) if eval_dataset is not None else 0
+        self.max_new_tokens = max_new_tokens
+
+    def on_evaluate(self, args, state, control, **kwargs):
+        if not self.n_slice:
+            return control
+        model = kwargs.get("model")
+        if model is None:
+            return control
+        was_training = model.training
+        model.eval()
+        passes = 0
+        attempted = 0
+        try:
+            for i in range(self.n_slice):
+                row = self.eval_dataset[i]
+                messages = row.get("messages") if isinstance(row, dict) else None
+                if not messages:
+                    continue
+                user_msgs = [m for m in messages if m.get("role") == "user"]
+                if not user_msgs:
+                    continue
+                prompt = self.tokenizer.apply_chat_template(
+                    [{"role": "user", "content": user_msgs[-1]["content"]}],
+                    tokenize=False,
+                    add_generation_prompt=True,
+                )
+                inputs = self.tokenizer(
+                    prompt, return_tensors="pt", truncation=True, max_length=512
+                ).to(model.device)
+                with torch.no_grad():
+                    gen = model.generate(
+                        **inputs,
+                        max_new_tokens=self.max_new_tokens,
+                        do_sample=False,
+                        pad_token_id=self.tokenizer.eos_token_id,
+                    )
+                text = self.tokenizer.decode(
+                    gen[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True
+                )
+                if CONTRACT_RE.search(text):
+                    passes += 1
+                attempted += 1
+        except Exception as exc:
+            print(f"[ContractEvalCallback] error during sampling: {exc}")
+        finally:
+            if was_training:
+                model.train()
+        if attempted:
+            rate = passes / attempted
+            print(
+                f"[ContractEvalCallback] step={state.global_step} "
+                f"contract_pass_rate={rate:.3f} ({passes}/{attempted})"
+            )
+        return control
+
+
 TrainerClass = (
     WeightedDslSFTTrainer
-    if SELECTOR_TOKEN_WEIGHT > 1.0 or DSL_PRIMITIVE_TOKEN_WEIGHT > 1.0
+    if SELECTOR_TOKEN_WEIGHT > 1.0 or DSL_PRIMITIVE_TOKEN_WEIGHT > 1.0 or _NONUNIFORM
     else SFTTrainer
 )
 
@@ -511,6 +636,20 @@ if eval_dataset is not None and EARLY_STOPPING_PATIENCE > 0:
     print(
         f"EarlyStopping armed: patience={EARLY_STOPPING_PATIENCE}, "
         f"threshold={EARLY_STOPPING_THRESHOLD}, monitoring eval_loss"
+    )
+
+if eval_dataset is not None and CONTRACT_EVAL_SLICE > 0:
+    trainer.add_callback(
+        ContractEvalCallback(
+            eval_dataset=eval_dataset,
+            tokenizer=tokenizer,
+            n_slice=CONTRACT_EVAL_SLICE,
+            max_new_tokens=CONTRACT_EVAL_MAX_NEW_TOKENS,
+        )
+    )
+    print(
+        f"ContractEvalCallback armed: n_slice={CONTRACT_EVAL_SLICE}, "
+        f"max_new_tokens={CONTRACT_EVAL_MAX_NEW_TOKENS}"
     )
 
 write_status("training")

@@ -1,13 +1,11 @@
 {
-  "schema_version": "bijective_dsl_v5_holdout_manifest_v1",
-  "generated_at_utc": "2026-04-27T14:58:14.981884+00:00",
-  "source_v4_records": 69,
-  "repair_v3_train_records": 18,
-  "repair_v3_removed": 18,
-  "translate_one_cap": 7,
-  "floor_patch_records": 4,
+  "schema_version": "bijective_dsl_v5_holdout_manifest_v2",
+  "generated_at_utc": "2026-04-27T20:41:26.970675+00:00",
+  "p3_floor_patch_appended": 44,
+  "p3_appended_multiline_edit": 22,
+  "p3_appended_dialogue": 22,
   "output": "training-data/sft/bijective_dsl_v5_holdout.sft.jsonl",
-  "output_records": 52,
+  "output_records": 96,
   "by_category": {
     "identify": 3,
     "edit_slot_all": 4,
@@ -15,9 +13,9 @@
     "governance_tag": 5,
     "align": 9,
     "translate_all": 5,
-    "dialogue": 8,
+    "dialogue": 30,
     "translate_one": 7,
-    "multiline_edit": 8
+    "multiline_edit": 30
   },
-  "sha256": "c461bcebf511cc500a759efb4331cca3e4fe28b0bfa535c05a494bde8651c8c3"
+  "sha256": "7bfbbdc5caba3f8a821b413e21341fcfbfb2ea8576dcfa9a48ab4371e0c4b480"
 }
