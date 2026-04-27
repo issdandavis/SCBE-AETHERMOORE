@@ -210,7 +210,14 @@ def test_code_packet_generic_bin_collects_quarks_for_nonlexicon_code(tmp_path: P
     packet = json.loads(result.stdout)
     assert packet["semantic_expression"]["label"] == "generic_program_bin"
     quarks = set(packet["semantic_expression"]["quarks"])
-    assert {"import_binding", "class_shape", "function_shape", "assignment_flow", "return_flow", "arithmetic_transform"} <= quarks
+    assert {
+        "import_binding",
+        "class_shape",
+        "function_shape",
+        "assignment_flow",
+        "return_flow",
+        "arithmetic_transform",
+    } <= quarks
 
 
 def test_code_packet_generic_bin_collects_domain_well_quarks(tmp_path: Path) -> None:
@@ -235,7 +242,14 @@ def test_code_packet_generic_bin_collects_domain_well_quarks(tmp_path: Path) -> 
     assert result.returncode == 0, result.stderr
     packet = json.loads(result.stdout)
     quarks = set(packet["semantic_expression"]["quarks"])
-    assert {"comparison_gate", "timing_window", "measurement_signal", "risk_gate", "care_state", "summary_emit"} <= quarks
+    assert {
+        "comparison_gate",
+        "timing_window",
+        "measurement_signal",
+        "risk_gate",
+        "care_state",
+        "summary_emit",
+    } <= quarks
 
 
 def test_code_packet_scaffolds_structure_symbol_and_semantic_layers(tmp_path: Path) -> None:
@@ -455,9 +469,7 @@ def test_topology_view_emits_polygons_chains_and_compass(tmp_path: Path) -> None
     assert topology["dictionaries"]["coding_languages"]["all"]["GO"] == "go"
     assert topology["dictionaries"]["tokenizer_tongues"]["primary"] == ["KO", "AV", "RU", "CA", "UM", "DR"]
     add_binding = next(
-        entry
-        for entry in topology["dictionaries"]["keyboard_command_map"]
-        if entry["command_key"] == "add"
+        entry for entry in topology["dictionaries"]["keyboard_command_map"] if entry["command_key"] == "add"
     )
     assert add_binding["key_slot"] == "A1"
     assert add_binding["phase_operation"] == "arithmetic:add"
@@ -482,12 +494,20 @@ def test_topology_view_emits_polygons_chains_and_compass(tmp_path: Path) -> None
     assert isinstance(topology["route_packet"]["transport_tokens"]["KO"], str)
     assert "sub" in topology["route_packet"]["support_commands"]
     assert topology["route_packet"]["cost_retro_summary"]["route_total_cost"] > 0
-    assert topology["route_packet"]["cost_retro_summary"]["preferred_leyline"] in {"semantic_backbone", "binary_spine", "harmonic_spine"}
+    assert topology["route_packet"]["cost_retro_summary"]["preferred_leyline"] in {
+        "semantic_backbone",
+        "binary_spine",
+        "harmonic_spine",
+    }
     assert topology["summary"]["operative_command"]["phase_operation"] == "arithmetic:add"
     assert topology["summary"]["route_packet"]["operative_command"] == "arithmetic:add"
     assert topology["cost_retro"]["objective"]["operative_command"] == "arithmetic:add"
     assert topology["cost_retro"]["totals"]["route_total_cost"] > 0
-    assert topology["cost_retro"]["route_memory"]["preferred_leyline"] in {"semantic_backbone", "binary_spine", "harmonic_spine"}
+    assert topology["cost_retro"]["route_memory"]["preferred_leyline"] in {
+        "semantic_backbone",
+        "binary_spine",
+        "harmonic_spine",
+    }
     assert topology["summary"]["cost_retro"]["route_total_cost"] == topology["cost_retro"]["totals"]["route_total_cost"]
     assert any(node["kind"] == "data_polygon" for node in topology["nodes"])
     assert any(edge["relation"] == "amino_backbone_traverse" for edge in topology["edges"])
@@ -726,9 +746,9 @@ def test_cluster_and_formation_graphs_emit_cross_lattice_layers(tmp_path: Path) 
     source_file = tmp_path / "graph_layers.rs"
     source_file.write_text(
         "fn relay_window(latency_ms: u64, thermal_ok: bool) -> &'static str {\n"
-        "    if !thermal_ok { return \"hold\"; }\n"
-        "    if latency_ms > 1200 { return \"store_and_forward\"; }\n"
-        "    \"direct_relay\"\n"
+        '    if !thermal_ok { return "hold"; }\n'
+        '    if latency_ms > 1200 { return "store_and_forward"; }\n'
+        '    "direct_relay"\n'
         "}\n",
         encoding="utf-8",
     )

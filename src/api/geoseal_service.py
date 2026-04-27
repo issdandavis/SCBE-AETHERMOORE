@@ -133,9 +133,7 @@ async def spaceport_status() -> dict[str, Any]:
 
 
 @app.post("/runtime/inspect", tags=["Runtime"])
-async def runtime_inspect(
-    request: RuntimeInspectRequest, user: str = Depends(verify_api_key)
-) -> dict[str, Any]:
+async def runtime_inspect(request: RuntimeInspectRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
     return {
         "status": "ok",
@@ -167,9 +165,7 @@ async def runtime_system_cards(
 
 
 @app.post("/runtime/run-route", tags=["Runtime"])
-async def runtime_run_route(
-    request: RuntimeRunRouteRequest, user: str = Depends(verify_api_key)
-) -> dict[str, Any]:
+async def runtime_run_route(request: RuntimeRunRouteRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
     from src.geoseal_cli import _build_execution_shell_payload, _execute_execution_shell_payload
 
@@ -192,9 +188,7 @@ async def runtime_run_route(
 
 
 @app.post("/runtime/portal-box", tags=["Runtime"])
-async def runtime_portal_box(
-    request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)
-) -> dict[str, Any]:
+async def runtime_portal_box(request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
     from src.geoseal_cli import _build_portal_box_payload
 
@@ -212,9 +206,7 @@ async def runtime_portal_box(
 
 
 @app.post("/runtime/stream-wheel", tags=["Runtime"])
-async def runtime_stream_wheel(
-    request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)
-) -> dict[str, Any]:
+async def runtime_stream_wheel(request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
     from src.geoseal_cli import _build_portal_box_payload, _build_stream_wheel_payload
 
@@ -281,8 +273,6 @@ async def polly_chat(request: PollyChatRequest) -> dict[str, Any]:
         "status": "ok",
         "model": "polly-local-control-plane",
         "message": "local GeoSeal route resolved",
-        "coding_spine": {
-            "tongue": resolution.get("runtime_packet", {}).get("route_tongue", "KO")
-        },
+        "coding_spine": {"tongue": resolution.get("runtime_packet", {}).get("route_tongue", "KO")},
         "deck": deck,
     }

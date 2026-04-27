@@ -31,9 +31,7 @@ def test_binary_pillar_records_preserve_round_trip_invariants() -> None:
         assert payload["round_trip"]["binary_to_decimal"] == decimal
         assert payload["round_trip"]["decimal_to_binary"] == binary
         assert set(payload["code_pillar"]) == {"python", "typescript", "c", "rust"}
-        assert payload["invariant"].startswith(
-            "All pillars describe the same substrate value"
-        )
+        assert payload["invariant"].startswith("All pillars describe the same substrate value")
 
 
 def test_write_dataset_outputs_jsonl_and_manifest(tmp_path) -> None:

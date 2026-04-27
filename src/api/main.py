@@ -37,6 +37,7 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
+
 def _load_local_env_if_explicitly_enabled() -> None:
     """Load local secret env file only when explicitly enabled for dev."""
     allow_local_secrets = os.getenv("SCBE_LOAD_LOCAL_SECRETS", "").strip().lower()
@@ -66,10 +67,12 @@ from src.storage import BlobNotFoundError, SealedBlobRecord, get_storage_backend
 from src.api.hydra_routes import hydra_router, init_hydra_spine
 from src.api.saas_routes import saas_router
 from src.api.stripe_billing import billing_router
+
 try:
     from src.contracts.operation_panel import resolve_source_to_operation_panel
     from src.contracts.system_cards import build_system_deck, play_system_card
     from src.contracts.runtime_contract import inspect_runtime_packet
+
     _CONTRACTS_AVAILABLE = True
 except ImportError:
     _CONTRACTS_AVAILABLE = False
@@ -86,6 +89,7 @@ except ImportError:
 
     def inspect_runtime_packet(*a, **kw):
         raise HTTPException(status_code=501, detail="contracts module not installed")
+
 
 from src.api.compute_routes import compute_router
 from src.api.search_routes import search_router
@@ -561,7 +565,6 @@ CONNECTOR_TEMPLATES: List[Dict[str, Any]] = [
 # ============================================================================
 
 from src.api.auth_config import VALID_API_KEYS
-
 
 API_KEY_HEADER = APIKeyHeader(name="x-api-key", auto_error=False)
 API_KEY_HEADER_LEGACY = APIKeyHeader(name="SCBE_api_key", auto_error=False)

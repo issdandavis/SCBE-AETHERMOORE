@@ -124,7 +124,9 @@ def simulate_photonic_accelerator(
     precision_loss = max(0.0, (task["precision_required_bits"] - profile["precision_native_bits"]) / 64.0)
     precision_loss += task["branching_density"] * 0.04 + task["memory_access_density"] * 0.03
     predicted_latency_ms = max(0.1, task["latency_budget_ms"] * (0.22 + (1.0 - score) * 1.1) * branch_penalty)
-    predicted_energy_j = max(0.0001, task["energy_budget_j"] * (0.12 + (1.0 - score) * 0.55) * memory_penalty / compute_intensity)
+    predicted_energy_j = max(
+        0.0001, task["energy_budget_j"] * (0.12 + (1.0 - score) * 0.55) * memory_penalty / compute_intensity
+    )
     failure_modes: list[str] = []
     if task["precision_required_bits"] > profile["precision_native_bits"] + 8:
         failure_modes.append("precision_mismatch")

@@ -13,4 +13,3 @@ def test_runtime_health_aliases_match() -> None:
     assert health.status_code == 200
     assert versioned.status_code == 200
     assert health.json() == versioned.json()
-

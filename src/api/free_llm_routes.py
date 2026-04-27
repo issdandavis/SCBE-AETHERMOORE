@@ -28,16 +28,12 @@ ProviderKind = Literal["offline", "ollama", "huggingface", "custom"]
 
 class FreeLLMDispatchRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=32000)
-    provider: Optional[str] = Field(
-        default=None, max_length=64, description="Provider id; auto selects if omitted"
-    )
+    provider: Optional[str] = Field(default=None, max_length=64, description="Provider id; auto selects if omitted")
     model: Optional[str] = Field(default=None, max_length=256)
     system: Optional[str] = Field(default=None, max_length=8000)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
     max_tokens: int = Field(default=1024, ge=1, le=8192)
-    require_free: bool = Field(
-        default=True, description="Only route to local/open/free-style providers"
-    )
+    require_free: bool = Field(default=True, description="Only route to local/open/free-style providers")
     dry_run: bool = Field(
         default=False,
         description="Return route decision without sending prompt to a provider",
@@ -72,9 +68,7 @@ def _env_flag(name: str, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _http_json(
-    url: str, payload: Dict[str, Any], headers: Dict[str, str], timeout: float
-) -> Dict[str, Any]:
+def _http_json(url: str, payload: Dict[str, Any], headers: Dict[str, str], timeout: float) -> Dict[str, Any]:
     data = json.dumps(payload).encode("utf-8")
     req = urlrequest.Request(
         url,
@@ -149,19 +143,13 @@ def _build_bus_event(
         "prompt": {
             "sha256": _sha256_text(request.prompt),
             "chars": len(request.prompt),
-            "system_sha256": (
-                _sha256_text(request.system or "") if request.system else None
-            ),
+            "system_sha256": (_sha256_text(request.system or "") if request.system else None),
         },
         "result": {
             "provider": result.get("provider") if result else None,
             "model": result.get("model") if result else route.get("model"),
             "finish_reason": result.get("finish_reason") if result else None,
-            "text_sha256": (
-                _sha256_text(result.get("text", ""))
-                if result and result.get("text")
-                else None
-            ),
+            "text_sha256": (_sha256_text(result.get("text", "")) if result and result.get("text") else None),
             "text_chars": len(result.get("text", "")) if result else 0,
         },
         "error": error,
@@ -208,9 +196,7 @@ def _ollama_launch_registry() -> Dict[str, Any]:
     }
 
 
-def build_ollama_launch_plan(
-    request: OllamaLaunchPlanRequest, *, user: str = "internal"
-) -> Dict[str, Any]:
+def build_ollama_launch_plan(request: OllamaLaunchPlanRequest, *, user: str = "internal") -> Dict[str, Any]:
     registry = _ollama_launch_registry()
     requested = request.integration.strip().lower()
     integration = registry["aliases"].get(requested, requested)
@@ -243,9 +229,7 @@ def build_ollama_launch_plan(
 
 def free_llm_registry() -> Dict[str, Any]:
     hf_token_present = bool(
-        os.getenv("HF_TOKEN")
-        or os.getenv("HUGGINGFACE_TOKEN")
-        or os.getenv("HUGGING_FACE_HUB_TOKEN")
+        os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN")
     )
     ollama_base = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
     registry: Dict[str, Any] = {
@@ -279,9 +263,7 @@ def free_llm_registry() -> Dict[str, Any]:
                 "privacy": "remote",
                 "available": hf_token_present,
                 "token_present": hf_token_present,
-                "default_model": os.getenv(
-                    "HF_ROUTER_MODEL", "Qwen/Qwen2.5-Coder-7B-Instruct"
-                ),
+                "default_model": os.getenv("HF_ROUTER_MODEL", "Qwen/Qwen2.5-Coder-7B-Instruct"),
                 "dispatch": "hf_router_chat_completions",
             },
         },
@@ -303,16 +285,12 @@ def free_llm_registry() -> Dict[str, Any]:
     return registry
 
 
-def _select_provider(
-    request: FreeLLMDispatchRequest, registry: Dict[str, Any]
-) -> Dict[str, Any]:
+def _select_provider(request: FreeLLMDispatchRequest, registry: Dict[str, Any]) -> Dict[str, Any]:
     providers = registry["providers"]
     if request.provider:
         provider = providers.get(request.provider)
         if not provider:
-            raise HTTPException(
-                status_code=404, detail=f"Unknown provider '{request.provider}'"
-            )
+            raise HTTPException(status_code=404, detail=f"Unknown provider '{request.provider}'")
         return provider
     for provider_id in registry["default_order"]:
         provider = providers.get(provider_id)
@@ -321,9 +299,7 @@ def _select_provider(
     return providers["offline"]
 
 
-def _offline_dispatch(
-    request: FreeLLMDispatchRequest, provider: Dict[str, Any]
-) -> Dict[str, Any]:
+def _offline_dispatch(request: FreeLLMDispatchRequest, provider: Dict[str, Any]) -> Dict[str, Any]:
     prompt = request.prompt.strip()
     text = (
         "SCBE offline worker accepted the task. "
@@ -340,17 +316,14 @@ def _offline_dispatch(
     }
 
 
-def _ollama_dispatch(
-    request: FreeLLMDispatchRequest, provider: Dict[str, Any]
-) -> Dict[str, Any]:
+def _ollama_dispatch(request: FreeLLMDispatchRequest, provider: Dict[str, Any]) -> Dict[str, Any]:
     model = request.model or provider["default_model"]
     payload = {
         "model": model,
         "messages": [
             {
                 "role": "system",
-                "content": request.system
-                or "You are a concise coding worker in the HYDRA mission dock.",
+                "content": request.system or "You are a concise coding worker in the HYDRA mission dock.",
             },
             {"role": "user", "content": request.prompt},
         ],
@@ -368,24 +341,12 @@ def _ollama_dispatch(
         "provider": provider["provider"],
         "model": model,
         "finish_reason": data.get("done_reason") or "stop",
-        "usage": {
-            "raw": {
-                k: data.get(k)
-                for k in ("prompt_eval_count", "eval_count", "total_duration")
-                if k in data
-            }
-        },
+        "usage": {"raw": {k: data.get(k) for k in ("prompt_eval_count", "eval_count", "total_duration") if k in data}},
     }
 
 
-def _hf_dispatch(
-    request: FreeLLMDispatchRequest, provider: Dict[str, Any]
-) -> Dict[str, Any]:
-    token = (
-        os.getenv("HF_TOKEN")
-        or os.getenv("HUGGINGFACE_TOKEN")
-        or os.getenv("HUGGING_FACE_HUB_TOKEN")
-    )
+def _hf_dispatch(request: FreeLLMDispatchRequest, provider: Dict[str, Any]) -> Dict[str, Any]:
+    token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN")
     if not token:
         raise HTTPException(status_code=400, detail="Hugging Face token not configured")
     model = request.model or provider["default_model"]
@@ -394,8 +355,7 @@ def _hf_dispatch(
         "messages": [
             {
                 "role": "system",
-                "content": request.system
-                or "You are a concise coding worker in the HYDRA mission dock.",
+                "content": request.system or "You are a concise coding worker in the HYDRA mission dock.",
             },
             {"role": "user", "content": request.prompt},
         ],
@@ -403,9 +363,7 @@ def _hf_dispatch(
         "max_tokens": request.max_tokens,
     }
     data = _http_json(
-        os.getenv(
-            "HF_ROUTER_CHAT_URL", "https://router.huggingface.co/v1/chat/completions"
-        ),
+        os.getenv("HF_ROUTER_CHAT_URL", "https://router.huggingface.co/v1/chat/completions"),
         payload,
         {"Authorization": f"Bearer {token}"},
         timeout=60,
@@ -421,15 +379,11 @@ def _hf_dispatch(
     }
 
 
-def _custom_dispatch(
-    request: FreeLLMDispatchRequest, provider: Dict[str, Any]
-) -> Dict[str, Any]:
+def _custom_dispatch(request: FreeLLMDispatchRequest, provider: Dict[str, Any]) -> Dict[str, Any]:
     endpoint = provider.get("endpoint")
     if not endpoint:
         raise HTTPException(status_code=400, detail="Custom provider missing endpoint")
-    if provider.get("privacy") == "remote" and not _env_flag(
-        "SCBE_ALLOW_REMOTE_FREE_LLM_CUSTOM", False
-    ):
+    if provider.get("privacy") == "remote" and not _env_flag("SCBE_ALLOW_REMOTE_FREE_LLM_CUSTOM", False):
         raise HTTPException(
             status_code=400,
             detail="Remote custom providers require SCBE_ALLOW_REMOTE_FREE_LLM_CUSTOM=1",
@@ -440,8 +394,7 @@ def _custom_dispatch(
         "messages": [
             {
                 "role": "system",
-                "content": request.system
-                or "You are a concise coding worker in the HYDRA mission dock.",
+                "content": request.system or "You are a concise coding worker in the HYDRA mission dock.",
             },
             {"role": "user", "content": request.prompt},
         ],
@@ -452,18 +405,14 @@ def _custom_dispatch(
     token_env = provider.get("token_env")
     if token_env and os.getenv(str(token_env)):
         headers["Authorization"] = f"Bearer {os.getenv(str(token_env))}"
-    data = _http_json(
-        str(endpoint), payload, headers, timeout=float(provider.get("timeout", 45))
-    )
+    data = _http_json(str(endpoint), payload, headers, timeout=float(provider.get("timeout", 45)))
     choice = (data.get("choices") or [{}])[0]
     message = choice.get("message") or {}
     return {
         "text": message.get("content") or data.get("text") or "",
         "provider": provider["provider"],
         "model": model,
-        "finish_reason": choice.get("finish_reason")
-        or data.get("finish_reason")
-        or "stop",
+        "finish_reason": choice.get("finish_reason") or data.get("finish_reason") or "stop",
         "usage": data.get("usage") or {},
     }
 
@@ -481,9 +430,7 @@ async def list_ollama_launchers(x_api_key: str = Header(...)):
 
 
 @free_llm_router.post("/ollama-launch-plan")
-async def plan_ollama_launcher(
-    request: OllamaLaunchPlanRequest, x_api_key: str = Header(...)
-):
+async def plan_ollama_launcher(request: OllamaLaunchPlanRequest, x_api_key: str = Header(...)):
     user = await verify_api_key(x_api_key)
     return {"status": "ok", "data": build_ollama_launch_plan(request, user=user)}
 
@@ -504,9 +451,7 @@ def dispatch_free_llm_request(
         "account_or_free_tier",
         "user_configured",
     }:
-        raise HTTPException(
-            status_code=400, detail="Selected provider is not marked free/open"
-        )
+        raise HTTPException(status_code=400, detail="Selected provider is not marked free/open")
     route = {
         "provider": provider["provider"],
         "kind": provider["kind"],
@@ -542,9 +487,7 @@ def dispatch_free_llm_request(
         elif provider["kind"] == "custom":
             result = _custom_dispatch(request, provider)
         else:
-            raise HTTPException(
-                status_code=400, detail=f"Unsupported provider kind {provider['kind']}"
-            )
+            raise HTTPException(status_code=400, detail=f"Unsupported provider kind {provider['kind']}")
     except HTTPException:
         raise
     except Exception as exc:
@@ -610,8 +553,6 @@ def dispatch_free_llm_request(
 
 
 @free_llm_router.post("/dispatch")
-async def dispatch_free_llm(
-    request: FreeLLMDispatchRequest, x_api_key: str = Header(...)
-):
+async def dispatch_free_llm(request: FreeLLMDispatchRequest, x_api_key: str = Header(...)):
     user = await verify_api_key(x_api_key)
     return dispatch_free_llm_request(request, user=user, origin="outside")

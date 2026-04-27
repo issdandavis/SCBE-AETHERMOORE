@@ -74,9 +74,7 @@ class TestPlaywrightRuntime:
             await rt.launch(headless=True)
 
             # Use a data URI with a simple form
-            await rt.navigate(
-                "data:text/html,<input id='q' type='text'><button id='btn'>Go</button>"
-            )
+            await rt.navigate("data:text/html,<input id='q' type='text'><button id='btn'>Go</button>")
 
             await rt.type_text("#q", "hello aethermoore")
             value = await rt.evaluate("() => document.getElementById('q').value")
@@ -176,9 +174,7 @@ class TestRemoteDisplayManager:
             # This will navigate to CRD but won't connect (no auth)
             # It should NOT raise — just log warnings and return handle
             try:
-                handle = await mgr.connect_display(
-                    "test-display", timeout=10_000
-                )
+                handle = await mgr.connect_display("test-display", timeout=10_000)
                 assert handle.name == "test-display"
                 assert "test-display" in mgr.display_names
                 # Won't be connected without Google auth
@@ -202,7 +198,10 @@ class TestRemoteDisplayManager:
             ctx = await mgr._browser.new_context()
             page = await ctx.new_page()
             mgr._displays["dupe"] = DisplayHandle(
-                name="dupe", host_id="", context=ctx, page=page,
+                name="dupe",
+                host_id="",
+                context=ctx,
+                page=page,
             )
 
             with pytest.raises(ValueError, match="already exists"):
