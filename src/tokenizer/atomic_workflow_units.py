@@ -217,7 +217,6 @@ def _compatible(left: dict[str, Any], right: dict[str, Any]) -> tuple[bool, list
     left_sem = left["semantic_lane"]
     right_sem = right["semantic_lane"]
     left_chem = left["chemistry_lane"]
-    right_chem = right["chemistry_lane"]
     phase_gap = abs(float(right_sem["phase"]) - float(left_sem["phase"]))
     if phase_gap > 0.72:
         reasons.append(f"phase_gap_too_large:{phase_gap:.3f}")

@@ -22,7 +22,6 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote_plus
 
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 
 logger = logging.getLogger("scbe.api.polly")

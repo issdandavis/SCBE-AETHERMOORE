@@ -12,7 +12,7 @@ import hashlib
 import math
 import re
 from dataclasses import dataclass
-from typing import Iterable, Sequence
+from typing import Sequence
 
 import numpy as np
 

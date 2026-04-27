@@ -47,7 +47,6 @@ from scripts.experiments.layered_geometry_semantic_packing import (
 )
 from python.scbe.atomic_tokenization import map_token_to_atomic_state
 
-
 DEFAULT_INPUT = Path("artifacts/mathbac/cross_primary_atomic")
 DEFAULT_OUTPUT = Path("artifacts/mathbac/atomic_tokenizer_rename_benchmark")
 PERIODIC_TABLE = Path("artifacts/mathbac/periodic_table_full.json")
@@ -477,7 +476,7 @@ def make_operational_flow_feature() -> Callable[[str], dict[str, float]]:
 
 
 def combine_feature_heads(
-    heads: list[tuple[str, Callable[[str], dict[str, float]], float]]
+    heads: list[tuple[str, Callable[[str], dict[str, float]], float]],
 ) -> Callable[[str], dict[str, float]]:
     def feature(text: str) -> dict[str, float]:
         combined: dict[str, float] = {}
@@ -536,20 +535,17 @@ def make_layered_geometry_semantic_feature() -> Callable[[str], dict[str, float]
         )
         for family in GEOMETRY_TOKEN_FAMILIES
     }
-    keys = (
-        [f"geom_family_{family}" for family in GEOMETRY_TOKEN_FAMILIES]
-        + [
-            "geom_token_count_log",
-            "geom_mean_fit_score",
-            "geom_mean_semantic_loss",
-            "geom_mean_utilization",
-            "geom_mean_octave_links",
-            "geom_mean_collision_count",
-            "geom_mean_boundary_violations",
-            "geom_control_to_callable_ratio",
-            "geom_governance_to_data_ratio",
-        ]
-    )
+    keys = [f"geom_family_{family}" for family in GEOMETRY_TOKEN_FAMILIES] + [
+        "geom_token_count_log",
+        "geom_mean_fit_score",
+        "geom_mean_semantic_loss",
+        "geom_mean_utilization",
+        "geom_mean_octave_links",
+        "geom_mean_collision_count",
+        "geom_mean_boundary_violations",
+        "geom_control_to_callable_ratio",
+        "geom_governance_to_data_ratio",
+    ]
 
     def feature(text: str) -> dict[str, float]:
         result = {key: 0.0 for key in keys}
@@ -571,9 +567,9 @@ def make_layered_geometry_semantic_feature() -> Callable[[str], dict[str, float]
         result["geom_mean_utilization"] = sum(shape_reports[family].utilization for family in families) / n
         result["geom_mean_octave_links"] = sum(shape_reports[family].octave_link_count for family in families) / n
         result["geom_mean_collision_count"] = sum(shape_reports[family].collision_count for family in families) / n
-        result["geom_mean_boundary_violations"] = sum(
-            shape_reports[family].boundary_violation_count for family in families
-        ) / n
+        result["geom_mean_boundary_violations"] = (
+            sum(shape_reports[family].boundary_violation_count for family in families) / n
+        )
         result["geom_control_to_callable_ratio"] = counts["CONTROL_FLOW"] / max(1.0, float(counts["CALLABLE"]))
         result["geom_governance_to_data_ratio"] = counts["GOVERNANCE_GATE"] / max(1.0, float(counts["DATA_SYMBOL"]))
         return result
@@ -583,9 +579,7 @@ def make_layered_geometry_semantic_feature() -> Callable[[str], dict[str, float]
     return feature
 
 
-def byte_periodic_signature(
-    text: str, table: list[dict[str, Any]], *, mode: str
-) -> dict[str, Any]:
+def byte_periodic_signature(text: str, table: list[dict[str, Any]], *, mode: str) -> dict[str, Any]:
     """Build a source-level molecule signature from byte->element traces."""
 
     data = text.encode("utf-8")
@@ -616,9 +610,7 @@ def byte_periodic_signature(
         "element_fracs": {key: value / n for key, value in sorted(element_counts.items())},
         "atomic_number_mean": atomic_mean,
         "atomic_number_std": math.sqrt(atomic_var),
-        "electronegativity_mean": sum(
-            float(element.get("electronegativity_pauling") or 0.0) for element in elements
-        )
+        "electronegativity_mean": sum(float(element.get("electronegativity_pauling") or 0.0) for element in elements)
         / n,
         "period_mean": sum(float(element.get("period") or 0.0) for element in elements) / n,
         "group_mean": sum(float(element.get("group") or 0.0) for element in elements) / n,
@@ -702,9 +694,7 @@ def chemical_distance_report(
         "same_concept_cross_primary_mean": mean(same_concept_cross_primary),
         "same_primary_cross_concept_mean": mean(same_primary_cross_concept),
         "intra_inter_ratio": mean(intra) / mean(inter) if inter else 0.0,
-        "per_concept_intra_mean": {
-            concept: mean(values) for concept, values in sorted(per_concept.items())
-        },
+        "per_concept_intra_mean": {concept: mean(values) for concept, values in sorted(per_concept.items())},
         "nearest_neighbor_confusions": {
             concept: dict(counter.most_common(5)) for concept, counter in sorted(nearest.items())
         },
@@ -719,12 +709,8 @@ def chemical_distance_report(
                 "electronegativity_mean": signature["electronegativity_mean"],
                 "period_mean": signature["period_mean"],
                 "group_mean": signature["group_mean"],
-                "top_elements": sorted(
-                    signature["element_fracs"].items(), key=lambda item: (-item[1], item[0])
-                )[:8],
-                "top_categories": sorted(
-                    signature["category_fracs"].items(), key=lambda item: (-item[1], item[0])
-                )[:5],
+                "top_elements": sorted(signature["element_fracs"].items(), key=lambda item: (-item[1], item[0]))[:8],
+                "top_categories": sorted(signature["category_fracs"].items(), key=lambda item: (-item[1], item[0]))[:5],
             }
             for sample, signature in zip(samples, signatures)
         ],
@@ -838,9 +824,7 @@ def workflow_training_records(
                         "feature": geometry_feature(source),
                     },
                 },
-                "workflow_chain": workflow_chain_string(
-                    source, table, hex_lookup, mode=mode
-                ),
+                "workflow_chain": workflow_chain_string(source, table, hex_lookup, mode=mode),
             }
         )
     return records
@@ -853,9 +837,7 @@ def _feature_keys_for(features: list[dict[str, float]]) -> list[str]:
     return sorted(keys)
 
 
-def _loo_nearest_with_keys(
-    features: list[dict[str, float]], concepts: list[str], keys: list[str]
-) -> list[str]:
+def _loo_nearest_with_keys(features: list[dict[str, float]], concepts: list[str], keys: list[str]) -> list[str]:
     sums: dict[str, dict[str, float]] = {}
     counts: dict[str, int] = {}
     for feature, concept in zip(features, concepts):
@@ -875,10 +857,7 @@ def _loo_nearest_with_keys(
                 rest_count = counts[candidate] - 1
                 if rest_count <= 0:
                     continue
-                prototype = {
-                    key: (total[key] - feature.get(key, 0.0)) / rest_count
-                    for key in keys
-                }
+                prototype = {key: (total[key] - feature.get(key, 0.0)) / rest_count for key in keys}
             else:
                 rest_count = counts[candidate]
                 prototype = {key: total[key] / rest_count for key in keys}
@@ -937,10 +916,7 @@ def _normalize_features(features: list[dict[str, float]], keys: list[str]) -> li
         variance = sum((feature.get(key, 0.0) - mean) ** 2 for feature in features) / n
         means[key] = mean
         stdevs[key] = math.sqrt(variance) or 1.0
-    return [
-        {key: (feature.get(key, 0.0) - means[key]) / stdevs[key] for key in keys}
-        for feature in features
-    ]
+    return [{key: (feature.get(key, 0.0) - means[key]) / stdevs[key] for key in keys} for feature in features]
 
 
 SITUATION_PROFILES: dict[str, dict[str, float]] = {
@@ -1088,24 +1064,18 @@ def _label_shuffle_control(
         null_accuracies: list[float] = []
         iteration_seeds: list[int] = []
         marginal_count_checks: list[bool] = []
-        for iteration in range(shuffle_runs):
+        for _iteration in range(shuffle_runs):
             iteration_seed = rng.randrange(0, 2**32)
             iteration_rng = random.Random(iteration_seed)
             iteration_seeds.append(iteration_seed)
             predictions: list[str] = ["UNKNOWN"] * len(samples)
             for held_out_group in unique_groups:
-                train_indices = [
-                    index for index, group in enumerate(groups) if group != held_out_group
-                ]
-                test_indices = [
-                    index for index, group in enumerate(groups) if group == held_out_group
-                ]
+                train_indices = [index for index, group in enumerate(groups) if group != held_out_group]
+                test_indices = [index for index, group in enumerate(groups) if group == held_out_group]
                 shuffled_train_labels = [true_concepts[index] for index in train_indices]
                 original_train_counts = Counter(shuffled_train_labels)
                 iteration_rng.shuffle(shuffled_train_labels)
-                marginal_count_checks.append(
-                    Counter(shuffled_train_labels) == original_train_counts
-                )
+                marginal_count_checks.append(Counter(shuffled_train_labels) == original_train_counts)
                 sums: dict[str, dict[str, float]] = {}
                 counts: dict[str, int] = {}
                 for train_index, shuffled_label in zip(train_indices, shuffled_train_labels):
@@ -1119,13 +1089,8 @@ def _label_shuffle_control(
                     best = "UNKNOWN"
                     best_distance = math.inf
                     for candidate in sorted(sums):
-                        prototype = {
-                            key: sums[candidate][key] / counts[candidate] for key in keys
-                        }
-                        distance = math.fsum(
-                            (features[test_index].get(key, 0.0) - prototype[key]) ** 2
-                            for key in keys
-                        )
+                        prototype = {key: sums[candidate][key] / counts[candidate] for key in keys}
+                        distance = math.fsum((features[test_index].get(key, 0.0) - prototype[key]) ** 2 for key in keys)
                         if distance < best_distance:
                             best_distance = distance
                             best = candidate
@@ -1197,9 +1162,7 @@ def _evaluate_within_primary_loo(
     }
 
 
-def _per_primary_accuracy(
-    samples: list[Sample], predictions: list[str]
-) -> dict[str, dict[str, Any]]:
+def _per_primary_accuracy(samples: list[Sample], predictions: list[str]) -> dict[str, dict[str, Any]]:
     buckets: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for sample, pred in zip(samples, predictions):
         buckets[sample.primary].append((sample.concept, pred))
@@ -1316,11 +1279,7 @@ def _comparison_markdown(report: dict[str, Any]) -> str:
         "|---|---:|---:|---:|---|",
     ]
     for row in report["summary"]:
-        lines.append(
-            "| {feature} | {baseline:.1%} | {renamed:.1%} | {drop:.1%} | {interpretation} |".format(
-                **row
-            )
-        )
+        lines.append("| {feature} | {baseline:.1%} | {renamed:.1%} | {drop:.1%} | {interpretation} |".format(**row))
     lines.extend(
         [
             "",
@@ -1331,9 +1290,7 @@ def _comparison_markdown(report: dict[str, Any]) -> str:
         ]
     )
     for row in report["leave_primary_out_summary"]:
-        lines.append(
-            "| {feature} | {accuracy:.1%} | {risk} |".format(**row)
-        )
+        lines.append("| {feature} | {accuracy:.1%} | {risk} |".format(**row))
     lines.extend(
         [
             "",
@@ -1464,9 +1421,7 @@ def run(
     table = _load_periodic_table(PERIODIC_TABLE)
     hex_lookup = load_binary_hex_lookup()
     byte_feature = make_byte_periodic_feature(table, mode=byte_map_mode)
-    chemistry_feature = make_binary_hex_chemistry_feature(
-        table, hex_lookup, mode=byte_map_mode
-    )
+    chemistry_feature = make_binary_hex_chemistry_feature(table, hex_lookup, mode=byte_map_mode)
     flow_feature = make_operational_flow_feature()
     semantic_overlay_feature = make_atomic_semantic_overlay_feature()
     geometry_feature = make_layered_geometry_semantic_feature()
@@ -1509,36 +1464,78 @@ def run(
             "renamed": _evaluate(samples, renamed_sources, _default_atomic_feature, feature_name="atomic_current"),
         },
         f"byte_periodic_{byte_map_mode}": {
-            "baseline": _evaluate(samples, original_sources, byte_feature, feature_name=f"byte_periodic_{byte_map_mode}"),
+            "baseline": _evaluate(
+                samples, original_sources, byte_feature, feature_name=f"byte_periodic_{byte_map_mode}"
+            ),
             "renamed": _evaluate(samples, renamed_sources, byte_feature, feature_name=f"byte_periodic_{byte_map_mode}"),
         },
         f"chemistry_actual_{byte_map_mode}": {
-            "baseline": _evaluate(samples, original_sources, chemistry_feature, feature_name=f"chemistry_actual_{byte_map_mode}"),
-            "renamed": _evaluate(samples, renamed_sources, chemistry_feature, feature_name=f"chemistry_actual_{byte_map_mode}"),
+            "baseline": _evaluate(
+                samples, original_sources, chemistry_feature, feature_name=f"chemistry_actual_{byte_map_mode}"
+            ),
+            "renamed": _evaluate(
+                samples, renamed_sources, chemistry_feature, feature_name=f"chemistry_actual_{byte_map_mode}"
+            ),
         },
         "semantic_overlay_current": {
-            "baseline": _evaluate(samples, original_sources, semantic_overlay_feature, feature_name="semantic_overlay_current"),
-            "renamed": _evaluate(samples, renamed_sources, semantic_overlay_feature, feature_name="semantic_overlay_current"),
+            "baseline": _evaluate(
+                samples, original_sources, semantic_overlay_feature, feature_name="semantic_overlay_current"
+            ),
+            "renamed": _evaluate(
+                samples, renamed_sources, semantic_overlay_feature, feature_name="semantic_overlay_current"
+            ),
         },
         "flow_reinforcement": {
             "baseline": _evaluate(samples, original_sources, flow_feature, feature_name="flow_reinforcement"),
             "renamed": _evaluate(samples, renamed_sources, flow_feature, feature_name="flow_reinforcement"),
         },
         "layered_geometry_semantic": {
-            "baseline": _evaluate(samples, original_sources, geometry_feature, feature_name="layered_geometry_semantic"),
+            "baseline": _evaluate(
+                samples, original_sources, geometry_feature, feature_name="layered_geometry_semantic"
+            ),
             "renamed": _evaluate(samples, renamed_sources, geometry_feature, feature_name="layered_geometry_semantic"),
         },
         f"dual_lane_chemistry_semantic_{byte_map_mode}": {
-            "baseline": _evaluate(samples, original_sources, dual_lane_feature, feature_name=f"dual_lane_chemistry_semantic_{byte_map_mode}"),
-            "renamed": _evaluate(samples, renamed_sources, dual_lane_feature, feature_name=f"dual_lane_chemistry_semantic_{byte_map_mode}"),
+            "baseline": _evaluate(
+                samples,
+                original_sources,
+                dual_lane_feature,
+                feature_name=f"dual_lane_chemistry_semantic_{byte_map_mode}",
+            ),
+            "renamed": _evaluate(
+                samples,
+                renamed_sources,
+                dual_lane_feature,
+                feature_name=f"dual_lane_chemistry_semantic_{byte_map_mode}",
+            ),
         },
         f"reinforced_chemistry_semantic_flow_{byte_map_mode}": {
-            "baseline": _evaluate(samples, original_sources, reinforced_feature, feature_name=f"reinforced_chemistry_semantic_flow_{byte_map_mode}"),
-            "renamed": _evaluate(samples, renamed_sources, reinforced_feature, feature_name=f"reinforced_chemistry_semantic_flow_{byte_map_mode}"),
+            "baseline": _evaluate(
+                samples,
+                original_sources,
+                reinforced_feature,
+                feature_name=f"reinforced_chemistry_semantic_flow_{byte_map_mode}",
+            ),
+            "renamed": _evaluate(
+                samples,
+                renamed_sources,
+                reinforced_feature,
+                feature_name=f"reinforced_chemistry_semantic_flow_{byte_map_mode}",
+            ),
         },
         f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}": {
-            "baseline": _evaluate(samples, original_sources, geometry_reinforced_feature, feature_name=f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}"),
-            "renamed": _evaluate(samples, renamed_sources, geometry_reinforced_feature, feature_name=f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}"),
+            "baseline": _evaluate(
+                samples,
+                original_sources,
+                geometry_reinforced_feature,
+                feature_name=f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}",
+            ),
+            "renamed": _evaluate(
+                samples,
+                renamed_sources,
+                geometry_reinforced_feature,
+                feature_name=f"reinforced_chemistry_semantic_flow_geometry_{byte_map_mode}",
+            ),
         },
     }
     leave_primary_out = {
@@ -1569,11 +1566,7 @@ def run(
         seed=shuffle_seed,
     )
     label_shuffle_control_summary = [
-        {
-            key: value
-            for key, value in control.items()
-            if key != "distribution"
-        }
+        {key: value for key, value in control.items() if key != "distribution"}
         for control in label_shuffle_control.values()
     ]
 
@@ -1630,19 +1623,13 @@ def run(
     selected_control = label_shuffle_control.get(selected_lane["feature"])
     if selected_control and selected_control["risk"] == "passes shuffle control":
         training_status = "candidate"
-        training_status_reason = (
-            "Selected lane passed the pre-committed label-shuffle control; export remains a candidate training input, not a promoted dataset."
-        )
+        training_status_reason = "Selected lane passed the pre-committed label-shuffle control; export remains a candidate training input, not a promoted dataset."
     else:
         training_status = "hold"
         if selected_control:
-            training_status_reason = (
-                "Selected lane did not cleanly pass the label-shuffle null control; export is generated for inspection only and must not be promoted to training."
-            )
+            training_status_reason = "Selected lane did not cleanly pass the label-shuffle null control; export is generated for inspection only and must not be promoted to training."
         else:
-            training_status_reason = (
-                "Selected lane was not included in the shuffle control; export is generated for inspection only and must not be promoted to training."
-            )
+            training_status_reason = "Selected lane was not included in the shuffle control; export is generated for inspection only and must not be promoted to training."
     within_primary = {
         name: _evaluate_within_primary_loo(
             samples,
@@ -1702,12 +1689,8 @@ def run(
         "within_primary_diagnostic": within_primary_diagnostic,
         "renamed_aliases": {key: sorted(value) for key, value in renamed_aliases.items()},
         "atomic_collapse": _unknown_token_collapse(samples),
-        "chemical_distance": chemical_distance_report(
-            samples, original_sources, table, mode=byte_map_mode
-        ),
-        "token_atom_traces": token_atom_trace(
-            samples, table, mode=byte_map_mode, hex_lookup=hex_lookup
-        ),
+        "chemical_distance": chemical_distance_report(samples, original_sources, table, mode=byte_map_mode),
+        "token_atom_traces": token_atom_trace(samples, table, mode=byte_map_mode, hex_lookup=hex_lookup),
         "workflow_training_records": {
             "path": str(output_dir / "semantic_chemistry_workflows.jsonl"),
             "schema_version": "semantic_chemistry_workflow_v1",
@@ -1719,12 +1702,8 @@ def run(
     }
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "rename_benchmark_report.json").write_text(
-        json.dumps(report, indent=2), encoding="utf-8"
-    )
-    (output_dir / "comparison.md").write_text(
-        _comparison_markdown(report), encoding="utf-8"
-    )
+    (output_dir / "rename_benchmark_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    (output_dir / "comparison.md").write_text(_comparison_markdown(report), encoding="utf-8")
     (output_dir / "renamed_manifest.json").write_text(
         json.dumps(
             {
@@ -1744,12 +1723,8 @@ def run(
         ),
         encoding="utf-8",
     )
-    workflow_records = workflow_training_records(
-        samples, original_sources, table, hex_lookup, mode=byte_map_mode
-    )
-    with (output_dir / "semantic_chemistry_workflows.jsonl").open(
-        "w", encoding="utf-8", newline="\n"
-    ) as handle:
+    workflow_records = workflow_training_records(samples, original_sources, table, hex_lookup, mode=byte_map_mode)
+    with (output_dir / "semantic_chemistry_workflows.jsonl").open("w", encoding="utf-8", newline="\n") as handle:
         for record in workflow_records:
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
     return report
