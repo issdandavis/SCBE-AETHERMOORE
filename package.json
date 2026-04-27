@@ -129,6 +129,7 @@
     "training:adapter-registry": "python scripts/model_training/build_adapter_registry.py",
     "training:lora-drift": "python scripts/eval/analyze_lora_drift.py --use-registry",
     "training:curve": "python scripts/eval/analyze_training_curve.py",
+    "training:eval-matrix": "python scripts/eval/build_training_evaluation_matrix.py",
     "training:kaggle:patterns": "python scripts/eval/score_kaggle_round_patterns.py",
     "training:adapter-stack-plan": "python scripts/eval/plan_adapter_stack.py",
     "eval:dsl-v8-suite": "python scripts/eval/run_dsl_v8_eval_suite.py",
