@@ -551,7 +551,7 @@ def dispatch_free_llm_request(
         if provider["kind"] != "offline" and not request.provider:
             fallback = _offline_dispatch(request, registry["providers"]["offline"])
             fallback["fallback_from"] = provider["provider"]
-            fallback["fallback_error_class"] = str(exc)
+            fallback["fallback_error_class"] = type(exc).__name__
             fallback_route = {
                 "provider": "offline",
                 "kind": "offline",
@@ -567,6 +567,8 @@ def dispatch_free_llm_request(
                 origin=origin,
             )
             _append_bus_event(bus_event)
+            # Strip internal error details before sending to client
+            response_event = {k: v for k, v in bus_event.items() if k != "error"}
             return {
                 "status": "ok",
                 "data": {
@@ -574,7 +576,7 @@ def dispatch_free_llm_request(
                     "user": user,
                     "route": fallback_route,
                     "result": fallback,
-                    "bus_event": bus_event,
+                    "bus_event": response_event,
                 },
             }
         bus_event = _build_bus_event(
