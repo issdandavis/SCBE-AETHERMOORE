@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Dashboard | AetherMoore</title>
+  <meta name="description" content="Live agent routing results — web research, site monitoring, and AI-powered analysis via the SCBE Agent Bus.">
+  <link rel="stylesheet" href="static/polly-sidebar.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Quicksand', -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; color: #e6edf3; }
+    .subtitle { color: #8b949e; margin-bottom: 2rem; }
+    .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
+    .card h2 { font-size: 1.1rem; color: #58a6ff; margin-bottom: 0.5rem; }
+    .card .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.75rem; }
+    .card .body { font-size: 0.9rem; line-height: 1.6; }
+    .card .body a { color: #58a6ff; text-decoration: none; }
+    .tag { display: inline-block; background: #21262d; border: 1px solid #30363d; border-radius: 12px; padding: 2px 8px; font-size: 0.75rem; margin-right: 4px; }
+    .loading { text-align: center; padding: 2rem; color: #8b949e; }
+    .error { color: #f85149; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .status-dot.live { background: #3fb950; }
+    .status-dot.stale { background: #d29922; }
+    .trigger-form { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; margin-bottom: 2rem; }
+    .trigger-form select, .trigger-form input, .trigger-form button {
+      padding: 0.5rem; border-radius: 4px; border: 1px solid #30363d; background: #0d1117; color: #c9d1d9; font-size: 0.9rem;
+    }
+    .trigger-form button { background: #238636; border-color: #238636; cursor: pointer; color: #fff; }
+    .trigger-form button:hover { background: #2ea043; }
+    .empty-state { background: #161b22; border: 1px dashed #3d444d; border-radius: 8px; padding: 1.25rem; color: #8b949e; line-height: 1.6; }
+    .empty-state strong { color: #e6edf3; }
+    .empty-state a { color: #58a6ff; text-decoration: none; }
+    .empty-state ul { margin: 0.75rem 0 0 1.25rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Agent Dashboard</h1>
+    <p class="subtitle">Live results from the SCBE Agent Router — web research, monitoring, and analysis.</p>
+
+    <div class="trigger-form">
+      <strong>Dispatch Agent Task</strong>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <select id="task-type">
+          <option value="monitor">Monitor Sites</option>
+          <option value="research">Research</option>
+          <option value="ask">Ask Question</option>
+          <option value="scrape">Scrape Page</option>
+        </select>
+        <input id="task-query" placeholder="Query or URLs (comma-separated)" style="flex:1;min-width:200px;">
+        <button onclick="dispatch()">Run via GitHub Actions</button>
+      </div>
+      <p id="dispatch-status" style="font-size:0.8rem;color:#8b949e;margin-top:6px;"></p>
+    </div>
+
+    <div id="results" class="loading">Loading agent data...</div>
+  </div>
+
+  <script>
+    var BASE = (location.pathname.replace(/\/[^/]*$/, '') || '.') + '/static/agent-data';
+
+    async function loadData() {
+      var container = document.getElementById('results');
+      try {
+        var resp = await fetch(BASE + '/index.json');
+        if (!resp.ok) throw new Error('No agent data yet');
+        var index = await resp.json();
+
+        if (!index.tasks || Object.keys(index.tasks).length === 0) {
+          container.innerHTML = emptyState(index.updated);
+          return;
+        }
+
+        var html = '<div class="grid">';
+        for (var [task, info] of Object.entries(index.tasks)) {
+          html += '<div class="card" data-task="' + task + '">';
+          html += '<h2>' + task.charAt(0).toUpperCase() + task.slice(1) + '</h2>';
+          html += '<div class="meta"><span class="status-dot live"></span>Updated: ' + (info.updated || 'unknown') + '</div>';
+          html += '<div class="body">' + (info.preview || '').substring(0, 200) + '...</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+
+        // Load full data for each task
+        for (var [task, info] of Object.entries(index.tasks)) {
+          loadTask(task, info.file);
+        }
+      } catch (e) {
+        container.innerHTML = emptyState(null);
+      }
+    }
+
+    function emptyState(updated) {
+      return '<div class="empty-state">'
+        + '<strong>Agent Router is installed; no public task results are published yet.</strong>'
+        + '<p>This page is wired to <code>static/agent-data/index.json</code>. When the router writes task outputs, this dashboard will render them automatically.</p>'
+        + '<ul>'
+        + '<li>Data status: ' + (updated ? 'index last touched ' + updated : 'no readable data index') + '</li>'
+        + '<li>Run path: <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/agent-router.yml" target="_blank" rel="noopener">GitHub Actions Agent Router</a></li>'
+        + '<li>Safe behavior: empty data is shown as pending, not as a broken dashboard.</li>'
+        + '</ul>'
+        + '</div>';
+    }
+
+    async function loadTask(task, file) {
+      try {
+        var resp = await fetch(BASE + '/' + file);
+        var data = await resp.json();
+        var card = document.querySelector('[data-task="' + task + '"]');
+        if (!card) return;
+
+        var body = '';
+        if (task === 'monitor' && data.sites) {
+          body = data.sites.map(function(s) {
+            return '<div style="margin-bottom:8px;"><strong>' + (s.title || '?').substring(0,50) + '</strong>'
+              + '<br><span class="tag">' + (s.word_count || 0) + ' words</span>'
+              + '<span class="tag">' + (s.link_count || 0) + ' links</span>'
+              + '<br><small>' + (s.text_preview || '').substring(0,120) + '</small></div>';
+          }).join('');
+        } else if (task === 'research' && data.findings) {
+          body = '<p>' + (data.summary || '') + '</p>';
+          body += data.findings.slice(0,5).map(function(f) {
+            return '<div style="margin-top:8px;"><a href="' + f.source_url + '" target="_blank">' + (f.title || '').substring(0,60) + '</a>'
+              + ' <span class="tag">' + Math.round((f.confidence||0)*100) + '%</span></div>';
+          }).join('');
+        } else if (task === 'ask' || task === 'search_and_summarize') {
+          body = '<p><strong>Model:</strong> ' + (data.model || data.provider || '?') + '</p>';
+          body += '<p>' + (data.answer || data.summary || JSON.stringify(data).substring(0,300)) + '</p>';
+        } else {
+          body = '<pre style="white-space:pre-wrap;font-size:0.8rem;">' + JSON.stringify(data, null, 2).substring(0, 500) + '</pre>';
+        }
+        card.querySelector('.body').innerHTML = body;
+      } catch (e) {}
+    }
+
+    function dispatch() {
+      var task = document.getElementById('task-type').value;
+      var query = document.getElementById('task-query').value;
+      if (!query) { alert('Enter a query or URLs'); return; }
+      var status = document.getElementById('dispatch-status');
+
+      // Open GitHub Actions dispatch URL
+      var url = 'https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/agent-router.yml';
+      status.textContent = 'Opening GitHub Actions... Fill in the inputs and click "Run workflow".';
+      window.open(url, '_blank');
+    }
+
+    loadData();
+    // Refresh every 5 minutes
+    setInterval(loadData, 300000);
+  </script>
+
+  <script src="static/polly-sidebar.js"></script>
+</body>
+</html>

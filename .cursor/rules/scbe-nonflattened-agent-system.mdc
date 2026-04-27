@@ -1,0 +1,44 @@
+---
+description: Preserve specialist lanes while using Cursor/AI agents for SCBE development acceleration
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# SCBE Non-Flattened Agent System
+
+Do not flatten specialist training lanes into one broad corpus or one broad model plan. Preserve lane identity until the lane has its own eval evidence.
+
+## Agent Ownership
+
+Cursor is a side-agent lane. It may draft docs, add tests, inspect code, and make isolated patches. Codex remains owner of terminal verification, training dispatch, model promotion, adapter merge decisions, external sends, and secret-sensitive work.
+
+## Lane Rules
+
+- Keep `coding_model`, `dsl_synthesis`, `bijective_tongue`, `binary_hex`, `operator_agent_bus`, `governance_security`, `aligned_foundations`, and `research_bridge` separate.
+- Failed adapter output becomes repair data, not merge input.
+- Colab handoff/service receipts become operator-interaction training data, not model-quality evidence.
+- Local sync manifests become lineage evidence, not SFT records.
+- Route adapters before merge. Non-quantized PEFT merge is allowed only after frozen eval, executable behavior, Stage 6, and functional gates pass.
+- No quantized merge or quantized final consolidation.
+
+## Useful Commands
+
+```powershell
+npm run training:run-ledger
+npm run training:merge-readiness
+npm run training:v5-holdout
+npm run training:dsl-failure-math
+python scripts\kaggle_auto\launch.py --round dsl-synthesis-v3-fast --gpu t4 --ready
+```
+
+Use `training:merge-readiness:drift` only when specifically requested; it is heavy and can run for several minutes.
+
+## Done Criteria
+
+Every agent patch must leave:
+
+- changed paths listed;
+- exact verification command and result;
+- statement of whether it touched training data, eval data, routing, or merge logic;
+- no external publish/launch/send unless explicitly authorized by Issac.

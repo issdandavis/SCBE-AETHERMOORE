@@ -100,6 +100,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--adapter", required=True, help="HF repo id or local LoRA adapter path.")
     parser.add_argument("--base", default=DEFAULT_BASE)
     parser.add_argument("--out-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    parser.add_argument(
+        "--dsl-holdout",
+        default="training-data/sft/bijective_dsl_v5_holdout.sft.jsonl",
+        help="DSL executable holdout. Default is boundary-clean v5 holdout.",
+    )
     parser.add_argument("--dsl-limit", type=int, default=0, help="Limit DSL holdout rows; 0 = full holdout.")
     parser.add_argument("--frozen-per-file-limit", type=int, default=2)
     parser.add_argument("--max-new-tokens", type=int, default=96)
@@ -129,6 +134,8 @@ def main() -> int:
                 args.adapter,
                 "--base",
                 args.base,
+                "--holdout",
+                args.dsl_holdout,
                 "--max-new-tokens",
                 str(args.max_new_tokens),
             ],
@@ -181,6 +188,7 @@ def main() -> int:
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "adapter": args.adapter,
         "base_model": args.base,
+        "dsl_holdout": args.dsl_holdout,
         "dry_run": args.dry_run,
         "overall_pass": overall_pass,
         "steps": steps,

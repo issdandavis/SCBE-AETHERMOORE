@@ -1,0 +1,228 @@
+name: Agent Router
+
+on:
+  # Run on schedule (every 6 hours)
+  schedule:
+    - cron: '0 */6 * * *'
+  # Manual trigger with custom query
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Task type: research | monitor | ask | scrape'
+        required: true
+        default: 'monitor'
+        type: string
+      query:
+        description: 'Query or comma-separated URLs'
+        required: true
+        type: string
+      publish:
+        description: 'Publish results to GitHub Pages'
+        required: false
+        default: 'true'
+        type: string
+  # Trigger from other workflows or API
+  repository_dispatch:
+    types: [agent-task]
+
+permissions:
+  contents: write
+  pages: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: agent-router
+  cancel-in-progress: false
+
+jobs:
+  route:
+    name: Run Agent Task
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install playwright fastapi uvicorn pydantic huggingface_hub
+          python -m playwright install chromium
+          pip install -r requirements.txt 2>/dev/null || true
+
+      - name: Determine task
+        id: task
+        run: |
+          # From workflow_dispatch
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "task=${{ inputs.task }}" >> $GITHUB_OUTPUT
+            echo "query=${{ inputs.query }}" >> $GITHUB_OUTPUT
+            echo "publish=${{ inputs.publish }}" >> $GITHUB_OUTPUT
+          # From repository_dispatch
+          elif [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "task=${{ github.event.client_payload.task }}" >> $GITHUB_OUTPUT
+            echo "query=${{ github.event.client_payload.query }}" >> $GITHUB_OUTPUT
+            echo "publish=${{ github.event.client_payload.publish || 'true' }}" >> $GITHUB_OUTPUT
+          # From schedule — default monitor task
+          else
+            echo "task=monitor" >> $GITHUB_OUTPUT
+            echo "query=https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE,https://news.ycombinator.com,https://arxiv.org/list/cs.AI/recent" >> $GITHUB_OUTPUT
+            echo "publish=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run agent task
+        env:
+          PYTHONPATH: .
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          mkdir -p artifacts/agent-router docs/static/agent-data
+
+          TASK="${{ steps.task.outputs.task }}"
+          QUERY="${{ steps.task.outputs.query }}"
+
+          echo "Task: $TASK"
+          echo "Query: $QUERY"
+
+          case "$TASK" in
+            research)
+              python -m agents.browser_tools research "{\"query\": \"$QUERY\", \"max_sources\": 5}" \
+                > artifacts/agent-router/result.json
+              ;;
+            monitor)
+              # Split comma-separated URLs into JSON array
+              URLS_JSON=$(python -c "import json,sys; print(json.dumps('$QUERY'.split(',')))")
+              python -m agents.browser_tools monitor_sites "{\"urls\": $URLS_JSON}" \
+                > artifacts/agent-router/result.json
+              ;;
+            ask)
+              python -m agents.browser_tools ask "{\"question\": \"$QUERY\"}" \
+                > artifacts/agent-router/result.json
+              ;;
+            scrape)
+              python -m agents.browser_tools scrape_page "{\"url\": \"$QUERY\"}" \
+                > artifacts/agent-router/result.json
+              ;;
+            search_and_summarize)
+              python -m agents.browser_tools search_and_summarize "{\"query\": \"$QUERY\"}" \
+                > artifacts/agent-router/result.json
+              ;;
+            *)
+              echo "Unknown task: $TASK"
+              exit 1
+              ;;
+          esac
+
+          echo "Result size: $(wc -c < artifacts/agent-router/result.json) bytes"
+
+      - name: Publish to Pages data
+        if: steps.task.outputs.publish == 'true'
+        run: |
+          TASK="${{ steps.task.outputs.task }}"
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          # Copy result to pages-accessible location
+          cp artifacts/agent-router/result.json docs/static/agent-data/latest-${TASK}.json
+
+          # Build index of all agent data
+          python -c "
+          import json, glob, os
+          files = sorted(glob.glob('docs/static/agent-data/latest-*.json'))
+          index = {
+            'updated': '$TIMESTAMP',
+            'tasks': {}
+          }
+          for f in files:
+            name = os.path.basename(f).replace('latest-','').replace('.json','')
+            try:
+              data = json.load(open(f))
+              index['tasks'][name] = {
+                'file': os.path.basename(f),
+                'updated': '$TIMESTAMP',
+                'preview': str(data)[:200]
+              }
+            except:
+              pass
+          with open('docs/static/agent-data/index.json', 'w') as fh:
+            json.dump(index, fh, indent=2)
+          print(f'Index: {len(index[\"tasks\"])} tasks')
+          "
+
+      - name: Setup Pages
+        if: steps.task.outputs.publish == 'true'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: steps.task.outputs.publish == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+      - name: Deploy Pages data
+        if: steps.task.outputs.publish == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Commit and push results via PR
+        if: steps.task.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "SCBE Agent Router"
+          git config user.email "agent@aethermoore.com"
+          git add docs/static/agent-data/ || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            BRANCH="automation/agent-data-$(date +%s)"
+            git checkout -b "$BRANCH"
+            git commit -m "chore(agent): publish ${{ steps.task.outputs.task }} results"
+            git push origin "$BRANCH"
+            gh pr create --base main --head "$BRANCH" \
+              --title "chore(agent): publish ${{ steps.task.outputs.task }} results" \
+              --body "Automated agent router output. Auto-merge enabled."
+            gh pr merge "$BRANCH" --squash --auto || gh pr merge "$BRANCH" --squash --admin || true
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-router-result
+          path: artifacts/agent-router/result.json
+          retention-days: 30
+
+      - name: Write summary
+        if: always()
+        run: |
+          TASK="${{ steps.task.outputs.task }}"
+          echo "## Agent Router: $TASK" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python -c "
+          import json, sys
+          try:
+            r = json.load(open('artifacts/agent-router/result.json'))
+            if '$TASK' == 'monitor':
+              sites = r.get('sites', [])
+              print(f'**Sites monitored**: {len(sites)}')
+              for s in sites:
+                print(f'- {s.get(\"title\",\"?\")[:50]} ({s.get(\"word_count\",0)} words)')
+            elif '$TASK' == 'research':
+              print(f'**Sources**: {r.get(\"sources_checked\",0)}')
+              print(f'**Findings**: {len(r.get(\"findings\",[]))}')
+              print(f'**Words**: {r.get(\"total_words_read\",0):,}')
+              print(f'**Summary**: {r.get(\"summary\",\"\")[:300]}')
+            elif '$TASK' == 'ask':
+              print(f'**Provider**: {r.get(\"provider\",\"?\")}')
+              print(f'**Model**: {r.get(\"model\",\"?\")}')
+              print(f'**Sources**: {len(r.get(\"sources\",[]))}')
+              print(f'**Answer**: {r.get(\"answer\",\"\")[:500]}')
+            else:
+              print(json.dumps(r, indent=2, default=str)[:1000])
+          except Exception as e:
+            print(f'Error: {e}')
+          " >> $GITHUB_STEP_SUMMARY

@@ -224,6 +224,46 @@
       }
     },
     {
+      "label": "SCBE: Training Run Ledger",
+      "type": "npm",
+      "script": "training:run-ledger",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "SCBE: Merge Readiness Quick",
+      "type": "npm",
+      "script": "training:merge-readiness",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "SCBE: V5 Holdout Gate",
+      "type": "npm",
+      "script": "training:v5-holdout",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "SCBE: DSL Failure Math",
+      "type": "npm",
+      "script": "training:dsl-failure-math",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
       "label": "SCBE: Kaggle DSL V3 Fast Launch",
       "type": "shell",
       "command": "python scripts\\kaggle_auto\\launch.py --round dsl-synthesis-v3-fast --gpu t4",

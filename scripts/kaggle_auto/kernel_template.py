@@ -2,7 +2,8 @@
 """Auto-generated Kaggle kernel - SCBE Polly Training.
 Config is injected via the KERNEL_CONFIG dict at the top."""
 
-import subprocess, sys, json, os
+import subprocess, sys, json, os, math, re
+from collections import Counter
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("PYTHONUTF8", "1")
@@ -88,6 +89,13 @@ EARLY_STOPPING_PATIENCE = int(CFG.get("early_stopping_patience", 3))
 EARLY_STOPPING_THRESHOLD = float(CFG.get("early_stopping_threshold", 0.0))
 EVAL_STEPS = int(CFG.get("eval_steps", 30))
 SAVE_STEPS = int(CFG.get("save_steps", EVAL_STEPS))
+REQUIRE_GPU = bool(CFG.get("require_gpu", False))
+BALANCE_CATEGORIES = bool(CFG.get("balance_categories", False))
+SELECTOR_TOKEN_WEIGHT = float(CFG.get("selector_token_weight", 1.0))
+DSL_PRIMITIVE_TOKEN_WEIGHT = float(CFG.get("dsl_primitive_token_weight", SELECTOR_TOKEN_WEIGHT))
+MAX_SAMPLE_MULTIPLIER = float(CFG.get("max_sample_multiplier", 6.0))
+REPAIR_LANE_FILES = set(CFG.get("repair_lane_files", []))
+REPAIR_LANE_WEIGHT = float(CFG.get("repair_lane_weight", 1.0))
 
 # ---- Auth ----
 PUSH = False
@@ -168,6 +176,7 @@ def _normalize_records_from_files(files, split_name):
 
         count = 0
         cols = ds.column_names
+        source_weight = REPAIR_LANE_WEIGHT if name in REPAIR_LANE_FILES else 1.0
         for row in ds:
             rec = None
             if "messages" in cols and row.get("messages"):
@@ -183,6 +192,10 @@ def _normalize_records_from_files(files, split_name):
                 if u and a:
                     rec = {"messages": [{"role": "user", "content": u}, {"role": "assistant", "content": str(a)}]}
             if rec:
+                meta = row.get("meta") if isinstance(row.get("meta"), dict) else {}
+                rec["meta"] = meta
+                rec["_source_file"] = name
+                rec["_sample_weight"] = source_weight
                 records.append(rec)
                 count += 1
         print(f"  LOAD {split_name} {name}: {count} records")
@@ -198,13 +211,31 @@ def load_data():
         print("ERROR: No data loaded!")
         sys.exit(1)
 
+    if BALANCE_CATEGORIES:
+        counts = Counter(
+            (r.get("meta", {}) or {}).get("task")
+            or (r.get("meta", {}) or {}).get("category")
+            or "unknown"
+            for r in records
+        )
+        n_categories = max(1, len(counts))
+        for rec in records:
+            cat = (rec.get("meta", {}) or {}).get("task") or (rec.get("meta", {}) or {}).get("category") or "unknown"
+            inverse = len(records) / (n_categories * max(1, counts[cat]))
+            rec["_sample_weight"] = float(rec.get("_sample_weight", 1.0)) * min(MAX_SAMPLE_MULTIPLIER, inverse)
+        print(f"Category balance enabled: {dict(counts)}")
+
     # Cap dataset size to prevent OOM and timeout on CPU fallback
     import random as _random
     _use_gpu = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 7
     _max_records = MAX_RECORDS if _use_gpu else min(MAX_RECORDS, 200)  # CPU: tiny run, finishes in ~30min
     if len(records) > _max_records:
         _random.seed(42)
-        records = _random.sample(records, _max_records)
+        if BALANCE_CATEGORIES:
+            weights = [max(0.001, float(r.get("_sample_weight", 1.0))) for r in records]
+            records = _random.choices(records, weights=weights, k=_max_records)
+        else:
+            records = _random.sample(records, _max_records)
         print(f"Sampled {_max_records} records ({'GPU' if _use_gpu else 'CPU-tiny'} mode)")
 
     return Dataset.from_list(records)
@@ -262,6 +293,54 @@ tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, use_fast=True)
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
+
+def _token_ids_for_phrases(phrases):
+    ids = set()
+    for phrase in phrases:
+        for context in (
+            phrase,
+            f"{phrase}\n",
+            f"well_select({phrase})",
+            f"assistant\nwell_select({phrase})",
+            f" {phrase}",
+        ):
+            ids.update(tokenizer.encode(context, add_special_tokens=False))
+    return ids
+
+
+SELECTOR_TOKEN_IDS = _token_ids_for_phrases(
+    [
+        "TRANSLATED",
+        "TRANSLATED_ALL",
+        "IDENTIFIED",
+        "ALIGNED",
+        "GOVERNANCE",
+        "MULTILINE",
+        "SEALED",
+        "EDIT_",
+        "EDIT_ALL_",
+        "EDIT_SLOT",
+        "EDIT_ALL_SLOT",
+    ]
+)
+DSL_PRIMITIVE_TOKEN_IDS = _token_ids_for_phrases(
+    [
+        "well_select",
+        "tongue_shift",
+        "phi_weight",
+        "mobius_phase",
+        "breath",
+        "compose",
+        "vote",
+        "seal",
+    ]
+)
+print(
+    "Contract-token weighting: "
+    f"selector_ids={len(SELECTOR_TOKEN_IDS)} weight={SELECTOR_TOKEN_WEIGHT}, "
+    f"primitive_ids={len(DSL_PRIMITIVE_TOKEN_IDS)} weight={DSL_PRIMITIVE_TOKEN_WEIGHT}"
+)
+
 has_bf16 = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 8
 compute_cap = torch.cuda.get_device_capability(0) if torch.cuda.is_available() else (0, 0)
 compute_dtype = torch.bfloat16 if has_bf16 else torch.float16
@@ -271,6 +350,12 @@ compute_dtype = torch.bfloat16 if has_bf16 else torch.float16
 # For sm_60: fall back to CPU (0.5B model trains fine on CPU with small datasets).
 # For sm_70+: use 4-bit NF4 quantization via bitsandbytes.
 use_gpu = torch.cuda.is_available() and compute_cap[0] >= 7
+
+if REQUIRE_GPU and not use_gpu:
+    raise RuntimeError(
+        f"GPU required for this round, but got compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
+        "Refusing CPU/P100 tiny-run because it contaminates contract-learning metrics."
+    )
 
 if use_gpu:
     print("Using 4-bit NF4 quantization on GPU (sm_70+)")
@@ -327,7 +412,60 @@ else:
     use_fp16 = not has_bf16
     use_bf16 = has_bf16
 
-trainer = SFTTrainer(
+
+class WeightedDslSFTTrainer(SFTTrainer):
+    """Token-weighted CE for parser-critical DSL contract tokens."""
+
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        labels = inputs.get("labels")
+        if labels is None:
+            return super().compute_loss(model, inputs, return_outputs=return_outputs, **kwargs)
+
+        outputs = model(**inputs)
+        logits = outputs.logits if hasattr(outputs, "logits") else outputs["logits"]
+        shift_logits = logits[..., :-1, :].contiguous()
+        shift_labels = labels[..., 1:].contiguous()
+
+        flat_loss = torch.nn.functional.cross_entropy(
+            shift_logits.view(-1, shift_logits.size(-1)),
+            shift_labels.view(-1),
+            ignore_index=-100,
+            reduction="none",
+        )
+        token_loss = flat_loss.view_as(shift_labels)
+        label_mask = shift_labels.ne(-100)
+        weights = torch.ones_like(token_loss)
+
+        if DSL_PRIMITIVE_TOKEN_IDS and DSL_PRIMITIVE_TOKEN_WEIGHT > 1.0:
+            primitive_ids = torch.tensor(sorted(DSL_PRIMITIVE_TOKEN_IDS), device=shift_labels.device)
+            primitive_mask = torch.isin(shift_labels, primitive_ids) & label_mask
+            weights = torch.where(
+                primitive_mask,
+                torch.full_like(weights, DSL_PRIMITIVE_TOKEN_WEIGHT),
+                weights,
+            )
+
+        if SELECTOR_TOKEN_IDS and SELECTOR_TOKEN_WEIGHT > 1.0:
+            selector_ids = torch.tensor(sorted(SELECTOR_TOKEN_IDS), device=shift_labels.device)
+            selector_mask = torch.isin(shift_labels, selector_ids) & label_mask
+            weights = torch.where(
+                selector_mask,
+                torch.full_like(weights, SELECTOR_TOKEN_WEIGHT),
+                weights,
+            )
+
+        denom = (weights * label_mask).sum().clamp_min(1.0)
+        loss = (token_loss * weights * label_mask).sum() / denom
+        return (loss, outputs) if return_outputs else loss
+
+
+TrainerClass = (
+    WeightedDslSFTTrainer
+    if SELECTOR_TOKEN_WEIGHT > 1.0 or DSL_PRIMITIVE_TOKEN_WEIGHT > 1.0
+    else SFTTrainer
+)
+
+trainer = TrainerClass(
     model=model, processing_class=tokenizer, train_dataset=dataset, eval_dataset=eval_dataset,
     args=SFTConfig(
         output_dir=OUTPUT_DIR,
