@@ -1,0 +1,46 @@
+{
+  "schema_version": "scbe_kv_cache_strategy_v1",
+  "status": "research_tracking",
+  "default_strategy": "full_context_no_compression",
+  "candidate_strategies": [
+    {
+      "id": "triattention_reference_v1",
+      "name": "TriAttention-style trigonometric KV cache compression",
+      "source": {
+        "paper": "https://arxiv.org/abs/2604.04921",
+        "code": "https://github.com/WeianMao/triattention"
+      },
+      "compression_target": "kv_cache_runtime_only",
+      "not_quantization": true,
+      "not_training": true,
+      "not_weight_merge": true,
+      "eligible_lanes": [
+        "agent_bus_replay",
+        "long_context_code_review",
+        "research_bridge",
+        "proposal_review",
+        "binary_hex_tongue_coding"
+      ],
+      "blocked_lanes_until_measured": [
+        "security_final_decision",
+        "contract_submission_final",
+        "model_promotion_gate",
+        "adapter_merge_acceptance"
+      ],
+      "promotion_gates": {
+        "accuracy_floor_vs_full_cache": 0.99,
+        "end_of_text_fact_recall_floor": 0.98,
+        "executable_benchmark_delta_max": 0.01,
+        "citation_recall_delta_max": 0.01,
+        "decode_speedup_target_min": 1.5,
+        "kv_cache_budget_target": 0.2
+      },
+      "implementation_phases": [
+        "metadata_only",
+        "trace_collection",
+        "remote_backend_experiment",
+        "agent_bus_router_hook"
+      ]
+    }
+  ]
+}
