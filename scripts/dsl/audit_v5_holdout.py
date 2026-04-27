@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""v5 launch gate: per-category coverage of bijective_dsl_v4_holdout.sft.jsonl.
+"""v5 promotion gate: per-category coverage of bijective_dsl_v5_holdout.sft.jsonl.
 
-This is the v5-aware variant of audit_v4_holdout_coverage.py. The v4 audit
-reads v1_holdout MINUS repair_idxs as a pool projection; this audit reads
-the assembled v4_holdout file directly and validates that the file the
-frozen-eval will consume satisfies v5 spec floors.
+The v3 repair corpus was mined from v4_holdout, so v4 is no longer a clean
+promotion target. This audit reads the assembled v5_holdout file directly and
+validates that the file frozen-eval will consume satisfies floors and remains
+disjoint from contract_repair_v3_train.
 
 Outputs:
   artifacts/dsl_eval_reports/v5_holdout_gate.json
 
 Exit codes:
-  0  PASS (all floors >=3, translate_one within cap, no parametric provenance leakage)
+  0  PASS (all floors >=3, translate_one within cap, no repair-train overlap)
   2  FAIL_LAUNCH_BLOCKED
 """
 from __future__ import annotations
@@ -23,9 +23,10 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-V4_HOLDOUT = PROJECT_ROOT / "training-data/sft/bijective_dsl_v4_holdout.sft.jsonl"
+V5_HOLDOUT = PROJECT_ROOT / "training-data/sft/bijective_dsl_v5_holdout.sft.jsonl"
 PARAMETRIC_TRAIN = PROJECT_ROOT / "training-data/sft/dsl_b2b_parametric_v1_train.sft.jsonl"
 PARAMETRIC_HOLDOUT = PROJECT_ROOT / "training-data/sft/dsl_b2b_parametric_v1_holdout.sft.jsonl"
+REPAIR_V3_TRAIN = PROJECT_ROOT / "training-data/sft/contract_repair_v3_train.sft.jsonl"
 OUT_PATH = PROJECT_ROOT / "artifacts/dsl_eval_reports/v5_holdout_gate.json"
 
 WORKING_MIN = 3
@@ -67,7 +68,7 @@ def _signature(row: dict) -> str:
 
 
 def main() -> int:
-    rows = _load_jsonl(V4_HOLDOUT)
+    rows = _load_jsonl(V5_HOLDOUT)
     n = len(rows)
 
     by_cat = Counter(_category(r) for r in rows)
@@ -88,8 +89,10 @@ def main() -> int:
     )
 
     train_sigs = {_signature(r) for r in _load_jsonl(PARAMETRIC_TRAIN)}
+    repair_v3_train_sigs = {_signature(r) for r in _load_jsonl(REPAIR_V3_TRAIN)}
     holdout_sigs = [_signature(r) for r in rows]
     cross_split_overlap = sum(1 for s in holdout_sigs if s in train_sigs)
+    repair_v3_train_overlap = sum(1 for s in holdout_sigs if s in repair_v3_train_sigs)
 
     parametric_holdout_canonical = _load_jsonl(PARAMETRIC_HOLDOUT)
     parametric_in_holdout_match = sum(
@@ -105,6 +108,8 @@ def main() -> int:
         failures.append(f"translate_one_over_cap={t1_count}/{n}={t1_pct:.4f}")
     if cross_split_overlap > 0:
         failures.append(f"cross_split_overlap={cross_split_overlap}")
+    if repair_v3_train_overlap > 0:
+        failures.append(f"repair_v3_train_overlap={repair_v3_train_overlap}")
     if parametric_in_holdout_match != len(parametric_holdout_canonical):
         failures.append(
             f"parametric_holdout_count_mismatch="
@@ -114,7 +119,7 @@ def main() -> int:
     payload = {
         "schema_version": "v5_holdout_gate_v1",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "input": str(V4_HOLDOUT.relative_to(PROJECT_ROOT).as_posix()),
+        "input": str(V5_HOLDOUT.relative_to(PROJECT_ROOT).as_posix()),
         "counts": {
             "total": n,
             "parametric_generated_v1": parametric_count,
@@ -132,14 +137,15 @@ def main() -> int:
             "within_cap": t1_within_cap,
         },
         "cross_split_overlap_with_parametric_train": cross_split_overlap,
+        "repair_v3_train_overlap": repair_v3_train_overlap,
         "parametric_holdout_count_match": (
-            parametric_in_holdout_match == len(parametric_holdout_canonical)
+            parametric_in_holdout_match >= len(parametric_holdout_canonical)
         ),
         "verdict": "PASS" if not failures else "FAIL_LAUNCH_BLOCKED",
         "failures": failures,
         "notes": (
-            "v5 launch gate. PASS = v4_holdout is safe to use as frozen-eval "
-            "target for the v5 contract-repair training round. FAIL = launch "
+            "v5 promotion gate. PASS = v5_holdout is safe to use as frozen-eval "
+            "target for the v3 contract-repair training round. FAIL = promotion "
             "is blocked; investigate failures before proceeding."
         ),
     }
@@ -153,6 +159,7 @@ def main() -> int:
         f"cap={TRANSLATE_ONE_CAP_PCT} within={t1_within_cap}"
     )
     print(f"[v5-gate] parametric={parametric_count} cross_split_overlap={cross_split_overlap}")
+    print(f"[v5-gate] repair_v3_train_overlap={repair_v3_train_overlap}")
     if failures:
         print(f"[v5-gate] FAIL_LAUNCH_BLOCKED: {failures}")
         return 2

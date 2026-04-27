@@ -1,0 +1,118 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "bijective-tongue-coder-v3",
+  "title": "Bijective Tongue Coder v3 - contract repair with GPU hard gate",
+  "description": "v3 retry after v2-format-repair was undermined by Kaggle assigning a sub-sm_70 GPU and silently falling back to a 200-record CPU tiny-run. This profile keeps the contract-rich data mix, requires a real sm_70+ GPU, uses contract_repair_v3, and evaluates promotion on boundary-clean bijective_dsl_v5_holdout.",
+  "backend": "kaggle-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE bijective Sacred-Tongue coder. Emit DSL programs in the canonical contract grammar: lead with well_select(<WELL>) and, when crossing tongues, tongue_shift(<SRC> -> <DST>). Wells include IDENTIFIED, MULTILINE, TRANSLATED, TRANSLATED_ALL, ALIGNED, GOVERNANCE, EDIT_BODY, EDIT_LOOP_BODY, EDIT_ALL_BODY, EDIT_GUARD. Tongues are the six Sacred Tongues KO/AV/RU/CA/UM/DR. Code blocks come AFTER the contract header, never instead of it.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "bijective_dsl_v1_train.sft.jsonl",
+      "contract_repair_v3_train.sft.jsonl",
+      "bijective_codeflow_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "bijective_dsl_v4_holdout.sft.jsonl",
+      "contract_repair_v3_holdout.sft.jsonl"
+    ],
+    "promotion_eval_files": [
+      "bijective_dsl_v5_holdout.sft.jsonl"
+    ],
+    "repair_lane_files": [
+      "contract_repair_v3_train.sft.jsonl"
+    ],
+    "repair_lane_weight": 4.0
+  },
+  "training": {
+    "max_seq_length": 768,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.1,
+    "learning_rate": 5e-5,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "warmup_ratio": 0.05,
+    "max_steps": 120,
+    "max_train_records": 1100,
+    "max_eval_records": 80,
+    "logging_steps": 10,
+    "save_steps": 30,
+    "eval_steps": 30,
+    "early_stopping_patience": 3,
+    "early_stopping_threshold": 0.0,
+    "gradient_checkpointing": true,
+    "seed": 54,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/bijective-tongue-coder-v3"
+  },
+  "contract_eval": {
+    "enabled": true,
+    "eval_steps": 60,
+    "inline_holdout": "training-data/sft/bijective_dsl_v4_holdout.sft.jsonl",
+    "notes": "v4_holdout is inline telemetry only for this round. Promotion must use v5_holdout because v3 repair data was mined from v4."
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+    "push_adapter": false,
+    "adapter_repo": "issdandavis/scbe-bijective-tongue-coder-v3-qwen-kaggle",
+    "push_merged": false,
+    "notes": "push_adapter:false until promotion gate clears on v5_holdout."
+  },
+  "execution": {
+    "recommended_target": "kaggle",
+    "kaggle_round": "bijective-tongue-coder-v3",
+    "gpu": "t4x2",
+    "require_gpu": true,
+    "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+    "default_emit_path": "artifacts/kaggle_kernels/polly-auto-bijective-coder-v3/script.py"
+  },
+  "evaluation": {
+    "promotion_gate": {
+      "dsl_executable": {
+        "report_path": "artifacts/dsl_eval_reports/polly-bijective-tongue-coder-v3_executable_accuracy.json",
+        "holdout": "training-data/sft/bijective_dsl_v5_holdout.sft.jsonl",
+        "min_executable_accuracy": 0.50,
+        "category_floors": {
+          "translate_one": 0.40,
+          "translate_all": 0.40,
+          "identify": 0.40,
+          "edit_slot_one": 0.30,
+          "edit_slot_all": 0.30,
+          "align": 0.30,
+          "governance_tag": 0.30,
+          "multiline_edit": 0.30,
+          "dialogue": 0.30
+        }
+      },
+      "stage6_regression": {
+        "report_path": "artifacts/dsl_eval_reports/polly-bijective-tongue-coder-v3_stage6_regression.json",
+        "min_pass_rate": 0.80,
+        "must_pass_all": true
+      },
+      "frozen_perplexity": {
+        "report_path": "artifacts/model_evals/frozen/polly-bijective-tongue-coder-v3/report.json",
+        "max_perplexity_vs_base": 1.10
+      }
+    },
+    "boundary_policy": {
+      "burned_holdouts": [
+        "training-data/sft/bijective_dsl_v1_holdout.sft.jsonl",
+        "training-data/sft/bijective_dsl_v4_holdout.sft.jsonl"
+      ],
+      "evaluation_holdout": "training-data/sft/bijective_dsl_v5_holdout.sft.jsonl",
+      "audit_report": "artifacts/dsl_eval_reports/v5_holdout_gate.json"
+    }
+  }
+}

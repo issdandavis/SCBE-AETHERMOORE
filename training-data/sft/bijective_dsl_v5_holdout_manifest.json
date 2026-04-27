@@ -1,0 +1,72 @@
+{
+  "schema_version": "bijective_dsl_v5_holdout_v1",
+  "generated_at_utc": "2026-04-27T14:04:51.476406+00:00",
+  "inputs": {
+    "v4_holdout": "training-data/sft/bijective_dsl_v4_holdout.sft.jsonl",
+    "repair_v3_train": "training-data/sft/contract_repair_v3_train.sft.jsonl",
+    "repair_v3_holdout": "training-data/sft/contract_repair_v3_holdout.sft.jsonl"
+  },
+  "construction": {
+    "step_1": "Drop v4 rows whose signatures appear in contract_repair_v3_train.",
+    "step_2": "Add deterministic v5 holdout-only parametric identify/edit_slot_one floor rows.",
+    "step_3": "Subsample translate_one to keep its share <= 15%.",
+    "subsample_seed": 271828182,
+    "translate_one_cap_pct": 0.15
+  },
+  "counts": {
+    "v4_total": 69,
+    "repair_v3_train_rows": 18,
+    "repair_v3_holdout_rows": 6,
+    "dropped_repair_v3_train_overlap": 18,
+    "parametric_added": 4,
+    "translate_one_before_cap": 10,
+    "translate_one_kept": 7,
+    "translate_one_dropped": 3,
+    "final_total": 52
+  },
+  "by_category_final": {
+    "identify": 3,
+    "edit_slot_all": 4,
+    "edit_slot_one": 3,
+    "governance_tag": 5,
+    "align": 9,
+    "translate_all": 5,
+    "dialogue": 8,
+    "multiline_edit": 8,
+    "translate_one": 7
+  },
+  "translate_one_final": {
+    "count": 7,
+    "pct": 0.1346,
+    "cap_pct": 0.15,
+    "within_cap": true
+  },
+  "floor_check": {
+    "working_minimum_per_category": 3,
+    "floor_bearing_categories": [
+      "align",
+      "dialogue",
+      "edit_slot_all",
+      "edit_slot_one",
+      "governance_tag",
+      "identify",
+      "multiline_edit",
+      "translate_all",
+      "translate_one"
+    ],
+    "violations": {},
+    "violation_count": 0
+  },
+  "boundary_check": {
+    "repair_v3_train_overlap": 0,
+    "repair_v3_holdout_overlap": 6,
+    "train_clean": true
+  },
+  "output": {
+    "path": "training-data/sft/bijective_dsl_v5_holdout.sft.jsonl",
+    "sha256": "b378028320782f5e46418cfa125f6a1b87f02ef136667813edc4a28cfaab417c"
+  },
+  "verdict": "PASS",
+  "failures": [],
+  "notes": "v5_holdout is the promotion-eval anchor for bijective-tongue-coder-v3 descendants. Do not evaluate v3 promotion on v4_holdout because contract_repair_v3_train was mined from v4."
+}
