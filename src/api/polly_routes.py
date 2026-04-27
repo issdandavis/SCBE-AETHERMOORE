@@ -272,6 +272,49 @@ def _deterministic_route(message: str) -> tuple[str, str]:
     )
 
 
+async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[dict]:
+    """Try free LLMs: Ollama (local) → HuggingFace (free API). Returns dict or None."""
+    prompt = message
+    if page_context:
+        prompt = f"Page context: {page_context[:1000]}\n\nUser: {message}"
+
+    # Try Ollama first (local, zero cost)
+    ollama_url = os.environ.get("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
+    ollama_model = os.environ.get("OLLAMA_MODEL", "llama3.2")
+    try:
+        payload = json.dumps({"model": ollama_model, "prompt": prompt, "stream": False}).encode()
+        req = urlrequest.Request(
+            f"{ollama_url}/api/generate", data=payload,
+            headers={"Content-Type": "application/json"}, method="POST",
+        )
+        with urlrequest.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read())
+        text = data.get("response", "")
+        if text.strip():
+            return {"text": text, "provider": "ollama", "model": ollama_model}
+    except Exception:
+        pass
+
+    # Try HuggingFace Inference API (free tier, chat completions)
+    hf_token = os.environ.get("HF_TOKEN")
+    hf_model = os.environ.get("HF_MODEL", "Qwen/Qwen2.5-72B-Instruct")
+    if hf_token:
+        try:
+            from huggingface_hub import InferenceClient
+            client = InferenceClient(model=hf_model, token=hf_token)
+            resp = client.chat_completion(
+                messages=[{"role": "user", "content": prompt[:4000]}],
+                max_tokens=512,
+            )
+            text = resp.choices[0].message.content
+            if text and text.strip():
+                return {"text": text.strip(), "provider": "huggingface", "model": hf_model}
+        except Exception:
+            pass
+
+    return None
+
+
 async def _gemini_chat(message: str, history: List[ChatMessage], page_context: Optional[str]) -> str:
     """Call Gemini for thinking-mode responses. Returns text or raises."""
     api_key = _gemini_key()
@@ -350,7 +393,18 @@ async def polly_chat(req: ChatRequest) -> ChatResponse:
                 ts=int(time.time()),
             )
         except RuntimeError as exc:
-            logger.warning("Gemini fallback to deterministic: %s", exc)
+            logger.warning("Gemini fallback: %s", exc)
+
+    # Try free LLM (HuggingFace / Ollama) before deterministic fallback
+    free_result = await _free_llm_chat(req.message, req.page_context)
+    if free_result:
+        return ChatResponse(
+            response=free_result["text"],
+            route=f"free-llm-{free_result['provider']}",
+            thinking=req.thinking,
+            model=free_result["model"],
+            ts=int(time.time()),
+        )
 
     route, response = _deterministic_route(req.message)
     return ChatResponse(
@@ -397,16 +451,41 @@ async def polly_search(req: SearchRequest) -> SearchResponse:
         except (HTTPError, URLError, Exception) as exc:
             logger.warning("Tavily search error: %s", exc)
 
-    # Fallback: inform the client no search backend is available.
+    # Free fallback: DuckDuckGo Instant Answer API (no key needed)
+    try:
+        ddg_url = f"https://api.duckduckgo.com/?q={quote_plus(query)}&format=json&no_html=1&skip_disambig=1"
+        ddg_req = urlrequest.Request(ddg_url, headers={"User-Agent": "SCBE-Polly/1.0"})
+        with urlrequest.urlopen(ddg_req, timeout=8) as resp:
+            ddg_data: Dict[str, Any] = json.loads(resp.read().decode())
+
+        ddg_results: list[SearchResult] = []
+        if ddg_data.get("AbstractURL"):
+            ddg_results.append(SearchResult(
+                title=ddg_data.get("Heading", query),
+                url=ddg_data["AbstractURL"],
+                excerpt=ddg_data.get("Abstract", "")[:300],
+            ))
+        for topic in ddg_data.get("RelatedTopics", []):
+            if isinstance(topic, dict) and topic.get("FirstURL") and not topic["FirstURL"].startswith("https://duckduckgo.com/c/"):
+                ddg_results.append(SearchResult(
+                    title=topic.get("Text", "")[:100],
+                    url=topic["FirstURL"],
+                    excerpt=topic.get("Text", "")[:300],
+                ))
+            if len(ddg_results) >= MAX_SEARCH_RESULTS:
+                break
+        if ddg_results:
+            return SearchResponse(results=ddg_results, source="duckduckgo", query=query, ts=int(time.time()))
+    except Exception as exc:
+        logger.debug("DuckDuckGo fallback failed: %s", exc)
+
+    # Last resort: link to DDG
     return SearchResponse(
         results=[
             SearchResult(
                 title=f"Search: {query}",
                 url=f"https://duckduckgo.com/?q={quote_plus(query)}",
-                excerpt=(
-                    "No Tavily API key is configured. Click the link to search DuckDuckGo directly, "
-                    "or add TAVILY_API_KEY to the server environment."
-                ),
+                excerpt="Click to search DuckDuckGo. Add TAVILY_API_KEY for richer results.",
             )
         ],
         source="fallback",
