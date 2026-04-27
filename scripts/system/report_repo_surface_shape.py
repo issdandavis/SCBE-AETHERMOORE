@@ -59,6 +59,33 @@ def score_shape(total: int, unknown_count: int, generated_count: int, private_co
     }
 
 
+def recommendations(report: dict) -> list[str]:
+    lanes = report["lanes"]
+    recs: list[str] = []
+
+    if report["unknown"]:
+        recs.append("Classify unknown top-level directories before moving files.")
+
+    generated_count = len(lanes.get("generated", []))
+    private_count = len(lanes.get("private", []))
+    product_count = len(lanes.get("product", []))
+    research_count = len(lanes.get("research", []))
+
+    if generated_count:
+        recs.append(
+            "Keep generated/cache directories out of public narratives and package surfaces; clean only after verification."
+        )
+    if private_count:
+        recs.append("Treat private/local directories as non-public state; never publish them without explicit review.")
+    if product_count > 20:
+        recs.append("Product lane is wide; pick one public demo/sales path and archive or defer the rest.")
+    if research_count > 10:
+        recs.append("Research lane is wide; require a one-line status for each active experiment before proposal reuse.")
+
+    recs.append("Use this report as a map first, not a deletion plan.")
+    return recs
+
+
 def render_markdown(report: dict) -> str:
     lines = [
         "# Repo Surface Shape Report",
@@ -74,6 +101,15 @@ def render_markdown(report: dict) -> str:
     for lane, paths in report["lanes"].items():
         rendered = ", ".join(f"`{p}`" for p in paths) if paths else "-"
         lines.append(f"| {lane} | {len(paths)} | {rendered} |")
+
+    lines.extend(
+        [
+            "",
+            "## Recommended Next Actions",
+            "",
+        ]
+    )
+    lines.extend(f"- {item}" for item in report["recommendations"])
 
     lines.extend(
         [
@@ -112,7 +148,7 @@ def build_report(config_path: Path) -> dict:
         generated_count=len(lanes.get("generated", [])),
         private_count=len(lanes.get("private", [])),
     )
-    return {
+    report = {
         "schema": "scbe_repo_surface_shape_report_v1",
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "root": str(REPO_ROOT),
@@ -123,6 +159,8 @@ def build_report(config_path: Path) -> dict:
         "unknown": classified["unknown"],
         "duplicates": classified["duplicates"],
     }
+    report["recommendations"] = recommendations(report)
+    return report
 
 
 def main() -> int:
