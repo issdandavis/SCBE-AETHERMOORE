@@ -62,6 +62,18 @@ class TongueProfile:
     speech_rate: float  # 0.6 - 1.3
     chant_ratio: float  # 0.0 - 1.0 (how much chant vs speech)
 
+    @property
+    def brightness(self) -> float:
+        """Small lead-gain modifier derived from the existing acoustic grammar."""
+        return {
+            "bright": 1.25,
+            "liquid": 1.1,
+            "balanced": 1.0,
+            "dense": 0.95,
+            "soft": 0.9,
+            "heavy": 0.85,
+        }.get(self.syllable_style, 1.0)
+
     def validate(self) -> None:
         assert 0.6 <= self.speech_rate <= 1.3
         assert 0.0 <= self.chant_ratio <= 1.0
