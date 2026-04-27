@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import subprocess
 import sys
 import time
@@ -615,11 +616,11 @@ def create_arc_kernel_dir(gpu: str) -> Path:
     return kernel_dir
 
 
-def push_kernel(kernel_dir: Path, gpu: str = "none") -> bool:
+def push_kernel(kernel_dir: Path, gpu: str = "none", accelerator_override: str | None = None) -> bool:
     """Push kernel to Kaggle."""
     print(f"Pushing kernel from {kernel_dir}...")
     cmd = ["kaggle", "kernels", "push", "-p", str(kernel_dir)]
-    accelerator = GPU_CONFIGS.get(gpu, GPU_CONFIGS["none"]).get("accelerator")
+    accelerator = accelerator_override or GPU_CONFIGS.get(gpu, GPU_CONFIGS["none"]).get("accelerator")
     if accelerator and accelerator != "none":
         cmd.extend(["--accelerator", accelerator])
     result = subprocess.run(
@@ -781,21 +782,32 @@ def missing_dataset_files(config: dict) -> list[str]:
     return missing
 
 
-def readiness_report(round_name: str, gpu: str) -> dict:
+def default_gpu_session_limit() -> int:
+    raw = os.environ.get("KAGGLE_GPU_SESSION_LIMIT", "2")
+    try:
+        limit = int(raw)
+    except ValueError:
+        return 2
+    return max(0, limit)
+
+
+def readiness_report(round_name: str, gpu: str, gpu_session_limit: int | None = None) -> dict:
     config = ROUNDS[round_name]
     active = running_gpu_kernels() if gpu != "none" else []
+    session_limit = default_gpu_session_limit() if gpu_session_limit is None else max(0, gpu_session_limit)
     missing_local = missing_local_dataset_files(config)
     missing = missing_dataset_files(config)
     slug = resolve_slug(round_name)
     kernel_dir = create_kernel_dir(round_name, config, gpu)
-    ready = not missing and (gpu == "none" or len(active) < 2)
+    ready = not missing and (gpu == "none" or len(active) < session_limit)
     return {
         "round": round_name,
         "slug": slug,
         "gpu": gpu,
+        "gpu_session_limit": session_limit if gpu != "none" else None,
         "ready": ready,
         "active_gpu_sessions": active,
-        "gpu_slots_available": max(0, 2 - len(active)) if gpu != "none" else None,
+        "gpu_slots_available": max(0, session_limit - len(active)) if gpu != "none" else None,
         "missing_dataset_files": missing,
         "missing_local_dataset_files": missing_local,
         "kernel_dir": str(kernel_dir),
@@ -805,11 +817,11 @@ def readiness_report(round_name: str, gpu: str) -> dict:
     }
 
 
-def wait_until_ready(round_name: str, gpu: str, interval: int, timeout: int) -> dict:
+def wait_until_ready(round_name: str, gpu: str, interval: int, timeout: int, gpu_session_limit: int) -> dict:
     """Poll readiness until the round can launch or timeout expires."""
     elapsed = 0
     while elapsed <= timeout:
-        report = readiness_report(round_name, gpu)
+        report = readiness_report(round_name, gpu, gpu_session_limit)
         print(
                 f"[ready {elapsed//60:>4d}m] ready={report['ready']} "
                 f"slots={report['gpu_slots_available']} missing={len(report['missing_dataset_files'])}"
@@ -863,6 +875,18 @@ def main():
     )
     parser.add_argument("--round", choices=list(ROUNDS.keys()) + ["all"], metavar="ROUND")
     parser.add_argument("--gpu", choices=list(GPU_CONFIGS.keys()), default="t4")
+    parser.add_argument(
+        "--gpu-session-limit",
+        type=int,
+        default=default_gpu_session_limit(),
+        help="Maximum active Kaggle GPU kernels allowed before launch preflight blocks "
+        "(default: KAGGLE_GPU_SESSION_LIMIT env var or 2)",
+    )
+    parser.add_argument(
+        "--accelerator",
+        default=None,
+        help="Raw Kaggle --accelerator override for paid-tier/CLI experiments; defaults to the --gpu profile",
+    )
     parser.add_argument("--poll", action="store_true", help="Wait for completion")
     parser.add_argument("--poll-interval", type=int, default=120, help="Seconds between polls")
     parser.add_argument("--wait-ready", action="store_true", help="Wait for GPU slot/file readiness before launch")
@@ -886,7 +910,7 @@ def main():
         kernel_dir = create_arc_kernel_dir(args.gpu)
         print(f"Kernel dir: {kernel_dir}")
 
-        if not push_kernel(kernel_dir, args.gpu):
+        if not push_kernel(kernel_dir, args.gpu, args.accelerator):
             print("FAILED to push ARC kernel")
             sys.exit(1)
 
@@ -916,7 +940,7 @@ def main():
     if args.ready:
         if args.round == "all":
             parser.error("--ready requires one concrete --round")
-        report = readiness_report(args.round, args.gpu)
+        report = readiness_report(args.round, args.gpu, args.gpu_session_limit)
         print(json.dumps(report, indent=2))
         return
 
@@ -936,6 +960,7 @@ def main():
         print(f"LAUNCHING: {round_name} — {config['desc']}")
         print(f"  Model: {config['base_model']}")
         print(f"  GPU:   {args.gpu}")
+        print(f"  GPU session limit: {args.gpu_session_limit}")
         print(f"  HF:    {config['hf_repo']}")
         print(f"{'='*60}\n")
 
@@ -945,7 +970,13 @@ def main():
 
         if args.wait_ready:
             try:
-                wait_until_ready(round_name, args.gpu, args.poll_interval, args.wait_ready_timeout)
+                wait_until_ready(
+                    round_name,
+                    args.gpu,
+                    args.poll_interval,
+                    args.wait_ready_timeout,
+                    args.gpu_session_limit,
+                )
             except TimeoutError as exc:
                 print(f"FAILED preflight: {exc}")
                 continue
@@ -957,14 +988,17 @@ def main():
 
         if args.gpu != "none":
             active = running_gpu_kernels()
-            if len(active) >= 2:
-                print("FAILED preflight: Kaggle GPU session limit is already full.")
+            if len(active) >= args.gpu_session_limit:
+                print(
+                    "FAILED preflight: configured Kaggle GPU session limit is already full "
+                    f"({len(active)}/{args.gpu_session_limit})."
+                )
                 for ref in active:
                     print(f"  active: {ref}")
                 continue
 
         # Push to Kaggle
-        if not push_kernel(kernel_dir, args.gpu):
+        if not push_kernel(kernel_dir, args.gpu, args.accelerator):
             print(f"FAILED to push {round_name} — skipping")
             continue
 
