@@ -45,7 +45,7 @@ def _load_local_env_if_explicitly_enabled() -> None:
 
     secrets_env = os.path.join(os.path.dirname(__file__), "../../.secrets/env.local")
     if not os.path.isfile(secrets_env):
-        logger.warning("SCBE_LOAD_LOCAL_SECRETS is enabled but %s was not found", secrets_env)
+        logger.warning("SCBE_LOAD_LOCAL_SECRETS is enabled but the local env file was not found")
         return
 
     with open(secrets_env, encoding="utf-8") as handle:

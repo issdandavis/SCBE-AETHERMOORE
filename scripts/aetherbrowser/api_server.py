@@ -3627,7 +3627,7 @@ async def polly_email(payload: PollyEmailPayload):
     try:
         from scripts.system.polly_service import send_email_from_chat
         result = await send_email_from_chat(payload.to, payload.subject, payload.body)
-        return {"ok": result["ok"], "data": result}
+        return {"ok": result.get("ok", False), "message_id": result.get("message_id")}
     except Exception as e:
         logger.warning("Polly email error: %s", e)
         return {"ok": False, "error": "Email service temporarily unavailable."}
@@ -3639,7 +3639,7 @@ async def polly_slack(payload: PollySlackPayload):
     try:
         from scripts.system.polly_service import notify_slack
         result = await notify_slack(payload.message, payload.channel)
-        return {"ok": result["ok"], "data": result}
+        return {"ok": result.get("ok", False)}
     except Exception as e:
         logger.warning("Polly slack error: %s", e)
         return {"ok": False, "error": "Slack service temporarily unavailable."}

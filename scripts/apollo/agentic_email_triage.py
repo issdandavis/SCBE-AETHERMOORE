@@ -318,8 +318,8 @@ def main():
     print(f"\nTriage complete. {len(results)} emails processed.\n")
     for r in results:
         agent = AGENTIC_EMPLOYEES.get(r.agent, {})
-        # Log sensitive details at DEBUG level; only show summary in CLI output
-        logger.debug("Triage result: agent=%s urgency=%s subject=%s", agent.get('name', r.agent), r.urgency, r.subject)
+        # Log only non-sensitive fields; subject may contain PII
+        logger.debug("Triage result: agent=%s urgency=%s action=%s", agent.get('name', r.agent), r.urgency, r.action)
         print(f"  [{r.urgency.upper()}] {agent.get('name', r.agent)} | action: {r.action}")
         print(f"           confidence: {r.confidence:.2f}")
         if r.draft_reply:
