@@ -99,6 +99,8 @@
     "scbe:bootstrap": "node scripts/scbe_bootstrap.mjs",
     "system:cli": "python scripts/scbe-system-cli.py",
     "training:terminal": "python scripts/system/training_terminal.py",
+    "training:watch": "python scripts/system/training_watch_report.py",
+    "training:watch:dsl": "python scripts/system/training_watch_report.py --focus-hf-job 69eec858d70108f37ace0514",
     "training:merge-adapters": "python scripts/system/merge_lora_adapters.py",
     "training:dispatch-coding-agent": "python scripts/system/dispatch_coding_agent_hf_job.py",
     "training:geoseal-coder": "python scripts/system/geoseal_coding_training_system.py",
