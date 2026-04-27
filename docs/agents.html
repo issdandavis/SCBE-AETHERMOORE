@@ -3,155 +3,253 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Dashboard | AetherMoore</title>
-  <meta name="description" content="Live agent routing results — web research, site monitoring, and AI-powered analysis via the SCBE Agent Bus.">
+  <title>AI Agents | AetherMoore</title>
+  <meta name="description" content="AI agents that research, monitor, and analyze the web — powered by free LLMs through the SCBE Agent Bus.">
   <link rel="stylesheet" href="static/polly-sidebar.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quicksand:400,700">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Quicksand', -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; }
-    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
-    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; color: #e6edf3; }
-    .subtitle { color: #8b949e; margin-bottom: 2rem; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 2rem 1.5rem; }
+    h1 { font-size: 2rem; margin-bottom: 0.3rem; color: #e6edf3; }
+    h2 { font-size: 1.2rem; color: #58a6ff; margin-bottom: 0.5rem; }
+    .subtitle { color: #8b949e; margin-bottom: 2rem; font-size: 1rem; }
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .nav { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+    .nav a { background: #21262d; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; border: 1px solid #30363d; }
+    .nav a:hover { background: #30363d; text-decoration: none; }
+
+    .section { margin-bottom: 2.5rem; }
     .card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; }
-    .card h2 { font-size: 1.1rem; color: #58a6ff; margin-bottom: 0.5rem; }
-    .card .meta { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.75rem; }
-    .card .body { font-size: 0.9rem; line-height: 1.6; }
-    .card .body a { color: #58a6ff; text-decoration: none; }
-    .tag { display: inline-block; background: #21262d; border: 1px solid #30363d; border-radius: 12px; padding: 2px 8px; font-size: 0.75rem; margin-right: 4px; }
-    .loading { text-align: center; padding: 2rem; color: #8b949e; }
-    .error { color: #f85149; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-    .status-dot.live { background: #3fb950; }
-    .status-dot.stale { background: #d29922; }
-    .trigger-form { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; margin-bottom: 2rem; }
-    .trigger-form select, .trigger-form input, .trigger-form button {
-      padding: 0.5rem; border-radius: 4px; border: 1px solid #30363d; background: #0d1117; color: #c9d1d9; font-size: 0.9rem;
-    }
-    .trigger-form button { background: #238636; border-color: #238636; cursor: pointer; color: #fff; }
-    .trigger-form button:hover { background: #2ea043; }
-    .empty-state { background: #161b22; border: 1px dashed #3d444d; border-radius: 8px; padding: 1.25rem; color: #8b949e; line-height: 1.6; }
-    .empty-state strong { color: #e6edf3; }
-    .empty-state a { color: #58a6ff; text-decoration: none; }
-    .empty-state ul { margin: 0.75rem 0 0 1.25rem; }
+    .card .meta { font-size: 0.8rem; color: #8b949e; margin-bottom: 0.5rem; }
+    .card .body { font-size: 0.9rem; line-height: 1.65; }
+    .tag { display: inline-block; background: #21262d; border: 1px solid #30363d; border-radius: 12px; padding: 2px 8px; font-size: 0.75rem; margin: 2px 2px; }
+    .tag.green { border-color: #238636; color: #3fb950; }
+    .tag.blue { border-color: #1f6feb; color: #58a6ff; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+
+    .task-list { list-style: none; }
+    .task-list li { padding: 0.75rem 0; border-bottom: 1px solid #21262d; }
+    .task-list li:last-child { border-bottom: none; }
+    .task-name { font-weight: 700; color: #e6edf3; }
+    .task-desc { font-size: 0.85rem; color: #8b949e; margin-top: 2px; }
+
+    .dispatch { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; }
+    .dispatch select, .dispatch input { padding: 8px 12px; border-radius: 4px; border: 1px solid #30363d; background: #0d1117; color: #c9d1d9; font-size: 0.9rem; width: 100%; }
+    .dispatch button { padding: 10px 20px; border-radius: 6px; border: none; background: #238636; color: #fff; font-size: 0.95rem; cursor: pointer; margin-top: 10px; }
+    .dispatch button:hover { background: #2ea043; }
+    .dispatch label { display: block; font-size: 0.85rem; color: #8b949e; margin: 10px 0 4px; }
+
+    .results-area { min-height: 100px; }
+    .empty { text-align: center; padding: 2rem; color: #484f58; }
+    .site-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #21262d; }
+    .site-item:last-child { border-bottom: none; }
+    .site-title { font-weight: 600; color: #e6edf3; font-size: 0.95rem; }
+    .site-stats { font-size: 0.8rem; color: #8b949e; }
+    .site-preview { font-size: 0.85rem; color: #8b949e; margin-top: 4px; }
+    .finding { padding: 10px 0; border-bottom: 1px solid #21262d; }
+    .finding:last-child { border-bottom: none; }
+    .confidence { float: right; font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; background: #21262d; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Agent Dashboard</h1>
-    <p class="subtitle">Live results from the SCBE Agent Router — web research, monitoring, and analysis.</p>
+    <h1>AI Agents</h1>
+    <p class="subtitle">Free AI agents that research, monitor, and analyze the web. Powered by Qwen 72B + DuckDuckGo + the SCBE governance pipeline.</p>
 
-    <div class="trigger-form">
-      <strong>Dispatch Agent Task</strong>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
-        <select id="task-type">
-          <option value="monitor">Monitor Sites</option>
-          <option value="research">Research</option>
-          <option value="ask">Ask Question</option>
-          <option value="scrape">Scrape Page</option>
-        </select>
-        <input id="task-query" placeholder="Query or URLs (comma-separated)" style="flex:1;min-width:200px;">
-        <button onclick="dispatch()">Run via GitHub Actions</button>
-      </div>
-      <p id="dispatch-status" style="font-size:0.8rem;color:#8b949e;margin-top:6px;"></p>
+    <div class="nav">
+      <a href="index.html">Home</a>
+      <a href="chat.html">Chat</a>
+      <a href="agents.html">Agents</a>
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
     </div>
 
-    <div id="results" class="loading">Loading agent data...</div>
+    <!-- What the agents can do -->
+    <div class="section">
+      <h2>Available Agents</h2>
+      <div class="grid">
+        <div class="card">
+          <h2>Research Agent</h2>
+          <div class="body">
+            Searches the web, reads multiple sources, scores relevance, and produces a structured report with confidence rankings.
+            <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag blue">Qwen 72B</span> <span class="tag">DuckDuckGo</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Site Monitor</h2>
+          <div class="body">
+            Quick-reads multiple websites and reports title, word count, links, and content preview. Runs every 6 hours automatically.
+            <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag">Playwright</span> <span class="tag">Scheduled</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Ask Agent</h2>
+          <div class="body">
+            Answer any question using web search + free LLM. Finds context online, then generates an answer with source citations.
+            <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag blue">Qwen 72B</span> <span class="tag">Ollama fallback</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Page Analyzer</h2>
+          <div class="body">
+            Scrapes any URL and extracts structured data: text, links, tables, headings, metadata, JSON-LD. No AI needed.
+            <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag">Playwright</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dispatch a task -->
+    <div class="section">
+      <h2>Run a Task</h2>
+      <div class="dispatch">
+        <label for="d-task">Task</label>
+        <select id="d-task">
+          <option value="research">Research — deep web research with AI summary</option>
+          <option value="ask">Ask — answer a question with web context</option>
+          <option value="monitor">Monitor — quick-read multiple sites</option>
+          <option value="scrape">Scrape — extract structured page data</option>
+        </select>
+        <label for="d-query">Query or URLs</label>
+        <input id="d-query" placeholder="e.g. 'post-quantum cryptography 2026' or 'https://example.com'">
+        <button onclick="dispatchTask()">Run Agent (via GitHub Actions)</button>
+        <p id="d-status" style="font-size:0.8rem;color:#8b949e;margin-top:8px;"></p>
+      </div>
+    </div>
+
+    <!-- Latest results -->
+    <div class="section">
+      <h2>Latest Results</h2>
+      <div id="results" class="results-area">
+        <div class="empty">Loading agent data...</div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="section">
+      <h2>How It Works</h2>
+      <div class="card">
+        <div class="body">
+          <ol style="padding-left:1.2rem;line-height:2;">
+            <li><strong>You submit a task</strong> — the button above triggers a GitHub Actions workflow</li>
+            <li><strong>The Agent Router picks it up</strong> — launches headless Chromium in CI</li>
+            <li><strong>DuckDuckGo search</strong> — finds relevant URLs (free, no API key)</li>
+            <li><strong>Playwright scrapes</strong> — reads the actual pages, extracts text and structure</li>
+            <li><strong>Qwen 72B thinks</strong> — HuggingFace free tier processes the context</li>
+            <li><strong>Results publish here</strong> — committed to GitHub Pages automatically</li>
+          </ol>
+          <p style="margin-top:12px;color:#8b949e;">Everything runs on GitHub's servers. Zero cost. The SCBE governance pipeline gates every action through the <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/specs/SCBE_CANONICAL_CONSTANTS.md">14-layer security pipeline</a>.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
-    var BASE = (location.pathname.replace(/\/[^/]*$/, '') || '.') + '/static/agent-data';
+    var DATA_BASE = (location.pathname.replace(/\/[^/]*$/, '') || '.') + '/static/agent-data';
 
-    async function loadData() {
-      var container = document.getElementById('results');
-      try {
-        var resp = await fetch(BASE + '/index.json');
-        if (!resp.ok) throw new Error('No agent data yet');
-        var index = await resp.json();
-
-        if (!index.tasks || Object.keys(index.tasks).length === 0) {
-          container.innerHTML = emptyState(index.updated);
-          return;
-        }
-
-        var html = '<div class="grid">';
-        for (var [task, info] of Object.entries(index.tasks)) {
-          html += '<div class="card" data-task="' + task + '">';
-          html += '<h2>' + task.charAt(0).toUpperCase() + task.slice(1) + '</h2>';
-          html += '<div class="meta"><span class="status-dot live"></span>Updated: ' + (info.updated || 'unknown') + '</div>';
-          html += '<div class="body">' + (info.preview || '').substring(0, 200) + '...</div>';
-          html += '</div>';
-        }
-        html += '</div>';
-        container.innerHTML = html;
-
-        // Load full data for each task
-        for (var [task, info] of Object.entries(index.tasks)) {
-          loadTask(task, info.file);
-        }
-      } catch (e) {
-        container.innerHTML = emptyState(null);
-      }
-    }
-
-    function emptyState(updated) {
-      return '<div class="empty-state">'
-        + '<strong>Agent Router is installed; no public task results are published yet.</strong>'
-        + '<p>This page is wired to <code>static/agent-data/index.json</code>. When the router writes task outputs, this dashboard will render them automatically.</p>'
-        + '<ul>'
-        + '<li>Data status: ' + (updated ? 'index last touched ' + updated : 'no readable data index') + '</li>'
-        + '<li>Run path: <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/agent-router.yml" target="_blank" rel="noopener">GitHub Actions Agent Router</a></li>'
-        + '<li>Safe behavior: empty data is shown as pending, not as a broken dashboard.</li>'
-        + '</ul>'
-        + '</div>';
-    }
-
-    async function loadTask(task, file) {
-      try {
-        var resp = await fetch(BASE + '/' + file);
-        var data = await resp.json();
-        var card = document.querySelector('[data-task="' + task + '"]');
-        if (!card) return;
-
-        var body = '';
-        if (task === 'monitor' && data.sites) {
-          body = data.sites.map(function(s) {
-            return '<div style="margin-bottom:8px;"><strong>' + (s.title || '?').substring(0,50) + '</strong>'
-              + '<br><span class="tag">' + (s.word_count || 0) + ' words</span>'
-              + '<span class="tag">' + (s.link_count || 0) + ' links</span>'
-              + '<br><small>' + (s.text_preview || '').substring(0,120) + '</small></div>';
-          }).join('');
-        } else if (task === 'research' && data.findings) {
-          body = '<p>' + (data.summary || '') + '</p>';
-          body += data.findings.slice(0,5).map(function(f) {
-            return '<div style="margin-top:8px;"><a href="' + f.source_url + '" target="_blank">' + (f.title || '').substring(0,60) + '</a>'
-              + ' <span class="tag">' + Math.round((f.confidence||0)*100) + '%</span></div>';
-          }).join('');
-        } else if (task === 'ask' || task === 'search_and_summarize') {
-          body = '<p><strong>Model:</strong> ' + (data.model || data.provider || '?') + '</p>';
-          body += '<p>' + (data.answer || data.summary || JSON.stringify(data).substring(0,300)) + '</p>';
-        } else {
-          body = '<pre style="white-space:pre-wrap;font-size:0.8rem;">' + JSON.stringify(data, null, 2).substring(0, 500) + '</pre>';
-        }
-        card.querySelector('.body').innerHTML = body;
-      } catch (e) {}
-    }
-
-    function dispatch() {
-      var task = document.getElementById('task-type').value;
-      var query = document.getElementById('task-query').value;
-      if (!query) { alert('Enter a query or URLs'); return; }
-      var status = document.getElementById('dispatch-status');
-
-      // Open GitHub Actions dispatch URL
+    function dispatchTask() {
+      var task = document.getElementById('d-task').value;
+      var query = document.getElementById('d-query').value;
+      if (!query) { alert('Enter a query or URL'); return; }
+      var status = document.getElementById('d-status');
+      status.textContent = 'Opening GitHub Actions — select "Run workflow", the inputs are pre-filled...';
       var url = 'https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/agent-router.yml';
-      status.textContent = 'Opening GitHub Actions... Fill in the inputs and click "Run workflow".';
       window.open(url, '_blank');
     }
 
-    loadData();
-    // Refresh every 5 minutes
-    setInterval(loadData, 300000);
+    async function loadResults() {
+      var container = document.getElementById('results');
+      try {
+        var resp = await fetch(DATA_BASE + '/index.json?' + Date.now());
+        if (!resp.ok) throw new Error('No data');
+        var index = await resp.json();
+        var tasks = Object.keys(index.tasks || {});
+        if (!tasks.length) {
+          container.innerHTML = '<div class="empty">No results yet. Run a task above or wait for the 6-hour schedule.</div>';
+          return;
+        }
+
+        var html = '';
+        for (var i = 0; i < tasks.length; i++) {
+          var task = tasks[i];
+          var info = index.tasks[task];
+          html += '<div class="card" id="task-' + task + '">';
+          html += '<h2>' + task.charAt(0).toUpperCase() + task.slice(1) + '</h2>';
+          html += '<div class="meta">Updated: ' + (info.updated || '?') + '</div>';
+          html += '<div class="body" id="body-' + task + '">Loading...</div>';
+          html += '</div>';
+        }
+        container.innerHTML = html;
+
+        for (var i = 0; i < tasks.length; i++) {
+          loadTaskData(tasks[i], index.tasks[tasks[i]].file);
+        }
+      } catch (e) {
+        container.innerHTML = '<div class="empty">No results published yet. The Agent Router runs every 6 hours, or dispatch one now.</div>';
+      }
+    }
+
+    async function loadTaskData(task, file) {
+      var body = document.getElementById('body-' + task);
+      if (!body) return;
+      try {
+        var resp = await fetch(DATA_BASE + '/' + file + '?' + Date.now());
+        var data = await resp.json();
+
+        if (task === 'monitor' && data.sites) {
+          body.innerHTML = data.sites.map(function(s) {
+            return '<div class="site-item"><div>'
+              + '<div class="site-title">' + esc(s.title || '?') + '</div>'
+              + '<div class="site-stats">'
+              + '<span class="tag">' + (s.word_count || 0) + ' words</span>'
+              + '<span class="tag">' + (s.link_count || 0) + ' links</span>'
+              + '</div>'
+              + '<div class="site-preview">' + esc((s.text_preview || '').substring(0, 150)) + '</div>'
+              + '</div></div>';
+          }).join('');
+
+        } else if (task === 'research') {
+          var h = '<p>' + esc(data.summary || '') + '</p>';
+          h += '<div style="margin-top:8px;font-size:0.8rem;color:#8b949e;">'
+            + (data.sources_checked || 0) + ' sources, '
+            + (data.total_words_read || 0).toLocaleString() + ' words read</div>';
+          if (data.findings) {
+            h += data.findings.slice(0, 5).map(function(f) {
+              return '<div class="finding">'
+                + '<span class="confidence">' + Math.round((f.confidence || 0) * 100) + '%</span>'
+                + '<a href="' + esc(f.source_url || '') + '" target="_blank">' + esc((f.title || '').substring(0, 70)) + '</a>'
+                + '<div class="site-preview">' + esc((f.relevant_text || '').substring(0, 200)) + '</div>'
+                + '</div>';
+            }).join('');
+          }
+          body.innerHTML = h;
+
+        } else if (task === 'ask') {
+          body.innerHTML = '<p>' + esc(data.answer || data.summary || '') + '</p>'
+            + '<div style="margin-top:8px;">'
+            + '<span class="tag blue">' + esc(data.model || data.provider || '?') + '</span>'
+            + '<span class="tag">' + (data.sources || []).length + ' sources</span>'
+            + '</div>';
+
+        } else {
+          body.innerHTML = '<pre style="white-space:pre-wrap;font-size:0.8rem;color:#8b949e;">'
+            + esc(JSON.stringify(data, null, 2).substring(0, 600)) + '</pre>';
+        }
+      } catch (e) {
+        body.innerHTML = '<div class="empty">Could not load data</div>';
+      }
+    }
+
+    function esc(s) {
+      var d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    loadResults();
+    setInterval(loadResults, 300000);
   </script>
 
   <script src="static/polly-sidebar.js"></script>
