@@ -193,7 +193,9 @@ class ResearchAgent:
                         )
                         report.source_outcomes.append(self._source_outcome(page, "matched_followed_link", score))
                     else:
-                        report.source_outcomes.append(self._source_outcome(page, "below_threshold_followed_link", score))
+                        report.source_outcomes.append(
+                            self._source_outcome(page, "below_threshold_followed_link", score)
+                        )
                 except Exception as exc:
                     report.errors.append(f"Follow link {url}: {exc}")
                     report.source_outcomes.append(
@@ -324,13 +326,7 @@ class ResearchAgent:
         else:
             position_signal = 0.0
 
-        score = (
-            (text_score * 0.4)
-            + (title_score * 0.6)
-            + density_signal
-            + length_signal
-            + position_signal
-        )
+        score = (text_score * 0.4) + (title_score * 0.6) + density_signal + length_signal + position_signal
 
         # Bonus for exact phrase match
         query_phrase = " ".join(sorted(query_terms))
