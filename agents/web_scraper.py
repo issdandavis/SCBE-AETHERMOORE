@@ -94,6 +94,7 @@ _EXTRACT_HEADINGS = """() => {
 @dataclass
 class PageData:
     """Structured extraction from a single page."""
+
     url: str
     title: str = ""
     text: str = ""
@@ -258,9 +259,7 @@ class WebScraper:
         logger.info("Search '%s' found %d result URLs", query, len(result_links))
         return await self.scrape_many(result_links, delay_ms=800)
 
-    async def _search_urls(
-        self, query: str, engine: str, max_results: int
-    ) -> List[str]:
+    async def _search_urls(self, query: str, engine: str, max_results: int) -> List[str]:
         """
         Get search result URLs via direct HTTP (no browser needed for search).
 
@@ -310,6 +309,7 @@ class WebScraper:
                     html = resp.read().decode("utf-8", errors="replace")
                 # Extract result URLs from href attributes
                 import re as _re
+
                 for match in _re.finditer(r'class="result__a"[^>]*href="([^"]+)"', html):
                     href = match.group(1)
                     if href.startswith("http") and "duckduckgo.com" not in href:
@@ -318,6 +318,7 @@ class WebScraper:
                 # Also try uddg= parameter (DDG redirect URLs)
                 for match in _re.finditer(r'uddg=([^&"]+)', html):
                     from urllib.parse import unquote
+
                     href = unquote(match.group(1))
                     if href.startswith("http") and "duckduckgo.com" not in href:
                         if href not in urls:
