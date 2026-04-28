@@ -17,8 +17,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
 
-import pytest
-
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from agents.research_agent import ResearchAgent  # noqa: E402
