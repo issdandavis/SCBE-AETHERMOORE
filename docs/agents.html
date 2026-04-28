@@ -133,7 +133,7 @@
         </select>
         <label for="d-query">Query or URLs</label>
         <input id="d-query" placeholder="e.g. 'post-quantum cryptography 2026' or 'https://example.com'">
-        <button onclick="dispatchTask()">Run Agent (via GitHub Actions)</button>
+        <button onclick="dispatchTask()">Run Agent</button>
         <p id="d-status" style="font-size:0.8rem;color:#8b949e;margin-top:8px;"></p>
         <div class="recipe-row" aria-label="Task recipes">
           <button type="button" onclick="setRecipe('research','SCBE hyperbolic geometry AI governance')">Research demo</button>
@@ -184,7 +184,7 @@
             <li><strong>Qwen 72B thinks</strong> — HuggingFace free tier processes the context</li>
             <li><strong>Results publish here</strong> — committed to GitHub Pages automatically</li>
           </ol>
-          <p style="margin-top:12px;color:#8b949e;">Everything runs on GitHub's servers. Zero cost. The SCBE governance pipeline gates every action through the <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/specs/SCBE_CANONICAL_CONSTANTS.md">14-layer security pipeline</a>.</p>
+          <p style="margin-top:12px;color:#8b949e;">The heavy agent run still happens on GitHub Actions. A small Vercel bridge can queue runs and read status when configured; otherwise this page falls back to the manual GitHub workflow. The SCBE governance pipeline gates every action through the <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/specs/SCBE_CANONICAL_CONSTANTS.md">14-layer security pipeline</a>.</p>
         </div>
       </div>
     </div>
@@ -192,15 +192,61 @@
 
   <script>
     var DATA_BASE = (location.pathname.replace(/\/[^/]*$/, '') || '.') + '/static/agent-data';
+    var AGENT_API_BASE = window.AGENT_API_BASE || localStorage.getItem('scbeAgentApiBase') || detectAgentApiBase();
+    var AGENT_DISPATCH_SECRET = window.AGENT_DISPATCH_SECRET || localStorage.getItem('scbeAgentDispatchSecret') || '';
 
-    function dispatchTask() {
+    async function dispatchTask() {
       var task = document.getElementById('d-task').value;
       var query = document.getElementById('d-query').value;
       if (!query) { alert('Enter a query or URL'); return; }
       var status = document.getElementById('d-status');
-      status.textContent = 'Opening GitHub Actions — select "Run workflow", the inputs are pre-filled...';
+      if (AGENT_API_BASE) {
+        status.textContent = 'Queueing through Vercel bridge...';
+        try {
+          var resp = await fetch(AGENT_API_BASE + '/api/agent/dispatch', {
+            method: 'POST',
+            headers: dispatchHeaders(),
+            body: JSON.stringify({ task: task, query: query, publish: 'true' })
+          });
+          var data = await resp.json();
+          if (!resp.ok || !data.ok) throw new Error(data.error || 'dispatch failed');
+          status.textContent = 'Queued. Refreshing status...';
+          loadAgentStatus();
+          return;
+        } catch (e) {
+          status.textContent = 'Vercel bridge unavailable: ' + (e.message || e) + '. Opening GitHub Actions fallback.';
+        }
+      } else {
+        status.textContent = 'Vercel bridge not configured. Opening GitHub Actions fallback.';
+      }
       var url = 'https://github.com/issdandavis/SCBE-AETHERMOORE/actions/workflows/agent-router.yml';
       window.open(url, '_blank');
+    }
+
+    function detectAgentApiBase() {
+      if (location.hostname.endsWith('.vercel.app')) return location.origin;
+      return '';
+    }
+
+    function dispatchHeaders() {
+      var headers = { 'Content-Type': 'application/json' };
+      if (AGENT_DISPATCH_SECRET) headers['X-Agent-Dispatch-Secret'] = AGENT_DISPATCH_SECRET;
+      return headers;
+    }
+
+    async function loadAgentStatus() {
+      if (!AGENT_API_BASE) return;
+      var status = document.getElementById('d-status');
+      try {
+        var resp = await fetch(AGENT_API_BASE + '/api/agent/status?limit=5&' + Date.now());
+        var data = await resp.json();
+        if (!resp.ok || !data.ok) throw new Error(data.error || 'status unavailable');
+        var latest = data.latest || {};
+        status.textContent = 'Bridge online. Active runs: ' + data.active_count
+          + '. Latest: ' + (latest.status || '?') + '/' + (latest.conclusion || 'pending') + '.';
+      } catch (e) {
+        status.textContent = 'Bridge status unavailable: ' + (e.message || e);
+      }
     }
 
     async function loadResults() {
@@ -290,7 +336,7 @@
     function setRecipe(task, query) {
       document.getElementById('d-task').value = task;
       document.getElementById('d-query').value = query;
-      document.getElementById('d-status').textContent = 'Recipe loaded. Click Run Agent, then run the GitHub workflow with these values.';
+      document.getElementById('d-status').textContent = 'Recipe loaded. Click Run Agent to use the Vercel bridge when available, or the GitHub fallback.';
     }
 
     function renderReceipt(task, file, data, hash) {
@@ -354,7 +400,9 @@
     }
 
     loadResults();
+    loadAgentStatus();
     setInterval(loadResults, 300000);
+    setInterval(loadAgentStatus, 120000);
   </script>
 
   <script src="static/polly-sidebar.js"></script>
