@@ -105,9 +105,19 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Localsend: An open-source cross-platform alternative to AirDrop",
+      "description": "Claude.ai is unavailable",
       "word_count": 585,
       "headings": [
+        {
+          "level": 2,
+          "text": "Claude.ai is unavailable",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "claude.com",
+          "source": "fallback-selector"
+        },
         {
           "level": 2,
           "text": "Localsend: An open-source cross-platform alternative to AirDrop",
@@ -116,6 +126,16 @@
         {
           "level": 2,
           "text": "github.com/localsend",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Waymo in Portland",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "waymo.com",
           "source": "fallback-selector"
         },
         {
@@ -130,38 +150,18 @@
         },
         {
           "level": 2,
-          "text": "The World's Most Complex Machine",
+          "text": "AISLE Discovers 38 CVEs in OpenEMR Healthcare Software",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "worksinprogress.co",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Talkie: a 13B vintage language model from 1930",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "talkie-lm.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "The Social Edge of Intelligence: Individual Gain, Collective Loss",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "theideasletter.org",
+          "text": "aisle.com",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 229,
+      "link_count": 226,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Localsend: An open-source cross-platform alternative to AirDrop (github.com/localsend)77 points by bilsbie 51 minutes ago  | hide | 26\u00a0comments2.Microsoft VibeVoice: Open-Source Frontier Voice AI (github.com/microsoft)14 points by tosh 50 minutes ago  | hide | 2\u00a0comments3.The World's Most Complex Machine (worksinprogress.co)123 points by mellosouls 5 hours ago  | hide | 59\u00a0comments4.Talkie: a 13B vintage language model from 1930..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Claude.ai is unavailable (claude.com)85 points by shorsher 37 minutes ago  | hide | 46\u00a0comments2.Localsend: An open-source cross-platform alternative to AirDrop (github.com/localsend)587 points by bilsbie 6 hours ago  | hide | 196\u00a0comments3.Waymo in Portland (waymo.com)17 points by xnx 30 minutes ago  | hide | discuss4.Microsoft VibeVoice: Open-Source Frontier Voice AI (github.com/microsoft)251 points by tosh 6 hours ago  | hide..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
