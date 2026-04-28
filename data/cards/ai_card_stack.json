@@ -1,0 +1,1487 @@
+{
+  "schema_version": "scbe-ai-card-stack-v1",
+  "generated_at_utc": "2026-04-28T00:54:06.514141Z",
+  "total_cards": 87,
+  "type_counts": {
+    "sft_dataset": 11,
+    "model_config": 17,
+    "kaggle_run": 46,
+    "experiment_artifact": 3,
+    "hf_repo": 10
+  },
+  "status_counts": {
+    "staged": 14,
+    "live": 20,
+    "unknown": 51,
+    "blocked": 2
+  },
+  "cards": [
+    {
+      "id": "sft_dataset::aligned_foundations",
+      "type": "sft_dataset",
+      "path": "training-data/sft/aligned_foundations_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.821731Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "aligned_foundations_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::atomic_workflow_stage6",
+      "type": "sft_dataset",
+      "path": "training-data/sft/atomic_workflow_stage6_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.822731Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "atomic_workflow_stage6_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::atomic_workflow_stage6_repair",
+      "type": "sft_dataset",
+      "path": "training-data/sft/atomic_workflow_stage6_repair_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.823731Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "atomic_workflow_stage6_repair_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::bijective_dsl_v5_holdout",
+      "type": "sft_dataset",
+      "path": "training-data/sft/bijective_dsl_v5_holdout_manifest.json",
+      "last_modified": "2026-04-28T00:08:09.150257Z",
+      "status": "live",
+      "size_hint": "52 rows",
+      "summary": "bijective_dsl_v5_holdout_manifest_v1",
+      "relations": [
+        {
+          "type": "produces_jsonl",
+          "target": "training-data/sft/bijective_dsl_v5_holdout.sft.jsonl"
+        }
+      ]
+    },
+    {
+      "id": "sft_dataset::binary_interpretation_matrix_v1",
+      "type": "sft_dataset",
+      "path": "training-data/sft/binary_interpretation_matrix_v1_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.826736Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "binary_interpretation_matrix_sft_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::binary_pillars_v1",
+      "type": "sft_dataset",
+      "path": "training-data/sft/binary_pillars_v1_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.828731Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "binary_pillars_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::chemistry_primary",
+      "type": "sft_dataset",
+      "path": "training-data/sft/chemistry_primary_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.829731Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "chemistry_primary_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::coding_system_full_v1",
+      "type": "sft_dataset",
+      "path": "training-data/sft/coding_system_full_v1_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.834732Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "coding_system_full_v1_manifest",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::eml_operator_v1",
+      "type": "sft_dataset",
+      "path": "training-data/sft/eml_operator_v1_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.837731Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "eml_operator_sft_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::specialist_extracted_v1",
+      "type": "sft_dataset",
+      "path": "training-data/sft/specialist_extracted_v1_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.845731Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "scbe_specialist_training_extraction_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "sft_dataset::t_operator_v1",
+      "type": "sft_dataset",
+      "path": "training-data/sft/t_operator_v1_manifest.json",
+      "last_modified": "2026-04-27T15:22:27.847731Z",
+      "status": "staged",
+      "size_hint": "n/a",
+      "summary": "t_operator_sft_manifest_v1",
+      "relations": []
+    },
+    {
+      "id": "model_config::agentic-coding-qlora",
+      "type": "model_config",
+      "path": "config/model_training/agentic-coding-qlora.json",
+      "last_modified": "2026-04-28T00:08:08.967632Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "agentic-coding-qlora",
+      "relations": []
+    },
+    {
+      "id": "model_config::aligned-foundations-qwen-primary",
+      "type": "model_config",
+      "path": "config/model_training/aligned-foundations-qwen-primary.json",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Qwen aligned foundations lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-7B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::chemistry-qwen-primary",
+      "type": "model_config",
+      "path": "config/model_training/chemistry-qwen-primary.json",
+      "last_modified": "2026-04-27T15:22:27.389946Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Qwen chemistry primary lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-7B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::coder-qwen-code-primaries",
+      "type": "model_config",
+      "path": "config/model_training/coder-qwen-code-primaries.json",
+      "last_modified": "2026-04-27T15:22:27.390946Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Qwen coder code primaries lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-7B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::coder-qwen-local",
+      "type": "model_config",
+      "path": "config/model_training/coder-qwen-local.json",
+      "last_modified": "2026-04-18T01:47:02.843263Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Qwen coder local training lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-7B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::coding-agent-qwen-atomic-workflow-stage6",
+      "type": "model_config",
+      "path": "config/model_training/coding-agent-qwen-atomic-workflow-stage6.json",
+      "last_modified": "2026-04-27T15:22:27.390946Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE coding agent Qwen atomic workflow Stage 6",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::coding-agent-qwen-full-coding-system-v8",
+      "type": "model_config",
+      "path": "config/model_training/coding-agent-qwen-full-coding-system-v8.json",
+      "last_modified": "2026-04-27T15:22:27.391946Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE coding agent Qwen full coding system v8",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::coding-agent-qwen-merged-coding-model",
+      "type": "model_config",
+      "path": "config/model_training/coding-agent-qwen-merged-coding-model.json",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "blocked",
+      "size_hint": "4 adapters",
+      "summary": "GeoSeal coding agent merged model v1",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+        },
+        {
+          "type": "output_repo",
+          "target": "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1"
+        },
+        {
+          "type": "uses_adapter",
+          "target": "issdandavis/scbe-coding-agent-qwen-online-v2"
+        },
+        {
+          "type": "uses_adapter",
+          "target": "issdandavis/scbe-coding-agent-qwen-binary-geoseal-v3"
+        },
+        {
+          "type": "uses_adapter",
+          "target": "issdandavis/scbe-coding-agent-qwen-geoseal-command-v4"
+        },
+        {
+          "type": "uses_adapter",
+          "target": "issdandavis/scbe-coding-agent-qwen-atomic-workflow-stage6"
+        },
+        {
+          "type": "blocked_adapter",
+          "target": "issdandavis/scbe-coding-agent-qwen-command-harmony-v5"
+        }
+      ]
+    },
+    {
+      "id": "model_config::coding-agent-qwen-stage6-repair-v7",
+      "type": "model_config",
+      "path": "config/model_training/coding-agent-qwen-stage6-repair-v7.json",
+      "last_modified": "2026-04-27T15:22:27.391946Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE coding agent Qwen Stage 6 repair v7",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::geoseal_coding_training_manifest",
+      "type": "model_config",
+      "path": "config/model_training/geoseal_coding_training_manifest.json",
+      "last_modified": "2026-04-28T00:08:08.969620Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "GeoSeal dedicated coding-agent training system",
+      "relations": []
+    },
+    {
+      "id": "model_config::governance-security-qwen-primary",
+      "type": "model_config",
+      "path": "config/model_training/governance-security-qwen-primary.json",
+      "last_modified": "2026-04-27T15:22:27.393946Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Qwen governance security lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::hf-agentic-handler",
+      "type": "model_config",
+      "path": "config/model_training/hf-agentic-handler.json",
+      "last_modified": "2026-04-18T01:47:02.843795Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Hugging Face agentic handler lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "HuggingFaceTB/SmolLM2-1.7B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::ollama-agentic-handler",
+      "type": "model_config",
+      "path": "config/model_training/ollama-agentic-handler.json",
+      "last_modified": "2026-04-18T01:47:02.844801Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Ollama agentic handler lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-7B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::operator-agent-bus-qwen-primary",
+      "type": "model_config",
+      "path": "config/model_training/operator-agent-bus-qwen-primary.json",
+      "last_modified": "2026-04-28T00:08:08.970913Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Qwen operator agent bus lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-Coder-0.5B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::research-bridge-qwen-primary",
+      "type": "model_config",
+      "path": "config/model_training/research-bridge-qwen-primary.json",
+      "last_modified": "2026-04-27T15:22:27.395462Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE Qwen research bridge lane",
+      "relations": [
+        {
+          "type": "base_model",
+          "target": "Qwen/Qwen2.5-7B-Instruct"
+        }
+      ]
+    },
+    {
+      "id": "model_config::scbe_dataset_regularization_v1",
+      "type": "model_config",
+      "path": "config/model_training/scbe_dataset_regularization_v1.json",
+      "last_modified": "2026-04-27T15:22:27.396266Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "SCBE dataset purpose buckets and regularization policy",
+      "relations": []
+    },
+    {
+      "id": "model_config::stage6_atomic_workflow_eval_contract",
+      "type": "model_config",
+      "path": "config/model_training/stage6_atomic_workflow_eval_contract.json",
+      "last_modified": "2026-04-27T15:22:27.396266Z",
+      "status": "unknown",
+      "size_hint": "0 adapters",
+      "summary": "stage6_atomic_workflow_eval_contract",
+      "relations": []
+    },
+    {
+      "id": "kaggle_run::polly-auto-geoseal-stage6-repair-v7",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/polly-auto-geoseal-stage6-repair-v7",
+      "last_modified": "2026-04-25T08:00:55.580000Z",
+      "status": "live",
+      "size_hint": "votes=0",
+      "summary": "Polly Auto: geoseal-stage6-repair-v7",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "active-training"
+        },
+        {
+          "type": "recommendation",
+          "target": "keep"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::polly-auto-covenantal",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/polly-auto-covenantal",
+      "last_modified": "2026-04-22T03:09:57.610000Z",
+      "status": "staged",
+      "size_hint": "votes=0",
+      "summary": "Polly Auto: covenantal",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "polly-auto-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "keep-or-archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::polly-hf-train-kaggle",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/polly-hf-train-kaggle",
+      "last_modified": "2026-04-21T02:03:13.937000Z",
+      "status": "live",
+      "size_hint": "votes=0",
+      "summary": "polly_hf_train_kaggle",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "active-training"
+        },
+        {
+          "type": "recommendation",
+          "target": "keep"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebookdc360a7523",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebookdc360a7523",
+      "last_modified": "2026-04-20T14:01:08.260000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebookdc360a7523",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::polly-auto-r8",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/polly-auto-r8",
+      "last_modified": "2026-04-16T20:48:52.260000Z",
+      "status": "staged",
+      "size_hint": "votes=0",
+      "summary": "Polly Auto: r8",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "polly-auto-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "keep-or-archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook8deb3be74c",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook8deb3be74c",
+      "last_modified": "2026-04-16T16:45:26.833000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook8deb3be74c",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebookdcda5a881b",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebookdcda5a881b",
+      "last_modified": "2026-04-16T16:45:08.933000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebookdcda5a881b",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-coding-agent-qlora-v2",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-coding-agent-qlora-v2",
+      "last_modified": "2026-04-16T02:17:06.773000Z",
+      "status": "live",
+      "size_hint": "votes=0",
+      "summary": "scbe-coding-agent-qlora-v2",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "active-training"
+        },
+        {
+          "type": "recommendation",
+          "target": "keep"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-coding-agent-kaggle",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-coding-agent-kaggle",
+      "last_modified": "2026-04-16T01:33:06.250000Z",
+      "status": "live",
+      "size_hint": "votes=0",
+      "summary": "SCBE_Coding_Agent_Kaggle",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "active-training"
+        },
+        {
+          "type": "recommendation",
+          "target": "keep"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook6e22d782d5",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook6e22d782d5",
+      "last_modified": "2026-04-16T01:32:51.100000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook6e22d782d5",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::polly-auto-prime-r7",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/polly-auto-prime-r7",
+      "last_modified": "2026-04-15T06:44:51.943000Z",
+      "status": "staged",
+      "size_hint": "votes=0",
+      "summary": "Polly Auto: prime-r7",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "polly-auto-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "keep-or-archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::polly-qlora-training",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/polly-qlora-training",
+      "last_modified": "2026-04-15T06:04:42.273000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "Polly QLoRA Training",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "training-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook32e09d5b64",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook32e09d5b64",
+      "last_modified": "2026-04-15T03:35:44.983000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook32e09d5b64",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-polly-training-v1",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-polly-training-v1",
+      "last_modified": "2026-04-07T10:48:42.113000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE Polly Training v1",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "training-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook42ebeef82c",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook42ebeef82c",
+      "last_modified": "2026-04-07T10:48:31.847000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook42ebeef82c",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::polly-auto-deep-knowledge",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/polly-auto-deep-knowledge",
+      "last_modified": "2026-04-07T02:43:31.707000Z",
+      "status": "staged",
+      "size_hint": "votes=0",
+      "summary": "Polly Auto: deep-knowledge",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "polly-auto-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "keep-or-archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook0e666088f6",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook0e666088f6",
+      "last_modified": "2026-04-06T13:03:58.533000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook0e666088f6",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebookc04c922531",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebookc04c922531",
+      "last_modified": "2026-04-06T12:47:48.100000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebookc04c922531",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-code-a-b-baseline-vs-triangulated",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-code-a-b-baseline-vs-triangulated",
+      "last_modified": "2026-04-02T13:07:02.453000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE Code A/B: Baseline vs Triangulated",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "code-experiment-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-governance-qwen-0-5b-fine-tune",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-governance-qwen-0-5b-fine-tune",
+      "last_modified": "2026-04-02T03:52:41.727000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE Governance Qwen 0.5B Fine-Tune",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "research-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-coder-multiview-training",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-coder-multiview-training",
+      "last_modified": "2026-04-02T00:09:24.560000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE Coder Multiview Training",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "code-experiment-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-code-model-multiview",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-code-model-multiview",
+      "last_modified": "2026-04-01T23:40:23.187000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE Code Model (Multiview)",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "code-experiment-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-polly-baseline-vs-stack-lite",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-polly-baseline-vs-stack-lite",
+      "last_modified": "2026-04-01T09:16:17.637000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE Polly Baseline vs Stack-Lite",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "uncategorized"
+        },
+        {
+          "type": "recommendation",
+          "target": "review"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook46aad8c157",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook46aad8c157",
+      "last_modified": "2026-03-20T05:44:32.110000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook46aad8c157",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebooka6288b409b",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebooka6288b409b",
+      "last_modified": "2026-03-04T07:02:58.480000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebooka6288b409b",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-aethermoore-qlora-sft-training",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-aethermoore-qlora-sft-training",
+      "last_modified": "2026-03-02T04:37:28.087000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE-AETHERMOORE QLoRA SFT Training",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "training-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::flatted",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/flatted",
+      "last_modified": "2026-03-02T01:16:31.767000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "flatted",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "uncategorized"
+        },
+        {
+          "type": "recommendation",
+          "target": "review"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-aethermoore-dual-lattice-pqc",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-aethermoore-dual-lattice-pqc",
+      "last_modified": "2026-03-02T01:14:23.007000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE_AETHERMOORE_Dual_Lattice_PQC",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "research-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::copy-of-colab-scbe-test-runner",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/copy-of-colab-scbe-test-runner",
+      "last_modified": "2026-03-02T01:14:17.247000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "Copy of colab_scbe_test_runner",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::copy-of-spiralverse-protocol-ai-training-data-ge",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/copy-of-spiralverse-protocol-ai-training-data-ge",
+      "last_modified": "2026-03-02T01:14:15.697000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "Copy of Spiralverse Protocol - AI Training Data Ge",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::aethertech",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/aethertech",
+      "last_modified": "2026-03-02T01:14:14.227000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "AetherTech",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "uncategorized"
+        },
+        {
+          "type": "recommendation",
+          "target": "review"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::spiralverse-protocol-ai-training-data-generator",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/spiralverse-protocol-ai-training-data-generator",
+      "last_modified": "2026-03-02T01:14:08.077000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "Spiralverse Protocol - AI Training Data Generator",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "training-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::untitled1",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/untitled1",
+      "last_modified": "2026-03-02T01:14:00.403000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "Untitled1",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::untitled2",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/untitled2",
+      "last_modified": "2026-03-02T01:13:57.113000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "Untitled2",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook7ed99a0124",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook7ed99a0124",
+      "last_modified": "2026-03-02T01:13:56.213000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook7ed99a0124",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::untitled0",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/untitled0",
+      "last_modified": "2026-03-02T01:13:55.510000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "Untitled0",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::colab-finetune",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/colab-finetune",
+      "last_modified": "2026-03-02T01:13:41.637000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "colab_finetune",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "training-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::quasicrystal-auth",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/quasicrystal-auth",
+      "last_modified": "2026-03-02T01:13:41.537000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "quasicrystal_auth",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "research-archive"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::scbe-sft-converter",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/scbe-sft-converter",
+      "last_modified": "2026-03-02T01:13:40.800000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "SCBE_SFT_Converter",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "uncategorized"
+        },
+        {
+          "type": "recommendation",
+          "target": "review"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::untitled",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/untitled",
+      "last_modified": "2026-03-02T01:13:40.697000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "Untitled",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook03ef4723e1",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook03ef4723e1",
+      "last_modified": "2026-03-02T01:13:37.460000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook03ef4723e1",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebook5f2e9d3ade",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebook5f2e9d3ade",
+      "last_modified": "2026-03-02T01:13:37.407000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebook5f2e9d3ade",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::notebookbac0258496",
+      "type": "kaggle_run",
+      "path": "kaggle://issacizrealdavis/notebookbac0258496",
+      "last_modified": "2026-03-02T01:13:14.217000Z",
+      "status": "unknown",
+      "size_hint": "votes=0",
+      "summary": "notebookbac0258496",
+      "relations": [
+        {
+          "type": "lane",
+          "target": "junk-or-unnamed"
+        },
+        {
+          "type": "recommendation",
+          "target": "archive-then-delete-candidate"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::tooling::kernel_template",
+      "type": "kaggle_run",
+      "path": "scripts/kaggle_auto/kernel_template.py",
+      "last_modified": "2026-04-28T00:08:09.017780Z",
+      "status": "live",
+      "size_hint": "21533 bytes",
+      "summary": "kaggle automation: kernel_template",
+      "relations": [
+        {
+          "type": "tooling",
+          "target": "kaggle_auto"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::tooling::launch",
+      "type": "kaggle_run",
+      "path": "scripts/kaggle_auto/launch.py",
+      "last_modified": "2026-04-28T00:08:09.018781Z",
+      "status": "live",
+      "size_hint": "42783 bytes",
+      "summary": "kaggle automation: launch",
+      "relations": [
+        {
+          "type": "tooling",
+          "target": "kaggle_auto"
+        }
+      ]
+    },
+    {
+      "id": "kaggle_run::tooling::poll_watch",
+      "type": "kaggle_run",
+      "path": "scripts/kaggle_auto/poll_watch.py",
+      "last_modified": "2026-04-18T01:47:03.104264Z",
+      "status": "live",
+      "size_hint": "2284 bytes",
+      "summary": "kaggle automation: poll_watch",
+      "relations": [
+        {
+          "type": "tooling",
+          "target": "kaggle_auto"
+        }
+      ]
+    },
+    {
+      "id": "experiment_artifact::gcd",
+      "type": "experiment_artifact",
+      "path": "experiments/bijective_2tongue_build/gcd.exe",
+      "last_modified": "2026-04-26T06:04:47.555495Z",
+      "status": "live",
+      "size_hint": "125440 bytes",
+      "summary": "compiled bijective tongue test: gcd",
+      "relations": [
+        {
+          "type": "experiment",
+          "target": "bijective_2tongue_build"
+        }
+      ]
+    },
+    {
+      "id": "experiment_artifact::gcd_op_ru",
+      "type": "experiment_artifact",
+      "path": "experiments/bijective_2tongue_build/gcd_op_ru.exe",
+      "last_modified": "2026-04-26T07:59:12.429642Z",
+      "status": "live",
+      "size_hint": "125440 bytes",
+      "summary": "compiled bijective tongue test: gcd_op_ru",
+      "relations": [
+        {
+          "type": "experiment",
+          "target": "bijective_2tongue_build"
+        }
+      ]
+    },
+    {
+      "id": "experiment_artifact::gcd_ru",
+      "type": "experiment_artifact",
+      "path": "experiments/bijective_2tongue_build/gcd_ru.exe",
+      "last_modified": "2026-04-26T07:59:12.434657Z",
+      "status": "live",
+      "size_hint": "125440 bytes",
+      "summary": "compiled bijective tongue test: gcd_ru",
+      "relations": [
+        {
+          "type": "experiment",
+          "target": "bijective_2tongue_build"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::Qwen/Qwen2.5-7B-Instruct",
+      "type": "hf_repo",
+      "path": "hf://Qwen/Qwen2.5-7B-Instruct",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "base_model for model_config::aligned-foundations-qwen-primary",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::aligned-foundations-qwen-primary"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::chemistry-qwen-primary"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::research-bridge-qwen-primary"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::Qwen/Qwen2.5-Coder-7B-Instruct",
+      "type": "hf_repo",
+      "path": "hf://Qwen/Qwen2.5-Coder-7B-Instruct",
+      "last_modified": "2026-04-27T15:22:27.390946Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "base_model for model_config::coder-qwen-code-primaries",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::coder-qwen-code-primaries"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::coder-qwen-local"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::ollama-agentic-handler"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::Qwen/Qwen2.5-Coder-0.5B-Instruct",
+      "type": "hf_repo",
+      "path": "hf://Qwen/Qwen2.5-Coder-0.5B-Instruct",
+      "last_modified": "2026-04-27T15:22:27.390946Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "base_model for model_config::coding-agent-qwen-atomic-workflow-stage6",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-atomic-workflow-stage6"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-full-coding-system-v8"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-merged-coding-model"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-stage6-repair-v7"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::governance-security-qwen-primary"
+        },
+        {
+          "type": "referenced_by",
+          "target": "model_config::operator-agent-bus-qwen-primary"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1",
+      "type": "hf_repo",
+      "path": "hf://issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "output_repo for model_config::coding-agent-qwen-merged-coding-model",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-merged-coding-model"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::issdandavis/scbe-coding-agent-qwen-online-v2",
+      "type": "hf_repo",
+      "path": "hf://issdandavis/scbe-coding-agent-qwen-online-v2",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "uses_adapter for model_config::coding-agent-qwen-merged-coding-model",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-merged-coding-model"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::issdandavis/scbe-coding-agent-qwen-binary-geoseal-v3",
+      "type": "hf_repo",
+      "path": "hf://issdandavis/scbe-coding-agent-qwen-binary-geoseal-v3",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "uses_adapter for model_config::coding-agent-qwen-merged-coding-model",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-merged-coding-model"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::issdandavis/scbe-coding-agent-qwen-geoseal-command-v4",
+      "type": "hf_repo",
+      "path": "hf://issdandavis/scbe-coding-agent-qwen-geoseal-command-v4",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "uses_adapter for model_config::coding-agent-qwen-merged-coding-model",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-merged-coding-model"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::issdandavis/scbe-coding-agent-qwen-atomic-workflow-stage6",
+      "type": "hf_repo",
+      "path": "hf://issdandavis/scbe-coding-agent-qwen-atomic-workflow-stage6",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "uses_adapter for model_config::coding-agent-qwen-merged-coding-model",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-merged-coding-model"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::issdandavis/scbe-coding-agent-qwen-command-harmony-v5",
+      "type": "hf_repo",
+      "path": "hf://issdandavis/scbe-coding-agent-qwen-command-harmony-v5",
+      "last_modified": "2026-04-28T00:08:08.968619Z",
+      "status": "blocked",
+      "size_hint": "n/a",
+      "summary": "blocked_adapter for model_config::coding-agent-qwen-merged-coding-model",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::coding-agent-qwen-merged-coding-model"
+        }
+      ]
+    },
+    {
+      "id": "hf_repo::HuggingFaceTB/SmolLM2-1.7B-Instruct",
+      "type": "hf_repo",
+      "path": "hf://HuggingFaceTB/SmolLM2-1.7B-Instruct",
+      "last_modified": "2026-04-18T01:47:02.843795Z",
+      "status": "live",
+      "size_hint": "n/a",
+      "summary": "base_model for model_config::hf-agentic-handler",
+      "relations": [
+        {
+          "type": "referenced_by",
+          "target": "model_config::hf-agentic-handler"
+        }
+      ]
+    }
+  ]
+}
