@@ -42,6 +42,25 @@
     .dispatch button:hover { background: #2ea043; }
     .dispatch label { display: block; font-size: 0.85rem; color: #8b949e; margin: 10px 0 4px; }
 
+    .recipe-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .recipe-row button { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; margin-top: 0; }
+    .receipt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 10px 0; }
+    .receipt { background: #0d1117; border: 1px solid #21262d; border-radius: 6px; padding: 10px; }
+    .receipt .label { color: #8b949e; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .receipt .value { color: #e6edf3; font-size: 0.9rem; margin-top: 3px; overflow-wrap: anywhere; }
+    .scorecard { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    .scorecard .tag { background: #0d1117; }
+    .source-outcomes { margin-top: 12px; border-top: 1px solid #21262d; padding-top: 8px; }
+    .outcome { display: grid; grid-template-columns: 105px 1fr 72px; gap: 8px; align-items: center; padding: 7px 0; border-bottom: 1px solid #21262d; font-size: 0.82rem; }
+    .outcome:last-child { border-bottom: none; }
+    .outcome-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .outcome-score { text-align: right; color: #8b949e; }
+    .badge { display: inline-block; border-radius: 12px; padding: 2px 8px; font-size: 0.72rem; border: 1px solid #30363d; color: #8b949e; }
+    .badge.matched, .badge.matched_followed_link { border-color: #238636; color: #3fb950; }
+    .badge.below_threshold, .badge.below_threshold_followed_link { border-color: #9e6a03; color: #d29922; }
+    .badge.error, .badge.error_followed_link { border-color: #da3633; color: #ff7b72; }
+    .json-link { float: right; font-size: 0.78rem; }
+    .small-note { color: #8b949e; font-size: 0.82rem; line-height: 1.55; }
     .results-area { min-height: 100px; }
     .empty { text-align: center; padding: 2rem; color: #484f58; }
     .site-item { display: flex; gap: 12px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid #21262d; }
@@ -116,6 +135,31 @@
         <input id="d-query" placeholder="e.g. 'post-quantum cryptography 2026' or 'https://example.com'">
         <button onclick="dispatchTask()">Run Agent (via GitHub Actions)</button>
         <p id="d-status" style="font-size:0.8rem;color:#8b949e;margin-top:8px;"></p>
+        <div class="recipe-row" aria-label="Task recipes">
+          <button type="button" onclick="setRecipe('research','SCBE hyperbolic geometry AI governance')">Research demo</button>
+          <button type="button" onclick="setRecipe('monitor','https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE,https://news.ycombinator.com,https://arxiv.org/list/cs.AI/recent')">Monitor demo</button>
+          <button type="button" onclick="setRecipe('ask','What changed in the latest SCBE agent bus result?')">Ask demo</button>
+          <button type="button" onclick="setRecipe('scrape','https://aethermoore.com/SCBE-AETHERMOORE/agents.html')">Scrape demo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quality harness -->
+    <div class="section">
+      <h2>Quality Harness</h2>
+      <div class="grid">
+        <div class="card">
+          <h2>What is measured now</h2>
+          <div class="body small-note">
+            The page reads the same JSON the agents publish: task freshness, checked sources, accepted findings, confidence spread, source outcomes, errors, and output hashes. This makes weak runs visible instead of hiding them behind a clean-looking summary.
+          </div>
+        </div>
+        <div class="card">
+          <h2>Known limits</h2>
+          <div class="body small-note">
+            GitHub Actions can be delayed, scraped sites can block bots, free LLM providers can fail, and the current public page shows latest results only. Historical run comparison needs a retained run archive before it can be shown honestly.
+          </div>
+        </div>
       </div>
     </div>
 
@@ -176,6 +220,7 @@
           var task = tasks[i];
           var info = index.tasks[task];
           html += '<div class="card" id="task-' + task + '">';
+          html += '<a class="json-link" href="' + DATA_BASE + '/' + esc(info.file || '') + '" target="_blank">JSON</a>';
           html += '<h2>' + task.charAt(0).toUpperCase() + task.slice(1) + '</h2>';
           html += '<div class="meta">Updated: ' + (info.updated || '?') + '</div>';
           html += '<div class="body" id="body-' + task + '">Loading...</div>';
@@ -197,9 +242,11 @@
       try {
         var resp = await fetch(DATA_BASE + '/' + file + '?' + Date.now());
         var data = await resp.json();
+        var hash = await digestText(JSON.stringify(data));
+        var receipt = renderReceipt(task, file, data, hash);
 
         if (task === 'monitor' && data.sites) {
-          body.innerHTML = data.sites.map(function(s) {
+          body.innerHTML = receipt + data.sites.map(function(s) {
             return '<div class="site-item"><div>'
               + '<div class="site-title">' + esc(s.title || '?') + '</div>'
               + '<div class="site-stats">'
@@ -211,10 +258,7 @@
           }).join('');
 
         } else if (task === 'research') {
-          var h = '<p>' + esc(data.summary || '') + '</p>';
-          h += '<div style="margin-top:8px;font-size:0.8rem;color:#8b949e;">'
-            + (data.sources_checked || 0) + ' sources, '
-            + (data.total_words_read || 0).toLocaleString() + ' words read</div>';
+          var h = receipt + renderResearchScorecard(data) + '<p>' + esc(data.summary || '') + '</p>';
           if (data.findings) {
             h += data.findings.slice(0, 5).map(function(f) {
               return '<div class="finding">'
@@ -224,22 +268,83 @@
                 + '</div>';
             }).join('');
           }
+          h += renderSourceOutcomes(data.source_outcomes || []);
           body.innerHTML = h;
 
         } else if (task === 'ask') {
-          body.innerHTML = '<p>' + esc(data.answer || data.summary || '') + '</p>'
+          body.innerHTML = receipt + '<p>' + esc(data.answer || data.summary || '') + '</p>'
             + '<div style="margin-top:8px;">'
             + '<span class="tag blue">' + esc(data.model || data.provider || '?') + '</span>'
             + '<span class="tag">' + (data.sources || []).length + ' sources</span>'
             + '</div>';
 
         } else {
-          body.innerHTML = '<pre style="white-space:pre-wrap;font-size:0.8rem;color:#8b949e;">'
+          body.innerHTML = receipt + '<pre style="white-space:pre-wrap;font-size:0.8rem;color:#8b949e;">'
             + esc(JSON.stringify(data, null, 2).substring(0, 600)) + '</pre>';
         }
       } catch (e) {
-        body.innerHTML = '<div class="empty">Could not load data</div>';
+        body.innerHTML = '<div class="empty">Could not load data: ' + esc(e.message || e) + '</div>';
       }
+    }
+
+    function setRecipe(task, query) {
+      document.getElementById('d-task').value = task;
+      document.getElementById('d-query').value = query;
+      document.getElementById('d-status').textContent = 'Recipe loaded. Click Run Agent, then run the GitHub workflow with these values.';
+    }
+
+    function renderReceipt(task, file, data, hash) {
+      var errors = Array.isArray(data.errors) ? data.errors.length : 0;
+      var sourceCount = data.sources_checked || (data.sites ? data.sites.length : (data.sources || []).length);
+      return '<div class="receipt-grid">'
+        + receiptCell('Task', task)
+        + receiptCell('Result file', file || '?')
+        + receiptCell('Sources checked', sourceCount || 0)
+        + receiptCell('Errors', errors)
+        + receiptCell('Output hash', hash.substring(0, 16))
+        + '</div>';
+    }
+
+    function receiptCell(label, value) {
+      return '<div class="receipt"><div class="label">' + esc(label) + '</div><div class="value">' + esc(String(value)) + '</div></div>';
+    }
+
+    function renderResearchScorecard(data) {
+      var outcomes = data.source_outcomes || [];
+      var matched = outcomes.filter(function(o) { return String(o.status || '').indexOf('matched') === 0; }).length;
+      var checked = data.sources_checked || outcomes.length || 0;
+      var confidences = (data.findings || []).map(function(f) { return Number(f.confidence || 0); });
+      var spread = confidences.length ? (Math.max.apply(null, confidences) - Math.min.apply(null, confidences)) : 0;
+      var errors = (data.errors || []).length;
+      return '<div class="scorecard">'
+        + '<span class="tag green">' + matched + '/' + checked + ' accepted</span>'
+        + '<span class="tag">' + (data.total_words_read || 0).toLocaleString() + ' words</span>'
+        + '<span class="tag blue">' + Math.round(spread * 1000) / 10 + '% confidence spread</span>'
+        + '<span class="tag' + (errors ? '' : ' green') + '">' + errors + ' errors</span>'
+        + '</div>';
+    }
+
+    function renderSourceOutcomes(outcomes) {
+      if (!outcomes.length) return '';
+      return '<div class="source-outcomes"><div class="meta">Source outcomes</div>'
+        + outcomes.map(function(o) {
+          var status = esc(o.status || 'unknown');
+          return '<div class="outcome">'
+            + '<span class="badge ' + status + '">' + status.replace(/_/g, ' ') + '</span>'
+            + '<a class="outcome-title" href="' + esc(o.url || '#') + '" target="_blank">' + esc(o.title || o.url || '?') + '</a>'
+            + '<span class="outcome-score">' + Math.round(Number(o.score || 0) * 100) + '%</span>'
+            + '</div>';
+        }).join('')
+        + '</div>';
+    }
+
+    async function digestText(text) {
+      if (!window.crypto || !window.crypto.subtle) return 'hash-unavailable';
+      var bytes = new TextEncoder().encode(text);
+      var digest = await window.crypto.subtle.digest('SHA-256', bytes);
+      return Array.from(new Uint8Array(digest)).map(function(b) {
+        return b.toString(16).padStart(2, '0');
+      }).join('');
     }
 
     function esc(s) {
