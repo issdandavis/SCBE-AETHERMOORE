@@ -4,32 +4,32 @@
     {
       "source_url": "https://www.linkedin.com/posts/issac-davis-scbe-aether_github-issdandavisscbe-aethermoore-14-activity-7428824158215745536-K23N",
       "title": "SCBE-AETHERMOORE's Hyperbolic AI Safety Approach Validated | Issac Davis posted on the topic | LinkedIn",
-      "relevant_text": "SCBE-AETHERMOORE implements 4/6 quorum consensus across constraint layers.\n\nThe future of AI safety is architectural, geometric, and mathematically enforced.\n\nv3.3.0 live on GKE with ML-KEM + ML-DSA post-quantum crypto.\n\nhttps://lnkd.in/gU5TVajm\n\n#AIGovernance #HyperbolicGeometry #PostQuantum #AISafety #MachineLearning #SCBE",
+      "relevant_text": "(2025) published \"Hyperbolic Safety-Aware Vision-Language Models\" (HySAC), showing hyperbolic geometry creates natural safety boundaries in AI. Safe content maps near the origin of Poincare space; unsafe content gets pushed to the periphery.\n\nThis mirrors our approach with SCBE-AETHERMOORE's 14-layer hyperbolic constraint pipeline - Lyapunov stability on Poincare ball embeddings enforcing geometric AI governance through mathematical structure, not policy.\n\nKey parallels:\n- HySAC uses entailment cones for safety hierarchies. We use dodecahedral constraint boundaries",
       "confidence": 0.9037353242285409,
       "tags": []
     },
     {
       "source_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/wiki/Research:-Hyperbolic-Geometry-for-Exponential-AI-Safety-Boundaries",
       "title": "GitHub - issdandavis/SCBE-AETHERMOORE: Geometric AI governance and evaluation framework with a 14-layer security pipeline, semantic projection, and reproducible benchmark lanes. \u00b7 GitHub",
-      "relevant_text": "tmp_hypothesis_paths.txt\u00a0\u00a0View all filesRepository files navigationSCBE-AETHERMOORE\nAI governance through geometric cost scaling.\nThis repository is the public working tree for the SCBE-AETHERMOORE stack: a governed AI system built around hyperbolic geometry, semantic weighting, auditability, and multi-layer runtime controls.\nIt is also a large hybrid repo. There is real code here, real docs here, and real experiments here. If you treat every file as equally canonical, the repo will look noisier than it actually is",
-      "confidence": 0.9035705812383835,
+      "relevant_text": "prettierignore\u00a0\u00a0.prettierrc.prettierrc\u00a0\u00a0View all filesRepository files navigationSCBE-AETHERMOORE\nAI governance through geometric cost scaling.\nThis repository is the public working tree for the SCBE-AETHERMOORE stack: a governed AI system built around hyperbolic geometry, semantic weighting, auditability, and multi-layer runtime controls.\nIt is also a large hybrid repo. There is real code here, real docs here, and real experiments here. If you treat every file as equally canonical, the repo will look noisier than it actually is",
+      "confidence": 0.9035686773577534,
       "tags": [
-        "documentation",
         "has-tables",
+        "documentation",
         "code"
       ]
     },
     {
       "source_url": "https://aethermoore.com/research/index.html",
       "title": "SCBE Research | Benchmarks, Verification, and AI Governance Experiments",
-      "relevant_text": "Connected to Medium, GitHub Discussions, and the SCBE research domain.\n            \n            \n                \n                    Research Forum + Polly AI\n                    Post articles, join discussions, ask Polly about Sacred Tongues, hyperbolic geometry, and the 14-layer pipeline.\n                    \n                        Forum\n                        Medium\n                        GitHub\n                        Polly AI\n                    \n                \n                \n                    Latest AI Safety Research",
+      "relevant_text": "Articles, discussions, and Polly AI assistant. Connected to Medium, GitHub Discussions, and the SCBE research domain.\n            \n            \n                \n                    Research Forum + Polly AI\n                    Post articles, join discussions, ask Polly about Sacred Tongues, hyperbolic geometry, and the 14-layer pipeline.\n                    \n                        Forum\n                        Medium\n                        GitHub\n                        Polly AI\n                    \n                \n                \n                    Latest AI Safety Research",
       "confidence": 0.8951782378479595,
       "tags": []
     }
   ],
   "sources_checked": 5,
   "total_words_read": 3944,
-  "duration_seconds": 7.8203012300000125,
+  "duration_seconds": 7.880171580000024,
   "summary": "Found 3 relevant sources for 'SCBE hyperbolic geometry AI governance'. Top result: SCBE-AETHERMOORE's Hyperbolic AI Safety Approach Validated | Issac Davis posted on the topic | LinkedIn (90% confidence). Read 3,944 words across 5 pages.",
   "errors": [],
   "source_outcomes": [
