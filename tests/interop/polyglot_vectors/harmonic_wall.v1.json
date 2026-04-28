@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "metric": "harmonic_wall_phi",
+  "formula": "H(d, pd) = 1 / (1 + phi * d + 2 * pd), with phi = (1 + sqrt(5)) / 2",
+  "phi": 1.618033988749895,
+  "tolerance": "abs <= 1e-12",
+  "notes": "Phi-weighted form, matching the submitted MATHBAC abstract (DARPA-PA-26-05-MATHBAC-PA-010, 2026-04-27). The legacy unweighted form 1/(1+d+2*pd) remains exported as harmonicScale for back-compat; the phi-weighted form is exported as harmonicScalePhi.",
+  "cases": [
+    {
+      "id": "simple_2d",
+      "d": 0.6582194273693331,
+      "pd": 0.0,
+      "expected": 0.4842564814668107
+    },
+    {
+      "id": "origin_to_axis",
+      "d": 1.0986122886681096,
+      "pd": 0.1,
+      "expected": 0.33584184539046563
+    },
+    {
+      "id": "symmetric_opposites",
+      "d": 3.5254943480781717,
+      "pd": 0.5,
+      "expected": 0.1297964715131346
+    },
+    {
+      "id": "simple_3d",
+      "d": 0.3727792085143391,
+      "pd": 0.25,
+      "expected": 0.47547286770628755
+    },
+    {
+      "id": "six_dimensional",
+      "d": 0.2623089007582853,
+      "pd": 1.0,
+      "expected": 0.29201985228115324
+    }
+  ]
+}

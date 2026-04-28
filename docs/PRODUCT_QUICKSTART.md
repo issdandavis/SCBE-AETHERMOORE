@@ -39,6 +39,28 @@ npm run aetherbrowser:service:start
 npm run aetherbrowser:service:verify
 ```
 
+## Profile-Driven Launch (Phase 0/1 Contract)
+
+The restructure lane now uses one command family with explicit profile blast radius.
+
+```powershell
+npm run scbe:launch:dev-min
+```
+
+Available profiles:
+
+- `npm run scbe:launch:dev-min`
+- `npm run scbe:launch:browser`
+- `npm run scbe:launch:training`
+- `npm run scbe:launch:contracts`
+- `npm run scbe:launch:full-local`
+
+Run the stabilization gates before path moves:
+
+```powershell
+npm run scbe:phase01:gates
+```
+
 What those do:
 
 - `aetherbrowser:service:start`

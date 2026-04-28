@@ -32,8 +32,160 @@ TELEMETRY_DIM = 9
 # Default weighting and scaling for telemetry block.
 # Last two (radial_norm, energy_harmonic) are derived cache slots and default to zero weight
 # to avoid double-counting geometry.
-DEFAULT_TELEMETRY_WEIGHTS = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0], dtype=float)
+DEFAULT_TELEMETRY_WEIGHTS = np.array(
+    [1.0, 1.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0], dtype=float
+)
 DEFAULT_TELEMETRY_SCALES = np.ones(TELEMETRY_DIM, dtype=float)
+
+STATE21_DIMENSION_ROUTES = (
+    {
+        "d": 0,
+        "name": "u0_tongue_poincare",
+        "block": "u",
+        "producer": "Layer 4/5 tongue geometry",
+        "consumer": "hyperbolic metric, trust routing",
+    },
+    {
+        "d": 1,
+        "name": "u1_tongue_poincare",
+        "block": "u",
+        "producer": "Layer 4/5 tongue geometry",
+        "consumer": "hyperbolic metric, trust routing",
+    },
+    {
+        "d": 2,
+        "name": "u2_tongue_poincare",
+        "block": "u",
+        "producer": "Layer 4/5 tongue geometry",
+        "consumer": "hyperbolic metric, trust routing",
+    },
+    {
+        "d": 3,
+        "name": "u3_tongue_poincare",
+        "block": "u",
+        "producer": "Layer 4/5 tongue geometry",
+        "consumer": "hyperbolic metric, trust routing",
+    },
+    {
+        "d": 4,
+        "name": "u4_tongue_poincare",
+        "block": "u",
+        "producer": "Layer 4/5 tongue geometry",
+        "consumer": "hyperbolic metric, trust routing",
+    },
+    {
+        "d": 5,
+        "name": "u5_tongue_poincare",
+        "block": "u",
+        "producer": "Layer 4/5 tongue geometry",
+        "consumer": "hyperbolic metric, trust routing",
+    },
+    {
+        "d": 6,
+        "name": "theta0_tongue_phase",
+        "block": "theta",
+        "producer": "Layer 6/7 phase rotor",
+        "consumer": "torus metric, phase routing",
+    },
+    {
+        "d": 7,
+        "name": "theta1_tongue_phase",
+        "block": "theta",
+        "producer": "Layer 6/7 phase rotor",
+        "consumer": "torus metric, phase routing",
+    },
+    {
+        "d": 8,
+        "name": "theta2_tongue_phase",
+        "block": "theta",
+        "producer": "Layer 6/7 phase rotor",
+        "consumer": "torus metric, phase routing",
+    },
+    {
+        "d": 9,
+        "name": "theta3_tongue_phase",
+        "block": "theta",
+        "producer": "Layer 6/7 phase rotor",
+        "consumer": "torus metric, phase routing",
+    },
+    {
+        "d": 10,
+        "name": "theta4_tongue_phase",
+        "block": "theta",
+        "producer": "Layer 6/7 phase rotor",
+        "consumer": "torus metric, phase routing",
+    },
+    {
+        "d": 11,
+        "name": "theta5_tongue_phase",
+        "block": "theta",
+        "producer": "Layer 6/7 phase rotor",
+        "consumer": "torus metric, phase routing",
+    },
+    {
+        "d": 12,
+        "name": "flux_participation",
+        "block": "telemetry",
+        "producer": "Layer 13 risk/triad delta",
+        "consumer": "telemetry metric, audit routing",
+    },
+    {
+        "d": 13,
+        "name": "coherence_spectral",
+        "block": "telemetry",
+        "producer": "Layer 9 spectral coherence",
+        "consumer": "telemetry metric, audit routing",
+    },
+    {
+        "d": 14,
+        "name": "coherence_spin",
+        "block": "telemetry",
+        "producer": "Layer 10 spin coherence",
+        "consumer": "telemetry metric, audit routing",
+    },
+    {
+        "d": 15,
+        "name": "coherence_triadic",
+        "block": "telemetry",
+        "producer": "Layer 11 triadic coherence",
+        "consumer": "telemetry metric, audit routing",
+    },
+    {
+        "d": 16,
+        "name": "risk_aggregate",
+        "block": "telemetry",
+        "producer": "Layer 13 risk aggregation",
+        "consumer": "governance logger, audit routing",
+    },
+    {
+        "d": 17,
+        "name": "entropy_density",
+        "block": "telemetry",
+        "producer": "Layer 12/13 entropy channel",
+        "consumer": "telemetry metric, audit routing",
+    },
+    {
+        "d": 18,
+        "name": "stabilization",
+        "block": "telemetry",
+        "producer": "Layer 12/13 stabilization channel",
+        "consumer": "telemetry metric, audit routing",
+    },
+    {
+        "d": 19,
+        "name": "radial_norm",
+        "block": "derived_cache",
+        "producer": "compute_radial_norm(u)",
+        "consumer": "validation cache, audit routing",
+    },
+    {
+        "d": 20,
+        "name": "energy_harmonic",
+        "block": "derived_cache",
+        "producer": "compute_energy_harmonic(u)",
+        "consumer": "validation cache, audit routing",
+    },
+)
 
 
 @dataclass(frozen=True)
@@ -95,7 +247,9 @@ def _wrap_angle_delta(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return np.arctan2(np.sin(a - b), np.cos(a - b))
 
 
-def hyperbolic_distance_poincare(u: np.ndarray, v: np.ndarray, eps: float = 1e-12) -> float:
+def hyperbolic_distance_poincare(
+    u: np.ndarray, v: np.ndarray, eps: float = 1e-12
+) -> float:
     uu = float(np.dot(u, u))
     vv = float(np.dot(v, v))
     if uu >= 1.0 or vv >= 1.0:
@@ -180,7 +334,11 @@ def product_metric_distance_v1(
     sb = parse_state21_v1(b)
 
     w = np.asarray(
-        (telemetry_weights if telemetry_weights is not None else DEFAULT_TELEMETRY_WEIGHTS),
+        (
+            telemetry_weights
+            if telemetry_weights is not None
+            else DEFAULT_TELEMETRY_WEIGHTS
+        ),
         dtype=float,
     )
     s = np.asarray(

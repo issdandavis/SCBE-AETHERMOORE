@@ -4,6 +4,8 @@ import numpy as np
 import pytest
 
 from src.harmonic.state21_product_metric import (
+    STATE21_DIM,
+    STATE21_DIMENSION_ROUTES,
     State21Error,
     compute_energy_harmonic,
     compute_radial_norm,
@@ -89,3 +91,16 @@ def test_torus_wrap_small_across_2pi_boundary():
     d = product_metric_distance_v1(a, b)
     # Wrapped delta should be ~0.02, not ~2*pi.
     assert d < 0.2
+
+
+def test_every_state21_dimension_has_name_and_route():
+    assert len(STATE21_DIMENSION_ROUTES) == STATE21_DIM
+    assert [entry["d"] for entry in STATE21_DIMENSION_ROUTES] == list(
+        range(STATE21_DIM)
+    )
+
+    for entry in STATE21_DIMENSION_ROUTES:
+        assert entry["name"]
+        assert entry["block"] in {"u", "theta", "telemetry", "derived_cache"}
+        assert entry["producer"]
+        assert entry["consumer"]

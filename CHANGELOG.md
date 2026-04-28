@@ -1,5 +1,16 @@
 # SCBE Production Pack Changelog
 
+## [Unreleased] - 2026-04-27
+
+### Added
+
+- **MATHBAC CDPTI-Internal fixture set** (`tests/interop/polyglot_vectors/`): four new v1.0.0 fixtures shipped — `mobius_addition`, `exponential_map`, `logarithmic_map`, `harmonic_wall` — each with 5 deterministic cases. Cross-validated by `tests/cross-language/polyglot-hyperbolic-ops.test.ts` (vitest) and `tests/interop/test_polyglot_hyperbolic_ops.py` (pytest); both runners pass at 12-decimal tolerance. Closes the §3.3 spot-check item on the MATHBAC proposer-metrics open follow-ups list.
+- **`harmonicScalePhi(d, pd)`** in `packages/kernel/src/harmonicScaling.ts`: φ-weighted L12 form `H(d, pd) = 1/(1 + φ·d_H + 2·pd)` matching the locked MATHBAC abstract DARPA-PA-26-05-MATHBAC-PA-010. Legacy `harmonicScale` (unweighted) is preserved unchanged for back-compat.
+
+### Fixed
+
+- **`exponentialMap` and `logarithmicMap`** in `src/harmonic/hyperbolic.ts`: replaced `1 - pNormSq + EPSILON` with `Math.max(EPSILON, 1 - pNormSq)` so interior points compute λ_p exactly instead of accumulating a 1e-10 drift. Boundary safety (pNormSq → 1) is unchanged. Restores 12-decimal cross-language parity with the Python reference; all 1789 harmonic tests still pass.
+
 ## [4.0.2] - 2026-04-24
 
 ### Changed

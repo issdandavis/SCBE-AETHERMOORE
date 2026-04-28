@@ -7,7 +7,9 @@
  * @since 2026-02-07
  *
  * Core type definitions for the Multi-Vectored Quasi-Space Architecture.
- * Defines the 21D unified brain state manifold and supporting types.
+ * Defines the TypeScript application-facing 21D brain state facade and
+ * supporting types. Canonical metric/audit routing uses state21_v1 in
+ * src/harmonic/state21_product_metric.py.
  *
  * Dimensions:
  *   SCBE Context (6D): device, location, network, behavior, time, intent
@@ -36,9 +38,10 @@ export const POINCARE_MAX_NORM = 1 - 1e-8;
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Named block index ranges for the 21D state vector.
+ * Named block index ranges for this TypeScript application vector.
  * Provides a secondary "conservation law" view of the same vector
- * produced by UnifiedBrainState.toVector().
+ * produced by UnifiedBrainState.toVector(). Convert to state21_v1 before
+ * product-metric or audit routing.
  *
  * BLOCK_HYPER   [0..5]   — Poincare ball coordinates (scbeContext)
  * BLOCK_PHASE   [6..11]  — Tongue phase angles, Z_6 quantized (navigation)

@@ -48,6 +48,7 @@ import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass, field
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -229,7 +230,9 @@ def _write_stdout_safe(text: str) -> None:
         sys.stdout.buffer.write(text.encode(encoding, errors="replace"))
         sys.stdout.buffer.write(b"\n")
     else:  # pragma: no cover - defensive
-        sys.stdout.write(text.encode(encoding, errors="replace").decode(encoding, errors="replace"))
+        sys.stdout.write(
+            text.encode(encoding, errors="replace").decode(encoding, errors="replace")
+        )
         sys.stdout.write("\n")
 
 
@@ -279,7 +282,9 @@ def syntax_check(tongue: str, code: str, timeout: float = 5.0) -> Tuple[bool, st
 
     Uses real compilers when available, falls back to structural brace-balance check.
     """
-    compiler_map: Dict[str, Tuple[Optional[str], Optional[List[str]], Optional[str]]] = {
+    compiler_map: Dict[
+        str, Tuple[Optional[str], Optional[List[str]], Optional[str]]
+    ] = {
         "RU": (
             shutil.which("rustc"),
             ["rustc", "--edition=2021", "--crate-type=lib", "-"],
@@ -300,9 +305,18 @@ def syntax_check(tongue: str, code: str, timeout: float = 5.0) -> Tuple[bool, st
         opens = code.count("(") + code.count("{") + code.count("[")
         closes = code.count(")") + code.count("}") + code.count("]")
         balanced = opens == closes
-        return (balanced, "structural-ok" if balanced else f"unbalanced: {opens} opens vs {closes} closes")
+        return (
+            balanced,
+            (
+                "structural-ok"
+                if balanced
+                else f"unbalanced: {opens} opens vs {closes} closes"
+            ),
+        )
     try:
-        proc = subprocess.run(argv, input=wrapper, capture_output=True, text=True, timeout=timeout)
+        proc = subprocess.run(
+            argv, input=wrapper, capture_output=True, text=True, timeout=timeout
+        )
         return (proc.returncode == 0, proc.stderr.strip() or "ok")
     except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
         return (False, str(exc))
@@ -379,7 +393,9 @@ def run_tongue_call(
         import tempfile
 
         suffix = ".go" if tongue == "GO" else ".zig"
-        fd, tmp_name = tempfile.mkstemp(suffix=suffix, prefix=f"geoseal_{tongue.lower()}_")
+        fd, tmp_name = tempfile.mkstemp(
+            suffix=suffix, prefix=f"geoseal_{tongue.lower()}_"
+        )
         tmp_path = Path(tmp_name)
         with open(fd, "w", encoding="utf-8") as fh:
             fh.write(wrapped)
@@ -431,7 +447,9 @@ def swarm_dispatch(
         outputs = sorted({c.stdout for c in successful if c.stdout})
         if len(outputs) == 1:
             result.quorum_ok = True
-            result.consensus_hash = hashlib.sha256(outputs[0].encode("utf-8")).hexdigest()
+            result.consensus_hash = hashlib.sha256(
+                outputs[0].encode("utf-8")
+            ).hexdigest()
         elif len(outputs) > 1:
             tally: Dict[str, int] = {}
             for c in successful:
@@ -500,19 +518,33 @@ def tongue_token_digest(tongue: str, text: str) -> Dict[str, object]:
     """
     code = (tongue or "").upper()
     if not code:
-        return {"tongue": None, "lang": None, "n_tokens": 0, "sha256": None, "skipped": "empty_tongue"}
+        return {
+            "tongue": None,
+            "lang": None,
+            "n_tokens": 0,
+            "sha256": None,
+            "skipped": "empty_tongue",
+        }
     if code not in ALL_TONGUE_NAMES and code not in TONGUE_CODE_MAP:
-        return {"tongue": code, "lang": None, "n_tokens": 0, "sha256": None, "skipped": "unknown_tongue"}
+        return {
+            "tongue": code,
+            "lang": None,
+            "n_tokens": 0,
+            "sha256": None,
+            "skipped": "unknown_tongue",
+        }
     transport = TONGUE_CODE_MAP.get(code, code.lower())
     payload = (text or "").encode("utf-8", errors="replace")
     try:
         tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, payload)
+        decoded = SACRED_TONGUE_TOKENIZER.decode_tokens(transport, tokens)
     except Exception as exc:  # pragma: no cover - defensive, tokenizer is total
         return {
             "tongue": code,
             "lang": ALL_LANG_MAP.get(code),
             "n_tokens": 0,
             "sha256": None,
+            "roundtrip_ok": False,
             "skipped": f"encode_error:{exc.__class__.__name__}",
         }
     joined = " ".join(tokens).encode("utf-8")
@@ -522,6 +554,66 @@ def tongue_token_digest(tongue: str, text: str) -> Dict[str, object]:
         "lang": ALL_LANG_MAP.get(code),
         "n_tokens": len(tokens),
         "sha256": digest,
+        "roundtrip_ok": decoded == payload,
+    }
+
+
+def _build_operator_route_packet(
+    semantic_ir: Optional[Dict[str, Any]], *, preferred_provider: Optional[str] = None
+) -> Optional[Dict[str, Any]]:
+    """Build blocker-aware substitute-route metadata for lexicon operators."""
+    if not semantic_ir:
+        return None
+    family = semantic_ir.get("operator_family") or {}
+    op_name = semantic_ir.get("op")
+    if not family or not op_name:
+        return None
+
+    primary = family.get("primary_route") or {}
+    primary_tongue = str(primary.get("tongue") or "")
+    fallback_routes = []
+    for route in family.get("fallback_routes", []):
+        tongue = str(route.get("tongue") or "")
+        score = 0.0
+        if tongue:
+            runtime_available = _runner_for(tongue) is not None
+            score += 1.0 if runtime_available else 0.25
+            score += 1.0 / max(TONGUE_PHI_WEIGHTS.get(tongue, 1.0), 0.1)
+            if preferred_provider:
+                score += 0.1
+            fallback_routes.append(
+                {
+                    **route,
+                    "runtime_available": runtime_available,
+                    "estimated_efficiency_score": round(score, 4),
+                }
+            )
+    fallback_routes.sort(
+        key=lambda item: (
+            not bool(item["runtime_available"]),
+            -float(item["estimated_efficiency_score"]),
+            item["tongue"],
+        )
+    )
+    witness_routes = []
+    for witness in family.get("witnesses", []):
+        tongue = str(witness.get("tongue") or "")
+        runtime_available = _runner_for(tongue) is not None
+        witness_routes.append({**witness, "runtime_available": runtime_available})
+    return {
+        "schema": "geoseal_operator_family_v1",
+        "op": op_name,
+        "equivalence_group": family.get("equivalence_group"),
+        "primary_route": {
+            **primary,
+            "runtime_available": _runner_for(primary_tongue) is not None
+            if primary_tongue
+            else False,
+        },
+        "witness_routes": witness_routes,
+        "fallback_routes": fallback_routes[:12],
+        "blockers": family.get("blockers", []),
+        "conservation_rule": family.get("conservation_rule"),
     }
 
 
@@ -550,6 +642,20 @@ def cmd_xlate_cmd(args: argparse.Namespace) -> int:
     decoded = SACRED_TONGUE_TOKENIZER.decode_tokens(src, tokens)
     out_tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(dst, decoded)
     print(" ".join(out_tokens))
+    return 0
+
+
+def cmd_matrix(args: argparse.Namespace) -> int:
+    matrix = build_stisa_code_matrix()
+    if args.json:
+        print(json.dumps(matrix))
+    else:
+        print(
+            f"STISA matrix {matrix['schema']} rows={matrix['row_count']} "
+            f"sha256={str(matrix['sha256'])[:16]}"
+        )
+        for row in matrix["rows"][: int(args.limit)]:
+            print(f"{row['tongue']} {row['hex']} {row['binary']} {row['token']}")
     return 0
 
 
@@ -613,7 +719,11 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 def cmd_swarm(args: argparse.Namespace) -> int:
     kv = _parse_kv_args(args.args)
-    tongues = [t.strip().upper() for t in args.tongues.split(",") if t.strip()] if args.tongues else list(TONGUE_NAMES)
+    tongues = (
+        [t.strip().upper() for t in args.tongues.split(",") if t.strip()]
+        if args.tongues
+        else list(TONGUE_NAMES)
+    )
     unknown = [t for t in tongues if t not in ALL_TONGUE_NAMES]
     if unknown:
         print(f"unknown tongues: {unknown}", file=sys.stderr)
@@ -632,7 +742,9 @@ def cmd_swarm(args: argparse.Namespace) -> int:
         status = "ok" if (call.ran and call.returncode == 0) else (call.error or "skip")
         out = call.stdout or ""
         print(f"  {call.tongue} ({call.language:>10}): {status:<20} {out}")
-    print(f"quorum_ok={result.quorum_ok}  consensus={result.consensus_hash[:12] or '-'}")
+    print(
+        f"quorum_ok={result.quorum_ok}  consensus={result.consensus_hash[:12] or '-'}"
+    )
 
     # Per-call sacred-tongue boundary digests for downstream parity training.
     # Written as a single 'swarm_tokens' summary record so we don't disturb the
@@ -674,8 +786,12 @@ def cmd_seal(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
     tier = getattr(args, "tier", "ALLOW")
-    seal = compute_seal(args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier)
-    print(f"tongue={tongue} phase={ALL_TONGUE_PHASES.get(tongue, 0.0):.6f} phi_cost={phi_cost:.4f} tier={tier}")
+    seal = compute_seal(
+        args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier
+    )
+    print(
+        f"tongue={tongue} phase={ALL_TONGUE_PHASES.get(tongue, 0.0):.6f} phi_cost={phi_cost:.4f} tier={tier}"
+    )
     print(f"seal={seal}")
     return 0
 
@@ -684,7 +800,9 @@ def cmd_verify(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
     tier = getattr(args, "tier", "ALLOW")
-    ok = verify_seal(args.seal, args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier)
+    ok = verify_seal(
+        args.seal, args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier
+    )
     print("OK" if ok else "MISMATCH")
     return 0 if ok else 1
 
@@ -722,7 +840,9 @@ def cmd_agent(args: argparse.Namespace) -> int:
     semantic_ir = infer_semantic_ir(task, force_tongue=force_tongue)
     if verbose:
         kw = f" (keyword: {route.override_keyword!r})" if route.override_keyword else ""
-        print(f"[route] {route.full_name} ({route.tongue}) -> {route.language} | conf={route.confidence:.2f}{kw}")
+        print(
+            f"[route] {route.full_name} ({route.tongue}) -> {route.language} | conf={route.confidence:.2f}{kw}"
+        )
         print(f"[route] trits: {route.trit_scores}")
         print(f"[ir] {semantic_ir.signature}")
 
@@ -734,7 +854,10 @@ def cmd_agent(args: argparse.Namespace) -> int:
     trust = phi_trust_score(phi_cost)
 
     if tier == "DENY":
-        print(f"[governance] DENY — phi_cost={phi_cost:.4f} exceeds threshold", file=sys.stderr)
+        print(
+            f"[governance] DENY — phi_cost={phi_cost:.4f} exceeds threshold",
+            file=sys.stderr,
+        )
         return 3
 
     # --max-tier gate: refuse anything more severe than the cap.
@@ -775,7 +898,9 @@ def cmd_agent(args: argparse.Namespace) -> int:
         while not ok and result.provider != "none":
             forbidden.append(result.provider)
             if verbose:
-                print(f"[escalate] syntax_check failed on {result.provider}; retrying with forbid={forbidden}")
+                print(
+                    f"[escalate] syntax_check failed on {result.provider}; retrying with forbid={forbidden}"
+                )
             result = generate(
                 task,
                 language=route.language,
@@ -801,7 +926,9 @@ def cmd_agent(args: argparse.Namespace) -> int:
 
     if verbose:
         print(f"[generate] provider={result.provider} model={result.model}")
-        print(f"[generate] prompt_tokens={result.prompt_tokens} completion_tokens={result.completion_tokens}")
+        print(
+            f"[generate] prompt_tokens={result.prompt_tokens} completion_tokens={result.completion_tokens}"
+        )
         if result.attempted_providers:
             chain = " -> ".join(
                 f"{a['provider']}({'ok' if a['success'] else (a.get('skipped_reason') or 'err')})"
@@ -813,7 +940,9 @@ def cmd_agent(args: argparse.Namespace) -> int:
     seal = compute_seal("agent", route.tongue, result.code, task, phi_cost, tier)
 
     # 5. Print output
-    print(f"# tongue={route.full_name} ({route.tongue}) lang={route.language} tier={tier} seal={seal[:16]}...")
+    print(
+        f"# tongue={route.full_name} ({route.tongue}) lang={route.language} tier={tier} seal={seal[:16]}..."
+    )
     _write_stdout_safe(result.code)
 
     # 6. SFT log — write as governance record to .scbe/geoseal_calls.jsonl
@@ -830,6 +959,9 @@ def cmd_agent(args: argparse.Namespace) -> int:
             "override_keyword": route.override_keyword,
             "trit_scores": route.trit_scores,
             "semantic_ir": semantic_ir.to_dict(),
+            "operator_family": _build_operator_route_packet(
+                semantic_ir.to_dict(), preferred_provider=result.provider
+            ),
             "phi_cost": phi_cost,
             "tier": tier,
             "trust_score": trust,
@@ -893,7 +1025,9 @@ def cmd_arc(args: argparse.Namespace) -> int:
     verbose = args.verbose
 
     if verbose:
-        print(f"[arc] task_id={task.task_id}  train={len(task.train)}  test_inputs={len(task.test_inputs)}")
+        print(
+            f"[arc] task_id={task.task_id}  train={len(task.train)}  test_inputs={len(task.test_inputs)}"
+        )
 
     # Synthesize program
     solution = synthesize_program(task)
@@ -967,7 +1101,9 @@ def cmd_arc(args: argparse.Namespace) -> int:
         ledger.parent.mkdir(parents=True, exist_ok=True)
         # Boundary digests: input is the task identity + family seed; output is the
         # serialized synthesized program (deterministic, semantic-preserving).
-        arc_in_payload = json.dumps({"task_id": task.task_id, "n_train": total}, sort_keys=True)
+        arc_in_payload = json.dumps(
+            {"task_id": task.task_id, "n_train": total}, sort_keys=True
+        )
         arc_out_payload = json.dumps(
             {
                 "family": solution.family,
@@ -1003,7 +1139,10 @@ def cmd_cursor(args: argparse.Namespace) -> int:
     """Run Cursor Agent as a bounded repo worker from the GeoSeal shell."""
     cursor_agent = _cursor_agent_path()
     if cursor_agent is None:
-        print("cursor agent not found; install Cursor Agent or set CURSOR_AGENT_CMD", file=sys.stderr)
+        print(
+            "cursor agent not found; install Cursor Agent or set CURSOR_AGENT_CMD",
+            file=sys.stderr,
+        )
         return 2
 
     workspace = Path(args.workspace).resolve()
@@ -1106,9 +1245,150 @@ class WorkflowStepResult:
     duration_ms: float = 0.0
     tongue_in: Optional[Dict[str, object]] = None
     tongue_out: Optional[Dict[str, object]] = None
+    harness: Optional[Dict[str, object]] = None
+    semantic_ir: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
+
+
+def binary_hex_addition(left: int, right: int, *, width: int = 8) -> Dict[str, object]:
+    """Return deterministic binary and hexadecimal addition evidence."""
+    if width <= 0:
+        raise ValueError("width must be positive")
+    mask = (1 << width) - 1
+    total = int(left) + int(right)
+    return {
+        "left": int(left),
+        "right": int(right),
+        "sum": total & mask,
+        "carry": total >> width,
+        "width": width,
+        "binary": {
+            "left": format(int(left) & mask, f"0{width}b"),
+            "right": format(int(right) & mask, f"0{width}b"),
+            "sum": format(total & mask, f"0{width}b"),
+        },
+        "hex": {
+            "left": f"0x{int(left) & mask:0{max(1, width // 4)}X}",
+            "right": f"0x{int(right) & mask:0{max(1, width // 4)}X}",
+            "sum": f"0x{total & mask:0{max(1, width // 4)}X}",
+        },
+    }
+
+
+def _stisa_feature_vector(
+    token: str, tongue: str, byte_value: int
+) -> Dict[str, object]:
+    from python.scbe.atomic_tokenization import map_token_to_atomic_state
+
+    state = map_token_to_atomic_state(token, language="stisa", context_class="operator")
+    return {
+        "Z_proxy": state.element.Z,
+        "group_proxy": state.element.group,
+        "period_proxy": state.element.period,
+        "valence_proxy": state.element.valence,
+        "chi_proxy": state.element.electronegativity,
+        "band_flag": state.band_flag,
+        "tongue_id": list(TONGUE_PHASES).index(tongue),
+        "reserved": byte_value,
+        "semantic_class": state.semantic_class,
+        "tau": state.tau.as_dict(),
+        "negative_state": state.negative_state,
+        "dual_state": state.dual_state,
+    }
+
+
+@lru_cache(maxsize=1)
+def build_stisa_code_matrix() -> Dict[str, object]:
+    """Build the full STISA 6-tongue x 256-opcode matrix."""
+    from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+
+    rows: List[Dict[str, object]] = []
+    for tongue_index, tongue in enumerate(TONGUE_PHASES):
+        tongue_code = tongue.lower()
+        tokens = SACRED_TONGUE_TOKENIZER.byte_to_token[tongue_code]
+        for byte_value, token in enumerate(tokens):
+            hi = (byte_value >> 4) & 0x0F
+            lo = byte_value & 0x0F
+            rows.append(
+                {
+                    "tongue": tongue,
+                    "tongue_index": tongue_index,
+                    "byte": byte_value,
+                    "hex": f"0x{byte_value:02X}",
+                    "binary": format(byte_value, "08b"),
+                    "high_nibble": hi,
+                    "low_nibble": lo,
+                    "token": token,
+                    "atomic_feature_vector": _stisa_feature_vector(
+                        token, tongue, byte_value
+                    ),
+                    "nibble_addition": binary_hex_addition(hi, lo, width=4),
+                }
+            )
+
+    matrix = {
+        "schema": "stisa_code_matrix_v1",
+        "description": "Six Sacred Tongues x 256 byte opcodes with bijective token and atomic feature rows.",
+        "tongues": list(TONGUE_PHASES),
+        "row_count": len(rows),
+        "rows": rows,
+    }
+    matrix["sha256"] = hashlib.sha256(
+        json.dumps(matrix, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return matrix
+
+
+def build_geoseal_harness_packet(
+    *,
+    workflow: str,
+    step_id: str,
+    result: WorkflowStepResult,
+    payload: str,
+    include_code_matrix: bool = False,
+    semantic_ir: Optional[Dict[str, Any]] = None,
+    preferred_provider: Optional[str] = None,
+) -> Dict[str, object]:
+    """Attach harness evidence to a GeoSeal workflow step."""
+    payload_bytes = payload.encode("utf-8")
+    digest_bytes = hashlib.sha256(payload_bytes).digest()
+    matrix = build_stisa_code_matrix()
+    packet: Dict[str, object] = {
+        "schema": "geoseal_agent_harness_v1",
+        "workflow": workflow,
+        "step_id": step_id,
+        "geoseal": {
+            "seal": result.seal,
+            "tongue": result.tongue,
+            "tier": result.tier,
+            "phi_cost": result.phi_cost,
+        },
+        "bijective_tokenizer": {
+            "source": "src.crypto.sacred_tongues",
+            "tongue_in": result.tongue_in,
+            "tongue_out": result.tongue_out,
+        },
+        "operator_family": _build_operator_route_packet(
+            semantic_ir, preferred_provider=preferred_provider
+        ),
+        "stisa_code_matrix": {
+            "schema": matrix["schema"],
+            "sha256": matrix["sha256"],
+            "row_count": matrix["row_count"],
+            "tongues": matrix["tongues"],
+        },
+        "binary_hex_addition": binary_hex_addition(
+            digest_bytes[0], digest_bytes[1], width=8
+        ),
+    }
+    if include_code_matrix:
+        packet["stisa_code_matrix"]["rows"] = matrix["rows"]  # type: ignore[index]
+    packet["sha256"] = hashlib.sha256(
+        json.dumps(packet, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return packet
 
 
 def load_workflow_spec(path: Path) -> Dict[str, Any]:
@@ -1162,7 +1442,9 @@ def validate_workflow_spec(spec: Dict[str, Any]) -> List[str]:
             seen_ids.add(sid)
         op = step.get("op")
         if op not in WORKFLOW_OP_KINDS:
-            errors.append(f"{prefix}({sid}): op must be one of {sorted(WORKFLOW_OP_KINDS)}, got {op!r}")
+            errors.append(
+                f"{prefix}({sid}): op must be one of {sorted(WORKFLOW_OP_KINDS)}, got {op!r}"
+            )
         if "task" not in step:
             errors.append(f"{prefix}({sid}): missing required field 'task'")
         tongue = step.get("tongue")
@@ -1181,7 +1463,9 @@ def validate_workflow_spec(spec: Dict[str, Any]) -> List[str]:
             else:
                 for fp in forbid:
                     if fp not in WORKFLOW_VALID_PROVIDERS:
-                        errors.append(f"{prefix}({sid}): forbid_provider entry invalid {fp!r}")
+                        errors.append(
+                            f"{prefix}({sid}): forbid_provider entry invalid {fp!r}"
+                        )
     return errors
 
 
@@ -1218,7 +1502,9 @@ def substitute_workflow_refs(
     return _WORKFLOW_REF_PATTERN.sub(_resolve, template)
 
 
-def _resolve_step_setting(step: Dict[str, Any], spec: Dict[str, Any], key: str, default: Any = None) -> Any:
+def _resolve_step_setting(
+    step: Dict[str, Any], spec: Dict[str, Any], key: str, default: Any = None
+) -> Any:
     if key in step and step[key] is not None:
         return step[key]
     default_key = f"default_{key}"
@@ -1238,6 +1524,7 @@ def _run_workflow_step_agent(
     try:
         from src.coding_spine.router import route_task
         from src.coding_spine.polly_client import generate
+        from src.coding_spine.shared_ir import infer_semantic_ir
     except ImportError as exc:  # pragma: no cover - import guard
         return WorkflowStepResult(
             step_id=step["id"],
@@ -1260,14 +1547,19 @@ def _run_workflow_step_agent(
         budget_tokens = int(budget_tokens)
     max_tier = _resolve_step_setting(step, spec, "max_tier")
     small_first = bool(_resolve_step_setting(step, spec, "small_first", default=False))
-    forbid_provider = list(_resolve_step_setting(step, spec, "forbid_provider", default=[]) or [])
+    forbid_provider = list(
+        _resolve_step_setting(step, spec, "forbid_provider", default=[]) or []
+    )
     chi = float(_resolve_step_setting(step, spec, "chi", default=0.2))
 
     route = route_task(task, force_tongue=force_tongue)
+    semantic_ir = infer_semantic_ir(task, force_tongue=force_tongue)
     phi_cost = phi_wall_cost(chi, route.tongue)
     tier = phi_wall_tier(phi_cost)
     if verbose:
-        print(f"[workflow:{sid}] route={route.full_name}({route.tongue}) tier={tier} cost={phi_cost:.4f}")
+        print(
+            f"[workflow:{sid}] route={route.full_name}({route.tongue}) tier={tier} cost={phi_cost:.4f}"
+        )
     if tier == "DENY":
         return WorkflowStepResult(
             step_id=sid,
@@ -1278,6 +1570,7 @@ def _run_workflow_step_agent(
             phi_cost=phi_cost,
             error=f"phi-wall DENY at cost={phi_cost:.4f}",
             tongue_in=tongue_token_digest(route.tongue, task),
+            semantic_ir=semantic_ir.to_dict(),
         )
     _TIER_RANK = {"ALLOW": 0, "QUARANTINE": 1, "ESCALATE": 2, "DENY": 3}
     if max_tier is not None and _TIER_RANK[tier] > _TIER_RANK[max_tier]:
@@ -1290,6 +1583,7 @@ def _run_workflow_step_agent(
             phi_cost=phi_cost,
             error=f"tier={tier} exceeds max_tier={max_tier}",
             tongue_in=tongue_token_digest(route.tongue, task),
+            semantic_ir=semantic_ir.to_dict(),
         )
 
     started = time.perf_counter()
@@ -1319,6 +1613,7 @@ def _run_workflow_step_agent(
             error=result.error,
             provider=result.provider,
             tongue_in=tongue_token_digest(route.tongue, task),
+            semantic_ir=semantic_ir.to_dict(),
         )
 
     code = result.code or ""
@@ -1335,6 +1630,7 @@ def _run_workflow_step_agent(
         duration_ms=duration_ms,
         tongue_in=tongue_token_digest(route.tongue, task),
         tongue_out=tongue_token_digest(route.tongue, code),
+        semantic_ir=semantic_ir.to_dict(),
     )
 
 
@@ -1383,6 +1679,8 @@ def run_workflow(
     input_text: str = "",
     ledger: Optional[Path] = None,
     verbose: bool = False,
+    include_harness: bool = True,
+    include_code_matrix: bool = False,
 ) -> Dict[str, Any]:
     """Execute a validated workflow spec, threading tongue boundaries between steps."""
     errors = validate_workflow_spec(spec)
@@ -1399,11 +1697,28 @@ def run_workflow(
     for idx, step in enumerate(spec["steps"]):
         op = step["op"]
         if op == "agent":
-            result = _run_workflow_step_agent(step, spec, input_text, step_outputs, verbose=verbose)
+            result = _run_workflow_step_agent(
+                step, spec, input_text, step_outputs, verbose=verbose
+            )
         elif op == "seal":
-            result = _run_workflow_step_seal(step, spec, input_text, step_outputs, verbose=verbose)
+            result = _run_workflow_step_seal(
+                step, spec, input_text, step_outputs, verbose=verbose
+            )
         else:  # pragma: no cover - already validated
             raise SystemExit(f"workflow op kind not implemented: {op}")
+        step_payload = substitute_workflow_refs(
+            step.get("task", ""), input_text, step_outputs
+        )
+        if include_harness:
+            result.harness = build_geoseal_harness_packet(
+                workflow=name,
+                step_id=result.step_id,
+                result=result,
+                payload=step_payload,
+                include_code_matrix=include_code_matrix,
+                semantic_ir=result.semantic_ir,
+                preferred_provider=result.provider,
+            )
         step_outputs[result.step_id] = result
         record: Dict[str, Any] = {
             "type": "workflow_step",
@@ -1420,6 +1735,8 @@ def run_workflow(
             "error": result.error,
             "tongue_in": result.tongue_in,
             "tongue_out": result.tongue_out,
+            "harness": result.harness,
+            "semantic_ir": result.semantic_ir,
             "prev_step_id": prev_step_id,
             "prev_tongue_out_sha256": prev_tongue_out_sha,
             "timestamp": time.time(),
@@ -1432,10 +1749,15 @@ def run_workflow(
         if result.error:
             failed = True
             if verbose:
-                print(f"[workflow:{result.step_id}] ERROR: {result.error}", file=sys.stderr)
+                print(
+                    f"[workflow:{result.step_id}] ERROR: {result.error}",
+                    file=sys.stderr,
+                )
             break
         prev_step_id = result.step_id
-        prev_tongue_out_sha = (result.tongue_out or {}).get("sha256") if result.tongue_out else None
+        prev_tongue_out_sha = (
+            (result.tongue_out or {}).get("sha256") if result.tongue_out else None
+        )
 
     summary = {
         "type": "workflow_run",
@@ -1450,6 +1772,12 @@ def run_workflow(
         "steps": [r["step_id"] for r in step_records],
         "final_seal": step_records[-1]["seal"] if step_records else "",
         "final_tongue_out_sha256": prev_tongue_out_sha,
+        "harness_schema": "geoseal_agent_harness_v1" if include_harness else None,
+        "stisa_code_matrix_sha256": (
+            step_records[-1]["harness"]["stisa_code_matrix"]["sha256"]
+            if include_harness and step_records and step_records[-1].get("harness")
+            else None
+        ),
     }
     if ledger is not None:
         with ledger.open("a", encoding="utf-8") as fh:
@@ -1510,7 +1838,14 @@ def cmd_workflow(args: argparse.Namespace) -> int:
         if args.input_file:
             input_text = Path(args.input_file).read_text(encoding="utf-8")
         ledger = None if args.no_ledger else Path(args.ledger)
-        summary = run_workflow(spec, input_text=input_text, ledger=ledger, verbose=args.verbose)
+        summary = run_workflow(
+            spec,
+            input_text=input_text,
+            ledger=ledger,
+            verbose=args.verbose,
+            include_harness=not args.no_harness,
+            include_code_matrix=args.include_code_matrix,
+        )
         if args.json:
             payload = {k: v for k, v in summary.items() if not k.startswith("_")}
             print(json.dumps(payload))
@@ -1536,28 +1871,53 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     p_ops = sub.add_parser("ops", help="List tokenizer ops")
-    p_ops.add_argument("--band", default=None, help="ARITHMETIC|LOGIC|COMPARISON|AGGREGATION")
+    p_ops.add_argument(
+        "--band", default=None, help="ARITHMETIC|LOGIC|COMPARISON|AGGREGATION"
+    )
     p_ops.set_defaults(func=cmd_ops)
 
-    p_encode = sub.add_parser("encode-cmd", help="Encode payload through Sacred Tongues transport")
+    p_encode = sub.add_parser(
+        "encode-cmd", help="Encode payload through Sacred Tongues transport"
+    )
     p_encode.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
-    p_encode.add_argument("payload", nargs="?", default=None, help="Plaintext payload (defaults to stdin)")
+    p_encode.add_argument(
+        "payload", nargs="?", default=None, help="Plaintext payload (defaults to stdin)"
+    )
     p_encode.set_defaults(func=cmd_encode_cmd)
 
-    p_decode = sub.add_parser("decode-cmd", help="Decode Sacred Tongue tokens back to plaintext")
+    p_decode = sub.add_parser(
+        "decode-cmd", help="Decode Sacred Tongue tokens back to plaintext"
+    )
     p_decode.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
-    p_decode.add_argument("tokens", nargs="?", default=None, help="Token stream (defaults to stdin)")
+    p_decode.add_argument(
+        "tokens", nargs="?", default=None, help="Token stream (defaults to stdin)"
+    )
     p_decode.set_defaults(func=cmd_decode_cmd)
 
-    p_xlate = sub.add_parser("xlate-cmd", help="Translate Sacred Tongue token stream across tongues")
+    p_xlate = sub.add_parser(
+        "xlate-cmd", help="Translate Sacred Tongue token stream across tongues"
+    )
     p_xlate.add_argument("--src", required=True, help="Source tongue")
     p_xlate.add_argument("--dst", required=True, help="Destination tongue")
-    p_xlate.add_argument("tokens", nargs="?", default=None, help="Token stream (defaults to stdin)")
+    p_xlate.add_argument(
+        "tokens", nargs="?", default=None, help="Token stream (defaults to stdin)"
+    )
     p_xlate.set_defaults(func=cmd_xlate_cmd)
+
+    p_matrix = sub.add_parser(
+        "matrix", help="Emit the full STISA Sacred Tongues code matrix"
+    )
+    p_matrix.add_argument("--json", action="store_true")
+    p_matrix.add_argument(
+        "--limit", type=int, default=12, help="Rows to show in text mode"
+    )
+    p_matrix.set_defaults(func=cmd_matrix)
 
     p_atomic = sub.add_parser("atomic", help="Inspect atomic substrate row for an op")
     p_atomic.add_argument("op")
-    p_atomic.add_argument("--show-code", action="store_true", help="Include all code templates")
+    p_atomic.add_argument(
+        "--show-code", action="store_true", help="Include all code templates"
+    )
     p_atomic.set_defaults(func=cmd_atomic)
 
     p_emit = sub.add_parser("emit", help="Emit code for an op")
@@ -1576,9 +1936,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_swarm = sub.add_parser("swarm", help="Dispatch an op to a swarm of tongue bots")
     p_swarm.add_argument("op")
-    p_swarm.add_argument("--tongues", default=None, help="comma-separated (default: all 6)")
+    p_swarm.add_argument(
+        "--tongues", default=None, help="comma-separated (default: all 6)"
+    )
     p_swarm.add_argument("--timeout", type=float, default=10.0)
-    p_swarm.add_argument("--no-run", action="store_true", help="Emit only, don't execute")
+    p_swarm.add_argument(
+        "--no-run", action="store_true", help="Emit only, don't execute"
+    )
     p_swarm.add_argument("--no-ledger", action="store_true", help="Skip writing ledger")
     p_swarm.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_swarm.add_argument("--json", action="store_true")
@@ -1597,7 +1961,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="phi-wall cost to bind into seal (use agent-reported value to re-verify)",
     )
     p_seal.add_argument(
-        "--tier", default="ALLOW", help="Governance tier to bind into seal (ALLOW/QUARANTINE/ESCALATE/DENY)"
+        "--tier",
+        default="ALLOW",
+        help="Governance tier to bind into seal (ALLOW/QUARANTINE/ESCALATE/DENY)",
     )
     p_seal.set_defaults(func=cmd_seal)
 
@@ -1613,12 +1979,18 @@ def build_parser() -> argparse.ArgumentParser:
         dest="phi_cost",
         help="phi-wall cost embedded in the seal (must match what was used when sealing)",
     )
-    p_verify.add_argument("--tier", default="ALLOW", help="Governance tier embedded in the seal (must match)")
+    p_verify.add_argument(
+        "--tier",
+        default="ALLOW",
+        help="Governance tier embedded in the seal (must match)",
+    )
     p_verify.set_defaults(func=cmd_verify)
 
     p_agent = sub.add_parser("agent", help="Route a coding task via Polly + GeoSeal")
     p_agent.add_argument("task", help="Natural language coding task")
-    p_agent.add_argument("--tongue", default=None, help="Force tongue (KO/AV/RU/CA/UM/DR)")
+    p_agent.add_argument(
+        "--tongue", default=None, help="Force tongue (KO/AV/RU/CA/UM/DR)"
+    )
     p_agent.add_argument(
         "--provider",
         default=None,
@@ -1669,18 +2041,28 @@ def build_parser() -> argparse.ArgumentParser:
     p_arc.add_argument("task_file", help="Path to ARC task JSON")
     p_arc.add_argument("--json", action="store_true", help="Machine-readable output")
     p_arc.add_argument("--onnx", action="store_true", help="Export program as ONNX")
-    p_arc.add_argument("--onnx-out", default=None, dest="onnx_out", help="ONNX output path")
+    p_arc.add_argument(
+        "--onnx-out", default=None, dest="onnx_out", help="ONNX output path"
+    )
     p_arc.add_argument("--no-ledger", action="store_true", help="Skip ledger write")
     p_arc.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_arc.add_argument("--verbose", "-v", action="store_true")
     p_arc.set_defaults(func=cmd_arc)
 
-    p_cursor = sub.add_parser("cursor", help="Delegate a bounded repo task to Cursor Agent")
+    p_cursor = sub.add_parser(
+        "cursor", help="Delegate a bounded repo task to Cursor Agent"
+    )
     p_cursor.add_argument("task", help="Repo task to hand to Cursor Agent")
-    p_cursor.add_argument("--workspace", default=str(Path.cwd()), help="Workspace directory")
+    p_cursor.add_argument(
+        "--workspace", default=str(Path.cwd()), help="Workspace directory"
+    )
     p_cursor.add_argument("--model", default=None, help="Cursor model override")
-    p_cursor.add_argument("--mode", default=None, choices=["plan", "ask"], help="Cursor execution mode")
-    p_cursor.add_argument("--force", action="store_true", help="Pass --force to Cursor Agent")
+    p_cursor.add_argument(
+        "--mode", default=None, choices=["plan", "ask"], help="Cursor execution mode"
+    )
+    p_cursor.add_argument(
+        "--force", action="store_true", help="Pass --force to Cursor Agent"
+    )
     p_cursor.add_argument(
         "--output-format",
         default="text",
@@ -1694,16 +2076,22 @@ def build_parser() -> argparse.ArgumentParser:
         dest="stream_partial_output",
         help="Enable stream-json partial output deltas",
     )
-    p_cursor.add_argument("--continue-session", action="store_true", dest="continue_session")
+    p_cursor.add_argument(
+        "--continue-session", action="store_true", dest="continue_session"
+    )
     p_cursor.add_argument("--no-ledger", action="store_true", help="Skip ledger write")
     p_cursor.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_cursor.add_argument("--verbose", "-v", action="store_true")
     p_cursor.set_defaults(func=cmd_cursor)
 
-    p_workflow = sub.add_parser("workflow", help="Declarative .geoseal.yaml workflow runner")
+    p_workflow = sub.add_parser(
+        "workflow", help="Declarative .geoseal.yaml workflow runner"
+    )
     wf_sub = p_workflow.add_subparsers(dest="workflow_cmd", required=True)
 
-    p_wf_list = wf_sub.add_parser("list", help="List .geoseal.yaml workflows in a directory")
+    p_wf_list = wf_sub.add_parser(
+        "list", help="List .geoseal.yaml workflows in a directory"
+    )
     p_wf_list.add_argument("--dir", default=".", help="Directory to scan")
     p_wf_list.add_argument("--json", action="store_true")
     p_wf_list.set_defaults(func=cmd_workflow, workflow_cmd="list")
@@ -1719,6 +2107,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_wf_run.add_argument("--input-file", default=None, dest="input_file")
     p_wf_run.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_wf_run.add_argument("--no-ledger", action="store_true")
+    p_wf_run.add_argument(
+        "--no-harness",
+        action="store_true",
+        help="Skip GeoSeal harness evidence packets",
+    )
+    p_wf_run.add_argument(
+        "--include-code-matrix",
+        action="store_true",
+        help="Embed the full STISA 6x256 code matrix in each harness packet",
+    )
     p_wf_run.add_argument("--json", action="store_true")
     p_wf_run.add_argument("--verbose", "-v", action="store_true")
     p_wf_run.set_defaults(func=cmd_workflow, workflow_cmd="run")

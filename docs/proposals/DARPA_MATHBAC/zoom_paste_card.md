@@ -18,7 +18,7 @@ Issac Davis — solo PI, SAM.gov UEI J4NXHM6N5F59 / CAGE 1EXD5. Teaming with Hoa
 ## 2. The 15-second hook (spoken or pasted)
 
 ```
-Two independently-built agentic stacks — bare-metal Rust (DAVA) and hyperbolic governance (SCBE) — converged on a 5-of-6 communication surface we never designed. Hash-sealed blind verification landed 24/24. That's geometric, not statistical.
+Two independently-built agentic stacks — bare-metal Rust (DAVA) and hyperbolic governance (SCBE) — show a 5-of-6 *static field-type-correspondence* between DAVA's beacon-packet fields and SCBE's L1 context slots, with no shared design. A separate hash-sealed blind protocol on DAVA traces landed 24/24. Geometric structure shows up in both stacks — we did not design it in.
 ```
 
 ---

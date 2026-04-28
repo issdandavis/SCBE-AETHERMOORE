@@ -55,6 +55,29 @@ export function harmonicScale(d: number, phaseDeviation: number = 0): number {
   return y;
 }
 
+const PHI = (1 + Math.sqrt(5)) / 2;
+
+/**
+ * Phi-weighted harmonic wall: H(d, pd) = 1 / (1 + phi * d + 2 * pd)
+ *
+ * Canonical L12 form cited in the submitted MATHBAC abstract
+ * (DARPA-PA-26-05-MATHBAC-PA-010, 2026-04-27). The phi prefactor on
+ * the hyperbolic-distance term aligns the L12 score with the Sacred
+ * Tongues phi-weighting used in L3, giving a single golden-ratio
+ * constant across the pipeline.
+ *
+ * @param d - Hyperbolic distance d_H (>= 0)
+ * @param phaseDeviation - Phase deviation pd (>= 0, default: 0)
+ * @returns Safety score in (0, 1]
+ */
+export function harmonicScalePhi(d: number, phaseDeviation: number = 0): number {
+  if (d < 0) throw new RangeError('d must be >= 0');
+  if (phaseDeviation < 0) throw new RangeError('phaseDeviation must be >= 0');
+  const y = 1 / (1 + PHI * d + 2 * phaseDeviation);
+  assertFinite(y, 'harmonicScalePhi');
+  return y;
+}
+
 /**
  * Calculate security bits with harmonic scaling
  *

@@ -17,6 +17,9 @@ Version: 1.0.0
 
 import uuid
 import asyncio
+import json
+import time
+from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable, Set
 from dataclasses import dataclass, field
 from enum import Enum
@@ -65,7 +68,9 @@ class TaskResult:
             "output": self.output,
             "error": self.error,
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "execution_time_ms": self.execution_time_ms,
             "agent_id": self.agent_id,
             "retries": self.retries,
@@ -112,7 +117,9 @@ class Task:
             "assigned_agent": self.assigned_agent,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "result": self.result.to_dict() if self.result else None,
             "max_retries": self.max_retries,
             "retry_count": self.retry_count,
@@ -150,6 +157,55 @@ class WorkflowStatus(Enum):
 
 
 @dataclass
+class TerminationPolicy:
+    """Bound a workflow run so agent loops cannot run forever."""
+
+    max_events: Optional[int] = None
+    max_duration_seconds: Optional[float] = None
+    external_stop: bool = False
+
+    def should_stop(
+        self, *, event_count: int, started_monotonic: float
+    ) -> Optional[str]:
+        if self.external_stop:
+            return "external_stop"
+        if self.max_events is not None and event_count >= self.max_events:
+            return "max_events"
+        if self.max_duration_seconds is not None:
+            if time.monotonic() - started_monotonic >= self.max_duration_seconds:
+                return "max_duration_seconds"
+        return None
+
+
+class WorkflowCheckpointStore:
+    """JSON checkpoint store for resumable workflow harness runs."""
+
+    def __init__(self, checkpoint_dir: str | Path):
+        self.checkpoint_dir = Path(checkpoint_dir)
+        self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    def checkpoint_path(self, workflow_id: str) -> Path:
+        return self.checkpoint_dir / f"{workflow_id}.json"
+
+    def save(self, workflow: "Workflow", execution_log: List[Dict[str, Any]]) -> Path:
+        payload = {
+            "schema": "scbe_workflow_checkpoint_v1",
+            "saved_at": datetime.now().isoformat(),
+            "workflow": workflow.to_dict(),
+            "execution_log": execution_log,
+        }
+        path = self.checkpoint_path(workflow.id)
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        return path
+
+    def load(self, workflow_id: str) -> Optional[Dict[str, Any]]:
+        path = self.checkpoint_path(workflow_id)
+        if not path.exists():
+            return None
+        return json.loads(path.read_text(encoding="utf-8"))
+
+
+@dataclass
 class Workflow:
     """
     A workflow is a collection of tasks with dependencies that execute
@@ -184,13 +240,19 @@ class Workflow:
         condition: Optional[Callable[[Dict], bool]] = None,
     ):
         """Add a step to the workflow."""
-        self.steps[name] = WorkflowStep(task=task, on_success=on_success, on_failure=on_failure, condition=condition)
+        self.steps[name] = WorkflowStep(
+            task=task, on_success=on_success, on_failure=on_failure, condition=condition
+        )
         if not self.entry_point:
             self.entry_point = name
 
     def get_ready_tasks(self) -> List[Task]:
         """Get all tasks that are ready to execute."""
-        completed = {name for name, step in self.steps.items() if step.task.status == TaskStatus.COMPLETED}
+        completed = {
+            name
+            for name, step in self.steps.items()
+            if step.task.status == TaskStatus.COMPLETED
+        }
 
         ready = []
         for _name, step in self.steps.items():
@@ -205,9 +267,17 @@ class Workflow:
     def get_progress(self) -> Dict[str, Any]:
         """Get workflow progress."""
         total = len(self.steps)
-        completed = sum(1 for step in self.steps.values() if step.task.status == TaskStatus.COMPLETED)
-        failed = sum(1 for step in self.steps.values() if step.task.status == TaskStatus.FAILED)
-        running = sum(1 for step in self.steps.values() if step.task.status == TaskStatus.RUNNING)
+        completed = sum(
+            1
+            for step in self.steps.values()
+            if step.task.status == TaskStatus.COMPLETED
+        )
+        failed = sum(
+            1 for step in self.steps.values() if step.task.status == TaskStatus.FAILED
+        )
+        running = sum(
+            1 for step in self.steps.values() if step.task.status == TaskStatus.RUNNING
+        )
 
         return {
             "workflow_id": self.id,
@@ -230,7 +300,9 @@ class Workflow:
             "entry_point": self.entry_point,
             "created_at": self.created_at.isoformat(),
             "started_at": self.started_at.isoformat() if self.started_at else None,
-            "completed_at": (self.completed_at.isoformat() if self.completed_at else None),
+            "completed_at": (
+                self.completed_at.isoformat() if self.completed_at else None
+            ),
             "steps": {
                 name: {
                     "task": step.task.to_dict(),
@@ -288,10 +360,19 @@ class WorkflowExecutor:
     Executes workflows by coordinating tasks across agents.
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        checkpoint_dir: Optional[str | Path] = None,
+        termination_policy: Optional[TerminationPolicy] = None,
+    ):
         self.active_workflows: Dict[str, Workflow] = {}
         self.task_queue = TaskQueue()
         self.execution_log: List[Dict[str, Any]] = []
+        self.checkpoints = (
+            WorkflowCheckpointStore(checkpoint_dir) if checkpoint_dir else None
+        )
+        self.termination_policy = termination_policy
+        self._event_seq_by_workflow: Dict[str, int] = {}
 
     async def execute_workflow(
         self, workflow: Workflow, agent_executor: Callable[[Task], TaskResult]
@@ -306,9 +387,12 @@ class WorkflowExecutor:
         Returns:
             Execution summary
         """
+        self.task_queue = TaskQueue()
+        self._restore_checkpoint(workflow)
         workflow.status = WorkflowStatus.RUNNING
         workflow.started_at = datetime.now()
         self.active_workflows[workflow.id] = workflow
+        started_monotonic = time.monotonic()
 
         self._log_event(
             "workflow_started",
@@ -316,14 +400,29 @@ class WorkflowExecutor:
                 "workflow_id": workflow.id,
                 "name": workflow.name,
             },
+            workflow_id=workflow.id,
         )
+        self._checkpoint(workflow)
 
         # Add all tasks to queue
         for _name, step in workflow.steps.items():
             self.task_queue.add(step.task)
+            if step.task.status == TaskStatus.COMPLETED:
+                self.task_queue.completed.add(step.task.id)
 
         try:
             while True:
+                stop_reason = self._termination_reason(workflow, started_monotonic)
+                if stop_reason:
+                    workflow.status = WorkflowStatus.PAUSED
+                    self._log_event(
+                        "workflow_paused",
+                        {"workflow_id": workflow.id, "reason": stop_reason},
+                        workflow_id=workflow.id,
+                    )
+                    self._checkpoint(workflow)
+                    break
+
                 # Get ready tasks
                 ready_tasks = self.task_queue.get_ready_tasks()
 
@@ -334,19 +433,38 @@ class WorkflowExecutor:
                         for step in workflow.steps.values()
                     ):
                         break
+                    if not any(
+                        step.task.status == TaskStatus.RUNNING
+                        for step in workflow.steps.values()
+                    ):
+                        workflow.status = WorkflowStatus.FAILED
+                        self._log_event(
+                            "workflow_stalled",
+                            {
+                                "workflow_id": workflow.id,
+                                "reason": "no_ready_tasks_and_no_running_tasks",
+                            },
+                            workflow_id=workflow.id,
+                        )
+                        self._checkpoint(workflow)
+                        break
                     # Wait for running tasks
                     await asyncio.sleep(0.1)
                     continue
 
                 # Execute ready tasks (can be parallel)
                 results = await asyncio.gather(
-                    *[self._execute_task(task, agent_executor, workflow) for task in ready_tasks]
+                    *[
+                        self._execute_task(task, agent_executor, workflow)
+                        for task in ready_tasks
+                    ]
                 )
 
                 # Process results
                 for task, result in zip(ready_tasks, results):
                     self.task_queue.mark_completed(task.id, result)
                     workflow.results[task.id] = result
+                    self._checkpoint(workflow)
 
                     # Find next step based on success/failure
                     step = next(
@@ -364,12 +482,17 @@ class WorkflowExecutor:
                                 next_step.task.status = TaskStatus.PENDING
 
             # Determine final status
-            failed_count = sum(1 for step in workflow.steps.values() if step.task.status == TaskStatus.FAILED)
+            if workflow.status == WorkflowStatus.RUNNING:
+                failed_count = sum(
+                    1
+                    for step in workflow.steps.values()
+                    if step.task.status == TaskStatus.FAILED
+                )
 
-            if failed_count > 0:
-                workflow.status = WorkflowStatus.FAILED
-            else:
-                workflow.status = WorkflowStatus.COMPLETED
+                if failed_count > 0:
+                    workflow.status = WorkflowStatus.FAILED
+                else:
+                    workflow.status = WorkflowStatus.COMPLETED
 
         except Exception as e:
             workflow.status = WorkflowStatus.FAILED
@@ -379,6 +502,8 @@ class WorkflowExecutor:
                     "workflow_id": workflow.id,
                     "error": str(e),
                 },
+                surface="operational",
+                workflow_id=workflow.id,
             )
 
         workflow.completed_at = datetime.now()
@@ -388,13 +513,20 @@ class WorkflowExecutor:
             {
                 "workflow_id": workflow.id,
                 "status": workflow.status.value,
-                "duration_ms": (workflow.completed_at - workflow.started_at).total_seconds() * 1000,
+                "duration_ms": (
+                    workflow.completed_at - workflow.started_at
+                ).total_seconds()
+                * 1000,
             },
+            workflow_id=workflow.id,
         )
+        self._checkpoint(workflow)
 
         return workflow.to_dict()
 
-    async def _execute_task(self, task: Task, executor: Callable[[Task], TaskResult], workflow: Workflow) -> TaskResult:
+    async def _execute_task(
+        self, task: Task, executor: Callable[[Task], TaskResult], workflow: Workflow
+    ) -> TaskResult:
         """Execute a single task with retry logic."""
         task.status = TaskStatus.RUNNING
         task.started_at = datetime.now()
@@ -406,6 +538,7 @@ class WorkflowExecutor:
                 "name": task.name,
                 "workflow_id": workflow.id,
             },
+            workflow_id=workflow.id,
         )
 
         while task.retry_count <= task.max_retries:
@@ -417,7 +550,9 @@ class WorkflowExecutor:
                 )
 
                 task.completed_at = datetime.now()
-                result.execution_time_ms = (task.completed_at - task.started_at).total_seconds() * 1000
+                result.execution_time_ms = (
+                    task.completed_at - task.started_at
+                ).total_seconds() * 1000
 
                 if result.status == TaskStatus.COMPLETED:
                     task.status = TaskStatus.COMPLETED
@@ -427,6 +562,7 @@ class WorkflowExecutor:
                             "task_id": task.id,
                             "execution_time_ms": result.execution_time_ms,
                         },
+                        workflow_id=workflow.id,
                     )
                     return result
 
@@ -440,6 +576,8 @@ class WorkflowExecutor:
                             "task_id": task.id,
                             "retry_count": task.retry_count,
                         },
+                        surface="operational",
+                        workflow_id=workflow.id,
                     )
                     await asyncio.sleep(2**task.retry_count)  # Exponential backoff
                 else:
@@ -454,6 +592,8 @@ class WorkflowExecutor:
                         "task_id": task.id,
                         "timeout_seconds": task.timeout_seconds,
                     },
+                    surface="operational",
+                    workflow_id=workflow.id,
                 )
 
             except Exception as e:
@@ -464,6 +604,8 @@ class WorkflowExecutor:
                         "task_id": task.id,
                         "error": str(e),
                     },
+                    surface="operational",
+                    workflow_id=workflow.id,
                 )
 
         # Exhausted retries
@@ -485,11 +627,24 @@ class WorkflowExecutor:
             return await executor(task)
         return executor(task)
 
-    def _log_event(self, event_type: str, data: Dict[str, Any]):
+    def _log_event(
+        self,
+        event_type: str,
+        data: Dict[str, Any],
+        *,
+        surface: str = "operational",
+        workflow_id: Optional[str] = None,
+    ):
         """Log an execution event."""
+        run_id = workflow_id or str(data.get("workflow_id", "global"))
+        seq = self._event_seq_by_workflow.get(run_id, 0) + 1
+        self._event_seq_by_workflow[run_id] = seq
         self.execution_log.append(
             {
+                "run_id": run_id,
+                "seq": seq,
                 "timestamp": datetime.now().isoformat(),
+                "surface": surface,
                 "event": event_type,
                 "data": data,
             }
@@ -498,6 +653,61 @@ class WorkflowExecutor:
     def get_execution_log(self) -> List[Dict[str, Any]]:
         """Get the execution log."""
         return self.execution_log
+
+    def _checkpoint(self, workflow: Workflow) -> None:
+        if self.checkpoints:
+            self.checkpoints.save(workflow, self.execution_log)
+
+    def _restore_checkpoint(self, workflow: Workflow) -> None:
+        if not self.checkpoints:
+            return
+        checkpoint = self.checkpoints.load(workflow.id)
+        if not checkpoint:
+            return
+
+        restored = checkpoint.get("workflow", {})
+        restored_steps = restored.get("steps", {})
+        for name, step in workflow.steps.items():
+            task_state = restored_steps.get(name, {}).get("task", {})
+            status_value = task_state.get("status")
+            if status_value:
+                step.task.status = TaskStatus(status_value)
+            step.task.retry_count = int(
+                task_state.get("retry_count", step.task.retry_count)
+            )
+            result_state = task_state.get("result")
+            if result_state:
+                step.task.result = TaskResult(
+                    task_id=result_state["task_id"],
+                    status=TaskStatus(result_state["status"]),
+                    output=result_state.get("output"),
+                    error=result_state.get("error"),
+                    execution_time_ms=float(result_state.get("execution_time_ms", 0.0)),
+                    agent_id=result_state.get("agent_id"),
+                    retries=int(result_state.get("retries", 0)),
+                )
+                workflow.results[step.task.id] = step.task.result
+
+        self.execution_log = list(checkpoint.get("execution_log", []))
+        for event in self.execution_log:
+            run_id = str(event.get("run_id", workflow.id))
+            seq = int(event.get("seq", 0))
+            self._event_seq_by_workflow[run_id] = max(
+                self._event_seq_by_workflow.get(run_id, 0), seq
+            )
+
+    def _termination_reason(
+        self, workflow: Workflow, started_monotonic: float
+    ) -> Optional[str]:
+        if not self.termination_policy:
+            return None
+        event_count = sum(
+            1 for event in self.execution_log if event.get("run_id") == workflow.id
+        )
+        return self.termination_policy.should_stop(
+            event_count=event_count,
+            started_monotonic=started_monotonic,
+        )
 
 
 # =============================================================================

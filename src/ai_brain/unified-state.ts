@@ -6,9 +6,9 @@
  * @version 1.1.0
  * @since 2026-02-07
  *
- * Implements the 21D unified brain state vector that integrates all SCBE-AETHERMOORE
- * components into a single coherent manifold. Each component contributes specific
- * dimensions, and the golden ratio weighting creates a hierarchical importance structure.
+ * Implements the TypeScript application-facing 21D brain state facade that integrates
+ * SCBE-AETHERMOORE components into a single coherent manifold. Canonical
+ * metric/audit routing uses state21_v1 in src/harmonic/state21_product_metric.py.
  *
  * The 21D vector is:
  *   [scbe(6) | navigation(6) | cognitive(3) | semantic(3) | swarm(3)]

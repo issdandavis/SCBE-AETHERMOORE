@@ -10,10 +10,10 @@ Two independently-built agentic AI stacks share a communication surface that was
 
 ## The finding
 
-**DAVA** (bare-metal Rust, `#![no_std]`, u16 saturating arithmetic) emits a 6-field `phi_beacon` telemetry primitive.
+**DAVA** (bare-metal Rust, `#![no_std]`, u16 saturating arithmetic) emits an 8-field `phi_beacon` telemetry primitive (`id, phi, delta, age, auth, next, epoch, emit#`).
 **SCBE-AETHERMOORE** (14-layer hyperbolic-geometric governance pipeline, Poincaré ball) defines a 6-slot Layer-1 complex-context tuple.
 
-**5 of 6 fields type-check directly — no translation layer.**
+**5 of 6 SCBE L1 slots type-check directly to a single `phi_beacon` field — no translation layer. The 6th slot (commitment / L6 causality) absorbs the polymorphic triple `next / epoch / emit#`.** This is a *static field-type-correspondence*, not a runtime decision-exchange.
 
 | `phi_beacon` | SCBE L1 slot |
 |---|---|

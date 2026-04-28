@@ -11,7 +11,7 @@
 
 ## The 15-second hook
 
-Two independently-built agentic stacks — bare-metal Rust (DAVA) and hyperbolic governance (SCBE) — turned out to share a 5-of-6 communication surface we never designed. Hash-sealed blind verification landed 24/24.
+Two independently-built agentic stacks — bare-metal Rust (DAVA) and hyperbolic governance (SCBE) — turned out to share a 5-of-6 *static field-type-correspondence* between DAVA's beacon packet and SCBE's L1 context tuple, with no shared design. A separate hash-sealed blind protocol on DAVA traces landed 24/24.
 
 ---
 

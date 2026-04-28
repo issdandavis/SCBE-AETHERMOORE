@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Windows Task Scheduler definition for the DARPA-PA-26-05 (MATHBAC)
+  amendment watch.
+
+  PURPOSE
+    Daily diff of the live SAM.gov resource list against the sealed
+    baseline at artifacts/mathbac/sam_resources_raw.json so that any
+    DARPA-side amendment (added/removed/changed attachment) is caught
+    before BAAT submission on 2026-06-16 16:00 ET.
+
+  WHAT IT RUNS
+    powershell.exe -ExecutionPolicy Bypass -File
+      <repo>\scripts\mathbac_amendment_watch_runner.ps1
+    which wraps scripts/mathbac_amendment_watch.py and:
+      - uses live SAM.gov fetch when SAM_GOV_API_KEY is set
+      - falls back to newest *.json in artifacts/mathbac/snapshots/
+      - logs a "no-source" record and exits 0 if neither is present
+        (so the schedule does not flap when credentials are absent)
+
+  EXIT CODES (passed through from python)
+    0 - no change
+    1 - material change detected (Task Scheduler "Last Run Result"
+        will show 0x1; treat as a review-required signal, not a failure)
+    2 - fetch failure (review SAM_GOV_API_KEY / network)
+
+  REGISTRATION (USER-AUTH-GATED)
+    Do NOT register this task in CI or unattended automation. Register
+    interactively from an elevated PowerShell with:
+
+      Register-ScheduledTask `
+        -Xml (Get-Content -Raw -Path `
+          "C:\Users\issda\SCBE-AETHERMOORE\config\system\mathbac_amendment_watch_task.xml") `
+        -TaskName "MATHBAC Amendment Watch" `
+        -User    $env:USERNAME
+
+    Before registering, replace the WORKING-DIRECTORY token if your
+    repo is not at C:\Users\issda\SCBE-AETHERMOORE.
+
+  UNREGISTER
+    Unregister-ScheduledTask -TaskName "MATHBAC Amendment Watch" -Confirm:$false
+-->
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Description>Daily diff of SAM.gov DARPA-PA-26-05 (MATHBAC) attachments vs. sealed 2026-04-27 baseline.</Description>
+  </RegistrationInfo>
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>2026-04-28T09:00:00</StartBoundary>
+      <Enabled>true</Enabled>
+      <ScheduleByDay>
+        <DaysInterval>1</DaysInterval>
+      </ScheduleByDay>
+    </CalendarTrigger>
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT15M</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>powershell.exe</Command>
+      <Arguments>-ExecutionPolicy Bypass -NoProfile -File "C:\Users\issda\SCBE-AETHERMOORE\scripts\mathbac_amendment_watch_runner.ps1" -Quiet</Arguments>
+      <WorkingDirectory>C:\Users\issda\SCBE-AETHERMOORE</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>

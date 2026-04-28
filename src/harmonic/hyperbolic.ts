@@ -377,7 +377,7 @@ export function exponentialMap(p: number[], v: number[]): number[] {
   if (vNorm < EPSILON) return [...p];
 
   const pNormSq = normSq(p);
-  const lambda_p = 2 / (1 - pNormSq + EPSILON);
+  const lambda_p = 2 / Math.max(EPSILON, 1 - pNormSq);
 
   // Direction of v
   const direction = scale(v, 1 / vNorm);
@@ -405,7 +405,7 @@ export function exponentialMap(p: number[], v: number[]): number[] {
  */
 export function logarithmicMap(p: number[], q: number[]): number[] {
   const pNormSq = normSq(p);
-  const lambda_p = 2 / (1 - pNormSq + EPSILON);
+  const lambda_p = 2 / Math.max(EPSILON, 1 - pNormSq);
 
   // -p ⊕ q (Möbius addition of -p and q)
   const negP = scale(p, -1);

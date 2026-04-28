@@ -17,6 +17,7 @@ Does NOT test inference (no LLM calls) — pure routing, governance, and CLI.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -101,7 +102,9 @@ class TestKeywordRouting:
             f"Got:             {r.tongue} ({TONGUE_LANGUAGE[r.tongue]})\n"
             f"Keyword used:    {r.override_keyword!r}"
         )
-        assert r.override_keyword is not None, "keyword routing should set override_keyword"
+        assert (
+            r.override_keyword is not None
+        ), "keyword routing should set override_keyword"
         assert r.confidence >= 0.90
 
     def test_all_six_tongues_reachable_by_keyword(self):
@@ -169,7 +172,9 @@ class TestDeterminism:
         results = [_route(task) for _ in range(5)]
         tongues = [r.tongue for r in results]
         confs = [r.confidence for r in results]
-        assert len(set(tongues)) == 1, f"Non-deterministic routing for: {task!r} → {tongues}"
+        assert (
+            len(set(tongues)) == 1
+        ), f"Non-deterministic routing for: {task!r} → {tongues}"
         assert len(set(confs)) == 1
 
     @pytest.mark.parametrize("task", TASKS)
@@ -210,7 +215,9 @@ class TestTritFallback:
         # Keyword override should be absent for truly generic tasks
         # (May be set for some — just ensure confidence is reasonable)
         if r.override_keyword is None:
-            assert r.confidence >= 0.20, "trit fallback must produce meaningful confidence"
+            assert (
+                r.confidence >= 0.20
+            ), "trit fallback must produce meaningful confidence"
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +237,8 @@ class TestGovernance:
         weights = [TONGUE_PHI_WEIGHTS[t] for t in self.TONGUES]
         for i in range(len(weights) - 1):
             assert weights[i] < weights[i + 1], (
-                f"Weight ordering violated: {self.TONGUES[i]}={weights[i]} " f">= {self.TONGUES[i+1]}={weights[i+1]}"
+                f"Weight ordering violated: {self.TONGUES[i]}={weights[i]} "
+                f">= {self.TONGUES[i+1]}={weights[i+1]}"
             )
 
     @pytest.mark.parametrize("tongue", ["KO", "AV", "RU", "CA", "UM", "DR"])
@@ -266,7 +274,9 @@ class TestGovernance:
         for chi in [0.0, 0.2, 0.5, 0.8, 1.0]:
             cost = phi_wall_cost(chi, tongue)
             trust = phi_trust_score(cost)
-            assert 0.0 <= trust <= 1.0, f"trust out of [0,1]: {trust} for {tongue} chi={chi}"
+            assert (
+                0.0 <= trust <= 1.0
+            ), f"trust out of [0,1]: {trust} for {tongue} chi={chi}"
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +287,15 @@ class TestGovernance:
 class TestGeoSeal:
     """GeoSeal stamps must be deterministic and tamper-evident."""
 
-    def _seal(self, op="agent", tongue="KO", code="print('hi')", payload="test", cost=1.0, tier="ALLOW") -> str:
+    def _seal(
+        self,
+        op="agent",
+        tongue="KO",
+        code="print('hi')",
+        payload="test",
+        cost=1.0,
+        tier="ALLOW",
+    ) -> str:
         return compute_seal(op, tongue, code, payload, cost, tier)
 
     def test_seal_is_deterministic(self):
@@ -311,7 +329,9 @@ class TestGeoSeal:
 
     def test_verify_fails_for_tampered_code(self):
         seal = self._seal(code="print('hi')")
-        assert not verify_seal(seal, "agent", "KO", "print('TAMPERED')", "test", 1.0, "ALLOW")
+        assert not verify_seal(
+            seal, "agent", "KO", "print('TAMPERED')", "test", 1.0, "ALLOW"
+        )
 
     @pytest.mark.parametrize("tongue", ["KO", "AV", "RU", "CA", "UM", "DR"])
     def test_seals_differ_per_tongue(self, tongue: str):
@@ -363,7 +383,9 @@ class TestBijectionStress:
 
     def _check_bijection(self, tasks: list[str]):
         seals = [self._seal_for_task(t) for t in tasks]
-        assert len(seals) == len(set(seals)), f"Seal collision detected in task set:\n" + "\n".join(
+        assert len(seals) == len(
+            set(seals)
+        ), f"Seal collision detected in task set:\n" + "\n".join(
             f"  {t} -> {s[:16]}..." for t, s in zip(tasks, seals)
         )
 
@@ -441,7 +463,9 @@ class TestCLISmoke:
         # seal
         rc, out, _ = self._run("seal", "hello world", "--tongue", "KO")
         assert rc == 0
-        seal = [line for line in out.splitlines() if line.startswith("seal=")][0].split("=", 1)[1]
+        seal = [line for line in out.splitlines() if line.startswith("seal=")][0].split(
+            "=", 1
+        )[1]
         # verify
         rc2, out2, _ = self._run("verify", seal, "hello world", "--tongue", "KO")
         assert rc2 == 0
@@ -492,7 +516,11 @@ class TestARCLane:
             r = route_task(task)
             # Both CA and UM are acceptable for symbolic/math grid work
             # KO is also fine if the trit system picks it
-            assert r.tongue in {"KO", "CA", "UM"}, f"ARC task routed to unexpected tongue {r.tongue}: {task!r}"
+            assert r.tongue in {
+                "KO",
+                "CA",
+                "UM",
+            }, f"ARC task routed to unexpected tongue {r.tongue}: {task!r}"
 
     def test_arc_synthesis_and_seal(self, tmp_path):
         """Full arc solve → seal pipeline on a real task JSON."""
@@ -514,7 +542,11 @@ class TestARCLane:
         solution = synthesize_program(task)
 
         # Verify training accuracy
-        correct = sum(1 for ex in task.train if np.array_equal(execute_program(ex.input, solution.program), ex.output))
+        correct = sum(
+            1
+            for ex in task.train
+            if np.array_equal(execute_program(ex.input, solution.program), ex.output)
+        )
         assert correct == len(
             task.train
         ), f"Expected 100% train acc, got {correct}/{len(task.train)} for family={solution.family}"
@@ -526,7 +558,9 @@ class TestARCLane:
         seal = compute_seal("arc", tongue, solution.family, task.task_id, cost, tier)
         assert len(seal) == 64
         assert tier == "ALLOW"
-        assert verify_seal(seal, "arc", tongue, solution.family, task.task_id, cost, tier)
+        assert verify_seal(
+            seal, "arc", tongue, solution.family, task.task_id, cost, tier
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -562,6 +596,18 @@ class TestSharedSemanticIR:
         ir = infer_semantic_ir("write a fibonacci function with memoization in rust")
         assert ir.family == "freeform"
         assert ir.op is None
+
+    def test_operator_family_groups_equivalent_witnesses(self):
+        ir = infer_semantic_ir("map a list in python")
+        family = ir.operator_family
+        assert family["op"] == "map"
+        assert family["equivalence_group"] == "map_transform"
+        assert family["primary_route"]["tongue"] == "KO"
+        witness_tongues = {item["tongue"] for item in family["witnesses"]}
+        assert witness_tongues == {"KO", "AV", "RU", "CA", "UM", "DR"}
+        assert any(item["preferred"] for item in family["witnesses"])
+        assert family["blockers"]
+        assert family["fallback_routes"]
 
 
 # ---------------------------------------------------------------------------
@@ -650,7 +696,9 @@ class TestSecurityRouting:
         # Force every reachable provider to fail (no real network) so we can
         # observe attempted_providers ordering and skip semantics.
         monkeypatch.setattr(polly_client, "_LOCAL_MODEL_PATH", Path("/no/such/path"))
-        monkeypatch.setattr(polly_client, "_ollama_available", lambda timeout=1.5: False)
+        monkeypatch.setattr(
+            polly_client, "_ollama_available", lambda timeout=1.5: False
+        )
 
         def _boom_hf(*a, **kw):
             raise RuntimeError("hf disabled in test")
@@ -674,7 +722,9 @@ class TestSecurityRouting:
         providers_seen = [a["provider"] for a in result.attempted_providers]
         # ollama appears in the chain and is recorded as skipped (not as an error)
         assert "ollama" in providers_seen
-        ollama_entry = next(a for a in result.attempted_providers if a["provider"] == "ollama")
+        ollama_entry = next(
+            a for a in result.attempted_providers if a["provider"] == "ollama"
+        )
         assert ollama_entry["skipped_reason"] == "ollama_unreachable"
         assert ollama_entry["success"] is False
         # hf and claude appear with errors after ollama
@@ -725,7 +775,9 @@ class TestSecurityRouting:
             max_tokens=64,
         )
         assert result.provider == "ollama"
-        ollama = next(a for a in result.attempted_providers if a["provider"] == "ollama")
+        ollama = next(
+            a for a in result.attempted_providers if a["provider"] == "ollama"
+        )
         assert ollama["success"] is True
         assert ollama["prompt_tokens"] == 7
         assert ollama["completion_tokens"] == 11
@@ -863,7 +915,11 @@ class TestAgentLedgerTongueBoundaries:
     def _read_ledger(self, path) -> list[dict]:
         from pathlib import Path as _Path
 
-        return [json.loads(line) for line in _Path(path).read_text(encoding="utf-8").splitlines() if line.strip()]
+        return [
+            json.loads(line)
+            for line in _Path(path).read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
 
     def test_agent_ledger_writes_tongue_in_and_tongue_out(self, tmp_path, monkeypatch):
         from src.coding_spine import polly_client
@@ -887,6 +943,11 @@ class TestAgentLedgerTongueBoundaries:
         rec = records[0]
         assert rec["type"] == "agent"
         assert "tongue_in" in rec and "tongue_out" in rec
+        assert rec["operator_family"]["schema"] == "geoseal_operator_family_v1"
+        assert rec["operator_family"]["primary_route"]["tongue"] == rec["tongue"]
+        assert any(
+            route["runtime_available"] for route in rec["operator_family"]["witness_routes"]
+        )
 
         # tongue_in should match the digest of the raw task text against the
         # routed tongue; tongue_out should match the canned code under the
@@ -900,7 +961,9 @@ class TestAgentLedgerTongueBoundaries:
         assert rec["tongue_in"]["sha256"] and len(rec["tongue_in"]["sha256"]) == 64
         assert rec["tongue_out"]["sha256"] and len(rec["tongue_out"]["sha256"]) == 64
 
-    def test_agent_ledger_tongue_out_changes_when_code_changes(self, tmp_path, monkeypatch):
+    def test_agent_ledger_tongue_out_changes_when_code_changes(
+        self, tmp_path, monkeypatch
+    ):
         """Two runs of the same task with different generated code must produce
         different tongue_out digests — the digest is content-bound, not just
         tongue-bound."""
@@ -965,11 +1028,19 @@ class TestSwarmLedgerTokens:
             cwd=str(_REPO_ROOT),
             env={**__import__("os").environ, "PYTHONPATH": str(_REPO_ROOT)},
         )
-        assert ledger.exists(), f"ledger missing: stdout={result.stdout!r} stderr={result.stderr!r}"
+        assert (
+            ledger.exists()
+        ), f"ledger missing: stdout={result.stdout!r} stderr={result.stderr!r}"
 
-        records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
+        records = [
+            json.loads(line)
+            for line in ledger.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
         token_records = [r for r in records if r.get("type") == "swarm_tokens"]
-        assert len(token_records) == 1, f"expected 1 swarm_tokens record, got {len(token_records)}"
+        assert (
+            len(token_records) == 1
+        ), f"expected 1 swarm_tokens record, got {len(token_records)}"
 
         tr = token_records[0]
         assert tr["op"] == "add"
@@ -1006,7 +1077,9 @@ class TestWorkflowSchema:
     def test_missing_name(self):
         from src.geoseal_cli import validate_workflow_spec
 
-        errors = validate_workflow_spec({"steps": [{"id": "a", "op": "agent", "task": "x"}]})
+        errors = validate_workflow_spec(
+            {"steps": [{"id": "a", "op": "agent", "task": "x"}]}
+        )
         assert any("name" in e for e in errors)
 
     def test_duplicate_step_ids(self):
@@ -1098,7 +1171,9 @@ class TestWorkflowRefSubstitution:
     def test_unknown_attr_raises(self):
         from src.geoseal_cli import WorkflowStepResult, substitute_workflow_refs
 
-        result = WorkflowStepResult(step_id="a", op="agent", tongue="KO", tier="ALLOW", seal="s", code="c")
+        result = WorkflowStepResult(
+            step_id="a", op="agent", tongue="KO", tier="ALLOW", seal="s", code="c"
+        )
         with pytest.raises(SystemExit):
             substitute_workflow_refs("${steps.a.banana}", "", {"a": result})
 
@@ -1116,7 +1191,12 @@ class TestWorkflowRun:
             "default_max_tier": "ESCALATE",
             "steps": [
                 {"id": "gen", "op": "agent", "task": "write a python add ${input}"},
-                {"id": "stamp", "op": "seal", "task": "${steps.gen.code}", "tongue": "RU"},
+                {
+                    "id": "stamp",
+                    "op": "seal",
+                    "task": "${steps.gen.code}",
+                    "tongue": "RU",
+                },
             ],
         }
         spec.update(overrides)
@@ -1130,14 +1210,20 @@ class TestWorkflowRun:
         monkeypatch.setattr(polly_client, "_LOCAL_MODEL_PATH", _Path("/no/such/path"))
         monkeypatch.setattr(polly_client, "_ollama_available", lambda timeout=1.5: True)
         canned = "def add(a, b):\n    return a + b\n"
-        monkeypatch.setattr(polly_client, "_generate_ollama", lambda *a, **kw: (canned, 5, 9))
+        monkeypatch.setattr(
+            polly_client, "_generate_ollama", lambda *a, **kw: (canned, 5, 9)
+        )
 
         ledger = tmp_path / "wf.jsonl"
         summary = run_workflow(self._spec(), input_text="function", ledger=ledger)
         assert summary["ok"] is True
         assert summary["n_steps_executed"] == 2
 
-        records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
+        records = [
+            json.loads(line)
+            for line in ledger.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
         step_records = [r for r in records if r["type"] == "workflow_step"]
         run_records = [r for r in records if r["type"] == "workflow_run"]
         assert len(step_records) == 2
@@ -1155,14 +1241,73 @@ class TestWorkflowRun:
         assert stamp_rec["prev_step_id"] == "gen"
 
         # Final summary mirrors the chain tail
-        assert run_records[0]["final_tongue_out_sha256"] == stamp_rec["tongue_out"]["sha256"]
+        assert (
+            run_records[0]["final_tongue_out_sha256"]
+            == stamp_rec["tongue_out"]["sha256"]
+        )
         assert run_records[0]["steps"] == ["gen", "stamp"]
+        assert gen_rec["harness"]["schema"] == "geoseal_agent_harness_v1"
+        assert gen_rec["harness"]["operator_family"]["schema"] == "geoseal_operator_family_v1"
+        assert gen_rec["semantic_ir"]["operator_family"]["op"] == "add"
+        assert gen_rec["harness"]["stisa_code_matrix"]["row_count"] == 1536
+        assert (
+            gen_rec["harness"]["bijective_tokenizer"]["tongue_in"]["roundtrip_ok"]
+            is True
+        )
+        assert "binary" in gen_rec["harness"]["binary_hex_addition"]
+        assert run_records[0]["harness_schema"] == "geoseal_agent_harness_v1"
+        assert (
+            run_records[0]["stisa_code_matrix_sha256"]
+            == stamp_rec["harness"]["stisa_code_matrix"]["sha256"]
+        )
 
     def test_invalid_spec_raises(self):
         from src.geoseal_cli import run_workflow
 
         with pytest.raises(SystemExit):
             run_workflow({"steps": [{"id": "a", "op": "agent", "task": "x"}]})
+
+
+class TestGeoSealHarness:
+    def test_stisa_code_matrix_is_full_and_bijective(self):
+        from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+        from src.geoseal_cli import build_stisa_code_matrix
+
+        matrix = build_stisa_code_matrix()
+        rows = matrix["rows"]
+        assert matrix["schema"] == "stisa_code_matrix_v1"
+        assert matrix["row_count"] == 6 * 256
+
+        ca_0x80 = next(
+            row for row in rows if row["tongue"] == "CA" and row["byte"] == 0x80
+        )
+        token = ca_0x80["token"]
+        assert ca_0x80["hex"] == "0x80"
+        assert ca_0x80["binary"] == "10000000"
+        assert SACRED_TONGUE_TOKENIZER.decode_tokens("ca", [token]) == bytes([0x80])
+        assert ca_0x80["atomic_feature_vector"]["tongue_id"] == 3
+        assert ca_0x80["nibble_addition"]["hex"]["sum"] == "0x8"
+
+    def test_binary_hex_addition_carries(self):
+        from src.geoseal_cli import binary_hex_addition
+
+        result = binary_hex_addition(0xF0, 0x30, width=8)
+        assert result["sum"] == 0x20
+        assert result["carry"] == 1
+        assert result["binary"]["sum"] == "00100000"
+        assert result["hex"]["sum"] == "0x20"
+
+    def test_matrix_cli_emits_summary(self):
+        result = subprocess.run(
+            [sys.executable, "-m", "src.geoseal_cli", "matrix", "--limit", "1"],
+            capture_output=True,
+            text=True,
+            cwd=str(_REPO_ROOT),
+            env={**os.environ, "PYTHONPATH": str(_REPO_ROOT)},
+        )
+        assert result.returncode == 0, result.stderr
+        assert "STISA matrix" in result.stdout
+        assert "rows=1536" in result.stdout
 
 
 # ---------------------------------------------------------------------------
@@ -1199,7 +1344,16 @@ class TestWorkflowCLISmoke:
     def test_list_finds_yaml(self, tmp_path):
         self._write_yaml(tmp_path)
         result = subprocess.run(
-            [sys.executable, "-m", "src.geoseal_cli", "workflow", "list", "--dir", str(tmp_path), "--json"],
+            [
+                sys.executable,
+                "-m",
+                "src.geoseal_cli",
+                "workflow",
+                "list",
+                "--dir",
+                str(tmp_path),
+                "--json",
+            ],
             capture_output=True,
             text=True,
             cwd=str(_REPO_ROOT),
@@ -1212,7 +1366,15 @@ class TestWorkflowCLISmoke:
     def test_validate_ok(self, tmp_path):
         path = self._write_yaml(tmp_path)
         result = subprocess.run(
-            [sys.executable, "-m", "src.geoseal_cli", "workflow", "validate", str(path), "--json"],
+            [
+                sys.executable,
+                "-m",
+                "src.geoseal_cli",
+                "workflow",
+                "validate",
+                str(path),
+                "--json",
+            ],
             capture_output=True,
             text=True,
             cwd=str(_REPO_ROOT),
@@ -1227,7 +1389,15 @@ class TestWorkflowCLISmoke:
         path = tmp_path / "bad.geoseal.yaml"
         path.write_text("steps: []\n", encoding="utf-8")  # missing name + empty steps
         result = subprocess.run(
-            [sys.executable, "-m", "src.geoseal_cli", "workflow", "validate", str(path), "--json"],
+            [
+                sys.executable,
+                "-m",
+                "src.geoseal_cli",
+                "workflow",
+                "validate",
+                str(path),
+                "--json",
+            ],
             capture_output=True,
             text=True,
             cwd=str(_REPO_ROOT),
@@ -1261,11 +1431,17 @@ class TestWorkflowCLISmoke:
             cwd=str(_REPO_ROOT),
             env=self._env(),
         )
-        assert result.returncode == 0, f"stderr={result.stderr!r} stdout={result.stdout!r}"
+        assert (
+            result.returncode == 0
+        ), f"stderr={result.stderr!r} stdout={result.stdout!r}"
         payload = json.loads(result.stdout.strip())
         assert payload["ok"] is True
         assert payload["n_steps_executed"] == 1
         assert ledger.exists()
-        records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip()]
+        records = [
+            json.loads(line)
+            for line in ledger.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
         assert any(r["type"] == "workflow_step" for r in records)
         assert any(r["type"] == "workflow_run" for r in records)
