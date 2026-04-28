@@ -4,7 +4,7 @@
       "url": "https://aethermoore.com/SCBE-AETHERMOORE/",
       "title": "AetherMoore Governed AI Toolkit | Dual-Layer Training Through The Six Tongues Protocol",
       "description": "Buy the AetherMoore governed AI toolkit, try the live demos, and inspect the public proof stack. The system includes The Six Tongues Protocol, a narrative training layer that teaches the same SCBE mechanics to humans and models.",
-      "word_count": 3246,
+      "word_count": 3248,
       "headings": [
         {
           "level": 1,
@@ -105,37 +105,17 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "To My Students",
-      "word_count": 594,
+      "description": "GTFOBins",
+      "word_count": 585,
       "headings": [
         {
           "level": 2,
-          "text": "To My Students",
+          "text": "GTFOBins",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "hendrix.edu",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "New Integrated by Design FreeBSD Book",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "vivianvoss.net",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Microsoft and OpenAI end their exclusive and revenue-sharing deal",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "bloomberg.com",
+          "text": "gtfobins.org",
           "source": "fallback-selector"
         },
         {
@@ -150,24 +130,44 @@
         },
         {
           "level": 2,
-          "text": "Three men are facing charges in Toronto SMS Blaster arrests",
+          "text": "Microsoft and OpenAI end their exclusive and revenue-sharing deal",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "tps.ca",
+          "text": "bloomberg.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Is my blue your blue?",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "ismy.blue",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Pgrx: Build Postgres Extensions with Rust",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "github.com/pgcentralfoundation",
           "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.To My Students (hendrix.edu)165 points by marvinborner 56 minutes ago  | hide | 56\u00a0comments2.New Integrated by Design FreeBSD Book (vivianvoss.net)44 points by vermaden 1 hour ago  | hide | 5\u00a0comments3.Microsoft and OpenAI end their exclusive and revenue-sharing deal (bloomberg.com)737 points by helsinkiandrew 11 hours ago  | hide | 645\u00a0comments4.Talkie: a 13B vintage language model from 1930 (talkie-lm.com)59 points by jekude 2..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.GTFOBins (gtfobins.org)40 points by StefanBatory 35 minutes ago  | hide | 2\u00a0comments2.Talkie: a 13B vintage language model from 1930 (talkie-lm.com)289 points by jekude 8 hours ago  | hide | 93\u00a0comments3.Microsoft and OpenAI end their exclusive and revenue-sharing deal (bloomberg.com)845 points by helsinkiandrew 17 hours ago  | hide | 722\u00a0comments4.Is my blue your blue? (ismy.blue)467 points by theogravity 10 hours ago  | hide |..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 2309,
+      "word_count": 2032,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Mon, 27 Apr 2026 (showing first 50 of 92 entries )"
+          "text": "Tue, 28 Apr 2026 (showing first 50 of 370 entries )"
         }
       ],
-      "link_count": 570,
+      "link_count": 479,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n        \n          Thu, 23 Apr 2026\n        \n      \n        \n          Wed, 22 Apr 2026\n        \n      \n        \n          Tue, 21 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1195 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1151-1195\n\n    \n    Showing up to 50 entries p..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n        \n          Thu, 23 Apr 2026\n        \n      \n        \n          Wed, 22 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1039 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1039\n\n    \n    Showing up to 50 entries p..."
     }
   ]
 }
