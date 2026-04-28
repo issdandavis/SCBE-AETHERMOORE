@@ -233,21 +233,16 @@
         if (resp.ok) data = await resp.json();
       } catch (_) {}
 
-      // Fallback: DuckDuckGo API directly from browser
+      // Fallback: DuckDuckGo via Vercel proxy (avoids CORS)
       if (!data || !data.results || !data.results.length) {
-        var ddgUrl = "https://api.duckduckgo.com/?q=" + encodeURIComponent(query) + "&format=json&no_html=1&skip_disambig=1";
-        var ddgResp = await fetch(ddgUrl);
-        var ddg = await ddgResp.json();
-        var results = [];
-        if (ddg.AbstractURL) {
-          results.push({ title: ddg.Heading || query, url: ddg.AbstractURL, excerpt: (ddg.Abstract || "").substring(0, 200) });
-        }
-        (ddg.RelatedTopics || []).forEach(function(t) {
-          if (t && t.FirstURL && !t.FirstURL.startsWith("https://duckduckgo.com/c/")) {
-            results.push({ title: (t.Text || "").substring(0, 80), url: t.FirstURL, excerpt: (t.Text || "").substring(0, 200) });
-          }
+        var ddgResp = await fetch(SEARCH_PROXY, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: query }),
         });
-        data = { results: results.slice(0, 5), source: "duckduckgo" };
+        if (ddgResp.ok) {
+          data = await ddgResp.json();
+        }
       }
 
       if (pending) pending.remove();
@@ -322,7 +317,10 @@
   }
 
   var HF_MODEL = "Qwen/Qwen2.5-72B-Instruct";
-  var HF_ENDPOINT = "https://router.huggingface.co/hf-inference/models/" + HF_MODEL + "/v1/chat/completions";
+  // Vercel proxy handles CORS — browser can't call HF directly
+  var VERCEL_BASE = window.POLLY_VERCEL_BASE || "https://scbe-aethermoore.vercel.app";
+  var CHAT_PROXY = VERCEL_BASE + "/api/agent/chat";
+  var SEARCH_PROXY = VERCEL_BASE + "/api/agent/search";
 
   async function handleChat(message, thinking, thread) {
     var thinkingMode = thinking || false;
@@ -373,19 +371,17 @@
       history.forEach(function(h) { messages.push(h); });
       messages.push({ role: "user", content: message });
 
-      var hfResp = await fetch(HF_ENDPOINT, {
+      var hfResp = await fetch(CHAT_PROXY, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: HF_MODEL, messages: messages, max_tokens: 512 }),
+        body: JSON.stringify({ message: message, history: history }),
       });
 
       if (pending) pending.remove();
 
       if (hfResp.ok) {
         var hfData = await hfResp.json();
-        var text = hfData.choices && hfData.choices[0] && hfData.choices[0].message
-          ? hfData.choices[0].message.content
-          : "No response from model.";
+        var text = hfData.text || "No response from model.";
         addMsg(thread, "assistant", md(text), chip("Qwen 72B", "online") + chip("HuggingFace", "science"));
         appendMemory("polly", text);
       } else {
