@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic Coding Workbench | AetherMoore</title>
+  <meta name="description" content="Routeable SCBE agentic coding workbench records that combine STISA, repository retrieval, harness verification, and current coding-agent research.">
+  <link rel="canonical" href="https://aethermoore.com/agentic-coding-workbench.html">
+  <meta property="og:title" content="Agentic Coding Workbench | AetherMoore">
+  <meta property="og:description" content="Generated agentic-coding training records for localize, patch, validate coding work.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://aethermoore.com/agentic-coding-workbench.html">
+  <meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="static/polly-sidebar.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0d1117; color: #d6deea; line-height: 1.6; }
+    a { color: #79c0ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { width: min(1080px, calc(100% - 32px)); margin: 0 auto; padding: 32px 0 56px; }
+    .nav { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+    .nav a { border: 1px solid #30363d; background: #161b22; border-radius: 6px; padding: 7px 12px; font-size: 14px; }
+    .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; align-items: end; margin-bottom: 26px; }
+    h1 { font-size: clamp(34px, 5vw, 58px); line-height: 1; letter-spacing: 0; color: #f0f6fc; margin-bottom: 14px; }
+    .lead { color: #9da7b3; max-width: 68ch; font-size: 18px; }
+    .panel { border: 1px solid #30363d; background: #161b22; border-radius: 8px; padding: 18px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat strong { display: block; color: #f0f6fc; font-size: 24px; }
+    .stat span { color: #8b949e; font-size: 13px; }
+    h2 { color: #f0f6fc; font-size: 22px; margin-bottom: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .record, .source { border: 1px solid #30363d; background: #0d1117; border-radius: 8px; padding: 14px; }
+    .record h3, .source h3 { font-size: 16px; color: #f0f6fc; margin-bottom: 8px; }
+    .meta { color: #8b949e; font-size: 13px; overflow-wrap: anywhere; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+    .chip { border: 1px solid #30363d; border-radius: 999px; padding: 2px 8px; color: #c9d1d9; font-size: 12px; }
+    .chip.hot { color: #3fb950; border-color: #238636; }
+    .section { margin-top: 24px; }
+    code { background: #21262d; padding: 2px 5px; border-radius: 4px; color: #f0f6fc; }
+    @media (max-width: 720px) { .hero, .stats { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="agents.html">Agents</a>
+      <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <section class="hero">
+      <div>
+        <h1>Agentic Coding Workbench</h1>
+        <p class="lead">A generated training surface for coding agents that binds STISA/Sacred Tongues routing, repository retrieval, harness verification, and current agentic software-engineering research into trainable JSONL records.</p>
+      </div>
+      <div class="panel">
+        <div class="meta">Primary command</div>
+        <code>npm run training:agentic-workbench</code>
+        <p class="meta" style="margin-top:10px;">Output feeds <code>training-data/agentic_coding/agentic_workbench_scbe.jsonl</code>.</p>
+      </div>
+    </section>
+    <section class="stats">
+      <div class="panel stat"><strong id="record-count">-</strong><span>generated records</span></div>
+      <div class="panel stat"><strong id="source-count">-</strong><span>research anchors</span></div>
+      <div class="panel stat"><strong id="updated">-</strong><span>last built</span></div>
+    </section>
+    <section class="section panel">
+      <h2>Workbench Records</h2>
+      <div id="records" class="grid"><div class="meta">Loading workbench data...</div></div>
+    </section>
+    <section class="section panel">
+      <h2>Research Grounding</h2>
+      <div id="sources" class="grid"><div class="meta">Loading sources...</div></div>
+    </section>
+  </main>
+  <script>
+    function esc(value) {
+      return String(value || '').replace(/[&<>"']/g, function (ch) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[ch];
+      });
+    }
+    function chips(values, hot) {
+      return (values || []).map(function (value) {
+        return '<span class="chip ' + (hot ? 'hot' : '') + '">' + esc(value) + '</span>';
+      }).join('');
+    }
+    fetch('static/agent-data/agentic-coding-workbench.json?' + Date.now())
+      .then(function (resp) { return resp.json(); })
+      .then(function (data) {
+        document.getElementById('record-count').textContent = data.record_count || 0;
+        document.getElementById('source-count').textContent = (data.research_grounding || []).length;
+        document.getElementById('updated').textContent = (data.updated || '').slice(0, 10);
+        document.getElementById('records').innerHTML = (data.records || []).map(function (row) {
+          return '<article class="record"><h3>' + esc(row.title) + '</h3>'
+            + '<div class="chips">' + chips(row.tongues, true) + '</div>'
+            + '<p class="meta">Mode: ' + esc(row.harness_mode) + '</p>'
+            + '<p class="meta">Verify: <code>' + esc((row.verification || []).join(' && ')) + '</code></p>'
+            + '<p class="meta">Files: ' + esc((row.retrieved_files || []).join(', ')) + '</p></article>';
+        }).join('');
+        document.getElementById('sources').innerHTML = (data.research_grounding || []).map(function (row) {
+          return '<article class="source"><h3>' + esc(row.title) + '</h3>'
+            + '<p class="meta">' + esc(row.takeaway) + '</p>'
+            + '<p class="meta">Rule: ' + esc(row.applied_rule) + '</p>'
+            + '<a href="' + esc(row.source_url) + '" target="_blank" rel="noopener">Source</a></article>';
+        }).join('');
+      })
+      .catch(function () {
+        document.getElementById('records').innerHTML = '<div class="meta">Workbench data unavailable.</div>';
+      });
+  </script>
+  <script src="static/polly-sidebar.js"></script>
+</body>
+</html>

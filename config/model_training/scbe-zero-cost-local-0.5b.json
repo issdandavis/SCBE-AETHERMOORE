@@ -13,7 +13,8 @@
       "artifacts/ai_training_consolidation/latest/regularized/aligned_foundations/aligned_foundations_train.regularized.jsonl",
       "artifacts/ai_training_consolidation/latest/regularized/operator_agent_bus/operator_agent_bus_train.regularized.jsonl",
       "artifacts/ai_training_consolidation/latest/regularized/governance_security/governance_security_train.regularized.jsonl",
-      "artifacts/ai_training_consolidation/latest/regularized/research_bridge/research_bridge_train.regularized.jsonl"
+      "artifacts/ai_training_consolidation/latest/regularized/research_bridge/research_bridge_train.regularized.jsonl",
+      "training-data/agentic_coding/agentic_workbench_scbe.jsonl"
     ],
     "eval_files": [
       "artifacts/ai_training_consolidation/latest/regularized/coding_model/coding_model_eval.regularized.jsonl",

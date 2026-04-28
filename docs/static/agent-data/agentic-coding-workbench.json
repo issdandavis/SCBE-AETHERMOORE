@@ -1,0 +1,188 @@
+{
+  "record_count": 5,
+  "records": [
+    {
+      "harness_mode": "localize_patch_validate",
+      "id": "scbe-agentic-workbench-v1-001",
+      "layers": [
+        1,
+        3,
+        7,
+        12,
+        14
+      ],
+      "retrieved_files": [
+        "scripts/benchmark/scbe_code_eval.py",
+        "tests/fixtures/code_eval_prompts.json",
+        "package.json"
+      ],
+      "task_id": "agentic-localize-patch-validate",
+      "title": "Localize, patch, validate coding harness behavior",
+      "tongues": [
+        "KO",
+        "DR",
+        "CA"
+      ],
+      "verification": [
+        "python scripts/benchmark/scbe_code_eval.py --dry-run"
+      ]
+    },
+    {
+      "harness_mode": "rag_guarded_patch",
+      "id": "scbe-agentic-workbench-v1-002",
+      "layers": [
+        2,
+        4,
+        8,
+        12,
+        14
+      ],
+      "retrieved_files": [
+        "scripts/aetherbrowser/api_server.py",
+        "src/harmonic/hyperbolicRAG.ts",
+        "tests/adversarial/test_indirect_injection.py"
+      ],
+      "task_id": "agentic-rag-source-lock",
+      "title": "RAG source lock for code edits",
+      "tongues": [
+        "AV",
+        "UM",
+        "DR"
+      ],
+      "verification": [
+        "python -m pytest tests/adversarial/test_indirect_injection.py -q"
+      ]
+    },
+    {
+      "harness_mode": "stisa_curriculum",
+      "id": "scbe-agentic-workbench-v1-003",
+      "layers": [
+        1,
+        2,
+        3,
+        7,
+        10,
+        12,
+        14
+      ],
+      "retrieved_files": [
+        "scripts/build_coding_system_full_sft.py",
+        "scripts/build_aligned_foundations_sft.py",
+        "python/scbe/tongue_code_lanes.py"
+      ],
+      "task_id": "agentic-stisa-route-selection",
+      "title": "STISA route selection for coding tasks",
+      "tongues": [
+        "KO",
+        "AV",
+        "RU",
+        "CA",
+        "UM",
+        "DR"
+      ],
+      "verification": [
+        "python scripts/build_aligned_foundations_sft.py"
+      ]
+    },
+    {
+      "harness_mode": "free_colab_fallback",
+      "id": "scbe-agentic-workbench-v1-004",
+      "layers": [
+        1,
+        3,
+        7,
+        12,
+        14
+      ],
+      "retrieved_files": [
+        "config/model_training/scbe-zero-cost-local-0.5b.json",
+        "notebooks/scbe_zero_cost_local_0p5b_colab.ipynb",
+        "scripts/system/colab_workflow_catalog.py"
+      ],
+      "task_id": "agentic-colab-unblock",
+      "title": "Free Colab fallback without paid cloud dispatch",
+      "tongues": [
+        "KO",
+        "CA",
+        "UM"
+      ],
+      "verification": [
+        "python scripts/scbe-system-cli.py colab url zero-cost --json"
+      ]
+    },
+    {
+      "harness_mode": "website_proof_surface",
+      "id": "scbe-agentic-workbench-v1-005",
+      "layers": [
+        1,
+        2,
+        8,
+        13,
+        14
+      ],
+      "retrieved_files": [
+        "docs/index.html",
+        "docs/agents.html",
+        "docs/static/agent-data/index.json"
+      ],
+      "task_id": "agentic-public-proof-route",
+      "title": "Public proof route through GitHub Pages",
+      "tongues": [
+        "AV",
+        "KO",
+        "DR"
+      ],
+      "verification": [
+        "python scripts/system/check_markdown_links.py --roots docs/architecture"
+      ]
+    }
+  ],
+  "research_grounding": [
+    {
+      "applied_rule": "Every agentic record must include local files and a verification command.",
+      "id": "swe-bench-verified",
+      "source_url": "https://openai.com/index/introducing-swe-bench-verified/",
+      "takeaway": "Use real repository issues and human-validated evaluation; do not trust benchmark labels blindly.",
+      "title": "SWE-bench Verified"
+    },
+    {
+      "applied_rule": "Record environment assumptions and keep tests local and explicit.",
+      "id": "swe-bench-verified-retired",
+      "source_url": "https://openai.com/index/why-we-no-longer-evaluate-swe-bench-verified/",
+      "takeaway": "Even curated coding benchmarks can contain underspecified or environment-sensitive tasks.",
+      "title": "SWE-bench Verified limitations"
+    },
+    {
+      "applied_rule": "Train the harness to localize first, then patch, then validate.",
+      "id": "agentless",
+      "source_url": "https://arxiv.org/abs/2407.01489",
+      "takeaway": "A simple localization, repair, and validation loop is a strong baseline for coding agents.",
+      "title": "Agentless software engineering baseline"
+    },
+    {
+      "applied_rule": "Include failure observations and recovery actions in assistant trajectories.",
+      "id": "reflexion",
+      "source_url": "https://arxiv.org/abs/2303.11366",
+      "takeaway": "Feedback traces improve later attempts when they are captured as verbal memory.",
+      "title": "Reflexion"
+    },
+    {
+      "applied_rule": "Bind retrieval snippets to each training task and require source-aware edits.",
+      "id": "repogenreflex",
+      "source_url": "https://arxiv.org/abs/2409.13122",
+      "takeaway": "Repository retrieval and verbal feedback can improve repository-level code completion.",
+      "title": "RepoGenReflex"
+    }
+  ],
+  "route_counts": {
+    "AV": 3,
+    "CA": 3,
+    "DR": 4,
+    "KO": 4,
+    "RU": 1,
+    "UM": 3
+  },
+  "schema_version": "scbe_agentic_coding_workbench_v1",
+  "training_file": "training-data/agentic_coding/agentic_workbench_scbe.jsonl",
+  "updated": "2026-04-28T20:00:57Z"
+}
