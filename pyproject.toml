@@ -63,6 +63,7 @@ include = [
     "api*",
     "crypto*",
     "harmonic*",
+    "interop*",
     "spiralverse*",
     "minimal*",
     "storage*",
