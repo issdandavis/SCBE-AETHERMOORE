@@ -1,15 +1,15 @@
 {
-  "updated": "2026-04-27T18:36:39Z",
+  "updated": "2026-04-28T00:26:06Z",
   "tasks": {
     "monitor": {
       "file": "latest-monitor.json",
-      "updated": "2026-04-27T18:36:39Z",
+      "updated": "2026-04-28T00:26:06Z",
       "preview": "{'sites': [{'url': 'https://aethermoore.com/SCBE-AETHERMOORE/', 'title': 'AetherMoore Governed AI Toolkit | Dual-Layer Training Through The Six Tongues Protocol', 'description': 'Buy the AetherMoore g"
     },
     "research": {
       "file": "latest-research.json",
-      "updated": "2026-04-27T18:36:39Z",
-      "preview": "{'query': 'SCBE hyperbolic geometry AI governance', 'findings': [{'source_url': 'https://github.com/issdandavis/SCBE-AETHERMOORE/wiki/Research:-Hyperbolic-Geometry-for-Exponential-AI-Safety-Boundaries"
+      "updated": "2026-04-28T00:26:06Z",
+      "preview": "{'query': 'SCBE hyperbolic geometry AI governance', 'findings': [{'source_url': 'https://www.linkedin.com/posts/issac-davis-scbe-aether_github-issdandavisscbe-aethermoore-14-activity-74288241582157455"
     }
   }
 }
