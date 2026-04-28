@@ -25,6 +25,13 @@ Started consolidation across local repo data, Hugging Face-targeted datasets, Co
 - Ran training run review:
   - `artifacts/ai_training_consolidation/latest/RUN_REVIEW.md`
   - `artifacts/ai_training_consolidation/latest/run_review.json`
+- Started routeable bucket-index consolidation:
+  - `python scripts/system/build_training_bucket_index.py`
+  - `artifacts/training_buckets/latest/TRAINING_BUCKET_INDEX.md`
+  - `artifacts/training_buckets/latest/training_bucket_index.json`
+  - 8 useful buckets
+  - 260 bucketed files
+  - 30 unassigned SFT files left for classification instead of being silently mixed
 - Mirrored the constrained consolidation set to Drive:
   - `C:\Users\issda\Drive\SCBE_Training_Consolidation_20260428`
   - 264 files
@@ -41,6 +48,19 @@ Specialist buckets are ready for training:
 | operator_agent_bus | operator_agent_bus_specialist | 48 | 3 | ready_for_training |
 | governance_security | governance_security_specialist | 59 | 101 | ready_for_training |
 | research_bridge | source_grounded_research_specialist | 84 | 19 | ready_for_training |
+
+Routeable bucket index:
+
+| Bucket | Files | Known JSONL Records | Gate |
+| --- | ---: | ---: | --- |
+| coding_transport | 42 | 4711 | coding smoke, slot preservation, deterministic round trip |
+| aligned_foundations_chemistry | 16 | 2277 | cross-lane concept preservation and packet compliance |
+| agent_ops_harness | 28 | 37 | exact command recall and fail-closed route behavior |
+| governance_safety | 30 | 175 | invalid-input regression and auditable decision record |
+| interop_social_civic | 9 | 0 | dual-frame payload identity, formation route, and social appeal path |
+| source_grounded_research | 7 | 138 | source identity, falsifiable claim, and citation verification |
+| story_manhwa_social | 91 | 0 | canon/style eval, no coding merge unless explicitly paired |
+| commerce_product_sidecar | 37 | 6 | secret sweep, live/test separation, and fulfillment smoke |
 
 Ledger platform counts:
 
@@ -85,3 +105,5 @@ python scripts/system/cloud_storage_sync.py --target hf --repo issdandavis/scbe-
 2. Run profile preflight for ready HF jobs before dispatch.
 3. Run frozen eval gates for the seven priority Kaggle/HF outputs listed in `artifacts/training_run_ledger/latest/ledger.md`.
 4. Decide whether the two legacy agentic-handler profiles should be repaired or archived.
+5. Classify the 30 unassigned SFT files from `artifacts/training_buckets/latest/training_bucket_index.json`.
+6. Add trainable SFT records for `interop_social_civic`; the bucket is structurally useful now but currently doc/code/eval heavy, not record heavy.
