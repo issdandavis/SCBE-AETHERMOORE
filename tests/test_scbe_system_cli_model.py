@@ -206,6 +206,68 @@ def test_build_training_preflight_recommends_non_local_when_runtime_is_missing(
     assert payload["next_steps"][1]["kind"] == "colab-notebook"
 
 
+def test_zero_cost_preflight_blocks_cloud_fallback_when_local_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _load_training_lane_module()
+    dataset_root = tmp_path / "datasets"
+    _write_jsonl(
+        dataset_root / "train.jsonl",
+        {"messages": [{"role": "user", "content": "hi"}, {"role": "assistant", "content": "hello"}]},
+    )
+    profile_path = tmp_path / "zero-cost-profile.json"
+    profile_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "scbe_model_training_profile_v1",
+                "profile_id": "tmp-zero-cost",
+                "title": "Tmp zero cost profile",
+                "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+                "dataset": {
+                    "root": str(dataset_root),
+                    "train_files": ["train.jsonl"],
+                    "eval_files": [],
+                },
+                "hub": {"push_adapter": False, "push_merged": False},
+                "execution": {
+                    "recommended_target": "local-only",
+                    "cost_policy": "zero_dollar_local_only",
+                    "allow_cloud": False,
+                    "minimum_local_vram_mb": 4096,
+                },
+            },
+            indent=2,
+            ensure_ascii=True,
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(module, "_dependency_status", lambda name: {"name": name, "available": name != "unsloth"})
+    monkeypatch.setattr(
+        module,
+        "_inspect_torch_runtime",
+        lambda: {
+            "available": True,
+            "version": "test",
+            "cuda_available": False,
+            "device_count": 0,
+            "devices": [],
+            "total_vram_mb": 0,
+        },
+    )
+    monkeypatch.setattr(module, "_inspect_nvidia_smi", lambda: {"available": False, "devices": []})
+    monkeypatch.delenv("HF_TOKEN", raising=False)
+
+    payload = module.build_training_preflight(ROOT, profile_path)
+
+    assert payload["decision"]["execution_target"] == "emit-only"
+    assert "zero-cost-policy-blocks-cloud-dispatch" in payload["decision"]["rationale"]
+    assert payload["cost_policy"]["zero_cost_local_only"] is True
+    assert payload["cost_policy"]["allow_cloud"] is False
+    assert payload["hub"]["token_required"] is False
+    assert not any(step["kind"] in {"hf-host-inventory", "colab-notebook"} for step in payload["next_steps"])
+
+
 def test_model_preflight_reports_execution_target(tmp_path: Path) -> None:
     dataset_root = tmp_path / "datasets"
     _write_jsonl(

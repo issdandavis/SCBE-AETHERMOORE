@@ -1,0 +1,72 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-zero-cost-local-0.5b",
+  "title": "SCBE zero-cost local 0.5B model lane",
+  "description": "Local-only, zero-dollar adapter lane for building an SCBE-owned working model from consolidated coding, aligned foundations, governance, operator, and research buckets. No cloud dispatch and no paid training.",
+  "backend": "unsloth-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE local autonomous coding and operations model. You use SCBE buckets, GeoSeal gates, 21D routing, Sacred Tongues boundaries, and repository tests to complete long-running work without paid cloud services.",
+  "dataset": {
+    "root": ".",
+    "train_files": [
+      "artifacts/ai_training_consolidation/latest/regularized/coding_model/coding_model_train.regularized.jsonl",
+      "artifacts/ai_training_consolidation/latest/regularized/aligned_foundations/aligned_foundations_train.regularized.jsonl",
+      "artifacts/ai_training_consolidation/latest/regularized/operator_agent_bus/operator_agent_bus_train.regularized.jsonl",
+      "artifacts/ai_training_consolidation/latest/regularized/governance_security/governance_security_train.regularized.jsonl",
+      "artifacts/ai_training_consolidation/latest/regularized/research_bridge/research_bridge_train.regularized.jsonl"
+    ],
+    "eval_files": [
+      "artifacts/ai_training_consolidation/latest/regularized/coding_model/coding_model_eval.regularized.jsonl",
+      "artifacts/ai_training_consolidation/latest/regularized/aligned_foundations/aligned_foundations_eval.regularized.jsonl",
+      "artifacts/ai_training_consolidation/latest/regularized/operator_agent_bus/operator_agent_bus_eval.regularized.jsonl",
+      "artifacts/ai_training_consolidation/latest/regularized/governance_security/governance_security_eval.regularized.jsonl",
+      "artifacts/ai_training_consolidation/latest/regularized/research_bridge/research_bridge_eval.regularized.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 1024,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.0002,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.03,
+    "max_steps": 250,
+    "packing": true,
+    "load_in_4bit": true,
+    "optim": "adamw_8bit",
+    "weight_decay": 0.01,
+    "lr_scheduler_type": "cosine",
+    "logging_steps": 10,
+    "save_strategy": "steps",
+    "save_steps": 50,
+    "save_total_limit": 2,
+    "dataloader_num_workers": 0,
+    "seed": 42,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/scbe-zero-cost-local-0.5b"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "push_adapter": false,
+    "adapter_repo": "",
+    "push_merged": false
+  },
+  "execution": {
+    "default_emit_path": "artifacts/model_training/scbe-zero-cost-local-0.5b-train.py",
+    "recommended_target": "local-only",
+    "cost_policy": "zero_dollar_local_only",
+    "allow_cloud": false,
+    "minimum_local_vram_mb": 4096
+  }
+}

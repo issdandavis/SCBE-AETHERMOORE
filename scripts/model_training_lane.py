@@ -475,8 +475,17 @@ def build_training_preflight(repo_root: Path, profile_path: Path) -> dict[str, A
     }
     torch_runtime = _inspect_torch_runtime()
     nvidia_smi = _inspect_nvidia_smi()
-    token_env = _coerce_string(profile["hub"].get("token_env"), "HF_TOKEN")
+    hub_cfg = profile["hub"]
+    execution_cfg = profile["execution"]
+    token_env = _coerce_string(hub_cfg.get("token_env"), "HF_TOKEN")
+    token_required = bool(hub_cfg.get("push_adapter") or hub_cfg.get("push_merged"))
     token_present = bool(os.environ.get(token_env, ""))
+    cost_policy = _coerce_string(execution_cfg.get("cost_policy"), "")
+    allow_cloud = bool(execution_cfg.get("allow_cloud", True))
+    zero_cost_local_only = (
+        cost_policy.lower() in {"zero_dollar_local_only", "zero-cost-local-only", "local_only"}
+        or allow_cloud is False
+    )
     minimum_local_vram_mb = _estimated_min_local_vram_mb(profile)
 
     local_blockers: list[str] = []
@@ -506,6 +515,9 @@ def build_training_preflight(repo_root: Path, profile_path: Path) -> dict[str, A
     if local_ready:
         execution_target = "local"
         rationale.append("local-environment-meets-profile-requirements")
+    elif zero_cost_local_only:
+        execution_target = "emit-only"
+        rationale.append("zero-cost-policy-blocks-cloud-dispatch")
     elif prefers_hf and hf_ready:
         execution_target = "hf-jobs"
         rationale.append("profile-prefers-hf-and-token-is-present")
@@ -520,7 +532,7 @@ def build_training_preflight(repo_root: Path, profile_path: Path) -> dict[str, A
         rationale.append("profile-can-emit-script-but-runtime-target-is-not-ready")
     if local_blockers:
         rationale.extend(local_blockers)
-    if not token_present:
+    if token_required and not token_present:
         rationale.append(f"missing-env:{token_env}")
 
     return {
@@ -537,7 +549,13 @@ def build_training_preflight(repo_root: Path, profile_path: Path) -> dict[str, A
         "nvidia_smi": nvidia_smi,
         "hub": {
             "token_env": token_env,
+            "token_required": token_required,
             "token_present": token_present,
+        },
+        "cost_policy": {
+            "policy": cost_policy or "standard",
+            "allow_cloud": allow_cloud,
+            "zero_cost_local_only": zero_cost_local_only,
         },
         "local": {
             "ready": local_ready,
