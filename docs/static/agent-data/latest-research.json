@@ -2,34 +2,76 @@
   "query": "SCBE hyperbolic geometry AI governance",
   "findings": [
     {
+      "source_url": "https://www.linkedin.com/posts/issac-davis-scbe-aether_github-issdandavisscbe-aethermoore-14-activity-7428824158215745536-K23N",
+      "title": "SCBE-AETHERMOORE's Hyperbolic AI Safety Approach Validated | Issac Davis posted on the topic | LinkedIn",
+      "relevant_text": "SCBE-AETHERMOORE implements 4/6 quorum consensus across constraint layers.\n\nThe future of AI safety is architectural, geometric, and mathematically enforced.\n\nv3.3.0 live on GKE with ML-KEM + ML-DSA post-quantum crypto.\n\nhttps://lnkd.in/gU5TVajm\n\n#AIGovernance #HyperbolicGeometry #PostQuantum #AISafety #MachineLearning #SCBE",
+      "confidence": 0.9037353242285409,
+      "tags": []
+    },
+    {
       "source_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/wiki/Research:-Hyperbolic-Geometry-for-Exponential-AI-Safety-Boundaries",
       "title": "GitHub - issdandavis/SCBE-AETHERMOORE: Geometric AI governance and evaluation framework with a 14-layer security pipeline, semantic projection, and reproducible benchmark lanes. \u00b7 GitHub",
-      "relevant_text": "md\u00a0\u00a0ALIASES.mdALIASES.md\u00a0\u00a0View all filesRepository files navigationSCBE-AETHERMOORE\nAI governance through geometric cost scaling.\nThis repository is the public working tree for the SCBE-AETHERMOORE stack: a governed AI system built around hyperbolic geometry, semantic weighting, auditability, and multi-layer runtime controls.\nIt is also a large hybrid repo. There is real code here, real docs here, and real experiments here. If you treat every file as equally canonical, the repo will look noisier than it actually is",
-      "confidence": 0.76,
+      "relevant_text": "tmp_hypothesis_paths.txt\u00a0\u00a0View all filesRepository files navigationSCBE-AETHERMOORE\nAI governance through geometric cost scaling.\nThis repository is the public working tree for the SCBE-AETHERMOORE stack: a governed AI system built around hyperbolic geometry, semantic weighting, auditability, and multi-layer runtime controls.\nIt is also a large hybrid repo. There is real code here, real docs here, and real experiments here. If you treat every file as equally canonical, the repo will look noisier than it actually is",
+      "confidence": 0.9035705812383835,
       "tags": [
         "documentation",
-        "code",
-        "has-tables"
+        "has-tables",
+        "code"
       ]
     },
     {
       "source_url": "https://aethermoore.com/research/index.html",
       "title": "SCBE Research | Benchmarks, Verification, and AI Governance Experiments",
       "relevant_text": "Connected to Medium, GitHub Discussions, and the SCBE research domain.\n            \n            \n                \n                    Research Forum + Polly AI\n                    Post articles, join discussions, ask Polly about Sacred Tongues, hyperbolic geometry, and the 14-layer pipeline.\n                    \n                        Forum\n                        Medium\n                        GitHub\n                        Polly AI\n                    \n                \n                \n                    Latest AI Safety Research",
-      "confidence": 0.76,
-      "tags": []
-    },
-    {
-      "source_url": "https://www.linkedin.com/posts/issac-davis-scbe-aether_github-issdandavisscbe-aethermoore-14-activity-7428824158215745536-K23N",
-      "title": "SCBE-AETHERMOORE's Hyperbolic AI Safety Approach Validated | Issac Davis posted on the topic | LinkedIn",
-      "relevant_text": "SCBE-AETHERMOORE implements 4/6 quorum consensus across constraint layers.\n\nThe future of AI safety is architectural, geometric, and mathematically enforced.\n\nv3.3.0 live on GKE with ML-KEM + ML-DSA post-quantum crypto.\n\nhttps://lnkd.in/gU5TVajm\n\n#AIGovernance #HyperbolicGeometry #PostQuantum #AISafety #MachineLearning #SCBE",
-      "confidence": 0.76,
+      "confidence": 0.8951782378479595,
       "tags": []
     }
   ],
   "sources_checked": 5,
-  "total_words_read": 3923,
-  "duration_seconds": 8.407229677000004,
-  "summary": "Found 3 relevant sources for 'SCBE hyperbolic geometry AI governance'. Top result: GitHub - issdandavis/SCBE-AETHERMOORE: Geometric AI governance and evaluation framework with a 14-layer security pipeline, semantic projection, and reproducible benchmark lanes. \u00b7 GitHub (76% confidence). Read 3,923 words across 5 pages.",
-  "errors": []
+  "total_words_read": 3944,
+  "duration_seconds": 7.8203012300000125,
+  "summary": "Found 3 relevant sources for 'SCBE hyperbolic geometry AI governance'. Top result: SCBE-AETHERMOORE's Hyperbolic AI Safety Approach Validated | Issac Davis posted on the topic | LinkedIn (90% confidence). Read 3,944 words across 5 pages.",
+  "errors": [],
+  "source_outcomes": [
+    {
+      "url": "https://pypi.org/project/scbe-aethermoore/",
+      "title": "Client Challenge",
+      "status": "below_threshold",
+      "score": 0.0,
+      "word_count": 35,
+      "reason": ""
+    },
+    {
+      "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/wiki/Research:-Hyperbolic-Geometry-for-Exponential-AI-Safety-Boundaries",
+      "title": "GitHub - issdandavis/SCBE-AETHERMOORE: Geometric AI governance and evaluation framework with a 14-layer security pipeline, semantic projection, and reproducible benchmark lanes. \u00b7 GitHub",
+      "status": "matched",
+      "score": 0.9036,
+      "word_count": 1727,
+      "reason": ""
+    },
+    {
+      "url": "https://medium.com/@issdandavis7795/why-ai-needs-a-geometric-cage-introducing-scbe-aethermoore-cb0b443500a2",
+      "title": "Just a moment...",
+      "status": "below_threshold",
+      "score": 0.0,
+      "word_count": 0,
+      "reason": ""
+    },
+    {
+      "url": "https://aethermoore.com/research/index.html",
+      "title": "SCBE Research | Benchmarks, Verification, and AI Governance Experiments",
+      "status": "matched",
+      "score": 0.8952,
+      "word_count": 574,
+      "reason": ""
+    },
+    {
+      "url": "https://www.linkedin.com/posts/issac-davis-scbe-aether_github-issdandavisscbe-aethermoore-14-activity-7428824158215745536-K23N",
+      "title": "SCBE-AETHERMOORE's Hyperbolic AI Safety Approach Validated | Issac Davis posted on the topic | LinkedIn",
+      "status": "matched",
+      "score": 0.9037,
+      "word_count": 1608,
+      "reason": ""
+    }
+  ]
 }
