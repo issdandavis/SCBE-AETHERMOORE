@@ -22,6 +22,7 @@ import argparse
 import email
 import imaplib
 import json
+import mimetypes
 import os
 import re
 import smtplib
@@ -225,8 +226,13 @@ def _connect_imap(config: BridgeConfig) -> imaplib.IMAP4:
 def _connect_smtp(config: BridgeConfig) -> smtplib.SMTP:
     if not config.has_credentials:
         raise RuntimeError("Bridge credentials are required. Set PROTON_BRIDGE_USERNAME and PROTON_BRIDGE_PASSWORD.")
-    client = smtplib.SMTP(config.host, config.smtp_port, timeout=10)
-    client.starttls(context=ssl.create_default_context())
+    client = smtplib.SMTP(config.host, config.smtp_port, timeout=120)
+    tls_context = ssl.create_default_context()
+    if config.host in {"127.0.0.1", "localhost", "::1"}:
+        # Proton Bridge presents a local self-signed certificate.
+        tls_context.check_hostname = False
+        tls_context.verify_mode = ssl.CERT_NONE
+    client.starttls(context=tls_context)
     client.login(config.username, config.password)
     return client
 
@@ -553,12 +559,38 @@ def sweep_messages(config: BridgeConfig, folder: str, limit: int) -> dict[str, A
 
 
 
-def send_mail(config: BridgeConfig, to: str, subject: str, body: str, execute: bool) -> dict[str, Any]:
+def send_mail(
+    config: BridgeConfig,
+    to: str,
+    subject: str,
+    body: str,
+    execute: bool,
+    cc: str = "",
+    from_email: str = "",
+    attachments: list[Path] | None = None,
+) -> dict[str, Any]:
+    attachment_paths = attachments or []
     message = EmailMessage()
-    message["From"] = config.username
+    message["From"] = from_email.strip() or config.username
     message["To"] = to
+    if cc.strip():
+        message["Cc"] = cc.strip()
     message["Subject"] = subject
     message.set_content(body)
+    for attachment_path in attachment_paths:
+        if not attachment_path.exists() or not attachment_path.is_file():
+            raise FileNotFoundError(f"attachment missing: {attachment_path}")
+        content_type, _ = mimetypes.guess_type(str(attachment_path))
+        if content_type:
+            maintype, subtype = content_type.split("/", 1)
+        else:
+            maintype, subtype = "application", "octet-stream"
+        message.add_attachment(
+            attachment_path.read_bytes(),
+            maintype=maintype,
+            subtype=subtype,
+            filename=attachment_path.name,
+        )
     status = "dry_run"
     if execute:
         with _connect_smtp(config) as client:
@@ -568,18 +600,24 @@ def send_mail(config: BridgeConfig, to: str, subject: str, body: str, execute: b
         "send_mail",
         {
             "to": to,
+            "cc": cc,
+            "from_email": message["From"],
             "subject": subject,
             "execute": execute,
             "status": status,
+            "attachments": [str(path) for path in attachment_paths],
         },
     )
     return {
         "schema_version": "proton_mail_bridge_send_v1",
         "generated_at": _now_iso(),
         "to": to,
+        "cc": cc,
+        "from_email": message["From"],
         "subject": subject,
         "execute": execute,
         "status": status,
+        "attachments": [str(path) for path in attachment_paths],
         "lines": [f"Send status: {status} -> {to}"],
     }
 
@@ -661,7 +699,20 @@ def cmd_send(args: argparse.Namespace) -> int:
         body = Path(args.body_file).read_text(encoding="utf-8")
     if not body:
         raise SystemExit("Provide --body or --body-file.")
-    return _emit(send_mail(load_config(), args.to, args.subject, body, execute=args.execute), args.json)
+    attachments = [Path(item) for item in args.attach]
+    return _emit(
+        send_mail(
+            load_config(),
+            args.to,
+            args.subject,
+            body,
+            execute=args.execute,
+            cc=args.cc,
+            from_email=args.from_email,
+            attachments=attachments,
+        ),
+        args.json,
+    )
 
 
 def cmd_store_credentials(args: argparse.Namespace) -> int:
@@ -719,9 +770,12 @@ def build_parser() -> argparse.ArgumentParser:
     send_cmd = sub.add_parser("send", help="Send a mail via Proton Bridge SMTP; dry-run unless --execute is set")
     add_common_flags(send_cmd)
     send_cmd.add_argument("--to", required=True)
+    send_cmd.add_argument("--cc", default="")
+    send_cmd.add_argument("--from-email", default="")
     send_cmd.add_argument("--subject", required=True)
     send_cmd.add_argument("--body", default="")
     send_cmd.add_argument("--body-file", default="")
+    send_cmd.add_argument("--attach", action="append", default=[], help="Attachment path; repeat for multiple files")
     send_cmd.add_argument("--execute", action="store_true", help="Actually send the mail")
     send_cmd.set_defaults(func=cmd_send)
     return parser

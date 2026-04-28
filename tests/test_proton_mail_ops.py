@@ -75,6 +75,7 @@ class FakeSmtp:
         self.started_tls = False
         self.logged_in = None
         self.sent_to = None
+        self.message = None
 
     def starttls(self, context=None):
         self.started_tls = True
@@ -84,6 +85,7 @@ class FakeSmtp:
 
     def send_message(self, message):
         self.sent_to = message["To"]
+        self.message = message
 
     def __enter__(self):
         return self
@@ -285,6 +287,36 @@ def test_send_mail_execute_uses_authenticated_bridge_smtp(monkeypatch) -> None:
     payload = mail_ops.send_mail(cfg, "buyer@example.com", "Hello", "World", execute=True)
     assert payload["status"] == "sent"
     assert fake.sent_to == "buyer@example.com"
+
+
+def test_send_mail_supports_cc_from_and_attachments(monkeypatch, tmp_path) -> None:
+    cfg = mail_ops.BridgeConfig("127.0.0.1", 1143, 1025, "bridge-user", "bridge-password", "Folders")
+    attachment = tmp_path / "capability.pdf"
+    attachment.write_bytes(b"%PDF-1.4\n% test\n")
+    fake = FakeSmtp()
+    audit_events: list[tuple[str, dict]] = []
+    monkeypatch.setattr(mail_ops, "_connect_smtp", lambda config: fake)
+    monkeypatch.setattr(mail_ops, "_audit", lambda event, payload: audit_events.append((event, payload)))
+
+    payload = mail_ops.send_mail(
+        cfg,
+        "buyer@example.com",
+        "Capability",
+        "Attached.",
+        execute=True,
+        cc="owner@example.com",
+        from_email="sender@example.com",
+        attachments=[attachment],
+    )
+
+    assert payload["status"] == "sent"
+    assert payload["from_email"] == "sender@example.com"
+    assert payload["cc"] == "owner@example.com"
+    assert payload["attachments"] == [str(attachment)]
+    assert fake.message["From"] == "sender@example.com"
+    assert fake.message["Cc"] == "owner@example.com"
+    assert list(fake.message.iter_attachments())[0].get_filename() == "capability.pdf"
+    assert audit_events[0][1]["attachments"] == [str(attachment)]
 
 
 def test_store_credentials_persists_bridge_secrets(monkeypatch) -> None:

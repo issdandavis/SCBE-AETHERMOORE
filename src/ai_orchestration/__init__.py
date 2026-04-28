@@ -50,6 +50,12 @@ __all__ = [
     "WorkflowTracker",
     # Registry
     "AgentRegistry",
+    # GeoSeal search field
+    "SearchFieldPolicy",
+    "SearchMetrics",
+    "SearchTrace",
+    "adapt_policy",
+    "trace_candidate",
 ]
 
 from .orchestrator import Orchestrator, AgentRegistry
@@ -57,3 +63,10 @@ from .agents import Agent, AgentCapability  # noqa: F401
 from .tasks import Task, Workflow, TaskStatus  # noqa: F401
 from .security import SecurityGate, PromptSanitizer, OutputValidator
 from .logging import AuditLogger, WorkflowTracker
+from .search_field import (  # noqa: F401
+    SearchFieldPolicy,
+    SearchMetrics,
+    SearchTrace,
+    adapt_policy,
+    trace_candidate,
+)
