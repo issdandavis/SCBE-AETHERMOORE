@@ -50,6 +50,7 @@
   },
   "hub": {
     "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-chemistry-primary-sft",
     "push_adapter": false,
     "adapter_repo": "issdandavis/scbe-chemistry-qwen-primary",
     "push_merged": false

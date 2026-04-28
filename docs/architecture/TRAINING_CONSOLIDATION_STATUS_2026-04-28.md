@@ -74,13 +74,14 @@ python scripts/system/cloud_storage_sync.py --target hf --repo issdandavis/scbe-
 ## Blockers / Gaps
 
 - HF upload is temporarily rate-limited; retry with the patched batch uploader.
-- `aligned-foundations-qwen-primary` and `chemistry-qwen-primary` profiles are missing `hub.dataset_repo`.
+- `aligned-foundations-qwen-primary` now routes datasets to `issdandavis/scbe-aligned-foundations-sft`.
+- `chemistry-qwen-primary` now routes datasets to `issdandavis/scbe-chemistry-primary-sft`.
 - `ollama-agentic-handler` and `hf-agentic-handler` profiles are missing both `hub.dataset_repo` and several older `training-data/code_*.jsonl` files.
 - Colab notebooks are cataloged and available, but no live Colab session URL was attached in this run.
 
 ## Next Safe Actions
 
-1. Add `hub.dataset_repo` to blocked aligned-foundations and chemistry profiles.
-2. Retry the patched HF batch upload after the rate limit clears.
-3. Run profile preflight for ready HF jobs before dispatch.
-4. Run frozen eval gates for the seven priority Kaggle/HF outputs listed in `artifacts/training_run_ledger/latest/ledger.md`.
+1. Retry the patched HF batch upload after the rate limit clears.
+2. Run profile preflight for ready HF jobs before dispatch.
+3. Run frozen eval gates for the seven priority Kaggle/HF outputs listed in `artifacts/training_run_ledger/latest/ledger.md`.
+4. Decide whether the two legacy agentic-handler profiles should be repaired or archived.
