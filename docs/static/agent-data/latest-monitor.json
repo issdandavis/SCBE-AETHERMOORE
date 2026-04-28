@@ -105,17 +105,68 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "",
-      "word_count": 618,
-      "headings": [],
+      "description": "To My Students",
+      "word_count": 594,
+      "headings": [
+        {
+          "level": 2,
+          "text": "To My Students",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "hendrix.edu",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "New Integrated by Design FreeBSD Book",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "vivianvoss.net",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Microsoft and OpenAI end their exclusive and revenue-sharing deal",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "bloomberg.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Talkie: a 13B vintage language model from 1930",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "talkie-lm.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Three men are facing charges in Toronto SMS Blaster arrests",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "tps.ca",
+          "source": "fallback-selector"
+        }
+      ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Microsoft and OpenAI end their exclusive and revenue-sharing deal (bloomberg.com)466 points by helsinkiandrew 5 hours ago  | hide | 391\u00a0comments2.Open-Source KiCad PCBs for Common Arduino, ESP32, RP2040 Boards (github.com/hanqaqa)39 points by Hanqaqa 50 minutes ago  | hide | discuss3.GitHub is having issues now (githubstatus.com)57 points by SenHeng 52 minutes ago  | hide | 17\u00a0comments4.\u201cWhy not just use Lean?\u201d (lawrencecpaulson..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.To My Students (hendrix.edu)165 points by marvinborner 56 minutes ago  | hide | 56\u00a0comments2.New Integrated by Design FreeBSD Book (vivianvoss.net)44 points by vermaden 1 hour ago  | hide | 5\u00a0comments3.Microsoft and OpenAI end their exclusive and revenue-sharing deal (bloomberg.com)737 points by helsinkiandrew 11 hours ago  | hide | 645\u00a0comments4.Talkie: a 13B vintage language model from 1930 (talkie-lm.com)59 points by jekude 2..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
-      "description": "",
+      "description": "quick links",
       "word_count": 2309,
       "headings": [
         {
