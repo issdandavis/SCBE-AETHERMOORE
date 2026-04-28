@@ -119,24 +119,31 @@ def _sync_to_hf(
     if not push:
         return summary
     try:
-        from huggingface_hub import HfApi  # type: ignore
+        from huggingface_hub import CommitOperationAdd, HfApi  # type: ignore
     except Exception as exc:  # pragma: no cover
         raise SystemExit(
             f"huggingface_hub is required for --target hf: {exc}. Install with `pip install huggingface_hub`."
         )
 
     api = HfApi(token=token)
+    operations = []
     for src in files:
         rel = _relative(src)
         path_in_repo = f"{prefix.rstrip('/')}/{rel}" if prefix else rel
-        api.upload_file(
-            path_or_fileobj=str(src),
-            path_in_repo=path_in_repo,
+        operations.append(
+            CommitOperationAdd(
+                path_or_fileobj=str(src),
+                path_in_repo=path_in_repo,
+            )
+        )
+    if operations:
+        api.create_commit(
             repo_id=repo_id,
             repo_type=repo_type,
-            commit_message=f"cloud-sync: {rel}",
+            operations=operations,
+            commit_message=f"cloud-sync: {len(operations)} file consolidation batch",
         )
-        summary["uploaded"] += 1
+        summary["uploaded"] = len(operations)
     return summary
 
 
