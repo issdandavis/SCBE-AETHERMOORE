@@ -219,19 +219,40 @@
   }
 
   async function handleSearch(query, thread) {
-    var pending = addMsg(thread, "system", "<p>Searching for <em>" + esc(query) + "</em>…</p>", chip("Tavily", "science"));
+    var pending = addMsg(thread, "system", "<p>Searching for <em>" + esc(query) + "</em>…</p>", chip("DuckDuckGo", "science"));
     try {
-      var resp = await fetch(apiUrl("/v1/polly/search"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query }),
-      });
+      // Try backend first
+      var data = null;
+      try {
+        var resp = await fetch(apiUrl("/v1/polly/search"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: query }),
+          signal: AbortSignal.timeout(5000),
+        });
+        if (resp.ok) data = await resp.json();
+      } catch (_) {}
+
+      // Fallback: DuckDuckGo API directly from browser
+      if (!data || !data.results || !data.results.length) {
+        var ddgUrl = "https://api.duckduckgo.com/?q=" + encodeURIComponent(query) + "&format=json&no_html=1&skip_disambig=1";
+        var ddgResp = await fetch(ddgUrl);
+        var ddg = await ddgResp.json();
+        var results = [];
+        if (ddg.AbstractURL) {
+          results.push({ title: ddg.Heading || query, url: ddg.AbstractURL, excerpt: (ddg.Abstract || "").substring(0, 200) });
+        }
+        (ddg.RelatedTopics || []).forEach(function(t) {
+          if (t && t.FirstURL && !t.FirstURL.startsWith("https://duckduckgo.com/c/")) {
+            results.push({ title: (t.Text || "").substring(0, 80), url: t.FirstURL, excerpt: (t.Text || "").substring(0, 200) });
+          }
+        });
+        data = { results: results.slice(0, 5), source: "duckduckgo" };
+      }
+
       if (pending) pending.remove();
-      if (!resp.ok) throw new Error("status " + resp.status);
-      var data = await resp.json();
-      var source = data.source === "tavily" ? "Tavily" : "Fallback";
-      if (!data.results || !data.results.length) {
-        addMsg(thread, "assistant", "<p>No results found for <em>" + esc(query) + "</em>.</p>", chip(source, "offline"));
+      if (!data.results.length) {
+        addMsg(thread, "assistant", "<p>No results for <em>" + esc(query) + "</em>. Try a broader search.</p>", chip("DuckDuckGo", "offline"));
         return;
       }
       var html = data.results.map(function (r) {
@@ -240,7 +261,7 @@
           : "<strong>" + esc(r.title) + "</strong>";
         return '<div class="polly-source">' + link + "<small>" + esc(r.excerpt) + "</small></div>";
       }).join("");
-      addMsg(thread, "assistant", '<div class="polly-sources">' + html + "</div>", chip(source, data.source === "tavily" ? "online" : "lore"));
+      addMsg(thread, "assistant", '<div class="polly-sources">' + html + "</div>", chip(data.source || "DuckDuckGo", "online"));
     } catch (err) {
       if (pending) pending.remove();
       addMsg(thread, "assistant", "<p>Search failed: " + esc(String(err)) + "</p>", chip("Error", "offline"));
@@ -300,15 +321,20 @@
     }
   }
 
+  var HF_MODEL = "Qwen/Qwen2.5-72B-Instruct";
+  var HF_ENDPOINT = "https://router.huggingface.co/hf-inference/models/" + HF_MODEL + "/v1/chat/completions";
+
   async function handleChat(message, thinking, thread) {
     var thinkingMode = thinking || false;
     var metaLabel = thinkingMode ? chip("Thinking…", "science") : chip("Routing…", "science");
     var pending = addMsg(thread, "system", "<p>Working on it…</p>", metaLabel);
 
-    var history = loadMemory().slice(-12).map(function (t) {
+    var history = loadMemory().slice(-6).map(function (t) {
       return { role: t.role === "polly" ? "assistant" : t.role, content: t.content };
     });
 
+    // Try backend first (local server or Vercel)
+    var answered = false;
     try {
       var resp = await fetch(apiUrl("/v1/polly/chat"), {
         method: "POST",
@@ -319,19 +345,56 @@
           history: history,
           page_context: document.title + " — " + window.location.pathname,
         }),
+        signal: AbortSignal.timeout(8000),
       });
+      if (resp.ok) {
+        var data = await resp.json();
+        if (pending) pending.remove();
+        var routeMeta = [
+          chip(data.route || "general", data.thinking ? "science" : "hybrid"),
+          chip(data.model || "polly", data.thinking ? "online" : "lore"),
+        ].join("");
+        addMsg(thread, "assistant", md(data.response || "No response."), routeMeta);
+        appendMemory("polly", data.response || "");
+        answered = true;
+      }
+    } catch (_) {}
+
+    if (answered) return;
+
+    // Fallback: call HuggingFace directly from the browser (free, no API key needed for public models)
+    try {
+      if (pending) { pending.remove(); pending = null; }
+      pending = addMsg(thread, "system", "<p>Calling Qwen 72B…</p>", chip("HuggingFace", "science"));
+
+      var messages = [
+        { role: "system", content: "You are Polly, the AI assistant for AetherMoore — an AI safety and governance framework using hyperbolic geometry. Be helpful, concise, and accurate. If you don't know something, say so." }
+      ];
+      history.forEach(function(h) { messages.push(h); });
+      messages.push({ role: "user", content: message });
+
+      var hfResp = await fetch(HF_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: HF_MODEL, messages: messages, max_tokens: 512 }),
+      });
+
       if (pending) pending.remove();
-      if (!resp.ok) throw new Error("status " + resp.status);
-      var data = await resp.json();
-      var routeMeta = [
-        chip(data.route || "general", data.thinking ? "science" : "hybrid"),
-        chip(data.model || "polly", data.thinking ? "online" : "lore"),
-      ].join("");
-      addMsg(thread, "assistant", md(data.response || "No response."), routeMeta);
-      appendMemory("polly", data.response || "");
+
+      if (hfResp.ok) {
+        var hfData = await hfResp.json();
+        var text = hfData.choices && hfData.choices[0] && hfData.choices[0].message
+          ? hfData.choices[0].message.content
+          : "No response from model.";
+        addMsg(thread, "assistant", md(text), chip("Qwen 72B", "online") + chip("HuggingFace", "science"));
+        appendMemory("polly", text);
+      } else {
+        var errText = await hfResp.text();
+        addMsg(thread, "assistant", "<p>AI is busy — free tier may be warming up. Try again in a moment.</p><p style='font-size:0.8rem;color:#8b949e;'>" + esc(errText.substring(0, 150)) + "</p>", chip("HuggingFace", "offline"));
+      }
     } catch (err) {
       if (pending) pending.remove();
-      addMsg(thread, "assistant", "<p>Backend unreachable. Check your connection or API configuration.</p>", chip("Offline", "offline"));
+      addMsg(thread, "assistant", "<p>Could not reach AI. Check your internet connection.</p>", chip("Offline", "offline"));
     }
   }
 
