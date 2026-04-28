@@ -4,7 +4,7 @@
       "url": "https://aethermoore.com/SCBE-AETHERMOORE/",
       "title": "AetherMoore Governed AI Toolkit | Dual-Layer Training Through The Six Tongues Protocol",
       "description": "Buy the AetherMoore governed AI toolkit, try the live demos, and inspect the public proof stack. The system includes The Six Tongues Protocol, a narrative training layer that teaches the same SCBE mechanics to humans and models.",
-      "word_count": 4848,
+      "word_count": 3246,
       "headings": [
         {
           "level": 1,
@@ -47,9 +47,9 @@
           "text": "Submerged layer"
         }
       ],
-      "link_count": 204,
+      "link_count": 64,
       "table_count": 0,
-      "text_preview": "\u25c8 feed\n    \n      SPY\u2009$715.17\u2009+0.17%\n      QQQ\u2009$664.23\u2009+0.03%\n      NVDA\u2009$216.61\u2009+4.01%\n      BTC\u2009$76,578\u2009-1.02%\n    \n    \n      HN Talkie: a 13B vintage language model from 1930HN Microsoft and OpenAI end their exclusive and revenue-sharing dealHN LingBot-Map: Streaming 3D reconstruction with geometric context transformerHN 4TB of voice samples just stolen from 40k AI contractors at MercorHN Show HN: AgentSwift \u2013 Open-source iOS builder agentHN China blocks Meta's acquisition of AI startup Manu..."
+      "text_preview": "\u25c8 feed\n    \n      SPY\u2009\u2014\u2009\n      QQQ\u2009\u2014\u2009\n      NVDA\u2009\u2014\u2009\n      BTC\u2009\u2014\u2009\n    \n    \n      \n        Fetching research feed\u2026\n      \n    \n  \n\n  \n    \n      \n        \n          AI governance, built from real math and real code\n          I built a messy but real system for governing how AI thinks, routes, and drifts.\n          \n            AetherMoore is the public face of SCBE-AETHERMOORE: a geometric governance stack for AI training, agent communication, and risk tracing. It uses structured channels, hyperb..."
     },
     {
       "url": "https://github.com/issdandavis/SCBE-AETHERMOORE",
@@ -105,17 +105,37 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "GTFOBins",
+      "description": "Localsend: An open-source cross-platform alternative to AirDrop",
       "word_count": 585,
       "headings": [
         {
           "level": 2,
-          "text": "GTFOBins",
+          "text": "Localsend: An open-source cross-platform alternative to AirDrop",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "gtfobins.org",
+          "text": "github.com/localsend",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Microsoft VibeVoice: Open-Source Frontier Voice AI",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "github.com/microsoft",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "The World's Most Complex Machine",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "worksinprogress.co",
           "source": "fallback-selector"
         },
         {
@@ -130,38 +150,18 @@
         },
         {
           "level": 2,
-          "text": "Microsoft and OpenAI end their exclusive and revenue-sharing deal",
+          "text": "The Social Edge of Intelligence: Individual Gain, Collective Loss",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "bloomberg.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Is my blue your blue?",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "ismy.blue",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Pgrx: Build Postgres Extensions with Rust",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "github.com/pgcentralfoundation",
+          "text": "theideasletter.org",
           "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.GTFOBins (gtfobins.org)43 points by StefanBatory 43 minutes ago  | hide | 5\u00a0comments2.Talkie: a 13B vintage language model from 1930 (talkie-lm.com)293 points by jekude 8 hours ago  | hide | 95\u00a0comments3.Microsoft and OpenAI end their exclusive and revenue-sharing deal (bloomberg.com)847 points by helsinkiandrew 17 hours ago  | hide | 723\u00a0comments4.Is my blue your blue? (ismy.blue)474 points by theogravity 10 hours ago  | hide |..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Localsend: An open-source cross-platform alternative to AirDrop (github.com/localsend)77 points by bilsbie 51 minutes ago  | hide | 26\u00a0comments2.Microsoft VibeVoice: Open-Source Frontier Voice AI (github.com/microsoft)14 points by tosh 50 minutes ago  | hide | 2\u00a0comments3.The World's Most Complex Machine (worksinprogress.co)123 points by mellosouls 5 hours ago  | hide | 59\u00a0comments4.Talkie: a 13B vintage language model from 1930..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
