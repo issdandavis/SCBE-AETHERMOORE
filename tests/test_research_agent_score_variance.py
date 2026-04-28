@@ -74,10 +74,7 @@ def test_three_pages_same_hit_pattern_get_distinct_scores():
         assert phrase not in p.text.lower()
 
     agent = _make_agent()
-    scores = [
-        agent._score_relevance(p, query_terms)
-        for p in (short, medium, long_dense)
-    ]
+    scores = [agent._score_relevance(p, query_terms) for p in (short, medium, long_dense)]
 
     assert all(0.0 <= s <= 1.0 for s in scores), scores
     assert len(set(scores)) == 3, f"expected 3 distinct scores, got {scores}"
