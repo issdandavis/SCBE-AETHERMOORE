@@ -40,10 +40,10 @@ PROFILES: dict[str, LaunchProfile] = {
     ),
     "training": LaunchProfile(
         name="training",
-        description="Training lane safety checks and operator terminal.",
+        description="Training lane safety checks and local run review.",
         commands=(
             [sys.executable, "scripts/system/repo_launch_preflight.py", "--profile", "training"],
-            [sys.executable, "scripts/system/training_terminal.py"],
+            [sys.executable, "scripts/system/review_training_runs.py"],
         ),
     ),
     "contracts": LaunchProfile(

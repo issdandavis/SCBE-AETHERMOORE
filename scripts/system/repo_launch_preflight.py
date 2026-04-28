@@ -27,7 +27,7 @@ PROFILE_REQUIRED_PATHS = {
         "scripts/system/start_aetherbrowser_extension_service.mjs",
         "scripts/verify_aetherbrowser_extension_service.py",
     ),
-    "training": ("scripts/system/training_terminal.py",),
+    "training": ("scripts/system/review_training_runs.py",),
     "contracts": ("scripts/sam_gov_ingest.py",),
     "full-local": (
         "scripts/system/start_aetherbrowser_extension_service.mjs",

@@ -110,7 +110,7 @@
     "scbe:cloud:sync": "python scripts/system/cloud_storage_sync.py",
     "scbe:phase01:gates": "python scripts/system/repo_launch_preflight.py --profile dev-min && python scripts/system/repo_path_reference_scan.py && python scripts/check_secrets.py && python scripts/system/check_markdown_links.py --roots docs/architecture",
     "system:cli": "python scripts/scbe-system-cli.py",
-    "training:terminal": "python scripts/system/training_terminal.py",
+    "training:terminal": "python scripts/system/review_training_runs.py",
     "training:watch": "python scripts/system/training_watch_report.py",
     "training:watch:dsl": "python scripts/system/training_watch_report.py --focus-hf-job 69eec858d70108f37ace0514",
     "training:merge-adapters": "python scripts/system/merge_lora_adapters.py",
