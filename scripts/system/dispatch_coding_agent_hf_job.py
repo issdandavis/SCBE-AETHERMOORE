@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-smoke.json"
+DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-atomic-workflow-stage6.json"
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_coding_agent_jobs"
 ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
 
