@@ -31,6 +31,14 @@ NOTEBOOKS: list[dict[str, Any]] = [
         "summary": "Free T4 LoRA fine-tuning lane for SCBE governance data.",
     },
     {
+        "name": "zero-cost-local-0p5b",
+        "aliases": ["zero-cost", "local-0p5b", "own-model", "free-model"],
+        "path": "notebooks/scbe_zero_cost_local_0p5b_colab.ipynb",
+        "branch": "chore/repo-launch-restructure",
+        "category": "training",
+        "summary": "Free Colab LoRA lane for the SCBE zero-cost 0.5B adapter when local Torch is blocked.",
+    },
+    {
         "name": "qlora-training",
         "aliases": ["qlora", "colab-qlora", "trainer"],
         "path": "notebooks/colab_qlora_training.ipynb",
@@ -111,15 +119,17 @@ def _github_branch() -> str:
 def _record_payload(row: dict[str, Any]) -> dict[str, Any]:
     rel_path = row["path"].replace("\\", "/")
     local_path = REPO_ROOT / row["path"]
+    branch = row.get("branch") or _github_branch()
     return {
         "name": row["name"],
         "aliases": row["aliases"],
         "category": row["category"],
         "summary": row["summary"],
+        "branch": branch,
         "path": rel_path,
         "local_path": str(local_path),
         "exists": local_path.exists(),
-        "colab_url": f"https://colab.research.google.com/github/{_github_repo()}/blob/{_github_branch()}/{rel_path}",
+        "colab_url": f"https://colab.research.google.com/github/{_github_repo()}/blob/{branch}/{rel_path}",
     }
 
 

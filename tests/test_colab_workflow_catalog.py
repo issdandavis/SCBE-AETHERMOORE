@@ -29,6 +29,7 @@ def test_list_json_contains_pivot_and_finetune() -> None:
     names = {row["name"] for row in payload}
     assert "scbe-pivot-v2" in names
     assert "scbe-finetune-free" in names
+    assert "zero-cost-local-0p5b" in names
 
 
 def test_show_resolves_alias() -> None:
@@ -42,3 +43,12 @@ def test_url_points_to_colab() -> None:
     out = _run("url", "finetune").strip()
     assert out.startswith("https://colab.research.google.com/github/")
     assert "notebooks/scbe_finetune_colab.ipynb" in out
+
+
+def test_zero_cost_colab_uses_active_branch_override() -> None:
+    payload = json.loads(_run("show", "zero-cost", "--json"))
+    assert payload["name"] == "zero-cost-local-0p5b"
+    assert payload["path"] == "notebooks/scbe_zero_cost_local_0p5b_colab.ipynb"
+    assert payload["branch"] == "chore/repo-launch-restructure"
+    assert payload["exists"] is True
+    assert "blob/chore/repo-launch-restructure/notebooks/scbe_zero_cost_local_0p5b_colab.ipynb" in payload["colab_url"]
