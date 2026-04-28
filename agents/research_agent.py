@@ -40,6 +40,7 @@ class ResearchReport:
     duration_seconds: float = 0
     summary: str = ""
     errors: List[str] = field(default_factory=list)
+    source_outcomes: List[Dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -141,11 +142,13 @@ class ResearchAgent:
 
             if page.error:
                 report.errors.append(f"{page.url}: {page.error}")
+                report.source_outcomes.append(self._source_outcome(page, "error", 0.0, page.error))
                 continue
 
             # Relevance scoring
             score = self._score_relevance(page, query_terms)
             if score < self.relevance_threshold:
+                report.source_outcomes.append(self._source_outcome(page, "below_threshold", score))
                 continue
 
             # Extract the most relevant portion of text
@@ -163,6 +166,7 @@ class ResearchAgent:
                     tags=tags,
                 )
             )
+            report.source_outcomes.append(self._source_outcome(page, "matched", score))
 
         # Step 3: Follow links for depth (if enabled and findings are thin)
         if follow_links and len(report.findings) < 3 and self.max_depth > 0:
@@ -173,6 +177,8 @@ class ResearchAgent:
                     report.sources_checked += 1
                     report.total_words_read += page.word_count
                     if page.error:
+                        report.errors.append(f"{page.url}: {page.error}")
+                        report.source_outcomes.append(self._source_outcome(page, "error", 0.0, page.error))
                         continue
                     score = self._score_relevance(page, query_terms)
                     if score >= self.relevance_threshold:
@@ -185,8 +191,21 @@ class ResearchAgent:
                                 tags=self._auto_tag(page) + ["followed-link"],
                             )
                         )
+                        report.source_outcomes.append(self._source_outcome(page, "matched_followed_link", score))
+                    else:
+                        report.source_outcomes.append(self._source_outcome(page, "below_threshold_followed_link", score))
                 except Exception as exc:
                     report.errors.append(f"Follow link {url}: {exc}")
+                    report.source_outcomes.append(
+                        {
+                            "url": url,
+                            "title": "",
+                            "status": "error_followed_link",
+                            "score": 0.0,
+                            "word_count": 0,
+                            "reason": str(exc),
+                        }
+                    )
 
         # Sort findings by confidence
         report.findings.sort(key=lambda f: f.confidence, reverse=True)
@@ -266,25 +285,52 @@ class ResearchAgent:
     # -- internal scoring ----------------------------------------------------
 
     def _score_relevance(self, page, query_terms: set) -> float:
-        """Score 0-1 how relevant a page is to the query."""
+        """Score 0-1 how relevant a page is to the query.
+
+        Composite of presence (text+title), continuous tie-breakers
+        (term-frequency density, length, first-match position), phrase
+        bonus, and short-page penalty. The continuous tie-breakers
+        prevent same-pattern pages from collapsing to identical scores.
+        """
+        import math
+
         if not page.text:
             return 0.0
-
-        text_lower = page.text.lower()
-        title_lower = page.title.lower()
-
-        # Term frequency in text
-        text_hits = sum(1 for t in query_terms if t in text_lower)
-        title_hits = sum(1 for t in query_terms if t in title_lower)
-
         if not query_terms:
             return 0.5
 
+        text_lower = page.text.lower()
+        title_lower = (page.title or "").lower()
+
+        # Presence: fraction of query terms found.
+        text_hits = sum(1 for t in query_terms if t in text_lower)
+        title_hits = sum(1 for t in query_terms if t in title_lower)
         text_score = text_hits / len(query_terms)
         title_score = title_hits / len(query_terms)
 
-        # Weighted combination: title matches worth 2x
-        score = (text_score * 0.4) + (title_score * 0.6)
+        # Continuous tie-breakers (max combined ~0.16 so they refine
+        # rather than dominate the presence headline).
+        total_occurrences = sum(text_lower.count(t) for t in query_terms)
+        density = total_occurrences / max(page.word_count / 1000.0, 0.1)
+        density_signal = min(0.08, math.log1p(density) * 0.04)
+
+        length_signal = min(0.04, math.log10(max(page.word_count, 1) / 100.0) * 0.02)
+        length_signal = max(0.0, length_signal)
+
+        first_positions = [text_lower.find(t) for t in query_terms if t in text_lower]
+        if first_positions:
+            first_pos = min(first_positions)
+            position_signal = max(0.0, 0.04 - (first_pos / max(len(text_lower), 1)) * 0.04)
+        else:
+            position_signal = 0.0
+
+        score = (
+            (text_score * 0.4)
+            + (title_score * 0.6)
+            + density_signal
+            + length_signal
+            + position_signal
+        )
 
         # Bonus for exact phrase match
         query_phrase = " ".join(sorted(query_terms))
@@ -295,7 +341,7 @@ class ResearchAgent:
         if page.word_count < 100:
             score *= 0.5
 
-        return min(1.0, score)
+        return max(0.0, min(1.0, score))
 
     def _extract_relevant_passage(self, text: str, query_terms: set, window: int = 500) -> str:
         """Extract the most relevant passage from text."""
@@ -379,6 +425,17 @@ class ResearchAgent:
 
         candidates.sort(reverse=True)
         return [url for _, url in candidates[:5]]
+
+    def _source_outcome(self, page, status: str, score: float, reason: str = "") -> Dict[str, Any]:
+        """Compact per-source receipt for dashboard/debugging without storing full page text."""
+        return {
+            "url": page.url,
+            "title": page.title,
+            "status": status,
+            "score": round(float(score), 4),
+            "word_count": int(page.word_count or 0),
+            "reason": reason,
+        }
 
     def _generate_summary(self, report: ResearchReport) -> str:
         """Generate a one-line summary."""

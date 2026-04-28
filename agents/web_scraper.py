@@ -78,10 +78,16 @@ _EXTRACT_IMAGES = """() => {
 }"""
 
 _EXTRACT_HEADINGS = """() => {
-    return Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6')).map(h => ({
+    const headings = Array.from(document.querySelectorAll('h1,h2,h3,h4,h5,h6')).map(h => ({
         level: parseInt(h.tagName[1]),
         text: h.innerText.trim().substring(0, 200)
-    }));
+    })).filter(h => h.text);
+    if (headings.length) return headings;
+    const fallbacks = Array.from(document.querySelectorAll('.titleline a, .athing .title a, article a, main a'))
+        .map(a => (a.innerText || '').trim())
+        .filter(Boolean)
+        .slice(0, 10);
+    return fallbacks.map(text => ({ level: 2, text: text.substring(0, 200), source: 'fallback-selector' }));
 }"""
 
 
@@ -195,6 +201,8 @@ class WebScraper:
 
             if extract_headings:
                 page.headings = await self.runtime.evaluate(_EXTRACT_HEADINGS)
+                if not page.description and page.headings:
+                    page.description = page.headings[0].get("text", "")
 
             if extract_links:
                 page.links = await self.runtime.evaluate(_EXTRACT_LINKS)
