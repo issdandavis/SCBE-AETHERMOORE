@@ -12,8 +12,10 @@ script never edits the bus or the workflow.
 
 Categories:
     1. confidence_variance      (HIGH)  — research findings share a single confidence value
-    2. sources_vs_findings_ratio (MEDIUM)— findings_count / sources_checked < 0.7
-    3. silent_error             (HIGH)  — ratio < 0.7 AND errors: []
+    2. sources_vs_findings_ratio (MEDIUM)— findings_count / sources_checked < 0.7 AND
+                                          `source_outcomes` does not document every source
+    3. silent_error             (HIGH)  — ratio < 0.7 AND errors:[] AND
+                                          `source_outcomes` is missing or incomplete
     4. title_sanity             (LOW/MEDIUM)
         a. title_equals_description (LOW)    — both fields collapsed to the same value
         b. extraction_partial       (MEDIUM) — word_count > 200 but headings=[] and description empty
@@ -87,6 +89,23 @@ def check_confidence_variance(research: Optional[Dict[str, Any]]) -> List[Findin
     ]
 
 
+def _source_outcomes_cover_drops(research: Dict[str, Any]) -> bool:
+    """True if `source_outcomes` accounts for every checked source with a status."""
+    sources_checked = research.get("sources_checked")
+    outcomes = research.get("source_outcomes")
+    if not isinstance(sources_checked, int) or sources_checked <= 0:
+        return False
+    if not isinstance(outcomes, list) or len(outcomes) < sources_checked:
+        return False
+    for entry in outcomes:
+        if not isinstance(entry, dict):
+            return False
+        status = entry.get("status")
+        if not isinstance(status, str) or not status:
+            return False
+    return True
+
+
 def check_sources_vs_findings(research: Optional[Dict[str, Any]]) -> List[Finding]:
     if not research:
         return []
@@ -97,6 +116,8 @@ def check_sources_vs_findings(research: Optional[Dict[str, Any]]) -> List[Findin
         return []
     ratio = findings_count / sources_checked
     if ratio >= RATIO_FLOOR:
+        return []
+    if _source_outcomes_cover_drops(research):
         return []
     return [
         Finding(
@@ -131,6 +152,8 @@ def check_silent_error(research: Optional[Dict[str, Any]]) -> List[Finding]:
     if ratio >= RATIO_FLOOR:
         return []
     if errors:
+        return []
+    if _source_outcomes_cover_drops(research):
         return []
     return [
         Finding(
