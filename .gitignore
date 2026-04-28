@@ -49,7 +49,9 @@ config/connector_oauth/.kaggle.env
 *.p12
 **/credentials.json
 .venv/
+.venv-training/
 venv/
+unsloth_compiled_cache/
 .python-version
 
 # n8n local isolation (may contain credential databases)
