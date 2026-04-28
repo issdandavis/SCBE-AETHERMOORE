@@ -192,7 +192,8 @@
 
   <script>
     var DATA_BASE = (location.pathname.replace(/\/[^/]*$/, '') || '.') + '/static/agent-data';
-    var AGENT_API_BASE = window.AGENT_API_BASE || localStorage.getItem('scbeAgentApiBase') || detectAgentApiBase();
+    var DEFAULT_AGENT_API_BASE = 'https://scbe-agent-bridge-vercel-9wun7fo3z-issac-davis-projects.vercel.app';
+    var AGENT_API_BASE = window.AGENT_API_BASE || localStorage.getItem('scbeAgentApiBase') || detectAgentApiBase() || DEFAULT_AGENT_API_BASE;
     var AGENT_DISPATCH_SECRET = window.AGENT_DISPATCH_SECRET || localStorage.getItem('scbeAgentDispatchSecret') || '';
 
     async function dispatchTask() {
