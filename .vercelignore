@@ -1,0 +1,6 @@
+# Vercel is only the lightweight agent bridge for this repo.
+# GitHub Pages remains the public static website host.
+*
+!api/
+!api/**
+!vercel.json
