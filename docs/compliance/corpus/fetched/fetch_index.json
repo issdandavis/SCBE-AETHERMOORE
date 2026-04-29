@@ -1,0 +1,44 @@
+{
+  "manifest": "config/compliance/public_sources.json",
+  "results": [
+    {
+      "id": "nist_ai_rmf_100_1",
+      "title": "NIST Artificial Intelligence Risk Management Framework (AI RMF 1.0)",
+      "url": "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf",
+      "path": "docs/compliance/corpus/fetched/nist_ai_rmf_100_1.pdf",
+      "tags": [
+        "nist",
+        "ai-governance",
+        "risk-management"
+      ],
+      "sha256": "7576edb531d9848825814ee88e28b1795d3a84b435b4b797d3670eafdc4a89f1",
+      "bytes": 1946127
+    },
+    {
+      "id": "nist_csf_2_0",
+      "title": "NIST Cybersecurity Framework 2.0",
+      "url": "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf",
+      "path": "docs/compliance/corpus/fetched/nist_cybersecurity_framework_2_0.pdf",
+      "tags": [
+        "nist",
+        "security",
+        "controls"
+      ],
+      "sha256": "3c31f46fee98cac0c4323453e5109291a213b4de7fef8c058af9bf67f717433c",
+      "bytes": 1518858
+    },
+    {
+      "id": "nist_sp800_171_rev3",
+      "title": "NIST SP 800-171 Rev 3 \u2014 Protecting CUI in Nonfederal Systems",
+      "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-171r3.pdf",
+      "path": "docs/compliance/corpus/fetched/nist_sp800_171_rev3.pdf",
+      "tags": [
+        "nist",
+        "cui",
+        "export-adjacent"
+      ],
+      "sha256": "3e4631df8b5d61f40a6e542b52779ef30ddbbfff31e09214fa94ad6e6f5e6d08",
+      "bytes": 1593213
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+# Generated binaries/HTML are large; commit fetch_index.json only if you want reproducible hashes in CI.
+*
+!.gitignore
+!fetch_index.json
