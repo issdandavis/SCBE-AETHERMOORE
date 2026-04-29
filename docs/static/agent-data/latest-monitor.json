@@ -47,7 +47,7 @@
           "text": "Submerged layer"
         }
       ],
-      "link_count": 204,
+      "link_count": 64,
       "table_count": 0,
       "text_preview": "\u25c8 feed\n    \n      SPY\u2009\u2014\u2009\n      QQQ\u2009\u2014\u2009\n      NVDA\u2009\u2014\u2009\n      BTC\u2009\u2014\u2009\n    \n    \n      \n        Fetching research feed\u2026\n      \n    \n  \n\n  \n    \n      \n        \n          AI governance, built from real math and real code\n          I built a messy but real system for governing how AI thinks, routes, and drifts.\n          \n            AetherMoore is the public face of SCBE-AETHERMOORE: a geometric governance stack for AI training, agent communication, and risk tracing. It uses structured channels, hyperb..."
     },
@@ -105,9 +105,19 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Ghostty is leaving GitHub",
-      "word_count": 564,
+      "description": "Soft launch of open-source code platform for government",
+      "word_count": 588,
       "headings": [
+        {
+          "level": 2,
+          "text": "Soft launch of open-source code platform for government",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "nldigitalgovernment.nl",
+          "source": "fallback-selector"
+        },
         {
           "level": 2,
           "text": "Ghostty is leaving GitHub",
@@ -130,6 +140,16 @@
         },
         {
           "level": 2,
+          "text": "HashiCorp co-founder says GitHub 'no longer a place for serious work'",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "theregister.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
           "text": "How ChatGPT serves ads",
           "source": "fallback-selector"
         },
@@ -137,31 +157,11 @@
           "level": 2,
           "text": "buchodi.com",
           "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Before GitHub",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "pocoo.org",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Show HN: Auto-Architecture: Karpathy's Loop, pointed at a CPU",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "github.com/fesens",
-          "source": "fallback-selector"
         }
       ],
-      "link_count": 229,
+      "link_count": 225,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Ghostty is leaving GitHub (mitchellh.com)2252 points by WadeGrimridge 11 hours ago  | hide | 671\u00a0comments2.Bugs Rust won't catch (corrode.dev)158 points by lwhsiao 4 hours ago  | hide | 50\u00a0comments3.How ChatGPT serves ads (buchodi.com)265 points by lmbbuchodi 7 hours ago  | hide | 170\u00a0comments4.Before GitHub (pocoo.org)389 points by mlex 9 hours ago  | hide | 119\u00a0comments5.Show HN: Auto-Architecture: Karpathy's Loop, pointed at ..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Soft launch of open-source code platform for government (nldigitalgovernment.nl)222 points by e12e 3 hours ago  | hide | 74\u00a0comments2.Ghostty is leaving GitHub (mitchellh.com)2814 points by WadeGrimridge 16 hours ago  | hide | 834\u00a0comments3.Bugs Rust won't catch (corrode.dev)386 points by lwhsiao 10 hours ago  | hide | 192\u00a0comments4.HashiCorp co-founder says GitHub 'no longer a place for serious work' (theregister.com)78 points ..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
