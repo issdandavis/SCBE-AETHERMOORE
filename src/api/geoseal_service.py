@@ -52,6 +52,12 @@ class PollyChatRequest(BaseModel):
     mode: str = Field(default="local-polypad", max_length=64)
 
 
+class ToolBridgeRequest(BaseModel):
+    """Inline agent goal for SCBE-native CLI / MCP bridge hints."""
+
+    goal: str = Field(..., min_length=1, max_length=12000)
+
+
 async def verify_api_key(x_api_key: str = Header(...)) -> str:
     if x_api_key != DEMO_API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API key")
@@ -110,6 +116,7 @@ async def spaceport_status() -> dict[str, Any]:
             "lanes": {
                 "public_portal_box": True,
                 "public_stream_wheel": True,
+                "harness_tool_bridge": True,
                 "system_cards": True,
                 "portal_box": True,
                 "stream_wheel": True,
@@ -120,6 +127,7 @@ async def spaceport_status() -> dict[str, Any]:
                     "/v1/spaceport/status",
                     "/v1/polly/portal-box",
                     "/v1/polly/stream-wheel",
+                    "/v1/harness/tool-bridge",
                 ],
                 "authenticated_runtime": [
                     "/runtime/inspect",
@@ -133,7 +141,9 @@ async def spaceport_status() -> dict[str, Any]:
 
 
 @app.post("/runtime/inspect", tags=["Runtime"])
-async def runtime_inspect(request: RuntimeInspectRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
+async def runtime_inspect(
+    request: RuntimeInspectRequest, user: str = Depends(verify_api_key)
+) -> dict[str, Any]:
     _ = user
     return {
         "status": "ok",
@@ -165,9 +175,14 @@ async def runtime_system_cards(
 
 
 @app.post("/runtime/run-route", tags=["Runtime"])
-async def runtime_run_route(request: RuntimeRunRouteRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
+async def runtime_run_route(
+    request: RuntimeRunRouteRequest, user: str = Depends(verify_api_key)
+) -> dict[str, Any]:
     _ = user
-    from src.geoseal_cli import _build_execution_shell_payload, _execute_execution_shell_payload
+    from src.geoseal_cli import (
+        _build_execution_shell_payload,
+        _execute_execution_shell_payload,
+    )
 
     shell_payload = _build_execution_shell_payload(
         language=request.language,
@@ -188,7 +203,9 @@ async def runtime_run_route(request: RuntimeRunRouteRequest, user: str = Depends
 
 
 @app.post("/runtime/portal-box", tags=["Runtime"])
-async def runtime_portal_box(request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
+async def runtime_portal_box(
+    request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)
+) -> dict[str, Any]:
     _ = user
     from src.geoseal_cli import _build_portal_box_payload
 
@@ -199,26 +216,36 @@ async def runtime_portal_box(request: RuntimePortalBoxRequest, user: str = Depen
             content=request.content,
             source_name=request.source_name,
             include_extended=request.include_extended,
-            deck_size=request.deck_size,
-            branch_width=request.branch_width,
         ),
     }
 
 
 @app.post("/runtime/stream-wheel", tags=["Runtime"])
-async def runtime_stream_wheel(request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
+async def runtime_stream_wheel(
+    request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)
+) -> dict[str, Any]:
     _ = user
-    from src.geoseal_cli import _build_portal_box_payload, _build_stream_wheel_payload
+    from src.geoseal_cli import _build_stream_wheel_payload
 
-    portal_payload = _build_portal_box_payload(
-        language=request.language,
-        content=request.content,
-        source_name=request.source_name,
-        include_extended=request.include_extended,
-        deck_size=request.deck_size,
-        branch_width=request.branch_width,
-    )
-    return {"status": "ok", "data": _build_stream_wheel_payload(portal_payload)}
+    return {
+        "status": "ok",
+        "data": _build_stream_wheel_payload(
+            language=request.language,
+            content=request.content,
+            source_name=request.source_name,
+            include_extended=request.include_extended,
+        ),
+    }
+
+
+@app.post("/v1/harness/tool-bridge", tags=["Harness"])
+async def harness_tool_bridge(request: ToolBridgeRequest) -> dict[str, Any]:
+    from src.coding_spine.agent_tool_bridge import build_agent_tool_bridge_v1
+
+    return {
+        "status": "ok",
+        "data": build_agent_tool_bridge_v1(inline_goal=request.goal),
+    }
 
 
 @app.post("/v1/polly/portal-box", tags=["Polly Pad"])
@@ -232,25 +259,23 @@ async def polly_public_portal_box(request: RuntimePortalBoxRequest) -> dict[str,
             content=request.content,
             source_name=request.source_name,
             include_extended=request.include_extended,
-            deck_size=request.deck_size,
-            branch_width=request.branch_width,
         ),
     }
 
 
 @app.post("/v1/polly/stream-wheel", tags=["Polly Pad"])
 async def polly_public_stream_wheel(request: RuntimePortalBoxRequest) -> dict[str, Any]:
-    from src.geoseal_cli import _build_portal_box_payload, _build_stream_wheel_payload
+    from src.geoseal_cli import _build_stream_wheel_payload
 
-    portal_payload = _build_portal_box_payload(
-        language=request.language,
-        content=request.content,
-        source_name=request.source_name,
-        include_extended=request.include_extended,
-        deck_size=request.deck_size,
-        branch_width=request.branch_width,
-    )
-    return {"status": "ok", "data": _build_stream_wheel_payload(portal_payload)}
+    return {
+        "status": "ok",
+        "data": _build_stream_wheel_payload(
+            language=request.language,
+            content=request.content,
+            source_name=request.source_name,
+            include_extended=request.include_extended,
+        ),
+    }
 
 
 @app.post("/v1/chat", tags=["Polly Pad"])
@@ -273,6 +298,8 @@ async def polly_chat(request: PollyChatRequest) -> dict[str, Any]:
         "status": "ok",
         "model": "polly-local-control-plane",
         "message": "local GeoSeal route resolved",
-        "coding_spine": {"tongue": resolution.get("runtime_packet", {}).get("route_tongue", "KO")},
+        "coding_spine": {
+            "tongue": resolution.get("runtime_packet", {}).get("route_tongue", "KO")
+        },
         "deck": deck,
     }

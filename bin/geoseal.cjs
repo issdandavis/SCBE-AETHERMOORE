@@ -23,6 +23,7 @@ Modes:
      Use SCBE_GEOSEAL_PYTHON to pin the Python executable.
 
 Useful commands:
+  geoseal doctor --json
   geoseal status --api-base http://127.0.0.1:8002
   geoseal shell --command "portal-box --content \"def add(a, b): return a + b\" --language python --source-name sample.python --json"
   geoseal portal-box --api-base http://127.0.0.1:8002 --language python --content "def add(a, b): return a + b"
@@ -44,6 +45,13 @@ Useful commands:
   geoseal decode-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --output-dir artifacts/tokenizer_code_lanes/decoded --from-binary --write-binary --json
   geoseal ai2ai-bridge --content "def add(a, b): return a + b" --language python --json
   geoseal code-packet --content "def add(a, b): return a + b" --language python
+  geoseal explain-route --content "def add(a, b): return a + b" --language python --json
+  geoseal backend-registry --json
+  geoseal history --limit 20 --json
+  geoseal replay --json
+  geoseal testing-cli --source-file sample.py --language python --execute --json
+  geoseal project-scaffold --content "build a pacman style web game" --language python --output-dir artifacts/pacman --json
+  geoseal code-roundtrip --source hello.rs --lang rust --tongue RU --execute --json
 
 Flags:
   --api-base <url>       GeoSeal API base URL
@@ -77,6 +85,8 @@ const COMMAND_MAP = {
   "orchestrator-promote": { method: "POST", path: "/runtime/orchestrator/promote", auth: true },
 };
 
+const LOCAL_PASSTHROUGH_COMMANDS = new Set(["portal-box", "stream-wheel", "shell"]);
+
 function parseArgs(argv) {
   const positionals = [];
   const flags = {};
@@ -104,6 +114,14 @@ function apiBase(flags) {
 
 function apiKey(flags) {
   return String(flags["api-key"] || process.env.SCBE_API_KEY || "");
+}
+
+function writeJsonOrText(flags, payload, text) {
+  if (flags.json) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
+  }
 }
 
 const DEFAULT_SERVICE_DIR = path.join(ROOT, "artifacts", "geoseal_service");
@@ -168,6 +186,86 @@ function resolveActiveServiceBase(flags) {
   if (!isPidAlive(pid)) return null;
   const headers = state.runtime_headers && typeof state.runtime_headers === "object" ? state.runtime_headers : {};
   return { apiBase: base, pid, authHeaders: headers, statePath };
+}
+
+function probePythonModule(moduleName) {
+  const executables = [];
+  if (process.env.SCBE_GEOSEAL_PYTHON) executables.push(process.env.SCBE_GEOSEAL_PYTHON);
+  if (process.platform === "win32") executables.push("py");
+  executables.push("python", "python3");
+
+  for (const executable of executables) {
+    const result = spawnSync(executable, ["-m", moduleName, "--help"], {
+      encoding: "utf8",
+      shell: false,
+      cwd: ROOT,
+      timeout: 8000,
+    });
+    if (!result.error) {
+      return {
+        executable,
+        module: moduleName,
+        ok: result.status === 0,
+        status: result.status,
+        stdout_preview: String(result.stdout || "").slice(0, 600),
+        stderr_preview: String(result.stderr || "").slice(0, 600),
+      };
+    }
+  }
+  return { module: moduleName, ok: false, error: "no usable Python executable found" };
+}
+
+function runDoctor(flags) {
+  const active = resolveActiveServiceBase(flags);
+  const advertisedCommands = [
+    "doctor",
+    "status",
+    "chat",
+    ...Object.keys(COMMAND_MAP).filter((name) => name !== "status" && name !== "chat"),
+    "service",
+    "service-status",
+    "service-stop",
+    "agent-io-contract",
+    "tokenizer-code-lanes",
+    "verify-code-lanes",
+    "decode-code-lanes",
+    "ai2ai-bridge",
+    "code-packet",
+    "explain-route",
+    "backend-registry",
+    "history",
+    "replay",
+    "testing-cli",
+    "project-scaffold",
+    "code-roundtrip",
+  ];
+  const payload = {
+    ok: true,
+    version: PACKAGE_JSON.version,
+    node: process.version,
+    platform: process.platform,
+    package_bin: PACKAGE_JSON.bin || {},
+    api_base_configured: Boolean(apiBase(flags)),
+    service_autodetect_enabled: String(process.env.SCBE_GEOSEAL_AUTODETECT || "").toLowerCase() !== "0",
+    active_service: active
+      ? { api_base: active.apiBase, pid: active.pid, state_path: active.statePath }
+      : null,
+    api_commands: Object.keys(COMMAND_MAP).sort(),
+    advertised_commands: advertisedCommands,
+    python_modules: [probePythonModule("src.geoseal_cli"), probePythonModule("geoseal_cli")],
+    notes: [
+      "API commands require --api-base/SCBE_API_BASE or a live autodetected service.",
+      "Python passthrough commands are limited to the installed geoseal_cli parser.",
+    ],
+  };
+  const text = [
+    `GeoSeal doctor ${payload.version}`,
+    `Node: ${payload.node}`,
+    `Active service: ${payload.active_service ? payload.active_service.api_base : "none"}`,
+    `API commands: ${payload.api_commands.length}`,
+    `Python module src.geoseal_cli: ${payload.python_modules[0].ok ? "ok" : "fail"}`,
+  ].join("\n");
+  writeJsonOrText(flags, payload, text);
 }
 
 function buildBody(command, flags) {
@@ -347,6 +445,10 @@ async function main() {
     process.stdout.write(`${PACKAGE_JSON.version}\n`);
     return;
   }
+  if (command === "doctor") {
+    runDoctor(flags);
+    return;
+  }
 
   const explicitBase = apiBase(flags);
   if (explicitBase && COMMAND_MAP[command]) {
@@ -354,7 +456,7 @@ async function main() {
     return;
   }
 
-  if (!explicitBase && COMMAND_MAP[command]) {
+  if (!explicitBase && COMMAND_MAP[command] && !LOCAL_PASSTHROUGH_COMMANDS.has(command)) {
     const active = resolveActiveServiceBase(flags);
     if (active) {
       process.stderr.write(
@@ -363,6 +465,20 @@ async function main() {
       await runApi(command, flags, { resolvedBase: active.apiBase, autoContext: active });
       return;
     }
+    const payload = {
+      ok: false,
+      error: "api_command_requires_service",
+      command,
+      message: `${command} is a GeoSeal API command. Start a service or pass --api-base.`,
+      fixes: [
+        "geoseal service --detach --allow-demo-keys --probe-health --json",
+        `geoseal ${command} --api-base http://127.0.0.1:8002 --json`,
+        "geoseal doctor --json",
+      ],
+    };
+    writeJsonOrText(flags, payload, `${payload.message}\nTry: ${payload.fixes[2]}`);
+    process.exitCode = 2;
+    return;
   }
 
   runPythonPassthrough(argv);
