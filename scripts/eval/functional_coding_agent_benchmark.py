@@ -184,9 +184,7 @@ def load_task_file(path: Path) -> list[FunctionalTask]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     raw_tasks = payload.get("tasks") if isinstance(payload, dict) else payload
     if not isinstance(raw_tasks, list):
-        raise ValueError(
-            "task file must be a JSON list or an object with a 'tasks' list"
-        )
+        raise ValueError("task file must be a JSON list or an object with a 'tasks' list")
     tasks: list[FunctionalTask] = []
     for row in raw_tasks:
         tasks.append(
@@ -211,9 +209,7 @@ def safe_slug(value: str) -> str:
 
 
 def extract_typescript(text: str) -> str:
-    fence = re.search(
-        r"```(?:typescript|ts|javascript|js)?\s*(.*?)```", text, flags=re.I | re.S
-    )
+    fence = re.search(r"```(?:typescript|ts|javascript|js)?\s*(.*?)```", text, flags=re.I | re.S)
     if fence:
         return fence.group(1).strip()
     idx = text.find("function evaluate")
@@ -231,17 +227,11 @@ def load_model(base_model: str, adapter: str, dtype_arg: str, use_4bit: bool):
 
     cuda_avail = torch.cuda.is_available()
     if dtype_arg == "auto":
-        dtype = (
-            torch.bfloat16
-            if cuda_avail and torch.cuda.get_device_capability(0)[0] >= 8
-            else torch.float16
-        )
+        dtype = torch.bfloat16 if cuda_avail and torch.cuda.get_device_capability(0)[0] >= 8 else torch.float16
         if not cuda_avail:
             dtype = torch.float32
     else:
-        dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[
-            dtype_arg
-        ]
+        dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[dtype_arg]
 
     tokenizer = AutoTokenizer.from_pretrained(base_model, use_fast=True)
     if tokenizer.pad_token is None:
@@ -285,9 +275,7 @@ def generate_code(tokenizer, model, prompt: str, max_new_tokens: int) -> str:
         },
         {"role": "user", "content": prompt},
     ]
-    text = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+    text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     inputs = tokenizer(text, return_tensors="pt").to(next(model.parameters()).device)
     with torch.no_grad():
         out = model.generate(
@@ -370,9 +358,7 @@ def score_candidate(source: str, task: FunctionalTask) -> dict[str, Any]:
 
 def run_model_benchmark(args: argparse.Namespace, adapter: str) -> dict[str, Any]:
     t0 = time.time()
-    tokenizer, model = load_model(
-        args.base_model, adapter, args.dtype, use_4bit=not args.no_4bit
-    )
+    tokenizer, model = load_model(args.base_model, adapter, args.dtype, use_4bit=not args.no_4bit)
     tasks = selected_tasks(args)
     rows = []
     for task in tasks:
@@ -409,14 +395,10 @@ def load_candidate_file(path: Path) -> list[dict[str, Any]]:
         return payload
     if isinstance(payload, dict) and isinstance(payload.get("candidates"), list):
         return payload["candidates"]
-    raise ValueError(
-        "candidate file must be a JSON list or an object with a 'candidates' list"
-    )
+    raise ValueError("candidate file must be a JSON list or an object with a 'candidates' list")
 
 
-def candidate_source_for_task(
-    candidate: dict[str, Any], task: FunctionalTask
-) -> str | None:
+def candidate_source_for_task(candidate: dict[str, Any], task: FunctionalTask) -> str | None:
     task_map = candidate.get("tasks")
     if isinstance(task_map, dict) and task.task_id in task_map:
         return str(task_map[task.task_id])
@@ -425,15 +407,8 @@ def candidate_source_for_task(
     return None
 
 
-def run_candidate_benchmark(
-    args: argparse.Namespace, candidate: dict[str, Any]
-) -> dict[str, Any]:
-    name = str(
-        candidate.get("name")
-        or candidate.get("model")
-        or candidate.get("id")
-        or "candidate"
-    )
+def run_candidate_benchmark(args: argparse.Namespace, candidate: dict[str, Any]) -> dict[str, Any]:
+    name = str(candidate.get("name") or candidate.get("model") or candidate.get("id") or "candidate")
     tasks = selected_tasks(args)
     rows = []
     for task in tasks:
@@ -510,11 +485,19 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--dtype", choices=["auto", "bf16", "fp16", "fp32"], default="auto")
     p.add_argument("--no-4bit", action="store_true")
     p.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
+    p.add_argument(
+        "--min-pass-rate",
+        type=float,
+        default=1.0,
+        help="Minimum required pass rate in [0,1] for process success (default: 1.0).",
+    )
     return p.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    if args.min_pass_rate < 0.0 or args.min_pass_rate > 1.0:
+        raise SystemExit("--min-pass-rate must be between 0 and 1")
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     out_dir = args.output_root / stamp
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -522,9 +505,7 @@ def main() -> int:
     results = []
     if args.candidate_file:
         for candidate in load_candidate_file(args.candidate_file):
-            print(
-                f"Benchmarking candidate {candidate.get('name') or candidate.get('model') or candidate.get('id')}"
-            )
+            print(f"Benchmarking candidate {candidate.get('name') or candidate.get('model') or candidate.get('id')}")
             results.append(run_candidate_benchmark(args, candidate))
     else:
         for adapter in args.models:
@@ -534,12 +515,11 @@ def main() -> int:
     payload = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "benchmark": "typescript_game_debug_functional_v1",
+        "min_pass_rate": args.min_pass_rate,
         "results": results,
     }
     report_path = out_dir / "report.json"
-    report_path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    report_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
     md_lines = [
         "# Functional Coding Agent Benchmark",
@@ -567,9 +547,7 @@ def main() -> int:
             failure = ""
             if not task["passed"]:
                 checks = task.get("checks") or []
-                first_bad = next(
-                    (check for check in checks if not check.get("passed")), None
-                )
+                first_bad = next((check for check in checks if not check.get("passed")), None)
                 if first_bad:
                     failure = (
                         f"check {first_bad.get('index')}: "
@@ -589,15 +567,20 @@ def main() -> int:
 
     latest = args.output_root / "latest"
     latest.mkdir(parents=True, exist_ok=True)
-    (latest / "report.json").write_text(
-        report_path.read_text(encoding="utf-8"), encoding="utf-8"
-    )
-    (latest / "report.md").write_text(
-        md_path.read_text(encoding="utf-8"), encoding="utf-8"
-    )
+    (latest / "report.json").write_text(report_path.read_text(encoding="utf-8"), encoding="utf-8")
+    (latest / "report.md").write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8")
 
     print(f"Report JSON: {report_path}")
     print(f"Report MD:   {md_path}")
+    overall_rates = [float(result["summary"]["pass_rate"]) for result in results]
+    overall_ok = bool(overall_rates) and min(overall_rates) >= args.min_pass_rate
+    if not overall_ok:
+        print(
+            f"FAIL: benchmark pass_rate below threshold min_pass_rate={args.min_pass_rate:.2f}; "
+            f"lowest={min(overall_rates) if overall_rates else 0.0:.2f}",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 
