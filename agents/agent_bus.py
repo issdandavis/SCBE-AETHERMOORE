@@ -485,6 +485,81 @@ class AgentBus:
         report = trigger.trigger(perf, dry_run=dry_run)
         return {"triggered": True, "perf": perf.__dict__, "report": report}
 
+    # -- tongue ISA / cross-language compile --------------------------------
+
+    def compile_tongue(
+        self,
+        tokens,
+        *,
+        target: str = "python",
+        fn_name: str = "tongue_fn",
+        arg_names=None,
+    ):
+        """Compile a Sacred Tongue token sequence to source in the target language.
+
+        First slice supports CA opcodes (0x00–0x3F) compiled to a stack-machine
+        program in Python / TypeScript / Go. Returns dict with keys:
+          source       — emitted code (str)
+          op_trace     — [(op_id, name), ...] from compilation
+          recovered    — disassembled trace from source (proves bijection)
+          target       — language name
+        """
+        import sys
+
+        sys.path.insert(0, "python") if "python" not in sys.path[:3] else None
+        from scbe.tongue_isa import compile_ca_tokens, disassemble
+        from src.code_prism.emitter import emit_from_ir
+
+        prog = compile_ca_tokens(tokens, target=target, fn_name=fn_name, arg_names=arg_names)
+        module = prog.to_prism_module()
+        source = emit_from_ir(module, target_language=target)
+        return {
+            "source": source,
+            "op_trace": prog.op_trace,
+            "recovered": disassemble(source),
+            "target": target,
+        }
+
+    def tongue_to_binary(
+        self,
+        tokens,
+        *,
+        fn_name: str = "tongue_fn",
+        arg_names=None,
+    ) -> bytes:
+        """Encode a token sequence as STIB binary — the universal canonical form.
+
+        Every language emitter consumes STIB; STIB is also produced from
+        emitted source via disassemble(). This is "the same basis file for all
+        commands that any language can fall back to."
+        """
+        import sys
+
+        sys.path.insert(0, "python") if "python" not in sys.path[:3] else None
+        from scbe.tongue_isa import compile_ca_tokens
+        from scbe.tongue_isa_binary import encode, from_compiled
+
+        prog = compile_ca_tokens(tokens, target="python", fn_name=fn_name, arg_names=arg_names)
+        return encode(from_compiled(prog))
+
+    def binary_to_source(self, blob: bytes, *, target: str = "python") -> str:
+        """Decode STIB binary and re-emit as source in the target language."""
+        import sys
+
+        sys.path.insert(0, "python") if "python" not in sys.path[:3] else None
+        from scbe.tongue_isa import compile_ca_tokens
+        from scbe.tongue_isa_binary import decode
+        from src.code_prism.emitter import emit_from_ir
+
+        block = decode(blob)
+        prog = compile_ca_tokens(
+            block.opcodes,
+            target=target,
+            fn_name=block.fn_name,
+            arg_names=block.arg_names,
+        )
+        return emit_from_ir(prog.to_prism_module(), target_language=target)
+
     # -- self-extension ------------------------------------------------------
 
     @property
