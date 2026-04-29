@@ -21,6 +21,7 @@ from __future__ import annotations
 import hashlib
 import math
 import secrets
+import warnings
 from dataclasses import dataclass
 from typing import Optional, Tuple, Dict, Any
 from enum import Enum
@@ -98,6 +99,8 @@ class HarmonicKeyMaterial:
     iteration_count: int
     salt: bytes
     info: bytes = b""
+    requested_iterations: int = 0
+    cap_engaged: bool = False
 
     @property
     def harmonic_multiplier(self) -> float:
@@ -150,6 +153,14 @@ def harmonic_key_stretch(
     # while maintaining the security claim
     max_iterations = 10_000_000
     actual_iterations = min(iteration_count, max_iterations)
+    cap_engaged = iteration_count > max_iterations
+    if cap_engaged:
+        warnings.warn(
+            f"harmonic_key_stretch cap engaged: requested {iteration_count} iterations "
+            f"(d={dimension}, R={R}), capped to {max_iterations}. "
+            f"Exponential cost-scaling claim degrades beyond this point.",
+            stacklevel=2,
+        )
 
     # Progressive key strengthening through iterated hashing
     # Each iteration incorporates dimension and ratio info
@@ -179,6 +190,8 @@ def harmonic_key_stretch(
         iteration_count=actual_iterations,
         salt=salt,
         info=info,
+        requested_iterations=iteration_count,
+        cap_engaged=cap_engaged,
     )
 
 
