@@ -1,0 +1,23 @@
+{
+  "id": "representation_consistency",
+  "level": 1,
+  "title": "Representation kaleidoscope — same concept across language lenses and transport",
+  "verify": {
+    "command": [
+      "python",
+      "-m",
+      "pytest",
+      "tests/benchmark/test_representation_kaleidoscope.py",
+      "tests/test_geoseal_agent_routing.py",
+      "-k",
+      "build_route_ir_has_replayable_hashes or explain_provider_chain_reports_registry_subset",
+      "-q"
+    ],
+    "timeout_sec": 300
+  },
+  "metrics_hint": {
+    "evidence_quality": "artifact",
+    "gate_type": "representation_consistency",
+    "notes": "Does not run npm run benchmark:representation-kaleidoscope; does not require fresh artifacts under artifacts/benchmarks/representation_kaleidoscope/."
+  }
+}

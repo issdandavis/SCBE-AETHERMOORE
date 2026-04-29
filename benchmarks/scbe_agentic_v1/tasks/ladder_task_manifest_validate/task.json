@@ -1,0 +1,12 @@
+{
+  "id": "ladder_task_manifest_validate",
+  "level": 1,
+  "title": "Validate scbe_agentic_v1 task.json files",
+  "verify": {
+    "command": ["python", "scripts/benchmark/agentic_benchmark_ladder.py", "validate"],
+    "timeout_sec": 60
+  },
+  "metrics_hint": {
+    "evidence_quality": "artifact"
+  }
+}

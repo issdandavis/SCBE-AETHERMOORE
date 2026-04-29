@@ -1,0 +1,66 @@
+{
+  "schema_version": "scbe_external_agentic_eval_manifest_v1",
+  "tasks": [
+    {
+      "task_id": "repo-native-agentic-ladder-smoke",
+      "suite": "repo_native",
+      "title": "Run SCBE agentic ladder validation",
+      "repo": "local",
+      "instructions": "Validate the in-repo agentic benchmark ladder task manifests.",
+      "verify_command": [
+        "python",
+        "scripts/benchmark/agentic_benchmark_ladder.py",
+        "validate"
+      ],
+      "sandbox": "host",
+      "expected_artifacts": [
+        "stdout.json"
+      ],
+      "max_attempts": 2,
+      "critic": true,
+      "rerank": true
+    },
+    {
+      "task_id": "terminal-bench-adapter-placeholder",
+      "suite": "terminal_bench",
+      "title": "Terminal-Bench style task adapter placeholder",
+      "repo": "external",
+      "instructions": "Map a task folder, Dockerfile, verifier command, and expected artifacts into SCBE result schema.",
+      "verify_command": [
+        "python",
+        "-c",
+        "print('terminal-bench adapter placeholder')"
+      ],
+      "sandbox": "docker",
+      "expected_artifacts": [
+        "patch.diff",
+        "verifier.log",
+        "trajectory.json"
+      ],
+      "max_attempts": 3,
+      "critic": true,
+      "rerank": true
+    },
+    {
+      "task_id": "swe-bench-adapter-placeholder",
+      "suite": "swe_bench",
+      "title": "SWE-bench style issue-resolution adapter placeholder",
+      "repo": "external",
+      "instructions": "Map instance id, base commit, problem statement, patch artifact, and verifier into SCBE result schema.",
+      "verify_command": [
+        "python",
+        "-c",
+        "print('swe-bench adapter placeholder')"
+      ],
+      "sandbox": "docker",
+      "expected_artifacts": [
+        "patch.diff",
+        "test_output.log",
+        "trajectory.json"
+      ],
+      "max_attempts": 5,
+      "critic": true,
+      "rerank": true
+    }
+  ]
+}

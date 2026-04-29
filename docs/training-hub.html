@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SCBE Training Hub</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    :root { color-scheme: dark; --bg:#0b0d12; --panel:#141922; --line:#2c3542; --text:#f4f0e8; --muted:#aeb7c2; --accent:#d6a756; --ok:#69d391; --warn:#f1c45d; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
+    header, main { width:min(1120px, calc(100% - 32px)); margin:0 auto; }
+    header { padding:42px 0 22px; border-bottom:1px solid var(--line); }
+    h1 { margin:0 0 10px; font-size:clamp(32px, 6vw, 64px); line-height:.96; letter-spacing:0; }
+    h2 { margin:34px 0 12px; font-size:22px; }
+    p { color:var(--muted); max-width:78ch; }
+    a { color:var(--accent); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; }
+    .k { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+    .v { font-size:24px; font-weight:700; margin-top:4px; }
+    code { background:#0f131a; border:1px solid var(--line); border-radius:6px; padding:2px 5px; color:#f8dfaa; }
+    table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+    th, td { padding:10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; font-size:14px; }
+    th { color:var(--accent); font-weight:700; }
+    tr:last-child td { border-bottom:0; }
+    .pill { display:inline-block; border:1px solid var(--line); border-radius:999px; padding:2px 8px; color:var(--muted); }
+    footer { width:min(1120px, calc(100% - 32px)); margin:36px auto; color:var(--muted); font-size:13px; }
+    </style>
+</head>
+<body>
+  <header>
+    <div class="k">SCBE-AETHERMOORE Operator Surface</div>
+    <h1>Training Hub</h1>
+    <p>local repo remains source of truth; Colab, Kaggle, Hugging Face, and Vercel are execution or publication surfaces</p>
+  </header>
+  <main>
+    <section class="grid" aria-label="status cards">
+      <div class="card"><div class="k">Colab notebooks</div><div class="v">11</div></div>
+      <div class="card"><div class="k">Hugging Face token</div><div class="v">set</div></div>
+      <div class="card"><div class="k">Kaggle credentials</div><div class="v">missing</div></div>
+      <div class="card"><div class="k">Zero-cost preflight</div><div class="v">not run/blocked</div></div>
+    </section>
+
+    <h2>Daily Stack</h2>
+    <table><thead><tr><th>Step</th><th>Command</th><th>Cost</th></tr></thead><tbody><tr><td>refresh consolidated local buckets</td><td><code>python scripts/system/consolidate_ai_training.py</code></td><td>local</td></tr><tr><td>verify zero-cost profile inputs</td><td><code>npm run training:preflight:zero-cost</code></td><td>local</td></tr><tr><td>open the safest remote compute lane</td><td><code>npm run training:surfaces -- --surface colab</code></td><td>Colab or existing subscription</td></tr><tr><td>review current candidates before new GPU time</td><td><code>npm run training:eval-matrix &amp;&amp; npm run training:run-ledger</code></td><td>local</td></tr><tr><td>run reversible-buffer leakage tests</td><td><code>npm run experiment:info-leakage-buffer</code></td><td>local</td></tr><tr><td>build Jupiter-ring feedback rows</td><td><code>npm run training:jupiter-ring</code></td><td>local</td></tr><tr><td>publish this operator view</td><td><code>npm run training:hub</code></td><td>local/Vercel static hosting</td></tr></tbody></table>
+
+    <h2>Highest-Value Run Queue</h2>
+    <table><thead><tr><th>Run</th><th>Triage</th><th>Platform</th><th>Lane</th><th>Next Step</th></tr></thead><tbody><tr><td><code>polly-coding-approval-metrics-v2/checkpoint-100</code></td><td>EVALUATE_NEXT</td><td>kaggle</td><td>coding_approval</td><td>Run missing gates: frozen_perplexity, functional_benchmark.</td></tr><tr><td><code>polly-coding-approval-metrics-v2/checkpoint-60</code></td><td>EVALUATE_NEXT</td><td>kaggle</td><td>coding_approval</td><td>Run missing gates: frozen_perplexity, functional_benchmark.</td></tr><tr><td><code>polly-coding-approval-metrics-v2/checkpoint-90</code></td><td>EVALUATE_NEXT</td><td>kaggle</td><td>coding_approval</td><td>Run missing gates: frozen_perplexity, functional_benchmark.</td></tr><tr><td><code>brick3_instruct_live_20260424/checkpoint-30</code></td><td>EVALUATE_NEXT</td><td>local</td><td>general_training</td><td>Run frozen perplexity plus functional coding-agent gate; do not merge until executable behavior passes.</td></tr><tr><td><code>brick3_instruct_live_20260424/checkpoint-60</code></td><td>EVALUATE_NEXT</td><td>local</td><td>general_training</td><td>Run frozen perplexity plus functional coding-agent gate; do not merge until executable behavior passes.</td></tr><tr><td><code>brick3_local/checkpoint-400</code></td><td>EVALUATE_NEXT</td><td>local</td><td>general_training</td><td>Run frozen perplexity plus functional coding-agent gate; do not merge until executable behavior passes.</td></tr><tr><td><code>brick3_local/checkpoint-450</code></td><td>EVALUATE_NEXT</td><td>local</td><td>general_training</td><td>Run frozen perplexity plus functional coding-agent gate; do not merge until executable behavior passes.</td></tr><tr><td><code>brick3_local/checkpoint-500</code></td><td>EVALUATE_NEXT</td><td>local</td><td>general_training</td><td>Run frozen perplexity plus functional coding-agent gate; do not merge until executable behavior passes.</td></tr><tr><td><code>20260426T013255Z</code></td><td>EVALUATE_OR_RERUN_NEXT</td><td>huggingface-job-packet</td><td>aligned_foundations</td><td>Confirm remote artifact exists, pull/push adapter, then run the standard eval matrix.</td></tr><tr><td><code>20260425T010044Z</code></td><td>EVALUATE_OR_RERUN_NEXT</td><td>huggingface-job-packet</td><td>binary_hex</td><td>Confirm remote artifact exists, pull/push adapter, then run the standard eval matrix.</td></tr><tr><td><code>20260426T091757Z</code></td><td>EVALUATE_OR_RERUN_NEXT</td><td>huggingface-job-packet</td><td>dsl_synthesis</td><td>Confirm remote artifact exists, pull/push adapter, then run the standard eval matrix.</td></tr><tr><td><code>20260426T091811Z</code></td><td>EVALUATE_OR_RERUN_NEXT</td><td>huggingface-job-packet</td><td>dsl_synthesis</td><td>Confirm remote artifact exists, pull/push adapter, then run the standard eval matrix.</td></tr></tbody></table>
+
+    <h2>Remote Compute Lanes</h2>
+    <table><thead><tr><th>Notebook</th><th>Category</th><th>Use</th></tr></thead><tbody><tr><td><a href="https://colab.research.google.com/github/issdandavis/SCBE-AETHERMOORE/blob/main/notebooks/scbe_finetune_colab.ipynb">scbe-finetune-free</a></td><td>training</td><td>Free T4 LoRA fine-tuning lane for SCBE governance data.</td></tr><tr><td><a href="https://colab.research.google.com/github/issdandavis/SCBE-AETHERMOORE/blob/main/notebooks/colab_qlora_training.ipynb">qlora-training</a></td><td>training</td><td>QLoRA training notebook for compact Colab model adaptation.</td></tr><tr><td><a href="https://colab.research.google.com/github/issdandavis/SCBE-AETHERMOORE/blob/main/notebooks/coder_qwen_code_primaries_colab.ipynb">coder-code-primaries</a></td><td>training</td><td>QLoRA notebook for the SCBE coding-primaries lane across Python, JavaScript, Rust, Mathematica, Haskell, and Markdown.</td></tr></tbody></table>
+
+    <h2>Evidence Links</h2>
+    <table><thead><tr><th>Path</th><th>Exists</th><th>Bytes</th></tr></thead><tbody><tr><td><a href="../artifacts/training_reports/run_review_latest.md">artifacts/training_reports/run_review_latest.md</a></td><td>yes</td><td>47856</td></tr><tr><td><a href="../artifacts/training_run_ledger/latest/ledger.md">artifacts/training_run_ledger/latest/ledger.md</a></td><td>yes</td><td>57761</td></tr><tr><td><a href="../artifacts/training_evaluation_matrix/latest.md">artifacts/training_evaluation_matrix/latest.md</a></td><td>yes</td><td>13081</td></tr><tr><td><a href="../artifacts/adapter_registry/registry.md">artifacts/adapter_registry/registry.md</a></td><td>yes</td><td>1896</td></tr><tr><td><a href="../artifacts/adapter_registry/drift/latest/drift_report.md">artifacts/adapter_registry/drift/latest/drift_report.md</a></td><td>yes</td><td>1372</td></tr><tr><td>artifacts/ai_training_consolidation/latest/manifest.json</td><td>no</td><td></td></tr><tr><td><a href="../artifacts/experiments/information_leakage_buffer/latest.json">artifacts/experiments/information_leakage_buffer/latest.json</a></td><td>yes</td><td>5136</td></tr><tr><td><a href="../artifacts/training_hub/jupiter_ring_feedback_manifest.json">artifacts/training_hub/jupiter_ring_feedback_manifest.json</a></td><td>yes</td><td>545</td></tr><tr><td><a href="../training-data/agentic_coding/jupiter_ring_feedback.jsonl">training-data/agentic_coding/jupiter_ring_feedback.jsonl</a></td><td>yes</td><td>162658</td></tr></tbody></table>
+  </main>
+  <footer>
+    Generated 2026-04-29T03:20:26.229601+00:00. This page is an operator map, not a certification or performance claim.
+  </footer>
+</body>
+</html>
