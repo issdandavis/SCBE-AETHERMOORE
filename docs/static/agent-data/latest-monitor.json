@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Claude.ai is unavailable",
-      "word_count": 585,
+      "description": "Ghostty is leaving GitHub",
+      "word_count": 571,
       "headings": [
         {
           "level": 2,
-          "text": "Claude.ai is unavailable",
+          "text": "Ghostty is leaving GitHub",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "claude.com",
+          "text": "mitchellh.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Localsend: An open-source cross-platform alternative to AirDrop",
+          "text": "ChatGPT serves ads. Here's the full attribution loop",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/localsend",
+          "text": "buchodi.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Waymo in Portland",
+          "text": "Before GitHub",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "waymo.com",
+          "text": "pocoo.org",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Microsoft VibeVoice: Open-Source Frontier Voice AI",
+          "text": "Claude system prompt bug wastes user money and bricks managed agents",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/microsoft",
+          "text": "github.com/anthropics",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "AISLE Discovers 38 CVEs in OpenEMR Healthcare Software",
+          "text": "Carrot Disclosure: Forgejo",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "aisle.com",
+          "text": "dustri.org",
           "source": "fallback-selector"
         }
       ],
       "link_count": 226,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Claude.ai is unavailable (claude.com)85 points by shorsher 37 minutes ago  | hide | 46\u00a0comments2.Localsend: An open-source cross-platform alternative to AirDrop (github.com/localsend)587 points by bilsbie 6 hours ago  | hide | 196\u00a0comments3.Waymo in Portland (waymo.com)17 points by xnx 30 minutes ago  | hide | discuss4.Microsoft VibeVoice: Open-Source Frontier Voice AI (github.com/microsoft)251 points by tosh 6 hours ago  | hide..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Ghostty is leaving GitHub (mitchellh.com)1564 points by WadeGrimridge 5 hours ago  | hide | 493\u00a0comments2.ChatGPT serves ads. Here's the full attribution loop (buchodi.com)88 points by lmbbuchodi 1 hour ago  | hide | 33\u00a0comments3.Before GitHub (pocoo.org)239 points by mlex 3 hours ago  | hide | 63\u00a0comments4.Claude system prompt bug wastes user money and bricks managed agents (github.com/anthropics)34 points by thomashobohm 56 mi..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
