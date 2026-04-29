@@ -218,6 +218,7 @@ _staging/
 .clawhub/lock.json
 .streamlit/
 .tmp-build/
+unsloth_compiled_cache/
 notes/.obsidian/
 notes/c/
 notes/Messges Dumps_trainging files/
