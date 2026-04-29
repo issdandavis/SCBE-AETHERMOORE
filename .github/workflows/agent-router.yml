@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'Task type: research | monitor | ask | scrape'
+        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder'
         required: true
         default: 'monitor'
         type: string
@@ -39,7 +39,7 @@ jobs:
   route:
     name: Run Agent Task
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -108,8 +108,20 @@ jobs:
               python -m agents.browser_tools scrape_page "{\"url\": \"$QUERY\"}" \
                 > artifacts/agent-router/result.json
               ;;
-            search_and_summarize)
+            web_search|search_and_summarize)
               python -m agents.browser_tools search_and_summarize "{\"query\": \"$QUERY\"}" \
+                > artifacts/agent-router/result.json
+              ;;
+            coding)
+              python scripts/system/agent_router_smoke.py coding \
+                > artifacts/agent-router/result.json
+              ;;
+            system_build)
+              python scripts/system/agent_router_smoke.py system_build \
+                > artifacts/agent-router/result.json
+              ;;
+            agentic_ladder)
+              python scripts/benchmark/agentic_benchmark_ladder.py run --query "$QUERY" \
                 > artifacts/agent-router/result.json
               ;;
             *)
@@ -221,6 +233,15 @@ jobs:
               print(f'**Model**: {r.get(\"model\",\"?\")}')
               print(f'**Sources**: {len(r.get(\"sources\",[]))}')
               print(f'**Answer**: {r.get(\"answer\",\"\")[:500]}')
+            elif '$TASK' == 'agentic_ladder':
+              mr = r.get('metrics_rollup', {})
+              l6 = r.get('levels', {}).get('6', {})
+              print(f'**Ladder ok**: {r.get(\"ok\")}')
+              print(f'**Max level**: {r.get(\"max_level\")}')
+              print(f'**Level 6 (CLI/GeoSeal)**: skipped={l6.get(\"skipped\", False)} ok={l6.get(\"ok\")}')
+              print(f'**Tasks evaluated**: {mr.get(\"tasks_evaluated\")} passed={mr.get(\"tasks_passed\")} failed={mr.get(\"tasks_failed\")}')
+              print(f'**Secret leak count (heuristic)**: {mr.get(\"total_secret_leak_count\")}')
+              print(json.dumps(r, indent=2, default=str)[:1200])
             else:
               print(json.dumps(r, indent=2, default=str)[:1000])
           except Exception as e:

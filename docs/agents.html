@@ -117,6 +117,27 @@
             <div style="margin-top:8px;"><span class="tag green">Free</span> <span class="tag">Playwright</span></div>
           </div>
         </div>
+        <div class="card">
+          <h2>Coding Smoke</h2>
+          <div class="body">
+            Runs the SCBE coding-system benchmark lane and returns pass/fail evidence for agentic coding readiness.
+            <div style="margin-top:8px;"><span class="tag green">Local</span> <span class="tag">Benchmark</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>System Build Smoke</h2>
+          <div class="body">
+            Checks router entrypoints, required scripts, Node syntax, and Python compile health before heavier build promotion.
+            <div style="margin-top:8px;"><span class="tag green">Fast</span> <span class="tag">CI-ready</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Agentic Benchmark Ladder</h2>
+          <div class="body">
+            Runs Level 0 smokes plus Level 1 repo-native tasks; optional Level 6 adds GeoSeal/CLI surface pytest gates. Reports multi-metric rollup (time, secret-leak heuristics, pass rate) instead of a single score.
+            <div style="margin-top:8px;"><span class="tag">Ladder</span> <span class="tag">Metrics</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -130,9 +151,13 @@
           <option value="ask">Ask — answer a question with web context</option>
           <option value="monitor">Monitor — quick-read multiple sites</option>
           <option value="scrape">Scrape — extract structured page data</option>
+          <option value="web_search">Web Search — search and summarize public web results</option>
+          <option value="coding">Coding — run the agentic coding benchmark smoke</option>
+          <option value="system_build">System Build — run the fast repo build smoke</option>
+          <option value="agentic_ladder">Agentic ladder — Levels 0–1 + optional 6 (query = max level: 1 fast, 6 includes CLI/GeoSeal pytest)</option>
         </select>
         <label for="d-query">Query or URLs</label>
-        <input id="d-query" placeholder="e.g. 'post-quantum cryptography 2026' or 'https://example.com'">
+        <input id="d-query" placeholder="e.g. URLs, research query, or ladder max level: 1 (default depth) or 6 (adds CLI/GeoSeal tests)">
         <button onclick="dispatchTask()">Run Agent</button>
         <p id="d-status" style="font-size:0.8rem;color:#8b949e;margin-top:8px;"></p>
         <div class="recipe-row" aria-label="Task recipes">
@@ -140,6 +165,11 @@
           <button type="button" onclick="setRecipe('monitor','https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE,https://news.ycombinator.com,https://arxiv.org/list/cs.AI/recent')">Monitor demo</button>
           <button type="button" onclick="setRecipe('ask','What changed in the latest SCBE agent bus result?')">Ask demo</button>
           <button type="button" onclick="setRecipe('scrape','https://aethermoore.com/SCBE-AETHERMOORE/agents.html')">Scrape demo</button>
+          <button type="button" onclick="setRecipe('web_search','multi-agent coding harness web search')">Web search demo</button>
+          <button type="button" onclick="setRecipe('coding','Run SCBE agentic coding readiness smoke')">Coding smoke</button>
+          <button type="button" onclick="setRecipe('system_build','Run SCBE repo entrypoint and build smoke')">Build smoke</button>
+          <button type="button" onclick="setRecipe('agentic_ladder','1')">Ladder (levels 0–1)</button>
+          <button type="button" onclick="setRecipe('agentic_ladder','6')">Ladder through L6 (CLI/GeoSeal)</button>
         </div>
       </div>
     </div>
@@ -192,7 +222,7 @@
 
   <script>
     var DATA_BASE = (location.pathname.replace(/\/[^/]*$/, '') || '.') + '/static/agent-data';
-    var DEFAULT_AGENT_API_BASE = 'https://scbe-agent-bridge-vercel-9wun7fo3z-issac-davis-projects.vercel.app';
+    var DEFAULT_AGENT_API_BASE = 'https://scbe-agent-bridge-vercel.vercel.app';
     var AGENT_API_BASE = window.AGENT_API_BASE || localStorage.getItem('scbeAgentApiBase') || detectAgentApiBase() || DEFAULT_AGENT_API_BASE;
     var AGENT_DISPATCH_SECRET = window.AGENT_DISPATCH_SECRET || localStorage.getItem('scbeAgentDispatchSecret') || '';
 
