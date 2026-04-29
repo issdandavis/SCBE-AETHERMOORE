@@ -1,0 +1,74 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to publish a release for (e.g. v4.0.3)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          # Strip leading 'v' for the package version compare
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Determine previous tag
+        id: prev
+        run: |
+          PREV=$(git tag --list 'v*.*.*' --sort=-v:refname \
+            | grep -v "^${{ steps.tag.outputs.tag }}$" \
+            | head -1 || true)
+          echo "prev=$PREV" >> "$GITHUB_OUTPUT"
+
+      - name: Build release notes
+        id: notes
+        run: |
+          {
+            echo "## ${{ steps.tag.outputs.tag }}"
+            echo
+            if [ -n "${{ steps.prev.outputs.prev }}" ]; then
+              echo "### Changes since ${{ steps.prev.outputs.prev }}"
+              echo
+              git log --pretty=format:'- %s (%h)' \
+                "${{ steps.prev.outputs.prev }}..${{ steps.tag.outputs.tag }}" \
+                || true
+              echo
+              echo
+              echo "Full diff: https://github.com/${{ github.repository }}/compare/${{ steps.prev.outputs.prev }}...${{ steps.tag.outputs.tag }}"
+            else
+              echo "Initial release."
+            fi
+          } > release_notes.md
+          echo "path=release_notes.md" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
+          body_path: ${{ steps.notes.outputs.path }}
+          draft: false
+          prerelease: ${{ contains(steps.tag.outputs.tag, '-rc') || contains(steps.tag.outputs.tag, '-alpha') || contains(steps.tag.outputs.tag, '-beta') }}
