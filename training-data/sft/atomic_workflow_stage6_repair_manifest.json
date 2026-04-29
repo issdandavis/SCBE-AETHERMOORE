@@ -1,14 +1,21 @@
 {
-  "schema_version": "atomic_workflow_stage6_repair_manifest_v1",
-  "generated_at_utc": "2026-04-25T07:42:59.224766+00:00",
+  "schema_version": "atomic_workflow_stage6_repair_manifest_v2",
+  "generated_at_utc": "2026-04-29T16:44:43.331970+00:00",
   "outputs": {
     "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_repair_train.sft.jsonl",
     "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_repair_holdout.sft.jsonl"
   },
   "counts": {
-    "train": 36,
-    "holdout": 10,
-    "total": 46
+    "train": 302,
+    "holdout": 76,
+    "total": 378,
+    "by_kind": {
+      "resource_jump_cancel": 90,
+      "lane_separation": 90,
+      "hex_trace": 90,
+      "cost_propagation": 90,
+      "training_boundary": 18
+    }
   },
   "boundary": "Analog repair examples only. Frozen Stage 6 eval prompts are not copied into training."
 }
