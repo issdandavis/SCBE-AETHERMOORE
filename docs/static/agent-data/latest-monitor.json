@@ -47,7 +47,7 @@
           "text": "Submerged layer"
         }
       ],
-      "link_count": 64,
+      "link_count": 204,
       "table_count": 0,
       "text_preview": "\u25c8 feed\n    \n      SPY\u2009\u2014\u2009\n      QQQ\u2009\u2014\u2009\n      NVDA\u2009\u2014\u2009\n      BTC\u2009\u2014\u2009\n    \n    \n      \n        Fetching research feed\u2026\n      \n    \n  \n\n  \n    \n      \n        \n          AI governance, built from real math and real code\n          I built a messy but real system for governing how AI thinks, routes, and drifts.\n          \n            AetherMoore is the public face of SCBE-AETHERMOORE: a geometric governance stack for AI training, agent communication, and risk tracing. It uses structured channels, hyperb..."
     },
@@ -106,7 +106,7 @@
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
       "description": "Ghostty is leaving GitHub",
-      "word_count": 571,
+      "word_count": 564,
       "headings": [
         {
           "level": 2,
@@ -120,7 +120,17 @@
         },
         {
           "level": 2,
-          "text": "ChatGPT serves ads. Here's the full attribution loop",
+          "text": "Bugs Rust won't catch",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "corrode.dev",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "How ChatGPT serves ads",
           "source": "fallback-selector"
         },
         {
@@ -140,34 +150,24 @@
         },
         {
           "level": 2,
-          "text": "Claude system prompt bug wastes user money and bricks managed agents",
+          "text": "Show HN: Auto-Architecture: Karpathy's Loop, pointed at a CPU",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/anthropics",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Carrot Disclosure: Forgejo",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "dustri.org",
+          "text": "github.com/fesens",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 226,
+      "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Ghostty is leaving GitHub (mitchellh.com)1564 points by WadeGrimridge 5 hours ago  | hide | 493\u00a0comments2.ChatGPT serves ads. Here's the full attribution loop (buchodi.com)88 points by lmbbuchodi 1 hour ago  | hide | 33\u00a0comments3.Before GitHub (pocoo.org)239 points by mlex 3 hours ago  | hide | 63\u00a0comments4.Claude system prompt bug wastes user money and bricks managed agents (github.com/anthropics)34 points by thomashobohm 56 mi..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Ghostty is leaving GitHub (mitchellh.com)2252 points by WadeGrimridge 11 hours ago  | hide | 671\u00a0comments2.Bugs Rust won't catch (corrode.dev)158 points by lwhsiao 4 hours ago  | hide | 50\u00a0comments3.How ChatGPT serves ads (buchodi.com)265 points by lmbbuchodi 7 hours ago  | hide | 170\u00a0comments4.Before GitHub (pocoo.org)389 points by mlex 9 hours ago  | hide | 119\u00a0comments5.Show HN: Auto-Architecture: Karpathy's Loop, pointed at ..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 2032,
+      "word_count": 2088,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Tue, 28 Apr 2026 (showing first 50 of 370 entries )"
+          "text": "Wed, 29 Apr 2026 (showing first 50 of 178 entries )"
         }
       ],
-      "link_count": 479,
+      "link_count": 508,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n        \n          Thu, 23 Apr 2026\n        \n      \n        \n          Wed, 22 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1039 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1039\n\n    \n    Showing up to 50 entries p..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Wed, 29 Apr 2026\n        \n      \n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n        \n          Thu, 23 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1029 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1029\n\n    \n    Showing up to 50 entries p..."
     }
   ]
 }
