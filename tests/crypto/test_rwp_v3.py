@@ -167,8 +167,11 @@ class TestRWPv3Protocol:
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(b"password", b"message")
 
-        # Tamper with ciphertext (replace first token)
-        envelope.ct[0] = "bip'u"  # Different token
+        # Flip bits after decode so we never collide with the random ciphertext by accident
+        # (replacing token with a fixed alternate can decode to the same byte ~1/256 runs).
+        ct_bytes = bytearray(SACRED_TONGUE_TOKENIZER.decode_section("ct", envelope.ct))
+        ct_bytes[0] ^= 0xFF
+        envelope.ct = SACRED_TONGUE_TOKENIZER.encode_section("ct", bytes(ct_bytes))
 
         with pytest.raises(ValueError, match="AEAD authentication failed"):
             protocol.decrypt(b"password", envelope)
@@ -178,8 +181,11 @@ class TestRWPv3Protocol:
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(b"password", b"message")
 
-        # Tamper with tag
-        envelope.tag[0] = "anvil'u"
+        tag_bytes = bytearray(
+            SACRED_TONGUE_TOKENIZER.decode_section("tag", envelope.tag)
+        )
+        tag_bytes[0] ^= 0xFF
+        envelope.tag = SACRED_TONGUE_TOKENIZER.encode_section("tag", bytes(tag_bytes))
 
         with pytest.raises(ValueError, match="AEAD authentication failed"):
             protocol.decrypt(b"password", envelope)
