@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Soft launch of open-source code platform for government",
-      "word_count": 588,
+      "description": "Zed 1.0",
+      "word_count": 591,
       "headings": [
         {
           "level": 2,
-          "text": "Soft launch of open-source code platform for government",
+          "text": "Zed 1.0",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "nldigitalgovernment.nl",
+          "text": "zed.dev",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Ghostty is leaving GitHub",
+          "text": "Copy Fail \u2013 CVE-2026-31431",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "mitchellh.com",
+          "text": "copy.fail",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Bugs Rust won't catch",
+          "text": "FastCGI: 30 years old and still the better protocol for reverse proxies",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "corrode.dev",
+          "text": "agwa.name",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "HashiCorp co-founder says GitHub 'no longer a place for serious work'",
+          "text": "We need a federation of forges",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "theregister.com",
+          "text": "tangled.org",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "How ChatGPT serves ads",
+          "text": "Ramp's Sheets AI Exfiltrates Financials",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "buchodi.com",
+          "text": "promptarmor.com",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 225,
+      "link_count": 226,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Soft launch of open-source code platform for government (nldigitalgovernment.nl)222 points by e12e 3 hours ago  | hide | 74\u00a0comments2.Ghostty is leaving GitHub (mitchellh.com)2814 points by WadeGrimridge 16 hours ago  | hide | 834\u00a0comments3.Bugs Rust won't catch (corrode.dev)386 points by lwhsiao 10 hours ago  | hide | 192\u00a0comments4.HashiCorp co-founder says GitHub 'no longer a place for serious work' (theregister.com)78 points ..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Zed 1.0 (zed.dev)960 points by salkahfi 4 hours ago  | hide | 318\u00a0comments2.Copy Fail \u2013 CVE-2026-31431 (copy.fail)34 points by unsnap_biceps 25 minutes ago  | hide | 9\u00a0comments3.FastCGI: 30 years old and still the better protocol for reverse proxies (agwa.name)99 points by agwa 2 hours ago  | hide | 17\u00a0comments4.We need a federation of forges (tangled.org)401 points by icy 4 hours ago  | hide | 213\u00a0comments5.Ramp's Sheets AI Exf..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
