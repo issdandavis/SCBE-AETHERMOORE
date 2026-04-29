@@ -1,14 +1,14 @@
 {
-  "updated": "2026-04-29T06:59:42Z",
+  "updated": "2026-04-29T12:43:32Z",
   "tasks": {
     "monitor": {
       "file": "latest-monitor.json",
-      "updated": "2026-04-29T06:59:42Z",
+      "updated": "2026-04-29T12:43:32Z",
       "preview": "{'sites': [{'url': 'https://aethermoore.com/SCBE-AETHERMOORE/', 'title': 'AetherMoore Governed AI Toolkit | Dual-Layer Training Through The Six Tongues Protocol', 'description': 'Buy the AetherMoore g"
     },
     "research": {
       "file": "latest-research.json",
-      "updated": "2026-04-29T06:59:42Z",
+      "updated": "2026-04-29T12:43:32Z",
       "preview": "{'query': 'SCBE hyperbolic geometry AI governance', 'findings': [{'source_url': 'https://www.linkedin.com/posts/issac-davis-scbe-aether_github-issdandavisscbe-aethermoore-14-activity-74288241582157455"
     }
   }
