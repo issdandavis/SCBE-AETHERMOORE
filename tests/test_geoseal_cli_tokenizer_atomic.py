@@ -188,6 +188,11 @@ def test_code_packet_emits_source_packet(tmp_path: Path) -> None:
     assert packet["route_ir"]["hashes"]["plan_sha256"]
     assert packet["execution_lane"]["schema_version"] == "scbe_execution_lane_v1"
     assert "binary" in packet["execution_lane"]["core_lanes"]
+    assert packet["native_tokenization"]["schema_version"] == "scbe_native_tokenization_surface_v1"
+    assert len(packet["native_tokenization"]["inputs"]) == 6
+    assert len(packet["native_tokenization"]["outputs"]) == len(packet["language_views"])
+    assert all(row["token_count"] > 0 for row in packet["native_tokenization"]["inputs"])
+    assert all("token_sha256" in row for row in packet["native_tokenization"]["outputs"])
     assert packet["atomic_states"]
     assert packet["ternary_semantics"]["version"] == "scbe-ternary-semantics-v1"
     assert packet["ternary_semantics"]["checksum"]
@@ -679,6 +684,9 @@ def test_testing_cli_surfaces_route_packet_and_execution(tmp_path: Path) -> None
     assert (
         payload["topology"]["operative_command"]["stability_adjusted_route_score"] > 0
     )
+    assert payload["native_tokenization"]["schema_version"] == "scbe_testing_cli_native_tokenization_v1"
+    assert payload["native_tokenization"]["input"]["token_count"] > 0
+    assert "token_sha256" in payload["native_tokenization"]["output"]
 
 
 def test_cross_domain_sequence_builds_near_related_field_steps(tmp_path: Path) -> None:

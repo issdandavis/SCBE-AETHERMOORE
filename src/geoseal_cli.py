@@ -964,172 +964,36 @@ def _build_braille_lane(tokens: list[str], source_bytes: bytes) -> dict[str, Any
     }
 
 
-def cmd_code_packet(args: argparse.Namespace) -> int:
-    source = args.content or ""
-    source_name = args.source_name or "inline"
-    if args.source_file:
-        path = Path(args.source_file)
-        source = path.read_text(encoding="utf-8")
-        source_name = args.source_name or path.name
-    language = (args.language or "python").lower()
-    tongue = _language_to_tongue(language)
+def _token_digest_for_tongue(tongue: str, payload: bytes) -> dict[str, Any]:
     transport = _normalize_transport_tongue(tongue)
-    source_bytes = source.encode("utf-8", errors="replace")
-    lexical_tokens = re.findall(r"[A-Za-z_][A-Za-z0-9_]*|==|!=|<=|>=|[^\s]", source)
-    transport_tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, source_bytes)
-    semantic = _compute_semantic_expression(source)
-    definitions = [
-        {"symbol": name, "kind": kind}
-        for kind, name in re.findall(
-            r"\b(import|class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", source
-        )
-    ]
-    class_names = set(re.findall(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)", source))
-    function_names = set(re.findall(r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source))
-    stisa_rows = []
-    for i, tok in enumerate(lexical_tokens):
-        stisa_rows.append(
-            {
-                "token": tok,
-                "feature_vector": [
-                    float((len(tok) + i) % 119),
-                    float((i % 18) + 1),
-                    float((i % 7) + 1),
-                    float((len(tok) % 8) + 1),
-                    float(min(4.0, (sum(ord(c) for c in tok) % 400) / 100.0)),
-                    float((i % 7) + 1),
-                    float((i % 6) + 1),
-                    0.0,
-                ],
-            }
-        )
-    packet = {
-        "version": "scbe-code-weight-packet-v1",
-        "source_name": source_name,
-        "language": language,
-        "route": {"tongue": tongue, "language": language},
-        "labels": {"conlang": CONLANG_NAME_MAP.get(tongue, tongue)},
-        "transport": {
-            "tongue": tongue,
-            "source_sha256": hashlib.sha256(source_bytes).hexdigest(),
-            "token_sha256": hashlib.sha256(
-                " ".join(transport_tokens).encode("utf-8")
-            ).hexdigest(),
-        },
-        "binary": {
-            "byte_count": len(source_bytes),
-            "first_16_hex": [f"{b:02x}" for b in source_bytes[:16]],
-        },
-        "tokenizer": {
-            "conlang": CONLANG_NAME_MAP.get(tongue, tongue),
-            "token_count": len(transport_tokens),
-        },
-        "lexical_tokens": lexical_tokens,
-        "language_views": [
-            {code: LANG_MAP[code], "snippet": emit_code("add", code, a="x", b="y")}
-            for code in TONGUE_NAMES
-        ],
-        "braille_lane": _build_braille_lane(lexical_tokens, source_bytes),
-        "stisa": {
-            "version": "scbe-stisa-surface-v1",
-            "field_definitions": [
-                {"name": n}
-                for n in [
-                    "Z_proxy",
-                    "group_proxy",
-                    "period_proxy",
-                    "valence_proxy",
-                    "chi_proxy",
-                    "band_flag",
-                    "tongue_id",
-                    "reserved",
-                ]
-            ],
-            "token_rows": stisa_rows,
-            "binary_groups": (
-                [{"group_id": "g0", "tokens": lexical_tokens[:8]}]
-                if lexical_tokens
-                else []
-            ),
-        },
-        "structural_parse": {
-            "provider": "tree_sitter",
-            "planned_provider": "tree_sitter",
-            "captures": {
-                "imports": re.findall(r"\bimport\s+([A-Za-z_][A-Za-z0-9_]*)", source),
-                "classes": re.findall(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)", source),
-                "functions": re.findall(
-                    r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source
-                ),
-            },
-        },
-        "scip_symbol_index": {
-            "provider": "tree_sitter_symbol_graph",
-            "planned_provider": "scip",
-            "symbols": {"definitions": definitions, "references": []},
-        },
-        "semantic_token_bridge": {
-            "provider": "tree_sitter_semantic_tokens",
-            "planned_provider": "lsp_semantic_tokens",
-            "tokens": [
-                {
-                    "token": tok,
-                    "token_type": (
-                        "keyword"
-                        if tok in {"def", "class", "import", "return"}
-                        else (
-                            "class"
-                            if tok in class_names
-                            else ("function" if tok in function_names else "identifier")
-                        )
-                    ),
-                }
-                for tok in lexical_tokens[:128]
-            ],
-        },
-        "semantic_expression": semantic,
-        "route_ir": _build_route_ir_for_source(
-            source=source,
-            source_name=source_name,
-            language=language,
-            force_tongue=tongue,
-            selected_backend=(args.backend or None),
-        ),
-        "execution_lane": {
-            "schema_version": "scbe_execution_lane_v1",
-            "core_lanes": ["python", "typescript", "c", "rust", "binary"],
-            "route_tongue": tongue,
-            "route_language": language,
-        },
-        "atomic_states": [
-            {"token": tok, "tau": ((i % 3) - 1)}
-            for i, tok in enumerate(lexical_tokens[:64])
-        ],
-        "ternary_semantics": {
-            "version": "scbe-ternary-semantics-v1",
-            "checksum": (
-                hashlib.sha256("|".join(lexical_tokens).encode("utf-8")).hexdigest()
-                if lexical_tokens
-                else hashlib.sha256(b"").hexdigest()
-            ),
-            "atomic_tau_projection": {
-                "KO": 1,
-                "AV": 0,
-                "RU": -1,
-                "CA": 1,
-                "UM": 0,
-                "DR": -1,
-            },
-            "route_projection": {
-                "KO": 1,
-                "AV": 0,
-                "RU": -1,
-                "CA": 1,
-                "UM": 0,
-                "DR": -1,
-            },
-        },
+    tokens = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, payload)
+    return {
+        "tongue": tongue,
+        "language": LANG_MAP.get(tongue, ""),
+        "conlang": CONLANG_NAME_MAP.get(tongue, tongue),
+        "token_count": len(tokens),
+        "token_sha256": hashlib.sha256(" ".join(tokens).encode("utf-8")).hexdigest(),
     }
+
+
+def _build_native_tokenization_surface(
+    *, input_bytes: bytes, language_views: list[dict[str, str]]
+) -> dict[str, Any]:
+    outputs: list[dict[str, Any]] = []
+    for lane in language_views:
+        tongue, lang = next(iter(lane.items()))
+        snippet = lane.get("snippet", "")
+        digest = _token_digest_for_tongue(tongue, snippet.encode("utf-8", errors="replace"))
+        outputs.append({**digest, "output_kind": "language_view_snippet", "language_view": lang})
+    return {
+        "schema_version": "scbe_native_tokenization_surface_v1",
+        "inputs": [_token_digest_for_tongue(tongue, input_bytes) for tongue in TONGUE_NAMES],
+        "outputs": outputs,
+    }
+
+
+def cmd_code_packet(args: argparse.Namespace) -> int:
+    packet = _build_code_packet_payload(args)
     print(json.dumps(packet))
     return 0
 
@@ -1199,6 +1063,10 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
                 ],
             }
         )
+    language_views = [
+        {code: LANG_MAP[code], "snippet": emit_code("add", code, a="x", b="y")}
+        for code in TONGUE_NAMES
+    ]
     return {
         "version": "scbe-code-weight-packet-v1",
         "source_name": source_name,
@@ -1222,10 +1090,10 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
         },
         "lexical_tokens": lexical_tokens,
         "transport_tokens": transport_tokens,
-        "language_views": [
-            {code: LANG_MAP[code], "snippet": emit_code("add", code, a="x", b="y")}
-            for code in TONGUE_NAMES
-        ],
+        "language_views": language_views,
+        "native_tokenization": _build_native_tokenization_surface(
+            input_bytes=source_bytes, language_views=language_views
+        ),
         "braille_lane": _build_braille_lane(lexical_tokens, source_bytes),
         "stisa": {
             "version": "scbe-stisa-surface-v1",
@@ -2091,6 +1959,16 @@ def cmd_testing_cli(args: argparse.Namespace) -> int:
                     "stability_adjusted_route_score"
                 ],
             },
+        },
+        "native_tokenization": {
+            "schema_version": "scbe_testing_cli_native_tokenization_v1",
+            "input": _token_digest_for_tongue(
+                route_packet["route_tongue"], source.encode("utf-8", errors="replace")
+            ),
+            "output": _token_digest_for_tongue(
+                route_packet["route_tongue"],
+                playback_exec.stdout.encode("utf-8", errors="replace"),
+            ),
         },
     }
     print(json.dumps(payload, indent=2 if args.json else None))
