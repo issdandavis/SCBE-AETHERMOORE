@@ -39,7 +39,7 @@ class EventSigner:
         """Load existing identity or create a fresh one. Returns True if signing is active."""
         try:
             from src.crypto.pqc_liboqs import MLDSA65
-        except ImportError as exc:
+        except (ImportError, RuntimeError, OSError) as exc:
             logger.warning("ML-DSA-65 unavailable (%s) — events will not be signed", exc)
             return False
 
@@ -111,7 +111,7 @@ class EventSigner:
             return False
         try:
             from src.crypto.pqc_liboqs import MLDSA65, LIBOQS_AVAILABLE, PURE_PQC_AVAILABLE
-        except ImportError:
+        except (ImportError, RuntimeError, OSError):
             return False
         if not (LIBOQS_AVAILABLE or PURE_PQC_AVAILABLE):
             logger.debug("verify: tier-3 simulation does not support public-key-only verify")

@@ -14,6 +14,11 @@ __pycache__/
 coverage.json
 htmlcov/
 
+# Local virtualenvs (never tracked)
+check_test/
+.venv/
+venv/
+
 # Hypothesis (property-based testing)
 .hypothesis/
 
