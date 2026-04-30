@@ -664,7 +664,11 @@ export function applyTemporalWindows(route: Route, windows: TemporalWindow[]): R
  * - Medium: rolling average governance over 3-segment windows
  * - Long-term: total route governance trend
  *
- * d_tri = w_i * d_immediate + w_m * d_medium + w_l * d_long
+ * d_tri = (λ_i·d_i^φ + λ_m·d_m^φ + λ_l·d_l^φ)^(1/φ)
+ *
+ * Phi-power mean (canonical) — matches
+ * src/polly_pads_runtime.py:triadic_temporal_distance. Weights derive from
+ * the φ-ladder (immediate=1, medium=φ, long=φ²) normalized to sum to 1.
  *
  * @axiom A3: Causality — temporal distance is strictly non-negative
  * @layer L11
@@ -695,13 +699,21 @@ export function triadicTemporalDistance(route: Route): number {
   // Long-term: 1 - overall governance trend (high governance = low long-term distance)
   const longTerm = 1 - route.avgGovernanceScore;
 
-  // Phi-weighted combination (immediate is fastest, long-term is deepest)
-  const w_i = 1.0;
-  const w_m = PHI;
-  const w_l = PHI ** 2;
-  const total = w_i + w_m + w_l;
+  // Phi-power mean with phi-ladder weights normalized to sum to 1.
+  const total = 1.0 + PHI + PHI ** 2;
+  const lambda_i = 1.0 / total;
+  const lambda_m = PHI / total;
+  const lambda_l = (PHI ** 2) / total;
 
-  return (w_i * immediate + w_m * medium + w_l * longTerm) / total;
+  const eps = 1e-10;
+  const ci = Math.max(immediate, eps);
+  const cm = Math.max(medium, eps);
+  const cl = Math.max(longTerm, eps);
+  const s =
+    lambda_i * Math.pow(ci, PHI) +
+    lambda_m * Math.pow(cm, PHI) +
+    lambda_l * Math.pow(cl, PHI);
+  return Math.pow(Math.max(0, s), 1.0 / PHI);
 }
 
 // ═══════════════════════════════════════════════════════════════

@@ -441,6 +441,9 @@ def layer_10_spin_coherence(phasors: np.ndarray) -> float:
 # =============================================================================
 # LAYER 11: Triadic Temporal Aggregation
 # =============================================================================
+_PHI_L11 = (1.0 + 5.0**0.5) / 2.0  # golden ratio
+
+
 def layer_11_triadic_temporal(
     d1: float,
     d2: float,
@@ -451,19 +454,24 @@ def layer_11_triadic_temporal(
     d_scale: float = 1.0,
 ) -> float:
     """
-    Layer 11: Triadic Temporal Distance
+    Layer 11: Triadic Temporal Distance — phi-power mean (canonical).
 
-    Input: Recent (d1), mid-term (d2), global (dG) distances
-    Output: d_tri ∈ [0,1]
+    Canonical formula (matches src/polly_pads_runtime.py:triadic_temporal_distance):
+        d_tri = (lambda1 * d1^phi + lambda2 * d2^phi + lambda3 * dG^phi)^(1/phi)
 
-    A11: d_tri = √(λ₁d₁² + λ₂d₂² + λ₃d_G²) / d_scale
+    Then normalized to [0,1] by d_scale. Replaces the prior M_2 (Euclidean)
+    aggregation; phi-power mean lies between M_1 and M_2 for inputs in [0,1]
+    when 1 < phi < 2, preserving monotonicity and adding scale separation.
     """
-    # Verify weights sum to 1
     assert abs(lambda1 + lambda2 + lambda3 - 1.0) < 1e-6, "Lambdas must sum to 1"
 
-    d_tri = np.sqrt(lambda1 * d1**2 + lambda2 * d2**2 + lambda3 * dG**2)
-
-    # Normalize to [0,1]
+    eps = 1e-10
+    s = (
+        lambda1 * max(d1, eps) ** _PHI_L11
+        + lambda2 * max(d2, eps) ** _PHI_L11
+        + lambda3 * max(dG, eps) ** _PHI_L11
+    )
+    d_tri = s ** (1.0 / _PHI_L11)
     return min(1.0, d_tri / d_scale)
 
 
