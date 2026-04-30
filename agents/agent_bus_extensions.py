@@ -136,6 +136,56 @@ def _load_module_from_source(name: str, source: str) -> Any:
     return module
 
 
+def _fixture_for_type(type_str: str) -> Any:
+    """Generate a sane test fixture for a parameter type-string."""
+    t = (type_str or "").lower().strip()
+    if t in ("int", "integer"):
+        return 42
+    if t in ("float", "number"):
+        return 3.14
+    if t in ("bool", "boolean"):
+        return True
+    if t in ("list", "list[str]", "list[int]", "array"):
+        return ["a", "b", "c"]
+    if t in ("dict", "object", "mapping"):
+        return {"k": "v"}
+    # default: a non-empty string
+    return "hello world"
+
+
+async def _live_test_tool(spec: ToolSpec, fn: Any, *, timeout: float = 5.0) -> None:
+    """Run the tool with synthetic fixtures. Raise ToolValidationError on any failure.
+
+    Asserts:
+      1. tool runs to completion within timeout
+      2. tool returns a JSON-serializable dict (not a list, primitive, or unserializable object)
+      3. no uncaught exceptions
+    """
+    fixtures = {name: _fixture_for_type(tp) for name, tp in spec.parameters.items()}
+
+    try:
+        coro = fn(bus=None, **fixtures)
+    except TypeError as exc:
+        raise ToolValidationError(f"signature mismatch: {exc}") from exc
+
+    try:
+        result = await asyncio.wait_for(coro, timeout=timeout)
+    except asyncio.TimeoutError as exc:
+        raise ToolValidationError(f"tool exceeded {timeout}s timeout") from exc
+    except Exception as exc:  # noqa: BLE001
+        raise ToolValidationError(f"tool raised at runtime: {type(exc).__name__}: {exc}") from exc
+
+    if not isinstance(result, dict):
+        raise ToolValidationError(f"tool must return dict, got {type(result).__name__}")
+
+    try:
+        import json as _json
+
+        _json.dumps(result)
+    except (TypeError, ValueError) as exc:
+        raise ToolValidationError(f"tool result is not JSON-serializable: {exc}") from exc
+
+
 class ToolGenerator:
     """Drives the bus's LLM to write new tools, then validates and registers them."""
 
@@ -161,6 +211,8 @@ class ToolGenerator:
                 fn = getattr(module, "tool", None)
                 if fn is None or not asyncio.iscoroutinefunction(fn):
                     raise ToolValidationError("tool symbol missing or not async")
+                # Live test: run with fixtures, assert shape, before registering
+                await _live_test_tool(spec, fn)
                 self.registry.register(spec, fn)
                 self._persist(spec.name, source)
                 logger.info("tool %s registered (attempt %d)", spec.name, attempt)
