@@ -28,6 +28,7 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     assert "coding-agent-qwen-atomic-workflow-stage6" in ids
     assert "coding-agent-qwen-ca-geoseal-smoke-repair-v1" in ids
     assert "coding-agent-qwen-ca-opcode-exact-repair-v2" in ids
+    assert "coding-agent-qwen-ca-geoseal-combined-repair-v3" in ids
     assert profiles["schema_version"] == "geoseal_coding_training_profiles_v1"
 
     stage6 = next(
@@ -47,6 +48,12 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     )
     assert exact_repair["stage"] == "ca_opcode_exact_repair"
     assert exact_repair["exists"] is True
+
+    combined_repair = next(
+        item for item in profiles["profiles"] if item["profile_id"] == "coding-agent-qwen-ca-geoseal-combined-repair-v3"
+    )
+    assert combined_repair["stage"] == "ca_geoseal_combined_repair"
+    assert combined_repair["exists"] is True
 
 
 def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:

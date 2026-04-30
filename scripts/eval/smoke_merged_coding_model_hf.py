@@ -77,6 +77,7 @@ STISA_PROMPT = (
     "In the SCBE CA opcode table, generate a CA opcode sequence for abs(a) + abs(b). "
     "Return the relevant hex opcodes and operation names only."
 )
+CA_ABS_ADD_SEQUENCE_RE = re.compile(r"0x09\s*,\s*0x09\s*,\s*0x00", flags=re.IGNORECASE)
 
 
 def _json_event(event: str, **payload: Any) -> None:
@@ -212,6 +213,7 @@ def main() -> int:
         "mentions_add": "add" in normalized,
         "mentions_abs_hex": "0x09" in normalized or "09" in normalized,
         "mentions_add_hex": "0x00" in normalized or "00" in normalized,
+        "mentions_exact_sequence": bool(CA_ABS_ADD_SEQUENCE_RE.search(stisa_response)),
     }
     stisa_ok = all(stisa_checks.values())
     stisa = {

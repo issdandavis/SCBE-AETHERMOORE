@@ -63,6 +63,12 @@
       "profile_path": "config/model_training/coding-agent-qwen-ca-opcode-exact-repair-v2.json",
       "stage": "ca_opcode_exact_repair",
       "purpose": "Narrow exact-byte repair after direct adapter smoke reached 3/4 but confused CA add with abs; drills abs=0x09, add=0x00, sequence 0x09,0x09,0x00."
+    },
+    {
+      "profile_id": "coding-agent-qwen-ca-geoseal-combined-repair-v3",
+      "profile_path": "config/model_training/coding-agent-qwen-ca-geoseal-combined-repair-v3.json",
+      "stage": "ca_geoseal_combined_repair",
+      "purpose": "Combined direct-smoke repair for exact CA abs/add byte sequence and runnable depth-2 JSON key code after separate v1/v2 repairs each reached 3/4."
     }
   ],
   "smoke_eval": {

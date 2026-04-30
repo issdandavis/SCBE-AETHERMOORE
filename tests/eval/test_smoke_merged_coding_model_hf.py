@@ -41,3 +41,13 @@ def test_compile_and_run_allows_common_type_checks() -> None:
     )
 
     assert verdict == {"ok": True, "failures": []}
+
+
+def test_ca_sequence_gate_requires_exact_abs_abs_add_bytes() -> None:
+    module = _load_module()
+
+    good = "CA opcode sequence for abs(a) + abs(b): 0x09, 0x09, 0x00. abs=0x09; add=0x00."
+    bad = "CA opcode sequence for abs(a) + abs(b): 0x09, 0x09, 0x09. abs=0x09; add=0x00."
+
+    assert module.CA_ABS_ADD_SEQUENCE_RE.search(good)
+    assert not module.CA_ABS_ADD_SEQUENCE_RE.search(bad)
