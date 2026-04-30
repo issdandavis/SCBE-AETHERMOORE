@@ -23,11 +23,9 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
 
 DEFAULT_MODEL = "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1"
+torch: Any = None
 
 
 @dataclass(frozen=True)
@@ -84,7 +82,7 @@ def _json_event(event: str, **payload: Any) -> None:
 
 
 def _extract_code(text: str) -> str:
-    fenced = re.search(r"```(?:python)?\s*(.*?)```", text, flags=re.IGNORECASE | re.DOTALL)
+    fenced = re.search(r"```(?:python|py)?\s*(.*?)```", text, flags=re.IGNORECASE | re.DOTALL)
     if fenced:
         return fenced.group(1).strip()
     start = text.find("def ")
@@ -152,6 +150,11 @@ def _generate(model: Any, tokenizer: Any, prompt: str, max_new_tokens: int) -> t
 
 
 def main() -> int:
+    global torch
+    import torch as torch_module
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    torch = torch_module
     model_id = os.environ.get("SCBE_SMOKE_MODEL", DEFAULT_MODEL)
     token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN") or None
     _json_event("load_start", model_id=model_id)

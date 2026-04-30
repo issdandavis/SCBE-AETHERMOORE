@@ -26,6 +26,7 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     assert "coding-agent-qwen-smoke" in ids
     assert "coding-agent-qwen-online-v2" in ids
     assert "coding-agent-qwen-atomic-workflow-stage6" in ids
+    assert "coding-agent-qwen-ca-geoseal-smoke-repair-v1" in ids
     assert profiles["schema_version"] == "geoseal_coding_training_profiles_v1"
 
     stage6 = next(
@@ -33,6 +34,12 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     )
     assert stage6["stage"] == "atomic_workflow_resource_decay"
     assert stage6["exists"] is True
+
+    repair = next(
+        item for item in profiles["profiles"] if item["profile_id"] == "coding-agent-qwen-ca-geoseal-smoke-repair-v1"
+    )
+    assert repair["stage"] == "ca_geoseal_smoke_repair"
+    assert repair["exists"] is True
 
 
 def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:

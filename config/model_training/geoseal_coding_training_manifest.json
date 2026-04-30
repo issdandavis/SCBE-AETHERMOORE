@@ -51,6 +51,12 @@
       "profile_path": "config/model_training/coding-agent-qwen-full-coding-system-v8.json",
       "stage": "full_coding_system",
       "purpose": "Adds the full coding system as a gated lane: code primaries, music-theory harmony, atomic tokenizer rows, binary/hex transport, code-lane contracts, and workflow composition as separate aligned evidence lanes."
+    },
+    {
+      "profile_id": "coding-agent-qwen-ca-geoseal-smoke-repair-v1",
+      "profile_path": "config/model_training/coding-agent-qwen-ca-geoseal-smoke-repair-v1.json",
+      "stage": "ca_geoseal_smoke_repair",
+      "purpose": "Focused repair adapter for merged-model smoke failures: CA abs/add opcode recall and runnable depth-2 JSON key extraction."
     }
   ],
   "smoke_eval": {
