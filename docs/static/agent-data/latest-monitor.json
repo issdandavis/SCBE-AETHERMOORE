@@ -105,9 +105,39 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Zed 1.0",
-      "word_count": 588,
+      "description": "Where the goblins came from",
+      "word_count": 591,
       "headings": [
+        {
+          "level": 2,
+          "text": "Where the goblins came from",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "openai.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Craig Venter has died",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "jcvi.org",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Noctua releases official 3D CAD models for its cooling fans",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "noctua.at",
+          "source": "fallback-selector"
+        },
         {
           "level": 2,
           "text": "Zed 1.0",
@@ -120,54 +150,24 @@
         },
         {
           "level": 2,
-          "text": "Copy Fail \u2013 CVE-2026-31431",
+          "text": "Alignment whack-a-mole: Finetuning activates recall of copyrighted books in LLMs",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "copy.fail",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "> Be Alexandra Elbakyan",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "nitter.space",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "OpenTrafficMap",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "opentrafficmap.org",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "HERMES.md in commit messages causes requests to route to extra usage billing",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "github.com/anthropics",
+          "text": "github.com/cauchy221",
           "source": "fallback-selector"
         }
       ],
       "link_count": 226,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Zed 1.0 (zed.dev)1488 points by salkahfi 10 hours ago  | hide | 486\u00a0comments2.Copy Fail \u2013 CVE-2026-31431 (copy.fail)525 points by unsnap_biceps 6 hours ago  | hide | 249\u00a0comments3.> Be Alexandra Elbakyan (nitter.space)67 points by DanielleMolloy 2 hours ago  | hide | 6\u00a0comments4.OpenTrafficMap (opentrafficmap.org)138 points by moooo99 5 hours ago  | hide | 32\u00a0comments5.HERMES.md in commit messages causes requests to route to ext..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Where the goblins came from (openai.com)400 points by ilreb 3 hours ago  | hide | 199\u00a0comments2.Craig Venter has died (jcvi.org)203 points by rdl 5 hours ago  | hide | 35\u00a0comments3.Noctua releases official 3D CAD models for its cooling fans (noctua.at)120 points by embedding-shape 4 hours ago  | hide | 19\u00a0comments4.Zed 1.0 (zed.dev)1746 points by salkahfi 16 hours ago  | hide | 561\u00a0comments5.Alignment whack-a-mole: Finetuning ac..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 2088,
+      "word_count": 2287,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Wed, 29 Apr 2026 (showing first 50 of 178 entries )"
+          "text": "Thu, 30 Apr 2026 (showing first 50 of 115 entries )"
         }
       ],
-      "link_count": 508,
+      "link_count": 475,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Wed, 29 Apr 2026\n        \n      \n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n        \n          Thu, 23 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1029 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1029\n\n    \n    Showing up to 50 entries p..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n  See today's new changes\n      Total of 956 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      951-956\n\n    \n    Showing up to 50 entries per ..."
     }
   ]
 }
