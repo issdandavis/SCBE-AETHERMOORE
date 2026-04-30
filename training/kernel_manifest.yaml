@@ -1,0 +1,19 @@
+version: 1
+description: Canonical SCBE kernel files retained in the main repo after the training-lab split.
+kernel:
+  - src/geoseal_cli.py
+  - src/geoseal.py
+  - src/geoseal.ts
+  - src/geoseal-v2.ts
+  - src/geoseal_compass.py
+  - src/geoseal_mission_compass.py
+  - src/governance/runtime_gate.py
+  - src/governance/stage6_constrained_decoding.py
+  - src/harmonic/constants.ts
+  - src/harmonic/compute_ds_squared.py
+  - src/harmonic/context_encoder.py
+  - src/crypto/sacred_tongues.py
+  - src/crypto/sacred_tongue_payload_bijection.py
+  - src/crypto/geo_seal.py
+  - src/coding_spine/router.py
+  - src/ai_orchestration/orchestrator.py
