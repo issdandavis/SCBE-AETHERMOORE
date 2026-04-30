@@ -83,6 +83,15 @@ const COMMAND_MAP = {
   "orchestrator-dispatch": { method: "POST", path: "/runtime/orchestrator/dispatch", auth: true },
   "orchestrator-status": { method: "POST", path: "/runtime/orchestrator/status", auth: true },
   "orchestrator-promote": { method: "POST", path: "/runtime/orchestrator/promote", auth: true },
+  "code-packet": { method: "POST", path: "/v1/geoseal/code-packet", auth: false },
+  "explain-route": { method: "POST", path: "/v1/geoseal/explain-route", auth: false },
+  "backend-registry": { method: "POST", path: "/v1/geoseal/backend-registry", auth: false },
+  "agent-harness": { method: "POST", path: "/v1/geoseal/agent-harness", auth: false },
+  history: { method: "POST", path: "/v1/geoseal/history", auth: false },
+  replay: { method: "POST", path: "/v1/geoseal/replay", auth: false },
+  "testing-cli": { method: "POST", path: "/v1/geoseal/testing-cli", auth: false },
+  "project-scaffold": { method: "POST", path: "/v1/geoseal/project-scaffold", auth: false },
+  "code-roundtrip": { method: "POST", path: "/v1/geoseal/code-roundtrip", auth: false },
 };
 
 const LOCAL_PASSTHROUGH_COMMANDS = new Set(["portal-box", "stream-wheel", "shell"]);
@@ -230,14 +239,6 @@ function runDoctor(flags) {
     "verify-code-lanes",
     "decode-code-lanes",
     "ai2ai-bridge",
-    "code-packet",
-    "explain-route",
-    "backend-registry",
-    "history",
-    "replay",
-    "testing-cli",
-    "project-scaffold",
-    "code-roundtrip",
   ];
   const payload = {
     ok: true,
@@ -303,6 +304,26 @@ function buildBody(command, flags) {
     body.tentacle = String(flags.tentacle || "local");
     body.mode = String(flags.mode || "local-polypad");
   }
+  if (flags.source) body.source = String(flags.source);
+  if (flags["source-file"]) body.source_file = String(flags["source-file"]);
+  if (flags.ledger) body.ledger = String(flags.ledger);
+  if (flags.type) body.type = String(flags.type);
+  if (flags.op) body.op = String(flags.op);
+  if (flags.index !== undefined && flags.index !== true && Number.isFinite(Number(flags.index))) {
+    body.index = Number(flags.index);
+  }
+  if (flags["no-ledger"] !== undefined) {
+    body.no_ledger = flags["no-ledger"] === true || String(flags["no-ledger"]).toLowerCase() === "true";
+  }
+  if (flags.lang) body.lang = String(flags.lang);
+  if (flags.provider) body.provider = String(flags.provider);
+  if (flags["small-first"] !== undefined) {
+    body.small_first = flags["small-first"] === true || String(flags["small-first"]).toLowerCase() === "true";
+  }
+  if (flags["governance-tier"]) body.governance_tier = String(flags["governance-tier"]);
+  if (flags.backend) body.backend = String(flags.backend);
+  if (flags.goal) body.goal = String(flags.goal);
+  if (flags["permission-mode"]) body.permission_mode = String(flags["permission-mode"]);
   return body;
 }
 
@@ -338,6 +359,43 @@ function ensureBody(command, body) {
     }
   }
   if (command === "cursor-status" || command === "cursor-overlord" || command === "fleet-distributions") {
+    return;
+  }
+  if (command === "backend-registry") return;
+  if (command === "agent-harness") return;
+  if (command === "history") return;
+  if (command === "replay") return;
+  if (command === "code-packet") {
+    if (!body.content && !body.source_file) {
+      throw new Error("--content or --source-file is required for code-packet");
+    }
+    return;
+  }
+  if (command === "explain-route") {
+    if (!body.content && !body.source_file) {
+      throw new Error("--content or --source-file is required for explain-route");
+    }
+    return;
+  }
+  if (command === "testing-cli") {
+    if (!body.content && !body.source_file) {
+      throw new Error("--content or --source-file is required for testing-cli");
+    }
+    return;
+  }
+  if (command === "project-scaffold") {
+    if (!body.content) {
+      throw new Error("--content is required for project-scaffold");
+    }
+    if (!body.output_dir) {
+      throw new Error("--output-dir is required for project-scaffold");
+    }
+    return;
+  }
+  if (command === "code-roundtrip") {
+    if (!body.source && !body.content) {
+      throw new Error("--source or --content is required for code-roundtrip");
+    }
     return;
   }
   if (command === "orchestrator-dispatch" || command === "orchestrator-status" || command === "orchestrator-promote") {

@@ -983,11 +983,17 @@ def _build_native_tokenization_surface(
     for lane in language_views:
         tongue, lang = next(iter(lane.items()))
         snippet = lane.get("snippet", "")
-        digest = _token_digest_for_tongue(tongue, snippet.encode("utf-8", errors="replace"))
-        outputs.append({**digest, "output_kind": "language_view_snippet", "language_view": lang})
+        digest = _token_digest_for_tongue(
+            tongue, snippet.encode("utf-8", errors="replace")
+        )
+        outputs.append(
+            {**digest, "output_kind": "language_view_snippet", "language_view": lang}
+        )
     return {
         "schema_version": "scbe_native_tokenization_surface_v1",
-        "inputs": [_token_digest_for_tongue(tongue, input_bytes) for tongue in TONGUE_NAMES],
+        "inputs": [
+            _token_digest_for_tongue(tongue, input_bytes) for tongue in TONGUE_NAMES
+        ],
         "outputs": outputs,
     }
 
@@ -1715,6 +1721,26 @@ def cmd_backend_registry(args: argparse.Namespace) -> int:
     for row in payload["backends"]:
         lanes = ",".join(row["supports_lanes"])
         print(f"{row['provider']:<8} model={row['model']} lanes={lanes}")
+    return 0
+
+
+def cmd_agent_harness(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_tool_bridge import build_agent_harness_manifest_v1
+
+    payload = build_agent_harness_manifest_v1(
+        inline_goal=args.goal or "",
+        preferred_language=args.language or "python",
+        permission_mode=args.permission_mode or "observe",
+    )
+    if args.json:
+        print(json.dumps(payload, indent=2))
+        return 0
+    selected = payload["selected_language"]
+    print(
+        f"schema={payload['schema_version']} language={selected['language']} tongue={selected['tongue']}"
+    )
+    print(f"permission_mode={payload['permission_mode']}")
+    print("flow=" + " -> ".join(payload["standard_flow"]))
     return 0
 
 
@@ -3427,6 +3453,25 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_backends.add_argument("--json", action="store_true")
     p_backends.set_defaults(func=cmd_backend_registry)
+
+    p_harness = sub.add_parser(
+        "agent-harness", help="Emit model-neutral agent harness manifest"
+    )
+    p_harness.add_argument("--goal", default="", help="Agent goal or task intent")
+    p_harness.add_argument(
+        "--language",
+        default="python",
+        choices=sorted(set(ALL_LANG_MAP.values())),
+        help="Preferred source language for route selection",
+    )
+    p_harness.add_argument(
+        "--permission-mode",
+        default="observe",
+        choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
+        dest="permission_mode",
+    )
+    p_harness.add_argument("--json", action="store_true")
+    p_harness.set_defaults(func=cmd_agent_harness)
 
     p_history = sub.add_parser("history", help="Show execution history from ledger")
     p_history.add_argument("--ledger", default=str(DEFAULT_LEDGER))
