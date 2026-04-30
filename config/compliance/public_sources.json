@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "policy": "Only entries with fetch_kind \"http_get\" may be downloaded by fetch_public_compliance_corpus.py. ISO/IEC and proprietary audit frameworks are listed under purchase_only for human sourcing.",
+  "sources": [
+    {
+      "id": "nist_ai_rmf_100_1",
+      "title": "NIST Artificial Intelligence Risk Management Framework (AI RMF 1.0)",
+      "fetch_kind": "http_get",
+      "url": "https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.100-1.pdf",
+      "save_as": "nist_ai_rmf_100_1.pdf",
+      "tags": ["nist", "ai-governance", "risk-management"],
+      "notes": "Canonical US AI governance framing; aligns with agentic systems and documentation expectations."
+    },
+    {
+      "id": "nist_csf_2_0",
+      "title": "NIST Cybersecurity Framework 2.0",
+      "fetch_kind": "http_get",
+      "url": "https://nvlpubs.nist.gov/nistpubs/CSWP/NIST.CSWP.29.pdf",
+      "save_as": "nist_cybersecurity_framework_2_0.pdf",
+      "tags": ["nist", "security", "controls"],
+      "notes": "Broad security outcomes vocabulary useful when mapping gates and evidence."
+    },
+    {
+      "id": "nist_sp800_171_rev3",
+      "title": "NIST SP 800-171 Rev 3 — Protecting CUI in Nonfederal Systems",
+      "fetch_kind": "http_get",
+      "url": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-171r3.pdf",
+      "save_as": "nist_sp800_171_rev3.pdf",
+      "tags": ["nist", "cui", "export-adjacent"],
+      "notes": "Useful when systems touch defense-adjacent or regulated supplier workflows."
+    },
+    {
+      "id": "gdpr_eurlex_html",
+      "title": "Regulation (EU) 2016/679 (GDPR) — consolidated English HTML",
+      "fetch_kind": "http_get",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32016R0679",
+      "save_as": "gdpr_celex_32016r0679.html",
+      "tags": ["privacy", "eu", "data-protection"],
+      "large": true,
+      "notes": "Large page; use --include-large to fetch. Official consolidated legal text."
+    },
+    {
+      "id": "eu_ai_act_eurlex_html",
+      "title": "Regulation (EU) 2024/1689 (EU AI Act) — consolidated English HTML",
+      "fetch_kind": "http_get",
+      "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32024R1689",
+      "save_as": "eu_ai_act_celex_32024r1689.html",
+      "tags": ["eu", "ai-regulation", "high-risk-systems"],
+      "large": true,
+      "notes": "Large page; use --include-large to fetch. Map excerpts carefully for training data licensing."
+    },
+    {
+      "id": "soc2_tsc_aicpa",
+      "title": "AICPA Trust Services Criteria (SOC 2)",
+      "fetch_kind": "purchase_only",
+      "url": "https://www.aicpa.org/resources/toolkit/soc-suite-of-services",
+      "tags": ["soc2", "audit", "trust-services"],
+      "notes": "Full TSC document set is not freely redistributable; purchase or license via AICPA / CPA firm access."
+    },
+    {
+      "id": "iso_27001_2022",
+      "title": "ISO/IEC 27001:2022 Information Security Management",
+      "fetch_kind": "purchase_only",
+      "url": "https://www.iso.org/standard/54534.html",
+      "tags": ["iso", "isms"],
+      "notes": "ISO texts require purchase; do not commit pirated PDFs to the repo."
+    },
+    {
+      "id": "iso_42001_2023",
+      "title": "ISO/IEC 42001:2023 AI Management System",
+      "fetch_kind": "purchase_only",
+      "url": "https://www.iso.org/standard/81230.html",
+      "tags": ["iso", "ai-management"],
+      "notes": "Purchase-only; useful alignment reference once obtained outside this automated fetch."
+    }
+  ]
+}

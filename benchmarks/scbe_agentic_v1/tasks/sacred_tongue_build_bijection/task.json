@@ -1,0 +1,13 @@
+{
+  "id": "sacred_tongue_build_bijection",
+  "level": 1,
+  "title": "Sacred Tongue SS1 bijection self-check (all six tongues)",
+  "verify": {
+    "command": ["python", "scripts/system/sacred_tongue_build_bijection.py", "--self-check"],
+    "timeout_sec": 120
+  },
+  "metrics_hint": {
+    "evidence_quality": "artifact",
+    "notes": "Byte-level bijective codec per tongue; canonical build payloads use prove_dict in src/crypto/sacred_tongue_payload_bijection.py."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "ca_geoseal_smoke_repair_manifest_v1",
+  "source_smoke_job": "69f2c4ddd2c8bd8662bd3809",
+  "design": "Focused repair shard for merged coding-model smoke failures. Reinforces CA abs/add opcode recall and runnable depth-2 JSON key code.",
+  "outputs": {
+    "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\ca_geoseal_smoke_repair_v1_train.sft.jsonl",
+    "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\ca_geoseal_smoke_repair_v1_holdout.sft.jsonl"
+  },
+  "counts": {
+    "train": 100,
+    "holdout": 3,
+    "ca_train": 64,
+    "depth2_train": 36
+  },
+  "must_recall": {
+    "abs": "0x09",
+    "add": "0x00",
+    "abs_add_sequence": [
+      "0x09",
+      "0x09",
+      "0x00"
+    ]
+  },
+  "promotion_gate": {
+    "merged_smoke_min_passed": 4,
+    "merged_smoke_total": 4,
+    "evaluator": "scripts/eval/smoke_merged_coding_model_hf.py"
+  }
+}

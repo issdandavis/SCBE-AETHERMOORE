@@ -64,6 +64,22 @@ _SYSTEM_TEMPLATE = textwrap.dedent("""\
 _FENCE_RE = re.compile(r"```[a-zA-Z0-9_+-]*\n?(.*?)```", re.DOTALL)
 
 
+@dataclass(frozen=True)
+class BackendDescriptor:
+    provider: str
+    model: str
+    supports_lanes: tuple[str, ...]
+    local_only: bool = False
+
+    def to_dict(self) -> dict:
+        return {
+            "provider": self.provider,
+            "model": self.model,
+            "supports_lanes": list(self.supports_lanes),
+            "local_only": self.local_only,
+        }
+
+
 @dataclass
 class GenerateResult:
     code: str  # Extracted code (fences stripped)
@@ -288,6 +304,43 @@ def _provider_model(provider: str) -> str:
     if provider == "claude":
         return _CLAUDE_MODEL
     return provider
+
+
+def get_backend_registry() -> list[BackendDescriptor]:
+    """Inspectable provider capability table for CLI explain/history surfaces."""
+    lanes = ("python", "typescript", "c", "rust", "binary")
+    return [
+        BackendDescriptor("local", str(_LOCAL_MODEL_PATH), lanes, local_only=True),
+        BackendDescriptor("ollama", _ollama_model(), lanes, local_only=True),
+        BackendDescriptor("hf", _HF_MODEL_ID, lanes, local_only=False),
+        BackendDescriptor("claude", _CLAUDE_MODEL, lanes, local_only=False),
+    ]
+
+
+def explain_provider_chain(
+    *,
+    force_provider: Optional[str],
+    forbidden_providers: Optional[list[str]],
+    small_first: bool,
+    governance_tier: Optional[str],
+) -> dict:
+    chain = _resolve_provider_chain(
+        force_provider=force_provider,
+        forbidden_providers=forbidden_providers,
+        small_first=small_first,
+        governance_tier=governance_tier,
+    )
+    registry = {entry.provider: entry for entry in get_backend_registry()}
+    return {
+        "requested": {
+            "force_provider": force_provider,
+            "forbidden_providers": list(forbidden_providers or []),
+            "small_first": bool(small_first),
+            "governance_tier": governance_tier or "ALLOW",
+        },
+        "resolved_chain": chain,
+        "backends": [registry[p].to_dict() for p in chain if p in registry],
+    }
 
 
 def _resolve_provider_chain(

@@ -1,0 +1,24 @@
+{
+  "schema_version": "atomic_workflow_stage6_must_pass_boost_manifest_v1",
+  "generated_at_utc": "2026-04-29T16:45:48.683791+00:00",
+  "outputs": {
+    "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_must_pass_boost_train.sft.jsonl",
+    "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_must_pass_boost_holdout.sft.jsonl"
+  },
+  "counts": {
+    "train": 216,
+    "holdout": 54,
+    "total": 270,
+    "by_kind": {
+      "resource_jump_cancel": 90,
+      "lane_separation": 90,
+      "hex_trace": 90
+    },
+    "train_must_pass_token_rows": {
+      "transmit_burst": 72,
+      "queue_drain_guard": 72,
+      "crc_patch": 72
+    }
+  },
+  "boundary": "Boost shard. Frozen Stage 6 eval prompts are not copied into training; only the must_pass token literals (transmit_burst, queue_drain_guard, crc_patch) are oversampled through analog scenarios."
+}

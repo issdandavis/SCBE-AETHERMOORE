@@ -1,0 +1,35 @@
+{
+  "schema_version": "atomic_workflow_stage6_signal_shape_boost_v12_manifest_v1",
+  "design": "Asymmetric v12: keep v10 base corpus intact, add forced-prefix only for the 3 prompts that v10 still failed (jump_cancel, lane_separation, training_boundary). Skip hex_trace + cost_propagation (passed in v10; v11 forced-prefix on them caused regressions). Duplicate 3x to push concentration without bringing back competing shards. Source v1 shards untouched.",
+  "source": {
+    "train": "atomic_workflow_stage6_signal_shape_boost_train.sft.jsonl",
+    "holdout": "atomic_workflow_stage6_signal_shape_boost_holdout.sft.jsonl"
+  },
+  "outputs": {
+    "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_signal_shape_boost_v12_train.sft.jsonl",
+    "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_signal_shape_boost_v12_holdout.sft.jsonl"
+  },
+  "filter": {
+    "keep_kinds": [
+      "lane_separation",
+      "resource_jump_cancel",
+      "training_boundary"
+    ],
+    "train_duplicate": 3,
+    "holdout_duplicate": 1
+  },
+  "counts": {
+    "train": 216,
+    "holdout": 18,
+    "train_by_kind": {
+      "resource_jump_cancel": 96,
+      "lane_separation": 96,
+      "training_boundary": 24
+    },
+    "holdout_by_kind": {
+      "resource_jump_cancel": 8,
+      "lane_separation": 8,
+      "training_boundary": 2
+    }
+  }
+}

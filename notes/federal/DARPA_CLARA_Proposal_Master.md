@@ -16,6 +16,16 @@ patent: "USPTO #63/961,403"
 
 # DARPA CLARA Proposal — Master Document
 
+> **Canonical-formula clarification (added 2026-04-29, post-submission of FP-033):**
+> The canonical SCBE safety score at the L12→L13 governance boundary is the bounded harmonic wall
+> `H(d, pd) = 1/(1 + phi * d_H + 2 * pd) in (0, 1]`, where `d_H` is hyperbolic distance in the
+> Poincaré ball. The super-exponential cost form `H_wall(d*, R) = R^((phi * d*)^2)` cited below is
+> retained in this document **as the submitted record of FP-033** and is preserved unchanged for
+> traceability; it is also retained in `src/symphonic_cipher/core/harmonic_scaling_law.py` as the
+> legacy cost-multiplier interpretation. The cost-blow-up rhetoric is honestly anchored to
+> Poincaré metric divergence at the boundary (`d_H -> infinity` as `r -> 1`), which is what
+> drives any cost-scaling claim regardless of which functional form is plotted on top of `d_H`.
+
 > **Deadline: April 17, 2026, 4:00 PM ET** (12 days from today)
 > **Award**: $2M OT (Phase 1 ~15mo + Phase 2 ~9mo)
 > **Contact**: CLARA@darpa.mil

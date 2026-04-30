@@ -10,8 +10,22 @@ from __future__ import annotations
 import time
 from typing import Any, Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Body, Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
+
+GEOSEAL_CLI_COMMANDS = frozenset(
+    {
+        "code-packet",
+        "explain-route",
+        "backend-registry",
+        "agent-harness",
+        "history",
+        "replay",
+        "testing-cli",
+        "project-scaffold",
+        "code-roundtrip",
+    }
+)
 
 STARTED_AT = time.time()
 DEMO_API_KEY = "demo_key_12345"
@@ -50,6 +64,20 @@ class PollyChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=64000)
     tentacle: str = Field(default="local", max_length=64)
     mode: str = Field(default="local-polypad", max_length=64)
+
+
+class ToolBridgeRequest(BaseModel):
+    """Inline agent goal for SCBE-native CLI / MCP bridge hints."""
+
+    goal: str = Field(..., min_length=1, max_length=12000)
+
+
+class AgentHarnessRequest(BaseModel):
+    """Model-neutral harness manifest request."""
+
+    goal: str = Field(default="", max_length=12000)
+    language: str = Field(default="python", max_length=64)
+    permission_mode: str = Field(default="observe", max_length=64)
 
 
 async def verify_api_key(x_api_key: str = Header(...)) -> str:
@@ -110,6 +138,8 @@ async def spaceport_status() -> dict[str, Any]:
             "lanes": {
                 "public_portal_box": True,
                 "public_stream_wheel": True,
+                "harness_tool_bridge": True,
+                "agent_harness_manifest": True,
                 "system_cards": True,
                 "portal_box": True,
                 "stream_wheel": True,
@@ -120,6 +150,17 @@ async def spaceport_status() -> dict[str, Any]:
                     "/v1/spaceport/status",
                     "/v1/polly/portal-box",
                     "/v1/polly/stream-wheel",
+                    "/v1/harness/tool-bridge",
+                    "/v1/harness/agent-harness",
+                    "/v1/geoseal/code-packet",
+                    "/v1/geoseal/explain-route",
+                    "/v1/geoseal/backend-registry",
+                    "/v1/geoseal/agent-harness",
+                    "/v1/geoseal/history",
+                    "/v1/geoseal/replay",
+                    "/v1/geoseal/testing-cli",
+                    "/v1/geoseal/project-scaffold",
+                    "/v1/geoseal/code-roundtrip",
                 ],
                 "authenticated_runtime": [
                     "/runtime/inspect",
@@ -167,7 +208,10 @@ async def runtime_system_cards(
 @app.post("/runtime/run-route", tags=["Runtime"])
 async def runtime_run_route(request: RuntimeRunRouteRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
-    from src.geoseal_cli import _build_execution_shell_payload, _execute_execution_shell_payload
+    from src.geoseal_cli import (
+        _build_execution_shell_payload,
+        _execute_execution_shell_payload,
+    )
 
     shell_payload = _build_execution_shell_payload(
         language=request.language,
@@ -199,8 +243,6 @@ async def runtime_portal_box(request: RuntimePortalBoxRequest, user: str = Depen
             content=request.content,
             source_name=request.source_name,
             include_extended=request.include_extended,
-            deck_size=request.deck_size,
-            branch_width=request.branch_width,
         ),
     }
 
@@ -208,17 +250,57 @@ async def runtime_portal_box(request: RuntimePortalBoxRequest, user: str = Depen
 @app.post("/runtime/stream-wheel", tags=["Runtime"])
 async def runtime_stream_wheel(request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
-    from src.geoseal_cli import _build_portal_box_payload, _build_stream_wheel_payload
+    from src.geoseal_cli import _build_stream_wheel_payload
 
-    portal_payload = _build_portal_box_payload(
-        language=request.language,
-        content=request.content,
-        source_name=request.source_name,
-        include_extended=request.include_extended,
-        deck_size=request.deck_size,
-        branch_width=request.branch_width,
-    )
-    return {"status": "ok", "data": _build_stream_wheel_payload(portal_payload)}
+    return {
+        "status": "ok",
+        "data": _build_stream_wheel_payload(
+            language=request.language,
+            content=request.content,
+            source_name=request.source_name,
+            include_extended=request.include_extended,
+        ),
+    }
+
+
+@app.post("/v1/geoseal/{command}", tags=["GeoSeal CLI"])
+async def geoseal_cli_http(command: str, body: dict[str, Any] = Body(default_factory=dict)) -> dict[str, Any]:
+    """Expose curated GeoSeal CLI subcommands over HTTP for ``bin/geoseal.cjs`` routing."""
+
+    if command not in GEOSEAL_CLI_COMMANDS:
+        raise HTTPException(status_code=404, detail=f"Unknown GeoSeal command: {command}")
+    from src.api.geoseal_cli_bridge import dispatch_geoseal_command
+
+    try:
+        result = dispatch_geoseal_command(command, body)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    exit_code = int(result.get("exit_code") or 0)
+    return {"status": "ok" if exit_code == 0 else "error", **result}
+
+
+@app.post("/v1/harness/tool-bridge", tags=["Harness"])
+async def harness_tool_bridge(request: ToolBridgeRequest) -> dict[str, Any]:
+    from src.coding_spine.agent_tool_bridge import build_agent_tool_bridge_v1
+
+    return {
+        "status": "ok",
+        "data": build_agent_tool_bridge_v1(inline_goal=request.goal),
+    }
+
+
+@app.post("/v1/harness/agent-harness", tags=["Harness"])
+async def harness_agent_harness(request: AgentHarnessRequest) -> dict[str, Any]:
+    from src.coding_spine.agent_tool_bridge import build_agent_harness_manifest_v1
+
+    return {
+        "status": "ok",
+        "data": build_agent_harness_manifest_v1(
+            inline_goal=request.goal,
+            preferred_language=request.language,
+            permission_mode=request.permission_mode,
+        ),
+    }
 
 
 @app.post("/v1/polly/portal-box", tags=["Polly Pad"])
@@ -232,25 +314,23 @@ async def polly_public_portal_box(request: RuntimePortalBoxRequest) -> dict[str,
             content=request.content,
             source_name=request.source_name,
             include_extended=request.include_extended,
-            deck_size=request.deck_size,
-            branch_width=request.branch_width,
         ),
     }
 
 
 @app.post("/v1/polly/stream-wheel", tags=["Polly Pad"])
 async def polly_public_stream_wheel(request: RuntimePortalBoxRequest) -> dict[str, Any]:
-    from src.geoseal_cli import _build_portal_box_payload, _build_stream_wheel_payload
+    from src.geoseal_cli import _build_stream_wheel_payload
 
-    portal_payload = _build_portal_box_payload(
-        language=request.language,
-        content=request.content,
-        source_name=request.source_name,
-        include_extended=request.include_extended,
-        deck_size=request.deck_size,
-        branch_width=request.branch_width,
-    )
-    return {"status": "ok", "data": _build_stream_wheel_payload(portal_payload)}
+    return {
+        "status": "ok",
+        "data": _build_stream_wheel_payload(
+            language=request.language,
+            content=request.content,
+            source_name=request.source_name,
+            include_extended=request.include_extended,
+        ),
+    }
 
 
 @app.post("/v1/chat", tags=["Polly Pad"])

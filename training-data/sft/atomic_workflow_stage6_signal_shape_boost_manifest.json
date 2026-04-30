@@ -1,0 +1,31 @@
+{
+  "schema_version": "atomic_workflow_stage6_signal_shape_boost_manifest_v1",
+  "generated_at_utc": "2026-04-29T17:05:27.614113+00:00",
+  "outputs": {
+    "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_signal_shape_boost_train.sft.jsonl",
+    "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_signal_shape_boost_holdout.sft.jsonl"
+  },
+  "counts": {
+    "train": 111,
+    "holdout": 28,
+    "total": 139,
+    "by_kind": {
+      "resource_jump_cancel": 40,
+      "lane_separation": 40,
+      "hex_trace": 40,
+      "cost_propagation": 9,
+      "training_boundary": 10
+    },
+    "train_token_rows": {
+      "transmit_burst": 32,
+      "queue_drain_guard": 32,
+      "crc_patch": 32,
+      "sample_soil": 7,
+      "send_digest": 7,
+      "Stage 6": 15,
+      "held-out": 8
+    },
+    "train_forced_prefix_rows": 111
+  },
+  "design": "Forced-prefix shape: every response opens with `required-tokens: ... ::` listing the kind's required substrings in canonical order, then the prose body. Trains the model to emit the checklist before any prose, removing the prose-collapse failure mode from v8/v9/v10. Covers all 5 stage6 contract prompt classes (v9 only covered 3 must_pass)."
+}

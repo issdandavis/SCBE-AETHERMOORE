@@ -5,7 +5,13 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
 
-  const { query } = req.body || {};
+  let body;
+  try {
+    body = await readJsonBody(req);
+  } catch (err) {
+    return res.status(400).json({ error: "invalid JSON body", detail: String(err.message || err) });
+  }
+  const { query } = body || {};
   if (!query) return res.status(400).json({ error: "query required" });
 
   try {
@@ -25,4 +31,29 @@ export default async function handler(req, res) {
   } catch (err) {
     return res.status(500).json({ error: String(err) });
   }
+}
+
+async function readJsonBody(req) {
+  if (req.body && typeof req.body === "object") return req.body;
+  if (typeof req.body === "string") return req.body.trim() ? JSON.parse(req.body) : {};
+
+  return new Promise((resolve, reject) => {
+    let raw = "";
+    req.on("data", (chunk) => {
+      raw += chunk;
+      if (raw.length > 4096) {
+        reject(new Error("request body too large"));
+        req.destroy();
+      }
+    });
+    req.on("end", () => {
+      if (!raw.trim()) return resolve({});
+      try {
+        resolve(JSON.parse(raw));
+      } catch (err) {
+        reject(err);
+      }
+    });
+    req.on("error", reject);
+  });
 }

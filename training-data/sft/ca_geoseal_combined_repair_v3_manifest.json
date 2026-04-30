@@ -1,0 +1,32 @@
+{
+  "schema_version": "ca_geoseal_combined_repair_manifest_v3",
+  "source_smoke_jobs": [
+    "69f2cc41d2c8bd8662bd3863",
+    "69f2ceb6d70108f37ace19b9"
+  ],
+  "design": "Combined direct-smoke repair for exact CA bytes and runnable depth-2 JSON key code.",
+  "outputs": {
+    "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\ca_geoseal_combined_repair_v3_train.sft.jsonl",
+    "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\ca_geoseal_combined_repair_v3_holdout.sft.jsonl"
+  },
+  "counts": {
+    "train": 144,
+    "holdout": 4,
+    "ca_train": 80,
+    "depth2_train": 64
+  },
+  "must_recall": {
+    "abs": "0x09",
+    "add": "0x00",
+    "abs_add_sequence": [
+      "0x09",
+      "0x09",
+      "0x00"
+    ]
+  },
+  "promotion_gate": {
+    "direct_adapter_smoke_min_passed": 4,
+    "direct_adapter_smoke_total": 4,
+    "evaluator": "scripts/eval/smoke_merged_coding_model_hf.py"
+  }
+}
