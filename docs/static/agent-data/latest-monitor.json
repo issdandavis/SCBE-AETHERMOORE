@@ -105,9 +105,39 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Where the goblins came from",
-      "word_count": 591,
+      "description": "Granite 4.1: IBM's 8B Model Matching 32B MoE",
+      "word_count": 602,
       "headings": [
+        {
+          "level": 2,
+          "text": "Granite 4.1: IBM's 8B Model Matching 32B MoE",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "firethering.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Belgium stops decommissioning nuclear power plants",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "dpa-international.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Mozilla's Opposition to Chrome's Prompt API",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "github.com/mozilla",
+          "source": "fallback-selector"
+        },
         {
           "level": 2,
           "text": "Where the goblins came from",
@@ -120,16 +150,6 @@
         },
         {
           "level": 2,
-          "text": "Craig Venter has died",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "jcvi.org",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
           "text": "Noctua releases official 3D CAD models for its cooling fans",
           "source": "fallback-selector"
         },
@@ -137,31 +157,11 @@
           "level": 2,
           "text": "noctua.at",
           "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Zed 1.0",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "zed.dev",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Alignment whack-a-mole: Finetuning activates recall of copyrighted books in LLMs",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "github.com/cauchy221",
-          "source": "fallback-selector"
         }
       ],
-      "link_count": 226,
+      "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Where the goblins came from (openai.com)400 points by ilreb 3 hours ago  | hide | 199\u00a0comments2.Craig Venter has died (jcvi.org)203 points by rdl 5 hours ago  | hide | 35\u00a0comments3.Noctua releases official 3D CAD models for its cooling fans (noctua.at)120 points by embedding-shape 4 hours ago  | hide | 19\u00a0comments4.Zed 1.0 (zed.dev)1746 points by salkahfi 16 hours ago  | hide | 561\u00a0comments5.Alignment whack-a-mole: Finetuning ac..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Granite 4.1: IBM's 8B Model Matching 32B MoE (firethering.com)122 points by steveharing1 2 hours ago  | hide | 63\u00a0comments2.Belgium stops decommissioning nuclear power plants (dpa-international.com)9 points by mpweiher 24 minutes ago  | hide | 1\u00a0comment3.Mozilla's Opposition to Chrome's Prompt API (github.com/mozilla)209 points by jaffathecake 4 hours ago  | hide | 90\u00a0comments4.Where the goblins came from (openai.com)763 points ..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
