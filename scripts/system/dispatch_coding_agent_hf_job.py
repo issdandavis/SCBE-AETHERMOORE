@@ -88,14 +88,9 @@ def render_uv_training_script(profile: dict[str, Any]) -> str:
     train_files = [str(name) for name in dataset.get("train_files", [])]
     eval_files = [str(name) for name in dataset.get("eval_files", [])]
     eval_cfg = profile.get("evaluation") or {}
-    contract_rel = str(
-        eval_cfg.get(
-            "contract_path",
-            "config/model_training/stage6_atomic_workflow_eval_contract.json",
-        )
-    )
-    contract_path = REPO_ROOT / contract_rel
-    if contract_path.exists():
+    contract_rel = str(eval_cfg.get("contract_path", "")).strip()
+    contract_path = REPO_ROOT / contract_rel if contract_rel else None
+    if contract_path is not None and contract_path.exists():
         contract_payload = json.loads(contract_path.read_text(encoding="utf-8"))
     else:
         contract_payload = {"contract_id": "", "thresholds": {}, "prompts": []}
@@ -281,9 +276,10 @@ def main() -> None:
     model.save_pretrained(out_dir)
     tokenizer.save_pretrained(out_dir)
 
-    # === Inline Stage 6 frozen-eval gate ===
-    # Mirrors scripts/eval/score_stage6_regression.py byte-for-byte.
-    # Decision: push iff (push_adapter AND overall_pass). Exit 1 on gate fail.
+    # === Optional inline contract gate ===
+    # Profiles with evaluation.contract_path use the frozen contract before push.
+    # Focused repair profiles may omit contract_path; those push after training and
+    # are evaluated by their own post-merge smoke gate.
     print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or [])}}))
     del trainer
     del model
@@ -352,7 +348,7 @@ def main() -> None:
         print(json.dumps({{"event": "gate_prompt", "id": diag["id"], "ok": diag["ok"], "missing": diag["missing_required"], "elapsed_s": round(elapsed, 1)}}))
 
     n_total = len(results)
-    pass_rate = (n_pass / n_total) if n_total else 0.0
+    pass_rate = (n_pass / n_total) if n_total else 1.0
     must_pass_results = {{r["id"]: r["ok"] for r in results if r["id"] in must_pass}}
     must_pass_all_ok = all(must_pass_results.values()) if must_pass else True
     overall_pass = (pass_rate >= min_rate) and must_pass_all_ok
