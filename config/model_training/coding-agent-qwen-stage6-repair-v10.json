@@ -1,0 +1,69 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-stage6-repair-v10",
+  "title": "SCBE coding agent Qwen Stage 6 repair v10 (slim signal-concentration)",
+  "description": "v10 retry after v9 gate failed 1/5 (only stage6_unseen_hex_trace passed). v9 root cause: 216-row must_pass_boost was diluted by 4426-row total corpus (boost at 4.8%). v10 slims training to ONLY stage6 + stage6_repair + boost shards (594 rows total, boost at 36.4% — 7.5x concentration). All other v9 shards (drill_langues, codeflow, cross_tongue, command_lattice, binary_interpretation, geoseal_*) removed because they were teaching generalist Stage 6 prose patterns that overrode the boost's required-token signal. Inline gate against stage6_atomic_workflow_eval_contract.json blocks any HF push if score < 0.8 or any must_pass prompt fails.",
+  "backend": "local-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Preserve token-to-binary/hex flow across code, semantic overlay, structural chemistry frame, and resource-aware workflow composition. Keep material chemistry separate from structural chemistry templates, predict resource overruns before commit, and use steady-state fallback plus re-advance when a launch would exceed budget.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "atomic_workflow_stage6_train.sft.jsonl",
+      "atomic_workflow_stage6_repair_train.sft.jsonl",
+      "atomic_workflow_stage6_must_pass_boost_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "atomic_workflow_stage6_holdout.sft.jsonl",
+      "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+      "atomic_workflow_stage6_must_pass_boost_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 8e-5,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "warmup_ratio": 0.05,
+    "max_steps": 100,
+    "max_train_records": 594,
+    "max_eval_records": 143,
+    "logging_steps": 10,
+    "save_steps": 100,
+    "save_total_limit": 2,
+    "gradient_checkpointing": true,
+    "seed": 60,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-stage6-repair-v10"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v10",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-stage6-repair-v10",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "local",
+    "hf_flavor": "l4x1",
+    "timeout": "3h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-stage6-repair-v10-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/stage6_atomic_workflow_eval_contract.json",
+    "notes": "Must clear the frozen Stage 6 unseen contract via the inline gate (render_uv_training_script in dispatch_coding_agent_hf_job.py). v10 tests the signal-concentration hypothesis: same boost shape as v9, but diluting shards removed so boost rises 4.8% -> 36.4% of train rows. If v10 still fails, v11 will add forced-prefix response shape per project_v9_gate_result.md."
+  }
+}

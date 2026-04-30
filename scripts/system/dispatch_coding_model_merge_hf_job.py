@@ -193,7 +193,7 @@ def main() -> None:
 
     output_repo = str(PACKET["output_model_repo"])
     api.create_repo(output_repo, repo_type="model", exist_ok=True, private=False)
-    merged.push_to_hub(output_repo, token=token, safe_serialization=True)
+    merged.push_to_hub(output_repo, token=token)
     tokenizer.push_to_hub(output_repo, token=token)
     summary = {{
         "schema_version": "scbe_coding_model_merge_result_v1",

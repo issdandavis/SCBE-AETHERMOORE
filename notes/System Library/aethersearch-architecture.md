@@ -22,7 +22,7 @@ AetherSearch: `query string -> tongue profile -> polyhedral coordinate -> harmon
 |------------|----------------------------|--------------|
 | Tokenizer | BPE / word-level NLP | Sacred Tongues (6D phi-weighted) |
 | Relevance | TF-IDF / BM25 / vector cosine | Polyhedral friction (198 dimensions) |
-| Ranking | Keyword match + embedding similarity | Harmonic wall: R^((phi*d*)^2) |
+| Ranking | Keyword match + embedding similarity | Harmonic wall: H(d, pd) = 1/(1 + phi*d_H + 2*pd) in (0, 1] |
 | Semantic depth | Flat embedding vectors | 47D complex manifold (pairs + triples + self-imaginary) |
 | Governance | None (or basic rules) | 14-layer pipeline: ALLOW / QUARANTINE / ESCALATE / DENY |
 | Typo tolerance | Edit distance | Tongue affinity (typos on same tongue cluster = closer) |
@@ -123,8 +123,10 @@ Replace Meilisearch internals with SCBE-native components:
    - Indexing stores tongue vectors alongside term positions
 
 2. **Replace BM25 with harmonic wall scoring**
-   - Distance = R^((phi * d*)^2) where d* is polyhedral distance between query and document
-   - Near-safe documents are cheap; adversarial documents cost exponentially more
+   - Safety score `H(d, pd) = 1/(1 + phi * d_H + 2 * pd) in (0, 1]` where `d_H` is hyperbolic
+     distance in the Poincaré ball between query and document
+   - Near-safe documents score near 1; the Poincaré metric diverges at the boundary, so
+     adversarial documents are pushed to vanishing scores by the geometry itself
 
 3. **Replace flat vector search with polyhedral friction search**
    - 198-dimensional friction vectors replace 768/1536-dim embedding vectors

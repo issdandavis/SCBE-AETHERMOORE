@@ -12,7 +12,7 @@
 > SCBE = **Spectral Context Bound Encryption**. It maps every piece of AI input, intent, and response into a 6-dimensional curved (hyperbolic) space, and measures how far each step drifts from safe behavior. Drift is cheap near the center and **superexponentially expensive near the edge** — so adversarial moves don't get blocked by pattern matching, they get priced out of reach.
 
 **If they want more (60 sec):**
-> It's a 14-layer pipeline. Each layer adds one orthogonal measurement — complex context, phi-weighted tongues, Poincaré embedding, hyperbolic distance, spectral coherence, triadic temporal intent, and so on — and writes a signed trace at every step. By the time a request reaches the governance gate, you have a full geometric history of the AI's trajectory through the system. The canonical cost formula is **H(d*, R) = R^((φ·d*)²)**. That means the same attack that costs 1 unit from the center costs ~10¹⁴ units from the boundary. It's a **geometric upper bound on an agentic channel**, and under hash-sealed blind test against Collin's DAVA labels, it hit 24/24 = 100% at permutation p ≤ 3.00×10⁻⁴.
+> It's a 14-layer pipeline. Each layer adds one orthogonal measurement — complex context, phi-weighted tongues, Poincaré embedding, hyperbolic distance, spectral coherence, triadic temporal intent, and so on — and writes a signed trace at every step. By the time a request reaches the governance gate, you have a full geometric history of the AI's trajectory through the system. The canonical safety score is the harmonic wall **H(d, pd) = 1/(1 + φ·d_H + 2·pd) ∈ (0, 1]**, where d_H is the hyperbolic distance in the Poincaré ball. Because the Poincaré metric diverges at the boundary, the same drift that crosses 1 unit of d_H near the safe interior crosses many orders of magnitude more as it approaches the edge — adversarial intent gets priced out of reach by the geometry itself, not by H. It's a **geometric upper bound on an agentic channel**, and under hash-sealed blind test against Collin's DAVA labels, it hit 24/24 = 100% at permutation p ≤ 3.00×10⁻⁴.
 
 **If they ask the simple version:**
 > It's a tracking method — for the AI, and for any piece of information moving through the AI. Every layer leaves a signed breadcrumb. If the AI drifts, you see exactly where and how far.
@@ -25,7 +25,7 @@
 |---|---|
 | Applying hyperbolic geometry to provable cost-scaling of adversarial intent | Hyperbolic geometry itself — 150+ years old, well-understood |
 | The 14-axiom-gated pipeline with Möbius-equivariant transforms | The Poincaré ball model (standard Riemannian manifold) |
-| The harmonic wall H(d*, R) = R^((φ·d*)²) as a safety score | Riemann Hypothesis — **NOT RELATED.** Don't say it |
+| The harmonic wall H(d, pd) = 1/(1 + φ·d_H + 2·pd) as a bounded safety score in (0, 1] | Riemann Hypothesis — **NOT RELATED.** Don't say it |
 | Sealed-blind cross-observer verification with hash commits | FFT spectral analysis (textbook) |
 | The 24/24 result at p ≤ 3.00×10⁻⁴ | Standard bootstrap / permutation tests |
 

@@ -1,0 +1,16 @@
+{
+  "id": "package_json_core_scripts",
+  "level": 1,
+  "title": "package.json declares core npm scripts",
+  "verify": {
+    "command": [
+      "python",
+      "-c",
+      "import json; from pathlib import Path; p=json.loads(Path('package.json').read_text(encoding='utf-8')); s=p.get('scripts',{}); assert 'build' in s and 'test' in s and 'typecheck' in s"
+    ],
+    "timeout_sec": 30
+  },
+  "metrics_hint": {
+    "evidence_quality": "log"
+  }
+}

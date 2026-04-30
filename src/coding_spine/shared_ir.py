@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import re
 from dataclasses import asdict, dataclass
-from typing import Optional
+from hashlib import sha256
+from typing import Any, Optional
 
 from src.ca_lexicon import lookup
 
@@ -76,6 +77,23 @@ class SemanticIR:
         return asdict(self)
 
 
+@dataclass(frozen=True)
+class RouteIR:
+    """Canonical replayable execution contract for code and task lanes."""
+
+    schema_version: str
+    semantic: dict[str, Any]
+    source: dict[str, Any]
+    route: dict[str, Any]
+    backend: dict[str, Any]
+    execution_policy: dict[str, Any]
+    hashes: dict[str, str]
+    replay: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
 def infer_semantic_ir(task: str, *, force_tongue: Optional[str] = None) -> SemanticIR:
     route: RouteResult = route_task(task, force_tongue=force_tongue)
     op_name = _infer_op(task)
@@ -107,3 +125,56 @@ def infer_semantic_ir(task: str, *, force_tongue: Optional[str] = None) -> Seman
 
 def equivalent_ir(left: SemanticIR, right: SemanticIR) -> bool:
     return left.signature == right.signature
+
+
+def build_route_ir(
+    *,
+    task: str,
+    source_text: str,
+    source_language: str,
+    source_name: str,
+    force_tongue: Optional[str] = None,
+    selected_backend: Optional[str] = None,
+    available_backends: Optional[list[str]] = None,
+    timeout_seconds: float = 10.0,
+) -> RouteIR:
+    """Build a canonical execution contract used by explain/history/replay."""
+    semantic = infer_semantic_ir(task, force_tongue=force_tongue)
+    canonical_task = task.strip()
+    canonical_source = source_text.replace("\r\n", "\n")
+    task_hash = sha256(canonical_task.encode("utf-8")).hexdigest()
+    source_hash = sha256(canonical_source.encode("utf-8")).hexdigest()
+    plan_key = sha256(f"{semantic.signature}|{source_hash}|{source_language.lower()}".encode("utf-8")).hexdigest()
+    backend = selected_backend or (available_backends[0] if available_backends else "none")
+    return RouteIR(
+        schema_version="scbe_route_ir_v1",
+        semantic=semantic.to_dict(),
+        source={
+            "name": source_name,
+            "language": source_language.lower(),
+            "byte_length": len(canonical_source.encode("utf-8")),
+        },
+        route={
+            "tongue": semantic.tongue,
+            "language": semantic.language.lower(),
+            "signature": semantic.signature,
+        },
+        backend={
+            "selected": backend,
+            "candidates": list(available_backends or []),
+        },
+        execution_policy={
+            "timeout_seconds": timeout_seconds,
+            "deterministic": True,
+            "sandbox_mode": "bounded-subprocess",
+        },
+        hashes={
+            "task_sha256": task_hash,
+            "source_sha256": source_hash,
+            "plan_sha256": plan_key,
+        },
+        replay={
+            "strategy": "plan+source+route",
+            "replay_key": plan_key,
+        },
+    )

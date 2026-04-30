@@ -113,7 +113,15 @@ def test_binary_to_tokenizer_maps_bits_to_tokens_and_prime_language() -> None:
 
 
 def test_binary_to_tokenizer_flags_language_mismatch() -> None:
-    result = _run_cli("binary-to-tokenizer", "--tongue", "CA", "--language", "python", "--json", "01100001")
+    result = _run_cli(
+        "binary-to-tokenizer",
+        "--tongue",
+        "CA",
+        "--language",
+        "python",
+        "--json",
+        "01100001",
+    )
     assert result.returncode == 0, result.stderr
     mapping = json.loads(result.stdout)
     assert mapping["tongue"] == "CA"
@@ -166,11 +174,76 @@ def test_code_packet_emits_source_packet(tmp_path: Path) -> None:
     assert packet["semantic_token_bridge"]["provider"] == "tree_sitter_semantic_tokens"
     assert packet["semantic_token_bridge"]["planned_provider"] == "lsp_semantic_tokens"
     assert "def" in packet["lexical_tokens"]
+    assert packet["route_ir"]["schema_version"] == "scbe_route_ir_v1"
+    assert packet["route_ir"]["route"]["tongue"] == "KO"
+    assert packet["route_ir"]["source"]["language"] == "python"
+    assert packet["route_ir"]["hashes"]["plan_sha256"]
+    assert packet["execution_lane"]["schema_version"] == "scbe_execution_lane_v1"
+    assert "binary" in packet["execution_lane"]["core_lanes"]
+    assert packet["native_tokenization"]["schema_version"] == "scbe_native_tokenization_surface_v1"
+    assert len(packet["native_tokenization"]["inputs"]) == 6
+    assert len(packet["native_tokenization"]["outputs"]) == len(packet["language_views"])
+    assert all(row["token_count"] > 0 for row in packet["native_tokenization"]["inputs"])
+    assert all("token_sha256" in row for row in packet["native_tokenization"]["outputs"])
     assert packet["atomic_states"]
     assert packet["ternary_semantics"]["version"] == "scbe-ternary-semantics-v1"
     assert packet["ternary_semantics"]["checksum"]
     assert packet["ternary_semantics"]["atomic_tau_projection"]["KO"] in (-1, 0, 1)
     assert packet["ternary_semantics"]["route_projection"]["KO"] in (-1, 0, 1)
+
+
+def test_explain_route_surfaces_ir_and_backend_chain(tmp_path: Path) -> None:
+    source_file = tmp_path / "explain_sample.py"
+    source_file.write_text("def add(a, b):\n    return a + b\n", encoding="utf-8")
+    result = _run_cli(
+        "explain-route",
+        "--source-file",
+        str(source_file),
+        "--language",
+        "python",
+        "--json",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["version"] == "geoseal-route-explain-v1"
+    assert payload["route_ir"]["schema_version"] == "scbe_route_ir_v1"
+    assert payload["provider_chain"]["resolved_chain"]
+
+
+def test_backend_registry_lists_core_lanes() -> None:
+    result = _run_cli("backend-registry", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["version"] == "geoseal-backend-registry-v1"
+    assert payload["backends"]
+    for row in payload["backends"]:
+        assert "python" in row["supports_lanes"]
+        assert "binary" in row["supports_lanes"]
+
+
+def test_history_and_replay_from_swarm_record(tmp_path: Path) -> None:
+    ledger = tmp_path / "history.jsonl"
+    swarm = _run_cli(
+        "swarm",
+        "add",
+        "--tongues",
+        "KO",
+        "--ledger",
+        str(ledger),
+        "--json",
+        "a=2",
+        "b=3",
+    )
+    assert swarm.returncode == 0, swarm.stderr
+    history = _run_cli("history", "--ledger", str(ledger), "--json")
+    assert history.returncode == 0, history.stderr
+    hist_payload = json.loads(history.stdout)
+    assert hist_payload["version"] == "geoseal-history-v1"
+    assert hist_payload["count"] >= 1
+    replay = _run_cli("replay", "--ledger", str(ledger), "--json")
+    assert replay.returncode == 0, replay.stderr
+    replay_payload = json.loads(replay.stdout)
+    assert replay_payload["version"] == "geoseal-replay-v1"
 
 
 def test_code_packet_captures_semantic_gloss_for_hello_world(tmp_path: Path) -> None:
@@ -192,7 +265,9 @@ def test_code_packet_captures_semantic_gloss_for_hello_world(tmp_path: Path) -> 
     assert packet["semantic_expression"]["quarks"] == ["output_emit", "string_literal"]
 
 
-def test_code_packet_generic_bin_collects_quarks_for_nonlexicon_code(tmp_path: Path) -> None:
+def test_code_packet_generic_bin_collects_quarks_for_nonlexicon_code(
+    tmp_path: Path,
+) -> None:
     source_file = tmp_path / "generic_shape.py"
     source_file.write_text(
         "import math\n\nclass Greeter:\n    pass\n\ndef area(r):\n    value = math.pi * r * r\n    return value\n",
@@ -252,7 +327,9 @@ def test_code_packet_generic_bin_collects_domain_well_quarks(tmp_path: Path) -> 
     } <= quarks
 
 
-def test_code_packet_scaffolds_structure_symbol_and_semantic_layers(tmp_path: Path) -> None:
+def test_code_packet_scaffolds_structure_symbol_and_semantic_layers(
+    tmp_path: Path,
+) -> None:
     source_file = tmp_path / "shape.py"
     source_file.write_text(
         "import math\n\nclass Greeter:\n    pass\n\ndef area(r):\n    return math.pi * r * r\n",
@@ -322,7 +399,14 @@ def test_braille_lane_cli_emits_polyhedral_rhombic_cells(tmp_path: Path) -> None
     assert lane["cell_schema"]["bits_per_cell"] == 6
     assert lane["binary_surface"]["cell_count"] > 0
     first_cell = lane["binary_surface"]["cells"][0]
-    assert first_cell["polyhedral_face"] in {"north", "east", "south", "west", "zenith", "nadir"}
+    assert first_cell["polyhedral_face"] in {
+        "north",
+        "east",
+        "south",
+        "west",
+        "zenith",
+        "nadir",
+    }
     assert first_cell["rhombic_block"] in {"alpha", "beta", "gamma", "delta"}
     assert set(first_cell["position"]) == {"x", "y", "z"}
 
@@ -354,7 +438,9 @@ def test_braille_lane_cli_reads_packet_artifact(tmp_path: Path) -> None:
     assert lane["token_surface"]["token_count"] >= 1
 
 
-def test_interaction_graph_connects_source_tokens_atoms_and_views(tmp_path: Path) -> None:
+def test_interaction_graph_connects_source_tokens_atoms_and_views(
+    tmp_path: Path,
+) -> None:
     source_file = tmp_path / "graph_sample.py"
     source_file.write_text("def add(a, b):\n    return a + b\n", encoding="utf-8")
 
@@ -467,7 +553,14 @@ def test_topology_view_emits_polygons_chains_and_compass(tmp_path: Path) -> None
     assert topology["surfaces"]["harmonic_spiral_state_count"] > 0
     assert topology["dictionaries"]["coding_languages"]["primary"]["KO"] == "python"
     assert topology["dictionaries"]["coding_languages"]["all"]["GO"] == "go"
-    assert topology["dictionaries"]["tokenizer_tongues"]["primary"] == ["KO", "AV", "RU", "CA", "UM", "DR"]
+    assert topology["dictionaries"]["tokenizer_tongues"]["primary"] == [
+        "KO",
+        "AV",
+        "RU",
+        "CA",
+        "UM",
+        "DR",
+    ]
     add_binding = next(
         entry for entry in topology["dictionaries"]["keyboard_command_map"] if entry["command_key"] == "add"
     )
@@ -558,6 +651,9 @@ def test_testing_cli_surfaces_route_packet_and_execution(tmp_path: Path) -> None
     assert payload["route_packet"]["route_confidence"] > 0
     assert payload["topology"]["route_packet"]["stability_adjusted_route_score"] > 0
     assert payload["topology"]["operative_command"]["stability_adjusted_route_score"] > 0
+    assert payload["native_tokenization"]["schema_version"] == "scbe_testing_cli_native_tokenization_v1"
+    assert payload["native_tokenization"]["input"]["token_count"] > 0
+    assert "token_sha256" in payload["native_tokenization"]["output"]
 
 
 def test_cross_domain_sequence_builds_near_related_field_steps(tmp_path: Path) -> None:
@@ -615,7 +711,9 @@ def test_cross_domain_sequence_accepts_topology_view_artifact(tmp_path: Path) ->
     assert sequence["steps"][0]["command_key"] == "add"
 
 
-def test_honeycomb_analysis_matches_outputs_and_tracks_remainders(tmp_path: Path) -> None:
+def test_honeycomb_analysis_matches_outputs_and_tracks_remainders(
+    tmp_path: Path,
+) -> None:
     source_file = tmp_path / "honeycomb_add.py"
     source_file.write_text("def add(a, b):\n    return a + b\n", encoding="utf-8")
 
@@ -765,9 +863,12 @@ def test_cluster_and_formation_graphs_emit_cross_lattice_layers(tmp_path: Path) 
     assert cluster.returncode == 0, cluster.stderr
     cluster_graph = json.loads(cluster.stdout)
     assert cluster_graph["version"] == "scbe-cluster-graph-v1"
-    assert {"source_field", "semantic_field", "atomic_mesh", "language_projection"} <= set(
-        cluster_graph["summary"]["cluster_kinds"]
-    )
+    assert {
+        "source_field",
+        "semantic_field",
+        "atomic_mesh",
+        "language_projection",
+    } <= set(cluster_graph["summary"]["cluster_kinds"])
     assert any(node["metadata"]["mesh_block"] for node in cluster_graph["nodes"])
 
     formation = _run_cli(
@@ -798,7 +899,14 @@ def test_emit_json_bundle_shows_language_conlang_binary_and_tokenizer() -> None:
     languages = {variant["language"] for variant in bundle["variants"]}
     conlangs = {variant["conlang"] for variant in bundle["variants"]}
     assert {"python", "typescript", "rust", "c", "julia", "haskell"} <= languages
-    assert {"Kor'aelin", "Avali", "Runethic", "Cassisivadan", "Umbroth", "Draumric"} <= conlangs
+    assert {
+        "Kor'aelin",
+        "Avali",
+        "Runethic",
+        "Cassisivadan",
+        "Umbroth",
+        "Draumric",
+    } <= conlangs
     assert all(variant["binary"]["byte_count"] > 0 for variant in bundle["variants"])
     assert all(variant["tokenizer"]["token_count"] > 0 for variant in bundle["variants"])
 

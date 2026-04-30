@@ -15,7 +15,9 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-smoke.json"
+DEFAULT_PROFILE = (
+    REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-smoke.json"
+)
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_coding_agent_jobs"
 ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
 
@@ -53,7 +55,9 @@ def _load_profile(path: Path) -> dict[str, Any]:
 def _count_jsonl(path: Path) -> int:
     if not path.exists():
         return 0
-    return sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
+    return sum(
+        1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    )
 
 
 def _dataset_rows(profile: dict[str, Any], split: str) -> list[dict[str, Any]]:
@@ -83,6 +87,14 @@ def render_uv_training_script(profile: dict[str, Any]) -> str:
     dataset_repo = str(hub_cfg.get("dataset_repo", "issdandavis/scbe-coding-agent-sft"))
     train_files = [str(name) for name in dataset.get("train_files", [])]
     eval_files = [str(name) for name in dataset.get("eval_files", [])]
+    eval_cfg = profile.get("evaluation") or {}
+    contract_rel = str(eval_cfg.get("contract_path", "")).strip()
+    contract_path = REPO_ROOT / contract_rel if contract_rel else None
+    if contract_path is not None and contract_path.exists():
+        contract_payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    else:
+        contract_payload = {"contract_id": "", "thresholds": {}, "prompts": []}
+    contract_json = json.dumps(contract_payload, indent=2, ensure_ascii=True)
     return f'''# /// script
 # dependencies = [
 #   "accelerate>=0.34.0",
@@ -95,18 +107,23 @@ def render_uv_training_script(profile: dict[str, Any]) -> str:
 # ///
 from __future__ import annotations
 
+import gc
 import json
 import os
 import random
+import sys
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import torch
 from datasets import Dataset
 from huggingface_hub import hf_hub_download, whoami
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, PeftModel, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer, DataCollatorForLanguageModeling, Trainer, TrainingArguments
 
 PROFILE = json.loads(r"""{profile_json}""")
+CONTRACT = json.loads(r"""{contract_json}""")
 DATASET_REPO = {dataset_repo!r}
 TRAIN_FILES = {json.dumps(train_files, indent=2)}
 EVAL_FILES = {json.dumps(eval_files, indent=2)}
@@ -258,9 +275,116 @@ def main() -> None:
     stats = trainer.train()
     model.save_pretrained(out_dir)
     tokenizer.save_pretrained(out_dir)
-    if hub_cfg.get("push_adapter", True):
-        model.push_to_hub(adapter_repo, token=token)
+
+    # === Optional inline contract gate ===
+    # Profiles with evaluation.contract_path use the frozen contract before push.
+    # Focused repair profiles may omit contract_path; those push after training and
+    # are evaluated by their own post-merge smoke gate.
+    print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or [])}}))
+    del trainer
+    del model
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    gate_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    gate_base = AutoModelForCausalLM.from_pretrained(
+        base_model,
+        token=token,
+        torch_dtype=gate_dtype,
+        trust_remote_code=True,
+    )
+    gate_model = PeftModel.from_pretrained(gate_base, str(out_dir))
+    gate_model.eval()
+    gate_model.config.use_cache = True
+    if torch.cuda.is_available():
+        gate_model = gate_model.to("cuda")
+
+    def _gate_score(prompt, response):
+        body_lower = (response or "").lower()
+        missing_required = [str(t) for t in (prompt.get("required") or []) if str(t).lower() not in body_lower]
+        triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if str(t).lower() in body_lower]
+        ok = (not missing_required) and (not triggered_forbidden)
+        return {{"id": prompt.get("id"), "ok": ok, "missing_required": missing_required, "triggered_forbidden": triggered_forbidden}}
+
+    def _gate_generate(user_prompt, max_new_tokens=320):
+        msgs = [
+            {{"role": "system", "content": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent."}},
+            {{"role": "user", "content": user_prompt}},
+        ]
+        text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+        inputs = tokenizer(text, return_tensors="pt").to(gate_model.device)
+        n_in = inputs["input_ids"].shape[1]
+        out = gate_model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            temperature=1.0,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+        return tokenizer.decode(out[0][n_in:], skip_special_tokens=True)
+
+    prompts = CONTRACT.get("prompts") or []
+    thresholds = CONTRACT.get("thresholds") or {{}}
+    min_rate = float(thresholds.get("minimum_pass_rate") or 0.8)
+    must_pass = set(thresholds.get("must_pass") or [])
+
+    results = []
+    n_pass = 0
+    t0 = time.time()
+    for prompt in prompts:
+        try:
+            with torch.no_grad():
+                response = _gate_generate(prompt.get("prompt", ""))
+        except Exception as exc:
+            results.append({{"id": prompt.get("id"), "ok": False, "error": str(exc), "response": ""}})
+            continue
+        diag = _gate_score(prompt, response)
+        diag["response"] = response[:1200]
+        results.append(diag)
+        if diag["ok"]:
+            n_pass += 1
+        elapsed = time.time() - t0
+        print(json.dumps({{"event": "gate_prompt", "id": diag["id"], "ok": diag["ok"], "missing": diag["missing_required"], "elapsed_s": round(elapsed, 1)}}))
+
+    n_total = len(results)
+    pass_rate = (n_pass / n_total) if n_total else 1.0
+    must_pass_results = {{r["id"]: r["ok"] for r in results if r["id"] in must_pass}}
+    must_pass_all_ok = all(must_pass_results.values()) if must_pass else True
+    overall_pass = (pass_rate >= min_rate) and must_pass_all_ok
+
+    report = {{
+        "schema": "scbe_stage6_regression_report_v1",
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "contract_id": CONTRACT.get("contract_id"),
+        "adapter": str(out_dir),
+        "base_model": base_model,
+        "n_total": n_total,
+        "n_pass": n_pass,
+        "pass_rate": pass_rate,
+        "minimum_pass_rate": min_rate,
+        "must_pass_results": must_pass_results,
+        "must_pass_all_ok": must_pass_all_ok,
+        "overall_pass": overall_pass,
+        "results": results,
+    }}
+    report_path = out_dir / "stage6_regression_inline.json"
+    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    # Emit gate_report BEFORE any push so it always lands in logs.
+    print(json.dumps({{"event": "gate_report", "report": report}}))
+
+    push_requested = bool(hub_cfg.get("push_adapter", True))
+    should_push = push_requested and overall_pass
+    pushed_adapter = False
+    if should_push:
+        print(json.dumps({{"event": "push_attempt", "adapter_repo": adapter_repo}}))
+        gate_model.push_to_hub(adapter_repo, token=token)
         tokenizer.push_to_hub(adapter_repo, token=token)
+        pushed_adapter = True
+    else:
+        reason = "gate_failed" if (push_requested and not overall_pass) else "push_disabled"
+        print(json.dumps({{"event": "push_skipped", "reason": reason, "overall_pass": overall_pass, "push_requested": push_requested}}))
+
     summary = {{
         "profile_id": PROFILE["profile_id"],
         "base_model": base_model,
@@ -271,9 +395,16 @@ def main() -> None:
         "eval_rows_used": len(eval_ds) if eval_ds is not None else 0,
         "global_step": int(getattr(stats, "global_step", 0)),
         "training_loss": float(getattr(stats, "training_loss", 0.0)),
-        "pushed_adapter": bool(hub_cfg.get("push_adapter", True)),
+        "pushed_adapter": pushed_adapter,
+        "gate_overall_pass": overall_pass,
+        "gate_pass_rate": pass_rate,
+        "gate_must_pass_all_ok": must_pass_all_ok,
+        "gate_n_pass": n_pass,
+        "gate_n_total": n_total,
     }}
     print(json.dumps({{"event": "training_complete", "summary": summary}}, indent=2))
+    if not overall_pass:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -332,7 +463,11 @@ def build_packet(
             "flavor": selected_flavor,
             "timeout": selected_timeout,
             "cli": shutil.which("hf") or "",
-            "token_present": bool(os.environ.get(str((profile.get("hub") or {}).get("token_env", "HF_TOKEN")), "")),
+            "token_present": bool(
+                os.environ.get(
+                    str((profile.get("hub") or {}).get("token_env", "HF_TOKEN")), ""
+                )
+            ),
         },
         "command": command,
         "dispatched": False,
@@ -375,7 +510,10 @@ def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
     if not dataset_repo:
         raise RuntimeError("hub.dataset_repo is required for HF Jobs training")
     root = REPO_ROOT / str(dataset_cfg.get("root", "training-data/sft"))
-    names = [*list(dataset_cfg.get("train_files", [])), *list(dataset_cfg.get("eval_files", []))]
+    names = [
+        *list(dataset_cfg.get("train_files", [])),
+        *list(dataset_cfg.get("eval_files", [])),
+    ]
     uploads: list[dict[str, Any]] = []
     for name in names:
         local_path = root / str(name)
@@ -393,7 +531,9 @@ def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
             "--commit-message",
             f"Update SCBE coding agent data {name}",
         ]
-        result = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+        result = subprocess.run(
+            command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False
+        )
         uploads.append(
             {
                 "name": str(name),
@@ -403,7 +543,9 @@ def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
             }
         )
         if result.returncode != 0:
-            raise RuntimeError(f"Dataset upload failed for {name}: {result.stderr.strip()}")
+            raise RuntimeError(
+                f"Dataset upload failed for {name}: {result.stderr.strip()}"
+            )
     return uploads
 
 
@@ -414,11 +556,21 @@ def dispatch_packet(packet: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError("HF token is not available in the configured environment")
     profile = _load_profile(Path(packet["profile_path"]))
     uploads = upload_training_dataset(profile)
-    result = subprocess.run(packet["command"], cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+    result = subprocess.run(
+        packet["command"],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
     stdout = result.stdout.strip()
     stderr = result.stderr.strip()
     job_id = ""
-    match = re.search(r"(?:Job ID|ID|job)[^A-Za-z0-9_-]*([A-Za-z0-9_-]{8,})", stdout + "\n" + stderr, re.IGNORECASE)
+    match = re.search(
+        r"(?:Job ID|ID|job)[^A-Za-z0-9_-]*([A-Za-z0-9_-]{8,})",
+        stdout + "\n" + stderr,
+        re.IGNORECASE,
+    )
     if match:
         job_id = match.group(1)
     updated = {
@@ -451,8 +603,18 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.command == "status":
-        result = subprocess.run(["hf", "jobs", "ps"], cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
-        payload = {"returncode": result.returncode, "stdout": result.stdout, "stderr": result.stderr}
+        result = subprocess.run(
+            ["hf", "jobs", "ps"],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        payload = {
+            "returncode": result.returncode,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+        }
     else:
         packet = build_packet(
             profile_path=Path(args.profile_path),

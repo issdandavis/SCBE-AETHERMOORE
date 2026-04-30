@@ -1,0 +1,74 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-ca-geoseal-smoke-repair-v1",
+  "title": "SCBE coding agent Qwen CA/GeoSeal smoke repair v1",
+  "description": "Focused LoRA repair after merged coding model smoke job 69f2c4ddd2c8bd8662bd3809 passed only 2/4. This profile trains only on the failed surfaces: CA opcode recall for abs(a)+abs(b), and runnable depth-2 JSON key extraction code. It is designed as a small post-merge repair adapter, not a broad Stage 6 retrain.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal coding agent. Keep CA opcode mappings explicit, preserve hex bytes, and return runnable code when asked for code. For CA arithmetic, abs is opcode 0x09 and add is opcode 0x00.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "ca_geoseal_smoke_repair_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "ca_geoseal_smoke_repair_v1_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 512,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00015,
+    "num_train_epochs": 3,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": 90,
+    "max_train_records": 100,
+    "max_eval_records": 3,
+    "logging_steps": 10,
+    "save_steps": 90,
+    "save_total_limit": 2,
+    "gradient_checkpointing": true,
+    "seed": 73,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-ca-geoseal-smoke-repair-v1"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-ca-geoseal-smoke-repair-v1",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-geoseal-smoke-repair-v1",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-ca-geoseal-smoke-repair-v1-train.py"
+  },
+  "evaluation": {
+    "smoke_job_id": "69f2c4ddd2c8bd8662bd3809",
+    "post_training_gate": "Re-merge only after this adapter trains, then run scripts/eval/smoke_merged_coding_model_hf.py against the candidate merged model and require 4/4.",
+    "must_recall": {
+      "abs": "0x09",
+      "add": "0x00",
+      "abs_add_sequence": [
+        "0x09",
+        "0x09",
+        "0x00"
+      ]
+    }
+  }
+}

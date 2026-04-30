@@ -4,7 +4,18 @@ const DEFAULT_REPO = "issdandavis/SCBE-AETHERMOORE";
 const DEFAULT_WORKFLOW = "agent-router.yml";
 const DEFAULT_REF = "main";
 const MAX_QUERY_LENGTH = 600;
-const ALLOWED_TASKS = new Set(["research", "monitor", "ask", "scrape"]);
+const ALLOWED_TASKS = new Set([
+  "research",
+  "monitor",
+  "ask",
+  "scrape",
+  "web_search",
+  "coding",
+  "system_build",
+  "agentic_ladder",
+  "pair_benchmark",
+  "poly_coding_seed",
+]);
 const PAGES_DATA_BASE = "https://aethermoore.com/SCBE-AETHERMOORE/static/agent-data";
 
 function setCors(res) {

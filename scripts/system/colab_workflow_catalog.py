@@ -17,6 +17,20 @@ CANONICAL_BRANCH = "main"
 
 NOTEBOOKS: list[dict[str, Any]] = [
     {
+        "name": "zero-cost-local-0p5b",
+        "aliases": [
+            "zero-cost",
+            "zero-cost-local",
+            "brick1",
+            "brick1-0p5b",
+            "0p5b",
+            "qwen-0p5b",
+        ],
+        "path": "notebooks/brick1_0p5b_colab.ipynb",
+        "category": "training",
+        "summary": "Zero-cost free-tier Colab notebook for the 0.5B Qwen2.5-Coder LoRA brick1 lane (recommended starting point).",
+    },
+    {
         "name": "scbe-pivot-v2",
         "aliases": ["pivot", "pivot-v2", "conversation-pivot"],
         "path": "notebooks/scbe_pivot_training_v2.ipynb",
@@ -39,7 +53,12 @@ NOTEBOOKS: list[dict[str, Any]] = [
     },
     {
         "name": "coder-code-primaries",
-        "aliases": ["code-primaries", "coder-primaries", "coding-primaries", "code-qlora"],
+        "aliases": [
+            "code-primaries",
+            "coder-primaries",
+            "coding-primaries",
+            "code-qlora",
+        ],
         "path": "notebooks/coder_qwen_code_primaries_colab.ipynb",
         "category": "training",
         "summary": "QLoRA notebook for the SCBE coding-primaries lane across Python, JavaScript, Rust, Mathematica, Haskell, and Markdown.",
@@ -101,7 +120,11 @@ def _normalize(value: str) -> str:
 
 
 def _github_repo() -> str:
-    return CANONICAL_REPO.replace("\\", "/") if CANONICAL_REPO else "issdandavis/SCBE-AETHERMOORE"
+    return (
+        CANONICAL_REPO.replace("\\", "/")
+        if CANONICAL_REPO
+        else "issdandavis/SCBE-AETHERMOORE"
+    )
 
 
 def _github_branch() -> str:
@@ -135,7 +158,10 @@ def _resolve_notebook(query: str) -> dict[str, Any]:
             return row
 
     for row in NOTEBOOKS:
-        haystack = [_normalize(row["name"]), *[_normalize(alias) for alias in row["aliases"]]]
+        haystack = [
+            _normalize(row["name"]),
+            *[_normalize(alias) for alias in row["aliases"]],
+        ]
         if any(term in item for item in haystack):
             return row
 
@@ -168,8 +194,12 @@ def _print_text_list() -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Catalog SCBE Colab notebooks and derived Colab URLs")
-    parser.add_argument("action", nargs="?", default="list", choices=["list", "show", "url"])
+    parser = argparse.ArgumentParser(
+        description="Catalog SCBE Colab notebooks and derived Colab URLs"
+    )
+    parser.add_argument(
+        "action", nargs="?", default="list", choices=["list", "show", "url"]
+    )
     parser.add_argument("name", nargs="?", default="")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     args = parser.parse_args()
@@ -190,7 +220,12 @@ def main() -> int:
     payload = _record_payload(row)
     if args.action == "url":
         if args.json:
-            print(json.dumps({"name": payload["name"], "colab_url": payload["colab_url"]}, indent=2))
+            print(
+                json.dumps(
+                    {"name": payload["name"], "colab_url": payload["colab_url"]},
+                    indent=2,
+                )
+            )
         else:
             print(payload["colab_url"])
         return 0

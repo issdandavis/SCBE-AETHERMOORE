@@ -1,0 +1,29 @@
+{
+  "schema_version": "ca_opcode_exact_repair_manifest_v2",
+  "source_smoke_job": "69f2cc41d2c8bd8662bd3863",
+  "design": "Narrow exact-byte repair for CA add opcode confusion after direct adapter smoke reached 3/4.",
+  "outputs": {
+    "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\ca_opcode_exact_repair_v2_train.sft.jsonl",
+    "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\ca_opcode_exact_repair_v2_holdout.sft.jsonl"
+  },
+  "counts": {
+    "train": 80,
+    "holdout": 2,
+    "ca_exact_train": 80
+  },
+  "must_recall": {
+    "abs": "0x09",
+    "add": "0x00",
+    "forbidden_add_opcode": "0x09",
+    "abs_add_sequence": [
+      "0x09",
+      "0x09",
+      "0x00"
+    ]
+  },
+  "promotion_gate": {
+    "direct_adapter_smoke_min_passed": 4,
+    "direct_adapter_smoke_total": 4,
+    "evaluator": "scripts/eval/smoke_merged_coding_model_hf.py"
+  }
+}

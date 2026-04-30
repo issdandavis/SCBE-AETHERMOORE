@@ -24,9 +24,10 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
 billing_router = APIRouter(prefix="/billing", tags=["Billing"])
@@ -73,6 +74,20 @@ BILLING_CUSTOMERS: Dict[str, Dict[str, Any]] = {}
 BILLING_API_KEYS: Dict[str, Dict[str, Any]] = {}
 
 LOGGER = logging.getLogger("scbe.billing")
+
+
+def _owner_token() -> str:
+    token = os.getenv("SCBE_OWNER_API_TOKEN", "").strip()
+    if not token:
+        raise HTTPException(503, "Owner API token is not configured")
+    return token
+
+
+def _require_owner_token(x_owner_token: str | None) -> None:
+    expected = _owner_token()
+    provided = (x_owner_token or "").strip()
+    if not provided or not hmac.compare_digest(provided, expected):
+        raise HTTPException(401, "Unauthorized")
 
 
 # ---------------------------------------------------------------------------
@@ -278,8 +293,15 @@ async def stripe_webhook(request: Request):
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
 
-    # Verify signature (skip in dev if no secret configured)
+    # Verify signature. Unsigned webhooks are only allowed when explicitly enabled.
     webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "").strip()
+    allow_unsigned = os.getenv("SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    if not webhook_secret and not allow_unsigned:
+        raise HTTPException(503, "Webhook secret is not configured")
     if webhook_secret and not _verify_stripe_signature(payload, sig_header):
         raise HTTPException(400, "Invalid signature")
 
@@ -476,18 +498,23 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     metadata = session.get("metadata", {})
     product_key = metadata.get("scbe_product", "")
 
-    # If no metadata, guess from amount (both are $29 = 2900 cents, so default to toolkit)
-    if not product_key:
-        product_key = "toolkit"
-
-    product = ONETIME_PRODUCTS.get(product_key, ONETIME_PRODUCTS["toolkit"])
+    # Do not guess from amount to avoid mis-delivery between similarly priced products.
+    product = ONETIME_PRODUCTS.get(product_key) if product_key else None
+    unresolved_product = product is None
+    if unresolved_product:
+        product = {
+            "name": "UNRESOLVED_PRODUCT",
+            "download_url": "",
+            "manual_url": "",
+        }
 
     # Log the purchase
     record = {
         "session_id": session.get("id", ""),
         "email": email,
-        "product": product_key,
+        "product": product_key or "unknown",
         "product_name": product["name"],
+        "unresolved_product": unresolved_product,
         "amount_cents": amount,
         "timestamp": int(time.time()),
     }
@@ -497,9 +524,16 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     _persist_purchase(record)
 
     # Send delivery email to buyer
-    if email:
+    if email and not unresolved_product:
         _send_delivery_email(email, product["name"], product["download_url"], product["manual_url"])
         _notify_owner(product["name"], email, amount)
+    elif unresolved_product:
+        LOGGER.warning(
+            "One-time purchase unresolved product mapping; session=%s amount_cents=%s email=%s",
+            _safe_for_log(session.get("id", "")),
+            _safe_for_log(amount),
+            _safe_for_log(email),
+        )
 
 
 def _persist_purchase(record: Dict[str, Any]) -> None:
@@ -520,8 +554,9 @@ def _persist_purchase(record: Dict[str, Any]) -> None:
 
 
 @billing_router.get("/purchases")
-async def list_purchases():
-    """List recent purchases (owner-only, no auth for now)."""
+async def list_purchases(x_owner_token: str | None = Header(default=None)):
+    """List recent purchases (owner-only)."""
+    _require_owner_token(x_owner_token)
     return {"status": "ok", "count": len(PURCHASE_LOG), "purchases": PURCHASE_LOG[-20:]}
 
 
