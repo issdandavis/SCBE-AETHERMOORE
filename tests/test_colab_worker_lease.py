@@ -215,6 +215,33 @@ def test_derive_runtime_state_detects_connected_and_disconnected() -> None:
         )
         == "auth_required"
     )
+
+
+def test_open_auth_bootstrap_launches_visible_chrome(tmp_path: Path, monkeypatch) -> None:
+    calls: list[list[str]] = []
+    chrome = tmp_path / "chrome.exe"
+    chrome.write_text("", encoding="utf-8")
+
+    def fake_popen(args, stdout=None, stderr=None):
+        calls.append(list(args))
+
+        class Proc:
+            pid = 123
+
+        return Proc()
+
+    monkeypatch.setenv("SCBE_COLAB_BRANCH", "test-branch")
+    monkeypatch.setattr(worker.subprocess, "Popen", fake_popen)
+
+    payload = worker.open_auth_bootstrap("zero-cost", tmp_path / "profile", str(chrome))
+
+    assert payload["state"] == "opened"
+    assert payload["notebook"]["name"] == "zero-cost-local-0p5b"
+    assert payload["profile_dir"].endswith("profile")
+    assert calls
+    assert calls[0][0] == str(chrome)
+    assert any(arg.startswith("--user-data-dir=") for arg in calls[0])
+    assert "--new-window" in calls[0]
     assert (
         worker._derive_runtime_state(
             "auth_required",

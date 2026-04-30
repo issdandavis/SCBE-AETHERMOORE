@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -166,6 +168,44 @@ def _attempt_runtime_connect(page) -> Dict[str, Any]:
         return {"attempted": True, "ok": True, "error": ""}
     except Exception as exc:
         return {"attempted": True, "ok": False, "error": str(exc)[:500]}
+
+
+def _default_chrome_executable() -> Path | None:
+    candidates = [
+        Path(os.environ.get("ProgramFiles", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
+        Path(os.environ.get("ProgramFiles(x86)", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return None
+
+
+def open_auth_bootstrap(notebook_query: str, profile_dir: Path, browser_executable: str = "") -> Dict[str, Any]:
+    notebook = catalog.resolve_notebook_payload(notebook_query)
+    executable = Path(browser_executable) if browser_executable else _default_chrome_executable()
+    if executable is None or not executable.exists():
+        raise FileNotFoundError("normal Google Chrome executable was not found")
+    profile_dir.mkdir(parents=True, exist_ok=True)
+    subprocess.Popen(
+        [
+            str(executable),
+            f"--user-data-dir={profile_dir}",
+            "--new-window",
+            notebook["colab_url"],
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return {
+        "schema_version": "scbe_colab_auth_bootstrap_v1",
+        "state": "opened",
+        "notebook": notebook,
+        "profile_dir": str(profile_dir),
+        "browser_executable": str(executable),
+        "next_action": "Sign in once in the opened browser window, close that window, then rerun the worker with --connect-runtime.",
+    }
 
 
 def _layer14_from_state(state: str, title: str, url: str) -> Dict[str, Any]:
@@ -475,6 +515,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-headless", dest="headless", action="store_false", help="Launch browser with UI.")
     parser.add_argument("--keep-open", action="store_true", help="Keep the browser open until Enter is pressed.")
     parser.add_argument("--connect-runtime", action="store_true", help="Click Connect when the notebook is authenticated and disconnected.")
+    parser.add_argument("--auth-bootstrap", action="store_true", help="Open normal Chrome visibly with this worker profile for one-time Google sign-in.")
+    parser.add_argument("--browser-executable", default="", help="Optional normal Chrome executable path for --auth-bootstrap.")
     parser.add_argument(
         "--dry-run", action="store_true", help="Resolve notebook and emit packets without launching the browser."
     )
@@ -492,6 +534,9 @@ def main(argv: list[str] | None = None) -> int:
         regions=args.regions,
         jurisdictions=args.jurisdictions,
     )
+    if args.auth_bootstrap:
+        print(json.dumps(open_auth_bootstrap(args.notebook, Path(args.profile_dir), args.browser_executable), indent=2))
+        return 0
     artifact = provision_colab_worker(
         notebook_query=args.notebook,
         mission_id=mission_id,
