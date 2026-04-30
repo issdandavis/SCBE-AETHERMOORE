@@ -1,5 +1,10 @@
 import pytest
 
+pytest.importorskip(
+    "scripts.mathbac_cross_primary_atomic",
+    reason="benchmark depends on uncommitted scripts/mathbac_cross_primary_atomic.py",
+)
+
 from scripts.experiments.atomic_tokenizer_rename_benchmark import (
     DEFAULT_INPUT,
     run,
