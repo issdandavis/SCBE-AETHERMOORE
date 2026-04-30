@@ -108,7 +108,7 @@ class TestAPIEndpoints:
         }
 
         response = client.post("/seal-memory", json=payload)
-        assert response.status_code == 422  # Missing header
+        assert response.status_code == 401
 
     def test_seal_memory_invalid_position(self, client, auth_headers):
         """Test seal-memory rejects invalid position vectors."""
