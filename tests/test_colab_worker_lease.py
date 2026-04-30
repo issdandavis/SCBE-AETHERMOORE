@@ -199,9 +199,21 @@ def test_derive_runtime_state_detects_connected_and_disconnected() -> None:
             {
                 "usage_visible": False,
                 "connect_button_visible": True,
+                "sign_in_button_visible": False,
             },
         )
         == "runtime_disconnected"
+    )
+    assert (
+        worker._derive_runtime_state(
+            "notebook_open",
+            {
+                "usage_visible": False,
+                "connect_button_visible": True,
+                "sign_in_button_visible": True,
+            },
+        )
+        == "auth_required"
     )
     assert (
         worker._derive_runtime_state(
@@ -209,6 +221,7 @@ def test_derive_runtime_state_detects_connected_and_disconnected() -> None:
             {
                 "usage_visible": True,
                 "connect_button_visible": False,
+                "sign_in_button_visible": False,
             },
         )
         == "auth_required"

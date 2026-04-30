@@ -118,12 +118,20 @@ def _probe_colab_runtime(page) -> Dict[str, Any]:
 () => {
   const usage = document.querySelector('colab-usage-display');
   const machine = document.querySelector('colab-machine-type');
-  const buttons = Array.from(document.querySelectorAll('button'))
-    .map((btn) => (btn.innerText || btn.textContent || '').trim())
+  const controls = Array.from(document.querySelectorAll('button, a, [role="button"], paper-button, mwc-button'))
+    .map((btn) => {
+      const text = (btn.innerText || btn.textContent || btn.getAttribute('aria-label') || '').trim();
+      const aria = (btn.getAttribute('aria-label') || '').trim();
+      return [text, aria].filter(Boolean).join(' ');
+    })
     .filter(Boolean);
-  const connectVisible = buttons.some((text) => {
+  const connectVisible = controls.some((text) => {
     const lowered = text.toLowerCase();
     return lowered === 'connect' || lowered === 'reconnect' || lowered.includes('connect');
+  });
+  const signInVisible = controls.some((text) => {
+    const lowered = text.toLowerCase();
+    return lowered === 'sign in' || lowered.includes('sign in');
   });
   return {
     notebook_loaded: document.querySelectorAll('.cell').length > 0,
@@ -131,7 +139,8 @@ def _probe_colab_runtime(page) -> Dict[str, Any]:
     usage_text: usage ? (usage.innerText || usage.textContent || '').trim().slice(0, 240) : '',
     machine_type: machine ? (machine.innerText || machine.textContent || '').trim().slice(0, 120) : '',
     connect_button_visible: connectVisible,
-    button_samples: buttons.slice(0, 12),
+    sign_in_button_visible: signInVisible,
+    button_samples: controls.slice(0, 12),
   };
 }
 """
@@ -141,11 +150,22 @@ def _probe_colab_runtime(page) -> Dict[str, Any]:
 def _derive_runtime_state(base_state: str, runtime_probe: Dict[str, Any]) -> str:
     if base_state == "auth_required":
         return base_state
+    if runtime_probe.get("sign_in_button_visible"):
+        return "auth_required"
     if runtime_probe.get("usage_visible"):
         return "runtime_connected"
     if runtime_probe.get("connect_button_visible"):
         return "runtime_disconnected"
     return base_state
+
+
+def _attempt_runtime_connect(page) -> Dict[str, Any]:
+    try:
+        page.get_by_text("Connect", exact=True).first.click(timeout=8000)
+        page.wait_for_timeout(12000)
+        return {"attempted": True, "ok": True, "error": ""}
+    except Exception as exc:
+        return {"attempted": True, "ok": False, "error": str(exc)[:500]}
 
 
 def _layer14_from_state(state: str, title: str, url: str) -> Dict[str, Any]:
@@ -268,6 +288,7 @@ def provision_colab_worker(
     keep_open: bool,
     timeout_ms: int,
     dry_run: bool,
+    connect_runtime: bool = False,
     parallel_group: str = "",
     shard_index: int = 0,
     shard_count: int = 1,
@@ -319,6 +340,7 @@ def provision_colab_worker(
     state = "dry_run"
     screenshot_path = None
     runtime_probe: Dict[str, Any] = {}
+    connect_attempt: Dict[str, Any] = {"attempted": False}
 
     if not dry_run:
         sync_playwright = _load_sync_playwright()
@@ -336,6 +358,12 @@ def provision_colab_worker(
                 state = _state_from_page(current_url, title)
                 runtime_probe = _probe_colab_runtime(page)
                 state = _derive_runtime_state(state, runtime_probe)
+                if connect_runtime and state == "runtime_disconnected":
+                    connect_attempt = _attempt_runtime_connect(page)
+                    title = page.title()
+                    current_url = page.url
+                    runtime_probe = _probe_colab_runtime(page)
+                    state = _derive_runtime_state(_state_from_page(current_url, title), runtime_probe)
                 screenshot_path = artifact_dir / "colab_worker_page.png"
                 page.screenshot(path=str(screenshot_path), full_page=True)
                 if keep_open:  # pragma: no cover
@@ -409,6 +437,7 @@ def provision_colab_worker(
         "artifact_path": str(artifact_path),
         "screenshot_path": str(screenshot_path) if screenshot_path is not None else None,
         "runtime_probe": runtime_probe,
+        "connect_attempt": connect_attempt,
         "packets": {
             "claim": claim_packet["packet_id"],
             "internal": internal_packet["packet_id"],
@@ -445,6 +474,7 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--headless", action="store_true", help="Launch browser headless.")
     parser.add_argument("--no-headless", dest="headless", action="store_false", help="Launch browser with UI.")
     parser.add_argument("--keep-open", action="store_true", help="Keep the browser open until Enter is pressed.")
+    parser.add_argument("--connect-runtime", action="store_true", help="Click Connect when the notebook is authenticated and disconnected.")
     parser.add_argument(
         "--dry-run", action="store_true", help="Resolve notebook and emit packets without launching the browser."
     )
@@ -480,6 +510,7 @@ def main(argv: list[str] | None = None) -> int:
         keep_open=bool(args.keep_open),
         timeout_ms=args.timeout_ms,
         dry_run=bool(args.dry_run),
+        connect_runtime=bool(args.connect_runtime),
     )
     print(json.dumps(artifact, indent=2))
     return 0
