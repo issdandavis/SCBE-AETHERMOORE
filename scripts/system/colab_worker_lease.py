@@ -516,7 +516,7 @@ def provision_colab_worker(
                     current_url = page.url
                     runtime_probe = _probe_colab_runtime(page)
                     state = _derive_runtime_state(_state_from_page(current_url, title), runtime_probe)
-                if run_all and state == "runtime_connected":
+                if run_all and state in {"runtime_connected", "notebook_open"}:
                     run_all_attempt = _attempt_run_all(page)
                     if post_run_wait_seconds > 0:
                         page.wait_for_timeout(max(0, int(post_run_wait_seconds)) * 1000)
