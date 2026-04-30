@@ -106,7 +106,7 @@
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
       "description": "Zed 1.0",
-      "word_count": 591,
+      "word_count": 588,
       "headings": [
         {
           "level": 2,
@@ -130,38 +130,38 @@
         },
         {
           "level": 2,
-          "text": "FastCGI: 30 years old and still the better protocol for reverse proxies",
+          "text": "> Be Alexandra Elbakyan",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "agwa.name",
+          "text": "nitter.space",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "We need a federation of forges",
+          "text": "OpenTrafficMap",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "tangled.org",
+          "text": "opentrafficmap.org",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Ramp's Sheets AI Exfiltrates Financials",
+          "text": "HERMES.md in commit messages causes requests to route to extra usage billing",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "promptarmor.com",
+          "text": "github.com/anthropics",
           "source": "fallback-selector"
         }
       ],
       "link_count": 226,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Zed 1.0 (zed.dev)960 points by salkahfi 4 hours ago  | hide | 318\u00a0comments2.Copy Fail \u2013 CVE-2026-31431 (copy.fail)34 points by unsnap_biceps 25 minutes ago  | hide | 9\u00a0comments3.FastCGI: 30 years old and still the better protocol for reverse proxies (agwa.name)99 points by agwa 2 hours ago  | hide | 17\u00a0comments4.We need a federation of forges (tangled.org)401 points by icy 4 hours ago  | hide | 213\u00a0comments5.Ramp's Sheets AI Exf..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Zed 1.0 (zed.dev)1488 points by salkahfi 10 hours ago  | hide | 486\u00a0comments2.Copy Fail \u2013 CVE-2026-31431 (copy.fail)525 points by unsnap_biceps 6 hours ago  | hide | 249\u00a0comments3.> Be Alexandra Elbakyan (nitter.space)67 points by DanielleMolloy 2 hours ago  | hide | 6\u00a0comments4.OpenTrafficMap (opentrafficmap.org)138 points by moooo99 5 hours ago  | hide | 32\u00a0comments5.HERMES.md in commit messages causes requests to route to ext..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
