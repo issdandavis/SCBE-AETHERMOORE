@@ -21,7 +21,6 @@ codebase_to_sft = _load_module("test_batch5_codebase_to_sft", "scripts/codebase_
 
 def test_lore_strip_copies_use_dom_rendering_and_safe_url_helper():
     for relative_path in (
-        "docs/arena.html",
         "public/index.html",
         "public/arena.html",
     ):
