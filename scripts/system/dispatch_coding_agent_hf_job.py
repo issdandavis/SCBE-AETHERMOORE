@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import os
 import re
@@ -52,6 +53,35 @@ def _load_profile(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("profile must be a JSON object")
+    return payload
+
+
+def _smoke_profile(profile: dict[str, Any]) -> dict[str, Any]:
+    """Return a tiny no-push profile that validates HF job plumbing first."""
+
+    payload = copy.deepcopy(profile)
+    payload["profile_id"] = f"{payload['profile_id']}-smoke"
+    payload["title"] = f"{payload.get('title', payload['profile_id'])} smoke"
+    training = payload.setdefault("training", {})
+    training.update(
+        {
+            "max_seq_length": min(int(training.get("max_seq_length", 512)), 512),
+            "lora_rank": min(int(training.get("lora_rank", 8)), 4),
+            "lora_alpha": min(int(training.get("lora_alpha", 16)), 8),
+            "max_steps": 1,
+            "max_train_records": min(int(training.get("max_train_records", 24)), 24),
+            "max_eval_records": min(int(training.get("max_eval_records", 8)), 8),
+            "logging_steps": 1,
+            "save_steps": 1,
+            "save_total_limit": 1,
+            "gradient_accumulation_steps": 1,
+        }
+    )
+    hub = payload.setdefault("hub", {})
+    hub["push_adapter"] = False
+    execution = payload.setdefault("execution", {})
+    execution["timeout"] = "30m"
+    payload["smoke"] = True
     return payload
 
 
@@ -175,6 +205,10 @@ os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 
+def emit(event: str, **payload) -> None:
+    print(json.dumps({{"event": event, **payload}}), flush=True)
+
+
 def _token() -> str:
     token_env = str((PROFILE.get("hub") or {{}}).get("token_env", "HF_TOKEN"))
     token = os.environ.get(token_env, "").strip() or os.environ.get("HUGGING_FACE_HUB_TOKEN", "").strip()
@@ -241,6 +275,7 @@ def _build_dataset(source, tokenizer, limit: int, seed: int) -> Dataset:
 
 
 def main() -> None:
+    emit("startup", profile_id=PROFILE.get("profile_id"), base_model=PROFILE.get("base_model"), dataset_repo=DATASET_REPO)
     token = _token()
     train_cfg = PROFILE.get("training") or {{}}
     hub_cfg = PROFILE.get("hub") or {{}}
@@ -249,11 +284,13 @@ def main() -> None:
     base_model = str(PROFILE["base_model"])
     adapter_repo = str(hub_cfg["adapter_repo"])
 
-    print(json.dumps({{"event": "auth", "whoami": whoami(token=token).get("name", "unknown")}}))
+    emit("auth", whoami=whoami(token=token).get("name", "unknown"))
+    emit("tokenizer_load_start", base_model=base_model)
     tokenizer = AutoTokenizer.from_pretrained(base_model, token=token)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
+    emit("model_load_start", base_model=base_model, cuda=torch.cuda.is_available())
     dtype = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16
     model = AutoModelForCausalLM.from_pretrained(
         base_model,
@@ -277,8 +314,10 @@ def main() -> None:
     )
     model.print_trainable_parameters()
 
+    emit("dataset_download_start", train_files=len(TRAIN_FILES), eval_files=len(EVAL_FILES))
     train_rows = _load_jsonl_files(TRAIN_FILES, "train", token)
     eval_rows = _load_jsonl_files(EVAL_FILES, "eval", token) if EVAL_FILES else None
+    emit("dataset_loaded", train_rows=len(train_rows), eval_rows=len(eval_rows) if eval_rows is not None else 0)
     train_ds = _build_dataset(train_rows, tokenizer, int(train_cfg.get("max_train_records", 1200)), seed)
     eval_ds = _build_dataset(eval_rows, tokenizer, int(train_cfg.get("max_eval_records", 120)), seed) if eval_rows is not None else None
 
@@ -289,6 +328,7 @@ def main() -> None:
     eval_tok = eval_ds.map(tokenize, batched=True, remove_columns=["text"]) if eval_ds is not None else None
 
     out_dir = WORKDIR / "adapter"
+    emit("train_start", max_steps=int(train_cfg.get("max_steps", 120)), train_rows_used=len(train_ds), eval_rows_used=len(eval_ds) if eval_ds is not None else 0)
     args = TrainingArguments(
         output_dir=str(WORKDIR / "checkpoints"),
         max_steps=int(train_cfg.get("max_steps", 120)),
@@ -315,13 +355,14 @@ def main() -> None:
         data_collator=DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False),
     )
     stats = trainer.train()
+    emit("train_done", global_step=int(getattr(stats, "global_step", 0)), training_loss=float(getattr(stats, "training_loss", 0.0)))
     model.save_pretrained(out_dir)
     tokenizer.save_pretrained(out_dir)
 
     # === Required inline contract gate ===
     # Every HF training profile must carry a non-empty evaluation.contract_path.
     # Empty gates are invalid because a 0/0 gate can otherwise look like success.
-    print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or [])}}))
+    emit("gate_start", contract_id=CONTRACT.get("contract_id"), n_prompts=len(CONTRACT.get("prompts") or []))
     del trainer
     del model
     gc.collect()
@@ -390,7 +431,7 @@ def main() -> None:
         if diag["ok"]:
             n_pass += 1
         elapsed = time.time() - t0
-        print(json.dumps({{"event": "gate_prompt", "id": diag["id"], "ok": diag["ok"], "missing": diag["missing_required"], "elapsed_s": round(elapsed, 1)}}))
+        emit("gate_prompt", id=diag["id"], ok=diag["ok"], missing=diag["missing_required"], elapsed_s=round(elapsed, 1))
 
     n_total = len(results)
     pass_rate = (n_pass / n_total) if n_total else 0.0
@@ -418,19 +459,19 @@ def main() -> None:
     report_path = out_dir / "stage6_regression_inline.json"
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     # Emit gate_report BEFORE any push so it always lands in logs.
-    print(json.dumps({{"event": "gate_report", "report": report}}))
+    emit("gate_report", report=report)
 
     push_requested = bool(hub_cfg.get("push_adapter", True))
     should_push = push_requested and overall_pass
     pushed_adapter = False
     if should_push:
-        print(json.dumps({{"event": "push_attempt", "adapter_repo": adapter_repo}}))
+        emit("push_attempt", adapter_repo=adapter_repo)
         gate_model.push_to_hub(adapter_repo, token=token)
         tokenizer.push_to_hub(adapter_repo, token=token)
         pushed_adapter = True
     else:
         reason = "gate_failed" if (push_requested and not overall_pass) else "push_disabled"
-        print(json.dumps({{"event": "push_skipped", "reason": reason, "overall_pass": overall_pass, "push_requested": push_requested}}))
+        emit("push_skipped", reason=reason, overall_pass=overall_pass, push_requested=push_requested)
 
     summary = {{
         "profile_id": PROFILE["profile_id"],
@@ -449,7 +490,7 @@ def main() -> None:
         "gate_n_pass": n_pass,
         "gate_n_total": n_total,
     }}
-    print(json.dumps({{"event": "training_complete", "summary": summary}}, indent=2))
+    emit("training_complete", summary=summary)
     if not overall_pass:
         sys.exit(1)
 
@@ -465,9 +506,12 @@ def build_packet(
     artifact_root: Path = ARTIFACT_ROOT,
     flavor: str | None = None,
     timeout: str | None = None,
+    smoke: bool = False,
 ) -> dict[str, Any]:
     _load_env_file()
     profile = _load_profile(profile_path)
+    if smoke:
+        profile = _smoke_profile(profile)
     execution = profile.get("execution") or {}
     stamp = _utc_stamp()
     run_dir = artifact_root / str(profile["profile_id"]) / stamp
@@ -489,6 +533,8 @@ def build_packet(
         "--env",
         "PYTHONIOENCODING=utf-8",
         "--env",
+        "PYTHONUNBUFFERED=1",
+        "--env",
         "PYTHONUTF8=1",
         "--secrets",
         str((profile.get("hub") or {}).get("token_env", "HF_TOKEN")),
@@ -499,6 +545,7 @@ def build_packet(
         "schema_version": "scbe_coding_agent_hf_job_packet_v1",
         "prepared_at_utc": stamp,
         "profile_id": profile["profile_id"],
+        "smoke": smoke,
         "profile_path": str(profile_path),
         "run_dir": str(run_dir),
         "script_path": str(script_path),
@@ -644,6 +691,11 @@ def main() -> int:
         item.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
         item.add_argument("--flavor", default="")
         item.add_argument("--timeout", default="")
+        item.add_argument(
+            "--smoke",
+            action="store_true",
+            help="Run a tiny no-push HF job first to validate dependencies, auth, model load, data load, and one train step.",
+        )
         item.add_argument("--json", action="store_true")
     status = sub.add_parser("status")
     status.add_argument("--json", action="store_true")
@@ -668,6 +720,7 @@ def main() -> int:
             artifact_root=Path(args.artifact_root),
             flavor=args.flavor or None,
             timeout=args.timeout or None,
+            smoke=bool(args.smoke),
         )
         payload = dispatch_packet(packet) if args.command == "dispatch" else packet
 

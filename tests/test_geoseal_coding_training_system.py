@@ -119,6 +119,27 @@ def test_dispatch_default_profile_exists_and_has_contract() -> None:
     assert "stage6_atomic_workflow_unseen_eval_v1" in script
 
 
+def test_dispatch_smoke_profile_is_tiny_no_push_and_unbuffered(tmp_path: Path) -> None:
+    dispatcher = _load_dispatcher_module()
+    profile_path = ROOT / "config" / "model_training" / "coding-agent-qwen-full-coding-system-v8.json"
+
+    packet = dispatcher.build_packet(
+        profile_path=profile_path,
+        artifact_root=tmp_path,
+        smoke=True,
+    )
+    script = Path(packet["script_path"]).read_text(encoding="utf-8")
+
+    assert packet["smoke"] is True
+    assert packet["profile_id"].endswith("-smoke")
+    assert "PYTHONUNBUFFERED=1" in packet["command"]
+    assert '"max_steps": 1' in script
+    assert '"max_train_records": 24' in script
+    assert '"push_adapter": false' in script
+    assert 'emit("startup"' in script
+    assert 'emit("train_start"' in script
+
+
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     manifest = module.load_manifest(MANIFEST_PATH)
