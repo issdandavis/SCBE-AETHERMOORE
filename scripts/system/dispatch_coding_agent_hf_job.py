@@ -660,7 +660,7 @@ def dispatch_packet(packet: dict[str, Any]) -> dict[str, Any]:
         token = os.environ.get(token_env, "").strip()
         api = HfApi(token=token)
         job = api.run_uv_job(
-            Path(packet["script_path"]).read_text(encoding="utf-8"),
+            str(Path(packet["script_path"])),
             env={
                 "PYTHONIOENCODING": "utf-8",
                 "PYTHONUNBUFFERED": "1",

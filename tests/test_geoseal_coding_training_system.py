@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -161,6 +162,44 @@ def test_geoseal_training_plan_can_request_smoke_profile(tmp_path: Path, monkeyp
     assert packet["hf"]["flavor"] == "l4x1"
     assert packet["hf"]["timeout"] == "30m"
     assert packet["hf"]["backend"] == "api-inline"
+
+
+def test_api_inline_dispatch_passes_script_path_to_hf_jobs(tmp_path: Path, monkeypatch) -> None:
+    dispatcher = _load_dispatcher_module()
+    profile_path = ROOT / "config" / "model_training" / "coding-agent-qwen-full-coding-system-v8.json"
+    captured: dict[str, object] = {}
+
+    class FakeApi:
+        def __init__(self, token: str) -> None:
+            captured["token"] = token
+
+        def run_uv_job(self, script: str, **kwargs: object) -> SimpleNamespace:
+            captured["script"] = script
+            captured["kwargs"] = kwargs
+            return SimpleNamespace(id="job-12345678", url="https://huggingface.co/jobs/owner/job-12345678")
+
+    import huggingface_hub
+
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    monkeypatch.setattr(huggingface_hub, "HfApi", FakeApi)
+    monkeypatch.setattr(dispatcher, "upload_training_dataset", lambda profile: [])
+    packet = dispatcher.build_packet(
+        profile_path=profile_path,
+        artifact_root=tmp_path,
+        smoke=True,
+        backend="api-inline",
+    )
+
+    dispatched = dispatcher.dispatch_packet(packet)
+
+    assert dispatched["dispatched"] is True
+    assert dispatched["dispatch"]["job_id"] == "job-12345678"
+    assert captured["token"] == "test-token"
+    assert captured["script"] == packet["script_path"]
+    assert Path(str(captured["script"])).exists()
+    assert str(captured["script"]).endswith("train_coding_agent_hf.py")
+    assert "event" not in str(captured["script"])
+    assert (captured["kwargs"] or {})["env"]["PYTHONUNBUFFERED"] == "1"
 
 
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
