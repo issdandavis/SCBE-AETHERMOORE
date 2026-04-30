@@ -320,7 +320,7 @@ def test_attempt_run_all_prefers_visible_run_all_button() -> None:
     class FakePage:
         def evaluate(self, script: str) -> bool:
             calls.append(script)
-            return True
+            return len(calls) == 1
 
         def wait_for_timeout(self, delay: int) -> None:
             waits.append(delay)
@@ -331,7 +331,9 @@ def test_attempt_run_all_prefers_visible_run_all_button() -> None:
     assert result["ok"] is True
     assert result["method"] == "run-all-button"
     assert "run all" in calls[0].lower()
-    assert waits == [5000]
+    assert "run anyway" in calls[1].lower()
+    assert result["warning_dismissed"] is False
+    assert waits == [2500, 5000]
 
 
 def test_attempt_run_all_uses_keyboard_fallback() -> None:
@@ -343,16 +345,22 @@ def test_attempt_run_all_uses_keyboard_fallback() -> None:
 
     class FakePage:
         keyboard = FakeKeyboard()
+        calls = 0
+        waits: list[int] = []
 
         def evaluate(self, script: str) -> bool:
+            self.calls += 1
+            if self.calls == 2:
+                return True
             return False
 
         def wait_for_timeout(self, delay: int) -> None:
-            assert delay == 5000
+            self.waits.append(delay)
 
     result = worker._attempt_run_all(FakePage())
 
     assert result["attempted"] is True
     assert result["ok"] is True
     assert result["method"] == "keyboard-control-f9"
+    assert result["warning_dismissed"] is True
     assert keys == ["Control+F9"]

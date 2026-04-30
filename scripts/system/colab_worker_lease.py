@@ -212,9 +212,34 @@ def _attempt_run_all(page) -> Dict[str, Any]:
         )
         if not clicked:
             page.keyboard.press("Control+F9")
+        page.wait_for_timeout(2500)
+        warning_dismissed = page.evaluate(
+            """
+() => {
+  const buttons = Array.from(document.querySelectorAll(
+    'button, [role="button"], paper-button, mwc-button'
+  ));
+  const el = buttons.find((node) => {
+    const text = (node.innerText || node.textContent || node.getAttribute('aria-label') || '').trim();
+    return /^run anyway$/i.test(text);
+  });
+  if (!el) {
+    return false;
+  }
+  el.click();
+  return true;
+}
+"""
+        )
         page.wait_for_timeout(5000)
         method = "run-all-button" if clicked else "keyboard-control-f9"
-        return {"attempted": True, "ok": True, "method": method, "error": ""}
+        return {
+            "attempted": True,
+            "ok": True,
+            "method": method,
+            "warning_dismissed": bool(warning_dismissed),
+            "error": "",
+        }
     except Exception as exc:
         return {"attempted": True, "ok": False, "error": str(exc)[:500]}
 
