@@ -39,8 +39,7 @@ jobs:
         id: prev
         run: |
           PREV=$(git tag --list 'v*.*.*' --sort=-v:refname \
-            | grep -v "^${{ steps.tag.outputs.tag }}$" \
-            | head -1 || true)
+            | awk -v current="${{ steps.tag.outputs.tag }}" '$0 != current { print; exit }')
           echo "prev=$PREV" >> "$GITHUB_OUTPUT"
 
       - name: Build release notes
@@ -53,8 +52,7 @@ jobs:
               echo "### Changes since ${{ steps.prev.outputs.prev }}"
               echo
               git log --pretty=format:'- %s (%h)' \
-                "${{ steps.prev.outputs.prev }}..${{ steps.tag.outputs.tag }}" \
-                || true
+                "${{ steps.prev.outputs.prev }}..${{ steps.tag.outputs.tag }}"
               echo
               echo
               echo "Full diff: https://github.com/${{ github.repository }}/compare/${{ steps.prev.outputs.prev }}...${{ steps.tag.outputs.tag }}"
