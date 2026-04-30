@@ -5,17 +5,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict
 
 from urllib.parse import urlparse
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from scripts.system import colab_workflow_catalog as catalog
 from scripts.system import crosstalk_relay as relay
-
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _safe_url(raw_url: str) -> str:
@@ -39,6 +41,22 @@ def _slug(value: str) -> str:
     return "".join(ch.lower() if ch.isalnum() else "-" for ch in value).strip("-") or "worker"
 
 
+def _split_csv(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def build_intersection_scope(*, languages: str = "", regions: str = "", jurisdictions: str = "") -> Dict[str, Any]:
+    language_items = _split_csv(languages)
+    region_items = _split_csv(regions)
+    jurisdiction_items = _split_csv(jurisdictions)
+    return {
+        "languages": language_items,
+        "regions": region_items,
+        "jurisdictions": jurisdiction_items,
+        "intersection_count": max(1, len(language_items) or 1) * max(1, len(region_items) or 1),
+    }
+
+
 def _load_sync_playwright():
     try:
         from playwright.sync_api import sync_playwright  # type: ignore
@@ -57,6 +75,10 @@ def build_worker_lease(
     resource_class: str = "browser-colab",
     lease_seconds: int = 3600,
     claimed_at: datetime | None = None,
+    parallel_group: str = "",
+    shard_index: int = 0,
+    shard_count: int = 1,
+    intersection_scope: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     claimed = claimed_at or _utc_now()
     lease_id = f"lease-{_slug(worker_id)}-{_slug(notebook_name)}-{claimed.strftime('%Y%m%d%H%M%S')}"
@@ -69,6 +91,12 @@ def build_worker_lease(
         "lease_seconds": int(lease_seconds),
         "claimed_at_utc": _utc_str(claimed),
         "expires_at_utc": _utc_str(expires),
+        "parallel": {
+            "group": parallel_group,
+            "shard_index": max(0, int(shard_index)),
+            "shard_count": max(1, int(shard_count)),
+        },
+        "intersection_scope": intersection_scope or build_intersection_scope(),
     }
 
 
@@ -240,9 +268,21 @@ def provision_colab_worker(
     keep_open: bool,
     timeout_ms: int,
     dry_run: bool,
+    parallel_group: str = "",
+    shard_index: int = 0,
+    shard_count: int = 1,
+    intersection_scope: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     notebook = catalog.resolve_notebook_payload(notebook_query)
-    lease = build_worker_lease(worker_id=worker_id, notebook_name=notebook["name"], lease_seconds=lease_seconds)
+    lease = build_worker_lease(
+        worker_id=worker_id,
+        notebook_name=notebook["name"],
+        lease_seconds=lease_seconds,
+        parallel_group=parallel_group,
+        shard_index=shard_index,
+        shard_count=shard_count,
+        intersection_scope=intersection_scope or build_intersection_scope(),
+    )
     artifact_dir = artifact_root / mission_id / worker_id
     artifact_dir.mkdir(parents=True, exist_ok=True)
     artifact_path = artifact_dir / "colab_worker_session.json"
@@ -358,6 +398,8 @@ def provision_colab_worker(
         "recipient": recipient,
         "lease": lease,
         "notebook": notebook,
+        "parallel": lease["parallel"],
+        "intersection_scope": lease["intersection_scope"],
         "state": state,
         "title": title,
         "current_url": current_url,
@@ -393,6 +435,12 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT), help="Artifact root directory.")
     parser.add_argument("--lease-seconds", type=int, default=3600, help="Lease duration in seconds.")
+    parser.add_argument("--parallel-group", default="", help="Shared group for parallel Colab workers.")
+    parser.add_argument("--shard-index", type=int, default=0, help="Zero-based worker shard index.")
+    parser.add_argument("--shard-count", type=int, default=1, help="Total workers in this parallel group.")
+    parser.add_argument("--languages", default="", help="Comma-separated language scope for the worker.")
+    parser.add_argument("--regions", default="", help="Comma-separated regional scope for the worker.")
+    parser.add_argument("--jurisdictions", default="", help="Comma-separated jurisdiction or policy scope.")
     parser.add_argument("--timeout-ms", type=int, default=90000, help="Page load timeout.")
     parser.add_argument("--headless", action="store_true", help="Launch browser headless.")
     parser.add_argument("--no-headless", dest="headless", action="store_false", help="Launch browser with UI.")
@@ -409,6 +457,11 @@ def main(argv: list[str] | None = None) -> int:
     mission_id = args.mission_id.strip() or f"colab-mission-{_utc_now().strftime('%Y%m%d%H%M%S')}"
     worker_id = args.worker_id.strip() or f"worker-colab-{_slug(args.notebook)}"
     session_id = args.session_id.strip() or f"{worker_id}-session"
+    intersection_scope = build_intersection_scope(
+        languages=args.languages,
+        regions=args.regions,
+        jurisdictions=args.jurisdictions,
+    )
     artifact = provision_colab_worker(
         notebook_query=args.notebook,
         mission_id=mission_id,
@@ -419,6 +472,10 @@ def main(argv: list[str] | None = None) -> int:
         profile_dir=Path(args.profile_dir),
         artifact_root=Path(args.artifact_root),
         lease_seconds=args.lease_seconds,
+        parallel_group=args.parallel_group,
+        shard_index=args.shard_index,
+        shard_count=args.shard_count,
+        intersection_scope=intersection_scope,
         headless=bool(args.headless),
         keep_open=bool(args.keep_open),
         timeout_ms=args.timeout_ms,

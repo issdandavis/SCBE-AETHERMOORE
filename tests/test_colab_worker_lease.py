@@ -7,16 +7,28 @@ from scripts.system import colab_worker_lease as worker
 
 
 def test_build_worker_lease_has_expiry() -> None:
+    scope = worker.build_intersection_scope(languages="en, ko", regions="us, asia", jurisdictions="public, export-safe")
     lease = worker.build_worker_lease(
         worker_id="worker-colab-01",
         notebook_name="scbe-pivot-v2",
         lease_seconds=900,
+        parallel_group="coding-swarm",
+        shard_index=1,
+        shard_count=4,
+        intersection_scope=scope,
     )
     assert lease["owner"] == "worker-colab-01"
     assert lease["provider"] == "colab"
     assert lease["resource_class"] == "browser-colab"
     assert lease["lease_seconds"] == 900
     assert lease["claimed_at_utc"] < lease["expires_at_utc"]
+    assert lease["parallel"]["group"] == "coding-swarm"
+    assert lease["parallel"]["shard_index"] == 1
+    assert lease["parallel"]["shard_count"] == 4
+    assert lease["intersection_scope"]["languages"] == ["en", "ko"]
+    assert lease["intersection_scope"]["regions"] == ["us", "asia"]
+    assert lease["intersection_scope"]["jurisdictions"] == ["public", "export-safe"]
+    assert lease["intersection_scope"]["intersection_count"] == 4
 
 
 def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatch) -> None:
@@ -42,6 +54,10 @@ def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatc
         keep_open=False,
         timeout_ms=1000,
         dry_run=True,
+        parallel_group="training-swarm",
+        shard_index=0,
+        shard_count=2,
+        intersection_scope=worker.build_intersection_scope(languages="en,ja", regions="global"),
     )
 
     assert artifact["state"] == "dry_run"
@@ -54,6 +70,10 @@ def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatc
     ]
     assert emitted[1]["worker_id"] == "worker-colab-01"
     assert emitted[1]["mission_id"] == "mission-1"
+    assert emitted[1]["lease"]["parallel"]["group"] == "training-swarm"
+    assert emitted[1]["lease"]["intersection_scope"]["languages"] == ["en", "ja"]
+    assert artifact["parallel"]["shard_count"] == 2
+    assert artifact["intersection_scope"]["regions"] == ["global"]
     assert Path(artifact["artifact_path"]).exists()
     saved = json.loads(Path(artifact["artifact_path"]).read_text(encoding="utf-8"))
     assert saved["packets"]["claim"] == "pkt-1"

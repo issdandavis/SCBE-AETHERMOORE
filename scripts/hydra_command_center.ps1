@@ -20,7 +20,10 @@ $script:IssacGithubSweepScript = Join-Path $script:IssacCommandCenterRoot "scrip
 $script:IssacGithubNavScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\aetherbrowser_github_nav.py"
 $script:IssacYoutubeTranscriptScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\youtube_transcript_pull.py"
 $script:IssacColabCatalogScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\colab_workflow_catalog.py"
-$script:IssacColabBridgeScript = "C:\Users\issda\.codex\skills\scbe-n8n-colab-bridge\scripts\colab_n8n_bridge.py"
+$script:IssacColabBridgeScript = Join-Path $script:IssacCommandCenterRoot "external\codex-skills-live\scbe-n8n-colab-bridge\scripts\colab_n8n_bridge.py"
+if (-not (Test-Path -LiteralPath $script:IssacColabBridgeScript)) {
+    $script:IssacColabBridgeScript = "C:\Users\issda\.codex\skills\scbe-n8n-colab-bridge\scripts\colab_n8n_bridge.py"
+}
 $script:IssacDeepResearchLoop = Join-Path $script:IssacCommandCenterRoot "scripts\system\run_deep_research_self_healing.ps1"
 $script:IssacWorkflowVectorScript = Join-Path $script:IssacCommandCenterRoot "scripts\system\workflow_vector.py"
 $script:IssacPostAllScript = Join-Path $script:IssacCommandCenterRoot "scripts\publish\post_all.py"
