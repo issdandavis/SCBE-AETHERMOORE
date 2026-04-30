@@ -105,17 +105,27 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Granite 4.1: IBM's 8B Model Matching 32B MoE",
-      "word_count": 602,
+      "description": "How Mark Klein told the EFF about Room 641A [book excerpt]",
+      "word_count": 623,
       "headings": [
         {
           "level": 2,
-          "text": "Granite 4.1: IBM's 8B Model Matching 32B MoE",
+          "text": "How Mark Klein told the EFF about Room 641A [book excerpt]",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "firethering.com",
+          "text": "mitpress.mit.edu",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Shai-Hulud Themed Malware Found in the PyTorch Lightning AI Training Library",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "semgrep.dev",
           "source": "fallback-selector"
         },
         {
@@ -130,38 +140,28 @@
         },
         {
           "level": 2,
-          "text": "Mozilla's Opposition to Chrome's Prompt API",
+          "text": "CopyFail Was Not Disclosed to Distros",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/mozilla",
+          "text": "openwall.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Where the goblins came from",
+          "text": "I built a Game Boy emulator in F#",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "openai.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Noctua releases official 3D CAD models for its cooling fans",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "noctua.at",
+          "text": "nickkossolapov.github.io",
           "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Granite 4.1: IBM's 8B Model Matching 32B MoE (firethering.com)122 points by steveharing1 2 hours ago  | hide | 63\u00a0comments2.Belgium stops decommissioning nuclear power plants (dpa-international.com)9 points by mpweiher 24 minutes ago  | hide | 1\u00a0comment3.Mozilla's Opposition to Chrome's Prompt API (github.com/mozilla)209 points by jaffathecake 4 hours ago  | hide | 90\u00a0comments4.Where the goblins came from (openai.com)763 points ..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.How Mark Klein told the EFF about Room 641A [book excerpt] (mitpress.mit.edu)159 points by the-mitr 1 hour ago  | hide | 29\u00a0comments2.Shai-Hulud Themed Malware Found in the PyTorch Lightning AI Training Library (semgrep.dev)142 points by j12y 2 hours ago  | hide | 34\u00a0comments3.Belgium stops decommissioning nuclear power plants (dpa-international.com)598 points by mpweiher 6 hours ago  | hide | 484\u00a0comments4.CopyFail Was Not Disc..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
