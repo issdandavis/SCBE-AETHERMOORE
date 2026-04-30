@@ -138,6 +138,20 @@
             <div style="margin-top:8px;"><span class="tag">Ladder</span> <span class="tag">Metrics</span></div>
           </div>
         </div>
+        <div class="card">
+          <h2>Pair Benchmark</h2>
+          <div class="body">
+            Compares a one-body coding workflow against the paired builder/navigator pattern on SCBE-native coding tasks.
+            <div style="margin-top:8px;"><span class="tag green">Zero-cost</span> <span class="tag">Dual-agent</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Poly Coding Seed</h2>
+          <div class="body">
+            Regenerates the external coding seed corpus with language lenses, binary/hex transport, CA operation hints, and GeoSeal metadata.
+            <div style="margin-top:8px;"><span class="tag">Training</span> <span class="tag">GeoSeal</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -155,6 +169,8 @@
           <option value="coding">Coding — run the agentic coding benchmark smoke</option>
           <option value="system_build">System Build — run the fast repo build smoke</option>
           <option value="agentic_ladder">Agentic ladder — Levels 0–1 + optional 6 (query = max level: 1 fast, 6 includes CLI/GeoSeal pytest)</option>
+          <option value="pair_benchmark">Pair Benchmark — compare solo vs paired coding workflow</option>
+          <option value="poly_coding_seed">Poly Coding Seed — rebuild external poly-coded training seed records</option>
         </select>
         <label for="d-query">Query or URLs</label>
         <input id="d-query" placeholder="e.g. URLs, research query, or ladder max level: 1 (default depth) or 6 (adds CLI/GeoSeal tests)">
@@ -170,6 +186,8 @@
           <button type="button" onclick="setRecipe('system_build','Run SCBE repo entrypoint and build smoke')">Build smoke</button>
           <button type="button" onclick="setRecipe('agentic_ladder','1')">Ladder (levels 0–1)</button>
           <button type="button" onclick="setRecipe('agentic_ladder','6')">Ladder through L6 (CLI/GeoSeal)</button>
+          <button type="button" onclick="setRecipe('pair_benchmark','Run dual-agent pair benchmark')">Pair benchmark</button>
+          <button type="button" onclick="setRecipe('poly_coding_seed','Regenerate external poly coding seed corpus')">Poly seed</button>
         </div>
       </div>
     </div>

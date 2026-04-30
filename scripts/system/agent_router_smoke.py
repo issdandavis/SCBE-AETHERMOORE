@@ -139,12 +139,72 @@ def system_build_smoke() -> dict[str, Any]:
     }
 
 
+def pair_benchmark_smoke() -> dict[str, Any]:
+    command = [
+        sys.executable,
+        "scripts/benchmark/dual_agent_pair_benchmark.py",
+        "run",
+        "--output",
+        "artifacts/agent-router/dual_agent_pair_benchmark.json",
+    ]
+    run = _run(command, timeout=180)
+    parsed: dict[str, Any] = {}
+    if run["stdout"].strip():
+        try:
+            parsed = json.loads(run["stdout"])
+        except json.JSONDecodeError:
+            parsed = {"parse_error": "benchmark stdout was not JSON"}
+    summary = parsed.get("summary", {})
+    return {
+        "schema_version": "scbe_agent_router_pair_benchmark_smoke_v1",
+        "created_at": _utc_now(),
+        "ok": run["ok"] and summary.get("pair_passed", 0) >= summary.get("solo_passed", 0),
+        "task": "pair_benchmark",
+        "lane": "dual_agent_pair_coding_benchmark",
+        "run": run,
+        "benchmark": parsed,
+    }
+
+
+def poly_coding_seed_smoke() -> dict[str, Any]:
+    command = [
+        sys.executable,
+        "scripts/build_external_poly_coding_sft.py",
+        "--out-dir",
+        "artifacts/agent-router/poly-coding-seed",
+    ]
+    run = _run(command, timeout=180)
+    parsed: dict[str, Any] = {}
+    if run["stdout"].strip():
+        try:
+            parsed = json.loads(run["stdout"])
+        except json.JSONDecodeError:
+            parsed = {"parse_error": "builder stdout was not JSON"}
+    summary = parsed.get("summary", {})
+    return {
+        "schema_version": "scbe_agent_router_poly_coding_seed_smoke_v1",
+        "created_at": _utc_now(),
+        "ok": run["ok"] and summary.get("train_count", 0) > 0 and summary.get("holdout_count", 0) > 0,
+        "task": "poly_coding_seed",
+        "lane": "external_poly_coding_training_seed",
+        "run": run,
+        "builder": parsed,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run SCBE agent-router smoke tasks.")
-    parser.add_argument("task", choices=["coding", "system_build"])
+    parser.add_argument("task", choices=["coding", "system_build", "pair_benchmark", "poly_coding_seed"])
     args = parser.parse_args()
 
-    result = coding_smoke() if args.task == "coding" else system_build_smoke()
+    if args.task == "coding":
+        result = coding_smoke()
+    elif args.task == "system_build":
+        result = system_build_smoke()
+    elif args.task == "pair_benchmark":
+        result = pair_benchmark_smoke()
+    else:
+        result = poly_coding_seed_smoke()
     print(json.dumps(result, indent=2))
     return 0 if result["ok"] else 1
 

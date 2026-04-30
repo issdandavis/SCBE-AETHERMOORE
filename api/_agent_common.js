@@ -13,6 +13,8 @@ const ALLOWED_TASKS = new Set([
   "coding",
   "system_build",
   "agentic_ladder",
+  "pair_benchmark",
+  "poly_coding_seed",
 ]);
 const PAGES_DATA_BASE = "https://aethermoore.com/SCBE-AETHERMOORE/static/agent-data";
 

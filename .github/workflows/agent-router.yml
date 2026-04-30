@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder'
+        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder | pair_benchmark | poly_coding_seed'
         required: true
         default: 'monitor'
         type: string
@@ -122,6 +122,14 @@ jobs:
               ;;
             agentic_ladder)
               python scripts/benchmark/agentic_benchmark_ladder.py run --query "$QUERY" \
+                > artifacts/agent-router/result.json
+              ;;
+            pair_benchmark)
+              python scripts/system/agent_router_smoke.py pair_benchmark \
+                > artifacts/agent-router/result.json
+              ;;
+            poly_coding_seed)
+              python scripts/system/agent_router_smoke.py poly_coding_seed \
                 > artifacts/agent-router/result.json
               ;;
             *)
@@ -241,6 +249,20 @@ jobs:
               print(f'**Level 6 (CLI/GeoSeal)**: skipped={l6.get(\"skipped\", False)} ok={l6.get(\"ok\")}')
               print(f'**Tasks evaluated**: {mr.get(\"tasks_evaluated\")} passed={mr.get(\"tasks_passed\")} failed={mr.get(\"tasks_failed\")}')
               print(f'**Secret leak count (heuristic)**: {mr.get(\"total_secret_leak_count\")}')
+              print(json.dumps(r, indent=2, default=str)[:1200])
+            elif '$TASK' == 'pair_benchmark':
+              summary = r.get('benchmark', {}).get('summary', {})
+              print(f'**Pair benchmark ok**: {r.get(\"ok\")}')
+              print(f'**Solo pass rate**: {summary.get(\"solo_pass_rate\")}')
+              print(f'**Pair pass rate**: {summary.get(\"pair_pass_rate\")}')
+              print(f'**Cost USD**: {summary.get(\"cost_usd\")}')
+              print(json.dumps(r, indent=2, default=str)[:1200])
+            elif '$TASK' == 'poly_coding_seed':
+              summary = r.get('builder', {}).get('summary', {})
+              print(f'**Poly coding seed ok**: {r.get(\"ok\")}')
+              print(f'**Train records**: {summary.get(\"train_count\")}')
+              print(f'**Holdout records**: {summary.get(\"holdout_count\")}')
+              print(f'**Source count**: {summary.get(\"source_count\")}')
               print(json.dumps(r, indent=2, default=str)[:1200])
             else:
               print(json.dumps(r, indent=2, default=str)[:1000])

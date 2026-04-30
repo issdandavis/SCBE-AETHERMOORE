@@ -17,6 +17,8 @@ EXPECTED_TASKS = {
     "coding",
     "system_build",
     "agentic_ladder",
+    "pair_benchmark",
+    "poly_coding_seed",
 }
 
 
@@ -69,3 +71,36 @@ def test_agent_router_system_build_smoke_passes() -> None:
     payload = json.loads(proc.stdout)
     assert payload["ok"] is True
     assert payload["package_scripts"]["ok"] is True
+
+
+def test_agent_router_pair_benchmark_smoke_passes() -> None:
+    proc = subprocess.run(
+        [sys.executable, "scripts/system/agent_router_smoke.py", "pair_benchmark"],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=240,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["ok"] is True
+    assert payload["benchmark"]["summary"]["pair_pass_rate"] >= payload["benchmark"]["summary"]["solo_pass_rate"]
+
+
+def test_agent_router_poly_coding_seed_smoke_passes() -> None:
+    proc = subprocess.run(
+        [sys.executable, "scripts/system/agent_router_smoke.py", "poly_coding_seed"],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=240,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["ok"] is True
+    assert payload["builder"]["summary"]["train_count"] > 0
+    assert payload["builder"]["summary"]["holdout_count"] > 0
