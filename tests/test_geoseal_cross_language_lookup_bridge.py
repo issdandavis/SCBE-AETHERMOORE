@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 LOOKUP_PATH = REPO_ROOT / "artifacts" / "cross_language_lookup" / "full_cross_language_lookup.json"
 

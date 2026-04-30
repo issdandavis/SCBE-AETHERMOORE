@@ -48,8 +48,7 @@ PROVIDER_TIERS = ("local", "ollama", "hf", "claude")
 _GOVERNANCE_TIERS = ("ALLOW", "QUARANTINE", "ESCALATE", "DENY")
 
 # System prompt template — filled with tongue/language at call time
-_SYSTEM_TEMPLATE = textwrap.dedent(
-    """\
+_SYSTEM_TEMPLATE = textwrap.dedent("""\
     You are Polly, an expert {language} code generation assistant.
     You operate under the SCBE governance framework using the {tongue_name} Sacred Tongue.
 
@@ -59,8 +58,7 @@ _SYSTEM_TEMPLATE = textwrap.dedent(
     - Write idiomatic, production-quality {language}.
     - Include only necessary imports/use declarations.
     - Never add placeholder comments like "# TODO" unless they were in the task.
-    """
-)
+    """)
 
 # Strip markdown code fences from model output
 _FENCE_RE = re.compile(r"```[a-zA-Z0-9_+-]*\n?(.*?)```", re.DOTALL)

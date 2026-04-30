@@ -15,7 +15,6 @@ from scripts.eval.score_aligned_foundations_cross_lane import (
     _format_summary,
 )
 
-
 CANONICAL_CA = (
     "[Cassisivadan/mathematica] predict products under atom conservation.\n"
     "reactants: 2Na + 2H2O\n"

@@ -11,7 +11,6 @@ from src.crypto.sacred_tongue_payload_bijection import (
     prove_bytes_all_tongues,
 )
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 

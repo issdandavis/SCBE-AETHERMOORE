@@ -168,16 +168,14 @@ def test_generate_no_llm_short_circuits():
 def test_safe_apply_rejects_dotgit_paths():
     from scripts.agents.safe_apply import apply_patch_safely
 
-    bad_patch = textwrap.dedent(
-        """\
+    bad_patch = textwrap.dedent("""\
         diff --git a/.git/config b/.git/config
         --- a/.git/config
         +++ b/.git/config
         @@ -1 +1,2 @@
          [core]
         +    evil = true
-        """
-    )
+        """)
     result = apply_patch_safely(bad_patch)
     assert result.ok is False
     assert "forbidden" in result.error
@@ -187,16 +185,14 @@ def test_safe_apply_rejects_dotgit_paths():
 def test_safe_apply_rejects_path_escape():
     from scripts.agents.safe_apply import apply_patch_safely
 
-    escape_patch = textwrap.dedent(
-        """\
+    escape_patch = textwrap.dedent("""\
         diff --git a/../etc/passwd b/../etc/passwd
         --- a/../etc/passwd
         +++ b/../etc/passwd
         @@ -1 +1 @@
         -root
         +pwn
-        """
-    )
+        """)
     result = apply_patch_safely(escape_patch)
     assert result.ok is False
     assert "forbidden" in result.error or "escape" in result.error.lower()
@@ -233,8 +229,7 @@ def test_safe_apply_dry_run_smoke_passes(tmp_path):
     if main_target.exists():
         pytest.skip(f"{rel} already exists; refusing to overwrite")
 
-    patch = textwrap.dedent(
-        f"""\
+    patch = textwrap.dedent(f"""\
         diff --git a/{rel} b/{rel}
         new file mode 100644
         index 0000000..e69de29
@@ -242,8 +237,7 @@ def test_safe_apply_dry_run_smoke_passes(tmp_path):
         +++ b/{rel}
         @@ -0,0 +1 @@
         +scbe_code safe_apply smoke probe
-        """
-    )
+        """)
 
     result = apply_patch_safely(patch, smoke_cmd="python -c \"print('ok')\"", smoke_timeout=30)
 

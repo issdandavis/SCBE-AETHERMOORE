@@ -4,7 +4,6 @@ import importlib.util
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "build_representation_kaleidoscope.py"
 

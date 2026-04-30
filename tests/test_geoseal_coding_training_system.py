@@ -226,8 +226,7 @@ def test_reward_smoke_report_exports_rule_based_rlvr_signal(tmp_path: Path) -> N
 
 def test_summarize_training_log_parses_pretty_completion_json() -> None:
     module = _load_module()
-    summary = module.summarize_training_log(
-        """
+    summary = module.summarize_training_log("""
 {'loss': '0.1773', 'grad_norm': '0.8329', 'learning_rate': '7.018e-07', 'epoch': '1.105'}
 100%|██████████| 180/180 [14:32<00:00,  4.51s/it]
 {
@@ -239,8 +238,7 @@ def test_summarize_training_log_parses_pretty_completion_json() -> None:
     "pushed_adapter": true
   }
 }
-"""
-    )
+""")
 
     assert summary["latest_loss"]["loss"] == 0.1773
     assert summary["progress"]["step"] == 180
