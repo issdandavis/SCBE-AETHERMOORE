@@ -21,7 +21,7 @@
   - The Poincaré-ball governance module and hyperbolic distance metric (`d_H`).
   - Möbius-equivariant transforms under PSU(1,1).
   - The Sacred Tongues weighting system (KO / AV / RU / CA / UM / DR, phi-scaled).
-  - The harmonic wall formula `H(d*, R) = R^((phi * d*)^2)`.
+  - The canonical harmonic wall formula `H(d, pd) = 1/(1 + phi * d_H + 2 * pd)` (the bounded safety score in (0, 1] used at the L12→L13 governance boundary; supersedes the legacy super-exponential cost form `R^((phi * d*)^2)` retained in `src/symphonic_cipher/core/harmonic_scaling_law.py` for back-compat).
 - USPTO provisional patent application **#63/961,403**.
 - Published book *The Six Tongues Protocol* (ASIN **B0GSSFQD9G**), KDP ebook + paperback.
 - All code in the `SCBE-AETHERMOORE` repository at and prior to the anchor commit for the branch `neurogolf/ant-colony-solvers @ 090aa5e8` on 2026-04-20.
