@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """SCBE agentic benchmark ladder — multi-level evaluation, not a single score.
 
-Maps conceptual ladder levels to runnable harness steps. Levels 0–1 and **6** are
+Maps conceptual ladder levels to runnable harness steps. Levels 0–1, **6**, and **7** are
 implemented in-repo; levels 2–5 record deferred targets (SWE-bench, Terminal-Bench,
 GAIA, governance) until adapters are wired.
 
 Level **6** is CLI / GeoSeal *surface readiness* (not model IQ): focused pytest on
 `cli_competitive_benchmark` + npm `geoseal` bin smoke. Full scoring refresh:
 `npm run benchmark:cli`.
+
+Level **7** is SCBE's deployable coding-agent surface readiness: the
+`scripts/agents/scbe_code.py` no-GPU paths plus sandboxed apply tests.
 
 See benchmarks/scbe_agentic_v1/ for the repo-native task format (includes
 `representation_consistency`: pytest for the representation kaleidoscope, not
@@ -54,15 +57,15 @@ def _parse_max_level(query: str) -> int:
     if not raw:
         return 1
     if raw.isdigit():
-        return max(0, min(6, int(raw)))
+        return max(0, min(7, int(raw)))
     if "max_level" in raw:
         m = re.search(r"max_level\s*=\s*(\d+)", raw)
         if m:
-            return max(0, min(6, int(m.group(1))))
+            return max(0, min(7, int(m.group(1))))
         try:
             obj = json.loads(raw)
             if isinstance(obj, dict) and "max_level" in obj:
-                return max(0, min(6, int(obj["max_level"])))
+                return max(0, min(7, int(obj["max_level"])))
         except json.JSONDecodeError:
             pass
     return 1
@@ -283,6 +286,103 @@ def run_level6_cli_readiness(max_level: int) -> dict[str, Any]:
     return out
 
 
+def run_level7_scbe_code_agent(max_level: int) -> dict[str, Any]:
+    """Level 7: deployable SCBE coding-agent surface readiness."""
+
+    out: dict[str, Any] = {
+        "level": 7,
+        "label": "scbe_code_agent_readiness",
+        "summary": (
+            "Measures scripts/agents/scbe_code.py: CA opcode compilation, "
+            "lexicon rendering, stage6 manifest fallback, and sandboxed safe_apply."
+        ),
+        "ok": True,
+        "subtasks": [],
+    }
+    if max_level < 7:
+        out["skipped"] = True
+        return out
+
+    checks: list[tuple[str, list[str], int]] = [
+        (
+            "scbe_code_unit_tests",
+            [sys.executable, "-m", "pytest", "tests/agents/test_scbe_code.py", "-q"],
+            240,
+        ),
+        (
+            "scbe_code_manifest",
+            [sys.executable, "scripts/agents/scbe_code.py", "manifest"],
+            60,
+        ),
+        (
+            "scbe_code_compile_ca",
+            [
+                sys.executable,
+                "scripts/agents/scbe_code.py",
+                "compile-ca",
+                "--opcodes",
+                "0x00",
+                "--target",
+                "python",
+                "--fn",
+                "bench_add",
+                "--args",
+                "a,b",
+                "--json",
+            ],
+            60,
+        ),
+        (
+            "scbe_code_render_op",
+            [
+                sys.executable,
+                "scripts/agents/scbe_code.py",
+                "render-op",
+                "--op",
+                "add",
+                "--target",
+                "KO",
+                "--a",
+                "x",
+                "--b",
+                "y",
+                "--json",
+            ],
+            60,
+        ),
+    ]
+
+    for name, cmd, timeout in checks:
+        code, so, se, elapsed = _run_cmd(
+            cmd, REPO_ROOT, timeout=timeout, env=_env_with_repo_pythonpath()
+        )
+        text = (so or "") + (se or "")
+        ok = code == 0
+        if ok and name == "scbe_code_compile_ca":
+            try:
+                ok = bool(json.loads(so).get("round_trip_ok"))
+            except json.JSONDecodeError:
+                ok = False
+        if ok and name == "scbe_code_render_op":
+            try:
+                ok = json.loads(so).get("rendered") == "(x + y)"
+            except json.JSONDecodeError:
+                ok = False
+        if not ok:
+            out["ok"] = False
+        out["subtasks"].append(
+            {
+                "name": name,
+                "ok": ok,
+                "metrics": _default_metrics(ok, elapsed, 1, text, "artifact"),
+                "command": cmd,
+                "stdout_tail": (so or "")[-2500:],
+                "stderr_tail": (se or "")[-2500:],
+            }
+        )
+    return out
+
+
 def deferred_targets() -> dict[str, Any]:
     """Document external ladder rungs not yet wired in CI."""
     return {
@@ -354,11 +454,12 @@ def rollup_metrics(level_blocks: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def run_ladder(max_level: int) -> dict[str, Any]:
-    max_level = max(0, min(6, max_level))
+    max_level = max(0, min(7, max_level))
     blocks: list[dict[str, Any]] = []
     blocks.append(run_level0_smoke())
     blocks.append(run_level1_tasks(max_level))
     blocks.append(run_level6_cli_readiness(max_level))
+    blocks.append(run_level7_scbe_code_agent(max_level))
 
     ok = all(b.get("ok", True) for b in blocks if not b.get("skipped"))
     return {
@@ -374,6 +475,7 @@ def run_ladder(max_level: int) -> dict[str, Any]:
             "Pass rate alone is insufficient; use metrics_rollup and per-task metrics.",
             "Levels 2–5 require separate adapters (Terminal-Bench, SWE-bench, GAIA/WebArena, governance).",
             "Level 6 is CLI/GeoSeal surface readiness (pytest); full peer scoring: npm run benchmark:cli.",
+            "Level 7 is SCBE deployable coding-agent surface readiness, not frontier-model parity.",
         ],
     }
 
@@ -420,12 +522,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="SCBE agentic benchmark ladder")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_run = sub.add_parser("run", help="Run ladder up to max_level (0–6)")
+    p_run = sub.add_parser("run", help="Run ladder up to max_level (0–7)")
     p_run.add_argument(
         "--max-level",
         type=int,
         default=1,
-        help="Highest ladder level to execute: 0–1 and 6 are implemented; 2–5 deferred (default 1)",
+        help="Highest ladder level to execute: 0–1, 6, and 7 are implemented; 2–5 deferred (default 1)",
     )
     p_run.add_argument(
         "--query",
@@ -445,7 +547,7 @@ def main() -> int:
     if args.command == "list":
         return cmd_list(args)
     if args.command == "run":
-        ml = max(0, min(6, args.max_level))
+        ml = max(0, min(7, args.max_level))
         if args.query:
             ml = _parse_max_level(args.query)
         result = run_ladder(ml)
