@@ -190,6 +190,34 @@ def _attempt_runtime_connect(page) -> Dict[str, Any]:
         return {"attempted": True, "ok": False, "error": str(exc)[:500]}
 
 
+def _attempt_run_all(page) -> Dict[str, Any]:
+    try:
+        clicked = page.evaluate(
+            """
+() => {
+  const candidates = Array.from(document.querySelectorAll(
+    'colab-toolbar-button, [role="button"], button, paper-button, mwc-button'
+  ));
+  const el = candidates.find((node) => {
+    const text = (node.innerText || node.textContent || node.getAttribute('aria-label') || '').trim();
+    return /^run all$/i.test(text) || /run all/i.test(text);
+  });
+  if (!el) {
+    return false;
+  }
+  el.click();
+  return true;
+}
+"""
+        )
+        if not clicked:
+            page.get_by_text("Run all", exact=True).first.click(timeout=8000)
+        page.wait_for_timeout(5000)
+        return {"attempted": True, "ok": True, "method": "run-all-button", "error": ""}
+    except Exception as exc:
+        return {"attempted": True, "ok": False, "error": str(exc)[:500]}
+
+
 def _default_chrome_executable() -> Path | None:
     candidates = [
         Path(os.environ.get("ProgramFiles", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
@@ -349,6 +377,8 @@ def provision_colab_worker(
     timeout_ms: int,
     dry_run: bool,
     connect_runtime: bool = False,
+    run_all: bool = False,
+    post_run_wait_seconds: int = 0,
     parallel_group: str = "",
     shard_index: int = 0,
     shard_count: int = 1,
@@ -401,6 +431,7 @@ def provision_colab_worker(
     screenshot_path = None
     runtime_probe: Dict[str, Any] = {}
     connect_attempt: Dict[str, Any] = {"attempted": False}
+    run_all_attempt: Dict[str, Any] = {"attempted": False}
 
     if not dry_run:
         sync_playwright = _load_sync_playwright()
@@ -420,6 +451,14 @@ def provision_colab_worker(
                 state = _derive_runtime_state(state, runtime_probe)
                 if connect_runtime and state in {"runtime_disconnected", "notebook_open"}:
                     connect_attempt = _attempt_runtime_connect(page)
+                    title = page.title()
+                    current_url = page.url
+                    runtime_probe = _probe_colab_runtime(page)
+                    state = _derive_runtime_state(_state_from_page(current_url, title), runtime_probe)
+                if run_all and state == "runtime_connected":
+                    run_all_attempt = _attempt_run_all(page)
+                    if post_run_wait_seconds > 0:
+                        page.wait_for_timeout(max(0, int(post_run_wait_seconds)) * 1000)
                     title = page.title()
                     current_url = page.url
                     runtime_probe = _probe_colab_runtime(page)
@@ -455,7 +494,7 @@ def provision_colab_worker(
         layer14=layer14,
         proof=[notebook["colab_url"]],
         next_action="Attach workload or authenticate if required.",
-        status="ready" if state == "notebook_open" else "attention",
+        status="ready" if state in {"notebook_open", "runtime_connected"} else "attention",
     )
 
     evidence_proof = [str(artifact_path)]
@@ -498,6 +537,7 @@ def provision_colab_worker(
         "screenshot_path": str(screenshot_path) if screenshot_path is not None else None,
         "runtime_probe": runtime_probe,
         "connect_attempt": connect_attempt,
+        "run_all_attempt": run_all_attempt,
         "packets": {
             "claim": claim_packet["packet_id"],
             "internal": internal_packet["packet_id"],
@@ -535,6 +575,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-headless", dest="headless", action="store_false", help="Launch browser with UI.")
     parser.add_argument("--keep-open", action="store_true", help="Keep the browser open until Enter is pressed.")
     parser.add_argument("--connect-runtime", action="store_true", help="Click Connect when the notebook is authenticated and disconnected.")
+    parser.add_argument("--run-all", action="store_true", help="Click the notebook Run all control after a connected runtime is detected.")
+    parser.add_argument("--post-run-wait-seconds", type=int, default=0, help="Seconds to wait after --run-all before capturing evidence.")
     parser.add_argument("--auth-bootstrap", action="store_true", help="Open normal Chrome visibly with this worker profile for one-time Google sign-in.")
     parser.add_argument("--browser-executable", default="", help="Optional normal Chrome executable path for --auth-bootstrap.")
     parser.add_argument(
@@ -576,6 +618,8 @@ def main(argv: list[str] | None = None) -> int:
         timeout_ms=args.timeout_ms,
         dry_run=bool(args.dry_run),
         connect_runtime=bool(args.connect_runtime),
+        run_all=bool(args.run_all),
+        post_run_wait_seconds=int(args.post_run_wait_seconds),
     )
     print(json.dumps(artifact, indent=2))
     return 0

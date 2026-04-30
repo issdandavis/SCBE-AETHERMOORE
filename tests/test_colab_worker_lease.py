@@ -311,3 +311,55 @@ def test_attempt_runtime_connect_force_clicks_toolbar_fallback() -> None:
         )
         == "auth_required"
     )
+
+
+def test_attempt_run_all_prefers_visible_run_all_button() -> None:
+    calls: list[str] = []
+    waits: list[int] = []
+
+    class FakePage:
+        def evaluate(self, script: str) -> bool:
+            calls.append(script)
+            return True
+
+        def wait_for_timeout(self, delay: int) -> None:
+            waits.append(delay)
+
+    result = worker._attempt_run_all(FakePage())
+
+    assert result["attempted"] is True
+    assert result["ok"] is True
+    assert result["method"] == "run-all-button"
+    assert "run all" in calls[0].lower()
+    assert waits == [5000]
+
+
+def test_attempt_run_all_uses_text_fallback() -> None:
+    clicked: list[dict[str, object]] = []
+
+    class FakeButton:
+        def click(self, timeout: int) -> None:
+            clicked.append({"timeout": timeout})
+
+    class FakeText:
+        @property
+        def first(self) -> FakeButton:
+            return FakeButton()
+
+    class FakePage:
+        def evaluate(self, script: str) -> bool:
+            return False
+
+        def get_by_text(self, text: str, exact: bool) -> FakeText:
+            assert text == "Run all"
+            assert exact is True
+            return FakeText()
+
+        def wait_for_timeout(self, delay: int) -> None:
+            assert delay == 5000
+
+    result = worker._attempt_run_all(FakePage())
+
+    assert result["attempted"] is True
+    assert result["ok"] is True
+    assert clicked == [{"timeout": 8000}]
