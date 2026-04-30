@@ -333,7 +333,8 @@ def test_attempt_run_all_prefers_visible_run_all_button() -> None:
     assert "run all" in calls[0].lower()
     assert "run anyway" in calls[1].lower()
     assert result["warning_dismissed"] is False
-    assert waits == [2500, 5000]
+    assert result["secret_grants"] == 0
+    assert waits == [2500, 5000, 5000, 5000]
 
 
 def test_attempt_run_all_uses_keyboard_fallback() -> None:
@@ -344,7 +345,7 @@ def test_attempt_run_all_uses_keyboard_fallback() -> None:
         def press(self, key: str) -> None:
             keys.append(key)
 
-    class FakeRunAnyway:
+    class FakeButton:
         def click(self, timeout: int) -> None:
             clicked.append({"timeout": timeout})
 
@@ -357,10 +358,10 @@ def test_attempt_run_all_uses_keyboard_fallback() -> None:
             self.calls += 1
             return False
 
-        def get_by_text(self, text: str, exact: bool) -> FakeRunAnyway:
-            assert text == "Run anyway"
+        def get_by_text(self, text: str, exact: bool) -> FakeButton:
+            assert text in {"Run anyway", "Grant access"}
             assert exact is True
-            return FakeRunAnyway()
+            return FakeButton()
 
         def wait_for_timeout(self, delay: int) -> None:
             self.waits.append(delay)
@@ -371,5 +372,6 @@ def test_attempt_run_all_uses_keyboard_fallback() -> None:
     assert result["ok"] is True
     assert result["method"] == "keyboard-control-f9"
     assert result["warning_dismissed"] is True
+    assert result["secret_grants"] == 3
     assert keys == ["Control+F9"]
-    assert clicked == [{"timeout": 8000}]
+    assert clicked == [{"timeout": 8000}, {"timeout": 1500}, {"timeout": 1500}, {"timeout": 1500}]

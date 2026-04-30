@@ -192,6 +192,7 @@ def _attempt_runtime_connect(page) -> Dict[str, Any]:
 
 def _attempt_run_all(page) -> Dict[str, Any]:
     try:
+        secret_grants = 0
         clicked = page.evaluate(
             """
 () => {
@@ -237,13 +238,41 @@ def _attempt_run_all(page) -> Dict[str, Any]:
                 warning_dismissed = True
             except Exception:
                 warning_dismissed = False
-        page.wait_for_timeout(5000)
+        for _ in range(3):
+            page.wait_for_timeout(5000)
+            granted = page.evaluate(
+                """
+() => {
+  const buttons = Array.from(document.querySelectorAll(
+    'button, [role="button"], paper-button, mwc-button'
+  ));
+  const el = buttons.find((node) => {
+    const text = (node.innerText || node.textContent || node.getAttribute('aria-label') || '').trim();
+    return /^grant access$/i.test(text);
+  });
+  if (!el) {
+    return false;
+  }
+  el.click();
+  return true;
+}
+"""
+            )
+            if not granted:
+                try:
+                    page.get_by_text("Grant access", exact=True).click(timeout=1500)
+                    granted = True
+                except Exception:
+                    granted = False
+            if granted:
+                secret_grants += 1
         method = "run-all-button" if clicked else "keyboard-control-f9"
         return {
             "attempted": True,
             "ok": True,
             "method": method,
             "warning_dismissed": bool(warning_dismissed),
+            "secret_grants": secret_grants,
             "error": "",
         }
     except Exception as exc:
