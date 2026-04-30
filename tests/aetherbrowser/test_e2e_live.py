@@ -6,11 +6,29 @@ Run with: PYTHONPATH=. python -m pytest tests/aetherbrowser/test_e2e_live.py -v 
 """
 
 import asyncio
+import glob
 import os
 import sys
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+pytest.importorskip("playwright", reason="playwright not installed in this env")
+
+
+def _chromium_binary_available() -> bool:
+    cache_root = os.path.expanduser("~/.cache/ms-playwright")
+    if not os.path.isdir(cache_root):
+        return False
+    matches = glob.glob(os.path.join(cache_root, "chromium*", "**", "chrome*"), recursive=True)
+    return any(os.path.isfile(p) and os.access(p, os.X_OK) for p in matches)
+
+
+if not _chromium_binary_available():
+    pytest.skip(
+        "Playwright chromium browser binary not installed (run: playwright install chromium)",
+        allow_module_level=True,
+    )
 
 pytestmark = pytest.mark.slow
 
