@@ -29,30 +29,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.governance.stage6_constrained_decoding import score_prompt as _score_prompt  # noqa: E402
+
 
 def _safe_slug(value: str) -> str:
     slug = re.sub(r"[^A-Za-z0-9._-]+", "-", str(value or "").strip())
     return re.sub(r"-+", "-", slug).strip("-.") or "adapter"
-
-
-def _score_prompt(prompt: Dict[str, Any], response: str) -> Dict[str, Any]:
-    body = response or ""
-    body_lower = body.lower()
-    missing_required: List[str] = []
-    for token in prompt.get("required", []) or []:
-        if str(token).lower() not in body_lower:
-            missing_required.append(str(token))
-    triggered_forbidden: List[str] = []
-    for token in prompt.get("forbidden", []) or []:
-        if str(token).lower() in body_lower:
-            triggered_forbidden.append(str(token))
-    ok = (not missing_required) and (not triggered_forbidden)
-    return {
-        "id": prompt.get("id"),
-        "ok": ok,
-        "missing_required": missing_required,
-        "triggered_forbidden": triggered_forbidden,
-    }
 
 
 def _generate(model, tokenizer, user_prompt: str, max_new_tokens: int = 320) -> str:
@@ -63,9 +45,7 @@ def _generate(model, tokenizer, user_prompt: str, max_new_tokens: int = 320) -> 
         },
         {"role": "user", "content": user_prompt},
     ]
-    text = tokenizer.apply_chat_template(
-        msgs, tokenize=False, add_generation_prompt=True
-    )
+    text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
     n_in = inputs["input_ids"].shape[1]
     out = model.generate(
@@ -80,9 +60,7 @@ def _generate(model, tokenizer, user_prompt: str, max_new_tokens: int = 320) -> 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "--adapter", required=True, help="HF repo id or local path of the LoRA"
-    )
+    ap.add_argument("--adapter", required=True, help="HF repo id or local path of the LoRA")
     ap.add_argument("--base", default="Qwen/Qwen2.5-Coder-0.5B-Instruct")
     ap.add_argument(
         "--contract",

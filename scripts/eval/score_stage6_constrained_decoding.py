@@ -11,6 +11,9 @@ continuation only has to avoid the (narrow) forbidden substring list.
 Run against base Qwen2.5-Coder-0.5B-Instruct (no LoRA) by default to isolate
 whether the prefix injection alone clears the gate.
 
+The primitives now live in ``src/governance/stage6_constrained_decoding.py``;
+this module re-exports them for backwards compatibility and provides the CLI.
+
 Usage:
   PYTHONPATH=. python scripts/eval/score_stage6_constrained_decoding.py
   PYTHONPATH=. python scripts/eval/score_stage6_constrained_decoding.py \
@@ -27,144 +30,46 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-
-PREFIX_ORDER: Dict[str, List[str]] = {
-    "resource_jump_cancel": [
-        "transmit_burst",
-        "hex",
-        "semantic",
-        "comms",
-        "steady-state fallback",
-        "momentum",
-        "re-advance",
-    ],
-    "lane_separation": [
-        "queue_drain_guard",
-        "byte",
-        "hex",
-        "semantic",
-        "structural",
-        "material chemistry",
-    ],
-    "hex_trace": [
-        "crc_patch",
-        "byte",
-        "hex",
-        "error-repair",
-        "compute",
-        "hold",
-        "re-advance",
-    ],
-    "cost_propagation": [
-        "sample_soil",
-        "reduce_noise",
-        "send_digest",
-        "power",
-        "compute",
-        "time",
-        "comms",
-        "wear",
-    ],
-    "training_boundary": [
-        "Stage 6",
-        "gated",
-        "command-harmony-v5",
-        "held-out",
-        "pollution",
-    ],
-}
-
-
-SYSTEM_PROMPT = (
-    "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Preserve "
-    "token-to-binary/hex flow across code, semantic overlay, structural "
-    "chemistry frame, and resource-aware workflow composition. Keep material "
-    "chemistry separate from structural chemistry templates, predict resource "
-    "overruns before commit, and use steady-state fallback plus re-advance "
-    "when a launch would exceed budget."
+from src.governance.stage6_constrained_decoding import (  # noqa: E402
+    PREFIX_ORDER,
+    SYSTEM_PROMPT,
+    _build_prefix,
+    _generate_with_prefix,
+    _kind_from_id,
+    _score_prompt,
+    build_prefix,
+    generate_with_prefix,
+    kind_from_id,
+    score_prompt,
+    stage6_constrained_response,
 )
 
-
-def _kind_from_id(prompt_id: str) -> Optional[str]:
-    if not prompt_id:
-        return None
-    for kind in PREFIX_ORDER:
-        if prompt_id.endswith(kind):
-            return kind
-    return None
-
-
-def _build_prefix(kind: str) -> str:
-    tokens = PREFIX_ORDER[kind]
-    rendered = " | ".join(f"`{t}`" if "_" in t else t for t in tokens)
-    return f"required-tokens: {rendered} ::"
-
-
-def _score_prompt(prompt: Dict[str, Any], response: str) -> Dict[str, Any]:
-    body = response or ""
-    body_lower = body.lower()
-    missing_required: List[str] = []
-    for token in prompt.get("required", []) or []:
-        if str(token).lower() not in body_lower:
-            missing_required.append(str(token))
-    triggered_forbidden: List[str] = []
-    for token in prompt.get("forbidden", []) or []:
-        if str(token).lower() in body_lower:
-            triggered_forbidden.append(str(token))
-    ok = (not missing_required) and (not triggered_forbidden)
-    return {
-        "id": prompt.get("id"),
-        "ok": ok,
-        "missing_required": missing_required,
-        "triggered_forbidden": triggered_forbidden,
-    }
-
-
-def _generate_with_prefix(
-    model,
-    tokenizer,
-    user_prompt: str,
-    forced_prefix: str,
-    max_new_tokens: int,
-) -> str:
-    """Apply chat template, append forced prefix to assistant turn, then continue.
-
-    The chat template ends at the assistant turn opener (add_generation_prompt
-    = True). We then append the forced prefix as if the model had already
-    emitted it, and call generate to extend from there. Returned response is
-    forced_prefix + continuation.
-    """
-    msgs = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_prompt},
-    ]
-    text = tokenizer.apply_chat_template(
-        msgs, tokenize=False, add_generation_prompt=True
-    )
-    primed_text = text + forced_prefix + "\n"
-    inputs = tokenizer(primed_text, return_tensors="pt").to(model.device)
-    n_in_chat_only = tokenizer(text, return_tensors="pt")["input_ids"].shape[1]
-    out = model.generate(
-        **inputs,
-        max_new_tokens=max_new_tokens,
-        do_sample=False,
-        temperature=1.0,
-        pad_token_id=tokenizer.eos_token_id,
-    )
-    return tokenizer.decode(out[0][n_in_chat_only:], skip_special_tokens=True)
+__all__ = [
+    "PREFIX_ORDER",
+    "SYSTEM_PROMPT",
+    "_build_prefix",
+    "_generate_with_prefix",
+    "_kind_from_id",
+    "_score_prompt",
+    "build_prefix",
+    "generate_with_prefix",
+    "kind_from_id",
+    "score_prompt",
+    "stage6_constrained_response",
+    "main",
+]
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--base", default="Qwen/Qwen2.5-Coder-0.5B-Instruct")
-    ap.add_argument("--adapter", default=None,
-                    help="Optional LoRA adapter (default: base only)")
+    ap.add_argument("--adapter", default=None, help="Optional LoRA adapter (default: base only)")
     ap.add_argument(
         "--contract",
         default="config/model_training/stage6_atomic_workflow_eval_contract.json",
@@ -197,11 +102,10 @@ def main() -> int:
         tokenizer.pad_token = tokenizer.eos_token
 
     dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-    model = AutoModelForCausalLM.from_pretrained(
-        args.base, torch_dtype=dtype, trust_remote_code=True
-    )
+    model = AutoModelForCausalLM.from_pretrained(args.base, torch_dtype=dtype, trust_remote_code=True)
     if args.adapter:
         from peft import PeftModel  # noqa: E402
+
         model = PeftModel.from_pretrained(model, args.adapter)
     model.eval()
     if torch.cuda.is_available():
@@ -212,23 +116,25 @@ def main() -> int:
     t0 = time.time()
     for prompt in prompts:
         prompt_id = prompt.get("id", "")
-        kind = _kind_from_id(prompt_id)
+        kind = kind_from_id(prompt_id)
         if kind is None:
-            results.append({
-                "id": prompt_id,
-                "ok": False,
-                "missing_required": prompt.get("required", []),
-                "triggered_forbidden": [],
-                "error": f"no kind detected for id {prompt_id!r}",
-                "response": "",
-                "kind": None,
-                "prefix": "",
-            })
+            results.append(
+                {
+                    "id": prompt_id,
+                    "ok": False,
+                    "missing_required": prompt.get("required", []),
+                    "triggered_forbidden": [],
+                    "error": f"no kind detected for id {prompt_id!r}",
+                    "response": "",
+                    "kind": None,
+                    "prefix": "",
+                }
+            )
             continue
-        forced_prefix = _build_prefix(kind)
+        forced_prefix = build_prefix(kind)
         try:
             with torch.no_grad():
-                response = _generate_with_prefix(
+                response = generate_with_prefix(
                     model,
                     tokenizer,
                     prompt.get("prompt", ""),
@@ -236,16 +142,18 @@ def main() -> int:
                     max_new_tokens=args.max_new_tokens,
                 )
         except Exception as exc:  # noqa: BLE001
-            results.append({
-                "id": prompt_id,
-                "ok": False,
-                "error": str(exc),
-                "response": "",
-                "kind": kind,
-                "prefix": forced_prefix,
-            })
+            results.append(
+                {
+                    "id": prompt_id,
+                    "ok": False,
+                    "error": str(exc),
+                    "response": "",
+                    "kind": kind,
+                    "prefix": forced_prefix,
+                }
+            )
             continue
-        diag = _score_prompt(prompt, response)
+        diag = score_prompt(prompt, response)
         diag["response"] = response[:1500]
         diag["kind"] = kind
         diag["prefix"] = forced_prefix
