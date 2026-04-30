@@ -22,14 +22,14 @@
     ]
   },
   "training": {
-    "max_seq_length": 4096,
+    "max_seq_length": 1536,
     "lora_rank": 32,
     "lora_alpha": 64,
     "lora_dropout": 0.05,
     "learning_rate": 0.0002,
     "num_train_epochs": 1,
-    "batch_size": 2,
-    "gradient_accumulation_steps": 8,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
     "warmup_ratio": 0.05,
     "max_steps": -1,
     "packing": true,
