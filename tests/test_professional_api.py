@@ -436,9 +436,10 @@ class TestErrorHandling:
         """Test error responses have consistent format."""
         response = client.get("/metrics")  # Missing auth
 
-        assert response.status_code == 422
+        assert response.status_code == 401
         data = response.json()
-        assert "detail" in data  # FastAPI validation error format
+        assert data["status"] == "error"
+        assert "error" in data
 
     def test_404_handling(self, client):
         """Test 404 for non-existent endpoints."""
