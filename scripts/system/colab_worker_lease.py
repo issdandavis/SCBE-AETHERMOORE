@@ -135,13 +135,18 @@ def _probe_colab_runtime(page) -> Dict[str, Any]:
     const lowered = text.toLowerCase();
     return lowered === 'sign in' || lowered.includes('sign in');
   });
+  const bodyText = (document.body ? (document.body.innerText || document.body.textContent || '') : '');
+  const bodyHasConnect = /(^|\\s)connect(\\s|$)/i.test(bodyText);
+  const connectedTextVisible = /connected to|t4 \\(python 3\\)|ram\\s+disk/i.test(bodyText);
   return {
     notebook_loaded: document.querySelectorAll('.cell').length > 0,
-    usage_visible: !!usage,
+    usage_visible: !!usage || connectedTextVisible,
     usage_text: usage ? (usage.innerText || usage.textContent || '').trim().slice(0, 240) : '',
     machine_type: machine ? (machine.innerText || machine.textContent || '').trim().slice(0, 120) : '',
-    connect_button_visible: connectVisible,
+    connect_button_visible: connectVisible || bodyHasConnect,
     sign_in_button_visible: signInVisible,
+    body_has_connect: bodyHasConnect,
+    connected_text_visible: connectedTextVisible,
     button_samples: controls.slice(0, 12),
   };
 }
@@ -156,16 +161,31 @@ def _derive_runtime_state(base_state: str, runtime_probe: Dict[str, Any]) -> str
         return "auth_required"
     if runtime_probe.get("usage_visible"):
         return "runtime_connected"
-    if runtime_probe.get("connect_button_visible"):
+    if runtime_probe.get("connect_button_visible") or runtime_probe.get("body_has_connect"):
         return "runtime_disconnected"
     return base_state
 
 
 def _attempt_runtime_connect(page) -> Dict[str, Any]:
     try:
-        page.get_by_text("Connect", exact=True).first.click(timeout=8000)
+        clicked = page.evaluate(
+            """
+() => {
+  const el = document.querySelector('colab-toolbar-button#connect')
+    || Array.from(document.querySelectorAll('colab-toolbar-button, [role="button"], button'))
+      .find((node) => /connect/i.test(node.innerText || node.textContent || node.getAttribute('aria-label') || ''));
+  if (!el) {
+    return false;
+  }
+  el.click();
+  return true;
+}
+"""
+        )
+        if not clicked:
+            page.locator("colab-toolbar-button#connect").click(timeout=8000, force=True)
         page.wait_for_timeout(12000)
-        return {"attempted": True, "ok": True, "error": ""}
+        return {"attempted": True, "ok": True, "method": "colab-toolbar-button", "error": ""}
     except Exception as exc:
         return {"attempted": True, "ok": False, "error": str(exc)[:500]}
 
@@ -398,7 +418,7 @@ def provision_colab_worker(
                 state = _state_from_page(current_url, title)
                 runtime_probe = _probe_colab_runtime(page)
                 state = _derive_runtime_state(state, runtime_probe)
-                if connect_runtime and state == "runtime_disconnected":
+                if connect_runtime and state in {"runtime_disconnected", "notebook_open"}:
                     connect_attempt = _attempt_runtime_connect(page)
                     title = page.title()
                     current_url = page.url

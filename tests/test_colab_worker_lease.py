@@ -189,6 +189,7 @@ def test_derive_runtime_state_detects_connected_and_disconnected() -> None:
             {
                 "usage_visible": True,
                 "connect_button_visible": False,
+                "connected_text_visible": True,
             },
         )
         == "runtime_connected"
@@ -200,6 +201,19 @@ def test_derive_runtime_state_detects_connected_and_disconnected() -> None:
                 "usage_visible": False,
                 "connect_button_visible": True,
                 "sign_in_button_visible": False,
+                "body_has_connect": False,
+            },
+        )
+        == "runtime_disconnected"
+    )
+    assert (
+        worker._derive_runtime_state(
+            "notebook_open",
+            {
+                "usage_visible": False,
+                "connect_button_visible": False,
+                "sign_in_button_visible": False,
+                "body_has_connect": True,
             },
         )
         == "runtime_disconnected"
@@ -242,6 +256,50 @@ def test_open_auth_bootstrap_launches_visible_chrome(tmp_path: Path, monkeypatch
     assert calls[0][0] == str(chrome)
     assert any(arg.startswith("--user-data-dir=") for arg in calls[0])
     assert "--new-window" in calls[0]
+
+
+def test_attempt_runtime_connect_prefers_colab_toolbar_button() -> None:
+    calls: list[str] = []
+
+    class FakePage:
+        def evaluate(self, script: str) -> bool:
+            calls.append(script)
+            return True
+
+        def wait_for_timeout(self, delay: int) -> None:
+            assert delay == 12000
+
+    result = worker._attempt_runtime_connect(FakePage())
+
+    assert result["attempted"] is True
+    assert result["ok"] is True
+    assert result["method"] == "colab-toolbar-button"
+    assert "colab-toolbar-button#connect" in calls[0]
+
+
+def test_attempt_runtime_connect_force_clicks_toolbar_fallback() -> None:
+    clicked: list[dict[str, object]] = []
+
+    class FakeLocator:
+        def click(self, timeout: int, force: bool) -> None:
+            clicked.append({"timeout": timeout, "force": force})
+
+    class FakePage:
+        def evaluate(self, script: str) -> bool:
+            return False
+
+        def locator(self, selector: str) -> FakeLocator:
+            assert selector == "colab-toolbar-button#connect"
+            return FakeLocator()
+
+        def wait_for_timeout(self, delay: int) -> None:
+            assert delay == 12000
+
+    result = worker._attempt_runtime_connect(FakePage())
+
+    assert result["attempted"] is True
+    assert result["ok"] is True
+    assert clicked == [{"timeout": 8000, "force": True}]
     assert (
         worker._derive_runtime_state(
             "auth_required",
