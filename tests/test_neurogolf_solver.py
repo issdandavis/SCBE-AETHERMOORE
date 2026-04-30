@@ -4,11 +4,18 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from neurogolf.arc_io import load_arc_task
 from neurogolf.family_lattice import task_topology
 from neurogolf.move_family import prefilter_moves, solve_by_move_algebra
 from neurogolf.solver import execute_program, synthesize_program
+
+
+def load_external_arc_task_or_skip(task_path: Path):
+    if not task_path.exists():
+        pytest.skip(f"external ARC artifact not available: {task_path}")
+    return load_arc_task(task_path)
 
 
 def test_synthesize_color_remap_program(tmp_path):
@@ -439,7 +446,7 @@ def test_synthesize_connect_aligned_pairs_program(tmp_path):
 
 def test_eval_regression_connect_aligned_pairs_070dd51e():
     task_path = Path("artifacts/arc-data/ARC-AGI-master/data/evaluation/070dd51e.json")
-    task = load_arc_task(task_path)
+    task = load_external_arc_task_or_skip(task_path)
     expected = json.loads(task_path.read_text(encoding="utf-8"))["test"][0]["output"]
     solution = synthesize_program(task)
 
@@ -506,7 +513,7 @@ def test_synthesize_corner_legend_row_swap_program(tmp_path):
 
 def test_eval_regression_corner_legend_row_swap_0becf7df():
     task_path = Path("artifacts/arc-data/ARC-AGI-master/data/evaluation/0becf7df.json")
-    task = load_arc_task(task_path)
+    task = load_external_arc_task_or_skip(task_path)
     expected = json.loads(task_path.read_text(encoding="utf-8"))["test"][0]["output"]
     solution = synthesize_program(task)
 
@@ -586,7 +593,7 @@ def test_synthesize_panel_consensus_tile_program(tmp_path):
 
 def test_eval_regression_panel_consensus_tile_0607ce86():
     task_path = Path("artifacts/arc-data/ARC-AGI-master/data/evaluation/0607ce86.json")
-    task = load_arc_task(task_path)
+    task = load_external_arc_task_or_skip(task_path)
     expected = json.loads(task_path.read_text(encoding="utf-8"))["test"][0]["output"]
     solution = synthesize_program(task)
 
@@ -638,7 +645,7 @@ def test_synthesize_select_unique_object_crop_program(tmp_path):
 
 def test_eval_regression_select_unique_object_crop_cd3c21df():
     task_path = Path("artifacts/arc-data/ARC-AGI-master/data/evaluation/cd3c21df.json")
-    task = load_arc_task(task_path)
+    task = load_external_arc_task_or_skip(task_path)
     expected = json.loads(task_path.read_text(encoding="utf-8"))["test"][0]["output"]
     solution = synthesize_program(task)
 
