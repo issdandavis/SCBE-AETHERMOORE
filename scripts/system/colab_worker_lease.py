@@ -231,6 +231,12 @@ def _attempt_run_all(page) -> Dict[str, Any]:
 }
 """
         )
+        if not warning_dismissed:
+            try:
+                page.get_by_text("Run anyway", exact=True).click(timeout=8000)
+                warning_dismissed = True
+            except Exception:
+                warning_dismissed = False
         page.wait_for_timeout(5000)
         method = "run-all-button" if clicked else "keyboard-control-f9"
         return {
