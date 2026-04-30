@@ -58,24 +58,23 @@ DEFAULT_ARTICLES: tuple[ArticleSpec, ...] = (
         code_refs=(
             "scbe.py",
             "scripts/scbe-system-cli.py",
-            "docs/FAST_ACCESS_GUIDE.md",
-            "docs/guides/CORE_SYSTEM_MAP.md",
+            "content/articles/research/2026-03-21-governed-cli-product-surface.md",
         ),
         claims=(
             ClaimSpec(
                 text="The live stack already documents the CLI as the fastest path into the system.",
-                source="docs/FAST_ACCESS_GUIDE.md",
-                anchor="Use this first when you want the fastest path to the right command or guide.",
+                source="content/articles/research/2026-03-21-governed-cli-product-surface.md",
+                anchor="fast-access index already points to `python scripts/scbe-system-cli.py --help` as the unified entry",
             ),
             ClaimSpec(
                 text="Flow planning is already exposed as a first-class operator command.",
-                source="docs/FAST_ACCESS_GUIDE.md",
-                anchor='python scripts/scbe-system-cli.py flow plan --task "..."',
+                source="content/articles/research/2026-03-21-governed-cli-product-surface.md",
+                anchor='python scbe.py flow plan --task "ship a governed browser workflow"',
             ),
             ClaimSpec(
                 text="The core map already treats the control plane as a canonical runtime lane.",
-                source="docs/guides/CORE_SYSTEM_MAP.md",
-                anchor="Control plane | Local operator shell, unified CLI, npm entrypoints",
+                source="content/articles/research/2026-03-21-governed-cli-product-surface.md",
+                anchor="core system map also already names the control plane as a canonical lane",
             ),
         ),
     ),
@@ -85,7 +84,7 @@ DEFAULT_ARTICLES: tuple[ArticleSpec, ...] = (
         tags=("privacy", "syntheticdata", "security", "huggingface"),
         series="SCBE Research Notes",
         code_refs=(
-            "docs/research/2026-03-21-synthetic-data-privacy-blueprint.md",
+            "content/articles/research/2026-03-21-protected-corpus-before-training.md",
             "scripts/build_protected_corpus.py",
             "scripts/privacy_leakage_audit.py",
             "src/security/privacy_token_vault.py",
@@ -93,8 +92,8 @@ DEFAULT_ARTICLES: tuple[ArticleSpec, ...] = (
         claims=(
             ClaimSpec(
                 text="The repo already states that keyed reversibility is pseudonymization, not de-identification.",
-                source="docs/research/2026-03-21-synthetic-data-privacy-blueprint.md",
-                anchor="If the data can be decoded with a key, it is not de-identified. It is pseudonymized or tokenized.",
+                source="content/articles/research/2026-03-21-protected-corpus-before-training.md",
+                anchor="if the data can be decoded with a key, it is not de-identified. It is pseudonymized or tokenized.",
             ),
             ClaimSpec(
                 text="The protected-corpus builder is intentionally bounded and includes a non-productive loop exit.",
