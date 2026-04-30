@@ -334,26 +334,18 @@ def test_attempt_run_all_prefers_visible_run_all_button() -> None:
     assert waits == [5000]
 
 
-def test_attempt_run_all_uses_text_fallback() -> None:
-    clicked: list[dict[str, object]] = []
+def test_attempt_run_all_uses_keyboard_fallback() -> None:
+    keys: list[str] = []
 
-    class FakeButton:
-        def click(self, timeout: int) -> None:
-            clicked.append({"timeout": timeout})
-
-    class FakeText:
-        @property
-        def first(self) -> FakeButton:
-            return FakeButton()
+    class FakeKeyboard:
+        def press(self, key: str) -> None:
+            keys.append(key)
 
     class FakePage:
+        keyboard = FakeKeyboard()
+
         def evaluate(self, script: str) -> bool:
             return False
-
-        def get_by_text(self, text: str, exact: bool) -> FakeText:
-            assert text == "Run all"
-            assert exact is True
-            return FakeText()
 
         def wait_for_timeout(self, delay: int) -> None:
             assert delay == 5000
@@ -362,4 +354,5 @@ def test_attempt_run_all_uses_text_fallback() -> None:
 
     assert result["attempted"] is True
     assert result["ok"] is True
-    assert clicked == [{"timeout": 8000}]
+    assert result["method"] == "keyboard-control-f9"
+    assert keys == ["Control+F9"]

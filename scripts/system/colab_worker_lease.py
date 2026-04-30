@@ -211,9 +211,10 @@ def _attempt_run_all(page) -> Dict[str, Any]:
 """
         )
         if not clicked:
-            page.get_by_text("Run all", exact=True).first.click(timeout=8000)
+            page.keyboard.press("Control+F9")
         page.wait_for_timeout(5000)
-        return {"attempted": True, "ok": True, "method": "run-all-button", "error": ""}
+        method = "run-all-button" if clicked else "keyboard-control-f9"
+        return {"attempted": True, "ok": True, "method": method, "error": ""}
     except Exception as exc:
         return {"attempted": True, "ok": False, "error": str(exc)[:500]}
 
