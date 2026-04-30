@@ -507,6 +507,7 @@ def build_packet(
     flavor: str | None = None,
     timeout: str | None = None,
     smoke: bool = False,
+    backend: str = "cli-file",
 ) -> dict[str, Any]:
     _load_env_file()
     profile = _load_profile(profile_path)
@@ -556,6 +557,7 @@ def build_packet(
         "hf": {
             "flavor": selected_flavor,
             "timeout": selected_timeout,
+            "backend": backend,
             "cli": shutil.which("hf") or "",
             "token_present": bool(
                 os.environ.get(
@@ -644,34 +646,60 @@ def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def dispatch_packet(packet: dict[str, Any]) -> dict[str, Any]:
-    if not packet["hf"]["cli"]:
+    backend = str((packet.get("hf") or {}).get("backend", "cli-file"))
+    if backend == "cli-file" and not packet["hf"]["cli"]:
         raise RuntimeError("hf CLI is not available")
     if not packet["hf"]["token_present"]:
         raise RuntimeError("HF token is not available in the configured environment")
     profile = _load_profile(Path(packet["profile_path"]))
     uploads = upload_training_dataset(profile)
-    result = subprocess.run(
-        packet["command"],
-        cwd=str(REPO_ROOT),
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    stdout = result.stdout.strip()
-    stderr = result.stderr.strip()
-    job_id = ""
-    match = re.search(
-        r"(?:Job ID|ID|job)[^A-Za-z0-9_-]*([A-Za-z0-9_-]{8,})",
-        stdout + "\n" + stderr,
-        re.IGNORECASE,
-    )
-    if match:
-        job_id = match.group(1)
+    if backend == "api-inline":
+        from huggingface_hub import HfApi
+
+        token_env = str((profile.get("hub") or {}).get("token_env", "HF_TOKEN"))
+        token = os.environ.get(token_env, "").strip()
+        api = HfApi(token=token)
+        job = api.run_uv_job(
+            Path(packet["script_path"]).read_text(encoding="utf-8"),
+            env={
+                "PYTHONIOENCODING": "utf-8",
+                "PYTHONUNBUFFERED": "1",
+                "PYTHONUTF8": "1",
+            },
+            secrets={"HF_TOKEN": token},
+            flavor=str(packet["hf"]["flavor"]),
+            timeout=str(packet["hf"]["timeout"]),
+        )
+        stdout = f"Job started with ID: {job.id}\nView at: {job.url}"
+        stderr = ""
+        returncode = 0
+        job_id = str(job.id)
+    elif backend == "cli-file":
+        result = subprocess.run(
+            packet["command"],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        stdout = result.stdout.strip()
+        stderr = result.stderr.strip()
+        returncode = result.returncode
+        job_id = ""
+        match = re.search(
+            r"(?:Job ID|ID|job)[^A-Za-z0-9_-]*([A-Za-z0-9_-]{8,})",
+            stdout + "\n" + stderr,
+            re.IGNORECASE,
+        )
+        if match:
+            job_id = match.group(1)
+    else:
+        raise ValueError(f"unsupported dispatch backend: {backend}")
     updated = {
         **packet,
-        "dispatched": result.returncode == 0,
+        "dispatched": returncode == 0,
         "dispatch": {
-            "returncode": result.returncode,
+            "returncode": returncode,
             "stdout": stdout[-4000:],
             "stderr": stderr[-4000:],
             "job_id": job_id,
@@ -695,6 +723,12 @@ def main() -> int:
             "--smoke",
             action="store_true",
             help="Run a tiny no-push HF job first to validate dependencies, auth, model load, data load, and one train step.",
+        )
+        item.add_argument(
+            "--backend",
+            choices=["cli-file", "api-inline"],
+            default="cli-file",
+            help="HF Jobs dispatch backend. api-inline avoids the CLI's local-file encoding wrapper.",
         )
         item.add_argument("--json", action="store_true")
     status = sub.add_parser("status")
@@ -721,6 +755,7 @@ def main() -> int:
             flavor=args.flavor or None,
             timeout=args.timeout or None,
             smoke=bool(args.smoke),
+            backend=args.backend,
         )
         payload = dispatch_packet(packet) if args.command == "dispatch" else packet
 

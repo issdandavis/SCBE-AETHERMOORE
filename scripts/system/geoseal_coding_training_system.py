@@ -128,6 +128,41 @@ def summarize_training_log(text: str) -> dict[str, Any]:
     }
 
 
+def assess_job_health(inspect_summary: dict[str, Any], logs_payload: dict[str, Any] | None) -> dict[str, Any]:
+    """Classify common HF Jobs failure modes before a full train is launched."""
+    stage = str(inspect_summary.get("stage") or "").upper()
+    tail = str((logs_payload or {}).get("tail") or "").strip()
+    logs_returncode = (logs_payload or {}).get("returncode")
+    summary = (logs_payload or {}).get("summary") or {}
+    has_training_signal = bool(
+        tail
+        or (isinstance(summary, dict) and (summary.get("latest_loss") or summary.get("progress") or summary.get("training_complete")))
+    )
+    if stage == "RUNNING" and logs_payload is not None and not has_training_signal and logs_returncode == 0:
+        return {
+            "state": "running_without_logs",
+            "safe_for_full_train": False,
+            "recommendation": "cancel this smoke job and do not launch a full training run until a smoke job emits startup/train logs",
+        }
+    if stage in {"FAILED", "CANCELED", "ERROR"}:
+        return {
+            "state": stage.lower(),
+            "safe_for_full_train": False,
+            "recommendation": "inspect the failed smoke job before launching another training run",
+        }
+    if stage in {"COMPLETED", "SUCCEEDED"}:
+        return {
+            "state": "completed",
+            "safe_for_full_train": True,
+            "recommendation": "full training can be launched if the smoke eval gate also passes",
+        }
+    return {
+        "state": stage.lower() or "unknown",
+        "safe_for_full_train": False,
+        "recommendation": "wait for startup/train logs or a terminal job state before spending on full training",
+    }
+
+
 def list_profiles(manifest: dict[str, Any]) -> dict[str, Any]:
     rows = []
     for entry in profile_entries(manifest):
@@ -155,6 +190,7 @@ def plan_or_dispatch(
     flavor: str,
     timeout: str,
     smoke: bool = False,
+    backend: str = "cli-file",
 ) -> dict[str, Any]:
     resolved = resolve_profile(manifest, profile_id)
     dispatcher = _dispatcher_module()
@@ -164,6 +200,7 @@ def plan_or_dispatch(
         flavor=flavor or None,
         timeout=timeout or None,
         smoke=smoke,
+        backend=backend,
     )
     if dispatch:
         packet = dispatcher.dispatch_packet(packet)
@@ -212,6 +249,7 @@ def status(manifest: dict[str, Any], profile_id: str | None, job_id: str | None,
                 "tail": combined[-12000:],
                 "summary": summarize_training_log(combined),
             }
+        payload["health"] = assess_job_health(inspect_summary, payload.get("logs"))
     return payload
 
 
@@ -551,6 +589,12 @@ def main() -> int:
             action="store_true",
             help="Use the tiny no-push HF smoke profile before spending on a full train.",
         )
+        item.add_argument(
+            "--backend",
+            choices=["cli-file", "api-inline"],
+            default="cli-file",
+            help="HF Jobs dispatch backend.",
+        )
     status_parser = sub.add_parser("status")
     status_parser.add_argument("--profile-id", default="")
     status_parser.add_argument("--job-id", default="")
@@ -579,6 +623,7 @@ def main() -> int:
             flavor=args.flavor,
             timeout=args.timeout,
             smoke=bool(args.smoke),
+            backend=args.backend,
         )
     elif args.command == "dispatch":
         payload = plan_or_dispatch(
@@ -588,6 +633,7 @@ def main() -> int:
             flavor=args.flavor,
             timeout=args.timeout,
             smoke=bool(args.smoke),
+            backend=args.backend,
         )
     elif args.command == "status":
         payload = status(manifest, args.profile_id or None, args.job_id or None, args.logs)

@@ -132,6 +132,7 @@ def test_dispatch_smoke_profile_is_tiny_no_push_and_unbuffered(tmp_path: Path) -
 
     assert packet["smoke"] is True
     assert packet["profile_id"].endswith("-smoke")
+    assert packet["hf"]["backend"] == "cli-file"
     assert "PYTHONUNBUFFERED=1" in packet["command"]
     assert '"max_steps": 1' in script
     assert '"max_train_records": 24' in script
@@ -152,12 +153,14 @@ def test_geoseal_training_plan_can_request_smoke_profile(tmp_path: Path, monkeyp
         flavor="l4x1",
         timeout="30m",
         smoke=True,
+        backend="api-inline",
     )
 
     assert packet["smoke"] is True
     assert packet["profile_id"].endswith("-smoke")
     assert packet["hf"]["flavor"] == "l4x1"
     assert packet["hf"]["timeout"] == "30m"
+    assert packet["hf"]["backend"] == "api-inline"
 
 
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
@@ -319,6 +322,19 @@ def test_summarize_training_log_parses_pretty_completion_json() -> None:
     assert summary["progress"]["step"] == 180
     assert summary["training_complete"]["global_step"] == 180
     assert summary["training_complete"]["pushed_adapter"] is True
+
+
+def test_assess_job_health_blocks_running_job_without_logs() -> None:
+    module = _load_module()
+
+    health = module.assess_job_health(
+        {"stage": "RUNNING", "flavor": "l4x1"},
+        {"returncode": 0, "tail": "", "summary": {"latest_loss": None, "progress": None, "training_complete": None}},
+    )
+
+    assert health["state"] == "running_without_logs"
+    assert health["safe_for_full_train"] is False
+    assert "do not launch a full training run" in health["recommendation"]
 
 
 def test_render_smoke_eval_script_scores_geoseal_gates(tmp_path: Path, monkeypatch) -> None:
