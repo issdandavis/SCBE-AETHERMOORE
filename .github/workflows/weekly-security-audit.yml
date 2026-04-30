@@ -26,6 +26,7 @@ jobs:
       - name: Run npm audit
         id: npm_audit
         run: |
+          # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
           set +e
           npm audit --json > npm-audit.json 2>&1
           AUDIT_EXIT=$?
@@ -93,6 +94,7 @@ jobs:
       - name: Run pip-audit
         id: pip_audit
         run: |
+          # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
           set +e
           pip-audit --format json --output pip-audit.json
           AUDIT_EXIT=$?
@@ -121,6 +123,7 @@ jobs:
         with:
           name: npm-audit-report
           path: ./reports
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
 
       - name: Download pip audit
@@ -128,6 +131,7 @@ jobs:
         with:
           name: pip-audit-report
           path: ./reports
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
 
       - name: Check for critical vulnerabilities

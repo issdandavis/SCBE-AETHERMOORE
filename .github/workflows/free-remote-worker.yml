@@ -120,6 +120,7 @@ jobs:
         shell: bash
         run: |
           set -u
+          # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
           set +e
           set -o pipefail
           mkdir -p "${ARTIFACT_ROOT}"

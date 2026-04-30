@@ -91,6 +91,7 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         with:
           file: ./coverage.xml
