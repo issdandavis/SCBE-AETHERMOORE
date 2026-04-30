@@ -3787,7 +3787,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args, extra_args = parser.parse_known_args(argv)
+    if extra_args:
+        if hasattr(args, "args") and isinstance(args.args, list):
+            args.args.extend(extra_args)
+        else:
+            parser.error(f"unrecognized arguments: {' '.join(extra_args)}")
     return args.func(args)
 
 
