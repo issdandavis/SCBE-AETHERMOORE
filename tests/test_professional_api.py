@@ -172,7 +172,7 @@ class TestAPIEndpoints:
         """Test /metrics requires authentication."""
         # Without auth
         response = client.get("/metrics")
-        assert response.status_code == 422
+        assert response.status_code == 401
 
         # With auth
         response = client.get("/metrics", headers=auth_headers)
@@ -277,7 +277,7 @@ class TestAuthentication:
     def test_missing_api_key_rejected(self, client):
         """Test missing API key is rejected."""
         response = client.get("/metrics")
-        assert response.status_code == 422  # Missing required header
+        assert response.status_code == 401
 
 
 # =============================================================================
