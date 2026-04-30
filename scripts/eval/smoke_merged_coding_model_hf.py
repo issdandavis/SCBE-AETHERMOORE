@@ -4,7 +4,8 @@
 #   "transformers>=4.46.0",
 #   "huggingface_hub>=0.25.0",
 #   "accelerate>=0.34.0",
-#   "safetensors"
+#   "safetensors",
+#   "peft>=0.12.0"
 # ]
 # ///
 """HF Jobs smoke test for the merged SCBE coding model.
@@ -25,6 +26,7 @@ from typing import Any
 
 
 DEFAULT_MODEL = "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1"
+DEFAULT_BASE_MODEL = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
 torch: Any = None
 
 
@@ -109,6 +111,7 @@ def _compile_and_run(code: str, fn_name: str, tests: tuple[tuple[tuple[Any, ...]
             "dict": dict,
             "enumerate": enumerate,
             "int": int,
+            "isinstance": isinstance,
             "len": len,
             "list": list,
             "max": max,
@@ -155,9 +158,10 @@ def main() -> int:
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     torch = torch_module
-    model_id = os.environ.get("SCBE_SMOKE_MODEL", DEFAULT_MODEL)
+    adapter_id = os.environ.get("SCBE_SMOKE_ADAPTER", "").strip()
+    model_id = os.environ.get("SCBE_SMOKE_MODEL", DEFAULT_BASE_MODEL if adapter_id else DEFAULT_MODEL)
     token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN") or None
-    _json_event("load_start", model_id=model_id)
+    _json_event("load_start", model_id=model_id, adapter_id=adapter_id or None)
     started = time.time()
     tokenizer = AutoTokenizer.from_pretrained(model_id, token=token, trust_remote_code=True)
     if tokenizer.pad_token_id is None:
@@ -170,10 +174,15 @@ def main() -> int:
         device_map="auto" if torch.cuda.is_available() else None,
         trust_remote_code=True,
     )
+    if adapter_id:
+        from peft import PeftModel
+
+        model = PeftModel.from_pretrained(model, adapter_id, token=token)
     model.eval()
     _json_event(
         "load_complete",
         model_id=model_id,
+        adapter_id=adapter_id or None,
         seconds=round(time.time() - started, 2),
         cuda=torch.cuda.is_available(),
         dtype=str(dtype),
@@ -218,6 +227,7 @@ def main() -> int:
     summary = {
         "schema_version": "scbe_merged_coding_model_smoke_v1",
         "model_id": model_id,
+        "adapter_id": adapter_id or None,
         "ok": all(row["ok"] for row in all_rows),
         "passed": sum(1 for row in all_rows if row["ok"]),
         "total": len(all_rows),
