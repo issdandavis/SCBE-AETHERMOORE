@@ -52,7 +52,6 @@ jobs:
 
       - name: Run Layer 11 coherence check
         id: coherence
-        continue-on-error: true
         run: |
           if [ ! -f scripts/coherence-check.py ]; then
             echo "coherence-check.py not found, generating fallback report"

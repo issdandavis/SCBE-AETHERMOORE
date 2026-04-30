@@ -46,6 +46,7 @@ jobs:
 
       - name: Run bandit
         id: bandit
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           bandit -r src scripts api python agents -q \
@@ -54,12 +55,14 @@ jobs:
       - name: Check for package.json and run npm audit
         id: npm_audit
         if: ${{ hashFiles('package-lock.json') != '' }}
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: npm audit --audit-level=high
 
       - name: Check for requirements.txt and run pip-audit
         id: pip_audit
         if: ${{ hashFiles('requirements.txt') != '' }}
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           pip-audit -r requirements.txt

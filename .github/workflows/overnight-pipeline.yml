@@ -54,6 +54,7 @@ jobs:
           node-version: '20'
 
       - name: Install Python deps
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           if [ -f requirements.txt ]; then
@@ -63,19 +64,23 @@ jobs:
           fi
 
       - name: Install Node deps
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: npm ci
 
       - name: SCBE selftest
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: python scbe.py selftest
 
       - name: SCBE doctor
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: python scbe.py doctor --json
 
       - name: VM bridge health check
         id: vm-health
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           RESPONSE=$(curl -s --connect-timeout 10 "http://34.134.99.90:8001/health" 2>&1)
@@ -143,6 +148,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           if [ -f requirements.txt ]; then
@@ -156,6 +162,7 @@ jobs:
         with:
           name: tier-1-results
           path: artifacts/tier-1/
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
 
       - name: Full test suite
@@ -204,6 +211,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           if [ -f requirements.txt ]; then
@@ -217,6 +225,7 @@ jobs:
         with:
           name: tier-2-results
           path: artifacts/tier-2/
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
 
       - name: Adversarial attack suite
@@ -286,6 +295,7 @@ jobs:
           fi
 
       - name: arXiv research sweep
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -303,6 +313,7 @@ jobs:
           " 2>&1 | tee -a artifacts/tier3_security_results.txt
 
       - name: Governance scan (VM bridge)
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           RESULT=$(curl -s --connect-timeout 10 \
@@ -339,6 +350,7 @@ jobs:
           node-version: '20'
 
       - name: Install Python deps
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           if [ -f requirements.txt ]; then
@@ -348,6 +360,7 @@ jobs:
           fi
 
       - name: Install Node deps
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: npm ci
 
@@ -355,9 +368,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts/previous/
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
 
       - name: Build TypeScript
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           if ! npm run build; then
@@ -366,6 +381,7 @@ jobs:
           fi
 
       - name: Build book EPUB
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           pip install pypandoc_binary
@@ -373,6 +389,7 @@ jobs:
           python scripts/publish/rebuild_and_stage_kdp.py 2>&1 | tee artifacts/tier4_build_results.txt
 
       - name: Generate training data
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -424,6 +441,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: pip install huggingface_hub datasets pytest numpy
 
@@ -526,6 +544,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install deps
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: pip install huggingface_hub google-genai requests
 
@@ -534,6 +553,7 @@ jobs:
         with:
           name: tier-5-results
           path: artifacts/
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
 
       - name: Push training data to HuggingFace

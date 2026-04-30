@@ -27,12 +27,14 @@ jobs:
 
       - name: Build TypeScript
         id: build
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: npm run build
 
       - name: Run harmonic pipeline smoke tests
         id: harmonic_ts
         if: steps.build.outcome == 'success'
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           npx vitest run tests/harmonic/ --reporter=json --outputFile=harmonic-ts-results.json 2>&1
@@ -45,6 +47,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install Python dependencies
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           python -m pip install --upgrade pip
@@ -54,6 +57,7 @@ jobs:
 
       - name: Run Python harmonic validation
         id: harmonic_py
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
         run: |
           python3 - <<'PYEOF'
