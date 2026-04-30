@@ -54,7 +54,9 @@ jobs:
         run: |
           pip install playwright fastapi uvicorn pydantic huggingface_hub
           python -m playwright install chromium
-          pip install -r requirements.txt 2>/dev/null || true
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
       - name: Determine task
         id: task
@@ -195,7 +197,7 @@ jobs:
         run: |
           git config user.name "SCBE Agent Router"
           git config user.email "agent@aethermoore.com"
-          git add docs/static/agent-data/ || true
+          git add docs/static/agent-data/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
@@ -206,7 +208,14 @@ jobs:
             gh pr create --base main --head "$BRANCH" \
               --title "chore(agent): publish ${{ steps.task.outputs.task }} results" \
               --body "Automated agent router output. Auto-merge enabled."
-            gh pr merge "$BRANCH" --squash --auto || gh pr merge "$BRANCH" --squash --admin || true
+            if gh pr merge "$BRANCH" --squash --auto; then
+              echo "Auto-merge enabled for $BRANCH"
+            elif gh pr merge "$BRANCH" --squash --admin; then
+              echo "Admin-merged $BRANCH"
+            else
+              echo "::error::Failed to merge agent data PR for $BRANCH"
+              exit 1
+            fi
           fi
 
       - name: Upload artifact
