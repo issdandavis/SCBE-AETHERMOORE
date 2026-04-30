@@ -147,7 +147,15 @@ def list_profiles(manifest: dict[str, Any]) -> dict[str, Any]:
     return {"schema_version": "geoseal_coding_training_profiles_v1", "profiles": rows}
 
 
-def plan_or_dispatch(manifest: dict[str, Any], profile_id: str | None, *, dispatch: bool, flavor: str, timeout: str) -> dict[str, Any]:
+def plan_or_dispatch(
+    manifest: dict[str, Any],
+    profile_id: str | None,
+    *,
+    dispatch: bool,
+    flavor: str,
+    timeout: str,
+    smoke: bool = False,
+) -> dict[str, Any]:
     resolved = resolve_profile(manifest, profile_id)
     dispatcher = _dispatcher_module()
     packet = dispatcher.build_packet(
@@ -155,6 +163,7 @@ def plan_or_dispatch(manifest: dict[str, Any], profile_id: str | None, *, dispat
         artifact_root=REPO_ROOT / str(manifest.get("artifact_root", "artifacts/hf_coding_agent_jobs")),
         flavor=flavor or None,
         timeout=timeout or None,
+        smoke=smoke,
     )
     if dispatch:
         packet = dispatcher.dispatch_packet(packet)
@@ -537,6 +546,11 @@ def main() -> int:
         item.add_argument("--profile-id", default="")
         item.add_argument("--flavor", default="")
         item.add_argument("--timeout", default="")
+        item.add_argument(
+            "--smoke",
+            action="store_true",
+            help="Use the tiny no-push HF smoke profile before spending on a full train.",
+        )
     status_parser = sub.add_parser("status")
     status_parser.add_argument("--profile-id", default="")
     status_parser.add_argument("--job-id", default="")
@@ -558,9 +572,23 @@ def main() -> int:
     if args.command == "profiles":
         payload = list_profiles(manifest)
     elif args.command == "plan":
-        payload = plan_or_dispatch(manifest, args.profile_id or None, dispatch=False, flavor=args.flavor, timeout=args.timeout)
+        payload = plan_or_dispatch(
+            manifest,
+            args.profile_id or None,
+            dispatch=False,
+            flavor=args.flavor,
+            timeout=args.timeout,
+            smoke=bool(args.smoke),
+        )
     elif args.command == "dispatch":
-        payload = plan_or_dispatch(manifest, args.profile_id or None, dispatch=True, flavor=args.flavor, timeout=args.timeout)
+        payload = plan_or_dispatch(
+            manifest,
+            args.profile_id or None,
+            dispatch=True,
+            flavor=args.flavor,
+            timeout=args.timeout,
+            smoke=bool(args.smoke),
+        )
     elif args.command == "status":
         payload = status(manifest, args.profile_id or None, args.job_id or None, args.logs)
     elif args.command == "smoke-eval-plan":

@@ -140,6 +140,26 @@ def test_dispatch_smoke_profile_is_tiny_no_push_and_unbuffered(tmp_path: Path) -
     assert 'emit("train_start"' in script
 
 
+def test_geoseal_training_plan_can_request_smoke_profile(tmp_path: Path, monkeypatch) -> None:
+    module = _load_module()
+    manifest = module.load_manifest(MANIFEST_PATH)
+    monkeypatch.setattr(module, "REPO_ROOT", ROOT)
+
+    packet = module.plan_or_dispatch(
+        manifest,
+        "coding-agent-qwen-full-coding-system-v8",
+        dispatch=False,
+        flavor="l4x1",
+        timeout="30m",
+        smoke=True,
+    )
+
+    assert packet["smoke"] is True
+    assert packet["profile_id"].endswith("-smoke")
+    assert packet["hf"]["flavor"] == "l4x1"
+    assert packet["hf"]["timeout"] == "30m"
+
+
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     manifest = module.load_manifest(MANIFEST_PATH)
