@@ -4,6 +4,8 @@ import importlib.util
 import json
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "system" / "geoseal_coding_training_system.py"
 MANIFEST_PATH = ROOT / "config" / "model_training" / "geoseal_coding_training_manifest.json"
@@ -68,21 +70,53 @@ def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:
     assert training["gradient_checkpointing"] is True
 
 
-def test_repair_profile_does_not_inherit_stage6_contract_by_default() -> None:
+def _load_dispatcher_module():
     dispatcher_path = ROOT / "scripts" / "system" / "dispatch_coding_agent_hf_job.py"
     spec = importlib.util.spec_from_file_location("dispatch_coding_agent_hf_job", dispatcher_path)
     assert spec and spec.loader
     dispatcher = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dispatcher)
+    return dispatcher
+
+
+def test_repair_profile_uses_non_empty_ca_geoseal_contract() -> None:
+    dispatcher = _load_dispatcher_module()
     profile = json.loads(
         (ROOT / "config" / "model_training" / "coding-agent-qwen-ca-geoseal-smoke-repair-v1.json").read_text()
     )
 
     script = dispatcher.render_uv_training_script(profile)
 
-    assert '"contract_id": ""' in script
-    assert '"prompts": []' in script
-    assert "pass_rate = (n_pass / n_total) if n_total else 1.0" in script
+    assert '"contract_id": "ca_geoseal_repair_eval_v1"' in script
+    assert '"prompts": []' not in script
+    assert 'raise RuntimeError("empty evaluation contract: refusing zero-prompt gate")' in script
+    assert "pass_rate = (n_pass / n_total) if n_total else 1.0" not in script
+    assert "pass_rate = (n_pass / n_total) if n_total else 0.0" in script
+
+
+def test_dispatch_refuses_missing_eval_contract() -> None:
+    dispatcher = _load_dispatcher_module()
+
+    with pytest.raises(ValueError, match="evaluation.contract_path"):
+        dispatcher.render_uv_training_script(
+            {
+                "profile_id": "bad-zero-gate",
+                "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+                "dataset": {"train_files": [], "eval_files": []},
+                "hub": {"dataset_repo": "owner/data", "adapter_repo": "owner/adapter"},
+            }
+        )
+
+
+def test_dispatch_default_profile_exists_and_has_contract() -> None:
+    dispatcher = _load_dispatcher_module()
+
+    assert dispatcher.DEFAULT_PROFILE.exists()
+    profile = json.loads(dispatcher.DEFAULT_PROFILE.read_text(encoding="utf-8"))
+    script = dispatcher.render_uv_training_script(profile)
+
+    assert '"prompts": []' not in script
+    assert "stage6_atomic_workflow_unseen_eval_v1" in script
 
 
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:

@@ -59,6 +59,7 @@
     "default_emit_path": "artifacts/model_training/coding-agent-qwen-ca-opcode-exact-repair-v2-train.py"
   },
   "evaluation": {
+    "contract_path": "config/model_training/ca_geoseal_repair_eval_contract.json",
     "smoke_job_id": "69f2cc41d2c8bd8662bd3863",
     "post_training_gate": "Run direct adapter smoke with scripts/eval/smoke_merged_coding_model_hf.py and require 4/4 before adding this adapter to a promoted merge.",
     "must_recall": {

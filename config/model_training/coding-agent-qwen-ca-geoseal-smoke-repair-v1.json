@@ -59,6 +59,7 @@
     "default_emit_path": "artifacts/model_training/coding-agent-qwen-ca-geoseal-smoke-repair-v1-train.py"
   },
   "evaluation": {
+    "contract_path": "config/model_training/ca_geoseal_repair_eval_contract.json",
     "smoke_job_id": "69f2c4ddd2c8bd8662bd3809",
     "post_training_gate": "Re-merge only after this adapter trains, then run scripts/eval/smoke_merged_coding_model_hf.py against the candidate merged model and require 4/4.",
     "must_recall": {

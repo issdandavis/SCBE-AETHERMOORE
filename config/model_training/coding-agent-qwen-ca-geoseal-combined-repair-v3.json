@@ -59,6 +59,7 @@
     "default_emit_path": "artifacts/model_training/coding-agent-qwen-ca-geoseal-combined-repair-v3-train.py"
   },
   "evaluation": {
+    "contract_path": "config/model_training/ca_geoseal_repair_eval_contract.json",
     "source_smoke_jobs": [
       "69f2cc41d2c8bd8662bd3863",
       "69f2ceb6d70108f37ace19b9"

@@ -16,7 +16,10 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROFILE = (
-    REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-smoke.json"
+    REPO_ROOT
+    / "config"
+    / "model_training"
+    / "coding-agent-qwen-atomic-workflow-stage6.json"
 )
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_coding_agent_jobs"
 ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
@@ -80,6 +83,51 @@ def _dataset_rows(profile: dict[str, Any], split: str) -> list[dict[str, Any]]:
     return rows
 
 
+def _load_eval_contract(profile: dict[str, Any]) -> dict[str, Any]:
+    eval_cfg = profile.get("evaluation") or {}
+    contract_rel = str(eval_cfg.get("contract_path", "")).strip()
+    if not contract_rel:
+        profile_id = str(profile.get("profile_id", "<unknown>"))
+        raise ValueError(
+            f"profile {profile_id} is missing evaluation.contract_path; "
+            "refusing to render a zero-prompt training gate"
+        )
+
+    contract_path = REPO_ROOT / contract_rel
+    if not contract_path.exists():
+        raise FileNotFoundError(f"evaluation contract does not exist: {contract_path}")
+
+    contract_payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    if not isinstance(contract_payload, dict):
+        raise ValueError(f"evaluation contract must be a JSON object: {contract_path}")
+
+    prompts = contract_payload.get("prompts")
+    if not isinstance(prompts, list) or not prompts:
+        raise ValueError(
+            f"evaluation contract has no prompts: {contract_path}; "
+            "refusing to render a zero-prompt training gate"
+        )
+
+    prompt_ids = {str(item.get("id", "")).strip() for item in prompts if isinstance(item, dict)}
+    if "" in prompt_ids:
+        raise ValueError(f"evaluation contract has a prompt without id: {contract_path}")
+
+    thresholds = contract_payload.get("thresholds") or {}
+    must_pass = [str(item).strip() for item in thresholds.get("must_pass") or []]
+    if not must_pass:
+        raise ValueError(
+            f"evaluation contract has no thresholds.must_pass entries: {contract_path}"
+        )
+
+    missing = sorted(set(must_pass) - prompt_ids)
+    if missing:
+        raise ValueError(
+            f"evaluation contract must_pass ids are not defined as prompts: {missing}"
+        )
+
+    return contract_payload
+
+
 def render_uv_training_script(profile: dict[str, Any]) -> str:
     profile_json = json.dumps(profile, indent=2, ensure_ascii=True)
     dataset = profile.get("dataset") or {}
@@ -87,13 +135,7 @@ def render_uv_training_script(profile: dict[str, Any]) -> str:
     dataset_repo = str(hub_cfg.get("dataset_repo", "issdandavis/scbe-coding-agent-sft"))
     train_files = [str(name) for name in dataset.get("train_files", [])]
     eval_files = [str(name) for name in dataset.get("eval_files", [])]
-    eval_cfg = profile.get("evaluation") or {}
-    contract_rel = str(eval_cfg.get("contract_path", "")).strip()
-    contract_path = REPO_ROOT / contract_rel if contract_rel else None
-    if contract_path is not None and contract_path.exists():
-        contract_payload = json.loads(contract_path.read_text(encoding="utf-8"))
-    else:
-        contract_payload = {"contract_id": "", "thresholds": {}, "prompts": []}
+    contract_payload = _load_eval_contract(profile)
     contract_json = json.dumps(contract_payload, indent=2, ensure_ascii=True)
     return f'''# /// script
 # dependencies = [
@@ -276,10 +318,9 @@ def main() -> None:
     model.save_pretrained(out_dir)
     tokenizer.save_pretrained(out_dir)
 
-    # === Optional inline contract gate ===
-    # Profiles with evaluation.contract_path use the frozen contract before push.
-    # Focused repair profiles may omit contract_path; those push after training and
-    # are evaluated by their own post-merge smoke gate.
+    # === Required inline contract gate ===
+    # Every HF training profile must carry a non-empty evaluation.contract_path.
+    # Empty gates are invalid because a 0/0 gate can otherwise look like success.
     print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or [])}}))
     del trainer
     del model
@@ -325,9 +366,13 @@ def main() -> None:
         return tokenizer.decode(out[0][n_in:], skip_special_tokens=True)
 
     prompts = CONTRACT.get("prompts") or []
+    if not prompts:
+        raise RuntimeError("empty evaluation contract: refusing zero-prompt gate")
     thresholds = CONTRACT.get("thresholds") or {{}}
     min_rate = float(thresholds.get("minimum_pass_rate") or 0.8)
     must_pass = set(thresholds.get("must_pass") or [])
+    if not must_pass:
+        raise RuntimeError("evaluation contract has no must_pass ids: refusing weak gate")
 
     results = []
     n_pass = 0
@@ -348,9 +393,10 @@ def main() -> None:
         print(json.dumps({{"event": "gate_prompt", "id": diag["id"], "ok": diag["ok"], "missing": diag["missing_required"], "elapsed_s": round(elapsed, 1)}}))
 
     n_total = len(results)
-    pass_rate = (n_pass / n_total) if n_total else 1.0
+    pass_rate = (n_pass / n_total) if n_total else 0.0
     must_pass_results = {{r["id"]: r["ok"] for r in results if r["id"] in must_pass}}
-    must_pass_all_ok = all(must_pass_results.values()) if must_pass else True
+    missing_must_pass = sorted(must_pass - set(must_pass_results))
+    must_pass_all_ok = bool(must_pass) and not missing_must_pass and all(must_pass_results.values())
     overall_pass = (pass_rate >= min_rate) and must_pass_all_ok
 
     report = {{
@@ -364,6 +410,7 @@ def main() -> None:
         "pass_rate": pass_rate,
         "minimum_pass_rate": min_rate,
         "must_pass_results": must_pass_results,
+        "missing_must_pass": missing_must_pass,
         "must_pass_all_ok": must_pass_all_ok,
         "overall_pass": overall_pass,
         "results": results,
