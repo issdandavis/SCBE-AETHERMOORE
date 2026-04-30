@@ -23,6 +23,7 @@ Three operating modes, no LLM required for the first two:
 Subcommands
 -----------
 - ``compile-ca``       bytes → source (tongue mode)
+- ``ca-plan``          op names / known expressions → exact CA opcode bytes
 - ``render-op``        op-name + args → lexicon template (lookup mode)
 - ``manifest``         emit stage6 forced-prefix manifest as JSON (no model)
 - ``generate``         run llm-mode generation OR fall back to manifest
@@ -117,6 +118,57 @@ def cmd_compile_ca(args: argparse.Namespace) -> int:
         if not payload["round_trip_ok"]:
             print("# WARN: bijection round-trip mismatch", file=sys.stderr)
             return 2
+    return 0
+
+
+def _ca_name_index() -> Dict[str, int]:
+    from python.scbe.ca_opcode_table import OP_TABLE
+
+    return {entry.name.lower(): op_id for op_id, entry in OP_TABLE.items()}
+
+
+def _parse_ca_ops(spec: str) -> List[str]:
+    return [token.strip().lower() for token in spec.replace(",", " ").split() if token.strip()]
+
+
+def _ops_for_expression(expr: str) -> List[str]:
+    key = expr.strip().lower().replace(" ", "")
+    known = {
+        "abs_add": ["abs", "abs", "add"],
+        "abs(a)+abs(b)": ["abs", "abs", "add"],
+        "|a|+|b|": ["abs", "abs", "add"],
+        "abs(left)+abs(right)": ["abs", "abs", "add"],
+    }
+    if key not in known:
+        raise ValueError(f"unknown CA expression {expr!r}; use --ops for explicit op names")
+    return known[key]
+
+
+def cmd_ca_plan(args: argparse.Namespace) -> int:
+    """Resolve CA operation names to canonical opcode bytes without model recall."""
+    names = _ops_for_expression(args.expr) if args.expr else _parse_ca_ops(args.ops)
+    if not names:
+        print("provide --ops or --expr", file=sys.stderr)
+        return 2
+
+    index = _ca_name_index()
+    unknown = [name for name in names if name not in index]
+    if unknown:
+        print(f"unknown CA op(s): {', '.join(unknown)}", file=sys.stderr)
+        return 2
+
+    opcodes = [index[name] for name in names]
+    hex_sequence = [f"0x{op:02X}" for op in opcodes]
+    payload = {
+        "tongue": "CA",
+        "ops": names,
+        "opcodes": opcodes,
+        "hex_sequence": hex_sequence,
+        "hex": ", ".join(hex_sequence),
+        "compile_hint": f"compile-ca --opcodes \"{' '.join(hex_sequence)}\"",
+        "source": "python.scbe.ca_opcode_table.OP_TABLE",
+    }
+    print(json.dumps(payload, indent=2) if args.json else payload["hex"])
     return 0
 
 
@@ -346,6 +398,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_ca.add_argument("--args", default="", help="comma-separated arg names")
     p_ca.add_argument("--json", action="store_true")
     p_ca.set_defaults(func=cmd_compile_ca)
+
+    p_ca_plan = sub.add_parser("ca-plan", help="CA op names / known expressions -> exact opcode bytes")
+    p_ca_plan.add_argument("--ops", default="", help='comma/space-separated names, e.g. "abs,abs,add"')
+    p_ca_plan.add_argument("--expr", default="", help='known expression alias, e.g. "abs(a)+abs(b)" or "abs_add"')
+    p_ca_plan.add_argument("--json", action="store_true")
+    p_ca_plan.set_defaults(func=cmd_ca_plan)
 
     p_op = sub.add_parser("render-op", help="render single lexicon op for a tongue")
     p_op.add_argument("--op", required=True, help="op name (e.g. add) or id (5 / 0x05)")

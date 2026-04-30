@@ -71,6 +71,28 @@ def test_compile_ca_rejects_underflow():
         _run_cli(["compile-ca", "--opcodes", "0x00", "--args", ""])
 
 
+def test_ca_plan_resolves_abs_abs_add_from_table():
+    rc, stdout, _ = _run_cli(["ca-plan", "--ops", "abs,abs,add", "--json"])
+    assert rc == 0
+    payload = json.loads(stdout)
+    assert payload["source"] == "python.scbe.ca_opcode_table.OP_TABLE"
+    assert payload["ops"] == ["abs", "abs", "add"]
+    assert payload["hex_sequence"] == ["0x09", "0x09", "0x00"]
+    assert payload["compile_hint"] == 'compile-ca --opcodes "0x09 0x09 0x00"'
+
+
+def test_ca_plan_known_abs_add_expression():
+    rc, stdout, _ = _run_cli(["ca-plan", "--expr", "abs(a)+abs(b)"])
+    assert rc == 0
+    assert stdout.strip() == "0x09, 0x09, 0x00"
+
+
+def test_ca_plan_unknown_op_fails():
+    rc, _, err = _run_cli(["ca-plan", "--ops", "abs,definitely_not_ca"])
+    assert rc == 2
+    assert "unknown CA op" in err
+
+
 # ---------------------------------------------------------------------------
 # scbe_code: lookup mode (no LLM)
 # ---------------------------------------------------------------------------
