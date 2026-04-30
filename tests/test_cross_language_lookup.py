@@ -44,4 +44,3 @@ def test_cross_language_lookup_lexicon_and_extended_inheritance() -> None:
     assert set(("KO", "AV", "RU", "CA", "UM", "DR", "GO", "ZI")).issubset(set(add["code"]))
     assert "GO_inherits_from" in add["code"]
     assert "ZI_inherits_from" in add["code"]
-

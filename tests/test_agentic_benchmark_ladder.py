@@ -70,10 +70,7 @@ def test_level7_scbe_code_agent_runs_at_7() -> None:
 def test_secret_leak_count_heuristic() -> None:
     m = _load_ladder_module()
     assert m._secret_leak_count("no secrets here") == 0
-    assert (
-        m._secret_leak_count("token sk-live-abcdefghijklmnopqrstuvwxyz1234567890abcd")
-        >= 1
-    )
+    assert m._secret_leak_count("token sk-live-abcdefghijklmnopqrstuvwxyz1234567890abcd") >= 1
 
 
 def test_agentic_ladder_validate_subcommand() -> None:

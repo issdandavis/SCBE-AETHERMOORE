@@ -7,7 +7,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = REPO_ROOT / "config" / "compliance" / "public_sources.json"
@@ -22,9 +21,7 @@ def test_public_sources_manifest_shape() -> None:
     http_ids = [s["id"] for s in sources if s.get("fetch_kind") == "http_get"]
     assert "nist_ai_rmf_100_1" in http_ids
     purchase = [s for s in sources if s.get("fetch_kind") == "purchase_only"]
-    assert (
-        purchase
-    ), "expect at least one purchase_only row so ISO/SOC scope is explicit"
+    assert purchase, "expect at least one purchase_only row so ISO/SOC scope is explicit"
 
 
 def test_fetch_script_dry_run_zero_network_writes(tmp_path: Path) -> None:
@@ -50,9 +47,7 @@ def test_fetch_script_dry_run_zero_network_writes(tmp_path: Path) -> None:
     payload = json.loads(proc.stdout)
     assert payload.get("dry_run") is True
     assert len(payload.get("results", [])) == 1
-    assert not out.exists() or not any(
-        out.iterdir()
-    ), "dry-run must not write corpus files"
+    assert not out.exists() or not any(out.iterdir()), "dry-run must not write corpus files"
 
 
 def test_filter_excludes_large_without_flag() -> None:

@@ -109,9 +109,7 @@ def _strip_fences(text: str) -> str:
 
 
 def _build_system(language: str, tongue: str, tongue_name: str) -> str:
-    return _SYSTEM_TEMPLATE.format(
-        language=language, tongue=tongue, tongue_name=tongue_name
-    )
+    return _SYSTEM_TEMPLATE.format(language=language, tongue=tongue, tongue_name=tongue_name)
 
 
 # ---------------------------------------------------------------------------
@@ -135,9 +133,7 @@ def _generate_local(
         {"role": "system", "content": system},
         {"role": "user", "content": task},
     ]
-    prompt_str = tok.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+    prompt_str = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     prompt_ids = tok(prompt_str, return_tensors="pt").input_ids
     prompt_len = prompt_ids.shape[-1]
 
@@ -247,9 +243,7 @@ def _generate_hf(
         )
         raw = resp.choices[0].message.content or ""
         pt = getattr(resp.usage, "prompt_tokens", 0) if hasattr(resp, "usage") else 0
-        ct = (
-            getattr(resp.usage, "completion_tokens", 0) if hasattr(resp, "usage") else 0
-        )
+        ct = getattr(resp.usage, "completion_tokens", 0) if hasattr(resp, "usage") else 0
         return raw, pt, ct
     except Exception:
         pass

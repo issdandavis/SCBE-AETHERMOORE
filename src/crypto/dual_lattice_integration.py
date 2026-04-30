@@ -1133,12 +1133,14 @@ class DualLatticeIntegrator:
 
 def demo():
     """Demonstrate 14-layer integration."""
-    print("""
+    print(
+        """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║              DUAL LATTICE CROSS-STITCH - 14-LAYER INTEGRATION                 ║
 ║         PQC-Gated • Realm-Breathing • Spectral-Coherent • Sonified            ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
     integrator = DualLatticeIntegrator()
 

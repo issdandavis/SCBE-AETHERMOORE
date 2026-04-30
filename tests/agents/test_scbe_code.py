@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import io
 import json
-import os
 import subprocess
 import sys
 import textwrap
@@ -99,9 +98,7 @@ def test_ca_plan_unknown_op_fails():
 
 
 def test_render_op_add_python_substitutes_placeholders():
-    rc, stdout, _ = _run_cli(
-        ["render-op", "--op", "add", "--target", "KO", "--a", "x", "--b", "y", "--json"]
-    )
+    rc, stdout, _ = _run_cli(["render-op", "--op", "add", "--target", "KO", "--a", "x", "--b", "y", "--json"])
     assert rc == 0
     payload = json.loads(stdout)
     assert payload["name"] == "add"

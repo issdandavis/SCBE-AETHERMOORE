@@ -222,9 +222,7 @@ def inspect_runtime_packet(payload: dict[str, Any]) -> dict[str, Any]:
     content = str(payload.get("content", ""))
     language = str(payload.get("language", "python"))
     source_name = str(payload.get("source_name", "inline"))
-    portal = _build_portal_box_payload(
-        content=content, language=language, source_name=source_name
-    )
+    portal = _build_portal_box_payload(content=content, language=language, source_name=source_name)
     route_packet = (portal.get("shell_contract") or {}).get("route_packet", {})
     return {
         "version": "geoseal-runtime-inspect-v1",
@@ -249,9 +247,7 @@ def _build_execution_shell_payload(
         source_name=source_name,
         include_extended=include_extended,
     )
-    deck = build_system_deck(
-        resolution, source_text=content, source_name=source_name, max_cards=deck_size
-    )
+    deck = build_system_deck(resolution, source_text=content, source_name=source_name, max_cards=deck_size)
     return {
         "version": "geoseal-execution-shell-v1",
         "resolution": resolution,
@@ -266,14 +262,10 @@ def _execute_execution_shell_payload(
     timeout: float = 10.0,
     tongue: Optional[str] = None,
 ) -> dict[str, Any]:
-    route_packet = (
-        (shell_payload.get("resolution") or {}).get("shell_contract") or {}
-    ).get("route_packet", {})
+    route_packet = ((shell_payload.get("resolution") or {}).get("shell_contract") or {}).get("route_packet", {})
     exec_tongue = (tongue or route_packet.get("route_tongue") or "KO").upper()
     command_key = route_packet.get("command_key", "add")
-    replay = run_tongue_call(
-        command_key, exec_tongue, {"a": "7", "b": "3"}, execute=True, timeout=timeout
-    )
+    replay = run_tongue_call(command_key, exec_tongue, {"a": "7", "b": "3"}, execute=True, timeout=timeout)
     return {
         "version": "geoseal-execution-run-v1",
         "route_packet": route_packet,
@@ -503,9 +495,7 @@ def syntax_check(tongue: str, code: str, timeout: float = 5.0) -> Tuple[bool, st
 
     Uses real compilers when available, falls back to structural brace-balance check.
     """
-    compiler_map: Dict[
-        str, Tuple[Optional[str], Optional[List[str]], Optional[str]]
-    ] = {
+    compiler_map: Dict[str, Tuple[Optional[str], Optional[List[str]], Optional[str]]] = {
         "RU": (
             shutil.which("rustc"),
             ["rustc", "--edition=2021", "--crate-type=lib", "-"],
@@ -528,16 +518,10 @@ def syntax_check(tongue: str, code: str, timeout: float = 5.0) -> Tuple[bool, st
         balanced = opens == closes
         return (
             balanced,
-            (
-                "structural-ok"
-                if balanced
-                else f"unbalanced: {opens} opens vs {closes} closes"
-            ),
+            ("structural-ok" if balanced else f"unbalanced: {opens} opens vs {closes} closes"),
         )
     try:
-        proc = subprocess.run(
-            argv, input=wrapper, capture_output=True, text=True, timeout=timeout
-        )
+        proc = subprocess.run(argv, input=wrapper, capture_output=True, text=True, timeout=timeout)
         return (proc.returncode == 0, proc.stderr.strip() or "ok")
     except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
         return (False, str(exc))
@@ -614,9 +598,7 @@ def run_tongue_call(
         import tempfile
 
         suffix = ".go" if tongue == "GO" else ".zig"
-        fd, tmp_name = tempfile.mkstemp(
-            suffix=suffix, prefix=f"geoseal_{tongue.lower()}_"
-        )
+        fd, tmp_name = tempfile.mkstemp(suffix=suffix, prefix=f"geoseal_{tongue.lower()}_")
         tmp_path = Path(tmp_name)
         with open(fd, "w", encoding="utf-8") as fh:
             fh.write(wrapped)
@@ -668,9 +650,7 @@ def swarm_dispatch(
         outputs = sorted({c.stdout for c in successful if c.stdout})
         if len(outputs) == 1:
             result.quorum_ok = True
-            result.consensus_hash = hashlib.sha256(
-                outputs[0].encode("utf-8")
-            ).hexdigest()
+            result.consensus_hash = hashlib.sha256(outputs[0].encode("utf-8")).hexdigest()
         elif len(outputs) > 1:
             tally: Dict[str, int] = {}
             for c in successful:
@@ -792,8 +772,7 @@ def cmd_portal_box(args: argparse.Namespace) -> int:
     payload = _build_portal_box_payload(
         content=content or "",
         language=args.language,
-        source_name=args.source_name
-        or (Path(args.source_file).name if args.source_file else "inline"),
+        source_name=args.source_name or (Path(args.source_file).name if args.source_file else "inline"),
         include_extended=args.include_extended,
     )
     print(json.dumps(payload, indent=2 if args.json else None))
@@ -807,8 +786,7 @@ def cmd_stream_wheel(args: argparse.Namespace) -> int:
     payload = _build_stream_wheel_payload(
         content=content or "",
         language=args.language,
-        source_name=args.source_name
-        or (Path(args.source_file).name if args.source_file else "inline"),
+        source_name=args.source_name or (Path(args.source_file).name if args.source_file else "inline"),
         include_extended=args.include_extended,
     )
     print(json.dumps(payload, indent=2 if args.json else None))
@@ -846,21 +824,16 @@ def cmd_binary_to_tokenizer(args: argparse.Namespace) -> int:
         b = int(bits, 2)
         raw.append(b)
         token = SACRED_TONGUE_TOKENIZER.encode_bytes(transport, bytes([b]))[0]
-        rows.append(
-            {"bits": bits, "byte_int": b, "byte_hex": f"0x{b:02X}", "token": token}
-        )
+        rows.append({"bits": bits, "byte_int": b, "byte_hex": f"0x{b:02X}", "token": token})
 
-    decoded = SACRED_TONGUE_TOKENIZER.decode_tokens(
-        transport, [row["token"] for row in rows]
-    )
+    decoded = SACRED_TONGUE_TOKENIZER.decode_tokens(transport, [row["token"] for row in rows])
     payload = {
         "version": "geoseal-binary-tokenizer-map-v1",
         "tongue": tongue,
         "conlang": CONLANG_NAME_MAP.get(tongue, tongue),
         "prime_language": LANG_MAP.get(tongue, ""),
         "requested_language": (args.language or "").lower() if args.language else None,
-        "language_matches_prime": (args.language or "").lower()
-        in {"", LANG_MAP.get(tongue, "")},
+        "language_matches_prime": (args.language or "").lower() in {"", LANG_MAP.get(tongue, "")},
         "byte_count": len(rows),
         "rows": rows,
         "harmonic_spiral": {
@@ -976,24 +949,16 @@ def _token_digest_for_tongue(tongue: str, payload: bytes) -> dict[str, Any]:
     }
 
 
-def _build_native_tokenization_surface(
-    *, input_bytes: bytes, language_views: list[dict[str, str]]
-) -> dict[str, Any]:
+def _build_native_tokenization_surface(*, input_bytes: bytes, language_views: list[dict[str, str]]) -> dict[str, Any]:
     outputs: list[dict[str, Any]] = []
     for lane in language_views:
         tongue, lang = next(iter(lane.items()))
         snippet = lane.get("snippet", "")
-        digest = _token_digest_for_tongue(
-            tongue, snippet.encode("utf-8", errors="replace")
-        )
-        outputs.append(
-            {**digest, "output_kind": "language_view_snippet", "language_view": lang}
-        )
+        digest = _token_digest_for_tongue(tongue, snippet.encode("utf-8", errors="replace"))
+        outputs.append({**digest, "output_kind": "language_view_snippet", "language_view": lang})
     return {
         "schema_version": "scbe_native_tokenization_surface_v1",
-        "inputs": [
-            _token_digest_for_tongue(tongue, input_bytes) for tongue in TONGUE_NAMES
-        ],
+        "inputs": [_token_digest_for_tongue(tongue, input_bytes) for tongue in TONGUE_NAMES],
         "outputs": outputs,
     }
 
@@ -1046,9 +1011,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
     semantic = _compute_semantic_expression(source)
     definitions = [
         {"symbol": name, "kind": kind}
-        for kind, name in re.findall(
-            r"\b(import|class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", source
-        )
+        for kind, name in re.findall(r"\b(import|class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", source)
     ]
     class_names = set(re.findall(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)", source))
     function_names = set(re.findall(r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source))
@@ -1069,10 +1032,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
                 ],
             }
         )
-    language_views = [
-        {code: LANG_MAP[code], "snippet": emit_code("add", code, a="x", b="y")}
-        for code in TONGUE_NAMES
-    ]
+    language_views = [{code: LANG_MAP[code], "snippet": emit_code("add", code, a="x", b="y")} for code in TONGUE_NAMES]
     return {
         "version": "scbe-code-weight-packet-v1",
         "source_name": source_name,
@@ -1082,9 +1042,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
         "transport": {
             "tongue": tongue,
             "source_sha256": hashlib.sha256(source_bytes).hexdigest(),
-            "token_sha256": hashlib.sha256(
-                " ".join(transport_tokens).encode("utf-8")
-            ).hexdigest(),
+            "token_sha256": hashlib.sha256(" ".join(transport_tokens).encode("utf-8")).hexdigest(),
         },
         "binary": {
             "byte_count": len(source_bytes),
@@ -1117,11 +1075,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
                 ]
             ],
             "token_rows": stisa_rows,
-            "binary_groups": (
-                [{"group_id": "g0", "tokens": lexical_tokens[:8]}]
-                if lexical_tokens
-                else []
-            ),
+            "binary_groups": ([{"group_id": "g0", "tokens": lexical_tokens[:8]}] if lexical_tokens else []),
         },
         "structural_parse": {
             "provider": "tree_sitter",
@@ -1129,9 +1083,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
             "captures": {
                 "imports": re.findall(r"\bimport\s+([A-Za-z_][A-Za-z0-9_]*)", source),
                 "classes": re.findall(r"\bclass\s+([A-Za-z_][A-Za-z0-9_]*)", source),
-                "functions": re.findall(
-                    r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source
-                ),
+                "functions": re.findall(r"\bdef\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(", source),
             },
         },
         "scip_symbol_index": {
@@ -1149,9 +1101,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
                         "keyword"
                         if tok in {"def", "class", "import", "return"}
                         else (
-                            "class"
-                            if tok in class_names
-                            else ("function" if tok in function_names else "identifier")
+                            "class" if tok in class_names else ("function" if tok in function_names else "identifier")
                         )
                     ),
                 }
@@ -1172,10 +1122,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
             "route_tongue": tongue,
             "route_language": language,
         },
-        "atomic_states": [
-            {"token": tok, "tau": ((i % 3) - 1)}
-            for i, tok in enumerate(lexical_tokens[:64])
-        ],
+        "atomic_states": [{"token": tok, "tau": ((i % 3) - 1)} for i, tok in enumerate(lexical_tokens[:64])],
         "ternary_semantics": {
             "version": "scbe-ternary-semantics-v1",
             "checksum": (
@@ -1203,9 +1150,7 @@ def _build_code_packet_payload(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
-def _build_interaction_graph(
-    packet: dict[str, Any], max_binary_nodes: int = 8
-) -> dict[str, Any]:
+def _build_interaction_graph(packet: dict[str, Any], max_binary_nodes: int = 8) -> dict[str, Any]:
     tongue = packet["route"]["tongue"]
     semantic = packet.get("semantic_expression", {})
     nodes: list[dict[str, Any]] = [
@@ -1245,33 +1190,21 @@ def _build_interaction_graph(
     for i, tok in enumerate(packet.get("lexical_tokens", [])[:max_binary_nodes]):
         tid = f"token:{i}:{tok}"
         nodes.append({"id": tid, "label": tok, "kind": "token"})
-        edges.append(
-            {"source": "source:program", "target": tid, "relation": "contains_token"}
-        )
+        edges.append({"source": "source:program", "target": tid, "relation": "contains_token"})
         if i < len(packet.get("stisa", {}).get("token_rows", [])):
             sid = f"stisa:{i}"
             nodes.append({"id": sid, "label": f"stisa:{tok}", "kind": "stisa"})
-            edges.append(
-                {"source": tid, "target": sid, "relation": "maps_to_stisa_row"}
-            )
+            edges.append({"source": tid, "target": sid, "relation": "maps_to_stisa_row"})
         if i < len(packet.get("atomic_states", [])):
             aid = f"atom:{i}"
             nodes.append({"id": aid, "label": f"atom:{tok}", "kind": "atom"})
-            edges.append(
-                {"source": tid, "target": aid, "relation": "maps_to_atomic_state"}
-            )
+            edges.append({"source": tid, "target": aid, "relation": "maps_to_atomic_state"})
     for i, token in enumerate(packet.get("transport_tokens", [])[:max_binary_nodes]):
-        nodes.append(
-            {"id": f"transport_token:{i}", "label": token, "kind": "transport_token"}
-        )
+        nodes.append({"id": f"transport_token:{i}", "label": token, "kind": "transport_token"})
     for group in packet.get("stisa", {}).get("binary_groups", []):
         gid = f"binary_group:{group.get('group_id', 'g0')}"
         nodes.append({"id": gid, "label": gid, "kind": "binary_group"})
-    for cell in (
-        packet.get("braille_lane", {})
-        .get("binary_surface", {})
-        .get("cells", [])[:max_binary_nodes]
-    ):
+    for cell in packet.get("braille_lane", {}).get("binary_surface", {}).get("cells", [])[:max_binary_nodes]:
         bid = f"braille:{cell['index']}"
         nodes.append({"id": bid, "label": f"braille:{cell['bits']}", "kind": "braille"})
         edges.append(
@@ -1281,11 +1214,7 @@ def _build_interaction_graph(
                 "relation": "projects_to_braille_cell",
             }
         )
-    for state in (
-        packet.get("braille_lane", {})
-        .get("harmonic_spiral", {})
-        .get("states", [])[:max_binary_nodes]
-    ):
+    for state in packet.get("braille_lane", {}).get("harmonic_spiral", {}).get("states", [])[:max_binary_nodes]:
         hid = f"spiral:{state['index']}"
         nodes.append({"id": hid, "label": hid, "kind": "spiral"})
         edges.append(
@@ -1316,9 +1245,7 @@ def _build_interaction_graph(
             "language_view_count": len(packet.get("language_views", [])),
             "binary_group_count": len(packet.get("stisa", {}).get("binary_groups", [])),
             "harmonic_spiral_state_count": len(
-                packet.get("braille_lane", {})
-                .get("harmonic_spiral", {})
-                .get("states", [])
+                packet.get("braille_lane", {}).get("harmonic_spiral", {}).get("states", [])
             ),
         },
         "nodes": nodes,
@@ -1366,23 +1293,16 @@ def _command_binding() -> dict[str, Any]:
             for code in TONGUE_NAMES
         },
         "primary_transport_tokens": {
-            code: " ".join(
-                SACRED_TONGUE_TOKENIZER.encode_bytes(TONGUE_CODE_MAP[code], b"add")
-            )
-            for code in TONGUE_NAMES
+            code: " ".join(SACRED_TONGUE_TOKENIZER.encode_bytes(TONGUE_CODE_MAP[code], b"add")) for code in TONGUE_NAMES
         },
         "topology_local_relevance_score": 0.92,
     }
 
 
-def _build_topology_view(
-    packet: dict[str, Any], max_binary_nodes: int = 8
-) -> dict[str, Any]:
+def _build_topology_view(packet: dict[str, Any], max_binary_nodes: int = 8) -> dict[str, Any]:
     graph = _build_interaction_graph(packet, max_binary_nodes=max_binary_nodes)
     polygons = []
-    for i, row in enumerate(
-        packet.get("stisa", {}).get("token_rows", [])[:max_binary_nodes]
-    ):
+    for i, row in enumerate(packet.get("stisa", {}).get("token_rows", [])[:max_binary_nodes]):
         vec = row.get("feature_vector", [0.0] * 8)[:8]
         total = max(sum(abs(float(v)) for v in vec), 1.0)
         normalized = [round(float(v) / total, 6) for v in vec]
@@ -1390,9 +1310,7 @@ def _build_topology_view(
             {
                 "token": row["token"],
                 "normalized_vector": normalized,
-                "vertices": [
-                    {"axis": j, "value": value} for j, value in enumerate(normalized)
-                ],
+                "vertices": [{"axis": j, "value": value} for j, value in enumerate(normalized)],
                 "centroid": {
                     "x": normalized[0],
                     "y": normalized[1],
@@ -1424,12 +1342,10 @@ def _build_topology_view(
         }
     ]
     leylines = [
-        {"kind": k, "weight": i + 1}
-        for i, k in enumerate(["semantic_backbone", "binary_spine", "harmonic_spine"])
+        {"kind": k, "weight": i + 1} for i, k in enumerate(["semantic_backbone", "binary_spine", "harmonic_spine"])
     ]
     nodes = graph["nodes"] + [
-        {"id": f"polygon:{i}", "kind": "data_polygon", "label": f"polygon:{p['token']}"}
-        for i, p in enumerate(polygons)
+        {"id": f"polygon:{i}", "kind": "data_polygon", "label": f"polygon:{p['token']}"} for i, p in enumerate(polygons)
     ]
     edges = graph["edges"] + [
         {
@@ -1464,9 +1380,7 @@ def _build_topology_view(
         "surfaces": {
             "stisa_row_count": len(packet.get("stisa", {}).get("token_rows", [])),
             "harmonic_spiral_state_count": len(
-                packet.get("braille_lane", {})
-                .get("harmonic_spiral", {})
-                .get("states", [])
+                packet.get("braille_lane", {}).get("harmonic_spiral", {}).get("states", [])
             ),
         },
         "dictionaries": {
@@ -1511,9 +1425,7 @@ def cmd_braille_lane(args: argparse.Namespace) -> int:
 
 
 def cmd_interaction_graph(args: argparse.Namespace) -> int:
-    graph = _build_interaction_graph(
-        _packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes
-    )
+    graph = _build_interaction_graph(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes)
     if args.format == "mermaid":
         print(_graph_to_mermaid(graph, direction="TD"), end="")
     elif args.format == "dot":
@@ -1524,14 +1436,10 @@ def cmd_interaction_graph(args: argparse.Namespace) -> int:
 
 
 def cmd_topology_view(args: argparse.Namespace) -> int:
-    topology = _build_topology_view(
-        _packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes
-    )
+    topology = _build_topology_view(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes)
     if args.format == "mermaid":
         print(
-            _graph_to_mermaid(
-                {"nodes": topology["nodes"], "edges": topology["edges"]}, direction="LR"
-            ),
+            _graph_to_mermaid({"nodes": topology["nodes"], "edges": topology["edges"]}, direction="LR"),
             end="",
         )
     elif args.format == "dot":
@@ -1580,9 +1488,7 @@ def cmd_cross_domain_sequence(args: argparse.Namespace) -> int:
     if args.topology_file:
         topology = json.loads(Path(args.topology_file).read_text(encoding="utf-8"))
     else:
-        topology = _build_topology_view(
-            _packet_from_surface_args(args), max_binary_nodes=8
-        )
+        topology = _build_topology_view(_packet_from_surface_args(args), max_binary_nodes=8)
     print(
         json.dumps(
             {"sequence": _build_cross_domain_sequence(topology)},
@@ -1623,9 +1529,7 @@ def cmd_cognition_map(args: argparse.Namespace) -> int:
     quarks = set(packet.get("semantic_expression", {}).get("quarks", []))
     payload = {
         "version": "scbe-cognition-map-v1",
-        "semantic_label": packet.get("semantic_expression", {}).get(
-            "label", "generic_program_bin"
-        ),
+        "semantic_label": packet.get("semantic_expression", {}).get("label", "generic_program_bin"),
         "well_scores": {
             "measurement": 1.0 if "measurement_signal" in quarks else 0.4,
             "governance": 1.0 if "risk_gate" in quarks else 0.4,
@@ -1636,9 +1540,7 @@ def cmd_cognition_map(args: argparse.Namespace) -> int:
             "counts": {"positive": 3, "zero": 2, "negative": 1},
             "tongue_projection": packet["ternary_semantics"]["route_projection"],
         },
-        "dual_ternary": {
-            "history_length": max(1, len(packet.get("atomic_states", [])))
-        },
+        "dual_ternary": {"history_length": max(1, len(packet.get("atomic_states", [])))},
         "tri_manifold": {"tick": max(1, len(packet.get("lexical_tokens", [])))},
     }
     print(json.dumps(payload, indent=2))
@@ -1685,9 +1587,7 @@ def _build_cluster_graph(
 def cmd_cluster_graph(args: argparse.Namespace) -> int:
     print(
         json.dumps(
-            _build_cluster_graph(
-                _packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes
-            ),
+            _build_cluster_graph(_packet_from_surface_args(args), max_binary_nodes=args.max_binary_nodes),
             indent=2,
         )
     )
@@ -1736,9 +1636,7 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
         return 0
     selected = payload["selected_language"]
-    print(
-        f"schema={payload['schema_version']} language={selected['language']} tongue={selected['tongue']}"
-    )
+    print(f"schema={payload['schema_version']} language={selected['language']} tongue={selected['tongue']}")
     print(f"permission_mode={payload['permission_mode']}")
     print("flow=" + " -> ".join(payload["standard_flow"]))
     return 0
@@ -1766,11 +1664,7 @@ def cmd_explain_route(args: argparse.Namespace) -> int:
         source_name=source_name,
         language=language,
         force_tongue=force_tongue,
-        selected_backend=(
-            provider_explain["resolved_chain"][0]
-            if provider_explain["resolved_chain"]
-            else None
-        ),
+        selected_backend=(provider_explain["resolved_chain"][0] if provider_explain["resolved_chain"] else None),
     )
     payload = {
         "version": "geoseal-route-explain-v1",
@@ -1783,9 +1677,7 @@ def cmd_explain_route(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
         return 0
     print(f"source={source_name} language={language}")
-    print(
-        f"signature={route_ir['route']['signature']} tongue={route_ir['route']['tongue']}"
-    )
+    print(f"signature={route_ir['route']['signature']} tongue={route_ir['route']['tongue']}")
     print(f"backend={route_ir['backend']['selected']}")
     return 0
 
@@ -1811,9 +1703,7 @@ def cmd_history(args: argparse.Namespace) -> int:
     ledger = Path(args.ledger)
     rows = _read_ledger_records(ledger)
     if args.type:
-        rows = [
-            row for row in rows if str(row.get("type", "swarm_result")) == args.type
-        ]
+        rows = [row for row in rows if str(row.get("type", "swarm_result")) == args.type]
     if args.op:
         rows = [row for row in rows if str(row.get("op", "")) == args.op]
     if args.limit > 0:
@@ -1847,18 +1737,12 @@ def cmd_replay(args: argparse.Namespace) -> int:
 
     if row.get("type") == "swarm_tokens":
         op = str(row.get("op", "add"))
-        tongues = [
-            str(item.get("tongue", "KO")).upper()
-            for item in row.get("calls", [])
-            if isinstance(item, dict)
-        ]
+        tongues = [str(item.get("tongue", "KO")).upper() for item in row.get("calls", []) if isinstance(item, dict)]
         prior_swarm = next(
             (
                 candidate
                 for candidate in reversed(rows)
-                if candidate is not row
-                and candidate.get("type") == "swarm_result"
-                and candidate.get("op") == op
+                if candidate is not row and candidate.get("type") == "swarm_result" and candidate.get("op") == op
             ),
             None,
         )
@@ -1883,11 +1767,7 @@ def cmd_replay(args: argparse.Namespace) -> int:
 
     if "op" in row and "calls" in row and isinstance(row["calls"], list):
         op = str(row.get("op", "add"))
-        tongues = [
-            str(item.get("tongue", "KO")).upper()
-            for item in row.get("calls", [])
-            if isinstance(item, dict)
-        ]
+        tongues = [str(item.get("tongue", "KO")).upper() for item in row.get("calls", []) if isinstance(item, dict)]
         args_map = row.get("args", {})
         result = swarm_dispatch(
             op,
@@ -1913,11 +1793,7 @@ def _command_key_and_route_packet(source: str, language: str) -> dict[str, Any]:
     command_key = _extract_command_key(source, fallback="add")
     if command_key == "code":
         command_key = "add"
-    operative = (
-        f"arithmetic:{command_key}"
-        if command_key in {"add", "sub", "mul", "div", "mod"}
-        else command_key
-    )
+    operative = f"arithmetic:{command_key}" if command_key in {"add", "sub", "mul", "div", "mod"} else command_key
     return {
         "operative_command": operative,
         "command_key": command_key,
@@ -1932,9 +1808,7 @@ def _command_key_and_route_packet(source: str, language: str) -> dict[str, Any]:
 def _run_python_add(a: int = 7, b: int = 3) -> SwarmCallResult:
     code = f"print({a} + {b})"
     t0 = time.time()
-    proc = subprocess.run(
-        [sys.executable, "-c", code], capture_output=True, text=True, timeout=10.0
-    )
+    proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, timeout=10.0)
     return SwarmCallResult(
         op="add",
         tongue="KO",
@@ -1959,9 +1833,7 @@ def cmd_testing_cli(args: argparse.Namespace) -> int:
     playback_exec = (
         _run_python_add()
         if args.execute
-        else SwarmCallResult(
-            op="add", tongue="KO", language="python", code="", ran=False
-        )
+        else SwarmCallResult(op="add", tongue="KO", language="python", code="", ran=False)
     )
     payload = {
         "version": "geoseal-testing-cli-v1",
@@ -1974,23 +1846,17 @@ def cmd_testing_cli(args: argparse.Namespace) -> int:
             },
             "execution": playback_exec.to_dict(),
         },
-        "honeycomb_analysis": {
-            "matched_output": playback_exec.stdout if playback_exec.ran else ""
-        },
+        "honeycomb_analysis": {"matched_output": playback_exec.stdout if playback_exec.ran else ""},
         "topology": {
             "route_packet": route_packet,
             "operative_command": {
                 "phase_operation": "arithmetic:add",
-                "stability_adjusted_route_score": route_packet[
-                    "stability_adjusted_route_score"
-                ],
+                "stability_adjusted_route_score": route_packet["stability_adjusted_route_score"],
             },
         },
         "native_tokenization": {
             "schema_version": "scbe_testing_cli_native_tokenization_v1",
-            "input": _token_digest_for_tongue(
-                route_packet["route_tongue"], source.encode("utf-8", errors="replace")
-            ),
+            "input": _token_digest_for_tongue(route_packet["route_tongue"], source.encode("utf-8", errors="replace")),
             "output": _token_digest_for_tongue(
                 route_packet["route_tongue"],
                 playback_exec.stdout.encode("utf-8", errors="replace"),
@@ -2004,9 +1870,7 @@ def cmd_testing_cli(args: argparse.Namespace) -> int:
 def cmd_project_scaffold(args: argparse.Namespace) -> int:
     out_dir = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    route_packet = _command_key_and_route_packet(
-        args.content or "", (args.language or "python").lower()
-    )
+    route_packet = _command_key_and_route_packet(args.content or "", (args.language or "python").lower())
     (out_dir / "index.html").write_text(
         "<!doctype html><html><head><title>Pacman Scaffold</title><link rel='stylesheet' href='style.css'></head>"
         "<body><h1>Pacman Scaffold</h1><canvas id='game'></canvas><script src='game.js'></script></body></html>",
@@ -2026,9 +1890,7 @@ def cmd_project_scaffold(args: argparse.Namespace) -> int:
         "route_packet": {"command_key": route_packet["command_key"]},
         "honeycomb_feedback": {"route_confidence": route_packet["route_confidence"]},
     }
-    (out_dir / "project_manifest.json").write_text(
-        json.dumps(manifest, indent=2), encoding="utf-8"
-    )
+    (out_dir / "project_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     payload = {
         "version": "geoseal-project-scaffold-v1",
         "project_kind": "pacman_web",
@@ -2069,9 +1931,7 @@ def _execute_rust_source(source_path: Path) -> tuple[bool, dict[str, Any]]:
             "stdout": "",
             "stderr": compile_proc.stderr,
         }
-    run_proc = subprocess.run(
-        [str(exe_path)], capture_output=True, text=True, timeout=30.0
-    )
+    run_proc = subprocess.run([str(exe_path)], capture_output=True, text=True, timeout=30.0)
     return True, {
         "ran": True,
         "returncode": run_proc.returncode,
@@ -2103,9 +1963,7 @@ def cmd_code_roundtrip(args: argparse.Namespace) -> int:
     }
     if args.execute and language == "rust":
         ran, original_exec = _execute_rust_source(source_path)
-        decoded_path = source_path.with_name(
-            source_path.stem + ".decoded" + source_path.suffix
-        )
+        decoded_path = source_path.with_name(source_path.stem + ".decoded" + source_path.suffix)
         decoded_path.write_bytes(back)
         _, decoded_exec = _execute_rust_source(decoded_path)
         if decoded_path.exists():
@@ -2119,19 +1977,12 @@ def cmd_code_roundtrip(args: argparse.Namespace) -> int:
         "execution": {
             "original": original_exec,
             "decoded": decoded_exec,
-            "stdout_identical": original_exec.get("stdout")
-            == decoded_exec.get("stdout"),
-            "returncode_identical": original_exec.get("returncode")
-            == decoded_exec.get("returncode"),
+            "stdout_identical": original_exec.get("stdout") == decoded_exec.get("stdout"),
+            "returncode_identical": original_exec.get("returncode") == decoded_exec.get("returncode"),
         },
     }
     print(json.dumps(payload, indent=2 if args.json else None))
-    return (
-        0
-        if payload["byte_identical"]
-        and (not args.execute or payload["execution"]["returncode_identical"])
-        else 1
-    )
+    return 0 if payload["byte_identical"] and (not args.execute or payload["execution"]["returncode_identical"]) else 1
 
 
 def cmd_shell(args: argparse.Namespace) -> int:
@@ -2196,9 +2047,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
             payload = {
                 "version": "geoseal-emit-v1",
                 "op": args.op,
-                "semantic_expression": {
-                    "gloss": "add x and y" if args.op == "add" else args.op
-                },
+                "semantic_expression": {"gloss": "add x and y" if args.op == "add" else args.op},
                 "variants": [
                     {
                         "tongue": tongue,
@@ -2207,11 +2056,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
                         "code": code,
                         "seal": seal,
                         "binary": {"byte_count": len(code.encode("utf-8"))},
-                        "tokenizer": {
-                            "token_count": tongue_token_digest(tongue, code).get(
-                                "n_tokens", 0
-                            )
-                        },
+                        "tokenizer": {"token_count": tongue_token_digest(tongue, code).get("n_tokens", 0)},
                     }
                 ],
             }
@@ -2232,9 +2077,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
                     "code": code,
                     "seal": compute_seal(args.op, t, code),
                     "binary": {"byte_count": len(code.encode("utf-8"))},
-                    "tokenizer": {
-                        "token_count": tongue_token_digest(t, code).get("n_tokens", 0)
-                    },
+                    "tokenizer": {"token_count": tongue_token_digest(t, code).get("n_tokens", 0)},
                 }
             )
         print(
@@ -2242,9 +2085,7 @@ def cmd_emit(args: argparse.Namespace) -> int:
                 {
                     "version": "geoseal-emit-v1",
                     "op": args.op,
-                    "semantic_expression": {
-                        "gloss": "add x and y" if args.op == "add" else args.op
-                    },
+                    "semantic_expression": {"gloss": "add x and y" if args.op == "add" else args.op},
                     "variants": rows,
                 },
                 indent=2,
@@ -2280,9 +2121,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 + "\n"
             )
     if args.json:
-        print(
-            json.dumps({"version": "geoseal-run-v1", "call": call.to_dict()}, indent=2)
-        )
+        print(json.dumps({"version": "geoseal-run-v1", "call": call.to_dict()}, indent=2))
         return 0 if (call.ran and call.returncode == 0) else 1
     print(f"op={call.op} tongue={call.tongue} lang={call.language}")
     print(f"code: {call.code}")
@@ -2299,11 +2138,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 def cmd_swarm(args: argparse.Namespace) -> int:
     kv = _parse_kv_args(args.args)
-    tongues = (
-        [t.strip().upper() for t in args.tongues.split(",") if t.strip()]
-        if args.tongues
-        else list(TONGUE_NAMES)
-    )
+    tongues = [t.strip().upper() for t in args.tongues.split(",") if t.strip()] if args.tongues else list(TONGUE_NAMES)
     unknown = [t for t in tongues if t not in ALL_TONGUE_NAMES]
     if unknown:
         print(f"unknown tongues: {unknown}", file=sys.stderr)
@@ -2322,9 +2157,7 @@ def cmd_swarm(args: argparse.Namespace) -> int:
         status = "ok" if (call.ran and call.returncode == 0) else (call.error or "skip")
         out = call.stdout or ""
         print(f"  {call.tongue} ({call.language:>10}): {status:<20} {out}")
-    print(
-        f"quorum_ok={result.quorum_ok}  consensus={result.consensus_hash[:12] or '-'}"
-    )
+    print(f"quorum_ok={result.quorum_ok}  consensus={result.consensus_hash[:12] or '-'}")
 
     # Per-call sacred-tongue boundary digests for downstream parity training.
     # Written as a single 'swarm_tokens' summary record so we don't disturb the
@@ -2366,12 +2199,8 @@ def cmd_seal(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
     tier = getattr(args, "tier", "ALLOW")
-    seal = compute_seal(
-        args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier
-    )
-    print(
-        f"tongue={tongue} phase={ALL_TONGUE_PHASES.get(tongue, 0.0):.6f} phi_cost={phi_cost:.4f} tier={tier}"
-    )
+    seal = compute_seal(args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier)
+    print(f"tongue={tongue} phase={ALL_TONGUE_PHASES.get(tongue, 0.0):.6f} phi_cost={phi_cost:.4f} tier={tier}")
     print(f"seal={seal}")
     return 0
 
@@ -2380,9 +2209,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
     tier = getattr(args, "tier", "ALLOW")
-    ok = verify_seal(
-        args.seal, args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier
-    )
+    ok = verify_seal(args.seal, args.op or "seal", tongue, args.payload, phi_cost=phi_cost, tier=tier)
     print("OK" if ok else "MISMATCH")
     return 0 if ok else 1
 
@@ -2420,9 +2247,7 @@ def cmd_agent(args: argparse.Namespace) -> int:
     semantic_ir = infer_semantic_ir(task, force_tongue=force_tongue)
     if verbose:
         kw = f" (keyword: {route.override_keyword!r})" if route.override_keyword else ""
-        print(
-            f"[route] {route.full_name} ({route.tongue}) -> {route.language} | conf={route.confidence:.2f}{kw}"
-        )
+        print(f"[route] {route.full_name} ({route.tongue}) -> {route.language} | conf={route.confidence:.2f}{kw}")
         print(f"[route] trits: {route.trit_scores}")
         print(f"[ir] {semantic_ir.signature}")
 
@@ -2478,9 +2303,7 @@ def cmd_agent(args: argparse.Namespace) -> int:
         while not ok and result.provider != "none":
             forbidden.append(result.provider)
             if verbose:
-                print(
-                    f"[escalate] syntax_check failed on {result.provider}; retrying with forbid={forbidden}"
-                )
+                print(f"[escalate] syntax_check failed on {result.provider}; retrying with forbid={forbidden}")
             result = generate(
                 task,
                 language=route.language,
@@ -2506,9 +2329,7 @@ def cmd_agent(args: argparse.Namespace) -> int:
 
     if verbose:
         print(f"[generate] provider={result.provider} model={result.model}")
-        print(
-            f"[generate] prompt_tokens={result.prompt_tokens} completion_tokens={result.completion_tokens}"
-        )
+        print(f"[generate] prompt_tokens={result.prompt_tokens} completion_tokens={result.completion_tokens}")
         if result.attempted_providers:
             chain = " -> ".join(
                 f"{a['provider']}({'ok' if a['success'] else (a.get('skipped_reason') or 'err')})"
@@ -2520,9 +2341,7 @@ def cmd_agent(args: argparse.Namespace) -> int:
     seal = compute_seal("agent", route.tongue, result.code, task, phi_cost, tier)
 
     # 5. Print output
-    print(
-        f"# tongue={route.full_name} ({route.tongue}) lang={route.language} tier={tier} seal={seal[:16]}..."
-    )
+    print(f"# tongue={route.full_name} ({route.tongue}) lang={route.language} tier={tier} seal={seal[:16]}...")
     _write_stdout_safe(result.code)
 
     # 6. SFT log — write as governance record to .scbe/geoseal_calls.jsonl
@@ -2602,9 +2421,7 @@ def cmd_arc(args: argparse.Namespace) -> int:
     verbose = args.verbose
 
     if verbose:
-        print(
-            f"[arc] task_id={task.task_id}  train={len(task.train)}  test_inputs={len(task.test_inputs)}"
-        )
+        print(f"[arc] task_id={task.task_id}  train={len(task.train)}  test_inputs={len(task.test_inputs)}")
 
     # Synthesize program
     solution = synthesize_program(task)
@@ -2678,9 +2495,7 @@ def cmd_arc(args: argparse.Namespace) -> int:
         ledger.parent.mkdir(parents=True, exist_ok=True)
         # Boundary digests: input is the task identity + family seed; output is the
         # serialized synthesized program (deterministic, semantic-preserving).
-        arc_in_payload = json.dumps(
-            {"task_id": task.task_id, "n_train": total}, sort_keys=True
-        )
+        arc_in_payload = json.dumps({"task_id": task.task_id, "n_train": total}, sort_keys=True)
         arc_out_payload = json.dumps(
             {
                 "family": solution.family,
@@ -2878,9 +2693,7 @@ def validate_workflow_spec(spec: Dict[str, Any]) -> List[str]:
             seen_ids.add(sid)
         op = step.get("op")
         if op not in WORKFLOW_OP_KINDS:
-            errors.append(
-                f"{prefix}({sid}): op must be one of {sorted(WORKFLOW_OP_KINDS)}, got {op!r}"
-            )
+            errors.append(f"{prefix}({sid}): op must be one of {sorted(WORKFLOW_OP_KINDS)}, got {op!r}")
         if "task" not in step:
             errors.append(f"{prefix}({sid}): missing required field 'task'")
         tongue = step.get("tongue")
@@ -2899,9 +2712,7 @@ def validate_workflow_spec(spec: Dict[str, Any]) -> List[str]:
             else:
                 for fp in forbid:
                     if fp not in WORKFLOW_VALID_PROVIDERS:
-                        errors.append(
-                            f"{prefix}({sid}): forbid_provider entry invalid {fp!r}"
-                        )
+                        errors.append(f"{prefix}({sid}): forbid_provider entry invalid {fp!r}")
     return errors
 
 
@@ -2938,9 +2749,7 @@ def substitute_workflow_refs(
     return _WORKFLOW_REF_PATTERN.sub(_resolve, template)
 
 
-def _resolve_step_setting(
-    step: Dict[str, Any], spec: Dict[str, Any], key: str, default: Any = None
-) -> Any:
+def _resolve_step_setting(step: Dict[str, Any], spec: Dict[str, Any], key: str, default: Any = None) -> Any:
     if key in step and step[key] is not None:
         return step[key]
     default_key = f"default_{key}"
@@ -2982,18 +2791,14 @@ def _run_workflow_step_agent(
         budget_tokens = int(budget_tokens)
     max_tier = _resolve_step_setting(step, spec, "max_tier")
     small_first = bool(_resolve_step_setting(step, spec, "small_first", default=False))
-    forbid_provider = list(
-        _resolve_step_setting(step, spec, "forbid_provider", default=[]) or []
-    )
+    forbid_provider = list(_resolve_step_setting(step, spec, "forbid_provider", default=[]) or [])
     chi = float(_resolve_step_setting(step, spec, "chi", default=0.2))
 
     route = route_task(task, force_tongue=force_tongue)
     phi_cost = phi_wall_cost(chi, route.tongue)
     tier = phi_wall_tier(phi_cost)
     if verbose:
-        print(
-            f"[workflow:{sid}] route={route.full_name}({route.tongue}) tier={tier} cost={phi_cost:.4f}"
-        )
+        print(f"[workflow:{sid}] route={route.full_name}({route.tongue}) tier={tier} cost={phi_cost:.4f}")
     if tier == "DENY":
         return WorkflowStepResult(
             step_id=sid,
@@ -3125,13 +2930,9 @@ def run_workflow(
     for idx, step in enumerate(spec["steps"]):
         op = step["op"]
         if op == "agent":
-            result = _run_workflow_step_agent(
-                step, spec, input_text, step_outputs, verbose=verbose
-            )
+            result = _run_workflow_step_agent(step, spec, input_text, step_outputs, verbose=verbose)
         elif op == "seal":
-            result = _run_workflow_step_seal(
-                step, spec, input_text, step_outputs, verbose=verbose
-            )
+            result = _run_workflow_step_seal(step, spec, input_text, step_outputs, verbose=verbose)
         else:  # pragma: no cover - already validated
             raise SystemExit(f"workflow op kind not implemented: {op}")
         step_outputs[result.step_id] = result
@@ -3168,9 +2969,7 @@ def run_workflow(
                 )
             break
         prev_step_id = result.step_id
-        prev_tongue_out_sha = (
-            (result.tongue_out or {}).get("sha256") if result.tongue_out else None
-        )
+        prev_tongue_out_sha = (result.tongue_out or {}).get("sha256") if result.tongue_out else None
 
     summary = {
         "type": "workflow_run",
@@ -3245,9 +3044,7 @@ def cmd_workflow(args: argparse.Namespace) -> int:
         if args.input_file:
             input_text = Path(args.input_file).read_text(encoding="utf-8")
         ledger = None if args.no_ledger else Path(args.ledger)
-        summary = run_workflow(
-            spec, input_text=input_text, ledger=ledger, verbose=args.verbose
-        )
+        summary = run_workflow(spec, input_text=input_text, ledger=ledger, verbose=args.verbose)
         if args.json:
             payload = {k: v for k, v in summary.items() if not k.startswith("_")}
             print(json.dumps(payload))
@@ -3273,23 +3070,15 @@ def build_parser() -> argparse.ArgumentParser:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     p_ops = sub.add_parser("ops", help="List tokenizer ops")
-    p_ops.add_argument(
-        "--band", default=None, help="ARITHMETIC|LOGIC|COMPARISON|AGGREGATION"
-    )
+    p_ops.add_argument("--band", default=None, help="ARITHMETIC|LOGIC|COMPARISON|AGGREGATION")
     p_ops.set_defaults(func=cmd_ops)
 
-    p_encode = sub.add_parser(
-        "encode-cmd", help="Encode payload through Sacred Tongues transport"
-    )
+    p_encode = sub.add_parser("encode-cmd", help="Encode payload through Sacred Tongues transport")
     p_encode.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
-    p_encode.add_argument(
-        "payload", nargs="?", default=None, help="Plaintext payload (defaults to stdin)"
-    )
+    p_encode.add_argument("payload", nargs="?", default=None, help="Plaintext payload (defaults to stdin)")
     p_encode.set_defaults(func=cmd_encode_cmd)
 
-    p_binary = sub.add_parser(
-        "binary-to-tokenizer", help="Map binary bytes into Sacred Tongue tokenizer rows"
-    )
+    p_binary = sub.add_parser("binary-to-tokenizer", help="Map binary bytes into Sacred Tongue tokenizer rows")
     p_binary.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
     p_binary.add_argument(
         "--language",
@@ -3297,28 +3086,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional requested language for prime-lane check",
     )
     p_binary.add_argument("--json", action="store_true")
-    p_binary.add_argument(
-        "bits", nargs="?", default="", help="Space/comma separated 8-bit chunks"
-    )
+    p_binary.add_argument("bits", nargs="?", default="", help="Space/comma separated 8-bit chunks")
     p_binary.set_defaults(func=cmd_binary_to_tokenizer)
 
-    p_code_packet = sub.add_parser(
-        "code-packet", help="Build SCBE weighted code packet from source"
-    )
+    p_code_packet = sub.add_parser("code-packet", help="Build SCBE weighted code packet from source")
     p_code_packet.add_argument("--content", default="", help="Inline source content")
-    p_code_packet.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_code_packet.add_argument("--source-file", default=None, help="Read source content from file")
     p_code_packet.add_argument("--source-name", default=None)
     p_code_packet.add_argument("--language", default="python")
-    p_code_packet.add_argument(
-        "--backend", default=None, choices=["local", "ollama", "hf", "claude"]
-    )
+    p_code_packet.add_argument("--backend", default=None, choices=["local", "ollama", "hf", "claude"])
     p_code_packet.set_defaults(func=cmd_code_packet)
 
-    p_braille = sub.add_parser(
-        "braille-lane", help="Build braille/polyhedral lane from source or code packet"
-    )
+    p_braille = sub.add_parser("braille-lane", help="Build braille/polyhedral lane from source or code packet")
     p_braille.add_argument("--content", default="")
     p_braille.add_argument("--source-file", default=None)
     p_braille.add_argument("--packet-file", default=None)
@@ -3327,41 +3106,27 @@ def build_parser() -> argparse.ArgumentParser:
     p_braille.add_argument("--json", action="store_true")
     p_braille.set_defaults(func=cmd_braille_lane)
 
-    p_igraph = sub.add_parser(
-        "interaction-graph", help="Build source/token/STISA/atomic interaction graph"
-    )
+    p_igraph = sub.add_parser("interaction-graph", help="Build source/token/STISA/atomic interaction graph")
     p_igraph.add_argument("--content", default="")
     p_igraph.add_argument("--source-file", default=None)
     p_igraph.add_argument("--packet-file", default=None)
     p_igraph.add_argument("--source-name", default=None)
     p_igraph.add_argument("--language", default="python")
-    p_igraph.add_argument(
-        "--max-binary-nodes", type=int, default=8, dest="max_binary_nodes"
-    )
-    p_igraph.add_argument(
-        "--format", default="json", choices=["json", "mermaid", "dot"]
-    )
+    p_igraph.add_argument("--max-binary-nodes", type=int, default=8, dest="max_binary_nodes")
+    p_igraph.add_argument("--format", default="json", choices=["json", "mermaid", "dot"])
     p_igraph.set_defaults(func=cmd_interaction_graph)
 
-    p_topology = sub.add_parser(
-        "topology-view", help="Build topology view from source or packet"
-    )
+    p_topology = sub.add_parser("topology-view", help="Build topology view from source or packet")
     p_topology.add_argument("--content", default="")
     p_topology.add_argument("--source-file", default=None)
     p_topology.add_argument("--packet-file", default=None)
     p_topology.add_argument("--source-name", default=None)
     p_topology.add_argument("--language", default="python")
-    p_topology.add_argument(
-        "--max-binary-nodes", type=int, default=8, dest="max_binary_nodes"
-    )
-    p_topology.add_argument(
-        "--format", default="json", choices=["json", "mermaid", "dot"]
-    )
+    p_topology.add_argument("--max-binary-nodes", type=int, default=8, dest="max_binary_nodes")
+    p_topology.add_argument("--format", default="json", choices=["json", "mermaid", "dot"])
     p_topology.set_defaults(func=cmd_topology_view)
 
-    p_sequence = sub.add_parser(
-        "cross-domain-sequence", help="Build near-related cross-domain route sequence"
-    )
+    p_sequence = sub.add_parser("cross-domain-sequence", help="Build near-related cross-domain route sequence")
     p_sequence.add_argument("--content", default="")
     p_sequence.add_argument("--source-file", default=None)
     p_sequence.add_argument("--packet-file", default=None)
@@ -3371,9 +3136,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_sequence.add_argument("--json", action="store_true")
     p_sequence.set_defaults(func=cmd_cross_domain_sequence)
 
-    p_honeycomb = sub.add_parser(
-        "honeycomb-analysis", help="Analyze route cells and execution stability"
-    )
+    p_honeycomb = sub.add_parser("honeycomb-analysis", help="Analyze route cells and execution stability")
     p_honeycomb.add_argument("--content", default="")
     p_honeycomb.add_argument("--source-file", default=None)
     p_honeycomb.add_argument("--packet-file", default=None)
@@ -3383,9 +3146,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_honeycomb.add_argument("--json", action="store_true")
     p_honeycomb.set_defaults(func=cmd_honeycomb_analysis)
 
-    p_cognition = sub.add_parser(
-        "cognition-map", help="Build cognitive well/ternary map"
-    )
+    p_cognition = sub.add_parser("cognition-map", help="Build cognitive well/ternary map")
     p_cognition.add_argument("--content", default="")
     p_cognition.add_argument("--source-file", default=None)
     p_cognition.add_argument("--packet-file", default=None)
@@ -3393,45 +3154,31 @@ def build_parser() -> argparse.ArgumentParser:
     p_cognition.add_argument("--language", default="python")
     p_cognition.set_defaults(func=cmd_cognition_map)
 
-    p_cluster = sub.add_parser(
-        "cluster-graph", help="Build cross-lattice cluster graph"
-    )
+    p_cluster = sub.add_parser("cluster-graph", help="Build cross-lattice cluster graph")
     p_cluster.add_argument("--content", default="")
     p_cluster.add_argument("--source-file", default=None)
     p_cluster.add_argument("--packet-file", default=None)
     p_cluster.add_argument("--source-name", default=None)
     p_cluster.add_argument("--language", default="python")
-    p_cluster.add_argument(
-        "--max-binary-nodes", type=int, default=8, dest="max_binary_nodes"
-    )
+    p_cluster.add_argument("--max-binary-nodes", type=int, default=8, dest="max_binary_nodes")
     p_cluster.set_defaults(func=cmd_cluster_graph)
 
-    p_formation = sub.add_parser(
-        "formation-graph", help="Build cross-lattice formation graph"
-    )
+    p_formation = sub.add_parser("formation-graph", help="Build cross-lattice formation graph")
     p_formation.add_argument("--content", default="")
     p_formation.add_argument("--source-file", default=None)
     p_formation.add_argument("--packet-file", default=None)
     p_formation.add_argument("--source-name", default=None)
     p_formation.add_argument("--language", default="python")
-    p_formation.add_argument(
-        "--max-binary-nodes", type=int, default=8, dest="max_binary_nodes"
-    )
+    p_formation.add_argument("--max-binary-nodes", type=int, default=8, dest="max_binary_nodes")
     p_formation.set_defaults(func=cmd_formation_graph)
 
-    p_explain = sub.add_parser(
-        "explain-route", help="Explain route IR + backend chain for a source/task"
-    )
+    p_explain = sub.add_parser("explain-route", help="Explain route IR + backend chain for a source/task")
     p_explain.add_argument("--content", default="", help="Inline source content")
-    p_explain.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_explain.add_argument("--source-file", default=None, help="Read source content from file")
     p_explain.add_argument("--source-name", default=None)
     p_explain.add_argument("--language", default="python")
     p_explain.add_argument("--tongue", default=None, help="Force tongue")
-    p_explain.add_argument(
-        "--provider", default=None, choices=["local", "ollama", "hf", "claude"]
-    )
+    p_explain.add_argument("--provider", default=None, choices=["local", "ollama", "hf", "claude"])
     p_explain.add_argument(
         "--forbid-provider",
         action="append",
@@ -3448,15 +3195,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_explain.add_argument("--json", action="store_true")
     p_explain.set_defaults(func=cmd_explain_route)
 
-    p_backends = sub.add_parser(
-        "backend-registry", help="List backend providers and lane support"
-    )
+    p_backends = sub.add_parser("backend-registry", help="List backend providers and lane support")
     p_backends.add_argument("--json", action="store_true")
     p_backends.set_defaults(func=cmd_backend_registry)
 
-    p_harness = sub.add_parser(
-        "agent-harness", help="Emit model-neutral agent harness manifest"
-    )
+    p_harness = sub.add_parser("agent-harness", help="Emit model-neutral agent harness manifest")
     p_harness.add_argument("--goal", default="", help="Agent goal or task intent")
     p_harness.add_argument(
         "--language",
@@ -3483,29 +3226,21 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_replay = sub.add_parser("replay", help="Replay a previous ledger record")
     p_replay.add_argument("--ledger", default=str(DEFAULT_LEDGER))
-    p_replay.add_argument(
-        "--index", type=int, default=None, help="Record index (default: last)"
-    )
+    p_replay.add_argument("--index", type=int, default=None, help="Record index (default: last)")
     p_replay.add_argument("--timeout", type=float, default=10.0)
     p_replay.add_argument("--no-ledger", action="store_true")
     p_replay.add_argument("--json", action="store_true")
     p_replay.set_defaults(func=cmd_replay)
 
-    p_testing = sub.add_parser(
-        "testing-cli", help="Build testing playback packet and optionally execute"
-    )
+    p_testing = sub.add_parser("testing-cli", help="Build testing playback packet and optionally execute")
     p_testing.add_argument("--content", default="", help="Inline source content")
-    p_testing.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_testing.add_argument("--source-file", default=None, help="Read source content from file")
     p_testing.add_argument("--language", default="python")
     p_testing.add_argument("--execute", action="store_true")
     p_testing.add_argument("--json", action="store_true")
     p_testing.set_defaults(func=cmd_testing_cli)
 
-    p_scaffold = sub.add_parser(
-        "project-scaffold", help="Create lightweight project scaffold from task intent"
-    )
+    p_scaffold = sub.add_parser("project-scaffold", help="Create lightweight project scaffold from task intent")
     p_scaffold.add_argument("--content", required=True)
     p_scaffold.add_argument("--language", default="python")
     p_scaffold.add_argument("--output-dir", required=True, dest="output_dir")
@@ -3523,35 +3258,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_roundtrip.add_argument("--json", action="store_true")
     p_roundtrip.set_defaults(func=cmd_code_roundtrip)
 
-    p_portal = sub.add_parser(
-        "portal-box", help="Build a local Polly portal-box route packet"
-    )
+    p_portal = sub.add_parser("portal-box", help="Build a local Polly portal-box route packet")
     p_portal.add_argument("--content", default="", help="Inline source content")
-    p_portal.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_portal.add_argument("--source-file", default=None, help="Read source content from file")
     p_portal.add_argument("--language", default="python")
     p_portal.add_argument("--source-name", default=None)
     p_portal.add_argument("--include-extended", action="store_true")
     p_portal.add_argument("--json", action="store_true")
     p_portal.set_defaults(func=cmd_portal_box)
 
-    p_stream = sub.add_parser(
-        "stream-wheel", help="Build a local Polly stream-wheel route packet"
-    )
+    p_stream = sub.add_parser("stream-wheel", help="Build a local Polly stream-wheel route packet")
     p_stream.add_argument("--content", default="", help="Inline source content")
-    p_stream.add_argument(
-        "--source-file", default=None, help="Read source content from file"
-    )
+    p_stream.add_argument("--source-file", default=None, help="Read source content from file")
     p_stream.add_argument("--language", default="python")
     p_stream.add_argument("--source-name", default=None)
     p_stream.add_argument("--include-extended", action="store_true")
     p_stream.add_argument("--json", action="store_true")
     p_stream.set_defaults(func=cmd_stream_wheel)
 
-    p_mars = sub.add_parser(
-        "mars-mission", help="Build a GeoSeal Mars mission compass/minimap packet"
-    )
+    p_mars = sub.add_parser("mars-mission", help="Build a GeoSeal Mars mission compass/minimap packet")
     p_mars.add_argument("--input", default=None, help="Mission telemetry JSON file")
     p_mars.add_argument("--payload", default=None, help="Inline mission telemetry JSON")
     p_mars.add_argument("--json", action="store_true")
@@ -3561,30 +3286,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_shell.add_argument("--command", required=True)
     p_shell.set_defaults(func=cmd_shell)
 
-    p_decode = sub.add_parser(
-        "decode-cmd", help="Decode Sacred Tongue tokens back to plaintext"
-    )
+    p_decode = sub.add_parser("decode-cmd", help="Decode Sacred Tongue tokens back to plaintext")
     p_decode.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
-    p_decode.add_argument(
-        "tokens", nargs="?", default=None, help="Token stream (defaults to stdin)"
-    )
+    p_decode.add_argument("tokens", nargs="?", default=None, help="Token stream (defaults to stdin)")
     p_decode.set_defaults(func=cmd_decode_cmd)
 
-    p_xlate = sub.add_parser(
-        "xlate-cmd", help="Translate Sacred Tongue token stream across tongues"
-    )
+    p_xlate = sub.add_parser("xlate-cmd", help="Translate Sacred Tongue token stream across tongues")
     p_xlate.add_argument("--src", required=True, help="Source tongue")
     p_xlate.add_argument("--dst", required=True, help="Destination tongue")
-    p_xlate.add_argument(
-        "tokens", nargs="?", default=None, help="Token stream (defaults to stdin)"
-    )
+    p_xlate.add_argument("tokens", nargs="?", default=None, help="Token stream (defaults to stdin)")
     p_xlate.set_defaults(func=cmd_xlate_cmd)
 
     p_atomic = sub.add_parser("atomic", help="Inspect atomic substrate row for an op")
     p_atomic.add_argument("op")
-    p_atomic.add_argument(
-        "--show-code", action="store_true", help="Include all code templates"
-    )
+    p_atomic.add_argument("--show-code", action="store_true", help="Include all code templates")
     p_atomic.set_defaults(func=cmd_atomic)
 
     p_emit = sub.add_parser("emit", help="Emit code for an op")
@@ -3607,13 +3322,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_swarm = sub.add_parser("swarm", help="Dispatch an op to a swarm of tongue bots")
     p_swarm.add_argument("op")
-    p_swarm.add_argument(
-        "--tongues", default=None, help="comma-separated (default: all 6)"
-    )
+    p_swarm.add_argument("--tongues", default=None, help="comma-separated (default: all 6)")
     p_swarm.add_argument("--timeout", type=float, default=10.0)
-    p_swarm.add_argument(
-        "--no-run", action="store_true", help="Emit only, don't execute"
-    )
+    p_swarm.add_argument("--no-run", action="store_true", help="Emit only, don't execute")
     p_swarm.add_argument("--no-ledger", action="store_true", help="Skip writing ledger")
     p_swarm.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_swarm.add_argument("--json", action="store_true")
@@ -3659,9 +3370,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_agent = sub.add_parser("agent", help="Route a coding task via Polly + GeoSeal")
     p_agent.add_argument("task", help="Natural language coding task")
-    p_agent.add_argument(
-        "--tongue", default=None, help="Force tongue (KO/AV/RU/CA/UM/DR)"
-    )
+    p_agent.add_argument("--tongue", default=None, help="Force tongue (KO/AV/RU/CA/UM/DR)")
     p_agent.add_argument(
         "--provider",
         default=None,
@@ -3712,28 +3421,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_arc.add_argument("task_file", help="Path to ARC task JSON")
     p_arc.add_argument("--json", action="store_true", help="Machine-readable output")
     p_arc.add_argument("--onnx", action="store_true", help="Export program as ONNX")
-    p_arc.add_argument(
-        "--onnx-out", default=None, dest="onnx_out", help="ONNX output path"
-    )
+    p_arc.add_argument("--onnx-out", default=None, dest="onnx_out", help="ONNX output path")
     p_arc.add_argument("--no-ledger", action="store_true", help="Skip ledger write")
     p_arc.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_arc.add_argument("--verbose", "-v", action="store_true")
     p_arc.set_defaults(func=cmd_arc)
 
-    p_cursor = sub.add_parser(
-        "cursor", help="Delegate a bounded repo task to Cursor Agent"
-    )
+    p_cursor = sub.add_parser("cursor", help="Delegate a bounded repo task to Cursor Agent")
     p_cursor.add_argument("task", help="Repo task to hand to Cursor Agent")
-    p_cursor.add_argument(
-        "--workspace", default=str(Path.cwd()), help="Workspace directory"
-    )
+    p_cursor.add_argument("--workspace", default=str(Path.cwd()), help="Workspace directory")
     p_cursor.add_argument("--model", default=None, help="Cursor model override")
-    p_cursor.add_argument(
-        "--mode", default=None, choices=["plan", "ask"], help="Cursor execution mode"
-    )
-    p_cursor.add_argument(
-        "--force", action="store_true", help="Pass --force to Cursor Agent"
-    )
+    p_cursor.add_argument("--mode", default=None, choices=["plan", "ask"], help="Cursor execution mode")
+    p_cursor.add_argument("--force", action="store_true", help="Pass --force to Cursor Agent")
     p_cursor.add_argument(
         "--output-format",
         default="text",
@@ -3747,22 +3446,16 @@ def build_parser() -> argparse.ArgumentParser:
         dest="stream_partial_output",
         help="Enable stream-json partial output deltas",
     )
-    p_cursor.add_argument(
-        "--continue-session", action="store_true", dest="continue_session"
-    )
+    p_cursor.add_argument("--continue-session", action="store_true", dest="continue_session")
     p_cursor.add_argument("--no-ledger", action="store_true", help="Skip ledger write")
     p_cursor.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_cursor.add_argument("--verbose", "-v", action="store_true")
     p_cursor.set_defaults(func=cmd_cursor)
 
-    p_workflow = sub.add_parser(
-        "workflow", help="Declarative .geoseal.yaml workflow runner"
-    )
+    p_workflow = sub.add_parser("workflow", help="Declarative .geoseal.yaml workflow runner")
     wf_sub = p_workflow.add_subparsers(dest="workflow_cmd", required=True)
 
-    p_wf_list = wf_sub.add_parser(
-        "list", help="List .geoseal.yaml workflows in a directory"
-    )
+    p_wf_list = wf_sub.add_parser("list", help="List .geoseal.yaml workflows in a directory")
     p_wf_list.add_argument("--dir", default=".", help="Directory to scan")
     p_wf_list.add_argument("--json", action="store_true")
     p_wf_list.set_defaults(func=cmd_workflow, workflow_cmd="list")

@@ -158,9 +158,7 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         finally:
             if temp_path is not None and temp_path.exists():
                 try:
-                    decoded = temp_path.with_name(
-                        temp_path.stem + ".decoded" + temp_path.suffix
-                    )
+                    decoded = temp_path.with_name(temp_path.stem + ".decoded" + temp_path.suffix)
                     if decoded.exists():
                         decoded.unlink(missing_ok=True)
                     temp_path.unlink(missing_ok=True)

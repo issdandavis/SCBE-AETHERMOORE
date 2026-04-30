@@ -832,12 +832,14 @@ class TongueLatticeGovernor:
 
 def demo():
     """Demonstrate the dual lattice cross-stitch system."""
-    print("""
+    print(
+        """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║                    DUAL LATTICE CROSS-STITCH DEMO                             ║
 ║            Kyber + Dilithium + Sacred Tongues + Time + Intent                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
     # Create governor
     governor = TongueLatticeGovernor()
@@ -894,7 +896,8 @@ def demo():
 
     print("       └" + "─" * 50 + "┘")
 
-    print("""
+    print(
+        """
 
   Legend:
   ────────
@@ -903,7 +906,8 @@ def demo():
   • KO-I coupling: Strongest (intent binds to purpose)
   • Tongue-Phase: Sinusoidal based on phase angles
   • Flux (ν): Modulates all couplings
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":

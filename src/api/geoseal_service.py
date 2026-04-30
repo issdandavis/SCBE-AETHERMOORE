@@ -174,9 +174,7 @@ async def spaceport_status() -> dict[str, Any]:
 
 
 @app.post("/runtime/inspect", tags=["Runtime"])
-async def runtime_inspect(
-    request: RuntimeInspectRequest, user: str = Depends(verify_api_key)
-) -> dict[str, Any]:
+async def runtime_inspect(request: RuntimeInspectRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
     return {
         "status": "ok",
@@ -208,9 +206,7 @@ async def runtime_system_cards(
 
 
 @app.post("/runtime/run-route", tags=["Runtime"])
-async def runtime_run_route(
-    request: RuntimeRunRouteRequest, user: str = Depends(verify_api_key)
-) -> dict[str, Any]:
+async def runtime_run_route(request: RuntimeRunRouteRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
     from src.geoseal_cli import (
         _build_execution_shell_payload,
@@ -236,9 +232,7 @@ async def runtime_run_route(
 
 
 @app.post("/runtime/portal-box", tags=["Runtime"])
-async def runtime_portal_box(
-    request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)
-) -> dict[str, Any]:
+async def runtime_portal_box(request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
     from src.geoseal_cli import _build_portal_box_payload
 
@@ -254,9 +248,7 @@ async def runtime_portal_box(
 
 
 @app.post("/runtime/stream-wheel", tags=["Runtime"])
-async def runtime_stream_wheel(
-    request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)
-) -> dict[str, Any]:
+async def runtime_stream_wheel(request: RuntimePortalBoxRequest, user: str = Depends(verify_api_key)) -> dict[str, Any]:
     _ = user
     from src.geoseal_cli import _build_stream_wheel_payload
 
@@ -272,15 +264,11 @@ async def runtime_stream_wheel(
 
 
 @app.post("/v1/geoseal/{command}", tags=["GeoSeal CLI"])
-async def geoseal_cli_http(
-    command: str, body: dict[str, Any] = Body(default_factory=dict)
-) -> dict[str, Any]:
+async def geoseal_cli_http(command: str, body: dict[str, Any] = Body(default_factory=dict)) -> dict[str, Any]:
     """Expose curated GeoSeal CLI subcommands over HTTP for ``bin/geoseal.cjs`` routing."""
 
     if command not in GEOSEAL_CLI_COMMANDS:
-        raise HTTPException(
-            status_code=404, detail=f"Unknown GeoSeal command: {command}"
-        )
+        raise HTTPException(status_code=404, detail=f"Unknown GeoSeal command: {command}")
     from src.api.geoseal_cli_bridge import dispatch_geoseal_command
 
     try:
@@ -365,8 +353,6 @@ async def polly_chat(request: PollyChatRequest) -> dict[str, Any]:
         "status": "ok",
         "model": "polly-local-control-plane",
         "message": "local GeoSeal route resolved",
-        "coding_spine": {
-            "tongue": resolution.get("runtime_packet", {}).get("route_tongue", "KO")
-        },
+        "coding_spine": {"tongue": resolution.get("runtime_packet", {}).get("route_tongue", "KO")},
         "deck": deck,
     }

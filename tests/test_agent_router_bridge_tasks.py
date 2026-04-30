@@ -24,14 +24,10 @@ EXPECTED_TASKS = {
 
 def test_vercel_bridge_allowed_tasks_match_router_and_page() -> None:
     common = (REPO_ROOT / "api" / "_agent_common.js").read_text(encoding="utf-8")
-    workflow = (REPO_ROOT / ".github" / "workflows" / "agent-router.yml").read_text(
-        encoding="utf-8"
-    )
+    workflow = (REPO_ROOT / ".github" / "workflows" / "agent-router.yml").read_text(encoding="utf-8")
     page = (REPO_ROOT / "docs" / "agents.html").read_text(encoding="utf-8")
 
-    allowed_match = re.search(
-        r"ALLOWED_TASKS\s*=\s*new Set\(\[(.*?)\]\)", common, re.DOTALL
-    )
+    allowed_match = re.search(r"ALLOWED_TASKS\s*=\s*new Set\(\[(.*?)\]\)", common, re.DOTALL)
     assert allowed_match, "ALLOWED_TASKS declaration not found"
     allowed = set(re.findall(r'"([^"]+)"', allowed_match.group(1)))
     assert EXPECTED_TASKS <= allowed

@@ -156,9 +156,7 @@ def build_agent_harness_manifest_v1(
     goal = (inline_goal or "").strip()[:12000]
     preferred = (preferred_language or "python").strip().lower()
     matrix = _language_matrix()
-    language_row = next(
-        (row for row in matrix if row["language"] == preferred), matrix[0]
-    )
+    language_row = next((row for row in matrix if row["language"] == preferred), matrix[0])
     bridge = build_agent_tool_bridge_v1(inline_goal=goal or "inspect harness")
     return {
         "schema_version": "scbe_agent_harness_manifest_v1",
@@ -222,14 +220,10 @@ def build_agent_tool_bridge_v1(
     exe = _exe()
     if intent_relative_posix:
         src = shlex.quote(intent_relative_posix)
-        file_args = (
-            f"--source-file {src} --language python --source-name task_intent.txt"
-        )
+        file_args = f"--source-file {src} --language python --source-name task_intent.txt"
     else:
         text = (inline_goal or "")[:12000]
-        file_args = (
-            f"--content {shlex.quote(text)} --language python --source-name agent_goal"
-        )
+        file_args = f"--content {shlex.quote(text)} --language python --source-name agent_goal"
 
     geoseal_cli = {
         "backend_registry_json": f"{exe} -m src.geoseal_cli backend-registry --json",
@@ -239,12 +233,8 @@ def build_agent_tool_bridge_v1(
         "testing_cli_json": f"{exe} -m src.geoseal_cli testing-cli {file_args} --json",
     }
 
-    base_url = os.environ.get("GEOSEAL_SERVICE_URL", "http://127.0.0.1:8765").rstrip(
-        "/"
-    )
-    n8n_bridge = os.environ.get("SCBE_N8N_BRIDGE_URL", "http://127.0.0.1:8001").rstrip(
-        "/"
-    )
+    base_url = os.environ.get("GEOSEAL_SERVICE_URL", "http://127.0.0.1:8765").rstrip("/")
+    n8n_bridge = os.environ.get("SCBE_N8N_BRIDGE_URL", "http://127.0.0.1:8001").rstrip("/")
 
     return {
         "schema_version": "scbe_agent_tool_bridge_v1",

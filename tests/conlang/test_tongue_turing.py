@@ -892,7 +892,8 @@ def run_turing_test():
     print(f"{'='*60}")
 
     if failed == 0:
-        print("""
+        print(
+            """
 CONCLUSION: The Six Sacred Tongues ARE coding languages.
 
   Each tongue's existing structure provides:
@@ -916,7 +917,8 @@ CONCLUSION: The Six Sacred Tongues ARE coding languages.
     Draumric    = Make    (target-deps-recipe)
 
   idea → thought → code → trial → error → function ✓
-""")
+"""
+        )
 
     return failed == 0
 

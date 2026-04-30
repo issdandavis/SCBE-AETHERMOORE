@@ -144,12 +144,8 @@ def build_route_ir(
     canonical_source = source_text.replace("\r\n", "\n")
     task_hash = sha256(canonical_task.encode("utf-8")).hexdigest()
     source_hash = sha256(canonical_source.encode("utf-8")).hexdigest()
-    plan_key = sha256(
-        f"{semantic.signature}|{source_hash}|{source_language.lower()}".encode("utf-8")
-    ).hexdigest()
-    backend = selected_backend or (
-        available_backends[0] if available_backends else "none"
-    )
+    plan_key = sha256(f"{semantic.signature}|{source_hash}|{source_language.lower()}".encode("utf-8")).hexdigest()
+    backend = selected_backend or (available_backends[0] if available_backends else "none")
     return RouteIR(
         schema_version="scbe_route_ir_v1",
         semantic=semantic.to_dict(),

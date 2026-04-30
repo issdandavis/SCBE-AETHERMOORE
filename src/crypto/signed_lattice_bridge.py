@@ -295,12 +295,14 @@ class SignedLatticeBridge:
 
 def demo():
     """Demonstrate the signed lattice bridge."""
-    print("""
+    print(
+        """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
 ║              SIGNED LATTICE BRIDGE - Moving Past Binary                       ║
 ║         Symphonic Cipher + GeoSeal + Dual Lattice Integration                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
-    """)
+    """
+    )
 
     bridge = SignedLatticeBridge()
 
