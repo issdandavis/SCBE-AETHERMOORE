@@ -24,8 +24,13 @@ jobs:
         shell: bash
         run: |
           python scbe.py selftest
+      - name: 'Plan'
+        id: step_02_plan
+        shell: bash
+        run: |
+          python scbe.py flow plan --task "nightly ops packetize smoke" --workflow-template implementation-loop --output artifacts/flow_plans/demo.json --no-action-map
       - name: 'Packetize'
-        id: step_02_packetize
+        id: step_03_packetize
         shell: bash
         run: |
           python scbe.py flow packetize --plan artifacts/flow_plans/demo.json
