@@ -129,12 +129,28 @@ Cleanup:
 - Cancelled stale HF smoke job `69f4374dd2c8bd8662bd4406`.
 - Cancelled redundant HF merge job `69f46801d70108f37ace2089` after local merge and HF upload were confirmed.
 
-Open blocker:
+DSL synthesis repair:
 
-- `dsl-synthesis-v3-fast` still fails on Kaggle at `loading_tokenizer`.
-- Patch added to `scripts/kaggle_auto/kernel_template.py`:
-  - `STATUS.json` phase telemetry for tokenizer/model/trainer/train/save/push.
-  - `ERROR.json` failure payload on caught exceptions.
-  - `TOKENIZERS_PARALLELISM=false`.
-  - slow tokenizer path with `use_fast=False`.
-- The failure still appears to be a hard worker failure before Python can write `ERROR.json`; do not relaunch this notebook blindly. Next repair should use a tiny tokenizer-only Kaggle probe or a packaged local model/tokenizer input before another full training push.
+- `polly-tokenizer-probe-qwen-coder` completed on Kaggle in about 30 seconds, proving Qwen tokenizer download/load/encode works on Kaggle.
+- The apparent `loading_tokenizer` failure was misleading. Added `checking_device` / `device_checked` telemetry and confirmed the real blocker was Kaggle assigning a Tesla P100 (`sm_60`) while the round required sm70+ behavior.
+- Patched `scripts/kaggle_auto/kernel_template.py` so:
+  - T4/A100 assignments keep the real 4-bit NF4 GPU training path.
+  - P100 assignments enter a bounded CPU smoke fallback instead of hard-failing during P100 model load.
+  - CPU/P100 smoke defaults are capped with `cpu_smoke_max_records` and `cpu_smoke_max_steps`.
+- `dsl-synthesis-v3-fast` version 8 completed:
+  - DONE artifact: `artifacts/kaggle_output/polly-auto-dsl-syn-v3-fast/DONE.json`
+  - Status: `complete`
+  - Global step: `3`
+  - Train records: `32`
+  - Eval records: `6`
+  - Train loss: `67.37401326497395`
+  - Adapter: `artifacts/kaggle_output/polly-auto-dsl-syn-v3-fast/polly-dsl-synthesis-v3-fast/adapter_model.safetensors`
+- Published smoke adapter and evidence:
+  - Repo: `issdandavis/scbe-coding-agent-qwen-dsl-synthesis-v3-fast-kaggle`
+  - Adapter upload commit: `ee1f2ac18a9089d860b909b9c3505a9d7f16d61e`
+  - DONE commit: `dc15ad00fd6f80eb8aec3b6205c8f38dac1c4332`
+  - Training history commit: `15af2b5bf08203f253a40b0a29873f14c73e2a37`
+
+Promotion note:
+
+- The DSL v3-fast adapter is a completed smoke artifact, not a promotion-quality adapter. Loss is high and the run used the bounded fallback path. Use it as proof that the Kaggle lane no longer fails silently; wait for a real T4/A100 run before adding this adapter to a production merge.

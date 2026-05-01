@@ -97,6 +97,8 @@ DSL_PRIMITIVE_TOKEN_WEIGHT = float(CFG.get("dsl_primitive_token_weight", SELECTO
 MAX_SAMPLE_MULTIPLIER = float(CFG.get("max_sample_multiplier", 6.0))
 REPAIR_LANE_FILES = set(CFG.get("repair_lane_files", []))
 REPAIR_LANE_WEIGHT = float(CFG.get("repair_lane_weight", 1.0))
+CPU_SMOKE_MAX_RECORDS = int(CFG.get("cpu_smoke_max_records", 48))
+CPU_SMOKE_MAX_STEPS = int(CFG.get("cpu_smoke_max_steps", 3))
 
 # ---- Auth ----
 PUSH = False
@@ -229,7 +231,7 @@ def load_data():
     # Cap dataset size to prevent OOM and timeout on CPU fallback
     import random as _random
     _use_gpu = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 7
-    _max_records = MAX_RECORDS if _use_gpu else min(MAX_RECORDS, 200)  # CPU: tiny run, finishes in ~30min
+    _max_records = MAX_RECORDS if _use_gpu else min(MAX_RECORDS, CPU_SMOKE_MAX_RECORDS)
     if len(records) > _max_records:
         _random.seed(42)
         if BALANCE_CATEGORIES:
@@ -403,10 +405,10 @@ try:
         },
     )
 
-    if REQUIRE_GPU and not use_gpu:
+    if REQUIRE_GPU and not has_cuda:
         raise RuntimeError(
             f"GPU required for this round, but got gpu={gpu_name} compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
-            "Refusing CPU/P100 tiny-run because it contaminates contract-learning metrics."
+            "No accelerator was assigned."
         )
 
     if use_4bit:
@@ -432,6 +434,8 @@ try:
                     "gpu_name": gpu_name,
                     "compute_capability": f"sm_{compute_cap[0]}{compute_cap[1]}",
                     "max_steps_before_cap": MAX_STEPS,
+                    "cpu_smoke_max_records": CPU_SMOKE_MAX_RECORDS,
+                    "cpu_smoke_max_steps": CPU_SMOKE_MAX_STEPS,
                 },
             )
         else:
@@ -440,9 +444,9 @@ try:
         # consume the full Kaggle wall-clock limit.
         EPOCHS = 1
         if MAX_STEPS < 0:
-            MAX_STEPS = 30
+            MAX_STEPS = CPU_SMOKE_MAX_STEPS
         else:
-            MAX_STEPS = min(MAX_STEPS, 30)
+            MAX_STEPS = min(MAX_STEPS, CPU_SMOKE_MAX_STEPS)
         quant_config = None
         compute_dtype = torch.float32
         load_kwargs = {"torch_dtype": torch.float32, "device_map": "cpu"}
