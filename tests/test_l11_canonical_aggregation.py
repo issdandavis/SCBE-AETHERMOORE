@@ -122,9 +122,9 @@ def test_parity_with_scbe_14layer_reference() -> None:
         # 14-layer ref clamps to [0,1] via min(1.0, d_tri/d_scale); use d_scale large enough
         # to avoid the clamp interfering at these values.
         got = layer_11_triadic_temporal(d1, d2, dG, l1, l2, l3, d_scale=10.0)
-        assert math.isclose(got * 10.0, ref, rel_tol=1e-9, abs_tol=1e-9), (
-            f"14-layer-ref drift: ({d1},{d2},{dG}) ref={ref}, got*scale={got * 10.0}"
-        )
+        assert math.isclose(
+            got * 10.0, ref, rel_tol=1e-9, abs_tol=1e-9
+        ), f"14-layer-ref drift: ({d1},{d2},{dG}) ref={ref}, got*scale={got * 10.0}"
 
 
 def test_parity_with_scbe_cpse_unified() -> None:
@@ -147,9 +147,9 @@ def test_parity_with_scbe_cpse_unified() -> None:
         history = [d] * 9
         ref = _phi_power_mean(d, d, d, cfg.lambda1, cfg.lambda2, cfg.lambda3)
         got = sys.compute_triadic_distance(history)
-        assert math.isclose(got * cfg.d_scale, ref, rel_tol=1e-9, abs_tol=1e-9), (
-            f"cpse_unified drift: d={d}, ref={ref}, got*scale={got * cfg.d_scale}"
-        )
+        assert math.isclose(
+            got * cfg.d_scale, ref, rel_tol=1e-9, abs_tol=1e-9
+        ), f"cpse_unified drift: d={d}, ref={ref}, got*scale={got * cfg.d_scale}"
 
 
 def test_dual_lattice_alias_preserved() -> None:

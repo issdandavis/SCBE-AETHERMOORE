@@ -466,12 +466,7 @@ def build_openai_style_skill_tools(skills: list[dict[str, Any]]) -> list[dict[st
         desc = s["description"]
         path_hint = s["skill_path"]
         area = s.get("function_area", "ops_tool")
-        full_desc = (
-            f"{desc}\n\n"
-            f"function_area={area}\n"
-            f"skill_id={s['skill_id']}\n"
-            f"SKILL.md path={path_hint}"
-        )
+        full_desc = f"{desc}\n\n" f"function_area={area}\n" f"skill_id={s['skill_id']}\n" f"SKILL.md path={path_hint}"
         if len(full_desc) > 2800:
             full_desc = full_desc[:2797] + "..."
         tools.append(

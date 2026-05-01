@@ -98,7 +98,9 @@ def score_candidate(goal: str, candidate: SparseCandidate) -> dict[str, Any]:
 
     goal_tokens = _tokenize(goal)
     text_tokens = _tokenize(candidate.text)
-    metadata_tokens = _tokenize(" ".join(str(v) for v in candidate.metadata.values() if isinstance(v, (str, int, float))))
+    metadata_tokens = _tokenize(
+        " ".join(str(v) for v in candidate.metadata.values() if isinstance(v, (str, int, float)))
+    )
     all_tokens = text_tokens | metadata_tokens
     overlap = goal_tokens & all_tokens
     coverage = len(overlap) / max(len(goal_tokens), 1)
@@ -106,7 +108,14 @@ def score_candidate(goal: str, candidate: SparseCandidate) -> dict[str, Any]:
     priority = max(min(candidate.priority, 10.0), -10.0) / 20.0
     kind_boost = 0.08 if candidate.kind.lower() in {"tool", "route", "test", "code", "skill"} else 0.0
     lane_boost = 0.06 if any(token in candidate.lane.lower() for token in goal_tokens) else 0.0
-    score = (coverage * 1.8) + (density * 0.6) + priority + kind_boost + lane_boost + _stable_noise(goal, candidate.candidate_id)
+    score = (
+        (coverage * 1.8)
+        + (density * 0.6)
+        + priority
+        + kind_boost
+        + lane_boost
+        + _stable_noise(goal, candidate.candidate_id)
+    )
     return {
         "candidate_id": candidate.candidate_id,
         "score": round(score, 6),
@@ -152,11 +161,18 @@ def _channel_rows(
     semantic = heapq.nlargest(
         min(budget, len(candidates)),
         candidates,
-        key=lambda candidate: (score_by_id[candidate.candidate_id]["score"], candidate.priority, candidate.candidate_id),
+        key=lambda candidate: (
+            score_by_id[candidate.candidate_id]["score"],
+            candidate.priority,
+            candidate.candidate_id,
+        ),
     )
 
     def rows(selected: list[SparseCandidate]) -> list[dict[str, Any]]:
-        return [_ranked_candidate_row(candidate, score_by_id[candidate.candidate_id], idx) for idx, candidate in enumerate(selected, start=1)]
+        return [
+            _ranked_candidate_row(candidate, score_by_id[candidate.candidate_id], idx)
+            for idx, candidate in enumerate(selected, start=1)
+        ]
 
     return {
         "local_window": rows(local),
@@ -315,7 +331,11 @@ def select_sparse_candidates(
     selected = heapq.nlargest(
         min(k, len(survivor_candidates)),
         survivor_candidates,
-        key=lambda candidate: (score_by_id[candidate.candidate_id]["score"], candidate.priority, candidate.candidate_id),
+        key=lambda candidate: (
+            score_by_id[candidate.candidate_id]["score"],
+            candidate.priority,
+            candidate.candidate_id,
+        ),
     )
 
     rows = []

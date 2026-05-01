@@ -1,4 +1,4 @@
-import { sha512 } from '@noble/hashes/sha2';
+import { sha512 } from '@noble/hashes/sha2.js';
 
 export interface StoredVoxel {
   id: Uint8Array;

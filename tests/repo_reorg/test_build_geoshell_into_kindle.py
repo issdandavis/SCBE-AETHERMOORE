@@ -23,9 +23,7 @@ SCRIPT = REPO / "scripts" / "repo_reorg" / "build_geoshell_into_kindle.py"
 def _load() -> ModuleType:
     """Load the build script as a module without executing main()."""
 
-    spec = importlib.util.spec_from_file_location(
-        "build_geoshell_into_kindle", SCRIPT
-    )
+    spec = importlib.util.spec_from_file_location("build_geoshell_into_kindle", SCRIPT)
     assert spec and spec.loader, f"could not load {SCRIPT}"
     mod = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = mod
@@ -92,9 +90,7 @@ def test_argparse_accepts_skip_install(mod: ModuleType, monkeypatch: pytest.Monk
     }
 
 
-def test_write_manifest_schema_is_versioned(
-    mod: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_write_manifest_schema_is_versioned(mod: ModuleType, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """The Kindle app reads geoshell-manifest.json. If we rename a key
     or drop the schema_version, native code breaks. Lock the schema."""
 

@@ -466,11 +466,7 @@ def layer_11_triadic_temporal(
     assert abs(lambda1 + lambda2 + lambda3 - 1.0) < 1e-6, "Lambdas must sum to 1"
 
     eps = 1e-10
-    s = (
-        lambda1 * max(d1, eps) ** _PHI_L11
-        + lambda2 * max(d2, eps) ** _PHI_L11
-        + lambda3 * max(dG, eps) ** _PHI_L11
-    )
+    s = lambda1 * max(d1, eps) ** _PHI_L11 + lambda2 * max(d2, eps) ** _PHI_L11 + lambda3 * max(dG, eps) ** _PHI_L11
     d_tri = s ** (1.0 / _PHI_L11)
     return min(1.0, d_tri / d_scale)
 

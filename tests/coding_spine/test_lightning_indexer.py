@@ -44,10 +44,7 @@ def test_lightning_indexer_selects_relevant_sparse_candidate() -> None:
 
 
 def test_lightning_indexer_uses_block_first_sparse_shape() -> None:
-    candidates = [
-        {"candidate_id": f"noise-{idx}", "text": "generic unrelated candidate"}
-        for idx in range(12)
-    ]
+    candidates = [{"candidate_id": f"noise-{idx}", "text": "generic unrelated candidate"} for idx in range(12)]
     candidates.append({"candidate_id": "tests", "text": "pytest geoseal agent verification benchmark", "priority": 5})
 
     payload = select_sparse_candidates("geoseal benchmark tests", candidates, top_k=2, block_size=4, block_multiplier=1)

@@ -48,8 +48,7 @@ PROVIDER_TIERS = ("local", "ollama", "hf", "claude")
 _GOVERNANCE_TIERS = ("ALLOW", "QUARANTINE", "ESCALATE", "DENY")
 
 # System prompt template — filled with tongue/language at call time
-_SYSTEM_TEMPLATE = textwrap.dedent(
-    """\
+_SYSTEM_TEMPLATE = textwrap.dedent("""\
     You are Polly, an expert {language} code generation assistant.
     You operate under the SCBE governance framework using the {tongue_name} Sacred Tongue.
 
@@ -59,8 +58,7 @@ _SYSTEM_TEMPLATE = textwrap.dedent(
     - Write idiomatic, production-quality {language}.
     - Include only necessary imports/use declarations.
     - Never add placeholder comments like "# TODO" unless they were in the task.
-    """
-)
+    """)
 
 # Strip markdown code fences from model output
 _FENCE_RE = re.compile(r"```[a-zA-Z0-9_+-]*\n?(.*?)```", re.DOTALL)
@@ -109,9 +107,7 @@ def _strip_fences(text: str) -> str:
 
 
 def _build_system(language: str, tongue: str, tongue_name: str) -> str:
-    return _SYSTEM_TEMPLATE.format(
-        language=language, tongue=tongue, tongue_name=tongue_name
-    )
+    return _SYSTEM_TEMPLATE.format(language=language, tongue=tongue, tongue_name=tongue_name)
 
 
 # ---------------------------------------------------------------------------
@@ -135,9 +131,7 @@ def _generate_local(
         {"role": "system", "content": system},
         {"role": "user", "content": task},
     ]
-    prompt_str = tok.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
+    prompt_str = tok.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     prompt_ids = tok(prompt_str, return_tensors="pt").input_ids
     prompt_len = prompt_ids.shape[-1]
 
@@ -247,9 +241,7 @@ def _generate_hf(
         )
         raw = resp.choices[0].message.content or ""
         pt = getattr(resp.usage, "prompt_tokens", 0) if hasattr(resp, "usage") else 0
-        ct = (
-            getattr(resp.usage, "completion_tokens", 0) if hasattr(resp, "usage") else 0
-        )
+        ct = getattr(resp.usage, "completion_tokens", 0) if hasattr(resp, "usage") else 0
         return raw, pt, ct
     except Exception:
         pass

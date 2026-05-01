@@ -32,7 +32,6 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-
 PREFIX_ORDER: Dict[str, List[str]] = {
     "resource_jump_cancel": [
         "transmit_burst",

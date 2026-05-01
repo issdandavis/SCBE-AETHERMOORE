@@ -4,7 +4,6 @@ import hashlib
 import re
 from typing import Any
 
-
 FIELD_DEFINITIONS = [
     {"name": "Z_proxy"},
     {"name": "group_proxy"},

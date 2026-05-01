@@ -72,13 +72,12 @@ def test_every_tile_has_required_fields(registry: dict) -> None:
             assert "id" in tile and tile["id"], f"tile in {cat['id']} missing id"
             assert "name" in tile and tile["name"], f"tile {tile.get('id')} missing name"
             assert tile.get("appId") in _ALLOWED_APP_IDS, (
-                f"tile {tile['id']} has unknown appId={tile.get('appId')!r}; "
-                f"update _ALLOWED_APP_IDS or types.ts"
+                f"tile {tile['id']} has unknown appId={tile.get('appId')!r}; " f"update _ALLOWED_APP_IDS or types.ts"
             )
             if tile.get("bgColor"):
-                assert _TAILWIND_BG_RE.match(tile["bgColor"]), (
-                    f"tile {tile['id']} bgColor not a tailwind class: {tile['bgColor']!r}"
-                )
+                assert _TAILWIND_BG_RE.match(
+                    tile["bgColor"]
+                ), f"tile {tile['id']} bgColor not a tailwind class: {tile['bgColor']!r}"
 
 
 def test_tile_ids_are_globally_unique(registry: dict) -> None:
@@ -96,17 +95,17 @@ def test_service_tiles_have_complete_binding(registry: dict) -> None:
                 continue
             binding = tile.get("service")
             assert binding, f"service tile {tile['id']} missing 'service' binding"
-            assert binding.get("kind") == "http", (
-                f"service tile {tile['id']} kind must be 'http' (got {binding.get('kind')!r})"
-            )
-            assert isinstance(binding.get("defaultUrl"), str) and binding["defaultUrl"], (
-                f"service tile {tile['id']} missing defaultUrl"
-            )
+            assert (
+                binding.get("kind") == "http"
+            ), f"service tile {tile['id']} kind must be 'http' (got {binding.get('kind')!r})"
+            assert (
+                isinstance(binding.get("defaultUrl"), str) and binding["defaultUrl"]
+            ), f"service tile {tile['id']} missing defaultUrl"
             if "envUrl" in binding:
                 env = binding["envUrl"]
-                assert isinstance(env, str) and env.isupper(), (
-                    f"service tile {tile['id']} envUrl must be UPPER_SNAKE: {env!r}"
-                )
+                assert (
+                    isinstance(env, str) and env.isupper()
+                ), f"service tile {tile['id']} envUrl must be UPPER_SNAKE: {env!r}"
             if "openInExternal" in binding:
                 assert isinstance(binding["openInExternal"], bool)
             if "description" in binding:
@@ -120,9 +119,7 @@ def test_loader_typescript_appid_matches_registry(registry: dict) -> None:
     used_ids = {tile["appId"] for cat in registry["categories"] for tile in cat["tiles"]}
     for app_id in used_ids:
         # We expect the literal `'app_id'` to appear in the AppId union.
-        assert f"'{app_id}'" in types_ts, (
-            f"appId {app_id!r} used in registry but missing from types.ts AppId union"
-        )
+        assert f"'{app_id}'" in types_ts, f"appId {app_id!r} used in registry but missing from types.ts AppId union"
 
 
 def test_required_tile_categories_present(registry: dict) -> None:
@@ -166,8 +163,7 @@ def test_app_tsx_renders_every_appid_used_in_registry(registry: dict) -> None:
         # Match the literal `appId === 'foo'` exactly to avoid false positives.
         needle = f"win.item.appId === '{app_id}'"
         assert needle in app_tsx, (
-            f"App.tsx is missing a render branch for appId {app_id!r}; "
-            f"expected to find: {needle}"
+            f"App.tsx is missing a render branch for appId {app_id!r}; " f"expected to find: {needle}"
         )
 
 
@@ -188,6 +184,5 @@ def test_loader_allowed_app_ids_matches_types(registry: dict) -> None:
     loader_intersection = loader_allowed & type_union
     missing = type_union - loader_intersection
     assert not missing, (
-        f"AppId values present in types.ts but missing from "
-        f"apps-registry-loader.ts allow list: {sorted(missing)}"
+        f"AppId values present in types.ts but missing from " f"apps-registry-loader.ts allow list: {sorted(missing)}"
     )

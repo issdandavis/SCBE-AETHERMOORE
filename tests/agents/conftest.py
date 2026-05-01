@@ -34,6 +34,4 @@ def _ensure_cross_language_lookup_artifact():
     finally:
         sys.argv = saved_argv
     if rc != 0 or not LOOKUP_PATH.exists():
-        pytest.skip(
-            f"cross-language lookup builder returned rc={rc}; artifact at {LOOKUP_PATH} missing"
-        )
+        pytest.skip(f"cross-language lookup builder returned rc={rc}; artifact at {LOOKUP_PATH} missing")

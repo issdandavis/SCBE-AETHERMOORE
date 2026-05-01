@@ -280,15 +280,11 @@ FAMILY_TOPOLOGIES.update(
         "select_second_color_crop": FamilyTopology(
             "select_second_color_crop", (0.8, 0.0, 0.6, 1.0, 0.3, 0.0), 0.66, (1, 0, 1, 1, 0, 0)
         ),
-        "mask_by_color": FamilyTopology(
-            "mask_by_color", (0.1, 0.0, 0.8, 0.5, 0.2, 0.0), 0.45, (0, 0, 1, 1, 0, 0)
-        ),
+        "mask_by_color": FamilyTopology("mask_by_color", (0.1, 0.0, 0.8, 0.5, 0.2, 0.0), 0.45, (0, 0, 1, 1, 0, 0)),
         "sym_complete_180_frames": FamilyTopology(
             "sym_complete_180_frames", (0.1, 1.0, 0.3, 0.7, 0.95, 0.5), 0.75, (0, 1, 1, 1, 1, 1)
         ),
-        "template_stamp": FamilyTopology(
-            "template_stamp", (0.6, 0.2, 0.2, 0.8, 0.8, 0.9), 0.72, (1, 0, 0, 1, 1, 1)
-        ),
+        "template_stamp": FamilyTopology("template_stamp", (0.6, 0.2, 0.2, 0.8, 0.8, 0.9), 0.72, (1, 0, 0, 1, 1, 1)),
         "tile_marker_propagate": FamilyTopology(
             "tile_marker_propagate", (0.9, 0.2, 0.4, 0.9, 0.9, 0.7), 0.82, (1, 0, 1, 1, 1, 1)
         ),

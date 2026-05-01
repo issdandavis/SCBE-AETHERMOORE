@@ -7,7 +7,6 @@ from pathlib import Path
 
 from scripts.benchmark.terminus_training_runner import TerminusTrainingSession, run_benchmark, run_scripted
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 

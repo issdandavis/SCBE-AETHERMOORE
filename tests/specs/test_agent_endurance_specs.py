@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 REPO = Path(__file__).resolve().parents[2]
 
 REGIMEN_SCHEMA = REPO / "schemas" / "agent_endurance_regimen_v1.schema.json"

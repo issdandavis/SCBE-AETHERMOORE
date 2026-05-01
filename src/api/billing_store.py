@@ -48,8 +48,7 @@ def _connect() -> sqlite3.Connection:
 
 
 def init_schema(conn: sqlite3.Connection) -> None:
-    conn.executescript(
-        """
+    conn.executescript("""
         CREATE TABLE IF NOT EXISTS billing_customers (
             customer_id TEXT PRIMARY KEY NOT NULL,
             record_json TEXT NOT NULL,
@@ -74,8 +73,7 @@ def init_schema(conn: sqlite3.Connection) -> None:
             event_id TEXT PRIMARY KEY NOT NULL,
             received_at INTEGER NOT NULL
         );
-        """
-    )
+        """)
     conn.commit()
 
 
