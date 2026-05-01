@@ -104,10 +104,31 @@ def _action_lane(round_packet: dict[str, Any]) -> dict[str, Any]:
     tertiary = (
         round_packet.get("tertiary_bus", []) if isinstance(round_packet, dict) else []
     )
+    hydra_bridge = (
+        round_packet.get("hydra_tokenizer_bridge", {})
+        if isinstance(round_packet.get("hydra_tokenizer_bridge"), dict)
+        else {}
+    )
     return {
         "selected_provider": round_packet.get("selected_provider"),
         "task": round_packet.get("task", {}),
         "operation_shape": round_packet.get("operation_shape"),
+        "hydra_tokenizer_bridge": {
+            "enabled": hydra_bridge.get("enabled", False),
+            "schema_version": hydra_bridge.get("schema_version"),
+            "head_count": hydra_bridge.get("head_count", 0),
+            "selected_tongue": (
+                hydra_bridge.get("tokenizer_packet", {}).get("selected_tongue")
+                if isinstance(hydra_bridge.get("tokenizer_packet"), dict)
+                else None
+            ),
+            "payload_sha256_prefix": _hex_prefix(
+                hydra_bridge.get("tokenizer_packet", {}).get("payload_sha256")
+                if isinstance(hydra_bridge.get("tokenizer_packet"), dict)
+                else None
+            ),
+            "artifact": hydra_bridge.get("artifact"),
+        },
         "primary": [
             {
                 "provider": item.get("provider"),

@@ -32,6 +32,7 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     assert "coding-agent-qwen-ca-geoseal-smoke-repair-v1" in ids
     assert "coding-agent-qwen-ca-opcode-exact-repair-v2" in ids
     assert "coding-agent-qwen-ca-geoseal-combined-repair-v3" in ids
+    assert "coding-agent-qwen-geoshell-pair-agent-v1" in ids
     assert profiles["schema_version"] == "geoseal_coding_training_profiles_v1"
 
     stage6 = next(
@@ -57,6 +58,12 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     )
     assert combined_repair["stage"] == "ca_geoseal_combined_repair"
     assert combined_repair["exists"] is True
+
+    pair_agent = next(
+        item for item in profiles["profiles"] if item["profile_id"] == "coding-agent-qwen-geoshell-pair-agent-v1"
+    )
+    assert pair_agent["stage"] == "geoshell_pair_agent"
+    assert pair_agent["exists"] is True
 
 
 def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:
@@ -140,6 +147,32 @@ def test_dispatch_smoke_profile_is_tiny_no_push_and_unbuffered(tmp_path: Path) -
     assert '"push_adapter": false' in script
     assert 'emit("startup"' in script
     assert 'emit("train_start"' in script
+
+
+def test_geoshell_pair_agent_profile_has_dataset_and_eval_contract(tmp_path: Path) -> None:
+    builder_path = ROOT / "scripts" / "training_data" / "build_geoshell_pair_agent_sft.py"
+    spec = importlib.util.spec_from_file_location("build_geoshell_pair_agent_sft", builder_path)
+    assert spec and spec.loader
+    builder = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(builder)
+    builder.write_outputs(builder.build_dataset(), ROOT / "training-data" / "sft")
+
+    dispatcher = _load_dispatcher_module()
+    profile_path = ROOT / "config" / "model_training" / "coding-agent-qwen-geoshell-pair-agent-v1.json"
+
+    packet = dispatcher.build_packet(
+        profile_path=profile_path,
+        artifact_root=tmp_path,
+        smoke=True,
+    )
+    script = Path(packet["script_path"]).read_text(encoding="utf-8")
+
+    assert packet["profile_id"].endswith("-smoke")
+    assert packet["train_datasets"][0]["exists"] is True
+    assert packet["train_datasets"][0]["row_count"] == 4
+    assert packet["eval_datasets"][0]["row_count"] == 2
+    assert "geoshell_pair_agent_eval_v1" in script
+    assert '"prompts": []' not in script
 
 
 def test_geoseal_training_plan_can_request_smoke_profile(tmp_path: Path, monkeypatch) -> None:

@@ -48,3 +48,16 @@ def test_generated_kernel_config_preserves_t4_safe_stage6_settings() -> None:
     assert payload["max_steps"] == 360
     assert payload["learning_rate"] == 8e-5
     assert payload["max_records"] == 3950
+
+
+def test_tokenizer_probe_kernel_is_status_instrumented() -> None:
+    module = _load_module()
+
+    script = module.tokenizer_probe_script()
+
+    assert "TOKENIZERS_PARALLELISM" in script
+    assert "downloading_tokenizer_config" in script
+    assert "snapshot_tokenizer_files" in script
+    assert "loading_slow_tokenizer" in script
+    assert "loading_fast_tokenizer" in script
+    assert "ERROR.json" in script

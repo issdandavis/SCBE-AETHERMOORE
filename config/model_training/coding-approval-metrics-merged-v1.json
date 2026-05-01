@@ -1,0 +1,42 @@
+{
+  "schema_version": "scbe_coding_model_merge_profile_v1",
+  "merge_id": "coding-approval-metrics-merged-v1",
+  "title": "SCBE coding approval metrics merged v1",
+  "description": "Full-model merge of the confirmed Kaggle coding-approval-metrics-v2 adapter into Qwen2.5-Coder-0.5B-Instruct. This is a narrow, traceable merge artifact from one completed remote training run, not a broad all-adapter consolidation.",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "output_model_repo": "issdandavis/scbe-coding-approval-metrics-qwen-merged-v1",
+  "merge_mode": "stack",
+  "adapters": [
+    {
+      "profile_id": "coding-approval-metrics-v2",
+      "stage": "agentic_coding_approval_metrics",
+      "adapter_repo": "issdandavis/scbe-coding-approval-metrics-qwen-kaggle-v2",
+      "weight": 1.0,
+      "required": true,
+      "evidence": {
+        "source": "artifacts/kaggle_outputs/polly-auto-coding-approval-metrics-v1/DONE.json",
+        "status": "complete",
+        "global_step": 30,
+        "train_records": 175,
+        "eval_records": 107,
+        "best_metric": 2.9622254371643066
+      }
+    }
+  ],
+  "blocked_adapters": [],
+  "pre_merge_gates": {
+    "completed_remote_training_required": true,
+    "source_done_json": "artifacts/kaggle_outputs/polly-auto-coding-approval-metrics-v1/DONE.json",
+    "notes": "Merge only this completed adapter. Do not treat it as approval for a broad multi-adapter merge."
+  },
+  "post_merge_gates": {
+    "smoke_evaluator": "scripts/eval/smoke_merged_coding_model_hf.py",
+    "model_kind": "full_merged_model",
+    "notes": "After the merge repo exists, run a small coding smoke before promotion."
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  }
+}

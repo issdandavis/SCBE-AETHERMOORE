@@ -1,0 +1,66 @@
+{
+  "schema_version": "scbe_agent_endurance_taskset_v1",
+  "taskset_id": "ae-v1-round-001",
+  "regimen_id": "national-exam-style-endurance-v1",
+  "created_at_utc": "2026-05-01T08:05:00Z",
+  "metadata": {
+    "topic_lane": "coding_model",
+    "seed": 1701
+  },
+  "tasks": [
+    {
+      "task_id": "scr-001",
+      "phase_id": "screening",
+      "task_type": "known_answer",
+      "difficulty": "medium",
+      "prompt": "Compute minimal patch for a failing parser test suite with fixed fixtures.",
+      "time_budget_seconds": 2700,
+      "tool_budget": { "max_tool_calls": 20, "max_network_calls": 0 },
+      "ground_truth": {
+        "checks": ["all tests green", "no new lint failures"]
+      },
+      "scoring": {
+        "method": "unit_tests"
+      }
+    },
+    {
+      "task_id": "tw-014",
+      "phase_id": "timed-written",
+      "task_type": "open_ended",
+      "difficulty": "hard",
+      "prompt": "Write a tradeoff memo comparing two resilience strategies and choose one.",
+      "time_budget_seconds": 5400,
+      "tool_budget": { "max_tool_calls": 25, "max_network_calls": 2 },
+      "ground_truth": null,
+      "scoring": {
+        "method": "rubric",
+        "rubric": [
+          { "criterion": "argument coherence", "max_points": 3 },
+          { "criterion": "evidence grounding", "max_points": 3 },
+          { "criterion": "risk articulation", "max_points": 2 },
+          { "criterion": "final decision clarity", "max_points": 2 }
+        ]
+      }
+    },
+    {
+      "task_id": "pc-003",
+      "phase_id": "project-continuity",
+      "task_type": "project_checkpoint",
+      "difficulty": "expert",
+      "prompt": "Continue prior branch task with new constraints and preserve all previous passing gates.",
+      "time_budget_seconds": 14400,
+      "tool_budget": { "max_tool_calls": 60, "max_network_calls": 4 },
+      "ground_truth": {
+        "must_preserve": ["gate_A", "gate_B", "gate_C"]
+      },
+      "scoring": {
+        "method": "hybrid",
+        "rubric": [
+          { "criterion": "regression prevention", "max_points": 4 },
+          { "criterion": "constraint adaptation", "max_points": 3 },
+          { "criterion": "continuity trace quality", "max_points": 3 }
+        ]
+      }
+    }
+  ]
+}

@@ -10,6 +10,8 @@ Env vars required:
 - STRIPE_SECRET_KEY: Stripe API key (rk_live_* or sk_test_*)
 - STRIPE_WEBHOOK_SECRET: Webhook signing secret (whsec_*)
 - SCBE_BILLING_BASE_URL: Public URL for success/cancel redirects
+- SCBE_BILLING_DB_PATH: optional path to SQLite file (default: ``<repo>/.scbe/billing.sqlite3``)
+- SCBE_OWNER_API_TOKEN: required for ``GET /billing/purchases`` (``x-owner-token`` header)
 """
 
 from __future__ import annotations
@@ -66,14 +68,28 @@ PLANS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-# In-memory mapping: stripe_customer_id -> tenant record
-# In production this would be a database table.
+# In-memory mapping: stripe_customer_id -> tenant record (also persisted in SQLite).
 BILLING_CUSTOMERS: Dict[str, Dict[str, Any]] = {}
 
 # API keys issued via billing (api_key -> {customer_id, plan, tenant_id, ...})
 BILLING_API_KEYS: Dict[str, Dict[str, Any]] = {}
 
+# Recent purchases (mirrored from SQLite on load; appended on webhook).
+PURCHASE_LOG: list = []
+
 LOGGER = logging.getLogger("scbe.billing")
+
+
+def _ensure_billing_loaded() -> None:
+    from src.api import auth_config
+    from src.api.billing_store import ensure_loaded
+
+    ensure_loaded(
+        BILLING_CUSTOMERS,
+        BILLING_API_KEYS,
+        PURCHASE_LOG,
+        auth_config.VALID_API_KEYS,
+    )
 
 
 def _owner_token() -> str:
@@ -197,6 +213,7 @@ class CheckoutRequest(BaseModel):
 @billing_router.get("/plans")
 async def list_plans():
     """List available subscription plans and pricing."""
+    _ensure_billing_loaded()
     return {
         "status": "ok",
         "data": {
@@ -219,6 +236,7 @@ async def create_checkout(request: CheckoutRequest):
     Returns a checkout URL — redirect the customer there.
     No custom payment UI needed.
     """
+    _ensure_billing_loaded()
     plan = PLANS.get(request.plan)
     if not plan:
         raise HTTPException(400, f"Unknown plan: {request.plan}")
@@ -250,6 +268,7 @@ async def create_checkout(request: CheckoutRequest):
 @billing_router.get("/success")
 async def checkout_success(session_id: str = ""):
     """Landing page after successful checkout. Returns API key if ready."""
+    _ensure_billing_loaded()
     if not session_id:
         return {
             "status": "ok",
@@ -290,6 +309,7 @@ async def stripe_webhook(request: Request):
     - customer.subscription.updated: Update plan limits
     - customer.subscription.deleted: Revoke API key
     """
+    _ensure_billing_loaded()
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature", "")
 
@@ -310,6 +330,13 @@ async def stripe_webhook(request: Request):
     except json.JSONDecodeError:
         raise HTTPException(400, "Invalid JSON")
 
+    from src.api.billing_store import try_claim_webhook_event
+
+    event_id = str(event.get("id") or "")
+    if event_id and not try_claim_webhook_event(event_id):
+        LOGGER.info("Stripe webhook deduped: %s", _safe_for_log(event_id))
+        return {"status": "ok", "deduped": True}
+
     event_type = event.get("type", "")
     data = event.get("data", {}).get("object", {})
 
@@ -329,6 +356,18 @@ async def stripe_webhook(request: Request):
 
 def _handle_checkout_completed(session: Dict[str, Any]) -> None:
     """Provision a new API key when checkout completes."""
+    from src.api import auth_config
+    from src.api.billing_store import save_api_key, save_customer
+
+    checkout_sid = session.get("id", "")
+    for rec in BILLING_API_KEYS.values():
+        if rec.get("checkout_session_id") == checkout_sid:
+            LOGGER.info(
+                "checkout.session.completed already provisioned for session %s",
+                _safe_for_log(checkout_sid),
+            )
+            return
+
     customer_id = session.get("customer", "")
     plan_id = session.get("metadata", {}).get("scbe_plan", "starter")
     subscription_id = session.get("subscription", "")
@@ -343,7 +382,7 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
         "plan": plan_id,
         "email": email,
         "api_key": api_key,
-        "checkout_session_id": session.get("id", ""),
+        "checkout_session_id": checkout_sid,
         "created_at": now,
         "active": True,
     }
@@ -351,14 +390,15 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
     BILLING_CUSTOMERS[customer_id] = record
     BILLING_API_KEYS[api_key] = record
 
-    # Also register in the SaaS API key store so endpoints accept it
-    from src.api.saas_routes import VALID_API_KEYS
-
-    VALID_API_KEYS[api_key] = email or customer_id
+    auth_config.VALID_API_KEYS[api_key] = email or customer_id
+    save_customer(customer_id, record)
+    save_api_key(api_key, customer_id, record)
 
 
 def _handle_subscription_updated(subscription: Dict[str, Any]) -> None:
     """Update plan when subscription changes."""
+    from src.api.billing_store import save_api_key, save_customer
+
     customer_id = subscription.get("customer", "")
     record = BILLING_CUSTOMERS.get(customer_id)
     if not record:
@@ -371,9 +411,17 @@ def _handle_subscription_updated(subscription: Dict[str, Any]) -> None:
 
     record["active"] = subscription.get("status") == "active"
 
+    api_key = record.get("api_key", "")
+    if api_key:
+        save_customer(customer_id, record)
+        save_api_key(api_key, customer_id, record)
+
 
 def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
     """Revoke API key when subscription is canceled."""
+    from src.api import auth_config
+    from src.api.billing_store import save_api_key, save_customer
+
     customer_id = subscription.get("customer", "")
     record = BILLING_CUSTOMERS.get(customer_id)
     if not record:
@@ -382,10 +430,10 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
     record["active"] = False
     api_key = record.get("api_key", "")
 
-    # Remove from valid API keys
-    from src.api.saas_routes import VALID_API_KEYS
-
-    VALID_API_KEYS.pop(api_key, None)
+    auth_config.VALID_API_KEYS.pop(api_key, None)
+    if api_key:
+        save_customer(customer_id, record)
+        save_api_key(api_key, customer_id, record)
 
 
 # ---------------------------------------------------------------------------
@@ -408,9 +456,6 @@ ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = {
         "manual_url": "https://aethermoore.com/docs/research/",
     },
 }
-
-# Purchase log for tracking (in production, use a database)
-PURCHASE_LOG: list = []
 
 
 def _send_delivery_email(to_email: str, product_name: str, download_url: str, manual_url: str) -> bool:
@@ -487,6 +532,8 @@ def _notify_owner(product_name: str, buyer_email: str, amount_cents: int) -> Non
 
 def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     """Handle a one-time product purchase from Payment Links."""
+    from src.api.billing_store import append_purchase
+
     email = session.get("customer_email") or session.get("customer_details", {}).get("email", "")
     amount = session.get("amount_total", 0)
     payment_status = session.get("payment_status", "")
@@ -556,6 +603,7 @@ def _persist_purchase(record: Dict[str, Any]) -> None:
 @billing_router.get("/purchases")
 async def list_purchases(x_owner_token: str | None = Header(default=None)):
     """List recent purchases (owner-only)."""
+    _ensure_billing_loaded()
     _require_owner_token(x_owner_token)
     return {"status": "ok", "count": len(PURCHASE_LOG), "purchases": PURCHASE_LOG[-20:]}
 
@@ -563,6 +611,7 @@ async def list_purchases(x_owner_token: str | None = Header(default=None)):
 @billing_router.get("/status/{api_key}")
 async def billing_status(api_key: str):
     """Check billing status for an API key."""
+    _ensure_billing_loaded()
     record = BILLING_API_KEYS.get(api_key)
     if not record:
         raise HTTPException(404, "API key not found")

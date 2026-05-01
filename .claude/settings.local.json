@@ -1,18 +1,4 @@
 {
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python .claude/hooks/sacred_path_check.py",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
       "Bash(*)",
@@ -39,7 +25,23 @@
       "mcp__youtube-studio__youtube_list_videos",
       "mcp__youtube-studio__youtube_auth",
       "mcp__youtube-studio__youtube_search",
-      "mcp__youtube-studio__youtube_get_transcript"
+      "mcp__youtube-studio__youtube_get_transcript",
+      "Bash(mkdir -p artifacts/bijective_tongue)",
+      "Bash(cp \"C:\\\\SCBE_C~1\\\\temp\\\\claude\\\\C--Users-issda-SCBE-AETHERMOORE\\\\11794b9f-5136-47b4-8f1d-34e3fdf61ec7\\\\tasks\\\\bhybamjt8.output\" artifacts/bijective_tongue/logs_69f2dcaa_full.txt)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/sacred_path_check.py",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

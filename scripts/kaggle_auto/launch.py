@@ -439,6 +439,7 @@ ROUNDS = {
         "eval_steps": 10,
         "save_steps": 10,
         "slug_override": "polly-auto-dsl-syn-v3-fast",
+        "title_override": "Polly Auto DSL Syn V3 Fast",
     },
     "regularized-coding-v8": {
         "desc": "Regularized coding model v8 - focused coding bucket with frozen eval",
@@ -507,6 +508,8 @@ ARC_KERNEL_SLUG = "arc-neurogolf-submit"
 ARC_SUBMISSION_TEMPLATE = Path(__file__).parent / "arc_submission_kernel.py"
 ARC_NEUROGOLF_DATASET = f"{KAGGLE_USER}/scbe-neurogolf-solver"
 ARC_COMPETITION = "arc-prize-2026"
+TOKENIZER_PROBE_SLUG = "polly-tokenizer-probe-qwen-coder"
+TOKENIZER_PROBE_MODEL = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
 
 
 # ============================================================
@@ -628,6 +631,168 @@ def create_arc_kernel_dir(gpu: str) -> Path:
         json.dumps(meta, indent=2), encoding="utf-8"
     )
 
+    return kernel_dir
+
+
+def tokenizer_probe_script(model_id: str = TOKENIZER_PROBE_MODEL) -> str:
+    """Return a tiny Kaggle script that isolates tokenizer download/load failures."""
+    return f'''#!/usr/bin/env python3
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import time
+import traceback
+from pathlib import Path
+
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
+MODEL_ID = {json.dumps(model_id)}
+START = time.time()
+
+
+def write_status(phase, **extra):
+    payload = {{
+        "probe": "tokenizer",
+        "model_id": MODEL_ID,
+        "phase": phase,
+        "elapsed_s": round(time.time() - START, 2),
+        **extra,
+    }}
+    Path("/kaggle/working/STATUS.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    print(json.dumps(payload, ensure_ascii=True), flush=True)
+
+
+def fail(phase, exc):
+    payload = {{
+        "probe": "tokenizer",
+        "model_id": MODEL_ID,
+        "phase": "failed",
+        "failed_phase": phase,
+        "elapsed_s": round(time.time() - START, 2),
+        "error_type": type(exc).__name__,
+        "error": str(exc),
+        "traceback": traceback.format_exc(),
+    }}
+    Path("/kaggle/working/ERROR.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    Path("/kaggle/working/STATUS.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    print(json.dumps(payload, ensure_ascii=True), flush=True)
+    raise
+
+
+try:
+    write_status("installing_dependencies")
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "-q",
+            "huggingface_hub>=0.25",
+            "transformers==4.46.3",
+            "tokenizers>=0.20,<0.21",
+            "sentencepiece",
+        ],
+        check=True,
+    )
+except BaseException as exc:
+    fail("installing_dependencies", exc)
+
+try:
+    write_status("importing")
+    import huggingface_hub
+    import tokenizers
+    import transformers
+    from huggingface_hub import hf_hub_download, snapshot_download
+    from transformers import AutoTokenizer
+
+    write_status(
+        "imported",
+        versions={{
+            "huggingface_hub": huggingface_hub.__version__,
+            "transformers": transformers.__version__,
+            "tokenizers": tokenizers.__version__,
+        }},
+    )
+except BaseException as exc:
+    fail("importing", exc)
+
+try:
+    write_status("downloading_tokenizer_config")
+    cfg = hf_hub_download(repo_id=MODEL_ID, filename="tokenizer_config.json")
+    write_status("downloaded_tokenizer_config", path=cfg)
+except BaseException as exc:
+    fail("downloading_tokenizer_config", exc)
+
+try:
+    write_status("snapshot_tokenizer_files")
+    snap = snapshot_download(
+        repo_id=MODEL_ID,
+        allow_patterns=[
+            "tokenizer.json",
+            "tokenizer_config.json",
+            "vocab.json",
+            "merges.txt",
+            "special_tokens_map.json",
+            "generation_config.json",
+        ],
+    )
+    write_status("snapshot_done", path=snap, files=sorted(str(p.name) for p in Path(snap).glob("*")))
+except BaseException as exc:
+    fail("snapshot_tokenizer_files", exc)
+
+try:
+    write_status("loading_slow_tokenizer")
+    tok = AutoTokenizer.from_pretrained(snap, use_fast=False, local_files_only=True)
+    ids = tok.encode("def add(a, b): return a + b", add_special_tokens=False)
+    write_status("slow_tokenizer_ok", token_count=len(ids), first_ids=ids[:12])
+except BaseException as exc:
+    fail("loading_slow_tokenizer", exc)
+
+try:
+    write_status("loading_fast_tokenizer")
+    tok_fast = AutoTokenizer.from_pretrained(snap, use_fast=True, local_files_only=True)
+    ids = tok_fast.encode("def add(a, b): return a + b", add_special_tokens=False)
+    write_status("fast_tokenizer_ok", token_count=len(ids), first_ids=ids[:12])
+except BaseException as exc:
+    write_status("fast_tokenizer_failed_nonfatal", error_type=type(exc).__name__, error=str(exc))
+
+Path("/kaggle/working/DONE.json").write_text(
+    json.dumps({{"probe": "tokenizer", "status": "complete", "model_id": MODEL_ID}}, indent=2),
+    encoding="utf-8",
+)
+write_status("complete")
+'''
+
+
+def create_tokenizer_probe_kernel_dir(gpu: str) -> Path:
+    """Create a tiny tokenizer diagnostic kernel."""
+    kernel_dir = REPO_ROOT / "artifacts" / "kaggle_kernels" / TOKENIZER_PROBE_SLUG
+    kernel_dir.mkdir(parents=True, exist_ok=True)
+    (kernel_dir / "script.py").write_text(tokenizer_probe_script(), encoding="utf-8")
+    meta = {
+        "id": f"{KAGGLE_USER}/{TOKENIZER_PROBE_SLUG}",
+        "title": "Polly Tokenizer Probe Qwen Coder",
+        "code_file": "script.py",
+        "language": "python",
+        "kernel_type": "script",
+        "is_private": True,
+        "enable_gpu": gpu != "none",
+        "enable_internet": True,
+        "dataset_sources": [],
+        "competition_sources": [],
+        "kernel_sources": [],
+    }
+    (kernel_dir / "kernel-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     return kernel_dir
 
 
@@ -910,6 +1075,7 @@ def main():
     parser.add_argument("--ready", action="store_true", help="Preflight a round: slots, local files, and kernel dir")
     parser.add_argument("--pull", action="store_true", help="Download output from completed kernel")
     parser.add_argument("--arc-submit", action="store_true", help="Push ARC Prize submission kernel")
+    parser.add_argument("--tokenizer-probe", action="store_true", help="Push a tiny Kaggle tokenizer diagnostic kernel")
     args = parser.parse_args()
 
     if args.status:
@@ -949,8 +1115,29 @@ def main():
             print(f"  kaggle kernels status {KAGGLE_USER}/{ARC_KERNEL_SLUG}")
         return
 
+    if args.tokenizer_probe:
+        print(f"\n{'='*60}")
+        print("TOKENIZER PROBE - Qwen coder")
+        print(f"{'='*60}\n")
+        kernel_dir = create_tokenizer_probe_kernel_dir(args.gpu)
+        print(f"Kernel dir: {kernel_dir}")
+        if not push_kernel(kernel_dir, args.gpu, args.accelerator):
+            print("FAILED to push tokenizer probe")
+            sys.exit(1)
+        print(f"Kernel pushed: kaggle.com/code/{KAGGLE_USER}/{TOKENIZER_PROBE_SLUG}")
+        if args.poll:
+            status = poll_until_done(TOKENIZER_PROBE_SLUG, interval=args.poll_interval)
+            dest = pull_output(TOKENIZER_PROBE_SLUG)
+            print(f"Tokenizer probe status: {status}")
+            print(f"Output at: {dest}")
+        else:
+            print("Probe running. Check with:")
+            print(f"  kaggle kernels status {KAGGLE_USER}/{TOKENIZER_PROBE_SLUG}")
+            print(f"  kaggle kernels output {KAGGLE_USER}/{TOKENIZER_PROBE_SLUG} -p artifacts/kaggle_output/{TOKENIZER_PROBE_SLUG}")
+        return
+
     if not args.round:
-        parser.error("--round is required (unless using --status or --arc-submit)")
+        parser.error("--round is required (unless using --status, --arc-submit, or --tokenizer-probe)")
 
     if args.ready:
         if args.round == "all":

@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe.dev/schemas/yin_yang_dual_token_v1.schema.json",
+  "title": "SCBE Yin-Yang Dual-Frame Token Packet v1",
+  "description": "Production-style schema for a digital dual-frame KO/DR semantic transport packet. The tokenizer is not a security boundary; execution remains governed by external policy, crypto, capability, and verification layers.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "identity",
+    "role",
+    "boundary",
+    "active_frame",
+    "active_tongue",
+    "inactive_tongue",
+    "conjugate_pair",
+    "channels",
+    "surface",
+    "microstructure",
+    "routing",
+    "governance",
+    "crypto_envelope",
+    "telemetry",
+    "training_hooks",
+    "packet_sha256"
+  ],
+  "properties": {
+    "schema_version": { "const": "scbe-yin-yang-dual-token-v1" },
+    "identity": {
+      "type": "object",
+      "required": ["packet_id", "profile", "producer", "mission_id", "asset_id", "environment"],
+      "properties": {
+        "packet_id": { "type": "string", "pattern": "^yy1-[a-f0-9]{16}$" },
+        "profile": { "type": "string", "minLength": 1 },
+        "producer": { "type": "string", "minLength": 1 },
+        "mission_id": { "type": "string", "minLength": 1 },
+        "asset_id": { "type": "string", "minLength": 1 },
+        "environment": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "role": { "const": "view_dependent_semantic_execution_lattice" },
+    "boundary": {
+      "type": "object",
+      "required": ["tokenizer_role", "not_security_boundary", "security_layers"],
+      "properties": {
+        "tokenizer_role": { "type": "string", "minLength": 1 },
+        "not_security_boundary": { "const": true },
+        "security_layers": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 5,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "active_frame": { "type": "integer", "enum": [0, 1] },
+    "active_tongue": { "type": "string", "enum": ["KO", "DR"] },
+    "inactive_tongue": { "type": "string", "enum": ["KO", "DR"] },
+    "conjugate_pair": {
+      "type": "object",
+      "required": ["figure_frame_0", "figure_frame_1", "interpretation"],
+      "properties": {
+        "figure_frame_0": { "const": "KO" },
+        "figure_frame_1": { "const": "DR" },
+        "interpretation": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "channels": {
+      "type": "object",
+      "required": ["KO", "DR"],
+      "properties": {
+        "KO": { "$ref": "#/$defs/channel" },
+        "DR": { "$ref": "#/$defs/channel" }
+      },
+      "additionalProperties": false
+    },
+    "surface": {
+      "type": "object",
+      "required": ["model", "size", "cell_encoding", "frames", "complementarity"],
+      "properties": {
+        "model": { "const": "yin_yang_s_curve_complementary_mask" },
+        "size": { "type": "integer", "minimum": 5 },
+        "cell_encoding": {
+          "type": "object",
+          "required": ["KO", "DR"],
+          "properties": {
+            "KO": { "type": "string", "minLength": 1 },
+            "DR": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": false
+        },
+        "frames": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/frame" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "complementarity": {
+          "type": "object",
+          "required": ["rotational_antisymmetry_score", "cell_count", "flipped_cell_count", "passes"],
+          "properties": {
+            "rotational_antisymmetry_score": { "type": "number", "minimum": 0, "maximum": 1 },
+            "cell_count": { "type": "integer", "minimum": 1 },
+            "flipped_cell_count": { "type": "integer", "minimum": 0 },
+            "passes": { "type": "boolean" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "microstructure": {
+      "type": "object",
+      "required": [
+        "version",
+        "ridge_model",
+        "route_cost",
+        "confidence",
+        "terrain_risk",
+        "retry_count",
+        "map_tile_id",
+        "home_vector",
+        "checksum_sha256"
+      ],
+      "properties": {
+        "version": { "type": "integer", "minimum": 1 },
+        "ridge_model": { "const": "digital_sideband_fields" },
+        "route_cost": { "type": "number", "minimum": 0 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "terrain_risk": { "type": "number", "minimum": 0, "maximum": 1 },
+        "retry_count": { "type": "integer", "minimum": 0 },
+        "map_tile_id": { "type": "string", "minLength": 1 },
+        "home_vector": {
+          "type": "object",
+          "required": ["frame", "x_m", "y_m", "z_m"],
+          "properties": {
+            "frame": { "type": "string", "minLength": 1 },
+            "x_m": { "type": "number" },
+            "y_m": { "type": "number" },
+            "z_m": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "checksum_sha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "routing": {
+      "type": "object",
+      "required": ["planner_view", "verifier_view", "allowed_consumers", "delivery_mode"],
+      "properties": {
+        "planner_view": { "const": "KO" },
+        "verifier_view": { "const": "DR" },
+        "allowed_consumers": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "delivery_mode": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "governance": {
+      "type": "object",
+      "required": ["risk_tier", "policy_mode", "requires_human_ack", "action_boundary", "promotion_requirements"],
+      "properties": {
+        "risk_tier": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "policy_mode": { "type": "string", "minLength": 1 },
+        "requires_human_ack": { "type": "boolean" },
+        "action_boundary": { "type": "string", "minLength": 1 },
+        "promotion_requirements": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "crypto_envelope": {
+      "type": "object",
+      "required": ["payload_state", "production_expectation", "payload_hashes", "signature"],
+      "properties": {
+        "payload_state": { "type": "string", "minLength": 1 },
+        "production_expectation": { "type": "string", "minLength": 1 },
+        "payload_hashes": {
+          "type": "object",
+          "required": ["KO", "DR"],
+          "properties": {
+            "KO": { "$ref": "#/$defs/sha256" },
+            "DR": { "$ref": "#/$defs/sha256" }
+          },
+          "additionalProperties": false
+        },
+        "signature": {
+          "type": "object",
+          "required": ["algorithm", "key_id", "signature_b64"],
+          "properties": {
+            "algorithm": { "type": "string", "minLength": 1 },
+            "key_id": { "type": "string", "minLength": 1 },
+            "signature_b64": { "type": "string" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "telemetry": {
+      "type": "object",
+      "required": ["bandwidth_class", "latency_tolerance", "audit_replay", "operator_notes"],
+      "properties": {
+        "bandwidth_class": { "type": "string", "minLength": 1 },
+        "latency_tolerance": { "type": "string", "minLength": 1 },
+        "audit_replay": { "type": "boolean" },
+        "operator_notes": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "training_hooks": {
+      "type": "object",
+      "required": ["use_as", "promotion_gate"],
+      "properties": {
+        "use_as": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "promotion_gate": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "packet_sha256": { "$ref": "#/$defs/sha256" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "active_frame": { "const": 0 } } },
+      "then": {
+        "properties": {
+          "active_tongue": { "const": "KO" },
+          "inactive_tongue": { "const": "DR" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "active_frame": { "const": 1 } } },
+      "then": {
+        "properties": {
+          "active_tongue": { "const": "DR" },
+          "inactive_tongue": { "const": "KO" }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "channel": {
+      "type": "object",
+      "required": ["tongue", "text_sha256", "byte_count", "token_count", "token_sha256", "roundtrip_ok", "tokens"],
+      "properties": {
+        "tongue": { "type": "string", "enum": ["KO", "DR"] },
+        "text_sha256": { "$ref": "#/$defs/sha256" },
+        "byte_count": { "type": "integer", "minimum": 0 },
+        "token_count": { "type": "integer", "minimum": 0 },
+        "token_sha256": { "$ref": "#/$defs/sha256" },
+        "roundtrip_ok": { "type": "boolean" },
+        "tokens": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "frame": {
+      "type": "object",
+      "required": [
+        "frame",
+        "rotation_degrees",
+        "figure_tongue",
+        "ground_tongue",
+        "figure_cells",
+        "ground_cells",
+        "figure_ground_balance",
+        "surface_preview"
+      ],
+      "properties": {
+        "frame": { "type": "integer", "enum": [0, 1] },
+        "rotation_degrees": { "type": "integer", "enum": [0, 180] },
+        "figure_tongue": { "type": "string", "enum": ["KO", "DR"] },
+        "ground_tongue": { "type": "string", "enum": ["KO", "DR"] },
+        "figure_cells": { "type": "integer", "minimum": 0 },
+        "ground_cells": { "type": "integer", "minimum": 0 },
+        "figure_ground_balance": { "type": "number", "minimum": 0, "maximum": 1 },
+        "surface_preview": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

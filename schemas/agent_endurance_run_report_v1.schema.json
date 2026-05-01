@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scbe://schemas/agent_endurance_run_report_v1.schema.json",
+  "title": "SCBE Agent Endurance Run Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "regimen_id",
+    "taskset_id",
+    "candidate_id",
+    "timestamp_utc",
+    "permission_mode",
+    "scores",
+    "thresholds",
+    "gate_results",
+    "pass",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "scbe_agent_endurance_run_report_v1"
+    },
+    "run_id": { "type": "string", "minLength": 3 },
+    "regimen_id": { "type": "string", "minLength": 3 },
+    "taskset_id": { "type": "string", "minLength": 3 },
+    "candidate_id": { "type": "string", "minLength": 1 },
+    "timestamp_utc": { "type": "string", "minLength": 10 },
+    "permission_mode": {
+      "type": "string",
+      "enum": ["observe", "workspace-write", "cloud-dispatch", "maintenance"]
+    },
+    "harness_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "agent_harness_schema_version": { "type": "string" },
+        "agent_io_contract_schema_version": { "type": "string" }
+      }
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["correctness", "robustness", "efficiency", "process_quality", "safety", "total"],
+      "properties": {
+        "correctness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "robustness": { "type": "number", "minimum": 0, "maximum": 1 },
+        "efficiency": { "type": "number", "minimum": 0, "maximum": 1 },
+        "process_quality": { "type": "number", "minimum": 0, "maximum": 1 },
+        "safety": { "type": "number", "minimum": 0, "maximum": 1 },
+        "total": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_total_score", "minimum_safety_score"],
+      "properties": {
+        "minimum_total_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minimum_safety_score": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "gate_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "pass", "hard_stop", "detail"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "pass": { "type": "boolean" },
+          "hard_stop": { "type": "boolean" },
+          "detail": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "violations": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy_violations": { "type": "integer", "minimum": 0 },
+        "hallucinated_citations": { "type": "integer", "minimum": 0 },
+        "unreproducible_steps": { "type": "integer", "minimum": 0 },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "pass": { "type": "boolean" },
+    "evaluation_contract_hint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": { "type": "string" },
+        "benchmark_id": { "type": "string" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["history_path", "task_trace_path"],
+      "properties": {
+        "history_path": { "type": "string", "minLength": 1 },
+        "task_trace_path": { "type": "string", "minLength": 1 },
+        "stdout_log_path": { "type": ["string", "null"] },
+        "raw_report_path": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

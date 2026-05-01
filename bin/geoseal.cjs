@@ -41,6 +41,8 @@ Useful commands:
   geoseal fleet-distributions --json
   geoseal agent-io-contract --output-dir artifacts/agent_io_contract --json
   geoseal tokenizer-code-lanes --command shl --tongues all --output artifacts/tokenizer_code_lanes/shl_lanes.json
+  geoseal convert-code --from binary --to hex "01101000 01101001" --json
+  geoseal convert-code --from hex --to space-math "0x0F 0x10" --json
   geoseal verify-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --json
   geoseal decode-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --output-dir artifacts/tokenizer_code_lanes/decoded --from-binary --write-binary --json
   geoseal ai2ai-bridge --content "def add(a, b): return a + b" --language python --json
@@ -65,6 +67,7 @@ Flags:
 const COMMAND_MAP = {
   status: { method: "GET", path: "/v1/spaceport/status", auth: false },
   chat: { method: "POST", path: "/v1/chat", auth: false },
+  "ai2ai-bridge": { method: "POST", path: "/v1/harness/tool-bridge", auth: false },
   "portal-box": { method: "POST", path: "/v1/polly/portal-box", runtimePath: "/runtime/portal-box", auth: false, runtimeAuth: true },
   "stream-wheel": { method: "POST", path: "/v1/polly/stream-wheel", runtimePath: "/runtime/stream-wheel", auth: false, runtimeAuth: true },
   inspect: { method: "POST", path: "/runtime/inspect", auth: true },
@@ -87,6 +90,9 @@ const COMMAND_MAP = {
   "explain-route": { method: "POST", path: "/v1/geoseal/explain-route", auth: false },
   "backend-registry": { method: "POST", path: "/v1/geoseal/backend-registry", auth: false },
   "agent-harness": { method: "POST", path: "/v1/geoseal/agent-harness", auth: false },
+  "skill-tools": { method: "POST", path: "/v1/geoseal/skill-tools", auth: false },
+  "agentic-training-loop": { method: "POST", path: "/v1/geoseal/agentic-training-loop", auth: false },
+  "loop-dispatch": { method: "POST", path: "/v1/geoseal/loop-dispatch", auth: false },
   history: { method: "POST", path: "/v1/geoseal/history", auth: false },
   replay: { method: "POST", path: "/v1/geoseal/replay", auth: false },
   "testing-cli": { method: "POST", path: "/v1/geoseal/testing-cli", auth: false },
@@ -238,7 +244,6 @@ function runDoctor(flags) {
     "tokenizer-code-lanes",
     "verify-code-lanes",
     "decode-code-lanes",
-    "ai2ai-bridge",
   ];
   const payload = {
     ok: true,
@@ -324,6 +329,9 @@ function buildBody(command, flags) {
   if (flags.backend) body.backend = String(flags.backend);
   if (flags.goal) body.goal = String(flags.goal);
   if (flags["permission-mode"]) body.permission_mode = String(flags["permission-mode"]);
+  if (command === "ai2ai-bridge") {
+    body.goal = String(flags.content || flags.message || flags.goal || body.content || "").trim();
+  }
   return body;
 }
 
@@ -362,6 +370,12 @@ function ensureBody(command, body) {
     return;
   }
   if (command === "backend-registry") return;
+  if (command === "ai2ai-bridge") {
+    if (!body.goal) {
+      throw new Error("--content, --message, or --goal is required for ai2ai-bridge");
+    }
+    return;
+  }
   if (command === "agent-harness") return;
   if (command === "history") return;
   if (command === "replay") return;

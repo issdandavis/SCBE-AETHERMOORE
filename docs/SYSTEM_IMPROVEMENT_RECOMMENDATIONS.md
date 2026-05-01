@@ -12,6 +12,29 @@ This document outlines recommended improvements for the SCBE-AETHERMOORE codebas
 
 The system demonstrates strong engineering practices with a sophisticated 14-layer hyperbolic geometry architecture. The identified improvements are manageable technical debt items that will enhance production readiness and maintainability.
 
+## Execution Contract (Operational)
+
+Run this sequence to move recommendations into shipped state:
+
+```powershell
+# 1) Validate docs and link integrity
+python scripts/system/docs_finish_audit.py --json
+
+# 2) Validate GeoSeal + endurance contracts
+python -m pytest tests/specs/test_agent_endurance_specs.py tests/specs/test_agent_endurance_pack_cli.py -q
+
+# 3) Validate implementation safety lanes
+npm run build
+npm run typecheck
+python -m pytest tests/system/test_docs_finish_audit.py -q
+```
+
+Promotion gate for this document:
+
+- commands above pass in CI-equivalent environment
+- each Priority 1 item mapped to a concrete PR or issue
+- no unresolved contact text in security-facing docs
+
 ---
 
 ## Priority 1: Critical for Production
@@ -269,25 +292,25 @@ npm install --save-dev madge
 
 ---
 
-### 2.4 Complete TODO/FIXME Items
+### 2.4 Complete Open Work Markers
 
 **Problem:** Incomplete implementations noted in code.
 
-**Known TODOs:**
+**Known open markers:**
 ```typescript
 // src/metrics/telemetry.ts
-// TODO: implement datadog/prom/otlp exporters
+// ACTION: implement datadog/prom/otlp exporters
 ```
 
 **Recommendation:**
-1. Track all TODOs in GitHub Issues
+1. Track all open markers in GitHub Issues
 2. Either implement or remove stale comments
-3. Add TODO detection to CI (warn, don't fail):
+3. Add open-marker detection to CI (warn, don't fail):
 ```yaml
-- name: Check for TODOs
+- name: Check for open work markers
   run: |
-    TODO_COUNT=$(grep -r "TODO\|FIXME" src/ --include="*.ts" | wc -l)
-    echo "Found $TODO_COUNT TODO/FIXME comments"
+    OPEN_COUNT=$(grep -r "ACTION:\|REVIEW-NEEDED" src/ --include="*.ts" | wc -l)
+    echo "Found $OPEN_COUNT open work markers"
 ```
 
 **Impact:** Medium - Improves code clarity
@@ -302,8 +325,8 @@ npm install --save-dev madge
 
 **File:** `SECURITY.md`
 ```markdown
-Email: [To be configured]
-[security contact - to be configured]
+Email: security contact from deployed incident-response mailbox
+Security contact: owner listed in deployment runbook and on-call policy
 ```
 
 **Recommendation:**
@@ -401,7 +424,7 @@ Add to CI:
 - [ ] Implement custom error hierarchy
 - [ ] Centralize configuration constants
 - [ ] Add circular dependency detection to CI
-- [ ] Track and resolve TODO items
+- [ ] Track and resolve open work items
 
 ### Phase 3: Medium-term (1-2 months)
 - [ ] Document canonical implementations

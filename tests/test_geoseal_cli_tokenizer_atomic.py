@@ -136,6 +136,58 @@ def test_binary_to_tokenizer_flags_language_mismatch() -> None:
     assert mapping["language_matches_prime"] is False
 
 
+def test_convert_code_binary_to_hex_tokens_languages_and_domain_views() -> None:
+    result = _run_cli(
+        "convert-code",
+        "--from",
+        "binary",
+        "--language",
+        "python",
+        "--all-tongues",
+        "--json",
+        "01101000 01101001",
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["version"] == "geoseal-transport-conversion-v1"
+    assert payload["utf8"] == "hi"
+    assert payload["hex"] == "6869"
+    assert payload["hex_groups"] == ["0x68", "0x69"]
+    assert payload["binary_groups"] == ["01101000", "01101001"]
+    assert payload["decimal"] == [104, 105]
+    assert len(payload["tokenizer_views"]) >= 6
+    assert all(view["roundtrip_ok"] for view in payload["tokenizer_views"])
+    assert payload["language_views"][0]["language"] == "python"
+    assert payload["chemistry_view"]["boundary"].startswith("structural chemistry")
+    assert payload["chemistry_view"]["rows"][0]["element_symbol"]
+    assert payload["space_math_view"]["boundary"].startswith("orbital")
+    assert set(payload["space_math_view"]["rows"][0]["orbiter_economy_hint"]) == {
+        "power",
+        "compute",
+        "time",
+        "wear",
+    }
+
+
+def test_convert_code_hex_to_space_math_only() -> None:
+    result = _run_cli("convert-code", "--from", "hex", "--to", "space-math", "--json", "0x0F 0x10")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["space-math"]["schema_version"] == "geoseal-space-math-transport-view-v1"
+    assert payload["space-math"]["rows"][0]["byte_hex"] == "0x0F"
+    assert payload["roundtrip"]["hex_ok"] is True
+
+
+def test_convert_code_tokens_roundtrip_to_hex() -> None:
+    encoded = _run_cli("encode-cmd", "--tongue", "KO", "hi")
+    assert encoded.returncode == 0, encoded.stderr
+    result = _run_cli("convert-code", "--from", "tokens", "--to", "hex", "--tongue", "KO", "--json", encoded.stdout)
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["hex"] == "6869"
+    assert payload["roundtrip"]["tokenizer_ok"] is True
+
+
 def test_atomic_shows_row_metadata() -> None:
     result = _run_cli("atomic", "add")
     assert result.returncode == 0, result.stderr
