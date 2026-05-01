@@ -81,7 +81,7 @@
     "test:coverage": "vitest run --coverage",
     "test:python": "pytest tests/ -v",
     "verify:geoseal-agent": "python -m pytest tests/coding_spine/test_agent_tool_policy.py tests/coding_spine/test_agent_tool_policy_mcdc.py -q --tb=line && python -m pytest tests/test_agent_task_run_and_external_eval.py -k geoseal -q --tb=line",
-    "verify:geoshell-registry": "python -m pytest tests/visual_system/test_apps_registry.py -q --tb=line",
+    "verify:geoshell-registry": "python -m pytest tests/visual_system/test_apps_registry.py tests/repo_reorg/test_build_geoshell_into_kindle.py -q --tb=line",
     "geoshell:build-into-kindle": "python scripts/repo_reorg/build_geoshell_into_kindle.py",
     "geoshell:build-into-kindle:skip-install": "python scripts/repo_reorg/build_geoshell_into_kindle.py --skip-install",
     "postgres:lite:up": "docker compose -f docker-compose.postgres-lite.yml up -d",

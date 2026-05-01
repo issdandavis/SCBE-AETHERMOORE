@@ -146,3 +146,48 @@ def test_critical_service_tiles_present(registry: dict) -> None:
     tile_ids = {tile["id"] for cat in registry["categories"] for tile in cat["tiles"]}
     for must_exist in ("spiralword", "geoseal"):
         assert must_exist in tile_ids, f"required service tile missing: {must_exist}"
+
+
+_APP_TSX = REPO / "scbe-visual-system" / "App.tsx"
+_LOADER_TS = REPO / "scbe-visual-system" / "lib" / "apps-registry-loader.ts"
+
+
+def test_app_tsx_renders_every_appid_used_in_registry(registry: dict) -> None:
+    """Every appId in the registry must have a render branch in App.tsx.
+
+    This prevents the "broken tile" bug where the user clicks a tile and
+    nothing happens because App.tsx falls through the if/else chain.
+    """
+
+    app_tsx = _APP_TSX.read_text(encoding="utf-8")
+    used_app_ids = {tile["appId"] for cat in registry["categories"] for tile in cat["tiles"]}
+    used_app_ids.discard("folder")  # folders use the type === 'folder' branch
+    for app_id in used_app_ids:
+        # Match the literal `appId === 'foo'` exactly to avoid false positives.
+        needle = f"win.item.appId === '{app_id}'"
+        assert needle in app_tsx, (
+            f"App.tsx is missing a render branch for appId {app_id!r}; "
+            f"expected to find: {needle}"
+        )
+
+
+def test_loader_allowed_app_ids_matches_types(registry: dict) -> None:
+    """The hand-maintained allow list inside apps-registry-loader.ts must
+    match the AppId union in types.ts. This is the third copy of the same
+    enum (types.ts, the loader, the test); keeping all three aligned
+    prevents the loader from silently coercing unknown appIds to 'notepad'."""
+
+    types_ts = (REPO / "scbe-visual-system" / "types.ts").read_text(encoding="utf-8")
+    loader_ts = _LOADER_TS.read_text(encoding="utf-8")
+
+    type_union = set(re.findall(r"\|\s*'([a-z]+)'", types_ts))
+    loader_allowed = set(re.findall(r"'([a-z]+)'", loader_ts))
+    # The loader file has many quoted strings; restrict to ones that also
+    # appear in the registry plus the canonical AppId members. Compare the
+    # intersection against the type union so a missing entry surfaces.
+    loader_intersection = loader_allowed & type_union
+    missing = type_union - loader_intersection
+    assert not missing, (
+        f"AppId values present in types.ts but missing from "
+        f"apps-registry-loader.ts allow list: {sorted(missing)}"
+    )
