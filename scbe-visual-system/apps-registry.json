@@ -80,6 +80,48 @@
             "openInExternal": false,
             "description": "FastAPI Swagger UI for the GeoSeal service."
           }
+        },
+        {
+          "id": "ai-ide",
+          "name": "AI IDE",
+          "appId": "service",
+          "icon": "Code",
+          "bgColor": "bg-zinc-800",
+          "service": {
+            "kind": "http",
+            "envUrl": "AI_IDE_URL",
+            "defaultUrl": "http://127.0.0.1:5173",
+            "openInExternal": false,
+            "description": "Coding-assistant IDE (Vite/React). Start with: cd ai-ide && npm install && npm run dev"
+          }
+        },
+        {
+          "id": "scbe-monitor",
+          "name": "SCBE Monitor",
+          "appId": "service",
+          "icon": "Shield",
+          "bgColor": "bg-emerald-700",
+          "service": {
+            "kind": "http",
+            "envUrl": "SCBE_MONITOR_URL",
+            "defaultUrl": "/dashboard/scbe_monitor.html",
+            "openInExternal": false,
+            "description": "Static SCBE monitor dashboard (dashboard/scbe_monitor.html)."
+          }
+        },
+        {
+          "id": "physics-sim",
+          "name": "Physics Sim",
+          "appId": "service",
+          "icon": "Gamepad2",
+          "bgColor": "bg-purple-700",
+          "service": {
+            "kind": "http",
+            "envUrl": "PHYSICS_SIM_URL",
+            "defaultUrl": "/dashboard/physics-simulator.html",
+            "openInExternal": false,
+            "description": "Static physics-simulator dashboard (dashboard/physics-simulator.html)."
+          }
         }
       ]
     },
