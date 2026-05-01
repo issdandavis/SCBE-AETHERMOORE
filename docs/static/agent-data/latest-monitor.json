@@ -105,19 +105,9 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Rivian allows you to disable all internet connectivity",
-      "word_count": 624,
+      "description": "How Mark Klein told the EFF about Room 641A [book excerpt]",
+      "word_count": 618,
       "headings": [
-        {
-          "level": 2,
-          "text": "Rivian allows you to disable all internet connectivity",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "rivian.com",
-          "source": "fallback-selector"
-        },
         {
           "level": 2,
           "text": "How Mark Klein told the EFF about Room 641A [book excerpt]",
@@ -126,6 +116,16 @@
         {
           "level": 2,
           "text": "mitpress.mit.edu",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "For Linux kernel vulnerabilities, there is no heads-up to distributions",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "openwall.com",
           "source": "fallback-selector"
         },
         {
@@ -140,16 +140,6 @@
         },
         {
           "level": 2,
-          "text": "CopyFail was not disclosed to distro developers?",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "openwall.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
           "text": "Shai-Hulud Themed Malware Found in the PyTorch Lightning AI Training Library",
           "source": "fallback-selector"
         },
@@ -157,17 +147,27 @@
           "level": 2,
           "text": "semgrep.dev",
           "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "New copy of earliest poem in English, written 1,3k years ago, discovered in Rome",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "tcd.ie",
+          "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Rivian allows you to disable all internet connectivity (rivian.com)440 points by Cider9986 4 hours ago  | hide | 171\u00a0comments2.How Mark Klein told the EFF about Room 641A [book excerpt] (mitpress.mit.edu)409 points by the-mitr 8 hours ago  | hide | 119\u00a0comments3.Opus 4.7 knows the real Kelsey (theargumentmag.com)128 points by ilamont 4 hours ago  | hide | 64\u00a0comments4.CopyFail was not disclosed to distro developers? (openwall.co..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.How Mark Klein told the EFF about Room 641A [book excerpt] (mitpress.mit.edu)543 points by the-mitr 14 hours ago  | hide | 179\u00a0comments2.For Linux kernel vulnerabilities, there is no heads-up to distributions (openwall.com)456 points by ori_b 14 hours ago  | hide | 341\u00a0comments3.Opus 4.7 knows the real Kelsey (theargumentmag.com)295 points by ilamont 10 hours ago  | hide | 155\u00a0comments4.Shai-Hulud Themed Malware Found in the PyT..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 2287,
+      "word_count": 1947,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Thu, 30 Apr 2026 (showing first 50 of 115 entries )"
+          "text": "Fri, 1 May 2026 (showing first 50 of 217 entries )"
         }
       ],
-      "link_count": 475,
+      "link_count": 482,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n  See today's new changes\n      Total of 956 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      951-956\n\n    \n    Showing up to 50 entries per ..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n  See today's new changes\n      Total of 972 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      951-972\n\n    \n    Showing up to 50 entries per p..."
     }
   ]
 }
