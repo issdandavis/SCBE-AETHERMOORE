@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -128,6 +130,24 @@ def _github_repo() -> str:
 
 
 def _github_branch() -> str:
+    env_branch = os.environ.get("SCBE_COLAB_BRANCH", "").strip()
+    if env_branch:
+        return env_branch
+    try:
+        result = subprocess.run(
+            ["git", "branch", "--show-current"],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+        )
+        branch = result.stdout.strip()
+        if result.returncode == 0 and branch:
+            return branch
+    except OSError:
+        pass
     return CANONICAL_BRANCH
 
 

@@ -162,7 +162,11 @@ def test_free_llm_auto_dispatch_falls_back_to_offline_when_ollama_unreachable(
     data = response.json()["data"]
     assert data["route"]["provider"] == "offline"
     assert data["result"]["fallback_from"] == "ollama"
-    assert data["bus_event"]["error"] == "provider_unreachable"
+    assert "error" not in data["bus_event"]
+
+    bus_path = tmp_path / ".scbe" / "packets" / "free_llm_dispatch.jsonl"
+    saved = json.loads(bus_path.read_text(encoding="utf-8").splitlines()[-1])
+    assert saved["error"] == "provider_unreachable"
 
 
 def test_free_llm_custom_local_provider_from_env(

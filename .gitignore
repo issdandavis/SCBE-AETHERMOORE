@@ -158,6 +158,7 @@ dist-gateway/
 .scbe/lanes/
 .scbe/packets/
 .scbe/skill_registry/
+.scbe/billing.sqlite3
 
 # Playwright MCP session snapshots (browser automation temp files)
 .playwright-mcp/
@@ -237,6 +238,7 @@ polly_iq_results.json
 
 _external/
 external_repos/
+external/cli-quests/
 
 # Symlink roots — points to full drives, never commit
 .roots/

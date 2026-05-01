@@ -22,6 +22,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
 
+import numpy as np
+
 PHI: float = (1.0 + 5.0**0.5) / 2.0
 
 ENRICHED_LOG = str(Path("artifacts") / "training" / "semantic_shape_enriched.jsonl")
@@ -120,7 +122,7 @@ class SemanticShapeEngraver:
             return candidates[0] if level in ("trivial", "deep") else candidates[-1]
 
         budget = float(energy_budget)
-        for name in candidates:
+        for name in reversed(candidates):
             if float(POLYHEDRA[name]["energy"]) <= budget:
                 return name
         return candidates[0]

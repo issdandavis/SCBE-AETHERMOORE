@@ -142,6 +142,7 @@ class DualSpin:
         self.seed = int(seed)
         self.lfsr_a = FibonacciLFSR(n_bits=8, state=(self.seed or 1) & 0xFF)
         self.lfsr_b = FibonacciLFSR(n_bits=8, state=((self.seed ^ 0xA5) or 1) & 0xFF)
+        self.route_salt = ((self.seed * 17) ^ (self.seed >> 3) ^ 0x5A) & 0xFF
 
     def spin(self) -> List[int]:
         a = self.lfsr_a.generate(8)
@@ -153,6 +154,7 @@ class DualSpin:
         val = 0
         for b in bits:
             val = (val << 1) | int(b)
+        val ^= self.route_salt
         return int(val % 16)
 
     def ternary_state(self) -> List[int]:

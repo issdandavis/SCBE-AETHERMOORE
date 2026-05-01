@@ -1,23 +1,23 @@
 {
   "schema_version": "bijective_dsl_v5_holdout_manifest_v1",
-  "generated_at_utc": "2026-04-27T14:58:14.981884+00:00",
+  "generated_at_utc": "2026-05-01T13:36:02.422956+00:00",
   "source_v4_records": 69,
   "repair_v3_train_records": 18,
   "repair_v3_removed": 18,
   "translate_one_cap": 7,
-  "floor_patch_records": 4,
+  "floor_patch_records": 27,
   "output": "training-data/sft/bijective_dsl_v5_holdout.sft.jsonl",
-  "output_records": 52,
+  "output_records": 75,
   "by_category": {
-    "identify": 3,
-    "edit_slot_all": 4,
-    "edit_slot_one": 3,
-    "governance_tag": 5,
-    "align": 9,
-    "translate_all": 5,
-    "dialogue": 8,
-    "translate_one": 7,
-    "multiline_edit": 8
+    "identify": 4,
+    "edit_slot_all": 7,
+    "edit_slot_one": 4,
+    "governance_tag": 8,
+    "align": 12,
+    "translate_all": 8,
+    "dialogue": 11,
+    "translate_one": 10,
+    "multiline_edit": 11
   },
-  "sha256": "c461bcebf511cc500a759efb4331cca3e4fe28b0bfa535c05a494bde8651c8c3"
+  "sha256": "bcc8ea875951bd3999efdf62e71ba5a83d9ddcd2f3a76abea87da74dc9cd2e76"
 }

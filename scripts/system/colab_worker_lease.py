@@ -5,17 +5,21 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
+import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict
 
 from urllib.parse import urlparse
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from scripts.system import colab_workflow_catalog as catalog
 from scripts.system import crosstalk_relay as relay
-
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _safe_url(raw_url: str) -> str:
@@ -39,6 +43,22 @@ def _slug(value: str) -> str:
     return "".join(ch.lower() if ch.isalnum() else "-" for ch in value).strip("-") or "worker"
 
 
+def _split_csv(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def build_intersection_scope(*, languages: str = "", regions: str = "", jurisdictions: str = "") -> Dict[str, Any]:
+    language_items = _split_csv(languages)
+    region_items = _split_csv(regions)
+    jurisdiction_items = _split_csv(jurisdictions)
+    return {
+        "languages": language_items,
+        "regions": region_items,
+        "jurisdictions": jurisdiction_items,
+        "intersection_count": max(1, len(language_items) or 1) * max(1, len(region_items) or 1),
+    }
+
+
 def _load_sync_playwright():
     try:
         from playwright.sync_api import sync_playwright  # type: ignore
@@ -57,6 +77,10 @@ def build_worker_lease(
     resource_class: str = "browser-colab",
     lease_seconds: int = 3600,
     claimed_at: datetime | None = None,
+    parallel_group: str = "",
+    shard_index: int = 0,
+    shard_count: int = 1,
+    intersection_scope: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     claimed = claimed_at or _utc_now()
     lease_id = f"lease-{_slug(worker_id)}-{_slug(notebook_name)}-{claimed.strftime('%Y%m%d%H%M%S')}"
@@ -69,6 +93,12 @@ def build_worker_lease(
         "lease_seconds": int(lease_seconds),
         "claimed_at_utc": _utc_str(claimed),
         "expires_at_utc": _utc_str(expires),
+        "parallel": {
+            "group": parallel_group,
+            "shard_index": max(0, int(shard_index)),
+            "shard_count": max(1, int(shard_count)),
+        },
+        "intersection_scope": intersection_scope or build_intersection_scope(),
     }
 
 
@@ -90,20 +120,34 @@ def _probe_colab_runtime(page) -> Dict[str, Any]:
 () => {
   const usage = document.querySelector('colab-usage-display');
   const machine = document.querySelector('colab-machine-type');
-  const buttons = Array.from(document.querySelectorAll('button'))
-    .map((btn) => (btn.innerText || btn.textContent || '').trim())
+  const controls = Array.from(document.querySelectorAll('button, a, [role="button"], paper-button, mwc-button'))
+    .map((btn) => {
+      const text = (btn.innerText || btn.textContent || btn.getAttribute('aria-label') || '').trim();
+      const aria = (btn.getAttribute('aria-label') || '').trim();
+      return [text, aria].filter(Boolean).join(' ');
+    })
     .filter(Boolean);
-  const connectVisible = buttons.some((text) => {
+  const connectVisible = controls.some((text) => {
     const lowered = text.toLowerCase();
     return lowered === 'connect' || lowered === 'reconnect' || lowered.includes('connect');
   });
+  const signInVisible = controls.some((text) => {
+    const lowered = text.toLowerCase();
+    return lowered === 'sign in' || lowered.includes('sign in');
+  });
+  const bodyText = (document.body ? (document.body.innerText || document.body.textContent || '') : '');
+  const bodyHasConnect = /(^|\\s)connect(\\s|$)/i.test(bodyText);
+  const connectedTextVisible = /connected to|t4 \\(python 3\\)|ram\\s+disk/i.test(bodyText);
   return {
     notebook_loaded: document.querySelectorAll('.cell').length > 0,
-    usage_visible: !!usage,
+    usage_visible: !!usage || connectedTextVisible,
     usage_text: usage ? (usage.innerText || usage.textContent || '').trim().slice(0, 240) : '',
     machine_type: machine ? (machine.innerText || machine.textContent || '').trim().slice(0, 120) : '',
-    connect_button_visible: connectVisible,
-    button_samples: buttons.slice(0, 12),
+    connect_button_visible: connectVisible || bodyHasConnect,
+    sign_in_button_visible: signInVisible,
+    body_has_connect: bodyHasConnect,
+    connected_text_visible: connectedTextVisible,
+    button_samples: controls.slice(0, 12),
   };
 }
 """
@@ -113,11 +157,164 @@ def _probe_colab_runtime(page) -> Dict[str, Any]:
 def _derive_runtime_state(base_state: str, runtime_probe: Dict[str, Any]) -> str:
     if base_state == "auth_required":
         return base_state
+    if runtime_probe.get("sign_in_button_visible"):
+        return "auth_required"
     if runtime_probe.get("usage_visible"):
         return "runtime_connected"
-    if runtime_probe.get("connect_button_visible"):
+    if runtime_probe.get("connect_button_visible") or runtime_probe.get("body_has_connect"):
         return "runtime_disconnected"
     return base_state
+
+
+def _attempt_runtime_connect(page) -> Dict[str, Any]:
+    try:
+        clicked = page.evaluate(
+            """
+() => {
+  const el = document.querySelector('colab-toolbar-button#connect')
+    || Array.from(document.querySelectorAll('colab-toolbar-button, [role="button"], button'))
+      .find((node) => /connect/i.test(node.innerText || node.textContent || node.getAttribute('aria-label') || ''));
+  if (!el) {
+    return false;
+  }
+  el.click();
+  return true;
+}
+"""
+        )
+        if not clicked:
+            page.locator("colab-toolbar-button#connect").click(timeout=8000, force=True)
+        page.wait_for_timeout(12000)
+        return {"attempted": True, "ok": True, "method": "colab-toolbar-button", "error": ""}
+    except Exception as exc:
+        return {"attempted": True, "ok": False, "error": str(exc)[:500]}
+
+
+def _attempt_run_all(page) -> Dict[str, Any]:
+    try:
+        secret_grants = 0
+        clicked = page.evaluate(
+            """
+() => {
+  const candidates = Array.from(document.querySelectorAll(
+    'colab-toolbar-button, [role="button"], button, paper-button, mwc-button'
+  ));
+  const el = candidates.find((node) => {
+    const text = (node.innerText || node.textContent || node.getAttribute('aria-label') || '').trim();
+    return /^run all$/i.test(text) || /run all/i.test(text);
+  });
+  if (!el) {
+    return false;
+  }
+  el.click();
+  return true;
+}
+"""
+        )
+        if not clicked:
+            page.keyboard.press("Control+F9")
+        page.wait_for_timeout(2500)
+        warning_dismissed = page.evaluate(
+            """
+() => {
+  const buttons = Array.from(document.querySelectorAll(
+    'button, [role="button"], paper-button, mwc-button'
+  ));
+  const el = buttons.find((node) => {
+    const text = (node.innerText || node.textContent || node.getAttribute('aria-label') || '').trim();
+    return /^run anyway$/i.test(text);
+  });
+  if (!el) {
+    return false;
+  }
+  el.click();
+  return true;
+}
+"""
+        )
+        if not warning_dismissed:
+            try:
+                page.get_by_text("Run anyway", exact=True).click(timeout=8000)
+                warning_dismissed = True
+            except Exception:
+                warning_dismissed = False
+        for _ in range(3):
+            page.wait_for_timeout(5000)
+            granted = page.evaluate(
+                """
+() => {
+  const buttons = Array.from(document.querySelectorAll(
+    'button, [role="button"], paper-button, mwc-button'
+  ));
+  const el = buttons.find((node) => {
+    const text = (node.innerText || node.textContent || node.getAttribute('aria-label') || '').trim();
+    return /^grant access$/i.test(text);
+  });
+  if (!el) {
+    return false;
+  }
+  el.click();
+  return true;
+}
+"""
+            )
+            if not granted:
+                try:
+                    page.get_by_text("Grant access", exact=True).click(timeout=1500)
+                    granted = True
+                except Exception:
+                    granted = False
+            if granted:
+                secret_grants += 1
+        method = "run-all-button" if clicked else "keyboard-control-f9"
+        return {
+            "attempted": True,
+            "ok": True,
+            "method": method,
+            "warning_dismissed": bool(warning_dismissed),
+            "secret_grants": secret_grants,
+            "error": "",
+        }
+    except Exception as exc:
+        return {"attempted": True, "ok": False, "error": str(exc)[:500]}
+
+
+def _default_chrome_executable() -> Path | None:
+    candidates = [
+        Path(os.environ.get("ProgramFiles", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
+        Path(os.environ.get("ProgramFiles(x86)", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return None
+
+
+def open_auth_bootstrap(notebook_query: str, profile_dir: Path, browser_executable: str = "") -> Dict[str, Any]:
+    notebook = catalog.resolve_notebook_payload(notebook_query)
+    executable = Path(browser_executable) if browser_executable else _default_chrome_executable()
+    if executable is None or not executable.exists():
+        raise FileNotFoundError("normal Google Chrome executable was not found")
+    profile_dir.mkdir(parents=True, exist_ok=True)
+    subprocess.Popen(
+        [
+            str(executable),
+            f"--user-data-dir={profile_dir}",
+            "--new-window",
+            notebook["colab_url"],
+        ],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    return {
+        "schema_version": "scbe_colab_auth_bootstrap_v1",
+        "state": "opened",
+        "notebook": notebook,
+        "profile_dir": str(profile_dir),
+        "browser_executable": str(executable),
+        "next_action": "Sign in once in the opened browser window, close that window, then rerun the worker with --connect-runtime.",
+    }
 
 
 def _layer14_from_state(state: str, title: str, url: str) -> Dict[str, Any]:
@@ -240,9 +437,24 @@ def provision_colab_worker(
     keep_open: bool,
     timeout_ms: int,
     dry_run: bool,
+    connect_runtime: bool = False,
+    run_all: bool = False,
+    post_run_wait_seconds: int = 0,
+    parallel_group: str = "",
+    shard_index: int = 0,
+    shard_count: int = 1,
+    intersection_scope: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
     notebook = catalog.resolve_notebook_payload(notebook_query)
-    lease = build_worker_lease(worker_id=worker_id, notebook_name=notebook["name"], lease_seconds=lease_seconds)
+    lease = build_worker_lease(
+        worker_id=worker_id,
+        notebook_name=notebook["name"],
+        lease_seconds=lease_seconds,
+        parallel_group=parallel_group,
+        shard_index=shard_index,
+        shard_count=shard_count,
+        intersection_scope=intersection_scope or build_intersection_scope(),
+    )
     artifact_dir = artifact_root / mission_id / worker_id
     artifact_dir.mkdir(parents=True, exist_ok=True)
     artifact_path = artifact_dir / "colab_worker_session.json"
@@ -279,6 +491,8 @@ def provision_colab_worker(
     state = "dry_run"
     screenshot_path = None
     runtime_probe: Dict[str, Any] = {}
+    connect_attempt: Dict[str, Any] = {"attempted": False}
+    run_all_attempt: Dict[str, Any] = {"attempted": False}
 
     if not dry_run:
         sync_playwright = _load_sync_playwright()
@@ -296,6 +510,20 @@ def provision_colab_worker(
                 state = _state_from_page(current_url, title)
                 runtime_probe = _probe_colab_runtime(page)
                 state = _derive_runtime_state(state, runtime_probe)
+                if connect_runtime and state in {"runtime_disconnected", "notebook_open"}:
+                    connect_attempt = _attempt_runtime_connect(page)
+                    title = page.title()
+                    current_url = page.url
+                    runtime_probe = _probe_colab_runtime(page)
+                    state = _derive_runtime_state(_state_from_page(current_url, title), runtime_probe)
+                if run_all and state in {"runtime_connected", "notebook_open"}:
+                    run_all_attempt = _attempt_run_all(page)
+                    if post_run_wait_seconds > 0:
+                        page.wait_for_timeout(max(0, int(post_run_wait_seconds)) * 1000)
+                    title = page.title()
+                    current_url = page.url
+                    runtime_probe = _probe_colab_runtime(page)
+                    state = _derive_runtime_state(_state_from_page(current_url, title), runtime_probe)
                 screenshot_path = artifact_dir / "colab_worker_page.png"
                 page.screenshot(path=str(screenshot_path), full_page=True)
                 if keep_open:  # pragma: no cover
@@ -327,7 +555,7 @@ def provision_colab_worker(
         layer14=layer14,
         proof=[notebook["colab_url"]],
         next_action="Attach workload or authenticate if required.",
-        status="ready" if state == "notebook_open" else "attention",
+        status="ready" if state in {"notebook_open", "runtime_connected"} else "attention",
     )
 
     evidence_proof = [str(artifact_path)]
@@ -358,6 +586,8 @@ def provision_colab_worker(
         "recipient": recipient,
         "lease": lease,
         "notebook": notebook,
+        "parallel": lease["parallel"],
+        "intersection_scope": lease["intersection_scope"],
         "state": state,
         "title": title,
         "current_url": current_url,
@@ -367,6 +597,8 @@ def provision_colab_worker(
         "artifact_path": str(artifact_path),
         "screenshot_path": str(screenshot_path) if screenshot_path is not None else None,
         "runtime_probe": runtime_probe,
+        "connect_attempt": connect_attempt,
+        "run_all_attempt": run_all_attempt,
         "packets": {
             "claim": claim_packet["packet_id"],
             "internal": internal_packet["packet_id"],
@@ -393,10 +625,21 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT), help="Artifact root directory.")
     parser.add_argument("--lease-seconds", type=int, default=3600, help="Lease duration in seconds.")
+    parser.add_argument("--parallel-group", default="", help="Shared group for parallel Colab workers.")
+    parser.add_argument("--shard-index", type=int, default=0, help="Zero-based worker shard index.")
+    parser.add_argument("--shard-count", type=int, default=1, help="Total workers in this parallel group.")
+    parser.add_argument("--languages", default="", help="Comma-separated language scope for the worker.")
+    parser.add_argument("--regions", default="", help="Comma-separated regional scope for the worker.")
+    parser.add_argument("--jurisdictions", default="", help="Comma-separated jurisdiction or policy scope.")
     parser.add_argument("--timeout-ms", type=int, default=90000, help="Page load timeout.")
     parser.add_argument("--headless", action="store_true", help="Launch browser headless.")
     parser.add_argument("--no-headless", dest="headless", action="store_false", help="Launch browser with UI.")
     parser.add_argument("--keep-open", action="store_true", help="Keep the browser open until Enter is pressed.")
+    parser.add_argument("--connect-runtime", action="store_true", help="Click Connect when the notebook is authenticated and disconnected.")
+    parser.add_argument("--run-all", action="store_true", help="Click the notebook Run all control after a connected runtime is detected.")
+    parser.add_argument("--post-run-wait-seconds", type=int, default=0, help="Seconds to wait after --run-all before capturing evidence.")
+    parser.add_argument("--auth-bootstrap", action="store_true", help="Open normal Chrome visibly with this worker profile for one-time Google sign-in.")
+    parser.add_argument("--browser-executable", default="", help="Optional normal Chrome executable path for --auth-bootstrap.")
     parser.add_argument(
         "--dry-run", action="store_true", help="Resolve notebook and emit packets without launching the browser."
     )
@@ -409,6 +652,14 @@ def main(argv: list[str] | None = None) -> int:
     mission_id = args.mission_id.strip() or f"colab-mission-{_utc_now().strftime('%Y%m%d%H%M%S')}"
     worker_id = args.worker_id.strip() or f"worker-colab-{_slug(args.notebook)}"
     session_id = args.session_id.strip() or f"{worker_id}-session"
+    intersection_scope = build_intersection_scope(
+        languages=args.languages,
+        regions=args.regions,
+        jurisdictions=args.jurisdictions,
+    )
+    if args.auth_bootstrap:
+        print(json.dumps(open_auth_bootstrap(args.notebook, Path(args.profile_dir), args.browser_executable), indent=2))
+        return 0
     artifact = provision_colab_worker(
         notebook_query=args.notebook,
         mission_id=mission_id,
@@ -419,10 +670,17 @@ def main(argv: list[str] | None = None) -> int:
         profile_dir=Path(args.profile_dir),
         artifact_root=Path(args.artifact_root),
         lease_seconds=args.lease_seconds,
+        parallel_group=args.parallel_group,
+        shard_index=args.shard_index,
+        shard_count=args.shard_count,
+        intersection_scope=intersection_scope,
         headless=bool(args.headless),
         keep_open=bool(args.keep_open),
         timeout_ms=args.timeout_ms,
         dry_run=bool(args.dry_run),
+        connect_runtime=bool(args.connect_runtime),
+        run_all=bool(args.run_all),
+        post_run_wait_seconds=int(args.post_run_wait_seconds),
     )
     print(json.dumps(artifact, indent=2))
     return 0

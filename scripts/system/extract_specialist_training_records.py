@@ -190,8 +190,101 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         extra={"source_record_index": idx},
                     )
                 )
+
+    fallback_train, fallback_eval = extract_operator_source_fallback_records()
+    records.extend(fallback_train)
+    records.extend(fallback_eval)
+
     train = [item for item in records if item["metadata"]["split"] == "train"]
     evals = [item for item in records if item["metadata"]["split"] == "eval"]
+    return train, evals
+
+
+def extract_operator_source_fallback_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Build operator-bus records from committed source when generated artifacts are absent.
+
+    CI starts without the ignored artifacts/ tree, but the specialist bucket
+    still needs a reproducible floor. These records preserve the committed bus
+    schema, replay, CLI, and eval contracts as source-faithful examples.
+    """
+
+    train_specs = [
+        (
+            REPO_ROOT / "agents" / "agent_bus_schema.py",
+            "Summarize the SCBE agent-bus schema validation contract from this committed source. "
+            "Return required fields, future-version behavior, and migration behavior only.",
+            ["agent_bus", "schema_validation", "committed_source"],
+        ),
+        (
+            REPO_ROOT / "agents" / "agent_bus_replay.py",
+            "Summarize the deterministic replay contract for SCBE agent-bus events from this committed source. "
+            "Return the replay inputs, skipped-event handling, and aggregate metrics only.",
+            ["agent_bus", "replay", "committed_source"],
+        ),
+        (
+            REPO_ROOT / "agents" / "agent_bus_cli.py",
+            "Summarize the operator-facing CLI actions for the SCBE agent bus from this committed source. "
+            "Return commands, safety posture, and audit outputs only.",
+            ["agent_bus", "operator_cli", "committed_source"],
+        ),
+    ]
+    eval_specs = [
+        (
+            REPO_ROOT / "tests" / "benchmark" / "test_operator_agent_bus_eval.py",
+            "Extract the frozen operator-agent-bus benchmark invariants from this committed test source. "
+            "Return the checks that must pass and the unsafe payload behavior.",
+            ["agent_bus", "benchmark_eval", "committed_test"],
+        ),
+        (
+            REPO_ROOT / "tests" / "agents" / "test_scbe_code.py",
+            "Extract the deployable coding-assistant operator invariants from this committed test source. "
+            "Return only dispatch, manifest, and safe-apply expectations.",
+            ["agent_bus", "coding_assistant_eval", "committed_test"],
+        ),
+    ]
+
+    def _source_summary(path: Path, *, max_chars: int = 3200) -> str:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        exported = re.findall(r"^(?:class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", text, flags=re.MULTILINE)
+        constants = re.findall(r"^([A-Z][A-Z0-9_]{2,})\s*=", text, flags=re.MULTILINE)
+        summary = {
+            "source_path": repo_rel(path),
+            "symbols": exported[:24],
+            "constants": constants[:16],
+            "excerpt": text[:max_chars],
+        }
+        return compact_json(summary, max_chars=max_chars + 900)
+
+    train: list[dict[str, Any]] = []
+    evals: list[dict[str, Any]] = []
+    for idx, (path, instruction, tags) in enumerate(train_specs):
+        if not path.exists():
+            continue
+        train.append(
+            record(
+                purpose="operator_agent_bus",
+                split="train",
+                source_path=path,
+                instruction=instruction,
+                response=_source_summary(path),
+                tags=tags,
+                extra={"source_record_index": idx, "fallback_source": True},
+            )
+        )
+    for idx, (path, instruction, tags) in enumerate(eval_specs):
+        if not path.exists():
+            continue
+        evals.append(
+            record(
+                purpose="operator_agent_bus",
+                split="eval",
+                source_path=path,
+                instruction=instruction,
+                response=_source_summary(path),
+                tags=tags,
+                extra={"source_record_index": idx, "fallback_source": True},
+            )
+        )
     return train, evals
 
 

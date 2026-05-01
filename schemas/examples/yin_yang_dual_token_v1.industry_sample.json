@@ -1,0 +1,298 @@
+{
+  "schema_version": "scbe-yin-yang-dual-token-v1",
+  "identity": {
+    "packet_id": "yy1-ffe8024081f92cf4",
+    "profile": "industry-sample",
+    "producer": "SCBE-AETHERMOORE GeoSeal CLI",
+    "mission_id": "local-prototype",
+    "asset_id": "space-agent-sim-001",
+    "environment": "digital-simulation"
+  },
+  "role": "view_dependent_semantic_execution_lattice",
+  "boundary": {
+    "tokenizer_role": "semantic transport and reversible cross-domain mapping",
+    "not_security_boundary": true,
+    "security_layers": [
+      "governance gates",
+      "crypto/sealing",
+      "capability controls",
+      "execution policy",
+      "verification layers"
+    ]
+  },
+  "active_frame": 0,
+  "active_tongue": "KO",
+  "inactive_tongue": "DR",
+  "conjugate_pair": {
+    "figure_frame_0": "KO",
+    "figure_frame_1": "DR",
+    "interpretation": "KO intent/control-flow and DR structure/transform share one complementary surface."
+  },
+  "channels": {
+    "KO": {
+      "tongue": "KO",
+      "text_sha256": "f3e1e70376a899ef731717072f564033f2d7080a5f08c66e5ebb68e92208798d",
+      "byte_count": 50,
+      "token_count": 50,
+      "token_sha256": "610b58101f3c92c54f9af5ba52166a31c1d0b0bfbd41d34917d820404ad61ef2",
+      "roundtrip_ok": true,
+      "tokens": [
+        "nav'il",
+        "nav'oth",
+        "ael'ia",
+        "ael'a",
+        "nav'uu",
+        "nav'ia",
+        "ael'oa",
+        "vel'a",
+        "ael'ei",
+        "nav'il",
+        "nav'oa",
+        "nav'ar",
+        "nav'uu",
+        "vel'a",
+        "ael'ia",
+        "nav'uu",
+        "nav'ia",
+        "ael'oa",
+        "nav'esh",
+        "ael'ei",
+        "vel'a",
+        "nav'ae",
+        "nav'un",
+        "ael'a",
+        "nav'or",
+        "nav'ae",
+        "vel'a",
+        "nav'ae",
+        "nav'oth",
+        "nav'oa",
+        "vel'a",
+        "ael'ei",
+        "nav'uu",
+        "ael'oa",
+        "ael'uu",
+        "ael'ei",
+        "nav'oth",
+        "vel'a",
+        "nav'ei",
+        "ael'il",
+        "vel'a",
+        "ael'ia",
+        "nav'ae",
+        "nav'eth",
+        "nav'uu",
+        "vel'a",
+        "ael'a",
+        "nav'ae",
+        "ael'oa",
+        "nav'or"
+      ]
+    },
+    "DR": {
+      "tongue": "DR",
+      "text_sha256": "c105634a386c66a51435bbc7ce8bdd1de4254fdc30fe1a74596f4a46b2c335b3",
+      "byte_count": 73,
+      "token_count": 73,
+      "token_sha256": "9d1a0fcf207dd3738080dada9bd17b576fb752df8b2d5e8160af71dc230e7b9f",
+      "roundtrip_ok": true,
+      "tokens": [
+        "forge'o",
+        "temper'or",
+        "temper'on",
+        "forge'a",
+        "temper'ae",
+        "mek'a",
+        "temper'or",
+        "temper'grond",
+        "temper'ar",
+        "temper'grond",
+        "forge'u",
+        "mek'a",
+        "forge'u",
+        "forge'mek",
+        "temper'ae",
+        "temper'or",
+        "forge'rak",
+        "temper'ae",
+        "mek'a",
+        "temper'u",
+        "temper'ae",
+        "temper'mek",
+        "forge'i",
+        "temper'ae",
+        "temper'ae",
+        "forge'o",
+        "mek'a",
+        "temper'i",
+        "temper'e",
+        "forge'u",
+        "forge'u",
+        "temper'ae",
+        "forge'i",
+        "forge'grond",
+        "mek'a",
+        "temper'rak",
+        "temper'or",
+        "temper'on",
+        "temper'on",
+        "forge'i",
+        "mek'a",
+        "temper'rak",
+        "temper'on",
+        "forge'i",
+        "forge'u",
+        "forge'grond",
+        "mek'a",
+        "forge'a",
+        "temper'ae",
+        "forge'i",
+        "temper'o",
+        "temper'ae",
+        "temper'en",
+        "forge'u",
+        "mek'a",
+        "temper'tharn",
+        "temper'on",
+        "temper'ar",
+        "temper'ae",
+        "mek'a",
+        "forge'rak",
+        "temper'ae",
+        "temper'o",
+        "forge'u",
+        "temper'on",
+        "forge'i",
+        "mek'a",
+        "temper'or",
+        "temper'on",
+        "temper'o",
+        "temper'ul",
+        "temper'ae",
+        "temper'u"
+      ]
+    }
+  },
+  "surface": {
+    "model": "yin_yang_s_curve_complementary_mask",
+    "size": 9,
+    "cell_encoding": {
+      "KO": "control_flow_lobe",
+      "DR": "structure_transform_lobe"
+    },
+    "frames": [
+      {
+        "frame": 0,
+        "rotation_degrees": 0,
+        "figure_tongue": "KO",
+        "ground_tongue": "DR",
+        "figure_cells": 40,
+        "ground_cells": 41,
+        "figure_ground_balance": 0.493827,
+        "surface_preview": [
+          "KKKK.....",
+          "KKK......",
+          "KKK......",
+          "KKK......",
+          "KKKK.....",
+          "KKKKKK...",
+          "KKKKKK...",
+          "KKKKKK...",
+          "KKKKK...."
+        ]
+      },
+      {
+        "frame": 1,
+        "rotation_degrees": 180,
+        "figure_tongue": "DR",
+        "ground_tongue": "KO",
+        "figure_cells": 41,
+        "ground_cells": 40,
+        "figure_ground_balance": 0.506173,
+        "surface_preview": [
+          ",,,,DDDDD",
+          ",,,DDDDDD",
+          ",,,DDDDDD",
+          ",,,DDDDDD",
+          ",,,,DDDDD",
+          ",,,,,,DDD",
+          ",,,,,,DDD",
+          ",,,,,,DDD",
+          ",,,,,DDDD"
+        ]
+      }
+    ],
+    "complementarity": {
+      "rotational_antisymmetry_score": 1.0,
+      "cell_count": 80,
+      "flipped_cell_count": 80,
+      "passes": true
+    }
+  },
+  "microstructure": {
+    "version": 1,
+    "ridge_model": "digital_sideband_fields",
+    "route_cost": 0.759259,
+    "confidence": 0.82,
+    "terrain_risk": 0.18,
+    "retry_count": 0,
+    "map_tile_id": "sim://mars/jezero/ridge-0001",
+    "home_vector": {
+      "frame": "local_ned",
+      "x_m": -14.2,
+      "y_m": 3.6,
+      "z_m": 0.0
+    },
+    "checksum_sha256": "ffe8024081f92cf4561851f3beb0590112d0385718ac7880f338257ef77683fa"
+  },
+  "routing": {
+    "planner_view": "KO",
+    "verifier_view": "DR",
+    "allowed_consumers": [
+      "planner",
+      "verifier",
+      "governance",
+      "training"
+    ],
+    "delivery_mode": "store-and-forward-compatible"
+  },
+  "governance": {
+    "risk_tier": "LOW",
+    "policy_mode": "observe",
+    "requires_human_ack": false,
+    "action_boundary": "semantic_packet_only",
+    "promotion_requirements": [
+      "all channels roundtrip",
+      "rotational antisymmetry score equals 1.0",
+      "external GeoSeal policy permits execution"
+    ]
+  },
+  "crypto_envelope": {
+    "payload_state": "plaintext_sample",
+    "production_expectation": "encrypt sensitive channel payloads and sign canonical packet bytes",
+    "payload_hashes": {
+      "KO": "f3e1e70376a899ef731717072f564033f2d7080a5f08c66e5ebb68e92208798d",
+      "DR": "c105634a386c66a51435bbc7ce8bdd1de4254fdc30fe1a74596f4a46b2c335b3"
+    },
+    "signature": {
+      "algorithm": "not-applied-in-sample",
+      "key_id": "sample-only",
+      "signature_b64": ""
+    }
+  },
+  "telemetry": {
+    "bandwidth_class": "low",
+    "latency_tolerance": "delayed",
+    "audit_replay": true,
+    "operator_notes": "Sample packet shows digital side-band structure; it is not a physical optical medium."
+  },
+  "training_hooks": {
+    "use_as": [
+      "paired KO/DR route record",
+      "frame-conditioned tokenizer example",
+      "bijective reconstruction check"
+    ],
+    "promotion_gate": "both channels roundtrip and rotational antisymmetry score is 1.0"
+  },
+  "packet_sha256": "ffe8024081f92cf4561851f3beb0590112d0385718ac7880f338257ef77683fa"
+}

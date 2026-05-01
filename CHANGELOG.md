@@ -1,5 +1,27 @@
 # SCBE Production Pack Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Repo shape 2026-04 (Phases 1-4 + 5)**: machine + human reorg plan at `scripts/repo_reorg/plan_repo_shape.py`, `artifacts/repo_reorg/inventory_2026-04.json`, `docs/ops/REPO_REORG_2026-04.md`. Root went from ~120 files to 72 files; 39 docs moved to `docs/{specs,ops,business}/`, 14 unreferenced root entry points archived under `runnables/legacy/` and `archive/`, 13 throwaway demos archived to `archive/demos/`, 3 empty UI stubs (`aetherbrowse/`, `app/`, `ui/`) archived to `archive/ui-graveyard/`. All moves use `git mv` so history is preserved.
+- **GeoShell App Store** in `scbe-visual-system/`: data-driven tile registry at `apps-registry.json`; new `lib/apps-registry-loader.ts`, `components/apps/AppStoreApp.tsx`, `components/apps/ServiceApp.tsx`; `types.ts` extended with `ServiceBinding` + missing `AppId` values. Service tiles for `Spiral Word`, `GeoSeal`, `GeoSeal Docs`, `AI IDE`, `SCBE Monitor`, `Physics Sim` with env URL overrides (`SPIRAL_WORD_URL`, `GEOSEAL_SERVICE_URL`, `AI_IDE_URL`, `SCBE_MONITOR_URL`, `PHYSICS_SIM_URL`). Shell renamed to **GeoShell v2.1.0**.
+- **GeoShell -> Kindle build pipe**: `scripts/repo_reorg/build_geoshell_into_kindle.py` builds `scbe-visual-system/` and mirrors `dist/` into `kindle-app/www/geoshell/`. NPM: `npm run geoshell:build-into-kindle` (and `:skip-install` variant).
+- **Registry contract tests**: `tests/visual_system/test_apps_registry.py` (9 tests) lock the App Store JSON shape, tile id uniqueness, service binding completeness, and AppId enum cross-check against `types.ts`. NPM: `npm run verify:geoshell-registry`.
+- **Active surface map**: `docs/specs/STRUCTURE.md` rewritten with the canonical UI-root map and the agent navigation guide.
+- **Harness skill tools**: `src/coding_spine/skill_harness_tools.py` discovers `SKILL.md` under `.claude/skills`, `.agents/skills`, `skills`, and optional `SCBE_HARNESS_SKILL_ROOTS`; embeds `harness_skill_tools_v1` + `openai_style_tools` in `agent-harness` manifest; GeoSeal `skill-tools` CLI/HTTP (`/v1/geoseal/skill-tools`) and npm `geoseal skill-tools`.
+- **Postgres lite (optional)**: `docker-compose.postgres-lite.yml` + `deploy/postgres-lite/init.sql`; `src/api/postgres_lite.py` probes `SCBE_POSTGRES_URL` / `DATABASE_URL`; `/health` includes `postgres_lite` on GeoSeal service and main API. Dependency: `psycopg[binary]`. NPM: `npm run postgres:lite:up` / `postgres:lite:down`.
+- **Billing persistence**: SQLite store (`src/api/billing_store.py`) for Stripe webhook dedupe and purchase records; default path `.scbe/billing.sqlite3` (override with `SCBE_BILLING_DB_PATH`).
+- **Agent operator rail**: `docs/ops/OPERATOR_SHIPPING_RAIL.md` and `docs/ops/MERGE_AND_STASH_PLAYBOOK.md` for merge hygiene, stash handling, and `scripts/agents/run_agent_task.py` + harness flows.
+
+### Changed
+
+- **Stripe billing API** (`src/api/stripe_billing.py`): owner-gated `GET /billing/purchases` (`x-owner-token` / `SCBE_OWNER_API_TOKEN`); webhook signature required unless `SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK` is set for dev; idempotent checkout completion and event-id dedupe; unresolved one-time purchases when product metadata cannot be mapped (no silent default SKU).
+
+### Tests
+
+- `tests/api/test_stripe_billing_hardening.py`: owner auth, unsigned webhook policy, unresolved purchases, SQLite persistence, webhook dedupe.
+
 ## [4.0.2] - 2026-04-24
 
 ### Changed

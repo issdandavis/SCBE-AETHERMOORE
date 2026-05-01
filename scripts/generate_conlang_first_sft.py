@@ -483,10 +483,7 @@ def generate_story_lesson_records() -> list:
 
     for filename, tongue_code in STORY_TONGUE_MAP.items():
         filepath = STORIES_DIR / filename
-        if not filepath.exists():
-            continue
-
-        story_text = filepath.read_text(encoding="utf-8")
+        story_text = filepath.read_text(encoding="utf-8") if filepath.exists() else ""
 
         # Extract title (first line after #)
         title = ""
@@ -494,6 +491,8 @@ def generate_story_lesson_records() -> list:
             if line.startswith("# "):
                 title = line[2:].strip()
                 break
+        if not title:
+            title = filename.removesuffix(".md").split("-", 1)[-1].replace("-", " ").title()
 
         if tongue_code is None:
             # Counting rhymes — all tongues

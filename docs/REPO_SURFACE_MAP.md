@@ -103,8 +103,8 @@ Use this lane when the task is about how the system is actually driven locally.
 
 Use this lane when the task is about DARPA, SAM.gov, DIBBS, DLA supplier access, APEX, grant/proposal readiness, submission contacts, or federal go/no-go decisions.
 
-- `docs/operations/DIBBS_DLA_OPERATING_MODEL.md`
-- `docs/operations/DIBBS_REGISTRATION_AND_FOLLOW_UP.md`
+- `docs/ops/DIBBS_DLA_OPERATING_MODEL.md`
+- `docs/ops/DIBBS_REGISTRATION_AND_FOLLOW_UP.md`
 - `docs/business/DIBBS_MONETIZATION_MAP.md`
 - `docs/legal/SAM_GOV_REGISTRATION_RECORD.md`
 - `notes/federal/DARPA_CLARA_Proposal_Master.md`
@@ -121,6 +121,7 @@ Use this lane when the task is about document authority, note consolidation, rep
 - `docs/README_INDEX.md`
 - `docs/CLEANUP_NOTES.md`
 - `docs/REPO_SURFACE_MAP.md`
+- `docs/ops/DOCUMENT_MANAGEMENT_OPERATING_MODEL.md`
 - `skills/scbe-document-management/SKILL.md`
 
 ### 7. Internal Agent Coordination Surface

@@ -108,7 +108,7 @@ class TestAPIEndpoints:
         }
 
         response = client.post("/seal-memory", json=payload)
-        assert response.status_code == 422  # Missing header
+        assert response.status_code == 401
 
     def test_seal_memory_invalid_position(self, client, auth_headers):
         """Test seal-memory rejects invalid position vectors."""
@@ -172,7 +172,7 @@ class TestAPIEndpoints:
         """Test /metrics requires authentication."""
         # Without auth
         response = client.get("/metrics")
-        assert response.status_code == 422
+        assert response.status_code == 401
 
         # With auth
         response = client.get("/metrics", headers=auth_headers)
@@ -277,7 +277,7 @@ class TestAuthentication:
     def test_missing_api_key_rejected(self, client):
         """Test missing API key is rejected."""
         response = client.get("/metrics")
-        assert response.status_code == 422  # Missing required header
+        assert response.status_code == 401
 
 
 # =============================================================================
@@ -436,9 +436,10 @@ class TestErrorHandling:
         """Test error responses have consistent format."""
         response = client.get("/metrics")  # Missing auth
 
-        assert response.status_code == 422
+        assert response.status_code == 401
         data = response.json()
-        assert "detail" in data  # FastAPI validation error format
+        assert data["status"] == "error"
+        assert "error" in data
 
     def test_404_handling(self, client):
         """Test 404 for non-existent endpoints."""

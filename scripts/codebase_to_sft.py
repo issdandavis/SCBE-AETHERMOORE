@@ -50,10 +50,10 @@ MIN_SECTION_CHARS = 100
 # Markdown documentation files to mine (relative to PROJECT_ROOT)
 MD_SOURCES = [
     "README.md",
-    "SYSTEM_ARCHITECTURE.md",
-    "ARCHITECTURE.md",
-    "SPEC.md",
-    "CONCEPTS.md",
+    "docs/specs/SYSTEM_ARCHITECTURE.md",
+    "docs/specs/ARCHITECTURE.md",
+    "docs/specs/SPEC.md",
+    "docs/specs/CONCEPTS.md",
     "docs/TECHNICAL_REFERENCE.md",
     "docs/SCBE_COMPLETE_SYSTEM.md",
     "docs/AXIOM_CROSS_REFERENCE.md",

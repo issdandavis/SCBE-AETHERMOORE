@@ -47,7 +47,7 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 - Blocks prompt injection (180+ techniques)
 - Stops risky AI use in real-time
 - Agent-based deployment model
-- $60-185/device/year (AIDR pricing TBD)
+- $60-185/device/year (AIDR pricing not yet publicly fixed)
 
 **Where they fall short**:
 - **Still detection/response** — alerts and contains, doesn't prevent
@@ -213,7 +213,7 @@ Pull up the relevant card when a prospect mentions a competitor by name, or when
 | Darktrace | Network detection | Public (LSE) | No | No | No | No | Prevention + explainability |
 | CrowdStrike | Endpoint + AIDR | $80B mktcap | No | No | Partial | Partial | Math-based + PQC |
 | Manifold | Runtime agent sec | $8M | No | No | Yes | Partial | Patent + depth |
-| Armadin | Agentic AI sec | $190M | No | No | TBD | TBD | Prevention + PQC |
+| Armadin | Agentic AI sec | $190M | No | No | Emerging | Emerging | Prevention + PQC |
 | Aurascape | AI governance | $62.8M | No | No | No | No | Runtime enforcement |
 | 7AI | Agentic security ops | $130M | No | No | Partial | No | Governance vs ops |
 | Surf AI | Agentic security ops | $57M | No | No | Partial | No | Math proofs |
