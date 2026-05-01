@@ -13,11 +13,13 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+
 # Detect GPU compute capability and install matching PyTorch
 # P100 = sm_60, T4 = sm_75, A100 = sm_80
 def ensure_cuda_compat():
     try:
         import torch
+
         if not torch.cuda.is_available():
             return
         cap = torch.cuda.get_device_capability(0)
@@ -35,25 +37,60 @@ def ensure_cuda_compat():
         # sm_60 (P100): needs PyTorch with cu118 (last version supporting sm_60)
         if cap[0] < 7:
             print(f"sm_{cap[0]}{cap[1]} not supported by current torch - reinstalling with cu118 (supports sm_60+)...")
-            subprocess.run([sys.executable, "-m", "pip", "install", "-q",
-                "torch==2.1.2", "torchvision", "torchaudio",
-                "--index-url", "https://download.pytorch.org/whl/cu118"],
-                check=True)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "-q",
+                    "torch==2.1.2",
+                    "torchvision",
+                    "torchaudio",
+                    "--index-url",
+                    "https://download.pytorch.org/whl/cu118",
+                ],
+                check=True,
+            )
             print("Reinstalled torch 2.1.2+cu118 - P100 now supported")
         else:
             print(f"sm_{cap[0]}{cap[1]} should work - reinstalling latest cu121...")
-            subprocess.run([sys.executable, "-m", "pip", "install", "-q",
-                "torch", "--index-url", "https://download.pytorch.org/whl/cu121"],
-                check=True)
+            subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "-q",
+                    "torch",
+                    "--index-url",
+                    "https://download.pytorch.org/whl/cu121",
+                ],
+                check=True,
+            )
     except ImportError as exc:
         print(f"torch import unavailable during CUDA compatibility check: {exc}")
 
+
 ensure_cuda_compat()
 
-subprocess.run([sys.executable, "-m", "pip", "install", "-q",
-    "transformers>=4.49", "peft>=0.14", "trl>=0.19",
-    "bitsandbytes>=0.45", "accelerate>=1.3", "datasets>=3.3",
-    "huggingface_hub"], check=True)
+subprocess.run(
+    [
+        sys.executable,
+        "-m",
+        "pip",
+        "install",
+        "-q",
+        "transformers>=4.49",
+        "peft>=0.14",
+        "trl>=0.19",
+        "bitsandbytes>=0.45",
+        "accelerate>=1.3",
+        "datasets>=3.3",
+        "huggingface_hub",
+    ],
+    check=True,
+)
 
 import torch
 from datasets import Dataset, load_dataset
@@ -97,11 +134,14 @@ DSL_PRIMITIVE_TOKEN_WEIGHT = float(CFG.get("dsl_primitive_token_weight", SELECTO
 MAX_SAMPLE_MULTIPLIER = float(CFG.get("max_sample_multiplier", 6.0))
 REPAIR_LANE_FILES = set(CFG.get("repair_lane_files", []))
 REPAIR_LANE_WEIGHT = float(CFG.get("repair_lane_weight", 1.0))
+CPU_SMOKE_MAX_RECORDS = int(CFG.get("cpu_smoke_max_records", 48))
+CPU_SMOKE_MAX_STEPS = int(CFG.get("cpu_smoke_max_steps", 3))
 
 # ---- Auth ----
 PUSH = False
 try:
     from kaggle_secrets import UserSecretsClient
+
     hf_token = UserSecretsClient().get_secret("hugging face")
     login(token=hf_token)
     print("HF authenticated via Kaggle secrets")
@@ -142,14 +182,17 @@ def _normalize_records_from_files(files, split_name):
         if not path.exists():
             try:
                 from huggingface_hub import hf_hub_download
+
                 last_hf_error = None
                 for prefix in [f"sft/{name}", name, f"training-data/sft/{name}"]:
                     try:
-                        path = Path(hf_hub_download(
-                            repo_id=HF_DATASET_REPO,
-                            filename=prefix,
-                            repo_type="dataset",
-                        ))
+                        path = Path(
+                            hf_hub_download(
+                                repo_id=HF_DATASET_REPO,
+                                filename=prefix,
+                                repo_type="dataset",
+                            )
+                        )
                         break
                     except (OSError, RuntimeError, ValueError) as exc:
                         last_hf_error = exc
@@ -214,9 +257,7 @@ def load_data():
 
     if BALANCE_CATEGORIES:
         counts = Counter(
-            (r.get("meta", {}) or {}).get("task")
-            or (r.get("meta", {}) or {}).get("category")
-            or "unknown"
+            (r.get("meta", {}) or {}).get("task") or (r.get("meta", {}) or {}).get("category") or "unknown"
             for r in records
         )
         n_categories = max(1, len(counts))
@@ -228,8 +269,9 @@ def load_data():
 
     # Cap dataset size to prevent OOM and timeout on CPU fallback
     import random as _random
+
     _use_gpu = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 7
-    _max_records = MAX_RECORDS if _use_gpu else min(MAX_RECORDS, 200)  # CPU: tiny run, finishes in ~30min
+    _max_records = MAX_RECORDS if _use_gpu else min(MAX_RECORDS, CPU_SMOKE_MAX_RECORDS)
     if len(records) > _max_records:
         _random.seed(42)
         if BALANCE_CATEGORIES:
@@ -255,11 +297,14 @@ def load_eval_data():
 
 # ---- Heartbeat helper ----
 import time as _time
+
 _start_ts = _time.time()
+
 
 def write_status(phase: str, extra: dict | None = None):
     """Write /kaggle/working/STATUS.json so `kaggle kernels output` can see progress."""
     import json as _json
+
     payload = {
         "round": ROUND,
         "phase": phase,
@@ -298,12 +343,13 @@ def fail_status(phase: str, exc: BaseException):
         )
     raise
 
+
 # ---- Train ----
 print(f"=== POLLY KAGGLE: {ROUND} ===")
 write_status("starting")
 if torch.cuda.is_available():
     props = torch.cuda.get_device_properties(0)
-    vram = getattr(props, 'total_memory', getattr(props, 'total_mem', 0)) / 1024**3
+    vram = getattr(props, "total_memory", getattr(props, "total_mem", 0)) / 1024**3
     print(f"GPU: {torch.cuda.get_device_name(0)}")
     print(f"VRAM: {vram:.1f} GB")
     print(f"Compute: {props.major}.{props.minor}")
@@ -317,7 +363,10 @@ try:
     write_status("loading_data")
     dataset = load_data()
     eval_dataset = load_eval_data()
-    write_status("data_loaded", {"num_records": len(dataset), "eval_records": len(eval_dataset) if eval_dataset is not None else 0})
+    write_status(
+        "data_loaded",
+        {"num_records": len(dataset), "eval_records": len(eval_dataset) if eval_dataset is not None else 0},
+    )
 except Exception as exc:
     fail_status("loading_data", exc)
 
@@ -403,10 +452,10 @@ try:
         },
     )
 
-    if REQUIRE_GPU and not use_gpu:
+    if REQUIRE_GPU and not has_cuda:
         raise RuntimeError(
             f"GPU required for this round, but got gpu={gpu_name} compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
-            "Refusing CPU/P100 tiny-run because it contaminates contract-learning metrics."
+            "No accelerator was assigned."
         )
 
     if use_4bit:
@@ -432,6 +481,8 @@ try:
                     "gpu_name": gpu_name,
                     "compute_capability": f"sm_{compute_cap[0]}{compute_cap[1]}",
                     "max_steps_before_cap": MAX_STEPS,
+                    "cpu_smoke_max_records": CPU_SMOKE_MAX_RECORDS,
+                    "cpu_smoke_max_steps": CPU_SMOKE_MAX_STEPS,
                 },
             )
         else:
@@ -440,9 +491,9 @@ try:
         # consume the full Kaggle wall-clock limit.
         EPOCHS = 1
         if MAX_STEPS < 0:
-            MAX_STEPS = 30
+            MAX_STEPS = CPU_SMOKE_MAX_STEPS
         else:
-            MAX_STEPS = min(MAX_STEPS, 30)
+            MAX_STEPS = min(MAX_STEPS, CPU_SMOKE_MAX_STEPS)
         quant_config = None
         compute_dtype = torch.float32
         load_kwargs = {"torch_dtype": torch.float32, "device_map": "cpu"}
@@ -458,11 +509,17 @@ except Exception as exc:
 if quant_config is not None:
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
 
-model = get_peft_model(model, LoraConfig(
-    r=LORA_R, lora_alpha=LORA_ALPHA, lora_dropout=LORA_DROPOUT, bias="none",
-    task_type="CAUSAL_LM",
-    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-))
+model = get_peft_model(
+    model,
+    LoraConfig(
+        r=LORA_R,
+        lora_alpha=LORA_ALPHA,
+        lora_dropout=LORA_DROPOUT,
+        bias="none",
+        task_type="CAUSAL_LM",
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    ),
+)
 model.print_trainable_parameters()
 
 # Adjust training params based on device
@@ -527,16 +584,15 @@ class WeightedDslSFTTrainer(SFTTrainer):
         return (loss, outputs) if return_outputs else loss
 
 
-TrainerClass = (
-    WeightedDslSFTTrainer
-    if SELECTOR_TOKEN_WEIGHT > 1.0 or DSL_PRIMITIVE_TOKEN_WEIGHT > 1.0
-    else SFTTrainer
-)
+TrainerClass = WeightedDslSFTTrainer if SELECTOR_TOKEN_WEIGHT > 1.0 or DSL_PRIMITIVE_TOKEN_WEIGHT > 1.0 else SFTTrainer
 
 try:
     write_status("building_trainer")
     trainer = TrainerClass(
-        model=model, processing_class=tokenizer, train_dataset=dataset, eval_dataset=eval_dataset,
+        model=model,
+        processing_class=tokenizer,
+        train_dataset=dataset,
+        eval_dataset=eval_dataset,
         args=SFTConfig(
             output_dir=OUTPUT_DIR,
             hub_model_id=HF_REPO,
