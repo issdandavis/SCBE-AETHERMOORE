@@ -151,7 +151,6 @@ KEEP_ROOT_DIRS = {
     "services",
     "workflows",
     "tools",
-    "rust",
     "lexicons",
     "extensions",
     "automation",

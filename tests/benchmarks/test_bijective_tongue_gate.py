@@ -88,7 +88,7 @@ def test_aggregation_handles_mixed_tongues(gate):
     report = gate.run_gate(cases, tongues=["AV", "RU"], generate=stub.generate, model_id="stub")
     assert report.n_tests == len(cases) * 2
     assert set(report.by_tongue.keys()) == {"AV", "RU"}
-    for cid, stats in report.by_case.items():
+    for _cid, stats in report.by_case.items():
         assert stats["n"] == 2
 
 
