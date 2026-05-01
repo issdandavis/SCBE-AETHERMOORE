@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Your Website Is Not for You",
-      "word_count": 592,
+      "description": "Uber Torches 2026 AI Budget on Claude Code in Four Months",
+      "word_count": 627,
       "headings": [
         {
           "level": 2,
-          "text": "Your Website Is Not for You",
+          "text": "Uber Torches 2026 AI Budget on Claude Code in Four Months",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "websmith.studio",
+          "text": "briefs.co",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Running Adobe's 1991 PostScript Interpreter in the Browser",
+          "text": "Ask HN: Who is hiring? (May 2026)",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "pagetable.com",
+          "text": "whohas \u2013 Command-line utility for cross-distro, cross-repository package search",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Show HN: Perfect Bluetooth MIDI for Windows",
+          "text": "github.com/whohas",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Show HN: WhatCable, a tiny menu bar app for inspecting USB-C cables",
+          "text": "Flock cameras keep telling police a man who doesn't have a warrant has a warrant",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/darrylmorley",
+          "text": "youtube.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "How Mark Klein told the EFF about Room 641A [book excerpt]",
+          "text": "Ask HN: Who wants to be hired? (May 2026)",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "mitpress.mit.edu",
+          "text": "Sally McKee, who coined the term \"the memory wall\", has died",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Show HN: Site Mogging",
+          "text": "online-tribute.com",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 228,
+      "link_count": 225,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Your Website Is Not for You (websmith.studio)43 points by pumbaa 1 hour ago  | hide | 22\u00a0comments2.Running Adobe's 1991 PostScript Interpreter in the Browser (pagetable.com)8 points by ingve 31 minutes ago  | hide | 1\u00a0comment3.Show HN: Perfect Bluetooth MIDI for Windows46 points by mayerwin 2 hours ago  | hide | 8\u00a0comments4.Show HN: WhatCable, a tiny menu bar app for inspecting USB-C cables (github.com/darrylmorley)163 points by..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Uber Torches 2026 AI Budget on Claude Code in Four Months (briefs.co)278 points by lwhsiao 2 hours ago  | hide | 289\u00a0comments2.Ask HN: Who is hiring? (May 2026)133 points by whoishiring 3 hours ago  | hide | 144\u00a0comments3.whohas \u2013 Command-line utility for cross-distro, cross-repository package search (github.com/whohas)65 points by peter_d_sherman 3 hours ago  | hide | 16\u00a0comments4.Flock cameras keep telling police a man who doe..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
