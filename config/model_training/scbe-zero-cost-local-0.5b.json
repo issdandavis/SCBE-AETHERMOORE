@@ -1,0 +1,36 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-zero-cost-local-0.5b",
+  "title": "SCBE zero-cost local 0.5B preflight profile",
+  "description": "Local/Colab-safe dataset preflight profile for small 0.5B coding-agent experiments. This profile exists so zero-cost training checks validate concrete files before any notebook or remote lane is launched.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "ca_geoseal_combined_repair_v3_train.sft.jsonl",
+      "aligned_foundations_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "ca_geoseal_combined_repair_v3_holdout.sft.jsonl",
+      "aligned_foundations_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 512,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "max_steps": 20,
+    "lora_rank": 4,
+    "lora_alpha": 8,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.0001,
+    "gradient_checkpointing": true,
+    "seed": 42
+  },
+  "notes": [
+    "This is a preflight contract, not a promoted model profile.",
+    "Use explicit GeoSeal coding profiles for HF Jobs dispatch.",
+    "Run npm run training:geoshell-pairs before preflighting the generated GeoShell pair-agent dataset profile."
+  ]
+}

@@ -49,7 +49,7 @@ def run_bool_command(command: list[str]) -> tuple[float, str]:
 
 
 def compute_doc_coverage(repo_root: Path) -> tuple[float, dict[str, float]]:
-    must_have = ["README.md", "CONTRIBUTING.md", "LAYER_INDEX.md"]
+    must_have = ["README.md", "CONTRIBUTING.md", "docs/specs/LAYER_INDEX.md"]
     existing = sum(1 for doc in must_have if (repo_root / doc).exists())
     baseline = existing / len(must_have)
 

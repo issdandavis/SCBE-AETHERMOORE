@@ -79,18 +79,21 @@ Use this lane when the task is about how the system is actually driven locally.
 
 Use this lane when the task is about DARPA, SAM.gov, APEX, grant/proposal readiness, submission contacts, or federal go/no-go decisions.
 
-- `docs/operations/DARPA_SAM_GOV_CONTACTS_AND_PROPOSAL_STATUS.md`
-- `notes/DARPA_CLARA_Proposal_Master.md`
+- `docs/ops/DIBBS_DLA_OPERATING_MODEL.md`
+- `docs/ops/DIBBS_REGISTRATION_AND_FOLLOW_UP.md`
+- `docs/business/DIBBS_MONETIZATION_MAP.md`
+- `docs/legal/SAM_GOV_REGISTRATION_RECORD.md`
+- `notes/federal/DARPA_CLARA_Proposal_Master.md`
 - `docs/proposals/DARPA_CLARA/`
-- `docs/research/DARPA_AI_SECURITY_PROGRAMS_2026.md`
-- `docs/research/FUNDING_OPPORTUNITIES_2026.md`
+- `docs/proposals/DARPA_MATHBAC/sam_gov_attachments/`
+- `docs/proposals/DARPA_MATHBAC/proposers_day_playbook.md`
 
 ### 6. Document Management Surface
 
 Use this lane when the task is about document authority, note consolidation, repo drift cleanup, or deciding whether a file is canonical, operational, public, exploratory, historical, or generated.
 
-- `docs/operations/DOCUMENT_MANAGEMENT_OPERATING_MODEL.md`
-- `docs/operations/REPO_CLEANUP_INVENTORY.md`
+- `docs/ops/DOCUMENT_MANAGEMENT_OPERATING_MODEL.md`
+- `docs/ops/CLEANUP_NOTES.md`
 - `CANONICAL_SYSTEM_STATE.md`
 - `REPO_SURFACE_MAP.md`
 - `skills/scbe-document-management/SKILL.md`

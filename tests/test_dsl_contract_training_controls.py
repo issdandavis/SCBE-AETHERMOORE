@@ -14,6 +14,11 @@ def test_kernel_template_has_contract_weighted_loss_and_gpu_gate() -> None:
     assert "REQUIRE_GPU" in source
     assert "Refusing CPU/P100 tiny-run" in source
     assert "class WeightedDslSFTTrainer" in source
+    assert "checking_device" in source
+    assert "device_checked" in source
+    assert "use_4bit" in source
+    assert "p100_cpu_smoke_fallback" in source
+    assert "hard-fails during P100 model load" in source
     assert "torch.isin" in source
     assert "SELECTOR_TOKEN_WEIGHT" in source
     assert "DSL_PRIMITIVE_TOKEN_WEIGHT" in source

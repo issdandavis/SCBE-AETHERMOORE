@@ -7,6 +7,7 @@ from collections import Counter
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 if hasattr(sys.stderr, "reconfigure"):
@@ -269,6 +270,34 @@ def write_status(phase: str, extra: dict | None = None):
     with open("/kaggle/working/STATUS.json", "w") as _f:
         _json.dump(payload, _f)
 
+
+def fail_status(phase: str, exc: BaseException):
+    """Persist the actual exception before Kaggle tears down the worker."""
+    import traceback as _traceback
+
+    write_status(
+        "failed",
+        {
+            "failed_phase": phase,
+            "error_type": type(exc).__name__,
+            "error": str(exc)[-2000:],
+            "traceback_tail": _traceback.format_exc()[-6000:],
+        },
+    )
+    with open("/kaggle/working/ERROR.json", "w", encoding="utf-8") as _f:
+        json.dump(
+            {
+                "round": ROUND,
+                "failed_phase": phase,
+                "error_type": type(exc).__name__,
+                "error": str(exc),
+                "traceback": _traceback.format_exc(),
+            },
+            _f,
+            indent=2,
+        )
+    raise
+
 # ---- Train ----
 print(f"=== POLLY KAGGLE: {ROUND} ===")
 write_status("starting")
@@ -284,14 +313,21 @@ if torch.cuda.is_available():
 else:
     print("WARNING: No GPU")
 
-write_status("loading_data")
-dataset = load_data()
-eval_dataset = load_eval_data()
-write_status("data_loaded", {"num_records": len(dataset), "eval_records": len(eval_dataset) if eval_dataset is not None else 0})
+try:
+    write_status("loading_data")
+    dataset = load_data()
+    eval_dataset = load_eval_data()
+    write_status("data_loaded", {"num_records": len(dataset), "eval_records": len(eval_dataset) if eval_dataset is not None else 0})
+except Exception as exc:
+    fail_status("loading_data", exc)
 
-tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, use_fast=True)
-if tokenizer.pad_token is None:
-    tokenizer.pad_token = tokenizer.eos_token
+try:
+    write_status("loading_tokenizer")
+    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, use_fast=False)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+except BaseException as exc:
+    fail_status("loading_tokenizer", exc)
 
 
 def _token_ids_for_phrases(phrases):
@@ -341,51 +377,83 @@ print(
     f"primitive_ids={len(DSL_PRIMITIVE_TOKEN_IDS)} weight={DSL_PRIMITIVE_TOKEN_WEIGHT}"
 )
 
-has_bf16 = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 8
-compute_cap = torch.cuda.get_device_capability(0) if torch.cuda.is_available() else (0, 0)
-compute_dtype = torch.bfloat16 if has_bf16 else torch.float16
+try:
+    write_status("checking_device")
+    has_cuda = torch.cuda.is_available()
+    compute_cap = torch.cuda.get_device_capability(0) if has_cuda else (0, 0)
+    gpu_name = torch.cuda.get_device_name(0) if has_cuda else "none"
+    has_bf16 = has_cuda and torch.cuda.get_device_capability(0)[0] >= 8
+    compute_dtype = torch.bfloat16 if has_bf16 else torch.float16
 
-# Kaggle randomly assigns P100 (sm_60) or T4 (sm_75).
-# P100's PyTorch build lacks sm_60 kernels - CUDA ops segfault.
-# For sm_60: fall back to CPU (0.5B model trains fine on CPU with small datasets).
-# For sm_70+: use 4-bit NF4 quantization via bitsandbytes.
-use_gpu = torch.cuda.is_available() and compute_cap[0] >= 7
-
-if REQUIRE_GPU and not use_gpu:
-    raise RuntimeError(
-        f"GPU required for this round, but got compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
-        "Refusing CPU/P100 tiny-run because it contaminates contract-learning metrics."
+    # Kaggle randomly assigns P100 (sm_60) or T4 (sm_75).
+    # T4/A100 lanes use 4-bit NF4 quantization through bitsandbytes.
+    # P100 (sm_60) is unstable for this worker image during model load, so it is
+    # routed to the bounded CPU smoke path instead of hard-crashing the kernel.
+    use_gpu = has_cuda and compute_cap[0] >= 7
+    use_4bit = has_cuda and compute_cap[0] >= 7
+    write_status(
+        "device_checked",
+        {
+            "cuda_available": has_cuda,
+            "gpu_name": gpu_name,
+            "compute_capability": f"sm_{compute_cap[0]}{compute_cap[1]}",
+            "use_gpu": use_gpu,
+            "use_4bit": use_4bit,
+            "require_gpu": REQUIRE_GPU,
+        },
     )
 
-if use_gpu:
-    print("Using 4-bit NF4 quantization on GPU (sm_70+)")
-    quant_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=compute_dtype,
-        bnb_4bit_use_double_quant=True,
-    )
-    load_kwargs = {"quantization_config": quant_config, "torch_dtype": compute_dtype, "device_map": "auto"}
-else:
-    if torch.cuda.is_available():
-        print(f"GPU sm_{compute_cap[0]}{compute_cap[1]} not supported - falling back to CPU tiny-run (200 records, 1 epoch)")
-        os.environ["CUDA_VISIBLE_DEVICES"] = ""
-        torch.cuda.is_available = lambda: False
-    else:
-        print("No GPU - CPU tiny-run (200 records, 1 epoch)")
-    # CPU tiny-run: override epochs and steps so a bad GPU assignment cannot
-    # consume the full Kaggle wall-clock limit.
-    EPOCHS = 1
-    if MAX_STEPS < 0:
-        MAX_STEPS = 30
-    else:
-        MAX_STEPS = min(MAX_STEPS, 30)
-    quant_config = None
-    compute_dtype = torch.float32
-    load_kwargs = {"torch_dtype": torch.float32, "device_map": "cpu"}
+    if REQUIRE_GPU and not use_gpu:
+        raise RuntimeError(
+            f"GPU required for this round, but got gpu={gpu_name} compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
+            "Refusing CPU/P100 tiny-run because it contaminates contract-learning metrics."
+        )
 
-write_status("loading_model")
-model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, **load_kwargs)
+    if use_4bit:
+        print("Using 4-bit NF4 quantization on GPU (sm_70+)")
+        quant_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=compute_dtype,
+            bnb_4bit_use_double_quant=True,
+        )
+        load_kwargs = {"quantization_config": quant_config, "torch_dtype": compute_dtype, "device_map": "auto"}
+    else:
+        if has_cuda:
+            print(
+                f"GPU {gpu_name} sm_{compute_cap[0]}{compute_cap[1]} routed to CPU smoke path "
+                "because this Kaggle image hard-fails during P100 model load."
+            )
+            os.environ["CUDA_VISIBLE_DEVICES"] = ""
+            torch.cuda.is_available = lambda: False
+            write_status(
+                "p100_cpu_smoke_fallback",
+                {
+                    "gpu_name": gpu_name,
+                    "compute_capability": f"sm_{compute_cap[0]}{compute_cap[1]}",
+                    "max_steps_before_cap": MAX_STEPS,
+                },
+            )
+        else:
+            print("No GPU - CPU tiny-run (200 records, 1 epoch)")
+        # CPU tiny-run: override epochs and steps so a bad GPU assignment cannot
+        # consume the full Kaggle wall-clock limit.
+        EPOCHS = 1
+        if MAX_STEPS < 0:
+            MAX_STEPS = 30
+        else:
+            MAX_STEPS = min(MAX_STEPS, 30)
+        quant_config = None
+        compute_dtype = torch.float32
+        load_kwargs = {"torch_dtype": torch.float32, "device_map": "cpu"}
+except BaseException as exc:
+    fail_status("checking_device", exc)
+
+try:
+    write_status("loading_model")
+    model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, **load_kwargs)
+except Exception as exc:
+    fail_status("loading_model", exc)
 
 if quant_config is not None:
     model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
@@ -465,41 +533,45 @@ TrainerClass = (
     else SFTTrainer
 )
 
-trainer = TrainerClass(
-    model=model, processing_class=tokenizer, train_dataset=dataset, eval_dataset=eval_dataset,
-    args=SFTConfig(
-        output_dir=OUTPUT_DIR,
-        hub_model_id=HF_REPO,
-        push_to_hub=PUSH,
-        learning_rate=LEARNING_RATE,
-        per_device_train_batch_size=effective_batch,
-        gradient_accumulation_steps=GRAD_ACCUM,
-        num_train_epochs=EPOCHS,
-        max_steps=MAX_STEPS,
-        warmup_ratio=0.03,
-        weight_decay=0.01,
-        max_grad_norm=0.3,
-        lr_scheduler_type="cosine",
-        logging_steps=10,
-        eval_strategy="steps" if eval_dataset is not None else "no",
-        eval_steps=EVAL_STEPS,
-        save_strategy="steps" if eval_dataset is not None else "epoch",
-        save_steps=SAVE_STEPS if eval_dataset is not None else 500,
-        save_total_limit=3,
-        load_best_model_at_end=eval_dataset is not None,
-        metric_for_best_model="eval_loss" if eval_dataset is not None else None,
-        greater_is_better=False if eval_dataset is not None else None,
-        max_length=MAX_LEN,
-        packing=False,
-        dataset_num_proc=1,
-        report_to="none",
-        fp16=use_fp16,
-        bf16=use_bf16,
-        optim="adamw_torch",
-        gradient_checkpointing=use_grad_ckpt,
-        gradient_checkpointing_kwargs={"use_reentrant": False},
-    ),
-)
+try:
+    write_status("building_trainer")
+    trainer = TrainerClass(
+        model=model, processing_class=tokenizer, train_dataset=dataset, eval_dataset=eval_dataset,
+        args=SFTConfig(
+            output_dir=OUTPUT_DIR,
+            hub_model_id=HF_REPO,
+            push_to_hub=PUSH,
+            learning_rate=LEARNING_RATE,
+            per_device_train_batch_size=effective_batch,
+            gradient_accumulation_steps=GRAD_ACCUM,
+            num_train_epochs=EPOCHS,
+            max_steps=MAX_STEPS,
+            warmup_ratio=0.03,
+            weight_decay=0.01,
+            max_grad_norm=0.3,
+            lr_scheduler_type="cosine",
+            logging_steps=10,
+            eval_strategy="steps" if eval_dataset is not None else "no",
+            eval_steps=EVAL_STEPS,
+            save_strategy="steps" if eval_dataset is not None else "epoch",
+            save_steps=SAVE_STEPS if eval_dataset is not None else 500,
+            save_total_limit=3,
+            load_best_model_at_end=eval_dataset is not None,
+            metric_for_best_model="eval_loss" if eval_dataset is not None else None,
+            greater_is_better=False if eval_dataset is not None else None,
+            max_length=MAX_LEN,
+            packing=False,
+            dataset_num_proc=1,
+            report_to="none",
+            fp16=use_fp16,
+            bf16=use_bf16,
+            optim="adamw_torch",
+            gradient_checkpointing=use_grad_ckpt,
+            gradient_checkpointing_kwargs={"use_reentrant": False},
+        ),
+    )
+except Exception as exc:
+    fail_status("building_trainer", exc)
 
 if eval_dataset is not None and EARLY_STOPPING_PATIENCE > 0:
     trainer.add_callback(
@@ -513,10 +585,17 @@ if eval_dataset is not None and EARLY_STOPPING_PATIENCE > 0:
         f"threshold={EARLY_STOPPING_THRESHOLD}, monitoring eval_loss"
     )
 
-write_status("training")
-train_result = trainer.train()
-write_status("saving")
-trainer.save_model()
+try:
+    write_status("training")
+    train_result = trainer.train()
+except Exception as exc:
+    fail_status("training", exc)
+
+try:
+    write_status("saving")
+    trainer.save_model()
+except Exception as exc:
+    fail_status("saving", exc)
 print(f"\nSaved to {OUTPUT_DIR}")
 
 history_payload = {
@@ -536,8 +615,12 @@ with open("/kaggle/working/TRAINING_HISTORY.json", "w", encoding="utf-8") as f:
 print("Wrote TRAINING_HISTORY.json")
 
 if PUSH:
-    trainer.push_to_hub()
-    print(f"Pushed to {HF_REPO}")
+    try:
+        write_status("pushing_hub")
+        trainer.push_to_hub()
+        print(f"Pushed to {HF_REPO}")
+    except Exception as exc:
+        fail_status("pushing_hub", exc)
 
 with open("/kaggle/working/DONE.json", "w", encoding="utf-8") as f:
     json.dump(

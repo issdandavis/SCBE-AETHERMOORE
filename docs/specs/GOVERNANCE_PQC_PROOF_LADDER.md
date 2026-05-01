@@ -50,7 +50,7 @@ Use this tier only when neither native nor pure-Python PQC is available.
 
 The canonical runtime reporting surface is in:
 
-- [src/crypto/pqc_liboqs.py](C:/Users/issda/SCBE-AETHERMOORE/src/crypto/pqc_liboqs.py:1)
+- [src/crypto/pqc_liboqs.py](../../src/crypto/pqc_liboqs.py)
 
 Use:
 

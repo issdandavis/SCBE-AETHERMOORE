@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from openpyxl import Workbook, load_workbook
+import pytest
+
+openpyxl = pytest.importorskip("openpyxl", reason="openpyxl not installed in this env")
+Workbook = openpyxl.Workbook
+load_workbook = openpyxl.load_workbook
 
 from scripts.augment_binary_interpretation_matrix import SCBE_EXTENSION_SHEETS, augment_workbook
 

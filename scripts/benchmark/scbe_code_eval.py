@@ -112,6 +112,7 @@ SAFE_BUILTINS = {
     "type": type,
     "isinstance": isinstance,
     "__import__": __import__,
+    "eval": eval,
 }
 
 

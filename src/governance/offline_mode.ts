@@ -6,9 +6,9 @@
 // Aligns with OFS v1.0.0 and the Law vs Flux Manifest pattern.
 // ─────────────────────────────────────────────────────────────────
 
+import { sha512 } from '@noble/hashes/sha2.js';
 import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
 import { ml_kem768 } from '@noble/post-quantum/ml-kem.js';
-import { sha512 } from '@noble/hashes/sha2.js';
 
 // ═══════════════════════════════════════════════════════════════
 // §1  Enumerations
@@ -153,7 +153,7 @@ export const PQCrypto = {
   },
 
   fingerprint(publicKey: Uint8Array): string {
-    const h = sha512(publicKey);
+    const h = sha512(publicKey) as Uint8Array;
     return Array.from(h.slice(0, 16))
       .map((b) => b.toString(16).padStart(2, '0'))
       .join(':');

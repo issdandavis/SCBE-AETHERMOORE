@@ -8,7 +8,40 @@ declare global {
     var html2canvas: (element: HTMLElement, options?: any) => Promise<HTMLCanvasElement>;
 }
 
-export type AppId = 'home' | 'mail' | 'slides' | 'snake' | 'folder' | 'notepad' | 'automator' | 'code' | 'sudoku' | 'wordle';
+export type AppId =
+    | 'home'
+    | 'mail'
+    | 'slides'
+    | 'snake'
+    | 'folder'
+    | 'notepad'
+    | 'automator'
+    | 'code'
+    | 'sudoku'
+    | 'wordle'
+    | 'security'
+    | 'cryptolab'
+    | 'defense'
+    | 'agents'
+    | 'overseer'
+    | 'fleet'
+    | 'knowledge'
+    | 'pollypad'
+    | 'service'
+    | 'appstore';
+
+export interface ServiceBinding {
+    /** Transport kind. ``http`` renders an iframe to ``effectiveUrl``. */
+    kind: 'http';
+    /** Optional environment variable consulted before ``defaultUrl``. */
+    envUrl?: string;
+    /** URL used when no env override is present. */
+    defaultUrl: string;
+    /** When true, opens the URL in the OS browser instead of an in-shell iframe. */
+    openInExternal?: boolean;
+    /** Human-readable description shown in the empty/help state. */
+    description?: string;
+}
 
 export interface DesktopItem {
     id: string;
@@ -19,6 +52,10 @@ export interface DesktopItem {
     contents?: DesktopItem[];
     bgColor?: string;
     notepadInitialContent?: string;
+    /** Optional registry category (security / ai-workspace / games / services / discovery). */
+    category?: string;
+    /** Optional binding to a nested HTTP service (used by ``appId === 'service'``). */
+    service?: ServiceBinding;
 }
 
 export interface Point {

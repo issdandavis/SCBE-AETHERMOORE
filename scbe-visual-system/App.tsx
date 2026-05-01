@@ -30,16 +30,26 @@ import { CryptoLabApp } from './components/apps/CryptoLabApp';
 import { AgentOrchestratorApp } from './components/apps/AgentOrchestratorApp';
 import { EntropicDefenseApp } from './components/apps/EntropicDefenseApp';
 import { KnowledgeBaseApp } from './components/apps/KnowledgeBaseApp';
+import { OverseerControlPanelApp } from './components/apps/OverseerControlPanelApp';
+import { AppStoreApp } from './components/apps/AppStoreApp';
+import { ServiceApp } from './components/apps/ServiceApp';
 import { SidebarSharePanel } from './components/SidebarSharePanel';
+import { loadDesktopItems } from './lib/apps-registry-loader';
 
-const APP_VERSION = "v2.0.0 SCBE";
+const APP_VERSION = "v2.1.0 GeoShell";
 
-const INITIAL_DESKTOP_ITEMS: DesktopItem[] = [
+// Registry-driven tile list. Edit ``apps-registry.json`` to change the home
+// screen layout. Anything in the registry also appears in the App Store tile.
+const INITIAL_DESKTOP_ITEMS: DesktopItem[] = loadDesktopItems();
+
+// Legacy hand-coded layout, kept for reference only.
+const _LEGACY_INITIAL_DESKTOP_ITEMS: DesktopItem[] = [
     // SCBE Security Suite (Row 1) - Core Security Tools
     { id: 'security', name: 'Security', type: 'app', icon: Shield, appId: 'security', bgColor: 'bg-emerald-600' },
     { id: 'cryptolab', name: 'Crypto Lab', type: 'app', icon: Lock, appId: 'cryptolab', bgColor: 'bg-purple-600' },
     { id: 'defense', name: 'Defense', type: 'app', icon: Bug, appId: 'defense', bgColor: 'bg-gradient-to-br from-red-600 to-orange-500' },
     { id: 'agents', name: 'Agents', type: 'app', icon: ShieldCheck, appId: 'agents', bgColor: 'bg-gradient-to-br from-red-500 to-blue-500' },
+    { id: 'overseer', name: 'Overseer', type: 'app', icon: Shield, appId: 'overseer', bgColor: 'bg-gradient-to-br from-cyan-600 to-fuchsia-600' },
     { id: 'fleet', name: 'Fleet', type: 'app', icon: ShieldCheck, appId: 'fleet', bgColor: 'bg-indigo-600' },
     { id: 'knowledge', name: 'Docs', type: 'app', icon: BookOpen, appId: 'knowledge', bgColor: 'bg-cyan-600' },
     // AI Workspace (Row 2)
@@ -165,6 +175,7 @@ export const App: React.FC = () => {
         if (item.appId === 'cryptolab') initialSize = { width: 600, height: 700 };
         if (item.appId === 'defense') initialSize = { width: 950, height: 750 };
         if (item.appId === 'agents') initialSize = { width: 900, height: 650 };
+        if (item.appId === 'overseer') initialSize = { width: 1100, height: 720 };
         if (item.appId === 'fleet') initialSize = { width: 1000, height: 700 };
         if (item.appId === 'knowledge') initialSize = { width: 900, height: 700 };
         if (item.appId === 'pollypad') initialSize = { width: 500, height: 700 };
@@ -300,6 +311,7 @@ export const App: React.FC = () => {
                     else if (win.item.appId === 'cryptolab') content = <CryptoLabApp />;
                     else if (win.item.appId === 'defense') content = <EntropicDefenseApp />;
                     else if (win.item.appId === 'agents') content = <AgentOrchestratorApp />;
+                    else if (win.item.appId === 'overseer') content = <OverseerControlPanelApp />;
                     else if (win.item.appId === 'fleet') content = <FleetDashboardApp />;
                     else if (win.item.appId === 'knowledge') content = <KnowledgeBaseApp />;
                     else if (win.item.appId === 'pollypad') content = <PollyPadApp />;
@@ -312,6 +324,8 @@ export const App: React.FC = () => {
                     else if (win.item.appId === 'sudoku') content = <SudokuApp />;
                     else if (win.item.appId === 'wordle') content = <WordPuzzleApp />;
                     else if (win.item.appId === 'notepad') content = <NotepadApp id={win.item.id} initialContent={win.item.notepadInitialContent} />;
+                    else if (win.item.appId === 'appstore') content = <AppStoreApp onLaunch={handleLaunch} />;
+                    else if (win.item.appId === 'service') content = <ServiceApp item={win.item} />;
                     else if (win.item.type === 'folder') content = <FolderView folder={win.item} />;
 
                     return (

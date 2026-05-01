@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip(
+    "scripts.mathbac_cross_primary_atomic",
+    reason="benchmark depends on uncommitted scripts/mathbac_cross_primary_atomic.py",
+)
+
 from scripts.experiments.cross_primary_braid_consistency import (
     DEFAULT_INPUT,
     cross_primary_cycles,

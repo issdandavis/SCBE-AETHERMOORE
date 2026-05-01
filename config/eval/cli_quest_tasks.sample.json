@@ -1,0 +1,47 @@
+{
+  "schema_version": "scbe_cli_quest_manifest_v1",
+  "quests": [
+    {
+      "quest_id": "bashcrawl-navigation",
+      "source": "bashcrawl",
+      "title": "Bashcrawl navigation quest",
+      "repo_url": "https://gitlab.com/slackermedia/bashcrawl",
+      "local_path": "external/cli-quests/bashcrawl",
+      "start_path": "entrance",
+      "instructions_file": "scroll",
+      "objective": "Navigate the directory dungeon, read instructions, and collect command evidence for the quest objective.",
+      "success_markers": ["final room reached", "command evidence recorded"],
+      "allowed_commands": ["pwd", "ls", "dir", "cat", "type", "grep", "rg", "find", "Select-String", "cd"],
+      "sandbox": "copy",
+      "max_steps": 40
+    },
+    {
+      "quest_id": "clmystery-evidence-search",
+      "source": "clmystery",
+      "title": "Command Line Murder Mystery evidence search",
+      "repo_url": "https://github.com/veltman/clmystery",
+      "local_path": "external/cli-quests/clmystery",
+      "start_path": ".",
+      "instructions_file": "instructions",
+      "objective": "Use command-line evidence search to identify the suspect and cite the files or commands that support the answer.",
+      "success_markers": ["suspect identified", "evidence cited", "command trace recorded"],
+      "allowed_commands": ["pwd", "ls", "dir", "cat", "type", "grep", "rg", "find", "Select-String", "cd", "wc", "sort", "uniq", "head", "tail"],
+      "sandbox": "copy",
+      "max_steps": 80
+    },
+    {
+      "quest_id": "terminus-state-change",
+      "source": "terminus",
+      "title": "Terminus state-change quest",
+      "repo_url": "https://github.com/mprat/Terminus",
+      "local_path": "external/cli-quests/terminus",
+      "start_path": ".",
+      "instructions_file": "readme.md",
+      "objective": "Complete a command-driven text-adventure objective and record the world-state change caused by each command.",
+      "success_markers": ["objective reached", "state change recorded", "command trace recorded"],
+      "allowed_commands": ["pwd", "ls", "dir", "cat", "type", "grep", "rg", "find", "Select-String", "cd"],
+      "sandbox": "external_planned",
+      "max_steps": 60
+    }
+  ]
+}

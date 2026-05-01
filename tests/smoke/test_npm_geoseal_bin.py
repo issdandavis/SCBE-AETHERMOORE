@@ -95,3 +95,79 @@ def test_npm_geoseal_bin_python_passthrough_shell_command() -> None:
     payload = json.loads(proc.stdout)
     assert payload["version"] == "geoseal-polly-portal-box-v1"
     assert payload["shell_contract"]["route_packet"]["command_key"] == "add"
+
+
+def test_npm_geoseal_bin_code_lanes_roundtrip(tmp_path: Path) -> None:
+    env = dict(os.environ)
+    env["SCBE_GEOSEAL_PYTHON"] = sys.executable
+
+    lanes_file = tmp_path / "shl_lanes.json"
+    decode_dir = tmp_path / "decoded"
+
+    lanes_proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "tokenizer-code-lanes",
+            "--command",
+            "shl",
+            "--tongues",
+            "KO,AV",
+            "--output",
+            str(lanes_file),
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        env=env,
+    )
+    assert lanes_proc.returncode == 0, lanes_proc.stderr
+    lanes_payload = json.loads(lanes_proc.stdout)
+    assert lanes_payload["schema_version"] == "geoseal_tokenizer_code_lanes_v1"
+    assert lanes_file.exists()
+
+    verify_proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "verify-code-lanes",
+            "--input-file",
+            str(lanes_file),
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        env=env,
+    )
+    assert verify_proc.returncode == 0, verify_proc.stderr
+    verify_payload = json.loads(verify_proc.stdout)
+    assert verify_payload["ok"] is True
+
+    decode_proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "decode-code-lanes",
+            "--input-file",
+            str(lanes_file),
+            "--output-dir",
+            str(decode_dir),
+            "--write-binary",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        env=env,
+    )
+    assert decode_proc.returncode == 0, decode_proc.stderr
+    decode_payload = json.loads(decode_proc.stdout)
+    assert decode_payload["decoded_count"] == 2
+    for row in decode_payload["written"]:
+        assert Path(row["path"]).exists()
+        assert Path(row["binary_path"]).exists()

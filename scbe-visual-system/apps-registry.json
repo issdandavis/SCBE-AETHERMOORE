@@ -1,0 +1,137 @@
+{
+  "schema_version": "geoshell_apps_registry_v1",
+  "shell_name": "GeoShell",
+  "categories": [
+    {
+      "id": "security",
+      "label": "SCBE Security Suite",
+      "tiles": [
+        { "id": "security",   "name": "Security",  "appId": "security",   "icon": "Shield",       "bgColor": "bg-emerald-600" },
+        { "id": "cryptolab",  "name": "Crypto Lab","appId": "cryptolab",  "icon": "Lock",         "bgColor": "bg-purple-600" },
+        { "id": "defense",    "name": "Defense",   "appId": "defense",    "icon": "Bug",          "bgColor": "bg-gradient-to-br from-red-600 to-orange-500" },
+        { "id": "agents",     "name": "Agents",    "appId": "agents",     "icon": "ShieldCheck",  "bgColor": "bg-gradient-to-br from-red-500 to-blue-500" },
+        { "id": "overseer",   "name": "Overseer",  "appId": "overseer",   "icon": "Shield",       "bgColor": "bg-gradient-to-br from-cyan-600 to-fuchsia-600" },
+        { "id": "fleet",      "name": "Fleet",     "appId": "fleet",      "icon": "ShieldCheck",  "bgColor": "bg-indigo-600" },
+        { "id": "knowledge",  "name": "Docs",      "appId": "knowledge",  "icon": "BookOpen",     "bgColor": "bg-cyan-600" }
+      ]
+    },
+    {
+      "id": "ai-workspace",
+      "label": "AI Workspace",
+      "tiles": [
+        { "id": "pollypad",  "name": "Polly Pad",  "appId": "pollypad",  "icon": "FileText",     "bgColor": "bg-sky-600" },
+        { "id": "code",      "name": "IDE",        "appId": "code",      "icon": "Code",         "bgColor": "bg-zinc-800" },
+        { "id": "automator", "name": "Automator",  "appId": "automator", "icon": "Share2",       "bgColor": "bg-violet-600" },
+        { "id": "mail",      "name": "Mail",       "appId": "mail",      "icon": "Mail",         "bgColor": "bg-blue-600" },
+        { "id": "slides",    "name": "Slides",     "appId": "slides",    "icon": "Presentation", "bgColor": "bg-orange-600" }
+      ]
+    },
+    {
+      "id": "games",
+      "label": "Games & Utilities",
+      "tiles": [
+        { "id": "snake",  "name": "Alien Defense", "appId": "snake",  "icon": "Gamepad2", "bgColor": "bg-rose-600" },
+        { "id": "sudoku", "name": "Sudoku",         "appId": "sudoku", "icon": "Hash",     "bgColor": "bg-pink-600" },
+        { "id": "wordle", "name": "Wordle",         "appId": "wordle", "icon": "Type",     "bgColor": "bg-amber-600" }
+      ]
+    },
+    {
+      "id": "services",
+      "label": "Nested Services",
+      "tiles": [
+        {
+          "id": "spiralword",
+          "name": "Spiral Word",
+          "appId": "service",
+          "icon": "FileText",
+          "bgColor": "bg-emerald-700",
+          "service": {
+            "kind": "http",
+            "envUrl": "SPIRAL_WORD_URL",
+            "defaultUrl": "http://127.0.0.1:8000",
+            "openInExternal": false,
+            "description": "Collaborative editor (FastAPI + WebSocket). Start locally with: python spiral-word-app/app.py"
+          }
+        },
+        {
+          "id": "geoseal",
+          "name": "GeoSeal",
+          "appId": "service",
+          "icon": "Key",
+          "bgColor": "bg-amber-700",
+          "service": {
+            "kind": "http",
+            "envUrl": "GEOSEAL_SERVICE_URL",
+            "defaultUrl": "http://127.0.0.1:8765",
+            "openInExternal": false,
+            "description": "GeoSeal CLI HTTP service. Start with: python -m uvicorn src.api.geoseal_service:app --port 8765"
+          }
+        },
+        {
+          "id": "geoseal-docs",
+          "name": "GeoSeal Docs",
+          "appId": "service",
+          "icon": "BookOpen",
+          "bgColor": "bg-amber-600",
+          "service": {
+            "kind": "http",
+            "envUrl": "GEOSEAL_SERVICE_URL",
+            "defaultUrl": "http://127.0.0.1:8765/docs",
+            "openInExternal": false,
+            "description": "FastAPI Swagger UI for the GeoSeal service."
+          }
+        },
+        {
+          "id": "ai-ide",
+          "name": "AI IDE",
+          "appId": "service",
+          "icon": "Code",
+          "bgColor": "bg-zinc-800",
+          "service": {
+            "kind": "http",
+            "envUrl": "AI_IDE_URL",
+            "defaultUrl": "http://127.0.0.1:5173",
+            "openInExternal": false,
+            "description": "Coding-assistant IDE (Vite/React). Start with: cd ai-ide && npm install && npm run dev"
+          }
+        },
+        {
+          "id": "scbe-monitor",
+          "name": "SCBE Monitor",
+          "appId": "service",
+          "icon": "Shield",
+          "bgColor": "bg-emerald-700",
+          "service": {
+            "kind": "http",
+            "envUrl": "SCBE_MONITOR_URL",
+            "defaultUrl": "/dashboard/scbe_monitor.html",
+            "openInExternal": false,
+            "description": "Static SCBE monitor dashboard (dashboard/scbe_monitor.html)."
+          }
+        },
+        {
+          "id": "physics-sim",
+          "name": "Physics Sim",
+          "appId": "service",
+          "icon": "Gamepad2",
+          "bgColor": "bg-purple-700",
+          "service": {
+            "kind": "http",
+            "envUrl": "PHYSICS_SIM_URL",
+            "defaultUrl": "/dashboard/physics-simulator.html",
+            "openInExternal": false,
+            "description": "Static physics-simulator dashboard (dashboard/physics-simulator.html)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "discovery",
+      "label": "Discovery",
+      "tiles": [
+        { "id": "appstore",   "name": "App Store",   "appId": "appstore",   "icon": "Folder",   "bgColor": "bg-zinc-700" },
+        { "id": "how_to_use", "name": "how_to_use",  "appId": "notepad",    "icon": "FileText", "bgColor": "bg-pink-600" }
+      ]
+    }
+  ]
+}

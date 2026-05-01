@@ -18,9 +18,10 @@
  *   Manifold 2 (Memory):     Window W₂ — medium-term pattern memory
  *   Manifold 3 (Governance): Window W_G — long-term policy enforcement
  *
- *   Triadic Distance:
- *     d_tri(t) = √(λ₁·d₁² + λ₂·d₂² + λ₃·d_G²)
- *     where λᵢ ≥ 0 and Σλᵢ = 1
+ *   Triadic Distance (canonical phi-power mean):
+ *     d_tri(t) = (λ₁·d₁^φ + λ₂·d₂^φ + λ₃·d_G^φ)^(1/φ)
+ *     where λᵢ ≥ 0, Σλᵢ = 1, φ ≈ 1.618 (golden ratio).
+ *     Matches src/polly_pads_runtime.py:triadic_temporal_distance.
  *
  *   Harmonic Scaling (super-exponential):
  *     H(d, R) = R^(d²)
@@ -196,13 +197,17 @@ export function harmonicScaleTable(
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * Triadic temporal distance: weighted Euclidean norm of 3 manifold distances.
+ * Triadic temporal distance: phi-power mean of 3 manifold distances (canonical).
  *
- * d_tri = √(λ₁·d₁² + λ₂·d₂² + λ₃·d_G²)
+ * d_tri = (λ₁·d₁^φ + λ₂·d₂^φ + λ₃·d_G^φ)^(1/φ)
+ *
+ * Matches src/polly_pads_runtime.py:triadic_temporal_distance. The phi-power
+ * mean lies between M_1 (arithmetic) and M_2 (Euclidean) for inputs in [0,1]
+ * when 1 < φ < 2; preserves monotonicity and adds scale separation.
  *
  * Properties:
- *   - Non-negative (sum of squares under sqrt)
- *   - Positive-definite: d_tri = 0 ⟺ all dᵢ = 0
+ *   - Non-negative for non-negative inputs
+ *   - Positive-definite under eps clamp: d_tri ≈ 0 ⟺ all dᵢ ≈ 0
  *   - Monotonic in each component: ∂d_tri/∂dᵢ ≥ 0
  *
  * @param d1 - Immediate manifold distance
@@ -216,9 +221,15 @@ export function triadicDistance(
   dG: number,
   weights: TriadicWeights = DEFAULT_TRIADIC_WEIGHTS
 ): number {
-  const sumSq =
-    weights.immediate * d1 * d1 + weights.memory * d2 * d2 + weights.governance * dG * dG;
-  return Math.sqrt(Math.max(0, sumSq));
+  const eps = 1e-10;
+  const c1 = Math.max(d1, eps);
+  const c2 = Math.max(d2, eps);
+  const cG = Math.max(dG, eps);
+  const s =
+    weights.immediate * Math.pow(c1, PHI) +
+    weights.memory * Math.pow(c2, PHI) +
+    weights.governance * Math.pow(cG, PHI);
+  return Math.pow(Math.max(0, s), 1.0 / PHI);
 }
 
 /**

@@ -40,7 +40,7 @@ No competitor has more than one. SCBE has all four.
 |--------|----------|---------------|----------|-----|------------|------------|
 | **Darktrace** | Network detection | Public (LSE) | Anomaly ML | No | No | No |
 | **CrowdStrike** | Endpoint + AIDR | $80B | Detection/response | No | No | Partial |
-| **Armadin** | Agentic AI sec | $190M | TBD (Mandiant DNA) | No | No | TBD |
+| **Armadin** | Agentic AI sec | $190M | Emerging (Mandiant DNA) | No | No | Emerging |
 | **7AI** | Agentic sec ops | $130M | Security ops | No | No | No |
 | **Aurascape** | AI governance | $62.8M | Policy/compliance | No | No | No |
 | **Surf AI** | Agentic sec ops | $57M | Platform | No | No | No |

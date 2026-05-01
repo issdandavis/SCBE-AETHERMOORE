@@ -1635,6 +1635,8 @@ async def health():
 
     **Security:** Public endpoint
     """
+    from src.api.postgres_lite import health_postgres_payload
+
     return {
         "status": "healthy",
         "version": "3.0.0",
@@ -1642,6 +1644,7 @@ async def health():
         "tests_total": 160,
         "coverage": "75%",
         "uptime_seconds": metrics_store.get_metrics()["uptime_seconds"],
+        "postgres_lite": health_postgres_payload(),
     }
 
 

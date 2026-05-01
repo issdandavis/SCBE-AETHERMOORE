@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip(
+    "scripts.mathbac_cross_primary_atomic",
+    reason="binary_branch_braid_router transitively imports uncommitted scripts/mathbac_cross_primary_atomic.py",
+)
+
 from scripts.experiments.binary_branch_braid_router import (
     DEFAULT_INPUT,
     binary_fingerprint,

@@ -423,8 +423,8 @@ Concurrent Users: 5000  │ 410 ops/sec
 ## Next Steps
 
 1. **Run the demo:** `python demo.py`
-2. **Read the API docs:** [docs/API.md](docs/API.md)
-3. **Explore architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+2. **Read the API docs:** [README_INDEX.md](README_INDEX.md)
+3. **Explore architecture:** [ARCHITECTURE.md](ARCHITECTURE.md)
 4. **Run tests:** `npm test && pytest tests/`
 
 ---
@@ -432,7 +432,7 @@ Concurrent Users: 5000  │ 410 ops/sec
 ## Support
 
 - **GitHub Issues:** [Report bugs](https://github.com/ISDanDavis2/scbe-aethermoore/issues)
-- **Documentation:** [Full docs](./docs/)
+- **Documentation:** [Full docs](README_INDEX.md)
 - **Email:** Contact for enterprise pilots
 
 ---

@@ -22,9 +22,9 @@ DB_PATH = RAG_DIR / "index.db"
 MASTER_SOURCES = [
     # Docs
     ("C:/Users/issda/SCBE-AETHERMOORE/CLAUDE.md", "docs"),
-    ("C:/Users/issda/SCBE-AETHERMOORE/SPEC.md", "docs"),
-    ("C:/Users/issda/SCBE-AETHERMOORE/SYSTEM_ARCHITECTURE.md", "docs"),
-    ("C:/Users/issda/SCBE-AETHERMOORE/LAYER_INDEX.md", "docs"),
+    ("C:/Users/issda/SCBE-AETHERMOORE/docs/specs/SPEC.md", "docs"),
+    ("C:/Users/issda/SCBE-AETHERMOORE/docs/specs/SYSTEM_ARCHITECTURE.md", "docs"),
+    ("C:/Users/issda/SCBE-AETHERMOORE/docs/specs/LAYER_INDEX.md", "docs"),
     ("C:/Users/issda/CLAUDE.md", "docs"),
     # Key docs folder
     ("C:/Users/issda/SCBE-AETHERMOORE/docs/M5_MESH_PRODUCT_SERVICE_BLUEPRINT.md", "product"),

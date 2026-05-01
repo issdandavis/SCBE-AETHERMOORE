@@ -2643,6 +2643,61 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         operation_command=args.operation_command,
     )
 
+    hydra_bridge_path = output_dir / "hydra_tokenizer_bridge.json"
+    hydra_bridge_summary: dict[str, object] = {"enabled": False}
+    try:
+        from src.coding_spine.agent_tool_bridge import build_hydra_tokenizer_bridge_v1
+
+        hydra_bridge = build_hydra_tokenizer_bridge_v1(
+            goal=args.task,
+            preferred_language="python",
+            permission_mode="observe" if args.privacy == "local_only" else "cloud-dispatch",
+        )
+        token_rows = hydra_bridge.get("tokenizer_packet", {}).get("rows", [])
+        hydra_bridge_summary = {
+            "enabled": True,
+            "schema_version": hydra_bridge.get("schema_version"),
+            "goal_sha256": hashlib.sha256(args.task.encode("utf-8")).hexdigest(),
+            "selected_language": hydra_bridge.get("selected_language", {}),
+            "head_count": len(hydra_bridge.get("hydra_heads", [])),
+            "heads": [
+                {"head": row.get("head"), "tongue": row.get("tongue")}
+                for row in hydra_bridge.get("hydra_heads", [])
+                if isinstance(row, dict)
+            ],
+            "tokenizer_packet": {
+                "payload_sha256": hydra_bridge.get("tokenizer_packet", {}).get("payload_sha256"),
+                "selected_tongue": hydra_bridge.get("tokenizer_packet", {}).get("selected_tongue"),
+                "row_count": len(token_rows) if isinstance(token_rows, list) else 0,
+                "token_sha256_prefixes": [
+                    str(row.get("token_sha256", ""))[:16] for row in token_rows if isinstance(row, dict)
+                ],
+            },
+            "artifact": _display_path(hydra_bridge_path, repo_root),
+        }
+        hydra_bridge_path.write_text(
+            json.dumps(
+                {
+                    **hydra_bridge,
+                    "goal_excerpt": "",
+                    "privacy_note": "Agent-bus artifact strips raw task text; use goal_sha256 in summary.",
+                },
+                indent=2,
+                ensure_ascii=True,
+            ),
+            encoding="utf-8",
+        )
+        round_packet["hydra_tokenizer_bridge"] = hydra_bridge_summary
+        latest_round_path = mirror_root / series_id / "latest_round.json"
+        latest_round_path.write_text(json.dumps(round_packet, indent=2, ensure_ascii=True), encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001
+        hydra_bridge_summary = {
+            "enabled": False,
+            "error": exc.__class__.__name__,
+            "reason": str(exc)[:240],
+        }
+        round_packet["hydra_tokenizer_bridge"] = hydra_bridge_summary
+
     dispatch_payload: dict[str, object] = {"enabled": False}
     if args.dispatch:
         free_llm = _load_free_llm_routes_module(repo_root)
@@ -2680,10 +2735,13 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
     dispatch_log = repo_root / ".scbe" / "packets" / "free_llm_dispatch.jsonl"
     tracked_paths = [
         latest_round,
+        hydra_bridge_path,
         dispatch_log,
         repo_root / "scripts" / "system" / "mirror_room_agent_bus.py",
         repo_root / "scripts" / "system" / "observable_state_watcher.py",
         repo_root / "src" / "tokenizer" / "topological_operator_tree.py",
+        repo_root / "src" / "coding_spine" / "agent_tool_bridge.py",
+        repo_root / "src" / "geoseal_cli.py",
     ]
     snapshot = tracker.build_snapshot(tracked_paths, label=f"agentbus-user-run-{series_id}", repo_root=repo_root)
     tracker_output_dir = _repo_path(repo_root, args.tracker_output_dir)
@@ -2711,9 +2769,11 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         "primary_bus": round_packet.get("primary_bus", []),
         "secondary_bus": round_packet.get("secondary_bus", []),
         "tertiary_bus_count": len(round_packet.get("tertiary_bus", [])),
+        "hydra_tokenizer_bridge": hydra_bridge_summary,
         "dispatch": dispatch_payload,
         "artifacts": {
             "latest_round": _display_path(latest_round, repo_root),
+            "hydra_tokenizer_bridge": _display_path(hydra_bridge_path, repo_root),
             "tracker_snapshot": _display_path(tracker_paths["snapshot"], repo_root),
             "tracker_changed": _display_path(tracker_paths["changed"], repo_root),
             "watcher": _display_path(watcher_output, repo_root),

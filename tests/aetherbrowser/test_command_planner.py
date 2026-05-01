@@ -1,7 +1,7 @@
 """Tests for command planning and orchestration signals."""
 
 from src.aetherbrowser.agents import AgentSquad
-from src.aetherbrowser.command_planner import build_command_plan
+from src.aetherbrowser.command_planner import _infer_risk, build_command_plan
 from src.aetherbrowser.router import ModelProvider, OctoArmorRouter
 from src.aetherbrowser.ws_feed import WsFeed
 
@@ -90,3 +90,40 @@ class TestCommandPlanner:
         assert plan.selection_reason == "preference_override"
         assert plan.auto_cascade is False
         assert plan.fallback_chain == ["sonnet"]
+
+    def test_risk_gate_mcdc_condition_independence(self):
+        """MC/DC-style independence pairs for the browser risk decision.
+
+        The decision inputs are:
+        A = auth keyword present
+        S = side-effect keyword present
+        H = high-risk keyword present
+        B = browser action required
+        R = read-only keyword present
+        """
+        cases = [
+            # Baseline: no approvals, low risk.
+            ("baseline", "inspect page", False, "low", []),
+            # A independently changes approvals from none to medium.
+            ("auth", "inspect token", False, "medium", ["Uses authentication or credentials"]),
+            # S independently changes approvals from none to medium.
+            ("side_effect", "inspect update", False, "medium", ["Performs a state-changing browser action"]),
+            # H independently changes tier to high.
+            ("high_risk", "inspect delete", False, "high", ["Touches a high-impact flow"]),
+            # B independently adds approval when the action is not clearly read-only.
+            ("browser_unknown", "open dashboard", True, "medium", ["Browser action is not clearly read-only"]),
+            # R independently masks the browser-action approval and returns to low.
+            ("browser_read_only", "open read dashboard", True, "low", []),
+        ]
+
+        for _name, text, browser_action_required, expected_tier, expected_reason_fragments in cases:
+            lowered = text.lower()
+            tokens = set(lowered.split())
+            risk_tier, approvals = _infer_risk(
+                lowered=lowered,
+                tokens=tokens,
+                browser_action_required=browser_action_required,
+            )
+            assert risk_tier == expected_tier
+            for fragment in expected_reason_fragments:
+                assert any(fragment in approval for approval in approvals)

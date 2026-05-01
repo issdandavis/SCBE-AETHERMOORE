@@ -1,0 +1,32 @@
+# Local Postgres (Alpine) for SCBE dev — optional companion to SQLite billing.
+#
+#   docker compose -f docker-compose.postgres-lite.yml up -d
+#
+# Default URL (matches env below):
+#   postgresql://scbe:scbe@127.0.0.1:5433/scbe
+#
+# Override:
+#   SCBE_POSTGRES_URL=postgresql://user:pass@host:port/dbname
+
+services:
+  postgres-lite:
+    image: postgres:16-alpine
+    container_name: scbe-postgres-lite
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: scbe
+      POSTGRES_PASSWORD: scbe
+      POSTGRES_DB: scbe
+    volumes:
+      - scbe-postgres-lite-data:/var/lib/postgresql/data
+      - ./deploy/postgres-lite/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scbe -d scbe"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  scbe-postgres-lite-data:

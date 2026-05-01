@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip(
+    "scripts.mathbac_cross_primary_atomic",
+    reason="benchmark depends on uncommitted scripts/mathbac_cross_primary_atomic.py",
+)
+
 from scripts.experiments.basket_weave_consistency_gate import run
 
 

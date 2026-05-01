@@ -257,7 +257,7 @@ def _load_oqs():
         import oqs  # type: ignore
 
         return oqs
-    except Exception:
+    except (Exception, SystemExit):
         return None
 
 

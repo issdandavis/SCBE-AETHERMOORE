@@ -32,6 +32,7 @@ except Exception:
     )
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+pytest.importorskip("hypothesis", reason="hypothesis not installed in this env")
 from hypothesis import given, strategies as st, settings, assume
 
 from symphonic_cipher.scbe_aethermoore.spiral_seal import (
