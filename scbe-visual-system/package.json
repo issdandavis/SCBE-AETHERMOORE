@@ -1,6 +1,7 @@
 {
   "name": "scbe-visual-system",
   "description": "Quantum-Safe Fleet Tablet OS - USPTO #63/961,403",
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "private": true,
   "version": "3.0.0",
   "type": "module",
