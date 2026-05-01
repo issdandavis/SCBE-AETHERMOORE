@@ -105,9 +105,44 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "How Mark Klein told the EFF about Room 641A [book excerpt]",
-      "word_count": 618,
+      "description": "Your Website Is Not for You",
+      "word_count": 592,
       "headings": [
+        {
+          "level": 2,
+          "text": "Your Website Is Not for You",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "websmith.studio",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Running Adobe's 1991 PostScript Interpreter in the Browser",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "pagetable.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Show HN: Perfect Bluetooth MIDI for Windows",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Show HN: WhatCable, a tiny menu bar app for inspecting USB-C cables",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "github.com/darrylmorley",
+          "source": "fallback-selector"
+        },
         {
           "level": 2,
           "text": "How Mark Klein told the EFF about Room 641A [book excerpt]",
@@ -120,48 +155,13 @@
         },
         {
           "level": 2,
-          "text": "For Linux kernel vulnerabilities, there is no heads-up to distributions",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "openwall.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Opus 4.7 knows the real Kelsey",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "theargumentmag.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Shai-Hulud Themed Malware Found in the PyTorch Lightning AI Training Library",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "semgrep.dev",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "New copy of earliest poem in English, written 1,3k years ago, discovered in Rome",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "tcd.ie",
+          "text": "Show HN: Site Mogging",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 229,
+      "link_count": 228,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.How Mark Klein told the EFF about Room 641A [book excerpt] (mitpress.mit.edu)543 points by the-mitr 14 hours ago  | hide | 179\u00a0comments2.For Linux kernel vulnerabilities, there is no heads-up to distributions (openwall.com)456 points by ori_b 14 hours ago  | hide | 341\u00a0comments3.Opus 4.7 knows the real Kelsey (theargumentmag.com)295 points by ilamont 10 hours ago  | hide | 155\u00a0comments4.Shai-Hulud Themed Malware Found in the PyT..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Your Website Is Not for You (websmith.studio)43 points by pumbaa 1 hour ago  | hide | 22\u00a0comments2.Running Adobe's 1991 PostScript Interpreter in the Browser (pagetable.com)8 points by ingve 31 minutes ago  | hide | 1\u00a0comment3.Show HN: Perfect Bluetooth MIDI for Windows46 points by mayerwin 2 hours ago  | hide | 8\u00a0comments4.Show HN: WhatCable, a tiny menu bar app for inspecting USB-C cables (github.com/darrylmorley)163 points by..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
