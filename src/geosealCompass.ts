@@ -703,16 +703,14 @@ export function triadicTemporalDistance(route: Route): number {
   const total = 1.0 + PHI + PHI ** 2;
   const lambda_i = 1.0 / total;
   const lambda_m = PHI / total;
-  const lambda_l = (PHI ** 2) / total;
+  const lambda_l = PHI ** 2 / total;
 
   const eps = 1e-10;
   const ci = Math.max(immediate, eps);
   const cm = Math.max(medium, eps);
   const cl = Math.max(longTerm, eps);
   const s =
-    lambda_i * Math.pow(ci, PHI) +
-    lambda_m * Math.pow(cm, PHI) +
-    lambda_l * Math.pow(cl, PHI);
+    lambda_i * Math.pow(ci, PHI) + lambda_m * Math.pow(cm, PHI) + lambda_l * Math.pow(cl, PHI);
   return Math.pow(Math.max(0, s), 1.0 / PHI);
 }
 
