@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -103,23 +102,6 @@ def test_agent_harness_manifest_routes_all_code_languages():
     assert manifest["permission_mode"] == "workspace-write"
     assert any(tool["tool"] == "execute_tests" for tool in manifest["tool_contracts"])
     assert "agent_harness_json" in manifest["geoseal_cli"]
-    stack = manifest["agent_execution_stack_v1"]
-    assert stack["schema_version"] == "scbe_agent_execution_stack_v1"
-    assert "execution_layer" in stack
-    assert "temporal_reliance_layer" in stack
-    ext = manifest["inbuilt_agentic_training_extensions"]
-    assert ext["schema_version"] == "scbe_agentic_training_extensions_v1"
-    assert "github" in ext and "huggingface" in ext
-    assert "trigger_router_coding" in ext["github"]["commands"]
-    assert "dispatch_train_and_gate" in ext["huggingface"]["commands"]
-    assert "loop_dispatch_github_coding_json" in manifest["geoseal_cli"]
-    assert "agentic_training_loop_json" in manifest["geoseal_cli"]
-    hydra = manifest["hydra_tokenizer_bridge_v1"]
-    assert hydra["schema_version"] == "geoseal_hydra_tokenizer_bridge_v1"
-    assert hydra["selected_language"]["language"] == "rust"
-    assert len(hydra["hydra_heads"]) == 6
-    assert len(hydra["tokenizer_packet"]["rows"]) == 6
-    assert "hydra_bridge_json" in manifest["geoseal_cli"]
 
 
 def test_geoseal_agent_harness_cli_json():
@@ -149,72 +131,6 @@ def test_geoseal_agent_harness_cli_json():
     assert payload["schema_version"] == "scbe_agent_harness_manifest_v1"
     assert payload["selected_language"]["language"] == "zig"
     assert payload["selected_language"]["parent_tongue"] == "RU"
-
-
-def test_geoseal_agentic_training_loop_cli_json():
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "src.geoseal_cli",
-            "agentic-training-loop",
-            "--goal",
-            "run nightly training loop",
-            "--provider",
-            "both",
-            "--json",
-        ],
-        cwd=REPO_ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    assert proc.returncode == 0, proc.stderr
-    payload = json.loads(proc.stdout)
-    assert payload["schema_version"] == "geoseal-agentic-training-loop-v1"
-    assert payload["extensions"]["github"] is not None
-    assert payload["extensions"]["huggingface"] is not None
-    assert "watch_run" in payload["extensions"]["github"]["commands"]
-
-
-def test_geoseal_hydra_bridge_cli_json():
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "src.geoseal_cli",
-            "hydra-bridge",
-            "--goal",
-            "route a coding task through hydra and tokenizer",
-            "--language",
-            "typescript",
-            "--permission-mode",
-            "observe",
-            "--json",
-        ],
-        cwd=REPO_ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    assert proc.returncode == 0, proc.stderr
-    payload = json.loads(proc.stdout)
-    assert payload["schema_version"] == "geoseal_hydra_tokenizer_bridge_v1"
-    assert payload["selected_language"]["tongue"] == "AV"
-    assert payload["separation_of_concerns"]["hydra"].startswith("multi-agent")
-    assert payload["tokenizer_packet"]["transport_boundary"].endswith("not authorization.")
-    assert {row["tongue"] for row in payload["tokenizer_packet"]["rows"]} == {
-        "KO",
-        "AV",
-        "RU",
-        "CA",
-        "UM",
-        "DR",
-    }
 
 
 def test_geoseal_service_tool_bridge_endpoint():
@@ -278,174 +194,6 @@ def test_geoseal_service_cli_bridge_agent_harness():
     assert body["status"] == "ok"
     assert body["exit_code"] == 0
     assert body["data"]["selected_language"]["tongue"] == "AV"
-
-
-def test_geoseal_service_cli_bridge_hydra_bridge():
-    from fastapi.testclient import TestClient
-
-    from src.api.geoseal_service import app
-
-    client = TestClient(app)
-    response = client.post(
-        "/v1/geoseal/hydra-bridge",
-        json={"goal": "coordinate paired agents", "language": "go"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["status"] == "ok"
-    assert body["exit_code"] == 0
-    assert body["data"]["schema_version"] == "geoseal_hydra_tokenizer_bridge_v1"
-    assert body["data"]["selected_language"]["parent_tongue"] == "CA"
-
-
-def test_geoseal_service_cli_bridge_agentic_training_loop():
-    from fastapi.testclient import TestClient
-
-    from src.api.geoseal_service import app
-
-    client = TestClient(app)
-    response = client.post(
-        "/v1/geoseal/agentic-training-loop",
-        json={"goal": "nightly loop", "provider": "github"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["status"] == "ok"
-    assert body["exit_code"] == 0
-    assert body["data"]["extensions"]["github"] is not None
-    assert body["data"]["extensions"]["huggingface"] is None
-
-
-def test_geoseal_loop_dispatch_cli_json_github_coding():
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "src.geoseal_cli",
-            "loop-dispatch",
-            "--provider",
-            "github",
-            "--task",
-            "coding",
-            "--branch",
-            "feat/test-loop",
-            "--query",
-            "smoke router",
-            "--json",
-        ],
-        cwd=REPO_ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    assert proc.returncode == 0, proc.stderr
-    payload = json.loads(proc.stdout)
-    assert payload["schema_version"] == "geoseal-loop-dispatch-v1"
-    assert payload["ok"] is True
-    assert payload["provider"] == "github"
-    assert payload["task"] == "trigger_router_coding"
-    assert "gh" in payload["argv"]
-    assert "feat/test-loop" in payload["argv"]
-    assert "smoke router" in " ".join(payload["argv"])
-
-
-def test_geoseal_loop_dispatch_cli_json_hf_bijective():
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "src.geoseal_cli",
-            "loop-dispatch",
-            "--provider",
-            "huggingface",
-            "--task",
-            "bijective_gate",
-            "--hf-model",
-            "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1",
-            "--json",
-        ],
-        cwd=REPO_ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    assert proc.returncode == 0, proc.stderr
-    payload = json.loads(proc.stdout)
-    assert payload["ok"] is True
-    assert payload["execute_env"]["SCBE_GATE_MODEL"] == "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1"
-    assert str(payload["argv"][-1]).endswith("run_bijective_tongue_gate_hf.py")
-
-
-def test_geoseal_loop_dispatch_execute_refused_without_gate_env():
-    proc = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "src.geoseal_cli",
-            "loop-dispatch",
-            "--provider",
-            "github",
-            "--task",
-            "list_runs",
-            "--permission-mode",
-            "cloud-dispatch",
-            "--execute",
-        ],
-        cwd=REPO_ROOT,
-        text=True,
-        env={k: v for k, v in os.environ.items() if k != "SCBE_AGENTIC_LOOP_EXECUTE"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=60,
-        check=False,
-    )
-    assert proc.returncode == 2
-    assert "SCBE_AGENTIC_LOOP_EXECUTE" in proc.stderr
-
-
-def test_geoseal_service_cli_bridge_loop_dispatch():
-    from fastapi.testclient import TestClient
-
-    from src.api.geoseal_service import app
-
-    client = TestClient(app)
-    response = client.post(
-        "/v1/geoseal/loop-dispatch",
-        json={"provider": "github", "task": "list_runs"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["status"] == "ok"
-    assert body["exit_code"] == 0
-    assert body["data"]["ok"] is True
-    assert body["data"]["argv"][0] == "gh"
-
-
-def test_geoseal_service_loop_dispatch_execute_blocked_by_policy():
-    from fastapi.testclient import TestClient
-
-    from src.api.geoseal_service import app
-
-    client = TestClient(app)
-    response = client.post(
-        "/v1/geoseal/loop-dispatch",
-        json={
-            "provider": "github",
-            "task": "list_runs",
-            "execute": True,
-            "permission_mode": "observe",
-        },
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["status"] == "error"
-    assert body["exit_code"] == 2
-    assert body["data"]["schema_version"] == "scbe_agent_tool_policy_v1"
-    assert body["data"]["ok"] is False
 
 
 def test_geoseal_service_cli_bridge_code_packet():

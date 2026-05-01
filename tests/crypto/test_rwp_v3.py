@@ -181,9 +181,7 @@ class TestRWPv3Protocol:
         protocol = RWPv3Protocol(enable_pqc=False)
         envelope = protocol.encrypt(b"password", b"message")
 
-        tag_bytes = bytearray(
-            SACRED_TONGUE_TOKENIZER.decode_section("tag", envelope.tag)
-        )
+        tag_bytes = bytearray(SACRED_TONGUE_TOKENIZER.decode_section("tag", envelope.tag))
         tag_bytes[0] ^= 0xFF
         envelope.tag = SACRED_TONGUE_TOKENIZER.encode_section("tag", bytes(tag_bytes))
 

@@ -5,14 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
-LOOKUP_PATH = (
-    REPO_ROOT
-    / "artifacts"
-    / "cross_language_lookup"
-    / "full_cross_language_lookup.json"
-)
+LOOKUP_PATH = REPO_ROOT / "artifacts" / "cross_language_lookup" / "full_cross_language_lookup.json"
 
 
 def _run_cli(*args: str) -> subprocess.CompletedProcess[str]:
@@ -36,9 +30,7 @@ def test_geoseal_emit_matches_cross_language_lookup_templates() -> None:
     kwargs = {"a": "x", "b": "y"}
 
     for tongue in ("KO", "AV", "RU", "CA", "UM", "DR"):
-        result = _run_cli(
-            "emit", op, "--tongue", tongue, *(f"{k}={v}" for k, v in kwargs.items())
-        )
+        result = _run_cli("emit", op, "--tongue", tongue, *(f"{k}={v}" for k, v in kwargs.items()))
         assert result.returncode == 0, f"{tongue}: {result.stderr}"
         first_line = result.stdout.splitlines()[0].strip()
         expected = _lexicon_template(artifact, op, tongue).format(**kwargs)

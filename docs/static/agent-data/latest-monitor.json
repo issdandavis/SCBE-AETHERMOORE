@@ -105,69 +105,69 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "To My Students",
-      "word_count": 594,
+      "description": "Your Website Is Not for You",
+      "word_count": 592,
       "headings": [
         {
           "level": 2,
-          "text": "To My Students",
+          "text": "Your Website Is Not for You",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "hendrix.edu",
+          "text": "websmith.studio",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "New Integrated by Design FreeBSD Book",
+          "text": "Running Adobe's 1991 PostScript Interpreter in the Browser",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "vivianvoss.net",
+          "text": "pagetable.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Microsoft and OpenAI end their exclusive and revenue-sharing deal",
+          "text": "Show HN: Perfect Bluetooth MIDI for Windows",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "bloomberg.com",
+          "text": "Show HN: WhatCable, a tiny menu bar app for inspecting USB-C cables",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Talkie: a 13B vintage language model from 1930",
+          "text": "github.com/darrylmorley",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "talkie-lm.com",
+          "text": "How Mark Klein told the EFF about Room 641A [book excerpt]",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Three men are facing charges in Toronto SMS Blaster arrests",
+          "text": "mitpress.mit.edu",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "tps.ca",
+          "text": "Show HN: Site Mogging",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 229,
+      "link_count": 228,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.To My Students (hendrix.edu)165 points by marvinborner 56 minutes ago  | hide | 56\u00a0comments2.New Integrated by Design FreeBSD Book (vivianvoss.net)44 points by vermaden 1 hour ago  | hide | 5\u00a0comments3.Microsoft and OpenAI end their exclusive and revenue-sharing deal (bloomberg.com)737 points by helsinkiandrew 11 hours ago  | hide | 645\u00a0comments4.Talkie: a 13B vintage language model from 1930 (talkie-lm.com)59 points by jekude 2..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Your Website Is Not for You (websmith.studio)43 points by pumbaa 1 hour ago  | hide | 22\u00a0comments2.Running Adobe's 1991 PostScript Interpreter in the Browser (pagetable.com)8 points by ingve 31 minutes ago  | hide | 1\u00a0comment3.Show HN: Perfect Bluetooth MIDI for Windows46 points by mayerwin 2 hours ago  | hide | 8\u00a0comments4.Show HN: WhatCable, a tiny menu bar app for inspecting USB-C cables (github.com/darrylmorley)163 points by..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 2309,
+      "word_count": 1947,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Mon, 27 Apr 2026 (showing first 50 of 92 entries )"
+          "text": "Fri, 1 May 2026 (showing first 50 of 217 entries )"
         }
       ],
-      "link_count": 570,
+      "link_count": 482,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Mon, 27 Apr 2026\n        \n      \n        \n          Fri, 24 Apr 2026\n        \n      \n        \n          Thu, 23 Apr 2026\n        \n      \n        \n          Wed, 22 Apr 2026\n        \n      \n        \n          Tue, 21 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1195 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1151-1195\n\n    \n    Showing up to 50 entries p..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n  See today's new changes\n      Total of 972 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      951-972\n\n    \n    Showing up to 50 entries per p..."
     }
   ]
 }

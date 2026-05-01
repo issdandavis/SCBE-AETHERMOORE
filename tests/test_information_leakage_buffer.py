@@ -43,9 +43,7 @@ def test_reversible_buffer_can_be_erased() -> None:
 
 def test_irreversible_route_mark_becomes_leaky() -> None:
     mod = _load()
-    result = mod.simulate(
-        mod.LeakageScenario(name="leaky", environment_leak=0.7, symmetric_noise=0.02)
-    )
+    result = mod.simulate(mod.LeakageScenario(name="leaky", environment_leak=0.7, symmetric_noise=0.02))
     assert result.route_metadata_leak >= 0.7
     assert result.decision == "MEASURED_OR_LEAKY"
 

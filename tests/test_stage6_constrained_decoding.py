@@ -23,12 +23,7 @@ from scripts.eval.score_stage6_constrained_decoding import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CONTRACT_PATH = (
-    REPO_ROOT
-    / "config"
-    / "model_training"
-    / "stage6_atomic_workflow_eval_contract.json"
-)
+CONTRACT_PATH = REPO_ROOT / "config" / "model_training" / "stage6_atomic_workflow_eval_contract.json"
 
 
 @pytest.fixture(scope="module")
@@ -54,8 +49,7 @@ def test_prefix_covers_every_required_token(contract):
         prefix_lower = prefix.lower()
         for required in prompt.get("required", []):
             assert required.lower() in prefix_lower, (
-                f"required token {required!r} not in prefix for {prompt['id']!r}\n"
-                f"prefix: {prefix}"
+                f"required token {required!r} not in prefix for {prompt['id']!r}\n" f"prefix: {prefix}"
             )
 
 
@@ -66,8 +60,7 @@ def test_prefix_does_not_trigger_any_forbidden_token(contract):
         prefix_lower = _build_prefix(kind).lower()
         for forbidden in prompt.get("forbidden", []):
             assert forbidden.lower() not in prefix_lower, (
-                f"forbidden token {forbidden!r} appears in prefix for "
-                f"{prompt['id']!r}"
+                f"forbidden token {forbidden!r} appears in prefix for " f"{prompt['id']!r}"
             )
 
 
@@ -111,6 +104,5 @@ def test_prefix_order_matches_required_set(contract):
         prefix_str = " ".join(PREFIX_ORDER[kind]).lower()
         for token in missing:
             assert token in prefix_str, (
-                f"required token {token!r} for {prompt['id']!r} not present in "
-                f"PREFIX_ORDER[{kind!r}]"
+                f"required token {token!r} for {prompt['id']!r} not present in " f"PREFIX_ORDER[{kind!r}]"
             )

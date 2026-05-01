@@ -61,22 +61,15 @@ def test_mars_mission_compass_builds_minimap_routes_and_actions() -> None:
 
     assert packet["version"] == "geoseal-mars-mission-compass-v1"
     assert packet["transport_packet"]["sha256"]
-    assert packet["semantic_phrase"]["contract"].startswith(
-        "GeoSeal is the sole mission substrate"
-    )
+    assert packet["semantic_phrase"]["contract"].startswith("GeoSeal is the sole mission substrate")
 
     metric = packet["metric_payload"]
     assert metric["minimap"]["cell_count"] == 3
     assert metric["home_route"]["waypoints"] == ["current", "home"]
     assert metric["return_route"]["waypoints"][-1] == "home"
     assert "geology_tagging_from_telemetry" in metric["software_capabilities"]
-    assert any(
-        tool["tool"] == "navigation_camera" for tool in metric["physical_tool_manual"]
-    )
-    assert any(
-        cell["geology"]["mineral_hint"] == "basaltic"
-        for cell in metric["minimap"]["cells"]
-    )
+    assert any(tool["tool"] == "navigation_camera" for tool in metric["physical_tool_manual"])
+    assert any(cell["geology"]["mineral_hint"] == "basaltic" for cell in metric["minimap"]["cells"])
     assert len(packet["action_packets"]) == 6
 
     action_kinds = {p["semantic_phrase"]["kind"] for p in packet["action_packets"]}

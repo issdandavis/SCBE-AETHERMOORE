@@ -57,6 +57,7 @@ jobs:
             --ignore-pattern "scbe-visual-system" \
             --ignore-pattern "kindle-app" \
             --ignore-pattern "src/word-addin"
+        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
         continue-on-error: true
 
       - name: Upload analysis results to GitHub

@@ -50,11 +50,7 @@ def test_ca_geoseal_smoke_repair_builder_emits_targeted_rows(tmp_path: Path, mon
     assert manifest["must_recall"]["add"] == "0x00"
     assert manifest["must_recall"]["abs_add_sequence"] == ["0x09", "0x09", "0x00"]
 
-    rows = [
-        json.loads(line)
-        for line in module.TRAIN_OUT.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    rows = [json.loads(line) for line in module.TRAIN_OUT.read_text(encoding="utf-8").splitlines() if line.strip()]
     serialized = json.dumps(rows)
     assert "CA opcode sequence for abs(a) + abs(b): 0x09, 0x09, 0x00" in serialized
     assert "def depth2_keys(obj: dict) -> list[str]:" in serialized
@@ -79,11 +75,7 @@ def test_ca_opcode_exact_repair_builder_emits_add_byte_drill(tmp_path: Path, mon
     assert manifest["must_recall"]["forbidden_add_opcode"] == "0x09"
     assert manifest["must_recall"]["abs_add_sequence"] == ["0x09", "0x09", "0x00"]
 
-    rows = [
-        json.loads(line)
-        for line in module.TRAIN_OUT.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    rows = [json.loads(line) for line in module.TRAIN_OUT.read_text(encoding="utf-8").splitlines() if line.strip()]
     serialized = json.dumps(rows)
     assert "Never use 0x09 for add" in serialized
     assert "0x09, 0x09, 0x00" in serialized
@@ -104,11 +96,7 @@ def test_ca_geoseal_combined_repair_builder_keeps_both_smoke_surfaces(tmp_path: 
     assert manifest["counts"]["holdout"] == 4
     assert manifest["must_recall"]["abs_add_sequence"] == ["0x09", "0x09", "0x00"]
 
-    rows = [
-        json.loads(line)
-        for line in module.TRAIN_OUT.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+    rows = [json.loads(line) for line in module.TRAIN_OUT.read_text(encoding="utf-8").splitlines() if line.strip()]
     serialized = json.dumps(rows)
     assert "CA: 0x09, 0x09, 0x00" in serialized
     assert "def depth2_keys(obj: dict) -> list[str]:" in serialized

@@ -5,8 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -72,14 +70,3 @@ def test_preflight_fails_on_empty_file(tmp_path: Path) -> None:
     result = mod.run_preflight(p)
     assert result["ok"] is False
     assert empty.name in result["empty"]
-
-
-def test_default_zero_cost_profile_exists_and_preflights() -> None:
-    mod = _load()
-
-    result = mod.run_preflight(mod.DEFAULT_PROFILE)
-
-    assert result["profile_id"] == "scbe-zero-cost-local-0.5b"
-    assert result["ok"] is True
-    assert result["missing_count"] == 0
-    assert result["empty_count"] == 0

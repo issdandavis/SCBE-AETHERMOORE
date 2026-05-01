@@ -19,10 +19,6 @@ GEOSEAL_CLI_COMMANDS = frozenset(
         "explain-route",
         "backend-registry",
         "agent-harness",
-        "skill-tools",
-        "hydra-bridge",
-        "agentic-training-loop",
-        "loop-dispatch",
         "history",
         "replay",
         "testing-cli",
@@ -124,13 +120,10 @@ def _build_runtime_deck_payload(
 @app.get("/health", tags=["System"])
 @app.get("/v1/health", tags=["System"])
 async def health() -> dict[str, Any]:
-    from src.api.postgres_lite import health_postgres_payload
-
     return {
         "status": "healthy",
         "version": "geoseal-service-v1",
         "uptime_seconds": int(time.time() - STARTED_AT),
-        "postgres_lite": health_postgres_payload(),
     }
 
 
@@ -163,10 +156,6 @@ async def spaceport_status() -> dict[str, Any]:
                     "/v1/geoseal/explain-route",
                     "/v1/geoseal/backend-registry",
                     "/v1/geoseal/agent-harness",
-                    "/v1/geoseal/skill-tools",
-                    "/v1/geoseal/hydra-bridge",
-                    "/v1/geoseal/agentic-training-loop",
-                    "/v1/geoseal/loop-dispatch",
                     "/v1/geoseal/history",
                     "/v1/geoseal/replay",
                     "/v1/geoseal/testing-cli",

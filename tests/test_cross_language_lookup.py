@@ -5,7 +5,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "scripts" / "system" / "build_cross_language_lookup.py"
 ARTIFACT = REPO_ROOT / "artifacts" / "cross_language_lookup" / "full_cross_language_lookup.json"
@@ -44,4 +43,3 @@ def test_cross_language_lookup_lexicon_and_extended_inheritance() -> None:
     assert set(("KO", "AV", "RU", "CA", "UM", "DR", "GO", "ZI")).issubset(set(add["code"]))
     assert "GO_inherits_from" in add["code"]
     assert "ZI_inherits_from" in add["code"]
-

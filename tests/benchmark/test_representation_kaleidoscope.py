@@ -4,7 +4,6 @@ import importlib.util
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "build_representation_kaleidoscope.py"
 
@@ -41,9 +40,7 @@ def test_kaleidoscope_groups_same_concept_across_language_lenses() -> None:
 
 def test_kaleidoscope_markdown_writer_emits_lens_table(tmp_path: Path) -> None:
     module = _load_module()
-    report = module.build_kaleidoscope(
-        [ROOT / "training-data" / "sft" / "coding_system_full_v1_train.sft.jsonl"]
-    )
+    report = module.build_kaleidoscope([ROOT / "training-data" / "sft" / "coding_system_full_v1_train.sft.jsonl"])
     out = tmp_path / "kaleidoscope.md"
     module.write_markdown(report, out)
     body = out.read_text(encoding="utf-8")

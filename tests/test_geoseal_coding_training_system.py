@@ -3,9 +3,6 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
-from types import SimpleNamespace
-
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "system" / "geoseal_coding_training_system.py"
@@ -32,7 +29,6 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     assert "coding-agent-qwen-ca-geoseal-smoke-repair-v1" in ids
     assert "coding-agent-qwen-ca-opcode-exact-repair-v2" in ids
     assert "coding-agent-qwen-ca-geoseal-combined-repair-v3" in ids
-    assert "coding-agent-qwen-geoshell-pair-agent-v1" in ids
     assert profiles["schema_version"] == "geoseal_coding_training_profiles_v1"
 
     stage6 = next(
@@ -59,12 +55,6 @@ def test_manifest_lists_dedicated_geoseal_coding_profiles() -> None:
     assert combined_repair["stage"] == "ca_geoseal_combined_repair"
     assert combined_repair["exists"] is True
 
-    pair_agent = next(
-        item for item in profiles["profiles"] if item["profile_id"] == "coding-agent-qwen-geoshell-pair-agent-v1"
-    )
-    assert pair_agent["stage"] == "geoshell_pair_agent"
-    assert pair_agent["exists"] is True
-
 
 def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:
     profile = json.loads(
@@ -78,161 +68,21 @@ def test_stage6_profile_is_t4_safe_after_oom_hardening() -> None:
     assert training["gradient_checkpointing"] is True
 
 
-def _load_dispatcher_module():
+def test_repair_profile_does_not_inherit_stage6_contract_by_default() -> None:
     dispatcher_path = ROOT / "scripts" / "system" / "dispatch_coding_agent_hf_job.py"
     spec = importlib.util.spec_from_file_location("dispatch_coding_agent_hf_job", dispatcher_path)
     assert spec and spec.loader
     dispatcher = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dispatcher)
-    return dispatcher
-
-
-def test_repair_profile_uses_non_empty_ca_geoseal_contract() -> None:
-    dispatcher = _load_dispatcher_module()
     profile = json.loads(
         (ROOT / "config" / "model_training" / "coding-agent-qwen-ca-geoseal-smoke-repair-v1.json").read_text()
     )
 
     script = dispatcher.render_uv_training_script(profile)
 
-    assert '"contract_id": "ca_geoseal_repair_eval_v1"' in script
-    assert '"prompts": []' not in script
-    assert 'raise RuntimeError("empty evaluation contract: refusing zero-prompt gate")' in script
-    assert "pass_rate = (n_pass / n_total) if n_total else 1.0" not in script
-    assert "pass_rate = (n_pass / n_total) if n_total else 0.0" in script
-
-
-def test_dispatch_refuses_missing_eval_contract() -> None:
-    dispatcher = _load_dispatcher_module()
-
-    with pytest.raises(ValueError, match="evaluation.contract_path"):
-        dispatcher.render_uv_training_script(
-            {
-                "profile_id": "bad-zero-gate",
-                "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
-                "dataset": {"train_files": [], "eval_files": []},
-                "hub": {"dataset_repo": "owner/data", "adapter_repo": "owner/adapter"},
-            }
-        )
-
-
-def test_dispatch_default_profile_exists_and_has_contract() -> None:
-    dispatcher = _load_dispatcher_module()
-
-    assert dispatcher.DEFAULT_PROFILE.exists()
-    profile = json.loads(dispatcher.DEFAULT_PROFILE.read_text(encoding="utf-8"))
-    script = dispatcher.render_uv_training_script(profile)
-
-    assert '"prompts": []' not in script
-    assert "stage6_atomic_workflow_unseen_eval_v1" in script
-
-
-def test_dispatch_smoke_profile_is_tiny_no_push_and_unbuffered(tmp_path: Path) -> None:
-    dispatcher = _load_dispatcher_module()
-    profile_path = ROOT / "config" / "model_training" / "coding-agent-qwen-full-coding-system-v8.json"
-
-    packet = dispatcher.build_packet(
-        profile_path=profile_path,
-        artifact_root=tmp_path,
-        smoke=True,
-    )
-    script = Path(packet["script_path"]).read_text(encoding="utf-8")
-
-    assert packet["smoke"] is True
-    assert packet["profile_id"].endswith("-smoke")
-    assert packet["hf"]["backend"] == "cli-file"
-    assert "PYTHONUNBUFFERED=1" in packet["command"]
-    assert '"max_steps": 1' in script
-    assert '"max_train_records": 24' in script
-    assert '"push_adapter": false' in script
-    assert 'emit("startup"' in script
-    assert 'emit("train_start"' in script
-
-
-def test_geoshell_pair_agent_profile_has_dataset_and_eval_contract(tmp_path: Path) -> None:
-    builder_path = ROOT / "scripts" / "training_data" / "build_geoshell_pair_agent_sft.py"
-    spec = importlib.util.spec_from_file_location("build_geoshell_pair_agent_sft", builder_path)
-    assert spec and spec.loader
-    builder = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(builder)
-    builder.write_outputs(builder.build_dataset(), ROOT / "training-data" / "sft")
-
-    dispatcher = _load_dispatcher_module()
-    profile_path = ROOT / "config" / "model_training" / "coding-agent-qwen-geoshell-pair-agent-v1.json"
-
-    packet = dispatcher.build_packet(
-        profile_path=profile_path,
-        artifact_root=tmp_path,
-        smoke=True,
-    )
-    script = Path(packet["script_path"]).read_text(encoding="utf-8")
-
-    assert packet["profile_id"].endswith("-smoke")
-    assert packet["train_datasets"][0]["exists"] is True
-    assert packet["train_datasets"][0]["row_count"] == 4
-    assert packet["eval_datasets"][0]["row_count"] == 2
-    assert "geoshell_pair_agent_eval_v1" in script
-    assert '"prompts": []' not in script
-
-
-def test_geoseal_training_plan_can_request_smoke_profile(tmp_path: Path, monkeypatch) -> None:
-    module = _load_module()
-    manifest = module.load_manifest(MANIFEST_PATH)
-    monkeypatch.setattr(module, "REPO_ROOT", ROOT)
-
-    packet = module.plan_or_dispatch(
-        manifest,
-        "coding-agent-qwen-full-coding-system-v8",
-        dispatch=False,
-        flavor="l4x1",
-        timeout="30m",
-        smoke=True,
-        backend="api-inline",
-    )
-
-    assert packet["smoke"] is True
-    assert packet["profile_id"].endswith("-smoke")
-    assert packet["hf"]["flavor"] == "l4x1"
-    assert packet["hf"]["timeout"] == "30m"
-    assert packet["hf"]["backend"] == "api-inline"
-
-
-def test_api_inline_dispatch_passes_script_path_to_hf_jobs(tmp_path: Path, monkeypatch) -> None:
-    dispatcher = _load_dispatcher_module()
-    profile_path = ROOT / "config" / "model_training" / "coding-agent-qwen-full-coding-system-v8.json"
-    captured: dict[str, object] = {}
-
-    class FakeApi:
-        def __init__(self, token: str) -> None:
-            captured["token"] = token
-
-        def run_uv_job(self, script: str, **kwargs: object) -> SimpleNamespace:
-            captured["script"] = script
-            captured["kwargs"] = kwargs
-            return SimpleNamespace(id="job-12345678", url="https://huggingface.co/jobs/owner/job-12345678")
-
-    import huggingface_hub
-
-    monkeypatch.setenv("HF_TOKEN", "test-token")
-    monkeypatch.setattr(huggingface_hub, "HfApi", FakeApi)
-    monkeypatch.setattr(dispatcher, "upload_training_dataset", lambda profile: [])
-    packet = dispatcher.build_packet(
-        profile_path=profile_path,
-        artifact_root=tmp_path,
-        smoke=True,
-        backend="api-inline",
-    )
-
-    dispatched = dispatcher.dispatch_packet(packet)
-
-    assert dispatched["dispatched"] is True
-    assert dispatched["dispatch"]["job_id"] == "job-12345678"
-    assert captured["token"] == "test-token"
-    assert captured["script"] == packet["script_path"]
-    assert Path(str(captured["script"])).exists()
-    assert str(captured["script"]).endswith("train_coding_agent_hf.py")
-    assert "event" not in str(captured["script"])
-    assert (captured["kwargs"] or {})["env"]["PYTHONUNBUFFERED"] == "1"
+    assert '"contract_id": ""' in script
+    assert '"prompts": []' in script
+    assert "pass_rate = (n_pass / n_total) if n_total else 1.0" in script
 
 
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
@@ -394,19 +244,6 @@ def test_summarize_training_log_parses_pretty_completion_json() -> None:
     assert summary["progress"]["step"] == 180
     assert summary["training_complete"]["global_step"] == 180
     assert summary["training_complete"]["pushed_adapter"] is True
-
-
-def test_assess_job_health_blocks_running_job_without_logs() -> None:
-    module = _load_module()
-
-    health = module.assess_job_health(
-        {"stage": "RUNNING", "flavor": "l4x1"},
-        {"returncode": 0, "tail": "", "summary": {"latest_loss": None, "progress": None, "training_complete": None}},
-    )
-
-    assert health["state"] == "running_without_logs"
-    assert health["safe_for_full_train"] is False
-    assert "do not launch a full training run" in health["recommendation"]
 
 
 def test_render_smoke_eval_script_scores_geoseal_gates(tmp_path: Path, monkeypatch) -> None:

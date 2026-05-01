@@ -22,6 +22,7 @@ jobs:
       - name: Audit
         id: audit
         run: |
+          # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
           set +e
           npm audit --json > npm-audit.json 2>&1
           set -e
@@ -60,6 +61,7 @@ jobs:
         run: |
           pip install pip-audit
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
           set +e
           pip-audit --format json --output pip-audit.json 2>&1
           EXIT_CODE=$?

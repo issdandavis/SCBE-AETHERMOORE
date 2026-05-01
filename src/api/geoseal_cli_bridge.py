@@ -5,18 +5,10 @@ from __future__ import annotations
 import argparse
 import io
 import json
-import os
 import tempfile
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any
-
-
-def _geoseal_body_requests_execute(command: str, body: dict[str, Any]) -> bool:
-    c = (command or "").strip().lower()
-    if c in ("loop-dispatch", "testing-cli", "code-roundtrip"):
-        return bool(body.get("execute"))
-    return False
 
 
 def _capture_cli(handler: Any, namespace: argparse.Namespace) -> tuple[int, str, str]:
@@ -32,38 +24,7 @@ def _capture_cli(handler: Any, namespace: argparse.Namespace) -> tuple[int, str,
 def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, Any]:
     """Dispatch JSON body to the matching CLI handler; return API envelope dict."""
 
-    from src.coding_spine.agent_tool_policy import (
-        evaluate_harness_tool_policy,
-        geoseal_command_to_tool_class,
-    )
-
-    if os.environ.get("SCBE_SKIP_AGENT_TOOL_POLICY", "").strip().lower() not in (
-        "1",
-        "true",
-        "yes",
-        "on",
-    ):
-        permission_mode = (
-            str(body.get("permission_mode") or "").strip()
-            or os.environ.get("SCBE_AGENT_PERMISSION_MODE", "").strip()
-            or "observe"
-        )
-        wants_exec = _geoseal_body_requests_execute(command, body)
-        tc = geoseal_command_to_tool_class(command, execute=wants_exec)
-        pol = evaluate_harness_tool_policy(permission_mode=permission_mode, tool_class=tc)
-        if not pol.get("ok"):
-            return {"exit_code": 2, "data": pol, "stderr": pol.get("reason")}
-
     from src import geoseal_cli
-
-    if command == "skill-tools":
-        from pathlib import Path
-
-        from src.coding_spine.skill_harness_tools import build_harness_skill_tools_v1
-
-        root = Path(__file__).resolve().parents[2]
-        data = build_harness_skill_tools_v1(repo_root=root)
-        return {"exit_code": 0, "data": data, "stderr": None}
 
     if command == "code-packet":
         ns = argparse.Namespace(
@@ -91,48 +52,6 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
             json=True,
         )
         rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_agent_harness, ns)
-        data = _parse_json_stdout(stdout, stderr, rc)
-        return {"exit_code": rc, "data": data, "stderr": stderr or None}
-
-    if command == "hydra-bridge":
-        ns = argparse.Namespace(
-            goal=body.get("goal") or "",
-            language=body.get("language") or "python",
-            permission_mode=body.get("permission_mode") or "observe",
-            json=True,
-        )
-        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_hydra_bridge, ns)
-        data = _parse_json_stdout(stdout, stderr, rc)
-        return {"exit_code": rc, "data": data, "stderr": stderr or None}
-
-    if command == "agentic-training-loop":
-        ns = argparse.Namespace(
-            goal=body.get("goal") or "",
-            provider=body.get("provider") or "both",
-            json=True,
-        )
-        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_agentic_training_loop, ns)
-        data = _parse_json_stdout(stdout, stderr, rc)
-        return {"exit_code": rc, "data": data, "stderr": stderr or None}
-
-    if command == "loop-dispatch":
-        ns = argparse.Namespace(
-            provider=body.get("provider") or "",
-            task=body.get("task") or "",
-            query=body.get("query") or "",
-            branch=body.get("branch") or "",
-            run_id=body.get("run_id") or body.get("run-id") or "",
-            hf_model=body.get("hf_model") or body.get("hf-model") or "",
-            hf_dataset=body.get("hf_dataset") or body.get("hf-dataset") or "",
-            execute=bool(body.get("execute")),
-            permission_mode=str(
-                body.get("permission_mode")
-                or os.environ.get("SCBE_AGENT_PERMISSION_MODE", "")
-                or "observe"
-            ),
-            json=True,
-        )
-        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_loop_dispatch, ns)
         data = _parse_json_stdout(stdout, stderr, rc)
         return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
@@ -218,6 +137,7 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
                 stem = body.get("source_name") or "geoseal_roundtrip"
                 suffix = Path(stem).suffix or ".rs"
                 fd, path_str = tempfile.mkstemp(suffix=suffix, prefix="geoseal_rt_")
+                import os
 
                 with os.fdopen(fd, "wb") as f:
                     f.write(str(content).encode("utf-8", errors="replace"))

@@ -39,11 +39,7 @@ def test_pair_routes_ca_opcode_through_deterministic_table():
     assert result["ok"] is True
     assert "0x09, 0x09, 0x00" in result["output"]
     assert any(packet["lane"] == "deterministic_tool" for packet in result["packets"])
-    assert any(
-        "scbe_code.py ca-plan" in tool
-        for packet in result["packets"]
-        for tool in packet["tools"]
-    )
+    assert any("scbe_code.py ca-plan" in tool for packet in result["packets"] for tool in packet["tools"])
 
 
 def test_solo_model_fails_exact_ca_sequence():

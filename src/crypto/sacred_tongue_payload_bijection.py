@@ -20,14 +20,10 @@ CANONICAL_SEPARATORS = (",", ":")
 
 def canonical_json_bytes(obj: Any) -> bytes:
     """UTF-8 JSON with sorted keys and minimal separators."""
-    return json.dumps(
-        obj, sort_keys=True, separators=CANONICAL_SEPARATORS, ensure_ascii=False
-    ).encode("utf-8")
+    return json.dumps(obj, sort_keys=True, separators=CANONICAL_SEPARATORS, ensure_ascii=False).encode("utf-8")
 
 
-def prove_bytes_all_tongues(
-    data: bytes, tokenizer: SacredTongueTokenizer | None = None
-) -> dict[str, Any]:
+def prove_bytes_all_tongues(data: bytes, tokenizer: SacredTongueTokenizer | None = None) -> dict[str, Any]:
     """Round-trip `data` through each tongue's byte bijection."""
     tok = tokenizer or SacredTongueTokenizer()
     per: dict[str, Any] = {}

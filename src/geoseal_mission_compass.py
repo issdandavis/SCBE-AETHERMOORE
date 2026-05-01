@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -18,7 +17,6 @@ from src.geoseal_compass import (
     COMPASS_BEARINGS,
     TONGUES,
     bearing_to_string,
-    build_segment,
     compute_bearing,
     create_waypoint,
     generate_compass_rose,
@@ -104,15 +102,11 @@ def infer_goal_tongue(goal: str) -> str:
     return best if scores[best] > 0 else "KO"
 
 
-def parse_terrain_samples(
-    payload: Mapping[str, Any], dimension: int = DEFAULT_DIMENSION
-) -> List[TerrainSample]:
+def parse_terrain_samples(payload: Mapping[str, Any], dimension: int = DEFAULT_DIMENSION) -> List[TerrainSample]:
     """Parse telemetry terrain samples into bounded Poincare-ball points."""
 
     samples: List[TerrainSample] = []
-    for idx, item in enumerate(
-        payload.get("terrain", []) or payload.get("telemetry", []) or []
-    ):
+    for idx, item in enumerate(payload.get("terrain", []) or payload.get("telemetry", []) or []):
         if not isinstance(item, Mapping):
             continue
         sid = str(item.get("id") or f"sample-{idx:03d}")
@@ -123,29 +117,15 @@ def parse_terrain_samples(
                 id=sid,
                 label=label,
                 position=position,
-                difficulty=_clamp_unit(
-                    item.get("difficulty", item.get("terrain_difficulty", 0.0))
-                ),
+                difficulty=_clamp_unit(item.get("difficulty", item.get("terrain_difficulty", 0.0))),
                 hazard=_clamp_unit(item.get("hazard", item.get("risk", 0.0))),
-                signal=_clamp_unit(
-                    item.get("signal", item.get("signal_strength", 1.0)), 1.0
-                ),
+                signal=_clamp_unit(item.get("signal", item.get("signal_strength", 1.0)), 1.0),
                 resource=str(item["resource"]) if item.get("resource") else None,
                 slope=_clamp_unit(item.get("slope", 0.0)),
                 roughness=_clamp_unit(item.get("roughness", 0.0)),
-                albedo=(
-                    _clamp_unit(item["albedo"])
-                    if item.get("albedo") is not None
-                    else None
-                ),
-                mineral_hint=(
-                    str(item["mineral_hint"]) if item.get("mineral_hint") else None
-                ),
-                stratigraphy_hint=(
-                    str(item["stratigraphy_hint"])
-                    if item.get("stratigraphy_hint")
-                    else None
-                ),
+                albedo=(_clamp_unit(item["albedo"]) if item.get("albedo") is not None else None),
+                mineral_hint=(str(item["mineral_hint"]) if item.get("mineral_hint") else None),
+                stratigraphy_hint=(str(item["stratigraphy_hint"]) if item.get("stratigraphy_hint") else None),
                 time=float(item.get("time", idx + 1)),
             )
         )
@@ -164,9 +144,7 @@ def _sample_score(origin: List[float], sample: TerrainSample) -> float:
     return distance + risk
 
 
-def _route_samples(
-    origin: List[float], samples: Iterable[TerrainSample], limit: int
-) -> List[TerrainSample]:
+def _route_samples(origin: List[float], samples: Iterable[TerrainSample], limit: int) -> List[TerrainSample]:
     return sorted(samples, key=lambda sample: _sample_score(origin, sample))[:limit]
 
 
@@ -176,9 +154,7 @@ def _minimap_cell(sample: TerrainSample, origin: List[float]) -> Dict[str, Any]:
         "id": sample.id,
         "label": sample.label,
         "position": [round(v, 6) for v in sample.position],
-        "risk": round(
-            (sample.hazard + sample.difficulty + (1.0 - sample.signal)) / 3.0, 6
-        ),
+        "risk": round((sample.hazard + sample.difficulty + (1.0 - sample.signal)) / 3.0, 6),
         "hazard": sample.hazard,
         "difficulty": sample.difficulty,
         "geology": {
@@ -196,15 +172,11 @@ def _minimap_cell(sample: TerrainSample, origin: List[float]) -> Dict[str, Any]:
 
 
 def _packet_hash(payload: Mapping[str, Any]) -> str:
-    canonical = json.dumps(
-        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    )
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _action_packet(
-    kind: str, goal: str, route_tongue: str, context: Mapping[str, Any]
-) -> Dict[str, Any]:
+def _action_packet(kind: str, goal: str, route_tongue: str, context: Mapping[str, Any]) -> Dict[str, Any]:
     semantic_phrase = {
         "kind": kind,
         "goal": goal,
@@ -225,9 +197,7 @@ def _action_packet(
     }
     transport_packet = {
         "encoding": "geoseal-action-packet-v1",
-        "sha256": _packet_hash(
-            {"semantic_phrase": semantic_phrase, "metric_payload": metric_payload}
-        ),
+        "sha256": _packet_hash({"semantic_phrase": semantic_phrase, "metric_payload": metric_payload}),
     }
     return {
         "semantic_phrase": semantic_phrase,
@@ -245,13 +215,9 @@ def build_mars_mission_compass(payload: Mapping[str, Any]) -> Dict[str, Any]:
     dimension = int(payload.get("dimension") or DEFAULT_DIMENSION)
     dimension = max(2, min(21, dimension))
 
-    origin_pos = _as_vector(
-        payload.get("position") or payload.get("current_position"), dimension
-    )
+    origin_pos = _as_vector(payload.get("position") or payload.get("current_position"), dimension)
     home_pos = _as_vector(
-        payload.get("home_position")
-        or payload.get("base_position")
-        or [0.0] * dimension,
+        payload.get("home_position") or payload.get("base_position") or [0.0] * dimension,
         dimension,
     )
     route_tongue = infer_goal_tongue(goal)
@@ -285,11 +251,7 @@ def build_mars_mission_compass(payload: Mapping[str, Any]) -> Dict[str, Any]:
         "CA",
     )
 
-    terrain_route = (
-        plan_route([current, *terrain_waypoints], min_governance=0.05)
-        if terrain_waypoints
-        else None
-    )
+    terrain_route = plan_route([current, *terrain_waypoints], min_governance=0.05) if terrain_waypoints else None
     home_route = plan_route([current, home], min_governance=0.05)
 
     if terrain_waypoints:
