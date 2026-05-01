@@ -29,9 +29,9 @@ DEFAULT_OUTPUT = REPO_ROOT / "products" / "packaged"
 
 TOOLKIT_FILES = [
     # Architecture docs
-    ("LAYER_INDEX.md", "docs/LAYER_INDEX.md"),
-    ("SYSTEM_ARCHITECTURE.md", "docs/SYSTEM_ARCHITECTURE.md"),
-    ("ARCHITECTURE.md", "docs/ARCHITECTURE.md"),
+    ("docs/specs/LAYER_INDEX.md", "docs/LAYER_INDEX.md"),
+    ("docs/specs/SYSTEM_ARCHITECTURE.md", "docs/SYSTEM_ARCHITECTURE.md"),
+    ("docs/specs/ARCHITECTURE.md", "docs/ARCHITECTURE.md"),
     ("docs/LANGUES_WEIGHTING_SYSTEM.md", "docs/LANGUES_WEIGHTING_SYSTEM.md"),
     ("docs/CORE_AXIOMS_CANONICAL_INDEX.md", "docs/CORE_AXIOMS_CANONICAL_INDEX.md"),
     ("docs/specs/LAYER_12_CANONICAL_FORMULA.md", "docs/LAYER_12_CANONICAL_FORMULA.md"),

@@ -96,10 +96,9 @@ ROOT_RULES: dict[str, tuple[str, str]] = {
 
 ROOT_FILE_RULES: dict[str, tuple[str, str]] = {
     "AGENTS.md": ("canonical", "Repository operating instructions."),
-    "ARCHITECTURE.md": ("canonical", "Root architecture surface."),
     "CLAUDE.md": ("canonical", "Assistant/repo operating surface."),
-    "INSTRUCTIONS.md": ("canonical", "Root implementation guidance."),
     "README.md": ("canonical", "Primary repo overview."),
+    "README_INDEX.md": ("canonical", "Doc layout index after 2026-04 reorg."),
     "package.json": ("canonical", "Root Node manifest."),
     "pyproject.toml": ("canonical", "Root Python manifest."),
     "pytest.ini": ("canonical", "Root pytest authority."),
