@@ -105,9 +105,29 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Ti-84 Evo",
-      "word_count": 614,
+      "description": "Why does it take so long to release black fan versions?",
+      "word_count": 590,
       "headings": [
+        {
+          "level": 2,
+          "text": "Why does it take so long to release black fan versions?",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "noctua.at",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Job Postings for Software Engineers Are Rapidly Rising",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "citadelsecurities.com",
+          "source": "fallback-selector"
+        },
         {
           "level": 2,
           "text": "Ti-84 Evo",
@@ -120,48 +140,28 @@
         },
         {
           "level": 2,
-          "text": "New research suggests people can communicate and practice skills while dreaming",
+          "text": "Ask.com has closed",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "newyorker.com",
+          "text": "ask.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "The smelly baby problem",
+          "text": "Artemis II Photo Timeline",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "worksinprogress.news",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "What did you love about VB6?",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "evilgeniuslabs.ca",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Eka\u2019s robotic claw feels like we're approaching a ChatGPT moment",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "wired.com",
+          "text": "artemistimeline.com",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 226,
+      "link_count": 224,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Ti-84 Evo (ti.com)247 points by thatxliner 4 hours ago  | hide | 254\u00a0comments2.New research suggests people can communicate and practice skills while dreaming (newyorker.com)217 points by XzetaU8 7 hours ago  | hide | 119\u00a0comments3.The smelly baby problem (worksinprogress.news)82 points by dionysou 3 hours ago  | hide | 31\u00a0comments4.What did you love about VB6? (evilgeniuslabs.ca)14 points by andsoitis 42 minutes ago  | hide | 6..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Why does it take so long to release black fan versions? (noctua.at)49 points by buildbot 2 hours ago  | hide | 13\u00a0comments2.Job Postings for Software Engineers Are Rapidly Rising (citadelsecurities.com)119 points by delichon 5 hours ago  | hide | 54\u00a0comments3.Ti-84 Evo (ti.com)411 points by thatxliner 10 hours ago  | hide | 366\u00a0comments4.Ask.com has closed (ask.com)193 points by supermdguy 2 hours ago  | hide | 98\u00a0comments5.Arte..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
