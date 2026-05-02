@@ -62,6 +62,39 @@
         "node_modules/**",
         ".git/**"
       ]
+    },
+    "deploy-production-minimal": {
+      "description": "Minimum deployment package for runtime entrypoints, canonical specs, and operator CLI.",
+      "include": [
+        "api",
+        "src/api",
+        "src/storage",
+        "scripts/scbe-system-cli.py",
+        "scripts/system/deployment_readiness_gate.py",
+        "config/offline_bundle_profiles.json",
+        "docs/specs/CANONICAL_SYSTEM_STATE.md",
+        "docs/specs/CANONICAL_FORMULA_REGISTRY.md",
+        "docs/specs/MASTER_ARCHITECTURE_CONTRACT_21D_M4_SQUAD.md",
+        "package.json",
+        "pyproject.toml",
+        "requirements.txt"
+      ],
+      "exclude": [
+        "**/__pycache__/**",
+        "**/*.pyc",
+        "**/.pytest_cache/**",
+        "**/.ruff_cache/**",
+        "**/.hypothesis/**",
+        "artifacts/**",
+        "archive/**",
+        "backups/**",
+        "external/**",
+        "external_repos/**",
+        "training-data/**",
+        "training-runs/**",
+        "node_modules/**",
+        ".git/**"
+      ]
     }
   }
 }
