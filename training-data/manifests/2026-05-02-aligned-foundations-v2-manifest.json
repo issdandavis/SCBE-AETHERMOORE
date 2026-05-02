@@ -1,0 +1,84 @@
+{
+  "manifest_id": "2026-05-02-aligned-foundations-v2",
+  "created_utc": "2026-05-02T00:00:00Z",
+  "branch": "chore/release-4.0.3-housekeeping",
+  "purpose": "Frozen v2 aligned-foundations packet. Adds the missing coding face plus concept_id threading on top of v1. Output is consumable by routing-aware fine-tunes. Pairs with the section-A inventory at notes/sessions/2026-05-02-inventory.md and the pretrain manifest at training-data/manifests/2026-05-02-pretrain-manifest.json.",
+  "supersedes": null,
+  "extends_v1": "training-data/sft/aligned_foundations_manifest.json",
+  "test_evidence": {
+    "pytest": {
+      "command": "python -m pytest tests/training_data/test_aligned_foundations_v2.py -v",
+      "result": "8 passed",
+      "ran_utc": "2026-05-02T00:00:00Z"
+    }
+  },
+  "lane": "aligned_foundations_v2",
+  "files": [
+    {
+      "path": "scripts/training_data/build_aligned_foundations_v2.py",
+      "kind": "python-builder",
+      "lines": 358,
+      "bytes": 15930,
+      "sha256": "5ebf472584ca4bd9da2d961976d88e2446366818d1aadb3437b3801d581217fb"
+    },
+    {
+      "path": "training-data/sft/aligned_foundations_v2_train.sft.jsonl",
+      "kind": "sft-jsonl",
+      "lines": 72,
+      "bytes": 55753,
+      "sha256": "862ac619d15a8a7c9d5edc0bf7e3bb0e09b46480d9c92f610a9ce06fd8c6d560"
+    },
+    {
+      "path": "training-data/sft/aligned_foundations_v2_holdout.sft.jsonl",
+      "kind": "sft-jsonl",
+      "lines": 23,
+      "bytes": 18052,
+      "sha256": "587b78607820fdbb5d83d200536bfae70f3e9408fa4830bf31f7a8c03643f491"
+    },
+    {
+      "path": "training-data/sft/aligned_foundations_v2_manifest.json",
+      "kind": "row-manifest",
+      "lines": 141,
+      "bytes": 2978,
+      "sha256": "2d6103d6cafc265cd54424309fec4dd5645a2324a4302f6f1b0d79c66d3a07e7"
+    },
+    {
+      "path": "tests/training_data/test_aligned_foundations_v2.py",
+      "kind": "test-pytest",
+      "lines": 118,
+      "bytes": 4565,
+      "sha256": "2520295bdbf8fafda06e30f15697569301a8bbebd9b9062e120df7f516bac447"
+    }
+  ],
+  "row_summary": {
+    "train": 72,
+    "holdout": 23,
+    "total": 95,
+    "concept_ids": 95,
+    "categories": {
+      "alphabet": 26,
+      "numbers": 16,
+      "tongues": 6,
+      "layers": 14,
+      "risk_tiers": 4,
+      "axioms": 5,
+      "chemistry": 12,
+      "coding": 12
+    },
+    "faces": ["binary", "chemistry", "coding", "english", "math", "sacred_tongues"]
+  },
+  "tongue_canonical_lang": {
+    "KO": "Python",
+    "AV": "TypeScript",
+    "RU": "Rust",
+    "CA": "C",
+    "UM": "Julia",
+    "DR": "Haskell"
+  },
+  "promotion_gate_required": "training-data/manifests/2026-05-02-promotion-gate.md",
+  "next_actions": [
+    "Wire v2 corpus into next training pass alongside chemistry_primary",
+    "Run G1 (tests) + G3 (coding bench) before declaring this lane ship-ready",
+    "Reuse concept_id field in eval to score per-concept face coverage rather than per-row only"
+  ]
+}
