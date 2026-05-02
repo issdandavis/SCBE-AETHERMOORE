@@ -68,7 +68,7 @@ The Davis Principle: if expansion rate > search rate, attacker can never win.
   - Created: Photos/, Lore_and_Writing/, SCBE_Archives/, Legal_and_School/, Installers/
 - **SECURITY**: 29 credential files moved to `Sensitive_Keys_MOVE_TO_VAULT/`:
   - AWS root keys and access keys
-  - PEM private keys (Clawbot, CloudFront)
+  - PEM private keys (Agent Relay, CloudFront)
   - Chrome password exports
   - HuggingFace, GitHub, OpenAI tokens
   - IRS recovery code

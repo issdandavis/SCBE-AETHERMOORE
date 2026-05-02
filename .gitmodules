@@ -10,9 +10,6 @@
 [submodule "external/designer-skills"]
 	path = external/designer-skills
 	url = https://github.com/Owl-Listener/designer-skills.git
-[submodule "external/openclaw"]
-	path = external/openclaw
-	url = https://github.com/openclaw/openclaw.git
 [submodule "external_repos/Spiralverse-AetherMoore"]
 	path = external_repos/Spiralverse-AetherMoore
 	url = https://github.com/issdandavis/Spiralverse-AetherMoore.git

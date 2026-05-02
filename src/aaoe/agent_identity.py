@@ -212,7 +212,7 @@ class GeoSeal:
     seal_id: str = field(default_factory=lambda: f"geo-{uuid.uuid4().hex[:12]}")
     agent_id: str = ""
     agent_name: str = ""
-    origin_platform: str = ""  # "openclaw", "langchain", "autogpt", "custom"
+    origin_platform: str = ""  # "local", "langchain", "autogpt", "custom"
     created_at: float = field(default_factory=time.time)
     tier: AccessTier = AccessTier.FREE
     governance_score: GovernanceScore = field(default_factory=GovernanceScore)
@@ -307,7 +307,7 @@ class AgentRegistry:
 
     Usage:
         registry = AgentRegistry()
-        seal = registry.register("agent-123", "MyBot", "openclaw")
+        seal = registry.register("agent-123", "MyBot", "local")
         token = seal.issue_token("Research quantum computing papers")
         # ... agent does work ...
         seal.record_session("sess-abc", was_clean=True, training_records=42)

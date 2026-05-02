@@ -1015,9 +1015,9 @@
       ]
     },
     {
-      "skill": "hydra-clawbot-synthesis",
-      "skill_dir": "hydra-clawbot-synthesis",
-      "description": "Synthesize HYDRA terminal browsing, multi-agent orchestration, Playwright smoke checks, Airtable/Hugging Face dataset handoff, and Obsidian command-lane publishing for Clawbot/OpenClaw operations.",
+      "skill": "hydra-agent-relay-synthesis",
+      "skill_dir": "hydra-agent-relay-synthesis",
+      "description": "Synthesize HYDRA terminal browsing, multi-agent orchestration, Playwright smoke checks, Airtable/Hugging Face dataset handoff, and Obsidian command-lane publishing for Agent Relay/External Agent operations.",
       "primary": {
         "tongue": "RU",
         "tier": 2,
@@ -1056,7 +1056,7 @@
     {
       "skill": "hydra-deep-research-self-healing",
       "skill_dir": "hydra-deep-research-self-healing",
-      "description": "Run deep-research loops with HYDRA/Clawbot using self-healing workflow methods (sense, plan, execute, verify, recover), combining arXiv routing, Playwright evidence capture, synthesis smoke checks, and CI triage hooks. Use when operating long-running 24/7 research automation with deterministic cross-talk logging.",
+      "description": "Run deep-research loops with HYDRA/Agent Relay using self-healing workflow methods (sense, plan, execute, verify, recover), combining arXiv routing, Playwright evidence capture, synthesis smoke checks, and CI triage hooks. Use when operating long-running 24/7 research automation with deterministic cross-talk logging.",
       "primary": {
         "tongue": "DR",
         "tier": 3,

@@ -30,5 +30,5 @@
 - hugging-face-cli -> tongues=DR,UM,RU categories=deployment,security
 - hugging-face-datasets -> tongues=KO,DR categories=ops
 - hugging-face-model-trainer -> tongues=DR,UM,RU categories=deployment,security
-- hydra-clawbot-synthesis -> tongues=AV,CA,KO,RU,DR categories=browser,knowledge,ops
+- hydra-agent-relay-synthesis -> tongues=AV,CA,KO,RU,DR categories=browser,knowledge,ops
 - hydra-deep-research-self-healing -> tongues=AV,CA,DR,UM,KO,RU categories=browser,deployment,knowledge,ops,research
