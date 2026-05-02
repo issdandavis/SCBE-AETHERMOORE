@@ -13,6 +13,7 @@ Commands:
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import functools
 import hashlib
 import importlib.util
@@ -32,11 +33,12 @@ from urllib.request import Request, urlopen
 from urllib.parse import parse_qs, urlsplit, urlunsplit
 from pathlib import Path
 
-
 DEFAULT_REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PAD_ROOT = Path(".scbe") / "polly-pads"
 DEFAULT_AGENT_REGISTRY = Path(".scbe") / "agent_squad.json"
 DEFAULT_CLI_CONTEXT = Path(".scbe") / "cli-context.json"
+DEFAULT_ROOT_LAYOUT_CONFIG = Path("config") / "repo_consolidation_inventory.json"
+DEFAULT_OFFLINE_BUNDLE_PROFILES = Path("config") / "offline_bundle_profiles.json"
 DEFAULT_NOTEBOOKLM_PAD_ID = "notebooklm-main"
 DEFAULT_NOTEBOOKLM_URL = "https://notebooklm.google.com/notebook/bf1e9a1b-b49c-4343-8f0e-8494546e4f24"
 SENSITIVE_METADATA_ITERATIONS = 120_000
@@ -494,7 +496,6 @@ def _load_model_training_module_cached(repo_root_str: str):
     return module
 
 
-
 @functools.lru_cache(maxsize=4)
 def _load_agentbus_module(repo_root_str: str):
     repo_root = Path(repo_root_str)
@@ -551,6 +552,7 @@ def _load_free_llm_routes_module(repo_root: Path):
     except Exception:
         return None
     return free_llm_routes
+
 
 def _tongue_attestation(repo_root: Path, tongue: str, payload: bytes, max_tokens: int = 6) -> str:
     module = _load_tongues_module(repo_root)
@@ -1677,7 +1679,11 @@ def _resolve_agent_api_key(agent: dict, env_cache: dict[str, str]) -> tuple[str 
         env_var = (
             "ANTHROPIC_API_KEY"
             if provider == "anthropic"
-            else "OPENAI_API_KEY" if provider in {"openai", "openai-compatible"} else "GOOGLE_API_KEY" if provider == "gemini" else None
+            else (
+                "OPENAI_API_KEY"
+                if provider in {"openai", "openai-compatible"}
+                else "GOOGLE_API_KEY" if provider == "gemini" else None
+            )
         )
     if not env_var:
         return None, None
@@ -1714,10 +1720,7 @@ def _build_agent_messages(agent: dict, prompt: str, repo_root: Path) -> list[dic
     user_prompt = prompt
     if context_text:
         user_prompt = (
-            "Persistent context from Obsidian memory note:\n"
-            f"{context_text}\n\n"
-            "Current user turn:\n"
-            f"{prompt}"
+            "Persistent context from Obsidian memory note:\n" f"{context_text}\n\n" "Current user turn:\n" f"{prompt}"
         )
     return [
         {"role": "system", "content": system_prompt},
@@ -2615,7 +2618,6 @@ def cmd_agent_cycle(args: argparse.Namespace) -> int:
     return run_turn(prompt)
 
 
-
 def cmd_agentbus_run(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
     agentbus = _load_agentbus_module(str(repo_root.resolve()))
@@ -2793,6 +2795,7 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
         f"  Summary:  {summary['artifacts']['summary']}",
     ]
     return _json_result(args, summary, lines)
+
 
 def cmd_flow_plan(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
@@ -3299,7 +3302,11 @@ def _model_profile_selection(args: argparse.Namespace) -> tuple[Path, str, str, 
         or safe_text(defaults.get("model_profile"))
         or "coder-qwen-local"
     )
-    profile_dir = safe_text(getattr(args, "profile_dir", "")) or safe_text(context_payload.get("model_profile_dir")) or safe_text(defaults.get("model_profile_dir"))
+    profile_dir = (
+        safe_text(getattr(args, "profile_dir", ""))
+        or safe_text(context_payload.get("model_profile_dir"))
+        or safe_text(defaults.get("model_profile_dir"))
+    )
     profile_path = safe_text(getattr(args, "profile_path", ""))
     return config_path, profile_name, profile_dir, profile_path
 
@@ -3416,16 +3423,10 @@ def cmd_model_preflight(args: argparse.Namespace) -> int:
         hf_cli = toolchain.get("hf_cli") or {}
         ollama = toolchain.get("ollama") or {}
         lines.append(f"- python: {python_cfg.get('path', 'missing')}")
-        lines.append(
-            f"- hf-cli: {hf_cli.get('path', 'missing') if hf_cli.get('available') else 'missing'}"
-        )
-        lines.append(
-            f"- ollama: {ollama.get('path', 'missing') if ollama.get('available') else 'missing'}"
-        )
+        lines.append(f"- hf-cli: {hf_cli.get('path', 'missing') if hf_cli.get('available') else 'missing'}")
+        lines.append(f"- ollama: {ollama.get('path', 'missing') if ollama.get('available') else 'missing'}")
         lines.append(f"- colab-catalog: {(toolchain.get('colab_catalog') or {}).get('path', 'missing')}")
-        lines.append(
-            f"- model-host-quickcall: {(toolchain.get('model_host_quickcall') or {}).get('path', 'missing')}"
-        )
+        lines.append(f"- model-host-quickcall: {(toolchain.get('model_host_quickcall') or {}).get('path', 'missing')}")
         runtime = toolchain.get("runtime") or {}
         if runtime:
             lines.append(
@@ -3630,6 +3631,264 @@ def cmd_status(args: argparse.Namespace) -> int:
     lines.append("Tip: run `status` after each cycle and open `artifacts/*.md` files for human review.")
     lines.append("Notion/AI notes reference points:")
     lines.extend(f"- {note}" for note in payload["notes"])
+    return _json_result(args, payload, lines)
+
+
+def _load_layout_inventory(repo_root: Path, config_path: str) -> dict:
+    layout_path = (repo_root / config_path).resolve()
+    with layout_path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _parse_csv_values(raw: str) -> list[str]:
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
+def cmd_layout_plan(args: argparse.Namespace) -> int:
+    inventory = _load_layout_inventory(args.repo_root, args.layout_config)
+    root_classification = inventory.get("root_classification", {})
+    product = set(root_classification.get("product", []))
+    platform = set(root_classification.get("platform", []))
+    research = set(root_classification.get("research", []))
+    archive = set(root_classification.get("archive", []))
+
+    deploy_names = product | platform | set(_parse_csv_values(args.include_deploy))
+    non_deploy_research_names = research | set(_parse_csv_values(args.include_research))
+    non_deploy_archive_names = archive | set(_parse_csv_values(args.include_archive))
+
+    plan_entries: list[dict[str, str]] = []
+
+    def add_entries(names: set[str], lane: str, dest_prefix: Path) -> None:
+        for name in sorted(names):
+            source = args.repo_root / name
+            if not source.exists():
+                continue
+            destination = dest_prefix / name
+            plan_entries.append(
+                {
+                    "name": name,
+                    "lane": lane,
+                    "source": str(source),
+                    "destination": str(args.repo_root / destination),
+                }
+            )
+
+    add_entries(deploy_names, "deploy", Path(args.deploy_root))
+    add_entries(non_deploy_research_names, "non_deploy_research", Path(args.non_deploy_root) / "research")
+    add_entries(non_deploy_archive_names, "non_deploy_archive", Path(args.non_deploy_root) / "archive")
+
+    payload = {
+        "schema_version": "scbe_root_layout_plan_v1",
+        "generated_at": _now_iso(),
+        "repo_root": str(args.repo_root),
+        "layout_config": str((args.repo_root / args.layout_config).resolve()),
+        "deploy_root": args.deploy_root,
+        "non_deploy_root": args.non_deploy_root,
+        "entry_count": len(plan_entries),
+        "entries": plan_entries,
+        "notes": [
+            "This command does not move files.",
+            "Run `layout scaffold` to create target roots.",
+            "Perform moves only after reviewing compatibility impacts.",
+        ],
+    }
+
+    output_path = Path(args.output) if args.output else (args.repo_root / "artifacts" / "root_layout_plan.json")
+    if not output_path.is_absolute():
+        output_path = (args.repo_root / output_path).resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+    payload["output"] = str(output_path)
+
+    lines = [
+        "Root layout plan generated",
+        "-" * 28,
+        f"Deploy root: {args.deploy_root}",
+        f"Non-deploy root: {args.non_deploy_root}",
+        f"Planned entries: {len(plan_entries)}",
+        f"Plan file: {output_path}",
+    ]
+    return _json_result(args, payload, lines)
+
+
+def cmd_layout_scaffold(args: argparse.Namespace) -> int:
+    roots = [
+        args.repo_root / args.deploy_root,
+        args.repo_root / args.non_deploy_root,
+        args.repo_root / args.non_deploy_root / "research",
+        args.repo_root / args.non_deploy_root / "archive",
+        args.repo_root / args.non_deploy_root / "dev",
+    ]
+    for root in roots:
+        root.mkdir(parents=True, exist_ok=True)
+        readme = root / "README.md"
+        if not readme.exists():
+            readme.write_text(
+                (
+                    f"# {root.name}\n\n"
+                    "Created by `scbe-system layout scaffold`.\n"
+                    "Use `scbe-system layout plan` to map current root entries into this lane.\n"
+                ),
+                encoding="utf-8",
+            )
+
+    payload = {
+        "schema_version": "scbe_root_layout_scaffold_v1",
+        "generated_at": _now_iso(),
+        "repo_root": str(args.repo_root),
+        "created": [str(p) for p in roots],
+    }
+    lines = ["Created layout roots:"] + [f"- {path}" for path in payload["created"]]
+    return _json_result(args, payload, lines)
+
+
+def _load_offline_profiles(repo_root: Path, profiles_path: str) -> dict:
+    path = Path(profiles_path)
+    if not path.is_absolute():
+        path = (repo_root / path).resolve()
+    with path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data
+
+
+def _path_is_excluded(relative_path: str, exclude_patterns: list[str]) -> bool:
+    normalized = relative_path.replace("\\", "/")
+    return any(fnmatch.fnmatch(normalized, pattern) for pattern in exclude_patterns)
+
+
+def _copy_for_bundle(repo_root: Path, src: Path, dst_root: Path, exclude_patterns: list[str]) -> int:
+    copied = 0
+    rel = src.relative_to(repo_root)
+    if src.is_file():
+        rel_str = rel.as_posix()
+        if not _path_is_excluded(rel_str, exclude_patterns):
+            dst = dst_root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dst)
+            copied += 1
+        return copied
+
+    for child in src.rglob("*"):
+        if not child.is_file():
+            continue
+        child_rel = child.relative_to(repo_root).as_posix()
+        if _path_is_excluded(child_rel, exclude_patterns):
+            continue
+        dst = dst_root / child.relative_to(repo_root)
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(child, dst)
+        copied += 1
+    return copied
+
+
+def cmd_offline_bundle_build(args: argparse.Namespace) -> int:
+    profiles = _load_offline_profiles(args.repo_root, args.profiles)
+    profile = profiles.get("profiles", {}).get(args.profile, {})
+    if not profile:
+        raise SystemExit(f"Unknown offline profile: {args.profile}")
+
+    includes = profile.get("include", [])
+    excludes = profile.get("exclude", [])
+    if not isinstance(includes, list) or not includes:
+        raise SystemExit(f"Offline profile `{args.profile}` has no include paths.")
+    if not isinstance(excludes, list):
+        excludes = []
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    output_dir = (
+        Path(args.output)
+        if args.output
+        else (args.repo_root / "artifacts" / "offline_kits" / f"{args.profile}-{timestamp}")
+    )
+    if not output_dir.is_absolute():
+        output_dir = (args.repo_root / output_dir).resolve()
+    payload_root = output_dir / "payload"
+    payload_root.mkdir(parents=True, exist_ok=True)
+
+    copied_files = 0
+    missing_paths: list[str] = []
+    resolved_includes: list[str] = []
+    for rel_path in includes:
+        src = (args.repo_root / rel_path).resolve()
+        if not src.exists():
+            missing_paths.append(rel_path)
+            continue
+        resolved_includes.append(rel_path)
+        copied_files += _copy_for_bundle(args.repo_root, src, payload_root, excludes)
+
+    manifest = {
+        "schema_version": "scbe_offline_bundle_v1",
+        "generated_at": _now_iso(),
+        "profile": args.profile,
+        "description": profile.get("description", ""),
+        "repo_root": str(args.repo_root),
+        "payload_root": "payload",
+        "include": resolved_includes,
+        "exclude": excludes,
+        "missing": missing_paths,
+        "copied_files": copied_files,
+    }
+    manifest_path = output_dir / "bundle_manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_offline_bundle_build_result_v1",
+        "bundle_dir": str(output_dir),
+        "manifest": str(manifest_path),
+        "copied_files": copied_files,
+        "missing": missing_paths,
+        "profile": args.profile,
+    }
+    lines = [
+        "Offline bundle created",
+        "-" * 23,
+        f"Profile: {args.profile}",
+        f"Bundle: {output_dir}",
+        f"Files copied: {copied_files}",
+    ]
+    if missing_paths:
+        lines.append("Missing include paths:")
+        lines.extend(f"- {item}" for item in missing_paths)
+    return _json_result(args, payload, lines)
+
+
+def cmd_offline_bundle_install(args: argparse.Namespace) -> int:
+    bundle_dir = Path(args.bundle)
+    if not bundle_dir.is_absolute():
+        bundle_dir = bundle_dir.resolve()
+    manifest_path = bundle_dir / "bundle_manifest.json"
+    payload_root = bundle_dir / "payload"
+    if not manifest_path.exists() or not payload_root.exists():
+        raise SystemExit("Bundle is missing `bundle_manifest.json` or `payload/`.")
+
+    target_root = Path(args.target)
+    if not target_root.is_absolute():
+        target_root = target_root.resolve()
+    target_root.mkdir(parents=True, exist_ok=True)
+
+    installed = 0
+    for file_path in payload_root.rglob("*"):
+        if not file_path.is_file():
+            continue
+        rel = file_path.relative_to(payload_root)
+        dst = target_root / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(file_path, dst)
+        installed += 1
+
+    payload = {
+        "schema_version": "scbe_offline_bundle_install_result_v1",
+        "bundle_dir": str(bundle_dir),
+        "target_root": str(target_root),
+        "installed_files": installed,
+    }
+    lines = [
+        "Offline bundle installed",
+        "-" * 24,
+        f"Bundle: {bundle_dir}",
+        f"Target: {target_root}",
+        f"Installed files: {installed}",
+    ]
     return _json_result(args, payload, lines)
 
 
@@ -3873,7 +4132,9 @@ def _gh_pulse_payload() -> dict[str, object]:
     }
 
 
-def _gh_doctor_payload(repo_root: str, pr: int | None = None, verify: bool = False, limit: int = 5) -> dict[str, object]:
+def _gh_doctor_payload(
+    repo_root: str, pr: int | None = None, verify: bool = False, limit: int = 5
+) -> dict[str, object]:
     ci = _gh_ci_payload(pr)
     scan = _gh_scan_payload(repo_root, verify=verify)
     prs = _gh_prs_payload(limit=limit)
@@ -4162,7 +4423,11 @@ def cmd_gh_pulse(args: argparse.Namespace) -> int:
         f"  Open PRs:      {payload['open_pr_count']}",
         f"  Open issues:   {payload['open_issue_count']}",
         f"  Open scans:    {payload['open_scan_alerts']}",
-        f"  CI pass rate:  {payload['ci_pass_rate']:.0f}% ({payload['ci_pass_count']}/{total_runs} last 20 runs)" if total_runs else "  CI pass rate:  n/a",
+        (
+            f"  CI pass rate:  {payload['ci_pass_rate']:.0f}% ({payload['ci_pass_count']}/{total_runs} last 20 runs)"
+            if total_runs
+            else "  CI pass rate:  n/a"
+        ),
     ]
     return _json_result(args, payload, lines)
 
@@ -4550,7 +4815,9 @@ def build_parser() -> argparse.ArgumentParser:
     add_model_profile_flags(model_plan)
     model_plan.set_defaults(func=cmd_model_plan)
 
-    model_preflight = model_sub.add_parser("preflight", help="Check whether a model profile should run locally, on Colab, or on HF Jobs")
+    model_preflight = model_sub.add_parser(
+        "preflight", help="Check whether a model profile should run locally, on Colab, or on HF Jobs"
+    )
     add_runtime_cli_flags(model_preflight)
     add_model_profile_flags(model_preflight)
     model_preflight.set_defaults(func=cmd_model_preflight)
@@ -4689,14 +4956,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     flow_packetize.set_defaults(func=cmd_flow_packetize, emit_action_map=True)
 
-
     agentbus = sub.add_parser("agentbus", help="Run a user-facing shaped agent-bus task")
     add_runtime_cli_flags(agentbus)
     agentbus_sub = agentbus.add_subparsers(dest="agentbus_cmd", required=True)
-    agentbus_run = agentbus_sub.add_parser("run", help="Intake task, braid operation shape, route bus, dispatch, track, and watch")
+    agentbus_run = agentbus_sub.add_parser(
+        "run", help="Intake task, braid operation shape, route bus, dispatch, track, and watch"
+    )
     add_runtime_cli_flags(agentbus_run)
     agentbus_run.add_argument("--task", required=True, help="User-facing task to route")
-    agentbus_run.add_argument("--operation-command", default="", help="Optional operation command, e.g. 'korah aelin dahru'")
+    agentbus_run.add_argument(
+        "--operation-command", default="", help="Optional operation command, e.g. 'korah aelin dahru'"
+    )
     agentbus_run.add_argument(
         "--task-type",
         choices=["coding", "review", "research", "governance", "training", "general"],
@@ -4707,7 +4977,9 @@ def build_parser() -> argparse.ArgumentParser:
     agentbus_run.add_argument("--privacy", choices=["local_only", "remote_ok"], default="local_only")
     agentbus_run.add_argument("--budget-cents", type=float, default=0.0)
     agentbus_run.add_argument("--max-players", type=int, default=1)
-    agentbus_run.add_argument("--dispatch", action="store_true", help="Dispatch the task through the free/local LLM bus")
+    agentbus_run.add_argument(
+        "--dispatch", action="store_true", help="Dispatch the task through the free/local LLM bus"
+    )
     agentbus_run.add_argument("--dispatch-provider", default="offline")
     agentbus_run.add_argument("--dispatch-tail", type=int, default=5)
     agentbus_run.add_argument("--mirror-root", default="artifacts/agent_bus/mirror_room")
@@ -4722,6 +4994,46 @@ def build_parser() -> argparse.ArgumentParser:
     status = sub.add_parser("status", help="Show artifact presence for last cycle")
     add_runtime_cli_flags(status)
     status.set_defaults(func=cmd_status)
+
+    layout = sub.add_parser("layout", help="Plan and scaffold deploy/non-deploy root layout lanes")
+    add_runtime_cli_flags(layout)
+    layout_sub = layout.add_subparsers(dest="layout_cmd", required=True)
+    layout_plan = layout_sub.add_parser("plan", help="Build a non-destructive root partition plan")
+    add_runtime_cli_flags(layout_plan)
+    layout_plan.add_argument("--layout-config", default=str(DEFAULT_ROOT_LAYOUT_CONFIG))
+    layout_plan.add_argument("--deploy-root", default="deploy_runtime")
+    layout_plan.add_argument("--non-deploy-root", default="non_deploy")
+    layout_plan.add_argument("--include-deploy", default="", help="Extra comma-separated root entries for deploy lane")
+    layout_plan.add_argument(
+        "--include-research", default="", help="Extra comma-separated root entries for non_deploy/research"
+    )
+    layout_plan.add_argument(
+        "--include-archive", default="", help="Extra comma-separated root entries for non_deploy/archive"
+    )
+    layout_plan.add_argument("--output", default="artifacts/root_layout_plan.json")
+    layout_plan.set_defaults(func=cmd_layout_plan)
+
+    layout_scaffold = layout_sub.add_parser("scaffold", help="Create deploy/non-deploy root directories")
+    add_runtime_cli_flags(layout_scaffold)
+    layout_scaffold.add_argument("--deploy-root", default="deploy_runtime")
+    layout_scaffold.add_argument("--non-deploy-root", default="non_deploy")
+    layout_scaffold.set_defaults(func=cmd_layout_scaffold)
+
+    offline = sub.add_parser("offline", help="Build and install offline capability bundles")
+    add_runtime_cli_flags(offline)
+    offline_sub = offline.add_subparsers(dest="offline_cmd", required=True)
+    offline_build = offline_sub.add_parser("build", help="Build an offline bundle from a profile")
+    add_runtime_cli_flags(offline_build)
+    offline_build.add_argument("--profiles", default=str(DEFAULT_OFFLINE_BUNDLE_PROFILES))
+    offline_build.add_argument("--profile", default="cli-offline-core")
+    offline_build.add_argument("--output", default="")
+    offline_build.set_defaults(func=cmd_offline_bundle_build)
+
+    offline_install = offline_sub.add_parser("install", help="Install a built offline bundle into a target path")
+    add_runtime_cli_flags(offline_install)
+    offline_install.add_argument("--bundle", required=True, help="Path to the bundle directory")
+    offline_install.add_argument("--target", required=True, help="Target directory for offline installation")
+    offline_install.set_defaults(func=cmd_offline_bundle_install)
 
     pollypad = sub.add_parser("pollypad", help="Agent personal storage capsule (Kindle-style)")
     add_runtime_cli_flags(pollypad)
@@ -4797,29 +5109,54 @@ def build_parser() -> argparse.ArgumentParser:
     pub_sub = pub_parser.add_subparsers(dest="pub_cmd", required=True)
 
     pub_bsky = pub_sub.add_parser("bluesky", help="Post to Bluesky")
-    pub_bsky.add_argument("content", choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"], help="What to post")
-    pub_bsky.set_defaults(func=lambda args: subprocess.call(
-        [sys.executable, str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"), "--promo", args.content]
-    ))
+    pub_bsky.add_argument(
+        "content",
+        choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"],
+        help="What to post",
+    )
+    pub_bsky.set_defaults(
+        func=lambda args: subprocess.call(
+            [
+                sys.executable,
+                str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"),
+                "--promo",
+                args.content,
+            ]
+        )
+    )
 
     pub_bsky_custom = pub_sub.add_parser("post", help="Post custom text to Bluesky")
     pub_bsky_custom.add_argument("text", help="Text to post")
-    pub_bsky_custom.set_defaults(func=lambda args: subprocess.call(
-        [sys.executable, str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"), "--text", args.text]
-    ))
+    pub_bsky_custom.set_defaults(
+        func=lambda args: subprocess.call(
+            [
+                sys.executable,
+                str(Path(args.repo_root) / "scripts" / "publish" / "post_to_bluesky.py"),
+                "--text",
+                args.text,
+            ]
+        )
+    )
 
     pub_all = pub_sub.add_parser("all", help="Post to all platforms via GitHub Actions")
-    pub_all.add_argument("content", choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"])
-    pub_all.set_defaults(func=lambda args: subprocess.call(
-        ["gh", "workflow", "run", "publish-content.yml", "-f", "platform=all", "-f", f"content={args.content}"]
-    ))
+    pub_all.add_argument(
+        "content", choices=["book-promo", "chapter-1", "chapter-2", "chapter-3", "governance", "design-partner"]
+    )
+    pub_all.set_defaults(
+        func=lambda args: subprocess.call(
+            ["gh", "workflow", "run", "publish-content.yml", "-f", "platform=all", "-f", f"content={args.content}"]
+        )
+    )
 
     # â”€â”€ outreach: Cold outreach pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     outreach_parser = sub.add_parser("outreach", help="Cold outreach â€” draft, preview, send partnership emails")
     outreach_parser.add_argument("outreach_args", nargs=argparse.REMAINDER, help="Args for outreach pipeline")
-    outreach_parser.set_defaults(func=lambda args: subprocess.call(
-        [sys.executable, str(Path(args.repo_root) / "scripts" / "outreach" / "cold_outreach_pipeline.py")] + args.outreach_args
-    ))
+    outreach_parser.set_defaults(
+        func=lambda args: subprocess.call(
+            [sys.executable, str(Path(args.repo_root) / "scripts" / "outreach" / "cold_outreach_pipeline.py")]
+            + args.outreach_args
+        )
+    )
 
     # â”€â”€ gh: GitHub operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     gh_parser = sub.add_parser("gh", help="GitHub operations - PRs, CI, issues, code scanning, releases")
@@ -4902,7 +5239,9 @@ def build_parser() -> argparse.ArgumentParser:
     add_runtime_cli_flags(ops_sweep)
     ops_sweep.add_argument("--limit", type=int, default=5, help="Max GitHub PR/issue samples to include")
     ops_sweep.add_argument("--verify-scan", action="store_true", help="Ask GitHub doctor/sweep to verify code scanning")
-    ops_sweep.add_argument("--include-release", action="store_true", help="Include latest release summary in GitHub sweep")
+    ops_sweep.add_argument(
+        "--include-release", action="store_true", help="Include latest release summary in GitHub sweep"
+    )
     ops_sweep.add_argument("--skip-github", action="store_true", help="Skip GitHub inside the board phase")
     ops_sweep.add_argument("--skip-colab", action="store_true", help="Skip Colab inside the board phase")
     ops_sweep.set_defaults(func=cmd_ops_sweep)
@@ -4952,4 +5291,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
