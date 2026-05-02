@@ -1,0 +1,3 @@
+# Normalize churn-prone script so CRLF/LF toggling stops dirtying Windows checkouts
+* text=auto
+scripts/scbe-system-cli.py text eol=lf
