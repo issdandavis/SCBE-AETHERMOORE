@@ -17,6 +17,7 @@ Options:
 import os
 import sys
 import shutil
+import shlex
 import subprocess
 from pathlib import Path
 
@@ -24,7 +25,7 @@ from pathlib import Path
 def run_command(cmd, cwd=None):
     """Run a shell command and return success status."""
     print(f"\n>>> {cmd}")
-    result = subprocess.run(cmd, shell=True, cwd=cwd)
+    result = subprocess.run(shlex.split(cmd), cwd=cwd)
     return result.returncode == 0
 
 

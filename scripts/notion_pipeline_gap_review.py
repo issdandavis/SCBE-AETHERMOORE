@@ -148,7 +148,7 @@ def _build_task(
     confidence: float = 0.82,
 ) -> Dict[str, Any]:
     return {
-        "task_id": hashlib.sha1(f"{title}:{component}:{priority}:{mode}".encode("utf-8")).hexdigest()[:12],
+        "task_id": hashlib.sha256(f"{title}:{component}:{priority}:{mode}".encode("utf-8")).hexdigest()[:12],
         "mode": mode,
         "title": title,
         "description": description,

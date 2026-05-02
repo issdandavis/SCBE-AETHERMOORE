@@ -66,7 +66,7 @@ def deterministic_pick(items, seed, n=1):
     """Deterministically pick n items based on seed hash."""
     if not items:
         return [] if n > 1 else ""
-    h = int(hashlib.md5(seed.encode()).hexdigest(), 16)
+    h = int(hashlib.sha256(seed.encode()).hexdigest(), 16)
     if n == 1:
         return items[h % len(items)]
     picked = []
@@ -186,15 +186,15 @@ def gen_architecture(record):
     t1, t2 = TONGUES[ti[0]], TONGUES[ti[1]]
     layers = CAT_PRIMARY_LAYERS.get(cat, [1, 5, 12, 13])
 
-    h1 = int(hashlib.md5((seed + 'p1').encode()).hexdigest(), 16) % len(DESIGN_PATTERNS)
-    h2 = int(hashlib.md5((seed + 'p2').encode()).hexdigest(), 16) % len(DESIGN_PATTERNS)
+    h1 = int(hashlib.sha256((seed + 'p1').encode()).hexdigest(), 16) % len(DESIGN_PATTERNS)
+    h2 = int(hashlib.sha256((seed + 'p2').encode()).hexdigest(), 16) % len(DESIGN_PATTERNS)
     if h2 == h1:
         h2 = (h1 + 1) % len(DESIGN_PATTERNS)
     pat1, pat1_desc = DESIGN_PATTERNS[h1]
     pat2, pat2_desc = DESIGN_PATTERNS[h2]
 
-    h3 = int(hashlib.md5((seed + 't1').encode()).hexdigest(), 16) % len(TRADEOFF_PAIRS)
-    h4 = int(hashlib.md5((seed + 't2').encode()).hexdigest(), 16) % len(TRADEOFF_PAIRS)
+    h3 = int(hashlib.sha256((seed + 't1').encode()).hexdigest(), 16) % len(TRADEOFF_PAIRS)
+    h4 = int(hashlib.sha256((seed + 't2').encode()).hexdigest(), 16) % len(TRADEOFF_PAIRS)
     if h4 == h3:
         h4 = (h3 + 1) % len(TRADEOFF_PAIRS)
     tf1 = TRADEOFF_PAIRS[h3]
@@ -303,8 +303,8 @@ def gen_comparison(record):
     extract_bullets(content)
 
     tools = TRAD_TOOLS.get(cat, TRAD_TOOLS['general'])
-    h1 = int(hashlib.md5((seed + 'tool1').encode()).hexdigest(), 16) % len(tools)
-    h2 = int(hashlib.md5((seed + 'tool2').encode()).hexdigest(), 16) % len(tools)
+    h1 = int(hashlib.sha256((seed + 'tool1').encode()).hexdigest(), 16) % len(tools)
+    h2 = int(hashlib.sha256((seed + 'tool2').encode()).hexdigest(), 16) % len(tools)
     if h2 == h1 and len(tools) > 1:
         h2 = (h1 + 1) % len(tools)
     tool1 = tools[h1]

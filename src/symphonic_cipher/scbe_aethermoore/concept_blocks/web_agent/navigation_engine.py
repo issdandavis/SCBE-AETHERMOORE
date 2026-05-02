@@ -56,7 +56,7 @@ class PageUnderstanding:
 
     @staticmethod
     def from_content(url: str, title: str, text: str, links: List[Dict[str, str]]) -> "PageUnderstanding":
-        fp = hashlib.md5((url + title + text[:500]).encode()).hexdigest()[:12]
+        fp = hashlib.sha256((url + title + text[:500]).encode()).hexdigest()[:12]
         page_type = _classify_page(url, title, text)
         return PageUnderstanding(
             url=url,

@@ -134,7 +134,7 @@ def classify_collection(path: Path, prefix: str) -> str:
 def make_doc_id(path: Path, line_no: int, row: Dict[str, Any]) -> str:
     payload = json.dumps(row, sort_keys=True, ensure_ascii=False)
     token = f"{path}|{line_no}|{payload}".encode("utf-8")
-    return hashlib.sha1(token).hexdigest()
+    return hashlib.sha256(token).hexdigest()
 
 
 def relative_path_str(path: Path) -> str:

@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shlex
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -139,7 +140,7 @@ class GateResult:
 
 def run_cmd(cmd: str) -> str:
     """Run a shell command and return output."""
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=str(ROOT))
+    result = subprocess.run(shlex.split(cmd), capture_output=True, text=True, cwd=str(ROOT))
     return result.stdout.strip()
 
 

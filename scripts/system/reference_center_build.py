@@ -27,7 +27,7 @@ def repo_root_from_script() -> Path:
 
 
 def codename_for(agent: str) -> str:
-    digest = hashlib.sha1(agent.encode("utf-8")).hexdigest()[:6].upper()
+    digest = hashlib.sha256(agent.encode("utf-8")).hexdigest()[:6].upper()
     stem = agent.replace(".", "-").replace("_", "-").strip("-")
     return f"{stem}-RC-{digest}"
 

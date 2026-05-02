@@ -300,7 +300,7 @@ def export_tetris_sft(records: list[dict], tetris: TetrisEmbedder, output_path: 
                 "tier": emb.tier,
                 "tongue_coords": emb.tongue_coords.tolist(),
                 "spatial_coords": emb.spatial_coords.tolist(),
-                "embedding_hash": hashlib.md5(emb.rotated_embedding.tobytes()).hexdigest()[:16],
+                "embedding_hash": hashlib.sha256(emb.rotated_embedding.tobytes()).hexdigest()[:16],
             }
             f.write(json.dumps(enriched, ensure_ascii=False, default=str) + "\n")
             written += 1
@@ -385,7 +385,7 @@ def main():
     seen = set()
     deduped = []
     for rec in all_records:
-        key = hashlib.md5(
+        key = hashlib.sha256(
             (rec.get("instruction", rec.get("prompt", "")) + rec.get("response", "")).encode()
         ).hexdigest()
         if key not in seen:

@@ -193,7 +193,7 @@ CATEGORY_SCBE_CONNECTIONS = {
 def deterministic_seed(record):
     # Include skill_source to differentiate same-category skills with similar questions
     key = record["instruction"] + "|" + record.get("skill_source", "")
-    h = hashlib.md5(key.encode()).hexdigest()
+    h = hashlib.sha256(key.encode()).hexdigest()
     return int(h[:8], 16)
 
 

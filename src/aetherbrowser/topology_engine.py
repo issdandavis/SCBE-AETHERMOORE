@@ -283,7 +283,7 @@ def compute_page_topology(
 
     # Build center node
     center = TopologyNode(
-        id=hashlib.md5(url.encode()).hexdigest()[:12],
+        id=hashlib.sha256(url.encode()).hexdigest()[:12],
         label=title[:40] if title else "Current Page",
         url=url,
         x=0.0,
@@ -311,7 +311,7 @@ def compute_page_topology(
         x, y = project_to_disk(dist, angle)
 
         node = TopologyNode(
-            id=hashlib.md5(link_url.encode()).hexdigest()[:12],
+            id=hashlib.sha256(link_url.encode()).hexdigest()[:12],
             label=link_text[:30] if link_text else link_url.split("/")[-1][:30],
             url=link_url,
             x=round(x, 6),

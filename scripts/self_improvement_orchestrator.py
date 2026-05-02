@@ -37,7 +37,7 @@ class ImprovementTask:
 
 
 def _hash_id(*parts: str) -> str:
-    return hashlib.sha1("|".join(parts).encode("utf-8")).hexdigest()[:12]
+    return hashlib.sha256("|".join(parts).encode("utf-8")).hexdigest()[:12]
 
 
 def _safe_load_json(path: Path) -> Optional[Dict[str, Any]]:

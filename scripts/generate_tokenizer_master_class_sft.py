@@ -125,7 +125,7 @@ def add(system: str, user: str, assistant: str, tongue_scores: dict[str, float],
         "difficulty": difficulty,
         "augmentation": augmentation,
         "tags": tags,
-        "source_hash": hashlib.md5(user.encode()).hexdigest()[:8],
+        "source_hash": hashlib.sha256(user.encode()).hexdigest()[:8],
     })
 
 
