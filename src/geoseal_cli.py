@@ -969,6 +969,142 @@ def cmd_code_packet(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_reasoning_code_packet(args: argparse.Namespace) -> int:
+    source = args.content or ""
+    source_name = args.source_name or "inline"
+    if args.source_file:
+        path = Path(args.source_file)
+        source = path.read_text(encoding="utf-8")
+        source_name = args.source_name or path.name
+    from src.coding_spine.bijective_reasoning_code_packet import build_bijective_reasoning_code_packet
+
+    packet = build_bijective_reasoning_code_packet(
+        intent=args.intent or "",
+        source=source,
+        language=(args.language or "python").lower(),
+        source_name=source_name,
+        tile_row=args.tile_row,
+        tile_col=args.tile_col,
+        permission_mode=args.permission_mode,
+    )
+    print(json.dumps(packet, indent=2 if args.json else None))
+    return 0
+
+
+def cmd_packet_graph_run(args: argparse.Namespace) -> int:
+    from src.agent_comms import AgentPacketV1, Budget, ContextRef, Route, build_default_packet_graph, hash_state, new_task_id
+    from src.coding_spine.deterministic_tongue_router import route_prompt
+
+    source = args.content or ""
+    source_name = args.source_name or "inline"
+    refs: list[ContextRef] = []
+    if args.source_file:
+        path = Path(args.source_file)
+        source = path.read_text(encoding="utf-8")
+        source_name = args.source_name or path.name
+        refs.append(ContextRef(kind="path", value=str(path)))
+
+    intent = args.intent or "Run SCBE packet graph."
+    route = route_prompt(f"{intent}\n{source}").as_json()
+    base_packet = AgentPacketV1(
+        task_id=args.task_id or new_task_id("graph"),
+        phase="plan",
+        route=Route(tongue=route["tongue"], domain="code", permission="read"),
+        context_refs=refs,
+        state_hash=hash_state(intent, args.language or "python", source_name, source),
+        budget=Budget(max_input_tokens=int(args.max_input_tokens), max_output_tokens=int(args.max_output_tokens)),
+        request=intent,
+        expected_output="delta",
+    )
+    checkpoint_path = Path(args.checkpoint) if args.checkpoint else None
+    runner = build_default_packet_graph(route_tongue=route["tongue"], checkpoint_path=checkpoint_path)
+    result = runner.run(base_packet, max_steps=int(args.max_steps))
+    payload = result.to_dict()
+    payload["base_route"] = route
+    payload["source_name"] = source_name
+    if checkpoint_path is not None:
+        payload["checkpoint_path"] = str(checkpoint_path)
+    print(json.dumps(payload, indent=2 if args.json else None, sort_keys=True))
+    return 0
+
+
+def _handoff_secret(args: argparse.Namespace) -> str:
+    secret = getattr(args, "secret", None)
+    if secret:
+        return secret
+    env_name = getattr(args, "secret_env", None) or "SCBE_HANDOFF_SECRET"
+    secret = os.environ.get(env_name, "")
+    if not secret:
+        raise SystemExit(f"missing handoff secret; pass --secret or set {env_name}")
+    return secret
+
+
+def _read_json_arg(value: str | None, file_value: str | None) -> dict[str, Any]:
+    if file_value:
+        return json.loads(Path(file_value).read_text(encoding="utf-8"))
+    if value:
+        return json.loads(value)
+    raise SystemExit("expected --packet-json or --packet-file")
+
+
+def cmd_handoff_seal(args: argparse.Namespace) -> int:
+    from src.agent_comms import AgentPacketV1, Budget, ContextRef, Route, hash_state, new_task_id
+    from src.agent_comms.secure_handoff import seal_handoff
+
+    if args.packet_json or args.packet_file:
+        packet = AgentPacketV1.from_dict(_read_json_arg(args.packet_json, args.packet_file))
+    else:
+        source = args.content or ""
+        source_name = args.source_name or "inline"
+        refs: list[ContextRef] = []
+        if args.source_file:
+            path = Path(args.source_file)
+            source = path.read_text(encoding="utf-8")
+            source_name = args.source_name or path.name
+            refs.append(ContextRef(kind="path", value=str(path), bytes=len(source.encode("utf-8"))))
+        for ref in args.context_ref or []:
+            kind, _, value = ref.partition(":")
+            if not kind or not value:
+                raise SystemExit("--context-ref must use kind:value format")
+            refs.append(ContextRef(kind=kind, value=value))
+        intent = args.intent or "Agent handoff task."
+        packet = AgentPacketV1(
+            task_id=args.task_id or new_task_id("handoff"),
+            phase=args.phase,
+            route=Route(tongue=args.tongue, domain=args.domain, permission=args.permission),
+            context_refs=refs,
+            state_hash=hash_state(intent, source_name, source, args.phase, args.tongue),
+            budget=Budget(max_input_tokens=args.max_input_tokens, max_output_tokens=args.max_output_tokens),
+            request=intent if not source else f"{intent}\n\nSource summary: {source_name}",
+            expected_output=args.expected_output,
+        )
+
+    sealed = seal_handoff(
+        packet,
+        sender_id=args.sender,
+        recipient_id=args.recipient,
+        shared_secret=_handoff_secret(args),
+    )
+    if args.output:
+        Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.output).write_text(json.dumps(sealed, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps(sealed, indent=2 if args.json else None, sort_keys=True))
+    return 0
+
+
+def cmd_handoff_open(args: argparse.Namespace) -> int:
+    from src.agent_comms.secure_handoff import open_handoff
+
+    sealed = _read_json_arg(args.sealed_json, args.sealed_file)
+    packet = open_handoff(sealed, shared_secret=_handoff_secret(args))
+    payload = packet.to_dict()
+    if args.output:
+        Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.output).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    print(json.dumps(payload, indent=2 if args.json else None, sort_keys=True))
+    return 0
+
+
 def _read_source_for_surface(args: argparse.Namespace) -> tuple[str, str, str]:
     source = getattr(args, "content", "") or ""
     source_name = getattr(args, "source_name", None) or "inline"
@@ -3065,6 +3201,57 @@ def cmd_workflow(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_harness_terminal(args: argparse.Namespace) -> int:
+    from scripts.terminal.geoseal_harness_terminal import (
+        build_terminal_state,
+        parse_model_refs,
+        render_terminal_text,
+    )
+
+    state = build_terminal_state(
+        model_refs=parse_model_refs(args.models),
+        bridge_url=args.bridge_url,
+        probe_health=not args.no_health,
+        timeout=args.timeout,
+    )
+    if args.json:
+        print(json.dumps(state, indent=2, sort_keys=True))
+    else:
+        print(render_terminal_text(state))
+    return 0
+
+
+def cmd_harness_research(args: argparse.Namespace) -> int:
+    from scripts.benchmark.harness_research_matrix import (
+        build_research_matrix,
+        render_research_text,
+    )
+
+    matrix = build_research_matrix()
+    if args.json:
+        print(json.dumps(matrix, indent=2, sort_keys=True))
+    else:
+        print(render_research_text(matrix))
+    return 0
+
+
+def cmd_terminus_training(args: argparse.Namespace) -> int:
+    from scripts.benchmark.terminus_training_runner import main as terminus_main
+
+    forwarded = [args.mode]
+    if args.scenario:
+        forwarded.extend(["--scenario", args.scenario])
+    if args.agent_id:
+        forwarded.extend(["--agent-id", args.agent_id])
+    if args.out_dir:
+        forwarded.extend(["--out-dir", args.out_dir])
+    for command in args.command or []:
+        forwarded.extend(["--command", command])
+    if args.json:
+        forwarded.append("--json")
+    return terminus_main(forwarded)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="geoseal", description="GeoSeal swarm CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -3096,6 +3283,82 @@ def build_parser() -> argparse.ArgumentParser:
     p_code_packet.add_argument("--language", default="python")
     p_code_packet.add_argument("--backend", default=None, choices=["local", "ollama", "hf", "claude"])
     p_code_packet.set_defaults(func=cmd_code_packet)
+
+    p_reasoning_code = sub.add_parser(
+        "reasoning-code-packet",
+        help="Build first-class bijective reasoning/code packet from intent and optional source",
+    )
+    p_reasoning_code.add_argument("--intent", default="", help="Plain-language coding intent")
+    p_reasoning_code.add_argument("--content", default="", help="Inline source content")
+    p_reasoning_code.add_argument("--source-file", default=None, help="Read source content from file")
+    p_reasoning_code.add_argument("--source-name", default=None)
+    p_reasoning_code.add_argument("--language", default="python")
+    p_reasoning_code.add_argument("--tile-row", type=int, default=None, dest="tile_row")
+    p_reasoning_code.add_argument("--tile-col", type=int, default=None, dest="tile_col")
+    p_reasoning_code.add_argument(
+        "--permission-mode",
+        default="observe",
+        choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
+        dest="permission_mode",
+    )
+    p_reasoning_code.add_argument("--json", action="store_true")
+    p_reasoning_code.set_defaults(func=cmd_reasoning_code_packet)
+
+    p_packet_graph = sub.add_parser(
+        "packet-graph-run",
+        help="Run the SCBE-native packet graph with checkpoints",
+    )
+    p_packet_graph.add_argument("--intent", required=True, help="Task intent for the base packet")
+    p_packet_graph.add_argument("--content", default="", help="Inline source/content context")
+    p_packet_graph.add_argument("--source-file", default=None, help="Read source/content context from file")
+    p_packet_graph.add_argument("--source-name", default=None)
+    p_packet_graph.add_argument("--language", default="python")
+    p_packet_graph.add_argument("--task-id", default=None, dest="task_id")
+    p_packet_graph.add_argument("--checkpoint", default=None, help="Optional JSONL checkpoint output path")
+    p_packet_graph.add_argument("--max-steps", type=int, default=16, dest="max_steps")
+    p_packet_graph.add_argument("--max-input-tokens", type=int, default=1024, dest="max_input_tokens")
+    p_packet_graph.add_argument("--max-output-tokens", type=int, default=256, dest="max_output_tokens")
+    p_packet_graph.add_argument("--json", action="store_true")
+    p_packet_graph.set_defaults(func=cmd_packet_graph_run)
+
+    p_handoff_seal = sub.add_parser(
+        "handoff-seal",
+        help="Seal a compact agent-to-agent task handoff packet",
+    )
+    p_handoff_seal.add_argument("--sender", required=True)
+    p_handoff_seal.add_argument("--recipient", required=True)
+    p_handoff_seal.add_argument("--secret", default=None, help="Shared handoff secret; prefer --secret-env for real use")
+    p_handoff_seal.add_argument("--secret-env", default="SCBE_HANDOFF_SECRET", dest="secret_env")
+    p_handoff_seal.add_argument("--packet-json", default=None, help="Existing AgentPacketV1 JSON")
+    p_handoff_seal.add_argument("--packet-file", default=None, help="Existing AgentPacketV1 JSON file")
+    p_handoff_seal.add_argument("--intent", default="")
+    p_handoff_seal.add_argument("--content", default="")
+    p_handoff_seal.add_argument("--source-file", default=None)
+    p_handoff_seal.add_argument("--source-name", default=None)
+    p_handoff_seal.add_argument("--context-ref", action="append", default=[], help="Additional context ref as kind:value")
+    p_handoff_seal.add_argument("--task-id", default=None, dest="task_id")
+    p_handoff_seal.add_argument("--phase", default="plan", choices=["plan", "edit", "verify", "merge"])
+    p_handoff_seal.add_argument("--tongue", default="KO", choices=["KO", "AV", "RU", "CA", "UM", "DR"])
+    p_handoff_seal.add_argument("--domain", default="code")
+    p_handoff_seal.add_argument("--permission", default="read", choices=["read", "edit", "merge"])
+    p_handoff_seal.add_argument("--expected-output", default="delta", choices=["delta", "vote", "patch", "verdict"], dest="expected_output")
+    p_handoff_seal.add_argument("--max-input-tokens", type=int, default=1024, dest="max_input_tokens")
+    p_handoff_seal.add_argument("--max-output-tokens", type=int, default=256, dest="max_output_tokens")
+    p_handoff_seal.add_argument("--output", default=None)
+    p_handoff_seal.add_argument("--json", action="store_true")
+    p_handoff_seal.set_defaults(func=cmd_handoff_seal)
+
+    p_handoff_open = sub.add_parser(
+        "handoff-open",
+        help="Open and authenticate a sealed agent-to-agent handoff packet",
+    )
+    p_handoff_open.add_argument("--secret", default=None)
+    p_handoff_open.add_argument("--secret-env", default="SCBE_HANDOFF_SECRET", dest="secret_env")
+    p_handoff_open.add_argument("--sealed-json", default=None)
+    p_handoff_open.add_argument("--sealed-file", default=None)
+    p_handoff_open.add_argument("--output", default=None)
+    p_handoff_open.add_argument("--json", action="store_true")
+    p_handoff_open.set_defaults(func=cmd_handoff_open)
 
     p_braille = sub.add_parser("braille-lane", help="Build braille/polyhedral lane from source or code packet")
     p_braille.add_argument("--content", default="")
@@ -3215,6 +3478,36 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
+
+    p_harness_terminal = sub.add_parser(
+        "harness-terminal",
+        help="Show terminal UI for GeoSeal AI-to-AI harness lanes",
+    )
+    p_harness_terminal.add_argument("--models", default=None, help="Comma-separated provider:model refs")
+    p_harness_terminal.add_argument("--bridge-url", default="http://127.0.0.1:8766")
+    p_harness_terminal.add_argument("--timeout", type=float, default=1.5)
+    p_harness_terminal.add_argument("--no-health", action="store_true")
+    p_harness_terminal.add_argument("--json", action="store_true")
+    p_harness_terminal.set_defaults(func=cmd_harness_terminal)
+
+    p_harness_research = sub.add_parser(
+        "harness-research",
+        help="Show research-backed benchmark lanes for the GeoSeal harness",
+    )
+    p_harness_research.add_argument("--json", action="store_true")
+    p_harness_research.set_defaults(func=cmd_harness_research)
+
+    p_terminus = sub.add_parser(
+        "terminus-training",
+        help="Run the local Terminus-inspired action/checkpoint training runner",
+    )
+    p_terminus.add_argument("--mode", default="benchmark", choices=["run", "benchmark", "play"])
+    p_terminus.add_argument("--scenario", default=None)
+    p_terminus.add_argument("--agent-id", default="geoseal-agent")
+    p_terminus.add_argument("--out-dir", default=None)
+    p_terminus.add_argument("--command", action="append", default=[])
+    p_terminus.add_argument("--json", action="store_true")
+    p_terminus.set_defaults(func=cmd_terminus_training)
 
     p_history = sub.add_parser("history", help="Show execution history from ledger")
     p_history.add_argument("--ledger", default=str(DEFAULT_LEDGER))

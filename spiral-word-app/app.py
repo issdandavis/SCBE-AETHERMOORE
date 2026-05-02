@@ -17,7 +17,7 @@ from contextlib import asynccontextmanager
 from typing import Dict, List, Set
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 
 from sync_engine import SyncEngine, EditOp
@@ -30,6 +30,7 @@ from governance import (
     verify_signature,
 )
 from ai_ports import ai_ports
+from headless import DOCX_MIME, generate_record, render_docx
 
 logging.basicConfig(
     level=logging.INFO,
@@ -50,7 +51,7 @@ connections: Dict[str, Set[WebSocket]] = {}
 def _public_ai_result_payload(result: str) -> dict | None:
     """Normalize provider status strings into safe client payloads."""
     if result.startswith("[BLOCKED]"):
-        reason = result[len("[BLOCKED]"):].strip() or "Request blocked by governance"
+        reason = result[len("[BLOCKED]") :].strip() or "Request blocked by governance"
         return {"status": "blocked", "message": reason}
     if result.startswith("[ERROR]"):
         return {"status": "error", "message": "AI provider request failed"}
@@ -99,6 +100,17 @@ class AIEditRequest(BaseModel):
     provider: str = "echo"
     options: dict = None
     site_id: str = "ai"
+
+
+class HeadlessGenerateRequest(BaseModel):
+    doc_id: str
+    prompt: str
+    provider: str = "echo"
+    options: dict = None
+    site_id: str = "headless"
+    title: str = None
+    author: str = None
+    replace: bool = True
 
 
 # ---------------------------------------------------------------------------
@@ -258,6 +270,98 @@ async def list_ai_providers():
 
 
 # ---------------------------------------------------------------------------
+# REST API — Headless Word (.docx) Generation
+# ---------------------------------------------------------------------------
+
+
+def _docx_filename(doc_id: str) -> str:
+    safe = "".join(c if c.isalnum() or c in "-_." else "_" for c in doc_id)
+    return f"{safe or 'document'}.docx"
+
+
+@app.get("/doc/{doc_id}/export.docx")
+async def export_docx(
+    doc_id: str,
+    title: str | None = None,
+    author: str | None = None,
+):
+    """Export the current document state as a .docx file."""
+    if doc_id not in sync.documents:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    doc = sync.documents[doc_id]
+    try:
+        data = render_docx(doc, title=title, author=author)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+    audit_log.record(
+        doc_id=doc_id,
+        site_id="export",
+        action="export_docx",
+        op_checksum=doc.snapshot()["op_count"] and str(doc.version) or "0",
+        governance_decision="ALLOW:export",
+    )
+    return Response(
+        content=data,
+        media_type=DOCX_MIME,
+        headers={
+            "Content-Disposition": f'attachment; filename="{_docx_filename(doc_id)}"',
+            "X-Spiralword-Version": str(doc.version),
+        },
+    )
+
+
+@app.post("/headless/generate")
+async def headless_generate(req: HeadlessGenerateRequest):
+    """
+    Headless AI-driven Word document generation.
+
+    Runs the AI prompt through the governance pipeline, replaces (or
+    appends to) the target document, and returns the .docx binary plus
+    the audit record id in response headers. The full record is also
+    written to the audit log for retrieval via /audit.
+    """
+    try:
+        data, record, _text = generate_record(
+            sync=sync,
+            doc_id=req.doc_id,
+            prompt=req.prompt,
+            provider=req.provider,
+            options=req.options,
+            site_id=req.site_id,
+            title=req.title,
+            author=req.author,
+            replace=req.replace,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    return Response(
+        content=data,
+        media_type=DOCX_MIME,
+        headers={
+            "Content-Disposition": f'attachment; filename="{_docx_filename(req.doc_id)}"',
+            "X-Spiralword-Record": record.record_id,
+            "X-Spiralword-Docx-Sha256": record.docx_sha256,
+            "X-Spiralword-Tongue": record.tongue,
+            "X-Spiralword-Confidence": f"{record.confidence:.2f}",
+        },
+    )
+
+
+@app.get("/headless/record/{record_id}")
+async def get_headless_record(record_id: str):
+    """Look up a headless generation record from the audit log."""
+    for entry in audit_log.entries:
+        if entry.action == "headless_generate" and record_id in entry.governance_decision:
+            return entry.to_dict()
+    raise HTTPException(status_code=404, detail="Record not found")
+
+
+# ---------------------------------------------------------------------------
 # REST API — Governance & Audit
 # ---------------------------------------------------------------------------
 
@@ -308,10 +412,14 @@ async def websocket_endpoint(websocket: WebSocket, doc_id: str):
 
     # Send current state to new joiner
     try:
-        await websocket.send_text(json.dumps({
-            "type": "snapshot",
-            "data": doc.snapshot(),
-        }))
+        await websocket.send_text(
+            json.dumps(
+                {
+                    "type": "snapshot",
+                    "data": doc.snapshot(),
+                }
+            )
+        )
     except Exception:
         connections[doc_id].discard(websocket)
         return
@@ -327,19 +435,27 @@ async def websocket_endpoint(websocket: WebSocket, doc_id: str):
 
                 # L9: Replay protection
                 if not check_replay(op.nonce):
-                    await websocket.send_text(json.dumps({
-                        "type": "error",
-                        "message": "Replay detected",
-                    }))
+                    await websocket.send_text(
+                        json.dumps(
+                            {
+                                "type": "error",
+                                "message": "Replay detected",
+                            }
+                        )
+                    )
                     continue
 
                 # L13: Signature check (optional)
                 if "sig" in msg:
                     if not verify_signature(op_data, msg["sig"]):
-                        await websocket.send_text(json.dumps({
-                            "type": "error",
-                            "message": "Invalid signature",
-                        }))
+                        await websocket.send_text(
+                            json.dumps(
+                                {
+                                    "type": "error",
+                                    "message": "Invalid signature",
+                                }
+                            )
+                        )
                         continue
 
                 # Apply remote op
@@ -358,10 +474,14 @@ async def websocket_endpoint(websocket: WebSocket, doc_id: str):
                     for peer in connections.get(doc_id, set()):
                         if peer != websocket:
                             try:
-                                await peer.send_text(json.dumps({
-                                    "type": "op",
-                                    "data": op.to_dict(),
-                                }))
+                                await peer.send_text(
+                                    json.dumps(
+                                        {
+                                            "type": "op",
+                                            "data": op.to_dict(),
+                                        }
+                                    )
+                                )
                             except Exception:
                                 pass
 

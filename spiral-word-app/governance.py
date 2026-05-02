@@ -206,9 +206,12 @@ class AuditEntry:
     governance_decision: str
     tongue: str = "KO"
     confidence: float = 1.0
+    phdm_node_id: Optional[str] = None
+    loop_index: Optional[int] = None
+    braid_receipt: Optional[str] = None
 
     def to_dict(self) -> dict:
-        return {
+        data = {
             "timestamp": self.timestamp,
             "doc_id": self.doc_id,
             "site_id": self.site_id,
@@ -218,6 +221,13 @@ class AuditEntry:
             "tongue": self.tongue,
             "confidence": self.confidence,
         }
+        if self.phdm_node_id is not None:
+            data["phdm_node_id"] = self.phdm_node_id
+        if self.loop_index is not None:
+            data["loop_index"] = self.loop_index
+        if self.braid_receipt is not None:
+            data["braid_receipt"] = self.braid_receipt
+        return data
 
 
 class AuditLog:
@@ -241,6 +251,9 @@ class AuditLog:
         governance_decision: str,
         tongue: str = "KO",
         confidence: float = 1.0,
+        phdm_node_id: Optional[str] = None,
+        loop_index: Optional[int] = None,
+        braid_receipt: Optional[str] = None,
     ):
         entry = AuditEntry(
             timestamp=time.time(),
@@ -251,6 +264,9 @@ class AuditLog:
             governance_decision=governance_decision,
             tongue=tongue,
             confidence=confidence,
+            phdm_node_id=phdm_node_id,
+            loop_index=loop_index,
+            braid_receipt=braid_receipt,
         )
         self.entries.append(entry)
         logger.info("AUDIT: %s", json.dumps(entry.to_dict()))

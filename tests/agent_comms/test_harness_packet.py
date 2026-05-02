@@ -67,6 +67,8 @@ def _mock_call(text: str, ok: bool = True) -> dict[str, Any]:
     return {
         "ok": ok,
         "model": "mock",
+        "provider": "mock-provider",
+        "tool_adapter": "raw_json_only",
         "text": text,
         "finish_reason": "stop" if ok else "error",
         "usage": {},
@@ -114,6 +116,7 @@ def test_packet_endpoint_promotes_on_agreement(client: TestClient, monkeypatch: 
     assert body["merge_report"]["task_id"] == body["task_id"]
     assert body["merge_report"]["delta"]["refs_total"] == 1
     assert body["merge_report"]["delta"]["refs_resolved"] == 1
+    assert body["lane_switch"]["ok"] is True
 
 
 def test_packet_endpoint_holds_on_disagreement(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -127,6 +130,58 @@ def test_packet_endpoint_holds_on_disagreement(client: TestClient, monkeypatch: 
         )
     assert resp.status_code == 200
     assert resp.json()["merge_report"]["decision"] == "hold"
+
+
+def test_packet_endpoint_flags_unsignaled_cross_provider_lane_change(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Cross-provider agreement without a blinker/signal must hold, not promote."""
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    text = json.dumps({"verdict": "ok"}, sort_keys=True)
+    fake = AsyncMock(side_effect=[_mock_call(text), _mock_call(text)])
+    with patch.object(harness, "_call_hf", fake):
+        resp = client.post(
+            "/harness/packet",
+            json={
+                "packet": _packet_dict(),
+                "models": ["ollama:model-a", "deepseek:model-b"],
+                "bypass_ledger": True,
+            },
+        )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["lane_switch"]["ok"] is False
+    assert body["lane_switch"]["signal_required"] is True
+    assert body["merge_report"]["decision"] == "hold"
+    assert "lane_switch:flagged" in body["merge_report"]["evidence"]
+
+
+def test_packet_endpoint_accepts_signaled_cross_provider_lane_change(
+    client: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    text = json.dumps({"verdict": "ok"}, sort_keys=True)
+    fake = AsyncMock(side_effect=[_mock_call(text), _mock_call(text)])
+    with patch.object(harness, "_call_hf", fake):
+        resp = client.post(
+            "/harness/packet",
+            json={
+                "packet": _packet_dict(),
+                "models": ["ollama:model-a", "deepseek:model-b"],
+                "lane_signal": "provider-pair:ollama->deepseek:compare-local-vs-remote",
+                "bypass_ledger": True,
+            },
+        )
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["lane_switch"]["ok"] is True
+    assert body["lane_switch"]["signal_present"] is True
+    assert body["merge_report"]["decision"] == "promote"
+    assert "lane_switch:ok" in body["merge_report"]["evidence"]
 
 
 def test_packet_endpoint_rejects_when_both_fail(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:

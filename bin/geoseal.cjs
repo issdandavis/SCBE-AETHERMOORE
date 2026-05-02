@@ -40,6 +40,10 @@ Useful commands:
   geoseal cursor-overlord --json
   geoseal fleet-distributions --json
   geoseal agent-io-contract --output-dir artifacts/agent_io_contract --json
+  geoseal harness-terminal --no-health
+  geoseal harness-research --json
+  geoseal handoff-seal --sender codex --recipient claude --intent "review changed files" --secret-env SCBE_HANDOFF_SECRET --json
+  geoseal handoff-open --sealed-file artifacts/agent_comm/handoff.json --secret-env SCBE_HANDOFF_SECRET --json
   geoseal tokenizer-code-lanes --command shl --tongues all --output artifacts/tokenizer_code_lanes/shl_lanes.json
   geoseal verify-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --json
   geoseal decode-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --output-dir artifacts/tokenizer_code_lanes/decoded --from-binary --write-binary --json
@@ -235,6 +239,10 @@ function runDoctor(flags) {
     "service-status",
     "service-stop",
     "agent-io-contract",
+    "harness-terminal",
+    "harness-research",
+    "handoff-seal",
+    "handoff-open",
     "tokenizer-code-lanes",
     "verify-code-lanes",
     "decode-code-lanes",

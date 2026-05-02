@@ -58,7 +58,11 @@ from src.agent_comms import (
     MergeReport,
     PacketLedger,
     enforce_budget,
+    compact_system_prompt,
+    evaluate_lane_switch,
     packet_input_tokens,
+    provider_registry,
+    resolve_provider_model,
 )
 from src.coding_spine.deterministic_tongue_router import route_prompt
 
@@ -95,6 +99,7 @@ class PairRequest(BaseModel):
     models: list[str] | None = Field(default=None, max_length=2)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
     max_tokens: int = Field(default=1024, ge=1, le=8192)
+    lane_signal: str | None = Field(default=None, max_length=512)
 
 
 class ReasoningCodePacketRequest(BaseModel):
@@ -124,10 +129,31 @@ async def _call_hf(
     system: str | None,
     temperature: float,
     max_tokens: int,
-    token: str,
+    token: str | None = None,
 ) -> dict[str, Any]:
+    try:
+        provider, resolved_model = resolve_provider_model(model)
+    except ValueError as exc:
+        return {
+            "ok": False,
+            "model": model,
+            "provider": "unknown",
+            "text": "",
+            "error": str(exc),
+            "latency_ms": 0,
+        }
+    resolved_token = token or provider.token()
+    if not resolved_token:
+        return {
+            "ok": False,
+            "model": resolved_model,
+            "provider": provider.provider,
+            "text": "",
+            "error": f"missing token for provider {provider.provider}; set one of {','.join(provider.api_key_env)}",
+            "latency_ms": 0,
+        }
     payload = {
-        "model": model,
+        "model": resolved_model,
         "messages": [
             {
                 "role": "system",
@@ -140,16 +166,17 @@ async def _call_hf(
         "max_tokens": max_tokens,
     }
     headers = {
-        "Authorization": f"Bearer {token}",
+        "Authorization": f"Bearer {resolved_token}",
         "Content-Type": "application/json",
     }
     started = time.perf_counter()
     try:
-        resp = await client.post(HF_ROUTER_URL, json=payload, headers=headers, timeout=60.0)
+        resp = await client.post(provider.chat_url, json=payload, headers=headers, timeout=60.0)
     except httpx.HTTPError as exc:
         return {
             "ok": False,
-            "model": model,
+            "model": resolved_model,
+            "provider": provider.provider,
             "text": "",
             "error": f"transport: {type(exc).__name__}: {exc}",
             "latency_ms": int((time.perf_counter() - started) * 1000),
@@ -158,7 +185,8 @@ async def _call_hf(
     if resp.status_code >= 400:
         return {
             "ok": False,
-            "model": model,
+            "model": resolved_model,
+            "provider": provider.provider,
             "text": "",
             "error": f"hf_{resp.status_code}: {resp.text[:400]}",
             "latency_ms": latency_ms,
@@ -168,7 +196,8 @@ async def _call_hf(
     except ValueError:
         return {
             "ok": False,
-            "model": model,
+            "model": resolved_model,
+            "provider": provider.provider,
             "text": "",
             "error": "non-json response from HF router",
             "latency_ms": latency_ms,
@@ -178,7 +207,10 @@ async def _call_hf(
     text = (message.get("content") or "").strip()
     return {
         "ok": bool(text),
-        "model": model,
+        "model": resolved_model,
+        "provider": provider.provider,
+        "provider_family": provider.family,
+        "tool_adapter": provider.tool_adapter,
         "text": text,
         "finish_reason": choice.get("finish_reason"),
         "usage": data.get("usage") or {},
@@ -246,28 +278,30 @@ async def health() -> dict[str, Any]:
         ),
         "default_pair": [DEFAULT_MODEL_A, DEFAULT_MODEL_B],
         "router": HF_ROUTER_URL,
+        "providers": {name: provider.status() for name, provider in provider_registry().items()},
     }
 
 
 @app.post("/harness/pair")
 async def harness_pair(req: PairRequest) -> dict[str, Any]:
-    token = _hf_token()
     pair = req.models or [DEFAULT_MODEL_A, DEFAULT_MODEL_B]
     if len(pair) == 1:
         pair = [pair[0], pair[0]]
     if len(pair) != 2:
         raise HTTPException(status_code=400, detail="exactly two models required")
+    lane = evaluate_lane_switch(pair, signal=req.lane_signal)
 
     async with httpx.AsyncClient() as client:
         results = await asyncio.gather(
-            _call_hf(client, pair[0], req.prompt, req.system, req.temperature, req.max_tokens, token),
-            _call_hf(client, pair[1], req.prompt, req.system, req.temperature, req.max_tokens, token),
+            _call_hf(client, pair[0], req.prompt, req.system, req.temperature, req.max_tokens, None),
+            _call_hf(client, pair[1], req.prompt, req.system, req.temperature, req.max_tokens, None),
         )
     a, b = results
     return {
         "a": a,
         "b": b,
         "deterministic_route": route_prompt(req.prompt).as_json(),
+        "lane_switch": lane.to_dict(),
         "agree": _agree(a.get("text", ""), b.get("text", "")),
         "both_ok": bool(a.get("ok") and b.get("ok")),
     }
@@ -303,6 +337,7 @@ class PacketRequest(BaseModel):
     max_tokens: int = Field(default=1024, ge=1, le=8192)
     include_excerpts: bool = Field(default=False)
     bypass_ledger: bool = Field(default=False, description="Skip dedup short-circuit and force a fresh fan-out")
+    lane_signal: str | None = Field(default=None, max_length=512)
 
 
 def _resolve_path_ref(value: str) -> Path | None:
@@ -452,22 +487,26 @@ async def harness_packet(req: PacketRequest) -> dict[str, Any]:
             }
 
     prompt = _build_packet_prompt(packet, ref_summaries)
-    token = _hf_token()
     pair = req.models or [DEFAULT_MODEL_A, DEFAULT_MODEL_B]
     if len(pair) == 1:
         pair = [pair[0], pair[0]]
     if len(pair) != 2:
         raise HTTPException(status_code=400, detail="exactly two models required")
+    lane = evaluate_lane_switch(pair, signal=req.lane_signal)
 
-    system_msg = (
-        f"You are agent in phase={packet.phase}, route={packet.route.tongue}/"
-        f"{packet.route.domain}. Reply with the {packet.expected_output} only."
+    first_provider, _ = resolve_provider_model(pair[0])
+    system_msg = compact_system_prompt(
+        phase=packet.phase,
+        tongue=packet.route.tongue,
+        domain=packet.route.domain,
+        expected_output=packet.expected_output,
+        adapter=first_provider.tool_adapter,
     )
 
     async with httpx.AsyncClient() as client:
         a, b = await asyncio.gather(
-            _call_hf(client, pair[0], prompt, system_msg, req.temperature, req.max_tokens, token),
-            _call_hf(client, pair[1], prompt, system_msg, req.temperature, req.max_tokens, token),
+            _call_hf(client, pair[0], prompt, system_msg, req.temperature, req.max_tokens, None),
+            _call_hf(client, pair[1], prompt, system_msg, req.temperature, req.max_tokens, None),
         )
 
     text_a = a.get("text", "")
@@ -475,9 +514,16 @@ async def harness_packet(req: PacketRequest) -> dict[str, Any]:
     both_ok = bool(a.get("ok") and b.get("ok"))
     agree = _agree(text_a, text_b)
     decision = _decide(both_ok, agree)
+    if decision == "promote" and not lane.ok:
+        decision = "hold"
 
     evidence: list[str] = []
     evidence.append(f"models:{pair[0]}|{pair[1]}")
+    evidence.append(f"providers:{a.get('provider')}|{b.get('provider')}")
+    evidence.append(f"tool_adapters:{a.get('tool_adapter')}|{b.get('tool_adapter')}")
+    evidence.append(f"lane_switch:{'ok' if lane.ok else 'flagged'}")
+    evidence.append(f"lane_cost:{lane.cost}")
+    evidence.append(f"lane_reason:{lane.reason}")
     evidence.append(f"both_ok:{str(both_ok).lower()}")
     evidence.append(f"agree:{str(agree).lower()}")
     evidence.extend(hash_evidence)
@@ -492,6 +538,7 @@ async def harness_packet(req: PacketRequest) -> dict[str, Any]:
         "latency_ms_b": b.get("latency_ms"),
         "refs_resolved": sum(1 for s in ref_summaries if s.get("resolved")),
         "refs_total": len(ref_summaries),
+        "lane_switch": lane.to_dict(),
     }
 
     report = MergeReport(
@@ -516,7 +563,22 @@ async def harness_packet(req: PacketRequest) -> dict[str, Any]:
         },
         "deterministic_route": route_prompt(packet.request).as_json(),
         "ref_summaries": ref_summaries,
+        "lane_switch": lane.to_dict(),
         "merge_report": report.to_dict(),
-        "a": {"ok": a.get("ok"), "model": a.get("model"), "text": text_a, "latency_ms": a.get("latency_ms")},
-        "b": {"ok": b.get("ok"), "model": b.get("model"), "text": text_b, "latency_ms": b.get("latency_ms")},
+        "a": {
+            "ok": a.get("ok"),
+            "provider": a.get("provider"),
+            "model": a.get("model"),
+            "tool_adapter": a.get("tool_adapter"),
+            "text": text_a,
+            "latency_ms": a.get("latency_ms"),
+        },
+        "b": {
+            "ok": b.get("ok"),
+            "provider": b.get("provider"),
+            "model": b.get("model"),
+            "tool_adapter": b.get("tool_adapter"),
+            "text": text_b,
+            "latency_ms": b.get("latency_ms"),
+        },
     }

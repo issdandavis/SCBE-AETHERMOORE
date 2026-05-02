@@ -34,6 +34,40 @@ from .packet import (
     unpack,
 )
 from .ledger import LedgerEntry, PacketLedger, fingerprint
+from .graph_runner import (
+    GraphCheckpoint,
+    GraphEdge,
+    GraphNode,
+    GraphRunResult,
+    PacketGraphRunner,
+    build_default_packet_graph,
+    validate_only_handler,
+)
+from .harness_providers import (
+    HarnessProvider,
+    LaneSwitchVerdict,
+    compact_system_prompt,
+    default_provider_id,
+    evaluate_lane_switch,
+    lane_switch_cost,
+    parse_model_ref,
+    provider_registry,
+    resolve_provider_model,
+)
+from .secure_handoff import (
+    DecodeAgreement,
+    HandoffIntegrityError,
+    compactness_report,
+    open_handoff,
+    seal_handoff,
+    semantic_shadow,
+)
+from .triadic_handoff import (
+    TriBundleReceipt,
+    TriadicHandoffGateResult,
+    build_tri_bundle_receipt,
+    evaluate_triadic_handoff,
+)
 
 __all__ = [
     "AgentMessage",
@@ -59,4 +93,30 @@ __all__ = [
     "LedgerEntry",
     "PacketLedger",
     "fingerprint",
+    "GraphCheckpoint",
+    "GraphEdge",
+    "GraphNode",
+    "GraphRunResult",
+    "PacketGraphRunner",
+    "build_default_packet_graph",
+    "validate_only_handler",
+    "HarnessProvider",
+    "LaneSwitchVerdict",
+    "compact_system_prompt",
+    "default_provider_id",
+    "evaluate_lane_switch",
+    "lane_switch_cost",
+    "parse_model_ref",
+    "provider_registry",
+    "resolve_provider_model",
+    "DecodeAgreement",
+    "HandoffIntegrityError",
+    "compactness_report",
+    "open_handoff",
+    "seal_handoff",
+    "semantic_shadow",
+    "TriBundleReceipt",
+    "TriadicHandoffGateResult",
+    "build_tri_bundle_receipt",
+    "evaluate_triadic_handoff",
 ]
