@@ -1,0 +1,9 @@
+{
+  "schema_version": "scbe_sft_dataset_manifest_v1",
+  "dataset_id": "ca_opcode_literal_sft_v1",
+  "train_rows": 126,
+  "holdout_rows": 4,
+  "train_path": "training-data/sft/ca_opcode_literal_sft_v1_train.sft.jsonl",
+  "holdout_path": "training-data/sft/ca_opcode_literal_sft_v1_holdout.sft.jsonl",
+  "required_sequence": "0x09, 0x09, 0x00"
+}

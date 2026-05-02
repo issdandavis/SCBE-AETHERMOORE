@@ -1,0 +1,85 @@
+{
+  "schema_version": "scbe_coding_model_merge_profile_v1",
+  "merge_id": "coding-agent-qwen-merged-coding-model-v3",
+  "title": "GeoSeal coding agent merged model v3 candidate",
+  "description": "Promotion candidate after the Stage 6 boss DPO merged model passed the constrained Stage 6 gate but failed broad smoke on depth-2 JSON and CA opcode exactness. This profile combines the existing broad coding adapters with the confirmed CA/GeoSeal combined repair adapter and the confirmed Stage 6 boss DPO adapter.",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "output_model_repo": "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v3",
+  "merge_mode": "weighted",
+  "adapters": [
+    {
+      "profile_id": "coding-agent-qwen-online-v2",
+      "stage": "cross_tongue_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-online-v2",
+      "weight": 0.06,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-binary-geoseal-v3",
+      "stage": "binary_geoseal_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-binary-geoseal-v3",
+      "weight": 0.08,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-geoseal-command-v4",
+      "stage": "command_recall_geoseal_coder",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoseal-command-v4",
+      "weight": 0.10,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-atomic-workflow-stage6",
+      "stage": "atomic_workflow_resource_decay",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-atomic-workflow-stage6",
+      "weight": 0.16,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-ca-geoseal-combined-repair-v3",
+      "stage": "ca_geoseal_combined_repair",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-geoseal-combined-repair-v3",
+      "weight": 0.34,
+      "required": true
+    },
+    {
+      "profile_id": "coding-agent-qwen-stage6-boss-dpo-v1",
+      "stage": "atomic_workflow_boss_retry_dpo",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-stage6-boss-dpo-v1",
+      "weight": 0.26,
+      "required": true,
+      "source_job_id": "69f587579d85bec4d76f0297",
+      "gate": {
+        "contract_id": "stage6_atomic_workflow_unseen_eval_v1",
+        "n_pass": 5,
+        "n_total": 5,
+        "pass_rate": 1.0,
+        "constrained_gate_scaffold": true
+      }
+    }
+  ],
+  "blocked_adapters": [
+    {
+      "profile_id": "coding-agent-qwen-command-harmony-v5",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-command-harmony-v5",
+      "reason": "Repo was not found on Hugging Face during 2026-04-25 setup. Train or publish this adapter before adding it to the merge."
+    }
+  ],
+  "pre_merge_gates": {
+    "must_have_stage6_dpo_gate": true,
+    "stage6_dpo_job_id": "69f587579d85bec4d76f0297",
+    "must_include_ca_json_repair": true,
+    "repair_adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-geoseal-combined-repair-v3",
+    "notes": "Do not promote v3 unless scripts/eval/smoke_merged_coding_model_hf.py reaches 4/4 after merge."
+  },
+  "post_merge_gates": {
+    "evaluator": "scripts/eval/smoke_merged_coding_model_hf.py",
+    "required_passed": 4,
+    "required_total": 4
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  }
+}

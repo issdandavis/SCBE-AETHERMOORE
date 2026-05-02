@@ -1,0 +1,40 @@
+{
+  "schema_version": "scbe_coding_model_merge_profile_v1",
+  "merge_id": "coding-agent-qwen-stage6-boss-dpo-merged-v1",
+  "title": "GeoSeal Stage 6 boss DPO merged model v1",
+  "description": "Single-adapter full-model merge of the confirmed Stage 6 boss-retry DPO adapter. The source adapter passed the frozen Stage 6 gate 5/5 with the GeoSeal constrained-checklist scaffold in HF job 69f587579d85bec4d76f0297.",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "output_model_repo": "issdandavis/scbe-coding-agent-qwen-stage6-boss-dpo-merged-v1",
+  "merge_mode": "stack",
+  "adapters": [
+    {
+      "profile_id": "coding-agent-qwen-stage6-boss-dpo-v1",
+      "stage": "atomic_workflow_boss_retry_dpo",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-stage6-boss-dpo-v1",
+      "weight": 1.0,
+      "required": true,
+      "source_job_id": "69f587579d85bec4d76f0297",
+      "gate": {
+        "contract_id": "stage6_atomic_workflow_unseen_eval_v1",
+        "n_pass": 5,
+        "n_total": 5,
+        "pass_rate": 1.0,
+        "constrained_gate_scaffold": true
+      }
+    }
+  ],
+  "pre_merge_gates": {
+    "must_pass_stage6_boss_retry": true,
+    "source_job_id": "69f587579d85bec4d76f0297",
+    "notes": "Only this confirmed adapter is merged in this profile. Broader multi-adapter coding merges should be separate gated profiles."
+  },
+  "post_merge_gates": {
+    "evaluator": "scripts/eval/smoke_merged_coding_model_hf.py",
+    "stage6_contract": "config/model_training/stage6_atomic_workflow_eval_contract.json"
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  }
+}
