@@ -1,0 +1,194 @@
+{
+  "manifest_id": "2026-05-02-pretrain",
+  "created_utc": "2026-05-02T00:00:00Z",
+  "branch": "chore/release-4.0.3-housekeeping",
+  "purpose": "Frozen section-A inventory for next training pass. Pulls only files reviewed and tested green on 2026-05-02. Auto-regenerated and out-of-scope files from sections B/C/D of notes/sessions/2026-05-02-inventory.md are explicitly excluded.",
+  "source_inventory": "notes/sessions/2026-05-02-inventory.md",
+  "bench_artifact": "artifacts/bench/geoseal_coder_pair_20260502T085810Z.json",
+  "test_evidence": {
+    "pytest": {
+      "command": "python -m pytest tests/test_tile_lang.py tests/coding_spine/test_deterministic_tongue_router.py -v",
+      "result": "7 passed",
+      "ran_utc": "2026-05-02T05:47:00-07:00"
+    },
+    "vitest": {
+      "command": "npx vitest run tests/L2-unit/tileLang.unit.test.ts",
+      "result": "4 passed",
+      "ran_utc": "2026-05-02T05:47:00-07:00"
+    }
+  },
+  "lanes": {
+    "tile_lang": {
+      "role": "2D tile grid <-> Sacred Tongue lane binding for kernel routing/voxel addresses",
+      "files": [
+        {
+          "path": "packages/kernel/src/tileLang.ts",
+          "kind": "ts-canonical",
+          "lines": 64,
+          "bytes": 2191,
+          "sha256": "2032dcd554e8c1df2cc53386ccfb0f6d992bbdc23c60e279cc7eeb711d360e50"
+        },
+        {
+          "path": "python/scbe/tile_lang.py",
+          "kind": "python-parity",
+          "lines": 36,
+          "bytes": 1096,
+          "sha256": "0776201d4bbe26393985147aa764085c02b24ab072bca5c5a6409c3505dce20e"
+        },
+        {
+          "path": "packages/kernel/src/index.ts",
+          "kind": "ts-reexport",
+          "lines": 89,
+          "bytes": 5346,
+          "sha256": "402e55188604b5d120bb0131823302d513b6bd092c29be99af1d6585a1bb9f60",
+          "note": "MOD: added export * from './tileLang.js'"
+        },
+        {
+          "path": "tests/L2-unit/tileLang.unit.test.ts",
+          "kind": "test-vitest",
+          "lines": 36,
+          "bytes": 1045,
+          "sha256": "4ed628efcb9c212814c1fd1ab48bb5abc9e2db12af788ef3b42c378abd3c0c76"
+        },
+        {
+          "path": "tests/test_tile_lang.py",
+          "kind": "test-pytest",
+          "lines": 20,
+          "bytes": 617,
+          "sha256": "c2b9b151555c7abe7cda723e2516cf78e38617ba6c4093ca58aed591c00ece2e"
+        }
+      ]
+    },
+    "coding_spine": {
+      "role": "Deterministic tongue router wrapping atomic-token router; control plane authority for routing decisions",
+      "files": [
+        {
+          "path": "src/coding_spine/deterministic_tongue_router.py",
+          "kind": "python-canonical",
+          "lines": 194,
+          "bytes": 4936,
+          "sha256": "3bef0fa06a9572c1e591b732425a2297a7d7376ba9ace7e0b3de20ba0ff75443"
+        },
+        {
+          "path": "tests/coding_spine/test_deterministic_tongue_router.py",
+          "kind": "test-pytest",
+          "lines": 34,
+          "bytes": 1415,
+          "sha256": "0c7240f1d3f859e281f7576546dca33737a063579d0ada68b608fde1bf3eb039"
+        }
+      ]
+    },
+    "geoseal_harness": {
+      "role": "FastAPI bridge that emits deterministic_route per pair call; default backend = local Ollama",
+      "files": [
+        {
+          "path": "scripts/serve_geoseal_harness.py",
+          "kind": "python-service",
+          "lines": 249,
+          "bytes": 7677,
+          "sha256": "d74df25a6964a1baaf9f93b2c8e41ee36ac034b7d452dc5f2e5bb5a1257e578b"
+        },
+        {
+          "path": "scripts/system/bench_geoseal_coder_pair.py",
+          "kind": "python-bench",
+          "lines": 356,
+          "bytes": 13488,
+          "sha256": "019acb3842be0f1aae833b07eae04fbaddc21391adf9bac014882314bfb7e8c1"
+        },
+        {
+          "path": "scripts/system/import_hf_model_to_ollama.py",
+          "kind": "python-tool",
+          "lines": 230,
+          "bytes": 8152,
+          "sha256": "65e58ce21f3b0570ff7d4aba305ce20d0f957ac1ab03cfc4e800605ffb328a37"
+        }
+      ]
+    },
+    "balanced_routing_sft": {
+      "role": "72-row balanced SFT seed (12 per tongue) for future routing-bias retraining; canonical-map labelled",
+      "files": [
+        {
+          "path": "scripts/training_data/build_balanced_tongue_routing_sft.py",
+          "kind": "python-builder",
+          "lines": 132,
+          "bytes": 5012,
+          "sha256": "fbed92342c4317e76d1e718e041f5d6e57bc05c2e70d98bcf2cb54862aff59ed"
+        },
+        {
+          "path": "artifacts/training/balanced_tongue_routing_sft.jsonl",
+          "kind": "sft-jsonl",
+          "lines": 72,
+          "bytes": 57483,
+          "sha256": "14538f105863fa9cc44a1290b429c715a05a29a37ef52c7734e1df7611fb1bb2"
+        }
+      ]
+    },
+    "session_notes": {
+      "role": "Concept capture (yin-yang token, valence-friction, 6D merge) and pre-train inventory record",
+      "files": [
+        {
+          "path": "notes/sessions/2026-05-02-session.md",
+          "kind": "doc",
+          "lines": 169,
+          "bytes": 8134,
+          "sha256": "0c839a7821954714a815b846c9fc17572514949b3280130582791df9fbdb2921"
+        },
+        {
+          "path": "notes/sessions/2026-05-02-inventory.md",
+          "kind": "doc",
+          "lines": 85,
+          "bytes": 4275,
+          "sha256": "8d48ba867924064d41774a770a6034e4aacc379116ad9e9ed899391967e86eff"
+        },
+        {
+          "path": "notes/Cross Talk.md",
+          "kind": "doc",
+          "lines": 963,
+          "bytes": 45067,
+          "sha256": "b569ca8f5f1a2933ccccb72ebe07814a9c05d46c9a54a331640a78068e632f8d",
+          "note": "MOD: appended Codex XTALK-MANUAL-20260502 sync packet (+13 lines)"
+        }
+      ]
+    },
+    "bench_baseline": {
+      "role": "Authoritative pair bench v2 result; reference baseline for any future router/coder change",
+      "files": [
+        {
+          "path": "artifacts/bench/geoseal_coder_pair_20260502T085810Z.json",
+          "kind": "bench-json",
+          "lines": 275,
+          "bytes": 10199,
+          "sha256": "860898f2e40c9871e71fe2baf9f917a95d9566bad677fd61061ac8467a6e8781"
+        }
+      ]
+    }
+  },
+  "exclusions": {
+    "auto_regenerated": [
+      "training-data/sft/coding_system_full_v1_manifest.json",
+      "training-data/sft/coding_system_full_v1_train.sft.jsonl",
+      "training-data/sft/coding_system_full_v1_holdout.sft.jsonl",
+      "training-data/sft/bijective_dsl_v5_holdout_manifest.json",
+      "sealed_blobs/1_2_3_5_8_13.json"
+    ],
+    "out_of_scope": [
+      ".claude/settings.local.json",
+      ".scbe/cli-context.json",
+      "scripts/scbe-system-cli.py",
+      "tests/test_telemetry_advanced_math.json",
+      ".gitignore",
+      "ui/geoseal-console/",
+      ".cursor/plans/major_build+launch_restructure_b8eec43c.plan.md"
+    ],
+    "flagged_do_not_push": [],
+    "restored_from_head": [
+      ".github/workflows/nightly-ops.yml"
+    ]
+  },
+  "promotion_gate_required": "training-data/manifests/2026-05-02-promotion-gate.md",
+  "next_actions": [
+    "Verify manifest hashes match working tree before any training pass",
+    "Run promotion gate (code + chemistry + routing + packet integrity) before any HF push",
+    "Treat balanced_routing_sft as optional retraining seed, not blocking input"
+  ]
+}
