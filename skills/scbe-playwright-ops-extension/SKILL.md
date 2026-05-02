@@ -12,7 +12,7 @@ This skill composes:
 - `hydra-node-terminal-browsing` for deterministic evidence JSON
 - `agent-handoff-packager` for resume-ready handoff docs
 - `speed-line-delivery` for lane-based one-line execution
-- `hydra-clawbot-synthesis` and `scbe-universal-synthesis` alignment via artifact contracts
+- `hydra-agent-relay-synthesis` and `scbe-universal-synthesis` alignment via artifact contracts
 
 ## Command
 

@@ -76,18 +76,32 @@ def latest_packet(profile_id: str, manifest: dict[str, Any]) -> Path | None:
     return packets[0] if packets else None
 
 
-def _run_hf(args: list[str]) -> dict[str, Any]:
-    env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1"}
-    result = subprocess.run(
-        args,
-        cwd=str(REPO_ROOT),
-        env=env,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
+def _run_hf(args: list[str], *, timeout_s: int = 60) -> dict[str, Any]:
+    env = {
+        **os.environ,
+        "HF_HUB_DISABLE_PROGRESS_BARS": "1",
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONUTF8": "1",
+    }
+    try:
+        result = subprocess.run(
+            args,
+            cwd=str(REPO_ROOT),
+            env=env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+            timeout=timeout_s,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "command": args,
+            "returncode": 124,
+            "stdout": (exc.stdout or "") if isinstance(exc.stdout, str) else "",
+            "stderr": ((exc.stderr or "") if isinstance(exc.stderr, str) else "") + f"\nTimed out after {timeout_s}s",
+        }
     return {
         "command": args,
         "returncode": result.returncode,
@@ -199,8 +213,6 @@ def plan_or_dispatch(
         artifact_root=REPO_ROOT / str(manifest.get("artifact_root", "artifacts/hf_coding_agent_jobs")),
         flavor=flavor or None,
         timeout=timeout or None,
-        smoke=smoke,
-        backend=backend,
     )
     if dispatch:
         packet = dispatcher.dispatch_packet(packet)

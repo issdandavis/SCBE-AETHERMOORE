@@ -174,7 +174,6 @@ OLLAMA_LAUNCH_INTEGRATIONS: Dict[str, Dict[str, Any]] = {
     "hermes": {"name": "Hermes Agent", "aliases": []},
     "kimi": {"name": "Kimi Code CLI", "aliases": []},
     "opencode": {"name": "OpenCode", "aliases": []},
-    "openclaw": {"name": "OpenClaw", "aliases": ["clawdbot", "moltbot"]},
     "pi": {"name": "Pi", "aliases": []},
     "vscode": {"name": "VS Code", "aliases": ["code"]},
 }

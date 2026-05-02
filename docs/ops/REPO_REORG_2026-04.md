@@ -149,7 +149,7 @@ It is the source of truth for what moves where.
 - `.benchmarks`
 - `.cache`
 - `.claude`
-- `.clawhub`
+- `.skillhub`
 - `.codex_tmp`
 - `.cursor`
 - `.devcontainer`

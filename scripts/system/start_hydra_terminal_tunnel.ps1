@@ -5,9 +5,6 @@ param(
     [int]$N8nPort = 5680,
     [int]$N8nTaskBrokerPort = 5681,
     [switch]$UseTunnel,
-    [switch]$StartOpenClaw,
-    [int]$OpenClawGatewayPort = 18789,
-    [int]$OpenClawBridgePort = 18790,
     [string]$BrowseUrl = "https://github.com",
     [int]$StartupTimeoutSec = 60
 )
@@ -103,11 +100,6 @@ if ($bridgeReady -and $browserReady -and $n8nReady) {
     if ($UseTunnel) {
         $startArgs += "-UseTunnel"
     }
-    if ($StartOpenClaw) {
-        $startArgs += "-StartOpenClaw"
-        $startArgs += @("-OpenClawGatewayPort", "$OpenClawGatewayPort", "-OpenClawBridgePort", "$OpenClawBridgePort")
-    }
-
     & $startScript @startArgs
 }
 

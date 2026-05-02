@@ -50,20 +50,20 @@ switch ($Action) {
         Write-Host "[VM] Running bootstrap (this can take several minutes)..."
         Invoke-Remote -Command "bash -lc 'chmod +x /tmp/oracle_vm_setup.sh && /tmp/oracle_vm_setup.sh'"
         Write-Host "[VM] Bootstrap complete. Starting services..."
-        Invoke-Remote -Command "bash -lc 'sudo systemctl daemon-reload && sudo systemctl enable aethercode hydra-clawbot && sudo systemctl restart aethercode hydra-clawbot'"
-        Invoke-Remote -Command "bash -lc 'sudo systemctl --no-pager --full status aethercode hydra-clawbot | sed -n \"1,80p\"'"
+        Invoke-Remote -Command "bash -lc 'sudo systemctl daemon-reload && sudo systemctl enable aethercode hydra-agent-relay && sudo systemctl restart aethercode hydra-agent-relay'"
+        Invoke-Remote -Command "bash -lc 'sudo systemctl --no-pager --full status aethercode hydra-agent-relay | sed -n \"1,80p\"'"
     }
     "start" {
-        Invoke-Remote -Command "bash -lc 'sudo systemctl restart aethercode hydra-clawbot && sudo systemctl --no-pager --full status aethercode hydra-clawbot | sed -n \"1,80p\"'"
+        Invoke-Remote -Command "bash -lc 'sudo systemctl restart aethercode hydra-agent-relay && sudo systemctl --no-pager --full status aethercode hydra-agent-relay | sed -n \"1,80p\"'"
     }
     "status" {
-        Invoke-Remote -Command "bash -lc 'systemctl is-active aethercode hydra-clawbot; systemctl --no-pager --full status aethercode hydra-clawbot | sed -n \"1,80p\"'"
+        Invoke-Remote -Command "bash -lc 'systemctl is-active aethercode hydra-agent-relay; systemctl --no-pager --full status aethercode hydra-agent-relay | sed -n \"1,80p\"'"
     }
     "logs" {
-        Invoke-Remote -Command "bash -lc 'sudo journalctl -u hydra-clawbot -n $Tail --no-pager; echo \"-----\"; sudo journalctl -u aethercode -n $Tail --no-pager'"
+        Invoke-Remote -Command "bash -lc 'sudo journalctl -u hydra-agent-relay -n $Tail --no-pager; echo \"-----\"; sudo journalctl -u aethercode -n $Tail --no-pager'"
     }
     "stop" {
-        Invoke-Remote -Command "bash -lc 'sudo systemctl stop hydra-clawbot aethercode; systemctl is-active hydra-clawbot aethercode'"
+        Invoke-Remote -Command "bash -lc 'sudo systemctl stop hydra-agent-relay aethercode; systemctl is-active hydra-agent-relay aethercode'"
     }
     "deploy-research" {
         Invoke-Remote -Command "bash -lc 'cd $RemoteRepo && docker compose -f docker-compose.research.yml up -d --build && docker compose -f docker-compose.research.yml ps'"

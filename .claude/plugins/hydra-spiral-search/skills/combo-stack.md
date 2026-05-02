@@ -45,9 +45,9 @@ When a task spans multiple SCBE skills, load the right combination as a coordina
 **Invoke**: `Skill aethermoor-scbe-integration` for bridge work
 
 ### /combo full
-**Skills**: ALL of the above + scbe-ops-control + scbe-flock-shepherd + hydra-clawbot-synthesis
+**Skills**: ALL of the above + scbe-ops-control + scbe-flock-shepherd + hydra-deep-research-self-healing
 **Use when**: User says "full HYDRA", "everything", "all systems"
-**Invoke**: Start with `Skill hydra-clawbot-synthesis` as orchestrator
+**Invoke**: Start with `Skill hydra-deep-research-self-healing` as orchestrator
 
 ## How to Use
 When you identify the user's task, announce which combo you're loading and invoke the primary skill for that stack. The skill content will guide you on when to invoke the secondary skills.
