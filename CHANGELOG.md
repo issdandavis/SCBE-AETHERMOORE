@@ -22,6 +22,12 @@
 
 - `tests/api/test_stripe_billing_hardening.py`: owner auth, unsigned webhook policy, unresolved purchases, SQLite persistence, webhook dedupe.
 
+## [4.0.3] - 2026-05-02
+
+### Changed
+
+- Unified **npm** (`package.json`, `package-lock.json`) and **PyPI** (root `pyproject.toml`, `src/pyproject.toml`) at version **4.0.3** for release packaging and registry consistency.
+
 ## [4.0.2] - 2026-04-24
 
 ### Changed
