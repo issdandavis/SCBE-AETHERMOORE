@@ -38,6 +38,40 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         data = _parse_json_stdout(stdout, stderr, rc)
         return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
+    if command == "reasoning-code-packet":
+        ns = argparse.Namespace(
+            intent=body.get("intent") or "",
+            content=body.get("content") or "",
+            source_file=body.get("source_file"),
+            source_name=body.get("source_name"),
+            language=body.get("language") or "python",
+            tile_row=body.get("tile_row"),
+            tile_col=body.get("tile_col"),
+            permission_mode=body.get("permission_mode") or "observe",
+            json=True,
+        )
+        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_reasoning_code_packet, ns)
+        data = _parse_json_stdout(stdout, stderr, rc)
+        return {"exit_code": rc, "data": data, "stderr": stderr or None}
+
+    if command == "packet-graph-run":
+        ns = argparse.Namespace(
+            intent=body.get("intent") or "",
+            content=body.get("content") or "",
+            source_file=body.get("source_file"),
+            source_name=body.get("source_name"),
+            language=body.get("language") or "python",
+            task_id=body.get("task_id"),
+            checkpoint=body.get("checkpoint"),
+            max_steps=int(body.get("max_steps") or 16),
+            max_input_tokens=int(body.get("max_input_tokens") or 1024),
+            max_output_tokens=int(body.get("max_output_tokens") or 256),
+            json=True,
+        )
+        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_packet_graph_run, ns)
+        data = _parse_json_stdout(stdout, stderr, rc)
+        return {"exit_code": rc, "data": data, "stderr": stderr or None}
+
     if command == "backend-registry":
         ns = argparse.Namespace(json=True)
         rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_backend_registry, ns)

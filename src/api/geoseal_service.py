@@ -16,6 +16,8 @@ from pydantic import BaseModel, Field
 GEOSEAL_CLI_COMMANDS = frozenset(
     {
         "code-packet",
+        "reasoning-code-packet",
+        "packet-graph-run",
         "explain-route",
         "backend-registry",
         "agent-harness",
@@ -153,6 +155,8 @@ async def spaceport_status() -> dict[str, Any]:
                     "/v1/harness/tool-bridge",
                     "/v1/harness/agent-harness",
                     "/v1/geoseal/code-packet",
+                    "/v1/geoseal/reasoning-code-packet",
+                    "/v1/geoseal/packet-graph-run",
                     "/v1/geoseal/explain-route",
                     "/v1/geoseal/backend-registry",
                     "/v1/geoseal/agent-harness",

@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scbe.local/schemas/bijective_reasoning_code_packet.schema.json",
+  "title": "SCBE Bijective Reasoning Code Packet v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "intent",
+    "route",
+    "semantic_ir",
+    "code_views",
+    "transport",
+    "reconstruction",
+    "compact_agent_packet",
+    "permission",
+    "verification",
+    "merge_geometry",
+    "training_hooks",
+    "identity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "scbe-bijective-reasoning-code-packet-v1"
+    },
+    "intent": {
+      "type": "object",
+      "required": ["plain", "domain", "operation", "source_state"],
+      "properties": {
+        "plain": {"type": "string"},
+        "domain": {"const": "coding"},
+        "operation": {"type": "string"},
+        "source_state": {"enum": ["precode_intent", "source_code"]}
+      }
+    },
+    "route": {
+      "type": "object",
+      "required": ["tongue", "language", "requested_language", "tile", "voxel6"],
+      "properties": {
+        "tongue": {"enum": ["KO", "AV", "RU", "CA", "UM", "DR", "GO", "ZI"]},
+        "language": {"type": "string"},
+        "requested_language": {"type": "string"},
+        "parent_tongue": {"type": ["string", "null"]},
+        "source": {"type": "string"},
+        "reason": {"type": "string"},
+        "confidence": {"type": "number"},
+        "tile": {"type": "string", "pattern": "^tile:-?[0-9]+:-?[0-9]+$"},
+        "tile_tongue": {"enum": ["KO", "AV", "RU", "CA", "UM", "DR"]},
+        "voxel6": {
+          "type": "array",
+          "minItems": 6,
+          "maxItems": 6,
+          "items": {"type": "integer"}
+        }
+      }
+    },
+    "semantic_ir": {
+      "type": "object",
+      "required": ["quarks", "operation_signature", "lexical_token_count", "stisa_row_count"],
+      "properties": {
+        "quarks": {"type": "array", "items": {"type": "string"}},
+        "operation_signature": {"type": "string"},
+        "code_weight_packet_version": {"type": ["string", "null"]},
+        "lexical_token_count": {"type": "integer", "minimum": 0},
+        "stisa_row_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "code_views": {"type": "object"},
+    "transport": {"type": "object"},
+    "reconstruction": {
+      "type": "object",
+      "required": ["roundtrip_ok", "language_matches_tongue", "known_losses"],
+      "properties": {
+        "roundtrip_ok": {"type": "boolean"},
+        "language_matches_tongue": {"type": "boolean"},
+        "known_losses": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "compact_agent_packet": {
+      "type": "object",
+      "required": ["phase", "route", "state_hash", "budget", "expected_output"],
+      "properties": {
+        "phase": {"enum": ["precode", "packetize"]},
+        "route": {"type": "object"},
+        "state_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "budget": {"type": "object"},
+        "expected_output": {"type": "string"}
+      }
+    },
+    "permission": {"type": "object"},
+    "verification": {"type": "object"},
+    "merge_geometry": {
+      "type": "object",
+      "required": ["rule", "hard_contact_count", "near_contact_count", "promote_ready"],
+      "properties": {
+        "rule": {"const": "one_hard_contact_and_two_near_contacts"},
+        "hard_contact_count": {"type": "integer", "minimum": 0},
+        "near_contact_count": {"type": "integer", "minimum": 0},
+        "promote_ready": {"type": "boolean"}
+      }
+    },
+    "training_hooks": {"type": "object"},
+    "identity": {
+      "type": "object",
+      "required": ["packet_id", "source_name", "packet_sha256"],
+      "properties": {
+        "packet_id": {"type": "string", "pattern": "^brc1-[a-f0-9]{16}$"},
+        "source_name": {"type": "string"},
+        "packet_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  }
+}
