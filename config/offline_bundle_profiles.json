@@ -1,0 +1,67 @@
+{
+  "version": "scbe_offline_bundle_profiles_v1",
+  "profiles": {
+    "cli-offline-core": {
+      "description": "Core SCBE CLI lane for offline planning, governance checks, and local operations.",
+      "include": [
+        "scripts/scbe-system-cli.py",
+        "scripts/repo_reorg/plan_repo_shape.py",
+        "config/repo_consolidation_inventory.json",
+        "config/offline_bundle_profiles.json",
+        "docs/specs/STRUCTURE.md",
+        "README.md",
+        "README_INDEX.md"
+      ],
+      "exclude": [
+        "**/__pycache__/**",
+        "**/*.pyc",
+        "artifacts/**",
+        "node_modules/**",
+        ".git/**"
+      ]
+    },
+    "deploy-runtime-core": {
+      "description": "Deploy/runtime focused surfaces with platform dependencies and deployment manifests.",
+      "include": [
+        "app",
+        "api",
+        "products",
+        "public",
+        "services",
+        "src",
+        "python",
+        "config",
+        "schemas",
+        "deploy",
+        "k8s",
+        "Dockerfile",
+        "Dockerfile.api",
+        "Dockerfile.cloudrun",
+        "Dockerfile.gateway",
+        "docker-compose.yml",
+        "docker-compose.api.yml",
+        "docker-compose.unified.yml",
+        "package.json",
+        "package-lock.json",
+        "pyproject.toml",
+        "requirements.txt"
+      ],
+      "exclude": [
+        "**/__pycache__/**",
+        "**/*.pyc",
+        "**/.pytest_cache/**",
+        "**/.ruff_cache/**",
+        "**/.hypothesis/**",
+        "artifacts/**",
+        "archive/**",
+        "backups/**",
+        "external/**",
+        "external_repos/**",
+        "training-data/**",
+        "training-runs/**",
+        "node_modules/**",
+        ".git/**"
+      ]
+    }
+  }
+}
