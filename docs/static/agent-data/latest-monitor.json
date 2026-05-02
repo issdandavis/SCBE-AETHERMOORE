@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Uber Torches 2026 AI Budget on Claude Code in Four Months",
-      "word_count": 627,
+      "description": "Ti-84 Evo",
+      "word_count": 614,
       "headings": [
         {
           "level": 2,
-          "text": "Uber Torches 2026 AI Budget on Claude Code in Four Months",
+          "text": "Ti-84 Evo",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "briefs.co",
+          "text": "ti.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Ask HN: Who is hiring? (May 2026)",
+          "text": "New research suggests people can communicate and practice skills while dreaming",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "whohas \u2013 Command-line utility for cross-distro, cross-repository package search",
+          "text": "newyorker.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/whohas",
+          "text": "The smelly baby problem",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Flock cameras keep telling police a man who doesn't have a warrant has a warrant",
+          "text": "worksinprogress.news",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "youtube.com",
+          "text": "What did you love about VB6?",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Ask HN: Who wants to be hired? (May 2026)",
+          "text": "evilgeniuslabs.ca",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Sally McKee, who coined the term \"the memory wall\", has died",
+          "text": "Eka\u2019s robotic claw feels like we're approaching a ChatGPT moment",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "online-tribute.com",
+          "text": "wired.com",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 225,
+      "link_count": 226,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Uber Torches 2026 AI Budget on Claude Code in Four Months (briefs.co)278 points by lwhsiao 2 hours ago  | hide | 289\u00a0comments2.Ask HN: Who is hiring? (May 2026)133 points by whoishiring 3 hours ago  | hide | 144\u00a0comments3.whohas \u2013 Command-line utility for cross-distro, cross-repository package search (github.com/whohas)65 points by peter_d_sherman 3 hours ago  | hide | 16\u00a0comments4.Flock cameras keep telling police a man who doe..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Ti-84 Evo (ti.com)247 points by thatxliner 4 hours ago  | hide | 254\u00a0comments2.New research suggests people can communicate and practice skills while dreaming (newyorker.com)217 points by XzetaU8 7 hours ago  | hide | 119\u00a0comments3.The smelly baby problem (worksinprogress.news)82 points by dionysou 3 hours ago  | hide | 31\u00a0comments4.What did you love about VB6? (evilgeniuslabs.ca)14 points by andsoitis 42 minutes ago  | hide | 6..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
