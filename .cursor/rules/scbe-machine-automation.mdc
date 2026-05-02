@@ -1,0 +1,47 @@
+---
+description: Machine automation and Cursor agent safety rules for SCBE-AETHERMOORE.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# SCBE Machine Automation Rules
+
+Use Cursor agents as parallel workers, not as final authority.
+
+## Allowed default lanes
+
+- Documentation cleanup and link repair.
+- Focused tests for changed files.
+- Non-destructive repo inventory.
+- Public/free API connector metadata.
+- Small isolated scripts with tests.
+- Read-only GitHub issue or pull-request review.
+
+## Ask before doing
+
+- Sending email or posting externally.
+- Deleting files or moving large directories.
+- Changing secrets, tokens, OAuth config, or credential files.
+- Publishing models, datasets, npm packages, or releases.
+- Promoting training adapters or merged models.
+- Editing private proposal, tax, patent, or payment material.
+
+## Verification floor
+
+Before reporting completion, run the narrowest relevant check:
+
+- `python -m json.tool <changed-json>`
+- `python -m pytest <changed-tests> -q`
+- `black --check --target-version py311 --line-length 120 <changed-python-files>`
+- `git diff --check`
+
+If a check fails, fix the failure or report the exact failing command and file.
+
+## Git hygiene
+
+- Work on a branch.
+- Do not force-push shared branches unless explicitly instructed.
+- Do not revert work made by another agent unless the user explicitly asks.
+- Keep generated artifacts, caches, credentials, and local machine state out of commits.
+

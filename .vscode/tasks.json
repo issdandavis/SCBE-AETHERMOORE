@@ -312,6 +312,57 @@
         "reveal": "always",
         "panel": "shared"
       }
+    },
+    {
+      "label": "SCBE: Open Cursor Agents",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "Start-Process 'https://cursor.com/agents#workerId=45675c38-f466-408d-aa0d-d2ab0cf35bde'"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "SCBE: Open Cursor Automations",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "Start-Process 'https://cursor.com/automations/new#workerId=45675c38-f466-408d-aa0d-d2ab0cf35bde'"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "never",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "SCBE: Verify Government API Directory",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "python -m json.tool src\\knowledge\\storage\\government_api_directory.json > $null; python -m pytest tests\\test_government_api_directory.py -q"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     }
   ]
 }
