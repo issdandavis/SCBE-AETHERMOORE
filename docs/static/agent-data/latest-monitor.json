@@ -105,9 +105,19 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Why does it take so long to release black fan versions?",
-      "word_count": 590,
+      "description": "How fast is a macOS VM, and how small could it be?",
+      "word_count": 622,
       "headings": [
+        {
+          "level": 2,
+          "text": "How fast is a macOS VM, and how small could it be?",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "eclecticlight.co",
+          "source": "fallback-selector"
+        },
         {
           "level": 2,
           "text": "Why does it take so long to release black fan versions?",
@@ -120,48 +130,38 @@
         },
         {
           "level": 2,
-          "text": "Job Postings for Software Engineers Are Rapidly Rising",
+          "text": "Why are there both TMP and TEMP environment variables? (2015)",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "citadelsecurities.com",
+          "text": "devblogs.microsoft.com/oldnewthing",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Ti-84 Evo",
+          "text": "Show HN: DAC \u2013 open-source dashboard as code tool for agents and humans",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "ti.com",
+          "text": "github.com/bruin-data",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Ask.com has closed",
+          "text": "Dotcl: Common Lisp Implementation on .NET",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "ask.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Artemis II Photo Timeline",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "artemistimeline.com",
+          "text": "github.com/dotcl",
           "source": "fallback-selector"
         }
       ],
       "link_count": 224,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Why does it take so long to release black fan versions? (noctua.at)49 points by buildbot 2 hours ago  | hide | 13\u00a0comments2.Job Postings for Software Engineers Are Rapidly Rising (citadelsecurities.com)119 points by delichon 5 hours ago  | hide | 54\u00a0comments3.Ti-84 Evo (ti.com)411 points by thatxliner 10 hours ago  | hide | 366\u00a0comments4.Ask.com has closed (ask.com)193 points by supermdguy 2 hours ago  | hide | 98\u00a0comments5.Arte..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.How fast is a macOS VM, and how small could it be? (eclecticlight.co)56 points by moosia 2 hours ago  | hide | 15\u00a0comments2.Why does it take so long to release black fan versions? (noctua.at)329 points by buildbot 7 hours ago  | hide | 151\u00a0comments3.Why are there both TMP and TEMP environment variables? (2015) (devblogs.microsoft.com/oldnewthing)66 points by ankitg12 4 hours ago  | hide | 29\u00a0comments4.Show HN: DAC \u2013 open-source ..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
