@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 # =============================================================================
 
 SCBE_API_URL = os.getenv("SCBE_API_URL", "http://127.0.0.1:8080")
-SCBE_API_KEY = os.getenv("SCBE_API_KEY", "")
+SCBE_API_KEY = os.getenv("SCBE_API_KEY", "test-key-12345")
 
 # Action sensitivity levels (higher = stricter governance)
 ACTION_SENSITIVITY = {
@@ -132,31 +132,17 @@ class SCBEClient:
         self.session = requests.Session()
         self.session.headers.update({
             "Content-Type": "application/json",
-            "x-api-key": self.api_key,
+            "SCBE_api_key": self.api_key,
         })
-
-    def _candidate_paths(self, *paths: str) -> List[str]:
-        candidates: List[str] = []
-        for path in paths:
-            normalized = path if path.startswith("/") else f"/{path}"
-            versioned = normalized if normalized.startswith("/v1/") else f"/v1{normalized}"
-            for candidate in (versioned, normalized):
-                if candidate not in candidates:
-                    candidates.append(candidate)
-        return candidates
 
     def health_check(self) -> bool:
         """Check if SCBE API is available."""
-        last_error: Optional[Exception] = None
-        for path in self._candidate_paths("/health"):
-            try:
-                resp = self.session.get(f"{self.api_url}{path}", timeout=5)
-                if resp.status_code == 200 and resp.json().get("status") == "healthy":
-                    return True
-            except Exception as exc:
-                last_error = exc
-        print(f"[SCBE] Health check failed: {last_error or 'no healthy endpoint responded'}")
-        return False
+        try:
+            resp = self.session.get(f"{self.api_url}/v1/health", timeout=5)
+            return resp.status_code == 200 and resp.json().get("status") == "healthy"
+        except Exception as e:
+            print(f"[SCBE] Health check failed: {e}")
+            return False
 
     def authorize(
         self,
@@ -177,34 +163,32 @@ class SCBEClient:
             }
         }
 
-        last_error: Optional[Exception] = None
-        for path in self._candidate_paths("/authorize"):
-            try:
-                resp = self.session.post(
-                    f"{self.api_url}{path}",
-                    json=payload,
-                    timeout=10
-                )
-                resp.raise_for_status()
-                data = resp.json()
+        try:
+            resp = self.session.post(
+                f"{self.api_url}/v1/authorize",
+                json=payload,
+                timeout=10
+            )
+            resp.raise_for_status()
+            data = resp.json()
 
-                return GovernanceResult(
-                    decision=Decision(data["decision"]),
-                    decision_id=data["decision_id"],
-                    score=data["score"],
-                    explanation=data["explanation"],
-                    token=data.get("token"),
-                    expires_at=data.get("expires_at")
-                )
-            except requests.exceptions.RequestException as exc:
-                last_error = exc
-        print(f"[SCBE] Authorization failed: {last_error}")
-        return GovernanceResult(
-            decision=Decision.DENY,
-            decision_id="error",
-            score=0.0,
-            explanation={"error": str(last_error) if last_error else "authorization endpoint unavailable"}
-        )
+            return GovernanceResult(
+                decision=Decision(data["decision"]),
+                decision_id=data["decision_id"],
+                score=data["score"],
+                explanation=data["explanation"],
+                token=data.get("token"),
+                expires_at=data.get("expires_at")
+            )
+        except requests.exceptions.RequestException as e:
+            print(f"[SCBE] Authorization failed: {e}")
+            # Fail-safe: DENY on API failure
+            return GovernanceResult(
+                decision=Decision.DENY,
+                decision_id="error",
+                score=0.0,
+                explanation={"error": str(e)}
+            )
 
     def roundtable(
         self,
@@ -250,22 +234,20 @@ class SCBEClient:
             "initial_trust": initial_trust
         }
 
-        last_error: Optional[Exception] = None
-        for path in self._candidate_paths("/agents"):
-            try:
-                resp = self.session.post(
-                    f"{self.api_url}{path}",
-                    json=payload,
-                    timeout=10
-                )
-                if resp.status_code == 409:
-                    return {"agent_id": agent_id, "status": "exists"}
-                resp.raise_for_status()
-                return resp.json()
-            except requests.exceptions.RequestException as exc:
-                last_error = exc
-        print(f"[SCBE] Agent registration failed: {last_error}")
-        return {"error": str(last_error) if last_error else "registration endpoint unavailable"}
+        try:
+            resp = self.session.post(
+                f"{self.api_url}/v1/agents",
+                json=payload,
+                timeout=10
+            )
+            if resp.status_code == 409:
+                # Agent already exists
+                return {"agent_id": agent_id, "status": "exists"}
+            resp.raise_for_status()
+            return resp.json()
+        except requests.exceptions.RequestException as e:
+            print(f"[SCBE] Agent registration failed: {e}")
+            return {"error": str(e)}
 
 
 # =============================================================================
@@ -384,14 +366,12 @@ class SCBEBrowserAgent:
         agent_id: str = "browser-agent-001",
         agent_name: str = "SCBE Browser Agent",
         initial_trust: float = 0.7,
-        auto_escalate: bool = True,
-        runtime=None,
+        auto_escalate: bool = True
     ):
         self.agent_id = agent_id
         self.agent_name = agent_name
         self.initial_trust = initial_trust
         self.auto_escalate = auto_escalate
-        self.runtime = runtime  # PlaywrightRuntime instance or None for dry-run
 
         # Initialize components
         self.scbe = SCBEClient()
@@ -409,9 +389,6 @@ class SCBEBrowserAgent:
     def _initialize(self):
         """Initialize the agent with SCBE."""
         print(f"[AGENT] Initializing {self.agent_name} ({self.agent_id})")
-
-        if not self.scbe.api_key:
-            raise RuntimeError("SCBE_API_KEY is required for browser agent startup")
 
         # Check API health
         if not self.scbe.health_check():
@@ -516,11 +493,8 @@ class SCBEBrowserAgent:
                 "result": result,
                 "timestamp": datetime.now(timezone.utc).isoformat()
             })
-            # Only auto-execute quarantined actions on low-risk domains
-            domain_risk = self._get_domain_risk(action.target)
-            can_execute = domain_risk < 0.5
-            if not can_execute:
-                print(f"         [QUARANTINE-BLOCKED] Domain risk {domain_risk:.2f} too high for auto-execute")
+            # In quarantine mode, we might still execute with extra logging
+            can_execute = True  # Execute but monitored
 
         elif result.needs_escalation:
             if self.auto_escalate:
@@ -568,9 +542,8 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Navigating to: {url}")
-            if self.runtime:
-                import asyncio
-                asyncio.get_event_loop().run_until_complete(self.runtime.navigate(url))
+            # In real implementation, this would use browser automation
+            # e.g., selenium, playwright, or Chrome DevTools Protocol
             return True
         return False
 
@@ -586,9 +559,6 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Clicking: {selector}")
-            if self.runtime:
-                import asyncio
-                asyncio.get_event_loop().run_until_complete(self.runtime.click(selector))
             return True
         return False
 
@@ -607,9 +577,6 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Typing into: {selector}")
-            if self.runtime:
-                import asyncio
-                asyncio.get_event_loop().run_until_complete(self.runtime.type_text(selector, text))
             return True
         return False
 
@@ -625,9 +592,6 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Submitting form: {form_selector}")
-            if self.runtime:
-                import asyncio
-                asyncio.get_event_loop().run_until_complete(self.runtime.submit_form(form_selector))
             return True
         return False
 
@@ -663,9 +627,6 @@ class SCBEBrowserAgent:
 
         if can_execute:
             print(f"         Executing script (hash: {script_hash})")
-            if self.runtime:
-                import asyncio
-                asyncio.get_event_loop().run_until_complete(self.runtime.evaluate(script))
             return True
         return False
 

@@ -127,9 +127,8 @@ class Ledger:
     @classmethod
     def _resolve_db_path(cls, requested: str = None) -> str:
         """Resolve to the requested path, falling back to repo-local if unwritable."""
-        path = os.path.realpath(requested) if requested else cls._default_db_path()
-        # realpath follows symlinks and Windows junctions so db_path is always canonical.
-        path = os.path.realpath(path)
+        path = os.path.abspath(requested) if requested else cls._default_db_path()
+        path = os.path.abspath(path)
         db_dir = os.path.dirname(path)
         if cls._can_write_path(db_dir):
             return path

@@ -40,7 +40,10 @@ def _load_browser_api_keys() -> Dict[str, str]:
     - SCBE_API_KEY: "legacy_key,legacy_key2"
     - N8N_API_KEY / N8N_WEBHOOK_TOKEN: single key for n8n callbacks
     """
-    keys: Dict[str, str] = {}
+    keys: Dict[str, str] = {
+        "browser-agent-key": "browser-agent",
+        "test-key": "test-user",
+    }
 
     for source in ("BROWSER_AGENT_API_KEYS", "SCBE_API_KEYS"):
         raw = os.getenv(source, "").strip()

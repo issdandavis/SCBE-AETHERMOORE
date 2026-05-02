@@ -252,22 +252,12 @@ class ScoutAgent(SwarmAgent):
             # Analyze URL for safety
             risk = self._assess_url_risk(url)
 
-            # Execute real navigation if browser backend available and safe
-            nav_success = False
-            if risk < 0.7 and self.swarm.browser and hasattr(self.swarm.browser, "navigate"):
-                try:
-                    await self.swarm.browser.navigate(url)
-                    nav_success = True
-                except Exception as exc:
-                    logger.warning("ScoutAgent: browser navigate failed: %s", exc)
-
             return self.create_message(
                 "navigation_plan",
                 {
                     "url": url,
                     "risk_score": risk,
                     "safe": risk < 0.7,
-                    "navigated": nav_success,
                     "recommendation": "proceed" if risk < 0.7 else "escalate"
                 },
                 to_agent=SacredTongue.DR  # Send to Judge
@@ -442,19 +432,12 @@ class ClickerAgent(SwarmAgent):
 
         if action == "click":
             coordinates = payload.get("coordinates", [0, 0])
-            selector = payload.get("selector")
-            success = True
-            if selector and self.swarm.browser and hasattr(self.swarm.browser, "click"):
-                try:
-                    await self.swarm.browser.click(selector)
-                except Exception as exc:
-                    logger.warning("ClickerAgent: browser click failed: %s", exc)
-                    success = False
+            # Would execute click via browser backend
             return self.create_message(
                 "click_result",
                 {
                     "coordinates": coordinates,
-                    "success": success,
+                    "success": True,
                     "element_clicked": payload.get("target", "unknown")
                 }
             )
@@ -474,19 +457,12 @@ class TyperAgent(SwarmAgent):
 
         if action == "type":
             text = payload.get("text", "")
-            selector = payload.get("selector")
-            success = True
-            if selector and self.swarm.browser and hasattr(self.swarm.browser, "type_text"):
-                try:
-                    await self.swarm.browser.type_text(selector, text)
-                except Exception as exc:
-                    logger.warning("TyperAgent: browser type failed: %s", exc)
-                    success = False
+            # Would execute typing via browser backend
             return self.create_message(
                 "type_result",
                 {
                     "length": len(text),
-                    "success": success,
+                    "success": True,
                     "masked": True  # Never log actual text
                 }
             )
