@@ -107,7 +107,7 @@ KEEP_ROOT_DIRS = {
     ".firebase",
     ".grok",
     ".home",
-    ".clawhub",
+    ".skillhub",
     ".streamlit",
     ".tmp-build",
     ".pytest_tmp_hallpass_review",

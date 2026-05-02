@@ -24,8 +24,8 @@ description: |
   </example>
 
   <example>
-  Context: A new tool was registered in the OpenClaw gateway extension.
-  user: "I added scbe_hf_model_plan to extensions/openclaw-scbe-system-tools/index.ts"
+  Context: A new tool was registered in the External Agent gateway extension.
+  user: "I added scbe_hf_model_plan to extensions/external-agent-scbe-system-tools/index.ts"
   assistant: "I'll launch scbe-dry-run-rubix to dry-run the new tool registration across the verification cube before we enable it live."
   <commentary>New gateway tool registrations must pass cube verification (schema validity, subprocess build, artifact path handling, stderr propagation, cross-tongue semantic consistency) before going live.</commentary>
   </example>
@@ -161,7 +161,7 @@ These are the known-hard corners of the SCBE codebase. Check every item on every
    `scripts/system/octoarms_dispatch.py:65` - NEVER let this regress.)
 2. **Windows backslashes in JSON** - strings emitted into JSON artifacts must survive a
    round-trip through `json.loads(json.dumps(...))` and equal the original.
-3. **Subprocess stderr capture** - `runCommand` wrappers in the OpenClaw gateway must
+3. **Subprocess stderr capture** - `runCommand` wrappers in the External Agent gateway must
    propagate subprocess tracebacks, not swallow them into a generic "tool execution
    failed" string. Every new registered gateway tool must be probed with a
    deliberately-broken input to confirm the real stderr comes through.

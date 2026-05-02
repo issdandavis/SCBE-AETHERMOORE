@@ -220,8 +220,6 @@ training-runs/
 backups/
 _staging/
 .grok/
-.clawhub/
-.clawhub/lock.json
 .streamlit/
 .tmp-build/
 unsloth_compiled_cache/

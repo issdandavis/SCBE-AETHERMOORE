@@ -11,7 +11,6 @@ This note groups mirrored repository documents by their original top-level sourc
 ## Source Roots
 
 - [.claude](../Repository Mirror/.claude/_folder_index.md) - 40 files
-- [.clawhub](../Repository Mirror/.clawhub/_folder_index.md) - 1 files
 - [.devcontainer](../Repository Mirror/.devcontainer/_folder_index.md) - 2 files
 - [.github](../Repository Mirror/.github/_folder_index.md) - 98 files
 - [.grok](../Repository Mirror/.grok/_folder_index.md) - 1 files

@@ -44,7 +44,7 @@ python C:\Users\issda\.codex\skills\skill-synthesis\scripts\compose_skill_stack.
 ## Built-in Stack Profiles
 
 ### `hydra-library-wing`
-- `hydra-clawbot-synthesis`
+- `hydra-agent-relay-synthesis`
 - `aetherbrowser-arxiv-nav`
 - `aetherbrowser-github-nav`
 - `hugging-face-model-trainer`

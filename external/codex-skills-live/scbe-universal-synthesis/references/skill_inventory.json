@@ -111,15 +111,15 @@
       "path": "C:\\Users\\issda\\.codex\\skills\\hugging-face-model-trainer"
     },
     {
-      "slug": "hydra-clawbot-synthesis",
-      "name": "hydra-clawbot-synthesis",
-      "description": "Synthesize HYDRA terminal browsing, multi-agent orchestration, Playwright smoke checks, Airtable/Hugging Face dataset handoff, and Obsidian command-lane publishing for Clawbot/OpenClaw operations.",
-      "path": "C:\\Users\\issda\\.codex\\skills\\hydra-clawbot-synthesis"
+      "slug": "hydra-agent-relay-synthesis",
+      "name": "hydra-agent-relay-synthesis",
+      "description": "Synthesize HYDRA terminal browsing, multi-agent orchestration, Playwright smoke checks, Airtable/Hugging Face dataset handoff, and Obsidian command-lane publishing for Agent Relay/External Agent operations.",
+      "path": "C:\\Users\\issda\\.codex\\skills\\hydra-agent-relay-synthesis"
     },
     {
       "slug": "hydra-deep-research-self-healing",
       "name": "hydra-deep-research-self-healing",
-      "description": "Run deep-research loops with HYDRA/Clawbot using self-healing workflow methods (sense, plan, execute, verify, recover), combining arXiv routing, Playwright evidence capture, synthesis smoke checks, and CI triage hooks. Use when operating long-running 24/7 research automation with deterministic cross-talk logging.",
+      "description": "Run deep-research loops with HYDRA/Agent Relay using self-healing workflow methods (sense, plan, execute, verify, recover), combining arXiv routing, Playwright evidence capture, synthesis smoke checks, and CI triage hooks. Use when operating long-running 24/7 research automation with deterministic cross-talk logging.",
       "path": "C:\\Users\\issda\\.codex\\skills\\hydra-deep-research-self-healing"
     },
     {

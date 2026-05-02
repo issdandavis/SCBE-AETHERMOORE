@@ -34,8 +34,8 @@ def test_free_llm_provider_registry_lists_default_open_lanes(
     assert registry["providers"]["offline"]["available"] is True
     assert registry["providers"]["ollama"]["privacy"] == "local"
     assert registry["providers"]["huggingface"]["token_present"] is False
-    assert "openclaw" in registry["agent_launchers"]["integrations"]
-    assert registry["agent_launchers"]["aliases"]["clawdbot"] == "openclaw"
+    assert "codex" in registry["agent_launchers"]["integrations"]
+    assert registry["agent_launchers"]["aliases"]["copilot-cli"] == "copilot"
 
 
 def test_free_llm_dispatch_offline_returns_deterministic_local_result(
@@ -199,7 +199,7 @@ def test_free_llm_custom_local_provider_from_env(
 def test_ollama_launch_plan_normalizes_alias_and_extra_args() -> None:
     plan = free_llm_routes.build_ollama_launch_plan(
         free_llm_routes.OllamaLaunchPlanRequest(
-            integration="clawdbot",
+            integration="copilot-cli",
             model="qwen2.5-coder:0.5b",
             extra_args=["--sandbox", "workspace-write"],
         ),
@@ -207,11 +207,11 @@ def test_ollama_launch_plan_normalizes_alias_and_extra_args() -> None:
     )
 
     assert plan["version"] == "hydra-ollama-launch-plan-v1"
-    assert plan["integration"] == "openclaw"
+    assert plan["integration"] == "copilot"
     assert plan["command"] == [
         "ollama",
         "launch",
-        "openclaw",
+        "copilot",
         "--yes",
         "--model",
         "qwen2.5-coder:0.5b",

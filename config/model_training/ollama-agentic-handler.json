@@ -2,10 +2,10 @@
   "schema_version": "scbe_model_training_profile_v1",
   "profile_id": "ollama-agentic-handler",
   "title": "SCBE Ollama agentic handler lane",
-  "description": "Bounded local Ollama profile for OpenClaw, HYDRA, and OctoArms handler planning over the SCBE coding corpora.",
+  "description": "Bounded local Ollama profile for HYDRA and OctoArms handler planning over the SCBE coding corpora.",
   "backend": "unsloth-qlora",
   "base_model": "Qwen/Qwen2.5-Coder-7B-Instruct",
-  "system_prompt": "You are an SCBE-AETHERMOORE governance-aware local coding and handler agent. You route bounded tasks through HYDRA and OpenClaw lanes, prefer deterministic execution, and return concise operational output.",
+  "system_prompt": "You are an SCBE-AETHERMOORE governance-aware local coding and handler agent. You route bounded tasks through HYDRA lanes, prefer deterministic execution, and return concise operational output.",
   "dataset": {
     "root": "training-data",
     "train_files": [

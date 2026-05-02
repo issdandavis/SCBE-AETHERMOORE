@@ -522,7 +522,7 @@ class TestGeoSeal:
     def test_seal_creation(self):
         from src.aaoe.agent_identity import GeoSeal, AccessTier
 
-        seal = GeoSeal(agent_id="bot-1", agent_name="TestBot", origin_platform="openclaw")
+        seal = GeoSeal(agent_id="bot-1", agent_name="TestBot", origin_platform="local")
         assert seal.tier == AccessTier.FREE
         assert seal.fingerprint
         assert len(seal.fingerprint) == 24
@@ -603,7 +603,7 @@ class TestAgentRegistry:
         from src.aaoe.agent_identity import AgentRegistry
 
         reg = AgentRegistry()
-        seal = reg.register("bot-1", "TestBot", "openclaw")
+        seal = reg.register("bot-1", "TestBot", "local")
         assert seal.agent_id == "bot-1"
 
     def test_register_idempotent(self):
@@ -659,7 +659,7 @@ class TestAAOEIntegration:
 
         # 1. Register agent
         registry = AgentRegistry()
-        seal = registry.register("openclaw-agent-42", "ResearchBot", "openclaw")
+        seal = registry.register("local-agent-42", "ResearchBot", "local")
         token = seal.issue_token("Research quantum computing papers")
         assert token.is_valid
 
