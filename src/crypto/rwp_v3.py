@@ -104,6 +104,26 @@ _HASH_SIG_ALG = _select_hash_sig_algorithm()  # FIPS 205 hash-based sig
 
 from .sacred_tongues import SACRED_TONGUE_TOKENIZER
 
+RWP_ENVELOPE_NONCE_LEN = 24
+CHACHA20_POLY1305_NONCE_LEN = 12
+
+
+def _derive_chacha20poly1305_nonce(envelope_nonce: bytes) -> bytes:
+    """Derive the 96-bit AEAD nonce from the RWP 24-byte envelope nonce.
+
+    RWP v3 serialized a 24-byte XChaCha-style nonce into the Sacred Tongues
+    envelope. The `cryptography` ChaCha20Poly1305 primitive uses the standard
+    12-byte nonce, so keep the wire contract stable and derive the AEAD nonce
+    from the full envelope nonce.
+    """
+    if len(envelope_nonce) == CHACHA20_POLY1305_NONCE_LEN:
+        return envelope_nonce
+    if len(envelope_nonce) != RWP_ENVELOPE_NONCE_LEN:
+        raise ValueError(f"RWP nonce must be {RWP_ENVELOPE_NONCE_LEN} bytes")
+    return hashlib.sha256(b"RWPv3-ChaCha20Poly1305 nonce\x00" + envelope_nonce).digest()[
+        :CHACHA20_POLY1305_NONCE_LEN
+    ]
+
 
 def get_rwp_pqc_governance_status() -> Dict[str, Any]:
     """Return the PQC proof ladder state visible to RWP governance checks.
@@ -297,15 +317,16 @@ class RWPv3Protocol:
         """
         # Generate cryptographic material
         salt = secrets.token_bytes(ARGON2_PARAMS["salt_len"])
-        nonce = secrets.token_bytes(12)  # ChaCha20-Poly1305 nonce
+        nonce = secrets.token_bytes(RWP_ENVELOPE_NONCE_LEN)
 
         # Derive encryption key
         key = self._derive_key(password, salt)
 
         # AEAD encryption: ChaCha20-Poly1305
         if CHACHA_AVAILABLE:
+            aead_nonce = _derive_chacha20poly1305_nonce(nonce)
             cipher = ChaCha20Poly1305(key)
-            ct_with_tag = cipher.encrypt(nonce, plaintext, aad)
+            ct_with_tag = cipher.encrypt(aead_nonce, plaintext, aad)
             ct, tag = ct_with_tag[:-16], ct_with_tag[-16:]
         else:
             # Fallback: no encryption (NOT SECURE - for testing only)
@@ -381,8 +402,9 @@ class RWPv3Protocol:
         # AEAD decryption: ChaCha20-Poly1305
         if CHACHA_AVAILABLE:
             try:
+                aead_nonce = _derive_chacha20poly1305_nonce(nonce)
                 cipher = ChaCha20Poly1305(key)
-                plaintext = cipher.decrypt(nonce, ct + tag, aad)
+                plaintext = cipher.decrypt(aead_nonce, ct + tag, aad)
             except Exception as e:
                 raise ValueError("AEAD authentication failed") from e
         else:
