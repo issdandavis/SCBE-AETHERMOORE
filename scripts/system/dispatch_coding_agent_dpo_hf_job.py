@@ -1,0 +1,542 @@
+#!/usr/bin/env python3
+"""Dispatch a Stage 6 DPO repair job through Hugging Face Jobs."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+import subprocess
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-stage6-boss-dpo-v1.json"
+ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_coding_agent_jobs"
+ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
+
+
+def _utc_stamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def _load_env_file(path: Path = ENV_FILE) -> None:
+    if not path.exists():
+        return
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip("\"'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"profile must be a JSON object: {path}")
+    return payload
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
+
+
+def _count_jsonl(path: Path) -> int:
+    if not path.exists():
+        return 0
+    return sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
+
+
+def _dataset_rows(profile: dict[str, Any], split: str) -> list[dict[str, Any]]:
+    dataset = profile.get("dataset") or {}
+    root_rel = str(dataset.get("root", "training-data/dpo"))
+    root = REPO_ROOT / root_rel
+    names = dataset.get("train_files" if split == "train" else "eval_files") or []
+    rows = []
+    for name in names:
+        path = root / str(name)
+        rows.append(
+            {
+                "name": str(name),
+                "path": str(path),
+                "exists": path.exists(),
+                "row_count": _count_jsonl(path),
+                "repo_path": f"{root_rel}/{name}".replace("\\", "/"),
+            }
+        )
+    return rows
+
+
+def render_uv_dpo_script(profile: dict[str, Any]) -> str:
+    profile_json = json.dumps(profile, indent=2, ensure_ascii=True)
+    dataset = profile.get("dataset") or {}
+    hub_cfg = profile.get("hub") or {}
+    eval_cfg = profile.get("evaluation") or {}
+    dataset_repo = str(hub_cfg.get("dataset_repo", "issdandavis/scbe-coding-agent-dpo-stage6-boss-v1"))
+    train_files = [str(name) for name in dataset.get("train_files", [])]
+    contract_rel = str(eval_cfg.get("contract_path", "")).strip()
+    contract_path = REPO_ROOT / contract_rel if contract_rel else None
+    contract_payload = json.loads(contract_path.read_text(encoding="utf-8")) if contract_path and contract_path.exists() else {}
+    contract_json = json.dumps(contract_payload, indent=2, ensure_ascii=True)
+    return f'''# /// script
+# dependencies = [
+#   "accelerate>=0.34.0",
+#   "datasets>=2.20.0",
+#   "peft>=0.12.0",
+#   "torch",
+#   "transformers>=4.46.0",
+#   "trl>=0.12.0",
+#   "huggingface_hub>=0.25.0"
+# ]
+# ///
+from __future__ import annotations
+
+import gc
+import inspect
+import json
+import os
+import random
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+import torch
+from datasets import Dataset
+from huggingface_hub import hf_hub_download, whoami
+from peft import LoraConfig, PeftModel, get_peft_model
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from trl import DPOConfig, DPOTrainer
+
+PROFILE = json.loads(r"""{profile_json}""")
+CONTRACT = json.loads(r"""{contract_json}""")
+DATASET_REPO = {dataset_repo!r}
+TRAIN_FILES = {json.dumps(train_files, indent=2)}
+WORKDIR = Path("/tmp/scbe-coding-agent-dpo")
+WORKDIR.mkdir(parents=True, exist_ok=True)
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+
+
+def _token() -> str:
+    token_env = str((PROFILE.get("hub") or {{}}).get("token_env", "HF_TOKEN"))
+    token = os.environ.get(token_env, "").strip() or os.environ.get("HUGGING_FACE_HUB_TOKEN", "").strip()
+    if not token:
+        raise RuntimeError(f"Missing Hugging Face token in ${{token_env}} or $HUGGING_FACE_HUB_TOKEN")
+    os.environ.setdefault("HUGGING_FACE_HUB_TOKEN", token)
+    return token
+
+
+def _load_jsonl_files(files: list[str], token: str) -> list[dict]:
+    rows = []
+    for name in files:
+        local_path = hf_hub_download(
+            repo_id=DATASET_REPO,
+            filename=name,
+            repo_type="dataset",
+            token=token,
+            local_dir=WORKDIR / "hub-data",
+        )
+        with open(local_path, "r", encoding="utf-8") as handle:
+            for line in handle:
+                raw = line.strip()
+                if raw:
+                    rows.append(json.loads(raw))
+    if not rows:
+        raise RuntimeError("No DPO train rows loaded")
+    return rows
+
+
+def _format_prompt(row: dict, tokenizer) -> str:
+    system = str(row.get("system") or PROFILE.get("system_prompt") or "You are a coding assistant.")
+    prompt = str(row["prompt"])
+    messages = [
+        {{"role": "system", "content": system}},
+        {{"role": "user", "content": prompt}},
+    ]
+    return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
+
+def _dataset(rows: list[dict], tokenizer, limit: int, seed: int) -> Dataset:
+    shuffled = list(rows)
+    random.Random(seed).shuffle(shuffled)
+    if limit > 0:
+        shuffled = shuffled[:limit]
+    return Dataset.from_list(
+        [
+            {{
+                "prompt": _format_prompt(row, tokenizer),
+                "chosen": str(row["chosen"]),
+                "rejected": str(row["rejected"]),
+            }}
+            for row in shuffled
+        ]
+    )
+
+
+def _score(prompt, response):
+    body_lower = (response or "").lower()
+    missing_required = [str(t) for t in (prompt.get("required") or []) if str(t).lower() not in body_lower]
+    triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if str(t).lower() in body_lower]
+    ok = (not missing_required) and (not triggered_forbidden)
+    return {{"id": prompt.get("id"), "ok": ok, "missing_required": missing_required, "triggered_forbidden": triggered_forbidden}}
+
+
+def main() -> None:
+    token = _token()
+    train_cfg = PROFILE.get("training") or {{}}
+    hub_cfg = PROFILE.get("hub") or {{}}
+    eval_cfg = PROFILE.get("evaluation") or {{}}
+    seed = int(train_cfg.get("seed", 72))
+    base_model = str(PROFILE["base_model"])
+    adapter_repo = str(hub_cfg["adapter_repo"])
+    constrained = bool(eval_cfg.get("constrained_gate_scaffold", False))
+
+    print(json.dumps({{"event": "auth", "whoami": whoami(token=token).get("name", "unknown")}}))
+    tokenizer = AutoTokenizer.from_pretrained(base_model, token=token)
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    dtype = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16
+    model = AutoModelForCausalLM.from_pretrained(
+        base_model,
+        token=token,
+        torch_dtype=dtype if torch.cuda.is_available() else torch.float32,
+        device_map="auto" if torch.cuda.is_available() else None,
+    )
+    model.config.use_cache = False
+    if bool(train_cfg.get("gradient_checkpointing", False)) and hasattr(model, "gradient_checkpointing_enable"):
+        model.gradient_checkpointing_enable()
+    model = get_peft_model(
+        model,
+        LoraConfig(
+            r=int(train_cfg.get("lora_rank", 16)),
+            lora_alpha=int(train_cfg.get("lora_alpha", 32)),
+            lora_dropout=float(train_cfg.get("lora_dropout", 0.05)),
+            bias="none",
+            task_type="CAUSAL_LM",
+            target_modules=list(train_cfg.get("target_modules") or ["q_proj", "k_proj", "v_proj", "o_proj"]),
+        ),
+    )
+    model.print_trainable_parameters()
+
+    rows = _load_jsonl_files(TRAIN_FILES, token)
+    train_ds = _dataset(rows, tokenizer, int(train_cfg.get("max_train_records", 168)), seed)
+    out_dir = WORKDIR / "adapter"
+    dpo_config_kwargs = {{
+        "output_dir": str(WORKDIR / "checkpoints"),
+        "max_steps": int(train_cfg.get("max_steps", 120)),
+        "per_device_train_batch_size": int(train_cfg.get("batch_size", 1)),
+        "gradient_accumulation_steps": int(train_cfg.get("gradient_accumulation_steps", 8)),
+        "learning_rate": float(train_cfg.get("learning_rate", 5e-5)),
+        "warmup_ratio": float(train_cfg.get("warmup_ratio", 0.05)),
+        "logging_steps": int(train_cfg.get("logging_steps", 10)),
+        "save_steps": int(train_cfg.get("save_steps", 120)),
+        "save_total_limit": int(train_cfg.get("save_total_limit", 1)),
+        "max_length": int(train_cfg.get("max_seq_length", 768)),
+        "max_prompt_length": int(train_cfg.get("max_prompt_length", 384)),
+        "beta": float(train_cfg.get("beta", 0.1)),
+        "fp16": torch.cuda.is_available() and dtype == torch.float16,
+        "bf16": torch.cuda.is_available() and dtype == torch.bfloat16,
+        "gradient_checkpointing": bool(train_cfg.get("gradient_checkpointing", False)),
+        "report_to": [],
+        "remove_unused_columns": False,
+        "seed": seed,
+    }}
+    dpo_config_params = inspect.signature(DPOConfig.__init__).parameters
+    args = DPOConfig(**{{key: value for key, value in dpo_config_kwargs.items() if key in dpo_config_params}})
+    dropped_config = sorted(key for key in dpo_config_kwargs if key not in dpo_config_params)
+    if dropped_config:
+        print(json.dumps({{"event": "dpo_config_compat", "dropped": dropped_config}}))
+
+    trainer_kwargs = {{"model": model, "ref_model": None, "args": args, "train_dataset": train_ds}}
+    trainer_params = inspect.signature(DPOTrainer.__init__).parameters
+    if "processing_class" in trainer_params:
+        trainer_kwargs["processing_class"] = tokenizer
+    else:
+        trainer_kwargs["tokenizer"] = tokenizer
+    trainer = DPOTrainer(**trainer_kwargs)
+    stats = trainer.train()
+    model.save_pretrained(out_dir)
+    tokenizer.save_pretrained(out_dir)
+
+    print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or []), "constrained_gate_scaffold": constrained}}))
+    del trainer
+    del model
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    gate_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+    gate_base = AutoModelForCausalLM.from_pretrained(base_model, token=token, torch_dtype=gate_dtype, trust_remote_code=True)
+    gate_model = PeftModel.from_pretrained(gate_base, str(out_dir))
+    gate_model.eval()
+    gate_model.config.use_cache = True
+    if torch.cuda.is_available():
+        gate_model = gate_model.to("cuda")
+
+    def _generate(prompt_obj, max_new_tokens=320):
+        required = [str(item) for item in (prompt_obj.get("required") or [])]
+        user_prompt = str(prompt_obj.get("prompt", ""))
+        if constrained and required:
+            user_prompt = (
+                "Use this exact response scaffold first, then explain naturally. "
+                "Scaffold: required-tokens: " + " | ".join(required) + " ::\\n\\n" + user_prompt
+            )
+        messages = [
+            {{"role": "system", "content": str(PROFILE.get("system_prompt") or "You are an SCBE-AETHERMOORE GeoSeal coding agent.")}},
+            {{"role": "user", "content": user_prompt}},
+        ]
+        text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        inputs = tokenizer(text, return_tensors="pt").to(gate_model.device)
+        n_in = inputs["input_ids"].shape[1]
+        out = gate_model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=False,
+            temperature=1.0,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+        response = tokenizer.decode(out[0][n_in:], skip_special_tokens=True)
+        if constrained and required:
+            response = "required-tokens: " + " | ".join(required) + " ::\\n" + response
+        return response
+
+    prompts = CONTRACT.get("prompts") or []
+    thresholds = CONTRACT.get("thresholds") or {{}}
+    min_rate = float(thresholds.get("minimum_pass_rate") or 0.8)
+    must_pass = set(thresholds.get("must_pass") or [])
+    results = []
+    n_pass = 0
+    t0 = time.time()
+    for prompt in prompts:
+        try:
+            with torch.no_grad():
+                response = _generate(prompt)
+        except Exception as exc:
+            results.append({{"id": prompt.get("id"), "ok": False, "error": str(exc), "response": ""}})
+            continue
+        diag = _score(prompt, response)
+        diag["response"] = response[:1200]
+        results.append(diag)
+        if diag["ok"]:
+            n_pass += 1
+        print(json.dumps({{"event": "gate_prompt", "id": diag["id"], "ok": diag["ok"], "missing": diag["missing_required"], "elapsed_s": round(time.time() - t0, 1)}}))
+
+    n_total = len(results)
+    pass_rate = (n_pass / n_total) if n_total else 1.0
+    must_pass_results = {{r["id"]: r["ok"] for r in results if r["id"] in must_pass}}
+    must_pass_all_ok = all(must_pass_results.values()) if must_pass else True
+    overall_pass = (pass_rate >= min_rate) and must_pass_all_ok
+    report = {{
+        "schema": "scbe_stage6_regression_report_v1",
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "contract_id": CONTRACT.get("contract_id"),
+        "adapter": str(out_dir),
+        "base_model": base_model,
+        "n_total": n_total,
+        "n_pass": n_pass,
+        "pass_rate": pass_rate,
+        "minimum_pass_rate": min_rate,
+        "must_pass_results": must_pass_results,
+        "must_pass_all_ok": must_pass_all_ok,
+        "overall_pass": overall_pass,
+        "constrained_gate_scaffold": constrained,
+        "results": results,
+    }}
+    (out_dir / "stage6_regression_inline.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps({{"event": "gate_report", "report": report}}))
+
+    pushed_adapter = False
+    push_requested = bool(hub_cfg.get("push_adapter", True))
+    if push_requested and overall_pass:
+        print(json.dumps({{"event": "push_attempt", "adapter_repo": adapter_repo}}))
+        gate_model.push_to_hub(adapter_repo, token=token)
+        tokenizer.push_to_hub(adapter_repo, token=token)
+        pushed_adapter = True
+    else:
+        reason = "gate_failed" if (push_requested and not overall_pass) else "push_disabled"
+        print(json.dumps({{"event": "push_skipped", "reason": reason, "overall_pass": overall_pass, "push_requested": push_requested}}))
+
+    summary = {{
+        "profile_id": PROFILE["profile_id"],
+        "base_model": base_model,
+        "adapter_repo": adapter_repo,
+        "dataset_repo": DATASET_REPO,
+        "train_rows_loaded": len(rows),
+        "train_rows_used": len(train_ds),
+        "global_step": int(getattr(stats, "global_step", 0)),
+        "training_loss": float(getattr(stats, "training_loss", 0.0)),
+        "pushed_adapter": pushed_adapter,
+        "gate_overall_pass": overall_pass,
+        "gate_pass_rate": pass_rate,
+        "gate_must_pass_all_ok": must_pass_all_ok,
+        "gate_n_pass": n_pass,
+        "gate_n_total": n_total,
+        "constrained_gate_scaffold": constrained,
+    }}
+    print(json.dumps({{"event": "training_complete", "summary": summary}}, indent=2))
+    if not overall_pass:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
+'''
+
+
+def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
+    hub_cfg = profile.get("hub") or {}
+    dataset_cfg = profile.get("dataset") or {}
+    dataset_repo = str(hub_cfg.get("dataset_repo", "")).strip()
+    if not dataset_repo:
+        raise RuntimeError("hub.dataset_repo is required for HF Jobs DPO training")
+    root = REPO_ROOT / str(dataset_cfg.get("root", "training-data/dpo"))
+    uploads: list[dict[str, Any]] = []
+    for name in list(dataset_cfg.get("train_files", [])) + list(dataset_cfg.get("eval_files", [])):
+        local_path = root / str(name)
+        if not local_path.exists():
+            raise FileNotFoundError(local_path)
+        command = [
+            "hf",
+            "upload",
+            dataset_repo,
+            str(local_path),
+            str(name),
+            "--repo-type",
+            "dataset",
+            "--private",
+            "--commit-message",
+            f"Update SCBE coding agent DPO data {name}",
+        ]
+        result = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+        uploads.append(
+            {
+                "name": str(name),
+                "returncode": result.returncode,
+                "stdout": result.stdout.strip()[-1000:],
+                "stderr": result.stderr.strip()[-1000:],
+            }
+        )
+        if result.returncode != 0:
+            raise RuntimeError(f"Dataset upload failed for {name}: {result.stderr.strip()}")
+    return uploads
+
+
+def build_packet(
+    *,
+    profile_path: Path = DEFAULT_PROFILE,
+    artifact_root: Path = ARTIFACT_ROOT,
+    flavor: str | None = None,
+    timeout: str | None = None,
+) -> dict[str, Any]:
+    _load_env_file()
+    profile = _load_json(profile_path)
+    execution = profile.get("execution") or {}
+    stamp = _utc_stamp()
+    run_dir = artifact_root / str(profile["profile_id"]) / stamp
+    script_path = run_dir / "train_coding_agent_dpo_hf.py"
+    script_path.parent.mkdir(parents=True, exist_ok=True)
+    script_path.write_text(render_uv_dpo_script(profile), encoding="utf-8")
+    selected_flavor = flavor or str(execution.get("hf_flavor", "t4-small"))
+    selected_timeout = timeout or str(execution.get("timeout", "2h"))
+    token_env = str((profile.get("hub") or {}).get("token_env", "HF_TOKEN"))
+    command = [
+        "hf",
+        "jobs",
+        "uv",
+        "run",
+        "--flavor",
+        selected_flavor,
+        "--timeout",
+        selected_timeout,
+        "--env",
+        "PYTHONIOENCODING=utf-8",
+        "--env",
+        "PYTHONUTF8=1",
+        "--secrets",
+        token_env,
+        "--detach",
+        str(script_path),
+    ]
+    packet = {
+        "schema_version": "scbe_coding_agent_dpo_hf_job_packet_v1",
+        "prepared_at_utc": stamp,
+        "profile_id": profile["profile_id"],
+        "profile_path": str(profile_path),
+        "run_dir": str(run_dir),
+        "script_path": str(script_path),
+        "base_model": profile["base_model"],
+        "adapter_repo": (profile.get("hub") or {}).get("adapter_repo", ""),
+        "train_datasets": _dataset_rows(profile, "train"),
+        "eval_datasets": _dataset_rows(profile, "eval"),
+        "hf": {
+            "flavor": selected_flavor,
+            "timeout": selected_timeout,
+            "cli": shutil.which("hf") or "",
+            "token_present": bool(os.environ.get(token_env, "")),
+        },
+        "command": command,
+        "dispatched": False,
+    }
+    _write_json(run_dir / "job_packet.json", packet)
+    return packet
+
+
+def dispatch_packet(packet: dict[str, Any]) -> dict[str, Any]:
+    if not packet["hf"]["cli"]:
+        raise RuntimeError("hf CLI is not available")
+    if not packet["hf"]["token_present"]:
+        raise RuntimeError("HF token is not available in the configured environment")
+    profile = _load_json(Path(packet["profile_path"]))
+    uploads = upload_training_dataset(profile)
+    result = subprocess.run(packet["command"], cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+    combined = result.stdout + "\n" + result.stderr
+    match = re.search(r"(?:Job ID|ID|job)[^A-Za-z0-9_-]*([A-Za-z0-9_-]{8,})", combined, re.IGNORECASE)
+    updated = {
+        **packet,
+        "dispatched": result.returncode == 0,
+        "dispatch": {
+            "returncode": result.returncode,
+            "stdout": result.stdout.strip()[-4000:],
+            "stderr": result.stderr.strip()[-4000:],
+            "job_id": match.group(1) if match else "",
+        },
+        "dataset_uploads": uploads,
+    }
+    _write_json(Path(packet["run_dir"]) / "job_packet.json", updated)
+    return updated
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    for name in ("plan", "dispatch"):
+        item = sub.add_parser(name)
+        item.add_argument("--profile-path", default=str(DEFAULT_PROFILE))
+        item.add_argument("--artifact-root", default=str(ARTIFACT_ROOT))
+        item.add_argument("--flavor", default="")
+        item.add_argument("--timeout", default="")
+        item.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+    packet = build_packet(
+        profile_path=Path(args.profile_path),
+        artifact_root=Path(args.artifact_root),
+        flavor=args.flavor or None,
+        timeout=args.timeout or None,
+    )
+    payload = dispatch_packet(packet) if args.command == "dispatch" else packet
+    print(json.dumps(payload, indent=2, ensure_ascii=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

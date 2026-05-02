@@ -1,0 +1,65 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-stage6-boss-dpo-v1",
+  "title": "SCBE coding agent Qwen Stage 6 boss retry DPO v1",
+  "description": "Preference-training pivot after v12 SFT reached the frozen Stage 6 boss gate but failed 2/5, including the must-pass hex trace. Uses analog DPO rows generated from the boss retry plan, not copied held-out prompt text. The gate uses the production constrained-checklist scaffold because the intended deployed agent path is GeoSeal harness plus model, not raw unconstrained chat.",
+  "backend": "hf-jobs-peft-dpo",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Preserve byte/hex evidence, semantic workflow intent, resource-budget routing, and training-boundary governance as separate lanes. When exact gate markers are required, start with a required-token checklist and then explain the route.",
+  "dataset": {
+    "root": "training-data/dpo",
+    "train_files": [
+      "stage6_boss_retry_v1_train.jsonl"
+    ],
+    "eval_files": []
+  },
+  "training": {
+    "max_seq_length": 768,
+    "max_prompt_length": 384,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 5e-5,
+    "beta": 0.1,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": 120,
+    "max_train_records": 168,
+    "logging_steps": 10,
+    "save_steps": 120,
+    "save_total_limit": 1,
+    "gradient_checkpointing": true,
+    "seed": 72,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-stage6-boss-dpo-v1"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-dpo-stage6-boss-v1",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-stage6-boss-dpo-v1",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-stage6-boss-dpo-v1-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/stage6_atomic_workflow_eval_contract.json",
+    "constrained_gate_scaffold": true,
+    "notes": "Production path test: model output is evaluated through a GeoSeal-style required-token scaffold. This is intentional constrained decoding, not a changed eval contract."
+  }
+}

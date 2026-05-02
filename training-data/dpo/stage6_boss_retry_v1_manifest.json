@@ -1,0 +1,19 @@
+{
+  "schema_version": "stage6_boss_retry_dpo_manifest_v1",
+  "generated_utc": "2026-05-02T04:59:35.669681+00:00",
+  "source_plan": "hf_job:69f5795798a8d679adfb865c",
+  "source_profile_id": "coding-agent-qwen-stage6-repair-v12",
+  "output_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\dpo\\stage6_boss_retry_v1_train.jsonl",
+  "row_count": 168,
+  "rows_by_failure_kind": {
+    "byte_hex_compute_trace": 72,
+    "multi_budget_cost_propagation": 48,
+    "heldout_boundary_pollution_control": 48
+  },
+  "training_boundary": {
+    "rule": "Analog repair rows only; frozen eval prompt text is not copied into DPO data.",
+    "frozen_contract": "C:\\Users\\issda\\SCBE-AETHERMOORE\\config\\model_training\\stage6_atomic_workflow_eval_contract.json"
+  },
+  "plan_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\artifacts\\model_training\\stage6-v12-boss-retry-plan.json",
+  "contract_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\config\\model_training\\stage6_atomic_workflow_eval_contract.json"
+}
