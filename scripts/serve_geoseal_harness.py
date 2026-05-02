@@ -56,6 +56,7 @@ from src.agent_comms import (
     AgentPacketV1,
     BudgetExceeded,
     MergeReport,
+    PacketLedger,
     enforce_budget,
     packet_input_tokens,
 )
@@ -64,6 +65,13 @@ from src.coding_spine.deterministic_tongue_router import route_prompt
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PACKET_REF_EXCERPT_BYTES = int(os.getenv("GEOSEAL_PACKET_REF_EXCERPT_BYTES", "2048"))
 PACKET_REF_MAX_BYTES = int(os.getenv("GEOSEAL_PACKET_REF_MAX_BYTES", "65536"))
+PACKET_LEDGER_MAX = int(os.getenv("GEOSEAL_PACKET_LEDGER_MAX", "256"))
+_LEDGER_PATH_ENV = os.getenv("GEOSEAL_PACKET_LEDGER_PATH")
+_LEDGER = PacketLedger(
+    max_entries=PACKET_LEDGER_MAX,
+    path=Path(_LEDGER_PATH_ENV) if _LEDGER_PATH_ENV else None,
+    promoted_only=True,
+)
 
 
 HF_ROUTER_URL = os.getenv(
@@ -87,6 +95,14 @@ class PairRequest(BaseModel):
     models: list[str] | None = Field(default=None, max_length=2)
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
     max_tokens: int = Field(default=1024, ge=1, le=8192)
+
+
+class ReasoningCodePacketRequest(BaseModel):
+    intent: str = Field(..., min_length=1, max_length=12000)
+    source: str = Field(default="", max_length=64000)
+    source_name: str = Field(default="inline", max_length=512)
+    language: str = Field(default="python", max_length=64)
+    permission_mode: str = Field(default="observe", max_length=64)
 
 
 def _hf_token() -> str:
@@ -257,6 +273,20 @@ async def harness_pair(req: PairRequest) -> dict[str, Any]:
     }
 
 
+@app.post("/harness/reasoning-code-packet")
+async def harness_reasoning_code_packet(req: ReasoningCodePacketRequest) -> dict[str, Any]:
+    from src.coding_spine.bijective_reasoning_code_packet import build_bijective_reasoning_code_packet
+
+    packet = build_bijective_reasoning_code_packet(
+        intent=req.intent,
+        source=req.source,
+        language=req.language,
+        source_name=req.source_name,
+        permission_mode=req.permission_mode,
+    )
+    return {"packet": packet}
+
+
 class PacketRequest(BaseModel):
     """Compact pair-mode request keyed on AgentPacketV1.
 
@@ -272,6 +302,7 @@ class PacketRequest(BaseModel):
     temperature: float = Field(default=0.2, ge=0.0, le=2.0)
     max_tokens: int = Field(default=1024, ge=1, le=8192)
     include_excerpts: bool = Field(default=False)
+    bypass_ledger: bool = Field(default=False, description="Skip dedup short-circuit and force a fresh fan-out")
 
 
 def _resolve_path_ref(value: str) -> Path | None:
@@ -390,9 +421,37 @@ async def harness_packet(req: PacketRequest) -> dict[str, Any]:
         raise HTTPException(status_code=413, detail=str(exc)) from exc
 
     ref_summaries, hash_evidence = _dereference_refs(packet, req.include_excerpts)
-    prompt = _build_packet_prompt(packet, ref_summaries)
     estimated_input_tokens = packet_input_tokens(packet)
 
+    if not req.bypass_ledger:
+        cached = _LEDGER.seen(packet)
+        if cached is not None:
+            cached_dict = cached.to_dict()
+            cached_evidence = list(cached_dict.get("evidence", []))
+            if "ledger:hit" not in cached_evidence:
+                cached_evidence.append("ledger:hit")
+            cached_dict["evidence"] = cached_evidence
+            cached_dict["task_id"] = packet.task_id
+            cached_delta = dict(cached_dict.get("delta", {}))
+            cached_delta["cached"] = True
+            cached_delta["estimated_input_tokens"] = estimated_input_tokens
+            cached_dict["delta"] = cached_delta
+            return {
+                "task_id": packet.task_id,
+                "route": {
+                    "tongue": packet.route.tongue,
+                    "domain": packet.route.domain,
+                    "permission": packet.route.permission,
+                },
+                "deterministic_route": route_prompt(packet.request).as_json(),
+                "ref_summaries": ref_summaries,
+                "merge_report": cached_dict,
+                "a": {"ok": True, "model": "ledger", "text": "", "latency_ms": 0},
+                "b": {"ok": True, "model": "ledger", "text": "", "latency_ms": 0},
+                "cached": True,
+            }
+
+    prompt = _build_packet_prompt(packet, ref_summaries)
     token = _hf_token()
     pair = req.models or [DEFAULT_MODEL_A, DEFAULT_MODEL_B]
     if len(pair) == 1:
@@ -444,6 +503,9 @@ async def harness_packet(req: PacketRequest) -> dict[str, Any]:
         task_id=packet.task_id,
     )
     report.validate()
+
+    if not req.bypass_ledger:
+        _LEDGER.record(packet, report)
 
     return {
         "task_id": packet.task_id,

@@ -33,6 +33,7 @@ from .packet import (
     packet_input_tokens,
     unpack,
 )
+from .ledger import LedgerEntry, PacketLedger, fingerprint
 
 __all__ = [
     "AgentMessage",
@@ -55,4 +56,7 @@ __all__ = [
     "pack",
     "packet_input_tokens",
     "unpack",
+    "LedgerEntry",
+    "PacketLedger",
+    "fingerprint",
 ]

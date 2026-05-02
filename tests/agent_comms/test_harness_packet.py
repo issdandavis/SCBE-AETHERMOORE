@@ -44,6 +44,20 @@ def _packet_dict(**overrides: Any) -> dict[str, Any]:
     return data
 
 
+@pytest.fixture(autouse=True)
+def _clear_ledger():
+    """Wipe the module-level packet ledger between tests.
+
+    The /harness/packet endpoint dedups by packet fingerprint, and
+    `_packet_dict()` produces the same fingerprint across tests. Without
+    this reset, a promote recorded in one test would short-circuit the
+    next test's fan-out before its mocks fire.
+    """
+    harness._LEDGER._entries.clear()
+    yield
+    harness._LEDGER._entries.clear()
+
+
 @pytest.fixture
 def client() -> TestClient:
     return TestClient(harness.app)
@@ -166,6 +180,51 @@ def test_packet_endpoint_resolves_manifest_id(client: TestClient, monkeypatch: p
     body = resp.json()
     assert body["ref_summaries"][0]["resolved"] is True
     assert body["ref_summaries"][0]["path"].endswith("2026-05-02-aligned-foundations-v2-manifest.json")
+
+
+def test_packet_endpoint_short_circuits_on_ledger_hit(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Second identical packet must reuse the cached MergeReport without re-fanning."""
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    text = json.dumps({"verdict": "ok"}, sort_keys=True)
+    fake = AsyncMock(side_effect=[_mock_call(text), _mock_call(text)])
+    pkt = _packet_dict()
+    with patch.object(harness, "_call_hf", fake):
+        first = client.post("/harness/packet", json={"packet": pkt, "models": ["a", "b"]})
+        # second call uses a fresh task_id so we can prove the cached entry
+        # was reused (fingerprint excludes task_id) and re-stamped
+        second_pkt = _packet_dict()
+        second = client.post("/harness/packet", json={"packet": second_pkt, "models": ["a", "b"]})
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["merge_report"]["decision"] == "promote"
+
+    body = second.json()
+    assert body.get("cached") is True
+    assert body["merge_report"]["decision"] == "promote"
+    assert "ledger:hit" in body["merge_report"]["evidence"]
+    assert body["merge_report"]["delta"]["cached"] is True
+    assert body["merge_report"]["task_id"] == body["task_id"]
+    # The cached short-circuit must NOT call the model pair again.
+    assert fake.await_count == 2
+
+
+def test_packet_endpoint_bypass_ledger_forces_fan_out(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    """bypass_ledger=True must skip the cache and re-call the model pair."""
+    monkeypatch.setenv("HF_TOKEN", "test-token")
+    text = json.dumps({"verdict": "ok"}, sort_keys=True)
+    fake = AsyncMock(side_effect=[_mock_call(text)] * 4)
+    with patch.object(harness, "_call_hf", fake):
+        client.post("/harness/packet", json={"packet": _packet_dict(), "models": ["a", "b"]})
+        resp = client.post(
+            "/harness/packet",
+            json={"packet": _packet_dict(), "models": ["a", "b"], "bypass_ledger": True},
+        )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body.get("cached") is not True
+    # Fan-out happened twice (2 calls each).
+    assert fake.await_count == 4
 
 
 def test_packet_endpoint_rejects_path_traversal(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
