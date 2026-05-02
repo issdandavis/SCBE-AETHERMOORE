@@ -10,10 +10,12 @@ If you are new here, use this order:
 
 1. [README.md](README.md)
 2. [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
-3. [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
-4. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
-5. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
-6. [config/repo_consolidation_inventory.json](config/repo_consolidation_inventory.json)
+3. [docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md](docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md)
+4. [docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md](docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md)
+5. [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
+6. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
+7. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
+8. [config/repo_consolidation_inventory.json](config/repo_consolidation_inventory.json)
 
 ## What To Expect
 
@@ -47,8 +49,10 @@ Open these first:
 
 1. [README.md](README.md)
 2. [docs/PRODUCT_QUICKSTART.md](docs/PRODUCT_QUICKSTART.md)
-3. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
-4. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
+3. [docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md](docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md)
+4. [docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md](docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md)
+5. [docs/REPO_SURFACE_MAP.md](docs/REPO_SURFACE_MAP.md)
+6. [docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md](docs/specs/MONOREPO_CONSOLIDATION_AUTHORITY.md)
 
 ## If You Want Canonical Definitions
 

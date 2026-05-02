@@ -28,6 +28,8 @@ To reduce ambiguity for human readers and AI indexers, treat files as follows.
 
 ## Operations and planning
 
+- `docs/ops/INVESTOR_AND_OPERATOR_QUICKSTART_2026-05-02.md` — reviewer-facing entrypoint with first-run commands and package buckets
+- `docs/ops/DISTRIBUTION_PACKAGE_MAP_2026-05-02.md` — distribution/package boundary map for frontend, middleware, backend, infrastructure, guides, training, and private doctrine
 - `docs/ops/REPO_REORG_2026-04.md` — current repo reshape plan (this reorg)
 - `docs/ops/RESTRUCTURE_PLAN.md` — historical restructure plan
 - `docs/ops/REPO_AUDIT.md`, `docs/ops/REPO_REPORT.md`, `docs/ops/REPO_BOUNDARY_PLAN.md`,
