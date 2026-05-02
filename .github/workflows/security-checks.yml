@@ -46,10 +46,11 @@ jobs:
 
       - name: Run bandit
         id: bandit
-        # audit: advisory - non-blocking telemetry/reporting path; downstream summary or gate handles outcome
+        # audit: hard gate for high-severity Python issues; lower severity findings remain visible in logs.
         continue-on-error: true
         run: |
           bandit -r src scripts api python agents -q \
+            --severity-level high \
             -x tests,node_modules,dist,artifacts,training,external
 
       - name: Check for package.json and run npm audit
