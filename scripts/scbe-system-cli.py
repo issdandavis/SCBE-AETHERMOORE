@@ -2212,6 +2212,9 @@ def cmd_self_improve(args: argparse.Namespace) -> int:
 
 
 def cmd_web(args: argparse.Namespace) -> int:
+    if args.engine == "parallel":
+        return cmd_web_parallel(args)
+
     script = args.repo_root / "scripts" / "agentic_web_tool.py"
     if not script.exists():
         print(f"Missing web tool script: {script}")
@@ -2236,6 +2239,103 @@ def cmd_web(args: argparse.Namespace) -> int:
         print("Unknown web command")
         return 2
     return _run_script(script, base)
+
+
+def _run_parallel_cli_command(argv: list[str], cwd: Path | None = None) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        argv,
+        cwd=str(cwd or DEFAULT_REPO_ROOT),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+
+
+def _parallel_cli_ready(repo_root: Path) -> tuple[bool, str]:
+    if not shutil.which("parallel-cli"):
+        return False, "parallel-cli is not installed. Run `/parallel-setup`."
+
+    auth = _run_parallel_cli_command(["parallel-cli", "auth"], cwd=repo_root)
+    auth_output = f"{auth.stdout}\n{auth.stderr}".lower()
+    if "not authenticated" in auth_output:
+        return False, "parallel-cli is not authenticated. Run `parallel-cli login`."
+    return True, ""
+
+
+def cmd_web_parallel(args: argparse.Namespace) -> int:
+    if args.web_cmd != "search":
+        payload = {
+            "schema_version": "scbe_parallel_web_error_v1",
+            "engine": "parallel",
+            "error": "Parallel engine currently supports only `web search`.",
+        }
+        _json_result(args, payload, ["Parallel engine currently supports only `web search`."])
+        return 2
+
+    if not args.query:
+        payload = {
+            "schema_version": "scbe_parallel_web_error_v1",
+            "engine": "parallel",
+            "error": "Missing --query",
+        }
+        _json_result(args, payload, ["Missing --query"])
+        return 2
+
+    is_ready, issue = _parallel_cli_ready(args.repo_root)
+    if not is_ready:
+        payload = {
+            "schema_version": "scbe_parallel_web_error_v1",
+            "engine": "parallel",
+            "error": issue,
+        }
+        _json_result(args, payload, [issue])
+        return 2
+
+    output_dir = _repo_path(args.repo_root, str(args.output_dir))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    out_file = output_dir / f"parallel-search-{stamp}.json"
+
+    cmd = [
+        "parallel-cli",
+        "search",
+        args.query,
+        "--json",
+        "--max-results",
+        str(args.max_results),
+        "--excerpt-max-chars-total",
+        "27000",
+        "-o",
+        str(out_file),
+    ]
+    result = _run_parallel_cli_command(cmd, cwd=args.repo_root)
+    ok = result.returncode == 0
+
+    payload = {
+        "schema_version": "scbe_parallel_web_search_v1",
+        "engine": "parallel",
+        "ok": ok,
+        "query": args.query,
+        "max_results": args.max_results,
+        "output_file": str(out_file),
+        "return_code": result.returncode,
+        "stdout_tail": result.stdout[-1500:] if result.stdout else "",
+        "stderr_tail": result.stderr[-1500:] if result.stderr else "",
+    }
+    lines = [
+        "Parallel web search complete" if ok else "Parallel web search failed",
+        "-" * 28,
+        f"Query: {args.query}",
+        f"Output: {out_file}",
+        f"Return code: {result.returncode}",
+    ]
+    if not ok and result.stderr.strip():
+        lines.append("Error:")
+        lines.append(result.stderr.strip()[:300])
+    _json_result(args, payload, lines)
+    return 0 if ok else 1
 
 
 def cmd_antivirus(args: argparse.Namespace) -> int:
@@ -4640,7 +4740,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     web = sub.add_parser("web", help="Run web lookup/capture helpers")
     add_runtime_cli_flags(web)
-    web.add_argument("--engine", choices=("auto", "playwright", "http"), default="auto")
+    web.add_argument("--engine", choices=("auto", "playwright", "http", "parallel"), default="auto")
     web.add_argument("--output-dir", default="artifacts/web_tool")
     web_sub = web.add_subparsers(dest="web_cmd", required=True)
     web_search = web_sub.add_parser("search", help="DuckDuckGo search capture")
