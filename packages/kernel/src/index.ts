@@ -59,6 +59,7 @@ export * from './tBraid.js';
 // ═══════════════════════════════════════════════════════════════
 
 export * from './chsfn.js';
+export * from './tileLang.js';
 export * from './quasiSphereOverlap.js';
 export * from './securityInvariants.js';
 export * from './triDirectionalPlanner.js';
