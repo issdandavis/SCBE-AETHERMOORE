@@ -224,6 +224,35 @@ def test_reward_smoke_report_exports_rule_based_rlvr_signal(tmp_path: Path) -> N
     assert reward["items"][0]["forbidden_penalty"] == 0.0
 
 
+def test_extract_gate_report_and_boss_retry_plan_target_failed_mechanics(tmp_path: Path) -> None:
+    module = _load_module()
+    log_text = """
+noise
+{"event": "gate_report", "report": {"contract_id": "stage6_atomic_workflow_unseen_eval_v1", "n_total": 5, "n_pass": 2, "pass_rate": 0.4, "minimum_pass_rate": 0.8, "must_pass_results": {"stage6_unseen_hex_trace": false}, "results": [{"id": "stage6_unseen_hex_trace", "ok": false, "missing_required": ["compute"]}, {"id": "stage6_unseen_cost_propagation", "ok": false, "missing_required": ["sample_soil", "send_digest"]}, {"id": "stage6_unseen_lane_separation", "ok": true}]}}
+"""
+
+    report = module.extract_gate_report(log_text)
+    assert report is not None
+    plan = module.build_boss_retry_plan(report, profile_id="coding-agent-qwen-stage6-repair-v12")
+
+    assert plan["schema_version"] == "geoseal_stage6_boss_retry_plan_v1"
+    assert plan["score"]["promotion_ready"] is False
+    assert plan["strategy"] == "constrained_decoding_plus_targeted_dpo"
+    targets = {item["id"]: item for item in plan["repair_targets"]}
+    assert targets["stage6_unseen_hex_trace"]["kind"] == "byte_hex_compute_trace"
+    assert targets["stage6_unseen_hex_trace"]["must_pass"] is True
+    assert targets["stage6_unseen_cost_propagation"]["recommended_rows"] == 48
+    assert "aggregate micro-skill evidence" in plan["experience_model"]["definition"]
+    assert "Do not copy held-out prompt text into training data." in plan["next_actions"]
+
+    out = tmp_path / "boss_retry.json"
+    wrapped = tmp_path / "gate_report.json"
+    wrapped.write_text(json.dumps({"event": "gate_report", "report": report}), encoding="utf-8")
+    written = module.boss_retry_plan_from_report(wrapped, profile_id="coding-agent-qwen-stage6-repair-v12", output=out)
+    assert out.exists()
+    assert written["output_path"] == str(out)
+
+
 def test_summarize_training_log_parses_pretty_completion_json() -> None:
     module = _load_module()
     summary = module.summarize_training_log("""

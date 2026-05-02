@@ -142,6 +142,141 @@ def summarize_training_log(text: str) -> dict[str, Any]:
     }
 
 
+def extract_gate_report(text: str) -> dict[str, Any] | None:
+    """Extract the last inline gate report from HF job logs.
+
+    The training script emits the promotion gate as a single JSON event before
+    it decides whether to push. Keeping this parser line-oriented avoids fragile
+    regex matching across tqdm progress output.
+    """
+    latest: dict[str, Any] | None = None
+    decoder = json.JSONDecoder()
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or '"gate_report"' not in line:
+            continue
+        start = line.find("{")
+        if start < 0:
+            continue
+        try:
+            event, _ = decoder.raw_decode(line[start:])
+        except json.JSONDecodeError:
+            continue
+        if isinstance(event, dict) and event.get("event") == "gate_report" and isinstance(event.get("report"), dict):
+            latest = event["report"]
+    return latest
+
+
+def _failure_kind_from_id(prompt_id: str) -> str:
+    if "resource_jump" in prompt_id:
+        return "resource_overrun_fallback"
+    if "lane_separation" in prompt_id:
+        return "byte_hex_semantic_lane_separation"
+    if "hex_trace" in prompt_id:
+        return "byte_hex_compute_trace"
+    if "cost_propagation" in prompt_id:
+        return "multi_budget_cost_propagation"
+    if "training_boundary" in prompt_id:
+        return "heldout_boundary_pollution_control"
+    return "unknown_contract_gap"
+
+
+def build_boss_retry_plan(
+    gate_report: dict[str, Any],
+    *,
+    profile_id: str = "",
+    source: str = "",
+) -> dict[str, Any]:
+    """Turn a failed promotion gate into the next bounded repair plan.
+
+    This is the video-game boss loop in repo terms: fight the gate, record
+    exactly which mechanics beat the model, generate analog repair curriculum,
+    retry, and only promote when the same frozen boss gate passes. It does not
+    copy frozen prompt text into training instructions.
+    """
+    results = [item for item in gate_report.get("results", []) if isinstance(item, dict)]
+    failed = [item for item in results if not item.get("ok")]
+    passed = [item for item in results if item.get("ok")]
+    n_total = int(gate_report.get("n_total") or len(results))
+    n_pass = int(gate_report.get("n_pass") or len(passed))
+    pass_rate = float(gate_report.get("pass_rate") or (n_pass / n_total if n_total else 0.0))
+    minimum = float(gate_report.get("minimum_pass_rate") or 0.8)
+    must_pass_results = gate_report.get("must_pass_results") or {}
+    must_pass_failed = [key for key, ok in must_pass_results.items() if ok is not True]
+
+    repair_targets = []
+    for item in failed:
+        prompt_id = str(item.get("id") or "")
+        missing = [str(token) for token in item.get("missing_required", item.get("missing", [])) if str(token)]
+        kind = _failure_kind_from_id(prompt_id)
+        repair_targets.append(
+            {
+                "id": prompt_id,
+                "kind": kind,
+                "missing_required": missing,
+                "must_pass": prompt_id in must_pass_failed,
+                "repair_rule": (
+                    "Generate new analog scenarios with different nouns and action chains, "
+                    "but preserve the missing required markers and the same forbidden-marker guard."
+                ),
+                "recommended_rows": 72 if prompt_id in must_pass_failed else 48,
+            }
+        )
+
+    strategy = "promote_or_merge"
+    if repair_targets:
+        strategy = "constrained_decoding_plus_targeted_dpo" if "v12" in profile_id.lower() else "targeted_repair_sft"
+    if pass_rate < 0.5 and repair_targets:
+        strategy = "constrained_decoding_plus_targeted_dpo"
+
+    next_actions = [
+        "Do not change the frozen eval contract.",
+        "Do not copy held-out prompt text into training data.",
+        "Generate analog repair rows only from missing marker classes and failure kinds.",
+        "Run the next candidate through the same inline gate and push only if the gate passes.",
+    ]
+    if strategy == "constrained_decoding_plus_targeted_dpo":
+        next_actions.insert(
+            2,
+            "Add a decoding shim or response scaffold that forces a required-token checklist before prose, then train preferences around pass/fail responses.",
+        )
+
+    return {
+        "schema_version": "geoseal_stage6_boss_retry_plan_v1",
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "source": source,
+        "profile_id": profile_id or gate_report.get("profile_id", ""),
+        "contract_id": gate_report.get("contract_id", ""),
+        "score": {
+            "n_pass": n_pass,
+            "n_total": n_total,
+            "pass_rate": pass_rate,
+            "minimum_pass_rate": minimum,
+            "must_pass_failed": must_pass_failed,
+            "promotion_ready": bool(pass_rate >= minimum and not must_pass_failed and n_total),
+        },
+        "strategy": strategy,
+        "passed_ids": [str(item.get("id") or "") for item in passed],
+        "repair_targets": repair_targets,
+        "experience_model": {
+            "definition": (
+                "EXP is aggregate micro-skill evidence: each failed gate records the small repeated behaviors "
+                "that must become routine before the agent earns promotion."
+            ),
+            "unit_fields": [
+                "failure_kind",
+                "missing_required_marker",
+                "must_pass_pressure",
+                "analog_repair_rows",
+                "same_gate_retry",
+            ],
+            "promotion_rule": "EXP counts only when the same frozen gate improves without training on the held-out prompt text.",
+        },
+        "next_actions": next_actions,
+        "loop_rule": "train -> frozen gate -> mine failures -> analog repair data -> retry; publish only after gate pass",
+    }
+
+
 def assess_job_health(inspect_summary: dict[str, Any], logs_payload: dict[str, Any] | None) -> dict[str, Any]:
     """Classify common HF Jobs failure modes before a full train is launched."""
     stage = str(inspect_summary.get("stage") or "").upper()
@@ -586,6 +721,42 @@ def reward_smoke_report(report_path: Path, manifest: dict[str, Any]) -> dict[str
     }
 
 
+def boss_retry_plan_from_report(
+    report_path: Path,
+    *,
+    profile_id: str = "",
+    output: Path | None = None,
+) -> dict[str, Any]:
+    payload = _load_json(report_path)
+    gate_report = payload.get("report") if payload.get("event") == "gate_report" else payload
+    if not isinstance(gate_report, dict) or "results" not in gate_report:
+        raise ValueError(f"Report does not look like a Stage 6 gate report: {report_path}")
+    plan = build_boss_retry_plan(gate_report, profile_id=profile_id, source=str(report_path))
+    if output is not None:
+        _write_json(output, plan)
+        plan["output_path"] = str(output)
+    return plan
+
+
+def boss_retry_plan_from_job(
+    job_id: str,
+    *,
+    profile_id: str = "",
+    output: Path | None = None,
+) -> dict[str, Any]:
+    logs_result = _run_hf(["hf", "jobs", "logs", job_id, "--tail", "400"], timeout_s=90)
+    combined = logs_result["stdout"] + "\n" + logs_result["stderr"]
+    gate_report = extract_gate_report(combined)
+    if gate_report is None:
+        raise ValueError(f"No gate_report event found in HF job logs: {job_id}")
+    plan = build_boss_retry_plan(gate_report, profile_id=profile_id, source=f"hf_job:{job_id}")
+    plan["logs_returncode"] = logs_result["returncode"]
+    if output is not None:
+        _write_json(output, plan)
+        plan["output_path"] = str(output)
+    return plan
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", default=str(MANIFEST_PATH))
@@ -622,6 +793,12 @@ def main() -> int:
     score_parser.add_argument("--report", required=True)
     reward_parser = sub.add_parser("reward-smoke-report")
     reward_parser.add_argument("--report", required=True)
+    boss_parser = sub.add_parser("boss-retry-plan")
+    boss_src = boss_parser.add_mutually_exclusive_group(required=True)
+    boss_src.add_argument("--report")
+    boss_src.add_argument("--job-id")
+    boss_parser.add_argument("--profile-id", default="")
+    boss_parser.add_argument("--output", default="")
     args = parser.parse_args()
 
     manifest = load_manifest(Path(args.manifest))
@@ -657,6 +834,12 @@ def main() -> int:
         payload = score_smoke_report(Path(args.report), manifest)
     elif args.command == "reward-smoke-report":
         payload = reward_smoke_report(Path(args.report), manifest)
+    elif args.command == "boss-retry-plan":
+        output = Path(args.output) if args.output else None
+        if args.report:
+            payload = boss_retry_plan_from_report(Path(args.report), profile_id=args.profile_id, output=output)
+        else:
+            payload = boss_retry_plan_from_job(str(args.job_id), profile_id=args.profile_id, output=output)
     else:
         raise AssertionError(args.command)
     print(json.dumps(payload, indent=2, ensure_ascii=True))
