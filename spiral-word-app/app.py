@@ -13,8 +13,18 @@ Run: uvicorn app:app --reload --host 0.0.0.0 --port 8000
 
 import json
 import logging
+import sys
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Dict, List, Set
+
+_APP_DIR = str(Path(__file__).resolve().parent)
+if _APP_DIR in sys.path:
+    sys.path.remove(_APP_DIR)
+sys.path.insert(0, _APP_DIR)
+_governance_module = sys.modules.get("governance")
+if _governance_module is not None and not str(getattr(_governance_module, "__file__", "")).startswith(_APP_DIR):
+    sys.modules.pop("governance", None)
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import JSONResponse, Response

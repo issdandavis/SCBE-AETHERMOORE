@@ -7,5 +7,7 @@ import sys
 
 _REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 _APP_DIR = os.path.join(_REPO_ROOT, "spiral-word-app")
-if _APP_DIR not in sys.path:
-    sys.path.insert(0, _APP_DIR)
+if _APP_DIR in sys.path:
+    sys.path.remove(_APP_DIR)
+sys.path.insert(0, _APP_DIR)
+sys.modules.pop("governance", None)

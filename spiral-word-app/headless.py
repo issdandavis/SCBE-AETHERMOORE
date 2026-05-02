@@ -27,9 +27,19 @@ from __future__ import annotations
 import hashlib
 import io
 import logging
+import sys
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
+
+_APP_DIR = str(Path(__file__).resolve().parent)
+if _APP_DIR in sys.path:
+    sys.path.remove(_APP_DIR)
+sys.path.insert(0, _APP_DIR)
+_governance_module = sys.modules.get("governance")
+if _governance_module is not None and not str(getattr(_governance_module, "__file__", "")).startswith(_APP_DIR):
+    sys.modules.pop("governance", None)
 
 from sync_engine import Document
 from governance import audit_log, classify_intent
