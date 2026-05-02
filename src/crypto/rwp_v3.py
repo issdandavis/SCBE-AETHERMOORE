@@ -120,9 +120,7 @@ def _derive_chacha20poly1305_nonce(envelope_nonce: bytes) -> bytes:
         return envelope_nonce
     if len(envelope_nonce) != RWP_ENVELOPE_NONCE_LEN:
         raise ValueError(f"RWP nonce must be {RWP_ENVELOPE_NONCE_LEN} bytes")
-    return hashlib.sha256(b"RWPv3-ChaCha20Poly1305 nonce\x00" + envelope_nonce).digest()[
-        :CHACHA20_POLY1305_NONCE_LEN
-    ]
+    return hashlib.sha256(b"RWPv3-ChaCha20Poly1305 nonce\x00" + envelope_nonce).digest()[:CHACHA20_POLY1305_NONCE_LEN]
 
 
 def get_rwp_pqc_governance_status() -> Dict[str, Any]:
