@@ -220,8 +220,7 @@ def apply_patch_safely(
 
         try:
             proc = subprocess.run(
-                smoke,
-                shell=True,
+                shlex.split(smoke),
                 cwd=str(worktree),
                 capture_output=True,
                 text=True,

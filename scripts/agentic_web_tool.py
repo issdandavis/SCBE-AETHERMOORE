@@ -89,7 +89,7 @@ async def _playwright_capture(url: str, output_dir: Path, timeout_ms: int = 3000
                 if len(links) >= 20:
                     break
 
-        artifact_slug = hashlib.sha1(f"{url}:{datetime.now(timezone.utc).timestamp()}".encode("utf-8")).hexdigest()[:12]
+        artifact_slug = hashlib.sha256(f"{url}:{datetime.now(timezone.utc).timestamp()}".encode("utf-8")).hexdigest()[:12]
         output_dir.mkdir(parents=True, exist_ok=True)
         screenshot_path = str(output_dir / f"{artifact_slug}.png")
         await page.screenshot(path=screenshot_path, full_page=True)
@@ -167,7 +167,7 @@ def _save_capture(output_dir: Path, result: CaptureResult) -> Path:
         "links": result.links,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
-    filename = hashlib.sha1(result.url.encode("utf-8")).hexdigest()[:12] + ".json"
+    filename = hashlib.sha256(result.url.encode("utf-8")).hexdigest()[:12] + ".json"
     output_path = output_dir / filename
     output_path.write_text(json.dumps(output, indent=2), encoding="utf-8")
     return output_path
@@ -182,7 +182,7 @@ def _search_and_save(output_dir: Path, query: str, max_results: int) -> Path:
         "result_count": len(results),
         "results": results,
     }
-    filename = hashlib.sha1(query.encode("utf-8")).hexdigest()[:12] + ".json"
+    filename = hashlib.sha256(query.encode("utf-8")).hexdigest()[:12] + ".json"
     output_path = output_dir / filename
     output_path.write_text(json.dumps(output, indent=2), encoding="utf-8")
     return output_path

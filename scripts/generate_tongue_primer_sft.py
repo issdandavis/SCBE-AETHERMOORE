@@ -768,7 +768,7 @@ def main():
             "difficulty": difficulty,
             "augmentation": "tongue-primer",
             "tags": r["tags"],
-            "source_hash": hashlib.md5(r["user"].encode()).hexdigest()[:8],
+            "source_hash": hashlib.sha256(r["user"].encode()).hexdigest()[:8],
         }
         records.append(rec)
 

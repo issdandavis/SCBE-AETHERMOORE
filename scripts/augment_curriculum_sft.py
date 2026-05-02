@@ -257,7 +257,7 @@ def make_record(
 
 
 def content_hash(text: str) -> str:
-    return hashlib.md5(text.encode()).hexdigest()[:8]
+    return hashlib.sha256(text.encode()).hexdigest()[:8]
 
 
 # ─────────────────────────────────────────────

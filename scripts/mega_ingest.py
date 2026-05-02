@@ -394,7 +394,7 @@ def load_everweave_text() -> list[dict]:
         if not path.exists():
             continue
         text = path.read_text(encoding="utf-8", errors="replace")
-        h = hashlib.md5(text[:5000].encode()).hexdigest()
+        h = hashlib.sha256(text[:5000].encode()).hexdigest()
         if h in seen_hashes:
             continue
         seen_hashes.add(h)
@@ -482,7 +482,7 @@ def load_lore_drafts() -> list[dict]:
         else:
             continue
 
-        h = hashlib.md5(text[:5000].encode()).hexdigest()
+        h = hashlib.sha256(text[:5000].encode()).hexdigest()
         if h in seen_hashes:
             continue
         seen_hashes.add(h)
@@ -712,7 +712,7 @@ def load_phone_backup_lore() -> list[dict]:
         path = phone_dir / name
         if path.exists():
             text = path.read_text(encoding="utf-8", errors="replace")
-            h = hashlib.md5(text[:3000].encode()).hexdigest()
+            h = hashlib.sha256(text[:3000].encode()).hexdigest()
             if h not in seen:
                 seen.add(h)
                 pairs.extend(text_to_sft_pairs(text, source=source))
@@ -906,7 +906,7 @@ def load_dropbox_mega_texts() -> list[dict]:
             else:
                 continue
 
-            h = hashlib.md5(text[:5000].encode()).hexdigest()
+            h = hashlib.sha256(text[:5000].encode()).hexdigest()
             if h in seen or len(text) < 200:
                 continue
             seen.add(h)
@@ -963,7 +963,7 @@ def load_avalon_github_archive() -> list[dict]:
             if f.suffix in (".txt", ".md", ".markdown") and f.stat().st_size > 500:
                 try:
                     text = f.read_text(encoding="utf-8", errors="replace")
-                    h = hashlib.md5(text[:3000].encode()).hexdigest()
+                    h = hashlib.sha256(text[:3000].encode()).hexdigest()
                     if h not in seen:
                         seen.add(h)
                         pairs.extend(text_to_sft_pairs(text, source=f"Avalon GitHub/{subdir}", chapter=f.stem))
@@ -1033,7 +1033,7 @@ def deduplicate(records: list[dict]) -> list[dict]:
     deduped = []
     for rec in records:
         key_text = rec.get("instruction", rec.get("prompt", "")) + rec.get("response", rec.get("text", ""))
-        h = hashlib.md5(key_text.encode(errors="replace")).hexdigest()
+        h = hashlib.sha256(key_text.encode(errors="replace")).hexdigest()
         if h not in seen:
             seen.add(h)
             deduped.append(rec)

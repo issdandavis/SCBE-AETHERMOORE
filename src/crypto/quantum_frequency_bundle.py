@@ -1740,7 +1740,7 @@ def compute_qho_state(
         w = TONGUE_WEIGHTS[tongue]
         base_frequency = TONGUE_FREQUENCIES[tongue]
         # Hash-based deterministic affinity
-        h = int(hashlib.md5((tongue + text[:32]).encode()).hexdigest()[:8], 16)
+        h = int(hashlib.sha256((tongue + text[:32]).encode()).hexdigest()[:8], 16)
         raw = (h % 1000) / 1000.0 * w
         raw *= 1.0 + (base_frequency / (base_frequency + byte_sum))
         return raw

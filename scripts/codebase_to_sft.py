@@ -451,7 +451,7 @@ def generate_pairs_from_section(
     count = determine_pair_count(content)
 
     # Use a hash-based seed for deterministic but varied template selection
-    seed = int(hashlib.md5((heading + source_file).encode()).hexdigest()[:8], 16)
+    seed = int(hashlib.sha256((heading + source_file).encode()).hexdigest()[:8], 16)
     templates = select_templates(category, count, seed)
 
     response = clean_response(content)

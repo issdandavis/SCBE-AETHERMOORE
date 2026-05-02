@@ -14,7 +14,7 @@ Security Stack:
 5. Sacred Tongue encoding for semantic binding
 
 Dependencies:
-    pip install argon2-cffi pycryptodome liboqs-python
+    pip install argon2-cffi cryptography liboqs-python
 """
 
 import os
@@ -39,12 +39,12 @@ except ImportError:
     print("Warning: argon2-cffi not installed. Install with: pip install argon2-cffi")
 
 try:
-    from Crypto.Cipher import ChaCha20_Poly1305
+    from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
     CHACHA_AVAILABLE = True
 except ImportError:
     CHACHA_AVAILABLE = False
-    print("Warning: pycryptodome not installed. Install with: pip install pycryptodome")
+    print("Warning: cryptography not installed. Install with: pip install cryptography")
 
 _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
     "1",
@@ -232,7 +232,7 @@ class RWPv3Protocol:
         if not ARGON2_AVAILABLE:
             raise ImportError("argon2-cffi required. Install with: pip install argon2-cffi")
         if not CHACHA_AVAILABLE:
-            raise ImportError("pycryptodome required. Install with: pip install pycryptodome")
+            raise ImportError("cryptography required. Install with: pip install cryptography")
 
         self.tokenizer = SACRED_TONGUE_TOKENIZER
         self.enable_pqc = enable_pqc
@@ -297,16 +297,16 @@ class RWPv3Protocol:
         """
         # Generate cryptographic material
         salt = secrets.token_bytes(ARGON2_PARAMS["salt_len"])
-        nonce = secrets.token_bytes(24)  # XChaCha20 requires 24 bytes
+        nonce = secrets.token_bytes(12)  # ChaCha20-Poly1305 nonce
 
         # Derive encryption key
         key = self._derive_key(password, salt)
 
-        # AEAD encryption: XChaCha20-Poly1305
+        # AEAD encryption: ChaCha20-Poly1305
         if CHACHA_AVAILABLE:
-            cipher = ChaCha20_Poly1305.new(key=key, nonce=nonce)
-            cipher.update(aad)
-            ct, tag = cipher.encrypt_and_digest(plaintext)
+            cipher = ChaCha20Poly1305(key)
+            ct_with_tag = cipher.encrypt(nonce, plaintext, aad)
+            ct, tag = ct_with_tag[:-16], ct_with_tag[-16:]
         else:
             # Fallback: no encryption (NOT SECURE - for testing only)
             ct = plaintext
@@ -378,12 +378,11 @@ class RWPv3Protocol:
             if not is_valid:
                 raise ValueError("ML-DSA-65 signature verification failed")
 
-        # AEAD decryption: XChaCha20-Poly1305
+        # AEAD decryption: ChaCha20-Poly1305
         if CHACHA_AVAILABLE:
             try:
-                cipher = ChaCha20_Poly1305.new(key=key, nonce=nonce)
-                cipher.update(aad)
-                plaintext = cipher.decrypt_and_verify(ct, tag)
+                cipher = ChaCha20Poly1305(key)
+                plaintext = cipher.decrypt(nonce, ct + tag, aad)
             except Exception as e:
                 raise ValueError("AEAD authentication failed") from e
         else:

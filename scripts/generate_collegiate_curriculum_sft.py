@@ -313,7 +313,7 @@ def generate_convergent_view(
 
     primary_domain = grade.domains[0]
     # Pick a convergent domain deterministically
-    h = int(hashlib.md5((record_hash + "convergent").encode()).hexdigest(), 16)
+    h = int(hashlib.sha256((record_hash + "convergent").encode()).hexdigest(), 16)
 
     # Find a domain that ISN'T the primary
     all_domains = list(TOPIC_DOMAINS.keys())
@@ -415,7 +415,7 @@ def generate_opposed_view(
         return None
 
     primary_domain = grade.domains[0]
-    h = int(hashlib.md5((record_hash + "opposed").encode()).hexdigest(), 16)
+    h = int(hashlib.sha256((record_hash + "opposed").encode()).hexdigest(), 16)
     OPPOSED_ANGLES[h % len(OPPOSED_ANGLES)]
 
     topic_excerpt = text[:120].strip()
@@ -519,7 +519,7 @@ def generate_orthogonal_view(
         return None  # Only for graduate+ level
 
     primary_domain = grade.domains[0]
-    h = int(hashlib.md5((record_hash + "orthogonal").encode()).hexdigest(), 16)
+    h = int(hashlib.sha256((record_hash + "orthogonal").encode()).hexdigest(), 16)
 
     # Pick the most DISTANT domain
     distance_map = {
@@ -657,7 +657,7 @@ def main():
 
         # Classify
         grade = classify_grade(combined)
-        record_hash = hashlib.md5(combined[:256].encode()).hexdigest()
+        record_hash = hashlib.sha256(combined[:256].encode()).hexdigest()
 
         # Add grade metadata to record
         record["metadata"]["collegiate"] = {

@@ -345,7 +345,7 @@ def prepare_dataset(
     # Hash all holdout texts to ensure no contamination
     holdout_hashes = set()
     for r in holdout_records:
-        holdout_hashes.add(hashlib.md5(r["text"].encode()).hexdigest())
+        holdout_hashes.add(hashlib.sha256(r["text"].encode()).hexdigest())
     logger.info("  Holdout fingerprints: %d (these MUST NOT appear in training)", len(holdout_hashes))
 
     # Deduplicate training data AND filter out any holdout contamination
@@ -353,7 +353,7 @@ def prepare_dataset(
     clean_train = []
     contamination_count = 0
     for r in train_records:
-        h = hashlib.md5(r["text"].encode()).hexdigest()
+        h = hashlib.sha256(r["text"].encode()).hexdigest()
         if h in holdout_hashes:
             contamination_count += 1
             continue  # BLOCK: this text is in the holdout set
