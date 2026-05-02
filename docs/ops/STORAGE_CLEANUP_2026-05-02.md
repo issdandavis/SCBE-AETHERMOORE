@@ -10,8 +10,10 @@ Purpose: reclaim local disk space without deleting source code, personal tax/bus
 
 ## Actions Taken
 
-- Saved .venv-training package list to `docs/ops/venv-training-freeze-before-cleanup-2026-05-02.txt`.
-- Saved artifact inventory to `docs/ops/artifact-cleanup-inventory-2026-05-02.txt` before deleting generated artifact directories.
+- Saved .venv-training package list before cleanup; detailed copy is stored in private repo
+  `issdandavis/SCBE-private` at `ops/storage-ledgers/2026-05-02/`.
+- Saved artifact inventory before deleting generated artifact directories; detailed copy is stored in private repo
+  `issdandavis/SCBE-private` at `ops/storage-ledgers/2026-05-02/`.
 - Removed regenerable training virtual environment: `.venv-training/`.
 - Removed cache roots:
   - `C:\SCBE_CACHE\hf`
