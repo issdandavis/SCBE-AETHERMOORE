@@ -10,7 +10,6 @@ from dataclasses import dataclass
 import math
 from typing import Literal
 
-
 SpinVector = tuple[float, float, float]
 TPhase = Literal["fast", "memory", "governance", "day", "night", "set"]
 
@@ -83,7 +82,9 @@ def spin_hamiltonian(
     return exchange_term + field_term
 
 
-def spin_disorder(spins: list[SpinVector], *, edges: list[tuple[int, int]] | None = None, epsilon: float = 1e-9) -> float:
+def spin_disorder(
+    spins: list[SpinVector], *, edges: list[tuple[int, int]] | None = None, epsilon: float = 1e-9
+) -> float:
     if not spins:
         return 0.0
     if edges is None:
@@ -96,7 +97,9 @@ def spin_disorder(spins: list[SpinVector], *, edges: list[tuple[int, int]] | Non
     return disagreement / (len(edges) + epsilon)
 
 
-def phason_rotation_matrix(*, n: int = 1, phi: float = (1.0 + math.sqrt(5.0)) / 2.0) -> tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]:
+def phason_rotation_matrix(
+    *, n: int = 1, phi: float = (1.0 + math.sqrt(5.0)) / 2.0
+) -> tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]:
     phase_n = max(1, int(n))
     theta = (2.0 * math.pi) / (phi**phase_n)
     c = math.cos(theta)
@@ -104,7 +107,9 @@ def phason_rotation_matrix(*, n: int = 1, phi: float = (1.0 + math.sqrt(5.0)) / 
     return ((c, -s, 0.0), (s, c, 0.0), (0.0, 0.0, 1.0))
 
 
-def rotate_spin(spin: SpinVector, matrix: tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]) -> SpinVector:
+def rotate_spin(
+    spin: SpinVector, matrix: tuple[tuple[float, float, float], tuple[float, float, float], tuple[float, float, float]]
+) -> SpinVector:
     x = (matrix[0][0] * spin[0]) + (matrix[0][1] * spin[1]) + (matrix[0][2] * spin[2])
     y = (matrix[1][0] * spin[0]) + (matrix[1][1] * spin[1]) + (matrix[1][2] * spin[2])
     z = (matrix[2][0] * spin[0]) + (matrix[2][1] * spin[1]) + (matrix[2][2] * spin[2])
