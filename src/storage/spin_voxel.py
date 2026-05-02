@@ -10,7 +10,6 @@ from dataclasses import dataclass
 import math
 from typing import Literal
 
-
 SpinVector = tuple[float, float, float]
 TPhase = Literal["fast", "memory", "governance", "day", "night", "set"]
 
