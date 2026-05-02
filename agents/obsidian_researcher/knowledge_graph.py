@@ -487,7 +487,7 @@ class KnowledgeGraph:
         Uses an 8-char hex hash to avoid collisions while keeping
         the diagram readable.
         """
-        h = hashlib.md5(f"{prefix}:{text}".encode("utf-8")).hexdigest()[:8]
+        h = hashlib.sha256(f"{prefix}:{text}".encode("utf-8")).hexdigest()[:8]
         return f"{prefix}_{h}"
 
     @staticmethod

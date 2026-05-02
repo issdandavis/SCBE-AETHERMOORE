@@ -567,7 +567,7 @@ def main():
                     total_lore += 1
 
                     # Dedup by content hash
-                    text_hash = hashlib.md5(text[:500].encode()).hexdigest()
+                    text_hash = hashlib.sha256(text[:500].encode()).hexdigest()
                     if text_hash in seen_hashes:
                         continue
                     seen_hashes.add(text_hash)

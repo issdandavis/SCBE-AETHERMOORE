@@ -8,18 +8,12 @@ import hmac
 import hashlib
 from typing import Tuple
 
-# Try to use PyCryptodome, fall back to cryptography
 try:
-    from Crypto.Cipher import AES
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-    CRYPTO_BACKEND = "pycryptodome"
+    CRYPTO_BACKEND = "cryptography"
 except ImportError:
-    try:
-        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-
-        CRYPTO_BACKEND = "cryptography"
-    except ImportError:
-        CRYPTO_BACKEND = "none"
+    CRYPTO_BACKEND = "none"
 
 
 def get_random(n: int) -> bytes:
@@ -44,14 +38,7 @@ def aes_gcm_encrypt(key: bytes, plaintext: bytes, aad: bytes = b"") -> Tuple[byt
 
     nonce = get_random(12)  # 96-bit nonce for GCM
 
-    if CRYPTO_BACKEND == "pycryptodome":
-        cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
-        if aad:
-            cipher.update(aad)
-        ciphertext, tag = cipher.encrypt_and_digest(plaintext)
-        return nonce, ciphertext, tag
-
-    elif CRYPTO_BACKEND == "cryptography":
+    if CRYPTO_BACKEND == "cryptography":
         aesgcm = AESGCM(key)
         ct_with_tag = aesgcm.encrypt(nonce, plaintext, aad if aad else None)
         # cryptography library appends tag to ciphertext
@@ -60,7 +47,7 @@ def aes_gcm_encrypt(key: bytes, plaintext: bytes, aad: bytes = b"") -> Tuple[byt
         return nonce, ciphertext, tag
 
     else:
-        raise RuntimeError("No cryptographic backend available. Install pycryptodome or cryptography.")
+        raise RuntimeError("No cryptographic backend available. Install cryptography.")
 
 
 def aes_gcm_decrypt(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad: bytes = b"") -> bytes:
@@ -87,17 +74,7 @@ def aes_gcm_decrypt(key: bytes, nonce: bytes, ciphertext: bytes, tag: bytes, aad
     if len(tag) != 16:
         raise ValueError("Tag must be 16 bytes")
 
-    if CRYPTO_BACKEND == "pycryptodome":
-        cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
-        if aad:
-            cipher.update(aad)
-        try:
-            plaintext = cipher.decrypt_and_verify(ciphertext, tag)
-            return plaintext
-        except ValueError:
-            raise ValueError("Authentication failed - data may be tampered")
-
-    elif CRYPTO_BACKEND == "cryptography":
+    if CRYPTO_BACKEND == "cryptography":
         aesgcm = AESGCM(key)
         ct_with_tag = ciphertext + tag
         try:

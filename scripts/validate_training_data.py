@@ -119,7 +119,7 @@ def validate_content_quality(records: list[dict]) -> dict:
 
         lengths.append(len(content))
 
-        h = hashlib.md5(content.encode(errors="replace")).hexdigest()
+        h = hashlib.sha256(content.encode(errors="replace")).hexdigest()
         if h in seen_hashes:
             duplicates += 1
         seen_hashes.add(h)

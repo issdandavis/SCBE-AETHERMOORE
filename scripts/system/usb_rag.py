@@ -83,7 +83,7 @@ def get_db():
 
 
 def file_hash(path):
-    h = hashlib.md5()
+    h = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(65536), b""):
             h.update(chunk)

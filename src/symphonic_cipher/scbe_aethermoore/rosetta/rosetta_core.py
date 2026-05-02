@@ -314,7 +314,7 @@ class RosettaStone:
         # Add CJK cognate records
         for char, data in sorted(CJK_COGNATES.items()):
             record = {
-                "id": f"rosetta-cjk-{hashlib.md5(char.encode()).hexdigest()[:6]}",
+                "id": f"rosetta-cjk-{hashlib.sha256(char.encode()).hexdigest()[:6]}",
                 "category": "rosetta-cognate",
                 "instruction": (
                     f"What are the readings of the CJK character '{char}'" " across Chinese, Japanese, and Korean?"

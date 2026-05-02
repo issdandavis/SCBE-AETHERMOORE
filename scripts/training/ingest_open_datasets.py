@@ -123,7 +123,7 @@ def convert_chat_to_scbe(example: Dict, config: Dict, idx: int) -> Optional[Dict
     all_text = " ".join(str(m.get("content", "")) for m in messages)
     
     return {
-        "id": f"ag-{config['category'][:3]}-{hashlib.sha1(all_text[:200].encode()).hexdigest()[:8]}-{idx:05d}",
+        "id": f"ag-{config['category'][:3]}-{hashlib.sha256(all_text[:200].encode()).hexdigest()[:8]}-{idx:05d}",
         "category": config["category"],
         "messages": [
             {
@@ -154,7 +154,7 @@ def convert_trajectory_to_scbe(example: Dict, config: Dict, idx: int) -> Optiona
     all_text = json.dumps(trajectory)[:500]
     
     return {
-        "id": f"ag-{config['category'][:3]}-{hashlib.sha1(all_text.encode()).hexdigest()[:8]}-{idx:05d}",
+        "id": f"ag-{config['category'][:3]}-{hashlib.sha256(all_text.encode()).hexdigest()[:8]}-{idx:05d}",
         "category": config["category"],
         "trajectory": trajectory,
         "metadata": {

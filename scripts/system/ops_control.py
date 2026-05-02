@@ -27,6 +27,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -459,19 +460,17 @@ def cmd_roster(args):
 
 def cmd_health(args):
     """Run health checks."""
-    import subprocess
-
     print("\n--- HEALTH CHECK ---\n")
 
     checks = [
-        ("GCP VM", "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 https://34.134.99.90:8001/health"),
-        ("n8n Bridge", "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 http://127.0.0.1:8001/health"),
-        ("AetherNet", "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 http://127.0.0.1:8300/health"),
+        ("GCP VM", ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "--connect-timeout", "5", "https://34.134.99.90:8001/health"]),
+        ("n8n Bridge", ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "--connect-timeout", "5", "http://127.0.0.1:8001/health"]),
+        ("AetherNet", ["curl", "-s", "-o", "/dev/null", "-w", "%{http_code}", "--connect-timeout", "5", "http://127.0.0.1:8300/health"]),
     ]
 
     for name, cmd in checks:
         try:
-            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=10)
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
             code = result.stdout.strip().replace("'", "")
             if code == "200":
                 print(f"  [PASS] {name}: HTTP {code}")

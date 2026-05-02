@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import shlex
 import subprocess
 import sys
 from dataclasses import asdict
@@ -265,10 +266,9 @@ def execute_verify(payload: dict[str, Any], limit: int) -> list[dict[str, Any]]:
             continue
         cmd = packet["verify_command"]
         proc = subprocess.run(
-            cmd,
+            shlex.split(cmd),
             cwd=REPO_ROOT,
             text=True,
-            shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             timeout=240,
