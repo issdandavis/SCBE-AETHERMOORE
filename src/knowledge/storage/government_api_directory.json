@@ -2,379 +2,1096 @@
   "library_name": "SCBE Government API Directory",
   "version": "2026-05-02",
   "generated_at": "2026-05-02T03:00:00Z",
-  "source": "User-provided GSA API Directory list",
+  "source": "Official GSA API Directory plus user-provided directory list",
   "connectors": [
     {
       "id": "gsa_acquisition_gateway_listings_api",
       "name": "Acquisition Gateway Listings API",
       "category": "gsa_acquisition",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/ag-api/",
       "base_url": "",
       "auth": "unknown",
       "access_level": "unknown",
-      "format": ["unknown"],
-      "best_for": ["acquisition gateway listings"],
-      "constraints": ["placeholder; API not yet available"]
+      "format": [
+        "unknown"
+      ],
+      "best_for": [
+        "acquisition gateway listings"
+      ],
+      "constraints": [
+        "placeholder; API not yet available"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/ag-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "placeholder_not_available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "review_required",
+      "notes": [
+        "Official directory marks this API page as a placeholder; no default connector."
+      ],
+      "free_tier": "review_required"
     },
     {
       "id": "gsa_analytics_usa_gov_api",
       "name": "Analytics.usa.gov API",
       "category": "analytics",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/dap/",
       "base_url": "https://analytics.usa.gov/",
       "auth": "none",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["federal web analytics"],
-      "constraints": ["aggregated/anonymized data"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "federal web analytics"
+      ],
+      "constraints": [
+        "aggregated/anonymized data"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/dap/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "GSA_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required",
+      "endpoint_examples": [
+        "https://api.gsa.gov/analytics/dap/v2/reports/{report}?api_key=${GSA_API_KEY}"
+      ],
+      "use_for_scbe": [
+        "federal web analytics research",
+        "public-service UX benchmarking"
+      ]
     },
     {
       "id": "gsa_api_data_gov_admin_api",
       "name": "Api.Data.Gov Admin API",
       "category": "api_management",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/apidatagov/",
       "base_url": "https://api.data.gov/",
       "auth": "partner credentials",
       "access_level": "partner",
-      "format": ["JSON"],
-      "best_for": ["api.data.gov administration"],
-      "constraints": ["admin-only functionality"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "api.data.gov administration"
+      ],
+      "constraints": [
+        "admin-only functionality"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/apidatagov/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     },
     {
       "id": "gsa_api_data_gov_metrics_api",
       "name": "Api.Data.Gov Metrics API",
       "category": "api_management",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/apidatagov-metrics/",
       "base_url": "https://api.data.gov/",
       "auth": "none or key by endpoint",
       "access_level": "mixed",
-      "format": ["JSON"],
-      "best_for": ["api.data.gov system metrics"],
-      "constraints": ["endpoint-specific access policies"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "api.data.gov system metrics"
+      ],
+      "constraints": [
+        "endpoint-specific access policies"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/apidatagov-metrics/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "free_public_no_key",
+      "notes": [],
+      "free_tier": "public_no_key"
     },
     {
       "id": "gsa_calc_api",
       "name": "Contract-Awarded Labor Category (CALC) API",
       "category": "procurement",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/dx-calc-api/",
       "base_url": "https://calc.gsa.gov/",
       "auth": "none",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["awarded labor rates", "schedule price comparisons"],
-      "constraints": ["schedule and filter limitations"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "awarded labor rates",
+        "schedule price comparisons"
+      ],
+      "constraints": [
+        "schedule and filter limitations"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/dx-calc-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "free_public_no_key",
+      "notes": [],
+      "free_tier": "public_no_key",
+      "use_for_scbe": [
+        "labor-rate comparison",
+        "price realism support",
+        "proposal pricing research"
+      ]
     },
     {
       "id": "gsa_data_gov_ckan_api",
       "name": "Data.gov CKAN API",
       "category": "datasets",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/datadotgov/",
       "base_url": "https://catalog.data.gov/api/3/action/",
       "auth": "none",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["federal open-data catalog metadata"],
-      "constraints": ["CKAN query conventions"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "federal open-data catalog metadata"
+      ],
+      "constraints": [
+        "CKAN query conventions"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/datadotgov/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "free_public_no_key",
+      "notes": [],
+      "free_tier": "public_no_key",
+      "endpoint_examples": [
+        "https://catalog.data.gov/api/3/action/package_search?q={query}"
+      ],
+      "use_for_scbe": [
+        "federal open-data search",
+        "training/research source discovery"
+      ]
     },
     {
       "id": "gsa_fpds_api",
       "name": "Federal Procurement Data System - FPDS API",
       "category": "procurement",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://sam.gov/data-services/Data%20Dictionary/Contract%20Awards?privacy=Public",
       "base_url": "https://www.fpds.gov/",
       "auth": "varies",
       "access_level": "mixed",
-      "format": ["SOAP", "XML"],
-      "best_for": ["federal procurement records"],
-      "constraints": ["legacy SOAP/XML interoperability patterns"]
+      "format": [
+        "SOAP",
+        "XML"
+      ],
+      "best_for": [
+        "federal procurement records"
+      ],
+      "constraints": [
+        "legacy SOAP/XML interoperability patterns"
+      ],
+      "official_docs_url": "https://sam.gov/data-services/Data%20Dictionary/Contract%20Awards?privacy=Public",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "review_required",
+      "notes": [
+        "Review documentation and access terms before enabling as a default connector."
+      ],
+      "free_tier": "review_required"
     },
     {
       "id": "gsa_fleet_vehicles_api",
       "name": "Fleet Vehicles API",
       "category": "fleet",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://www.gsa.gov/buying-selling/products-services/transportation-logistics-services/vehicle-leasing/gsa-fleet-drivethru",
       "base_url": "https://drivethru.fas.gsa.gov/",
       "auth": "customer credentials",
       "access_level": "partner",
-      "format": ["JSON"],
-      "best_for": ["fleet leasing customer reporting"],
-      "constraints": ["GSA Fleet customer access required"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "fleet leasing customer reporting"
+      ],
+      "constraints": [
+        "GSA Fleet customer access required"
+      ],
+      "official_docs_url": "https://www.gsa.gov/buying-selling/products-services/transportation-logistics-services/vehicle-leasing/gsa-fleet-drivethru",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     },
     {
       "id": "gsa_it_collect_public_api",
       "name": "GSA IT Collect Public API",
       "category": "it_portfolio",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/itcollect/",
       "base_url": "https://itcollect.itdashboard.gov/",
       "auth": "none",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["government-wide IT portfolio data"],
-      "constraints": ["public dataset scope"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "government-wide IT portfolio data"
+      ],
+      "constraints": [
+        "public dataset scope"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/itcollect/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "free_public_no_key",
+      "notes": [],
+      "free_tier": "public_no_key"
     },
     {
       "id": "gsa_per_diem_api",
       "name": "Per Diem API",
       "category": "travel",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/perdiem/",
       "base_url": "https://api.gsa.gov/travel/",
       "auth": "none",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["federal travel lodging and meal rates"],
-      "constraints": ["rate periods and location filters"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "federal travel lodging and meal rates"
+      ],
+      "constraints": [
+        "rate periods and location filters"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/perdiem/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "GSA_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required",
+      "endpoint_examples": [
+        "https://api.gsa.gov/travel/perdiem/v2/rates/{year}/{state}/{zip}?api_key=${GSA_API_KEY}"
+      ],
+      "use_for_scbe": [
+        "travel-rate lookup",
+        "proposal travel budget support"
+      ]
     },
     {
       "id": "gsa_regulations_gov_api",
       "name": "Regulations.gov API",
       "category": "regulatory",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/regulationsgov/",
       "base_url": "https://api.regulations.gov/v4",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["documents", "comments", "dockets search"],
-      "constraints": ["key usage and rate limits"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "documents",
+        "comments",
+        "dockets search"
+      ],
+      "constraints": [
+        "key usage and rate limits"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/regulationsgov/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "REGULATIONS_GOV_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required",
+      "endpoint_examples": [
+        "https://api.regulations.gov/v4/documents?api_key=${REGULATIONS_GOV_API_KEY}",
+        "https://api.regulations.gov/v4/comments?api_key=${REGULATIONS_GOV_API_KEY}",
+        "https://api.regulations.gov/v4/dockets?api_key=${REGULATIONS_GOV_API_KEY}"
+      ],
+      "use_for_scbe": [
+        "rulemaking research",
+        "public-comment corpus collection",
+        "regulatory context retrieval"
+      ]
     },
     {
       "id": "sam_assistance_listings_public_api",
       "name": "SAM.gov Assistance Listings Public API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/assistance-listings-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["active/inactive assistance listings"],
-      "constraints": ["SAM key and pagination"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "active/inactive assistance listings"
+      ],
+      "constraints": [
+        "SAM key and pagination"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/assistance-listings-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required"
     },
     {
       "id": "sam_acquisition_subaward_reporting_public_api",
       "name": "SAM.gov Acquisition Subaward Reporting Public API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/acquisition-subaward-reporting-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["published/deleted federal subcontract data"],
-      "constraints": ["SAM key and data publication scope"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "published/deleted federal subcontract data"
+      ],
+      "constraints": [
+        "SAM key and data publication scope"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/acquisition-subaward-reporting-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required"
     },
     {
       "id": "sam_assistance_subaward_reporting_public_api",
       "name": "SAM.gov Assistance Subaward Reporting Public API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/assistance-subaward-reporting-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["published/deleted federal subaward data"],
-      "constraints": ["SAM key and data publication scope"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "published/deleted federal subaward data"
+      ],
+      "constraints": [
+        "SAM key and data publication scope"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/assistance-subaward-reporting-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required"
     },
     {
       "id": "sam_entity_exclusions_extracts_download_api",
       "name": "SAM.gov Entity/Exclusions Extracts Download API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/sam-entity-extracts-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON", "download files"],
-      "best_for": ["entity/exclusions extract retrieval"],
-      "constraints": ["file and parameter based retrieval rules"]
+      "format": [
+        "JSON",
+        "download files"
+      ],
+      "best_for": [
+        "entity/exclusions extract retrieval"
+      ],
+      "constraints": [
+        "file and parameter based retrieval rules"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/sam-entity-extracts-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required"
     },
     {
       "id": "sam_contract_awards_api",
       "name": "SAM.gov Contract Awards API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/contract-awards/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["contract award retrieval"],
-      "constraints": ["query parameter limitations"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "contract award retrieval"
+      ],
+      "constraints": [
+        "query parameter limitations"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/contract-awards/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required"
     },
     {
       "id": "sam_entity_management_api",
       "name": "SAM.gov Entity Management API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/entity-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key and role permissions",
       "access_level": "mixed",
-      "format": ["JSON"],
-      "best_for": ["entity detail information"],
-      "constraints": ["role-based endpoint permissions"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "entity detail information"
+      ],
+      "constraints": [
+        "role-based endpoint permissions"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/entity-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [
+        "Review documentation and access terms before enabling as a default connector.",
+        "Default connector must request public data only; do not enable FOUO/CUI/Sensitive tiers without explicit authorization."
+      ],
+      "free_tier": "public_key_required_public_mode_only",
+      "endpoint_examples": [
+        "https://api.sam.gov/entity-information/v4/entities?api_key=${SAM_API_KEY}"
+      ],
+      "rate_limit_notes": [
+        "Public/non-federal access can be very low volume; keep connector cached and throttled."
+      ],
+      "data_sensitivity": "public lane only by default; FOUO/CUI/Sensitive tiers require explicit federal/system-account authorization"
     },
     {
       "id": "sam_exclusions_api",
       "name": "SAM.gov Exclusions API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/exclusions-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["exclusion detail lookups"],
-      "constraints": ["parameterized retrieval constraints"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "exclusion detail lookups"
+      ],
+      "constraints": [
+        "parameterized retrieval constraints"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/exclusions-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required",
+      "endpoint_examples": [
+        "https://api.sam.gov/entity-information/v4/exclusions?api_key=${SAM_API_KEY}"
+      ],
+      "use_for_scbe": [
+        "excluded-party checks",
+        "vendor due-diligence support"
+      ]
     },
     {
       "id": "sam_federal_hierarchy_fouo_api",
       "name": "SAM.gov Federal Hierarchy FOUO API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/fh-fouo-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "federal credentials",
       "access_level": "partner",
-      "format": ["JSON"],
-      "best_for": ["office-level federal hierarchy (FOUO)"],
-      "constraints": ["U.S. Government use only"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "office-level federal hierarchy (FOUO)"
+      ],
+      "constraints": [
+        "U.S. Government use only"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/fh-fouo-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     },
     {
       "id": "sam_federal_hierarchy_public_api",
       "name": "SAM.gov Federal Hierarchy Public API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/fh-public-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["public federal organization hierarchy"],
-      "constraints": ["public hierarchy depth limitations"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "public federal organization hierarchy"
+      ],
+      "constraints": [
+        "public hierarchy depth limitations"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/fh-public-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required"
     },
     {
       "id": "sam_get_opportunities_public_api",
       "name": "SAM.gov Get Opportunities Public API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/get-opportunities-public-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["published federal opportunity details"],
-      "constraints": ["paginated retrieval"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "published federal opportunity details"
+      ],
+      "constraints": [
+        "paginated retrieval"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/get-opportunities-public-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required",
+      "endpoint_examples": [
+        "https://api.sam.gov/opportunities/v2/search?api_key=${SAM_API_KEY}&postedFrom=MM/DD/YYYY&postedTo=MM/DD/YYYY"
+      ],
+      "rate_limit_notes": [
+        "postedFrom and postedTo are mandatory; date ranges are bounded; paginate with limit/offset."
+      ],
+      "use_for_scbe": [
+        "contract opportunity discovery",
+        "NAICS/PSC/set-aside filtering",
+        "DARPA/SAM opportunity monitoring"
+      ]
     },
     {
       "id": "sam_opportunity_management_api",
       "name": "SAM.gov Opportunity Management API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/opportunities-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "authorized account",
       "access_level": "partner",
-      "format": ["JSON"],
-      "best_for": ["submitting/managing opportunities"],
-      "constraints": ["authorized users only"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "submitting/managing opportunities"
+      ],
+      "constraints": [
+        "authorized users only"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/opportunities-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     },
     {
       "id": "sam_product_service_codes_psc_api",
       "name": "SAM.gov Product Service Codes (PSC) API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/PSC-Public-API/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["PSC code lookup and metadata"],
-      "constraints": ["date/status filters by request parameters"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "PSC code lookup and metadata"
+      ],
+      "constraints": [
+        "date/status filters by request parameters"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/PSC-Public-API/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required",
+      "endpoint_examples": [
+        "https://api.sam.gov/prod/locationservices/v1/api/publicpscdetails?api_key=${SAM_API_KEY}"
+      ],
+      "rate_limit_notes": [
+        "Low non-federal daily limits are possible; cache PSC lookups locally."
+      ],
+      "use_for_scbe": [
+        "proposal tagging",
+        "opportunity classification",
+        "contract search normalization"
+      ]
     },
     {
       "id": "sam_public_location_services_api",
       "name": "SAM.gov Public Location Services API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/location-public-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "API key",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["location retrieval for opportunities"],
-      "constraints": ["location normalization constraints"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "location retrieval for opportunities"
+      ],
+      "constraints": [
+        "location normalization constraints"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/location-public-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": true,
+      "required_env": [
+        "SAM_API_KEY"
+      ],
+      "route_bucket": "free_public_key_required",
+      "notes": [],
+      "free_tier": "public_key_required"
     },
     {
       "id": "sam_subaward_reporting_bulk_upload_api",
       "name": "SAM.gov Subaward reporting Bulk Upload API",
       "category": "sam_gov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/subawards-bulkupload-api/",
       "base_url": "https://api.sam.gov/",
       "auth": "authorized account",
       "access_level": "partner",
-      "format": ["JSON", "bulk upload"],
-      "best_for": ["publishing subcontract and subaward reports"],
-      "constraints": ["bulk upload workflow and authorization requirements"]
+      "format": [
+        "JSON",
+        "bulk upload"
+      ],
+      "best_for": [
+        "publishing subcontract and subaward reports"
+      ],
+      "constraints": [
+        "bulk upload workflow and authorization requirements"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/subawards-bulkupload-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     },
     {
       "id": "searchgov_clicks_api",
       "name": "SearchGov Clicks API",
       "category": "searchgov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/searchgov-clicks/",
       "base_url": "https://search.usa.gov/",
       "auth": "customer credentials",
       "access_level": "partner",
-      "format": ["JSON"],
-      "best_for": ["sending SearchGov click analytics"],
-      "constraints": ["must be paired with SearchGov Results API"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "sending SearchGov click analytics"
+      ],
+      "constraints": [
+        "must be paired with SearchGov Results API"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/searchgov-clicks/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     },
     {
       "id": "searchgov_results_api",
       "name": "SearchGov Results API",
       "category": "searchgov",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/searchgov-results/",
       "base_url": "https://search.usa.gov/",
       "auth": "customer credentials",
       "access_level": "partner",
-      "format": ["JSON"],
-      "best_for": ["receiving SearchGov results"],
-      "constraints": ["must be paired with SearchGov Clicks API"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "receiving SearchGov results"
+      ],
+      "constraints": [
+        "must be paired with SearchGov Clicks API"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/searchgov-results/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     },
     {
       "id": "gsa_site_scanning_api",
       "name": "Site Scanning API",
       "category": "website_health",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/site-scanning-api/",
       "base_url": "https://api.gsa.gov/technology/site-scanning/",
       "auth": "none",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["federal website scan health and best-practice metrics"],
-      "constraints": ["scan coverage based on site-scanning program scope"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "federal website scan health and best-practice metrics"
+      ],
+      "constraints": [
+        "scan coverage based on site-scanning program scope"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/site-scanning-api/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "free_public_no_key",
+      "notes": [],
+      "free_tier": "public_no_key",
+      "endpoint_examples": [
+        "https://api.gsa.gov/technology/site-scanning/v1/websites"
+      ],
+      "use_for_scbe": [
+        "federal website health analysis",
+        "civic-agent target discovery"
+      ]
     },
     {
       "id": "sustainable_facilities_tool_api",
       "name": "Sustainable Facilities Tool API",
       "category": "facilities",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://sftool.gov/developers",
       "base_url": "https://sftool.gov/",
       "auth": "none",
       "access_level": "public",
-      "format": ["JSON"],
-      "best_for": ["sustainable facilities guidance and tooling"],
-      "constraints": ["tool-specific endpoint limits"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "sustainable facilities guidance and tooling"
+      ],
+      "constraints": [
+        "tool-specific endpoint limits"
+      ],
+      "official_docs_url": "https://sftool.gov/developers",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": true,
+      "deployment_safe": true,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "free_public_no_key",
+      "notes": [],
+      "free_tier": "public_no_key"
     },
     {
       "id": "tmss_2_rate_query_api",
       "name": "TMSS 2.0 Rate Query API",
       "category": "transportation",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://open.gsa.gov/api/ratequeryhhg/",
       "base_url": "https://tmss.gsa.gov/",
       "auth": "customer credentials",
       "access_level": "partner",
-      "format": ["JSON"],
-      "best_for": ["household goods and storage shipment cost queries"],
-      "constraints": ["customer-facing shipment quoting requirements"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "household goods and storage shipment cost queries"
+      ],
+      "constraints": [
+        "customer-facing shipment quoting requirements"
+      ],
+      "official_docs_url": "https://open.gsa.gov/api/ratequeryhhg/",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     },
     {
       "id": "touchpoints_api",
       "name": "Touchpoints API",
       "category": "feedback",
-      "docs_url": "https://open.gsa.gov/api/",
+      "docs_url": "https://github.com/gsa/touchpoints/wiki/API",
       "base_url": "https://touchpoints.app.cloud.gov/",
       "auth": "agency credentials",
       "access_level": "partner",
-      "format": ["JSON"],
-      "best_for": ["forms and response data access"],
-      "constraints": ["form-level permissions"]
+      "format": [
+        "JSON"
+      ],
+      "best_for": [
+        "forms and response data access"
+      ],
+      "constraints": [
+        "form-level permissions"
+      ],
+      "official_docs_url": "https://github.com/gsa/touchpoints/wiki/API",
+      "source_url": "https://open.gsa.gov/api/",
+      "connector_status": "available",
+      "free_to_add": false,
+      "deployment_safe": false,
+      "requires_api_key": false,
+      "required_env": [],
+      "route_bucket": "partner_gated",
+      "notes": [
+        "Do not enable by default; requires partner/customer/admin/authorized account scope."
+      ],
+      "free_tier": "partner_gated"
     }
+  ],
+  "source_url": "https://open.gsa.gov/api/",
+  "last_verified": "2026-05-02",
+  "deployment_policy": {
+    "free_first": "Agents may auto-plan public_no_key and public_key_required connectors; key-required connectors must resolve keys from environment only.",
+    "partner_gated": "Partner, customer, admin, FOUO, or authorized-account APIs must stay disabled until credentials and permission scope are explicitly configured.",
+    "no_secret_storage": "This catalog stores metadata only. Do not store API keys or credentials here.",
+    "public_mode_only": "Mixed-sensitivity APIs such as SAM Entity Management are enabled only for public data unless an operator explicitly configures elevated authorization."
+  },
+  "connector_buckets": {
+    "free_public_no_key": [
+      "gsa_api_data_gov_metrics_api",
+      "gsa_calc_api",
+      "gsa_data_gov_ckan_api",
+      "gsa_it_collect_public_api",
+      "gsa_site_scanning_api",
+      "sustainable_facilities_tool_api"
+    ],
+    "free_public_key_required": [
+      "gsa_analytics_usa_gov_api",
+      "gsa_per_diem_api",
+      "gsa_regulations_gov_api",
+      "sam_acquisition_subaward_reporting_public_api",
+      "sam_assistance_listings_public_api",
+      "sam_assistance_subaward_reporting_public_api",
+      "sam_contract_awards_api",
+      "sam_entity_exclusions_extracts_download_api",
+      "sam_entity_management_api",
+      "sam_exclusions_api",
+      "sam_federal_hierarchy_public_api",
+      "sam_get_opportunities_public_api",
+      "sam_product_service_codes_psc_api",
+      "sam_public_location_services_api"
+    ],
+    "partner_gated": [
+      "gsa_api_data_gov_admin_api",
+      "gsa_fleet_vehicles_api",
+      "sam_federal_hierarchy_fouo_api",
+      "sam_opportunity_management_api",
+      "sam_subaward_reporting_bulk_upload_api",
+      "searchgov_clicks_api",
+      "searchgov_results_api",
+      "tmss_2_rate_query_api",
+      "touchpoints_api"
+    ],
+    "review_required": [
+      "gsa_acquisition_gateway_listings_api",
+      "gsa_fpds_api"
+    ]
+  },
+  "free_public_connector_ids": [
+    "gsa_analytics_usa_gov_api",
+    "gsa_api_data_gov_metrics_api",
+    "gsa_calc_api",
+    "gsa_data_gov_ckan_api",
+    "gsa_it_collect_public_api",
+    "gsa_per_diem_api",
+    "gsa_regulations_gov_api",
+    "gsa_site_scanning_api",
+    "sam_acquisition_subaward_reporting_public_api",
+    "sam_assistance_listings_public_api",
+    "sam_assistance_subaward_reporting_public_api",
+    "sam_contract_awards_api",
+    "sam_entity_exclusions_extracts_download_api",
+    "sam_entity_management_api",
+    "sam_exclusions_api",
+    "sam_federal_hierarchy_public_api",
+    "sam_get_opportunities_public_api",
+    "sam_product_service_codes_psc_api",
+    "sam_public_location_services_api",
+    "sustainable_facilities_tool_api"
+  ],
+  "recommended_free_connector_order": [
+    "sam_get_opportunities_public_api",
+    "sam_product_service_codes_psc_api",
+    "sam_entity_management_api",
+    "sam_exclusions_api",
+    "gsa_calc_api",
+    "gsa_data_gov_ckan_api",
+    "gsa_regulations_gov_api",
+    "gsa_per_diem_api",
+    "gsa_site_scanning_api",
+    "gsa_analytics_usa_gov_api"
   ]
 }
