@@ -6,14 +6,26 @@ This module provides deterministic, dependency-light primitives used by the unit
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Sequence
+from typing import Deque, Dict, List, Optional, Sequence, Tuple
 
+import json
 import math
+import os
 import random
+import threading
+import time
 
 PHI: float = (1.0 + math.sqrt(5.0)) / 2.0
 PHI_INV: float = 1.0 / PHI
+
+# rho_i instrumentation (measurement-first; env-gated, default off).
+# Enable with SCBE_RHO_LOG=1; override path with SCBE_RHO_LOG_PATH.
+_RHO_LOG_WINDOW: int = 256
+_RHO_LOG_MIN_SAMPLES: int = 32
+_RHO_LOG_LOCK = threading.Lock()
+_RHO_HISTORY: Dict[str, Deque[Tuple[float, float]]] = {}
 
 
 TONGUE_WEIGHTS: Dict[str, float] = {
@@ -221,6 +233,49 @@ class PolyhedralFlowRouter:
         return f"{tongue}:" + "->".join(str(h["polyhedron"]) for h in path)
 
 
+def _pearson(samples: Sequence[Tuple[float, float]]) -> Optional[float]:
+    n = len(samples)
+    if n < 2:
+        return None
+    mx = sum(s[0] for s in samples) / n
+    my = sum(s[1] for s in samples) / n
+    num = sum((s[0] - mx) * (s[1] - my) for s in samples)
+    dx = math.sqrt(sum((s[0] - mx) ** 2 for s in samples))
+    dy = math.sqrt(sum((s[1] - my) ** 2 for s in samples))
+    if dx == 0.0 or dy == 0.0:
+        return 0.0
+    return float(num / (dx * dy))
+
+
+def _rho_log(distances: Dict[str, float], h: float, tier: str, phase_deviation: float) -> None:
+    if not os.environ.get("SCBE_RHO_LOG"):
+        return
+    try:
+        with _RHO_LOG_LOCK:
+            rho: Dict[str, Optional[float]] = {}
+            for k, v in distances.items():
+                buf = _RHO_HISTORY.setdefault(k, deque(maxlen=_RHO_LOG_WINDOW))
+                buf.append((float(v), float(h)))
+                rho[k] = _pearson(list(buf)) if len(buf) >= _RHO_LOG_MIN_SAMPLES else None
+            path = os.environ.get(
+                "SCBE_RHO_LOG_PATH",
+                os.path.join("artifacts", "rho_logging", "composite_wall_rho.jsonl"),
+            )
+            os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+            rec = {
+                "ts": time.time(),
+                "distances": {k: float(v) for k, v in distances.items()},
+                "h_composite": float(h),
+                "tier": tier,
+                "phase_deviation": float(phase_deviation),
+                "rho_per_axis": rho,
+            }
+            with open(path, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(rec) + "\n")
+    except Exception:
+        pass
+
+
 def composite_harmonic_wall(
     distances: Dict[str, float],
     *,
@@ -233,6 +288,7 @@ def composite_harmonic_wall(
     h *= math.exp(-0.03 * max(len(vals) - 1, 0))
     h = float(max(min(h, 1.0), 1e-12))
     tier = "ALLOW" if h >= 0.75 else ("DENY" if h < 0.15 else "QUARANTINE")
+    _rho_log(distances, h, tier, phase_deviation)
     return {"h_composite": h, "tier": tier, "mitm_immune": True}
 
 

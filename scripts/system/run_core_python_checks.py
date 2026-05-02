@@ -23,6 +23,8 @@ CORE_SMOKE_PATHS: tuple[str, ...] = (
     "tests/test_sacred_egg_registry.py",
     "tests/test_semantic_projector_deep.py",
     "tests/test_triangulated_lattice.py",
+    "tests/test_rho_logging_generator_smoke.py",
+    "tests/test_analyze_rho_log_hint.py",
     "tests/crypto",
 )
 

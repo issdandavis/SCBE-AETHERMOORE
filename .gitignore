@@ -159,6 +159,9 @@ dist-gateway/
 .scbe/packets/
 .scbe/skill_registry/
 .scbe/billing.sqlite3
+.scbe/tmp/
+.cursor/settings.json
+.cursor/plans/
 
 # Playwright MCP session snapshots (browser automation temp files)
 .playwright-mcp/
