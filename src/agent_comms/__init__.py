@@ -19,6 +19,20 @@ from .message import AgentMessage, MessagePriority, MessageType
 from .channel import Channel, ChannelState
 from .registry import AgentRegistry, AgentInfo
 from .router import MessageRouter
+from .packet import (
+    AgentPacketV1,
+    Budget,
+    BudgetExceeded,
+    ContextRef,
+    MergeReport,
+    Route,
+    enforce_budget,
+    hash_state,
+    new_task_id,
+    pack,
+    packet_input_tokens,
+    unpack,
+)
 
 __all__ = [
     "AgentMessage",
@@ -29,4 +43,16 @@ __all__ = [
     "AgentRegistry",
     "AgentInfo",
     "MessageRouter",
+    "AgentPacketV1",
+    "Budget",
+    "BudgetExceeded",
+    "ContextRef",
+    "MergeReport",
+    "Route",
+    "enforce_budget",
+    "hash_state",
+    "new_task_id",
+    "pack",
+    "packet_input_tokens",
+    "unpack",
 ]
