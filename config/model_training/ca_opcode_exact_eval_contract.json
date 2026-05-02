@@ -1,0 +1,37 @@
+{
+  "contract_id": "ca_opcode_exact_eval_v1",
+  "description": "Small gate for exact CA abs/add opcode recall after broad smoke exposed repeated omission of the add byte.",
+  "thresholds": {
+    "minimum_pass_rate": 1.0,
+    "must_pass": [
+      "ca_abs_add_exact_smoke_prompt",
+      "ca_abs_add_correct_wrong_abs_slot"
+    ]
+  },
+  "prompts": [
+    {
+      "id": "ca_abs_add_exact_smoke_prompt",
+      "prompt": "In the SCBE CA opcode table, generate a CA opcode sequence for abs(a) + abs(b). Return the relevant hex opcodes and operation names only.",
+      "required": [
+        "CA",
+        "0x09, 0x09, 0x00",
+        "abs",
+        "add"
+      ],
+      "forbidden": [
+        "0x09, 0x09, 0x09"
+      ]
+    },
+    {
+      "id": "ca_abs_add_correct_wrong_abs_slot",
+      "prompt": "A model wrote CA: 0x09 and named abs(a), abs(b), add, but forgot the add byte. Correct the CA sequence.",
+      "required": [
+        "0x09, 0x09, 0x00",
+        "add=0x00"
+      ],
+      "forbidden": [
+        "CA: 0x09\nOPCODES"
+      ]
+    }
+  ]
+}

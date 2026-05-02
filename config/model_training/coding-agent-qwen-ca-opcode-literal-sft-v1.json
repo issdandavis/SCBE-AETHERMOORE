@@ -1,0 +1,65 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-ca-opcode-literal-sft-v1",
+  "title": "SCBE coding agent Qwen CA opcode literal SFT v1",
+  "description": "Literal-output supervised repair after CA DPO overfit the scaffold and raw smoke still missed exact bytes. Includes exact CA abs/add outputs plus simple Python and depth-2 JSON examples to preserve broad smoke behavior.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal coding agent. Return exact requested code or exact CA byte plans. For CA arithmetic, abs is opcode 0x09 and add is opcode 0x00. The sequence for abs(a)+abs(b) is exactly 0x09, 0x09, 0x00.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "ca_opcode_literal_sft_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "ca_opcode_literal_sft_v1_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 512,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.03,
+    "learning_rate": 0.00022,
+    "num_train_epochs": 4,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.04,
+    "max_steps": 140,
+    "max_train_records": 220,
+    "max_eval_records": 8,
+    "logging_steps": 10,
+    "save_steps": 140,
+    "save_total_limit": 1,
+    "gradient_checkpointing": true,
+    "seed": 97,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-ca-opcode-literal-sft-v1"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-ca-opcode-literal-v1",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-opcode-literal-sft-v1",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-ca-opcode-literal-sft-v1-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/ca_opcode_exact_eval_contract.json",
+    "post_training_gate": "Run direct adapter smoke with scripts/eval/smoke_merged_coding_model_hf.py and require 4/4 before adding this adapter to a promoted merge."
+  }
+}

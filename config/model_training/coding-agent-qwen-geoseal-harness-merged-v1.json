@@ -1,0 +1,41 @@
+{
+  "schema_version": "scbe_coding_model_merge_profile_v1",
+  "merge_id": "coding-agent-qwen-geoseal-harness-merged-v1",
+  "title": "GeoSeal harness coding agent merged model v1",
+  "description": "Full-model merge for the first usable GeoSeal coding-agent harness path. The model handles general coding and depth-2 JSON generation; CA opcode exactness is intentionally routed through the deterministic scbe_code.ca-plan tool.",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "output_model_repo": "issdandavis/scbe-coding-agent-qwen-geoseal-harness-merged-v1",
+  "merge_mode": "stack",
+  "adapters": [
+    {
+      "profile_id": "coding-agent-qwen-ca-geoseal-combined-repair-v3",
+      "stage": "ca_geoseal_combined_repair",
+      "adapter_repo": "issdandavis/scbe-coding-agent-qwen-ca-geoseal-combined-repair-v3",
+      "weight": 1.0,
+      "required": true,
+      "harness_smoke_job_id": "69f5a18498a8d679adfb8709",
+      "harness_gate": {
+        "passed": 4,
+        "total": 4,
+        "tool_routed_cases": [
+          "ca_opcode_abs_add"
+        ]
+      }
+    }
+  ],
+  "pre_merge_gates": {
+    "must_pass_harness_smoke": true,
+    "source_harness_smoke_job_id": "69f5a18498a8d679adfb8709",
+    "notes": "This is a harnessed agent model, not a claim that raw model text memorizes every CA opcode. CA is resolved through GeoSeal/scbe_code.ca-plan."
+  },
+  "post_merge_gates": {
+    "evaluator": "scripts/eval/smoke_geoseal_coding_agent_hf.py",
+    "required_passed": 4,
+    "required_total": 4
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  }
+}
