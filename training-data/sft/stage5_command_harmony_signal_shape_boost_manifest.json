@@ -1,0 +1,19 @@
+{
+  "schema_version": "stage5_command_harmony_signal_shape_boost_manifest_v1",
+  "generated_utc": "2026-05-03T01:19:08.100695+00:00",
+  "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\stage5_command_harmony_signal_shape_boost_train.sft.jsonl",
+  "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\stage5_command_harmony_signal_shape_boost_holdout.sft.jsonl",
+  "train_rows": 40,
+  "holdout_rows": 4,
+  "kinds": [
+    "analog_action_ladder",
+    "current_harness_terminal_command",
+    "provider_lane_signal",
+    "runtime_vs_structural_boundary"
+  ],
+  "repair_source": {
+    "job_id": "69f69b559d85bec4d76f0e0e",
+    "failed_gate": "stage5_command_harmony_eval_v1",
+    "failure_summary": "1/4 pass; exact CLI, provider signal, and runtime/structural boundary markers were missing."
+  }
+}

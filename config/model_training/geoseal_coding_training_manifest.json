@@ -35,6 +35,12 @@
       "purpose": "Adds runtime-verified command harmony records for binary slots, cross-language command outputs, and structural-vs-runtime convergence."
     },
     {
+      "profile_id": "coding-agent-qwen-command-harmony-v5-signal-repair-v1",
+      "profile_path": "config/model_training/coding-agent-qwen-command-harmony-v5-signal-repair-v1.json",
+      "stage": "command_harmony_signal_repair",
+      "purpose": "Concentrated repair after command-harmony-v5 failed the inline gate 1/4. Adds forced-prefix signal-shape rows for exact CLI markers, provider lane signaling, analog actions, and runtime-vs-structural boundaries."
+    },
+    {
       "profile_id": "coding-agent-qwen-atomic-workflow-stage6",
       "profile_path": "config/model_training/coding-agent-qwen-atomic-workflow-stage6.json",
       "stage": "atomic_workflow_resource_decay",

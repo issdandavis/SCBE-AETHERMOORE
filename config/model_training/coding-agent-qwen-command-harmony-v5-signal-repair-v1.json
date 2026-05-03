@@ -1,0 +1,68 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-command-harmony-v5-signal-repair-v1",
+  "title": "SCBE coding agent Qwen GeoSeal command harmony v5 signal repair v1",
+  "description": "Repair pass after command-harmony-v5 trained cleanly but failed the Stage 5 gate 1/4. Concentrates on forced-prefix required-token shape for current harness-terminal commands, provider-pair lane signals, analog actions, and runtime-vs-structural boundaries.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Emit exact required command markers before prose, preserve provider-pair lane-change signals, and separate structural-only maps from runtime-verified evidence.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "stage5_command_harmony_signal_shape_boost_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "stage5_command_harmony_signal_shape_boost_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.0001,
+    "num_train_epochs": 1,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": 120,
+    "max_train_records": 120,
+    "max_eval_records": 40,
+    "logging_steps": 10,
+    "save_steps": 120,
+    "save_total_limit": 1,
+    "seed": 47,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-command-harmony-v5-signal-repair-v1"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-v5",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-command-harmony-v5-signal-repair-v1",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-command-harmony-v5-signal-repair-v1-hf-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/stage5_command_harmony_eval_contract.json",
+    "notes": "Concentrated repair profile. It intentionally drops broad codeflow/drill shards because the first v5 run learned general prose but missed exact gate tokens."
+  }
+}
