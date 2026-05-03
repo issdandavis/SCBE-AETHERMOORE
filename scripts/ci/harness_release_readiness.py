@@ -28,8 +28,10 @@ HARNESS_RELEASE_PATHS = [
     "src/agent_comms/lane_grid.py",
     "src/agent_comms/secure_handoff.py",
     "src/agent_comms/triadic_handoff.py",
+    "src/aethercode/arena_intent_overlay.py",
     "src/geoseal_cli.py",
     "bin/geoseal.cjs",
+    "scripts/aetherbrowser/api_server.py",
     "scripts/serve_geoseal_harness.py",
     "scripts/benchmark/harness_provider_matrix.py",
     "scripts/benchmark/harness_research_matrix.py",
@@ -51,6 +53,8 @@ HARNESS_RELEASE_PATHS = [
     "tests/agent_comms/test_lane_grid.py",
     "tests/agent_comms/test_secure_handoff.py",
     "tests/agent_comms/test_triadic_handoff.py",
+    "tests/aethercode/test_arena_intent_overlay.py",
+    "tests/aethercode/test_arena_static_integration.py",
     "tests/benchmark/test_harness_provider_matrix.py",
     "tests/benchmark/test_harness_research_matrix.py",
     "tests/benchmark/test_harness_live_smoke.py",
@@ -76,6 +80,7 @@ HARNESS_RELEASE_PATHS = [
 
 TEST_COMMANDS = [
     "python -m pytest tests/agent_comms tests/benchmark/test_harness_provider_matrix.py "
+    "tests/aethercode/test_arena_intent_overlay.py tests/aethercode/test_arena_static_integration.py "
     "tests/benchmark/test_harness_research_matrix.py tests/benchmark/test_harness_live_smoke.py "
     "tests/research/test_geoseal_research_routes.py tests/research/test_geoseal_source_terminal.py "
     "tests/research/test_aethercode_source_finder_static.py tests/terminal/test_geoseal_harness_terminal.py "

@@ -1625,6 +1625,8 @@ def _arena_provider_rows() -> list[dict[str, Any]]:
                 "available": available,
                 "model": model_name,
                 "required_env": meta["env"],
+                "provider_kind": provider_type,
+                "backend_chat_available": bool(available and provider_type in {"local", "huggingface"}),
             }
         )
     return rows
@@ -1779,6 +1781,13 @@ class ArenaCompatChatRequest(BaseModel):
     domain: Optional[str] = None
 
 
+class ArenaIntentOverlayRequest(BaseModel):
+    problem: str
+    shared_code: str = ""
+    previous_receipt: str = "GENESIS"
+    seat_ids: list[str] = []
+
+
 class RagQueryRequest(BaseModel):
     query: str
     max_sources: int = RAG_DEFAULT_TOP_K
@@ -1800,6 +1809,21 @@ class CrossTalkSendRequest(BaseModel):
 @app.get("/v1/providers")
 async def arena_compat_providers():
     return {"tentacles": _arena_provider_rows()}
+
+
+@app.post("/v1/arena/intent-overlay")
+async def arena_intent_overlay(req: ArenaIntentOverlayRequest):
+    from src.aethercode.arena_intent_overlay import build_intent_overlay
+
+    problem = (req.problem or "").strip()
+    if not problem:
+        raise HTTPException(status_code=400, detail="problem is required")
+    return build_intent_overlay(
+        problem=problem,
+        shared_code=req.shared_code,
+        previous_receipt=req.previous_receipt or "GENESIS",
+        seat_ids=req.seat_ids or None,
+    )
 
 
 @app.get("/v1/rag/status")

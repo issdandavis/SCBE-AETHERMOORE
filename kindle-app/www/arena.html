@@ -78,6 +78,7 @@ body{
 .seat-status.offline{color:var(--dim);background:rgba(148,163,184,0.1)}
 .seat-status.proxy{color:#67e8f9;background:rgba(6,182,212,0.14)}
 .seat-status.nokey{color:var(--amber);background:rgba(255,184,74,0.1)}
+.seat-status.backend{color:#67e8f9;background:rgba(6,182,212,0.14)}
 
 /* BYOK Settings Modal */
 .settings-btn{
@@ -177,6 +178,7 @@ body{
 .deal-input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;font-family:var(--font)}
 .deal-input:focus{border-color:var(--accent);outline:none}
 .deal-input::placeholder{color:var(--dim)}
+.receipt-pill{font-family:var(--mono);font-size:9px;color:#67e8f9;background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.28);border-radius:4px;padding:1px 4px;margin-left:4px}
 
 @media(max-width:1100px){
   .table-layout{grid-template-columns:1fr}
@@ -214,7 +216,7 @@ body{
     <h3>API Keys (BYOK) <button class="close-settings" onclick="closeSettings()">&times;</button></h3>
     <div id="settingsRows"></div>
     <button class="settings-save" onclick="saveSettings()">Save &amp; Apply</button>
-    <div class="settings-note">Keys are stored in your browser's localStorage only. They are sent directly to each provider's API from your browser — never to any intermediary server. Ollama runs locally and needs no key.</div>
+    <div class="settings-note">Arena prefers the local backend provider router for Ollama and Hugging Face when it is running. Browser keys are fallback only and stay in localStorage.</div>
   </div>
 </div>
 
@@ -258,6 +260,8 @@ const TONGUE_INSTRUCTIONS = {
 // State
 const seats = {};
 const providerStatus = {};
+let backendProviderLoaded = false;
+const arenaReceipts = [];
 let deferredInstallPrompt = null;
 let sharedCode = `# Shared workspace — all players see this code\n# Edit here, then Deal or Deliberate\n\ndef hello():\n    print("Hello from the Round Table")\n`;
 const REPLIT_OWNERS = ['issdandavis', 'ISDanDavis2'];
@@ -729,10 +733,52 @@ function trimText(s, maxLen = 1800) {
   return s.length > maxLen ? s.slice(0, maxLen) + '\n...[trimmed]' : s;
 }
 
+async function hashText(text) {
+  if (window.crypto && window.crypto.subtle) {
+    const bytes = new TextEncoder().encode(text);
+    const digest = await window.crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(16).padStart(8, '0');
+}
+
+async function recordArenaReceipt(playerId, prompt, response, meta) {
+  const previous = arenaReceipts.length ? arenaReceipts[arenaReceipts.length - 1].receipt : 'GENESIS';
+  const player = PLAYERS.find(p => p.id === playerId) || {};
+  const payload = JSON.stringify({
+    previous,
+    player_id: playerId,
+    tongue: player.tongue || '',
+    role: player.role || '',
+    model: meta && meta.model || activeModelFor(playerId),
+    transport: meta && meta.transport || 'unknown',
+    prompt_hash: await hashText(prompt),
+    response_hash: await hashText(response),
+    step: arenaReceipts.length,
+  });
+  const receipt = await hashText(payload);
+  const row = {
+    schema_version: 'aethercode_arena_receipt_v1',
+    step: arenaReceipts.length,
+    previous,
+    receipt,
+    player_id: playerId,
+    tongue: player.tongue || '',
+    transport: meta && meta.transport || 'unknown',
+  };
+  arenaReceipts.push(row);
+  return row;
+}
+
 function availablePlayerIds() {
   return PLAYERS
     .map(p => p.id)
-    .filter(id => !(providerStatus[id] && providerStatus[id].available === false));
+    .filter(id => hasBackendProvider(id) || hasBrowserCredential(id));
 }
 
 function orderedAvailableIds() {
@@ -813,6 +859,50 @@ function getKey(playerId) {
   return (keys[playerId] || '').trim();
 }
 
+function hasBrowserCredential(playerId) {
+  if (playerId === 'ollama') return true;
+  const keys = loadArenaKeys();
+  return !!(keys[playerId] && keys[playerId].trim());
+}
+
+function hasBackendProvider(playerId) {
+  const row = providerStatus[playerId];
+  return !!(row && row.backendAvailable);
+}
+
+function activeModelFor(playerId) {
+  const row = providerStatus[playerId] || {};
+  const player = PLAYERS.find(p => p.id === playerId);
+  return row.model || (player ? player.model : '');
+}
+
+async function loadBackendProviders() {
+  try {
+    const resp = await fetch(API + '/v1/providers');
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || 'provider status failed');
+    const rows = Array.isArray(data.tentacles) ? data.tentacles : [];
+    rows.forEach((row) => {
+      if (!row || !row.tentacle) return;
+      const current = providerStatus[row.tentacle] || {};
+      const backendChat = !!row.backend_chat_available;
+      providerStatus[row.tentacle] = {
+        ...current,
+        backendAvailable: backendChat,
+        serverAvailable: !!row.available,
+        available: !!row.available || !!current.available,
+        model: row.model || current.model,
+        required_env: row.required_env || current.required_env,
+        provider_kind: row.provider_kind || current.provider_kind,
+      };
+    });
+    backendProviderLoaded = true;
+  } catch (_err) {
+    backendProviderLoaded = false;
+  }
+  refreshKeyStatus();
+}
+
 // Settings panel
 function openSettings() {
   const overlay = document.getElementById('settingsOverlay');
@@ -879,9 +969,17 @@ function saveSettings() {
 
 function refreshKeyStatus() {
   PLAYERS.forEach(p => {
-    const has = hasKey(p.id);
-    providerStatus[p.id] = { available: has };
-    if (!has) {
+    const current = providerStatus[p.id] || {};
+    const backend = !!current.backendAvailable;
+    const server = !!current.serverAvailable;
+    const browser = hasBrowserCredential(p.id);
+    const available = backend || server || browser;
+    providerStatus[p.id] = { ...current, available };
+    if (backend) {
+      setStatus(p.id, 'backend', 'backend');
+    } else if (server) {
+      setStatus(p.id, 'proxy', 'server');
+    } else if (!available) {
       setStatus(p.id, 'nokey', 'no key');
     } else {
       setStatus(p.id, 'idle', 'ready');
@@ -953,16 +1051,13 @@ async function callClaude(apiKey, model, systemPrompt, userMessage) {
 }
 
 async function callHuggingFace(apiKey, userMessage) {
-  const url = 'https://api-inference.huggingface.co/models/meta-llama/Llama-3.3-70B-Instruct';
-  const resp = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-    body: JSON.stringify({ inputs: userMessage, parameters: { max_new_tokens: 1024, temperature: 0.7, return_full_text: false } }),
-  });
-  const data = await resp.json();
-  if (!resp.ok) throw new Error(data.error || JSON.stringify(data));
-  if (Array.isArray(data) && data[0]) return data[0].generated_text || '';
-  return typeof data === 'string' ? data : JSON.stringify(data);
+  return callOpenAICompatible(
+    'https://router.huggingface.co/v1/chat/completions',
+    apiKey,
+    activeModelFor('huggingface') || 'Qwen/Qwen2.5-Coder-7B-Instruct',
+    'You are the Hugging Face model trainer seat in the governed AI Round Table.',
+    userMessage
+  );
 }
 
 async function callOllama(model, systemPrompt, userMessage) {
@@ -976,31 +1071,99 @@ async function callOllama(model, systemPrompt, userMessage) {
   return data.response || '';
 }
 
+async function callBackendProvider(playerId, systemPrompt, userMessage) {
+  const resp = await fetch(API + '/v1/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tentacle: playerId,
+      mode: 'arena-round-table',
+      domain: 'hybrid',
+      message: userMessage,
+      hf_model: playerId === 'huggingface' ? activeModelFor('huggingface') : null,
+      context: [
+        { role: 'system', content: systemPrompt },
+        { role: 'shared_code', content: sharedCode },
+        { role: 'receipt_tip', content: arenaReceipts.length ? arenaReceipts[arenaReceipts.length - 1].receipt : 'GENESIS' },
+      ],
+    }),
+  });
+  const data = await resp.json();
+  if (!resp.ok || data.detail && !data.response) throw new Error(data.detail || 'backend provider failed');
+  return {
+    text: data.response || '',
+    meta: {
+      transport: 'backend',
+      model: data.model || activeModelFor(playerId),
+      latency_ms: data.latency_ms || 0,
+      governance_score: data.governance_score,
+      sources: Array.isArray(data.sources) ? data.sources.length : 0,
+    },
+  };
+}
+
+async function buildIntentOverlayForSeat(playerId, userMessage) {
+  try {
+    const previous = arenaReceipts.length ? arenaReceipts[arenaReceipts.length - 1].receipt : 'GENESIS';
+    const resp = await fetch(API + '/v1/arena/intent-overlay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        problem: userMessage,
+        shared_code: sharedCode,
+        previous_receipt: previous,
+        seat_ids: [playerId],
+      }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || 'intent overlay failed');
+    const block = data.blocks && data.blocks[0];
+    if (!block) return '';
+    return [
+      `ARENA INTENT BLOCK ${block.seat.name} ${block.seat.tongue}`,
+      `problem_hash=${block.problem_hash}`,
+      `shared_code_hash=${block.shared_code_hash}`,
+      `previous_receipt=${block.previous_receipt || previous}`,
+      `intent=${block.intent}`,
+      `axis=${block.readout_axis}`,
+      `route=${block.route_contract}`,
+      `receipt=${block.receipt_contract}`,
+      `build_state=${JSON.stringify(block.build_state_contract || {})}`,
+      `advance=${block.advancement_rule}`,
+    ].join('\n');
+  } catch (_err) {
+    return '';
+  }
+}
+
 // Route a call to the correct provider
 async function callProvider(playerId, systemPrompt, userMessage) {
   const player = PLAYERS.find(p => p.id === playerId);
-  const model = player ? player.model : '';
+  const model = activeModelFor(playerId) || (player ? player.model : '');
   const key = getKey(playerId);
+  if (hasBackendProvider(playerId)) {
+    return callBackendProvider(playerId, systemPrompt, userMessage);
+  }
 
   switch (playerId) {
     case 'groq':
-      return callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', key, model, systemPrompt, userMessage);
+      return { text: await callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
     case 'cerebras':
-      return callOpenAICompatible('https://api.cerebras.ai/v1/chat/completions', key, model, systemPrompt, userMessage);
+      return { text: await callOpenAICompatible('https://api.cerebras.ai/v1/chat/completions', key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
     case 'xai':
-      return callOpenAICompatible('https://api.x.ai/v1/chat/completions', key, model, systemPrompt, userMessage);
+      return { text: await callOpenAICompatible('https://api.x.ai/v1/chat/completions', key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
     case 'openrouter':
-      return callOpenAICompatible('https://openrouter.ai/api/v1/chat/completions', key, 'moonshotai/kimi-k2-0711-preview', systemPrompt, userMessage, { 'HTTP-Referer': window.location.origin, 'X-Title': 'AetherCode Arena' });
+      return { text: await callOpenAICompatible('https://openrouter.ai/api/v1/chat/completions', key, 'moonshotai/kimi-k2-0711-preview', systemPrompt, userMessage, { 'HTTP-Referer': window.location.origin, 'X-Title': 'AetherCode Arena' }), meta: { transport: 'browser', model: 'moonshotai/kimi-k2-0711-preview' } };
     case 'github_models':
-      return callOpenAICompatible('https://models.inference.ai.azure.com/chat/completions', key, model, systemPrompt, userMessage);
+      return { text: await callOpenAICompatible('https://models.inference.ai.azure.com/chat/completions', key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
     case 'google_ai':
-      return callGoogle(key, model, systemPrompt, userMessage);
+      return { text: await callGoogle(key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
     case 'claude':
-      return callClaude(key, model, systemPrompt, userMessage);
+      return { text: await callClaude(key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
     case 'huggingface':
-      return callHuggingFace(key, systemPrompt + '\n\n' + userMessage);
+      return { text: await callHuggingFace(key, systemPrompt + '\n\n' + userMessage), meta: { transport: 'browser', model } };
     case 'ollama':
-      return callOllama(model !== 'local' ? model : 'llama3', systemPrompt, userMessage);
+      return { text: await callOllama(model !== 'local' ? model : 'llama3', systemPrompt, userMessage), meta: { transport: 'browser', model } };
     default:
       throw new Error('Unknown provider: ' + playerId);
   }
@@ -1012,9 +1175,9 @@ async function askPlayer(playerId, message) {
   const text = message || (input ? input.value.trim() : '');
   if (!text) return null;
 
-  if (!hasKey(playerId)) {
+  if (!hasBackendProvider(playerId) && !hasBrowserCredential(playerId)) {
     const cfg = PROVIDER_KEY_MAP[playerId];
-    addMessage(playerId, 'error', `No API key set. Click the gear icon and enter your ${cfg ? cfg.envName : 'key'}.`);
+    addMessage(playerId, 'error', `No backend route or browser key is available. Click the gear icon and enter your ${cfg ? cfg.envName : 'key'}, or start the backend provider.`);
     return null;
   }
 
@@ -1028,15 +1191,23 @@ async function askPlayer(playerId, message) {
 
   const systemParts = [roleContext];
   if (sharedCode) systemParts.push('Shared code:\n```\n' + sharedCode + '\n```');
+  const intentBlock = await buildIntentOverlayForSeat(playerId, text);
+  if (intentBlock) systemParts.push(intentBlock);
   const systemPrompt = systemParts.join('\n\n');
 
   const t0 = performance.now();
   try {
-    const response = await callProvider(playerId, systemPrompt, text);
+    const result = await callProvider(playerId, systemPrompt, text);
+    const response = result && typeof result === 'object' ? result.text : String(result || '');
+    const meta = result && typeof result === 'object' ? result.meta || {} : {};
+    const receipt = await recordArenaReceipt(playerId, text, response, meta);
     const latency = Math.round(performance.now() - t0);
 
-    addMessage(playerId, 'ai', response, `${player.model} / ${latency}ms`);
-    setStatus(playerId, 'idle', 'ready');
+    const modelLabel = meta.model || activeModelFor(playerId) || player.model;
+    const transport = meta.transport ? `${meta.transport}` : 'browser';
+    const sourceSuffix = meta.sources ? ` / ${meta.sources} sources` : '';
+    addMessage(playerId, 'ai', response, `${modelLabel} / ${transport} / ${latency}ms${sourceSuffix} / receipt:${receipt.receipt.slice(0, 10)}`);
+    setStatus(playerId, hasBackendProvider(playerId) ? 'backend' : 'idle', hasBackendProvider(playerId) ? 'backend' : 'ready');
     return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response };
   } catch (err) {
     addMessage(playerId, 'error', err.message);
@@ -1056,7 +1227,8 @@ async function dealToAll() {
   document.getElementById('dealBtn').disabled = true;
   document.getElementById('dealBtn').textContent = 'Dealing...';
 
-  const promises = PLAYERS.map(p => askPlayer(p.id, text));
+  const ids = orderedAvailableIds();
+  const promises = ids.map(id => askPlayer(id, text));
   await Promise.allSettled(promises);
 
   document.getElementById('dealBtn').disabled = false;
@@ -1158,8 +1330,9 @@ async function deliberate() {
   btn.disabled = true;
   btn.textContent = 'Deliberating...';
 
-  // Phase 1: Fan out to all players
-  const promises = PLAYERS.map(p => askPlayer(p.id, text));
+  // Phase 1: Fan out to callable players
+  const ids = orderedAvailableIds();
+  const promises = ids.map(id => askPlayer(id, text));
   const results = await Promise.allSettled(promises);
 
   // Phase 2: Collect responses
@@ -1177,10 +1350,11 @@ async function deliberate() {
   // Phase 3: Synthesis round — send all responses to Lead Architect (Google AI / DR)
   const synthesisPrompt = `ROUND TABLE SYNTHESIS\n\nThe AI Round Table was asked: "${text}"\n\n${PLAYERS.length} models responded. Their answers:\n\n${responses}\n\nAs Lead Architect (DR tongue), synthesize:\n1. Points of agreement\n2. Points of disagreement\n3. Your unified recommendation\n4. Action items`;
 
-  const synthesis = await askPlayer('google_ai', synthesisPrompt);
+  const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
+  const synthesis = await askPlayer(synthId, synthesisPrompt);
   if (synthesis) {
     // Also show synthesis in center or highlight it
-    addMessage('google_ai', 'synthesis', '[ROUND TABLE CONSENSUS] ' + synthesis.response);
+    addMessage(synthId, 'synthesis', '[ROUND TABLE CONSENSUS] ' + synthesis.response);
   }
 
   btn.disabled = false;
@@ -1301,6 +1475,7 @@ registerServiceWorker();
 setupInstallPrompt();
 updateInstallUi();
 refreshKeyStatus();
+loadBackendProviders();
 updateTrainingCount();
 </script>
 </body>
