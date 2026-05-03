@@ -73,6 +73,9 @@ def test_table_game_records_legal_shared_board_without_private_hands():
     assert "shared task board" in table["objective"]
     assert table["deck_schema_version"] == "scbe_coding_deck_manifest_v1"
     assert table["deck_grounded_minimum_cards"] == 899
+    assert table["tribunal"]["schema_version"] == "scbe_dm_tribunal_v1"
+    assert table["tribunal"]["mode"] == "deterministic_ai_dm_overseer"
+    assert table["tribunal"]["dm_count"] == 3
     assert "private" in table["rules"].lower()
     assert table["final_total"] <= table["target_total"]
     assert table["board_verdict"] == "pass"
@@ -93,6 +96,8 @@ def test_receipts_include_board_state():
         assert receipt["deck_card_id"]
         assert receipt["deck_card_type"]
         assert 0.0 <= receipt["cooperative_score"] <= 1.0
+        assert receipt["tribunal_action"]
+        assert receipt["subprompt_sha256"]
 
 
 def test_role_deck_draws_match_expected_groups():
@@ -112,6 +117,18 @@ def test_table_game_is_non_greedy_cooperative():
     assert table["game_mode"] == "deterministic_non_greedy_cooperative"
     assert "do not maximize isolated role score" in table["objective"]
     assert all(receipt["cooperative_score"] > 0 for receipt in result["receipts"])
+
+
+def test_dm_tribunal_guides_every_visible_play():
+    result = simulate_formation(_task())
+    plays = result["table_game"]["plays"]
+
+    assert all(play["tribunal_action"] for play in plays)
+    assert all(play["subprompt_sha256"] for play in plays)
+
+    for receipt, play in zip(result["receipts"], plays):
+        assert receipt["tribunal_action"] == play["tribunal_action"]
+        assert receipt["subprompt_sha256"] == play["subprompt_sha256"]
 
 
 def test_missing_task_id_fails():

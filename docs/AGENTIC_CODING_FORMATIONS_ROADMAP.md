@@ -317,3 +317,13 @@ The current simulator draws public coding substrate cards from `config/coding_de
 | `file_manager`, `verifier` | STIB structure cards |
 | `context_roller` | binary byte cards |
 | `integrator` | operation cards |
+
+The current simulator also includes a deterministic AI-DM tribunal above the table. This is not a separate model call. It is a bounded overseer layer that rolls tenreary arrays from packet hashes and emits compact sub-prompts for each role.
+
+| DM | Focus | Function |
+|---|---|---|
+| `rules_dm` | legality | Keep moves inside owned paths, declared tools, and visible board rules. |
+| `math_dm` | score | Prefer shared board progress and handoff efficiency. |
+| `lore_dm` | continuity | Preserve task intent, role identity, and compact context continuity. |
+
+If this layer improves training traces, keep it. If it adds noise, repurpose it as an eval-only prompt planner.

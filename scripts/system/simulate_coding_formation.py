@@ -115,6 +115,21 @@ ROLE_DECK_GROUP = {
     "planner": "pairings",
 }
 
+DM_TRIBUNAL = {
+    "rules_dm": {
+        "focus": "legality",
+        "prompt": "Keep the move inside owned paths, declared tools, and visible board rules.",
+    },
+    "math_dm": {
+        "focus": "score",
+        "prompt": "Choose the move that improves shared board progress and handoff efficiency.",
+    },
+    "lore_dm": {
+        "focus": "continuity",
+        "prompt": "Preserve task intent, role identity, and compact context continuity.",
+    },
+}
+
 KEYWORD_WEIGHTS = {
     "research": [0.9, 0.1, 0.2, 0.2],
     "docs": [0.7, 0.1, 0.2, 0.6],
@@ -151,6 +166,8 @@ class Receipt:
     deck_card_id: str
     deck_card_type: str
     cooperative_score: float
+    tribunal_action: str
+    subprompt_sha256: str
     verdict: str
 
 
@@ -281,6 +298,72 @@ def _cooperative_score(play: dict[str, Any], role_fit: float, handoff_cost: floa
     return round(max(0.0, min(1.0, score)), 6)
 
 
+def _tenreary_roll(task: dict[str, Any], role: str, index: int, channel: str) -> list[int]:
+    digest = packet_hash({"task": task, "role": role, "index": index, "channel": channel})
+    return [int(char, 16) % 10 for char in digest[:6]]
+
+
+def _tribunal_guidance(
+    task: dict[str, Any],
+    role: str,
+    index: int,
+    play: dict[str, Any],
+    deck_play: dict[str, Any],
+    cooperative_score: float,
+) -> dict[str, Any]:
+    dms: list[dict[str, Any]] = []
+    roll_total = 0
+    for dm_id, dm in DM_TRIBUNAL.items():
+        roll = _tenreary_roll(task, role, index, dm_id)
+        score = sum(roll)
+        roll_total += score
+        dms.append(
+            {
+                "dm_id": dm_id,
+                "focus": dm["focus"],
+                "tenreary_roll": roll,
+                "roll_score": score,
+                "guidance": dm["prompt"],
+            }
+        )
+
+    if not play["legal"]:
+        action = "repair_illegal_move"
+    elif cooperative_score >= 0.80:
+        action = "advance"
+    elif roll_total >= 90:
+        action = "press_advantage"
+    elif role in {"verifier", "integrator"}:
+        action = "tighten_gate"
+    else:
+        action = "request_evidence"
+
+    subprompt = {
+        "schema_version": "scbe_dm_subprompt_v1",
+        "role": role,
+        "step_index": index,
+        "action": action,
+        "board_lane": play["board_lane"],
+        "workflow_card": play["card"],
+        "deck_card_id": deck_play["card_id"],
+        "instruction": (
+            f"{role}: {action}. Use {play['card']} on {play['board_lane']} with "
+            f"{deck_play['card_id']}. Return one compact receipt; do not expose private hand."
+        ),
+    }
+    return {
+        "schema_version": "scbe_dm_tribunal_guidance_v1",
+        "tribunal_id": "coding-table-dm-tribunal",
+        "role": role,
+        "step_index": index,
+        "dms": dms,
+        "roll_total": roll_total,
+        "action": action,
+        "subprompt": subprompt,
+        "subprompt_sha256": packet_hash(subprompt),
+    }
+
+
 def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(task, dict):
         raise ValueError("Task packet must be a JSON object.")
@@ -320,6 +403,9 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
         role_fit = round(_cosine(task_vector, role_vector), 6)
         handoff_cost = _transition_cost(prev_role, role)
         cooperative_score = _cooperative_score(play, role_fit, handoff_cost)
+        tribunal = _tribunal_guidance(task, role, index, play, deck_play, cooperative_score)
+        play["tribunal_action"] = tribunal["action"]
+        play["subprompt_sha256"] = tribunal["subprompt_sha256"]
         total_fit += role_fit
         total_cost += handoff_cost
         verdict = "pass" if role_fit >= 0.45 else "review"
@@ -332,6 +418,7 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
             "role_fit": role_fit,
             "handoff_cost": handoff_cost,
             "cooperative_score": cooperative_score,
+            "tribunal_guidance": tribunal,
             "board_play": play,
             "deck_card": deck_play,
             "allowed_tools": FORMATION_ROLES[role]["tools"],
@@ -357,9 +444,12 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
                 deck_card_id=str(deck_play["card_id"]),
                 deck_card_type=str(deck_play["card_type"]),
                 cooperative_score=cooperative_score,
+                tribunal_action=str(tribunal["action"]),
+                subprompt_sha256=str(tribunal["subprompt_sha256"]),
                 verdict=verdict,
             )
         )
+        current_packet["tribunal_guidance"] = tribunal
         current_packet = next_packet
         prev_role = role
 
@@ -388,6 +478,13 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
             "objective": "Advance the shared task board with legal, low-cost handoffs; do not maximize isolated role score.",
             "deck_schema_version": deck["schema_version"],
             "deck_grounded_minimum_cards": deck["counts"]["current_grounded_minimum_cards"],
+            "tribunal": {
+                "schema_version": "scbe_dm_tribunal_v1",
+                "mode": "deterministic_ai_dm_overseer",
+                "dm_count": len(DM_TRIBUNAL),
+                "dm_ids": list(DM_TRIBUNAL),
+                "decision_rule": "Tenreary rolls guide compact sub-prompts; final action remains bounded by legal board moves.",
+            },
             "target_total": target_total,
             "final_total": board_total,
             "board_verdict": board_verdict,
