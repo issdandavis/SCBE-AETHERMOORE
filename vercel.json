@@ -1,8 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "api/agent/*.js": {
-      "maxDuration": 30
+  "builds": [
+    {
+      "src": "api/agent/*.js",
+      "use": "@vercel/node"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "^/$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/launch$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/api/agent/(.*)$",
+      "dest": "/api/agent/$1.js"
+    }
+  ]
 }
