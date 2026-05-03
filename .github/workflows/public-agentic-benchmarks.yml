@@ -108,6 +108,7 @@ jobs:
 
           latest_dir="$(ls -td tmp.benchmarks/*--scbe-remote-scored | head -1)"
           mkdir -p ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
+          python -m pip install -e '.[dev]'
           python benchmark/benchmark.py --stats "${latest_dir}" \
             | tee ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/latest_stats.yml
           cp -R "${latest_dir}" ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/run
