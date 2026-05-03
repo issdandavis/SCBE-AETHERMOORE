@@ -247,6 +247,7 @@ polly_iq_results.json
 
 _external/
 external_repos/
+external/benchmarks/
 external/cli-quests/
 
 # Symlink roots — points to full drives, never commit
