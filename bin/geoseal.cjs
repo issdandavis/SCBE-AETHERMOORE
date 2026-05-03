@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { spawnSync } = require("child_process");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -24,6 +25,8 @@ Modes:
 
 Useful commands:
   geoseal doctor --json
+  geoseal custom-commands --json
+  geoseal run-command harness-benchmark --json
   geoseal status --api-base http://127.0.0.1:8002
   geoseal shell --command "portal-box --content \"def add(a, b): return a + b\" --language python --source-name sample.python --json"
   geoseal portal-box --api-base http://127.0.0.1:8002 --language python --content "def add(a, b): return a + b"
@@ -95,6 +98,7 @@ const COMMAND_MAP = {
 };
 
 const LOCAL_PASSTHROUGH_COMMANDS = new Set(["portal-box", "stream-wheel", "shell"]);
+const CUSTOM_COMMANDS_DIR = path.join(ROOT, ".geoseal", "commands");
 
 function parseArgs(argv) {
   const positionals = [];
@@ -131,6 +135,206 @@ function writeJsonOrText(flags, payload, text) {
   } else {
     process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
   }
+}
+
+function parseFrontmatter(text) {
+  if (!text.startsWith("---\n") && !text.startsWith("---\r\n")) {
+    return { metadata: {}, body: text };
+  }
+  const normalized = text.replace(/\r\n/g, "\n");
+  const end = normalized.indexOf("\n---\n", 4);
+  if (end === -1) {
+    return { metadata: {}, body: text };
+  }
+  const metadata = {};
+  const header = normalized.slice(4, end).trim();
+  for (const line of header.split("\n")) {
+    const match = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(line.trim());
+    if (match) {
+      metadata[match[1]] = match[2].replace(/^["']|["']$/g, "");
+    }
+  }
+  return { metadata, body: normalized.slice(end + 5).trim() };
+}
+
+function loadCustomCommand(filePath) {
+  const raw = fs.readFileSync(filePath, "utf8");
+  const parsed = parseFrontmatter(raw);
+  const fallbackName = path.basename(filePath, path.extname(filePath));
+  const relativePath = path.relative(ROOT, filePath).replace(/\\/g, "/");
+  const body = parsed.body.trim();
+  return {
+    name: String(parsed.metadata.name || fallbackName),
+    description: String(parsed.metadata.description || ""),
+    path: relativePath,
+    execution_mode: "template_only",
+    body,
+    body_preview: body.slice(0, 600),
+  };
+}
+
+function listCustomCommands() {
+  if (!fs.existsSync(CUSTOM_COMMANDS_DIR)) return [];
+  return fs
+    .readdirSync(CUSTOM_COMMANDS_DIR)
+    .filter((name) => name.endsWith(".md"))
+    .map((name) => loadCustomCommand(path.join(CUSTOM_COMMANDS_DIR, name)))
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function runCustomCommands(flags) {
+  const commands = listCustomCommands().map((command) => ({
+    name: command.name,
+    description: command.description,
+    path: command.path,
+    execution_mode: command.execution_mode,
+  }));
+  const payload = {
+    schema_version: "geoseal_custom_commands_v1",
+    ok: true,
+    command_dir: path.relative(ROOT, CUSTOM_COMMANDS_DIR).replace(/\\/g, "/"),
+    count: commands.length,
+    commands,
+  };
+  const text = commands.length
+    ? commands.map((command) => `${command.name}: ${command.description}`).join("\n")
+    : "No custom commands found.";
+  writeJsonOrText(flags, payload, text);
+}
+
+function runCustomCommand(name, flags) {
+  if (!name) {
+    const payload = {
+      schema_version: "geoseal_custom_command_v1",
+      ok: false,
+      error: "missing_custom_command",
+      message: "Pass a custom command name, for example: geoseal run-command harness-benchmark --json",
+    };
+    writeJsonOrText(flags, payload, payload.message);
+    process.exitCode = 2;
+    return;
+  }
+  const command = listCustomCommands().find((item) => item.name === name);
+  if (!command) {
+    const payload = {
+      schema_version: "geoseal_custom_command_v1",
+      ok: false,
+      error: "custom_command_not_found",
+      name,
+      available: listCustomCommands().map((item) => item.name),
+    };
+    writeJsonOrText(flags, payload, `Custom command not found: ${name}`);
+    process.exitCode = 2;
+    return;
+  }
+  const payload = {
+    schema_version: "geoseal_custom_command_v1",
+    ok: true,
+    command,
+    safety: {
+      executes_shell: false,
+      note: "This command surface returns a governed template packet; it does not execute shell commands.",
+    },
+  };
+  writeJsonOrText(flags, payload, command.body);
+}
+
+function sha256Hex(text) {
+  return crypto.createHash("sha256").update(String(text), "utf8").digest("hex");
+}
+
+function parseTongues(flags) {
+  const raw = String(flags.tongues || flags.tongue || "KO");
+  return raw
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function runTokenizerCodeLanes(flags) {
+  const command = String(flags.command || flags.content || "");
+  if (!command) {
+    throw new Error("--command is required for tokenizer-code-lanes");
+  }
+  const tongues = parseTongues(flags);
+  const lanes = tongues.map((tongue, index) => {
+    const source = `${tongue}:${command}`;
+    const binary = Buffer.from(source, "utf8").toString("hex");
+    return {
+      index,
+      tongue,
+      command,
+      source,
+      binary,
+      source_sha256: sha256Hex(source),
+      token_sha256: sha256Hex(`${tongue}:${binary}`),
+    };
+  });
+  const payload = {
+    schema_version: "geoseal_tokenizer_code_lanes_v1",
+    ok: true,
+    command,
+    tongues,
+    lanes,
+  };
+  if (flags.output) {
+    const outputPath = path.resolve(ROOT, String(flags.output));
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+    payload.output = path.relative(ROOT, outputPath).replace(/\\/g, "/");
+  }
+  writeJsonOrText(flags, payload, JSON.stringify(payload, null, 2));
+}
+
+function loadLanePacket(flags, positionals) {
+  if (flags["input-file"]) {
+    return JSON.parse(fs.readFileSync(path.resolve(ROOT, String(flags["input-file"])), "utf8"));
+  }
+  const raw = positionals.find((item) => item.trim().startsWith("{"));
+  if (raw) return JSON.parse(raw);
+  throw new Error("--input-file or a JSON packet argument is required");
+}
+
+function runVerifyCodeLanes(flags, positionals) {
+  const packet = loadLanePacket(flags, positionals);
+  const lanes = Array.isArray(packet.lanes) ? packet.lanes : [];
+  const payload = {
+    schema_version: "geoseal_verify_code_lanes_v1",
+    ok: packet.schema_version === "geoseal_tokenizer_code_lanes_v1" && lanes.length > 0,
+    decoded_count: lanes.length,
+    lane_count: lanes.length,
+  };
+  writeJsonOrText(flags, payload, payload.ok ? "Code lanes verified." : "Code lanes failed verification.");
+}
+
+function runDecodeCodeLanes(flags, positionals) {
+  const packet = loadLanePacket(flags, positionals);
+  const lanes = Array.isArray(packet.lanes) ? packet.lanes : [];
+  const outputDir = path.resolve(ROOT, String(flags["output-dir"] || "artifacts/tokenizer_code_lanes/decoded"));
+  fs.mkdirSync(outputDir, { recursive: true });
+  const written = [];
+  for (const lane of lanes) {
+    const base = `${String(lane.index).padStart(2, "0")}_${lane.tongue}_${lane.command}`;
+    const safeBase = base.replace(/[^A-Za-z0-9_.-]+/g, "_");
+    const textPath = path.join(outputDir, `${safeBase}.txt`);
+    const binaryPath = path.join(outputDir, `${safeBase}.bin`);
+    fs.writeFileSync(textPath, String(lane.source || lane.command || ""), "utf8");
+    if (flags["write-binary"]) {
+      fs.writeFileSync(binaryPath, String(lane.binary || ""), "utf8");
+    }
+    written.push({
+      path: path.relative(ROOT, textPath).replace(/\\/g, "/"),
+      binary_path: path.relative(ROOT, binaryPath).replace(/\\/g, "/"),
+      tongue: lane.tongue,
+    });
+  }
+  const payload = {
+    schema_version: "geoseal_decode_code_lanes_v1",
+    ok: true,
+    decoded_count: lanes.length,
+    written,
+  };
+  writeJsonOrText(flags, payload, `Decoded ${lanes.length} code lanes.`);
 }
 
 const DEFAULT_SERVICE_DIR = path.join(ROOT, "artifacts", "geoseal_service");
@@ -228,6 +432,8 @@ function runDoctor(flags) {
   const active = resolveActiveServiceBase(flags);
   const advertisedCommands = [
     "doctor",
+    "custom-commands",
+    "run-command",
     "status",
     "chat",
     ...Object.keys(COMMAND_MAP).filter((name) => name !== "status" && name !== "chat"),
@@ -253,6 +459,12 @@ function runDoctor(flags) {
       : null,
     api_commands: Object.keys(COMMAND_MAP).sort(),
     advertised_commands: advertisedCommands,
+    custom_commands: listCustomCommands().map((command) => ({
+      name: command.name,
+      description: command.description,
+      path: command.path,
+      execution_mode: command.execution_mode,
+    })),
     python_modules: [probePythonModule("src.geoseal_cli"), probePythonModule("geoseal_cli")],
     notes: [
       "API commands require --api-base/SCBE_API_BASE or a live autodetected service.",
@@ -505,6 +717,26 @@ async function main() {
   }
   if (command === "doctor") {
     runDoctor(flags);
+    return;
+  }
+  if (command === "custom-commands") {
+    runCustomCommands(flags);
+    return;
+  }
+  if (command === "run-command") {
+    runCustomCommand(positionals[1], flags);
+    return;
+  }
+  if (command === "tokenizer-code-lanes") {
+    runTokenizerCodeLanes(flags);
+    return;
+  }
+  if (command === "verify-code-lanes") {
+    runVerifyCodeLanes(flags, positionals.slice(1));
+    return;
+  }
+  if (command === "decode-code-lanes") {
+    runDecodeCodeLanes(flags, positionals.slice(1));
     return;
   }
 
