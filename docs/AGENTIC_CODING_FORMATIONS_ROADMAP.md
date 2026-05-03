@@ -264,3 +264,44 @@ Good SFT row:
 ```
 
 Keep the training compact. Do not train on whole conversations when packet traces are enough.
+
+## Coding Pazaak Simulation
+
+Use a turn-based table simulation as the long-form training game.
+
+The point is not the card-game theme. The useful property is hidden-hand, visible-board coordination:
+
+- each role has private context or capability cards,
+- the system does not need to inspect the private hand,
+- each role plays one legal move to the shared board,
+- the board records only visible plays, totals, lanes, and receipts,
+- success is measured by legal progression toward the task target.
+
+This is a good repeatable simulator for coding formations because it teaches:
+
+- turn order,
+- handoff discipline,
+- role specialization,
+- legal move constraints,
+- hidden local context with shared public state,
+- verifier/integrator gates at the table level.
+
+Prototype:
+
+```powershell
+python scripts/system/simulate_coding_formation.py --json
+```
+
+Focused test:
+
+```powershell
+python -m pytest tests/system/test_simulate_coding_formation.py -q
+```
+
+Current prototype behavior:
+
+```text
+task packet -> formation choice -> role turns -> table-game board plays -> receipts -> final verdict
+```
+
+The simulation is intentionally pure math and local JSON. It should become the first source for compact SFT traces before real agents are allowed to run formation work.
