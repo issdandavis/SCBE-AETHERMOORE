@@ -84,7 +84,17 @@ jobs:
           cd external/benchmarks/aider
           mkdir -p tmp.benchmarks
           git clone --depth 1 https://github.com/Aider-AI/polyglot-benchmark.git tmp.benchmarks/polyglot-benchmark
-          ./benchmark/docker_build.sh
+          for attempt in 1 2 3; do
+            if ./benchmark/docker_build.sh; then
+              break
+            fi
+            if [ "${attempt}" = "3" ]; then
+              echo "Aider benchmark Docker build failed after ${attempt} attempts" >&2
+              exit 1
+            fi
+            echo "Aider benchmark Docker build failed on attempt ${attempt}; retrying after transient registry/apt backoff"
+            sleep $((attempt * 20))
+          done
           docker run --rm \
             --memory=12g \
             --memory-swap=12g \
