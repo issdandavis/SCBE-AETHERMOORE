@@ -43,6 +43,16 @@ from .graph_runner import (
     build_default_packet_graph,
     validate_only_handler,
 )
+from .lane_grid import (
+    LANE_GRID_SCHEMA_VERSION,
+    LaneCell,
+    LaneGridResult,
+    LaneGridScheduler,
+    LaneSpec,
+    SideStep,
+    build_six_tongue_lane_grid,
+    default_lane_handler,
+)
 from .harness_providers import (
     HarnessProvider,
     LaneSwitchVerdict,
@@ -100,6 +110,14 @@ __all__ = [
     "PacketGraphRunner",
     "build_default_packet_graph",
     "validate_only_handler",
+    "LANE_GRID_SCHEMA_VERSION",
+    "LaneCell",
+    "LaneGridResult",
+    "LaneGridScheduler",
+    "LaneSpec",
+    "SideStep",
+    "build_six_tongue_lane_grid",
+    "default_lane_handler",
     "HarnessProvider",
     "LaneSwitchVerdict",
     "compact_system_prompt",
