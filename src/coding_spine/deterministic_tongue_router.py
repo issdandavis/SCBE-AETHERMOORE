@@ -22,7 +22,7 @@ TONGUE_CANONICAL_LANG: dict[str, str] = {
     "RU": "Rust",
     "CA": "C",
     "UM": "Julia",
-    "DR": "Haskell",
+    "DR": "Markdown",
 }
 
 TONGUE_ROUTE_HINTS: dict[str, tuple[str, ...]] = {

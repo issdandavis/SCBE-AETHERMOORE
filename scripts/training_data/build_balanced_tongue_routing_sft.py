@@ -56,14 +56,14 @@ SEEDS: dict[str, list[str]] = {
         "write a Julia multiple-dispatch function for security scoring",
     ],
     "DR": [
-        "implement a Haskell Maybe monad bind operator",
-        "write a parser combinator in Haskell",
         "create a project README with architecture sections",
         "draft Markdown documentation with headings and bullet lists",
+        "write a Markdown task-flow card for an agentic script",
+        "create structured Markdown release notes with verification commands",
     ],
 }
 
-MAPPING_TEXT = "KO=Python, AV=TypeScript, RU=Rust, CA=C, UM=Julia, DR=Haskell"
+MAPPING_TEXT = "KO=Python, AV=TypeScript, RU=Rust, CA=C, UM=Julia, DR=Markdown"
 
 
 def record_for(tongue: str, task: str, variant: str) -> dict:

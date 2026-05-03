@@ -25,7 +25,7 @@ def test_routes_rust_task_without_python_map_contamination() -> None:
 def test_routes_readme_as_structural_draumric_work() -> None:
     route = route_prompt("Task: write project README documentation with headings and bullet lists.")
     assert route.tongue == "DR"
-    assert route.language == "Haskell"
+    assert route.language == "Markdown"
 
 
 def test_force_tongue_wins() -> None:
