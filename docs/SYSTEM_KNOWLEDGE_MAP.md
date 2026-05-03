@@ -42,6 +42,7 @@ This means a concept can be real while still living at different maturity levels
 | Training data | `training-data/sft/`, `training-data/dpo/`, `config/model_training/` | JSONL corpora, manifests, profiles, evaluation contracts, promotion gates. | Active canonical corpus lane |
 | Generated artifacts | `artifacts/`, `training/runs/`, `dist/` | Logs, reports, run outputs, build output, packaged artifacts. | Generated; inspect but do not treat as source |
 | Public docs and launch material | `docs/`, `docs/business/`, `docs/readiness/`, `docs/specs/` | Architecture, readiness, product, proposal, and specification docs. | Mixed authority; verify against code |
+| Research roadmaps | `docs/RESEARCH_ROADMAP_INDEX.md`, root `*-research.json` captures before cleanup | Research captures converted into implementation lanes, gates, and discard rules. | Active routing layer; raw JSON should be digested then moved out of root |
 
 ## Major System Threads
 
@@ -129,6 +130,7 @@ Use this split when deciding what to trust:
 3. Link recent successful training runs into the map: Stage 5 scaffolded adapter, Stage 6 constrained scaffold, Kaggle approval metrics.
 4. Keep Obsidian vault edits read-only unless explicitly requested; export curated subsets into repo-controlled staging folders when needed.
 5. Add a release-clean surface that separates source files from generated artifacts before npm/PyPI/package publication.
+6. Digest root `*-research.json` captures into `docs/RESEARCH_ROADMAP_INDEX.md`, then move raw captures under dated artifacts.
 
 ## Fast Commands
 
@@ -147,4 +149,7 @@ python -m pytest tests/test_geoseal_coding_training_system.py tests/test_stage6_
 
 # Inspect package/release readiness
 python scripts/ci/harness_release_readiness.py
+
+# Review research captures as roadmap seeds
+Get-Content docs/RESEARCH_ROADMAP_INDEX.md
 ```
