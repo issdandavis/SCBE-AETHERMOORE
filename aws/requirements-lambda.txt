@@ -4,7 +4,7 @@
 # FastAPI and ASGI adapter
 fastapi>=0.104.0
 pydantic>=2.5.0
-mangum>=0.17.0
+mangum>=0.21.0
 
 # Core dependencies
 numpy>=1.26.0
