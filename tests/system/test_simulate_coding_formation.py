@@ -69,12 +69,18 @@ def test_table_game_records_legal_shared_board_without_private_hands():
     result = simulate_formation(_task())
     table = result["table_game"]
     assert table["schema_version"] == "scbe_formation_table_game_v1"
+    assert table["game_mode"] == "deterministic_non_greedy_cooperative"
+    assert "shared task board" in table["objective"]
+    assert table["deck_schema_version"] == "scbe_coding_deck_manifest_v1"
+    assert table["deck_grounded_minimum_cards"] == 899
     assert "private" in table["rules"].lower()
     assert table["final_total"] <= table["target_total"]
     assert table["board_verdict"] == "pass"
     assert len(table["plays"]) == len(result["roles"])
     assert all(play["legal"] for play in table["plays"])
     assert all("card" in play for play in table["plays"])
+    assert all(play["deck_card_id"] for play in table["plays"])
+    assert all(play["deck_card_type"] for play in table["plays"])
     assert all("hand" not in play for play in table["plays"])
 
 
@@ -84,6 +90,28 @@ def test_receipts_include_board_state():
         assert isinstance(receipt["board_total_after"], int)
         assert receipt["board_lane"]
         assert receipt["card_played"]
+        assert receipt["deck_card_id"]
+        assert receipt["deck_card_type"]
+        assert 0.0 <= receipt["cooperative_score"] <= 1.0
+
+
+def test_role_deck_draws_match_expected_groups():
+    result = simulate_formation(_task())
+    plays = result["table_game"]["plays"]
+    assert [play["deck_group"] for play in plays] == [
+        "pairings",
+        "language_views",
+        "stib",
+        "operations",
+    ]
+
+
+def test_table_game_is_non_greedy_cooperative():
+    result = simulate_formation(_task())
+    table = result["table_game"]
+    assert table["game_mode"] == "deterministic_non_greedy_cooperative"
+    assert "do not maximize isolated role score" in table["objective"]
+    assert all(receipt["cooperative_score"] > 0 for receipt in result["receipts"])
 
 
 def test_missing_task_id_fails():

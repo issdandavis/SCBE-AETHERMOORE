@@ -269,13 +269,14 @@ Keep the training compact. Do not train on whole conversations when packet trace
 
 Use a turn-based table simulation as the long-form training game.
 
-The point is not the card-game theme. The useful property is hidden-hand, visible-board coordination:
+The point is not the card-game theme. The useful property is hidden-hand, visible-board coordination with non-greedy cooperative scoring:
 
 - each role has private context or capability cards,
 - the system does not need to inspect the private hand,
 - each role plays one legal move to the shared board,
 - the board records only visible plays, totals, lanes, and receipts,
-- success is measured by legal progression toward the task target.
+- success is measured by legal progression toward the task target,
+- roles are rewarded for useful shared progress and low-cost handoffs, not isolated point hoarding.
 
 This is a good repeatable simulator for coding formations because it teaches:
 
@@ -284,6 +285,7 @@ This is a good repeatable simulator for coding formations because it teaches:
 - role specialization,
 - legal move constraints,
 - hidden local context with shared public state,
+- cooperative non-greedy action selection,
 - verifier/integrator gates at the table level.
 
 Prototype:
@@ -301,7 +303,17 @@ python -m pytest tests/system/test_simulate_coding_formation.py -q
 Current prototype behavior:
 
 ```text
-task packet -> formation choice -> role turns -> table-game board plays -> receipts -> final verdict
+task packet -> formation choice -> role turns -> table-game board plays + coding deck draws -> receipts -> final verdict
 ```
 
 The simulation is intentionally pure math and local JSON. It should become the first source for compact SFT traces before real agents are allowed to run formation work.
+
+The current simulator draws public coding substrate cards from `config/coding_decks/coding_deck_manifest.v1.json` while keeping each role's private hand hidden. This ties formation practice to the 899-card grounded deck:
+
+| Role kind | Deck group |
+|---|---|
+| `researcher`, `scout`, `planner` | pairing cards |
+| `coder`, `firefighter` | language-view cards |
+| `file_manager`, `verifier` | STIB structure cards |
+| `context_roller` | binary byte cards |
+| `integrator` | operation cards |

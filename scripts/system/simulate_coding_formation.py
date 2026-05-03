@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import math
+import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -20,6 +21,11 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "formation_simulations"
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.system.build_coding_decks import build_manifest
 
 FORMATION_ROLES = {
     "researcher": {
@@ -97,6 +103,18 @@ ROLE_CARD_PLAY = {
     "planner": {"card": "intent-split", "value": 2, "board_lane": "plan"},
 }
 
+ROLE_DECK_GROUP = {
+    "researcher": "pairings",
+    "scout": "pairings",
+    "coder": "language_views",
+    "firefighter": "language_views",
+    "file_manager": "stib",
+    "context_roller": "binary",
+    "verifier": "stib",
+    "integrator": "operations",
+    "planner": "pairings",
+}
+
 KEYWORD_WEIGHTS = {
     "research": [0.9, 0.1, 0.2, 0.2],
     "docs": [0.7, 0.1, 0.2, 0.6],
@@ -130,6 +148,9 @@ class Receipt:
     board_total_after: int
     board_lane: str
     card_played: str
+    deck_card_id: str
+    deck_card_type: str
+    cooperative_score: float
     verdict: str
 
 
@@ -231,6 +252,35 @@ def _play_card(role: str, board_total: int, target_total: int) -> dict[str, Any]
     }
 
 
+def _select_deck_card(deck: dict[str, Any], task: dict[str, Any], role: str, index: int) -> dict[str, Any]:
+    """Select one visible substrate card for the role's move.
+
+    The role's private hand is still hidden. This picks the public card that
+    explains which coding substrate the role touched: operation, language
+    projection, binary byte, STIB field, or pair route.
+    """
+    group_name = ROLE_DECK_GROUP[role]
+    group = deck["cards"][group_name]
+    seed = int(packet_hash({"task": task, "role": role, "index": index, "group": group_name})[:12], 16)
+    card = group[seed % len(group)]
+    return {
+        "deck_group": group_name,
+        "card_id": card["card_id"],
+        "card_type": card["card_type"],
+    }
+
+
+def _cooperative_score(play: dict[str, Any], role_fit: float, handoff_cost: float) -> float:
+    """Reward shared board progress instead of greedy individual gain."""
+    target = max(1, int(play["target_total"]))
+    after = int(play["board_total_after"])
+    closeness = 1.0 - (abs(target - after) / target)
+    handoff_efficiency = max(0.0, 1.0 - (handoff_cost / 2.0))
+    legal_bonus = 0.15 if play["legal"] else -0.35
+    score = (0.45 * closeness) + (0.35 * role_fit) + (0.20 * handoff_efficiency) + legal_bonus
+    return round(max(0.0, min(1.0, score)), 6)
+
+
 def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(task, dict):
         raise ValueError("Task packet must be a JSON object.")
@@ -245,6 +295,7 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
     task_vector = infer_task_vector(task)
     formation_id = choose_formation(task, task_vector)
     roles = FORMATIONS[formation_id]
+    deck = build_manifest()
     target_total = _target_board_total(task_vector, len(roles))
     board_total = 0
     board_plays: list[dict[str, Any]] = []
@@ -258,12 +309,17 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
 
     for index, role in enumerate(roles):
         play = _play_card(role, board_total, target_total)
+        deck_play = _select_deck_card(deck, task, role, index)
+        play["deck_card_id"] = deck_play["card_id"]
+        play["deck_card_type"] = deck_play["card_type"]
+        play["deck_group"] = deck_play["deck_group"]
         board_total = int(play["board_total_after"])
         board_plays.append(play)
         input_hash = packet_hash(current_packet)
         role_vector = FORMATION_ROLES[role]["vector"]
         role_fit = round(_cosine(task_vector, role_vector), 6)
         handoff_cost = _transition_cost(prev_role, role)
+        cooperative_score = _cooperative_score(play, role_fit, handoff_cost)
         total_fit += role_fit
         total_cost += handoff_cost
         verdict = "pass" if role_fit >= 0.45 else "review"
@@ -275,7 +331,9 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
             "previous_packet_sha256": input_hash,
             "role_fit": role_fit,
             "handoff_cost": handoff_cost,
+            "cooperative_score": cooperative_score,
             "board_play": play,
+            "deck_card": deck_play,
             "allowed_tools": FORMATION_ROLES[role]["tools"],
             "verdict": verdict,
         }
@@ -296,6 +354,9 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
                 board_total_after=board_total,
                 board_lane=str(play["board_lane"]),
                 card_played=str(play["card"]),
+                deck_card_id=str(deck_play["card_id"]),
+                deck_card_type=str(deck_play["card_type"]),
+                cooperative_score=cooperative_score,
                 verdict=verdict,
             )
         )
@@ -323,6 +384,10 @@ def simulate_formation(task: dict[str, Any]) -> dict[str, Any]:
         "table_game": {
             "schema_version": "scbe_formation_table_game_v1",
             "rules": "Role hands stay private; only legal board plays and receipts are recorded.",
+            "game_mode": "deterministic_non_greedy_cooperative",
+            "objective": "Advance the shared task board with legal, low-cost handoffs; do not maximize isolated role score.",
+            "deck_schema_version": deck["schema_version"],
+            "deck_grounded_minimum_cards": deck["counts"]["current_grounded_minimum_cards"],
             "target_total": target_total,
             "final_total": board_total,
             "board_verdict": board_verdict,
