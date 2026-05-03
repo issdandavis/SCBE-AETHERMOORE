@@ -55,7 +55,7 @@
       "url": "https://github.com/issdandavis/SCBE-AETHERMOORE",
       "title": "GitHub - issdandavis/SCBE-AETHERMOORE: Geometric AI governance and evaluation framework with a 14-layer security pipeline, semantic projection, and reproducible benchmark lanes. \u00b7 GitHub",
       "description": "Geometric AI governance and evaluation framework with a 14-layer security pipeline, semantic projection, and reproducible benchmark lanes. - issdandavis/SCBE-AETHERMOORE",
-      "word_count": 1710,
+      "word_count": 1727,
       "headings": [
         {
           "level": 2,
@@ -78,10 +78,6 @@
           "text": "Use saved searches to filter your results more quickly"
         },
         {
-          "level": 1,
-          "text": "Sponsor issdandavis/SCBE-AETHERMOORE"
-        },
-        {
           "level": 3,
           "text": "Uh oh!"
         },
@@ -96,36 +92,50 @@
         {
           "level": 2,
           "text": "Latest commit"
+        },
+        {
+          "level": 2,
+          "text": "History"
         }
       ],
-      "link_count": 434,
+      "link_count": 426,
       "table_count": 5,
       "text_preview": "Skip to content\n\n      \n    \n      \n      \n      \n\n  \n  \n  \n\n      \n\n          \n\n              \n\n      \n  \n        \n        You signed in with another tab or window. Reload to refresh your session.\n        You signed out in another tab or window. Reload to refresh your session.\n        You switched accounts on another tab or window. Reload to refresh your session.\n\n      \n\n  \n\n    \n\n  \n\n    \n\n  \n\n    \n\n  \n        \n    \n      \n      \n\n  \n\n  \n\n      \n\n        \n            \n  \n      \n    \n    \n    ..."
     },
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "VS Code inserting 'Co-Authored-by Copilot' into commits regardless of usage",
-      "word_count": 615,
+      "description": "Kimi K2.6 just beat Claude, GPT-5.5, and Gemini in a coding challenge",
+      "word_count": 608,
       "headings": [
         {
           "level": 2,
-          "text": "VS Code inserting 'Co-Authored-by Copilot' into commits regardless of usage",
+          "text": "Kimi K2.6 just beat Claude, GPT-5.5, and Gemini in a coding challenge",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/microsoft",
+          "text": "thinkpol.ca",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Six Years Perfecting Maps on WatchOS",
+          "text": "Clandestine network smuggling Starlink tech into Iran to beat internet blackout",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "david-smith.org",
+          "text": "bbc.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "A Couple Million Lines of Haskell: Production Engineering at Mercury",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "haskell.org",
           "source": "fallback-selector"
         },
         {
@@ -140,28 +150,18 @@
         },
         {
           "level": 2,
-          "text": "Dav2d",
+          "text": "Six Years Perfecting Maps on WatchOS",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "videolan.org",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "A Couple Million Lines of Haskell: Production Engineering at Mercury",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "haskell.org",
+          "text": "david-smith.org",
           "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.VS Code inserting 'Co-Authored-by Copilot' into commits regardless of usage (github.com/microsoft)679 points by indrora 5 hours ago  | hide | 312\u00a0comments2.Six Years Perfecting Maps on WatchOS (david-smith.org)146 points by valzevul 3 hours ago  | hide | 31\u00a0comments3.This Month in Ladybird - April 2026 (ladybird.org)128 points by richardboegli 4 hours ago  | hide | 19\u00a0comments4.Dav2d (videolan.org)319 points by dabinat 7 hours a..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Kimi K2.6 just beat Claude, GPT-5.5, and Gemini in a coding challenge (thinkpol.ca)190 points by bazlightyear 2 hours ago  | hide | 90\u00a0comments2.Clandestine network smuggling Starlink tech into Iran to beat internet blackout (bbc.com)150 points by 1659447091 5 hours ago  | hide | 77\u00a0comments3.A Couple Million Lines of Haskell: Production Engineering at Mercury (haskell.org)151 points by unignorant 6 hours ago  | hide | 57\u00a0commen..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
