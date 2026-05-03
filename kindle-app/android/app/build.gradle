@@ -1,14 +1,47 @@
 apply plugin: 'com.android.application'
 
+def appVariant = (System.getenv("AETHERCODE_APP_VARIANT") ?: "").toLowerCase()
+def isAetherBrowse = appVariant == "aetherbrowse"
+def nativeAppId = isAetherBrowse ? "com.issdandavis.aetherbrowse" : "com.issdandavis.aethercode"
+def nativeAppName = isAetherBrowse ? "AetherBrowse" : "AetherCode"
+def signingProps = new Properties()
+def signingPropsFile = rootProject.file("signing.local.properties")
+if (signingPropsFile.exists()) {
+    signingPropsFile.withInputStream { signingProps.load(it) }
+}
+def envOrProp = { envName, propName ->
+    def envValue = System.getenv(envName)
+    return envValue != null && envValue.trim() ? envValue : signingProps.getProperty(propName)
+}
+def releaseStoreFile = envOrProp("AETHERBROWSE_UPLOAD_STORE_FILE", "storeFile")
+def releaseStorePassword = envOrProp("AETHERBROWSE_UPLOAD_STORE_PASSWORD", "storePassword")
+def releaseKeyAlias = envOrProp("AETHERBROWSE_UPLOAD_KEY_ALIAS", "keyAlias")
+def releaseKeyPassword = envOrProp("AETHERBROWSE_UPLOAD_KEY_PASSWORD", "keyPassword")
+def hasReleaseSigning = releaseStoreFile && releaseStorePassword && releaseKeyAlias && releaseKeyPassword
+
 android {
     namespace "com.issdandavis.aethercode"
     compileSdk rootProject.ext.compileSdkVersion
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
+    }
     defaultConfig {
-        applicationId "com.issdandavis.aethercode"
+        applicationId nativeAppId
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 2
         versionName "1.1.0"
+        resValue "string", "app_name", nativeAppName
+        resValue "string", "title_activity_main", nativeAppName
+        resValue "string", "package_name", nativeAppId
+        resValue "string", "custom_url_scheme", nativeAppId
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -19,6 +52,9 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
