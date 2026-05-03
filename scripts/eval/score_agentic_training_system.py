@@ -120,6 +120,40 @@ def _strip_ansi(text: str) -> str:
     return re.sub(r"\x1b\[[0-9;]*m", "", text)
 
 
+def _extract_json_object_after_marker(text: str, marker: str) -> dict[str, Any] | None:
+    idx = text.find(marker)
+    if idx < 0:
+        return None
+    start = text.rfind("{", 0, idx)
+    if start < 0:
+        start = text.find("{", idx)
+    if start < 0:
+        return None
+    depth = 0
+    in_string = False
+    escaped = False
+    for pos in range(start, len(text)):
+        ch = text[pos]
+        if escaped:
+            escaped = False
+            continue
+        if ch == "\\":
+            escaped = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return json.loads(text[start : pos + 1])
+    return None
+
+
 def _refresh_hf_gate(job_id: str) -> dict[str, Any]:
     """Best-effort live HF Jobs log parser. Never gates local scoring if HF is unavailable."""
 
@@ -164,6 +198,75 @@ def _refresh_hf_gate(job_id: str) -> dict[str, Any]:
         report["push_skipped"] = True
     if "gate_failed" in text:
         report["gate_failed"] = True
+    return report
+
+
+def _local_hf_gate_from_log(job_id: str) -> dict[str, Any]:
+    """Parse a cached HF Jobs log when live `hf jobs logs` is unavailable."""
+
+    if not job_id:
+        return {"job_id": job_id, "queried": False, "local_log": None}
+    log_matches = sorted(
+        (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob(f"*/**/hf_job_{job_id}.log"),
+        key=lambda item: item.stat().st_mtime,
+        reverse=True,
+    )
+    if not log_matches:
+        return {"job_id": job_id, "queried": False, "local_log": None}
+
+    log_path = log_matches[0]
+    text = _strip_ansi(log_path.read_text(encoding="utf-8", errors="replace"))
+    report: dict[str, Any] = {
+        "job_id": job_id,
+        "queried": False,
+        "local_log": str(log_path.relative_to(PROJECT_ROOT)),
+        "gate_overall_pass": None,
+        "gate_pass_rate": None,
+        "gate_n_pass": None,
+        "gate_n_total": None,
+        "train_loss": None,
+        "pushed_adapter": None,
+    }
+    for line in reversed(text.splitlines()):
+        stripped = line.strip()
+        if not stripped.startswith("{") or "training_complete" not in stripped:
+            continue
+        try:
+            payload = json.loads(stripped)
+        except json.JSONDecodeError:
+            continue
+        summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+        report.update(
+            {
+                "gate_overall_pass": summary.get("gate_overall_pass"),
+                "gate_pass_rate": summary.get("gate_pass_rate"),
+                "gate_n_pass": summary.get("gate_n_pass"),
+                "gate_n_total": summary.get("gate_n_total"),
+                "train_loss": summary.get("training_loss"),
+                "pushed_adapter": summary.get("pushed_adapter"),
+                "profile_id": summary.get("profile_id"),
+                "adapter_repo": summary.get("adapter_repo"),
+                "source": "local_hf_log",
+            }
+        )
+        return report
+    wrapped = _extract_json_object_after_marker(text, '"event": "training_complete"')
+    if wrapped and isinstance(wrapped.get("summary"), dict):
+        summary = wrapped["summary"]
+        report.update(
+            {
+                "gate_overall_pass": summary.get("gate_overall_pass"),
+                "gate_pass_rate": summary.get("gate_pass_rate"),
+                "gate_n_pass": summary.get("gate_n_pass"),
+                "gate_n_total": summary.get("gate_n_total"),
+                "train_loss": summary.get("training_loss"),
+                "pushed_adapter": summary.get("pushed_adapter"),
+                "profile_id": summary.get("profile_id"),
+                "adapter_repo": summary.get("adapter_repo"),
+                "source": "local_hf_log",
+            }
+        )
+        return report
     return report
 
 
@@ -398,6 +501,10 @@ def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_H
     if refresh_hf_logs:
         hf_gate = _refresh_hf_gate(hf_job_id)
     hf_packet, hf_packet_path = _find_hf_packet(hf_job_id)
+    if hf_gate.get("gate_overall_pass") is None:
+        local_gate = _local_hf_gate_from_log(hf_job_id)
+        if local_gate.get("gate_overall_pass") is not None:
+            hf_gate = local_gate
 
     evidence = {
         "release": build_release_readiness(),

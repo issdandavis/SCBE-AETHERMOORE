@@ -1,4 +1,7 @@
-from scripts.eval.score_agentic_training_system import _grade, _model_lines, _packet_job_id, _sum_dataset_rows
+import json
+
+from scripts.eval import score_agentic_training_system as scorer
+from scripts.eval.score_agentic_training_system import _grade, _local_hf_gate_from_log, _model_lines, _packet_job_id, _sum_dataset_rows
 
 
 def test_sum_dataset_rows_handles_hf_job_packet_shape() -> None:
@@ -47,3 +50,71 @@ def test_model_lines_scores_dpo_dataset_without_eval_floor() -> None:
     assert lines["hf_dataset_floor"].status == "PASS"
     assert "eval=n/a dpo" in lines["hf_dataset_floor"].evidence
     assert lines["adapter_promoted"].status == "PASS"
+
+
+def test_local_hf_gate_from_log_reads_training_complete(monkeypatch, tmp_path) -> None:
+    root = tmp_path
+    log_dir = root / "artifacts" / "hf_coding_agent_jobs" / "profile" / "run"
+    log_dir.mkdir(parents=True)
+    log_path = log_dir / "hf_job_job-1.log"
+    log_path.write_text(
+        json.dumps(
+            {
+                "event": "training_complete",
+                "summary": {
+                    "profile_id": "profile",
+                    "adapter_repo": "owner/adapter",
+                    "training_loss": 1.23,
+                    "pushed_adapter": True,
+                    "gate_overall_pass": True,
+                    "gate_pass_rate": 1.0,
+                    "gate_n_pass": 4,
+                    "gate_n_total": 4,
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(scorer, "PROJECT_ROOT", root)
+
+    gate = _local_hf_gate_from_log("job-1")
+
+    assert gate["source"] == "local_hf_log"
+    assert gate["gate_overall_pass"] is True
+    assert gate["pushed_adapter"] is True
+    assert gate["train_loss"] == 1.23
+
+
+def test_local_hf_gate_from_log_reads_pretty_training_complete(monkeypatch, tmp_path) -> None:
+    root = tmp_path
+    log_dir = root / "artifacts" / "hf_coding_agent_jobs" / "profile" / "run"
+    log_dir.mkdir(parents=True)
+    log_path = log_dir / "hf_job_job-2.log"
+    log_path.write_text(
+        json.dumps(
+            {
+                "event": "training_complete",
+                "summary": {
+                    "profile_id": "profile",
+                    "adapter_repo": "owner/adapter",
+                    "training_loss": 0.9,
+                    "pushed_adapter": True,
+                    "gate_overall_pass": True,
+                    "gate_pass_rate": 1.0,
+                    "gate_n_pass": 4,
+                    "gate_n_total": 4,
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(scorer, "PROJECT_ROOT", root)
+
+    gate = _local_hf_gate_from_log("job-2")
+
+    assert gate["source"] == "local_hf_log"
+    assert gate["gate_n_pass"] == 4
+    assert gate["train_loss"] == 0.9
