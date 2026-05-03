@@ -94,7 +94,7 @@ jobs:
             -e AIDER_DOCKER=1 \
             -e AIDER_BENCHMARK_DIR=/benchmarks \
             aider-benchmark \
-            bash -lc "cd /aider && pip install -e '.[dev]' && python benchmark/benchmark.py scbe-remote-scored --model '${AIDER_MODEL}' --edit-format '${AIDER_EDIT_FORMAT}' --threads 1 --num-tests '${AIDER_NUM_TESTS}' --exercises-dir /benchmarks/polyglot-benchmark"
+            bash -lc "cd /aider && pip install -e '.[dev]' && python3 benchmark/benchmark.py scbe-remote-scored --model '${AIDER_MODEL}' --edit-format '${AIDER_EDIT_FORMAT}' --threads 1 --num-tests '${AIDER_NUM_TESTS}' --exercises-dir /benchmarks/polyglot-benchmark"
 
           latest_dir="$(ls -td tmp.benchmarks/*--scbe-remote-scored | head -1)"
           mkdir -p ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
