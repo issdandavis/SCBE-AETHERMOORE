@@ -22,6 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_AIDER_ROOT = REPO_ROOT / "external" / "benchmarks" / "aider"
 DEFAULT_POLYGLOT_ROOT = DEFAULT_AIDER_ROOT / "tmp.benchmarks" / "polyglot-benchmark"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "public_agentic_benchmark_setup" / "aider_polyglot"
+POLYGLOT_REPO_URL = "https://github.com/Aider-AI/polyglot-benchmark.git"
 SCHEMA_VERSION = "scbe_aider_polyglot_smoke_v1"
 
 UV_DEPS = [
@@ -82,6 +83,13 @@ def _run(command: list[str], cwd: Path, timeout: int = 300) -> dict[str, Any]:
         }
 
 
+def _clone_polyglot(polyglot_root: Path) -> dict[str, Any] | None:
+    if (polyglot_root / ".git").exists():
+        return {"action": "already_present", "path": str(polyglot_root), "ok": True}
+    polyglot_root.parent.mkdir(parents=True, exist_ok=True)
+    return _run(["git", "clone", "--depth", "1", POLYGLOT_REPO_URL, str(polyglot_root)], cwd=REPO_ROOT, timeout=240)
+
+
 def _uv_python_command(python_version: str, aider_root: Path, args: list[str]) -> list[str]:
     command = ["uv", "run", "--no-project", "--python", python_version, "--with-editable", "."]
     for dep in UV_DEPS:
@@ -117,10 +125,14 @@ def build_report(
     polyglot_root: Path = DEFAULT_POLYGLOT_ROOT,
     output_root: Path = DEFAULT_OUTPUT_ROOT,
     execute: bool = False,
+    download_polyglot: bool = False,
     python_version: str = "3.12",
     num_tests: int = 1,
 ) -> dict[str, Any]:
     aider_repo_present = (aider_root / "benchmark" / "benchmark.py").exists()
+    clone_polyglot_result = None
+    if download_polyglot and not polyglot_root.exists():
+        clone_polyglot_result = _clone_polyglot(polyglot_root)
     polyglot = inspect_polyglot(polyglot_root)
     uv_present = shutil.which("uv") is not None
 
@@ -160,8 +172,11 @@ def build_report(
         "created_at": _utc_now(),
         "ok": not blockers,
         "execute": execute,
+        "download_polyglot": download_polyglot,
         "aider_root": str(aider_root),
         "aider_repo_present": aider_repo_present,
+        "polyglot_repo_url": POLYGLOT_REPO_URL,
+        "clone_polyglot_result": clone_polyglot_result,
         "polyglot": polyglot,
         "uv_present": uv_present,
         "python_version": python_version,
@@ -229,6 +244,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--polyglot-root", type=Path, default=DEFAULT_POLYGLOT_ROOT)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--execute", action="store_true", help="Run help and no-model/no-unit-tests smoke commands.")
+    parser.add_argument("--download-polyglot", action="store_true", help="Clone Aider-AI/polyglot-benchmark when missing.")
     parser.add_argument("--python", default="3.12", help="Python version passed to uv run.")
     parser.add_argument("--num-tests", type=int, default=1)
     return parser
@@ -241,6 +257,7 @@ def main() -> int:
         polyglot_root=args.polyglot_root,
         output_root=args.output_root,
         execute=args.execute,
+        download_polyglot=args.download_polyglot,
         python_version=args.python,
         num_tests=args.num_tests,
     )

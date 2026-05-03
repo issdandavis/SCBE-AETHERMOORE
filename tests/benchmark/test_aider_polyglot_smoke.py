@@ -34,6 +34,8 @@ def test_aider_polyglot_plan_report_is_non_scoring(tmp_path: Path) -> None:
 
     assert payload["schema_version"] == "scbe_aider_polyglot_smoke_v1"
     assert payload["execute"] is False
+    assert payload["download_polyglot"] is False
+    assert payload["polyglot_repo_url"] == "https://github.com/Aider-AI/polyglot-benchmark.git"
     assert payload["full_scoring_ready"] is False
     assert "not a public leaderboard score" in payload["claim_allowed"]
     assert "Aider checkout is missing benchmark/benchmark.py." in payload["blockers"]
