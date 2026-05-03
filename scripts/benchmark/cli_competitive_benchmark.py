@@ -173,13 +173,23 @@ def benchmark_scbe() -> dict[str, Any]:
         "geoseal_help": _run(["node", str(geoseal), "--help"]),
         "geoseal_version": _run(["node", str(geoseal), "version"]),
         "geoseal_doctor": _run(["node", str(geoseal), "doctor", "--json"]),
+        "geoseal_permissions": _run(["node", str(geoseal), "permissions", "--json"]),
         "geoseal_status_without_service": _run(
             ["node", str(geoseal), "status", "--json"]
+        ),
+        "geoseal_custom_commands": _run(
+            ["node", str(geoseal), "custom-commands", "--json"]
+        ),
+        "geoseal_run_command": _run(
+            ["node", str(geoseal), "run-command", "harness-benchmark", "--json"]
         ),
         "scbe_cli_help": _run(["python", "scbe-cli.py", "--help"]),
     }
     doctor = _json_from_stdout(commands["geoseal_doctor"])
+    permissions = _json_from_stdout(commands["geoseal_permissions"])
     status_error = _json_from_stdout(commands["geoseal_status_without_service"])
+    custom_commands = _json_from_stdout(commands["geoseal_custom_commands"])
+    run_command = _json_from_stdout(commands["geoseal_run_command"])
     command_help = commands["geoseal_help"].stdout
 
     capabilities = {
@@ -193,9 +203,19 @@ def benchmark_scbe() -> dict[str, Any]:
         or "cursor" in doctor.get("python_modules", [{}])[0].get("stdout_preview", ""),
         "workflow_runner": "workflow"
         in doctor.get("python_modules", [{}])[0].get("stdout_preview", ""),
-        "permission_model": "max-tier"
-        in doctor.get("python_modules", [{}])[0].get("stdout_preview", ""),
-        "custom_commands": False,
+        "permission_model": permissions.get("schema_version")
+        == "geoseal_permissions_v1"
+        and permissions.get("gates", {}).get("secrets_to_remote_models") == "forbid"
+        and bool(permissions.get("max_tier")),
+        "custom_commands": custom_commands.get("schema_version")
+        == "geoseal_custom_commands_v1"
+        and custom_commands.get("count", 0) >= 1
+        and any(
+            command.get("name") == "harness-benchmark"
+            for command in custom_commands.get("commands", [])
+        )
+        and run_command.get("schema_version") == "geoseal_custom_command_v1"
+        and run_command.get("command", {}).get("name") == "harness-benchmark",
         "mcp_or_tool_extensibility": "nexus-dispatch" in command_help
         or "orchestrator-dispatch" in command_help,
         "session_state": "service-output-dir" in command_help
@@ -203,7 +223,7 @@ def benchmark_scbe() -> dict[str, Any]:
         "benchmark_artifacts": True,
     }
     gaps = [name for name in CRITERIA if not capabilities.get(name)]
-    improvements = [
+    possible_improvements = [
         {
             "gap": "custom_commands",
             "recommendation": "Add a repo-local .geoseal/commands/*.md prompt-command loader similar to slash-command CLIs.",
@@ -216,6 +236,9 @@ def benchmark_scbe() -> dict[str, Any]:
             "gap": "help_accuracy",
             "recommendation": "Separate API-only examples from local passthrough commands and add tests for advertised commands.",
         },
+    ]
+    improvements = [
+        item for item in possible_improvements if item["gap"] in gaps or item["gap"] == "help_accuracy"
     ]
     return {
         "name": "scbe-geoseal",
@@ -302,6 +325,11 @@ def main() -> int:
         description="Benchmark SCBE CLI against peer CLI patterns."
     )
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Accepted for wrapper parity; the command always prints a JSON summary.",
+    )
     args = parser.parse_args()
     out_dir = Path(args.out_dir)
     if not out_dir.is_absolute():
