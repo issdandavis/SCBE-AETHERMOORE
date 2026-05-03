@@ -35,6 +35,7 @@ def test_geoseal_doctor_outputs_machine_json() -> None:
     assert payload["ok"] is True
     assert payload["version"]
     assert "status" in payload["api_commands"]
+    assert "permissions" in payload["advertised_commands"]
     assert "custom-commands" in payload["advertised_commands"]
     assert any(command["name"] == "harness-benchmark" for command in payload["custom_commands"])
     assert payload["python_modules"]
@@ -71,7 +72,9 @@ def test_cli_competitive_scores_custom_commands_from_real_cli() -> None:
     module = _load_module()
     report = module.build_report()
     assert report["scbe"]["capabilities"]["custom_commands"] is True
-    assert report["scbe"]["score"]["passed"] >= 10
+    assert report["scbe"]["capabilities"]["permission_model"] is True
+    assert report["scbe"]["gaps"] == []
+    assert report["scbe"]["score"]["passed"] == 11
 
 
 def test_cli_competitive_accepts_json_flag(tmp_path: Path) -> None:
