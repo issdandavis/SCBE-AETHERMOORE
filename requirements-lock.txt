@@ -123,7 +123,7 @@ opentelemetry-instrumentation-logging==0.62b0
 opentelemetry-instrumentation-mysql==0.61b0
 opentelemetry-instrumentation-mysqlclient==0.61b0
 opentelemetry-instrumentation-pika==0.62b0
-opentelemetry-instrumentation-psycopg2==0.60b1
+opentelemetry-instrumentation-psycopg2==0.62b1
 opentelemetry-instrumentation-pymemcache==0.62b1
 opentelemetry-instrumentation-pymongo==0.61b0
 opentelemetry-instrumentation-pymysql==0.61b0
