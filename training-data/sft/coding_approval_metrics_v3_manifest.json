@@ -1,0 +1,36 @@
+{
+  "eval_count": 20,
+  "eval_file": "coding_approval_metrics_v3_eval.sft.jsonl",
+  "sacred_tongue_names": {
+    "AV": "Avali",
+    "CA": "Cassisivadan",
+    "DR": "Draumric",
+    "KO": "Kor'aelin",
+    "RU": "Runethic",
+    "UM": "Umbroth"
+  },
+  "schema_version": "scbe_coding_approval_metrics_v3_manifest",
+  "sha256": {
+    "coding_approval_metrics_v3_eval.sft.jsonl": "5a26a4fb8f03c495b892e2ba3903c44073819f5fe7b67d8a42f5b1f83dc4b7fb",
+    "coding_approval_metrics_v3_train.sft.jsonl": "780cc1fd98a3c4df9b91982c59fa9ba8bfbe7b98ba4d46bbca4298181f600614"
+  },
+  "source_counts": {
+    "markdown_task_flow": 72,
+    "packet_trace": 24,
+    "training_residue": 4
+  },
+  "source_paths": {
+    "flow_manifest": "notes\\agentic_task_flows\\manifest.json",
+    "packet_traces": "training-data\\agentic_coding\\packet_traces.jsonl",
+    "residues": "artifacts\\training_digestion\\stage5-command-harmony-signal-repair-69f6a61c\\training_residues.jsonl"
+  },
+  "total_count": 100,
+  "track": "coding_approval_metrics_v3",
+  "train_count": 80,
+  "train_file": "coding_approval_metrics_v3_train.sft.jsonl",
+  "verdict_counts": {
+    "HOLD": 72,
+    "INCUBATE": 4,
+    "PROMOTE": 24
+  }
+}

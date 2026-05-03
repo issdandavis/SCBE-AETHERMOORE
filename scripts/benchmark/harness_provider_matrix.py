@@ -33,6 +33,7 @@ DEFAULT_MODEL_REFS = [
     "together:zai-org/GLM-5",
     "mistral:codestral-latest",
     "cerebras:qwen-3-coder-480b",
+    "nvidia:qwen/qwen3-coder-480b-a35b-instruct",
     "openrouter:qwen/qwen3-coder",
     "huggingface:Qwen/Qwen2.5-Coder-7B-Instruct",
 ]
