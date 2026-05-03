@@ -32,6 +32,19 @@ Run the current executable public-evidence smoke:
 python scripts/benchmark/public_agentic_cli_suite.py --execute
 ```
 
+Check whether the public benchmark harnesses are installed:
+
+```powershell
+python scripts/benchmark/setup_public_agentic_benchmarks.py --dry-run
+```
+
+Shallow-clone the public harness repositories without downloading benchmark
+datasets:
+
+```powershell
+python scripts/benchmark/setup_public_agentic_benchmarks.py --download --dry-run
+```
+
 Run the local GeoSeal command-line interface competitive harness directly:
 
 ```powershell
@@ -44,6 +57,11 @@ The public suite writes:
 
 - `artifacts/public_agentic_cli_suite/latest_report.json`
 - `artifacts/public_agentic_cli_suite/latest_report.md`
+
+The public benchmark setup script writes:
+
+- `artifacts/public_agentic_benchmark_setup/latest_setup.json`
+- `artifacts/public_agentic_benchmark_setup/latest_setup.md`
 
 The local command-line interface harness writes:
 
