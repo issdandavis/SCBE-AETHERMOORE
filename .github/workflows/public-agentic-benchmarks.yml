@@ -123,7 +123,21 @@ jobs:
           """
           if old not in text:
               raise SystemExit("Aider benchmark Dockerfile changed; refusing silent patch")
-          dockerfile.write_text(text.replace(old, new), encoding="utf-8")
+          text = text.replace(old, new)
+          old_pip = """COPY . /aider
+          RUN pip3 install --no-cache-dir --upgrade pip uv
+          RUN uv pip install --system --no-cache-dir -e /aider[dev]
+          """
+          new_pip = """RUN python3 -m venv /opt/aider-venv
+          ENV PATH="/opt/aider-venv/bin:$PATH"
+
+          COPY . /aider
+          RUN pip install --no-cache-dir --upgrade pip uv
+          RUN uv pip install --no-cache-dir -e /aider[dev]
+          """
+          if old_pip not in text:
+              raise SystemExit("Aider benchmark Dockerfile pip install block changed; refusing silent patch")
+          dockerfile.write_text(text.replace(old_pip, new_pip), encoding="utf-8")
           PY
           mkdir -p tmp.benchmarks
           git clone --depth 1 https://github.com/Aider-AI/polyglot-benchmark.git tmp.benchmarks/polyglot-benchmark
