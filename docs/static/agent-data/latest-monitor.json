@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Show HN: Apple's Sharp Running in the Browser via ONNX Runtime Web",
-      "word_count": 618,
+      "description": "What Chromium versions are major browsers are on?",
+      "word_count": 607,
       "headings": [
         {
           "level": 2,
-          "text": "Show HN: Apple's Sharp Running in the Browser via ONNX Runtime Web",
+          "text": "What Chromium versions are major browsers are on?",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/bring-shrubbery",
+          "text": "chromium-drift.pages.dev",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "A couple million lines of Haskell: Production engineering at Mercury",
+          "text": "Southwest Headquarters Tour",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "haskell.org",
+          "text": "katherinemichel.github.io",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "This Month in Ladybird \u2013 April 2026",
+          "text": "Mercedes-Benz commits to bringing back physical buttons",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "ladybird.org",
+          "text": "drive.com.au",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Dav2d",
+          "text": "Porsche will contest Laguna Seca in historic colors of the Apple Computer livery",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "videolan.org",
+          "text": "porsche.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Six Years Perfecting Maps on WatchOS",
+          "text": "What Is Z-Angle Memory and Why Is Intel Developing It?",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "david-smith.org",
+          "text": "hpcwire.com",
           "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Show HN: Apple's Sharp Running in the Browser via ONNX Runtime Web (github.com/bring-shrubbery)33 points by bring-shrubbery 3 hours ago  | hide | 3\u00a0comments2.A couple million lines of Haskell: Production engineering at Mercury (haskell.org)283 points by unignorant 12 hours ago  | hide | 119\u00a0comments3.This Month in Ladybird \u2013 April 2026 (ladybird.org)375 points by richardboegli 15 hours ago  | hide | 85\u00a0comments4.Dav2d (videolan...."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.What Chromium versions are major browsers are on? (chromium-drift.pages.dev)67 points by skaul 1 hour ago  | hide | 19\u00a0comments2.Southwest Headquarters Tour (katherinemichel.github.io)46 points by KatiMichel 1 hour ago  | hide | 5\u00a0comments3.Mercedes-Benz commits to bringing back physical buttons (drive.com.au)369 points by teleforce 3 hours ago  | hide | 209\u00a0comments4.Porsche will contest Laguna Seca in historic colors of the Ap..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
