@@ -113,6 +113,17 @@ jobs:
           python benchmark/benchmark.py --stats "${latest_dir}" \
             | tee ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/latest_stats.yml
           cp -R "${latest_dir}" ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/run
+          diagnostics_dir="../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/diagnostics"
+          mkdir -p "${diagnostics_dir}"
+          find "${latest_dir}" -name ".aider.results.json" -print0 | while IFS= read -r -d '' result_file; do
+            rel_dir="$(dirname "${result_file#${latest_dir}/}")"
+            safe_name="$(echo "${rel_dir}" | tr '/\\' '__')"
+            cp "${result_file}" "${diagnostics_dir}/${safe_name}.results.json"
+            chat_file="$(dirname "${result_file}")/.aider.chat.history.md"
+            if [ -f "${chat_file}" ]; then
+              cp "${chat_file}" "${diagnostics_dir}/${safe_name}.chat.history.md"
+            fi
+          done
 
       - name: Terminal-Bench remote setup note
         if: ${{ inputs.track == 'terminal-bench-setup' }}
