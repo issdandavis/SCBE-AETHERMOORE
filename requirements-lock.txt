@@ -59,7 +59,7 @@ httpx-sse==0.4.3
 hypothesis==6.152.2
 identify==2.6.19
 idna==3.11
-importlib_metadata==8.6.1
+importlib_metadata==9.0.0
 importlib_resources==7.1.0
 iniconfig==2.3.0
 itsdangerous==2.2.0
