@@ -2897,6 +2897,27 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
     return _json_result(args, summary, lines)
 
 
+def cmd_transit_aws_demo(args: argparse.Namespace) -> int:
+    cmd = [
+        sys.executable,
+        str(Path(args.repo_root) / "scripts" / "system" / "agentic_transit_station.py"),
+        "aws-demo",
+        "--ticket-id",
+        args.ticket_id,
+        "--output-root",
+        args.output_root,
+    ]
+    if args.remote_ok:
+        cmd.append("--remote-ok")
+    if args.run_demo:
+        cmd.append("--run-demo")
+    if args.execute_demo:
+        cmd.append("--execute-demo")
+    if getattr(args, "json_output", False):
+        cmd.append("--json")
+    return subprocess.call(cmd, cwd=str(args.repo_root))
+
+
 def cmd_flow_plan(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
     template_name = args.workflow_template
@@ -5090,6 +5111,18 @@ def build_parser() -> argparse.ArgumentParser:
         default=str(DEFAULT_REPO_ROOT / "config" / "governance" / "terminal_ai_router_profiles.json"),
     )
     agentbus_run.set_defaults(func=cmd_agentbus_run)
+
+    transit = sub.add_parser("transit", help="Agentic transit station operational complex")
+    add_runtime_cli_flags(transit)
+    transit_sub = transit.add_subparsers(dest="transit_cmd", required=True)
+    transit_aws = transit_sub.add_parser("aws-demo", help="Route the AWS free-tier demo through a station ticket")
+    add_runtime_cli_flags(transit_aws)
+    transit_aws.add_argument("--ticket-id", default="")
+    transit_aws.add_argument("--output-root", default="artifacts/agentic_transit_station")
+    transit_aws.add_argument("--remote-ok", action="store_true")
+    transit_aws.add_argument("--run-demo", action="store_true")
+    transit_aws.add_argument("--execute-demo", action="store_true")
+    transit_aws.set_defaults(func=cmd_transit_aws_demo)
 
     status = sub.add_parser("status", help="Show artifact presence for last cycle")
     add_runtime_cli_flags(status)

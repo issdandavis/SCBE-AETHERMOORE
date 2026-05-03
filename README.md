@@ -136,7 +136,7 @@ harmonicWall(result.d_star)  // cost in [1, ∞)
 
 This started as a DnD campaign on [Everweave.ai](https://everweave.ai). 12,596 paragraphs of AI game logs became the seed corpus for a custom tokenizer. That tokenizer became a 6-dimensional semantic coordinate system. That coordinate system became a 14-layer security pipeline. That pipeline became a patent (USPTO #63/961,403). And the game logs became a [141,000-word novel](https://www.amazon.com/dp/B0F28PHSPR) where the magic system is the real security architecture.
 
-Built by [Issac Davis](https://github.com/issdandavis) in Port Angeles, WA.
+Built by [Issac Daniel Davis](https://github.com/issdandavis) in Port Angeles, WA.
 
 ## Benchmark results
 
@@ -343,4 +343,4 @@ Then move into the specific lane you care about.
 
 ## Author
 
-Built by [Issac Davis](https://github.com/issdandavis).
+Built by [Issac Daniel Davis](https://github.com/issdandavis).
