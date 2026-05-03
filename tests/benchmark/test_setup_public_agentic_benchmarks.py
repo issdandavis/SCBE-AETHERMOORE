@@ -6,7 +6,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "setup_public_agentic_benchmarks.py"
 CONFIG_PATH = ROOT / "config" / "eval" / "public_agentic_benchmark_sources.v1.json"

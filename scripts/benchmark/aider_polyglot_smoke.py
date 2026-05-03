@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_AIDER_ROOT = REPO_ROOT / "external" / "benchmarks" / "aider"
 DEFAULT_POLYGLOT_ROOT = DEFAULT_AIDER_ROOT / "tmp.benchmarks" / "polyglot-benchmark"
@@ -244,7 +243,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--polyglot-root", type=Path, default=DEFAULT_POLYGLOT_ROOT)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--execute", action="store_true", help="Run help and no-model/no-unit-tests smoke commands.")
-    parser.add_argument("--download-polyglot", action="store_true", help="Clone Aider-AI/polyglot-benchmark when missing.")
+    parser.add_argument(
+        "--download-polyglot", action="store_true", help="Clone Aider-AI/polyglot-benchmark when missing."
+    )
     parser.add_argument("--python", default="3.12", help="Python version passed to uv run.")
     parser.add_argument("--num-tests", type=int, default=1)
     return parser

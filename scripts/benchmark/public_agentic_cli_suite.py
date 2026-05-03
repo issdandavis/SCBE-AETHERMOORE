@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG = REPO_ROOT / "config" / "eval" / "public_agentic_cli_suite.v1.json"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "public_agentic_cli_suite"
@@ -78,9 +77,7 @@ def load_tracks(config: dict[str, Any]) -> list[Track]:
                 run_command=command,
                 expected_artifacts=[str(item) for item in row.get("expected_artifacts", [])],
                 primary_metric=str(row["primary_metric"]),
-                pass_threshold=(
-                    None if row.get("pass_threshold") is None else float(row["pass_threshold"])
-                ),
+                pass_threshold=(None if row.get("pass_threshold") is None else float(row["pass_threshold"])),
                 cost_tier=str(row["cost_tier"]),
             )
         )
@@ -258,11 +255,7 @@ def build_report(config_path: Path, output_root: Path, execute: bool, timeout: i
     tracks = load_tracks(config)
     results = [run_track(track, execute=execute, timeout=timeout) for track in tracks]
     required = [row for row in results if row["required_for_public_all_around_claim"]]
-    external_required = [
-        row
-        for row in required
-        if row["track_id"] != "geoseal_cli_competitive"
-    ]
+    external_required = [row for row in required if row["track_id"] != "geoseal_cli_competitive"]
     all_required_public_ready = all(row["public_claim_ready"] for row in required)
     local_ready = all(row["passed_gate"] for row in results if row["adapter_status"] == "wired")
     adapter_readiness_ok = all(row["command"]["returncode"] in {0, None} for row in results)
@@ -281,7 +274,9 @@ def build_report(config_path: Path, output_root: Path, execute: bool, timeout: i
             "planned_tracks": sum(1 for row in results if row["adapter_status"] != "wired"),
             "local_ready": local_ready,
             "all_required_public_ready": all_required_public_ready,
-            "external_required_not_ready": [row["track_id"] for row in external_required if not row["public_claim_ready"]],
+            "external_required_not_ready": [
+                row["track_id"] for row in external_required if not row["public_claim_ready"]
+            ],
             "external_setup_evidence": [
                 row["track_id"]
                 for row in external_required
@@ -394,7 +389,9 @@ def validate_config(config_path: Path) -> dict[str, Any]:
             problems.append(f"track is not marked required for all-around claim: {required}")
     forbidden = set(config.get("claim_policy", {}).get("forbidden_now", []))
     if not any("all-around best coding agent" in item for item in forbidden):
-        problems.append("claim_policy must explicitly forbid all-around best coding agent claims until official runs exist")
+        problems.append(
+            "claim_policy must explicitly forbid all-around best coding agent claims until official runs exist"
+        )
     return {"ok": not problems, "track_count": len(tracks), "problems": problems}
 
 
@@ -403,7 +400,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--validate-only", action="store_true")
-    parser.add_argument("--execute", action="store_true", help="Run wired local commands and adapter-readiness commands.")
+    parser.add_argument(
+        "--execute", action="store_true", help="Run wired local commands and adapter-readiness commands."
+    )
     parser.add_argument("--timeout", type=int, default=180)
     return parser
 
