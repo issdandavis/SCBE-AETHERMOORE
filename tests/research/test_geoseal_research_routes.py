@@ -17,6 +17,7 @@ def test_research_routes_cover_requested_rag_sources() -> None:
     assert matrix["schema_version"] == "scbe_geoseal_research_routes_v1"
     assert {
         "arxiv_public",
+        "scbe_github_pages_site",
         "public_news_clearnet",
         "flight_public_adsb",
         "air_traffic_radio_public",
@@ -48,6 +49,14 @@ def test_research_route_filters_and_text_renderer() -> None:
     starlink = build_research_route_matrix(query="starlink")
     assert starlink["route_count"] == 1
     assert starlink["routes"][0]["family"] == "space_telemetry"
+
+    website = build_research_route_matrix(query="aethermoore")
+    assert website["route_count"] == 1
+    assert website["routes"][0]["source_id"] == "scbe_github_pages_site"
+
+    tor = build_research_route_matrix(query="tor")
+    assert tor["route_count"] == 1
+    assert tor["routes"][0]["source_id"] == "tor_trusted_onion_research"
 
     text = render_routes_text(build_research_route_matrix(source_id="arxiv_public"))
     assert "GeoSeal Research Source Routes" in text

@@ -35,6 +35,7 @@ HARNESS_RELEASE_PATHS = [
     "scripts/benchmark/harness_research_matrix.py",
     "scripts/benchmark/harness_live_smoke.py",
     "scripts/research/geoseal_research_routes.py",
+    "scripts/research/geoseal_source_terminal.py",
     "scripts/terminal/geoseal_harness_terminal.py",
     "scripts/terminal/analog_action_primitives.py",
     "scripts/system/geoseal_github_ops.py",
@@ -54,6 +55,8 @@ HARNESS_RELEASE_PATHS = [
     "tests/benchmark/test_harness_research_matrix.py",
     "tests/benchmark/test_harness_live_smoke.py",
     "tests/research/test_geoseal_research_routes.py",
+    "tests/research/test_geoseal_source_terminal.py",
+    "tests/research/test_aethercode_source_finder_static.py",
     "tests/terminal/test_geoseal_harness_terminal.py",
     "tests/ci/test_harness_release_readiness.py",
     "tests/spiral_word/test_app_endpoints.py",
@@ -67,12 +70,15 @@ HARNESS_RELEASE_PATHS = [
     "tests/system/test_geoseal_github_ops.py",
     "docs/ops/RELEASE_AND_REVENUE_PATH_2026-05-02.md",
     "docs/specs/TRIADIC_BRAID_SOURCE_MAP.md",
+    "kindle-app/www/index.html",
+    "kindle-app/www/arena.html",
 ]
 
 TEST_COMMANDS = [
     "python -m pytest tests/agent_comms tests/benchmark/test_harness_provider_matrix.py "
     "tests/benchmark/test_harness_research_matrix.py tests/benchmark/test_harness_live_smoke.py "
-    "tests/research/test_geoseal_research_routes.py tests/terminal/test_geoseal_harness_terminal.py "
+    "tests/research/test_geoseal_research_routes.py tests/research/test_geoseal_source_terminal.py "
+    "tests/research/test_aethercode_source_finder_static.py tests/terminal/test_geoseal_harness_terminal.py "
     "tests/ci/test_harness_release_readiness.py "
     "tests/system/test_verify_docs_publish_surface.py tests/system/test_geoseal_github_ops.py "
     "tests/spiral_word tests/training/test_generate_ambiguity_action_sft.py "

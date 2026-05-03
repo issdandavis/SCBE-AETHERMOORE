@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AetherCode Arena — AI Round Table</title>
-<link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#17c6cf">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -190,26 +190,6 @@ body{
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-track{background:transparent}
 </style>
-<script>
-  // Capacitor bridge — detect native vs web
-  window.isKindleApp = typeof window.Capacitor !== 'undefined';
-
-  // Handle offline state
-  window.addEventListener('offline', () => {
-    const dot = document.getElementById('status-dot');
-    const txt = document.getElementById('status-text');
-    if (dot) dot.className = 'dot off';
-    if (txt) txt.textContent = 'Offline';
-  });
-  window.addEventListener('online', () => {
-    const dot = document.getElementById('status-dot');
-    const txt = document.getElementById('status-text');
-    if (dot) dot.className = 'dot on';
-    if (txt) txt.textContent = 'Online';
-    // Re-check health
-    if (typeof checkHealth === 'function') checkHealth();
-  });
-</script>
 </head>
 <body>
 
@@ -394,7 +374,7 @@ function updateInstallUi() {
 
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
-  navigator.serviceWorker.register('./sw.js').then(() => {
+  navigator.serviceWorker.register('/sw.js').then(() => {
     updateInstallUi();
   }).catch(() => {});
 }

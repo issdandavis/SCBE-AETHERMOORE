@@ -46,6 +46,9 @@ Useful commands:
   geoseal agent-io-contract --output-dir artifacts/agent_io_contract --json
   geoseal harness-terminal --no-health
   geoseal harness-research --json
+  geoseal research-terminal
+  geoseal research-sources --query arxiv --json
+  geoseal github --mode status --json
   geoseal handoff-seal --sender codex --recipient claude --intent "review changed files" --secret-env SCBE_HANDOFF_SECRET --json
   geoseal handoff-open --sealed-file artifacts/agent_comm/handoff.json --secret-env SCBE_HANDOFF_SECRET --json
   geoseal tokenizer-code-lanes --command shl --tongues all --output artifacts/tokenizer_code_lanes/shl_lanes.json
@@ -491,6 +494,11 @@ function runDoctor(flags) {
     "agent-io-contract",
     "harness-terminal",
     "harness-research",
+    "research-terminal",
+    "research-sources",
+    "github",
+    "gh",
+    "lane-grid",
     "handoff-seal",
     "handoff-open",
     "tokenizer-code-lanes",

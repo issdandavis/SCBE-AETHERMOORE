@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -92,6 +93,34 @@ def build_research_routes() -> list[ResearchSourceRoute]:
             gate="extract title, authors, abstract, categories, date, URL; cite arxiv id; prefer abs page before PDF",
             tags=["arxiv", "papers", "academic", "citation"],
             notes="Use for methods and literature review. Do not treat preprints as peer-reviewed fact.",
+        ),
+        ResearchSourceRoute(
+            source_id="scbe_github_pages_site",
+            title="SCBE-AETHERMOORE Public Website and GitHub Pages",
+            family="first_party_site",
+            lane="KO",
+            access_mode="local_docs_or_public_site",
+            authority_class="owned_public",
+            safety_tier="ALLOW_OWNED_PUBLIC",
+            training_status="allowed_owned_public_training",
+            redistribution_status="owned_public",
+            source_url="https://aethermoore.com;https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/docs",
+            default_command=[
+                "python",
+                "scripts/system/verify_docs_publish_surface.py",
+                "--root",
+                "docs",
+                "--require",
+                "index.html",
+                "--require",
+                "support.html",
+                "--require",
+                "redteam.html",
+            ],
+            evidence_target="artifacts/research/scbe_site/<page>.json",
+            gate="prefer local docs for exact source, then compare public site freshness; capture page path, git commit, canonical URL, and sitemap entry",
+            tags=["aethermoore", "github-pages", "scbe", "website", "docs", "owned-source"],
+            notes="First-party route for public product copy, demos, support, proof pages, and website-grounded RAG.",
         ),
         ResearchSourceRoute(
             source_id="public_news_clearnet",
@@ -285,7 +314,9 @@ def build_research_routes() -> list[ResearchSourceRoute]:
 
 def _matches(route: ResearchSourceRoute, query: str) -> bool:
     text = " ".join([route.source_id, route.title, route.family, *route.tags, route.notes]).lower()
-    return all(term in text for term in query.lower().split())
+    tokens = set(re.findall(r"[a-z0-9]+", text))
+    terms = re.findall(r"[a-z0-9]+", query.lower())
+    return all(term in tokens for term in terms)
 
 
 def build_research_route_matrix(

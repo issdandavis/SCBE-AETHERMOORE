@@ -3298,6 +3298,20 @@ def cmd_research_sources(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_research_terminal(args: argparse.Namespace) -> int:
+    from scripts.research.geoseal_source_terminal import (
+        build_source_terminal_state,
+        render_source_terminal_text,
+    )
+
+    state = build_source_terminal_state(family=args.family, source_id=args.source_id, query=args.query)
+    if args.json:
+        print(json.dumps(state, indent=2, sort_keys=True))
+    else:
+        print(render_source_terminal_text(state))
+    return 0
+
+
 def cmd_terminus_training(args: argparse.Namespace) -> int:
     from scripts.benchmark.terminus_training_runner import main as terminus_main
 
@@ -3610,6 +3624,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_research_sources.add_argument("--query", default=None)
     p_research_sources.add_argument("--json", action="store_true")
     p_research_sources.set_defaults(func=cmd_research_sources)
+
+    p_research_terminal = sub.add_parser(
+        "research-terminal",
+        help="Show a readable terminal front-end for governed source finding",
+    )
+    p_research_terminal.add_argument("--family", default=None)
+    p_research_terminal.add_argument("--source-id", default=None, dest="source_id")
+    p_research_terminal.add_argument("--query", default=None)
+    p_research_terminal.add_argument("--json", action="store_true")
+    p_research_terminal.set_defaults(func=cmd_research_terminal)
 
     p_terminus = sub.add_parser(
         "terminus-training",
