@@ -22,3 +22,14 @@ def test_scored_aider_workflow_patches_flaky_deadsnakes_dockerfile() -> None:
     assert "deadsnakes/ppa" in workflow
     assert "Aider benchmark Dockerfile changed; refusing silent patch" in workflow
     assert "Ubuntu noble's native Python" in workflow
+
+
+def test_scored_aider_workflow_uses_venv_for_noble_pep668() -> None:
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+
+    assert "python3 -m venv /opt/aider-venv" in workflow
+    assert 'ENV PATH="/opt/aider-venv/bin:$PATH"' in workflow
+    assert "RUN pip install --no-cache-dir --upgrade pip uv" in workflow
+    assert "RUN uv pip install --no-cache-dir -e /aider[dev]" in workflow
+    assert "--system --no-cache-dir -e /aider[dev]" in workflow
+    assert "Aider benchmark Dockerfile pip install block changed; refusing silent patch" in workflow
