@@ -39,6 +39,13 @@ def test_bigquery_multimodal_cluster_packet_has_sql_and_visual_step() -> None:
     assert any(
         "CREATE OR REPLACE MODEL" in sql for sql in packet["artifacts"]["sql_skeleton"]
     )
+    assert "source_inlets_manifest.json" in packet["artifacts"]["expected"]
+    assert {
+        "arxiv_public",
+        "crossref_metadata",
+        "openalex_graph",
+        "bigquery_public_datasets",
+    }.issubset({inlet["inlet_id"] for inlet in packet["source_inlets"]["recommended"]})
     assert len(packet["packet_sha256"]) == 64
 
 
@@ -61,11 +68,55 @@ def test_python_search_packet_has_embedding_index_skeleton() -> None:
         "NearestNeighbors" in line for line in packet["artifacts"]["python_skeleton"]
     )
     assert packet["promotion_gate"]["minimum_evidence"] == [
+        "source inlets manifest",
         "source manifest with hashes",
         "feature manifest",
         "metric or profile report",
         "repro command",
     ]
+
+
+def test_science_goal_auto_selects_field_specific_inlets() -> None:
+    module = _load_module()
+
+    packet = module.build_data_science_packet(
+        module.DataScienceRequest(
+            goal="Analyze climate satellite storm tracks with NASA and NOAA data",
+            dataset="storm_tracks.csv",
+            modality="tabular",
+            task_type="profile",
+            surface="python",
+        )
+    )
+
+    inlet_ids = {inlet["inlet_id"] for inlet in packet["source_inlets"]["recommended"]}
+    assert {"nasa_open_data", "noaa_open_data", "arxiv_public"}.issubset(inlet_ids)
+    assert packet["source_inlets"]["minimum_receipts"] == [
+        "inlet_id",
+        "source_url",
+        "access_mode",
+        "citation_or_dataset_id",
+        "rights_or_terms_status",
+        "retrieved_at_or_snapshot_id",
+    ]
+
+
+def test_explicit_source_inlets_are_preserved_and_filtered() -> None:
+    module = _load_module()
+
+    packet = module.build_data_science_packet(
+        module.DataScienceRequest(
+            goal="Build biomedical chemistry literature dataset",
+            dataset="papers.jsonl",
+            source_inlets="pubmed_ncbi,materials_project,unknown_inlet",
+        )
+    )
+
+    assert [inlet["inlet_id"] for inlet in packet["source_inlets"]["recommended"]] == [
+        "pubmed_ncbi",
+        "materials_project",
+    ]
+    assert packet["source_inlets"]["selection_mode"] == "explicit"
 
 
 def test_cli_json_is_valid() -> None:
@@ -121,3 +172,7 @@ def test_geoseal_cli_routes_data_science_agent() -> None:
     assert packet["request"]["surface"] == "bigquery"
     assert packet["route"]["required_signal"] == "data-science:bigquery:cluster"
     assert any("ML.EVALUATE" in sql for sql in packet["artifacts"]["sql_skeleton"])
+    assert any(
+        inlet["inlet_id"] == "arxiv_public"
+        for inlet in packet["source_inlets"]["recommended"]
+    )

@@ -20,6 +20,140 @@ SCHEMA_VERSION = "scbe_data_science_agent_packet_v1"
 SURFACES = ("bigquery", "python", "kaggle", "notebook")
 MODALITIES = ("tabular", "image", "text", "multimodal")
 TASK_TYPES = ("cluster", "predict", "search", "profile", "classify")
+DATA_INLETS: dict[str, dict[str, Any]] = {
+    "arxiv_public": {
+        "title": "arXiv public research papers",
+        "fields": [
+            "computer_science",
+            "physics",
+            "mathematics",
+            "quantitative_biology",
+            "statistics",
+        ],
+        "source_url": "https://arxiv.org",
+        "access_mode": "public_metadata_or_abs_page",
+        "safety_tier": "ALLOW_WITH_CITATION",
+        "training_status": "allowed_public_training",
+        "receipt_fields": [
+            "arxiv_id",
+            "title",
+            "authors",
+            "abstract",
+            "categories",
+            "url",
+        ],
+    },
+    "pubmed_ncbi": {
+        "title": "PubMed / NCBI biomedical literature",
+        "fields": ["biology", "medicine", "chemistry", "public_health"],
+        "source_url": "https://pubmed.ncbi.nlm.nih.gov",
+        "access_mode": "public_metadata_or_api",
+        "safety_tier": "ALLOW_WITH_CITATION",
+        "training_status": "retrieval_summary_only",
+        "receipt_fields": ["pmid", "title", "journal", "publication_date", "url"],
+    },
+    "crossref_metadata": {
+        "title": "Crossref DOI metadata",
+        "fields": ["all_science", "literature_graph", "citation_metadata"],
+        "source_url": "https://api.crossref.org",
+        "access_mode": "public_api",
+        "safety_tier": "ALLOW_WITH_CITATION",
+        "training_status": "metadata_training_allowed",
+        "receipt_fields": ["doi", "title", "publisher", "issued", "url"],
+    },
+    "openalex_graph": {
+        "title": "OpenAlex scholarly graph",
+        "fields": ["all_science", "citation_graph", "institutions", "topics"],
+        "source_url": "https://openalex.org",
+        "access_mode": "public_api",
+        "safety_tier": "ALLOW_WITH_CITATION",
+        "training_status": "metadata_training_allowed",
+        "receipt_fields": ["openalex_id", "title", "concepts", "cited_by_count", "url"],
+    },
+    "nasa_open_data": {
+        "title": "NASA open data and software catalogs",
+        "fields": ["astronomy", "aerospace", "earth_science", "robotics"],
+        "source_url": "https://data.nasa.gov",
+        "access_mode": "public_api_or_catalog",
+        "safety_tier": "ALLOW_PUBLIC_DATA",
+        "training_status": "allowed_public_training",
+        "receipt_fields": [
+            "dataset_id",
+            "mission_or_program",
+            "license",
+            "url",
+            "source_sha256",
+        ],
+    },
+    "noaa_open_data": {
+        "title": "NOAA open weather, climate, and ocean data",
+        "fields": ["climate", "weather", "oceanography", "earth_science"],
+        "source_url": "https://www.noaa.gov/information-technology/open-data-dissemination",
+        "access_mode": "public_api_or_bucket",
+        "safety_tier": "ALLOW_PUBLIC_DATA",
+        "training_status": "allowed_public_training",
+        "receipt_fields": [
+            "dataset_id",
+            "station_or_grid",
+            "time_range",
+            "url",
+            "source_sha256",
+        ],
+    },
+    "usgs_open_data": {
+        "title": "USGS open geospatial and hazard data",
+        "fields": ["geology", "hydrology", "earthquake", "geospatial"],
+        "source_url": "https://www.usgs.gov/products/data-and-tools/data-and-tools-topics",
+        "access_mode": "public_api_or_catalog",
+        "safety_tier": "ALLOW_PUBLIC_DATA",
+        "training_status": "allowed_public_training",
+        "receipt_fields": [
+            "dataset_id",
+            "region",
+            "time_range",
+            "url",
+            "source_sha256",
+        ],
+    },
+    "epa_open_data": {
+        "title": "EPA environmental open data",
+        "fields": ["environment", "chemistry", "air_quality", "water_quality"],
+        "source_url": "https://www.epa.gov/data",
+        "access_mode": "public_api_or_catalog",
+        "safety_tier": "ALLOW_PUBLIC_DATA",
+        "training_status": "allowed_public_training",
+        "receipt_fields": ["dataset_id", "program", "region", "url", "source_sha256"],
+    },
+    "materials_project": {
+        "title": "Materials Project scientific materials database",
+        "fields": ["materials_science", "chemistry", "physics"],
+        "source_url": "https://materialsproject.org",
+        "access_mode": "public_docs_auth_api",
+        "safety_tier": "ALLOW_WITH_TERMS_CHECK",
+        "training_status": "retrieval_only_until_terms_checked",
+        "receipt_fields": [
+            "material_id",
+            "formula",
+            "property",
+            "license_or_terms",
+            "url",
+        ],
+    },
+    "bigquery_public_datasets": {
+        "title": "BigQuery public datasets",
+        "fields": ["all_science", "structured_data", "benchmarking"],
+        "source_url": "https://cloud.google.com/bigquery/public-data",
+        "access_mode": "bigquery_public_dataset",
+        "safety_tier": "ALLOW_WITH_COST_CHECK",
+        "training_status": "derived_records_only",
+        "receipt_fields": [
+            "project_dataset_table",
+            "row_count",
+            "schema_sha256",
+            "query_job_id",
+        ],
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -31,6 +165,7 @@ class DataScienceRequest:
     surface: str = "python"
     target: str = ""
     safety_tier: str = "ALLOW"
+    source_inlets: str = "auto"
 
 
 def _sha256_json(payload: dict[str, Any]) -> str:
@@ -59,6 +194,116 @@ def _infer_task_type(goal: str, explicit: str) -> str:
     if any(token in text for token in ("classify", "label")):
         return "classify"
     return "profile"
+
+
+def _selected_inlet_ids(goal: str, source_inlets: str, surface: str) -> list[str]:
+    requested = [
+        item.strip() for item in str(source_inlets or "").split(",") if item.strip()
+    ]
+    if requested and requested != ["auto"]:
+        selected = [item for item in requested if item in DATA_INLETS]
+        return selected or ["arxiv_public", "crossref_metadata", "openalex_graph"]
+
+    text = goal.lower()
+    selected: list[str] = []
+    keyword_map = {
+        "arxiv_public": (
+            "paper",
+            "preprint",
+            "arxiv",
+            "algorithm",
+            "model",
+            "math",
+            "physics",
+            "llm",
+            "ai",
+        ),
+        "pubmed_ncbi": (
+            "pubmed",
+            "clinical",
+            "biomedical",
+            "medical",
+            "medicine",
+            "biology",
+            "protein",
+            "gene",
+        ),
+        "nasa_open_data": (
+            "nasa",
+            "space",
+            "satellite",
+            "mars",
+            "aerospace",
+            "astronomy",
+            "orbital",
+        ),
+        "noaa_open_data": ("weather", "climate", "ocean", "storm", "forecast", "noaa"),
+        "usgs_open_data": (
+            "geology",
+            "earthquake",
+            "hydrology",
+            "geospatial",
+            "terrain",
+            "usgs",
+        ),
+        "epa_open_data": (
+            "environment",
+            "pollution",
+            "air quality",
+            "water quality",
+            "epa",
+        ),
+        "materials_project": (
+            "material",
+            "crystal",
+            "battery",
+            "catalyst",
+            "compound",
+            "materials",
+        ),
+        "bigquery_public_datasets": (
+            "bigquery",
+            "public dataset",
+            "warehouse",
+            "sql",
+            "structured",
+        ),
+    }
+    for inlet_id, tokens in keyword_map.items():
+        if any(token in text for token in tokens):
+            selected.append(inlet_id)
+    for default_id in ("arxiv_public", "crossref_metadata", "openalex_graph"):
+        if default_id not in selected:
+            selected.append(default_id)
+    if surface == "bigquery" and "bigquery_public_datasets" not in selected:
+        selected.append("bigquery_public_datasets")
+    return selected[:6]
+
+
+def _data_inlet_packet(goal: str, source_inlets: str, surface: str) -> dict[str, Any]:
+    selected_ids = _selected_inlet_ids(goal, source_inlets, surface)
+    selected = []
+    for inlet_id in selected_ids:
+        spec = dict(DATA_INLETS[inlet_id])
+        spec["inlet_id"] = inlet_id
+        selected.append(spec)
+    return {
+        "schema_version": "scbe_data_science_source_inlets_v1",
+        "selection_mode": (
+            "auto" if str(source_inlets or "").strip() in {"", "auto"} else "explicit"
+        ),
+        "recommended": selected,
+        "available_inlet_ids": sorted(DATA_INLETS),
+        "route_rule": "Use inlets to build source manifests and citations before feature/model work; do not treat discovery snippets as facts.",
+        "minimum_receipts": [
+            "inlet_id",
+            "source_url",
+            "access_mode",
+            "citation_or_dataset_id",
+            "rights_or_terms_status",
+            "retrieved_at_or_snapshot_id",
+        ],
+    }
 
 
 def _steps(req: DataScienceRequest) -> list[dict[str, Any]]:
@@ -247,6 +492,7 @@ def build_data_science_packet(request: DataScienceRequest) -> dict[str, Any]:
         surface=surface,
         target=request.target.strip(),
         safety_tier=(request.safety_tier.strip().upper() or "ALLOW"),
+        source_inlets=request.source_inlets.strip() or "auto",
     )
     packet: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
@@ -257,6 +503,7 @@ def build_data_science_packet(request: DataScienceRequest) -> dict[str, Any]:
             "fallback_surface": "python" if req.surface != "python" else "notebook",
             "required_signal": f"data-science:{req.surface}:{req.task_type}",
             "allowed_tools": [
+                "select_source_inlets",
                 "read_dataset",
                 "profile",
                 "feature_build",
@@ -265,9 +512,11 @@ def build_data_science_packet(request: DataScienceRequest) -> dict[str, Any]:
             ],
             "blocked_tools": ["delete_source_data", "publish_publicly_without_review"],
         },
+        "source_inlets": _data_inlet_packet(req.goal, req.source_inlets, req.surface),
         "workflow": _steps(req),
         "artifacts": {
             "expected": [
+                "source_inlets_manifest.json",
                 "source_manifest.json",
                 "feature_manifest.json",
                 "gate_report.json",
@@ -278,6 +527,7 @@ def build_data_science_packet(request: DataScienceRequest) -> dict[str, Any]:
         "promotion_gate": {
             "decision_rule": "PASS only when dataset provenance, feature manifest, metric report, and reproducible command exist.",
             "minimum_evidence": [
+                "source inlets manifest",
                 "source manifest with hashes",
                 "feature manifest",
                 "metric or profile report",
@@ -298,8 +548,16 @@ def render_text(packet: dict[str, Any]) -> str:
         f"signal: {packet['route']['required_signal']}",
         f"packet: {packet['packet_sha256'][:16]}",
         "",
-        "workflow:",
+        "source inlets:",
     ]
+    for inlet in packet["source_inlets"]["recommended"]:
+        lines.append(f"- {inlet['inlet_id']}: {inlet['title']}")
+    lines.extend(
+        [
+            "",
+            "workflow:",
+        ]
+    )
     for step in packet["workflow"]:
         lines.append(f"- {step['step_id']}: {step['purpose']}")
     return "\n".join(lines)
@@ -318,6 +576,11 @@ def main() -> int:
     parser.add_argument("--surface", default="python", choices=SURFACES)
     parser.add_argument("--target", default="")
     parser.add_argument("--safety-tier", default="ALLOW")
+    parser.add_argument(
+        "--source-inlets",
+        default="auto",
+        help="Comma-separated inlet ids or auto. Examples: arxiv_public,pubmed_ncbi,nasa_open_data",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -330,6 +593,7 @@ def main() -> int:
             surface=args.surface,
             target=args.target,
             safety_tier=args.safety_tier,
+            source_inlets=args.source_inlets,
         )
     )
     print(

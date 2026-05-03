@@ -3263,6 +3263,7 @@ def cmd_data_science_agent(args: argparse.Namespace) -> int:
             surface=args.surface,
             target=args.target,
             safety_tier=args.safety_tier,
+            source_inlets=args.source_inlets,
         )
     )
     if args.json:
@@ -3625,6 +3626,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_data_science.add_argument("--target", default="")
     p_data_science.add_argument("--safety-tier", default="ALLOW")
+    p_data_science.add_argument(
+        "--source-inlets",
+        default="auto",
+        help="Comma-separated inlet ids or auto",
+    )
     p_data_science.add_argument("--json", action="store_true")
     p_data_science.set_defaults(func=cmd_data_science_agent)
 
