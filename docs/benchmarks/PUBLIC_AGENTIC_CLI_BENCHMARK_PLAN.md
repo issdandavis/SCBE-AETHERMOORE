@@ -75,9 +75,14 @@ runners instead of this Windows workstation:
 ```powershell
 gh workflow run public-agentic-benchmarks.yml -f track=setup-only
 gh workflow run public-agentic-benchmarks.yml -f track=aider-polyglot-smoke -f num_tests=1
+gh workflow run public-agentic-benchmarks.yml -f track=aider-polyglot-scored-small -f num_tests=1 -f model=gpt-4o-mini -f edit_format=whole
 gh workflow run public-agentic-benchmarks.yml -f track=terminal-bench-setup
 gh workflow run public-agentic-benchmarks.yml -f track=swe-bench-setup
 ```
+
+The scored Aider lane runs inside Docker on GitHub-hosted compute and requires
+the repository `OPENAI_API_KEY` secret. Keep `num_tests=1` until the adapter,
+cost, and artifact packet are stable.
 
 ## Evidence Bundle
 

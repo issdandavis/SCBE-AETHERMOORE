@@ -11,12 +11,21 @@ on:
         options:
           - setup-only
           - aider-polyglot-smoke
+          - aider-polyglot-scored-small
           - terminal-bench-setup
           - swe-bench-setup
       num_tests:
         description: "Tiny smoke count for lanes that support it"
         required: false
         default: "1"
+      model:
+        description: "Aider model name for scored runs"
+        required: false
+        default: "gpt-4o-mini"
+      edit_format:
+        description: "Aider edit format for scored runs"
+        required: false
+        default: "whole"
 
 permissions:
   contents: read
@@ -26,6 +35,11 @@ jobs:
     name: ${{ inputs.track }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      AIDER_MODEL: ${{ inputs.model }}
+      AIDER_EDIT_FORMAT: ${{ inputs.edit_format }}
+      AIDER_NUM_TESTS: ${{ inputs.num_tests }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     steps:
       - name: Checkout
@@ -54,6 +68,39 @@ jobs:
       - name: Run Aider Polyglot non-scoring smoke
         if: ${{ inputs.track == 'aider-polyglot-smoke' }}
         run: python scripts/benchmark/aider_polyglot_smoke.py --download-polyglot --execute --num-tests "${{ inputs.num_tests }}"
+
+      - name: Run Aider Polyglot scored small slice
+        if: ${{ inputs.track == 'aider-polyglot-scored-small' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${OPENAI_API_KEY:-}" ]; then
+            echo "OPENAI_API_KEY repository secret is required for scored Aider runs" >&2
+            exit 1
+          fi
+
+          rm -rf external/benchmarks/aider
+          git clone --depth 1 https://github.com/Aider-AI/aider.git external/benchmarks/aider
+          cd external/benchmarks/aider
+          mkdir -p tmp.benchmarks
+          git clone --depth 1 https://github.com/Aider-AI/polyglot-benchmark.git tmp.benchmarks/polyglot-benchmark
+          ./benchmark/docker_build.sh
+          docker run --rm \
+            --memory=12g \
+            --memory-swap=12g \
+            -v "$PWD":/aider \
+            -v "$PWD/tmp.benchmarks":/benchmarks \
+            -e OPENAI_API_KEY="${OPENAI_API_KEY}" \
+            -e AIDER_DOCKER=1 \
+            -e AIDER_BENCHMARK_DIR=/benchmarks \
+            aider-benchmark \
+            bash -lc "cd /aider && pip install -e '.[dev]' && python benchmark/benchmark.py scbe-remote-scored --model '${AIDER_MODEL}' --edit-format '${AIDER_EDIT_FORMAT}' --threads 1 --num-tests '${AIDER_NUM_TESTS}' --exercises-dir /benchmarks/polyglot-benchmark"
+
+          latest_dir="$(ls -td tmp.benchmarks/*--scbe-remote-scored | head -1)"
+          mkdir -p ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
+          python benchmark/benchmark.py --stats "${latest_dir}" \
+            | tee ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/latest_stats.yml
+          cp -R "${latest_dir}" ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/run
 
       - name: Terminal-Bench remote setup note
         if: ${{ inputs.track == 'terminal-bench-setup' }}
