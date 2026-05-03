@@ -26,6 +26,15 @@ on:
         description: "Aider edit format for scored runs"
         required: false
         default: "whole"
+      api_provider:
+        description: "API provider for scored Aider runs"
+        required: false
+        default: "openai"
+        type: choice
+        options:
+          - openai
+          - huggingface
+          - nvidia
 
 permissions:
   contents: read
@@ -39,7 +48,10 @@ jobs:
       AIDER_MODEL: ${{ inputs.model }}
       AIDER_EDIT_FORMAT: ${{ inputs.edit_format }}
       AIDER_NUM_TESTS: ${{ inputs.num_tests }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      AIDER_API_PROVIDER: ${{ inputs.api_provider }}
+      OPENAI_API_KEY_SECRET: ${{ secrets.OPENAI_API_KEY }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
 
     steps:
       - name: Checkout
@@ -74,9 +86,34 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${OPENAI_API_KEY:-}" ]; then
-            echo "OPENAI_API_KEY repository secret is required for scored Aider runs" >&2
+          SELECTED_API_BASE=""
+          case "${AIDER_API_PROVIDER}" in
+            openai)
+              SELECTED_API_KEY="${OPENAI_API_KEY_SECRET:-}"
+              REQUIRED_SECRET="OPENAI_API_KEY"
+              ;;
+            huggingface)
+              SELECTED_API_KEY="${HF_TOKEN:-}"
+              SELECTED_API_BASE="https://router.huggingface.co/v1"
+              REQUIRED_SECRET="HF_TOKEN"
+              ;;
+            nvidia)
+              SELECTED_API_KEY="${NVIDIA_API_KEY:-}"
+              SELECTED_API_BASE="https://integrate.api.nvidia.com/v1"
+              REQUIRED_SECRET="NVIDIA_API_KEY"
+              ;;
+            *)
+              echo "Unsupported Aider API provider: ${AIDER_API_PROVIDER}" >&2
+              exit 1
+              ;;
+          esac
+          if [ -z "${SELECTED_API_KEY:-}" ]; then
+            echo "${REQUIRED_SECRET} repository secret is required for ${AIDER_API_PROVIDER} scored Aider runs" >&2
             exit 1
+          fi
+          api_env_args=(-e OPENAI_API_KEY="${SELECTED_API_KEY}")
+          if [ -n "${SELECTED_API_BASE}" ]; then
+            api_env_args+=(-e OPENAI_API_BASE="${SELECTED_API_BASE}" -e AIDER_OPENAI_API_BASE="${SELECTED_API_BASE}")
           fi
 
           rm -rf external/benchmarks/aider
@@ -157,7 +194,7 @@ jobs:
             --memory-swap=12g \
             -v "$PWD":/aider \
             -v "$PWD/tmp.benchmarks":/benchmarks \
-            -e OPENAI_API_KEY="${OPENAI_API_KEY}" \
+            "${api_env_args[@]}" \
             -e AIDER_DOCKER=1 \
             -e AIDER_BENCHMARK_DIR=/benchmarks \
             aider-benchmark \
