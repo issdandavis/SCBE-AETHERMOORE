@@ -26,6 +26,8 @@ LANE_SWITCH_COSTS = {
     ("openrouter", "ollama"): 5,
     ("ollama", "huggingface"): 4,
     ("huggingface", "ollama"): 4,
+    ("ollama", "nvidia"): 4,
+    ("nvidia", "ollama"): 4,
 }
 
 
@@ -320,6 +322,19 @@ def provider_registry() -> dict[str, HarnessProvider]:
             capabilities=("chat", "tools-json", "open-models"),
             docs_url="https://huggingface.co/docs/inference-providers/index",
             notes="Hugging Face Inference Router or endpoint",
+        ),
+        "nvidia": HarnessProvider(
+            provider="nvidia",
+            family="remote-openai-compatible",
+            base_url=_env("NVIDIA_OPENAI_BASE_URL", "https://integrate.api.nvidia.com/v1"),
+            api_key_env=("NVIDIA_API_KEY", "NVIDIA_API_KEY_1", "NVIDIA_API_KEY_2"),
+            default_model=_env("GEOSEAL_NVIDIA_MODEL", "qwen/qwen3-coder-480b-a35b-instruct"),
+            tool_adapter="openai_tool_call",
+            local=False,
+            pricing_tier="free-tier-or-paid",
+            capabilities=("chat", "tools-json", "large-models", "coding", "reasoning"),
+            docs_url="https://docs.api.nvidia.com/nim/reference/llm-apis",
+            notes="NVIDIA API Catalog / NIM OpenAI-compatible endpoint",
         ),
         "openai": HarnessProvider(
             provider="openai",

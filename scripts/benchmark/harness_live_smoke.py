@@ -88,7 +88,7 @@ def call_chat_completion(
             raw = resp.read().decode("utf-8", errors="replace")
             latency_ms = int((time.perf_counter() - started) * 1000)
             body = json.loads(raw)
-            content = body.get("choices", [{}])[0].get("message", {}).get("content", "")
+            content = _extract_message_text(body)
             return {
                 "ref": provider_ref,
                 "provider": provider.provider,
@@ -104,6 +104,24 @@ def call_chat_completion(
         return _failure(provider_ref, provider.provider, model, "http_error", str(exc.code), detail)
     except (OSError, URLError, TimeoutError, json.JSONDecodeError) as exc:
         return _failure(provider_ref, provider.provider, model, "error", str(exc), "")
+
+
+def _extract_message_text(body: dict[str, Any]) -> str:
+    """Return content text while tolerating reasoning-only model responses.
+
+    Some NVIDIA-hosted reasoning models emit ``content: null`` until enough
+    tokens have been generated, while placing partial text in
+    ``reasoning_content`` or ``reasoning``. Smoke tests should report that
+    text instead of crashing on a non-string content value.
+    """
+
+    choices = body.get("choices") or [{}]
+    message = choices[0].get("message", {}) if isinstance(choices[0], dict) else {}
+    for key in ("content", "reasoning_content", "reasoning"):
+        value = message.get(key)
+        if isinstance(value, str) and value:
+            return value
+    return ""
 
 
 def _content_is_jsonish(content: str) -> bool:

@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from scripts.benchmark.harness_live_smoke import build_chat_payload, build_smoke_report
+from scripts.benchmark.harness_live_smoke import _extract_message_text, build_chat_payload, build_smoke_report
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -27,6 +27,22 @@ def test_live_smoke_payload_requires_compact_json() -> None:
     assert payload["messages"][0]["role"] == "system"
     assert "Reply only" in payload["messages"][0]["content"]
     assert "harness-smoke" in payload["messages"][1]["content"]
+
+
+def test_live_smoke_extracts_reasoning_content_when_content_is_null() -> None:
+    body = {
+        "choices": [
+            {
+                "message": {
+                    "content": None,
+                    "reasoning_content": "thinking text",
+                    "reasoning": "fallback text",
+                }
+            }
+        ]
+    }
+
+    assert _extract_message_text(body) == "thinking text"
 
 
 def test_live_smoke_script_json_output() -> None:

@@ -53,12 +53,17 @@ def test_provider_registry_covers_local_free_and_remote_free_tier_lanes() -> Non
     providers = provider_registry()
 
     assert len(providers) >= 18
-    assert {"ollama", "lmstudio", "vllm", "llamacpp", "groq", "gemini", "together", "moonshot"}.issubset(providers)
+    assert {"ollama", "lmstudio", "vllm", "llamacpp", "groq", "gemini", "together", "moonshot", "nvidia"}.issubset(
+        providers
+    )
     assert providers["ollama"].pricing_tier == "free-local"
     assert providers["gemini"].chat_url == "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
     assert providers["groq"].chat_url == "https://api.groq.com/openai/v1/chat/completions"
     assert providers["fireworks"].chat_url == "https://api.fireworks.ai/inference/v1/chat/completions"
+    assert providers["nvidia"].chat_url == "https://integrate.api.nvidia.com/v1/chat/completions"
+    assert providers["nvidia"].default_model == "qwen/qwen3-coder-480b-a35b-instruct"
     assert "tools-json" in providers["together"].capabilities
+    assert "large-models" in providers["nvidia"].capabilities
 
 
 def test_resolve_new_remote_provider_aliases() -> None:

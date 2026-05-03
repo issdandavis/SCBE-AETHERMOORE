@@ -26,6 +26,7 @@ def test_provider_matrix_reports_lane_switch_costs() -> None:
     assert report["provider_count"] >= 18
     assert report["providers"]["groq"]["pricing_tier"] == "free-tier"
     assert report["providers"]["gemini"]["chat_url"].endswith("/openai/chat/completions")
+    assert report["providers"]["nvidia"]["chat_url"] == "https://integrate.api.nvidia.com/v1/chat/completions"
 
 
 def test_provider_matrix_surfaces_pricing_capabilities_and_docs() -> None:
