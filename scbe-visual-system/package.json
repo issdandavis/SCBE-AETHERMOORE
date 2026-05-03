@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.51.0",
-    "lucide-react": "^1.11.0",
+    "lucide-react": "^1.14.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.5"
   },
