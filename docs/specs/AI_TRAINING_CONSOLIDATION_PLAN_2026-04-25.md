@@ -4,6 +4,22 @@ Date: 2026-04-25
 
 This is the working plan for consolidating SCBE training into specialist open-weight adapter buckets, testing those buckets independently, then merging only promoted adapters into a rounded coding/operator model.
 
+## Convergence Goal
+
+The model family should converge toward one practical behavior: turn messy human intent into routeable, testable, reversible SCBE work packets.
+
+That means the training target is not "chat better." The target is:
+
+- preserve bijective reasoning and coding as a first-class behavior,
+- keep mathematics, English, Sacred Tongues full names and abbreviations, binary framing, chemistry packets, and coding primaries synchronized,
+- turn ambiguous user requests into repo-grounded actions with explicit places to ask for clarity,
+- choose the smallest useful agent formation, runner chain, tool route, and gate,
+- keep research source-grounded with claim text, source identity, reject lists, and implementation targets,
+- use local/free model pairs and triads by default, with explicit lane-change signals when crossing providers, permission tiers, phases, or language lanes,
+- promote only artifacts that pass packet integrity, route consistency, code tests, benchmark checks, and release-readiness cleanup.
+
+The compact training unit is a packet trace, receipt, or source-grounded card. Whole conversations are only raw material; they should be digested into smaller records before they become training data.
+
 ## Command
 
 ```powershell
@@ -57,6 +73,23 @@ Blocked does not mean useless. It means those records need a schema adapter or G
 4. Use GRPO only where rewards are mechanically verifiable, such as code tests, command recall, or governance decisions.
 5. Merge promoted adapters with weighted adapter merge.
 6. Run final smoke, coding benchmark, governance regression, and local GGUF export only after the merged model beats the base model.
+
+## Active Training Lanes
+
+- `aligned_foundations`: shared substrate learning across mathematics, English, Sacred Tongues, binary transport, chemistry, and coding.
+- `stage5_command_harmony`: current GeoSeal command recall, analog action compression, provider lane signaling, and runtime-vs-structural boundaries.
+- `stage6_coding_repair`: executable repair vocabulary and constrained code-output behavior under frozen must-pass gates.
+- `agentic_packet_traces`: compact runner-chain and provider-pair behavior from executable packet traces instead of full conversations.
+- `source_grounded_research`: source finding, falsifiable claims, and research-to-implementation routing.
+
+## Promotion Gates
+
+- G1 packet integrity: schema, hashes, and bijective round-trip evidence survive.
+- G2 route and lane signaling: provider, permission, phase, or language lane changes fail closed without a signal.
+- G3 executable coding: coding specialists pass focused repo tests or frozen executable contracts.
+- G4 cross-lane alignment: aligned-foundations records preserve concept identity across every synchronized face.
+- G5 source and research grounding: research records carry source identity, falsifiable claim text, and a routeable target.
+- G6 release readiness: merged outputs pass benchmark/readiness checks and keep generated churn out of release commits.
 
 ## Merge Boundary
 

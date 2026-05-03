@@ -10,7 +10,9 @@ MODULE_PATH = ROOT / "scripts" / "system" / "consolidate_ai_training.py"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location("consolidate_ai_training", MODULE_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "consolidate_ai_training", MODULE_PATH
+    )
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -29,7 +31,9 @@ def test_parse_purposes_rejects_unknown_bucket() -> None:
         raise AssertionError("expected ValueError")
 
 
-def test_build_specialist_plan_normalizes_merge_weights(tmp_path: Path, monkeypatch) -> None:
+def test_build_specialist_plan_normalizes_merge_weights(
+    tmp_path: Path, monkeypatch
+) -> None:
     module = _load_module()
     regularization = {
         "model_sets": {
@@ -73,9 +77,16 @@ def test_build_specialist_plan_normalizes_merge_weights(tmp_path: Path, monkeypa
         },
     }
 
-    plan = module.build_specialist_plan(inventory, regularized, ("coding_model", "aligned_foundations"))
+    plan = module.build_specialist_plan(
+        inventory, regularized, ("coding_model", "aligned_foundations")
+    )
 
     assert plan["schema_version"] == "scbe_ai_training_consolidation_plan_v1"
+    assert plan["convergence_goals"][0]["goal_id"] == "bijective_reasoning_and_coding"
+    assert any(
+        lane["lane_id"] == "stage5_command_harmony" for lane in plan["training_lanes"]
+    )
+    assert any("packet schema" in check for check in plan["promotion_checks"])
     assert plan["final_merge"]["merge_id"] == "merge-v1"
     assert plan["specialists"][0]["eval_gate"] == "coding gate"
     assert sum(item["normalized_merge_weight"] for item in plan["specialists"]) == 1.0
@@ -103,12 +114,26 @@ def test_render_report_includes_specialists() -> None:
             }
         ],
         "training_method_ladder": ["SFT first"],
+        "convergence_goals": [
+            {
+                "goal_id": "bijective_reasoning_and_coding",
+                "summary": "Make reversible packet reasoning and coding first-class.",
+            }
+        ],
+        "training_lanes": [
+            {
+                "lane_id": "stage5_command_harmony",
+                "purpose": "Teach current GeoSeal command recall.",
+            }
+        ],
         "promotion_checks": ["test before merge"],
     }
 
     report = module.render_report(plan)
 
     assert "coding_primary_specialist" in report
+    assert "bijective_reasoning_and_coding" in report
+    assert "stage5_command_harmony" in report
     assert "SFT first" in report
     assert "test before merge" in report
 
@@ -118,6 +143,10 @@ def test_specialist_defaults_include_unblocked_bucket_profiles() -> None:
 
     assert (
         "config/model_training/operator-agent-bus-qwen-primary.json"
+        in module.SPECIALIST_DEFAULTS["operator_agent_bus"]["profile_candidates"]
+    )
+    assert (
+        "config/model_training/coding-agent-qwen-command-harmony-v5-signal-repair-v1.json"
         in module.SPECIALIST_DEFAULTS["operator_agent_bus"]["profile_candidates"]
     )
     assert (

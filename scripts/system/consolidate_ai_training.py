@@ -25,6 +25,141 @@ DEFAULT_PURPOSES = (
     "governance_security",
     "research_bridge",
 )
+CONVERGENCE_GOALS = (
+    {
+        "goal_id": "bijective_reasoning_and_coding",
+        "summary": "Make reversible packet reasoning and coding a first-class behavior across GeoSeal, Sacred Tongues, and coding formation traces.",
+        "evidence": [
+            "source_sha256/token_sha256 round trips",
+            "slot-preserving code packet traces",
+            "Stage 5 and Stage 6 frozen contracts",
+        ],
+    },
+    {
+        "goal_id": "repo_grounded_agentic_execution",
+        "summary": "Train models to turn ambiguous user goals into repo-grounded actions, receipts, tests, and release gates instead of broad prose.",
+        "evidence": [
+            "intent packets",
+            "layer runner receipts",
+            "formation role receipts",
+            "focused pytest or benchmark command evidence",
+        ],
+    },
+    {
+        "goal_id": "multi_representation_alignment",
+        "summary": "Keep mathematics, English, full Sacred Tongues names, abbreviations, binary framing, chemistry packets, and coding primaries synchronized.",
+        "evidence": [
+            "aligned-foundations concept_id threading",
+            "chemistry conservation records",
+            "coding face and packet compliance checks",
+        ],
+    },
+    {
+        "goal_id": "source_grounded_research_rag",
+        "summary": "Convert research captures into source-identified, falsifiable records that agents can cite, reject, or route into implementation lanes.",
+        "evidence": [
+            "source path or URL identity",
+            "claim text",
+            "reject list",
+            "testable implementation target",
+        ],
+    },
+    {
+        "goal_id": "local_first_free_model_fleet",
+        "summary": "Prefer small local/free model pairs and triads with explicit lane-change signaling; use larger models only as bounded helpers.",
+        "evidence": [
+            "provider-pair signals",
+            "harness-terminal provider matrix",
+            "costed pair or triad receipts",
+        ],
+    },
+    {
+        "goal_id": "release_cleanliness_and_promotion",
+        "summary": "Promote only artifacts that pass packet integrity, route consistency, code tests, benchmark checks, and release-readiness cleanup.",
+        "evidence": [
+            "promotion gate report",
+            "specialist bucket readiness report",
+            "release readiness output",
+        ],
+    },
+)
+TRAINING_LANES = (
+    {
+        "lane_id": "aligned_foundations",
+        "purpose": "Shared substrate learning across math, English, Sacred Tongues, binary, chemistry, and coding.",
+        "primary_profile": "config/model_training/aligned-foundations-qwen-primary.json",
+        "canonical_inputs": [
+            "training-data/manifests/2026-05-02-aligned-foundations-v2-manifest.json",
+            "training-data/sft/drill_langues_full_train.sft.jsonl",
+            "training-data/sft/bijective_codeflow_v1_train.sft.jsonl",
+        ],
+    },
+    {
+        "lane_id": "stage5_command_harmony",
+        "purpose": "Teach current GeoSeal command recall, analog action compression, provider lane signaling, and runtime-vs-structural boundaries.",
+        "primary_profile": "config/model_training/coding-agent-qwen-command-harmony-v5-signal-repair-v1.json",
+        "canonical_inputs": [
+            "config/model_training/stage5_command_harmony_eval_contract.json",
+            "training-data/sft/stage5_command_harmony_signal_shape_boost_train.sft.jsonl",
+            "training-data/sft/stage5_command_harmony_signal_shape_boost_holdout.sft.jsonl",
+        ],
+    },
+    {
+        "lane_id": "stage6_coding_repair",
+        "purpose": "Teach executable repair vocabulary and constrained code-output behavior under frozen must-pass gates.",
+        "primary_profile": "config/model_training/coding-agent-qwen-stage6-repair-v9.json",
+        "canonical_inputs": [
+            "training-data/sft/atomic_workflow_stage6_must_pass_boost_manifest.json",
+            "training-data/sft/atomic_workflow_stage6_signal_shape_boost_manifest.json",
+        ],
+    },
+    {
+        "lane_id": "agentic_packet_traces",
+        "purpose": "Teach compact runner-chain and provider-pair behavior from executable packet traces instead of whole conversations.",
+        "primary_profile": "config/model_training/operator-agent-bus-qwen-primary.json",
+        "canonical_inputs": [
+            "training-data/agentic_coding/packet_traces.jsonl",
+            "docs/AGENTIC_LAYER_RUNNER_ROADMAP.md",
+            "docs/AGENTIC_CODING_FORMATIONS_ROADMAP.md",
+        ],
+    },
+    {
+        "lane_id": "source_grounded_research",
+        "purpose": "Teach agents to find sources, keep claims falsifiable, and route research into implementation or rejection lanes.",
+        "primary_profile": "config/model_training/research-bridge-qwen-primary.json",
+        "canonical_inputs": [
+            "docs/RESEARCH_ROADMAP_INDEX.md",
+            "docs/research/ATOMIC_TOKENIZER_INDUSTRY_REFERENCES_2026-05-03.md",
+            "training-data/research_bridge_smoke",
+        ],
+    },
+)
+PROMOTION_GATES = (
+    {
+        "gate_id": "G1_packet_integrity",
+        "rule": "Every promoted lane must preserve packet schema, hashes, and bijective round-trip evidence.",
+    },
+    {
+        "gate_id": "G2_route_and_lane_signaling",
+        "rule": "Provider, permission, phase, or language lane changes require explicit signals and must fail closed when missing.",
+    },
+    {
+        "gate_id": "G3_executable_coding",
+        "rule": "Coding specialists must pass focused repo tests or frozen executable contracts before adapter promotion.",
+    },
+    {
+        "gate_id": "G4_cross_lane_alignment",
+        "rule": "Aligned-foundations records must preserve concept identity across math, English, Sacred Tongues, binary, chemistry, and coding faces.",
+    },
+    {
+        "gate_id": "G5_source_and_research_grounding",
+        "rule": "Research records must carry source identity, falsifiable claim text, and a routeable implementation or rejection target.",
+    },
+    {
+        "gate_id": "G6_release_readiness",
+        "rule": "Merged outputs must pass benchmark/readiness checks and keep generated churn out of release commits.",
+    },
+)
 REGULARIZATION_CONFIG = (
     REPO_ROOT / "config" / "model_training" / "scbe_dataset_regularization_v1.json"
 )
@@ -65,11 +200,13 @@ SPECIALIST_DEFAULTS: dict[str, dict[str, Any]] = {
         "method_order": ["SFT", "tool_trace_eval", "DPO_optional"],
         "profile_candidates": [
             "config/model_training/operator-agent-bus-qwen-primary.json",
+            "config/model_training/coding-agent-qwen-command-harmony-v5-signal-repair-v1.json",
+            "config/model_training/coding-agent-qwen-command-harmony-v5.json",
             "config/model_training/ollama-agentic-handler.json",
             "config/model_training/hf-agentic-handler.json",
         ],
         "merge_weight": 0.16,
-        "promotion_gate": "exact CLI recall and fail-closed route behavior",
+        "promotion_gate": "exact CLI recall, Stage 5 command harmony, provider-pair signaling, and fail-closed route behavior",
     },
     "governance_security": {
         "specialist_id": "governance_security_specialist",
@@ -208,6 +345,8 @@ def build_specialist_plan(
         "schema_version": "scbe_ai_training_consolidation_plan_v1",
         "generated_at_utc": _utc_now(),
         "core_rule": "Train specialist adapters first, test each bucket independently, then merge only promoted adapters into a rounded model.",
+        "convergence_goals": list(CONVERGENCE_GOALS),
+        "training_lanes": list(TRAINING_LANES),
         "local_inventory_summary": summary,
         "open_weight_strategy": {
             "low_cost_coding": "Qwen/Qwen2.5-Coder-0.5B-Instruct for Kaggle/HF smoke and LoRA iteration",
@@ -233,6 +372,7 @@ def build_specialist_plan(
             "rule": "Do not merge a specialist adapter until its eval gate passes and its held-out set stays frozen.",
         },
         "promotion_checks": [
+            *(gate["rule"] for gate in PROMOTION_GATES),
             "all selected specialist buckets have train_records > 0",
             "each specialist has an eval or explicit frozen external contract",
             "no story_lore or commerce_product records enter coding_model unless explicitly code-paired",
@@ -261,11 +401,15 @@ def render_report(plan: dict[str, Any]) -> str:
             f"- Local files: {summary.get('local_file_count', 0)}",
             f"- Local JSONL files: {summary.get('local_jsonl_file_count', 0)}",
             f"- Known local JSONL records: {summary.get('local_known_jsonl_records', 0)}",
-            "",
-            "## Specialist Buckets",
-            "",
         ]
     )
+    lines.extend(["", "## Convergence Goals", ""])
+    for goal in plan.get("convergence_goals", []):
+        lines.append(f"- {goal['goal_id']}: {goal['summary']}")
+    lines.extend(["", "## Training Lanes", ""])
+    for lane in plan.get("training_lanes", []):
+        lines.append(f"- {lane['lane_id']}: {lane['purpose']}")
+    lines.extend(["", "## Specialist Buckets", ""])
     for specialist in plan["specialists"]:
         lines.append(
             "- "
