@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "KO"
+script_tongue_name: "Kor'aelin"
 script_language: "Python"
 script_path: "scripts/system/force_delete.py"
 source_sha256: "50efdaac56da4491e8291b947b860d1bbfde057e43d0e20c3c80a60fb5f4fa26"
@@ -16,9 +18,9 @@ Force-delete a directory, handling Windows reserved names (nul, con, etc).
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `KO`
+- Script tongue: `KO` (Kor'aelin)
 - Script language lane: `Python`
 - Route reason: `trit-aggregate`
 

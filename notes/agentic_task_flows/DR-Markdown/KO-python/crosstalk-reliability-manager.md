@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "KO"
+script_tongue_name: "Kor'aelin"
 script_language: "Python"
 script_path: "scripts/system/crosstalk_reliability_manager.py"
 source_sha256: "f666e951d3a5d1d9b2859aafa17db65bf9477975dcf6cbf9794eb631e11c2b12"
@@ -16,9 +18,9 @@ Cross-talk reliability checker and repair utility.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `KO`
+- Script tongue: `KO` (Kor'aelin)
 - Script language lane: `Python`
 - Route reason: `trit-aggregate`
 

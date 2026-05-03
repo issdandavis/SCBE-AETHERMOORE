@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "CA"
+script_tongue_name: "Cassisivadan"
 script_language: "C"
 script_path: "scripts/system/octoarms_dispatch.py"
 source_sha256: "cc88c02e0b755f83d7d24a75e4a6f9f43db0ce3dc2432f892c222874db212f2b"
@@ -16,9 +18,9 @@ Agentic task flow wrapper for octoarms_dispatch.py.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `CA`
+- Script tongue: `CA` (Cassisivadan)
 - Script language lane: `C`
 - Route reason: `c`
 

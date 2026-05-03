@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "KO"
+script_tongue_name: "Kor'aelin"
 script_language: "Python"
 script_path: "scripts/system/push_hf_card_constrained_decoding_2026_04_30.py"
 source_sha256: "07316f0da475f59c208a68b66178cf033cb9c1d7edab0bc1474f6bef9aa84817"
@@ -16,9 +18,9 @@ Push updated model card for scbe-coding-agent-qwen-merged-coding-model-v1.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `KO`
+- Script tongue: `KO` (Kor'aelin)
 - Script language lane: `Python`
 - Route reason: `trit-aggregate`
 

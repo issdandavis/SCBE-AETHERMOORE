@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "KO"
+script_tongue_name: "Kor'aelin"
 script_language: "Python"
 script_path: "scripts/system/proton_mail_ops.py"
 source_sha256: "2b5b562f19090ec63a4b6f420361e6d5cd56f5026f25217b3fb605468ef0cd1b"
@@ -16,9 +18,9 @@ Secure local Proton Mail Bridge operations for AI-assisted inbox work.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `KO`
+- Script tongue: `KO` (Kor'aelin)
 - Script language lane: `Python`
 - Route reason: `trit-aggregate`
 

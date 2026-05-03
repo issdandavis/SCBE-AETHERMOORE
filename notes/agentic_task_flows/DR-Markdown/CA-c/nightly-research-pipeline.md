@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "CA"
+script_tongue_name: "Cassisivadan"
 script_language: "C"
 script_path: "scripts/system/nightly_research_pipeline.py"
 source_sha256: "2570418ee71d5143956a7022421aad6f403fce004fd893b4eba226dcea1a9c5c"
@@ -16,9 +18,9 @@ SCBE Nightly Research Pipeline — Autonomous Research Agent  Runs on a schedule
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `CA`
+- Script tongue: `CA` (Cassisivadan)
 - Script language lane: `C`
 - Route reason: `c`
 

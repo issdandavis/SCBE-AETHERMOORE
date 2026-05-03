@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "RU"
+script_tongue_name: "Runethic"
 script_language: "Rust"
 script_path: "scripts/system/preflight_zero_cost_training.py"
 source_sha256: "00dafd6f8bf45d7597b719f4fe1fe74b536f3ac589c071fe84fd90f7665a8699"
@@ -16,9 +18,9 @@ Fail-fast checks for the zero-cost local training profile.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `RU`
+- Script tongue: `RU` (Runethic)
 - Script language lane: `Rust`
 - Route reason: `zero-cost`
 

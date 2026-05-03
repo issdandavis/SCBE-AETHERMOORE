@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "CA"
+script_tongue_name: "Cassisivadan"
 script_language: "C"
 script_path: "scripts/system/repo_ordering.py"
 source_sha256: "df2aadf937a8048c0e2f34a69d6b43d92fb655333cb2cc90d5a6da499ca22040"
@@ -16,9 +18,9 @@ Agentic task flow wrapper for repo_ordering.py.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `CA`
+- Script tongue: `CA` (Cassisivadan)
 - Script language lane: `C`
 - Route reason: `c`
 

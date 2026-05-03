@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "KO"
+script_tongue_name: "Kor'aelin"
 script_language: "Python"
 script_path: "scripts/system/crosstalk_relay.py"
 source_sha256: "d2cf48773dd9e9c303d07cb6c143139c39a1dff677a3a1275e939b2fdf5bdc9b"
@@ -16,9 +18,9 @@ Cross-Talk Relay — Reliable multi-lane AI-to-AI packet delivery.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `KO`
+- Script tongue: `KO` (Kor'aelin)
 - Script language lane: `Python`
 - Route reason: `trit-aggregate`
 

@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "DR"
+script_tongue_name: "Draumric"
 script_language: "Markdown"
 script_path: "scripts/system/research_training_bridge.py"
 source_sha256: "7a1445344307c36e7c0807b7b3cddbfcc06aa11fa130cefb7a4818c081569867"
@@ -16,9 +18,9 @@ Stage arXiv evidence and markdown notes into Hugging Face-ready training bundles
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `DR`
+- Script tongue: `DR` (Draumric)
 - Script language lane: `Markdown`
 - Route reason: `markdown`
 

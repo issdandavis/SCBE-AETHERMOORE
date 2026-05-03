@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "CA"
+script_tongue_name: "Cassisivadan"
 script_language: "C"
 script_path: "scripts/system/website_sales_train.py"
 source_sha256: "73242572eaa6ebba76fcbe0c58e5a4b0686dcff0e3c5d927d460242cf67603b6"
@@ -16,9 +18,9 @@ Agentic task flow wrapper for website_sales_train.py.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `CA`
+- Script tongue: `CA` (Cassisivadan)
 - Script language lane: `C`
 - Route reason: `c`
 

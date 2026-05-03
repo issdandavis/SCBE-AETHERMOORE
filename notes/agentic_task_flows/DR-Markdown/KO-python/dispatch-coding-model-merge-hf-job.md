@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "KO"
+script_tongue_name: "Kor'aelin"
 script_language: "Python"
 script_path: "scripts/system/dispatch_coding_model_merge_hf_job.py"
 source_sha256: "2b5fc71a9c775b82daf52eaf231eec134ffc2dd9e0c3db9093c75344a0db8b44"
@@ -16,9 +18,9 @@ Plan and dispatch a Hugging Face job that merges coding-agent LoRA adapters.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `KO`
+- Script tongue: `KO` (Kor'aelin)
 - Script language lane: `Python`
 - Route reason: `trit-aggregate`
 

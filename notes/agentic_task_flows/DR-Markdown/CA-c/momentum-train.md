@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "CA"
+script_tongue_name: "Cassisivadan"
 script_language: "C"
 script_path: "scripts/system/momentum_train.py"
 source_sha256: "04302894988f281377f4a6f577b73fc87ec00a2cc9772ef2a5f3b63070a09193"
@@ -16,9 +18,9 @@ Agentic task flow wrapper for momentum_train.py.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `CA`
+- Script tongue: `CA` (Cassisivadan)
 - Script language lane: `C`
 - Route reason: `c`
 

@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "DR"
+script_tongue_name: "Draumric"
 script_language: "Markdown"
 script_path: "scripts/system/chessboard_dev_stack.py"
 source_sha256: "f4c5bbe67deeb5f35a734d4d752caef78b6db658b9750fe563b94cfc0d4f2d14"
@@ -16,9 +18,9 @@ Agentic task flow wrapper for chessboard_dev_stack.py.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `DR`
+- Script tongue: `DR` (Draumric)
 - Script language lane: `Markdown`
 - Route reason: `stack`
 

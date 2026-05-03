@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "CA"
+script_tongue_name: "Cassisivadan"
 script_language: "C"
 script_path: "scripts/system/polly_npc_roundtable_builder.py"
 source_sha256: "62d172011b0a9653fe6146fe3b7a8f7a5bdc6746435d9a58fb871e9e0b01caee"
@@ -16,9 +18,9 @@ Build NPC training rows from Aetherlore using a Round Table format.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `CA`
+- Script tongue: `CA` (Cassisivadan)
 - Script language lane: `C`
 - Route reason: `c`
 

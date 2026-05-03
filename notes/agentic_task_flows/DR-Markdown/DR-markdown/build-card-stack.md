@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "DR"
+script_tongue_name: "Draumric"
 script_language: "Markdown"
 script_path: "scripts/system/build_card_stack.py"
 source_sha256: "6b491761351aba9a1f4495d083b722edddd36c406b22f77c962bdb1fc519be08"
@@ -16,9 +18,9 @@ Regenerate the SCBE AI card stack — one card per dataset / model config / run 
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `DR`
+- Script tongue: `DR` (Draumric)
 - Script language lane: `Markdown`
 - Route reason: `stack`
 

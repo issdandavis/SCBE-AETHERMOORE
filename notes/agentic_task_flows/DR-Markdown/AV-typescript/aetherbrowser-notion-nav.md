@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "AV"
+script_tongue_name: "Avali"
 script_language: "TypeScript"
 script_path: "scripts/system/aetherbrowser_notion_nav.py"
 source_sha256: "4678df5c748b8c87b17dd13cbdb43cb2bbaaf77c9ec9fa74a4db58e672e77b0f"
@@ -16,9 +18,9 @@ AetherBrowser Notion Navigation — Notion API + optional Playwright browser.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `AV`
+- Script tongue: `AV` (Avali)
 - Script language lane: `TypeScript`
 - Route reason: `browser`
 

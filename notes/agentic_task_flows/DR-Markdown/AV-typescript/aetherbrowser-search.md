@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "AV"
+script_tongue_name: "Avali"
 script_language: "TypeScript"
 script_path: "scripts/system/aetherbrowser_search.py"
 source_sha256: "688bbd693d77ec0836f456d1cfa7f30618bd7a5201793f6dd5728fbbaa524636"
@@ -16,9 +18,9 @@ Unified AetherBrowser search entrypoint.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `AV`
+- Script tongue: `AV` (Avali)
 - Script language lane: `TypeScript`
 - Route reason: `browser`
 

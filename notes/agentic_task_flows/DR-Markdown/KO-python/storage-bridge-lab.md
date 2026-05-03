@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "KO"
+script_tongue_name: "Kor'aelin"
 script_language: "Python"
 script_path: "scripts/system/storage_bridge_lab.py"
 source_sha256: "3a7b68f5ed898d0f64e5ce20fd416afba5c77a1e5aaa135782d92b333dbc5a57"
@@ -16,9 +18,9 @@ Storage Bridge Lab — Experimental Multi-Surface Comparison ===================
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `KO`
+- Script tongue: `KO` (Kor'aelin)
 - Script language lane: `Python`
 - Route reason: `trit-aggregate`
 

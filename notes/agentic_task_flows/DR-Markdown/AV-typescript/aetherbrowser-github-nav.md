@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "AV"
+script_tongue_name: "Avali"
 script_language: "TypeScript"
 script_path: "scripts/system/aetherbrowser_github_nav.py"
 source_sha256: "4a49a8adf35ca0d48e77942bbef69ecdac6813efbff4cafa9292933dc5f02b86"
@@ -16,9 +18,9 @@ AetherBrowser GitHub Navigation — Playwright-based GitHub search with Obsidian
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `AV`
+- Script tongue: `AV` (Avali)
 - Script language lane: `TypeScript`
 - Route reason: `browser`
 

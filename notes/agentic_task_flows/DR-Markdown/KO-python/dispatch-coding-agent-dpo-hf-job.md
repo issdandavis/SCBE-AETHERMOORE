@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "KO"
+script_tongue_name: "Kor'aelin"
 script_language: "Python"
 script_path: "scripts/system/dispatch_coding_agent_dpo_hf_job.py"
 source_sha256: "ca0c5042179af07f32cbc44cf9384901ac6f38c6a459f793d922897482933217"
@@ -16,9 +18,9 @@ Dispatch a Stage 6 DPO repair job through Hugging Face Jobs.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `KO`
+- Script tongue: `KO` (Kor'aelin)
 - Script language lane: `Python`
 - Route reason: `trit-aggregate`
 

@@ -1,8 +1,10 @@
 ---
 schema_version: "scbe_script_markdown_flow_v1"
 card_tongue: "DR"
+card_tongue_name: "Draumric"
 card_language: "Markdown"
 script_tongue: "AV"
+script_tongue_name: "Avali"
 script_language: "TypeScript"
 script_path: "scripts/system/aetherbrowser_model_cli.py"
 source_sha256: "b2e8dfebeb68961f4f1c47cb3e065ada4304776dd701de76f9822552e4136ddd"
@@ -16,9 +18,9 @@ CLI for running AetherBrowser plans through a chosen model provider.
 
 ## Route
 
-- Card tongue: `DR`
+- Card tongue: `DR` (Draumric)
 - Card language lane: `Markdown`
-- Script tongue: `AV`
+- Script tongue: `AV` (Avali)
 - Script language lane: `TypeScript`
 - Route reason: `browser`
 

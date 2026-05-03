@@ -28,13 +28,25 @@ if str(REPO_ROOT) not in sys.path:
 from src.coding_spine.deterministic_tongue_router import route_prompt
 
 
+TONGUE_FULL_NAMES: dict[str, str] = {
+    "KO": "Kor'aelin",
+    "AV": "Avali",
+    "RU": "Runethic",
+    "CA": "Cassisivadan",
+    "UM": "Umbroth",
+    "DR": "Draumric",
+}
+
+
 @dataclass(frozen=True)
 class ScriptFlowCard:
     script_path: str
     card_path: str
     card_tongue: str
+    card_tongue_name: str
     card_language: str
     script_tongue: str
+    script_tongue_name: str
     script_language: str
     title: str
     purpose: str
@@ -47,8 +59,10 @@ class ScriptFlowCard:
             "script_path": self.script_path,
             "card_path": self.card_path,
             "card_tongue": self.card_tongue,
+            "card_tongue_name": self.card_tongue_name,
             "card_language": self.card_language,
             "script_tongue": self.script_tongue,
+            "script_tongue_name": self.script_tongue_name,
             "script_language": self.script_language,
             "title": self.title,
             "purpose": self.purpose,
@@ -126,8 +140,10 @@ def _card_markdown(card: ScriptFlowCard) -> str:
     front_matter = {
         "schema_version": "scbe_script_markdown_flow_v1",
         "card_tongue": card.card_tongue,
+        "card_tongue_name": card.card_tongue_name,
         "card_language": card.card_language,
         "script_tongue": card.script_tongue,
+        "script_tongue_name": card.script_tongue_name,
         "script_language": card.script_language,
         "script_path": card.script_path,
         "source_sha256": card.source_sha256,
@@ -147,9 +163,9 @@ def _card_markdown(card: ScriptFlowCard) -> str:
             "",
             "## Route",
             "",
-            f"- Card tongue: `{card.card_tongue}`",
+            f"- Card tongue: `{card.card_tongue}` ({card.card_tongue_name})",
             f"- Card language lane: `{card.card_language}`",
-            f"- Script tongue: `{card.script_tongue}`",
+            f"- Script tongue: `{card.script_tongue}` ({card.script_tongue_name})",
             f"- Script language lane: `{card.script_language}`",
             f"- Route reason: `{card.route_reason}`",
             "",
@@ -195,8 +211,10 @@ def route_script(path: Path, out_root: Path) -> ScriptFlowCard:
         script_path=rel_script,
         card_path=_display_path(card_path),
         card_tongue="DR",
+        card_tongue_name=TONGUE_FULL_NAMES["DR"],
         card_language="Markdown",
         script_tongue=route.tongue,
+        script_tongue_name=TONGUE_FULL_NAMES.get(route.tongue, route.tongue),
         script_language=route.language,
         title=_title_for(path),
         purpose=purpose,
@@ -248,7 +266,9 @@ def build_routes(
         "include_untracked": include_untracked,
         "card_count": len(cards),
         "card_tongue": "DR",
+        "card_tongue_name": TONGUE_FULL_NAMES["DR"],
         "card_language": "Markdown",
+        "tongue_full_names": TONGUE_FULL_NAMES,
         "by_script_tongue": dict(sorted(by_script_tongue.items())),
         "cards": [card.to_dict() for card in cards],
     }
@@ -271,11 +291,14 @@ def _index_markdown(manifest: dict) -> str:
         "## Counts",
         "",
         f"- Cards: `{manifest['card_count']}`",
-        f"- Card tongue: `{manifest['card_tongue']}`",
+        f"- Card tongue: `{manifest['card_tongue']}` ({manifest['card_tongue_name']})",
         f"- Card language: `{manifest['card_language']}`",
     ]
     for tongue, count in manifest["by_script_tongue"].items():
-        lines.append(f"- `{tongue}`: `{count}`")
+        lines.append(f"- `{tongue}` ({manifest['tongue_full_names'].get(tongue, tongue)}): `{count}`")
+    lines.extend(["", "## Sacred Tongue Legend", ""])
+    for tongue, name in manifest["tongue_full_names"].items():
+        lines.append(f"- `{tongue}` = {name}")
     lines.extend(["", "## Cards", ""])
     for card in manifest["cards"]:
         card_path = Path(card["card_path"])
@@ -286,7 +309,7 @@ def _index_markdown(manifest: dict) -> str:
             link = card_path.name
         lines.append(
             f"- [{card['title']}]({link}) -> `{card['script_path']}` "
-            f"(`{card['script_tongue']}`/`{card['script_language']}`)"
+            f"(`{card['script_tongue']}` {card['script_tongue_name']}/`{card['script_language']}`)"
         )
     lines.append("")
     return "\n".join(lines)
@@ -325,6 +348,7 @@ def main() -> int:
                     "out_root": manifest["out_root"],
                     "card_count": manifest["card_count"],
                     "card_tongue": manifest["card_tongue"],
+                    "card_tongue_name": manifest["card_tongue_name"],
                     "card_language": manifest["card_language"],
                     "by_script_tongue": manifest["by_script_tongue"],
                 },
