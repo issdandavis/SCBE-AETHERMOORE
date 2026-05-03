@@ -56,6 +56,13 @@ This verifies the public Aider benchmark command path and the six-language
 Polyglot exercise checkout. It is intentionally non-scoring because it uses
 `--no-aider --no-unit-tests`.
 
+On a fresh runner, let the smoke script clone the separate Polyglot exercise
+repo:
+
+```powershell
+python scripts/benchmark/aider_polyglot_smoke.py --download-polyglot --execute
+```
+
 Run the local GeoSeal command-line interface competitive harness directly:
 
 ```powershell

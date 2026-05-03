@@ -53,7 +53,7 @@ jobs:
 
       - name: Run Aider Polyglot non-scoring smoke
         if: ${{ inputs.track == 'aider-polyglot-smoke' }}
-        run: python scripts/benchmark/aider_polyglot_smoke.py --execute --num-tests "${{ inputs.num_tests }}"
+        run: python scripts/benchmark/aider_polyglot_smoke.py --download-polyglot --execute --num-tests "${{ inputs.num_tests }}"
 
       - name: Terminal-Bench remote setup note
         if: ${{ inputs.track == 'terminal-bench-setup' }}
