@@ -22,6 +22,8 @@ def test_harness_terminal_state_reports_roundabout_signals() -> None:
     assert state["summary"]["signal_required_pairs"] >= 1
     assert state["summary"]["analog_actions"] >= 6
     assert state["summary"]["research_lanes"] >= 8
+    assert state["summary"]["control_panel_verdict"] in {"HOLD", "PROMOTE", "INCUBATE", "ESCALATE"}
+    assert state["control_panel_brain"]["schema_version"] == "scbe_geoseal_control_panel_turn_v1"
     assert state["bridge"]["error"] == "not_probed"
 
     text = render_terminal_text(state)
@@ -30,6 +32,7 @@ def test_harness_terminal_state_reports_roundabout_signals() -> None:
     assert "Lane Switches" in text
     assert "Release Gates" in text
     assert "Analog Actions" in text
+    assert "Control Panel Brain" in text
     assert "Research Benchmarks" in text
     assert "terminal-bench-shape" in text
     assert "harness_live_smoke.py" in text
@@ -44,6 +47,8 @@ def test_harness_terminal_script_json_output() -> None:
             "scripts/terminal/geoseal_harness_terminal.py",
             "--models",
             "ollama:a,deepseek:b",
+            "--goal",
+            "benchmark training eval",
             "--no-health",
             "--json",
         ],
@@ -59,6 +64,7 @@ def test_harness_terminal_script_json_output() -> None:
     state = json.loads(proc.stdout)
     assert state["summary"]["models"] == 2
     assert state["summary"]["blocked_without_signal_pairs"] == 1
+    assert state["control_panel_brain"]["intent"] == "training_eval"
     assert state["research_benchmarks"]["families"]["terminal_bench"] == 1
     assert any("harness_live_smoke.py" in command for command in state["controls"]["release_gate_commands"])
 

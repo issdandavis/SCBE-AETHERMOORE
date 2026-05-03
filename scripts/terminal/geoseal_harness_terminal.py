@@ -25,6 +25,7 @@ from scripts.benchmark.harness_provider_matrix import DEFAULT_MODEL_REFS, build_
 from scripts.benchmark.harness_research_matrix import build_research_matrix  # noqa: E402
 from scripts.ci.harness_release_readiness import TEST_COMMANDS  # noqa: E402
 from scripts.terminal.analog_action_primitives import build_default_action_deck  # noqa: E402
+from scripts.terminal.geoseal_control_panel_brain import recommend_turn  # noqa: E402
 
 DEFAULT_BRIDGE_URL = "http://127.0.0.1:8766"
 
@@ -71,6 +72,7 @@ def probe_bridge_health(base_url: str, *, timeout: float = 1.5) -> dict[str, Any
 def build_terminal_state(
     *,
     model_refs: list[str],
+    goal: str = "training eval harness check",
     bridge_url: str = DEFAULT_BRIDGE_URL,
     probe_health: bool = True,
     timeout: float = 1.5,
@@ -83,6 +85,7 @@ def build_terminal_state(
     remote_models = [model for model in matrix["models"] if not model["local"]]
     action_deck = build_default_action_deck()
     research_matrix = build_research_matrix()
+    control_panel = recommend_turn(goal=goal, matrix=matrix).to_dict()
     bridge = probe_bridge_health(bridge_url, timeout=timeout) if probe_health else {
         "ok": None,
         "url": f"{bridge_url.rstrip('/')}/health",
@@ -97,6 +100,7 @@ def build_terminal_state(
         "bridge": bridge,
         "matrix": matrix,
         "analog_actions": [action.to_dict() for action in action_deck],
+        "control_panel_brain": control_panel,
         "research_benchmarks": research_matrix,
         "summary": {
             "models": len(matrix["models"]),
@@ -108,6 +112,8 @@ def build_terminal_state(
             "blocked_without_signal_pairs": len(blocked_without_signal),
             "analog_actions": len(action_deck),
             "research_lanes": research_matrix["lane_count"],
+            "control_panel_verdict": control_panel["verdict"],
+            "control_panel_provider": control_panel["recommended_provider"],
         },
         "controls": {
             "pair_endpoint": f"{bridge_url.rstrip('/')}/harness/pair",
@@ -168,6 +174,19 @@ def render_terminal_text(state: dict[str, Any]) -> str:
     else:
         lines.append("- no provider pairs in current selection")
 
+    brain = state.get("control_panel_brain") or {}
+    lines.extend(["", "Control Panel Brain", "-" * 28])
+    lines.append(
+        f"- intent={brain.get('intent')} verdict={brain.get('verdict')} "
+        f"horizon={brain.get('return_horizon')} mode={brain.get('route_mode')}"
+    )
+    lines.append(f"- provider={brain.get('recommended_provider')} model={brain.get('recommended_model_ref')}")
+    if brain.get("lane_signal"):
+        lines.append(f"- signal={brain.get('lane_signal')}")
+    lines.append(f"- action={brain.get('action_id')} reason={brain.get('reason')}")
+    for item in brain.get("evidence_required", []):
+        lines.append(f"  evidence: {item}")
+
     lines.extend(["", "Operator Controls", "-" * 28])
     controls = state["controls"]
     lines.append(f"- pair:   {controls['pair_endpoint']}")
@@ -198,6 +217,7 @@ def render_terminal_text(state: dict[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--models", default=",".join(DEFAULT_MODEL_REFS), help="Comma-separated provider:model refs")
+    parser.add_argument("--goal", default="training eval harness check", help="Goal text for the tiny control-panel brain")
     parser.add_argument("--bridge-url", default=DEFAULT_BRIDGE_URL, help="GeoSeal harness bridge URL")
     parser.add_argument("--timeout", type=float, default=1.5, help="Bridge health timeout in seconds")
     parser.add_argument("--no-health", action="store_true", help="Skip bridge health probe")
@@ -206,6 +226,7 @@ def main(argv: list[str] | None = None) -> int:
 
     state = build_terminal_state(
         model_refs=parse_model_refs(args.models),
+        goal=args.goal,
         bridge_url=args.bridge_url,
         probe_health=not args.no_health,
         timeout=args.timeout,

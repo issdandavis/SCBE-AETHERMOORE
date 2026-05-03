@@ -3210,6 +3210,7 @@ def cmd_harness_terminal(args: argparse.Namespace) -> int:
 
     state = build_terminal_state(
         model_refs=parse_model_refs(args.models),
+        goal=args.goal,
         bridge_url=args.bridge_url,
         probe_health=not args.no_health,
         timeout=args.timeout,
@@ -3484,6 +3485,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show terminal UI for GeoSeal AI-to-AI harness lanes",
     )
     p_harness_terminal.add_argument("--models", default=None, help="Comma-separated provider:model refs")
+    p_harness_terminal.add_argument("--goal", default="training eval harness check", help="Goal text for the control panel brain")
     p_harness_terminal.add_argument("--bridge-url", default="http://127.0.0.1:8766")
     p_harness_terminal.add_argument("--timeout", type=float, default=1.5)
     p_harness_terminal.add_argument("--no-health", action="store_true")
