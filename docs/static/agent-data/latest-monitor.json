@@ -105,32 +105,22 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Kimi K2.6 just beat Claude, GPT-5.5, and Gemini in a coding challenge",
-      "word_count": 608,
+      "description": "Show HN: Apple's Sharp Running in the Browser via ONNX Runtime Web",
+      "word_count": 618,
       "headings": [
         {
           "level": 2,
-          "text": "Kimi K2.6 just beat Claude, GPT-5.5, and Gemini in a coding challenge",
+          "text": "Show HN: Apple's Sharp Running in the Browser via ONNX Runtime Web",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "thinkpol.ca",
+          "text": "github.com/bring-shrubbery",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Clandestine network smuggling Starlink tech into Iran to beat internet blackout",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "bbc.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "A Couple Million Lines of Haskell: Production Engineering at Mercury",
+          "text": "A couple million lines of Haskell: Production engineering at Mercury",
           "source": "fallback-selector"
         },
         {
@@ -140,12 +130,22 @@
         },
         {
           "level": 2,
-          "text": "This Month in Ladybird - April 2026",
+          "text": "This Month in Ladybird \u2013 April 2026",
           "source": "fallback-selector"
         },
         {
           "level": 2,
           "text": "ladybird.org",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Dav2d",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "videolan.org",
           "source": "fallback-selector"
         },
         {
@@ -161,7 +161,7 @@
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Kimi K2.6 just beat Claude, GPT-5.5, and Gemini in a coding challenge (thinkpol.ca)190 points by bazlightyear 2 hours ago  | hide | 90\u00a0comments2.Clandestine network smuggling Starlink tech into Iran to beat internet blackout (bbc.com)150 points by 1659447091 5 hours ago  | hide | 77\u00a0comments3.A Couple Million Lines of Haskell: Production Engineering at Mercury (haskell.org)151 points by unignorant 6 hours ago  | hide | 57\u00a0commen..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Show HN: Apple's Sharp Running in the Browser via ONNX Runtime Web (github.com/bring-shrubbery)33 points by bring-shrubbery 3 hours ago  | hide | 3\u00a0comments2.A couple million lines of Haskell: Production engineering at Mercury (haskell.org)283 points by unignorant 12 hours ago  | hide | 119\u00a0comments3.This Month in Ladybird \u2013 April 2026 (ladybird.org)375 points by richardboegli 15 hours ago  | hide | 85\u00a0comments4.Dav2d (videolan...."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
