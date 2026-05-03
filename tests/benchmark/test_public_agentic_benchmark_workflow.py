@@ -13,3 +13,12 @@ def test_scored_aider_workflow_exports_visible_diagnostics() -> None:
     assert 'find "${latest_dir}" -name ".aider.results.json"' in workflow
     assert ".chat.history.md" in workflow
     assert "${safe_name}.results.json" in workflow
+
+
+def test_scored_aider_workflow_patches_flaky_deadsnakes_dockerfile() -> None:
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+
+    assert "FROM buildpack-deps:noble" in workflow
+    assert "deadsnakes/ppa" in workflow
+    assert "Aider benchmark Dockerfile changed; refusing silent patch" in workflow
+    assert "Ubuntu noble's native Python" in workflow
