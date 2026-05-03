@@ -33,3 +33,16 @@ def test_scored_aider_workflow_uses_venv_for_noble_pep668() -> None:
     assert "RUN uv pip install --no-cache-dir -e /aider[dev]" in workflow
     assert "--system --no-cache-dir -e /aider[dev]" in workflow
     assert "Aider benchmark Dockerfile pip install block changed; refusing silent patch" in workflow
+
+
+def test_scored_aider_workflow_can_select_openai_compatible_provider() -> None:
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+
+    assert "api_provider:" in workflow
+    assert "AIDER_API_PROVIDER" in workflow
+    assert "HF_TOKEN" in workflow
+    assert "NVIDIA_API_KEY" in workflow
+    assert "https://router.huggingface.co/v1" in workflow
+    assert "https://integrate.api.nvidia.com/v1" in workflow
+    assert "AIDER_OPENAI_API_BASE" in workflow
+    assert '"${api_env_args[@]}"' in workflow
