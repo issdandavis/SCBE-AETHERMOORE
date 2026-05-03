@@ -141,6 +141,7 @@ def build_terminal_state(
             "blocked_without_signal_pairs": len(blocked_without_signal),
             "analog_actions": len(action_deck),
             "research_lanes": research_matrix["lane_count"],
+            "research_source_routes": research_matrix.get("source_routes", {}).get("route_count", 0),
             "control_panel_verdict": control_panel["verdict"],
             "control_panel_provider": control_panel["recommended_provider"],
             "lane_grid_columns": len(lane_grid["columns"]),
@@ -261,6 +262,15 @@ def render_terminal_text(state: dict[str, Any]) -> str:
             f"parity={lane['parity_claim']}"
         )
         lines.append(f"  gate: {lane['promotion_gate']}")
+    source_routes = research.get("source_routes") or {}
+    if source_routes:
+        lines.extend(["", "Research Source Routes", "-" * 28])
+        lines.append(
+            f"- routes={source_routes.get('route_count')} families={len(source_routes.get('families', {}))} "
+            f"safety-tiers={len(source_routes.get('safety_tiers', {}))}"
+        )
+        for family, count in sorted(source_routes.get("families", {}).items()):
+            lines.append(f"  {family}: {count}")
     lines.append("")
     lines.append("This terminal panel is read-only. It verifies lane readiness and turn-signal rules before model fan-out.")
     return "\n".join(lines)

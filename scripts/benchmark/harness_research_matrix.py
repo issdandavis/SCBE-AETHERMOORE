@@ -11,12 +11,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.research.geoseal_research_routes import build_research_route_matrix  # noqa: E402
+
 SCHEMA_VERSION = "scbe_harness_research_matrix_v1"
 
 
@@ -212,6 +218,7 @@ def build_research_lanes() -> list[ResearchLane]:
 
 def build_research_matrix() -> dict[str, Any]:
     lanes = build_research_lanes()
+    source_routes = build_research_route_matrix()
     risks: dict[str, int] = {}
     families: dict[str, int] = {}
     for lane in lanes:
@@ -223,10 +230,18 @@ def build_research_matrix() -> dict[str, Any]:
         "families": families,
         "risks": risks,
         "lanes": [lane.to_dict() for lane in lanes],
+        "source_routes": {
+            "schema_version": source_routes["schema_version"],
+            "route_count": source_routes["route_count"],
+            "families": source_routes["families"],
+            "safety_tiers": source_routes["safety_tiers"],
+            "global_policy": source_routes["global_policy"],
+        },
         "notes": [
             "Benchmark tasks are not copied into training corpora.",
             "External benchmark parity is not claimed until official runners are wired and isolated.",
             "Local lanes are promotion gates for harness readiness, not model intelligence scores.",
+            "Research-source routes feed RAG/evidence workflows, but live operational sources remain quarantine-first.",
         ],
     }
 
@@ -245,6 +260,15 @@ def render_research_text(matrix: dict[str, Any]) -> str:
         lines.append(f"- {lane['lane_id']} [{lane['family']}] cost={lane['cost']} risk={lane['risk']}")
         lines.append(f"  gate: {lane['promotion_gate']}")
         lines.append(f"  run:  {command}")
+    if matrix.get("source_routes"):
+        source_routes = matrix["source_routes"]
+        lines.extend(["", "Research Source Routes", "-" * 34])
+        lines.append(
+            f"routes={source_routes['route_count']} families={len(source_routes['families'])} "
+            f"safety_tiers={len(source_routes['safety_tiers'])}"
+        )
+        for family, count in sorted(source_routes["families"].items()):
+            lines.append(f"- {family}: {count}")
     lines.append("")
     lines.extend(f"- {note}" for note in matrix["notes"])
     return "\n".join(lines)

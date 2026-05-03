@@ -3284,6 +3284,20 @@ def cmd_harness_research(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_research_sources(args: argparse.Namespace) -> int:
+    from scripts.research.geoseal_research_routes import (
+        build_research_route_matrix,
+        render_routes_text,
+    )
+
+    matrix = build_research_route_matrix(family=args.family, source_id=args.source_id, query=args.query)
+    if args.json:
+        print(json.dumps(matrix, indent=2, sort_keys=True))
+    else:
+        print(render_routes_text(matrix))
+    return 0
+
+
 def cmd_terminus_training(args: argparse.Namespace) -> int:
     from scripts.benchmark.terminus_training_runner import main as terminus_main
 
@@ -3586,6 +3600,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_harness_research.add_argument("--json", action="store_true")
     p_harness_research.set_defaults(func=cmd_harness_research)
+
+    p_research_sources = sub.add_parser(
+        "research-sources",
+        help="Show governed research source routes for agent research tools",
+    )
+    p_research_sources.add_argument("--family", default=None)
+    p_research_sources.add_argument("--source-id", default=None, dest="source_id")
+    p_research_sources.add_argument("--query", default=None)
+    p_research_sources.add_argument("--json", action="store_true")
+    p_research_sources.set_defaults(func=cmd_research_sources)
 
     p_terminus = sub.add_parser(
         "terminus-training",

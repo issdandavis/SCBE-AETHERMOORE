@@ -16,6 +16,7 @@ def test_research_matrix_covers_required_harness_lanes() -> None:
     lane_ids = {lane["lane_id"] for lane in matrix["lanes"]}
 
     assert matrix["schema_version"] == "scbe_harness_research_matrix_v1"
+    assert matrix["source_routes"]["route_count"] >= 9
     assert {
         "terminal-bench-shape",
         "swe-bench-shape",
@@ -41,6 +42,7 @@ def test_research_matrix_does_not_claim_external_parity_or_training_data() -> No
     assert external
     assert all(lane["parity_claim"] == "not_claimed" for lane in external)
     assert any("not copied into training corpora" in note for note in matrix["notes"])
+    assert any("Research-source routes feed RAG" in note for note in matrix["notes"])
 
 
 def test_research_matrix_commands_are_explicit_and_local_first() -> None:
@@ -57,6 +59,8 @@ def test_research_matrix_commands_are_explicit_and_local_first() -> None:
     assert "GeoSeal Harness Research Matrix" in text
     assert "hydra-dry-run" in text
     assert "m4-manifest-interop" in text
+    assert "Research Source Routes" in text
+    assert "academic_papers" in text
 
 
 def test_research_matrix_cli_json_output() -> None:
@@ -74,6 +78,7 @@ def test_research_matrix_cli_json_output() -> None:
     matrix = json.loads(proc.stdout)
     assert matrix["lane_count"] >= 8
     assert matrix["families"]["m4_mesh"] == 1
+    assert matrix["source_routes"]["families"]["tor"] == 1
 
 
 def test_geoseal_cli_harness_research_passthrough() -> None:

@@ -22,6 +22,7 @@ def test_harness_terminal_state_reports_roundabout_signals() -> None:
     assert state["summary"]["signal_required_pairs"] >= 1
     assert state["summary"]["analog_actions"] >= 6
     assert state["summary"]["research_lanes"] >= 8
+    assert state["summary"]["research_source_routes"] >= 9
     assert state["summary"]["lane_grid_columns"] == 3
     assert state["summary"]["lane_grid_final_decision"] == "advance"
     assert state["summary"]["control_panel_verdict"] in {"HOLD", "PROMOTE", "INCUBATE", "ESCALATE"}
@@ -39,6 +40,7 @@ def test_harness_terminal_state_reports_roundabout_signals() -> None:
     assert "-0 HOLD" in text
     assert "Control Panel Brain" in text
     assert "Research Benchmarks" in text
+    assert "Research Source Routes" in text
     assert "terminal-bench-shape" in text
     assert "harness_live_smoke.py" in text
     assert "scripts/ci/harness_release_readiness.py" in text

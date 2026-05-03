@@ -34,6 +34,7 @@ HARNESS_RELEASE_PATHS = [
     "scripts/benchmark/harness_provider_matrix.py",
     "scripts/benchmark/harness_research_matrix.py",
     "scripts/benchmark/harness_live_smoke.py",
+    "scripts/research/geoseal_research_routes.py",
     "scripts/terminal/geoseal_harness_terminal.py",
     "scripts/terminal/analog_action_primitives.py",
     "scripts/system/geoseal_github_ops.py",
@@ -52,6 +53,7 @@ HARNESS_RELEASE_PATHS = [
     "tests/benchmark/test_harness_provider_matrix.py",
     "tests/benchmark/test_harness_research_matrix.py",
     "tests/benchmark/test_harness_live_smoke.py",
+    "tests/research/test_geoseal_research_routes.py",
     "tests/terminal/test_geoseal_harness_terminal.py",
     "tests/ci/test_harness_release_readiness.py",
     "tests/spiral_word/test_app_endpoints.py",
@@ -70,7 +72,8 @@ HARNESS_RELEASE_PATHS = [
 TEST_COMMANDS = [
     "python -m pytest tests/agent_comms tests/benchmark/test_harness_provider_matrix.py "
     "tests/benchmark/test_harness_research_matrix.py tests/benchmark/test_harness_live_smoke.py "
-    "tests/terminal/test_geoseal_harness_terminal.py tests/ci/test_harness_release_readiness.py "
+    "tests/research/test_geoseal_research_routes.py tests/terminal/test_geoseal_harness_terminal.py "
+    "tests/ci/test_harness_release_readiness.py "
     "tests/system/test_verify_docs_publish_surface.py tests/system/test_geoseal_github_ops.py "
     "tests/spiral_word tests/training/test_generate_ambiguity_action_sft.py "
     "tests/training/test_generate_packet_traces_sft.py tests/training/test_score_packet_trace_sft.py -q",
