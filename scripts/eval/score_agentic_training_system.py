@@ -82,6 +82,26 @@ def _latest_json(pattern: str) -> dict[str, Any]:
     return _load_json(matches[0]) if matches else {}
 
 
+def _packet_job_id(packet: dict[str, Any]) -> str:
+    dispatch = packet.get("dispatch") if isinstance(packet.get("dispatch"), dict) else {}
+    return str(packet.get("job_id") or dispatch.get("job_id") or "").strip()
+
+
+def _find_hf_packet(job_id: str) -> tuple[dict[str, Any], Path]:
+    """Resolve the HF job packet backing a refreshed scorecard run."""
+
+    if job_id:
+        for path in sorted(
+            (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob("*/**/job_packet.json"),
+            key=lambda item: item.stat().st_mtime,
+            reverse=True,
+        ):
+            packet = _load_json(path)
+            if _packet_job_id(packet) == job_id:
+                return packet, path
+    return _load_json(HF_PACKET), HF_PACKET
+
+
 def _pct(value: Any) -> float:
     if isinstance(value, bool):
         return 1.0 if value else 0.0
@@ -121,10 +141,12 @@ def _refresh_hf_gate(job_id: str) -> dict[str, Any]:
         "gate_overall_pass": None,
         "gate_pass_rate": None,
         "gate_n_pass": None,
+        "gate_n_total": None,
         "train_loss": None,
+        "pushed_adapter": None,
     }
     text = _strip_ansi(proc.stdout + "\n" + proc.stderr)
-    for key in ("gate_overall_pass", "gate_pass_rate", "gate_n_pass", "train_loss"):
+    for key in ("gate_overall_pass", "gate_pass_rate", "gate_n_pass", "gate_n_total", "train_loss", "pushed_adapter"):
         match = re.search(rf'"?{key}"?\s*[:=]\s*(false|true|[-+]?[0-9]*\.?[0-9]+)', text, flags=re.IGNORECASE)
         if not match:
             continue
@@ -288,24 +310,34 @@ def _model_lines(evidence: dict[str, Any]) -> list[ScoreLine]:
         )
     )
 
-    dispatched = bool(hf_packet.get("dispatched") or hf_packet.get("job_id") or hf_packet.get("job_url"))
+    dispatched = bool(hf_packet.get("dispatched") or _packet_job_id(hf_packet) or hf_packet.get("job_url"))
     lines.append(
         _score_fraction(
             "hf_job_dispatch",
             1.0 if dispatched else 0.0,
             10,
-            f"job_id={hf_packet.get('job_id') or hf_gate.get('job_id')}",
+            f"job_id={_packet_job_id(hf_packet) or hf_gate.get('job_id')}",
         )
     )
 
     train_rows = float(hf_packet.get("train_rows") or _sum_dataset_rows(hf_packet.get("train_datasets")) or 0)
     eval_rows = float(hf_packet.get("eval_rows") or _sum_dataset_rows(hf_packet.get("eval_datasets")) or 0)
+    is_dpo_packet = (
+        str(hf_packet.get("schema_version", "")).endswith("_dpo_hf_job_packet_v1")
+        or "dpo" in str(hf_packet.get("profile_id", "")).lower()
+    )
+    if is_dpo_packet:
+        dataset_fraction = min(1.0, train_rows / 150.0)
+        dataset_evidence = f"train={int(train_rows)} eval=n/a dpo"
+    else:
+        dataset_fraction = min(1.0, min(train_rows / 100.0, eval_rows / 50.0))
+        dataset_evidence = f"train={int(train_rows)} eval={int(eval_rows)}"
     lines.append(
         _score_fraction(
             "hf_dataset_floor",
-            min(1.0, min(train_rows / 100.0, eval_rows / 50.0)),
+            dataset_fraction,
             10,
-            f"train={int(train_rows)} eval={int(eval_rows)}",
+            dataset_evidence,
         )
     )
 
@@ -328,7 +360,7 @@ def _model_lines(evidence: dict[str, Any]) -> list[ScoreLine]:
             "adapter_promoted",
             1.0 if pushed else 0.0,
             15,
-            f"kaggle_push={kaggle_done.get('push')} hf_push_skipped={hf_gate.get('push_skipped')}",
+            f"kaggle_push={kaggle_done.get('push')} hf_pushed={hf_gate.get('pushed_adapter')} hf_push_skipped={hf_gate.get('push_skipped')}",
         )
     )
 
@@ -365,6 +397,7 @@ def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_H
     hf_gate: dict[str, Any] = {"job_id": hf_job_id, "queried": False}
     if refresh_hf_logs:
         hf_gate = _refresh_hf_gate(hf_job_id)
+    hf_packet, hf_packet_path = _find_hf_packet(hf_job_id)
 
     evidence = {
         "release": build_release_readiness(),
@@ -376,7 +409,8 @@ def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_H
         "ledger": _load_json(PROJECT_ROOT / "artifacts" / "training_run_ledger" / "latest" / "ledger.json"),
         "kaggle_done": _load_json(KAGGLE_DONE),
         "kaggle_history": _load_json(KAGGLE_HISTORY),
-        "hf_packet": _load_json(HF_PACKET),
+        "hf_packet": hf_packet,
+        "hf_packet_path": hf_packet_path,
         "hf_gate": hf_gate,
     }
 
@@ -425,13 +459,13 @@ def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_H
             "Expand routing evals from 6 smoke prompts to at least 30 adversarial mixed-language prompts.",
             "Expand pair-agent benchmark from 3 repo-native tasks to at least 20 tasks with held-out deterministic facts.",
             "Turn the Kaggle run from 3-step plumbing into a real frozen-eval round with best_metric populated.",
-            "Grow the HF GeoShell pair-agent dataset beyond 4 train / 2 eval rows before expecting gate movement.",
-            "Promote adapters only after the same packet/routing/coding gates pass locally and in remote logs.",
+            "Use the promoted Stage 6 DPO adapter as the boss-gate baseline before merging it into broader coding profiles.",
+            "Keep adapter promotion claims tied to the same frozen packet/routing/coding gates locally and in remote logs.",
         ],
         "evidence_paths": {
             "kaggle_done": str(KAGGLE_DONE.relative_to(PROJECT_ROOT)),
             "kaggle_history": str(KAGGLE_HISTORY.relative_to(PROJECT_ROOT)),
-            "hf_packet": str(HF_PACKET.relative_to(PROJECT_ROOT)),
+            "hf_packet": str(hf_packet_path.relative_to(PROJECT_ROOT)),
             "pair_benchmark": str(PAIR_BENCH.relative_to(PROJECT_ROOT)),
             "coder_pair": "artifacts/bench/geoseal_coder_pair_*.json",
             "packet_trace_corpus": "training-data/agentic_coding/packet_traces.jsonl",
@@ -445,6 +479,8 @@ def _build_findings(evidence: dict[str, Any], system_score: float, model_score: 
     pair = evidence["pair_benchmark"].get("summary", {})
     kaggle = evidence["kaggle_done"]
     hf_gate = evidence["hf_gate"]
+    hf_packet = evidence["hf_packet"]
+    profile_id = hf_packet.get("profile_id") or "unknown-profile"
     return [
         f"System/harness is the win right now: {system_score:.1f}/100 versus model-promotion {model_score:.1f}/100.",
         (
@@ -465,8 +501,9 @@ def _build_findings(evidence: dict[str, Any], system_score: float, model_score: 
             f"global_step={kaggle.get('global_step')} best_metric={kaggle.get('best_metric')}."
         ),
         (
-            "HF GeoShell job should stay unpromoted: "
-            f"gate_overall_pass={hf_gate.get('gate_overall_pass')} gate_pass_rate={hf_gate.get('gate_pass_rate')}."
+            f"HF current job ({profile_id}) promotion state: "
+            f"gate_overall_pass={hf_gate.get('gate_overall_pass')} gate_pass_rate={hf_gate.get('gate_pass_rate')} "
+            f"pushed_adapter={hf_gate.get('pushed_adapter')}."
         ),
     ]
 
