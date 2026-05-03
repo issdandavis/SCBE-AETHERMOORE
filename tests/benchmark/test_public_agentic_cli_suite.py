@@ -59,6 +59,7 @@ def test_public_agentic_cli_suite_plan_report_does_not_overclaim(tmp_path: Path)
         "swe_bench_verified_or_lite",
         "aider_polyglot",
     }
+    assert "external_setup_evidence" in payload["summary"]
     assert "public superiority claim" in payload["summary"]["publishable_claim"].lower()
     assert Path(report["json"]).exists()
     assert Path(report["markdown"]).exists()
