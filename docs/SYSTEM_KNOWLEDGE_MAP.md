@@ -43,7 +43,7 @@ This means a concept can be real while still living at different maturity levels
 | Generated artifacts | `artifacts/`, `training/runs/`, `dist/` | Logs, reports, run outputs, build output, packaged artifacts. | Generated; inspect but do not treat as source |
 | Public docs and launch material | `docs/`, `docs/business/`, `docs/readiness/`, `docs/specs/` | Architecture, readiness, product, proposal, and specification docs. | Mixed authority; verify against code |
 | Research roadmaps | `docs/RESEARCH_ROADMAP_INDEX.md`, root `*-research.json` captures before cleanup | Research captures converted into implementation lanes, gates, and discard rules. | Active routing layer; raw JSON should be digested then moved out of root |
-| Agentic layer runners | `docs/AGENTIC_LAYER_RUNNER_ROADMAP.md`, future `config/layer_runners/` | Layer-by-layer runner contracts for bijective packets, GeoSeal handoffs, gates, receipts, and deploy tests. | Roadmap-ready; next implementation slice is a 5-runner registry |
+| Agentic layer runners and coding formations | `docs/AGENTIC_LAYER_RUNNER_ROADMAP.md`, `docs/AGENTIC_CODING_FORMATIONS_ROADMAP.md`, future `config/layer_runners/`, future `config/formations/` | Layer-by-layer runner contracts plus bijective coding-agent formations for implementation work. | Roadmap-ready; next implementation slices are a 5-runner registry and dry-run formation planner |
 
 ## Major System Threads
 
@@ -59,6 +59,7 @@ This means a concept can be real while still living at different maturity levels
 | Post-gate residue digestion | This document plus run artifacts | `scripts/eval/digest_agentic_training_run.py` | `tests/eval/test_digest_agentic_training_run.py`, `artifacts/training_digestion/` | Newly implemented; turns gate logs into compact residue chains |
 | Parallelism and scheduler experiments | `config/parallelism/README.md` if present | `scripts/system/parallelism_system.py` | Run reports under `artifacts/parallelism_system/` | Present but still early; dirty/uncommitted at last scan |
 | Agentic layer runners | `docs/AGENTIC_LAYER_RUNNER_ROADMAP.md` | Future `config/layer_runners/layer_runner_registry.json`, `src/geoseal_cli.py` commands | Future `tests/agent_comms/test_layer_runner_registry.py`, `tests/terminal/test_geoseal_layer_runner_cli.py` | Best next harness architecture: activate runners by packet/layer instead of keeping 14 agents always on |
+| Agentic coding formations | `docs/AGENTIC_CODING_FORMATIONS_ROADMAP.md`, `notes/sphere-grid/KO-Command/T2-Formation-Swap/`, Notion swarm formation export | Future `config/formations/coding_formations.json`, future `geoseal formation-plan` | Future formation planner tests and compact SFT traces | Coding side of the harness: researcher, scout, coder, firefighter, file manager, context roller, verifier, and integrator in packetized formations |
 | Release readiness | `docs/readiness/`, `package.json`, `scripts/ci/harness_release_readiness.py` | npm and PyPI publish scripts in `package.json`, `scripts/npm_*`, `scripts/pypi_*` | `tests/ci/test_harness_release_readiness.py`, release readiness scripts | Active but requires cleanup before publish |
 
 ## Current GeoSeal Surface
