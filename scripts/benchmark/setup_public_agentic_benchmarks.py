@@ -191,7 +191,9 @@ def next_steps(results: list[dict[str, Any]]) -> list[str]:
     if any(row["benchmark_id"] == "aider_polyglot" and not row["repo_present"] for row in results):
         steps.append("Run with --download to shallow-clone Aider before checking benchmark/benchmark.py.")
     if any(row["benchmark_id"] == "aider_polyglot" and "Aider benchmark Python dependencies are not installed in the active environment." in row["blockers"] for row in results):
-        steps.append("Install Aider benchmark dependencies in an isolated environment before running Aider Polyglot.")
+        steps.append("Run python scripts/benchmark/aider_polyglot_smoke.py --execute to use the isolated uv-based Aider Polyglot smoke.")
+    if any(row["benchmark_id"] in {"terminal_bench", "swe_bench"} for row in results):
+        steps.append("Use the manual public-agentic-benchmarks GitHub workflow for Docker-heavy public harness setup instead of filling the local disk.")
     if not steps:
         steps.append("All public harness repos/tools are dry-run ready; wire GeoSeal as the agent runtime next.")
     return steps

@@ -45,10 +45,31 @@ datasets:
 python scripts/benchmark/setup_public_agentic_benchmarks.py --download --dry-run
 ```
 
+Run the Aider Polyglot local smoke after the Aider and Polyglot checkouts are
+present:
+
+```powershell
+python scripts/benchmark/aider_polyglot_smoke.py --execute
+```
+
+This verifies the public Aider benchmark command path and the six-language
+Polyglot exercise checkout. It is intentionally non-scoring because it uses
+`--no-aider --no-unit-tests`.
+
 Run the local GeoSeal command-line interface competitive harness directly:
 
 ```powershell
 python scripts/benchmark/cli_competitive_benchmark.py --json
+```
+
+Run Docker-heavy setup and future public-harness scoring on GitHub-hosted
+runners instead of this Windows workstation:
+
+```powershell
+gh workflow run public-agentic-benchmarks.yml -f track=setup-only
+gh workflow run public-agentic-benchmarks.yml -f track=aider-polyglot-smoke -f num_tests=1
+gh workflow run public-agentic-benchmarks.yml -f track=terminal-bench-setup
+gh workflow run public-agentic-benchmarks.yml -f track=swe-bench-setup
 ```
 
 ## Evidence Bundle
@@ -62,6 +83,11 @@ The public benchmark setup script writes:
 
 - `artifacts/public_agentic_benchmark_setup/latest_setup.json`
 - `artifacts/public_agentic_benchmark_setup/latest_setup.md`
+
+The Aider Polyglot smoke writes:
+
+- `artifacts/public_agentic_benchmark_setup/aider_polyglot/latest_aider_polyglot_smoke.json`
+- `artifacts/public_agentic_benchmark_setup/aider_polyglot/latest_aider_polyglot_smoke.md`
 
 The local command-line interface harness writes:
 
@@ -81,10 +107,10 @@ run and produce complete evidence packets:
 ## Next Implementation Steps
 
 1. Terminal-Bench adapter: expose GeoSeal through the benchmark's agent runtime
-   interface and run a small public task subset.
+   interface and run a small public task subset on the remote Docker workflow.
 2. SWE-bench adapter: emit patches, logs, model/provider metadata, resolved
-   rate, cost, and failure cases.
+   rate, cost, and failure cases on the remote Docker workflow.
 3. Aider Polyglot adapter: run the public Exercism-derived editing suite with a
-   fixed model/provider budget.
+   fixed model/provider budget after the non-scoring smoke is green.
 4. Publish the resulting JSON, Markdown, patches, trajectories, and exact
    command lines.

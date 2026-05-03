@@ -168,6 +168,43 @@ def _artifact_state(paths: list[str]) -> list[dict[str, Any]]:
     return rows
 
 
+def _external_smoke_state(track_id: str) -> dict[str, Any]:
+    if track_id == "aider_polyglot":
+        path = (
+            REPO_ROOT
+            / "artifacts"
+            / "public_agentic_benchmark_setup"
+            / "aider_polyglot"
+            / "latest_aider_polyglot_smoke.json"
+        )
+        if not path.exists():
+            return {"available": False, "source": str(path)}
+        payload = _load_json(path)
+        return {
+            "available": True,
+            "source": str(path),
+            "ok": bool(payload.get("ok")),
+            "execute": bool(payload.get("execute")),
+            "full_scoring_ready": bool(payload.get("full_scoring_ready")),
+            "claim_allowed": payload.get("claim_allowed"),
+        }
+    if track_id in {"terminal_bench", "swe_bench_verified_or_lite"}:
+        path = REPO_ROOT / "artifacts" / "public_agentic_benchmark_setup" / "latest_setup.json"
+        if not path.exists():
+            return {"available": False, "source": str(path)}
+        payload = _load_json(path)
+        setup_id = "swe_bench" if track_id == "swe_bench_verified_or_lite" else track_id
+        row = next((item for item in payload.get("results", []) if item.get("benchmark_id") == setup_id), None)
+        return {
+            "available": row is not None,
+            "source": str(path),
+            "repo_present": bool(row.get("repo_present")) if row else False,
+            "ready_for_full_run": bool(row.get("ready_for_full_run")) if row else False,
+            "blockers": row.get("blockers", []) if row else ["setup row missing"],
+        }
+    return {"available": False, "source": None}
+
+
 def run_track(track: Track, execute: bool, timeout: int) -> dict[str, Any]:
     command_result = _run(track.run_command, execute=execute, timeout=timeout)
     artifacts = _artifact_state(track.expected_artifacts)
@@ -193,6 +230,7 @@ def run_track(track: Track, execute: bool, timeout: int) -> dict[str, Any]:
         "artifacts": artifacts,
         "primary_metric": track.primary_metric,
         "score": score,
+        "external_smoke": _external_smoke_state(track.track_id),
         "pass_threshold": track.pass_threshold,
         "passed_gate": bool(passed_gate),
         "public_claim_ready": public_claim_ready,
@@ -244,6 +282,11 @@ def build_report(config_path: Path, output_root: Path, execute: bool, timeout: i
             "local_ready": local_ready,
             "all_required_public_ready": all_required_public_ready,
             "external_required_not_ready": [row["track_id"] for row in external_required if not row["public_claim_ready"]],
+            "external_setup_evidence": [
+                row["track_id"]
+                for row in external_required
+                if row["external_smoke"].get("ok") or row["external_smoke"].get("repo_present")
+            ],
             "publishable_claim": _publishable_claim(results, all_required_public_ready),
         },
         "results": results,
@@ -303,6 +346,18 @@ def render_markdown(payload: dict[str, Any]) -> str:
     missing = payload["summary"]["external_required_not_ready"]
     if missing:
         lines.extend(f"- `{track_id}`" for track_id in missing)
+    else:
+        lines.append("- none")
+    lines.extend(
+        [
+            "",
+            "## External Smoke Evidence",
+            "",
+        ]
+    )
+    setup_evidence = payload["summary"]["external_setup_evidence"]
+    if setup_evidence:
+        lines.extend(f"- `{track_id}`" for track_id in setup_evidence)
     else:
         lines.append("- none")
     lines.extend(
