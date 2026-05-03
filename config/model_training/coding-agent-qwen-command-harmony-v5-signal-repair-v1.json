@@ -63,6 +63,7 @@
   },
   "evaluation": {
     "contract_path": "config/model_training/stage5_command_harmony_eval_contract.json",
-    "notes": "Concentrated repair profile. It intentionally drops broad codeflow/drill shards because the first v5 run learned general prose but missed exact gate tokens."
+    "constrained_gate_scaffold": true,
+    "notes": "Concentrated repair profile. It intentionally drops broad codeflow/drill shards because the first v5 run learned general prose but missed exact gate tokens. The gate uses the production required-token scaffold as a loss-valley parachute for exact CLI/signal markers."
   }
 }

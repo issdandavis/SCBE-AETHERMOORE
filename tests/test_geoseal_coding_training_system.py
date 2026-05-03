@@ -85,6 +85,31 @@ def test_repair_profile_does_not_inherit_stage6_contract_by_default() -> None:
     assert "pass_rate = (n_pass / n_total) if n_total else 1.0" in script
 
 
+def test_dispatcher_renders_constrained_gate_scaffold_when_profile_requests_it() -> None:
+    dispatcher_path = ROOT / "scripts" / "system" / "dispatch_coding_agent_hf_job.py"
+    spec = importlib.util.spec_from_file_location("dispatch_coding_agent_hf_job", dispatcher_path)
+    assert spec and spec.loader
+    dispatcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dispatcher)
+    profile = json.loads(
+        (
+            ROOT
+            / "config"
+            / "model_training"
+            / "coding-agent-qwen-command-harmony-v5-signal-repair-v1.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    script = dispatcher.render_uv_training_script(profile)
+
+    assert "CONSTRAINED_GATE_SCAFFOLD = bool" in script
+    assert '"constrained_gate_scaffold": true' in script
+    assert "def _gate_required_prefix(prompt):" in script
+    assert "required-tokens:" in script
+    assert "constrained gate prefix would trigger forbidden token" in script
+    assert "response = _gate_generate(prompt)" in script
+
+
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     manifest = module.load_manifest(MANIFEST_PATH)

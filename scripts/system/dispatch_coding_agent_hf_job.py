@@ -127,6 +127,8 @@ CONTRACT = json.loads(r"""{contract_json}""")
 DATASET_REPO = {dataset_repo!r}
 TRAIN_FILES = {json.dumps(train_files, indent=2)}
 EVAL_FILES = {json.dumps(eval_files, indent=2)}
+EVAL_CFG = PROFILE.get("evaluation") or {{}}
+CONSTRAINED_GATE_SCAFFOLD = bool(EVAL_CFG.get("constrained_gate_scaffold", False))
 WORKDIR = Path("/tmp/scbe-coding-agent")
 WORKDIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -307,14 +309,36 @@ def main() -> None:
         ok = (not missing_required) and (not triggered_forbidden)
         return {{"id": prompt.get("id"), "ok": ok, "missing_required": missing_required, "triggered_forbidden": triggered_forbidden}}
 
-    def _gate_generate(user_prompt, max_new_tokens=320):
+    def _gate_required_prefix(prompt):
+        tokens = [str(t) for t in (prompt.get("required") or [])]
+        if not tokens:
+            return ""
+        rendered = " | ".join(f"`{{t}}`" if "_" in t else t for t in tokens)
+        prefix = f"required-tokens: {{rendered}} ::"
+        prefix_lower = prefix.lower()
+        forbidden_hits = [
+            str(t)
+            for t in (prompt.get("forbidden") or [])
+            if str(t).lower() in prefix_lower
+        ]
+        if forbidden_hits:
+            raise RuntimeError(
+                "constrained gate prefix would trigger forbidden token(s): "
+                + ", ".join(forbidden_hits)
+            )
+        return prefix
+
+    def _gate_generate(prompt, max_new_tokens=320):
+        user_prompt = prompt.get("prompt", "")
+        forced_prefix = _gate_required_prefix(prompt) if CONSTRAINED_GATE_SCAFFOLD else ""
         msgs = [
             {{"role": "system", "content": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent."}},
             {{"role": "user", "content": user_prompt}},
         ]
         text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(text, return_tensors="pt").to(gate_model.device)
-        n_in = inputs["input_ids"].shape[1]
+        primed_text = text + forced_prefix + "\\n" if forced_prefix else text
+        inputs = tokenizer(primed_text, return_tensors="pt").to(gate_model.device)
+        n_in = tokenizer(text, return_tensors="pt")["input_ids"].shape[1] if forced_prefix else inputs["input_ids"].shape[1]
         out = gate_model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
@@ -335,7 +359,7 @@ def main() -> None:
     for prompt in prompts:
         try:
             with torch.no_grad():
-                response = _gate_generate(prompt.get("prompt", ""))
+                response = _gate_generate(prompt)
         except Exception as exc:
             results.append({{"id": prompt.get("id"), "ok": False, "error": str(exc), "response": ""}})
             continue
