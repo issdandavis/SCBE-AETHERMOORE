@@ -3222,6 +3222,54 @@ def cmd_harness_terminal(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_lane_grid(args: argparse.Namespace) -> int:
+    from scripts.terminal.geoseal_harness_terminal import build_lane_grid_preview
+
+    state = build_lane_grid_preview(goal=args.goal, max_columns=args.columns)
+    if args.json:
+        print(json.dumps(state, indent=2, sort_keys=True))
+    else:
+        print("GeoSeal Lane Grid")
+        print("=" * 28)
+        print(
+            f"grid={state['grid_id']} columns={len(state['columns'])} "
+            f"decision={state['final_decision']} reason={state['halted_reason']}"
+        )
+        print(f"write-rule: {state['world_write_rule']}")
+        print(f"+0: {state['motion_rules']['+0']}")
+        print(f"-0 HOLD: {state['motion_rules']['-0']}")
+        for column in state["columns"]:
+            side_steps = sum(len(cell.get("side_steps", [])) for cell in column["cells"])
+            print(
+                f"c{column['column']}: {column['decision']} ({column['reason']}) "
+                f"cells={len(column['cells'])} side-steps={side_steps}"
+            )
+    return 0
+
+
+def cmd_github(args: argparse.Namespace) -> int:
+    from scripts.system.geoseal_github_ops import (
+        build_github_plan,
+        execute_github_plan,
+        render_github_plan_text,
+    )
+
+    plan = build_github_plan(
+        goal=args.goal,
+        mode=args.mode,
+        repo=args.repo,
+        run_id=args.run_id,
+        pr=args.pr,
+        limit=args.limit,
+    )
+    payload = execute_github_plan(plan, timeout=args.timeout) if args.execute else plan
+    if args.json:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        print(render_github_plan_text(payload))
+    return 0
+
+
 def cmd_harness_research(args: argparse.Namespace) -> int:
     from scripts.benchmark.harness_research_matrix import (
         build_research_matrix,
@@ -3491,6 +3539,46 @@ def build_parser() -> argparse.ArgumentParser:
     p_harness_terminal.add_argument("--no-health", action="store_true")
     p_harness_terminal.add_argument("--json", action="store_true")
     p_harness_terminal.set_defaults(func=cmd_harness_terminal)
+
+    p_lane_grid = sub.add_parser(
+        "lane-grid",
+        help="Preview the governed six-tongue lane-grid scheduler",
+    )
+    p_lane_grid.add_argument("--goal", default="training eval harness check", help="Task goal to hash into the grid state")
+    p_lane_grid.add_argument("--columns", type=int, default=3, help="Maximum scheduler columns to preview")
+    p_lane_grid.add_argument("--json", action="store_true")
+    p_lane_grid.set_defaults(func=cmd_lane_grid)
+
+    p_github = sub.add_parser(
+        "github",
+        aliases=["gh"],
+        help="Route read-only GitHub CLI workflow and code-assessment operations",
+    )
+    p_github.add_argument("--goal", default="repo status")
+    p_github.add_argument(
+        "--mode",
+        default="auto",
+        choices=[
+            "auto",
+            "status",
+            "workflow-list",
+            "runs",
+            "run-view",
+            "pr-list",
+            "pr-view",
+            "pr-diff",
+            "assess-code",
+            "fix-plan",
+        ],
+    )
+    p_github.add_argument("--repo", default="issdandavis/SCBE-AETHERMOORE")
+    p_github.add_argument("--run-id", default=None)
+    p_github.add_argument("--pr", default=None)
+    p_github.add_argument("--limit", type=int, default=10)
+    p_github.add_argument("--execute", action="store_true", help="Execute read-only allowlisted commands")
+    p_github.add_argument("--timeout", type=float, default=60.0)
+    p_github.add_argument("--json", action="store_true")
+    p_github.set_defaults(func=cmd_github)
 
     p_harness_research = sub.add_parser(
         "harness-research",

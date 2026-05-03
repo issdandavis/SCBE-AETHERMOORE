@@ -26,6 +26,7 @@ from scripts.benchmark.harness_research_matrix import build_research_matrix  # n
 from scripts.ci.harness_release_readiness import TEST_COMMANDS  # noqa: E402
 from scripts.terminal.analog_action_primitives import build_default_action_deck  # noqa: E402
 from scripts.terminal.geoseal_control_panel_brain import recommend_turn  # noqa: E402
+from src.agent_comms import SideStep, build_six_tongue_lane_grid, hash_state  # noqa: E402
 
 DEFAULT_BRIDGE_URL = "http://127.0.0.1:8766"
 
@@ -69,6 +70,32 @@ def probe_bridge_health(base_url: str, *, timeout: float = 1.5) -> dict[str, Any
         }
 
 
+def build_lane_grid_preview(*, goal: str, max_columns: int = 3) -> dict[str, Any]:
+    """Run the canonical six-tongue scheduler as a terminal preview."""
+
+    scheduler = build_six_tongue_lane_grid(
+        convergence_columns=(2,),
+        side_steps=(
+            SideStep("KO", "AV", "peek", "preserve user intent before creative expansion"),
+            SideStep("RU", "CA", "borrow", "risk reader hands constraints to compute optimizer"),
+            SideStep("UM", "DR", "challenge", "policy arbiter asks judge lane before convergence"),
+        ),
+    )
+    result = scheduler.run(
+        task_id="harness-terminal-grid",
+        base_state_hash=hash_state(goal or "harness-terminal"),
+        max_columns=max_columns,
+    )
+    payload = result.to_dict()
+    payload["motion_rules"] = {
+        "+0": "abstain-pass; continue advancing the column",
+        "-0": "abstain-hold; freeze advancement and run audit/quorum checks",
+        "convergence": "world-changing work should only commit at convergence columns",
+    }
+    payload["world_write_rule"] = "DR plus two other lanes must agree before a write-capable handoff."
+    return payload
+
+
 def build_terminal_state(
     *,
     model_refs: list[str],
@@ -86,6 +113,7 @@ def build_terminal_state(
     action_deck = build_default_action_deck()
     research_matrix = build_research_matrix()
     control_panel = recommend_turn(goal=goal, matrix=matrix).to_dict()
+    lane_grid = build_lane_grid_preview(goal=goal)
     bridge = probe_bridge_health(bridge_url, timeout=timeout) if probe_health else {
         "ok": None,
         "url": f"{bridge_url.rstrip('/')}/health",
@@ -101,6 +129,7 @@ def build_terminal_state(
         "matrix": matrix,
         "analog_actions": [action.to_dict() for action in action_deck],
         "control_panel_brain": control_panel,
+        "lane_grid": lane_grid,
         "research_benchmarks": research_matrix,
         "summary": {
             "models": len(matrix["models"]),
@@ -114,6 +143,9 @@ def build_terminal_state(
             "research_lanes": research_matrix["lane_count"],
             "control_panel_verdict": control_panel["verdict"],
             "control_panel_provider": control_panel["recommended_provider"],
+            "lane_grid_columns": len(lane_grid["columns"]),
+            "lane_grid_final_decision": lane_grid["final_decision"],
+            "lane_grid_halted_reason": lane_grid["halted_reason"],
         },
         "controls": {
             "pair_endpoint": f"{bridge_url.rstrip('/')}/harness/pair",
@@ -121,6 +153,8 @@ def build_terminal_state(
             "signal_format": "provider-pair:<left-provider>-><right-provider>:<reason>",
             "cli_examples": [
                 "geoseal harness-terminal --no-health",
+                "geoseal lane-grid --json",
+                "geoseal github --mode status --json",
                 "python scripts/benchmark/harness_provider_matrix.py --json",
                 "python scripts/benchmark/harness_live_smoke.py --json",
                 "python scripts/ci/harness_release_readiness.py --json",
@@ -186,6 +220,24 @@ def render_terminal_text(state: dict[str, Any]) -> str:
     lines.append(f"- action={brain.get('action_id')} reason={brain.get('reason')}")
     for item in brain.get("evidence_required", []):
         lines.append(f"  evidence: {item}")
+
+    lane_grid = state.get("lane_grid") or {}
+    lines.extend(["", "Lane Grid", "-" * 28])
+    lines.append(
+        f"- grid={lane_grid.get('grid_id')} columns={len(lane_grid.get('columns', []))} "
+        f"decision={lane_grid.get('final_decision')} reason={lane_grid.get('halted_reason')}"
+    )
+    lines.append(f"- write-rule: {lane_grid.get('world_write_rule')}")
+    motion_rules = lane_grid.get("motion_rules") or {}
+    if motion_rules:
+        lines.append(f"- +0: {motion_rules.get('+0')}")
+        lines.append(f"- -0 HOLD: {motion_rules.get('-0')}")
+    for column in lane_grid.get("columns", [])[:3]:
+        side_step_count = sum(len(cell.get("side_steps", [])) for cell in column.get("cells", []))
+        lines.append(
+            f"  c{column['column']}: {column['decision']} ({column['reason']}) "
+            f"cells={len(column.get('cells', []))} side-steps={side_step_count}"
+        )
 
     lines.extend(["", "Operator Controls", "-" * 28])
     controls = state["controls"]
