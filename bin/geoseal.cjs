@@ -25,6 +25,7 @@ Modes:
 
 Useful commands:
   geoseal doctor --json
+  geoseal permissions --json
   geoseal custom-commands --json
   geoseal run-command harness-benchmark --json
   geoseal status --api-base http://127.0.0.1:8002
@@ -203,6 +204,48 @@ function runCustomCommands(flags) {
   const text = commands.length
     ? commands.map((command) => `${command.name}: ${command.description}`).join("\n")
     : "No custom commands found.";
+  writeJsonOrText(flags, payload, text);
+}
+
+function runPermissions(flags) {
+  const payload = {
+    schema_version: "geoseal_permissions_v1",
+    ok: true,
+    default_profile: "local-first",
+    max_tier: "repo_write",
+    modes: [
+      {
+        name: "local_secret_review",
+        provider_policy: "local_only",
+        allowed_providers: ["ollama", "llamacpp", "lmstudio", "vllm"],
+        requires_signal: false,
+      },
+      {
+        name: "training_eval",
+        provider_policy: "remote_allowed_with_signal",
+        allowed_providers: ["nvidia", "huggingface", "deepseek", "openrouter", "openai"],
+        requires_signal: true,
+      },
+      {
+        name: "release_gate",
+        provider_policy: "evidence_required",
+        allowed_actions: ["test", "benchmark", "readiness", "package"],
+        requires_clean_harness: true,
+      },
+    ],
+    gates: {
+      destructive_filesystem: "forbid_without_explicit_user_request",
+      secrets_to_remote_models: "forbid",
+      repo_write: "allow_with_tests",
+      package_publish: "require_release_gate",
+    },
+  };
+  const text = [
+    `GeoSeal permissions ${payload.schema_version}`,
+    `Default profile: ${payload.default_profile}`,
+    `Max tier: ${payload.max_tier}`,
+    `Secrets to remote models: ${payload.gates.secrets_to_remote_models}`,
+  ].join("\n");
   writeJsonOrText(flags, payload, text);
 }
 
@@ -436,6 +479,7 @@ function runDoctor(flags) {
   const active = resolveActiveServiceBase(flags);
   const advertisedCommands = [
     "doctor",
+    "permissions",
     "custom-commands",
     "run-command",
     "status",
@@ -725,6 +769,10 @@ async function main() {
   }
   if (command === "doctor") {
     runDoctor(flags);
+    return;
+  }
+  if (command === "permissions") {
+    runPermissions(flags);
     return;
   }
   if (command === "custom-commands") {

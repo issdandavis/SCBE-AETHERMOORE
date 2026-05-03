@@ -61,6 +61,21 @@ def test_npm_geoseal_bin_custom_commands_json() -> None:
     assert any(command["name"] == "harness-benchmark" for command in payload["commands"])
 
 
+def test_npm_geoseal_bin_permissions_json() -> None:
+    proc = subprocess.run(
+        ["node", str(ROOT / "bin" / "geoseal.cjs"), "permissions", "--json"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "geoseal_permissions_v1"
+    assert payload["gates"]["secrets_to_remote_models"] == "forbid"
+    assert payload["max_tier"]
+
+
 def test_npm_geoseal_bin_run_command_template_json() -> None:
     proc = subprocess.run(
         [

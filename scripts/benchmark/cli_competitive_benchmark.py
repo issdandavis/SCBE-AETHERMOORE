@@ -173,6 +173,7 @@ def benchmark_scbe() -> dict[str, Any]:
         "geoseal_help": _run(["node", str(geoseal), "--help"]),
         "geoseal_version": _run(["node", str(geoseal), "version"]),
         "geoseal_doctor": _run(["node", str(geoseal), "doctor", "--json"]),
+        "geoseal_permissions": _run(["node", str(geoseal), "permissions", "--json"]),
         "geoseal_status_without_service": _run(
             ["node", str(geoseal), "status", "--json"]
         ),
@@ -185,6 +186,7 @@ def benchmark_scbe() -> dict[str, Any]:
         "scbe_cli_help": _run(["python", "scbe-cli.py", "--help"]),
     }
     doctor = _json_from_stdout(commands["geoseal_doctor"])
+    permissions = _json_from_stdout(commands["geoseal_permissions"])
     status_error = _json_from_stdout(commands["geoseal_status_without_service"])
     custom_commands = _json_from_stdout(commands["geoseal_custom_commands"])
     run_command = _json_from_stdout(commands["geoseal_run_command"])
@@ -201,8 +203,10 @@ def benchmark_scbe() -> dict[str, Any]:
         or "cursor" in doctor.get("python_modules", [{}])[0].get("stdout_preview", ""),
         "workflow_runner": "workflow"
         in doctor.get("python_modules", [{}])[0].get("stdout_preview", ""),
-        "permission_model": "max-tier"
-        in doctor.get("python_modules", [{}])[0].get("stdout_preview", ""),
+        "permission_model": permissions.get("schema_version")
+        == "geoseal_permissions_v1"
+        and permissions.get("gates", {}).get("secrets_to_remote_models") == "forbid"
+        and bool(permissions.get("max_tier")),
         "custom_commands": custom_commands.get("schema_version")
         == "geoseal_custom_commands_v1"
         and custom_commands.get("count", 0) >= 1
