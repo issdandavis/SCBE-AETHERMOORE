@@ -43,6 +43,7 @@ This means a concept can be real while still living at different maturity levels
 | Generated artifacts | `artifacts/`, `training/runs/`, `dist/` | Logs, reports, run outputs, build output, packaged artifacts. | Generated; inspect but do not treat as source |
 | Public docs and launch material | `docs/`, `docs/business/`, `docs/readiness/`, `docs/specs/` | Architecture, readiness, product, proposal, and specification docs. | Mixed authority; verify against code |
 | Research roadmaps | `docs/RESEARCH_ROADMAP_INDEX.md`, root `*-research.json` captures before cleanup | Research captures converted into implementation lanes, gates, and discard rules. | Active routing layer; raw JSON should be digested then moved out of root |
+| Agentic layer runners | `docs/AGENTIC_LAYER_RUNNER_ROADMAP.md`, future `config/layer_runners/` | Layer-by-layer runner contracts for bijective packets, GeoSeal handoffs, gates, receipts, and deploy tests. | Roadmap-ready; next implementation slice is a 5-runner registry |
 
 ## Major System Threads
 
@@ -57,6 +58,7 @@ This means a concept can be real while still living at different maturity levels
 | Stage 6 atomic workflow | `config/model_training/stage6_atomic_workflow_eval_contract.json` | `scripts/build_stage6_*.py`, `src/governance/stage6_constrained_decoding.py`, `scripts/eval/score_stage6_constrained_decoding.py` | Stage 6 SFT/DPO profiles and tests under `tests/test_stage6_constrained_decoding.py` and `tests/governance/` | Active gate and constrained scaffold lane |
 | Post-gate residue digestion | This document plus run artifacts | `scripts/eval/digest_agentic_training_run.py` | `tests/eval/test_digest_agentic_training_run.py`, `artifacts/training_digestion/` | Newly implemented; turns gate logs into compact residue chains |
 | Parallelism and scheduler experiments | `config/parallelism/README.md` if present | `scripts/system/parallelism_system.py` | Run reports under `artifacts/parallelism_system/` | Present but still early; dirty/uncommitted at last scan |
+| Agentic layer runners | `docs/AGENTIC_LAYER_RUNNER_ROADMAP.md` | Future `config/layer_runners/layer_runner_registry.json`, `src/geoseal_cli.py` commands | Future `tests/agent_comms/test_layer_runner_registry.py`, `tests/terminal/test_geoseal_layer_runner_cli.py` | Best next harness architecture: activate runners by packet/layer instead of keeping 14 agents always on |
 | Release readiness | `docs/readiness/`, `package.json`, `scripts/ci/harness_release_readiness.py` | npm and PyPI publish scripts in `package.json`, `scripts/npm_*`, `scripts/pypi_*` | `tests/ci/test_harness_release_readiness.py`, release readiness scripts | Active but requires cleanup before publish |
 
 ## Current GeoSeal Surface
