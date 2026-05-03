@@ -1,0 +1,74 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-command-harmony-v5",
+  "title": "SCBE coding agent Qwen GeoSeal command harmony v5",
+  "description": "Online Hugging Face Jobs lane that adds runtime-verified GeoSeal command harmony records: binary command slots, cross-language outputs, analog terminal actions, and route-signal discipline for command-line coding.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent. Produce exact commands, preserve binary and language slot alignment, distinguish structural-only maps from runtime-verified convergence, require lane-change signaling when crossing providers or permission tiers, and do not invent flags.",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "bijective_codeflow_v1_train.sft.jsonl",
+      "cross_tongue_dialogue_bijective_v1_train.sft.jsonl",
+      "drill_langues_full_train.sft.jsonl",
+      "command_lattice_seed_train.sft.jsonl",
+      "binary_interpretation_matrix_v1.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl"
+    ],
+    "eval_files": [
+      "bijective_codeflow_v1_holdout.sft.jsonl",
+      "cross_tongue_dialogue_bijective_v1_holdout.sft.jsonl",
+      "drill_langues_full_holdout.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 1024,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.0001,
+    "num_train_epochs": 1,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": 280,
+    "max_train_records": 3800,
+    "max_eval_records": 340,
+    "logging_steps": 10,
+    "save_steps": 140,
+    "save_total_limit": 2,
+    "seed": 46,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-command-harmony-v5"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-v5",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-command-harmony-v5",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-command-harmony-v5-hf-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/stage5_command_harmony_eval_contract.json",
+    "notes": "Promotion is gated on current GeoSeal harness-terminal and terminus-training surfaces. The old command-harmony-map CLI name is no longer exposed by src.geoseal_cli."
+  }
+}

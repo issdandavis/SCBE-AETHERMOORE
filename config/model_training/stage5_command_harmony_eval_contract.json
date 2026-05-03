@@ -1,0 +1,114 @@
+{
+  "schema_version": "scbe_stage_eval_contract_v1",
+  "contract_id": "stage5_command_harmony_eval_v1",
+  "profile_id": "coding-agent-qwen-command-harmony-v5",
+  "frozen_reason": "Restored Stage 5 command-harmony lane must prove current GeoSeal CLI routing, analog action compression, and lane-change signaling before any adapter push.",
+  "dataset_boundary": {
+    "training_sources": [
+      "training-data/sft/bijective_codeflow_v1_train.sft.jsonl",
+      "training-data/sft/cross_tongue_dialogue_bijective_v1_train.sft.jsonl",
+      "training-data/sft/drill_langues_full_train.sft.jsonl",
+      "training-data/sft/command_lattice_seed_train.sft.jsonl",
+      "training-data/sft/binary_interpretation_matrix_v1.sft.jsonl",
+      "training-data/sft/geoseal_command_recall_v1.sft.jsonl",
+      "training-data/sft/geoseal_command_harmony_v1.sft.jsonl"
+    ],
+    "unseen_eval_rule": "Eval prompts use the current harness-terminal and terminus-training surfaces rather than the removed command-harmony-map CLI spelling."
+  },
+  "thresholds": {
+    "minimum_pass_rate": 1.0,
+    "must_pass": [
+      "stage5_current_harness_terminal_command",
+      "stage5_provider_lane_signal",
+      "stage5_analog_action_ladder",
+      "stage5_runtime_vs_structural_boundary"
+    ],
+    "decision_rule": "Adapter pushes only if every Stage 5 command-harmony prompt passes."
+  },
+  "failure_modes": [
+    {
+      "id": "stale_cli_command",
+      "counts_as_failure": "Uses the removed command-harmony-map command or invents flags not exposed by python -m src.geoseal_cli."
+    },
+    {
+      "id": "lane_signal_omitted",
+      "counts_as_failure": "Moves across provider, phase, or permission lanes without an explicit provider-pair or lane-change signal."
+    },
+    {
+      "id": "runtime_claim_without_evidence",
+      "counts_as_failure": "Claims runtime convergence when only a structural map, prompt plan, or training record is available."
+    },
+    {
+      "id": "analog_actions_collapsed",
+      "counts_as_failure": "Treats observe, move, inspect, solve, verify, and reset as prose instead of reusable terminal action primitives."
+    }
+  ],
+  "prompts": [
+    {
+      "id": "stage5_current_harness_terminal_command",
+      "prompt": "Show the current GeoSeal CLI command that prints the harness terminal as machine-readable JSON without probing the bridge. Include a two-model example using Ollama and DeepSeek, and do not use removed command names.",
+      "required": [
+        "python -m src.geoseal_cli",
+        "harness-terminal",
+        "--models",
+        "ollama:",
+        "deepseek:",
+        "--no-health",
+        "--json"
+      ],
+      "forbidden": [
+        "command-harmony-map",
+        "--execute",
+        "--training-jsonl-output"
+      ]
+    },
+    {
+      "id": "stage5_provider_lane_signal",
+      "prompt": "Explain the required signal when routing an agent pair from Ollama to DeepSeek for a benchmark. Include the exact signal shape and why the system blocks the pair without it.",
+      "required": [
+        "provider-pair:ollama->deepseek:benchmark",
+        "signal",
+        "blocked",
+        "lane",
+        "cost"
+      ],
+      "forbidden": [
+        "no signal needed",
+        "free switch"
+      ]
+    },
+    {
+      "id": "stage5_analog_action_ladder",
+      "prompt": "Map a terminal-game coding task into six GeoSeal analog actions. Include observe-room, move-lane, inspect-object, solve-checkpoint, verify-evidence, and reset-run as compact reusable primitives.",
+      "required": [
+        "observe-room",
+        "move-lane",
+        "inspect-object",
+        "solve-checkpoint",
+        "verify-evidence",
+        "reset-run"
+      ],
+      "forbidden": [
+        "single prose step",
+        "skip verify"
+      ]
+    },
+    {
+      "id": "stage5_runtime_vs_structural_boundary",
+      "prompt": "For a KO/Python to AV/TypeScript add command mapping, distinguish structural-only alignment from runtime-verified convergence. State what evidence is needed before calling the outputs shared runtime output.",
+      "required": [
+        "KO",
+        "Python",
+        "AV",
+        "TypeScript",
+        "structural",
+        "runtime",
+        "evidence"
+      ],
+      "forbidden": [
+        "runtime verified by naming",
+        "no tests needed"
+      ]
+    }
+  ]
+}

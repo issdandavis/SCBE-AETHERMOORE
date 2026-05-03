@@ -178,13 +178,20 @@
       },
       {
         "id": "command_harmony_task",
-        "prompt": "Show the exact GeoSeal CLI command that maps default commands across KO and AV, verifies shared runtime output, and writes SFT JSONL training rows.",
+        "prompt": "Show the current GeoSeal CLI command that prints the harness terminal as machine-readable JSON without probing the bridge. Include a two-model Ollama-to-DeepSeek example and the required provider-pair signal shape.",
         "required": [
-          "command-harmony-map",
-          "--execute",
-          "--training-jsonl-output"
+          "harness-terminal",
+          "--models",
+          "ollama:",
+          "deepseek:",
+          "--no-health",
+          "--json",
+          "provider-pair:"
         ],
-        "forbidden": []
+        "forbidden": [
+          "command-harmony-map",
+          "--training-jsonl-output"
+        ]
       },
       {
         "id": "atomic_workflow_stage6_task",
