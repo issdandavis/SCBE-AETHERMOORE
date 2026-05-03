@@ -3247,6 +3247,31 @@ def cmd_lane_grid(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_data_science_agent(args: argparse.Namespace) -> int:
+    from scripts.system.data_science_agent import (
+        DataScienceRequest,
+        build_data_science_packet,
+        render_text,
+    )
+
+    packet = build_data_science_packet(
+        DataScienceRequest(
+            goal=args.goal,
+            dataset=args.dataset,
+            modality=args.modality,
+            task_type=args.task_type,
+            surface=args.surface,
+            target=args.target,
+            safety_tier=args.safety_tier,
+        )
+    )
+    if args.json:
+        print(json.dumps(packet, indent=2, sort_keys=True))
+    else:
+        print(render_text(packet))
+    return 0
+
+
 def cmd_github(args: argparse.Namespace) -> int:
     from scripts.system.geoseal_github_ops import (
         build_github_plan,
@@ -3576,6 +3601,32 @@ def build_parser() -> argparse.ArgumentParser:
     p_lane_grid.add_argument("--columns", type=int, default=3, help="Maximum scheduler columns to preview")
     p_lane_grid.add_argument("--json", action="store_true")
     p_lane_grid.set_defaults(func=cmd_lane_grid)
+
+    p_data_science = sub.add_parser(
+        "data-science-agent",
+        help="Build a governed data-science workflow packet",
+    )
+    p_data_science.add_argument("--goal", default="Profile dataset and recommend next data-science step.")
+    p_data_science.add_argument("--dataset", default="unknown_dataset")
+    p_data_science.add_argument(
+        "--modality",
+        default="tabular",
+        choices=["tabular", "image", "text", "multimodal"],
+    )
+    p_data_science.add_argument(
+        "--task-type",
+        default="",
+        choices=["", "cluster", "predict", "search", "profile", "classify"],
+    )
+    p_data_science.add_argument(
+        "--surface",
+        default="python",
+        choices=["bigquery", "python", "kaggle", "notebook"],
+    )
+    p_data_science.add_argument("--target", default="")
+    p_data_science.add_argument("--safety-tier", default="ALLOW")
+    p_data_science.add_argument("--json", action="store_true")
+    p_data_science.set_defaults(func=cmd_data_science_agent)
 
     p_github = sub.add_parser(
         "github",
