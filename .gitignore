@@ -94,6 +94,11 @@ training-data/**/*.jsonl
 !training-data/news-pipeline/records/*.jsonl
 !training-data/news-pipeline/sft/*.jsonl
 !training-data/agentic_coding/*.jsonl
+# ...and curated chemistry SFT lanes referenced by Chemistry Lane CI preflight
+!training-data/sft/chemistry_primary_*.sft.jsonl
+!training-data/sft/chemistry_manual_verification_v2_*.sft.jsonl
+!training-data/sft/chemistry_adapter_verification_v1_*.sft.jsonl
+!training-data/sft/chemistry_adapter_invariants_v1_*.sft.jsonl
 training-data/**/*.jsonl.gz
 training-data/sft_combined*.jsonl
 training-data/sft_*_regen*.jsonl
@@ -253,3 +258,6 @@ external/cli-quests/
 # Symlink roots — points to full drives, never commit
 .roots/
 .home/.codex/
+
+# Rust build outputs
+rust/**/target/

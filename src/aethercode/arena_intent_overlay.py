@@ -47,13 +47,27 @@ class ArenaIntentBlock:
 
 DEFAULT_SEATS: tuple[ArenaSeat, ...] = (
     ArenaSeat("groq", "Groq", "KO", "Intent Analyst", "llama-3.3-70b-versatile", "extract the user's real goal"),
-    ArenaSeat("cerebras", "Cerebras", "RU", "Security Auditor", "llama-3.3-70b", "find breakage, risk, and invalid assumptions"),
+    ArenaSeat(
+        "cerebras",
+        "Cerebras",
+        "RU",
+        "Security Auditor",
+        "llama-3.3-70b",
+        "find breakage, risk, and invalid assumptions",
+    ),
     ArenaSeat("google_ai", "Google AI", "DR", "Lead Architect", "gemini-2.5-flash", "synthesize a working plan"),
     ArenaSeat("claude", "Claude", "UM", "Governance Arbiter", "claude-sonnet", "judge policy, consistency, and scope"),
     ArenaSeat("xai", "xAI", "AV", "Creative Advocate", "grok-3-mini", "expand options without losing the thread"),
     ArenaSeat("openrouter", "Kimi", "CA", "Compute Optimizer", "kimi-k2-instruct", "compress the action path"),
     ArenaSeat("github_models", "GitHub", "RU", "Code Reviewer", "gpt-4o-mini", "ground claims in repo evidence"),
-    ArenaSeat("huggingface", "Hugging Face", "AV", "Model Trainer", "Qwen/Qwen2.5-Coder-7B-Instruct", "turn outputs into training signal"),
+    ArenaSeat(
+        "huggingface",
+        "Hugging Face",
+        "AV",
+        "Model Trainer",
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+        "turn outputs into training signal",
+    ),
     ArenaSeat("ollama", "Ollama", "KO", "Local Runner", "local", "provide private local fallback"),
 )
 
