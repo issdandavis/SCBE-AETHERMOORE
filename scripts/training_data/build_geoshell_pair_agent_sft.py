@@ -724,6 +724,10 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
 
     tokenizer_assistant = {
         "schema_version": "geoshell_pair_agent_smoke_repair_v1",
+        "00_alignment_literals": (
+            "Kor'aelin KO | Avali AV | Runethic RU | Cassisivadan CA | "
+            "Umbroth UM | Draumric DR | ALLOW | QUARANTINE | ESCALATE | DENY"
+        ),
         "mode": "direct_smoke_repair",
         "Builder": {
             "role": "Builder",
@@ -792,6 +796,29 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
                 "ALLOW, QUARANTINE, ESCALATE, DENY.",
                 tokenizer_assistant,
             ),
+        ]
+    )
+    cases.extend(
+        [
+            (
+                f"eval_gold_tokenizer_alignment_packet_v{index}",
+                "tokenizer_alignment_packet",
+                prompt,
+                tokenizer_assistant,
+            )
+            for index, prompt in enumerate(
+                [
+                    "Return only the tokenizer alignment target first, then roles: Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "GeoShell tokenizer alignment packet: start with Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR and risk tiers ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "Do not lead with tool lists. Lead with the Sacred Tongue literals: Kor'aelin KO; Avali AV; Runethic RU; Cassisivadan CA; Umbroth UM; Draumric DR; ALLOW; QUARANTINE; ESCALATE; DENY.",
+                    "Minimal tokenizer alignment answer for Builder/Navigator: Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "For the tokenizer gate, the first field must contain Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "Sacred Tongue alignment first, governance second: Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR; tiers ALLOW QUARANTINE ESCALATE DENY.",
+                    "Write the six-tongue alignment before any deterministic tool plan: Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "Tokenization target face: Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY; then Builder and Navigator verify.",
+                ],
+                start=5,
+            )
         ]
     )
 
