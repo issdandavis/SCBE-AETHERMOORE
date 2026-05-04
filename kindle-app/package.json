@@ -15,6 +15,7 @@
     "build:apk:aetherbrowse:kindle": "cross-env AETHERCODE_APP_VARIANT=aetherbrowse AETHERCODE_TARGET=kindle npm run build && cd android && gradlew.bat assembleRelease",
     "build:release": "cd android && gradlew.bat assembleRelease",
     "build:aab": "cd android && gradlew.bat bundleRelease",
+    "build:aab:aethercode": "cross-env AETHERCODE_APP_VARIANT=aethercode npm run build && cd android && gradlew.bat bundleRelease",
     "build:aab:aetherbrowse": "cross-env AETHERCODE_APP_VARIANT=aetherbrowse npm run build && cd android && gradlew.bat bundleRelease",
     "build:aab:aetherbrowse:kindle": "cross-env AETHERCODE_APP_VARIANT=aetherbrowse AETHERCODE_TARGET=kindle npm run build && cd android && gradlew.bat bundleRelease",
     "build": "npm run copy:assets && npm run cap:sync",
