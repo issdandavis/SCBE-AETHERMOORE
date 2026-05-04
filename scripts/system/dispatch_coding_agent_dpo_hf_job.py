@@ -197,6 +197,7 @@ def main() -> None:
     eval_cfg = PROFILE.get("evaluation") or {{}}
     seed = int(train_cfg.get("seed", 72))
     base_model = str(PROFILE["base_model"])
+    base_adapter_repo = str(train_cfg.get("base_adapter_repo", "")).strip()
     adapter_repo = str(hub_cfg["adapter_repo"])
     constrained = bool(eval_cfg.get("constrained_gate_scaffold", False))
 
@@ -215,17 +216,21 @@ def main() -> None:
     model.config.use_cache = False
     if bool(train_cfg.get("gradient_checkpointing", False)) and hasattr(model, "gradient_checkpointing_enable"):
         model.gradient_checkpointing_enable()
-    model = get_peft_model(
-        model,
-        LoraConfig(
-            r=int(train_cfg.get("lora_rank", 16)),
-            lora_alpha=int(train_cfg.get("lora_alpha", 32)),
-            lora_dropout=float(train_cfg.get("lora_dropout", 0.05)),
-            bias="none",
-            task_type="CAUSAL_LM",
-            target_modules=list(train_cfg.get("target_modules") or ["q_proj", "k_proj", "v_proj", "o_proj"]),
-        ),
-    )
+    if base_adapter_repo:
+        print(json.dumps({{"event": "base_adapter_load", "base_adapter_repo": base_adapter_repo}}))
+        model = PeftModel.from_pretrained(model, base_adapter_repo, token=token, is_trainable=True)
+    else:
+        model = get_peft_model(
+            model,
+            LoraConfig(
+                r=int(train_cfg.get("lora_rank", 16)),
+                lora_alpha=int(train_cfg.get("lora_alpha", 32)),
+                lora_dropout=float(train_cfg.get("lora_dropout", 0.05)),
+                bias="none",
+                task_type="CAUSAL_LM",
+                target_modules=list(train_cfg.get("target_modules") or ["q_proj", "k_proj", "v_proj", "o_proj"]),
+            ),
+        )
     model.print_trainable_parameters()
 
     rows = _load_jsonl_files(TRAIN_FILES, token)
@@ -476,6 +481,7 @@ def build_packet(
         "script_path": str(script_path),
         "base_model": profile["base_model"],
         "adapter_repo": (profile.get("hub") or {}).get("adapter_repo", ""),
+        "base_adapter_repo": (profile.get("training") or {}).get("base_adapter_repo", ""),
         "train_datasets": _dataset_rows(profile, "train"),
         "eval_datasets": _dataset_rows(profile, "eval"),
         "hf": {

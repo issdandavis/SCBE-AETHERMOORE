@@ -1,0 +1,66 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-geoshell-pair-agent-dpo-v1",
+  "title": "SCBE coding agent Qwen GeoShell paired-agent DPO v1",
+  "description": "Preference-training repair for the GeoShell Builder/Navigator paired-agent adapter after SFT reached scaffolded 4/4 but independent raw smoke plateaued at 3/4. The repair continues from the SFT adapter and specifically rewards exact plural tests before apply while rejecting the observed singular-test near miss.",
+  "backend": "hf-jobs-peft-dpo",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoShell paired coding agent. Work as Builder and Navigator. Builder proposes intent and owned-file scope. Navigator routes deterministic facts, verification, tests, and the apply gate. Name tests before apply and use the exact plural word tests when required.",
+  "dataset": {
+    "root": "training-data/dpo",
+    "train_files": [
+      "geoshell_pair_agent_preference_v1_train.jsonl"
+    ],
+    "eval_files": []
+  },
+  "training": {
+    "base_adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoshell-pair-agent-v1",
+    "max_seq_length": 768,
+    "max_prompt_length": 384,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 3e-5,
+    "beta": 0.1,
+    "num_train_epochs": 1,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "warmup_ratio": 0.0,
+    "max_steps": 80,
+    "max_train_records": 5,
+    "logging_steps": 5,
+    "save_steps": 80,
+    "save_total_limit": 1,
+    "gradient_checkpointing": true,
+    "seed": 107,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-agent-qwen-geoshell-pair-agent-dpo-v1"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-dpo-geoshell-pair-agent-v1",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoshell-pair-agent-dpo-v1",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "2h",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-geoshell-pair-agent-dpo-v1-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/geoshell_pair_agent_eval_contract.json",
+    "constrained_gate_scaffold": true,
+    "post_training_gate": "Run independent GeoShell pair-agent smoke eval with this adapter repo override; promotion needs raw 4/4, not only scaffolded 4/4."
+  }
+}

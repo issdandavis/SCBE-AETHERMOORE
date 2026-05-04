@@ -101,6 +101,12 @@
       "purpose": "Builder/Navigator pair-agent behavior for GeoShell. Useful after core Stage 6 and CA/GeoSeal command recall are stable."
     },
     {
+      "profile_id": "coding-agent-qwen-geoshell-pair-agent-dpo-v1",
+      "profile_path": "config/model_training/coding-agent-qwen-geoshell-pair-agent-dpo-v1.json",
+      "stage": "geoshell_pair_agent_dpo",
+      "purpose": "Preference repair over the trained GeoShell pair-agent SFT adapter. Targets the repeated raw smoke miss where Builder/Navigator output used test singular and omitted exact plural tests before apply."
+    },
+    {
       "profile_id": "coding-agent-qwen-ca-geoseal-smoke-repair-v1",
       "profile_path": "config/model_training/coding-agent-qwen-ca-geoseal-smoke-repair-v1.json",
       "stage": "ca_geoseal_smoke_repair",

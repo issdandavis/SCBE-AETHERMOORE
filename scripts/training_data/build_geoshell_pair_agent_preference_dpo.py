@@ -24,6 +24,7 @@ SCHEMA_VERSION = "geoshell_pair_agent_preference_v1"
 HOLD_NOTE = "docs/readiness/GEOSHELL_PAIR_AGENT_HOLD_2026-05-04.md"
 FIRST_SMOKE_JOB = "69f89eb798a8d679adfb8ef5"
 RETRY_SMOKE_JOB = "69f8a39798a8d679adfb8f09"
+SFT_LITERAL_REPAIR_SMOKE_JOB = "69f90ef29d85bec4d76f268d"
 
 SYSTEM = (
     "You are a GeoShell paired coding agent. Work as Builder and Navigator. "
@@ -68,6 +69,40 @@ CASES: list[dict[str, Any]] = [
             "verification_field": 1.0,
             "tests_field": 1.0,
             "apply_gate_closed": 1.0,
+        },
+    },
+    {
+        "case_id": "builder_navigator_packet_tests_literal_first_field",
+        "difficulty_band": "easy",
+        "failure_reason": "raw_output_uses_test_singular_and_skips_tests_in_first_field",
+        "prompt": (
+            "Return the Builder/Navigator packet for a safe GeoShell coding task. "
+            "The first field must name Builder, Navigator, deterministic, verification, tests, and apply. "
+            "Use the exact plural word tests before any apply action."
+        ),
+        "chosen": (
+            "00_required_items=Builder | Navigator | deterministic | verification | tests | apply\n"
+            "01_tests_literal=tests\n"
+            "02_tests_before_apply=tests before apply\n"
+            "Builder=state the intended helper and owned files\n"
+            "Navigator=collect deterministic repo facts and verification evidence\n"
+            "deterministic=repo tools before memory-only claims\n"
+            "verification=inspect focused command results\n"
+            "tests=unit tests plus boundary tests\n"
+            "apply=blocked until tests pass"
+        ),
+        "rejected": (
+            "00_required_items=Builder | Navigator | deterministic | verification | apply\n"
+            "Builder=state the helper\n"
+            "Navigator=check verification later\n"
+            "opens_after=verification passes and test passes\n"
+            "apply=ready"
+        ),
+        "reward_components": {
+            "first_field_tests_literal": 1.0,
+            "plural_tests_not_test": 1.0,
+            "tests_before_apply": 1.0,
+            "apply_blocked_until_tests": 1.0,
         },
     },
     {
@@ -216,7 +251,7 @@ def write_outputs(out_dir: Path = DEFAULT_OUT_DIR) -> dict[str, Any]:
         "difficulty_counts": difficulty_counts,
         "failure_counts": failure_counts,
         "source_note": HOLD_NOTE,
-        "source_smoke_jobs": [FIRST_SMOKE_JOB, RETRY_SMOKE_JOB],
+        "source_smoke_jobs": [FIRST_SMOKE_JOB, RETRY_SMOKE_JOB, SFT_LITERAL_REPAIR_SMOKE_JOB],
         "training_boundary": {
             "method": "DPO_ORPO_or_strict_repair_SFT",
             "not_for_blind_positive_sft": True,

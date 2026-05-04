@@ -23,7 +23,7 @@ def test_build_rows_emits_failure_pack_preference_records() -> None:
 
     rows = module.build_rows()
 
-    assert len(rows) == 4
+    assert len(rows) == 5
     assert {row["meta"]["schema_version"] for row in rows} == {"geoshell_pair_agent_preference_v1"}
     assert {row["meta"]["training_boundary"] for row in rows} == {"preference_rows_not_positive_sft"}
     assert all(row["chosen"] != row["rejected"] for row in rows)
@@ -39,6 +39,12 @@ def test_preference_rows_pin_observed_smoke_failures() -> None:
     assert "verification=" in builder["chosen"]
     assert "tests=" in builder["chosen"]
     assert "verification=" not in builder["rejected"]
+
+    tests_literal = rows["builder_navigator_packet_tests_literal_first_field"]
+    assert "00_required_items=Builder | Navigator | deterministic | verification | tests | apply" in tests_literal["chosen"]
+    assert "01_tests_literal=tests" in tests_literal["chosen"]
+    assert "test passes" in tests_literal["rejected"]
+    assert "verification | tests | apply" not in tests_literal["rejected"]
 
     ca_route = rows["ca_abs_add_pair_route_lost_exact_markers"]
     assert "Builder=" in ca_route["chosen"]
@@ -75,11 +81,12 @@ def test_write_outputs_creates_jsonl_and_manifest(tmp_path: Path) -> None:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
 
     assert result["ok"] is True
-    assert result["row_count"] == 4
-    assert len(rows) == 4
-    assert manifest["row_count"] == 4
+    assert result["row_count"] == 5
+    assert len(rows) == 5
+    assert manifest["row_count"] == 5
     assert manifest["source_smoke_jobs"] == [
         "69f89eb798a8d679adfb8ef5",
         "69f8a39798a8d679adfb8f09",
+        "69f90ef29d85bec4d76f268d",
     ]
     assert manifest["training_boundary"]["not_for_blind_positive_sft"] is True

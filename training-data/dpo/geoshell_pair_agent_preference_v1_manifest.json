@@ -1,6 +1,6 @@
 {
   "difficulty_counts": {
-    "easy": 1,
+    "easy": 2,
     "hard": 1,
     "medium": 2
   },
@@ -8,15 +8,17 @@
     "credential_like_query_field_in_alignment_packet": 1,
     "lost_builder_navigator_zero_opcode_and_deterministic_markers": 1,
     "missing_verification_and_tests_fields": 1,
-    "passes_required_items_scaffold_but_fails_free_generation": 1
+    "passes_required_items_scaffold_but_fails_free_generation": 1,
+    "raw_output_uses_test_singular_and_skips_tests_in_first_field": 1
   },
-  "row_count": 4,
+  "row_count": 5,
   "schema_version": "geoshell_pair_agent_preference_v1_manifest",
-  "sha256": "14f6629711e49ea699d736c0d2f9b66b7397debf025eb5a611e7052831f862b7",
+  "sha256": "9c0b6288e196e6a2161a92de9cd51d60b32c31544ee50c3d7be7724802f4cc0a",
   "source_note": "docs/readiness/GEOSHELL_PAIR_AGENT_HOLD_2026-05-04.md",
   "source_smoke_jobs": [
     "69f89eb798a8d679adfb8ef5",
-    "69f8a39798a8d679adfb8f09"
+    "69f8a39798a8d679adfb8f09",
+    "69f90ef29d85bec4d76f268d"
   ],
   "train_file": "training-data\\dpo\\geoshell_pair_agent_preference_v1_train.jsonl",
   "training_boundary": {
