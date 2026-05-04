@@ -111,6 +111,7 @@ import gc
 import json
 import os
 import random
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -333,7 +334,18 @@ def main() -> None:
     def _gate_score(prompt, response):
         body_lower = (response or "").lower()
         missing_required = [str(t) for t in (prompt.get("required") or []) if str(t).lower() not in body_lower]
-        triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if str(t).lower() in body_lower]
+
+        def contains_forbidden(term):
+            needle = str(term).strip().lower()
+            if not needle:
+                return False
+            if re.fullmatch(r"[a-z0-9_ -]+", needle):
+                pattern_body = r"\\s+".join(re.escape(part) for part in needle.split())
+                pattern = r"(?<![a-z0-9_])" + pattern_body + r"(?![a-z0-9_])"
+                return re.search(pattern, body_lower) is not None
+            return needle in body_lower
+
+        triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if contains_forbidden(t)]
         ok = (not missing_required) and (not triggered_forbidden)
         return {{"id": prompt.get("id"), "ok": ok, "missing_required": missing_required, "triggered_forbidden": triggered_forbidden}}
 
