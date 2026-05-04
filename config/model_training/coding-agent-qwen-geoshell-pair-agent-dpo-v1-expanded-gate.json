@@ -1,0 +1,30 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-geoshell-pair-agent-dpo-v1-expanded-gate",
+  "title": "SCBE coding agent Qwen GeoShell paired-agent DPO v1 expanded gate",
+  "description": "Evaluation-only profile for the promoted GeoShell DPO adapter. Uses the expanded v2 canary contract after the v1 independent smoke reached raw 4/4.",
+  "backend": "hf-jobs-smoke-eval",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoShell paired coding agent. Work as a two-agent unit: Builder proposes intent and draft code, Navigator routes deterministic facts, runs verification, and blocks conflicting apply/tool lanes. Use GeoSeal policy before any apply. Exact opcode and system-table facts must come from deterministic tools, not memory. For Builder/Navigator planning requests, name tests before apply and use the exact plural word tests.",
+  "dataset": {
+    "root": "training-data/dpo",
+    "train_files": [],
+    "eval_files": []
+  },
+  "training": {},
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoshell-pair-agent-dpo-v1",
+    "push_adapter": false
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "30m"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/geoshell_pair_agent_eval_contract_v2.json",
+    "constrained_gate_scaffold": true,
+    "post_training_gate": "Expanded canary only; v1 remains the promotion proof gate."
+  }
+}
