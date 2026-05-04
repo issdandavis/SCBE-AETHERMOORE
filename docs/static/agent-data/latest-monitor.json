@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Humanoid Robot Actuators",
-      "word_count": 620,
+      "description": "GameStop makes $55.5B takeover offer for eBay",
+      "word_count": 613,
       "headings": [
         {
           "level": 2,
-          "text": "Humanoid Robot Actuators",
+          "text": "GameStop makes $55.5B takeover offer for eBay",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "firgelli.com",
+          "text": "bbc.co.uk",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Using \"underdrawings\" for accurate text and numbers",
+          "text": "ASML's Best Selling Product Isn't What You Think It Is",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "siliconimist.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Talking to 35 Strangers at the Gym",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "thienantran.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Trademark violation: Fake Notepad++ for Mac",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "notepad-plus-plus.org",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Using \u201cunderdrawings\u201d for accurate text and numbers",
           "source": "fallback-selector"
         },
         {
           "level": 2,
           "text": "samcollins.blog",
           "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "BYOMesh \u2013 New LoRa mesh radio offers 100x the bandwidth",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "partyon.xyz",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "DeepClaude \u2013 Claude Code agent loop with DeepSeek V4 Pro",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "github.com/aattaran",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Discovering hard disk physical geometry through microbenchmarking (2019)",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "stuffedcow.net",
-          "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Humanoid Robot Actuators (firgelli.com)85 points by ofrzeta 3 hours ago  | hide | 9\u00a0comments2.Using \"underdrawings\" for accurate text and numbers (samcollins.blog)159 points by samcollins 7 hours ago  | hide | 41\u00a0comments3.BYOMesh \u2013 New LoRa mesh radio offers 100x the bandwidth (partyon.xyz)341 points by nullagent 13 hours ago  | hide | 107\u00a0comments4.DeepClaude \u2013 Claude Code agent loop with DeepSeek V4 Pro (github.com/aattaran)3..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.GameStop makes $55.5B takeover offer for eBay (bbc.co.uk)227 points by n1b0m 3 hours ago  | hide | 164\u00a0comments2.ASML's Best Selling Product Isn't What You Think It Is (siliconimist.com)70 points by johncole 1 hour ago  | hide | 25\u00a0comments3.Talking to 35 Strangers at the Gym (thienantran.com)30 points by thitran 1 hour ago  | hide | 2\u00a0comments4.Trademark violation: Fake Notepad++ for Mac (notepad-plus-plus.org)265 points by max..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
