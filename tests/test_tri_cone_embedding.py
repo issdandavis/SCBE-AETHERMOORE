@@ -25,6 +25,7 @@ from python.scbe.tri_cone_embedding import (
     chromatic_shadow,
     signed_cone_governance,
     tri_cone_signature,
+    tri_cone_signature_from_content,
     verify_tri_cone_signature,
 )
 
@@ -267,6 +268,39 @@ def test_real_prompt_produces_valid_cone_signature():
     sig = tri_cone_signature(braid)
     assert sig.cone_governance in {ALLOW, QUARANTINE, ESCALATE, DENY}
     assert verify_tri_cone_signature(sig, braid)["ok"] is True
+
+
+# ---------------------------------------------------------------------------
+# tri_cone_signature_from_content convenience entry point
+# ---------------------------------------------------------------------------
+
+
+def test_signature_from_content_matches_explicit_chain():
+    """The convenience wrapper must be byte-identical to the long-form chain."""
+
+    content = "plan a paired coding task with verification gate"
+    embedding = build_poly_embedding(content)
+    braid = tri_braid_signature(embedding)
+    expected = tri_cone_signature(braid)
+    actual = tri_cone_signature_from_content(content)
+    assert actual.cone_hash == expected.cone_hash
+    assert actual.cone_governance == expected.cone_governance
+    assert actual.positive_membership_count == expected.positive_membership_count
+    assert actual.shadow_membership_count == expected.shadow_membership_count
+
+
+def test_signature_from_content_handles_empty_string():
+    """Empty content must not blow up; falls back to a placeholder concept."""
+
+    sig = tri_cone_signature_from_content("")
+    assert sig.cone_governance in {ALLOW, QUARANTINE, ESCALATE, DENY}
+    assert sig.schema_version == SCHEMA_VERSION
+
+
+def test_signature_from_content_is_deterministic():
+    a = tri_cone_signature_from_content("safe paired coding task")
+    b = tri_cone_signature_from_content("safe paired coding task")
+    assert a.cone_hash == b.cone_hash
 
 
 # ---------------------------------------------------------------------------

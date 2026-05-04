@@ -624,3 +624,20 @@ def signed_cone_governance(positive_membership_count: int, shadow_membership_cou
     if not (0 <= shadow_membership_count <= 3):
         raise ValueError(f"shadow_membership_count must be 0..3, got {shadow_membership_count}")
     return _signed_governance(positive_membership_count, shadow_membership_count)
+
+
+def tri_cone_signature_from_content(content: str) -> TriConeSignature:
+    """Build a tri-chromatic cone signature directly from a content string.
+
+    Wires the production stack so external callers (n8n bridge, CLI tools,
+    governance receipts) can go from raw text to a signed cone reading in
+    a single call without having to import poly_embedded_jepa and
+    tri_braid_embedding themselves.
+    """
+
+    from .poly_embedded_jepa import build_poly_embedding
+    from .tri_braid_embedding import tri_braid_signature
+
+    embedding = build_poly_embedding(content or "empty content")
+    braid = tri_braid_signature(embedding)
+    return tri_cone_signature(braid)
