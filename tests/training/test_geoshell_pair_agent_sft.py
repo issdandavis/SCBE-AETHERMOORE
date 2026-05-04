@@ -25,11 +25,11 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     dataset = module.build_dataset()
 
     assert dataset["schema_version"] == "geoshell_pair_agent_sft_v1"
-    assert dataset["base_record_count"] == 15
+    assert dataset["base_record_count"] == 17
     assert dataset["population_multiplier"] == 14
-    assert len(dataset["train"]) == 182
+    assert len(dataset["train"]) == 210
     assert len(dataset["holdout"]) == 28
-    assert len(dataset["events"]) == 210
+    assert len(dataset["events"]) == 238
 
     first = json.loads(dataset["train"][0]["messages"][-1]["content"])
     assert first["schema_version"] == "geoshell_pair_agent_answer_v1"
@@ -72,6 +72,15 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     assert "Kor'aelin" in gate_repair["required_gate_evidence"]
     assert gate_repair["verification"]["apply_gate"] == "closed until tests pass"
 
+    smoke_repair = next(
+        json.loads(row["messages"][-1]["content"])
+        for row in dataset["train"]
+        if row["meta"]["task_id"].startswith("smoke_repair_tokenizer_alignment_full_names_first")
+    )
+    assert smoke_repair["schema_version"] == "geoshell_pair_agent_smoke_repair_v1"
+    assert "Runethic RU" in smoke_repair["sacred_tongues"]
+    assert "Draumric DR" in smoke_repair["sacred_tongues"]
+
 
 def test_records_do_not_embed_secret_material() -> None:
     module = _load_module()
@@ -102,12 +111,12 @@ def test_write_outputs_creates_train_holdout_manifest_and_events(
     assert train.exists()
     assert holdout.exists()
     assert manifest["profile_id"] == "geoshell-pair-agent-v1"
-    assert manifest["base_record_count"] == 15
+    assert manifest["base_record_count"] == 17
     assert manifest["population_multiplier"] == 14
-    assert manifest["train_count"] == 182
+    assert manifest["train_count"] == 210
     assert manifest["holdout_count"] == 28
-    assert manifest["record_count"] == 210
-    assert len(events) == 210
+    assert manifest["record_count"] == 238
+    assert len(events) == 238
     assert events[0]["_agent_id"] == "pair-agent-builder-navigator"
 
 
@@ -144,9 +153,9 @@ def test_geoseal_cli_builds_pair_agent_training_outputs(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["ok"] is True
-    assert payload["base_record_count"] == 15
+    assert payload["base_record_count"] == 17
     assert payload["population_multiplier"] == 14
-    assert payload["train_count"] == 182
+    assert payload["train_count"] == 210
     assert payload["holdout_count"] == 28
     assert Path(payload["paths"]["manifest"]).exists()
     assert Path(payload["geoshell_event_feed"]).exists()

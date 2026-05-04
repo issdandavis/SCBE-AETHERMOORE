@@ -26,7 +26,7 @@
     "gradient_accumulation_steps": 4,
     "warmup_ratio": 0.05,
     "max_steps": 120,
-    "max_train_records": 182,
+    "max_train_records": 210,
     "max_eval_records": 28,
     "logging_steps": 5,
     "save_steps": 60,

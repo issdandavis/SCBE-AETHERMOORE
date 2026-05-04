@@ -133,6 +133,7 @@
     "benchmark:poly-embedded-jepa": "python scripts/bench_poly_embedded_jepa.py",
     "governance:topological-canaries:build": "python scripts/build_topological_canaries.py",
     "governance:topological-canaries:smoke": "python scripts/smoke_topological_receipt.py",
+    "governance:topological-canaries:adapter-smoke": "python scripts/smoke_adapter_topological_receipt.py --dry-run",
     "benchmark:fiction-quality": "python scripts/benchmark/fiction_quality_benchmark.py",
     "benchmark:fiction-quality:blind": "python scripts/benchmark/fiction_quality_blind_round.py",
     "benchmark:fiction-quality:book": "python scripts/benchmark/book_quality_sweep.py",
