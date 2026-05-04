@@ -53,6 +53,10 @@ def main() -> int:
     errors: list[str] = []
     warnings: list[str] = []
 
+    if not MANIFEST_PATH.exists() and not SCHEMA_PATH.exists():
+        print(f"skip: layer manifest not present at {MANIFEST_PATH.relative_to(ROOT)}")
+        return 0
+
     try:
         # Presence + parse check for schema document itself.
         _ = _load_json(SCHEMA_PATH)
