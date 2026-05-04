@@ -167,6 +167,125 @@ def extract_gate_report(text: str) -> dict[str, Any] | None:
     return latest
 
 
+def extract_smoke_eval_event(text: str) -> dict[str, Any] | None:
+    """Extract the last smoke_eval_complete event from HF job logs.
+
+    Smoke eval emits pretty-printed JSON, so a line-oriented parser is not
+    enough. Scan backward from each marker and let JSONDecoder consume the
+    complete object from the nearest opening brace that works.
+    """
+    cleaned = re.sub(r"\x1b\[[0-9;]*m", "", text)
+    decoder = json.JSONDecoder()
+    latest: dict[str, Any] | None = None
+    marker = '"event": "smoke_eval_complete"'
+    search_from = 0
+    while True:
+        marker_pos = cleaned.find(marker, search_from)
+        if marker_pos < 0:
+            break
+        brace_pos = cleaned.rfind("{", 0, marker_pos)
+        while brace_pos >= 0:
+            try:
+                event, _ = decoder.raw_decode(cleaned[brace_pos:])
+            except json.JSONDecodeError:
+                brace_pos = cleaned.rfind("{", 0, brace_pos)
+                continue
+            if isinstance(event, dict) and event.get("event") == "smoke_eval_complete":
+                latest = event
+                break
+            brace_pos = cleaned.rfind("{", 0, brace_pos)
+        search_from = marker_pos + len(marker)
+    return latest
+
+
+def summarize_smoke_eval_event(event: dict[str, Any]) -> dict[str, Any]:
+    summary = dict(event.get("summary") or {})
+    results = [item for item in event.get("results", []) if isinstance(item, dict)]
+    raw_failures = [
+        {
+            "id": str(item.get("id") or ""),
+            "raw_missing_required": list(item.get("raw_missing_required") or []),
+            "raw_present_forbidden": list(item.get("raw_present_forbidden") or []),
+        }
+        for item in results
+        if item.get("raw_passed") is not True
+    ]
+    scaffold_failures = [
+        {
+            "id": str(item.get("id") or ""),
+            "missing_required": list(item.get("missing_required") or []),
+            "present_forbidden": list(item.get("present_forbidden") or []),
+        }
+        for item in results
+        if item.get("passed") is not True
+    ]
+    raw_passed = int(summary.get("raw_passed") or 0)
+    total = int(summary.get("total") or len(results))
+    return {
+        "schema_version": "geoseal_coding_training_smoke_eval_summary_v1",
+        "adapter_repo": summary.get("adapter_repo", ""),
+        "base_model": summary.get("base_model", ""),
+        "scaffolded": bool(summary.get("scaffolded")),
+        "constrained_prompt_prefix": bool(summary.get("constrained_prompt_prefix")),
+        "raw_passed": raw_passed,
+        "raw_total": total,
+        "raw_pass_rate": float(summary.get("raw_pass_rate") or (raw_passed / total if total else 0.0)),
+        "passed": int(summary.get("passed") or 0),
+        "total": total,
+        "pass_rate": float(summary.get("pass_rate") or 0.0),
+        "must_pass_ok": bool(summary.get("must_pass_ok")),
+        "promotion_ready": bool(summary.get("promotion_ready")),
+        "raw_failures": raw_failures,
+        "scaffold_failures": scaffold_failures,
+        "next_action": (
+            "promote_or_raise_threshold"
+            if total and raw_passed == total
+            else "repair_raw_failures_before_promotion"
+        ),
+    }
+
+
+def smoke_eval_summary_from_log(
+    log_path: Path,
+    *,
+    output: Path | None = None,
+) -> dict[str, Any]:
+    event = extract_smoke_eval_event(log_path.read_text(encoding="utf-8", errors="replace"))
+    if event is None:
+        raise ValueError(f"No smoke_eval_complete event found in log: {log_path}")
+    summary = summarize_smoke_eval_event(event)
+    summary["source"] = str(log_path)
+    if output is not None:
+        _write_json(output, summary)
+        summary["output_path"] = str(output)
+    return summary
+
+
+def smoke_eval_summary_from_job(
+    job_id: str,
+    *,
+    output: Path | None = None,
+    log_output: Path | None = None,
+) -> dict[str, Any]:
+    logs_result = _run_hf(["hf", "jobs", "logs", job_id], timeout_s=180)
+    combined = logs_result["stdout"] + "\n" + logs_result["stderr"]
+    if log_output is not None:
+        log_output.parent.mkdir(parents=True, exist_ok=True)
+        log_output.write_text(combined, encoding="utf-8", errors="replace")
+    event = extract_smoke_eval_event(combined)
+    if event is None:
+        raise ValueError(f"No smoke_eval_complete event found in HF job logs: {job_id}")
+    summary = summarize_smoke_eval_event(event)
+    summary["source"] = f"hf_job:{job_id}"
+    summary["logs_returncode"] = logs_result["returncode"]
+    if log_output is not None:
+        summary["log_output"] = str(log_output)
+    if output is not None:
+        _write_json(output, summary)
+        summary["output_path"] = str(output)
+    return summary
+
+
 def _failure_kind_from_id(prompt_id: str) -> str:
     if "resource_jump" in prompt_id:
         return "resource_overrun_fallback"
@@ -415,6 +534,8 @@ def smoke_eval_plan(manifest: dict[str, Any], profile_id: str | None, adapter_re
     resolved = resolve_profile(manifest, profile_id)
     profile = resolved["profile"]
     eval_cfg = dict(manifest.get("smoke_eval") or {})
+    profile_training_cfg = profile.get("training") or {}
+    profile_evaluation_cfg = profile.get("evaluation") or {}
     contract_path = str(((profile.get("evaluation") or {}).get("contract_path")) or "").strip()
     contract: dict[str, Any] = {}
     if contract_path:
@@ -438,8 +559,14 @@ def smoke_eval_plan(manifest: dict[str, Any], profile_id: str | None, adapter_re
         "adapter_repo": selected_adapter,
         "system_prompt": profile.get("system_prompt")
         or "You are an SCBE-AETHERMOORE GeoSeal coding agent. Preserve route/slot semantics.",
-        "max_new_tokens": int(eval_cfg.get("max_new_tokens", 384)),
-        "constrained_gate_scaffold": bool((profile.get("evaluation") or {}).get("constrained_gate_scaffold")),
+        "max_new_tokens": int(
+            profile_evaluation_cfg.get(
+                "max_new_tokens",
+                profile_training_cfg.get("max_new_tokens", eval_cfg.get("max_new_tokens", 384)),
+            )
+        ),
+        "constrained_gate_scaffold": bool(profile_evaluation_cfg.get("constrained_gate_scaffold")),
+        "constrained_prompt_prefix": bool(profile_evaluation_cfg.get("constrained_prompt_prefix")),
         "output_dir": str(out_dir),
         "prompts": eval_cfg.get("prompts") or [],
         "promotion_gate": promotion_gate,
@@ -520,7 +647,7 @@ def _generate(tokenizer, model, prompt: str, max_new_tokens: int) -> str:
     with torch.no_grad():
         outputs = model.generate(
             input_ids,
-            max_new_tokens=int(PLAN.get("max_new_tokens", 220)),
+            max_new_tokens=max_new_tokens,
             do_sample=False,
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
@@ -539,6 +666,21 @@ def _gate_required_prefix(item: dict) -> str:
             "constrained gate prefix would trigger forbidden token: " + ", ".join(present_forbidden)
         )
     return prefix
+
+
+def _prompt_with_required_prefix(item: dict) -> str:
+    required = [str(needle) for needle in (item.get("required") or [])]
+    prompt = str(item["prompt"])
+    prefix = (
+        "Your first line must be exactly: REQUIRED_MARKERS="
+        + " | ".join(required)
+        + "\\nYour second line must be exactly: REQUIRED_CHECKLIST="
+        + "; ".join(needle + "=" + needle for needle in required)
+        + "\\nDo not translate, rename, pluralize, omit, or replace any REQUIRED_MARKERS value."
+        + "\\nAfter that line, answer the task compactly."
+        + "\\nTask: "
+    )
+    return prefix + prompt
 
 
 def main() -> None:
@@ -561,7 +703,8 @@ def main() -> None:
 
     results = []
     for item in PLAN["prompts"]:
-        raw_response = _generate(tokenizer, model, str(item["prompt"]), int(PLAN.get("max_new_tokens", 220)))
+        prompt = _prompt_with_required_prefix(item) if PLAN.get("constrained_prompt_prefix") else str(item["prompt"])
+        raw_response = _generate(tokenizer, model, prompt, int(PLAN.get("max_new_tokens", 220)))
         scaffolded = bool(PLAN.get("constrained_gate_scaffold"))
         response = raw_response
         if scaffolded:
@@ -604,6 +747,7 @@ def main() -> None:
             "base_model": base_model,
             "adapter_repo": adapter_repo,
             "scaffolded": bool(PLAN.get("constrained_gate_scaffold")),
+            "constrained_prompt_prefix": bool(PLAN.get("constrained_prompt_prefix")),
             "raw_passed": raw_passed,
             "raw_pass_rate": raw_pass_rate,
             "passed": passed,
@@ -838,6 +982,12 @@ def main() -> int:
     score_parser.add_argument("--report", required=True)
     reward_parser = sub.add_parser("reward-smoke-report")
     reward_parser.add_argument("--report", required=True)
+    smoke_summary_parser = sub.add_parser("smoke-eval-summary")
+    smoke_src = smoke_summary_parser.add_mutually_exclusive_group(required=True)
+    smoke_src.add_argument("--log")
+    smoke_src.add_argument("--job-id")
+    smoke_summary_parser.add_argument("--output", default="")
+    smoke_summary_parser.add_argument("--log-output", default="")
     boss_parser = sub.add_parser("boss-retry-plan")
     boss_src = boss_parser.add_mutually_exclusive_group(required=True)
     boss_src.add_argument("--report")
@@ -879,6 +1029,13 @@ def main() -> int:
         payload = score_smoke_report(Path(args.report), manifest)
     elif args.command == "reward-smoke-report":
         payload = reward_smoke_report(Path(args.report), manifest)
+    elif args.command == "smoke-eval-summary":
+        output = Path(args.output) if args.output else None
+        if args.log:
+            payload = smoke_eval_summary_from_log(Path(args.log), output=output)
+        else:
+            log_output = Path(args.log_output) if args.log_output else None
+            payload = smoke_eval_summary_from_job(str(args.job_id), output=output, log_output=log_output)
     elif args.command == "boss-retry-plan":
         output = Path(args.output) if args.output else None
         if args.report:

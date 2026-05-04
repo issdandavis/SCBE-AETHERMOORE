@@ -244,7 +244,7 @@ def test_smoke_eval_plan_carries_constrained_scaffold_flag(tmp_path: Path, monke
                 "profile_id": "coding-agent-qwen-geoshell-pair-agent-v1",
                 "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
                 "hub": {"adapter_repo": "owner/geoshell"},
-                "evaluation": {"constrained_gate_scaffold": True},
+                "evaluation": {"constrained_gate_scaffold": True, "constrained_prompt_prefix": True},
             }
         ),
         encoding="utf-8",
@@ -258,13 +258,65 @@ def test_smoke_eval_plan_carries_constrained_scaffold_flag(tmp_path: Path, monke
     script = module.render_smoke_eval_uv_script(plan)
 
     assert plan["constrained_gate_scaffold"] is True
+    assert plan["constrained_prompt_prefix"] is True
     assert "def _gate_required_prefix(item: dict) -> str:" in script
+    assert "def _prompt_with_required_prefix(item: dict) -> str:" in script
     assert "required-items:" in script
+    assert "Your first line must be exactly: REQUIRED_MARKERS=" in script
+    assert "Your second line must be exactly: REQUIRED_CHECKLIST=" in script
+    assert "Do not translate, rename, pluralize, omit, or replace any REQUIRED_MARKERS value." in script
     assert "raw_response" in script
     assert "raw_pass_rate" in script
     assert "raw_missing_required" in script
     assert "scaffolded" in script
     assert "constrained gate prefix would trigger forbidden token" in script
+
+
+def test_smoke_eval_plan_prefers_profile_evaluation_token_budget(tmp_path: Path, monkeypatch) -> None:
+    module = _load_module()
+    manifest = module.load_manifest(MANIFEST_PATH)
+    profile_path = tmp_path / "config" / "model_training" / "coding-agent-qwen-budget-test.json"
+    profile_path.parent.mkdir(parents=True)
+    profile_path.write_text(
+        json.dumps(
+            {
+                "profile_id": "coding-agent-qwen-budget-test",
+                "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+                "training": {"max_new_tokens": 220},
+                "hub": {"adapter_repo": "owner/budget-test"},
+                "evaluation": {"max_new_tokens": 180},
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest["profiles"].append(
+        {
+            "profile_id": "coding-agent-qwen-budget-test",
+            "profile_path": "config/model_training/coding-agent-qwen-budget-test.json",
+        }
+    )
+    monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
+
+    plan = module.smoke_eval_plan(manifest, "coding-agent-qwen-budget-test", "")
+    script = module.render_smoke_eval_uv_script(plan)
+
+    assert plan["max_new_tokens"] == 180
+    assert "max_new_tokens=max_new_tokens" in script
+    assert 'max_new_tokens=int(PLAN.get("max_new_tokens", 220))' not in script
+
+
+def test_scale16_gate_profile_uses_v3_contract() -> None:
+    module = _load_module()
+    manifest = module.load_manifest(MANIFEST_PATH)
+
+    plan = module.smoke_eval_plan(manifest, "coding-agent-qwen-geoshell-pair-agent-dpo-v4-scale16-gate", "")
+
+    assert plan["eval_contract"]["contract_id"] == "geoshell_pair_agent_eval_v3_scale16"
+    assert plan["constrained_prompt_prefix"] is True
+    assert plan["max_new_tokens"] == 220
+    assert len(plan["prompts"]) == 16
+    assert plan["promotion_gate"]["minimum_pass_rate"] == 1.0
+    assert "release_readiness_packet" in plan["promotion_gate"]["must_pass"]
 
 
 def test_score_smoke_report_enforces_required_and_forbidden_markers(tmp_path: Path) -> None:
@@ -350,6 +402,68 @@ noise
     written = module.boss_retry_plan_from_report(wrapped, profile_id="coding-agent-qwen-stage6-repair-v12", output=out)
     assert out.exists()
     assert written["output_path"] == str(out)
+
+
+def test_extract_smoke_eval_event_parses_pretty_json_and_summarizes_failures() -> None:
+    module = _load_module()
+    log_text = """
+startup noise
+{
+  "event": "smoke_eval_complete",
+  "summary": {
+    "base_model": "Qwen/base",
+    "adapter_repo": "owner/adapter",
+    "scaffolded": true,
+    "raw_passed": 1,
+    "raw_pass_rate": 0.5,
+    "passed": 2,
+    "total": 2,
+    "pass_rate": 1.0,
+    "must_pass_ok": true,
+    "promotion_ready": true
+  },
+  "results": [
+    {
+      "id": "ok_case",
+      "raw_passed": true,
+      "passed": true,
+      "raw_missing_required": [],
+      "raw_present_forbidden": [],
+      "missing_required": [],
+      "present_forbidden": []
+    },
+    {
+      "id": "repair_case",
+      "raw_passed": false,
+      "passed": true,
+      "raw_missing_required": ["ownership"],
+      "raw_present_forbidden": [],
+      "missing_required": [],
+      "present_forbidden": []
+    }
+  ]
+}
+tail noise
+"""
+
+    event = module.extract_smoke_eval_event(log_text)
+    assert event is not None
+    summary = module.summarize_smoke_eval_event(event)
+
+    assert summary["adapter_repo"] == "owner/adapter"
+    assert summary["constrained_prompt_prefix"] is False
+    assert summary["raw_passed"] == 1
+    assert summary["raw_total"] == 2
+    assert summary["raw_pass_rate"] == 0.5
+    assert summary["raw_failures"] == [
+        {
+            "id": "repair_case",
+            "raw_missing_required": ["ownership"],
+            "raw_present_forbidden": [],
+        }
+    ]
+    assert summary["scaffold_failures"] == []
+    assert summary["next_action"] == "repair_raw_failures_before_promotion"
 
 
 def test_summarize_training_log_parses_pretty_completion_json() -> None:

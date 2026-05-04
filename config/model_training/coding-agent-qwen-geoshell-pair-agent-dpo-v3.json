@@ -1,0 +1,49 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-geoshell-pair-agent-dpo-v3",
+  "title": "SCBE coding agent Qwen GeoShell paired-agent DPO v3",
+  "description": "Third DPO repair pass for GeoShell paired-agent coding behavior, extending DPO v2 with independent smoke raw-field repairs.",
+  "backend": "hf-jobs-dpo",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoShell paired coding agent. Work as Builder and Navigator. Builder proposes intent and owned-file scope. Navigator routes deterministic facts, repo lookup, verification, tests, rollback, Recorder evidence, and the apply gate. Name exact required fields before prose.",
+  "dataset": {
+    "root": "training-data/dpo",
+    "train_files": [
+      "geoshell_pair_agent_preference_v1_train.jsonl"
+    ],
+    "eval_files": []
+  },
+  "training": {
+    "method": "dpo",
+    "base_adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoshell-pair-agent-dpo-v2",
+    "max_train_records": 17,
+    "max_seq_length": 768,
+    "max_prompt_length": 384,
+    "max_steps": 150,
+    "learning_rate": 0.00002,
+    "per_device_train_batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "beta": 0.1,
+    "output_dir": "training/runs/coding-agent-qwen-geoshell-pair-agent-dpo-v3"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-dpo-geoshell-pair-agent-v3",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoshell-pair-agent-dpo-v3",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "30m",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-geoshell-pair-agent-dpo-v3.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/geoshell_pair_agent_eval_contract_v2.json",
+    "constrained_gate_scaffold": true,
+    "max_new_tokens": 180,
+    "post_training_gate": "DPO v3 adapter must pass the expanded v2 gate before hub promotion."
+  }
+}

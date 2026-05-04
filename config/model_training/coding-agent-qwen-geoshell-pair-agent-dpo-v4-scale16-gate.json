@@ -1,0 +1,41 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-agent-qwen-geoshell-pair-agent-dpo-v4-scale16-gate",
+  "title": "SCBE coding agent Qwen GeoShell paired-agent DPO v4 scale-16 gate",
+  "description": "Evaluation-only 16-prompt canary profile for the GeoShell DPO v4 adapter after required-checklist prompting reached raw 8/8 on v2.",
+  "backend": "hf-jobs-smoke-eval",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoShell paired coding agent. Work as Builder and Navigator. Builder proposes intent and owned-file scope. Navigator routes deterministic facts, repo lookup, verification, tests, rollback, Recorder evidence, and the apply gate. Name exact required fields before prose.",
+  "dataset": {
+    "root": "training-data/dpo",
+    "train_files": [],
+    "eval_files": []
+  },
+  "training": {
+    "max_seq_length": 768,
+    "max_prompt_length": 384,
+    "max_new_tokens": 220,
+    "output_dir": "training/runs/coding-agent-qwen-geoshell-pair-agent-dpo-v4-scale16-gate"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-agent-dpo-geoshell-pair-agent-v4",
+    "push_adapter": false,
+    "adapter_repo": "issdandavis/scbe-coding-agent-qwen-geoshell-pair-agent-dpo-v4",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "40m",
+    "default_emit_path": "artifacts/model_training/coding-agent-qwen-geoshell-pair-agent-dpo-v4-scale16-gate-smoke.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/geoshell_pair_agent_eval_contract_v3.json",
+    "constrained_gate_scaffold": true,
+    "constrained_prompt_prefix": true,
+    "max_new_tokens": 220,
+    "post_training_gate": "Scale-16 canary profile passes only when raw model output reaches 16/16 on the v3 contract."
+  }
+}

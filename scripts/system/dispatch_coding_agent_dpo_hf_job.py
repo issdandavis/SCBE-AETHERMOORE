@@ -210,6 +210,7 @@ def main() -> None:
     base_adapter_repo = str(train_cfg.get("base_adapter_repo", "")).strip()
     adapter_repo = str(hub_cfg["adapter_repo"])
     constrained = bool(eval_cfg.get("constrained_gate_scaffold", False))
+    gate_max_new_tokens = int(eval_cfg.get("max_new_tokens", train_cfg.get("max_gate_new_tokens", 220)))
 
     print(json.dumps({{"event": "auth", "whoami": whoami(token=token).get("name", "unknown")}}))
     tokenizer = AutoTokenizer.from_pretrained(base_model, token=token)
@@ -283,7 +284,7 @@ def main() -> None:
     model.save_pretrained(out_dir)
     tokenizer.save_pretrained(out_dir)
 
-    print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or []), "constrained_gate_scaffold": constrained}}))
+    print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or []), "constrained_gate_scaffold": constrained, "max_new_tokens": gate_max_new_tokens}}))
     del trainer
     del model
     gc.collect()
@@ -298,7 +299,7 @@ def main() -> None:
     if torch.cuda.is_available():
         gate_model = gate_model.to("cuda")
 
-    def _generate(prompt_obj, max_new_tokens=320):
+    def _generate(prompt_obj, max_new_tokens=gate_max_new_tokens):
         required = [str(item) for item in (prompt_obj.get("required") or [])]
         user_prompt = str(prompt_obj.get("prompt", ""))
         if constrained and required:
