@@ -335,3 +335,110 @@ class TrichromaticGovernanceEngine:
             if norm > strongest:
                 strongest = norm
         return strongest
+
+
+# ---------------------------------------------------------------------------
+# Cone-extended scoring
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class TrichromaticConeScores:
+    """Extended scoring blob that combines per-tongue band scoring with
+    the tri-chromatic cone reading from ``python.scbe.tri_cone_embedding``.
+
+    Carries both component readings plus a unified governance verdict
+    so a single decision surface can be wired into the gate without the
+    caller having to know about both sub-systems.
+    """
+
+    band_scores: TrichromaticScores
+    cone_governance: str
+    positive_membership_count: int
+    shadow_membership_count: int
+    cone_interference: float
+    cone_plateau_imbalance: float
+    cone_triple_intersection_score: float
+    cone_triple_shadow_score: float
+    cone_risk_score: float
+    unified_governance: str
+    unified_risk_score: float
+
+
+def _cone_risk_score(
+    band_risk: float,
+    interference: float,
+    plateau_imbalance: float,
+) -> float:
+    """Blend the existing band risk with cone-derived risk signals.
+
+    - Band risk (the existing coherence/lattice/anomaly weighted score)
+      contributes its full magnitude in [0, 1].
+    - Positive interference (lit and shadow simultaneously inside their
+      respective cones) is the classic adversarial-tension signal —
+      contributes ``max(0, interference)`` capped at 0.3 so it cannot
+      single-handedly dominate the verdict.
+    - Plateau imbalance (lopsided cone activations) contributes 0.2 of
+      its [0, 1] magnitude — uneven soap bubbles are uneven governance.
+    """
+
+    interference_term = min(0.3, max(0.0, float(interference)))
+    plateau_term = 0.2 * max(0.0, min(1.0, float(plateau_imbalance)))
+    return min(1.0, float(band_risk) + interference_term + plateau_term)
+
+
+def _unified_governance(
+    cone_governance: str, unified_risk: float
+) -> str:
+    """Pick the more conservative of (cone reading, band-risk threshold).
+
+    The cone reading is the primary verdict. The band-risk score acts
+    as a safety override: if it is high, escalate the decision toward
+    QUARANTINE / DENY even when the cone reading would have been more
+    permissive. This matches the SCBE convention that the tighter of
+    several governance signals always wins.
+    """
+
+    # Pre-existing risk thresholds inherited from the trichromatic
+    # forgery-resistance article: 0.40 = drift, 0.70 = block.
+    if cone_governance == "DENY" or unified_risk >= 0.70:
+        return "DENY"
+    if cone_governance == "QUARANTINE" or unified_risk >= 0.40:
+        return "QUARANTINE"
+    if cone_governance == "ESCALATE":
+        return "ESCALATE"
+    return "ALLOW"
+
+
+def score_state_with_cones(
+    band_scores: TrichromaticScores,
+    cone_signature,  # python.scbe.tri_cone_embedding.TriConeSignature
+) -> TrichromaticConeScores:
+    """Combine per-tongue band scoring with a tri-chromatic cone signature.
+
+    Decoupled from ``TrichromaticGovernanceEngine`` so callers that
+    already have a ``TrichromaticScores`` (e.g. from ``score_state``)
+    can layer cone semantics on top without rebuilding the band state.
+    The cone signature parameter is loosely typed to avoid a hard
+    cross-package import; runtime duck-typing is sufficient because
+    ``TriConeSignature`` is a dataclass with stable field names.
+    """
+
+    unified_risk = _cone_risk_score(
+        band_scores.risk_score,
+        cone_signature.interference_score,
+        cone_signature.plateau_imbalance,
+    )
+    return TrichromaticConeScores(
+        band_scores=band_scores,
+        cone_governance=cone_signature.cone_governance,
+        positive_membership_count=int(cone_signature.positive_membership_count),
+        shadow_membership_count=int(cone_signature.shadow_membership_count),
+        cone_interference=float(cone_signature.interference_score),
+        cone_plateau_imbalance=float(cone_signature.plateau_imbalance),
+        cone_triple_intersection_score=float(cone_signature.triple_intersection_score),
+        cone_triple_shadow_score=float(cone_signature.triple_shadow_score),
+        cone_risk_score=unified_risk,
+        unified_governance=_unified_governance(cone_signature.cone_governance, unified_risk),
+        unified_risk_score=unified_risk,
+    )
