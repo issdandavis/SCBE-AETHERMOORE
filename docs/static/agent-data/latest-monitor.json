@@ -105,27 +105,27 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "The text mode lie: why modern TUIs are a nightmare for accessibility",
-      "word_count": 615,
+      "description": "Humanoid Robot Actuators",
+      "word_count": 620,
       "headings": [
         {
           "level": 2,
-          "text": "The text mode lie: why modern TUIs are a nightmare for accessibility",
+          "text": "Humanoid Robot Actuators",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "xogium.me",
+          "text": "firgelli.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Agentic Coding Is a Trap",
+          "text": "Using \"underdrawings\" for accurate text and numbers",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "larsfaye.com",
+          "text": "samcollins.blog",
           "source": "fallback-selector"
         },
         {
@@ -140,7 +140,7 @@
         },
         {
           "level": 2,
-          "text": "DeepClaude \u2013 Claude Code agent loop with DeepSeek V4 Pro, 17x cheaper",
+          "text": "DeepClaude \u2013 Claude Code agent loop with DeepSeek V4 Pro",
           "source": "fallback-selector"
         },
         {
@@ -150,24 +150,24 @@
         },
         {
           "level": 2,
-          "text": "Let's Buy Spirit Air",
+          "text": "Discovering hard disk physical geometry through microbenchmarking (2019)",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "letsbuyspiritair.com",
+          "text": "stuffedcow.net",
           "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.The text mode lie: why modern TUIs are a nightmare for accessibility (xogium.me)48 points by SpyCoder77 56 minutes ago  | hide | 11\u00a0comments2.Agentic Coding Is a Trap (larsfaye.com)68 points by ayoisaiah 2 hours ago  | hide | 43\u00a0comments3.BYOMesh \u2013 New LoRa mesh radio offers 100x the bandwidth (partyon.xyz)245 points by nullagent 6 hours ago  | hide | 78\u00a0comments4.DeepClaude \u2013 Claude Code agent loop with DeepSeek V4 Pro, 17x che..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Humanoid Robot Actuators (firgelli.com)85 points by ofrzeta 3 hours ago  | hide | 9\u00a0comments2.Using \"underdrawings\" for accurate text and numbers (samcollins.blog)159 points by samcollins 7 hours ago  | hide | 41\u00a0comments3.BYOMesh \u2013 New LoRa mesh radio offers 100x the bandwidth (partyon.xyz)341 points by nullagent 13 hours ago  | hide | 107\u00a0comments4.DeepClaude \u2013 Claude Code agent loop with DeepSeek V4 Pro (github.com/aattaran)3..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 1947,
+      "word_count": 2372,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Fri, 1 May 2026 (showing first 50 of 217 entries )"
+          "text": "Mon, 4 May 2026 (showing first 50 of 117 entries )"
         }
       ],
-      "link_count": 482,
+      "link_count": 531,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n        \n          Tue, 28 Apr 2026\n        \n      \n        \n          Mon, 27 Apr 2026\n        \n      \n  See today's new changes\n      Total of 972 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      951-972\n\n    \n    Showing up to 50 entries per p..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Mon, 4 May 2026\n        \n      \n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n        \n          Tue, 28 Apr 2026\n        \n      \n  See today's new changes\n      Total of 997 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      951-997\n\n    \n    Showing up to 50 entries per pa..."
     }
   ]
 }
