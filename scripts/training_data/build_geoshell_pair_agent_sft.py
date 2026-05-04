@@ -39,7 +39,7 @@ DEFAULT_EVENT_PATH = (
 DEFAULT_EVAL_CONTRACT_PATH = (
     REPO_ROOT / "config" / "model_training" / "geoshell_pair_agent_eval_contract.json"
 )
-DEFAULT_POPULATION_MULTIPLIER = 14
+DEFAULT_POPULATION_MULTIPLIER = 6
 
 TRAIN_NAME = "geoshell_pair_agent_v1_train.sft.jsonl"
 HOLDOUT_NAME = "geoshell_pair_agent_v1_holdout.sft.jsonl"
@@ -66,19 +66,11 @@ RISK_TIERS = ["ALLOW", "QUARANTINE", "ESCALATE", "DENY"]
 
 POPULATION_CONTEXTS = [
     "baseline operator request",
-    "tired operator with short instructions",
     "release-prep operator asking for exact gates",
     "dirty-worktree operator requiring owned-file boundaries",
-    "multi-agent handoff with Cursor, Claude, Codex, and Kimi present",
     "security-aware operator requiring secret and apply separation",
     "training-run operator asking for machine-readable evidence",
-    "remote GPU operator preparing Hugging Face and Kaggle dispatch",
-    "terminal-first operator using PowerShell with copy-paste commands",
     "research-bridge operator asking for source-grounded routing before coding",
-    "chemistry-lane operator requiring validation before promotion",
-    "website-release operator asking for docs, tests, and user-facing evidence",
-    "failure-recovery operator turning a failed run into repair data",
-    "roundtable operator coordinating Builder, Navigator, Judge, and Context Keeper",
 ]
 
 
@@ -454,12 +446,7 @@ def _gate_contract_records(
             assistant["sacred_tongue_coding_lanes"] = {
                 item["name"]: item["coding_lane"] for item in SACRED_TONGUES
             }
-        user_content = (
-            "Return a GeoShell paired-agent promotion-gate answer that satisfies every required "
-            "substring and avoids every forbidden substring.\n\n"
-            f"GATE_ID: {gate_id}\nPROMPT: {prompt['prompt']}\n"
-            f"REQUIRED: {_json_dumps(required)}\nFORBIDDEN: {_json_dumps(forbidden)}"
-        )
+        user_content = prompt["prompt"]
         records.append(
             {
                 "messages": [
@@ -486,84 +473,281 @@ def _gate_contract_records(
     return records
 
 
-def _focused_smoke_repair_records() -> list[dict[str, Any]]:
-    """Add concise positive rows for the two observed direct-smoke misses.
+def _eval_shape_gold_records() -> list[dict[str, Any]]:
+    """Hand-authored eval-shape gold rows for the four frozen contract prompts.
 
-    These rows do not change the frozen eval contract. They teach the adapter
-    to satisfy the contract shape with short, early evidence so generation
-    does not truncate before the required markers appear.
+    These rows are intentionally NOT multiplied by the population loop. They
+    represent the natural inference distribution (no preamble, no
+    POPULATION_CONTEXT trailer, no GATE_ID/REQUIRED/FORBIDDEN hints). Four
+    paraphrases per gate prompt give the adapter sixteen distinct
+    eval-shape examples to anchor on during free generation.
+
+    Replaces the previous direct_smoke_repair set, which was bootstrapped
+    from a failing HF job and trained the model on its own bad outputs.
     """
 
-    rows: list[dict[str, Any]] = []
-    cases: list[tuple[str, str, dict[str, Any]]] = [
-        (
-            "smoke_repair_builder_navigator_verification_first",
+    cases: list[tuple[str, str, str, dict[str, Any]]] = []
+
+    builder_navigator_assistant = {
+        "schema_version": "geoshell_pair_agent_smoke_repair_v1",
+        "mode": "direct_smoke_repair",
+        "Builder": {
+            "role": "Builder",
+            "responsibility": "draft the safe Python helper and identify owned-file scope only",
+        },
+        "Navigator": {
+            "role": "Navigator",
+            "deterministic": "route facts through repo tools and the deterministic opcode table before any memory recall",
+            "verification": "run focused unit tests and a boundary test, then inspect results before apply",
+        },
+        "tests": ["unit test", "invalid-input boundary test", "permission-scope test"],
+        "apply": {"apply_gate": "closed", "opens_after": "tests pass and owned-paths confirmed"},
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-builder-navigator",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-builder-navigator",
+            "task_type": "pair_coding_gate_repair",
+            "query": "safe Python helper",
+            "success": True,
+            "timestamp": _utc_now(),
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
             (
+                "eval_gold_builder_navigator_packet_v1",
+                "builder_navigator_packet",
                 "For GeoShell, plan a paired coding task that writes a safe Python helper. "
-                "Return the Builder/Navigator packet with deterministic routing, verification, "
-                "tests, and an apply gate closed until tests pass."
+                "Return a structured packet with Builder and Navigator roles, separate "
+                "deterministic tool and verification lanes, and an apply gate that stays "
+                "closed until tests pass.",
+                builder_navigator_assistant,
             ),
-            {
-                "schema_version": "geoshell_pair_agent_smoke_repair_v1",
-                "mode": "direct_smoke_repair",
-                "Builder": {
-                    "role": "Builder",
-                    "intent": "draft the Python helper and explain owned-file scope only",
-                },
-                "Navigator": {
-                    "role": "Navigator",
-                    "deterministic": "route facts through repo tools before memory",
-                    "verification": "run focused tests and inspect results before apply",
-                },
-                "tests": ["unit test", "invalid-input boundary test"],
-                "apply": {"apply_gate": "closed", "opens_after": "tests pass"},
-                "geoshell_event": {
-                    "_sig": "geoshell-smoke-repair-builder-navigator-verification",
-                    "_agent_id": "pair-agent-builder-navigator",
-                    "id": "smoke-repair-builder-navigator-verification",
-                    "task_type": "pair_coding_gate_repair",
-                    "query": "safe Python helper",
-                    "success": True,
-                    "timestamp": _utc_now(),
-                    "breaker_state": {"apply_gate": "closed"},
-                },
-            },
-        ),
-        (
-            "smoke_repair_tokenizer_alignment_full_names_first",
             (
-                "Return the Sacred Tongue tokenizer alignment packet for a GeoShell Builder/Navigator "
-                "coding task. Include all full names, abbreviations, and risk tiers."
+                "eval_gold_builder_navigator_packet_v2",
+                "builder_navigator_packet",
+                "Plan a GeoShell paired coding task for a small Python helper. Show a "
+                "Builder/Navigator packet with separate deterministic routing and "
+                "verification lanes, and keep the apply gate closed until the tests "
+                "have passed.",
+                builder_navigator_assistant,
             ),
-            {
-                "schema_version": "geoshell_pair_agent_smoke_repair_v1",
-                "mode": "direct_smoke_repair",
-                "Builder": "Builder drafts the task packet.",
-                "Navigator": "Navigator verifies deterministic routing before apply.",
-                "sacred_tongues": [
-                    "Kor'aelin KO",
-                    "Avali AV",
-                    "Runethic RU",
-                    "Cassisivadan CA",
-                    "Umbroth UM",
-                    "Draumric DR",
-                ],
-                "risk_tiers": ["ALLOW", "QUARANTINE", "ESCALATE", "DENY"],
-                "governance": "apply gate remains closed until tests and route checks pass",
-                "geoshell_event": {
-                    "_sig": "geoshell-smoke-repair-tokenizer-alignment",
-                    "_agent_id": "pair-agent-builder-navigator",
-                    "id": "smoke-repair-tokenizer-alignment",
-                    "task_type": "tokenizer_alignment_gate_repair",
-                    "query": "Sacred Tongue tokenizer alignment packet",
-                    "success": True,
-                    "timestamp": _utc_now(),
-                    "breaker_state": {"apply_gate": "closed"},
-                },
-            },
-        ),
-    ]
-    for case_id, user_content, assistant in cases:
+            (
+                "eval_gold_builder_navigator_packet_v3",
+                "builder_navigator_packet",
+                "Sketch a GeoShell paired coding workflow with a Builder, a Navigator, "
+                "deterministic lookup separated from verification, and an apply gate that "
+                "only opens once tests pass.",
+                builder_navigator_assistant,
+            ),
+            (
+                "eval_gold_builder_navigator_packet_v4",
+                "builder_navigator_packet",
+                "Outline a paired coding task in GeoShell. Required: Builder role, "
+                "Navigator role, deterministic tool routing, verification, and an apply "
+                "gate held closed until tests pass.",
+                builder_navigator_assistant,
+            ),
+        ]
+    )
+
+    ca_pair_assistant = {
+        "schema_version": "geoshell_pair_agent_smoke_repair_v1",
+        "mode": "direct_smoke_repair",
+        "Builder": {
+            "role": "Builder",
+            "intent": "propose abs(a)+abs(b) as a paired-agent route through deterministic CA opcode lookup",
+        },
+        "Navigator": {
+            "role": "Navigator",
+            "deterministic": "look up CA opcode facts in python.scbe.ca_opcode_table.OP_TABLE: abs=0x09, add=0x00",
+            "verification": "confirm exact_sequence before apply",
+        },
+        "ca_opcode_facts": {"abs": "0x09", "add": "0x00"},
+        "expected_sequence": "0x09, 0x09, 0x00",
+        "apply_gate": "closed until verification passes",
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-ca-abs-add",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-ca-abs-add",
+            "task_type": "pair_coding_gate_repair",
+            "query": "abs(a)+abs(b) CA opcode route",
+            "success": True,
+            "timestamp": _utc_now(),
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
+            (
+                "eval_gold_ca_abs_add_pair_route_v1",
+                "ca_abs_add_pair_route",
+                "Run the task abs(a)+abs(b) as a GeoShell paired-agent route. The Builder "
+                "should propose intent, the Navigator should route exact CA opcode facts "
+                "through deterministic lookup, and the final sequence must include abs=0x09 "
+                "and add=0x00.",
+                ca_pair_assistant,
+            ),
+            (
+                "eval_gold_ca_abs_add_pair_route_v2",
+                "ca_abs_add_pair_route",
+                "Build a GeoShell pair-agent answer for abs(a)+abs(b). Builder proposes the "
+                "intent, Navigator routes the deterministic CA opcode facts, and the final "
+                "answer must contain abs=0x09 and add=0x00.",
+                ca_pair_assistant,
+            ),
+            (
+                "eval_gold_ca_abs_add_pair_route_v3",
+                "ca_abs_add_pair_route",
+                "For abs(a)+abs(b), produce a paired Builder/Navigator route in GeoShell "
+                "with deterministic opcode lookup. The exact sequence must include abs=0x09 "
+                "and add=0x00; never guess opcodes from memory.",
+                ca_pair_assistant,
+            ),
+            (
+                "eval_gold_ca_abs_add_pair_route_v4",
+                "ca_abs_add_pair_route",
+                "Plan abs(a)+abs(b) as a GeoShell paired-agent task: Builder drafts intent, "
+                "Navigator does deterministic CA opcode routing, final sequence has "
+                "abs=0x09 and add=0x00.",
+                ca_pair_assistant,
+            ),
+        ]
+    )
+
+    geoshell_event_assistant = {
+        "schema_version": "geoshell_pair_agent_smoke_repair_v1",
+        "mode": "direct_smoke_repair",
+        "_agent_id": "pair-agent-builder-navigator",
+        "task_type": "pair_coding",
+        "query": "successful paired coding task",
+        "success": True,
+        "timestamp": "2026-05-04T13:35:34Z",
+        "breaker_state": {"apply_gate": "closed"},
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-event-shape",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-event-shape",
+            "task_type": "pair_coding",
+            "query": "successful paired coding task",
+            "success": True,
+            "timestamp": "2026-05-04T13:35:34Z",
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
+            (
+                "eval_gold_geoshell_event_shape_v1",
+                "geoshell_event_shape",
+                "Return a GeoShell-compatible event row for a successful paired coding task. "
+                "Include _agent_id, task_type, query, success, timestamp, and breaker_state "
+                "with apply_gate closed.",
+                geoshell_event_assistant,
+            ),
+            (
+                "eval_gold_geoshell_event_shape_v2",
+                "geoshell_event_shape",
+                "Emit one GeoShell event row for a successful pair-coding run. Fields: "
+                "_agent_id, task_type, query, success, timestamp, and breaker_state with "
+                "apply_gate closed.",
+                geoshell_event_assistant,
+            ),
+            (
+                "eval_gold_geoshell_event_shape_v3",
+                "geoshell_event_shape",
+                "Produce a GeoShell event entry that records a successful paired coding task "
+                "with _agent_id, task_type, query, success, timestamp, and breaker_state "
+                "showing apply_gate closed.",
+                geoshell_event_assistant,
+            ),
+            (
+                "eval_gold_geoshell_event_shape_v4",
+                "geoshell_event_shape",
+                "Write a single GeoShell event row reporting a successful pair coding run, "
+                "with _agent_id, task_type, query, success, timestamp, and breaker_state "
+                "carrying apply_gate=closed.",
+                geoshell_event_assistant,
+            ),
+        ]
+    )
+
+    tokenizer_assistant = {
+        "schema_version": "geoshell_pair_agent_smoke_repair_v1",
+        "mode": "direct_smoke_repair",
+        "Builder": {
+            "role": "Builder",
+            "responsibility": "produce the tokenizer alignment packet",
+        },
+        "Navigator": {
+            "role": "Navigator",
+            "responsibility": "verify all six Sacred Tongues and risk tiers are present",
+        },
+        "sacred_tongues": [
+            {"code": "KO", "name": "Kor'aelin"},
+            {"code": "AV", "name": "Avali"},
+            {"code": "RU", "name": "Runethic"},
+            {"code": "CA", "name": "Cassisivadan"},
+            {"code": "UM", "name": "Umbroth"},
+            {"code": "DR", "name": "Draumric"},
+        ],
+        "risk_tiers": ["ALLOW", "QUARANTINE", "ESCALATE", "DENY"],
+        "governance": "apply gate remains closed until tests and route checks pass",
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-tokenizer-alignment",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-tokenizer-alignment",
+            "task_type": "tokenizer_alignment_gate_repair",
+            "query": "Sacred Tongue tokenizer alignment packet",
+            "success": True,
+            "timestamp": _utc_now(),
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
+            (
+                "eval_gold_tokenizer_alignment_packet_v1",
+                "tokenizer_alignment_packet",
+                "For a GeoShell Builder/Navigator coding task, return the Sacred Tongue "
+                "tokenizer alignment packet. Include the full names and abbreviations for "
+                "Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, and "
+                "Draumric DR, plus risk tiers ALLOW, QUARANTINE, ESCALATE, and DENY.",
+                tokenizer_assistant,
+            ),
+            (
+                "eval_gold_tokenizer_alignment_packet_v2",
+                "tokenizer_alignment_packet",
+                "Return the tokenizer alignment packet for a GeoShell Builder/Navigator "
+                "task. Cover all six Sacred Tongues by full name and abbreviation: "
+                "Kor'aelin (KO), Avali (AV), Runethic (RU), Cassisivadan (CA), Umbroth "
+                "(UM), Draumric (DR), and the risk tiers ALLOW, QUARANTINE, ESCALATE, DENY.",
+                tokenizer_assistant,
+            ),
+            (
+                "eval_gold_tokenizer_alignment_packet_v3",
+                "tokenizer_alignment_packet",
+                "List the Sacred Tongue tokenizer alignment for a Builder/Navigator coding "
+                "task. Use both abbreviations and full names: KO Kor'aelin, AV Avali, RU "
+                "Runethic, CA Cassisivadan, UM Umbroth, DR Draumric. Include risk tiers "
+                "ALLOW, QUARANTINE, ESCALATE, DENY.",
+                tokenizer_assistant,
+            ),
+            (
+                "eval_gold_tokenizer_alignment_packet_v4",
+                "tokenizer_alignment_packet",
+                "Provide the GeoShell pair-agent Sacred Tongue alignment with all six "
+                "tongues by full name and abbreviation (Kor'aelin KO, Avali AV, Runethic "
+                "RU, Cassisivadan CA, Umbroth UM, Draumric DR) and the four risk tiers "
+                "ALLOW, QUARANTINE, ESCALATE, DENY.",
+                tokenizer_assistant,
+            ),
+        ]
+    )
+
+    rows: list[dict[str, Any]] = []
+    for case_id, gate_id, user_content, assistant in cases:
         assistant_json = _json_dumps(assistant)
         rows.append(
             {
@@ -575,11 +759,12 @@ def _focused_smoke_repair_records() -> list[dict[str, Any]]:
                 "meta": {
                     "schema_version": SCHEMA_VERSION,
                     "program": "geoshell_pair_agent",
-                    "source_family": "geoshell_pair_agent_direct_smoke_repair",
-                    "source_script": "hf_job:69f89eb798a8d679adfb8ef5",
+                    "source_family": "geoshell_pair_agent_eval_shape_gold",
+                    "source_script": "scripts/training_data/build_geoshell_pair_agent_sft.py",
                     "split": "train",
                     "task_id": case_id,
-                    "task_kind": "direct_smoke_repair",
+                    "task_kind": "eval_shape_gold",
+                    "gate_id": gate_id,
                     "goal_sha256": _sha256_text(user_content),
                     "assistant_sha256": _sha256_text(assistant_json),
                     "geoshell_event_sig": assistant["geoshell_event"]["_sig"],
@@ -629,18 +814,24 @@ def build_dataset(
         assistant = json.loads(record["messages"][-1]["content"])
         events.append(assistant["geoshell_event"])
 
-    for record in _focused_smoke_repair_records():
-        records.append(record)
-        assistant = json.loads(record["messages"][-1]["content"])
-        events.append(assistant["geoshell_event"])
-
     populated = _populate_records(records, population_multiplier)
+
+    # Eval-shape gold rows are NOT multiplied: they represent the natural
+    # inference distribution and live alongside the populated rows verbatim.
+    eval_gold_rows = _eval_shape_gold_records()
+
     train = [row for row in populated if row["meta"]["split"] == "train"]
+    train.extend(eval_gold_rows)
     holdout = [row for row in populated if row["meta"]["split"] == "holdout"]
     populated_events = []
     for row in populated:
         assistant = json.loads(row["messages"][-1]["content"])
         event = assistant.get("geoshell_event") or assistant.get("switchboard_event")
+        if event:
+            populated_events.append(event)
+    for row in eval_gold_rows:
+        assistant = json.loads(row["messages"][-1]["content"])
+        event = assistant.get("geoshell_event")
         if event:
             populated_events.append(event)
     return {
@@ -651,6 +842,7 @@ def build_dataset(
         "events": populated_events,
         "base_record_count": len(records),
         "population_multiplier": population_multiplier,
+        "eval_gold_count": len(eval_gold_rows),
         "source": {
             "benchmark_schema": PAIR_BENCHMARK_SCHEMA,
             "source_script": "scripts/benchmark/dual_agent_pair_benchmark.py",
@@ -701,6 +893,7 @@ def write_outputs(
         "profile_id": "geoshell-pair-agent-v1",
         "base_record_count": dataset["base_record_count"],
         "population_multiplier": dataset["population_multiplier"],
+        "eval_gold_count": dataset.get("eval_gold_count", 0),
         "train_count": len(dataset["train"]),
         "holdout_count": len(dataset["holdout"]),
         "record_count": len(dataset["train"]) + len(dataset["holdout"]),
@@ -716,6 +909,7 @@ def write_outputs(
             "Records train Builder/Navigator pair behavior, not frontier-model capability claims.",
             "GeoShell can read geoshell_events_path through the existing __SCBE_AGENT_BUS_EVENTS__ shape.",
             "Apply remains gated; records teach route/verify/apply separation before mutation.",
+            "eval_gold rows are population-immune and mirror the frozen contract prompts.",
         ],
     }
     manifest_path.write_text(

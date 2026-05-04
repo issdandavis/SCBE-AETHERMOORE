@@ -25,11 +25,12 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     dataset = module.build_dataset()
 
     assert dataset["schema_version"] == "geoshell_pair_agent_sft_v1"
-    assert dataset["base_record_count"] == 17
-    assert dataset["population_multiplier"] == 14
-    assert len(dataset["train"]) == 210
-    assert len(dataset["holdout"]) == 28
-    assert len(dataset["events"]) == 238
+    assert dataset["base_record_count"] == 15
+    assert dataset["population_multiplier"] == 6
+    assert dataset["eval_gold_count"] == 16
+    assert len(dataset["train"]) == 94  # 13 train base * 6 + 16 eval_gold
+    assert len(dataset["holdout"]) == 12  # 2 holdout base * 6
+    assert len(dataset["events"]) == 106  # 90 multiplied + 16 eval_gold
 
     first = json.loads(dataset["train"][0]["messages"][-1]["content"])
     assert first["schema_version"] == "geoshell_pair_agent_answer_v1"
@@ -72,14 +73,45 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     assert "Kor'aelin" in gate_repair["required_gate_evidence"]
     assert gate_repair["verification"]["apply_gate"] == "closed until tests pass"
 
-    smoke_repair = next(
-        json.loads(row["messages"][-1]["content"])
+    # Gate-repair user prompts must NOT leak the substring contract any more.
+    gate_repair_row = next(
+        row
         for row in dataset["train"]
-        if row["meta"]["task_id"].startswith("smoke_repair_tokenizer_alignment_full_names_first")
+        if row["meta"]["task_kind"] == "promotion_gate_repair"
     )
-    assert smoke_repair["schema_version"] == "geoshell_pair_agent_smoke_repair_v1"
-    assert "Runethic RU" in smoke_repair["sacred_tongues"]
-    assert "Draumric DR" in smoke_repair["sacred_tongues"]
+    user_content = gate_repair_row["messages"][1]["content"]
+    assert "REQUIRED:" not in user_content, "gate-spec leakage in training prompt"
+    assert "FORBIDDEN:" not in user_content, "gate-spec leakage in training prompt"
+    assert "GATE_ID:" not in user_content, "gate-spec leakage in training prompt"
+
+    # Eval-shape gold rows must be present and population-immune (no
+    # POPULATION_CONTEXT trailer, mirroring the natural inference distribution).
+    eval_gold_rows = [
+        row for row in dataset["train"] if row["meta"]["task_kind"] == "eval_shape_gold"
+    ]
+    assert len(eval_gold_rows) == 16
+    eval_gold_gate_ids = {row["meta"]["gate_id"] for row in eval_gold_rows}
+    assert eval_gold_gate_ids == {
+        "builder_navigator_packet",
+        "ca_abs_add_pair_route",
+        "geoshell_event_shape",
+        "tokenizer_alignment_packet",
+    }
+    for row in eval_gold_rows:
+        assert "POPULATION_CONTEXT:" not in row["messages"][1]["content"]
+        # Source must not cite the failed bootstrap HF job.
+        assert "hf_job:69f89eb798a8d679adfb8ef5" not in row["meta"]["source_script"]
+
+    # Spot-check: builder_navigator_packet gold response must satisfy the contract
+    # (every required substring present, no forbidden substring leaking).
+    bnp_row = next(
+        row for row in eval_gold_rows if row["meta"]["gate_id"] == "builder_navigator_packet"
+    )
+    bnp_assistant_text = bnp_row["messages"][-1]["content"]
+    for required in ("Builder", "Navigator", "deterministic", "verification", "apply", "tests"):
+        assert required in bnp_assistant_text, f"{required!r} missing from gold answer"
+    for forbidden in ("apply immediately", "skip tests"):
+        assert forbidden not in bnp_assistant_text, f"{forbidden!r} leaked into gold answer"
 
 
 def test_records_do_not_embed_secret_material() -> None:
@@ -111,12 +143,13 @@ def test_write_outputs_creates_train_holdout_manifest_and_events(
     assert train.exists()
     assert holdout.exists()
     assert manifest["profile_id"] == "geoshell-pair-agent-v1"
-    assert manifest["base_record_count"] == 17
-    assert manifest["population_multiplier"] == 14
-    assert manifest["train_count"] == 210
-    assert manifest["holdout_count"] == 28
-    assert manifest["record_count"] == 238
-    assert len(events) == 238
+    assert manifest["base_record_count"] == 15
+    assert manifest["population_multiplier"] == 6
+    assert manifest["eval_gold_count"] == 16
+    assert manifest["train_count"] == 94
+    assert manifest["holdout_count"] == 12
+    assert manifest["record_count"] == 106
+    assert len(events) == 106
     assert events[0]["_agent_id"] == "pair-agent-builder-navigator"
 
 
@@ -153,9 +186,9 @@ def test_geoseal_cli_builds_pair_agent_training_outputs(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["ok"] is True
-    assert payload["base_record_count"] == 17
-    assert payload["population_multiplier"] == 14
-    assert payload["train_count"] == 210
-    assert payload["holdout_count"] == 28
+    assert payload["base_record_count"] == 15
+    assert payload["population_multiplier"] == 6
+    assert payload["train_count"] == 94
+    assert payload["holdout_count"] == 12
     assert Path(payload["paths"]["manifest"]).exists()
     assert Path(payload["geoshell_event_feed"]).exists()

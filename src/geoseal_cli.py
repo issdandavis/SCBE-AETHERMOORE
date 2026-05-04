@@ -4076,7 +4076,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_pair_training.add_argument("--output-dir", default="training-data/sft")
     p_pair_training.add_argument("--event-path", default="artifacts/geoshell/pair_agent/latest_events.json")
-    p_pair_training.add_argument("--population-multiplier", type=int, default=14)
+    p_pair_training.add_argument("--population-multiplier", type=int, default=6)
     p_pair_training.add_argument("--json", action="store_true")
     p_pair_training.set_defaults(func=cmd_pair_agent_training)
 
