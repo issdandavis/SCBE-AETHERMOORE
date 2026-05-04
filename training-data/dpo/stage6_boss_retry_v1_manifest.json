@@ -1,6 +1,6 @@
 {
   "schema_version": "stage6_boss_retry_dpo_manifest_v1",
-  "generated_utc": "2026-05-02T04:59:35.669681+00:00",
+  "generated_utc": "2026-05-04T00:19:48.920896+00:00",
   "source_plan": "hf_job:69f5795798a8d679adfb865c",
   "source_profile_id": "coding-agent-qwen-stage6-repair-v12",
   "output_path": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\dpo\\stage6_boss_retry_v1_train.jsonl",

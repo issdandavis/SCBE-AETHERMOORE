@@ -861,6 +861,137 @@ def cmd_binary_to_tokenizer(args: argparse.Namespace) -> int:
     return 0
 
 
+def _parse_binary_chunks(bits_value: str) -> tuple[list[str], bytearray]:
+    bit_chunks = [tok for tok in re.split(r"[\s,]+", (bits_value or "").strip()) if tok]
+    if not bit_chunks:
+        raise ValueError("binary input requires one or more 8-bit chunks")
+    raw = bytearray()
+    for bits in bit_chunks:
+        if not re.fullmatch(r"[01]{8}", bits):
+            raise ValueError(f"invalid 8-bit chunk: {bits}")
+        raw.append(int(bits, 2))
+    return bit_chunks, raw
+
+
+def _language_payload_wrapper(language: str, text: str) -> str:
+    safe = text.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+    wrappers = {
+        "python": f'payload = "{safe}"\nprint(payload)\n',
+        "typescript": f'const payload = "{safe}";\nconsole.log(payload);\n',
+        "rust": ("fn main() {\n" f'    let payload = "{safe}";\n' '    println!("{}", payload);\n' "}\n"),
+        "c": (
+            "#include <stdio.h>\n\n"
+            "int main(void) {\n"
+            f'    const char *payload = "{safe}";\n'
+            '    printf("%s\\n", payload);\n'
+            "    return 0;\n"
+            "}\n"
+        ),
+        "julia": f'payload = "{safe}"\nprintln(payload)\n',
+        "haskell": f'main :: IO ()\nmain = putStrLn "{safe}"\n',
+        "go": (
+            "package main\n\n"
+            'import "fmt"\n\n'
+            "func main() {\n"
+            f'    payload := "{safe}"\n'
+            "    fmt.Println(payload)\n"
+            "}\n"
+        ),
+        "zig": (
+            'const std = @import("std");\n\n'
+            "pub fn main() !void {\n"
+            f'    const payload = "{safe}";\n'
+            "    const out = std.io.getStdOut().writer();\n"
+            '    try out.print("{s}\\n", .{payload});\n'
+            "}\n"
+        ),
+    }
+    return wrappers.get(language, f"// payload for {language}\n// {safe}\n")
+
+
+def cmd_binary_to_tmatrix(args: argparse.Namespace) -> int:
+    bits_input = args.bits
+    if isinstance(bits_input, list):
+        bits_input = " ".join(bits_input)
+    try:
+        bit_chunks, raw = _parse_binary_chunks(bits_input or "")
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    source_bytes = bytes(raw)
+    decoded_text = source_bytes.decode("utf-8", errors="replace")
+    tongues = sorted(set(TONGUE_NAMES))
+    rows: list[dict[str, Any]] = []
+    for idx, bits in enumerate(bit_chunks):
+        b = int(bits, 2)
+        token_cells = {
+            tongue: SACRED_TONGUE_TOKENIZER.encode_bytes(_normalize_transport_tongue(tongue), bytes([b]))[0]
+            for tongue in tongues
+        }
+        tvector = [1 if bit == "1" else -1 for bit in bits[:6]]
+        rows.append(
+            {
+                "index": idx,
+                "bits": bits,
+                "byte_int": b,
+                "byte_hex": f"0x{b:02X}",
+                "tvector6": tvector,
+                "tokens": token_cells,
+            }
+        )
+
+    language_views: list[dict[str, Any]] = []
+    for tongue in tongues:
+        language = ALL_LANG_MAP.get(tongue, "").lower()
+        if not language:
+            continue
+        language_views.append(
+            {
+                "tongue": tongue,
+                "language": language,
+                "conlang": CONLANG_NAME_MAP.get(tongue, tongue),
+                "snippet": _language_payload_wrapper(language, decoded_text),
+            }
+        )
+    # Add any extra languages that are mapped but not in tongue order.
+    seen_langs = {row["language"] for row in language_views}
+    for language in sorted(set(ALL_LANG_MAP.values())):
+        lower = language.lower()
+        if lower in seen_langs:
+            continue
+        language_views.append(
+            {
+                "tongue": None,
+                "language": lower,
+                "conlang": "unbound",
+                "snippet": _language_payload_wrapper(lower, decoded_text),
+            }
+        )
+
+    payload = {
+        "version": "geoseal-binary-tmatrix-v1",
+        "byte_count": len(bit_chunks),
+        "tongue_count": len(tongues),
+        "tmatrix": {
+            "row_axis": "byte_index",
+            "column_axis": "tongue",
+            "rows": rows,
+        },
+        "roundtrip": {
+            "decoded_utf8": decoded_text,
+            "raw_hex": source_bytes.hex(),
+        },
+        "language_views": language_views,
+        "language_agnostic": {
+            "note": "Same binary payload represented across every mapped language surface.",
+            "hash_sha256": hashlib.sha256(source_bytes).hexdigest(),
+        },
+    }
+    print(json.dumps(payload, indent=2 if args.json else None))
+    return 0
+
+
 def _compute_semantic_expression(source: str) -> dict[str, Any]:
     low = source.lower()
     if "hello, world" in low or "hello world" in low:
@@ -992,7 +1123,15 @@ def cmd_reasoning_code_packet(args: argparse.Namespace) -> int:
 
 
 def cmd_packet_graph_run(args: argparse.Namespace) -> int:
-    from src.agent_comms import AgentPacketV1, Budget, ContextRef, Route, build_default_packet_graph, hash_state, new_task_id
+    from src.agent_comms import (
+        AgentPacketV1,
+        Budget,
+        ContextRef,
+        Route,
+        build_default_packet_graph,
+        hash_state,
+        new_task_id,
+    )
     from src.coding_spine.deterministic_tongue_router import route_prompt
 
     source = args.content or ""
@@ -2350,6 +2489,150 @@ def cmd_verify(args: argparse.Namespace) -> int:
     return 0 if ok else 1
 
 
+def _quick_command_response(command: str, context: str) -> dict[str, Any]:
+    normalized = (command or "").strip().lower()
+    quick_map = {
+        "yes": ("Acknowledged. Proceeding.", "button_1"),
+        "no": ("Acknowledged. Holding position.", "button_2"),
+        "status": ("System is responsive; run `geoseal doctor --json` for full diagnostics.", "button_3"),
+        "help": ("Use `geoseal --help` for full command surface.", "button_4"),
+        "button 1": ("Button 1 confirmed.", "button_1"),
+        "button1": ("Button 1 confirmed.", "button_1"),
+    }
+    if normalized in quick_map:
+        text, button = quick_map[normalized]
+        mode = "quick_hit"
+    else:
+        text = f"Quick response: `{normalized or 'empty'}` received."
+        button = "button_1"
+        mode = "fallback"
+    return {
+        "mode": mode,
+        "text": text,
+        "button_id": button,
+        "context_echo": context[:280],
+    }
+
+
+def _operator_speech_bubbles(operator: str, context: str) -> list[dict[str, str]]:
+    prompt = (context or "").strip()
+    return [
+        {"speaker": operator, "bubble": "Quick lane open. Keep responses short."},
+        {"speaker": "assistant", "bubble": "Ready. Use `yes`, `no`, `status`, or `button1` for low-token control."},
+        {"speaker": operator, "bubble": prompt[:120] if prompt else "No extra context supplied."},
+    ]
+
+
+def _alignment_catalog(repo_root: Path, max_files: int) -> dict[str, Any]:
+    groups: dict[str, list[str]] = {
+        "cli_core": [
+            "bin/geoseal.cjs",
+            "src/geoseal_cli.py",
+            "src/api/geoseal_*.py",
+            "src/api/*geoseal*.py",
+        ],
+        "benchmarks_and_eval": [
+            "scripts/benchmark/*cli*.py",
+            "scripts/benchmark/*geoseal*.py",
+            "config/eval/*cli*.json",
+            "config/eval/*geoseal*.json",
+        ],
+        "agent_and_operator_surfaces": [
+            "src/coding_spine/*.py",
+            "src/agent_comms/*.py",
+            "src/aetherbrowser/*.py",
+        ],
+        "tests_and_validation": [
+            "tests/**/*geoseal*.py",
+            "tests/**/*cli*.py",
+            "tests/**/*agent*.py",
+        ],
+    }
+    grouped_paths: dict[str, list[str]] = {}
+    seen: set[str] = set()
+    for group, patterns in groups.items():
+        matches: list[str] = []
+        for pattern in patterns:
+            for path in repo_root.glob(pattern):
+                if not path.is_file():
+                    continue
+                rel = path.relative_to(repo_root).as_posix()
+                if rel in seen:
+                    continue
+                seen.add(rel)
+                matches.append(rel)
+                if len(seen) >= max_files:
+                    break
+            if len(seen) >= max_files:
+                break
+        grouped_paths[group] = sorted(matches)
+        if len(seen) >= max_files:
+            break
+    return {
+        "schema_version": "geoseal_alignment_audit_v1",
+        "repo_root": repo_root.as_posix(),
+        "max_files": max_files,
+        "scanned_file_count": len(seen),
+        "groups": grouped_paths,
+        "next_actions": [
+            "Prioritize cli_core + benchmarks_and_eval for immediate GeoSeal alignment checks.",
+            "Use quick-agent for low-token operator handoffs during triage.",
+            "Run benchmark and public suite after any CLI surface changes.",
+        ],
+    }
+
+
+def cmd_alignment_audit(args: argparse.Namespace) -> int:
+    repo_root = Path(__file__).resolve().parents[1]
+    payload = _alignment_catalog(repo_root, max_files=max(100, int(args.max_files or 4000)))
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(f"GeoSeal alignment audit: {payload['scanned_file_count']} files scanned")
+        for group, rows in payload["groups"].items():
+            print(f"- {group}: {len(rows)}")
+    return 0
+
+
+def cmd_quick_agent(args: argparse.Namespace) -> int:
+    """
+    Semi-agentic quick call/response mode for low-token operator interactions.
+    """
+    command = (args.command or "").strip()
+    context = (args.context or "").strip()
+    operator = (args.operator or "ai-operator").strip() or "ai-operator"
+    include_bubbles = bool(getattr(args, "allow_free_speech", False))
+
+    response = _quick_command_response(command, context)
+    payload = {
+        "schema_version": "geoseal_quick_agent_v1",
+        "ok": True,
+        "command": command,
+        "response": response,
+        "token_saver": {
+            "mode": "concise_call_response",
+            "suggested_next": ["yes", "no", "status", "button1"],
+            "default_button": "button_1",
+        },
+        "buttons": [
+            {"id": "button_1", "label": "Yes", "send": "yes"},
+            {"id": "button_2", "label": "No", "send": "no"},
+            {"id": "button_3", "label": "Status", "send": "status"},
+            {"id": "button_4", "label": "Help", "send": "help"},
+        ],
+        "speech_bubbles": _operator_speech_bubbles(operator, context) if include_bubbles else [],
+    }
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(response["text"])
+        print("Quick buttons: [1] Yes  [2] No  [3] Status  [4] Help")
+        if include_bubbles:
+            for row in payload["speech_bubbles"]:
+                print(f"[{row['speaker']}] {row['bubble']}")
+    return 0
+
+
 def cmd_agent(args: argparse.Namespace) -> int:
     """Route a natural-language coding task through the coding spine.
 
@@ -3379,6 +3662,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_binary.add_argument("bits", nargs="?", default="", help="Space/comma separated 8-bit chunks")
     p_binary.set_defaults(func=cmd_binary_to_tokenizer)
 
+    p_tmatrix = sub.add_parser(
+        "binary-to-tmatrix",
+        help="Map binary bytes into a tongue/language tmatrix for cross-language code surfaces",
+    )
+    p_tmatrix.add_argument("--json", action="store_true")
+    p_tmatrix.add_argument("bits", nargs="*", default=[], help="Space/comma separated 8-bit chunks")
+    p_tmatrix.set_defaults(func=cmd_binary_to_tmatrix)
+
     p_code_packet = sub.add_parser("code-packet", help="Build SCBE weighted code packet from source")
     p_code_packet.add_argument("--content", default="", help="Inline source content")
     p_code_packet.add_argument("--source-file", default=None, help="Read source content from file")
@@ -3430,7 +3721,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_handoff_seal.add_argument("--sender", required=True)
     p_handoff_seal.add_argument("--recipient", required=True)
-    p_handoff_seal.add_argument("--secret", default=None, help="Shared handoff secret; prefer --secret-env for real use")
+    p_handoff_seal.add_argument(
+        "--secret", default=None, help="Shared handoff secret; prefer --secret-env for real use"
+    )
     p_handoff_seal.add_argument("--secret-env", default="SCBE_HANDOFF_SECRET", dest="secret_env")
     p_handoff_seal.add_argument("--packet-json", default=None, help="Existing AgentPacketV1 JSON")
     p_handoff_seal.add_argument("--packet-file", default=None, help="Existing AgentPacketV1 JSON file")
@@ -3438,13 +3731,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_handoff_seal.add_argument("--content", default="")
     p_handoff_seal.add_argument("--source-file", default=None)
     p_handoff_seal.add_argument("--source-name", default=None)
-    p_handoff_seal.add_argument("--context-ref", action="append", default=[], help="Additional context ref as kind:value")
+    p_handoff_seal.add_argument(
+        "--context-ref", action="append", default=[], help="Additional context ref as kind:value"
+    )
     p_handoff_seal.add_argument("--task-id", default=None, dest="task_id")
     p_handoff_seal.add_argument("--phase", default="plan", choices=["plan", "edit", "verify", "merge"])
     p_handoff_seal.add_argument("--tongue", default="KO", choices=["KO", "AV", "RU", "CA", "UM", "DR"])
     p_handoff_seal.add_argument("--domain", default="code")
     p_handoff_seal.add_argument("--permission", default="read", choices=["read", "edit", "merge"])
-    p_handoff_seal.add_argument("--expected-output", default="delta", choices=["delta", "vote", "patch", "verdict"], dest="expected_output")
+    p_handoff_seal.add_argument(
+        "--expected-output", default="delta", choices=["delta", "vote", "patch", "verdict"], dest="expected_output"
+    )
     p_handoff_seal.add_argument("--max-input-tokens", type=int, default=1024, dest="max_input_tokens")
     p_handoff_seal.add_argument("--max-output-tokens", type=int, default=256, dest="max_output_tokens")
     p_handoff_seal.add_argument("--output", default=None)
@@ -3587,7 +3884,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Show terminal UI for GeoSeal AI-to-AI harness lanes",
     )
     p_harness_terminal.add_argument("--models", default=None, help="Comma-separated provider:model refs")
-    p_harness_terminal.add_argument("--goal", default="training eval harness check", help="Goal text for the control panel brain")
+    p_harness_terminal.add_argument(
+        "--goal", default="training eval harness check", help="Goal text for the control panel brain"
+    )
     p_harness_terminal.add_argument("--bridge-url", default="http://127.0.0.1:8766")
     p_harness_terminal.add_argument("--timeout", type=float, default=1.5)
     p_harness_terminal.add_argument("--no-health", action="store_true")
@@ -3598,7 +3897,9 @@ def build_parser() -> argparse.ArgumentParser:
         "lane-grid",
         help="Preview the governed six-tongue lane-grid scheduler",
     )
-    p_lane_grid.add_argument("--goal", default="training eval harness check", help="Task goal to hash into the grid state")
+    p_lane_grid.add_argument(
+        "--goal", default="training eval harness check", help="Task goal to hash into the grid state"
+    )
     p_lane_grid.add_argument("--columns", type=int, default=3, help="Maximum scheduler columns to preview")
     p_lane_grid.add_argument("--json", action="store_true")
     p_lane_grid.set_defaults(func=cmd_lane_grid)
@@ -3904,6 +4205,30 @@ def build_parser() -> argparse.ArgumentParser:
     p_agent.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_agent.add_argument("--verbose", "-v", action="store_true")
     p_agent.set_defaults(func=cmd_agent)
+
+    p_quick_agent = sub.add_parser(
+        "quick-agent",
+        help="Semi-agentic quick call/response lane for low-token operator control",
+    )
+    p_quick_agent.add_argument("--command", default="status", help="Short control command (yes/no/status/help/button1)")
+    p_quick_agent.add_argument("--context", default="", help="Optional context snippet for operator handoff")
+    p_quick_agent.add_argument("--operator", default="ai-operator", help="Operator label for speech bubbles")
+    p_quick_agent.add_argument(
+        "--allow-free-speech",
+        action="store_true",
+        dest="allow_free_speech",
+        help="Include compact free-speech bubbles for operator handoff",
+    )
+    p_quick_agent.add_argument("--json", action="store_true")
+    p_quick_agent.set_defaults(func=cmd_quick_agent)
+
+    p_alignment = sub.add_parser(
+        "alignment-audit",
+        help="Research and group repo files for GeoSeal CLI alignment",
+    )
+    p_alignment.add_argument("--max-files", type=int, default=4000, dest="max_files")
+    p_alignment.add_argument("--json", action="store_true")
+    p_alignment.set_defaults(func=cmd_alignment_audit)
 
     p_arc = sub.add_parser("arc", help="Synthesize + apply an ARC task program")
     p_arc.add_argument("task_file", help="Path to ARC task JSON")

@@ -31,6 +31,18 @@ try:
 except Exception:  # pragma: no cover - optional preflight dependency
     HfApi = None
 
+
+def _configure_console_encoding() -> None:
+    """Keep Kaggle CLI output printable on Windows codepages."""
+    for stream_name in ("stdout", "stderr"):
+        stream = getattr(sys, stream_name, None)
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="replace")
+
+
+_configure_console_encoding()
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 KAGGLE_USER = "issacizrealdavis"
 KAGGLE_DATASET = "issacizrealdavis/scbe-polly-training-data"
@@ -396,6 +408,241 @@ ROUNDS = {
         "early_stopping_threshold": 0.0,
         # Reuse the existing notebook shell to avoid Kaggle slug churn while
         # injecting the v3 config and writing a separate HF output repo.
+        "slug_override": "polly-auto-coding-approval-metrics-v1",
+        "title_override": "Polly Auto: coding-approval-metrics-v1",
+    },
+    "coding-approval-grandmaster-v4": {
+        "desc": (
+            "Kaggle Grandmaster discipline v4 - validation-heavy, leak-aware, category-balanced coding approval "
+            "training for agentic routing, governance, research, and repair lanes"
+        ),
+        "files": [
+            "coding_approval_metrics_v1.sft.jsonl",
+            "coding_approval_metrics_v3_train.sft.jsonl",
+            "coding_system_full_v1_train.sft.jsonl",
+            "geoseal_command_recall_v1.sft.jsonl",
+            "geoseal_command_harmony_v1.sft.jsonl",
+            "stage5_command_harmony_signal_shape_boost_train.sft.jsonl",
+            "operator_agent_bus_extracted_v1_train.sft.jsonl",
+            "research_bridge_source_grounded_v1_train.sft.jsonl",
+            "governance_deep_v2.jsonl",
+            "atomic_workflow_stage6_train.sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+            "atomic_workflow_stage6_signal_shape_boost_v12_train.sft.jsonl",
+            "functional_coding_benchmark_repairs_v1.sft.jsonl",
+        ],
+        "eval_files": [
+            "coding_approval_metrics_v3_eval.sft.jsonl",
+            "coding_system_full_v1_holdout.sft.jsonl",
+            "stage5_command_harmony_signal_shape_boost_holdout.sft.jsonl",
+            "operator_agent_bus_extracted_v1_eval.sft.jsonl",
+            "research_bridge_source_grounded_v1_eval.sft.jsonl",
+            "governance_security_boundary_eval_v1.sft.jsonl",
+            "atomic_workflow_stage6_holdout.sft.jsonl",
+            "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+            "atomic_workflow_stage6_signal_shape_boost_v12_holdout.sft.jsonl",
+            "functional_coding_benchmark_repairs_v1_eval.sft.jsonl",
+        ],
+        "hf_repo": "issdandavis/scbe-coding-approval-grandmaster-qwen-kaggle-v4",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 896,
+        "max_steps": 160,
+        "learning_rate": 4e-5,
+        "max_records": 2200,
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "lora_dropout": 0.12,
+        "early_stopping_patience": 4,
+        "early_stopping_threshold": 0.0,
+        "eval_steps": 32,
+        "save_steps": 32,
+        "balance_categories": True,
+        "max_sample_multiplier": 3.0,
+        "repair_lane_files": [
+            "coding_approval_metrics_v3_train.sft.jsonl",
+            "operator_agent_bus_extracted_v1_train.sft.jsonl",
+            "research_bridge_source_grounded_v1_train.sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+            "atomic_workflow_stage6_signal_shape_boost_v12_train.sft.jsonl",
+            "functional_coding_benchmark_repairs_v1.sft.jsonl",
+        ],
+        "repair_lane_weight": 1.5,
+        "cpu_smoke_max_records": 64,
+        "cpu_smoke_max_steps": 4,
+        # Reuse the stable notebook shell. The injected config and HF repo
+        # separate this v4 run from the earlier approval-metrics rounds.
+        "slug_override": "polly-auto-coding-approval-metrics-v1",
+        "title_override": "Polly Auto: coding-approval-metrics-v1",
+    },
+    "active-research-grandmaster-v5": {
+        "desc": (
+            "Active research/API usage v5 - teaches local-first RAG, public/open API retrieval, citable receipts, "
+            "and open/free-tier key safety for agentic coding research"
+        ),
+        "files": [
+            "active_research_api_usage_v1_train.sft.jsonl",
+            "geoseal_industry_commands_v1_train.sft.jsonl",
+            "research_bridge_source_grounded_v1_train.sft.jsonl",
+            "operator_agent_bus_extracted_v1_train.sft.jsonl",
+            "coding_approval_metrics_v3_train.sft.jsonl",
+            "geoseal_command_recall_v1.sft.jsonl",
+            "geoseal_command_harmony_v1.sft.jsonl",
+            "coding_system_full_v1_train.sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+        ],
+        "eval_files": [
+            "active_research_api_usage_v1_eval.sft.jsonl",
+            "geoseal_industry_commands_v1_eval.sft.jsonl",
+            "research_bridge_source_grounded_v1_eval.sft.jsonl",
+            "operator_agent_bus_extracted_v1_eval.sft.jsonl",
+            "coding_approval_metrics_v3_eval.sft.jsonl",
+            "governance_security_boundary_eval_v1.sft.jsonl",
+            "coding_system_full_v1_holdout.sft.jsonl",
+            "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+        ],
+        "hf_repo": "issdandavis/scbe-active-research-agent-qwen-kaggle-v5",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 896,
+        "max_steps": 120,
+        "learning_rate": 4e-5,
+        "max_records": 1600,
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "lora_dropout": 0.12,
+        "early_stopping_patience": 4,
+        "early_stopping_threshold": 0.0,
+        "eval_steps": 30,
+        "save_steps": 30,
+        "balance_categories": True,
+        "max_sample_multiplier": 3.0,
+        "repair_lane_files": [
+            "active_research_api_usage_v1_train.sft.jsonl",
+            "geoseal_industry_commands_v1_train.sft.jsonl",
+            "research_bridge_source_grounded_v1_train.sft.jsonl",
+            "operator_agent_bus_extracted_v1_train.sft.jsonl",
+        ],
+        "repair_lane_weight": 1.7,
+        "cpu_smoke_max_records": 48,
+        "cpu_smoke_max_steps": 4,
+        "slug_override": "polly-auto-coding-approval-metrics-v1",
+        "title_override": "Polly Auto: coding-approval-metrics-v1",
+    },
+    "go-strategy-grandmaster-v6": {
+        "desc": (
+            "Go strategy v6 - small SFT lane teaching Go board-game concepts, Go language habits, "
+            "and math-booster curriculum metadata for agentic coding strategy"
+        ),
+        "files": [
+            "go_game_go_lang_agentic_strategy_v1_train.sft.jsonl",
+            "active_research_api_usage_v1_train.sft.jsonl",
+            "operator_agent_bus_extracted_v1_train.sft.jsonl",
+            "coding_approval_metrics_v3_train.sft.jsonl",
+            "geoseal_command_recall_v1.sft.jsonl",
+            "geoseal_command_harmony_v1.sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+        ],
+        "eval_files": [
+            "go_game_go_lang_agentic_strategy_v1_eval.sft.jsonl",
+            "active_research_api_usage_v1_eval.sft.jsonl",
+            "operator_agent_bus_extracted_v1_eval.sft.jsonl",
+            "coding_approval_metrics_v3_eval.sft.jsonl",
+            "governance_security_boundary_eval_v1.sft.jsonl",
+            "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+        ],
+        "hf_repo": "issdandavis/scbe-go-strategy-agent-qwen-kaggle-v6",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 768,
+        "max_steps": 100,
+        "learning_rate": 4e-5,
+        "max_records": 1200,
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "lora_dropout": 0.12,
+        "early_stopping_patience": 4,
+        "early_stopping_threshold": 0.0,
+        "eval_steps": 25,
+        "save_steps": 25,
+        "balance_categories": True,
+        "max_sample_multiplier": 3.0,
+        "repair_lane_files": [
+            "go_game_go_lang_agentic_strategy_v1_train.sft.jsonl",
+            "active_research_api_usage_v1_train.sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+        ],
+        "repair_lane_weight": 1.6,
+        "cpu_smoke_max_records": 48,
+        "cpu_smoke_max_steps": 4,
+        "slug_override": "polly-auto-coding-approval-metrics-v1",
+        "title_override": "Polly Auto: coding-approval-metrics-v1",
+    },
+    "chemistry-science-grandmaster-v7": {
+        "desc": (
+            "Chemistry science v7 - manual verification arithmetic, chemistry-primary transport, "
+            "SCBE fusion expectations, and active-research source receipts"
+        ),
+        "files": [
+            "chemistry_manual_verification_v1_train.sft.jsonl",
+            "chemistry_adapter_invariants_v1_train.sft.jsonl",
+            "chemistry_adapter_verification_v1_train.sft.jsonl",
+            "chemistry_primary_train.sft.jsonl",
+            "active_research_api_usage_v1_train.sft.jsonl",
+            "research_bridge_source_grounded_v1_train.sft.jsonl",
+            "atomic_workflow_stage6_repair_train.sft.jsonl",
+        ],
+        "eval_files": [
+            "chemistry_manual_verification_v1_eval.sft.jsonl",
+            "chemistry_adapter_invariants_v1_eval.sft.jsonl",
+            "chemistry_adapter_verification_v1_eval.sft.jsonl",
+            "chemistry_primary_holdout.sft.jsonl",
+            "active_research_api_usage_v1_eval.sft.jsonl",
+            "research_bridge_source_grounded_v1_eval.sft.jsonl",
+            "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+        ],
+        "hf_repo": "issdandavis/scbe-chemistry-science-agent-qwen-kaggle-v7",
+        "hf_dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+        "kaggle_dataset": "issacizrealdavis/scbe-coding-agent-stage6-repair-v7",
+        "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        "epochs": 1,
+        "batch_size": 1,
+        "grad_accum": 16,
+        "max_length": 896,
+        "max_steps": 120,
+        "learning_rate": 4e-5,
+        "max_records": 1800,
+        "lora_r": 16,
+        "lora_alpha": 32,
+        "lora_dropout": 0.12,
+        "early_stopping_patience": 4,
+        "early_stopping_threshold": 0.0,
+        "eval_steps": 30,
+        "save_steps": 30,
+        "balance_categories": True,
+        "max_sample_multiplier": 3.0,
+        "repair_lane_files": [
+            "chemistry_manual_verification_v1_train.sft.jsonl",
+            "chemistry_adapter_invariants_v1_train.sft.jsonl",
+            "chemistry_adapter_verification_v1_train.sft.jsonl",
+            "chemistry_primary_train.sft.jsonl",
+            "active_research_api_usage_v1_train.sft.jsonl",
+        ],
+        "repair_lane_weight": 1.7,
+        "cpu_smoke_max_records": 48,
+        "cpu_smoke_max_steps": 4,
         "slug_override": "polly-auto-coding-approval-metrics-v1",
         "title_override": "Polly Auto: coding-approval-metrics-v1",
     },
@@ -850,6 +1097,8 @@ def push_kernel(kernel_dir: Path, gpu: str = "none", accelerator_override: str |
         cmd,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     print(result.stdout)
     combined = f"{result.stdout}\n{result.stderr}".lower()
@@ -866,6 +1115,8 @@ def check_status(kernel_slug: str) -> str:
         ["kaggle", "kernels", "status", ref],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     output = result.stdout.strip()
     # Parse status from output
@@ -917,6 +1168,8 @@ def pull_output(kernel_slug: str, dest: Path | None = None) -> Path:
         ["kaggle", "kernels", "output", ref, "-p", str(dest)],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     print(result.stdout)
     if result.returncode != 0:
@@ -926,7 +1179,7 @@ def pull_output(kernel_slug: str, dest: Path | None = None) -> Path:
 
 
 def _run_kaggle(args: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["kaggle", *args], capture_output=True, text=True)
+    return subprocess.run(["kaggle", *args], capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
 def list_mine_rows() -> list[dict[str, str]]:

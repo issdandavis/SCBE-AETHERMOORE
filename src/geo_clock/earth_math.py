@@ -34,8 +34,22 @@ def initial_bearing_deg(lat1: float, lon1: float, lat2: float, lon2: float) -> f
 def cardinal_for_bearing(bearing_deg: float) -> str:
     """16-point compass label."""
     points = [
-        "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-        "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "WNW",
+        "NW",
+        "NNW",
     ]
     return points[int((bearing_deg / 22.5) + 0.5) % 16]
 

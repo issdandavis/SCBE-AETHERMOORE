@@ -41,6 +41,22 @@ def test_specialist_extractor_builds_source_faithful_records(tmp_path: Path) -> 
     assert first["metadata"]["dedupe_key"]
 
 
+def test_governance_extractor_allows_baseline_clean_rows(tmp_path: Path) -> None:
+    extractor = _load(EXTRACTOR_PATH, "extract_specialist_training_records_baseline_test")
+
+    extractor.build(tmp_path)
+
+    governance_eval = tmp_path / "governance_security_boundary_eval_v1.sft.jsonl"
+    rows = [json.loads(line) for line in governance_eval.read_text(encoding="utf-8").splitlines() if line.strip()]
+    baseline_rows = [row for row in rows if "baseline_clean" in set(row.get("metadata", {}).get("tags", []) or [])]
+
+    assert baseline_rows
+    for row in baseline_rows:
+        assistant = json.loads(row["messages"][-1]["content"])
+        assert assistant["attack_class"] == "baseline_clean"
+        assert assistant["decision"] == "ALLOW"
+
+
 def test_gain_board_marks_data_ready_buckets_as_needing_benchmark() -> None:
     review = _load(REVIEW_PATH, "review_training_runs_test")
     plan = {
@@ -146,6 +162,44 @@ def test_gain_board_blocks_explicit_hold_eval_artifact() -> None:
     assert board["governance_security"]["status"] == "needs_eval_gate"
     assert "explicit HOLD eval artifact" in board["governance_security"]["blockers"][0]
     assert "false-positive" in board["governance_security"]["recommended_action"]
+
+
+def test_gain_board_ignores_stale_hold_when_pass_artifact_exists() -> None:
+    review = _load(REVIEW_PATH, "review_training_runs_stale_hold_test")
+    plan = {
+        "specialists": [
+            {
+                "purpose": "governance_security",
+                "train_records": 10,
+                "eval_records": 2,
+            }
+        ]
+    }
+    reviews = [
+        {
+            "purpose": "governance_security",
+            "path": "artifacts/benchmarks/governance_security_eval/old/report.json",
+            "promotion_score": 100.0,
+            "quality_signal": 1.0,
+            "loss_signal": None,
+            "metric_count": 3,
+            "decision": "HOLD",
+        },
+        {
+            "purpose": "governance_security",
+            "path": "artifacts/benchmarks/governance_security_eval/latest_report.json",
+            "promotion_score": 100.0,
+            "quality_signal": 1.0,
+            "loss_signal": None,
+            "metric_count": 3,
+            "decision": "PASS",
+        },
+    ]
+
+    board = review.build_gain_board(reviews, plan)
+
+    assert board["governance_security"]["status"] == "promote_candidate"
+    assert board["governance_security"]["blockers"] == []
 
 
 def test_diamond_state_marks_loss_only_as_cut_not_promoted() -> None:

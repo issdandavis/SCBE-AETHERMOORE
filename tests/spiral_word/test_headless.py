@@ -166,7 +166,7 @@ def test_generate_record_provider_error_raises(sync, monkeypatch):
 
 
 def test_generate_record_writes_audit_entry(sync):
-    from governance import audit_log
+    from headless import audit_log
 
     before = len(audit_log.entries)
     _, record, _ = generate_record(

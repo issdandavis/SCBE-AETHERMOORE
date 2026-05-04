@@ -92,12 +92,9 @@ def test_dispatcher_renders_constrained_gate_scaffold_when_profile_requests_it()
     dispatcher = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(dispatcher)
     profile = json.loads(
-        (
-            ROOT
-            / "config"
-            / "model_training"
-            / "coding-agent-qwen-command-harmony-v5-signal-repair-v1.json"
-        ).read_text(encoding="utf-8")
+        (ROOT / "config" / "model_training" / "coding-agent-qwen-command-harmony-v5-signal-repair-v1.json").read_text(
+            encoding="utf-8"
+        )
     )
 
     script = dispatcher.render_uv_training_script(profile)
@@ -108,6 +105,45 @@ def test_dispatcher_renders_constrained_gate_scaffold_when_profile_requests_it()
     assert "required-tokens:" in script
     assert "constrained gate prefix would trigger forbidden token" in script
     assert "response = _gate_generate(prompt)" in script
+
+
+def test_chemistry_profile_has_non_empty_hf_promotion_contract() -> None:
+    dispatcher_path = ROOT / "scripts" / "system" / "dispatch_coding_agent_hf_job.py"
+    spec = importlib.util.spec_from_file_location("dispatch_coding_agent_hf_job", dispatcher_path)
+    assert spec and spec.loader
+    dispatcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dispatcher)
+
+    profile = json.loads(
+        (ROOT / "config" / "model_training" / "scbe-chemistry-0.5b-qlora.json").read_text(encoding="utf-8")
+    )
+    contract_path = ROOT / profile["evaluation"]["contract_path"]
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    script = dispatcher.render_uv_training_script(profile)
+
+    assert contract["contract_id"] == "chemistry_verification_unseen_eval_v1"
+    assert len(contract["prompts"]) >= 5
+    assert "chem_eval_pentavalent_carbon_reject" in contract["thresholds"]["must_pass"]
+    assert "chemistry_verification_unseen_eval_v1" in script
+    assert '"n_prompts": 0' not in script
+    assert "chem_eval_ethanol_route" in script
+
+
+def test_dispatcher_honors_explicit_warmup_steps_without_deprecated_ratio() -> None:
+    dispatcher_path = ROOT / "scripts" / "system" / "dispatch_coding_agent_hf_job.py"
+    spec = importlib.util.spec_from_file_location("dispatch_coding_agent_hf_job", dispatcher_path)
+    assert spec and spec.loader
+    dispatcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dispatcher)
+
+    profile = json.loads(
+        (ROOT / "config" / "model_training" / "scbe-chemistry-0.5b-qlora.json").read_text(encoding="utf-8")
+    )
+    script = dispatcher.render_uv_training_script(profile)
+
+    assert 'if "warmup_steps" in train_cfg:' in script
+    assert 'warmup_kwargs["warmup_steps"]' in script
+    assert "warmup_ratio=float(train_cfg.get" not in script
 
 
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
@@ -298,6 +334,26 @@ def test_summarize_training_log_parses_pretty_completion_json() -> None:
     assert summary["progress"]["step"] == 180
     assert summary["training_complete"]["global_step"] == 180
     assert summary["training_complete"]["pushed_adapter"] is True
+
+
+def test_assess_job_health_marks_running_loss_signal_as_safe_to_continue() -> None:
+    module = _load_module()
+
+    health = module.assess_job_health(
+        {"stage": "RUNNING"},
+        {
+            "returncode": 0,
+            "tail": "",
+            "summary": {
+                "latest_loss": {"loss": 1.737, "epoch": 0.1667},
+                "progress": {"step": 57, "max_steps": 420, "percent": 14},
+            },
+        },
+    )
+
+    assert health["state"] == "running_with_training_signal"
+    assert health["safe_for_full_train"] is True
+    assert "terminal gate" in health["recommendation"]
 
 
 def test_render_smoke_eval_script_scores_geoseal_gates(tmp_path: Path, monkeypatch) -> None:

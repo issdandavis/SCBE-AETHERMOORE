@@ -249,6 +249,11 @@ def main() -> None:
     eval_tok = eval_ds.map(tokenize, batched=True, remove_columns=["text"]) if eval_ds is not None else None
 
     out_dir = WORKDIR / "adapter"
+    warmup_kwargs = {{}}
+    if "warmup_steps" in train_cfg:
+        warmup_kwargs["warmup_steps"] = int(train_cfg.get("warmup_steps", 0))
+    else:
+        warmup_kwargs["warmup_ratio"] = float(train_cfg.get("warmup_ratio", 0.05))
     args = TrainingArguments(
         output_dir=str(WORKDIR / "checkpoints"),
         max_steps=int(train_cfg.get("max_steps", 120)),
@@ -256,7 +261,7 @@ def main() -> None:
         per_device_train_batch_size=int(train_cfg.get("batch_size", 2)),
         gradient_accumulation_steps=int(train_cfg.get("gradient_accumulation_steps", 8)),
         learning_rate=float(train_cfg.get("learning_rate", 2e-4)),
-        warmup_ratio=float(train_cfg.get("warmup_ratio", 0.05)),
+        **warmup_kwargs,
         logging_steps=int(train_cfg.get("logging_steps", 10)),
         save_steps=int(train_cfg.get("save_steps", 60)),
         save_total_limit=int(train_cfg.get("save_total_limit", 2)),

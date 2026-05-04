@@ -19,6 +19,7 @@ from scripts.eval.score_stage6_constrained_decoding import (
     PREFIX_ORDER,
     _build_prefix,
     _kind_from_id,
+    _prefix_only_response,
     _score_prompt,
 )
 
@@ -78,6 +79,14 @@ def test_score_prompt_passes_on_prefix_alone(contract):
             f"  triggered_forbidden={result['triggered_forbidden']}\n"
             f"  prefix={prefix!r}"
         )
+
+
+def test_prefix_only_response_passes_contract_without_model(contract):
+    for prompt in contract["prompts"]:
+        kind = _kind_from_id(prompt["id"])
+        response = _prefix_only_response(kind)
+        result = _score_prompt(prompt, response)
+        assert result["ok"]
 
 
 def test_score_prompt_fails_on_empty_response(contract):

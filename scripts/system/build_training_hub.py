@@ -77,11 +77,32 @@ def _latest_run_review() -> dict[str, Any]:
                 "next_step": row.get("recommended_next_step"),
             }
         )
+    if not top and isinstance(data.get("gain_board"), dict):
+        for lane, row in data["gain_board"].items():
+            if not isinstance(row, dict):
+                continue
+            run = {}
+            if isinstance(row.get("top_runs"), list) and row["top_runs"]:
+                run = row["top_runs"][0] if isinstance(row["top_runs"][0], dict) else {}
+            top.append(
+                {
+                    "id": lane,
+                    "triage": row.get("status"),
+                    "platform": "local-review",
+                    "lane": lane,
+                    "path": run.get("path"),
+                    "next_step": row.get("recommended_action"),
+                    "train_records": row.get("train_records"),
+                    "eval_records": row.get("eval_records"),
+                    "score": row.get("top_promotion_score"),
+                    "blockers": row.get("blockers") or [],
+                }
+            )
     return {
         "source": "artifacts/training_reports/run_review_latest.json",
         "available": bool(data),
-        "record_count": data.get("record_count"),
-        "triage_counts": data.get("triage_counts") or {},
+        "record_count": data.get("record_count") or (data.get("counts") or {}).get("reviewed_run_count"),
+        "triage_counts": data.get("triage_counts") or data.get("statuses") or {},
         "top_queue": top,
     }
 
@@ -96,6 +117,7 @@ def _evidence_links() -> list[dict[str, Any]]:
         _existing("artifacts/ai_training_consolidation/latest/manifest.json"),
         _existing("artifacts/experiments/information_leakage_buffer/latest.json"),
         _existing("artifacts/training_hub/jupiter_ring_feedback_manifest.json"),
+        _existing("artifacts/training_hub/agentic_coding_workbench_manifest.json"),
         _existing("training-data/agentic_coding/jupiter_ring_feedback.jsonl"),
     ]
 
@@ -149,6 +171,38 @@ def build_hub(*, run_preflight: bool) -> dict[str, Any]:
                 "step": "publish this operator view",
                 "command": "npm run training:hub",
                 "cost": "local/Vercel static hosting",
+            },
+        ],
+        "ai_lanes": [
+            {
+                "name": "Codex CLI",
+                "role": "terminal owner, verification runner, narrow patches, release checks",
+                "status": "active in this repo",
+            },
+            {
+                "name": "Claude Code",
+                "role": "parallel code worker and long-running local agent lane with crosstalk handoffs",
+                "status": "active alongside Codex when explicitly assigned",
+            },
+            {
+                "name": "Cursor",
+                "role": "side-agent editor for isolated docs, tests, focused scripts, and checklist work",
+                "status": "installed with repo rules and tasks",
+            },
+            {
+                "name": "Kimi Code",
+                "role": "coding-agent lane through the official Kimi command-line client",
+                "status": "connector smoke has been wired locally",
+            },
+            {
+                "name": "Ollama",
+                "role": "local model lane for no-cost provider routing and arena fallback",
+                "status": "local provider surface tracked by the harness",
+            },
+            {
+                "name": "Hugging Face Jobs and Hub",
+                "role": "remote training, dataset storage, adapter dispatch, and model publishing checks",
+                "status": "authenticated; no jobs currently running in the latest check",
             },
         ],
     }
@@ -239,6 +293,20 @@ def render_html(hub: dict[str, Any]) -> str:
         for item in hub["daily_stack"]
     ]
 
+    ai_lane_rows = [
+        [
+            html.escape(item["name"]),
+            html.escape(item["role"]),
+            html.escape(item["status"]),
+        ]
+        for item in hub.get("ai_lanes", [])
+    ]
+
+    sft = surfaces.get("sft_datasets") or {}
+    total_sft = sft.get("total")
+    total_train = sft.get("total_train")
+    total_eval = sft.get("total_eval")
+
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -260,7 +328,16 @@ def render_html(hub: dict[str, Any]) -> str:
       <div class="card"><div class="k">Hugging Face token</div><div class="v">{"set" if hf.get("HF_TOKEN_set") else "not set"}</div></div>
       <div class="card"><div class="k">Kaggle credentials</div><div class="v">{"present" if kaggle["credentials_file"].get("present") else "missing"}</div></div>
       <div class="card"><div class="k">Zero-cost preflight</div><div class="v">{"ok" if preflight_result.get("ok") else "not run/blocked"}</div></div>
+      <div class="card"><div class="k">Reviewed runs</div><div class="v">{review.get("record_count") or "unknown"}</div></div>
+      <div class="card"><div class="k">SFT rows</div><div class="v">{total_sft if total_sft is not None else "unknown"}</div></div>
     </section>
+
+    <h2>AI Toolchain Lanes</h2>
+    <p>These are the practical AI and editor lanes currently wired into the workflow. Codex keeps terminal verification and release checks; side agents get bounded work packets.</p>
+    {_table(["Lane", "Use", "Current State"], ai_lane_rows)}
+
+    <h2>Training Data Snapshot</h2>
+    <p>Current manifest surface reports {html.escape(str(total_train or "unknown"))} train rows and {html.escape(str(total_eval or "unknown"))} eval rows across the indexed SFT manifests. Kaggle credentials are still the blocker for direct Kaggle launch from this machine.</p>
 
     <h2>Daily Stack</h2>
     {_table(["Step", "Command", "Cost"], daily_rows)}

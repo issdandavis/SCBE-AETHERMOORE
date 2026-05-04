@@ -22,6 +22,12 @@ from src.agent_comms import compact_system_prompt, resolve_provider_model  # noq
 SMOKE_USER_PROMPT = (
     'Return exactly this JSON shape with no prose: {"ok":true,"role":"harness-smoke","tokens_saved":true}'
 )
+MIRROR_SERVICE_BY_PROVIDER = {
+    "kimi": "kimi",
+    "kimi_code": "kimi",
+    "moonshot": "moonshot",
+}
+KEY_MIRROR = Path.home() / ".codex" / "skills" / "scbe-api-key-local-mirror" / "scripts" / "key_mirror.py"
 
 
 def parse_model_refs(raw: str | None) -> list[str]:
@@ -31,7 +37,7 @@ def parse_model_refs(raw: str | None) -> list[str]:
 
 
 def build_chat_payload(provider_id: str, model: str) -> dict[str, Any]:
-    return {
+    payload = {
         "model": model,
         "temperature": 0,
         "max_tokens": 80,
@@ -49,6 +55,10 @@ def build_chat_payload(provider_id: str, model: str) -> dict[str, Any]:
             {"role": "user", "content": SMOKE_USER_PROMPT},
         ],
     }
+    if provider_id == "moonshot" and model.startswith("kimi-k2.6"):
+        # Kimi K2.6 currently rejects temperature=0 and requires temperature=1.
+        payload["temperature"] = 1
+    return payload
 
 
 def call_chat_completion(
@@ -59,6 +69,9 @@ def call_chat_completion(
 ) -> dict[str, Any]:
     provider, model = resolve_provider_model(provider_ref)
     token = provider.token()
+    mirror_service = MIRROR_SERVICE_BY_PROVIDER.get(provider.provider)
+    if not token and mirror_service:
+        token = _resolve_mirrored_key(mirror_service)
     if not token:
         return {
             "ref": provider_ref,
@@ -101,9 +114,44 @@ def call_chat_completion(
             }
     except HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace") if hasattr(exc, "read") else str(exc)
-        return _failure(provider_ref, provider.provider, model, "http_error", str(exc.code), detail)
+        status = "http_error"
+        reason = str(exc.code)
+        if exc.code == 403 and "only available for Coding Agents" in detail:
+            status = "blocked_client_identity"
+            reason = "requires official/allowed coding-agent client identity"
+        return _failure(provider_ref, provider.provider, model, status, reason, detail)
     except (OSError, URLError, TimeoutError, json.JSONDecodeError) as exc:
         return _failure(provider_ref, provider.provider, model, "error", str(exc), "")
+
+
+def _resolve_mirrored_key(service: str) -> str | None:
+    """Resolve a local DPAPI-mirrored key without printing it.
+
+    This is a convenience bridge for live smoke tests. The main provider
+    registry still treats environment variables as the canonical runtime
+    contract, while the local key mirror can fill a missing env var for
+    operator-only terminal checks.
+    """
+
+    if not KEY_MIRROR.exists():
+        return None
+    import subprocess
+
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(KEY_MIRROR), "resolve", "--service", service, "--raw"],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0:
+        return None
+    value = proc.stdout.strip()
+    return value or None
 
 
 def _extract_message_text(body: dict[str, Any]) -> str:
@@ -126,6 +174,8 @@ def _extract_message_text(body: dict[str, Any]) -> str:
 
 def _content_is_jsonish(content: str) -> bool:
     text = content.strip()
+    if "{" in text and "}" in text and not text.startswith("{"):
+        text = text[text.find("{") : text.rfind("}") + 1]
     if not (text.startswith("{") and text.endswith("}")):
         return False
     try:

@@ -5,7 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from scripts.benchmark.harness_provider_matrix import build_provider_matrix
+from scripts.benchmark.harness_provider_matrix import build_provider_matrix, build_software_factory_envelope
+from scripts.benchmark.harness_live_smoke import MIRROR_SERVICE_BY_PROVIDER
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -26,19 +27,26 @@ def test_provider_matrix_reports_lane_switch_costs() -> None:
     assert report["provider_count"] >= 18
     assert report["providers"]["groq"]["pricing_tier"] == "free-tier"
     assert report["providers"]["gemini"]["chat_url"].endswith("/openai/chat/completions")
+    assert report["providers"]["kimi"]["default_model"] == "kimi-for-coding"
+    assert report["providers"]["moonshot"]["default_model"] == "kimi-k2.6"
+    assert "agentic-coding" in report["providers"]["kimi"]["capabilities"]
     assert report["providers"]["nvidia"]["chat_url"] == "https://integrate.api.nvidia.com/v1/chat/completions"
 
 
 def test_provider_matrix_surfaces_pricing_capabilities_and_docs() -> None:
-    report = build_provider_matrix(["groq:llama-3.3-70b-versatile", "gemini:gemini-2.5-flash"])
+    report = build_provider_matrix(["groq:llama-3.3-70b-versatile", "gemini:gemini-2.5-flash", "kimi:kimi-for-coding"])
 
     groq = report["models"][0]
     gemini = report["models"][1]
+    kimi = report["models"][2]
     assert groq["provider"] == "groq"
     assert groq["pricing_tier"] == "free-tier"
     assert "fast-inference" in groq["capabilities"]
     assert gemini["provider"] == "gemini"
     assert gemini["docs_url"].startswith("https://ai.google.dev/")
+    assert kimi["provider"] == "kimi"
+    assert kimi["docs_url"].startswith("https://www.kimi.com/code/docs/")
+    assert "coding" in kimi["capabilities"]
 
 
 def test_provider_matrix_cli_json() -> None:
@@ -62,3 +70,56 @@ def test_provider_matrix_cli_json() -> None:
     report = json.loads(proc.stdout)
     assert report["model_count"] == 2
     assert report["pairs"][0]["signal_required"] is True
+
+
+def test_software_factory_envelope_wraps_provider_matrix() -> None:
+    report = build_software_factory_envelope(
+        ["ollama:a", "deepseek:b"],
+        task_id="sandcastle-compare",
+        prompt="Sandcastle comparison dry run",
+    )
+
+    assert report["schema_version"] == "scbe_software_factory_run_v1"
+    assert report["task_id"] == "sandcastle-compare"
+    assert report["provider"] == "no_sandbox"
+    assert report["branch_strategy"] == "scratch"
+    assert report["signals"]["completion"] == "HOLD"
+    assert "COMPLETE" in report["signals"]["allowed_completion_values"]
+    assert report["matrix"]["schema_version"] == "scbe_harness_provider_matrix_v1"
+    assert report["governance"]["lane_signal_required_pairs"] == 1
+    assert report["governance"]["promotion_decision"] == "HOLD"
+    assert report["benchmark_target"]["repository"] == "https://github.com/mattpocock/sandcastle"
+    assert "provider-neutral sandbox abstraction" in report["benchmark_target"]["borrowed_contracts"]
+
+
+def test_provider_matrix_cli_can_emit_software_factory_envelope() -> None:
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "scripts/benchmark/harness_provider_matrix.py",
+            "--models",
+            "ollama:a,deepseek:b",
+            "--software-factory",
+            "--task-id",
+            "sandcastle-compare",
+            "--json",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stderr
+    report = json.loads(proc.stdout)
+    assert report["schema_version"] == "scbe_software_factory_run_v1"
+    assert report["task_id"] == "sandcastle-compare"
+    assert report["matrix"]["model_count"] == 2
+
+
+def test_live_smoke_knows_kimi_key_mirror_service() -> None:
+    assert MIRROR_SERVICE_BY_PROVIDER["kimi"] == "kimi"
+    assert MIRROR_SERVICE_BY_PROVIDER["kimi_code"] == "kimi"
+    assert MIRROR_SERVICE_BY_PROVIDER["moonshot"] == "moonshot"

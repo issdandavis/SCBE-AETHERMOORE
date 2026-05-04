@@ -6,7 +6,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODULE_PATH = ROOT / "scripts" / "benchmark" / "public_agentic_cli_suite.py"
 CONFIG_PATH = ROOT / "config" / "eval" / "public_agentic_cli_suite.v1.json"
@@ -40,10 +39,7 @@ def test_public_agentic_cli_suite_required_tracks_and_claim_guardrails() -> None
         "swe_bench_verified_or_lite",
         "aider_polyglot",
     }.issubset(track_ids)
-    assert any(
-        "all-around best coding agent" in item
-        for item in config["claim_policy"]["forbidden_now"]
-    )
+    assert any("all-around best coding agent" in item for item in config["claim_policy"]["forbidden_now"])
     assert all(track.required_for_public_all_around_claim for track in tracks)
 
 

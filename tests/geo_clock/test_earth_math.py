@@ -9,7 +9,6 @@ import pytest
 
 from src.geo_clock import earth_math
 
-
 PORT_ANGELES = (48.1181, -123.4307)
 GREENWICH = (51.4779, -0.0015)
 SHANGHAI = (31.2304, 121.4737)

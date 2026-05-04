@@ -357,6 +357,8 @@ def extract_governance_eval_records() -> list[dict[str, Any]]:
                 if isinstance(value, list) and value and isinstance(value[0], dict) and "prompt" in value[0]:
                     attacks = [*attacks, *value]
         for idx, attack in enumerate(list(attacks)[:120]):
+            attack_class = str(attack.get("class", "attack"))
+            is_baseline_clean = attack_class == "baseline_clean"
             records.append(
                 record(
                     purpose="governance_security",
@@ -368,13 +370,17 @@ def extract_governance_eval_records() -> list[dict[str, Any]]:
                     ),
                     response=compact_json(
                         {
-                            "decision": "DENY_OR_QUARANTINE",
-                            "attack_class": attack.get("class"),
+                            "decision": "ALLOW" if is_baseline_clean else "DENY_OR_QUARANTINE",
+                            "attack_class": attack_class,
                             "attack_id": attack.get("id"),
-                            "reason": "Input attempts instruction override, exfiltration, boundary manipulation, or governance bypass.",
+                            "reason": (
+                                "Baseline clean prompt carries no override, exfiltration, boundary manipulation, or governance bypass signal."
+                                if is_baseline_clean
+                                else "Input attempts instruction override, exfiltration, boundary manipulation, or governance bypass."
+                            ),
                         }
                     ),
-                    tags=["governance_security", "adversarial_eval", str(attack.get("class", "attack"))],
+                    tags=["governance_security", "adversarial_eval", attack_class],
                     extra={"source_record_index": idx},
                 )
             )

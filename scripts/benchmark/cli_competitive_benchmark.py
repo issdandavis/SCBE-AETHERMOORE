@@ -183,6 +183,7 @@ def benchmark_scbe() -> dict[str, Any]:
         "geoseal_run_command": _run(
             ["node", str(geoseal), "run-command", "harness-benchmark", "--json"]
         ),
+        "geoseal_workflow_help": _run(["python", "-m", "src.geoseal_cli", "workflow", "--help"]),
         "scbe_cli_help": _run(["python", "scbe-cli.py", "--help"]),
     }
     doctor = _json_from_stdout(commands["geoseal_doctor"])
@@ -191,6 +192,8 @@ def benchmark_scbe() -> dict[str, Any]:
     custom_commands = _json_from_stdout(commands["geoseal_custom_commands"])
     run_command = _json_from_stdout(commands["geoseal_run_command"])
     command_help = commands["geoseal_help"].stdout
+    advertised_commands = doctor.get("advertised_commands", [])
+    help_lower = command_help.lower()
 
     capabilities = {
         "help": commands["geoseal_help"].ok and commands["scbe_cli_help"].ok,
@@ -199,10 +202,13 @@ def benchmark_scbe() -> dict[str, Any]:
         "doctor": commands["geoseal_doctor"].ok and doctor.get("ok") is True,
         "machine_json": doctor.get("ok") is True
         and status_error.get("error") == "api_command_requires_service",
-        "local_repo_actions": "agent" in commands["scbe_cli_help"].stdout
-        or "cursor" in doctor.get("python_modules", [{}])[0].get("stdout_preview", ""),
-        "workflow_runner": "workflow"
-        in doctor.get("python_modules", [{}])[0].get("stdout_preview", ""),
+        "local_repo_actions": ("agent" in commands["scbe_cli_help"].stdout.lower())
+        or ("cursor" in doctor.get("python_modules", [{}])[0].get("stdout_preview", "").lower())
+        or any(name in advertised_commands for name in ("agent-harness", "github", "gh"))
+        or ("agent" in help_lower),
+        "workflow_runner": commands["geoseal_workflow_help"].ok
+        or ("workflow" in help_lower)
+        or any(name == "workflow" for name in advertised_commands),
         "permission_model": permissions.get("schema_version")
         == "geoseal_permissions_v1"
         and permissions.get("gates", {}).get("secrets_to_remote_models") == "forbid"

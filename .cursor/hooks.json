@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "python .cursor/hooks/session_start.py",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "python .cursor/hooks/session_end.py",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "python .cursor/hooks/shell_guard.py",
+        "timeout": 8,
+        "failClosed": false
+      }
+    ],
+    "afterShellExecution": [
+      {
+        "command": "python .cursor/hooks/after_shell_execution.py",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "beforeMCPExecution": [
+      {
+        "command": "python .cursor/hooks/before_mcp_execution.py",
+        "timeout": 8,
+        "failClosed": false
+      }
+    ],
+    "afterMCPExecution": [
+      {
+        "command": "python .cursor/hooks/after_mcp_execution.py",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "python .cursor/hooks/pre_tool_use.py",
+        "timeout": 8,
+        "failClosed": false
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "python .cursor/hooks/post_tool_use.py",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "python .cursor/hooks/post_tool_use_failure.py",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "python .cursor/hooks/before_submit_prompt.py",
+        "timeout": 8,
+        "failClosed": false
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "python .cursor/hooks/after_file_edit.py",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "python .cursor/hooks/subagent_start.py",
+        "timeout": 8,
+        "failClosed": false
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "python .cursor/hooks/subagent_stop.py",
+        "timeout": 5,
+        "failClosed": false
+      }
+    ]
+  }
+}

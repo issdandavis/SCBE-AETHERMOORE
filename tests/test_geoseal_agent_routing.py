@@ -36,6 +36,7 @@ from src.coding_spine.router import (
 from src.coding_spine.polly_client import explain_provider_chain
 from src.coding_spine.shared_ir import build_route_ir, equivalent_ir, infer_semantic_ir
 from src.geoseal_cli import (
+    cmd_quick_agent,
     compute_seal,
     phi_wall_cost,
     phi_wall_tier,
@@ -475,6 +476,54 @@ class TestCLISmoke:
         assert rc == 0
         assert "task_file" in out
         assert "--onnx" in out
+
+    def test_quick_agent_help(self):
+        rc, out, _ = self._run("quick-agent", "--help")
+        assert rc == 0
+        assert "--command" in out
+        assert "--allow-free-speech" in out
+
+    def test_quick_agent_json_packet(self):
+        rc, out, err = self._run(
+            "quick-agent",
+            "--command",
+            "button1",
+            "--context",
+            "operator wants quick yes lane",
+            "--allow-free-speech",
+            "--json",
+        )
+        assert rc == 0, err
+        payload = json.loads(out)
+        assert payload["schema_version"] == "geoseal_quick_agent_v1"
+        assert payload["ok"] is True
+        assert payload["response"]["button_id"] == "button_1"
+        assert payload["speech_bubbles"]
+
+    def test_alignment_audit_json_packet(self):
+        rc, out, err = self._run("alignment-audit", "--max-files", "300", "--json")
+        assert rc == 0, err
+        payload = json.loads(out)
+        assert payload["schema_version"] == "geoseal_alignment_audit_v1"
+        assert payload["scanned_file_count"] > 0
+        assert "cli_core" in payload["groups"]
+
+
+class TestQuickAgentCore:
+    def test_cmd_quick_agent_text_mode(self, capsys):
+        import argparse
+
+        ns = argparse.Namespace(
+            command="status",
+            context="",
+            operator="ai-operator",
+            allow_free_speech=False,
+            json=False,
+        )
+        rc = cmd_quick_agent(ns)
+        captured = capsys.readouterr()
+        assert rc == 0
+        assert "System is responsive" in captured.out
 
 
 # ---------------------------------------------------------------------------

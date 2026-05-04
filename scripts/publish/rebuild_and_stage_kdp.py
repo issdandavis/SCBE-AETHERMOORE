@@ -78,7 +78,7 @@ CHAPTER_FILES = [
 
 METADATA = {
     "title": "The Six Tongues Protocol",
-    "author": "Issac Davis",
+    "author": "Issac Daniel Davis",
     "language": "en",
     "rights": "Copyright 2026 Issac Daniel Davis",
 }

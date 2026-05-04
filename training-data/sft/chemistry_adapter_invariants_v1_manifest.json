@@ -1,0 +1,37 @@
+{
+  "schema_version": "chemistry_adapter_invariants_manifest_v1",
+  "track": "chemistry_adapter_invariants_v1",
+  "train_file": "training-data\\sft\\chemistry_adapter_invariants_v1_train.sft.jsonl",
+  "eval_file": "training-data\\sft\\chemistry_adapter_invariants_v1_eval.sft.jsonl",
+  "train_records": 6,
+  "eval_records": 2,
+  "source_files": [
+    "python/scbe/chemistry_adapter.py",
+    "python/scbe/atomic_tokenization.py",
+    "tests/test_chemistry_adapter.py"
+  ],
+  "invariants": [
+    "invalid_smiles_error_path_booleans",
+    "valid_molecule_promotion_contract",
+    "chemistry_context_real_element_mapping",
+    "valence_violation_rejection",
+    "threshold_can_override_validity",
+    "batch_check_ordered_results",
+    "sft_score_fields",
+    "complex_valid_molecule_promotion"
+  ],
+  "files": {
+    "chemistry_adapter_invariants_v1_train.sft.jsonl": "202900380674f2dfdeed2dc9fdc7f4265e1df12c0a325c77d5cbc104c00af46b",
+    "chemistry_adapter_invariants_v1_eval.sft.jsonl": "a51c88baaa6ba148ce01389c26079b7ee313e1eaede20865f343b099e9fcf90d"
+  },
+  "gate": {
+    "decision": "PASS only if responses preserve adapter booleans, real chemistry element mapping, threshold denial, and no promotion without RDKit, valence, fusion, and policy agreement.",
+    "blocked": [
+      "missing_adapter_booleans",
+      "all_elements_as_fe",
+      "promotion_without_rdkit",
+      "promotion_without_valence",
+      "threshold_denial_ignored"
+    ]
+  }
+}

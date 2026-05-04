@@ -1,0 +1,26 @@
+{
+  "gates": [
+    "RDKit parse or explicit invalid rejection",
+    "manual valence arithmetic",
+    "manual electronegativity and functional-group explanation",
+    "SCBE 9D chemistry fusion expectations",
+    "governance verdict agreement"
+  ],
+  "hashes": {
+    "eval_sha256": "3f27f50a2cc67333dd6df237de1ab2925a41da153726cd50665671eb8ece9364",
+    "source_sha256": "65230bb1fdd075abd75db0f4ea4cabe8c3098e79e6dcbf70740bd788bfd0f032",
+    "train_sha256": "6a71670e07d1cf0df640a67aab278109defd8b7ff2e6871697210e7177d36e32"
+  },
+  "outputs": {
+    "eval": "training-data\\sft\\chemistry_manual_verification_v1_eval.sft.jsonl",
+    "train": "training-data\\sft\\chemistry_manual_verification_v1_train.sft.jsonl"
+  },
+  "row_counts": {
+    "eval": 5,
+    "source": 20,
+    "train": 15
+  },
+  "schema_version": "chemistry_manual_verification_sft_manifest_v1",
+  "source": "training-data\\chemistry_manual_verification_v1.jsonl",
+  "training_pattern": "predict_verify_receipt_promote"
+}

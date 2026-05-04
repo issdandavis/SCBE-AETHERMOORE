@@ -113,6 +113,72 @@ def _hf_hub_status() -> dict[str, Any]:
     return out
 
 
+def _sft_datasets() -> dict[str, Any]:
+    """Discover SFT dataset manifests under training-data/."""
+    datasets: dict[str, Any] = {}
+    manifest_dirs = [
+        REPO_ROOT / "training-data" / "manifests",
+        REPO_ROOT / "training-data" / "sft",
+    ]
+    for d in manifest_dirs:
+        if not d.is_dir():
+            continue
+        for path in sorted(d.glob("*.json")):
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            key = path.stem
+            # Extract row counts from common manifest shapes
+            def _num(val):
+                if isinstance(val, (int, float)):
+                    return int(val)
+                return 0
+
+            n_total = _num(data.get("n_total")) or _num(data.get("total")) or (_num(data.get("n_train")) + _num(data.get("n_eval"))) or _num(data.get("train_records")) + _num(data.get("eval_records"))
+            n_train = _num(data.get("n_train")) or _num(data.get("train_records"))
+            n_eval = _num(data.get("n_eval")) or _num(data.get("eval_records")) or _num(data.get("holdout"))
+            if n_total or n_train or n_eval:
+                datasets[key] = {
+                    "path": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
+                    "n_train": n_train,
+                    "n_eval": n_eval,
+                    "n_total": n_total,
+                    "description": data.get("description", data.get("purpose", "")),
+                }
+    # Aggregate bundles
+    bundle_paths = [
+        REPO_ROOT / "training-data" / "manifests" / "chemistry_training_bundle_v1.json",
+    ]
+    for bp in bundle_paths:
+        if bp.is_file():
+            try:
+                data = json.loads(bp.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            key = data.get("manifest_id", bp.stem)
+            totals = data.get("totals", {})
+            datasets[key] = {
+                "path": str(bp.relative_to(REPO_ROOT)).replace("\\", "/"),
+                "n_train": totals.get("n_train", 0),
+                "n_eval": totals.get("n_eval", 0),
+                "n_total": totals.get("n_total", 0),
+                "description": data.get("purpose", ""),
+                "datasets": [
+                    {"name": d["name"], "n_train": d.get("n_train", 0), "n_eval": d.get("n_eval", 0)}
+                    for d in data.get("datasets", [])
+                ],
+            }
+    total_train = sum(d.get("n_train", 0) for d in datasets.values())
+    total_eval = sum(d.get("n_eval", 0) for d in datasets.values())
+    return {
+        "datasets": datasets,
+        "total_train": total_train,
+        "total_eval": total_eval,
+        "total": total_train + total_eval,
+    }
+
+
 def _run_preflight() -> dict[str, Any]:
     script = REPO_ROOT / "scripts" / "system" / "preflight_zero_cost_training.py"
     proc = subprocess.run(
@@ -190,6 +256,7 @@ def build_manifest(*, run_preflight: bool) -> dict[str, Any]:
             },
         },
         "local_preflight": _run_preflight() if run_preflight else None,
+        "sft_datasets": _sft_datasets(),
         "npm_shortcuts": {
             "surfaces": "npm run training:surfaces",
             "preflight_zero_cost": "npm run training:preflight:zero-cost",

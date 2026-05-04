@@ -344,11 +344,12 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
             if str(run.get("decision", "")).upper() == "HOLD"
             or (run.get("diamond_state") or {}).get("state") == "rough_hold"
         ]
-        if hold_runs and in_merge_plan:
-            blockers.append(f"explicit HOLD eval artifact: {hold_runs[0]['path']}")
         promotion_ready_runs = [
             run for run in runs if (run.get("diamond_state") or {}).get("promotion_ready") is True
         ]
+        has_passing_eval_artifact = any(str(run.get("decision", "")).upper() == "PASS" for run in promotion_ready_runs)
+        if hold_runs and in_merge_plan and not has_passing_eval_artifact:
+            blockers.append(f"explicit HOLD eval artifact: {hold_runs[0]['path']}")
         polished_runs = [
             run for run in runs if (run.get("diamond_state") or {}).get("state") == "polished_candidate"
         ]

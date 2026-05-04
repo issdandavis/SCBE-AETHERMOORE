@@ -9,7 +9,6 @@ from fastapi.testclient import TestClient
 
 from src.coding_spine.bijective_reasoning_code_packet import build_bijective_reasoning_code_packet
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 

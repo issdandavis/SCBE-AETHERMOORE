@@ -109,6 +109,37 @@ DEFAULT_ELEMENTS: Dict[SemanticClass, Element] = {
     "TEMPORAL": Element(symbol="Si", Z=14, group=14, period=3, valence=4, electronegativity=1.9),
 }
 
+# Chemistry-aware element table: maps token strings to real periodic-table elements.
+# Used when language="chemistry" or context_class="molecular".
+CHEMISTRY_ELEMENTS: Dict[str, Element] = {
+    "c": Element(symbol="C", Z=6, group=14, period=2, valence=4, electronegativity=2.55),
+    "carbon_aromatic": Element(symbol="C", Z=6, group=14, period=2, valence=4, electronegativity=2.55),
+    "n": Element(symbol="N", Z=7, group=15, period=2, valence=3, electronegativity=3.04),
+    "nitrogen_aromatic": Element(symbol="N", Z=7, group=15, period=2, valence=3, electronegativity=3.04),
+    "o": Element(symbol="O", Z=8, group=16, period=2, valence=2, electronegativity=3.44),
+    "oxygen_aromatic": Element(symbol="O", Z=8, group=16, period=2, valence=2, electronegativity=3.44),
+    "s": Element(symbol="S", Z=16, group=16, period=3, valence=2, electronegativity=2.58),
+    "sulfur_aromatic": Element(symbol="S", Z=16, group=16, period=3, valence=2, electronegativity=2.58),
+    "p": Element(symbol="P", Z=15, group=15, period=3, valence=3, electronegativity=2.19),
+    "phosphorus_aromatic": Element(symbol="P", Z=15, group=15, period=3, valence=3, electronegativity=2.19),
+    "h": Element(symbol="H", Z=1, group=1, period=1, valence=1, electronegativity=2.20),
+    "f": Element(symbol="F", Z=9, group=17, period=2, valence=1, electronegativity=3.98),
+    "cl": Element(symbol="Cl", Z=17, group=17, period=3, valence=1, electronegativity=3.16),
+    "br": Element(symbol="Br", Z=35, group=17, period=4, valence=1, electronegativity=2.96),
+    "i": Element(symbol="I", Z=53, group=17, period=5, valence=1, electronegativity=2.66),
+    "si": Element(symbol="Si", Z=14, group=14, period=3, valence=4, electronegativity=1.90),
+    "se": Element(symbol="Se", Z=34, group=16, period=4, valence=2, electronegativity=2.55),
+    "as": Element(symbol="As", Z=33, group=15, period=4, valence=3, electronegativity=2.18),
+    "na": Element(symbol="Na", Z=11, group=1, period=3, valence=1, electronegativity=0.93),
+    "mg": Element(symbol="Mg", Z=12, group=2, period=3, valence=2, electronegativity=1.31),
+    "al": Element(symbol="Al", Z=13, group=13, period=3, valence=3, electronegativity=1.61),
+    "ca": Element(symbol="Ca", Z=20, group=2, period=4, valence=2, electronegativity=1.00),
+    "fe": Element(symbol="Fe", Z=26, group=8, period=4, valence=2, electronegativity=1.83),
+    "cu": Element(symbol="Cu", Z=29, group=11, period=4, valence=2, electronegativity=1.90),
+    "zn": Element(symbol="Zn", Z=30, group=12, period=4, valence=2, electronegativity=1.65),
+    "b": Element(symbol="B", Z=5, group=13, period=2, valence=3, electronegativity=2.04),
+}
+
 
 TOKEN_CLASS_OVERRIDES: Dict[str, SemanticClass] = {
     "the": "INERT_WITNESS",
@@ -205,6 +236,31 @@ CONTEXT_TOKEN_OVERRIDES: Dict[str, Dict[str, SemanticClass]] = {
         "allow": "ACTION",
         "hold": "INERT_WITNESS",
     },
+    "molecular": {
+        "c": "ENTITY",
+        "n": "ENTITY",
+        "o": "ENTITY",
+        "s": "ENTITY",
+        "p": "ENTITY",
+        "carbon_aromatic": "ENTITY",
+        "nitrogen_aromatic": "ENTITY",
+        "oxygen_aromatic": "ENTITY",
+        "sulfur_aromatic": "ENTITY",
+        "phosphorus_aromatic": "ENTITY",
+        "double_bond": "ACTION",
+        "triple_bond": "ACTION",
+        "branch_open": "RELATION",
+        "branch_close": "RELATION",
+        "ring_1": "TEMPORAL",
+        "ring_2": "TEMPORAL",
+        "ring_3": "TEMPORAL",
+        "ring_4": "TEMPORAL",
+        "ring_5": "TEMPORAL",
+        "ring_6": "TEMPORAL",
+        "ring_7": "TEMPORAL",
+        "ring_8": "TEMPORAL",
+        "ring_9": "TEMPORAL",
+    },
 }
 
 SEMANTIC_BAND_FLAGS: Dict[SemanticClass, int] = {
@@ -277,6 +333,16 @@ def map_token_to_element(
     context_class: ContextClass = None,
     element_table: Optional[Dict[SemanticClass, Element]] = None,
 ) -> Element:
+    t = _normalized_token(token)
+    lang = _normalized_language(language)
+    context = _normalized_context(context_class)
+
+    # Chemistry mode: use real periodic-table elements
+    if lang == "chemistry" or context == "molecular":
+        chem_el = CHEMISTRY_ELEMENTS.get(t)
+        if chem_el is not None:
+            return chem_el
+
     element_table = element_table or DEFAULT_ELEMENTS
     semantic_class = classify_token_semantic(token, language=language, context_class=context_class)
     return element_table[semantic_class]
@@ -447,7 +513,9 @@ def map_token_to_atomic_state(
     thresholds: Optional[Dict[Tongue, Tuple[float, float]]] = None,
 ) -> AtomicTokenState:
     semantic_class = classify_token_semantic(token, language=language, context_class=context_class)
-    element = (element_table or DEFAULT_ELEMENTS)[semantic_class]
+    element = map_token_to_element(token, language=language, context_class=context_class)
+    if element_table and semantic_class in element_table:
+        element = element_table[semantic_class]
     tau = element_to_trit_vector(element, thresholds=thresholds)
     negative_state = is_negative_atomic_state(semantic_class, element)
     dual_state = infer_dual_state(token, semantic_class, element)

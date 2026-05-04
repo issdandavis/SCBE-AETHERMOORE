@@ -18,7 +18,6 @@ from src.coding_spine.deterministic_tongue_router import route_prompt
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
 from src.tokenizer.code_weight_packets import build_code_weight_packet
 
-
 SCHEMA_VERSION = "scbe-bijective-reasoning-code-packet-v1"
 TONGUES: tuple[str, ...] = ("KO", "AV", "RU", "CA", "UM", "DR")
 

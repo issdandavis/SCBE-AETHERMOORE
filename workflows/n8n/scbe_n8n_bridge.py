@@ -32,6 +32,7 @@ Start:
 from __future__ import annotations
 
 import asyncio
+import hmac
 import logging
 import json
 import os
@@ -91,11 +92,28 @@ app = FastAPI(
 
 # CORS — allow the mobile app (Capacitor webview) and local dev
 from starlette.middleware.cors import CORSMiddleware
+
+
+def _load_cors_origins() -> List[str]:
+    raw = os.environ.get(
+        "SCBE_CORS_ORIGINS",
+        "http://127.0.0.1,http://localhost,http://127.0.0.1:3000,http://localhost:3000",
+    )
+    origins = [item.strip() for item in raw.split(",") if item.strip()]
+    env_name = os.environ.get("SCBE_ENV", os.environ.get("NODE_ENV", "production")).lower()
+    if env_name not in {"development", "dev", "test"}:
+        origins = [item for item in origins if item != "*"]
+    if not origins:
+        origins = ["http://127.0.0.1", "http://localhost"]
+    return origins
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_load_cors_origins(),
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=False,
 )
 
 # Shared instances
@@ -108,12 +126,37 @@ _telemetry: List[Dict[str, Any]] = []
 for plat in Platform:
     _buffer.register_publisher(PlatformPublisher(plat))
 
+
 # API key validation
-_API_KEYS = set(
-    k.strip()
-    for k in os.environ.get("SCBE_API_KEYS", "scbe-dev-key,test-key").split(",")
-    if k.strip()
-)
+def _load_bridge_api_keys() -> set[str]:
+    raw = os.environ.get("SCBE_API_KEYS", "").strip()
+    if raw:
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict):
+                return {str(k).strip() for k in parsed.keys() if str(k).strip()}
+        except json.JSONDecodeError:
+            pass
+        return {k.strip() for k in raw.split(",") if k.strip()}
+
+    allow_demo = os.environ.get("SCBE_ALLOW_DEMO_KEYS", "").strip().lower() in {"1", "true", "yes", "on"}
+    if allow_demo:
+        env_name = os.environ.get("SCBE_ENV", os.environ.get("NODE_ENV", "production")).strip().lower()
+        if env_name in {"production", "prod", "staging", "stage"}:
+            logging.getLogger("scbe-n8n-bridge").warning(
+                "SCBE_ALLOW_DEMO_KEYS=1 ignored: refusing to enable public demo keys in env=%s",
+                env_name,
+            )
+            return set()
+        logging.getLogger("scbe-n8n-bridge").warning(
+            "SCBE_ALLOW_DEMO_KEYS=1 active: public demo keys enabled (env=%s) — do not expose this bridge",
+            env_name or "unset",
+        )
+        return {"demo_key_12345", "pilot_key_67890", "test-key"}
+    return set()
+
+
+_API_KEYS = _load_bridge_api_keys()
 _BROWSER_SERVICE_URL = os.environ.get(
     "SCBE_BROWSER_SERVICE_URL",
     "http://127.0.0.1:8011",
@@ -147,13 +190,9 @@ _ANTHROPIC_DEFAULT_MODEL = os.environ.get(
 ).strip()
 _XAI_DEFAULT_MODEL = os.environ.get("SCBE_XAI_MODEL", "grok-beta").strip()
 _HF_DEFAULT_MODEL = os.environ.get("SCBE_HF_MODEL", "Qwen/Qwen2.5-7B-Instruct").strip()
-_HF_DATASET_REPO_RE = re.compile(
-    r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}/[A-Za-z0-9][A-Za-z0-9._-]{0,95}$"
-)
+_HF_DATASET_REPO_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,95}/[A-Za-z0-9][A-Za-z0-9._-]{0,95}$")
 _HF_ALLOWED_DATASET_REPOS = {
-    repo.strip().lower()
-    for repo in os.environ.get("SCBE_HF_ALLOWED_DATASET_REPOS", "").split(",")
-    if repo.strip()
+    repo.strip().lower() for repo in os.environ.get("SCBE_HF_ALLOWED_DATASET_REPOS", "").split(",") if repo.strip()
 }
 _HF_COMMIT_MESSAGE_MAX_LEN = 120
 _AUTOMATION_RULES_PATH = Path(
@@ -175,8 +214,23 @@ _AUTOMATION_HUB = AutomationHub(
     allowed_hosts=_AUTOMATION_ALLOWED_HOSTS,
 )
 
+_PUBLIC_SECRET_PREFIXES = (
+    "gh" + "p_",
+    "gh" + "o_",
+    "gh" + "u_",
+    "gh" + "s_",
+    "gh" + "r_",
+    "h" + "f_",
+    "s" + "k-",
+    "s" + "k-proj-",
+    "x" + "ai-",
+    "rk" + "_live_",
+    "rk" + "_test_",
+    "shp" + "at_",
+    "AK" + "IA",
+)
 _PUBLIC_SECRET_RE = re.compile(
-    r"(?:ghp_|gho_|ghu_|ghs_|ghr_|hf_|sk-|sk-proj-|xai-|rk_live_|rk_test_|shpat_|AKIA)[A-Za-z0-9_\-]{8,}"
+    r"(?:" + "|".join(re.escape(p) for p in _PUBLIC_SECRET_PREFIXES) + r")[A-Za-z0-9_\-]{8,}"
 )
 
 
@@ -204,14 +258,20 @@ def _public_error_detail(
 
 
 def _check_key(api_key: Optional[str] = None):
-    if api_key and api_key in _API_KEYS:
-        return
+    if not _API_KEYS:
+        raise HTTPException(status_code=503, detail="Bridge API keys are not configured")
+    if api_key:
+        candidate = api_key.encode("utf-8")
+        for known in _API_KEYS:
+            if hmac.compare_digest(candidate, known.encode("utf-8")):
+                return
     raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 
 # ---------------------------------------------------------------------------
 #  Request/response models
 # ---------------------------------------------------------------------------
+
 
 class ScanRequest(BaseModel):
     content: str
@@ -255,6 +315,7 @@ class TelemetryRequest(BaseModel):
 
 class TrainingIngestRequest(BaseModel):
     """Game event forwarded from n8n for training data collection."""
+
     event_type: str
     context: str = ""
     outcome: str = ""
@@ -264,6 +325,7 @@ class TrainingIngestRequest(BaseModel):
 
 class N8nBrowseAction(BaseModel):
     """Compact action payload expected by browser integration endpoint."""
+
     action: str
     target: str
     value: Optional[str] = None
@@ -273,6 +335,7 @@ class N8nBrowseAction(BaseModel):
 
 class N8nBrowseRequest(BaseModel):
     """Bridge request used by n8n workflows for Playwright browsing."""
+
     actions: List[N8nBrowseAction]
     session_id: Optional[str] = None
     dry_run: bool = False
@@ -283,6 +346,7 @@ class N8nBrowseRequest(BaseModel):
 
 class CouncilRequest(BaseModel):
     """AI Round Table — fan out a query to multiple LLMs with governance."""
+
     query: str
     system: Optional[str] = None
     providers: List[str] = ["anthropic", "openai", "xai"]
@@ -294,6 +358,7 @@ class CouncilRequest(BaseModel):
 
 class LLMDispatchRequest(BaseModel):
     """Unified provider dispatch for OpenAI, Anthropic, xAI, and HF router."""
+
     provider: str
     model: Optional[str] = None
     messages: List[Dict[str, Any]] = []
@@ -376,6 +441,7 @@ class CodeExecRequest(BaseModel):
 #  Endpoints
 # ---------------------------------------------------------------------------
 
+
 @app.get("/health")
 async def health():
     return {
@@ -454,10 +520,7 @@ def _extract_openai_style_response(resp: Dict[str, Any]) -> Dict[str, Any]:
     message = choices[0].get("message", {}) or {}
     content = message.get("content", "")
     if isinstance(content, list):
-        content = "\n".join(
-            str(block.get("text", "")) if isinstance(block, dict) else str(block)
-            for block in content
-        )
+        content = "\n".join(str(block.get("text", "")) if isinstance(block, dict) else str(block) for block in content)
     return {
         "text": content or "",
         "tool_calls": message.get("tool_calls", []) or [],
@@ -570,6 +633,7 @@ def _send_zapier_event(event_payload: Dict[str, Any]) -> Dict[str, Any]:
         return {"status": "skipped", "reason": "missing_hook_url"}
     # SSRF protection: only allow known webhook domains
     from urllib.parse import urlparse
+
     parsed = urlparse(hook_url)
     _ALLOWED_WEBHOOK_HOSTS = {
         "hooks.zapier.com",
@@ -680,15 +744,60 @@ async def llm_dispatch(req: LLMDispatchRequest, x_api_key: Optional[str] = Heade
 
 # Map app seat IDs → provider + base_url + key + default model
 _ARENA_PROVIDERS = {
-    "groq":          {"base_url": "https://api.groq.com/openai/v1/chat/completions",          "key_fn": lambda: _GROQ_API_KEY,         "model": "llama-3.3-70b-versatile", "style": "openai"},
-    "cerebras":      {"base_url": "https://api.cerebras.ai/v1/chat/completions",               "key_fn": lambda: _CEREBRAS_API_KEY,     "model": "llama3.1-8b",             "style": "openai"},
-    "google_ai":     {"base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "key_fn": lambda: _GOOGLE_AI_KEY, "model": "gemini-2.5-flash", "style": "openai"},
-    "claude":        {"base_url": None,                                                        "key_fn": lambda: _ANTHROPIC_API_KEY,    "model": _ANTHROPIC_DEFAULT_MODEL,  "style": "anthropic"},
-    "xai":           {"base_url": "https://api.x.ai/v1/chat/completions",                      "key_fn": lambda: _XAI_API_KEY,          "model": "grok-3-mini-fast",        "style": "openai"},
-    "openrouter":    {"base_url": "https://openrouter.ai/api/v1/chat/completions",             "key_fn": lambda: _OPENROUTER_API_KEY,   "model": "moonshotai/kimi-k2",      "style": "openai"},
-    "github_models": {"base_url": "https://models.inference.ai.azure.com/chat/completions",    "key_fn": lambda: _GITHUB_MODELS_TOKEN,  "model": "gpt-4o-mini",             "style": "openai"},
-    "huggingface":   {"base_url": "https://router.huggingface.co/v1/chat/completions",         "key_fn": lambda: _HF_ROUTER_TOKEN,      "model": _HF_DEFAULT_MODEL,         "style": "openai"},
-    "ollama":        {"base_url": "http://127.0.0.1:11434/v1/chat/completions",                "key_fn": lambda: "ollama",              "model": "llama3.2",                "style": "openai"},
+    "groq": {
+        "base_url": "https://api.groq.com/openai/v1/chat/completions",
+        "key_fn": lambda: _GROQ_API_KEY,
+        "model": "llama-3.3-70b-versatile",
+        "style": "openai",
+    },
+    "cerebras": {
+        "base_url": "https://api.cerebras.ai/v1/chat/completions",
+        "key_fn": lambda: _CEREBRAS_API_KEY,
+        "model": "llama3.1-8b",
+        "style": "openai",
+    },
+    "google_ai": {
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+        "key_fn": lambda: _GOOGLE_AI_KEY,
+        "model": "gemini-2.5-flash",
+        "style": "openai",
+    },
+    "claude": {
+        "base_url": None,
+        "key_fn": lambda: _ANTHROPIC_API_KEY,
+        "model": _ANTHROPIC_DEFAULT_MODEL,
+        "style": "anthropic",
+    },
+    "xai": {
+        "base_url": "https://api.x.ai/v1/chat/completions",
+        "key_fn": lambda: _XAI_API_KEY,
+        "model": "grok-3-mini-fast",
+        "style": "openai",
+    },
+    "openrouter": {
+        "base_url": "https://openrouter.ai/api/v1/chat/completions",
+        "key_fn": lambda: _OPENROUTER_API_KEY,
+        "model": "moonshotai/kimi-k2",
+        "style": "openai",
+    },
+    "github_models": {
+        "base_url": "https://models.inference.ai.azure.com/chat/completions",
+        "key_fn": lambda: _GITHUB_MODELS_TOKEN,
+        "model": "gpt-4o-mini",
+        "style": "openai",
+    },
+    "huggingface": {
+        "base_url": "https://router.huggingface.co/v1/chat/completions",
+        "key_fn": lambda: _HF_ROUTER_TOKEN,
+        "model": _HF_DEFAULT_MODEL,
+        "style": "openai",
+    },
+    "ollama": {
+        "base_url": "http://127.0.0.1:11434/v1/chat/completions",
+        "key_fn": lambda: "ollama",
+        "model": "llama3.2",
+        "style": "openai",
+    },
 }
 
 
@@ -731,8 +840,9 @@ def _arena_chat_anthropic_sdk(messages: List[Dict], api_key: str, model: str) ->
 
 
 @app.post("/v1/chat")
-async def arena_chat(req: ArenaChatRequest):
+async def arena_chat(req: ArenaChatRequest, x_api_key: Optional[str] = Header(None)):
     """AetherCode Arena chat — routes to the right AI provider via SDK (no Cloudflare blocks)."""
+    _check_key(x_api_key)
     t0 = time.time()
     seat = req.tentacle.lower().strip()
     cfg = _ARENA_PROVIDERS.get(seat)
@@ -775,8 +885,9 @@ async def arena_chat(req: ArenaChatRequest):
 
 
 @app.get("/v1/providers")
-async def arena_providers():
+async def arena_providers(x_api_key: Optional[str] = Header(None)):
     """Return which providers are available for the Arena app."""
+    _check_key(x_api_key)
     result = {}
     for seat, cfg in _ARENA_PROVIDERS.items():
         api_key = cfg["key_fn"]()
@@ -793,7 +904,7 @@ _KERNEL_RUNNER_URL = os.getenv("KERNEL_RUNNER_URL", "http://127.0.0.1:4242")
 
 
 @app.post("/v1/execute")
-async def execute_code(req: CodeExecRequest):
+async def execute_code(req: CodeExecRequest, x_api_key: Optional[str] = Header(None)):
     """Delegate code execution to the Docker-sandboxed kernel-runner service.
 
     Instead of running user-supplied code in a local subprocess (command-injection
@@ -801,6 +912,7 @@ async def execute_code(req: CodeExecRequest):
     executes inside a constrained Docker container with no network, capped CPU/
     memory, and a governance preflight gate.
     """
+    _check_key(x_api_key)
     if req.language not in ("python", "javascript"):
         raise HTTPException(400, detail=f"Unsupported language: {req.language}")
     timeout = max(1, min(req.timeout, 30))
@@ -827,12 +939,14 @@ async def execute_code(req: CodeExecRequest):
             "scripts": {"test": "node index.js"},
         }
 
-    payload = json.dumps({
-        "files": files,
-        "packageJson": pkg,
-        "runCommand": run_command,
-        "runTimeoutMs": timeout * 1000,
-    }).encode("utf-8")
+    payload = json.dumps(
+        {
+            "files": files,
+            "packageJson": pkg,
+            "runCommand": run_command,
+            "runTimeoutMs": timeout * 1000,
+        }
+    ).encode("utf-8")
 
     url = f"{_KERNEL_RUNNER_URL}/api/run"
     http_req = urllib_request.Request(
@@ -1038,6 +1152,7 @@ async def tongue_encode(req: TongueEncodeRequest, x_api_key: Optional[str] = Hea
     _check_key(x_api_key)
     try:
         from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.tongue_transport import TongueTransport
+
         transport = TongueTransport()
         if req.seal and req.context:
             env = transport.seal(req.text, tongue=req.tongue, context=req.context)
@@ -1068,6 +1183,7 @@ async def buffer_post(req: BufferPostRequest, x_api_key: Optional[str] = Header(
     if req.tongue_encode:
         try:
             from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.tongue_transport import TongueTransport
+
             transport = TongueTransport()
             tongue = req.tongue or "KO"
             env = transport.encode(text, tongue=tongue)
@@ -1093,10 +1209,7 @@ async def buffer_post(req: BufferPostRequest, x_api_key: Optional[str] = Header(
     results = []
     if not req.schedule_at:
         publish_results = _buffer.publish_due()
-        results = [
-            {"platform": r.platform.value, "success": r.success, "url": r.post_url}
-            for r in publish_results
-        ]
+        results = [{"platform": r.platform.value, "success": r.success, "url": r.post_url} for r in publish_results]
 
     return {
         "post_id": post.post_id,
@@ -1139,8 +1252,7 @@ async def n8n_browse_proxy(req: N8nBrowseRequest, x_api_key: Optional[str] = Hea
     """Proxy n8n browse payloads to Playwright browser service."""
     _check_key(x_api_key)
     serialized_actions = [
-        action.model_dump() if hasattr(action, "model_dump") else action.dict()
-        for action in req.actions
+        action.model_dump() if hasattr(action, "model_dump") else action.dict() for action in req.actions
     ]
     payload = {
         "actions": serialized_actions,
@@ -1218,13 +1330,19 @@ def _dispatch_single_provider(provider: str, prompt: str, system_prompt: str, ma
             temperature=0.3,
         )
         if p == "openai":
-            raw = _dispatch_openai_compatible(req, "https://api.openai.com/v1/chat/completions", _OPENAI_API_KEY, _OPENAI_DEFAULT_MODEL)
+            raw = _dispatch_openai_compatible(
+                req, "https://api.openai.com/v1/chat/completions", _OPENAI_API_KEY, _OPENAI_DEFAULT_MODEL
+            )
             return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
         elif p == "xai":
-            raw = _dispatch_openai_compatible(req, "https://api.x.ai/v1/chat/completions", _XAI_API_KEY, _XAI_DEFAULT_MODEL)
+            raw = _dispatch_openai_compatible(
+                req, "https://api.x.ai/v1/chat/completions", _XAI_API_KEY, _XAI_DEFAULT_MODEL
+            )
             return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
         elif p == "huggingface":
-            raw = _dispatch_openai_compatible(req, "https://router.huggingface.co/v1/chat/completions", _HF_ROUTER_TOKEN, _HF_DEFAULT_MODEL)
+            raw = _dispatch_openai_compatible(
+                req, "https://router.huggingface.co/v1/chat/completions", _HF_ROUTER_TOKEN, _HF_DEFAULT_MODEL
+            )
             return {"provider": p, "text": _extract_openai_style_response(raw).get("text", ""), "status": "ok"}
         elif p == "anthropic":
             raw = _dispatch_anthropic(req)
@@ -1315,8 +1433,7 @@ async def council_deliberate(req: CouncilRequest, x_api_key: Optional[str] = Hea
         synthesis = all_texts[-1] if all_texts else ""
     elif req.strategy == "debate":
         synthesis = "\n\n---\n\n".join(
-            f"[{r.get('provider', '?')}]: {r.get('text', '')}"
-            for r in responses if r.get("text")
+            f"[{r.get('provider', '?')}]: {r.get('text', '')}" for r in responses if r.get("text")
         )
     else:  # consensus
         synthesis = " | ".join(all_texts) if len(all_texts) <= 2 else all_texts[0] if all_texts else ""
@@ -1481,11 +1598,9 @@ async def training_status(x_api_key: Optional[str] = Header(None)):
 #  Hyperbolic Lattice 2.5D Workflow Route
 # ---------------------------------------------------------------------------
 
+
 def _notion_token() -> str:
-    token = (
-        os.environ.get("NOTION_TOKEN", "").strip()
-        or os.environ.get("NOTION_API_KEY", "").strip()
-    )
+    token = os.environ.get("NOTION_TOKEN", "").strip() or os.environ.get("NOTION_API_KEY", "").strip()
     return token
 
 
@@ -1888,8 +2003,10 @@ async def workflow_lattice25d(
 #  ChoiceScript Branching Workflow Engine
 # ---------------------------------------------------------------------------
 
+
 class BranchExploreRequest(BaseModel):
     """Execute a branching scene graph with multi-path exploration."""
+
     graph_name: str = "research_pipeline"
     topic: str = ""
     strategy: str = "all_paths"
@@ -1902,6 +2019,7 @@ class BranchExploreRequest(BaseModel):
 
 class BranchActionRequest(BaseModel):
     """Single scene action callback from n8n branching workflow."""
+
     scene: str
     action: str
     params: Dict[str, Any] = {}
@@ -1927,6 +2045,7 @@ async def workflow_branch_explore(req: BranchExploreRequest, x_api_key: Optional
     except ImportError:
         # Fallback: direct import from same directory
         import importlib.util
+
         spec = importlib.util.spec_from_file_location(
             "choicescript_branching_engine",
             os.path.join(os.path.dirname(__file__), "choicescript_branching_engine.py"),
@@ -1948,7 +2067,9 @@ async def workflow_branch_explore(req: BranchExploreRequest, x_api_key: Optional
 
     builder = graph_builders.get(req.graph_name)
     if not builder:
-        raise HTTPException(status_code=400, detail=f"Unknown graph: {req.graph_name}. Available: {list(graph_builders.keys())}")
+        raise HTTPException(
+            status_code=400, detail=f"Unknown graph: {req.graph_name}. Available: {list(graph_builders.keys())}"
+        )
 
     graph = builder()
     engine = BranchingEngine(
@@ -1973,11 +2094,15 @@ async def workflow_branch_explore(req: BranchExploreRequest, x_api_key: Optional
         "total_scenes": result.total_scenes,
         "coverage": round(result.coverage, 3),
         "paths_explored": len(result.paths),
-        "best_path": {
-            "scenes": result.best_path.scenes_visited,
-            "score": result.best_path.score,
-            "actions": len(result.best_path.actions_taken),
-        } if result.best_path else None,
+        "best_path": (
+            {
+                "scenes": result.best_path.scenes_visited,
+                "score": result.best_path.score,
+                "actions": len(result.best_path.actions_taken),
+            }
+            if result.best_path
+            else None
+        ),
         "all_paths": [
             {
                 "id": p.path_id,

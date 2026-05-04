@@ -18,6 +18,15 @@ Use Cursor agents as parallel workers, not as final authority.
 - Small isolated scripts with tests.
 - Read-only GitHub issue or pull-request review.
 
+## AI toolchain routing
+
+- Codex CLI owns terminal verification, final release checks, and cross-agent integration review.
+- Claude Code may take bounded implementation packets when the write scope is explicit.
+- Cursor may edit isolated docs, tests, small scripts, and checklist files under these rules.
+- Kimi Code may be used as a coding-agent lane through its official command-line client after login.
+- Ollama is the preferred local/private model fallback for no-cost tests and arena routing.
+- Hugging Face Jobs and Hub are training/publishing surfaces; do not dispatch or promote without an explicit task and gate evidence.
+
 ## Ask before doing
 
 - Sending email or posting externally.

@@ -29,9 +29,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 def _load_generator():
-    spec = importlib.util.spec_from_file_location(
-        "generate_packet_traces_sft", SCRIPT_PATH
-    )
+    spec = importlib.util.spec_from_file_location("generate_packet_traces_sft", SCRIPT_PATH)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -111,8 +109,7 @@ def test_merge_verdicts_have_valid_decision(pairs, generator):
     for pair in verdicts:
         report = json.loads(pair["response"])
         assert report.get("decision") in VALID_DECISIONS, (
-            f"verdict {pair['id']!r} decision {report.get('decision')!r} "
-            f"not in {VALID_DECISIONS}"
+            f"verdict {pair['id']!r} decision {report.get('decision')!r} " f"not in {VALID_DECISIONS}"
         )
 
 
@@ -121,9 +118,7 @@ def test_merge_verdicts_have_channel_value_tags(pairs):
     for pair in verdicts:
         report = json.loads(pair["response"])
         for tag in report.get("evidence", []) + report.get("contact_points", []):
-            assert isinstance(tag, str) and ":" in tag, (
-                f"tag {tag!r} in verdict {pair['id']!r} must be 'channel:value'"
-            )
+            assert isinstance(tag, str) and ":" in tag, f"tag {tag!r} in verdict {pair['id']!r} must be 'channel:value'"
 
 
 def test_merge_verdicts_carry_task_id(pairs):
@@ -142,9 +137,7 @@ def test_merge_verdicts_have_no_created_at_clock(pairs):
     verdicts = [p for p in pairs if p["category"] == "agentic-merge-verdict"]
     for pair in verdicts:
         report = json.loads(pair["response"])
-        assert "created_at" not in report, (
-            f"verdict {pair['id']!r} still carries created_at clock"
-        )
+        assert "created_at" not in report, f"verdict {pair['id']!r} still carries created_at clock"
 
 
 # ---------------------------------------------------------------------------
@@ -176,9 +169,7 @@ def test_traces_checkpoints_are_non_empty(pairs):
     traces = [p for p in pairs if p["category"] == "agentic-packet-trace"]
     for pair in traces:
         result = json.loads(pair["response"])
-        assert len(result["checkpoints"]) > 0, (
-            f"trace {pair['id']!r} has no checkpoints — graph never executed"
-        )
+        assert len(result["checkpoints"]) > 0, f"trace {pair['id']!r} has no checkpoints — graph never executed"
 
 
 def test_traces_use_runner_schema_version(pairs):
@@ -199,9 +190,7 @@ def test_verdict_fingerprint_matches_seed(pairs, generator):
     verdicts = [p for p in pairs if p["category"] == "agentic-merge-verdict"]
     for pair in verdicts:
         recomputed = generator.recompute_fingerprint_from_metadata(pair["metadata"])
-        assert recomputed is not None, (
-            f"verdict {pair['id']!r} task_id is not in the seed corpus"
-        )
+        assert recomputed is not None, f"verdict {pair['id']!r} task_id is not in the seed corpus"
         assert recomputed == pair["metadata"]["packet_fingerprint"], (
             f"verdict {pair['id']!r} fingerprint drift: "
             f"meta={pair['metadata']['packet_fingerprint']!r} "
@@ -219,9 +208,9 @@ def test_jsonl_is_byte_deterministic(generator, tmp_path):
     out_b = tmp_path / "b.jsonl"
     generator.write_jsonl(generator.generate_pairs(), out_a)
     generator.write_jsonl(generator.generate_pairs(), out_b)
-    assert out_a.read_bytes() == out_b.read_bytes(), (
-        "two generator runs produced different bytes — non-determinism leak"
-    )
+    assert (
+        out_a.read_bytes() == out_b.read_bytes()
+    ), "two generator runs produced different bytes — non-determinism leak"
 
 
 # ---------------------------------------------------------------------------
@@ -252,10 +241,8 @@ def test_no_fabricated_tool_call_prose(pairs):
     for pair in pairs:
         for token in forbidden:
             assert token not in pair["response"], (
-                f"pair {pair['id']!r} response contains forbidden prose token "
-                f"{token!r}"
+                f"pair {pair['id']!r} response contains forbidden prose token " f"{token!r}"
             )
             assert token not in pair["instruction"], (
-                f"pair {pair['id']!r} instruction contains forbidden prose token "
-                f"{token!r}"
+                f"pair {pair['id']!r} instruction contains forbidden prose token " f"{token!r}"
             )

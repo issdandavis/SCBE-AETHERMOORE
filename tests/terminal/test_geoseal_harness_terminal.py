@@ -132,7 +132,9 @@ def test_analog_action_deck_has_resettable_domino_primitives() -> None:
     deck = build_default_action_deck()
     ids = {action.action_id for action in deck}
 
-    assert {"observe-room", "move-lane", "inspect-object", "solve-checkpoint", "verify-evidence", "reset-run"}.issubset(ids)
+    assert {"observe-room", "move-lane", "inspect-object", "solve-checkpoint", "verify-evidence", "reset-run"}.issubset(
+        ids
+    )
     assert all(action.symbol for action in deck)
     assert all(action.multi_encoding["terminal"] for action in deck)
 

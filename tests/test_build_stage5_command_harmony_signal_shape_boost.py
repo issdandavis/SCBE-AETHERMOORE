@@ -4,7 +4,6 @@ import importlib.util
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT_PATH = ROOT / "scripts" / "build_stage5_command_harmony_signal_shape_boost.py"
 
@@ -55,14 +54,10 @@ def test_stage5_signal_shape_written_jsonl_is_valid() -> None:
     module.main()
 
     train_rows = [
-        json.loads(line)
-        for line in module.TRAIN_OUT.read_text(encoding="utf-8").splitlines()
-        if line.strip()
+        json.loads(line) for line in module.TRAIN_OUT.read_text(encoding="utf-8").splitlines() if line.strip()
     ]
     holdout_rows = [
-        json.loads(line)
-        for line in module.HOLDOUT_OUT.read_text(encoding="utf-8").splitlines()
-        if line.strip()
+        json.loads(line) for line in module.HOLDOUT_OUT.read_text(encoding="utf-8").splitlines() if line.strip()
     ]
     manifest = json.loads(module.MANIFEST_OUT.read_text(encoding="utf-8"))
 

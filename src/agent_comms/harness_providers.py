@@ -22,6 +22,12 @@ LANE_SWITCH_COSTS = {
     ("llamacpp", "ollama"): 2,
     ("ollama", "deepseek"): 5,
     ("deepseek", "ollama"): 5,
+    ("ollama", "kimi"): 5,
+    ("kimi", "ollama"): 5,
+    ("ollama", "kimi_code"): 5,
+    ("kimi_code", "ollama"): 5,
+    ("ollama", "moonshot"): 5,
+    ("moonshot", "ollama"): 5,
     ("ollama", "openrouter"): 5,
     ("openrouter", "ollama"): 5,
     ("ollama", "huggingface"): 4,
@@ -94,6 +100,46 @@ def _env(name: str, default: str) -> str:
 
 def provider_registry() -> dict[str, HarnessProvider]:
     """Return supported harness providers keyed by stable provider id."""
+
+    kimi_code_provider = HarnessProvider(
+        provider="kimi_code",
+        family="remote-openai-compatible",
+        base_url=_env("KIMI_CODE_OPENAI_BASE_URL", "https://api.kimi.com/coding/v1"),
+        api_key_env=("KIMI_CODE_API_KEY", "KIMI_API_KEY"),
+        default_model=_env("GEOSEAL_KIMI_CODE_MODEL", _env("GEOSEAL_KIMI_MODEL", "kimi-for-coding")),
+        tool_adapter="openai_tool_call",
+        local=False,
+        pricing_tier="membership-credits",
+        capabilities=("chat", "tools-json", "coding", "long-context", "agentic-coding"),
+        docs_url="https://www.kimi.com/code/docs/en/",
+        notes="Kimi Code membership API; use model kimi-for-coding.",
+    )
+    kimi_provider = HarnessProvider(
+        provider="kimi",
+        family=kimi_code_provider.family,
+        base_url=kimi_code_provider.base_url,
+        api_key_env=kimi_code_provider.api_key_env,
+        default_model=_env("GEOSEAL_KIMI_MODEL", kimi_code_provider.default_model),
+        tool_adapter=kimi_code_provider.tool_adapter,
+        local=False,
+        pricing_tier=kimi_code_provider.pricing_tier,
+        capabilities=kimi_code_provider.capabilities,
+        docs_url=kimi_code_provider.docs_url,
+        notes="Kimi Code alias; use kimi:kimi-for-coding refs in the agent bus.",
+    )
+    moonshot_provider = HarnessProvider(
+        provider="moonshot",
+        family="remote-openai-compatible",
+        base_url=_env("MOONSHOT_OPENAI_BASE_URL", "https://api.moonshot.ai/v1"),
+        api_key_env=("MOONSHOT_API_KEY",),
+        default_model=_env("GEOSEAL_MOONSHOT_MODEL", "kimi-k2.6"),
+        tool_adapter="openai_tool_call",
+        local=False,
+        pricing_tier="paid",
+        capabilities=("chat", "tools-json", "coding", "long-context", "agentic-coding"),
+        docs_url="https://platform.kimi.ai/docs/api/overview",
+        notes="Moonshot/Kimi OpenAI-compatible API",
+    )
 
     return {
         "ollama": HarnessProvider(
@@ -285,19 +331,9 @@ def provider_registry() -> dict[str, HarnessProvider]:
             docs_url="https://docs.x.ai/developers/model-capabilities/legacy/chat-completions",
             notes="xAI OpenAI-compatible API",
         ),
-        "moonshot": HarnessProvider(
-            provider="moonshot",
-            family="remote-openai-compatible",
-            base_url=_env("MOONSHOT_OPENAI_BASE_URL", "https://api.moonshot.ai/v1"),
-            api_key_env=("MOONSHOT_API_KEY", "KIMI_API_KEY"),
-            default_model=_env("GEOSEAL_MOONSHOT_MODEL", "kimi-k2-0905-preview"),
-            tool_adapter="openai_tool_call",
-            local=False,
-            pricing_tier="paid",
-            capabilities=("chat", "tools-json", "coding", "long-context"),
-            docs_url="https://platform.kimi.ai/docs/api/overview",
-            notes="Moonshot/Kimi OpenAI-compatible API",
-        ),
+        "moonshot": moonshot_provider,
+        "kimi": kimi_provider,
+        "kimi_code": kimi_code_provider,
         "openrouter": HarnessProvider(
             provider="openrouter",
             family="remote-openai-compatible",

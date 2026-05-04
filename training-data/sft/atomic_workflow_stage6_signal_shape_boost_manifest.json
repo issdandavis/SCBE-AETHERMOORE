@@ -1,6 +1,6 @@
 {
   "schema_version": "atomic_workflow_stage6_signal_shape_boost_manifest_v1",
-  "generated_at_utc": "2026-04-29T17:05:27.614113+00:00",
+  "generated_at_utc": "2026-05-03T00:53:07.209911+00:00",
   "outputs": {
     "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_signal_shape_boost_train.sft.jsonl",
     "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\atomic_workflow_stage6_signal_shape_boost_holdout.sft.jsonl"

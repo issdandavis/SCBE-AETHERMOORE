@@ -15,7 +15,6 @@ from typing import Any
 
 from src.coding_spine.router import RouteResult, route_task
 
-
 TONGUE_CANONICAL_LANG: dict[str, str] = {
     "KO": "Python",
     "AV": "TypeScript",

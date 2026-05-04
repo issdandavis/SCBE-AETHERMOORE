@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
 import tempfile
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
@@ -198,6 +199,42 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
                     temp_path.unlink(missing_ok=True)
                 except OSError:
                     pass
+
+    if command == "quick-agent":
+        bridge_allow_free_speech = os.environ.get("SCBE_GEOSEAL_BRIDGE_ALLOW_FREE_SPEECH", "").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        ns = argparse.Namespace(
+            command=body.get("command") or "status",
+            context=body.get("context") or "",
+            operator=body.get("operator") or "ai-operator",
+            allow_free_speech=bool(body.get("allow_free_speech")) and bridge_allow_free_speech,
+            json=True,
+        )
+        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_quick_agent, ns)
+        data = _parse_json_stdout(stdout, stderr, rc)
+        return {"exit_code": rc, "data": data, "stderr": stderr or None}
+
+    if command == "alignment-audit":
+        ns = argparse.Namespace(
+            max_files=int(body.get("max_files") or 4000),
+            json=True,
+        )
+        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_alignment_audit, ns)
+        data = _parse_json_stdout(stdout, stderr, rc)
+        return {"exit_code": rc, "data": data, "stderr": stderr or None}
+
+    if command == "binary-to-tmatrix":
+        ns = argparse.Namespace(
+            bits=body.get("bits") or "",
+            json=True,
+        )
+        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_binary_to_tmatrix, ns)
+        data = _parse_json_stdout(stdout, stderr, rc)
+        return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
     raise ValueError(f"unsupported GeoSeal bridge command: {command}")
 

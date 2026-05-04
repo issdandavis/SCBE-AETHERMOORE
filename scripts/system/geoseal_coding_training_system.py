@@ -293,6 +293,12 @@ def assess_job_health(inspect_summary: dict[str, Any], logs_payload: dict[str, A
             "safe_for_full_train": False,
             "recommendation": "cancel this smoke job and do not launch a full training run until a smoke job emits startup/train logs",
         }
+    if stage == "RUNNING" and has_training_signal:
+        return {
+            "state": "running_with_training_signal",
+            "safe_for_full_train": True,
+            "recommendation": "training is emitting progress/loss signal; wait for the terminal gate before promotion",
+        }
     if stage in {"FAILED", "CANCELED", "ERROR"}:
         return {
             "state": stage.lower(),

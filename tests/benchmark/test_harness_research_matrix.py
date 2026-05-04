@@ -7,7 +7,6 @@ from pathlib import Path
 
 from scripts.benchmark.harness_research_matrix import build_research_matrix, render_research_text
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -34,11 +33,7 @@ def test_research_matrix_covers_required_harness_lanes() -> None:
 def test_research_matrix_does_not_claim_external_parity_or_training_data() -> None:
     matrix = build_research_matrix()
 
-    external = [
-        lane
-        for lane in matrix["lanes"]
-        if lane["family"] in {"terminal_bench", "swe_bench"}
-    ]
+    external = [lane for lane in matrix["lanes"] if lane["family"] in {"terminal_bench", "swe_bench"}]
     assert external
     assert all(lane["parity_claim"] == "not_claimed" for lane in external)
     assert any("not copied into training corpora" in note for note in matrix["notes"])

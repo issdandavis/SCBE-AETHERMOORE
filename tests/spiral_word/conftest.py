@@ -10,4 +10,5 @@ _APP_DIR = os.path.join(_REPO_ROOT, "spiral-word-app")
 if _APP_DIR in sys.path:
     sys.path.remove(_APP_DIR)
 sys.path.insert(0, _APP_DIR)
-sys.modules.pop("governance", None)
+for _module_name in ("governance", "headless", "sync_engine", "braid_ledger", "ai_ports"):
+    sys.modules.pop(_module_name, None)

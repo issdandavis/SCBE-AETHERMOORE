@@ -83,7 +83,7 @@ def test_generate_record_attaches_braid_fields():
 
 
 def test_generate_record_writes_braid_audit_fields():
-    from governance import audit_log
+    from headless import audit_log
 
     sync = SyncEngine()
     before = len(audit_log.entries)

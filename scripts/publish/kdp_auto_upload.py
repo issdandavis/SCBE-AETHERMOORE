@@ -26,6 +26,8 @@ if you're not already authenticated. Your credentials are never stored.
 """
 
 import argparse
+import json
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -34,9 +36,43 @@ REPO = Path(r"C:\Users\issda\SCBE-AETHERMOORE")
 DEFAULT_EPUB = REPO / "artifacts" / "book" / "kdp" / "the-six-tongues-protocol.epub"
 KDP_BOOKSHELF = "https://kdp.amazon.com/en_US/bookshelf"
 BOOK_TITLE = "The Six Tongues Protocol"
+DEFAULT_ACCEPTANCE_REPORT = REPO / "artifacts" / "book" / "kdp" / "acceptance-gate.json"
 
 
-def run_upload(epub_path, dry_run=False, headless=False):
+def run_acceptance_gates(manuscript_path: Path) -> None:
+    """Run local story, visual, and KDP acceptance gates before browser upload."""
+    commands = [
+        [sys.executable, "scripts/publish/kdp_story_quality_gate.py"],
+        [sys.executable, "scripts/publish/kdp_visual_format_report.py"],
+        [
+            sys.executable,
+            "scripts/publish/kdp_acceptance_gate.py",
+            "--manuscript",
+            str(manuscript_path),
+            "--out",
+            str(DEFAULT_ACCEPTANCE_REPORT),
+        ],
+    ]
+    for cmd in commands:
+        print(f"[gate] {' '.join(cmd)}")
+        result = subprocess.run(cmd, cwd=REPO, text=True, capture_output=True)
+        if result.stdout:
+            print(result.stdout.strip())
+        if result.stderr:
+            print(result.stderr.strip(), file=sys.stderr)
+        if result.returncode != 0:
+            print("\nERROR: KDP acceptance gates did not pass. Upload blocked.")
+            print("Fix the gate report before trying again.")
+            sys.exit(result.returncode)
+
+    report = json.loads(DEFAULT_ACCEPTANCE_REPORT.read_text(encoding="utf-8"))
+    if report.get("decision") != "PASS":
+        print(f"ERROR: KDP acceptance decision is {report.get('decision')}. Upload blocked.")
+        sys.exit(2)
+    print(f"[gate] PASS score={report.get('score')}/{report.get('max_score')}")
+
+
+def run_upload(epub_path, dry_run=False, headless=False, skip_gate=False):
     """Run the KDP upload automation."""
     try:
         from playwright.sync_api import sync_playwright
@@ -49,6 +85,11 @@ def run_upload(epub_path, dry_run=False, headless=False):
         print(f"ERROR: EPUB not found: {epub}")
         print(f"Run: python scripts/publish/rebuild_and_stage_kdp.py")
         sys.exit(1)
+
+    if skip_gate:
+        print("[gate] SKIPPED by explicit flag. Final publish still requires manual confirmation.")
+    else:
+        run_acceptance_gates(epub)
 
     print(f"[KDP Auto-Upload]")
     print(f"  EPUB: {epub}")
@@ -242,9 +283,10 @@ def main():
     parser.add_argument("--epub", default=str(DEFAULT_EPUB), help="Path to EPUB file to upload")
     parser.add_argument("--dry-run", action="store_true", help="Navigate without publishing")
     parser.add_argument("--headless", action="store_true", help="Run without visible browser")
+    parser.add_argument("--skip-gate", action="store_true", help="Skip local acceptance gates before upload")
 
     args = parser.parse_args()
-    run_upload(args.epub, args.dry_run, args.headless)
+    run_upload(args.epub, args.dry_run, args.headless, args.skip_gate)
 
 
 if __name__ == "__main__":

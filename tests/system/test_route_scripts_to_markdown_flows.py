@@ -7,7 +7,6 @@ from pathlib import Path
 
 from scripts.system.route_scripts_to_markdown_flows import build_routes
 
-
 SCRIPT_PATTERN = "scripts/system/build_coding_decks.py"
 
 

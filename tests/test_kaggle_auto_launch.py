@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,3 +62,67 @@ def test_tokenizer_probe_kernel_is_status_instrumented() -> None:
     assert "loading_slow_tokenizer" in script
     assert "loading_fast_tokenizer" in script
     assert "ERROR.json" in script
+
+
+def test_kaggle_cli_runner_uses_utf8_replacement(monkeypatch) -> None:
+    module = _load_module()
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append((cmd, kwargs))
+        return subprocess.CompletedProcess(cmd, 0, stdout="ref,title\nuser/polly-auto,smart quote \u201d\n", stderr="")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+
+    result = module._run_kaggle(["kernels", "list", "--mine", "--csv"])
+
+    assert result.returncode == 0
+    assert calls == [
+        (
+            ["kaggle", "kernels", "list", "--mine", "--csv"],
+            {"capture_output": True, "text": True, "encoding": "utf-8", "errors": "replace"},
+        )
+    ]
+
+
+def test_list_mine_rows_handles_unicode_csv(monkeypatch) -> None:
+    module = _load_module()
+
+    def fake_run_kaggle(args):
+        assert args == ["kernels", "list", "--mine", "--csv"]
+        return subprocess.CompletedProcess(
+            ["kaggle", *args],
+            0,
+            stdout="ref,title\nissacizrealdavis/polly-auto-coding-approval-metrics-v1,AI \u2014 ready\n",
+            stderr="",
+        )
+
+    monkeypatch.setattr(module, "_run_kaggle", fake_run_kaggle)
+
+    rows = module.list_mine_rows()
+
+    assert rows == [
+        {
+            "ref": "issacizrealdavis/polly-auto-coding-approval-metrics-v1",
+            "title": "AI \u2014 ready",
+        }
+    ]
+
+
+def test_configure_console_encoding_is_fail_soft(monkeypatch) -> None:
+    module = _load_module()
+    calls = []
+
+    class FakeStream:
+        def reconfigure(self, **kwargs):
+            calls.append(kwargs)
+
+    monkeypatch.setattr(module.sys, "stdout", FakeStream())
+    monkeypatch.setattr(module.sys, "stderr", FakeStream())
+
+    module._configure_console_encoding()
+
+    assert calls == [
+        {"encoding": "utf-8", "errors": "replace"},
+        {"encoding": "utf-8", "errors": "replace"},
+    ]

@@ -1,0 +1,18 @@
+{
+  "schema_version": "go_game_go_lang_agentic_strategy_v1_manifest",
+  "train_file": "training-data\\sft\\go_game_go_lang_agentic_strategy_v1_train.sft.jsonl",
+  "eval_file": "training-data\\sft\\go_game_go_lang_agentic_strategy_v1_eval.sft.jsonl",
+  "train_records": 8,
+  "eval_records": 2,
+  "difficulty_counts": {
+    "easy": 3,
+    "medium": 3,
+    "hard": 4
+  },
+  "math_boosters": {
+    "curriculum_difficulty_scheduling": "easy -> medium -> hard strategy rows",
+    "multi_granularity_preference": "concept, move, language habit, and next action are separately inspectable",
+    "geometric_mean_reward_stabilization": "reserved for later mechanical reward loops; not applied to SFT labels"
+  },
+  "sha256": "6f95451fef2fe8c8df48944f7ab94ca1ef49eb0c948ae7a76f98d4b5bebbfe4f"
+}

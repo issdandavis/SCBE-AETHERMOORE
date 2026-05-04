@@ -1,0 +1,42 @@
+{
+  "dataset": "chemistry_manual_verification_v1",
+  "version": "1.0.0",
+  "n_rows": 20,
+  "sources": [
+    "basic",
+    "boundary",
+    "drug",
+    "stress_test",
+    "functional_group"
+  ],
+  "difficulty_distribution": {
+    "1": 6,
+    "2": 10,
+    "3": 4
+  },
+  "governance_distribution": {
+    "ALLOW": 18,
+    "DENY": 2
+  },
+  "columns": [
+    "smiles",
+    "name",
+    "expected_valid",
+    "expected_family",
+    "expected_elements",
+    "expected_governance",
+    "manual_valence_check",
+    "manual_electronegativity",
+    "manual_functional_group",
+    "manual_bond_analysis",
+    "expected_tau_hat_signs",
+    "expected_coherence_range",
+    "expected_valence_pressure_range",
+    "required_checks",
+    "difficulty",
+    "source",
+    "tags"
+  ],
+  "path": "training-data/chemistry_manual_verification_v1.jsonl",
+  "description": "College-level chemistry verification dataset. Each row forces the system to walk the full arithmetic path: atoms \u2192 bonds \u2192 valence \u2192 electronegativity \u2192 functional group \u2192 RDKit validity \u2192 SCBE fusion \u2192 governance verdict."
+}

@@ -116,15 +116,38 @@ def test_dispatch_single_provider_hides_exception_text(monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_execute_code_hides_kernel_runner_exception_text(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+
     def fake_urlopen(*args, **kwargs):
         raise RuntimeError("secret kernel-runner details")
 
     monkeypatch.setattr(bridge.urllib_request, "urlopen", fake_urlopen)
 
-    result = await bridge.execute_code(bridge.CodeExecRequest(code="print('hi')"))
+    result = await bridge.execute_code(bridge.CodeExecRequest(code="print('hi')"), x_api_key="test-key")
 
     assert result["stderr"] == "kernel-runner request failed"
     assert "secret kernel-runner details" not in json.dumps(result)
+
+
+@pytest.mark.asyncio
+async def test_arena_chat_requires_api_key(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+
+    req = bridge.ArenaChatRequest.model_validate({"message": "hello", "tentacle": "huggingface"})
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.arena_chat(req, x_api_key=None)
+
+    assert exc.value.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_arena_providers_requires_api_key(monkeypatch) -> None:
+    monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})
+
+    with pytest.raises(bridge.HTTPException) as exc:
+        await bridge.arena_providers(x_api_key=None)
+
+    assert exc.value.status_code == 401
 
 
 def test_forward_to_browser_service_hides_upstream_body(monkeypatch) -> None:

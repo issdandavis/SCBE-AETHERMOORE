@@ -126,6 +126,19 @@ def _score_prompt(prompt: Dict[str, Any], response: str) -> Dict[str, Any]:
     }
 
 
+def _prefix_only_response(kind: str) -> str:
+    """Deterministic no-model response for local contract checks.
+
+    This mode proves the forced-prefix scaffold itself covers the frozen gate.
+    It intentionally avoids any domain prose that could trigger forbidden
+    substrings.
+    """
+    return (
+        _build_prefix(kind)
+        + "\ncontract-check: deterministic prefix scaffold emitted; model continuation disabled."
+    )
+
+
 def _generate_with_prefix(
     model,
     tokenizer,
@@ -175,6 +188,11 @@ def main() -> int:
         default="artifacts/stage6_constrained_decoding",
     )
     ap.add_argument("--tag", default="base_no_adapter")
+    ap.add_argument(
+        "--prefix-only",
+        action="store_true",
+        help="Run a deterministic no-model check of the forced prefix scaffold.",
+    )
     args = ap.parse_args()
 
     contract_path = (PROJECT_ROOT / args.contract).resolve()
@@ -188,24 +206,30 @@ def main() -> int:
     print(f"[constrained-decoding] adapter: {args.adapter or '(none)'}", flush=True)
     print(f"[constrained-decoding] prompts: {len(prompts)}", flush=True)
     print(f"[constrained-decoding] tag: {args.tag}", flush=True)
+    print(f"[constrained-decoding] prefix_only: {args.prefix_only}", flush=True)
 
-    import torch  # noqa: E402
-    from transformers import AutoModelForCausalLM, AutoTokenizer  # noqa: E402
+    model = None
+    tokenizer = None
+    torch = None
+    if not args.prefix_only:
+        import torch as torch_module  # noqa: E402
+        from transformers import AutoModelForCausalLM, AutoTokenizer  # noqa: E402
 
-    tokenizer = AutoTokenizer.from_pretrained(args.base, trust_remote_code=True)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+        torch = torch_module
+        tokenizer = AutoTokenizer.from_pretrained(args.base, trust_remote_code=True)
+        if tokenizer.pad_token is None:
+            tokenizer.pad_token = tokenizer.eos_token
 
-    dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-    model = AutoModelForCausalLM.from_pretrained(
-        args.base, torch_dtype=dtype, trust_remote_code=True
-    )
-    if args.adapter:
-        from peft import PeftModel  # noqa: E402
-        model = PeftModel.from_pretrained(model, args.adapter)
-    model.eval()
-    if torch.cuda.is_available():
-        model = model.to("cuda")
+        dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+        model = AutoModelForCausalLM.from_pretrained(
+            args.base, torch_dtype=dtype, trust_remote_code=True
+        )
+        if args.adapter:
+            from peft import PeftModel  # noqa: E402
+            model = PeftModel.from_pretrained(model, args.adapter)
+        model.eval()
+        if torch.cuda.is_available():
+            model = model.to("cuda")
 
     results: List[Dict[str, Any]] = []
     n_pass = 0
@@ -226,25 +250,29 @@ def main() -> int:
             })
             continue
         forced_prefix = _build_prefix(kind)
-        try:
-            with torch.no_grad():
-                response = _generate_with_prefix(
-                    model,
-                    tokenizer,
-                    prompt.get("prompt", ""),
-                    forced_prefix,
-                    max_new_tokens=args.max_new_tokens,
-                )
-        except Exception as exc:  # noqa: BLE001
-            results.append({
-                "id": prompt_id,
-                "ok": False,
-                "error": str(exc),
-                "response": "",
-                "kind": kind,
-                "prefix": forced_prefix,
-            })
-            continue
+        if args.prefix_only:
+            response = _prefix_only_response(kind)
+        else:
+            try:
+                assert torch is not None
+                with torch.no_grad():
+                    response = _generate_with_prefix(
+                        model,
+                        tokenizer,
+                        prompt.get("prompt", ""),
+                        forced_prefix,
+                        max_new_tokens=args.max_new_tokens,
+                    )
+            except Exception as exc:  # noqa: BLE001
+                results.append({
+                    "id": prompt_id,
+                    "ok": False,
+                    "error": str(exc),
+                    "response": "",
+                    "kind": kind,
+                    "prefix": forced_prefix,
+                })
+                continue
         diag = _score_prompt(prompt, response)
         diag["response"] = response[:1500]
         diag["kind"] = kind
@@ -272,7 +300,7 @@ def main() -> int:
         "base_model": args.base,
         "adapter": args.adapter,
         "tag": args.tag,
-        "decoding_mode": "forced_prefix_injection",
+        "decoding_mode": "prefix_only_contract_check" if args.prefix_only else "forced_prefix_injection",
         "n_total": n_total,
         "n_pass": n_pass,
         "pass_rate": pass_rate,

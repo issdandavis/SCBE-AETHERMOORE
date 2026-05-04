@@ -38,11 +38,13 @@ def _report(pass_rate: float = 1.0) -> dict:
                 "missing_required": [] if ok else ["provider-pair:ollama->deepseek:benchmark"],
                 "triggered_forbidden": [],
                 "response": (
-                    "required-tokens: provider-pair:ollama->deepseek:benchmark | "
-                    "signal | blocked | lane | cost ::\nSignal follows."
-                )
-                if ok
-                else "Signal omitted.",
+                    (
+                        "required-tokens: provider-pair:ollama->deepseek:benchmark | "
+                        "signal | blocked | lane | cost ::\nSignal follows."
+                    )
+                    if ok
+                    else "Signal omitted."
+                ),
             },
         ],
     }
@@ -73,10 +75,7 @@ def test_extract_gate_report_and_losses_from_hf_log(tmp_path: Path) -> None:
     wrapped = {"event": "gate_report", "report": _report()}
     log = tmp_path / "hf.log"
     log.write_text(
-        "{'loss': '4.215', 'epoch': '2'}\n"
-        "{'loss': '0.2556', 'epoch': '24'}\n"
-        + json.dumps(wrapped)
-        + "\n",
+        "{'loss': '4.215', 'epoch': '2'}\n" "{'loss': '0.2556', 'epoch': '24'}\n" + json.dumps(wrapped) + "\n",
         encoding="utf-8",
     )
 

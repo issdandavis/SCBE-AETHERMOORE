@@ -36,9 +36,7 @@ def test_bigquery_multimodal_cluster_packet_has_sql_and_visual_step() -> None:
     assert packet["request"]["task_type"] == "cluster"
     assert packet["route"]["required_signal"] == "data-science:bigquery:cluster"
     assert any(step["step_id"] == "S3_visual_enrichment" for step in packet["workflow"])
-    assert any(
-        "CREATE OR REPLACE MODEL" in sql for sql in packet["artifacts"]["sql_skeleton"]
-    )
+    assert any("CREATE OR REPLACE MODEL" in sql for sql in packet["artifacts"]["sql_skeleton"])
     assert "source_inlets_manifest.json" in packet["artifacts"]["expected"]
     assert {
         "arxiv_public",
@@ -64,9 +62,7 @@ def test_python_search_packet_has_embedding_index_skeleton() -> None:
 
     assert packet["request"]["task_type"] == "search"
     assert packet["request"]["surface"] == "python"
-    assert any(
-        "NearestNeighbors" in line for line in packet["artifacts"]["python_skeleton"]
-    )
+    assert any("NearestNeighbors" in line for line in packet["artifacts"]["python_skeleton"])
     assert packet["promotion_gate"]["minimum_evidence"] == [
         "source inlets manifest",
         "source manifest with hashes",
@@ -172,7 +168,4 @@ def test_geoseal_cli_routes_data_science_agent() -> None:
     assert packet["request"]["surface"] == "bigquery"
     assert packet["route"]["required_signal"] == "data-science:bigquery:cluster"
     assert any("ML.EVALUATE" in sql for sql in packet["artifacts"]["sql_skeleton"])
-    assert any(
-        inlet["inlet_id"] == "arxiv_public"
-        for inlet in packet["source_inlets"]["recommended"]
-    )
+    assert any(inlet["inlet_id"] == "arxiv_public" for inlet in packet["source_inlets"]["recommended"])

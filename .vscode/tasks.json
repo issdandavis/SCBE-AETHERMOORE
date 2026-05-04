@@ -9,7 +9,9 @@
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": ["$tsc"],
+      "problemMatcher": [
+        "$tsc"
+      ],
       "presentation": {
         "reveal": "always",
         "panel": "new"
@@ -20,7 +22,9 @@
       "type": "npm",
       "script": "build:watch",
       "isBackground": true,
-      "problemMatcher": ["$tsc-watch"],
+      "problemMatcher": [
+        "$tsc-watch"
+      ],
       "presentation": {
         "reveal": "always",
         "panel": "dedicated"
@@ -30,7 +34,9 @@
       "label": "Type Check",
       "type": "npm",
       "script": "typecheck",
-      "problemMatcher": ["$tsc"],
+      "problemMatcher": [
+        "$tsc"
+      ],
       "presentation": {
         "reveal": "always",
         "panel": "shared"
@@ -227,6 +233,16 @@
       "label": "SCBE: Training Run Ledger",
       "type": "npm",
       "script": "training:run-ledger",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "SCBE: Refresh Training Hub",
+      "type": "npm",
+      "script": "training:hub",
       "problemMatcher": [],
       "presentation": {
         "reveal": "always",

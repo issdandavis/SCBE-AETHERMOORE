@@ -24,7 +24,6 @@ from typing import Any
 
 from .packet import AgentPacketV1, BudgetExceeded, enforce_budget
 
-
 SCHEMA = "agent_secure_handoff_v1"
 DECODE_METHOD = "canonical-json.zlib.hmac-sha256-xorstream-v1"
 KDF_METHOD = "hkdf-sha256-route-bound-v1"

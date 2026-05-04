@@ -22,7 +22,6 @@ from .harness_providers import LaneSwitchVerdict, evaluate_lane_switch
 from .packet import AgentPacketV1
 from .secure_handoff import CANONICAL_SEPARATORS, semantic_shadow
 
-
 SCHEMA = "agent_triadic_handoff_gate_v1"
 
 

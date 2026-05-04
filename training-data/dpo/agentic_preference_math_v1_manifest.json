@@ -1,0 +1,43 @@
+{
+  "schema_version": "agentic_preference_math_v1_manifest",
+  "train_file": "training-data\\dpo\\agentic_preference_math_v1_train.jsonl",
+  "row_count": 6,
+  "difficulty_counts": {
+    "easy": 2,
+    "medium": 2,
+    "hard": 2
+  },
+  "preference_granularity_counts": {
+    "receipt_checklist": 2,
+    "action_step": 2,
+    "answer": 2
+  },
+  "math_boosters": {
+    "multi_granularity_preference": {
+      "levels": [
+        "answer",
+        "action_step",
+        "receipt_checklist"
+      ],
+      "purpose": "Score why the chosen answer beats the rejected answer instead of storing only a binary label."
+    },
+    "geometric_mean_reward_stabilization": {
+      "reward_stability_mode": "geometric_mean_clip",
+      "purpose": "Suppress one-off reward spikes before future GRPO-style loops."
+    },
+    "curriculum_difficulty_scheduling": {
+      "bands": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "purpose": "Keep hard examples from overwhelming the early adapter."
+    }
+  },
+  "training_boundary": {
+    "method": "DPO_ORPO_ready",
+    "not_for_sft_kaggle_kernel": true,
+    "rule": "Preference rows are chosen/rejected pairs and should not be mixed into SFT-only Kaggle rounds."
+  },
+  "sha256": "c9dc6a07dc6fd13c17ff1c26ad91e87ef1174371163abb31582ef642e96289ca"
+}

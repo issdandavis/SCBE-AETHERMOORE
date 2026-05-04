@@ -73,9 +73,9 @@ def test_tongue_rows_match_canonical_map(all_rows):
         body = row["messages"][-1]["content"]
         abbr = row["meta"]["concept_id"].split(":", 1)[1]
         expected_lang = CANONICAL_TONGUE_LANG[abbr]
-        assert f"coding_face: {abbr} -> {expected_lang}" in body, (
-            f"tongue {abbr} body must declare canonical coding face {expected_lang}"
-        )
+        assert (
+            f"coding_face: {abbr} -> {expected_lang}" in body
+        ), f"tongue {abbr} body must declare canonical coding face {expected_lang}"
 
 
 def test_coding_rows_route_via_canonical_map(all_rows):
@@ -100,9 +100,9 @@ def test_chemistry_rows_declare_valid_tongue(all_rows):
         body = row["messages"][-1]["content"]
         tongue_line = next(line for line in body.splitlines() if line.startswith("tongue_face:"))
         tongue = tongue_line.split(":", 1)[1].strip()
-        assert tongue in CANONICAL_TONGUE_LANG, (
-            f"chemistry row {row['meta']['concept_id']} declares unknown tongue {tongue}"
-        )
+        assert (
+            tongue in CANONICAL_TONGUE_LANG
+        ), f"chemistry row {row['meta']['concept_id']} declares unknown tongue {tongue}"
 
 
 def test_holdout_split_non_empty_per_category(manifest):

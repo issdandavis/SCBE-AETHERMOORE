@@ -1,6 +1,6 @@
 {
   "schema_version": "stage5_command_harmony_signal_shape_boost_manifest_v1",
-  "generated_utc": "2026-05-03T01:19:08.100695+00:00",
+  "generated_utc": "2026-05-04T00:42:40.415102+00:00",
   "train": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\stage5_command_harmony_signal_shape_boost_train.sft.jsonl",
   "holdout": "C:\\Users\\issda\\SCBE-AETHERMOORE\\training-data\\sft\\stage5_command_harmony_signal_shape_boost_holdout.sft.jsonl",
   "train_rows": 40,

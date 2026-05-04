@@ -1,0 +1,34 @@
+{
+  "dataset": "chemistry_manual_verification_v1",
+  "version": "1.0.0",
+  "format": "sft",
+  "n_train": 51,
+  "n_eval": 8,
+  "n_total": 59,
+  "sources": [
+    "aromatic_edge",
+    "basic",
+    "boundary",
+    "charged",
+    "drug",
+    "functional_group",
+    "generated_failure",
+    "peptide",
+    "solvent",
+    "stereochemistry",
+    "stress_test",
+    "toxic"
+  ],
+  "difficulty_distribution": {
+    "1": 7,
+    "2": 23,
+    "3": 29
+  },
+  "governance_distribution": {
+    "ALLOW": 53,
+    "DENY": 6
+  },
+  "train_path": "training-data/sft/chemistry_manual_verification_v1_train.sft.jsonl",
+  "eval_path": "training-data/sft/chemistry_manual_verification_v1_eval.sft.jsonl",
+  "description": "College-level chemistry verification SFT dataset. Each example teaches the agent to walk the full arithmetic path from SMILES to governance verdict."
+}

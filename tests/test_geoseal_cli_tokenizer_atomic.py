@@ -130,6 +130,38 @@ def test_binary_to_tokenizer_flags_language_mismatch() -> None:
     assert mapping["language_matches_prime"] is False
 
 
+def test_binary_to_tmatrix_emits_language_agnostic_matrix() -> None:
+    result = _run_cli("binary-to-tmatrix", "--json", "01101000 01101001")
+    assert result.returncode == 0, result.stderr
+    packet = json.loads(result.stdout)
+    assert packet["version"] == "geoseal-binary-tmatrix-v1"
+    assert packet["byte_count"] == 2
+    assert packet["tmatrix"]["row_axis"] == "byte_index"
+    assert packet["tmatrix"]["column_axis"] == "tongue"
+    assert len(packet["tmatrix"]["rows"]) == 2
+    first = packet["tmatrix"]["rows"][0]
+    assert first["bits"] == "01101000"
+    assert len(first["tvector6"]) == 6
+    assert "KO" in first["tokens"]
+    assert packet["roundtrip"]["decoded_utf8"] == "hi"
+    langs = {row["language"] for row in packet["language_views"]}
+    assert {"python", "typescript", "rust", "c", "julia", "haskell"} <= langs
+
+
+def test_binary_to_tmatrix_accepts_unquoted_byte_chunks() -> None:
+    result = _run_cli("binary-to-tmatrix", "--json", "01001000", "01101001")
+    assert result.returncode == 0, result.stderr
+    packet = json.loads(result.stdout)
+    assert packet["byte_count"] == 2
+    assert packet["roundtrip"]["decoded_utf8"] == "Hi"
+
+
+def test_binary_to_tmatrix_rejects_invalid_bits() -> None:
+    result = _run_cli("binary-to-tmatrix", "--json", "0101")
+    assert result.returncode == 2
+    assert "invalid 8-bit chunk" in result.stderr
+
+
 def test_atomic_shows_row_metadata() -> None:
     result = _run_cli("atomic", "add")
     assert result.returncode == 0, result.stderr

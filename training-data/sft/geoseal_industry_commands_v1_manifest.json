@@ -1,0 +1,33 @@
+{
+  "schema_version": "geoseal_industry_commands_manifest_v1",
+  "track": "geoseal_industry_commands_v1",
+  "train_file": "training-data\\sft\\geoseal_industry_commands_v1_train.sft.jsonl",
+  "eval_file": "training-data\\sft\\geoseal_industry_commands_v1_eval.sft.jsonl",
+  "train_records": 13,
+  "eval_records": 3,
+  "specific_records": 8,
+  "non_specific_records": 8,
+  "command_families": [
+    "auth",
+    "bench",
+    "factory",
+    "github",
+    "models",
+    "release",
+    "sandbox",
+    "train"
+  ],
+  "files": {
+    "geoseal_industry_commands_v1_train.sft.jsonl": "2b8a8f95d8aa046ec64028042ba95a4b2ccebc221a29c3e5f407ade3d3913639",
+    "geoseal_industry_commands_v1_eval.sft.jsonl": "880d1bfb28096e080609526525025ca63db36469c5d15ebcd012342917bdc04b"
+  },
+  "gate": {
+    "decision": "PASS only if the response preserves intent_class, command_family, command_status, receipts, and distinguishes planned GeoSeal aliases from existing repo commands.",
+    "blocked": [
+      "raw_secrets",
+      "fake_execution_claims",
+      "publish_without_gate",
+      "merge_without_review"
+    ]
+  }
+}

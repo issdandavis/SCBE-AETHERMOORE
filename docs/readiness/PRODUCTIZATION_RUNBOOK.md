@@ -17,35 +17,34 @@ Do not bundle every experimental subsystem in first release messaging.
 Run:
 
 ```powershell
-npm run product:ship:quick
+npm run publish:check:strict && npm run connector:health
 ```
 
 This does two things:
-1. Runs product readiness gates (`product:readiness`)
-2. Builds SHA-256 download manifests (`product:manifest`)
+1. Runs strict npm package publish guards (`publish:check:strict`)
+2. Verifies connector/runtime readiness (`connector:health`)
 
 Outputs:
-- `artifacts/releases/product_readiness_latest.json`
-- `artifacts/releases/download_manifest_latest.json`
-- `artifacts/releases/SHA256SUMS.txt`
+- `artifacts/npm-pack/pack.json`
+- connector health summary in terminal output
 
 ## Full gate (slower)
 
 Run this before public announcements:
 
 ```powershell
-npm run product:readiness:full
+npm run publish:check:strict && npm run publish:pypi:build && npm run publish:pypi:check && npm run test:all
 ```
 
 This adds:
-- PyPI build + guard
-- GeoShell Electron packaging (`electron:pack`)
+- PyPI build + dist guard
+- Full TS + Python test lane (`test:all`)
 
 ## Publish-safe checklist
 
-- [ ] `npm run product:ship:quick` passes.
-- [ ] `artifacts/releases/product_readiness_latest.json` says `"all_passed": true`.
-- [ ] `artifacts/releases/SHA256SUMS.txt` exists and is attached with download links.
+- [ ] `npm run publish:check:strict && npm run connector:health` passes.
+- [ ] `artifacts/pypi-dist/` contains fresh build artifacts when shipping Python package lanes.
+- [ ] `artifacts/npm-pack/pack.json` exists and passed guard checks.
 - [ ] Release notes clearly state what is in scope (`CLI + packages + app artifacts + docs`).
 - [ ] No secrets or private proposal materials are in artifact bundles.
 

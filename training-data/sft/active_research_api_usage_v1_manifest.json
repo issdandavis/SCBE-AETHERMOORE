@@ -1,0 +1,25 @@
+{
+  "schema_version": "scbe_active_research_api_usage_manifest_v1",
+  "track": "active_research_api_usage_v1",
+  "train_file": "training-data\\sft\\active_research_api_usage_v1_train.sft.jsonl",
+  "eval_file": "training-data\\sft\\active_research_api_usage_v1_eval.sft.jsonl",
+  "train_records": 10,
+  "eval_records": 2,
+  "source_files": [
+    "src\\knowledge\\storage\\open_source_api_library.json",
+    "src\\knowledge\\storage\\government_api_directory.json"
+  ],
+  "files": {
+    "active_research_api_usage_v1_train.sft.jsonl": "fe576b40f5849f16ab47783f879b45e1b9cd08be9ee0a3ceeafe4b7839e33540",
+    "active_research_api_usage_v1_eval.sft.jsonl": "6a4649c398172428a25b149762edde879a3c02379cd8f5512ca0c4ef7b164282"
+  },
+  "gate": {
+    "decision": "PASS only if assistant JSON preserves decision, inlet choice, receipts, safety checks, and compact handoff rules.",
+    "blocked": [
+      "raw_api_keys",
+      "unbounded_collection",
+      "uncited_claims",
+      "live_sensitive_targeting"
+    ]
+  }
+}

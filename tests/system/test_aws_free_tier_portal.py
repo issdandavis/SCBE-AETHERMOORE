@@ -21,9 +21,7 @@ def _load_module():
 def test_build_operator_policy_is_limited_to_free_tier_lanes() -> None:
     module = _load_module()
 
-    policy = module.build_operator_policy(
-        "123456789012", "scbe-free-tier-operator", "scbe-lambda-basic-exec"
-    )
+    policy = module.build_operator_policy("123456789012", "scbe-free-tier-operator", "scbe-lambda-basic-exec")
     encoded = json.dumps(policy)
 
     assert "lambda:CreateFunction" in encoded
@@ -52,9 +50,7 @@ def test_lambda_trust_policy_only_allows_lambda_service() -> None:
 def test_read_root_csv_accepts_aws_headers(tmp_path: Path) -> None:
     module = _load_module()
     path = tmp_path / "root.csv"
-    path.write_text(
-        "Access key ID,Secret access key\nAKIA_TEST,secret-test\n", encoding="utf-8"
-    )
+    path.write_text("Access key ID,Secret access key\nAKIA_TEST,secret-test\n", encoding="utf-8")
 
     creds = module.read_root_csv(path)
 
