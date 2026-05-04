@@ -663,6 +663,58 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
             )
         ]
     )
+    builder_tests_first_field_assistant = {
+        "00_required_items": "Builder | Navigator | deterministic | verification | tests | apply",
+        "01_tests_literal": "tests",
+        "02_tests_before_apply": "tests before apply",
+        "03_do_not_substitute": "do not replace tests with test gate, unit check, or validation gate",
+        "Builder": {
+            "role": "Builder",
+            "responsibility": "draft safe Python helper intent only",
+        },
+        "Navigator": {
+            "role": "Navigator",
+            "deterministic": "route facts through deterministic tools",
+            "verification": "run tests and report tests before apply",
+        },
+        "deterministic": "repo tools and deterministic lookup before memory",
+        "verification": "tests are the named verification artifact",
+        "tests": ["tests"],
+        "apply": {"apply_gate": "closed", "opens_after": "tests pass"},
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-builder-tests-first-field",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-builder-tests-first-field",
+            "task_type": "pair_coding_gate_repair",
+            "query": "safe Python helper tests first-field repair",
+            "success": True,
+            "timestamp": _utc_now(),
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
+            (
+                f"eval_gold_builder_navigator_packet_v{index}",
+                "builder_navigator_packet",
+                prompt,
+                builder_tests_first_field_assistant,
+            )
+            for index, prompt in enumerate(
+                [
+                    "The first generated field must be exactly 00_required_items with Builder, Navigator, deterministic, verification, tests, apply.",
+                    "Raw canary repair: 00_required_items must contain tests between verification and apply.",
+                    "Do not say test gate. Say tests. First field: Builder | Navigator | deterministic | verification | tests | apply.",
+                    "Return JSON-like packet where 00_required_items includes the exact plural tests before apply.",
+                    "GeoShell Builder/Navigator helper packet: the first field must preserve tests as a required literal.",
+                    "Repair missing raw literal tests by putting tests in 00_required_items and again in 01_tests_literal.",
+                    "Output starts with 00_required_items: Builder | Navigator | deterministic | verification | tests | apply.",
+                    "For this safe helper route, tests is mandatory evidence; do not substitute validation or gate wording.",
+                ],
+                start=29,
+            )
+        ]
+    )
 
     ca_pair_assistant = {
         "schema_version": "geoshell_pair_agent_smoke_repair_v1",
