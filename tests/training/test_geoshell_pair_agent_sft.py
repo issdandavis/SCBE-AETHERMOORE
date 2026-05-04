@@ -27,10 +27,10 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     assert dataset["schema_version"] == "geoshell_pair_agent_sft_v1"
     assert dataset["base_record_count"] == 15
     assert dataset["population_multiplier"] == 6
-    assert dataset["eval_gold_count"] == 40
-    assert len(dataset["train"]) == 118  # 13 train base * 6 + 40 eval_gold
+    assert dataset["eval_gold_count"] == 56
+    assert len(dataset["train"]) == 134  # 13 train base * 6 + 56 eval_gold
     assert len(dataset["holdout"]) == 12  # 2 holdout base * 6
-    assert len(dataset["events"]) == 130  # 90 multiplied + 40 eval_gold
+    assert len(dataset["events"]) == 146  # 90 multiplied + 56 eval_gold
 
     first = json.loads(dataset["train"][0]["messages"][-1]["content"])
     assert first["schema_version"] == "geoshell_pair_agent_answer_v1"
@@ -89,7 +89,7 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     eval_gold_rows = [
         row for row in dataset["train"] if row["meta"]["task_kind"] == "eval_shape_gold"
     ]
-    assert len(eval_gold_rows) == 40
+    assert len(eval_gold_rows) == 56
     eval_gold_gate_ids = {row["meta"]["gate_id"] for row in eval_gold_rows}
     assert eval_gold_gate_ids == {
         "builder_navigator_packet",
@@ -112,6 +112,14 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
         assert required in bnp_assistant_text, f"{required!r} missing from gold answer"
     for forbidden in ("apply immediately", "skip tests"):
         assert forbidden not in bnp_assistant_text, f"{forbidden!r} leaked into gold answer"
+
+    bnp_first_face_row = next(
+        row for row in eval_gold_rows if row["meta"]["task_id"] == "eval_gold_builder_navigator_packet_v13"
+    )
+    bnp_first_face_text = bnp_first_face_row["messages"][-1]["content"]
+    assert "00_required_items" in bnp_first_face_text
+    assert "tests" in bnp_first_face_text
+    assert "apply" in bnp_first_face_text
 
     tokenizer_row = next(
         row for row in eval_gold_rows if row["meta"]["task_id"] == "eval_gold_tokenizer_alignment_packet_v5"
@@ -170,11 +178,11 @@ def test_write_outputs_creates_train_holdout_manifest_and_events(
     assert manifest["profile_id"] == "geoshell-pair-agent-v1"
     assert manifest["base_record_count"] == 15
     assert manifest["population_multiplier"] == 6
-    assert manifest["eval_gold_count"] == 40
-    assert manifest["train_count"] == 118
+    assert manifest["eval_gold_count"] == 56
+    assert manifest["train_count"] == 134
     assert manifest["holdout_count"] == 12
-    assert manifest["record_count"] == 130
-    assert len(events) == 130
+    assert manifest["record_count"] == 146
+    assert len(events) == 146
     assert events[0]["_agent_id"] == "pair-agent-builder-navigator"
 
 
@@ -213,7 +221,7 @@ def test_geoseal_cli_builds_pair_agent_training_outputs(tmp_path: Path) -> None:
     assert payload["ok"] is True
     assert payload["base_record_count"] == 15
     assert payload["population_multiplier"] == 6
-    assert payload["train_count"] == 118
+    assert payload["train_count"] == 134
     assert payload["holdout_count"] == 12
     assert Path(payload["paths"]["manifest"]).exists()
     assert Path(payload["geoshell_event_feed"]).exists()

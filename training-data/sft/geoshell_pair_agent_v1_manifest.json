@@ -1,7 +1,7 @@
 {
   "base_record_count": 15,
-  "created_at": "2026-05-04T14:52:16Z",
-  "eval_gold_count": 40,
+  "created_at": "2026-05-04T17:43:46Z",
+  "eval_gold_count": 56,
   "geoshell_events_path": "artifacts\\geoshell\\pair_agent\\latest_events.json",
   "holdout_count": 12,
   "holdout_path": "training-data\\sft\\geoshell_pair_agent_v1_holdout.sft.jsonl",
@@ -13,13 +13,13 @@
   ],
   "population_multiplier": 6,
   "profile_id": "geoshell-pair-agent-v1",
-  "record_count": 130,
+  "record_count": 146,
   "schema_version": "geoshell_pair_agent_sft_v1",
   "source": {
     "benchmark_schema": "scbe_dual_agent_pair_benchmark_v1",
     "source_script": "scripts/benchmark/dual_agent_pair_benchmark.py"
   },
-  "train_count": 118,
+  "train_count": 134,
   "train_path": "training-data\\sft\\geoshell_pair_agent_v1_train.sft.jsonl",
   "verification": [
     "python scripts/benchmark/dual_agent_pair_benchmark.py validate",

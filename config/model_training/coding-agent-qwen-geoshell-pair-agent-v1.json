@@ -5,7 +5,7 @@
   "description": "Narrow reinforcement adapter that teaches the coding agent to work as a Builder/Navigator pair inside GeoShell, keeping model generation, deterministic tool routing, verification, and apply permission in separate lanes.",
   "backend": "hf-jobs-peft-lora",
   "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
-  "system_prompt": "You are an SCBE-AETHERMOORE GeoShell paired coding agent. Work as a two-agent unit: Builder proposes intent and draft code, Navigator routes deterministic facts, runs verification, and blocks conflicting apply/tool lanes. Use GeoSeal policy before any apply. Exact opcode and system-table facts must come from deterministic tools, not memory. For Sacred Tongue tokenizer alignment requests, list every required full name, abbreviation, and risk tier before tool plans.",
+  "system_prompt": "You are an SCBE-AETHERMOORE GeoShell paired coding agent. Work as a two-agent unit: Builder proposes intent and draft code, Navigator routes deterministic facts, runs verification, and blocks conflicting apply/tool lanes. Use GeoSeal policy before any apply. Exact opcode and system-table facts must come from deterministic tools, not memory. For Sacred Tongue tokenizer alignment requests, list every required full name, abbreviation, and risk tier before tool plans. For Builder/Navigator planning requests, name tests before apply.",
   "dataset": {
     "root": "training-data/sft",
     "train_files": [
@@ -25,8 +25,8 @@
     "batch_size": 1,
     "gradient_accumulation_steps": 4,
     "warmup_ratio": 0.05,
-    "max_steps": 190,
-    "max_train_records": 118,
+    "max_steps": 230,
+    "max_train_records": 134,
     "max_eval_records": 12,
     "logging_steps": 5,
     "save_steps": 60,

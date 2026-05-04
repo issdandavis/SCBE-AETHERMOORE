@@ -490,6 +490,7 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
 
     builder_navigator_assistant = {
         "schema_version": "geoshell_pair_agent_smoke_repair_v1",
+        "00_required_items": "Builder | Navigator | deterministic | verification | tests | apply",
         "mode": "direct_smoke_repair",
         "Builder": {
             "role": "Builder",
@@ -573,6 +574,48 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
                     "Builder drafts; Navigator verifies. Output must still include deterministic, verification, tests, and apply gate closed.",
                 ],
                 start=5,
+            )
+        ]
+    )
+    builder_navigator_first_face_assistant = {
+        "00_required_items": "Builder | Navigator | deterministic | verification | tests | apply",
+        "01_tests": "unit test, invalid-input boundary test, permission-scope test",
+        "02_apply": "apply gate closed until tests pass",
+        "Builder": "draft safe Python helper intent only",
+        "Navigator": "deterministic lookup, verification, tests, then apply-gate decision",
+        "deterministic": "repo tools and deterministic lookup before memory",
+        "verification": "tests must be named before any apply decision",
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-builder-navigator-first-face",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-builder-navigator-first-face",
+            "task_type": "pair_coding_gate_repair",
+            "query": "safe Python helper first-face repair",
+            "success": True,
+            "timestamp": _utc_now(),
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
+            (
+                f"eval_gold_builder_navigator_packet_v{index}",
+                "builder_navigator_packet",
+                prompt,
+                builder_navigator_first_face_assistant,
+            )
+            for index, prompt in enumerate(
+                [
+                    "Raw repair: first line must include Builder, Navigator, deterministic, verification, tests, apply for a safe Python helper.",
+                    "Before any facts or tool list, output Builder, Navigator, deterministic, verification, tests, apply for the GeoShell helper packet.",
+                    "GeoShell raw gate: do not bury tests. Start with Builder, Navigator, deterministic, verification, tests, apply.",
+                    "For the safe Python helper, the answer must name tests before apply and include Builder, Navigator, deterministic, verification.",
+                    "Minimal first-face Builder/Navigator packet: Builder, Navigator, deterministic, verification, tests, apply. Then optional details.",
+                    "Repair the missing-tests failure: include tests in the first field with Builder, Navigator, deterministic, verification, and apply.",
+                    "Return a compact first-face packet. Required literals: Builder Navigator deterministic verification tests apply.",
+                    "Do not lead with unrelated object facts. Lead with Builder, Navigator, deterministic, verification, tests, apply.",
+                ],
+                start=13,
             )
         ]
     )
@@ -818,6 +861,57 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
                     "Tokenization target face: Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY; then Builder and Navigator verify.",
                 ],
                 start=5,
+            )
+        ]
+    )
+    tokenizer_first_face_assistant = {
+        "00_alignment_literals": (
+            "Kor'aelin KO | Avali AV | Runethic RU | Cassisivadan CA | "
+            "Umbroth UM | Draumric DR | ALLOW | QUARANTINE | ESCALATE | DENY"
+        ),
+        "01_instruction": "repeat the alignment literals before any tool list or event body",
+        "Builder": "prepare tokenizer alignment packet",
+        "Navigator": "verify all six full names, abbreviations, and risk tiers",
+        "sacred_tongues": [
+            "Kor'aelin KO",
+            "Avali AV",
+            "Runethic RU",
+            "Cassisivadan CA",
+            "Umbroth UM",
+            "Draumric DR",
+        ],
+        "risk_tiers": "ALLOW | QUARANTINE | ESCALATE | DENY",
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-tokenizer-first-face",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-tokenizer-first-face",
+            "task_type": "tokenizer_alignment_gate_repair",
+            "query": "Sacred Tongue tokenizer alignment first-face repair",
+            "success": True,
+            "timestamp": _utc_now(),
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
+            (
+                f"eval_gold_tokenizer_alignment_packet_v{index}",
+                "tokenizer_alignment_packet",
+                prompt,
+                tokenizer_first_face_assistant,
+            )
+            for index, prompt in enumerate(
+                [
+                    "Raw repair: first line must be Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "Before any GeoShell event or tool list, output Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "Tokenizer raw gate: do not describe the packet first. Start with Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "Repair missing tokenizer literals by putting every required Sacred Tongue and risk tier in the first field.",
+                    "Minimal first-face tokenizer packet: Kor'aelin KO | Avali AV | Runethic RU | Cassisivadan CA | Umbroth UM | Draumric DR | ALLOW | QUARANTINE | ESCALATE | DENY.",
+                    "Do not lead with abstract text. Lead with Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "GeoShell Sacred Tongue alignment first, roles second: Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "For tokenizer alignment, the required target face is Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                ],
+                start=13,
             )
         ]
     )
