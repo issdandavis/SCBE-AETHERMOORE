@@ -1107,7 +1107,9 @@ def cmd_reasoning_code_packet(args: argparse.Namespace) -> int:
         path = Path(args.source_file)
         source = path.read_text(encoding="utf-8")
         source_name = args.source_name or path.name
-    from src.coding_spine.bijective_reasoning_code_packet import build_bijective_reasoning_code_packet
+    from src.coding_spine.bijective_reasoning_code_packet import (
+        build_bijective_reasoning_code_packet,
+    )
 
     packet = build_bijective_reasoning_code_packet(
         intent=args.intent or "",
@@ -1151,7 +1153,10 @@ def cmd_packet_graph_run(args: argparse.Namespace) -> int:
         route=Route(tongue=route["tongue"], domain="code", permission="read"),
         context_refs=refs,
         state_hash=hash_state(intent, args.language or "python", source_name, source),
-        budget=Budget(max_input_tokens=int(args.max_input_tokens), max_output_tokens=int(args.max_output_tokens)),
+        budget=Budget(
+            max_input_tokens=int(args.max_input_tokens),
+            max_output_tokens=int(args.max_output_tokens),
+        ),
         request=intent,
         expected_output="delta",
     )
@@ -1187,7 +1192,14 @@ def _read_json_arg(value: str | None, file_value: str | None) -> dict[str, Any]:
 
 
 def cmd_handoff_seal(args: argparse.Namespace) -> int:
-    from src.agent_comms import AgentPacketV1, Budget, ContextRef, Route, hash_state, new_task_id
+    from src.agent_comms import (
+        AgentPacketV1,
+        Budget,
+        ContextRef,
+        Route,
+        hash_state,
+        new_task_id,
+    )
     from src.agent_comms.secure_handoff import seal_handoff
 
     if args.packet_json or args.packet_file:
@@ -1213,8 +1225,11 @@ def cmd_handoff_seal(args: argparse.Namespace) -> int:
             route=Route(tongue=args.tongue, domain=args.domain, permission=args.permission),
             context_refs=refs,
             state_hash=hash_state(intent, source_name, source, args.phase, args.tongue),
-            budget=Budget(max_input_tokens=args.max_input_tokens, max_output_tokens=args.max_output_tokens),
-            request=intent if not source else f"{intent}\n\nSource summary: {source_name}",
+            budget=Budget(
+                max_input_tokens=args.max_input_tokens,
+                max_output_tokens=args.max_output_tokens,
+            ),
+            request=(intent if not source else f"{intent}\n\nSource summary: {source_name}"),
             expected_output=args.expected_output,
         )
 
@@ -2494,7 +2509,10 @@ def _quick_command_response(command: str, context: str) -> dict[str, Any]:
     quick_map = {
         "yes": ("Acknowledged. Proceeding.", "button_1"),
         "no": ("Acknowledged. Holding position.", "button_2"),
-        "status": ("System is responsive; run `geoseal doctor --json` for full diagnostics.", "button_3"),
+        "status": (
+            "System is responsive; run `geoseal doctor --json` for full diagnostics.",
+            "button_3",
+        ),
         "help": ("Use `geoseal --help` for full command surface.", "button_4"),
         "button 1": ("Button 1 confirmed.", "button_1"),
         "button1": ("Button 1 confirmed.", "button_1"),
@@ -2518,8 +2536,14 @@ def _operator_speech_bubbles(operator: str, context: str) -> list[dict[str, str]
     prompt = (context or "").strip()
     return [
         {"speaker": operator, "bubble": "Quick lane open. Keep responses short."},
-        {"speaker": "assistant", "bubble": "Ready. Use `yes`, `no`, `status`, or `button1` for low-token control."},
-        {"speaker": operator, "bubble": prompt[:120] if prompt else "No extra context supplied."},
+        {
+            "speaker": "assistant",
+            "bubble": "Ready. Use `yes`, `no`, `status`, or `button1` for low-token control.",
+        },
+        {
+            "speaker": operator,
+            "bubble": prompt[:120] if prompt else "No extra context supplied.",
+        },
     ]
 
 
@@ -2620,7 +2644,7 @@ def cmd_quick_agent(args: argparse.Namespace) -> int:
             {"id": "button_3", "label": "Status", "send": "status"},
             {"id": "button_4", "label": "Help", "send": "help"},
         ],
-        "speech_bubbles": _operator_speech_bubbles(operator, context) if include_bubbles else [],
+        "speech_bubbles": (_operator_speech_bubbles(operator, context) if include_bubbles else []),
     }
     if args.json:
         print(json.dumps(payload, indent=2))
@@ -3638,6 +3662,35 @@ def cmd_terminus_training(args: argparse.Namespace) -> int:
     return terminus_main(forwarded)
 
 
+def cmd_pair_agent_training(args: argparse.Namespace) -> int:
+    from scripts.training_data.build_geoshell_pair_agent_sft import (
+        build_dataset,
+        write_outputs,
+    )
+
+    dataset = build_dataset(population_multiplier=args.population_multiplier)
+    paths = write_outputs(dataset, Path(args.output_dir), Path(args.event_path))
+    payload = {
+        "ok": True,
+        "schema_version": dataset["schema_version"],
+        "base_record_count": dataset["base_record_count"],
+        "population_multiplier": dataset["population_multiplier"],
+        "train_count": len(dataset["train"]),
+        "holdout_count": len(dataset["holdout"]),
+        "paths": paths,
+        "geoshell_event_feed": paths["events"],
+    }
+    if args.json:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        print(
+            "GeoShell pair-agent training built "
+            f"train={payload['train_count']} holdout={payload['holdout_count']} "
+            f"manifest={paths['manifest']}"
+        )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="geoseal", description="GeoSeal swarm CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -3722,7 +3775,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_handoff_seal.add_argument("--sender", required=True)
     p_handoff_seal.add_argument("--recipient", required=True)
     p_handoff_seal.add_argument(
-        "--secret", default=None, help="Shared handoff secret; prefer --secret-env for real use"
+        "--secret",
+        default=None,
+        help="Shared handoff secret; prefer --secret-env for real use",
     )
     p_handoff_seal.add_argument("--secret-env", default="SCBE_HANDOFF_SECRET", dest="secret_env")
     p_handoff_seal.add_argument("--packet-json", default=None, help="Existing AgentPacketV1 JSON")
@@ -3732,7 +3787,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_handoff_seal.add_argument("--source-file", default=None)
     p_handoff_seal.add_argument("--source-name", default=None)
     p_handoff_seal.add_argument(
-        "--context-ref", action="append", default=[], help="Additional context ref as kind:value"
+        "--context-ref",
+        action="append",
+        default=[],
+        help="Additional context ref as kind:value",
     )
     p_handoff_seal.add_argument("--task-id", default=None, dest="task_id")
     p_handoff_seal.add_argument("--phase", default="plan", choices=["plan", "edit", "verify", "merge"])
@@ -3740,7 +3798,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_handoff_seal.add_argument("--domain", default="code")
     p_handoff_seal.add_argument("--permission", default="read", choices=["read", "edit", "merge"])
     p_handoff_seal.add_argument(
-        "--expected-output", default="delta", choices=["delta", "vote", "patch", "verdict"], dest="expected_output"
+        "--expected-output",
+        default="delta",
+        choices=["delta", "vote", "patch", "verdict"],
+        dest="expected_output",
     )
     p_handoff_seal.add_argument("--max-input-tokens", type=int, default=1024, dest="max_input_tokens")
     p_handoff_seal.add_argument("--max-output-tokens", type=int, default=256, dest="max_output_tokens")
@@ -3885,7 +3946,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_harness_terminal.add_argument("--models", default=None, help="Comma-separated provider:model refs")
     p_harness_terminal.add_argument(
-        "--goal", default="training eval harness check", help="Goal text for the control panel brain"
+        "--goal",
+        default="training eval harness check",
+        help="Goal text for the control panel brain",
     )
     p_harness_terminal.add_argument("--bridge-url", default="http://127.0.0.1:8766")
     p_harness_terminal.add_argument("--timeout", type=float, default=1.5)
@@ -3898,7 +3961,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Preview the governed six-tongue lane-grid scheduler",
     )
     p_lane_grid.add_argument(
-        "--goal", default="training eval harness check", help="Task goal to hash into the grid state"
+        "--goal",
+        default="training eval harness check",
+        help="Task goal to hash into the grid state",
     )
     p_lane_grid.add_argument("--columns", type=int, default=3, help="Maximum scheduler columns to preview")
     p_lane_grid.add_argument("--json", action="store_true")
@@ -4004,6 +4069,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_terminus.add_argument("--command", action="append", default=[])
     p_terminus.add_argument("--json", action="store_true")
     p_terminus.set_defaults(func=cmd_terminus_training)
+
+    p_pair_training = sub.add_parser(
+        "pair-agent-training",
+        help="Build GeoShell Builder/Navigator pair-agent SFT records and event feed",
+    )
+    p_pair_training.add_argument("--output-dir", default="training-data/sft")
+    p_pair_training.add_argument("--event-path", default="artifacts/geoshell/pair_agent/latest_events.json")
+    p_pair_training.add_argument("--population-multiplier", type=int, default=14)
+    p_pair_training.add_argument("--json", action="store_true")
+    p_pair_training.set_defaults(func=cmd_pair_agent_training)
 
     p_history = sub.add_parser("history", help="Show execution history from ledger")
     p_history.add_argument("--ledger", default=str(DEFAULT_LEDGER))
@@ -4210,7 +4285,11 @@ def build_parser() -> argparse.ArgumentParser:
         "quick-agent",
         help="Semi-agentic quick call/response lane for low-token operator control",
     )
-    p_quick_agent.add_argument("--command", default="status", help="Short control command (yes/no/status/help/button1)")
+    p_quick_agent.add_argument(
+        "--command",
+        default="status",
+        help="Short control command (yes/no/status/help/button1)",
+    )
     p_quick_agent.add_argument("--context", default="", help="Optional context snippet for operator handoff")
     p_quick_agent.add_argument("--operator", default="ai-operator", help="Operator label for speech bubbles")
     p_quick_agent.add_argument(

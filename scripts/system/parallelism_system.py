@@ -99,7 +99,9 @@ def _run_shell_job(job: dict[str, Any], run_dir: Path) -> JobResult:
     log_file = run_dir / f"{job_id}.log"
 
     started = datetime.now(timezone.utc)
-    proc = subprocess.run(command, cwd=str(REPO_ROOT), shell=True, capture_output=True, text=True, check=False)
+    proc = subprocess.run(  # nosec B602: developer-only runner; command comes from local JSON spec; shell=True needed for pipe/redirect
+        command, cwd=str(REPO_ROOT), shell=True, capture_output=True, text=True, check=False
+    )
     finished = datetime.now(timezone.utc)
     elapsed = int((finished - started).total_seconds() * 1000)
 
