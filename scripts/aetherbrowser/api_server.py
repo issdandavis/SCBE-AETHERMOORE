@@ -358,10 +358,29 @@ app = FastAPI(
     version="1.0.0",
 )
 
+
+def _load_cors_origins() -> list[str]:
+    raw = os.environ.get(
+        "SCBE_CORS_ORIGINS",
+        "http://127.0.0.1,http://localhost,http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:8100,http://localhost:8100",
+    )
+    origins = [item.strip() for item in raw.split(",") if item.strip()]
+    env_name = os.environ.get("SCBE_ENV", os.environ.get("NODE_ENV", "production")).lower()
+    allow_wildcard = os.environ.get("SCBE_ALLOW_WILDCARD_CORS", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+    if not (env_name in {"development", "dev", "test"} and allow_wildcard):
+        origins = [item for item in origins if item != "*"]
+    return origins or ["http://127.0.0.1", "http://localhost"]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_load_cors_origins(),
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
