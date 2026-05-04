@@ -2,7 +2,7 @@
 license: cc-by-4.0
 language:
   - en
-pretty_name: Scbe Governance Receipts V1
+pretty_name: SCBE Governance Receipts v1
 tags:
   - scbe
   - governance
@@ -17,12 +17,13 @@ task_categories:
   - other
 ---
 
-# scbe-governance-receipts-v1
+# SCBE Governance Receipts v1
 
 Schema: `scbe_governed_dataset_v1`
 Receipt schema: `scbe_governance_receipt_v1`
-Built: `2026-05-04T23:41:33Z`
+Built: `2026-05-04T23:45:37Z`
 Rows: **40**
+Dataset ID: `scbe-governance-receipts-v1`
 
 ## What this is
 
@@ -48,6 +49,13 @@ the digest matches.
 | `label` | string | caller-supplied label or `unlabeled` |
 | `governance_receipt` | object | 34-field SCBE receipt (see below) |
 | `row_sha256` | string | SHA-256 of (`content`, canonical receipt JSON) |
+
+## Dataset files
+
+- `data.jsonl` — governed rows
+- `datacard.json` — machine-readable schema and use notes
+- `manifest.json` — build-time hashes for `data.jsonl` and `datacard.json`
+- `README.md` — this card
 
 ## Governance receipt fields
 
@@ -104,6 +112,24 @@ def verify(row):
 CC-BY-4.0 with SCBE attribution. The receipt schema is open; any
 third party can re-implement the SCBE pipeline against the public
 specification and produce compatible receipts.
+
+## Intended use
+
+- Governance receipt verification examples
+- Safety and provenance dataset demonstrations
+- SCBE training and audit pipeline smoke tests
+
+## Limitations
+
+- Small reference bundle, not a broad production safety corpus
+- Rows are fixture-derived unless rebuilt with an external source corpus
+- Receipt verification requires the matching SCBE implementation version
+
+## Publish command
+
+```powershell
+hf upload issdandavis/scbe-governance-receipts-v1 dataset/scbe-governance-receipts-v1 . --repo-type dataset --commit-message "publish: governed receipts"
+```
 
 ## Stack provenance
 

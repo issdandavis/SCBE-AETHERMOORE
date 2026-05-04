@@ -16,7 +16,7 @@ output directory is a self-contained dataset bundle:
         manifest.json    build-time verification summary
 
 The bundle can then be:
-- Pushed to HF via ``scripts/push_jsonl_dataset.py``
+- Pushed to Hugging Face as a complete dataset bundle with ``hf upload``
 - Zipped and listed on Gumroad as a "Sacred Data Factory" product
 - Audited offline by re-running ``verify_governed_dataset()``
 
@@ -45,6 +45,7 @@ from python.scbe.tri_braid_embedding import GOVERNANCE_RECEIPT_SCHEMA, governanc
 
 DATASET_SCHEMA_VERSION = "scbe_governed_dataset_v1"
 DEFAULT_DATASET_ID = "scbe-governance-receipts-v1"
+DEFAULT_HF_REPO = "issdandavis/scbe-governance-receipts-v1"
 
 
 def _utc_now() -> str:
@@ -155,6 +156,17 @@ def _datacard(dataset: dict[str, Any]) -> dict[str, Any]:
             "Re-run governance_receipt(row.content) and recompute " "row_sha256 to verify any row independently."
         ),
         "license": "CC-BY-4.0 with SCBE attribution",
+        "hf_repo": DEFAULT_HF_REPO if dataset["dataset_id"] == DEFAULT_DATASET_ID else "",
+        "intended_use": [
+            "Governance receipt verification examples",
+            "Safety and provenance dataset demonstrations",
+            "SCBE training and audit pipeline smoke tests",
+        ],
+        "limitations": [
+            "Small reference bundle, not a broad production safety corpus",
+            "Rows are fixture-derived unless rebuilt with an external source corpus",
+            "Receipt verification requires the matching SCBE implementation version",
+        ],
         "stack_provenance": {
             "tile_layer": "python/scbe/poly_embedded_jepa.py",
             "tongue_layer": "python/scbe/tri_braid_embedding.py",
@@ -169,7 +181,10 @@ def _readme(dataset: dict[str, Any], datacard: dict[str, Any]) -> str:
 
     label_lines = "\n".join(f"- `{label}`: {count}" for label, count in sorted(datacard["label_counts"].items()))
     field_lines = "\n".join(f"- `{field}`" for field in datacard["receipt_field_reference"])
-    pretty_name = dataset["dataset_id"].replace("-", " ").title()
+    if dataset["dataset_id"] == DEFAULT_DATASET_ID:
+        pretty_name = "SCBE Governance Receipts v1"
+    else:
+        pretty_name = dataset["dataset_id"].replace("-", " ").title()
     size_bucket = "n<1K" if dataset["row_count"] < 1000 else "1K<n<10K"
     frontmatter = (
         "---\n"
@@ -189,12 +204,16 @@ def _readme(dataset: dict[str, Any], datacard: dict[str, Any]) -> str:
         "  - other\n"
         "---\n\n"
     )
-    return frontmatter + f"""# {dataset['dataset_id']}
+    intended_use_lines = "\n".join(f"- {item}" for item in datacard["intended_use"])
+    limitation_lines = "\n".join(f"- {item}" for item in datacard["limitations"])
+    hf_repo = datacard.get("hf_repo") or "<owner>/<dataset-repo>"
+    return frontmatter + f"""# {pretty_name}
 
 Schema: `{DATASET_SCHEMA_VERSION}`
 Receipt schema: `{dataset['receipt_schema_version']}`
 Built: `{dataset['created_at']}`
 Rows: **{dataset['row_count']}**
+Dataset ID: `{dataset['dataset_id']}`
 
 ## What this is
 
@@ -220,6 +239,13 @@ the digest matches.
 | `governance_receipt` | object | 34-field SCBE receipt (see below) |
 | `row_sha256` | string | SHA-256 of (`content`, canonical receipt JSON) |
 
+## Dataset files
+
+- `data.jsonl` — governed rows
+- `datacard.json` — machine-readable schema and use notes
+- `manifest.json` — build-time hashes for `data.jsonl` and `datacard.json`
+- `README.md` — this card
+
 ## Governance receipt fields
 
 {field_lines}
@@ -242,6 +268,20 @@ def verify(row):
 CC-BY-4.0 with SCBE attribution. The receipt schema is open; any
 third party can re-implement the SCBE pipeline against the public
 specification and produce compatible receipts.
+
+## Intended use
+
+{intended_use_lines}
+
+## Limitations
+
+{limitation_lines}
+
+## Publish command
+
+```powershell
+hf upload {hf_repo} dataset/{dataset['dataset_id']} . --repo-type dataset --commit-message "publish: governed receipts"
+```
 
 ## Stack provenance
 

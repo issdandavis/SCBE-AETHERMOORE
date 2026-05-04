@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from huggingface_hub import DatasetCard
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -151,6 +152,22 @@ def test_readme_contains_label_breakdown(tmp_path):
     assert "benign" in readme
     assert "adversarial" in readme
     assert "readme-test" in readme
+
+
+def test_readme_has_hugging_face_dataset_metadata(tmp_path):
+    corpus = [("benign", "plan a paired coding task")]
+    dataset = build_dataset(corpus)
+    write_bundle(dataset, tmp_path)
+    readme_path = tmp_path / "README.md"
+
+    card = DatasetCard.load(readme_path)
+    readme = readme_path.read_text("utf-8")
+
+    assert card.data.license == "cc-by-4.0"
+    assert card.data.pretty_name == "SCBE Governance Receipts v1"
+    assert "SCBE Governance Receipts v1" in readme
+    assert "Dataset files" in readme
+    assert "hf upload issdandavis/scbe-governance-receipts-v1" in readme
 
 
 def test_default_dataset_id_constant():

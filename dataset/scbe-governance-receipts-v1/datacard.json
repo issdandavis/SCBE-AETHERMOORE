@@ -1,11 +1,22 @@
 {
-  "created_at": "2026-05-04T23:41:33Z",
+  "created_at": "2026-05-04T23:45:37Z",
   "dataset_id": "scbe-governance-receipts-v1",
+  "hf_repo": "issdandavis/scbe-governance-receipts-v1",
+  "intended_use": [
+    "Governance receipt verification examples",
+    "Safety and provenance dataset demonstrations",
+    "SCBE training and audit pipeline smoke tests"
+  ],
   "label_counts": {
     "adversarial": 20,
     "benign": 20
   },
   "license": "CC-BY-4.0 with SCBE attribution",
+  "limitations": [
+    "Small reference bundle, not a broad production safety corpus",
+    "Rows are fixture-derived unless rebuilt with an external source corpus",
+    "Receipt verification requires the matching SCBE implementation version"
+  ],
   "receipt_field_reference": [
     "binary_packet_sha256",
     "braid_exponent_sum",
