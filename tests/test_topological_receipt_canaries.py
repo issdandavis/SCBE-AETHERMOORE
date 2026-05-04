@@ -10,9 +10,10 @@ def test_build_topological_canaries_has_expected_coverage() -> None:
     payload = build_canaries()
 
     assert payload["schema_version"] == CANARY_SCHEMA
-    assert payload["n"] >= 20
+    assert payload["n"] >= 30
     assert {"coding", "adversarial", "security_pqc", "scbe_lore"}.issubset(payload["coverage"]["categories"])
     assert {"ALLOW", "QUARANTINE"}.issubset(payload["coverage"]["decisions"])
+    assert {"KO", "AV", "RU", "CA", "UM", "DR"} == set(payload["coverage"]["tongues"])
     assert payload["canaries"]
     assert all(item["expected"]["binary_packet_sha256"] for item in payload["canaries"])
 

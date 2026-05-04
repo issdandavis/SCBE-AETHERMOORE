@@ -131,6 +131,8 @@
     "benchmark:representation-kaleidoscope": "python scripts/benchmark/build_representation_kaleidoscope.py",
     "benchmark:agentic:external": "python scripts/benchmark/external_agentic_eval_driver.py",
     "benchmark:poly-embedded-jepa": "python scripts/bench_poly_embedded_jepa.py",
+    "governance:topological-canaries:build": "python scripts/build_topological_canaries.py",
+    "governance:topological-canaries:smoke": "python scripts/smoke_topological_receipt.py",
     "benchmark:fiction-quality": "python scripts/benchmark/fiction_quality_benchmark.py",
     "benchmark:fiction-quality:blind": "python scripts/benchmark/fiction_quality_blind_round.py",
     "benchmark:fiction-quality:book": "python scripts/benchmark/book_quality_sweep.py",
