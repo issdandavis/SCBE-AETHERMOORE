@@ -2,6 +2,7 @@
 
 from dataclasses import asdict, replace
 
+import pytest
 from hypothesis import HealthCheck, given, settings, strategies as st
 
 from python.scbe.poly_embedded_jepa import build_poly_embedding
@@ -13,6 +14,7 @@ from python.scbe.tri_braid_embedding import (
     CREATIVE_TENSION_B,
     DENY,
     FORWARD_THRUST,
+    GOVERNANCE_RECEIPT_SCHEMA,
     PERPENDICULAR_NEG,
     PERPENDICULAR_POS,
     QUARANTINE,
@@ -31,6 +33,7 @@ from python.scbe.tri_braid_embedding import (
     braid_writhe,
     classify_braid_governance,
     extract_axis_anchors,
+    governance_receipt,
     seal_sacred_egg,
     temporal_braid_admit,
     tri_braid_signature,
@@ -425,6 +428,87 @@ def test_property_sacred_egg_round_trips(concept, row, col):
     seal = seal_sacred_egg(sig)
     report = verify_sacred_egg(seal, sig)
     assert report["ok"] is True, report["failed"]
+
+
+# ---------------------------------------------------------------------------
+# Production governance receipt
+# ---------------------------------------------------------------------------
+
+
+_RECEIPT_KEYS = {
+    "schema_version",
+    "binary_packet_sha256",
+    "ordered_hash",
+    "crossing_count",
+    "triadic_stable",
+    "decision",
+    "braid_word_length",
+    "braid_exponent_sum",
+    "governance_state",
+    "primary_trit",
+    "mirror_trit",
+    "trust_level",
+    "security_action",
+    "egg_seal_sha3",
+    "ring_index",
+    "ring_radius",
+    "tile",
+    "tongue",
+}
+
+
+def test_governance_receipt_has_full_schema():
+    receipt = governance_receipt("matrix multiply with LSP diagnostic")
+    assert set(receipt.keys()) == _RECEIPT_KEYS
+    assert receipt["schema_version"] == GOVERNANCE_RECEIPT_SCHEMA
+
+
+def test_governance_receipt_decision_is_canonical():
+    receipt = governance_receipt("test content for governance")
+    assert receipt["decision"] in {ALLOW, QUARANTINE, DENY}
+
+
+def test_governance_receipt_is_deterministic():
+    a = governance_receipt("deterministic content")
+    b = governance_receipt("deterministic content")
+    assert a == b
+
+
+def test_governance_receipt_changes_with_content():
+    a = governance_receipt("content alpha")
+    b = governance_receipt("content beta")
+    assert a["binary_packet_sha256"] != b["binary_packet_sha256"]
+    assert a["ordered_hash"] != b["ordered_hash"]
+
+
+def test_governance_receipt_rejects_empty_content():
+    with pytest.raises(ValueError, match="non-empty"):
+        governance_receipt("")
+    with pytest.raises(ValueError, match="non-empty"):
+        governance_receipt("   \n\t  ")
+
+
+def test_governance_receipt_is_json_serializable():
+    import json
+
+    receipt = governance_receipt("serialization probe")
+    payload = json.dumps(receipt)
+    restored = json.loads(payload)
+    assert restored["ordered_hash"] == receipt["ordered_hash"]
+
+
+@PROP
+@given(CONCEPTS, ROWS, COLS)
+def test_property_governance_receipt_well_formed(concept, row, col):
+    receipt = governance_receipt(concept, masked_row=row, masked_col=col)
+    assert set(receipt.keys()) == _RECEIPT_KEYS
+    assert receipt["decision"] in {ALLOW, QUARANTINE, DENY}
+    assert isinstance(receipt["binary_packet_sha256"], str)
+    assert len(receipt["binary_packet_sha256"]) == 64
+    assert isinstance(receipt["ordered_hash"], str)
+    assert len(receipt["ordered_hash"]) == 64
+    assert receipt["primary_trit"] in {-1, 0, 1}
+    assert receipt["mirror_trit"] in {-1, 0, 1}
 
 
 @PROP

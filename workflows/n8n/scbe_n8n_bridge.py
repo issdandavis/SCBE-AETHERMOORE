@@ -62,8 +62,7 @@ if _DEMO not in sys.path:
 logger = logging.getLogger("scbe_n8n_bridge")
 
 try:
-    from fastapi import FastAPI, HTTPException, Header, Request
-    from fastapi.responses import JSONResponse
+    from fastapi import FastAPI, HTTPException, Header
     from pydantic import BaseModel, Field
 except ImportError:
     print("pip install fastapi uvicorn  # required for n8n bridge")
@@ -76,9 +75,7 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
     PlatformPublisher,
     AgentOrchestrator,
     WebTask,
-    TaskStatus,
 )
-from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.publishers import create_publisher
 from workflows.n8n.scbe_automation_hub import AutomationHub, parse_allowed_hosts
 
 # ---------------------------------------------------------------------------
@@ -1151,6 +1148,7 @@ async def governance_scan(req: ScanRequest, x_api_key: Optional[str] = Header(No
     profile = _antivirus.scan(req.content)
     payload = profile.to_dict()
     payload["poly_embedding"] = _poly_embedding_receipt(req.content)
+    payload["topological_receipt"] = _topological_receipt(req.content)
     return payload
 
 
@@ -1174,6 +1172,28 @@ def _poly_embedding_receipt(content: str) -> Dict[str, Any]:
     except Exception:
         logger.exception("poly embedding receipt failed")
         return {"schema_version": "scbe_poly_embedded_jepa_v1", "verify_ok": False, "error": "poly_embedding_failed"}
+
+
+def _topological_receipt(content: str) -> Dict[str, Any]:
+    """Attach a tri-vector cross-braid topological fingerprint to scan results.
+
+    Composes ordered_hash, crossing_count, braid word stats, 9-state
+    Hamiltonian-Braid governance classification, and Sacred Egg ring
+    seal so consumers get a tamper-evident receipt that survives
+    permutation, replay, and rate-of-change attacks.
+    """
+
+    try:
+        from python.scbe.tri_braid_embedding import governance_receipt
+
+        return governance_receipt(content or "empty governance scan")
+    except Exception:
+        logger.exception("topological receipt failed")
+        try:
+            from python.scbe.tri_braid_embedding import GOVERNANCE_RECEIPT_SCHEMA as _schema
+        except Exception:
+            _schema = "scbe_governance_receipt_v1"
+        return {"schema_version": _schema, "error": "topological_receipt_failed"}
 
 
 @app.post("/v1/tongue/encode")

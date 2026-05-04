@@ -32,6 +32,7 @@ from .poly_embedded_jepa import (
     PHI,
     CodingSystem,
     PolyEmbedding,
+    build_poly_embedding,
     normalized_tongue_weights,
 )
 
@@ -624,4 +625,59 @@ def verify_sacred_egg(seal: SacredEggSeal, signature: TriBraidSignature) -> dict
         "schema_version": seal.schema_version,
         "checks": checks,
         "failed": [name for name, ok in checks.items() if not ok],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Production governance receipt — tested surface used by the n8n bridge
+# ---------------------------------------------------------------------------
+
+GOVERNANCE_RECEIPT_SCHEMA = "scbe_governance_receipt_v1"
+
+
+def governance_receipt(
+    content: str,
+    *,
+    masked_row: int = 0,
+    masked_col: int = 0,
+) -> dict[str, object]:
+    """Build a serializable topological governance receipt for arbitrary text.
+
+    Composes the full stack into one dict:
+    - poly-embedded JEPA ``binary_packet_sha256`` (provenance)
+    - tri-vector cross-braid ``ordered_hash`` (non-commutative)
+    - ``crossing_count``, ``braid_word_length``, ``braid_exponent_sum`` (topology)
+    - 9-state Hamiltonian-Braid governance state with trust + action
+    - Sacred Egg ring seal
+
+    Used by the ``/v1/governance/scan`` route and any other publisher that
+    needs a tamper-evident receipt for an ingested record.
+    """
+    if not content.strip():
+        raise ValueError("governance_receipt requires non-empty content")
+
+    embedding = build_poly_embedding(content, masked_row=masked_row, masked_col=masked_col)
+    signature = tri_braid_signature(embedding)
+    governance = classify_braid_governance(signature)
+    seal = seal_sacred_egg(signature)
+
+    return {
+        "schema_version": GOVERNANCE_RECEIPT_SCHEMA,
+        "binary_packet_sha256": embedding.binary_packet_sha256,
+        "ordered_hash": signature.ordered_hash,
+        "crossing_count": signature.crossing_count,
+        "triadic_stable": signature.triadic_stable,
+        "decision": signature.decision,
+        "braid_word_length": braid_word_length(signature),
+        "braid_exponent_sum": braid_exponent_sum(signature),
+        "governance_state": governance.state,
+        "primary_trit": governance.primary_trit,
+        "mirror_trit": governance.mirror_trit,
+        "trust_level": governance.trust_level,
+        "security_action": governance.security_action,
+        "egg_seal_sha3": seal.egg_seal_sha3,
+        "ring_index": seal.ring_index,
+        "ring_radius": seal.ring_radius,
+        "tile": embedding.masked_tile,
+        "tongue": embedding.tile_node.tongue,
     }
