@@ -342,7 +342,7 @@ def main() -> None:
         if not tokens:
             return ""
         rendered = " | ".join(f"`{{t}}`" if "_" in t else t for t in tokens)
-        prefix = f"required-tokens: {{rendered}} ::"
+        prefix = f"required-items: {{rendered}} ::"
         prefix_lower = prefix.lower()
         forbidden_hits = [
             str(t)
