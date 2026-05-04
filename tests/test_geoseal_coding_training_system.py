@@ -261,6 +261,8 @@ def test_smoke_eval_plan_carries_constrained_scaffold_flag(tmp_path: Path, monke
     assert "def _gate_required_prefix(item: dict) -> str:" in script
     assert "required-items:" in script
     assert "raw_response" in script
+    assert "raw_pass_rate" in script
+    assert "raw_missing_required" in script
     assert "scaffolded" in script
     assert "constrained gate prefix would trigger forbidden token" in script
 

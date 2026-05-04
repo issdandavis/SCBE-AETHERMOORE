@@ -568,6 +568,8 @@ def main() -> None:
             response = _gate_required_prefix(item) + "\\n" + raw_response
         required = list(item.get("required") or [])
         forbidden = list(item.get("forbidden") or [])
+        raw_missing = [needle for needle in required if needle not in raw_response]
+        raw_present_forbidden = [needle for needle in forbidden if needle in raw_response]
         missing = [needle for needle in required if needle not in response]
         present_forbidden = [needle for needle in forbidden if needle in response]
         results.append(
@@ -577,6 +579,9 @@ def main() -> None:
                 "response": response,
                 "raw_response": raw_response,
                 "scaffolded": scaffolded,
+                "raw_passed": not raw_missing and not raw_present_forbidden,
+                "raw_missing_required": raw_missing,
+                "raw_present_forbidden": raw_present_forbidden,
                 "passed": not missing and not present_forbidden,
                 "missing_required": missing,
                 "present_forbidden": present_forbidden,
@@ -584,18 +589,23 @@ def main() -> None:
         )
 
     passed = sum(1 for item in results if item["passed"])
+    raw_passed = sum(1 for item in results if item["raw_passed"])
     total = len(results)
     gate = PLAN.get("promotion_gate") or {{}}
     must_pass = set(gate.get("must_pass") or [])
     by_id = {{item["id"]: item for item in results}}
     must_pass_ok = all(by_id.get(item, {{}}).get("passed") is True for item in must_pass)
     pass_rate = passed / total if total else 0.0
+    raw_pass_rate = raw_passed / total if total else 0.0
     promotion_ready = bool(total and pass_rate >= float(gate.get("minimum_pass_rate", 1.0)) and must_pass_ok)
     print(json.dumps({{
         "event": "smoke_eval_complete",
         "summary": {{
             "base_model": base_model,
             "adapter_repo": adapter_repo,
+            "scaffolded": bool(PLAN.get("constrained_gate_scaffold")),
+            "raw_passed": raw_passed,
+            "raw_pass_rate": raw_pass_rate,
             "passed": passed,
             "total": total,
             "pass_rate": pass_rate,
