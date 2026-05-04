@@ -172,6 +172,7 @@ def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) 
     assert plan["adapter_repo"] == "owner/adapter"
     assert plan["system_prompt"] == "You are an SCBE-AETHERMOORE GeoSeal coding agent. Preserve route/slot semantics."
     assert plan["max_new_tokens"] == 220
+    assert plan["constrained_gate_scaffold"] is False
     assert "geoseal_execution_shell_task" in prompts
     assert "portal-box" in prompts["polly_portal_stream_task"]["required"]
     assert "def is_even" in prompts["ko_python_to_ru_rust"]["forbidden"]
@@ -230,6 +231,38 @@ def test_stage6_smoke_eval_plan_uses_frozen_unseen_contract(tmp_path: Path, monk
     assert plan["eval_contract"]["contract_id"] == "stage6_contract_test"
     assert plan["prompts"][0]["id"] == "unseen_task"
     assert plan["promotion_gate"]["must_pass"] == ["unseen_task"]
+
+
+def test_smoke_eval_plan_carries_constrained_scaffold_flag(tmp_path: Path, monkeypatch) -> None:
+    module = _load_module()
+    manifest = module.load_manifest(MANIFEST_PATH)
+    profile_path = tmp_path / "config" / "model_training" / "coding-agent-qwen-geoshell-pair-agent-v1.json"
+    profile_path.parent.mkdir(parents=True)
+    profile_path.write_text(
+        json.dumps(
+            {
+                "profile_id": "coding-agent-qwen-geoshell-pair-agent-v1",
+                "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+                "hub": {"adapter_repo": "owner/geoshell"},
+                "evaluation": {"constrained_gate_scaffold": True},
+            }
+        ),
+        encoding="utf-8",
+    )
+    for item in manifest["profiles"]:
+        if item["profile_id"] == "coding-agent-qwen-geoshell-pair-agent-v1":
+            item["profile_path"] = "config/model_training/coding-agent-qwen-geoshell-pair-agent-v1.json"
+    monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
+
+    plan = module.smoke_eval_plan(manifest, "coding-agent-qwen-geoshell-pair-agent-v1", "")
+    script = module.render_smoke_eval_uv_script(plan)
+
+    assert plan["constrained_gate_scaffold"] is True
+    assert "def _gate_required_prefix(item: dict) -> str:" in script
+    assert "required-items:" in script
+    assert "raw_response" in script
+    assert "scaffolded" in script
+    assert "constrained gate prefix would trigger forbidden token" in script
 
 
 def test_score_smoke_report_enforces_required_and_forbidden_markers(tmp_path: Path) -> None:

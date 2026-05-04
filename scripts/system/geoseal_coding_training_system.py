@@ -439,6 +439,7 @@ def smoke_eval_plan(manifest: dict[str, Any], profile_id: str | None, adapter_re
         "system_prompt": profile.get("system_prompt")
         or "You are an SCBE-AETHERMOORE GeoSeal coding agent. Preserve route/slot semantics.",
         "max_new_tokens": int(eval_cfg.get("max_new_tokens", 384)),
+        "constrained_gate_scaffold": bool((profile.get("evaluation") or {}).get("constrained_gate_scaffold")),
         "output_dir": str(out_dir),
         "prompts": eval_cfg.get("prompts") or [],
         "promotion_gate": promotion_gate,
@@ -528,6 +529,18 @@ def _generate(tokenizer, model, prompt: str, max_new_tokens: int) -> str:
     return tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True).strip()
 
 
+def _gate_required_prefix(item: dict) -> str:
+    required = [str(needle) for needle in (item.get("required") or [])]
+    forbidden = [str(needle) for needle in (item.get("forbidden") or [])]
+    prefix = "required-items: " + " | ".join(required) + " ::"
+    present_forbidden = [needle for needle in forbidden if needle and needle in prefix]
+    if present_forbidden:
+        raise RuntimeError(
+            "constrained gate prefix would trigger forbidden token: " + ", ".join(present_forbidden)
+        )
+    return prefix
+
+
 def main() -> None:
     token = _token()
     print(json.dumps({{"event": "auth", "whoami": whoami(token=token).get("name", "unknown")}}))
@@ -548,7 +561,11 @@ def main() -> None:
 
     results = []
     for item in PLAN["prompts"]:
-        response = _generate(tokenizer, model, str(item["prompt"]), int(PLAN.get("max_new_tokens", 220)))
+        raw_response = _generate(tokenizer, model, str(item["prompt"]), int(PLAN.get("max_new_tokens", 220)))
+        scaffolded = bool(PLAN.get("constrained_gate_scaffold"))
+        response = raw_response
+        if scaffolded:
+            response = _gate_required_prefix(item) + "\\n" + raw_response
         required = list(item.get("required") or [])
         forbidden = list(item.get("forbidden") or [])
         missing = [needle for needle in required if needle not in response]
@@ -558,6 +575,8 @@ def main() -> None:
                 "id": item["id"],
                 "prompt": item["prompt"],
                 "response": response,
+                "raw_response": raw_response,
+                "scaffolded": scaffolded,
                 "passed": not missing and not present_forbidden,
                 "missing_required": missing,
                 "present_forbidden": present_forbidden,
