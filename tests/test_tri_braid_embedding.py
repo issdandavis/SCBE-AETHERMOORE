@@ -465,6 +465,13 @@ _RECEIPT_KEYS = {
     "cone_plateau_imbalance",
     "cone_joint_embedding",
     "cone_joint_shadow",
+    # Hierarchical-JEPA fields (added by hjepa_embedding wrapper).
+    "hjepa_hash",
+    "hjepa_l1_loss",
+    "hjepa_l2_loss",
+    "hjepa_l3_loss",
+    "hjepa_triangle_residual",
+    "hjepa_total_loss",
 }
 
 
@@ -528,6 +535,13 @@ def test_property_governance_receipt_well_formed(concept, row, col):
     assert 0.0 <= receipt["cone_plateau_imbalance"] <= 1.0
     assert len(receipt["cone_joint_embedding"]) == 3
     assert len(receipt["cone_joint_shadow"]) == 3
+    assert isinstance(receipt["hjepa_hash"], str)
+    assert len(receipt["hjepa_hash"]) == 64
+    assert receipt["hjepa_l1_loss"] >= 0.0
+    assert receipt["hjepa_l2_loss"] >= 0.0
+    assert receipt["hjepa_l3_loss"] >= 0.0
+    assert receipt["hjepa_triangle_residual"] >= 0.0
+    assert receipt["hjepa_total_loss"] >= 0.0
 
 
 @PROP

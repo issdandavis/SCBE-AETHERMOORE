@@ -667,6 +667,12 @@ def governance_receipt(
 
     cone = tri_cone_signature(signature)
 
+    # Local import: hjepa_embedding pulls in tri_braid_embedding itself,
+    # so it must be imported at runtime rather than at module load.
+    from .hjepa_embedding import hjepa_signature
+
+    hjepa = hjepa_signature(content, masked_row=masked_row, masked_col=masked_col)
+
     return {
         "schema_version": GOVERNANCE_RECEIPT_SCHEMA,
         "binary_packet_sha256": embedding.binary_packet_sha256,
@@ -696,4 +702,10 @@ def governance_receipt(
         "cone_plateau_imbalance": cone.plateau_imbalance,
         "cone_joint_embedding": cone.joint_embedding,
         "cone_joint_shadow": cone.joint_shadow,
+        "hjepa_hash": hjepa.hjepa_hash,
+        "hjepa_l1_loss": hjepa.levels[0].loss,
+        "hjepa_l2_loss": hjepa.levels[1].loss,
+        "hjepa_l3_loss": hjepa.levels[2].loss,
+        "hjepa_triangle_residual": hjepa.triangle_residual,
+        "hjepa_total_loss": hjepa.total_loss,
     }
