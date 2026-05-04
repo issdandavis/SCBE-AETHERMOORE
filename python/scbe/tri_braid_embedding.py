@@ -661,6 +661,12 @@ def governance_receipt(
     governance = classify_braid_governance(signature)
     seal = seal_sacred_egg(signature)
 
+    # Local import keeps tri_cone_embedding optional and avoids the
+    # circular dependency it would create at module load time.
+    from .tri_cone_embedding import tri_cone_signature
+
+    cone = tri_cone_signature(signature)
+
     return {
         "schema_version": GOVERNANCE_RECEIPT_SCHEMA,
         "binary_packet_sha256": embedding.binary_packet_sha256,
@@ -680,4 +686,14 @@ def governance_receipt(
         "ring_radius": seal.ring_radius,
         "tile": embedding.masked_tile,
         "tongue": embedding.tile_node.tongue,
+        "cone_governance": cone.cone_governance,
+        "cone_hash": cone.cone_hash,
+        "cone_positive_count": cone.positive_membership_count,
+        "cone_shadow_count": cone.shadow_membership_count,
+        "cone_triple_intersection_score": cone.triple_intersection_score,
+        "cone_triple_shadow_score": cone.triple_shadow_score,
+        "cone_interference_score": cone.interference_score,
+        "cone_plateau_imbalance": cone.plateau_imbalance,
+        "cone_joint_embedding": cone.joint_embedding,
+        "cone_joint_shadow": cone.joint_shadow,
     }
