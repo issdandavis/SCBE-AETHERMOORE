@@ -1,0 +1,38 @@
+{
+  "name": "scbe-fiction-quality",
+  "version": "0.1.0",
+  "description": "SCBE fiction-quality benchmark CLI for deterministic prose scoring, thought-track diagnostics, and blind writing comparison rounds.",
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "scbe-fiction-quality": "bin/scbe-fiction-quality.cjs"
+  },
+  "files": [
+    "bin",
+    "README.md",
+    "package.json"
+  ],
+  "keywords": [
+    "ai",
+    "fiction",
+    "writing",
+    "benchmark",
+    "evaluation",
+    "kaggle",
+    "scbe",
+    "aethermoore"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "packages/scbe-fiction-quality"
+  },
+  "bugs": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

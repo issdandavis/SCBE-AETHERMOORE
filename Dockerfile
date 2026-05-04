@@ -15,8 +15,8 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY src/ ./src/
 
-# Build TypeScript
-RUN npm run build || true
+# Build TypeScript (fail-fast for release safety)
+RUN npm run build
 
 # Stage 2: Build liboqs C library
 FROM python:3.11-slim AS liboqs-builder
@@ -120,7 +120,7 @@ ENV SCBE_PQC_BACKEND=liboqs
 EXPOSE 8080
 # Health check - verify API is responding
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+    CMD curl -f http://localhost:8080/v1/health || exit 1
 # Verify PQC on startup
 RUN python -c "from src.crypto.pqc_liboqs import get_pqc_backend; print(f'PQC Backend: {get_pqc_backend()}')"
 

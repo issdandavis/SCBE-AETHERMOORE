@@ -25,9 +25,9 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     dataset = module.build_dataset()
 
     assert dataset["schema_version"] == "geoshell_pair_agent_sft_v1"
-    assert len(dataset["train"]) == 4
+    assert len(dataset["train"]) == 9
     assert len(dataset["holdout"]) == 2
-    assert len(dataset["events"]) == 6
+    assert len(dataset["events"]) == 11
 
     first = json.loads(dataset["train"][0]["messages"][-1]["content"])
     assert first["schema_version"] == "geoshell_pair_agent_answer_v1"
@@ -58,7 +58,9 @@ def test_records_do_not_embed_secret_material() -> None:
     assert "config/connector_oauth/.env.connector.oauth" not in body
 
 
-def test_write_outputs_creates_train_holdout_manifest_and_events(tmp_path: Path) -> None:
+def test_write_outputs_creates_train_holdout_manifest_and_events(
+    tmp_path: Path,
+) -> None:
     module = _load_module()
     dataset = module.build_dataset()
     event_path = tmp_path / "events" / "latest_events.json"
@@ -73,10 +75,10 @@ def test_write_outputs_creates_train_holdout_manifest_and_events(tmp_path: Path)
     assert train.exists()
     assert holdout.exists()
     assert manifest["profile_id"] == "geoshell-pair-agent-v1"
-    assert manifest["train_count"] == 4
+    assert manifest["train_count"] == 9
     assert manifest["holdout_count"] == 2
-    assert manifest["record_count"] == 6
-    assert len(events) == 6
+    assert manifest["record_count"] == 11
+    assert len(events) == 11
     assert events[0]["_agent_id"] == "pair-agent-builder-navigator"
 
 
@@ -113,7 +115,7 @@ def test_geoseal_cli_builds_pair_agent_training_outputs(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["ok"] is True
-    assert payload["train_count"] == 4
+    assert payload["train_count"] == 9
     assert payload["holdout_count"] == 2
     assert Path(payload["paths"]["manifest"]).exists()
     assert Path(payload["geoshell_event_feed"]).exists()

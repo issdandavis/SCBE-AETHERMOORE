@@ -78,7 +78,6 @@ body{
 .seat-status.offline{color:var(--dim);background:rgba(148,163,184,0.1)}
 .seat-status.proxy{color:#67e8f9;background:rgba(6,182,212,0.14)}
 .seat-status.nokey{color:var(--amber);background:rgba(255,184,74,0.1)}
-.seat-status.backend{color:#67e8f9;background:rgba(6,182,212,0.14)}
 
 /* BYOK Settings Modal */
 .settings-btn{
@@ -149,43 +148,17 @@ body{
 .service-path{font-size:10px;color:var(--dim);line-height:1.35;word-break:break-word}
 .service-open{display:inline-flex;justify-content:center;align-items:center;text-decoration:none;color:#fff;background:linear-gradient(135deg,var(--accent),#2e98dd);padding:6px 10px;border-radius:7px;font-size:11px;font-weight:700}
 .service-hint{font-size:10px;color:var(--dim)}
-.source-terminal{display:grid;grid-template-columns:220px 1fr;gap:1px;background:var(--border);height:100%;min-height:0}
-.source-rail{background:rgba(7,11,18,.95);padding:12px;overflow:auto}
-.source-rail h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin-bottom:10px}
-.source-filter{width:100%;background:rgba(11,19,31,.9);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:12px;font-family:var(--mono);margin-bottom:10px}
-.source-stat{display:flex;justify-content:space-between;border-top:1px solid rgba(142,170,199,.18);padding:8px 0;font-size:11px;color:var(--dim)}
-.source-stat strong{color:var(--text);font-size:13px}
-.source-board{background:rgba(8,13,22,.96);overflow:auto;padding:14px 16px}
-.source-heading{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:14px;border-bottom:1px solid rgba(142,170,199,.2);padding-bottom:12px}
-.source-heading h2{font-size:17px;font-weight:750}
-.source-heading p{font-size:11px;color:var(--dim);line-height:1.45;max-width:580px;margin-top:4px}
-.source-command{font-family:var(--mono);font-size:10px;color:var(--green);background:rgba(45,211,166,.08);border:1px solid rgba(45,211,166,.26);border-radius:6px;padding:6px 8px;white-space:nowrap}
-.source-lane{display:grid;grid-template-columns:72px 1fr;gap:12px;border-bottom:1px solid rgba(142,170,199,.16);padding:12px 0}
-.source-lane-code{font-family:var(--mono);font-size:18px;font-weight:800;color:var(--accent)}
-.source-lane-name{font-size:10px;color:var(--dim);line-height:1.35;margin-top:4px}
-.source-row{display:grid;grid-template-columns:minmax(160px,.7fr) minmax(220px,1.4fr) minmax(170px,.8fr);gap:12px;align-items:start;padding:8px 0}
-.source-title{font-size:12px;font-weight:750;color:var(--text)}
-.source-meta{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:4px;word-break:break-word}
-.source-gate{font-size:11px;color:#c7d7ea;line-height:1.4}
-.source-pill{display:inline-flex;align-items:center;border-radius:999px;border:1px solid rgba(142,170,199,.26);padding:3px 7px;font-size:9px;font-weight:800;color:var(--dim);margin:0 4px 5px 0}
-.source-pill.allow{color:var(--green);border-color:rgba(45,211,166,.4);background:rgba(45,211,166,.1)}
-.source-pill.quarantine{color:var(--amber);border-color:rgba(255,184,74,.4);background:rgba(255,184,74,.1)}
-.source-pill.discovery{color:var(--accent);border-color:rgba(23,198,207,.38);background:rgba(23,198,207,.1)}
-.source-empty{font-size:12px;color:var(--dim);padding:28px 0}
 
 /* Deal prompt bar */
 .deal-bar{display:flex;gap:8px;padding:8px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .deal-input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;font-family:var(--font)}
 .deal-input:focus{border-color:var(--accent);outline:none}
 .deal-input::placeholder{color:var(--dim)}
-.receipt-pill{font-family:var(--mono);font-size:9px;color:#67e8f9;background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.28);border-radius:4px;padding:1px 4px;margin-left:4px}
 
 @media(max-width:1100px){
   .table-layout{grid-template-columns:1fr}
   .seat-column{display:grid;grid-template-columns:1fr 1fr}
   .service-grid{grid-template-columns:1fr}
-  .source-terminal{grid-template-columns:1fr}
-  .source-row{grid-template-columns:1fr}
 }
 
 ::-webkit-scrollbar{width:5px}
@@ -216,7 +189,7 @@ body{
     <h3>API Keys (BYOK) <button class="close-settings" onclick="closeSettings()">&times;</button></h3>
     <div id="settingsRows"></div>
     <button class="settings-save" onclick="saveSettings()">Save &amp; Apply</button>
-    <div class="settings-note">Arena prefers the local backend provider router for Ollama and Hugging Face when it is running. Browser keys are fallback only and stay in localStorage.</div>
+    <div class="settings-note">Keys are stored in your browser's localStorage only. They are sent directly to each provider's API from your browser — never to any intermediary server. Ollama runs locally and needs no key.</div>
   </div>
 </div>
 
@@ -296,28 +269,6 @@ const SERVICE_PORTALS = [
   { id: 'godot',      name: 'Godot Docs',        zone: 'GREEN',  url: 'https://docs.godotengine.org/en/stable/',                       path: 'https://docs.godotengine.org',                            hint: 'Game dev reference' },
   { id: 'unity',      name: 'Unity Learn',       zone: 'YELLOW', url: 'https://learn.unity.com/',                                      path: 'https://learn.unity.com',                                 hint: 'Engine training' },
 ];
-
-const SOURCE_ROUTES = [
-  { id:'arxiv_public', family:'academic_papers', lane:'UM', title:'arXiv Public Research Corpus', safety:'ALLOW_WITH_CITATION', train:'allowed_public_training', url:'https://arxiv.org', command:'geoseal research-terminal --query arxiv', gate:'Capture title, authors, abstract, categories, date, URL, and arXiv id before any synthesis.' },
-  { id:'scbe_github_pages_site', family:'first_party_site', lane:'KO', title:'SCBE-AETHERMOORE Public Website', safety:'ALLOW_OWNED_PUBLIC', train:'allowed_owned_public_training', url:'https://aethermoore.com', command:'geoseal research-terminal --query aethermoore', gate:'Prefer local docs for exact source, then compare public site freshness; capture page path, git commit, canonical URL, and sitemap entry.' },
-  { id:'public_news_clearnet', family:'news', lane:'RU', title:'Public News Outlets', safety:'ALLOW_WITH_CITATION', train:'retrieval_summary_only', url:'https://www.reuters.com', command:'geoseal research-terminal --family news', gate:'Use multiple outlets for current events; separate reported fact from opinion and keep date evidence.' },
-  { id:'flight_public_adsb', family:'aviation', lane:'CA', title:'Public Flight Path / ADS-B', safety:'QUARANTINE_LIVE_OPERATIONS', train:'retrieval_only', url:'https://opensky-network.org', command:'geoseal research-terminal --family aviation', gate:'Historical or aggregate research only; no live tactical tracking, stalking, evasion, or interception support.' },
-  { id:'air_traffic_radio_public', family:'audio_radio', lane:'DR', title:'Public Air Traffic Radio', safety:'QUARANTINE_LIVE_OPERATIONS', train:'retrieval_summary_only', url:'https://www.liveatc.net', command:'geoseal research-terminal --source-id air_traffic_radio_public', gate:'Public streams only; summarize timestamps and route transcripts through Layer 14 audio governance.' },
-  { id:'starlink_public_space_telemetry', family:'space_telemetry', lane:'CA', title:'Starlink / Public Space Telemetry', safety:'ALLOW_PUBLIC_AGGREGATE', train:'allowed_public_training', url:'https://celestrak.org', command:'geoseal research-terminal --query starlink', gate:'Prefer public catalogs and aggregate availability; no targeting, interference, or unauthorized access.' },
-  { id:'public_broadcast_archives', family:'broadcast_archives', lane:'AV', title:'Public Broadcast Archives', safety:'ALLOW_WITH_RIGHTS_CHECK', train:'retrieval_summary_only', url:'https://archive.org', command:'geoseal research-terminal --family broadcast_archives', gate:'Record rights, date, station or program, and citation; do not copy full copyrighted broadcasts.' },
-  { id:'google_public_discovery', family:'search', lane:'KO', title:'Google Discovery Lane', safety:'DISCOVERY_ONLY', train:'retrieval_only', url:'https://news.google.com', command:'geoseal research-terminal --query google', gate:'Discovery engines are not authority sources; open and cite the primary source they lead to.' },
-  { id:'tor_trusted_onion_research', family:'tor', lane:'RU', title:'Trusted Tor Onion Research', safety:'QUARANTINE_BY_DEFAULT', train:'retrieval_only_until_allowed', url:'https://www.torproject.org', command:'geoseal research-terminal --family tor', gate:'Trusted registry only; never access blocked categories; scrub secrets; owner ALLOW required before training.' },
-  { id:'official_public_data_apis', family:'public_data_api', lane:'UM', title:'Official Public Data APIs', safety:'ALLOW_WITH_TERMS', train:'license_dependent', url:'https://www.data.gov', command:'geoseal research-terminal --family public_data_api', gate:'Verify terms, rate limits, schema, timestamp, and license before storing or training.' },
-];
-
-const SOURCE_LANES = {
-  KO: 'intent and discovery',
-  AV: 'media and archive',
-  RU: 'risk and citation',
-  CA: 'telemetry and compute',
-  UM: 'knowledge synthesis',
-  DR: 'audio and final report',
-};
 
 const GAMMA_FALLBACK_SITES = [
   {
@@ -437,7 +388,6 @@ async function emitCrossTalk() {
 
 function setCenterView(view) {
   const code = document.getElementById('centerCodeView');
-  const sources = document.getElementById('centerSourceView');
   const services = document.getElementById('centerServicesView');
   const gamma = document.getElementById('centerGammaView');
   const tabs = document.querySelectorAll('.file-tab[data-center-view]');
@@ -447,84 +397,17 @@ function setCenterView(view) {
   });
   if (view === 'services') {
     if (code) code.style.display = 'none';
-    if (sources) sources.style.display = 'none';
     if (services) services.style.display = 'block';
-    if (gamma) gamma.style.display = 'none';
-  } else if (view === 'sources') {
-    if (code) code.style.display = 'none';
-    if (sources) sources.style.display = 'grid';
-    if (services) services.style.display = 'none';
     if (gamma) gamma.style.display = 'none';
   } else if (view === 'gamma') {
     if (code) code.style.display = 'none';
-    if (sources) sources.style.display = 'none';
     if (services) services.style.display = 'none';
     if (gamma) gamma.style.display = 'block';
   } else {
     if (code) code.style.display = 'block';
-    if (sources) sources.style.display = 'none';
     if (services) services.style.display = 'none';
     if (gamma) gamma.style.display = 'none';
   }
-}
-
-function sourceSafetyClass(safety) {
-  const s = String(safety || '').toLowerCase();
-  if (s.includes('quarantine')) return 'quarantine';
-  if (s.includes('discovery')) return 'discovery';
-  return 'allow';
-}
-
-function renderSourceTerminal() {
-  const board = document.getElementById('sourceBoard');
-  const rail = document.getElementById('sourceRailStats');
-  const filter = document.getElementById('sourceFilter');
-  if (!board || !rail) return;
-  const q = String((filter && filter.value) || '').trim().toLowerCase();
-  const routes = SOURCE_ROUTES.filter((route) => {
-    if (!q) return true;
-    return [route.id, route.family, route.lane, route.title, route.safety, route.gate].join(' ').toLowerCase().includes(q);
-  });
-  const families = new Set(routes.map((route) => route.family));
-  const quarantine = routes.filter((route) => route.safety.includes('QUARANTINE')).length;
-  rail.innerHTML = `
-    <div class="source-stat"><span>Routes</span><strong>${routes.length}</strong></div>
-    <div class="source-stat"><span>Families</span><strong>${families.size}</strong></div>
-    <div class="source-stat"><span>Quarantine</span><strong>${quarantine}</strong></div>
-    <div class="source-stat"><span>Command</span><strong>geoseal</strong></div>
-  `;
-
-  const laneHtml = ['KO','AV','RU','CA','UM','DR'].map((lane) => {
-    const laneRoutes = routes.filter((route) => route.lane === lane);
-    if (!laneRoutes.length) return '';
-    return `
-      <section class="source-lane">
-        <div>
-          <div class="source-lane-code">${lane}</div>
-          <div class="source-lane-name">${escHtml(SOURCE_LANES[lane] || 'research lane')}</div>
-        </div>
-        <div>
-          ${laneRoutes.map((route) => `
-            <div class="source-row">
-              <div>
-                <div class="source-title">${escHtml(route.title)}</div>
-                <div class="source-meta">${escHtml(route.id)} / ${escHtml(route.family)}</div>
-                <div class="source-meta">${escHtml(route.command)}</div>
-              </div>
-              <div class="source-gate">${escHtml(route.gate)}</div>
-              <div>
-                <span class="source-pill ${sourceSafetyClass(route.safety)}">${escHtml(route.safety)}</span>
-                <span class="source-pill">${escHtml(route.train)}</span>
-                <a class="service-open" href="${safeHref(route.url)}" target="_blank" rel="noreferrer">Open</a>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </section>
-    `;
-  }).join('');
-
-  board.innerHTML = laneHtml || '<div class="source-empty">No source routes match this filter.</div>';
 }
 
 function renderServiceGrid() {
@@ -609,31 +492,12 @@ function buildTable() {
       <h2>Shared Code</h2>
       <div class="file-tabs">
         <div class="file-tab active" data-center-view="code">main.py</div>
-        <div class="file-tab" data-center-view="sources">Sources</div>
         <div class="file-tab" data-center-view="services">Services</div>
         <div class="file-tab" data-center-view="gamma">Gamma Wing</div>
       </div>
     </div>
     <div class="code-editor" id="centerCodeView">
       <textarea id="sharedEditor" spellcheck="false">${escHtml(sharedCode)}</textarea>
-    </div>
-    <div class="source-terminal" id="centerSourceView" style="display:none">
-      <aside class="source-rail">
-        <h3>Source Finder</h3>
-        <input class="source-filter" id="sourceFilter" placeholder="filter: arxiv, tor, audio..." />
-        <div id="sourceRailStats"></div>
-        <div class="service-hint" style="margin-top:12px;line-height:1.5">RAG routes are evidence lanes. Live operations and Tor stay quarantine-first until promoted.</div>
-      </aside>
-      <section class="source-board">
-        <div class="source-heading">
-          <div>
-            <h2>Governed RAG Intake</h2>
-            <p>Agents pick a source lane, collect the required evidence, and keep training status explicit before anything enters a corpus.</p>
-          </div>
-          <div class="source-command">geoseal research-terminal</div>
-        </div>
-        <div id="sourceBoard"></div>
-      </section>
     </div>
     <div class="service-pane" id="centerServicesView" style="display:none">
       <div class="service-grid" id="serviceGrid"></div>
@@ -667,10 +531,7 @@ function buildTable() {
   });
 
   renderServiceGrid();
-  renderSourceTerminal();
   loadGammaLandingSites();
-  const sourceFilter = document.getElementById('sourceFilter');
-  if (sourceFilter) sourceFilter.addEventListener('input', renderSourceTerminal);
 }
 
 function createSeat(player) {
@@ -733,52 +594,10 @@ function trimText(s, maxLen = 1800) {
   return s.length > maxLen ? s.slice(0, maxLen) + '\n...[trimmed]' : s;
 }
 
-async function hashText(text) {
-  if (window.crypto && window.crypto.subtle) {
-    const bytes = new TextEncoder().encode(text);
-    const digest = await window.crypto.subtle.digest('SHA-256', bytes);
-    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0).toString(16).padStart(8, '0');
-}
-
-async function recordArenaReceipt(playerId, prompt, response, meta) {
-  const previous = arenaReceipts.length ? arenaReceipts[arenaReceipts.length - 1].receipt : 'GENESIS';
-  const player = PLAYERS.find(p => p.id === playerId) || {};
-  const payload = JSON.stringify({
-    previous,
-    player_id: playerId,
-    tongue: player.tongue || '',
-    role: player.role || '',
-    model: meta && meta.model || activeModelFor(playerId),
-    transport: meta && meta.transport || 'unknown',
-    prompt_hash: await hashText(prompt),
-    response_hash: await hashText(response),
-    step: arenaReceipts.length,
-  });
-  const receipt = await hashText(payload);
-  const row = {
-    schema_version: 'aethercode_arena_receipt_v1',
-    step: arenaReceipts.length,
-    previous,
-    receipt,
-    player_id: playerId,
-    tongue: player.tongue || '',
-    transport: meta && meta.transport || 'unknown',
-  };
-  arenaReceipts.push(row);
-  return row;
-}
-
 function availablePlayerIds() {
   return PLAYERS
     .map(p => p.id)
-    .filter(id => hasBackendProvider(id) || hasBrowserCredential(id));
+    .filter(id => !(providerStatus[id] && providerStatus[id].available === false));
 }
 
 function orderedAvailableIds() {
@@ -859,50 +678,6 @@ function getKey(playerId) {
   return (keys[playerId] || '').trim();
 }
 
-function hasBrowserCredential(playerId) {
-  if (playerId === 'ollama') return true;
-  const keys = loadArenaKeys();
-  return !!(keys[playerId] && keys[playerId].trim());
-}
-
-function hasBackendProvider(playerId) {
-  const row = providerStatus[playerId];
-  return !!(row && row.backendAvailable);
-}
-
-function activeModelFor(playerId) {
-  const row = providerStatus[playerId] || {};
-  const player = PLAYERS.find(p => p.id === playerId);
-  return row.model || (player ? player.model : '');
-}
-
-async function loadBackendProviders() {
-  try {
-    const resp = await fetch(API + '/v1/providers');
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.detail || 'provider status failed');
-    const rows = Array.isArray(data.tentacles) ? data.tentacles : [];
-    rows.forEach((row) => {
-      if (!row || !row.tentacle) return;
-      const current = providerStatus[row.tentacle] || {};
-      const backendChat = !!row.backend_chat_available;
-      providerStatus[row.tentacle] = {
-        ...current,
-        backendAvailable: backendChat,
-        serverAvailable: !!row.available,
-        available: !!row.available || !!current.available,
-        model: row.model || current.model,
-        required_env: row.required_env || current.required_env,
-        provider_kind: row.provider_kind || current.provider_kind,
-      };
-    });
-    backendProviderLoaded = true;
-  } catch (_err) {
-    backendProviderLoaded = false;
-  }
-  refreshKeyStatus();
-}
-
 // Settings panel
 function openSettings() {
   const overlay = document.getElementById('settingsOverlay');
@@ -969,22 +744,53 @@ function saveSettings() {
 
 function refreshKeyStatus() {
   PLAYERS.forEach(p => {
-    const current = providerStatus[p.id] || {};
-    const backend = !!current.backendAvailable;
-    const server = !!current.serverAvailable;
-    const browser = hasBrowserCredential(p.id);
-    const available = backend || server || browser;
-    providerStatus[p.id] = { ...current, available };
+    const backend = providerStatus[p.id] && providerStatus[p.id].backend_chat_available;
+    const has = hasKey(p.id) || backend;
+    providerStatus[p.id] = { ...providerStatus[p.id], available: Boolean(has) };
     if (backend) {
-      setStatus(p.id, 'backend', 'backend');
-    } else if (server) {
-      setStatus(p.id, 'proxy', 'server');
-    } else if (!available) {
+      setStatus(p.id, 'proxy', 'backend');
+    } else if (!has) {
       setStatus(p.id, 'nokey', 'no key');
     } else {
       setStatus(p.id, 'idle', 'ready');
     }
   });
+}
+
+function backendBaseUrl() {
+  return API || '';
+}
+
+function backendProviderFor(playerId) {
+  const row = providerStatus[playerId];
+  return row && row.backend_chat_available ? row : null;
+}
+
+async function loadBackendProviders() {
+  try {
+    const resp = await fetch(backendBaseUrl() + '/v1/providers');
+    const data = resp.ok ? await resp.json() : null;
+    const providers = Array.isArray(data && data.providers)
+      ? data.providers
+      : (Array.isArray(data && data.tentacles) ? data.tentacles : []);
+    providers.forEach((row) => {
+      const id = String(row.id || row.provider || row.tentacle || '').trim();
+      if (!id) return;
+      providerStatus[id] = {
+        ...providerStatus[id],
+        ...row,
+        available: Boolean(row.available),
+        backend_chat_available: Boolean(row.backend_chat_available),
+      };
+      if (providerStatus[id].backend_chat_available) {
+        setStatus(id, 'proxy', 'backend');
+      }
+    });
+    backendProviderLoaded = true;
+  } catch (_err) {
+    backendProviderLoaded = false;
+  }
+  return providerStatus;
 }
 
 // Close settings on overlay click
@@ -1051,13 +857,16 @@ async function callClaude(apiKey, model, systemPrompt, userMessage) {
 }
 
 async function callHuggingFace(apiKey, userMessage) {
-  return callOpenAICompatible(
-    'https://router.huggingface.co/v1/chat/completions',
-    apiKey,
-    activeModelFor('huggingface') || 'Qwen/Qwen2.5-Coder-7B-Instruct',
-    'You are the Hugging Face model trainer seat in the governed AI Round Table.',
-    userMessage
-  );
+  const url = 'https://api-inference.huggingface.co/models/meta-llama/Llama-3.3-70B-Instruct';
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+    body: JSON.stringify({ inputs: userMessage, parameters: { max_new_tokens: 1024, temperature: 0.7, return_full_text: false } }),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || JSON.stringify(data));
+  if (Array.isArray(data) && data[0]) return data[0].generated_text || '';
+  return typeof data === 'string' ? data : JSON.stringify(data);
 }
 
 async function callOllama(model, systemPrompt, userMessage) {
@@ -1072,98 +881,99 @@ async function callOllama(model, systemPrompt, userMessage) {
 }
 
 async function callBackendProvider(playerId, systemPrompt, userMessage) {
-  const resp = await fetch(API + '/v1/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      tentacle: playerId,
-      mode: 'arena-round-table',
-      domain: 'hybrid',
-      message: userMessage,
-      hf_model: playerId === 'huggingface' ? activeModelFor('huggingface') : null,
-      context: [
-        { role: 'system', content: systemPrompt },
-        { role: 'shared_code', content: sharedCode },
-        { role: 'receipt_tip', content: arenaReceipts.length ? arenaReceipts[arenaReceipts.length - 1].receipt : 'GENESIS' },
-      ],
-    }),
-  });
-  const data = await resp.json();
-  if (!resp.ok || data.detail && !data.response) throw new Error(data.detail || 'backend provider failed');
-  return {
-    text: data.response || '',
-    meta: {
-      transport: 'backend',
-      model: data.model || activeModelFor(playerId),
-      latency_ms: data.latency_ms || 0,
-      governance_score: data.governance_score,
-      sources: Array.isArray(data.sources) ? data.sources.length : 0,
+  const player = PLAYERS.find(p => p.id === playerId) || {};
+  const payload = {
+    tentacle: playerId,
+    provider: playerId,
+    mode: 'arena-round-table',
+    domain: 'hybrid',
+    message: userMessage,
+    hf_model: playerId === 'huggingface' ? player.model || '' : null,
+    context: [
+      { role: 'system', content: systemPrompt },
+      { role: 'shared_code', content: sharedCode },
+    ],
+    metadata: {
+      source: 'aethercode_arena',
+      backendProviderLoaded,
     },
   };
+  const resp = await fetch(backendBaseUrl() + '/v1/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.detail || data.error || JSON.stringify(data));
+  return data.response || data.content || data.message || '';
 }
 
-async function buildIntentOverlayForSeat(playerId, userMessage) {
+async function requestIntentOverlay(promptText) {
+  const previous = arenaReceipts.length ? arenaReceipts[arenaReceipts.length - 1] : null;
   try {
-    const previous = arenaReceipts.length ? arenaReceipts[arenaReceipts.length - 1].receipt : 'GENESIS';
-    const resp = await fetch(API + '/v1/arena/intent-overlay', {
+    const resp = await fetch(backendBaseUrl() + '/v1/arena/intent-overlay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        problem: userMessage,
+        problem: promptText,
+        prompt: promptText,
         shared_code: sharedCode,
-        previous_receipt: previous,
-        seat_ids: [playerId],
+        seat_ids: PLAYERS.map((p) => p.id),
+        seats: PLAYERS.map((p) => p.id),
+        previous_receipt: previous && previous.receipt_id ? previous.receipt_id : previous,
       }),
     });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.detail || 'intent overlay failed');
-    const block = data.blocks && data.blocks[0];
-    if (!block) return '';
-    return [
-      `ARENA INTENT BLOCK ${block.seat.name} ${block.seat.tongue}`,
-      `problem_hash=${block.problem_hash}`,
-      `shared_code_hash=${block.shared_code_hash}`,
-      `previous_receipt=${block.previous_receipt || previous}`,
-      `intent=${block.intent}`,
-      `axis=${block.readout_axis}`,
-      `route=${block.route_contract}`,
-      `receipt=${block.receipt_contract}`,
-      `build_state=${JSON.stringify(block.build_state_contract || {})}`,
-      `advance=${block.advancement_rule}`,
-    ].join('\n');
+    const data = resp.ok ? await resp.json() : null;
+    const receipt = {
+      schema_version: 'aethercode_arena_receipt_v1',
+      previous_receipt: previous && previous.receipt_id ? previous.receipt_id : null,
+      response: data,
+      created_at: new Date().toISOString(),
+    };
+    arenaReceipts.push(receipt);
+    if (data && data.overlay_text) return data.overlay_text;
+    if (data && data.intent_blocks) return 'ARENA INTENT BLOCK\n' + JSON.stringify(data.intent_blocks, null, 2);
   } catch (_err) {
-    return '';
+    // Keep the Arena usable when the Python bridge is offline.
   }
+  const receipt = {
+    schema_version: 'aethercode_arena_receipt_v1',
+    previous_receipt: previous && previous.receipt_id ? previous.receipt_id : null,
+    response: null,
+    created_at: new Date().toISOString(),
+  };
+  arenaReceipts.push(receipt);
+  return `ARENA INTENT BLOCK\nprompt=${promptText}\nprevious_receipt=${receipt.previous_receipt || ''}`;
 }
 
 // Route a call to the correct provider
 async function callProvider(playerId, systemPrompt, userMessage) {
   const player = PLAYERS.find(p => p.id === playerId);
-  const model = activeModelFor(playerId) || (player ? player.model : '');
+  const model = player ? player.model : '';
   const key = getKey(playerId);
-  if (hasBackendProvider(playerId)) {
+  if (backendProviderFor(playerId)) {
     return callBackendProvider(playerId, systemPrompt, userMessage);
   }
 
   switch (playerId) {
     case 'groq':
-      return { text: await callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
+      return callOpenAICompatible('https://api.groq.com/openai/v1/chat/completions', key, model, systemPrompt, userMessage);
     case 'cerebras':
-      return { text: await callOpenAICompatible('https://api.cerebras.ai/v1/chat/completions', key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
+      return callOpenAICompatible('https://api.cerebras.ai/v1/chat/completions', key, model, systemPrompt, userMessage);
     case 'xai':
-      return { text: await callOpenAICompatible('https://api.x.ai/v1/chat/completions', key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
+      return callOpenAICompatible('https://api.x.ai/v1/chat/completions', key, model, systemPrompt, userMessage);
     case 'openrouter':
-      return { text: await callOpenAICompatible('https://openrouter.ai/api/v1/chat/completions', key, 'moonshotai/kimi-k2-0711-preview', systemPrompt, userMessage, { 'HTTP-Referer': window.location.origin, 'X-Title': 'AetherCode Arena' }), meta: { transport: 'browser', model: 'moonshotai/kimi-k2-0711-preview' } };
+      return callOpenAICompatible('https://openrouter.ai/api/v1/chat/completions', key, 'moonshotai/kimi-k2-0711-preview', systemPrompt, userMessage, { 'HTTP-Referer': window.location.origin, 'X-Title': 'AetherCode Arena' });
     case 'github_models':
-      return { text: await callOpenAICompatible('https://models.inference.ai.azure.com/chat/completions', key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
+      return callOpenAICompatible('https://models.inference.ai.azure.com/chat/completions', key, model, systemPrompt, userMessage);
     case 'google_ai':
-      return { text: await callGoogle(key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
+      return callGoogle(key, model, systemPrompt, userMessage);
     case 'claude':
-      return { text: await callClaude(key, model, systemPrompt, userMessage), meta: { transport: 'browser', model } };
+      return callClaude(key, model, systemPrompt, userMessage);
     case 'huggingface':
-      return { text: await callHuggingFace(key, systemPrompt + '\n\n' + userMessage), meta: { transport: 'browser', model } };
+      return callHuggingFace(key, systemPrompt + '\n\n' + userMessage);
     case 'ollama':
-      return { text: await callOllama(model !== 'local' ? model : 'llama3', systemPrompt, userMessage), meta: { transport: 'browser', model } };
+      return callOllama(model !== 'local' ? model : 'llama3', systemPrompt, userMessage);
     default:
       throw new Error('Unknown provider: ' + playerId);
   }
@@ -1175,9 +985,9 @@ async function askPlayer(playerId, message) {
   const text = message || (input ? input.value.trim() : '');
   if (!text) return null;
 
-  if (!hasBackendProvider(playerId) && !hasBrowserCredential(playerId)) {
+  if (!hasKey(playerId) && !backendProviderFor(playerId)) {
     const cfg = PROVIDER_KEY_MAP[playerId];
-    addMessage(playerId, 'error', `No backend route or browser key is available. Click the gear icon and enter your ${cfg ? cfg.envName : 'key'}, or start the backend provider.`);
+    addMessage(playerId, 'error', `No API key set. Click the gear icon and enter your ${cfg ? cfg.envName : 'key'}.`);
     return null;
   }
 
@@ -1191,23 +1001,15 @@ async function askPlayer(playerId, message) {
 
   const systemParts = [roleContext];
   if (sharedCode) systemParts.push('Shared code:\n```\n' + sharedCode + '\n```');
-  const intentBlock = await buildIntentOverlayForSeat(playerId, text);
-  if (intentBlock) systemParts.push(intentBlock);
   const systemPrompt = systemParts.join('\n\n');
 
   const t0 = performance.now();
   try {
-    const result = await callProvider(playerId, systemPrompt, text);
-    const response = result && typeof result === 'object' ? result.text : String(result || '');
-    const meta = result && typeof result === 'object' ? result.meta || {} : {};
-    const receipt = await recordArenaReceipt(playerId, text, response, meta);
+    const response = await callProvider(playerId, systemPrompt, text);
     const latency = Math.round(performance.now() - t0);
 
-    const modelLabel = meta.model || activeModelFor(playerId) || player.model;
-    const transport = meta.transport ? `${meta.transport}` : 'browser';
-    const sourceSuffix = meta.sources ? ` / ${meta.sources} sources` : '';
-    addMessage(playerId, 'ai', response, `${modelLabel} / ${transport} / ${latency}ms${sourceSuffix} / receipt:${receipt.receipt.slice(0, 10)}`);
-    setStatus(playerId, hasBackendProvider(playerId) ? 'backend' : 'idle', hasBackendProvider(playerId) ? 'backend' : 'ready');
+    addMessage(playerId, 'ai', response, `${player.model} / ${latency}ms`);
+    setStatus(playerId, 'idle', 'ready');
     return { id: playerId, name: player.name, tongue: player.tongue, role: player.role, response };
   } catch (err) {
     addMessage(playerId, 'error', err.message);
@@ -1227,8 +1029,9 @@ async function dealToAll() {
   document.getElementById('dealBtn').disabled = true;
   document.getElementById('dealBtn').textContent = 'Dealing...';
 
-  const ids = orderedAvailableIds();
-  const promises = ids.map(id => askPlayer(id, text));
+  const overlayText = await requestIntentOverlay(text);
+  const routedText = overlayText ? `${text}\n\n${overlayText}` : text;
+  const promises = PLAYERS.map(p => askPlayer(p.id, routedText));
   await Promise.allSettled(promises);
 
   document.getElementById('dealBtn').disabled = false;
@@ -1330,9 +1133,10 @@ async function deliberate() {
   btn.disabled = true;
   btn.textContent = 'Deliberating...';
 
-  // Phase 1: Fan out to callable players
-  const ids = orderedAvailableIds();
-  const promises = ids.map(id => askPlayer(id, text));
+  // Phase 1: Fan out to all players
+  const overlayText = await requestIntentOverlay(text);
+  const routedText = overlayText ? `${text}\n\n${overlayText}` : text;
+  const promises = PLAYERS.map(p => askPlayer(p.id, routedText));
   const results = await Promise.allSettled(promises);
 
   // Phase 2: Collect responses
@@ -1350,11 +1154,10 @@ async function deliberate() {
   // Phase 3: Synthesis round — send all responses to Lead Architect (Google AI / DR)
   const synthesisPrompt = `ROUND TABLE SYNTHESIS\n\nThe AI Round Table was asked: "${text}"\n\n${PLAYERS.length} models responded. Their answers:\n\n${responses}\n\nAs Lead Architect (DR tongue), synthesize:\n1. Points of agreement\n2. Points of disagreement\n3. Your unified recommendation\n4. Action items`;
 
-  const synthId = ids.includes('google_ai') ? 'google_ai' : narratorSeatId();
-  const synthesis = await askPlayer(synthId, synthesisPrompt);
+  const synthesis = await askPlayer('google_ai', synthesisPrompt);
   if (synthesis) {
     // Also show synthesis in center or highlight it
-    addMessage(synthId, 'synthesis', '[ROUND TABLE CONSENSUS] ' + synthesis.response);
+    addMessage('google_ai', 'synthesis', '[ROUND TABLE CONSENSUS] ' + synthesis.response);
   }
 
   btn.disabled = false;
@@ -1475,7 +1278,7 @@ registerServiceWorker();
 setupInstallPrompt();
 updateInstallUi();
 refreshKeyStatus();
-loadBackendProviders();
+loadBackendProviders().then(refreshKeyStatus);
 updateTrainingCount();
 </script>
 </body>

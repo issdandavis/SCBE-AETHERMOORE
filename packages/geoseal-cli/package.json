@@ -1,0 +1,36 @@
+{
+  "name": "geoseal-cli",
+  "version": "0.1.0",
+  "description": "Alias package for the GeoSeal CLI binary from scbe-aethermoore",
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "geoseal": "bin/geoseal.cjs",
+    "scbe-geoseal": "bin/geoseal.cjs"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "keywords": [
+    "geoseal",
+    "cli",
+    "scbe",
+    "aethermoore"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "packages/geoseal-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "scbe-aethermoore": "^4.0.3"
+  }
+}
