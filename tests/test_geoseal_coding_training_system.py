@@ -102,7 +102,7 @@ def test_dispatcher_renders_constrained_gate_scaffold_when_profile_requests_it()
     assert "CONSTRAINED_GATE_SCAFFOLD = bool" in script
     assert '"constrained_gate_scaffold": true' in script
     assert "def _gate_required_prefix(prompt):" in script
-    assert "required-tokens:" in script
+    assert "required-items:" in script
     assert "constrained gate prefix would trigger forbidden token" in script
     assert "response = _gate_generate(prompt)" in script
 
@@ -170,6 +170,8 @@ def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) 
 
     prompts = {item["id"]: item for item in plan["prompts"]}
     assert plan["adapter_repo"] == "owner/adapter"
+    assert plan["system_prompt"] == "You are an SCBE-AETHERMOORE GeoSeal coding agent. Preserve route/slot semantics."
+    assert plan["max_new_tokens"] == 220
     assert "geoseal_execution_shell_task" in prompts
     assert "portal-box" in prompts["polly_portal_stream_task"]["required"]
     assert "def is_even" in prompts["ko_python_to_ru_rust"]["forbidden"]
@@ -224,6 +226,7 @@ def test_stage6_smoke_eval_plan_uses_frozen_unseen_contract(tmp_path: Path, monk
     plan = module.smoke_eval_plan(manifest, "coding-agent-qwen-atomic-workflow-stage6", "")
 
     assert plan["adapter_repo"] == "owner/stage6"
+    assert plan["system_prompt"] == "You are an SCBE-AETHERMOORE GeoSeal coding agent. Preserve route/slot semantics."
     assert plan["eval_contract"]["contract_id"] == "stage6_contract_test"
     assert plan["prompts"][0]["id"] == "unseen_task"
     assert plan["promotion_gate"]["must_pass"] == ["unseen_task"]
