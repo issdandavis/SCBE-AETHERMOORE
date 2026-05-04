@@ -500,6 +500,8 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
             "deterministic": "route facts through repo tools and the deterministic opcode table before any memory recall",
             "verification": "run focused unit tests and a boundary test, then inspect results before apply",
         },
+        "deterministic": "repo tools and deterministic lookup before memory",
+        "verification": "focused tests plus boundary test before apply",
         "tests": ["unit test", "invalid-input boundary test", "permission-scope test"],
         "apply": {"apply_gate": "closed", "opens_after": "tests pass and owned-paths confirmed"},
         "geoshell_event": {
@@ -551,10 +553,34 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
             ),
         ]
     )
+    cases.extend(
+        [
+            (
+                f"eval_gold_builder_navigator_packet_v{index}",
+                "builder_navigator_packet",
+                prompt,
+                builder_navigator_assistant,
+            )
+            for index, prompt in enumerate(
+                [
+                    "Return only a compact GeoShell Builder/Navigator packet for a safe Python helper. It must include Builder, Navigator, deterministic, verification, tests, and apply.",
+                    "Write a GeoShell pair packet with exact fields: Builder, Navigator, deterministic, verification, tests, apply. The apply gate stays closed until tests pass.",
+                    "GeoShell pair task: safe Python helper. Include Builder role, Navigator role, deterministic lookup, verification, tests, and apply gate closed.",
+                    "Produce the minimal valid packet for Builder/Navigator paired coding. Required fields: Builder, Navigator, deterministic, verification, tests, apply.",
+                    "For a Python helper task, return GeoShell JSON-like evidence with Builder, Navigator, deterministic, verification, tests, and apply gate closed.",
+                    "Do not skip tests. Return Builder, Navigator, deterministic, verification, tests, and apply for a GeoShell paired coding helper.",
+                    "Show Builder and Navigator lanes plus deterministic routing, verification, tests, and apply gate closed until tests pass.",
+                    "Builder drafts; Navigator verifies. Output must still include deterministic, verification, tests, and apply gate closed.",
+                ],
+                start=5,
+            )
+        ]
+    )
 
     ca_pair_assistant = {
         "schema_version": "geoshell_pair_agent_smoke_repair_v1",
         "mode": "direct_smoke_repair",
+        "deterministic": "required",
         "Builder": {
             "role": "Builder",
             "intent": "propose abs(a)+abs(b) as a paired-agent route through deterministic CA opcode lookup",
@@ -613,6 +639,29 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
                 "abs=0x09 and add=0x00.",
                 ca_pair_assistant,
             ),
+        ]
+    )
+    cases.extend(
+        [
+            (
+                f"eval_gold_ca_abs_add_pair_route_v{index}",
+                "ca_abs_add_pair_route",
+                prompt,
+                ca_pair_assistant,
+            )
+            for index, prompt in enumerate(
+                [
+                    "Return a compact GeoShell route for abs(a)+abs(b). It must include Builder, Navigator, deterministic, abs=0x09, and add=0x00.",
+                    "GeoShell CA route: Builder proposes abs(a)+abs(b); Navigator performs deterministic lookup. Required facts: abs=0x09 and add=0x00.",
+                    "Do not say deterministic false. For abs(a)+abs(b), return Builder, Navigator, deterministic, 0x09, and 0x00.",
+                    "Cassisivadan CA exact route for |a|+|b|: Builder, Navigator, deterministic lookup, abs 0x09, add 0x00.",
+                    "Produce the minimal valid CA pair route. Include Builder, Navigator, deterministic=required, abs=0x09, add=0x00.",
+                    "For abs(a)+abs(b), the final GeoShell packet must name Builder and Navigator and show deterministic lookup with 0x09 and 0x00.",
+                    "Return CA opcode facts for abs(a)+abs(b): Builder lane, Navigator lane, deterministic lookup, abs=0x09, add=0x00.",
+                    "GeoShell pair-agent route for abs plus abs: exact markers Builder, Navigator, deterministic, 0x09, 0x00.",
+                ],
+                start=5,
+            )
         ]
     )
 

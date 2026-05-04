@@ -27,10 +27,10 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     assert dataset["schema_version"] == "geoshell_pair_agent_sft_v1"
     assert dataset["base_record_count"] == 15
     assert dataset["population_multiplier"] == 6
-    assert dataset["eval_gold_count"] == 16
-    assert len(dataset["train"]) == 94  # 13 train base * 6 + 16 eval_gold
+    assert dataset["eval_gold_count"] == 32
+    assert len(dataset["train"]) == 110  # 13 train base * 6 + 32 eval_gold
     assert len(dataset["holdout"]) == 12  # 2 holdout base * 6
-    assert len(dataset["events"]) == 106  # 90 multiplied + 16 eval_gold
+    assert len(dataset["events"]) == 122  # 90 multiplied + 32 eval_gold
 
     first = json.loads(dataset["train"][0]["messages"][-1]["content"])
     assert first["schema_version"] == "geoshell_pair_agent_answer_v1"
@@ -89,7 +89,7 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     eval_gold_rows = [
         row for row in dataset["train"] if row["meta"]["task_kind"] == "eval_shape_gold"
     ]
-    assert len(eval_gold_rows) == 16
+    assert len(eval_gold_rows) == 32
     eval_gold_gate_ids = {row["meta"]["gate_id"] for row in eval_gold_rows}
     assert eval_gold_gate_ids == {
         "builder_navigator_packet",
@@ -145,11 +145,11 @@ def test_write_outputs_creates_train_holdout_manifest_and_events(
     assert manifest["profile_id"] == "geoshell-pair-agent-v1"
     assert manifest["base_record_count"] == 15
     assert manifest["population_multiplier"] == 6
-    assert manifest["eval_gold_count"] == 16
-    assert manifest["train_count"] == 94
+    assert manifest["eval_gold_count"] == 32
+    assert manifest["train_count"] == 110
     assert manifest["holdout_count"] == 12
-    assert manifest["record_count"] == 106
-    assert len(events) == 106
+    assert manifest["record_count"] == 122
+    assert len(events) == 122
     assert events[0]["_agent_id"] == "pair-agent-builder-navigator"
 
 
@@ -188,7 +188,7 @@ def test_geoseal_cli_builds_pair_agent_training_outputs(tmp_path: Path) -> None:
     assert payload["ok"] is True
     assert payload["base_record_count"] == 15
     assert payload["population_multiplier"] == 6
-    assert payload["train_count"] == 94
+    assert payload["train_count"] == 110
     assert payload["holdout_count"] == 12
     assert Path(payload["paths"]["manifest"]).exists()
     assert Path(payload["geoshell_event_feed"]).exists()
