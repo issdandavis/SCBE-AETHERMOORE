@@ -165,11 +165,31 @@ def _datacard(dataset: dict[str, Any]) -> dict[str, Any]:
 
 
 def _readme(dataset: dict[str, Any], datacard: dict[str, Any]) -> str:
-    """Human-readable datacard."""
+    """Human-readable datacard with HF-standard YAML frontmatter."""
 
     label_lines = "\n".join(f"- `{label}`: {count}" for label, count in sorted(datacard["label_counts"].items()))
     field_lines = "\n".join(f"- `{field}`" for field in datacard["receipt_field_reference"])
-    return f"""# {dataset['dataset_id']}
+    pretty_name = dataset["dataset_id"].replace("-", " ").title()
+    size_bucket = "n<1K" if dataset["row_count"] < 1000 else "1K<n<10K"
+    frontmatter = (
+        "---\n"
+        "license: cc-by-4.0\n"
+        "language:\n  - en\n"
+        f"pretty_name: {pretty_name}\n"
+        "tags:\n"
+        "  - scbe\n"
+        "  - governance\n"
+        "  - hyperbolic-geometry\n"
+        "  - jepa\n"
+        "  - safety\n"
+        "  - hierarchical-jepa\n"
+        f"size_categories:\n  - {size_bucket}\n"
+        "task_categories:\n"
+        "  - text-classification\n"
+        "  - other\n"
+        "---\n\n"
+    )
+    return frontmatter + f"""# {dataset['dataset_id']}
 
 Schema: `{DATASET_SCHEMA_VERSION}`
 Receipt schema: `{dataset['receipt_schema_version']}`

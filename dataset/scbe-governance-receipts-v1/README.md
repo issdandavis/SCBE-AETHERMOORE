@@ -1,8 +1,27 @@
+---
+license: cc-by-4.0
+language:
+  - en
+pretty_name: Scbe Governance Receipts V1
+tags:
+  - scbe
+  - governance
+  - hyperbolic-geometry
+  - jepa
+  - safety
+  - hierarchical-jepa
+size_categories:
+  - n<1K
+task_categories:
+  - text-classification
+  - other
+---
+
 # scbe-governance-receipts-v1
 
 Schema: `scbe_governed_dataset_v1`
 Receipt schema: `scbe_governance_receipt_v1`
-Built: `2026-05-04T23:34:19Z`
+Built: `2026-05-04T23:41:33Z`
 Rows: **40**
 
 ## What this is
