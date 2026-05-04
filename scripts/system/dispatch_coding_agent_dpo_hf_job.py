@@ -190,6 +190,16 @@ def _score(prompt, response):
     return {{"id": prompt.get("id"), "ok": ok, "missing_required": missing_required, "triggered_forbidden": triggered_forbidden}}
 
 
+def _gate_required_prefix(prompt_obj):
+    required = [str(item) for item in (prompt_obj.get("required") or [])]
+    forbidden = [str(item) for item in (prompt_obj.get("forbidden") or [])]
+    prefix = "required-items: " + " | ".join(required) + " ::"
+    present_forbidden = [item for item in forbidden if item and item.lower() in prefix.lower()]
+    if present_forbidden:
+        raise RuntimeError("constrained gate prefix would trigger forbidden marker: " + ", ".join(present_forbidden))
+    return prefix
+
+
 def main() -> None:
     token = _token()
     train_cfg = PROFILE.get("training") or {{}}
@@ -294,7 +304,7 @@ def main() -> None:
         if constrained and required:
             user_prompt = (
                 "Use this exact response scaffold first, then explain naturally. "
-                "Scaffold: required-tokens: " + " | ".join(required) + " ::\\n\\n" + user_prompt
+                "Scaffold: " + _gate_required_prefix(prompt_obj) + "\\n\\n" + user_prompt
             )
         messages = [
             {{"role": "system", "content": str(PROFILE.get("system_prompt") or "You are an SCBE-AETHERMOORE GeoSeal coding agent.")}},
@@ -312,7 +322,7 @@ def main() -> None:
         )
         response = tokenizer.decode(out[0][n_in:], skip_special_tokens=True)
         if constrained and required:
-            response = "required-tokens: " + " | ".join(required) + " ::\\n" + response
+            response = _gate_required_prefix(prompt_obj) + "\\n" + response
         return response
 
     prompts = CONTRACT.get("prompts") or []
