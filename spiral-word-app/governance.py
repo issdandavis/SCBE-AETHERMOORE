@@ -105,7 +105,9 @@ def check_governance(action: str, prompt: str = "") -> Tuple[bool, str]:
     if tongue_info["weight"] > 4.0 and action in ("read", "query", "insert"):
         logger.warning(
             "Governance flag: high-weight tongue %s (%.2f) on low-tier action '%s'",
-            tongue, tongue_info["weight"], action,
+            tongue,
+            tongue_info["weight"],
+            action,
         )
 
     # UM (security) tongue with high confidence → require manual approval
@@ -116,7 +118,9 @@ def check_governance(action: str, prompt: str = "") -> Tuple[bool, str]:
     if tongue not in required and len(required) > 1:
         logger.info(
             "Governance: tongue %s not in required quorum %s for '%s', allowing with audit",
-            tongue, required, action,
+            tongue,
+            required,
+            action,
         )
 
     return True, f"ALLOW: tongue={tongue} conf={confidence:.2f} action={action}"
@@ -125,6 +129,7 @@ def check_governance(action: str, prompt: str = "") -> Tuple[bool, str]:
 # ---------------------------------------------------------------------------
 # Nonce Cache (L9/L10) — replay protection
 # ---------------------------------------------------------------------------
+
 
 class NonceGuard:
     """
@@ -167,6 +172,7 @@ def check_replay(nonce: str) -> bool:
 # Envelope Signing (L13/L14) — per-message integrity
 # ---------------------------------------------------------------------------
 
+
 def _get_secret_key() -> bytes:
     """Load secret key from env or use default (dev only)."""
     key = os.environ.get("SCBE_SECRET_KEY", "spiralword-dev-key-change-me")
@@ -195,9 +201,11 @@ def verify_signature(op_data: dict, signature: str) -> bool:
 # Audit Log (L14) — deterministic edit trail
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AuditEntry:
     """A single audit log entry."""
+
     timestamp: float
     doc_id: str
     site_id: str
@@ -206,9 +214,12 @@ class AuditEntry:
     governance_decision: str
     tongue: str = "KO"
     confidence: float = 1.0
+    phdm_node_id: Optional[str] = None
+    loop_index: Optional[int] = None
+    braid_receipt: Optional[str] = None  # hex HMAC tag
 
     def to_dict(self) -> dict:
-        return {
+        d = {
             "timestamp": self.timestamp,
             "doc_id": self.doc_id,
             "site_id": self.site_id,
@@ -218,6 +229,13 @@ class AuditEntry:
             "tongue": self.tongue,
             "confidence": self.confidence,
         }
+        if self.phdm_node_id is not None:
+            d["phdm_node_id"] = self.phdm_node_id
+        if self.loop_index is not None:
+            d["loop_index"] = self.loop_index
+        if self.braid_receipt is not None:
+            d["braid_receipt"] = self.braid_receipt
+        return d
 
 
 class AuditLog:
@@ -241,6 +259,9 @@ class AuditLog:
         governance_decision: str,
         tongue: str = "KO",
         confidence: float = 1.0,
+        phdm_node_id: Optional[str] = None,
+        loop_index: Optional[int] = None,
+        braid_receipt: Optional[str] = None,
     ):
         entry = AuditEntry(
             timestamp=time.time(),
@@ -251,6 +272,9 @@ class AuditLog:
             governance_decision=governance_decision,
             tongue=tongue,
             confidence=confidence,
+            phdm_node_id=phdm_node_id,
+            loop_index=loop_index,
+            braid_receipt=braid_receipt,
         )
         self.entries.append(entry)
         logger.info("AUDIT: %s", json.dumps(entry.to_dict()))
