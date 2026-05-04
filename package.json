@@ -162,6 +162,7 @@
     "training:build:active-research-api": "python scripts/training_data/build_active_research_api_sft.py --copy-kaggle",
     "training:build:geoseal-industry-commands": "python scripts/training_data/build_geoseal_industry_commands_sft.py --copy-kaggle",
     "training:build:agentic-preference-math": "python scripts/training_data/build_agentic_preference_math_dpo.py",
+    "training:build:geoshell-pair-preference": "python scripts/training_data/build_geoshell_pair_agent_preference_dpo.py",
     "training:build:go-strategy": "python scripts/training_data/build_go_game_go_lang_strategy_sft.py --copy-kaggle",
     "training:build:sacred-tongue-syntax-alignment": "python scripts/training_data/build_sacred_tongue_syntax_alignment_sft.py",
     "training:build:chemistry-manual": "python scripts/training_data/build_chemistry_sft_v1.py",

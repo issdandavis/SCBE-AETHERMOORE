@@ -1,0 +1,27 @@
+{
+  "difficulty_counts": {
+    "easy": 1,
+    "hard": 1,
+    "medium": 2
+  },
+  "failure_counts": {
+    "credential_like_query_field_in_alignment_packet": 1,
+    "lost_builder_navigator_zero_opcode_and_deterministic_markers": 1,
+    "missing_verification_and_tests_fields": 1,
+    "passes_required_items_scaffold_but_fails_free_generation": 1
+  },
+  "row_count": 4,
+  "schema_version": "geoshell_pair_agent_preference_v1_manifest",
+  "sha256": "14f6629711e49ea699d736c0d2f9b66b7397debf025eb5a611e7052831f862b7",
+  "source_note": "docs/readiness/GEOSHELL_PAIR_AGENT_HOLD_2026-05-04.md",
+  "source_smoke_jobs": [
+    "69f89eb798a8d679adfb8ef5",
+    "69f8a39798a8d679adfb8f09"
+  ],
+  "train_file": "training-data\\dpo\\geoshell_pair_agent_preference_v1_train.jsonl",
+  "training_boundary": {
+    "method": "DPO_ORPO_or_strict_repair_SFT",
+    "not_for_blind_positive_sft": true,
+    "promotion_rule": "independent adapter smoke must pass 4/4 before promotion"
+  }
+}
