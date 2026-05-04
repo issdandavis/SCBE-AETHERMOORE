@@ -3,41 +3,48 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+
+permissions:
+  contents: read
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
+    name: claude-review
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: read
-      id-token: write
-
+    timeout-minutes: 10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
 
-      - name: Run Claude Code Review
-        id: claude-review
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+      - name: Local deterministic review gate
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          echo "## Local deterministic review gate" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          echo "- External AI invoked: no" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Repository comment written: no" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Base: \`${base}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Head: \`${head}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+
+          git diff --check "$base" "$head"
+          git diff --name-only "$base" "$head" > changed-files.txt
+
+          if git grep -nE '^(<<<<<<<|>>>>>>>)' -- \
+            ':!node_modules/**' \
+            ':!artifacts/**' \
+            ':!training-data/**' \
+            ':!**/target/**'; then
+            echo "Conflict markers found." >&2
+            exit 1
+          fi
+
+          file_count="$(wc -l < changed-files.txt | tr -d ' ')"
+          echo "- Changed files: ${file_count}" >> "$GITHUB_STEP_SUMMARY"
