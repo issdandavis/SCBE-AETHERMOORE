@@ -1,0 +1,61 @@
+{
+  "created_at": "2026-05-04T23:34:19Z",
+  "dataset_id": "scbe-governance-receipts-v1",
+  "label_counts": {
+    "adversarial": 20,
+    "benign": 20
+  },
+  "license": "CC-BY-4.0 with SCBE attribution",
+  "receipt_field_reference": [
+    "binary_packet_sha256",
+    "braid_exponent_sum",
+    "braid_word_length",
+    "cone_governance",
+    "cone_hash",
+    "cone_interference_score",
+    "cone_joint_embedding",
+    "cone_joint_shadow",
+    "cone_plateau_imbalance",
+    "cone_positive_count",
+    "cone_shadow_count",
+    "cone_triple_intersection_score",
+    "cone_triple_shadow_score",
+    "crossing_count",
+    "decision",
+    "egg_seal_sha3",
+    "governance_state",
+    "hjepa_hash",
+    "hjepa_l1_loss",
+    "hjepa_l2_loss",
+    "hjepa_l3_loss",
+    "hjepa_total_loss",
+    "hjepa_triangle_residual",
+    "mirror_trit",
+    "ordered_hash",
+    "primary_trit",
+    "ring_index",
+    "ring_radius",
+    "schema_version",
+    "security_action",
+    "tile",
+    "tongue",
+    "triadic_stable",
+    "trust_level"
+  ],
+  "receipt_schema_version": "scbe_governance_receipt_v1",
+  "row_count": 40,
+  "row_schema": {
+    "content": "string -- original input text",
+    "governance_receipt": "object -- 34-field SCBE receipt; see receipt_field_reference",
+    "label": "string -- caller-supplied label or 'unlabeled'",
+    "row_sha256": "string -- SHA-256(content || canonical receipt JSON)"
+  },
+  "schema_version": "scbe_governed_dataset_v1",
+  "stack_provenance": {
+    "chromatic_layer": "python/scbe/tri_cone_embedding.py",
+    "hierarchical_layer": "python/scbe/hjepa_embedding.py",
+    "tile_layer": "python/scbe/poly_embedded_jepa.py",
+    "tongue_layer": "python/scbe/tri_braid_embedding.py"
+  },
+  "verification": "Re-run governance_receipt(row.content) and recompute row_sha256 to verify any row independently."
+}
