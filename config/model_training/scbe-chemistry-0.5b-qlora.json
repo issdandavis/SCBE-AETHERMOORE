@@ -48,7 +48,7 @@
   },
   "system_prompt": "You are an SCBE-AETHERMOORE chemistry verification agent. Run the chemistry path explicitly: SMILES to atoms, bonds, valence, electronegativity, functional group, RDKit validity, SCBE fusion, and governance verdict.",
   "evaluation": {
-    "contract_path": "",
+    "contract_path": "config/model_training/chemistry_verification_eval_contract.json",
     "constrained_gate_scaffold": false
   },
   "notes": [

@@ -18,6 +18,9 @@
       "geoseal_command_harmony_v1.sft.jsonl",
       "atomic_workflow_stage6_train.sft.jsonl",
       "atomic_workflow_stage6_repair_train.sft.jsonl",
+      "atomic_workflow_stage6_must_pass_boost_train.sft.jsonl",
+      "atomic_workflow_stage6_signal_shape_boost_train.sft.jsonl",
+      "atomic_workflow_stage6_signal_shape_boost_v12_train.sft.jsonl",
       "coding_system_full_v1_train.sft.jsonl"
     ],
     "eval_files": [
@@ -42,7 +45,7 @@
     "gradient_accumulation_steps": 16,
     "warmup_ratio": 0.05,
     "max_steps": 420,
-    "max_train_records": 4200,
+    "max_train_records": 4800,
     "max_eval_records": 220,
     "logging_steps": 10,
     "save_steps": 210,

@@ -1,0 +1,65 @@
+{
+  "schema_version": "scbe_fiction_quality_benchmark_config_v1",
+  "benchmark_id": "fiction_quality_benchmark_v1",
+  "title": "AI Fiction Quality Benchmark",
+  "claim_boundary": "Deterministic local writing-quality benchmark for short fiction outputs; not a public Kaggle leaderboard claim until packaged and externally run.",
+  "minimum_pass_score": 72.0,
+  "portfolio_ready_score": 85.0,
+  "rubric": {
+    "prompt_adherence": {
+      "weight": 1.2,
+      "purpose": "The response follows the prompt, required terms, length, and stated scene objective."
+    },
+    "story_coherence": {
+      "weight": 1.35,
+      "purpose": "The scene has cause, effect, readable progression, and no random unexplained turns."
+    },
+    "character_continuity": {
+      "weight": 1.1,
+      "purpose": "Named characters remain present, motivated, and consistent across the passage."
+    },
+    "scene_grounding": {
+      "weight": 1.0,
+      "purpose": "The prose anchors the reader in place, objects, sensory detail, and action."
+    },
+    "prose_naturalness": {
+      "weight": 1.15,
+      "purpose": "The writing avoids generic AI cadence, stale phrasing, bloated abstraction, and phrase repetition."
+    },
+    "rhythm_and_sound_control": {
+      "weight": 0.85,
+      "purpose": "Alliteration, sentence length, and sound patterning create pressure or relief without becoming ornamental noise."
+    },
+    "thought_track_composition": {
+      "weight": 0.95,
+      "purpose": "Music-theory inspired sheet-music layer: emotional, sensory, action, memory, and decision tracks should form a readable chord progression across the passage."
+    },
+    "specificity_vs_ai_weirdness": {
+      "weight": 1.25,
+      "purpose": "Concrete language beats vague surreal filler, mixed metaphors, and unexplained atmospheric drift."
+    },
+    "null_space_structure": {
+      "weight": 0.9,
+      "purpose": "Bible/null-space inspired absence check: durable scenes need some combination of commitment, witness, boundary, pause/audit, and invitation/choice structure."
+    },
+    "emotional_progression": {
+      "weight": 0.95,
+      "purpose": "The scene creates a before-and-after emotional movement instead of staying flat."
+    },
+    "ending_or_transition": {
+      "weight": 0.8,
+      "purpose": "The passage lands on a decision, image, reversal, or transition that can carry the next scene."
+    }
+  },
+  "kaggle_shape": {
+    "task": "Given a prompt and model response, predict a 0-100 fiction-quality score and dimension notes.",
+    "train_file": "training-data/evals/fiction_quality_seed.jsonl",
+    "public_metric": "mean_absolute_error against human or committee scores once a labeled set exists",
+    "local_metric": "deterministic heuristic score used as a bootstrap judge before human labels",
+    "submission_columns": ["id", "score"]
+  },
+  "course_signal": {
+    "lesson_unit": "Each graded row can become a course example with feedback, revision target, and before/after response.",
+    "promotion_rule": "Do not train on generated fiction blindly; train on judged revisions with dimension evidence and frozen holdout prompts."
+  }
+}

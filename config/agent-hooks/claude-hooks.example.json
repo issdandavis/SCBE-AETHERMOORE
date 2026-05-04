@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "runtime": "claude-example",
+  "policy_intents": {
+    "destructive_shell_gate": true,
+    "network_exfil_awareness": true,
+    "secret_leak_guard": true,
+    "high_risk_mcp_confirmation": true,
+    "tool_audit_logging": true,
+    "post_run_summaries": true,
+    "file_edit_postcheck_hint": true,
+    "subagent_guardrails": true
+  },
+  "event_mapping": {
+    "session_start": "sessionStart",
+    "session_end": "sessionEnd",
+    "before_shell_execution": "beforeShellExecution",
+    "after_shell_execution": "afterShellExecution",
+    "before_mcp_execution": "beforeMCPExecution",
+    "after_mcp_execution": "afterMCPExecution",
+    "pre_tool_use": "preToolUse",
+    "post_tool_use": "postToolUse",
+    "post_tool_use_failure": "postToolUseFailure",
+    "before_submit_prompt": "beforeSubmitPrompt",
+    "after_file_edit": "afterFileEdit",
+    "subagent_start": "subagentStart",
+    "subagent_stop": "subagentStop"
+  },
+  "handlers": {
+    "beforeShellExecution": ".cursor/hooks/shell_guard.py",
+    "beforeMCPExecution": ".cursor/hooks/before_mcp_execution.py",
+    "preToolUse": ".cursor/hooks/pre_tool_use.py",
+    "beforeSubmitPrompt": ".cursor/hooks/before_submit_prompt.py",
+    "afterFileEdit": ".cursor/hooks/after_file_edit.py",
+    "subagentStart": ".cursor/hooks/subagent_start.py",
+    "postToolUse": ".cursor/hooks/post_tool_use.py",
+    "postToolUseFailure": ".cursor/hooks/post_tool_use_failure.py",
+    "afterShellExecution": ".cursor/hooks/after_shell_execution.py",
+    "afterMCPExecution": ".cursor/hooks/after_mcp_execution.py",
+    "subagentStop": ".cursor/hooks/subagent_stop.py",
+    "sessionStart": ".cursor/hooks/session_start.py",
+    "sessionEnd": ".cursor/hooks/session_end.py"
+  },
+  "fail_open_default": true,
+  "notes": [
+    "Template only. Adapt keys to Claude runtime hook API.",
+    "Keep ask or deny on explicitly dangerous checks.",
+    "Use additional_context only where runtime supports it."
+  ]
+}

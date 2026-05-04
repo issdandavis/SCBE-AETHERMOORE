@@ -1,0 +1,36 @@
+{
+  "name": "hf-coding-agent-v8-production-lane",
+  "description": "Production-ready parallel lane for HF coding-agent v8 research and local preflight checks.",
+  "jobs": [
+    {
+      "id": "hf-trl-research-coding-agent-v8",
+      "type": "parallel_search",
+      "objective": "Hugging Face TRL and PEFT production training practices for Qwen coding agents",
+      "queries": [
+        "SFTTrainer",
+        "DPOTrainer",
+        "QLoRA",
+        "LoRA rank tuning"
+      ],
+      "max_results": 10,
+      "excerpt_max_chars_total": 32000
+    },
+    {
+      "id": "bijective-coding-research-coding-agent-v8",
+      "type": "parallel_search",
+      "objective": "Bijective and reversible coding techniques to improve deterministic code generation reliability",
+      "queries": [
+        "reversible programming language",
+        "bijective numeration",
+        "invertible transformations in compilers"
+      ],
+      "max_results": 10,
+      "excerpt_max_chars_total": 32000
+    },
+    {
+      "id": "preflight-coding-agent-v8-files",
+      "type": "shell",
+      "command": "python -c \"from pathlib import Path; import sys; base=Path('.'); req=[base/'config'/'model_training'/'coding-agent-qwen-full-coding-system-v8.json', base/'config'/'model_training'/'stage6_atomic_workflow_eval_contract.json', base/'config'/'model_training'/'geoseal_coding_training_manifest.json', base/'scripts'/'build_stage6_must_pass_boost.py', base/'scripts'/'build_stage6_signal_shape_boost_v12.py']; missing=[str(p) for p in req if not p.exists()]; print('preflight_ok' if not missing else 'missing_files'); [print(m) for m in missing]; sys.exit(0 if not missing else 1)\""
+    }
+  ]
+}

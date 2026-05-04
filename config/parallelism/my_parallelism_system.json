@@ -1,0 +1,32 @@
+{
+  "name": "my-parallel-lane",
+  "description": "Example parallelism workflow mixing web research and local jobs.",
+  "jobs": [
+    {
+      "id": "hf-training-research",
+      "type": "parallel_search",
+      "objective": "Hugging Face LLM training best practices with TRL and PEFT",
+      "queries": [
+        "SFTTrainer",
+        "DPOTrainer",
+        "QLoRA"
+      ],
+      "max_results": 8
+    },
+    {
+      "id": "bijective-coding-research",
+      "type": "parallel_search",
+      "objective": "Bijective and reversible coding techniques for robust code generation",
+      "queries": [
+        "reversible programming",
+        "bijective numeration"
+      ],
+      "max_results": 8
+    },
+    {
+      "id": "quick-local-check",
+      "type": "shell",
+      "command": "python --version"
+    }
+  ]
+}

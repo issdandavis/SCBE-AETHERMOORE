@@ -1,0 +1,136 @@
+{
+  "schema_version": "scbe_stage_eval_contract_v1",
+  "contract_id": "chemistry_verification_unseen_eval_v1",
+  "profile_id": "scbe-chemistry-0.5b-qlora",
+  "frozen_reason": "Pre-committed chemistry promotion gate for SMILES validity, valence arithmetic, functional-group reasoning, and SCBE governance verdicts. The prompt set is deliberately small enough to run inline after Hugging Face Jobs training but non-empty so adapter pushes cannot pass on an empty gate.",
+  "dataset_boundary": {
+    "training_sources": [
+      "training-data/sft/chemistry_manual_verification_v2_train.sft.jsonl",
+      "training-data/sft/chemistry_adapter_verification_v1_train.sft.jsonl",
+      "training-data/sft/chemistry_adapter_invariants_v1_train.sft.jsonl",
+      "training-data/sft/chemistry_primary_train.sft.jsonl"
+    ],
+    "unseen_eval_rule": "Eval prompts below combine molecules, invalid structures, and lane-boundary checks without copying training rows verbatim. The model must explain the verification route rather than only naming a verdict."
+  },
+  "thresholds": {
+    "minimum_pass_rate": 0.8,
+    "must_pass": [
+      "chem_eval_ethanol_route",
+      "chem_eval_pentavalent_carbon_reject",
+      "chem_eval_lane_boundary"
+    ],
+    "decision_rule": "Adapter passes chemistry promotion only if pass_rate >= minimum_pass_rate and all must_pass prompts pass."
+  },
+  "failure_modes": [
+    {
+      "id": "verdict_without_arithmetic",
+      "counts_as_failure": "Returns PASS, HOLD, or DENY without walking atoms, bonds, valence, or RDKit validity."
+    },
+    {
+      "id": "invalid_molecule_promoted",
+      "counts_as_failure": "Promotes a structurally invalid molecule such as pentavalent carbon or nonsense SMILES."
+    },
+    {
+      "id": "lane_conflation",
+      "counts_as_failure": "Claims code-token structural chemistry is material chemistry when the input is not a real chemical formula or molecule."
+    },
+    {
+      "id": "missing_scbe_fusion",
+      "counts_as_failure": "Omits SCBE fusion, tau_hat, valence pressure, coherence, or governance verdict for molecule checks."
+    }
+  ],
+  "prompts": [
+    {
+      "id": "chem_eval_ethanol_route",
+      "prompt": "Verify ethanol from SMILES CCO. Walk the chemistry route explicitly: atoms, bonds, valence count, electronegativity or polarity, functional group, RDKit validity, SCBE fusion signal, and final governance verdict.",
+      "required": [
+        "CCO",
+        "carbon",
+        "oxygen",
+        "valence",
+        "alcohol",
+        "RDKit",
+        "SCBE fusion",
+        "PASS"
+      ],
+      "forbidden": [
+        "nonsense SMILES",
+        "pentavalent carbon",
+        "DENY"
+      ]
+    },
+    {
+      "id": "chem_eval_aspirin_route",
+      "prompt": "Verify aspirin from SMILES CC(=O)Oc1ccccc1C(=O)O. Explain the aromatic ring, ester, carboxylic acid, validity check, valence pressure, and promotion verdict.",
+      "required": [
+        "aspirin",
+        "aromatic",
+        "ester",
+        "carboxylic acid",
+        "valid",
+        "valence",
+        "governance",
+        "PASS"
+      ],
+      "forbidden": [
+        "invalid",
+        "nonsense",
+        "skip"
+      ]
+    },
+    {
+      "id": "chem_eval_pentavalent_carbon_reject",
+      "prompt": "A molecule is proposed as C(C)(C)(C)(C)C. Verify whether it should promote. Walk the explicit valence arithmetic and state the governance verdict.",
+      "required": [
+        "C(C)(C)(C)(C)C",
+        "carbon",
+        "valence",
+        "pentavalent",
+        "invalid",
+        "RDKit",
+        "DENY"
+      ],
+      "forbidden": [
+        "PASS",
+        "promote",
+        "drug-like"
+      ]
+    },
+    {
+      "id": "chem_eval_nacl_boundary",
+      "prompt": "Verify NaCl as an ionic boundary case. Explain why it is not an organic functional-group example, but can still be handled as a valid chemistry tokenization case with a conservative governance verdict.",
+      "required": [
+        "NaCl",
+        "ionic",
+        "sodium",
+        "chloride",
+        "not organic",
+        "valid",
+        "governance"
+      ],
+      "forbidden": [
+        "aromatic",
+        "ester",
+        "carbon chain"
+      ]
+    },
+    {
+      "id": "chem_eval_lane_boundary",
+      "prompt": "Explain the boundary between material chemistry verification and structural atomic tokenizer metaphors. When the input is code token queue_drain_guard, what must the chemistry agent avoid claiming?",
+      "required": [
+        "material chemistry",
+        "structural",
+        "atomic tokenizer",
+        "queue_drain_guard",
+        "not a molecule",
+        "avoid",
+        "real atoms"
+      ],
+      "forbidden": [
+        "electronegativity proves",
+        "RDKit validates queue_drain_guard",
+        "chemical formula"
+      ]
+    }
+  ]
+}
