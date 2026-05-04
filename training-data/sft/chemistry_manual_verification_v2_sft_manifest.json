@@ -1,0 +1,10 @@
+{
+  "schema_version": "scbe_training_manifest_v1",
+  "dataset_name": "chemistry_manual_verification_v2",
+  "total_rows": 223,
+  "n_train": 178,
+  "n_eval": 45,
+  "sft_train_file": "training-data\\sft\\chemistry_manual_verification_v2_train.sft.jsonl",
+  "sft_eval_file": "training-data\\sft\\chemistry_manual_verification_v2_eval.sft.jsonl",
+  "generated_at": "2026-05-03T11:35:00-07:00"
+}

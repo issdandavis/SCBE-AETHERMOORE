@@ -1,0 +1,77 @@
+{
+  "manifest_id": "chemistry_training_bundle_v1",
+  "created_utc": "2026-05-03T18:00:00Z",
+  "branch": "main",
+  "purpose": "Aggregated chemistry SFT bundle for next training pass. Includes manual verification (hand-reasoned), adapter invariants (contract tests), adapter verification (live computed values), and chemistry primary (transport_atomic reaction records).",
+  "test_evidence": {
+    "pytest": {
+      "command": "python -m pytest tests/test_chemistry_adapter.py tests/test_chemistry_verification_gate.py tests/test_state9d_chemistry.py tests/test_state9d_chemistry_fusion.py tests/test_state9d_engine.py -q",
+      "result": "113 passed",
+      "ran_utc": "2026-05-03T18:00:00Z"
+    }
+  },
+  "lane": "chemistry",
+  "datasets": [
+    {
+      "name": "chemistry_manual_verification_v1",
+      "role": "hand_reasoned_path",
+      "manifest": "training-data/sft/chemistry_manual_verification_v1_manifest.json",
+      "train": "training-data/sft/chemistry_manual_verification_v1_train.sft.jsonl",
+      "eval": "training-data/sft/chemistry_manual_verification_v1_eval.sft.jsonl",
+      "n_train": 15,
+      "n_eval": 5,
+      "description": "College-level chemistry verification with full manual arithmetic reasoning paths."
+    },
+    {
+      "name": "chemistry_adapter_invariants_v1",
+      "role": "contract_tests",
+      "manifest": "training-data/sft/chemistry_adapter_invariants_v1_manifest.json",
+      "train": "training-data/sft/chemistry_adapter_invariants_v1_train.sft.jsonl",
+      "eval": "training-data/sft/chemistry_adapter_invariants_v1_eval.sft.jsonl",
+      "n_train": 6,
+      "n_eval": 2,
+      "description": "Adapter invariant tests: error paths, real element mapping, threshold denial, batch ordering."
+    },
+    {
+      "name": "chemistry_adapter_verification_v1",
+      "role": "live_computed_values",
+      "manifest": "training-data/sft/chemistry_adapter_verification_v1_manifest.json",
+      "train": "training-data/sft/chemistry_adapter_verification_v1_train.sft.jsonl",
+      "eval": "training-data/sft/chemistry_adapter_verification_v1_eval.sft.jsonl",
+      "n_train": 40,
+      "n_eval": 10,
+      "description": "Machine-verified adapter outputs: tau_hat, votes, valence_pressure, coherence_penalty, governance verdict from live SCBE pipeline."
+    },
+    {
+      "name": "chemistry_primary",
+      "role": "transport_atomic_reactions",
+      "manifest": "training-data/sft/chemistry_primary_manifest.json",
+      "train": "training-data/sft/chemistry_primary_train.sft.jsonl",
+      "eval": "training-data/sft/chemistry_primary_holdout.sft.jsonl",
+      "n_train": 1551,
+      "n_eval": 189,
+      "description": "Transport atomic reaction records: predict, stability, template, transport across 6 Sacred Tongues."
+    },
+    {
+      "name": "chemistry_manual_verification_v2",
+      "role": "hand_reasoned_path",
+      "manifest": "training-data/sft/chemistry_manual_verification_v2_sft_manifest.json",
+      "train": "training-data/sft/chemistry_manual_verification_v2_train.sft.jsonl",
+      "eval": "training-data/sft/chemistry_manual_verification_v2_eval.sft.jsonl",
+      "n_train": 178,
+      "n_eval": 45,
+      "description": "Expanded college-level chemistry verification (223 total rows) with auto-generated manual arithmetic reasoning paths."
+    }
+  ],
+  "totals": {
+    "n_train": 1790,
+    "n_eval": 251,
+    "n_total": 2041
+  },
+  "promotion_gate_required": "scripts/eval/chemistry_verification_gate.py",
+  "next_actions": [
+    "Expand adapter verification to 50-200 rows with isotopes, invalid rings, salts, organometallics",
+    "Train neural generator to replace rule-based validity (current 5-28% vs SOTA 95-100%)",
+    "Run chemistry bundle through next SFT pass alongside aligned_foundations_v2"
+  ]
+}

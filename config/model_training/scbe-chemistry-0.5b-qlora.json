@@ -1,0 +1,60 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-chemistry-0.5b-qlora",
+  "title": "SCBE Chemistry 0.5B QLoRA",
+  "description": "Chemistry-focused QLoRA fine-tuning on the 2,041-row chemistry bundle. Targets SMILES verification, valence arithmetic, functional-group detection, and SCBE governance verdict prediction.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "chemistry_manual_verification_v2_train.sft.jsonl",
+      "chemistry_adapter_verification_v1_train.sft.jsonl",
+      "chemistry_adapter_invariants_v1_train.sft.jsonl",
+      "chemistry_primary_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "chemistry_manual_verification_v2_eval.sft.jsonl",
+      "chemistry_adapter_verification_v1_eval.sft.jsonl",
+      "chemistry_adapter_invariants_v1_eval.sft.jsonl",
+      "chemistry_primary_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 1024,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "max_steps": 500,
+    "warmup_steps": 50,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.0002,
+    "gradient_checkpointing": true,
+    "seed": 42,
+    "logging_steps": 10,
+    "save_steps": 100,
+    "eval_steps": 50
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-chemistry-sft",
+    "adapter_repo": "issdandavis/scbe-chemistry-0.5b-qlora",
+    "token_env": "HF_TOKEN",
+    "push_adapter": true
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE chemistry verification agent. Run the chemistry path explicitly: SMILES to atoms, bonds, valence, electronegativity, functional group, RDKit validity, SCBE fusion, and governance verdict.",
+  "evaluation": {
+    "contract_path": "",
+    "constrained_gate_scaffold": false
+  },
+  "notes": [
+    "Profile targets chemistry lane only. Merge with coding profiles for multi-task training.",
+    "Estimated Colab T4 runtime: ~45-60 minutes for 500 steps.",
+    "Run preflight before dispatch: python scripts/system/preflight_zero_cost_training.py --profile config/model_training/scbe-chemistry-0.5b-qlora.json",
+    "SMOKE RUN: use --flavor cpu-small and --timeout 30m for validation before scaling up."
+  ]
+}

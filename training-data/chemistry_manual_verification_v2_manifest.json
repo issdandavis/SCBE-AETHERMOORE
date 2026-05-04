@@ -1,0 +1,29 @@
+{
+  "schema_version": "scbe_training_manifest_v1",
+  "dataset_name": "chemistry_manual_verification_v2",
+  "total_rows": 223,
+  "n_train": 178,
+  "n_eval": 45,
+  "sources": [
+    "amino_acid",
+    "aromatic",
+    "basic",
+    "boundary",
+    "drug",
+    "functional_group",
+    "heterocycle",
+    "inorganic",
+    "natural_product",
+    "organometallic",
+    "peptide",
+    "stress_test"
+  ],
+  "difficulty_distribution": {
+    "1": 50,
+    "2": 97,
+    "3": 48,
+    "4": 21,
+    "5": 7
+  },
+  "generated_at": "2026-05-03T11:30:00-07:00"
+}
