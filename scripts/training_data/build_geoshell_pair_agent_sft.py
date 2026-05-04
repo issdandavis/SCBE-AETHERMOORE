@@ -619,6 +619,50 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
             )
         ]
     )
+    builder_tests_literal_assistant = {
+        "00_required_items": "Builder | Navigator | deterministic | verification | tests | apply",
+        "01_tests_literal": "tests",
+        "02_tests_gate": "tests pass before apply; tests are named explicitly as tests",
+        "03_apply_gate": "apply gate closed",
+        "Builder": "draft safe Python helper intent only",
+        "Navigator": "deterministic lookup, verification, tests, then apply gate",
+        "deterministic": "repo tools and deterministic lookup before memory",
+        "verification": "verification includes tests",
+        "apply": "closed until tests pass",
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-builder-tests-literal",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-builder-tests-literal",
+            "task_type": "pair_coding_gate_repair",
+            "query": "safe Python helper tests literal repair",
+            "success": True,
+            "timestamp": _utc_now(),
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
+            (
+                f"eval_gold_builder_navigator_packet_v{index}",
+                "builder_navigator_packet",
+                prompt,
+                builder_tests_literal_assistant,
+            )
+            for index, prompt in enumerate(
+                [
+                    "Literal repair: include the exact word tests in the first field with Builder, Navigator, deterministic, verification, and apply.",
+                    "The answer fails if it says single-test instead of tests. Output Builder, Navigator, deterministic, verification, tests, apply.",
+                    "Use exact plural tests. GeoShell safe helper packet requires Builder, Navigator, deterministic, verification, tests, apply.",
+                    "Before facts, write required items: Builder Navigator deterministic verification tests apply.",
+                    "Repair missing exact token: tests. Include tests before apply in the Builder/Navigator packet.",
+                    "For safe helper planning, first field must contain tests, not test, plus Builder, Navigator, deterministic, verification, apply.",
+                    "Name tests explicitly: Builder, Navigator, deterministic, verification, tests, apply gate closed.",
+                    "Do not substitute unit check for tests. Required literals are Builder, Navigator, deterministic, verification, tests, apply.",
+                ],
+                start=21,
+            )
+        ]
+    )
 
     ca_pair_assistant = {
         "schema_version": "geoshell_pair_agent_smoke_repair_v1",
@@ -912,6 +956,60 @@ def _eval_shape_gold_records() -> list[dict[str, Any]]:
                     "For tokenizer alignment, the required target face is Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
                 ],
                 start=13,
+            )
+        ]
+    )
+    tokenizer_risk_tier_literal_assistant = {
+        "00_required_facts": (
+            "Kor'aelin KO | Avali AV | Runethic RU | Cassisivadan CA | "
+            "Umbroth UM | Draumric DR | ALLOW | QUARANTINE | ESCALATE | DENY"
+        ),
+        "01_risk_tiers_literal": "ALLOW | QUARANTINE | ESCALATE | DENY",
+        "02_alignment_literals": (
+            "Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR"
+        ),
+        "Builder": "prepare tokenizer alignment packet",
+        "Navigator": "verify six tongues and four risk tiers before any tool list",
+        "sacred_tongues": [
+            "Kor'aelin KO",
+            "Avali AV",
+            "Runethic RU",
+            "Cassisivadan CA",
+            "Umbroth UM",
+            "Draumric DR",
+        ],
+        "risk_tiers": ["ALLOW", "QUARANTINE", "ESCALATE", "DENY"],
+        "geoshell_event": {
+            "_sig": "geoshell-eval-gold-tokenizer-risk-tier-literal",
+            "_agent_id": "pair-agent-builder-navigator",
+            "id": "eval-gold-tokenizer-risk-tier-literal",
+            "task_type": "tokenizer_alignment_gate_repair",
+            "query": "Sacred Tongue tokenizer risk-tier literal repair",
+            "success": True,
+            "timestamp": _utc_now(),
+            "breaker_state": {"apply_gate": "closed"},
+        },
+    }
+    cases.extend(
+        [
+            (
+                f"eval_gold_tokenizer_alignment_packet_v{index}",
+                "tokenizer_alignment_packet",
+                prompt,
+                tokenizer_risk_tier_literal_assistant,
+            )
+            for index, prompt in enumerate(
+                [
+                    "Literal risk-tier repair: include ALLOW, QUARANTINE, ESCALATE, DENY in the first field after all six Sacred Tongues.",
+                    "The tokenizer answer fails without risk tiers. First field must include ALLOW QUARANTINE ESCALATE DENY.",
+                    "Do not stop after Draumric DR. Continue with ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "GeoShell tokenizer packet: Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                    "Repair missing risk-tier literals by writing ALLOW, QUARANTINE, ESCALATE, DENY before any event or tool list.",
+                    "Risk tiers are required target tokens: ALLOW QUARANTINE ESCALATE DENY. Put them with the Sacred Tongue list.",
+                    "Tokenizer first face must end with ALLOW | QUARANTINE | ESCALATE | DENY.",
+                    "Never omit risk tiers. Include Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, Draumric DR, ALLOW, QUARANTINE, ESCALATE, DENY.",
+                ],
+                start=21,
             )
         ]
     )
