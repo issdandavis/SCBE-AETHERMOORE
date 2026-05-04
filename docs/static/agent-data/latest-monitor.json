@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "What Chromium versions are major browsers are on?",
-      "word_count": 607,
+      "description": "The text mode lie: why modern TUIs are a nightmare for accessibility",
+      "word_count": 615,
       "headings": [
         {
           "level": 2,
-          "text": "What Chromium versions are major browsers are on?",
+          "text": "The text mode lie: why modern TUIs are a nightmare for accessibility",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "chromium-drift.pages.dev",
+          "text": "xogium.me",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Southwest Headquarters Tour",
+          "text": "Agentic Coding Is a Trap",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "katherinemichel.github.io",
+          "text": "larsfaye.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Mercedes-Benz commits to bringing back physical buttons",
+          "text": "BYOMesh \u2013 New LoRa mesh radio offers 100x the bandwidth",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "drive.com.au",
+          "text": "partyon.xyz",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Porsche will contest Laguna Seca in historic colors of the Apple Computer livery",
+          "text": "DeepClaude \u2013 Claude Code agent loop with DeepSeek V4 Pro, 17x cheaper",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "porsche.com",
+          "text": "github.com/aattaran",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "What Is Z-Angle Memory and Why Is Intel Developing It?",
+          "text": "Let's Buy Spirit Air",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "hpcwire.com",
+          "text": "letsbuyspiritair.com",
           "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.What Chromium versions are major browsers are on? (chromium-drift.pages.dev)67 points by skaul 1 hour ago  | hide | 19\u00a0comments2.Southwest Headquarters Tour (katherinemichel.github.io)46 points by KatiMichel 1 hour ago  | hide | 5\u00a0comments3.Mercedes-Benz commits to bringing back physical buttons (drive.com.au)369 points by teleforce 3 hours ago  | hide | 209\u00a0comments4.Porsche will contest Laguna Seca in historic colors of the Ap..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.The text mode lie: why modern TUIs are a nightmare for accessibility (xogium.me)48 points by SpyCoder77 56 minutes ago  | hide | 11\u00a0comments2.Agentic Coding Is a Trap (larsfaye.com)68 points by ayoisaiah 2 hours ago  | hide | 43\u00a0comments3.BYOMesh \u2013 New LoRa mesh radio offers 100x the bandwidth (partyon.xyz)245 points by nullagent 6 hours ago  | hide | 78\u00a0comments4.DeepClaude \u2013 Claude Code agent loop with DeepSeek V4 Pro, 17x che..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
