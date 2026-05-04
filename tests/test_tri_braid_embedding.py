@@ -454,6 +454,17 @@ _RECEIPT_KEYS = {
     "ring_radius",
     "tile",
     "tongue",
+    # Tri-chromatic signed-cone fields (added by tri_cone_embedding fusion).
+    "cone_governance",
+    "cone_hash",
+    "cone_positive_count",
+    "cone_shadow_count",
+    "cone_triple_intersection_score",
+    "cone_triple_shadow_score",
+    "cone_interference_score",
+    "cone_plateau_imbalance",
+    "cone_joint_embedding",
+    "cone_joint_shadow",
 }
 
 
@@ -509,6 +520,14 @@ def test_property_governance_receipt_well_formed(concept, row, col):
     assert len(receipt["ordered_hash"]) == 64
     assert receipt["primary_trit"] in {-1, 0, 1}
     assert receipt["mirror_trit"] in {-1, 0, 1}
+    assert receipt["cone_governance"] in {"ALLOW", "QUARANTINE", "ESCALATE", "DENY"}
+    assert isinstance(receipt["cone_hash"], str)
+    assert len(receipt["cone_hash"]) == 64
+    assert 0 <= receipt["cone_positive_count"] <= 3
+    assert 0 <= receipt["cone_shadow_count"] <= 3
+    assert 0.0 <= receipt["cone_plateau_imbalance"] <= 1.0
+    assert len(receipt["cone_joint_embedding"]) == 3
+    assert len(receipt["cone_joint_shadow"]) == 3
 
 
 @PROP
