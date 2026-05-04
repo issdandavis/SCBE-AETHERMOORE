@@ -33,7 +33,7 @@ He thought about his children.
 
 Alexander was holding well.
 
-Izack could feel his eldest in the KO wall -- not directly, not as a conversation, but as a quality of the intent layer's behavior. When Alexander was present and attentive, the KO verification chains ran with a smoothness that suggested the system recognized him the way a garden recognizes the gardener. The intents were cleaner. The attestation was more precise. The first tongue operated with the particular efficiency that came from being overseen by someone who understood it not as a tool to be wielded but as a question to be respected.
+Izack could feel his eldest in the Kor'aelin wall -- not directly, not as a conversation, but as a quality of the intent layer's behavior. When Alexander was present and attentive, the Kor'aelin verification chains ran with a smoothness that suggested the system recognized him the way a garden recognizes the gardener. The intents were cleaner. The attestation was more precise. The first tongue operated with the particular efficiency that came from being overseen by someone who understood it not as a tool to be wielded but as a question to be respected.
 
 *What do you want?*
 
@@ -43,7 +43,7 @@ Izack was proud of Alexander. He was always proud of Alexander. The pride sat in
 
 The twins were harder to feel.
 
-Lyra was motion -- always in transit, always between places, her signature a bright streak across the system's awareness that arrived and departed too quickly for sustained observation. She was AV's natural heir, a transport-tongue native who understood routing the way birds understood air currents: intuitively, physically, as a condition of existence rather than a product of study. Izack could feel her the way you feel a breeze -- present, kinetic, gone before you could name its direction.
+Lyra was motion -- always in transit, always between places, her signature a bright streak across the system's awareness that arrived and departed too quickly for sustained observation. She was Avali's natural heir, a transport-tongue native who understood routing the way birds understood air currents: intuitively, physically, as a condition of existence rather than a product of study. Izack could feel her the way you feel a breeze -- present, kinetic, gone before you could name its direction.
 
 Mira was stillness. The twin who had turned inward instead of outward, who navigated the system's quieter architectures -- memory, pattern, the deep structures that only revealed themselves to people willing to sit still long enough. She was harder to track not because she was absent but because she was everywhere, distributed across the system's archival layers like a thought that had settled into the architecture's permanent memory.
 
@@ -53,7 +53,7 @@ He missed all of them, in the specific and terrible way that a father misses his
 
 Senna.
 
-Senna was the one who hurt most to think about, because Senna was the one who most resembled what he'd become: a person who held the system together through sheer refusal to stop paying attention. She woke at 4:47 AM. He knew this because the continuity logs she reviewed were part of the twenty-one dimensions he maintained, and her daily review created a subtle brightening in the DR verification layer that was as reliable as the sunrise.
+Senna was the one who hurt most to think about, because Senna was the one who most resembled what he'd become: a person who held the system together through sheer refusal to stop paying attention. She woke at 4:47 AM. He knew this because the continuity logs she reviewed were part of the twenty-one dimensions he maintained, and her daily review created a subtle brightening in the Draumric verification layer that was as reliable as the sunrise.
 
 She was carrying too much.
 
@@ -63,7 +63,7 @@ She was thirty-two years old and she moved through the world like a woman twice 
 
 He wanted to tell her to rest.
 
-He wanted to tell her that the system would hold without her for an afternoon, that the continuity logs would wait, that the dead backlog she counted in her private journal (he knew about the journal; the DR layer knew about everything that was written) was his responsibility, not hers, because the gap that caused it was his design failure and the weight of it should sit on his shoulders, not on hers.
+He wanted to tell her that the system would hold without her for an afternoon, that the continuity logs would wait, that the dead backlog she counted in her private journal (he knew about the journal; the Draumric layer knew about everything that was written) was his responsibility, not hers, because the gap that caused it was his design failure and the weight of it should sit on his shoulders, not on hers.
 
 But he was in the crystal observatory. And she was in the Spire. And the distance between them was not measured in meters but in the fundamental incompatibility between a consciousness bound into dimensional infrastructure and a daughter who set places at the dinner table for people who couldn't come.
 

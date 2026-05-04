@@ -235,6 +235,8 @@ output/
 training-runs/
 backups/
 _staging/
+tmp_manifest.json
+training-data/moses/
 .grok/
 .streamlit/
 .tmp-build/

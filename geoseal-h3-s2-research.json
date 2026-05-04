@@ -1,0 +1,87 @@
+{
+  "search_id": "search_ded9b523b4dc4497a1b36fb161cc1f7f",
+  "status": "ok",
+  "results": [
+    {
+      "url": "https://gist.github.com/colbyn/001064f00385d253b42693c3889f9beb",
+      "title": "H3 Resolution Levels \u00b7 GitHub",
+      "publish_date": null,
+      "excerpts": [
+        "Set hierarchy \u2192 <strong>Every hexagon has one parent and 7 children (except for base resolution).</strong> Consistent spatial indexing \u2192 You can move between resolutions while keeping location relationships intact."
+      ]
+    },
+    {
+      "url": "https://h3geo.org/docs/highlights/indexing/",
+      "title": "Indexing | H3",
+      "publish_date": null,
+      "excerpts": [
+        "<strong>H3 is a hierarchical geospatial index</strong>. H3 indexes refer to cells by the spatial hierarchy. Every hexagonal cell, up to the maximum resolution supported by H3, has seven child cells below it in this hierarchy. This subdivision is referred to as aperture 7."
+      ]
+    },
+    {
+      "url": "https://s2geometry.io/",
+      "title": "S2 Geometry | S2Geometry",
+      "publish_date": null,
+      "excerpts": [
+        "S2Geometry  \nGet S2 About S2 Developer Guide Community Resources\n\n# S2 Geometry\n\n**Welcome to the S2 Geometry Library!**\n\nA unique feature of the S2 library is that unlike traditional geographic\ninformation systems, which represent data as flat two-dimensional projections\n(similar to an atlas), the S2 library represents all data on a three-dimensional\nsphere (similar to a globe). This makes it possible to build a worldwide\ngeographic database with no seams or singularities, using a single coordinate\nsystem, and with low distortion everywhere compared to the true shape of the\nEarth. While the Earth is not quite spherical, it is much closer to being a\nsphere than it is to being flat!\n\nIf you want to learn more about the library, start by reading the Overview and QuickStart document , then read the\nintroduction to the basic types\n\n**[Get S2 on GitHub](https://github.com/google/s2geometry)**\n\n## S2 Features\n\nNotable features of the library include:\n\n* Flexible support for spatial indexing, including the ability\n  to approximate arbitrary regions as collections of discrete\n  S2 cells. This feature makes it easy to build large distributed\n  spatial indexes.\n* Fast in-memory spatial indexing of collections of points,\n  polylines, and polygons.\n* Robust constructive operations (such as intersection, union, and\n  simplification) and boolean predicates (such as testing for\n  containment).\n* Efficient query operations for finding nearby objects, measuring\n  distances, computing centroids, etc.\n* A flexible and robust implementation of snap rounding (a geometric\n  technique that allows operations to be implemented 100% robustly\n  while using small and fast coordinate representations).\n* A collection of efficient yet exact mathematical predicates for\n  testing relationships among geometric primitives.\n* Extensive testing on Google\u2019s vast collection of geographic data.\n* Flexible Apache 2.0 license.\n\n## Table of Contents\n\n* About S2\n  \n    + Overview\n    + Platforms Guide\n* Tutorials\n  \n    + Quick Start\n* Developer Guides\n  \n    + Basic Types\n    + Finding Nearby Edges\n    + S2Cell Hierarchy\n    + Covering Examples\n* Resources\n  \n    + The S2 Earthcube\n    + S2Cell Statistics\n\n## S2Geometry\n\n* S2Geometry\n* s2geometry-io@googlegroups.com\n\nThe s2geometry.io website"
+      ]
+    },
+    {
+      "url": "https://h3geo.org/",
+      "title": "Home | H3",
+      "publish_date": null,
+      "excerpts": [
+        "Indexed data can be quickly joined across disparate datasets and aggregated at different levels of precision. H3 enables a range of algorithms and optimizations based on the grid, including nearest neighbors, shortest path, gradient smoothing, and more."
+      ]
+    },
+    {
+      "url": "https://h3geo.org/docs/core-library/h3Indexing/",
+      "title": "H3 Index | H3",
+      "publish_date": null,
+      "excerpts": [
+        "Each directed edge and vertex is assigned an index based on its origin or owner cell, respectively. <strong>An H3Index is the 64-bit integer representation of an H3 index</strong>, which may be one of multiple modes to indicate the concept being indexed."
+      ]
+    },
+    {
+      "url": "https://h3geo.org/docs/",
+      "title": "Introduction | H3",
+      "publish_date": null,
+      "excerpts": [
+        "H3 is a <strong>hierarchical geospatial index, which provides exact logical containment but only approximate geometric containment across the cell hierarchy</strong>."
+      ]
+    },
+    {
+      "url": "https://h3geo.org/docs/core-library/restable/",
+      "title": "Tables of Cell Statistics Across Resolutions | H3",
+      "publish_date": null,
+      "excerpts": [
+        "*: Within a given resolution, all pentagons have the same area. The area of an H3 cell varies based on its position relative to the icosahedron vertices."
+      ]
+    },
+    {
+      "url": "https://h3geo.org/docs/3.x/core-library/h3Indexing/",
+      "title": "H3 Index Representations | H3",
+      "publish_date": null,
+      "excerpts": [
+        "For up-to-date documentation, see the latest version (4.x). ... <strong>The H3 system assigns a unique hierarchical index to each cell</strong>. The H3 index of a resolution r cell begins with the appropriate resolution 0 base cell number. This is followed by a sequence of r digits 0-6, where each ith digit"
+      ]
+    },
+    {
+      "url": "https://docs.carto.com/data-and-analysis/analytics-toolbox-for-bigquery/sql-reference/h3",
+      "title": "h3 | CARTO Documentation",
+      "publish_date": null,
+      "excerpts": [
+        "H3 is Uber\u2019s Hexagonal Hierarchical Spatial Index. <strong>Full documentation of the project can be found at h3geo</strong>."
+      ]
+    },
+    {
+      "url": "https://docs.oracle.com/en/database/oracle/oracle-database/26/spatl/h3-indexing.html",
+      "title": "H3 Indexing",
+      "publish_date": null,
+      "excerpts": [
+        "H3 is an open source indexing system developed by Uber that uses hexagons in a grid system to cover the earth\u2019s surface. Data points are bucketed in hexagon cells, and attributes can be aggregated and summarized over these hexagons."
+      ]
+    }
+  ],
+  "warnings": []
+}

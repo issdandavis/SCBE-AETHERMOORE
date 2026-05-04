@@ -5,7 +5,7 @@
 
 **INCIDENT REPORT — INTERNAL USE ONLY**
 
-**Filed by**: Bram Cortez, CA Maintenance Lead, Infrastructure Division
+**Filed by**: Bram Cortez, Cassisivadan Maintenance Lead, Infrastructure Division
 **Date**: [Protocol-local timestamp, 14 days post-arrival of Earth-native designate CHEN, M.]
 **Classification**: Routine — Personal Observation — Not For Council Review
 **Status**: Filed to /dev/null because I'm writing this for me, not for Jorren's bloody archive
@@ -26,7 +26,7 @@ But I'm writing this one because I need to put something down before it gets los
 
 **Observation 1: He Listens to Infrastructure**
 
-Day three. I'm in the Level Six junction realigning a CA conduit that's been drifting off-resonance for months -- nothing critical, just the kind of slow degradation that happens when maintenance budgets get allocated to visible problems instead of invisible ones. Standard. Annoying. My problem, not anyone else's.
+Day three. I'm in the Level Six junction realigning a Cassisivadan conduit that's been drifting off-resonance for months -- nothing critical, just the kind of slow degradation that happens when maintenance budgets get allocated to visible problems instead of invisible ones. Standard. Annoying. My problem, not anyone else's.
 
 Chen walks in. Doesn't announce himself. Doesn't ask what I'm doing. Just stands in the doorway and listens.
 
@@ -34,7 +34,7 @@ Chen walks in. Doesn't announce himself. Doesn't ask what I'm doing. Just stands
 
 I almost drop my wrench.
 
-*Tired.* Not "malfunctioning." Not "degraded." Not "requiring recalibration to specification parameters," which is what the last CA inspector said before filing a report that went directly into Jorren's archive and directly out of anyone's actionable awareness. Tired. Like the conduit was a living thing doing its best, which -- and I will deny this under formal interrogation -- is closer to the truth than most people in this Spire would be comfortable admitting.
+*Tired.* Not "malfunctioning." Not "degraded." Not "requiring recalibration to specification parameters," which is what the last Cassisivadan inspector said before filing a report that went directly into Jorren's archive and directly out of anyone's actionable awareness. Tired. Like the conduit was a living thing doing its best, which -- and I will deny this under formal interrogation -- is closer to the truth than most people in this Spire would be comfortable admitting.
 
 "How long since it's had a full service?" Chen asks.
 
@@ -46,7 +46,7 @@ I almost drop my wrench.
 
 He doesn't say anything else. Doesn't lecture me about maintenance schedules or resource allocation or the importance of infrastructure investment. Just nods, makes a note in that journal he carries everywhere, and leaves.
 
-The next morning, I find a requisition form on my desk. Signed by Senna Thorne. Authorizing a full CA conduit service cycle for Levels Four through Eight. Priority: Elevated.
+The next morning, I find a requisition form on my desk. Signed by Senna Thorne. Authorizing a full Cassisivadan conduit service cycle for Levels Four through Eight. Priority: Elevated.
 
 I ask Senna about it. She says Chen mentioned the conduit resonance issue during his morning briefing and suggested that infrastructure fatigue might be masking deeper system behaviors.
 
@@ -64,7 +64,7 @@ These are the correct things to complain about. I like this man.
 
 **Observation 3: He Understands Maintenance**
 
-Day nine. I'm explaining the RU conduit routing to Nadia, who is a fine relay technician but thinks infrastructure is something that happens to other people. Chen is sitting in the corner of the workshop, ostensibly reviewing Fleet training materials, actually listening to every word I say.
+Day nine. I'm explaining the Runethic conduit routing to Nadia, who is a fine relay technician but thinks infrastructure is something that happens to other people. Chen is sitting in the corner of the workshop, ostensibly reviewing Fleet training materials, actually listening to every word I say.
 
 "You've got redundant routing through the Level Three junction," he says, without looking up. "If the primary path goes down, the failover adds eleven milliseconds of latency. That's fine for normal traffic, but if you're running emergency governance attestation through that path during a breach event, eleven milliseconds might mean the difference between a valid witness chain and a temporal mismatch."
 

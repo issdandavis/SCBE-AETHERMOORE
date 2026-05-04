@@ -59,6 +59,18 @@ def test_build_digest_extracts_positive_residue_chains() -> None:
     assert digest["residues"][0]["kind"] == "positive_residue"
     assert "python -m src.geoseal_cli" in digest["residues"][0]["token_chain"]
     assert digest["loss"]["latest"] == 0.25
+    assert digest["recovery_policy"]["sequence"] == [
+        "avoid_obvious_falls",
+        "fall_smaller",
+        "learn_impact_shape",
+        "practice_recovery",
+        "retest",
+        "retain_lesson",
+    ]
+    assert "factorio_factory_loop" in digest["automation_patterns"]
+    assert "dwarf_fortress_ops_loop" in digest["automation_patterns"]
+    assert "tython_typescript_to_python_compiler_note" in digest["automation_patterns"]
+    assert "tython_security_as_code_note" in digest["automation_patterns"]
 
 
 def test_build_digest_expands_state_space_on_low_loss_gate_failure() -> None:
@@ -69,6 +81,8 @@ def test_build_digest_expands_state_space_on_low_loss_gate_failure() -> None:
     repair = [row for row in digest["residues"] if row["kind"] == "repair_residue"]
     assert repair
     assert repair[0]["token_chain"] == ["provider-pair:ollama->deepseek:benchmark"]
+    assert repair[0]["fall_recovery"]["recovery_action"] == "add_exact_repair_exemplar"
+    assert digest["recovery_policy"]["stance"] == "learn_to_fall_better"
 
 
 def test_extract_gate_report_and_losses_from_hf_log(tmp_path: Path) -> None:

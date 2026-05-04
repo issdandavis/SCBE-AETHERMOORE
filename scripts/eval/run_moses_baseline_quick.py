@@ -92,7 +92,7 @@ def evaluate(smiles_list: List[str], train_set: Set[str]) -> Dict[str, float]:
 
     # Filters: basic drug-likeness (MolWt < 500, LogP < 5)
     passed = 0
-    for smi, mol in unique_valid.items():
+    for mol in unique_valid.values():
         mw = Descriptors.MolWt(mol)
         logp = Descriptors.MolLogP(mol)
         if mw < 500 and logp < 5:
@@ -179,6 +179,7 @@ def main() -> int:
     # Save
     import json
     from pathlib import Path
+
     out_path = Path("artifacts/moses_baseline_quick.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8") as fh:

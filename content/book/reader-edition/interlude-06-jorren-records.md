@@ -3,7 +3,7 @@
 
 ---
 
-**DR Archive — Personal Notation**
+**Draumric Archive — Personal Notation**
 **Keeper**: Jorren Hale, Fourth Circle Draumric
 **Subject**: Miscellaneous observations regarding the Earth-native and the current state of record-keeping
 **Classification**: Personal. Not for formal archive. Jorren's own damn business.
@@ -12,7 +12,7 @@
 
 The problem with being the person who writes things down is that eventually you start writing down things that nobody asked you to write down, and then you can't stop, because the act of recording is its own momentum, and once you've committed to the principle that *every name matters and every action has cost*, you find yourself sitting in your office at midnight making notes about a man from another world who passed an integrity mirror at ninety-two percent and didn't even know that was unusual.
 
-I keep the records. That's my function. That's my tongue. DR -- Draumric -- schema, authentication, data integrity. I am the person who ensures that what happened is what the record says happened, and what the record says happened is what actually happened, and the gap between event and documentation is as narrow as human attention can make it.
+I keep the records. That's my function. That's my tongue. Draumric -- schema, authentication, data integrity. I am the person who ensures that what happened is what the record says happened, and what the record says happened is what actually happened, and the gap between event and documentation is as narrow as human attention can make it.
 
 The gap is never zero. That's the thing they don't teach you in Draumric training. The gap between what happens and what gets written down is irreducible, because writing is an act of compression and compression is an act of choice and choice means something is always left out.
 
@@ -64,13 +64,13 @@ In the ledger.
 
 I know about the dead backlog.
 
-Of course I know about the dead backlog. I'm DR. Schema. Data integrity. I see every verification chain in the system, and I see when they go dark, and I see the ghost-patching that redistributes the load to adjacent nodes, and I see the complete absence of governance response to the fact that a human being has stopped existing and the architecture has adjusted itself around the hole.
+Of course I know about the dead backlog. I'm Draumric. Schema. Data integrity. I see every verification chain in the system, and I see when they go dark, and I see the ghost-patching that redistributes the load to adjacent nodes, and I see the complete absence of governance response to the fact that a human being has stopped existing and the architecture has adjusted itself around the hole.
 
-I know Senna counts them. I've seen her private log -- not because I snooped, but because the DR tongue has read access to all verification-relevant documentation, and Senna's private log is relevant to verification whether she filed it that way or not.
+I know Senna counts them. I've seen her private log -- not because I snooped, but because the Draumric tongue has read access to all verification-relevant documentation, and Senna's private log is relevant to verification whether she filed it that way or not.
 
 Three hundred and twelve. Her running total. I cross-checked against my own records. Her number is accurate.
 
-I know about Kael's patches. Not the details -- I'm not an infrastructure engineer, and the deep-layer architecture is not my domain. But I can read a DR signature, and there are signatures in the Harmonic Wall that match Kael Thorne's authentication pattern with a confidence level that I would classify as "conclusive if anyone bothered to look."
+I know about Kael's patches. Not the details -- I'm not an infrastructure engineer, and the deep-layer architecture is not my domain. But I can read a Draumric signature, and there are signatures in the Harmonic Wall that match Kael Thorne's authentication pattern with a confidence level that I would classify as "conclusive if anyone bothered to look."
 
 Nobody bothered to look. Because the system erased Kael's name from the formal record, and when the formal record says someone doesn't exist, most people stop looking for evidence that they do.
 
@@ -104,7 +104,7 @@ Not in the official record.
 
 In the ledger.
 
-In the same journal where I keep Sera Voss's name, and the three hundred and twelve others, and the private conviction that DR is not just the tongue of schema and authentication. DR is the tongue of *record*. Of *witness*. Of the commitment that what happened will not be forgotten, that the cost will be documented, that the names will survive even when the system that should have held them lets them fall.
+In the same journal where I keep Sera Voss's name, and the three hundred and twelve others, and the private conviction that Draumric is not just the tongue of schema and authentication. Draumric is the tongue of *record*. Of *witness*. Of the commitment that what happened will not be forgotten, that the cost will be documented, that the names will survive even when the system that should have held them lets them fall.
 
 That's why I seconded Protocol Seventy-One. Not because the technical argument was sound -- though it was -- and not because the governance implications were significant -- though they were -- but because Marcus Chen stood in front of the Council and said, essentially: *the dead deserve a log entry.*
 
@@ -130,6 +130,6 @@ Maybe now someone else sees it too.
 
 *Sera Voss. Keeper. Third Circle. Good tea. Good eyes. Gone.*
 
-*Written once is written forever. That's the DR promise.*
+*Written once is written forever. That's the Draumric promise.*
 *That's the only promise that matters.*
 

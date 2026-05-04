@@ -22,7 +22,6 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from symphonic_cipher.scbe_aethermoore.axiom_grouped import polyhedral_flow as pf
 from symphonic_cipher.scbe_aethermoore.axiom_grouped.polyhedral_flow import (
     _pearson,
     _RHO_HISTORY,

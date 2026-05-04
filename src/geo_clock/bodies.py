@@ -21,8 +21,6 @@ from src.symphonic_cipher.scbe_aethermoore.ede.spiral_ring import (
     LIGHT_SPEED,  # m/s
     MARS_DISTANCE_MAX,  # m  (~401e9)
     MARS_DISTANCE_MIN,  # m  (~54.6e9)
-    MARS_LIGHT_TIME_MAX,  # s  (~1338)
-    MARS_LIGHT_TIME_MIN,  # s  (~182)
 )
 
 # Moon mean Earth-center to Moon-center distance. We don't have a

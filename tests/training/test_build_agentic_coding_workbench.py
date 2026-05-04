@@ -9,3 +9,5 @@ def test_agentic_coding_workbench_entrypoint_exists():
     assert "scbe_agentic_coding_workbench_manifest_v1" in text
     assert "generate_packet_traces_sft.py" in text
     assert "build_jupiter_ring_feedback.py" in text
+    assert "build_geoshell_pair_agent_sft.py" in text
+    assert "geoshell_pair_agent_v1_train.sft.jsonl" in text

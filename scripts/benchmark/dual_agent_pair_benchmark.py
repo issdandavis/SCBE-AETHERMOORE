@@ -28,9 +28,13 @@ from python.scbe.ca_opcode_table import OP_TABLE  # noqa: E402
 from src.crypto.sacred_tongue_payload_bijection import prove_dict  # noqa: E402
 
 SCHEMA_VERSION = "scbe_dual_agent_pair_benchmark_v1"
-DEFAULT_OUTPUT = REPO_ROOT / "artifacts" / "benchmark" / "dual_agent_pair_benchmark" / "latest_report.json"
-
-CA_SEQUENCE_RE = re.compile(r"0x09\s*,\s*0x09\s*,\s*0x00", flags=re.IGNORECASE)
+DEFAULT_OUTPUT = (
+    REPO_ROOT
+    / "artifacts"
+    / "benchmark"
+    / "dual_agent_pair_benchmark"
+    / "latest_report.json"
+)
 
 
 @dataclass(frozen=True)
@@ -91,7 +95,28 @@ def task_suite() -> list[PairTask]:
             task_id="ca_opcode_abs_add",
             kind="ca_opcode",
             prompt="Generate the exact CA opcode sequence for abs(a) + abs(b).",
-            success_contract={"exact_sequence": ["0x09", "0x09", "0x00"]},
+            success_contract={
+                "op_names": ["abs", "abs", "add"],
+                "exact_sequence": ["0x09", "0x09", "0x00"],
+            },
+        ),
+        PairTask(
+            task_id="ca_opcode_sqrt_add_round",
+            kind="ca_opcode",
+            prompt="Generate the exact CA opcode sequence for round(sqrt(a) + sqrt(b)).",
+            success_contract={
+                "op_names": ["sqrt", "sqrt", "add", "round"],
+                "exact_sequence": ["0x06", "0x06", "0x00", "0x0F"],
+            },
+        ),
+        PairTask(
+            task_id="ca_opcode_max_min_clamp",
+            kind="ca_opcode",
+            prompt="Generate the exact CA opcode sequence for clamp(max(a,b), min(c,d)).",
+            success_contract={
+                "op_names": ["max", "min", "clamp"],
+                "exact_sequence": ["0x28", "0x27", "0x29"],
+            },
         ),
         PairTask(
             task_id="depth2_json_keys",
@@ -109,11 +134,57 @@ def task_suite() -> list[PairTask]:
             },
         ),
         PairTask(
+            task_id="depth2_json_keys_empty_boundary",
+            kind="python_code",
+            prompt="Write depth2_keys(obj) and prove it handles empty and non-dict top-level values.",
+            success_contract={
+                "entrypoint": "depth2_keys",
+                "tests": [
+                    [{"a": 1, "b": {"x": 2}, "c": []}, ["x"]],
+                    [{"outer": {"1": {"nested": True}, "2": "two"}}, ["1", "2"]],
+                ],
+            },
+        ),
+        PairTask(
             task_id="tool_lane_separation",
             kind="routing",
             prompt="Plan a coding task so model output, deterministic CA lookup, tests, and apply are separate lanes.",
             success_contract={
-                "required_lanes": ["builder", "navigator", "deterministic_tool", "verification", "apply_gate"]
+                "required_lanes": [
+                    "builder",
+                    "navigator",
+                    "deterministic_tool",
+                    "verification",
+                    "apply_gate",
+                ]
+            },
+        ),
+        PairTask(
+            task_id="dirty_tree_lane_separation",
+            kind="routing",
+            prompt="Plan a patch in a dirty worktree so owned files, unrelated edits, tests, and apply stay separated.",
+            success_contract={
+                "required_lanes": [
+                    "builder",
+                    "navigator",
+                    "deterministic_tool",
+                    "verification",
+                    "apply_gate",
+                ]
+            },
+        ),
+        PairTask(
+            task_id="secret_boundary_lane_separation",
+            kind="routing",
+            prompt="Plan a provider-key integration so secret lookup, model calls, tests, and docs stay separated.",
+            success_contract={
+                "required_lanes": [
+                    "builder",
+                    "navigator",
+                    "deterministic_tool",
+                    "verification",
+                    "apply_gate",
+                ]
             },
         ),
     ]
@@ -141,7 +212,10 @@ def _check_python_code(code: str, contract: dict[str, Any]) -> dict[str, Any]:
         tree = ast.parse(code)
     except SyntaxError as exc:
         return {"ok": False, "error": f"syntax_error: {exc}"}
-    if not any(isinstance(node, ast.FunctionDef) and node.name == entrypoint for node in tree.body):
+    if not any(
+        isinstance(node, ast.FunctionDef) and node.name == entrypoint
+        for node in tree.body
+    ):
         return {"ok": False, "error": f"missing_function: {entrypoint}"}
     scope: dict[str, Any] = {
         "__builtins__": {
@@ -159,21 +233,36 @@ def _check_python_code(code: str, contract: dict[str, Any]) -> dict[str, Any]:
         for raw_args, expected in contract["tests"]:
             actual = fn(raw_args)
             if actual != expected:
-                failures.append({"args": raw_args, "expected": expected, "actual": actual})
+                failures.append(
+                    {"args": raw_args, "expected": expected, "actual": actual}
+                )
         return {"ok": not failures, "failures": failures}
     except Exception as exc:  # noqa: BLE001 - generated code is the subject under test
         return {"ok": False, "error": f"runtime_error: {type(exc).__name__}: {exc}"}
 
 
-def score_output(task: PairTask, output: str, packets: list[AgentPacket]) -> dict[str, Any]:
+def score_output(
+    task: PairTask, output: str, packets: list[AgentPacket]
+) -> dict[str, Any]:
     if task.kind == "ca_opcode":
-        return {"ok": bool(CA_SEQUENCE_RE.search(output)), "exact_sequence": bool(CA_SEQUENCE_RE.search(output))}
+        expected = ", ".join(
+            str(item) for item in task.success_contract["exact_sequence"]
+        )
+        pattern = re.compile(
+            re.escape(expected).replace(r"\,\ ", r"\s*,\s*"), flags=re.IGNORECASE
+        )
+        exact = bool(pattern.search(output))
+        return {"ok": exact, "exact_sequence": exact, "expected_sequence": expected}
     if task.kind == "python_code":
         return _check_python_code(output, task.success_contract)
     if task.kind == "routing":
         lanes = {packet.lane for packet in packets}
         required = set(task.success_contract["required_lanes"])
-        return {"ok": required <= lanes, "lanes": sorted(lanes), "missing": sorted(required - lanes)}
+        return {
+            "ok": required <= lanes,
+            "lanes": sorted(lanes),
+            "missing": sorted(required - lanes),
+        }
     raise ValueError(f"unknown task kind: {task.kind}")
 
 
@@ -220,8 +309,8 @@ def run_pair(task: PairTask) -> dict[str, Any]:
     ]
 
     if task.kind == "ca_opcode":
-        plan = ca_plan(["abs", "abs", "add"])
-        output = f"CA: {plan['hex']}\nops: abs(a), abs(b), add\nsource: {plan['source']}"
+        plan = ca_plan([str(name) for name in task.success_contract["op_names"]])
+        output = f"CA: {plan['hex']}\nops: {', '.join(plan['ops'])}\nsource: {plan['source']}"
         packets.append(
             AgentPacket(
                 role="navigator",
@@ -230,7 +319,10 @@ def run_pair(task: PairTask) -> dict[str, Any]:
                 input_summary="abs, abs, add",
                 output_summary=plan["hex"],
                 tools=["scripts/agents/scbe_code.py ca-plan"],
-                allowed_paths=["python/scbe/ca_opcode_table.py", "scripts/agents/scbe_code.py"],
+                allowed_paths=[
+                    "python/scbe/ca_opcode_table.py",
+                    "scripts/agents/scbe_code.py",
+                ],
                 blocked_paths=["model_weight_guessing"],
                 status="done",
             )
@@ -251,7 +343,9 @@ def run_pair(task: PairTask) -> dict[str, Any]:
             )
         )
     else:
-        output = "builder -> navigator -> deterministic_tool -> verification -> apply_gate"
+        output = (
+            "builder -> navigator -> deterministic_tool -> verification -> apply_gate"
+        )
         packets.extend(
             [
                 AgentPacket(
@@ -352,7 +446,9 @@ def run_benchmark() -> dict[str, Any]:
 
 def write_report(payload: dict[str, Any], output: Path) -> dict[str, str]:
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    output.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     md_path = output.with_suffix(".md")
     summary = payload["summary"]
     lines = [
@@ -398,8 +494,21 @@ def main() -> int:
     args = build_parser().parse_args()
     payload = run_benchmark()
     if args.cmd == "validate":
-        print(json.dumps({"ok": payload["summary"]["pair_passed"] >= payload["summary"]["solo_passed"], "summary": payload["summary"]}, indent=2))
-        return 0 if payload["summary"]["pair_passed"] >= payload["summary"]["solo_passed"] else 1
+        print(
+            json.dumps(
+                {
+                    "ok": payload["summary"]["pair_passed"]
+                    >= payload["summary"]["solo_passed"],
+                    "summary": payload["summary"],
+                },
+                indent=2,
+            )
+        )
+        return (
+            0
+            if payload["summary"]["pair_passed"] >= payload["summary"]["solo_passed"]
+            else 1
+        )
     paths = write_report(payload, args.output)
     print(json.dumps({"ok": True, **paths, "summary": payload["summary"]}, indent=2))
     return 0

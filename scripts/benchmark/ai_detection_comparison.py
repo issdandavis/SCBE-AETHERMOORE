@@ -13,11 +13,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "benchmarks" / "fiction_quality"
 DEFAULT_BOOK_SWEEP = DEFAULT_OUTPUT_ROOT / "book_quality_sweep_latest.json"
-DEFAULT_REFERENCE_SWEEP = DEFAULT_OUTPUT_ROOT / "reference_books" / "frankenstein" / "sweep" / "book_quality_sweep_latest.json"
+DEFAULT_REFERENCE_SWEEP = (
+    DEFAULT_OUTPUT_ROOT / "reference_books" / "frankenstein" / "sweep" / "book_quality_sweep_latest.json"
+)
 DEFAULT_BLIND_ROUND = DEFAULT_OUTPUT_ROOT / "fiction_quality_blind_round_latest.json"
 SCHEMA_VERSION = "scbe_ai_detection_comparison_v1"
 
@@ -187,11 +188,13 @@ def compare_detection(
             "known_ai_average_ai_likelihood": known_ai.get("ai_likelihood_average"),
             "public_domain_average_ai_likelihood": public_domain.get("ai_likelihood_average"),
             "verdict": (
-                "Local detector catches generic generated text but misses grounded or edited AI. "
-                "Do not use it as proof of authorship."
-            )
-            if false_negatives
-            else "Local detector passed the current tiny control set; still requires external validation.",
+                (
+                    "Local detector catches generic generated text but misses grounded or edited AI. "
+                    "Do not use it as proof of authorship."
+                )
+                if false_negatives
+                else "Local detector passed the current tiny control set; still requires external validation."
+            ),
         }
     if summaries:
         own_avg = summaries["own_book"]["average_ai_likelihood"]
@@ -232,7 +235,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
             ]
         )
     lines.extend(["", "## Summaries", ""])
-    for key, summary in payload.get("summaries", {}).items():
+    for summary in payload.get("summaries", {}).values():
         lines.extend(
             [
                 f"### {summary['source_name']}",

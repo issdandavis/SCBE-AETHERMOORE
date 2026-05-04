@@ -25,7 +25,7 @@
 
 ### Fonts
 - **Embed all fonts** (fully, not subsets)
-- Body: Georgia or Garamond, 11pt
+- Body: Garamond, 11pt
 - Chapter titles: same family, small caps, 18pt
 - **Minimum text size**: 7pt
 
@@ -71,7 +71,7 @@
 ### Our Build Command (future)
 ```bash
 # When we build the paperback:
-python scripts/publish/build_paperback_pdf.py --trim 5.5x8.5 --font Georgia --embed-fonts
+python scripts/publish/build_paperback_pdf.py --trim 5.5x8.5 --font Garamond --embed-fonts
 ```
 
 ### Current Status

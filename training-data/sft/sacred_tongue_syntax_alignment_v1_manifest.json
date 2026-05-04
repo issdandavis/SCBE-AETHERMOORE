@@ -1,0 +1,30 @@
+{
+  "concept_ids": [
+    "matrix_literal",
+    "matrix_shape",
+    "matrix_multiply",
+    "record_type",
+    "enum_type",
+    "explainable_error",
+    "lsp_diagnostic",
+    "vim_operator_motion",
+    "binary_wave_tool_packet"
+  ],
+  "config_path": "config\\model_training\\sacred_tongue_syntax_alignment_v1.json",
+  "created_at": "2026-05-04T07:08:08Z",
+  "holdout_count": 1,
+  "holdout_path": "training-data\\sft\\sacred_tongue_syntax_alignment_v1_holdout.sft.jsonl",
+  "notes": [
+    "This is an experimental eval-only alignment set until every surface has production adapter evidence.",
+    "Cassisivadan is aligned to Mathematica for symbolic computation and matrix algebra.",
+    "Every record keeps the full Sacred Tongue names visible.",
+    "Matrix syntax is treated as a first-class aligned block, not a decorative example."
+  ],
+  "record_count": 9,
+  "schema_version": "sacred_tongue_syntax_alignment_v1",
+  "train_count": 8,
+  "train_path": "training-data\\sft\\sacred_tongue_syntax_alignment_v1_train.sft.jsonl",
+  "verification": [
+    "python -m pytest tests/training_data/test_build_sacred_tongue_syntax_alignment_sft.py -q"
+  ]
+}

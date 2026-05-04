@@ -1,6 +1,6 @@
 """
-Build KDP-formatted Word document for "The Six Tongues Protocol" by Issac Davis.
-6x9 trim paperback, Kindle Direct Publishing standards.
+Build KDP-formatted Word document for "The Six Tongues Protocol" by Issac Daniel Davis.
+5.5x8.5 trim paperback, Kindle Direct Publishing standards.
 """
 
 import re
@@ -15,7 +15,7 @@ from docx.oxml import parse_xml
 # ── Configuration ──────────────────────────────────────────────
 
 BOOK_TITLE = "The Six Tongues Protocol"
-AUTHOR = "Issac Davis"
+AUTHOR = "Issac Daniel Davis"
 SUBTITLE = "Book One of The Six Tongues Protocol"
 
 BASE_DIR = r"C:\Users\issda\SCBE-AETHERMOORE\content\book\reader-edition"
@@ -48,25 +48,25 @@ CHAPTER_FILES = [
     "ch-rootlight.md",
 ]
 
-# Page setup constants (6x9 trim)
-PAGE_WIDTH = Inches(6)
-PAGE_HEIGHT = Inches(9)
+# Page setup constants (5.5x8.5 trim)
+PAGE_WIDTH = Inches(5.5)
+PAGE_HEIGHT = Inches(8.5)
 MARGIN_TOP = Inches(0.75)
 MARGIN_BOTTOM = Inches(0.75)
-MARGIN_INSIDE = Inches(0.875)
-MARGIN_OUTSIDE = Inches(0.625)
+MARGIN_INSIDE = Inches(0.75)
+MARGIN_OUTSIDE = Inches(0.5)
 
 # Font settings
-BODY_FONT = "Georgia"
+BODY_FONT = "Garamond"
 BODY_SIZE = Pt(11)
 CHAPTER_TITLE_SIZE = Pt(18)
-LINE_SPACING = Pt(14)
-FIRST_LINE_INDENT = Inches(0.3)
+LINE_SPACING = Pt(13.5)
+FIRST_LINE_INDENT = Inches(0.25)
 
 # ── Helpers ────────────────────────────────────────────────────
 
 def setup_page(section):
-    """Configure page size and margins for 6x9 KDP trim."""
+    """Configure page size and margins for 5.5x8.5 KDP trim."""
     section.page_width = PAGE_WIDTH
     section.page_height = PAGE_HEIGHT
     section.top_margin = MARGIN_TOP
@@ -90,6 +90,8 @@ def set_font(run, font_name=BODY_FONT, font_size=BODY_SIZE, bold=False, italic=F
     """Apply font settings to a run."""
     run.font.name = font_name
     run.font.size = font_size
+    run._element.rPr.rFonts.set(qn('w:ascii'), font_name)
+    run._element.rPr.rFonts.set(qn('w:hAnsi'), font_name)
     run.bold = bold
     run.italic = italic
 
@@ -358,7 +360,7 @@ def build_document():
         "Any resemblance to actual events, locales, or persons, living or dead, "
         "is entirely coincidental.\n\n"
         "First Edition, 2026\n\n"
-        "Published by Issac Davis"
+        f"Published by {AUTHOR}"
     )
     p = doc.add_paragraph()
     p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
@@ -478,7 +480,7 @@ def build_document():
     set_font(run, font_size=CHAPTER_TITLE_SIZE, bold=True)
 
     about_text = (
-        "Issac Davis is a writer and technologist who believes that the best stories "
+        "Issac Daniel Davis is a writer and technologist who believes that the best stories "
         "are the ones that make you think differently about the systems you live inside. "
         "He writes fiction at the intersection of engineering, magic, and the stubborn "
         "human insistence that distributed consensus is worth the overhead.\n\n"
@@ -505,7 +507,7 @@ def build_document():
     p.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.space_before = Pt(72)
     p.paragraph_format.space_after = Pt(36)
-    run = p.add_run('Also by Issac Davis')
+    run = p.add_run(f'Also by {AUTHOR}')
     set_font(run, font_size=CHAPTER_TITLE_SIZE, bold=True)
 
     p = doc.add_paragraph()
@@ -523,7 +525,7 @@ def build_document():
     print(f"  Output: {OUTPUT}")
     print(f"  Chapters: {chapter_count}")
     print(f"  Total Words: {total_words:,}")
-    print(f"  Format: 6\" x 9\" trim, KDP paperback")
+    print(f"  Format: 5.5\" x 8.5\" trim, KDP paperback")
     print(f"{'='*60}")
 
     return chapter_count, total_words

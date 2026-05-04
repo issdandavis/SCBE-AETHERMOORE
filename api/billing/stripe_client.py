@@ -40,6 +40,7 @@ class StripeClient:
         success_url: Optional[str] = None,
         cancel_url: Optional[str] = None,
         metadata: Optional[Dict[str, str]] = None,
+        idempotency_key: Optional[str] = None,
     ) -> dict:
         """
         Create a Stripe Checkout session for subscription signup.
@@ -60,7 +61,11 @@ class StripeClient:
         elif customer_email:
             session_params["customer_email"] = customer_email
 
-        session = stripe.checkout.Session.create(**session_params)
+        create_kwargs = dict(session_params)
+        if idempotency_key and str(idempotency_key).strip():
+            create_kwargs["idempotency_key"] = str(idempotency_key).strip()[:255]
+
+        session = stripe.checkout.Session.create(**create_kwargs)
 
         return {
             "session_id": session.id,

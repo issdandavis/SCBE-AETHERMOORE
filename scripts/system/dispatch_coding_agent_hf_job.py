@@ -116,11 +116,27 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+os.environ.setdefault("PYTHONUTF8", "1")
+os.environ.setdefault("LANG", "C.UTF-8")
+os.environ.setdefault("LC_ALL", "C.UTF-8")
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import torch
-from datasets import Dataset
+from datasets import Dataset, disable_progress_bars
 from huggingface_hub import hf_hub_download, whoami
 from peft import LoraConfig, PeftModel, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer, DataCollatorForLanguageModeling, Trainer, TrainingArguments
+from transformers.utils import logging as transformers_logging
+
+disable_progress_bars()
+transformers_logging.disable_progress_bar()
+transformers_logging.set_verbosity_error()
 
 PROFILE = json.loads(r"""{profile_json}""")
 CONTRACT = json.loads(r"""{contract_json}""")
@@ -131,7 +147,6 @@ EVAL_CFG = PROFILE.get("evaluation") or {{}}
 CONSTRAINED_GATE_SCAFFOLD = bool(EVAL_CFG.get("constrained_gate_scaffold", False))
 WORKDIR = Path("/tmp/scbe-coding-agent")
 WORKDIR.mkdir(parents=True, exist_ok=True)
-os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 
@@ -235,7 +250,14 @@ def main() -> None:
             target_modules=list(train_cfg.get("target_modules") or ["q_proj", "k_proj", "v_proj", "o_proj"]),
         ),
     )
-    model.print_trainable_parameters()
+    trainable_params = sum(param.numel() for param in model.parameters() if param.requires_grad)
+    total_params = sum(param.numel() for param in model.parameters())
+    print(json.dumps({{
+        "event": "trainable_parameters",
+        "trainable": int(trainable_params),
+        "total": int(total_params),
+        "trainable_pct": round((trainable_params / total_params) * 100.0, 4) if total_params else 0.0,
+    }}))
 
     train_rows = _load_jsonl_files(TRAIN_FILES, "train", token)
     eval_rows = _load_jsonl_files(EVAL_FILES, "eval", token) if EVAL_FILES else None
@@ -269,6 +291,7 @@ def main() -> None:
         bf16=torch.cuda.is_available() and dtype == torch.bfloat16,
         gradient_checkpointing=bool(train_cfg.get("gradient_checkpointing", False)),
         report_to=[],
+        disable_tqdm=True,
         remove_unused_columns=False,
         seed=seed,
     )
@@ -472,6 +495,14 @@ def build_packet(
         "PYTHONIOENCODING=utf-8",
         "--env",
         "PYTHONUTF8=1",
+        "--env",
+        "LANG=C.UTF-8",
+        "--env",
+        "LC_ALL=C.UTF-8",
+        "--env",
+        "HF_HUB_DISABLE_PROGRESS_BARS=1",
+        "--env",
+        "TOKENIZERS_PARALLELISM=false",
         "--secrets",
         str((profile.get("hub") or {}).get("token_env", "HF_TOKEN")),
         "--detach",

@@ -36,6 +36,35 @@ async def handle_checkout_completed(event: Any) -> dict:
     logger.info(f"Checkout completed: {session.id}")
 
     with get_db() as db:
+        if db.query(BillingEvent).filter(BillingEvent.stripe_event_id == event.id).first():
+            logger.info("Skipping duplicate Stripe event %s", event.id)
+            return {"status": "duplicate_event", "stripe_event_id": event.id}
+
+        existing_sub = None
+        if getattr(session, "subscription", None):
+            existing_sub = (
+                db.query(Subscription)
+                .filter(Subscription.stripe_subscription_id == session.subscription)
+                .first()
+            )
+
+        if existing_sub:
+            billing_event = BillingEvent(
+                customer_id=existing_sub.customer_id,
+                stripe_event_id=event.id,
+                event_type="checkout.session.completed",
+            )
+            db.add(billing_event)
+            logger.info(
+                "Recorded checkout for existing subscription %s (event=%s)",
+                session.subscription,
+                event.id,
+            )
+            return {
+                "status": "subscription_already_exists",
+                "customer_id": existing_sub.customer_id,
+            }
+
         # Get or create customer
         customer = db.query(Customer).filter(
             Customer.stripe_customer_id == session.customer

@@ -27,19 +27,35 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.benchmark.harness_provider_matrix import build_provider_matrix  # noqa: E402
-from scripts.benchmark.harness_research_matrix import build_research_matrix  # noqa: E402
+from scripts.benchmark.harness_provider_matrix import (
+    build_provider_matrix,
+)  # noqa: E402
+from scripts.benchmark.harness_research_matrix import (
+    build_research_matrix,
+)  # noqa: E402
 from scripts.ci.harness_release_readiness import build_release_readiness  # noqa: E402
 from scripts.eval.score_packet_trace_sft import score_packet_trace_corpus  # noqa: E402
 
 DEFAULT_OUT_DIR = PROJECT_ROOT / "artifacts" / "training_evals"
 DEFAULT_HF_JOB_ID = "69f66e999d85bec4d76f0bd1"
 
-KAGGLE_DONE = PROJECT_ROOT / "artifacts" / "kaggle_output" / "polly-auto-coding-approval-metrics-v1" / "DONE.json"
-KAGGLE_HISTORY = (
-    PROJECT_ROOT / "artifacts" / "kaggle_output" / "polly-auto-coding-approval-metrics-v1" / "TRAINING_HISTORY.json"
+KAGGLE_DONE = (
+    PROJECT_ROOT
+    / "artifacts"
+    / "kaggle_output"
+    / "polly-auto-coding-approval-metrics-v1"
+    / "DONE.json"
 )
-PAIR_BENCH = PROJECT_ROOT / "artifacts" / "agent-router" / "dual_agent_pair_benchmark.json"
+KAGGLE_HISTORY = (
+    PROJECT_ROOT
+    / "artifacts"
+    / "kaggle_output"
+    / "polly-auto-coding-approval-metrics-v1"
+    / "TRAINING_HISTORY.json"
+)
+PAIR_BENCH = (
+    PROJECT_ROOT / "artifacts" / "agent-router" / "dual_agent_pair_benchmark.json"
+)
 HF_PACKET = (
     PROJECT_ROOT
     / "artifacts"
@@ -78,12 +94,16 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 
 def _latest_json(pattern: str) -> dict[str, Any]:
-    matches = sorted(PROJECT_ROOT.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True)
+    matches = sorted(
+        PROJECT_ROOT.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True
+    )
     return _load_json(matches[0]) if matches else {}
 
 
 def _packet_job_id(packet: dict[str, Any]) -> str:
-    dispatch = packet.get("dispatch") if isinstance(packet.get("dispatch"), dict) else {}
+    dispatch = (
+        packet.get("dispatch") if isinstance(packet.get("dispatch"), dict) else {}
+    )
     return str(packet.get("job_id") or dispatch.get("job_id") or "").strip()
 
 
@@ -92,7 +112,9 @@ def _find_hf_packet(job_id: str) -> tuple[dict[str, Any], Path]:
 
     if job_id:
         for path in sorted(
-            (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob("*/**/job_packet.json"),
+            (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob(
+                "*/**/job_packet.json"
+            ),
             key=lambda item: item.stat().st_mtime,
             reverse=True,
         ):
@@ -110,7 +132,9 @@ def _pct(value: Any) -> float:
     return 0.0
 
 
-def _score_fraction(name: str, fraction: float, max_points: float, evidence: str) -> ScoreLine:
+def _score_fraction(
+    name: str, fraction: float, max_points: float, evidence: str
+) -> ScoreLine:
     fraction = max(0.0, min(1.0, fraction))
     status = "PASS" if fraction >= 0.95 else "AMBER" if fraction >= 0.5 else "RED"
     return ScoreLine(name, fraction * max_points, max_points, status, evidence)
@@ -180,8 +204,19 @@ def _refresh_hf_gate(job_id: str) -> dict[str, Any]:
         "pushed_adapter": None,
     }
     text = _strip_ansi(proc.stdout + "\n" + proc.stderr)
-    for key in ("gate_overall_pass", "gate_pass_rate", "gate_n_pass", "gate_n_total", "train_loss", "pushed_adapter"):
-        match = re.search(rf'"?{key}"?\s*[:=]\s*(false|true|[-+]?[0-9]*\.?[0-9]+)', text, flags=re.IGNORECASE)
+    for key in (
+        "gate_overall_pass",
+        "gate_pass_rate",
+        "gate_n_pass",
+        "gate_n_total",
+        "train_loss",
+        "pushed_adapter",
+    ):
+        match = re.search(
+            rf'"?{key}"?\s*[:=]\s*(false|true|[-+]?[0-9]*\.?[0-9]+)',
+            text,
+            flags=re.IGNORECASE,
+        )
         if not match:
             continue
         value = match.group(1)
@@ -207,7 +242,9 @@ def _local_hf_gate_from_log(job_id: str) -> dict[str, Any]:
     if not job_id:
         return {"job_id": job_id, "queried": False, "local_log": None}
     log_matches = sorted(
-        (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob(f"*/**/hf_job_{job_id}.log"),
+        (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob(
+            f"*/**/hf_job_{job_id}.log"
+        ),
         key=lambda item: item.stat().st_mtime,
         reverse=True,
     )
@@ -235,7 +272,9 @@ def _local_hf_gate_from_log(job_id: str) -> dict[str, Any]:
             payload = json.loads(stripped)
         except json.JSONDecodeError:
             continue
-        summary = payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+        summary = (
+            payload.get("summary") if isinstance(payload.get("summary"), dict) else {}
+        )
         report.update(
             {
                 "gate_overall_pass": summary.get("gate_overall_pass"),
@@ -291,7 +330,9 @@ def _system_lines(evidence: dict[str, Any]) -> list[ScoreLine]:
     )
 
     providers = int(provider.get("provider_count", 0) or 0)
-    available = sum(1 for item in provider.get("providers", {}).values() if item.get("available"))
+    available = sum(
+        1 for item in provider.get("providers", {}).values() if item.get("available")
+    )
     lines.append(
         _score_fraction(
             "provider_surface",
@@ -303,7 +344,9 @@ def _system_lines(evidence: dict[str, Any]) -> list[ScoreLine]:
 
     pairs = provider.get("pairs", [])
     signal_required = [item for item in pairs if item.get("signal_required")]
-    signaled_ok = [item for item in signal_required if item.get("ok_with_recommended_signal")]
+    signaled_ok = [
+        item for item in signal_required if item.get("ok_with_recommended_signal")
+    ]
     lines.append(
         _score_fraction(
             "lane_switch_signaling",
@@ -392,8 +435,12 @@ def _model_lines(evidence: dict[str, Any]) -> list[ScoreLine]:
         )
     )
 
-    train_records = float(kaggle_done.get("train_records") or kaggle_history.get("train_records") or 0)
-    eval_records = float(kaggle_done.get("eval_records") or kaggle_history.get("eval_records") or 0)
+    train_records = float(
+        kaggle_done.get("train_records") or kaggle_history.get("train_records") or 0
+    )
+    eval_records = float(
+        kaggle_done.get("eval_records") or kaggle_history.get("eval_records") or 0
+    )
     lines.append(
         _score_fraction(
             "kaggle_dataset_floor",
@@ -413,7 +460,11 @@ def _model_lines(evidence: dict[str, Any]) -> list[ScoreLine]:
         )
     )
 
-    dispatched = bool(hf_packet.get("dispatched") or _packet_job_id(hf_packet) or hf_packet.get("job_url"))
+    dispatched = bool(
+        hf_packet.get("dispatched")
+        or _packet_job_id(hf_packet)
+        or hf_packet.get("job_url")
+    )
     lines.append(
         _score_fraction(
             "hf_job_dispatch",
@@ -423,8 +474,16 @@ def _model_lines(evidence: dict[str, Any]) -> list[ScoreLine]:
         )
     )
 
-    train_rows = float(hf_packet.get("train_rows") or _sum_dataset_rows(hf_packet.get("train_datasets")) or 0)
-    eval_rows = float(hf_packet.get("eval_rows") or _sum_dataset_rows(hf_packet.get("eval_datasets")) or 0)
+    train_rows = float(
+        hf_packet.get("train_rows")
+        or _sum_dataset_rows(hf_packet.get("train_datasets"))
+        or 0
+    )
+    eval_rows = float(
+        hf_packet.get("eval_rows")
+        or _sum_dataset_rows(hf_packet.get("eval_datasets"))
+        or 0
+    )
     is_dpo_packet = (
         str(hf_packet.get("schema_version", "")).endswith("_dpo_hf_job_packet_v1")
         or "dpo" in str(hf_packet.get("profile_id", "")).lower()
@@ -482,20 +541,36 @@ def _sum_dataset_rows(datasets: Any) -> int:
 
 def _grade(score: float) -> dict[str, str]:
     if score >= 85:
-        return {"rank": "Raid Ready", "verdict": "strong enough for broader benchmark lanes"}
+        return {
+            "rank": "Raid Ready",
+            "verdict": "strong enough for broader benchmark lanes",
+        }
     if score >= 70:
-        return {"rank": "Dungeon Clear", "verdict": "system works; expand evals before promotion claims"}
+        return {
+            "rank": "Dungeon Clear",
+            "verdict": "system works; expand evals before promotion claims",
+        }
     if score >= 55:
-        return {"rank": "Arena Qualifier", "verdict": "promising but too small to trust"}
+        return {
+            "rank": "Arena Qualifier",
+            "verdict": "promising but too small to trust",
+        }
     if score >= 40:
-        return {"rank": "Training Yard", "verdict": "plumbing exists; gates need real wins"}
+        return {
+            "rank": "Training Yard",
+            "verdict": "plumbing exists; gates need real wins",
+        }
     return {"rank": "Spawn Room", "verdict": "not benchmarkable yet"}
 
 
-def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_HF_JOB_ID) -> dict[str, Any]:
+def build_scorecard(
+    *, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_HF_JOB_ID
+) -> dict[str, Any]:
     coder_pair = _latest_json("artifacts/bench/geoseal_coder_pair_*.json")
     if not coder_pair:
-        coder_pair = _load_json(PROJECT_ROOT / "artifacts" / "bench" / "geoseal_pair_coding_2026_05_02.json")
+        coder_pair = _load_json(
+            PROJECT_ROOT / "artifacts" / "bench" / "geoseal_pair_coding_2026_05_02.json"
+        )
 
     hf_gate: dict[str, Any] = {"job_id": hf_job_id, "queried": False}
     if refresh_hf_logs:
@@ -513,7 +588,13 @@ def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_H
         "packet_trace": score_packet_trace_corpus(),
         "pair_benchmark": _load_json(PAIR_BENCH),
         "coder_pair": coder_pair,
-        "ledger": _load_json(PROJECT_ROOT / "artifacts" / "training_run_ledger" / "latest" / "ledger.json"),
+        "ledger": _load_json(
+            PROJECT_ROOT
+            / "artifacts"
+            / "training_run_ledger"
+            / "latest"
+            / "ledger.json"
+        ),
         "kaggle_done": _load_json(KAGGLE_DONE),
         "kaggle_history": _load_json(KAGGLE_HISTORY),
         "hf_packet": hf_packet,
@@ -543,11 +624,22 @@ def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_H
 
     system_lines = _system_lines(evidence)
     model_lines = _model_lines(evidence)
-    system_score = sum(item.points for item in system_lines) / sum(item.max_points for item in system_lines) * 100.0
-    model_score = sum(item.points for item in model_lines) / sum(item.max_points for item in model_lines) * 100.0
+    system_score = (
+        sum(item.points for item in system_lines)
+        / sum(item.max_points for item in system_lines)
+        * 100.0
+    )
+    model_score = (
+        sum(item.points for item in model_lines)
+        / sum(item.max_points for item in model_lines)
+        * 100.0
+    )
     overall = 0.7 * system_score + 0.3 * model_score
     grade = _grade(overall)
 
+    pair_task_count = int(
+        evidence["pair_benchmark"].get("summary", {}).get("tasks") or 0
+    )
     return {
         "schema_version": "scbe_agentic_training_scorecard_v1",
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -564,7 +656,7 @@ def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_H
         "findings": _build_findings(evidence, system_score, model_score),
         "next_benchmark_ladder": [
             "Expand routing evals from 6 smoke prompts to at least 30 adversarial mixed-language prompts.",
-            "Expand pair-agent benchmark from 3 repo-native tasks to at least 20 tasks with held-out deterministic facts.",
+            f"Expand pair-agent benchmark from {pair_task_count} repo-native tasks to at least 20 tasks with held-out deterministic facts.",
             "Turn the Kaggle run from 3-step plumbing into a real frozen-eval round with best_metric populated.",
             "Use the promoted Stage 6 DPO adapter as the boss-gate baseline before merging it into broader coding profiles.",
             "Keep adapter promotion claims tied to the same frozen packet/routing/coding gates locally and in remote logs.",
@@ -580,7 +672,9 @@ def build_scorecard(*, refresh_hf_logs: bool = False, hf_job_id: str = DEFAULT_H
     }
 
 
-def _build_findings(evidence: dict[str, Any], system_score: float, model_score: float) -> list[str]:
+def _build_findings(
+    evidence: dict[str, Any], system_score: float, model_score: float
+) -> list[str]:
     routing = evidence["coder_pair"].get("summary", {}).get("routing", {})
     coding = evidence["coder_pair"].get("summary", {}).get("coding", {})
     pair = evidence["pair_benchmark"].get("summary", {})
@@ -596,7 +690,7 @@ def _build_findings(evidence: dict[str, Any], system_score: float, model_score: 
             f"champ={routing.get('champ_acc')} challenger={routing.get('challenger_acc')}."
         ),
         (
-            "Pair-agent orchestration beat the solo stub on the tiny repo-native set: "
+            "Pair-agent orchestration beat the solo stub on the repo-native set: "
             f"pair_pass_rate={pair.get('pair_pass_rate')} solo_pass_rate={pair.get('solo_pass_rate')}."
         ),
         (
@@ -639,9 +733,14 @@ def render_markdown(report: dict[str, Any]) -> str:
         for item in report["model_lines"]
     )
     lines.extend(["", "## Next Benchmark Ladder", ""])
-    lines.extend(f"{idx}. {item}" for idx, item in enumerate(report["next_benchmark_ladder"], start=1))
+    lines.extend(
+        f"{idx}. {item}"
+        for idx, item in enumerate(report["next_benchmark_ladder"], start=1)
+    )
     lines.extend(["", "## Evidence Paths", ""])
-    lines.extend(f"- `{key}`: `{value}`" for key, value in report["evidence_paths"].items())
+    lines.extend(
+        f"- `{key}`: `{value}`" for key, value in report["evidence_paths"].items()
+    )
     lines.append("")
     return "\n".join(lines)
 
@@ -649,19 +748,29 @@ def render_markdown(report: dict[str, Any]) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--json", action="store_true", help="Print scorecard JSON")
-    parser.add_argument("--write", action="store_true", help="Write JSON and Markdown artifacts")
+    parser.add_argument(
+        "--write", action="store_true", help="Write JSON and Markdown artifacts"
+    )
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
-    parser.add_argument("--refresh-hf-logs", action="store_true", help="Best-effort live HF Jobs log refresh")
+    parser.add_argument(
+        "--refresh-hf-logs",
+        action="store_true",
+        help="Best-effort live HF Jobs log refresh",
+    )
     parser.add_argument("--hf-job-id", default=DEFAULT_HF_JOB_ID)
     args = parser.parse_args(argv)
 
-    report = build_scorecard(refresh_hf_logs=args.refresh_hf_logs, hf_job_id=args.hf_job_id)
+    report = build_scorecard(
+        refresh_hf_logs=args.refresh_hf_logs, hf_job_id=args.hf_job_id
+    )
     markdown = render_markdown(report)
 
     if args.write:
         args.out_dir.mkdir(parents=True, exist_ok=True)
         stem = "agentic_system_scorecard_2026-05-02"
-        (args.out_dir / f"{stem}.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (args.out_dir / f"{stem}.json").write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         (args.out_dir / f"{stem}.md").write_text(markdown, encoding="utf-8")
 
     if args.json:

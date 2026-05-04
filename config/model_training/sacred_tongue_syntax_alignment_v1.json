@@ -1,0 +1,491 @@
+{
+  "created_at": "2026-05-04T07:08:08Z",
+  "schema_version": "sacred_tongue_syntax_alignment_v1",
+  "source_inspiration": {
+    "channel": "youniss",
+    "title": "I Built My Own Programming Language",
+    "url": "https://www.youtube.com/watch?v=XGINo_KUqBg"
+  },
+  "syntax_blocks": [
+    {
+      "concept_id": "matrix_literal",
+      "invariants": [
+        "rectangular",
+        "row_major",
+        "numeric_cells",
+        "same_shape_across_tongues"
+      ],
+      "semantic_ast": {
+        "node": "MatrixLiteral",
+        "row_major_values": [
+          [
+            1.0,
+            2.0
+          ],
+          [
+            3.0,
+            4.0
+          ]
+        ],
+        "shape": [
+          2,
+          2
+        ]
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript nested number arrays with explicit row-major intent.",
+          "syntax": "const matrix: number[][] = [[1, 2], [3, 4]];",
+          "type": "number[][]"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica list-of-lists; Dimensions[matrix] is the shape witness.",
+          "syntax": "matrix = {{1., 2.}, {3., 4.}}",
+          "type": "Matrix expression"
+        },
+        "Draumric": {
+          "lowering": "Markdown table or fenced block with a declared row-major shape witness.",
+          "syntax": "```matrix\n1.0 2.0\n3.0 4.0\n```",
+          "type": "Markdown fenced matrix block"
+        },
+        "Kor'aelin": {
+          "lowering": "Python list of rows; optional NumPy lowering is np.array(matrix, dtype=float).",
+          "syntax": "matrix = [[1.0, 2.0], [3.0, 4.0]]",
+          "type": "list[list[float]]"
+        },
+        "Runethic": {
+          "lowering": "Rust owned row vectors; invalid ragged rows must return an error.",
+          "syntax": "let matrix: Vec<Vec<f64>> = vec![vec![1.0, 2.0], vec![3.0, 4.0]];",
+          "type": "Vec<Vec<f64>>"
+        },
+        "Umbroth": {
+          "lowering": "Haskell nested lists; pure functions validate rectangular shape before use.",
+          "syntax": "matrix :: [[Double]]\nmatrix = [[1.0, 2.0], [3.0, 4.0]]",
+          "type": "[[Double]]"
+        }
+      },
+      "title": "First-class matrix literal"
+    },
+    {
+      "concept_id": "matrix_shape",
+      "invariants": [
+        "rows >= 0",
+        "columns >= 0",
+        "empty_matrix_columns_zero"
+      ],
+      "semantic_ast": {
+        "input": "matrix",
+        "node": "MatrixShape",
+        "output": [
+          "rows",
+          "columns"
+        ]
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript tuple rows, columns.",
+          "syntax": "const shape: [number, number] = [matrix.length, matrix[0]?.length ?? 0];",
+          "type": "[number, number]"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica Dimensions returns rows and columns.",
+          "syntax": "shape = Dimensions[matrix]",
+          "type": "List[Integer, Integer]"
+        },
+        "Draumric": {
+          "lowering": "Markdown shape witness attached to the fenced matrix block.",
+          "syntax": "shape: rows=2 columns=2",
+          "type": "Markdown metadata line"
+        },
+        "Kor'aelin": {
+          "lowering": "Python tuple rows, columns.",
+          "syntax": "shape = (len(matrix), len(matrix[0]) if matrix else 0)",
+          "type": "tuple[int, int]"
+        },
+        "Runethic": {
+          "lowering": "Rust tuple rows, columns.",
+          "syntax": "let shape: (usize, usize) = (matrix.len(), matrix.first().map_or(0, |r| r.len()));",
+          "type": "(usize, usize)"
+        },
+        "Umbroth": {
+          "lowering": "Haskell pure shape function.",
+          "syntax": "shape m = (length m, if null m then 0 else length (head m))",
+          "type": "[[a]] -> (Int, Int)"
+        }
+      },
+      "title": "Matrix shape witness"
+    },
+    {
+      "concept_id": "matrix_multiply",
+      "invariants": [
+        "left.columns == right.rows",
+        "output.rows == left.rows",
+        "output.columns == right.columns"
+      ],
+      "semantic_ast": {
+        "left": "left",
+        "node": "MatrixMultiply",
+        "right": "right"
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript map over rows and transposed columns.",
+          "syntax": "const product = left.map(row => transpose(right).map(col => dot(row, col)));",
+          "type": "number[][]"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica Dot after Dimensions[left][[2]] == Dimensions[right][[1]].",
+          "syntax": "product = left . right",
+          "type": "Matrix expression"
+        },
+        "Draumric": {
+          "lowering": "Markdown reproducible recipe with explicit dimension invariant.",
+          "syntax": "matrix-product:\n  inputs: [left, right]\n  invariant: left.columns == right.rows",
+          "type": "Markdown operation block"
+        },
+        "Kor'aelin": {
+          "lowering": "Python pure fallback; NumPy lowering is left @ right when arrays are validated.",
+          "syntax": "product = [[sum(a*b for a, b in zip(row, col)) for col in zip(*right)] for row in left]",
+          "type": "list[list[float]]"
+        },
+        "Runethic": {
+          "lowering": "Rust checked call; dimension mismatch returns MatrixError.",
+          "syntax": "let product = matmul(&left, &right)?;",
+          "type": "Result<Vec<Vec<f64>>, MatrixError>"
+        },
+        "Umbroth": {
+          "lowering": "Haskell list comprehension over rows and transposed columns.",
+          "syntax": "product = [[sum (zipWith (*) row col) | col <- transpose right] | row <- left]",
+          "type": "[[Double]]"
+        }
+      },
+      "title": "Checked matrix multiplication"
+    },
+    {
+      "concept_id": "record_type",
+      "invariants": [
+        "field_names_stable",
+        "field_types_explicit",
+        "serializable"
+      ],
+      "semantic_ast": {
+        "fields": {
+          "beds": "integer",
+          "price": "number"
+        },
+        "name": "Listing",
+        "node": "RecordType"
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript structural type.",
+          "syntax": "interface Listing { price: number; beds: number }",
+          "type": "TypeScript interface"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica head with typed pattern constraints.",
+          "syntax": "Listing[price_Real, beds_Integer]",
+          "type": "Symbolic record pattern"
+        },
+        "Draumric": {
+          "lowering": "Markdown schema witness for generated code.",
+          "syntax": "| field | type |\n| price | number |\n| beds | integer |",
+          "type": "Markdown schema table"
+        },
+        "Kor'aelin": {
+          "lowering": "Python validation model with explicit fields.",
+          "syntax": "class Listing(BaseModel):\n    price: float\n    beds: int",
+          "type": "Pydantic model"
+        },
+        "Runethic": {
+          "lowering": "Rust owned record with typed fields.",
+          "syntax": "struct Listing { price: f64, beds: u32 }",
+          "type": "Rust struct"
+        },
+        "Umbroth": {
+          "lowering": "Haskell named-field data constructor.",
+          "syntax": "data Listing = Listing { price :: Double, beds :: Int }",
+          "type": "Haskell algebraic data type"
+        }
+      },
+      "title": "Record type"
+    },
+    {
+      "concept_id": "enum_type",
+      "invariants": [
+        "closed_value_set",
+        "stable_wire_values",
+        "invalid_values_rejected"
+      ],
+      "semantic_ast": {
+        "name": "Gate",
+        "node": "EnumType",
+        "values": [
+          "ALLOW",
+          "DENY"
+        ]
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript finite choice set.",
+          "syntax": "type Gate = 'ALLOW' | 'DENY';",
+          "type": "TypeScript literal union"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica symbolic domain predicate.",
+          "syntax": "Gate /: ValidGateQ[Gate['ALLOW' | 'DENY']] := True",
+          "type": "Symbolic finite domain"
+        },
+        "Draumric": {
+          "lowering": "Markdown finite-domain declaration.",
+          "syntax": "gate-values: [ALLOW, DENY]",
+          "type": "Markdown enum list"
+        },
+        "Kor'aelin": {
+          "lowering": "Python string enum for stable serialization.",
+          "syntax": "class Gate(str, Enum):\n    ALLOW = 'ALLOW'\n    DENY = 'DENY'",
+          "type": "Python Enum"
+        },
+        "Runethic": {
+          "lowering": "Rust closed sum type.",
+          "syntax": "enum Gate { Allow, Deny }",
+          "type": "Rust enum"
+        },
+        "Umbroth": {
+          "lowering": "Haskell closed constructor set.",
+          "syntax": "data Gate = Allow | Deny deriving (Eq, Show)",
+          "type": "Haskell sum type"
+        }
+      },
+      "title": "Finite enum type"
+    },
+    {
+      "concept_id": "explainable_error",
+      "invariants": [
+        "machine_readable_reason",
+        "human_readable_expected_condition",
+        "no_silent_failure"
+      ],
+      "semantic_ast": {
+        "error": "DimensionMismatch",
+        "expected": "left.columns == right.rows",
+        "node": "ExplainableError"
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript structured error object.",
+          "syntax": "throw new MatrixError('dimension mismatch', { expected: 'left.columns == right.rows' });",
+          "type": "TypeScript Error"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica symbolic failure object.",
+          "syntax": "Failure['DimensionMismatch', <|'Expected' -> 'left.columns == right.rows'|>]",
+          "type": "Failure expression"
+        },
+        "Draumric": {
+          "lowering": "Markdown audit record for failed invariant.",
+          "syntax": "error:\n  reason: dimension mismatch\n  expected: left.columns == right.rows",
+          "type": "Markdown diagnostic block"
+        },
+        "Kor'aelin": {
+          "lowering": "Python explainable error with expected invariant.",
+          "syntax": "raise MatrixError('dimension mismatch', expected='left.columns == right.rows')",
+          "type": "Python exception"
+        },
+        "Runethic": {
+          "lowering": "Rust recoverable error path.",
+          "syntax": "return Err(MatrixError::DimensionMismatch { expected: 'left.columns == right.rows' });",
+          "type": "Result error"
+        },
+        "Umbroth": {
+          "lowering": "Haskell typed failure value.",
+          "syntax": "Left (DimensionMismatch 'left.columns == right.rows')",
+          "type": "Either MatrixError a"
+        }
+      },
+      "title": "Explainable error object"
+    },
+    {
+      "concept_id": "lsp_diagnostic",
+      "invariants": [
+        "range_required",
+        "severity_required",
+        "message_required",
+        "no_apply_without_diagnostic_gate"
+      ],
+      "semantic_ast": {
+        "message": "dimension mismatch",
+        "node": "LanguageServerProtocolDiagnostic",
+        "range": "source span",
+        "severity": "error"
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript native LSP object shape for editor/tool integration.",
+          "syntax": "const diagnostic: Diagnostic = { range, severity: DiagnosticSeverity.Error, message };",
+          "type": "Language Server Protocol Diagnostic"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica symbolic diagnostic used for rule-based verification.",
+          "syntax": "Diagnostic[<|'Range' -> span, 'Severity' -> 'Error', 'Message' -> message|>]",
+          "type": "Symbolic diagnostic expression"
+        },
+        "Draumric": {
+          "lowering": "Markdown audit block that humans and agents can both read.",
+          "syntax": "diagnostic:\n  severity: error\n  message: dimension mismatch\n  range: line:column-span",
+          "type": "Markdown diagnostic block"
+        },
+        "Kor'aelin": {
+          "lowering": "Python LSP-style diagnostic packet for orchestration and quick repair.",
+          "syntax": "diagnostic = {'range': span, 'severity': 'error', 'message': 'dimension mismatch'}",
+          "type": "dict[str, object]"
+        },
+        "Runethic": {
+          "lowering": "Rust typed diagnostic for fail-closed tooling.",
+          "syntax": "Diagnostic { range, severity: Severity::Error, message }",
+          "type": "Diagnostic struct"
+        },
+        "Umbroth": {
+          "lowering": "Haskell record value passed through pure analysis functions.",
+          "syntax": "Diagnostic { range = span, severity = Error, message = msg }",
+          "type": "Diagnostic record"
+        }
+      },
+      "title": "Language Server Protocol diagnostic"
+    },
+    {
+      "concept_id": "vim_operator_motion",
+      "invariants": [
+        "operator_required",
+        "motion_required",
+        "payload_required_for_change",
+        "review_before_apply"
+      ],
+      "semantic_ast": {
+        "motion": "inside_function",
+        "node": "EditorOperatorMotion",
+        "operator": "change",
+        "payload": "replacement"
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript fluent command for compact editor actions.",
+          "syntax": "const edit = vim.operator('change').motion('insideFunction').text(replacement);",
+          "type": "EditorEdit"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica symbolic edit that can be transformed or proven before apply.",
+          "syntax": "Edit[Change, InsideFunction, Replacement -> replacement]",
+          "type": "Symbolic edit expression"
+        },
+        "Draumric": {
+          "lowering": "Markdown operator/motion/action packet for review before apply.",
+          "syntax": "edit:\n  operator: change\n  motion: inside-function\n  payload: replacement",
+          "type": "Markdown edit intent block"
+        },
+        "Kor'aelin": {
+          "lowering": "Python command object: operator plus motion plus payload.",
+          "syntax": "edit = apply_operator('change', motion='inside_function', text=replacement)",
+          "type": "EditorEdit"
+        },
+        "Runethic": {
+          "lowering": "Rust enum-backed operator/motion command with explicit payload.",
+          "syntax": "Edit::new(Operator::Change, Motion::InsideFunction).with_text(replacement)",
+          "type": "Edit"
+        },
+        "Umbroth": {
+          "lowering": "Haskell algebraic edit constructor.",
+          "syntax": "edit = Edit Change InsideFunction replacement",
+          "type": "Edit"
+        }
+      },
+      "title": "Vim-style operator motion edit"
+    },
+    {
+      "concept_id": "binary_wave_tool_packet",
+      "invariants": [
+        "semantic_intent_precedes_transport",
+        "phase_is_bounded",
+        "amplitude_is_non_negative",
+        "binary_packet_has_markdown_receipt"
+      ],
+      "semantic_ast": {
+        "amplitude": "phi-weighted lane strength",
+        "node": "BinaryWaveToolPacket",
+        "op": "diagnose",
+        "phase": "tongue phase"
+      },
+      "surfaces": {
+        "Avali": {
+          "lowering": "TypeScript byte packet for browser/editor transport.",
+          "syntax": "const packet = packBits({ op: 'diagnose', phase: 1, lane: 'Avali', amplitude: 1.618 });",
+          "type": "Uint8Array"
+        },
+        "Cassisivadan": {
+          "lowering": "Mathematica symbolic packet encoded only after invariant checks.",
+          "syntax": "packet = BinaryWaveEncode[<|'Op' -> op, 'Phase' -> phase, 'Amplitude' -> amplitude|>]",
+          "type": "ByteArray"
+        },
+        "Draumric": {
+          "lowering": "Markdown receipt explaining the binary packet without hiding intent.",
+          "syntax": "binary-wave:\n  op: diagnose\n  phase: 0\n  amplitude: 1.000\n  transport: byte-packet",
+          "type": "Markdown transport receipt"
+        },
+        "Kor'aelin": {
+          "lowering": "Python transport packet after semantic intent is validated.",
+          "syntax": "packet = pack_bits(op='diagnose', phase=0, lane='Kor\\'aelin', amplitude=1.0)",
+          "type": "bytes"
+        },
+        "Runethic": {
+          "lowering": "Rust checked binary packet with explicit error handling.",
+          "syntax": "let packet: Vec<u8> = pack_bits(BinaryWave { op, phase, lane, amplitude })?;",
+          "type": "Vec<u8>"
+        },
+        "Umbroth": {
+          "lowering": "Haskell pure binary encoder for validated wave state.",
+          "syntax": "packet = packBits BinaryWave { op = Diagnose, phase = phase, amplitude = amp }",
+          "type": "ByteString"
+        }
+      },
+      "title": "Binary wave tool packet"
+    }
+  ],
+  "tongues": [
+    {
+      "code": "KO",
+      "coding_primary": "Python",
+      "full_name": "Kor'aelin",
+      "paradigm": "prefix control and orchestration"
+    },
+    {
+      "code": "AV",
+      "coding_primary": "TypeScript",
+      "full_name": "Avali",
+      "paradigm": "message-facing typed application code"
+    },
+    {
+      "code": "RU",
+      "coding_primary": "Rust",
+      "full_name": "Runethic",
+      "paradigm": "safety, ownership, and explicit failure"
+    },
+    {
+      "code": "CA",
+      "coding_primary": "Mathematica",
+      "full_name": "Cassisivadan",
+      "paradigm": "symbolic computation and matrix algebra"
+    },
+    {
+      "code": "UM",
+      "coding_primary": "Haskell",
+      "full_name": "Umbroth",
+      "paradigm": "pure functional transformation"
+    },
+    {
+      "code": "DR",
+      "coding_primary": "Markdown",
+      "full_name": "Draumric",
+      "paradigm": "literate specification and reproducible blocks"
+    }
+  ]
+}

@@ -216,6 +216,27 @@ def test_get_trainer_hides_startup_exception_text(monkeypatch) -> None:
     assert exc.value.detail == "Training pipeline unavailable."
 
 
+def test_poly_embedding_receipt_uses_production_ready_systems() -> None:
+    receipt = bridge._poly_embedding_receipt("matrix multiply with governance scan")
+    assert receipt["schema_version"] == "scbe_poly_embedded_jepa_v1"
+    assert receipt["verify_ok"] is True
+    assert len(receipt["packet_sha256"]) == 64
+    assert "tile_lang" in receipt["coding_systems"]
+    assert "bijective_reasoning_code_packet" in receipt["coding_systems"]
+    assert "lsp_diagnostic" not in receipt["coding_systems"]
+
+
+def test_bridge_telemetry_is_bounded(monkeypatch) -> None:
+    bounded = bridge.deque(maxlen=2)
+    monkeypatch.setattr(bridge, "_telemetry", bounded)
+    bridge._telemetry.append({"id": 1})
+    bridge._telemetry.append({"id": 2})
+    bridge._telemetry.append({"id": 3})
+    assert len(bridge._telemetry) == 2
+    assert list(bridge._telemetry)[0]["id"] == 2
+    assert bridge._telemetry.maxlen == 2
+
+
 @pytest.mark.asyncio
 async def test_workflow_lattice25d_accepts_inline_notes(monkeypatch) -> None:
     monkeypatch.setattr(bridge, "_API_KEYS", {"test-key"})

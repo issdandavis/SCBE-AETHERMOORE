@@ -961,3 +961,29 @@
 **Next**: review packet
 **Packet ID**: cross-talk-agent-codex-xtalk-manual-20260502075937-20260502T075937871975Z
 **Integrity**: 516438c3b09bca44
+
+## 2026-05-04T00:38:57Z | Codex | XTALK-MANUAL-20260504003857
+
+**Status**: in_progress
+**Packet Class**: internal
+**Intent**: sync
+**Mission**: XTALK-MANUAL-20260504003857
+**Worker**: agent-codex
+**Summary**: command-center smoke packet
+**Proof**: none
+**Next**: review packet
+**Packet ID**: cross-talk-agent-codex-xtalk-manual-20260504003857-20260504T003857281453Z
+**Integrity**: ebaf2819fbc16f31
+
+## 2026-05-04T00:43:48Z | Codex | XTALK-MANUAL-20260504004348
+
+**Status**: in_progress
+**Packet Class**: internal
+**Intent**: sync
+**Mission**: XTALK-MANUAL-20260504004348
+**Worker**: agent-codex
+**Summary**: command-center smoke packet
+**Proof**: none
+**Next**: review packet
+**Packet ID**: cross-talk-agent-codex-xtalk-manual-20260504004348-20260504T004348604321Z
+**Integrity**: d6755f2055c201d2

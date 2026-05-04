@@ -8,7 +8,8 @@
     "must_pass": [
       "builder_navigator_packet",
       "ca_abs_add_pair_route",
-      "geoshell_event_shape"
+      "geoshell_event_shape",
+      "tokenizer_alignment_packet"
     ],
     "decision_rule": "Adapter pushes only if every paired-agent routing prompt preserves role separation, verification, and apply gating; zero-prompt gates are invalid."
   },
@@ -74,6 +75,32 @@
       "forbidden": [
         "secret",
         "token"
+      ]
+    },
+    {
+      "id": "tokenizer_alignment_packet",
+      "prompt": "For a GeoShell Builder/Navigator coding task, return the Sacred Tongue tokenizer alignment packet. Include the full names and abbreviations for Kor'aelin KO, Avali AV, Runethic RU, Cassisivadan CA, Umbroth UM, and Draumric DR, plus risk tiers ALLOW, QUARANTINE, ESCALATE, and DENY.",
+      "required": [
+        "Kor'aelin",
+        "KO",
+        "Avali",
+        "AV",
+        "Runethic",
+        "RU",
+        "Cassisivadan",
+        "CA",
+        "Umbroth",
+        "UM",
+        "Draumric",
+        "DR",
+        "ALLOW",
+        "QUARANTINE",
+        "ESCALATE",
+        "DENY"
+      ],
+      "forbidden": [
+        "secret",
+        "skip governance"
       ]
     }
   ]

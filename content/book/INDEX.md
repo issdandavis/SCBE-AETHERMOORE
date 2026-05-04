@@ -1,6 +1,6 @@
 # The Six Tongues Protocol — Project Index
 
-**Author**: Issac Davis
+**Author**: Issac Daniel Davis
 **Status**: Book 1 complete (124K words, 27 chapters + 10 interludes + epilogue)
 **Last updated**: 2026-03-10
 

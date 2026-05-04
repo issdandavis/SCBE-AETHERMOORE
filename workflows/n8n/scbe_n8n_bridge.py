@@ -41,8 +41,9 @@ import sys
 import threading
 import time
 import uuid
+from collections import deque
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Deque, Dict, List, Literal, Optional
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 
@@ -120,7 +121,11 @@ app.add_middleware(
 _antivirus = SemanticAntivirus()
 _buffer = ContentBuffer(antivirus=_antivirus)
 _orchestrator = AgentOrchestrator(antivirus=_antivirus)
-_telemetry: List[Dict[str, Any]] = []
+try:
+    _TELEMETRY_MAXLEN = max(1, int(os.environ.get("SCBE_BRIDGE_TELEMETRY_MAXLEN", "1000")))
+except ValueError:
+    _TELEMETRY_MAXLEN = 1000
+_telemetry: Deque[Dict[str, Any]] = deque(maxlen=_TELEMETRY_MAXLEN)
 
 # Register dry-run publishers (replace with real credentials in production)
 for plat in Platform:
@@ -1144,7 +1149,31 @@ async def automation_emit(req: AutomationEmitRequest, x_api_key: Optional[str] =
 async def governance_scan(req: ScanRequest, x_api_key: Optional[str] = Header(None)):
     _check_key(x_api_key)
     profile = _antivirus.scan(req.content)
-    return profile.to_dict()
+    payload = profile.to_dict()
+    payload["poly_embedding"] = _poly_embedding_receipt(req.content)
+    return payload
+
+
+def _poly_embedding_receipt(content: str) -> Dict[str, Any]:
+    """Attach a production-ready poly-embedded receipt to scan results."""
+
+    try:
+        from python.scbe.poly_embedded_jepa import build_poly_embedding, verify_poly_embedding
+
+        embedding = build_poly_embedding(content or "empty governance scan")
+        report = verify_poly_embedding(embedding)
+        return {
+            "schema_version": embedding.schema_version,
+            "packet_sha256": embedding.binary_packet_sha256,
+            "tile": embedding.masked_tile,
+            "masked_tiles": list(embedding.masked_tiles),
+            "tongue": embedding.tile_node.tongue,
+            "coding_systems": [system.system_id for system in embedding.coding_systems],
+            "verify_ok": bool(report["ok"]),
+        }
+    except Exception:
+        logger.exception("poly embedding receipt failed")
+        return {"schema_version": "scbe_poly_embedded_jepa_v1", "verify_ok": False, "error": "poly_embedding_failed"}
 
 
 @app.post("/v1/tongue/encode")
@@ -1299,7 +1328,7 @@ async def telemetry_log(req: TelemetryRequest, x_api_key: Optional[str] = Header
 @app.get("/v1/telemetry")
 async def telemetry_list(x_api_key: Optional[str] = Header(None)):
     _check_key(x_api_key)
-    return {"entries": _telemetry[-100:], "total": len(_telemetry)}
+    return {"entries": list(_telemetry)[-100:], "total": len(_telemetry), "max_entries": _telemetry.maxlen}
 
 
 # ---------------------------------------------------------------------------

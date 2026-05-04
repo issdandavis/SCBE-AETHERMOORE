@@ -1,21 +1,23 @@
 {
-  "created_at": "2026-05-01T04:42:24Z",
+  "base_record_count": 15,
+  "created_at": "2026-05-04T06:51:10Z",
   "geoshell_events_path": "artifacts\\geoshell\\pair_agent\\latest_events.json",
-  "holdout_count": 2,
+  "holdout_count": 28,
   "holdout_path": "training-data\\sft\\geoshell_pair_agent_v1_holdout.sft.jsonl",
   "notes": [
     "Records train Builder/Navigator pair behavior, not frontier-model capability claims.",
     "GeoShell can read geoshell_events_path through the existing __SCBE_AGENT_BUS_EVENTS__ shape.",
     "Apply remains gated; records teach route/verify/apply separation before mutation."
   ],
+  "population_multiplier": 14,
   "profile_id": "geoshell-pair-agent-v1",
-  "record_count": 6,
+  "record_count": 210,
   "schema_version": "geoshell_pair_agent_sft_v1",
   "source": {
     "benchmark_schema": "scbe_dual_agent_pair_benchmark_v1",
     "source_script": "scripts/benchmark/dual_agent_pair_benchmark.py"
   },
-  "train_count": 4,
+  "train_count": 182,
   "train_path": "training-data\\sft\\geoshell_pair_agent_v1_train.sft.jsonl",
   "verification": [
     "python scripts/benchmark/dual_agent_pair_benchmark.py validate",

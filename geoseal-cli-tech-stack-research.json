@@ -1,0 +1,103 @@
+{
+  "search_id": "search_15c5d939ba864ffcb0da0782619af474",
+  "status": "ok",
+  "results": [
+    {
+      "url": "https://postgis.net/docs/ST_Azimuth.html",
+      "title": "ST_Azimuth",
+      "publish_date": null,
+      "excerpts": [
+        "SELECT degrees(ST_Azimuth( ST_Point(25, 45), ST_Point(75, 100))) AS degA_B, degrees(ST_Azimuth( ST_Point(75, 100), ST_Point(25, 45) )) AS degB_A; dega_b | degb_a ------------------+------------------ 42.2736890060937 | 222.273689006094 \u00b7 ST_Angle, ST_Point, ST_Translate, ST_Project, PostgreSQL Math Functions"
+      ]
+    },
+    {
+      "url": "https://gdal.org/en/stable/programs/index.html",
+      "title": "Programs \u2014 GDAL documentation",
+      "publish_date": null,
+      "excerpts": [
+        "Starting with GDAL 3.11, parts of the GDAL utilities are available from a new single gdal program that accepts commands and subcommands. As an introduction, you can follow the webinar given on June 3, 2025 about the GDAL Command Line Interface Modernization as a PDF slide deck or the recording"
+      ]
+    },
+    {
+      "url": "https://proj.org/en/stable/usage/transformation.html",
+      "title": "Geodetic transformation \u2014 PROJ 9.8.1 documentation",
+      "publish_date": null,
+      "excerpts": [
+        "While originally developed as a tool for cartographic projections, PROJ has over time evolved into <strong>a powerful generic coordinate transformation engine that makes it possible to do both large scale cartographic projections as well as coordinate transformation at a geodetic high precision level</strong>."
+      ]
+    },
+    {
+      "url": "https://gdal.org/",
+      "title": "GDAL \u2014 GDAL documentation",
+      "publish_date": null,
+      "excerpts": [
+        "It also comes with a variety of useful command line utilities for data translation and processing. The NEWS page describes the August 2024 GDAL/OGR 3.9.2 release. ... This documentation is also available as a PDF file, and a .ZIP of individual HTML pages for offline browsing."
+      ]
+    },
+    {
+      "url": "https://developers.planet.com/docs/planetschool/getting-started-with-gdal/",
+      "title": "Getting started with GDAL - Planet Documentation",
+      "publish_date": null,
+      "excerpts": [
+        "GDAL, also known as GDAL/OGR, is ... to be familiar with when working with geospatial data. While the GDAL library can be used programmatically, GDAL also includes a CLI (Command Line Interface)."
+      ]
+    },
+    {
+      "url": "https://access.crunchydata.com/documentation/postgis/3.0.1/ST_Project.html",
+      "title": "ST_Project",
+      "publish_date": null,
+      "excerpts": [
+        "PostGIS - Spatial and Geographic Objects for PostgreSQL ... ST_Project \u2014 <strong>Returns a point projected from a start point by a distance and bearing (azimuth).</strong>"
+      ]
+    },
+    {
+      "url": "https://proj.org/usage/transformation.html",
+      "title": "Geodetic transformation \u2014 PROJ 9.2.0 documentation",
+      "publish_date": null,
+      "excerpts": [
+        "While originally developed as a tool for cartographic projections, PROJ has over time evolved into <strong>a powerful generic coordinate transformation engine that makes it possible to do both large scale cartographic projections as well as coordinate transformation at a geodetic high precision level</strong>."
+      ]
+    },
+    {
+      "url": "https://postgis.net/docs/ST_Project.html",
+      "title": "ST_Project",
+      "publish_date": null,
+      "excerpts": [
+        "ST_Project \u2014 <strong>Returns a point projected from a start point by a distance and bearing (azimuth).</strong>"
+      ]
+    },
+    {
+      "url": "https://proj.org/en/9.4/usage/transformation.html",
+      "title": "Geodetic transformation \u2014 PROJ 9.4.1 documentation",
+      "publish_date": null,
+      "excerpts": [
+        "While originally developed as a tool for cartographic projections, PROJ has over time evolved into <strong>a powerful generic coordinate transformation engine that makes it possible to do both large scale cartographic projections as well as coordinate transformation at a geodetic high precision level</strong>."
+      ]
+    },
+    {
+      "url": "https://github.com/OSGeo/PROJ/tree/7.2",
+      "title": "GitHub - OSGeo/PROJ at 7.2 \u00b7 GitHub",
+      "publish_date": null,
+      "excerpts": [
+        "proj: <strong>for cartographic projection of geodetic coordinates</strong>. cs2cs: for transformation from one CRS to another CRS. geod: for geodesic (great circle) computations. cct: for generic Coordinate Conversions and Transformations. gie: the Geospatial"
+      ]
+    },
+    {
+      "url": "https://github.com/OSGeo/PROJ",
+      "title": "GitHub - OSGeo/PROJ: PROJ - Cartographic Projections and Coordinate Transformations Library \u00b7 GitHub",
+      "publish_date": null,
+      "excerpts": [
+        "proj: <strong>for cartographic projection of geodetic coordinates</strong>. cs2cs: for transformation from one CRS to another CRS. geod: for geodesic (great circle) computations. cct: for generic Coordinate Conversions and Transformations. gie: the Geospatial"
+      ]
+    },
+    {
+      "url": "https://github.com/OSGeo/PROJ/blob/master/src/geodesic.h",
+      "title": "PROJ/src/geodesic.h at master \u00b7 OSGeo/PROJ",
+      "publish_date": null,
+      "excerpts": [
+        "PROJ - Cartographic Projections and Coordinate Transformations Library - PROJ/src/geodesic.h at master \u00b7 OSGeo/PROJ"
+      ]
+    }
+  ],
+  "warnings": []
+}

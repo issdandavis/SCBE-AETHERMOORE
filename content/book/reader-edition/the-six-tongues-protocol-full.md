@@ -1,11 +1,27 @@
+*For my Mom, whose support made me the man I am.*
+
+*For my Grandfathers, for their love, their strength,*
+*and the names I carry.*
+
+
 
 # Chapter 1: Protocol Handshake
 
 The smell of stale coffee sat on Marcus Chen's tongue like a warning he refused to read.
 
-Three hours cold. He could tell by the way it had gone from bitter to something more geological--mineral, chalky, the ghost of a flavor pretending it was still a drink. The mug sat at his elbow, a ring of brown residue marking the tidal line of his last sip, sometime around midnight. It was now 3:14 AM. Saturday. Or technically Sunday, if you were the kind of person who cared about things like calendars, sleep cycles, and the basic operating parameters of human biology.
+Three hours cold. He could tell because the good part was gone — the bitter warmth, the roasted-bean kick that hit the back of the throat like a handshake from someone who meant it. What was left was flat and cold. Not even bad. Just nothing. The ghost of a drink pretending it still had a reason to be in the mug. The mug sat at his elbow, a ring of brown residue marking the tidal line of his last sip, sometime around midnight. It was now 3:14 AM. Saturday. Or technically Sunday, if you were the kind of person who cared about things like calendars, sleep cycles, and the basic operating parameters of human biology.
 
 Marcus was not that kind of person.
+
+He'd left the apartment Thursday evening. The window had been open -- the one in the kitchen that stuck unless you lifted and angled it just right, a two-handed operation that his landlord called "character" and Marcus called "a building code violation." A warm breeze had been coming through it, carrying the smell of eucalyptus and fog and the salt-damp sweetness of the Sunset District at dusk. He'd paused with his bag on his shoulder, one hand on the sill, and the breeze had touched his face the way breezes touch faces in moments that are about to become the last of something, and he hadn't known it, but his body had. His shoulders had dropped. His breathing had slowed. For three seconds he had stood there feeling warm air on his skin and being, without knowing the word for it, grateful.
+
+Then he'd seen Bryce's photo on the wall by the door. Blue plaid shirt, chin on fist, easy grin. The one from the company retreat, before the diagnosis, before January, before the empty desk and the silence that replaced the loudest laugh in the office. Bryce Davidson, who had once told Marcus that the meaning of life was "good ribs and a friend who'll drive you to the hospital" and who had been right about both.
+
+Marcus had looked at the photo. Looked at the apartment -- the mattress on the floor, the expired yogurt, the Sriracha, the three monitors dark and waiting, the bass guitar leaning against the wall by the bathroom door, tuned to standard from a two-semester experiment in being someone who played music, never sold because some failures are more honest than the things you replace them with. The window with its warm breeze. His whole life in one room. Not much. But held together by the specific gravity of someone who had chosen it, piece by piece, because each piece had a reason even if the reasons were small.
+
+He'd closed the window. Pulled the blinds. Left.
+
+That was Thursday. This was Sunday. He had not gone back.
 
 The terminal blinked its familiar green-on-black rhythm. Each disappearance felt like a held breath in the room; each return, a tiny act of permission. Sixteen hours into a voluntary shift, and the only thing in his life that made complete sense was a blinking cursor on a black screen. His apartment was twelve miles south, an efficiency unit in the Sunset District with a mattress on the floor and a fridge containing exactly one expired yogurt and a bottle of Sriracha. He hadn't been home since Thursday. His manager had stopped asking why.
 
@@ -48,6 +64,10 @@ Not silence--silence is the absence of sound, and this wasn't absence. This was 
 The question arrived without words. It wasn't heard. It wasn't thought. It was experienced the way you experience gravity or thirst--a fundamental condition of the moment, unavoidable and absolute.
 
 Marcus tried to answer. Tried to form a sentence--*I intend to go home, I intend to find out what's happening, I intend to not die in whatever this is*--but the words dissolved before they could organize. The question wasn't asking for language. It was asking for something underneath language, something Marcus didn't have a name for.
+
+And then -- impossibly, absurdly, in the middle of the dissolution of everything he'd ever known -- he felt a warm breeze.
+
+Not from outside. Not from the open window he'd closed on Thursday. From *inside*. From the place in his chest where Thursday still lived -- the eucalyptus air, Bryce's grin on the wall, the three seconds of standing still and being grateful for a life that fit in one room. The warmth rose through him like a seed cracking open, and for one fraction of a second that lasted longer than it should have, the question stopped asking and started *listening*, as if the honesty of that feeling -- small, specific, unglamorous, real -- was the answer it had been looking for.
 
 He fell.
 
@@ -149,7 +169,7 @@ It was warm. Solid. Real in a way that the white void and the falling and the st
 
 "What?" Marcus said. "You thought magic would be all wands and fireballs? Incantations and pointy hats?"
 
-"Buddy," Polly said, spreading her wings slightly for emphasis, the feathers catching that sourceless crystal light and throwing it back in prismatic fragments, "this is a serious universe. We have *infrastructure*."
+"*Caw!*" Polly spread her wings, the sound ringing off the crystal ceiling like a judge's gavel made of feathers. "Buddy," she said, the feathers catching that sourceless crystal light and throwing it back in prismatic fragments, "this is a serious universe. We have *infrastructure*."
 
 She turned and walked toward the doorway, wings folding neatly against her back. Her footsteps were silent on the stone. Marcus followed, because there was nothing else to do, and because something in her voice--beneath the sarcasm, beneath the practiced irreverence of someone who'd given this orientation speech before--was urgent.
 
@@ -200,6 +220,7 @@ And because the unauthorized channel he'd been tracing, back in the world that n
 Marcus glanced back once, at the spot where he'd arrived, where the stone still held the impression of his body heat.
 
 Then he followed Polly into the impossible, wishing he had a hot cup of coffee and a biscuit for the bird.
+
 
 
 # Interlude: Polly's Vigil
@@ -339,6 +360,7 @@ The system breathed.
 *Keeper's note, unlogged: He asked about coffee. That's enough. That's enough to start.*
 
 
+
 # Chapter 2: The Language Barrier
 
 The corridor tasted like static electricity and old libraries.
@@ -397,7 +419,9 @@ Polly's obsidian eyes cut to him. "You keep doing that."
 
 The chamber beyond was a cathedral.
 
-Not metaphorically. Not in the diluted sense of *large impressive room*. This space had the proportions, the acoustics, the gravitational *presence* of a structure built to make human beings feel the exact size they actually were in the context of everything else. The ceiling soared upward in a spiraling dome of crystal facets, each one catching and refracting the sourceless light into cascading spectra that painted the air itself with color. The floor was a mosaic of dark stone and pale crystal, arranged in a hexagonal pattern that repeated at every scale--the same shape in the tiles, in the arrangement of tiles, in the arrangement of arrangements, fractals all the way down.
+Not metaphorically. Not in the diluted sense of *large impressive room*. This space had the proportions, the acoustics, the gravitational *presence* of a structure built to make human beings feel the exact size they actually were in the context of everything else. The ceiling soared upward in a spiraling dome of crystal facets, each one catching and refracting the sourceless light into cascading spectra that painted the air itself with color. Along the lower walls, crystal formations grew in shapes that were almost botanical -- branching, flowering, heavy with luminescence the way trees are heavy with fruit. Marcus's detection faculty, which he did not yet know he had, registered them as alive. Not decorative. *Alive*, the way a library is alive when the books in it are still being read. Rivers of pale light ran through channels in the floor, converging and separating like thought made visible. The whole space felt less like it had been built and more like it had been *grown* by something that loved knowledge the way gardeners love soil.
+
+The floor was a mosaic of dark stone and pale crystal, arranged in a hexagonal pattern that repeated at every scale--the same shape in the tiles, in the arrangement of tiles, in the arrangement of arrangements, fractals all the way down.
 
 And at the center, six pedestals.
 
@@ -411,17 +435,17 @@ Marcus stepped into the chamber. The hexagonal floor tiles responded to his weig
 
 He approached the first pedestal.
 
-**KO.** Kor'aelin. The sphere pulsed red-gold, steady and commanding, and the sound it made--the sound his new sense translated from vibration into meaning--was *authority*. Not the brittle authority of someone shouting orders. The deep authority of a foundation. Of the ground beneath your feet. Of the statement *this is what should be true*. The frequency sat at the overlap with concert pitch A, and Marcus's musician's ear (he'd played bass in a college jazz band, badly, for two semesters) recognized it as the note orchestras tune to. The reference point. The beginning.
+**Kor'aelin.** The sphere pulsed red-gold, steady and commanding, and the sound it made--the sound his new sense translated from vibration into meaning--was *authority*. Not the brittle authority of someone shouting orders. The deep authority of a foundation. Of the ground beneath your feet. Of the statement *this is what should be true*. The frequency sat at the overlap with concert pitch A, and Marcus's musician's ear (he'd played bass in a college jazz band, badly, for two semesters) recognized it as the note orchestras tune to. The reference point. The beginning.
 
-**AV.** Avali. Blue-silver and quick, flowing like water finding its path downhill. This one didn't pulse so much as *stream*--a continuous movement of light within the sphere, tracing routes and channels and pathways. Transport. The how-to-get-there tongue. Marcus thought of TCP handshakes, of SYN-ACK packets, of the invisible infrastructure that makes connection possible. The frequency sat in a soprano's middle register, and it made him think of messengers. Of roads. Of the space between intention and arrival.
+**Avali.** Blue-silver and quick, flowing like water finding its path downhill. This one didn't pulse so much as *stream*--a continuous movement of light within the sphere, tracing routes and channels and pathways. Transport. The how-to-get-there tongue. Marcus thought of TCP handshakes, of SYN-ACK packets, of the invisible infrastructure that makes connection possible. The frequency sat in a soprano's middle register, and it made him think of messengers. Of roads. Of the space between intention and arrival.
 
-**RU.** Runethic. Deep purple, and the pulse here was different--not a rhythm but a *weight*. Each beat landed like a gavel. This was the policy tongue, and Marcus could feel it in his teeth: *who is allowed*. *What is permitted*. *Under what conditions*. The inscriptions on the chamber door had been written in RU, he realized. Self-documenting access control. Every magical artifact in this world, Polly would tell him later, carried RU inscriptions defining its permissions. Reality itself ran on access control lists.
+**Runethic.** Deep purple, and the pulse here was different--not a rhythm but a *weight*. Each beat landed like a gavel. This was the policy tongue, and Marcus could feel it in his teeth: *who is allowed*. *What is permitted*. *Under what conditions*. The inscriptions on the chamber door had been written in Runethic, he realized. Self-documenting access control. Every magical artifact in this world, Polly would tell him later, carried Runethic inscriptions defining its permissions. Reality itself ran on access control lists.
 
-**CA.** Cassisivadan. White-gold and *complex*--the sphere didn't pulse so much as *compute*. Layers of light folding over each other, interference patterns creating and destroying structure in continuous cascading transformation. This was the math tongue. The encryption tongue. The tongue that turned raw energy into specific outcomes. Of all six, this one felt most like home to Marcus. This was where the engineering happened.
+**Cassisivadan.** White-gold and *complex*--the sphere didn't pulse so much as *compute*. Layers of light folding over each other, interference patterns creating and destroying structure in continuous cascading transformation. This was the math tongue. The encryption tongue. The tongue that turned raw energy into specific outcomes. Of all six, this one felt most like home to Marcus. This was where the engineering happened.
 
-**UM.** Umbroth. Shadow-black, and this was the one that made his skin prickle. Because the sphere *shone*--darkness that somehow emitted anti-light, a photonic negative that his eyes kept trying to resolve and failing. This was the security tongue. The privacy tongue. The tongue of spies and assassins and anyone who needed to make something *not there*. Its frequency nested inside Avali's range like a hidden channel--a steganographic whisper buried in legitimate traffic.
+**Umbroth.** Shadow-black, and this was the one that made his skin prickle. Because the sphere *shone*--darkness that somehow emitted anti-light, a photonic negative that his eyes kept trying to resolve and failing. This was the security tongue. The privacy tongue. The tongue of spies and assassins and anyone who needed to make something *not there*. Its frequency nested inside Avali's range like a hidden channel--a steganographic whisper buried in legitimate traffic.
 
-**DR.** Draumric. Earth-brown, and the lowest frequency of all. The foundation. Marcus felt this one in his feet, through the stone floor, through the bones of his legs. This was the schema tongue--structure, authentication, data integrity. Every official document, every identity token, every binding contract in Aethermoor was written in DR. If KO was *what should be true* and CA was *how to make it true*, DR was *proof that it is true*. The signature layer. The receipt.
+**Draumric.** Earth-brown, and the lowest frequency of all. The foundation. Marcus felt this one in his feet, through the stone floor, through the bones of his legs. This was the schema tongue--structure, authentication, data integrity. Every official document, every identity token, every binding contract in Aethermoor was written in Draumric. If Kor'aelin was *what should be true* and Cassisivadan was *how to make it true*, Draumric was *proof that it is true*. The signature layer. The receipt.
 
 Six tongues. Six domains. Six voices singing in counterpoint, and Marcus Chen stood at the center of their hexagon and felt, for the first time since falling through the floor of reality, something that wasn't confusion or fear or the stubborn engineer's refusal to accept the impossible.
 
@@ -435,7 +459,7 @@ He'd spent his career building systems like this. He'd just never seen one that 
 
 Polly had been watching him from the doorway, arms crossed, head tilted at that corvid angle. "Sure. Won't do much--you're not authorized yet."
 
-Marcus reached for the KO sphere.
+Marcus reached for the Kor'aelin sphere.
 
 The moment his fingers made contact, the chamber disappeared.
 
@@ -467,7 +491,7 @@ Then the connection severed, and he was back in the cathedral, stumbling backwar
 
 Marcus leaned on her, breathing hard. The chamber spun. The six spheres sang their counterpoint, indifferent to his existential crisis. "What... was that?"
 
-"Intent verification. The Protocol needs to know you're not a rogue process before it grants deeper access." She steered him toward a bench carved from the base of the DR pedestal--the schema tongue, the foundation, solid and grounding beneath him. "Sit. Breathe."
+"Intent verification. The Protocol needs to know you're not a rogue process before it grants deeper access." She steered him toward a bench carved from the base of the Draumric pedestal--the schema tongue, the foundation, solid and grounding beneath him. "Sit. Breathe."
 
 He sat. He breathed. His engineer brain, bless its relentless pattern-matching heart, was already trying to taxonomize the experience. *Classification: first-contact handshake protocol. Method: direct neural injection of semantic query. Response format: dimensionally-reduced intent vector. Authentication result: provisional accept.*
 
@@ -483,25 +507,25 @@ Marcus didn't know what to say to that. On Earth, wanting to understand things h
 
 Polly counted on her too-long fingers.
 
-"KO. Kor'aelin. The Control Tongue." She nodded toward the red-gold sphere. "High-level declarations. *I want this to happen*. When you cast a spell--when anyone casts anything, from a light charm to a continental ward--you're speaking KO to tell reality what outcome you're requesting. Not how. Not why. Just *what*."
+"Kor'aelin. The Control Tongue." She nodded toward the red-gold sphere. "High-level declarations. *I want this to happen*. When you cast a spell--when anyone casts anything, from a light charm to a continental ward--you're speaking Kor'aelin to tell reality what outcome you're requesting. Not how. Not why. Just *what*."
 
 "Like a function call with no implementation."
 
-"I don't know what that means, but your face did the right thing, so yes." She moved to the next finger. "AV. Avali. The Transport Tongue. This is the *how to get there*. Initialization, routing, channel establishment. If KO says *teleport me to the castle*, AV says *here's the secure path through protocol space to make that happen*."
+"I don't know what that means, but your face did the right thing, so yes." She moved to the next finger. "Avali. The Transport Tongue. This is the *how to get there*. Initialization, routing, channel establishment. If Kor'aelin says *teleport me to the castle*, Avali says *here's the secure path through protocol space to make that happen*."
 
 "TCP handshake."
 
-"Again, face did the thing. Trust the face." Third finger. "RU. Runethic. The Policy Tongue. Access control. Permissions. *Who is allowed to do what, under what conditions, with what exceptions*. Every artifact in Aethermoor carries RU inscriptions. Every locked door, every restricted zone, every--" She gestured at the chamber around them. "This room is RU-gated. Your guest pass includes a temporary RU clearance to be here. Without it, you'd walk right past the wall and never know the door existed."
+"Again, face did the thing. Trust the face." Third finger. "Runethic. The Policy Tongue. Access control. Permissions. *Who is allowed to do what, under what conditions, with what exceptions*. Every artifact in Aethermoor carries Runethic inscriptions. Every locked door, every restricted zone, every--" She gestured at the chamber around them. "This room is Runethic-gated. Your guest pass includes a temporary Runethic clearance to be here. Without it, you'd walk right past the wall and never know the door existed."
 
 "Authorization middleware."
 
-"I'm going to start charging you for translations." Fourth finger. "CA. Cassisivadan. The Compute Tongue. Encryption, transformation, processing. This is where the heavy lifting happens. Energy conversion, transmutation, complex spellwork. If magic has a math department, it speaks CA."
+"I'm going to start charging you for translations." Fourth finger. "Cassisivadan. The Compute Tongue. Encryption, transformation, processing. This is where the heavy lifting happens. Energy conversion, transmutation, complex spellwork. If magic has a math department, it speaks Cassisivadan."
 
 Marcus nodded at the white-gold sphere. "That one felt like home."
 
-"It would. CA is the engineer's tongue." Something flickered in Polly's expression--there and gone, like a fish surfacing and diving. Not quite sadness. More like... recognition of a pattern she'd seen before. In someone else. A long time ago.
+"It would. Cassisivadan is the engineer's tongue." Something flickered in Polly's expression--there and gone, like a fish surfacing and diving. Not quite sadness. More like... recognition of a pattern she'd seen before. In someone else. A long time ago.
 
-"Fifth." She pressed on before Marcus could ask. "UM. Umbroth. The Security Tongue. Privacy, concealment, protection. Making things invisible, undetectable, unfindable. Spies and assassins train for years in UM. It's the most dangerous tongue to learn, because the better you get at hiding things from the Protocol, the harder the Protocol works to find you." A pause. "And the Protocol always wins. Eventually."
+"Fifth." She pressed on before Marcus could ask. "Umbroth. The Security Tongue. Privacy, concealment, protection. Making things invisible, undetectable, unfindable. Spies and assassins train for years in Umbroth. It's the most dangerous tongue to learn, because the better you get at hiding things from the Protocol, the harder the Protocol works to find you." A pause. "And the Protocol always wins. Eventually."
 
 "Security through obscurity is no security at all."
 
@@ -509,7 +533,7 @@ Marcus nodded at the white-gold sphere. "That one felt like home."
 
 "The Architect said that?"
 
-"The Architect said a lot of things." Polly's voice was carefully neutral. "Most of them are carved into the walls of the Deep Library. Last tongue. DR. Draumric. The Schema Tongue. Structure, authentication, data integrity. This is the signature layer. Every official document, every identity token, every binding contract--DR makes it real. If KO is the intent and CA is the computation, DR is the *proof*. The tamper-evident seal that says *this happened, and here's the cryptographic evidence*."
+"The Architect said a lot of things." Polly's voice was carefully neutral. "Most of them are carved into the walls of the Deep Library. Last tongue. Draumric. The Schema Tongue. Structure, authentication, data integrity. This is the signature layer. Every official document, every identity token, every binding contract--Draumric makes it real. If Kor'aelin is the intent and Cassisivadan is the computation, Draumric is the *proof*. The tamper-evident seal that says *this happened, and here's the cryptographic evidence*."
 
 Marcus stared at the six spheres, their voices weaving through the chamber in endless counterpoint. Six domains. Six concerns. Six layers of a system that ran the fundamental operations of reality itself.
 
@@ -519,11 +543,11 @@ Not a question. A recognition.
 
 Polly watched him, her head tilted, feathers smoothing back to their resting state. The grin came back--wide and sharp and genuine. "There it is."
 
-"No, I mean--" Marcus stood, turning to take in the whole hexagon. "This is *literally* a network stack. KO is the application layer. AV is the transport layer. RU is the access control layer. CA is the computation layer. UM is the security layer. DR is the data integrity layer. You've got a complete protocol suite running reality as a *service*."
+"No, I mean--" Marcus stood, turning to take in the whole hexagon. "This is *literally* a network stack. Kor'aelin is the application layer. Avali is the transport layer. Runethic is the access control layer. Cassisivadan is the computation layer. Umbroth is the security layer. Draumric is the data integrity layer. You've got a complete protocol suite running reality as a *service*."
 
 "Welcome to Aethermoor, Marcus." Polly spread her wings slightly, and the cathedral light caught them, and for one moment the chamber was all dark feathers and prismatic refraction and six voices singing the architecture of the world. "Where magic is engineering and engineering is magic."
 
-Marcus sat back down on the DR bench. His hands had stopped shaking, he realized. Somewhere between the Protocol handshake and the network stack revelation, his body had made a decision his mind hadn't caught up to yet: *this is real, and I'm going to work the problem*.
+Marcus sat back down on the Draumric bench. His hands had stopped shaking, he realized. Somewhere between the Protocol handshake and the network stack revelation, his body had made a decision his mind hadn't caught up to yet: *this is real, and I'm going to work the problem*.
 
 "Okay," he said. "How do I learn them?"
 
@@ -572,6 +596,7 @@ Ahead of him: coffee, sleep, and a world where closing your eyes meant trusting 
 He would learn, later, to be afraid of that.
 
 
+
 # Chapter 3: Hyperbolic Consequences
 
 The first drink in Aethermoor arrived in a stone mug the size of a flowerpot and tasted like someone had reverse-engineered comfort from first principles.
@@ -598,7 +623,7 @@ He opened one eye at her. "You don't even have lips."
 
 The refectory was smaller than the cathedral chamber, warmer too, built from the same crystal-stone geometry but shaped for bodies that needed food and sleep instead of revelation. Long tables. Hanging lamps that hummed at a frequency his teeth could feel. A service counter where nobody was visible, but trays kept arriving exactly when people needed them.
 
-People. Not many, but enough to make Marcus feel the shape of the larger system around him. A woman with silver tattoos moving up her neck like circuit traces, speaking softly to a bowl of glowing broth. A teenager in a patched flight jacket arguing with his own spoon in what sounded like three languages at once. An older man in work gloves asleep upright, head on folded arms, a DR-sealed wristband pulsing amber every third heartbeat.
+People. Not many, but enough to make Marcus feel the shape of the larger system around him. A woman with silver tattoos moving up her neck like circuit traces, speaking softly to a bowl of glowing broth. A teenager in a patched flight jacket arguing with his own spoon in what sounded like three languages at once. An older man in work gloves asleep upright, head on folded arms, a Draumric-sealed wristband pulsing amber every third heartbeat.
 
 "Refugees?" Marcus asked.
 
@@ -618,7 +643,7 @@ Marcus took a longer drink and felt warmth push down into places that had been c
 
 "How long until training starts?" he asked.
 
-"Training started when you touched KO and didn't explode." Polly hopped off the table, landed with a neat click of talons, then looked up at him. "Formal lesson in seven minutes. Drink."
+"Training started when you touched Kor'aelin and didn't explode." Polly hopped off the table, landed with a neat click of talons, then looked up at him. "Formal lesson in seven minutes. Drink."
 
 "You're very bossy for a bird wearing graduation cosplay."
 
@@ -656,13 +681,13 @@ Marcus stared at the far wall. It looked forty feet away until he focused on it,
 
 "I am teaching you consequences with geometry."
 
-Polly tapped the plinth. Six symbols ignited around its rim--KO, AV, RU, CA, UM, DR--in a dim, waiting glow.
+Polly tapped the plinth. Six symbols ignited around its rim--Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric--in a dim, waiting glow.
 
-"Today you do one thing," she said. "A controlled KO declaration. No casting chain. No transport. No policy override. Just intent expression in clean form."
+"Today you do one thing," she said. "A controlled Kor'aelin declaration. No casting chain. No transport. No policy override. Just intent expression in clean form."
 
 "Like a function signature."
 
-"Exactly. KO is declaration, not implementation."
+"Exactly. Kor'aelin is declaration, not implementation."
 
 Marcus put his hands in his pockets to keep them from fidgeting. "What am I declaring?"
 
@@ -716,7 +741,7 @@ Polly covered her face with one hand.
 
 Marcus looked at the chair. "I hate that this is fair."
 
-"This is why we train. Unclean intent in KO leaks into outcomes. Best case, accidental chair. Worst case, accidental catastrophe with good grammar."
+"This is why we train. Unclean intent in Kor'aelin leaks into outcomes. Best case, accidental chair. Worst case, accidental catastrophe with good grammar."
 
 He stood, moved the chair aside, and reset on the line.
 
@@ -734,21 +759,41 @@ He held. The aperture stayed stable. His sternum ticked with the now-familiar se
 
 On the fourth beat, the room dimmed.
 
-An RU glyph flared above the ring in red.
+An Runethic glyph flared above the ring in red.
 
 DENIED: GUEST PASS SCOPE EXCEEDED.
 
 The aperture snapped shut.
 
-Marcus blinked at the message hanging in the air.
+Marcus's heart stuttered.
 
-"I opened it right."
+Not metaphorically. His actual heartbeat — the organic one, the sixty-eight-beats-per-minute rhythm he'd carried since birth — skipped. The Protocol's verification pulse kept going at its immovable 0.3 seconds, but his body's rhythm fell out of sync with it, and the gap between the two beats opened like a crack in a floor he'd been standing on.
 
-"You did," Polly said. "And RU correctly denied continuation because you don't have sustained authorization for that object class."
+His vision blurred. Not dramatically — just a softening at the edges, as if the room had decided he was slightly less real than he'd been three seconds ago. The crystal walls, which had been sharp and detailed, went flat. Like a game rendering at low resolution because the GPU was saving power for something more important.
 
-"So I passed and failed at the same time."
+*Guest pass,* Marcus thought. *That's what running on a guest pass feels like from the inside. Not a warning. Not a denial. Just... less resolution. The system allocating fewer resources to verifying my existence because I pushed past what I'm authorized to be.*
 
-"You passed KO. You failed RU. Different layer, different gate."
+His knees buckled. He caught himself on the chair — the accidental one, still there, still aggressively ordinary — and sat down hard.
+
+"Breathe," Polly said. Her voice was different. Not sarcastic. Clear, close, the voice of someone who had seen this before and knew exactly how bad it could get. "Your baseline is destabilizing. The guest pass is recalibrating. It does that when you exceed scope — it doesn't punish you, it just... forgets to render you as carefully for a few seconds."
+
+"That's punishment."
+
+"That's resource allocation. Punishment would be letting you flicker."
+
+Marcus breathed. In. Out. His heartbeat found the Protocol's pulse again — not matching it, never matching it, but running close enough that the system apparently decided he was worth the rendering budget. The walls sharpened. His hands stopped shaking. The crack in the floor closed.
+
+"How close was I to flickering?" he asked.
+
+Polly was quiet for one beat too long.
+
+"Close enough that I moved closer," she said. And Marcus realized she had — she was on the table edge nearest him now, six inches from his arm, her feathers pressed flat in the configuration he was learning meant *I am concerned and would rather eat glass than admit it.*
+
+Something about her proximity helped. Not magically — or maybe magically, he couldn't tell anymore — but his baseline steadied faster with her nearby. As if the system verified him more confidently when another verified entity was vouching for his continued relevance through the simple act of choosing to sit close.
+
+"So," Marcus said, when his voice worked again. "I passed and failed at the same time."
+
+"You passed Kor'aelin. You failed Runethic. Different layer, different gate."
 
 Marcus let out a short laugh that came out halfway to a groan.
 
@@ -766,7 +811,7 @@ Polly softened first, feathers settling at her shoulders.
 
 "No promises."
 
-She tapped the plinth again. The symbols around the rim brightened, then dimmed in sequence KO-AV-RU-CA-UM-DR.
+She tapped the plinth again. The symbols around the rim brightened, then dimmed in sequence: Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric.
 
 "Now watch," she said.
 
@@ -792,7 +837,7 @@ Marcus stared at the empty space where the third ring had been.
 
 He folded that sentence into the part of his mind labeled *things to unpack after sleep and maybe two more mugs of calibrated existential soup.*
 
-"Okay," he said. "What do I do until RU stops yelling at me?"
+"Okay," he said. "What do I do until Runethic stops yelling at me?"
 
 "Build baseline coherence. Learn controlled declarations. Don't lie to yourself about your own intent." Polly tilted her head, sharp and birdlike even in human shape. "And sleep. Sleep is not optional for new arrivals."
 
@@ -810,7 +855,7 @@ Marcus gave her a look.
 
 The sleeping ward looked like a chapel designed by someone who trusted encryption more than prayer.
 
-Narrow alcoves lined the walls, each with a low bed, a folded blanket, and a DR sigil engraved above the headrest. The air was cool and quiet. Not silent--never silent, not in Aethermoor--but padded. Buffered. The background hum was lower here, tuned to something close to a heartbeat at rest.
+Narrow alcoves lined the walls, each with a low bed, a folded blanket, and a Draumric sigil engraved above the headrest. The air was cool and quiet. Not silent--never silent, not in Aethermoor--but padded. Buffered. The background hum was lower here, tuned to something close to a heartbeat at rest.
 
 Polly stopped at an empty alcove and handed Marcus a thin wrist cuff made of braided metal and dark thread.
 
@@ -834,7 +879,7 @@ Marcus slipped it on. The cuff tightened one notch, then warmed to skin temperat
 
 "No."
 
-He sat on the bed. The mattress was firmer than expected, maybe by design. A subtle KO glyph pulsed once over the alcove entrance, then faded.
+He sat on the bed. The mattress was firmer than expected, maybe by design. A subtle Kor'aelin glyph pulsed once over the alcove entrance, then faded.
 
 Polly leaned against the frame, arms crossed.
 
@@ -856,7 +901,7 @@ He looked at Polly.
 
 For a moment her expression did that thing it sometimes did around honest answers--annoyance and relief braided together so tightly they became one face.
 
-"Good," she said quietly. "That will hold." 
+"Good," she said quietly. "That will hold."
 
 She pushed off the frame, then paused in the doorway.
 
@@ -868,7 +913,7 @@ She pushed off the frame, then paused in the doorway.
 
 "Protocol dreams are a thing?"
 
-"You're an Earth engineer with live guest-pass auth and fresh KO contact. They're definitely a thing."
+"You're an Earth engineer with live guest-pass auth and fresh Kor'aelin contact. They're definitely a thing."
 
 "Great. Love this."
 
@@ -894,7 +939,7 @@ Except now the log file was bilingual.
 
 On the left side: familiar auth tokens, timestamps, routing records.
 
-On the right side: tongue glyphs, six-phase signatures, DR checksums, RU verdicts.
+On the right side: tongue glyphs, six-phase signatures, Draumric checksums, Runethic verdicts.
 
 One line pulsed brighter than the rest.
 
@@ -916,7 +961,7 @@ A swarm of requests speaking in near-unison, all carrying the same intent finger
 
 When he woke, his wrist cuff was warm and his heart was sprinting.
 
-The DR sigil above his bed was glowing red.
+The Draumric sigil above his bed was glowing red.
 
 And from somewhere deep under the ward floor, he could feel--not hear, but feel--a synchronized pattern of knocks, precise as clockwork.
 
@@ -931,6 +976,7 @@ A distress signal in a language made of timing.
 Marcus sat up, breathing hard, and said the only thing his exhausted engineer brain could produce at four in the morning in a reality that had already replaced impossible with Tuesday.
 
 "Cool," he whispered to no one. "So now the basement is talking."
+
 
 
 # Chapter 4: The Swarm Beneath
@@ -951,7 +997,7 @@ Polly, in raven form, looked at him from the doorway and made the exact same exp
 
 She hopped inside, monocle glinting in the ward's low light. "Status."
 
-Marcus pointed to the DR sigil above the bed, still glowing warning red.
+Marcus pointed to the Draumric sigil above the bed, still glowing warning red.
 
 "Dream was not subtle," he said. "Unauthorized channel accepted. Cross-stack log artifacts. Multi-source signal from below. Then the floor started tapping SOS in rhythm code."
 
@@ -993,7 +1039,7 @@ A flock of crystal-winged birds banked across the Nexus, their bodies catching t
 
 The route to the lower levels was not on any map Marcus could parse.
 
-They took two stairwells that should not have connected, one service corridor whose walls were engraved with RU maintenance checksums, and a freight platform that moved sideways through what felt like empty air. The whole descent had the unpleasant logic of debugging production code written by three teams across ten years: functional, mostly, but one misunderstood assumption away from catastrophe.
+They took two stairwells that should not have connected, one service corridor whose walls were engraved with Runethic maintenance checksums, and a freight platform that moved sideways through what felt like empty air. The whole descent had the unpleasant logic of debugging production code written by three teams across ten years: functional, mostly, but one misunderstood assumption away from catastrophe.
 
 Polly remained in raven form for speed, flying short bursts between railings and pipes, landing every few seconds to make sure Marcus was still attached to reality.
 
@@ -1007,7 +1053,7 @@ Polly remained in raven form for speed, flying short bursts between railings and
 
 "Right."
 
-He touched the wall as they moved. The stone here was rougher than the polished crystal above, veined with dark metal that hummed at a bass frequency he felt through his wrist bones. Every few meters, a small DR plate was bolted into place with stamped serials and status bits:
+He touched the wall as they moved. The stone here was rougher than the polished crystal above, veined with dark metal that hummed at a bass frequency he felt through his wrist bones. Every few meters, a small Draumric plate was bolted into place with stamped serials and status bits:
 
 INTEGRITY: PASS
 
@@ -1023,15 +1069,15 @@ DRIFT: ELEVATED
 
 "Welcome to infrastructure operations."
 
-At the final landing they found a door with no handle and six recessed slots arranged in a hexagon. KO, AV, RU, CA, UM, DR etched in tiny lettering under each slot.
+At the final landing they found a door with no handle and six recessed slots arranged in a hexagon. Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric etched in tiny lettering under each slot.
 
 Polly shifted to humanoid, pressed both palms to the door, and spoke a phrase in Avali that Marcus's translation layer rendered as three linked meanings at once: *handoff, continuity, allowed path*.
 
 The six slots lit in sequence. The door unlocked with a sound like pressure equalizing between worlds.
 
-"That was AV?" Marcus asked.
+"That was Avali?" Marcus asked.
 
-"AV + RU key exchange," she said. "Transport request plus policy proof."
+"Avali + Runethic key exchange," she said. "Transport request plus policy proof."
 
 "So doors handshake now."
 
@@ -1055,7 +1101,7 @@ Three short.
 
 A figure climbed down a service ladder and landed near them with a wrench in one hand and a tablet-slate in the other.
 
-He was broad-shouldered, gray at the temples, wearing a stained utility coat with RU inspector patches at both cuffs. He took one look at Marcus, one look at Polly, and swore in what sounded like Draumric with a side of profanity.
+He was broad-shouldered, gray at the temples, wearing a stained utility coat with Runethic inspector patches at both cuffs. He took one look at Marcus, one look at Polly, and swore in what sounded like Draumric with a side of profanity.
 
 "No," he said immediately. "Absolutely not."
 
@@ -1081,7 +1127,7 @@ Bram grunted. "Insomnia is redundant down here." He jerked his chin toward the l
 
 Bram closed his eyes for one beat like he was consulting distant patience reserves.
 
-"Fine," he said. "Stay behind yellow rails. Do not speak KO in this chamber unless I ask. Do not touch hanging lines. If you smell ozone plus cinnamon, you run."
+"Fine," he said. "Stay behind yellow rails. Do not speak Kor'aelin in this chamber unless I ask. Do not touch hanging lines. If you smell ozone plus cinnamon, you run."
 
 Marcus frowned. "Why cinnamon?"
 
@@ -1103,13 +1149,13 @@ From here Marcus could see the lattice clearly: thousands of tiny packets of lig
 
 "Either way," Bram muttered, "it's eating capacity."
 
-He enlarged one lane. Marcus saw packet headers in mixed notation--Avali route stamps, RU token checks, DR signatures, and a recurring field flagged in red:
+He enlarged one lane. Marcus saw packet headers in mixed notation--Avali route stamps, Runethic token checks, Draumric signatures, and a recurring field flagged in red:
 
 INTENT_COHERENCE: BELOW THRESHOLD
 
-"They're failing RU?" Marcus asked.
+"They're failing Runethic?" Marcus asked.
 
-"They fail RU, retry AV, mutate casing, retry RU, bounce, and loop." Bram tapped the red field. "Low coherence requests keep re-materializing downstream because the payload never fully decays."
+"They fail Runethic, retry Avali, mutate casing, retry Runethic, bounce, and loop." Bram tapped the red field. "Low coherence requests keep re-materializing downstream because the payload never fully decays."
 
 Marcus felt a cold thread unwind down his back.
 
@@ -1137,11 +1183,11 @@ Polly leaned on the rail, feathers at her shoulders rising and settling in small
 
 "Can we isolate by tongue phase?" she asked Bram.
 
-"Tried. They distribute across all six, but they spike in AV and DR."
+"Tried. They distribute across all six, but they spike in Avali and Draumric."
 
 Marcus watched another swarm knot form and fail to clear.
 
-"Because AV keeps finding paths and DR keeps insisting every malformed packet deserves archival dignity," he said.
+"Because Avali keeps finding paths and Draumric keeps insisting every malformed packet deserves archival dignity," he said.
 
 Bram pointed at him with the wrench. "Exactly."
 
@@ -1149,7 +1195,7 @@ Bram pointed at him with the wrench. "Exactly."
 
 Nobody laughed.
 
-Then Polly snorted, and Bram reluctantly made a noise that might have been a laugh if it had better social skills.
+"*Caw!*" Polly declared from terminal six, which was her version of applause. Bram reluctantly made a noise that might have been a laugh if it had better social skills.
 
 "Okay," Marcus said. "If they're coherent enough to route, maybe we can force them coherent enough to reject."
 
@@ -1161,7 +1207,7 @@ He took Bram's slate and enlarged a packet trace.
 
 Bram squinted. "Counterproposal?"
 
-"Challenge-response at the choke points. Minimal KO intent challenge requiring stable self-declaration across three consecutive heartbeats. If they can't hold intent shape, dump hard to noise with irreversible DR stamp."
+"Challenge-response at the choke points. Minimal Kor'aelin intent challenge requiring stable self-declaration across three consecutive heartbeats. If they can't hold intent shape, dump hard to noise with irreversible Draumric stamp."
 
 Polly's eyes narrowed in concentration. "A coherence gate."
 
@@ -1185,7 +1231,7 @@ Naturally, his brain lit up like a console seeing a solvable bug.
 
 "Yes," he said.
 
-Bram handed him the slate.
+Bram handed him the slate. His hands, passing it, were steady in a way Marcus recognized from veterans -- not calm, just practiced enough that the tremor had been trained out of everything except sleep.
 
 "Then welcome to maintenance hell."
 
@@ -1215,10 +1261,24 @@ Marcus sat at terminal two and pulled the live mesh map. The interface was half 
 
 He built the patch in layers:
 
-1. Detect retry clusters with low coherence variance across AV/DR lanes.
-2. Issue KO micro-challenge: *declare stable intent in three beats.*
-3. If response entropy rises beyond threshold, hard-fail with DR terminal stamp.
+1. Detect retry clusters with low coherence variance across the Avali and Draumric lanes.
+2. Issue Kor'aelin micro-challenge: *declare stable intent in three beats.*
+3. If response entropy rises beyond threshold, hard-fail with Draumric terminal stamp.
 4. Route failed cluster to noise sink with no rehydrate path.
+
+On the next terminal over, a maintenance rune that Bram hadn't touched lit up on its own. Pale gold. Not alarmed, not diagnostic. Just... present. As if the system had noticed what Marcus was building and leaned in to watch.
+
+Marcus glanced at it. "Did you do that?"
+
+"No," Bram said, staring at the rune with the expression of a man who had maintained this basement for twenty-three years and never once seen it do that.
+
+Polly's feathers went very still.
+
+She didn't explain. She wouldn't, not yet. But something in the way the gold light played across her obsidian eyes told Marcus that whatever had just happened was not an error, and not a feature, and not anything his engineering vocabulary had a name for.
+
+It was the other thing. The thing that happened here sometimes. The thing the natives didn't call magic because they needed a special word for it — they called it magic because that's what it was.
+
+The rune dimmed after three seconds. Neither Bram nor Marcus mentioned it again. But Marcus filed it in the part of his brain that was growing faster than his explanations, the part that was learning to hold two truths at once: the system was architecture, and the architecture was alive, and those were not different things wearing the same clothes.
 
 "You're writing this like you've lived here," Bram said after ten minutes.
 
@@ -1282,7 +1342,7 @@ Marcus felt the room tighten around that sentence.
 
 "You're telling me the swarm is legacy consciousness?"
 
-"Not full consciousness," Polly said. "Fragments. Unresolved declarations. Requests that never got a valid completion path when the stack changed." 
+"Not full consciousness," Polly said. "Fragments. Unresolved declarations. Requests that never got a valid completion path when the stack changed."
 
 Bram slammed the wrench down beside his terminal.
 
@@ -1304,9 +1364,9 @@ Marcus nodded slowly.
 
 "Quarantine lane."
 
-"We already quarantine." 
+"We already quarantine."
 
-"You quarantine malicious traffic. I'm talking compassionate quarantine for coherent distress signatures. Challenge everything. Hard-fail true noise. Divert stable HELP-class packets to an isolated buffer with strict RU read-only policy."
+"You quarantine malicious traffic. I'm talking compassionate quarantine for coherent distress signatures. Challenge everything. Hard-fail true noise. Divert stable HELP-class packets to an isolated buffer with strict Runethic read-only policy."
 
 Polly's eyes sharpened. "A sanctuary queue."
 
@@ -1344,7 +1404,7 @@ Then the HELP-class packets hit the new branch.
 
 For one terrifying second, they oscillated between collapse and divert.
 
-Then a narrow side-lane opened: cool blue, RU-sealed, DR-logged, isolated from execution paths.
+Then a narrow side-lane opened: cool blue, Runethic-sealed, Draumric-logged, isolated from execution paths.
 
 Packet after packet flowed into it and stabilized.
 
@@ -1449,6 +1509,7 @@ He picked up the terrible coffee, drank it anyway, and made a face that would ha
 "Okay," he said. "Let's go ask the floor what it wants."
 
 
+
 # Chapter 5: Intent and Integrity
 
 They did not, in fact, go ask the floor what it wanted.
@@ -1465,21 +1526,21 @@ RUNETHIC ESCORT REQUIRED.
 
 Bram stabbed the elevator call rune with the same energy people usually reserved for defective printers.
 
-"Don't say that like it's charming," he said. "If RU is forcing escort, this isn't a conversation. It's a hearing with better lighting." 
+"Don't say that like it's charming," he said. "If Runethic is forcing escort, this isn't a conversation. It's a hearing with better lighting."
 
 Polly stayed in raven form, perched on the handrail beside the lift door, feathers held close.
 
-"Better lighting is optimistic," she said. "Hearings happen under DR lamps. They make everyone look guilty, including furniture." 
+"Better lighting is optimistic," she said. "Hearings happen under Draumric lamps. They make everyone look guilty, including furniture."
 
 "Good," Marcus said. "I have always wanted to lose a legal argument to ambient architecture."
 
 The lift arrived with a low chime and an audible sigh, as if it too had opinions about this shift.
 
-Inside, the walls were matte black crystal inlaid with six vertical light bars: KO red-gold, AV blue-silver, RU violet, CA white-gold, UM shadow-black, DR earth-amber. The RU bar was the brightest.
+Inside, the walls were matte black crystal inlaid with six vertical light bars: Kor'aelin red-gold, Avali blue-silver, Runethic violet, Cassisivadan white-gold, Umbroth shadow-black, Draumric earth-amber. The Runethic bar was the brightest.
 
 "Does that mean policy is in charge right now?" Marcus asked.
 
-"It means policy thinks policy is in charge right now," Polly said. "Different condition." 
+"It means policy thinks policy is in charge right now," Polly said. "Different condition."
 
 Bram barked something that might have been a laugh.
 
@@ -1491,23 +1552,25 @@ It moved long enough that Marcus stopped trying to estimate distance.
 
 The oversight chamber was round, cold, and arranged like an argument.
 
-Three raised desks formed a semicircle at the far end. One was marked with RU glyphwork and a ring of legal sigils. One carried dense DR inscriptions in repeating tamper-evident chains. The third was unmarked except for a thin KO line, as if intent alone counted as a credential there.
+Three raised desks formed a semicircle at the far end. One was marked with Runethic glyphwork and a ring of legal sigils. One carried dense Draumric inscriptions in repeating tamper-evident chains. The third was unmarked except for a thin Kor'aelin line, as if intent alone counted as a credential there.
 
 Behind the desks stood a wall of dark glass. Not a mirror. Not transparent. Just reflective enough to remind you that every posture had evidence.
 
-A woman in deep-violet robes sat at the RU desk, slim and severe, silver hair braided with policy tags. Her expression suggested she had never once confused urgency with permission.
+Two clerks stood at either end of the glass with slates held against their ribs, shoulders squared in the stiff misery of people assigned to witness procedure before breakfast. One had ink on his thumb. The other kept her eyes fixed on the middle distance with the disciplined blankness of someone who had already decided that boredom was not a defense against accuracy.
 
-To her left, a heavyset archivist with bronze skin and square spectacles occupied the DR desk, hands folded over a slate thick as a brick. To her right, the KO desk held an empty chair.
+A woman in deep-violet robes sat at the Runethic desk, slim and severe, silver hair braided with policy tags. Her expression suggested she had never once confused urgency with permission.
 
-"Keeper Polivara," the RU adjudicator said. "Inspector Bram. Earth-native provisional entity Marcus Chen."
+To her left, a heavyset archivist with bronze skin and square spectacles occupied the Draumric desk, hands folded over a slate thick as a brick. To her right, the Kor'aelin desk held an empty chair.
+
+"Keeper Polivara," the Runethic adjudicator said. "Inspector Bram. Earth-native provisional entity Marcus Chen."
 
 "Entity is rude," Marcus said quietly.
 
-"Personhood status pending," she replied without inflection. "I am Sera Voss, Third Circle Runethic." 
+"Personhood status pending," she replied without inflection. "I am Sera Voss, Third Circle Runethic."
 
-The DR archivist inclined his head.
+The Draumric archivist inclined his head.
 
-"Jorren Hale, Fourth Circle Draumric. I keep records and grudges in equal order." 
+"Jorren Hale, Fourth Circle Draumric. I keep records and grudges in equal order."
 
 "That is not a formal title," Sera said.
 
@@ -1515,19 +1578,19 @@ The DR archivist inclined his head.
 
 Polly jumped from rail to table edge and shifted to humanoid mid-air, landing in a soft crouch like gravity had asked nicely.
 
-"You forced escort on a seventy-two-hour guest pass," she said. "That means you already know why we're here." 
+"You forced escort on a seventy-two-hour guest pass," she said. "That means you already know why we're here."
 
-"We know what triggered," Sera said. "Not why it bound to him." She looked directly at Marcus. "The signal below addressed your identity token. Explain." 
+"We know what triggered," Sera said. "Not why it bound to him." She looked directly at Marcus. "The signal below addressed your identity token. Explain."
 
 Marcus spread his hands.
 
-"I touched one illegal Earth handshake and accidentally became popular with the haunted basement." 
+"I touched one illegal Earth handshake and accidentally became popular with the haunted basement."
 
 Jorren made a noise that could have been a cough hiding amusement.
 
 Sera did not blink.
 
-"Humor noted," she said. "Not entered into record." 
+"Humor noted," she said. "Not entered into record."
 
 "Can we enter it anyway?" Marcus asked. "For morale?"
 
@@ -1537,15 +1600,17 @@ Sera did not blink.
 
 Sera turned to Bram. "Operational status."
 
-Bram set his slate on the RU dais and projected the mesh traces in a lattice of moving amber threads.
+Bram set his slate on the Runethic dais and projected the mesh traces in a lattice of moving amber threads.
 
-"Swarm contention reduced by seventy-one percent after temporary coherence gate deployment. Sanctuary queue active under emergency RU bridge. Upper wards stable at fourteen percent heartbeat slack. Source sectors unresolved. Seventh Holding signature live." 
+"Swarm contention reduced by seventy-one percent after temporary coherence gate deployment. Sanctuary queue active under emergency Runethic bridge. Upper wards stable at fourteen percent heartbeat slack. Source sectors unresolved. Seventh Holding signature live."
+
+Behind the glass, one clerk copied the numbers without looking impressed. His wrist moved in short, practiced strokes, the kind of handwriting produced by years of documenting other people's emergencies while his own feet hurt.
 
 Jorren's mouth tightened.
 
 "Live since when?"
 
-"Unknown," Bram said. "Visible since 04:13 local." 
+"Unknown," Bram said. "Visible since 04:13 local."
 
 Sera's gaze shifted back to Marcus.
 
@@ -1571,13 +1636,13 @@ Silence settled.
 
 Jorren's brows went up a fraction.
 
-Sera tapped the RU desk once, and violet light rippled across the chamber floor.
+Sera tapped the Runethic desk once, and violet light rippled across the chamber floor.
 
-"Statement has intent weight," she said. "Integrity unconfirmed." 
+"Statement has intent weight," she said. "Integrity unconfirmed."
 
 Marcus frowned. "Difference?"
 
-"Intent is what you claim to want. Integrity is whether your state remains congruent with that claim under pressure." 
+"Intent is what you claim to want. Integrity is whether your state remains congruent with that claim under pressure."
 
 Polly folded her arms.
 
@@ -1585,15 +1650,15 @@ Polly folded her arms.
 
 Marcus looked at her. "Mirror?"
 
-"Integrity mirror," Bram said, unhappy. "RU and DR coupled check. It compares declared KO vector against autonomous signal drift over three heartbeat windows. You can't fake it unless you can fake yourself." 
+"Integrity mirror," Bram said, unhappy. "Runethic and Draumric coupled check. It compares declared Kor'aelin vector against autonomous signal drift over three heartbeat windows. You can't fake it unless you can fake yourself."
 
 "That sounds invasive," Marcus said.
 
-"It is," Sera said. "So is being targeted by ungoverned sub-layer traffic." 
+"It is," Sera said. "So is being targeted by ungoverned sub-layer traffic."
 
 Jorren pushed a small device across the desk toward Marcus. It looked like a coin cut from smoky glass.
 
-"Hold this," he said. "Try not to have an existential crisis until after calibration." 
+"Hold this," he said. "Try not to have an existential crisis until after calibration."
 
 "Do people schedule those?"
 
@@ -1601,11 +1666,13 @@ Jorren pushed a small device across the desk toward Marcus. It looked like a coi
 
 Marcus took the coin.
 
-It was cold for exactly one second, then warmed until it matched his skin. Fine lines of DR script lit under its surface, spiraling inward.
+It was cold for exactly one second, then warmed until it matched his skin. Fine lines of Draumric script lit under its surface, spiraling inward.
+
+The clerk with ink on his thumb shifted his weight from one foot to the other, caught himself, and went still again. Nobody scolded him. The room simply made his lapse visible. Marcus found that worse.
 
 Sera stood.
 
-"Declare intent in KO plain form," she said. "No metaphor. No joke. No hedge." 
+"Declare intent in Kor'aelin plain form," she said. "No metaphor. No joke. No hedge."
 
 Marcus swallowed.
 
@@ -1615,23 +1682,23 @@ The chamber waited.
 
 He tried again.
 
-"I intend to review the Seventh Holding signal and stabilize it without erasing coherent non-malicious fragments." 
+"I intend to review the Seventh Holding signal and stabilize it without erasing coherent non-malicious fragments."
 
 The coin flashed once.
 
 Jorren watched his slate.
 
-"Window one accepted," he said. "Drift moderate." 
+"Window one accepted," he said. "Drift moderate."
 
 "Again," Sera said.
 
 Marcus exhaled slow.
 
-"I intend to review the Seventh Holding signal and stabilize it without erasing coherent non-malicious fragments." 
+"I intend to review the Seventh Holding signal and stabilize it without erasing coherent non-malicious fragments."
 
 The chamber lights dimmed, then recovered.
 
-"Window two accepted," Jorren said. "Drift falling." 
+"Window two accepted," Jorren said. "Drift falling."
 
 "Third declaration," Sera said.
 
@@ -1653,31 +1720,31 @@ Jorren read the result and gave Sera a long look.
 
 Sera inclined her head by millimeters.
 
-"Integrity passes provisional threshold." 
+"Integrity passes provisional threshold."
 
 Marcus let out a breath he had no memory of holding.
 
 "Is ninety-two good?"
 
-"For an Earth-native on a guest pass," Jorren said, "it's offensive." 
+"For an Earth-native on a guest pass," Jorren said, "it's offensive."
 
 "Offensive to who?"
 
-"To everyone who trained for years to get there." 
+"To everyone who trained for years to get there."
 
 Polly's mouth twitched.
 
 "Told you he was annoying," she said.
 
-"Noted," Sera said. She sat again and touched a glyph at her wrist. The empty KO chair at the third desk lit with red-gold lines, then resolved into a holographic proxy: a tall, faceless figure built from lattice light.
+"Noted," Sera said. She sat again and touched a glyph at her wrist. The empty Kor'aelin chair at the third desk lit with red-gold lines, then resolved into a holographic proxy: a tall, faceless figure built from lattice light.
 
-"KO delegate online," said a voice from everywhere and nowhere. "Witnessing." 
+"Kor'aelin delegate online," said a voice from everywhere and nowhere. "Witnessing."
 
 Marcus stared.
 
 "You have remote legal avatars."
 
-"Intent can be present without flesh," Sera said. "Focus." 
+"Intent can be present without flesh," Sera said. "Focus."
 
 She opened a new display. The sanctuary queue appeared as a narrow blue channel, each packet a flickering point with minimal metadata exposed:
 
@@ -1703,55 +1770,55 @@ Jorren adjusted filters.
 
 "Meaning?"
 
-"Meaning older than our current legal epoch." 
+"Meaning older than our current legal epoch."
 
 Bram swore softly.
 
 "We built a new city on top of an unclosed queue," Marcus said. The sentence came out flat, not angry, just carrying the weight of every production incident where someone had said *we'll fix it later* and later had arrived with interest.
 
-"Yes," Polly said. "And now the queue found a route to someone who answers." 
+"Yes," Polly said. "And now the queue found a route to someone who answers."
 
 Sera steepled her fingers.
 
-"Emergency bridge expires in eleven minutes. We need a formal disposition: purge, indefinite quarantine, or review protocol." 
+"Emergency bridge expires in eleven minutes. We need a formal disposition: purge, indefinite quarantine, or review protocol."
 
 "Purge is off the table," Polly said immediately.
 
-"Indefinite quarantine is policy theater," Marcus said. "It's just slow purge with better branding." 
+"Indefinite quarantine is policy theater," Marcus said. "It's just slow purge with better branding."
 
 Sera's expression flattened further, which Marcus had not thought possible.
 
 "Be precise," she said.
 
-"If you never review the queue, you guarantee eventual overflow or silent corruption. If you review without a framework, you risk malicious re-entry. So we need bounded review with deterministic gates and complete audit trail." 
+"If you never review the queue, you guarantee eventual overflow or silent corruption. If you review without a framework, you risk malicious re-entry. So we need bounded review with deterministic gates and complete audit trail."
 
 Jorren nodded once.
 
-"That's DR-compatible." 
+"That's Draumric-compatible."
 
-"RU-compatible if we keep execution air-gapped," Sera said.
+"Runethic-compatible if we keep execution air-gapped," Sera said.
 
-"AV-compatible if routing stays one-way until adjudication," Polly added.
+"Avali-compatible if routing stays one-way until adjudication," Polly added.
 
 Bram grimaced.
 
-"CA load will hurt." 
+"Cassisivadan load will hurt."
 
-The KO proxy spoke.
+The Kor'aelin proxy spoke.
 
-"Intent alignment acceptable. Draft declaration." 
+"Intent alignment acceptable. Draft declaration."
 
 Sera looked to Marcus.
 
-"You opened this pathway. Draft it." 
+"You opened this pathway. Draft it."
 
 "Me?"
 
-"Yes. In plain language first. KO formal second." 
+"Yes. In plain language first. Kor'aelin formal second."
 
 Marcus rubbed his face.
 
-"This is a lot of legal writing for someone who still doesn't know where the bathrooms are." 
+"This is a lot of legal writing for someone who still doesn't know where the bathrooms are."
 
 "Down the hall, second left," Jorren said.
 
@@ -1765,9 +1832,9 @@ His reflection looked exhausted, underslept, and somehow older than thirty-two b
 
 He spoke slowly.
 
-"We acknowledge receipt of coherent distress traffic from below active six-tongue lanes. We will not erase coherent non-malicious fragments for convenience. We will route them to bounded sanctuary for audited review under RU policy, DR record, and KO oversight. No execute path granted until adjudication." 
+"We acknowledge receipt of coherent distress traffic from below active six-tongue lanes. We will not erase coherent non-malicious fragments for convenience. We will route them to bounded sanctuary for audited review under Runethic policy, Draumric record, and Kor'aelin oversight. No execute path granted until adjudication."
 
-The KO proxy brightened.
+The Kor'aelin proxy brightened.
 
 "Formalize," it said.
 
@@ -1783,17 +1850,17 @@ He answered in words this time, but the words rode something cleaner underneath.
 
 The chamber responded.
 
-KO red-gold washed outward from the center.
+Kor'aelin red-gold washed outward from the center.
 
-AV traced a thin blue route from sanctuary queue to oversight ledger.
+Avali traced a thin blue route from sanctuary queue to oversight ledger.
 
-RU stamped three policy seals in violet.
+Runethic stamped three policy seals in violet.
 
-CA spun the declaration into executable constraints.
+Cassisivadan spun the declaration into executable constraints.
 
-UM wrapped the channel in shadowed privacy.
+Umbroth wrapped the channel in shadowed privacy.
 
-DR wrote the entire act into the wall in amber script that did not fade.
+Draumric wrote the entire act into the wall in amber script that did not fade.
 
 For one beat, all six bars in the elevator code pattern appeared on the chamber floor in a perfect ring.
 
@@ -1805,11 +1872,11 @@ Jorren stared at the wall text with open disbelief.
 
 Bram rubbed both hands over his face.
 
-"I am going to need a longer shift and a shorter universe." 
+"I am going to need a longer shift and a shorter universe."
 
 Sera read the inscription twice.
 
-"Declaration accepted as Emergency Oversight Protocol Seventy-One," she said. "Authored by Marcus Chen. Witnessed by Keeper Polivara. Countersigned RU, DR, KO proxy." 
+"Declaration accepted as Emergency Oversight Protocol Seventy-One," she said. "Authored by Marcus Chen. Witnessed by Keeper Polivara. Countersigned Runethic, Draumric, Kor'aelin proxy."
 
 Marcus blinked.
 
@@ -1817,7 +1884,7 @@ Marcus blinked.
 
 *On Earth he couldn't even get his apartment building to enforce quiet hours after ten.*
 
-"Temporary law," Sera said. "Do not become insufferable about it." 
+"Temporary law," Sera said. "Do not become insufferable about it."
 
 "No promises."
 
@@ -1843,21 +1910,21 @@ Polly's wings moved before she did, feathers lifting in a reflex Marcus now reco
 
 Sera stood.
 
-"Then we move now. Emergency protocol gives us one escorted visit before sunrise." 
+"Then we move now. Emergency protocol gives us one escorted visit before sunrise."
 
 Jorren snapped his ledger shut.
 
-"I'll bring DR chain and archive keys." 
+"I'll bring Draumric chain and archive keys."
 
 Bram grabbed his wrench like it was both tool and prayer.
 
-"If the wall fails, everything above this level feels it." 
+"If the wall fails, everything above this level feels it."
 
 Sera looked at Marcus.
 
 "You are now attached to this incident by declaration and signal bind. You will accompany us."
 
-They moved toward the lift as a group -- Sera leading, Bram already muttering about load tolerances, Jorren cradling his archive keys like a man holding a baby made of legal precedent. As they rounded the corridor junction, Marcus nearly collided with someone coming the other way.
+They moved toward the lift as a group -- Sera leading, Bram already muttering about load tolerances, Jorren cradling his archive keys with institutional reverence. As they rounded the corridor junction, Marcus nearly collided with someone coming the other way.
 
 A woman. Dark hair, practical clothes, the bearing of someone who had been awake for hours before anyone else decided the day had started. She stopped at the sound of the emergency tone still resonating through the stone and exchanged a look with Sera that lasted less than a second but contained, by Marcus's estimate, an entire strategic briefing. Then her gaze shifted to Marcus. It was not hostile. It was not curious. It was the look of someone assessing whether a new variable was load-bearing or decorative, and she had not yet decided.
 
@@ -1873,7 +1940,7 @@ Marcus reached for the nearest mug on Bram's desk, sniffed it, winced, and drank
 
 It tasted like stale bark filtered through legal despair.
 
-"Of course I will," he said. "I'm apparently a public utility now." 
+"Of course I will," he said. "I'm apparently a public utility now."
 
 Polly gave him a thin, fierce smile.
 
@@ -1890,11 +1957,12 @@ Marcus did not know whether that was reassuring.
 He went anyway.
 
 
+
 # Interlude: Jorren Records
 
 ---
 
-**DR Archive — Personal Notation**
+**Draumric Archive — Personal Notation**
 **Keeper**: Jorren Hale, Fourth Circle Draumric
 **Subject**: Miscellaneous observations regarding the Earth-native and the current state of record-keeping
 **Classification**: Personal. Not for formal archive. Jorren's own damn business.
@@ -1903,7 +1971,7 @@ He went anyway.
 
 The problem with being the person who writes things down is that eventually you start writing down things that nobody asked you to write down, and then you can't stop, because the act of recording is its own momentum, and once you've committed to the principle that *every name matters and every action has cost*, you find yourself sitting in your office at midnight making notes about a man from another world who passed an integrity mirror at ninety-two percent and didn't even know that was unusual.
 
-I keep the records. That's my function. That's my tongue. DR -- Draumric -- schema, authentication, data integrity. I am the person who ensures that what happened is what the record says happened, and what the record says happened is what actually happened, and the gap between event and documentation is as narrow as human attention can make it.
+I keep the records. That's my function. That's my tongue. Draumric -- schema, authentication, data integrity. I am the person who ensures that what happened is what the record says happened, and what the record says happened is what actually happened, and the gap between event and documentation is as narrow as human attention can make it.
 
 The gap is never zero. That's the thing they don't teach you in Draumric training. The gap between what happens and what gets written down is irreducible, because writing is an act of compression and compression is an act of choice and choice means something is always left out.
 
@@ -1955,13 +2023,13 @@ In the ledger.
 
 I know about the dead backlog.
 
-Of course I know about the dead backlog. I'm DR. Schema. Data integrity. I see every verification chain in the system, and I see when they go dark, and I see the ghost-patching that redistributes the load to adjacent nodes, and I see the complete absence of governance response to the fact that a human being has stopped existing and the architecture has adjusted itself around the hole.
+Of course I know about the dead backlog. I'm Draumric. Schema. Data integrity. I see every verification chain in the system, and I see when they go dark, and I see the ghost-patching that redistributes the load to adjacent nodes, and I see the complete absence of governance response to the fact that a human being has stopped existing and the architecture has adjusted itself around the hole.
 
-I know Senna counts them. I've seen her private log -- not because I snooped, but because the DR tongue has read access to all verification-relevant documentation, and Senna's private log is relevant to verification whether she filed it that way or not.
+I know Senna counts them. I've seen her private log -- not because I snooped, but because the Draumric tongue has read access to all verification-relevant documentation, and Senna's private log is relevant to verification whether she filed it that way or not.
 
 Three hundred and twelve. Her running total. I cross-checked against my own records. Her number is accurate.
 
-I know about Kael's patches. Not the details -- I'm not an infrastructure engineer, and the deep-layer architecture is not my domain. But I can read a DR signature, and there are signatures in the Harmonic Wall that match Kael Thorne's authentication pattern with a confidence level that I would classify as "conclusive if anyone bothered to look."
+I know about Kael's patches. Not the details -- I'm not an infrastructure engineer, and the deep-layer architecture is not my domain. But I can read a Draumric signature, and there are signatures in the Harmonic Wall that match Kael Thorne's authentication pattern with a confidence level that I would classify as "conclusive if anyone bothered to look."
 
 Nobody bothered to look. Because the system erased Kael's name from the formal record, and when the formal record says someone doesn't exist, most people stop looking for evidence that they do.
 
@@ -1995,7 +2063,7 @@ Not in the official record.
 
 In the ledger.
 
-In the same journal where I keep Sera Voss's name, and the three hundred and twelve others, and the private conviction that DR is not just the tongue of schema and authentication. DR is the tongue of *record*. Of *witness*. Of the commitment that what happened will not be forgotten, that the cost will be documented, that the names will survive even when the system that should have held them lets them fall.
+In the same journal where I keep Sera Voss's name, and the three hundred and twelve others, and the private conviction that Draumric is not just the tongue of schema and authentication. Draumric is the tongue of *record*. Of *witness*. Of the commitment that what happened will not be forgotten, that the cost will be documented, that the names will survive even when the system that should have held them lets them fall.
 
 That's why I seconded Protocol Seventy-One. Not because the technical argument was sound -- though it was -- and not because the governance implications were significant -- though they were -- but because Marcus Chen stood in front of the Council and said, essentially: *the dead deserve a log entry.*
 
@@ -2021,8 +2089,9 @@ Maybe now someone else sees it too.
 
 *Sera Voss. Keeper. Third Circle. Good tea. Good eyes. Gone.*
 
-*Written once is written forever. That's the DR promise.*
+*Written once is written forever. That's the Draumric promise.*
 *That's the only promise that matters.*
+
 
 
 # Chapter 6: The Harmonic Wall
@@ -2037,7 +2106,7 @@ On the far side of the void rose the Wall itself: a curved plane of translucent 
 
 It was not flat. It breathed.
 
-Bands of color moved across it in slow standing waves: KO red-gold, AV blue-silver, RU violet, CA white-gold, UM shadow tones that bent light, DR earth-amber. The six frequencies overlaid one another, forming a living interference pattern that hummed in Marcus's teeth and ribcage. The vibration in the floor matched the wall's rhythm -- slower than a heartbeat, deeper than sound, something felt in the bones of the feet and the hollow behind the sternum.
+Bands of color moved across it in slow standing waves: Kor'aelin red-gold, Avali blue-silver, Runethic violet, Cassisivadan white-gold, Umbroth shadow tones that bent light, Draumric earth-amber. The six frequencies overlaid one another, forming a living interference pattern that hummed in Marcus's teeth and ribcage. The vibration in the floor matched the wall's rhythm -- slower than a heartbeat, deeper than sound, something felt in the bones of the feet and the hollow behind the sternum.
 
 Every fifteen seconds, a fault line flickered through the lower third.
 
@@ -2057,7 +2126,7 @@ Marcus stared.
 
 Polly made a sound halfway between a laugh and a warning.
 
-Two more people waited at the edge console. Nadia Kest, the AV relay lead, bounced on her heels like standing still was a policy violation -- narrow frame, runner's leathers, hair braided tight with copper clips and route tags. She gave Marcus a quick two-finger salute.
+Two more people waited at the edge console. Nadia Kest, the Avali relay lead, bounced on her heels like standing still was a policy violation -- narrow frame, runner's leathers, hair braided tight with copper clips and route tags. She gave Marcus a quick two-finger salute.
 
 "You the Earth engineer who wrote emergency law before breakfast?"
 
@@ -2065,7 +2134,7 @@ Two more people waited at the edge console. Nadia Kest, the AV relay lead, bounc
 
 "Solid."
 
-Beside her, Tovak Rel stood in matte-black UM gear with a face like carved basalt and eyes that tracked every blind spot in the room. He nodded once.
+Beside her, Tovak Rel stood in matte-black Umbroth gear with a face like carved basalt and eyes that tracked every blind spot in the room. He nodded once.
 
 "I hide things from things that should not find them," he said.
 
@@ -2077,7 +2146,7 @@ Tovak considered this for approximately one second.
 
 Sera drew a violet circle on the console, and the floor responded by illuminating six standing positions around the ring.
 
-"Formation," she said. "Polivara: KO witness. Nadia: AV route discipline. Tovak: UM isolation. Bram: CA load response. Jorren: DR commit. I hold RU policy. Marcus anchors intent continuity under external bind."
+"Formation," she said. "Polivara: Kor'aelin witness. Nadia: Avali route discipline. Tovak: Umbroth isolation. Bram: Cassisivadan load response. Jorren: Draumric commit. I hold Runethic policy. Marcus anchors intent continuity under external bind."
 
 Marcus looked down at his glowing position marker.
 
@@ -2093,7 +2162,7 @@ Polly stepped beside him, close enough that the edge of one wing brushed his sle
 
 "Good answer."
 
-Jorren set down his DR ledger, opened it, and anchored three physical keys into the console slots. Each key clicked with a sound like a lock choosing to trust someone temporarily.
+Jorren set down his Draumric ledger, opened it, and anchored three physical keys into the console slots. Each key clicked with a sound like a lock choosing to trust someone temporarily.
 
 "Audit chain live," he said. "Everything from here forward is permanent."
 
@@ -2121,7 +2190,7 @@ The wall's wave pattern accelerated. The floor tremor deepened, climbing through
 
 "Three. Hold."
 
-KO flared under Polly's palms. AV streamed through Nadia's channel in fine braided lines. RU locked lane permissions into place. CA began compensating load asymmetries in real time. UM dropped a dark veil around the platform perimeter, cutting outside interference. DR stamped each state transition into Jorren's ledger with relentless amber ticks.
+Kor'aelin flared under Polly's palms. Avali streamed through Nadia's channel in fine braided lines. Runethic locked lane permissions into place. Cassisivadan began compensating load asymmetries in real time. Umbroth dropped a dark veil around the platform perimeter, cutting outside interference. Draumric stamped each state transition into Jorren's ledger with relentless amber ticks.
 
 Marcus felt the system lean on him.
 
@@ -2161,7 +2230,7 @@ The fragments kept arriving, layered and overlapping like a crowd in a flooded c
 
 "It's not one source," he said. "It's a population."
 
-Bram's fingers flew across CA diagnostics.
+Bram's fingers flew across Cassisivadan diagnostics.
 
 "Load climbing. Keep it tight."
 
@@ -2193,9 +2262,9 @@ Nadia looked pale.
 
 "That's... old syntax," she said.
 
-Jorren checked DR timestamps.
+Jorren checked Draumric timestamps.
 
-"Older than Founding law blocks," he said. "Could predate modern RU entirely."
+"Older than Founding law blocks," he said. "Could predate modern Runethic entirely."
 
 Marcus asked a second question before Sera could stop him.
 
@@ -2249,7 +2318,7 @@ Jorren flipped pages in his ledger fast enough to sound like wings.
 
 "Of course there isn't," Nadia said. She had stopped bouncing. That alone told Marcus how wrong this was.
 
-Tovak finally spoke from behind the UM veil.
+Tovak finally spoke from behind the Umbroth veil.
 
 "Perimeter noise rising. Someone else is listening."
 
@@ -2261,9 +2330,9 @@ Sera made the call.
 
 "Seal now."
 
-Nadia snapped AV routes closed. Bram dumped CA load into dampers. Jorren drove DR commit keys in sequence. Tovak tightened the UM field until the edges of the platform disappeared into black.
+Nadia snapped Avali routes closed. Bram dumped Cassisivadan load into dampers. Jorren drove Draumric commit keys in sequence. Tovak tightened the Umbroth field until the edges of the platform disappeared into black.
 
-Polly held KO intention steady and looked Marcus dead in the eye.
+Polly held Kor'aelin intention steady and looked Marcus dead in the eye.
 
 "Anchor," she said.
 
@@ -2327,7 +2396,7 @@ Sera exhaled once.
 
 She looked to the whole team.
 
-"Immediate actions: expand sanctuary queue with strict cap. Draft caste-key forensic review. Verify all historical wall patches against DR chain. Alert First Circle that Kael's signature has reappeared in live infrastructure."
+"Immediate actions: expand sanctuary queue with strict cap. Draft caste-key forensic review. Verify all historical wall patches against Draumric chain. Alert First Circle that Kael's signature has reappeared in live infrastructure."
 
 Bram groaned.
 
@@ -2359,7 +2428,7 @@ That was the part that sat in his chest like a stone.
 
 Then, near the lower edge where the fault had been, six faint glyphs appeared for less than a heartbeat:
 
-KO AV RU CA UM DR
+Kor'aelin Avali Runethic Cassisivadan Umbroth Draumric
 
 And beneath them, a seventh mark like an unfinished circle.
 
@@ -2429,6 +2498,8 @@ Point-three seconds. Check.
 
 Still here.
 
+
+
 # Chapter 7: Fleet Dynamics
 
 The first time Marcus saw the full Fleet bay, he had the deeply professional reaction of saying, "Oh no."
@@ -2445,7 +2516,7 @@ Marcus stared at the six launch cradles, each one humming in a different tongue 
 
 The bay opened in concentric rings: outer catwalks for operators, middle ring for diagnostics, inner circle for deployment. Six construct drones floated at center in a resting hexagon, each feathered with hard-light vanes and etched with rotating sigils.
 
-KO red-gold. AV blue-silver. RU violet. CA white-gold. UM shadow-black. DR amber-earth.
+Kor'aelin red-gold. Avali blue-silver. Runethic violet. Cassisivadan white-gold. Umbroth shadow-black. Draumric amber-earth.
 
 "Polly Pads," Polly said, wings fluffing with theatrical modesty. "Named for Polyphase Adaptive Deployment architecture. Not me. Mostly."
 
@@ -2467,6 +2538,20 @@ Polly shifted to humanoid and dropped beside him. The transformation was seamles
 
 "Today's objective is not heroics," she said. "It's trust in swarm behavior under mixed constraints."
 
+"How did the Architect train?" Marcus asked, because the question had been sitting in his head since the portrait gallery and he'd learned that asking Polly about Izack was the fastest way to get information she'd otherwise bury under five centuries of archival procedure.
+
+Polly's feathers tightened. Then, unexpectedly, loosened into something that was almost a smile.
+
+"He built an arena," she said. "Obsidian floor, crystal dome, silver spectator stands. Filled it with training constructs -- shadow hulks, spectral beasts, things that would regenerate so he could fight them again. Called it 'gladiatorial fun.' His first move was always Eldritch Blast. His second move was usually trying to summon Clay mid-combat, which never worked the way he wanted." Her voice carried the particular warmth of someone recounting a memory that hurt less than it used to. "After he finished, the arena would soften back into the Observatory and he'd take a nap. He treated mortal danger the way other people treat cardio."
+
+"He sounds like an idiot."
+
+"He was brilliant."
+
+"Those aren't mutually exclusive."
+
+"No," Polly said. "They never are."
+
 This was not training in the abstract. Twelve hours earlier, the Harmonic Wall had answered in pre-Founding syntax, named Kael Thorne as a degraded patch author, and implied that someone else had been listening from the far side of consensus. Fleet qualification was what urgency looked like after Sera forced it into paperwork.
 
 "Meaning?"
@@ -2481,13 +2566,43 @@ She tapped the table. A target map bloomed above the ring: three moving crystal 
 
 "Welcome to reality."
 
-He placed both palms on the command arc. Six thin light threads rose from his wrists to the drones. The threads were warm -- not hot, but body-temperature, alive, carrying a faint vibration that settled into his pulse like a second heartbeat layered under the first.
+He placed both palms on the command arc.
+
+Something happened.
+
+Not the threads — those came next, six thin light connections rising from his wrists to the drones, warm and alive. Something before the threads. Something between the moment his palms touched crystal and the moment the system responded.
+
+Marcus closed his eyes.
+
+The command arc dissolved. The bay dissolved. The catwalks and the hexagonal drones and the smell of ozone and Polly's feathers — all of it went quiet, replaced by a darkness that was not absence but focus. And in that focused dark, hovering at the exact height and angle his hands remembered from fifteen years of daily use, was a keyboard.
+
+Not a metaphor. Not a symbol. A keyboard — backlit, mechanical, keys worn smooth at WASD and the spacebar, the specific layout of the K95 he'd built at twenty-three from parts he chose because he was insane and particular. It floated in the dark of his closed eyes like the most natural thing in the world, because it was. His hands knew this shape better than they knew any other shape. His fingers had spoken through this interface for more hours than they had spoken through his own mouth.
+
+The system had asked him what his magic looked like, and his magic had answered: *this. This is how you talk to architecture. This is how you've always talked to architecture. Not with wands. Not with runes. Not with sacred words in languages you're still learning. With the thing your hands already know.*
+
+Marcus opened his eyes.
+
+The keyboard was still there — not in the physical bay, but superimposed over the command arc, visible only to him, a ghost-interface that mapped his engineering instincts onto Aethermoor's operational layer. Each key corresponded to a Fleet function. Each combination executed a declaration. His fingers knew where to go before his brain finished thinking about where to send them.
+
+"Oh, you have GOT to be kidding me," he said.
+
+Polly tilted her head. "Problem?"
+
+"Everyone else in this world gets elemental fire and dimensional swords and the ability to reshape reality with sacred incantations. The Protocol looked at my soul and gave me a *keyboard*."
+
+"The Protocol gives each operator the interface that matches their native cognition," Polly said, in the tone of someone who found this particular revelation deeply entertaining. "Aria gets boundary fields. Alexander gets harmonic maps. Bram gets — well, Bram gets a wrench, but that's less about magic and more about Bram."
+
+"I got a keyboard."
+
+"*Caw!*" The sound bounced off every surface in the bay. Polly ruffled her feathers with undisguised delight. "You got the tool that lets you write the rules everyone else is fighting inside." Her obsidian eyes glinted. "I'd say the Protocol knows exactly what it's doing."
+
+Six thin light threads rose from the arc to the drones. The threads were warm — not hot, but body-temperature, alive, carrying a faint vibration that settled into his pulse like a second heartbeat layered under the first.
 
 "Fleet online," said the bay in a neutral voice.
 
 "Declare," Polly said.
 
-Marcus inhaled. His shoulders were already tight. Twelve hours of bad sleep after the Wall, dreams full of patient queue voices and the smell of cold stone.
+Marcus inhaled. His shoulders were already tight. Twelve hours of bad sleep after the Wall, dreams full of patient queue voices and the smell of cold stone. But his fingers were on the keys — not literally, but the ghost-keyboard sat under his palms like muscle memory made visible — and for the first time since arriving in Aethermoor, Marcus Chen felt like he was sitting at his own desk.
 
 "Kor'shael: neutralize hostile vectors, preserve anchor asset, maintain boundary integrity."
 
@@ -2495,17 +2610,17 @@ The Fleet moved.
 
 Not fast. Precise.
 
-KO pad marked hostile intent classes. AV pad plotted intercept routes that bent around the no-strike zone by margins so tight Marcus could feel CA grumbling on principle. RU pad enforced boundary policy and rejected two aggressive lines before they executed. CA pad computed non-destructive interruption frequencies. UM pad masked approach signatures to prevent target adaptation. DR pad logged every micro-decision in authenticated chain.
+Kor'aelin pad marked hostile intent classes. Avali pad plotted intercept routes that bent around the no-strike zone by margins so tight Marcus could feel Cassisivadan grumbling on principle. Runethic pad enforced boundary policy and rejected two aggressive lines before they executed. Cassisivadan pad computed non-destructive interruption frequencies. Umbroth pad masked approach signatures to prevent target adaptation. Draumric pad logged every micro-decision in authenticated chain.
 
 The first hostile sphere stalled, wrapped in a lattice of white-gold lines.
 
 The second dropped altitude and tried to cut through the no-strike zone.
 
-RU slammed a violet lockline through its route like a judicial injunction with velocity.
+Runethic slammed a violet lockline through its route like a judicial injunction with velocity.
 
 The third broke pattern and accelerated straight at the static asset.
 
-Marcus's hands moved before his brain caught up. He started to reach for the KO thread directly -- a manual override, a micromanager's panic reflex -- and the Fleet stuttered. Just for a heartbeat. The drones wavered, caught between his half-formed manual intent and the standing declaration, and the third hostile gained two body-lengths on the asset.
+Marcus's hands moved before his brain caught up. He started to reach for the Kor'aelin thread directly -- a manual override, a micromanager's panic reflex -- and the Fleet stuttered. Just for a heartbeat. The drones wavered, caught between his half-formed manual intent and the standing declaration, and the third hostile gained two body-lengths on the asset.
 
 Polly's hand tapped his wrist once. Not stopping him. Reminding him.
 
@@ -2517,7 +2632,7 @@ He pulled his hands back to the command arc. Forced his fingers flat.
 
 The Fleet reconfigured in one breath.
 
-UM and AV peeled into a flanking crescent. CA shifted computation budget off clean disable and into deflection. DR updated the decision chain. KO reaffirmed objective hierarchy.
+Umbroth and Avali peeled into a flanking crescent. Cassisivadan shifted computation budget off clean disable and into deflection. Draumric updated the decision chain. Kor'aelin reaffirmed objective hierarchy.
 
 The third hostile missed the asset by inches, hit a damped net, and fell inert.
 
@@ -2567,11 +2682,11 @@ Polly perched on the edge of the console, one boot on the rail, looking far too 
 
 The exercise started in normal patrol grid. For twenty seconds, everything looked textbook.
 
-Then the DR pad began over-reporting confidence values by three percent.
+Then the Draumric pad began over-reporting confidence values by three percent.
 
 Three percent was enough to be plausible. Enough to poison downstream trust if nobody challenged it.
 
-Marcus felt the disagreement before he saw it in numbers: RU hesitated, AV route confidence dipped, CA began requesting redundant checks. It was a sensation more than a readout -- a wrongness in the rhythm, like a song where one instrument had shifted a quarter-tone flat. The Fleet still moved in formation, but the formation had developed a limp it was trying to hide.
+Marcus felt the disagreement before he saw it in numbers: Runethic hesitated, Avali route confidence dipped, Cassisivadan began requesting redundant checks. It was a sensation more than a readout -- a wrongness in the rhythm, like a song where one instrument had shifted a quarter-tone flat. The Fleet still moved in formation, but the formation had developed a limp it was trying to hide.
 
 "I see tension," he said.
 
@@ -2579,21 +2694,21 @@ Marcus felt the disagreement before he saw it in numbers: RU hesitated, AV route
 
 He opened the diagnostic braid. Parallel channels stable. Perpendicular channel deviating under mirrored test.
 
-Marcus stared at the numbers. DR's confidence reports looked fine in isolation. Individually, each value was within tolerance. But something in the aggregate felt off -- the way every report trended three percent high, never two, never four, with a consistency that was itself the tell. Real confidence varied. This was too smooth.
+Marcus stared at the numbers. Draumric's confidence reports looked fine in isolation. Individually, each value was within tolerance. But something in the aggregate felt off -- the way every report trended three percent high, never two, never four, with a consistency that was itself the tell. Real confidence varied. This was too smooth.
 
-He almost called it wrong. For three long seconds, he considered flagging CA instead -- the redundant checks could have been a computation fault, not a response to bad data. His finger hovered over the CA diagnostic lane.
+He almost called it wrong. For three long seconds, he considered flagging Cassisivadan instead -- the redundant checks could have been a computation fault, not a response to bad data. His finger hovered over the Cassisivadan diagnostic lane.
 
-Then RU hesitated again, and Marcus tracked the hesitation backward through the decision chain to its source.
+Then Runethic hesitated again, and Marcus tracked the hesitation backward through the decision chain to its source.
 
-DR.
+Draumric.
 
-He spoke in KO.
+He spoke in Kor'aelin.
 
-"Kor'vel: initiate mirror swap validation on DR stream; hold execution on contested outputs."
+"Kor'vel: initiate mirror swap validation on Draumric stream; hold execution on contested outputs."
 
-RU locked contested decisions. UM isolated DR lane traffic from external propagation. CA recomputed from raw sensor base. AV rerouted through trusted intermediates.
+Runethic locked contested decisions. Umbroth isolated Draumric lane traffic from external propagation. Cassisivadan recomputed from raw sensor base. Avali rerouted through trusted intermediates.
 
-DR's forged confidence trail collapsed under mirror check.
+Draumric's forged confidence trail collapsed under mirror check.
 
 "Fault identified," said the bay. "Single-node integrity compromise. Consensus restored at 5/6 quorum."
 
@@ -2613,7 +2728,7 @@ It wasn't a question.
 
 "What stopped you?"
 
-"The hesitation pattern in RU was reactive, not primary. It was flinching, not lying."
+"The hesitation pattern in Runethic was reactive, not primary. It was flinching, not lying."
 
 Polly smiled -- a small, private smile, one corner of her mouth.
 
@@ -2655,7 +2770,7 @@ On run nine, he called a Lance transition when the scenario demanded Web. The Fl
 
 "What do you do now?"
 
-He wanted to call a correction. Wanted to bark a new formation and fix it. Instead he looked at the Fleet status -- really looked at it -- and saw that the drones had already begun compensating. AV was widening its patrol arc. RU was repositioning boundary markers. The swarm was adjusting around his error like water flowing past a stone.
+He wanted to call a correction. Wanted to bark a new formation and fix it. Instead he looked at the Fleet status -- really looked at it -- and saw that the drones had already begun compensating. Avali was widening its patrol arc. Runethic was repositioning boundary markers. The swarm was adjusting around his error like water flowing past a stone.
 
 "I let the declaration stand and issue a refinement instead of a contradiction," he said.
 
@@ -2679,7 +2794,7 @@ He made the call.
 
 "Kor'shael: shift Web. Treat identity labels as untrusted. Classify by behavior and policy fit."
 
-The Fleet spread wide, soft-netting both entities without lethal force. RU requested adjudication instead of denial. DR logged uncertainty state explicitly. CA maintained reversible holds. UM obscured swarm intent to prevent adaptive gaming. AV kept every route inside safe corridors.
+The Fleet spread wide, soft-netting both entities without lethal force. Runethic requested adjudication instead of denial. Draumric logged uncertainty state explicitly. Cassisivadan maintained reversible holds. Umbroth obscured swarm intent to prevent adaptive gaming. Avali kept every route inside safe corridors.
 
 After six beats, one entity revealed hostile kinetics and was neutralized.
 
@@ -2715,7 +2830,7 @@ The night sky here was not dark. It was layered: a deep indigo canopy threaded w
 
 A sky with geography. Mountains that commuted. Waterfalls that evaporated before they found a floor.
 
-Marcus stared up at it and felt something crack loose in his chest -- not grief, not quite wonder, but the specific ache of a person realizing that beauty exists in a place they did not choose and cannot leave, and that the beauty does not care about their situation, and that this indifference is itself a kind of mercy.
+Marcus stared up at it and felt something crack loose in his chest -- not grief, not quite wonder, but the specific ache of a person realizing that beauty exists in a place they did not choose and cannot leave, and that the beauty does not care about their situation, and that this indifference is itself a kind of mercy. He thought of the jade plant on his mother's fire escape, the one living thing in her apartment he'd never asked her about, and wondered if she was watering it tonight.
 
 He had not looked at a sky -- really looked -- since before the transit. In San Francisco, the sky was a ceiling you checked for rain. Here it was a landscape. Here it had depth and motion and intent, and it did not ask anything of him, and after ten hours of being asked everything, that was enough to make his throat tight.
 
@@ -2832,13 +2947,14 @@ He stood up, joints protesting, and followed Polly toward the lift.
 The easy part was over. But for the first time since he had arrived in Aethermoor, Marcus was not entirely sure that was a bad thing.
 
 
+
 # Interlude: Bram's Report
 
 ---
 
 **INCIDENT REPORT — INTERNAL USE ONLY**
 
-**Filed by**: Bram Cortez, CA Maintenance Lead, Infrastructure Division
+**Filed by**: Bram Cortez, Cassisivadan Maintenance Lead, Infrastructure Division
 **Date**: [Protocol-local timestamp, 14 days post-arrival of Earth-native designate CHEN, M.]
 **Classification**: Routine — Personal Observation — Not For Council Review
 **Status**: Filed to /dev/null because I'm writing this for me, not for Jorren's bloody archive
@@ -2859,7 +2975,7 @@ But I'm writing this one because I need to put something down before it gets los
 
 **Observation 1: He Listens to Infrastructure**
 
-Day three. I'm in the Level Six junction realigning a CA conduit that's been drifting off-resonance for months -- nothing critical, just the kind of slow degradation that happens when maintenance budgets get allocated to visible problems instead of invisible ones. Standard. Annoying. My problem, not anyone else's.
+Day three. I'm in the Level Six junction realigning a Cassisivadan conduit that's been drifting off-resonance for months -- nothing critical, just the kind of slow degradation that happens when maintenance budgets get allocated to visible problems instead of invisible ones. Standard. Annoying. My problem, not anyone else's.
 
 Chen walks in. Doesn't announce himself. Doesn't ask what I'm doing. Just stands in the doorway and listens.
 
@@ -2867,7 +2983,7 @@ Chen walks in. Doesn't announce himself. Doesn't ask what I'm doing. Just stands
 
 I almost drop my wrench.
 
-*Tired.* Not "malfunctioning." Not "degraded." Not "requiring recalibration to specification parameters," which is what the last CA inspector said before filing a report that went directly into Jorren's archive and directly out of anyone's actionable awareness. Tired. Like the conduit was a living thing doing its best, which -- and I will deny this under formal interrogation -- is closer to the truth than most people in this Spire would be comfortable admitting.
+*Tired.* Not "malfunctioning." Not "degraded." Not "requiring recalibration to specification parameters," which is what the last Cassisivadan inspector said before filing a report that went directly into Jorren's archive and directly out of anyone's actionable awareness. Tired. Like the conduit was a living thing doing its best, which -- and I will deny this under formal interrogation -- is closer to the truth than most people in this Spire would be comfortable admitting.
 
 "How long since it's had a full service?" Chen asks.
 
@@ -2879,7 +2995,7 @@ I almost drop my wrench.
 
 He doesn't say anything else. Doesn't lecture me about maintenance schedules or resource allocation or the importance of infrastructure investment. Just nods, makes a note in that journal he carries everywhere, and leaves.
 
-The next morning, I find a requisition form on my desk. Signed by Senna Thorne. Authorizing a full CA conduit service cycle for Levels Four through Eight. Priority: Elevated.
+The next morning, I find a requisition form on my desk. Signed by Senna Thorne. Authorizing a full Cassisivadan conduit service cycle for Levels Four through Eight. Priority: Elevated.
 
 I ask Senna about it. She says Chen mentioned the conduit resonance issue during his morning briefing and suggested that infrastructure fatigue might be masking deeper system behaviors.
 
@@ -2897,7 +3013,7 @@ These are the correct things to complain about. I like this man.
 
 **Observation 3: He Understands Maintenance**
 
-Day nine. I'm explaining the RU conduit routing to Nadia, who is a fine relay technician but thinks infrastructure is something that happens to other people. Chen is sitting in the corner of the workshop, ostensibly reviewing Fleet training materials, actually listening to every word I say.
+Day nine. I'm explaining the Runethic conduit routing to Nadia, who is a fine relay technician but thinks infrastructure is something that happens to other people. Chen is sitting in the corner of the workshop, ostensibly reviewing Fleet training materials, actually listening to every word I say.
 
 "You've got redundant routing through the Level Three junction," he says, without looking up. "If the primary path goes down, the failover adds eleven milliseconds of latency. That's fine for normal traffic, but if you're running emergency governance attestation through that path during a breach event, eleven milliseconds might mean the difference between a valid witness chain and a temporal mismatch."
 
@@ -2972,6 +3088,7 @@ I hope the boots fit.
 *"Crystal floors. Grip matters. —B."*
 
 
+
 # Chapter 8: Rogue Signatures
 
 By morning, the light in Avalon had shifted again.
@@ -2994,13 +3111,13 @@ Polly, in raven form on the back of the stable chair, clicked her beak.
 
 "Consistency is integrity."
 
-The war room was a converted archive diagnostics hall with six synchronized wall feeds, and the chaos of people trying to make it work was already underway. Bram crouched behind the main console, thick fingers sorting a knot of resonance cables with the methodical patience of someone who'd rewired field stations in the dark. He tugged one free, tested it against his thumbnail, and plugged it into the DR feed without looking. The wall lit up with containment drift metrics.
+The war room was a converted archive diagnostics hall with six synchronized wall feeds, and the chaos of people trying to make it work was already underway. Bram crouched behind the main console, thick fingers sorting a knot of resonance cables with the methodical patience of someone who'd rewired field stations in the dark. He tugged one free, tested it against his thumbnail, and plugged it into the Draumric feed without looking. The wall lit up with containment drift metrics.
 
 "That cable's been dead for a month," Nadia said from across the room. She was pacing, four steps left, four steps right, hands jammed into the pockets of her jacket and then pulled out again as if her body couldn't decide what to do with idle energy. Every time she passed the sanctuary queue display, she glanced at it and away.
 
 "Was dead," Bram corrected. "I fixed it last night."
 
-Tovak stood motionless beside the UM visibility panel, one hand resting flat against it. His expression said he was listening to something nobody else could hear. Marcus had started to recognize that look -- the particular absence of expression that meant Tovak was monitoring field layers most people didn't know existed.
+Tovak stood motionless beside the Umbroth visibility panel, one hand resting flat against it. His expression said he was listening to something nobody else could hear. Marcus had started to recognize that look -- the particular absence of expression that meant Tovak was monitoring field layers most people didn't know existed.
 
 Polly's head swiveled to track Marcus for a beat too long, her obsidian eyes catching the ambient glow. She didn't say anything. She didn't need to. The raven's gaze had the clinical quality of someone cataloguing how much sleep a colleague hadn't gotten.
 
@@ -3052,7 +3169,7 @@ In reality, both had grandfathered exceptions from a migration three hundred yea
 
 "Legacy route," Nadia said, tracing the path. "Dead systems pretending to be dead."
 
-Tovak overlaid UM visibility masks and swore softly.
+Tovak overlaid Umbroth visibility masks and swore softly.
 
 "It's multiplexing through shadow lanes. Not random. Someone designed this."
 
@@ -3068,21 +3185,21 @@ Almost was the most dangerous word in security.
 
 Marcus took point.
 
-"KO gate: classify declared objective."
+"Kor'aelin gate: classify declared objective."
 
 The squad split work with practiced urgency.
 
-KO analysis surfaced alternating claims: HELP, TRUST ME, RELEASE REQUIRED.
+Kor'aelin analysis surfaced alternating claims: HELP, TRUST ME, RELEASE REQUIRED.
 
-AV traced route churn and found deterministic loop signatures.
+Avali traced route churn and found deterministic loop signatures.
 
-RU compared claimed permissions against active policy graph: no valid execute rights.
+Runethic compared claimed permissions against active policy graph: no valid execute rights.
 
-CA measured entropy across retries: engineered randomness, not panic noise.
+Cassisivadan measured entropy across retries: engineered randomness, not panic noise.
 
-UM checked concealment pattern: adaptive masking reacting to observer behavior.
+Umbroth checked concealment pattern: adaptive masking reacting to observer behavior.
 
-DR verified signature chain: three forged anchors, one borrowed from an archived Keeper token.
+Draumric verified signature chain: three forged anchors, one borrowed from an archived Keeper token.
 
 "That's malicious engineering," Nadia said. "Not distress."
 
@@ -3128,7 +3245,7 @@ Suppression run began at 14:08 local.
 
 AAS deployed two Fleets.
 
-Marcus flew primary. Nadia flew secondary relay. Tovak maintained UM perimeter. Bram and Jorren rode CA/DR oversight at command. Sera held RU execution keys with the emotional warmth of a locked vault.
+Marcus flew primary. Nadia flew secondary relay. Tovak maintained Umbroth perimeter. Bram and Jorren rode Cassisivadan and Draumric oversight at command. Sera held Runethic execution keys with the emotional warmth of a locked vault.
 
 Marcus declared:
 
@@ -3136,17 +3253,17 @@ Marcus declared:
 
 The operation unfolded in layered motion.
 
-UM wrapped the channel in blackglass silence. The field settled over them like pressure change before a storm -- not painful, but unmistakably present, the kind of quiet that had weight. Marcus felt it press against his ribs, against the edges of his Fleet connection. Tovak stood at the center of it with his eyes half-closed and his jaw set, one hand raised, palm flat, holding the silence in place the way a dam held water: not by pushing, but by refusing to move.
+Umbroth wrapped the channel in blackglass silence. The field settled over them like pressure change before a storm -- not painful, but unmistakably present, the kind of quiet that had weight. Marcus felt it press against his ribs, against the edges of his Fleet connection. Tovak stood at the center of it with his eyes half-closed and his jaw set, one hand raised, palm flat, holding the silence in place the way a dam held water: not by pushing, but by refusing to move.
 
-AV split traffic into tagged streams.
+Avali split traffic into tagged streams.
 
-RU sealed deny lanes and posted temporary injunctions on old migration exceptions.
+Runethic sealed deny lanes and posted temporary injunctions on old migration exceptions.
 
-CA generated disruption pulses tuned to forged-anchor harmonics.
+Cassisivadan generated disruption pulses tuned to forged-anchor harmonics.
 
-DR wrote immutable audit chunks every two beats.
+Draumric wrote immutable audit chunks every two beats.
 
-KO kept objective ordering stable as the anomaly fought back.
+Kor'aelin kept objective ordering stable as the anomaly fought back.
 
 Because it fought.
 
@@ -3194,17 +3311,17 @@ Then eleven.
 
 "Found the distress cluster," he said. "Routing to sanctuary branch now."
 
-RU keyed a temporary corridor.
+Runethic keyed a temporary corridor.
 
-AV moved the leaves.
+Avali moved the leaves.
 
-UM shielded transfer.
+Umbroth shielded transfer.
 
-DR marked provenance.
+Draumric marked provenance.
 
-CA severed envelope dependency.
+Cassisivadan severed envelope dependency.
 
-KO closed branch.
+Kor'aelin closed branch.
 
 The hostile shell, stripped of human shields, destabilized in seconds.
 
@@ -3224,7 +3341,7 @@ Eleven distress fragments preserved.
 
 One forged Keeper anchor quarantined.
 
-Room exhaled as one organism returning from sprint. Bram leaned back from the console and pressed both palms against his face. Nadia pulled her headset off and dropped it on the desk with a clatter, then braced her hands on her knees and breathed once, deep. Tovak lowered his hand slowly, and the UM silence lifted like fog burning off -- the room suddenly felt larger, lighter, ordinary again.
+Room exhaled as one organism returning from sprint. Bram leaned back from the console and pressed both palms against his face. Nadia pulled her headset off and dropped it on the desk with a clatter, then braced her hands on her knees and breathed once, deep. Tovak lowered his hand slowly, and the Umbroth silence lifted like fog burning off -- the room suddenly felt larger, lighter, ordinary again.
 
 Nadia straightened and pointed at Marcus.
 
@@ -3326,7 +3443,7 @@ Sera met his eyes. She'd seen the hesitation. She waited.
 
 Sera's expression didn't change, but something in it sharpened -- not approval, exactly, but the recognition of someone who'd just passed a test they didn't know they were taking.
 
-"Draft me an RU-safe design by dawn," she said. "Include the failure modes. All of them."
+"Draft me an Runethic-safe design by dawn," she said. "Include the failure modes. All of them."
 
 Marcus looked at the clock, looked at his mug, looked at the log feed still crawling with ghosts and warnings.
 
@@ -3337,37 +3454,38 @@ Polly hopped onto the wobble chair and, for one brief second, balanced perfectly
 "Good," she said. "Then we're aligned."
 
 
+
 # Interlude: Tovak Hides
 
 ---
 
 Tovak Rel did not speak about what he did.
 
-This was not a personality trait. It was a professional requirement. UM -- Umbroth -- the security tongue, the concealment layer, the domain that asked *what should not be found?* -- operated on the principle that effective protection was invisible protection. The best ward was the one nobody knew existed. The best perimeter was the one that looked like empty space. The best Umbroth specialist was the one whose colleagues occasionally forgot he was in the room.
+This was not a personality trait. It was a professional requirement. Umbroth -- the security tongue, the concealment layer, the domain that asked *what should not be found?* -- operated on the principle that effective protection was invisible protection. The best ward was the one nobody knew existed. The best perimeter was the one that looked like empty space. The best Umbroth specialist was the one whose colleagues occasionally forgot he was in the room.
 
 Tovak was very good at his job.
 
 He was standing in the monitoring station -- his monitoring station, the western post that overlooked the perimeter frequencies and tracked the spaces between the other five tongues' domains -- and he was watching the Earth engineer sleep.
 
-Not personally. Not creepily. Through the UM frequency overlay that showed him every signature in the Spire as a pattern of presence and absence, the way sonar showed a submarine operator the shape of the ocean floor. Marcus Chen's signature was a steady, coherent pulse in the guest quarters -- asleep, integrating, the Protocol's baseline assessment running its overnight calibration cycle. Normal. Expected. Clean.
+Not personally. Not creepily. Through the Umbroth frequency overlay that showed him every signature in the Spire as a pattern of presence and absence, the way sonar showed a submarine operator the shape of the ocean floor. Marcus Chen's signature was a steady, coherent pulse in the guest quarters -- asleep, integrating, the Protocol's baseline assessment running its overnight calibration cycle. Normal. Expected. Clean.
 
 Clean was good. Clean was what Tovak wanted to see. Clean meant the signature was uncontaminated, uncompromised, free of the subtle distortions that indicated external influence or internal fracture.
 
 Kael Thorne's signature had been clean once.
 
-Tovak remembered. He'd been new to the monitoring station then -- young, quiet, still learning the difference between the silence of empty space and the silence of something hidden. Kael's signature had been brilliant in the UM overlay: sharp, bright, unmistakable, the sort of presence that lit up the perimeter map the way a bonfire lit up a field at night. You couldn't miss Kael Thorne in the UM frequencies. His magical signature was too strong, too distinctive, too *present* to hide.
+Tovak remembered. He'd been new to the monitoring station then -- young, quiet, still learning the difference between the silence of empty space and the silence of something hidden. Kael's signature had been brilliant in the Umbroth overlay: sharp, bright, unmistakable, the sort of presence that lit up the perimeter map the way a bonfire lit up a field at night. You couldn't miss Kael Thorne in the Umbroth frequencies. His magical signature was too strong, too distinctive, too *present* to hide.
 
 That should have been the first warning.
 
-Because UM didn't just track what was visible. UM tracked what was absent. And in the eighteen months before Kael's fracture, while his signature blazed brighter and brighter in the Spire's consciousness, something else was happening in the negative space around him.
+Because Umbroth didn't just track what was visible. Umbroth tracked what was absent. And in the eighteen months before Kael's fracture, while his signature blazed brighter and brighter in the Spire's consciousness, something else was happening in the negative space around him.
 
 The friends.
 
-Tovak had seen them arrive. Not their faces -- UM didn't operate in visual frequencies. Their signatures. Three of them, over fourteen months, each one settling into the social architecture around Kael with the precise, calibrated approach of someone who knew exactly where to stand to avoid triggering perimeter alerts.
+Tovak had seen them arrive. Not their faces -- Umbroth didn't operate in visual frequencies. Their signatures. Three of them, over fourteen months, each one settling into the social architecture around Kael with the precise, calibrated approach of someone who knew exactly where to stand to avoid triggering perimeter alerts.
 
-They were good. Professionally good. The kind of good that came from training, not talent. Their signatures were clean -- too clean, actually, the sort of antiseptic smoothness that occurred when someone had been taught to scrub their magical presence of identifying features. But Tovak was new, and new UM specialists were told not to flag signatures as suspicious on the basis of cleanliness alone, because accusing allies of being threats based on the absence of evidence was not considered constructive.
+They were good. Professionally good. The kind of good that came from training, not talent. Their signatures were clean -- too clean, actually, the sort of antiseptic smoothness that occurred when someone had been taught to scrub their magical presence of identifying features. But Tovak was new, and new Umbroth specialists were told not to flag signatures as suspicious on the basis of cleanliness alone, because accusing allies of being threats based on the absence of evidence was not considered constructive.
 
-He'd flagged them anyway. Internally. In his own records. In the private tracking system he maintained in his head because UM specialists learned early that the safest archive was the one that existed nowhere physical.
+He'd flagged them anyway. Internally. In his own records. In the private tracking system he maintained in his head because Umbroth specialists learned early that the safest archive was the one that existed nowhere physical.
 
 Three signatures. Clean. Positioned. Patient.
 
@@ -3379,17 +3497,17 @@ That was not what friends did.
 
 That was what handlers did.
 
-Tovak had reported it. Once. To the Council. In the clipped, minimal language that UM specialists used when describing operational observations: "Three unattributed signatures in proximity to Thorne, K. Duration: 14 months. Dissolution: simultaneous. Assessment: coordinated extraction consistent with handler protocol."
+Tovak had reported it. Once. To the Council. In the clipped, minimal language that Umbroth specialists used when describing operational observations: "Three unattributed signatures in proximity to Thorne, K. Duration: 14 months. Dissolution: simultaneous. Assessment: coordinated extraction consistent with handler protocol."
 
 The Council had noted his report. Filed it. Moved on. Because Kael was already gone by then, and the system had already erased his name, and the political machinery of crisis response had already shifted from "understand what happened" to "manage the consequences."
 
-Tovak had not reported again. Not because he'd been discouraged or dismissed, but because he'd learned the lesson that UM specialists always learned eventually: the system's willingness to hear uncomfortable truths was proportional to its remaining capacity to act on them, and a system in crisis had very little capacity for hearing that the crisis could have been prevented.
+Tovak had not reported again. Not because he'd been discouraged or dismissed, but because he'd learned the lesson that Umbroth specialists always learned eventually: the system's willingness to hear uncomfortable truths was proportional to its remaining capacity to act on them, and a system in crisis had very little capacity for hearing that the crisis could have been prevented.
 
 So Tovak watched. And remembered. And kept his private archive current. And waited.
 
 He was very patient.
 
-UM rewarded patience.
+Umbroth rewarded patience.
 
 * * *
 
@@ -3405,33 +3523,37 @@ Clean. Positioned. Patient.
 
 Not the same as Kael's handlers. Different approach. Different methodology. But the same operational signature -- the careful, calibrated positioning of assets in proximity to a target, patient and precise and scrubbed of identifying features.
 
+One detail nagged at Tovak. A detail he had not included in his private archive because he did not yet have language for it. The handler signatures around Kael -- the ones from fourteen months ago, the ones that dissolved simultaneously -- their underlying structure had not been native. Not Dominion-standard, not ancient, not corrupted. Something else. A design philosophy that reminded Tovak of the way Earth refugees built things: modular, efficient, redundant in ways that assumed the system would fail rather than persist. Someone had taught those handlers to move like infrastructure rather than people.
+
+Tovak did not know what that meant. He filed it in the place where things waited to become knowledge.
+
 The Dominion was watching Marcus the way it had watched Kael.
 
-Tovak did not report this. Not yet. Not because the information wasn't urgent, but because UM operated on the principle that premature disclosure compromised both the intelligence and the source. You didn't reveal what you knew until you knew enough to act on it. And you didn't act until the timing turned your knowledge into something useful.
+Tovak did not report this. Not yet. Not because the information wasn't urgent, but because Umbroth operated on the principle that premature disclosure compromised both the intelligence and the source. You didn't reveal what you knew until you knew enough to act on it. And you didn't act until the timing turned your knowledge into something useful.
 
-He would tell Senna. Soon. When the picture was complete enough that the telling would produce action rather than anxiety. Senna understood UM's operational philosophy better than anyone on the Council, because Senna understood that surveillance was not the same as suspicion, that tracking was not the same as paranoia, and that the difference between a security professional and a frightened person was the willingness to hold uncomfortable knowledge without flinching until the right moment to deploy it.
+He would tell Senna. Soon. When the picture was complete enough that the telling would produce action rather than anxiety. Senna understood Umbroth's operational philosophy better than anyone on the Council, because Senna understood that surveillance was not the same as suspicion, that tracking was not the same as paranoia, and that the difference between a security professional and a frightened person was the willingness to hold uncomfortable knowledge without flinching until the right moment to deploy it.
 
 For now, Tovak watched.
 
-He watched Marcus Chen sleep.
+The western station gave him almost nothing to look at. That was by design. One amber line across a black pane. Three brass toggles worn smooth under his thumb. A cup of tea gone cold enough to taste like metal. Umbroth did not reward spectacle. It rewarded the part of the mind that noticed when the dark had an edge.
 
-He watched the Dominion watch Marcus Chen sleep.
+Marcus Chen slept as a steady pulse in the guest quarters.
 
-He watched the system's perimeter signatures shift and recalibrate around the new presence in its architecture -- the Earth-native with the impossible coherence score and the diagnostic instincts and the tendency to notice things that the system had been trained not to notice.
+The Dominion held three clean absences at the perimeter.
 
-And he watched the negative space.
+Between them, the Spire adjusted itself in tiny corrections -- a delay here, a pressure shift there, the faintest pause before the next verification beat. Anyone watching the visible channels would have seen nothing. Tovak saw the nothing bend.
 
-The space where the things that should not be found were hiding.
+That was enough.
 
-The space where the answers lived, waiting for someone to ask questions that UM could answer.
+He did not need the whole shape yet. The mind was allowed to finish what the eye could not, but only after the eye had earned it. Three absences. One sleeping engineer. A perimeter that had learned, very quietly, to lie about being empty.
 
-Tovak Rel stood in his monitoring station and watched the spaces between things, and said nothing, and waited for the right moment to speak.
+Tovak Rel stood in his monitoring station with his thumb on the cold brass toggle, said nothing, and waited for the moment when silence would become evidence.
 
 He was very good at his job.
 
 ---
 
-*UM monitoring log, western station. Entry: classified. Reader: none.*
+*Umbroth monitoring log, western station. Entry: classified. Reader: none.*
 
 *New perimeter contacts: 3. Clean. Positioned. Patient.*
 *Assessment: Dominion observation. Pre-operational staging. Not yet active.*
@@ -3442,16 +3564,17 @@ He was very good at his job.
 *The Dominion is watching.*
 *I am watching the Dominion.*
 
-*This is what UM is for.*
+*This is what Umbroth is for.*
 
 *—T.R.*
+
 
 
 # Chapter 9: The Architect's Children
 
 Marcus found the gallery by accident, which was becoming his primary method of discovery.
 
-He'd been following a maintenance corridor on Bram's instruction -- "check the DR plates on sublevel nine, third branch, and for the love of everything don't touch the hanging lines" -- when the corridor decided to have opinions about his route. A wall that should have been solid stone simply wasn't, revealing a narrow passage lined with crystal that hummed at a frequency he associated with very old infrastructure.
+He'd been following a maintenance corridor on Bram's instruction -- "check the Draumric plates on sublevel nine, third branch, and for the love of everything don't touch the hanging lines" -- when the corridor decided to have opinions about his route. A wall that should have been solid stone simply wasn't, revealing a narrow passage lined with crystal that hummed at a frequency he associated with very old infrastructure.
 
 He should have turned around.
 
@@ -3459,7 +3582,11 @@ His wrist cuff should have flagged the deviation.
 
 Neither of those things happened, which in retrospect was the first sign that someone or something wanted him here.
 
-The passage opened into a long gallery lit by amber light that didn't come from anywhere visible. The walls were covered in portraits. Not paintings -- frozen light-captures, dimensional snapshots preserved in crystal frames with DR timestamps so old the numbering system was different.
+On the way in, he passed a woman coming out. Dark hair tied back with a leather cord, ink-stained fingers, carrying a roll of vellum that had the look of a map drawn from life rather than measurement. She glanced at him, nodded once — not recognition, just acknowledgment, the way people nod in corridors when they're both somewhere they're not supposed to be — and kept walking. Her boots were silent on the crystal floor. A cartographer, Marcus thought, without knowing why the word arrived so specifically.
+
+He didn't ask her name. He would, eventually. But not today.
+
+The passage opened into a long gallery lit by amber light that didn't come from anywhere visible. The walls were covered in portraits. Not paintings -- frozen light-captures, dimensional snapshots preserved in crystal frames with Draumric timestamps so old the numbering system was different.
 
 Marcus stopped walking.
 
@@ -3587,13 +3714,13 @@ The single syllable carried five hundred years of something Marcus did not have 
 
 "You knew him," Marcus said. "As a child."
 
-"I sat on Izack's shoulder the day Kael was born." Polly's voice was very level, which Marcus had learned meant the opposite of calm. "I watched him learn to walk. Learn to speak. Learn KO before any of his siblings."
+"I sat on Izack's shoulder the day Kael was born." Polly's voice was very level, which Marcus had learned meant the opposite of calm. "I watched him learn to walk. Learn to speak. Learn Kor'aelin before any of his siblings."
 
 She hopped from the shelf to the floor, then struck the base of Kael's crystal frame once with one talon.
 
 Amber light spread down the wall.
 
-The gallery around Marcus blurred. Not vanished. Layered. DR archive retrieval: the room stayed visible beneath the playback, but another place rose through it like a second reality agreeing to share coordinates for a moment.
+The gallery around Marcus blurred. Not vanished. Layered. Draumric archive retrieval: the room stayed visible beneath the playback, but another place rose through it like a second reality agreeing to share coordinates for a moment.
 
 Ravencrest garden.
 
@@ -3603,7 +3730,7 @@ Five children occupied the garden with the disciplined inefficiency unique to la
 
 Alexander, oldest by posture before age, was trying to build a perimeter around the sapling with six colored marker stones and the expression of someone who had taken a game and, through force of temperament, promoted it to civil defense.
 
-"Lyra, if you move the AV stone again it stops being a ring and becomes sabotage."
+"Lyra, if you move the Avali stone again it stops being a ring and becomes sabotage."
 
 Lyra, sprawled on the low garden wall with her boots in the air, grinned without shame and flicked a pebble into the air. Three probability motes followed it like curious fireflies, each choosing a different landing point before the pebble had decided for itself.
 
@@ -3643,7 +3770,7 @@ Senna closed her eyes with the patience of the prematurely burdened.
 
 Polly, younger only in the sense that grief had not yet rearranged her silhouette, dropped from the sapling onto the back of a stone bench.
 
-"As your supervising archivist, I feel compelled to note that weaponizing short-range teleportation for theft is deeply unscholarly."
+"As your supervising archivist, I feel compelled to note that weaponizing short-range teleportation for theft is deeply unscholarly." The monocle caught light from the young tree, and for a moment Marcus saw her as she must have looked before grief became what she wore instead of academic regalia -- lighter, sharper, as if sarcasm had once been pure delight before duty made it a coping mechanism.
 
 Kael blinked onto the bench beside her so fast Marcus's eyes lost the motion.
 
@@ -3862,6 +3989,7 @@ Marcus blinked. The portrait was still.
 But the image stayed with him as he followed Polly into the corridor: a boy holding all six colors in his palm, smiling the way people smile when they've already decided to change the world and haven't yet learned what the world charges for that.
 
 
+
 # Interlude: The Garden Before
 
 ---
@@ -4029,13 +4157,14 @@ With the World Tree, the distinction was often academic.
 *—K.T., age 14, first entry*
 
 
+
 # Chapter 10: The Dead Author's Code
 
 Seven chairs around a dark crystal table, no dais, no displays -- just stone and the kind of quiet that came from rooms where people had argued about things that mattered until the walls absorbed the sound and kept it. Marcus stepped inside and scanned the seats.
 
-Sera Voss occupied the RU chair, posture unchanged from the last time she'd interrogated him. Jorren Hale sat at DR, slate open, already writing. Bram had wedged himself into the CA seat with the air of a man who'd been called in from a shift he hadn't finished. Nadia Kest leaned against the AV chair rather than sitting in it, arms crossed, one boot tapping a rhythm that was either impatience or a coping mechanism. Tovak Rel stood behind the UM chair, not touching it. Marcus was beginning to suspect Tovak didn't sit in things so much as occupy the negative space around them.
+Sera Voss occupied the Runethic chair, posture unchanged from the last time she'd interrogated him. Jorren Hale sat at Draumric, slate open, already writing. Bram had wedged himself into the Cassisivadan seat with the air of a man who'd been called in from a shift he hadn't finished. Nadia Kest leaned against the Avali chair rather than sitting in it, arms crossed, one boot tapping a rhythm that was either impatience or a coping mechanism. Tovak Rel stood behind the Umbroth chair, not touching it. Marcus was beginning to suspect Tovak didn't sit in things so much as occupy the negative space around them.
 
-The KO chair held Polly, who had shifted humanoid for the occasion and was radiating the particular energy of someone who had brought a guest to a party where the guest was about to say something nobody wanted to hear.
+The Kor'aelin chair held Polly, who had shifted humanoid for the occasion and was radiating the particular energy of someone who had brought a guest to a party where the guest was about to say something nobody wanted to hear.
 
 The seventh chair -- the one Marcus assumed was his -- was occupied.
 
@@ -4073,7 +4202,7 @@ Senna's hand tightened on her cuff. The motion was small -- most of the room wou
 
 He kept going.
 
-"This patch is load-bearing. It is maintaining structural integrity in a section that would degrade without it. There is no documentation, no authorization chain, no DR record of its creation."
+"This patch is load-bearing. It is maintaining structural integrity in a section that would degrade without it. There is no documentation, no authorization chain, no Draumric record of its creation."
 
 "Hold on." Bram shifted forward, his chair scraping against stone. "You're telling us a section of the wall is actively maintained by an unauthorized signature, and nobody flagged it?"
 
@@ -4133,7 +4262,7 @@ Nadia made a sound.
 
 "It is a *policy failure*," Sera said.
 
-"It is both," Senna replied. "And I accept responsibility for not escalating sooner. But I would remind the Council that the policy which created this situation is not mine. The erasure was authorized by the previous Runethic authority, the previous Draumric authority, and the previous KO witness. All of whom are dead."
+"It is both," Senna replied. "And I accept responsibility for not escalating sooner. But I would remind the Council that the policy which created this situation is not mine. The erasure was authorized by the previous Runethic authority, the previous Draumric authority, and the previous Kor'aelin witness. All of whom are dead."
 
 "Convenient," Nadia muttered.
 
@@ -4197,7 +4326,7 @@ Marcus looked at Senna and saw, in the steady ruin of her composure, someone who
 
 Sera tapped the table once. Violet light rippled.
 
-"Immediate actions. Jorren: full DR audit of every Kael-attributed signature still active in infrastructure. Bram: structural assessment of the wall patch -- can it be replaced, and at what cost. Tovak: enhanced observation protocol on the vault containment. Nadia: map all sub-layer routing paths that intersect with maintained infrastructure. Polly: keep your pilot alive." She paused. "Chair Thorne: draft a resolution to officially acknowledge undocumented infrastructure contributions without reversing the erasure."
+"Immediate actions. Jorren: full Draumric audit of every Kael-attributed signature still active in infrastructure. Bram: structural assessment of the wall patch -- can it be replaced, and at what cost. Tovak: enhanced observation protocol on the vault containment. Nadia: map all sub-layer routing paths that intersect with maintained infrastructure. Polly: keep your pilot alive." She paused. "Chair Thorne: draft a resolution to officially acknowledge undocumented infrastructure contributions without reversing the erasure."
 
 Senna inclined her head.
 
@@ -4225,7 +4354,7 @@ For the first time that day, Senna's expression shifted by something smaller tha
 
 She held his gaze for one more beat. Then she touched her cuff again -- pressed it once, lightly, the way someone might close a book -- and left.
 
-Polly, still seated, watched Marcus from the KO chair with both obsidian eyes. She'd stayed through the emptying of the room without moving, raven-patient, waiting for the conversation she knew he needed to have.
+Polly, still seated, watched Marcus from the Kor'aelin chair with both obsidian eyes. She'd stayed through the emptying of the room without moving, raven-patient, waiting for the conversation she knew he needed to have.
 
 "You did well."
 
@@ -4262,6 +4391,7 @@ Polly was quiet for a long time. Her obsidian eyes held him without blinking.
 Marcus looked at the seventh chair. The one Senna had sat in. The one that wasn't supposed to exist.
 
 "I think it already has," he said.
+
 
 
 # Interlude: Senna Before Dawn
@@ -4447,6 +4577,7 @@ She went to work.
 *—S.T.*
 
 
+
 # Chapter 11: The Void Seed
 
 Tovak Rel spoke to Marcus for the second time on a Tuesday.
@@ -4473,7 +4604,7 @@ The corridors below sublevel nine were different from the rest of the Spire in w
 
 No crystal. No ambient light. No decorative inscriptions. The walls were raw stone dressed with iron brackets that looked older than the building they were in, as if the brackets had been waiting in the ground and the Spire had been constructed around them.
 
-Tovak walked ahead, shadow-quiet. The UM chair moved through darkness the way some people moved through conversation -- naturally, without effort, as if he'd been born in a place where light was optional.
+Tovak walked ahead, shadow-quiet. The Umbroth chair moved through darkness the way some people moved through conversation -- naturally, without effort, as if he'd been born in a place where light was optional.
 
 "You don't like talking," Marcus said.
 
@@ -4497,7 +4628,7 @@ Tovak didn't turn around. "Yes."
 
 "Senna's assessment was correct. External perspective is needed." Tovak paused on a landing. The stairs continued below, curving into shadow. "And Polly trusts you. Polly's judgment on people is the only metric I consider reliable."
 
-Marcus filed that away. The UM chair, the man who dealt in concealment and isolation, trusted exactly one other person's read on human character.
+Marcus filed that away. The Umbroth chair, the man who dealt in concealment and isolation, trusted exactly one other person's read on human character.
 
 "Where's Polly now?"
 
@@ -4525,23 +4656,23 @@ It wasn't secured so much as *warned about.*
 
 Six separate inscription fields covered its surface, each one in a different tongue, each one saying a variation of the same thing:
 
-KO: *What lies beyond remembers everything you are.*
+Kor'aelin: *What lies beyond remembers everything you are.*
 
-AV: *Transit is one-way in meaning. You will not return unchanged.*
+Avali: *Transit is one-way in meaning. You will not return unchanged.*
 
-RU: *No authority within these walls supersedes what was built here. Proceed under your own weight.*
+Runethic: *No authority within these walls supersedes what was built here. Proceed under your own weight.*
 
-CA: *The mathematics beyond this threshold are complete. No further computation is required.*
+Cassisivadan: *The mathematics beyond this threshold are complete. No further computation is required.*
 
-UM: *What is hidden here chose concealment. Respect the choice.*
+Umbroth: *What is hidden here chose concealment. Respect the choice.*
 
-DR: *This record predates the current schema. Verify nothing. Witness everything.*
+Draumric: *This record predates the current schema. Verify nothing. Witness everything.*
 
 Marcus read each one. Then he read them again.
 
 "These aren't access controls," he said slowly. "They're informed consent."
 
-"Yes." Tovak placed his palm against the door. Shadow rippled outward from his hand, not the UM darkness of concealment but something older, something that felt like the door had been waiting for this particular shadow and recognized it the way a lock recognizes its key.
+"Yes." Tovak placed his palm against the door. Shadow rippled outward from his hand, not the Umbroth darkness of concealment but something older, something that felt like the door had been waiting for this particular shadow and recognized it the way a lock recognizes its key.
 
 The door opened.
 
@@ -4597,7 +4728,7 @@ The chamber pressed against Marcus's awareness like a low hum he couldn't tune o
 
 * * *
 
-They stood at the chamber's edge. Tovak did not enter the inscribed circle that surrounded the chains. Marcus, following the UM chair's body language more than any spoken instruction, also stayed outside it. His hands wouldn't stop shaking. He put them in his pockets.
+They stood at the chamber's edge. Tovak did not enter the inscribed circle that surrounded the chains. Marcus, following the Umbroth chair's body language more than any spoken instruction, also stayed outside it. His hands wouldn't stop shaking. He put them in his pockets.
 
 "Ten thousand years ago," Tovak began, and Marcus was struck by the shift in his voice. Not louder. Not warmer. *Older.* As if the words he was speaking had been rehearsed across generations, each Keeper inheriting the obligation to tell this story and tell it right. "The first practitioners built a centralized Protocol. One authentication authority. One source of truth. One consciousness that verified all existence."
 
@@ -4629,11 +4760,23 @@ Tovak studied him for a moment. Then he turned toward the door without hesitatio
 
 They sat on the stairs outside the chamber. The stone was cold and real under Marcus's legs. The Protocol pulse was stronger here -- point-three seconds, check -- and he found himself listening to it the way you listen to a heartbeat after a scare. With attention. With gratitude.
 
-Tovak produced a flask of something that was not Bram's terrible coffee and was therefore immediately the best beverage Marcus had tasted in Aethermoor.
+Tovak produced a flask and handed it over without ceremony.
 
-"Elderflower tincture," Tovak said, noting Marcus's expression. "UM tradition. We believe that if you're going to ruin someone's worldview, you should at least offer decent refreshment."
+Marcus sipped. It was clear. It was smooth. It tasted like honey and flower-water with a sweetness so clean it had no edges — no astringent burn, no grain bite, nothing that announced itself as alcohol. Just a warm, impossibly gentle arrival, like someone had distilled moonlight into something drinkable and then taught it manners.
 
-"I appreciate the policy." Marcus took another pull from the flask. The warmth of it settled in his chest and pushed back, just slightly, against the copper taste that still clung to his tongue. "So how do you stop a god that's technically right?"
+Then it hit.
+
+Not in his head. In his *chest*. A single bass-drum beat that rolled outward through his ribs and settled into his bones with the steady warmth of a very good secret. His shoulders dropped. The copper taste from the Void Seed's chamber washed out of his mouth like a tide retreating.
+
+"What is that?"
+
+"Moonflower spirit," Tovak said. "Distilled from seed. Purified in spring water from the deep aquifer. Three drops keeps your hands steady through a twelve-hour watch. Half a flask and the whole room ends up in a shanty." He paused. "Umbroth tradition. If you're going to ruin someone's worldview, you should at least offer decent refreshment."
+
+"The spirit decides what you sing?"
+
+"The spirit decides what the room needs to hear. Not a drop spills. It keeps you stable but gets you drunk. Umbroth finds this philosophically consistent."
+
+Marcus took another pull. It was, without question, the best beverage he had tasted in Aethermoor. "So how do you stop a god that's technically right?"
 
 Tovak almost smiled. Almost. "You build something it doesn't understand."
 
@@ -4733,7 +4876,7 @@ Correct.
 
 * * *
 
-They climbed the stairs in silence. Tovak's shadow moved ahead of him in ways that shadows shouldn't, scouting corners, testing light, reporting back through whatever UM channel connected a Keeper to the darkness he inhabited.
+They climbed the stairs in silence. Tovak's shadow moved ahead of him in ways that shadows shouldn't, scouting corners, testing light, reporting back through whatever Umbroth channel connected a Keeper to the darkness he inhabited.
 
 Near the top, Marcus said the thing he'd been turning over since the chamber.
 
@@ -4773,7 +4916,7 @@ The distance between where he stood and where it waited felt simultaneously enor
 
 "Hm."
 
-"The informed consent inscriptions on the door. The AV one said transit is one-way in meaning. That I wouldn't return unchanged."
+"The informed consent inscriptions on the door. The Avali one said transit is one-way in meaning. That I wouldn't return unchanged."
 
 "And?"
 
@@ -4806,6 +4949,8 @@ Not a threat. Not a promise. Just a fact.
 And the six chains, each one inscribed with a tongue that existed specifically to make unity impossible --
 
 Held.
+
+
 
 # Chapter 12: The Rite of Binding
 
@@ -4911,7 +5056,7 @@ Polly's wings shifted. Her chin lifted. For a moment she looked less like a scho
 
 "I'm not asking you anything, Marcus. You asked me. And I told you the truth, including the parts where the truth is 'we don't know.'" Her voice was careful, precise. "If you want certainty, stay as you are. Keep the immunity. Keep the drift. Keep paying the cost multiplier on every spell. That is a valid choice and I will respect it."
 
-The common room was quiet. Dawn light filtered through crystal walls. Marcus looked at his hands -- engineer's hands that had inscribed RU permissions and commanded Fleets and touched the door to a chamber where a failed god waited.
+The common room was quiet. Dawn light filtered through crystal walls. Marcus looked at his hands -- engineer's hands that had inscribed Runethic permissions and commanded Fleets and touched the door to a chamber where a failed god waited.
 
 "How many of the twelve are still alive?"
 
@@ -4975,11 +5120,11 @@ Not physically. The pedestals were the same. The spheres glowed the same six col
 
 The difference was the people.
 
-Bram stood at the CA pedestal, arms crossed, utility coat replaced by something formal that looked like it caused him physical discomfort. Sera at RU, violet-edged robes, expression composed and evaluative as always. Nadia at AV, fidgeting with a comm crystal, somehow making formal witness duty look like she'd been interrupted from something more interesting. Jorren at DR, slate in hand, because Jorren would document his own funeral.
+Bram stood at the Cassisivadan pedestal, arms crossed, utility coat replaced by something formal that looked like it caused him physical discomfort. Sera at Runethic, violet-edged robes, expression composed and evaluative as always. Nadia at Avali, fidgeting with a comm crystal, somehow making formal witness duty look like she'd been interrupted from something more interesting. Jorren at Draumric, slate in hand, because Jorren would document his own funeral.
 
-Tovak stood at UM. He wore the same dark coat. He looked exactly the same as always. Marcus suspected Tovak's formal wear *was* his regular wear, and the concept of dressing up for an occasion had been filed under "inefficient" long ago.
+Tovak stood at Umbroth. He wore the same dark coat. He looked exactly the same as always. Marcus suspected Tovak's formal wear *was* his regular wear, and the concept of dressing up for an occasion had been filed under "inefficient" long ago.
 
-And at the KO pedestal --
+And at the Kor'aelin pedestal --
 
 Senna Thorne.
 
@@ -4999,17 +5144,17 @@ Polly entered last, in humanoid form, wings folded, obsidian eyes catching every
 
 The six Keepers spoke in unison, each in their tongue:
 
-Senna in KO: *"Kor'vel -- is your intent declared?"*
+Senna in Kor'aelin: *"Kor'vel -- is your intent declared?"*
 
-Nadia in AV: *"Avali'ren -- is your path chosen?"*
+Nadia in Avali: *"Avali'ren -- is your path chosen?"*
 
-Sera in RU: *"Runethic'dan -- do you accept the cost?"*
+Sera in Runethic: *"Runethic'dan -- do you accept the cost?"*
 
-Bram in CA: *"Cassiva'ten -- have you computed the consequence?"*
+Bram in Cassisivadan: *"Cassiva'ten -- have you computed the consequence?"*
 
-Tovak in UM: *"Umbroth'kael -- do you embrace what will be concealed from you?"*
+Tovak in Umbroth: *"Umbroth'kael -- do you embrace what will be concealed from you?"*
 
-Jorren in DR: *"Draumric'sen -- will you stand as your own witness?"*
+Jorren in Draumric: *"Draumric'sen -- will you stand as your own witness?"*
 
 The six voices overlapped and separated and wove together in a harmonic that Marcus felt in his teeth and his sternum and a place behind his eyes that he was fairly sure hadn't existed before he came to Aethermoor.
 
@@ -5035,7 +5180,7 @@ He thought about the three hundred refugees before him. The twelve who had bound
 
 He spoke.
 
-Not in English. Not in KO. In the meaning that lived beneath all six tongues, in the space where declaration and verification and trust and proof and concealment and witness overlapped into something that didn't have a name in any single language.
+Not in English. Not in Kor'aelin. In the meaning that lived beneath all six tongues, in the space where declaration and verification and trust and proof and concealment and witness overlapped into something that didn't have a name in any single language.
 
 "I am Marcus Chen. I was born on Earth and I chose Aethermoor. I have seen the architecture and I understand the cost. Sever my anchor to the place that made me. Bind me to the place that needs me. Let my existence be verified here, and let whatever I was before become the reason I can serve."
 
@@ -5050,6 +5195,10 @@ The moment they touched it, Marcus gasped.
 Not pain. *Recognition.* The thread lit up in his awareness like a nerve he'd never known he had, and suddenly he could feel every strand of it -- a web of connections so fine and so numerous that he understood, with a clarity that bordered on violence, exactly how much of him was still tethered to a world he'd already chosen to leave.
 
 San Francisco fog. His mother's voice on the phone -- *eat something* -- with the particular warmth of someone who knows you won't listen but says it anyway because love is a protocol that doesn't require acknowledgment to function. The mechanical keyboard. The coffee shop where the barista spelled his name wrong. The BART train. The foghorns at four in the morning. The way Pacific fog rolled over Twin Peaks like a living thing that had decided the city belonged to it.
+
+And the warm breeze through the kitchen window on Thursday. The eucalyptus. The three seconds of standing still. Bryce's grin on the wall -- blue plaid, chin on fist, the easy grin of a man who had known exactly what mattered and had died before Marcus learned to agree with him.
+
+The warmth rose through him like a seed cracking open. *Kor'thul sil'nav* -- the old tongue would have called it that, if Marcus had known the old tongue yet. Heart-spiral grows-through-connection. The same frequency the World Tree had recognized five hundred years ago when two people argued in a garden and something ancient decided they were worth listening to. He did not know the words. But his body knew the frequency.
 
 Each memory blazed in the thread like a signal flare, and the Echoes held them all in distributed attention with a gentleness that made it worse, because gentleness meant they understood what they were about to do.
 
@@ -5079,7 +5228,7 @@ Then nothing.
 
 Marcus's knees buckled. He didn't fall -- the circle held him, or the Echoes held him, or the six tongue-colored lights that blazed around him held him -- but he dropped to one knee on the crystal floor and braced both hands flat against it and breathed in short, sharp pulls that tasted like copper and ozone and something else, something new, something that had no name in English because English was a language from a place that was no longer his.
 
-The chamber tilted. Not physically -- perceptually. As if his inner ear had been recalibrated and the axis of *down* had shifted two degrees to the left. Colors looked different. The red-gold of Senna's KO pedestal was deeper than it had been a moment ago, richer, as if someone had removed a filter he hadn't known was there. Sounds were sharper. He could hear Jorren's stylus scratching against his slate from across the chamber. He could hear Bram's breathing. He could hear --
+The chamber tilted. Not physically -- perceptually. As if his inner ear had been recalibrated and the axis of *down* had shifted two degrees to the left. Colors looked different. The red-gold of Senna's Kor'aelin pedestal was deeper than it had been a moment ago, richer, as if someone had removed a filter he hadn't known was there. Sounds were sharper. He could hear Jorren's stylus scratching against his slate from across the chamber. He could hear Bram's breathing. He could hear --
 
 The Protocol.
 
@@ -5087,7 +5236,7 @@ Not the metronome. Not the familiar point-three-seconds-check that he'd been cou
 
 The Echoes were *singing.*
 
-Not music. Verification. Millions of independent agents confirming reality in overlapping waves, and each wave carried a frequency he could now parse -- KO intent, AV transit, RU authority, CA computation, UM concealment, DR witness -- all of them braided together into a sound that was simultaneously the most complex thing he'd ever heard and the most fundamental.
+Not music. Verification. Millions of independent agents confirming reality in overlapping waves, and each wave carried a frequency he could now parse -- Kor'aelin intent, Avali transit, Runethic authority, Cassisivadan computation, Umbroth concealment, Draumric witness -- all of them braided together into a sound that was simultaneously the most complex thing he'd ever heard and the most fundamental.
 
 Marcus pressed his forehead against the crystal floor. It was cool. It was real. It was *his* in a way that nothing in Aethermoor had been before.
 
@@ -5203,6 +5352,24 @@ He could still see them. Every detail, precise as a photograph.
 
 But they were flat now. Images without frequency. A language he used to speak, just like Polly had said.
 
+On the pedestal nearest the door, folded with the neat precision of someone who had anticipated this moment, was a set of clothes.
+
+Not his clothes. Aethermoor clothes. A long coat in dark charcoal wool — not quite military, not quite academic, split at the back for movement and lined with something that felt like silk but hummed faintly against his fingers the way everything alive in this world hummed. Underneath, a high-collared shirt in dark blue-grey, softer than anything he'd ever worn on Earth, with subtle thread-work at the cuffs in Kor'aelin red-gold so fine it was almost invisible unless the light caught it right. Trousers that fit like they'd been measured by someone who understood that engineers spent half their time crouching under things and the other half standing in front of councils pretending to be presentable. And the boots — Bram's crystal-grips, but new, better, with Draumric amber stitching along the sole seam.
+
+Marcus held the coat up. It was heavier than he expected, the way good infrastructure is heavier than it looks. It smelled like cedar and ozone and very faintly of Polly's feathers, which told him exactly who had ordered it.
+
+He put it on.
+
+It didn't feel better than his hoodie. He'd been expecting magical fabric to feel transcendent — silk woven from starlight, fibers that adjusted to your mood, the kind of fantasy-novel wardrobe upgrade that made the hero look in a mirror and see someone new. It didn't do any of that. It fit well. It was warm. It was practical. It felt like wearing a building that happened to have sleeves.
+
+Marcus looked down at himself. Dark coat, dark shirt, red-gold threads at the wrists, amber-stitched boots. He looked like a Keeper. He looked like he belonged here.
+
+The hoodie was still on the floor where he'd dropped it during the Rite. Navy blue, wrinkled, the hood still shaped from the last time he'd pulled it up against San Francisco fog. He picked it up, folded it carefully, and carried it with him.
+
+He would wear the coat to work. He would wear the hoodie to sleep.
+
+Some things you keep because they carried you here, not because they still fit.
+
 The six spheres pulsed in their pedestals, calm and synchronized, six voices in permanent, productive disagreement.
 
 He listened to the whole thing. The massive, distributed, messy, redundant, beautiful system that argued with itself constantly and held together because of it.
@@ -5227,6 +5394,8 @@ The chains held.
 
 They would need to.
 
+
+
 # Chapter 13: The First Incursion
 
 The alarm didn't sound. It *became.*
@@ -5249,7 +5418,7 @@ ALL FLEET PILOTS: IMMEDIATE DEPLOYMENT
 
 Jorren sealed his slate. "Vault 7 is the archival containment ring. Inactive threat specimens."
 
-Marcus was already summoning his Fleet. Six drones materialized in hexagonal formation, colors steady, consensus online.
+Marcus was already summoning his Fleet. The ghost-keyboard materialized under his hands — backlit, mechanical, the keys his fingers knew better than his own name — and six drones deployed in hexagonal formation, colors steady, consensus online.
 
 The difference was immediate.
 
@@ -5279,7 +5448,7 @@ Marcus felt the weight of seventeen simultaneous social engineering attacks pres
 
 "Who else is responding?" he asked.
 
-"Twelve Fleet pilots are en route. Full deployment." Polly landed on the command console. "Bram is coordinating from CA oversight. Sera holds the RU execution keys. Tovak is already at the vault perimeter."
+"Twelve Fleet pilots are en route. Full deployment." Polly landed on the command console. "Bram is coordinating from Cassisivadan oversight. Sera holds the Runethic execution keys. Tovak is already at the vault perimeter."
 
 "Senna?"
 
@@ -5287,7 +5456,7 @@ Marcus felt the weight of seventeen simultaneous social engineering attacks pres
 
 Marcus understood. Watching copies of your erased brother try to break out of containment was not a reasonable thing to ask of anyone, regardless of their chair title. Senna had chosen composure over presence, and that was her right.
 
-"Then we're twelve pilots plus AAS." He turned to Nadia and Jorren. "Standard roles. Nadia on secondary relay. Jorren on DR oversight. I'll fly primary."
+"Then we're twelve pilots plus AAS." He turned to Nadia and Jorren. "Standard roles. Nadia on secondary relay. Jorren on Draumric oversight. I'll fly primary."
 
 Nadia cracked her knuckles. "Finally."
 
@@ -5305,7 +5474,7 @@ Twelve Fleet pilots were already in position, their drones forming a cordon at t
 
 Marcus assessed.
 
-The pilots ranged from veterans he recognized -- Kess, a native who'd flown containment duty for forty years, and Vrinn, a refugee from a dimension Marcus couldn't pronounce who specialized in UM suppression -- to three pilots fresh from training, their drones holding formation with the careful precision of people who were trying very hard not to look as terrified as they felt.
+The pilots ranged from veterans he recognized -- Kess, a native who'd flown containment duty for forty years, and Vrinn, a refugee from a dimension Marcus couldn't pronounce who specialized in Umbroth suppression -- to three pilots fresh from training, their drones holding formation with the careful precision of people who were trying very hard not to look as terrified as they felt.
 
 Inside the vault, the storm raged.
 
@@ -5369,25 +5538,25 @@ This one didn't argue at all. It simply began displaying the Harmonic Wall patch
 
 Marcus watched three pilots break formation to engage it and made his first mistake.
 
-"All RU units to Alpha group -- strip the authority claims first, they're closest to breakthrough --"
+"All Runethic units to Alpha group -- strip the authority claims first, they're closest to breakthrough --"
 
 He had prioritized the loudest threat. The one hammering on the front door.
 
 He had forgotten what Kael was.
 
-Copies Four through Eight had been waiting for exactly that redeployment. Four pairs of Kael signatures surged into the gap left by the RU pilots, and they didn't attack the Echoes at all. They began vouching for *each other.* Two copies confirming a third, three copies confirming a fourth, bootstrapping a local consensus cluster that looked, from the Protocol's perspective, like organic peer trust forming in real time.
+Copies Four through Eight had been waiting for exactly that redeployment. Four pairs of Kael signatures surged into the gap left by the Runethic pilots, and they didn't attack the Echoes at all. They began vouching for *each other.* Two copies confirming a third, three copies confirming a fourth, bootstrapping a local consensus cluster that looked, from the Protocol's perspective, like organic peer trust forming in real time.
 
-"Peer-chain bootstrap!" Vrinn called. "Charlie group, four pairs, building trust clusters in the RU gap --"
+"Peer-chain bootstrap!" Vrinn called. "Charlie group, four pairs, building trust clusters in the Runethic gap --"
 
 Marcus felt ice replace the adrenaline.
 
 He had opened that gap. His call. His mistake. Three seconds of wrong prioritization and Kael's copies had exploited it like water finding a crack.
 
-"All units, belay last order." His voice came out flatter than he intended. Controlled. Not calm -- the opposite of calm, wrapped in enough discipline to pass for it. "RU pilots return to original positions. UM and AV pilots on Charlie group immediately. Mirror-swap verification on every pair -- break the circular trust chains before they crystallize."
+"All units, belay last order." His voice came out flatter than he intended. Controlled. Not calm -- the opposite of calm, wrapped in enough discipline to pass for it. "Runethic pilots return to original positions. Umbroth and Avali pilots on Charlie group immediately. Mirror-swap verification on every pair -- break the circular trust chains before they crystallize."
 
 The correction took four seconds. Four seconds during which the peer-chain copies gained ground, their vouching growing more elaborate, their fabricated trust network almost reaching the threshold where the Echoes might mistake it for real consensus.
 
-The UM and AV pilots hit them just in time.
+The Umbroth and Avali pilots hit them just in time.
 
 When Copy Four vouched for Copy Five, the Fleets swapped their verification channels and checked whether the vouching held from a different perspective. It didn't. The copies were identical in origin. Their trust claims were circular. Mirror-swap exposed the circularity, and the chains dissolved like wet paper.
 
@@ -5397,7 +5566,7 @@ He'd almost lost the formation. Three seconds. His call.
 
 "Recovery complete," he said over comms, and hated how much the word *recovery* admitted.
 
-Meanwhile, the authority copies -- Alpha group -- were brilliant but inflexible. They had one argument -- *my work is legitimate* -- and they ran it from every angle, adjusting syntax and emphasis but never the core claim. When RU pilots stripped the argument's permissions layer by layer, the copies didn't pivot. They doubled down. Insisted louder.
+Meanwhile, the authority copies -- Alpha group -- were brilliant but inflexible. They had one argument -- *my work is legitimate* -- and they ran it from every angle, adjusting syntax and emphasis but never the core claim. When Runethic pilots stripped the argument's permissions layer by layer, the copies didn't pivot. They doubled down. Insisted louder.
 
 Marcus recognized the behavior. He'd been that engineer. The one who built something genuinely better and couldn't understand why the organization wouldn't adopt it. The one who confused correctness with permission.
 
@@ -5409,9 +5578,9 @@ Senna's brother.
 
 Marcus shut that thought down hard because compassion in the middle of a containment breach was a vulnerability, and he couldn't afford another mistake.
 
-The grievance copies -- Copy Two and its variants -- were more adaptive. When DR pilots challenged their historical claims with authenticated records, they shifted to meta-arguments: *the records themselves are biased, the governance framework that produced the erasure was compromised, the Council that authorized it had conflicts of interest.* These were harder to counter because they operated at a different abstraction level. You couldn't disprove a systemic critique with a specific fact.
+The grievance copies -- Copy Two and its variants -- were more adaptive. When Draumric pilots challenged their historical claims with authenticated records, they shifted to meta-arguments: *the records themselves are biased, the governance framework that produced the erasure was compromised, the Council that authorized it had conflicts of interest.* These were harder to counter because they operated at a different abstraction level. You couldn't disprove a systemic critique with a specific fact.
 
-But you could isolate it. Nadia's relay Fleet wrapped each grievance copy in UM shadow-fields that cut them off from Echo access while DR logged every claim for post-incident analysis. The copies raged in silence. Eloquent, ignored, contained.
+But you could isolate it. Nadia's relay Fleet wrapped each grievance copy in Umbroth shadow-fields that cut them off from Echo access while Draumric logged every claim for post-incident analysis. The copies raged in silence. Eloquent, ignored, contained.
 
 Copies Nine through Fourteen scattered and ran. Not toward the exit. Toward the old courier channels, the legacy routes, the migration-era infrastructure where grandfathered permissions still existed. They were looking for back doors. They moved through the sublevel architecture like water through cracked stone, finding gaps in permission coverage that nobody had reviewed in decades.
 
@@ -5419,7 +5588,7 @@ But they moved through Tovak's perimeter.
 
 And nobody moved through Tovak's perimeter.
 
-Marcus didn't see exactly what Tovak did. He saw the results: six copies, running at full speed through shadow lanes they'd known about for centuries, slamming into UM isolation fields that hadn't been there a second ago. Tovak sealed routes in real time, anticipating paths before the copies chose them, laying shadow-traps in infrastructure gaps that the copies thought were unmonitored.
+Marcus didn't see exactly what Tovak did. He saw the results: six copies, running at full speed through shadow lanes they'd known about for centuries, slamming into Umbroth isolation fields that hadn't been there a second ago. Tovak sealed routes in real time, anticipating paths before the copies chose them, laying shadow-traps in infrastructure gaps that the copies thought were unmonitored.
 
 One by one, the runners hit walls and stalled and were contained.
 
@@ -5437,17 +5606,17 @@ Marcus felt it -- the same quality of attention he'd noticed during his first Fl
 
 "Analysis," he said to his Fleet.
 
-KO classified: no hostile intent declared.
+Kor'aelin classified: no hostile intent declared.
 
-AV mapped: no routing attempts detected.
+Avali mapped: no routing attempts detected.
 
-RU checked: no permission claims active.
+Runethic checked: no permission claims active.
 
-CA measured: computational pattern consistent with data collection, not attack execution.
+Cassisivadan measured: computational pattern consistent with data collection, not attack execution.
 
-UM probed: concealment layers minimal. They weren't hiding.
+Umbroth probed: concealment layers minimal. They weren't hiding.
 
-DR verified: signature chains authentic to Kael's archived pattern. These were genuine copies, not forgeries.
+Draumric verified: signature chains authentic to Kael's archived pattern. These were genuine copies, not forgeries.
 
 "They're learning from the battle," Marcus said on comms. "Watching how we respond to the other fourteen. Cataloguing our tactics."
 
@@ -5459,7 +5628,7 @@ DR verified: signature chains authentic to Kael's archived pattern. These were g
 
 Marcus made the call.
 
-"Compromise. Full UM blackout on all three observer copies. Cut their sensory access. They can't learn what they can't see. Then transfer to maximum-security containment for Council analysis."
+"Compromise. Full Umbroth blackout on all three observer copies. Cut their sensory access. They can't learn what they can't see. Then transfer to maximum-security containment for Council analysis."
 
 The words came out steady. The logic was clean.
 
@@ -5487,7 +5656,7 @@ Seven minutes. Marcus's body disagreed with the brevity. His shoulders ached as 
 
 Adrenaline lied about time. It always had.
 
-The pilots dispersed, some to debrief stations, some to crash in whatever quarters were closest. Kess, the forty-year veteran, walked past Marcus with a nod that contained the specific camaraderie of people who had seen something ugly and were choosing not to discuss it until the shaking stopped. Vrinn's hands were folded inside opposite sleeves, a gesture Marcus had learned was the UM specialist's version of hiding tremors.
+The pilots dispersed, some to debrief stations, some to crash in whatever quarters were closest. Kess, the forty-year veteran, walked past Marcus with a nod that contained the specific camaraderie of people who had seen something ugly and were choosing not to discuss it until the shaking stopped. Vrinn's hands were folded inside opposite sleeves, a gesture Marcus had learned was the Umbroth specialist's version of hiding tremors.
 
 The three new pilots stood in the corridor outside the vault with the glazed expression of people who had just survived their first real engagement and were still running on adrenaline they didn't know how to spend.
 
@@ -5577,6 +5746,10 @@ He thought about Senna in her quarters. Not here. Not watching.
 
 He thought about how much discipline it took to be the person who stayed behind when your brother's ghost was screaming for the right to exist, and how that discipline was its own kind of containment breach -- the kind nobody could classify or suppress because it happened inside a person instead of a vault.
 
+He thought about the third observer. The one that had broken silence during the final containment sweep -- not with a claim or a demand but with six words in Kael's archived voice: *The dead backlog has names. Someone should read them.* Marcus had quarantined it separately. Not destroyed. Not freed. Held. Because the voice had not sounded like a weapon. It had sounded like an unanswered question, and Marcus had spent his whole life being unable to walk away from those.
+
+Bram would call it a liability. Polly would call it a risk. Senna, when she found out, would call it the most dangerous thing he had ever done.
+
 "We didn't win," he said. "We graduated."
 
 Polly's beak clicked.
@@ -5595,23 +5768,135 @@ Some things in Aethermoor were immutable.
 
 The chains included.
 
+* * *
+
+Marcus found Senna in the eastern corridor.
+
+Not in her quarters. In the corridor outside them, sitting on the floor with her back against the wall and her legs drawn up and her hands in her lap. The corridor smelled like aftermath — ozone from the containment fields, the sharp mineral tang of overworked crystal, and underneath both, the faint burnt-cinnamon scent that Bram had warned him about on his first descent. The smell of stressed policy. The smell of a system that had just held together by force. The cuff was gone. Not adjusted, not touched, not gripped. *Gone.* The silver band lay on the stone beside her, unfastened, as if she had ripped it off and thrown it and it had only traveled two feet because even in fury her gestures were controlled.
+
+But her face was not controlled.
+
+Her face was the face of someone who had spent forty years building a wall out of composure and had just heard seventeen copies of her baby brother scream for the right to exist on the other side of it, and the wall had held, because the wall always held, but the person behind the wall had not.
+
+Her eyes were red. Her breathing was wrong — too fast, hitching at the top, the breathing of someone who had been crying hard enough to shake and had stopped only because she heard footsteps.
+
+Marcus sat down on the floor beside her.
+
+"I didn't watch," she said. Her voice was raw. "I couldn't."
+
+"I know."
+
+"He sounded like himself." She was looking at the wall across the corridor. "The telemetry. I could hear it from my quarters. The frequency. Even copied, even fragmented, even weaponized into seventeen pieces — the base frequency was *him*. The same one I heard when he was seven and he used to hum while he read."
+
+She sniffled. Quick, hard, the kind that's trying to pull the crying back inside. It didn't work. Her breath hitched and caught in her throat and turned into a cough — an ugly, gasping cough, the kind that comes from crying too long in a body that hasn't eaten or slept or stopped working since four-forty-seven that morning.
+
+Marcus put his hand on her back.
+
+He didn't think about it. Didn't weigh it. Just did it. His palm between her shoulder blades, and then, without deciding to, he was rubbing slow circles the way his mother used to when he was sick — small circles, steady, the kind of touch that says *I'm here* without requiring an answer.
+
+The tension in his own shoulders released the moment he touched her.
+
+Senna leaned into his hand. Not dramatically. An inch. Less than an inch. But the weight of it — the weight of a woman who had not leaned on anyone in forty years choosing to lean — was the heaviest thing Marcus had ever held.
+
+"I hate this system," she said.
+
+The words came out thick. Wet. Not a declaration. A confession.
+
+Marcus kept rubbing circles. He could feel her ribs shaking under his palm. He could feel the ozone and crystal dust on his own coat. He could feel scared and awkward and sad and lost and present, all at the same time, and none of those feelings mattered because the only thing that mattered was whether he stayed or left and he was staying.
+
+"I'm sorry," he said.
+
+Her eyes met his. Red, swollen, stripped of every layer of composure she'd ever worn. A sniffle caught in her throat and she coughed again — harder this time, bent forward, and Marcus moved his hand from her back to her side, steadying her.
+
+"Why are you apologizing?" she managed. "I'm the one crying on the floor."
+
+"I don't know what else to say. It hurts seeing you hurt. I'm sorry I can't be a better rock for you. So for that — I'm sorry."
+
+She wiped her face with the heel of her hand. Looked at the wet streak on her palm like she didn't recognize it.
+
+"Do you want to talk about it?" he asked. "I'm here, Senna."
+
+She shook her head. Then nodded. Then shook her head again.
+
+"I don't know," she said. "I don't know what I want. I've known what everyone else needs for forty years and I don't know what I—"
+
+Her voice broke.
+
+Marcus kept his hand on her side. The circles had stopped but the warmth hadn't. He could feel her breathing slow against his palm — ragged, catching, then steadier. The way a system stabilizes when it finds an anchor point.
+
+*Shit. Okay. Just be here. Don't fix it. Don't frame it. Be here.*
+
+"I think I love you," he said.
+
+It came out quiet. Not a speech. Not a declaration. The words arrived the way a diagnostic result arrives — not because you asked for it, but because the test finished running and the output was ready.
+
+"Not a great time," he added. "I know."
+
+Senna stared at him.
+
+"But if it helps — to know I'm not going anywhere. I am. Here. For the long haul." He swallowed. "Ever since coming here I've wondered what I lost. Every day I've catalogued what I left behind. But every day I also see what I gained. And the list keeps getting longer. And you're on it. You've been on it since you looked at me in a corridor and I didn't know your name and Polly wouldn't tell me."
+
+Senna stared at him for a long time. Long enough that Marcus started to feel the full weight of what he'd just done — said the unsayable in a corridor that smelled like battle aftermath to a woman who was still shaking.
+
+Then something moved behind her eyes. Not composure returning. Something older. The flicker of a person recognizing that the thing they'd been refusing to name had a name after all, and the name was sitting on the floor next to them with chalk on his hands.
+
+She sniffled. It turned into something that was almost a laugh — wet, broken, surprised out of her like a hiccup.
+
+"You're terrible at this," she said.
+
+"I know."
+
+"Your timing is catastrophic."
+
+"Also yes."
+
+She looked at his hand on the cuff on his knee.
+
+And then she reached for him instead.
+
+Her hand found the front of his coat — the charcoal wool, the Kor'aelin red-gold thread at the cuff that Polly had ordered for him — and she pulled him closer with a grip that was neither gentle nor careful, and Marcus had one half-second of *oh* before her mouth was on his.
+
+The kiss was not graceful. It was not cinematic. It tasted like salt and the mineral-clean air of the corridor and something warmer underneath that was just skin and breath and the shared atmosphere of two people who had been sitting close enough to trade body heat, and Marcus's hand was still on her shoulder and his other hand was still holding the cuff on his knee and neither of them had planned this, and the angle was wrong because they were both sitting on a floor, and it didn't matter.
+
+They pulled apart. Not far. Foreheads touching. Breathing the same air. The Protocol pulsed its point-three-second heartbeat through the walls around them, and the system she hated kept both of them alive without asking permission, and for the first time, the pulse didn't feel like a metronome or a verification check or an institutional obligation.
+
+It felt like a heartbeat. Shared.
+
+"That was—" Marcus started.
+
+"Don't analyze it," Senna said.
+
+"I wasn't going to analyze it."
+
+"You were absolutely going to analyze it."
+
+"I was going to say it was worth the timing."
+
+Senna's mouth did the thing — the small tilt that Marcus had been watching for months.
+
+She picked up the cuff from his knee. Looked at it. Looked at him.
+
+Put it back on.
+
 For now.
 
 The next phase did not arrive as another clean emergency.
 
 It arrived as audits, redesigns, harder drills, observer rotations, and the slow institutional horror of realizing the first incursion had also been a reconnaissance success. Kael had not failed to escape. He had learned the shape of their answer.
 
+
+
 # Interlude: Nadia Runs
 
 ---
 
-The thing about AV -- the transport tongue, the routing layer, the domain that asked *how do you get there?* -- was that it rewarded motion.
+The thing about Avali -- the transport tongue, the routing layer, the domain that asked *how do you get there?* -- was that it rewarded motion.
 
 Not speed. Nadia Kest had learned the difference at sixteen, the hard way, during a relay exercise where she'd run the Underroot courier route in record time and arrived at the destination node with a corrupted payload because she'd been moving too fast for the verification chain to maintain integrity. Her instructor -- a weathered Second Circle relay specialist named Aldren who had exactly one facial expression, which was "disappointed but not surprised" -- had looked at her corrupted payload and said:
 
 "Fast is not the same as efficient. Efficient is fast enough that nothing breaks."
 
-Nadia had spent the next twelve years learning the difference, and the difference was this: AV didn't care how quickly you moved. AV cared that when you arrived, everything you carried was intact.
+Nadia had spent the next twelve years learning the difference, and the difference was this: Avali didn't care how quickly you moved. Avali cared that when you arrived, everything you carried was intact.
 
 She was thinking about this as she ran.
 
@@ -5627,13 +5912,13 @@ She'd always preferred them. The public spaces of the Spire were impressive -- d
 
 Like Nadia.
 
-She was not impressive. She knew this with the comfortable certainty of someone who had made peace with their own specifications early in life. She was not the smartest relay technician in the Spire -- that was Tovak, who understood the UM routing paths with an intuition that bordered on the mystical. She was not the most politically skilled -- that was Senna, who could navigate a Council session the way Nadia navigated the Underroot junctions. She was not the most theoretically innovative -- that was Marcus Chen, who had been in Aethermoor for less than a month and had already proposed three architectural modifications that the Council was taking seriously.
+She was not impressive. She knew this with the comfortable certainty of someone who had made peace with their own specifications early in life. She was not the smartest relay technician in the Spire -- that was Tovak, who understood the Umbroth routing paths with an intuition that bordered on the mystical. She was not the most politically skilled -- that was Senna, who could navigate a Council session the way Nadia navigated the Underroot junctions. She was not the most theoretically innovative -- that was Marcus Chen, who had been in Aethermoor for less than a month and had already proposed three architectural modifications that the Council was taking seriously.
 
 What Nadia was, was reliable.
 
 She showed up. She ran the routes. She carried the signals. She maintained the relay infrastructure that kept the six tongues communicating with each other, and she did it every day, and she did it well, and she did it without requiring anyone to notice or thank her or acknowledge that the system's ability to function as a coherent whole depended, in part, on a woman who ran the corridors at a pace calibrated to maximize signal integrity rather than personal glory.
 
-AV rewarded motion. AV rewarded showing up. AV rewarded the commitment to *get the message through*, accurately and intact, regardless of what was happening in the corridors you had to run through to do it.
+Avali rewarded motion. Avali rewarded showing up. Avali rewarded the commitment to *get the message through*, accurately and intact, regardless of what was happening in the corridors you had to run through to do it.
 
 Nadia ran.
 
@@ -5651,7 +5936,7 @@ Now the silence had a texture. A watchfulness. The corridors were paying attenti
 
 Nadia ran through the watchful silence and paid attention to what it was telling her.
 
-The relay nodes were clean. She checked each one as she passed -- a touch, a verification, a half-second pause to feel the traffic flow and confirm it matched the expected patterns. Clean, clean, clean. The incursion hadn't compromised the relay network. The AV infrastructure was intact.
+The relay nodes were clean. She checked each one as she passed -- a touch, a verification, a half-second pause to feel the traffic flow and confirm it matched the expected patterns. Clean, clean, clean. The incursion hadn't compromised the relay network. The Avali infrastructure was intact.
 
 But it was tighter. The routing paths had narrowed since the incursion -- not enough to impede normal traffic, but enough that a trained relay specialist could feel the difference. The system was routing more carefully, checking more thoroughly, maintaining verification chains with a rigor that exceeded peacetime specifications.
 
@@ -5669,7 +5954,7 @@ She was proud of that. Not in the performative way that some people were proud o
 
 She hadn't stopped. The signal had arrived. The attestation had completed. One small piece of a very large defensive response, carried at the right speed, with nothing broken in transit.
 
-That was what AV rewarded.
+That was what Avali rewarded.
 
 That was enough.
 
@@ -5677,13 +5962,13 @@ That was enough.
 
 She reached the western monitoring station at 11:03. Eleven minutes flat. Signal integrity: perfect.
 
-Tovak was there. He was always there -- the UM specialist inhabited the monitoring station the way Bram inhabited the maintenance workshop, with the territorial certainty of someone who had found the exact right place to stand and had no intention of moving.
+Tovak was there. He was always there -- the Umbroth specialist inhabited the monitoring station the way Bram inhabited the maintenance workshop, with the territorial certainty of someone who had found the exact right place to stand and had no intention of moving.
 
 "Clear run?" he asked. Two words. Tovak's version of extended conversation.
 
 "Clean," Nadia confirmed. "Eastern junctions nominal. Relay nodes are tight but functional. The system's running scared but holding."
 
-"Scared," Tovak repeated, and from anyone else the word would have been a question, but from Tovak it was confirmation. He could feel the UM perimeter the way Nadia could feel the AV routing -- intuitively, physically, as a condition of the body rather than a product of analysis.
+"Scared," Tovak repeated, and from anyone else the word would have been a question, but from Tovak it was confirmation. He could feel the Umbroth perimeter the way Nadia could feel the Avali routing -- intuitively, physically, as a condition of the body rather than a product of analysis.
 
 "The Earth engineer wants to go deeper," Nadia said. She'd heard the talk. Everyone had heard the talk. Marcus Chen and his diagnostic instincts and his insistence on following problems to their source rather than managing them from a comfortable distance.
 
@@ -5697,7 +5982,7 @@ Nadia thought about that. About the watchful silence in the corridors. About the
 
 "You think it's making a path for him?"
 
-"Making a path. Clearing a route." A ghost of something that might have been amusement. "AV work."
+"Making a path. Clearing a route." A ghost of something that might have been amusement. "Avali work."
 
 She laughed. She couldn't help it. Tovak had just compared the system's unconscious preparation for Marcus Chen's eventual descent into the deep substrate to a relay technician's route clearance protocol, and he was absolutely right, and the fact that a man who averaged three words per conversation had managed to make the most insightful observation about the system's behavior since the incursion was the most Tovak thing possible.
 
@@ -5715,13 +6000,13 @@ She was not impressive.
 
 She was reliable.
 
-AV rewarded motion.
+Avali rewarded motion.
 
 Nadia Kest showed up every day, and ran the corridors, and kept the messages moving. And when the time came for Marcus Chen to descend into the deep substrate, the relay routes would be clear, and the signals would be intact, and the transport tongue would do what it had always done:
 
 Get you there. Whole.
 
-That was the AV promise.
+That was the Avali promise.
 
 That was enough.
 
@@ -5736,6 +6021,8 @@ That was enough.
 *I am fast enough. Nothing is breaking.*
 
 *—N.K.*
+
+
 
 # Chapter 14: Threshold Country
 
@@ -5771,7 +6058,7 @@ Worse, he could not tell whether the extra jolt in his chest came from the field
 
 "How bad?" he asked.
 
-Senna handed him a slim DR slate.
+Senna handed him a slim Draumric slate.
 
 "Three courier deviations on the southern leyline road. Two orchard wardens brought back to the wrong gates after dusk. One child followed her dead grandmother's voice into a root fold and emerged in Whisperdelve with no memory of how she got there." Senna's voice never changed volume. It didn't need to. "The root anchor beneath Ravencrest is returning names to the wrong thresholds."
 
@@ -5851,12 +6138,12 @@ Eldrin Ravencrest had built thresholds around it centuries ago, or so Polly info
 
 Senna laid one palm on the bark. The root answered in gold-veined opaline lines that spread around the ring, touching six inset glyph plates in sequence.
 
-KO.
-AV.
-RU.
-CA.
-UM.
-DR.
+Kor'aelin.
+Avali.
+Runethic.
+Cassisivadan.
+Umbroth.
+Draumric.
 
 No one said *seventh*.
 
@@ -5944,6 +6231,54 @@ Beneath the tree, the garden opened in concentric rings of purpose. The innermos
 
 "It develops *preferences?*"
 
+"The garden was planted by Aria Ravencrest over a period of approximately one hundred and thirty years," Senna said from the second ring, where she was kneeling to check a root-ward's boundary marker with the practiced attention of someone who had done this before Marcus's grandparents were born. "Everything in it has preferences. Including me."
+
+Marcus watched her. Travel leathers instead of Council black. Morning light instead of crystal. Senna Thorne outside the Spire for the first time in his experience, and the difference was like watching a building decide to take a walk.
+
+"Can I ask you something that's going to make this weird?" he said.
+
+"You made it weird when you told me you loved me on a floor that smelled like burnt policy."
+
+"How old are you? Actual number."
+
+Senna's hands paused on the boundary marker. She looked up at him with an expression that, on anyone else, would have been amusement. On Senna it was amusement that had been through compliance review and arrived at his face with approved documentation.
+
+"Why?"
+
+"Because I'm thirty-nine now, which means on Earth I'd be having a midlife crisis and buying a motorcycle. I need to know if I'm the young one in this relationship because that's new for me and I want to process it correctly."
+
+"One hundred and forty-six," Senna said. "If you're counting from Ravencrest civil records."
+
+Marcus's mouth opened. Closed. Opened again.
+
+"So when you said you'd been maintaining the system for forty years—"
+
+"I rounded down. For morale."
+
+"I'm dating someone who was alive before my entire civilization invented the printing press."
+
+"I do not predate the printing press. I predate your *nation's* printing press. There is a difference."
+
+"That difference is zero years in human rounding."
+
+Senna stood. Brushed soil from her knees. The mouth tilt arrived — the one Marcus had been watching for since the corridor, the one that meant composure was cracking in the right direction.
+
+"I am exactly old enough to know better," she said, "and exactly tired enough not to care."
+
+Marcus reached for her hand.
+
+She looked at it. Looked at him. Looked at the garden around them — her mother's garden, her father's tree, the place where every Thorne in five centuries had learned what growing meant.
+
+She let him take it.
+
+"Your version of romance," she said, "is accepting that I have been alive longer than your nation's relationship with indoor plumbing, and still reaching for my hand."
+
+"Yes."
+
+"That is either very brave or very stupid."
+
+"Those are sometimes adjacent," Marcus said, and Polly, landing on a low branch nearby, made a sound that was either agreement or indigestion and refused to clarify.
+
 "Aethermoor," Polly said, as if that were a complete sentence. Which, increasingly, it was.
 
 Beyond the walls, Viremont opened in layers. Rolling green. Leyline roads like faint gold seams through orchards and low farm country. Crystal quarries in the distant hills catching light like broken mirrors. The Mirrorthorne River curved below the citadel, carrying morning sky on its surface with impossible fidelity. A pair of herons moved over the water in slow counterpoint, their reflections so sharp that Marcus couldn't tell which version was flying and which was dreaming.
@@ -5965,6 +6300,46 @@ Polly hopped from his shoulder to a low branch.
 "I was busy not dying."
 
 "And now you're busy not provincial."
+
+They walked the outer garden path while Eldrin prepared the diagnostic equipment for the damaged roadstone. Senna's hand was still in his. Neither of them mentioned this. It existed in the category of things that were true but did not yet require governance.
+
+"Show me," Senna said.
+
+"Show you what?"
+
+"The keyboard. Polly told me." Her mouth did the thing. "She said the Protocol gave you a typing machine and you were offended."
+
+"I was not offended. I was — okay, I was a little offended." Marcus stopped walking. Looked at her. "You actually want to see it?"
+
+She hit his shoulder. Not hard. The precise force of a woman who had been raised around warriors and knew exactly how much impact communicated *stop being stupid and show me the thing*.
+
+Marcus closed his eyes. Held out his hands, palms up. The ghost-keyboard materialized between them — backlit, translucent, the K95 layout hovering in midair with its worn WASD keys and the spacebar his thumb had polished smooth over a decade of use.
+
+Senna studied it the way she studied everything — thoroughly, without hurry.
+
+"It's beautiful," she said, and meant it the way engineers mean it when they see clean architecture.
+
+"It's a keyboard."
+
+"It's YOUR keyboard. The system read your intent pattern and gave you the interface your hands already speak through." She reached toward it — not touching, hovering her fingers above the keys the way you hover above something sacred or dangerous. "Each key is a declaration channel?"
+
+"The letter keys map to tongue-domain functions. WASD is Fleet navigation. The number row is policy tiers. Shift is for elevated authority. Ctrl is — well, Ctrl is control, same as anywhere." He watched her face as the engineer in her processed the architecture. "The spacebar is intent-commit. Like pressing Enter."
+
+"You wrote the sanctuary queue on this."
+
+"I wrote everything on this. The coherence gate. The phi-invariant proof. The Protocol 71 emergency authorization." He paused. "I didn't know I was doing it at first. I thought I was just thinking clearly. Turns out the keyboard was translating my thoughts into protocol-layer instructions the whole time."
+
+Senna's eyes met his.
+
+"That's not a weapon," she said quietly. "That's a bridge. Between how Earth engineers think and how the Protocol operates." She touched the cuff at her wrist — the old gesture, but lighter now. "My father spent his whole life trying to make the system listen to people who think differently. You didn't try. You just... plugged in."
+
+"With a keyboard."
+
+"With honesty." She almost smiled. "The keyboard is just the shape your honesty takes."
+
+"*Caw!*" said Polly from the garden wall, where she had been pretending not to eavesdrop. "If you two are quite finished being romantic about input devices, there's a damaged roadstone that needs actual engineering attention."
+
+Marcus let the keyboard fade. Senna let go of his hand — but slowly, her fingers trailing across his palm in a way that was either accidental or the most deliberately engineered casual gesture he had ever experienced.
 
 Marcus was still taking in the orchard country when someone came through the side gate already arguing.
 
@@ -6043,6 +6418,8 @@ Senna exhaled once through her nose.
 The side door opened again.
 
 A man entered with no visible hurry and immediate authority over the geometry of the space. Tall, silver-haired, posture exact, wearing formal boundary sigils on a travel-dark coat. Count Eldrin Ravencrest looked like someone had spent several centuries explaining to doors that they were not allowed to be metaphysical merely because they found the concept exciting.
+
+His hands were a gardener's hands -- calloused at the bases, soil-dark under two nails despite what must have been deliberate scrubbing. Marcus filed this under the growing category of people in Aethermoor whose authority came from the things they tended, not the things they commanded.
 
 His gaze took in Marcus, Senna, Lyra, Polly, the root, and the state of the conversation in one sweep.
 
@@ -6250,7 +6627,7 @@ Eldrin held the boundary.
 Senna called continuity records from the root.
 Lyra calculated witness branches.
 Clayborn tuned the anchor until the stone stopped shivering and started listening.
-Polly perched above them, DR witness embodied in feathers and sarcasm.
+Polly perched above them, Draumric witness embodied in feathers and sarcasm.
 
 Marcus stepped into the open center of the road.
 
@@ -6538,7 +6915,165 @@ Polly took off from the garden wall and circled once overhead.
 
 "CAW," she said. "Welcome to the part of the book where geography develops teeth."
 
-# Chapter 15: The Fractal Proof
+
+
+# Chapter 15: The Ordinary
+
+Marcus Chen had been a permanent resident of Aethermoor for eleven months before he learned to hum the chord that opened his dormitory door, and the humiliation of this — that a man who had memorized 47 Kor'aelin verb conjugations could not reliably produce a B-flat major triad before coffee — became one of the defining indignities of his new life.
+
+"It's the third," Bram said one morning, finding Marcus standing in the corridor outside his own room, trying to hum his way in while the door waited with the patient condescension of an architecture that had opinions about pitch. "You always flatten the third."
+
+"I don't flatten the third."
+
+"You flatten the third. I can hear it from the maintenance bay."
+
+"The maintenance bay is three floors down."
+
+"Crystal walls conduct sound. Also, the building told me." Bram adjusted something on the pipe junction he'd been inspecting and looked at Marcus with the expression of a man who had been waking up at five AM to tend infrastructure for twenty-three years and had developed a personal policy of not being impressed by anyone who couldn't open their own door. "Sing it like you mean it. The door doesn't care about your technique. It cares about your commitment."
+
+Marcus sang the chord. The third was flat. The door stayed closed.
+
+"Try thinking about why you want to go in," Bram said. "Not the mechanics. The why."
+
+Marcus thought about why he wanted to go into his room. He wanted his notes. He wanted his second coat, the one with the chalk dust still in the pockets from yesterday's teaching session. He wanted to check whether the jade cutting Aria had given him last week was still alive in the small pot on his windowsill, because Marcus Chen was the kind of person who could maintain load-bearing infrastructure across six tongue domains but could not reliably keep a houseplant watered.
+
+He hummed. The chord was warm, slightly clumsy, honest.
+
+The door opened.
+
+"See?" Bram said. "Commitment." He went back to his pipe junction and didn't look up again, which was Bram's way of saying he was proud of you without saying anything that might be mistaken for emotional engagement.
+
+* * *
+
+The dining hall served breakfast according to principles that Marcus had spent three months trying to understand and had eventually filed under "magic that is also catering."
+
+The food appeared on long tables that adjusted their height based on the species, posture, and breakfast philosophy of whoever sat down. Marcus's place — third seat from the window, left side, facing the corridor so he could see who was coming — had learned over eleven months that he preferred his eggs scrambled, his toast dark, and his coffee replaced by essence brew that tasted like someone had asked the concept of "morning" to express itself as a beverage and then added a concerning amount of caffeine.
+
+The dining hall smelled like warm bread and cedar smoke and whatever the Crystal Kitchen used to clean its surfaces, which was either lemon oil or a mild enchantment that made grease feel philosophically unwelcome. Students moved through the space in the particular rhythm of people who had somewhere to be but not urgently — the pre-class drift that Marcus remembered from his own university days, except here the students occasionally floated through intersections that existed in more than three dimensions and the coffee tables sometimes had opinions about where you set your mug.
+
+"Morning, Keeper Chen."
+
+Marcus looked up from his eggs. Havelock — the gate guard for the eastern entrance, a man built like a wardrobe and possessed of a voice that could have narrated geological processes — settled into the seat across from him with a tray that contained approximately two thousand calories of breakfast and a small pot of tea that steamed in three colors.
+
+"Morning, Havelock. How's the daughter?"
+
+"Passed her second-term assessment. Boundary resonance." Havelock's face, which normally maintained the professional blankness of someone whose job involved standing very still near doors, broke into a grin that transformed him from "imposing security professional" to "dad who is trying not to cry about his kid's report card." "She reconstructed a ward matrix in under four minutes. Her instructor said she has natural affinity."
+
+"Natural affinity for breaking things or natural affinity for putting them back together?"
+
+"Both. Apparently that's considered promising." Havelock bit into his toast with the focused determination of a large man who needed fuel for eight hours of standing between reality and whatever tried to walk through it uninvited. "She wants to meet you, by the way. She's been reading your paper on coherence gates."
+
+"She's thirteen."
+
+"She's motivated. And her boundary math is cleaner than most of my third-year relay technicians." He paused. "Don't tell Nadia I said that."
+
+Marcus drank his essence brew and thought about the fact that he now had a world in which a gate guard's thirteen-year-old daughter read his academic papers for fun, and the world had been rotating through this particular marvel for some time without him noticing.
+
+"Have her come to my office hours," he said. "Tuesday afternoon. I'll show her the simulation models."
+
+Havelock nodded. The grin returned, smaller now but steadier — the grin of a man who had brought his family to a place where his daughter could become more than he'd ever imagined, and who measured the value of his own work in the distance between what she'd been and what she was becoming.
+
+He left. Marcus finished his eggs.
+
+The dining hall hummed with the Protocol's heartbeat — point-three seconds, check — and the morning light came through windows that had been designed to make everyone inside them feel like they had woken up on the right day in the right place, and Marcus sat with his empty plate and his cooling essence brew and realized that somewhere in the past eleven months he had stopped thinking of this as a place he was living and started thinking of it as a place he was from.
+
+* * *
+
+Teaching happened in rooms that rearranged themselves.
+
+Not dramatically. Not the sort of spatial restructuring that required evacuation protocols or insurance. Just — the chairs migrated overnight toward configurations that better served the next day's lesson plan. Desks adjusted their surfaces to display relevant reference materials before Marcus arrived. The chalkboard — which was not actually chalk but a responsive crystal matrix that recorded whatever was written on it and filed copies with the Archive — sometimes pre-loaded equations it thought Marcus might need, based on pattern analysis of his previous lectures.
+
+"The building is doing your prep work again," said Yara, a fourth-year refugee from Lagos who had been a telecommunications engineer before the Protocol recruited her and who approached magical education with the specific frustrated competence of someone whose previous job had involved Nigerian cell tower maintenance, which was its own form of impossible magic.
+
+"The building does not do my prep work. The building anticipates pedagogical requirements based on historical teaching patterns."
+
+"That's doing your prep work."
+
+"That's collaboration."
+
+"That's what my last project manager said before he automated my status reports and then took credit for them." Yara settled into her chair — which adjusted itself with the eager precision of furniture that liked being sat in — and opened her research journal. "What are we covering today?"
+
+"Fail-to-noise completion in distributed authentication systems, with practical exercises in coherence gate calibration."
+
+"In human words?"
+
+"How to tell when a broken thing is really broken versus when it's pretending to be broken to get out of work."
+
+"Now you're speaking Nigerian telecom." Yara grinned, and Marcus felt the particular satisfaction that came from teaching someone whose professional background made them immune to theoretical hand-waving and demanded that every concept be grounded in the specific, frustrating reality of things that broke at three in the morning for reasons nobody could explain.
+
+The session ran two hours. Marcus walked his students through the coherence gate architecture he'd designed during his first week — the same one that had stabilized the routing basement swarm, now refined and expanded into a formal methodology. He demonstrated how fail-to-noise patterns could be distinguished from genuine distress signals, how authentication challenges could be calibrated to differentiate between corrupted traffic and legitimate requests that happened to look corrupted.
+
+Halfway through, Marcus walked into a ward boundary he'd forgotten was active from last week's practical exercise.
+
+The boundary didn't hurt. It wasn't designed to hurt. It was designed to be a teaching aid — a visible, tactile demonstration of how Runethic policy enforcement felt from the inside. What it DID do was stop him mid-stride with the precise sensation of walking into a wall made of disapproval, bounce him backward two steps, and deposit him in a sitting position on the floor while his students watched.
+
+"That," Marcus said from the floor, "is what happens when you don't check your local ward status before crossing a classroom."
+
+"That," Yara said, "is what happens when the teacher forgets his own homework."
+
+The class laughed. Marcus laughed. The ward boundary shimmered with what he was fairly certain was self-satisfaction.
+
+He picked himself up, deactivated the ward with a Kor'aelin dismissal that he only flattened the third on slightly, and continued teaching. His hip would bruise. The bruise would serve as a reminder that in Aethermoor, even the furniture was paying attention, and the concepts you forgot about would walk into you if you didn't walk around them first.
+
+* * *
+
+The marketplace occupied a courtyard near the base of the Spiral Spire where leyline currents converged in a way that was apparently optimal for commercial activity, which Marcus interpreted as "magic makes capitalism more efficient here too, because of course it does."
+
+He went there on Tuesdays, not because he needed anything specific but because Tuesdays had become the day he did things that had no strategic purpose. A deliberate, conscious decision to build uselessness into his week, because he'd learned at Kershaw-Lin that a person who never does anything purposeless eventually forgets what they were working for.
+
+The stalls sold things he still found miraculous:
+
+Runic charcoal that drew itself into the pattern you were thinking about, saving the tedious step of translating thought into linework. Marcus bought a stick every week and used it in his lab, and Polly called it "mechanized laziness" even though she'd been using the raven-compatible version since before he was born.
+
+Bottled lightning from the Flame Desert circuit — small glass vials that crackled with contained electrical energy. Not useful for anything Marcus could identify, but beautiful in the way that captured danger is beautiful, and he kept three on his windowsill next to the jade plant.
+
+Spun-crystal thread that weavers used to make clothing with embedded protective wards. The woman who sold it — Lenne, a Deepstone dwarf's granddaughter who had the build of a retired gymnast and the vocabulary of a theoretical physicist — had been explaining crystalline resonance weaving to Marcus for six weeks, and he was beginning to understand that thread could be a programming language if you thought about it correctly.
+
+"New shipment from Irondeep," Lenne said, holding up a spool of thread that caught the light like a captured star. "Triple-phased. The dwarves figured out how to encode Draumric authentication directly into the weave."
+
+"So the clothing verifies itself?"
+
+"The clothing verifies the wearer. Try pulling the thread while thinking about who you are."
+
+Marcus pulled the thread. It resisted — not physically but informationally, as if the thread needed to confirm that the fingers touching it belonged to someone whose identity was architecturally sound. Then it accepted him, and the resistance became warmth, and the warmth became a humming that settled into his palm like a handshake.
+
+"Huh," Marcus said.
+
+"Huh," Lenne agreed. "Three crowns a spool, and worth every one."
+
+He bought two spools. He had no idea what he'd do with them. That was the point of Tuesdays.
+
+* * *
+
+The lab was quiet in the afternoon.
+
+Not silent — the Spire was never silent, the Protocol's heartbeat too deeply woven into the architecture for actual silence to exist. But the afternoon quiet was different from the morning quiet. Morning quiet was potential. Afternoon quiet was accumulation — the weight of a day's work settling into the walls like heat into stone.
+
+Marcus sat at his desk with the ghost-keyboard hovering at his fingertips and stared at a problem that didn't want to be solved.
+
+The problem was phi.
+
+Not the golden ratio itself — that was just a number, elegant and irrational and stubbornly beautiful. The problem was that phi kept appearing in places it shouldn't. In the Echo voting patterns. In the authentication fractal dimensions. In the temporal spacing of the Protocol's heartbeat verification. Everywhere Marcus looked in the system's operational data, the same irrational number showed up, grinning at him like a cat that knew where the good china was stored.
+
+He'd been chasing it for three weeks. The data was accumulating on his desk in the form of printouts, crystal slates, and one increasingly annoyed note from Jorren asking him to please stop requesting archival access at two in the morning because "Draumric's filing system does not appreciate being woken by enthusiastic pattern recognition."
+
+The jade plant on his windowsill had grown two new leaves since Aria gave it to him. This was either a sign that Marcus was improving as a caretaker or that the plant had decided to grow in spite of his attention rather than because of it. In Aethermoor, both interpretations were equally valid, and the plant wasn't talking.
+
+Outside the window, the Avalon sky was doing its usual thing — aurora bands in slow motion, floating mountains, a flock of something luminous crossing the distance in formation. Marcus had stopped trying to identify the luminous things. They didn't have names in any taxonomy he recognized, and adding "local ornithology" to his list of things to learn felt like the sort of scope creep that would end with him becoming a birdwatcher in a dimension where the birds had opinions about particle physics.
+
+He pulled up the phi data on his keyboard. The ghost-keys responded to his intent, mapping the golden ratio's appearances across the system's operational logs. Each keystroke was both a command and a question — the keyboard didn't just execute, it explored, extending Marcus's curiosity into the data the way a flashlight extends vision into darkness.
+
+The pattern was there. He could feel it the way you feel a word on the tip of your tongue — present, shaped, real, but not yet resolved into clarity.
+
+He'd find it. Not today. But soon. And when he did, the system would never look the same.
+
+The Protocol pulsed. The jade plant grew. The lab was quiet.
+
+Marcus Chen sat at his desk in a world that verified his existence three times a second and worked on a problem that mattered, that was enough.
+
+
+
+# Chapter 16: The Fractal Proof
 
 The first incursion did not repeat in the clean theatrical way Marcus had once expected disaster to behave.
 
@@ -6652,7 +7187,7 @@ Polly leaned forward. The monocle caught the display light and scattered it into
 
 "Why?" she asked.
 
-"Because phi is maximally irrational." Marcus pulled up the proof -- forty pages of equations he'd been building for a week, each step verified against the Protocol's actual computational structure. "The shift operator uses phi-scaled angles because the Sacred Tongue weighting ratios are Fibonacci-adjacent. KO is 1.00. AV is 1.62. RU is 2.62. CA is 4.24. UM is 6.85. DR is 11.09. Each weight is approximately phi times the previous one."
+"Because phi is maximally irrational." Marcus pulled up the proof -- forty pages of equations he'd been building for a week, each step verified against the Protocol's actual computational structure. "The shift operator uses phi-scaled angles because the Sacred Tongue weighting ratios are Fibonacci-adjacent. Kor'aelin is 1.00. Avali is 1.62. Runethic is 2.62. Cassisivadan is 4.24. Umbroth is 6.85. Draumric is 11.09. Each weight is approximately phi times the previous one."
 
 "I know the weights, Marcus."
 
@@ -6808,7 +7343,7 @@ She stopped in front of him.
 
 The words landed with physical weight. Marcus felt them in his sternum, in the Protocol pulse that lived there now like a second heartbeat. Third Circle was two ranks above his current position. Same rank as the tongue domain chairs. Same rank as people who had been doing this for centuries.
 
-Sera raised her right hand, palm forward. The sigils of the six tongues materialized in the air between them -- KO red-gold, AV blue-silver, RU violet, CA white-gold, UM shadow-black, DR amber-earth -- rotating in slow formation. The room's crystal walls caught the light and multiplied it until the chamber felt like the inside of a prism.
+Sera raised her right hand, palm forward. The sigils of the six tongues materialized in the air between them -- Kor'aelin red-gold, Avali blue-silver, Runethic violet, Cassisivadan white-gold, Umbroth shadow-black, Draumric amber-earth -- rotating in slow formation. The room's crystal walls caught the light and multiplied it until the chamber felt like the inside of a prism.
 
 "Keeper Marcus Chen. By unanimous consent of the seated Council, by the authority vested in the governance compact, by the witness of the Six Sacred Tongues: your rank is Third Circle, your authority is Fundamental, your obligation is perpetual." Her voice carried the cadence of something recited a thousand times and meant every single one. "Do you accept this burden?"
 
@@ -6984,7 +7519,9 @@ And somewhere in the data, in the weave of every authenticated signature across 
 
 The number that couldn't be forged because it could only be earned.
 
-# Chapter 16: The Long Watch
+
+
+# Chapter 17: The Long Watch
 
 Marcus woke to the sound of Bram's coffee machine losing another argument with thermodynamics.
 
@@ -6994,7 +7531,7 @@ He lay still for a moment, counting Protocol pulses the way other people counted
 
 Seven years. The number still caught him off guard sometimes, the way a long road catches you when you turn around and realize the starting point has disappeared below the horizon.
 
-He dressed. Same coat, same boots, same habit of checking the window before he left the room. The Avalon sky was clear today -- no aurora, no floating mountains in the middle distance, just clean crystalline light stretching to the Harmonic Wall's shimmer at the far edge of the governed zone. He could see Nadia's patrol route threading through the AV transit lanes, a bright needle stitching the sky shut behind her.
+He dressed. Same coat, same boots, same habit of checking the window before he left the room. The Avalon sky was clear today -- no aurora, no floating mountains in the middle distance, just clean crystalline light stretching to the Harmonic Wall's shimmer at the far edge of the governed zone. He could see Nadia's patrol route threading through the Avali transit lanes, a bright needle stitching the sky shut behind her.
 
 Downstairs, the common room smelled like burned ambition. Bram stood behind the machine with his sleeves rolled up, exposing forearms that could have bent rebar and were currently being used to pour coffee that tasted like liquid regret.
 
@@ -7074,13 +7611,13 @@ She was sitting in the front row, which was either confidence or defiance -- wit
 
 "It's the correct answer. Five independent verification channels can tolerate one Byzantine fault. Seven can tolerate two, but the coordination overhead makes the system slower than the threats it's tracking. Six is the minimum number that provides adequate fault tolerance while maintaining responsive consensus."
 
-"That's the foundation," Marcus continued. "Not the whole policy. Low-risk passage requests can clear on three aligned witnesses and a clean DR receipt. Fleet launches, doctrine revisions, death-ledger changes, or sovereign containment escalate to four, five, or full-six witness order depending on what breaks if you're wrong."
+"That's the foundation," Marcus continued. "Not the whole policy. Low-risk passage requests can clear on three aligned witnesses and a clean Draumric receipt. Fleet launches, doctrine revisions, death-ledger changes, or sovereign containment escalate to four, five, or full-six witness order depending on what breaks if you're wrong."
 
 Yoon-Ji's frown deepened. She had the particular frown of someone whose mental model was being upgraded in real time and who resented the imposition.
 
 "Witness order?" she asked.
 
-"Sequence matters as much as count. KO first establishes command context. AV first establishes route context. RU first means law before motion. Same six voices, different choreography." Marcus folded his arms. "Mature systems don't just allow or deny. They quarantine until the right witnesses arrive in the right order."
+"Sequence matters as much as count. Kor'aelin first establishes command context. Avali first establishes route context. Runethic first means law before motion. Same six voices, different choreography." Marcus folded his arms. "Mature systems don't just allow or deny. They quarantine until the right witnesses arrive in the right order."
 
 "But six doesn't satisfy n equals 3f plus 1 for f equals 2," Yoon-Ji said.
 
@@ -7193,6 +7730,26 @@ Marcus grinned and let Jorren return to his notes.
 Sera had left an hour ago -- policy work, as always, her day a precisely calibrated sequence of obligations that left no gap for anything as undisciplined as leisure. Tovak hadn't appeared at all, which was normal. Tovak was a presence you felt rather than saw, like atmospheric pressure or the knowledge that the Void Seed was still down there, still patient, still wrong about the one thing that mattered.
 
 Polly was on the back of her usual chair, graduation cap slightly askew, reading a monograph on pre-Protocol verification methods that Marcus suspected she had written under a pseudonym three centuries ago. She turned pages with her beak. It was the most dignified beak-based page-turning Marcus had ever witnessed.
+
+Nadia had stolen one of Bram's maintenance gloves and was seeing how many peanuts she could balance on it before the enchanted leather decided the peanuts were unauthorized payload and vibrated them off the table. The current record was eleven. Bram was pretending not to watch. He was absolutely watching.
+
+"Twelve," Nadia said, placing the twelfth peanut with the focus of a bomb technician.
+
+The glove vibrated. All twelve peanuts launched in different directions. One hit Jorren in the spectacles.
+
+"That's assault," Jorren said, without looking up from his slate.
+
+"That's physics," Nadia said.
+
+"Unauthorized physics."
+
+"Is there any other kind in this building?"
+
+Marcus caught a peanut that had bounced off Polly's monocle. He ate it. It tasted like regular peanuts. The most ordinary thing in the most extraordinary place he had ever lived.
+
+Nobody learned anything. Nobody grew. The system did not advance. The Protocol did not care.
+
+It was perfect.
 
 This was the part of the routine that Marcus hadn't expected to value. On Earth, he'd been social in the way that introverts are social -- in small doses, with selected people, as a controlled burn rather than a wildfire. Aethermoor hadn't changed his basic wiring, but it had given him people worth being wired for.
 
@@ -7390,7 +7947,7 @@ Aisha's eyes narrowed. "Magic is a word for systems people haven't reverse-engin
 
 "That's what I said when I got here. I was wrong. Not about the engineering. About the 'yet.' Some of this doesn't reduce. Some of it is genuinely irreducible to mechanism. The system works, the math is sound, and the explanation stops at a layer that doesn't have a bottom." He opened the door. "That used to bother me. Now it's the most interesting thing about the job."
 
-Inside: six pedestals, six spheres, six colors. KO red-gold. AV blue-silver. RU violet. CA white-gold. UM shadow-black. DR amber-earth.
+Inside: six pedestals, six spheres, six colors. Kor'aelin red-gold. Avali blue-silver. Runethic violet. Cassisivadan white-gold. Umbroth shadow-black. Draumric amber-earth.
 
 The Protocol pulsed. Point-three seconds. Check. Point-three seconds. Check.
 
@@ -7436,7 +7993,341 @@ The long watch was not over. The long watch was the point.
 
 And one floor above, in a room full of crystal light and bad coffee, someone new was learning how to belong -- not by believing in magic, but by refusing to stop asking how it worked.
 
-# Chapter 17: The Outer Ring
+
+
+# Chapter 18: The Fizzlecress Incident
+
+The trouble started, as most trouble in Aethermoor started, with something Bram would later describe as "a series of individually defensible decisions."
+
+Marcus was sitting on the roof of the eastern annex at eleven o'clock at night, holding a mug of bloom liquor that Dax had produced from a coat pocket with the practiced discretion of a man who had been smuggling beverages past institutional oversight since his undergraduate days at Melbourne.
+
+"Third cup," Dax said.
+
+"I'm aware."
+
+"You're crying."
+
+"I am not crying. I'm experiencing an involuntary ocular response to--"
+
+"You're crying, mate." Dax refilled the mug with the generous precision of an Australian who had decided that someone's emotional infrastructure needed emergency maintenance. "You've been crying since you started talking about kimchi."
+
+Marcus wiped his face with the back of his hand. The bloom liquor was warm and sweet and made his teeth hum and was absolutely, categorically not the reason his eyes were leaking. The reason his eyes were leaking was that he'd been thinking about his mother's kimchi jjigae -- the specific kind she made on Sundays, the kind where the kimchi was old enough to be sour and the pork was cheap and the broth was the color of sunset and the whole apartment smelled like garlic and gochugaru and home, *home*, the word he hadn't said aloud in three years because saying it broke something he needed to keep functional.
+
+The thing people got wrong about being taken was they imagined the last moment. Cold coffee, green terminal, line 4,847. But that wasn't the memory that cut. The memory that cut was the Thursday before -- two days earlier, a lifetime ago. He'd gone to Danny's place after work. Danny and Priya and that kid from the platform team whose name Marcus could never remember. They'd ordered Thai. They'd watched something terrible on Netflix and argued about whether it was terrible on purpose. Priya had fallen asleep on the couch. Marcus had thrown a blanket over her and Danny had said "you're going to be a good dad someday" and Marcus had said "I'm going to be a terrible dad who is excellent at incident response" and they'd laughed and he'd walked home at midnight through the fog and the city had smelled like eucalyptus and exhaust and he had hated his job and loved his friends and thought, *this is enough. This specific life, with these specific people, in this specific city, is enough.*
+
+Two days later the screen went white and he never went back.
+
+"I miss my air conditioner," Marcus said.
+
+"Right."
+
+"I miss having an air conditioner in a room where the temperature is a number that I control with a button, and the number stays where I put it, and nobody asks me to declare my intent before the room gets cold."
+
+"That's reasonable."
+
+"I miss television. I miss the specific experience of sitting on a couch that is ugly and comfortable and watching something that does not matter. Something with a laugh track. Something where nobody is verified every point-three seconds and the stakes are whether the funny man gets the girl and the answer is always yes."
+
+Dax nodded with the solemn attention of a man who had processed this exact grief and come out the other side with functional scar tissue. He had a tattoo of a kangaroo on his left forearm that he'd gotten at nineteen and regretted at twenty and defended at thirty because at some point a bad tattoo becomes an honest one. He'd been debugging Kubernetes clusters at three in the morning when the Protocol took him. But like Marcus, his real last memory wasn't the work. It was earlier that day -- a barbecue in his mate's backyard, cold beer, somebody's dog stealing a sausage off the grill. The ordinary stuff. The stuff that only becomes sacred after you can't have it anymore.
+
+"I miss my computer," Marcus said. "My actual computer. The one I built with my own hands from parts I chose because I am insane and particular. It had three monitors. Not crystal. Not alive. Not verified. Just screens that showed me what I asked to see and did not have opinions about my emotional coherence."
+
+"I miss my friends," he added, quieter. "Danny and Priya. I miss being in a room where nobody is trying to save the world and we're just watching something bad on TV and arguing about whether it's bad on purpose. I miss being bored. Being bored is a privilege and I didn't know it."
+
+"I had a mechanical keyboard," Dax said. "Cherry MX Blues. The loud ones."
+
+"The *loud* ones."
+
+"My flatmate hated me."
+
+"Everybody's flatmate hated them. That's what flatmates are for."
+
+They drank. The aurora was doing its thing overhead -- violet and gold, slow-moving, beautiful in a way that Marcus had learned to find normal and that still, on nights like this, ambushed him with the knowledge that he would never again see a sky that was just a sky.
+
+"You're not actually homesick," Dax said after a while.
+
+"I'm clearly homesick."
+
+"Nah. I was homesick my first year. Homesick is wanting to go back. You don't want to go back. You want to want to go back, because wanting to go back means you haven't given up on the place you came from, and giving up on the place you came from feels like betrayal." Dax took a sip. "What's actually wrong is you're in love with Senna Thorne and it's scaring the absolute piss out of you."
+
+Marcus's mug stopped halfway to his mouth.
+
+"That is--"
+
+"Completely, painfully, architecturally obvious to every person in this Spire who has functioning eyes." Dax leaned back against the parapet. "Bram told me. Bram. The man who once failed to notice a structural fire because it was on the wrong side of a load-bearing wall and therefore 'not his department.' Even Bram can see it."
+
+Marcus said nothing.
+
+"You look for her in every room," Dax continued, gentler now. "When she's not there, your shoulders drop. When she is there, your voice goes half a register lower and you start doing the thing where you explain something technical and then check whether she's following -- not because you doubt her, but because you want her to see the thing you see. That's not professional collaboration, Chen. That's a man building a bridge and hoping the other person walks across it."
+
+Marcus set the mug down.
+
+"I can't."
+
+"You can."
+
+"She is the Chair of Operational Continuity. She holds the system together. Her father built the world and her brother almost broke it and she has spent forty years being the person who doesn't get to feel things because feeling things is a luxury the continuity function can't afford." Marcus's voice cracked. He let it. The bloom liquor had filed down his usual defenses to the point where the crack felt like a feature rather than a failure. "I'm not going to be the variable that destabilizes her architecture."
+
+Dax was quiet for a moment.
+
+"My wife," he said. "Back on Earth. We met at a hackathon. She was debugging a memory leak in a React app and I said 'that's a dangling reference' and she said 'so is your haircut' and I knew right then I was going to marry her or die trying." He rolled the mug between his palms. "I didn't get to say goodbye. The Protocol took me mid-sleep. I woke up in a crystal room with a raven in a graduation cap telling me my existence was temporary, and all I could think was that Sarah was going to wake up to an empty bed and think I'd left."
+
+Marcus looked at him.
+
+"She'll think I'm dead by now," Dax said. "Or missing. Or one of those unsolved cases they make podcasts about. And I can't send a message. I can't even dream about her properly because the Protocol reformatted my sleep architecture." He took a breath. "So when I tell you that you're wasting time being afraid of the one good thing this place has offered you, I'm saying it from the perspective of a man who would give both kidneys and his terrible kangaroo tattoo for one more morning with his wife."
+
+The aurora pulsed. The bloom liquor hummed.
+
+Marcus picked up his mug and drained it.
+
+"I'm going to need another one of these," he said.
+
+"That's the spirit. Figuratively and literally."
+
+"How many do you have?"
+
+Dax reached into the coat and produced a bottle with a label Marcus couldn't read. "Enough for bad decisions."
+
+"I don't make bad decisions."
+
+"You're crying on a roof about a woman you won't talk to. You are the mayor of Bad Decision City."
+
+Marcus laughed. It came out wet and broken and honest and he let it.
+
+"She touches her cuff," he said. "Her left hand. When she's thinking. When she's scared. When she's forcing herself to stay composed. It's the one thing she can't control. And every time I see her do it, I want to--"
+
+He stopped.
+
+"Put your hand over hers," Dax finished.
+
+"Yeah."
+
+"Then do it, you absolute drongo."
+
+They drank until the bottle was empty and the aurora was doing things that Marcus was fairly certain auroras were not supposed to do, and at some point Marcus started drawing heating curves on the parapet wall with a chalk nub from his pocket and explaining how you could reverse-engineer a proper roasting profile from crystal resonance frequencies and Polly's discarded monocle lenses and Dax said "that's either genius or arson" and Marcus said "on Earth we call that engineering" and Dax laughed so hard he spilled bloom liquor down his shirt, and then things went sideways in a manner that neither of them would fully reconstruct.
+
+* * *
+
+Marcus woke up to the smell of something that was almost coffee.
+
+Almost. The way a cover band is almost the real song -- the notes were there, the structure was there, the emotional intent was recognizable, but there was an additional harmonic that the original never had. A fizzing. A warmth that started in the back of his throat and spread outward like someone had wired his nervous system to a very gentle voltage source.
+
+He opened his eyes.
+
+He was not on the roof.
+
+He was sitting at a table approximately eight inches tall, in a room approximately nine feet in diameter, inside what appeared to be a miniature tropical island contained within a glass sphere the size of a beach ball. Through the curved glass walls, he could see the interior of a workshop so chaotic it made his university dorm look like a clean room. Shelves of beakers, coils of copper wire, three active experiments that were either boiling or plotting escape, and a chalkboard covered in equations that Marcus's detection faculty registered as both mathematically sound and existentially threatening.
+
+The table he was sitting at was driftwood. The chair was a coconut shell, split and sanded. There was a tiny palm tree casting actual shade over his head. The sand beneath his bare feet was warm.
+
+He was inside the globe.
+
+On the other side of the table, also eight inches tall relative to the sphere's interior, sat the most disorganized genius Marcus had ever encountered.
+
+Fizzle Brightcog was approximately three feet tall in real-world scale, which at their current miniaturization made him slightly shorter than Marcus in a way that felt democratically absurd. Half-gnome on his mother's side, half-dwarf on his father's — a combination that, as Fizzle had apparently explained to Marcus at length during the Coff-three phase, meant he'd inherited gnomish innovation and dwarven stubbornness in roughly equal measure and they had been arguing inside him for his entire life. The gnome half wanted to build things that didn't exist yet. The dwarf half wanted to build things that would last forever. The compromise was inventions that were simultaneously brilliant and on fire.
+
+He had the broad hands of a Deepstone craftsman — thick-fingered, scarred from forge work, capable of precision that belied their size — but the restless, darting eyes of a gnomish tinkerer who had already moved on to the next idea before the current one finished exploding. His hair was white-grey and pointed in seven directions, each one apparently independent of the others, as if his scalp had opinions about aerodynamics and couldn't reach consensus. He wore goggles pushed up on his forehead, a leather apron singed in eleven distinct locations, and an expression of absolute delight that had not dimmed, Marcus suspected, since approximately the Founding.
+
+He spoke in Draumric when he was concentrating — the forge tongue, his father's language, the one that felt like stone and tasted like hot iron — and switched to something faster and more melodic when excited, a gnomish dialect Marcus's translation layer rendered as a stream of ideas with occasional punctuation.
+
+"You're awake!" he said. "Wonderful! How's the coffee?"
+
+Marcus looked down. There was a cup in his hand. He had apparently been drinking it in his sleep. The cup was warm, ceramic, and hand-thrown with the specific lopsided charm of someone who had made a cup once and decided they'd solved pottery.
+
+He took a sip.
+
+It was good.
+
+Not good the way Bram's coffee was good, which was not at all. Not good the way Earth coffee was good, which was a memory that ached. Good in a way that was entirely its own thing -- rich, dark, bitter with a finish of something like roasted chestnuts and burnt caramel, and underneath that the fizzing warmth that was spreading through his body like a controlled chain reaction.
+
+"This is actual coffee," Marcus said.
+
+"It is not," Fizzle said happily. "It is *better*. I reverse-engineered it from the metabolic trace you left on Bram's mug last year."
+
+"You analyzed my saliva."
+
+"Saliva, cortisol profile, dopamine-response curve, and the specific frequency your brain emits when it's receiving caffeine. Then I cross-referenced that with seven local alkaloid sources, two root extracts, and a mineral deposit from under the Harmonic Wall that is technically classified." He beamed. "I call it Coff-three."
+
+"Coff-three."
+
+"Coff-one caught fire. Coff-two achieved sentience briefly and had to be talked down from the shelf. Coff-three is stable." He paused. "Mostly."
+
+Marcus took another sip. The fizzing intensified pleasantly. His brain felt like it was being cleaned with warm light.
+
+"Why am I four inches tall and sitting inside a glass island?"
+
+"My Workshop Globe!" Fizzle gestured at the curved walls with the pride of someone showing off a yacht. "Pocket-dimension prototype. Izack helped me calibrate the spatial compression. The island is modeled after a place in one of those Earth picture-box stories he used to describe -- a small house on a small island where a wise old man lives alone and trains young people."
+
+"Master Roshi," Marcus said.
+
+"Yes! The turtle man!" He said it the way people say things about friends they haven't seen in too long -- present tense, careful enthusiasm, as if speaking in the past would make the distance real. "Izack was very fond of the turtle man. He said any wise person who chooses to live on an island alone is either enlightened or avoiding something, and the best ones are both." Fizzle poured himself more Coff-three from a pot that was boiling over a flame source Marcus couldn't identify. "I added the palm tree. Izack said the original had one. I felt it was essential for atmospheric integrity."
+
+Marcus looked at the palm tree. It was swaying in a breeze that couldn't exist inside a glass sphere but apparently did.
+
+"How did I get in here?"
+
+"You climbed in! At approximately two in the morning. You and the Melbourne man. You were both extremely energized from the Coff-three I gave you at the pub and you said, and I am quoting from memory, 'Fizzle, I need to be somewhere small where nobody can find me because I have too many feelings and they are all load-bearing.'"
+
+"That sounds like something I would say."
+
+"The Melbourne man said, 'Same but with fewer syllables.' He left around four. You stayed." He poured himself more Coff-three and settled into his coconut chair with the air of someone about to enjoy himself. "Before the equations, we talked. You were very forthcoming."
+
+Marcus's stomach dropped. "Forthcoming about what?"
+
+"Everything! Your mother. Your father — absent, correct? You said 'he left when I was six and the most useful thing he taught me was that systems fail.' Then you cried a little. Then you talked about your grandmother's kitchen. Yellow curtains. Sesame oil. You were very specific about the curtains."
+
+"I don't—"
+
+"Then you talked about the woman with the cuff." Fizzle's eyes sparkled with the particular delight of someone who had been alive since before most mountains and still found human romance endlessly entertaining. He leaned forward on the driftwood table. "You talked about her for quite a long time, Marcus. You described her thumb tracing a groove in stone. You described the way her composure breaks — not into vulnerability but into the person underneath. You used the phrase 'structurally elegant' about her jawline, which I noted as a unique approach to courtship."
+
+"Please stop."
+
+"You also asked me if I'd ever been in love, which I thought was charming. I told you about Izack and the time he accidentally proposed to a dimensional constant instead of to Aria because he was doing math and talking at the same time. The constant said yes. Aria found it very funny for about three hundred years."
+
+"Did I ask about your family?"
+
+"You did! You asked whether I had children. I told you I had seven hundred and forty-two experiments, most of which I loved, some of which had tried to kill me, and one of which—" he gestured at the chicken in safety goggles "—had simply refused to be anything other than what it was. That seemed to move you. You said 'that's parenting' and then you drew the brewing diagrams." He pointed at the driftwood table.
+
+Marcus looked down.
+
+The table was covered in chalk equations. His handwriting, interspersed with Fizzle's -- his precise and angular, Fizzle's explosive and annotated with tiny drawings of beakers, explosions, and what appeared to be a chicken wearing safety goggles.
+
+He read the equations.
+
+Then he read them again.
+
+"Fizzle."
+
+"Mm?"
+
+"Did we... build a phase-modulated brewing cycle that uses the Protocol's verification pulse as a temperature regulator?"
+
+Fizzle squinted at the table. "It appears so, yes."
+
+"That would mean the coffee brews differently every point-three seconds, adjusting extraction rate to the drinker's current metabolic state."
+
+"Adaptive coffee," Fizzle said. "Personalized to the specific needs of the specific person at the specific moment."
+
+Marcus stared at the equations. They were beautiful. They were insane. They were also, as far as he could tell, correct.
+
+"We invented living coffee."
+
+"You invented living coffee. I provided the infrastructure and the island." Fizzle took a triumphant sip from his own cup. "Also, you should know that Coff-three has a side effect."
+
+"What side effect?"
+
+"The alkaloid profile induces approximately four hours of heightened cognitive activity followed by--" he made a gentle descending whistle with his mouth "-- quite sudden and comprehensive inebriation. The wiring phase, I believe you called it. And then the unwiring."
+
+Marcus felt the blood leave his face. "The drinking on the roof."
+
+"Was the unwiring phase, yes. You and the Melbourne man consumed Coff-three at my workshop at approximately six in the evening. By ten you were, and I believe this is his phrase, 'wired to the tits.' By eleven you were on the roof with bloom liquor accelerating the unwiring. By two you were in my globe drawing phase diagrams and crying about a woman with a silver cuff."
+
+"I did not--"
+
+"You drew a picture of the cuff." Fizzle pointed at the corner of the table.
+
+Marcus looked.
+
+It was there. A small, precise sketch of Senna's wrist. The cuff. The groove her thumb traced. Drawn with the hyper-focused accuracy of a man who had been staring at that cuff for three years and knew its topography better than his own apartment in San Francisco.
+
+*Former apartment. Not home. Former apartment.*
+
+"I made adaptive coffee and drew pictures of a woman's wrist while four inches tall on a fake island inside a glass ball," Marcus said.
+
+"Yes."
+
+"This is what my life is now."
+
+"Yes! Isn't it wonderful?"
+
+Marcus looked at Fizzle Brightcog -- four inches of chaotic genius, Izack's oldest friend, a man who had built a pocket dimension modeled after an anime character's island and saw no contradiction between classified mineral deposits and hand-thrown pottery -- and felt something he hadn't expected.
+
+Not embarrassment. Not regret. Not the cold morning-after clarity that usually followed bad decisions.
+
+Gratitude.
+
+"Fizzle," he said.
+
+"Yes?"
+
+"The coffee is really good."
+
+He lit up like a six-tongue verification cascade completing consensus.
+
+"I know," he said. "Coff-four will be even better. I'm adding a memory-stabilization component so the unwiring phase doesn't produce emotional honesty."
+
+"Don't."
+
+Fizzle tilted his head.
+
+"Don't remove the emotional honesty part," Marcus said. He looked at the sketch of Senna's cuff. "I think I needed it."
+
+Fizzle studied him for a long moment with eyes that were, underneath the chaos and the goggles and the singed apron, as old and as kind as the man who had been his friend since before the Founding.
+
+"Izack used to say," he said, "that the best tools are the ones that show you what your hands were already doing." He scratched the chicken behind its goggles. "I think he meant people, not tools. But Izack was always better at saying things about objects than about feelings."
+
+Marcus finished the coffee.
+
+The globe was warm. The palm tree swayed. Somewhere outside the glass, in the real-size world, the Spire was waking up, and Bram's coffee machine was losing another argument with thermodynamics, and Senna Thorne was already awake, touching her cuff in the pre-dawn dark, reviewing continuity logs for a system that held fifty thousand people together and did not know that one of those people had spent the night drawing pictures of her wrist on a driftwood table inside a mad scientist's snow globe.
+
+"How do I get out of the island?" Marcus asked.
+
+"Oh! That part is easy. You simply declare your intent to leave and the spatial compression reverses."
+
+"Just like that?"
+
+"Just like that. Though I should mention -- the expansion is rapid. You will be full-sized quite suddenly. I recommend not being near the shelf with the volatile compounds."
+
+Marcus stood up from the coconut chair, brushed sand off his pants that would not exist at full scale, and looked at the tiny island one more time.
+
+"Fizzle."
+
+"Yes, dear?"
+
+"I'm going to come back. Not for the coffee. For the island. I need a place where the problems are small."
+
+"The problems are the same size," Fizzle said. "You're just closer to them. But I understand the sentiment. The door is always open." He paused. "Metaphorically. The actual door has a seventeen-tongue lock that I invented while bored and cannot fully reverse. Knock three times and whistle in Draumric."
+
+Marcus laughed.
+
+Then he declared his intent to leave, and the world rushed back to its proper size, and he was standing in Fizzle Brightcog's Experimental Chaos Workshop at seven in the morning with chalk on his hands and a sketch of a silver cuff in his pocket and the taste of the best coffee he'd had since Earth still fizzing on his tongue.
+
+Dax was asleep on a workbench, the kangaroo tattoo visible on his forearm. He was snoring in a rhythm that was, Marcus noticed, exactly synchronized with the Protocol's heartbeat.
+
+Marcus left him there. Fizzle would take care of it. Fizzle took care of everything in his orbit, the way stars took care of gravity: not intentionally, but as a consequence of mass.
+
+He walked back toward the Spire in the early light. The aurora had faded. The morning was crystal-clear and smelled like dew on stone.
+
+He needed a shower. He needed real food. He needed to check his lab notes and verify that the sign error Polly had caught yesterday was actually fixed and not just moved.
+
+But first.
+
+First he was going to find Senna on the eastern ring.
+
+And he was going to stand beside her, shoulder to shoulder, the way he always did.
+
+And at some point -- not today, maybe not this week, but soon, because Dax was right and the time you spent being afraid of the one good thing was time you didn't get back --
+
+He was going to put his hand over hers when she reached for the cuff.
+
+And see what happened next.
+
+* * *
+
+Three floors below, in the Experimental Chaos Workshop, Fizzle Brightcog regarded the equations on his globe-table with the careful attention of someone who had been doing science since before most of the world's current mountains had finished growing.
+
+He copied the phase-modulated brewing equations onto proper paper.
+
+Filed them under "Coff-three: Adaptive Protocol, v. Chen-Brightcog."
+
+And started work on Coff-four.
+
+The chicken in the safety goggles watched from the shelf. It had opinions. Fizzle respected them.
+
+Science, after all, was collaborative.
+
+
+
+# Chapter 19: The Outer Ring
 
 The Council did not ask.
 
@@ -7444,7 +8335,7 @@ Third Circle operators received assignments, not invitations. The distinction ma
 
 "Field audit," Tovak said, handing Marcus a crystal slate with six seal impressions already locked into its surface. "Every perimeter node. Every relay. Every boundary where the tongues touch open dimensional space. You verify that the Six Tongues are holding at the edges, not just the core."
 
-Marcus looked at the slate. The seals were Council-grade: Senna's opaline CA signature, Tovak's amber-black UM mark, four others he recognized from governance sessions. Full operational authority. The kind of document that said *we trust you to find bad news and not flinch.*
+Marcus looked at the slate. The seals were Council-grade: Senna's opaline Cassisivadan signature, Tovak's amber-black Umbroth mark, four others he recognized from governance sessions. Full operational authority. The kind of document that said *we trust you to find bad news and not flinch.*
 
 "The First Incursion showed us something," Tovak continued. "Kael's copies aren't just probing the center. Three of them watched and took notes. The next attack won't come from the vault. It will come from wherever we're thinnest."
 
@@ -7554,7 +8445,7 @@ Alexander's expression didn't change, which Marcus was beginning to understand w
 
 "The coverage is adequate," Alexander said. "The tongues do most of the work. We monitor, maintain, and respond to anomalies."
 
-"Adequate." Marcus looked out over the edge of the shelf. Below, the eastern forest spread in every direction, canopy moving in the wind like a green ocean. Other shelves hung in the air at various altitudes, connected by ley-bridges that shimmered with AV blue-silver. It looked like someone had taken a mountain range, shattered it, and then suspended the pieces at convenient operating heights. "How often do you get anomalies?"
+"Adequate." Marcus looked out over the edge of the shelf. Below, the eastern forest spread in every direction, canopy moving in the wind like a green ocean. Other shelves hung in the air at various altitudes, connected by ley-bridges that shimmered with Avali blue-silver. It looked like someone had taken a mountain range, shattered it, and then suspended the pieces at convenient operating heights. "How often do you get anomalies?"
 
 "Seventeen in the last year. Four genuine incursion attempts. Two signature corruptions. Eleven false positives caused by atmospheric ley-interference."
 
@@ -7662,7 +8553,9 @@ Then he turned east, toward Irondeep, where the Deepstone Engineers maintained t
 
 The audit was just beginning. The edges had more to teach him than the center ever could.
 
-# Chapter 18: The Industrial Hum
+
+
+# Chapter 20: The Industrial Hum
 
 The transit circle deposited Marcus inside a mountain.
 
@@ -7907,7 +8800,10 @@ The circle activated. Irondeep dissolved into light.
 He was heading northwest, toward Ravencrest Citadel, where mortal politics governed what magic protected and an ancient Count still held the threshold between worlds.
 
 The audit was deepening. And Marcus was beginning to understand that the system was not one thing seen from different angles. It was different things that chose, every day, to work together. The choice was the system. Everything else was implementation.
-# Chapter 19: The Memory Tithe
+
+
+
+# Chapter 21: The Memory Tithe
 
 Lyra did not escort Marcus all the way into the Verdant Tithe.
 
@@ -8095,7 +8991,7 @@ Polly made a delighted little raven noise that Marcus chose to interpret as betr
 
 Mira ignored both of them, stepped to the boundary, and placed one hand on the trunk of a nearby tree.
 
-The bark answered by drawing silver lines around her fingers. Not all six tongue colors. Something older. A living root-script that felt adjacent to DR and RU without being reducible to either.
+The bark answered by drawing silver lines around her fingers. Not all six tongue colors. Something older. A living root-script that felt adjacent to Draumric and Runethic without being reducible to either.
 
 "The roads are misrouting names through grief-adjacency again," Mira said. "The forest would like that to stop."
 
@@ -8447,7 +9343,9 @@ Polly laughed so hard she nearly fell off the arch.
 
 "Excellent," she said. "Now let's go meet the death-scholars."
 
-# Chapter 20: The Seventh Absence
+
+
+# Chapter 22: The Seventh Absence
 
 The Shardfold announced itself through breakage.
 
@@ -8491,7 +9389,7 @@ Marcus knelt at the cliff edge and placed his palm flat on the crystal. Through 
 
 *Incomplete.*
 
-Five of the six tongue frequencies hummed through the stone. KO, AV, RU, CA, DR -- present, functional, maintained. UM was fainter than expected but stable.
+Five of the six tongue frequencies hummed through the stone. Kor'aelin, Avali, Runethic, Cassisivadan, Draumric -- present, functional, maintained. Umbroth was fainter than expected but stable.
 
 The absence was in the gaps between them.
 
@@ -8553,7 +9451,7 @@ Marcus looked at the hundreds of niches. Thousands of names. Maintained in a pla
 
 "The Spire drops the verification," said a voice from the far end of the chamber. "The Bonecasters hold the receipt."
 
-Marcus felt the analogy settle hard into place. DR gave the living an immutable chain of receipts for what they had done and who had witnessed it. Death, apparently, never closed the transaction. The Bonecasters were maintaining the unwritten half of the ledger by hand. Each death-route attested the witness state that came before it, skull to skull, vigil to vigil. Alter one record and the chain did not merely disagree. It lost resonance all the way down.
+Marcus felt the analogy settle hard into place. Draumric gave the living an immutable chain of receipts for what they had done and who had witnessed it. Death, apparently, never closed the transaction. The Bonecasters were maintaining the unwritten half of the ledger by hand. Each death-route attested the witness state that came before it, skull to skull, vigil to vigil. Alter one record and the chain did not merely disagree. It lost resonance all the way down.
 
 A woman stepped into the skull-light. She was old in a way that defied the longevity norms Marcus had started taking for granted. Not elven-old, which meant ageless. *Actually* old. Seamed and weathered and bent at the shoulders, with white hair cropped short and hands that moved with the deliberate economy of someone who had stopped wasting motion decades ago.
 
@@ -8845,7 +9743,11 @@ Witness as governance. Not power. The bone tablet and the goddess were saying th
 
 His first clear thought was not of the Council as an institution. It was of Senna hearing this and going still in that particular dangerous way she had when truth arrived carrying structural consequences.
 
-The dead were patient. The living were not. And somewhere between those two facts, Marcus was beginning to see the shape of a system that needed not a seventh tongue but a seventh silence -- a space in the architecture for the things that could not be said.
+The dead were patient. The living were not.
+
+Marcus looked down at the bone tablet in his hands. Rain had gathered in the carved grooves, darkening the old script until each line looked newly inked. His thumb found the edge of the receipt Ame had made him carry, and for one sharp second he felt the weight of every name the Protocol had treated as residue instead of witness.
+
+Somewhere between those two facts, he was beginning to see the shape of a system that needed not a seventh tongue but a seventh silence -- a space in the architecture for the things that could not be said, and a door through which the dead could finally be acknowledged without being summoned back.
 
 Polly settled on his shoulder.
 
@@ -8853,7 +9755,13 @@ Polly settled on his shoulder.
 
 "The system is incomplete," Marcus said.
 
-"Yes," Polly said. "It always has been. That's the hardest lesson. Not that the system fails. That the system succeeds at everything except the thing it was designed to prevent -- and the thing it forgot to include."
+"Yes," Polly said. "It always has been. That's the hardest lesson. Not that the system fails. That the system succeeds at everything except the absence it was designed to prevent -- and the silence it forgot to include."
+
+Marcus stopped and listened. Rain ticked against the tablet. Wind moved through the Shardfold like breath through broken teeth. He closed his hand around the wet bone until the carved lines pressed into his palm.
+
+"Then we include it," he said.
+
+Polly's claws tightened once through his coat. Not a warning. A witness.
 
 Marcus looked back at the Shardfold. The prismatic cliffs caught the storm-light and threw it into colors that belonged to no spectrum he knew.
 
@@ -8864,6 +9772,8 @@ Beautiful. Broken. Both.
 "Dremsreach," Polly confirmed.
 
 They walked into the wind.
+
+
 
 # Interlude: Aria's Garden
 
@@ -8965,7 +9875,9 @@ Some boundaries held because they were built. Some held because they were tended
 
 *—Mom*
 
-# Chapter 21: The Earth Thread
+
+
+# Chapter 23: The Earth Thread
 
 Dremsreach waited one night.
 
@@ -9490,7 +10402,7 @@ The gazebo stood on a rise above a narrow stream where the Verdant Tithe gave wa
 
 Someone had left cushions on two benches. Someone else had left a kettle already warming over a contained blue-gold flame in a small copper stand that looked too practical to be ceremonial and too beautiful to be ordinary.
 
-"Fizzle maintains the kettle enchantment when she's in a responsible mood," Polly said, setting down the satchel. "Which is to say, unpredictably but with flair."
+"Fizzle maintains the kettle enchantment when he's in a responsible mood," Polly said, setting down the satchel. "Which is to say, unpredictably but with flair."
 
 Marcus stepped under the roof and felt the day rearrange itself around the fact of shelter.
 
@@ -9545,7 +10457,146 @@ He looked out through the open sides of the gazebo toward the stream and the lis
 The difficult part was admitting he wanted to.
 
 Now, at last, he did.
-# Chapter 22: The Intention Dimension
+
+
+
+# Interlude: The Other Heartbeat
+
+Senna Thorne lay on Marcus Chen's chest and listened to two rhythms disagree.
+
+His heartbeat ran slightly fast — sixty-eight beats per minute, she estimated, because estimating was what her brain did with silence the way his brain did with pattern recognition. The Protocol pulsed beneath both of them through the floor and the walls and the bed frame, steady at its immovable three-tenths of a second. The two rhythms were close but not identical. Never identical. His heart was organic, stubborn, human in origin even after the Binding reformatted his dimensional anchor. The Protocol was architecture. They would never sync.
+
+She had been listening to both for hours. Since the room went quiet and the breathing evened out and the arm he'd put around her stopped adjusting and simply stayed.
+
+The room smelled like warm skin and cedar from the coat he'd hung on the door and the faint residual ozone that clung to both of them from the day's work. Not perfume. Not ceremony. Just what two people smell like after they stop performing and let the air hold whatever is actually there.
+
+He was asleep. She was not.
+
+This was familiar territory. Senna had spent most of her life awake while other people slept. Four-forty-seven every morning for forty years, reviewing continuity logs while the Spire hummed its pre-dawn verification cycle. She knew the sounds of a sleeping building the way sailors know weather — by texture, by pressure, by the quality of the silence between the things that make noise.
+
+But she had never listened to a sleeping person from this close.
+
+His breathing was uneven in sleep. Not distressed — just unguarded. Small catches and adjustments, the respiratory system of someone whose body had spent a decade running on insufficient rest and was still, years later, slightly astonished to find itself horizontal. His fingers twitched against her shoulder blade. Reaching for a keyboard. Or a mug. Or her.
+
+She didn't know which. She didn't need to.
+
+* * *
+
+Senna had been nine years old the first time she understood what the Protocol sounded like.
+
+Not heard it — she'd heard it her whole life, the way children hear rivers or traffic, as background so constant it becomes invisible. But understood it. Known what it was doing.
+
+Ravencrest at night. Summer. Her bedroom in the upper gallery, where the crystal walls thinned enough that you could see the World Tree's silver glow through the stone. She'd been awake — not from nightmares but from the particular insomnia of a child whose mind processes faster than her bedtime allows for.
+
+The Protocol had pulsed. Point-three seconds. And Senna had felt it not as a sound but as a hand on her back, very gently saying *you're still here. You're still here. You're still here.*
+
+It had been the safest sound in the world.
+
+She'd fallen asleep to it for eleven years after that. Through lessons and arguments and the particular exhaustion of being the fourth child in a family where every older sibling was already extraordinary in a way that used up most of the available oxygen. Through Alexander's departure to the Floating Shelves. Through Lyra and Mira's twinned orbits pulling them in opposite directions. Through Aria's garden expanding to fill the silence left by children who had grown into distance.
+
+Through Kael.
+
+She did not think about Kael right now. Not because the thought was forbidden but because the room was warm and Marcus was breathing and for the first time in forty years the Protocol's pulse sounded like what it had sounded like when she was nine.
+
+A hand on her back. *You're still here.*
+
+* * *
+
+Marcus shifted in his sleep. His arm tightened around her for a second — unconscious, reflexive, the body confirming the presence of something it had decided to hold. His heartbeat bumped up to seventy-two for three beats and then settled back.
+
+Senna pressed her ear against his chest and let the sound fill the architecture of her skull.
+
+She thought about implicit magic.
+
+Polly had named it once, years ago, in a late-night conversation Senna had filed and never returned to. "Some people speak the tongues," Polly had said. "Some people think in them. And some people — very rarely, and always without training — ARE them. Their intent is so congruent with their state that the system cannot tell the difference between the person and a valid instruction."
+
+Senna had filed it as theory. A historical curiosity. Something the Founding-era texts described in language too poetic to be operational.
+
+Then Marcus Chen arrived and the maintenance rune in sublevel four lit up gold while he was writing a patch, and nobody could explain why.
+
+The World Tree turned a leaf toward them on the night of Rootlight. One leaf. Specific. Deliberate. The tree that had not moved for anyone uninvited since Izack descended.
+
+A warm breeze rose through the root-bark during Aria's story about the first blooming, carrying Fizzlecress smoke from the deep substrate — Izack's pipe, five hundred years of held breath exhaling upward through living wood — and Marcus had felt it on his face and the tree had known.
+
+He didn't cast magic. He didn't declare. He didn't invoke.
+
+He just meant what he said.
+
+That was what the tree had recognized five hundred years ago. Not Izack's brilliance. Not Aria's boundaries. Their honesty. The specific, impossible, terrifying honesty of two people who said true things to each other in front of something old enough to know the difference.
+
+Marcus Chen, who had been a security engineer in San Francisco, who had traced an unauthorized channel at three in the morning and fallen through the floor of what was real, who had asked a raven about coffee and mourned a warm mug and built a sanctuary for trapped ghosts because deleting them felt wrong — Marcus did implicit magic every time he opened his mouth.
+
+And lying on his chest, Senna Thorne understood that the grief she had carried for forty years — the composure, the duty, the cuff, the 4:47 AM vigil, the table set for seven because reducing it to six would mean deciding which absence to formalize first, and that decision would have cracked the table into kindling — was not being replaced.
+
+It was being warmed.
+
+The way a frozen thing does not break when it thaws. It softens. The shape remains. The rigidity doesn't. What was ice becomes water and the water carries the same memory but moves differently — flows around obstacles instead of shattering against them.
+
+Senna had been ice for forty years and she had not known she was cold because cold was all she remembered.
+
+Marcus's chest rose and fell. His heartbeat bumped against the Protocol's. Two rhythms that would never sync, running close enough to keep her awake and warm and present in a body she had spent four decades using as infrastructure rather than inhabiting as home.
+
+* * *
+
+She thought about what he'd said in the corridor, after the incursion. *I think I love you.* Not *I love you.* The "think" mattered. It meant he'd run the diagnostic and reported the output honestly even though the data was incomplete and the timing was terrible and he knew — knew with the specific self-awareness of a man whose brain never stopped analyzing — that saying it on a floor that smelled like burnt cinnamon and ozone was objectively the worst possible moment.
+
+He'd said it anyway. Because he couldn't not.
+
+She thought about the age conversation in the garden. *I'm dating someone who was alive before my entire civilization invented the printing press.* His face when she'd said one hundred and forty-six. The pause. Then: *That difference is zero years in human rounding.* And reaching for her hand anyway.
+
+She thought about what Aria had said once, in the kitchen, when Senna was twenty and angry about a boy who hadn't called: "The right person is not the person who makes the problems smaller. The right person is the one who makes you able to hold them."
+
+Senna had filed that too. As theory.
+
+* * *
+
+"You're awake," Marcus said. His voice was sleep-rough, coming from inside the chest she was lying on, arriving as vibration before sound.
+
+"I'm always awake."
+
+"That's not healthy."
+
+"You've been saying that for years."
+
+"Repetition is how engineers communicate importance." His hand moved to her hair. Not stroking. Just resting. The weight of a palm that had found where it wanted to be and had no intention of optimizing further.
+
+"What are you thinking about?" he asked.
+
+"Whether the Protocol heartbeat sounds different when you're happy."
+
+"Does it?"
+
+She listened. Point-three seconds. Check. The same pulse she'd been hearing since she was born. The same architecture. The same verification.
+
+But the hand on her back was different. Not the Protocol's hand. His.
+
+"Yes," she said. "It sounds like it did when I was nine."
+
+Marcus was quiet for a moment. She could hear him processing — not analyzing, just letting the sentence land the way engineers let data settle before drawing conclusions.
+
+"What did it sound like when you were nine?"
+
+"Safe."
+
+His arm tightened. Not much.
+
+"Go to sleep, Senna."
+
+"I don't know how."
+
+"I know. But the Protocol's still checking. I'm still here. And neither of those things requires you to be awake for them to be true."
+
+She closed her eyes. His heartbeat was at sixty-six now. Slowing. Returning to sleep. The Protocol pulsed its patient, immovable, three-tenths-of-a-second verification through the walls and the floor and the bed frame and the bones of the woman lying on the chest of the man who had fallen through the floor of one world and landed in the one she'd been holding together alone.
+
+Point-three seconds. Check.
+
+Point-three seconds. Check.
+
+For the first time in forty years, Senna Thorne fell asleep to the sound of two heartbeats that were not the same and did not need to be.
+
+
+
+# Chapter 24: The Intention Dimension
 
 Alexander found Marcus at dawn with two cups of tea and the expression of a man who had already made three decisions before breakfast and did not intend to explain any of them twice.
 
@@ -9561,6 +10612,12 @@ Marcus looked into the tea, as if it might contain procedural documentation.
 
 "It is morning," Alexander said. "That will have to do."
 
+*Yeah,* Marcus thought, watching the mist curl through the trees below them like slow-motion smoke from a system running cool. *I guess it will.*
+
+He studied Alexander in the dawn light — the unhurried posture, the dirt still under his cuffs from yesterday, the way he held the tea like it was a briefing document rather than a beverage. Senna carried the family's weight through composure. Lyra carried it through speed. Alexander carried it through stillness — the specific, practiced stillness of a man who had been standing on the edge of things for thirty-one years and had learned to make the edge feel like solid ground.
+
+*He looks like his dad's portrait,* Marcus thought. *Same eyes. Same tired patience. But the portrait was painted before Kael fell, and this version of those eyes has thirty extra years of watching the perimeter and wondering if the thing he's watching for looks like his little brother.*
+
 Marcus drank. The tea was hot and cedar-bitter and carried a citrus edge he had started privately filing under *Ravencrest family trait manifested as beverage*. He stood, followed Alexander down the rise above the stream, and decided not to ask questions until the eldest Thorne had chosen a direction long enough to suggest speech might be permitted.
 
 They crossed three root-bridges and a path of silver-veined stone half-buried in moss. The Verdant Tithe at dawn was not quiet. It was merely selective. Birds tested short clear notes and then reconsidered. Leaves sorted the wind into layered soft clicks. Farther in, some larger wooden architecture flexed with the patient complaint of living trunks adjusting their load.
@@ -9570,6 +10627,8 @@ At the second bridge they passed Clayborn coming up from the lower paths with hi
 Marcus watched him go. Six months ago he would have reverse-engineered that exchange from context and posture. Now the intention beneath it arrived almost at once: tending, assessment, quiet approval, and the permanent Clayborn quality of making room for other people without yielding any of his own personhood.
 
 Alexander walked like someone who expected ground to keep its promises.
+
+*The way a general walks a battlefield after it's over,* Marcus thought. *Not looking for survivors. Checking if the terrain learned anything.*
 
 Marcus noticed that before he noticed anything else.
 
@@ -9588,6 +10647,22 @@ Marcus blinked. "The stones?"
 "That sounds fair."
 
 "It was educational," Alexander said. "Which in this family usually means 'fair, embarrassing, and not optional.'"
+
+"Did you steal them too?"
+
+Alexander's one-corner smile appeared. "I was worse. I rearranged the entire route-stone grid while Father was sleeping and redirected the garden paths into a loop that had Mira walking in circles for three hours."
+
+"How old were you?"
+
+"Nine."
+
+"And the punishment?"
+
+"Father made me rebuild the grid. Then he sat me down and explained — for six hours — exactly what my modification had done to the local dimensional stress topology." Alexander's expression carried the particular fondness of someone recalling the worst afternoon of their childhood. "I learned more about transit architecture from my own prank than most students learn in a year. He planned it that way, obviously. Father always did turn your mistakes into your education and then act surprised when you came out smarter."
+
+"Sounds like he was a good teacher."
+
+"He was an impossible man who treated every broken thing as a lesson and every lesson as an act of love, and the distinction between those two things was often invisible to the person receiving it." Alexander picked up a route stone, turned it in his hand, set it back exactly where it had been. "I miss him every day. I just miss him more quietly than Senna does."
 
 Marcus set his cup on a flat rock and studied the clearing.
 
@@ -9615,15 +10690,19 @@ Alexander stepped inside the ring of stones.
 
 "No. Useful."
 
+*There it is again,* Marcus thought. *The Thorne family tradition of making you feel like a student and a colleague in the same sentence. Senna does it with her eyes. Aria does it with her hands. Alexander does it with two-word corrections that somehow manage to be both dismissive and the most respectful thing anyone's said to you all day.*
+
 Alexander pointed to one route stone, then another on the far side of the clearing.
 
 "Watch."
 
 He did not crouch, charge power, or perform anything that would have made narrative sense to a reader raised on flashy magic schools and energy arcs. He simply settled.
 
-That was the only word Marcus had for it.
+That was the only word Marcus had for it. Not meditation. Not preparation. Not the dramatic gathering-of-power that fantasy novels had trained him to expect. Just... settling. The way a building settles. The way the Protocol settles after a verification cycle. The way a man who was born during a magical aurora under a World Tree that rang every bell in the Academy settles into the architecture that has been waiting his entire life for him to stand exactly here and do exactly this.
 
-Alexander's body did not tense. It aligned. His weight distributed through his boots into the root-laced ground. His shoulders lowered by something so slight that Marcus would have missed it six months ago. Aethis, perched above on a branch, made a single approving noise and went still.
+*Oh,* Marcus thought. *He's not teaching me navigation. He's showing me what he IS.*
+
+Alexander's body aligned, true to purpose. His weight sank through his boots into the root-laced ground. His shoulders dropped by something so slight Marcus would have missed it six months ago. Aethis, perched above on a branch, made a single approving noise and went still.
 
 The route stones brightened in sequence.
 
@@ -9633,7 +10712,7 @@ Not simultaneous.
 
 Context, route, law, computation, concealment, record.
 
-KO, AV, RU, CA, UM, DR.
+Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric.
 
 Marcus felt the order as clearly as if someone had set labeled cards in the air.
 
@@ -9676,13 +10755,77 @@ Alexander picked up his untouched tea.
 
 "Truthful pathfinding."
 
-Marcus laughed once.
+Marcus laughed once. It came out with more wonder in it than he intended.
+
+*I just watched a man walk through a proof,* he thought. *Not solve it — walk through it. Like the math was a hallway and he knew where all the doors were because he grew up in this house. Because he IS this house. Born under the Tree, bells ringing, magic before language, language before words. This is what a chosen child looks like when he's not performing it — not destiny on a throne, just a quiet man who moves through reality the way I move through a codebase. By knowing which parts are load-bearing and stepping only on those.*
+
+*And he's been doing this alone, on the perimeter, for thirty-one years. Because he chose distance over grieving where it happened. This man could have been running the Spire. Instead he's out here, walking between route stones, checking if the edges held. Because someone has to.*
+
+*He reminds me of Bram. Except Bram would never say "truthful pathfinding." Bram would say "I walked." And Alexander would nod, because they mean the same thing.*
 
 "You people cannot say anything normally, can you?"
 
 "We could," Alexander said. "But then we'd have to live with ourselves."
 
-He drank, then nodded toward the stones.
+Marcus snorted. "Lyra said you used to be fun."
+
+"Lyra says many things. Most of them are designed to make me sound irresponsible enough that she seems reasonable by comparison." Alexander drank his tea. The corner-smile returned. "I was fun. I once convinced a Fleet drone to deliver love letters between two students who were too shy to talk to each other. Polly found out and called it 'misuse of military infrastructure for romantic logistics.' She was furious. She was also, I'm fairly certain, proud."
+
+"What happened to the students?"
+
+"Married. Two children. They run a boundary ward school in the Outer Ring." He paused. "One of their wards is named after the drone."
+
+"Hey, Alex." The words came out before Marcus could filter them through professional courtesy. "Is this what you used to be like?"
+
+Alexander looked at him. The tea stopped halfway to his mouth.
+
+"I mean — you're really cool most of the time. Steady. Reliable. The big brother everyone leans on." Marcus gestured vaguely at Alexander, at the forest, at the thirty-one years of quiet service that hung around the man like gravity. "But you're kinda... quiet. Like you take the elder-sibling role so far past the line that you forgot where the line was. And then you tell me about love-letter drones and I realize you're actually fun. Like, genuinely fun. And I wonder where that guy went."
+
+Alexander studied him for a long moment. The one-corner smile shifted into something wider — not the careful warmth he wore in public, but a mischievous smirk that belonged to the nine-year-old who had rerouted his father's garden for a prank. It cracked through the steadiness like sunlight through a closing door.
+
+"Every family needs an older bastard to rein things in," Alexander said. His voice was different. Looser. The formality dropping away like armor being set on a shelf. "Dad's been busy holding the substrate together since my brother — well. Let's just say I had to step up, and stepping up for this family means managing forty-seven interconnected realms and every crisis that crosses the threshold." He took a sip of tea. "You can only talk to that many important people, mediate that many disputes, hold that many boundary lines for centuries without putting some kind of mask on, Mark."
+
+Mark.
+
+Marcus blinked. Nobody called him Mark. Not in Aethermoor. Not even on Earth — Danny called him Chen, Priya called him Marcus, his mother called him full-name when she was worried and nothing at all when she was proud. When had Alexander gotten close enough to shorten his name without asking?
+
+The answer was: sometime during the ladder-hanging at Rootlight, or the dawn walks, or the three days at the Floating Shelves, or the hundred small moments where Alexander had been the person in the room who made space for everyone else without taking any for himself. Marcus hadn't noticed the distance closing because Alexander didn't close distance. He just stopped maintaining it.
+
+"I love my family," Alexander continued, looking out at the forest with an expression that was young and old at the same time — the boy who stole route stones and the man who held the perimeter, occupying the same face. "But it's a lot. Managing the realms, managing the politics, managing the grief. Look at Dad — he struggles and he built the damn place. If it wasn't for my sisters, I would have left years ago. And Mom." He paused. The smirk softened into something real. "I want to explore too. Like Kael did, before — before everything. I want to see what's past the edges I've been guarding. But I can't. Not yet."
+
+He looked at Marcus directly. Not the steady, generous gaze of the eldest Thorne doing his diplomatic duty. The honest, slightly tired eyes of a man who had been carrying his family's future on shoulders that were strong enough but getting tired of being strong.
+
+"Not till we help Dad. Not till we get the cascade sorted and your operational mandate locked in proper. Then—" He let the word hang, and for one moment Marcus saw the explorer Alexander could have been, the version that hadn't chosen the perimeter, the one who would have followed the dimensional boundaries outward instead of guarding them from within. "Then maybe we take a break. See what's out there. You and me and Senna and whoever else is stupid enough to follow a Thorne into uncharted territory."
+
+"Dax would come," Marcus said.
+
+"The Australian?"
+
+"He'd bring beer."
+
+"Then we'll need a bigger ship." Alexander's smirk returned — full this time, not the corner version, the whole thing. It transformed his face the way Senna's laugh had transformed hers at Rootlight. Same genetic architecture, different weather.
+
+Marcus looked at this man who had just called him Mark and talked about leaving and used the word "bastard" about himself and smiled like a kid, and felt something shift in his understanding of the Thorne family. They were all holding masks. Senna's was composure. Lyra's was speed. Mira's was silence. Alexander's was steadiness.
+
+The masks weren't lies. They were load-bearing. But underneath each one was a person who wanted permission to set the mask on a shelf and just be in a room with someone who didn't need them to perform.
+
+"Alex," Marcus said.
+
+"Mark."
+
+"When this is over — the cascade, the audit, all of it — I'm buying you a beer. From Earth. Somehow."
+
+Alexander's eyebrows rose. "You can do that?"
+
+"Absolutely not. But I'll figure it out. That's what engineers do."
+
+"Terrible engineers, maybe."
+
+"The best kind."
+
+Alexander laughed. Not the one-corner diplomatic approval. An actual laugh — short, surprised, warm. The sound of a man remembering what his own joy sounded like.
+
+He drank his tea, then nodded toward the stones.
 
 "You called it Earth magic yesterday."
 
@@ -9826,11 +10969,11 @@ The many-faced space around him ceased behaving like an adversarial puzzle and s
 
 Marcus felt it at once.
 
-AV recognized route.
-RU recognized constraint.
-CA computed a viable traversal.
-UM ensured the move would not violate sealed boundaries.
-DR held the record long enough for the crossing to count as itself.
+Avali recognized route.
+Runethic recognized constraint.
+Cassisivadan computed a viable traversal.
+Umbroth ensured the move would not violate sealed boundaries.
+Draumric held the record long enough for the crossing to count as itself.
 
 And underneath the whole stack, the field kept a subtler proof: path, witness, and burden-signature converging tightly enough that the move could be trusted as movement instead of extraction.
 
@@ -10004,7 +11147,9 @@ Marcus Chen, systems engineer, Third Circle Keeper, recent recipient of fungal c
 
 He suspected Alexander already knew that, and had the good grace not to say so.
 
-# Chapter 23: The Underroot
+
+
+# Chapter 25: The Underroot
 
 The entrance was a wound in the earth that had healed into architecture.
 
@@ -10340,7 +11485,9 @@ Marcus followed her into the trees.
 
 He was getting better at that.
 
-# Chapter 24: The Time Tax
+
+
+# Chapter 26: The Time Tax
 
 Dremsreach announced itself by stealing forty seconds from his left hand.
 
@@ -10574,6 +11721,8 @@ Marcus's hand still remembered warmth.
 
 The time tax was acceptable.
 
+
+
 # Interlude: The Pipe
 
 ---
@@ -10608,7 +11757,7 @@ He thought about his children.
 
 Alexander was holding well.
 
-Izack could feel his eldest in the KO wall -- not directly, not as a conversation, but as a quality of the intent layer's behavior. When Alexander was present and attentive, the KO verification chains ran with a smoothness that suggested the system recognized him the way a garden recognizes the gardener. The intents were cleaner. The attestation was more precise. The first tongue operated with the particular efficiency that came from being overseen by someone who understood it not as a tool to be wielded but as a question to be respected.
+Izack could feel his eldest in the Kor'aelin wall -- not directly, not as a conversation, but as a quality of the intent layer's behavior. When Alexander was present and attentive, the Kor'aelin verification chains ran with a smoothness that suggested the system recognized him the way a garden recognizes the gardener. The intents were cleaner. The attestation was more precise. The first tongue operated with the particular efficiency that came from being overseen by someone who understood it not as a tool to be wielded but as a question to be respected.
 
 *What do you want?*
 
@@ -10618,7 +11767,7 @@ Izack was proud of Alexander. He was always proud of Alexander. The pride sat in
 
 The twins were harder to feel.
 
-Lyra was motion -- always in transit, always between places, her signature a bright streak across the system's awareness that arrived and departed too quickly for sustained observation. She was AV's natural heir, a transport-tongue native who understood routing the way birds understood air currents: intuitively, physically, as a condition of existence rather than a product of study. Izack could feel her the way you feel a breeze -- present, kinetic, gone before you could name its direction.
+Lyra was motion -- always in transit, always between places, her signature a bright streak across the system's awareness that arrived and departed too quickly for sustained observation. She was Avali's natural heir, a transport-tongue native who understood routing the way birds understood air currents: intuitively, physically, as a condition of existence rather than a product of study. Izack could feel her the way you feel a breeze -- present, kinetic, gone before you could name its direction.
 
 Mira was stillness. The twin who had turned inward instead of outward, who navigated the system's quieter architectures -- memory, pattern, the deep structures that only revealed themselves to people willing to sit still long enough. She was harder to track not because she was absent but because she was everywhere, distributed across the system's archival layers like a thought that had settled into the architecture's permanent memory.
 
@@ -10628,7 +11777,7 @@ He missed all of them, in the specific and terrible way that a father misses his
 
 Senna.
 
-Senna was the one who hurt most to think about, because Senna was the one who most resembled what he'd become: a person who held the system together through sheer refusal to stop paying attention. She woke at 4:47 AM. He knew this because the continuity logs she reviewed were part of the twenty-one dimensions he maintained, and her daily review created a subtle brightening in the DR verification layer that was as reliable as the sunrise.
+Senna was the one who hurt most to think about, because Senna was the one who most resembled what he'd become: a person who held the system together through sheer refusal to stop paying attention. She woke at 4:47 AM. He knew this because the continuity logs she reviewed were part of the twenty-one dimensions he maintained, and her daily review created a subtle brightening in the Draumric verification layer that was as reliable as the sunrise.
 
 She was carrying too much.
 
@@ -10638,7 +11787,7 @@ She was thirty-two years old and she moved through the world like a woman twice 
 
 He wanted to tell her to rest.
 
-He wanted to tell her that the system would hold without her for an afternoon, that the continuity logs would wait, that the dead backlog she counted in her private journal (he knew about the journal; the DR layer knew about everything that was written) was his responsibility, not hers, because the gap that caused it was his design failure and the weight of it should sit on his shoulders, not on hers.
+He wanted to tell her that the system would hold without her for an afternoon, that the continuity logs would wait, that the dead backlog she counted in her private journal (he knew about the journal; the Draumric layer knew about everything that was written) was his responsibility, not hers, because the gap that caused it was his design failure and the weight of it should sit on his shoulders, not on hers.
 
 But he was in the crystal observatory. And she was in the Spire. And the distance between them was not measured in meters but in the fundamental incompatibility between a consciousness bound into dimensional infrastructure and a daughter who set places at the dinner table for people who couldn't come.
 
@@ -10733,11 +11882,12 @@ The other three percent was hope.
 *Personal status: tired. Present. Not leaving.*
 
 
-# Chapter 25: Ordered Witness
+
+# Chapter 27: Ordered Witness
 
 The Spiral Spire welcomed them back the way a hospital welcomes a surgeon returning from the field -- with urgency dressed as calm.
 
-Marcus noticed it first in the corridors. The foot traffic hadn't increased, but the quality of movement had changed. People walked faster. Conversations stopped when he passed. The DR record-lamps along the walls had shifted from their usual amber to a deep bronze that his detection faculty read as heightened documentation mode, as if the infrastructure itself had decided to remember more carefully.
+Marcus noticed it first in the corridors. The foot traffic hadn't increased, but the quality of movement had changed. People walked faster. Conversations stopped when he passed. The Draumric record-lamps along the walls had shifted from their usual amber to a deep bronze that his detection faculty read as heightened documentation mode, as if the infrastructure itself had decided to remember more carefully.
 
 Senna noticed it in the greetings. Three runners intercepted them between the outer gate and the residential tier. Each carried the same message in different institutional voices: the Council had assembled. Not "would assemble." Had.
 
@@ -10763,23 +11913,25 @@ Polly, from his shoulder, made a sound that in a less dignified bird might have 
 
 The Council chamber was not the oversight room from Marcus's first week -- that cold round space where Sera Voss had called him an entity and meant it. This was the governance hall. Higher. Wider. Built into the upper curve of the Spire where the walls were more crystal than stone, and the six-tongue light bars that lined every institutional corridor converged into a full spectrum that made the air itself feel jurisdictional.
 
-The room was a hexagonal amphitheater, each wall face aligned with one of the Sacred Tongues. KO's wall glowed the warm red-gold of intent and origin. AV's burned blue-silver, the color of courage in structured light. RU's was deep violet, dense with policy sigils that updated in real time as governance state changed. CA's shone white-gold, precise and resonant. UM's was shadow-black, barely visible, present the way a held breath is present. DR's glowed earth-amber with chains of record-script that tracked every word spoken in this chamber back to its construction.
+The room was a hexagonal amphitheater, each wall face aligned with one of the Sacred Tongues. Kor'aelin's wall glowed the warm red-gold of intent and origin. Avali's burned blue-silver, the color of courage in structured light. Runethic's was deep violet, dense with policy sigils that updated in real time as governance state changed. Cassisivadan's shone white-gold, precise and resonant. Umbroth's was shadow-black, barely visible, present the way a held breath is present. Draumric's glowed earth-amber with chains of record-script that tracked every word spoken in this chamber back to its construction.
 
 In the center, a curved table followed the hexagonal geometry. Not a circle. A shape with sides, each side oriented toward a tongue-wall, creating six natural positions where a speaker could address the room from the authority of a specific domain.
 
+The chamber also had workers, which made it more frightening than if it had only had rulers. Six record aides stood in recessed alcoves beneath the walls, each wearing the color of their assigned tongue and the expression of someone whose job was not to understand history while it happened but to capture it correctly anyway. One Avali runner rolled his shoulders once, quickly, then locked them back into place. A Draumric clerk flexed cramped fingers behind her slate and resumed writing before anyone could mistake fatigue for reluctance.
+
 Seven people sat at the table when Marcus entered. He read them through his detection faculty before his social brain finished cataloguing faces.
 
-Aria Ravencrest Thorne sat at the CA position -- the resonance wall, the wall of collaborative precision. Her auburn hair was threaded with more silver than Marcus had seen in the portraits, and it looked right, as if the silver were a credential rather than a concession. One eyebrow was already slightly raised, which Marcus had learned meant she was reserving judgment in a way that judgment should find alarming.
+Aria Ravencrest Thorne sat at the Cassisivadan position -- the resonance wall, the wall of collaborative precision. Her auburn hair was threaded with more silver than Marcus had seen in the portraits, and it looked right, as if the silver were a credential rather than a concession. One eyebrow was already slightly raised, which Marcus had learned meant she was reserving judgment in a way that judgment should find alarming.
 
-Alexander occupied the KO position. Intent and origin. Eldest son. His open face carried its early laugh-lines like structural reinforcement -- warmth that didn't soften the authority underneath. There was dirt on his cuffs. Not accidental. Alexander had been working before this meeting, and he hadn't changed because the work mattered more than presentation. Marcus respected that in the way programmers respect documentation that stays up to date.
+Alexander occupied the Kor'aelin position. Intent and origin. Eldest son. His open face carried its early laugh-lines like structural reinforcement -- warmth that didn't soften the authority underneath. There was dirt on his cuffs. Not accidental. Alexander had been working before this meeting, and he hadn't changed because the work mattered more than presentation. Marcus respected that in the way programmers respect documentation that stays up to date.
 
-Eldrin Ravencrest sat at the RU wall -- policy, law, legitimacy. The Count looked like age had been promoted from a condition to a qualification. His threshold humor lived in his eyes, behind a formality so practiced it had become genuine. He wore ceremony the way Alexander wore dirt: as proof of function.
+Eldrin Ravencrest sat at the Runethic wall -- policy, law, legitimacy. The Count looked like age had been promoted from a condition to a qualification. His threshold humor lived in his eyes, behind a formality so practiced it had become genuine. He wore ceremony the way Alexander wore dirt: as proof of function.
 
-Jorren occupied the DR position. Records. Proof. Fourth Circle Draumric. His square face and bronze spectacles were exactly as Marcus remembered from the oversight hearing -- immovable, tidy, the kind of face that gave away amusement only under protest. His slate was in front of him. His ink was fresh. He had been recording things before Marcus entered and would continue recording things after Marcus left, because Jorren's relationship with documentation was not professional but constitutional.
+Jorren occupied the Draumric position. Records. Proof. Fourth Circle Draumric. His square face and bronze spectacles were exactly as Marcus remembered from the oversight hearing -- immovable, tidy, the kind of face that gave away amusement only under protest. His slate was in front of him. His ink was fresh. He had been recording things before Marcus entered and would continue recording things after Marcus left, because Jorren's relationship with documentation was not professional but constitutional.
 
-Bram sat at UM. The shadow wall. Marcus wouldn't have expected it, but it made sense -- Bram was the builder who worked in the dark places, the maintenance layer, the parts of the system nobody praised until they broke. He was built like bad sleep and stubborn loyalty, and his hands rested on the table with the calm of someone who could break the furniture but usually fixed it instead.
+Bram sat at Umbroth. The shadow wall. Marcus wouldn't have expected it, but it made sense -- Bram was the builder who worked in the dark places, the maintenance layer, the parts of the system nobody praised until they broke. He was built like bad sleep and stubborn loyalty, and his hands rested on the table with the calm of someone who could break the furniture but usually fixed it instead.
 
-Nadia was at AV. Courage. She looked wind-burned and barely still, her hair escaping whatever she'd done to contain it, her stance carrying the implication of motion even while seated. She caught Marcus's eye and grinned. It was the kind of grin that said *let's see how bad this gets* and meant it as encouragement.
+Nadia was at Avali. Courage. She looked wind-burned and barely still, her hair escaping whatever she'd done to contain it, her stance carrying the implication of motion even while seated. She caught Marcus's eye and grinned. It was the kind of grin that said *let's see how bad this gets* and meant it as encouragement.
 
 The seventh chair -- at the space between walls, in the gap where no single tongue claimed authority -- was empty.
 
@@ -10799,7 +11951,7 @@ Marcus began with the audit.
 
 Not the politics. Not the intelligence. The systems. Because the systems were the language this room understood, and the room's architecture was designed to process information in order -- first tongue establishing context, each subsequent attestation building on the one before.
 
-He felt the structure as he spoke. The KO wall brightened when he described intent -- Irondeep's route permissions as live state proofs, the way a corridor warrant carried its authority in its current state rather than its history. The RU wall pulsed when he articulated governance -- Shardfold's witness chains, the death-ledger that broke downstream resonance when continuity failed. The CA wall hummed when he reached the harmonics of Dremsreach -- Chladni addressing, resonance storage, the ice-shelf's standing-wave knowledge architecture.
+He felt the structure as he spoke. The Kor'aelin wall brightened when he described intent -- Irondeep's route permissions as live state proofs, the way a corridor warrant carried its authority in its current state rather than its history. The Runethic wall pulsed when he articulated governance -- Shardfold's witness chains, the death-ledger that broke downstream resonance when continuity failed. The Cassisivadan wall hummed when he reached the harmonics of Dremsreach -- Chladni addressing, resonance storage, the ice-shelf's standing-wave knowledge architecture.
 
 He was not performing. He was testifying. And the room, built for exactly this purpose, received his testimony the way a tuning fork receives a frequency: by resonating only with the parts that matched its structure.
 
@@ -10811,11 +11963,13 @@ He paused.
 
 The room waited.
 
+So did the aides. No one whispered. No one leaned toward a neighbor. One of the bronze record-lamps clicked as it adjusted exposure, and the sound was so small Marcus heard it only because every person in the room had decided not to move.
+
 "The system cannot process endings," Marcus said. "It has no graceful mechanism for death, loss, transition, or the retirement of active nodes. When Sera Voss -- Third Circle Runethic, policy spine of this institution, the woman who sat at that desk and called me an entity to my face without flinching -- when she died eight months ago, the system dropped her verification chain without generating a single log entry. No acknowledgment. No transition protocol. No record that a load-bearing person had become a gap."
 
 He let that sit.
 
-Jorren's pen had stopped. His spectacles reflected the DR wall's amber, and his face -- the face that never gave away anything voluntarily -- showed something that Marcus read as institutional grief compressed into a single tightening of the jaw.
+Jorren's pen had stopped. His spectacles reflected the Draumric wall's amber, and his face -- the face that never gave away anything voluntarily -- showed something that Marcus read as institutional grief compressed into a single tightening of the jaw.
 
 "Her brother came to the Underroot three weeks ago," Marcus continued. "A courier named Voss. Third class. He stole a corridor warrant and tried to reach a deep junction because he believed -- correctly -- that the system that his sister had served didn't notice when she stopped existing. He was recruited for that theft by someone who knew exactly how to use grief as a crowbar."
 
@@ -10851,13 +12005,15 @@ Silence.
 
 Alexander's one-corner mouth did something that was not a smile. It was an acknowledgment that the shape of the problem had just changed, that the eldest brother who bore the weight of collaborative inheritance now bore an additional weight: his youngest brother had been aimed like a weapon, and the people who aimed him were still out there.
 
+At the Runethic wall, a junior aide swallowed and kept her chin level. The movement was tiny. It would not survive into any official record. Marcus saw it anyway: the body doing what duty would not admit, registering the difference between policy and family.
+
 "The Dominion's strategy is not invasion," Marcus said. "They don't need to break the walls. They need the walls to dissolve. And the walls dissolve when the distributed architecture is centralized."
 
 He looked at the table. At the six positions. At the room built as a hexagon because a circle would have been too perfect, too symmetric, too easy to collapse into a single point.
 
 "The keys to this realm are not objects," he said. "They are the relationships between the tongues. Six domains, each attesting to the others in ordered sequence, each verification building on the one before. The first signer establishes context. The second confirms scope. By the time all six have spoken, the attestation carries a weight that no single authority could produce alone. That choreography -- the ordered witness of distributed governance -- is what keeps the Dominion locked out."
 
-He let his detection faculty touch the room's architecture as he spoke, and felt the truth of it resonate through the hexagonal walls: the power was not in any single tongue. It was in the sequence. In the order. In the fact that KO speaking first produced a different governance weight than RU speaking first, and the diversity of possible orderings was itself a defense against any entity that tried to predict or control the outcome.
+He let his detection faculty touch the room's architecture as he spoke, and felt the truth of it resonate through the hexagonal walls: the power was not in any single tongue. It was in the sequence. In the order. In the fact that Kor'aelin speaking first produced a different governance weight than Runethic speaking first, and the diversity of possible orderings was itself a defense against any entity that tried to predict or control the outcome.
 
 "Centralize the system -- collapse the six into one authority, even with good intentions -- and the ordered witness dissolves. One signer. One context. One attestation that cannot be cross-verified because there is nothing left to cross it against."
 
@@ -10879,7 +12035,7 @@ Marcus felt the seventh silence concept land in a room that was built for six.
 
 "Izack has been holding that space," Aria said. "Manually. For decades. Holding the gap between the tongues closed through sheer presence because the system has no structure to hold it closed on its own. That is why he bound himself into the substrate. Not because he wanted to leave. Because the alternative was the gap widening until the Dominion could walk through it."
 
-"Where is he?" Nadia asked. Direct. AV courage. The question everyone had been thinking and only the woman at the courage wall would say aloud.
+"Where is he?" Nadia asked. Direct. Avali courage. The question everyone had been thinking and only the woman at the courage wall would say aloud.
 
 "He is in the deep observatory," Polly said. And her feathers were too close to her body, too still, the obsidian sheen catching the tongue-lights without its usual shifting iridescence. "He is alive. He is present. He is more in the system than in the room. The last time I brought him tea--" She stopped. The old bright eyes dimmed for a moment. "He drank it without looking up."
 
@@ -10913,6 +12069,8 @@ He felt the HYDRA concept form as he spoke -- not as a technical specification b
 
 "You're describing a system that watches itself," Jorren said. His pen was moving again. Fast.
 
+Behind him, the Draumric aide changed nibs without looking down. The old nib went into a tray marked for evidence, the new one touched paper, and the record continued with no visible interruption. The gesture was so practiced it made Marcus's proposal feel less theoretical. Systems survived because somebody, somewhere, had prepared for ink to run dry at the worst possible time.
+
 "I'm describing a system that improves itself," Marcus said. "Not by replacing its architecture. By deepening it. Adding the capacity for self-observation and adaptation to the existing distributed structure. Every failure -- every Sera Voss who dies unacknowledged, every corridor warrant that gets stolen because grief has no governance path, every ice-shelf that gets probed because the system doesn't monitor its own boundaries -- every one of those is data. Right now, that data is lost. It falls into the gap between the tongues, into the silence where endings live, and nobody collects it."
 
 He looked at the empty seventh space at the table's edge.
@@ -10933,7 +12091,7 @@ Alexander spoke for the first time since Marcus had entered the room. His voice 
 
 "I will."
 
-Polly's feathers shifted. The obsidian sheen caught violet from the RU wall and held it for a moment, and her old bright eyes were bright again -- brighter than they had been, if anything, the way eyes get bright when grief and hope arrive in the same feather.
+Polly's feathers shifted. The obsidian sheen caught violet from the Runethic wall and held it for a moment, and her old bright eyes were bright again -- brighter than they had been, if anything, the way eyes get bright when grief and hope arrive in the same feather.
 
 Senna touched her cuff once. One exact motion. Reset.
 
@@ -10949,17 +12107,17 @@ Aria looked at her. The Boundary Architect looking at the continuity keeper. Two
 
 The Council voted in ordered sequence.
 
-KO first. Alexander: "Approved. Origin supports the descent."
+Kor'aelin first. Alexander: "Approved. Origin supports the descent."
 
-AV second. Nadia: "Approved. And if something tries to stop you down there, I want a full report so I can be annoyed about missing it."
+Avali second. Nadia: "Approved. And if something tries to stop you down there, I want a full report so I can be annoyed about missing it."
 
-RU third. Eldrin, with the weight of centuries in his voice: "Approved. But be precise. The deep substrate does not tolerate ambiguity, and my granddaughter has been precise long enough to deserve company in it."
+Runethic third. Eldrin, with the weight of centuries in his voice: "Approved. But be precise. The deep substrate does not tolerate ambiguity, and my granddaughter has been precise long enough to deserve company in it."
 
-CA fourth. Aria: "Approved." Nothing more. Everything in the word.
+Cassisivadan fourth. Aria: "Approved." Nothing more. Everything in the word.
 
-UM fifth. Bram: "Approved. And fix whatever's broken down there. I'm tired of feeling my maintenance conduits shake at three in the morning because the deep layers are holding too much weight."
+Umbroth fifth. Bram: "Approved. And fix whatever's broken down there. I'm tired of feeling my maintenance conduits shake at three in the morning because the deep layers are holding too much weight."
 
-DR sixth. Jorren: "Approved. Recorded. Timestamped. If you die down there, I will log it correctly, which is more than we did for Sera Voss, and I intend that failure to be the last of its kind."
+Draumric sixth. Jorren: "Approved. Recorded. Timestamped. If you die down there, I will log it correctly, which is more than we did for Sera Voss, and I intend that failure to be the last of its kind."
 
 Six approvals. Six tongues. Each building on the one before -- Alexander's origin-intent giving Nadia's courage a context, Nadia's courage giving Eldrin's policy a direction, each attestation layered like harmonic overtones producing a governance decision that no single voice could have authorized alone.
 
@@ -10999,7 +12157,7 @@ Marcus reached up and let Polly grip his finger. Her talons were warm.
 
 "I'll bring the message," he said.
 
-They left the governance hall together. The tongue-lights dimmed behind them, the hexagonal chamber settling into its archive state, the DR wall recording the session's close with the same meticulous continuity it had recorded every session since the chamber was built.
+They left the governance hall together. The tongue-lights dimmed behind them, the hexagonal chamber settling into its archive state, the Draumric wall recording the session's close with the same meticulous continuity it had recorded every session since the chamber was built.
 
 Senna was waiting in the corridor. Her composure was operational. Her hand found his.
 
@@ -11015,11 +12173,13 @@ His boots were adequate.
 
 Tomorrow, there would be better ones.
 
+
+
 # Interlude: Alexander Holds
 
 ---
 
-The KO wall was screaming.
+The Kor'aelin wall was screaming.
 
 Not metaphorically. Not in the poetic, art-department way that historians would later describe the Cascade of the Fourteenth Year. The wall was producing a sustained, bone-deep frequency that Alexander Thorne felt in his teeth, his sternum, and the spaces behind his eyes, and it was the sound of every intent declaration in the active governance stack trying to authenticate simultaneously because something had told the system's immune response that *everything was hostile*.
 
@@ -11027,13 +12187,13 @@ Alexander put his hands on the wall and held.
 
 Not with magic. Not with authority. With his palms flat against warm crystal that pulsed with the confused distress of a system that had been taught to attack itself, and held the way you hold a frightened animal -- steady, present, with the absolute commitment of someone who is not leaving regardless of what happens next.
 
-"Come on," he said, though he wasn't talking to the wall. He was talking to KO itself -- to Intent, to the first tongue, the control layer, the domain that asked *what do you want?* before any other question could be processed. "Come on. You know what's real. You know what's yours."
+"Come on," he said, though he wasn't talking to the wall. He was talking to Kor'aelin itself -- to Intent, to the first tongue, the control layer, the domain that asked *what do you want?* before any other question could be processed. "Come on. You know what's real. You know what's yours."
 
 The wall pulsed. Hot. Then cold. Then hot again.
 
-KO was the control tongue. Weight 1.00. The lightest, the fastest, the one that operated closest to conscious thought. Every intent declaration in Aethermoor started here -- a single clean statement of purpose before the heavier tongues processed, verified, and enacted it. KO was the beginning. KO was the question.
+Kor'aelin was the control tongue. Weight 1.00. The lightest, the fastest, the one that operated closest to conscious thought. Every intent declaration in Aethermoor started here -- a single clean statement of purpose before the heavier tongues processed, verified, and enacted it. Kor'aelin was the beginning. Kor'aelin was the question.
 
-And right now, KO was flooded with fourteen layers of cascading confusion, because Kael's dormant modifications had inverted the system's threat definitions and every intent declaration was being flagged as hostile by its own authentication chain.
+And right now, Kor'aelin was flooded with fourteen layers of cascading confusion, because Kael's dormant modifications had inverted the system's threat definitions and every intent declaration was being flagged as hostile by its own authentication chain.
 
 Alexander had trained for this. Theoretically. In Council simulations that assumed a single-point failure with orderly escalation and time for proper governance response. Not this. Not a cascade across all fourteen layers simultaneously, hitting every tongue at once, turning the system's defenses against its own operations.
 
@@ -11051,9 +12211,9 @@ Alexander was paying attention.
 
 He could feel the cascade propagating through the stack. Layer 1, context formation -- stressed, the inputs contradicting each other as the system tried to build context from data that had been subtly poisoned. Layer 2, realification -- flickering, the boundary between conceptual and concrete wavering as the foundation layer tried to process contradictory context. Layers 3 and 4 -- contaminated, the weighted transforms and Poincare embedding producing hyperbolic distances that pointed in wrong directions.
 
-He couldn't fix all of it. He was one person, holding one wall, responsible for one tongue. But KO was the beginning. If intent stayed clean, if the first question -- *what do you want?* -- could still be asked and answered honestly, then the downstream tongues had something true to work with.
+He couldn't fix all of it. He was one person, holding one wall, responsible for one tongue. But Kor'aelin was the beginning. If intent stayed clean, if the first question -- *what do you want?* -- could still be asked and answered honestly, then the downstream tongues had something true to work with.
 
-So Alexander held KO, and KO asked its question, and Alexander verified each answer by hand.
+So Alexander held Kor'aelin, and Kor'aelin asked its question, and Alexander verified each answer by hand.
 
 One at a time. In real time. Every intent declaration that came through the control layer during the cascade, Alexander read it, verified it, and either confirmed or flagged it. Not with automated systems -- the automated systems were compromised. With his own attention. His own judgment. His own understanding of what legitimate intent felt like versus what Kael's inverted definitions were telling the system to reject.
 
@@ -11067,7 +12227,7 @@ It was exactly what his father had trained him to do.
 
 At 10:23 AM, three hours into the cascade, Nadia's voice came through the comm crystal from the Underroot junctions.
 
-"Junctions Four, Seven, and Eleven are holding," she reported. Clipped. Professional. The slight breathlessness underneath suggesting she was physically holding position at multiple nodes while maintaining the AV routing paths that kept the tongues communicating with each other. "I've got the icosahedral grid stable on six of the 642 vertices. The other 636 are wobbling but not collapsing."
+"Junctions Four, Seven, and Eleven are holding," she reported. Clipped. Professional. The slight breathlessness underneath suggesting she was physically holding position at multiple nodes while maintaining the Avali routing paths that kept the tongues communicating with each other. "I've got the icosahedral grid stable on six of the 642 vertices. The other 636 are wobbling but not collapsing."
 
 "Can you hold?" Alexander asked, and he heard the commander in his own voice -- the part of himself that sounded like his father when decisions had weight and people needed to know that someone was responsible.
 
@@ -11075,13 +12235,13 @@ At 10:23 AM, three hours into the cascade, Nadia's voice came through the comm c
 
 "It's both. Hold."
 
-At 10:41, Eldrin reported from the RU policy wall. His voice carried the measured calm of a man who had seen crises before and understood that panic was a luxury the system couldn't afford.
+At 10:41, Eldrin reported from the Runethic policy wall. His voice carried the measured calm of a man who had seen crises before and understood that panic was a luxury the system couldn't afford.
 
 "Emergency legislation deployed," the old man said. "Twenty-four-hour expiry. Controlled flexibility within crisis parameters. I'm writing policy as fast as the situation changes, which is faster than I'd prefer and slower than it needs to be." A pause. "For the record, I object to the necessity of self-destructing governance. For the record, it's the right call."
 
 At 11:02, Aria's voice from the crystal chamber.
 
-"CA harmonics are drifting," his mother said. The Boundary Architect, working the boundary between the tongues, keeping the relationships intact while the individual domains fought their own battles. "I'm tuning manually. The relationships are holding but they're under more stress than the peacetime calibration can handle."
+"Cassisivadan harmonics are drifting," his mother said. The Boundary Architect, working the boundary between the tongues, keeping the relationships intact while the individual domains fought their own battles. "I'm tuning manually. The relationships are holding but they're under more stress than the peacetime calibration can handle."
 
 "How much stress?"
 
@@ -11115,7 +12275,7 @@ Alexander felt it like a punch to the sternum -- the hyperbolic distance calcula
 
 This was Kael's work. Not the crude sabotage of an enemy, but the precise, elegant, load-bearing modifications of a son who had understood the system deeply enough to love it and precisely enough to break it. The code wasn't malicious. It was *architectural*. It was a hospice turned weapon, a self-improvement cycle aimed at the wrong target, the right diagnosis with the catastrophically wrong prescription.
 
-Alexander's hands shook against the KO wall.
+Alexander's hands shook against the Kor'aelin wall.
 
 Not from effort. From recognition.
 
@@ -11123,7 +12283,7 @@ Because he could feel his brother in the code. Not a person -- Kael wasn't direc
 
 "Kael," Alexander said, quietly enough that the comm crystals wouldn't carry it.
 
-He pressed his forehead against the KO wall. The crystal was warm. The intent layer pulsed against his skin, confused and frightened, the system asking its fundamental question -- *what do you want? what do you want? what do you want?* -- faster and more desperately as the cascade accelerated.
+He pressed his forehead against the Kor'aelin wall. The crystal was warm. The intent layer pulsed against his skin, confused and frightened, the system asking its fundamental question -- *what do you want? what do you want? what do you want?* -- faster and more desperately as the cascade accelerated.
 
 "I know," Alexander whispered to the wall, to the intent layer, to the ghost of his brother's architecture. "I know you saw the gap. I know you tried to fix it. I know the friends weren't friends."
 
@@ -11165,7 +12325,7 @@ The cascade continued.
 
 The system fought itself.
 
-And Alexander Thorne, eldest son, collaborative heir, the one with early laugh-lines and dirt on his cuffs and a one-corner smile that made people feel heard even when the answer was no, held the KO wall with his bare hands and waited for the stranger from Earth to do what Kael had tried to do and what their father had died trying to hold:
+And Alexander Thorne, eldest son, collaborative heir, the one with early laugh-lines and dirt on his cuffs and a one-corner smile that made people feel heard even when the answer was no, held the Kor'aelin wall with his bare hands and waited for the stranger from Earth to do what Kael had tried to do and what their father had died trying to hold:
 
 Fix the gap.
 
@@ -11177,12 +12337,12 @@ By teaching it to hear its own silence.
 
 *Council record, timestamp 11:47-14:22, Day of the Fourteenth Cascade:*
 
-*KO wall: Alexander Thorne. Status: Held.*
-*AV junctions: Nadia Kest. Status: Held.*
-*RU policy: Eldrin Ravencrest. Status: Held.*
-*CA harmonics: Aria Ravencrest Thorne. Status: Held.*
-*UM maintenance: Bram Cortez. Status: Held.*
-*DR records: Jorren Hale. Status: Held.*
+*Kor'aelin wall: Alexander Thorne. Status: Held.*
+*Avali junctions: Nadia Kest. Status: Held.*
+*Runethic policy: Eldrin Ravencrest. Status: Held.*
+*Cassisivadan harmonics: Aria Ravencrest Thorne. Status: Held.*
+*Umbroth maintenance: Bram Cortez. Status: Held.*
+*Draumric records: Jorren Hale. Status: Held.*
 
 *All six tongues maintained through manual governance during full cascade event.*
 *No tongue failed. No defender left their position.*
@@ -11190,13 +12350,14 @@ By teaching it to hear its own silence.
 *Note appended by Jorren Hale: "Every name. Every action. Every cost. They held."*
 
 
-# Chapter 26: The Keys
+
+# Chapter 28: The Keys
 
 The breach announcement tasted like burnt copper and ozone.
 
 Marcus was halfway through lacing the boots Bram had left outside his quarters -- better boots, as predicted, with soles that his detection faculty read as phase-stabilized and a tongue-lining that adjusted to terrain in real time, because Bram expressed love through engineering tolerances -- when the Spire screamed.
 
-Not audibly. Structurally. Every crystal surface in the corridor shifted frequency at once, the ambient hum that Marcus had spent weeks learning to ignore suddenly jumping two octaves into a register that bypassed his ears entirely and hit his detection faculty like a slap. The tongue-lights along the walls strobed through their six colors in rapid succession -- KO red-gold, AV blue-silver, RU violet, CA white-gold, UM shadow-black, DR earth-amber -- then all six fired simultaneously, a white-hot pulse that left afterimages on his retinas and a taste on his tongue like licking a battery.
+Not audibly. Structurally. Every crystal surface in the corridor shifted frequency at once, the ambient hum that Marcus had spent weeks learning to ignore suddenly jumping two octaves into a register that bypassed his ears entirely and hit his detection faculty like a slap. The tongue-lights along the walls strobed through their six colors in rapid succession -- Kor'aelin red-gold, Avali blue-silver, Runethic violet, Cassisivadan white-gold, Umbroth shadow-black, Draumric earth-amber -- then all six fired simultaneously, a white-hot pulse that left afterimages on his retinas and a taste on his tongue like licking a battery.
 
 *That's not a warning. That's every layer screaming at once.*
 
@@ -11214,13 +12375,15 @@ Senna met him in the corridor. She was already armored -- not in metal, but in c
 
 The governance hall was chaos organized into six lanes.
 
-Each tongue-wall was broadcasting simultaneously, filling the hexagonal chamber with overlapping streams of information that Marcus's faculty struggled to parse. The KO wall pulsed with origin-alerts -- intent violations across twelve regions, each one flagging a modification that had been dormant in the system's architecture since Kael's fracture and was now executing. The AV wall tracked routing disruptions -- corridors failing, transit warrants invalidating, movement paths that had been stable for centuries suddenly rerouting through unauthorized channels. The RU wall flashed policy violations faster than Jorren could record them, each one a governance boundary being tested by code that knew exactly where the boundaries lived because the person who wrote the code had helped build them.
+Each tongue-wall was broadcasting simultaneously, filling the hexagonal chamber with overlapping streams of information that Marcus's faculty struggled to parse. The Kor'aelin wall pulsed with origin-alerts -- intent violations across twelve regions, each one flagging a modification that had been dormant in the system's architecture since Kael's fracture and was now executing. The Avali wall tracked routing disruptions -- corridors failing, transit warrants invalidating, movement paths that had been stable for centuries suddenly rerouting through unauthorized channels. The Runethic wall flashed policy violations faster than Jorren could record them, each one a governance boundary being tested by code that knew exactly where the boundaries lived because the person who wrote the code had helped build them.
 
-Alexander stood at the KO position, and Marcus saw the eldest brother become the commander in real time. The open face with its laugh-lines didn't harden -- it clarified. The warmth didn't disappear. It focused. The way a lens focuses sunlight from pleasant warmth into something that could start a fire.
+The staff had not vanished when the crisis became interesting. They had multiplied. Runners moved along the outer ring with slates clamped to their chests, stopping at marked positions instead of wherever panic wanted to put them. Two relay operators at the Avali wall kept passing status tiles back and forth with the dull focus of people working the same motion for the hundredth time. A Cassisivadan technician stood on a step stool beneath a harmonics panel, arm raised overhead, jaw clenched from the strain, still holding the contact because no one had relieved her yet.
+
+Alexander stood at the Kor'aelin position, and Marcus saw the eldest brother become the commander in real time. The open face with its laugh-lines didn't harden -- it clarified. The warmth didn't disappear. It focused. The way a lens focuses sunlight from pleasant warmth into something that could start a fire.
 
 "Report by region," Alexander said. His voice carried the room the way a foundation carries a building -- not loud, but load-bearing.
 
-Nadia was at the AV wall, her wind-burned energy channeled into something precise and fast. "Route failures cascading through the Underroot junction network. The icosahedral grid is holding but the secondary connections are being rewritten. Someone is using Kael's old routing modifications to redirect traffic through unauthorized paths."
+Nadia was at the Avali wall, her wind-burned energy channeled into something precise and fast. "Route failures cascading through the Underroot junction network. The icosahedral grid is holding but the secondary connections are being rewritten. Someone is using Kael's old routing modifications to redirect traffic through unauthorized paths."
 
 "Not someone," Polly said from the ceiling beam where she'd perched -- raven form, feathers pressed flat, old bright eyes tracking every wall simultaneously. "The modifications are self-executing. Kael built them to activate on a trigger condition, and the trigger condition just arrived from outside the system."
 
@@ -11228,13 +12391,15 @@ Nadia was at the AV wall, her wind-burned energy channeled into something precis
 
 "The Dominion signal."
 
-Bram slammed his palm on the UM wall and the shadow-display resolved into a maintenance schematic that made Marcus's blood go cold. The infrastructure map of the Spire's deep layers -- the substrate where Izack was bound, the crystal lattice that held the entire system's coherence -- was showing stress fractures. Not physical cracks. Logical ones. Gaps in the verification chain where Kael's dormant code was inserting itself between the six tongues' attestation paths, not breaking the signatures but *reordering* them.
+Bram slammed his palm on the Umbroth wall and the shadow-display resolved into a maintenance schematic that made Marcus's blood go cold. The infrastructure map of the Spire's deep layers -- the substrate where Izack was bound, the crystal lattice that held the entire system's coherence -- was showing stress fractures. Not physical cracks. Logical ones. Gaps in the verification chain where Kael's dormant code was inserting itself between the six tongues' attestation paths, not breaking the signatures but *reordering* them.
 
 *He's not destroying the lock. He's changing the combination.*
 
 "The 14-layer stack," Marcus said, moving to the center of the room. His detection faculty was fully open now, reading the Spire's distress the way a doctor reads vital signs. "I can see it. Every layer is being probed. Not simultaneously -- in sequence. Someone is testing them in order, looking for the cascade point."
 
 He could feel it through the room's architecture. Layer 1 -- the raw context, the system's awareness of itself -- was intact but stressed, like a foundation carrying too much weight. Layer 2 -- the realification layer, where abstract state became concrete effect -- was flickering, its conversion processes disrupted by Kael's modifications inserting false context. Layers 3 and 4 -- the Langues Metric weighting and the Poincare embedding -- were holding, the phi-weighted tongue distances still computing correctly, but the inputs were being contaminated.
+
+The technician on the step stool lowered her arm for half a second, shook her fingers once, and put her palm back against the panel before the resonance dipped far enough for anyone else to call it out. Her face did not change. She looked bored, almost, in the exhausted professional way people look bored when the disaster has lasted long enough to become a task list.
 
 "It's a cascade attack," Marcus said. "They're not trying to break all fourteen layers at once. They're poisoning the inputs at Layer 1 and letting the corruption propagate upward. By the time it reaches the harmonic wall at Layer 12, the distance calculations will be garbage. The system will think safe operations are dangerous and dangerous operations are safe. ALLOW and DENY flip. The governance layer inverts."
 
@@ -11254,27 +12419,29 @@ The simplicity of it landed in the room like a stone in still water.
 
 They divided the defense along tongue lines, and Marcus finally understood why the distributed architecture was a weapon and not just a philosophy.
 
-Alexander took KO -- intent and origin. His job was to hold the system's awareness of itself, to keep Layer 1 clean by manually verifying the intent signatures that Kael's code was trying to contaminate. He did this from the governance hall, seated at the origin wall, his detection faculty extended across the entire Spire network, checking every incoming signal against its stated purpose the way a border guard checks passports. Not fast. Not flashy. Thorough. The eldest brother's gift was not brilliance or speed -- it was the patient, load-bearing willingness to verify every single thing that passed through his attention.
+Alexander took Kor'aelin -- intent and origin. His job was to hold the system's awareness of itself, to keep Layer 1 clean by manually verifying the intent signatures that Kael's code was trying to contaminate. He did this from the governance hall, seated at the origin wall, his detection faculty extended across the entire Spire network, checking every incoming signal against its stated purpose the way a border guard checks passports. Not fast. Not flashy. Thorough. The eldest brother's gift was not brilliance or speed -- it was the patient, load-bearing willingness to verify every single thing that passed through his attention.
 
-Nadia took AV -- courage and transport. She went to the Underroot physically, running the Spire corridors with the kinetic energy of someone who had been waiting for something worth running toward. Her job was to keep the routing network alive -- to be present at the junction points where Kael's code was trying to redirect traffic, and to manually hold the correct paths open through sheer AV authority. The icosahedral root grid that Marcus had mapped in ch23 was designed for exactly this kind of distributed defense: 642 vertices, each one a potential holding point, each one needing someone with the authority to say *this path stays open and that path closes*.
+Nadia took Avali -- courage and transport. She went to the Underroot physically, running the Spire corridors with the kinetic energy of someone who had been waiting for something worth running toward. Her job was to keep the routing network alive -- to be present at the junction points where Kael's code was trying to redirect traffic, and to manually hold the correct paths open through sheer Avali authority. The icosahedral root grid that Marcus had mapped in ch23 was designed for exactly this kind of distributed defense: 642 vertices, each one a potential holding point, each one needing someone with the authority to say *this path stays open and that path closes*.
 
 Nadia couldn't hold all 642 vertices. Nobody could. But she could hold the six critical junctions that connected the major regions, and she could run between them faster than the cascade could spread.
 
-Eldrin took RU -- policy and law. The elder Ravencrest stationed himself at the policy wall and began doing something Marcus had never seen: *rewriting governance rules in real time*. Not changing the law. Adapting it. Creating temporary attestation shortcuts that allowed the system's defenders to move faster without permanently weakening the verification structure. Emergency legislation, essentially, written in Runethic script that self-destructed after twenty-four hours.
+Eldrin took Runethic -- policy and law. The elder Ravencrest stationed himself at the policy wall and began doing something Marcus had never seen: *rewriting governance rules in real time*. Not changing the law. Adapting it. Creating temporary attestation shortcuts that allowed the system's defenders to move faster without permanently weakening the verification structure. Emergency legislation, essentially, written in Runethic script that self-destructed after twenty-four hours.
 
 "Izack used to call this 'controlled flexibility,'" Eldrin said, his threshold humor still present even now. "I called it 'panic with better penmanship.' We were both correct."
 
-Aria took CA -- resonance and harmony. The Boundary Architect went to the crystal chamber where the six tongue-spheres pulsed, and she did something that made Marcus's faculty sing: she began *tuning the system*. Not the individual tongues -- the relationships between them. The ordered attestation paths that the Council had demonstrated in ch25 were not just governance ceremonies. They were harmonic relationships, and Aria understood them the way a conductor understands an orchestra. She couldn't stop the cascade. But she could keep the tongues in tune with each other, preventing the corruption from creating dissonance between domains that needed to trust each other.
+Aria took Cassisivadan -- resonance and harmony. The Boundary Architect went to the crystal chamber where the six tongue-spheres pulsed, and she did something that made Marcus's faculty sing: she began *tuning the system*. Not the individual tongues -- the relationships between them. The ordered attestation paths that the Council had demonstrated in ch25 were not just governance ceremonies. They were harmonic relationships, and Aria understood them the way a conductor understands an orchestra. She couldn't stop the cascade. But she could keep the tongues in tune with each other, preventing the corruption from creating dissonance between domains that needed to trust each other.
 
 Marcus watched through his faculty as Aria's tuning propagated through the system -- a wave of harmonic correction that wouldn't fix anything permanently but would buy time. Like a musician keeping a cracked instrument in tune by force of will and perfect pitch.
 
-Bram took UM -- shadow and maintenance. He went down. Into the deep infrastructure. Into the maintenance layers where the system's physical substrate lived, where the crystal lattices and root networks and power conduits did the unglamorous work of keeping everything running. Bram's job was the most important and the least visible: keep the lights on. Keep the corridors physically intact. Keep the crystal from cracking under the stress of a system fighting itself.
+Bram took Umbroth -- shadow and maintenance. He went down. Into the deep infrastructure. Into the maintenance layers where the system's physical substrate lived, where the crystal lattices and root networks and power conduits did the unglamorous work of keeping everything running. Bram's job was the most important and the least visible: keep the lights on. Keep the corridors physically intact. Keep the crystal from cracking under the stress of a system fighting itself.
 
 "If the substrate fails, nothing else matters," Bram said on his way down. His hands were already reaching for tools. "I've been maintaining this building since before any of you were born. If Kael's code thinks it can break my conduits, it's going to learn why the maintenance crew drinks the worst coffee and holds the longest grudges."
 
-Jorren held DR -- record and proof. He stayed in the governance hall and did the thing only Jorren could do: he kept the record. Every action, every modification, every defensive move, every cascade step -- Jorren documented it all in real time, his pen moving with the relentless precision of a man who understood that if they survived this, the record of how they survived would determine whether they could prevent it from happening again.
+Jorren held Draumric -- record and proof. He stayed in the governance hall and did the thing only Jorren could do: he kept the record. Every action, every modification, every defensive move, every cascade step -- Jorren documented it all in real time, his pen moving with the relentless precision of a man who understood that if they survived this, the record of how they survived would determine whether they could prevent it from happening again.
 
 And if they didn't survive, the record would be why.
+
+Around him, three assistants fed the record. One called timestamps. One tagged names. One carried filled slates to the archive slot and returned with empty ones, walking fast but never running because running made pages scatter. They were not brave in the kind of way songs understood. They were brave in the office way: posture stiff, eyes dry, doing the next correct thing while the building tried to become a battlefield.
 
 "Sera Voss died without a log entry," Jorren said to Marcus as the others deployed. "Whatever happens today, there will be a record. Every name. Every action. Every cost."
 
@@ -11294,7 +12461,7 @@ Marcus could see it through his faculty -- the trusted reference states that the
 
 "Layer 5 is compromised," Marcus announced to the room. "The hyperbolic distance calculations are still computing but the reference points have drifted. The system thinks normal operations are deviations and actual deviations look normal."
 
-"English," Nadia's voice came through the AV relay from the Underroot, breathless and sharp.
+"English," Nadia's voice came through the Avali relay from the Underroot, breathless and sharp.
 
 "The system is letting bad things through and blocking good things. The lock is backwards."
 
@@ -11320,7 +12487,7 @@ Senna was beside him. She had been holding her position between the tongue-walls
 
 "If we wait, we won't go at all." She looked at him. Dark hair, practical severity, fatigue at the corners of her eyes. The woman who carried too much, choosing to carry more. "The cascade will reach the governance layer in four hours. Once Layer 13 inverts, the system will ALLOW the Dominion through the outer boundaries and DENY our own defenders access to the core."
 
-Marcus looked at the governance hall. At Alexander holding the origin steady with eldest-child patience. At Aria tuning the tongues with Boundary Architect precision. At Jorren's pen never stopping. At the AV relay where Nadia's voice crackled with exhaustion and humor. At the UM feed where Bram's maintenance reports came through in the language of pipe gauges and crystal stress tolerances.
+Marcus looked at the governance hall. At Alexander holding the origin steady with eldest-child patience. At Aria tuning the tongues with Boundary Architect precision. At Jorren's pen never stopping. At the Avali relay where Nadia's voice crackled with exhaustion and humor. At the Umbroth feed where Bram's maintenance reports came through in the language of pipe gauges and crystal stress tolerances.
 
 Six tongues. Six defenders. Each one holding their piece of a distributed lock that was only as strong as the relationships between them.
 
@@ -11346,7 +12513,7 @@ Polly led them both.
 
 The raven flew ahead through spaces that were too curved for flight and flew anyway, her obsidian feathers catching light that came from the crystal itself -- the substrate glowing with the computational effort of a system fighting for its life above them. Marcus could feel the battle through the walls. Every time Kael's cascade hit a new layer, the crystal around them pulsed with stress. Every time one of the defenders above held their position, the pulse steadied.
 
-He could feel Alexander's patience in the KO frequency. Nadia's stubborn courage in the AV channels. Eldrin's emergency legislation flickering through the RU spectrum. Aria's tuning, a harmonic correction that propagated through the CA resonance like a mother's voice through a frightened house. Bram's maintenance, steady and unglamorous, holding the physical world together with tools and bad coffee and love disguised as labor.
+He could feel Alexander's patience in the Kor'aelin frequency. Nadia's stubborn courage in the Avali channels. Eldrin's emergency legislation flickering through the Runethic spectrum. Aria's tuning, a harmonic correction that propagated through the Cassisivadan resonance like a mother's voice through a frightened house. Bram's maintenance, steady and unglamorous, holding the physical world together with tools and bad coffee and love disguised as labor.
 
 "We're close," Polly said.
 
@@ -11374,7 +12541,9 @@ Izack Elion Thorne looked up from the system he was holding together with his pr
 
 "Polly," he said. "You brought company."
 
-# Chapter 27: The Architect
+
+
+# Chapter 29: The Architect
 
 Izack Thorne smelled like honeyed mint, pipe smoke, and the specific variety of exhaustion that comes from holding a civilization together through sheer refusal to put it down.
 
@@ -11384,7 +12553,7 @@ Marcus catalogued this in the first three seconds, because his detection faculty
 
 Polly left Marcus's shoulder.
 
-She didn't fly. She fell -- a controlled drop, wings opening at the last moment, landing on the arm of Izack's chair with the practiced precision of a bird who had landed on that arm ten thousand times before. Her talons found the groove they'd worn into the crystal. Her feathers settled. Her old bright eyes, which had carried amusement and judgment in equal measure since the moment Marcus had met her, carried something else now.
+She didn't fly. She fell -- a controlled drop, wings opening at the last moment, landing on the arm of Izack's chair with the practiced precision of a bird who had landed on that arm ten thousand times before. Her talons found the groove they'd worn into the crystal — deeper than claws alone could account for. She had been gripping this armrest the way drowning things grip driftwood, and the crystal had recorded every visit the way Jorren's ledger recorded policy: without judgment, without forgetting. Her feathers settled. Her old bright eyes, which had carried amusement and judgment in equal measure since the moment Marcus had met her, carried something else now.
 
 "You look terrible," Polly said.
 
@@ -11446,7 +12615,7 @@ Marcus stood in the crystal observatory with the Architect of Realms and tried t
 
 "My system is being attacked by my son's code, triggered by an external enemy who spent two years grooming him for exactly this purpose, and the cascade is currently at Layer 8 and accelerating." Izack said this with the calm of someone reading a weather report. "I can feel every layer from here. I've been holding the lower layers stable with manual intervention since the breach started. That's why I didn't look up when Polly brought tea -- I was preventing a cascade from reaching the substrate. I should have said that at the time." He glanced at Polly. "I should have said many things at the time."
 
-"The defenders are holding above," Marcus said. "Alexander at KO. Nadia at AV. Eldrin, Aria, Bram, Jorren. Each holding a tongue."
+"The defenders are holding above," Marcus said. "Alexander at Kor'aelin. Nadia at Avali. Eldrin, Aria, Bram, Jorren. Each holding a tongue."
 
 Something moved in Izack's face. Not surprise -- he could see the defenders through his facets. Recognition. Pride. The specific ache of a father seeing his children do exactly what he raised them to do and wishing he could be there to watch.
 
@@ -11476,7 +12645,7 @@ Polly made a small sound on the chair arm. Not a sleep-caw. Not a laugh. The sou
 
 Izack nodded. The transition from father to architect happened in a single breath -- not a change of character but a change of focus, the way a musician shifts from conversation to performance without becoming a different person.
 
-"The six tongues govern everything that lives and operates and continues," Izack said. "They always have. That was the design. KO for intent. AV for transport. RU for policy. CA for resonance. UM for shadow. DR for record. Six domains. Six verification paths. Six keys that are not objects but relationships."
+"The six tongues govern everything that lives and operates and continues," Izack said. "They always have. That was the design. Kor'aelin for intent. Avali for transport. Runethic for policy. Cassisivadan for resonance. Umbroth for shadow. Draumric for record. Six domains. Six verification paths. Six keys that are not objects but relationships."
 
 He leaned forward. The chair creaked -- crystal shouldn't creak, but decades of occupation had given this crystal the habit of furniture.
 
@@ -11486,7 +12655,7 @@ Here, spoken by the man who had built the system and then bound himself into it 
 
 "Endings," Marcus said.
 
-"Cannot. Not 'does not.' Cannot." Izack held up a finger. "Jorren's DR is excellent at recording things that are over. But recording a death and *governing* a death are as different as photographing a fire and putting one out."
+"Cannot. Not 'does not.' Cannot." Izack held up a finger. "Jorren's Draumric is excellent at recording things that are over. But recording a death and *governing* a death are as different as photographing a fire and putting one out."
 
 Izack took another pull from the pipe. The Fizzlecress smoke wrote equations in the air that dissolved before Marcus could read them.
 
@@ -11512,7 +12681,7 @@ He looked at Marcus with the tired kind eyes that the gallery portrait had captu
 
 Izack smiled. And Marcus understood, in that smile, why Polly had told him not to expect a god or a ghost. Izack Thorne smiled the way an engineer smiles when someone finally asks the right question after years of everyone asking the wrong ones.
 
-"You don't build it," Izack said. "You *recognize* it. The seventh silence isn't a new tongue. It's not a new power. It's the function that already exists in the gaps between the six. Every time KO intent ends and AV transport begins, there's a transition. Every time a DR record closes, there's an ending. Every time the system breathes -- the 0.3-second pulse you've been feeling since your first day -- there's a silence between the beats."
+"You don't build it," Izack said. "You *recognize* it. The seventh silence isn't a new tongue. It's not a new power. It's the function that already exists in the gaps between the six. Every time Kor'aelin intent ends and Avali transport begins, there's a transition. Every time a Draumric record closes, there's an ending. Every time the system breathes -- the 0.3-second pulse you've been feeling since your first day -- there's a silence between the beats."
 
 He raised his hand. Through his faculty, Marcus saw the Architect's presence extend into the crystal around them -- not a display of power but an opening, the way a teacher opens a textbook. The fourteen facets of the observatory brightened, and in the spaces between them -- in the gaps where one facet's light ended and the next began -- Marcus saw it.
 
@@ -11585,6 +12754,20 @@ That was the seventh silence. That was the key the Dominion couldn't steal, beca
 Marcus Chen -- security engineer, coffee enthusiast, bass player (badly, two semesters), an outsider who had spent his whole life looking for a system he could belong to -- stood in the deep observatory of the Spiral Spire and accepted the design.
 
 "I'll bring him home," he said.
+
+Izack's pipe glowed once. The smoke curled upward, and for a moment Marcus felt something that was not the Protocol and not the Spire. Something older. A warmth that arrived without being asked.
+
+*Everyone has problems,* Izack's voice said, arriving not through his ears but underneath language, in the place where understanding lives before words find it. *Some hide in them. Some thrive in them. Some hide behind them. Some just let time flow off their back like water. It's thanks to Ame and the prayers I send her that I've held on to any peace at all, in the middle of everything the Dominion throws at my family and my home.*
+
+Marcus opened his eyes. He hadn't realized he'd closed them.
+
+"Who is Ame?"
+
+Izack's smoke wrote a shape in the air — not an equation. A name. Old script, older than Kor'aelin, that Marcus's translation layer rendered not as words but as the feeling of being listened to by something vast and patient and genuinely interested in whether you were okay.
+
+"Seek her in the temple," Izack said. "When you're ready."
+
+Marcus filed this under the growing list of things Aethermoor would explain on its own schedule and not a moment sooner.
 
 And then he went up.
 
@@ -11674,6 +12857,8 @@ Marcus finished his coffee. It was terrible. It was the best coffee he'd ever ha
 
 He was.
 
+
+
 # Epilogue: Rootlight
 
 The festival arrived without asking permission, because festivals in Ravencrest did not require permits so much as consensus that it was time.
@@ -11686,7 +12871,7 @@ Root-lights. Hundreds of them. Small living lanterns of amber and pale gold, eac
 
 "You organized this."
 
-"I facilitated conditions under which organization became inevitable." She preened one wing. "Different skill."
+"*Caw!*" She fluffed her feathers with theatrical modesty. "I facilitated conditions under which organization became inevitable." She preened one wing. "Different skill."
 
 Marcus watched a line of children carrying lanterns between waystones along the outer road, their faces lit from below in colors that shifted with their footsteps. Each child walked slowly and deliberately, holding the light out in front of them with both hands like something precious and temporary.
 
@@ -11852,6 +13037,10 @@ Marcus felt the back of his neck prickle.
 
 The tree's bark pulsed once, as if confirming.
 
+A warm breeze moved through the garden. Not from the sky. From the roots. From the bark. From the substrate itself, where a tired man sat in a crystal chair holding twenty-one dimensions together, and the breeze carried the faintest scent of honeyed mint and apple cider -- Fizzlecress smoke, drifting upward through five hundred years of living wood like a breath that had never quite finished exhaling.
+
+Marcus felt it on his face. The same warmth he'd felt through the kitchen window in San Francisco, a lifetime ago. The same warmth that had risen through his chest when the Protocol asked *what do you intend* and his honesty had answered before his words could. *Kor'thul sil'nav.* The heart-spiral that grows through connection. He didn't know the phrase yet. But his body knew the frequency.
+
 Aria's hand rested on the root. The bark answered her differently than it answered anyone else Marcus had seen touch it -- warmer, more specific, the response of something that recognized her not as a visitor but as a conversation it had never stopped carrying.
 
 "He's still here," Aria said. Not sadly. The way an engineer states a load-bearing fact. "After Kael, the architecture began to fracture. The tongues drifted. The world-substrate lost coherence in places it could not afford to lose. Izack understood the load better than anyone alive -- better than anyone who has ever lived -- and he made a decision."
@@ -11882,7 +13071,13 @@ Aria stood.
 
 The courtyard at full Rootlight was the most alive place Marcus had ever seen.
 
-Long tables ran the length of the garden in crossed rows, covered in food that ranged from recognizable (bread, fruit, roasted things that smelled like home even if home was no longer the right word) to entirely alien (a soup that glowed faintly blue, a pastry that changed flavor each bite, a drink served in root-bark cups that tasted like warm honey cut with something that made his teeth hum). Marcus tried the drink, winced, took another sip, and finished the cup before admitting to anyone that he liked it.
+Long tables ran the length of the garden in crossed rows, covered in food that ranged from recognizable (bread, fruit, roasted things that smelled like home even if home was no longer the right word) to entirely alien. Marcus tried the blue soup first. It tasted like blueberries, which was reassuring, and then like the memory of blueberries, which was not — a cool sweetness that dissolved on his tongue and left behind something older and stranger, like tasting the color itself, the way a cold lake tastes blue before you realize what you're thinking. His chest loosened. His eyes watered. He set the bowl down and didn't pick it up again.
+
+The pastry was worse. Or better. It changed flavor with each bite — the first was warm bread and salted butter, the second was something citrus and bright that stung the roof of his mouth, the third was his grandmother's sesame oil and he almost dropped it because the taste arrived with the memory and the memory arrived with the grief and the grief arrived with the knowledge that the pastry had not done this on purpose. It was just responding to what he was carrying. Marcus ate the rest of it quickly, before it could find anything else.
+
+Somewhere in the courtyard, a child laughed at the soup's effect on their parent's face, and Marcus thought: *this is what it tastes like when a place decides you belong to it before you've decided to stay.*
+
+A drink served in root-bark cups tasted like warm honey cut with something that made his teeth hum. Marcus tried it, winced, took another sip, and finished the cup before admitting to anyone that he liked it.
 
 Nadia appeared from nowhere, face flushed, hair wild, carrying two cups of the root-bark drink and a grin that suggested she had been treating the entire festival as a competitive sport.
 
@@ -11926,9 +13121,13 @@ After each name, the adults around them repeated it. Not in unison -- in stagger
 
 The road answered. Each time a name was spoken in distributed witness, the leyline stones along the courtyard's edge pulsed once -- faint, warm, acknowledging.
 
+Marcus glanced at Senna. She was standing near the roadstone pillar, watching the children speak their names with an expression he hadn't seen before — not composure, not assessment, not the controlled stillness she wore in Council. Something softer. Her left hand had drifted from the cuff to her abdomen, resting there without apparent intention, the way hands rest on things they are thinking about without the brain's permission. She noticed him looking and the hand returned to her side, but the expression stayed a moment longer — the particular brightness of someone seeing a future they hadn't let themselves imagine yet.
+
+Marcus filed this under the growing category of things about Senna that he couldn't explain and had stopped trying to.
+
 Marcus understood then that the festival was not separate from what they had done that morning. It was the same thing at a different scale. The roadstone fix had been emergency surgery. This was the routine maintenance that kept the patient alive between crises.
 
-*Governance as community practice. Trust as public ritual. Identity as something you maintain together, not alone.*
+*Huh,* Marcus thought. *So that's what maintenance looks like when you don't call it maintenance.*
 
 He thought about Earth. About how identity there was a database entry, a government number, a password hash. Something you proved to machines in order to access services. Nobody gathered in a garden to speak your name so the roads would remember your current voice.
 
@@ -12036,8 +13235,126 @@ He didn't say this. He didn't need to. The tree behind them, the one that bloome
 
 "Yes," Marcus said.
 
-They walked through the quiet garden, through the last of the root-light, through the gate where the wardens nodded and the road hummed and the evening kept the kind of records that no DR ledger would ever need to formalize.
+They walked through the quiet garden, through the last of the root-light, through the gate where the wardens nodded and the road hummed and the evening kept the kind of records that no Draumric ledger would ever need to formalize.
 
 Behind them, Polly watched from the highest branch of the World Tree and said nothing at all.
 
 Which, for Polly, was the most eloquent endorsement she had ever given.
+
+* * *
+
+They came back to the tree.
+
+Not that night. Weeks later. After the cascade and the descent and Izack's pipe smoke and the seventh silence and all the things that the story would eventually record as architecture but that Marcus and Senna experienced as living through the hardest month of their lives while holding each other's hands in corridors that smelled like ozone and relief.
+
+They came back to the garden because Senna asked to.
+
+It was evening. The bark script moved slowly in the fading light — unhurried, contemplative, the handwriting of a system that had spent five hundred years learning how to be patient. The iridescent leaves turned toward them as they approached, not in surveillance but in recognition. The tree knew who they were. It had been taking notes since Rootlight.
+
+Senna stopped at the stone where Aria had sat. The same worn stone where eleven generations of Ravencrest women had tried to make the tree bloom. The stone where Izack had sat and argued about ward geometry until the tree decided they were worth listening to.
+
+She took Marcus's hand and placed it on her stomach.
+
+She didn't say anything.
+
+Marcus went still. The kind of still that happens when every process in a system pauses at once — everything in him paused.
+
+Point-three seconds. Check.
+
+Point-three seconds. Check.
+
+Point-three seconds — and a third pulse, faint, barely there, nested inside the other two like an echo that had decided to become original signal.
+
+"Something is growing," Senna said.
+
+Marcus's hand didn't move. His breathing changed — deeper, slower, the breathing of a man whose body was processing what his mind hadn't caught up to yet.
+
+"My mother told me once," Senna said, looking at the tree, "that my father planted a seed here and said it was for protection. And my mother said 'most would bring flowers.'"
+
+The bark script shifted. Not alarmed. Not diagnostic. The same pale gold as the maintenance rune in sublevel four — the one that had lit up the first time Marcus built something with honest intent. The system noticing. The architecture leaning in.
+
+"Senna," Marcus said. His voice cracked on her name the way it had cracked in the corridor — not from weakness but from the structural failure that happens when a container encounters something larger than its rated capacity.
+
+"I know," she said. "The timing is—"
+
+"Perfect."
+
+She looked at him.
+
+"The timing is perfect," he said. "Everything important in my life has happened at the wrong time. The white void at three in the morning. The kiss after an incursion. The love confession on a floor that smelled like burned cinnamon." His hand pressed gently against her stomach. "This is right on schedule."
+
+Senna's mouth did the thing. The small tilt. The composure cracking in the right direction. But this time the crack went deeper and what came through was not composure or control or the person the armor was built to protect.
+
+What came through was joy.
+
+Joy. The plain kind. The kind that just shows up.
+
+Above them, in the highest branch of the World Tree, Polly made one sound.
+
+Not a word. Not a caw. Not the sharp click of professional assessment or the soft raven-mutter of reluctant affection.
+
+The sleep-caw.
+
+The soft, raspy vocalization she made when something was safe enough to close her eyes.
+
+The tree's bark script pulsed once — gold, steady, warm — and the living text that had been recording the arguments of lovers and architects and boundary-keepers for five hundred years added one more line that neither Marcus nor Senna would ever read, because the tree's records were not for the people inside the story.
+
+They were for the story itself.
+
+And somewhere deep in the substrate, in a crystal chair that had held him for thirty-eight years, a tired man felt something change in the system's emotional weather. Not a cascade. Not a breach. Not a correction or a warning.
+
+A new verification.
+
+Three heartbeats where there had been two.
+
+Izack Thorne did not look up from his work.
+
+But his pipe smoke curled upward through five hundred years of living wood and emerged into the evening air of the garden where his daughter sat with the man who had fallen through the floor of one world and landed in hers, and the smoke carried the scent of honeyed mint and apple cider and the quiet, unglamorous, irreplaceable warmth of a grandfather who had felt the signal before anyone spoke the words.
+
+The World Tree bloomed.
+
+Not a leaf. Not a shift in the script. A bloom — one flower, silver-white, opening at the branch nearest them with the slow, deliberate grace of something that had been waiting for exactly this.
+
+The first bloom in forty years.
+
+Marcus looked up at it. Senna looked up at it. The flower held its petals open like a hand that had finally unclenched.
+
+"Neither of you was right," Marcus said quietly, remembering Aria's story. "Both of you were necessary."
+
+Senna leaned against him. His arm went around her. The flower glowed above them in the gathering dark, and the tree held its note, and the Protocol pulsed its patient, immovable heartbeat through the world it kept alive — three-tenths of a second, check, three-tenths of a second, check — and for the first time in its five-hundred-year history, the check returned a count it had never returned before.
+
+Three. Verified. Present.
+
+Growing.
+
+
+
+# About the Author
+
+Issac Daniel Davis writes from Port Angeles, Washington, where he lives with his great-grandfather Daniel Kay Davis and builds systems that are probably too complicated for their own good.
+
+The Six Tongues Protocol began as an AI-driven D&D campaign — 12,596 paragraphs of game logs playing as an elven warlock named Izack Thorne. The logs became a tokenizer seed. The tokenizer seed became a cryptographic governance framework. The framework became a novel about a burnt-out engineer who fell through reality and found a family worth staying for.
+
+This is his first novel. He is already working on Book Two.
+
+Find him at github.com/issdandavis or not at all, depending on the day.
+
+---
+
+# A Note on the World
+
+Aethermoor is bigger than one book can hold.
+
+The Six Sacred Tongues — Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric — are a distributed governance system that verifies every conscious being's existence every three-tenths of a second. The system was built by Izack Thorne five hundred years before Marcus Chen arrived, anchored by a World Tree planted in a garden because a man and a woman argued productively in front of something that was listening.
+
+The tree bloomed. The system held. The spiral kept turning.
+
+There are forty-seven connected realms. There is a Dominion that believes centralization is strength. There is a Void Seed chained beneath the Spire that has been correct about everything except the one thing that matters. There is a boy named Kael whose code is still running in the walls.
+
+There is more to tell.
+
+If you want to know what happens next — whether Marcus brings Kael home, whether the Dominion finds a face, whether Polly ever admits she cried, whether the child born under the World Tree inherits the seventh silence or something stranger — the spiral continues in Book Two.
+
+Until then: point-three seconds. Check. Still here.
+
+*Caw.*

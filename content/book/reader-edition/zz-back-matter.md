@@ -15,7 +15,7 @@ Find him at github.com/issdandavis or not at all, depending on the day.
 
 Aethermoor is bigger than one book can hold.
 
-The Six Sacred Tongues — KO, AV, RU, CA, UM, DR — are a distributed governance system that verifies every conscious being's existence every three-tenths of a second. The system was built by Izack Thorne five hundred years before Marcus Chen arrived, anchored by a World Tree planted in a garden because a man and a woman argued productively in front of something that was listening.
+The Six Sacred Tongues — Kor'aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric — are a distributed governance system that verifies every conscious being's existence every three-tenths of a second. The system was built by Izack Thorne five hundred years before Marcus Chen arrived, anchored by a World Tree planted in a garden because a man and a woman argued productively in front of something that was listening.
 
 The tree bloomed. The system held. The spiral kept turning.
 

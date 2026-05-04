@@ -1,0 +1,103 @@
+{
+  "search_id": "search_193ad1ef45bd445caf62eaed98c185a7",
+  "status": "ok",
+  "results": [
+    {
+      "url": "https://thesurvivaluniversity.com/product/navigation-3-day-class/",
+      "title": "Land Navigation: Map & Compass Skills for the Backcountry",
+      "publish_date": null,
+      "excerpts": [
+        "Hands-On Map &amp; Compass Exercises ... Navigation Techniques Learn how to navigate using <strong>triangulation, dead reckoning, and nighttime navigation under limited light</strong>."
+      ]
+    },
+    {
+      "url": "https://www.troop1028.org/uploads/1/1/0/6/110687961/bsa_map_and_compass_class_kevin_sept_2020_ec.pdf",
+      "title": "SCOUTS BSA Core Scout Skills Map and Compass Training (Navigation)",
+      "publish_date": null,
+      "excerpts": [
+        "Core Scout Skills \u00b7 Training Agenda \u00b7 1. What is a compass and how does it work \u00b7 2. Parts of the compass \u00b7 3. Determining Compass Bearing \u00b7 4. What is a topographic map? 5. Symbols on a topographic map \u00b7 6. Reading a contour map \u00b7 7. Orienting a map with a compass \u00b7"
+      ]
+    },
+    {
+      "url": "https://github.com/JakobMiksch/geospatial-cli",
+      "title": "GitHub - JakobMiksch/geospatial-cli: A collection of geospatial programs with commandline interface \u00b7 GitHub",
+      "publish_date": null,
+      "excerpts": [
+        "A collection of geospatial programs with commandline interface - JakobMiksch/geospatial-cli"
+      ]
+    },
+    {
+      "url": "https://www.scouting.org/cub-scout-adventures/finding-your-way/",
+      "title": "Finding Your Way | Scouting America",
+      "publish_date": null,
+      "excerpts": [
+        "<strong>Practice using both a map and a compass</strong>. Using a map, locate where you live. ... Cub Scouts use Google Maps to show where they live. ... Cub Scouts find and show their town on a map. ... Draw a map for a friend to locate your home or school."
+      ]
+    },
+    {
+      "url": "https://troopleader.scouting.org/activities/scout-skill-challenges/compass-skill-activities/",
+      "title": "Compass Skill Activities - Troop Leader Resources",
+      "publish_date": null,
+      "excerpts": [
+        "<strong>Each Scout turns themselves around three times, then follows the bearing on their compass for 50 steps</strong>. They then turn around and follow the bearing back (orienting the direction of travel arrow toward themselves instead of away) for 45 steps."
+      ]
+    },
+    {
+      "url": "https://www.californiasurvivaltraining.com/map-compass-course",
+      "title": "Map & Compass Course \u2014 Thomas Coyne Survival Schools",
+      "publish_date": null,
+      "excerpts": [
+        "*<strong>Learn to select and read a topographic map for navigation</strong> *Learn to select and use a quality compass *Learn the essentials of route finding and planning, both on and off the map *Learnt the three primary types of field navigation *How to take"
+      ]
+    },
+    {
+      "url": "https://troopleader.scouting.org/program-features/orienteering/plans-ideas/",
+      "title": "Meeting Plans & Ideas: ORIENTEERING - Troop Leader Resources",
+      "publish_date": null,
+      "excerpts": [
+        "Learn how to use a compass. Practice following given bearings outside your meeting place. Practice following those bearings without going off course. Review the skills above. Practice determining the bearings to specific landmarks outside your meeting place. Review the skills above. Practice calculating and following back bearings (which take you from a destination back to the starting point); add or subtract 180\u00b0 to get a back bearing. ... Study the map symbols found on a sample topographic map."
+      ]
+    },
+    {
+      "url": "https://github.com/sacridini/Awesome-Geospatial",
+      "title": "GitHub - sacridini/Awesome-Geospatial: Long list of geospatial tools and resources \u00b7 GitHub",
+      "publish_date": null,
+      "excerpts": [
+        "godal - Godal aims at providing an idiomatic go wrapper around the GDAL library. gopostal - Go (cgo) interface to libpostal for fast international address parsing/normalization. GoSpatial - GoSpatial is a simple command-line interface program for manipulating geospatial data. lidario - A small Go library for reading and writing LiDAR (LAS) files. orb - A set of types for working with 2d geo and planar/projected geometric data in Golang \u00b7 pg_featureserv - Lightweight RESTful Geospatial Feature Server for PostGIS in Go."
+      ]
+    },
+    {
+      "url": "https://www.exploretruenorth.com/courses/land-navigation/basic-land-navigation",
+      "title": "Basic Land Navigation Training Course | Explore True North",
+      "publish_date": null,
+      "excerpts": [
+        "In our 1-day Basic Land Navigation training course, you will <strong>learn the parts of a compass and how to use it in the wilderness, how to read a topographic map, how to understand declination, and how to use related tools, equipment, and resources</strong>."
+      ]
+    },
+    {
+      "url": "https://thesurvivaluniversity.com/product/navigation-advanced-3-day-class/",
+      "title": "Advanced Land Navigation Course | Backcountry Compass Skills",
+      "publish_date": null,
+      "excerpts": [
+        "You\u2019ll use <strong>detailed topographic maps, an orienteering compass, and terrain association</strong> to travel across wilderness landscapes\u2014without trails, GPS, or modern crutches. Day One: Introduction at basecamp with refresher skills, basic wilderness"
+      ]
+    },
+    {
+      "url": "https://troopleader.scouting.org/rank-advancement-skills/campcraft/navigation-and-measurements/",
+      "title": "Navigation and Measurements - Troop Leader Resources",
+      "publish_date": null,
+      "excerpts": [
+        "Using a Compass and Map https://youtu.be/oECr1ig1MwcThis basic skill is one of the first things Scouts are taught when learning to use a compass.Related"
+      ]
+    },
+    {
+      "url": "https://developers.redhat.com/articles/2025/10/02/postgis-powerful-geospatial-extension-postgresql",
+      "title": "PostGIS: A powerful geospatial extension for PostgreSQL | Red Hat Developer",
+      "publish_date": null,
+      "excerpts": [
+        "GDAL: <strong>Translator for both vector and raster geospatial data formats</strong>. Even though the main use is as a library, this tool includes multiple command-line tools. Apart from simple conversions between data formats, it is also able to manipulate"
+      ]
+    }
+  ],
+  "warnings": []
+}

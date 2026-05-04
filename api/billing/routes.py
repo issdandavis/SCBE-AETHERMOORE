@@ -24,6 +24,7 @@ class CheckoutRequest(BaseModel):
     tier: str
     success_url: Optional[str] = None
     cancel_url: Optional[str] = None
+    idempotency_key: Optional[str] = None
 
 
 class PublicCheckoutRequest(BaseModel):
@@ -32,6 +33,7 @@ class PublicCheckoutRequest(BaseModel):
     success_url: Optional[str] = None
     cancel_url: Optional[str] = None
     source: Optional[str] = "landing"
+    idempotency_key: Optional[str] = None
 
 
 class CheckoutResponse(BaseModel):
@@ -93,6 +95,7 @@ async def create_public_checkout_session(request: PublicCheckoutRequest):
         success_url=request.success_url,
         cancel_url=request.cancel_url,
         metadata={"source": (request.source or "landing").strip()[:64]},
+        idempotency_key=request.idempotency_key,
     )
     return CheckoutResponse(**result)
 
@@ -124,6 +127,7 @@ async def create_checkout_session(
         customer_email=customer.customer_email if not stripe_customer_id else None,
         success_url=request.success_url,
         cancel_url=request.cancel_url,
+        idempotency_key=request.idempotency_key,
     )
 
     return CheckoutResponse(**result)

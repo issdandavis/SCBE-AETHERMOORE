@@ -79,6 +79,27 @@ Apply these rules when editing prose for Issac's voice:
 - Choose specific sensory language over generic description.
 - Leave negative space where the reader can do work.
 - Avoid pretension and system-jargon flattening.
+- Treat sensory detail like an instrument panel, not the road. The reader
+  should feel orientation, pressure, body-state, and time the way a driver
+  feels motion without naming every gauge.
+- Use the eyeball rule: give the mind enough edges, contrast, and missing
+  signal to complete the image. Do not flood the scene with inventory.
+- Keep background professionals visible during exposition-heavy scenes. Add
+  stiffness, fatigue, procedural boredom, and off-stage competence so the world
+  feels staffed by people doing jobs, not waiting for the protagonist to talk.
+- Treat each paragraph as a sentence under pressure: identify the governing
+  sentence, then make the surrounding passage sharpen, complicate, embody, or
+  hand forward that sentence. If a paragraph only repeats the same sentence in
+  looser language, cut or compress it.
+- Pull worldbuilding from existing AetherMoore sources before inventing new
+  lore. Prefer `content/book/AVALON_WRITING_BIBLE.md`,
+  `content/book/LORE_INTEGRATION_NOTES.md`,
+  `content/book/worldbuilding-geography.md`,
+  `content/book/MUSICAL_TOPOLOGY.md`, and
+  `content/book/TENSOR_FIELD_INTEGRATION_NOTES.md` when a scene needs place,
+  texture, systems context, or symbolic continuity.
+- Quality and AI detection stay separate. Improve prose for reader effect,
+  not for detector evasion.
 
 ## Output Contract
 

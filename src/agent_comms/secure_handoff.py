@@ -19,10 +19,10 @@ import json
 import secrets
 import time
 import zlib
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from typing import Any
 
-from .packet import AgentPacketV1, BudgetExceeded, enforce_budget
+from .packet import AgentPacketV1, enforce_budget
 
 SCHEMA = "agent_secure_handoff_v1"
 DECODE_METHOD = "canonical-json.zlib.hmac-sha256-xorstream-v1"

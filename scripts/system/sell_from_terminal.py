@@ -3,9 +3,11 @@
 
 Runs core selling actions without requiring dashboard/browser hopping:
 - load credentials from local secret store into process env
-- publish Shopify product catalog live
+- optionally publish Shopify catalog (opt-in via --shopify-publish; uses repo script below)
 - optionally post an X update
 - run core connector health checks
+
+Default Stripe / own-site posture: Shopify live publish is off unless explicitly requested.
 """
 
 from __future__ import annotations
@@ -192,7 +194,16 @@ def _connector_health() -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run sell actions from terminal only")
-    parser.add_argument("--skip-shopify", action="store_true", help="Skip Shopify publish step")
+    parser.add_argument(
+        "--shopify-publish",
+        action="store_true",
+        help="Run Shopify live sync via scripts/system/shopify_store_launch_pack.py --publish-live",
+    )
+    parser.add_argument(
+        "--skip-shopify",
+        action="store_true",
+        help="Deprecated: Shopify publish is off by default; kept for compat with old command lines.",
+    )
     parser.add_argument("--x-text", default="", help="Optional X post text")
     parser.add_argument("--dry-run", action="store_true", help="Do not post/publish, only check status")
     parser.add_argument(
@@ -216,13 +227,34 @@ def main() -> int:
     if args.dry_run:
         report["actions"].append({"name": "dry_run", "status": "ok"})
     else:
-        if not args.skip_shopify:
-            report["actions"].append(
-                {
-                    "name": "shopify_publish_live",
-                    "result": _run_cmd([sys.executable, "scripts/shopify_bridge.py", "products", "--publish-live"]),
-                }
-            )
+        if args.shopify_publish and not args.skip_shopify:
+            launch_pack = REPO_ROOT / "scripts" / "system" / "shopify_store_launch_pack.py"
+            if not launch_pack.is_file():
+                report["actions"].append(
+                    {
+                        "name": "shopify_publish_live",
+                        "result": {
+                            "returncode": 1,
+                            "stdout": "",
+                            "stderr": f"missing_launch_pack:{launch_pack.relative_to(REPO_ROOT)}",
+                        },
+                    }
+                )
+            else:
+                report["actions"].append(
+                    {
+                        "name": "shopify_publish_live",
+                        "result": _run_cmd(
+                            [
+                                sys.executable,
+                                str(launch_pack),
+                                "--publish-live",
+                                "--store",
+                                os.getenv("SHOPIFY_SHOP", "aethermore-code.myshopify.com"),
+                            ]
+                        ),
+                    }
+                )
 
         if args.x_text.strip():
             report["actions"].append(

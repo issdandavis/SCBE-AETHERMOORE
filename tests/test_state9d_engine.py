@@ -15,7 +15,6 @@ import numpy as np
 import pytest
 
 from python.scbe.state9d_engine import (
-    BETA,
     DELTA_DRIFT_MAX,
     ETA_MAX,
     ETA_MIN,

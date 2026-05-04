@@ -18,9 +18,16 @@ Supported out-of-the-box:
 import json
 import logging
 import os
+import sys
+from pathlib import Path
 from typing import Callable, Dict, Optional
 
 logger = logging.getLogger("spiralword.ai_ports")
+
+_APP_DIR = str(Path(__file__).resolve().parent)
+if _APP_DIR in sys.path:
+    sys.path.remove(_APP_DIR)
+sys.path.insert(0, _APP_DIR)
 
 
 # Type alias for AI provider callables
@@ -81,6 +88,9 @@ class AIPortRegistry:
         Returns:
             Generated text from the AI provider.
         """
+        governance_module = sys.modules.get("governance")
+        if governance_module is not None and not str(getattr(governance_module, "__file__", "")).startswith(_APP_DIR):
+            sys.modules.pop("governance", None)
         from governance import classify_intent, check_governance
 
         name = provider or self._default

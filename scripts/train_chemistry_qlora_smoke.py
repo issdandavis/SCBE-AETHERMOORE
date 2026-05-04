@@ -69,7 +69,7 @@ def main() -> int:
 
     # Validate message format
     bad = 0
-    for i, row in enumerate(all_train[:100]):
+    for row in all_train[:100]:
         msgs = row.get("messages", [])
         if not msgs or msgs[0].get("role") != "system":
             bad += 1
@@ -82,6 +82,7 @@ def main() -> int:
     try:
         from transformers import AutoTokenizer
         from peft import LoraConfig
+
         print("TRL/PEFT imports: OK")
     except ImportError as exc:
         print(f"Import missing: {exc}")

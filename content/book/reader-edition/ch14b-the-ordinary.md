@@ -1,7 +1,7 @@
 
 # Chapter 15: The Ordinary
 
-Marcus Chen had been a permanent resident of Aethermoor for eleven months before he learned to hum the chord that opened his dormitory door, and the humiliation of this — that a man who had memorized 47 KO verb conjugations could not reliably produce a B-flat major triad before coffee — became one of the defining indignities of his new life.
+Marcus Chen had been a permanent resident of Aethermoor for eleven months before he learned to hum the chord that opened his dormitory door, and the humiliation of this — that a man who had memorized 47 Kor'aelin verb conjugations could not reliably produce a B-flat major triad before coffee — became one of the defining indignities of his new life.
 
 "It's the third," Bram said one morning, finding Marcus standing in the corridor outside his own room, trying to hum his way in while the door waited with the patient condescension of an architecture that had opinions about pitch. "You always flatten the third."
 
@@ -87,7 +87,7 @@ The session ran two hours. Marcus walked his students through the coherence gate
 
 Halfway through, Marcus walked into a ward boundary he'd forgotten was active from last week's practical exercise.
 
-The boundary didn't hurt. It wasn't designed to hurt. It was designed to be a teaching aid — a visible, tactile demonstration of how RU policy enforcement felt from the inside. What it DID do was stop him mid-stride with the precise sensation of walking into a wall made of disapproval, bounce him backward two steps, and deposit him in a sitting position on the floor while his students watched.
+The boundary didn't hurt. It wasn't designed to hurt. It was designed to be a teaching aid — a visible, tactile demonstration of how Runethic policy enforcement felt from the inside. What it DID do was stop him mid-stride with the precise sensation of walking into a wall made of disapproval, bounce him backward two steps, and deposit him in a sitting position on the floor while his students watched.
 
 "That," Marcus said from the floor, "is what happens when you don't check your local ward status before crossing a classroom."
 
@@ -95,7 +95,7 @@ The boundary didn't hurt. It wasn't designed to hurt. It was designed to be a te
 
 The class laughed. Marcus laughed. The ward boundary shimmered with what he was fairly certain was self-satisfaction.
 
-He picked himself up, deactivated the ward with a KO dismissal that he only flattened the third on slightly, and continued teaching. His hip would bruise. The bruise would serve as a reminder that in Aethermoor, even the furniture was paying attention, and the concepts you forgot about would walk into you if you didn't walk around them first.
+He picked himself up, deactivated the ward with a Kor'aelin dismissal that he only flattened the third on slightly, and continued teaching. His hip would bruise. The bruise would serve as a reminder that in Aethermoor, even the furniture was paying attention, and the concepts you forgot about would walk into you if you didn't walk around them first.
 
 * * *
 
@@ -111,7 +111,7 @@ Bottled lightning from the Flame Desert circuit — small glass vials that crack
 
 Spun-crystal thread that weavers used to make clothing with embedded protective wards. The woman who sold it — Lenne, a Deepstone dwarf's granddaughter who had the build of a retired gymnast and the vocabulary of a theoretical physicist — had been explaining crystalline resonance weaving to Marcus for six weeks, and he was beginning to understand that thread could be a programming language if you thought about it correctly.
 
-"New shipment from Irondeep," Lenne said, holding up a spool of thread that caught the light like a captured star. "Triple-phased. The dwarves figured out how to encode DR authentication directly into the weave."
+"New shipment from Irondeep," Lenne said, holding up a spool of thread that caught the light like a captured star. "Triple-phased. The dwarves figured out how to encode Draumric authentication directly into the weave."
 
 "So the clothing verifies itself?"
 
@@ -137,7 +137,7 @@ The problem was phi.
 
 Not the golden ratio itself — that was just a number, elegant and irrational and stubbornly beautiful. The problem was that phi kept appearing in places it shouldn't. In the Echo voting patterns. In the authentication fractal dimensions. In the temporal spacing of the Protocol's heartbeat verification. Everywhere Marcus looked in the system's operational data, the same irrational number showed up, grinning at him like a cat that knew where the good china was stored.
 
-He'd been chasing it for three weeks. The data was accumulating on his desk in the form of printouts, crystal slates, and one increasingly annoyed note from Jorren asking him to please stop requesting archival access at two in the morning because "DR's filing system does not appreciate being woken by enthusiastic pattern recognition."
+He'd been chasing it for three weeks. The data was accumulating on his desk in the form of printouts, crystal slates, and one increasingly annoyed note from Jorren asking him to please stop requesting archival access at two in the morning because "Draumric's filing system does not appreciate being woken by enthusiastic pattern recognition."
 
 The jade plant on his windowsill had grown two new leaves since Aria gave it to him. This was either a sign that Marcus was improving as a caretaker or that the plant had decided to grow in spite of his attention rather than because of it. In Aethermoor, both interpretations were equally valid, and the plant wasn't talking.
 

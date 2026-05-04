@@ -8,11 +8,8 @@ Verifies:
   - Chemistry elements map correctly (not all Fe)
 """
 
-import pytest
-
 from python.scbe.chemistry_adapter import (
     ChemistryAdapter,
-    ChemistryCheckResult,
     training_gate_check,
 )
 

@@ -150,6 +150,34 @@ def _allocation_for_phase(phase: str) -> dict[str, int]:
     return table.get(phase, table["explore"])
 
 
+def _lesson_for_residue(kind: str, missing: list[str], forbidden: list[str], ok: bool) -> dict[str, Any]:
+    if ok:
+        return {
+            "lesson": "This path survived the gate; keep it as a light positive bias, not a hard rule.",
+            "recovery_action": "retain_positive_residue",
+            "next_practice": "replay in a small eval before promotion",
+        }
+    if missing:
+        return {
+            "lesson": "The model fell by omitting required evidence.",
+            "recovery_action": "add_exact_repair_exemplar",
+            "next_practice": "rerun the smallest gate that checks these required tokens",
+            "practice_tokens": missing,
+        }
+    if forbidden:
+        return {
+            "lesson": "The model fell by crossing a boundary that the gate forbids.",
+            "recovery_action": "add_boundary_guard_exemplar",
+            "next_practice": "teach the model to route around the forbidden phrase without losing the required answer",
+            "practice_tokens": forbidden,
+        }
+    return {
+        "lesson": "The model failed without a clean token-level cause.",
+        "recovery_action": "inspect_response_shape",
+        "next_practice": "compress the failure into a smaller diagnostic prompt",
+    }
+
+
 def _residue_records(report: dict[str, Any], run_id: str, loss_latest: float | None) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for item in report.get("results") or []:
@@ -188,9 +216,83 @@ def _residue_records(report: dict[str, Any], run_id: str, loss_latest: float | N
                 "missing_required": missing,
                 "triggered_forbidden": forbidden,
                 "loss_latest": loss_latest,
+                "fall_recovery": _lesson_for_residue(kind, missing, forbidden, ok),
             }
         )
     return records
+
+
+def _recovery_policy(pass_rate: float, residues: list[dict[str, Any]]) -> dict[str, Any]:
+    repair_count = sum(1 for row in residues if row["kind"] == "repair_residue")
+    boundary_count = sum(1 for row in residues if row["kind"] == "boundary_residue")
+    if pass_rate >= 1.0:
+        stance = "practice_success_without_overfitting"
+        next_action = "promote only after independent rerun"
+    elif repair_count:
+        stance = "learn_to_fall_better"
+        next_action = "convert missing-token failures into exact repair rows"
+    elif boundary_count:
+        stance = "learn_to_roll_away_from_boundaries"
+        next_action = "add boundary exemplars that avoid forbidden paths"
+    else:
+        stance = "fall_smaller"
+        next_action = "reduce the task to a diagnostic gate"
+    return {
+        "principle": "Failure is useful when it teaches a lesson that is applied later.",
+        "stance": stance,
+        "next_action": next_action,
+        "sequence": [
+            "avoid_obvious_falls",
+            "fall_smaller",
+            "learn_impact_shape",
+            "practice_recovery",
+            "retest",
+            "retain_lesson",
+        ],
+        "promotion_rule": "Do not promote a branch just because it completed; promote only after recovery lessons pass a fresh gate.",
+    }
+
+
+def _automation_patterns() -> dict[str, Any]:
+    return {
+        "factorio_factory_loop": {
+            "mapping": {
+                "ore": "raw failures and noisy logs",
+                "belts": "typed artifact paths",
+                "splitters": "gate classifiers",
+                "assemblers": "repair-row builders",
+                "buffers": "residue JSONL queues",
+                "circuit_network": "score matrix thresholds",
+            },
+            "operating_rule": "Backpressure is signal: if repair buffers fill, stop launching bigger runs and improve the recipe.",
+        },
+        "dwarf_fortress_ops_loop": {
+            "mapping": {
+                "burrows": "bounded task lanes",
+                "stockpiles": "curated datasets",
+                "labor_assignments": "agent roles",
+                "hospital": "failure digestion and recovery",
+                "alerts": "promotion gates",
+                "work_orders": "scheduled night-watch checks",
+            },
+            "operating_rule": "A fortress survives by routing injuries to recovery fast; the harness survives by routing failures to lessons fast.",
+        },
+        "tython_typescript_to_python_compiler_note": {
+            "mapping": {
+                "typescript_source": "typed front-end/action intent",
+                "python_target": "repo-local execution and verification lane",
+                "transpiler_boundary": "bijective cross-language proof point to test for semantic loss",
+            },
+            "operating_rule": "Treat TypeScript-to-Python compilation as a round-trip benchmark surface: if intent survives translation, it becomes strong coding-spine evidence.",
+        },
+        "tython_security_as_code_note": {
+            "mapping": {
+                "security_as_code": "encode recovery and gate rules as runnable policy",
+                "reference_architecture": "repeatable training-lane blueprint",
+            },
+            "operating_rule": "The useful Tython-style lesson is policy-as-code: write the recovery rule into the pipeline so it runs without memory.",
+        },
+    }
 
 
 def build_digest(report: dict[str, Any], losses: list[float], run_id: str) -> dict[str, Any]:
@@ -219,6 +321,8 @@ def build_digest(report: dict[str, Any], losses: list[float], run_id: str) -> di
         },
         "next_phase": phase,
         "lane_allocation": _allocation_for_phase(phase),
+        "recovery_policy": _recovery_policy(pass_rate, residues),
+        "automation_patterns": _automation_patterns(),
         "residue_count": len(residues),
         "residues": residues,
     }

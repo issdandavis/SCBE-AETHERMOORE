@@ -1,6 +1,6 @@
 # The Six Tongues Protocol — House Style Guide
 
-**Author**: Issac Davis
+**Author**: Issac Daniel Davis
 **Series**: SCBE-AETHERMOORE
 **Copyright**: 2026 Issac Daniel Davis
 **Patent**: USPTO Provisional #63/961,403
@@ -38,7 +38,7 @@ Same fiction body + endnotes per chapter mapping story to SCBE architecture.
 | Font (body) | Garamond or Palatino, 11pt |
 | Font (chapter titles) | Same family, small caps, 18pt |
 | Line spacing | 1.15 |
-| First line indent | 0.3 in (no indent after scene break or chapter start) |
+| First line indent | 0.25 in (no indent after scene break or chapter start) |
 | Scene break | `* * *` centered, extra space above/below |
 | Chapter start | new page, drop cap or small caps first line, title centered |
 | Page numbers | centered bottom, no number on chapter-start pages |

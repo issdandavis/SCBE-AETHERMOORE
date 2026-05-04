@@ -15,10 +15,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO_ROOT / "training-data" / "agentic_coding"
-MANIFEST_PATH = REPO_ROOT / "artifacts" / "training_hub" / "agentic_coding_workbench_manifest.json"
+SFT_DIR = REPO_ROOT / "training-data" / "sft"
+MANIFEST_PATH = (
+    REPO_ROOT / "artifacts" / "training_hub" / "agentic_coding_workbench_manifest.json"
+)
 
 
 GENERATORS = [
@@ -27,6 +29,12 @@ GENERATORS = [
     ("ambiguity_action_traces", ["scripts/training/generate_ambiguity_action_sft.py"]),
     ("packet_traces", ["scripts/training/generate_packet_traces_sft.py"]),
     ("jupiter_ring_feedback", ["scripts/training/build_jupiter_ring_feedback.py"]),
+    ("geoshell_pair_agent", ["scripts/training_data/build_geoshell_pair_agent_sft.py"]),
+]
+
+EXTRA_JSONL = [
+    SFT_DIR / "geoshell_pair_agent_v1_train.sft.jsonl",
+    SFT_DIR / "geoshell_pair_agent_v1_holdout.sft.jsonl",
 ]
 
 
@@ -49,7 +57,9 @@ def main() -> int:
         _run(script)
 
     files = []
-    for path in sorted(OUT_DIR.glob("*.jsonl")):
+    for path in sorted(OUT_DIR.glob("*.jsonl")) + [
+        path for path in EXTRA_JSONL if path.exists()
+    ]:
         files.append(
             {
                 "path": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
@@ -62,14 +72,23 @@ def main() -> int:
         "schema_version": "scbe_agentic_coding_workbench_manifest_v1",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "generators": [
-            {"name": name, "script": " ".join(script)}
-            for name, script in GENERATORS
+            {"name": name, "script": " ".join(script)} for name, script in GENERATORS
         ],
         "files": files,
         "total_rows": sum(row["rows"] for row in files),
     }
-    MANIFEST_PATH.write_text(json.dumps(manifest, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
-    print(json.dumps({"manifest": str(MANIFEST_PATH.relative_to(REPO_ROOT)), "total_rows": manifest["total_rows"]}, indent=2))
+    MANIFEST_PATH.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=True) + "\n", encoding="utf-8"
+    )
+    print(
+        json.dumps(
+            {
+                "manifest": str(MANIFEST_PATH.relative_to(REPO_ROOT)),
+                "total_rows": manifest["total_rows"],
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

@@ -1,0 +1,69 @@
+{
+  "schema_version": "scbe_story_quality_packet_v1",
+  "title": "The Six Tongues Protocol",
+  "author": "Issac Daniel Davis",
+  "evaluation_mode": "human_author_plus_ai_assisted_review",
+  "rubric_scale": "1_to_10",
+  "minimum_publishable_score": 75,
+  "minimum_portfolio_score": 85,
+  "dimensions": {
+    "whole_story_coherence": {
+      "score": 8,
+      "evidence_refs": [
+        "content/book/FINAL_TOPOGRAPHY.md",
+        "content/book/reader-edition/canon"
+      ],
+      "note": "Full topography exists and continuity flags are tracked."
+    },
+    "character_continuity": {
+      "score": 8,
+      "evidence_refs": [
+        "content/book/INDEX.md",
+        "content/book/reader-edition/canon/interludes_continuity_flags.md"
+      ],
+      "note": "Multiple point-of-view interludes have explicit continuity tracking."
+    },
+    "plot_causality": {
+      "score": 8,
+      "evidence_refs": [
+        "content/book/FINAL_TOPOGRAPHY.md",
+        "content/book/BEAT_SHEET_SENNA_ARC.md"
+      ],
+      "note": "Cause-and-effect spine is documented and connected to late-book payoff."
+    },
+    "prose_readability": {
+      "score": 7,
+      "evidence_refs": [
+        "content/book/HOUSE_STYLE.md",
+        "content/book/CRAFT_COMPARISON_MATRIX.md",
+        "artifacts/benchmarks/fiction_quality/book_quality_sweep_latest.json",
+        "docs/book/BOOK_QUALITY_SWEEP_REVIEW_2026-05-03.md"
+      ],
+      "note": "House style exists; latest sweep scores the reader edition at 69.208 average after spelling out the Sacred Tongue names and adding off-stage professional presence to exposition-heavy scenes. Ch20 improved from 62.855 to 66.725 after quality-only revision, and interlude-09 closing improved from 62.518 to 73.199 after embodied negative-space revision."
+    },
+    "originality_and_reader_value": {
+      "score": 8,
+      "evidence_refs": [
+        "content/book/MARKET_COMP_ANALYSIS_2025_2026.md",
+        "content/book/MUSICAL_TOPOLOGY.md"
+      ],
+      "note": "Magic-as-infrastructure and warmth/system rigor are documented differentiators."
+    },
+    "portfolio_fit": {
+      "score": 8,
+      "evidence_refs": [
+        "content/book/SPIRAL_OF_ETERNITY_LORE_INDEX.md",
+        "content/book/LORE_INTEGRATION_NOTES.md"
+      ],
+      "note": "Book fits the broader AetherMoore/Six Tongues catalog direction."
+    },
+    "production_readiness": {
+      "score": 7,
+      "evidence_refs": [
+        "content/book/KDP_PAPERBACK_FORMAT_SPEC.md",
+        "artifacts/book/kdp/visual-format-report.json"
+      ],
+      "note": "Manuscript can build; final visual review is still required before upload."
+    }
+  }
+}

@@ -375,7 +375,7 @@ He didn't say this. He didn't need to. The tree behind them, the one that bloome
 
 "Yes," Marcus said.
 
-They walked through the quiet garden, through the last of the root-light, through the gate where the wardens nodded and the road hummed and the evening kept the kind of records that no DR ledger would ever need to formalize.
+They walked through the quiet garden, through the last of the root-light, through the gate where the wardens nodded and the road hummed and the evening kept the kind of records that no Draumric ledger would ever need to formalize.
 
 Behind them, Polly watched from the highest branch of the World Tree and said nothing at all.
 

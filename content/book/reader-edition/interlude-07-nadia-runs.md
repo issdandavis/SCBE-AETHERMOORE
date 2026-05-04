@@ -3,13 +3,13 @@
 
 ---
 
-The thing about AV -- the transport tongue, the routing layer, the domain that asked *how do you get there?* -- was that it rewarded motion.
+The thing about Avali -- the transport tongue, the routing layer, the domain that asked *how do you get there?* -- was that it rewarded motion.
 
 Not speed. Nadia Kest had learned the difference at sixteen, the hard way, during a relay exercise where she'd run the Underroot courier route in record time and arrived at the destination node with a corrupted payload because she'd been moving too fast for the verification chain to maintain integrity. Her instructor -- a weathered Second Circle relay specialist named Aldren who had exactly one facial expression, which was "disappointed but not surprised" -- had looked at her corrupted payload and said:
 
 "Fast is not the same as efficient. Efficient is fast enough that nothing breaks."
 
-Nadia had spent the next twelve years learning the difference, and the difference was this: AV didn't care how quickly you moved. AV cared that when you arrived, everything you carried was intact.
+Nadia had spent the next twelve years learning the difference, and the difference was this: Avali didn't care how quickly you moved. Avali cared that when you arrived, everything you carried was intact.
 
 She was thinking about this as she ran.
 
@@ -25,13 +25,13 @@ She'd always preferred them. The public spaces of the Spire were impressive -- d
 
 Like Nadia.
 
-She was not impressive. She knew this with the comfortable certainty of someone who had made peace with their own specifications early in life. She was not the smartest relay technician in the Spire -- that was Tovak, who understood the UM routing paths with an intuition that bordered on the mystical. She was not the most politically skilled -- that was Senna, who could navigate a Council session the way Nadia navigated the Underroot junctions. She was not the most theoretically innovative -- that was Marcus Chen, who had been in Aethermoor for less than a month and had already proposed three architectural modifications that the Council was taking seriously.
+She was not impressive. She knew this with the comfortable certainty of someone who had made peace with their own specifications early in life. She was not the smartest relay technician in the Spire -- that was Tovak, who understood the Umbroth routing paths with an intuition that bordered on the mystical. She was not the most politically skilled -- that was Senna, who could navigate a Council session the way Nadia navigated the Underroot junctions. She was not the most theoretically innovative -- that was Marcus Chen, who had been in Aethermoor for less than a month and had already proposed three architectural modifications that the Council was taking seriously.
 
 What Nadia was, was reliable.
 
 She showed up. She ran the routes. She carried the signals. She maintained the relay infrastructure that kept the six tongues communicating with each other, and she did it every day, and she did it well, and she did it without requiring anyone to notice or thank her or acknowledge that the system's ability to function as a coherent whole depended, in part, on a woman who ran the corridors at a pace calibrated to maximize signal integrity rather than personal glory.
 
-AV rewarded motion. AV rewarded showing up. AV rewarded the commitment to *get the message through*, accurately and intact, regardless of what was happening in the corridors you had to run through to do it.
+Avali rewarded motion. Avali rewarded showing up. Avali rewarded the commitment to *get the message through*, accurately and intact, regardless of what was happening in the corridors you had to run through to do it.
 
 Nadia ran.
 
@@ -49,7 +49,7 @@ Now the silence had a texture. A watchfulness. The corridors were paying attenti
 
 Nadia ran through the watchful silence and paid attention to what it was telling her.
 
-The relay nodes were clean. She checked each one as she passed -- a touch, a verification, a half-second pause to feel the traffic flow and confirm it matched the expected patterns. Clean, clean, clean. The incursion hadn't compromised the relay network. The AV infrastructure was intact.
+The relay nodes were clean. She checked each one as she passed -- a touch, a verification, a half-second pause to feel the traffic flow and confirm it matched the expected patterns. Clean, clean, clean. The incursion hadn't compromised the relay network. The Avali infrastructure was intact.
 
 But it was tighter. The routing paths had narrowed since the incursion -- not enough to impede normal traffic, but enough that a trained relay specialist could feel the difference. The system was routing more carefully, checking more thoroughly, maintaining verification chains with a rigor that exceeded peacetime specifications.
 
@@ -67,7 +67,7 @@ She was proud of that. Not in the performative way that some people were proud o
 
 She hadn't stopped. The signal had arrived. The attestation had completed. One small piece of a very large defensive response, carried at the right speed, with nothing broken in transit.
 
-That was what AV rewarded.
+That was what Avali rewarded.
 
 That was enough.
 
@@ -75,13 +75,13 @@ That was enough.
 
 She reached the western monitoring station at 11:03. Eleven minutes flat. Signal integrity: perfect.
 
-Tovak was there. He was always there -- the UM specialist inhabited the monitoring station the way Bram inhabited the maintenance workshop, with the territorial certainty of someone who had found the exact right place to stand and had no intention of moving.
+Tovak was there. He was always there -- the Umbroth specialist inhabited the monitoring station the way Bram inhabited the maintenance workshop, with the territorial certainty of someone who had found the exact right place to stand and had no intention of moving.
 
 "Clear run?" he asked. Two words. Tovak's version of extended conversation.
 
 "Clean," Nadia confirmed. "Eastern junctions nominal. Relay nodes are tight but functional. The system's running scared but holding."
 
-"Scared," Tovak repeated, and from anyone else the word would have been a question, but from Tovak it was confirmation. He could feel the UM perimeter the way Nadia could feel the AV routing -- intuitively, physically, as a condition of the body rather than a product of analysis.
+"Scared," Tovak repeated, and from anyone else the word would have been a question, but from Tovak it was confirmation. He could feel the Umbroth perimeter the way Nadia could feel the Avali routing -- intuitively, physically, as a condition of the body rather than a product of analysis.
 
 "The Earth engineer wants to go deeper," Nadia said. She'd heard the talk. Everyone had heard the talk. Marcus Chen and his diagnostic instincts and his insistence on following problems to their source rather than managing them from a comfortable distance.
 
@@ -95,7 +95,7 @@ Nadia thought about that. About the watchful silence in the corridors. About the
 
 "You think it's making a path for him?"
 
-"Making a path. Clearing a route." A ghost of something that might have been amusement. "AV work."
+"Making a path. Clearing a route." A ghost of something that might have been amusement. "Avali work."
 
 She laughed. She couldn't help it. Tovak had just compared the system's unconscious preparation for Marcus Chen's eventual descent into the deep substrate to a relay technician's route clearance protocol, and he was absolutely right, and the fact that a man who averaged three words per conversation had managed to make the most insightful observation about the system's behavior since the incursion was the most Tovak thing possible.
 
@@ -113,13 +113,13 @@ She was not impressive.
 
 She was reliable.
 
-AV rewarded motion.
+Avali rewarded motion.
 
 Nadia Kest showed up every day, and ran the corridors, and kept the messages moving. And when the time came for Marcus Chen to descend into the deep substrate, the relay routes would be clear, and the signals would be intact, and the transport tongue would do what it had always done:
 
 Get you there. Whole.
 
-That was the AV promise.
+That was the Avali promise.
 
 That was enough.
 

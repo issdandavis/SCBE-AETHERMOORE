@@ -63,6 +63,7 @@ Useful commands:
   geoseal testing-cli --source-file sample.py --language python --execute --json
   geoseal project-scaffold --content "build a pacman style web game" --language python --output-dir artifacts/pacman --json
   geoseal code-roundtrip --source hello.rs --lang rust --tongue RU --execute --json
+  geoseal binary-to-tmatrix --json "01101000 01101001"
 
 Flags:
   --api-base <url>       GeoSeal API base URL
@@ -103,9 +104,10 @@ const COMMAND_MAP = {
   "testing-cli": { method: "POST", path: "/v1/geoseal/testing-cli", auth: false },
   "project-scaffold": { method: "POST", path: "/v1/geoseal/project-scaffold", auth: false },
   "code-roundtrip": { method: "POST", path: "/v1/geoseal/code-roundtrip", auth: false },
+  "binary-to-tmatrix": { method: "POST", path: "/v1/geoseal/binary-to-tmatrix", auth: false },
 };
 
-const LOCAL_PASSTHROUGH_COMMANDS = new Set(["portal-box", "stream-wheel", "shell"]);
+const LOCAL_PASSTHROUGH_COMMANDS = new Set(["portal-box", "stream-wheel", "shell", "binary-to-tmatrix"]);
 const CUSTOM_COMMANDS_DIR = path.join(ROOT, ".geoseal", "commands");
 
 function parseArgs(argv) {
@@ -589,6 +591,7 @@ function buildBody(command, flags) {
   }
   if (flags.lang) body.lang = String(flags.lang);
   if (flags.provider) body.provider = String(flags.provider);
+  if (flags.bits) body.bits = String(flags.bits);
   if (flags["small-first"] !== undefined) {
     body.small_first = flags["small-first"] === true || String(flags["small-first"]).toLowerCase() === "true";
   }
@@ -667,6 +670,12 @@ function ensureBody(command, body) {
   if (command === "code-roundtrip") {
     if (!body.source && !body.content) {
       throw new Error("--source or --content is required for code-roundtrip");
+    }
+    return;
+  }
+  if (command === "binary-to-tmatrix") {
+    if (!body.bits) {
+      throw new Error("--bits is required for binary-to-tmatrix");
     }
     return;
   }

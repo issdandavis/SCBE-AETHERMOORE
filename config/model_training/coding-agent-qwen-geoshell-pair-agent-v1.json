@@ -25,9 +25,9 @@
     "batch_size": 1,
     "gradient_accumulation_steps": 4,
     "warmup_ratio": 0.05,
-    "max_steps": 60,
-    "max_train_records": 64,
-    "max_eval_records": 16,
+    "max_steps": 120,
+    "max_train_records": 182,
+    "max_eval_records": 28,
     "logging_steps": 5,
     "save_steps": 60,
     "save_total_limit": 2,
@@ -60,6 +60,7 @@
   },
   "evaluation": {
     "contract_path": "config/model_training/geoshell_pair_agent_eval_contract.json",
+    "constrained_gate_scaffold": true,
     "paired_benchmark_gate": "python scripts/benchmark/dual_agent_pair_benchmark.py validate",
     "post_training_gate": "Run paired coding gate plus GeoShell pair-agent eval contract before adding this adapter to any promoted merge."
   }

@@ -1,0 +1,30 @@
+{
+  "url": "https://youtu.be/fLUtUkqYHnQ?si=Q9BnKF55g6EkeY1V",
+  "resolved_url": "https://www.youtube.com/watch?si=Q9BnKF55g6EkeY1V&v=fLUtUkqYHnQ&feature=youtu.be",
+  "status": 200,
+  "title": "Everything I Learned Training Frontier Small Models — Maxime Labonne, Liquid AI - YouTube",
+  "text_excerpt": "Everything I Learned Training Frontier Small Models — Maxime Labonne, Liquid AI - YouTube About Press Copyright Contact us Creators Advertise Developers Terms Privacy Policy & Safety How YouTube works Test new features NFL Sunday Ticket &copy; 2026 Google LLC",
+  "links": [
+    "https://www.youtube.com/",
+    "https://www.youtube.com/about/",
+    "https://www.youtube.com/about/press/",
+    "https://www.youtube.com/about/copyright/",
+    "https://www.youtube.com/t/contact_us/",
+    "https://www.youtube.com/creators/",
+    "https://www.youtube.com/ads/",
+    "https://developers.google.com/youtube",
+    "https://www.youtube.com/t/terms",
+    "https://www.youtube.com/t/privacy",
+    "https://www.youtube.com/about/policies/",
+    "https://www.youtube.com/howyoutubeworks?utm_campaign=ytgen&amp;utm_source=ythp&amp;utm_medium=LeftNav&amp;utm_content=txt&amp;u=https%3A%2F%2Fwww.youtube.com%2Fhowyoutubeworks%3Futm_source%3Dythp%26utm_medium%3DLeftNav%26utm_campaign%3Dytgen",
+    "https://www.youtube.com/new",
+    "https://tv.youtube.com/learn/nflsundayticket"
+  ],
+  "metrics": {
+    "html_chars": 1336810,
+    "text_chars": 259,
+    "link_count": 14,
+    "truncated": false
+  },
+  "fetched_at": "2026-05-04T00:59:01.018Z"
+}

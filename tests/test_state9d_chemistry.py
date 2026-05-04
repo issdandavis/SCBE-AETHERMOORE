@@ -15,9 +15,7 @@ import numpy as np
 import pytest
 
 from python.scbe.state9d_chemistry import (
-    ATOMIC_WEIGHTS,
     BENCHMARK_LEADERBOARD,
-    MolecularProperties,
     assemble_chemical_state_vector,
     compute_molecular_properties,
     get_benchmark_report,

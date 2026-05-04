@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import io
 import json
-import os
 import tempfile
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path

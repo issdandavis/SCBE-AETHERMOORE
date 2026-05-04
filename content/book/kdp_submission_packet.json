@@ -1,0 +1,25 @@
+{
+  "schema_version": "scbe_kdp_submission_packet_v1",
+  "title": "The Six Tongues Protocol",
+  "author": "Issac Daniel Davis",
+  "publisher": "Issac Daniel Davis",
+  "edition": "paperback_reader_edition",
+  "ai_content_disclosure": {
+    "text": "ai_generated",
+    "cover_images": "ai_generated",
+    "interior_images": "none",
+    "translations": "none"
+  },
+  "human_review": {
+    "approved_for_kdp_upload": true,
+    "reviewer": "Issac Daniel Davis",
+    "notes": "AI-generated or AI-shaped content is intentionally disclosed for Kindle Direct Publishing review. Final publish remains human-confirmed."
+  },
+  "quality_gate": {
+    "minimum_score": 85,
+    "required_reports": [
+      "acceptance-gate.json",
+      "visual-format-report.json"
+    ]
+  }
+}
