@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "GameStop makes $55.5B takeover offer for eBay",
-      "word_count": 613,
+      "description": "Days Without GitHub Incidents",
+      "word_count": 633,
       "headings": [
         {
           "level": 2,
-          "text": "GameStop makes $55.5B takeover offer for eBay",
+          "text": "Days Without GitHub Incidents",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "bbc.co.uk",
+          "text": "dayswithoutgithubincident.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "ASML's Best Selling Product Isn't What You Think It Is",
+          "text": "US healthcare marketplaces shared citizenship and race data with ad tech giants",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "siliconimist.com",
+          "text": "techcrunch.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Talking to 35 Strangers at the Gym",
+          "text": "Removable batteries in smartphones will be mandatory in the EU starting in 2027",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "thienantran.com",
+          "text": "ecopv-eu.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Trademark violation: Fake Notepad++ for Mac",
+          "text": "U.S. military data left exposed at an a16z startup for 150 days",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "notepad-plus-plus.org",
+          "text": "strix.ai",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Using \u201cunderdrawings\u201d for accurate text and numbers",
+          "text": "I am worried about Bun",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "samcollins.blog",
+          "text": "wwj.dev",
           "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.GameStop makes $55.5B takeover offer for eBay (bbc.co.uk)227 points by n1b0m 3 hours ago  | hide | 164\u00a0comments2.ASML's Best Selling Product Isn't What You Think It Is (siliconimist.com)70 points by johncole 1 hour ago  | hide | 25\u00a0comments3.Talking to 35 Strangers at the Gym (thienantran.com)30 points by thitran 1 hour ago  | hide | 2\u00a0comments4.Trademark violation: Fake Notepad++ for Mac (notepad-plus-plus.org)265 points by max..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Days Without GitHub Incidents (dayswithoutgithubincident.com)211 points by goalieca 1 hour ago  | hide | 67\u00a0comments2.US healthcare marketplaces shared citizenship and race data with ad tech giants (techcrunch.com)104 points by ZeidJ 1 hour ago  | hide | 31\u00a0comments3.Removable batteries in smartphones will be mandatory in the EU starting in 2027 (ecopv-eu.com)517 points by rdeboo 3 hours ago  | hide | 443\u00a0comments4.U.S. military..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
