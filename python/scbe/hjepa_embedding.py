@@ -272,12 +272,19 @@ def hjepa_signature(
     masked_row: int = 0,
     masked_col: int = 0,
     loss_weights: tuple[float, float, float, float] = DEFAULT_LOSS_WEIGHTS,
+    use_learned_predictor: bool = False,
 ) -> HJEPASignature:
     """Build the full three-level H-JEPA signature for a content string.
 
-    Cascades the existing encoders and runs deterministic predictors at
-    each level, computes hyperbolic losses against the next-level target,
-    and adds a chromatic-space triangle-inequality residual.
+    Cascades the existing encoders and runs predictors at each level,
+    computes hyperbolic losses against the next-level target, and adds
+    a chromatic-space triangle-inequality residual.
+
+    When ``use_learned_predictor`` is True and trained weights exist on
+    disk (``artifacts/hjepa/predictor_v1.npz``), the L1 -> L2 predictor
+    uses the learned linear head from ``hjepa_predictor`` instead of
+    the deterministic identity-swap baseline. If the weights file is
+    missing, falls back silently to the deterministic predictor.
     """
 
     if len(loss_weights) != 4:
@@ -286,7 +293,17 @@ def hjepa_signature(
 
     poly = build_poly_embedding(content, masked_row=masked_row, masked_col=masked_col)
     braid_target = tri_braid_signature(poly)
-    braid_prediction = _predict_braid(poly)
+
+    if use_learned_predictor:
+        # Local import keeps numpy out of the import-time dependency chain
+        # for callers that only want the deterministic baseline.
+        from .hjepa_predictor import load_weights, predict_braid_learned
+
+        weights = load_weights()
+        braid_prediction = predict_braid_learned(poly, weights) if weights is not None else _predict_braid(poly)
+    else:
+        braid_prediction = _predict_braid(poly)
+
     cone_target = tri_cone_signature(braid_target)
     cone_prediction = _predict_cone(braid_prediction)
 
