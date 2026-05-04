@@ -5,34 +5,45 @@ on:
     types:
       - opened
 
+permissions:
+  contents: read
+
 jobs:
   summarize:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    permissions:
-      issues: write
-      models: read
     steps:
-      - name: Summarize issue with AI
-        uses: actions/ai-inference@v1
-        id: summary
-        with:
-          model: openai/gpt-4o-mini
-          system-prompt: |
-            You are a helpful assistant that analyzes GitHub issues for the SCBE-AETHERMOORE project — a post-quantum cryptographic AI system with a Sacred Tongue protocol, Spiralverse game engine, and multi-modal training pipeline.
-            Summarize the issue in 2-3 sentences. Identify: 1) the component affected (crypto, game, CI, API, docs, etc.), 2) severity (bug/enhancement/question), 3) suggested next steps.
-            Be concise and technical.
-          prompt: "Please summarize this GitHub issue:\n\nTitle: ${{ github.event.issue.title }}\n\nBody: ${{ github.event.issue.body }}"
-      - name: Comment with AI summary
-        uses: actions/github-script@v7
+      - name: Record deterministic issue triage summary
         env:
-          AI_RESPONSE: ${{ steps.summary.outputs.response }}
-        with:
-          script: |
-            const body = `🤖 **AI Issue Summary**\n\n${process.env.AI_RESPONSE}\n\n---\n*Generated automatically by the AI Issue Summary workflow*`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body
-            })
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR_ASSOCIATION: ${{ github.event.issue.author_association }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          read -r title_chars body_chars < <(python - <<'PY'
+          import json
+          import os
+
+          with open(os.environ["GITHUB_EVENT_PATH"], "r", encoding="utf-8") as handle:
+              event = json.load(handle)
+          issue = event.get("issue") or {}
+          title = str(issue.get("title") or "")
+          body = str(issue.get("body") or "")
+          print(len(title.encode("utf-8")), len(body.encode("utf-8")))
+          PY
+          )
+
+          {
+            echo "## Deterministic Issue Intake"
+            echo
+            echo "- Issue: #${ISSUE_NUMBER}"
+            echo "- Author association: ${ISSUE_AUTHOR_ASSOCIATION}"
+            echo "- Title characters: ${title_chars}"
+            echo "- Body characters: ${body_chars}"
+            echo "- Public comment written: no"
+            echo "- AI model invoked: no"
+            echo
+            echo "Untrusted issue text is intentionally not sent to an AI model and not mirrored"
+            echo "back into an authenticated repository comment."
+          } >> "$GITHUB_STEP_SUMMARY"
