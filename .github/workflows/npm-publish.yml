@@ -35,6 +35,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Verify package contents
+        run: npm run publish:check:strict
+
       - name: Verify package version matches tag
         run: |
           PKG_VER=$(node -p "require('./package.json').version")
@@ -70,6 +73,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Verify package contents
+        run: npm run publish:check:strict
 
       - name: Rewrite package name to scoped form for GH Packages
         # GitHub Packages requires a scope matching the owner. We don't change the
