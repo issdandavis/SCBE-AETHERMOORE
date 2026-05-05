@@ -15,7 +15,11 @@ from typing import Any
 
 from src.training_cli import guides as guides_module
 from src.training_cli.heartbeat import read_heartbeat
-from src.training_cli.quickstart import plan_quickstart, supported_trainers
+from src.training_cli.quickstart import (
+    plan_quickstart,
+    plan_quickstart_with_council,
+    supported_trainers,
+)
 from src.training_cli.runs import list_runs
 from src.training_cli.status import collect_status
 from src.training_cli.verdicts import load_verdicts
@@ -152,14 +156,30 @@ def cmd_guide(args: argparse.Namespace) -> int:
 
 def cmd_quickstart(args: argparse.Namespace) -> int:
     repo_root = Path(args.repo_root).resolve()
-    plan = plan_quickstart(
-        base_model=args.base_model,
-        dataset_path=args.data,
-        run_name=args.run_name,
-        trainer=args.trainer,
-        flavor=args.flavor,
-        repo_root=repo_root,
-    )
+    families = None
+    if getattr(args, "council_families", None):
+        families = tuple(f.strip() for f in args.council_families.split(",") if f.strip())
+
+    if getattr(args, "council", False):
+        plan = plan_quickstart_with_council(
+            base_model=args.base_model,
+            dataset_path=args.data,
+            run_name=args.run_name,
+            trainer=args.trainer,
+            flavor=args.flavor,
+            repo_root=repo_root,
+            budget_cents=float(getattr(args, "council_budget_cents", 5.0)),
+            families_to_include=families,
+        )
+    else:
+        plan = plan_quickstart(
+            base_model=args.base_model,
+            dataset_path=args.data,
+            run_name=args.run_name,
+            trainer=args.trainer,
+            flavor=args.flavor,
+            repo_root=repo_root,
+        )
     if args.json:
         _print_json(plan.to_dict())
         return 0
@@ -221,6 +241,22 @@ def build_parser(prog: str = "training") -> argparse.ArgumentParser:
     p_quick.add_argument("--trainer", default="sft", choices=supported_trainers())
     p_quick.add_argument("--flavor", default="default")
     p_quick.add_argument("--json", action="store_true")
+    p_quick.add_argument(
+        "--council",
+        action="store_true",
+        help="Augment with a tiered-council advisory (free local first, paid only if needed).",
+    )
+    p_quick.add_argument(
+        "--council-budget-cents",
+        type=float,
+        default=5.0,
+        help="Hard budget cap for the council in cents. Default 5.0 (=$0.05).",
+    )
+    p_quick.add_argument(
+        "--council-families",
+        default=None,
+        help="Comma-separated harness families to restrict the council to (e.g. 'ollama,openrouter').",
+    )
     p_quick.set_defaults(func=cmd_quickstart)
 
     return parser

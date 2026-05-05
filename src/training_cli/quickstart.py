@@ -6,9 +6,9 @@ This keeps the irreversible cloud-spend action out of the CLI's blast radius.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 @dataclass(frozen=True)
@@ -96,3 +96,121 @@ def plan_quickstart(
 
 def supported_trainers() -> list[str]:
     return sorted(_TRAINER_TO_DISPATCH_SCRIPT)
+
+
+# Council dispatch type alias: matches src.agent_comms.tiered_council_dispatch.dispatch_tiered_council
+# The function returns the agentbus-shaped dict with keys: solved, final_tier, final_answer,
+# total_cents, budget_cents, escalation_path, attempts, note.
+CouncilDispatchFn = Callable[..., dict[str, Any]]
+
+
+_COUNCIL_PROMPT_TEMPLATE = (
+    "You are advising on a SCBE training pipeline dispatch. The operator wants to "
+    "review the plan before running it; you do not execute anything.\n\n"
+    "Operator's plan:\n"
+    "- run_name: {run_name}\n"
+    "- base_model: {base_model}\n"
+    "- dataset: {dataset_path}\n"
+    "- trainer: {trainer}\n"
+    "- flavor: {flavor}\n\n"
+    "Available trainers:\n"
+    "- sft: supervised fine-tuning, expects JSONL of [{{prompt, response}}].\n"
+    "- dpo: direct preference optimization, expects JSONL of [{{prompt, chosen, rejected}}].\n"
+    "- merge: merge multiple LoRA adapters into a base model.\n"
+    "- aligned-foundations: aligned-foundations dispatch (specialized).\n\n"
+    "Based ONLY on the dataset path naming, run name, and base model name:\n"
+    "1. Confirm the trainer choice or recommend a swap.\n"
+    "2. Flag any obvious mismatch (e.g. DPO trainer with an SFT-shaped dataset name).\n"
+    "3. Suggest one specific check before dispatch.\n\n"
+    "Respond in at most 4 short bullet lines. If the names alone are ambiguous, say so. "
+    "Do not invent file contents."
+)
+
+
+def plan_quickstart_with_council(
+    *,
+    base_model: str,
+    dataset_path: str,
+    run_name: str,
+    trainer: str = "sft",
+    flavor: str = "default",
+    repo_root: Path | None = None,
+    budget_cents: float = 5.0,
+    families_to_include: tuple[str, ...] | None = None,
+    dispatch_fn: CouncilDispatchFn | None = None,
+) -> QuickstartPlan:
+    """Wrap plan_quickstart with a tiered-council advisory.
+
+    Council is asked to confirm/correct the trainer choice and flag mismatches.
+    Its text response is appended to the plan's notes; the deterministic dispatch
+    command is NOT mutated. Operator still eyeballs the command before running.
+
+    `dispatch_fn` is injectable for tests; defaults to the live dispatch when None.
+    """
+
+    base_plan = plan_quickstart(
+        base_model=base_model,
+        dataset_path=dataset_path,
+        run_name=run_name,
+        trainer=trainer,
+        flavor=flavor,
+        repo_root=repo_root,
+    )
+
+    if dispatch_fn is None:
+        from src.agent_comms.tiered_council_dispatch import (
+            CouncilDispatchConfig,
+            dispatch_tiered_council,
+        )
+
+        config = CouncilDispatchConfig(families_to_include=families_to_include)
+
+        def _live_dispatch(**kwargs: Any) -> dict[str, Any]:
+            return dispatch_tiered_council(config=config, **kwargs)
+
+        dispatch_fn = _live_dispatch
+
+    prompt = _COUNCIL_PROMPT_TEMPLATE.format(
+        run_name=run_name,
+        base_model=base_model,
+        dataset_path=dataset_path,
+        trainer=trainer,
+        flavor=flavor,
+    )
+
+    council_notes: list[str] = ["--- council advisory ---"]
+    try:
+        result = dispatch_fn(
+            task=prompt,
+            budget_cents=budget_cents,
+            metadata={
+                "source": "training_cli.quickstart",
+                "run_name": run_name,
+                "trainer": trainer,
+            },
+        )
+    except Exception as exc:  # noqa: BLE001 -- never let advisory failure block the plan
+        council_notes.append(f"council unavailable: {type(exc).__name__}: {exc}")
+        return replace(base_plan, notes=[*base_plan.notes, *council_notes])
+
+    solved = bool(result.get("solved", False))
+    final_tier = result.get("final_tier")
+    total_cents = result.get("total_cents", 0.0)
+    final_answer = (result.get("final_answer") or "").strip()
+    escalation_path = result.get("escalation_path") or []
+
+    if solved and final_answer:
+        council_notes.append(f"tier={final_tier} cost={total_cents:.4f}c")
+        for line in final_answer.splitlines():
+            line = line.rstrip()
+            if line:
+                council_notes.append(line)
+    else:
+        council_notes.append(
+            f"council did not converge (solved={solved}, tier={final_tier}, "
+            f"cost={total_cents:.4f}c, budget={budget_cents:.4f}c)"
+        )
+        if escalation_path:
+            council_notes.append(f"escalation: {' -> '.join(escalation_path)}")
+
+    return replace(base_plan, notes=[*base_plan.notes, *council_notes])

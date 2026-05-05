@@ -9,7 +9,11 @@ import pytest
 
 from src.training_cli.cli import build_parser, main
 from src.training_cli.heartbeat import HEARTBEAT_REL, read_heartbeat
-from src.training_cli.quickstart import plan_quickstart, supported_trainers
+from src.training_cli.quickstart import (
+    plan_quickstart,
+    plan_quickstart_with_council,
+    supported_trainers,
+)
 from src.training_cli.runs import list_runs
 from src.training_cli.status import collect_status
 from src.training_cli.verdicts import load_verdicts, parse_verdict_file
@@ -268,3 +272,147 @@ def test_cli_quickstart_emits_command(tmp_path: Path, capsys: pytest.CaptureFixt
     assert payload["trainer"] == "dpo"
     assert payload["command"][0] == "python"
     assert "dispatch_coding_agent_dpo_hf_job.py" in payload["command_str"]
+
+
+# ----------------------------- council quickstart -----------------------------
+
+
+def _fake_solved_dispatch(*, task: str, budget_cents: float, metadata=None) -> dict:
+    return {
+        "schema_version": "scbe_tiered_council_dispatch_v1",
+        "council_schema_version": "scbe_tiered_council_v1",
+        "solved": True,
+        "final_tier": 0,
+        "final_answer": "- Trainer choice looks correct.\n- Dataset name matches DPO shape.\n- Verify scaffold flag before dispatch.",
+        "total_cents": 0.0,
+        "budget_cents": budget_cents,
+        "rubric_threshold": 0.7,
+        "escalation_path": ["tier0:score=1.00:passed=True:cents=0.0000"],
+        "attempts": [],
+        "note": "rubric_passed_at_tier_0",
+        "metadata": dict(metadata or {}),
+    }
+
+
+def _fake_unsolved_dispatch(*, task: str, budget_cents: float, metadata=None) -> dict:
+    return {
+        "schema_version": "scbe_tiered_council_dispatch_v1",
+        "council_schema_version": "scbe_tiered_council_v1",
+        "solved": False,
+        "final_tier": None,
+        "final_answer": "",
+        "total_cents": 0.0,
+        "budget_cents": budget_cents,
+        "rubric_threshold": 0.7,
+        "escalation_path": ["tier0:no_providers", "tier1:no_providers"],
+        "attempts": [],
+        "note": "rubric_never_passed_or_no_tier_available",
+        "metadata": dict(metadata or {}),
+    }
+
+
+def test_plan_quickstart_with_council_appends_advisory_notes_on_solved(tmp_path: Path) -> None:
+    plan = plan_quickstart_with_council(
+        base_model="Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        dataset_path="training-data/dpo/foo.jsonl",
+        run_name="rn",
+        trainer="dpo",
+        repo_root=tmp_path,
+        dispatch_fn=_fake_solved_dispatch,
+    )
+    joined = "\n".join(plan.notes)
+    assert "council advisory" in joined
+    assert "Trainer choice looks correct" in joined
+    assert "Verify scaffold flag" in joined
+    # deterministic command must remain unmutated by the council
+    assert plan.command[1].endswith("dispatch_coding_agent_dpo_hf_job.py")
+
+
+def test_plan_quickstart_with_council_handles_unsolved(tmp_path: Path) -> None:
+    plan = plan_quickstart_with_council(
+        base_model="bm",
+        dataset_path="dp",
+        run_name="rn",
+        trainer="sft",
+        repo_root=tmp_path,
+        dispatch_fn=_fake_unsolved_dispatch,
+    )
+    joined = "\n".join(plan.notes)
+    assert "did not converge" in joined
+    assert "escalation:" in joined
+
+
+def test_plan_quickstart_with_council_swallows_dispatch_exceptions(tmp_path: Path) -> None:
+    def _raises(**kwargs):
+        raise RuntimeError("boom")
+
+    plan = plan_quickstart_with_council(
+        base_model="bm",
+        dataset_path="dp",
+        run_name="rn",
+        trainer="sft",
+        repo_root=tmp_path,
+        dispatch_fn=_raises,
+    )
+    joined = "\n".join(plan.notes)
+    assert "council unavailable" in joined
+    assert "RuntimeError" in joined
+    # plan still has a valid dispatch command
+    assert plan.command[0] == "python"
+
+
+def test_plan_quickstart_with_council_passes_budget_and_metadata(tmp_path: Path) -> None:
+    captured: dict = {}
+
+    def _capture(*, task: str, budget_cents: float, metadata=None) -> dict:
+        captured["task"] = task
+        captured["budget_cents"] = budget_cents
+        captured["metadata"] = dict(metadata or {})
+        return _fake_solved_dispatch(task=task, budget_cents=budget_cents, metadata=metadata)
+
+    plan_quickstart_with_council(
+        base_model="bm",
+        dataset_path="dp",
+        run_name="rn-special",
+        trainer="merge",
+        repo_root=tmp_path,
+        budget_cents=2.5,
+        dispatch_fn=_capture,
+    )
+    assert captured["budget_cents"] == 2.5
+    assert captured["metadata"]["run_name"] == "rn-special"
+    assert captured["metadata"]["trainer"] == "merge"
+    assert "merge: merge multiple LoRA adapters" in captured["task"]
+
+
+def test_cli_quickstart_council_flag_routes_through_council(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        "src.training_cli.cli.plan_quickstart_with_council",
+        lambda **kwargs: plan_quickstart_with_council(dispatch_fn=_fake_solved_dispatch, **kwargs),
+    )
+    rc = main(
+        [
+            "--repo-root",
+            str(tmp_path),
+            "quickstart",
+            "--run-name",
+            "council-test",
+            "--base-model",
+            "bm",
+            "--data",
+            "training-data/x.jsonl",
+            "--trainer",
+            "dpo",
+            "--council",
+            "--council-budget-cents",
+            "1.0",
+            "--json",
+        ]
+    )
+    assert rc == 0
+    payload = json.loads(capsys.readouterr().out)
+    notes_joined = "\n".join(payload["notes"])
+    assert "council advisory" in notes_joined
+    assert "Trainer choice looks correct" in notes_joined
