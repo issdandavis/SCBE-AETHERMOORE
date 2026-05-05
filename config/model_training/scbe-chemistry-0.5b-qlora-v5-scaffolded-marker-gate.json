@@ -42,7 +42,7 @@
     "dataset_repo": "issdandavis/scbe-chemistry-sft",
     "adapter_repo": "issdandavis/scbe-chemistry-0.5b-qlora-v5-scaffolded-marker-gate",
     "token_env": "HF_TOKEN",
-    "push_adapter": true
+    "push_adapter": false
   },
   "execution": {
     "hf_flavor": "t4-small",
@@ -61,6 +61,7 @@
     "If v5 passes only scaffolded, package it as a governed chemistry lane adapter that requires the SCBE gate wrapper.",
     "If v5 still fails scaffolded, stop remote training and fix the evaluator or dataset objective locally.",
     "lora_dropout raised to 0.05 after kinematic mesh repair shard redaction to reduce memorization risk on repeated residue rows.",
-    "aligned_foundations_v2 train+holdout added as OOD anchor (~11% of train rows): pins concept-preservation behavior on alphabet/math/binary lanes outside chemistry, guards against the OOD regression pattern v1 bijective hit (+803% on aligned_foundations)."
+    "aligned_foundations_v2 train+holdout added as OOD anchor (~11% of train rows): pins concept-preservation behavior on alphabet/math/binary lanes outside chemistry, guards against the OOD regression pattern v1 bijective hit (+803% on aligned_foundations).",
+    "push_adapter forced false until the executable promotion gate is wired into the dispatcher. Per the no-publish-until-it-works rule: dispatch v5, run gate locally on the produced adapter, then flip push_adapter true (or push manually) only if gate clears."
   ]
 }
