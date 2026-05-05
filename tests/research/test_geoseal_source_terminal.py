@@ -62,3 +62,4 @@ def test_node_geoseal_doctor_advertises_research_terminal() -> None:
     payload = json.loads(proc.stdout)
     assert "research-terminal" in payload["advertised_commands"]
     assert "research-sources" in payload["advertised_commands"]
+    assert "polymarket" in payload["advertised_commands"]

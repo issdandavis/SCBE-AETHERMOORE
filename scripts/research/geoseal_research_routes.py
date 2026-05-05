@@ -309,6 +309,31 @@ def build_research_routes() -> list[ResearchSourceRoute]:
             tags=["data.gov", "noaa", "sec", "api", "public-data"],
             notes="Good default for low-risk factual grounding when an official source exists.",
         ),
+        ResearchSourceRoute(
+            source_id="polymarket_public_prediction_markets",
+            title="Polymarket Public Prediction Market APIs",
+            family="prediction_markets",
+            lane="CA",
+            access_mode="public_api_read_only",
+            authority_class="market_probability_surface",
+            safety_tier="READ_ONLY_NO_TRADING",
+            training_status="retrieval_summary_and_calibration_only",
+            redistribution_status="source_dependent",
+            source_url="https://gamma-api.polymarket.com;https://data-api.polymarket.com;https://clob.polymarket.com",
+            default_command=[
+                "python",
+                "scripts/research/polymarket_public_api.py",
+                "--mode",
+                "search",
+                "--query",
+                "<topic>",
+                "--json",
+            ],
+            evidence_target="artifacts/research/polymarket/<topic>.json",
+            gate="Gamma/Data/public CLOB reads only; capture market id/slug/token id, timestamp, price/probability fields, and source URL; no order placement or bridge operations",
+            tags=["polymarket", "prediction-market", "forecast", "probability", "gamma-api", "clob-public"],
+            notes="Use as an external forecast/calibration signal, not as truth. Trading and bridge endpoints stay out of this lane.",
+        ),
     ]
 
 
@@ -367,8 +392,7 @@ def render_routes_text(matrix: dict[str, Any]) -> str:
         if len(command) > 100:
             command = f"{command[:97]}..."
         lines.append(
-            f"- {route['source_id']} [{route['family']}] lane={route['lane']} "
-            f"safety={route['safety_tier']}"
+            f"- {route['source_id']} [{route['family']}] lane={route['lane']} " f"safety={route['safety_tier']}"
         )
         lines.append(f"  gate: {route['gate']}")
         lines.append(f"  run:  {command}")

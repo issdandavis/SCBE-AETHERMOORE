@@ -26,6 +26,7 @@ def test_research_routes_cover_requested_rag_sources() -> None:
         "google_public_discovery",
         "tor_trusted_onion_research",
         "official_public_data_apis",
+        "polymarket_public_prediction_markets",
     }.issubset(source_ids)
     assert matrix["route_count"] == len(matrix["routes"])
 
@@ -57,6 +58,11 @@ def test_research_route_filters_and_text_renderer() -> None:
     tor = build_research_route_matrix(query="tor")
     assert tor["route_count"] == 1
     assert tor["routes"][0]["source_id"] == "tor_trusted_onion_research"
+
+    polymarket = build_research_route_matrix(query="polymarket")
+    assert polymarket["route_count"] == 1
+    assert polymarket["routes"][0]["family"] == "prediction_markets"
+    assert polymarket["routes"][0]["safety_tier"] == "READ_ONLY_NO_TRADING"
 
     text = render_routes_text(build_research_route_matrix(source_id="arxiv_public"))
     assert "GeoSeal Research Source Routes" in text

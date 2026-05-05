@@ -115,6 +115,23 @@ def test_explicit_source_inlets_are_preserved_and_filtered() -> None:
     assert packet["source_inlets"]["selection_mode"] == "explicit"
 
 
+def test_prediction_market_goal_selects_polymarket_inlet() -> None:
+    module = _load_module()
+
+    packet = module.build_data_science_packet(
+        module.DataScienceRequest(
+            goal="Compare AI forecast probability against Polymarket prediction market odds",
+            dataset="forecast_packets.jsonl",
+            task_type="predict",
+        )
+    )
+
+    inlets = {inlet["inlet_id"]: inlet for inlet in packet["source_inlets"]["recommended"]}
+    assert "polymarket_public_prediction_markets" in inlets
+    assert inlets["polymarket_public_prediction_markets"]["safety_tier"] == "READ_ONLY_NO_TRADING"
+    assert packet["request"]["task_type"] == "predict"
+
+
 def test_cli_json_is_valid() -> None:
     proc = subprocess.run(
         [

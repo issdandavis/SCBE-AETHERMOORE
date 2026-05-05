@@ -3645,6 +3645,32 @@ def cmd_research_terminal(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_polymarket(args: argparse.Namespace) -> int:
+    from scripts.research.polymarket_public_api import (
+        PolymarketRequest,
+        build_polymarket_packet,
+        render_text,
+    )
+
+    packet = build_polymarket_packet(
+        PolymarketRequest(
+            mode=args.mode,
+            query=args.query,
+            market_id=args.market_id,
+            slug=args.slug,
+            token_id=args.token_id,
+            limit=args.limit,
+            live=args.live,
+            timeout=args.timeout,
+        )
+    )
+    if args.json:
+        print(json.dumps(packet, indent=2, sort_keys=True))
+    else:
+        print(render_text(packet))
+    return 0
+
+
 def cmd_terminus_training(args: argparse.Namespace) -> int:
     from scripts.benchmark.terminus_training_runner import main as terminus_main
 
@@ -4057,6 +4083,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_research_terminal.add_argument("--query", default=None)
     p_research_terminal.add_argument("--json", action="store_true")
     p_research_terminal.set_defaults(func=cmd_research_terminal)
+
+    p_polymarket = sub.add_parser(
+        "polymarket",
+        help="Build or fetch read-only Polymarket public market data packets",
+    )
+    p_polymarket.add_argument(
+        "--mode",
+        default="search",
+        choices=["search", "markets", "market-by-id", "market-by-slug", "midpoint", "server-time"],
+    )
+    p_polymarket.add_argument("--query", default="")
+    p_polymarket.add_argument("--market-id", default=None, dest="market_id")
+    p_polymarket.add_argument("--slug", default=None)
+    p_polymarket.add_argument("--token-id", default=None, dest="token_id")
+    p_polymarket.add_argument("--limit", type=int, default=10)
+    p_polymarket.add_argument("--live", action="store_true")
+    p_polymarket.add_argument("--timeout", type=float, default=20.0)
+    p_polymarket.add_argument("--json", action="store_true")
+    p_polymarket.set_defaults(func=cmd_polymarket)
 
     p_terminus = sub.add_parser(
         "terminus-training",

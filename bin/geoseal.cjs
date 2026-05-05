@@ -48,6 +48,7 @@ Useful commands:
   geoseal harness-research --json
   geoseal research-terminal
   geoseal research-sources --query arxiv --json
+  geoseal polymarket --mode search --query ai --json
   geoseal github --mode status --json
   geoseal handoff-seal --sender codex --recipient claude --intent "review changed files" --secret-env SCBE_HANDOFF_SECRET --json
   geoseal handoff-open --sealed-file artifacts/agent_comm/handoff.json --secret-env SCBE_HANDOFF_SECRET --json
@@ -498,6 +499,7 @@ function runDoctor(flags) {
     "harness-research",
     "research-terminal",
     "research-sources",
+    "polymarket",
     "github",
     "gh",
     "lane-grid",

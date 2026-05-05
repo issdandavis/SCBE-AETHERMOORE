@@ -153,6 +153,22 @@ DATA_INLETS: dict[str, dict[str, Any]] = {
             "query_job_id",
         ],
     },
+    "polymarket_public_prediction_markets": {
+        "title": "Polymarket public prediction market APIs",
+        "fields": ["prediction_markets", "forecasting", "probability", "events", "public_market_data"],
+        "source_url": "https://docs.polymarket.com/api-reference/introduction",
+        "access_mode": "public_gamma_data_and_clob_read_endpoints",
+        "safety_tier": "READ_ONLY_NO_TRADING",
+        "training_status": "retrieval_summary_and_calibration_only",
+        "receipt_fields": [
+            "endpoint",
+            "query_or_market_id",
+            "market_slug",
+            "token_id",
+            "retrieved_at_unix",
+            "probability_or_price_field",
+        ],
+    },
 }
 
 
@@ -169,9 +185,7 @@ class DataScienceRequest:
 
 
 def _sha256_json(payload: dict[str, Any]) -> str:
-    encoded = json.dumps(
-        payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    )
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
@@ -197,9 +211,7 @@ def _infer_task_type(goal: str, explicit: str) -> str:
 
 
 def _selected_inlet_ids(goal: str, source_inlets: str, surface: str) -> list[str]:
-    requested = [
-        item.strip() for item in str(source_inlets or "").split(",") if item.strip()
-    ]
+    requested = [item.strip() for item in str(source_inlets or "").split(",") if item.strip()]
     if requested and requested != ["auto"]:
         selected = [item for item in requested if item in DATA_INLETS]
         return selected or ["arxiv_public", "crossref_metadata", "openalex_graph"]
@@ -268,6 +280,15 @@ def _selected_inlet_ids(goal: str, source_inlets: str, surface: str) -> list[str
             "sql",
             "structured",
         ),
+        "polymarket_public_prediction_markets": (
+            "polymarket",
+            "prediction market",
+            "forecast",
+            "probability",
+            "market odds",
+            "clob",
+            "gamma api",
+        ),
     }
     for inlet_id, tokens in keyword_map.items():
         if any(token in text for token in tokens):
@@ -289,9 +310,7 @@ def _data_inlet_packet(goal: str, source_inlets: str, surface: str) -> dict[str,
         selected.append(spec)
     return {
         "schema_version": "scbe_data_science_source_inlets_v1",
-        "selection_mode": (
-            "auto" if str(source_inlets or "").strip() in {"", "auto"} else "explicit"
-        ),
+        "selection_mode": ("auto" if str(source_inlets or "").strip() in {"", "auto"} else "explicit"),
         "recommended": selected,
         "available_inlet_ids": sorted(DATA_INLETS),
         "route_rule": "Use inlets to build source manifests and citations before feature/model work; do not treat discovery snippets as facts.",
@@ -442,13 +461,9 @@ def _sql_skeleton(req: DataScienceRequest) -> list[str]:
         )
         statements.append(f"-- S5 eval\nSELECT * FROM ML.EVALUATE(MODEL {model});")
     elif req.task_type == "search":
-        statements.append(
-            "-- S4 search\n-- Build or reference an embedding column, then call VECTOR_SEARCH."
-        )
+        statements.append("-- S4 search\n-- Build or reference an embedding column, then call VECTOR_SEARCH.")
     else:
-        statements.append(
-            "-- S4 model/profile\n-- Select an explicit target and model_type before training."
-        )
+        statements.append("-- S4 model/profile\n-- Select an explicit target and model_type before training.")
     return statements
 
 
@@ -484,8 +499,7 @@ def build_data_science_packet(request: DataScienceRequest) -> dict[str, Any]:
     surface = _normalize_choice(request.surface, SURFACES, "python")
     task_type = _infer_task_type(request.goal, request.task_type)
     req = DataScienceRequest(
-        goal=request.goal.strip()
-        or "Profile dataset and recommend next data-science step.",
+        goal=request.goal.strip() or "Profile dataset and recommend next data-science step.",
         dataset=request.dataset.strip() or "unknown_dataset",
         modality=modality,
         task_type=task_type,
@@ -564,12 +578,8 @@ def render_text(packet: dict[str, Any]) -> str:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Build a governed SCBE data-science agent packet"
-    )
-    parser.add_argument(
-        "--goal", default="Profile dataset and recommend next data-science step."
-    )
+    parser = argparse.ArgumentParser(description="Build a governed SCBE data-science agent packet")
+    parser.add_argument("--goal", default="Profile dataset and recommend next data-science step.")
     parser.add_argument("--dataset", default="unknown_dataset")
     parser.add_argument("--modality", default="tabular", choices=MODALITIES)
     parser.add_argument("--task-type", default="", choices=("", *TASK_TYPES))
@@ -596,11 +606,7 @@ def main() -> int:
             source_inlets=args.source_inlets,
         )
     )
-    print(
-        json.dumps(packet, indent=2, sort_keys=True)
-        if args.json
-        else render_text(packet)
-    )
+    print(json.dumps(packet, indent=2, sort_keys=True) if args.json else render_text(packet))
     return 0
 
 
