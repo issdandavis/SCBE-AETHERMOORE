@@ -1,6 +1,11 @@
 schema_version: scbe_vertex_pipeline_config_v1
 owner: scbe-aethermoore
-purpose: Govern the local Notion-to-training-data and Vertex/Hugging Face fine-tune funnel.
+purpose: Govern the local exported-corpus and Vertex/Hugging Face fine-tune funnel.
+
+notion:
+  source_mode: local_export_only
+  live_sync_required: false
+  live_export_required: false
 
 fine_tune:
   target_model_family: qwen-coder

@@ -362,19 +362,28 @@ def _evaluate_funnel_config(
                 )
 
 
-def _evaluate_metadata(metadata: Dict[str, Any], tasks: List[Dict[str, Any]]) -> None:
+def _evaluate_metadata(
+    metadata: Dict[str, Any],
+    records: List[Dict[str, Any]],
+    pipeline_config: Dict[str, Any],
+    tasks: List[Dict[str, Any]],
+) -> None:
+    notion_policy = pipeline_config.get("notion") or {}
+    live_export_required = bool(notion_policy.get("live_export_required", True))
+    source_mode = str(notion_policy.get("source_mode", "live_or_local")).strip() or "live_or_local"
+
     if not metadata:
         tasks.append(
             _build_task(
                 title="Rebuild training-data metadata file",
-                description="No training-data/metadata.json was found from notion-to-dataset export.",
-                component="Notion Export Pipeline",
+                description="No training-data/metadata.json was found for the local training corpus.",
+                component="Local Training Corpus",
                 mode="code-assistant",
-                priority="high",
+                priority="medium" if records else "high",
                 confidence=0.93,
                 evidence={"expected_file": "training-data/metadata.json"},
                 suggested_actions=[
-                    "Run notion_to_dataset.py and verify export step writes metadata.json.",
+                    "Regenerate local corpus metadata from training-data/*.jsonl.",
                 ],
             )
         )
@@ -382,15 +391,19 @@ def _evaluate_metadata(metadata: Dict[str, Any], tasks: List[Dict[str, Any]]) ->
 
     exported = int(metadata.get("exported_records", 0))
     if exported == 0:
+        if records and not live_export_required:
+            return
         tasks.append(
             _build_task(
                 title="Notion export returned zero records",
-                description="The last notion-to-dataset run exported 0 records, indicating token scope or query issues.",
+                description=(
+                    "The last notion-to-dataset run exported 0 records, and this pipeline still requires live export."
+                ),
                 component="Notion Export Pipeline",
                 mode="code-assistant",
                 priority="critical",
                 confidence=0.98,
-                evidence=metadata,
+                evidence={**metadata, "source_mode": source_mode, "live_export_required": live_export_required},
                 suggested_actions=[
                     "Verify NOTION token has readable workspace scope.",
                     "Confirm notion_to_dataset filters are not over-restrictive.",
@@ -437,6 +450,7 @@ def _build_summary(
         "task_priority_counts": by_priority,
         "total_records": len(records),
         "exported_records": int(metadata.get("exported_records", 0) or 0),
+        "local_records": len(records),
         "category_breakdown": metadata.get("category_breakdown", {}),
         "checklist": DEFAULT_CHECKLIST,
     }
@@ -454,12 +468,15 @@ def run_gap_review(
     pipeline_config = _safe_load_yaml(pipeline_config_path)
     records = _list_jsonl_records(training_data_path)
     metadata = _load_metadata(training_data_path)
+    notion_policy = pipeline_config.get("notion") or {}
+    live_sync_required = bool(notion_policy.get("live_sync_required", True))
 
     tasks: List[Dict[str, Any]] = []
 
-    _evaluate_sync_config(sync_config, datetime.now(timezone.utc), tasks)
+    if live_sync_required:
+        _evaluate_sync_config(sync_config, datetime.now(timezone.utc), tasks)
     _evaluate_funnel_config(pipeline_config, records, tasks)
-    _evaluate_metadata(metadata, tasks)
+    _evaluate_metadata(metadata, records, pipeline_config, tasks)
 
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
