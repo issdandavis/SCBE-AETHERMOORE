@@ -132,7 +132,7 @@ def test_chemistry_profile_has_non_empty_hf_promotion_contract() -> None:
     assert "chemistry_verification_unseen_eval_v1" in script
     assert '"n_prompts": 0' not in script
     assert "chem_eval_ethanol_route" in script
-    assert "PROFILE.get(\"system_prompt\"" in script
+    assert 'PROFILE.get("system_prompt"' in script
     assert "Run the chemistry path explicitly" in script
 
 

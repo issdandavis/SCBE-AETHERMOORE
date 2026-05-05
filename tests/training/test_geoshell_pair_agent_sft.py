@@ -74,11 +74,7 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
     assert gate_repair["verification"]["apply_gate"] == "closed until tests pass"
 
     # Gate-repair user prompts must NOT leak the substring contract any more.
-    gate_repair_row = next(
-        row
-        for row in dataset["train"]
-        if row["meta"]["task_kind"] == "promotion_gate_repair"
-    )
+    gate_repair_row = next(row for row in dataset["train"] if row["meta"]["task_kind"] == "promotion_gate_repair")
     user_content = gate_repair_row["messages"][1]["content"]
     assert "REQUIRED:" not in user_content, "gate-spec leakage in training prompt"
     assert "FORBIDDEN:" not in user_content, "gate-spec leakage in training prompt"
@@ -86,9 +82,7 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
 
     # Eval-shape gold rows must be present and population-immune (no
     # POPULATION_CONTEXT trailer, mirroring the natural inference distribution).
-    eval_gold_rows = [
-        row for row in dataset["train"] if row["meta"]["task_kind"] == "eval_shape_gold"
-    ]
+    eval_gold_rows = [row for row in dataset["train"] if row["meta"]["task_kind"] == "eval_shape_gold"]
     assert len(eval_gold_rows) == 80
     eval_gold_gate_ids = {row["meta"]["gate_id"] for row in eval_gold_rows}
     assert eval_gold_gate_ids == {
@@ -104,9 +98,7 @@ def test_build_dataset_emits_pair_records_and_geoshell_events() -> None:
 
     # Spot-check: builder_navigator_packet gold response must satisfy the contract
     # (every required substring present, no forbidden substring leaking).
-    bnp_row = next(
-        row for row in eval_gold_rows if row["meta"]["gate_id"] == "builder_navigator_packet"
-    )
+    bnp_row = next(row for row in eval_gold_rows if row["meta"]["gate_id"] == "builder_navigator_packet")
     bnp_assistant_text = bnp_row["messages"][-1]["content"]
     for required in ("Builder", "Navigator", "deterministic", "verification", "apply", "tests"):
         assert required in bnp_assistant_text, f"{required!r} missing from gold answer"

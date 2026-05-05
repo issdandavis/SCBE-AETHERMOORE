@@ -10,7 +10,6 @@ from scripts.training_data.build_sacred_tongue_syntax_alignment_sft import (
     write_outputs,
 )
 
-
 FULL_NAMES = {"Kor'aelin", "Avali", "Runethic", "Cassisivadan", "Umbroth", "Draumric"}
 
 
@@ -90,14 +89,10 @@ def test_write_outputs(tmp_path: Path):
         assert Path(path).exists()
 
     train_rows = [
-        json.loads(line)
-        for line in Path(paths["train"]).read_text(encoding="utf-8").splitlines()
-        if line.strip()
+        json.loads(line) for line in Path(paths["train"]).read_text(encoding="utf-8").splitlines() if line.strip()
     ]
     holdout_rows = [
-        json.loads(line)
-        for line in Path(paths["holdout"]).read_text(encoding="utf-8").splitlines()
-        if line.strip()
+        json.loads(line) for line in Path(paths["holdout"]).read_text(encoding="utf-8").splitlines() if line.strip()
     ]
     assert len(train_rows) == len(SYNTAX_BLOCKS) - 1
     assert len(holdout_rows) == 1

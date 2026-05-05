@@ -41,7 +41,10 @@ def test_preference_rows_pin_observed_smoke_failures() -> None:
     assert "verification=" not in builder["rejected"]
 
     tests_literal = rows["builder_navigator_packet_tests_literal_first_field"]
-    assert "00_required_items=Builder | Navigator | deterministic | verification | tests | apply" in tests_literal["chosen"]
+    assert (
+        "00_required_items=Builder | Navigator | deterministic | verification | tests | apply"
+        in tests_literal["chosen"]
+    )
     assert "01_tests_literal=tests" in tests_literal["chosen"]
     assert "test passes" in tests_literal["rejected"]
     assert "verification | tests | apply" not in tests_literal["rejected"]

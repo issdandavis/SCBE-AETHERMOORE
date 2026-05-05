@@ -387,9 +387,7 @@ def _cone_risk_score(
     return min(1.0, float(band_risk) + interference_term + plateau_term)
 
 
-def _unified_governance(
-    cone_governance: str, unified_risk: float
-) -> str:
+def _unified_governance(cone_governance: str, unified_risk: float) -> str:
     """Pick the more conservative of (cone reading, band-risk threshold).
 
     The cone reading is the primary verdict. The band-risk score acts
