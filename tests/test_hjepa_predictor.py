@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import math
-import tempfile
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -15,7 +13,6 @@ from python.scbe.hjepa_predictor import (
     INPUT_DIM,
     OUTPUT_DIM,
     SCHEMA_VERSION,
-    HJEPAPredictorWeights,
     baseline_weights,
     build_training_pairs,
     fixture_corpus,

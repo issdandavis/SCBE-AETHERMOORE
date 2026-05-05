@@ -9,7 +9,6 @@ is the more conservative of the two underlying decisions.
 
 from __future__ import annotations
 
-import pytest
 
 from python.scbe.tri_braid_embedding import TriBraidSignature
 from python.scbe.tri_cone_embedding import tri_cone_signature

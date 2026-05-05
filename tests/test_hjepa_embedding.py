@@ -21,8 +21,6 @@ from hypothesis import strategies as st
 from python.scbe.hjepa_embedding import (
     DEFAULT_LOSS_WEIGHTS,
     SCHEMA_VERSION,
-    HJEPALevel,
-    HJEPASignature,
     hjepa_signature,
     verify_hjepa_signature,
 )
