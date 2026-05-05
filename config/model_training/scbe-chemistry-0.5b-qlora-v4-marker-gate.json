@@ -1,0 +1,57 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-chemistry-0.5b-qlora-v4-marker-gate",
+  "title": "SCBE Chemistry 0.5B QLoRA v4 Marker Gate",
+  "description": "Short focused marker-gate repair after v3 improved the frozen gate from 0/5 to 1/5. Trains exact REQUIRED_MARKERS answer format without the broad JSON receipt corpus.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "chemistry_gate_repair_v1_train.sft.jsonl",
+      "chemistry_adapter_invariants_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "chemistry_gate_repair_v1_eval.sft.jsonl",
+      "chemistry_adapter_invariants_v1_eval.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 512,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "max_steps": 220,
+    "warmup_steps": 16,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.02,
+    "learning_rate": 0.00018,
+    "gradient_checkpointing": true,
+    "seed": 45,
+    "logging_steps": 10,
+    "save_steps": 80,
+    "eval_steps": 40,
+    "max_train_records": 0,
+    "max_eval_records": 0
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-chemistry-sft",
+    "adapter_repo": "issdandavis/scbe-chemistry-0.5b-qlora-v4-marker-gate",
+    "token_env": "HF_TOKEN",
+    "push_adapter": true
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "35m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE chemistry verification agent. Answer in concise English, not JSON. Start with REQUIRED_MARKERS listing the exact gate words. Then explain the chemistry path and governance verdict. Use exact markers PASS and DENY when required.",
+  "evaluation": {
+    "contract_path": "config/model_training/chemistry_verification_eval_contract.json",
+    "constrained_gate_scaffold": false
+  },
+  "notes": [
+    "v4 targets exact marker recall, not broad chemistry knowledge.",
+    "If this passes, treat it as a gate-shape adapter and merge/stack with the broader chemistry adapter later.",
+    "If this fails, stop remote training and move the gate to a two-part raw/scaffold score before more spend."
+  ]
+}

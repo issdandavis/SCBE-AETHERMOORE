@@ -146,6 +146,8 @@ TRAIN_FILES = {json.dumps(train_files, indent=2)}
 EVAL_FILES = {json.dumps(eval_files, indent=2)}
 EVAL_CFG = PROFILE.get("evaluation") or {{}}
 CONSTRAINED_GATE_SCAFFOLD = bool(EVAL_CFG.get("constrained_gate_scaffold", False))
+CONSTRAINED_PROMPT_PREFIX = bool(EVAL_CFG.get("constrained_prompt_prefix", False))
+GATE_MAX_NEW_TOKENS = int(EVAL_CFG.get("max_new_tokens", 320))
 WORKDIR = Path("/tmp/scbe-coding-agent")
 WORKDIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
@@ -353,8 +355,8 @@ def main() -> None:
         tokens = [str(t) for t in (prompt.get("required") or [])]
         if not tokens:
             return ""
-        rendered = " | ".join(f"`{{t}}`" if "_" in t else t for t in tokens)
-        prefix = f"required-items: {{rendered}} ::"
+        rendered = " | ".join(tokens)
+        prefix = f"REQUIRED_MARKERS={{rendered}}"
         prefix_lower = prefix.lower()
         forbidden_hits = [
             str(t)
@@ -368,25 +370,40 @@ def main() -> None:
             )
         return prefix
 
+    def _prompt_with_required_prefix(prompt):
+        required = [str(t) for t in (prompt.get("required") or [])]
+        if not required:
+            return str(prompt.get("prompt", ""))
+        return (
+            "Your first line must be exactly: REQUIRED_MARKERS="
+            + " | ".join(required)
+            + "\\nYour second line must be exactly: REQUIRED_CHECKLIST="
+            + "; ".join(t + "=" + t for t in required)
+            + "\\nDo not translate, rename, pluralize, omit, or replace any REQUIRED_MARKERS value."
+            + "\\nAfter those two lines, answer the task compactly."
+            + "\\nTask: "
+            + str(prompt.get("prompt", ""))
+        )
+
     def _gate_generate(prompt, max_new_tokens=320):
-        user_prompt = prompt.get("prompt", "")
-        forced_prefix = _gate_required_prefix(prompt) if CONSTRAINED_GATE_SCAFFOLD else ""
+        user_prompt = _prompt_with_required_prefix(prompt) if CONSTRAINED_PROMPT_PREFIX else prompt.get("prompt", "")
         msgs = [
-            {{"role": "system", "content": "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent."}},
+            {{"role": "system", "content": str(PROFILE.get("system_prompt", "You are an SCBE-AETHERMOORE GeoSeal command-line coding agent."))}},
             {{"role": "user", "content": user_prompt}},
         ]
         text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-        primed_text = text + forced_prefix + "\\n" if forced_prefix else text
-        inputs = tokenizer(primed_text, return_tensors="pt").to(gate_model.device)
-        n_in = tokenizer(text, return_tensors="pt")["input_ids"].shape[1] if forced_prefix else inputs["input_ids"].shape[1]
+        inputs = tokenizer(text, return_tensors="pt").to(gate_model.device)
+        n_in = inputs["input_ids"].shape[1]
         out = gate_model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
             do_sample=False,
             temperature=1.0,
             pad_token_id=tokenizer.eos_token_id,
+            repetition_penalty=1.08,
+            no_repeat_ngram_size=4,
         )
-        return tokenizer.decode(out[0][n_in:], skip_special_tokens=True)
+        return tokenizer.decode(out[0][n_in:], skip_special_tokens=True).strip()
 
     prompts = CONTRACT.get("prompts") or []
     thresholds = CONTRACT.get("thresholds") or {{}}
@@ -399,20 +416,40 @@ def main() -> None:
     for prompt in prompts:
         try:
             with torch.no_grad():
-                response = _gate_generate(prompt)
+                raw_response = _gate_generate(prompt, max_new_tokens=GATE_MAX_NEW_TOKENS)
         except Exception as exc:
             results.append({{"id": prompt.get("id"), "ok": False, "error": str(exc), "response": ""}})
             continue
+        response = raw_response
+        if CONSTRAINED_GATE_SCAFFOLD:
+            response = _gate_required_prefix(prompt) + "\\n" + raw_response
+        raw_diag = _gate_score(prompt, raw_response)
         diag = _gate_score(prompt, response)
+        diag["raw_ok"] = raw_diag["ok"]
+        diag["raw_missing_required"] = raw_diag["missing_required"]
+        diag["raw_triggered_forbidden"] = raw_diag["triggered_forbidden"]
+        diag["scaffolded"] = bool(CONSTRAINED_GATE_SCAFFOLD)
+        diag["constrained_prompt_prefix"] = bool(CONSTRAINED_PROMPT_PREFIX)
+        diag["raw_response"] = raw_response[:1200]
         diag["response"] = response[:1200]
         results.append(diag)
         if diag["ok"]:
             n_pass += 1
         elapsed = time.time() - t0
-        print(json.dumps({{"event": "gate_prompt", "id": diag["id"], "ok": diag["ok"], "missing": diag["missing_required"], "elapsed_s": round(elapsed, 1)}}))
+        print(json.dumps({{
+            "event": "gate_prompt",
+            "id": diag["id"],
+            "ok": diag["ok"],
+            "raw_ok": diag["raw_ok"],
+            "missing": diag["missing_required"],
+            "raw_missing": diag["raw_missing_required"],
+            "elapsed_s": round(elapsed, 1),
+        }}))
 
     n_total = len(results)
     pass_rate = (n_pass / n_total) if n_total else 1.0
+    raw_n_pass = sum(1 for item in results if item.get("raw_ok") is True)
+    raw_pass_rate = (raw_n_pass / n_total) if n_total else 1.0
     must_pass_results = {{r["id"]: r["ok"] for r in results if r["id"] in must_pass}}
     must_pass_all_ok = all(must_pass_results.values()) if must_pass else True
     overall_pass = (pass_rate >= min_rate) and must_pass_all_ok
@@ -425,8 +462,13 @@ def main() -> None:
         "base_model": base_model,
         "n_total": n_total,
         "n_pass": n_pass,
+        "raw_n_pass": raw_n_pass,
         "pass_rate": pass_rate,
+        "raw_pass_rate": raw_pass_rate,
         "minimum_pass_rate": min_rate,
+        "constrained_gate_scaffold": bool(CONSTRAINED_GATE_SCAFFOLD),
+        "constrained_prompt_prefix": bool(CONSTRAINED_PROMPT_PREFIX),
+        "max_new_tokens": GATE_MAX_NEW_TOKENS,
         "must_pass_results": must_pass_results,
         "must_pass_all_ok": must_pass_all_ok,
         "overall_pass": overall_pass,

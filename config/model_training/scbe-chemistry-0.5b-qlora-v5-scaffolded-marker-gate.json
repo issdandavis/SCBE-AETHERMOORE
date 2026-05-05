@@ -1,0 +1,59 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-chemistry-0.5b-qlora-v5-scaffolded-marker-gate",
+  "title": "SCBE Chemistry 0.5B QLoRA v5 Scaffolded Marker Gate",
+  "description": "Same focused chemistry marker adapter as v4, but evaluates with prompt-prefix guidance plus raw/scaffold split reporting so adapter quality and harness quality stay separate.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "chemistry_gate_repair_v1_train.sft.jsonl",
+      "chemistry_adapter_invariants_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "chemistry_gate_repair_v1_eval.sft.jsonl",
+      "chemistry_adapter_invariants_v1_eval.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 512,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "max_steps": 220,
+    "warmup_steps": 16,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.02,
+    "learning_rate": 0.00018,
+    "gradient_checkpointing": true,
+    "seed": 46,
+    "logging_steps": 10,
+    "save_steps": 80,
+    "eval_steps": 40,
+    "max_train_records": 0,
+    "max_eval_records": 0
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-chemistry-sft",
+    "adapter_repo": "issdandavis/scbe-chemistry-0.5b-qlora-v5-scaffolded-marker-gate",
+    "token_env": "HF_TOKEN",
+    "push_adapter": true
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "35m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE chemistry verification agent. Answer in concise English. Preserve every REQUIRED_MARKERS word exactly. Then explain the chemistry path and governance verdict. Use PASS only for valid chemistry routes and DENY for invalid material chemistry claims.",
+  "evaluation": {
+    "contract_path": "config/model_training/chemistry_verification_eval_contract.json",
+    "constrained_gate_scaffold": true,
+    "constrained_prompt_prefix": true,
+    "max_new_tokens": 180
+  },
+  "notes": [
+    "v5 keeps raw_pass_rate visible. Scaffolded pass means the harness can force marker compliance; it is not the same claim as raw model promotion.",
+    "If v5 passes only scaffolded, package it as a governed chemistry lane adapter that requires the SCBE gate wrapper.",
+    "If v5 still fails scaffolded, stop remote training and fix the evaluator or dataset objective locally."
+  ]
+}

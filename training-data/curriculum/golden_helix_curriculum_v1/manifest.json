@@ -1,0 +1,67 @@
+{
+  "description": "Deterministic golden-angle curriculum schedule over local SCBE training rows.",
+  "golden_angle_deg": 137.50776405003785,
+  "include_globs": [
+    "training-data/**/*.jsonl"
+  ],
+  "lane_counts": {
+    "chemistry": 2039,
+    "coding": 2326,
+    "governance": 564,
+    "motion": 11,
+    "research": 10452,
+    "tokenizer": 3985
+  },
+  "lane_match_rate": 0.5882,
+  "lanes": [
+    "coding",
+    "chemistry",
+    "governance",
+    "research",
+    "motion",
+    "tokenizer"
+  ],
+  "phi": 1.618033988749895,
+  "row_count": 19377,
+  "schedule_path": "training-data/curriculum/golden_helix_curriculum_v1/schedule.jsonl",
+  "schedule_sha256": "6e349d1fb098867e813d8e5f2698435ffe057ae17e44ecb5b8cb6683909d75f6",
+  "schema_version": "scbe_golden_helix_curriculum_v1",
+  "source_file_count": 90,
+  "source_stream_count": 90,
+  "target_lane_counts": {
+    "chemistry": 3229,
+    "coding": 3230,
+    "governance": 3230,
+    "motion": 3231,
+    "research": 3228,
+    "tokenizer": 3229
+  },
+  "top_sources": {
+    "training-data/news-pipeline/sft/2026-04-23.jsonl": 490,
+    "training-data/news-pipeline/sft/2026-04-27.jsonl": 483,
+    "training-data/news-pipeline/sft/2026-04-28.jsonl": 490,
+    "training-data/personal_rag.jsonl": 1509,
+    "training-data/sft/bijective_codeflow_v1_all.sft.jsonl": 1040,
+    "training-data/sft/bijective_codeflow_v1_train.sft.jsonl": 936,
+    "training-data/sft/bijective_dsl_v1_train.sft.jsonl": 939,
+    "training-data/sft/binary_interpretation_matrix_v1.sft.jsonl": 482,
+    "training-data/sft/binary_matrix_v2_full.sft.jsonl": 503,
+    "training-data/sft/chemistry_primary_train.sft.jsonl": 1551,
+    "training-data/sft/drill_langues_full_all.sft.jsonl": 2630,
+    "training-data/sft/drill_langues_full_train.sft.jsonl": 2373
+  },
+  "top_streams": {
+    "training_data_news_pipeline_sft_2026_04_23": 490,
+    "training_data_news_pipeline_sft_2026_04_27": 483,
+    "training_data_news_pipeline_sft_2026_04_28": 490,
+    "training_data_personal_rag": 1509,
+    "training_data_sft_bijective_codeflow_v1_all": 1040,
+    "training_data_sft_bijective_codeflow_v1_train": 936,
+    "training_data_sft_bijective_dsl_v1_train": 939,
+    "training_data_sft_binary_interpretation_matrix_v1": 482,
+    "training_data_sft_binary_matrix_v2_full": 503,
+    "training_data_sft_chemistry_primary_train": 1551,
+    "training_data_sft_drill_langues_full_all": 2630,
+    "training_data_sft_drill_langues_full_train": 2373
+  }
+}

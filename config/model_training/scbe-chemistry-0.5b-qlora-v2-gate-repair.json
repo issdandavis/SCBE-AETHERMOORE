@@ -1,0 +1,63 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-chemistry-0.5b-qlora-v2-gate-repair",
+  "title": "SCBE Chemistry 0.5B QLoRA v2 Gate Repair",
+  "description": "Chemistry-focused QLoRA fine-tuning with the cleaned v2 chemistry bundle plus oversampled gate-language repair rows. Targets the exact frozen promotion contract that blocked HF job 69f96c159d85bec4d76f2c27.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "chemistry_gate_repair_v1_train.sft.jsonl",
+      "chemistry_manual_verification_v2_train.sft.jsonl",
+      "chemistry_adapter_verification_v1_train.sft.jsonl",
+      "chemistry_adapter_invariants_v1_train.sft.jsonl",
+      "chemistry_primary_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "chemistry_gate_repair_v1_eval.sft.jsonl",
+      "chemistry_manual_verification_v2_eval.sft.jsonl",
+      "chemistry_adapter_verification_v1_eval.sft.jsonl",
+      "chemistry_adapter_invariants_v1_eval.sft.jsonl",
+      "chemistry_primary_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 1024,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "max_steps": 500,
+    "warmup_steps": 50,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.0002,
+    "gradient_checkpointing": true,
+    "seed": 43,
+    "logging_steps": 10,
+    "save_steps": 100,
+    "eval_steps": 50,
+    "max_train_records": 0,
+    "max_eval_records": 0
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-chemistry-sft",
+    "adapter_repo": "issdandavis/scbe-chemistry-0.5b-qlora-v2-gate-repair",
+    "token_env": "HF_TOKEN",
+    "push_adapter": true
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "1h"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE chemistry verification agent. Run the chemistry path explicitly: SMILES to atoms, bonds, valence, electronegativity, functional group, RDKit validity, SCBE fusion, and governance verdict. Use exact promotion markers PASS and DENY when required by the gate.",
+  "evaluation": {
+    "contract_path": "config/model_training/chemistry_verification_eval_contract.json",
+    "constrained_gate_scaffold": false
+  },
+  "notes": [
+    "v2 repairs the first HF chemistry run where training loss reached 0.6498 but gate pass rate was 0/5.",
+    "The repair pack teaches exact lexical markers without changing the frozen evaluation contract.",
+    "max_train_records=0 disables the dispatcher's default 1200-row cap so the full chemistry bundle participates."
+  ]
+}

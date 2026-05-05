@@ -100,11 +100,16 @@ def test_dispatcher_renders_constrained_gate_scaffold_when_profile_requests_it()
     script = dispatcher.render_uv_training_script(profile)
 
     assert "CONSTRAINED_GATE_SCAFFOLD = bool" in script
+    assert "CONSTRAINED_PROMPT_PREFIX = bool" in script
     assert '"constrained_gate_scaffold": true' in script
     assert "def _gate_required_prefix(prompt):" in script
-    assert "required-items:" in script
+    assert "REQUIRED_MARKERS=" in script
+    assert "def _prompt_with_required_prefix(prompt):" in script
+    assert "Your first line must be exactly: REQUIRED_MARKERS=" in script
+    assert "raw_pass_rate" in script
+    assert "raw_missing_required" in script
     assert "constrained gate prefix would trigger forbidden token" in script
-    assert "response = _gate_generate(prompt)" in script
+    assert "raw_response = _gate_generate(prompt" in script
 
 
 def test_chemistry_profile_has_non_empty_hf_promotion_contract() -> None:
@@ -127,6 +132,8 @@ def test_chemistry_profile_has_non_empty_hf_promotion_contract() -> None:
     assert "chemistry_verification_unseen_eval_v1" in script
     assert '"n_prompts": 0' not in script
     assert "chem_eval_ethanol_route" in script
+    assert "PROFILE.get(\"system_prompt\"" in script
+    assert "Run the chemistry path explicitly" in script
 
 
 def test_dispatcher_honors_explicit_warmup_steps_without_deprecated_ratio() -> None:

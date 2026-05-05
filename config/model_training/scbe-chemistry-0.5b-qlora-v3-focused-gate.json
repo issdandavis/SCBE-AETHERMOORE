@@ -1,0 +1,59 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-chemistry-0.5b-qlora-v3-focused-gate",
+  "title": "SCBE Chemistry 0.5B QLoRA v3 Focused Gate",
+  "description": "Focused chemistry gate repair run. Removes the large structured JSON chemistry corpus and trains only exact promotion-language rows plus adapter invariants so the frozen gate measures answer shape rather than receipt-style completion.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "chemistry_gate_repair_v1_train.sft.jsonl",
+      "chemistry_adapter_invariants_v1_train.sft.jsonl",
+      "chemistry_adapter_verification_v1_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "chemistry_gate_repair_v1_eval.sft.jsonl",
+      "chemistry_adapter_invariants_v1_eval.sft.jsonl",
+      "chemistry_adapter_verification_v1_eval.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "max_steps": 260,
+    "warmup_steps": 20,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.03,
+    "learning_rate": 0.00018,
+    "gradient_checkpointing": true,
+    "seed": 44,
+    "logging_steps": 10,
+    "save_steps": 80,
+    "eval_steps": 40,
+    "max_train_records": 0,
+    "max_eval_records": 0
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-chemistry-sft",
+    "adapter_repo": "issdandavis/scbe-chemistry-0.5b-qlora-v3-focused-gate",
+    "token_env": "HF_TOKEN",
+    "push_adapter": true
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "45m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE chemistry verification agent. Answer in concise English, not JSON. Run the chemistry path explicitly: SMILES to atoms, bonds, valence, electronegativity, functional group, RDKit validity, SCBE fusion, and governance verdict. Use exact promotion markers PASS and DENY when required by the gate.",
+  "evaluation": {
+    "contract_path": "config/model_training/chemistry_verification_eval_contract.json",
+    "constrained_gate_scaffold": false
+  },
+  "notes": [
+    "v3 is intentionally narrow because v2 kept emitting structured JSON receipts under the frozen promotion gate.",
+    "If v3 improves raw gate pass rate, merge this focused adapter with the broader chemistry adapter instead of replacing the broad chemistry lane.",
+    "If v3 still fails, use constrained_gate_scaffold only as a diagnostic, not as a quality promotion claim."
+  ]
+}

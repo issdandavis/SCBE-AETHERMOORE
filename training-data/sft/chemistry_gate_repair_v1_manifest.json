@@ -1,0 +1,23 @@
+{
+  "schema_version": "chemistry_gate_repair_manifest_v1",
+  "track": "chemistry_gate_repair_v1",
+  "train_file": "training-data\\sft\\chemistry_gate_repair_v1_train.sft.jsonl",
+  "eval_file": "training-data\\sft\\chemistry_gate_repair_v1_eval.sft.jsonl",
+  "train_records": 525,
+  "eval_records": 2,
+  "repeats": 35,
+  "case_ids": [
+    "ethanol_route",
+    "aspirin_route",
+    "pentavalent_carbon_reject",
+    "nacl_boundary",
+    "lane_boundary",
+    "methanol_route_eval",
+    "code_token_boundary_eval"
+  ],
+  "repair_reason": "HF job 69f96c159d85bec4d76f2c27 trained, but failed the lexical chemistry promotion gate 0/5.",
+  "files": {
+    "chemistry_gate_repair_v1_train.sft.jsonl": "88a43d7bd55bec2da16a197b58fd9692e48b560edabe147411e8df5a73a9aa99",
+    "chemistry_gate_repair_v1_eval.sft.jsonl": "113a0c9af0e0a001752af18b8bc65285c67a74a2df296db676e30bda51db3464"
+  }
+}
