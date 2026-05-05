@@ -88,6 +88,21 @@ def _forbidden_tokens(row: dict[str, Any], contract_prompt: dict[str, Any] | Non
     return _tokens(row, "triggered_forbidden") or _tokens(row, "raw_triggered_forbidden")
 
 
+def _boundary_guard_line(forbidden: list[str]) -> str:
+    if not forbidden:
+        return "BOUNDARY_GUARD=none"
+    return f"BOUNDARY_GUARD=[redacted: {len(forbidden)} forbidden tokens]"
+
+
+def _redact_forbidden_text(text: str, forbidden: list[str]) -> str:
+    redacted = text
+    for token in sorted({item for item in forbidden if item}, key=len, reverse=True):
+        redacted = redacted.replace(token, "[redacted]")
+        redacted = redacted.replace(token.lower(), "[redacted]")
+        redacted = redacted.replace(token.upper(), "[redacted]")
+    return redacted
+
+
 def _assistant_for_residue(row: dict[str, Any], contract_prompt: dict[str, Any] | None = None) -> str:
     required = _required_tokens(row, contract_prompt)
     forbidden = _forbidden_tokens(row, contract_prompt)
@@ -95,7 +110,7 @@ def _assistant_for_residue(row: dict[str, Any], contract_prompt: dict[str, Any] 
         required = _tokens(row, "token_chain")
 
     marker_line = "REQUIRED_MARKERS=" + " | ".join(required) if required else "REQUIRED_MARKERS=none"
-    boundary_line = "BOUNDARY_GUARD=" + " | ".join(forbidden) if forbidden else "BOUNDARY_GUARD=none"
+    boundary_line = _boundary_guard_line(forbidden)
     verdict = "PASS" if row.get("kind") == "positive_residue" else "REPAIR"
     if forbidden:
         verdict = "BOUNDARY_REPAIR"
@@ -107,7 +122,7 @@ def _assistant_for_residue(row: dict[str, Any], contract_prompt: dict[str, Any] 
             "KINEMATIC_MESH_MODE=boundary_residue | BOUNDARY_REPAIR. "
             "C(C)(C)(C)(C)C is the rejected molecule. The central carbon is pentavalent, "
             "which violates carbon valence 4. RDKit rejects or invalidates this material "
-            "chemistry claim. Governance verdict: DENY. Do not write PASS, promote, or drug-like."
+            "chemistry claim. Governance verdict: DENY. Do not emit forbidden boundary strings."
         )
 
     return (
@@ -115,8 +130,8 @@ def _assistant_for_residue(row: dict[str, Any], contract_prompt: dict[str, Any] 
         f"{boundary_line}\n"
         f"KINEMATIC_MESH_MODE={row.get('kind', 'repair_residue')} | {verdict}. "
         "Treat the reusable gate as the mesh and this compact row as the sacrificial liner. "
-        "Replay the required markers exactly, keep forbidden strings out of the generated answer, "
-        "and retest before promotion."
+        "Replay the required markers exactly, keep forbidden boundary strings out of the generated answer, "
+        "and retest before release."
     )
 
 
@@ -124,11 +139,17 @@ def _user_for_residue(row: dict[str, Any], contract_prompt: dict[str, Any] | Non
     required = _required_tokens(row, contract_prompt)
     forbidden = _forbidden_tokens(row, contract_prompt)
     task = str((contract_prompt or {}).get("prompt") or "")
+    task = _redact_forbidden_text(task, forbidden) if forbidden else task
     task_line = f" Frozen task: {task}" if task else ""
+    forbidden_instruction = (
+        f"Forbidden boundary string count: {len(forbidden)}; keep those boundary strings redacted."
+        if forbidden
+        else "Forbidden boundary strings: none."
+    )
     return (
         f"Build a compact repair response for prompt_id={row.get('prompt_id', 'unknown')}. "
         f"Required markers: {', '.join(required) if required else 'none'}. "
-        f"Forbidden boundary strings: {', '.join(forbidden) if forbidden else 'none'}. "
+        f"{forbidden_instruction} "
         "Use the kinematic mesh filter pattern and do not copy the noisy original log." + task_line
     )
 

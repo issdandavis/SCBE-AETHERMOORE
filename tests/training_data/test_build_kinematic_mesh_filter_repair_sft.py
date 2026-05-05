@@ -50,7 +50,7 @@ def _write_contract(path: Path) -> None:
                 "prompts": [
                     {
                         "id": "chem_eval_pentavalent_carbon_reject",
-                        "prompt": "Reject the pentavalent carbon case.",
+                        "prompt": "Verify whether the pentavalent carbon case should promote.",
                         "required": ["C(C)(C)(C)(C)C", "carbon", "valence", "pentavalent", "invalid", "RDKit", "DENY"],
                         "forbidden": ["PASS", "promote", "drug-like"],
                     }
@@ -73,9 +73,17 @@ def test_build_rows_uses_failed_residues_as_sacrificial_layer(tmp_path: Path) ->
     assert len(eval_rows) == 2
     assistant = train[0]["messages"][2]["content"]
     assert "REQUIRED_MARKERS=C(C)(C)(C)(C)C | carbon | valence | pentavalent | invalid | RDKit | DENY" in assistant
-    assert "BOUNDARY_GUARD=PASS | promote | drug-like" in assistant
+    assert "BOUNDARY_GUARD=[redacted: 3 forbidden tokens]" in assistant
     assert "KINEMATIC_MESH_MODE=boundary_residue" in assistant
     assert "Governance verdict: DENY" in assistant
+    assert "PASS" not in assistant
+    assert "promote" not in assistant
+    assert "drug-like" not in assistant
+    user = train[0]["messages"][1]["content"]
+    assert "Forbidden boundary string count: 3" in user
+    assert "PASS" not in user
+    assert "promote" not in user
+    assert "drug-like" not in user
     assert train[0]["metadata"]["sacrificial_layer"] == "training_residue"
     assert train[0]["metadata"]["mesh_role"] == "reusable_gate_harness"
     assert "positive_residue" not in {row["metadata"]["source_kind"] for row in train + eval_rows}
