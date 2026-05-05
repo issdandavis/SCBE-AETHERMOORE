@@ -2813,36 +2813,65 @@ def cmd_agentbus_run(args: argparse.Namespace) -> int:
 
     dispatch_payload: dict[str, object] = {"enabled": False}
     if args.dispatch:
-        free_llm = _load_free_llm_routes_module(repo_root)
-        if free_llm is None:
-            print("Free LLM dispatch module is unavailable.")
-            return 2
         provider = args.dispatch_provider or str(round_packet["selected_provider"])
-        if provider not in {"offline", "ollama", "huggingface"}:
-            provider = "offline"
-        free_llm.REPO_ROOT = repo_root
-        response = free_llm.dispatch_free_llm_request(
-            free_llm.FreeLLMDispatchRequest(
-                provider=provider,
-                prompt=args.task,
+        if provider == "tiered_council":
+            from src.agent_comms.tiered_council_dispatch import (
+                CouncilDispatchConfig,
+                dispatch_tiered_council,
+                families_from_env,
+            )
+
+            council_payload = dispatch_tiered_council(
+                task=args.task,
+                budget_cents=float(args.budget_cents or 0.0),
+                config=CouncilDispatchConfig(families_to_include=families_from_env()),
                 metadata={
                     "task_type": args.task_type,
                     "series_id": series_id,
                     "operation_shape": round_packet.get("operation_shape"),
                 },
-            ),
-            user="scbe-system-cli",
-            origin="inside",
-        )
-        data = dict(response.get("data", {}))
-        event = data.get("bus_event", {}) if isinstance(data.get("bus_event"), dict) else {}
-        dispatch_payload = {
-            "enabled": True,
-            "provider": provider,
-            "event_id": event.get("event_id"),
-            "route": data.get("route", {}),
-            "result": data.get("result", {}),
-        }
+            )
+            dispatch_payload = {
+                "enabled": True,
+                "provider": "tiered_council",
+                "event_id": None,
+                "route": {
+                    "provider": "tiered_council",
+                    "final_tier": council_payload.get("final_tier"),
+                    "escalation_path": council_payload.get("escalation_path", []),
+                },
+                "result": council_payload,
+            }
+        else:
+            free_llm = _load_free_llm_routes_module(repo_root)
+            if free_llm is None:
+                print("Free LLM dispatch module is unavailable.")
+                return 2
+            if provider not in {"offline", "ollama", "huggingface"}:
+                provider = "offline"
+            free_llm.REPO_ROOT = repo_root
+            response = free_llm.dispatch_free_llm_request(
+                free_llm.FreeLLMDispatchRequest(
+                    provider=provider,
+                    prompt=args.task,
+                    metadata={
+                        "task_type": args.task_type,
+                        "series_id": series_id,
+                        "operation_shape": round_packet.get("operation_shape"),
+                    },
+                ),
+                user="scbe-system-cli",
+                origin="inside",
+            )
+            data = dict(response.get("data", {}))
+            event = data.get("bus_event", {}) if isinstance(data.get("bus_event"), dict) else {}
+            dispatch_payload = {
+                "enabled": True,
+                "provider": provider,
+                "event_id": event.get("event_id"),
+                "route": data.get("route", {}),
+                "result": data.get("result", {}),
+            }
 
     latest_round = mirror_root / series_id / "latest_round.json"
     dispatch_log = repo_root / ".scbe" / "packets" / "free_llm_dispatch.jsonl"
@@ -3343,6 +3372,17 @@ def cmd_colab_bridge_set(args: argparse.Namespace) -> int:
     if result.stderr.strip():
         print(result.stderr.strip(), file=sys.stderr)
     return result.returncode
+
+
+def cmd_training_dispatch(args: argparse.Namespace) -> int:
+    """Delegate to src.training_cli for the training extension subcommands."""
+    from src.training_cli.cli import main as training_main
+
+    extra: list[str] = list(getattr(args, "training_args", []) or [])
+    repo_root = getattr(args, "repo_root", None)
+    if repo_root is not None and not any(a.startswith("--repo-root") for a in extra):
+        extra = ["--repo-root", str(repo_root)] + extra
+    return int(training_main(extra) or 0)
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
@@ -4960,6 +5000,14 @@ def build_parser() -> argparse.ArgumentParser:
     model_train.add_argument("--emit-script", default="", help="Path for the generated training script")
     model_train.add_argument("--execute", action="store_true", help="Execute the generated training script immediately")
     model_train.set_defaults(func=cmd_model_train)
+
+    training = sub.add_parser(
+        "training",
+        help="Training extension: status, runs, verdicts, heartbeat, guides, quickstart",
+    )
+    add_runtime_cli_flags(training)
+    training.add_argument("training_args", nargs=argparse.REMAINDER)
+    training.set_defaults(func=cmd_training_dispatch)
 
     workflow = sub.add_parser("workflow", help="Generate GitHub + n8-style multistep workflow assets")
     add_runtime_cli_flags(workflow)
