@@ -47,7 +47,7 @@
           "text": "Submerged layer"
         }
       ],
-      "link_count": 158,
+      "link_count": 64,
       "table_count": 0,
       "text_preview": "\u25c8 feed\n    \n      SPY\u2009\u2014\u2009\n      QQQ\u2009\u2014\u2009\n      NVDA\u2009\u2014\u2009\n      BTC\u2009\u2014\u2009\n    \n    \n      \n        Fetching research feed\u2026\n      \n    \n  \n\n  \n    \n      \n        \n          AI governance, built from real math and real code\n          I built a messy but real system for governing how AI thinks, routes, and drifts.\n          \n            AetherMoore is the public face of SCBE-AETHERMOORE: a geometric governance stack for AI training, agent communication, and risk tracing. It uses structured channels, hyperb..."
     },
@@ -105,17 +105,27 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Train Your Own LLM from Scratch",
-      "word_count": 578,
+      "description": "Async Rust never left the MVP state",
+      "word_count": 592,
       "headings": [
         {
           "level": 2,
-          "text": "Train Your Own LLM from Scratch",
+          "text": "Async Rust never left the MVP state",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/angelos-p",
+          "text": "tweedegolf.nl",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Should I Run Plain Docker Compose in Production in 2026?",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "distr.sh",
           "source": "fallback-selector"
         },
         {
@@ -130,38 +140,28 @@
         },
         {
           "level": 2,
-          "text": "About 10% of AMC movie showings sell zero tickets. This site finds them",
+          "text": "When everyone has AI and the company still learns nothing",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "robert-glaser.de",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Empty Screenings \u2013 Finds AMC movie screenings with few or no tickets sold",
           "source": "fallback-selector"
         },
         {
           "level": 2,
           "text": "walzr.com",
           "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "CVE-2026-31431: Copy Fail vs. rootless containers",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "dragonsreach.it",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Hand Drawn QR Codes",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "sethmlarson.dev",
-          "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Train Your Own LLM from Scratch (github.com/angelos-p)103 points by kristianpaul 2 hours ago  | hide | 12\u00a0comments2.Bun is being ported from Zig to Rust (github.com/oven-sh)407 points by SergeAx 5 hours ago  | hide | 269\u00a0comments3.About 10% of AMC movie showings sell zero tickets. This site finds them (walzr.com)107 points by MrBuddyCasino 2 hours ago  | hide | 82\u00a0comments4.CVE-2026-31431: Copy Fail vs. rootless containers (drag..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Async Rust never left the MVP state (tweedegolf.nl)240 points by pjmlp 5 hours ago  | hide | 123\u00a0comments2.Should I Run Plain Docker Compose in Production in 2026? (distr.sh)111 points by pmig 3 hours ago  | hide | 79\u00a0comments3.Bun is being ported from Zig to Rust (github.com/oven-sh)583 points by SergeAx 11 hours ago  | hide | 409\u00a0comments4.When everyone has AI and the company still learns nothing (robert-glaser.de)71 points by..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
