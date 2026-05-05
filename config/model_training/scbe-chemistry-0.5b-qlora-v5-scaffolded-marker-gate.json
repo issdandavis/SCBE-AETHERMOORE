@@ -9,22 +9,26 @@
     "root": "training-data/sft",
     "train_files": [
       "chemistry_gate_repair_v1_train.sft.jsonl",
-      "chemistry_adapter_invariants_v1_train.sft.jsonl"
+      "chemistry_adapter_invariants_v1_train.sft.jsonl",
+      "kinematic_mesh_filter_repair_v1_train.sft.jsonl",
+      "aligned_foundations_v2_train.sft.jsonl"
     ],
     "eval_files": [
       "chemistry_gate_repair_v1_eval.sft.jsonl",
-      "chemistry_adapter_invariants_v1_eval.sft.jsonl"
+      "chemistry_adapter_invariants_v1_eval.sft.jsonl",
+      "kinematic_mesh_filter_repair_v1_eval.sft.jsonl",
+      "aligned_foundations_v2_holdout.sft.jsonl"
     ]
   },
   "training": {
-    "max_seq_length": 512,
-    "batch_size": 2,
-    "gradient_accumulation_steps": 4,
-    "max_steps": 220,
+    "max_seq_length": 384,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "max_steps": 180,
     "warmup_steps": 16,
     "lora_rank": 8,
     "lora_alpha": 16,
-    "lora_dropout": 0.02,
+    "lora_dropout": 0.05,
     "learning_rate": 0.00018,
     "gradient_checkpointing": true,
     "seed": 46,
@@ -49,11 +53,14 @@
     "contract_path": "config/model_training/chemistry_verification_eval_contract.json",
     "constrained_gate_scaffold": true,
     "constrained_prompt_prefix": true,
-    "max_new_tokens": 180
+    "max_new_tokens": 96
   },
   "notes": [
     "v5 keeps raw_pass_rate visible. Scaffolded pass means the harness can force marker compliance; it is not the same claim as raw model promotion.",
+    "T4-safe settings: sequence length 384, per-device batch size 1, accumulation 8, gate max_new_tokens 96.",
     "If v5 passes only scaffolded, package it as a governed chemistry lane adapter that requires the SCBE gate wrapper.",
-    "If v5 still fails scaffolded, stop remote training and fix the evaluator or dataset objective locally."
+    "If v5 still fails scaffolded, stop remote training and fix the evaluator or dataset objective locally.",
+    "lora_dropout raised to 0.05 after kinematic mesh repair shard redaction to reduce memorization risk on repeated residue rows.",
+    "aligned_foundations_v2 train+holdout added as OOD anchor (~11% of train rows): pins concept-preservation behavior on alphabet/math/binary lanes outside chemistry, guards against the OOD regression pattern v1 bijective hit (+803% on aligned_foundations)."
   ]
 }
