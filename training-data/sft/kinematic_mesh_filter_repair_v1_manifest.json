@@ -1,0 +1,22 @@
+{
+  "schema_version": "kinematic_mesh_filter_repair_manifest_v1",
+  "track": "kinematic_mesh_filter_repair_v1",
+  "source_note": "notes/concepts/kinematic_mesh_filter.md",
+  "source_residues": "artifacts\\training_digestion\\hf_69f98bc39d85bec4d76f2dc3\\training_residues.jsonl",
+  "source_contract": "config\\model_training\\chemistry_verification_eval_contract.json",
+  "train_file": "training-data\\sft\\kinematic_mesh_filter_repair_v1_train.sft.jsonl",
+  "eval_file": "training-data\\sft\\kinematic_mesh_filter_repair_v1_eval.sft.jsonl",
+  "train_records": 6,
+  "eval_records": 1,
+  "include_positive": false,
+  "repeats": 7,
+  "files": {
+    "kinematic_mesh_filter_repair_v1_train.sft.jsonl": "58cfefe3afd6954d26b32d4dd4d857043fea4af5a685acfad4fe05eef891a3c4",
+    "kinematic_mesh_filter_repair_v1_eval.sft.jsonl": "5b19526121dd5aae38b973478d8f5e7afed12628211c6563028bc74c3f7a2ea9"
+  },
+  "pattern": {
+    "reusable_mesh": "stable gate/harness",
+    "sacrificial_liner": "training residue JSONL",
+    "scab_ejection": "compact failed residues become repair SFT rows"
+  }
+}
