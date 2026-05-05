@@ -77,11 +77,11 @@ def assistant_payload(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def make_record(row: dict[str, Any], split: str, index: int) -> dict[str, Any]:
+def make_record(row: dict[str, Any], split: str, index: int, dataset_name: str, source_path: Path) -> dict[str, Any]:
     stable_id = sha256_text(
         "|".join(
             [
-                "chemistry_manual_verification_v1",
+                dataset_name,
                 split,
                 row["name"],
                 row["smiles"],
@@ -94,7 +94,7 @@ def make_record(row: dict[str, Any], split: str, index: int) -> dict[str, Any]:
         "Show the manual chemistry checks and return the SCBE governance verdict."
     )
     return {
-        "id": f"chemistry_manual_verification_v1_{row['name']}_{stable_id}",
+        "id": f"{dataset_name}_{row['name']}_{stable_id}",
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},
@@ -104,9 +104,9 @@ def make_record(row: dict[str, Any], split: str, index: int) -> dict[str, Any]:
             },
         ],
         "metadata": {
-            "track": "chemistry_manual_verification_v1",
+            "track": dataset_name,
             "split": split,
-            "source_file": str(SOURCE_PATH.relative_to(REPO_ROOT)),
+            "source_file": str(source_path.relative_to(REPO_ROOT)),
             "source": row["source"],
             "difficulty": row["difficulty"],
             "expected_governance": row["expected_governance"],
@@ -138,21 +138,36 @@ def file_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def build(copy_kaggle: bool = False) -> dict[str, Any]:
-    rows = load_jsonl(SOURCE_PATH)
-    train_raw, eval_raw = split_rows(rows)
-    train_rows = [make_record(row, "train", index) for index, row in enumerate(train_raw)]
-    eval_rows = [make_record(row, "eval", index) for index, row in enumerate(eval_raw)]
+def _paths_for_source(source_path: Path) -> tuple[str, Path, Path, Path]:
+    dataset_name = source_path.stem
+    if source_path == SOURCE_PATH:
+        return dataset_name, TRAIN_OUT, EVAL_OUT, MANIFEST_OUT
+    return (
+        dataset_name,
+        SFT_ROOT / f"{dataset_name}_train.sft.jsonl",
+        SFT_ROOT / f"{dataset_name}_eval.sft.jsonl",
+        SFT_ROOT / f"{dataset_name}_sft_manifest.json",
+    )
 
-    write_jsonl(TRAIN_OUT, train_rows)
-    write_jsonl(EVAL_OUT, eval_rows)
+
+def build(copy_kaggle: bool = False, source_path: Path | None = None) -> dict[str, Any]:
+    source_path = (source_path or SOURCE_PATH).resolve()
+    dataset_name, train_out, eval_out, manifest_out = _paths_for_source(source_path)
+    rows = load_jsonl(source_path)
+    train_raw, eval_raw = split_rows(rows)
+    train_rows = [make_record(row, "train", index, dataset_name, source_path) for index, row in enumerate(train_raw)]
+    eval_rows = [make_record(row, "eval", index, dataset_name, source_path) for index, row in enumerate(eval_raw)]
+
+    write_jsonl(train_out, train_rows)
+    write_jsonl(eval_out, eval_rows)
 
     manifest = {
         "schema_version": "chemistry_manual_verification_sft_manifest_v1",
-        "source": str(SOURCE_PATH.relative_to(REPO_ROOT)),
+        "dataset_name": dataset_name,
+        "source": str(source_path.relative_to(REPO_ROOT)),
         "outputs": {
-            "train": str(TRAIN_OUT.relative_to(REPO_ROOT)),
-            "eval": str(EVAL_OUT.relative_to(REPO_ROOT)),
+            "train": str(train_out.relative_to(REPO_ROOT)),
+            "eval": str(eval_out.relative_to(REPO_ROOT)),
         },
         "row_counts": {"source": len(rows), "train": len(train_rows), "eval": len(eval_rows)},
         "training_pattern": "predict_verify_receipt_promote",
@@ -164,16 +179,16 @@ def build(copy_kaggle: bool = False) -> dict[str, Any]:
             "governance verdict agreement",
         ],
         "hashes": {
-            "source_sha256": file_sha256(SOURCE_PATH),
-            "train_sha256": file_sha256(TRAIN_OUT),
-            "eval_sha256": file_sha256(EVAL_OUT),
+            "source_sha256": file_sha256(source_path),
+            "train_sha256": file_sha256(train_out),
+            "eval_sha256": file_sha256(eval_out),
         },
     }
-    MANIFEST_OUT.write_text(json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8")
+    manifest_out.write_text(json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True), encoding="utf-8")
 
     if copy_kaggle:
         KAGGLE_MIRROR.mkdir(parents=True, exist_ok=True)
-        for path in (TRAIN_OUT, EVAL_OUT, MANIFEST_OUT):
+        for path in (train_out, eval_out, manifest_out):
             shutil.copy2(path, KAGGLE_MIRROR / path.name)
         manifest["kaggle_mirror"] = str(KAGGLE_MIRROR.relative_to(REPO_ROOT))
 
@@ -182,17 +197,22 @@ def build(copy_kaggle: bool = False) -> dict[str, Any]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--copy-kaggle", action="store_true", help="Copy outputs into the active Kaggle dataset mirror.")
+    parser.add_argument("--source", default=str(SOURCE_PATH), help="Source chemistry manual verification JSONL.")
+    parser.add_argument(
+        "--copy-kaggle", action="store_true", help="Copy outputs into the active Kaggle dataset mirror."
+    )
     parser.add_argument("--json", action="store_true", help="Print machine-readable manifest summary.")
     args = parser.parse_args()
 
-    manifest = build(copy_kaggle=args.copy_kaggle)
+    manifest = build(copy_kaggle=args.copy_kaggle, source_path=Path(args.source))
     if args.json:
         print(json.dumps(manifest, indent=2, ensure_ascii=False, sort_keys=True))
     else:
-        print(f"[chemistry_manual_sft] train rows -> {manifest['row_counts']['train']} at {TRAIN_OUT}")
-        print(f"[chemistry_manual_sft] eval rows -> {manifest['row_counts']['eval']} at {EVAL_OUT}")
-        print(f"[chemistry_manual_sft] manifest -> {MANIFEST_OUT}")
+        print(f"[chemistry_manual_sft] dataset -> {manifest['dataset_name']}")
+        print(
+            f"[chemistry_manual_sft] train rows -> {manifest['row_counts']['train']} at {manifest['outputs']['train']}"
+        )
+        print(f"[chemistry_manual_sft] eval rows -> {manifest['row_counts']['eval']} at {manifest['outputs']['eval']}")
     return 0
 
 

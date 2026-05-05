@@ -41,6 +41,21 @@ class TestValenceCheck:
         assert not ok
         assert "valence" in msg or "Parse failed" in msg
 
+    def test_common_expanded_valence_species_pass(self):
+        for smiles in ("[NH4+]", "[OH3+]", "O=S(=O)(O)O", "O=P(O)(O)O", "O=[N+]([O-])O"):
+            ok, msg = valence_check(smiles)
+            assert ok, msg
+
+    def test_unrealistic_charge_fails(self):
+        ok, msg = valence_check("[C+5]")
+        assert not ok
+        assert "formal charge" in msg
+
+    def test_neutral_salt_fragment_fails(self):
+        ok, msg = valence_check("[Na].[Cl]")
+        assert not ok
+        assert "Neutral salt fragments" in msg
+
 
 class TestScbeFusionCheck:
     def test_ethanol_finite(self):
@@ -72,6 +87,11 @@ class TestRunGate:
     def test_pentavalent_deny(self):
         result = run_gate("C(C)(C)(C)(C)(C)")
         assert result["verdict"] == "DENY"
+
+    def test_empty_string_deny(self):
+        result = run_gate("")
+        assert result["verdict"] == "DENY"
+        assert not result["checks"]["rdkit_parse"]
 
 
 class TestPromote:

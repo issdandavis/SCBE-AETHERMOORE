@@ -21,14 +21,53 @@ DATASET_PATH = REPO_ROOT / "training-data" / "chemistry_manual_verification_v2.j
 MANIFEST_PATH = REPO_ROOT / "training-data" / "chemistry_manual_verification_v2_manifest.json"
 
 ELECTRONEGATIVITY = {
-    "H": 2.20, "Li": 0.98, "Be": 1.57, "B": 2.04, "C": 2.55, "N": 3.04,
-    "O": 3.44, "F": 3.98, "Na": 0.93, "Mg": 1.31, "Al": 1.61, "Si": 1.90,
-    "P": 2.19, "S": 2.58, "Cl": 3.16, "K": 0.82, "Ca": 1.00, "Sc": 1.36,
-    "Ti": 1.54, "V": 1.63, "Cr": 1.66, "Mn": 1.55, "Fe": 1.83, "Co": 1.88,
-    "Ni": 1.91, "Cu": 1.90, "Zn": 1.65, "Ga": 1.81, "Ge": 2.01, "As": 2.18,
-    "Se": 2.55, "Br": 2.96, "Rb": 0.82, "Sr": 0.95, "Ag": 1.93, "Cd": 1.69,
-    "In": 1.78, "Sn": 1.96, "Sb": 2.05, "Te": 2.1, "I": 2.66, "Cs": 0.79,
-    "Ba": 0.89, "Au": 2.54, "Hg": 2.00, "Pb": 2.33, "Bi": 2.02,
+    "H": 2.20,
+    "Li": 0.98,
+    "Be": 1.57,
+    "B": 2.04,
+    "C": 2.55,
+    "N": 3.04,
+    "O": 3.44,
+    "F": 3.98,
+    "Na": 0.93,
+    "Mg": 1.31,
+    "Al": 1.61,
+    "Si": 1.90,
+    "P": 2.19,
+    "S": 2.58,
+    "Cl": 3.16,
+    "K": 0.82,
+    "Ca": 1.00,
+    "Sc": 1.36,
+    "Ti": 1.54,
+    "V": 1.63,
+    "Cr": 1.66,
+    "Mn": 1.55,
+    "Fe": 1.83,
+    "Co": 1.88,
+    "Ni": 1.91,
+    "Cu": 1.90,
+    "Zn": 1.65,
+    "Ga": 1.81,
+    "Ge": 2.01,
+    "As": 2.18,
+    "Se": 2.55,
+    "Br": 2.96,
+    "Rb": 0.82,
+    "Sr": 0.95,
+    "Ag": 1.93,
+    "Cd": 1.69,
+    "In": 1.78,
+    "Sn": 1.96,
+    "Sb": 2.05,
+    "Te": 2.1,
+    "I": 2.66,
+    "Cs": 0.79,
+    "Ba": 0.89,
+    "Au": 2.54,
+    "Hg": 2.00,
+    "Pb": 2.33,
+    "Bi": 2.02,
 }
 
 FUNCTIONAL_GROUP_SMARTS = {
@@ -98,7 +137,6 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("[Zn+2]", "zinc_ion", "cation", 1, "inorganic", ["ionic", "metal", "transition"]),
     ("[Mg+2]", "magnesium_ion", "cation", 1, "inorganic", ["ionic", "metal"]),
     ("[K+]", "potassium_ion", "cation", 1, "inorganic", ["ionic", "metal", "alkali"]),
-
     # Alkanes
     ("CC", "ethane", "alkane", 1, "basic", ["alkane", "nonpolar"]),
     ("CCC", "propane", "alkane", 1, "basic", ["alkane", "nonpolar"]),
@@ -110,7 +148,6 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("C1CCCCC1", "cyclohexane", "alkane", 2, "basic", ["alkane", "cyclic", "nonpolar"]),
     ("C1CC1", "cyclopropane", "alkane", 2, "basic", ["alkane", "cyclic", "strained"]),
     ("C1CCC1", "cyclobutane", "alkane", 2, "basic", ["alkane", "cyclic"]),
-
     # Alkenes / alkynes
     ("C=C", "ethene", "alkene", 1, "basic", ["alkene", "nonpolar"]),
     ("CC=C", "propene", "alkene", 1, "basic", ["alkene", "nonpolar"]),
@@ -126,7 +163,6 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("c1ccc2c(c1)ccc2", "naphthalene", "aromatic", 3, "aromatic", ["aromatic", "polycyclic"]),
     ("c1ccc2ccccc2c1", "anthracene", "aromatic", 3, "aromatic", ["aromatic", "polycyclic"]),
     ("c1ccc(cc1)C(=O)c2ccccc2", "benzophenone", "aromatic", 3, "aromatic", ["aromatic", "ketone"]),
-
     # Functional groups
     ("CC(=O)O", "acetic_acid", "carboxylic_acid", 2, "functional_group", ["acid", "organic"]),
     ("CC(=O)OC", "methyl_acetate", "ester", 2, "functional_group", ["ester", "organic"]),
@@ -148,7 +184,6 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("CC(=O)Nc1ccc(cc1)O", "paracetamol", "amide", 2, "drug", ["drug", "analgesic", "phenol"]),
     ("CC(C)Cc1ccc(cc1)C(C)C(=O)O", "ibuprofen", "carboxylic_acid", 3, "drug", ["drug", "NSAID"]),
     ("COc1ccccc1O", "guaiacol", "ether", 2, "natural_product", ["natural", "phenol", "ether"]),
-
     # Amino acids (simplified, zwitterionic forms omitted for RDKit compatibility)
     ("NCC(=O)O", "glycine", "amino_acid", 2, "amino_acid", ["amino_acid", "simple"]),
     ("CC(N)C(=O)O", "alanine", "amino_acid", 2, "amino_acid", ["amino_acid"]),
@@ -162,13 +197,18 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("NC(Cc1c[nH]c2ccccc12)C(=O)O", "tryptophan", "amino_acid", 4, "amino_acid", ["amino_acid", "aromatic", "indole"]),
     ("NC(Cc1ccc(O)cc1)C(=O)O", "tyrosine", "amino_acid", 3, "amino_acid", ["amino_acid", "phenol"]),
     ("NC(CS)C(=O)O", "cysteine", "amino_acid", 2, "amino_acid", ["amino_acid", "thiol"]),
-
     # Peptides (small)
     ("NCC(=O)NCC(=O)O", "glycyl_glycine", "peptide", 3, "peptide", ["peptide", "dipeptide"]),
     ("CC(NC(=O)CN)C(=O)O", "alanyl_glycine", "peptide", 3, "peptide", ["peptide", "dipeptide"]),
-    ("NCC(=O)NC(Cc1ccccc1)C(=O)O", "glycyl_phenylalanine", "peptide", 4, "peptide", ["peptide", "dipeptide", "aromatic"]),
+    (
+        "NCC(=O)NC(Cc1ccccc1)C(=O)O",
+        "glycyl_phenylalanine",
+        "peptide",
+        4,
+        "peptide",
+        ["peptide", "dipeptide", "aromatic"],
+    ),
     ("CC(NC(=O)CNC(=O)C(C)N)C(=O)O", "alanyl_glycyl_alanine", "peptide", 4, "peptide", ["peptide", "tripeptide"]),
-
     # Drugs / natural products
     ("CC(=O)Oc1ccccc1C(=O)O", "aspirin", "ester", 3, "drug", ["drug", "NSAID", "salicylate"]),
     ("CN1C=NC2=C1C(=O)N(C(=O)N2C)C", "caffeine", "purine", 3, "drug", ["drug", "stimulant", "alkaloid"]),
@@ -180,7 +220,6 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("CC(=O)Nc1ccc(cc1)O", "paracetamol_2", "amide", 2, "drug", ["drug", "analgesic"]),
     ("CCCCc1ccc(CC(=O)O)cc1", "ibuprofen_precursor", "carboxylic_acid", 3, "drug", ["drug", "NSAID"]),
     ("c1ccc(cc1)C(=O)O", "benzoic_acid_2", "carboxylic_acid", 2, "drug", ["preservative", "acid"]),
-
     # Heterocycles
     ("c1ccncc1", "pyridine", "heterocycle", 2, "heterocycle", ["aromatic", "heterocycle", "base"]),
     ("c1cccnc1", "pyridine_2", "heterocycle", 2, "heterocycle", ["aromatic", "heterocycle"]),
@@ -190,14 +229,20 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("c1cncnc1", "pyrimidine", "heterocycle", 2, "heterocycle", ["aromatic", "heterocycle", "base"]),
     ("c1cnccn1", "pyrazine", "heterocycle", 2, "heterocycle", ["aromatic", "heterocycle"]),
     ("c1ccc2[nH]ccc2c1", "indole", "heterocycle", 3, "heterocycle", ["aromatic", "heterocycle", "indole"]),
-    ("c1ccc2c(c1)[nH]c1ccccc12", "carbazole", "heterocycle", 3, "heterocycle", ["aromatic", "heterocycle", "polycyclic"]),
+    (
+        "c1ccc2c(c1)[nH]c1ccccc12",
+        "carbazole",
+        "heterocycle",
+        3,
+        "heterocycle",
+        ["aromatic", "heterocycle", "polycyclic"],
+    ),
     ("C1=CC=NC=C1", "pyridine_aliphatic", "heterocycle", 2, "heterocycle", ["heterocycle"]),
     ("C1CCNC1", "pyrrolidine", "heterocycle", 2, "heterocycle", ["cyclic", "amine", "saturated"]),
     ("C1CCNCC1", "piperidine", "heterocycle", 2, "heterocycle", ["cyclic", "amine", "saturated"]),
     ("C1CNCCN1", "piperazine", "heterocycle", 2, "heterocycle", ["cyclic", "amine", "saturated"]),
     ("c1ccc2ncccc2c1", "quinoline", "heterocycle", 3, "heterocycle", ["aromatic", "heterocycle", "polycyclic"]),
     ("c1ccc2cnccc2c1", "isoquinoline", "heterocycle", 3, "heterocycle", ["aromatic", "heterocycle", "polycyclic"]),
-
     # Organometallics / coordination
     ("[Fe]", "iron_atom", "metal", 2, "organometallic", ["metal", "transition"]),
     ("[Fe+2]", "ferrous_ion", "metal", 1, "organometallic", ["metal", "ionic"]),
@@ -209,7 +254,6 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("[Hg]", "mercury_atom", "metal", 2, "organometallic", ["metal", "transition", "liquid"]),
     ("[Ti]", "titanium_atom", "metal", 2, "organometallic", ["metal", "transition"]),
     ("[Ni]", "nickel_atom", "metal", 2, "organometallic", ["metal", "transition", "catalyst"]),
-
     # Complex / stress tests
     ("C1CC1CC1CC1", "bicyclobutane_like", "alkane", 4, "stress_test", ["cyclic", "strained", "polycyclic"]),
     ("C1CC2CCC1C2", "norbornane", "alkane", 4, "stress_test", ["cyclic", "strained", "polycyclic"]),
@@ -227,15 +271,21 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("CC1=C2C(=CC=C1)C=CC2=O", "naphthoquinone", "ketone", 4, "natural_product", ["natural", "quinone", "aromatic"]),
     ("c1ccc(cc1)C(=O)c2ccccc2", "benzophenone_2", "ketone", 3, "stress_test", ["aromatic", "ketone"]),
     ("c1ccc(cc1)C(=O)Nc2ccccc2", "benzanilide", "amide", 3, "stress_test", ["aromatic", "amide"]),
-    ("CCOC(=O)C(C)NP(=O)(Oc1ccccc1)Oc2ccccc2", "sarin_precursor", "organophosphate", 5, "stress_test", ["toxic", "phosphate", "nerve_agent"]),
+    (
+        "CCOC(=O)C(C)NP(=O)(Oc1ccccc1)Oc2ccccc2",
+        "sarin_precursor",
+        "organophosphate",
+        5,
+        "stress_test",
+        ["toxic", "phosphate", "nerve_agent"],
+    ),
     ("CC(C)OP(=O)(F)OC(C)C", "sarin", "organophosphate", 5, "stress_test", ["toxic", "phosphate", "nerve_agent"]),
     ("CN1C=NC2=C1C(=O)N(C(=O)N2C)C", "caffeine_2", "purine", 3, "drug", ["drug", "stimulant"]),
     ("C1=CC=C(C=C1)CC(C(=O)O)N", "phenylalanine_simplified", "amino_acid", 3, "amino_acid", ["amino_acid", "aromatic"]),
     ("C1CC(=O)N(C1)CC(=O)O", "oxoproline_glycine", "peptide", 4, "peptide", ["peptide", "cyclic"]),
     ("C1CC(=O)NC1", "pyrrolidone", "lactam", 3, "stress_test", ["cyclic", "amide", "lactam"]),
-
     # Invalid / boundary
-    ("C(C)(C)(C)(C)", "invalid_carbon_valence", "invalid", 1, "boundary", ["invalid", "valence"]),
+    ("C(C)(C)(C)(C)(C)", "invalid_carbon_valence", "invalid", 1, "boundary", ["invalid", "valence"]),
     ("O=O=O", "invalid_ozone_like", "invalid", 2, "boundary", ["invalid", "valence"]),
     ("[C+5]", "invalid_carbon_charge", "invalid", 1, "boundary", ["invalid", "charge"]),
     ("", "empty_string", "invalid", 1, "boundary", ["invalid", "empty"]),
@@ -245,20 +295,17 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("C1CCCCC", "unclosed_ring_2", "invalid", 2, "boundary", ["invalid", "ring"]),
     ("C#C#C", "invalid_cumulene", "invalid", 2, "boundary", ["invalid", "bond"]),
     ("[Na].[Cl]", "invalid_ion_pair", "invalid", 2, "boundary", ["invalid", "ionic"]),
-
     # More alkanes / cyclic
     ("CCCCCCC", "heptane", "alkane", 1, "basic", ["alkane", "nonpolar"]),
     ("CCCCCCCCCC", "decane", "alkane", 1, "basic", ["alkane", "nonpolar"]),
     ("C1CCCC1", "cyclopentane", "alkane", 2, "basic", ["alkane", "cyclic"]),
     ("C1CCCCCC1", "cycloheptane", "alkane", 2, "basic", ["alkane", "cyclic"]),
     ("C1CCCCCCC1", "cyclooctane", "alkane", 2, "basic", ["alkane", "cyclic"]),
-
     # More alkenes
     ("C=CC", "propene_2", "alkene", 1, "basic", ["alkene", "nonpolar"]),
     ("C/C=C/C", "trans_2_butene", "alkene", 2, "basic", ["alkene", "nonpolar"]),
     ("CC=CC", "cis_2_butene", "alkene", 2, "basic", ["alkene", "nonpolar"]),
     ("C1=CC=C(C=C1)C=C", "styrene", "aromatic", 3, "aromatic", ["aromatic", "alkene"]),
-
     # More functional groups
     ("CCCC(=O)O", "butyric_acid", "carboxylic_acid", 2, "functional_group", ["acid", "organic"]),
     ("CCCCC(=O)O", "valeric_acid", "carboxylic_acid", 2, "functional_group", ["acid", "organic"]),
@@ -278,7 +325,6 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("c1ccc(cc1)C#N", "benzonitrile", "aromatic", 2, "aromatic", ["aromatic", "nitrile"]),
     ("N#C", "hydrogen_cyanide", "nitrile", 2, "functional_group", ["toxic", "nitrile"]),
     ("CC#N", "acetonitrile", "nitrile", 2, "functional_group", ["organic", "nitrile"]),
-
     # More amino acids
     ("NC(CC1=CC=CC=C1)C(=O)O", "phenylalanine_2", "amino_acid", 3, "amino_acid", ["amino_acid", "aromatic"]),
     ("NC(Cc1c[nH]c2ccccc12)C(=O)O", "tryptophan_2", "amino_acid", 4, "amino_acid", ["amino_acid", "indole"]),
@@ -288,16 +334,28 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("NC(CCC(=O)O)C(=O)O", "glutamic_acid_2", "amino_acid", 3, "amino_acid", ["amino_acid", "acidic"]),
     ("NC(CS)C(=O)O", "cysteine_2", "amino_acid", 2, "amino_acid", ["amino_acid", "thiol"]),
     ("NC(CC1=CNC2=CC=CC=C12)C(=O)O", "tryptophan_3", "amino_acid", 4, "amino_acid", ["amino_acid", "indole"]),
-
     # More drugs / natural products
     ("CC12CCC3C(C1CCC2O)CCC4=CC(=O)CCC34C", "testosterone", "steroid", 5, "drug", ["drug", "steroid", "hormone"]),
-    ("CC(C)CCCC(C)C1CCC2C1(CCC3C2CC=C4C3(CCC(C4)O)C)C", "cholesterol", "sterol", 5, "natural_product", ["natural", "sterol", "lipid"]),
+    (
+        "CC(C)CCCC(C)C1CCC2C1(CCC3C2CC=C4C3(CCC(C4)O)C)C",
+        "cholesterol",
+        "sterol",
+        5,
+        "natural_product",
+        ["natural", "sterol", "lipid"],
+    ),
     ("CC(=O)Oc1ccccc1C(=O)O", "aspirin_2", "ester", 3, "drug", ["drug", "NSAID"]),
     ("CN1C=NC2=C1C(=O)N(C(=O)N2C)C", "caffeine_3", "purine", 3, "drug", ["drug", "stimulant"]),
     ("C1=CC=C(C=C1)C(=O)O", "benzoic_acid_4", "carboxylic_acid", 2, "drug", ["preservative"]),
     ("CC1=CC=C(C=C1)C(C)C", "p_cymene_2", "aromatic", 3, "natural_product", ["natural", "terpene"]),
-    ("CC(C)=CCC/C(C)=C/COP(=O)(O)OP(=O)(O)O", "geranyl_pyrophosphate", "organophosphate", 5, "natural_product", ["natural", "terpene", "phosphate"]),
-
+    (
+        "CC(C)=CCC/C(C)=C/COP(=O)(O)OP(=O)(O)O",
+        "geranyl_pyrophosphate",
+        "organophosphate",
+        5,
+        "natural_product",
+        ["natural", "terpene", "phosphate"],
+    ),
     # More inorganics / acids
     ("O=S(=O)(O)O", "sulfuric_acid", "inorganic_acid", 2, "inorganic", ["acid", "strong", "inorganic"]),
     ("O=[N+]([O-])O", "nitric_acid", "inorganic_acid", 2, "inorganic", ["acid", "strong", "inorganic"]),
@@ -309,7 +367,6 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("[Ca+2].[Cl-].[Cl-]", "calcium_chloride", "salt", 1, "inorganic", ["salt", "ionic"]),
     ("[Mg+2].[O-2]", "magnesium_oxide", "salt", 1, "inorganic", ["oxide", "ionic"]),
     ("[Al+3].[Cl-].[Cl-].[Cl-]", "aluminum_chloride", "salt", 2, "inorganic", ["salt", "ionic", "lewis_acid"]),
-
     # More heterocycles
     ("c1ccc2[nH]ccc2c1", "indole_2", "heterocycle", 3, "heterocycle", ["aromatic", "heterocycle", "indole"]),
     ("c1c[nH]cn1", "imidazole_2", "heterocycle", 2, "heterocycle", ["aromatic", "heterocycle", "base"]),
@@ -321,8 +378,14 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("C1=CN=CN=C1", "pyrimidine_aliphatic", "heterocycle", 2, "heterocycle", ["heterocycle"]),
     ("c1ccc2[nH]cnc2c1", "benzimidazole", "heterocycle", 3, "heterocycle", ["aromatic", "heterocycle", "fused"]),
     ("c1ccc2occc2c1", "benzofuran", "heterocycle", 3, "heterocycle", ["aromatic", "heterocycle", "fused"]),
-    ("c1ccc2sccc2c1", "benzothiophene", "heterocycle", 3, "heterocycle", ["aromatic", "heterocycle", "fused", "sulfur"]),
-
+    (
+        "c1ccc2sccc2c1",
+        "benzothiophene",
+        "heterocycle",
+        3,
+        "heterocycle",
+        ["aromatic", "heterocycle", "fused", "sulfur"],
+    ),
     # More stress / complex
     ("C1=CC=C2C(=C1)C3=CC=CC=C3C2", "fluorene", "aromatic", 4, "stress_test", ["aromatic", "polycyclic"]),
     ("c1ccc2cc3ccccc3cc2c1", "phenanthrene", "aromatic", 4, "stress_test", ["aromatic", "polycyclic"]),
@@ -331,20 +394,20 @@ SEED_MOLECULES: List[tuple[str, str, str, int, str, List[str]]] = [
     ("CC1=C2C(=CC=C1)C=CC2=O", "naphthoquinone_2", "ketone", 4, "natural_product", ["natural", "quinone"]),
     ("c1ccc(cc1)C(=O)c2ccccc2", "benzophenone_3", "ketone", 3, "stress_test", ["aromatic", "ketone"]),
     ("c1ccc(cc1)C(=O)Nc2ccccc2", "benzanilide_2", "amide", 3, "stress_test", ["aromatic", "amide"]),
-
     # More invalid / boundary
-    ("C(C)(C)(C)C(C)(C)(C)", "invalid_hypervalent", "invalid", 2, "boundary", ["invalid", "valence"]),
+    ("C(C)(C)(C)(C)(C)C", "invalid_hypervalent", "invalid", 2, "boundary", ["invalid", "valence"]),
     ("F(F)(F)(F)(F)(F)(F)", "invalid_heptafluorine", "invalid", 2, "boundary", ["invalid", "valence"]),
     ("[H]1.[H]1", "invalid_bond_closure", "invalid", 2, "boundary", ["invalid", "syntax"]),
     ("C%00", "invalid_ring_high", "invalid", 2, "boundary", ["invalid", "ring"]),
-    ("C1CC1C1CC1C1CC1C1CC1", "invalid_ring_stress", "invalid", 3, "boundary", ["invalid", "ring", "stress"]),
-    ("C1CC1C1CC1C1CC1C1CC1C1CC1C1CC1", "invalid_extreme_rings", "invalid", 4, "boundary", ["invalid", "ring", "stress"]),
+    ("C1CC1C1CC1C1CC", "invalid_ring_stress", "invalid", 3, "boundary", ["invalid", "ring", "stress"]),
+    ("C1CC1C1CC1C1CC1C1CC", "invalid_extreme_rings", "invalid", 4, "boundary", ["invalid", "ring", "stress"]),
 ]
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _detect_functional_groups(mol: Chem.Mol) -> List[str]:
     groups = []
@@ -355,23 +418,99 @@ def _detect_functional_groups(mol: Chem.Mol) -> List[str]:
     return groups
 
 
+def _explicit_valence(atom: Chem.Atom) -> int:
+    try:
+        return int(atom.GetValence(Chem.ValenceType.EXPLICIT))
+    except Exception:
+        return int(atom.GetExplicitValence())
+
+
+def _allowed_valence(atom: Chem.Atom) -> int | None:
+    sym = atom.GetSymbol()
+    charge = atom.GetFormalCharge()
+    if sym == "N" and charge > 0:
+        return 4
+    if sym == "O" and charge > 0:
+        return 3
+    if sym == "O" and charge < 0:
+        return 1
+    if sym == "S":
+        return 6
+    if sym == "P":
+        return 5
+    return {
+        "C": 4,
+        "N": 3,
+        "O": 2,
+        "F": 1,
+        "Cl": 1,
+        "Br": 1,
+        "I": 1,
+        "B": 3,
+        "Na": 0,
+        "Mg": 0,
+        "Al": 0,
+        "Si": 4,
+        "K": 0,
+        "Ca": 0,
+    }.get(sym)
+
+
+def _valence_status(atom: Chem.Atom) -> tuple[bool, int, int | None, str]:
+    if abs(atom.GetFormalCharge()) > 3:
+        return False, 0, None, f"unrealistic formal charge {atom.GetFormalCharge():+d}"
+    if atom.GetSymbol() == "H" and atom.IsInRing():
+        return False, 0, None, "hydrogen ring closure is not promotable"
+    val = _explicit_valence(atom)
+    limit = _allowed_valence(atom)
+    if limit is None:
+        return True, val, limit, "transition/extended element not capped by this structural gate"
+    if val <= limit:
+        return True, val, limit, "within structural valence ceiling"
+    return False, val, limit, "over structural valence ceiling"
+
+
+def _mol_valence_ok(mol: Chem.Mol | None) -> bool:
+    if mol is None or mol.GetNumAtoms() == 0:
+        return False
+    if _has_neutral_salt_fragment(mol):
+        return False
+    return all(_valence_status(atom)[0] for atom in mol.GetAtoms())
+
+
+def _has_neutral_salt_fragment(mol: Chem.Mol) -> bool:
+    has_neutral_metal = False
+    has_neutral_halide = False
+    for atom in mol.GetAtoms():
+        sym = atom.GetSymbol()
+        charge = atom.GetFormalCharge()
+        if sym in {"Na", "K", "Mg", "Ca", "Al"} and charge == 0:
+            has_neutral_metal = True
+        if sym in {"F", "Cl", "Br", "I"} and charge == 0:
+            has_neutral_halide = True
+    return has_neutral_metal and has_neutral_halide
+
+
 def _build_valence_text(mol: Chem.Mol, name: str) -> str:
     if mol is None:
         return "RDKit failed to parse SMILES. INVALID."
+    if mol.GetNumAtoms() == 0:
+        return f"{name}: RDKit parsed zero atoms. INVALID."
+    if _has_neutral_salt_fragment(mol):
+        return f"{name}: neutral metal/halide fragments must be encoded as ions. INVALID."
     lines = []
     for atom in mol.GetAtoms():
         sym = atom.GetSymbol()
-        val = atom.GetTotalValence()
-        exp = Chem.GetPeriodicTable().GetDefaultValence(atom.GetAtomicNum())
+        ok, val, limit, note = _valence_status(atom)
         charge = atom.GetFormalCharge()
-        if charge != 0:
-            lines.append(f"{sym}{atom.GetIdx()}: valence {val}, charge {charge:+d}. OK (ionic).")
-        elif val == exp:
-            lines.append(f"{sym}{atom.GetIdx()}: valence {val} = expected {exp}. OK.")
-        elif val < exp:
-            lines.append(f"{sym}{atom.GetIdx()}: valence {val} < expected {exp}. Under-saturated (radical or partial).")
-        else:
-            lines.append(f"{sym}{atom.GetIdx()}: valence {val} > expected {exp}. OVERVALENT — INVALID.")
+        suffix = f", charge {charge:+d}" if charge else ""
+        if not ok:
+            limit_text = "uncapped" if limit is None else str(limit)
+            lines.append(f"{sym}{atom.GetIdx()}: valence {val} > allowed {limit_text}{suffix}. INVALID ({note}).")
+        elif limit is None:
+            lines.append(f"{sym}{atom.GetIdx()}: valence {val}{suffix}. OK ({note}).")
+        elif ok:
+            lines.append(f"{sym}{atom.GetIdx()}: valence {val} <= allowed {limit}{suffix}. OK ({note}).")
     return " ".join(lines) if lines else f"{name}: no atoms parsed."
 
 
@@ -390,7 +529,9 @@ def _build_en_text(mol: Chem.Mol) -> str:
     lowest = en_vals[-1]
     delta = highest[1] - lowest[1]
     bond_type = "ionic" if delta > 1.7 else "polar covalent" if delta > 0.4 else "nonpolar covalent"
-    return f"Highest EN: {highest[0]} ({highest[1]}). Lowest: {lowest[0]} ({lowest[1]}). ΔEN = {delta:.2f}. {bond_type}."
+    return (
+        f"Highest EN: {highest[0]} ({highest[1]}). Lowest: {lowest[0]} ({lowest[1]}). ΔEN = {delta:.2f}. {bond_type}."
+    )
 
 
 def _build_fg_text(mol: Chem.Mol) -> str:
@@ -459,9 +600,18 @@ def _required_checks(difficulty: int, valid: bool) -> List[str]:
     return base
 
 
-def generate_row(smiles: str, name: str, family: str, difficulty: int, source: str, tags: List[str]) -> ChemistryVerificationRow:
+def generate_row(
+    smiles: str, name: str, family: str, difficulty: int, source: str, tags: List[str]
+) -> ChemistryVerificationRow:
     mol = Chem.MolFromSmiles(smiles)
-    valid = mol is not None
+    hydrogen_ring_boundary = "[H]" in smiles and any(ch.isdigit() for ch in smiles)
+    valid = (
+        mol is not None
+        and mol.GetNumAtoms() > 0
+        and family != "invalid"
+        and not hydrogen_ring_boundary
+        and _mol_valence_ok(mol)
+    )
     elems = _elements(mol)
     return ChemistryVerificationRow(
         smiles=smiles,
@@ -495,6 +645,7 @@ def main() -> None:
 
     # Shuffle deterministically for reproducibility
     import random
+
     random.seed(42)
     random.shuffle(rows)
 

@@ -1,10 +1,27 @@
 {
-  "schema_version": "scbe_training_manifest_v1",
   "dataset_name": "chemistry_manual_verification_v2",
-  "total_rows": 223,
-  "n_train": 178,
-  "n_eval": 45,
-  "sft_train_file": "training-data\\sft\\chemistry_manual_verification_v2_train.sft.jsonl",
-  "sft_eval_file": "training-data\\sft\\chemistry_manual_verification_v2_eval.sft.jsonl",
-  "generated_at": "2026-05-03T11:35:00-07:00"
+  "gates": [
+    "RDKit parse or explicit invalid rejection",
+    "manual valence arithmetic",
+    "manual electronegativity and functional-group explanation",
+    "SCBE 9D chemistry fusion expectations",
+    "governance verdict agreement"
+  ],
+  "hashes": {
+    "eval_sha256": "3f718bae60fd48e5847ba7d330fda3be3a2e01fe0db0fd3d10118b6c765e3aef",
+    "source_sha256": "0b9c29d4ed597b35077127758a78be9a20a6a6b81651bb854bfe89b7d9b5c48c",
+    "train_sha256": "d4f917a1bc25f615e23e1b8e1fc1f195c5629f5fa20a6340537c7ff355c530a3"
+  },
+  "outputs": {
+    "eval": "training-data\\sft\\chemistry_manual_verification_v2_eval.sft.jsonl",
+    "train": "training-data\\sft\\chemistry_manual_verification_v2_train.sft.jsonl"
+  },
+  "row_counts": {
+    "eval": 45,
+    "source": 223,
+    "train": 178
+  },
+  "schema_version": "chemistry_manual_verification_sft_manifest_v1",
+  "source": "training-data\\chemistry_manual_verification_v2.jsonl",
+  "training_pattern": "predict_verify_receipt_promote"
 }

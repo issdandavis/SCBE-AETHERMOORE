@@ -16,7 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from rdkit import Chem, rdBase
 
@@ -29,7 +29,6 @@ from scbe.state9d_chemistry_fusion import (
     molecule_governance_summary,
     tokenize_molecule,
 )
-
 
 # ---------------------------------------------------------------------------
 # Gate thresholds
@@ -44,28 +43,98 @@ def rdkit_parse_check(smiles: str) -> tuple[bool, str]:
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return False, "RDKit returned None"
+        if mol.GetNumAtoms() == 0:
+            return False, "RDKit parsed zero atoms"
         Chem.SanitizeMol(mol)
         return True, f"Parsed: {mol.GetNumAtoms()} atoms"
     except Exception as e:
         return False, str(e)
 
 
+def _explicit_valence(atom: Chem.Atom) -> int:
+    try:
+        return int(atom.GetValence(Chem.ValenceType.EXPLICIT))
+    except Exception:
+        return int(atom.GetExplicitValence())
+
+
+def _allowed_valence(atom: Chem.Atom) -> int | None:
+    """Return conservative structural valence ceiling for training verification.
+
+    This is not a synthesis-safety rule. It only separates structurally valid
+    SMILES from impossible packets so the chemistry training data has a stable
+    promotion boundary.
+    """
+
+    sym = atom.GetSymbol()
+    charge = atom.GetFormalCharge()
+
+    if sym == "N" and charge > 0:
+        return 4
+    if sym == "O" and charge > 0:
+        return 3
+    if sym == "O" and charge < 0:
+        return 1
+    if sym == "S":
+        return 6
+    if sym == "P":
+        return 5
+
+    return {
+        "C": 4,
+        "N": 3,
+        "O": 2,
+        "F": 1,
+        "Cl": 1,
+        "Br": 1,
+        "I": 1,
+        "B": 3,
+        "Na": 0,
+        "Mg": 0,
+        "Al": 0,
+        "Si": 4,
+        "K": 0,
+        "Ca": 0,
+    }.get(sym)
+
+
 def valence_check(smiles: str) -> tuple[bool, str]:
     try:
+        if "[H]" in smiles and any(ch.isdigit() for ch in smiles):
+            return False, "Explicit hydrogen ring closure is not a promotable structure"
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return False, "Parse failed"
+        if mol.GetNumAtoms() == 0:
+            return False, "No atoms parsed"
+        if "." in smiles and _has_neutral_salt_fragment(mol):
+            return False, "Neutral salt fragments must be encoded with ionic charges"
         for atom in mol.GetAtoms():
             sym = atom.GetSymbol()
-            val = atom.GetExplicitValence()
-            max_val = {"C": 4, "N": 3, "O": 2, "S": 2, "P": 3,
-                       "F": 1, "Cl": 1, "Br": 1, "I": 1, "B": 3,
-                       "Na": 0, "Mg": 0, "Al": 0, "Si": 4}.get(sym, None)
+            if abs(atom.GetFormalCharge()) > 3:
+                return False, f"{sym} has unrealistic formal charge {atom.GetFormalCharge():+d}"
+            if sym == "H" and atom.IsInRing():
+                return False, "Hydrogen ring closure is not a promotable structure"
+            val = _explicit_valence(atom)
+            max_val = _allowed_valence(atom)
             if max_val is not None and val > max_val:
                 return False, f"{sym} has valence {val} > max {max_val}"
         return True, "All valences within limits"
     except Exception as e:
         return False, str(e)
+
+
+def _has_neutral_salt_fragment(mol: Chem.Mol) -> bool:
+    has_neutral_metal = False
+    has_neutral_halide = False
+    for atom in mol.GetAtoms():
+        sym = atom.GetSymbol()
+        charge = atom.GetFormalCharge()
+        if sym in {"Na", "K", "Mg", "Ca", "Al"} and charge == 0:
+            has_neutral_metal = True
+        if sym in {"F", "Cl", "Br", "I"} and charge == 0:
+            has_neutral_halide = True
+    return has_neutral_metal and has_neutral_halide
 
 
 def scbe_fusion_check(smiles: str) -> tuple[bool, str, Dict[str, Any]]:
@@ -176,34 +245,43 @@ def main():
     parser = argparse.ArgumentParser(description="Chemistry verification gate")
     parser.add_argument("--smiles", type=str, help="Single SMILES to check")
     parser.add_argument("--file", type=str, help="JSONL file of verification rows")
+    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
     args = parser.parse_args()
 
     if args.smiles:
         result = run_gate(args.smiles)
-        print(json.dumps(result, indent=2, default=str))
+        print(json.dumps(result, indent=None if args.json else 2, default=str))
         sys.exit(0 if result["verdict"] == "PASS" else 1)
 
     if args.file:
         batch = run_batch(args.file)
-        print(f"\nChemistry Verification Gate — Batch Results")
-        print(f"  Total: {batch['total']}")
-        print(f"  PASS:  {batch['counts']['PASS']}")
-        print(f"  DENY:  {batch['counts']['DENY']}")
-        print(f"  Rate:  {batch['pass_rate']*100:.1f}%")
 
         # Fail if any expected-valid molecules were denied
         denied_valid = []
         with open(args.file, "r", encoding="utf-8") as f:
             rows = [json.loads(line) for line in f if line.strip()]
         for row, res in zip(rows, batch["results"]):
-            if row.get("expected_valid") and res["verdict"] == "DENY":
+            expected_governance = row.get("expected_governance", "ALLOW" if row.get("expected_valid") else "DENY")
+            if expected_governance == "ALLOW" and res["verdict"] == "DENY":
                 denied_valid.append(row.get("name", row.get("smiles")))
 
+        batch["denied_expected_allow"] = denied_valid
+        if args.json:
+            print(json.dumps(batch, indent=2, default=str))
+        else:
+            print(f"\nChemistry Verification Gate — Batch Results")
+            print(f"  Total: {batch['total']}")
+            print(f"  PASS:  {batch['counts']['PASS']}")
+            print(f"  DENY:  {batch['counts']['DENY']}")
+            print(f"  Rate:  {batch['pass_rate']*100:.1f}%")
+
         if denied_valid:
-            print(f"\n  ERROR: Expected-valid molecules DENIED: {denied_valid}")
+            if not args.json:
+                print(f"\n  ERROR: Expected-ALLOW molecules DENIED: {denied_valid}")
             sys.exit(1)
 
-        print("\n  All expected-valid molecules passed. Gate OK.")
+        if not args.json:
+            print("\n  All expected-ALLOW molecules passed. Gate OK.")
         sys.exit(0)
 
     parser.print_help()
