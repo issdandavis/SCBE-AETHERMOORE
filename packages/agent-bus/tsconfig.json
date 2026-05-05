@@ -11,7 +11,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "ignoreDeprecations": "5.0",
+    "ignoreDeprecations": "6.0",
     "types": ["node"]
   },
   "include": ["src/**/*"]
