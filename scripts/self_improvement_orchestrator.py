@@ -18,7 +18,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -206,6 +205,45 @@ def _read_jsonl_records(training_data_path: Path) -> List[Dict[str, Any]]:
     return records
 
 
+def _record_labels(record: Dict[str, Any]) -> set[str]:
+    """Return category-like labels across old and new training row schemas."""
+
+    labels: set[str] = set()
+
+    def add(value: Any) -> None:
+        if value is None:
+            return
+        if isinstance(value, (list, tuple, set)):
+            for item in value:
+                add(item)
+            return
+        text = str(value).strip().lower()
+        if not text:
+            return
+        labels.add(text)
+        normalized = text.replace("\\", "/")
+        labels.add(normalized)
+        stem = Path(normalized).stem.lower()
+        if stem:
+            labels.add(stem)
+        for token in re.findall(r"[a-z0-9]+", normalized):
+            labels.add(token)
+
+    for key in ("categories", "tags", "source", "source_type", "track", "title", "_source_file", "name"):
+        add(record.get(key))
+
+    if record.get("smiles") or record.get("expected_family") or record.get("manual_valence_check"):
+        labels.add("chemistry")
+    if record.get("messages") or record.get("prompt") or record.get("completion"):
+        labels.add("sft")
+    if any(label in labels for label in ("python", "javascript", "rust", "haskell", "markdown", "mathematica")):
+        labels.add("coding")
+    if any(label in labels for label in ("governance", "geoseal", "hydra", "sacred", "tongues")):
+        labels.add("governance")
+
+    return labels
+
+
 def _fine_tune_funnel_tasks(training_data_path: Path, config: Dict[str, Any]) -> List[ImprovementTask]:
     records = _read_jsonl_records(training_data_path)
     streams = (config.get("fine_tune") or {}).get("streams", [])
@@ -233,7 +271,7 @@ def _fine_tune_funnel_tasks(training_data_path: Path, config: Dict[str, Any]) ->
 
     category_counts: Dict[str, int] = {}
     for record in records:
-        for cat in record.get("categories", []):
+        for cat in _record_labels(record):
             category_counts[cat] = category_counts.get(cat, 0) + 1
 
     tasks: List[ImprovementTask] = []
@@ -241,7 +279,7 @@ def _fine_tune_funnel_tasks(training_data_path: Path, config: Dict[str, Any]) ->
 
     def record_count_for(stream: Dict[str, Any]) -> int:
         categories = {x.lower() for x in stream.get("categories", [])}
-        return sum(1 for row in records if categories.intersection({c.lower() for c in row.get("categories", [])}))
+        return sum(1 for row in records if categories.intersection(_record_labels(row)))
 
     for stream in streams:
         if not isinstance(stream, dict):
@@ -550,7 +588,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", default=str(REPO_ROOT), help="Repository root")
     parser.add_argument(
         "--coherence-report",
-        default="coherence-report.json",
+        default=str(REPO_ROOT / "artifacts" / "coherence-report.json"),
         help="Path to coherence report file",
     )
     parser.add_argument(

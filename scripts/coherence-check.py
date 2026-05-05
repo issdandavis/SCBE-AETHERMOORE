@@ -32,6 +32,26 @@ _MISSING_TOOL_SIGNALS = (
 )
 
 
+_DOC_SCAN_SKIP_DIRS = {
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".tox",
+    ".venv",
+    "artifacts",
+    "build",
+    "dist",
+    "external",
+    "external_repos",
+    "node_modules",
+    "training",
+    "training-data",
+    "__pycache__",
+}
+
+
 def run_bool_command(command: list[str]) -> tuple[float, str]:
     if not shutil.which(command[0]):
         return 1.0, f"{command[0]} not found; treated as neutral-pass"
@@ -48,13 +68,52 @@ def run_bool_command(command: list[str]) -> tuple[float, str]:
     return (1.0 if proc.returncode == 0 else 0.0), tail
 
 
+def iter_project_files(repo_root: Path, suffixes: tuple[str, ...]) -> list[Path]:
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(repo_root), "ls-files"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if proc.returncode == 0:
+            files: list[Path] = []
+            for raw in proc.stdout.splitlines():
+                path = Path(raw)
+                if path.parts and any(part in _DOC_SCAN_SKIP_DIRS for part in path.parts):
+                    continue
+                if path.suffix in suffixes:
+                    files.append(repo_root / path)
+            return files
+    except Exception:
+        pass
+
+    files: list[Path] = []
+    stack = [repo_root]
+    while stack:
+        current = stack.pop()
+        try:
+            for child in current.iterdir():
+                if child.is_symlink():
+                    continue
+                if child.is_dir():
+                    if child.name not in _DOC_SCAN_SKIP_DIRS:
+                        stack.append(child)
+                    continue
+                if child.suffix in suffixes:
+                    files.append(child)
+        except (OSError, PermissionError):
+            continue
+    return files
+
+
 def compute_doc_coverage(repo_root: Path) -> tuple[float, dict[str, float]]:
     must_have = ["README.md", "CONTRIBUTING.md", "docs/specs/LAYER_INDEX.md"]
     existing = sum(1 for doc in must_have if (repo_root / doc).exists())
     baseline = existing / len(must_have)
 
-    source_files = list(repo_root.rglob("*.py")) + list(repo_root.rglob("*.ts"))
-    markdown_files = list(repo_root.rglob("*.md"))
+    source_files = iter_project_files(repo_root, (".py", ".ts"))
+    markdown_files = iter_project_files(repo_root, (".md",))
     ratio = min(1.0, len(markdown_files) / max(1, len(source_files) * 0.25))
 
     score = clamp(0.7 * baseline + 0.3 * ratio)
@@ -67,7 +126,7 @@ def compute_doc_coverage(repo_root: Path) -> tuple[float, dict[str, float]]:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Compute Layer 11 coherence score")
     parser.add_argument("--threshold", type=float, default=0.20)
-    parser.add_argument("--json-path", default="coherence-report.json")
+    parser.add_argument("--json-path", default="artifacts/coherence-report.json")
     parser.add_argument("--test-pass-rate", type=float)
     parser.add_argument("--type-coverage", type=float)
     parser.add_argument("--lint-score", type=float)
@@ -125,6 +184,7 @@ def main() -> int:
     }
 
     output_path = repo_root / args.json_path
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
 

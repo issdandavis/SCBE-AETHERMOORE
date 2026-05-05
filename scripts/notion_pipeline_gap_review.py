@@ -11,7 +11,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List
 
-
 DEFAULT_CHECKLIST = [
     "notion-sync",
     "notion-to-dataset",
@@ -128,6 +127,51 @@ def _list_jsonl_records(training_data_dir: Path) -> List[Dict[str, Any]]:
         except Exception:
             continue
     return records
+
+
+def _record_labels(record: Dict[str, Any]) -> set[str]:
+    """Return matching labels for records that predate explicit categories.
+
+    Older SCBE training rows are not uniform: some use ``categories``, chemistry
+    rows mostly use ``tags``/``source``, and RAG rows often only carry a source
+    path. The funnel gate should count those records without rewriting the
+    source corpora.
+    """
+
+    labels: set[str] = set()
+
+    def add(value: Any) -> None:
+        if value is None:
+            return
+        if isinstance(value, (list, tuple, set)):
+            for item in value:
+                add(item)
+            return
+        text = str(value).strip().lower()
+        if not text:
+            return
+        labels.add(text)
+        normalized = text.replace("\\", "/")
+        labels.add(normalized)
+        stem = Path(normalized).stem.lower()
+        if stem:
+            labels.add(stem)
+        for token in re.findall(r"[a-z0-9]+", normalized):
+            labels.add(token)
+
+    for key in ("categories", "tags", "source", "source_type", "track", "title", "_source_file", "name"):
+        add(record.get(key))
+
+    if record.get("smiles") or record.get("expected_family") or record.get("manual_valence_check"):
+        labels.add("chemistry")
+    if record.get("messages") or record.get("prompt") or record.get("completion"):
+        labels.add("sft")
+    if any(label in labels for label in ("python", "javascript", "rust", "haskell", "markdown", "mathematica")):
+        labels.add("coding")
+    if any(label in labels for label in ("governance", "geoseal", "hydra", "sacred", "tongues")):
+        labels.add("governance")
+
+    return labels
 
 
 def _load_metadata(training_data_dir: Path) -> Dict[str, Any]:
@@ -252,7 +296,8 @@ def _evaluate_funnel_config(
 
     category_index: Dict[str, int] = {}
     for record in records:
-        for category in record.get("categories", []) or ["general"]:
+        labels = _record_labels(record) or {"general"}
+        for category in labels:
             category_index[category] = category_index.get(category, 0) + 1
 
     for stream in streams:
@@ -262,11 +307,7 @@ def _evaluate_funnel_config(
         required = int(stream.get("required_min_records", 0) or 0)
         stream_categories = {x.lower() for x in stream.get("categories", []) if isinstance(x, str)}
 
-        matched = 0
-        for record in records:
-            cats = {str(cat).lower() for cat in record.get("categories", [])}
-            if stream_categories.intersection(cats):
-                matched += 1
+        matched = sum(1 for record in records if stream_categories.intersection(_record_labels(record)))
 
         if required and matched < required:
             ratio = matched / required if required else 1.0

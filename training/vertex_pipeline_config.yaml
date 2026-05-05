@@ -1,0 +1,60 @@
+schema_version: scbe_vertex_pipeline_config_v1
+owner: scbe-aethermoore
+purpose: Govern the local Notion-to-training-data and Vertex/Hugging Face fine-tune funnel.
+
+fine_tune:
+  target_model_family: qwen-coder
+  routing_policy: local_first_then_remote_gpu
+  streams:
+    - name: coding_bijective_spine
+      lane: canonical
+      required_min_records: 40
+      categories:
+        - coding
+        - code
+        - python
+        - javascript
+        - rust
+        - haskell
+        - markdown
+        - coding_systems_master_reference
+        - agentic_coding_formations_roadmap
+    - name: chemistry_manual_verification
+      lane: canonical
+      required_min_records: 200
+      categories:
+        - chemistry
+        - organic
+        - aromatic
+        - heterocycle
+        - ionic
+        - cyclic
+        - acid
+        - drug
+    - name: governance_and_geoseal
+      lane: governance
+      required_min_records: 50
+      categories:
+        - governance
+        - geoseal
+        - hydra
+        - sacred
+        - tongues
+        - security
+        - tokenizer
+    - name: research_and_proposals
+      lane: research
+      required_min_records: 80
+      categories:
+        - research
+        - proposals
+        - darpa
+        - mathbac
+        - evidence
+        - roadmap
+        - architecture
+  quality_checks:
+    require_repro_command: true
+    require_source_manifest: true
+    require_eval_split: true
+    max_category_imbalance: 12.0

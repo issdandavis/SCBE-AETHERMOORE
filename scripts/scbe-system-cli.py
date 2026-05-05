@@ -2145,40 +2145,51 @@ def cmd_gap_review(args: argparse.Namespace) -> int:
     if not script.exists():
         print(f"Missing gap review script: {script}")
         return 1
+    sync_config = _repo_path(args.repo_root, args.sync_config)
+    pipeline_config = _repo_path(args.repo_root, args.pipeline_config)
+    training_data = _repo_path(args.repo_root, args.training_data)
+    output = _repo_path(args.repo_root, args.output)
+    summary_path = _repo_path(args.repo_root, args.summary_path)
     extra = [
         "--repo-root",
         str(args.repo_root),
         "--sync-config",
-        str(args.sync_config),
+        str(sync_config),
         "--pipeline-config",
-        str(args.pipeline_config),
+        str(pipeline_config),
         "--training-data",
-        str(args.training_data),
+        str(training_data),
         "--output",
-        str(args.output),
+        str(output),
         "--summary-path",
-        str(args.summary_path),
+        str(summary_path),
     ]
     return _run_script(script, extra)
 
 
 def cmd_self_improve(args: argparse.Namespace) -> int:
-    gap_report = args.gap_report
+    output = _repo_path(args.repo_root, args.output)
+    summary = _repo_path(args.repo_root, args.summary)
+    coherence_report = _repo_path(args.repo_root, args.coherence_report)
+    training_data = _repo_path(args.repo_root, args.training_data)
+    pipeline_config = _repo_path(args.repo_root, args.pipeline_config)
+    sync_config = _repo_path(args.repo_root, args.sync_config)
+    gap_report = _repo_path(args.repo_root, args.notion_gap_report) if args.notion_gap_report else ""
     if args.run_gap:
         gap_script = args.repo_root / "scripts" / "notion_pipeline_gap_review.py"
         if not gap_script.exists():
             print(f"Missing gap review script: {gap_script}")
             return 1
-        gap_report = args.output.parent / "self_improvement_notion_gap.json"
+        gap_report = output.parent / "self_improvement_notion_gap.json"
         gap_args = [
             "--repo-root",
             str(args.repo_root),
             "--sync-config",
-            str(args.sync_config),
+            str(sync_config),
             "--pipeline-config",
-            str(args.pipeline_config),
+            str(pipeline_config),
             "--training-data",
-            str(args.training_data),
+            str(training_data),
             "--output",
             str(gap_report),
             "--summary-path",
@@ -2196,15 +2207,15 @@ def cmd_self_improve(args: argparse.Namespace) -> int:
         "--mode",
         args.mode,
         "--coherence-report",
-        str(args.coherence_report),
+        str(coherence_report),
         "--training-data",
-        str(args.training_data),
+        str(training_data),
         "--pipeline-config",
-        str(args.pipeline_config),
+        str(pipeline_config),
         "--output",
-        str(args.output),
+        str(output),
         "--summary-path",
-        str(args.summary),
+        str(summary),
     ]
     if gap_report:
         extra.extend(["--notion-gap-report", str(gap_report)])
@@ -4749,7 +4760,7 @@ def build_parser() -> argparse.ArgumentParser:
     improve.add_argument(
         "--mode", default="all", choices=("all", "code-assistant", "ai-nodal-dev-specialist", "fine-tune-funnel")
     )
-    improve.add_argument("--coherence-report", default="coherence-report.json")
+    improve.add_argument("--coherence-report", default="artifacts/coherence-report.json")
     improve.add_argument("--training-data", default="training-data")
     improve.add_argument("--pipeline-config", default="training/vertex_pipeline_config.yaml")
     improve.add_argument("--notion-gap-report", default="")
