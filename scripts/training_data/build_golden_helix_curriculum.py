@@ -21,12 +21,15 @@ from typing import Any, Iterable
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT_DIR = REPO_ROOT / "training-data" / "curriculum" / "golden_helix_curriculum_v1"
 DEFAULT_LANES = ("coding", "chemistry", "governance", "research", "motion", "tokenizer")
-DEFAULT_GLOBS = (
-    "training-data/*.jsonl",
-    "training-data/sft/*.jsonl",
-    "training-data/dpo/*.jsonl",
-    "training-data/proofs/**/*.jsonl",
-    "training-data/agentic_coding/*.jsonl",
+DEFAULT_GLOBS = ("training-data/**/*.jsonl",)
+DEFAULT_SKIP_SUBSTRINGS = (
+    "/evals/",
+    "/holdout",
+    "_holdout",
+    "_test.",
+    "_eval.",
+    "/intake/",
+    "/curriculum/",
 )
 PHI = (1.0 + math.sqrt(5.0)) / 2.0
 TAU = 2.0 * math.pi
@@ -75,18 +78,26 @@ LANE_KEYWORDS = {
     },
     "coding": {
         "coding",
-        "code",
+        "polyglot",
+        "coder",
+        "copilot",
         "python",
         "javascript",
         "typescript",
         "rust",
         "haskell",
-        "markdown",
         "mathematica",
-        "go",
-        "repair",
-        "function",
-        "api",
+        "stage6",
+        "boss",
+        "command_lattice",
+        "command-lattice",
+        "command_harmony",
+        "command-harmony",
+        "agentic",
+        "scbe_instructions",
+        "bijective_dsl",
+        "aethercode",
+        "instruction_tuning",
     },
     "governance": {
         "governance",
@@ -150,13 +161,21 @@ def _add_label(labels: set[str], value: Any) -> None:
     stem = Path(normalized).stem.lower()
     if stem:
         labels.add(stem)
-    for token in normalized.replace("_", " ").replace("-", " ").split():
+    splitter = normalized.replace("_", " ").replace("-", " ").replace("/", " ").replace(".", " ")
+    for token in splitter.split():
         token = "".join(ch for ch in token if ch.isalnum())
         if token:
             labels.add(token)
 
 
 def record_labels(row: dict[str, Any], source_path: str) -> set[str]:
+    """Build label set from STRUCTURAL metadata + path only.
+
+    Free-text content fields (prompt/completion/text/etc.) are intentionally
+    excluded so prose tokens like 'function' or 'api' don't dominate
+    classification. Explicit structural signals (smiles, motion_assembly,
+    semantic_token_bridge) still emit lane-direct labels.
+    """
     labels: set[str] = set()
     for key in (
         "categories",
@@ -164,29 +183,24 @@ def record_labels(row: dict[str, Any], source_path: str) -> set[str]:
         "source",
         "source_type",
         "track",
-        "title",
         "name",
         "id",
         "domain",
         "record_type",
-        "text",
-        "prompt",
-        "completion",
-        "chosen",
-        "rejected",
-        "system",
+        "lane",
+        "primary_lane",
     ):
         _add_label(labels, row.get(key))
     _add_label(labels, source_path)
 
     if row.get("smiles") or row.get("expected_family") or row.get("manual_valence_check"):
         labels.add("chemistry")
-    if row.get("prompt") or row.get("completion") or row.get("messages") or row.get("chosen"):
-        labels.add("coding")
     if row.get("motion_assembly") or row.get("embodiment_passport"):
         labels.add("motion")
     if row.get("tokenizer") or row.get("binary") or row.get("semantic_token_bridge"):
         labels.add("tokenizer")
+    if row.get("governance_decision") or row.get("policy") or row.get("audit_trail"):
+        labels.add("governance")
 
     return labels
 
@@ -218,19 +232,46 @@ def difficulty_score(row: dict[str, Any], labels: set[str]) -> float:
     return round(0.65 * length_score + 0.35 * label_score, 4)
 
 
-def iter_jsonl_files(root: Path, include_globs: Iterable[str]) -> list[Path]:
+def iter_jsonl_files(
+    root: Path,
+    include_globs: Iterable[str],
+    skip_substrings: Iterable[str] = DEFAULT_SKIP_SUBSTRINGS,
+) -> list[Path]:
     files: set[Path] = set()
+    skip_lower = tuple(s.lower() for s in skip_substrings)
     for pattern in include_globs:
         for path in root.glob(pattern):
-            if path.is_file():
-                files.add(path)
+            if not path.is_file():
+                continue
+            posix_lower = path.as_posix().lower()
+            if any(sub in posix_lower for sub in skip_lower):
+                continue
+            files.add(path)
     return sorted(files)
 
 
-def load_candidates(root: Path, include_globs: Iterable[str], lanes: tuple[str, ...]) -> list[Candidate]:
+def source_stream_for_path(rel_path: str) -> str:
+    """Derive a stable, lane-friendly stream label from a relative source path."""
+    cleaned = rel_path.replace("\\", "/")
+    if cleaned.endswith(".jsonl"):
+        cleaned = cleaned[: -len(".jsonl")]
+    cleaned = cleaned.replace(".sft", "")
+    parts = [p for p in cleaned.split("/") if p]
+    parts = [p.replace("-", "_").replace(" ", "_") for p in parts]
+    return "_".join(parts).strip("_") or "unknown"
+
+
+def load_candidates(
+    root: Path,
+    include_globs: Iterable[str],
+    lanes: tuple[str, ...],
+    skip_substrings: Iterable[str] = DEFAULT_SKIP_SUBSTRINGS,
+    cap_per_file: int = 0,
+) -> list[Candidate]:
     candidates: list[Candidate] = []
-    for path in iter_jsonl_files(root, include_globs):
+    for path in iter_jsonl_files(root, include_globs, skip_substrings):
         rel_path = path.relative_to(root).as_posix()
+        kept = 0
         for idx, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines()):
             raw = line.strip()
             if not raw or raw.startswith("version https://git-lfs.github.com") or raw.startswith("oid sha256"):
@@ -254,6 +295,9 @@ def load_candidates(root: Path, include_globs: Iterable[str], lanes: tuple[str, 
                     difficulty=difficulty_score(row, labels),
                 )
             )
+            kept += 1
+            if cap_per_file and kept >= cap_per_file:
+                break
     return sorted(candidates, key=lambda item: (item.primary_lane, item.difficulty, item.source_path, item.row_index))
 
 
@@ -265,8 +309,17 @@ def golden_target_lane(index: int, lanes: tuple[str, ...]) -> tuple[str, float, 
     return lanes[lane_index], math.degrees(theta), radius
 
 
-def schedule_candidates(candidates: list[Candidate], lanes: tuple[str, ...], limit: int = 0) -> list[dict[str, Any]]:
+def schedule_candidates(
+    candidates: list[Candidate],
+    lanes: tuple[str, ...],
+    limit: int = 0,
+    cap_per_lane: int = 0,
+) -> list[dict[str, Any]]:
     queues = {lane: deque([candidate for candidate in candidates if candidate.primary_lane == lane]) for lane in lanes}
+    if cap_per_lane > 0:
+        for lane in lanes:
+            while len(queues[lane]) > cap_per_lane:
+                queues[lane].pop()
     total = sum(len(queue) for queue in queues.values())
     if limit > 0:
         total = min(total, limit)
@@ -283,6 +336,8 @@ def schedule_candidates(candidates: list[Candidate], lanes: tuple[str, ...], lim
                 "helix_angle_deg": round(theta_deg, 6),
                 "helix_radius": round(radius, 6),
                 "helix_depth": index // len(lanes),
+                "helix_lane": lane,
+                "source_stream": source_stream_for_path(candidate.source_path),
                 "target_lane": target_lane,
                 "scheduled_lane": lane,
                 "lane_match": target_lane == lane,
@@ -309,6 +364,9 @@ def write_outputs(
     lane_counts = Counter(row["scheduled_lane"] for row in schedule)
     target_counts = Counter(row["target_lane"] for row in schedule)
     source_counts = Counter(row["source_path"] for row in schedule)
+    stream_counts = Counter(row["source_stream"] for row in schedule)
+    n_match = sum(1 for row in schedule if row["lane_match"])
+    lane_match_rate = round(n_match / len(schedule), 4) if schedule else 0.0
     manifest = {
         "schema_version": "scbe_golden_helix_curriculum_v1",
         "description": "Deterministic golden-angle curriculum schedule over local SCBE training rows.",
@@ -317,10 +375,13 @@ def write_outputs(
         "lanes": list(lanes),
         "include_globs": list(include_globs),
         "row_count": len(schedule),
+        "lane_match_rate": lane_match_rate,
         "lane_counts": dict(sorted(lane_counts.items())),
         "target_lane_counts": dict(sorted(target_counts.items())),
         "source_file_count": len(source_counts),
+        "source_stream_count": len(stream_counts),
         "top_sources": dict(source_counts.most_common(12)),
+        "top_streams": dict(stream_counts.most_common(12)),
         "schedule_path": (
             schedule_path.relative_to(REPO_ROOT).as_posix() if out_dir.is_relative_to(REPO_ROOT) else str(schedule_path)
         ),
@@ -353,8 +414,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-root", default=str(REPO_ROOT))
     parser.add_argument("--out-dir", default=str(DEFAULT_OUT_DIR))
     parser.add_argument("--limit", type=int, default=0, help="Maximum rows to schedule; 0 means all rows")
+    parser.add_argument(
+        "--cap-per-file",
+        type=int,
+        default=0,
+        help="Per-file row cap so one giant merged file does not dominate; 0 = no cap",
+    )
+    parser.add_argument(
+        "--cap-per-lane",
+        type=int,
+        default=0,
+        help="Per-lane row cap to force hard balance (matches helix intent); 0 = no cap",
+    )
     parser.add_argument("--lane", action="append", dest="lanes", help="Lane name; repeat to override defaults")
     parser.add_argument("--include-glob", action="append", dest="include_globs", help="Repo-root-relative JSONL glob")
+    parser.add_argument(
+        "--skip-substring",
+        action="append",
+        dest="skip_substrings",
+        help="Path substring to skip (lowercase, repeatable)",
+    )
     parser.add_argument("--json", action="store_true")
     return parser.parse_args()
 
@@ -367,14 +446,22 @@ def main() -> int:
         out_dir = root / out_dir
     lanes = tuple(args.lanes or DEFAULT_LANES)
     include_globs = tuple(args.include_globs or DEFAULT_GLOBS)
-    candidates = load_candidates(root, include_globs, lanes)
-    schedule = schedule_candidates(candidates, lanes, limit=args.limit)
+    skip_substrings = tuple(args.skip_substrings or DEFAULT_SKIP_SUBSTRINGS)
+    candidates = load_candidates(
+        root, include_globs, lanes, skip_substrings=skip_substrings, cap_per_file=args.cap_per_file
+    )
+    schedule = schedule_candidates(candidates, lanes, limit=args.limit, cap_per_lane=args.cap_per_lane)
     manifest = write_outputs(out_dir, schedule, lanes, include_globs)
     if args.json:
         print(json.dumps(manifest, indent=2, sort_keys=True))
     else:
         print(f"golden helix curriculum: rows={manifest['row_count']} out={out_dir}")
     return 0
+
+
+# Public alias so callers can import the implementation rule under its
+# canonical name without depending on the private `schedule_candidates` symbol.
+golden_helix_curriculum_order = schedule_candidates
 
 
 if __name__ == "__main__":
