@@ -105,47 +105,17 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Days Without GitHub Incidents",
-      "word_count": 633,
+      "description": "How OpenAI delivers low-latency voice AI at scale",
+      "word_count": 604,
       "headings": [
         {
           "level": 2,
-          "text": "Days Without GitHub Incidents",
+          "text": "How OpenAI delivers low-latency voice AI at scale",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "dayswithoutgithubincident.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "US healthcare marketplaces shared citizenship and race data with ad tech giants",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "techcrunch.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Removable batteries in smartphones will be mandatory in the EU starting in 2027",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "ecopv-eu.com",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "U.S. military data left exposed at an a16z startup for 150 days",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "strix.ai",
+          "text": "openai.com",
           "source": "fallback-selector"
         },
         {
@@ -157,11 +127,41 @@
           "level": 2,
           "text": "wwj.dev",
           "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Talking to strangers at the gym",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "thienantran.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Securing a DoD contractor: Finding a multi-tenant authorization vulnerability",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "strix.ai",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Agent Skills",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "addyosmani.com",
+          "source": "fallback-selector"
         }
       ],
       "link_count": 229,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Days Without GitHub Incidents (dayswithoutgithubincident.com)211 points by goalieca 1 hour ago  | hide | 67\u00a0comments2.US healthcare marketplaces shared citizenship and race data with ad tech giants (techcrunch.com)104 points by ZeidJ 1 hour ago  | hide | 31\u00a0comments3.Removable batteries in smartphones will be mandatory in the EU starting in 2027 (ecopv-eu.com)517 points by rdeboo 3 hours ago  | hide | 443\u00a0comments4.U.S. military..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.How OpenAI delivers low-latency voice AI at scale (openai.com)251 points by Sean-Der 5 hours ago  | hide | 94\u00a0comments2.I am worried about Bun (wwj.dev)387 points by remote-dev 8 hours ago  | hide | 260\u00a0comments3.Talking to strangers at the gym (thienantran.com)1111 points by thitran 13 hours ago  | hide | 520\u00a0comments4.Securing a DoD contractor: Finding a multi-tenant authorization vulnerability (strix.ai)162 points by bearsyan..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
