@@ -119,6 +119,81 @@ def test_gate_fails_when_forbidden_token_triggers_in_must_pass(tmp_path: Path) -
     assert not gate_passed(report)
 
 
+def test_forbidden_token_uses_word_boundary_not_substring(tmp_path: Path) -> None:
+    """Word-boundary semantics: forbidden 'PASS' must NOT trigger on 'compass' or 'PASSAGE'.
+
+    Mirrors dispatcher inline gate behavior so offline re-scoring produces
+    the same verdict as the on-runner gate.
+    """
+    contract_path = tmp_path / "contract.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "contract_id": "word_boundary_check",
+                "thresholds": {"minimum_pass_rate": 1.0, "must_pass": []},
+                "prompts": [
+                    {
+                        "id": "p1",
+                        "prompt": "p",
+                        "required": ["needed"],
+                        "forbidden": ["PASS", "promote"],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    candidates_path = _write_candidates(
+        tmp_path / "candidates.json",
+        [
+            {
+                "candidate_id": "stems_should_not_trigger",
+                "metadata": {},
+                "responses": {
+                    "p1": "needed token is here. The compass shows north and the passage is open. Promotion is also fine.",
+                },
+            }
+        ],
+    )
+
+    report = evaluate(contract_path, candidates_path, tmp_path / "report.json")
+    assert gate_passed(report), report["candidate_results"]
+
+
+def test_forbidden_token_does_trigger_on_exact_word(tmp_path: Path) -> None:
+    """Counterpart: same token DOES trigger on exact word boundary."""
+    contract_path = tmp_path / "contract.json"
+    contract_path.write_text(
+        json.dumps(
+            {
+                "contract_id": "word_boundary_positive",
+                "thresholds": {"minimum_pass_rate": 1.0, "must_pass": []},
+                "prompts": [
+                    {
+                        "id": "p1",
+                        "prompt": "p",
+                        "required": ["needed"],
+                        "forbidden": ["PASS"],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    candidates_path = _write_candidates(
+        tmp_path / "candidates.json",
+        [
+            {
+                "candidate_id": "exact_word_should_trigger",
+                "metadata": {},
+                "responses": {"p1": "needed token here. Verdict: PASS."},
+            }
+        ],
+    )
+    report = evaluate(contract_path, candidates_path, tmp_path / "report.json")
+    assert not gate_passed(report)
+
+
 def test_gate_fails_when_pass_rate_below_minimum(tmp_path: Path) -> None:
     contract_path = tmp_path / "contract.json"
     contract_path.write_text(

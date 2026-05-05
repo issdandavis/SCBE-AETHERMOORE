@@ -15,9 +15,7 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROFILE = (
-    REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-smoke.json"
-)
+DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-smoke.json"
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_coding_agent_jobs"
 ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
 
@@ -55,9 +53,7 @@ def _load_profile(path: Path) -> dict[str, Any]:
 def _count_jsonl(path: Path) -> int:
     if not path.exists():
         return 0
-    return sum(
-        1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
-    )
+    return sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
 
 
 def _dataset_rows(profile: dict[str, Any], split: str) -> list[dict[str, Any]]:
@@ -380,6 +376,7 @@ def main() -> None:
             + "\\nYour second line must be exactly: REQUIRED_CHECKLIST="
             + "; ".join(t + "=" + t for t in required)
             + "\\nDo not translate, rename, pluralize, omit, or replace any REQUIRED_MARKERS value."
+            + "\\nSome boundary strings are hidden by the evaluator; do not echo negated warning text."
             + "\\nAfter those two lines, answer the task compactly."
             + "\\nTask: "
             + str(prompt.get("prompt", ""))
@@ -476,8 +473,30 @@ def main() -> None:
     }}
     report_path = out_dir / "stage6_regression_inline.json"
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    # Emit a standardized candidates.json next to the report. This is the input
+    # shape that scripts/eval/run_post_train_gate.py expects, so offline
+    # re-scoring with the canonical scorer produces the same verdict as this
+    # on-runner gate (semantics aligned via score_response word-boundary check).
+    candidates_artifact = {{
+        "schema_version": "scbe_double_blind_eval_input_v1",
+        "candidates": [
+            {{
+                "candidate_id": str(adapter_repo),
+                "metadata": {{
+                    "adapter_path": str(out_dir),
+                    "base_model": base_model,
+                    "global_step": int(getattr(stats, "global_step", 0)),
+                    "constrained_gate_scaffold": bool(CONSTRAINED_GATE_SCAFFOLD),
+                    "constrained_prompt_prefix": bool(CONSTRAINED_PROMPT_PREFIX),
+                }},
+                "responses": {{r["id"]: r.get("response", "") for r in results if r.get("id")}},
+            }}
+        ],
+    }}
+    candidates_path = out_dir / "stage6_candidates.json"
+    candidates_path.write_text(json.dumps(candidates_artifact, indent=2), encoding="utf-8")
     # Emit gate_report BEFORE any push so it always lands in logs.
-    print(json.dumps({{"event": "gate_report", "report": report}}))
+    print(json.dumps({{"event": "gate_report", "report": report, "candidates_artifact": str(candidates_path)}}))
 
     push_requested = bool(hub_cfg.get("push_adapter", True))
     should_push = push_requested and overall_pass
@@ -577,11 +596,7 @@ def build_packet(
             "flavor": selected_flavor,
             "timeout": selected_timeout,
             "cli": shutil.which("hf") or "",
-            "token_present": bool(
-                os.environ.get(
-                    str((profile.get("hub") or {}).get("token_env", "HF_TOKEN")), ""
-                )
-            ),
+            "token_present": bool(os.environ.get(str((profile.get("hub") or {}).get("token_env", "HF_TOKEN")), "")),
         },
         "command": command,
         "dispatched": False,
@@ -645,9 +660,7 @@ def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
             "--commit-message",
             f"Update SCBE coding agent data {name}",
         ]
-        result = subprocess.run(
-            command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False
-        )
+        result = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
         uploads.append(
             {
                 "name": str(name),
@@ -657,9 +670,7 @@ def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
             }
         )
         if result.returncode != 0:
-            raise RuntimeError(
-                f"Dataset upload failed for {name}: {result.stderr.strip()}"
-            )
+            raise RuntimeError(f"Dataset upload failed for {name}: {result.stderr.strip()}")
     return uploads
 
 
