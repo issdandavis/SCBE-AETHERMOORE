@@ -128,6 +128,7 @@ EARLY_STOPPING_THRESHOLD = float(CFG.get("early_stopping_threshold", 0.0))
 EVAL_STEPS = int(CFG.get("eval_steps", 30))
 SAVE_STEPS = int(CFG.get("save_steps", EVAL_STEPS))
 REQUIRE_GPU = bool(CFG.get("require_gpu", False))
+REQUIRE_MODERN_GPU = bool(CFG.get("require_modern_gpu", False))
 BALANCE_CATEGORIES = bool(CFG.get("balance_categories", False))
 SELECTOR_TOKEN_WEIGHT = float(CFG.get("selector_token_weight", 1.0))
 DSL_PRIMITIVE_TOKEN_WEIGHT = float(CFG.get("dsl_primitive_token_weight", SELECTOR_TOKEN_WEIGHT))
@@ -449,6 +450,7 @@ try:
             "use_gpu": use_gpu,
             "use_4bit": use_4bit,
             "require_gpu": REQUIRE_GPU,
+            "require_modern_gpu": REQUIRE_MODERN_GPU,
         },
     )
 
@@ -456,6 +458,12 @@ try:
         raise RuntimeError(
             f"GPU required for this round, but got gpu={gpu_name} compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
             "No accelerator was assigned."
+        )
+    if REQUIRE_MODERN_GPU and not use_gpu:
+        raise RuntimeError(
+            f"Modern CUDA GPU required for this round, but got gpu={gpu_name} "
+            f"compute capability sm_{compute_cap[0]}{compute_cap[1]}. "
+            "Retry the Kaggle round until a T4/A100-class worker is assigned."
         )
 
     if use_4bit:
