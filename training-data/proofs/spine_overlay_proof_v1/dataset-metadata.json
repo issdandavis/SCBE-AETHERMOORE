@@ -1,0 +1,19 @@
+{
+  "description": "18-row demonstration bundle showing that the SCBE 12+ lane code-packet substrate handles code, chemistry, and mechanical motion as nested overlays under semantic_expression, without forking the tokenizer. See README.md for the full spec.",
+  "id": "issdandavis/scbe-spine-overlay-proof-v1",
+  "keywords": [
+    "scbe",
+    "sacred-tongues",
+    "multi-domain",
+    "robotics",
+    "chemistry",
+    "code-generation"
+  ],
+  "licenses": [
+    {
+      "name": "CC-BY-4.0"
+    }
+  ],
+  "subtitle": "One tokenizer spine, three domain overlays (code, chemistry, motion) across six Sacred Tongues.",
+  "title": "SCBE Spine-Overlay Proof v1"
+}

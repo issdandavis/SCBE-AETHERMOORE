@@ -1,0 +1,38 @@
+{
+  "dataset_id": "scbe-spine-overlay-proof-v1",
+  "domain_breakdown": {
+    "chemistry": 6,
+    "code": 6,
+    "motion": 6
+  },
+  "row_count": 18,
+  "row_ids": [
+    "code_KO",
+    "chemistry_KO",
+    "motion_KO",
+    "code_AV",
+    "chemistry_AV",
+    "motion_AV",
+    "code_RU",
+    "chemistry_RU",
+    "motion_RU",
+    "code_CA",
+    "chemistry_CA",
+    "motion_CA",
+    "code_UM",
+    "chemistry_UM",
+    "motion_UM",
+    "code_DR",
+    "chemistry_DR",
+    "motion_DR"
+  ],
+  "schema_version": "scbe-code-weight-packet-v1",
+  "tongue_breakdown": {
+    "AV": 3,
+    "CA": 3,
+    "DR": 3,
+    "KO": 3,
+    "RU": 3,
+    "UM": 3
+  }
+}
