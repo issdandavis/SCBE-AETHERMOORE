@@ -105,63 +105,63 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "Async Rust never left the MVP state",
-      "word_count": 592,
+      "description": "IBM didn't want Microsoft to use the Tab key to move between dialog fields",
+      "word_count": 628,
       "headings": [
         {
           "level": 2,
-          "text": "Async Rust never left the MVP state",
+          "text": "IBM didn't want Microsoft to use the Tab key to move between dialog fields",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "tweedegolf.nl",
+          "text": "devblogs.microsoft.com/oldnewthing",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Should I Run Plain Docker Compose in Production in 2026?",
+          "text": "Clarification on the Notepad++ Trademark Issue",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "distr.sh",
+          "text": "notepad-plus-plus.org",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Bun is being ported from Zig to Rust",
+          "text": "Three Inverse Laws of AI",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "github.com/oven-sh",
+          "text": "susam.net",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "When everyone has AI and the company still learns nothing",
+          "text": "Accelerating Gemma 4: faster inference with multi-token prediction drafters",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "robert-glaser.de",
+          "text": "blog.google",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Empty Screenings \u2013 Finds AMC movie screenings with few or no tickets sold",
+          "text": "EEVblog: The 555 Timer is 55 years old",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "walzr.com",
+          "text": "youtube.com",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 229,
+      "link_count": 225,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Async Rust never left the MVP state (tweedegolf.nl)240 points by pjmlp 5 hours ago  | hide | 123\u00a0comments2.Should I Run Plain Docker Compose in Production in 2026? (distr.sh)111 points by pmig 3 hours ago  | hide | 79\u00a0comments3.Bun is being ported from Zig to Rust (github.com/oven-sh)583 points by SergeAx 11 hours ago  | hide | 409\u00a0comments4.When everyone has AI and the company still learns nothing (robert-glaser.de)71 points by..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.IBM didn't want Microsoft to use the Tab key to move between dialog fields (devblogs.microsoft.com/oldnewthing)140 points by SeenNotHeard 1 hour ago  | hide | 63\u00a0comments2.Clarification on the Notepad++ Trademark Issue (notepad-plus-plus.org)46 points by minimaxir 34 minutes ago  | hide | 3\u00a0comments3.Three Inverse Laws of AI (susam.net)231 points by blenderob 3 hours ago  | hide | 141\u00a0comments4.Accelerating Gemma 4: faster infer..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
