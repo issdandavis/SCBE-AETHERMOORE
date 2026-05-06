@@ -72,7 +72,7 @@ def test_run_compare_emits_summary_for_each_method() -> None:
     report = run_compare(spec, budget_pairs=4)
 
     assert report["schema_version"] == SCHEMA_VERSION
-    expected = {
+    core_expected = {
         "brute_pair",
         "tang_cross_k10",
         "tang_cross_k20",
@@ -85,10 +85,12 @@ def test_run_compare_emits_summary_for_each_method() -> None:
         "resonance_lowrank_r8",
         "resonance_lowrank_r16",
         "resonance_lowrank_r32",
-        "disagreement_tang_vs_multigrid",
-        "disagreement_lowrank_seam",
     }
-    assert set(report["summary"]) == expected
+    assert core_expected.issubset(set(report["summary"]))
+    disagreement_keys = [name for name in report["summary"] if name.startswith("disagree__")]
+    assert len(disagreement_keys) > 0
+    n_input = len(core_expected) - 1  # exclude brute_pair from inputs
+    assert len(disagreement_keys) == n_input * (n_input - 1) // 2
     for row in report["summary"].values():
         assert "evaluations" in row and "diamond_recall" in row and "regret_log_amp" in row
 
@@ -121,7 +123,9 @@ def test_disagreement_probe_double_negative_makes_positive() -> None:
     spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
     report = run_compare(spec, budget_pairs=8)
     summary = report["summary"]
-    probe = summary["disagreement_tang_vs_multigrid"]
+    probe_key = "disagree__multigrid_cross_c30_k10__X__tang_cross_k20"
+    assert probe_key in summary
+    probe = summary[probe_key]
     tang20 = summary["tang_cross_k20"]
     multigrid = summary["multigrid_cross_c30_k10"]
     assert probe["diamond_recall"] == pytest.approx(tang20["diamond_recall"])

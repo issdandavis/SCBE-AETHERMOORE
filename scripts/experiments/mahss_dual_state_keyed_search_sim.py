@@ -422,29 +422,22 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
             A, B, M, rank=rank, budget_pairs=budget_pairs, alpha=alpha
         )
 
-    # Disagreement probes: pair two methods that have COMPLEMENTARY partial
-    # truth so their XOR midpoints actually land near diamonds. "Double
-    # negative makes positive" works only when each negative carries partial
-    # signal in different directions.
-    multigrid_pairs = runs["multigrid_cross_c30_k10"][0]
-    tang20_pairs = runs["tang_cross_k20"][0]
-    lowrank4_pairs = runs["resonance_lowrank_r4"][0]
-    lowrank8_pairs = runs["resonance_lowrank_r8"][0]
-
-    runs["disagreement_tang_vs_multigrid"] = select_disagreement_probe_cross(
-        A, B, M,
-        method_a_pairs=tang20_pairs,
-        method_b_pairs=multigrid_pairs,
-        budget_pairs=budget_pairs,
-        alpha=alpha,
-    )
-    runs["disagreement_lowrank_seam"] = select_disagreement_probe_cross(
-        A, B, M,
-        method_a_pairs=lowrank4_pairs,
-        method_b_pairs=lowrank8_pairs,
-        budget_pairs=budget_pairs,
-        alpha=alpha,
-    )
+    # Full C(N, 2) disagreement-probe matrix: every pair of source methods.
+    # The "double-negative-makes-positive" mechanism may fire for any
+    # (method_a, method_b) combination where their null-space XOR encodes
+    # complementary partial signal. Skip brute_pair (it has full recall
+    # already, no disagreement to mine).
+    disagreement_input_methods = sorted(name for name in runs if name != "brute_pair")
+    for i, name_a in enumerate(disagreement_input_methods):
+        for name_b in disagreement_input_methods[i + 1 :]:
+            probe_key = f"disagree__{name_a}__X__{name_b}"
+            runs[probe_key] = select_disagreement_probe_cross(
+                A, B, M,
+                method_a_pairs=runs[name_a][0],
+                method_b_pairs=runs[name_b][0],
+                budget_pairs=budget_pairs,
+                alpha=alpha,
+            )
 
     summary: dict[str, dict[str, object]] = {}
     for name, (pairs, evaluations) in runs.items():
