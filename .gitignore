@@ -263,3 +263,7 @@ external/cli-quests/
 
 # Rust build outputs
 rust/**/target/
+
+# Tokenizer audit + extension artifacts (regeneratable by scripts)
+artifacts/tokenizer_audit/
+artifacts/extended_tokenizer/

@@ -7,11 +7,17 @@ verdict mapping logic.
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
-from scripts.eval.interpret_v6f_gate_result import _find_event, _verdict
+from scripts.eval.interpret_v6f_gate_result import (
+    _find_event,
+    _verdict,
+    _verify_hf_adapter,
+)
 
 
 def test_find_event_picks_last_matching():
@@ -34,6 +40,52 @@ def test_find_event_picks_last_matching():
 def test_find_event_returns_none_when_absent():
     log = '{"event": "gate_prompt", "id": "p1", "ok": true}\n'
     assert _find_event(log, "gate_report") is None
+
+
+def test_find_event_handles_multiline_pretty_printed_json():
+    """training_complete is emitted by json.dumps(..., indent=2) — multi-line.
+    The single-line regex misses it, so the parser must fall back to a
+    brace-balanced scan."""
+
+    log = "\n".join(
+        [
+            '{"event": "gate_prompt", "id": "p1", "ok": true}',
+            "{",
+            '  "event": "training_complete",',
+            '  "summary": {',
+            '    "profile_id": "scbe-coding-primary-7b-qlora-v6f",',
+            '    "pushed_adapter": true,',
+            '    "adapter_repo": "issdandavis/scbe-coding-primary-7b-qlora-v6f"',
+            "  }",
+            "}",
+            '{"event": "push_attempt", "adapter_repo": "x"}',
+        ]
+    )
+    event = _find_event(log, "training_complete")
+    assert event is not None
+    assert event["summary"]["pushed_adapter"] is True
+    assert event["summary"]["adapter_repo"] == "issdandavis/scbe-coding-primary-7b-qlora-v6f"
+
+
+def test_find_event_multiline_handles_strings_with_braces():
+    """Brace-balanced scan must respect strings (a } inside a string value
+    is not a structural close)."""
+
+    log = "\n".join(
+        [
+            "{",
+            '  "event": "training_complete",',
+            '  "summary": {',
+            '    "chat_template": "if x then {y} else z",',
+            '    "pushed_adapter": false',
+            "  }",
+            "}",
+        ]
+    )
+    event = _find_event(log, "training_complete")
+    assert event is not None
+    assert event["summary"]["pushed_adapter"] is False
+    assert "if x then {y}" in event["summary"]["chat_template"]
 
 
 def test_verdict_green_when_shim_high_and_raw_above_half():
@@ -134,3 +186,31 @@ def test_verdict_lift_calculation():
     assert any("shim lift over bare model" in a for a in advice)
     # 0.83 - 0.083 = 0.747 = +74.7pp
     assert any("+74.7 pp" in a for a in advice)
+
+
+def test_verify_hf_adapter_skips_when_repo_missing():
+    ok, msg = _verify_hf_adapter(None)
+    assert not ok
+    assert "no adapter_repo" in msg
+
+
+def test_verify_hf_adapter_calls_hf_models_info():
+    """When repo is provided, shells out to 'hf models info' and reports
+    PASS on returncode 0, FAIL otherwise."""
+
+    fake_ok = subprocess.CompletedProcess(args=[], returncode=0, stdout="", stderr="")
+    with patch("scripts.eval.interpret_v6f_gate_result.subprocess.run", return_value=fake_ok) as mock_run:
+        ok, msg = _verify_hf_adapter("issdandavis/scbe-coding-primary-7b-qlora-v6f")
+        assert ok
+        assert "huggingface.co/issdandavis/scbe-coding-primary-7b-qlora-v6f" in msg
+        cmd = mock_run.call_args[0][0]
+        assert cmd[:3] == ["hf", "models", "info"]
+        assert "issdandavis/scbe-coding-primary-7b-qlora-v6f" in cmd
+
+    fake_fail = subprocess.CompletedProcess(
+        args=[], returncode=1, stdout="", stderr="Repository not found"
+    )
+    with patch("scripts.eval.interpret_v6f_gate_result.subprocess.run", return_value=fake_fail):
+        ok, msg = _verify_hf_adapter("issdandavis/does-not-exist")
+        assert not ok
+        assert "Repository not found" in msg

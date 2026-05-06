@@ -37,22 +37,83 @@ def _fetch_logs(job_id: str) -> str:
     return (res.stdout or "") + "\n" + (res.stderr or "")
 
 
-def _find_event(logs: str, event_name: str) -> dict[str, Any] | None:
-    """Find the last JSON line whose top-level ``event`` key matches.
+def _verify_hf_adapter(repo: str | None) -> tuple[bool, str]:
+    """Return (exists, message). Calls ``hf models info`` to confirm the
+    adapter actually landed on the Hub. Used after a shipping run that
+    set ``push_adapter=true`` to verify pushed_adapter=True is more than
+    self-report."""
 
-    The inline gate prints one event per prompt plus a final ``gate_report``
-    and ``training_complete``. Scan backwards so we always pick the final
-    summary, not an interim per-prompt event.
+    if not repo:
+        return False, "no adapter_repo recorded in training_complete summary"
+    res = subprocess.run(
+        ["hf", "models", "info", repo],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if res.returncode == 0:
+        return True, f"adapter live at https://huggingface.co/{repo}"
+    msg = (res.stderr or res.stdout or "").strip().splitlines()[-1] if (res.stderr or res.stdout) else "unknown"
+    return False, f"hf models info failed for {repo}: {msg}"
+
+
+def _find_event(logs: str, event_name: str) -> dict[str, Any] | None:
+    """Find the last JSON object whose top-level ``event`` key matches.
+
+    Per-prompt events (``gate_prompt``) and the final ``gate_report`` /
+    ``push_attempt`` print as single-line JSON. The ``training_complete``
+    event prints as pretty-printed multi-line JSON. Try single-line first,
+    then fall back to a brace-balanced multi-line scan so both formats
+    work without a JSON streaming parser.
     """
 
-    pattern = re.compile(r'\{"event":\s*"' + re.escape(event_name) + r'"[^\n]*\}')
-    matches = pattern.findall(logs)
+    single_line = re.compile(r'\{"event":\s*"' + re.escape(event_name) + r'"[^\n]*\}')
+    matches = single_line.findall(logs)
     for raw in reversed(matches):
         try:
             return json.loads(raw)
         except json.JSONDecodeError:
             continue
-    return None
+
+    # Multi-line fallback: locate "event": "<name>" then walk braces backward
+    # to the opening { and forward to the matching close.
+    needle = re.compile(r'"event":\s*"' + re.escape(event_name) + r'"')
+    last_match: dict[str, Any] | None = None
+    for hit in needle.finditer(logs):
+        start = logs.rfind("{", 0, hit.start())
+        if start == -1:
+            continue
+        depth = 0
+        end = -1
+        in_string = False
+        escape = False
+        for i in range(start, len(logs)):
+            ch = logs[i]
+            if escape:
+                escape = False
+                continue
+            if ch == "\\" and in_string:
+                escape = True
+                continue
+            if ch == '"':
+                in_string = not in_string
+                continue
+            if in_string:
+                continue
+            if ch == "{":
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0:
+                    end = i + 1
+                    break
+        if end == -1:
+            continue
+        try:
+            last_match = json.loads(logs[start:end])
+        except json.JSONDecodeError:
+            continue
+    return last_match
 
 
 def _verdict(report: dict[str, Any]) -> tuple[str, list[str]]:
@@ -124,6 +185,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("job_id", help="HF Jobs job id (e.g. 69fb49a046974e2a21d27a1a)")
     parser.add_argument("--json", action="store_true", help="emit raw JSON")
+    parser.add_argument(
+        "--verify-hf",
+        action="store_true",
+        help="after summary, call 'hf repo info' on the adapter_repo to confirm push landed",
+    )
     args = parser.parse_args()
 
     logs = _fetch_logs(args.job_id)
@@ -164,6 +230,19 @@ def main() -> int:
         print(f"  gate_overall_pass : {s.get('gate_overall_pass')}")
         print(f"  gate_pass_rate    : {s.get('gate_pass_rate')}")
         print(f"  gate_n_pass/total : {s.get('gate_n_pass')}/{s.get('gate_n_total')}")
+
+    if args.verify_hf:
+        print()
+        if not training_complete:
+            print("hf adapter verification: SKIPPED — no training_complete event in logs")
+        else:
+            s = training_complete.get("summary", {})
+            if s.get("pushed_adapter"):
+                adapter_repo = s.get("adapter_repo") or s.get("hub", {}).get("adapter_repo")
+                ok, msg = _verify_hf_adapter(adapter_repo)
+                print(f"hf adapter verification: {'PASS' if ok else 'FAIL'} — {msg}")
+            else:
+                print("hf adapter verification: SKIPPED — pushed_adapter=False in summary")
 
     fails = [r for r in report.get("results", []) if not r.get("ok")]
     if fails:
