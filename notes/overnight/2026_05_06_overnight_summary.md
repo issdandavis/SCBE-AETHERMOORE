@@ -162,3 +162,61 @@ Findings memo: `notes/overnight/2026_05_06_findings.md` (commits
 - **Lawyer AI vertical** still pending (memory: `project_lawyer_ai.md`)
 - **Untracked v6c/v6e/v6e-bumped DRAFT profiles** — should they be tracked
   or stay local-only? Not touched this session.
+
+---
+
+## Continuation block: 2026-05-06 (post-overnight, "keep working" window)
+
+Pure local work — no GPU dispatch, no HF push, no main merge. Focus:
+harden the shim primitives based on what the overnight audits taught.
+
+### CI unblock (PR #1384 — open, awaiting review)
+
+`tests/test_chemical_bonds.py` was failing the `tier-1-gates / core-gates`
+job on `main`. Root cause: the test imported `from governance.chemical_bonds`
+after only inserting `<repo>/src` on `sys.path`. With `<repo>` also on
+`sys.path` (CI sets `PYTHONPATH=.`), `governance` resolved to
+`spiral-word-app/governance.py` (single module file shadowing the
+`src/governance/` package). Fix: insert both repo and `repo/src`,
+import via `src.governance.chemical_bonds`. Local: 49 passed.
+PR https://github.com/issdandavis/SCBE-AETHERMOORE/pull/1384.
+
+### Shim hardening (5 commits on chore/release-4.0.3-housekeeping)
+
+Closes the two open follow-ups from the chemistry methodology-limit
+section, plus one bug surfaced by the resulting parametric sweep.
+
+| Commit | Purpose |
+|---|---|
+| `a6e6c1aa` | `build_bad_words_ids` + `suppress_forbidden=True` flag — masks forbidden tokens at decode time. Closes the chemistry strict 0.88 / best-of-N 1.0 split. |
+| `67aa8b71` | `coding_eval_best_of_n_response` + `DEFAULT_BEST_OF_N_CONTEXTS` — production wrapper trying decode contexts in order, short-circuits on first passing verdict. Identity-cost when greedy passes. |
+| `cdcf64b4` | Findings memo updated to reflect both follow-ups landed. |
+| `317f789e` | `_select_scaffold(forbidden_lower)` — collision-aware scaffolding. Surfaced by parametric sweep over all 9 eval contracts: `geoshell_pair_agent` forbids `"token"` (auth-token leakage guard) which silently broke the canonical `required-tokens:` scaffold. Coding/cross-lane/chemistry unchanged byte-for-byte; geoshell now uses `[anchors: ...]` fallback. |
+| `0ca0792f` | Sibling fix in HF Jobs audit script (kept its own inlined copy of the primitive — needed updating because commit `2d86bb86` made the audit contract-configurable, so any future contract pointing at it could otherwise self-trigger). |
+
+11 new tests landed. 133 governance tests pass; 205 broader
+governance+security tests pass.
+
+### What the parametric sweep teaches
+
+The geoshell scaffold collision was invisible to point tests — every
+existing test scoped to the coding contract. Added
+`test_structural_ceiling_holds_across_all_eval_contracts` that sweeps
+every `*_eval_contract.json`, asserts each prompt's required+forbidden
+does not self-trigger via the prefix scaffolding. Future contracts
+forbidding scaffold-colliding substrings fail the test instead of
+silently biasing audits. **Lesson:** parametric drift sweeps catch
+silent-bias bugs that point tests can't.
+
+### Real-model verification status
+
+The post-overnight commits are local-only and not yet validated against
+real models. The chemistry contract (which exposed the methodology
+limit on real Qwen) is now solvable in three independent ways:
+1. `suppress_forbidden=True` on the existing audit script
+2. `coding_eval_best_of_n_response` for production inference
+3. Both combined
+
+A real-model re-run against `chemistry_verification_unseen_eval_v1`
+with `suppress_forbidden=True` should bring greedy from 0.80 to 1.00.
+Deferred — needs explicit user auth before dispatching another HF Job.
