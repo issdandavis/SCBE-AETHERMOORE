@@ -484,6 +484,42 @@ current random and structured key profiles. The claim boundary remains the same:
 this is a proof over this simulator's planted-pair generator, not over all
 possible matrices or physical datasets.
 
+The adversarial optimizer is intentionally harsher:
+
+```powershell
+python scripts/experiments/mahss_tangent_rescue_adversarial.py --trials 1000 --sizes 80,320,500,1000,2000 --seeds 0:200 --output artifacts/mahss_dual_state/tangent_rescue_adversarial_v1.json
+```
+
+It samples key family, seed, board size, decoy count, decoy norm, and diamond
+alignment to maximize tangent-rescue failure while requiring a fair
+`tang_cross_k20` baseline. Current result:
+
+```text
+trials=1000
+fair_tang_cases=572
+target_failures_under_fair_tang=9
+worst_fair_case:
+  n=2000
+  seed=127
+  key_mode=signed_permutation
+  n_decoys_per_side=16
+  decoy_norm=5.5
+  diamond_alignment=0.82
+  target_recall=0.5
+  target_regret=0.0
+  target_evals=168
+```
+
+That is a real counterexample to universal planted-pair full recall. It does
+not refute the zero-regret optimum-finding result for that case, because the
+target still selects the global optimum, but it does narrow the claim:
+
+> Tangent rescue is currently proven as a fast optimum-finding selector on the
+> tested generator and as a full-recall selector on the proof-suite profiles.
+> Under adversarially weakened alignment, it can lose planted-pair recall even
+> when Tang k20 retains full recall. Publication claims must separate
+> zero-regret optimum recovery from full planted-pair recall.
+
 Complex edge metrics are implemented (`phase`, `hybrid`, `weighted_hybrid`) but
 are not the default winner. In the refreshed sweep, `polyhedral_edge_k20_w10`
 with weighted-hybrid edges reached only 44/50 full recall at n=80 and degraded

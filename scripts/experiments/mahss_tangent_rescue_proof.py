@@ -129,8 +129,8 @@ def run_profiles(profiles: Sequence[ProofProfile]) -> dict[str, object]:
         "elapsed_s": round(time.time() - started, 2),
         "claim_boundary": (
             "Synthetic dual-state keyed-search generator only. This suite does not "
-            "cover adversarially optimized keys, real attention matrices, or a "
-            "literature-faithful dequantized Tang sampler."
+            "cover the black-box adversarial parameter optimizer, real attention "
+            "matrices, or a literature-faithful dequantized Tang sampler."
         ),
     }
 
