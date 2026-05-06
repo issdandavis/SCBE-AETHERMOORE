@@ -47,7 +47,7 @@
           "text": "Submerged layer"
         }
       ],
-      "link_count": 64,
+      "link_count": 196,
       "table_count": 0,
       "text_preview": "\u25c8 feed\n    \n      SPY\u2009\u2014\u2009\n      QQQ\u2009\u2014\u2009\n      NVDA\u2009\u2014\u2009\n      BTC\u2009\u2014\u2009\n    \n    \n      \n        Fetching research feed\u2026\n      \n    \n  \n\n  \n    \n      \n        \n          AI governance, built from real math and real code\n          I built a messy but real system for governing how AI thinks, routes, and drifts.\n          \n            AetherMoore is the public face of SCBE-AETHERMOORE: a geometric governance stack for AI training, agent communication, and risk tracing. It uses structured channels, hyperb..."
     },
@@ -105,69 +105,69 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": ".de TLD offline due to DNSSEC?",
-      "word_count": 647,
+      "description": "Show HN: Red Squares \u2013 GitHub outages as contributions",
+      "word_count": 583,
       "headings": [
         {
           "level": 2,
-          "text": ".de TLD offline due to DNSSEC?",
+          "text": "Show HN: Red Squares \u2013 GitHub outages as contributions",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "verisignlabs.com",
+          "text": "cian.lol",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Accelerating Gemma 4: faster inference with multi-token prediction drafters",
+          "text": "The bottleneck was never the code",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "blog.google",
+          "text": "thetypicalset.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Computer Use is 45x more expensive than structured APIs",
+          "text": "Setting up a Sun Ray server on OpenIndiana Hipster 2025.10",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "reflex.dev",
+          "text": "catstret.ch",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Write some software, give it away for free",
+          "text": "Agents can now create Cloudflare accounts, buy domains, and deploy",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "nonogra.ph",
+          "text": "cloudflare.com",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "Three Inverse Laws of AI",
+          "text": "StarFighter 16-Inch",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "susam.net",
+          "text": "starlabs.systems",
           "source": "fallback-selector"
         }
       ],
       "link_count": 225,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1..de TLD offline due to DNSSEC? (verisignlabs.com)508 points by warpspin 4 hours ago  | hide | 230\u00a0comments2.Accelerating Gemma 4: faster inference with multi-token prediction drafters (blog.google)430 points by amrrs 8 hours ago  | hide | 195\u00a0comments3.Computer Use is 45x more expensive than structured APIs (reflex.dev)301 points by palashawas 8 hours ago  | hide | 164\u00a0comments4.Write some software, give it away for free (nonogr..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Show HN: Red Squares \u2013 GitHub outages as contributions (cian.lol)296 points by cianmm 2 hours ago  | hide | 55\u00a0comments2.The bottleneck was never the code (thetypicalset.com)58 points by Anon84 2 hours ago  | hide | 26\u00a0comments3.Setting up a Sun Ray server on OpenIndiana Hipster 2025.10 (catstret.ch)31 points by jandeboevrie 1 hour ago  | hide | 1\u00a0comment4.Agents can now create Cloudflare accounts, buy domains, and deploy (cloud..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 2058,
+      "word_count": 2152,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Tue, 5 May 2026 (showing first 50 of 385 entries )"
+          "text": "Wed, 6 May 2026 (showing first 50 of 186 entries )"
         }
       ],
-      "link_count": 579,
+      "link_count": 554,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Tue, 5 May 2026\n        \n      \n        \n          Mon, 4 May 2026\n        \n      \n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1012 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1012\n\n    \n    Showing up to 50 entries per ..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Wed, 6 May 2026\n        \n      \n        \n          Tue, 5 May 2026\n        \n      \n        \n          Mon, 4 May 2026\n        \n      \n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1020 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1020\n\n    \n    Showing up to 50 entries per p..."
     }
   ]
 }
