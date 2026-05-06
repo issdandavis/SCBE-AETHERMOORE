@@ -14,6 +14,14 @@ import os
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
+import numpy as np
+
+from src.symphonic_cipher.scbe_aethermoore.ai_brain.hamiltonian_braid import (
+    PHASE_STATES,
+    Rail,
+    RailPoint,
+    constraint_project,
+)
 from src.symphonic_cipher.scbe_aethermoore.qc_lattice.phdm import PHDMHamiltonianPath
 
 
@@ -63,10 +71,9 @@ class BraidLedger:
     """
     Thin SpiralWord adapter over PHDMHamiltonianPath.
 
-    The tube check is intentionally conservative for this first adapter:
-    normal hash-derived commits stay inside the tube, while explicit gate
-    vectors can mark a receipt as outside the tube for validation tests and
-    future controller wiring.
+    The tube check uses the existing Hamiltonian braid projection primitives.
+    Normal hash-derived commits are placed on the rail center; explicit gate
+    vectors perturb the 21D state and may fall outside ``tube_epsilon``.
     """
 
     def __init__(self, session_key: Optional[bytes] = None, tube_epsilon: float = 0.15):
@@ -75,6 +82,7 @@ class BraidLedger:
         self.path = PHDMHamiltonianPath(key=self.session_key)
         self.nodes = self.path.compute_path()
         self.loop_root = self.path.get_path_digest().hex()
+        self.rail = self._build_receipt_rail()
 
     def commit(
         self,
@@ -87,13 +95,9 @@ class BraidLedger:
         docx_hash = _normalize_sha256(docx_hash)
         seed = int(prompt_hash[:8] + docx_hash[:8], 16)
 
-        if gate_vector is None:
-            loop_index = seed % len(self.nodes)
-            tube_ok = True
-        else:
-            gates = [int(value) for value in gate_vector]
-            loop_index = sum(gates) % len(self.nodes)
-            tube_ok = self._gate_vector_in_tube(gates)
+        gates = None if gate_vector is None else [int(value) for value in gate_vector]
+        loop_index = seed % len(self.nodes) if gates is None else sum(gates) % len(self.nodes)
+        tube_ok = self._tube_check(loop_index, seed, gates)
 
         node = self.nodes[loop_index]
         return BraidReceipt(
@@ -128,14 +132,36 @@ class BraidLedger:
 
         return True, True, None
 
-    def _gate_vector_in_tube(self, gate_vector: list[int]) -> bool:
-        if not gate_vector:
+    def _build_receipt_rail(self) -> Rail:
+        points: list[RailPoint] = []
+        denom = max(1, len(self.nodes) - 1)
+        for index in range(len(self.nodes)):
+            position = np.zeros(21, dtype=float)
+            position[0] = (index / denom) * 0.20
+            position[1] = ((index * 7) % len(self.nodes)) / denom * 0.10
+            position[2] = ((index * 11) % len(self.nodes)) / denom * 0.10
+            points.append(
+                RailPoint(
+                    position=position,
+                    expected_phase=PHASE_STATES[index % len(PHASE_STATES)],
+                    index=index,
+                )
+            )
+        return Rail(points=points)
+
+    def _tube_check(self, loop_index: int, seed: int, gate_vector: Optional[list[int]]) -> bool:
+        if gate_vector is None:
             return True
         if any(value < 0 or value > 255 for value in gate_vector):
             return False
         spread = max(gate_vector) - min(gate_vector)
-        normalized_spread = spread / 255
-        return normalized_spread <= self.tube_epsilon
+        normalized_spread = spread / 255.0
+        state = np.array(self.rail.points[loop_index].position, dtype=float)
+        state[3] = normalized_spread
+        state[4] = ((seed >> 8) & 0xFF) / 255.0 * 0.05
+        phase = PHASE_STATES[loop_index % len(PHASE_STATES)]
+        projection = constraint_project(state, phase, self.rail)
+        return projection.braid_dist <= self.tube_epsilon
 
 
 def get_braid_ledger() -> BraidLedger:
