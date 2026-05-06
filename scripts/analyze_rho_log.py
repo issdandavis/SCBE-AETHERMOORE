@@ -23,32 +23,60 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 DEFAULT_PATH = Path("artifacts") / "rho_logging" / "composite_wall_rho.jsonl"
+RHO_LOG_WINDOW = 256
+RHO_LOG_MIN_SAMPLES = 32
+
+
+def _pearson(xs: List[float], ys: List[float]) -> Optional[float]:
+    n = min(len(xs), len(ys))
+    if n < 2:
+        return None
+    x = xs[-n:]
+    y = ys[-n:]
+    mx = sum(x) / n
+    my = sum(y) / n
+    num = sum((a - mx) * (b - my) for a, b in zip(x, y))
+    dx = math.sqrt(sum((a - mx) ** 2 for a in x))
+    dy = math.sqrt(sum((b - my) ** 2 for b in y))
+    if dx == 0.0 or dy == 0.0:
+        return 0.0
+    return float(num / (dx * dy))
+
+
+def _rolling_rhos(xs: List[float], ys: List[float]) -> List[float]:
+    out: List[float] = []
+    n = min(len(xs), len(ys))
+    for end in range(RHO_LOG_MIN_SAMPLES, n + 1):
+        start = max(0, end - RHO_LOG_WINDOW)
+        rho = _pearson(xs[start:end], ys[start:end])
+        if rho is not None and math.isfinite(rho):
+            out.append(float(rho))
+    return out
 
 
 def _summarize(records: List[dict]) -> Dict[str, dict]:
-    per_axis: Dict[str, List[Optional[float]]] = defaultdict(list)
     distances_by_axis: Dict[str, List[float]] = defaultdict(list)
     h_by_axis: Dict[str, List[float]] = defaultdict(list)
     tiers: Dict[str, int] = defaultdict(int)
 
     for rec in records:
         tiers[rec.get("tier", "?")] += 1
-        rho = rec.get("rho_per_axis", {}) or {}
         dists = rec.get("distances", {}) or {}
+        if not dists and rec.get("axis_distances"):
+            labels = rec.get("axis_labels") or [f"axis_{i}" for i in range(len(rec["axis_distances"]))]
+            dists = dict(zip(labels, rec["axis_distances"]))
         h = float(rec.get("h_composite", float("nan")))
-        for axis, val in rho.items():
-            per_axis[axis].append(val)
         for axis, dval in dists.items():
             distances_by_axis[axis].append(float(dval))
             h_by_axis[axis].append(h)
 
     summary: Dict[str, dict] = {}
-    for axis, vals in per_axis.items():
-        finite = [v for v in vals if v is not None and math.isfinite(v)]
-        latest = next((v for v in reversed(vals) if v is not None), None)
-        d_vals = distances_by_axis.get(axis, [])
+    for axis, d_vals in distances_by_axis.items():
+        h_vals = h_by_axis.get(axis, [])
+        finite = _rolling_rhos(d_vals, h_vals)
+        latest = finite[-1] if finite else None
         summary[axis] = {
-            "samples": len(vals),
+            "samples": len(d_vals),
             "warm_samples": len(finite),
             "rho_latest": latest,
             "rho_mean": (sum(finite) / len(finite)) if finite else None,

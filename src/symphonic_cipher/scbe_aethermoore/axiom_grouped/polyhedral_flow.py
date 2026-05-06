@@ -6,9 +6,8 @@ This module provides deterministic, dependency-light primitives used by the unit
 
 from __future__ import annotations
 
-from collections import deque
 from dataclasses import dataclass
-from typing import Deque, Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import json
 import math
@@ -25,7 +24,7 @@ PHI_INV: float = 1.0 / PHI
 _RHO_LOG_WINDOW: int = 256
 _RHO_LOG_MIN_SAMPLES: int = 32
 _RHO_LOG_LOCK = threading.Lock()
-_RHO_HISTORY: Dict[str, Deque[Tuple[float, float]]] = {}
+_RHO_HISTORY: Dict[str, object] = {}  # Backward-compatible import surface; no live rho state.
 
 
 TONGUE_WEIGHTS: Dict[str, float] = {
@@ -252,23 +251,21 @@ def _rho_log(distances: Dict[str, float], h: float, tier: str, phase_deviation: 
         return
     try:
         with _RHO_LOG_LOCK:
-            rho: Dict[str, Optional[float]] = {}
-            for k, v in distances.items():
-                buf = _RHO_HISTORY.setdefault(k, deque(maxlen=_RHO_LOG_WINDOW))
-                buf.append((float(v), float(h)))
-                rho[k] = _pearson(list(buf)) if len(buf) >= _RHO_LOG_MIN_SAMPLES else None
             path = os.environ.get(
                 "SCBE_RHO_LOG_PATH",
                 os.path.join("artifacts", "rho_logging", "composite_wall_rho.jsonl"),
             )
             os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+            labels = [str(k) for k in distances.keys()]
+            axis_distances = [float(distances[k]) for k in distances.keys()]
             rec = {
                 "ts": time.time(),
+                "axis_labels": labels,
+                "axis_distances": axis_distances,
                 "distances": {k: float(v) for k, v in distances.items()},
                 "h_composite": float(h),
                 "tier": tier,
                 "phase_deviation": float(phase_deviation),
-                "rho_per_axis": rho,
             }
             with open(path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(rec) + "\n")

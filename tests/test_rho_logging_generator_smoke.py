@@ -32,7 +32,9 @@ def test_generator_and_analyzer_roundtrip(tmp_path):
     lines = [ln for ln in log.read_text(encoding="utf-8").splitlines() if ln.strip()]
     assert len(lines) == 48
     last = json.loads(lines[-1])
-    assert "rho_per_axis" in last
+    assert "rho_per_axis" not in last
+    assert set(last) >= {"axis_labels", "axis_distances", "distances", "h_composite"}
+    assert len(last["axis_labels"]) == len(last["axis_distances"]) == 6
 
     r2 = subprocess.run(
         [sys.executable, str(AN), "--path", str(log), "--json", "--hint"],
@@ -46,6 +48,7 @@ def test_generator_and_analyzer_roundtrip(tmp_path):
     summary = json.loads(r2.stdout)
     assert summary["total_records"] == 48
     assert summary["per_axis"]
+    assert all(v["warm_samples"] > 0 for v in summary["per_axis"].values())
     assert "decision_hint" in summary
     assert summary["decision_hint"]["verdict"] in (
         "LOW_SIGNAL",

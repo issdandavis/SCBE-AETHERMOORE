@@ -5,7 +5,7 @@ Tests for the rho_i logging instrumentation in composite_harmonic_wall.
 Verifies:
 - Default (env unset) writes nothing and changes no return value.
 - SCBE_RHO_LOG=1 writes one JSONL record per call.
-- Per-axis rho is None until the warmup threshold is reached, then a number in [-1, 1].
+- Records contain raw per-axis distances only; rho is computed offline.
 - _pearson math is correct on simple analytic inputs.
 - Logging failure can never break the safety output.
 """
@@ -79,12 +79,23 @@ def test_env_on_writes_one_record_per_call(tmp_path, monkeypatch):
     lines = log_path.read_text(encoding="utf-8").strip().splitlines()
     assert len(lines) == 5
     rec = json.loads(lines[0])
-    assert set(rec) >= {"ts", "distances", "h_composite", "tier", "phase_deviation", "rho_per_axis"}
+    assert set(rec) >= {
+        "ts",
+        "axis_labels",
+        "axis_distances",
+        "distances",
+        "h_composite",
+        "tier",
+        "phase_deviation",
+    }
     assert set(rec["distances"]) == {"KO", "AV"}
+    assert rec["axis_labels"] == ["KO", "AV"]
+    assert rec["axis_distances"] == [0.1, 0.3]
+    assert "rho_per_axis" not in rec
     assert rec["tier"] in ("ALLOW", "QUARANTINE", "DENY")
 
 
-def test_rho_is_none_below_warmup_then_real(tmp_path, monkeypatch):
+def test_logger_stays_stateless_above_warmup(tmp_path, monkeypatch):
     log_path = tmp_path / "rho.jsonl"
     monkeypatch.setenv("SCBE_RHO_LOG", "1")
     monkeypatch.setenv("SCBE_RHO_LOG_PATH", str(log_path))
@@ -92,13 +103,12 @@ def test_rho_is_none_below_warmup_then_real(tmp_path, monkeypatch):
     for i in range(n):
         composite_harmonic_wall({"KO": 0.01 * i, "AV": 0.005 * i})
     lines = log_path.read_text(encoding="utf-8").strip().splitlines()
-    early = json.loads(lines[0])
     late = json.loads(lines[-1])
-    assert early["rho_per_axis"]["KO"] is None
-    assert early["rho_per_axis"]["AV"] is None
-    for axis, val in late["rho_per_axis"].items():
-        assert val is not None, axis
-        assert -1.0 <= val <= 1.0, (axis, val)
+    assert len(lines) == n
+    assert late["axis_labels"] == ["KO", "AV"]
+    assert late["axis_distances"] == pytest.approx([0.01 * (n - 1), 0.005 * (n - 1)])
+    assert _RHO_HISTORY == {}
+    assert "rho_per_axis" not in late
 
 
 def test_return_value_unchanged_by_logging(tmp_path, monkeypatch):

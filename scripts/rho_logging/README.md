@@ -1,6 +1,11 @@
 # Rho logging (`composite_harmonic_wall`)
 
-Instrumentation lives in `src/symphonic_cipher/scbe_aethermoore/axiom_grouped/polyhedral_flow.py` (env-gated, fail-soft).
+Instrumentation lives in `src/symphonic_cipher/scbe_aethermoore/axiom_grouped/polyhedral_flow.py` (env-gated, fail-soft, stateless).
+
+The hot path only appends raw `axis_labels`, `axis_distances`, `distances`,
+`phase_deviation`, and `h_composite` JSONL records. Pearson rho is computed
+offline by `scripts/analyze_rho_log.py`; it is not maintained in memory during
+cipher execution.
 
 ## PowerShell (Windows): use `$env:`, not `export`
 
@@ -29,7 +34,7 @@ $env:SCBE_RHO_LOG_PATH = "$(Get-Location)\artifacts\rho_logging\composite_wall_r
 ## Workflow
 
 1. Set the two env vars in the **same** shell (or process) that runs code calling `composite_harmonic_wall`.
-2. Run your app / tests / harness until the JSONL has enough rows (Pearson warms after 32 samples per axis in-process).
+2. Run your app / tests / harness until the JSONL has enough rows (offline Pearson warms after 32 samples per axis).
 3. Read out:
 
 ```powershell
