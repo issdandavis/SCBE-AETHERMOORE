@@ -1,8 +1,8 @@
 {
-  "generated": "2026-05-04T03:22:03.216935+00:00",
-  "feed_generated": "2026-05-04T03:22:02.707088+00:00",
-  "items_processed": 47,
-  "sft_pairs_generated": 329,
+  "generated": "2026-05-06T03:21:44.915679+00:00",
+  "feed_generated": "2026-05-06T03:21:44.683031+00:00",
+  "items_processed": 66,
+  "sft_pairs_generated": 462,
   "errors": 0,
   "crypto_tier": "cryptography",
   "tokenizer_source": "src.crypto.sacred_tongues",
@@ -14,8 +14,8 @@
     "UM",
     "DR"
   ],
-  "records_file": "training-data/news-pipeline/records/2026-05-04.jsonl",
-  "sft_file": "training-data/news-pipeline/sft/2026-05-04.jsonl",
+  "records_file": "training-data/news-pipeline/records/2026-05-06.jsonl",
+  "sft_file": "training-data/news-pipeline/sft/2026-05-06.jsonl",
   "pipeline_stages": [
     "raw",
     "geotagged",
