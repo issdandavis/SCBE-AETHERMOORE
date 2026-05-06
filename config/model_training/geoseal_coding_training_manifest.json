@@ -177,6 +177,12 @@
       "profile_path": "config/model_training/coding-agent-qwen-geoseal-harness-merged-v1.json",
       "stage": "geoseal_harness_merged_model",
       "purpose": "First confirmed harnessed coding-agent full model. General coding is handled by merged model weights; exact CA opcode planning is routed through scbe_code.ca-plan. Passed 4/4 harness smoke in HF job 69f5a24298a8d679adfb8713."
+    },
+    {
+      "profile_id": "scbe-coding-primary-7b-qlora-v6g-raw-repair",
+      "profile_path": "config/model_training/scbe-coding-primary-7b-qlora-v6g-raw-repair.json",
+      "stage": "coding_primary_raw_failure_repair",
+      "purpose": "Follow-up to v6f after production-shim pass 12/12 but raw 1/12. Adds analog raw-failure repair rows mined from v6f without copying frozen prompt text."
     }
   ],
   "smoke_eval": {

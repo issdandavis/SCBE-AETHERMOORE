@@ -121,3 +121,47 @@ Next useful work:
 - mine the 11 raw no-shim failures into repair data;
 - keep Kaggle on hold until a modern-GPU retry is worth spending;
 - fix packet trace byte determinism if release-score improvement matters.
+
+## Raw-Failure Repair Solution
+
+Implemented the missing repair-data miner:
+
+```powershell
+python scripts/training_data/build_coding_raw_failure_repair_sft.py --hf-job-id 69fb7223317220dbbd1a53da --repeats 8 --json
+```
+
+Output:
+
+- `training-data/sft/coding_raw_failure_repair_v1_train.sft.jsonl`
+- `training-data/sft/coding_raw_failure_repair_v1_eval.sft.jsonl`
+- `training-data/sft/coding_raw_failure_repair_v1_manifest.json`
+
+Result:
+
+- raw failures mined: 11
+- train records: 90
+- eval records: 22
+- frozen prompt text copied into messages: no
+- raw responses copied into messages: no
+- repair strategy: neighboring analog tasks by failure kind
+
+Added runnable follow-up profile:
+
+- `config/model_training/scbe-coding-primary-7b-qlora-v6g-raw-repair.json`
+- adapter target: `issdandavis/scbe-coding-primary-7b-qlora-v6g-raw-repair`
+- train rows in plan: 551
+- eval rows in plan: 110
+- HF flavor: `l4x1`
+- idempotency key from dry plan: `7730a049e5f5480fb77ab7e7df7d8fc3c55b6ebd6f304490ac7e2a0ce464af34`
+
+Dispatch only when ready to spend another HF job:
+
+```powershell
+python scripts/system/dispatch_coding_agent_hf_job.py dispatch --profile-path config/model_training/scbe-coding-primary-7b-qlora-v6g-raw-repair.json --json
+```
+
+Promotion read for v6g:
+
+- primary: production-shim gate must stay green;
+- secondary: raw pass rate must improve over v6f's 1/12 baseline;
+- do not claim no-shim mastery until raw pass rate clears a larger frozen eval.

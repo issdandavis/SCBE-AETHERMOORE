@@ -1,0 +1,45 @@
+{
+  "schema_version": "coding_raw_failure_repair_manifest_v1",
+  "generated_utc": "2026-05-06T23:54:59Z",
+  "source_contract_id": "coding_verification_unseen_eval_v1",
+  "source_adapter": "/tmp/scbe-coding-agent/adapter",
+  "gate_pass_rate": 1.0,
+  "raw_pass_rate": 0.08333333333333333,
+  "raw_failures": 11,
+  "repeats": 8,
+  "train_records": 90,
+  "eval_records": 22,
+  "failure_kinds": [
+    "approval_card_verdict",
+    "code_chemistry_boundary",
+    "cross_tongue_slot_translation",
+    "dictionary_merge_body",
+    "guarded_python_body",
+    "javascript_empty_guard",
+    "multi_lens_consistency",
+    "route_plus_python_body",
+    "rust_branch_body",
+    "rust_option_body"
+  ],
+  "source_prompt_ids": [
+    "code_eval_count_vowels_translate",
+    "code_eval_zero_guard_safe_subtract",
+    "code_eval_clamp_value_rust",
+    "code_eval_avali_javascript_lens",
+    "code_eval_identify_algorithm_haskell",
+    "code_eval_multi_lens_consistency",
+    "code_eval_approval_card_verdict",
+    "code_eval_geoseal_pair_route",
+    "code_eval_lane_boundary_no_chem",
+    "code_eval_executable_dict_merge",
+    "code_eval_runethic_option_chain"
+  ],
+  "frozen_eval_boundary": {
+    "copies_prompt_text": false,
+    "copies_raw_response": false,
+    "uses_analog_neighbor_tasks": true
+  },
+  "next_gate": "retrain or merge this shard, then report raw_pass_rate and shim_pass_rate separately",
+  "train_path": "training-data\\sft\\coding_raw_failure_repair_v1_train.sft.jsonl",
+  "eval_path": "training-data\\sft\\coding_raw_failure_repair_v1_eval.sft.jsonl"
+}
