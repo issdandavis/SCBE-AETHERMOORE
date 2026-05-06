@@ -39,6 +39,12 @@ Reads from environment:
   - SCBE_AUDIT_TEMPERATURES: comma-separated temperatures (default 0.0,0.4,0.8)
   - SCBE_AUDIT_MAX_NEW_TOKENS: max generation length (default 240)
   - SCBE_AUDIT_RESULT_REPO: target dataset repo (default issdandavis/scbe-eval-results)
+  - SCBE_AUDIT_SUPPRESS_FORBIDDEN: when "true"/"1", pass forbidden tokens
+    as ``bad_words_ids`` to ``model.generate``, masking them at decode time.
+    Mirrors ``coding_eval_constrained_response(suppress_forbidden=True)``.
+    Closes the chemistry-style strict-vs-best-of-N gap (greedy 0.80 / 0.92
+    sampled / best-of-N 1.0 was caused by drift into common-English
+    forbidden tokens past the prefix).
 """
 
 from __future__ import annotations
@@ -193,6 +199,40 @@ def _seed_torch(seed: int) -> None:
         torch.cuda.manual_seed_all(seed)
 
 
+def _build_bad_words_ids(tokenizer, forbidden):
+    """Render forbidden tokens into HF ``bad_words_ids`` shape.
+
+    Mirrors ``src/governance/coding_eval_constrained_decoding.py:build_bad_words_ids``
+    so the audit and the production shim mask forbidden tokens identically.
+    Tokenizes both leading-space and no-leading-space variants for BPE-family
+    tokenizers; dedups; drops empty/None entries.
+    """
+
+    if not forbidden:
+        return None
+    seen = set()
+    bad = []
+    for token in forbidden:
+        if token is None:
+            continue
+        token_str = str(token).strip()
+        if not token_str:
+            continue
+        for candidate in (token_str, " " + token_str):
+            try:
+                ids = tokenizer.encode(candidate, add_special_tokens=False)
+            except TypeError:
+                ids = tokenizer.encode(candidate)
+            if not ids:
+                continue
+            ids_tuple = tuple(int(x) for x in ids)
+            if ids_tuple in seen:
+                continue
+            seen.add(ids_tuple)
+            bad.append(list(ids_tuple))
+    return bad or None
+
+
 def _generate_one(
     model,
     tokenizer,
@@ -200,6 +240,7 @@ def _generate_one(
     seed: int,
     temperature: float,
     max_new_tokens: int,
+    suppress_forbidden: bool = False,
 ) -> str:
     import torch
 
@@ -213,23 +254,26 @@ def _generate_one(
         {"role": "system", "content": DEFAULT_SYSTEM_PROMPT},
         {"role": "user", "content": prompt.get("prompt", "")},
     ]
-    chat_text = tokenizer.apply_chat_template(
-        msgs, tokenize=False, add_generation_prompt=True
-    )
+    chat_text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
     primed = chat_text + forced_prefix + "\n"
     inputs = tokenizer(primed, return_tensors="pt").to(model.device)
     n_in = tokenizer(chat_text, return_tensors="pt")["input_ids"].shape[1]
 
     do_sample = temperature > 0.0
+    gen_kwargs = dict(
+        max_new_tokens=max_new_tokens,
+        do_sample=do_sample,
+        temperature=max(temperature, 1e-5),
+        top_p=0.95 if do_sample else 1.0,
+        pad_token_id=tokenizer.eos_token_id,
+    )
+    if suppress_forbidden:
+        bad_words_ids = _build_bad_words_ids(tokenizer, forbidden)
+        if bad_words_ids:
+            gen_kwargs["bad_words_ids"] = bad_words_ids
+
     with torch.no_grad():
-        out = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            do_sample=do_sample,
-            temperature=max(temperature, 1e-5),
-            top_p=0.95 if do_sample else 1.0,
-            pad_token_id=tokenizer.eos_token_id,
-        )
+        out = model.generate(**inputs, **gen_kwargs)
     return tokenizer.decode(out[0][n_in:], skip_special_tokens=True)
 
 
@@ -331,6 +375,12 @@ def main() -> int:
     temps_str = os.environ.get("SCBE_AUDIT_TEMPERATURES", "0.0,0.4,0.8")
     max_new_tokens = int(os.environ.get("SCBE_AUDIT_MAX_NEW_TOKENS", "240"))
     target_repo = os.environ.get("SCBE_AUDIT_RESULT_REPO", "issdandavis/scbe-eval-results")
+    suppress_forbidden = os.environ.get("SCBE_AUDIT_SUPPRESS_FORBIDDEN", "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    )
 
     seeds = [int(s) for s in seeds_str.split(",") if s.strip()]
     temperatures = [float(t) for t in temps_str.split(",") if t.strip()]
@@ -338,6 +388,7 @@ def main() -> int:
     print(f"[audit] base_model={base_model_id}")
     print(f"[audit] seeds={seeds} temperatures={temperatures}")
     print(f"[audit] max_new_tokens={max_new_tokens}")
+    print(f"[audit] suppress_forbidden={suppress_forbidden}")
 
     contract = _fetch_contract()
     contract_id = contract.get("contract_id", "<unknown>")
@@ -372,7 +423,13 @@ def main() -> int:
             for prompt in prompts:
                 pid = str(prompt.get("id", ""))
                 completion = _generate_one(
-                    model, tokenizer, prompt, seed, temperature, max_new_tokens
+                    model,
+                    tokenizer,
+                    prompt,
+                    seed,
+                    temperature,
+                    max_new_tokens,
+                    suppress_forbidden=suppress_forbidden,
                 )
                 check = required_forbidden_checker(prompt, completion)
                 trials.append(
@@ -405,6 +462,7 @@ def main() -> int:
         "contract_id": contract_id,
         "seeds": seeds,
         "temperatures": temperatures,
+        "suppress_forbidden": suppress_forbidden,
     }
     report = {
         **payload_for_key,
