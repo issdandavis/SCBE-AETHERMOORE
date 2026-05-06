@@ -140,8 +140,23 @@ DEFAULT_SYSTEM_PROMPT = (
 
 
 def _fetch_contract() -> dict:
-    """Return the embedded eval contract (no network call)."""
+    """Return the eval contract.
 
+    Default: embedded coding_verification_unseen_eval_v1 (no network).
+    Override: set SCBE_AUDIT_CONTRACT_REPO + SCBE_AUDIT_CONTRACT_PATH to
+    fetch a different contract from an HF dataset repo. This lets the
+    same audit script be reused across coding, chemistry, and any other
+    required+forbidden substring contract.
+    """
+
+    repo = os.environ.get("SCBE_AUDIT_CONTRACT_REPO", "").strip()
+    path = os.environ.get("SCBE_AUDIT_CONTRACT_PATH", "").strip()
+    if repo and path:
+        from huggingface_hub import hf_hub_download
+
+        local = hf_hub_download(repo_id=repo, filename=path, repo_type="dataset")
+        with open(local, "r", encoding="utf-8") as f:
+            return json.load(f)
     return json.loads(EMBEDDED_CONTRACT_JSON)
 
 
