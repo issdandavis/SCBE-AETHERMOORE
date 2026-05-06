@@ -44,6 +44,11 @@ Reads from environment:
   SCBE_AUDIT_SEEDS                      — default 0,1,2,3,4
   SCBE_AUDIT_TEMPERATURES               — default 0.0,0.4,0.8
   SCBE_AUDIT_MAX_NEW_TOKENS             — default 320
+  SCBE_AUDIT_USE_SHIM                   — "true" to force the
+                                          aligned_foundations_constrained_decoding
+                                          prefix before model continuation
+  SCBE_AUDIT_SHIM_MODULE_PATH           — path to shim module in dataset repo
+                                          (default aligned_foundations_constrained_decoding.py)
   SCBE_AUDIT_RESULT_REPO                — default issdandavis/scbe-eval-results
 
 Output: pushes a JSON report to ``SCBE_AUDIT_RESULT_REPO`` named
@@ -114,7 +119,13 @@ def _generate_one(
     seed: int,
     temperature: float,
     max_new_tokens: int,
+    forced_prefix: str = "",
 ) -> str:
+    """Generate. If ``forced_prefix`` is non-empty, the chat input is the
+    chat template + the prefix, so the prefix is treated as already-spoken
+    by the assistant and the model continues from it.
+    """
+
     import torch
 
     _seed_torch(seed)
@@ -125,8 +136,9 @@ def _generate_one(
     msgs.append({"role": "user", "content": user_prompt})
 
     chat_text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-    inputs = tokenizer(chat_text, return_tensors="pt").to(model.device)
-    n_in = inputs["input_ids"].shape[1]
+    primed = chat_text + (forced_prefix or "")
+    inputs = tokenizer(primed, return_tensors="pt").to(model.device)
+    n_in = tokenizer(chat_text, return_tensors="pt")["input_ids"].shape[1]
 
     do_sample = temperature > 0.0
     with torch.no_grad():
@@ -255,6 +267,10 @@ def main() -> int:
     cross_lane_path = os.environ.get(
         "SCBE_AUDIT_CROSS_LANE_PATH", "aligned_foundations_cross_lane.py"
     )
+    shim_module_path = os.environ.get(
+        "SCBE_AUDIT_SHIM_MODULE_PATH", "aligned_foundations_constrained_decoding.py"
+    )
+    use_shim = os.environ.get("SCBE_AUDIT_USE_SHIM", "false").lower() in ("1", "true", "yes")
     mode = os.environ.get("SCBE_AUDIT_MODE", "full").lower()
     holdout_limit = int(os.environ.get("SCBE_AUDIT_HOLDOUT_LIMIT", "0"))
     seeds = [int(s) for s in os.environ.get("SCBE_AUDIT_SEEDS", "0,1,2,3,4").split(",") if s.strip()]
@@ -272,11 +288,28 @@ def main() -> int:
     print(f"[audit] mode={mode}  holdout_limit={holdout_limit}")
     print(f"[audit] seeds={seeds}  temperatures={temperatures}")
     print(f"[audit] max_new_tokens={max_new_tokens}")
+    print(f"[audit] use_shim={use_shim}")
 
     print("[audit] downloading cross-lane module + holdout from dataset repo...")
     cross_lane_local = _download_from_dataset(holdout_repo, cross_lane_path)
     holdout_local = _download_from_dataset(holdout_repo, holdout_path)
     cross_lane = _load_cross_lane_module(cross_lane_local)
+
+    shim = None
+    if use_shim:
+        try:
+            shim_local = _download_from_dataset(holdout_repo, shim_module_path)
+            shim_spec = importlib.util.spec_from_file_location(
+                "aligned_foundations_constrained_decoding", shim_local
+            )
+            shim_module = importlib.util.module_from_spec(shim_spec)
+            shim_spec.loader.exec_module(shim_module)
+            shim = shim_module
+            print(f"[audit] shim loaded from {shim_module_path}")
+        except Exception as exc:
+            print(f"[audit] WARNING: shim requested but load failed: {exc}")
+            shim = None
+            use_shim = False
 
     records = []
     with open(holdout_local, "r", encoding="utf-8") as f:
@@ -311,7 +344,17 @@ def main() -> int:
             user = cross_lane.user_prompt_text(rec)
             system = cross_lane.system_prompt_text(rec)
             reference = cross_lane.reference_assistant_text(rec)
-            response = _generate_one(model, tokenizer, user, system, 0, 0.0, max_new_tokens)
+            forced = ""
+            if use_shim and shim is not None:
+                forced = shim.build_aligned_foundations_prefix(
+                    str(meta.get("map", "")),
+                    str(meta.get("kind", "")),
+                    str(meta.get("value", "")),
+                    str(meta.get("tongue", "")),
+                )
+            response = _generate_one(
+                model, tokenizer, user, system, 0, 0.0, max_new_tokens, forced_prefix=forced
+            )
             check = cross_lane.score_packet_compliance(
                 str(meta.get("map", "")), str(meta.get("kind", "")), response, reference
             )
@@ -340,9 +383,21 @@ def main() -> int:
         system = cross_lane.system_prompt_text(rec)
         reference = cross_lane.reference_assistant_text(rec)
 
+        forced = ""
+        if use_shim and shim is not None:
+            forced = shim.build_aligned_foundations_prefix(
+                str(meta.get("map", "")),
+                str(meta.get("kind", "")),
+                str(meta.get("value", "")),
+                str(meta.get("tongue", "")),
+            )
+
         for seed in seeds:
             for temperature in temperatures:
-                response = _generate_one(model, tokenizer, user, system, seed, temperature, max_new_tokens)
+                response = _generate_one(
+                    model, tokenizer, user, system, seed, temperature, max_new_tokens,
+                    forced_prefix=forced,
+                )
                 check = cross_lane.score_packet_compliance(
                     str(meta.get("map", "")), str(meta.get("kind", "")), response, reference
                 )
@@ -379,6 +434,7 @@ def main() -> int:
         "holdout_limit": holdout_limit,
         "seeds": seeds,
         "temperatures": temperatures,
+        "use_shim": use_shim,
     }
     report = {
         **payload_for_key,
@@ -415,7 +471,8 @@ def main() -> int:
         print(f"  {fc['map']:<28} {fc['kind']:<22} {fc['pass_rate']:.2f}  ({fc['passed']}/{fc['n']})")
     print()
 
-    file_name = f"aligned_foundations_audit_{mode}_{_utc_stamp()}.json"
+    shim_tag = "_shim" if use_shim else ""
+    file_name = f"aligned_foundations_audit_{mode}{shim_tag}_{_utc_stamp()}.json"
     try:
         url = _push_to_hub(report, target_repo, file_name)
         print(f"[audit] uploaded to {url}")
