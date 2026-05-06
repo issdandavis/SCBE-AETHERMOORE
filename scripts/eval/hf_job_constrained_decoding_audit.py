@@ -95,14 +95,34 @@ def _filter_required_against_forbidden(required, forbidden) -> list[str]:
     return kept
 
 
+# Scaffolding candidates: canonical first (preserves audited
+# coding/cross-lane prefixes byte-for-byte for contracts that don't forbid
+# "token"/"tokens"/":"), then collision-free fallbacks. Mirrors
+# src/governance/coding_eval_constrained_decoding.py:_PREFIX_SCAFFOLDS.
+_PREFIX_SCAFFOLDS = [
+    ("required-tokens: ", " ::", " | "),
+    ("[anchors: ", "]", "; "),
+    ("|>>", "<<|", " // "),
+]
+
+
+def _select_scaffold(forbidden_lower):
+    for lead, trail, sep in _PREFIX_SCAFFOLDS:
+        scaffolding = (lead + trail + sep).lower()
+        if not any(f in scaffolding for f in forbidden_lower):
+            return (lead, trail, sep)
+    return ("", "", " ")
+
+
 def build_prefix_from_required(required, forbidden=None) -> str:
-    kept = _filter_required_against_forbidden(required, forbidden or [])
+    forbidden_list = list(forbidden or [])
+    forbidden_lower = [str(f).lower() for f in forbidden_list if str(f).strip()]
+    kept = _filter_required_against_forbidden(required, forbidden_list)
+    lead, trail, sep = _select_scaffold(forbidden_lower)
     if not kept:
-        return "required-tokens: (none) ::"
-    rendered = " | ".join(
-        f"`{tok}`" if "_" in tok or " " in tok else tok for tok in kept
-    )
-    return f"required-tokens: {rendered} ::"
+        return f"{lead}(none){trail}"
+    rendered = sep.join(f"`{tok}`" if "_" in tok or " " in tok else tok for tok in kept)
+    return f"{lead}{rendered}{trail}"
 
 
 def required_forbidden_checker(prompt: dict, completion: str) -> dict:
