@@ -43,7 +43,6 @@ from src.governance.stage6_constrained_decoding import (  # noqa: F401
     score_prompt,
 )
 
-
 DEFAULT_SYSTEM_PROMPT = (
     "You are an SCBE-AETHERMOORE coding agent. When asked to produce code, "
     "respond with the bare executable code only. Do not wrap the code in "
@@ -82,6 +81,55 @@ def _filter_required_against_forbidden(
     return kept
 
 
+def build_bad_words_ids(
+    tokenizer,
+    forbidden: Iterable[str],
+) -> Optional[List[List[int]]]:
+    """Render a contract's ``forbidden`` list into a ``bad_words_ids`` list
+    suitable for ``model.generate(...)``.
+
+    Closes the chemistry-gate methodology limit (best-of-N 1.0 but strict
+    0.88 because the model occasionally drifts into common-English forbidden
+    tokens like ``"invalid"`` during continuation past the prefix). With
+    ``bad_words_ids`` set, those tokens are masked at decode time, eliminating
+    the continuation-drift failure mode.
+
+    For each forbidden string we tokenize two variants — with and without a
+    leading space — because tokenizers (BPE family in particular) emit
+    different IDs depending on whether the string starts a new word. Both
+    variants are added so the decoder can't slip through either way.
+
+    Empty token-id sequences (which would break ``model.generate``) and
+    duplicates are filtered out. Returns ``None`` if no usable token
+    sequences were produced.
+    """
+
+    if not forbidden:
+        return None
+
+    seen: set = set()
+    bad_words: List[List[int]] = []
+    for token in forbidden:
+        if token is None:
+            continue
+        token_str = str(token).strip()
+        if not token_str:
+            continue
+        for candidate in (token_str, " " + token_str):
+            try:
+                ids = tokenizer.encode(candidate, add_special_tokens=False)
+            except TypeError:
+                ids = tokenizer.encode(candidate)
+            if not ids:
+                continue
+            ids_tuple = tuple(int(x) for x in ids)
+            if ids_tuple in seen:
+                continue
+            seen.add(ids_tuple)
+            bad_words.append(list(ids_tuple))
+    return bad_words or None
+
+
 def build_prefix_from_required(
     required: Iterable[str],
     forbidden: Optional[Iterable[str]] = None,
@@ -112,13 +160,22 @@ def coding_eval_constrained_response(
     max_new_tokens: int = 240,
     *,
     system_prompt: str = DEFAULT_SYSTEM_PROMPT,
+    suppress_forbidden: bool = False,
 ) -> Dict[str, Any]:
     """High-level helper: read required tokens from prompt, build prefix,
     generate via stage6's chat-template+forced-prefix path, score.
 
+    With ``suppress_forbidden=True`` (off by default for backward compat with
+    the audited 180/180 number) the contract's ``forbidden`` list is also
+    rendered into ``bad_words_ids`` and passed to ``model.generate``, which
+    masks those token sequences at decode time. This addresses the chemistry
+    gate's best-of-N 1.0 / strict 0.88 split where greedy occasionally drifted
+    into common-English forbidden tokens past the prefix.
+
     Returns a verdict dict with ``id``, ``ok``, ``missing_required``,
-    ``triggered_forbidden``, ``response``, and ``prefix``. The ``response``
-    field includes the forced prefix.
+    ``triggered_forbidden``, ``response``, ``prefix``, and (when suppression
+    is on) ``suppressed_token_count``. The ``response`` field includes the
+    forced prefix.
     """
 
     prompt_id = prompt.get("id", "")
@@ -126,10 +183,6 @@ def coding_eval_constrained_response(
     forbidden = list(prompt.get("forbidden", []) or [])
     forced_prefix = build_prefix_from_required(required, forbidden)
 
-    # Use stage6's generator; it already accepts an arbitrary system prompt
-    # by way of a closure over its module-level SYSTEM_PROMPT. We monkey-call
-    # the underlying chat-template flow directly so the system prompt can
-    # vary.
     msgs = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt.get("prompt", "")},
@@ -138,24 +191,32 @@ def coding_eval_constrained_response(
     primed_text = text + forced_prefix + "\n"
     inputs = tokenizer(primed_text, return_tensors="pt").to(model.device)
     n_in_chat_only = tokenizer(text, return_tensors="pt")["input_ids"].shape[1]
-    out = model.generate(
-        **inputs,
+
+    bad_words_ids = build_bad_words_ids(tokenizer, forbidden) if suppress_forbidden else None
+    generate_kwargs: Dict[str, Any] = dict(
         max_new_tokens=max_new_tokens,
         do_sample=False,
         temperature=1.0,
         pad_token_id=tokenizer.eos_token_id,
     )
+    if bad_words_ids:
+        generate_kwargs["bad_words_ids"] = bad_words_ids
+
+    out = model.generate(**inputs, **generate_kwargs)
     response = tokenizer.decode(out[0][n_in_chat_only:], skip_special_tokens=True)
 
     diag = score_prompt(prompt, response)
     diag["response"] = response
     diag["prefix"] = forced_prefix
     diag["id"] = prompt_id
+    if suppress_forbidden:
+        diag["suppressed_token_count"] = len(bad_words_ids) if bad_words_ids else 0
     return diag
 
 
 __all__ = [
     "DEFAULT_SYSTEM_PROMPT",
+    "build_bad_words_ids",
     "build_prefix_from_required",
     "coding_eval_constrained_response",
     "score_prompt",

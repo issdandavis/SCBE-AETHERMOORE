@@ -24,8 +24,7 @@ out the canonical full form (Kor'aelin / Avali / Runethic / Cassisivadan
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Tuple
-
+from typing import Callable, Dict, Iterable, Optional, Tuple
 
 _TONGUE_LONG = {
     "KO": "Kor'aelin",
@@ -55,11 +54,7 @@ def _bracket_packet_prefix(label: str, surface_value: str = "stub") -> str:
       - kv_keys (multiple ``key=`` pairs)
     """
 
-    return (
-        f"[{label}]\n"
-        "tag=stub key=stub envelope=stub\n"
-        f"surface={surface_value}\n"
-    )
+    return f"[{label}]\n" "tag=stub key=stub envelope=stub\n" f"surface={surface_value}\n"
 
 
 def _runtime_emission_rationale_prefix(map_name: str, value: str, tongue: str) -> str:
@@ -117,10 +112,7 @@ def _transport_atomic_rationale_prefix(map_name: str, value: str, tongue: str) -
     """
 
     speaker = _tongue_label(tongue)
-    return (
-        f"{speaker} transport stays bijective for {value or 'map_double'} with "
-        "harmonic fingerprint canonical.\n"
-    )
+    return f"{speaker} transport stays bijective for {value or 'map_double'} with " "harmonic fingerprint canonical.\n"
 
 
 def _cross_braid_pair_prefix(map_name: str, value: str, tongue: str) -> str:
@@ -147,10 +139,7 @@ def _convergence_action_anchor_prefix(map_name: str, value: str, tongue: str) ->
     """Force the 'convergence anchor' marker + KV keys."""
 
     speaker = _tongue_label(tongue)
-    return (
-        f"{speaker} convergence anchor: voice=stub motif=stub cadence=stub "
-        "runtime=stub spirit=stub\n"
-    )
+    return f"{speaker} convergence anchor: voice=stub motif=stub cadence=stub " "runtime=stub spirit=stub\n"
 
 
 def _bracket_packet_named_prefix(canonical_label: str) -> Callable[[str, str, str], str]:
@@ -206,9 +195,7 @@ def supported_map_kinds() -> Tuple[Tuple[str, str], ...]:
     return tuple(sorted(_PREFIX_BUILDERS.keys()))
 
 
-def build_aligned_foundations_prefix(
-    map_name: str, kind: str, value: str = "", tongue: str = ""
-) -> str:
+def build_aligned_foundations_prefix(map_name: str, kind: str, value: str = "", tongue: str = "") -> str:
     """Return a forced prefix that satisfies the cross-lane extractor for
     ``(map_name, kind)``. Empty string if no shim is registered for the pair.
 
@@ -251,6 +238,7 @@ def aligned_foundations_constrained_response(
     temperature: float = 0.0,
     max_new_tokens: int = 320,
     use_shim: bool = True,
+    forbidden_tokens: Optional[Iterable[str]] = None,
 ):
     """High-level helper: build a prefix from (map, kind, value, tongue),
     prime the model continuation from it, generate, return the response.
@@ -297,25 +285,32 @@ def aligned_foundations_constrained_response(
         msgs.append({"role": "system", "content": system_prompt})
     msgs.append({"role": "user", "content": user_prompt})
 
-    chat_text = tokenizer.apply_chat_template(
-        msgs, tokenize=False, add_generation_prompt=True
-    )
+    chat_text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
     primed = chat_text + prefix
     inputs = tokenizer(primed, return_tensors="pt").to(model.device)
     n_in_chat_only = tokenizer(chat_text, return_tensors="pt")["input_ids"].shape[1]
 
+    bad_words_ids = None
+    if forbidden_tokens:
+        from src.governance.coding_eval_constrained_decoding import build_bad_words_ids
+
+        bad_words_ids = build_bad_words_ids(tokenizer, forbidden_tokens)
+
     do_sample = temperature > 0.0
+    generate_kwargs = dict(
+        max_new_tokens=max_new_tokens,
+        do_sample=do_sample,
+        temperature=max(temperature, 1e-5),
+        top_p=0.95 if do_sample else 1.0,
+        pad_token_id=tokenizer.eos_token_id,
+    )
+    if bad_words_ids:
+        generate_kwargs["bad_words_ids"] = bad_words_ids
+
     with torch.no_grad():
-        out = model.generate(
-            **inputs,
-            max_new_tokens=max_new_tokens,
-            do_sample=do_sample,
-            temperature=max(temperature, 1e-5),
-            top_p=0.95 if do_sample else 1.0,
-            pad_token_id=tokenizer.eos_token_id,
-        )
+        out = model.generate(**inputs, **generate_kwargs)
     full_text = tokenizer.decode(out[0][n_in_chat_only:], skip_special_tokens=True)
-    response = full_text[len(prefix):] if prefix and full_text.startswith(prefix) else full_text
+    response = full_text[len(prefix) :] if prefix and full_text.startswith(prefix) else full_text
     return {
         "response": response,
         "full_text": full_text,
@@ -323,6 +318,7 @@ def aligned_foundations_constrained_response(
         "map": map_name,
         "kind": kind,
         "shim_used": bool(prefix),
+        "suppressed_token_count": len(bad_words_ids) if bad_words_ids else 0,
     }
 
 
