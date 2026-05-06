@@ -220,3 +220,67 @@ limit on real Qwen) is now solvable in three independent ways:
 A real-model re-run against `chemistry_verification_unseen_eval_v1`
 with `suppress_forbidden=True` should bring greedy from 0.80 to 1.00.
 Deferred — needs explicit user auth before dispatching another HF Job.
+
+---
+
+## v6f: training gate aligned with production inference (commit `5825cee4`)
+
+**Why this matters for "training done using our methods".** Until now, the
+training-time inline gate in `dispatch_coding_agent_hf_job.py` ran in
+`constrained_gate_scaffold` mode: emit the prefix + a deterministic
+"SCBE_GATE_WRAPPER=deterministic receipt emitted" line, **discard the
+model's continuation**, score the receipt. This is structurally green
+by construction — v6e-bumped passed 12/12 in this mode while raw model
+output (the actual product) scored 1/12 = 0.083.
+
+Production inference uses `coding_eval_constrained_response` /
+`coding_eval_best_of_n_response`, which prepend the canonical
+`required-tokens: ... ::` prefix and **let the model continue**. So the
+training gate measured fake-pass; production measures real shim+model.
+
+The fix: a new `evaluation.production_shim_gate` flag in the dispatcher.
+When true:
+
+1. Render the canonical scaffold (collision-aware, mirrors
+   `src/governance/coding_eval_constrained_decoding.py`).
+2. Prepend it to the assistant turn (forced prefix).
+3. Generate a real model continuation.
+4. Score `prefix + continuation` as one output.
+
+Two complementary flags:
+- `gate_suppress_forbidden: true` — pass forbidden list as
+  `bad_words_ids` to `model.generate`. Closes the chemistry strict 0.88
+  / best-of-N 1.0 split.
+- `gate_best_of_n: true` — try 5 (seed, temperature) decode contexts,
+  short-circuit on first pass. Identity-cost when greedy already passes.
+
+DRAFT profile staged: `config/model_training/scbe-coding-primary-7b-qlora-v6f-DRAFT.json`.
+Same dataset and contract as v6e-bumped. Only the gate axis changed.
+
+### Wake-up runbook for the user
+
+```powershell
+# 1. Review the v6f profile and decide whether to dispatch.
+git diff main..HEAD -- config/model_training/scbe-coding-primary-7b-qlora-v6f-DRAFT.json
+git diff main..HEAD -- scripts/system/dispatch_coding_agent_hf_job.py
+
+# 2. (Optional) Verify the rendered template parses on your machine.
+PYTHONPATH=. python -m pytest tests/test_dispatch_coding_agent_production_shim_gate.py -v
+
+# 3. If happy with the v6f profile, drop the -DRAFT suffix and dispatch.
+#    The dispatcher accepts a profile path via --profile.
+#    (Cost estimate: l4x1 x 90 min ~= $2-4 on HF Pro.)
+```
+
+### What "overall_pass" means in v6f vs v6e-bumped
+
+|  | v6e-bumped (`constrained_gate_scaffold`) | v6f (`production_shim_gate`) |
+|---|---|---|
+| Prefix | `REQUIRED_MARKERS=tok | tok | ... ` | `required-tokens: tok | tok | ... ::` |
+| Continuation | discarded | scored |
+| `gate_pass_rate` measures | structural prefix coverage | shim+model continuation passing the substring contract |
+| `raw_pass_rate` measures | bare-model output passing the contract | (same) |
+| Production parity | none | bit-for-bit identical to `coding_eval_best_of_n_response` |
+
+A passing v6f adapter ships exactly as the gate verified. A passing
+v6e-bumped adapter ships as a different artifact than the gate verified.
