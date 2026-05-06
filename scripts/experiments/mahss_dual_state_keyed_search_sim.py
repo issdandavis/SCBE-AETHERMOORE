@@ -18,6 +18,8 @@ Compares four methods at the same effective budget:
   - tang_cross:          top-K by ||a||^2, top-K by ||b||^2, K^2 pairs evaluated
   - multigrid_cross:     two-level on A then on B, fine pass on top-K-each
                          only -> O(K * N_B + K * K_B) evaluations
+  - polyhedral_edge:     keyed sign-facet edge walk over rotated A and B
+                         cells, then exact scoring of the frontier
   - resonance_cross:     compute amplitude over the joint outer product in
                          one batched op, take top-K_pair pairs
 
@@ -44,6 +46,110 @@ if str(REPO_ROOT) not in sys.path:
 
 SCHEMA_VERSION = "scbe_mahss_dual_state_keyed_search_sim_v1"
 DIM = 32
+PHI = (1.0 + math.sqrt(5.0)) / 2.0
+
+
+def _platonic_solid(name: str) -> tuple[np.ndarray, list[tuple[int, int]]]:
+    """Return (unit-sphere vertices, edges) for a named Platonic solid.
+
+    Edges are the pairs of vertices at the minimum nonzero pairwise
+    distance on the unit sphere. The polyhedron acts as a bounded-
+    diameter compass over the joint A x B direction space; each edge
+    walked between vertices counts as one "turning" in the search.
+
+    Diameters (max graph-distance between any two vertices):
+      tetrahedron  (4 v,  6 e)  diameter 1
+      octahedron   (6 v, 12 e)  diameter 2
+      cube         (8 v, 12 e)  diameter 3
+      icosahedron (12 v, 30 e)  diameter 3
+      dodecahedron(20 v, 30 e)  diameter 5
+    """
+
+    name = name.lower()
+    if name == "tetrahedron":
+        verts = np.array(
+            [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]],
+            dtype=float,
+        )
+    elif name == "octahedron":
+        verts = np.array(
+            [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]],
+            dtype=float,
+        )
+    elif name == "cube":
+        verts = np.array(
+            [
+                [s1, s2, s3]
+                for s1 in (-1.0, 1.0)
+                for s2 in (-1.0, 1.0)
+                for s3 in (-1.0, 1.0)
+            ],
+            dtype=float,
+        )
+    elif name == "icosahedron":
+        rows: list[list[float]] = []
+        for s1 in (-1.0, 1.0):
+            for s2 in (-1.0, 1.0):
+                rows.append([0.0, s1, s2 * PHI])
+                rows.append([s1, s2 * PHI, 0.0])
+                rows.append([s2 * PHI, 0.0, s1])
+        verts = np.array(rows, dtype=float)
+    elif name == "dodecahedron":
+        rows = []
+        for s1 in (-1.0, 1.0):
+            for s2 in (-1.0, 1.0):
+                for s3 in (-1.0, 1.0):
+                    rows.append([s1, s2, s3])
+        inv_phi = 1.0 / PHI
+        for s1 in (-1.0, 1.0):
+            for s2 in (-1.0, 1.0):
+                rows.append([0.0, s1 * inv_phi, s2 * PHI])
+                rows.append([s1 * inv_phi, s2 * PHI, 0.0])
+                rows.append([s2 * PHI, 0.0, s1 * inv_phi])
+        verts = np.array(rows, dtype=float)
+    else:
+        raise ValueError(f"unknown polyhedron: {name}")
+
+    norms = np.linalg.norm(verts, axis=1, keepdims=True)
+    verts = verts / (norms + 1e-12)
+
+    n = verts.shape[0]
+    dists = np.linalg.norm(verts[:, None, :] - verts[None, :, :], axis=2)
+    iu = np.triu_indices(n, k=1)
+    nonzero = dists[iu]
+    if nonzero.size == 0:
+        return verts, []
+    min_d = float(nonzero.min())
+    edges: list[tuple[int, int]] = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            if abs(float(dists[i, j]) - min_d) < 1e-6:
+                edges.append((i, j))
+    return verts, edges
+
+
+def _polyhedron_diameter(n_vertices: int, edges: list[tuple[int, int]]) -> int:
+    """BFS-based graph diameter for a polyhedron's edge skeleton."""
+
+    if n_vertices <= 1:
+        return 0
+    adj: list[list[int]] = [[] for _ in range(n_vertices)]
+    for u, v in edges:
+        adj[u].append(v)
+        adj[v].append(u)
+    diameter = 0
+    for start in range(n_vertices):
+        dist = [-1] * n_vertices
+        dist[start] = 0
+        queue = [start]
+        while queue:
+            u = queue.pop(0)
+            for nb in adj[u]:
+                if dist[nb] == -1:
+                    dist[nb] = dist[u] + 1
+                    diameter = max(diameter, dist[nb])
+                    queue.append(nb)
+    return diameter
 
 
 @dataclass(frozen=True)
@@ -249,6 +355,71 @@ def select_resonance_cross_lowrank(
     return pairs, evaluations
 
 
+def _signatures(matrix: np.ndarray) -> np.ndarray:
+    """Return binary facet signatures for a coordinate-hyperplane polytope."""
+
+    return matrix >= 0.0
+
+
+def _hamming(signature: np.ndarray, signatures: np.ndarray) -> np.ndarray:
+    return np.count_nonzero(signatures != signature, axis=1)
+
+
+def select_polyhedral_edge_walk_cross(
+    A: np.ndarray,
+    B: np.ndarray,
+    M: np.ndarray,
+    *,
+    seed_count: int,
+    edge_width: int,
+    budget_pairs: int,
+    alpha: float = 1.0,
+) -> tuple[list[tuple[int, int]], int]:
+    """Walk keyed polyhedral sign-facet edges before exact pair scoring.
+
+    This is a direct selector, not a source-plus-probe reranker. It maps
+    ``M @ a`` and ``b`` into the same sign-facet cell system, starts from
+    high-energy seeds on each side, then scores pairs on low-Hamming-distance
+    cells. It is intended to test whether keyed geometry can expose paired
+    solutions without evaluating the full outer product.
+    """
+
+    if seed_count <= 0:
+        raise ValueError("seed_count must be > 0")
+    if edge_width <= 0:
+        raise ValueError("edge_width must be > 0")
+
+    a_norms = np.linalg.norm(A, axis=1)
+    b_norms = np.linalg.norm(B, axis=1)
+    rotated = A @ M.T
+    rotated_unit = _normalize_rows(rotated)
+    b_unit = _normalize_rows(B)
+    a_signatures = _signatures(rotated_unit)
+    b_signatures = _signatures(b_unit)
+
+    a_seeds = np.argsort(a_norms)[::-1][: min(seed_count, A.shape[0])]
+    b_seeds = np.argsort(b_norms)[::-1][: min(seed_count, B.shape[0])]
+    pairs: set[tuple[int, int]] = set()
+
+    for ai in a_seeds:
+        distances = _hamming(a_signatures[int(ai)], b_signatures)
+        order = np.lexsort((-b_norms, distances))
+        for bj in order[: min(edge_width, B.shape[0])]:
+            pairs.add((int(ai), int(bj)))
+
+    for bj in b_seeds:
+        distances = _hamming(b_signatures[int(bj)], a_signatures)
+        order = np.lexsort((-a_norms, distances))
+        for ai in order[: min(edge_width, A.shape[0])]:
+            pairs.add((int(ai), int(bj)))
+
+    candidates = sorted(pairs)
+    log_amp = amplitude_matrix(A, B, M, alpha=alpha)
+    candidates.sort(key=lambda pair: float(log_amp[pair[0], pair[1]]), reverse=True)
+    selected = candidates[:budget_pairs]
+    return selected, len(candidates)
+
+
 def select_disagreement_probe_cross(
     A: np.ndarray,
     B: np.ndarray,
@@ -362,6 +533,124 @@ def select_multigrid_cross(
     return pairs, evaluations
 
 
+def _score_pair(
+    A: np.ndarray, B: np.ndarray, M: np.ndarray, ai: int, bj: int, alpha: float
+) -> float:
+    """Single-pair amplitude evaluation; cost-honest unit for polyhedral walk."""
+
+    rotated = M @ A[ai]
+    rn = float(np.linalg.norm(rotated)) + 1e-12
+    bn = float(np.linalg.norm(B[bj])) + 1e-12
+    cos_v = float(rotated @ B[bj]) / (rn * bn)
+    return alpha * float(np.linalg.norm(A[ai])) * float(np.linalg.norm(B[bj])) * cos_v
+
+
+def select_polyhedral_walk_cross(
+    A: np.ndarray,
+    B: np.ndarray,
+    M: np.ndarray,
+    *,
+    polyhedron: str,
+    budget_pairs: int,
+    alpha: float = 1.0,
+) -> tuple[list[tuple[int, int]], int, dict[str, object]]:
+    """Polyhedral edge-walk: bounded-diameter compass over the joint A x B space.
+
+    Each side of the joint space is projected into R^3 via the top-3 SVD
+    components of the coupling matrix M. Every Platonic-solid vertex
+    represents a 3D direction; a candidate pair (a, b) "lives" at the
+    vertex whose direction best matches both lifts. We start at the
+    highest-affinity vertex and walk edges greedily, evaluating the
+    locally-best pair at each visited vertex. The polyhedron's diameter
+    bounds worst-case turnings to reach any region.
+
+    Returns (pairs, evaluations, walk_meta) where evaluations counts
+    one amplitude scoring per visited vertex (one "turning"), and
+    walk_meta carries the structural fingerprint of the walk:
+      - polyhedron name, n_vertices, n_edges, diameter
+      - turnings (number of edge-traversals consumed)
+      - vertices_visited (path through the polyhedron in order)
+    """
+
+    vertices, edges = _platonic_solid(polyhedron)
+    n_v = vertices.shape[0]
+    diameter = _polyhedron_diameter(n_v, edges)
+
+    adj: list[list[int]] = [[] for _ in range(n_v)]
+    for u, v in edges:
+        adj[u].append(v)
+        adj[v].append(u)
+
+    # Lift both sides into R^3 via top-3 SVD components of M:
+    #   amplitude(a, b) ~ ||a|| ||b|| cos(M a, b)
+    # In rank-3 truncation, M ~ U3 S3 V3^T, so M a ~ U3 S3 V3^T a.
+    # In the U3 basis: a_lift = S3 V3^T a, b_lift = U3^T b. A diamond
+    # pair has both lifts pointing in the same R^3 direction.
+    U, s, Vt = np.linalg.svd(M, full_matrices=False)
+    k = min(3, len(s))
+    a_lift = (A @ Vt[:k].T) * s[:k]  # n_a x 3
+    b_lift = B @ U[:, :k]  # n_b x 3
+
+    # Per-vertex affinity uses the un-normalized lift so magnitude
+    # (norm in the rank-3 subspace) matters as much as direction. The
+    # amplitude function is ||a|| * ||b|| * cos, and the polyhedral
+    # compass is the rank-3 surrogate of that score; weighting by lift
+    # norm makes high-norm diamonds dominate random vectors that happen
+    # to land near a vertex by direction alone.
+    a_align = a_lift @ vertices.T  # n_a x n_v
+    b_align = b_lift @ vertices.T  # n_b x n_v
+    best_a_at_vertex = np.argmax(a_align, axis=0)  # n_v
+    best_b_at_vertex = np.argmax(b_align, axis=0)  # n_v
+    vertex_score = a_align.max(axis=0) + b_align.max(axis=0)
+
+    start = int(np.argmax(vertex_score))
+    visited: list[int] = []
+    visited_set: set[int] = set()
+    frontier: list[int] = [start]
+
+    while frontier and len(visited) < n_v:
+        frontier.sort(key=lambda v: -float(vertex_score[v]))
+        v = frontier.pop(0)
+        if v in visited_set:
+            continue
+        visited.append(v)
+        visited_set.add(v)
+        for nb in adj[v]:
+            if nb not in visited_set:
+                frontier.append(nb)
+
+    # One amplitude eval per unique pair we land on while walking (the
+    # "turning" cost). Distinct vertices may collapse to the same pair
+    # when projected -- we count each unique pair once.
+    evaluations = 0
+    seen: set[tuple[int, int]] = set()
+    scored: list[tuple[float, tuple[int, int]]] = []
+    for v in visited:
+        ai = int(best_a_at_vertex[v])
+        bj = int(best_b_at_vertex[v])
+        pair = (ai, bj)
+        if pair in seen:
+            continue
+        seen.add(pair)
+        score = _score_pair(A, B, M, ai, bj, alpha)
+        scored.append((score, pair))
+        evaluations += 1
+
+    scored.sort(key=lambda t: -t[0])
+    pairs = [pair for _, pair in scored[:budget_pairs]]
+    turnings = max(0, len(visited) - 1)
+    walk_meta = {
+        "polyhedron": polyhedron,
+        "n_vertices": int(n_v),
+        "n_edges": int(len(edges)),
+        "diameter": int(diameter),
+        "turnings": int(turnings),
+        "vertices_visited": [int(v) for v in visited],
+        "unique_pair_evaluations": int(evaluations),
+    }
+    return pairs, evaluations, walk_meta
+
+
 def evaluate_selection(
     pairs: list[tuple[int, int]],
     landscape: dict[str, object],
@@ -412,6 +701,12 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
         "multigrid_cross_c30_k10": select_multigrid_cross(
             A, B, M, coarse_per_side=30, fine_top_k=10, budget_pairs=budget_pairs, alpha=alpha
         ),
+        "polyhedral_edge_k20_w4": select_polyhedral_edge_walk_cross(
+            A, B, M, seed_count=20, edge_width=4, budget_pairs=budget_pairs, alpha=alpha
+        ),
+        "polyhedral_edge_k30_w6": select_polyhedral_edge_walk_cross(
+            A, B, M, seed_count=30, edge_width=6, budget_pairs=budget_pairs, alpha=alpha
+        ),
     }
 
     rank_sweep = [1, 2, 4, 8, 16, A.shape[1]]
@@ -422,12 +717,28 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
             A, B, M, rank=rank, budget_pairs=budget_pairs, alpha=alpha
         )
 
+    # Platonic-solid compass walks. Each solid is a different
+    # bounded-diameter compass: tetrahedron is the cheapest 4-direction
+    # probe; icosahedron gives 12 directions with diameter 3; dodecahedron
+    # gives 20 directions with diameter 5. The joint A x B direction space
+    # is projected to R^3 via the top-3 SVD components of M, so each vertex
+    # represents a "turning" toward a principal joint direction.
+    polyhedral_meta: dict[str, dict[str, object]] = {}
+    for shape in ("tetrahedron", "octahedron", "cube", "icosahedron", "dodecahedron"):
+        pairs, evaluations, meta = select_polyhedral_walk_cross(
+            A, B, M, polyhedron=shape, budget_pairs=budget_pairs, alpha=alpha
+        )
+        method_name = f"polyhedral_walk_{shape}"
+        runs[method_name] = (pairs, evaluations)
+        polyhedral_meta[method_name] = meta
+
     # Full C(N, 2) disagreement-probe matrix: every pair of source methods.
     # The "double-negative-makes-positive" mechanism may fire for any
     # (method_a, method_b) combination where their null-space XOR encodes
     # complementary partial signal. Skip brute_pair (it has full recall
     # already, no disagreement to mine).
     disagreement_input_methods = sorted(name for name in runs if name != "brute_pair")
+    probe_sources: dict[str, tuple[str, str]] = {}
     for i, name_a in enumerate(disagreement_input_methods):
         for name_b in disagreement_input_methods[i + 1 :]:
             probe_key = f"disagree__{name_a}__X__{name_b}"
@@ -438,12 +749,69 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
                 budget_pairs=budget_pairs,
                 alpha=alpha,
             )
+            probe_sources[probe_key] = (name_a, name_b)
 
     summary: dict[str, dict[str, object]] = {}
     for name, (pairs, evaluations) in runs.items():
         row = evaluate_selection(pairs, landscape, log_amp_full)
+        source_names = probe_sources.get(name)
+        if source_names is None:
+            source_evaluations = 0
+            probe_evaluations = 0
+            total_evaluations = int(evaluations)
+            source_methods: list[str] = []
+            cost_accounting = "direct"
+        else:
+            source_evaluations = int(sum(runs[source_name][1] for source_name in source_names))
+            probe_evaluations = int(evaluations)
+            total_evaluations = source_evaluations + probe_evaluations
+            source_methods = list(source_names)
+            cost_accounting = "source_plus_probe"
         row["evaluations"] = int(evaluations)
+        row["probe_evaluations"] = probe_evaluations
+        row["source_evaluations"] = source_evaluations
+        row["source_methods"] = source_methods
+        row["total_evaluations"] = total_evaluations
+        row["cost_accounting"] = cost_accounting
+        if name in polyhedral_meta:
+            row["polyhedral_walk"] = polyhedral_meta[name]
         summary[name] = row
+
+    def _best_full_recall(names: Sequence[str]) -> dict[str, object] | None:
+        candidates = [
+            (name, summary[name])
+            for name in names
+            if float(summary[name]["diamond_recall"]) >= 1.0
+        ]
+        if not candidates:
+            return None
+        best_name, best_row = min(candidates, key=lambda item: int(item[1]["total_evaluations"]))
+        return {
+            "method": best_name,
+            "total_evaluations": int(best_row["total_evaluations"]),
+            "evaluations": int(best_row["evaluations"]),
+            "diamond_recall": float(best_row["diamond_recall"]),
+            "regret_log_amp": float(best_row["regret_log_amp"]),
+        }
+
+    direct_methods = [name for name in runs if name not in probe_sources and name != "brute_pair"]
+    probe_methods = sorted(probe_sources)
+    best_single = _best_full_recall(direct_methods)
+    best_probe = _best_full_recall(probe_methods)
+    probe_beats_single = (
+        best_single is not None
+        and best_probe is not None
+        and int(best_probe["total_evaluations"]) < int(best_single["total_evaluations"])
+    )
+    probe_cost_audit = {
+        "note": (
+            "Disagreement rows are re-rankers. total_evaluations includes both source selectors "
+            "and the probe rerank cost; evaluations alone is only the probe-local candidate count."
+        ),
+        "best_full_recall_single_method": best_single,
+        "best_full_recall_probe_method": best_probe,
+        "probe_beats_single_on_total_cost": probe_beats_single,
+    }
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -461,6 +829,7 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
         "alpha": alpha,
         "budget_pairs": budget_pairs,
         "joint_pool_size": int(A.shape[0] * B.shape[0]),
+        "probe_cost_audit": probe_cost_audit,
         "summary": summary,
     }
 
@@ -513,8 +882,11 @@ def main(argv: list[str] | None = None) -> int:
             f"joint_pool={report['joint_pool_size']}"
         )
         for name, row in report["summary"].items():
+            total = int(row["total_evaluations"])
+            total_suffix = "" if total == int(row["evaluations"]) else f" total={total:>6} "
             print(
                 f"  {name}: evals={row['evaluations']:>6} "
+                f"{total_suffix}"
                 f"recall={row['diamond_recall']:.2f} ({row['diamonds_caught']}/{spec.n_diamond_pairs}) "
                 f"regret_log_amp={row['regret_log_amp']:.4f}"
             )
