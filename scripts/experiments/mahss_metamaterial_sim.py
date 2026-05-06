@@ -23,11 +23,14 @@ if str(REPO_ROOT) not in sys.path:
 
 from python.scbe.mahss import (
     MAHSSConfig,
+    asymmetric_well_probabilities,
     build_mahss,
     l2_normalize,
     length_square_probabilities,
+    polar_vector_probabilities,
     radial_power_profile,
 )
+from python.scbe.space_filling import bits_for_cardinality, morton_encode
 
 SCHEMA_VERSION = "scbe_mahss_metamaterial_sim_v1"
 MECHANISMS = (
@@ -141,6 +144,62 @@ VARIANTS: tuple[AuxeticVariant, ...] = (
         cost_index=0.66,
     ),
 )
+
+
+def build_actuation_grid(steps: int) -> tuple[float, ...]:
+    """Return an inclusive 0..1 actuation grid."""
+
+    if steps < 2:
+        raise ValueError("actuation steps must be >= 2")
+    return tuple(float(idx / (steps - 1)) for idx in range(steps))
+
+
+def expand_variants(
+    base_variants: Sequence[AuxeticVariant] = VARIANTS,
+    *,
+    variants_per_base: int = 1,
+) -> tuple[AuxeticVariant, ...]:
+    """Create a larger deterministic candidate board from bounded variants.
+
+    This is a stress-test generator, not materials certification. It preserves
+    each base material family while perturbing constants with a phi-phase so
+    search modes can be compared on a larger algebraic board.
+    """
+
+    if variants_per_base < 1:
+        raise ValueError("variants_per_base must be >= 1")
+    if variants_per_base == 1:
+        return tuple(base_variants)
+
+    phi = (1.0 + math.sqrt(5.0)) / 2.0
+    expanded: list[AuxeticVariant] = []
+    for base_idx, base in enumerate(base_variants):
+        for idx in range(variants_per_base):
+            if idx == 0:
+                expanded.append(base)
+                continue
+            phase = 2.0 * math.pi * ((idx + 1) / phi + base_idx / (len(base_variants) + 1.0))
+            phase2 = 2.0 * math.pi * ((idx + 1) / (phi * phi) + (base_idx + 1) / (len(base_variants) + 2.0))
+            expanded.append(
+                AuxeticVariant(
+                    name=f"{base.name}_stress_{idx:02d}",
+                    poisson_ratio=-clamp(abs(base.poisson_ratio) * (1.0 + 0.10 * math.sin(phase)), 0.20, 1.25),
+                    relaxed_porosity=clamp(base.relaxed_porosity + 0.055 * math.sin(phase2), 0.18, 0.88),
+                    max_closure_fraction=clamp(
+                        base.max_closure_fraction + 0.070 * math.cos(phase),
+                        0.20,
+                        0.92,
+                    ),
+                    modulus_mpa=base.modulus_mpa * (1.0 + 0.18 * math.sin(phase + 0.40)),
+                    density_kg_m3=base.density_kg_m3 * (1.0 + 0.10 * math.cos(phase2 - 0.20)),
+                    temperature_limit_c=base.temperature_limit_c + 32.0 * math.sin(phase - 0.70),
+                    abrasion_resistance=clamp(base.abrasion_resistance + 0.075 * math.cos(phase2), 0.05, 1.0),
+                    magnetic_response=clamp(base.magnetic_response + 0.080 * math.sin(phase + phase2), 0.02, 1.0),
+                    recoverability=clamp(base.recoverability + 0.050 * math.cos(phase - phase2), 0.05, 1.0),
+                    cost_index=clamp(base.cost_index + 0.090 * math.sin(phase2 + 0.25), 0.02, 1.0),
+                )
+            )
+    return tuple(expanded)
 
 
 def clamp(value: float, low: float, high: float) -> float:
@@ -536,6 +595,379 @@ def select_uniform_candidates(
     return [candidates[int(idx)] for idx in sorted(idxs)]
 
 
+def select_morton_stride_candidates(
+    candidates: Sequence[tuple[AuxeticVariant, float]],
+    *,
+    sample_budget: int,
+    variant_order: Sequence[str],
+    actuation_values: Sequence[float],
+) -> tuple[list[tuple[AuxeticVariant, float]], dict[str, object]]:
+    """Select evenly spaced representatives along Morton/Z-order path."""
+
+    if sample_budget <= 0:
+        raise ValueError("sample_budget must be > 0")
+    variant_index = {name: idx for idx, name in enumerate(variant_order)}
+    actuation_index = {float(value): idx for idx, value in enumerate(actuation_values)}
+    bits = max(bits_for_cardinality(len(variant_order)), bits_for_cardinality(len(actuation_values)))
+    ordered = sorted(
+        candidates,
+        key=lambda pair: morton_encode(
+            (variant_index[pair[0].name], actuation_index[float(pair[1])]),
+            bits=bits,
+        ),
+    )
+    if sample_budget >= len(ordered):
+        selected = ordered
+    elif sample_budget == 1:
+        selected = [ordered[len(ordered) // 2]]
+    else:
+        idxs = sorted(
+            {
+                round(idx * (len(ordered) - 1) / (sample_budget - 1))
+                for idx in range(sample_budget)
+            }
+        )
+        selected = [ordered[int(idx)] for idx in idxs]
+    telemetry = {
+        "schema_version": "scbe_morton_stride_selection_v1",
+        "bits": bits,
+        "ordered_candidate_count": len(ordered),
+        "selected_keys": [candidate_key(variant, actuation) for variant, actuation in selected],
+    }
+    return selected, telemetry
+
+
+def select_polar_beam_candidates(
+    candidates: Sequence[tuple[AuxeticVariant, float]],
+    op: OperatingPoint,
+    *,
+    objective: str,
+    sample_budget: int,
+    sampling_power: float = 2.0,
+) -> tuple[list[tuple[AuxeticVariant, float]], dict[str, float], dict[str, dict[str, float]]]:
+    """Select candidates from dual positive/negative polar search surfaces."""
+
+    if sample_budget <= 0:
+        raise ValueError("sample_budget must be > 0")
+    query = np.asarray(objective_query(objective), dtype=float)
+    sketches: dict[str, tuple[float, ...]] = {}
+    for variant, actuation in candidates:
+        base = np.asarray(
+            candidate_sketch_vector(variant, op, objective=objective, actuation_fraction=actuation),
+            dtype=float,
+        )
+        centered = base - query
+        signed = base * np.sign(centered + 1e-12)
+        sketches[candidate_key(variant, actuation)] = tuple(float(x) for x in signed)
+
+    polar = polar_vector_probabilities(sketches, dim=DIM, power=sampling_power)
+    combined = {
+        key: 0.5 * row["positive_probability"] + 0.5 * row["negative_probability"] + 0.05 * row["contrast"]
+        for key, row in polar.items()
+    }
+    total = sum(combined.values())
+    probabilities = {key: value / total for key, value in combined.items()}
+    selected_keys = {
+        key for key, _ in sorted(probabilities.items(), key=lambda item: item[1], reverse=True)[:sample_budget]
+    }
+    selected = [
+        (variant, actuation)
+        for variant, actuation in candidates
+        if candidate_key(variant, actuation) in selected_keys
+    ]
+    return selected, probabilities, polar
+
+
+def select_asymmetric_well_candidates(
+    candidates: Sequence[tuple[AuxeticVariant, float]],
+    op: OperatingPoint,
+    *,
+    objective: str,
+    sample_budget: int,
+    beta: float = 0.25,
+    negative_gain: float = 1.0,
+    sampling_power: float = 2.0,
+) -> tuple[list[tuple[AuxeticVariant, float]], dict[str, float], dict[str, dict[str, float]]]:
+    """Select by a target-centered asymmetric potential well.
+
+    This is the "can be negative but prefers positive" search surface. The
+    signed space is the candidate residual against the objective query; positive
+    residuals pass normally, while negative residuals are compressed instead of
+    hard-clipped.
+    """
+
+    if sample_budget <= 0:
+        raise ValueError("sample_budget must be > 0")
+    sketches = {
+        candidate_key(variant, actuation): candidate_sketch_vector(
+            variant,
+            op,
+            objective=objective,
+            actuation_fraction=actuation,
+        )
+        for variant, actuation in candidates
+    }
+    profile = asymmetric_well_probabilities(
+        sketches,
+        objective_query(objective),
+        dim=DIM,
+        beta=beta,
+        negative_gain=negative_gain,
+        power=sampling_power,
+    )
+    probabilities = {key: row["probability"] for key, row in profile.items()}
+    selected_keys = {
+        key for key, _ in sorted(probabilities.items(), key=lambda item: item[1], reverse=True)[:sample_budget]
+    }
+    selected = [
+        (variant, actuation)
+        for variant, actuation in candidates
+        if candidate_key(variant, actuation) in selected_keys
+    ]
+    return selected, probabilities, profile
+
+
+def constructive_dissonance_profile(
+    candidates: Sequence[tuple[AuxeticVariant, float]],
+    op: OperatingPoint,
+    *,
+    objective: str,
+) -> dict[str, dict[str, float]]:
+    """Score useful disagreement between mechanism views.
+
+    Constructive dissonance is not maximum disagreement. It is disagreement
+    that still has a shared direction toward the query. Destructive dissonance
+    is high spread with low query alignment, and should be pruned.
+    """
+
+    query = np.asarray(objective_query(objective), dtype=float)
+    router = objective_router(objective)
+    profile: dict[str, dict[str, float]] = {}
+    for variant, actuation in candidates:
+        vectors, _metrics = mechanism_vectors(variant, op, actuation_fraction=actuation)
+        normalized_views = np.vstack([l2_normalize(np.asarray(vectors[name], dtype=float)) for name in MECHANISMS])
+        alignments = np.asarray([max(0.0, float(np.dot(row, l2_normalize(query)))) for row in normalized_views])
+        centroid = l2_normalize(np.average(normalized_views, axis=0, weights=[router[name] for name in MECHANISMS]))
+        centroid_alignment = max(0.0, float(np.dot(centroid, l2_normalize(query))))
+        spread = float(np.mean(np.linalg.norm(normalized_views - centroid, axis=1)))
+        alignment_mean = float(np.mean(alignments))
+        alignment_floor = float(np.min(alignments))
+        destructive = spread * (1.0 - centroid_alignment)
+        constructive = spread * (0.50 * centroid_alignment + 0.35 * alignment_mean + 0.15 * alignment_floor)
+        score = constructive - 0.5 * destructive
+        profile[candidate_key(variant, actuation)] = {
+            "spread": spread,
+            "centroid_alignment": centroid_alignment,
+            "alignment_mean": alignment_mean,
+            "alignment_floor": alignment_floor,
+            "constructive_dissonance": constructive,
+            "destructive_dissonance": destructive,
+            "score": score,
+        }
+    return profile
+
+
+def select_constructive_dissonance_candidates(
+    candidates: Sequence[tuple[AuxeticVariant, float]],
+    op: OperatingPoint,
+    *,
+    objective: str,
+    sample_budget: int,
+) -> tuple[list[tuple[AuxeticVariant, float]], dict[str, float], dict[str, dict[str, float]]]:
+    """Prune to candidates with useful mechanism disagreement."""
+
+    if sample_budget <= 0:
+        raise ValueError("sample_budget must be > 0")
+    profile = constructive_dissonance_profile(candidates, op, objective=objective)
+    min_score = min(row["score"] for row in profile.values())
+    shifted = {key: row["score"] - min_score + 1e-9 for key, row in profile.items()}
+    total = sum(shifted.values())
+    probabilities = {key: value / total for key, value in shifted.items()}
+    selected_keys = {
+        key for key, _ in sorted(profile.items(), key=lambda item: item[1]["score"], reverse=True)[:sample_budget]
+    }
+    selected = [
+        (variant, actuation)
+        for variant, actuation in candidates
+        if candidate_key(variant, actuation) in selected_keys
+    ]
+    return selected, probabilities, profile
+
+
+def select_algebraic_hybrid_candidates(
+    candidates: Sequence[tuple[AuxeticVariant, float]],
+    op: OperatingPoint,
+    *,
+    objective: str,
+    sample_budget: int,
+    variant_order: Sequence[str],
+    actuation_values: Sequence[float],
+    sampling_power: float = 2.125,
+    radial_gain: float = 0.125,
+    path_history: Sequence[str] = (),
+) -> tuple[list[tuple[AuxeticVariant, float]], dict[str, float], dict[str, object]]:
+    """One algebraic selector combining the useful search signals.
+
+    Score components:
+    - Morton index: reversible origin/path coordinate, used only as a locality
+      tie-breaker;
+    - Tang/radial probability: energy plus query/history steering;
+    - constructive dissonance: mechanism disagreement that still points toward
+      the query;
+    - coarse-group coverage: keep variant coverage before spending fine evals.
+    """
+
+    if sample_budget <= 0:
+        raise ValueError("sample_budget must be > 0")
+    variant_index = {name: idx for idx, name in enumerate(variant_order)}
+    actuation_index = {float(value): idx for idx, value in enumerate(actuation_values)}
+    bits = max(bits_for_cardinality(len(variant_order)), bits_for_cardinality(len(actuation_values)))
+    sketches = {
+        candidate_key(variant, actuation): candidate_sketch_vector(
+            variant,
+            op,
+            objective=objective,
+            actuation_fraction=actuation,
+        )
+        for variant, actuation in candidates
+    }
+    radial = radial_power_profile(
+        sketches,
+        objective_query(objective),
+        dim=DIM,
+        path_history=path_history,
+        base_power=sampling_power,
+        radial_gain=radial_gain,
+    )
+    dissonance = constructive_dissonance_profile(candidates, op, objective=objective)
+    morton_values = {
+        candidate_key(variant, actuation): morton_encode(
+            (variant_index[variant.name], actuation_index[float(actuation)]),
+            bits=bits,
+        )
+        for variant, actuation in candidates
+    }
+    max_morton = max(morton_values.values()) or 1
+    max_constructive = max(max(0.0, row["score"]) for row in dissonance.values()) or 1.0
+    raw_scores: dict[str, float] = {}
+    for variant, actuation in candidates:
+        key = candidate_key(variant, actuation)
+        radial_prob = radial[key]["probability"]
+        constructive = max(0.0, dissonance[key]["score"]) / max_constructive
+        locality = 1.0 - (morton_values[key] / max_morton)
+        coverage = 1.0 / (1.0 + variant_index[variant.name])
+        raw_scores[key] = 0.90 * radial_prob + 0.08 * constructive + 0.01 * coverage + 0.01 * locality
+
+    total = sum(raw_scores.values())
+    probabilities = {key: value / total for key, value in raw_scores.items()}
+
+    selected_keys = {
+        key for key, _score in sorted(raw_scores.items(), key=lambda item: item[1], reverse=True)[:sample_budget]
+    }
+
+    selected = [
+        (variant, actuation)
+        for variant, actuation in candidates
+        if candidate_key(variant, actuation) in selected_keys
+    ]
+    telemetry = {
+        "schema_version": "scbe_mahss_algebraic_hybrid_selector_v1",
+        "bits": bits,
+        "selected_keys": [candidate_key(variant, actuation) for variant, actuation in selected],
+        "top_scores": {
+            key: round(value, 12)
+            for key, value in sorted(raw_scores.items(), key=lambda item: item[1], reverse=True)[: min(8, len(raw_scores))]
+        },
+        "formula": "0.90*radial_probability + 0.08*normalized_constructive_dissonance + 0.01*coverage + 0.01*morton_locality",
+    }
+    return selected, probabilities, telemetry
+
+
+def select_mirror_beam_candidates(
+    candidates: Sequence[tuple[AuxeticVariant, float]],
+    op: OperatingPoint,
+    *,
+    objective: str,
+    sample_budget: int,
+    curvature: float = 1.0,
+) -> tuple[list[tuple[AuxeticVariant, float]], dict[str, dict[str, float]]]:
+    """One-pass hyperbolic-resonance candidate selection.
+
+    Projects every candidate sketch into the Poincare ball at curvature c
+    (the bent space), computes hyperbolic distance from the query in a
+    single batched pass (the beam), then returns the top-K candidates by
+    smallest distance (the speck of reflection). Because hyperbolic
+    distance grows exponentially with Euclidean distance near the ball
+    boundary, the strongest match separates from near-misses exponentially:
+    the right answer reflects brightest without iterative beam refinement.
+
+    Cost: O(N * d) for projection + distance + ranking, then O(K * score_cost)
+    for full scoring of the top-K. No random sampling, no path history,
+    no sequential beam refinement. Pure batched algebra over a fixed
+    bent-space metric.
+    """
+
+    if sample_budget <= 0:
+        raise ValueError("sample_budget must be > 0")
+    if curvature <= 0:
+        raise ValueError("curvature must be > 0")
+
+    sketches = {
+        candidate_key(variant, actuation): candidate_sketch_vector(
+            variant,
+            op,
+            objective=objective,
+            actuation_fraction=actuation,
+        )
+        for variant, actuation in candidates
+    }
+
+    sqrt_c = math.sqrt(curvature)
+
+    def _project_to_ball(v: np.ndarray) -> np.ndarray:
+        norm = float(np.linalg.norm(v))
+        if norm == 0.0:
+            return np.zeros_like(v)
+        scale = math.tanh(sqrt_c * norm) / (sqrt_c * norm)
+        return v * scale
+
+    query_vec = np.asarray(objective_query(objective), dtype=float)
+    q_ball = _project_to_ball(query_vec)
+    q_norm_sq = float(np.dot(q_ball, q_ball))
+
+    distances: dict[str, float] = {}
+    raw_norms: dict[str, float] = {}
+    for key, sketch in sketches.items():
+        s_arr = np.asarray(sketch, dtype=float)
+        s_ball = _project_to_ball(s_arr)
+        s_norm_sq = float(np.dot(s_ball, s_ball))
+        diff = s_ball - q_ball
+        diff_sq = float(np.dot(diff, diff))
+        denom = max(1e-12, (1.0 - s_norm_sq) * (1.0 - q_norm_sq))
+        cosh_arg = max(1.0, 1.0 + 2.0 * diff_sq / denom)
+        distances[key] = math.acosh(cosh_arg)
+        raw_norms[key] = float(np.linalg.norm(s_arr))
+
+    selected_keys = {
+        key for key, _ in sorted(distances.items(), key=lambda item: item[1])[:sample_budget]
+    }
+    selected = [
+        (variant, actuation)
+        for variant, actuation in candidates
+        if candidate_key(variant, actuation) in selected_keys
+    ]
+
+    telemetry = {
+        key: {
+            "hyperbolic_distance": round(distances[key], 9),
+            "reflection_amplitude": round(math.exp(-distances[key]), 9),
+            "euclidean_norm": round(raw_norms[key], 9),
+        }
+        for key in distances
+    }
+    return selected, telemetry
+
+
 def select_multigrid_candidates(
     candidates: Sequence[tuple[AuxeticVariant, float]],
     *,
@@ -639,7 +1071,13 @@ def run_simulation(
     candidate_pool = [(variant, actuation) for variant in variant_list for actuation in actuation_values]
     sampling_probabilities: dict[str, float] | None = None
     radial_profile: dict[str, dict[str, float]] | None = None
+    polar_profile: dict[str, dict[str, float]] | None = None
+    asymmetric_profile: dict[str, dict[str, float]] | None = None
+    dissonance_profile: dict[str, dict[str, float]] | None = None
     multigrid_telemetry: dict[str, object] | None = None
+    morton_telemetry: dict[str, object] | None = None
+    hybrid_telemetry: dict[str, object] | None = None
+    mirror_telemetry: dict[str, dict[str, float]] | None = None
     if search_mode == "multigrid":
         top_k_variants = max(1, int(sample_budget)) if sample_budget else 2
         coarse_picks, _by_variant = select_multigrid_candidates(candidate_pool)
@@ -716,6 +1154,14 @@ def run_simulation(
     elif search_mode == "uniform_sampled":
         budget = sample_budget if sample_budget is not None else max(1, int(math.ceil(math.sqrt(len(candidate_pool)))))
         selected_candidates = select_uniform_candidates(candidate_pool, sample_budget=budget, sample_seed=sample_seed)
+    elif search_mode == "morton_stride":
+        budget = sample_budget if sample_budget is not None else max(1, int(math.ceil(math.sqrt(len(candidate_pool)))))
+        selected_candidates, morton_telemetry = select_morton_stride_candidates(
+            candidate_pool,
+            sample_budget=budget,
+            variant_order=[variant.name for variant in variant_list],
+            actuation_values=actuation_values,
+        )
     elif search_mode == "tang_sampled":
         budget = sample_budget if sample_budget is not None else max(1, int(math.ceil(math.sqrt(len(candidate_pool)))))
         selected_candidates, sampling_probabilities = select_length_square_candidates(
@@ -748,6 +1194,53 @@ def run_simulation(
             radial_gain=radial_gain,
             beam=search_mode == "radial_beam",
         )
+    elif search_mode == "polar_beam":
+        budget = sample_budget if sample_budget is not None else max(1, int(math.ceil(math.sqrt(len(candidate_pool)))))
+        selected_candidates, sampling_probabilities, polar_profile = select_polar_beam_candidates(
+            candidate_pool,
+            operating_point,
+            objective=objective,
+            sample_budget=budget,
+            sampling_power=sampling_power,
+        )
+    elif search_mode == "asymmetric_well":
+        budget = sample_budget if sample_budget is not None else max(1, int(math.ceil(math.sqrt(len(candidate_pool)))))
+        selected_candidates, sampling_probabilities, asymmetric_profile = select_asymmetric_well_candidates(
+            candidate_pool,
+            operating_point,
+            objective=objective,
+            sample_budget=budget,
+            sampling_power=sampling_power,
+        )
+    elif search_mode == "dissonance_pruned":
+        budget = sample_budget if sample_budget is not None else max(1, int(math.ceil(math.sqrt(len(candidate_pool)))))
+        selected_candidates, sampling_probabilities, dissonance_profile = select_constructive_dissonance_candidates(
+            candidate_pool,
+            operating_point,
+            objective=objective,
+            sample_budget=budget,
+        )
+    elif search_mode == "algebraic_hybrid":
+        budget = sample_budget if sample_budget is not None else max(1, int(math.ceil(math.sqrt(len(candidate_pool)))))
+        selected_candidates, sampling_probabilities, hybrid_telemetry = select_algebraic_hybrid_candidates(
+            candidate_pool,
+            operating_point,
+            objective=objective,
+            sample_budget=budget,
+            variant_order=[variant.name for variant in variant_list],
+            actuation_values=actuation_values,
+            sampling_power=sampling_power,
+            radial_gain=radial_gain,
+            path_history=path_history,
+        )
+    elif search_mode == "mirror_beam":
+        budget = sample_budget if sample_budget is not None else max(1, int(math.ceil(math.sqrt(len(candidate_pool)))))
+        selected_candidates, mirror_telemetry = select_mirror_beam_candidates(
+            candidate_pool,
+            operating_point,
+            objective=objective,
+            sample_budget=budget,
+        )
     else:
         raise ValueError(f"unknown search_mode: {search_mode}")
 
@@ -773,7 +1266,17 @@ def run_simulation(
         "candidate_count": len(ranked),
         "evaluated_candidate_count": len(ranked),
         "length_square_sampling": {
-            "enabled": search_mode in {"tang_sampled", "tang_beam", "radial_sampled", "radial_beam"},
+            "enabled": search_mode
+            in {
+                "tang_sampled",
+                "tang_beam",
+                "radial_sampled",
+                "radial_beam",
+                "polar_beam",
+                "asymmetric_well",
+                "dissonance_pruned",
+                "algebraic_hybrid",
+            },
             "sampling_power": sampling_power,
             "radial_gain": radial_gain if search_mode in {"radial_sampled", "radial_beam"} else None,
             "sample_budget": sample_budget,
@@ -795,8 +1298,69 @@ def run_simulation(
                     reverse=True,
                 )[: min(8, len(radial_profile or {}))]
             },
+            "polar_hints": {
+                key: {
+                    field: round(value, 12)
+                    for field, value in row.items()
+                    if field
+                    in {
+                        "positive_probability",
+                        "negative_probability",
+                        "polarity",
+                        "contrast",
+                        "dual_entropy",
+                    }
+                }
+                for key, row in sorted(
+                    (polar_profile or {}).items(),
+                    key=lambda item: item[1]["contrast"],
+                    reverse=True,
+                )[: min(8, len(polar_profile or {}))]
+            },
+            "dissonance_hints": {
+                key: {
+                    field: round(value, 12)
+                    for field, value in row.items()
+                    if field
+                    in {
+                        "spread",
+                        "centroid_alignment",
+                        "alignment_mean",
+                        "alignment_floor",
+                        "constructive_dissonance",
+                        "destructive_dissonance",
+                        "score",
+                    }
+                }
+                for key, row in sorted(
+                    (dissonance_profile or {}).items(),
+                    key=lambda item: item[1]["score"],
+                    reverse=True,
+                )[: min(8, len(dissonance_profile or {}))]
+            },
+            "asymmetric_hints": {
+                key: {
+                    field: round(value, 12)
+                    for field, value in row.items()
+                    if field
+                    in {
+                        "probability",
+                        "transformed_norm",
+                        "positive_residual_norm",
+                        "negative_residual_norm",
+                    }
+                }
+                for key, row in sorted(
+                    (asymmetric_profile or {}).items(),
+                    key=lambda item: item[1]["probability"],
+                    reverse=True,
+                )[: min(8, len(asymmetric_profile or {}))]
+            },
         },
         "top_design": ranked[0],
+        "morton": morton_telemetry,
+        "algebraic_hybrid": hybrid_telemetry,
+        "mirror": mirror_telemetry,
         "ranked": ranked,
     }
 
@@ -811,6 +1375,8 @@ def compare_search_modes(
     objective: str = "balanced",
     sample_budget: int = 6,
     sample_seed: int = 17,
+    variants: Iterable[AuxeticVariant] = VARIANTS,
+    actuation_grid: Iterable[float] = (0.0, 0.25, 0.5, 0.75, 1.0),
 ) -> dict[str, object]:
     """Pure-math side-by-side search comparison.
 
@@ -822,7 +1388,14 @@ def compare_search_modes(
     - radial_beam_2_125: path-aware adaptive radial exponent beam.
     """
 
-    exhaustive = run_simulation(objective=objective, search_mode="exhaustive")
+    variant_list = tuple(variants)
+    actuation_values = tuple(float(value) for value in actuation_grid)
+    exhaustive = run_simulation(
+        objective=objective,
+        search_mode="exhaustive",
+        variants=variant_list,
+        actuation_grid=actuation_values,
+    )
     best = exhaustive["top_design"]
     assert isinstance(best, dict)
     best_score = float(best["score"])
@@ -834,6 +1407,8 @@ def compare_search_modes(
             search_mode="uniform_sampled",
             sample_budget=sample_budget,
             sample_seed=sample_seed,
+            variants=variant_list,
+            actuation_grid=actuation_values,
         ),
         "tang_beam_2": run_simulation(
             objective=objective,
@@ -841,6 +1416,8 @@ def compare_search_modes(
             sample_budget=sample_budget,
             sample_seed=sample_seed,
             sampling_power=2.0,
+            variants=variant_list,
+            actuation_grid=actuation_values,
         ),
         "tang_beam_2_125": run_simulation(
             objective=objective,
@@ -848,6 +1425,8 @@ def compare_search_modes(
             sample_budget=sample_budget,
             sample_seed=sample_seed,
             sampling_power=2.125,
+            variants=variant_list,
+            actuation_grid=actuation_values,
         ),
         "radial_beam_2_125": run_simulation(
             objective=objective,
@@ -857,11 +1436,64 @@ def compare_search_modes(
             sampling_power=2.125,
             radial_gain=0.125,
             path_history=baseline_history,
+            variants=variant_list,
+            actuation_grid=actuation_values,
+        ),
+        "polar_beam_2_125": run_simulation(
+            objective=objective,
+            search_mode="polar_beam",
+            sample_budget=sample_budget,
+            sample_seed=sample_seed,
+            sampling_power=2.125,
+            variants=variant_list,
+            actuation_grid=actuation_values,
+        ),
+        "asymmetric_well_2_125": run_simulation(
+            objective=objective,
+            search_mode="asymmetric_well",
+            sample_budget=sample_budget,
+            sample_seed=sample_seed,
+            sampling_power=2.125,
+            variants=variant_list,
+            actuation_grid=actuation_values,
+        ),
+        "morton_stride": run_simulation(
+            objective=objective,
+            search_mode="morton_stride",
+            sample_budget=sample_budget,
+            variants=variant_list,
+            actuation_grid=actuation_values,
+        ),
+        "dissonance_pruned": run_simulation(
+            objective=objective,
+            search_mode="dissonance_pruned",
+            sample_budget=sample_budget,
+            variants=variant_list,
+            actuation_grid=actuation_values,
+        ),
+        "algebraic_hybrid": run_simulation(
+            objective=objective,
+            search_mode="algebraic_hybrid",
+            sample_budget=sample_budget,
+            sampling_power=2.125,
+            radial_gain=0.125,
+            path_history=baseline_history,
+            variants=variant_list,
+            actuation_grid=actuation_values,
         ),
         "multigrid_top2": run_simulation(
             objective=objective,
             search_mode="multigrid",
             sample_budget=2,
+            variants=variant_list,
+            actuation_grid=actuation_values,
+        ),
+        "mirror_beam_c1": run_simulation(
+            objective=objective,
+            search_mode="mirror_beam",
+            sample_budget=sample_budget,
+            variants=variant_list,
+            actuation_grid=actuation_values,
         ),
     }
     summary: dict[str, dict[str, object]] = {}
@@ -881,6 +1513,9 @@ def compare_search_modes(
         "objective": objective,
         "sample_budget": sample_budget,
         "sample_seed": sample_seed,
+        "candidate_pool_count": len(variant_list) * len(actuation_values),
+        "variant_count": len(variant_list),
+        "actuation_count": len(actuation_values),
         "exhaustive_best_score": round(best_score, 9),
         "summary": summary,
     }
@@ -894,11 +1529,17 @@ def build_parser() -> argparse.ArgumentParser:
         choices=(
             "exhaustive",
             "uniform_sampled",
+            "morton_stride",
+            "dissonance_pruned",
+            "algebraic_hybrid",
             "tang_sampled",
             "tang_beam",
             "radial_sampled",
             "radial_beam",
+            "polar_beam",
+            "asymmetric_well",
             "multigrid",
+            "mirror_beam",
         ),
         default="exhaustive",
     )
@@ -911,6 +1552,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--sample-seed", type=int, default=17, help="Deterministic seed for Tang-style sampling.")
     parser.add_argument("--sampling-power", type=float, default=2.0, help="Norm exponent for Tang/radial sampling.")
     parser.add_argument("--radial-gain", type=float, default=0.125, help="Adaptive radial exponent gain.")
+    parser.add_argument(
+        "--variants-per-base",
+        type=int,
+        default=1,
+        help="Deterministically expand each base material family for large-board stress tests.",
+    )
+    parser.add_argument(
+        "--actuation-steps",
+        type=int,
+        default=5,
+        help="Inclusive 0..1 actuation grid size for stress tests.",
+    )
     parser.add_argument(
         "--path-history",
         default="",
@@ -929,11 +1582,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    variants = expand_variants(variants_per_base=args.variants_per_base)
+    actuation_grid = build_actuation_grid(args.actuation_steps)
     if args.compare:
         report = compare_search_modes(
             objective=args.objective,
             sample_budget=args.sample_budget or 6,
             sample_seed=args.sample_seed,
+            variants=variants,
+            actuation_grid=actuation_grid,
         )
         write_report(report, args.output)
         if args.json:
@@ -956,6 +1613,8 @@ def main(argv: list[str] | None = None) -> int:
         sample_seed=args.sample_seed,
         sampling_power=args.sampling_power,
         radial_gain=args.radial_gain,
+        variants=variants,
+        actuation_grid=actuation_grid,
         path_history=tuple(part.strip() for part in args.path_history.split(",") if part.strip()),
     )
     write_report(report, args.output)
