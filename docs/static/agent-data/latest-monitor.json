@@ -105,37 +105,17 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": "IBM didn't want Microsoft to use the Tab key to move between dialog fields",
-      "word_count": 628,
+      "description": ".de TLD offline due to DNSSEC?",
+      "word_count": 647,
       "headings": [
         {
           "level": 2,
-          "text": "IBM didn't want Microsoft to use the Tab key to move between dialog fields",
+          "text": ".de TLD offline due to DNSSEC?",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "devblogs.microsoft.com/oldnewthing",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Clarification on the Notepad++ Trademark Issue",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "notepad-plus-plus.org",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Three Inverse Laws of AI",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "susam.net",
+          "text": "verisignlabs.com",
           "source": "fallback-selector"
         },
         {
@@ -150,18 +130,38 @@
         },
         {
           "level": 2,
-          "text": "EEVblog: The 555 Timer is 55 years old",
+          "text": "Computer Use is 45x more expensive than structured APIs",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "youtube.com",
+          "text": "reflex.dev",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Write some software, give it away for free",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "nonogra.ph",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "Three Inverse Laws of AI",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "susam.net",
           "source": "fallback-selector"
         }
       ],
       "link_count": 225,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.IBM didn't want Microsoft to use the Tab key to move between dialog fields (devblogs.microsoft.com/oldnewthing)140 points by SeenNotHeard 1 hour ago  | hide | 63\u00a0comments2.Clarification on the Notepad++ Trademark Issue (notepad-plus-plus.org)46 points by minimaxir 34 minutes ago  | hide | 3\u00a0comments3.Three Inverse Laws of AI (susam.net)231 points by blenderob 3 hours ago  | hide | 141\u00a0comments4.Accelerating Gemma 4: faster infer..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1..de TLD offline due to DNSSEC? (verisignlabs.com)508 points by warpspin 4 hours ago  | hide | 230\u00a0comments2.Accelerating Gemma 4: faster inference with multi-token prediction drafters (blog.google)430 points by amrrs 8 hours ago  | hide | 195\u00a0comments3.Computer Use is 45x more expensive than structured APIs (reflex.dev)301 points by palashawas 8 hours ago  | hide | 164\u00a0comments4.Write some software, give it away for free (nonogr..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
