@@ -105,9 +105,39 @@
     {
       "url": "https://news.ycombinator.com",
       "title": "Hacker News",
-      "description": ".de TLD offline due to DNSSEC?",
-      "word_count": 647,
+      "description": "Agents can now create Cloudflare accounts, buy domains, and deploy",
+      "word_count": 614,
       "headings": [
+        {
+          "level": 2,
+          "text": "Agents can now create Cloudflare accounts, buy domains, and deploy",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "cloudflare.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "CARA 2.0 \u2013 \"I Built a Better Robot Dog\"",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "aaedmusa.com",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "StarFighter 16-Inch",
+          "source": "fallback-selector"
+        },
+        {
+          "level": 2,
+          "text": "starlabs.systems",
+          "source": "fallback-selector"
+        },
         {
           "level": 2,
           "text": ".de TLD offline due to DNSSEC?",
@@ -120,54 +150,24 @@
         },
         {
           "level": 2,
-          "text": "Accelerating Gemma 4: faster inference with multi-token prediction drafters",
+          "text": "Telus Uses AI to Alter Call-Agent Accents",
           "source": "fallback-selector"
         },
         {
           "level": 2,
-          "text": "blog.google",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Computer Use is 45x more expensive than structured APIs",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "reflex.dev",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Write some software, give it away for free",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "nonogra.ph",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "Three Inverse Laws of AI",
-          "source": "fallback-selector"
-        },
-        {
-          "level": 2,
-          "text": "susam.net",
+          "text": "letsdatascience.com",
           "source": "fallback-selector"
         }
       ],
-      "link_count": 225,
+      "link_count": 227,
       "table_count": 4,
-      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1..de TLD offline due to DNSSEC? (verisignlabs.com)508 points by warpspin 4 hours ago  | hide | 230\u00a0comments2.Accelerating Gemma 4: faster inference with multi-token prediction drafters (blog.google)430 points by amrrs 8 hours ago  | hide | 195\u00a0comments3.Computer Use is 45x more expensive than structured APIs (reflex.dev)301 points by palashawas 8 hours ago  | hide | 164\u00a0comments4.Write some software, give it away for free (nonogr..."
+      "text_preview": "Hacker Newsnew | past | comments | ask | show | jobs | submitlogin1.Agents can now create Cloudflare accounts, buy domains, and deploy (cloudflare.com)211 points by rolph 3 hours ago  | hide | 116\u00a0comments2.CARA 2.0 \u2013 \"I Built a Better Robot Dog\" (aaedmusa.com)51 points by hakonjdjohnsen 2 hours ago  | hide | discuss3.StarFighter 16-Inch (starlabs.systems)217 points by signa11 5 hours ago  | hide | 125\u00a0comments4..de TLD offline due to DNSSEC? (verisignlabs.com)618 points by warpspin 10 hours ago..."
     },
     {
       "url": "https://arxiv.org/list/cs.AI/recent",
       "title": "Artificial Intelligence",
       "description": "quick links",
-      "word_count": 2058,
+      "word_count": 2152,
       "headings": [
         {
           "level": 2,
@@ -183,12 +183,12 @@
         },
         {
           "level": 3,
-          "text": "Tue, 5 May 2026 (showing first 50 of 385 entries )"
+          "text": "Wed, 6 May 2026 (showing first 50 of 186 entries )"
         }
       ],
-      "link_count": 579,
+      "link_count": 554,
       "table_count": 0,
-      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Tue, 5 May 2026\n        \n      \n        \n          Mon, 4 May 2026\n        \n      \n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n        \n          Wed, 29 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1012 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1012\n\n    \n    Showing up to 50 entries per ..."
+      "text_preview": "Artificial Intelligence\n\nAuthors and titles for recent submissions\n  \n\n        \n          Wed, 6 May 2026\n        \n      \n        \n          Tue, 5 May 2026\n        \n      \n        \n          Mon, 4 May 2026\n        \n      \n        \n          Fri, 1 May 2026\n        \n      \n        \n          Thu, 30 Apr 2026\n        \n      \n  See today's new changes\n      Total of 1020 entries :      1-50\n      51-100\n      101-150\n      151-200\n      ...\n      1001-1020\n\n    \n    Showing up to 50 entries per p..."
     }
   ]
 }
