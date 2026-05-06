@@ -19,9 +19,11 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+repo_root = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(repo_root))
+sys.path.insert(0, str(repo_root / "src"))
 
-from governance.chemical_bonds import (
+from src.governance.chemical_bonds import (
     TONGUES,
     BOND_PAIRS,
     BOND_NAMES,
