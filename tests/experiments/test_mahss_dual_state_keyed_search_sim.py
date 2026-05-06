@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pytest
 
@@ -11,7 +13,11 @@ from scripts.experiments.mahss_dual_state_keyed_search_sim import (
     amplitude_matrix,
     build_landscape,
     run_compare,
+    run_seed_size_sweep,
+    select_constructive_oscillation_cross,
+    select_phase_angle_cross,
     select_brute_pair,
+    select_polyhedral_edge_gear_cross,
     select_polyhedral_edge_walk_cross,
     select_polyhedral_walk_cross,
     select_resonance_cross,
@@ -81,7 +87,13 @@ def test_run_compare_emits_summary_for_each_method() -> None:
         "resonance_cross_a1",
         "multigrid_cross_c20_k6",
         "multigrid_cross_c30_k10",
+        "constructive_oscillation_k8_o4_w3",
+        "phase_angle_k20_o7",
         "polyhedral_edge_k20_w4",
+        "polyhedral_edge_k20_w10",
+        "polyhedral_edge_k20_w4_hybrid",
+        "polyhedral_edge_k20_w10_weighted",
+        "polyhedral_edge_gear_k20_w4_w10",
         "polyhedral_edge_k30_w6",
         "polyhedral_walk_tetrahedron",
         "polyhedral_walk_octahedron",
@@ -133,6 +145,21 @@ def test_lowrank_resonance_recovers_recall_at_solution_rank() -> None:
     assert summary["resonance_lowrank_r2"]["diamond_recall"] < 1.0
     assert summary["resonance_lowrank_r16"]["diamond_recall"] == pytest.approx(1.0)
     assert summary["resonance_lowrank_r32"]["diamond_recall"] == pytest.approx(1.0)
+
+
+def test_seed_size_sweep_reports_aggregate_and_winners() -> None:
+    report = run_seed_size_sweep(sizes=[40], seeds=[0, 1], budget_pairs=4, n_diamond_pairs=2)
+    assert report["schema_version"] == "scbe_mahss_dual_state_seed_size_sweep_v1"
+    assert report["sizes"] == [40]
+    assert report["seeds"] == [0, 1]
+    assert len(report["rows"]) == 2
+    assert "polyhedral_edge_k20_w4" in report["aggregate"]
+    assert "polyhedral_edge_k20_w10" in report["aggregate"]
+    assert "polyhedral_edge_k20_w10_weighted" in report["aggregate"]
+    assert "polyhedral_edge_gear_k20_w4_w10" in report["aggregate"]
+    assert "constructive_oscillation_k8_o4_w3" in report["aggregate"]
+    assert "speedup_vs_tang_median" in report
+    assert sum(report["winner_counts"].values()) == 2
 
 
 def test_disagreement_probe_double_negative_makes_positive() -> None:
@@ -189,6 +216,80 @@ def test_polyhedral_edge_walk_beats_tang_on_strong_key_default() -> None:
     assert poly["total_evaluations"] < tang20["total_evaluations"]
 
 
+def test_polyhedral_edge_w10_is_conservative_recall_variant() -> None:
+    spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
+    report = run_compare(spec, budget_pairs=8)
+    w4 = report["summary"]["polyhedral_edge_k20_w4"]
+    w10 = report["summary"]["polyhedral_edge_k20_w10"]
+    tang20 = report["summary"]["tang_cross_k20"]
+    assert w10["diamond_recall"] == 1.0
+    assert w10["regret_log_amp"] == 0.0
+    assert w10["total_evaluations"] > w4["total_evaluations"]
+    assert w10["total_evaluations"] <= tang20["total_evaluations"]
+
+
+def test_polyhedral_edge_gear_shifts_by_search_space_size() -> None:
+    small = build_landscape(DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19))
+    pairs, evaluations, meta = select_polyhedral_edge_gear_cross(
+        small["A"],
+        small["B"],
+        small["M"],
+        seed_count=20,
+        fast_width=4,
+        torque_width=10,
+        shift_threshold=80_000,
+        budget_pairs=8,
+    )
+    assert meta["gear"] == "fast"
+    assert meta["edge_width"] == 4
+    assert meta["edge_metric"] == "hamming"
+    assert evaluations == 140
+    assert len(pairs) == 8
+
+    large = build_landscape(DualStateSpec(n_a=500, n_b=500, n_diamond_pairs=4, n_decoys_per_side=12, seed=1))
+    pairs, evaluations, meta = select_polyhedral_edge_gear_cross(
+        large["A"],
+        large["B"],
+        large["M"],
+        seed_count=20,
+        fast_width=4,
+        torque_width=10,
+        shift_threshold=80_000,
+        budget_pairs=8,
+    )
+    assert meta["gear"] == "torque"
+    assert meta["edge_width"] == 10
+    assert meta["edge_metric"] == "hamming"
+    assert evaluations < 400
+    assert len(pairs) == 8
+
+
+def test_polyhedral_edge_gear_is_reported_in_run_compare() -> None:
+    report = run_compare(DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19), budget_pairs=8)
+    row = report["summary"]["polyhedral_edge_gear_k20_w4_w10"]
+    assert row["diamond_recall"] == 1.0
+    assert row["regret_log_amp"] == 0.0
+    assert row["polyhedral_edge_gear"]["gear"] == "fast"
+    assert row["polyhedral_edge_gear"]["edge_width"] == 4
+    assert row["polyhedral_edge_gear"]["edge_metric"] == "hamming"
+
+
+def test_polyhedral_edge_metrics_are_supported() -> None:
+    landscape = build_landscape(DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19))
+    for metric in ("hamming", "phase", "hybrid", "weighted_hybrid"):
+        pairs, evaluations = select_polyhedral_edge_walk_cross(
+            landscape["A"],
+            landscape["B"],
+            landscape["M"],
+            seed_count=20,
+            edge_width=4,
+            edge_metric=metric,
+            budget_pairs=8,
+        )
+        assert len(pairs) == 8
+        assert evaluations > 0
+
+
 def test_polyhedral_edge_walk_selector_is_direct_and_bounded() -> None:
     spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
     landscape = build_landscape(spec)
@@ -203,6 +304,148 @@ def test_polyhedral_edge_walk_selector_is_direct_and_bounded() -> None:
     assert evaluations == 140
     assert len(pairs) == 8
     assert set(landscape["diamond_pairs"]).issubset(set(pairs))
+
+
+def test_phase_angle_selector_is_direct_and_metadata_bounded() -> None:
+    """Angular phase matching is a compact frontier selector, not an edge walk."""
+
+    spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
+    landscape = build_landscape(spec)
+    pairs, evaluations, meta = select_phase_angle_cross(
+        landscape["A"],
+        landscape["B"],
+        landscape["M"],
+        seed_count=20,
+        offsets=7,
+        angle_width=2,
+        budget_pairs=8,
+    )
+    assert len(pairs) == 8
+    assert evaluations == meta["frontier_size"]
+    assert evaluations <= 20 * 7 * 2 * 2
+    assert meta["offsets"] == 7
+    assert len(meta["phase_offsets"]) == 7
+
+
+def test_phase_angle_selector_is_compared_cost_honestly() -> None:
+    spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
+    report = run_compare(spec, budget_pairs=8)
+    phase = report["summary"]["phase_angle_k20_o7"]
+    poly = report["summary"]["polyhedral_edge_k20_w4"]
+    assert phase["cost_accounting"] == "direct"
+    assert phase["total_evaluations"] == phase["evaluations"]
+    assert "phase_angle" in phase
+    assert phase["total_evaluations"] <= 20 * 7 * 2 * 2
+    assert poly["diamond_recall"] == 1.0
+
+
+def test_constructive_oscillation_selector_is_direct_and_metadata_bounded() -> None:
+    spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
+    landscape = build_landscape(spec)
+    pairs, evaluations, meta = select_constructive_oscillation_cross(
+        landscape["A"],
+        landscape["B"],
+        landscape["M"],
+        seed_count=20,
+        oscillations=7,
+        beam_width=2,
+        budget_pairs=8,
+    )
+    assert len(pairs) == 8
+    assert evaluations == meta["frontier_size"]
+    assert evaluations <= 20 * 7 * 2 * 2
+    assert meta["oscillations"] == 7
+    assert meta["max_vote"] > 0.0
+    assert meta["score_model"] == "inverse_lyapunov_derivative"
+
+
+def test_constructive_oscillation_is_compared_cost_honestly() -> None:
+    spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
+    report = run_compare(spec, budget_pairs=8)
+    osc = report["summary"]["constructive_oscillation_k8_o4_w3"]
+    poly = report["summary"]["polyhedral_edge_k20_w4"]
+    assert osc["cost_accounting"] == "direct"
+    assert osc["total_evaluations"] == osc["evaluations"]
+    assert "constructive_oscillation" in osc
+    assert osc["diamond_recall"] == 1.0
+    assert osc["regret_log_amp"] == 0.0
+    assert osc["total_evaluations"] == 181
+    assert osc["total_evaluations"] < report["summary"]["tang_cross_k20"]["total_evaluations"]
+    assert osc["total_evaluations"] > poly["total_evaluations"]
+    assert poly["diamond_recall"] == 1.0
+
+
+def test_phase_angle_selector_is_fast_on_curved_phase_landscape() -> None:
+    """Curved-phase relation can be cheaper than edge search once mapped.
+
+    This is the athlete-style regime: the useful relation is an angular cycle,
+    not a straight line or a sign-facet edge. A tiny phase frontier recovers the
+    planted pairs because the answer is encoded in repeated phase timing.
+    """
+
+    rng = np.random.default_rng(23)
+    dim = 32
+    n = 48
+    M = np.eye(dim)
+    A = 0.15 * rng.standard_normal((n, dim))
+    B = 0.15 * rng.standard_normal((n, dim))
+    diamond_a_idx = [2, 11, 27, 39]
+    diamond_b_idx = [5, 16, 31, 44]
+    phases = [0.2, 1.7, 3.3, 5.1]
+    for ai, bj, theta in zip(diamond_a_idx, diamond_b_idx, phases):
+        vector = np.zeros(dim)
+        vector[0] = math.cos(theta)
+        vector[1] = math.sin(theta)
+        A[ai] = 5.0 * vector
+        B[bj] = 5.0 * vector
+
+    pairs, evaluations, meta = select_phase_angle_cross(
+        A,
+        B,
+        M,
+        seed_count=4,
+        offsets=1,
+        angle_width=1,
+        budget_pairs=4,
+    )
+    diamond_pairs = set(zip(diamond_a_idx, diamond_b_idx))
+    assert diamond_pairs.issubset(set(pairs))
+    assert evaluations <= 8
+    assert meta["frontier_size"] == evaluations
+
+
+def test_constructive_oscillation_runs_fast_on_curved_phase_landscape() -> None:
+    rng = np.random.default_rng(23)
+    dim = 32
+    n = 48
+    M = np.eye(dim)
+    A = 0.15 * rng.standard_normal((n, dim))
+    B = 0.15 * rng.standard_normal((n, dim))
+    diamond_a_idx = [2, 11, 27, 39]
+    diamond_b_idx = [5, 16, 31, 44]
+    phases = [0.2, 1.7, 3.3, 5.1]
+    for ai, bj, theta in zip(diamond_a_idx, diamond_b_idx, phases):
+        vector = np.zeros(dim)
+        vector[0] = math.cos(theta)
+        vector[1] = math.sin(theta)
+        A[ai] = 5.0 * vector
+        B[bj] = 5.0 * vector
+
+    pairs, evaluations, meta = select_constructive_oscillation_cross(
+        A,
+        B,
+        M,
+        seed_count=4,
+        oscillations=1,
+        beam_width=1,
+        budget_pairs=4,
+    )
+    diamond_pairs = set(zip(diamond_a_idx, diamond_b_idx))
+    assert diamond_pairs.issubset(set(pairs))
+    assert evaluations <= 8
+    assert meta["frontier_size"] == evaluations
+    assert meta["max_vote"] > 0.0
+    assert meta["score_model"] == "inverse_lyapunov_derivative"
 
 
 def test_platonic_walk_emits_polyhedron_structural_metadata() -> None:

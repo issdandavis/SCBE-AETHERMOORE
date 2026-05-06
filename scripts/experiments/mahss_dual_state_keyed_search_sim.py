@@ -20,6 +20,11 @@ Compares four methods at the same effective budget:
                          only -> O(K * N_B + K * K_B) evaluations
   - polyhedral_edge:     keyed sign-facet edge walk over rotated A and B
                          cells, then exact scoring of the frontier
+  - phase_angle:         keyed angular phase matching over rotated A and B
+                         using phi-spaced cyclic offsets
+  - constructive_oscillation:
+                         repeated phase/sign compatibility passes whose
+                         constructive votes define the exact-scored frontier
   - resonance_cross:     compute amplitude over the joint outer product in
                          one batched op, take top-K_pair pairs
 
@@ -365,6 +370,194 @@ def _hamming(signature: np.ndarray, signatures: np.ndarray) -> np.ndarray:
     return np.count_nonzero(signatures != signature, axis=1)
 
 
+def _phase_angles(matrix: np.ndarray) -> np.ndarray:
+    """Return a stable cyclic phase angle for each row.
+
+    The angle is computed from paired even/odd coordinates. It is a compact
+    phase sketch, not a replacement for the final amplitude score.
+    """
+
+    even = matrix[:, 0::2].sum(axis=1)
+    odd = matrix[:, 1::2].sum(axis=1)
+    return np.mod(np.arctan2(odd, even), 2.0 * math.pi)
+
+
+def _cyclic_angle_distance(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    delta = np.abs(a - b)
+    return np.minimum(delta, 2.0 * math.pi - delta)
+
+
+def select_phase_angle_cross(
+    A: np.ndarray,
+    B: np.ndarray,
+    M: np.ndarray,
+    *,
+    seed_count: int,
+    offsets: int,
+    angle_width: int,
+    budget_pairs: int,
+    alpha: float = 1.0,
+) -> tuple[list[tuple[int, int]], int, dict[str, object]]:
+    """Select pairs by keyed angular phase alignment.
+
+    Once ``M`` maps A into B's frame, sign-facet edges are not the only
+    relation available. This selector sketches each row into a cyclic phase
+    angle, then tests self-similar phi-spaced phase offsets. It scores only
+    the resulting angular frontier with the true amplitude function.
+    """
+
+    if seed_count <= 0:
+        raise ValueError("seed_count must be > 0")
+    if offsets <= 0:
+        raise ValueError("offsets must be > 0")
+    if angle_width <= 0:
+        raise ValueError("angle_width must be > 0")
+
+    a_norms = np.linalg.norm(A, axis=1)
+    b_norms = np.linalg.norm(B, axis=1)
+    rotated = A @ M.T
+    a_phase = _phase_angles(rotated)
+    b_phase = _phase_angles(B)
+    phase_offsets = np.mod(
+        np.arange(offsets, dtype=float) * (2.0 * math.pi / (PHI**2)),
+        2.0 * math.pi,
+    )
+
+    pairs: set[tuple[int, int]] = set()
+    a_seeds = np.argsort(a_norms)[::-1][: min(seed_count, A.shape[0])]
+    b_seeds = np.argsort(b_norms)[::-1][: min(seed_count, B.shape[0])]
+
+    for ai in a_seeds:
+        for offset in phase_offsets:
+            target = np.mod(a_phase[int(ai)] + offset, 2.0 * math.pi)
+            distances = _cyclic_angle_distance(target, b_phase)
+            order = np.lexsort((-b_norms, distances))
+            for bj in order[: min(angle_width, B.shape[0])]:
+                pairs.add((int(ai), int(bj)))
+
+    for bj in b_seeds:
+        for offset in phase_offsets:
+            target = np.mod(b_phase[int(bj)] - offset, 2.0 * math.pi)
+            distances = _cyclic_angle_distance(target, a_phase)
+            order = np.lexsort((-a_norms, distances))
+            for ai in order[: min(angle_width, A.shape[0])]:
+                pairs.add((int(ai), int(bj)))
+
+    candidates = sorted(pairs)
+    log_amp = amplitude_matrix(A, B, M, alpha=alpha)
+    candidates.sort(key=lambda pair: float(log_amp[pair[0], pair[1]]), reverse=True)
+    selected = candidates[:budget_pairs]
+    meta = {
+        "seed_count": int(seed_count),
+        "offsets": int(offsets),
+        "angle_width": int(angle_width),
+        "phase_offsets": [round(float(v), 6) for v in phase_offsets],
+        "frontier_size": int(len(candidates)),
+    }
+    return selected, len(candidates), meta
+
+
+def select_constructive_oscillation_cross(
+    A: np.ndarray,
+    B: np.ndarray,
+    M: np.ndarray,
+    *,
+    seed_count: int,
+    oscillations: int,
+    beam_width: int,
+    budget_pairs: int,
+    alpha: float = 1.0,
+) -> tuple[list[tuple[int, int]], int, dict[str, object]]:
+    """Run repeated phase/sign passes and keep constructive intersections.
+
+    This treats search as a short oscillatory run through the mapped solution
+    space. Each oscillation applies a phi-spaced phase shift, then combines
+    cyclic phase closeness with sign-facet compatibility. Pairs that repeatedly
+    line up across passes get votes; only the voted frontier is exact-scored.
+
+    The vote is an inverse-Lyapunov derivative surrogate. Let mismatch energy
+    be ``E = phase_distance/pi + hamming_distance/d`` and
+    ``L = 1 / (eps + E)``. A pair receives constructive mass when the current
+    oscillation improves L relative to the previous phase pass for that pair.
+    """
+
+    if seed_count <= 0:
+        raise ValueError("seed_count must be > 0")
+    if oscillations <= 0:
+        raise ValueError("oscillations must be > 0")
+    if beam_width <= 0:
+        raise ValueError("beam_width must be > 0")
+
+    a_norms = np.linalg.norm(A, axis=1)
+    b_norms = np.linalg.norm(B, axis=1)
+    rotated = A @ M.T
+    rotated_unit = _normalize_rows(rotated)
+    b_unit = _normalize_rows(B)
+    a_phase = _phase_angles(rotated)
+    b_phase = _phase_angles(B)
+    a_signatures = _signatures(rotated_unit)
+    b_signatures = _signatures(b_unit)
+    phase_offsets = np.mod(
+        np.arange(oscillations, dtype=float) * (2.0 * math.pi / (PHI**2)),
+        2.0 * math.pi,
+    )
+
+    a_seeds = np.argsort(a_norms)[::-1][: min(seed_count, A.shape[0])]
+    b_seeds = np.argsort(b_norms)[::-1][: min(seed_count, B.shape[0])]
+    votes: dict[tuple[int, int], float] = {}
+    previous_l: dict[tuple[int, int], float] = {}
+    eps = 1e-6
+
+    def _add_vote(pair: tuple[int, int], phase_distance: float, hamming_distance: float) -> None:
+        energy = (float(phase_distance) / math.pi) + (float(hamming_distance) / max(1, A.shape[1]))
+        inverse_l = 1.0 / (eps + energy)
+        derivative = inverse_l - previous_l.get(pair, 0.0)
+        previous_l[pair] = max(previous_l.get(pair, 0.0), inverse_l)
+        votes[pair] = votes.get(pair, 0.0) + max(0.0, derivative)
+
+    for ai in a_seeds:
+        ai_int = int(ai)
+        hamming = _hamming(a_signatures[ai_int], b_signatures)
+        for offset in phase_offsets:
+            target = np.mod(a_phase[ai_int] + offset, 2.0 * math.pi)
+            phase_distances = _cyclic_angle_distance(target, b_phase)
+            score = phase_distances + (hamming / max(1, A.shape[1]))
+            order = np.lexsort((-b_norms, score))
+            for bj in order[: min(beam_width, B.shape[0])]:
+                bj_int = int(bj)
+                _add_vote((ai_int, bj_int), float(phase_distances[bj_int]), float(hamming[bj_int]))
+
+    for bj in b_seeds:
+        bj_int = int(bj)
+        hamming = _hamming(b_signatures[bj_int], a_signatures)
+        for offset in phase_offsets:
+            target = np.mod(b_phase[bj_int] - offset, 2.0 * math.pi)
+            phase_distances = _cyclic_angle_distance(target, a_phase)
+            score = phase_distances + (hamming / max(1, A.shape[1]))
+            order = np.lexsort((-a_norms, score))
+            for ai in order[: min(beam_width, A.shape[0])]:
+                ai_int = int(ai)
+                _add_vote((ai_int, bj_int), float(phase_distances[ai_int]), float(hamming[ai_int]))
+
+    candidates = sorted(votes)
+    log_amp = amplitude_matrix(A, B, M, alpha=alpha)
+    candidates.sort(
+        key=lambda pair: (float(log_amp[pair[0], pair[1]]), votes[pair]),
+        reverse=True,
+    )
+    selected = candidates[:budget_pairs]
+    meta = {
+        "seed_count": int(seed_count),
+        "oscillations": int(oscillations),
+        "beam_width": int(beam_width),
+        "phase_offsets": [round(float(v), 6) for v in phase_offsets],
+        "frontier_size": int(len(candidates)),
+        "max_vote": round(float(max(votes.values()) if votes else 0.0), 6),
+        "score_model": "inverse_lyapunov_derivative",
+    }
+    return selected, len(candidates), meta
+
+
 def select_polyhedral_edge_walk_cross(
     A: np.ndarray,
     B: np.ndarray,
@@ -373,6 +566,7 @@ def select_polyhedral_edge_walk_cross(
     seed_count: int,
     edge_width: int,
     budget_pairs: int,
+    edge_metric: str = "hamming",
     alpha: float = 1.0,
 ) -> tuple[list[tuple[int, int]], int]:
     """Walk keyed polyhedral sign-facet edges before exact pair scoring.
@@ -388,6 +582,8 @@ def select_polyhedral_edge_walk_cross(
         raise ValueError("seed_count must be > 0")
     if edge_width <= 0:
         raise ValueError("edge_width must be > 0")
+    if edge_metric not in {"hamming", "phase", "hybrid", "weighted_hybrid"}:
+        raise ValueError("edge_metric must be hamming, phase, hybrid, or weighted_hybrid")
 
     a_norms = np.linalg.norm(A, axis=1)
     b_norms = np.linalg.norm(B, axis=1)
@@ -396,19 +592,43 @@ def select_polyhedral_edge_walk_cross(
     b_unit = _normalize_rows(B)
     a_signatures = _signatures(rotated_unit)
     b_signatures = _signatures(b_unit)
+    a_phase = _phase_angles(rotated)
+    b_phase = _phase_angles(B)
+
+    def _metric_for_a(ai: int) -> np.ndarray:
+        hamming = _hamming(a_signatures[ai], b_signatures).astype(float)
+        phase = _cyclic_angle_distance(a_phase[ai], b_phase) / math.pi
+        if edge_metric == "hamming":
+            return hamming
+        if edge_metric == "phase":
+            return phase
+        if edge_metric == "hybrid":
+            return (hamming / max(1, A.shape[1])) + phase
+        return (0.7 * hamming / max(1, A.shape[1])) + (0.3 * phase)
+
+    def _metric_for_b(bj: int) -> np.ndarray:
+        hamming = _hamming(b_signatures[bj], a_signatures).astype(float)
+        phase = _cyclic_angle_distance(b_phase[bj], a_phase) / math.pi
+        if edge_metric == "hamming":
+            return hamming
+        if edge_metric == "phase":
+            return phase
+        if edge_metric == "hybrid":
+            return (hamming / max(1, A.shape[1])) + phase
+        return (0.7 * hamming / max(1, A.shape[1])) + (0.3 * phase)
 
     a_seeds = np.argsort(a_norms)[::-1][: min(seed_count, A.shape[0])]
     b_seeds = np.argsort(b_norms)[::-1][: min(seed_count, B.shape[0])]
     pairs: set[tuple[int, int]] = set()
 
     for ai in a_seeds:
-        distances = _hamming(a_signatures[int(ai)], b_signatures)
+        distances = _metric_for_a(int(ai))
         order = np.lexsort((-b_norms, distances))
         for bj in order[: min(edge_width, B.shape[0])]:
             pairs.add((int(ai), int(bj)))
 
     for bj in b_seeds:
-        distances = _hamming(b_signatures[int(bj)], a_signatures)
+        distances = _metric_for_b(int(bj))
         order = np.lexsort((-a_norms, distances))
         for ai in order[: min(edge_width, A.shape[0])]:
             pairs.add((int(ai), int(bj)))
@@ -418,6 +638,59 @@ def select_polyhedral_edge_walk_cross(
     candidates.sort(key=lambda pair: float(log_amp[pair[0], pair[1]]), reverse=True)
     selected = candidates[:budget_pairs]
     return selected, len(candidates)
+
+
+def select_polyhedral_edge_gear_cross(
+    A: np.ndarray,
+    B: np.ndarray,
+    M: np.ndarray,
+    *,
+    seed_count: int,
+    fast_width: int,
+    torque_width: int,
+    shift_threshold: int,
+    budget_pairs: int,
+    fast_metric: str = "hamming",
+    torque_metric: str = "hamming",
+    alpha: float = 1.0,
+) -> tuple[list[tuple[int, int]], int, dict[str, object]]:
+    """Adaptive edge-walk gear shift.
+
+    Small boards use a narrow frontier for speed. Once the board crosses a
+    threshold, the selector shifts to a wider frontier ("more torque") to
+    reduce negative ingestion space: the missed-good region caused by an
+    overly tight local neighborhood.
+    """
+
+    if shift_threshold <= 0:
+        raise ValueError("shift_threshold must be > 0")
+    joint_pool_size = int(A.shape[0] * B.shape[0])
+    gear = "fast" if joint_pool_size <= shift_threshold else "torque"
+    edge_width = fast_width if gear == "fast" else torque_width
+    edge_metric = fast_metric if gear == "fast" else torque_metric
+    pairs, evaluations = select_polyhedral_edge_walk_cross(
+        A,
+        B,
+        M,
+        seed_count=seed_count,
+        edge_width=edge_width,
+        edge_metric=edge_metric,
+        budget_pairs=budget_pairs,
+        alpha=alpha,
+    )
+    meta = {
+        "gear": gear,
+        "seed_count": int(seed_count),
+        "edge_width": int(edge_width),
+        "edge_metric": edge_metric,
+        "fast_width": int(fast_width),
+        "torque_width": int(torque_width),
+        "fast_metric": fast_metric,
+        "torque_metric": torque_metric,
+        "shift_threshold": int(shift_threshold),
+        "joint_pool_size": joint_pool_size,
+    }
+    return pairs, evaluations, meta
 
 
 def select_disagreement_probe_cross(
@@ -707,7 +980,58 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
         "polyhedral_edge_k30_w6": select_polyhedral_edge_walk_cross(
             A, B, M, seed_count=30, edge_width=6, budget_pairs=budget_pairs, alpha=alpha
         ),
+        "polyhedral_edge_k20_w10": select_polyhedral_edge_walk_cross(
+            A, B, M, seed_count=20, edge_width=10, budget_pairs=budget_pairs, alpha=alpha
+        ),
+        "polyhedral_edge_k20_w4_hybrid": select_polyhedral_edge_walk_cross(
+            A, B, M, seed_count=20, edge_width=4, edge_metric="hybrid", budget_pairs=budget_pairs, alpha=alpha
+        ),
+        "polyhedral_edge_k20_w10_weighted": select_polyhedral_edge_walk_cross(
+            A, B, M, seed_count=20, edge_width=10, edge_metric="weighted_hybrid", budget_pairs=budget_pairs, alpha=alpha
+        ),
     }
+
+    gear_meta: dict[str, dict[str, object]] = {}
+    pairs, evaluations, meta = select_polyhedral_edge_gear_cross(
+        A,
+        B,
+        M,
+        seed_count=20,
+        fast_width=4,
+        torque_width=10,
+        shift_threshold=80_000,
+        torque_metric="hamming",
+        budget_pairs=budget_pairs,
+        alpha=alpha,
+    )
+    runs["polyhedral_edge_gear_k20_w4_w10"] = (pairs, evaluations)
+    gear_meta["polyhedral_edge_gear_k20_w4_w10"] = meta
+
+    phase_meta: dict[str, dict[str, object]] = {}
+    pairs, evaluations, meta = select_phase_angle_cross(
+        A,
+        B,
+        M,
+        seed_count=20,
+        offsets=7,
+        angle_width=2,
+        budget_pairs=budget_pairs,
+        alpha=alpha,
+    )
+    runs["phase_angle_k20_o7"] = (pairs, evaluations)
+    phase_meta["phase_angle_k20_o7"] = meta
+    pairs, evaluations, meta = select_constructive_oscillation_cross(
+        A,
+        B,
+        M,
+        seed_count=8,
+        oscillations=4,
+        beam_width=3,
+        budget_pairs=budget_pairs,
+        alpha=alpha,
+    )
+    runs["constructive_oscillation_k8_o4_w3"] = (pairs, evaluations)
+    phase_meta["constructive_oscillation_k8_o4_w3"] = meta
 
     rank_sweep = [1, 2, 4, 8, 16, A.shape[1]]
     for rank in rank_sweep:
@@ -775,6 +1099,13 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
         row["cost_accounting"] = cost_accounting
         if name in polyhedral_meta:
             row["polyhedral_walk"] = polyhedral_meta[name]
+        if name in gear_meta:
+            row["polyhedral_edge_gear"] = gear_meta[name]
+        if name in phase_meta:
+            if name.startswith("constructive_oscillation"):
+                row["constructive_oscillation"] = phase_meta[name]
+            else:
+                row["phase_angle"] = phase_meta[name]
         summary[name] = row
 
     def _best_full_recall(names: Sequence[str]) -> dict[str, object] | None:
@@ -834,6 +1165,187 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
     }
 
 
+def run_seed_size_sweep(
+    *,
+    sizes: Sequence[int],
+    seeds: Sequence[int],
+    budget_pairs: int = 8,
+    n_diamond_pairs: int = 4,
+    n_decoys_per_side: int = 12,
+    alpha: float = 1.0,
+) -> dict[str, object]:
+    """Run a lightweight robustness sweep over seeds and problem sizes.
+
+    This intentionally avoids the full disagreement-probe matrix. It answers
+    the Tier-1 stability question: whether the direct speedup survives across
+    multiple landscapes and n values.
+    """
+
+    method_order = [
+        "tang_cross_k20",
+        "polyhedral_edge_k20_w4",
+        "polyhedral_edge_k20_w10",
+        "polyhedral_edge_k20_w10_weighted",
+        "polyhedral_edge_gear_k20_w4_w10",
+        "constructive_oscillation_k8_o4_w3",
+    ]
+    rows: list[dict[str, object]] = []
+
+    for size in sizes:
+        for seed in seeds:
+            spec = DualStateSpec(
+                n_a=int(size),
+                n_b=int(size),
+                n_diamond_pairs=n_diamond_pairs,
+                n_decoys_per_side=n_decoys_per_side,
+                seed=int(seed),
+            )
+            landscape = build_landscape(spec)
+            A = landscape["A"]
+            B = landscape["B"]
+            M = landscape["M"]
+            assert isinstance(A, np.ndarray) and isinstance(B, np.ndarray) and isinstance(M, np.ndarray)
+            log_amp_full = amplitude_matrix(A, B, M, alpha=alpha)
+            runs = {
+                "tang_cross_k20": select_tang_cross(
+                    A, B, M, k_per_side=20, budget_pairs=budget_pairs, alpha=alpha
+                ),
+                "polyhedral_edge_k20_w4": select_polyhedral_edge_walk_cross(
+                    A, B, M, seed_count=20, edge_width=4, budget_pairs=budget_pairs, alpha=alpha
+                ),
+                "polyhedral_edge_k20_w10": select_polyhedral_edge_walk_cross(
+                    A, B, M, seed_count=20, edge_width=10, budget_pairs=budget_pairs, alpha=alpha
+                ),
+                "polyhedral_edge_k20_w10_weighted": select_polyhedral_edge_walk_cross(
+                    A,
+                    B,
+                    M,
+                    seed_count=20,
+                    edge_width=10,
+                    edge_metric="weighted_hybrid",
+                    budget_pairs=budget_pairs,
+                    alpha=alpha,
+                ),
+                "polyhedral_edge_gear_k20_w4_w10": select_polyhedral_edge_gear_cross(
+                    A,
+                    B,
+                    M,
+                    seed_count=20,
+                    fast_width=4,
+                    torque_width=10,
+                    shift_threshold=80_000,
+                    torque_metric="hamming",
+                    budget_pairs=budget_pairs,
+                    alpha=alpha,
+                )[:2],
+                "constructive_oscillation_k8_o4_w3": select_constructive_oscillation_cross(
+                    A,
+                    B,
+                    M,
+                    seed_count=8,
+                    oscillations=4,
+                    beam_width=3,
+                    budget_pairs=budget_pairs,
+                    alpha=alpha,
+                )[:2],
+            }
+
+            evaluated: dict[str, dict[str, object]] = {}
+            for name, (pairs, evaluations) in runs.items():
+                row = evaluate_selection(pairs, landscape, log_amp_full)
+                row["evaluations"] = int(evaluations)
+                row["total_evaluations"] = int(evaluations)
+                evaluated[name] = row
+
+            full_recall = [
+                name
+                for name in method_order
+                if float(evaluated[name]["diamond_recall"]) >= 1.0
+            ]
+            best_full_recall = (
+                min(full_recall, key=lambda name: int(evaluated[name]["total_evaluations"]))
+                if full_recall
+                else None
+            )
+            rows.append(
+                {
+                    "size": int(size),
+                    "seed": int(seed),
+                    "joint_pool_size": int(size) * int(size),
+                    "best_full_recall_method": best_full_recall,
+                    "methods": evaluated,
+                }
+            )
+
+    aggregate: dict[str, dict[str, object]] = {}
+    for method in method_order:
+        method_rows = [row["methods"][method] for row in rows]  # type: ignore[index]
+        full = [float(row["diamond_recall"]) >= 1.0 for row in method_rows]
+        zero = [float(row["regret_log_amp"]) == 0.0 for row in method_rows]
+        evals = [int(row["total_evaluations"]) for row in method_rows]
+        aggregate[method] = {
+            "runs": len(method_rows),
+            "full_recall_runs": int(sum(full)),
+            "full_recall_rate": round(float(sum(full) / max(1, len(full))), 6),
+            "zero_regret_runs": int(sum(zero)),
+            "zero_regret_rate": round(float(sum(zero) / max(1, len(zero))), 6),
+            "median_evaluations": int(np.median(evals)) if evals else 0,
+            "min_evaluations": int(min(evals)) if evals else 0,
+            "max_evaluations": int(max(evals)) if evals else 0,
+        }
+
+    winner_counts: dict[str, int] = {method: 0 for method in method_order}
+    winner_counts["none"] = 0
+    for row in rows:
+        winner = row["best_full_recall_method"]
+        winner_counts[str(winner) if winner is not None else "none"] += 1
+
+    tang_evals = [
+        int(row["methods"]["tang_cross_k20"]["total_evaluations"])  # type: ignore[index]
+        for row in rows
+    ]
+    poly_evals = [
+        int(row["methods"]["polyhedral_edge_k20_w4"]["total_evaluations"])  # type: ignore[index]
+        for row in rows
+    ]
+    poly_w10_evals = [
+        int(row["methods"]["polyhedral_edge_k20_w10"]["total_evaluations"])  # type: ignore[index]
+        for row in rows
+    ]
+    poly_weighted_evals = [
+        int(row["methods"]["polyhedral_edge_k20_w10_weighted"]["total_evaluations"])  # type: ignore[index]
+        for row in rows
+    ]
+    gear_evals = [
+        int(row["methods"]["polyhedral_edge_gear_k20_w4_w10"]["total_evaluations"])  # type: ignore[index]
+        for row in rows
+    ]
+    osc_evals = [
+        int(row["methods"]["constructive_oscillation_k8_o4_w3"]["total_evaluations"])  # type: ignore[index]
+        for row in rows
+    ]
+
+    return {
+        "schema_version": "scbe_mahss_dual_state_seed_size_sweep_v1",
+        "sizes": [int(size) for size in sizes],
+        "seeds": [int(seed) for seed in seeds],
+        "budget_pairs": int(budget_pairs),
+        "n_diamond_pairs": int(n_diamond_pairs),
+        "n_decoys_per_side": int(n_decoys_per_side),
+        "methods": method_order,
+        "aggregate": aggregate,
+        "winner_counts": winner_counts,
+        "speedup_vs_tang_median": {
+            "polyhedral_edge_k20_w4": round(float(np.median(np.asarray(tang_evals) / np.asarray(poly_evals))), 6),
+            "polyhedral_edge_k20_w10": round(float(np.median(np.asarray(tang_evals) / np.asarray(poly_w10_evals))), 6),
+            "polyhedral_edge_k20_w10_weighted": round(float(np.median(np.asarray(tang_evals) / np.asarray(poly_weighted_evals))), 6),
+            "polyhedral_edge_gear_k20_w4_w10": round(float(np.median(np.asarray(tang_evals) / np.asarray(gear_evals))), 6),
+            "constructive_oscillation_k8_o4_w3": round(float(np.median(np.asarray(tang_evals) / np.asarray(osc_evals))), 6),
+        },
+        "rows": rows,
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--n-a", type=int, default=80)
@@ -847,6 +1359,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--budget-pairs", type=int, default=8)
     parser.add_argument("--alpha", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=19)
+    parser.add_argument("--sweep", action="store_true", help="Run seed/size robustness sweep instead of one board.")
+    parser.add_argument("--sweep-sizes", default="80", help="Comma-separated n values for n_a=n_b.")
+    parser.add_argument("--sweep-seeds", type=int, default=10, help="Number of deterministic seeds, 0..N-1.")
     parser.add_argument(
         "--output",
         type=Path,
@@ -858,6 +1373,37 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.sweep:
+        sizes = [int(part.strip()) for part in str(args.sweep_sizes).split(",") if part.strip()]
+        seeds = list(range(int(args.sweep_seeds)))
+        report = run_seed_size_sweep(
+            sizes=sizes,
+            seeds=seeds,
+            budget_pairs=args.budget_pairs,
+            n_diamond_pairs=args.n_diamond_pairs,
+            n_decoys_per_side=args.n_decoys_per_side,
+            alpha=args.alpha,
+        )
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        if args.json:
+            print(json.dumps(report, indent=2, sort_keys=True))
+        else:
+            print(f"wrote {args.output}")
+            print(
+                f"sweep: sizes={report['sizes']} seeds={len(seeds)} "
+                f"budget={args.budget_pairs}"
+            )
+            for name, row in report["aggregate"].items():
+                print(
+                    f"  {name}: full_recall={row['full_recall_runs']}/{row['runs']} "
+                    f"zero_regret={row['zero_regret_runs']}/{row['runs']} "
+                    f"median_evals={row['median_evaluations']}"
+                )
+            print(f"  winner_counts={report['winner_counts']}")
+            print(f"  speedup_vs_tang_median={report['speedup_vs_tang_median']}")
+        return 0
+
     spec = DualStateSpec(
         n_a=args.n_a,
         n_b=args.n_b,
