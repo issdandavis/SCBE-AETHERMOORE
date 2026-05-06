@@ -16,7 +16,7 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_REVIEW_JSON = REPO_ROOT / "artifacts" / "training_reports" / "training_review_latest.json"
+DEFAULT_REVIEW_JSON = REPO_ROOT / "artifacts" / "ai_training_consolidation" / "latest" / "run_review.json"
 DEFAULT_OUT_DIR = REPO_ROOT / "artifacts" / "training_evaluation_matrix"
 
 

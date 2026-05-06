@@ -25,9 +25,13 @@ DEFAULT_OUTPUT_JSON = DEFAULT_CONSOLIDATION_DIR / "run_review.json"
 DEFAULT_OUTPUT_MD = DEFAULT_CONSOLIDATION_DIR / "RUN_REVIEW.md"
 
 RUN_SCAN_ROOTS = (
+    "artifacts/eval",
+    "artifacts/hf_eval_results",
     "artifacts/training_reports",
+    "artifacts/training_evals",
     "artifacts/benchmark",
     "artifacts/benchmarks",
+    "artifacts/model_evals",
     "artifacts/atomic_discovery_tonight",
     "artifacts/colab_training_handoffs",
     "artifacts/colab_smoke",
@@ -112,6 +116,10 @@ def classify_purpose(path_text: str, payload: dict[str, Any] | None = None) -> s
 
 def metric_kind(key: str) -> str | None:
     lowered = key.lower()
+    if re.search(r"(?:^|_)n_(?:pass|total|records|prompts|trials)$", lowered):
+        return None
+    if re.search(r"(?:passed|failed|skipped)_count$", lowered):
+        return None
     for pattern, kind in METRIC_PATTERNS:
         if re.search(pattern, lowered):
             return kind
@@ -298,7 +306,92 @@ def collect_run_reviews(roots: tuple[str, ...] = RUN_SCAN_ROOTS) -> list[dict[st
         }
         review["diamond_state"] = diamond_state_for_run(review)
         reviews.append(review)
+    reviews.extend(collect_hf_training_log_reviews())
     return sorted(reviews, key=lambda item: item.get("promotion_score", 0.0), reverse=True)
+
+
+def extract_json_objects(text: str) -> list[dict[str, Any]]:
+    """Extract standalone JSON objects from noisy logs.
+
+    HF debug logs contain curl payload snippets with braces, so this keeps the
+    extraction conservative: only balanced objects that json.loads accepts are
+    returned, and callers still filter by schema/event.
+    """
+
+    objects: list[dict[str, Any]] = []
+    start: int | None = None
+    depth = 0
+    in_string = False
+    escape = False
+    for idx, char in enumerate(text):
+        if in_string:
+            if escape:
+                escape = False
+            elif char == "\\":
+                escape = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+        elif char == "{":
+            if depth == 0:
+                start = idx
+            depth += 1
+        elif char == "}" and depth:
+            depth -= 1
+            if depth == 0 and start is not None:
+                candidate = text[start : idx + 1]
+                start = None
+                try:
+                    payload = json.loads(candidate)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(payload, dict):
+                    objects.append(payload)
+    return objects
+
+
+def collect_hf_training_log_reviews() -> list[dict[str, Any]]:
+    """Turn HF Jobs training_complete log blocks into reviewable run rows."""
+
+    root = REPO_ROOT / "artifacts" / "hf_coding_agent_jobs"
+    if not root.exists():
+        return []
+
+    reviews: list[dict[str, Any]] = []
+    for path in sorted(root.rglob("hf_job_logs.txt"), key=lambda item: str(item).lower()):
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for payload in extract_json_objects(text):
+            if payload.get("event") != "training_complete" or not isinstance(payload.get("summary"), dict):
+                continue
+            summary = payload["summary"]
+            signals = extract_metric_signals(summary)
+            decision = "PASS" if summary.get("gate_overall_pass") is True and summary.get("pushed_adapter") is True else None
+            profile_id = str(summary.get("profile_id") or path.parent.parent.name)
+            review = {
+                "path": repo_rel(path),
+                "purpose": classify_purpose(f"{path} {profile_id}", summary),
+                "decision": decision,
+                "metric_count": len(signals),
+                "metrics": [
+                    {"name": s.name, "value": s.value, "kind": s.kind, "json_path": s.json_path}
+                    for s in sorted(signals, key=lambda item: (item.kind, item.name, item.json_path))[:50]
+                ],
+                "profile_id": profile_id,
+                "adapter_repo": summary.get("adapter_repo"),
+                "base_model": summary.get("base_model"),
+                "train_records": summary.get("train_rows_used") or summary.get("train_rows_loaded"),
+                "eval_records": summary.get("eval_rows_used") or summary.get("eval_rows_loaded") or summary.get("gate_n_total"),
+                "hf_training_summary": summary,
+                **score_run(signals),
+            }
+            review["diamond_state"] = diamond_state_for_run(review)
+            reviews.append(review)
+    return reviews
 
 
 def load_consolidation_plan(path: Path) -> dict[str, Any]:
@@ -325,8 +418,10 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
             runs.append(row)
         runs = sorted(runs, key=lambda item: item.get("promotion_score", 0.0), reverse=True)
         specialist = specialists.get(purpose, {})
-        train_records = int(specialist.get("train_records") or 0)
-        eval_records = int(specialist.get("eval_records") or 0)
+        run_train_records = max((int(run.get("train_records") or 0) for run in runs), default=0)
+        run_eval_records = max((int(run.get("eval_records") or 0) for run in runs), default=0)
+        train_records = int(specialist.get("train_records") or 0) or run_train_records
+        eval_records = int(specialist.get("eval_records") or 0) or run_eval_records
         top_score = float(runs[0].get("promotion_score", 0.0)) if runs else 0.0
         blockers: list[str] = []
         in_merge_plan = purpose in specialists
@@ -359,7 +454,7 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
             blockers.append("not part of active specialist merge plan")
         if in_merge_plan and missing_metrics and train_records > 0 and eval_records > 0:
             status = "ready_needs_benchmark"
-        if blockers and top_score > 0 and train_records > 0:
+        if in_merge_plan and blockers and top_score > 0 and train_records > 0:
             status = "needs_eval_gate"
         if not blockers and not promotion_ready_runs and polished_runs:
             status = "polished_needs_frozen_gate"
@@ -375,9 +470,13 @@ def build_gain_board(reviews: list[dict[str, Any]], plan: dict[str, Any]) -> dic
             "top_runs": [
                 {
                     "path": run["path"],
+                    "profile_id": run.get("profile_id"),
+                    "adapter_repo": run.get("adapter_repo"),
                     "promotion_score": run["promotion_score"],
                     "quality_signal": run["quality_signal"],
                     "loss_signal": run["loss_signal"],
+                    "train_records": run.get("train_records"),
+                    "eval_records": run.get("eval_records"),
                     "metric_count": run["metric_count"],
                     "decision": run.get("decision"),
                     "diamond_state": (run.get("diamond_state") or {}).get("state"),
