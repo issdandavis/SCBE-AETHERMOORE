@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "4.0.4",
+  "version": "4.0.7",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT",
@@ -295,19 +295,19 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.26.0",
     "@noble/hashes": "^2.0.1",
     "@noble/post-quantum": "^0.6.0",
     "@notionhq/client": "^5.9.0",
-    "express": "^5.2.1",
-    "express-rate-limit": "^8.3.1"
+    "express": "^5.2.1"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
     "@playwright/test": "^1.58.2",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.0",
     "@vitest/coverage-v8": "^4.1.1",
+    "express-rate-limit": "^8.3.1",
     "fast-check": "^4.6.0",
     "madge": "^8.0.0",
     "prettier": "^3.8.1",
@@ -320,6 +320,7 @@
   },
   "overrides": {
     "fast-xml-parser": "^5.7.1",
+    "ip-address": "10.1.1",
     "typescript": "^6.0.2"
   }
 }

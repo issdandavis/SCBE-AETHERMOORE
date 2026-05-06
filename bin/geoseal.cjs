@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 const { spawnSync } = require("child_process");
+const readline = require("readline");
 
 const ROOT = path.resolve(__dirname, "..");
 const PACKAGE_JSON_PATH = path.join(ROOT, "package.json");
@@ -70,6 +71,10 @@ Useful commands:
   geoseal web-search --query "site:docs.python.org pathlib" --json
   geoseal url-fetch --url https://example.com --json
   geoseal toolbox --json
+  geoseal terminal-ui
+  geoseal agent-bus-ui
+  geoseal agent-bus-server --port 8787
+  geoseal agent-bus-send --task "review changed files" --json
 
 Flags:
   --api-base <url>       GeoSeal API base URL
@@ -852,6 +857,188 @@ function runToolbox(flags) {
   writeJsonOrText(flags, payload, payload.local_tools.map((tool) => `${tool.command}: ${tool.purpose}`).join("\n"));
 }
 
+function loadAgentBusModule() {
+  const localDist = path.join(ROOT, "packages", "agent-bus", "dist", "index.js");
+  if (fs.existsSync(localDist)) {
+    return require(localDist);
+  }
+  try {
+    return require("scbe-agent-bus");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`scbe-agent-bus is not available. Run npm install or install scbe-aethermoore-cli. Details: ${message}`);
+  }
+}
+
+function agentBusFrontendPacket() {
+  return {
+    schema_version: "geoseal_agent_bus_frontend_v1",
+    ok: true,
+    backend_default: "http://127.0.0.1:8787",
+    commands: [
+      { command: "agent-bus-server", purpose: "Start the local agent-bus HTTP backend.", example: "geoseal agent-bus-server --port 8787" },
+      { command: "agent-bus-ui", purpose: "Open the terminal frontend for the agent bus.", example: "geoseal agent-bus-ui" },
+      { command: "agent-bus-send", purpose: "Send one governed task to the backend.", example: 'geoseal agent-bus-send --task "review changed files" --json' },
+    ],
+    safety: {
+      shell_execution: "not available",
+      default_privacy: "local_only",
+      remote_dispatch: "explicit flags only",
+    },
+  };
+}
+
+async function runAgentBusServer(flags) {
+  const agentBus = loadAgentBusModule();
+  const handle = await agentBus.startAgentBusServer({
+    host: String(flags.host || "127.0.0.1"),
+    port: Number(flags.port || 8787),
+    repoRoot: flags["repo-root"] ? String(flags["repo-root"]) : ROOT,
+    python: flags.python ? String(flags.python) : undefined,
+    continueOnError: Boolean(flags["continue-on-error"]),
+  });
+  const payload = {
+    schema_version: "geoseal_agent_bus_backend_start_v1",
+    ok: true,
+    url: handle.url,
+    routes: ["/health", "/v1/events", "/v1/batch"],
+  };
+  process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+async function runAgentBusUi(flags) {
+  if (flags.json) {
+    writeJsonOrText(flags, agentBusFrontendPacket(), "agent-bus-ui");
+    return;
+  }
+  const agentBus = loadAgentBusModule();
+  await agentBus.runAgentBusTerminalUi({
+    baseUrl: String(flags["base-url"] || process.env.SCBE_AGENT_BUS_URL || "http://127.0.0.1:8787"),
+  });
+}
+
+async function runAgentBusSend(flags) {
+  const task = String(flags.task || "").trim();
+  if (!task) {
+    const payload = {
+      schema_version: "geoseal_agent_bus_send_v1",
+      ok: false,
+      error: "missing_task",
+      message: 'Pass --task, for example: geoseal agent-bus-send --task "review changed files" --json',
+    };
+    writeJsonOrText(flags, payload, payload.message);
+    return;
+  }
+  const agentBus = loadAgentBusModule();
+  const result = await agentBus.postAgentBusEvent(
+    {
+      task,
+      taskType: String(flags["task-type"] || "general"),
+      privacy: String(flags.privacy || "local_only"),
+      budgetCents: Number(flags["budget-cents"] || 0),
+      dispatchProvider: String(flags["dispatch-provider"] || "offline"),
+      dispatch: flags.dispatch !== "false",
+    },
+    { baseUrl: String(flags["base-url"] || process.env.SCBE_AGENT_BUS_URL || "http://127.0.0.1:8787") }
+  );
+  writeJsonOrText(flags, result, JSON.stringify(result));
+}
+
+const TERMINAL_UI_COMMANDS = [
+  { command: "toolbox", label: "Toolbox overview", prompt: null },
+  { command: "doctor", label: "Doctor / command inventory", prompt: null },
+  { command: "calc", label: "Calculator", prompt: "Expression" },
+  { command: "dimensions", label: "Dimensional analysis", prompt: "Unit expression" },
+  { command: "web-search", label: "Public web search", prompt: "Search query" },
+  { command: "url-fetch", label: "Fetch public URL", prompt: "URL" },
+  { command: "exit", label: "Exit", prompt: null },
+];
+
+function terminalUiPacket(interactive) {
+  return {
+    schema_version: "geoseal_terminal_ui_v1",
+    ok: true,
+    interactive,
+    purpose: "Optional terminal menu over GeoSeal local tools and public no-key network helpers.",
+    commands: TERMINAL_UI_COMMANDS.map((item, index) => ({
+      index: index + 1,
+      command: item.command,
+      label: item.label,
+      requires_input: Boolean(item.prompt),
+    })),
+    safety: {
+      shell_execution: "not available",
+      remote_model_calls: "not available",
+      network_tools: "public_no_key_only",
+    },
+  };
+}
+
+function askLine(rl, prompt) {
+  return new Promise((resolve) => rl.question(prompt, (answer) => resolve(String(answer || "").trim())));
+}
+
+async function runTerminalUi(flags) {
+  const interactive = Boolean(process.stdin.isTTY && process.stdout.isTTY && !flags.json);
+  const packet = terminalUiPacket(interactive);
+  if (!interactive) {
+    writeJsonOrText(
+      { ...flags, json: true },
+      packet,
+      packet.commands.map((item) => `${item.index}. ${item.label} (${item.command})`).join("\n")
+    );
+    return;
+  }
+
+  process.stdout.write("GeoSeal Terminal UI\n");
+  process.stdout.write("Safe local tools plus public no-key lookup. No shell execution.\n\n");
+
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    while (true) {
+      for (const item of TERMINAL_UI_COMMANDS) {
+        process.stdout.write(`${item.command === "exit" ? "0" : item.index}. ${item.label}\n`);
+      }
+      const choice = await askLine(rl, "\nSelect tool: ");
+      const selected =
+        TERMINAL_UI_COMMANDS.find((item) => item.command === choice.toLowerCase()) ||
+        TERMINAL_UI_COMMANDS.find((item) => String(item.index) === choice) ||
+        (choice === "0" ? TERMINAL_UI_COMMANDS.find((item) => item.command === "exit") : null);
+
+      if (!selected) {
+        process.stdout.write("Unknown selection.\n\n");
+        continue;
+      }
+      if (selected.command === "exit") {
+        process.stdout.write("Bye.\n");
+        return;
+      }
+
+      process.stdout.write("\n");
+      if (selected.command === "toolbox") {
+        runToolbox({});
+      } else if (selected.command === "doctor") {
+        runDoctor({});
+      } else if (selected.command === "calc") {
+        const expr = await askLine(rl, `${selected.prompt}: `);
+        runCalc({ expr }, []);
+      } else if (selected.command === "dimensions") {
+        const unit = await askLine(rl, `${selected.prompt}: `);
+        runDimensions({ unit }, []);
+      } else if (selected.command === "web-search") {
+        const query = await askLine(rl, `${selected.prompt}: `);
+        await runWebSearch({ query }, []);
+      } else if (selected.command === "url-fetch") {
+        const url = await askLine(rl, `${selected.prompt}: `);
+        await runUrlFetch({ url }, []);
+      }
+      process.stdout.write("\n");
+    }
+  } finally {
+    rl.close();
+  }
+}
+
 const DEFAULT_SERVICE_DIR = path.join(ROOT, "artifacts", "geoseal_service");
 
 function serviceOutputDir(flags) {
@@ -976,6 +1163,11 @@ function runDoctor(flags) {
     "web-search",
     "url-fetch",
     "toolbox",
+    "terminal-ui",
+    "ui",
+    "agent-bus-ui",
+    "agent-bus-server",
+    "agent-bus-send",
   ];
   const payload = {
     ok: true,
@@ -1299,6 +1491,22 @@ async function main() {
   }
   if (command === "toolbox") {
     runToolbox(flags);
+    return;
+  }
+  if (command === "terminal-ui" || command === "ui") {
+    await runTerminalUi(flags);
+    return;
+  }
+  if (command === "agent-bus-ui") {
+    await runAgentBusUi(flags);
+    return;
+  }
+  if (command === "agent-bus-server") {
+    await runAgentBusServer(flags);
+    return;
+  }
+  if (command === "agent-bus-send") {
+    await runAgentBusSend(flags);
     return;
   }
 

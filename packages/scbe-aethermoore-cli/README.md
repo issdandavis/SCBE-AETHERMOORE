@@ -20,6 +20,10 @@ scbe calc --expr "sqrt(2)^2 + phi" --json
 scbe dimensions --unit "kg*m/s^2" --json
 scbe web-search --query "site:docs.python.org pathlib" --json
 scbe url-fetch --url https://example.com --json
+scbe terminal-ui
+scbe agent-bus-ui
+scbe agent-bus-server --port 8787
+scbe agent-bus-send --task "review changed files" --json
 scbe tokenizer-code-lanes --command shl --tongues KO,AV --json
 ```
 
@@ -32,6 +36,9 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
 - `dimensions`: SI dimensional analysis over base and common derived units.
 - `web-search`: no-key public web lookup through DuckDuckGo Instant Answer.
 - `url-fetch`: public HTTP/HTTPS fetch with text preview and SHA-256 receipt.
+- `terminal-ui`: optional menu mode over the safe local tools and public no-key lookup helpers.
+- `agent-bus-ui`, `agent-bus-server`, `agent-bus-send`: terminal frontend,
+  local HTTP backend, and one-shot dispatch bridge for `scbe-agent-bus`.
 - `tokenizer-code-lanes`: code command to tongue-scoped binary/hex lanes.
 - `verify-code-lanes` and `decode-code-lanes`: lane packet verification and
   decode tools.

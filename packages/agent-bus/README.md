@@ -26,6 +26,27 @@ const result = await runEvent({
 console.log(result.ok, result.result);
 ```
 
+## Backend
+
+```bash
+scbe-agent-bus serve --port 8787
+```
+
+Routes:
+
+- `GET /health`
+- `POST /v1/events`
+- `POST /v1/batch`
+
+## Frontend
+
+```bash
+scbe-agent-bus ui --base-url http://127.0.0.1:8787
+```
+
+The terminal frontend can health-check the backend and send governed local-only
+tasks through the bus. It does not expose shell execution.
+
 ## Notes
 
 - The repo-local runner remains the source of truth.

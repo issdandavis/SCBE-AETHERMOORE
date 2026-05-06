@@ -1,10 +1,14 @@
 {
   "name": "scbe-agent-bus",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "SCBE agent-bus: typed Node surface over the SCBE governed event runner. Routes AI/human/AI events through the harmonic-wall pipeline and returns a typed envelope.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "scbe-agent-bus": "bin/scbe-agent-bus.cjs"
+  },
   "files": [
+    "bin",
     "dist",
     "README.md",
     "CHANGELOG.md"

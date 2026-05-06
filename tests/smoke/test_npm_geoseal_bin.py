@@ -286,3 +286,39 @@ def test_npm_geoseal_bin_toolbox_json() -> None:
     assert any(tool["command"] == "calc" for tool in payload["local_tools"])
     assert any(tool["command"] == "web-search" for tool in payload["network_tools"])
     assert payload["safety"]["secrets_to_remote_models"] == "forbid"
+
+
+def test_npm_geoseal_bin_terminal_ui_json() -> None:
+    proc = subprocess.run(
+        ["node", str(ROOT / "bin" / "geoseal.cjs"), "terminal-ui", "--json"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "geoseal_terminal_ui_v1"
+    assert payload["ok"] is True
+    assert payload["interactive"] is False
+    assert any(command["command"] == "calc" for command in payload["commands"])
+    assert any(command["command"] == "url-fetch" for command in payload["commands"])
+    assert payload["safety"]["shell_execution"] == "not available"
+
+
+def test_npm_geoseal_bin_agent_bus_ui_json() -> None:
+    proc = subprocess.run(
+        ["node", str(ROOT / "bin" / "geoseal.cjs"), "agent-bus-ui", "--json"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "geoseal_agent_bus_frontend_v1"
+    assert payload["ok"] is True
+    assert payload["backend_default"] == "http://127.0.0.1:8787"
+    assert any(command["command"] == "agent-bus-server" for command in payload["commands"])
+    assert any(command["command"] == "agent-bus-send" for command in payload["commands"])
+    assert payload["safety"]["default_privacy"] == "local_only"
