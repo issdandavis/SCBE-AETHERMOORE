@@ -133,6 +133,23 @@ def test_run_compare_emits_summary_for_each_method() -> None:
             assert row["total_evaluations"] == row["evaluations"]
 
 
+def test_key_modes_are_supported_and_reported() -> None:
+    for key_mode in ("random_orthogonal", "identity", "signed_permutation", "hadamard", "block_rotation"):
+        report = run_compare(
+            DualStateSpec(
+                n_a=40,
+                n_b=40,
+                n_diamond_pairs=2,
+                n_decoys_per_side=4,
+                seed=3,
+                key_mode=key_mode,
+            ),
+            budget_pairs=4,
+        )
+        assert report["spec"]["key_mode"] == key_mode
+        assert report["summary"]["tang_cross_k20"]["diamond_recall"] == 1.0
+
+
 def test_lowrank_resonance_recovers_recall_at_solution_rank() -> None:
     """Effective key strength = rank of the solution subspace, not rank(M).
 

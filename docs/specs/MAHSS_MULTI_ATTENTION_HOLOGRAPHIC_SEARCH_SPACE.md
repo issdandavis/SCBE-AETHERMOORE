@@ -389,6 +389,7 @@ Current sweep artifacts:
 - `artifacts/mahss_dual_state/seed50_size80_sweep.json`
 - `artifacts/mahss_dual_state/seed3_sizes500_1000_2000_sweep.json`
 - `artifacts/mahss_dual_state/tangent_rescue_sizes500_1000_2000_seed12.json`
+- `artifacts/mahss_dual_state/tangent_rescue_proof_suite_v1.json`
 
 The `sweep_v1.json` run is the current compact authority for the 40..320
 regime. It includes seed stability at n=80 over seeds 11..60 and size scaling
@@ -460,6 +461,28 @@ The defensible claim is therefore:
 That is still a synthetic-regime claim. It has not yet been tested against
 adversarially chosen keys `M`, real attention matrices, or a stronger
 dequantized Tang baseline.
+
+The packaged local proof command is:
+
+```powershell
+python scripts/experiments/mahss_tangent_rescue_proof.py --output artifacts/mahss_dual_state/tangent_rescue_proof_suite_v1.json
+```
+
+The current `tangent_rescue_proof_suite_v1.json` run covers six profiles:
+
+```text
+random_orthogonal_50seed:       250/250 full recall, median_evals=155, speedup_vs_tang=2.580645
+random_orthogonal_n5000_20seed:  20/20 full recall, median_evals=160, speedup_vs_tang=2.5
+identity_20seed:                 60/60 full recall, median_evals=157, speedup_vs_tang=2.547771
+signed_permutation_20seed:       60/60 full recall, median_evals=156, speedup_vs_tang=2.564103
+hadamard_20seed:                 60/60 full recall, median_evals=156, speedup_vs_tang=2.555937
+block_rotation_20seed:           60/60 full recall, median_evals=156, speedup_vs_tang=2.555937
+```
+
+That gives 510/510 full-recall local trials for the target selector across the
+current random and structured key profiles. The claim boundary remains the same:
+this is a proof over this simulator's planted-pair generator, not over all
+possible matrices or physical datasets.
 
 Complex edge metrics are implemented (`phase`, `hybrid`, `weighted_hybrid`) but
 are not the default winner. In the refreshed sweep, `polyhedral_edge_k20_w10`

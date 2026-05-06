@@ -170,6 +170,7 @@ class DualStateSpec:
     n_decoys_per_side: int = 12
     diamond_alignment: float = 0.92
     seed: int = 19
+    key_mode: str = "random_orthogonal"
 
 
 def _random_unit(rng: np.random.Generator, dim: int) -> np.ndarray:
@@ -182,14 +183,53 @@ def _normalize_rows(matrix: np.ndarray) -> np.ndarray:
     return matrix / norms
 
 
+def _hadamard_matrix(order: int) -> np.ndarray:
+    """Return normalized Sylvester-Hadamard matrix for power-of-two order."""
+
+    if order <= 0 or order & (order - 1):
+        raise ValueError("Hadamard key requires a positive power-of-two dimension")
+    H = np.asarray([[1.0]])
+    while H.shape[0] < order:
+        H = np.block([[H, H], [H, -H]])
+    return H / math.sqrt(float(order))
+
+
+def _key_matrix(rng: np.random.Generator, mode: str) -> np.ndarray:
+    """Build deterministic orthogonal coupling key for a landscape mode."""
+
+    if mode == "random_orthogonal":
+        raw = rng.standard_normal((DIM, DIM))
+        q, _ = np.linalg.qr(raw)
+        return q
+    if mode == "identity":
+        return np.eye(DIM, dtype=float)
+    if mode == "signed_permutation":
+        perm = rng.permutation(DIM)
+        signs = rng.choice(np.asarray([-1.0, 1.0]), size=DIM)
+        M = np.zeros((DIM, DIM), dtype=float)
+        M[np.arange(DIM), perm] = signs
+        return M
+    if mode == "hadamard":
+        signs = rng.choice(np.asarray([-1.0, 1.0]), size=DIM)
+        return np.diag(signs) @ _hadamard_matrix(DIM)
+    if mode == "block_rotation":
+        M = np.eye(DIM, dtype=float)
+        for start in range(0, DIM - 1, 2):
+            theta = float(rng.uniform(0.1, math.pi - 0.1))
+            c = math.cos(theta)
+            s = math.sin(theta)
+            M[start : start + 2, start : start + 2] = np.asarray([[c, -s], [s, c]])
+        return M
+    raise ValueError(
+        "key_mode must be one of: random_orthogonal, identity, signed_permutation, hadamard, block_rotation"
+    )
+
+
 def build_landscape(spec: DualStateSpec) -> dict[str, object]:
     """Return query-free dual-state landscape with planted matched pairs."""
 
     rng = np.random.default_rng(spec.seed)
-    # Coupling key M: a fixed orthogonal-ish rotation built from QR.
-    raw = rng.standard_normal((DIM, DIM))
-    q, _ = np.linalg.qr(raw)
-    M = q
+    M = _key_matrix(rng, spec.key_mode)
 
     A = np.empty((spec.n_a, DIM), dtype=float)
     B = np.empty((spec.n_b, DIM), dtype=float)
@@ -1317,6 +1357,7 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
             "n_decoys_per_side": spec.n_decoys_per_side,
             "diamond_alignment": spec.diamond_alignment,
             "seed": spec.seed,
+            "key_mode": spec.key_mode,
         },
         "alpha": alpha,
         "budget_pairs": budget_pairs,
@@ -1333,6 +1374,7 @@ def run_seed_size_sweep(
     budget_pairs: int = 8,
     n_diamond_pairs: int = 4,
     n_decoys_per_side: int = 12,
+    key_mode: str = "random_orthogonal",
     alpha: float = 1.0,
 ) -> dict[str, object]:
     """Run a lightweight robustness sweep over seeds and problem sizes.
@@ -1361,6 +1403,7 @@ def run_seed_size_sweep(
                 n_diamond_pairs=n_diamond_pairs,
                 n_decoys_per_side=n_decoys_per_side,
                 seed=int(seed),
+                key_mode=key_mode,
             )
             landscape = build_landscape(spec)
             A = landscape["A"]
@@ -1506,6 +1549,7 @@ def run_seed_size_sweep(
         "schema_version": "scbe_mahss_dual_state_seed_size_sweep_v1",
         "sizes": [int(size) for size in sizes],
         "seeds": [int(seed) for seed in seeds],
+        "key_mode": key_mode,
         "budget_pairs": int(budget_pairs),
         "n_diamond_pairs": int(n_diamond_pairs),
         "n_decoys_per_side": int(n_decoys_per_side),
@@ -1537,6 +1581,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--budget-pairs", type=int, default=8)
     parser.add_argument("--alpha", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=19)
+    parser.add_argument(
+        "--key-mode",
+        default="random_orthogonal",
+        choices=["random_orthogonal", "identity", "signed_permutation", "hadamard", "block_rotation"],
+        help="Orthogonal coupling key family used to plant and score paired states.",
+    )
     parser.add_argument("--sweep", action="store_true", help="Run seed/size robustness sweep instead of one board.")
     parser.add_argument("--sweep-sizes", default="80", help="Comma-separated n values for n_a=n_b.")
     parser.add_argument("--sweep-seeds", type=int, default=10, help="Number of deterministic seeds, 0..N-1.")
@@ -1560,6 +1610,7 @@ def main(argv: list[str] | None = None) -> int:
             budget_pairs=args.budget_pairs,
             n_diamond_pairs=args.n_diamond_pairs,
             n_decoys_per_side=args.n_decoys_per_side,
+            key_mode=args.key_mode,
             alpha=args.alpha,
         )
         args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -1592,6 +1643,7 @@ def main(argv: list[str] | None = None) -> int:
         n_decoys_per_side=args.n_decoys_per_side,
         diamond_alignment=args.diamond_alignment,
         seed=args.seed,
+        key_mode=args.key_mode,
     )
     report = run_compare(spec, budget_pairs=args.budget_pairs, alpha=args.alpha)
     args.output.parent.mkdir(parents=True, exist_ok=True)
