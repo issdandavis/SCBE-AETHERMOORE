@@ -693,6 +693,151 @@ def select_polyhedral_edge_gear_cross(
     return pairs, evaluations, meta
 
 
+def _tangent_basis_pair(direction: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Deterministic two-vector tangent basis orthogonal to ``direction``."""
+
+    d = np.asarray(direction, dtype=float)
+    d = d / (np.linalg.norm(d) + 1e-12)
+    dim = d.shape[0]
+    order = np.argsort(np.abs(d))
+    e1 = np.zeros(dim, dtype=float)
+    e1[int(order[0])] = 1.0
+    u = e1 - float(e1 @ d) * d
+    u = u / (np.linalg.norm(u) + 1e-12)
+    e2 = np.zeros(dim, dtype=float)
+    for idx in order[1:]:
+        e2[:] = 0.0
+        e2[int(idx)] = 1.0
+        v = e2 - float(e2 @ d) * d - float(e2 @ u) * u
+        if np.linalg.norm(v) > 1e-9:
+            v = v / (np.linalg.norm(v) + 1e-12)
+            return u, v
+    return u, np.roll(u, 1)
+
+
+def select_polyhedral_edge_tangent_rescue_cross(
+    A: np.ndarray,
+    B: np.ndarray,
+    M: np.ndarray,
+    *,
+    seed_count: int,
+    edge_width: int,
+    tangent_planes: int,
+    rescue_budget: int,
+    budget_pairs: int,
+    alpha: float = 1.0,
+) -> tuple[list[tuple[int, int]], int, dict[str, object]]:
+    """Run fast polyhedral edge walk plus tangent sidecar rescue probes.
+
+    This is "tangential parallelism" as a cost-audited selector. The main
+    path stays ``polyhedral_edge_k20_w4``. Sidecar workers then search rotated
+    tangent slices around the current keyed directions and collapse only a
+    bounded number of candidates back into real exact scoring.
+    """
+
+    if tangent_planes <= 0:
+        raise ValueError("tangent_planes must be > 0")
+    if rescue_budget < 0:
+        raise ValueError("rescue_budget must be >= 0")
+
+    main_pairs, main_evaluations = select_polyhedral_edge_walk_cross(
+        A,
+        B,
+        M,
+        seed_count=seed_count,
+        edge_width=edge_width,
+        budget_pairs=budget_pairs,
+        alpha=alpha,
+    )
+    if rescue_budget == 0:
+        return main_pairs, main_evaluations, {
+            "main_method": f"polyhedral_edge_k{seed_count}_w{edge_width}",
+            "tangent_planes": int(tangent_planes),
+            "rescue_budget": 0,
+            "main_evaluations": int(main_evaluations),
+            "rescue_evaluations": 0,
+            "cheap_probe_count": 0,
+            "frontier_size": int(main_evaluations),
+        }
+
+    a_norms = np.linalg.norm(A, axis=1)
+    b_norms = np.linalg.norm(B, axis=1)
+    rotated = A @ M.T
+    rotated_unit = _normalize_rows(rotated)
+    b_unit = _normalize_rows(B)
+    a_seeds = np.argsort(a_norms)[::-1][: min(seed_count, A.shape[0])]
+    b_seeds = np.argsort(b_norms)[::-1][: min(seed_count, B.shape[0])]
+
+    sidecar_scores: dict[tuple[int, int], float] = {}
+    cheap_probe_count = 0
+    per_plane_budget = max(1, math.ceil(rescue_budget / (2 * tangent_planes)))
+    phase_step = 2.0 * math.pi / (PHI * PHI)
+    main_set = set(main_pairs)
+
+    def _record(pair: tuple[int, int], score: float) -> None:
+        if pair in main_set:
+            return
+        sidecar_scores[pair] = max(sidecar_scores.get(pair, -float("inf")), float(score))
+
+    for plane in range(tangent_planes):
+        theta = float((plane * phase_step) % (2.0 * math.pi))
+
+        a_candidates: list[tuple[float, tuple[int, int]]] = []
+        for ai_raw in a_seeds:
+            ai = int(ai_raw)
+            target = rotated_unit[ai]
+            u, v = _tangent_basis_pair(target)
+            side = math.cos(theta) * u + math.sin(theta) * v
+            forward = b_unit @ target
+            lateral = np.abs(b_unit @ side)
+            score = forward + 0.08 * lateral + 0.01 * (b_norms / (float(b_norms.max()) + 1e-12))
+            cheap_probe_count += int(B.shape[0])
+            top = np.argsort(score)[::-1][: min(per_plane_budget, B.shape[0])]
+            for bj in top:
+                a_candidates.append((float(score[int(bj)]), (ai, int(bj))))
+        a_candidates.sort(key=lambda item: item[0], reverse=True)
+        for score, pair in a_candidates[:per_plane_budget]:
+            _record(pair, score)
+
+        b_candidates: list[tuple[float, tuple[int, int]]] = []
+        for bj_raw in b_seeds:
+            bj = int(bj_raw)
+            target = b_unit[bj]
+            u, v = _tangent_basis_pair(target)
+            side = math.cos(-theta) * u + math.sin(-theta) * v
+            forward = rotated_unit @ target
+            lateral = np.abs(rotated_unit @ side)
+            score = forward + 0.08 * lateral + 0.01 * (a_norms / (float(a_norms.max()) + 1e-12))
+            cheap_probe_count += int(A.shape[0])
+            top = np.argsort(score)[::-1][: min(per_plane_budget, A.shape[0])]
+            for ai in top:
+                b_candidates.append((float(score[int(ai)]), (int(ai), bj)))
+        b_candidates.sort(key=lambda item: item[0], reverse=True)
+        for score, pair in b_candidates[:per_plane_budget]:
+            _record(pair, score)
+
+    rescue_pairs = [
+        pair for pair, _ in sorted(sidecar_scores.items(), key=lambda item: item[1], reverse=True)[:rescue_budget]
+    ]
+    candidates = list(dict.fromkeys([*main_pairs, *rescue_pairs]))
+    log_amp = amplitude_matrix(A, B, M, alpha=alpha)
+    candidates.sort(key=lambda pair: float(log_amp[pair[0], pair[1]]), reverse=True)
+    selected = candidates[:budget_pairs]
+    rescue_evaluations = len([pair for pair in rescue_pairs if pair not in main_set])
+    evaluations = int(main_evaluations + rescue_evaluations)
+    meta = {
+        "main_method": f"polyhedral_edge_k{seed_count}_w{edge_width}",
+        "tangent_planes": int(tangent_planes),
+        "rescue_budget": int(rescue_budget),
+        "phase_step": round(float(phase_step), 6),
+        "main_evaluations": int(main_evaluations),
+        "rescue_evaluations": int(rescue_evaluations),
+        "cheap_probe_count": int(cheap_probe_count),
+        "frontier_size": int(len(candidates)),
+    }
+    return selected, evaluations, meta
+
+
 def select_disagreement_probe_cross(
     A: np.ndarray,
     B: np.ndarray,
@@ -1006,6 +1151,19 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
     )
     runs["polyhedral_edge_gear_k20_w4_w10"] = (pairs, evaluations)
     gear_meta["polyhedral_edge_gear_k20_w4_w10"] = meta
+    pairs, evaluations, meta = select_polyhedral_edge_tangent_rescue_cross(
+        A,
+        B,
+        M,
+        seed_count=20,
+        edge_width=4,
+        tangent_planes=4,
+        rescue_budget=40,
+        budget_pairs=budget_pairs,
+        alpha=alpha,
+    )
+    runs["polyhedral_edge_k20_w4_tangent_rescue_r4_b40"] = (pairs, evaluations)
+    gear_meta["polyhedral_edge_k20_w4_tangent_rescue_r4_b40"] = meta
 
     phase_meta: dict[str, dict[str, object]] = {}
     pairs, evaluations, meta = select_phase_angle_cross(
@@ -1100,7 +1258,10 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
         if name in polyhedral_meta:
             row["polyhedral_walk"] = polyhedral_meta[name]
         if name in gear_meta:
-            row["polyhedral_edge_gear"] = gear_meta[name]
+            if name.startswith("polyhedral_edge_gear"):
+                row["polyhedral_edge_gear"] = gear_meta[name]
+            else:
+                row["tangent_rescue"] = gear_meta[name]
         if name in phase_meta:
             if name.startswith("constructive_oscillation"):
                 row["constructive_oscillation"] = phase_meta[name]
@@ -1187,6 +1348,7 @@ def run_seed_size_sweep(
         "polyhedral_edge_k20_w10",
         "polyhedral_edge_k20_w10_weighted",
         "polyhedral_edge_gear_k20_w4_w10",
+        "polyhedral_edge_k20_w4_tangent_rescue_r4_b40",
         "constructive_oscillation_k8_o4_w3",
     ]
     rows: list[dict[str, object]] = []
@@ -1235,6 +1397,17 @@ def run_seed_size_sweep(
                     torque_width=10,
                     shift_threshold=80_000,
                     torque_metric="hamming",
+                    budget_pairs=budget_pairs,
+                    alpha=alpha,
+                )[:2],
+                "polyhedral_edge_k20_w4_tangent_rescue_r4_b40": select_polyhedral_edge_tangent_rescue_cross(
+                    A,
+                    B,
+                    M,
+                    seed_count=20,
+                    edge_width=4,
+                    tangent_planes=4,
+                    rescue_budget=40,
                     budget_pairs=budget_pairs,
                     alpha=alpha,
                 )[:2],
@@ -1320,6 +1493,10 @@ def run_seed_size_sweep(
         int(row["methods"]["polyhedral_edge_gear_k20_w4_w10"]["total_evaluations"])  # type: ignore[index]
         for row in rows
     ]
+    tangent_rescue_evals = [
+        int(row["methods"]["polyhedral_edge_k20_w4_tangent_rescue_r4_b40"]["total_evaluations"])  # type: ignore[index]
+        for row in rows
+    ]
     osc_evals = [
         int(row["methods"]["constructive_oscillation_k8_o4_w3"]["total_evaluations"])  # type: ignore[index]
         for row in rows
@@ -1340,6 +1517,7 @@ def run_seed_size_sweep(
             "polyhedral_edge_k20_w10": round(float(np.median(np.asarray(tang_evals) / np.asarray(poly_w10_evals))), 6),
             "polyhedral_edge_k20_w10_weighted": round(float(np.median(np.asarray(tang_evals) / np.asarray(poly_weighted_evals))), 6),
             "polyhedral_edge_gear_k20_w4_w10": round(float(np.median(np.asarray(tang_evals) / np.asarray(gear_evals))), 6),
+            "polyhedral_edge_k20_w4_tangent_rescue_r4_b40": round(float(np.median(np.asarray(tang_evals) / np.asarray(tangent_rescue_evals))), 6),
             "constructive_oscillation_k8_o4_w3": round(float(np.median(np.asarray(tang_evals) / np.asarray(osc_evals))), 6),
         },
         "rows": rows,

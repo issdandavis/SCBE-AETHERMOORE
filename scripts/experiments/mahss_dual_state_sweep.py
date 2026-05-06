@@ -7,6 +7,7 @@ selectors that achieved 4/4 recall on the seed=19 default:
   - polyhedral_edge_k20_w4     (current winner, sign-facet hypercube)
   - polyhedral_edge_k20_w10    (conservative torque gear)
   - polyhedral_edge_gear_k20_w4_w10 (adaptive speed/torque selector)
+  - polyhedral_edge_k20_w4_tangent_rescue_r4_b40 (fast edge + tangent sidecars)
   - polyhedral_edge_k20_w10_weighted (weighted hybrid edge diagnostic)
   - constructive_oscillation_k8_o4_w3 (Lyapunov-derivative oscillation)
   - polyhedral_edge_k30_w6     (parameter-bumped sign-facet)
@@ -20,7 +21,7 @@ For each method we report:
 
 Two regimes:
   1. SEED STABILITY at fixed n=80, n_diamonds=4 over many seeds
-  2. SIZE SCALING at fixed seed=19, varying n in {40, 80, 160, 320, 640}
+  2. SIZE SCALING over n in {40, 80, 160, 320}, using a small seed block
 
 Output: artifacts/mahss_dual_state/sweep_v1.json + console summary.
 """
@@ -47,6 +48,7 @@ TRACKED_METHODS = (
     "polyhedral_edge_k20_w4",
     "polyhedral_edge_k20_w10",
     "polyhedral_edge_gear_k20_w4_w10",
+    "polyhedral_edge_k20_w4_tangent_rescue_r4_b40",
     "polyhedral_edge_k20_w10_weighted",
     "constructive_oscillation_k8_o4_w3",
     "polyhedral_edge_k30_w6",

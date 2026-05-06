@@ -18,6 +18,7 @@ from scripts.experiments.mahss_dual_state_keyed_search_sim import (
     select_phase_angle_cross,
     select_brute_pair,
     select_polyhedral_edge_gear_cross,
+    select_polyhedral_edge_tangent_rescue_cross,
     select_polyhedral_edge_walk_cross,
     select_polyhedral_walk_cross,
     select_resonance_cross,
@@ -94,6 +95,7 @@ def test_run_compare_emits_summary_for_each_method() -> None:
         "polyhedral_edge_k20_w4_hybrid",
         "polyhedral_edge_k20_w10_weighted",
         "polyhedral_edge_gear_k20_w4_w10",
+        "polyhedral_edge_k20_w4_tangent_rescue_r4_b40",
         "polyhedral_edge_k30_w6",
         "polyhedral_walk_tetrahedron",
         "polyhedral_walk_octahedron",
@@ -157,6 +159,7 @@ def test_seed_size_sweep_reports_aggregate_and_winners() -> None:
     assert "polyhedral_edge_k20_w10" in report["aggregate"]
     assert "polyhedral_edge_k20_w10_weighted" in report["aggregate"]
     assert "polyhedral_edge_gear_k20_w4_w10" in report["aggregate"]
+    assert "polyhedral_edge_k20_w4_tangent_rescue_r4_b40" in report["aggregate"]
     assert "constructive_oscillation_k8_o4_w3" in report["aggregate"]
     assert "speedup_vs_tang_median" in report
     assert sum(report["winner_counts"].values()) == 2
@@ -272,6 +275,35 @@ def test_polyhedral_edge_gear_is_reported_in_run_compare() -> None:
     assert row["polyhedral_edge_gear"]["gear"] == "fast"
     assert row["polyhedral_edge_gear"]["edge_width"] == 4
     assert row["polyhedral_edge_gear"]["edge_metric"] == "hamming"
+
+
+def test_tangent_rescue_adds_bounded_sidecar_evaluations() -> None:
+    landscape = build_landscape(DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19))
+    pairs, evaluations, meta = select_polyhedral_edge_tangent_rescue_cross(
+        landscape["A"],
+        landscape["B"],
+        landscape["M"],
+        seed_count=20,
+        edge_width=4,
+        tangent_planes=4,
+        rescue_budget=40,
+        budget_pairs=8,
+    )
+    assert len(pairs) == 8
+    assert meta["main_evaluations"] == 140
+    assert meta["rescue_evaluations"] <= 40
+    assert evaluations == meta["main_evaluations"] + meta["rescue_evaluations"]
+    assert meta["cheap_probe_count"] > evaluations
+
+
+def test_tangent_rescue_is_reported_in_run_compare() -> None:
+    report = run_compare(DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19), budget_pairs=8)
+    row = report["summary"]["polyhedral_edge_k20_w4_tangent_rescue_r4_b40"]
+    assert row["cost_accounting"] == "direct"
+    assert row["diamond_recall"] == 1.0
+    assert row["tangent_rescue"]["tangent_planes"] == 4
+    assert row["tangent_rescue"]["rescue_budget"] == 40
+    assert row["total_evaluations"] <= 180
 
 
 def test_polyhedral_edge_metrics_are_supported() -> None:
