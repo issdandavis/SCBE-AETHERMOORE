@@ -37,7 +37,7 @@ from scripts.ci.harness_release_readiness import build_release_readiness  # noqa
 from scripts.eval.score_packet_trace_sft import score_packet_trace_corpus  # noqa: E402
 
 DEFAULT_OUT_DIR = PROJECT_ROOT / "artifacts" / "training_evals"
-DEFAULT_HF_JOB_ID = "69f66e999d85bec4d76f0bd1"
+DEFAULT_HF_JOB_ID = ""
 
 KAGGLE_DONE = (
     PROJECT_ROOT
@@ -107,6 +107,17 @@ def _packet_job_id(packet: dict[str, Any]) -> str:
     return str(packet.get("job_id") or dispatch.get("job_id") or "").strip()
 
 
+def _latest_hf_packet() -> tuple[dict[str, Any], Path]:
+    packets = sorted(
+        (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob("*/**/job_packet.json"),
+        key=lambda item: item.stat().st_mtime,
+        reverse=True,
+    )
+    if packets:
+        return _load_json(packets[0]), packets[0]
+    return _load_json(HF_PACKET), HF_PACKET
+
+
 def _find_hf_packet(job_id: str) -> tuple[dict[str, Any], Path]:
     """Resolve the HF job packet backing a refreshed scorecard run."""
 
@@ -121,7 +132,7 @@ def _find_hf_packet(job_id: str) -> tuple[dict[str, Any], Path]:
             packet = _load_json(path)
             if _packet_job_id(packet) == job_id:
                 return packet, path
-    return _load_json(HF_PACKET), HF_PACKET
+    return _latest_hf_packet()
 
 
 def _pct(value: Any) -> float:
@@ -236,17 +247,28 @@ def _refresh_hf_gate(job_id: str) -> dict[str, Any]:
     return report
 
 
-def _local_hf_gate_from_log(job_id: str) -> dict[str, Any]:
+def _local_hf_gate_from_log(job_id: str, packet_path: Path | None = None) -> dict[str, Any]:
     """Parse a cached HF Jobs log when live `hf jobs logs` is unavailable."""
 
-    if not job_id:
-        return {"job_id": job_id, "queried": False, "local_log": None}
-    log_matches = sorted(
-        (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob(
-            f"*/**/hf_job_{job_id}.log"
-        ),
-        key=lambda item: item.stat().st_mtime,
-        reverse=True,
+    log_matches: list[Path] = []
+    if packet_path is not None:
+        sibling_log = packet_path.parent / "hf_job_logs.txt"
+        if sibling_log.is_file():
+            log_matches.append(sibling_log)
+    if job_id:
+        log_matches.extend(
+            sorted(
+                (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob(f"*/**/hf_job_{job_id}.log"),
+                key=lambda item: item.stat().st_mtime,
+                reverse=True,
+            )
+        )
+    log_matches.extend(
+        sorted(
+            (PROJECT_ROOT / "artifacts" / "hf_coding_agent_jobs").glob("*/**/hf_job_logs.txt"),
+            key=lambda item: item.stat().st_mtime,
+            reverse=True,
+        )
     )
     if not log_matches:
         return {"job_id": job_id, "queried": False, "local_log": None}
@@ -572,12 +594,13 @@ def build_scorecard(
             PROJECT_ROOT / "artifacts" / "bench" / "geoseal_pair_coding_2026_05_02.json"
         )
 
-    hf_gate: dict[str, Any] = {"job_id": hf_job_id, "queried": False}
-    if refresh_hf_logs:
-        hf_gate = _refresh_hf_gate(hf_job_id)
     hf_packet, hf_packet_path = _find_hf_packet(hf_job_id)
+    effective_hf_job_id = hf_job_id or _packet_job_id(hf_packet)
+    hf_gate: dict[str, Any] = {"job_id": effective_hf_job_id, "queried": False}
+    if refresh_hf_logs:
+        hf_gate = _refresh_hf_gate(effective_hf_job_id)
     if hf_gate.get("gate_overall_pass") is None:
-        local_gate = _local_hf_gate_from_log(hf_job_id)
+        local_gate = _local_hf_gate_from_log(effective_hf_job_id, hf_packet_path)
         if local_gate.get("gate_overall_pass") is not None:
             hf_gate = local_gate
 
@@ -767,7 +790,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.write:
         args.out_dir.mkdir(parents=True, exist_ok=True)
-        stem = "agentic_system_scorecard_2026-05-02"
+        stem = "agentic_system_scorecard_" + datetime.now(timezone.utc).date().isoformat()
         (args.out_dir / f"{stem}.json").write_text(
             json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )

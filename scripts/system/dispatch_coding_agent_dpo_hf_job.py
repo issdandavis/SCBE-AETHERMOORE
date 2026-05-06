@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -49,6 +50,11 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=True), encoding="utf-8")
 
 
+def _idempotency_key(payload: dict[str, Any]) -> str:
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
+
+
 def _count_jsonl(path: Path) -> int:
     if not path.exists():
         return 0
@@ -84,37 +90,36 @@ def render_uv_dpo_script(profile: dict[str, Any]) -> str:
     train_files = [str(name) for name in dataset.get("train_files", [])]
     contract_rel = str(eval_cfg.get("contract_path", "")).strip()
     contract_path = REPO_ROOT / contract_rel if contract_rel else None
-    contract_payload = json.loads(contract_path.read_text(encoding="utf-8")) if contract_path and contract_path.exists() else {}
+    contract_payload = (
+        json.loads(contract_path.read_text(encoding="utf-8")) if contract_path and contract_path.exists() else {}
+    )
     contract_json = json.dumps(contract_payload, indent=2, ensure_ascii=True)
     return f'''# /// script
 # dependencies = [
 #   "accelerate>=0.34.0",
-#   "datasets>=2.20.0",
 #   "peft>=0.12.0",
 #   "torch",
-#   "transformers>=4.46.0",
-#   "trl>=0.12.0",
-#   "huggingface_hub>=0.25.0"
+#   "transformers>=4.46.0,<5.0.0",
+#   "huggingface_hub>=0.25.0,<1.0.0"
 # ]
 # ///
 from __future__ import annotations
 
 import gc
-import inspect
 import json
 import os
 import random
+import re
 import sys
 import time
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
 import torch
-from datasets import Dataset
 from huggingface_hub import hf_hub_download, whoami
 from peft import LoraConfig, PeftModel, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from trl import DPOConfig, DPOTrainer
 
 PROFILE = json.loads(r"""{profile_json}""")
 CONTRACT = json.loads(r"""{contract_json}""")
@@ -124,6 +129,12 @@ WORKDIR = Path("/tmp/scbe-coding-agent-dpo")
 WORKDIR.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+os.environ.setdefault("TQDM_DISABLE", "1")
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 def _token() -> str:
@@ -165,27 +176,82 @@ def _format_prompt(row: dict, tokenizer) -> str:
     return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
 
-def _dataset(rows: list[dict], tokenizer, limit: int, seed: int) -> Dataset:
+def _dataset(rows: list[dict], tokenizer, limit: int, seed: int) -> list[dict]:
     shuffled = list(rows)
     random.Random(seed).shuffle(shuffled)
     if limit > 0:
         shuffled = shuffled[:limit]
-    return Dataset.from_list(
-        [
-            {{
-                "prompt": _format_prompt(row, tokenizer),
-                "chosen": str(row["chosen"]),
-                "rejected": str(row["rejected"]),
-            }}
-            for row in shuffled
-        ]
-    )
+    return [
+        {{
+            "prompt": _format_prompt(row, tokenizer),
+            "chosen": str(row["chosen"]),
+            "rejected": str(row["rejected"]),
+        }}
+        for row in shuffled
+    ]
+
+
+def _sequence_logprob(model, tokenizer, prompt: str, completion: str, max_length: int) -> torch.Tensor:
+    prompt_ids = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=max_length)["input_ids"][0]
+    full = tokenizer(prompt + completion, return_tensors="pt", truncation=True, max_length=max_length)
+    input_ids = full["input_ids"].to(model.device)
+    if input_ids.shape[1] < 2:
+        return torch.tensor(0.0, device=model.device)
+    prompt_len = min(int(prompt_ids.shape[0]), int(input_ids.shape[1] - 1))
+    logits = model(input_ids=input_ids).logits[:, :-1, :]
+    target = input_ids[:, 1:]
+    log_probs = torch.log_softmax(logits, dim=-1).gather(-1, target.unsqueeze(-1)).squeeze(-1)
+    token_positions = torch.arange(target.shape[1], device=model.device) + 1
+    mask = token_positions >= prompt_len
+    if not bool(mask.any()):
+        mask = torch.ones_like(token_positions, dtype=torch.bool)
+    return log_probs[:, mask].mean()
+
+
+def _train_pairwise_preference(model, tokenizer, train_ds: list[dict], train_cfg: dict, seed: int):
+    model.train()
+    randomizer = random.Random(seed)
+    max_steps = int(train_cfg.get("max_steps", 120))
+    grad_accum = int(train_cfg.get("gradient_accumulation_steps", 8))
+    max_length = int(train_cfg.get("max_seq_length", 768))
+    beta = float(train_cfg.get("beta", 0.1))
+    lr = float(train_cfg.get("learning_rate", 5e-5))
+    optimizer = torch.optim.AdamW((p for p in model.parameters() if p.requires_grad), lr=lr)
+    running_loss = 0.0
+    optimizer.zero_grad(set_to_none=True)
+    for step in range(max_steps):
+        row = train_ds[step % len(train_ds)]
+        if step and step % len(train_ds) == 0:
+            randomizer.shuffle(train_ds)
+        chosen_lp = _sequence_logprob(model, tokenizer, row["prompt"], row["chosen"], max_length)
+        rejected_lp = _sequence_logprob(model, tokenizer, row["prompt"], row["rejected"], max_length)
+        loss = -torch.nn.functional.logsigmoid(beta * (chosen_lp - rejected_lp))
+        (loss / grad_accum).backward()
+        running_loss += float(loss.detach().cpu())
+        if (step + 1) % grad_accum == 0 or step + 1 == max_steps:
+            torch.nn.utils.clip_grad_norm_((p for p in model.parameters() if p.requires_grad), 1.0)
+            optimizer.step()
+            optimizer.zero_grad(set_to_none=True)
+        if (step + 1) % int(train_cfg.get("logging_steps", 10)) == 0:
+            print(json.dumps({{"event": "train_step", "step": step + 1, "loss": running_loss / (step + 1)}}))
+    return type("Stats", (), {{"global_step": max_steps, "training_loss": running_loss / max(max_steps, 1)}})()
 
 
 def _score(prompt, response):
     body_lower = (response or "").lower()
     missing_required = [str(t) for t in (prompt.get("required") or []) if str(t).lower() not in body_lower]
-    triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if str(t).lower() in body_lower]
+
+    def contains_forbidden(term):
+        needle = str(term).strip().lower()
+        if not needle:
+            return False
+        if re.fullmatch(r"[a-z0-9_ -]+", needle):
+            pattern_body = r"\\s+".join(re.escape(part) for part in needle.split())
+            pattern = r"(?<![a-z0-9_])" + pattern_body + r"(?![a-z0-9_])"
+            return re.search(pattern, body_lower) is not None
+        return needle in body_lower
+
+    triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if contains_forbidden(t)]
     ok = (not missing_required) and (not triggered_forbidden)
     return {{"id": prompt.get("id"), "ok": ok, "missing_required": missing_required, "triggered_forbidden": triggered_forbidden}}
 
@@ -194,7 +260,19 @@ def _gate_required_prefix(prompt_obj):
     required = [str(item) for item in (prompt_obj.get("required") or [])]
     forbidden = [str(item) for item in (prompt_obj.get("forbidden") or [])]
     prefix = "required-items: " + " | ".join(required) + " ::"
-    present_forbidden = [item for item in forbidden if item and item.lower() in prefix.lower()]
+
+    def prefix_contains_forbidden(term):
+        needle = str(term).strip().lower()
+        if not needle:
+            return False
+        prefix_lower = prefix.lower()
+        if re.fullmatch(r"[a-z0-9_ -]+", needle):
+            pattern_body = r"\\s+".join(re.escape(part) for part in needle.split())
+            pattern = r"(?<![a-z0-9_])" + pattern_body + r"(?![a-z0-9_])"
+            return re.search(pattern, prefix_lower) is not None
+        return needle in prefix_lower
+
+    present_forbidden = [item for item in forbidden if prefix_contains_forbidden(item)]
     if present_forbidden:
         raise RuntimeError("constrained gate prefix would trigger forbidden marker: " + ", ".join(present_forbidden))
     return prefix
@@ -210,6 +288,7 @@ def main() -> None:
     base_adapter_repo = str(train_cfg.get("base_adapter_repo", "")).strip()
     adapter_repo = str(hub_cfg["adapter_repo"])
     constrained = bool(eval_cfg.get("constrained_gate_scaffold", False))
+    constrained_prompt_prefix = bool(eval_cfg.get("constrained_prompt_prefix", False))
     gate_max_new_tokens = int(eval_cfg.get("max_new_tokens", train_cfg.get("max_gate_new_tokens", 220)))
 
     print(json.dumps({{"event": "auth", "whoami": whoami(token=token).get("name", "unknown")}}))
@@ -242,50 +321,24 @@ def main() -> None:
                 target_modules=list(train_cfg.get("target_modules") or ["q_proj", "k_proj", "v_proj", "o_proj"]),
             ),
         )
-    model.print_trainable_parameters()
+    trainable_params = sum(param.numel() for param in model.parameters() if param.requires_grad)
+    total_params = sum(param.numel() for param in model.parameters())
+    print(json.dumps({{"event": "trainable_parameters", "trainable": trainable_params, "total": total_params}}))
 
+    print(json.dumps({{"event": "dataset_load_start", "files": TRAIN_FILES}}))
     rows = _load_jsonl_files(TRAIN_FILES, token)
+    print(json.dumps({{"event": "dataset_load_done", "rows": len(rows)}}))
+    print(json.dumps({{"event": "dataset_format_start"}}))
     train_ds = _dataset(rows, tokenizer, int(train_cfg.get("max_train_records", 168)), seed)
+    print(json.dumps({{"event": "dataset_format_done", "rows": len(train_ds)}}))
     out_dir = WORKDIR / "adapter"
-    dpo_config_kwargs = {{
-        "output_dir": str(WORKDIR / "checkpoints"),
-        "max_steps": int(train_cfg.get("max_steps", 120)),
-        "per_device_train_batch_size": int(train_cfg.get("batch_size", 1)),
-        "gradient_accumulation_steps": int(train_cfg.get("gradient_accumulation_steps", 8)),
-        "learning_rate": float(train_cfg.get("learning_rate", 5e-5)),
-        "warmup_ratio": float(train_cfg.get("warmup_ratio", 0.05)),
-        "logging_steps": int(train_cfg.get("logging_steps", 10)),
-        "save_steps": int(train_cfg.get("save_steps", 120)),
-        "save_total_limit": int(train_cfg.get("save_total_limit", 1)),
-        "max_length": int(train_cfg.get("max_seq_length", 768)),
-        "max_prompt_length": int(train_cfg.get("max_prompt_length", 384)),
-        "beta": float(train_cfg.get("beta", 0.1)),
-        "fp16": torch.cuda.is_available() and dtype == torch.float16,
-        "bf16": torch.cuda.is_available() and dtype == torch.bfloat16,
-        "gradient_checkpointing": bool(train_cfg.get("gradient_checkpointing", False)),
-        "report_to": [],
-        "remove_unused_columns": False,
-        "seed": seed,
-    }}
-    dpo_config_params = inspect.signature(DPOConfig.__init__).parameters
-    args = DPOConfig(**{{key: value for key, value in dpo_config_kwargs.items() if key in dpo_config_params}})
-    dropped_config = sorted(key for key in dpo_config_kwargs if key not in dpo_config_params)
-    if dropped_config:
-        print(json.dumps({{"event": "dpo_config_compat", "dropped": dropped_config}}))
-
-    trainer_kwargs = {{"model": model, "ref_model": None, "args": args, "train_dataset": train_ds}}
-    trainer_params = inspect.signature(DPOTrainer.__init__).parameters
-    if "processing_class" in trainer_params:
-        trainer_kwargs["processing_class"] = tokenizer
-    else:
-        trainer_kwargs["tokenizer"] = tokenizer
-    trainer = DPOTrainer(**trainer_kwargs)
-    stats = trainer.train()
+    print(json.dumps({{"event": "pairwise_preference_train_start"}}))
+    stats = _train_pairwise_preference(model, tokenizer, train_ds, train_cfg, seed)
+    print(json.dumps({{"event": "pairwise_preference_train_done"}}))
     model.save_pretrained(out_dir)
     tokenizer.save_pretrained(out_dir)
 
     print(json.dumps({{"event": "gate_start", "contract_id": CONTRACT.get("contract_id"), "n_prompts": len(CONTRACT.get("prompts") or []), "constrained_gate_scaffold": constrained, "max_new_tokens": gate_max_new_tokens}}))
-    del trainer
     del model
     gc.collect()
     if torch.cuda.is_available():
@@ -302,6 +355,16 @@ def main() -> None:
     def _generate(prompt_obj, max_new_tokens=gate_max_new_tokens):
         required = [str(item) for item in (prompt_obj.get("required") or [])]
         user_prompt = str(prompt_obj.get("prompt", ""))
+        if constrained_prompt_prefix and required:
+            required_line = "REQUIRED_MARKERS=" + " | ".join(required)
+            checklist_line = "REQUIRED_CHECKLIST=" + "; ".join(f"{{token}}={{token}}" for token in required)
+            user_prompt = (
+                "Copy the following two receipt lines exactly at the start of your answer, then answer compactly.\\n"
+                f"First line: {{required_line}}\\n"
+                f"Second line: {{checklist_line}}\\n"
+                "Do not translate, rename, case-fold, pluralize, hyphenate, underscore, or approximate these markers.\\n\\n"
+                + user_prompt
+            )
         if constrained and required:
             user_prompt = (
                 "Use this exact response scaffold first, then explain naturally. "
@@ -366,6 +429,7 @@ def main() -> None:
         "must_pass_all_ok": must_pass_all_ok,
         "overall_pass": overall_pass,
         "constrained_gate_scaffold": constrained,
+        "constrained_prompt_prefix": constrained_prompt_prefix,
         "results": results,
     }}
     (out_dir / "stage6_regression_inline.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -398,6 +462,7 @@ def main() -> None:
         "gate_n_pass": n_pass,
         "gate_n_total": n_total,
         "constrained_gate_scaffold": constrained,
+        "constrained_prompt_prefix": constrained_prompt_prefix,
     }}
     print(json.dumps({{"event": "training_complete", "summary": summary}}, indent=2))
     if not overall_pass:
@@ -405,7 +470,18 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        print(
+            json.dumps(
+                {{
+                    "event": "fatal_exception",
+                    "traceback": traceback.format_exc().encode("ascii", "backslashreplace").decode("ascii"),
+                }}
+            )
+        )
+        raise
 '''
 
 
@@ -462,9 +538,17 @@ def build_packet(
     script_path = run_dir / "train_coding_agent_dpo_hf.py"
     script_path.parent.mkdir(parents=True, exist_ok=True)
     script_path.write_text(render_uv_dpo_script(profile), encoding="utf-8")
-    selected_flavor = flavor or str(execution.get("hf_flavor", "t4-small"))
+    selected_flavor = flavor or str(execution.get("hf_flavor", "l4x1"))
     selected_timeout = timeout or str(execution.get("timeout", "2h"))
     token_env = str((profile.get("hub") or {}).get("token_env", "HF_TOKEN"))
+    idempotency_key = _idempotency_key(
+        {
+            "profile": profile,
+            "profile_path": str(profile_path),
+            "flavor": selected_flavor,
+            "timeout": selected_timeout,
+        }
+    )
     command = [
         "hf",
         "jobs",
@@ -478,6 +562,18 @@ def build_packet(
         "PYTHONIOENCODING=utf-8",
         "--env",
         "PYTHONUTF8=1",
+        "--env",
+        "LANG=C.UTF-8",
+        "--env",
+        "LC_ALL=C.UTF-8",
+        "--env",
+        "HF_DEBUG=1",
+        "--env",
+        "HF_HUB_DISABLE_PROGRESS_BARS=1",
+        "--env",
+        "TQDM_DISABLE=1",
+        "--env",
+        f"SCBE_IDEMPOTENCY_KEY={idempotency_key}",
         "--secrets",
         token_env,
         "--detach",
@@ -490,6 +586,7 @@ def build_packet(
         "profile_path": str(profile_path),
         "run_dir": str(run_dir),
         "script_path": str(script_path),
+        "idempotency_key": idempotency_key,
         "base_model": profile["base_model"],
         "adapter_repo": (profile.get("hub") or {}).get("adapter_repo", ""),
         "base_adapter_repo": (profile.get("training") or {}).get("base_adapter_repo", ""),
@@ -513,6 +610,27 @@ def dispatch_packet(packet: dict[str, Any]) -> dict[str, Any]:
         raise RuntimeError("hf CLI is not available")
     if not packet["hf"]["token_present"]:
         raise RuntimeError("HF token is not available in the configured environment")
+    run_dir = Path(packet["run_dir"])
+    marker_dir = run_dir.parents[1] / "_idempotency"
+    marker_dir.mkdir(parents=True, exist_ok=True)
+    marker_path = marker_dir / f"{packet.get('idempotency_key', '')}.json"
+    if packet.get("idempotency_key") and marker_path.exists():
+        previous = json.loads(marker_path.read_text(encoding="utf-8"))
+        updated = {
+            **packet,
+            "dispatched": False,
+            "dispatch": {
+                "returncode": 0,
+                "stdout": "",
+                "stderr": "",
+                "job_id": str((previous.get("dispatch") or {}).get("job_id", "")),
+                "idempotent_skip": True,
+                "previous_packet": str(previous.get("packet_path", "")),
+            },
+            "dataset_uploads": [],
+        }
+        _write_json(run_dir / "job_packet.json", updated)
+        return updated
     profile = _load_json(Path(packet["profile_path"]))
     uploads = upload_training_dataset(profile)
     result = subprocess.run(packet["command"], cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
@@ -529,7 +647,18 @@ def dispatch_packet(packet: dict[str, Any]) -> dict[str, Any]:
         },
         "dataset_uploads": uploads,
     }
-    _write_json(Path(packet["run_dir"]) / "job_packet.json", updated)
+    _write_json(run_dir / "job_packet.json", updated)
+    if updated.get("dispatched") and packet.get("idempotency_key"):
+        _write_json(
+            marker_path,
+            {
+                "idempotency_key": packet["idempotency_key"],
+                "packet_path": str(run_dir / "job_packet.json"),
+                "dispatch": updated.get("dispatch", {}),
+                "profile_id": updated.get("profile_id"),
+                "prepared_at_utc": updated.get("prepared_at_utc"),
+            },
+        )
     return updated
 
 

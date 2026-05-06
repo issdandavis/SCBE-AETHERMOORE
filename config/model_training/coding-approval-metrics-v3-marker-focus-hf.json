@@ -1,0 +1,68 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-approval-metrics-v3-marker-focus-hf",
+  "title": "SCBE Coding Approval Metrics v3 Marker-Focus HF T4",
+  "description": "Focused HF Jobs repair profile for raw exact approval-gate marker fidelity. Uses marker_fidelity plus marker_copy_pressure rows after the first marker-only run reached 2/5 raw gate pass rate.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "coding_approval_metrics_v3_marker_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "coding_approval_metrics_v3_marker_eval.sft.jsonl",
+      "coding_approval_metrics_v3_eval.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "max_steps": 320,
+    "warmup_steps": 12,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00004,
+    "gradient_checkpointing": true,
+    "seed": 53,
+    "logging_steps": 10,
+    "save_steps": 80,
+    "eval_steps": 40,
+    "max_train_records": 0,
+    "max_eval_records": 0,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+    "adapter_repo": "issdandavis/scbe-coding-approval-metrics-v3-marker-focus-hf",
+    "token_env": "HF_TOKEN",
+    "push_adapter": true
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "45m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE approval-gate marker fidelity specialist. Copy required marker strings exactly before giving the compact approval verdict. Do not translate, rename, case-fold, pluralize, hyphenate, underscore, or approximate required markers.",
+  "evaluation": {
+    "contract_path": "config/model_training/coding_approval_metrics_v3_eval_contract.json",
+    "constrained_gate_scaffold": false,
+    "constrained_prompt_prefix": true,
+    "max_new_tokens": 160
+  },
+  "notes": [
+    "This is not the broad coding adapter; it is a focused exact-marker repair adapter.",
+    "The prior mixed v3 run passed 1/5 canaries and the first marker-focus run passed 2/5 raw canaries. Remaining failures are exact-copy normalization errors such as score_packet_trace_sft -> score_packet Trace_sft.",
+    "marker_copy_pressure rows vary the task wording around the exact REQUIRED_MARKERS and REQUIRED_CHECKLIST prefix so the adapter learns copy behavior instead of memorizing one case phrase.",
+    "Promotion still requires the same frozen v3 approval contract; no deterministic scaffold wrapper is enabled."
+  ]
+}

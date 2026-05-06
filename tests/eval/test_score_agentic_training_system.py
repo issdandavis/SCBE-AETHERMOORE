@@ -124,3 +124,38 @@ def test_local_hf_gate_from_log_reads_pretty_training_complete(monkeypatch, tmp_
     assert gate["source"] == "local_hf_log"
     assert gate["gate_n_pass"] == 4
     assert gate["train_loss"] == 0.9
+
+
+def test_local_hf_gate_from_log_reads_sibling_hf_job_logs(monkeypatch, tmp_path) -> None:
+    root = tmp_path
+    log_dir = root / "artifacts" / "hf_coding_agent_jobs" / "profile" / "run"
+    log_dir.mkdir(parents=True)
+    packet_path = log_dir / "job_packet.json"
+    packet_path.write_text(json.dumps({"dispatch": {"job_id": "job-3"}}), encoding="utf-8")
+    (log_dir / "hf_job_logs.txt").write_text(
+        json.dumps(
+            {
+                "event": "training_complete",
+                "summary": {
+                    "profile_id": "profile",
+                    "adapter_repo": "owner/adapter",
+                    "training_loss": 0.7,
+                    "pushed_adapter": True,
+                    "gate_overall_pass": True,
+                    "gate_pass_rate": 1.0,
+                    "gate_n_pass": 5,
+                    "gate_n_total": 5,
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(scorer, "PROJECT_ROOT", root)
+
+    gate = _local_hf_gate_from_log("job-3", packet_path)
+
+    assert gate["source"] == "local_hf_log"
+    assert gate["gate_n_pass"] == 5
+    assert gate["pushed_adapter"] is True

@@ -2,7 +2,10 @@
 """Digest agentic training gate output into compact reusable residues.
 
 The goal is to keep the useful post-test signal without feeding whole noisy
-logs back into training. A digest converts a gate report into small records:
+logs back into training. This uses the "kinematic mesh filter" pattern from
+the SCBE notes: the reusable mesh is the stable gate/harness, while disposable
+repair residues are the sacrificial liner that catches dirty failures and is
+rebuilt between runs. A digest converts a gate report into small records:
 
 - passed prompt required-token chains become positive residues,
 - failed prompt missing-token chains become repair residues,
@@ -21,7 +24,6 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
@@ -151,6 +153,12 @@ def _allocation_for_phase(phase: str) -> dict[str, int]:
 
 
 def _lesson_for_residue(kind: str, missing: list[str], forbidden: list[str], ok: bool) -> dict[str, Any]:
+    if kind == "scaffolded_positive_residue":
+        return {
+            "lesson": "The wrapper made this pass, but the raw model still missed required evidence.",
+            "recovery_action": "retain_scaffold_trace_without_raw_promotion",
+            "next_practice": "turn the raw omissions into exact repair rows before treating this as competence",
+        }
     if ok:
         return {
             "lesson": "This path survived the gate; keep it as a light positive bias, not a hard rule.",
@@ -193,8 +201,16 @@ def _residue_records(report: dict[str, Any], run_id: str, loss_latest: float | N
         if first_line.lower().startswith("required-tokens:"):
             body = first_line.split(":", 1)[1].rsplit("::", 1)[0]
             prefix_tokens = [token.strip().strip("`") for token in body.split("|") if token.strip()]
+        elif first_line.lower().startswith("required_markers="):
+            body = first_line.split("=", 1)[1]
+            prefix_tokens = [token.strip().strip("`") for token in body.split("|") if token.strip()]
 
-        if ok:
+        raw_ok = item.get("raw_ok")
+        scaffold_only = ok and raw_ok is False
+        if scaffold_only:
+            kind = "scaffolded_positive_residue"
+            token_chain = prefix_tokens
+        elif ok:
             kind = "positive_residue"
             token_chain = prefix_tokens
         elif missing:
@@ -204,6 +220,19 @@ def _residue_records(report: dict[str, Any], run_id: str, loss_latest: float | N
             kind = "boundary_residue"
             token_chain = forbidden
 
+        if scaffold_only:
+            filter_mode = "scaffold_bridge_mode"
+            ejection_action = "retain_scaffold_trace_without_raw_promotion"
+        elif ok:
+            filter_mode = "hose_mode"
+            ejection_action = "retain_positive_trace"
+        elif forbidden:
+            filter_mode = "filter_mode_boundary_scab"
+            ejection_action = "eject_boundary_guard_repair"
+        else:
+            filter_mode = "filter_mode_missing_marker_scab"
+            ejection_action = "eject_missing_marker_repair"
+
         records.append(
             {
                 "schema_version": "scbe_agentic_training_residue_v1",
@@ -211,10 +240,22 @@ def _residue_records(report: dict[str, Any], run_id: str, loss_latest: float | N
                 "contract_id": report.get("contract_id"),
                 "prompt_id": prompt_id,
                 "kind": kind,
+                "kinematic_mesh_filter": {
+                    "source_note": "notes/concepts/kinematic_mesh_filter.md",
+                    "mesh_role": "reusable_gate_harness",
+                    "sacrificial_layer": "training_residue",
+                    "mode": filter_mode,
+                    "ejection_action": ejection_action,
+                    "reuse_rule": "Do not retrain the full model from noisy logs; convert only compact residues into disposable repair shards.",
+                },
                 "ok": ok,
+                "raw_ok": item.get("raw_ok"),
                 "token_chain": token_chain,
                 "missing_required": missing,
                 "triggered_forbidden": forbidden,
+                "raw_missing_required": [str(t) for t in item.get("raw_missing_required") or []],
+                "raw_triggered_forbidden": [str(t) for t in item.get("raw_triggered_forbidden") or []],
+                "scaffolded": item.get("scaffolded"),
                 "loss_latest": loss_latest,
                 "fall_recovery": _lesson_for_residue(kind, missing, forbidden, ok),
             }
@@ -322,6 +363,13 @@ def build_digest(report: dict[str, Any], losses: list[float], run_id: str) -> di
         "next_phase": phase,
         "lane_allocation": _allocation_for_phase(phase),
         "recovery_policy": _recovery_policy(pass_rate, residues),
+        "kinematic_mesh_filter": {
+            "source_note": "notes/concepts/kinematic_mesh_filter.md",
+            "principle": "dirty failures are caught by a disposable layer; the reusable harness changes posture but is not contaminated",
+            "filter_mode": "strict gates catch missing required markers and forbidden boundary crossings",
+            "hose_mode": "clean passes flow through as positive residues",
+            "scab_ejection": "failed residues are peeled into focused repair shards before another GPU run",
+        },
         "automation_patterns": _automation_patterns(),
         "residue_count": len(residues),
         "residues": residues,
@@ -358,7 +406,10 @@ def main() -> int:
     digest = build_digest(report=report, losses=losses, run_id=generated_run_id)
     out_dir = Path(args.out_dir) if args.out_dir else Path("artifacts") / "training_digestion" / generated_run_id
     paths = write_outputs(digest, out_dir=out_dir)
-    payload = {"paths": paths, "summary": {k: digest[k] for k in ("run_id", "contract_id", "next_phase", "lane_allocation", "residue_count")}}
+    payload = {
+        "paths": paths,
+        "summary": {k: digest[k] for k in ("run_id", "contract_id", "next_phase", "lane_allocation", "residue_count")},
+    }
     print(json.dumps(payload if args.json else digest, indent=2, ensure_ascii=True))
     return 0
 

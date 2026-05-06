@@ -1,0 +1,72 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-approval-metrics-v3-marker-dpo-hf",
+  "title": "SCBE Coding Approval Metrics v3 Marker DPO HF T4",
+  "description": "Preference repair after marker-focus SFT regressed from 2/5 to 1/5 raw gate pass. Trains chosen exact marker receipts against observed raw near-miss failures and synthetic marker-corruption negatives.",
+  "backend": "hf-jobs-peft-dpo",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE approval-gate marker fidelity specialist. Copy required marker strings exactly before giving the compact approval verdict. Do not translate, rename, case-fold, pluralize, hyphenate, underscore, or approximate required markers.",
+  "dataset": {
+    "root": "training-data/dpo",
+    "train_files": [
+      "coding_approval_marker_dpo_v1_train.jsonl"
+    ],
+    "eval_files": []
+  },
+  "training": {
+    "base_adapter_repo": "issdandavis/scbe-coding-approval-metrics-v3-marker-focus-scaffold-hf",
+    "max_seq_length": 768,
+    "max_prompt_length": 384,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00002,
+    "beta": 0.12,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "warmup_ratio": 0.05,
+    "max_steps": 100,
+    "max_train_records": 0,
+    "logging_steps": 10,
+    "save_steps": 100,
+    "save_total_limit": 1,
+    "gradient_checkpointing": true,
+    "seed": 89,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "output_dir": "training/runs/coding-approval-metrics-v3-marker-dpo-hf"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-coding-approval-marker-dpo-v1",
+    "push_adapter": true,
+    "adapter_repo": "issdandavis/scbe-coding-approval-metrics-v3-marker-dpo-hf",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "50m",
+    "default_emit_path": "artifacts/model_training/coding-approval-metrics-v3-marker-dpo-hf-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/coding_approval_metrics_v3_eval_contract.json",
+    "constrained_gate_scaffold": false,
+    "constrained_prompt_prefix": true,
+    "max_new_tokens": 160,
+    "notes": "Raw-output repair test. The promoted production scaffold adapter remains the current deployment path; this DPO run is only promoted if unconstrained raw generation passes the frozen v3 approval contract."
+  },
+  "notes": [
+    "Do not keep scaling marker SFT blindly; the 160-row marker-copy SFT run regressed to 1/5.",
+    "Preference rows are built from observed wrong raw responses and deterministic corruption negatives.",
+    "This starts from the pushed scaffold adapter because failed raw adapters were not promoted to a Hugging Face adapter repo."
+  ]
+}

@@ -67,10 +67,26 @@ def test_build_digest_extracts_positive_residue_chains() -> None:
         "retest",
         "retain_lesson",
     ]
+    assert digest["kinematic_mesh_filter"]["filter_mode"].startswith("strict gates")
+    assert digest["residues"][0]["kinematic_mesh_filter"]["mesh_role"] == "reusable_gate_harness"
+    assert digest["residues"][0]["kinematic_mesh_filter"]["mode"] == "hose_mode"
     assert "factorio_factory_loop" in digest["automation_patterns"]
     assert "dwarf_fortress_ops_loop" in digest["automation_patterns"]
     assert "tython_typescript_to_python_compiler_note" in digest["automation_patterns"]
     assert "tython_security_as_code_note" in digest["automation_patterns"]
+
+
+def test_build_digest_labels_scaffold_only_passes_separately() -> None:
+    report = _report()
+    report["results"][0]["raw_ok"] = False
+
+    digest = build_digest(report, losses=[1.0, 0.4], run_id="unit-run")
+
+    first = digest["residues"][0]
+    assert first["kind"] == "scaffolded_positive_residue"
+    assert first["kinematic_mesh_filter"]["mode"] == "scaffold_bridge_mode"
+    assert first["kinematic_mesh_filter"]["ejection_action"] == "retain_scaffold_trace_without_raw_promotion"
+    assert first["fall_recovery"]["recovery_action"] == "retain_scaffold_trace_without_raw_promotion"
 
 
 def test_build_digest_expands_state_space_on_low_loss_gate_failure() -> None:
@@ -81,6 +97,8 @@ def test_build_digest_expands_state_space_on_low_loss_gate_failure() -> None:
     repair = [row for row in digest["residues"] if row["kind"] == "repair_residue"]
     assert repair
     assert repair[0]["token_chain"] == ["provider-pair:ollama->deepseek:benchmark"]
+    assert repair[0]["kinematic_mesh_filter"]["mode"] == "filter_mode_missing_marker_scab"
+    assert repair[0]["kinematic_mesh_filter"]["ejection_action"] == "eject_missing_marker_repair"
     assert repair[0]["fall_recovery"]["recovery_action"] == "add_exact_repair_exemplar"
     assert digest["recovery_policy"]["stance"] == "learn_to_fall_better"
 

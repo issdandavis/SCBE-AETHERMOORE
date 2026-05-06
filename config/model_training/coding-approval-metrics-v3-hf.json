@@ -1,0 +1,76 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-approval-metrics-v3-hf",
+  "title": "SCBE Coding Approval Metrics v3 HF T4",
+  "description": "HF Jobs fallback for the coding approval metrics v3 lane after Kaggle repeatedly assigned legacy P100 GPUs. Trains the approval/routing adapter on the dense v3 shards and gates promotion with a frozen approval contract.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "coding_approval_metrics_v1.sft.jsonl",
+      "coding_approval_metrics_v3_train.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "stage5_command_harmony_signal_shape_boost_train.sft.jsonl",
+      "operator_agent_bus_extracted_v1_train.sft.jsonl",
+      "atomic_workflow_stage6_repair_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "coding_approval_metrics_v3_eval.sft.jsonl",
+      "stage5_command_harmony_signal_shape_boost_holdout.sft.jsonl",
+      "functional_coding_benchmark_repairs_v1_eval.sft.jsonl",
+      "governance_security_boundary_eval_v1.sft.jsonl",
+      "operator_agent_bus_extracted_v1_eval.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "max_steps": 180,
+    "warmup_steps": 16,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.1,
+    "learning_rate": 0.00005,
+    "gradient_checkpointing": true,
+    "seed": 47,
+    "logging_steps": 10,
+    "save_steps": 60,
+    "eval_steps": 40,
+    "max_train_records": 0,
+    "max_eval_records": 0,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+    "adapter_repo": "issdandavis/scbe-coding-approval-metrics-v3-hf",
+    "token_env": "HF_TOKEN",
+    "push_adapter": true
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "45m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE agentic coding approval instructor. Use non-binary verdicts: PROMOTE, HOLD, INCUBATE, TRANSFORM, ESCALATE, DENY, or ARCHIVE. Require concrete evidence before promotion. Preserve full Sacred Tongue names when route context matters.",
+  "evaluation": {
+    "contract_path": "config/model_training/coding_approval_metrics_v3_eval_contract.json",
+    "constrained_gate_scaffold": false,
+    "constrained_prompt_prefix": true,
+    "max_new_tokens": 160
+  },
+  "notes": [
+    "Kaggle v3 is still useful when it gets a T4, but this profile is the score-moving HF path when Kaggle assigns P100.",
+    "The frozen contract separates approval quality from generic generation quality by checking verdict semantics, route context, security boundary behavior, and failed-run digestion.",
+    "Prompt prefix is enabled so the model sees the required/forbidden token frame, but scaffold injection is disabled so the answer must carry the verdict itself."
+  ]
+}

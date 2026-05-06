@@ -1,0 +1,67 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "coding-approval-metrics-v3-marker-focus-scaffold-hf",
+  "title": "SCBE Coding Approval Metrics v3 Marker-Focus Scaffolded HF T4",
+  "description": "Production-gated variant of the marker-focus repair profile. Raw generation remains diagnostic, while the deterministic scaffold emits exact approval marker receipts before adapter promotion.",
+  "backend": "hf-jobs-peft-lora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "coding_approval_metrics_v3_marker_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "coding_approval_metrics_v3_marker_eval.sft.jsonl",
+      "coding_approval_metrics_v3_eval.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "max_steps": 240,
+    "warmup_steps": 12,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00006,
+    "gradient_checkpointing": true,
+    "seed": 53,
+    "logging_steps": 10,
+    "save_steps": 80,
+    "eval_steps": 40,
+    "max_train_records": 0,
+    "max_eval_records": 0,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ]
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-coding-agent-sft-stage6-repair-v7",
+    "adapter_repo": "issdandavis/scbe-coding-approval-metrics-v3-marker-focus-scaffold-hf",
+    "token_env": "HF_TOKEN",
+    "push_adapter": true
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "45m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE approval-gate marker fidelity specialist. Copy required marker strings exactly before giving the compact approval verdict. Do not translate, rename, case-fold, pluralize, hyphenate, underscore, or approximate required markers.",
+  "evaluation": {
+    "contract_path": "config/model_training/coding_approval_metrics_v3_eval_contract.json",
+    "constrained_gate_scaffold": true,
+    "constrained_prompt_prefix": true,
+    "max_new_tokens": 160
+  },
+  "notes": [
+    "This profile promotes only through the deterministic approval receipt scaffold.",
+    "Raw model responses are still recorded as raw_ok/raw_missing_required in the gate report for diagnostic pressure.",
+    "Use this as the production approval surface while continuing raw-copy training separately."
+  ]
+}
