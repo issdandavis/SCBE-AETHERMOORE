@@ -214,6 +214,102 @@ def select_resonance_cross(
     return pairs, evaluations
 
 
+def select_resonance_cross_lowrank(
+    A: np.ndarray,
+    B: np.ndarray,
+    M: np.ndarray,
+    *,
+    rank: int,
+    budget_pairs: int,
+    alpha: float = 1.0,
+) -> tuple[list[tuple[int, int]], int]:
+    """Rank-r SVD-truncated coupling, then resonance over the joint space.
+
+    If the coupling matrix M has effective rank r << d, we can replace
+    M with its rank-r SVD M_r = U_r diag(s_r) V_r^T. The amplitude matrix
+    becomes a rank-r outer product structure that costs O((N_A + N_B) * d * r)
+    instead of O((N_A + N_B) * d^2). This empirically tests the claim that
+    "cryptographic strength of the coupling = search-method efficiency
+    frontier": low-rank M (weak key) admits sub-quadratic in d, full-rank
+    random M (strong key) does not.
+    """
+
+    if rank <= 0:
+        raise ValueError("rank must be > 0")
+    U, s, Vt = np.linalg.svd(M, full_matrices=False)
+    rank_eff = min(rank, len(s))
+    M_r = (U[:, :rank_eff] * s[:rank_eff]) @ Vt[:rank_eff, :]
+    log_amp = amplitude_matrix(A, B, M_r, alpha=alpha)
+    flat = np.argsort(log_amp.ravel())[::-1][:budget_pairs]
+    pairs = [(int(idx // log_amp.shape[1]), int(idx % log_amp.shape[1])) for idx in flat]
+    # Cost: O((N_A + N_B) * d * r) for the projection + O(N_A * N_B) for
+    # the cosine matrix on the rank-r-rotated vectors. We report the cosine-
+    # matrix size (the largest term) for direct comparison with full-rank.
+    evaluations = log_amp.size
+    return pairs, evaluations
+
+
+def select_disagreement_probe_cross(
+    A: np.ndarray,
+    B: np.ndarray,
+    M: np.ndarray,
+    *,
+    method_a_pairs: Sequence[tuple[int, int]],
+    method_b_pairs: Sequence[tuple[int, int]],
+    budget_pairs: int,
+    alpha: float = 1.0,
+) -> tuple[list[tuple[int, int]], int]:
+    """Non-linear "negative-between-negatives" selector.
+
+    Two source methods produce two pair sets P_a and P_b. Their null spaces
+    in the BUDGET-RECOVERED region are the symmetric difference:
+
+        D = P_a ⊕ P_b = (P_a \\ P_b) ∪ (P_b \\ P_a)
+
+    These are pairs each method picked but the other did not -- the
+    DISAGREEMENT region. The "negative between the negatives" is the
+    geometric midpoint between a disagreeing pair from P_a and one from
+    P_b in the joint sketch space, mapped back to candidate pairs that
+    sit closest to that midpoint. Those midpoints are the pairs neither
+    method nominated despite both half-nominating: pure non-linear probe
+    candidates that neither single-method ranking surfaces.
+
+    Concretely:
+      1. For every (a_i, b_j) in P_a \\ P_b and every (a_k, b_l) in P_b \\ P_a,
+         compute the midpoint sketch (a_i + a_k)/2 in A and (b_j + b_l)/2 in B.
+      2. For each midpoint, find the candidate (a*, b*) closest to it (by
+         Euclidean distance in the sketch space).
+      3. Score those probe pairs with the actual amplitude function.
+      4. Return the top-budget_pairs.
+    """
+
+    P_a = set(method_a_pairs)
+    P_b = set(method_b_pairs)
+    only_a = list(P_a - P_b)
+    only_b = list(P_b - P_a)
+    if not only_a or not only_b:
+        return list(P_a | P_b)[:budget_pairs], 0
+
+    probes: set[tuple[int, int]] = set()
+    for ai, bj in only_a:
+        for ak, bl in only_b:
+            mid_a = 0.5 * (A[ai] + A[ak])
+            mid_b = 0.5 * (B[bj] + B[bl])
+            a_dists = np.linalg.norm(A - mid_a, axis=1)
+            b_dists = np.linalg.norm(B - mid_b, axis=1)
+            a_star = int(np.argmin(a_dists))
+            b_star = int(np.argmin(b_dists))
+            probes.add((a_star, b_star))
+
+    union = list(P_a | P_b)
+    candidates: list[tuple[int, int]] = list(probes | set(union))
+    log_amp = amplitude_matrix(A, B, M, alpha=alpha)
+    candidates.sort(key=lambda pair: float(log_amp[pair[0], pair[1]]), reverse=True)
+    selected = candidates[:budget_pairs]
+    evaluations = len(candidates)
+    return selected, evaluations
+
+
 def select_multigrid_cross(
     A: np.ndarray,
     B: np.ndarray,
@@ -317,6 +413,38 @@ def run_compare(spec: DualStateSpec, *, budget_pairs: int = 8, alpha: float = 1.
             A, B, M, coarse_per_side=30, fine_top_k=10, budget_pairs=budget_pairs, alpha=alpha
         ),
     }
+
+    rank_sweep = [1, 2, 4, 8, 16, A.shape[1]]
+    for rank in rank_sweep:
+        if rank > A.shape[1]:
+            continue
+        runs[f"resonance_lowrank_r{rank}"] = select_resonance_cross_lowrank(
+            A, B, M, rank=rank, budget_pairs=budget_pairs, alpha=alpha
+        )
+
+    # Disagreement probes: pair two methods that have COMPLEMENTARY partial
+    # truth so their XOR midpoints actually land near diamonds. "Double
+    # negative makes positive" works only when each negative carries partial
+    # signal in different directions.
+    multigrid_pairs = runs["multigrid_cross_c30_k10"][0]
+    tang20_pairs = runs["tang_cross_k20"][0]
+    lowrank4_pairs = runs["resonance_lowrank_r4"][0]
+    lowrank8_pairs = runs["resonance_lowrank_r8"][0]
+
+    runs["disagreement_tang_vs_multigrid"] = select_disagreement_probe_cross(
+        A, B, M,
+        method_a_pairs=tang20_pairs,
+        method_b_pairs=multigrid_pairs,
+        budget_pairs=budget_pairs,
+        alpha=alpha,
+    )
+    runs["disagreement_lowrank_seam"] = select_disagreement_probe_cross(
+        A, B, M,
+        method_a_pairs=lowrank4_pairs,
+        method_b_pairs=lowrank8_pairs,
+        budget_pairs=budget_pairs,
+        alpha=alpha,
+    )
 
     summary: dict[str, dict[str, object]] = {}
     for name, (pairs, evaluations) in runs.items():

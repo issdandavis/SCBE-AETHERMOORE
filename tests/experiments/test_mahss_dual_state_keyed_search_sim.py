@@ -79,10 +79,54 @@ def test_run_compare_emits_summary_for_each_method() -> None:
         "resonance_cross_a1",
         "multigrid_cross_c20_k6",
         "multigrid_cross_c30_k10",
+        "resonance_lowrank_r1",
+        "resonance_lowrank_r2",
+        "resonance_lowrank_r4",
+        "resonance_lowrank_r8",
+        "resonance_lowrank_r16",
+        "resonance_lowrank_r32",
+        "disagreement_tang_vs_multigrid",
+        "disagreement_lowrank_seam",
     }
     assert set(report["summary"]) == expected
     for row in report["summary"].values():
         assert "evaluations" in row and "diamond_recall" in row and "regret_log_amp" in row
+
+
+def test_lowrank_resonance_recovers_recall_at_solution_rank() -> None:
+    """Effective key strength = rank of the solution subspace, not rank(M).
+
+    With 4 planted diamond pairs, the solution span is rank-4. Rank-8
+    truncation should already start recovering recall; rank>=16 should
+    fully recover. Rank<4 should fail.
+    """
+
+    spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
+    report = run_compare(spec, budget_pairs=8)
+    summary = report["summary"]
+    assert summary["resonance_lowrank_r2"]["diamond_recall"] < 1.0
+    assert summary["resonance_lowrank_r16"]["diamond_recall"] == pytest.approx(1.0)
+    assert summary["resonance_lowrank_r32"]["diamond_recall"] == pytest.approx(1.0)
+
+
+def test_disagreement_probe_double_negative_makes_positive() -> None:
+    """Two methods with complementary failure modes compose to a working one.
+
+    tang_cross_k20 finds diamonds at 400 evals. multigrid_cross_c30_k10
+    finds 0/4. Their disagreement-midpoint probe should preserve tang's
+    recall at far fewer evaluations because the amplitude-sort over the
+    enriched candidate set surfaces diamonds first.
+    """
+
+    spec = DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19)
+    report = run_compare(spec, budget_pairs=8)
+    summary = report["summary"]
+    probe = summary["disagreement_tang_vs_multigrid"]
+    tang20 = summary["tang_cross_k20"]
+    multigrid = summary["multigrid_cross_c30_k10"]
+    assert probe["diamond_recall"] == pytest.approx(tang20["diamond_recall"])
+    assert probe["diamond_recall"] > multigrid["diamond_recall"]
+    assert probe["evaluations"] < tang20["evaluations"]
 
 
 def test_resonance_outperforms_multigrid_under_key_coupling() -> None:
