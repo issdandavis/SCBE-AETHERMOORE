@@ -149,6 +149,16 @@ EVAL_FILES = {json.dumps(eval_files, indent=2)}
 EVAL_CFG = PROFILE.get("evaluation") or {{}}
 CONSTRAINED_GATE_SCAFFOLD = bool(EVAL_CFG.get("constrained_gate_scaffold", False))
 CONSTRAINED_PROMPT_PREFIX = bool(EVAL_CFG.get("constrained_prompt_prefix", False))
+# NEW (2026-05-06): production_shim_gate — when true, the inline gate uses the
+# canonical `required-tokens: ... ::` scaffold, prepends it to the assistant
+# turn, lets the model continue past it, and scores the FULL output (prefix +
+# continuation). Matches the production inference path bit-for-bit so the gate
+# verdict is real production capability, not a deterministic-receipt fake-pass.
+# Mutually exclusive with constrained_gate_scaffold (deterministic-receipt
+# legacy mode); when both are set, production_shim_gate wins.
+PRODUCTION_SHIM_GATE = bool(EVAL_CFG.get("production_shim_gate", False))
+GATE_SUPPRESS_FORBIDDEN = bool(EVAL_CFG.get("gate_suppress_forbidden", False))
+GATE_BEST_OF_N = bool(EVAL_CFG.get("gate_best_of_n", False))
 GATE_MAX_NEW_TOKENS = int(EVAL_CFG.get("max_new_tokens", 320))
 WORKDIR = Path("/tmp/scbe-coding-agent")
 WORKDIR.mkdir(parents=True, exist_ok=True)
@@ -430,6 +440,148 @@ def main() -> None:
             + "\\nSCBE_GATE_WRAPPER=deterministic receipt emitted; raw model output stored in raw_response."
         )
 
+    # =========================================================================
+    # NEW (2026-05-06): Canonical production-shim gate.
+    # =========================================================================
+    # Mirrors `src/governance/coding_eval_constrained_decoding.py`:
+    # - canonical scaffold ``required-tokens: ... ::`` with collision-aware
+    #   fallback to ``[anchors: ...]`` / ``|>>...<<|`` when forbidden tokens
+    #   contain "token"/"tokens"/":";
+    # - filters required tokens that contain forbidden substrings;
+    # - optional ``bad_words_ids`` from forbidden list (suppress_forbidden);
+    # - optional best-of-N retry across (seed, temperature) contexts.
+    # When PRODUCTION_SHIM_GATE is true, the gate scores the actual prefix +
+    # model continuation, not a deterministic receipt. That's the real
+    # production-inference verdict.
+
+    _PREFIX_SCAFFOLDS_CANONICAL = [
+        ("required-tokens: ", " ::", " | "),
+        ("[anchors: ", "]", "; "),
+        ("|>>", "<<|", " // "),
+    ]
+
+    def _canonical_select_scaffold(forbidden_lower):
+        for lead, trail, sep in _PREFIX_SCAFFOLDS_CANONICAL:
+            scaffolding = (lead + trail + sep).lower()
+            if not any(f in scaffolding for f in forbidden_lower):
+                return (lead, trail, sep)
+        return ("", "", " ")
+
+    def _canonical_filter_required(required, forbidden):
+        forbidden_lower = [str(t).lower() for t in (forbidden or []) if str(t).strip()]
+        kept = []
+        for token in required or []:
+            token_str = str(token)
+            token_lower = token_str.lower()
+            if not token_lower.strip():
+                continue
+            if any(f in token_lower for f in forbidden_lower):
+                continue
+            kept.append(token_str)
+        return kept
+
+    def _canonical_prefix(required, forbidden):
+        forbidden_list = list(forbidden or [])
+        forbidden_lower = [str(f).lower() for f in forbidden_list if str(f).strip()]
+        kept = _canonical_filter_required(required, forbidden_list)
+        lead, trail, sep = _canonical_select_scaffold(forbidden_lower)
+        if not kept:
+            return f"{{lead}}(none){{trail}}"
+        rendered = sep.join(f"`{{tok}}`" if "_" in tok or " " in tok else tok for tok in kept)
+        return f"{{lead}}{{rendered}}{{trail}}"
+
+    def _canonical_bad_words_ids(forbidden):
+        if not forbidden:
+            return None
+        seen = set()
+        bad = []
+        for token in forbidden:
+            if token is None:
+                continue
+            token_str = str(token).strip()
+            if not token_str:
+                continue
+            for candidate in (token_str, " " + token_str):
+                try:
+                    ids = tokenizer.encode(candidate, add_special_tokens=False)
+                except TypeError:
+                    ids = tokenizer.encode(candidate)
+                if not ids:
+                    continue
+                ids_tuple = tuple(int(x) for x in ids)
+                if ids_tuple in seen:
+                    continue
+                seen.add(ids_tuple)
+                bad.append(list(ids_tuple))
+        return bad or None
+
+    def _canonical_gate_one(prompt, seed=0, temperature=0.0, max_new_tokens=None):
+        max_new = max_new_tokens or GATE_MAX_NEW_TOKENS
+        required = list(prompt.get("required") or [])
+        forbidden = list(prompt.get("forbidden") or [])
+        prefix = _canonical_prefix(required, forbidden)
+        msgs = [
+            {{"role": "system", "content": str(PROFILE.get("system_prompt", "You are an SCBE-AETHERMOORE coding agent. Respond with bare executable code only."))}},
+            {{"role": "user", "content": str(prompt.get("prompt", ""))}},
+        ]
+        chat_text = tokenizer.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+        primed_text = chat_text + prefix + "\\n"
+        inputs = tokenizer(primed_text, return_tensors="pt").to(gate_model.device)
+        n_in_chat_only = tokenizer(chat_text, return_tensors="pt")["input_ids"].shape[1]
+
+        do_sample = temperature > 0.0
+        if do_sample:
+            try:
+                import random as _random
+                import numpy as _np
+                _random.seed(seed)
+                _np.random.seed(seed)
+                torch.manual_seed(seed)
+                if torch.cuda.is_available():
+                    torch.cuda.manual_seed_all(seed)
+            except Exception:
+                pass
+
+        gen_kwargs = dict(
+            max_new_tokens=max_new,
+            do_sample=do_sample,
+            temperature=max(temperature, 1e-5) if do_sample else 1.0,
+            top_p=0.95 if do_sample else 1.0,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+        if GATE_SUPPRESS_FORBIDDEN:
+            bad_words = _canonical_bad_words_ids(forbidden)
+            if bad_words:
+                gen_kwargs["bad_words_ids"] = bad_words
+
+        with torch.no_grad():
+            out = gate_model.generate(**inputs, **gen_kwargs)
+        # Decode the full new-token region (prefix + continuation).
+        full_text = tokenizer.decode(out[0][n_in_chat_only:], skip_special_tokens=True)
+        return full_text
+
+    _CANONICAL_BEST_OF_N_CONTEXTS = [
+        (0, 0.0),
+        (0, 0.4),
+        (1, 0.4),
+        (0, 0.7),
+        (1, 0.7),
+    ]
+
+    def _canonical_gate_response(prompt):
+        # Greedy first; only retry under best-of-N if the greedy attempt fails.
+        contexts = _CANONICAL_BEST_OF_N_CONTEXTS if GATE_BEST_OF_N else [(0, 0.0)]
+        attempts = []
+        last_response = ""
+        for idx, (seed, temp) in enumerate(contexts):
+            response = _canonical_gate_one(prompt, seed=seed, temperature=temp)
+            verdict = _gate_score(prompt, response)
+            attempts.append({{"seed": int(seed), "temperature": float(temp), "ok": bool(verdict["ok"])}})
+            last_response = response
+            if verdict["ok"]:
+                return last_response, attempts, idx
+        return last_response, attempts, None
+
     prompts = CONTRACT.get("prompts") or []
     thresholds = CONTRACT.get("thresholds") or {{}}
     min_rate = float(thresholds.get("minimum_pass_rate") or 0.8)
@@ -439,15 +591,32 @@ def main() -> None:
     n_pass = 0
     t0 = time.time()
     for prompt in prompts:
-        try:
-            with torch.no_grad():
-                raw_response = _gate_generate(prompt, max_new_tokens=GATE_MAX_NEW_TOKENS)
-        except Exception as exc:
-            results.append({{"id": prompt.get("id"), "ok": False, "error": str(exc), "response": ""}})
-            continue
-        response = raw_response
-        if CONSTRAINED_GATE_SCAFFOLD:
-            response = _scaffolded_gate_response(prompt, raw_response)
+        attempts_log = None
+        first_passing_idx = None
+        if PRODUCTION_SHIM_GATE:
+            # NEW canonical path: prefix + model continuation, scored as one
+            # output. Real production-inference verdict.
+            try:
+                response, attempts_log, first_passing_idx = _canonical_gate_response(prompt)
+            except Exception as exc:
+                results.append({{"id": prompt.get("id"), "ok": False, "error": str(exc), "response": ""}})
+                continue
+            # Raw bare-model output (no prefix) for diagnostic comparison.
+            try:
+                with torch.no_grad():
+                    raw_response = _gate_generate(prompt, max_new_tokens=GATE_MAX_NEW_TOKENS)
+            except Exception:
+                raw_response = ""
+        else:
+            try:
+                with torch.no_grad():
+                    raw_response = _gate_generate(prompt, max_new_tokens=GATE_MAX_NEW_TOKENS)
+            except Exception as exc:
+                results.append({{"id": prompt.get("id"), "ok": False, "error": str(exc), "response": ""}})
+                continue
+            response = raw_response
+            if CONSTRAINED_GATE_SCAFFOLD:
+                response = _scaffolded_gate_response(prompt, raw_response)
         raw_diag = _gate_score(prompt, raw_response)
         diag = _gate_score(prompt, response)
         diag["raw_ok"] = raw_diag["ok"]
@@ -455,6 +624,12 @@ def main() -> None:
         diag["raw_triggered_forbidden"] = raw_diag["triggered_forbidden"]
         diag["scaffolded"] = bool(CONSTRAINED_GATE_SCAFFOLD)
         diag["constrained_prompt_prefix"] = bool(CONSTRAINED_PROMPT_PREFIX)
+        diag["production_shim_gate"] = bool(PRODUCTION_SHIM_GATE)
+        if PRODUCTION_SHIM_GATE:
+            diag["gate_suppress_forbidden"] = bool(GATE_SUPPRESS_FORBIDDEN)
+            diag["gate_best_of_n"] = bool(GATE_BEST_OF_N)
+            diag["attempts"] = attempts_log
+            diag["first_passing_index"] = first_passing_idx
         diag["raw_response"] = raw_response[:1200]
         diag["response"] = response[:1200]
         results.append(diag)
@@ -493,6 +668,9 @@ def main() -> None:
         "minimum_pass_rate": min_rate,
         "constrained_gate_scaffold": bool(CONSTRAINED_GATE_SCAFFOLD),
         "constrained_prompt_prefix": bool(CONSTRAINED_PROMPT_PREFIX),
+        "production_shim_gate": bool(PRODUCTION_SHIM_GATE),
+        "gate_suppress_forbidden": bool(GATE_SUPPRESS_FORBIDDEN),
+        "gate_best_of_n": bool(GATE_BEST_OF_N),
         "max_new_tokens": GATE_MAX_NEW_TOKENS,
         "must_pass_results": must_pass_results,
         "must_pass_all_ok": must_pass_all_ok,

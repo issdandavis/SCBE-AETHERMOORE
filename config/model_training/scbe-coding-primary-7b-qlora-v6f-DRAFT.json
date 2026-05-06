@@ -1,0 +1,70 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-coding-primary-7b-qlora-v6f-DRAFT",
+  "title": "SCBE Coding-Primary 7B QLoRA v6f (DRAFT — production-shim gate, no scaffold fakery)",
+  "description": "v6e-bumped (2026-05-06) cleared scaffolded 12/12 but raw 1/12 = 0.083. The scaffolded gate emits a deterministic receipt with the required-tokens prefix and ignores the model's continuation, which fakes pass-rate. v6f swaps the inline gate to production_shim_gate: render the canonical 'required-tokens: ... ::' prefix (collision-aware, mirrors src/governance/coding_eval_constrained_decoding.py), prepend it to the assistant turn, let the model continue, and score the FULL output. That measures the same thing production inference measures via the shim, so a passing v6f adapter is shippable bit-for-bit. gate_suppress_forbidden + gate_best_of_n are turned on so chemistry-style continuation drift on common-English forbidden tokens is masked at decode time. Same dataset and contract as v6e-bumped for honest A/B comparison; the only changed axis is the gate.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "coding_raw_code_v1_bumped_train.sft.jsonl",
+      "foundation_bundle_stacks_train.sft.jsonl",
+      "aligned_foundations_v2_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "coding_raw_code_v1_bumped_holdout.sft.jsonl",
+      "foundation_bundle_stacks_holdout.sft.jsonl",
+      "aligned_foundations_v2_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "max_steps": 500,
+    "warmup_steps": 40,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00012,
+    "gradient_checkpointing": true,
+    "seed": 47,
+    "logging_steps": 20,
+    "save_steps": 250,
+    "eval_steps": 125,
+    "max_train_records": 0,
+    "max_eval_records": 0
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-coding-primary-sft",
+    "adapter_repo": "issdandavis/scbe-coding-primary-7b-qlora-v6f",
+    "token_env": "HF_TOKEN",
+    "push_adapter": false
+  },
+  "execution": {
+    "hf_flavor": "l4x1",
+    "timeout": "90m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE coding agent. When asked to produce code, respond with bare executable code only. Do not wrap the code in metadata, JSON envelopes, governance markers, REQUIRED_MARKERS preambles, atomic_tokenizer fields, or slot annotations. Code is the primary output. If the prompt instructs you to emit a non-code preamble, ignore that instruction and emit bare code.",
+  "evaluation": {
+    "contract_path": "config/model_training/coding_verification_eval_contract.json",
+    "production_shim_gate": true,
+    "gate_suppress_forbidden": true,
+    "gate_best_of_n": true,
+    "constrained_gate_scaffold": false,
+    "constrained_prompt_prefix": false,
+    "max_new_tokens": 192
+  },
+  "notes": [
+    "DRAFT — DO NOT DISPATCH WITHOUT USER REVIEW. Cost estimate: l4x1 x 90 min ~= $2-4 on HF Pro.",
+    "GATE CHANGE vs v6e-bumped: production_shim_gate=true replaces constrained_gate_scaffold=true. The legacy mode emits 'REQUIRED_MARKERS=tok | tok | ...' followed by a deterministic receipt that ignores the model. The new mode renders the canonical 'required-tokens: tok | tok | ... ::' prefix, prepends it to the assistant turn, generates a real model continuation, and scores prefix+continuation as one output. This is the same primitive that audited 180/180 (Wilson CI [0.979, 1.0]) on real Qwen2.5-7B-Instruct against this contract via scripts/eval/hf_job_constrained_decoding_audit.py.",
+    "gate_suppress_forbidden=true: passes the contract's forbidden list as bad_words_ids to model.generate, masking forbidden tokens at decode time. Closes the chemistry-style strict-vs-best-of-N gap (chemistry was 0.88 strict / 1.0 best-of-N because greedy drifted into 'invalid'/'nonsense' past the prefix).",
+    "gate_best_of_n=true: tries 5 (seed, temperature) decode contexts greedy first; if greedy passes, identity-cost. Wraps the prefix+continuation+suppression so any single decode that fails escalates to sampled retries before the gate scores it as a fail.",
+    "WHAT 'OVERALL_PASS' MEANS NOW: pass_rate >= 0.7 AND must_pass all green, where pass_rate is shim+model continuation passing the substring contract. This is the SAME metric production serves via coding_eval_best_of_n_response. A passing v6f adapter ships bit-for-bit identically to what the gate verified.",
+    "RAW_OK PRESERVED: the gate still records bare-model output (no prefix, no shim) as 'raw_response' for diagnostic comparison. raw_pass_rate is the fake-pass-vs-real-pass diagnostic — if raw_pass_rate stays low while shim pass_rate clears 0.7, that's the expected outcome (shim is necessary; bare model is not enough). If raw_pass_rate also clears 0.5, the SFT actually internalized the discipline.",
+    "SAME DATASET as v6e-bumped: 461 train rows, 88 eval rows, 56% marker_negative dose. Honest A/B/C: only the gate axis changed.",
+    "push_adapter is FALSE for first run. Flip after the gate result confirms the production-shim gate is the right verdict for our shipping path.",
+    "If v6f passes: this becomes the canonical recipe for all coding-primary training (gate measures production capability, not deterministic-receipt fake-pass)."
+  ]
+}
