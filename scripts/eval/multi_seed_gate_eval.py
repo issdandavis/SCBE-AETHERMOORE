@@ -42,8 +42,8 @@ Output schema (`scbe_multi_seed_gate_eval_v1`):
           "must_pass": bool
         }
       ],
-      "aggregate": {
-        "overall": {
+        "aggregate": {
+          "overall": {
           "n_trials": int,
           "passed_count": int,
           "pass_rate": float,
@@ -59,18 +59,26 @@ Output schema (`scbe_multi_seed_gate_eval_v1`):
           "spread": float,
           "single_seed_distribution": [float, ...]
         },
-        "must_pass_coverage": {
-          "n_must_pass_prompts": int,
-          "all_must_pass_pass_in_all_trials": bool,
-          "any_must_pass_failures_per_trial": [...]
-        }
-      }
+          "must_pass_coverage": {
+            "n_must_pass_prompts": int,
+            "all_must_pass_pass_in_all_trials": bool,
+            "any_must_pass_failures_per_trial": [...]
+          },
+          "best_of_n": {
+            "n_decode_contexts": int,
+            "prompt_pass_rate": float,
+            "all_prompts_any_pass": bool,
+            "must_pass_all_any_pass": bool
+          }
+        },
+      "idempotency_key": str
     }
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib
 import json
 import math
@@ -238,7 +246,64 @@ def _aggregate(trials: list[Trial], must_pass_ids: set[str]) -> dict[str, Any]:
             "all_must_pass_pass_in_all_trials": bool(all_must_pass),
             "must_pass_failures_per_context": must_pass_failures_per_trial_index,
         },
+        "best_of_n": _best_of_n(trials, must_pass_ids),
     }
+
+
+def _best_of_n(trials: list[Trial], must_pass_ids: set[str]) -> dict[str, Any]:
+    """Verifier-in-the-loop Best-of-N view.
+
+    Overall pass-rate answers "how many rollouts passed?" Best-of-N answers the
+    AlphaGo-style question: "for each prompt, did any rollout find a verified
+    leaf?" That is the right gate for test-time compute and golden-data mining.
+    """
+
+    per_prompt: dict[str, list[Trial]] = defaultdict(list)
+    contexts: set[tuple[int, float]] = set()
+    for t in trials:
+        per_prompt[t.prompt_id].append(t)
+        contexts.add((t.seed, t.temperature))
+
+    prompt_rows: dict[str, dict[str, Any]] = {}
+    passed_prompt_ids: list[str] = []
+    failed_prompt_ids: list[str] = []
+    for pid, rows in sorted(per_prompt.items()):
+        winners = [t for t in rows if t.passed]
+        if winners:
+            passed_prompt_ids.append(pid)
+        else:
+            failed_prompt_ids.append(pid)
+        best = max((t.score for t in rows), default=0.0)
+        prompt_rows[pid] = {
+            "any_pass": bool(winners),
+            "best_score": round(float(best), 4),
+            "winner_contexts": [
+                {"seed": t.seed, "temperature": t.temperature}
+                for t in winners
+            ],
+            "must_pass": pid in must_pass_ids,
+        }
+
+    n_prompts = len(per_prompt)
+    must_pass_any = all(prompt_rows.get(pid, {}).get("any_pass", False) for pid in must_pass_ids)
+    return {
+        "n_decode_contexts": len(contexts),
+        "prompt_passed_count": len(passed_prompt_ids),
+        "n_prompts": n_prompts,
+        "prompt_pass_rate": round((len(passed_prompt_ids) / n_prompts) if n_prompts else 0.0, 4),
+        "all_prompts_any_pass": bool(n_prompts and not failed_prompt_ids),
+        "must_pass_all_any_pass": bool(must_pass_any) if must_pass_ids else True,
+        "passed_prompt_ids": passed_prompt_ids,
+        "failed_prompt_ids": failed_prompt_ids,
+        "per_prompt": prompt_rows,
+    }
+
+
+def idempotency_key(payload: dict[str, Any]) -> str:
+    """Stable SHA-256 key for a sweep payload."""
+
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
 
 def run_sweep(
@@ -327,11 +392,18 @@ def synthetic_oracle_model(success_rate: float = 1.0, *, jitter_seed: int = 0) -
         if success_rate >= 1.0 or not required:
             return " ".join(required)
         # Deterministic per-trial drop of required tokens
-        h = (
-            hash((str(prompt.get("id", "")), int(seed), int(round(float(temperature) * 100)), jitter_seed))
-            & 0xFFFF_FFFF
+        material = json.dumps(
+            {
+                "prompt_id": str(prompt.get("id", "")),
+                "seed": int(seed),
+                "temperature": round(float(temperature), 4),
+                "jitter_seed": int(jitter_seed),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
         )
-        rng = h / 0xFFFF_FFFF
+        h = int(hashlib.sha256(material.encode("utf-8")).hexdigest()[:16], 16)
+        rng = h / float(0xFFFF_FFFF_FFFF_FFFF)
         if rng > success_rate:
             kept = required[: max(0, len(required) - 1)]
             return " ".join(kept)
@@ -464,6 +536,17 @@ def main(argv: list[str] | None = None) -> int:
         temperatures=temperatures,
         checker=checker,
         progress=progress,
+    )
+    report["idempotency_key"] = idempotency_key(
+        {
+            "schema_version": SCHEMA_VERSION,
+            "contract": contract,
+            "model_spec": args.model_spec,
+            "checker_spec": args.checker_spec,
+            "seeds": seeds,
+            "temperatures": temperatures,
+            "success_rate": args.success_rate if args.model_spec == "scripts.eval.multi_seed_gate_eval:synthetic_oracle_model" else None,
+        }
     )
     report["elapsed_s"] = round(time.time() - t0, 3)
 

@@ -11,6 +11,7 @@ from scripts.eval.multi_seed_gate_eval import (
     SCHEMA_VERSION,
     Trial,
     _aggregate,
+    idempotency_key,
     required_forbidden_checker,
     run_sweep,
     synthetic_oracle_model,
@@ -124,6 +125,11 @@ def test_run_sweep_oracle_full_pass_yields_full_recall() -> None:
     must = report["aggregate"]["must_pass_coverage"]
     assert must["n_must_pass_prompts"] == 2
     assert must["all_must_pass_pass_in_all_trials"] is True
+    bon = report["aggregate"]["best_of_n"]
+    assert bon["n_decode_contexts"] == 6
+    assert bon["prompt_pass_rate"] == 1.0
+    assert bon["all_prompts_any_pass"] is True
+    assert bon["must_pass_all_any_pass"] is True
 
 
 def test_run_sweep_partial_oracle_exposes_seed_lucky_spread() -> None:
@@ -161,6 +167,25 @@ def test_aggregate_must_pass_failure_recorded() -> None:
     assert agg["must_pass_coverage"]["all_must_pass_pass_in_all_trials"] is False
     failures = agg["must_pass_coverage"]["must_pass_failures_per_context"]
     assert any("alpha" in row for row in failures)
+    bon = agg["best_of_n"]
+    assert bon["must_pass_all_any_pass"] is True
+    assert bon["per_prompt"]["alpha"]["any_pass"] is True
+
+
+def test_best_of_n_can_pass_when_single_rollouts_are_mixed() -> None:
+    must_pass_ids = {"alpha"}
+    trials = [
+        Trial("alpha", 0, 0.0, False, 0.0, {}, True),
+        Trial("alpha", 1, 0.4, True, 1.0, {}, True),
+        Trial("beta", 0, 0.0, False, 0.0, {}, False),
+        Trial("beta", 1, 0.4, True, 1.0, {}, False),
+    ]
+    agg = _aggregate(trials, must_pass_ids)
+    assert agg["overall"]["pass_rate"] == 0.5
+    bon = agg["best_of_n"]
+    assert bon["prompt_pass_rate"] == 1.0
+    assert bon["all_prompts_any_pass"] is True
+    assert bon["must_pass_all_any_pass"] is True
 
 
 def test_run_sweep_is_deterministic_under_fixed_inputs() -> None:
@@ -173,6 +198,15 @@ def test_run_sweep_is_deterministic_under_fixed_inputs() -> None:
         contract, model, seeds=[0, 1, 2], temperatures=[0.0, 0.5]
     )
     assert a["aggregate"] == b["aggregate"]
+
+
+def test_idempotency_key_is_stable_and_changes_with_payload() -> None:
+    a = idempotency_key({"contract": "x", "seeds": [0, 1], "temperatures": [0.0]})
+    b = idempotency_key({"temperatures": [0.0], "seeds": [0, 1], "contract": "x"})
+    c = idempotency_key({"contract": "x", "seeds": [0, 2], "temperatures": [0.0]})
+    assert a == b
+    assert a != c
+    assert len(a) == 64
 
 
 def test_run_sweep_against_real_coding_verification_contract_with_oracle() -> None:
