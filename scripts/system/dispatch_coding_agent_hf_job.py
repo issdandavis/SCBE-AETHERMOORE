@@ -238,9 +238,13 @@ def main() -> None:
     max_length = int(train_cfg.get("max_seq_length", 1024))
     base_model = str(PROFILE["base_model"])
     adapter_repo = str(hub_cfg["adapter_repo"])
+    # Optional: load tokenizer from a separate path (e.g. an extended
+    # tokenizer with project-specific atomic vocabulary). Falls back to the
+    # base model's tokenizer for backward compatibility.
+    tokenizer_path = str(hub_cfg.get("tokenizer_path") or base_model)
 
     print(json.dumps({{"event": "auth", "whoami": whoami(token=token).get("name", "unknown")}}))
-    tokenizer = AutoTokenizer.from_pretrained(base_model, token=token)
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, token=token)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -252,8 +256,31 @@ def main() -> None:
         device_map="auto" if torch.cuda.is_available() else None,
     )
     model.config.use_cache = False
+    # When a custom tokenizer adds atomic entries the embedding matrix must
+    # grow to match. Mean-init for new rows is HF default. Resize must happen
+    # BEFORE peft wrap so the new rows are part of the base model.
+    base_vocab = int(getattr(model.config, "vocab_size", 0))
+    extended_vocab = int(len(tokenizer))
+    if extended_vocab != base_vocab:
+        model.resize_token_embeddings(extended_vocab)
+        print(json.dumps({{
+            "event": "resize_token_embeddings",
+            "base_vocab": base_vocab,
+            "extended_vocab": extended_vocab,
+            "delta": extended_vocab - base_vocab,
+        }}))
     if bool(train_cfg.get("gradient_checkpointing", False)) and hasattr(model, "gradient_checkpointing_enable"):
         model.gradient_checkpointing_enable()
+    # When tokenizer was extended, train embed_tokens + lm_head so the new
+    # rows learn project-specific representations rather than staying at
+    # mean-init. Honor an explicit profile override otherwise.
+    profile_modules_to_save = train_cfg.get("modules_to_save")
+    if profile_modules_to_save:
+        modules_to_save = list(profile_modules_to_save)
+    elif extended_vocab != base_vocab:
+        modules_to_save = ["embed_tokens", "lm_head"]
+    else:
+        modules_to_save = None
     model = get_peft_model(
         model,
         LoraConfig(
@@ -263,6 +290,7 @@ def main() -> None:
             bias="none",
             task_type="CAUSAL_LM",
             target_modules=list(train_cfg.get("target_modules") or ["q_proj", "k_proj", "v_proj", "o_proj"]),
+            modules_to_save=modules_to_save,
         ),
     )
     trainable_params = sum(param.numel() for param in model.parameters() if param.requires_grad)
