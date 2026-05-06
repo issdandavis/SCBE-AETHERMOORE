@@ -491,8 +491,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--temperatures",
         type=str,
-        default="0.0,0.5,1.0",
-        help="Comma-separated decode temperatures (default: 0.0,0.5,1.0).",
+        default="0.0,0.4,0.8",
+        help="Comma-separated decode temperatures (default: 0.0,0.4,0.8).",
     )
     parser.add_argument(
         "--success-rate",

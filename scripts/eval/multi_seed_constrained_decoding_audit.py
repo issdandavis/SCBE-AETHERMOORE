@@ -116,7 +116,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--temperatures",
         type=str,
-        default="0.0,0.3,0.7",
+        default="0.0,0.4,0.8",
     )
     parser.add_argument(
         "--forbidden-collision-rate",

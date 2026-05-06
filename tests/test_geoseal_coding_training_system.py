@@ -106,10 +106,14 @@ def test_dispatcher_renders_constrained_gate_scaffold_when_profile_requests_it()
     assert "REQUIRED_MARKERS=" in script
     assert "def _prompt_with_required_prefix(prompt):" in script
     assert "Your first line must be exactly: REQUIRED_MARKERS=" in script
+    assert "Never include these forbidden strings in your answer" not in script
+    assert "Some boundary strings are hidden by the evaluator" in script
     assert "raw_pass_rate" in script
     assert "raw_missing_required" in script
     assert "constrained gate prefix would trigger forbidden token" in script
     assert "raw_response = _gate_generate(prompt" in script
+    assert "def _scaffolded_gate_response(prompt, raw_response):" in script
+    assert "raw model output stored in raw_response" in script
 
 
 def test_chemistry_profile_has_non_empty_hf_promotion_contract() -> None:
@@ -151,6 +155,67 @@ def test_dispatcher_honors_explicit_warmup_steps_without_deprecated_ratio() -> N
     assert 'if "warmup_steps" in train_cfg:' in script
     assert 'warmup_kwargs["warmup_steps"]' in script
     assert "warmup_ratio=float(train_cfg.get" not in script
+
+
+def test_dispatcher_defaults_to_l4x1_and_carries_idempotency_key(tmp_path: Path) -> None:
+    dispatcher_path = ROOT / "scripts" / "system" / "dispatch_coding_agent_hf_job.py"
+    spec = importlib.util.spec_from_file_location("dispatch_coding_agent_hf_job", dispatcher_path)
+    assert spec and spec.loader
+    dispatcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dispatcher)
+
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text(
+        json.dumps(
+            {
+                "profile_id": "idempotency-test",
+                "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+                "dataset": {"root": "training-data/sft", "train_files": [], "eval_files": []},
+                "hub": {"adapter_repo": "owner/adapter", "token_env": "HF_TOKEN"},
+                "training": {},
+                "execution": {},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    packet = dispatcher.build_packet(profile_path=profile_path, artifact_root=tmp_path / "runs")
+
+    assert packet["hf"]["flavor"] == "l4x1"
+    assert len(packet["idempotency_key"]) == 64
+    assert f"SCBE_IDEMPOTENCY_KEY={packet['idempotency_key']}" in packet["command"]
+
+
+def test_dispatcher_idempotency_marker_skips_duplicate_job(tmp_path: Path) -> None:
+    dispatcher_path = ROOT / "scripts" / "system" / "dispatch_coding_agent_hf_job.py"
+    spec = importlib.util.spec_from_file_location("dispatch_coding_agent_hf_job", dispatcher_path)
+    assert spec and spec.loader
+    dispatcher = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dispatcher)
+
+    run_dir = tmp_path / "runs" / "profile" / "20260506T000000Z"
+    run_dir.mkdir(parents=True)
+    key = "a" * 64
+    marker_dir = tmp_path / "runs" / "_idempotency"
+    marker_dir.mkdir()
+    (marker_dir / f"{key}.json").write_text(
+        json.dumps({"packet_path": "previous/job_packet.json", "dispatch": {"job_id": "job-12345678"}}),
+        encoding="utf-8",
+    )
+    profile_path = tmp_path / "profile.json"
+    profile_path.write_text(json.dumps({"profile_id": "profile", "hub": {}}), encoding="utf-8")
+    packet = {
+        "hf": {"cli": "hf", "token_present": True},
+        "profile_path": str(profile_path),
+        "run_dir": str(run_dir),
+        "idempotency_key": key,
+    }
+
+    out = dispatcher.dispatch_packet(packet)
+
+    assert out["dispatch"]["idempotent_skip"] is True
+    assert out["dispatch"]["job_id"] == "job-12345678"
+    assert out["dataset_uploads"] == []
 
 
 def test_smoke_eval_plan_carries_geoseal_cli_gates(tmp_path: Path, monkeypatch) -> None:
