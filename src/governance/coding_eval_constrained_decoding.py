@@ -161,6 +161,8 @@ def coding_eval_constrained_response(
     *,
     system_prompt: str = DEFAULT_SYSTEM_PROMPT,
     suppress_forbidden: bool = False,
+    seed: int = 0,
+    temperature: float = 0.0,
 ) -> Dict[str, Any]:
     """High-level helper: read required tokens from prompt, build prefix,
     generate via stage6's chat-template+forced-prefix path, score.
@@ -172,10 +174,15 @@ def coding_eval_constrained_response(
     gate's best-of-N 1.0 / strict 0.88 split where greedy occasionally drifted
     into common-English forbidden tokens past the prefix.
 
+    ``seed`` and ``temperature`` enable best-of-N retries: greedy
+    (temperature=0.0) is the default and matches the audited path. With
+    temperature > 0 the call samples; ``seed`` fixes the RNG so retries
+    deterministically explore different decode contexts.
+
     Returns a verdict dict with ``id``, ``ok``, ``missing_required``,
-    ``triggered_forbidden``, ``response``, ``prefix``, and (when suppression
-    is on) ``suppressed_token_count``. The ``response`` field includes the
-    forced prefix.
+    ``triggered_forbidden``, ``response``, ``prefix``, ``seed``,
+    ``temperature``, and (when suppression is on) ``suppressed_token_count``.
+    The ``response`` field includes the forced prefix.
     """
 
     prompt_id = prompt.get("id", "")
@@ -192,11 +199,28 @@ def coding_eval_constrained_response(
     inputs = tokenizer(primed_text, return_tensors="pt").to(model.device)
     n_in_chat_only = tokenizer(text, return_tensors="pt")["input_ids"].shape[1]
 
+    do_sample = temperature > 0.0
+    if do_sample:
+        # Determinism per (seed, temperature): keep retries reproducible
+        try:
+            import random
+            import numpy as np
+            import torch as _torch
+
+            random.seed(seed)
+            np.random.seed(seed)
+            _torch.manual_seed(seed)
+            if _torch.cuda.is_available():
+                _torch.cuda.manual_seed_all(seed)
+        except ImportError:
+            pass
+
     bad_words_ids = build_bad_words_ids(tokenizer, forbidden) if suppress_forbidden else None
     generate_kwargs: Dict[str, Any] = dict(
         max_new_tokens=max_new_tokens,
-        do_sample=False,
-        temperature=1.0,
+        do_sample=do_sample,
+        temperature=max(temperature, 1e-5) if do_sample else 1.0,
+        top_p=0.95 if do_sample else 1.0,
         pad_token_id=tokenizer.eos_token_id,
     )
     if bad_words_ids:
@@ -209,15 +233,100 @@ def coding_eval_constrained_response(
     diag["response"] = response
     diag["prefix"] = forced_prefix
     diag["id"] = prompt_id
+    diag["seed"] = int(seed)
+    diag["temperature"] = float(temperature)
     if suppress_forbidden:
         diag["suppressed_token_count"] = len(bad_words_ids) if bad_words_ids else 0
     return diag
 
 
+# Default decode contexts for best-of-N retries: greedy first (deterministic,
+# fast), then mild sampling, then broader sampling. Matches the audited
+# distribution where best-of-N = 1.0 across all three gates (coding, cross-lane,
+# chemistry) at this fan-out.
+DEFAULT_BEST_OF_N_CONTEXTS: List[tuple] = [
+    (0, 0.0),
+    (0, 0.4),
+    (1, 0.4),
+    (0, 0.7),
+    (1, 0.7),
+]
+
+
+def coding_eval_best_of_n_response(
+    model,
+    tokenizer,
+    prompt: Dict[str, Any],
+    max_new_tokens: int = 240,
+    *,
+    system_prompt: str = DEFAULT_SYSTEM_PROMPT,
+    suppress_forbidden: bool = False,
+    decode_contexts: Optional[List[tuple]] = None,
+) -> Dict[str, Any]:
+    """Production best-of-N wrapper: try multiple (seed, temperature) decode
+    contexts; return the first passing verdict, or the last failing verdict
+    if none pass.
+
+    The chemistry audit (2026-05-06, n=75 on chem_eval_aspirin_route) showed
+    strict 0.88 / best-of-N 1.0 — every prompt passes in at least one decode
+    context, but greedy occasionally drifts into a forbidden token. This
+    wrapper closes that gap at inference time without retraining: it tries
+    greedy first (fast, deterministic, audited 180/180 path), and only
+    re-samples if greedy fails. With ``suppress_forbidden=True`` the wrapper
+    also masks forbidden tokens at decode time, making single-attempt
+    success much more likely.
+
+    Returns the first passing verdict from
+    ``coding_eval_constrained_response`` plus three additional keys:
+      - ``n_attempts``: how many decode contexts were tried
+      - ``first_passing_index``: index of the passing context, or None
+      - ``attempts``: list of (seed, temperature, ok) for each tried context
+    """
+
+    contexts = decode_contexts if decode_contexts is not None else DEFAULT_BEST_OF_N_CONTEXTS
+    if not contexts:
+        raise ValueError("decode_contexts must contain at least one (seed, temperature) tuple")
+
+    attempts: List[Dict[str, Any]] = []
+    last_diag: Optional[Dict[str, Any]] = None
+    first_passing_index: Optional[int] = None
+
+    for index, (seed, temperature) in enumerate(contexts):
+        diag = coding_eval_constrained_response(
+            model,
+            tokenizer,
+            prompt,
+            max_new_tokens=max_new_tokens,
+            system_prompt=system_prompt,
+            suppress_forbidden=suppress_forbidden,
+            seed=int(seed),
+            temperature=float(temperature),
+        )
+        attempts.append(
+            {
+                "seed": int(seed),
+                "temperature": float(temperature),
+                "ok": bool(diag.get("ok")),
+            }
+        )
+        last_diag = diag
+        if diag.get("ok"):
+            first_passing_index = index
+            break
+
+    final = dict(last_diag or {})
+    final["n_attempts"] = len(attempts)
+    final["first_passing_index"] = first_passing_index
+    final["attempts"] = attempts
+    return final
+
+
 __all__ = [
+    "DEFAULT_BEST_OF_N_CONTEXTS",
     "DEFAULT_SYSTEM_PROMPT",
     "build_bad_words_ids",
     "build_prefix_from_required",
+    "coding_eval_best_of_n_response",
     "coding_eval_constrained_response",
     "score_prompt",
 ]

@@ -11,9 +11,11 @@ import json
 from pathlib import Path
 
 from src.governance.coding_eval_constrained_decoding import (
+    DEFAULT_BEST_OF_N_CONTEXTS,
     DEFAULT_SYSTEM_PROMPT,
     build_bad_words_ids,
     build_prefix_from_required,
+    coding_eval_best_of_n_response,
     score_prompt,
 )
 
@@ -172,3 +174,199 @@ def test_build_bad_words_ids_skips_empty_strings():
     decoded_words = {tok._vocab.get(p) for p in (" invalid", "invalid")}
     flat_ids = {x for seq in bad for x in seq}
     assert flat_ids.issubset(decoded_words)
+
+
+# ---------------------------------------------------------------------------
+# Best-of-N wrapper (closes the strict-vs-best-of-N gap at inference time)
+# ---------------------------------------------------------------------------
+
+
+def test_default_best_of_n_contexts_starts_with_greedy():
+    """Greedy (seed=0, temp=0.0) must come first so the wrapper short-circuits
+    on the audited 180/180 path when possible — best-of-N is only invoked when
+    greedy fails.
+    """
+
+    assert DEFAULT_BEST_OF_N_CONTEXTS, "must have at least one default context"
+    first_seed, first_temp = DEFAULT_BEST_OF_N_CONTEXTS[0]
+    assert first_seed == 0
+    assert first_temp == 0.0
+    # All temperatures are non-negative; sampled contexts use temp > 0
+    assert all(t >= 0.0 for _, t in DEFAULT_BEST_OF_N_CONTEXTS)
+
+
+class _ScriptedTokenizer:
+    """Minimal tokenizer for the best-of-N harness.
+
+    Reports zero-length input ids (so ``n_in_chat_only`` is 0 and the
+    response decoder reads the entire mock output) and pass-through decode.
+    """
+
+    eos_token_id = 0
+
+    def apply_chat_template(self, msgs, tokenize=False, add_generation_prompt=True):
+        return "|".join(f"{m['role']}:{m['content']}" for m in msgs)
+
+    def __call__(self, text, return_tensors="pt"):
+        return _FakeTokenized([[]])
+
+    def encode(self, text, add_special_tokens=False):
+        text = text.strip()
+        return [hash(text) & 0xFFFF] if text else []
+
+    def decode(self, sliced, skip_special_tokens=True):
+        # Mocks return the response as a string already; pass through.
+        return sliced if isinstance(sliced, str) else "".join(sliced)
+
+
+class _FakeTokenized(dict):
+    """Stand-in for the BatchEncoding returned by HF tokenizers."""
+
+    def __init__(self, ids):
+        super().__init__()
+        self["input_ids"] = _FakeTensor(ids)
+        self._ids = ids
+
+    def to(self, device):
+        return self
+
+
+class _FakeTensor:
+    def __init__(self, data):
+        self._data = data
+
+    @property
+    def shape(self):
+        # data is list[list[int]] => (batch, seq)
+        return (len(self._data), len(self._data[0]) if self._data else 0)
+
+    def __getitem__(self, idx):
+        # Allow `out[0][n_in_chat_only:]` slicing in the response decoder
+        if isinstance(idx, tuple):
+            return self._data[idx[0]][idx[1]]
+        return self._data[idx]
+
+
+class _ScriptedModel:
+    """Mock model whose generate returns a different response each call.
+
+    The test passes responses that fail the contract until the configured
+    Nth call, where it returns a passing response. Lets us assert that
+    best-of-N short-circuits on the first pass.
+    """
+
+    class _Device:
+        def __repr__(self):
+            return "cpu"
+
+    device = _Device()
+
+    def __init__(self, responses):
+        self._responses = list(responses)
+        self.calls: list[dict] = []
+
+    def generate(self, **kwargs):
+        self.calls.append(
+            {
+                "do_sample": kwargs.get("do_sample"),
+                "temperature": kwargs.get("temperature"),
+                "has_bad_words_ids": "bad_words_ids" in kwargs,
+            }
+        )
+        idx = min(len(self.calls) - 1, len(self._responses) - 1)
+        return [self._responses[idx]]
+
+
+def _make_prompt():
+    return {
+        "id": "best_of_n_test",
+        "prompt": "test",
+        "required": ["return"],
+        "forbidden": ["TODO"],
+    }
+
+
+def test_best_of_n_short_circuits_on_first_pass():
+    """If greedy passes, only one decode call is made (matches audited path)."""
+
+    prompt = _make_prompt()
+    # A response containing required-tokens prefix + "return" passes
+    passing_response = "required-tokens: return :: return result"
+    model = _ScriptedModel([passing_response])
+    tok = _ScriptedTokenizer()
+
+    final = coding_eval_best_of_n_response(model, tok, prompt)
+
+    assert final["ok"] is True
+    assert final["n_attempts"] == 1
+    assert final["first_passing_index"] == 0
+    assert len(model.calls) == 1
+    assert model.calls[0]["do_sample"] is False  # greedy first
+
+
+def test_best_of_n_falls_through_to_sampling_when_greedy_fails():
+    """If greedy fails (e.g. drifts into a forbidden token), the wrapper
+    retries with sampled decode contexts."""
+
+    prompt = _make_prompt()
+    # Greedy emits TODO (forbidden); sample 1 emits valid response
+    failing = "required-tokens: return :: TODO return"
+    passing = "required-tokens: return :: return result"
+    model = _ScriptedModel([failing, passing])
+    tok = _ScriptedTokenizer()
+
+    final = coding_eval_best_of_n_response(model, tok, prompt)
+
+    assert final["ok"] is True
+    assert final["n_attempts"] == 2
+    assert final["first_passing_index"] == 1
+    # First call greedy, second call sampling
+    assert model.calls[0]["do_sample"] is False
+    assert model.calls[1]["do_sample"] is True
+
+
+def test_best_of_n_exhausts_all_contexts_when_no_pass():
+    """When every context fails, return the last verdict and report None for
+    first_passing_index. Production callers can act on this signal (escalate,
+    suppress, or fall back) rather than silently passing a failure."""
+
+    prompt = _make_prompt()
+    failing = "required-tokens: return :: TODO drift"
+    contexts = [(0, 0.0), (0, 0.4), (1, 0.7)]
+    model = _ScriptedModel([failing])
+    tok = _ScriptedTokenizer()
+
+    final = coding_eval_best_of_n_response(model, tok, prompt, decode_contexts=contexts)
+
+    assert final["ok"] is False
+    assert final["n_attempts"] == 3
+    assert final["first_passing_index"] is None
+    assert len(model.calls) == 3
+    assert all(a["ok"] is False for a in final["attempts"])
+
+
+def test_best_of_n_passes_suppress_forbidden_to_each_attempt():
+    """suppress_forbidden must propagate through every decode attempt, not
+    just the first — otherwise sampling retries lose the chemistry-gate fix."""
+
+    prompt = _make_prompt()
+    failing = "required-tokens: return :: TODO drift"
+    model = _ScriptedModel([failing])
+    tok = _ScriptedTokenizer()
+    contexts = [(0, 0.0), (0, 0.4)]
+
+    coding_eval_best_of_n_response(model, tok, prompt, suppress_forbidden=True, decode_contexts=contexts)
+
+    assert all(c["has_bad_words_ids"] for c in model.calls)
+
+
+def test_best_of_n_rejects_empty_decode_contexts():
+    prompt = _make_prompt()
+    model = _ScriptedModel(["whatever"])
+    tok = _ScriptedTokenizer()
+    try:
+        coding_eval_best_of_n_response(model, tok, prompt, decode_contexts=[])
+    except ValueError as exc:
+        assert "decode_contexts" in str(exc)
+    else:
+        raise AssertionError("expected ValueError for empty decode_contexts")
