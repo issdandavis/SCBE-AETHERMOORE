@@ -230,7 +230,105 @@ def build_aligned_foundations_prefix(
     return builder(str(map_name), str(value), str(tongue))
 
 
+DEFAULT_SYSTEM_PROMPT = (
+    "You are an SCBE-AETHERMOORE cross-lane responder. Emit only the canonical "
+    "envelope for the requested concept. Do not narrate, apologize, or restate "
+    "the question."
+)
+
+
+def aligned_foundations_constrained_response(
+    model,
+    tokenizer,
+    *,
+    map_name: str,
+    kind: str,
+    value: str = "",
+    tongue: str = "",
+    user_prompt: str,
+    system_prompt: str = DEFAULT_SYSTEM_PROMPT,
+    seed: int = 0,
+    temperature: float = 0.0,
+    max_new_tokens: int = 320,
+    use_shim: bool = True,
+):
+    """High-level helper: build a prefix from (map, kind, value, tongue),
+    prime the model continuation from it, generate, return the response.
+
+    Mirrors :func:`src.governance.coding_eval_constrained_decoding.coding_eval_constrained_response`
+    for the aligned-foundations cross-lane gate.
+
+    With ``use_shim=True`` (the production default) the model's continuation
+    starts after the canonical-anchor prefix, so the cross-lane extractor
+    for ``(map_name, kind)`` is satisfied by construction. With
+    ``use_shim=False`` the model is given the bare chat template and must
+    produce the envelope on its own — Audit B (2026-05-06) showed this
+    yields best-of-N = 0.125 on the failing 29 records, so this mode is
+    primarily a regression-testing baseline.
+
+    Returns a dict with:
+      - response: the decoded continuation (does NOT include the forced prefix)
+      - full_text: the prefix concatenated with the response
+      - prefix: the forced prefix actually injected (empty if use_shim=False
+        or if no shim is registered for the (map_name, kind) pair)
+      - map: the map name
+      - kind: the kind
+      - shim_used: bool, whether a non-empty prefix was injected
+    """
+
+    import torch
+
+    prefix = ""
+    if use_shim:
+        prefix = build_aligned_foundations_prefix(map_name, kind, value, tongue)
+
+    # Determinism per call
+    import random
+    import numpy as np
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+    msgs = []
+    if system_prompt:
+        msgs.append({"role": "system", "content": system_prompt})
+    msgs.append({"role": "user", "content": user_prompt})
+
+    chat_text = tokenizer.apply_chat_template(
+        msgs, tokenize=False, add_generation_prompt=True
+    )
+    primed = chat_text + prefix
+    inputs = tokenizer(primed, return_tensors="pt").to(model.device)
+    n_in_chat_only = tokenizer(chat_text, return_tensors="pt")["input_ids"].shape[1]
+
+    do_sample = temperature > 0.0
+    with torch.no_grad():
+        out = model.generate(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            temperature=max(temperature, 1e-5),
+            top_p=0.95 if do_sample else 1.0,
+            pad_token_id=tokenizer.eos_token_id,
+        )
+    full_text = tokenizer.decode(out[0][n_in_chat_only:], skip_special_tokens=True)
+    response = full_text[len(prefix):] if prefix and full_text.startswith(prefix) else full_text
+    return {
+        "response": response,
+        "full_text": full_text,
+        "prefix": prefix,
+        "map": map_name,
+        "kind": kind,
+        "shim_used": bool(prefix),
+    }
+
+
 __all__ = [
+    "DEFAULT_SYSTEM_PROMPT",
     "build_aligned_foundations_prefix",
     "supported_map_kinds",
+    "aligned_foundations_constrained_response",
 ]
