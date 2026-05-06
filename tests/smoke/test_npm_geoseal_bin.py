@@ -31,6 +31,9 @@ def test_npm_geoseal_bin_help() -> None:
     assert "nexus-dispatch" in proc.stdout
     assert "agent-io-contract" in proc.stdout
     assert "tokenizer-code-lanes" in proc.stdout
+    assert "calc" in proc.stdout
+    assert "dimensions" in proc.stdout
+    assert "web-search" in proc.stdout
 
 
 def test_npm_geoseal_bin_version_matches_package() -> None:
@@ -58,7 +61,9 @@ def test_npm_geoseal_bin_custom_commands_json() -> None:
     payload = json.loads(proc.stdout)
     assert payload["schema_version"] == "geoseal_custom_commands_v1"
     assert payload["count"] >= 1
-    assert any(command["name"] == "harness-benchmark" for command in payload["commands"])
+    assert any(
+        command["name"] == "harness-benchmark" for command in payload["commands"]
+    )
 
 
 def test_npm_geoseal_bin_permissions_json() -> None:
@@ -223,3 +228,61 @@ def test_npm_geoseal_bin_code_lanes_roundtrip(tmp_path: Path) -> None:
     for row in decode_payload["written"]:
         assert Path(row["path"]).exists()
         assert Path(row["binary_path"]).exists()
+
+
+def test_npm_geoseal_bin_local_toolbox_math_and_dimensions() -> None:
+    calc_proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "calc",
+            "--expr",
+            "sqrt(2)^2 + phi",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+    assert calc_proc.returncode == 0, calc_proc.stderr
+    calc_payload = json.loads(calc_proc.stdout)
+    assert calc_payload["schema_version"] == "geoseal_calc_v1"
+    assert calc_payload["ok"] is True
+    assert abs(calc_payload["value"] - (2 + calc_payload["constants"]["phi"])) < 1e-12
+
+    dims_proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "dimensions",
+            "--unit",
+            "kg*m/s^2",
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+    assert dims_proc.returncode == 0, dims_proc.stderr
+    dims_payload = json.loads(dims_proc.stdout)
+    assert dims_payload["schema_version"] == "geoseal_dimensional_analysis_v1"
+    assert dims_payload["vector"] == [1, 1, -2, 0, 0, 0, 0]
+    assert dims_payload["canonical"] == "M L T^-2"
+
+
+def test_npm_geoseal_bin_toolbox_json() -> None:
+    proc = subprocess.run(
+        ["node", str(ROOT / "bin" / "geoseal.cjs"), "toolbox", "--json"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "geoseal_toolbox_v1"
+    assert any(tool["command"] == "calc" for tool in payload["local_tools"])
+    assert any(tool["command"] == "web-search" for tool in payload["network_tools"])
+    assert payload["safety"]["secrets_to_remote_models"] == "forbid"

@@ -65,6 +65,11 @@ Useful commands:
   geoseal project-scaffold --content "build a pacman style web game" --language python --output-dir artifacts/pacman --json
   geoseal code-roundtrip --source hello.rs --lang rust --tongue RU --execute --json
   geoseal binary-to-tmatrix --json "01101000 01101001"
+  geoseal calc --expr "sqrt(2)^2 + phi" --json
+  geoseal dimensions --unit "kg*m/s^2" --json
+  geoseal web-search --query "site:docs.python.org pathlib" --json
+  geoseal url-fetch --url https://example.com --json
+  geoseal toolbox --json
 
 Flags:
   --api-base <url>       GeoSeal API base URL
@@ -146,6 +151,250 @@ function writeJsonOrText(flags, payload, text) {
   } else {
     process.stdout.write(text.endsWith("\n") ? text : `${text}\n`);
   }
+}
+
+function numericFlag(flags, name, fallback) {
+  const raw = flags[name];
+  if (raw === undefined || raw === true || raw === "") return fallback;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function makeScanner(input) {
+  return {
+    text: String(input || ""),
+    index: 0,
+    peek() {
+      return this.text[this.index] || "";
+    },
+    skipWs() {
+      while (/\s/.test(this.peek())) this.index += 1;
+    },
+    match(value) {
+      this.skipWs();
+      if (this.text.slice(this.index, this.index + value.length) === value) {
+        this.index += value.length;
+        return true;
+      }
+      return false;
+    },
+    number() {
+      this.skipWs();
+      const match = /^(\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/i.exec(this.text.slice(this.index));
+      if (!match) return null;
+      this.index += match[0].length;
+      return Number(match[0]);
+    },
+    identifier() {
+      this.skipWs();
+      const match = /^[A-Za-z_][A-Za-z0-9_]*/.exec(this.text.slice(this.index));
+      if (!match) return null;
+      this.index += match[0].length;
+      return match[0];
+    },
+  };
+}
+
+function evaluateExpression(expression) {
+  const scanner = makeScanner(expression);
+  const constants = {
+    pi: Math.PI,
+    e: Math.E,
+    phi: (1 + Math.sqrt(5)) / 2,
+    tau: Math.PI * 2,
+  };
+  const functions = {
+    abs: Math.abs,
+    acos: Math.acos,
+    asin: Math.asin,
+    atan: Math.atan,
+    ceil: Math.ceil,
+    cos: Math.cos,
+    exp: Math.exp,
+    floor: Math.floor,
+    ln: Math.log,
+    log: Math.log10,
+    max: Math.max,
+    min: Math.min,
+    pow: Math.pow,
+    round: Math.round,
+    sin: Math.sin,
+    sqrt: Math.sqrt,
+    tan: Math.tan,
+  };
+
+  function parseExpression() {
+    let value = parseTerm();
+    while (true) {
+      if (scanner.match("+")) value += parseTerm();
+      else if (scanner.match("-")) value -= parseTerm();
+      else return value;
+    }
+  }
+
+  function parseTerm() {
+    let value = parsePower();
+    while (true) {
+      if (scanner.match("*")) value *= parsePower();
+      else if (scanner.match("/")) value /= parsePower();
+      else return value;
+    }
+  }
+
+  function parsePower() {
+    let value = parseUnary();
+    if (scanner.match("^")) {
+      value = Math.pow(value, parsePower());
+    }
+    return value;
+  }
+
+  function parseUnary() {
+    if (scanner.match("+")) return parseUnary();
+    if (scanner.match("-")) return -parseUnary();
+    return parsePrimary();
+  }
+
+  function parseArgs() {
+    const args = [];
+    if (scanner.match(")")) return args;
+    while (true) {
+      args.push(parseExpression());
+      if (scanner.match(")")) return args;
+      if (!scanner.match(",")) throw new Error("Expected ',' or ')' in function call");
+    }
+  }
+
+  function parsePrimary() {
+    const number = scanner.number();
+    if (number !== null) return number;
+    if (scanner.match("(")) {
+      const value = parseExpression();
+      if (!scanner.match(")")) throw new Error("Expected ')'");
+      return value;
+    }
+    const name = scanner.identifier();
+    if (name) {
+      const key = name.toLowerCase();
+      if (scanner.match("(")) {
+        const fn = functions[key];
+        if (!fn) throw new Error(`Unknown function: ${name}`);
+        const args = parseArgs();
+        return fn(...args);
+      }
+      if (Object.prototype.hasOwnProperty.call(constants, key)) return constants[key];
+      throw new Error(`Unknown constant: ${name}`);
+    }
+    throw new Error(`Unexpected token near '${scanner.text.slice(scanner.index, scanner.index + 16)}'`);
+  }
+
+  const result = parseExpression();
+  scanner.skipWs();
+  if (scanner.index !== scanner.text.length) {
+    throw new Error(`Unexpected trailing input near '${scanner.text.slice(scanner.index, scanner.index + 16)}'`);
+  }
+  if (!Number.isFinite(result)) throw new Error("Expression did not produce a finite number");
+  return result;
+}
+
+const DIMENSION_LABELS = ["M", "L", "T", "I", "Theta", "N", "J"];
+const UNIT_DIMENSIONS = {
+  kg: [1, 0, 0, 0, 0, 0, 0],
+  g: [1, 0, 0, 0, 0, 0, 0],
+  m: [0, 1, 0, 0, 0, 0, 0],
+  meter: [0, 1, 0, 0, 0, 0, 0],
+  metre: [0, 1, 0, 0, 0, 0, 0],
+  s: [0, 0, 1, 0, 0, 0, 0],
+  sec: [0, 0, 1, 0, 0, 0, 0],
+  A: [0, 0, 0, 1, 0, 0, 0],
+  amp: [0, 0, 0, 1, 0, 0, 0],
+  K: [0, 0, 0, 0, 1, 0, 0],
+  mol: [0, 0, 0, 0, 0, 1, 0],
+  cd: [0, 0, 0, 0, 0, 0, 1],
+  N: [1, 1, -2, 0, 0, 0, 0],
+  newton: [1, 1, -2, 0, 0, 0, 0],
+  J: [1, 2, -2, 0, 0, 0, 0],
+  joule: [1, 2, -2, 0, 0, 0, 0],
+  W: [1, 2, -3, 0, 0, 0, 0],
+  watt: [1, 2, -3, 0, 0, 0, 0],
+  Pa: [1, -1, -2, 0, 0, 0, 0],
+  pascal: [1, -1, -2, 0, 0, 0, 0],
+  C: [0, 0, 1, 1, 0, 0, 0],
+  V: [1, 2, -3, -1, 0, 0, 0],
+  ohm: [1, 2, -3, -2, 0, 0, 0],
+  Hz: [0, 0, -1, 0, 0, 0, 0],
+  rad: [0, 0, 0, 0, 0, 0, 0],
+  one: [0, 0, 0, 0, 0, 0, 0],
+};
+
+const QUANTITY_DIMENSIONS = {
+  force: [1, 1, -2, 0, 0, 0, 0],
+  energy: [1, 2, -2, 0, 0, 0, 0],
+  power: [1, 2, -3, 0, 0, 0, 0],
+  pressure: [1, -1, -2, 0, 0, 0, 0],
+  velocity: [0, 1, -1, 0, 0, 0, 0],
+  acceleration: [0, 1, -2, 0, 0, 0, 0],
+  charge: [0, 0, 1, 1, 0, 0, 0],
+  voltage: [1, 2, -3, -1, 0, 0, 0],
+};
+
+function addDims(left, right, scale = 1) {
+  return left.map((value, index) => value + scale * right[index]);
+}
+
+function scaleDims(vector, scale) {
+  return vector.map((value) => value * scale);
+}
+
+function formatDimensions(vector) {
+  const parts = vector
+    .map((value, index) => [DIMENSION_LABELS[index], value])
+    .filter((row) => row[1] !== 0)
+    .map(([label, value]) => `${label}${value === 1 ? "" : `^${value}`}`);
+  return parts.length ? parts.join(" ") : "dimensionless";
+}
+
+function analyzeDimensions(unitExpression) {
+  const scanner = makeScanner(unitExpression || "one");
+
+  function parseExpression() {
+    let value = parseFactor();
+    while (true) {
+      if (scanner.match("*")) value = addDims(value, parseFactor());
+      else if (scanner.match("/")) value = addDims(value, parseFactor(), -1);
+      else return value;
+    }
+  }
+
+  function parseFactor() {
+    let value = parsePrimary();
+    if (scanner.match("^")) {
+      const exponent = scanner.number();
+      if (!Number.isFinite(exponent)) throw new Error("Expected numeric exponent after '^'");
+      value = scaleDims(value, exponent);
+    }
+    return value;
+  }
+
+  function parsePrimary() {
+    if (scanner.match("(")) {
+      const value = parseExpression();
+      if (!scanner.match(")")) throw new Error("Expected ')' in unit expression");
+      return value;
+    }
+    const name = scanner.identifier();
+    if (!name) throw new Error(`Expected unit near '${scanner.text.slice(scanner.index, scanner.index + 16)}'`);
+    const vector = UNIT_DIMENSIONS[name] || UNIT_DIMENSIONS[name.toLowerCase()] || QUANTITY_DIMENSIONS[name.toLowerCase()];
+    if (!vector) throw new Error(`Unknown unit or quantity: ${name}`);
+    return vector;
+  }
+
+  const vector = parseExpression();
+  scanner.skipWs();
+  if (scanner.index !== scanner.text.length) {
+    throw new Error(`Unexpected trailing unit input near '${scanner.text.slice(scanner.index, scanner.index + 16)}'`);
+  }
+  return vector;
 }
 
 function parseFrontmatter(text) {
@@ -390,6 +639,219 @@ function runDecodeCodeLanes(flags, positionals) {
   writeJsonOrText(flags, payload, `Decoded ${lanes.length} code lanes.`);
 }
 
+function runCalc(flags, positionals) {
+  const expression = String(flags.expr || flags.expression || positionals.slice(1).join(" ")).trim();
+  if (!expression) {
+    const payload = {
+      schema_version: "geoseal_calc_v1",
+      ok: false,
+      error: "missing_expression",
+      message: "Pass --expr, for example: geoseal calc --expr \"sqrt(2)^2 + phi\" --json",
+    };
+    writeJsonOrText(flags, payload, payload.message);
+    process.exitCode = 2;
+    return;
+  }
+  const value = evaluateExpression(expression);
+  const payload = {
+    schema_version: "geoseal_calc_v1",
+    ok: true,
+    expression,
+    value,
+    rounded_12: Number(value.toFixed(12)),
+    constants: {
+      phi: (1 + Math.sqrt(5)) / 2,
+      pi: Math.PI,
+      tau: Math.PI * 2,
+    },
+  };
+  writeJsonOrText(flags, payload, `${payload.rounded_12}`);
+}
+
+function runDimensions(flags, positionals) {
+  const unit = String(flags.unit || flags.quantity || positionals.slice(1).join(" ") || "one").trim();
+  const vector = analyzeDimensions(unit);
+  const payload = {
+    schema_version: "geoseal_dimensional_analysis_v1",
+    ok: true,
+    input: unit,
+    labels: DIMENSION_LABELS,
+    vector,
+    canonical: formatDimensions(vector),
+    basis: {
+      M: "mass",
+      L: "length",
+      T: "time",
+      I: "electric_current",
+      Theta: "temperature",
+      N: "amount_of_substance",
+      J: "luminous_intensity",
+    },
+  };
+  writeJsonOrText(flags, payload, `${unit} => ${payload.canonical}`);
+}
+
+function flattenDuckRelated(items, limit, rows = []) {
+  for (const item of items || []) {
+    if (rows.length >= limit) break;
+    if (Array.isArray(item.Topics)) {
+      flattenDuckRelated(item.Topics, limit, rows);
+      continue;
+    }
+    if (item.Text || item.FirstURL) {
+      rows.push({
+        title: String(item.Text || "").split(" - ")[0].slice(0, 180),
+        snippet: String(item.Text || "").slice(0, 600),
+        url: String(item.FirstURL || ""),
+      });
+    }
+  }
+  return rows;
+}
+
+async function runWebSearch(flags, positionals) {
+  const query = String(flags.query || flags.q || positionals.slice(1).join(" ")).trim();
+  if (!query) {
+    const payload = {
+      schema_version: "geoseal_web_search_v1",
+      ok: false,
+      error: "missing_query",
+      message: "Pass --query, for example: geoseal web-search --query \"site:docs.python.org pathlib\" --json",
+    };
+    writeJsonOrText(flags, payload, payload.message);
+    process.exitCode = 2;
+    return;
+  }
+  const limit = Math.max(1, Math.min(10, numericFlag(flags, "limit", 5)));
+  const url = new URL("https://api.duckduckgo.com/");
+  url.searchParams.set("q", query);
+  url.searchParams.set("format", "json");
+  url.searchParams.set("no_html", "1");
+  url.searchParams.set("skip_disambig", "1");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), Math.max(1000, numericFlag(flags, "timeout-ms", 10000)));
+  try {
+    const response = await fetch(url, {
+      headers: { "user-agent": "scbe-geoseal-cli/4" },
+      signal: controller.signal,
+    });
+    const text = await response.text();
+    let data = {};
+    try {
+      data = JSON.parse(text);
+    } catch (_err) {
+      data = {};
+    }
+    const results = [];
+    if (data.AbstractText || data.AbstractURL) {
+      results.push({
+        title: String(data.Heading || query),
+        snippet: String(data.AbstractText || "").slice(0, 1000),
+        url: String(data.AbstractURL || ""),
+      });
+    }
+    flattenDuckRelated(data.RelatedTopics, limit, results);
+    const payload = {
+      schema_version: "geoseal_web_search_v1",
+      ok: response.ok,
+      provider: "duckduckgo_instant_answer",
+      query,
+      status: response.status,
+      result_count: Math.min(results.length, limit),
+      results: results.slice(0, limit),
+      note: "Public no-key search surface. Use url-fetch on a selected result for page-level inspection.",
+    };
+    writeJsonOrText(flags, payload, payload.results.map((row) => `${row.title}\n${row.url}`).join("\n\n") || "No instant-answer results.");
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function stripHtml(text) {
+  return String(text || "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function runUrlFetch(flags, positionals) {
+  const rawUrl = String(flags.url || positionals[1] || "").trim();
+  if (!rawUrl) {
+    const payload = {
+      schema_version: "geoseal_url_fetch_v1",
+      ok: false,
+      error: "missing_url",
+      message: "Pass --url, for example: geoseal url-fetch --url https://example.com --json",
+    };
+    writeJsonOrText(flags, payload, payload.message);
+    process.exitCode = 2;
+    return;
+  }
+  const url = new URL(rawUrl);
+  if (!["http:", "https:"].includes(url.protocol)) {
+    throw new Error("url-fetch only supports http and https URLs");
+  }
+  const maxChars = Math.max(200, Math.min(20000, numericFlag(flags, "max-chars", 4000)));
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), Math.max(1000, numericFlag(flags, "timeout-ms", 10000)));
+  try {
+    const response = await fetch(url, {
+      headers: { "user-agent": "scbe-geoseal-cli/4" },
+      signal: controller.signal,
+    });
+    const contentType = String(response.headers.get("content-type") || "");
+    const raw = await response.text();
+    const text = contentType.includes("html") ? stripHtml(raw) : raw.replace(/\s+/g, " ").trim();
+    const payload = {
+      schema_version: "geoseal_url_fetch_v1",
+      ok: response.ok,
+      url: url.toString(),
+      status: response.status,
+      content_type: contentType,
+      byte_count: Buffer.byteLength(raw, "utf8"),
+      text_preview: text.slice(0, maxChars),
+      sha256: sha256Hex(raw),
+    };
+    writeJsonOrText(flags, payload, payload.text_preview);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function runToolbox(flags) {
+  const payload = {
+    schema_version: "geoseal_toolbox_v1",
+    ok: true,
+    purpose: "Small-agent mechanical tool surface for local verification, web lookup, code transport, and API routing.",
+    local_tools: [
+      { command: "calc", purpose: "Safe arithmetic with constants and math functions.", example: 'geoseal calc --expr "sqrt(2)^2 + phi" --json' },
+      { command: "dimensions", purpose: "Dimensional analysis over SI base and common derived units.", example: 'geoseal dimensions --unit "kg*m/s^2" --json' },
+      { command: "tokenizer-code-lanes", purpose: "Encode code commands into tongue-scoped binary/hex lanes.", example: "geoseal tokenizer-code-lanes --command shl --tongues KO,AV --json" },
+      { command: "verify-code-lanes", purpose: "Verify tokenizer lane packets.", example: "geoseal verify-code-lanes --input-file lanes.json --json" },
+      { command: "decode-code-lanes", purpose: "Decode tokenizer lane packets to text/binary artifacts.", example: "geoseal decode-code-lanes --input-file lanes.json --write-binary --json" },
+    ],
+    network_tools: [
+      { command: "web-search", purpose: "Public no-key web search via DuckDuckGo Instant Answer.", example: 'geoseal web-search --query "site:docs.python.org pathlib" --json' },
+      { command: "url-fetch", purpose: "Fetch and hash public HTTP/HTTPS content previews.", example: "geoseal url-fetch --url https://example.com --json" },
+      { command: "github", purpose: "Repo/issue helper routed through existing Python passthrough when installed.", example: "geoseal github --mode status --json" },
+      { command: "polymarket", purpose: "Prediction-market research routed through existing Python passthrough when installed.", example: "geoseal polymarket --mode search --query ai --json" },
+    ],
+    api_tools: Object.keys(COMMAND_MAP).sort(),
+    safety: {
+      secrets_to_remote_models: "forbid",
+      default_network_mode: "public_no_key",
+      shell_execution: "not provided by these local tools",
+    },
+  };
+  writeJsonOrText(flags, payload, payload.local_tools.map((tool) => `${tool.command}: ${tool.purpose}`).join("\n"));
+}
+
 const DEFAULT_SERVICE_DIR = path.join(ROOT, "artifacts", "geoseal_service");
 
 function serviceOutputDir(flags) {
@@ -509,6 +971,11 @@ function runDoctor(flags) {
     "verify-code-lanes",
     "decode-code-lanes",
     "ai2ai-bridge",
+    "calc",
+    "dimensions",
+    "web-search",
+    "url-fetch",
+    "toolbox",
   ];
   const payload = {
     ok: true,
@@ -812,6 +1279,26 @@ async function main() {
   }
   if (command === "decode-code-lanes") {
     runDecodeCodeLanes(flags, positionals.slice(1));
+    return;
+  }
+  if (command === "calc") {
+    runCalc(flags, positionals);
+    return;
+  }
+  if (command === "dimensions") {
+    runDimensions(flags, positionals);
+    return;
+  }
+  if (command === "web-search") {
+    await runWebSearch(flags, positionals);
+    return;
+  }
+  if (command === "url-fetch") {
+    await runUrlFetch(flags, positionals);
+    return;
+  }
+  if (command === "toolbox") {
+    runToolbox(flags);
     return;
   }
 
