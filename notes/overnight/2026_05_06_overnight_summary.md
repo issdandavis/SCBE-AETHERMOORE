@@ -118,6 +118,10 @@ not a quality level.
 | `b9c9d002` | Multi-seed sampling audit for aligned-foundations gate |
 | `009ff710` | Aligned-foundations cross-lane constrained-decoding shim + tests |
 | `b91d84cd` | Wire shim into audit script via SCBE_AUDIT_USE_SHIM env var |
+| `fa1af6fb` | Overnight summary doc (this file) |
+| `c3ad01e9` | Dispatcher auto-uploads shim alongside cross-lane to dataset repo |
+| `6f30f81d` | Findings memo: cross-lane gate solved by shim |
+| `0937d13c` | Findings revision: Audit B confirms bias-bound, not variance |
 | `d4f1a365` | (parallel session) shim + contract + dispatch hardening for coding lane |
 
 All commits are local on `chore/release-4.0.3-housekeeping`. Nothing
@@ -125,23 +129,31 @@ pushed to remote.
 
 ## What's pending
 
-1. **Aligned-foundations job 69fb011a finishes + adapter pushes to HF Hub.**
-   ETA from 09:33 UTC: ~30 more min. A wakeup is scheduled for 09:52 UTC
-   (2400s) to auto-dispatch the audit jobs.
+**Resolved during the session.** The 3 audit jobs ran and returned:
 
-2. **Audit jobs to dispatch once adapter is live:**
-   - Model-only baseline: `SCBE_AUDIT_USE_SHIM=false`, mode=full
-     (measures variance under sampling — predict near-zero, since greedy
-     was already deterministic 0.891)
-   - Shim-augmented: `SCBE_AUDIT_USE_SHIM=true`, mode=full
-     (predicted result: 1.000 with tight CI, mirroring the prefix-only
-     structural audit)
+- **Audit A** (full + shim + greedy, job `69fb1021`): **257/257 = 1.000,
+  Wilson CI [0.985, 1.0]**. Shim closes gate from 0.891 → 1.000
+  end-to-end on real Qwen2.5-7B + LoRA. Empty fail_clusters.
+- **Audit C** (failing-mode + shim + sampling, job `69fb1045`):
+  greedy filter found **0/257 failing under shim** before sweep started.
+  Confirms Audit A across the full 257-row holdout, not just the 49
+  records the structural prefix-only audit covered.
+- **Audit B** (failing-mode + no shim + sampling, job `69fb102e`):
+  **8/435 = 0.018 strict, best-of-N = 0.125**. Out of 29 failing records,
+  only ~3.6 ever pass at any (seed, temperature). Most pairs
+  (cross_braid_code/rationale, /pair, /witness_code, spirit_narrative
+  /rationale, convergence_action/anchor) have strict 0/N AND best-of-N
+  0/N across the full sampling matrix.
 
-3. **Decision after results:** if shim-augmented hits the predicted ceiling,
-   the cross-lane gate is solved without retraining. If not, the
-   continuation drift (model emits forbidden anchors after the prefix) is
-   the remaining failure mode and needs a more aggressive approach
-   (logit suppression on forbidden tokens, or v2 SFT shard).
+**Audit B revises the bias-variance framing.** The failing records are
+not "high-variance generation tasks the model gets right sometimes" —
+they're tasks the trained model literally cannot produce at any decode
+setting. The shim is solving a capability hole, not polishing decoder
+noise. **Sampling temperature is not the solution.**
+
+Findings memo: `notes/overnight/2026_05_06_findings.md` (commits
+`6f30f81d` + `0937d13c`). Result files on HF dataset
+`issdandavis/scbe-eval-results`.
 
 ## Decisions deferred to user
 
