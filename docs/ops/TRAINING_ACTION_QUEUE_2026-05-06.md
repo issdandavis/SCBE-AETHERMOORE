@@ -1,27 +1,37 @@
 # Training Action Queue - 2026-05-06
 
-Status: live operator snapshot after launch-route cleanup and topology harness parking.
+Status: live operator snapshot after launch-route cleanup, topology harness
+parking, and HF v6f completion scoring.
 
 ## Current Live Run
 
-HF job `69fb7223317220dbbd1a53da` is running:
+HF job `69fb7223317220dbbd1a53da` completed successfully:
 
 - Profile: `scbe-coding-primary-7b-qlora-v6f`
 - Flavor: `l4x1`
 - Adapter repo: `issdandavis/scbe-coding-primary-7b-qlora-v6f`
 - Packet: `artifacts/hf_coding_agent_jobs/scbe-coding-primary-7b-qlora-v6f/20260506T165343Z/job_packet.json`
 - Idempotency key: `a038fa1580932da5ba047e2c6349d027b63fa3116eb7610f60065e84e7ea4eae`
+- Stage: `COMPLETED`
+- Adapter pushed: yes
+- Gate: `coding_verification_unseen_eval_v1`
+- Gate result: 12/12 pass, production shim enabled, best-of-N enabled
+- Raw model pass before shim: 1/12
 
-Observed log tail:
+Final log summary:
 
 ```text
 auth passed as issdandavis
 trainable_parameters: 10,092,544 / 7,625,709,056 = 0.1323%
-loss 3.299 -> 0.0489 by epoch 8.972
+loss 3.299 -> 0.0323 by epoch 17.24
+train_loss: 0.3646
+gate_overall_pass: true
+gate_pass_rate: 1.0
+pushed_adapter: true
 ```
 
-Do not dispatch another HF coding-primary run until this job reaches a final
-state and its gate report is scored.
+Do not dispatch another HF coding-primary run from this same packet. The next
+useful step is a larger frozen eval or residue mining, not a blind rerun.
 
 Monitor:
 
@@ -30,7 +40,7 @@ python scripts/system/dispatch_coding_agent_hf_job.py status --job-id 69fb722331
 hf jobs logs 69fb7223317220dbbd1a53da
 ```
 
-After completion:
+Scoring commands already run:
 
 ```powershell
 python scripts/eval/score_agentic_training_system.py --hf-job-id 69fb7223317220dbbd1a53da --write --json
@@ -85,23 +95,29 @@ refreshes:
 - `artifacts/training_hub/model_score_coordination_matrix.json`
 - `artifacts/training_hub/model_score_coordination_matrix.md`
 
-Night watch with the active HF job reports:
+Night watch after HF completion reports:
 
-- HF: running
+- HF: complete
 - Kaggle: attention required
 - Bijective focused tests: 69/69 pass
 - Rank: `Dungeon Clear`
 - Overall: `72.4`
 - Model promotion score: `76.9`
+- HF promotion gate: pass
+- HF adapter promoted: pass
 
 The score is dragged down by release-clean-board / dirty-tree state and packet
 trace determinism, not by the focused bijective tests.
 
 ## Next Move
 
-Wait for HF job `69fb7223317220dbbd1a53da` to finish, score it, then decide:
+Treat `scbe-coding-primary-7b-qlora-v6f` as a route-specific promoted adapter
+under the production shim. Do not flatten it into every coding route yet.
 
-- promote if gate report passes and adapter push succeeds;
-- mine residues if gate fails;
-- do not rerun blindly if failure is continuation/scaffold mismatch rather than
-  data floor.
+Next useful work:
+
+- expand the frozen coding gate beyond 12 prompts before making broad promotion
+  claims;
+- mine the 11 raw no-shim failures into repair data;
+- keep Kaggle on hold until a modern-GPU retry is worth spending;
+- fix packet trace byte determinism if release-score improvement matters.
