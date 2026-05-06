@@ -39,6 +39,8 @@ ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_aligned_foundations_jobs"
 ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
 CROSS_LANE_SRC = REPO_ROOT / "src" / "governance" / "aligned_foundations_cross_lane.py"
 CROSS_LANE_FILENAME = "aligned_foundations_cross_lane.py"
+SHIM_SRC = REPO_ROOT / "src" / "governance" / "aligned_foundations_constrained_decoding.py"
+SHIM_FILENAME = "aligned_foundations_constrained_decoding.py"
 DEFAULT_DATASET_REPO = "issdandavis/scbe-aligned-foundations-sft"
 DEFAULT_GATE_HOLDOUT = "drill_langues_full_holdout.sft.jsonl"
 
@@ -780,6 +782,33 @@ def upload_training_dataset(profile: dict[str, Any], dataset_repo: str) -> list[
     if result.returncode != 0:
         raise RuntimeError(
             f"Cross-lane primitives upload failed: {result.stderr.strip()}"
+        )
+    # Also upload the constrained-decoding shim if present, so multi-seed
+    # audits can fetch it at runtime (USE_SHIM=true). Optional: missing
+    # shim is a warning, not a failure.
+    if SHIM_SRC.exists():
+        command = [
+            "hf",
+            "upload",
+            dataset_repo,
+            str(SHIM_SRC),
+            SHIM_FILENAME,
+            "--repo-type",
+            "dataset",
+            "--private",
+            "--commit-message",
+            "Update SCBE aligned-foundations constrained-decoding shim",
+        ]
+        result = subprocess.run(
+            command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False
+        )
+        uploads.append(
+            {
+                "name": SHIM_FILENAME,
+                "returncode": result.returncode,
+                "stdout": result.stdout.strip()[-1000:],
+                "stderr": result.stderr.strip()[-1000:],
+            }
         )
     return uploads
 
