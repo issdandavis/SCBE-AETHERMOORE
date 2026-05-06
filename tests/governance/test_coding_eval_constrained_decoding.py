@@ -93,6 +93,102 @@ def test_required_token_filtering_does_not_drop_non_overlapping_tokens():
 
 
 # ---------------------------------------------------------------------------
+# Collision-aware scaffolding (caught geoshell_pair_agent contract self-trip)
+# ---------------------------------------------------------------------------
+
+
+def test_canonical_scaffold_used_when_no_collision():
+    """For contracts that don't forbid 'token'/'tokens'/':', the canonical
+    'required-tokens:' scaffold must be preserved bit-for-bit. Otherwise the
+    audited 180/180 coding-eval prefix changes and breaks reproducibility."""
+
+    prefix = build_prefix_from_required(["foo", "bar"], forbidden=["TODO", "planned"])
+    assert prefix.startswith("required-tokens: ")
+    assert prefix.endswith(" ::")
+
+
+def test_scaffold_falls_back_when_forbidden_substring_matches_token():
+    """If the forbidden list contains 'token' (real geoshell case), the
+    canonical 'required-tokens:' header would self-trigger the forbidden
+    check. Fallback scaffold must not contain 'token'."""
+
+    prefix = build_prefix_from_required(["foo", "bar"], forbidden=["token", "secret"])
+    assert "token" not in prefix.lower()
+    # Fallback should still surface the required tokens
+    assert "foo" in prefix
+    assert "bar" in prefix
+
+
+def test_scaffold_falls_back_when_forbidden_substring_matches_colon():
+    """A contract forbidding ':' would trip on the canonical '::' trailer.
+    Fallback must avoid that character entirely."""
+
+    prefix = build_prefix_from_required(["foo"], forbidden=[":"])
+    assert ":" not in prefix
+
+
+def test_scaffold_collision_does_not_drop_required_tokens():
+    """Collision-aware scaffolding must not silently lose required tokens
+    that would have been rendered with the canonical scaffold."""
+
+    required = ["abc", "xyz", "lmn"]
+    forbidden = ["token"]  # forces fallback scaffold
+    prefix = build_prefix_from_required(required, forbidden)
+    for tok in required:
+        assert tok in prefix, f"{tok!r} dropped from fallback {prefix!r}"
+
+
+def test_geoshell_event_shape_contract_passes_with_collision_fix():
+    """Real-world regression: geoshell_pair_agent_eval_contract.json,
+    prompt 'geoshell_event_shape', forbids 'token'. Before the fix, the
+    canonical scaffold tripped its own forbidden check at structural ceiling.
+    """
+
+    geoshell = REPO_ROOT / "config" / "model_training" / "geoshell_pair_agent_eval_contract.json"
+    if not geoshell.exists():
+        return  # contract not in this checkout
+    contract = json.loads(geoshell.read_text(encoding="utf-8"))
+    target = next((p for p in contract["prompts"] if p.get("id") == "geoshell_event_shape"), None)
+    if target is None:
+        return
+    prefix = build_prefix_from_required(target.get("required", []), target.get("forbidden", []))
+    verdict = score_prompt(target, prefix)
+    assert not verdict["triggered_forbidden"], f"prefix self-triggered: {verdict}"
+
+
+def test_structural_ceiling_holds_across_all_eval_contracts():
+    """Drift guard: every prompt in every config/model_training/*_eval_contract.json
+    that has a non-empty required list must clear its own structural ceiling
+    when scored against build_prefix_from_required(required, forbidden) alone.
+
+    Catches: contract authors forbidding scaffold-colliding substrings,
+    contracts with internally contradictory required+forbidden, scaffold
+    fallback bugs.
+    """
+
+    contract_dir = REPO_ROOT / "config" / "model_training"
+    contracts = sorted(contract_dir.glob("*_eval_contract.json"))
+    assert contracts, "no eval contracts found — repo layout may have changed"
+
+    failures: list[tuple[str, str, list[str], list[str]]] = []
+    for path in contracts:
+        contract = json.loads(path.read_text(encoding="utf-8"))
+        for prompt in contract.get("prompts", []) or []:
+            required = prompt.get("required", []) or []
+            forbidden = prompt.get("forbidden", []) or []
+            if not required:
+                continue
+            kept = [t for t in required if not any(f.lower() in t.lower() for f in forbidden)]
+            prefix = build_prefix_from_required(required, forbidden)
+            verdict = score_prompt(prompt, prefix)
+            if not verdict["ok"]:
+                unexpected = [m for m in verdict["missing_required"] if m in kept]
+                if unexpected or verdict["triggered_forbidden"]:
+                    failures.append((path.name, prompt.get("id", "?"), unexpected, verdict["triggered_forbidden"]))
+    assert not failures, f"structural ceiling failures: {failures}"
+
+
+# ---------------------------------------------------------------------------
 # Logit-suppression extension (closes the chemistry methodology limit)
 # ---------------------------------------------------------------------------
 
