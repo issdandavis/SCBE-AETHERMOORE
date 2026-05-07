@@ -25,8 +25,8 @@ If a package depends on a hosted route or private asset, the access information 
 ## Recovery
 
 - Missing bundle or expired link:
-  - `aethermoregames@pm.me`
+  - `ai@aethermoore.com`
   - subject: `SCBE Delivery Issue`
 - Files arrived but are unclear or broken:
-  - `aethermoregames@pm.me`
+  - `ai@aethermoore.com`
   - subject: `SCBE Package Support`
