@@ -32,14 +32,15 @@ TOOLKIT_FILES = [
     ("docs/specs/LAYER_INDEX.md", "docs/LAYER_INDEX.md"),
     ("docs/specs/SYSTEM_ARCHITECTURE.md", "docs/SYSTEM_ARCHITECTURE.md"),
     ("docs/specs/ARCHITECTURE.md", "docs/ARCHITECTURE.md"),
-    ("docs/LANGUES_WEIGHTING_SYSTEM.md", "docs/LANGUES_WEIGHTING_SYSTEM.md"),
-    ("docs/CORE_AXIOMS_CANONICAL_INDEX.md", "docs/CORE_AXIOMS_CANONICAL_INDEX.md"),
-    ("docs/specs/LAYER_12_CANONICAL_FORMULA.md", "docs/LAYER_12_CANONICAL_FORMULA.md"),
+    ("docs/specs/SCBE_TECHNICAL_PACKET_v1.md", "docs/SCBE_TECHNICAL_PACKET_v1.md"),
+    ("docs/specs/SCBE_SYSTEM_OVERVIEW.md", "docs/SCBE_SYSTEM_OVERVIEW.md"),
+    ("docs/specs/CANONICAL_FORMULA_REGISTRY.md", "docs/CANONICAL_FORMULA_REGISTRY.md"),
+    ("docs/specs/LAYER_MATH_COMPRESSED.md", "docs/LAYER_MATH_COMPRESSED.md"),
     # Governance templates
     ("config/scbe_core_axioms_v1.yaml", "templates/scbe_core_axioms.yaml"),
     ("training-data/schemas/training_schema.json", "templates/training_schema.json"),
     # Quickstart
-    ("docs/QUICKSTART_MONETIZATION.md", "quickstart/DEMO_FLOW.md"),
+    ("docs/PRODUCT_QUICKSTART.md", "quickstart/PRODUCT_QUICKSTART.md"),
 ]
 
 TOOLKIT_README = """# SCBE AI Governance Toolkit
@@ -56,7 +57,7 @@ Thank you for purchasing the AI Governance Toolkit from AetherMoore.
 
 1. Read `docs/LAYER_INDEX.md` for the full 14-layer pipeline overview
 2. Copy `templates/scbe_core_axioms.yaml` into your project
-3. Follow `quickstart/DEMO_FLOW.md` for a hands-on walkthrough
+3. Follow `quickstart/PRODUCT_QUICKSTART.md` for a hands-on walkthrough
 
 ## Support
 
@@ -77,11 +78,11 @@ VAULT_SFT_FILES = [
     "training-data/sft/aetherbrowser_commands_v1.jsonl",
     "training-data/sft/api_usage_pairs.jsonl",
     "training-data/sft/architecture_explainer_v1.jsonl",
-    "training-data/sft/attention_residuals_sft.jsonl",
     "training-data/sft/biblical_null_space_probes.jsonl",
-    "training-data/sft/code_brushes_sft.jsonl",
-    "training-data/sft/code_substrate_l0_sft.jsonl",
-    "training-data/sft/codex_skill_tutorials_10th_grade.jsonl",
+    "training-data/sft/coding_raw_code_v1_train.sft.jsonl",
+    "training-data/sft/coding_raw_failure_repair_v1_train.sft.jsonl",
+    "training-data/sft/governance_security_boundary_eval_v1.sft.jsonl",
+    "training-data/sft/sacred_tongue_syntax_alignment_v1_train.sft.jsonl",
 ]
 
 VAULT_EXTRA_FILES = [
@@ -93,7 +94,8 @@ VAULT_EXTRA_FILES = [
     ("scripts/benchmark/context_embedding_benchmark.py", "benchmark/context_embedding_benchmark.py"),
     ("scripts/benchmark/null_space_ablation.py", "benchmark/null_space_ablation.py"),
     # Architecture reference
-    ("docs/specs/LAYER_12_CANONICAL_FORMULA.md", "docs/LAYER_12_CANONICAL_FORMULA.md"),
+    ("docs/specs/CANONICAL_FORMULA_REGISTRY.md", "docs/CANONICAL_FORMULA_REGISTRY.md"),
+    ("docs/specs/LAYER_MATH_COMPRESSED.md", "docs/LAYER_MATH_COMPRESSED.md"),
 ]
 
 VAULT_README = """# SCBE AI Security Training Vault
