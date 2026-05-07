@@ -1,0 +1,78 @@
+{
+  "schema": "scbe_bijective_probe_v1",
+  "probe_case": "to_string",
+  "minimal_back_prefix": "def to_string(x: object) -> str:\n",
+  "tongues": [
+    "AV",
+    "RU",
+    "CA",
+    "UM",
+    "DR"
+  ],
+  "n_pass": 4,
+  "n_total": 5,
+  "verdict": "PARTIAL_DRIFT",
+  "verdict_long": "1/5 tongues drifted. Drift is real but not universal. Catalog should treat language-idiom-drift as a per-tongue pattern.",
+  "results": [
+    {
+      "tongue": "AV",
+      "tests_passed": true,
+      "syntax_ok": true,
+      "exec_ok": true,
+      "round_tripped_head": "def to_string(x: object) -> str:\n    return str(x)",
+      "intermediate_head": "function toString(x) {\n  return x.toString();\n}",
+      "error": null,
+      "back_used_prefix": true,
+      "forward_seconds": 3.95,
+      "back_seconds": 1.542
+    },
+    {
+      "tongue": "RU",
+      "tests_passed": true,
+      "syntax_ok": true,
+      "exec_ok": true,
+      "round_tripped_head": "def to_string(x: object) -> str:\n    return x.__str__()",
+      "intermediate_head": "fn to_string<T>(x: &T) -> String { x.to_string() }",
+      "error": null,
+      "back_used_prefix": true,
+      "forward_seconds": 3.331,
+      "back_seconds": 1.604
+    },
+    {
+      "tongue": "CA",
+      "tests_passed": false,
+      "syntax_ok": true,
+      "exec_ok": true,
+      "round_tripped_head": "def to_string(x: object) -> str:\n    if isinstance(x, str):\n        return x\n    elif isinstance(x, list):\n        return '[' + ', '.join(to_string(item) for item in x) + ']'\n    elif isinstance(x, (i",
+      "intermediate_head": "ToString[x_] := ToString[ToString[x]] /; MemberQ[{String, List, Real, Integer}, Class[x]]",
+      "error": "AssertionError: Unsupported type <class 'NoneType'>",
+      "back_used_prefix": true,
+      "forward_seconds": 4.797,
+      "back_seconds": 11.649
+    },
+    {
+      "tongue": "UM",
+      "tests_passed": true,
+      "syntax_ok": true,
+      "exec_ok": true,
+      "round_tripped_head": "def to_string(x: object) -> str:\n    return str(x)",
+      "intermediate_head": "toString :: (Show a) => a -> String",
+      "error": null,
+      "back_used_prefix": true,
+      "forward_seconds": 2.03,
+      "back_seconds": 1.454
+    },
+    {
+      "tongue": "DR",
+      "tests_passed": true,
+      "syntax_ok": true,
+      "exec_ok": true,
+      "round_tripped_head": "def to_string(x: object) -> str:\n    return str(x)",
+      "intermediate_head": "```md\n- `x`: The input value.\n- `return`: The string representation of `x`.\n- `str(x)`: The string representation of `x`.",
+      "error": null,
+      "back_used_prefix": true,
+      "forward_seconds": 5.795,
+      "back_seconds": 1.529
+    }
+  ]
+}

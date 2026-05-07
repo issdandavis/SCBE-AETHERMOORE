@@ -26,13 +26,16 @@ CORE_SMOKE_PATHS: tuple[str, ...] = (
     "tests/test_rho_logging_generator_smoke.py",
     "tests/test_analyze_rho_log_hint.py",
     "tests/crypto",
+    # Billing + monetization scripts (no optional HF/stripe install required for these tests)
+    "tests/api/test_billing_public_checkout.py",
+    "tests/api/test_stripe_billing_hardening.py",
+    "tests/test_system_script_security.py",
 )
 
 # Optional or experimental lanes that currently pull in extra services,
 # unpublished modules, or heavyweight third-party stacks. Keep them out of the
 # default merge path and triage them in dedicated workflows instead.
 OPTIONAL_TEST_IGNORES: tuple[str, ...] = (
-    "tests/api/test_billing_public_checkout.py",
     "tests/industry_standard/test_byzantine_consensus.py",
     "tests/test_aethermoore_patents.py",
     "tests/test_api_key_hashing.py",
@@ -43,7 +46,8 @@ OPTIONAL_TEST_IGNORES: tuple[str, ...] = (
     "tests/test_paper_aggregator.py",
     "tests/test_sacred_tongue_integration.py",
     "tests/test_spectral_langgraph.py",
-    "tests/test_system_script_security.py",
+    "tests/eval/test_bijective_constrained_failure_catalog.py",
+    "tests/benchmarks/test_bijective_tongue_gate.py",
 )
 
 
