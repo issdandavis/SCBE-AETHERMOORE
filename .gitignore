@@ -267,3 +267,6 @@ rust/**/target/
 # Tokenizer audit + extension artifacts (regeneratable by scripts)
 artifacts/tokenizer_audit/
 artifacts/extended_tokenizer/
+
+# MAHSS Dynamo Core SCAD output (regeneratable from seed)
+artifacts/mahss_dynamo_core/
