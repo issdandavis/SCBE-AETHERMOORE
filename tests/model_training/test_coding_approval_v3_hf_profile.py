@@ -2,13 +2,10 @@ import json
 import re
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 PROFILE_PATH = ROOT / "config" / "model_training" / "coding-approval-metrics-v3-hf.json"
 MARKER_PROFILE_PATH = ROOT / "config" / "model_training" / "coding-approval-metrics-v3-marker-focus-hf.json"
-SCAFFOLD_PROFILE_PATH = (
-    ROOT / "config" / "model_training" / "coding-approval-metrics-v3-marker-focus-scaffold-hf.json"
-)
+SCAFFOLD_PROFILE_PATH = ROOT / "config" / "model_training" / "coding-approval-metrics-v3-marker-focus-scaffold-hf.json"
 DPO_PROFILE_PATH = ROOT / "config" / "model_training" / "coding-approval-metrics-v3-marker-dpo-hf.json"
 CONTRACT_PATH = ROOT / "config" / "model_training" / "coding_approval_metrics_v3_eval_contract.json"
 
@@ -36,7 +33,9 @@ def test_coding_approval_v3_hf_profile_has_real_files() -> None:
     assert profile["profile_id"] == "coding-approval-metrics-v3-hf"
     assert profile["hub"]["push_adapter"] is True
     assert profile["execution"]["hf_flavor"] == "t4-small"
-    assert profile["evaluation"]["contract_path"] == "config/model_training/coding_approval_metrics_v3_eval_contract.json"
+    assert (
+        profile["evaluation"]["contract_path"] == "config/model_training/coding_approval_metrics_v3_eval_contract.json"
+    )
     assert profile["evaluation"]["constrained_gate_scaffold"] is False
     assert profile["evaluation"]["constrained_prompt_prefix"] is True
 
@@ -100,7 +99,9 @@ def test_coding_approval_v3_marker_focus_profile_is_exact_copy_repair_lane() -> 
 
     assert profile["profile_id"] == "coding-approval-metrics-v3-marker-focus-hf"
     assert profile["hub"]["adapter_repo"].endswith("marker-focus-hf")
-    assert profile["evaluation"]["contract_path"] == "config/model_training/coding_approval_metrics_v3_eval_contract.json"
+    assert (
+        profile["evaluation"]["contract_path"] == "config/model_training/coding_approval_metrics_v3_eval_contract.json"
+    )
     assert profile["evaluation"]["constrained_gate_scaffold"] is False
     assert profile["evaluation"]["constrained_prompt_prefix"] is True
     assert profile["training"]["max_steps"] >= 320
@@ -120,7 +121,9 @@ def test_coding_approval_v3_scaffold_profile_keeps_raw_diagnostic_but_uses_recei
     assert profile["profile_id"] == "coding-approval-metrics-v3-marker-focus-scaffold-hf"
     assert profile["hub"]["adapter_repo"].endswith("marker-focus-scaffold-hf")
     assert profile["dataset"]["train_files"] == ["coding_approval_metrics_v3_marker_train.sft.jsonl"]
-    assert profile["evaluation"]["contract_path"] == "config/model_training/coding_approval_metrics_v3_eval_contract.json"
+    assert (
+        profile["evaluation"]["contract_path"] == "config/model_training/coding_approval_metrics_v3_eval_contract.json"
+    )
     assert profile["evaluation"]["constrained_gate_scaffold"] is True
     assert profile["evaluation"]["constrained_prompt_prefix"] is True
     assert any("raw_ok" in note or "Raw model responses" in note for note in profile["notes"])
@@ -133,7 +136,9 @@ def test_coding_approval_v3_marker_dpo_profile_uses_preference_repair() -> None:
     assert profile["profile_id"] == "coding-approval-metrics-v3-marker-dpo-hf"
     assert profile["backend"] == "hf-jobs-peft-dpo"
     assert profile["training"]["base_adapter_repo"].endswith("marker-focus-scaffold-hf")
-    assert profile["evaluation"]["contract_path"] == "config/model_training/coding_approval_metrics_v3_eval_contract.json"
+    assert (
+        profile["evaluation"]["contract_path"] == "config/model_training/coding_approval_metrics_v3_eval_contract.json"
+    )
     assert profile["evaluation"]["constrained_gate_scaffold"] is False
     assert profile["evaluation"]["constrained_prompt_prefix"] is True
     assert profile["training"]["learning_rate"] <= 0.00002

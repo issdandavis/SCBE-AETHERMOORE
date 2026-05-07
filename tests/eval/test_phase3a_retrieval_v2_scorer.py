@@ -46,4 +46,3 @@ def test_score_accepts_canonical_helper_call() -> None:
     assert ok
     assert missing == []
     assert triggered == []
-

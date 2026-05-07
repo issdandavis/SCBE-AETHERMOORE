@@ -42,9 +42,7 @@ def test_chosen_contains_all_required(builder, contract):
         required = entry["required"]
         chosen = builder.chosen_template(pid, required)
         for marker in required:
-            assert marker in chosen, (
-                f"prompt={pid}: required marker '{marker}' missing from chosen text"
-            )
+            assert marker in chosen, f"prompt={pid}: required marker '{marker}' missing from chosen text"
 
 
 def test_v6_v7_raw_responses_present(builder):
@@ -84,9 +82,9 @@ def test_synthetic_rejection_changes_one_marker(builder):
         # Rejected should differ from chosen by exactly the mutation correct→paraphrase
         correct, paraphrase = p.metadata["mutation"]
         if correct in p.chosen:
-            assert paraphrase in p.rejected, (
-                f"prompt={p.metadata['prompt_id']}: synthetic rejection should contain mutation paraphrase"
-            )
+            assert (
+                paraphrase in p.rejected
+            ), f"prompt={p.metadata['prompt_id']}: synthetic rejection should contain mutation paraphrase"
 
 
 def test_pair_count_within_expected_range(builder):

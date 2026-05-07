@@ -7,6 +7,10 @@ Verifies that the gate correctly:
   - Fails batch if expected-valid molecules are denied
 """
 
+import pytest
+
+pytest.importorskip("rdkit", reason="chemistry verification gate tests require rdkit")
+
 from scripts.eval.chemistry_verification_gate import (
     promote,
     run_gate,

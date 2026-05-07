@@ -14,7 +14,11 @@ def test_raw_anchor_repair_records_include_observed_corrections() -> None:
 
     for good in ("carboxylic acid", "NaCl", "queue_drain_guard", "SCBE fusion", "not a molecule"):
         assert good in answers
-    for bad in ("carboxyllic acid -> carboxylic acid", "NA_clathrine -> NaCl", "queue_drill_guard -> queue_drain_guard"):
+    for bad in (
+        "carboxyllic acid -> carboxylic acid",
+        "NA_clathrine -> NaCl",
+        "queue_drill_guard -> queue_drain_guard",
+    ):
         assert bad in answers
 
 

@@ -26,9 +26,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 def _baseline_profile() -> dict:
     return json.loads(
-        (REPO_ROOT / "config" / "model_training" / "scbe-coding-primary-7b-qlora-v6f.json").read_text(
-            encoding="utf-8"
-        )
+        (REPO_ROOT / "config" / "model_training" / "scbe-coding-primary-7b-qlora-v6f.json").read_text(encoding="utf-8")
     )
 
 

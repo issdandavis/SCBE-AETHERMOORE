@@ -10,11 +10,11 @@ Verifies:
 
 from __future__ import annotations
 
-import math
 
 import numpy as np
 import pytest
-import torch
+
+torch = pytest.importorskip("torch", reason="MAHSS attention bridge tests require torch")
 
 from python.scbe.mahss_attention_bridge import (
     MAHSSAttentionBridge,
@@ -69,7 +69,7 @@ def test_gradient_flows_to_all_trainable_params():
         bridge.W_v_b.add_(0.01 * torch.randn_like(bridge.W_v_b))
         bridge.W_q_b.add_(0.01 * torch.randn_like(bridge.W_q_b))
     h_new, _ = bridge(h, M, V)
-    loss = (h_new ** 2).sum()
+    loss = (h_new**2).sum()
     loss.backward()
     for name, p in bridge.named_parameters():
         assert p.grad is not None, f"no grad for {name}"
@@ -89,9 +89,7 @@ def test_param_count_matches_low_rank_lora_scale():
     assert n >= expected_low_bound
     # And it should be much less than the d*d*4 a full bridge would cost
     full_bridge_params = 4 * 4096 * 4096
-    assert n < full_bridge_params, (
-        f"bridge has {n} params, full would be {full_bridge_params}"
-    )
+    assert n < full_bridge_params, f"bridge has {n} params, full would be {full_bridge_params}"
 
 
 def test_circular_correlation_matches_numpy_hrr():
@@ -104,9 +102,7 @@ def test_circular_correlation_matches_numpy_hrr():
     # Numpy HRR
     np_result = np.fft.ifft(np.conj(np.fft.fft(a)) * np.fft.fft(b)).real
     # Torch HRR
-    torch_result = circular_correlation_torch(
-        torch.from_numpy(a), torch.from_numpy(b)
-    ).numpy()
+    torch_result = circular_correlation_torch(torch.from_numpy(a), torch.from_numpy(b)).numpy()
     np.testing.assert_allclose(torch_result, np_result, atol=1e-10)
 
 

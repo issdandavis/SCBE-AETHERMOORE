@@ -74,12 +74,8 @@ def test_write_outputs_creates_repair_shard_and_manifest(tmp_path: Path) -> None
         "code_eval_lane_boundary_no_chem",
     ]
     train_rows = [
-        json.loads(line)
-        for line in Path(result["train_path"]).read_text(encoding="utf-8").splitlines()
-        if line.strip()
+        json.loads(line) for line in Path(result["train_path"]).read_text(encoding="utf-8").splitlines() if line.strip()
     ]
     assert train_rows
-    assert train_rows[0]["messages"][0]["content"].startswith(
-        "You are an SCBE-AETHERMOORE coding repair tutor"
-    )
+    assert train_rows[0]["messages"][0]["content"].startswith("You are an SCBE-AETHERMOORE coding repair tutor")
     assert train_rows[0]["metadata"]["frozen_eval_boundary"] == "no held-out prompt text copied into messages"

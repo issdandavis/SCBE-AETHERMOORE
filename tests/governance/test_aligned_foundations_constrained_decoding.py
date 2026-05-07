@@ -16,11 +16,9 @@ from src.governance.aligned_foundations_constrained_decoding import (
     supported_map_kinds,
 )
 from src.governance.aligned_foundations_cross_lane import (
-    INVARIANT_FIELDS,
     KIND_EXTRACTORS,
     score_packet_compliance,
 )
-
 
 # Reference text — what a "good" model output would look like for each (map,
 # kind). The shim's prefix is benchmarked against these references via
@@ -84,9 +82,7 @@ def test_cross_braid_rationale_includes_three_anchors():
     anchor strings the extractor checks for.
     """
 
-    prefix = build_aligned_foundations_prefix(
-        "cross_braid_code", "rationale", value="AV", tongue="KO"
-    )
+    prefix = build_aligned_foundations_prefix("cross_braid_code", "rationale", value="AV", tongue="KO")
     body = prefix.lower()
     assert "bijective" in body
     assert "phase delta" in body or "phase_delta" in body
@@ -96,9 +92,7 @@ def test_cross_braid_rationale_includes_three_anchors():
 def test_cross_braid_pair_has_two_brackets():
     """Pair extractor checks bracket_count >= 2."""
 
-    prefix = build_aligned_foundations_prefix(
-        "cross_braid_code", "pair", value="AV", tongue="KO"
-    )
+    prefix = build_aligned_foundations_prefix("cross_braid_code", "pair", value="AV", tongue="KO")
     bracket_count = prefix.count("[")
     assert bracket_count >= 2, f"pair shim only has {bracket_count} brackets"
 
@@ -106,9 +100,7 @@ def test_cross_braid_pair_has_two_brackets():
 def test_atomic_semantic_rationale_anchors():
     """atomic_semantic rationale extractor needs invariant + (lattice or projection)."""
 
-    prefix = build_aligned_foundations_prefix(
-        "atomic_semantic", "rationale", value="map_double", tongue="UM"
-    )
+    prefix = build_aligned_foundations_prefix("atomic_semantic", "rationale", value="map_double", tongue="UM")
     body = prefix.lower()
     assert "invariant" in body
     assert "lattice" in body or "projection" in body
@@ -117,18 +109,14 @@ def test_atomic_semantic_rationale_anchors():
 def test_convergence_anchor_marker():
     """convergence_action/anchor extractor needs literal 'convergence anchor'."""
 
-    prefix = build_aligned_foundations_prefix(
-        "convergence_action", "anchor", value="REFACTORER", tongue="RU"
-    )
+    prefix = build_aligned_foundations_prefix("convergence_action", "anchor", value="REFACTORER", tongue="RU")
     assert "convergence anchor" in prefix.lower()
 
 
 def test_bracket_packet_has_surface():
     """Generic bracket packet extractors check for ``surface=`` substring."""
 
-    prefix = build_aligned_foundations_prefix(
-        "runtime_emission", "rationale", value="typescript", tongue="AV"
-    )
+    prefix = build_aligned_foundations_prefix("runtime_emission", "rationale", value="typescript", tongue="AV")
     assert "surface=" in prefix
 
 
@@ -155,9 +143,7 @@ def test_supported_pairs_cover_known_failure_clusters():
 def test_long_form_tongue_labels_used():
     """Tongue codes must be expanded to full names per project convention."""
 
-    prefix = build_aligned_foundations_prefix(
-        "cross_braid_code", "pair", value="AV", tongue="KO"
-    )
+    prefix = build_aligned_foundations_prefix("cross_braid_code", "pair", value="AV", tongue="KO")
     # Should contain Kor'aelin (long form) and Avali (long form), not "KO" / "AV".
     assert "Kor" in prefix and "Avali" in prefix
 
@@ -189,9 +175,7 @@ def test_high_level_wrapper_includes_shim_prefix():
 
     from src.governance import aligned_foundations_constrained_decoding as mod
 
-    prefix = mod.build_aligned_foundations_prefix(
-        "cross_braid_code", "rationale", "AV", "KO"
-    )
+    prefix = mod.build_aligned_foundations_prefix("cross_braid_code", "rationale", "AV", "KO")
     assert prefix
     assert "bijective" in prefix.lower()
 
@@ -206,9 +190,7 @@ def test_high_level_wrapper_use_shim_false_yields_empty_prefix():
     # Simulate: no shim path -> empty prefix regardless of args
     # (the wrapper guards on use_shim before calling build_aligned_foundations_prefix)
     # This is essentially a documentation test for the contract.
-    prefix = build_aligned_foundations_prefix(
-        "cross_braid_code", "rationale", "AV", "KO"
-    )
+    prefix = build_aligned_foundations_prefix("cross_braid_code", "rationale", "AV", "KO")
     assert prefix  # confirms shim has the entry
     # use_shim=False would skip this; the wrapper test would set prefix=""
     # Not running the full wrapper here to avoid torch dependency in CI.

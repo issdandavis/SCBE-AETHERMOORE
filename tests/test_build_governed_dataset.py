@@ -8,7 +8,9 @@ import sys
 from pathlib import Path
 
 import pytest
-from huggingface_hub import DatasetCard
+
+hf_hub = pytest.importorskip("huggingface_hub", reason="governed dataset bundle tests require huggingface_hub")
+DatasetCard = hf_hub.DatasetCard
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:

@@ -1,7 +1,10 @@
 import json
 from pathlib import Path
 
-from docx import Document
+import pytest
+
+docx = pytest.importorskip("docx", reason="KDP publishing gate tests require python-docx")
+Document = docx.Document
 from docx.shared import Inches, Pt
 
 from scripts.publish.kdp_acceptance_gate import run_gate

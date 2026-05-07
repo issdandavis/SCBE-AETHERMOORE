@@ -112,9 +112,7 @@ def test_parse_backtick_identifier():
 
 
 def test_parse_returns_unique_lowercase_values():
-    schema = parse_prompt(
-        "Implement foo in tongue KO (Kor'aelin/Python). Use tongue KO (Kor'aelin/Python) again."
-    )
+    schema = parse_prompt("Implement foo in tongue KO (Kor'aelin/Python). Use tongue KO (Kor'aelin/Python) again.")
     # Even though tongue KO appears twice, schema should contain it once
     assert schema.tongues.count("kor'aelin") == 1
 

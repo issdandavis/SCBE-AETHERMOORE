@@ -6,12 +6,9 @@ verdict mapping logic.
 
 from __future__ import annotations
 
-import json
 import subprocess
-from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 
 from scripts.eval.interpret_v6f_gate_result import (
     _find_event,
@@ -207,9 +204,7 @@ def test_verify_hf_adapter_calls_hf_models_info():
         assert cmd[:3] == ["hf", "models", "info"]
         assert "issdandavis/scbe-coding-primary-7b-qlora-v6f" in cmd
 
-    fake_fail = subprocess.CompletedProcess(
-        args=[], returncode=1, stdout="", stderr="Repository not found"
-    )
+    fake_fail = subprocess.CompletedProcess(args=[], returncode=1, stdout="", stderr="Repository not found")
     with patch("scripts.eval.interpret_v6f_gate_result.subprocess.run", return_value=fake_fail):
         ok, msg = _verify_hf_adapter("issdandavis/does-not-exist")
         assert not ok

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from pathlib import Path
 
 import pytest
@@ -191,12 +190,8 @@ def test_best_of_n_can_pass_when_single_rollouts_are_mixed() -> None:
 def test_run_sweep_is_deterministic_under_fixed_inputs() -> None:
     contract = _toy_contract()
     model = synthetic_oracle_model(success_rate=0.7, jitter_seed=11)
-    a = run_sweep(
-        contract, model, seeds=[0, 1, 2], temperatures=[0.0, 0.5]
-    )
-    b = run_sweep(
-        contract, model, seeds=[0, 1, 2], temperatures=[0.0, 0.5]
-    )
+    a = run_sweep(contract, model, seeds=[0, 1, 2], temperatures=[0.0, 0.5])
+    b = run_sweep(contract, model, seeds=[0, 1, 2], temperatures=[0.0, 0.5])
     assert a["aggregate"] == b["aggregate"]
 
 

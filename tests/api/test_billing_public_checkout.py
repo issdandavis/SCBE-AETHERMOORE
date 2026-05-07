@@ -1,5 +1,8 @@
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+pytest.importorskip("sqlalchemy", reason="billing checkout tests require sqlalchemy")
 
 from api.billing import routes
 

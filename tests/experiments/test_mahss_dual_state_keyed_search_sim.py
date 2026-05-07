@@ -57,9 +57,7 @@ def test_diamond_pairs_score_higher_than_random_pairs() -> None:
 def test_brute_pair_recovers_all_diamond_pairs() -> None:
     spec = DualStateSpec(n_a=60, n_b=60, n_diamond_pairs=4, n_decoys_per_side=10, seed=31)
     landscape = build_landscape(spec)
-    pairs, evaluations = select_brute_pair(
-        landscape["A"], landscape["B"], landscape["M"], budget_pairs=4
-    )
+    pairs, evaluations = select_brute_pair(landscape["A"], landscape["B"], landscape["M"], budget_pairs=4)
     assert evaluations == 60 * 60
     assert set(pairs) == landscape["diamond_pairs"]
 
@@ -67,12 +65,8 @@ def test_brute_pair_recovers_all_diamond_pairs() -> None:
 def test_resonance_cross_matches_brute_pair_recall() -> None:
     spec = DualStateSpec(n_a=60, n_b=60, n_diamond_pairs=4, n_decoys_per_side=10, seed=31)
     landscape = build_landscape(spec)
-    brute_pairs, _ = select_brute_pair(
-        landscape["A"], landscape["B"], landscape["M"], budget_pairs=4
-    )
-    resonance_pairs, _ = select_resonance_cross(
-        landscape["A"], landscape["B"], landscape["M"], budget_pairs=4
-    )
+    brute_pairs, _ = select_brute_pair(landscape["A"], landscape["B"], landscape["M"], budget_pairs=4)
+    resonance_pairs, _ = select_resonance_cross(landscape["A"], landscape["B"], landscape["M"], budget_pairs=4)
     assert set(resonance_pairs) == set(brute_pairs)
 
 
@@ -113,13 +107,7 @@ def test_run_compare_emits_summary_for_each_method() -> None:
     summary_keys = set(report["summary"])
     disagreement_keys = [name for name in summary_keys if name.startswith("disagree__")]
     assert len(disagreement_keys) > 0
-    n_input = len(
-        [
-            name
-            for name in summary_keys
-            if name != "brute_pair" and not name.startswith("disagree__")
-        ]
-    )
+    n_input = len([name for name in summary_keys if name != "brute_pair" and not name.startswith("disagree__")])
     assert len(disagreement_keys) == n_input * (n_input - 1) // 2
     for name, row in report["summary"].items():
         assert "evaluations" in row and "diamond_recall" in row and "regret_log_amp" in row
@@ -285,7 +273,9 @@ def test_polyhedral_edge_gear_shifts_by_search_space_size() -> None:
 
 
 def test_polyhedral_edge_gear_is_reported_in_run_compare() -> None:
-    report = run_compare(DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19), budget_pairs=8)
+    report = run_compare(
+        DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19), budget_pairs=8
+    )
     row = report["summary"]["polyhedral_edge_gear_k20_w4_w10"]
     assert row["diamond_recall"] == 1.0
     assert row["regret_log_amp"] == 0.0
@@ -314,7 +304,9 @@ def test_tangent_rescue_adds_bounded_sidecar_evaluations() -> None:
 
 
 def test_tangent_rescue_is_reported_in_run_compare() -> None:
-    report = run_compare(DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19), budget_pairs=8)
+    report = run_compare(
+        DualStateSpec(n_a=80, n_b=80, n_diamond_pairs=4, n_decoys_per_side=12, seed=19), budget_pairs=8
+    )
     row = report["summary"]["polyhedral_edge_k20_w4_tangent_rescue_r4_b40"]
     assert row["cost_accounting"] == "direct"
     assert row["diamond_recall"] == 1.0
@@ -568,16 +560,12 @@ def test_platonic_walk_succeeds_on_intentional_3d_landscape() -> None:
     # Octahedron: vertices at (+/-1, 0, 0), (0, +/-1, 0), (0, 0, +/-1).
     # The three planted directions map exactly to three of those axis vertices
     # in U_3 coordinates, so all three diamonds resolve.
-    pairs, evaluations, meta = select_polyhedral_walk_cross(
-        A, B, M, polyhedron="octahedron", budget_pairs=8
-    )
+    pairs, evaluations, meta = select_polyhedral_walk_cross(A, B, M, polyhedron="octahedron", budget_pairs=8)
     assert meta["n_vertices"] == 6
     assert evaluations <= 6
     diamond_pairs = set(zip(diamond_a_idx, diamond_b_idx))
     found = diamond_pairs & set(pairs)
-    assert len(found) == len(diamond_pairs), (
-        f"expected all 3 diamonds, found {len(found)}: pairs={pairs}"
-    )
+    assert len(found) == len(diamond_pairs), f"expected all 3 diamonds, found {len(found)}: pairs={pairs}"
 
 
 def test_resonance_outperforms_multigrid_under_key_coupling() -> None:

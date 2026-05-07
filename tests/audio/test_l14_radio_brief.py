@@ -3,7 +3,6 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = ROOT / "scripts" / "l14_radio_brief.py"
 SPEC = importlib.util.spec_from_file_location("l14_radio_brief", SCRIPT_PATH)
@@ -75,4 +74,3 @@ def test_receipt_loopback_passes_and_marks_audio_unrendered() -> None:
     assert receipt["transcript_check"]["ok"] is True
     assert receipt["audio"]["rendered"] is False
     assert receipt["voice_packet"]["text"] == receipt["script"]
-

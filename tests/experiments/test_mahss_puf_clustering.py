@@ -9,7 +9,6 @@ import numpy as np
 import pytest
 
 from python.scbe.mahss_puf_clustering import (
-    ClusterReport,
     cluster_report,
     find_critical_noise_sigma,
     measurement_from_geometry,
@@ -19,7 +18,6 @@ from python.scbe.mahss_puf_clustering import (
 )
 from python.scbe.mahss_crypto_lattice import apply_crypto_seed
 from scripts.experiments.mahss_metamaterial_sim import VARIANTS
-
 
 # --------------------------------------------------------------------------
 # Measurement adapters
@@ -83,9 +81,7 @@ def test_cluster_report_zero_noise_strict_passes():
     """With zero noise and distinct seeds, intra=0 for every pair and
     inter>0 for every pair, so the strict verdict trivially holds."""
 
-    report = simulate_cluster_test(
-        {"alice": 1, "bob": 2}, n_copies=3, noise_sigma=0.0
-    )
+    report = simulate_cluster_test({"alice": 1, "bob": 2}, n_copies=3, noise_sigma=0.0)
     assert report.strict_pass is True
     assert report.max_intra == pytest.approx(0.0, abs=1e-12)
     assert report.min_inter > 0.0
@@ -96,9 +92,7 @@ def test_cluster_report_small_noise_still_passes():
     """At small enough noise (<< inter-identity separation), strict
     clustering must still hold for the AuxeticVariant axis."""
 
-    report = simulate_cluster_test(
-        {"alice": 1, "bob": 2}, n_copies=5, noise_sigma=0.001
-    )
+    report = simulate_cluster_test({"alice": 1, "bob": 2}, n_copies=5, noise_sigma=0.001)
     assert report.strict_pass is True
     assert report.margin > 0.0
 
@@ -110,9 +104,7 @@ def test_cluster_report_huge_noise_fails():
 
     # 10x the magnitude of the AuxeticVariant fields — guaranteed to
     # destroy clustering.
-    report = simulate_cluster_test(
-        {"alice": 1, "bob": 2}, n_copies=8, noise_sigma=10000.0
-    )
+    report = simulate_cluster_test({"alice": 1, "bob": 2}, n_copies=8, noise_sigma=10000.0)
     assert report.strict_pass is False
 
 
@@ -144,10 +136,9 @@ def test_cluster_report_returns_full_distance_lists():
 
 
 def test_cluster_report_to_dict_is_json_friendly():
-    report = simulate_cluster_test(
-        {"alice": 1, "bob": 2}, n_copies=3, noise_sigma=0.0
-    )
+    report = simulate_cluster_test({"alice": 1, "bob": 2}, n_copies=3, noise_sigma=0.0)
     import json
+
     blob = json.dumps(report.to_dict())
     decoded = json.loads(blob)
     assert decoded["strict_pass"] is True

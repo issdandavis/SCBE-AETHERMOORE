@@ -8,14 +8,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
 
 from python.scbe.mahss_dynamo_core_scad import render_dynamo_core_scad, write_dynamo_core_scad
 from python.scbe.mahss_dynamo_core_scad_validator import (
     validate_dynamo_core_scad,
     validate_scad_file,
 )
-
 
 # --------------------------------------------------------------------------
 # Happy path: emitter output passes validation
@@ -61,7 +59,7 @@ def test_validate_missing_file_returns_failure(tmp_path: Path):
 def test_unmatched_brace_fails():
     src = render_dynamo_core_scad(seed=1)
     # Drop a closing brace
-    broken = src.replace("color(\"Red\") auxetic_sheath();\n", "color(\"Red\") auxetic_sheath();\n{ // hanging\n", 1)
+    broken = src.replace('color("Red") auxetic_sheath();\n', 'color("Red") auxetic_sheath();\n{ // hanging\n', 1)
     result = validate_dynamo_core_scad(broken)
     assert not result.ok
     assert any("unclosed" in e or "unmatched" in e for e in result.errors)
@@ -93,6 +91,7 @@ def test_perturb_table_length_mismatch_fails():
     src = render_dynamo_core_scad(seed=1)
     # Surgically truncate the perturb table to length 5
     import re
+
     broken = re.sub(
         r"perturb_mm = \[([^\]]+)\];",
         "perturb_mm = [0.0, 0.0, 0.0, 0.0, 0.0];",
@@ -116,9 +115,13 @@ def test_missing_difference_block_fails():
     src = "module auxetic_sheath() {} module seeded_hyperbolic_ridge(k) {}"
     # plus required constants stubbed
     src = (
-        "phi=1; golden_angle=137; R_tung=1; t_sheath=1; r_throat=1; c_z=1; "
-        "num_ridges=2; mesh_height=10; seed=1; perturb_mm=[0,0]; "
-    ) + src + " auxetic_sheath();"
+        (
+            "phi=1; golden_angle=137; R_tung=1; t_sheath=1; r_throat=1; c_z=1; "
+            "num_ridges=2; mesh_height=10; seed=1; perturb_mm=[0,0]; "
+        )
+        + src
+        + " auxetic_sheath();"
+    )
     result = validate_dynamo_core_scad(src)
     assert not result.ok
     assert any("difference" in e for e in result.errors)
@@ -130,6 +133,7 @@ def test_warning_on_oversized_perturb_does_not_fail():
 
     src = render_dynamo_core_scad(seed=1)
     import re
+
     broken = re.sub(
         r"perturb_mm = \[([^\]]+)\];",
         "perturb_mm = [" + ", ".join(["3.5"] * 16) + "];",

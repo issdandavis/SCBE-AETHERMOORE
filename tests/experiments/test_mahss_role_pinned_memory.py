@@ -113,9 +113,7 @@ def test_corpus_shape_is_well_formed():
         assert len(pairs) >= 1
         for role, filler in pairs:
             assert role in V6G_DISTRACTORS, f"role {role} missing from distractor vocab"
-            assert filler in V6G_DISTRACTORS[role], (
-                f"filler {filler!r} not in V6G_DISTRACTORS[{role!r}]"
-            )
+            assert filler in V6G_DISTRACTORS[role], f"filler {filler!r} not in V6G_DISTRACTORS[{role!r}]"
 
 
 def test_build_per_prompt_memory_registers_distractors_and_binds_pairs():

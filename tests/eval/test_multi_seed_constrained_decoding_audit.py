@@ -17,4 +17,3 @@ def test_noisy_continuation_is_stable_for_same_seed_and_temperature() -> None:
     b = model(dict(prompt), 7, 0.4)
 
     assert a == b
-

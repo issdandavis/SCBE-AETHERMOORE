@@ -64,9 +64,7 @@ def test_npm_geoseal_bin_custom_commands_json() -> None:
     payload = json.loads(proc.stdout)
     assert payload["schema_version"] == "geoseal_custom_commands_v1"
     assert payload["count"] >= 1
-    assert any(
-        command["name"] == "harness-benchmark" for command in payload["commands"]
-    )
+    assert any(command["name"] == "harness-benchmark" for command in payload["commands"])
 
 
 def test_npm_geoseal_bin_permissions_json() -> None:
@@ -236,11 +234,7 @@ def test_npm_geoseal_bin_code_lanes_roundtrip(tmp_path: Path) -> None:
 def test_npm_geoseal_bin_code_languages_ir_and_injection_plan(tmp_path: Path) -> None:
     source_file = tmp_path / "sample.py"
     source_file.write_text(
-        "import math\n\n"
-        "class Wheel:\n"
-        "    pass\n\n"
-        "def add(a, b):\n"
-        "    return a + b\n",
+        "import math\n\n" "class Wheel:\n" "    pass\n\n" "def add(a, b):\n" "    return a + b\n",
         encoding="utf-8",
     )
 
@@ -469,9 +463,7 @@ def _run_geoseal(*args: str) -> subprocess.CompletedProcess[str]:
 def test_npm_geoseal_code_ir_python_imports_no_newlines() -> None:
     target = ROOT / "scripts" / "research" / "mahss_demo.py"
     assert target.exists(), f"fixture missing: {target}"
-    proc = _run_geoseal(
-        "code-ir", "--source-file", str(target), "--language", "python", "--json"
-    )
+    proc = _run_geoseal("code-ir", "--source-file", str(target), "--language", "python", "--json")
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     imports = payload["symbols"]["imports"]
@@ -484,9 +476,7 @@ def test_npm_geoseal_code_ir_python_imports_no_newlines() -> None:
 
 def test_npm_geoseal_code_verify_happy_path() -> None:
     target = ROOT / "scripts" / "research" / "mahss_demo.py"
-    proc = _run_geoseal(
-        "code-verify", "--source-file", str(target), "--language", "python", "--json"
-    )
+    proc = _run_geoseal("code-verify", "--source-file", str(target), "--language", "python", "--json")
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["schema_version"] == "geoseal_code_verify_v1"

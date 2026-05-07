@@ -107,9 +107,7 @@ def test_tang_beam_search_keeps_highest_energy_candidates() -> None:
         sample_budget=4,
     )
 
-    expected_keys = {
-        key for key, _ in sorted(probabilities.items(), key=lambda item: item[1], reverse=True)[:4]
-    }
+    expected_keys = {key for key, _ in sorted(probabilities.items(), key=lambda item: item[1], reverse=True)[:4]}
     selected_keys = {f"{variant.name}@{actuation:.6f}" for variant, actuation in selected}
 
     assert selected_keys == expected_keys
@@ -205,9 +203,7 @@ def test_constructive_dissonance_prunes_to_best_scored_candidates() -> None:
         sample_budget=4,
     )
 
-    expected = {
-        key for key, _ in sorted(profile.items(), key=lambda item: item[1]["score"], reverse=True)[:4]
-    }
+    expected = {key for key, _ in sorted(profile.items(), key=lambda item: item[1]["score"], reverse=True)[:4]}
     actual = {f"{variant.name}@{actuation:.6f}" for variant, actuation in selected}
 
     assert actual == expected
@@ -307,7 +303,7 @@ def test_mirror_beam_uses_hyperbolic_distance_one_pass_selection() -> None:
     mirror = report["mirror"]
     assert isinstance(mirror, dict)
     assert mirror, "mirror telemetry should not be empty"
-    for key, row in mirror.items():
+    for _key, row in mirror.items():
         assert "hyperbolic_distance" in row
         assert "reflection_amplitude" in row
         assert "euclidean_norm" in row
