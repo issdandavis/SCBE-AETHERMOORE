@@ -1,0 +1,46 @@
+{
+  "schema_version": "chemistry_raw_anchor_repair_manifest_v1",
+  "track": "chemistry_raw_anchor_repair_v1",
+  "train_file": "training-data\\sft\\chemistry_raw_anchor_repair_v1_train.sft.jsonl",
+  "eval_file": "training-data\\sft\\chemistry_raw_anchor_repair_v1_eval.sft.jsonl",
+  "train_records": 90,
+  "eval_records": 2,
+  "repeats": 6,
+  "source_hf_job": "69fc98b3317220dbbd1a5d52",
+  "source_raw_pass_rate": 0.0,
+  "source_scaffolded_pass_rate": 1.0,
+  "repair_pairs": [
+    {
+      "bad": "carboxyllic acid",
+      "good": "carboxylic acid"
+    },
+    {
+      "bad": "NA_clathrine",
+      "good": "NaCl"
+    },
+    {
+      "bad": "queue_drill_guard",
+      "good": "queue_drain_guard"
+    },
+    {
+      "bad": "missing oxygen/alcohol/SCBE fusion",
+      "good": "oxygen | alcohol | SCBE fusion"
+    },
+    {
+      "bad": "mutated C(C)(C)(C)(C)C",
+      "good": "C(C)(C)(C)(C)C"
+    },
+    {
+      "bad": "carboxalate acid",
+      "good": "carboxylic acid"
+    },
+    {
+      "bad": "queue_drainage_guard",
+      "good": "queue_drain_guard"
+    }
+  ],
+  "files": {
+    "chemistry_raw_anchor_repair_v1_train.sft.jsonl": "bd5535430904a05b49308d7cdce55524b7277bb612eab56459c128d143e36503",
+    "chemistry_raw_anchor_repair_v1_eval.sft.jsonl": "edbfde1e5b33574050504738ebc11b9210e22f7133ca7aef0ce135f896d94424"
+  }
+}
