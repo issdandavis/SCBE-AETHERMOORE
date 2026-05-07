@@ -392,34 +392,47 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
 # One-time product purchases (Payment Links)
 # ---------------------------------------------------------------------------
 
-# Map one-time product keys to delivery info.
-# Payment Links should set metadata[scbe_product] to one of these keys.
-# As a fallback, set SCBE_PAYMENT_LINK_TOOLKIT or SCBE_PAYMENT_LINK_VAULT to
-# the live Stripe Payment Link IDs if metadata is unavailable.
-ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = {
-    # AI Governance Toolkit - $29
-    "toolkit": {
-        "name": "SCBE AI Governance Toolkit",
-        "download_url": os.getenv(
-            "SCBE_TOOLKIT_DOWNLOAD_URL",
-            "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
-        ),
-        "manual_url": "https://aethermoore.com/product-manual/ai-governance-toolkit.html",
-        "package_filename": "SCBE_AI_Governance_Toolkit_v1.zip",
-        "support_url": "https://aethermoore.com/support.html",
-    },
-    # AI Security Training Vault - $29
-    "vault": {
-        "name": "SCBE AI Security Training Vault",
-        "download_url": os.getenv(
-            "SCBE_VAULT_DOWNLOAD_URL",
-            "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
-        ),
-        "manual_url": "https://aethermoore.com/product-manual/training-vault.html",
-        "package_filename": "SCBE_AI_Security_Training_Vault_v1.zip",
-        "support_url": "https://aethermoore.com/support.html",
-    },
-}
+DEFAULT_PRODUCT_RELEASE_URL = "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest"
+
+
+def _delivery_url(*env_names: str) -> str:
+    """Resolve a buyer delivery URL, with public release fallback for dev/smoke use."""
+    for env_name in env_names:
+        value = os.getenv(env_name, "").strip()
+        if value:
+            return value
+    return DEFAULT_PRODUCT_RELEASE_URL
+
+
+def get_onetime_products() -> Dict[str, Dict[str, str]]:
+    """Map one-time product keys to delivery info.
+
+    Payment Links should set metadata[scbe_product] to one of these keys.
+    Production should set buyer-only product URLs so paid packets do not depend
+    on the public open-source release surface.
+    """
+    return {
+        # AI Governance Toolkit - $29
+        "toolkit": {
+            "name": "SCBE AI Governance Toolkit",
+            "download_url": _delivery_url("SCBE_TOOLKIT_DOWNLOAD_URL"),
+            "manual_url": "https://aethermoore.com/product-manual/ai-governance-toolkit.html",
+            "package_filename": "SCBE_AI_Governance_Toolkit_v1.zip",
+            "support_url": "https://aethermoore.com/support.html",
+        },
+        # AI Security Training Vault - $29
+        "vault": {
+            "name": "SCBE AI Security Training Vault",
+            "download_url": _delivery_url("SCBE_TRAINING_VAULT_DOWNLOAD_URL", "SCBE_VAULT_DOWNLOAD_URL"),
+            "manual_url": "https://aethermoore.com/product-manual/training-vault.html",
+            "package_filename": "SCBE_AI_Security_Training_Vault_v1.zip",
+            "support_url": "https://aethermoore.com/support.html",
+        },
+    }
+
+
+# Backwards-compatible default snapshot for tests and diagnostics.
+ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = get_onetime_products()
 
 # Purchase log for tracking (in production, use a database)
 PURCHASE_LOG: list = []
@@ -594,7 +607,7 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     product_key = _resolve_onetime_product_key(session)
 
     # Do not guess from amount to avoid mis-delivery between similarly priced products.
-    product = ONETIME_PRODUCTS.get(product_key) if product_key else None
+    product = get_onetime_products().get(product_key) if product_key else None
     unresolved_product = product is None
     if unresolved_product:
         product = {

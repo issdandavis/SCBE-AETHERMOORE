@@ -49,6 +49,14 @@ If these are not set, the delivery email falls back to the latest GitHub release
 https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest
 ```
 
+`SCBE_TRAINING_VAULT_DOWNLOAD_URL` is also accepted as the clearer alias for
+the Training Vault buyer-only ZIP link. Keep `SCBE_VAULT_DOWNLOAD_URL` for
+backwards compatibility with the earlier billing patch.
+
+The default package builder writes buyer ZIPs under `products/packaged/`, which
+is intentionally ignored by git. That lane is for staging paid packets, not for
+public GitHub Pages.
+
 ## SMTP
 
 Buyer delivery email uses:
