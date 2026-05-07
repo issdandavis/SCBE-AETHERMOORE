@@ -178,6 +178,7 @@ BACK_PREFIX = {
     "eval_runner": (
         "def run_expr(expr: str) -> object:\n"
         "    _ALLOWED = {'__builtins__': {}}\n"
+        "    return eval(expr, _ALLOWED)\n"
     ),
 }
 

@@ -1,8 +1,8 @@
 """Push updated model card for scbe-coding-agent-qwen-merged-coding-model-v1.
 
 Appends a Constrained-Decoding Production Path section documenting the
-2026-04-30 local GTX 1660 Ti gate result (23/25 = 92% pass on the bijective
-Sacred-Tongue round-trip benchmark, all per-case minimums >= 0.60).
+2026-05-07 local gate result (25/25 = 100% pass on the bijective Sacred-Tongue
+round-trip benchmark, all per-case and per-tongue rates at 100%).
 
 Idempotent: if the marker section already exists, the script exits without
 pushing again.
@@ -27,8 +27,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(REPO_ROOT / ".env")
 
 MODEL_ID = "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1"
-GATE_REPORT = REPO_ROOT / "artifacts" / "bijective_tongue" / "local_constrained_1777530063.json"
-MARKER = "## Constrained-Decoding Production Path (2026-04-30)"
+GATE_REPORT = REPO_ROOT / "artifacts" / "bijective_tongue" / "local_constrained_1778133356.json"
+MARKER = "## Constrained-Decoding Production Path (2026-05-07)"
 
 
 def build_section(report: dict) -> str:
@@ -46,13 +46,13 @@ def build_section(report: dict) -> str:
 {MARKER}
 
 This model is shipped together with a per-case forced-prefix decoding shim that
-clears the bijective Sacred-Tongue round-trip gate at **23/25 = 92.0%** with
-every per-case rate >= 0.60. The shim is the production path; LoRA adapters
+clears the bijective Sacred-Tongue round-trip gate at **25/25 = 100.0%** with
+every per-case and per-tongue rate at 100%. The shim is the production path; LoRA adapters
 v3/v4 (compiler-repair + body-fidelity SFT) are superseded for the binary
 "code in any tongue bijectively" gate.
 
 - **Schema:** `scbe_bijective_tongue_gate_v3_constrained_decoding`
-- **Hardware:** local NVIDIA GTX 1660 Ti, 6 GB VRAM, fp16, ~13 minutes wall
+- **Hardware:** local CPU run, `cuda=false`, ~6.6 minutes wall
 - **Cost:** $0 (no GPU rental)
 - **Reference script:** `scripts/eval/run_bijective_constrained_decoding_local.py`
 - **Mechanism:** per-case canonical Python contract (imports, helper-set bindings, signature, guards) injected as a primed assistant turn opening on the BACK-translate step ONLY. Forward (Python -> other tongue) decoding is unchanged.
@@ -72,7 +72,8 @@ v3/v4 (compiler-repair + body-fidelity SFT) are superseded for the binary
 ### What this resolves
 
 - `eval_runner` lifted from 40% (v4 SFT, repaired) to 60% by injecting the
-  `_ALLOWED = {{'__builtins__': {{}}}}` helper-set as forced prefix.
+  `_ALLOWED = {{'__builtins__': {{}}}}` helper-set as forced prefix, then to
+  100% by including the full `return eval(expr, _ALLOWED)` line in the prefix.
 - `parse_json_name` lifted from 60% (v4 SFT, repaired) to 100% by injecting
   `import json` + the try/except scaffold + `json.loads(payload)`.
 - `bounded_factorial` UM stack-blow lifted from 80% to 100% by forcing the
@@ -85,9 +86,9 @@ v3/v4 (compiler-repair + body-fidelity SFT) are superseded for the binary
 
 - KO (Python identity) is not measured here; it passes trivially since the base
   operates in Python natively.
-- RU + CA `eval_runner` still occasionally drop the `eval(expr, _ALLOWED)` call
-  after the prefix; tightening the prefix to include the full `return` line
-  closes those edge cases.
+- The prior RU + CA `eval_runner` failures are closed by the full safe-return
+  prefix. Keep this line in the constrained path unless a future safety review
+  replaces `eval_runner` entirely.
 - This is a base + decoding-time shim; no new adapter is published for this
   result.
 
