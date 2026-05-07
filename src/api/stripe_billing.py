@@ -392,20 +392,32 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
 # One-time product purchases (Payment Links)
 # ---------------------------------------------------------------------------
 
-# Map Stripe Payment Link product IDs to delivery info.
-# These correspond to the buy.stripe.com links on the website.
+# Map one-time product keys to delivery info.
+# Payment Links should set metadata[scbe_product] to one of these keys.
+# As a fallback, set SCBE_PAYMENT_LINK_TOOLKIT or SCBE_PAYMENT_LINK_VAULT to
+# the live Stripe Payment Link IDs if metadata is unavailable.
 ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = {
     # AI Governance Toolkit - $29
     "toolkit": {
         "name": "SCBE AI Governance Toolkit",
-        "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
+        "download_url": os.getenv(
+            "SCBE_TOOLKIT_DOWNLOAD_URL",
+            "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
+        ),
         "manual_url": "https://aethermoore.com/product-manual/ai-governance-toolkit.html",
+        "package_filename": "SCBE_AI_Governance_Toolkit_v1.zip",
+        "support_url": "https://aethermoore.com/support.html",
     },
     # AI Security Training Vault - $29
     "vault": {
         "name": "SCBE AI Security Training Vault",
-        "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
+        "download_url": os.getenv(
+            "SCBE_VAULT_DOWNLOAD_URL",
+            "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
+        ),
         "manual_url": "https://aethermoore.com/product-manual/training-vault.html",
+        "package_filename": "SCBE_AI_Security_Training_Vault_v1.zip",
+        "support_url": "https://aethermoore.com/support.html",
     },
 }
 
@@ -413,7 +425,84 @@ ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = {
 PURCHASE_LOG: list = []
 
 
-def _send_delivery_email(to_email: str, product_name: str, download_url: str, manual_url: str) -> bool:
+def _payment_link_product_map() -> Dict[str, str]:
+    """Return optional Stripe Payment Link ID -> product key mapping from env."""
+    mapping: Dict[str, str] = {}
+    for product_key in ONETIME_PRODUCTS:
+        env_name = f"SCBE_PAYMENT_LINK_{product_key.upper()}"
+        payment_link_id = os.getenv(env_name, "").strip()
+        if payment_link_id:
+            mapping[payment_link_id] = product_key
+    return mapping
+
+
+def _normalize_product_key(value: object) -> str:
+    """Normalize product selector text into a known one-time product key."""
+    normalized = str(value or "").strip().lower().replace("-", "_").replace(" ", "_")
+    aliases = {
+        "ai_governance_toolkit": "toolkit",
+        "governance_toolkit": "toolkit",
+        "scbe_ai_governance_toolkit": "toolkit",
+        "ai_security_training_vault": "vault",
+        "training_vault": "vault",
+        "security_training_vault": "vault",
+        "scbe_ai_security_training_vault": "vault",
+    }
+    return aliases.get(normalized, normalized)
+
+
+def _resolve_onetime_product_key(session: Dict[str, Any]) -> str:
+    """Resolve a one-time product from signed Stripe session data.
+
+    Metadata is the preferred path because it is explicit and deterministic.
+    Payment Link ID mapping is an operational fallback for existing links.
+    """
+    metadata = session.get("metadata", {}) or {}
+    for metadata_key in ("scbe_product", "product", "product_key", "offer"):
+        product_key = _normalize_product_key(metadata.get(metadata_key, ""))
+        if product_key in ONETIME_PRODUCTS:
+            return product_key
+
+    client_reference_id = _normalize_product_key(session.get("client_reference_id", ""))
+    if client_reference_id in ONETIME_PRODUCTS:
+        return client_reference_id
+
+    payment_link = str(session.get("payment_link", "") or "").strip()
+    if payment_link:
+        mapped_key = _payment_link_product_map().get(payment_link, "")
+        if mapped_key in ONETIME_PRODUCTS:
+            return mapped_key
+
+    return ""
+
+
+def _delivery_plaintext(product_name: str, download_url: str, manual_url: str, package_filename: str) -> str:
+    return "\n".join(
+        [
+            f"Thank you for your purchase. Your {product_name} is ready.",
+            "",
+            f"Download: {download_url}",
+            f"Manual:   {manual_url}",
+            f"Package:  {package_filename}",
+            "",
+            "First steps:",
+            "1. Download the package.",
+            "2. Open README.md or BUYER_START_GUIDE.md first.",
+            "3. Use the manual if you need the web instructions.",
+            "",
+            "Support: ai@aethermoore.com or https://aethermoore.com/support.html",
+        ]
+    )
+
+
+def _send_delivery_email(
+    to_email: str,
+    product_name: str,
+    download_url: str,
+    manual_url: str,
+    package_filename: str = "",
+    support_url: str = "https://aethermoore.com/support.html",
+) -> bool:
     """Send product delivery email via SMTP.
 
     Uses Porkbun email (ai@aethermoore.com) configured in .secrets/email_credentials.txt.
@@ -432,9 +521,11 @@ def _send_delivery_email(to_email: str, product_name: str, download_url: str, ma
     html_body = f"""<html><body style="font-family: Georgia, serif; color: #333; max-width: 600px;">
 <h2 style="color: #d6a756;">Thank you for your purchase!</h2>
 <p>Your <strong>{product_name}</strong> is ready for download.</p>
+<p>Expected package: <code>{package_filename or 'product ZIP'}</code></p>
 <p><a href="{download_url}" style="display:inline-block;padding:12px 24px;background:#d6a756;color:#14110c;
 text-decoration:none;border-radius:6px;font-weight:bold;">Download Your Product</a></p>
 <p><a href="{manual_url}">Read the Manual</a></p>
+<p><a href="{support_url}">Delivery support</a></p>
 <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
 <p style="font-size:14px;color:#888;">
 If you have any questions, reply to this email or reach us at ai@aethermoore.com.<br>
@@ -447,7 +538,12 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
     msg["From"] = f"AetherMoore <{smtp_user}>"
     msg["To"] = to_email
     msg["Reply-To"] = "ai@aethermoore.com"
-    msg.attach(MIMEText(f"Your {product_name} is ready: {download_url}", "plain"))
+    msg.attach(
+        MIMEText(
+            _delivery_plaintext(product_name, download_url, manual_url, package_filename),
+            "plain",
+        )
+    )
     msg.attach(MIMEText(html_body, "html"))
 
     if not smtp_pass:
@@ -482,6 +578,7 @@ def _notify_owner(product_name: str, buyer_email: str, amount_cents: int) -> Non
         product_name=f"NEW SALE: {product_name}",
         download_url=f"Buyer: {buyer_email} | Amount: ${amount_cents / 100:.2f}",
         manual_url="https://dashboard.stripe.com/payments",
+        package_filename="owner-notification",
     )
 
 
@@ -494,9 +591,7 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     if payment_status != "paid":
         return
 
-    # Determine which product was purchased based on amount or metadata
-    metadata = session.get("metadata", {})
-    product_key = metadata.get("scbe_product", "")
+    product_key = _resolve_onetime_product_key(session)
 
     # Do not guess from amount to avoid mis-delivery between similarly priced products.
     product = ONETIME_PRODUCTS.get(product_key) if product_key else None
@@ -506,6 +601,8 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
             "name": "UNRESOLVED_PRODUCT",
             "download_url": "",
             "manual_url": "",
+            "package_filename": "",
+            "support_url": "https://aethermoore.com/support.html",
         }
 
     # Log the purchase
@@ -516,6 +613,9 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
         "product_name": product["name"],
         "unresolved_product": unresolved_product,
         "amount_cents": amount,
+        "download_url": product["download_url"],
+        "manual_url": product["manual_url"],
+        "package_filename": product.get("package_filename", ""),
         "timestamp": int(time.time()),
     }
     PURCHASE_LOG.append(record)
@@ -525,7 +625,14 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
 
     # Send delivery email to buyer
     if email and not unresolved_product:
-        _send_delivery_email(email, product["name"], product["download_url"], product["manual_url"])
+        _send_delivery_email(
+            email,
+            product["name"],
+            product["download_url"],
+            product["manual_url"],
+            product.get("package_filename", ""),
+            product.get("support_url", "https://aethermoore.com/support.html"),
+        )
         _notify_owner(product["name"], email, amount)
     elif unresolved_product:
         LOGGER.warning(
