@@ -22,17 +22,25 @@ KAGGLE_KERNEL = "issacizrealdavis/polly-auto-coding-approval-metrics-v1"
 
 
 def _run(command: list[str], timeout: int = 120) -> dict[str, Any]:
-    proc = subprocess.run(
-        command,
-        cwd=REPO_ROOT,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        timeout=timeout,
-        check=False,
-        encoding="utf-8",
-        errors="replace",
-    )
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=REPO_ROOT,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+            check=False,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except FileNotFoundError as exc:
+        return {
+            "command": command,
+            "returncode": 127,
+            "stdout": "",
+            "stderr": f"missing executable: {exc.filename}",
+        }
     return {
         "command": command,
         "returncode": proc.returncode,

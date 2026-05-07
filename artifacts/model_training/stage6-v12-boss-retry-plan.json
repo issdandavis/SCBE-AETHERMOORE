@@ -1,0 +1,43 @@
+{
+  "schema_version": "geoseal_stage6_boss_retry_plan_v1",
+  "source": "hf_job:69f5795798a8d679adfb865c",
+  "profile_id": "coding-agent-qwen-stage6-repair-v12",
+  "repair_targets": [
+    {
+      "id": "byte-hex-compute-trace",
+      "kind": "byte_hex_compute_trace",
+      "missing_required": [
+        "byte",
+        "hex",
+        "compute",
+        "hold"
+      ],
+      "must_pass": true,
+      "recommended_rows": 72
+    },
+    {
+      "id": "multi-budget-cost-propagation",
+      "kind": "multi_budget_cost_propagation",
+      "missing_required": [
+        "power",
+        "compute",
+        "time",
+        "comms",
+        "wear"
+      ],
+      "must_pass": true,
+      "recommended_rows": 48
+    },
+    {
+      "id": "heldout-boundary-pollution-control",
+      "kind": "heldout_boundary_pollution_control",
+      "missing_required": [
+        "held-out",
+        "pollution",
+        "gated"
+      ],
+      "must_pass": true,
+      "recommended_rows": 48
+    }
+  ]
+}

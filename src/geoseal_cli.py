@@ -2523,6 +2523,117 @@ def cmd_yin_yang_dual(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_loop_dispatch(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_tool_policy import evaluate_harness_tool_policy, geoseal_command_to_tool_class
+
+    tool_class = geoseal_command_to_tool_class("loop-dispatch", execute=bool(args.execute))
+    policy = evaluate_harness_tool_policy(permission_mode=args.permission_mode, tool_class=tool_class)
+    payload: dict[str, Any] = {
+        "schema_version": "geoseal_loop_dispatch_gate_v1",
+        "provider": args.provider,
+        "task": args.task,
+        "execute": bool(args.execute),
+        "policy": policy,
+    }
+    if not policy.get("ok"):
+        if args.json:
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        else:
+            print(policy.get("decision", "DENY"))
+        return 2
+    if args.execute and os.environ.get("SCBE_AGENTIC_LOOP_EXECUTE", "").strip().lower() not in {"1", "true", "yes"}:
+        payload["execute_gate"] = {
+            "ok": False,
+            "decision": "QUARANTINE",
+            "reason": "set SCBE_AGENTIC_LOOP_EXECUTE=1 to actually dispatch cloud/network work",
+        }
+        if args.json:
+            print(json.dumps(payload, indent=2, sort_keys=True))
+        else:
+            print("execute gate blocked")
+        return 2
+    payload["execute_gate"] = {"ok": True, "decision": "ALLOW"}
+    if args.json:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        print("ready")
+    return 0
+
+
+def cmd_lightning_indexer(args: argparse.Namespace) -> int:
+    from src.coding_spine.lightning_indexer import select_sparse_candidates
+
+    candidates = json.loads(args.inline_candidates or "[]")
+    if not isinstance(candidates, list):
+        raise SystemExit("--inline-candidates must decode to a JSON list")
+    payload = select_sparse_candidates(
+        args.goal,
+        candidates,
+        top_k=args.top_k,
+        block_size=args.block_size,
+        channel_budget=args.channel_budget,
+    )
+    if args.json:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        for row in payload.get("selected", []):
+            print(row.get("candidate_id"))
+    return 0
+
+
+def cmd_agent_endurance_pack(args: argparse.Namespace) -> int:
+    round_id = args.round_id
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    regimen_id = f"{round_id}-regimen"
+    taskset_id = f"{round_id}-taskset"
+    regimen = {
+        "schema_version": "scbe_agent_endurance_regimen_v1",
+        "regimen_id": regimen_id,
+        "round_id": round_id,
+        "permission_mode": args.permission_mode,
+        "stages": ["observe", "route", "verify"],
+    }
+    taskset = {
+        "schema_version": "scbe_agent_endurance_taskset_v1",
+        "taskset_id": taskset_id,
+        "regimen_id": regimen_id,
+        "tasks": [
+            {"task_id": "inspect", "tool_class": "read"},
+            {"task_id": "verify", "tool_class": "execute_tests"},
+        ],
+    }
+    run_report = {
+        "schema_version": "scbe_agent_endurance_run_report_v1",
+        "round_id": round_id,
+        "regimen_id": regimen_id,
+        "taskset_id": taskset_id,
+        "permission_mode": args.permission_mode,
+        "status": "generated",
+    }
+    paths = {
+        "regimen": out_dir / "agent_endurance_regimen.json",
+        "taskset": out_dir / "agent_endurance_taskset.json",
+        "run_report": out_dir / "agent_endurance_run_report.json",
+        "manifest": out_dir / "agent_endurance_manifest.json",
+    }
+    paths["regimen"].write_text(json.dumps(regimen, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    paths["taskset"].write_text(json.dumps(taskset, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    paths["run_report"].write_text(json.dumps(run_report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    manifest = {
+        "schema_version": "geoseal_agent_endurance_pack_v1",
+        "round_id": round_id,
+        "permission_mode": args.permission_mode,
+        "paths": {key: str(path) for key, path in paths.items()},
+    }
+    paths["manifest"].write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if args.json:
+        print(json.dumps(manifest, indent=2, sort_keys=True))
+    else:
+        print(paths["manifest"])
+    return 0
+
+
 def cmd_seal(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
@@ -4286,6 +4397,30 @@ def build_parser() -> argparse.ArgumentParser:
     p_switchboard.add_argument("--request", default=None, help="JSON call request to evaluate")
     p_switchboard.add_argument("--json", action="store_true")
     p_switchboard.set_defaults(func=cmd_call_switchboard)
+
+    p_loop_dispatch = sub.add_parser("loop-dispatch", help="Gate network/cloud loop dispatch through harness policy")
+    p_loop_dispatch.add_argument("--provider", default="github")
+    p_loop_dispatch.add_argument("--task", default="")
+    p_loop_dispatch.add_argument("--permission-mode", default="observe")
+    p_loop_dispatch.add_argument("--execute", action="store_true")
+    p_loop_dispatch.add_argument("--json", action="store_true")
+    p_loop_dispatch.set_defaults(func=cmd_loop_dispatch)
+
+    p_lightning = sub.add_parser("lightning-indexer", help="Select sparse agent context candidates")
+    p_lightning.add_argument("--goal", required=True)
+    p_lightning.add_argument("--inline-candidates", default="[]")
+    p_lightning.add_argument("--top-k", type=int, default=8)
+    p_lightning.add_argument("--block-size", type=int, default=16)
+    p_lightning.add_argument("--channel-budget", type=int, default=3)
+    p_lightning.add_argument("--json", action="store_true")
+    p_lightning.set_defaults(func=cmd_lightning_indexer)
+
+    p_endurance = sub.add_parser("agent-endurance-pack", help="Generate an agent endurance training bundle")
+    p_endurance.add_argument("--round-id", required=True)
+    p_endurance.add_argument("--permission-mode", default="observe")
+    p_endurance.add_argument("--output-dir", required=True)
+    p_endurance.add_argument("--json", action="store_true")
+    p_endurance.set_defaults(func=cmd_agent_endurance_pack)
 
     p_yinyang = sub.add_parser("yin-yang-dual", help="Build a KO/DR yin-yang dual token packet")
     p_yinyang.add_argument("--ko-text", required=True, dest="ko_text")

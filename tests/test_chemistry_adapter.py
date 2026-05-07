@@ -8,6 +8,10 @@ Verifies:
   - Chemistry elements map correctly (not all Fe)
 """
 
+import pytest
+
+pytest.importorskip("rdkit")
+
 from python.scbe.chemistry_adapter import (
     ChemistryAdapter,
     training_gate_check,

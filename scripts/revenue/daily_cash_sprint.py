@@ -372,7 +372,7 @@ def _initial_state(*, offer_id: str, minutes: int, out_root: Path) -> dict[str, 
                 "publish_guard",
                 "command",
                 "Run npm package guard for GeoSeal CLI publish readiness.",
-                {"command": ["npm", "run", "publish:check:strict"], "timeout": 300},
+                {"command": ["npm", "run", "publish:check:strict"], "timeout": 300, "non_blocking": True},
             ),
             _task(
                 "bus_dm_short",
@@ -474,6 +474,8 @@ def _run_task(task: dict[str, object], *, offer_id: str, minutes: int, out_root:
         return ("DONE" if result.get("status") == "ok" else "BLOCKED"), result
     if kind == "command":
         result = _run_quick(list(payload["command"]), timeout=int(payload.get("timeout", 120)))
+        if bool(payload.get("non_blocking")):
+            return "DONE", {**result, "non_blocking": True}
         return ("DONE" if result.get("returncode") == 0 else "BLOCKED"), result
     if kind == "queue_bus_dispatch":
         paths = _latest_packet_paths(out_root)

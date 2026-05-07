@@ -5,6 +5,10 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip("torch")
+
 
 def _load_phase3a_3_module():
     path = Path("scripts/eval/hf_job_v8_pre_phase3a_3_retrieval_v2.py")

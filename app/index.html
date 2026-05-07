@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="scbe-api-base" content="">
+  <title>SCBE App</title>
+</head>
+<body>
+  <main id="app">SCBE application shell</main>
+  <script>
+    function resolveApiBase() {
+      const meta = document.querySelector('meta[name="scbe-api-base"]');
+      const configured = meta && meta.getAttribute('content');
+      if (configured) return configured.replace(/\/$/, '');
+      if (window.SCBE_API_BASE) return String(window.SCBE_API_BASE).replace(/\/$/, '');
+      return window.location.origin;
+    }
+
+    const API_URL = resolveApiBase();
+    window.SCBE_APP_CONFIG = { apiBase: API_URL };
+  </script>
+</body>
+</html>

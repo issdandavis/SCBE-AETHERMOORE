@@ -301,6 +301,11 @@ const GAMMA_FALLBACK_SITES = [
     primary_cta: 'Join the research digest',
   },
 ];
+const SOURCE_ROUTES = [
+  { id: 'scbe_github_pages_site', label: 'SCBE GitHub Pages site', policy: 'QUARANTINE_BY_DEFAULT' },
+  { id: 'tor_trusted_onion_research', label: 'Trusted onion research registry', policy: 'QUARANTINE_BY_DEFAULT' },
+  { id: 'starlink_public_space_telemetry', label: 'Public space telemetry source', policy: 'QUARANTINE_LIVE_OPERATIONS' },
+];
 
 let gammaLandingSites = [...GAMMA_FALLBACK_SITES];
 
@@ -410,6 +415,7 @@ function setCenterView(view) {
   const code = document.getElementById('centerCodeView');
   const services = document.getElementById('centerServicesView');
   const gamma = document.getElementById('centerGammaView');
+  const sources = document.getElementById('centerSourcesView');
   const tabs = document.querySelectorAll('.file-tab[data-center-view]');
   tabs.forEach((tab) => {
     if (tab.getAttribute('data-center-view') === view) tab.classList.add('active');
@@ -419,14 +425,22 @@ function setCenterView(view) {
     if (code) code.style.display = 'none';
     if (services) services.style.display = 'block';
     if (gamma) gamma.style.display = 'none';
+    if (sources) sources.style.display = 'none';
   } else if (view === 'gamma') {
     if (code) code.style.display = 'none';
     if (services) services.style.display = 'none';
     if (gamma) gamma.style.display = 'block';
+    if (sources) sources.style.display = 'none';
+  } else if (view === 'sources') {
+    if (code) code.style.display = 'none';
+    if (services) services.style.display = 'none';
+    if (gamma) gamma.style.display = 'none';
+    if (sources) sources.style.display = 'block';
   } else {
     if (code) code.style.display = 'block';
     if (services) services.style.display = 'none';
     if (gamma) gamma.style.display = 'none';
+    if (sources) sources.style.display = 'none';
   }
 }
 
@@ -478,6 +492,21 @@ function renderGammaGrid() {
   }).join('');
 }
 
+function renderSourceTerminal() {
+  const node = document.getElementById('sourceTerminal');
+  if (!node) return;
+  node.innerHTML = `
+    <div class="service-card">
+      <div class="service-head">
+        <span class="service-name">Governed RAG Intake</span>
+        <span class="service-zone yellow">QUARANTINE_BY_DEFAULT</span>
+      </div>
+      <div class="service-path">geoseal research-terminal</div>
+      <pre>${escHtml(JSON.stringify(SOURCE_ROUTES, null, 2))}</pre>
+    </div>
+  `;
+}
+
 async function loadGammaLandingSites() {
   try {
     const resp = await fetch(API + '/data/gamma_landing_sites.json');
@@ -514,6 +543,7 @@ function buildTable() {
         <div class="file-tab active" data-center-view="code">main.py</div>
         <div class="file-tab" data-center-view="services">Services</div>
         <div class="file-tab" data-center-view="gamma">Gamma Wing</div>
+        <div class="file-tab" data-center-view="sources">Sources</div>
       </div>
     </div>
     <div class="code-editor" id="centerCodeView">
@@ -524,6 +554,9 @@ function buildTable() {
     </div>
     <div class="service-pane" id="centerGammaView" style="display:none">
       <div class="service-grid" id="gammaGrid"></div>
+    </div>
+    <div class="service-pane" id="centerSourcesView" style="display:none">
+      <div class="service-grid" id="sourceTerminal"></div>
     </div>
   `;
   table.appendChild(center);
@@ -551,6 +584,7 @@ function buildTable() {
   });
 
   renderServiceGrid();
+  renderSourceTerminal();
   loadGammaLandingSites();
 }
 

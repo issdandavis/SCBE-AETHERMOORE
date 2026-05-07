@@ -29,6 +29,8 @@ GEOSEAL_CLI_COMMANDS = frozenset(
         "quick-agent",
         "alignment-audit",
         "binary-to-tmatrix",
+        "skill-tools",
+        "lightning-indexer",
     }
 )
 
@@ -282,6 +284,10 @@ async def geoseal_cli_http(command: str, body: dict[str, Any] = Body(default_fac
 
     if command not in GEOSEAL_CLI_COMMANDS:
         raise HTTPException(status_code=404, detail=f"Unknown GeoSeal command: {command}")
+    if command == "skill-tools":
+        from src.coding_spine.skill_harness_tools import build_harness_skill_tools_v1
+
+        return {"status": "ok", "exit_code": 0, "data": build_harness_skill_tools_v1()}
     from src.api.geoseal_cli_bridge import dispatch_geoseal_command
 
     try:
@@ -290,6 +296,14 @@ async def geoseal_cli_http(command: str, body: dict[str, Any] = Body(default_fac
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     exit_code = int(result.get("exit_code") or 0)
     return {"status": "ok" if exit_code == 0 else "error", **result}
+
+
+@app.post("/v1/geoseal/skill-tools", tags=["GeoSeal CLI"])
+async def geoseal_skill_tools(body: dict[str, Any] = Body(default_factory=dict)) -> dict[str, Any]:
+    _ = body
+    from src.coding_spine.skill_harness_tools import build_harness_skill_tools_v1
+
+    return {"status": "ok", "exit_code": 0, "data": build_harness_skill_tools_v1()}
 
 
 @app.post("/v1/harness/tool-bridge", tags=["Harness"])
