@@ -48,7 +48,7 @@ def _tool_contracts() -> list[dict[str, Any]]:
             "risk": "low",
             "approval": "auto",
             "purpose": "Inspect repository files, manifests, docs, and generated reports.",
-            "routes": ["code-packet", "explain-route", "history", "backend-registry"],
+            "routes": ["code-packet", "explain-route", "history", "backend-registry", "call-switchboard"],
         },
         {
             "tool": "write_workspace",
@@ -190,6 +190,7 @@ def build_agent_harness_manifest_v1(
             **bridge["geoseal_cli"],
             "agent_harness_json": f"{_exe()} -m src.geoseal_cli agent-harness --goal <goal> --json",
             "language_matrix_json": f"{_exe()} -m src.geoseal_cli agent-harness --language {preferred} --json",
+            "call_switchboard_json": f"{_exe()} -m src.geoseal_cli call-switchboard --calls <calls.json> --request <request.json> --json",
         },
         "service_routes": {
             **bridge["geoseal_service"],
@@ -198,7 +199,7 @@ def build_agent_harness_manifest_v1(
         "external_router": bridge["vercel_agent_router"],
         "mcp_style_exports": {
             "tools": [row["tool"] for row in _tool_contracts()],
-            "resources": ["language_routes", "permission_profiles", "standard_flow"],
+            "resources": ["language_routes", "permission_profiles", "standard_flow", "call_switchboard"],
             "prompts": ["explain-route", "testing-cli", "project-scaffold"],
         },
     }
@@ -231,6 +232,7 @@ def build_agent_tool_bridge_v1(
         "code_packet_json": f"{exe} -m src.geoseal_cli code-packet {file_args} --json",
         "history_json": f"{exe} -m src.geoseal_cli history --json",
         "testing_cli_json": f"{exe} -m src.geoseal_cli testing-cli {file_args} --json",
+        "call_switchboard_json": f"{exe} -m src.geoseal_cli call-switchboard --calls <calls.json> --request <request.json> --json",
     }
 
     base_url = os.environ.get("GEOSEAL_SERVICE_URL", "http://127.0.0.1:8765").rstrip("/")

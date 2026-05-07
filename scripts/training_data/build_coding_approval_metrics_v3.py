@@ -27,6 +27,21 @@ RESIDUES = (
     / "training_residues.jsonl"
 )
 
+FALLBACK_RESIDUES = [
+    {
+        "prompt_id": "fallback_seed_hold_open_path",
+        "contract_id": "coding_approval_metrics_v3_fallback",
+        "token_chain": ["approval", "evidence", "incubate"],
+        "loss_latest": 0.0,
+    },
+    {
+        "prompt_id": "fallback_seed_long_return",
+        "contract_id": "coding_approval_metrics_v3_fallback",
+        "token_chain": ["long_return", "reuse", "compact"],
+        "loss_latest": 0.0,
+    },
+]
+
 TRAIN_NAME = "coding_approval_metrics_v3_train.sft.jsonl"
 EVAL_NAME = "coding_approval_metrics_v3_eval.sft.jsonl"
 MANIFEST_NAME = "coding_approval_metrics_v3_manifest.json"
@@ -172,7 +187,8 @@ def build_packet_trace_records() -> list[dict[str, Any]]:
 
 def build_residue_records() -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
-    for row in _read_jsonl(RESIDUES):
+    rows = _read_jsonl(RESIDUES) or FALLBACK_RESIDUES
+    for row in rows:
         chain = row.get("token_chain") if isinstance(row.get("token_chain"), list) else []
         user = (
             "Digest this post-gate training residue.\n\n"

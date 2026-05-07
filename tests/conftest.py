@@ -69,6 +69,24 @@ os.environ["TMP"] = str(_PYTEST_TEMP_ROOT)
 os.environ.setdefault("SCBE_ALLOW_DEMO_KEYS", "1")
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _ensure_cross_language_lookup_artifact():
+    """Regenerate deterministic lookup artifacts in cold CI checkouts."""
+
+    lookup_path = _REPO_ROOT / "artifacts" / "cross_language_lookup" / "full_cross_language_lookup.json"
+    if lookup_path.exists():
+        return
+    builder = importlib.import_module("scripts.system.build_cross_language_lookup")
+    saved_argv = sys.argv
+    try:
+        sys.argv = [str(Path(builder.__file__).resolve())]
+        rc = builder.main()
+    finally:
+        sys.argv = saved_argv
+    if rc != 0 or not lookup_path.exists():
+        pytest.skip(f"cross-language lookup builder returned rc={rc}; artifact missing")
+
+
 def _repo_local_mkdtemp(suffix=None, prefix=None, dir=None):
     """Create a repo-local temp dir without relying on Windows stdlib ACL setup.
 

@@ -1,0 +1,84 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-coding-primary-7b-qlora-v6c-DRAFT",
+  "title": "SCBE Coding-Primary 7B QLoRA v6c (DRAFT — coding-output-primary mix)",
+  "description": "Scale-up targeted at agent coding quality. Coding-related shards weighted ~93% of training rows. Sacred-Tongue conlang lane retained via bijective_codeflow which IS the cross-tongue code translation shard. DRAFT — DO NOT DISPATCH WITHOUT USER REVIEW.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "bijective_codeflow_v1_train.sft.jsonl",
+      "ca_geoseal_combined_repair_v3_train.sft.jsonl",
+      "ca_opcode_literal_sft_v1_train.sft.jsonl",
+      "ca_geoseal_smoke_repair_v1_train.sft.jsonl",
+      "ca_opcode_exact_repair_v2_train.sft.jsonl",
+      "coding_approval_metrics_v3_train.sft.jsonl",
+      "coding_system_full_v1_train.sft.jsonl",
+      "college_coding_choice_matrix_v1.sft.jsonl",
+      "external_poly_coding_v1_train.sft.jsonl",
+      "geoseal_command_recall_v1.sft.jsonl",
+      "geoseal_industry_commands_v1_train.sft.jsonl",
+      "geoseal_command_harmony_v1.sft.jsonl",
+      "foundation_bundle_stacks_train.sft.jsonl",
+      "aligned_foundations_v2_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "bijective_codeflow_v1_holdout.sft.jsonl",
+      "ca_geoseal_combined_repair_v3_holdout.sft.jsonl",
+      "ca_geoseal_smoke_repair_v1_holdout.sft.jsonl",
+      "ca_opcode_exact_repair_v2_holdout.sft.jsonl",
+      "ca_opcode_literal_sft_v1_holdout.sft.jsonl",
+      "coding_approval_metrics_v3_eval.sft.jsonl",
+      "coding_system_full_v1_holdout.sft.jsonl",
+      "external_poly_coding_v1_holdout.sft.jsonl",
+      "foundation_bundle_stacks_holdout.sft.jsonl",
+      "aligned_foundations_v2_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 768,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 16,
+    "max_steps": 600,
+    "warmup_steps": 40,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00012,
+    "gradient_checkpointing": true,
+    "seed": 47,
+    "logging_steps": 20,
+    "save_steps": 200,
+    "eval_steps": 100,
+    "max_train_records": 0,
+    "max_eval_records": 0
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-coding-primary-sft",
+    "adapter_repo": "issdandavis/scbe-coding-primary-7b-qlora-v6c",
+    "token_env": "HF_TOKEN",
+    "push_adapter": false
+  },
+  "execution": {
+    "hf_flavor": "l4x1",
+    "timeout": "120m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE coding agent. Code is the primary output. The Sacred Tongues map bijectively to code languages (KO=Python, AV=JavaScript, RU=Rust, CA=Mathematica, UM=Haskell, DR=Markdown). Preserve slot alignment when translating across tongues. Emit minimal, executable code. Use governance verdicts (PASS/QUARANTINE/ESCALATE/DENY) only when the prompt is a verification task.",
+  "evaluation": {
+    "contract_path": "config/model_training/coding_verification_eval_contract.json",
+    "constrained_gate_scaffold": true,
+    "constrained_prompt_prefix": true,
+    "max_new_tokens": 192
+  },
+  "notes": [
+    "DRAFT — DO NOT DISPATCH WITHOUT USER REVIEW. Cost estimate: l4x1 x 120 min ~= $3-6 on HF Pro.",
+    "Train mix (1,699 rows total): 936 bijective_codeflow + 530 CA/GeoSeal repair + 163 coding-specific + 32 foundation_bundle + 72 aligned_foundations OOD = 93% coding-related, 7% drift guard.",
+    "Eval mix (220 holdout rows): 104 bijective + 13 CA/GeoSeal + 70 coding-specific + 10 foundation + 23 OOD anchor.",
+    "max_seq_length raised to 768 (vs v6's 512) because bijective_codeflow rows include full Python+JS+Rust source blocks side-by-side; many rows will truncate at 512.",
+    "Eval contract authored 2026-05-05 at config/model_training/coding_verification_eval_contract.json — coding_verification_unseen_eval_v1. 12 prompts spanning bijective translation (count_vowels KO->UM, multi-lens triple), body fidelity (inventory_unique seen-set guard, safe_subtract None-guard, clamp_value, merge_counts, first_positive Option), approval-card verdict, KO-route running_average, and code/chemistry lane boundary. Thresholds: minimum_pass_rate 0.7 with 3 must_pass items. Forbidden tokens word-boundary-matched per double_blind_training_eval._contains_forbidden.",
+    "push_adapter remains FALSE for v6c first dispatch — flip to true only after a base-model dry-run shows the contract correctly distinguishes a verbose-ideal candidate from a skeleton-only candidate, AND v6c training round actually clears the gate.",
+    "Components added 2026-05-04 (H-JEPA, golden-helix, spine overlay, council dispatch) intentionally NOT included here. v6c isolates the data-mix-and-base-scale variable for clean attribution. Layer those in v6d after v6c baseline is measured.",
+    "Comparison plan: v5 (0.5B chem) vs v6c (7B coding-primary) on bijective_codeflow holdout + coding_approval_metrics eval. Expected lift on 7B base alone: substantial. Expected lift from coding-primary mix: substantial. Combined lift should be measurable above v5 baseline."
+  ]
+}

@@ -2485,6 +2485,44 @@ def cmd_swarm(args: argparse.Namespace) -> int:
     return 0 if result.quorum_ok else 1
 
 
+def cmd_call_switchboard(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_call_switchboard import build_switchboard_snapshot, evaluate_call_request
+
+    calls_path = Path(args.calls) if args.calls else None
+    existing: list[dict[str, Any]] = []
+    if calls_path and calls_path.is_file():
+        payload = json.loads(calls_path.read_text(encoding="utf-8"))
+        existing = payload if isinstance(payload, list) else payload.get("calls", [])
+
+    if args.request:
+        request = json.loads(args.request)
+        payload = evaluate_call_request(existing, request)
+    else:
+        payload = build_switchboard_snapshot(existing)
+
+    if args.json:
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    else:
+        print(payload.get("decision", "SNAPSHOT"))
+    return 0
+
+
+def cmd_yin_yang_dual(args: argparse.Namespace) -> int:
+    from src.tokenizer.yin_yang_lattice import build_yin_yang_dual_packet
+
+    packet = build_yin_yang_dual_packet(
+        ko_text=args.ko_text,
+        dr_text=args.dr_text,
+        size=args.size,
+        active_frame=args.frame,
+    )
+    if args.json:
+        print(json.dumps(packet, indent=2, sort_keys=True))
+    else:
+        print(packet["packet_sha256"])
+    return 0
+
+
 def cmd_seal(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     phi_cost = getattr(args, "phi_cost", 0.0)
@@ -4240,6 +4278,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_swarm.add_argument("args", nargs="*")
     p_swarm.set_defaults(func=cmd_swarm)
 
+    p_switchboard = sub.add_parser(
+        "call-switchboard",
+        help="Evaluate or snapshot governed agent call reservations",
+    )
+    p_switchboard.add_argument("--calls", default=None, help="JSON file with existing calls")
+    p_switchboard.add_argument("--request", default=None, help="JSON call request to evaluate")
+    p_switchboard.add_argument("--json", action="store_true")
+    p_switchboard.set_defaults(func=cmd_call_switchboard)
+
+    p_yinyang = sub.add_parser("yin-yang-dual", help="Build a KO/DR yin-yang dual token packet")
+    p_yinyang.add_argument("--ko-text", required=True, dest="ko_text")
+    p_yinyang.add_argument("--dr-text", required=True, dest="dr_text")
+    p_yinyang.add_argument("--size", type=int, default=9)
+    p_yinyang.add_argument("--frame", type=int, default=0)
+    p_yinyang.add_argument("--json", action="store_true")
+    p_yinyang.set_defaults(func=cmd_yin_yang_dual)
+
     p_seal = sub.add_parser("seal", help="Apply a GeoSeal signature to a payload")
     p_seal.add_argument("payload")
     p_seal.add_argument("--op", default=None)
@@ -4417,7 +4472,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args, unknown = parser.parse_known_args(argv)
+    if unknown:
+        if getattr(args, "cmd", None) in {"emit", "run", "swarm"} and all("=" in item for item in unknown):
+            args.args = [*getattr(args, "args", []), *unknown]
+        else:
+            parser.error("unrecognized arguments: " + " ".join(unknown))
     return args.func(args)
 
 

@@ -89,9 +89,8 @@ def test_require_browser_not_launched():
 def test_playwright_runtime_remote_not_open():
     """remote_screenshot before open_remote_display raises RuntimeError."""
     from agents.playwright_runtime import PlaywrightRuntime
+    import asyncio
 
     rt = PlaywrightRuntime()
     with pytest.raises(RuntimeError, match="No remote displays"):
-        import asyncio
-
-        asyncio.get_event_loop().run_until_complete(rt.remote_screenshot("test"))
+        asyncio.run(rt.remote_screenshot("test"))
