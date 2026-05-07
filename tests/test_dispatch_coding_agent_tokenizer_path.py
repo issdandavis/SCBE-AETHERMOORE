@@ -52,25 +52,54 @@ def test_render_with_tokenizer_path_inlines_path_lookup():
 
 
 def test_render_emits_resize_guard():
-    """The resize guard must always be present so a profile that points
-    at an extended tokenizer does not need a flag day to opt in — the
-    code does the right thing automatically when vocab mismatches."""
+    """The resize guard must be present and gated on extended_vocab >
+    base_vocab. Many models (Qwen2.5) pad model.config.vocab_size beyond
+    the tokenizer's actual vocab — resizing down would crash. Use
+    strictly-greater to detect a real extension."""
 
     profile = _baseline_profile()
     script = dispatcher.render_uv_training_script(profile)
     assert "model.resize_token_embeddings(extended_vocab)" in script
     assert '"event": "resize_token_embeddings"' in script
-    assert "extended_vocab != base_vocab" in script
+    assert "extended_vocab > base_vocab" in script
+    # Negative: the buggy != check that shrunk Qwen embeddings 152064->151665
+    # (job 69fbd7c6, 2026-05-06) must be gone.
+    assert "extended_vocab != base_vocab" not in script
 
 
-def test_render_auto_sets_modules_to_save_when_vocab_mismatches():
-    """When tokenizer extends vocab, embed_tokens + lm_head must be
-    trainable so the new rows learn — LoRA alone freezes them."""
+def test_render_auto_sets_modules_to_save_when_tokenizer_was_extended():
+    """When tokenizer was extended (extended_vocab > base_vocab),
+    embed_tokens + lm_head must be trainable so the new rows learn —
+    LoRA alone freezes them. This must NOT fire when the tokenizer was
+    not extended (false positive on padded model.config.vocab_size
+    blew up v6g with 1.1B trainable params + OOM)."""
 
     profile = _baseline_profile()
     script = dispatcher.render_uv_training_script(profile)
     assert 'modules_to_save = ["embed_tokens", "lm_head"]' in script
     assert "modules_to_save=modules_to_save" in script
+    # Gate must be 'tokenizer_was_extended' (boolean derived from > comparison),
+    # not the buggy != comparison that fired on Qwen's padded vocab.
+    assert "tokenizer_was_extended" in script
+
+
+def test_render_does_not_resize_when_tokenizer_smaller_than_model_vocab():
+    """Regression for v6g failure (job 69fbd7c6). Qwen2.5-Coder-7B has
+    model.config.vocab_size=152064 but the base tokenizer is 151665. The
+    earlier render did `if extended_vocab != base_vocab: resize` which
+    SHRUNK the embedding 152064->151665, dropped 399 rows, and crashed
+    training. The fixed render must use strictly-greater so this case
+    is a no-op."""
+
+    profile = _baseline_profile()
+    # No tokenizer_path -> base tokenizer -> common case where Qwen pads model
+    profile.setdefault("hub", {}).pop("tokenizer_path", None)
+    script = dispatcher.render_uv_training_script(profile)
+    # The condition must be the strictly-greater form; the runtime decides
+    # but the rendered code can never call resize on shrink.
+    idx = script.index("if tokenizer_was_extended:")
+    block = script[idx : idx + 300]
+    assert "model.resize_token_embeddings" in block
 
 
 def test_render_honors_explicit_modules_to_save_override():

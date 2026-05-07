@@ -257,11 +257,16 @@ def main() -> None:
     )
     model.config.use_cache = False
     # When a custom tokenizer adds atomic entries the embedding matrix must
-    # grow to match. Mean-init for new rows is HF default. Resize must happen
-    # BEFORE peft wrap so the new rows are part of the base model.
+    # GROW to match. Mean-init for new rows is HF default. Resize must
+    # happen BEFORE peft wrap so the new rows are part of the base model.
+    # IMPORTANT: only resize when extended_vocab > base_vocab. Many models
+    # (Qwen2.5 included) pad model.config.vocab_size beyond the tokenizer's
+    # actual vocab for efficiency — that is NOT an extension and resizing
+    # downward would silently drop rows and crash subsequent training.
     base_vocab = int(getattr(model.config, "vocab_size", 0))
     extended_vocab = int(len(tokenizer))
-    if extended_vocab != base_vocab:
+    tokenizer_was_extended = extended_vocab > base_vocab
+    if tokenizer_was_extended:
         model.resize_token_embeddings(extended_vocab)
         print(json.dumps({{
             "event": "resize_token_embeddings",
@@ -277,7 +282,7 @@ def main() -> None:
     profile_modules_to_save = train_cfg.get("modules_to_save")
     if profile_modules_to_save:
         modules_to_save = list(profile_modules_to_save)
-    elif extended_vocab != base_vocab:
+    elif tokenizer_was_extended:
         modules_to_save = ["embed_tokens", "lm_head"]
     else:
         modules_to_save = None
