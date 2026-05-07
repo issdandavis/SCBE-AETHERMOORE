@@ -28,6 +28,26 @@ DEFAULT_OUTPUT = REPO_ROOT / "products" / "packaged"
 # ---- Product: AI Governance Toolkit ----
 
 TOOLKIT_FILES = [
+    # Buyer-facing start guide
+    ("deliverables/SCBE_Production_Pack/BUYER_START_GUIDE.md", "BUYER_START_GUIDE.md"),
+    ("deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/README.md", "quickstart/README.md"),
+    # Practical buyer templates promised on the sales/manual pages
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/decision-record-template.md",
+        "templates/decision-record-template.md",
+    ),
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/threshold-worksheet.md",
+        "templates/threshold-worksheet.md",
+    ),
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/pilot-checklist.md",
+        "templates/pilot-checklist.md",
+    ),
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/review-notes-template.md",
+        "templates/review-notes-template.md",
+    ),
     # Architecture docs
     ("docs/specs/LAYER_INDEX.md", "docs/LAYER_INDEX.md"),
     ("docs/specs/SYSTEM_ARCHITECTURE.md", "docs/SYSTEM_ARCHITECTURE.md"),
@@ -50,14 +70,21 @@ Thank you for purchasing the AI Governance Toolkit from AetherMoore.
 ## What's Inside
 
 - `docs/` — Complete 14-layer architecture documentation
+- `BUYER_START_GUIDE.md` — First ten minutes and support path
+- `templates/decision-record-template.md` — Capture a governed decision
+- `templates/threshold-worksheet.md` — Set first allow/quarantine/deny thresholds
+- `templates/pilot-checklist.md` — Run one small pilot workflow
+- `templates/review-notes-template.md` — Record review findings
 - `templates/` — Governance configuration templates (YAML/JSON)
-- `quickstart/` — Demo flow to get started immediately
+- `quickstart/` — Package README and demo flow
 
 ## Quick Start
 
-1. Read `docs/LAYER_INDEX.md` for the full 14-layer pipeline overview
-2. Copy `templates/scbe_core_axioms.yaml` into your project
-3. Follow `quickstart/PRODUCT_QUICKSTART.md` for a hands-on walkthrough
+1. Open `BUYER_START_GUIDE.md`
+2. Fill `templates/threshold-worksheet.md` for one real workflow
+3. Complete `templates/decision-record-template.md` for one allow/quarantine/deny decision
+4. Use `templates/pilot-checklist.md` to verify the workflow is ready for a small pilot
+5. Use `docs/LAYER_INDEX.md` after the first decision record is complete
 
 ## Support
 
