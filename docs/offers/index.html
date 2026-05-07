@@ -29,7 +29,7 @@
       <a href="../support.html">Support</a>
     </nav>
     <h1>SCBE customer offers</h1>
-    <p class="lead">These are the current customer-ready SCBE products. Checkout is handled by Stripe-hosted payment links; delivery and recovery paths are documented in the buyer manual.</p>
+    <p class="lead">These are the current customer-ready SCBE products. Checkout is handled by Stripe-hosted payment links; delivery and recovery paths are documented in the buyer manual. Paid ZIP artifacts are built before checkout traffic is promoted.</p>
     <section class="grid" aria-label="SCBE offers">
       <article class="card">
         <h2>SCBE AI Governance Toolkit</h2>
@@ -47,6 +47,11 @@
         <h2>Delivery or access help</h2>
         <p>If a buyer does not receive the package link or a manual path fails, use the delivery page first and then email support.</p>
         <a class="btn secondary" href="../product-manual/delivery-and-access.html">Delivery + Access</a>
+      </article>
+      <article class="card">
+        <h2>Delivery proof</h2>
+        <p>Product ZIPs rebuild locally with <code>python scripts/package_products.py</code> and stay out of public GitHub Pages under the ignored <code>products/packaged/</code> lane.</p>
+        <a class="btn secondary" href="../product-manual/delivery-and-access.html">Verify delivery path</a>
       </article>
     </section>
   </main>
