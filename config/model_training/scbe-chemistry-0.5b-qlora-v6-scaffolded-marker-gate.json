@@ -1,0 +1,67 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-chemistry-0.5b-qlora-v6-scaffolded-marker-gate",
+  "title": "SCBE Chemistry 0.5B QLoRA v6 Scaffolded Marker Gate",
+  "description": "v6: same data + same eval contract as v5; max_steps lifted 180->320 to test whether more training moves raw pass rate (v5 raw 1/5, scaffolded 5/5). Push gated on executable promotion gate, not on training metrics.",
+  "backend": "local-or-colab-qlora",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "dataset": {
+    "root": "training-data/sft",
+    "train_files": [
+      "chemistry_gate_repair_v1_train.sft.jsonl",
+      "chemistry_adapter_invariants_v1_train.sft.jsonl",
+      "kinematic_mesh_filter_repair_v1_train.sft.jsonl",
+      "aligned_foundations_v2_train.sft.jsonl"
+    ],
+    "eval_files": [
+      "chemistry_gate_repair_v1_eval.sft.jsonl",
+      "chemistry_adapter_invariants_v1_eval.sft.jsonl",
+      "kinematic_mesh_filter_repair_v1_eval.sft.jsonl",
+      "aligned_foundations_v2_holdout.sft.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 384,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 8,
+    "max_steps": 320,
+    "warmup_steps": 24,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 0.00018,
+    "gradient_checkpointing": true,
+    "seed": 47,
+    "logging_steps": 10,
+    "save_steps": 80,
+    "eval_steps": 40,
+    "max_train_records": 0,
+    "max_eval_records": 0
+  },
+  "hub": {
+    "dataset_repo": "issdandavis/scbe-chemistry-sft",
+    "adapter_repo": "issdandavis/scbe-chemistry-0.5b-qlora-v6-scaffolded-marker-gate",
+    "token_env": "HF_TOKEN",
+    "push_adapter": false
+  },
+  "execution": {
+    "hf_flavor": "t4-small",
+    "timeout": "55m"
+  },
+  "system_prompt": "You are an SCBE-AETHERMOORE chemistry verification agent. Answer in concise English. Preserve every REQUIRED_MARKERS word exactly. Then explain the chemistry path and governance verdict. Use PASS only for valid chemistry routes and DENY for invalid material chemistry claims.",
+  "evaluation": {
+    "contract_path": "config/model_training/chemistry_verification_eval_contract.json",
+    "constrained_gate_scaffold": true,
+    "constrained_prompt_prefix": true,
+    "max_new_tokens": 96
+  },
+  "notes": [
+    "v6 = v5 + 78% more steps (180->320) and slightly longer warmup (16->24) to give marker behavior time to internalize without scaffolding.",
+    "Same dataset, eval contract, and base model as v5. The only training-side variable is step count.",
+    "If v6 raw pass rate moves from 1/5 toward 3/5 or better, the scale-up budget unlocks for a 1.5B base in v7. If raw stays at v5 floor, the limitation is data not steps and v7 should rebuild marker shards instead.",
+    "T4-safe settings preserved: sequence length 384, per-device batch size 1, accumulation 8, gate max_new_tokens 96. Timeout 35m -> 55m to absorb the longer step count.",
+    "push_adapter remains false. Per the no-publish-until-it-works rule: dispatch v6, run gate locally on the produced adapter, then publish manually only if gate clears.",
+    "aligned_foundations_v2 OOD anchor preserved (~11% of train rows) to keep concept-preservation guard active.",
+    "Different seed (46 -> 47) so v6 is not a bit-identical re-run of v5; if results match exactly, that itself is information about the trainer not the data."
+  ]
+}
