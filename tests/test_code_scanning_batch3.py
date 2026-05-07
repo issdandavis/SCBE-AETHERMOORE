@@ -14,15 +14,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load_module(relative_path: str, module_name: str, extra_paths: list[Path] | None = None):
-    added: list[str] = []
+    path_positions: dict[str, int | None] = {}
     # Save and clear any cached modules that extra_paths might shadow
     saved_mods: dict[str, object] = {}
     if extra_paths:
         for extra in extra_paths:
             extra_str = str(extra)
-            if extra_str not in sys.path:
-                sys.path.insert(0, extra_str)
-                added.append(extra_str)
+            path_positions[extra_str] = sys.path.index(extra_str) if extra_str in sys.path else None
+            if extra_str in sys.path:
+                sys.path.remove(extra_str)
+            sys.path.insert(0, extra_str)
         # Clear cached governance so spiral-word-app/governance.py can be found
         # during module execution (it would otherwise resolve to src/governance/)
         gov = sys.modules.get("governance")
@@ -39,9 +40,11 @@ def _load_module(relative_path: str, module_name: str, extra_paths: list[Path] |
         return module
     finally:
         # Remove temporary paths so they don't shadow packages in src/
-        for p in added:
+        for p, old_index in path_positions.items():
             if p in sys.path:
                 sys.path.remove(p)
+            if old_index is not None:
+                sys.path.insert(min(old_index, len(sys.path)), p)
         # Restore original governance module if we cleared it
         for k, v in saved_mods.items():
             sys.modules.pop(k, None)  # remove spiral-word-app's governance
