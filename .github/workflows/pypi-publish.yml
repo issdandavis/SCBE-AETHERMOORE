@@ -17,6 +17,8 @@ jobs:
   build-and-publish:
     name: Build sdist+wheel and publish to PyPI
     runs-on: ubuntu-latest
+    # Skip releases tagged for sibling Python packages (they have their own publish workflows).
+    if: ${{ github.event_name == 'workflow_dispatch' || !startsWith(github.event.release.tag_name, 'agent-bus-py-v') }}
     steps:
       - uses: actions/checkout@v4
         with:

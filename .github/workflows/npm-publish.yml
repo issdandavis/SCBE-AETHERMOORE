@@ -18,6 +18,8 @@ jobs:
   npmjs:
     name: Publish to npmjs.org
     runs-on: ubuntu-latest
+    # Skip releases tagged for sibling Python-only packages.
+    if: ${{ github.event_name == 'workflow_dispatch' || !startsWith(github.event.release.tag_name, 'agent-bus-py-v') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,6 +58,7 @@ jobs:
   github-packages:
     name: Publish to GitHub Packages
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || !startsWith(github.event.release.tag_name, 'agent-bus-py-v') }}
     steps:
       - uses: actions/checkout@v4
         with:

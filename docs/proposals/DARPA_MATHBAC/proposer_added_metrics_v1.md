@@ -100,16 +100,53 @@ In Phase II, when TA1 and TA2 performers combine into Evolution Teams, PIS is th
 
 ### Honest open questions
 
-1. The MEE artifact-class extractor is a regex+LLM-judge ensemble; LLM-judge bias is a known failure mode. We will include a calibration study in Vol I §3.5 showing inter-judge agreement and human-spot-check pass rates.
-2. The CDPTI 95th-percentile baseline is per-campaign; cross-campaign comparability requires a normalization step we have not yet specified. This is a Vol I §3.4 work item.
-3. The PIS projection matrix W is learned on a seed corpus; the seed corpus selection is a defensible choice but not a unique one. We will publish the seed corpus hash so other teams can either adopt our W or train their own with documented divergence.
-4. None of the four metrics is novel in *isolation* — each leans on well-cited literature. The novelty claim is the *combination*: a four-component dashboard (evidence emission + axiom compliance + dynamics + identity) that can be computed cheaply on standard captured data and that fills the well-known gap between outcome metrics and protocol structure. We do not claim more than that.
+1. **MEE LLM-judge calibration (closed in §"MEE judge calibration protocol" below).** The MEE artifact-class extractor is a regex+LLM-judge ensemble; LLM-judge bias is a known failure mode. The calibration protocol below specifies judge composition, sample sizes, agreement metrics, and the human-spot-check budget that will appear in Vol I §3.5.
+2. **CDPTI cross-campaign normalization (closed in §"CDPTI normalization specification" below).** The CDPTI 95th-percentile baseline is per-campaign; cross-campaign comparability requires a normalization step. The specification below pins the four normalization factors (campaign duration, agent count, message volume, regime-class baseline) and the reporting form that will appear in Vol I §3.4.
+3. **PIS projection-matrix `W` seed corpus.** Open. `W` is learned on a seed corpus; the corpus selection is a defensible choice but not a unique one. Vol I §3.6 will publish the seed-corpus SHA-256 hash and a fork-safe protocol so other teams can either adopt our `W` or train their own with documented divergence (cosine distance distribution + within-cluster variance comparison against ours).
+4. **Novelty claim (unchanged).** None of the four metrics is novel in *isolation* — each leans on well-cited literature. The novelty claim is the *combination*: a four-component dashboard (evidence emission + axiom compliance + dynamics + identity) that can be computed cheaply on standard captured data and that fills the well-known gap between outcome metrics and protocol structure. We do not claim more than that.
+
+### MEE judge calibration protocol (closes open question 1)
+
+**Judge ensemble.** Three LLM judges of distinct family + one rule-based regex extractor + one human spot-check sampler. The three LLM judges are drawn from disjoint training-data lineages (e.g. one Claude-class, one GPT-class, one open-weight Mixtral-class) to limit family-bias propagation. The regex extractor is the deterministic floor: anything it catches is locked in regardless of judge disagreement. Each emitted artifact `e` is scored by all five extractors; the per-extractor score `v_k(e) ∈ {0, 0.5, 1}` is logged.
+
+**Aggregation.** The published `v(e)` is the *median* of the three LLM judge scores **after** the regex floor (a regex hit forces `v(e) ≥ 0.5`). Median-not-mean is deliberate: it is robust to one outlier judge and gives the "two of three judges agree" semantics MATHBAC reviewers will recognize from prior LLM-as-judge literature.
+
+**Inter-judge agreement.** For each campaign, report Cohen's κ pairwise across the three LLM judges and Krippendorff's α across all five extractors (treating the score scale as ordinal). Acceptance threshold for a campaign's MEE score to be reported in Vol I tables: pairwise Cohen's κ ≥ 0.6 between every pair of LLM judges (substantial agreement). Below 0.6, the campaign is flagged as "judge-divergent" and the regex-floor MEE is reported instead with the divergence noted.
+
+**Human spot-check.** Sample 5% of artifacts per campaign, stratified by judge-disagreement quintile (oversample the disagreement tail). One human reviewer per artifact; mean human-vs-ensemble agreement reported per campaign as a sanity-check column in Vol I §3.5. Acceptance threshold: ≥ 80% of human-checked artifacts agree with the published `v(e)` to within 0.5 (i.e. fail-vs-pass disagreement ≤ 20%).
+
+**Budget.** ~3 judge-hours per campaign at typical 2025-vintage API rates; ~0.5 human-reviewer-hours per campaign. Total Phase I IV&V cost addition: under $4K end-of-program. Tooling: open Python package shipped alongside SCBE Computational Design Tool (TA1 deliverable B).
+
+**Failure mode flagged in advance.** If all three judges share an undisclosed shared-training-data dependency, agreement can be high while bias is also high. Mitigation: every six months refresh at least one judge family and re-baseline; documented in the published calibration package.
+
+### CDPTI normalization specification (closes open question 2)
+
+**Per-campaign baseline (already specified).** Within a single campaign of T sliding-window timesteps, candidate transition timesteps are the local maxima of |dλ_2/dt|, |dσ/dt|, |dH/dt| above the 95th percentile of that campaign's empirical distribution. This stays unchanged.
+
+**Cross-campaign normalization (the gap).** To compare CDPTI across campaigns of different duration, agent count, and message volume, report a *normalized* CDPTI
+
+```
+CDPTI_norm = CDPTI_raw · (T_ref / T) · (n_ref / n_agents) · (M_ref / M_messages) · α(R)
+```
+
+where:
+- `T_ref` = 1000 sliding windows (chosen as round-number Phase I default; adjustable per-subdomain in Vol I §3.4).
+- `n_ref` = 6 agents (median across the MATHBAC TA2 reference protocols cited in PA lines 312–316).
+- `M_ref` = 5000 inter-agent messages (Phase I default; tracked across campaigns).
+- `α(R)` is a regime-class adjustment factor: `α(R) = 1` for closed-vocabulary regime sets (n_regimes ≤ 16); `α(R) = log_2(n_regimes / 8)` for open-vocabulary settings, attenuating the spurious-transition rate that comes with finer regime decomposition.
+
+**Reporting.** Every CDPTI in Vol I tables is reported as the triple `(CDPTI_raw, CDPTI_norm, n_transitions)` with the `(T, n_agents, M_messages)` campaign sizes shown in the row caption. Cross-campaign comparisons use `CDPTI_norm` only; within-campaign progress curves use `CDPTI_raw` to preserve absolute interpretability.
+
+**Validation.** Sanity-check via two synthetic campaigns of identical underlying dynamics but different durations (T = 500 vs T = 2000): `CDPTI_norm` should match within ±0.05; `CDPTI_raw` will differ by ~4×. This is a unit test in the open-source CDPTI package that ships with TA1 deliverable B.
+
+**Honest residual.** `α(R)` is itself a defensible-but-not-unique choice; if a Phase I subdomain reveals it under- or over-corrects, Vol I §3.4 will retain the formula and document the calibration override per subdomain rather than swap it.
 
 ---
 
 ## Status / next steps
 
 - This document is **DRAFT v1** for internal review. Author: Issac Davis.
+- **v1.1 — 2026-05-07:** closed open questions 1 (MEE judge calibration protocol) and 2 (CDPTI cross-campaign normalization specification). Open question 3 (PIS seed corpus) remains; it is a publish-the-hash item bound to the Vol I §3.6 finalization, not a methodology gap.
 - Will be folded into **Attachment X (Proposal Overview & Proposed Metrics)** for the 2026-06-16 BAAT submission.
 - Each metric is also referenced from `pa_26_05_compliance_checklist.md` line 50 (clause 2.8 closure).
 - Punch-list cross-reference: closes item #6 in `project_mathbac_proposal_spine_2026_04_21.md`.
