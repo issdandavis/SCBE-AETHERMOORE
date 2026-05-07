@@ -53,11 +53,6 @@ def test_toolkit_zip_contains_promised_buyer_templates(tmp_path: Path):
 
 
 def test_production_pack_support_email_is_current():
-    inventory = (
-        package_products.REPO_ROOT
-        / "deliverables"
-        / "SCBE_Production_Pack"
-        / "PACKAGE_INVENTORY.json"
-    )
+    inventory = package_products.REPO_ROOT / "deliverables" / "SCBE_Production_Pack" / "PACKAGE_INVENTORY.json"
     payload = json.loads(inventory.read_text(encoding="utf-8"))
     assert payload["support_email"] == "ai@aethermoore.com"

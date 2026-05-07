@@ -119,9 +119,9 @@ def _stripe_request(
 
     encoded_data = None
     if form_data:
-        encoded_data = urllib.parse.urlencode(
-            {k: str(v) for k, v in form_data.items() if v is not None}
-        ).encode("utf-8")
+        encoded_data = urllib.parse.urlencode({k: str(v) for k, v in form_data.items() if v is not None}).encode(
+            "utf-8"
+        )
 
     req = urllib.request.Request(
         url,
@@ -172,9 +172,7 @@ def _verify_stripe_signature(payload: bytes, sig_header: str) -> bool:
 
     # Compute expected signature
     signed_payload = f"{timestamp}.".encode("utf-8") + payload
-    expected = hmac.new(
-        secret.encode("utf-8"), signed_payload, hashlib.sha256
-    ).hexdigest()
+    expected = hmac.new(secret.encode("utf-8"), signed_payload, hashlib.sha256).hexdigest()
 
     return hmac.compare_digest(expected, v1_sig)
 
@@ -226,10 +224,7 @@ async def create_checkout(request: CheckoutRequest):
         raise HTTPException(400, f"Unknown plan: {request.plan}")
 
     base_url = os.getenv("SCBE_BILLING_BASE_URL", "http://localhost:8000").rstrip("/")
-    success_url = (
-        request.success_url
-        or f"{base_url}/billing/success?session_id={{CHECKOUT_SESSION_ID}}"
-    )
+    success_url = request.success_url or f"{base_url}/billing/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = request.cancel_url or f"{base_url}/billing/cancel"
 
     form_data: Dict[str, str] = {
@@ -300,9 +295,7 @@ async def stripe_webhook(request: Request):
 
     # Verify signature. Unsigned webhooks are only allowed when explicitly enabled.
     webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "").strip()
-    allow_unsigned = os.getenv(
-        "SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK", ""
-    ).strip().lower() in {
+    allow_unsigned = os.getenv("SCBE_ALLOW_UNSIGNED_STRIPE_WEBHOOK", "").strip().lower() in {
         "1",
         "true",
         "yes",
@@ -339,9 +332,7 @@ def _handle_checkout_completed(session: Dict[str, Any]) -> None:
     customer_id = session.get("customer", "")
     plan_id = session.get("metadata", {}).get("scbe_plan", "starter")
     subscription_id = session.get("subscription", "")
-    email = session.get("customer_email") or session.get("customer_details", {}).get(
-        "email", ""
-    )
+    email = session.get("customer_email") or session.get("customer_details", {}).get("email", "")
 
     api_key = _generate_api_key()
     now = int(time.time())
@@ -485,9 +476,7 @@ def _resolve_onetime_product_key(session: Dict[str, Any]) -> str:
     return ""
 
 
-def _delivery_plaintext(
-    product_name: str, download_url: str, manual_url: str, package_filename: str
-) -> str:
+def _delivery_plaintext(product_name: str, download_url: str, manual_url: str, package_filename: str) -> str:
     return "\n".join(
         [
             f"Thank you for your purchase. Your {product_name} is ready.",
@@ -551,9 +540,7 @@ If you have any questions, reply to this email or reach us at ai@aethermoore.com
     msg["Reply-To"] = "ai@aethermoore.com"
     msg.attach(
         MIMEText(
-            _delivery_plaintext(
-                product_name, download_url, manual_url, package_filename
-            ),
+            _delivery_plaintext(product_name, download_url, manual_url, package_filename),
             "plain",
         )
     )
@@ -597,9 +584,7 @@ def _notify_owner(product_name: str, buyer_email: str, amount_cents: int) -> Non
 
 def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     """Handle a one-time product purchase from Payment Links."""
-    email = session.get("customer_email") or session.get("customer_details", {}).get(
-        "email", ""
-    )
+    email = session.get("customer_email") or session.get("customer_details", {}).get("email", "")
     amount = session.get("amount_total", 0)
     payment_status = session.get("payment_status", "")
 
