@@ -26,7 +26,7 @@
       <div class="hero-card">
         <div class="eyebrow">Delivery + Access</div>
         <h1>Shortest path when a purchase needs recovery.</h1>
-        <p class="lead">Use this page when the package link, manual link, receipt, or access note is missing or broken. The product is not complete unless delivery and support are reachable.</p>
+        <p class="lead">Use this page when the package link, manual link, receipt, or access note is missing or broken. The product is not complete unless the buyer packet, manual, and support route are all reachable.</p>
         <div class="cta-row">
           <a class="btn btn-primary" href="mailto:ai@aethermoore.com?subject=SCBE%20Delivery%20Issue">Email delivery support</a>
           <a class="btn btn-secondary" href="index.html">Open manuals</a>
@@ -66,6 +66,11 @@
               </tr>
             </tbody>
           </table>
+        </section>
+
+        <section class="callout">
+          <h2>Non-open-source delivery check</h2>
+          <p>Paid ZIP artifacts are generated locally by <code>python scripts/package_products.py</code> and kept out of public GitHub Pages under <code>products/packaged/</code>. The checkout backend supports buyer-only package URLs through <code>SCBE_TOOLKIT_DOWNLOAD_URL</code> and <code>SCBE_TRAINING_VAULT_DOWNLOAD_URL</code>; those should be set before paid traffic is promoted.</p>
         </section>
 
         <section class="callout warning">

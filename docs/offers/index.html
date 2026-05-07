@@ -26,7 +26,7 @@
       <div class="hero-card">
         <div class="eyebrow">Direct offers</div>
         <h1>Small SCBE products you can buy and use without a sales call.</h1>
-        <p class="lead">These are the buyer-ready entry points. Each offer has a public manual and a delivery recovery route before checkout.</p>
+        <p class="lead">These are the buyer-ready entry points. Each offer has a public manual, a delivery recovery route, and a packaged ZIP artifact before checkout is promoted.</p>
       </div>
     </section>
 
@@ -57,6 +57,14 @@
       <div class="article">
         <h2>Before checkout</h2>
         <p>Review the manual and delivery page first. If a product page, delivery route, or package link is broken, email <a href="mailto:ai@aethermoore.com?subject=SCBE%20Broken%20Offer%20Route">ai@aethermoore.com</a> before buying so the route can be fixed.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="article">
+        <h2>Delivery proof</h2>
+        <p>The buyer packets are built by <code>python scripts/package_products.py</code> into the ignored local lane <code>products/packaged/</code>. That keeps paid ZIPs out of the public website while still letting the repo verify that every source file exists and every package can be rebuilt.</p>
+        <p>For production, configure <code>SCBE_TOOLKIT_DOWNLOAD_URL</code> and <code>SCBE_TRAINING_VAULT_DOWNLOAD_URL</code> to point at buyer-only package links. Without those variables, the backend falls back to the public GitHub release URL for smoke testing.</p>
       </div>
     </section>
   </main>

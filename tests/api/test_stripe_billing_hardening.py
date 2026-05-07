@@ -61,3 +61,48 @@ def test_onetime_product_manual_urls_are_live_buyer_routes():
     assert stripe_billing.ONETIME_PRODUCTS["vault"]["manual_url"].endswith("/product-manual/training-vault.html")
     for product in stripe_billing.ONETIME_PRODUCTS.values():
         assert "/docs/product-manual/" not in product["manual_url"]
+
+
+def test_onetime_product_download_urls_can_use_buyer_only_overrides(monkeypatch):
+    monkeypatch.setenv("SCBE_TOOLKIT_DOWNLOAD_URL", "https://delivery.aethermoore.com/toolkit.zip")
+    monkeypatch.setenv("SCBE_TRAINING_VAULT_DOWNLOAD_URL", "https://delivery.aethermoore.com/vault.zip")
+
+    products = stripe_billing.get_onetime_products()
+
+    assert products["toolkit"]["download_url"] == "https://delivery.aethermoore.com/toolkit.zip"
+    assert products["vault"]["download_url"] == "https://delivery.aethermoore.com/vault.zip"
+
+
+def test_onetime_purchase_uses_configured_buyer_delivery_url(monkeypatch):
+    sent: list[tuple[str, str, str, str]] = []
+
+    monkeypatch.setenv("SCBE_TOOLKIT_DOWNLOAD_URL", "https://delivery.aethermoore.com/toolkit.zip")
+    monkeypatch.setattr(
+        stripe_billing,
+        "_send_delivery_email",
+        lambda to_email, product_name, download_url, manual_url: sent.append(
+            (to_email, product_name, download_url, manual_url)
+        )
+        or True,
+    )
+    monkeypatch.setattr(stripe_billing, "_notify_owner", lambda *args, **kwargs: None)
+    stripe_billing.PURCHASE_LOG.clear()
+
+    session = {
+        "id": "cs_test_toolkit_delivery_url",
+        "customer_email": "buyer@example.com",
+        "amount_total": 2900,
+        "payment_status": "paid",
+        "metadata": {"scbe_product": "toolkit"},
+    }
+
+    stripe_billing._handle_onetime_purchase(session)
+
+    assert sent == [
+        (
+            "buyer@example.com",
+            "SCBE AI Governance Toolkit",
+            "https://delivery.aethermoore.com/toolkit.zip",
+            "https://aethermoore.com/product-manual/ai-governance-toolkit.html",
+        )
+    ]

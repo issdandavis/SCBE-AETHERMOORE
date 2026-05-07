@@ -663,6 +663,14 @@
                 <strong>91 / 91 attacks blocked</strong>
                 <span>Hyperbolic cost scaling + multi-factor omega gate blocked the full attack corpus. 85.7% detection, 0% false positives — attacks become computationally infeasible.</span>
               </div>
+              <div class="proof-cell">
+                <strong>25 / 25 constrained gate pass</strong>
+                <span>Bijective helper-call gate reran locally on CPU and passed 25/25 across AV, RU, CA, UM, and DR. No extra GPU spend; the schema shim now has a clean receipt.</span>
+              </div>
+              <div class="proof-cell">
+                <strong>Operator Agent Bus online</strong>
+                <span>The bus turns agent work into bounded packets with verification receipts: task in, local/private route first, test or artifact out. It is the coordination layer behind the training and delivery workflow.</span>
+              </div>
             </div>
             <div class="formula-pill">
               <strong>Canonical wall: H<sub>wall</sub>(d*,R) = R<sup>(&phi;&middot;d*)<sup>2</sup></sup></strong>
@@ -828,6 +836,8 @@
           <div class="meta" style="margin-top:24px;">
             <span>31% code improvement</span>
             <span>14% chat improvement</span>
+            <span>25/25 constrained gate</span>
+            <span>operator agent bus</span>
             <span>7.9% mixed L0+vault improvement</span>
             <span>3/3 dataset types beaten</span>
             <span>Patent pending (USPTO #63/961,403)</span>
@@ -907,6 +917,14 @@
               <strong>SAM.gov active &middot; DIBBS live</strong>
               <span>Registration ACTIVE as of 2026-04-13. UEI J4NXHM6N5F59 &middot; CAGE 1EXD5. DIBBS / DLA contract channel active. Federal contracting surface ready.</span>
             </div>
+            <div class="proof-cell">
+              <strong>Operator Agent Bus &middot; product lane wired</strong>
+              <span><code>operator_agent_bus</code> is the training and release coordination lane: bounded agent task packets, local/private routing first, and receipt-backed verification before product claims move forward.</span>
+            </div>
+            <div class="proof-cell">
+              <strong>Bijective constrained gate &middot; 25/25</strong>
+              <span>Local constrained decoding gate passed 25/25 across the five tested tongues on CPU. The failure catalog is now closed for this contract; remaining work is broader schema coverage, not this gate.</span>
+            </div>
           </div>
         </div>
       </div>
@@ -942,6 +960,7 @@
               Every claim on this page has a corresponding benchmark, formula, or test result. The research index separates what's proven from what's experimental. Verify before you trust.
             </p>
             <p style="margin-top:16px;"><a class="btn btn-secondary" href="#recent-milestones">Open research and proof</a></p>
+            <p style="margin-top:10px;"><a class="btn btn-secondary" href="training-hub.html">Open the Training Bus</a></p>
           </article>
         </div>
       </div>
@@ -1395,7 +1414,7 @@
           <div class="eyebrow">Delivery</div>
           <h2>Checkout, receipt, manual, first governed workflow. Four steps.</h2>
           <p>
-            Stripe handles payment. You get the package instantly. The manual tells you what to do first. Support exists if anything breaks.
+            Stripe handles payment. The backend can route each paid product to a buyer-only delivery URL, with the public GitHub release kept as the smoke-test fallback. The manual tells you what to do first. Support exists if anything breaks.
           </p>
         </div>
         <div class="flow" role="img" aria-label="Checkout, receipt, delivery, manual, support.">
@@ -1414,7 +1433,10 @@
             </ul>
           </article>
           <article class="slab">
-            <h3>Public contact</h3>
+            <h3>Delivery status</h3>
+            <p>
+              The current product packs build locally as ZIP files under the ignored <code>products/packaged/</code> lane. Production delivery should set <code>SCBE_TOOLKIT_DOWNLOAD_URL</code> and <code>SCBE_TRAINING_VAULT_DOWNLOAD_URL</code> to buyer-only package links before paid traffic is pushed hard.
+            </p>
             <p>
               If delivery fails or a file is broken, the public support route is <a href="mailto:ai@aethermoore.com?subject=SCBE%20Toolkit%20Support">ai@aethermoore.com</a>.
             </p>

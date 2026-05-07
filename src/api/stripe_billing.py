@@ -392,22 +392,38 @@ def _handle_subscription_deleted(subscription: Dict[str, Any]) -> None:
 # One-time product purchases (Payment Links)
 # ---------------------------------------------------------------------------
 
-# Map Stripe Payment Link product IDs to delivery info.
-# These correspond to the buy.stripe.com links on the website.
-ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = {
-    # AI Governance Toolkit - $29
-    "toolkit": {
-        "name": "SCBE AI Governance Toolkit",
-        "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
-        "manual_url": "https://aethermoore.com/product-manual/ai-governance-toolkit.html",
-    },
-    # AI Security Training Vault - $29
-    "vault": {
-        "name": "SCBE AI Security Training Vault",
-        "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
-        "manual_url": "https://aethermoore.com/product-manual/training-vault.html",
-    },
-}
+DEFAULT_PRODUCT_RELEASE_URL = "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest"
+
+
+def _delivery_url(env_name: str) -> str:
+    """Resolve a buyer delivery URL, with public release fallback for dev/smoke use."""
+    return os.getenv(env_name, "").strip() or DEFAULT_PRODUCT_RELEASE_URL
+
+
+def get_onetime_products() -> Dict[str, Dict[str, str]]:
+    """Map Stripe Payment Link product IDs to delivery info.
+
+    Production should set product-specific buyer-only URLs so paid packets do not
+    depend on the public open-source release surface.
+    """
+    return {
+        # AI Governance Toolkit - $29
+        "toolkit": {
+            "name": "SCBE AI Governance Toolkit",
+            "download_url": _delivery_url("SCBE_TOOLKIT_DOWNLOAD_URL"),
+            "manual_url": "https://aethermoore.com/product-manual/ai-governance-toolkit.html",
+        },
+        # AI Security Training Vault - $29
+        "vault": {
+            "name": "SCBE AI Security Training Vault",
+            "download_url": _delivery_url("SCBE_TRAINING_VAULT_DOWNLOAD_URL"),
+            "manual_url": "https://aethermoore.com/product-manual/training-vault.html",
+        },
+    }
+
+
+# Backwards-compatible default snapshot for tests and diagnostics.
+ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = get_onetime_products()
 
 # Purchase log for tracking (in production, use a database)
 PURCHASE_LOG: list = []
@@ -499,7 +515,7 @@ def _handle_onetime_purchase(session: Dict[str, Any]) -> None:
     product_key = metadata.get("scbe_product", "")
 
     # Do not guess from amount to avoid mis-delivery between similarly priced products.
-    product = ONETIME_PRODUCTS.get(product_key) if product_key else None
+    product = get_onetime_products().get(product_key) if product_key else None
     unresolved_product = product is None
     if unresolved_product:
         product = {
