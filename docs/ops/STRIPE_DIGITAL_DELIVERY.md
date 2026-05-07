@@ -77,4 +77,3 @@ attempt and records the purchase as an audit trail item.
 python -m pytest tests\api\test_stripe_billing_hardening.py tests\test_package_products.py -q
 python scripts\package_products.py --product all --output-dir artifacts\product_delivery_current_smoke
 ```
-
