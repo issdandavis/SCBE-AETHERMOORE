@@ -219,30 +219,42 @@ def build_pairs(rng: random.Random) -> tuple[list[Pair], list[Pair]]:
         chosen = chosen_template(pid, required)
         # 1. natural rejection from v6
         if pid in v6:
-            train_pairs.append(Pair(
-                prompt=prompt, chosen=chosen, rejected=v6[pid],
-                metadata={"prompt_id": pid, "rejection_source": "v6_raw"},
-            ))
+            train_pairs.append(
+                Pair(
+                    prompt=prompt,
+                    chosen=chosen,
+                    rejected=v6[pid],
+                    metadata={"prompt_id": pid, "rejection_source": "v6_raw"},
+                )
+            )
         # 2. natural rejection from v7
         if pid in v7:
-            train_pairs.append(Pair(
-                prompt=prompt, chosen=chosen, rejected=v7[pid],
-                metadata={"prompt_id": pid, "rejection_source": "v7_raw"},
-            ))
+            train_pairs.append(
+                Pair(
+                    prompt=prompt,
+                    chosen=chosen,
+                    rejected=v7[pid],
+                    metadata={"prompt_id": pid, "rejection_source": "v7_raw"},
+                )
+            )
         # 3. synthetic paraphrase mutations from observed failure modes
         muts = PARAPHRASE_MUTATIONS.get(pid, [])
         for mut in muts:
             rej = synthetic_rejected(chosen, required, mut)
             if rej == chosen:
                 continue  # mutation didn't apply
-            train_pairs.append(Pair(
-                prompt=prompt, chosen=chosen, rejected=rej,
-                metadata={
-                    "prompt_id": pid,
-                    "rejection_source": "synthetic",
-                    "mutation": list(mut),
-                },
-            ))
+            train_pairs.append(
+                Pair(
+                    prompt=prompt,
+                    chosen=chosen,
+                    rejected=rej,
+                    metadata={
+                        "prompt_id": pid,
+                        "rejection_source": "synthetic",
+                        "mutation": list(mut),
+                    },
+                )
+            )
     # Hold out one synthetic mutation per prompt for eval, not seen in train
     pid_to_eval: dict[str, list[Pair]] = {}
     train_kept: list[Pair] = []
@@ -253,7 +265,7 @@ def build_pairs(rng: random.Random) -> tuple[list[Pair], list[Pair]]:
         else:
             train_kept.append(pair)
     rng.seed(48)
-    for pid, lst in pid_to_eval.items():
+    for _pid, lst in pid_to_eval.items():
         if not lst:
             continue
         # Reserve last synthetic per prompt as eval

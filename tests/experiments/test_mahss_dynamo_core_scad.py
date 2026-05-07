@@ -12,7 +12,6 @@ import re
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from python.scbe.mahss_crypto_lattice import derive_perturbation_field
 from python.scbe.mahss_dynamo_core_scad import (
