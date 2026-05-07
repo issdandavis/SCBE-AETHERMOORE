@@ -1,6 +1,21 @@
 """Focused tests for PQC governance status reporting."""
 
+import builtins
+
 from src.crypto import pqc_liboqs
+
+
+def test_load_oqs_module_handles_system_exit(monkeypatch):
+    original_import = builtins.__import__
+
+    def fake_import(name, *args, **kwargs):
+        if name == "oqs":
+            raise SystemExit("liboqs bootstrap failed")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    assert pqc_liboqs._load_oqs_module() is None
 
 
 def test_get_pqc_proof_tier_native(monkeypatch):
