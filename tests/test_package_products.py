@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
+from zipfile import ZipFile
 
 import scripts.package_products as package_products
 
@@ -33,6 +34,22 @@ def test_packaged_product_smoke(tmp_path: Path):
     assert vault.exists()
     assert toolkit.stat().st_size > 0
     assert vault.stat().st_size > 0
+
+
+def test_toolkit_zip_contains_promised_buyer_templates(tmp_path: Path):
+    toolkit = package_products.package_toolkit(tmp_path)
+
+    with ZipFile(toolkit) as zf:
+        names = set(zf.namelist())
+
+    assert {
+        "BUYER_START_GUIDE.md",
+        "templates/decision-record-template.md",
+        "templates/threshold-worksheet.md",
+        "templates/pilot-checklist.md",
+        "templates/review-notes-template.md",
+        "quickstart/README.md",
+    }.issubset(names)
 
 
 def test_production_pack_support_email_is_current():
