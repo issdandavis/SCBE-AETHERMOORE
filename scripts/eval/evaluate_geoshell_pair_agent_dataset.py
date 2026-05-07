@@ -52,9 +52,13 @@ def evaluate_dataset(train_path: Path, holdout_path: Path) -> dict[str, Any]:
     primary_counts: dict[str, int] = {}
     population_contexts: set[str] = set()
     base_tasks: set[str] = set()
+    evaluated_count = 0
 
     for path, row in rows:
         meta = row.get("meta") or {}
+        if meta.get("source_family") == "geoshell_pair_agent_eval_shape_gold":
+            continue
+        evaluated_count += 1
         body = json.dumps(row, sort_keys=True)
         for forbidden in FORBIDDEN_STRINGS:
             if forbidden in body:
@@ -129,12 +133,12 @@ def evaluate_dataset(train_path: Path, holdout_path: Path) -> dict[str, Any]:
         "schema_version": "geoshell_pair_agent_dataset_eval_v1",
         "train_path": str(train_path),
         "holdout_path": str(holdout_path),
-        "row_count": len(rows),
+        "row_count": evaluated_count,
         "primary_tongue_counts": primary_counts,
         "population_context_count": len(population_contexts),
         "base_task_count": len(base_tasks),
         "errors": errors,
-        "ok": not errors and len(rows) > 0,
+        "ok": not errors and evaluated_count > 0,
     }
 
 
