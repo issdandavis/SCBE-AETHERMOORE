@@ -1,0 +1,26 @@
+{
+  "schema_version": "executable_coding_sft_manifest_v1",
+  "generated_utc": "2026-05-07T16:16:15.733517Z",
+  "n_problems": 10,
+  "n_train_rows": 30,
+  "n_holdout_rows": 10,
+  "problem_ids": [
+    "inventory_unique",
+    "safe_subtract",
+    "running_average",
+    "merge_counts",
+    "first_word",
+    "clamp",
+    "count_vowels",
+    "triple",
+    "is_palindrome",
+    "fibonacci"
+  ],
+  "verification": "every canonical solution executed and matched expected outputs at build time",
+  "system_prompt": "You are an SCBE-AETHERMOORE coding agent. When the user asks you to implement a function, return ONLY the function definition as bare executable Python code in a single fenced block. No prose. No metadata wrappers. No marker preambles. The code must run as-is and the function name must match the user's request.",
+  "files": {
+    "train": "training-data\\sft\\executable_coding_v1_train.sft.jsonl",
+    "holdout": "training-data\\sft\\executable_coding_v1_holdout.sft.jsonl",
+    "manifest": "training-data\\sft\\executable_coding_v1_manifest.json"
+  }
+}
