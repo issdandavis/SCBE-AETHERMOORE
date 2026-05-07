@@ -1,0 +1,78 @@
+{
+  "schema_version": "scbe_model_training_profile_v1",
+  "profile_id": "scbe-chemistry-0.5b-qlora-v8-marker-fidelity-dpo",
+  "title": "SCBE Chemistry 0.5B DPO v8 marker-fidelity",
+  "description": "v6 raw 0/5 + v7 raw 0/5 falsified the SFT-anchor-repair hypothesis. v8 switches to DPO. Each preference pair: chosen = synthesized response with every required marker verbatim; rejected = either v6/v7 raw paraphrase response (10 natural rejections) or a synthetic perturbation that mutates exactly one required marker to its observed paraphrase variant. This trains the model to push AWAY from paraphrase variants (carboxyllic acid, NA_clathrine, queue_drill_guard, queue_driver_guard) and TOWARD verbatim required tokens. Push gated on shim 5/5 + raw improving over v6/v7 floor 0/5.",
+  "backend": "hf-jobs-peft-dpo",
+  "base_model": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+  "system_prompt": "You are an SCBE-AETHERMOORE chemistry verification agent. Answer in concise English. Preserve exact chemistry anchors and code-token boundary anchors without paraphrase. If a near-miss spelling appears, repair it explicitly. Use PASS only for valid chemistry routes and DENY for invalid material chemistry claims.",
+  "dataset": {
+    "root": "training-data/dpo",
+    "train_files": [
+      "chemistry_marker_fidelity_dpo_v1_train.jsonl"
+    ],
+    "eval_files": [
+      "chemistry_marker_fidelity_dpo_v1_eval.jsonl"
+    ]
+  },
+  "training": {
+    "max_seq_length": 384,
+    "max_prompt_length": 192,
+    "lora_rank": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "learning_rate": 5e-6,
+    "beta": 0.1,
+    "num_train_epochs": 4,
+    "batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "warmup_ratio": 0.05,
+    "max_steps": 120,
+    "max_train_records": 0,
+    "logging_steps": 5,
+    "save_steps": 60,
+    "save_total_limit": 1,
+    "gradient_checkpointing": true,
+    "seed": 51,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "output_dir": "training/runs/scbe-chemistry-0.5b-qlora-v8-marker-fidelity-dpo"
+  },
+  "hub": {
+    "token_env": "HF_TOKEN",
+    "dataset_repo": "issdandavis/scbe-chemistry-marker-fidelity-dpo",
+    "push_adapter": false,
+    "adapter_repo": "issdandavis/scbe-chemistry-0.5b-qlora-v8-marker-fidelity-dpo",
+    "push_merged": false,
+    "gate_required": true
+  },
+  "execution": {
+    "recommended_target": "hf-jobs",
+    "hf_flavor": "t4-small",
+    "timeout": "45m",
+    "default_emit_path": "artifacts/model_training/scbe-chemistry-0.5b-qlora-v8-marker-fidelity-dpo-train.py"
+  },
+  "evaluation": {
+    "contract_path": "config/model_training/chemistry_verification_eval_contract.json",
+    "production_shim_gate": true,
+    "gate_suppress_forbidden": true,
+    "gate_best_of_n": true,
+    "constrained_gate_scaffold": false,
+    "max_new_tokens": 96,
+    "secondary_gate": "raw_pass_rate must improve over v6/v7 baseline 0/5 = 0.0",
+    "do_not_claim": "do not claim raw chemistry competence unless raw_pass_rate clears at least 2/5 on the unchanged frozen gate"
+  },
+  "notes": [
+    "v6 raw 0/5 + v7 raw 0/5 = SFT-anchor-repair falsified for marker-fidelity",
+    "v8 uses DPO with rejected paraphrase pairs (carboxyllic acid, NA_clathrine, queue_drill_guard, queue_driver_guard, etc.) to push the model AWAY from observed failure modes",
+    "DPO is more sensitive to lr than SFT — 5e-6 instead of 1.6e-4",
+    "beta=0.1 standard DPO; max_steps=120 for ~25 train pairs × 4 epochs",
+    "push_adapter=false until shim 5/5 holds AND raw improves over 0/5 floor",
+    "Shard built by scripts/training_data/build_chemistry_marker_fidelity_dpo_v1.py",
+    "Cost: ~$1-2 on t4-small, dispatch only after design review"
+  ]
+}

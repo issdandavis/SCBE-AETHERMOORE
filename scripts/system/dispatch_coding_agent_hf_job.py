@@ -380,7 +380,22 @@ def main() -> None:
 
     def _gate_score(prompt, response):
         body_lower = (response or "").lower()
-        missing_required = [str(t) for t in (prompt.get("required") or []) if str(t).lower() not in body_lower]
+        # A required entry is either a string (must appear verbatim in body) or
+        # a list of strings (alternation — any one of them passing satisfies the
+        # group). The list form lets the contract allow semantic equivalents
+        # like ['"', "'"] for empty-string syntax or ['x < lo', 'x <= lo'] for
+        # branch-condition variants without making the gate over-strict.
+        def _entry_present(entry):
+            if isinstance(entry, list):
+                return any(str(alt).lower() in body_lower for alt in entry)
+            return str(entry).lower() in body_lower
+
+        def _entry_label(entry):
+            if isinstance(entry, list):
+                return " | ".join(str(alt) for alt in entry)
+            return str(entry)
+
+        missing_required = [_entry_label(t) for t in (prompt.get("required") or []) if not _entry_present(t)]
 
         def contains_forbidden(term):
             needle = str(term).strip().lower()

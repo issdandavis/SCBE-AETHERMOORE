@@ -1,0 +1,19 @@
+{
+  "schema_version": "scbe_chemistry_dpo_manifest_v1",
+  "shard_id": "chemistry_marker_fidelity_dpo_v1",
+  "generated_utc": "2026-05-07T22:28:57.113512Z",
+  "n_train_pairs": 25,
+  "n_eval_pairs": 5,
+  "sources": {
+    "natural_rejections": [
+      "v6_raw",
+      "v7_raw"
+    ],
+    "synthetic_rejections": "PARAPHRASE_MUTATIONS in build_chemistry_marker_fidelity_dpo_v1.py"
+  },
+  "outputs": {
+    "train": "training-data\\dpo\\chemistry_marker_fidelity_dpo_v1_train.jsonl",
+    "eval": "training-data\\dpo\\chemistry_marker_fidelity_dpo_v1_eval.jsonl"
+  },
+  "purpose": "Push base model away from observed paraphrase variants (carboxyllic acid, NA_clathrine, queue_drill_guard, queue_driver_guard, etc.) toward verbatim required markers."
+}
