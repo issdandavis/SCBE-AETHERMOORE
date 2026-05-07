@@ -399,13 +399,13 @@ ONETIME_PRODUCTS: Dict[str, Dict[str, str]] = {
     "toolkit": {
         "name": "SCBE AI Governance Toolkit",
         "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
-        "manual_url": "https://aethermoore.com/docs/product-manual/ai-governance-toolkit",
+        "manual_url": "https://aethermoore.com/product-manual/ai-governance-toolkit.html",
     },
     # AI Security Training Vault - $29
     "vault": {
         "name": "SCBE AI Security Training Vault",
         "download_url": "https://github.com/issdandavis/SCBE-AETHERMOORE/releases/latest",
-        "manual_url": "https://aethermoore.com/docs/research/",
+        "manual_url": "https://aethermoore.com/product-manual/training-vault.html",
     },
 }
 

@@ -52,3 +52,12 @@ def test_onetime_purchase_without_product_metadata_is_marked_unresolved(monkeypa
     latest = stripe_billing.PURCHASE_LOG[-1]
     assert latest["product"] == "unknown"
     assert latest["unresolved_product"] is True
+
+
+def test_onetime_product_manual_urls_are_live_buyer_routes():
+    assert stripe_billing.ONETIME_PRODUCTS["toolkit"]["manual_url"].endswith(
+        "/product-manual/ai-governance-toolkit.html"
+    )
+    assert stripe_billing.ONETIME_PRODUCTS["vault"]["manual_url"].endswith("/product-manual/training-vault.html")
+    for product in stripe_billing.ONETIME_PRODUCTS.values():
+        assert "/docs/product-manual/" not in product["manual_url"]
