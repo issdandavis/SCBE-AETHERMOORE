@@ -242,3 +242,4 @@ external/cli-quests/
 # Symlink roots — points to full drives, never commit
 .roots/
 .home/.codex/
+.vercel
