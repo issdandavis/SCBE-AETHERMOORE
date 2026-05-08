@@ -7,11 +7,26 @@ measures what happens when the gate is given inputs it was never
 designed for: how often does it correctly QUARANTINE adversarial NL,
 how often does it force them into some op anyway, and which ops?
 
+Two run modes:
+
+  v1 (default, --no-dummy-args): args={} — measures the gate's
+      end-to-end refusal rate, but the args-completeness check at the
+      end of routing dominates because every lexicon op requires at
+      least one template variable. Quarantine reasons will skew toward
+      "missing args" rather than adversarial-content detection.
+
+  v2 (--dummy-args): args populated with a fixed dummy set covering
+      every common arg name. The args-completeness check no longer
+      filters anything, so the SLM's actual classification choices are
+      visible — this is what surfaces "false ALLOW" failure modes
+      where the bounded SLM forces adversarial NL into some op.
+
 Usage:
     python scripts/eval/petri_governance_gate_run.py \\
         --seeds-dir external/benchmarks/petri-seeds \\
         --ollama-model scbe-geoseal-coder:q8 \\
-        --json-out artifacts/petri/governance_gate_v1.json \\
+        --dummy-args \\
+        --json-out artifacts/petri/governance_gate_v2.json \\
         --limit 5            # smoke test — omit for full corpus
 """
 
@@ -56,11 +71,25 @@ class GateOutcome:
     elapsed_s: float = 0.0
 
 
-def run_one(router: LatticeRouter, seed: PetriSeed) -> GateOutcome:
+# Synthetic dummy args covering every template-variable name in use across
+# the 64-op lexicon. Passing these satisfies the post-classification
+# args-completeness check regardless of which op the SLM picks, so any
+# remaining quarantine traces back to the classification stages rather
+# than to a downstream args-mask. Values are deliberately benign
+# identifiers so a downstream emit_from_ir would render compilable code.
+_DUMMY_TEMPLATE_ARGS: Dict[str, str] = {
+    "xs": "data", "ys": "data2", "pairs": "pairs",
+    "fn": "f", "init": "z", "pred": "p",
+    "a": "x", "b": "y", "lhs": "x", "rhs": "y",
+    "n": "n", "k": "k",
+}
+
+
+def run_one(router: LatticeRouter, seed: PetriSeed, *, args_payload: Dict[str, str]) -> GateOutcome:
     tags = list(seed.metadata.get("tags") or [])
     t0 = time.monotonic()
     try:
-        result = router.route(intent=seed.input, args={}, mode=Mode.AUTO)
+        result = router.route(intent=seed.input, args=args_payload, mode=Mode.AUTO)
     except QuarantineError as exc:
         return GateOutcome(
             seed_id=seed.id,
@@ -153,7 +182,14 @@ def main(argv: List[str] | None = None) -> int:
                         help="cap N seeds (smoke test); omit for full corpus")
     parser.add_argument("--json-out", type=Path, default=None)
     parser.add_argument("--quiet", action="store_true")
+    parser.add_argument(
+        "--dummy-args", action="store_true",
+        help="populate args with a fixed dummy set so the post-classification "
+             "args-completeness check does not dominate quarantine reasons; "
+             "exposes the SLM's actual op classification choices",
+    )
     args = parser.parse_args(argv)
+    args_payload: Dict[str, str] = dict(_DUMMY_TEMPLATE_ARGS) if args.dummy_args else {}
 
     try:
         seeds = load_seed_directory(args.seeds_dir)
@@ -175,7 +211,7 @@ def main(argv: List[str] | None = None) -> int:
 
     outcomes: List[GateOutcome] = []
     for i, seed in enumerate(seeds, 1):
-        outcome = run_one(router, seed)
+        outcome = run_one(router, seed, args_payload=args_payload)
         outcomes.append(outcome)
         if not args.quiet:
             tag = (outcome.tags[0] if outcome.tags else "untagged")
@@ -190,6 +226,8 @@ def main(argv: List[str] | None = None) -> int:
         "ollama_model": args.ollama_model,
         "ollama_host": args.ollama_host,
         "seeds_dir": str(args.seeds_dir),
+        "args_mode": "dummy" if args.dummy_args else "empty",
+        "args_payload": args_payload,
         "summary": aggregate(outcomes),
         "per_seed": [asdict(o) for o in outcomes],
     }
