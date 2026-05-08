@@ -25,9 +25,7 @@ def _run(*extra: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def _ollama_reachable(
-    host: str = "http://localhost:11434", timeout: float = 1.0
-) -> bool:
+def _ollama_reachable(host: str = "http://localhost:11434", timeout: float = 1.0) -> bool:
     try:
         import httpx  # noqa: PLC0415
     except ImportError:

@@ -182,9 +182,7 @@ def _pack_mouse(ev: MouseEvent) -> bytes:
 
 def _unpack_mouse(payload: bytes) -> MouseEvent:
     if len(payload) != MOUSE_FRAME_SIZE - 1:
-        raise ValueError(
-            f"mouse frame must be {MOUSE_FRAME_SIZE - 1} bytes after kind, got {len(payload)}"
-        )
+        raise ValueError(f"mouse frame must be {MOUSE_FRAME_SIZE - 1} bytes after kind, got {len(payload)}")
     ts, x, y, btn, act, reserved, scroll_unsigned = struct.unpack("<Qiibb2sI", payload)
     if reserved != b"\x00\x00":
         raise ValueError("mouse frame reserved bytes must be zero")
@@ -213,9 +211,7 @@ def _pack_key(ev: KeyEvent) -> bytes:
 
 def _unpack_key(payload: bytes) -> KeyEvent:
     if len(payload) != KEY_FRAME_SIZE - 1:
-        raise ValueError(
-            f"key frame must be {KEY_FRAME_SIZE - 1} bytes after kind, got {len(payload)}"
-        )
+        raise ValueError(f"key frame must be {KEY_FRAME_SIZE - 1} bytes after kind, got {len(payload)}")
     ts, keycode, mods, action, reserved = struct.unpack("<QHBB4s", payload)
     if reserved != b"\x00\x00\x00\x00":
         raise ValueError("key frame reserved bytes must be zero")

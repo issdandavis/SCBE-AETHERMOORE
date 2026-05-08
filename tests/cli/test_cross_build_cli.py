@@ -76,9 +76,7 @@ def test_cross_build_single_av_to_dr_for_xor() -> None:
 
 def test_alias_xb_works_identically() -> None:
     main = _run("--src-code", "(x - y)", "--src-tongue", "KO", "--dst-tongue", "DR")
-    aliased = _run_alias(
-        "--src-code", "(x - y)", "--src-tongue", "KO", "--dst-tongue", "DR"
-    )
+    aliased = _run_alias("--src-code", "(x - y)", "--src-tongue", "KO", "--dst-tongue", "DR")
     assert main.returncode == 0 and aliased.returncode == 0
     assert json.loads(main.stdout)["dst_code"] == json.loads(aliased.stdout)["dst_code"]
 

@@ -84,12 +84,8 @@ def test_digest_changes_when_stdin_changes() -> None:
 
 
 def test_digest_changes_when_env_changes() -> None:
-    a = record_session(
-        ["geoseal", "ops"], env={"GEOSEAL_TIER": "public"}, timestamp_us=0
-    )
-    b = record_session(
-        ["geoseal", "ops"], env={"GEOSEAL_TIER": "keyed"}, timestamp_us=0
-    )
+    a = record_session(["geoseal", "ops"], env={"GEOSEAL_TIER": "public"}, timestamp_us=0)
+    b = record_session(["geoseal", "ops"], env={"GEOSEAL_TIER": "keyed"}, timestamp_us=0)
     assert a.digest() != b.digest()
 
 
@@ -220,9 +216,7 @@ def test_ledger_jsonl_round_trip(tmp_path: Path) -> None:
 
 
 def test_ledger_load_missing_file_returns_empty() -> None:
-    ledger = PromotionLedger.load(
-        Path("/tmp/nonexistent_ledger_xyz.jsonl"), threshold=2
-    )
+    ledger = PromotionLedger.load(Path("/tmp/nonexistent_ledger_xyz.jsonl"), threshold=2)
     assert ledger.entries == {}
 
 
@@ -238,9 +232,7 @@ def test_recurrent_invocations_from_replayed_packets_are_counted() -> None:
     ledger = PromotionLedger(threshold=2)
 
     # Agent A's session
-    trace_a = record_session(
-        ["geoseal", "swarm-exec", "--task", "add"], timestamp_us=100
-    )
+    trace_a = record_session(["geoseal", "swarm-exec", "--task", "add"], timestamp_us=100)
     packets = trace_to_packets(trace_a)
 
     # Agent B receives and replays
