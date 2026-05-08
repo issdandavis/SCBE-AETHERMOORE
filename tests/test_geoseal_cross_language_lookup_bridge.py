@@ -9,6 +9,19 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 LOOKUP_PATH = REPO_ROOT / "artifacts" / "cross_language_lookup" / "full_cross_language_lookup.json"
 
 
+def _ensure_lookup_artifact() -> None:
+    if LOOKUP_PATH.exists():
+        return
+    from scripts.system.build_cross_language_lookup import main
+
+    old_argv = sys.argv[:]
+    try:
+        sys.argv = ["build_cross_language_lookup.py"]
+        assert main() == 0
+    finally:
+        sys.argv = old_argv
+
+
 def _run_cli(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, "-m", "src.geoseal_cli", *args],
@@ -25,6 +38,7 @@ def _lexicon_template(artifact: dict, op_name: str, tongue: str) -> str:
 
 
 def test_geoseal_emit_matches_cross_language_lookup_templates() -> None:
+    _ensure_lookup_artifact()
     artifact = json.loads(LOOKUP_PATH.read_text(encoding="utf-8"))
     op = "add"
     kwargs = {"a": "x", "b": "y"}
@@ -38,6 +52,7 @@ def test_geoseal_emit_matches_cross_language_lookup_templates() -> None:
 
 
 def test_geoseal_encode_cmd_matches_lookup_byte_table_for_ascii_A() -> None:
+    _ensure_lookup_artifact()
     artifact = json.loads(LOOKUP_PATH.read_text(encoding="utf-8"))
     # ASCII "A" == 0x41
     ko_rows = artifact["byte_tables"]["KO"]
