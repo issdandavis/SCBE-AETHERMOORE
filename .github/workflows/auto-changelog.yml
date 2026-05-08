@@ -1,13 +1,7 @@
 name: Auto Changelog
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'CHANGELOG.md'
-      - '.github/**'
-      - '*.md'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

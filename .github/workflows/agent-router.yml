@@ -1,9 +1,6 @@
 name: Agent Router
 
 on:
-  # Run on schedule (every 6 hours)
-  schedule:
-    - cron: '0 */6 * * *'
   # Manual trigger with custom query
   workflow_dispatch:
     inputs:

@@ -1,13 +1,11 @@
 name: npm-publish
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:
         description: 'Tag to publish (e.g. v4.0.3). Defaults to latest semver tag.'
-        required: false
+        required: true
 
 permissions:
   contents: read
@@ -17,12 +15,12 @@ permissions:
 jobs:
   npmjs:
     name: Publish to npmjs.org
-    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
+    if: ${{ inputs.tag != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || github.ref }}
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,7 +37,7 @@ jobs:
       - name: Verify package version matches tag
         run: |
           PKG_VER=$(node -p "require('./package.json').version")
-          TAG="${{ github.event.release.tag_name || inputs.tag }}"
+          TAG="${{ inputs.tag }}"
           TAG_VER="${TAG#v}"
           if [ "$PKG_VER" != "$TAG_VER" ]; then
             echo "::error::package.json version ($PKG_VER) does not match tag ($TAG_VER)"
@@ -53,12 +51,12 @@ jobs:
 
   github-packages:
     name: Publish to GitHub Packages
-    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
+    if: ${{ inputs.tag != '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || github.ref }}
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Setup Node (GH Packages registry)
         uses: actions/setup-node@v4

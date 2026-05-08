@@ -1,13 +1,11 @@
 name: pypi-publish-agent-bus
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:
         description: 'Tag to publish (e.g. agent-bus-py-v0.2.0). Tag must start with `agent-bus-py-v` for release-triggered runs.'
-        required: false
+        required: true
 
 permissions:
   contents: read
@@ -18,12 +16,10 @@ jobs:
     name: Build sdist+wheel and publish scbe-agent-bus to PyPI
     runs-on: ubuntu-latest
     environment: release-agent-bus
-    # Only run on releases tagged for this package, or explicit workflow_dispatch.
-    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'agent-bus-py-v') }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || github.ref }}
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -37,7 +33,7 @@ jobs:
         working-directory: packages/agent-bus-py
         run: |
           PKG_VER=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-          TAG="${{ github.event.release.tag_name || inputs.tag }}"
+          TAG="${{ inputs.tag }}"
           # Strip the agent-bus-py-v prefix to get the bare semver
           TAG_VER="${TAG#agent-bus-py-v}"
           # Also accept plain v-prefixed (e.g. workflow_dispatch with v0.2.0)
