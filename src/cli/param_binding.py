@@ -191,9 +191,14 @@ class BoundCommand(BaseModel):
 
         sets = cls._resolve_parameter_sets()
         if sets:
+            # A field discriminates its parameter set only when the user
+            # actually supplied a value. Defaults of None/empty/False are
+            # treated as absent so a `bool=False` discriminator (a flag the
+            # user didn't pass) doesn't force its set into present_sets.
+            absent = (None, [], "", False)
             present_sets = []
             for set_name, members in sets.items():
-                if any(getattr(inst, m, None) not in (None, [], "") for m in members):
+                if any(getattr(inst, m, None) not in absent for m in members):
                     present_sets.append(set_name)
             if len(present_sets) == 0:
                 raise ParameterSetError(f"no parameter set satisfied; supply args for one of: {list(sets.keys())}")
