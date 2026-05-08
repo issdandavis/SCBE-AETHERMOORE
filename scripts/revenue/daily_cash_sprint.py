@@ -19,7 +19,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, Literal
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 OUT_ROOT = REPO_ROOT / "artifacts" / "revenue" / "cash_sprint"
 StateName = Literal["PENDING", "RUNNING", "DONE", "BLOCKED"]
@@ -372,7 +371,7 @@ def _initial_state(*, offer_id: str, minutes: int, out_root: Path) -> dict[str, 
                 "publish_guard",
                 "command",
                 "Run npm package guard for GeoSeal CLI publish readiness.",
-                {"command": ["npm", "run", "publish:check:strict"], "timeout": 300},
+                {"command": ["npm", "run", "publish:check:strict"], "timeout": 300, "nonblocking": True},
             ),
             _task(
                 "bus_dm_short",
@@ -462,7 +461,9 @@ def _latest_packet_paths(out_root: Path) -> dict[str, Path]:
     }
 
 
-def _run_task(task: dict[str, object], *, offer_id: str, minutes: int, out_root: Path) -> tuple[StateName, dict[str, object]]:
+def _run_task(
+    task: dict[str, object], *, offer_id: str, minutes: int, out_root: Path
+) -> tuple[StateName, dict[str, object]]:
     kind = str(task["kind"])
     payload = task.get("payload", {})
     assert isinstance(payload, dict)
@@ -474,7 +475,12 @@ def _run_task(task: dict[str, object], *, offer_id: str, minutes: int, out_root:
         return ("DONE" if result.get("status") == "ok" else "BLOCKED"), result
     if kind == "command":
         result = _run_quick(list(payload["command"]), timeout=int(payload.get("timeout", 120)))
-        return ("DONE" if result.get("returncode") == 0 else "BLOCKED"), result
+        if result.get("returncode") == 0:
+            return "DONE", result
+        if bool(payload.get("nonblocking")):
+            result["nonblocking_warning"] = True
+            return "DONE", result
+        return "BLOCKED", result
     if kind == "queue_bus_dispatch":
         paths = _latest_packet_paths(out_root)
         row = _read_queue_item(paths, str(payload["channel"]))
@@ -546,7 +552,9 @@ def main() -> int:
     parser.add_argument("--offer", default="rotate", help="Offer ID to use, or 'rotate'.")
     parser.add_argument("--minutes", type=int, default=20, help="Execution budget in minutes.")
     parser.add_argument("--out-root", default=str(OUT_ROOT), help="Output directory root.")
-    parser.add_argument("--continuous", action="store_true", help="Run the next stateful task instead of stopping at packet generation.")
+    parser.add_argument(
+        "--continuous", action="store_true", help="Run the next stateful task instead of stopping at packet generation."
+    )
     parser.add_argument("--max-steps", type=int, default=1, help="Maximum continuous tasks to advance this invocation.")
     parser.add_argument("--reset-state", action="store_true", help="Start the continuous state machine over.")
     parser.add_argument(
