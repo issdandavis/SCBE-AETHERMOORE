@@ -47,6 +47,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -67,6 +68,20 @@ from src.ca_lexicon import (
     trit_vector,
 )
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER
+from src.crypto.geoseal_execution_gate import (
+    DEFAULT_AUDIT_SECRET_ENV,
+    DEFAULT_EXEC_AUDIT_LOG,
+    TIER_RANK,
+    append_sealed_exec_audit,
+    execute_governed_command,
+    scan_command,
+)
+from src.agentic.meet_in_the_middle import (
+    CodeHalf,
+    SEAM_MARKER,
+    SeamContract,
+    merge_halves,
+)
 
 PHI = (1 + 5**0.5) / 2
 
@@ -559,6 +574,10 @@ def run_tongue_call(
     args: Dict[str, str],
     execute: bool = True,
     timeout: float = 10.0,
+    gate_max_tier: str = "QUARANTINE",
+    gate_audit_log: Optional[Path] = DEFAULT_EXEC_AUDIT_LOG,
+    gate_audit_secret: Optional[str] = None,
+    gate_audit_secret_env: str = DEFAULT_AUDIT_SECRET_ENV,
 ) -> SwarmCallResult:
     """Emit code for a single tongue and optionally run it."""
     if tongue not in ALL_TONGUE_NAMES:
@@ -605,6 +624,29 @@ def run_tongue_call(
         argv = list(argv_prefix) + [str(tmp_path)]
     else:
         argv = list(argv_prefix) + [wrapped]
+    gate_command = shlex.join(str(part) for part in argv)
+    gate_decision = scan_command(gate_command)
+    if TIER_RANK[gate_decision.tier] > TIER_RANK[gate_max_tier]:
+        result.error = f"execution gate {gate_decision.tier}: exceeds max tier {gate_max_tier}"
+        if gate_audit_log is not None:
+            append_sealed_exec_audit(
+                {
+                    "version": "geoseal-run-exec-gate-v1",
+                    "timestamp": time.time(),
+                    "op": op,
+                    "tongue": tongue,
+                    "command": gate_command,
+                    "max_tier": gate_max_tier,
+                    "decision": gate_decision.to_dict(),
+                    "ran": False,
+                },
+                audit_log=gate_audit_log,
+                audit_secret=gate_audit_secret,
+                audit_secret_env=gate_audit_secret_env,
+            )
+        if tmp_path is not None:
+            tmp_path.unlink(missing_ok=True)
+        return result
     t0 = time.time()
     try:
         proc = subprocess.run(
@@ -627,6 +669,26 @@ def run_tongue_call(
         if tmp_path is not None:
             tmp_path.unlink(missing_ok=True)
     result.duration_ms = (time.time() - t0) * 1000.0
+    if gate_audit_log is not None:
+        append_sealed_exec_audit(
+            {
+                "version": "geoseal-run-exec-gate-v1",
+                "timestamp": time.time(),
+                "op": op,
+                "tongue": tongue,
+                "command": gate_command,
+                "max_tier": gate_max_tier,
+                "decision": gate_decision.to_dict(),
+                "ran": result.ran,
+                "returncode": result.returncode,
+                "stdout_sha256": hashlib.sha256(result.stdout.encode("utf-8")).hexdigest(),
+                "stderr_sha256": hashlib.sha256(result.stderr.encode("utf-8")).hexdigest(),
+                "error": result.error,
+            },
+            audit_log=gate_audit_log,
+            audit_secret=gate_audit_secret,
+            audit_secret_env=gate_audit_secret_env,
+        )
     # chi note is advisory, not blocking; still attach for governance
     _ = entry.chi
     return result
@@ -1642,6 +1704,38 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_assist(args: argparse.Namespace) -> int:
+    from scripts.system.micro_agent_assist import build_advice, post_packet, render_text, resolve_bus
+
+    repo_root = Path(args.repo_root).resolve()
+    bus_path = resolve_bus(repo_root, Path(args.bus) if args.bus else None)
+    advice = build_advice(
+        task=args.task,
+        agent=args.agent,
+        repo_root=repo_root,
+        bus_path=bus_path,
+    )
+    if args.post:
+        packet = post_packet(
+            bus_path,
+            sender=args.agent,
+            recipient=args.recipient,
+            task_id="MICRO-ASSIST",
+            status="verify",
+            seam=advice["lane"],
+            claim_paths=advice["suggested_paths"],
+            summary=f"{advice['intent']}: {advice['first_action']}",
+            next_action="Follow micro-assist suggested paths and verify commands.",
+            proof=advice["verify_commands"],
+        )
+        advice["posted_packet_id"] = packet["packet_id"]
+    if args.json:
+        print(json.dumps(advice, indent=2, sort_keys=True))
+    else:
+        print(render_text(advice))
+    return 0
+
+
 def cmd_explain_route(args: argparse.Namespace) -> int:
     from src.coding_spine.polly_client import explain_provider_chain
 
@@ -1986,12 +2080,219 @@ def cmd_code_roundtrip(args: argparse.Namespace) -> int:
 
 
 def cmd_shell(args: argparse.Namespace) -> int:
+    gate = scan_command(args.command)
+    append_sealed_exec_audit(
+        {
+            "version": "geoseal-shell-gate-v1",
+            "timestamp": time.time(),
+            "command": args.command,
+            "max_tier": args.max_tier,
+            "decision": gate.to_dict(),
+            "ran": False,
+        },
+        audit_log=Path(args.audit_log),
+        audit_secret=args.audit_secret,
+        audit_secret_env=args.audit_secret_env,
+    )
+    if TIER_RANK[gate.tier] > TIER_RANK[args.max_tier]:
+        if args.json:
+            print(json.dumps({"version": "geoseal-shell-v1", "gate": gate.to_dict(), "ran": False}, indent=2))
+        else:
+            print(f"[gate] {gate.tier}: blocked nested command")
+            for finding in gate.findings:
+                print(f"  - {finding.rule}: {finding.message}")
+        return 2
     tokens = shlex.split(args.command)
     if not tokens:
         raise SystemExit("--command is empty")
     nested_parser = build_parser()
     nested_args = nested_parser.parse_args(tokens)
     return nested_args.func(nested_args)
+
+
+def cmd_exec(args: argparse.Namespace) -> int:
+    claimed_paths = args.claimed_path or []
+    command = subprocess.list2cmdline(args.command) if isinstance(args.command, list) else args.command
+    if not command:
+        print("exec command is empty", file=sys.stderr)
+        return 2
+    result = execute_governed_command(
+        command,
+        cwd=Path(args.cwd) if args.cwd else None,
+        timeout=args.timeout,
+        max_tier=args.max_tier,
+        claimed_paths=claimed_paths,
+        audit_log=None if args.no_audit else Path(args.audit_log),
+        audit_secret=args.audit_secret,
+        audit_secret_env=args.audit_secret_env,
+    )
+    payload = {"version": "geoseal-exec-v1", **result.to_dict()}
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        decision = result.decision
+        print(f"[gate] tier={decision.tier} allowed={decision.allowed} ran={result.ran}")
+        for finding in decision.findings:
+            print(f"  - {finding.rule}: {finding.message}")
+        if result.stdout:
+            print(result.stdout.rstrip())
+        if result.stderr:
+            print(result.stderr.rstrip(), file=sys.stderr)
+        if result.error:
+            print(f"error: {result.error}", file=sys.stderr)
+        if result.audit_written:
+            print(f"[audit] sealed record appended to {args.audit_log}")
+    if not result.ran:
+        return 2
+    return result.returncode or 0
+
+
+def cmd_swarm_exec(args: argparse.Namespace) -> int:
+    """Run the meet-in-the-middle protocol with two pre-written halves and
+    optionally execute the merged module through the SCBE execution gate.
+
+    Each half is a Python source file containing a SEAM_MARKER comment. The
+    declared seam contract (names + optional types) is encoded through the
+    bijective Sacred Tongues tokenizer for byte-equal verification at the
+    meeting line. Convergent halves are merged into a temp file and run
+    through the same gate as `geoseal exec`.
+    """
+    forward_path = Path(args.forward)
+    reverse_path = Path(args.reverse)
+    if not forward_path.is_file():
+        print(f"forward half not found: {forward_path}", file=sys.stderr)
+        return 2
+    if not reverse_path.is_file():
+        print(f"reverse half not found: {reverse_path}", file=sys.stderr)
+        return 2
+
+    seam_names = tuple(n.strip() for n in (args.seam_names or "").split(",") if n.strip())
+    if not seam_names:
+        print("--seam-names is required (comma-separated identifiers)", file=sys.stderr)
+        return 2
+    seam_types = tuple(t.strip() for t in (args.seam_types or "").split(",") if t.strip())
+    if seam_types and len(seam_types) != len(seam_names):
+        print("--seam-types must be empty or parallel to --seam-names", file=sys.stderr)
+        return 2
+
+    try:
+        contract = SeamContract(names=seam_names, types=seam_types)
+    except ValueError as exc:
+        print(f"invalid seam contract: {exc}", file=sys.stderr)
+        return 2
+
+    fwd = CodeHalf(
+        direction="forward",
+        code=forward_path.read_text(encoding="utf-8"),
+        declared_seam=contract,
+    )
+    rev = CodeHalf(
+        direction="reverse",
+        code=reverse_path.read_text(encoding="utf-8"),
+        declared_seam=contract,
+    )
+
+    # First, do an in-process merge with execute=False so we can show seam
+    # convergence diagnostics without invoking the merged module yet.
+    report = merge_halves(fwd, rev, execute=False)
+
+    base_payload: Dict[str, Any] = {
+        "version": "geoseal-swarm-exec-v1",
+        "tongue": args.tongue.lower(),
+        "seam_contract": {
+            "names": list(contract.names),
+            "types": list(contract.types),
+            "tongue_hash": contract.seam_tongue_hash(args.tongue.lower()),
+        },
+        "converged": report.converged,
+        "forward_seam_hash": report.forward_seam_hash,
+        "reverse_seam_hash": report.reverse_seam_hash,
+        "diagnostics": report.diagnostics,
+        "merged_source": report.merged_source if report.converged else None,
+    }
+
+    if not report.converged:
+        if args.json:
+            print(json.dumps(base_payload, indent=2))
+        else:
+            print(f"[swarm-exec] converged=False  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}")
+            for diag in report.diagnostics:
+                print(f"  - {diag}")
+        return 2
+
+    if not args.execute:
+        # convergence-only mode
+        if args.json:
+            print(json.dumps(base_payload, indent=2))
+        else:
+            print(f"[swarm-exec] converged=True  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}")
+            print(f"  forward_hash: {report.forward_seam_hash[:16]}")
+            print(f"  reverse_hash: {report.reverse_seam_hash[:16]}")
+            print(f"  merged source: {len(report.merged_source or '')} bytes (use --execute to run)")
+        return 0
+
+    # Execute the merged module through the SCBE execution gate.
+    with tempfile.TemporaryDirectory(prefix="geoseal-swarm-") as tmp:
+        merged_path = Path(tmp) / "merged.py"
+        merged_path.write_text(report.merged_source or "", encoding="utf-8")
+        # Quote the path so a space in tmp doesn't break the gate's parser.
+        command_str = f'"{sys.executable}" "{merged_path}"'
+
+        gate_result = execute_governed_command(
+            command_str,
+            cwd=Path(args.cwd) if args.cwd else None,
+            timeout=args.timeout,
+            max_tier=args.max_tier,
+            claimed_paths=args.claimed_path or [],
+            audit_log=None if args.no_audit else Path(args.audit_log),
+            audit_secret=args.audit_secret,
+            audit_secret_env=args.audit_secret_env,
+        )
+
+    payload = {
+        **base_payload,
+        "gate": gate_result.to_dict(),
+    }
+
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        decision = gate_result.decision
+        print(f"[swarm-exec] converged=True  seam_tongue_hash={base_payload['seam_contract']['tongue_hash'][:16]}")
+        print(f"[gate] tier={decision.tier} allowed={decision.allowed} ran={gate_result.ran}")
+        for finding in decision.findings:
+            print(f"  - {finding.rule}: {finding.message}")
+        if gate_result.stdout:
+            print(gate_result.stdout.rstrip())
+        if gate_result.stderr:
+            print(gate_result.stderr.rstrip(), file=sys.stderr)
+        if gate_result.error:
+            print(f"error: {gate_result.error}", file=sys.stderr)
+        if gate_result.audit_written:
+            print(f"[audit] sealed record appended to {args.audit_log}")
+
+    if not gate_result.ran:
+        return 2
+    return gate_result.returncode or 0
+
+
+def cmd_validate_line(args: argparse.Namespace) -> int:
+    command = subprocess.list2cmdline(args.command) if isinstance(args.command, list) else args.command
+    decision = scan_command(command, claimed_paths=args.claimed_path or [])
+    pill = f"[{decision.tier}:{'PASS' if decision.allowed else 'BLOCK'}]"
+    payload = {
+        "version": "geoseal-validate-line-v1",
+        "pill": pill,
+        "command_sha256": decision.command_sha256,
+        "decision": decision.to_dict(),
+    }
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(pill)
+        for finding in decision.findings:
+            print(f"  - {finding.rule}: {finding.message}")
+    return 0 if decision.allowed else 2
 
 
 def cmd_decode_cmd(args: argparse.Namespace) -> int:
@@ -2103,7 +2404,17 @@ def cmd_emit(args: argparse.Namespace) -> int:
 def cmd_run(args: argparse.Namespace) -> int:
     kv = _parse_kv_args(args.args)
     tongue = (args.tongue or "KO").upper()
-    call = run_tongue_call(args.op, tongue, kv, execute=True, timeout=args.timeout)
+    call = run_tongue_call(
+        args.op,
+        tongue,
+        kv,
+        execute=True,
+        timeout=args.timeout,
+        gate_max_tier=args.gate_max_tier,
+        gate_audit_log=None if args.no_gate_audit else Path(args.gate_audit_log),
+        gate_audit_secret=args.gate_audit_secret,
+        gate_audit_secret_env=args.gate_audit_secret_env,
+    )
     if not args.no_ledger:
         ledger = Path(args.ledger)
         ledger.parent.mkdir(parents=True, exist_ok=True)
@@ -3216,6 +3527,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
 
+    p_assist = sub.add_parser("assist", help="Run local micro-assist for terminal agents")
+    p_assist.add_argument("task", help="Task text to classify and route")
+    p_assist.add_argument("--agent", default="agent.codex")
+    p_assist.add_argument("--recipient", default="agent.claude")
+    p_assist.add_argument("--repo-root", default=str(Path.cwd()))
+    p_assist.add_argument("--bus", default=None)
+    p_assist.add_argument("--post", action="store_true", help="Post advice to centerline bus")
+    p_assist.add_argument("--json", action="store_true")
+    p_assist.set_defaults(func=cmd_assist)
+
     p_history = sub.add_parser("history", help="Show execution history from ledger")
     p_history.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_history.add_argument("--limit", type=int, default=20)
@@ -3284,7 +3605,105 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_shell = sub.add_parser("shell", help="Run a nested GeoSeal command string")
     p_shell.add_argument("--command", required=True)
+    p_shell.add_argument(
+        "--max-tier",
+        default="ALLOW",
+        choices=["ALLOW", "QUARANTINE", "ESCALATE"],
+        dest="max_tier",
+        help="Highest execution-gate tier allowed for the nested command",
+    )
+    p_shell.add_argument("--audit-log", default=str(DEFAULT_EXEC_AUDIT_LOG))
+    p_shell.add_argument("--audit-secret", default=None)
+    p_shell.add_argument("--audit-secret-env", default=DEFAULT_AUDIT_SECRET_ENV)
+    p_shell.add_argument("--json", action="store_true")
     p_shell.set_defaults(func=cmd_shell)
+
+    p_exec = sub.add_parser("exec", help="Run an external command through the GeoSeal execution gate")
+    p_exec.add_argument("command", nargs=argparse.REMAINDER, help="Command to parse, scan, and execute")
+    p_exec.add_argument("--cwd", default=None, help="Working directory for the subprocess")
+    p_exec.add_argument("--timeout", type=float, default=30.0)
+    p_exec.add_argument(
+        "--max-tier",
+        default="ALLOW",
+        choices=["ALLOW", "QUARANTINE", "ESCALATE"],
+        dest="max_tier",
+        help="Highest execution-gate tier allowed to run",
+    )
+    p_exec.add_argument(
+        "--claimed-path",
+        action="append",
+        default=[],
+        dest="claimed_path",
+        help="Path prefix the command is allowed to touch; repeatable",
+    )
+    p_exec.add_argument("--audit-log", default=str(DEFAULT_EXEC_AUDIT_LOG))
+    p_exec.add_argument("--audit-secret", default=None)
+    p_exec.add_argument("--audit-secret-env", default=DEFAULT_AUDIT_SECRET_ENV)
+    p_exec.add_argument("--no-audit", action="store_true")
+    p_exec.add_argument("--json", action="store_true")
+    p_exec.set_defaults(func=cmd_exec)
+
+    p_swarm_exec = sub.add_parser(
+        "swarm-exec",
+        help="Meet-in-the-middle codegen: merge two halves through the bijective seam, then run through the gate",
+    )
+    p_swarm_exec.add_argument("--forward", required=True, help="Path to the forward (input → seam) half")
+    p_swarm_exec.add_argument("--reverse", required=True, help="Path to the reverse (seam → output) half")
+    p_swarm_exec.add_argument(
+        "--seam-names",
+        required=True,
+        dest="seam_names",
+        help="Comma-separated identifiers that must agree at the seam",
+    )
+    p_swarm_exec.add_argument(
+        "--seam-types",
+        default="",
+        dest="seam_types",
+        help="Optional comma-separated type strings parallel to --seam-names",
+    )
+    p_swarm_exec.add_argument(
+        "--tongue",
+        default="ko",
+        help="Sacred Tongue used for seam canonicalization (default: ko)",
+    )
+    p_swarm_exec.add_argument("--execute", action="store_true", help="Actually run the merged module through the gate")
+    p_swarm_exec.add_argument("--cwd", default=None, help="Working directory for the merged-module subprocess")
+    p_swarm_exec.add_argument("--timeout", type=float, default=30.0)
+    p_swarm_exec.add_argument(
+        "--max-tier",
+        default="ALLOW",
+        choices=["ALLOW", "QUARANTINE", "ESCALATE"],
+        dest="max_tier",
+        help="Highest execution-gate tier allowed to run the merged module",
+    )
+    p_swarm_exec.add_argument(
+        "--claimed-path",
+        action="append",
+        default=[],
+        dest="claimed_path",
+        help="Path prefix the merged module is allowed to touch; repeatable",
+    )
+    p_swarm_exec.add_argument("--audit-log", default=str(DEFAULT_EXEC_AUDIT_LOG))
+    p_swarm_exec.add_argument("--audit-secret", default=None)
+    p_swarm_exec.add_argument("--audit-secret-env", default=DEFAULT_AUDIT_SECRET_ENV)
+    p_swarm_exec.add_argument("--no-audit", action="store_true")
+    p_swarm_exec.add_argument("--json", action="store_true")
+    p_swarm_exec.set_defaults(func=cmd_swarm_exec)
+
+    p_validate_line = sub.add_parser(
+        "validate-line",
+        help="Preflight a command line and print a PSReadLine-style gate verdict",
+    )
+    p_validate_line.add_argument("command", nargs=argparse.REMAINDER)
+    p_validate_line.add_argument(
+        "--claimed-path",
+        action="append",
+        default=[],
+        dest="claimed_path",
+        help="Path prefix the line is allowed to touch; repeatable",
+    )
+    p_validate_line.add_argument("--json", action="store_true")
+    p_validate_line.set_defaults(func=cmd_validate_line)
 
     p_decode = sub.add_parser("decode-cmd", help="Decode Sacred Tongue tokens back to plaintext")
     p_decode.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
@@ -3314,6 +3733,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("op")
     p_run.add_argument("--tongue", default="KO")
     p_run.add_argument("--timeout", type=float, default=10.0)
+    p_run.add_argument(
+        "--gate-max-tier",
+        default="QUARANTINE",
+        choices=["ALLOW", "QUARANTINE", "ESCALATE"],
+        dest="gate_max_tier",
+        help="Highest execution-gate tier allowed for the generated subprocess",
+    )
+    p_run.add_argument("--gate-audit-log", default=str(DEFAULT_EXEC_AUDIT_LOG))
+    p_run.add_argument("--gate-audit-secret", default=None)
+    p_run.add_argument("--gate-audit-secret-env", default=DEFAULT_AUDIT_SECRET_ENV)
+    p_run.add_argument("--no-gate-audit", action="store_true")
     p_run.add_argument("--no-ledger", action="store_true")
     p_run.add_argument("--ledger", default=str(DEFAULT_LEDGER))
     p_run.add_argument("--json", action="store_true")
