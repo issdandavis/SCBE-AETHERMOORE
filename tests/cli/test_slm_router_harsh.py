@@ -285,9 +285,7 @@ def test_ollama_adapter_http_500_surfaces_as_quarantine() -> None:
 
     adapter = OllamaAdapter()
     fake_response = MagicMock()
-    fake_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-        "500", request=MagicMock(), response=MagicMock()
-    )
+    fake_response.raise_for_status.side_effect = httpx.HTTPStatusError("500", request=MagicMock(), response=MagicMock())
     with patch("httpx.post", return_value=fake_response):
         with pytest.raises(QuarantineError):
             adapter.classify("test", ["A", "B"])
@@ -325,9 +323,7 @@ def test_ollama_adapter_choice_outside_choices_surfaces_as_quarantine() -> None:
     adapter = OllamaAdapter()
     fake_response = MagicMock()
     fake_response.raise_for_status.return_value = None
-    fake_response.json.return_value = {
-        "response": '{"choice": "TRANSCENDENT", "confidence": 0.99}'
-    }
+    fake_response.json.return_value = {"response": '{"choice": "TRANSCENDENT", "confidence": 0.99}'}
     with patch("httpx.post", return_value=fake_response):
         chosen, conf = adapter.classify("test", ["A", "B"])
         # Adapter contract is "return whatever model said" — verification

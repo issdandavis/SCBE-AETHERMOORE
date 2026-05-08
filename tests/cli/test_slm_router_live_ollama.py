@@ -19,9 +19,7 @@ from typing import Optional
 import pytest
 
 
-def _ollama_reachable(
-    host: str = "http://localhost:11434", timeout: float = 1.0
-) -> bool:
+def _ollama_reachable(host: str = "http://localhost:11434", timeout: float = 1.0) -> bool:
     try:
         import httpx  # noqa: PLC0415
     except ImportError:
@@ -33,9 +31,7 @@ def _ollama_reachable(
         return False
 
 
-def _model_available(
-    model: str, host: str = "http://localhost:11434", timeout: float = 2.0
-) -> bool:
+def _model_available(model: str, host: str = "http://localhost:11434", timeout: float = 2.0) -> bool:
     try:
         import httpx  # noqa: PLC0415
 
@@ -98,10 +94,7 @@ _QUALIFIED_MODEL = _resolve_qualified_model() if _REACHABLE else None
 
 
 if not _REACHABLE:
-    _SKIP_REASON = (
-        f"Ollama not reachable at {_HOST}. "
-        "Start with `ollama serve` to enable these tests."
-    )
+    _SKIP_REASON = f"Ollama not reachable at {_HOST}. " "Start with `ollama serve` to enable these tests."
 elif _QUALIFIED_MODEL is None:
     _SKIP_REASON = (
         f"No qualified instruct model installed at {_HOST}. "
@@ -149,9 +142,7 @@ def test_live_ollama_classifies_op_within_arithmetic_band() -> None:
 
     adapter = OllamaAdapter(model=_QUALIFIED_MODEL, host=_HOST)
     arith_ops = _ops_in_band("ARITHMETIC")
-    chosen, conf = adapter.classify(
-        _op_prompt("add x and y", "ARITHMETIC", arith_ops), arith_ops
-    )
+    chosen, conf = adapter.classify(_op_prompt("add x and y", "ARITHMETIC", arith_ops), arith_ops)
     assert chosen in arith_ops, f"out-of-set: {chosen!r}"
     assert chosen == "add", f"expected 'add', got {chosen!r}"
 

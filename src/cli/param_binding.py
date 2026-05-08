@@ -52,9 +52,7 @@ class ParameterSetError(ValueError):
 
 
 def _is_literal(annotation: Any) -> bool:
-    return get_origin(annotation) is not None and "Literal" in str(
-        get_origin(annotation)
-    )
+    return get_origin(annotation) is not None and "Literal" in str(get_origin(annotation))
 
 
 def _literal_choices(annotation: Any) -> list[Any]:
@@ -203,13 +201,9 @@ class BoundCommand(BaseModel):
                 if any(getattr(inst, m, None) not in absent for m in members):
                     present_sets.append(set_name)
             if len(present_sets) == 0:
-                raise ParameterSetError(
-                    f"no parameter set satisfied; supply args for one of: {list(sets.keys())}"
-                )
+                raise ParameterSetError(f"no parameter set satisfied; supply args for one of: {list(sets.keys())}")
             if len(present_sets) > 1:
-                raise ParameterSetError(
-                    f"parameter sets are mutually exclusive; saw multiple: {present_sets}"
-                )
+                raise ParameterSetError(f"parameter sets are mutually exclusive; saw multiple: {present_sets}")
         return inst
 
     @classmethod
