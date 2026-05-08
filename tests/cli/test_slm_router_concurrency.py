@@ -23,7 +23,7 @@ from src.cli.slm_router import (
 )
 
 
-_BAND_SET = frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"})
+_BAND_SET = frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"})
 _ARITH_OPS = frozenset(
     {
         "abs", "add", "ceil", "dec", "div", "exp", "floor", "inc",
