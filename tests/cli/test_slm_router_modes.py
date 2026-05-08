@@ -313,9 +313,7 @@ def test_pinned_stages_appear_in_reasoning() -> None:
         op_name="add",
         dst_tongue="RU",
     )
-    pinned_lines = [
-        r for r in result.reasoning if "pinned" in r or "caller-supplied" in r
-    ]
+    pinned_lines = [r for r in result.reasoning if "pinned" in r or "caller-supplied" in r]
     assert len(pinned_lines) == 3  # band-via-op, op, tongue
     assert any("band=pinned-via-op:ARITHMETIC" in r for r in pinned_lines)
     assert any("op=pinned:add" in r for r in pinned_lines)
@@ -333,9 +331,7 @@ def test_manual_mode_still_detects_loops() -> None:
 
     adapter = _RecordingAdapter()
     router = LatticeRouter(adapter, loop_window=4)
-    router.route(
-        "a", args={"a": "x", "b": "y"}, op_name="add", dst_tongue="KO", mode=Mode.MANUAL
-    )
+    router.route("a", args={"a": "x", "b": "y"}, op_name="add", dst_tongue="KO", mode=Mode.MANUAL)
     with pytest.raises(LoopDetected):
         router.route(
             "b",

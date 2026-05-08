@@ -50,11 +50,7 @@ def _canonical_args_for(op_name: str) -> Dict[str, str]:
         # Collect every {field} occurrence across all 6 tongue templates.
         import string as _s
 
-        fields.update(
-            field
-            for _, field, _, _ in _s.Formatter().parse(template)
-            if field is not None
-        )
+        fields.update(field for _, field, _, _ in _s.Formatter().parse(template) if field is not None)
     # Stable, simple, regex-safe arg values.
     canon = {
         "a": "x",
@@ -131,17 +127,11 @@ def test_symmetry_lexicon_all_directed_pairs() -> None:
                 forward = cross_build(src_code, src_tongue, dst_tongue)
                 back = cross_build(forward.dst_code, dst_tongue, src_tongue)
             except QuarantineError as exc:
-                failures.append(
-                    (op_name, src_tongue, dst_tongue, "<quarantine>", str(exc))
-                )
+                failures.append((op_name, src_tongue, dst_tongue, "<quarantine>", str(exc)))
                 continue
             if back.dst_code != src_code:
-                failures.append(
-                    (op_name, src_tongue, dst_tongue, src_code, back.dst_code)
-                )
-    assert (
-        not failures
-    ), f"symmetry broken in {len(failures)} cases: first={failures[:3]}"
+                failures.append((op_name, src_tongue, dst_tongue, src_code, back.dst_code))
+    assert not failures, f"symmetry broken in {len(failures)} cases: first={failures[:3]}"
 
 
 # ---------------------------------------------------------------------------
@@ -176,9 +166,7 @@ def test_ir_closure_value_equality_across_source_tongues() -> None:
         if canonical is None:
             canonical = ir
         else:
-            assert (
-                ir == canonical
-            ), f"IR drift for {op_name} from tongue={tongue}: {ir} != {canonical}"
+            assert ir == canonical, f"IR drift for {op_name} from tongue={tongue}: {ir} != {canonical}"
 
 
 def test_ir_closure_holds_for_every_lexicon_op() -> None:

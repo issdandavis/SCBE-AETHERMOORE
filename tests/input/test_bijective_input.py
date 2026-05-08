@@ -50,9 +50,7 @@ from src.input.bijective_input import (
 def test_mouse_move_round_trip() -> None:
     ev = MouseEvent(timestamp_us=1_700_000_000_000_000, x=512, y=384)
     tokens = encode_mouse_event(ev)
-    assert (
-        isinstance(tokens, list) and tokens
-    ), "encoder must return non-empty token list"
+    assert isinstance(tokens, list) and tokens, "encoder must return non-empty token list"
     decoded = decode_mouse_event(tokens)
     assert decoded == ev
 
@@ -247,9 +245,7 @@ def test_polar_zero_origin_returns_zero_radius() -> None:
 def _sample_trace() -> List[object]:
     return [
         MouseEvent(timestamp_us=10, x=100, y=100, action=MouseAction.MOVE),
-        KeyEvent(
-            timestamp_us=20, keycode=0x41, modifiers=MOD_SHIFT, action=KeyAction.DOWN
-        ),
+        KeyEvent(timestamp_us=20, keycode=0x41, modifiers=MOD_SHIFT, action=KeyAction.DOWN),
         MouseEvent(
             timestamp_us=30,
             x=200,
@@ -332,9 +328,7 @@ def test_verify_trace_with_expected_count() -> None:
 
 def test_verify_trace_with_expected_kinds() -> None:
     packets = encode_trace(_sample_trace())
-    good = verify_trace(
-        packets, expected_kinds=[KIND_MOUSE, KIND_KEY, KIND_MOUSE, KIND_KEY, KIND_MOUSE]
-    )
+    good = verify_trace(packets, expected_kinds=[KIND_MOUSE, KIND_KEY, KIND_MOUSE, KIND_KEY, KIND_MOUSE])
     assert good["ok"] is True
 
     wrong = verify_trace(packets, expected_kinds=[KIND_KEY] * 5)
@@ -386,9 +380,7 @@ def test_replay_trace_sink_is_optional() -> None:
 
 def test_same_event_yields_same_tokens() -> None:
     """Determinism is the whole point — same event, byte-equal tokens."""
-    ev = MouseEvent(
-        timestamp_us=12345, x=10, y=20, action=MouseAction.DOWN, button=MouseButton.LEFT
-    )
+    ev = MouseEvent(timestamp_us=12345, x=10, y=20, action=MouseAction.DOWN, button=MouseButton.LEFT)
     a = encode_mouse_event(ev)
     b = encode_mouse_event(ev)
     assert a == b

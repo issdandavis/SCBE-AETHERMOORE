@@ -85,11 +85,7 @@ def test_validate_range_rejects_out_of_band_value() -> None:
     ns = parser.parse_args(["--name", "x", "--count", "99"])
     with pytest.raises(ParameterSetError) as exc:
         _SimpleCmd.from_namespace(ns)
-    assert (
-        "less_than_equal" in str(exc.value)
-        or "100" in str(exc.value)
-        or "10" in str(exc.value)
-    )
+    assert "less_than_equal" in str(exc.value) or "100" in str(exc.value) or "10" in str(exc.value)
 
 
 def test_literal_choices_propagate_to_argparse() -> None:
