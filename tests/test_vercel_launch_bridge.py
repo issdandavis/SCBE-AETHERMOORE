@@ -40,6 +40,6 @@ def test_download_bridge_serves_private_blob_with_delivery_token() -> None:
     assert "BLOB_READ_WRITE_TOKEN" in source
     assert "SCBE_TOOLKIT_BLOB_URL" in source
     assert "SCBE_VAULT_BLOB_URL" in source
-    assert 'product must be toolkit or vault' in source
-    assert 'Content-Disposition' in source
+    assert "product must be toolkit or vault" in source
+    assert "Content-Disposition" in source
     assert 'Cache-Control", "private, no-store"' in source
