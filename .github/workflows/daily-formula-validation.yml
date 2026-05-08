@@ -1,8 +1,6 @@
 name: Daily Formula Validation
 
 on:
-  schedule:
-    - cron: '0 0 * * *'  # Every day at midnight UTC
   workflow_dispatch:
 
 permissions:

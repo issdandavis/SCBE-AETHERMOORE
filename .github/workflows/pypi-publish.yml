@@ -1,13 +1,11 @@
 name: pypi-publish
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:
         description: 'Tag to publish (e.g. v3.3.1)'
-        required: false
+        required: true
 
 permissions:
   contents: read
@@ -20,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || github.ref }}
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -33,7 +31,7 @@ jobs:
       - name: Verify pyproject version matches tag
         run: |
           PKG_VER=$(python -c "import tomllib,sys; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
-          TAG="${{ github.event.release.tag_name || inputs.tag }}"
+          TAG="${{ inputs.tag }}"
           TAG_VER="${TAG#v}"
           if [ "$PKG_VER" != "$TAG_VER" ]; then
             echo "::warning::pyproject.toml version ($PKG_VER) does not match tag ($TAG_VER) — skipping PyPI publish."
