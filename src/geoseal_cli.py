@@ -2245,6 +2245,819 @@ def _handle_seal_here(bound: BoundCommand, ns: argparse.Namespace) -> int:
     return 0
 
 
+#  cross-build: bijective sphere — any tongue in, any tongue out via the
+#  shared LatticeOp IR. Tier 1 covers 57/64 lexicon ops × 30 directed pairs.
+# ---------------------------------------------------------------------------
+
+
+class CrossBuildCommand(BoundCommand):
+    """Translate lexicon-rendered code from one Sacred Tongue to another."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        # Parameter sets are discriminated by ONE unique field per set.
+        # Shared inputs like --src-code / --src-tongue feed whichever
+        # set the discriminator selected, so they don't go in here.
+        parameter_sets={
+            "single": ["dst_tongue"],
+            "broadcast": ["all_tongues"],
+            "info": ["list_ops"],
+        },
+    )
+
+    src_code: Optional[str] = Field(
+        None,
+        description="Lexicon-rendered source snippet to lift into the lattice IR",
+    )
+    src_tongue: Optional[_Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
+        None, description="Source tongue (one of KO|AV|RU|CA|UM|DR)"
+    )
+    dst_tongue: Optional[_Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
+        None, description="Destination tongue for single-target translation"
+    )
+    all_tongues: bool = Field(
+        False,
+        description="Broadcast: emit the IR in every tongue except the source",
+    )
+    list_ops: bool = Field(
+        False,
+        description="Print the 57 Tier 1 participating ops and the 7 excluded ops",
+    )
+
+
+def _handle_cross_build(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.cross_build_ir import (
+        QuarantineError,
+        TIER1_EXCLUDED_OPS,
+        TIER1_PARTICIPATING_OPS,
+        cross_build,
+        emit_from_ir,
+        lift_to_lattice,
+    )
+
+    cmd = bound
+    assert isinstance(cmd, CrossBuildCommand)
+
+    if cmd.list_ops:
+        print(
+            json.dumps(
+                {
+                    "version": "geoseal-cross-build-v1",
+                    "tier": 1,
+                    "participating_count": len(TIER1_PARTICIPATING_OPS),
+                    "participating_ops": list(TIER1_PARTICIPATING_OPS),
+                    "excluded_count": len(TIER1_EXCLUDED_OPS),
+                    "excluded_ops": list(TIER1_EXCLUDED_OPS),
+                    "tongues": ["KO", "AV", "RU", "CA", "UM", "DR"],
+                },
+                indent=2,
+            )
+        )
+        return 0
+
+    try:
+        if cmd.all_tongues:
+            ir = lift_to_lattice(cmd.src_code or "", cmd.src_tongue or "")
+            translations: Dict[str, str] = {}
+            for tongue in ("KO", "AV", "RU", "CA", "UM", "DR"):
+                if tongue == cmd.src_tongue:
+                    continue
+                translations[tongue] = emit_from_ir(ir, tongue)
+            payload = {
+                "version": "geoseal-cross-build-v1",
+                "mode": "broadcast",
+                "src_tongue": cmd.src_tongue,
+                "src_code": cmd.src_code,
+                "ir": ir.model_dump(),
+                "translations": translations,
+            }
+        else:
+            result = cross_build(cmd.src_code or "", cmd.src_tongue or "", cmd.dst_tongue or "")
+            payload = {
+                "version": "geoseal-cross-build-v1",
+                "mode": "single",
+                "src_tongue": result.src_tongue,
+                "src_language": result.src_language,
+                "dst_tongue": result.dst_tongue,
+                "dst_language": result.dst_language,
+                "src_code": result.src_code,
+                "dst_code": result.dst_code,
+                "ir": result.ir.model_dump(),
+            }
+    except QuarantineError as exc:
+        err = {
+            "version": "geoseal-cross-build-v1",
+            "verdict": "QUARANTINE",
+            "error_type": type(exc).__name__,
+            "message": str(exc),
+        }
+        # Structured output always goes to stdout — exit code carries the
+        # verdict. Keeps JSON parseable even when stderr has unrelated noise
+        # (liboqs warnings, etc).
+        print(json.dumps(err, indent=2))
+        return 2
+
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+#  route: SLM-router CLI surface — natural-language intent -> LatticeOp.
+#  Two modes: AUTO (SLM picks unsupplied stages) and MANUAL (caller pins
+#  every stage; SLM is never invoked, deterministic dispatch).
+# ---------------------------------------------------------------------------
+
+
+class RouteCommand(BoundCommand):
+    """Route a natural-language intent through the SCBE Tier 1 SLM router."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        # Discriminated by the mode flag. MANUAL requires op_name + dst_tongue;
+        # AUTO accepts anything from intent-only up to fully pinned.
+        parameter_sets={
+            "auto": ["intent"],
+            "manual": ["manual"],
+        },
+    )
+
+    intent: Optional[str] = Field(
+        None,
+        description="Natural-language description of what to do (used by AUTO mode SLM prompts)",
+    )
+    manual: bool = Field(
+        False,
+        description="MANUAL mode: SLM never called, requires --op-name and --dst-tongue",
+    )
+    op_name: Optional[str] = Field(
+        None, description="Pin the lexicon op (e.g. add, mul, xor) — skips band+op SLM stages"
+    )
+    band: Optional[_Literal["ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"]] = Field(
+        None, description="Pin the operation band — skips band SLM stage"
+    )
+    dst_tongue: Optional[_Literal["KO", "AV", "RU", "CA", "UM", "DR"]] = Field(
+        None, description="Pin the destination tongue — skips tongue SLM stage"
+    )
+    arg: List[str] = Field(
+        default_factory=list,
+        description="Repeatable arg binding `name=value` (e.g. --arg a=x --arg b=y)",
+    )
+    emit: bool = Field(
+        False,
+        description="After routing, emit code in the resolved dst_tongue (adds dst_code to output)",
+    )
+    emit_all: bool = Field(
+        False,
+        description="After routing, emit code in ALL 6 tongues (adds translations map)",
+    )
+    raw: bool = Field(
+        False,
+        description=(
+            "Pipe-friendly: emitted code to stdout, JSON envelope to stderr. "
+            "Requires --emit (single tongue); ignored with --emit-all."
+        ),
+    )
+    ollama_model: Optional[str] = Field(
+        None,
+        description="Override Ollama model name (default qwen2.5:1.5b-instruct-q4_K_M)",
+    )
+    ollama_host: str = Field(
+        "http://localhost:11434", description="Ollama server URL"
+    )
+    min_confidence: float = Field(
+        0.5, ge=0.0, le=1.0, description="Reject SLM stages below this confidence"
+    )
+    timeout_seconds: float = Field(
+        30.0, ge=0.1, le=300.0, description="Per-classify timeout"
+    )
+    no_ledger: bool = Field(
+        False,
+        description="Skip persisting this dispatch to the promotion ledger (stateless mode)",
+    )
+    ledger_path: Optional[str] = Field(
+        None,
+        description="Override promotion-ledger path (default: .scbe/route_ledger.jsonl)",
+    )
+    promotion_threshold: int = Field(
+        3,
+        ge=2,
+        le=100,
+        description="Recurrence count at which a trace becomes a promotion candidate",
+    )
+
+
+def _parse_args_pairs(pairs: List[str]) -> Dict[str, str]:
+    """Parse `name=value` style flags into a dict. Refuses malformed pairs
+    with a clear error so silent loss doesn't happen at the CLI boundary."""
+    out: Dict[str, str] = {}
+    for raw in pairs:
+        if "=" not in raw:
+            raise ValueError(f"--arg must be name=value, got {raw!r}")
+        k, v = raw.split("=", 1)
+        k = k.strip()
+        if not k:
+            raise ValueError(f"--arg has empty name: {raw!r}")
+        out[k] = v
+    return out
+
+
+def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.slm_router import (
+        ClassificationFailure,
+        LatticeRouter,
+        ManualModeError,
+        Mode,
+        OllamaAdapter,
+        QuarantineError,
+    )
+
+    cmd = bound
+    assert isinstance(cmd, RouteCommand)
+
+    try:
+        args_dict = _parse_args_pairs(cmd.arg)
+    except ValueError as exc:
+        print(
+            json.dumps(
+                {
+                    "version": "geoseal-route-v1",
+                    "verdict": "QUARANTINE",
+                    "error_type": "ArgParseError",
+                    "message": str(exc),
+                },
+                indent=2,
+            )
+        )
+        return 2
+
+    mode = Mode.MANUAL if cmd.manual else Mode.AUTO
+
+    # Build adapter — Ollama in production, but routing without an adapter is
+    # legitimate in fully-pinned manual mode (caller never calls SLM).
+    if mode is Mode.MANUAL and cmd.op_name and cmd.dst_tongue:
+        # Use a no-op adapter that asserts if invoked — manual mode should
+        # never hit it.
+        class _ForbiddenAdapter:
+            def classify(self, prompt: str, choices):  # noqa: ANN001
+                raise RuntimeError("MANUAL mode adapter must not be called")
+
+        adapter = _ForbiddenAdapter()
+    else:
+        kwargs = {"host": cmd.ollama_host}
+        if cmd.ollama_model:
+            kwargs["model"] = cmd.ollama_model
+        adapter = OllamaAdapter(**kwargs)
+
+    router = LatticeRouter(
+        adapter,
+        min_confidence=cmd.min_confidence,
+        adapter_timeout=cmd.timeout_seconds,
+    )
+
+    try:
+        result = router.route(
+            intent=cmd.intent or "",
+            args=args_dict,
+            mode=mode,
+            band=cmd.band,
+            op_name=cmd.op_name,
+            dst_tongue=cmd.dst_tongue,
+        )
+    except QuarantineError as exc:
+        err = {
+            "version": "geoseal-route-v1",
+            "verdict": "QUARANTINE",
+            "mode": mode.value,
+            "error_type": type(exc).__name__,
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        router.close()
+        return 2
+    finally:
+        # close() is idempotent — fine to call after both success and the
+        # quarantine return path above.
+        pass
+
+    payload = {
+        "version": "geoseal-route-v1",
+        "mode": mode.value,
+        "verdict": "ALLOW",
+        "op_name": result.op.op_name,
+        "op_id": result.op.op_id,
+        "band": result.op.band,
+        "dst_tongue": result.dst_tongue,
+        "args": dict(result.op.args),
+        "confidence": result.confidence,
+        "reasoning": list(result.reasoning),
+    }
+
+    # Optional emit step — after routing succeeds, render the LatticeOp
+    # into one or all six target tongues. This closes the NL->IR->code
+    # loop in a single CLI call, which is what agentic loops actually
+    # want as a one-shot primitive.
+    if cmd.emit or cmd.emit_all:
+        from src.cli.cross_build_ir import (
+            QuarantineError as _IRQuarantine,
+            emit_from_ir,
+        )
+
+        try:
+            if cmd.emit_all:
+                tongues = ("KO", "AV", "RU", "CA", "UM", "DR")
+                payload["translations"] = {
+                    t: emit_from_ir(result.op, t) for t in tongues
+                }
+                # The "primary" dst_code is still the routed tongue.
+                payload["dst_code"] = payload["translations"][result.dst_tongue]
+            else:
+                payload["dst_code"] = emit_from_ir(result.op, result.dst_tongue)
+        except _IRQuarantine as exc:
+            err = {
+                "version": "geoseal-route-v1",
+                "verdict": "QUARANTINE",
+                "stage": "emit",
+                "error_type": type(exc).__name__,
+                "message": str(exc),
+            }
+            print(json.dumps(err, indent=2))
+            router.close()
+            return 2
+
+    # Promotion ledger — persist this dispatch's trace so frequent
+    # invocations surface as candidates for subcommand promotion. This
+    # is the floating-tower mechanic: the CLI grows new named primitives
+    # from agent usage patterns, not from a release cycle.
+    if not cmd.no_ledger:
+        try:
+            from src.cli.command_trace import PromotionLedger, record_session
+
+            ledger_path = Path(cmd.ledger_path) if cmd.ledger_path else Path(".scbe/route_ledger.jsonl")
+            ledger = PromotionLedger.load(ledger_path, threshold=cmd.promotion_threshold)
+            # Build a synthetic argv that captures the *normalised* dispatch
+            # rather than the raw CLI flags. Two invocations that resolve to
+            # the same op + args + tongue should hash identically regardless
+            # of whether they came in via --intent or --manual.
+            normalised_argv = (
+                "geoseal", "route",
+                "--op-name", result.op.op_name,
+                "--dst-tongue", result.dst_tongue,
+            ) + tuple(
+                flag for k, v in sorted(result.op.args.items())
+                for flag in ("--arg", f"{k}={v}")
+            )
+            trace = record_session(normalised_argv, env=os.environ)
+            entry = ledger.observe(trace)
+            ledger.save(ledger_path)
+            payload["ledger"] = {
+                "path": str(ledger_path),
+                "digest": entry.digest,
+                "count": entry.count,
+                "is_candidate": entry.count >= cmd.promotion_threshold,
+                "threshold": cmd.promotion_threshold,
+            }
+        except Exception as exc:
+            # Ledger is best-effort — never fail the route on persistence error.
+            payload["ledger_error"] = f"{type(exc).__name__}: {exc}"
+
+    # Output routing — `--raw` puts emitted code on stdout for clean
+    # piping (e.g. `geoseal route ... --emit --raw | bash`). The JSON
+    # envelope still goes somewhere so audit trails aren't lost.
+    if cmd.raw and cmd.emit and not cmd.emit_all:
+        print(payload["dst_code"])
+        sys.stderr.write(json.dumps(payload, indent=2) + "\n")
+    else:
+        print(json.dumps(payload, indent=2))
+    router.close()
+    return 0
+
+
+#  promote / aliases / alias / unpromote — the floating-tower self-modify path.
+#
+#  Workflow:
+#    geoseal route ... (×N times)        -> ledger accumulates digests
+#    geoseal promotions                  -> see candidates above threshold
+#    geoseal promote --digest <hex> --as <name>
+#    geoseal aliases                     -> list registered aliases
+#    geoseal alias <name> [--arg ...]    -> invoke the saved dispatch
+#    geoseal unpromote --alias <name>    -> remove
+# ---------------------------------------------------------------------------
+
+
+class PromoteCommand(BoundCommand):
+    """Upgrade a ledger candidate into a registered alias."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        # Either name a specific digest or take the top current candidate.
+        parameter_sets={
+            "by-digest": ["digest"],
+            "latest": ["latest"],
+        },
+    )
+
+    name: str = Field(
+        ...,
+        description="Alias name to register (lowercase letters/digits/hyphens, max 64 chars)",
+    )
+    digest: Optional[str] = Field(
+        None, description="Specific ledger digest to promote (use `geoseal promotions` to list)"
+    )
+    latest: bool = Field(
+        False, description="Promote the current top candidate (highest count)"
+    )
+    ledger_path: str = Field(
+        ".scbe/route_ledger.jsonl", description="Path to the route promotion ledger"
+    )
+    registry_path: str = Field(
+        ".scbe/route_aliases.json", description="Path to the alias registry"
+    )
+    overwrite: bool = Field(
+        False, description="Replace an existing alias with the same name"
+    )
+    threshold: int = Field(
+        3,
+        ge=1,
+        le=1000,
+        description="Recurrence threshold required to promote (matches `geoseal promotions`)",
+    )
+
+
+class AliasesCommand(BoundCommand):
+    """List registered aliases."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    registry_path: str = Field(
+        ".scbe/route_aliases.json", description="Path to the alias registry"
+    )
+
+
+class AliasCommand(BoundCommand):
+    """Invoke a registered alias — dispatches in MANUAL mode using the
+    stored op + tongue + default args, with caller-supplied --arg overrides."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    name: str = Field(..., description="Alias name to invoke")
+    arg: List[str] = Field(
+        default_factory=list,
+        description="Repeatable arg override `name=value`; missing keys fall back to alias defaults",
+    )
+    emit: bool = Field(False, description="Render LatticeOp into dst_tongue (adds dst_code)")
+    emit_all: bool = Field(False, description="Render in all 6 tongues")
+    raw: bool = Field(False, description="Emit code to stdout, envelope to stderr")
+    registry_path: str = Field(
+        ".scbe/route_aliases.json", description="Path to the alias registry"
+    )
+
+
+class UnpromoteCommand(BoundCommand):
+    """Remove a registered alias."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    alias: str = Field(..., description="Alias name to remove")
+    registry_path: str = Field(
+        ".scbe/route_aliases.json", description="Path to the alias registry"
+    )
+
+
+def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.alias_registry import AliasError, AliasRegistry
+    from src.cli.command_trace import PromotionLedger
+
+    cmd = bound
+    assert isinstance(cmd, PromoteCommand)
+
+    ledger = PromotionLedger.load(Path(cmd.ledger_path), threshold=cmd.threshold)
+
+    # Resolve which entry to promote.
+    if cmd.latest:
+        candidates = ledger.candidates()
+        if not candidates:
+            err = {
+                "version": "geoseal-promote-v1",
+                "verdict": "QUARANTINE",
+                "error_type": "NoCandidate",
+                "message": (
+                    f"no ledger entry has crossed threshold={cmd.threshold} "
+                    f"in {cmd.ledger_path}"
+                ),
+            }
+            print(json.dumps(err, indent=2))
+            return 2
+        target = candidates[0]
+    else:
+        target = ledger.entries.get(cmd.digest or "")
+        if target is None:
+            err = {
+                "version": "geoseal-promote-v1",
+                "verdict": "QUARANTINE",
+                "error_type": "DigestNotFound",
+                "message": f"digest {cmd.digest!r} not in ledger {cmd.ledger_path}",
+            }
+            print(json.dumps(err, indent=2))
+            return 2
+        if target.count < cmd.threshold:
+            err = {
+                "version": "geoseal-promote-v1",
+                "verdict": "QUARANTINE",
+                "error_type": "BelowThreshold",
+                "message": (
+                    f"digest {cmd.digest} has count={target.count}, "
+                    f"below threshold={cmd.threshold}"
+                ),
+            }
+            print(json.dumps(err, indent=2))
+            return 2
+
+    # Recover dispatch shape from the normalised sample_argv.
+    op_name, dst_tongue, default_args = _parse_normalised_argv(target.sample_argv)
+    if op_name is None or dst_tongue is None:
+        err = {
+            "version": "geoseal-promote-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "MalformedSampleArgv",
+            "message": f"could not parse sample_argv: {list(target.sample_argv)}",
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+
+    registry = AliasRegistry.load(Path(cmd.registry_path))
+    try:
+        entry = registry.register(
+            cmd.name,
+            op_name=op_name,
+            dst_tongue=dst_tongue,
+            default_args=default_args,
+            source_digest=target.digest,
+            promoted_from_count=target.count,
+            overwrite=cmd.overwrite,
+        )
+    except AliasError as exc:
+        err = {
+            "version": "geoseal-promote-v1",
+            "verdict": "QUARANTINE",
+            "error_type": type(exc).__name__,
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+    registry.save(Path(cmd.registry_path))
+
+    payload = {
+        "version": "geoseal-promote-v1",
+        "verdict": "ALLOW",
+        "registry_path": cmd.registry_path,
+        "promoted": entry.to_dict(),
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _handle_aliases(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.alias_registry import AliasRegistry
+
+    cmd = bound
+    assert isinstance(cmd, AliasesCommand)
+    path = Path(cmd.registry_path)
+    registry = AliasRegistry.load(path)
+    payload = {
+        "version": "geoseal-aliases-list-v1",
+        "registry_path": str(path),
+        "registry_exists": path.exists(),
+        "alias_count": len(registry.aliases),
+        "aliases": [e.to_dict() for e in registry.list_aliases()],
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _handle_alias(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.alias_registry import AliasNotFoundError, AliasRegistry
+    from src.cli.cross_build_ir import (
+        QuarantineError as _IRQuarantine,
+        emit_from_ir,
+    )
+
+    cmd = bound
+    assert isinstance(cmd, AliasCommand)
+    registry = AliasRegistry.load(Path(cmd.registry_path))
+    try:
+        entry = registry.lookup(cmd.name)
+    except AliasNotFoundError as exc:
+        err = {
+            "version": "geoseal-alias-invoke-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "AliasNotFoundError",
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+
+    # Merge default_args with caller overrides.
+    try:
+        overrides = _parse_args_pairs(cmd.arg)
+    except ValueError as exc:
+        err = {
+            "version": "geoseal-alias-invoke-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "ArgParseError",
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+    merged_args = {**dict(entry.default_args), **overrides}
+
+    # Build LatticeOp directly via the lexicon — alias dispatch is
+    # deterministic and bypasses the SLM router entirely.
+    from src.ca_lexicon import LEXICON_BY_NAME
+    from src.cli.cross_build_ir import LatticeOp, TIER1_PARTICIPATING_OPS
+
+    if entry.op_name not in LEXICON_BY_NAME:
+        err = {
+            "version": "geoseal-alias-invoke-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "StaleAlias",
+            "message": f"alias {cmd.name!r} references unknown op {entry.op_name!r}",
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+    if entry.op_name not in TIER1_PARTICIPATING_OPS:
+        err = {
+            "version": "geoseal-alias-invoke-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "StaleAlias",
+            "message": f"alias {cmd.name!r} op {entry.op_name!r} excluded from Tier 1",
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+
+    lex_entry = LEXICON_BY_NAME[entry.op_name]
+    op = LatticeOp.from_entry(lex_entry, merged_args)
+
+    payload = {
+        "version": "geoseal-alias-invoke-v1",
+        "verdict": "ALLOW",
+        "alias": entry.name,
+        "op_name": op.op_name,
+        "op_id": op.op_id,
+        "band": op.band,
+        "dst_tongue": entry.dst_tongue,
+        "args": dict(op.args),
+    }
+
+    if cmd.emit or cmd.emit_all:
+        try:
+            if cmd.emit_all:
+                tongues = ("KO", "AV", "RU", "CA", "UM", "DR")
+                payload["translations"] = {t: emit_from_ir(op, t) for t in tongues}
+                payload["dst_code"] = payload["translations"][entry.dst_tongue]
+            else:
+                payload["dst_code"] = emit_from_ir(op, entry.dst_tongue)
+        except _IRQuarantine as exc:
+            err = {
+                "version": "geoseal-alias-invoke-v1",
+                "verdict": "QUARANTINE",
+                "stage": "emit",
+                "error_type": type(exc).__name__,
+                "message": str(exc),
+            }
+            print(json.dumps(err, indent=2))
+            return 2
+
+    if cmd.raw and cmd.emit and not cmd.emit_all:
+        print(payload["dst_code"])
+        sys.stderr.write(json.dumps(payload, indent=2) + "\n")
+    else:
+        print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _handle_unpromote(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.alias_registry import AliasNotFoundError, AliasRegistry
+
+    cmd = bound
+    assert isinstance(cmd, UnpromoteCommand)
+    registry = AliasRegistry.load(Path(cmd.registry_path))
+    try:
+        removed = registry.unregister(cmd.alias)
+    except AliasNotFoundError as exc:
+        err = {
+            "version": "geoseal-unpromote-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "AliasNotFoundError",
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+    registry.save(Path(cmd.registry_path))
+    payload = {
+        "version": "geoseal-unpromote-v1",
+        "verdict": "ALLOW",
+        "removed": removed.to_dict(),
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _parse_normalised_argv(argv: tuple) -> tuple:
+    """Recover (op_name, dst_tongue, args_dict) from the normalised
+    sample_argv stored by the route handler.
+
+    The normalised shape is:
+      ("geoseal", "route", "--op-name", <op>, "--dst-tongue", <tongue>,
+       "--arg", "k1=v1", "--arg", "k2=v2", ...)
+    """
+    op_name = None
+    dst_tongue = None
+    args: Dict[str, str] = {}
+    i = 0
+    while i < len(argv):
+        token = argv[i]
+        if token == "--op-name" and i + 1 < len(argv):
+            op_name = argv[i + 1]
+            i += 2
+        elif token == "--dst-tongue" and i + 1 < len(argv):
+            dst_tongue = argv[i + 1]
+            i += 2
+        elif token == "--arg" and i + 1 < len(argv):
+            pair = argv[i + 1]
+            if "=" in pair:
+                k, v = pair.split("=", 1)
+                args[k] = v
+            i += 2
+        else:
+            i += 1
+    return op_name, dst_tongue, args
+
+
+#  promotions: list candidates from the route ledger.
+# ---------------------------------------------------------------------------
+
+
+class PromotionsCommand(BoundCommand):
+    """List recurrence candidates from the route promotion ledger."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    ledger_path: str = Field(
+        ".scbe/route_ledger.jsonl",
+        description="Path to the promotion ledger (default .scbe/route_ledger.jsonl)",
+    )
+    threshold: int = Field(
+        3,
+        ge=1,
+        le=1000,
+        description="Recurrence count at which an entry surfaces as a candidate",
+    )
+    show_all: bool = Field(
+        False,
+        description="Include all entries (below threshold too), not just candidates",
+    )
+
+
+def _handle_promotions(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.command_trace import PromotionLedger
+
+    cmd = bound
+    assert isinstance(cmd, PromotionsCommand)
+
+    path = Path(cmd.ledger_path)
+    ledger = PromotionLedger.load(path, threshold=cmd.threshold)
+
+    if cmd.show_all:
+        rows = sorted(ledger.entries.values(), key=lambda e: e.count, reverse=True)
+    else:
+        rows = ledger.candidates()
+
+    payload = {
+        "version": "geoseal-promotions-v1",
+        "ledger_path": str(path),
+        "ledger_exists": path.exists(),
+        "threshold": cmd.threshold,
+        "total_entries": len(ledger.entries),
+        "candidate_count": len(ledger.candidates()),
+        "shown_count": len(rows),
+        "shown": [
+            {
+                "digest": e.digest,
+                "count": e.count,
+                "first_seen_us": e.first_seen_us,
+                "last_seen_us": e.last_seen_us,
+                "sample_argv": list(e.sample_argv),
+                "is_candidate": e.count >= cmd.threshold,
+            }
+            for e in rows
+        ],
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
 def cmd_swarm_exec(args: argparse.Namespace) -> int:
     """Run the meet-in-the-middle protocol with two pre-written halves and
     optionally execute the merged module through the SCBE execution gate.
@@ -3752,6 +4565,57 @@ def build_parser() -> argparse.ArgumentParser:
         help="Seal a payload to a geographic fence (PowerShell-style parameter-bound subcommand)",
     )
     bind_subparser(p_seal_here, SealHereCommand, _handle_seal_here)
+
+    # cross-build (alias: xb) — bijective sphere translation across tongues.
+    p_cross_build = sub.add_parser(
+        "cross-build",
+        aliases=["xb"],
+        help="Translate lexicon code A->lattice IR->B (Tier 1: 57 ops, 30 directed pairs)",
+    )
+    bind_subparser(p_cross_build, CrossBuildCommand, _handle_cross_build)
+
+    # route — Tier 1 SLM router. AUTO mode picks unsupplied stages via
+    # local Ollama; MANUAL mode requires the caller to pin every stage.
+    p_route = sub.add_parser(
+        "route",
+        help="Route an intent through the SLM (auto) or pin every stage (manual)",
+    )
+    bind_subparser(p_route, RouteCommand, _handle_route)
+
+    # promotions — list recurrence candidates from the route ledger.
+    p_promotions = sub.add_parser(
+        "promotions",
+        help="List dispatch patterns that have crossed the promotion threshold",
+    )
+    bind_subparser(p_promotions, PromotionsCommand, _handle_promotions)
+
+    # promote — upgrade a ledger candidate into a registered alias.
+    p_promote = sub.add_parser(
+        "promote",
+        help="Register a recurring dispatch as a named alias",
+    )
+    bind_subparser(p_promote, PromoteCommand, _handle_promote)
+
+    # aliases — list registered aliases.
+    p_aliases = sub.add_parser(
+        "aliases",
+        help="List registered alias names + their dispatch shape",
+    )
+    bind_subparser(p_aliases, AliasesCommand, _handle_aliases)
+
+    # alias — invoke a registered alias.
+    p_alias = sub.add_parser(
+        "alias",
+        help="Invoke a registered alias (deterministic dispatch via stored op + tongue)",
+    )
+    bind_subparser(p_alias, AliasCommand, _handle_alias)
+
+    # unpromote — remove a registered alias.
+    p_unpromote = sub.add_parser(
+        "unpromote",
+        help="Remove a registered alias",
+    )
+    bind_subparser(p_unpromote, UnpromoteCommand, _handle_unpromote)
 
     p_swarm_exec = sub.add_parser(
         "swarm-exec",
