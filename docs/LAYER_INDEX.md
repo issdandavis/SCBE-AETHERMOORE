@@ -22,7 +22,7 @@
 | L9 | Spectral Coherence | S_spec = 1 - r_HF | FFT-based pattern stability |
 | L10 | Spin Coherence | C_spin | Mean resultant length |
 | L11 | Triadic Distance | d_tri | Byzantine consensus temporal |
-| L12 | Harmonic Scaling | H(d*, R) = R^((φ · d*)²) | Canonical harmonic wall |
+| L12 | Harmonic Scaling | H_score(d*, pd) = 1 / (1 + d* + 2·pd) | Bounded canonical harmonic score |
 | L13 | Decision & Risk | ALLOW/QUARANTINE/DENY | Risk-gated decision gate |
 | L14 | Audio Axis | S_audio | Harmonic + stellar octave mapping |
 
@@ -46,7 +46,7 @@ src/symphonic_cipher/scbe_aethermoore/layers/
     ├── layer_9_spectral_coherence()  # L9: FFT coherence
     ├── layer_10_spin_coherence()     # L10: Phasor alignment
     ├── layer_11_triadic_distance()   # L11: Byzantine consensus
-    ├── layer_12_harmonic_scale()     # L12: canonical wall H(d*, R) = R^((φ · d*)²)
+    ├── layer_12_harmonic_scale()     # L12: bounded score H_score(d*, pd) = 1/(1+d*+2·pd)
     ├── layer_13_decision()           # L13: Risk gating
     └── layer_14_audio_axis()         # L14: Spectral telemetry
 ```
@@ -88,7 +88,7 @@ docs/evidence/
 |---------|-----------|----------|
 | A | Metric Invariance: d_H preserved through transforms | L5, L6, L7 |
 | B | End-to-End Continuity: Smooth map composition | L1-L14 |
-| C | Risk Monotonicity: d* ↑ ⟹ H(d*,R) ↑ | L8, L12 |
+| C | Risk Monotonicity: d* ↑ ⟹ H_score(d*,pd) ↓ and risk amplification ↑ | L8, L12 |
 | D | Diffeomorphism: T_breath, T_phase are diffeomorphisms | L6, L7 |
 
 ---
@@ -115,9 +115,9 @@ Formal spec defining the two concurrent continuous processes that run across L8�
 |---------|-----------|------|
 | **Flight** | `ẋ(t) = f_flight(x, e, u)` — enacted, foreground trajectory | Co-conscious |
 | **Governance** | `ż(t) = f_gov(z, x, h, d, c)` — persistent normative field | Non-co-conscious |
-| **Coupling** | `ẋ_actual = A(ẋ, z) = ẋ ⊙ exp(-H(d,R)) + v_lift(α, tongue blend)` | Adjudication |
+| **Coupling** | `ẋ_actual = A(ẋ, z) = ẋ ⊙ exp(-risk_amp(d*,pd)) + v_lift(α, tongue blend)` | Adjudication |
 
-Where `H(d,R) = R^(d²)` is the superexponential hyperbolic cost (always active, even when silent).
+Where the current Layer 12 runtime score is `H_score(d*,pd) = 1/(1+d*+2·pd)` in `(0,1]`; downstream gates treat lower score as higher risk. The older `R^(d²)` wall is a legacy/theoretical variant, not the production L12 score.
 
 This produces the observed metrics:
 - F1 0.813 via early geometric damping
