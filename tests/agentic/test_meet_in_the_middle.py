@@ -11,10 +11,10 @@ from src.agentic.meet_in_the_middle import (
     merge_halves,
 )
 
-
 # ---------------------------------------------------------------------------
 #  SeamContract canonicalization
 # ---------------------------------------------------------------------------
+
 
 def test_seam_contract_hash_is_stable() -> None:
     a = SeamContract(names=("x", "y"), types=("int", "int"))

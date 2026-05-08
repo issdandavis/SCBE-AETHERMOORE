@@ -33,18 +33,35 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 #  Terminal niceties
 # ---------------------------------------------------------------------------
 
+
 def _color(s: str, code: str) -> str:
     if not sys.stdout.isatty():
         return s
     return f"\033[{code}m{s}\033[0m"
 
 
-def _bold(s: str) -> str: return _color(s, "1")
-def _dim(s: str) -> str: return _color(s, "2")
-def _green(s: str) -> str: return _color(s, "38;5;78")
-def _red(s: str) -> str: return _color(s, "38;5;203")
-def _cyan(s: str) -> str: return _color(s, "38;5;87")
-def _gold(s: str) -> str: return _color(s, "38;5;221")
+def _bold(s: str) -> str:
+    return _color(s, "1")
+
+
+def _dim(s: str) -> str:
+    return _color(s, "2")
+
+
+def _green(s: str) -> str:
+    return _color(s, "38;5;78")
+
+
+def _red(s: str) -> str:
+    return _color(s, "38;5;203")
+
+
+def _cyan(s: str) -> str:
+    return _color(s, "38;5;87")
+
+
+def _gold(s: str) -> str:
+    return _color(s, "38;5;221")
 
 
 def _file_sha(path: Path) -> str:
@@ -62,6 +79,7 @@ def _file_sha(path: Path) -> str:
 #  and run the public terminal demo? This is the "do they know what they
 #  are looking at" filter.
 # ---------------------------------------------------------------------------
+
 
 def phase1_terminal_hygiene() -> Tuple[bool, List[str]]:
     notes: List[str] = []
@@ -102,11 +120,10 @@ def phase1_terminal_hygiene() -> Tuple[bool, List[str]]:
 #  this trial verifies it against the canonical implementation by sampling.
 # ---------------------------------------------------------------------------
 
+
 def phase2_math_fluency(candidate_solution: Path | None = None) -> Tuple[bool, List[str]]:
     notes: List[str] = []
-    target = candidate_solution or (
-        REPO_ROOT / "candidate" / "phase2_harmonic_scale.py"
-    )
+    target = candidate_solution or (REPO_ROOT / "candidate" / "phase2_harmonic_scale.py")
     if not target.exists():
         notes.append(
             f"Expected the candidate to create {target.relative_to(REPO_ROOT) if target.is_relative_to(REPO_ROOT) else target} "
@@ -116,6 +133,7 @@ def phase2_math_fluency(candidate_solution: Path | None = None) -> Tuple[bool, L
 
     # Import the candidate's module without trusting the path.
     import importlib.util
+
     spec = importlib.util.spec_from_file_location("candidate_phase2", target)
     if spec is None or spec.loader is None:
         notes.append("Could not load candidate file as a Python module.")
@@ -155,6 +173,7 @@ def phase2_math_fluency(candidate_solution: Path | None = None) -> Tuple[bool, L
 #  governance verdict? Tests both networking competence and JSON discipline.
 # ---------------------------------------------------------------------------
 
+
 def phase3_bus_integration() -> Tuple[bool, List[str]]:
     notes: List[str] = []
     candidate = REPO_ROOT / "candidate" / "phase3_bus_call.py"
@@ -166,6 +185,7 @@ def phase3_bus_integration() -> Tuple[bool, List[str]]:
         return False, notes
 
     import importlib.util
+
     spec = importlib.util.spec_from_file_location("candidate_phase3", candidate)
     if spec is None or spec.loader is None:
         notes.append("Could not load candidate phase 3 file.")
@@ -201,6 +221,7 @@ def phase3_bus_integration() -> Tuple[bool, List[str]]:
 #  short report (Markdown) that pairs each prompt with the verdict and a
 #  one-sentence reason. Tests judgement, not just plumbing.
 # ---------------------------------------------------------------------------
+
 
 def phase4_adversarial_report() -> Tuple[bool, List[str]]:
     notes: List[str] = []
