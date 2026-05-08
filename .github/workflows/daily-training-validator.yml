@@ -1,8 +1,6 @@
 name: Daily Training Data Validator
 
 on:
-  schedule:
-    - cron: '30 3 * * *'  # Daily at 3:30 AM UTC
   workflow_dispatch:
 
 permissions:

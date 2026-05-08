@@ -1,8 +1,6 @@
 name: Research Feed
 
 on:
-  schedule:
-    - cron: "10 * * * *" # every hour at :10 past
   push:
     branches: [main]
     paths:

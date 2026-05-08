@@ -1,0 +1,13 @@
+# Bubblewrap-generated artifacts — DO NOT COMMIT
+android.keystore
+android.keystore.passwords
+*.keystore
+app/
+app-release-bundle.aab
+app-release-signed.apk
+app-release-unsigned.apk
+build/
+node_modules/
+
+# Allow the manifest itself
+!twa-manifest.json
