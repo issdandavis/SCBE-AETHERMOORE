@@ -3818,6 +3818,165 @@ def cmd_workflow(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_call_switchboard(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_call_switchboard import evaluate_call_request
+
+    calls_path = Path(args.calls) if args.calls else None
+    existing: list[dict[str, Any]] = []
+    if calls_path and calls_path.exists():
+        loaded = json.loads(calls_path.read_text(encoding="utf-8"))
+        existing = loaded if isinstance(loaded, list) else loaded.get("calls", [])
+    request = json.loads(args.request)
+    payload = evaluate_call_request(existing, request)
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0
+
+
+def cmd_lightning_indexer(args: argparse.Namespace) -> int:
+    from src.coding_spine.lightning_indexer import select_sparse_candidates
+
+    if args.inline_candidates:
+        candidates = json.loads(args.inline_candidates)
+    elif args.candidates:
+        candidates = json.loads(Path(args.candidates).read_text(encoding="utf-8"))
+    else:
+        candidates = []
+    payload = select_sparse_candidates(
+        args.goal,
+        candidates,
+        top_k=args.top_k,
+        block_size=args.block_size,
+        block_multiplier=args.block_multiplier,
+        channel_budget=args.channel_budget,
+    )
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0
+
+
+def cmd_loop_dispatch(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_tool_policy import evaluate_harness_tool_policy, geoseal_command_to_tool_class
+
+    tool_class = geoseal_command_to_tool_class("loop-dispatch", execute=args.execute)
+    policy = evaluate_harness_tool_policy(permission_mode=args.permission_mode, tool_class=tool_class)
+    payload: dict[str, Any] = {
+        "schema_version": "geoseal_loop_dispatch_v1",
+        "provider": args.provider,
+        "task": args.task,
+        "execute": bool(args.execute),
+        "policy": policy,
+    }
+    if not policy.get("ok"):
+        print(json.dumps(payload, indent=2 if not args.json else None))
+        return 2
+    if args.execute and not os.environ.get("SCBE_AGENTIC_LOOP_EXECUTE"):
+        payload["execute_gate"] = {
+            "ok": False,
+            "decision": "QUARANTINE",
+            "reason": "execution requires SCBE_AGENTIC_LOOP_EXECUTE=1",
+        }
+        print(json.dumps(payload, indent=2 if not args.json else None))
+        return 2
+    payload["execute_gate"] = {"ok": True, "decision": "ALLOW", "reason": "dry_run_or_env_approved"}
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0
+
+
+def cmd_terminus_training(args: argparse.Namespace) -> int:
+    from scripts.benchmark.terminus_training_runner import run_benchmark
+
+    out_dir = Path(args.out_dir)
+    if args.mode != "benchmark":
+        raise SystemExit("only --mode benchmark is supported by geoseal terminus-training")
+    payload = run_benchmark(out_dir, agent_id=args.agent_id)
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0 if payload.get("pass") else 1
+
+
+def cmd_yin_yang_dual(args: argparse.Namespace) -> int:
+    from src.tokenizer.yin_yang_lattice import build_yin_yang_dual_packet
+
+    payload = build_yin_yang_dual_packet(
+        ko_text=args.ko_text,
+        dr_text=args.dr_text,
+        size=args.size,
+        active_frame=args.frame,
+    )
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0
+
+
+def cmd_pair_agent_training(args: argparse.Namespace) -> int:
+    from scripts.training_data.build_geoshell_pair_agent_sft import build_dataset, write_outputs
+
+    dataset = build_dataset()
+    paths = write_outputs(dataset, Path(args.output_dir), Path(args.event_path))
+    payload = {
+        "schema_version": "geoseal_pair_agent_training_v1",
+        "ok": True,
+        "train_count": len(dataset["train"]),
+        "holdout_count": len(dataset["holdout"]),
+        "geoshell_event_feed": str(paths["events"]),
+        "paths": {name: str(path) for name, path in paths.items()},
+    }
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0
+
+
+def cmd_agent_endurance_pack(args: argparse.Namespace) -> int:
+    out_dir = Path(args.output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    round_id = args.round_id
+    regimen = {
+        "schema_version": "scbe_agent_endurance_regimen_v1",
+        "regimen_id": f"regimen-{round_id}",
+        "round_id": round_id,
+        "permission_mode": args.permission_mode,
+        "lanes": ["observe", "route", "test", "summarize"],
+    }
+    taskset = {
+        "schema_version": "scbe_agent_endurance_taskset_v1",
+        "taskset_id": f"taskset-{round_id}",
+        "regimen_id": regimen["regimen_id"],
+        "tasks": [
+            {"task_id": "readiness", "goal": "inspect launch readiness", "tool_class": "read"},
+            {"task_id": "bounded-test", "goal": "run focused verification", "tool_class": "execute_tests"},
+        ],
+    }
+    run_report = {
+        "schema_version": "scbe_agent_endurance_run_report_v1",
+        "run_id": f"run-{round_id}",
+        "regimen_id": regimen["regimen_id"],
+        "taskset_id": taskset["taskset_id"],
+        "status": "prepared",
+    }
+    manifest = {
+        "schema_version": "geoseal_agent_endurance_pack_manifest_v1",
+        "round_id": round_id,
+        "permission_mode": args.permission_mode,
+    }
+    paths = {
+        "regimen": out_dir / "regimen.json",
+        "taskset": out_dir / "taskset.json",
+        "run_report": out_dir / "run_report.json",
+        "manifest": out_dir / "manifest.json",
+    }
+    for name, payload in (
+        ("regimen", regimen),
+        ("taskset", taskset),
+        ("run_report", run_report),
+        ("manifest", manifest),
+    ):
+        paths[name].write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    payload = {
+        "schema_version": "geoseal_agent_endurance_pack_v1",
+        "round_id": round_id,
+        "permission_mode": args.permission_mode,
+        "paths": {name: str(path) for name, path in paths.items()},
+    }
+    print(json.dumps(payload, indent=2 if not args.json else None))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="geoseal", description="GeoSeal swarm CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -3968,6 +4127,69 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
+
+    p_switchboard = sub.add_parser("call-switchboard", help="Evaluate multi-agent call collisions")
+    p_switchboard.add_argument("--calls", default=None, help="JSON file with current calls")
+    p_switchboard.add_argument("--request", required=True, help="JSON call request")
+    p_switchboard.add_argument("--json", action="store_true")
+    p_switchboard.set_defaults(func=cmd_call_switchboard)
+
+    p_lightning = sub.add_parser("lightning-indexer", help="Select sparse candidates for agent context")
+    p_lightning.add_argument("--goal", required=True)
+    p_lightning.add_argument("--inline-candidates", default=None)
+    p_lightning.add_argument("--candidates", default=None, help="JSON candidate file")
+    p_lightning.add_argument("--top-k", type=int, default=8)
+    p_lightning.add_argument("--block-size", type=int, default=16)
+    p_lightning.add_argument("--block-multiplier", type=int, default=3)
+    p_lightning.add_argument("--channel-budget", type=int, default=3)
+    p_lightning.add_argument("--json", action="store_true")
+    p_lightning.set_defaults(func=cmd_lightning_indexer)
+
+    p_loop = sub.add_parser("loop-dispatch", help="Policy-check an agentic loop dispatch")
+    p_loop.add_argument("--provider", required=True)
+    p_loop.add_argument("--task", required=True)
+    p_loop.add_argument(
+        "--permission-mode",
+        default="observe",
+        choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
+        dest="permission_mode",
+    )
+    p_loop.add_argument("--execute", action="store_true")
+    p_loop.add_argument("--json", action="store_true")
+    p_loop.set_defaults(func=cmd_loop_dispatch)
+
+    p_terminus = sub.add_parser("terminus-training", help="Run the Terminus training benchmark")
+    p_terminus.add_argument("--mode", default="benchmark", choices=["benchmark"])
+    p_terminus.add_argument("--out-dir", required=True)
+    p_terminus.add_argument("--agent-id", default="geoseal-terminus")
+    p_terminus.add_argument("--json", action="store_true")
+    p_terminus.set_defaults(func=cmd_terminus_training)
+
+    p_yinyang = sub.add_parser("yin-yang-dual", help="Build a KO/DR dual lattice packet")
+    p_yinyang.add_argument("--ko-text", required=True)
+    p_yinyang.add_argument("--dr-text", required=True)
+    p_yinyang.add_argument("--frame", type=int, default=0)
+    p_yinyang.add_argument("--size", type=int, default=9)
+    p_yinyang.add_argument("--json", action="store_true")
+    p_yinyang.set_defaults(func=cmd_yin_yang_dual)
+
+    p_pair = sub.add_parser("pair-agent-training", help="Build GeoShell pair-agent SFT outputs")
+    p_pair.add_argument("--output-dir", required=True)
+    p_pair.add_argument("--event-path", required=True)
+    p_pair.add_argument("--json", action="store_true")
+    p_pair.set_defaults(func=cmd_pair_agent_training)
+
+    p_endurance = sub.add_parser("agent-endurance-pack", help="Generate an agent endurance regimen bundle")
+    p_endurance.add_argument("--round-id", required=True)
+    p_endurance.add_argument(
+        "--permission-mode",
+        default="observe",
+        choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
+        dest="permission_mode",
+    )
+    p_endurance.add_argument("--output-dir", required=True)
+    p_endurance.add_argument("--json", action="store_true")
+    p_endurance.set_defaults(func=cmd_agent_endurance_pack)
 
     p_assist = sub.add_parser("assist", help="Run local micro-assist for terminal agents")
     p_assist.add_argument("task", help="Task text to classify and route")

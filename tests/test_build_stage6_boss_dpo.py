@@ -8,6 +8,28 @@ ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = ROOT / "scripts" / "build_stage6_boss_dpo.py"
 
 
+def load_plan() -> dict:
+    return {
+        "source": "pytest-inline-fixture",
+        "profile_id": "stage6-v12-boss",
+        "repair_targets": [
+            {"id": "byte-hex", "kind": "byte_hex_compute_trace", "recommended_rows": 72, "must_pass": True},
+            {
+                "id": "budget",
+                "kind": "multi_budget_cost_propagation",
+                "recommended_rows": 48,
+                "must_pass": True,
+            },
+            {
+                "id": "boundary",
+                "kind": "heldout_boundary_pollution_control",
+                "recommended_rows": 48,
+                "must_pass": True,
+            },
+        ],
+    }
+
+
 def load_module():
     spec = importlib.util.spec_from_file_location("build_stage6_boss_dpo", MODULE_PATH)
     module = importlib.util.module_from_spec(spec)
@@ -18,7 +40,7 @@ def load_module():
 
 def test_boss_dpo_rows_have_preference_shape_and_targets():
     module = load_module()
-    plan = json.loads((ROOT / "artifacts" / "model_training" / "stage6-v12-boss-retry-plan.json").read_text())
+    plan = load_plan()
     contract = json.loads(
         (ROOT / "config" / "model_training" / "stage6_atomic_workflow_eval_contract.json").read_text()
     )
@@ -37,7 +59,7 @@ def test_boss_dpo_rows_have_preference_shape_and_targets():
 
 def test_boss_dpo_rows_do_not_copy_frozen_eval_prompts():
     module = load_module()
-    plan = json.loads((ROOT / "artifacts" / "model_training" / "stage6-v12-boss-retry-plan.json").read_text())
+    plan = load_plan()
     contract = json.loads(
         (ROOT / "config" / "model_training" / "stage6_atomic_workflow_eval_contract.json").read_text()
     )
@@ -52,7 +74,7 @@ def test_boss_dpo_rows_do_not_copy_frozen_eval_prompts():
 
 def test_boss_dpo_manifest_counts_rows_by_failure_kind(tmp_path):
     module = load_module()
-    plan = json.loads((ROOT / "artifacts" / "model_training" / "stage6-v12-boss-retry-plan.json").read_text())
+    plan = load_plan()
     contract = json.loads(
         (ROOT / "config" / "model_training" / "stage6_atomic_workflow_eval_contract.json").read_text()
     )

@@ -94,4 +94,4 @@ def test_playwright_runtime_remote_not_open():
     with pytest.raises(RuntimeError, match="No remote displays"):
         import asyncio
 
-        asyncio.get_event_loop().run_until_complete(rt.remote_screenshot("test"))
+        asyncio.run(rt.remote_screenshot("test"))
