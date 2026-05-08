@@ -30,7 +30,7 @@ import os
 import asyncio
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 from datetime import datetime, timezone
-from typing import Optional, Tuple
+from typing import Tuple
 import numpy as np
 
 # Try to import real crypto (AES-GCM)
@@ -38,20 +38,24 @@ import numpy as np
 REAL_CRYPTO_AVAILABLE = False
 AESGCM = None
 
+
 def _try_import_crypto():
     """Attempt to import cryptography library safely"""
     global REAL_CRYPTO_AVAILABLE, AESGCM
     try:
         # Check if cffi backend is available first
         import importlib.util
+
         if importlib.util.find_spec("_cffi_backend") is None:
             return False
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM as _AESGCM
+
         AESGCM = _AESGCM
         REAL_CRYPTO_AVAILABLE = True
         return True
     except Exception:
         return False
+
 
 _try_import_crypto()
 
@@ -65,6 +69,7 @@ MAX_COMPLEXITY = 1e10  # Cap to prevent overflow
 # ============================================================================
 # These show where ML-KEM-768 and ML-DSA-65 would integrate
 # For production, use liboqs or pqcrypto library
+
 
 class PQCStub:
     """
@@ -105,6 +110,7 @@ class PQCStub:
         # Stub: can't verify without proper keypair
         return len(signature) == 32
 
+
 # ============================================================================
 # PART 1: THE SIX SACRED TONGUES (Languages)
 # ============================================================================
@@ -116,7 +122,7 @@ TONGUES = {
     "RU": "Runethic - Context (the detective who knows the situation)",
     "CA": "Cassisivadan - Math & Logic (the accountant)",
     "UM": "Umbroth - Security & Encryption (the vault keeper)",
-    "DR": "Draumric - Data Types (the librarian)"
+    "DR": "Draumric - Data Types (the librarian)",
 }
 
 # ============================================================================
@@ -124,6 +130,7 @@ TONGUES = {
 # ============================================================================
 # Simple tasks = simple music = cheap
 # Complex tasks = complex harmonies = expensive
+
 
 def harmonic_complexity(depth: int, ratio: float = 1.5) -> float:
     """
@@ -138,6 +145,7 @@ def harmonic_complexity(depth: int, ratio: float = 1.5) -> float:
     result = ratio ** (depth * depth)
     return min(result, MAX_COMPLEXITY)  # Cap to prevent overflow
 
+
 def pricing_tier(depth: int) -> dict:
     """Convert complexity to a price tier"""
     H = harmonic_complexity(depth)
@@ -151,10 +159,12 @@ def pricing_tier(depth: int) -> dict:
     else:
         return {"tier": "ENTERPRISE", "complexity": H, "description": "Complex orchestration"}
 
+
 # ============================================================================
 # PART 3: 6D VECTOR NAVIGATION (Geometric Trust)
 # ============================================================================
 # Agents exist in a 6-dimensional space - like GPS but with 6 coordinates
+
 
 class Agent6D:
     """An AI agent with a position in 6D space"""
@@ -174,7 +184,7 @@ class Agent6D:
         self.trust_score = 1.0  # Starts fully trusted
         self.last_seen = time.time()
 
-    def distance_to(self, other: 'Agent6D') -> float:
+    def distance_to(self, other: "Agent6D") -> float:
         """
         Calculate distance between two agents.
         Close agents = simple communication
@@ -193,10 +203,12 @@ class Agent6D:
         self.trust_score *= np.exp(-decay_rate * time_elapsed)
         return self.trust_score
 
+
 # ============================================================================
 # PART 4: RWP ENVELOPE (The Secure Letter)
 # ============================================================================
 # This is like a tamper-proof envelope with a wax seal
+
 
 class RWPEnvelope:
     """
@@ -237,11 +249,11 @@ class RWPEnvelope:
 
         # Convert payload to JSON
         payload_json = json.dumps(self.payload, sort_keys=True)
-        payload_bytes = payload_json.encode('utf-8')
+        payload_bytes = payload_json.encode("utf-8")
 
         # Create the envelope metadata (AAD - Authenticated Associated Data)
         aad = f"{self.version}|{self.tongue}|{self.origin}|{self.timestamp}|{self.nonce}"
-        aad_bytes = aad.encode('utf-8')
+        aad_bytes = aad.encode("utf-8")
 
         # PQC: Optionally include ML-KEM encapsulated key
         pqc_ciphertext = None
@@ -278,7 +290,7 @@ class RWPEnvelope:
             "aad": aad,
             "payload": urlsafe_b64encode(encrypted).decode(),
             "sig": signature,
-            "enc": enc_mode
+            "enc": enc_mode,
         }
 
         if pqc_ciphertext:
@@ -340,16 +352,18 @@ class RWPEnvelope:
                 keystream = hmac.new(secret_key, envelope["aad"].encode(), hashlib.sha256).digest()
                 decrypted = bytes(p ^ keystream[i % len(keystream)] for i, p in enumerate(encrypted))
 
-            return json.loads(decrypted.decode('utf-8'))
+            return json.loads(decrypted.decode("utf-8"))
         except Exception:
             # Decryption failed - return noise
             noise = hmac.new(secret_key, b"decrypt_error", hashlib.sha256).digest()
             return {"error": "NOISE", "data": noise.hex()}
 
+
 # ============================================================================
 # PART 5: SECURITY GATE (The Bouncer)
 # ============================================================================
 # This decides if an agent is allowed to do something
+
 
 class SecurityGate:
     """
@@ -402,7 +416,7 @@ class SecurityGate:
 
         # Adaptive dwell time (higher risk = longer wait)
         # Note: This is time-dilation defense, not constant-time
-        dwell_ms = min(self.max_wait_ms, self.min_wait_ms * (self.alpha ** risk))
+        dwell_ms = min(self.max_wait_ms, self.min_wait_ms * (self.alpha**risk))
         await asyncio.sleep(dwell_ms / 1000.0)  # Non-blocking wait
 
         # Calculate composite score (0-1, higher = safer)
@@ -415,16 +429,16 @@ class SecurityGate:
         if score > 0.8:
             return {"status": "allow", "score": score, "dwell_ms": dwell_ms}
         elif score > 0.5:
-            return {"status": "review", "score": score, "dwell_ms": dwell_ms,
-                    "reason": "Manual approval required"}
+            return {"status": "review", "score": score, "dwell_ms": dwell_ms, "reason": "Manual approval required"}
         else:
-            return {"status": "deny", "score": score, "dwell_ms": dwell_ms,
-                    "reason": "Security threshold not met"}
+            return {"status": "deny", "score": score, "dwell_ms": dwell_ms, "reason": "Security threshold not met"}
+
 
 # ============================================================================
 # PART 6: ROUNDTABLE CONSENSUS (Multi-Signature Approval)
 # ============================================================================
 # Important decisions need multiple "departments" to agree
+
 
 class Roundtable:
     """
@@ -441,7 +455,7 @@ class Roundtable:
         "low": ["KO"],  # Just control flow
         "medium": ["KO", "RU"],  # Control + context
         "high": ["KO", "RU", "UM"],  # Control + context + security
-        "critical": ["KO", "RU", "UM", "DR"]  # All departments
+        "critical": ["KO", "RU", "UM", "DR"],  # All departments
     }
 
     @staticmethod
@@ -461,9 +475,11 @@ class Roundtable:
         """Check if we have all required signatures"""
         return all(tongue in signatures for tongue in required)
 
+
 # ============================================================================
 # DEMONSTRATION: Putting It All Together
 # ============================================================================
+
 
 async def demonstrate_spiralverse():
     """
@@ -506,12 +522,7 @@ async def demonstrate_spiralverse():
     print("✉️  PART 3: Creating Secure Envelope (RWP Demo)")
     print("-" * 80)
 
-    message = {
-        "action": "transfer_funds",
-        "amount": 1000,
-        "from": "account_123",
-        "to": "account_456"
-    }
+    message = {"action": "transfer_funds", "amount": 1000, "from": "account_123", "to": "account_456"}
 
     envelope_obj = RWPEnvelope(tongue="KO", origin="Alice-GPT", payload=message)
     sealed = envelope_obj.seal(secret_key)
@@ -563,7 +574,7 @@ async def demonstrate_spiralverse():
     print(f"    Status: {result2['status'].upper()}")
     print(f"    Score: {result2['score']:.2f}")
     print(f"    Wait time: {result2['dwell_ms']:.0f}ms")
-    if result2['status'] != 'allow':
+    if result2["status"] != "allow":
         print(f"    Reason: {result2.get('reason', 'N/A')}")
 
     # Scenario 3: Suspicious agent
@@ -664,6 +675,7 @@ Note: For production use, see the full RWP v2.1 implementation
 with AES-256-GCM encryption in src/spiralverse/index.ts
 """)
     print("=" * 80)
+
 
 # Run the demo
 if __name__ == "__main__":

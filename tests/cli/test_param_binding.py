@@ -14,7 +14,6 @@ import argparse
 import json
 import subprocess
 import sys
-from pathlib import Path
 from typing import Literal, Optional
 
 import pytest
@@ -26,10 +25,10 @@ from src.cli.param_binding import (
     bind_subparser,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Models used as fixtures
 # ---------------------------------------------------------------------------
+
 
 class _SimpleCmd(BoundCommand):
     name: str = Field(..., description="Required name")
@@ -43,7 +42,7 @@ class _ParamSetCmd(BoundCommand):
     model_config = ConfigDict(
         extra="forbid",
         parameter_sets={
-            "by-name":   ["location_name"],
+            "by-name": ["location_name"],
             "by-coords": ["lat", "lon"],
         },
     )
@@ -62,6 +61,7 @@ def _make_parser_with(model, handler):
 #  Direct framework tests
 # ---------------------------------------------------------------------------
 
+
 def test_required_field_marked_required_in_argparse() -> None:
     parser = _make_parser_with(_SimpleCmd, lambda c, ns: 0)
     with pytest.raises(SystemExit):
@@ -74,8 +74,8 @@ def test_defaults_flow_through_argparse_and_validate() -> None:
     ns = parser.parse_args(["--name", "alpha"])
     bound = _SimpleCmd.from_namespace(ns)
     assert bound.name == "alpha"
-    assert bound.count == 3       # default flowed through
-    assert bound.flag is False    # store_true default
+    assert bound.count == 3  # default flowed through
+    assert bound.flag is False  # store_true default
     assert bound.tongue == "ko"
     assert bound.tags == []
 
@@ -112,6 +112,7 @@ def test_boolean_flag_default_false_becomes_true_when_passed() -> None:
 # ---------------------------------------------------------------------------
 #  Parameter-set tests
 # ---------------------------------------------------------------------------
+
 
 def test_parameter_set_by_name_path_succeeds() -> None:
     parser = _make_parser_with(_ParamSetCmd, lambda c, ns: 0)
@@ -162,16 +163,22 @@ GEOSEAL_CLI = "src/geoseal_cli.py"
 def _run_cli(*extra: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, GEOSEAL_CLI, "seal-here", *extra],
-        capture_output=True, text=True, timeout=60,
+        capture_output=True,
+        text=True,
+        timeout=60,
     )
 
 
 def test_seal_here_by_name_emits_packet_summary() -> None:
     proc = _run_cli(
-        "--secret", "testkey",
-        "--payload", "agent-state-42",
-        "--location-name", "port-angeles",
-        "--radius-km", "5",
+        "--secret",
+        "testkey",
+        "--payload",
+        "agent-state-42",
+        "--location-name",
+        "port-angeles",
+        "--radius-km",
+        "5",
     )
     assert proc.returncode == 0, proc.stderr
     body = proc.stdout.strip().splitlines()
@@ -184,17 +191,26 @@ def test_seal_here_by_name_emits_packet_summary() -> None:
 
 def test_seal_here_by_coords_matches_by_name_for_same_point() -> None:
     by_name = _run_cli(
-        "--secret", "testkey",
-        "--payload", "agent-state-42",
-        "--location-name", "port-angeles",
-        "--radius-km", "5",
+        "--secret",
+        "testkey",
+        "--payload",
+        "agent-state-42",
+        "--location-name",
+        "port-angeles",
+        "--radius-km",
+        "5",
     )
     by_coords = _run_cli(
-        "--secret", "testkey",
-        "--payload", "agent-state-42",
-        "--lat", "48.1181",
-        "--lon", "-123.4307",
-        "--radius-km", "5",
+        "--secret",
+        "testkey",
+        "--payload",
+        "agent-state-42",
+        "--lat",
+        "48.1181",
+        "--lon",
+        "-123.4307",
+        "--radius-km",
+        "5",
     )
     name_summary = json.loads(by_name.stdout)
     coord_summary = json.loads(by_coords.stdout)
@@ -206,9 +222,14 @@ def test_seal_here_by_coords_matches_by_name_for_same_point() -> None:
 
 def test_seal_here_radius_out_of_range_rejected() -> None:
     proc = _run_cli(
-        "--secret", "k", "--payload", "p",
-        "--location-name", "seattle",
-        "--radius-km", "200",
+        "--secret",
+        "k",
+        "--payload",
+        "p",
+        "--location-name",
+        "seattle",
+        "--radius-km",
+        "200",
     )
     assert proc.returncode != 0
     assert "less_than_equal" in proc.stderr or "100" in proc.stderr
@@ -216,9 +237,16 @@ def test_seal_here_radius_out_of_range_rejected() -> None:
 
 def test_seal_here_both_sets_rejected() -> None:
     proc = _run_cli(
-        "--secret", "k", "--payload", "p",
-        "--location-name", "sequim",
-        "--lat", "48.0", "--lon", "-123.0",
+        "--secret",
+        "k",
+        "--payload",
+        "p",
+        "--location-name",
+        "sequim",
+        "--lat",
+        "48.0",
+        "--lon",
+        "-123.0",
     )
     assert proc.returncode != 0
     assert "mutually exclusive" in proc.stderr
@@ -226,8 +254,12 @@ def test_seal_here_both_sets_rejected() -> None:
 
 def test_seal_here_unknown_named_location_rejected_by_argparse() -> None:
     proc = _run_cli(
-        "--secret", "k", "--payload", "p",
-        "--location-name", "moscow",
+        "--secret",
+        "k",
+        "--payload",
+        "p",
+        "--location-name",
+        "moscow",
     )
     assert proc.returncode != 0
     assert "invalid choice" in proc.stderr

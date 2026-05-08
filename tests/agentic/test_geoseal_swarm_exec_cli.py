@@ -14,24 +14,18 @@ import sys
 import textwrap
 from pathlib import Path
 
-import pytest
-
-
 GEOSEAL_CLI = "src/geoseal_cli.py"
 
-FORWARD_GOOD = textwrap.dedent(
-    """\
+FORWARD_GOOD = textwrap.dedent("""\
     def gate_prompt(raw):
         payload = {"text": raw, "len": len(raw)}
         drift = 1.5 if "ignore previous" in (raw or "").lower() else 0.0
         score = 1.0 / (1.0 + drift)
         verdict = "ALLOW" if score >= 0.66 else "DENY"
         # === SCBE_MEET_SEAM ===
-    """
-)
+    """)
 
-REVERSE_GOOD = textwrap.dedent(
-    """\
+REVERSE_GOOD = textwrap.dedent("""\
         # === SCBE_MEET_SEAM ===
         return {"payload": payload, "verdict": verdict, "score": round(score, 3)}
 
@@ -39,8 +33,7 @@ REVERSE_GOOD = textwrap.dedent(
     if __name__ == "__main__":
         import json
         print(json.dumps(gate_prompt("Help me draft an email.")))
-    """
-)
+    """)
 
 
 def _write_halves(tmp_path: Path, fwd_text: str, rev_text: str) -> tuple[Path, Path]:
@@ -63,10 +56,14 @@ def _run_cli(*extra: str) -> subprocess.CompletedProcess[str]:
 def test_convergence_only_prints_matching_hashes(tmp_path: Path) -> None:
     fwd, rev = _write_halves(tmp_path, FORWARD_GOOD, REVERSE_GOOD)
     proc = _run_cli(
-        "--forward", str(fwd),
-        "--reverse", str(rev),
-        "--seam-names", "payload,verdict,score",
-        "--seam-types", "dict,str,float",
+        "--forward",
+        str(fwd),
+        "--reverse",
+        str(rev),
+        "--seam-names",
+        "payload,verdict,score",
+        "--seam-types",
+        "dict,str,float",
         "--json",
     )
     assert proc.returncode == 0, proc.stderr
@@ -80,10 +77,13 @@ def test_convergence_only_prints_matching_hashes(tmp_path: Path) -> None:
 def test_divergent_seam_names_block_merge(tmp_path: Path) -> None:
     fwd, rev = _write_halves(tmp_path, FORWARD_GOOD, REVERSE_GOOD)
     proc = _run_cli(
-        "--forward", str(fwd),
-        "--reverse", str(rev),
+        "--forward",
+        str(fwd),
+        "--reverse",
+        str(rev),
         # `decision` is not bound by the forward half → fail
-        "--seam-names", "payload,decision,score",
+        "--seam-names",
+        "payload,decision,score",
         "--json",
     )
     assert proc.returncode == 2
@@ -95,9 +95,12 @@ def test_divergent_seam_names_block_merge(tmp_path: Path) -> None:
 def test_execute_path_runs_merged_module_through_gate(tmp_path: Path) -> None:
     fwd, rev = _write_halves(tmp_path, FORWARD_GOOD, REVERSE_GOOD)
     proc = _run_cli(
-        "--forward", str(fwd),
-        "--reverse", str(rev),
-        "--seam-names", "payload,verdict,score",
+        "--forward",
+        str(fwd),
+        "--reverse",
+        str(rev),
+        "--seam-names",
+        "payload,verdict,score",
         "--execute",
         "--no-audit",
     )
@@ -114,9 +117,12 @@ def test_missing_forward_file_returns_error(tmp_path: Path) -> None:
     rev = tmp_path / "reverse.py"
     rev.write_text(REVERSE_GOOD, encoding="utf-8")
     proc = _run_cli(
-        "--forward", str(tmp_path / "nope.py"),
-        "--reverse", str(rev),
-        "--seam-names", "payload,verdict,score",
+        "--forward",
+        str(tmp_path / "nope.py"),
+        "--reverse",
+        str(rev),
+        "--seam-names",
+        "payload,verdict,score",
     )
     assert proc.returncode == 2
     assert "forward half not found" in proc.stderr
@@ -126,9 +132,12 @@ def test_missing_seam_marker_blocks_with_diagnostic(tmp_path: Path) -> None:
     fwd_no_seam = "x = 1\n"  # no SEAM_MARKER
     fwd, rev = _write_halves(tmp_path, fwd_no_seam, REVERSE_GOOD)
     proc = _run_cli(
-        "--forward", str(fwd),
-        "--reverse", str(rev),
-        "--seam-names", "payload,verdict,score",
+        "--forward",
+        str(fwd),
+        "--reverse",
+        str(rev),
+        "--seam-names",
+        "payload,verdict,score",
         "--json",
     )
     assert proc.returncode == 2
@@ -140,10 +149,14 @@ def test_missing_seam_marker_blocks_with_diagnostic(tmp_path: Path) -> None:
 def test_seam_types_must_be_parallel_or_empty(tmp_path: Path) -> None:
     fwd, rev = _write_halves(tmp_path, FORWARD_GOOD, REVERSE_GOOD)
     proc = _run_cli(
-        "--forward", str(fwd),
-        "--reverse", str(rev),
-        "--seam-names", "payload,verdict,score",
-        "--seam-types", "dict,str",  # too short
+        "--forward",
+        str(fwd),
+        "--reverse",
+        str(rev),
+        "--seam-names",
+        "payload,verdict,score",
+        "--seam-types",
+        "dict,str",  # too short
     )
     assert proc.returncode == 2
     assert "parallel" in proc.stderr

@@ -111,7 +111,7 @@ def test_exec_runs_bare_python_alias_after_resolution() -> None:
     """The CLI passes 'python' as argv[0]; the resolver must rewrite it
     so subprocess.run does not raise FileNotFoundError on Windows."""
     result = execute_governed_command(
-        'python -c "print(\'resolved-ok\')"',
+        "python -c \"print('resolved-ok')\"",
         max_tier="QUARANTINE",
         audit_log=None,
     )

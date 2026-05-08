@@ -36,9 +36,7 @@ from typing import (
     Any,
     Callable,
     ClassVar,
-    Iterable,
     Mapping,
-    Optional,
     Sequence,
     Type,
     get_args,
@@ -198,13 +196,9 @@ class BoundCommand(BaseModel):
                 if any(getattr(inst, m, None) not in (None, [], "") for m in members):
                     present_sets.append(set_name)
             if len(present_sets) == 0:
-                raise ParameterSetError(
-                    f"no parameter set satisfied; supply args for one of: {list(sets.keys())}"
-                )
+                raise ParameterSetError(f"no parameter set satisfied; supply args for one of: {list(sets.keys())}")
             if len(present_sets) > 1:
-                raise ParameterSetError(
-                    f"parameter sets are mutually exclusive; saw multiple: {present_sets}"
-                )
+                raise ParameterSetError(f"parameter sets are mutually exclusive; saw multiple: {present_sets}")
         return inst
 
     @classmethod
