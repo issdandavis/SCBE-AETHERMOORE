@@ -463,10 +463,10 @@ class RoundtableCore:
 # ============================================================================
 
 TONGUES = {
-    "KO": "Aelindra - Control Flow (the boss who makes decisions)",
-    "AV": "Voxmara - Communication (the messenger)",
-    "RU": "Thalassic - Context (the detective who knows the situation)",
-    "CA": "Numerith - Math & Logic (the accountant)",
-    "UM": "Glyphara - Security & Encryption (the vault keeper)",
-    "DR": "Morphael - Data Types (the librarian)",
+    "KO": "Kor'aelin - Control Flow (the boss who makes decisions)",
+    "AV": "Avali - Communication (the messenger)",
+    "RU": "Runethic - Context (the detective who knows the situation)",
+    "CA": "Cassisivadan - Math & Logic (the accountant)",
+    "UM": "Umbroth - Security & Encryption (the vault keeper)",
+    "DR": "Draumric - Data Types (the librarian)",
 }
