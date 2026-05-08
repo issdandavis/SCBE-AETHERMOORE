@@ -82,6 +82,9 @@ from src.agentic.meet_in_the_middle import (
     SeamContract,
     merge_halves,
 )
+from src.cli.param_binding import BoundCommand, bind_subparser
+from pydantic import ConfigDict, Field
+from typing import Literal as _Literal
 
 PHI = (1 + 5**0.5) / 2
 
@@ -2155,6 +2158,85 @@ def cmd_exec(args: argparse.Namespace) -> int:
     return result.returncode or 0
 
 
+# ---------------------------------------------------------------------------
+#  seal-here: example port to the BoundCommand parameter-binding framework
+#
+#  This is the migration template for step 6 of the scope-of-mind sequence.
+#  Future subcommands should declare a BoundCommand subclass + handler and
+#  register via `bind_subparser()` instead of free-form argparse calls.
+# ---------------------------------------------------------------------------
+
+# Named locations for the location-by-name parameter set.
+_NAMED_LOCATIONS: Dict[str, Tuple[float, float]] = {
+    "port-angeles": (48.1181, -123.4307),
+    "sequim":       (48.0792, -123.1027),
+    "seattle":      (47.6062, -122.3321),
+}
+
+
+class SealHereCommand(BoundCommand):
+    """Seal a payload to a geographic fence — name a place or give coordinates."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        parameter_sets={
+            "by-name":   ["location_name"],
+            "by-coords": ["lat", "lon"],
+        },
+    )
+
+    secret: str = Field(..., description="Secret used to seal the packet (required)")
+    payload: str = Field(..., description="Payload string to seal (required)")
+    radius_km: float = Field(
+        5.0, ge=0.1, le=100.0,
+        description="Fence radius in kilometers (1-100)",
+    )
+    location_name: Optional[_Literal["port-angeles", "sequim", "seattle"]] = Field(
+        None,
+        description="Use a known named location (port-angeles | sequim | seattle)",
+    )
+    lat: Optional[float] = Field(None, ge=-90.0, le=90.0, description="Latitude in degrees")
+    lon: Optional[float] = Field(None, ge=-180.0, le=180.0, description="Longitude in degrees")
+    label: str = Field("seal-here", description="Audit label for the sealed packet")
+    tongue: _Literal["ko", "av", "ru", "ca", "um", "dr"] = Field(
+        "ko", description="Sacred Tongue used as transport for the sealed bytes",
+    )
+
+
+def _handle_seal_here(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.crypto.geo_fenced_seal import seal_with_geo_fence
+
+    cmd = bound  # narrow type
+    assert isinstance(cmd, SealHereCommand)
+
+    if cmd.location_name is not None:
+        lat, lon = _NAMED_LOCATIONS[cmd.location_name]
+    else:
+        # parameter-set validation already guaranteed lat+lon are present here
+        lat, lon = float(cmd.lat or 0.0), float(cmd.lon or 0.0)
+
+    fence = {"lat": lat, "lon": lon, "radius_m": cmd.radius_km * 1000.0}
+    packet = seal_with_geo_fence(
+        secret=cmd.secret.encode("utf-8"),
+        payload=cmd.payload.encode("utf-8"),
+        geo_fence=fence,
+        label=cmd.label,
+        tongue=cmd.tongue,
+    )
+    summary = {
+        "version": "geoseal-seal-here-v1",
+        "fence": fence,
+        "tongue": cmd.tongue,
+        "label": cmd.label,
+        "token_count": packet["token_count"],
+        "source_sha256": packet["source_sha256"],
+        "token_sha256": packet["token_sha256"],
+    }
+    print(json.dumps(summary, indent=2))
+    return 0
+
+
 def cmd_swarm_exec(args: argparse.Namespace) -> int:
     """Run the meet-in-the-middle protocol with two pre-written halves and
     optionally execute the merged module through the SCBE execution gate.
@@ -3651,6 +3733,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_exec.add_argument("--no-audit", action="store_true")
     p_exec.add_argument("--json", action="store_true")
     p_exec.set_defaults(func=cmd_exec)
+
+    # ────────────────────────────────────────────────────────────────────
+    # seal-here — first subcommand on the BoundCommand parameter-binding
+    # framework. Demonstrates Mandatory, ValidateRange, ValidateSet (via
+    # Literal), and ParameterSetName (location-by-name vs location-by-coords).
+    # ────────────────────────────────────────────────────────────────────
+    p_seal_here = sub.add_parser(
+        "seal-here",
+        help="Seal a payload to a geographic fence (PowerShell-style parameter-bound subcommand)",
+    )
+    bind_subparser(p_seal_here, SealHereCommand, _handle_seal_here)
 
     p_swarm_exec = sub.add_parser(
         "swarm-exec",
