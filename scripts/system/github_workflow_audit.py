@@ -160,11 +160,20 @@ def triage_failure(name: str, log: str) -> tuple[str, str]:
     if "rate limit" in log_lower:
         return "yellow", "Rate limited — add retry logic or reduce API calls"
     if "dependabot" in log_lower and ("doesn't have access" in log_lower or "does not have access" in log_lower):
-        return "yellow", "Dependabot cannot access one dependency source — remove the private/unreachable source or grant Dependabot access"
+        return (
+            "yellow",
+            "Dependabot cannot access one dependency source — remove the private/unreachable source or grant Dependabot access",
+        )
     if "failed to request additional scope" in log_lower:
-        return "yellow", "Dependabot failed while requesting repository scope — fix dependency source visibility or Dependabot permissions"
+        return (
+            "yellow",
+            "Dependabot failed while requesting repository scope — fix dependency source visibility or Dependabot permissions",
+        )
     if "either the repo doesn't exist" in log_lower or "repository not found" in log_lower:
-        return "yellow", "Dependency source repository is missing or inaccessible — fix the dependency URL/source or repository permissions"
+        return (
+            "yellow",
+            "Dependency source repository is missing or inaccessible — fix the dependency URL/source or repository permissions",
+        )
     if "assertionerror" in log_lower or "assert" in log_lower:
         return "red", "Test assertion failure — real bug, needs code fix"
     if "out of memory" in log_lower or "oom" in log_lower:

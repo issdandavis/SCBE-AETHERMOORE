@@ -44,14 +44,14 @@ import sys
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 from src.crypto.sacred_tongues import SACRED_TONGUE_TOKENIZER as _TOK
-
 
 # ---------------------------------------------------------------------------
 #  Data types
 # ---------------------------------------------------------------------------
+
 
 @dataclass(frozen=True)
 class SeamContract:
@@ -64,6 +64,7 @@ class SeamContract:
         notes: Free-text guidance for the agents. NOT included in the seam
                canonical hash so notes can change without breaking convergence.
     """
+
     names: tuple[str, ...]
     types: tuple[str, ...] = ()
     notes: str = ""
@@ -93,6 +94,7 @@ class CodeHalf:
     `code` is the literal Python source for this half.
     `direction` is "forward" (input → seam) or "reverse" (seam → output).
     """
+
     direction: str
     code: str
     declared_seam: SeamContract
@@ -182,9 +184,7 @@ def merge_halves(
     fwd_hash = forward.declared_seam.seam_tongue_hash()
     rev_hash = reverse.declared_seam.seam_tongue_hash()
     if fwd_hash != rev_hash:
-        diagnostics.append(
-            f"seam contracts differ: fwd={fwd_hash[:12]} rev={rev_hash[:12]}"
-        )
+        diagnostics.append(f"seam contracts differ: fwd={fwd_hash[:12]} rev={rev_hash[:12]}")
 
     if _has_seam_marker(forward.code):
         scope = set(_names_in_scope_at_seam(forward.code))
@@ -207,11 +207,7 @@ def merge_halves(
     fwd_idx = next(i for i, l in enumerate(fwd_lines) if SEAM_MARKER in l)
     rev_idx = next(i for i, l in enumerate(rev_lines) if SEAM_MARKER in l)
 
-    merged = (
-        "\n".join(fwd_lines[: fwd_idx + 1])
-        + "\n"
-        + "\n".join(rev_lines[rev_idx + 1 :])
-    )
+    merged = "\n".join(fwd_lines[: fwd_idx + 1]) + "\n" + "\n".join(rev_lines[rev_idx + 1 :])
     if not merged.endswith("\n"):
         merged += "\n"
 

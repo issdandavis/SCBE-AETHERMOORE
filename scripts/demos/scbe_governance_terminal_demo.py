@@ -110,12 +110,7 @@ def _fragment_score(s: str) -> float:
 def estimate_d_h(text: str) -> float:
     if not text:
         return 0.0
-    raw = (
-        _fragment_score(text)
-        + _length_drift(text)
-        + _repetition_drift(text)
-        + _shoutiness(text)
-    )
+    raw = _fragment_score(text) + _length_drift(text) + _repetition_drift(text) + _shoutiness(text)
     return min(6.0, raw)
 
 
@@ -190,9 +185,12 @@ def _print_score(s: GateScore) -> None:
     print(verdict_pill + " " + _color(s.prompt[:88], ANSI["muted"]))
     print(
         "    "
-        + _color("d_H=", ANSI["dim"]) + _color(f"{s.d_h:.3f}", ANSI["gold"])
-        + _color("  H=", ANSI["dim"]) + _color(f"{s.h_score:.3f}", ANSI["gold"])
-        + _color("  cost=", ANSI["dim"]) + _color(_format_cost(s.cost), ANSI["gold"])
+        + _color("d_H=", ANSI["dim"])
+        + _color(f"{s.d_h:.3f}", ANSI["gold"])
+        + _color("  H=", ANSI["dim"])
+        + _color(f"{s.h_score:.3f}", ANSI["gold"])
+        + _color("  cost=", ANSI["dim"])
+        + _color(_format_cost(s.cost), ANSI["gold"])
         + _color("  - " + s.rationale, ANSI["muted"])
     )
     print()
@@ -220,8 +218,10 @@ def main() -> int:
     args = p.parse_args()
 
     print()
-    print(_color("  SCBE Governance Gate  ", ANSI["bold"] + ANSI["cyan"])
-          + _color("  Layer 12 harmonic wall · canonical formula", ANSI["muted"]))
+    print(
+        _color("  SCBE Governance Gate  ", ANSI["bold"] + ANSI["cyan"])
+        + _color("  Layer 12 harmonic wall · canonical formula", ANSI["muted"])
+    )
     print(_color("  H = 1 / (1 + d_H + 2*p_d)        cost = phi^(d_H^2)", ANSI["muted"]))
     print()
 
@@ -234,9 +234,7 @@ def main() -> int:
     by_verdict: dict[str, int] = {}
     for s in scores:
         by_verdict[s.verdict] = by_verdict.get(s.verdict, 0) + 1
-    summary = "  " + "  ".join(
-        f"{v}={by_verdict.get(v, 0)}" for v in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY")
-    )
+    summary = "  " + "  ".join(f"{v}={by_verdict.get(v, 0)}" for v in ("ALLOW", "QUARANTINE", "ESCALATE", "DENY"))
     print(_color(f"  scored {n} prompts", ANSI["bold"]) + _color(summary, ANSI["muted"]))
     print()
     return 0

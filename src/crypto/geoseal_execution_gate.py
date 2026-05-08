@@ -141,7 +141,6 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
     argv, parse_findings = _parse_command(command)
     findings.extend(parse_findings)
     command_l = command.lower()
-    joined_argv_l = " ".join(argv).lower()
 
     if any(marker in command for marker in ("|", "&&", "||", ";")):
         findings.append(
@@ -170,9 +169,7 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
         executable = Path(argv[0]).name.lower()
         if executable in {"powershell", "powershell.exe", "pwsh", "pwsh.exe"}:
             if any(arg.lower() in {"-encodedcommand", "-enc"} for arg in argv[1:]):
-                findings.append(
-                    GateFinding("encoded-powershell", "DENY", "encoded PowerShell commands are blocked")
-                )
+                findings.append(GateFinding("encoded-powershell", "DENY", "encoded PowerShell commands are blocked"))
         if executable in {"python", "python.exe", "py", "node", "node.exe"} and "-c" in argv[1:]:
             findings.append(
                 GateFinding(
@@ -185,11 +182,7 @@ def scan_command(command: str, *, claimed_paths: Optional[Sequence[str]] = None)
 
     if claimed_paths:
         normalized_claims = [Path(path).as_posix().lower().strip("/") for path in claimed_paths]
-        touched = [
-            token.strip("\"'").replace("\\", "/").lower()
-            for token in argv
-            if "/" in token or "\\" in token
-        ]
+        touched = [token.strip("\"'").replace("\\", "/").lower() for token in argv if "/" in token or "\\" in token]
         for token in touched:
             if normalized_claims and not any(token.startswith(claim) or claim in token for claim in normalized_claims):
                 findings.append(

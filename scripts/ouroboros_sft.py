@@ -53,7 +53,6 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -1219,8 +1218,7 @@ def main():
     print("=" * 72)
     print("  THE OUROBOROS CONCEPT")
     print("=" * 72)
-    print(
-        """
+    print("""
   Like the mythological serpent that eats its own tail, this script
   feeds the SCBE-AETHERMOORE system's own artifacts back into training
   data. The model learns not from external corpora but from:
@@ -1238,8 +1236,7 @@ def main():
     Code -> SFT Data -> Fine-Tuned Model -> Better Code -> Better SFT Data -> ...
 
   Patent: USPTO #63/961,403  |  Author: Issac Davis  |  v3.3.0
-"""
-    )
+""")
     print("=" * 72)
 
 

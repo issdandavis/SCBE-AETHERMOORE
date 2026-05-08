@@ -22,7 +22,6 @@ import os
 import asyncio
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 from datetime import datetime, timezone
-from typing import Dict, Tuple, Optional
 import numpy as np
 
 # ============================================================================
@@ -58,9 +57,7 @@ class NonceCache:
             try:
                 from bloom_filter2 import BloomFilter
 
-                self._bloom = BloomFilter(
-                    max_elements=max_size, error_rate=bloom_error_rate
-                )
+                self._bloom = BloomFilter(max_elements=max_size, error_rate=bloom_error_rate)
             except ImportError:
                 # Graceful fallback: bloom_filter2 not installed
                 self.use_bloom = False
@@ -89,9 +86,7 @@ class NonceCache:
             try:
                 from bloom_filter2 import BloomFilter
 
-                self._bloom = BloomFilter(
-                    max_elements=self.max_size, error_rate=0.001
-                )
+                self._bloom = BloomFilter(max_elements=self.max_size, error_rate=0.001)
             except ImportError:
                 pass
         else:
@@ -148,9 +143,7 @@ class EnvelopeCore:
         keystream = hmac.new(secret_key, aad.encode(), hashlib.sha256).digest()
 
         # Encrypt with XOR (keystream repeats if payload longer than 32 bytes)
-        encrypted = bytes(
-            p ^ keystream[i % len(keystream)] for i, p in enumerate(payload_bytes)
-        )
+        encrypted = bytes(p ^ keystream[i % len(keystream)] for i, p in enumerate(payload_bytes))
 
         # Create signature (HMAC over AAD + encrypted payload)
         signature_data = (aad + "|" + urlsafe_b64encode(encrypted).decode()).encode()
@@ -170,9 +163,7 @@ class EnvelopeCore:
         }
 
     @staticmethod
-    def verify_and_open(
-        envelope: dict, secret_key: bytes, max_age_seconds: int = 300
-    ) -> dict:
+    def verify_and_open(envelope: dict, secret_key: bytes, max_age_seconds: int = 300) -> dict:
         """
         Verify signature and decrypt payload.
 
@@ -221,12 +212,8 @@ class EnvelopeCore:
 
         # Decrypt payload
         encrypted = urlsafe_b64decode(envelope["payload"])
-        keystream = hmac.new(
-            secret_key, envelope["aad"].encode(), hashlib.sha256
-        ).digest()
-        decrypted = bytes(
-            e ^ keystream[i % len(keystream)] for i, e in enumerate(encrypted)
-        )
+        keystream = hmac.new(secret_key, envelope["aad"].encode(), hashlib.sha256).digest()
+        decrypted = bytes(e ^ keystream[i % len(keystream)] for i, e in enumerate(encrypted))
 
         return json.loads(decrypted.decode("utf-8"))
 
@@ -244,9 +231,7 @@ class SecurityGateCore:
     This is a time-dilation defense, not a timing-attack defense.
     """
 
-    def __init__(
-        self, min_wait_ms: int = 100, max_wait_ms: int = 5000, alpha: float = 1.5
-    ):
+    def __init__(self, min_wait_ms: int = 100, max_wait_ms: int = 5000, alpha: float = 1.5):
         self.min_wait_ms = min_wait_ms
         self.max_wait_ms = max_wait_ms
         self.alpha = alpha
@@ -409,9 +394,7 @@ class RoundtableCore:
             return RoundtableCore.TIERS["critical"]
 
     @staticmethod
-    def verify_quorum(
-        signatures: dict, required: list, pqc_pubkey: bytes = None
-    ) -> bool:
+    def verify_quorum(signatures: dict, required: list, pqc_pubkey: bytes = None) -> bool:
         """
         Check if we have all required signatures.
 
@@ -447,9 +430,7 @@ class RoundtableCore:
                     sig = signatures[tongue]
                     if isinstance(sig, str):
                         sig = sig.encode("utf-8")
-                    if not verifier.verify(
-                        tongue.encode("utf-8"), sig, pqc_pubkey
-                    ):
+                    if not verifier.verify(tongue.encode("utf-8"), sig, pqc_pubkey):
                         return False
             except ImportError:
                 # liboqs not installed — skip PQC check, rely on presence check
