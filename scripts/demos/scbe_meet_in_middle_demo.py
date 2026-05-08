@@ -30,7 +30,6 @@ from src.agentic.meet_in_the_middle import (
     merge_halves,
 )
 
-
 CONTRACT = SeamContract(
     names=("payload", "verdict", "score"),
     types=("dict", "str", "float"),

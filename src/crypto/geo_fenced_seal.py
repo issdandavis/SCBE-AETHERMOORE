@@ -49,16 +49,14 @@ EARTH_RADIUS_M = 6_371_008.8
 #  Distance
 # ---------------------------------------------------------------------------
 
+
 def haversine_meters(lat_a: float, lon_a: float, lat_b: float, lon_b: float) -> float:
     """Great-circle distance between two (lat, lon) points in meters."""
     phi_a = math.radians(lat_a)
     phi_b = math.radians(lat_b)
     d_phi = math.radians(lat_b - lat_a)
     d_lam = math.radians(lon_b - lon_a)
-    a = (
-        math.sin(d_phi / 2) ** 2
-        + math.cos(phi_a) * math.cos(phi_b) * math.sin(d_lam / 2) ** 2
-    )
+    a = math.sin(d_phi / 2) ** 2 + math.cos(phi_a) * math.cos(phi_b) * math.sin(d_lam / 2) ** 2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return EARTH_RADIUS_M * c
 
@@ -82,6 +80,7 @@ def _validate_fence(fence: Mapping[str, Any]) -> Dict[str, float]:
 # ---------------------------------------------------------------------------
 #  Seal / unseal with geo policy
 # ---------------------------------------------------------------------------
+
 
 class GeoFenceViolation(PermissionError):
     """Raised when an unseal attempt is outside the configured fence."""
@@ -145,8 +144,7 @@ def unseal_with_geo_check(
     distance_m = haversine_meters(fence["lat"], fence["lon"], cur_lat, cur_lon)
     if distance_m > fence["radius_m"]:
         raise GeoFenceViolation(
-            f"current location is {distance_m:.1f} m from fence center; "
-            f"fence radius is {fence['radius_m']:.1f} m"
+            f"current location is {distance_m:.1f} m from fence center; " f"fence radius is {fence['radius_m']:.1f} m"
         )
 
     result = unseal_memory_packet(secret, packet, enable_pqc=enable_pqc)

@@ -53,6 +53,12 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+if __package__ in (None, ""):
+    repo_root = Path(__file__).resolve().parent.parent
+    repo_root_str = str(repo_root)
+    if repo_root_str not in sys.path:
+        sys.path.insert(0, repo_root_str)
+
 from src.ca_lexicon import (
     ALL_LANG_MAP,
     ALL_TONGUE_NAMES,
@@ -78,7 +84,6 @@ from src.crypto.geoseal_execution_gate import (
 )
 from src.agentic.meet_in_the_middle import (
     CodeHalf,
-    SEAM_MARKER,
     SeamContract,
     merge_halves,
 )
@@ -2169,8 +2174,8 @@ def cmd_exec(args: argparse.Namespace) -> int:
 # Named locations for the location-by-name parameter set.
 _NAMED_LOCATIONS: Dict[str, Tuple[float, float]] = {
     "port-angeles": (48.1181, -123.4307),
-    "sequim":       (48.0792, -123.1027),
-    "seattle":      (47.6062, -122.3321),
+    "sequim": (48.0792, -123.1027),
+    "seattle": (47.6062, -122.3321),
 }
 
 
@@ -2181,7 +2186,7 @@ class SealHereCommand(BoundCommand):
         extra="forbid",
         validate_assignment=True,
         parameter_sets={
-            "by-name":   ["location_name"],
+            "by-name": ["location_name"],
             "by-coords": ["lat", "lon"],
         },
     )
@@ -2189,7 +2194,9 @@ class SealHereCommand(BoundCommand):
     secret: str = Field(..., description="Secret used to seal the packet (required)")
     payload: str = Field(..., description="Payload string to seal (required)")
     radius_km: float = Field(
-        5.0, ge=0.1, le=100.0,
+        5.0,
+        ge=0.1,
+        le=100.0,
         description="Fence radius in kilometers (1-100)",
     )
     location_name: Optional[_Literal["port-angeles", "sequim", "seattle"]] = Field(
@@ -2200,7 +2207,8 @@ class SealHereCommand(BoundCommand):
     lon: Optional[float] = Field(None, ge=-180.0, le=180.0, description="Longitude in degrees")
     label: str = Field("seal-here", description="Audit label for the sealed packet")
     tongue: _Literal["ko", "av", "ru", "ca", "um", "dr"] = Field(
-        "ko", description="Sacred Tongue used as transport for the sealed bytes",
+        "ko",
+        description="Sacred Tongue used as transport for the sealed bytes",
     )
 
 
