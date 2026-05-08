@@ -17,6 +17,7 @@ permissions:
 jobs:
   npmjs:
     name: Publish to npmjs.org
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,6 +53,7 @@ jobs:
 
   github-packages:
     name: Publish to GitHub Packages
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
