@@ -2110,9 +2110,17 @@ def cmd_shell(args: argparse.Namespace) -> int:
     return nested_args.func(nested_args)
 
 
+def _strip_argv_separator(argv: Any) -> Any:
+    """Drop a leading '--' that argparse REMAINDER captures verbatim."""
+    if isinstance(argv, list) and argv and argv[0] == "--":
+        return argv[1:]
+    return argv
+
+
 def cmd_exec(args: argparse.Namespace) -> int:
     claimed_paths = args.claimed_path or []
-    command = subprocess.list2cmdline(args.command) if isinstance(args.command, list) else args.command
+    cleaned = _strip_argv_separator(args.command)
+    command = subprocess.list2cmdline(cleaned) if isinstance(cleaned, list) else cleaned
     if not command:
         print("exec command is empty", file=sys.stderr)
         return 2
@@ -2277,7 +2285,8 @@ def cmd_swarm_exec(args: argparse.Namespace) -> int:
 
 
 def cmd_validate_line(args: argparse.Namespace) -> int:
-    command = subprocess.list2cmdline(args.command) if isinstance(args.command, list) else args.command
+    cleaned = _strip_argv_separator(args.command)
+    command = subprocess.list2cmdline(cleaned) if isinstance(cleaned, list) else cleaned
     decision = scan_command(command, claimed_paths=args.claimed_path or [])
     pill = f"[{decision.tier}:{'PASS' if decision.allowed else 'BLOCK'}]"
     payload = {
