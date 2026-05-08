@@ -31,3 +31,15 @@ def test_launch_page_links_to_public_docs_and_bridge_endpoints() -> None:
     assert "/api/agent/health" in source
     assert "/api/agent/status?limit=5" in source
     assert "https://aethermoore.com/SCBE-AETHERMOORE" in source
+
+
+def test_download_bridge_serves_private_blob_with_delivery_token() -> None:
+    source = (REPO_ROOT / "api" / "agent" / "download.js").read_text(encoding="utf-8")
+
+    assert "SCBE_DELIVERY_TOKEN" in source
+    assert "BLOB_READ_WRITE_TOKEN" in source
+    assert "SCBE_TOOLKIT_BLOB_URL" in source
+    assert "SCBE_VAULT_BLOB_URL" in source
+    assert 'product must be toolkit or vault' in source
+    assert 'Content-Disposition' in source
+    assert 'Cache-Control", "private, no-store"' in source
