@@ -57,6 +57,7 @@ def test_app_config_rejects_package_name_drift():
             "endpoints": {
                 "offers_json": f"{PAGES_BASE}/offers.json",
                 "supporter_page": f"{PAGES_BASE}/supporter.html",
+                "agent_bridge_system": f"{VERCEL_BASE}/api/agent/system",
                 "agent_bridge_offers": f"{VERCEL_BASE}/api/agent/offers",
                 "agent_bridge_app_config": f"{VERCEL_BASE}/api/agent/app-config",
             },
