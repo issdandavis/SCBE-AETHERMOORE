@@ -1,79 +1,264 @@
-const HF_MODEL = "Qwen/Qwen2.5-72B-Instruct";
-const HF_URL = `https://router.huggingface.co/hf-inference/models/${HF_MODEL}/v1/chat/completions`;
+'use strict';
+
+const { readJsonBody, sendJson, setCors } = require('../_agent_common');
+
+const DEFAULT_HF_MODEL = 'Qwen/Qwen2.5-72B-Instruct';
+const DEFAULT_OLLAMA_MODEL = 'llama3.2';
+const DEFAULT_MAX_TOKENS = 512;
+const DEFAULT_TIMEOUT_MS = 25000;
 
 const SYSTEM_PROMPT =
-  "You are Polly, the AI assistant for AetherMoore — an AI safety and governance framework " +
-  "using hyperbolic geometry with a 14-layer security pipeline. The framework makes adversarial " +
-  "AI behavior exponentially expensive using Poincare ball geometry. Be helpful, concise, and " +
-  "accurate. If asked about SCBE, explain the core innovation: adversarial intent costs " +
-  "exponentially more the further it drifts from safe operation.";
+  'You are Polly, the AI assistant for AetherMoore — an AI safety and governance framework ' +
+  'using hyperbolic geometry with a 14-layer security pipeline. Be helpful, concise, and ' +
+  'accurate. If asked about SCBE, explain the core innovation: governed agent behavior with ' +
+  'auditable safety decisions and cheap-first/local-first model routing.';
 
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
+function cleanBaseUrl(value) {
+  return String(value || '')
+    .trim()
+    .replace(/\/+$/, '');
+}
+
+function chatConfig() {
+  const hfModel = String(
+    process.env.HF_MODEL || process.env.AGENT_HF_MODEL || DEFAULT_HF_MODEL
+  ).trim();
+  const ollamaModel = String(
+    process.env.OLLAMA_MODEL || process.env.AGENT_OLLAMA_MODEL || DEFAULT_OLLAMA_MODEL
+  ).trim();
+  return {
+    hfModel,
+    hfToken:
+      process.env.HF_TOKEN ||
+      process.env.HUGGINGFACE_TOKEN ||
+      process.env.HUGGING_FACE_HUB_TOKEN ||
+      '',
+    hfUrl:
+      process.env.HF_CHAT_URL ||
+      `https://router.huggingface.co/hf-inference/models/${encodeURIComponent(hfModel)}/v1/chat/completions`,
+    ollamaUrl: cleanBaseUrl(process.env.OLLAMA_URL || process.env.AGENT_OLLAMA_URL || ''),
+    ollamaModel,
+    providerOrder: String(process.env.AGENT_CHAT_PROVIDER_ORDER || 'ollama,huggingface,offline')
+      .split(',')
+      .map((item) => item.trim().toLowerCase())
+      .filter(Boolean),
+    timeoutMs: Math.max(1000, Number(process.env.AGENT_CHAT_TIMEOUT_MS || DEFAULT_TIMEOUT_MS)),
+  };
+}
+
+function normalizeText(value) {
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) {
+    return value.map(normalizeText).filter(Boolean).join('\n').trim();
+  }
+  if (value && typeof value === 'object') {
+    return normalizeText(value.text || value.content || value.generated_text || '');
+  }
+  return '';
+}
+
+function buildMessages(message, history) {
+  const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
+  if (Array.isArray(history)) {
+    history.slice(-6).forEach((row) => {
+      const role = row && ['system', 'user', 'assistant'].includes(row.role) ? row.role : '';
+      const content = normalizeText(row && row.content);
+      if (role && content) messages.push({ role, content });
+    });
+  }
+  messages.push({ role: 'user', content: String(message).trim() });
+  return messages;
+}
+
+function messagesToPrompt(messages) {
+  return messages
+    .map((row) => {
+      const role =
+        row.role === 'assistant' ? 'Assistant' : row.role === 'system' ? 'System' : 'User';
+      return `${role}: ${row.content}`;
+    })
+    .join('\n\n')
+    .slice(0, 12000);
+}
+
+async function fetchWithTimeout(url, init, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function tryOllama(cfg, messages) {
+  if (!cfg.ollamaUrl) return null;
+  const response = await fetchWithTimeout(
+    `${cfg.ollamaUrl}/api/generate`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: cfg.ollamaModel,
+        prompt: messagesToPrompt(messages),
+        stream: false,
+      }),
+    },
+    cfg.timeoutMs
+  );
+  if (!response.ok) {
+    return {
+      ok: false,
+      provider: 'ollama',
+      model: cfg.ollamaModel,
+      error: `Ollama returned ${response.status}`,
+      detail: (await response.text()).slice(0, 400),
+    };
+  }
+  const data = await response.json();
+  const text = normalizeText(data.response);
+  if (!text) {
+    return {
+      ok: false,
+      provider: 'ollama',
+      model: cfg.ollamaModel,
+      error: 'Ollama returned no text',
+    };
+  }
+  return {
+    ok: true,
+    text,
+    provider: 'ollama',
+    model: cfg.ollamaModel,
+    tokens_in: Number(data.prompt_eval_count || 0),
+    tokens_out: Number(data.eval_count || 0),
+  };
+}
+
+async function tryHuggingFace(cfg, messages) {
+  if (!cfg.hfToken) return null;
+  const response = await fetchWithTimeout(
+    cfg.hfUrl,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${cfg.hfToken}`,
+      },
+      body: JSON.stringify({ model: cfg.hfModel, messages, max_tokens: DEFAULT_MAX_TOKENS }),
+    },
+    cfg.timeoutMs
+  );
+  if (!response.ok) {
+    return {
+      ok: false,
+      provider: 'huggingface',
+      model: cfg.hfModel,
+      error: `Hugging Face returned ${response.status}`,
+      detail: (await response.text()).slice(0, 400),
+    };
+  }
+  const data = await response.json();
+  const text =
+    normalizeText(
+      data &&
+        data.choices &&
+        data.choices[0] &&
+        data.choices[0].message &&
+        data.choices[0].message.content
+    ) ||
+    normalizeText(data && data.generated_text) ||
+    normalizeText(data && data.text) ||
+    normalizeText(Array.isArray(data) && data[0]);
+  if (!text) {
+    return {
+      ok: false,
+      provider: 'huggingface',
+      model: cfg.hfModel,
+      error: 'Hugging Face returned no text',
+    };
+  }
+  return { ok: true, text, provider: 'huggingface', model: cfg.hfModel };
+}
+
+function offlineReply(message, attempts) {
+  return {
+    ok: true,
+    text:
+      '[offline/local-first mode]\n\n' +
+      'No configured chat model answered. Start Ollama at home or set HF_TOKEN for the hosted fallback.\n\n' +
+      `Your message was received: ${String(message).slice(0, 600)}`,
+    provider: 'offline',
+    model: 'none',
+    attempts,
+  };
+}
+
+async function routeChat(cfg, message, history) {
+  const messages = buildMessages(message, history);
+  const attempts = [];
+  for (const provider of cfg.providerOrder) {
+    try {
+      const result =
+        provider === 'ollama'
+          ? await tryOllama(cfg, messages)
+          : provider === 'huggingface'
+            ? await tryHuggingFace(cfg, messages)
+            : null;
+      if (!result) {
+        attempts.push({ provider, status: 'skipped', reason: 'not_configured' });
+        continue;
+      }
+      if (result.ok) return { ...result, attempts };
+      attempts.push({
+        provider,
+        status: 'failed',
+        model: result.model,
+        error: result.error,
+        detail: result.detail || '',
+      });
+    } catch (error) {
+      attempts.push({
+        provider,
+        status: 'failed',
+        error: String(error && error.message ? error.message : error).slice(0, 400),
+      });
+    }
+  }
+  return offlineReply(message, attempts);
+}
+
+module.exports = async function handler(req, res) {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
   let body;
   try {
     body = await readJsonBody(req);
-  } catch (err) {
-    return res.status(400).json({ error: "invalid JSON body", detail: String(err.message || err) });
-  }
-  const { message, history } = body || {};
-  if (!message) return res.status(400).json({ error: "message required" });
-
-  const messages = [{ role: "system", content: SYSTEM_PROMPT }];
-  if (Array.isArray(history)) {
-    history.slice(-6).forEach((h) => {
-      if (h.role && h.content) messages.push({ role: h.role, content: h.content });
+  } catch (error) {
+    return sendJson(res, 400, {
+      ok: false,
+      error: 'invalid JSON body',
+      detail: String(error.message || error),
     });
   }
-  messages.push({ role: "user", content: message });
 
-  const headers = { "Content-Type": "application/json" };
-  if (process.env.HF_TOKEN) headers["Authorization"] = `Bearer ${process.env.HF_TOKEN}`;
+  const message = body && body.message;
+  if (!message || !String(message).trim())
+    return sendJson(res, 400, { ok: false, error: 'message required' });
 
-  try {
-    const hfResp = await fetch(HF_URL, {
-      method: "POST", headers,
-      body: JSON.stringify({ model: HF_MODEL, messages, max_tokens: 512 }),
-    });
-    if (!hfResp.ok) {
-      return res.status(502).json({ error: "HF error", detail: (await hfResp.text()).substring(0, 200) });
-    }
-    const data = await hfResp.json();
-    return res.status(200).json({
-      text: data.choices?.[0]?.message?.content || "No response.",
-      model: HF_MODEL, provider: "huggingface",
-    });
-  } catch (err) {
-    return res.status(500).json({ error: String(err) });
-  }
-}
-
-async function readJsonBody(req) {
-  if (req.body && typeof req.body === "object") return req.body;
-  if (typeof req.body === "string") return req.body.trim() ? JSON.parse(req.body) : {};
-
-  return new Promise((resolve, reject) => {
-    let raw = "";
-    req.on("data", (chunk) => {
-      raw += chunk;
-      if (raw.length > 8192) {
-        reject(new Error("request body too large"));
-        req.destroy();
-      }
-    });
-    req.on("end", () => {
-      if (!raw.trim()) return resolve({});
-      try {
-        resolve(JSON.parse(raw));
-      } catch (err) {
-        reject(err);
-      }
-    });
-    req.on("error", reject);
+  const result = await routeChat(chatConfig(), message, body.history);
+  return sendJson(res, 200, {
+    ...result,
+    cost: result.provider === 'huggingface' ? 'hf-token-or-free-tier' : 'zero-local-or-offline',
   });
-}
+};
+
+module.exports._private = {
+  buildMessages,
+  chatConfig,
+  messagesToPrompt,
+  normalizeText,
+  routeChat,
+};
