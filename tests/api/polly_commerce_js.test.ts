@@ -103,6 +103,12 @@ describe('polly commerce intent classification', () => {
     expect(intent.name).toBe('membership');
   });
 
+  it('classifies research intent at 0.8', () => {
+    const intent = commerce.classifyIntent('What is the latest research on the harmonic wall?');
+    expect(intent.name).toBe('research');
+    expect(intent.confidence).toBeCloseTo(0.8, 2);
+  });
+
   it('returns general intent when nothing matches', () => {
     const intent = commerce.classifyIntent('What is the weather today?');
     expect(intent.name).toBe('general');
@@ -146,6 +152,39 @@ describe('polly commerce reply rendering', () => {
     expect(out.actions[0].url).toContain('ko-fi.com');
     expect(out.actions[1].url).toContain('github.com');
     expect(out.actions[2].url).toContain('mailto:');
+  });
+
+  it('renderResearchReply with matching topic returns canonical body + repo links', () => {
+    const out = commerce.renderResearchReply('research the harmonic wall formula');
+    expect(out.text).toContain('Harmonic wall');
+    expect(out.text).toContain('H(d, pd)');
+    expect(out.actions.some((a: { url: string }) => a.url.includes('harmonicScaling.ts'))).toBe(
+      true
+    );
+  });
+
+  it('renderResearchReply with no matching topic returns topic index', () => {
+    const out = commerce.renderResearchReply('research something completely off-topic xyz');
+    expect(out.text).toContain('I can answer research questions');
+    expect(out.text).toContain('Harmonic wall');
+    expect(out.text).toContain('Sacred Tongues');
+  });
+});
+
+describe('polly chat handler — research path', () => {
+  it('returns deterministic answer for harmonic wall research question', async () => {
+    const req = makeReq({
+      body: {
+        message: 'What is the latest research on the harmonic wall?',
+        consent_to_train: false,
+      },
+    });
+    const res = makeRes();
+    await chatHandler(req, res);
+    const body = res.body as { intent: string; provider: string; text: string };
+    expect(body.intent).toBe('research');
+    expect(body.provider).toBe('research');
+    expect(body.text).toContain('H(d, pd)');
   });
 });
 
