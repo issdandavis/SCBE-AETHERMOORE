@@ -135,6 +135,14 @@
         color: var(--muted);
         font-size: 14px;
       }
+      .checklist {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .small-link {
+        color: var(--blue);
+        font-weight: 700;
+      }
     </style>
   </head>
   <body>
@@ -162,8 +170,8 @@
         >
         <a
           class="btn secondary"
-          href="mailto:ai@aethermoore.com?subject=AI%20Governance%20Snapshot%20question"
-          >Ask a question first</a
+          href="mailto:ai@aethermoore.com?subject=AI%20Governance%20Snapshot%20intake&body=Payment%20email%3A%0AWorkflow%20or%20tool%20to%20review%3A%0AWhat%20decision%20or%20output%20matters%3A%0ALinks%20or%20screenshots%20I%20can%20share%3A%0ADeadline%20or%20context%3A%0A"
+          >Send intake</a
         >
       </div>
 
@@ -192,6 +200,33 @@
             <li>One follow-up email thread for clarification.</li>
           </ul>
         </article>
+      </section>
+
+      <section class="panel" id="intake">
+        <h2>After checkout, send this intake</h2>
+        <p>
+          Payment opens the slot. The review starts when the intake arrives by email. Keep the
+          package small enough to inspect quickly.
+        </p>
+        <ol class="checklist">
+          <li>Payment email or receipt email.</li>
+          <li>The one AI workflow, tool, prompt chain, agent, or customer-facing feature to review.</li>
+          <li>What decision, output, or failure would create risk if the AI gets it wrong.</li>
+          <li>Links, screenshots, prompts, policy notes, or public docs that explain the workflow.</li>
+          <li>Any deadline, buyer conversation, grant packet, or internal review this needs to support.</li>
+        </ol>
+        <p class="note">
+          Do not send secrets, private keys, customer records, medical records, export-controlled
+          files, classified material, bank data, or regulated production data. Use redacted examples
+          or screenshots when possible.
+        </p>
+        <p>
+          <a
+            class="small-link"
+            href="mailto:ai@aethermoore.com?subject=AI%20Governance%20Snapshot%20intake&body=Payment%20email%3A%0AWorkflow%20or%20tool%20to%20review%3A%0AWhat%20decision%20or%20output%20matters%3A%0ALinks%20or%20screenshots%20I%20can%20share%3A%0ADeadline%20or%20context%3A%0A"
+            >Open the intake email template</a
+          >
+        </p>
       </section>
 
       <section class="panel">
