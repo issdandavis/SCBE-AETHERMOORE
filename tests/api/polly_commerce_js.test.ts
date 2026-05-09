@@ -17,6 +17,8 @@ const catalogHandler = require('../../api/polly/catalog.js');
 const trainCapture = require('../../api/_polly_train_capture.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const leadHandler = require('../../api/polly/lead.js');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const hfUpload = require('../../api/_polly_hf_upload.js');
 
 interface MockRes {
   statusCode: number;
@@ -398,6 +400,57 @@ describe('polly lead handler', () => {
     const res = makeRes();
     await leadHandler(req, res);
     expect(res.statusCode).toBe(405);
+  });
+});
+
+describe('polly direct HF upload', () => {
+  it('returns no_token when HF_TOKEN is unset', async () => {
+    const original = {
+      hf: process.env.HF_TOKEN,
+      hugging: process.env.HUGGINGFACE_TOKEN,
+      hub: process.env.HUGGING_FACE_HUB_TOKEN,
+    };
+    delete process.env.HF_TOKEN;
+    delete process.env.HUGGINGFACE_TOKEN;
+    delete process.env.HUGGING_FACE_HUB_TOKEN;
+    try {
+      const result = await hfUpload.uploadRecord({ ts: 1, kind: 'chat', user: 'x', assistant: 'y' });
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('no_token');
+    } finally {
+      if (original.hf) process.env.HF_TOKEN = original.hf;
+      if (original.hugging) process.env.HUGGINGFACE_TOKEN = original.hugging;
+      if (original.hub) process.env.HUGGING_FACE_HUB_TOKEN = original.hub;
+    }
+  });
+
+  it('returns disabled when POLLY_HF_UPLOAD_ENABLED=false', async () => {
+    const originalEnabled = process.env.POLLY_HF_UPLOAD_ENABLED;
+    const originalToken = process.env.HF_TOKEN;
+    process.env.POLLY_HF_UPLOAD_ENABLED = 'false';
+    process.env.HF_TOKEN = 'test-token';
+    try {
+      const result = await hfUpload.uploadRecord({ ts: 1 });
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('disabled');
+    } finally {
+      if (originalEnabled === undefined) delete process.env.POLLY_HF_UPLOAD_ENABLED;
+      else process.env.POLLY_HF_UPLOAD_ENABLED = originalEnabled;
+      if (originalToken === undefined) delete process.env.HF_TOKEN;
+      else process.env.HF_TOKEN = originalToken;
+    }
+  });
+
+  it('routes leads under polly-leads/ and chats under polly-chat-live/', () => {
+    const leadPath = hfUpload.pathFor({ kind: 'lead', ts: 1715200000 });
+    const chatPath = hfUpload.pathFor({ kind: 'chat', ts: 1715200000 });
+    expect(leadPath.startsWith('polly-leads/')).toBe(true);
+    expect(chatPath.startsWith('polly-chat-live/')).toBe(true);
+  });
+
+  it('falls back to chat path when kind is missing', () => {
+    const path = hfUpload.pathFor({ ts: 1715200000 });
+    expect(path.startsWith('polly-chat-live/')).toBe(true);
   });
 });
 
