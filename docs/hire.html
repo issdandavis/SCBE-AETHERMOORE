@@ -13,8 +13,14 @@
       property="og:description"
       content="Independent AI safety and governance engineering. Federal-registered, open-source-first."
     />
-    <meta property="og:url" content="https://aethermoore.com/hire" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aethermoore.com/SCBE-AETHERMOORE/hire.html" />
+    <meta property="og:image" content="https://aethermoore.com/SCBE-AETHERMOORE/hero.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Hire Issac Davis — AI Safety & Governance Engineering" />
+    <meta name="twitter:description" content="Independent AI safety and governance engineering. Federal-registered, open-source-first." />
+    <meta name="twitter:image" content="https://aethermoore.com/SCBE-AETHERMOORE/hero.svg" />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/hire.html" />
     <style>
       * {
         margin: 0;
@@ -775,13 +781,72 @@
         if (!form || !status) return;
         var apiBase =
           window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app';
+
+        // Contextual self-serve options based on project_type. Lets buyers
+        // who don't want to wait 24h grab the matching paid artifact now.
+        var SELF_SERVE = {
+          'advisory-call': {
+            label: 'Want a head start while I reach out?',
+            cta: 'Buy the AI Governance Toolkit ($79)',
+            href: 'https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06',
+          },
+          'audit': {
+            label: 'Want to start reviewing the methodology now?',
+            cta: 'Buy the Security Training Vault ($129)',
+            href: 'https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g',
+          },
+          'training': {
+            label: 'Want the workshop materials in advance?',
+            cta: 'Buy the Security Training Vault ($129)',
+            href: 'https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g',
+          },
+        };
+
+        function renderThankYou(parent, projectType) {
+          var offer = SELF_SERVE[projectType];
+          var blocks = [];
+          blocks.push(
+            '<h3 style="margin-bottom:8px;color:var(--green)">Got it — your message landed.</h3>'
+          );
+          blocks.push(
+            '<p style="color:var(--dim);margin-bottom:14px">' +
+              'I read every lead myself, usually within a few hours, always within 24h. ' +
+              'Reply will come from <strong style="color:var(--text)">issdandavis7795@gmail.com</strong> — ' +
+              "add it to your contacts so it doesn't go to spam." +
+              '</p>'
+          );
+          if (offer) {
+            blocks.push(
+              '<div style="border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--card);margin-bottom:14px">' +
+                '<div style="font-size:13px;color:var(--dim);margin-bottom:8px">' +
+                offer.label +
+                '</div>' +
+                '<a href="' +
+                offer.href +
+                '" target="_blank" rel="noopener" class="cta primary" style="display:inline-block;text-decoration:none">' +
+                offer.cta +
+                '</a>' +
+                '</div>'
+            );
+          }
+          blocks.push(
+            '<p style="font-size:13px;color:var(--dim)">' +
+              "If something's urgent, " +
+              '<a href="mailto:issdandavis7795@gmail.com" style="color:var(--accent)">email directly</a> — ' +
+              'or scroll up and ask Polly anything in the meantime.' +
+              '</p>'
+          );
+          parent.innerHTML = blocks.join('');
+        }
+
         form.addEventListener('submit', async function (event) {
           event.preventDefault();
           status.textContent = 'Sending…';
           status.style.color = 'var(--dim)';
+          var projectType = document.getElementById('leadProjectType').value;
           var payload = {
             contact: document.getElementById('leadContact').value,
-            project_type: document.getElementById('leadProjectType').value,
+            project_type: projectType,
             budget: document.getElementById('leadBudget').value,
             timeline: document.getElementById('leadTimeline').value,
             description: document.getElementById('leadDescription').value,
@@ -801,9 +866,19 @@
                 'Could not send: ' + (data.error || 'unknown error') + '. Try again or email directly.';
               return;
             }
-            status.style.color = 'var(--green)';
-            status.textContent = data.message || 'Got it — Issac will reply soon.';
-            form.reset();
+            // Replace the form with the contextual thank-you panel so the
+            // user gets a clear next step instead of a one-line confirmation.
+            var section = form.parentElement;
+            var heading = section ? section.querySelector('h2') : null;
+            if (heading) heading.textContent = 'Thanks for the message';
+            var preBlurb = section ? section.querySelector('p.muted') : null;
+            if (preBlurb) preBlurb.remove();
+            form.remove();
+            var thankYouHost = document.createElement('div');
+            thankYouHost.id = 'leadThankYou';
+            thankYouHost.style.maxWidth = '640px';
+            (section || document.body).appendChild(thankYouHost);
+            renderThankYou(thankYouHost, projectType);
           } catch (error) {
             status.style.color = '#ff7a7a';
             status.textContent =
