@@ -60,8 +60,8 @@ jobs:
     timeout-minutes: 30
     env:
       # PR CI exercises the deterministic fallback/PQC governance path. Native
-      # liboqs builds are too slow/flaky for the merge gate and belong in a
-      # dedicated PQC-native workflow.
+      # liboqs builds are handled by the dedicated "PQC Native liboqs" workflow,
+      # which must pass for release/security validation.
       SCBE_FORCE_SKIP_LIBOQS: "1"
 
     steps:
