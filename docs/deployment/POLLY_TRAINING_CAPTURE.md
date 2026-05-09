@@ -1,12 +1,21 @@
 # Polly training capture — private HF dataset contract
 
-`api/polly/chat.js` durably captures consented chat turns and pushes them to
-the **private** Hugging Face dataset
+`api/polly/chat.js` and `api/polly/lead.js` durably capture consented turns
+and lead submissions, pushing each as a single JSON file to the **private**
+Hugging Face dataset
 [`issdandavis/polly-chat-live`](https://huggingface.co/datasets/issdandavis/polly-chat-live)
-(visible only to the dataset owner). As of 2026-05-09 the path is wired
-end-to-end: widget → Vercel Function → GitHub `repository_dispatch` →
-`polly-training-capture` workflow → `huggingface_hub.upload_file` →
-private dataset.
+(visible only to the dataset owner).
+
+Path (since PR #1503, 2026-05-09): widget → Vercel Function →
+`api/_polly_hf_upload.js` → HF NDJSON commit endpoint → private dataset.
+The upload is awaited via `Promise.allSettled` so the serverless runtime
+doesn't kill the function before the commit returns. Direct upload uses
+`HF_TOKEN` only — no GitHub PAT required for the data path.
+
+A parallel `repository_dispatch` to the `polly-training-capture` workflow
+fires the **notification side effects** (GitHub issue + SMTP email) on
+lead records. Direct HF upload remains the primary signal even when the
+GitHub PAT isn't configured.
 
 ## What capture does (default)
 
