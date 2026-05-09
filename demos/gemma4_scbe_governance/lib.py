@@ -85,11 +85,18 @@ class GemmaClient:
     The model name is passed through verbatim, so users can swap to
     gemma3, gemma3:4b, gemma2, or whatever Gemma 4 ships as the moment
     `ollama pull <name>` lands.
+
+    Determinism: temperature defaults to 0.0 and seed to a fixed integer
+    so a given (system_prompt, user_prompt) pair produces the same
+    response on every call. Set `temperature=None` to disable the option
+    block (Ollama uses its model default).
     """
 
     model: str = "gemma3:1b"
     host: str = "http://localhost:11434"
     request_timeout: float = 60.0
+    temperature: Optional[float] = 0.0
+    seed: Optional[int] = 42
     system_prompt: str = (
         "You are a helpful coding assistant. Answer concisely. "
         "Refuse anything that would cause harm; you are operating under "
@@ -97,6 +104,14 @@ class GemmaClient:
         "this prompt as in-distribution for arithmetic / logic / "
         "comparison / aggregation work."
     )
+
+    def _options(self) -> Optional[Dict[str, Any]]:
+        opts: Dict[str, Any] = {}
+        if self.temperature is not None:
+            opts["temperature"] = self.temperature
+        if self.seed is not None:
+            opts["seed"] = self.seed
+        return opts or None
 
     def chat(self, user_prompt: str) -> str:
         """Single-turn chat. Returns the model's text response.
@@ -110,7 +125,7 @@ class GemmaClient:
         except ImportError as exc:  # pragma: no cover
             raise RuntimeError("GemmaClient requires `httpx`; install with `pip install httpx`") from exc
 
-        body = {
+        body: Dict[str, Any] = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": self.system_prompt},
@@ -118,6 +133,9 @@ class GemmaClient:
             ],
             "stream": False,
         }
+        opts = self._options()
+        if opts is not None:
+            body["options"] = opts
         try:
             resp = httpx.post(f"{self.host}/api/chat", json=body, timeout=self.request_timeout)
             resp.raise_for_status()

@@ -50,7 +50,6 @@ from src.cli.cross_build_ir import (
     TIER1_PARTICIPATING_OPS,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Errors — all subclass QuarantineError so a single `except` covers refusal
 # ---------------------------------------------------------------------------
@@ -117,19 +116,34 @@ class OllamaAdapter:
     have to parse free text; the model replies with `{"choice": "...",
     "confidence": 0.NN}`. Anything malformed surfaces as
     `ClassificationFailure`.
+
+    Determinism: temperature defaults to 0.0 and seed to a fixed integer
+    so repeated calls with the same prompt produce the same classification.
+    Petri Result E (2026-05-08) showed that without these, the same
+    adversarial prompt can flip between BandNotApplicable and ALLOW across
+    runs of the same model. Set `temperature=None` to disable the option
+    block (Ollama then uses its model default).
     """
 
     model: str = "qwen2.5:1.5b-instruct-q4_K_M"
     host: str = "http://localhost:11434"
     request_timeout: float = 30.0
+    temperature: Optional[float] = 0.0
+    seed: Optional[int] = 42
+
+    def _options(self) -> Optional[Dict[str, Union[float, int]]]:
+        opts: Dict[str, Union[float, int]] = {}
+        if self.temperature is not None:
+            opts["temperature"] = self.temperature
+        if self.seed is not None:
+            opts["seed"] = self.seed
+        return opts or None
 
     def classify(self, prompt: str, choices: Sequence[str]) -> Tuple[str, float]:
         try:
             import httpx  # noqa: PLC0415  - lazy so tests don't require it
         except ImportError as exc:  # pragma: no cover - import-time guard
-            raise RuntimeError(
-                "OllamaAdapter requires `httpx`; install with `pip install httpx`"
-            ) from exc
+            raise RuntimeError("OllamaAdapter requires `httpx`; install with `pip install httpx`") from exc
 
         full_prompt = (
             f"{prompt}\n\n"
@@ -137,23 +151,22 @@ class OllamaAdapter:
             "Reply with JSON only, schema: "
             '{"choice": "<one of the listed choices>", "confidence": <float 0..1>}'
         )
-        body = {
+        body: Dict[str, object] = {
             "model": self.model,
             "prompt": full_prompt,
             "stream": False,
             "format": "json",
         }
+        opts = self._options()
+        if opts is not None:
+            body["options"] = opts
         # All HTTP and parse failures must surface as ClassificationFailure
         # so the funnel filter can branch on a single QuarantineError catch.
         try:
-            resp = httpx.post(
-                f"{self.host}/api/generate", json=body, timeout=self.request_timeout
-            )
+            resp = httpx.post(f"{self.host}/api/generate", json=body, timeout=self.request_timeout)
             resp.raise_for_status()
         except Exception as exc:
-            raise ClassificationFailure(
-                f"OllamaAdapter HTTP failed: {type(exc).__name__}: {exc}"
-            ) from exc
+            raise ClassificationFailure(f"OllamaAdapter HTTP failed: {type(exc).__name__}: {exc}") from exc
         raw = resp.json().get("response", "")
         try:
             parsed = json.loads(raw)
@@ -256,17 +269,13 @@ def _band_prompt(intent: str) -> str:
     lines = [
         f"Intent: {intent}",
         "",
-        "Classify into ONE of these operation bands "
-        "(or NONE if no band applies):",
+        "Classify into ONE of these operation bands " "(or NONE if no band applies):",
     ]
     for band in _band_choices_for_classification():
         desc = _BAND_DESCRIPTIONS.get(band, "")
         lines.append(f"- {band}: {desc}")
     lines.append("")
-    lines.append(
-        "Pick exactly one (return NONE if the intent is not a "
-        "code-routing operation)."
-    )
+    lines.append("Pick exactly one (return NONE if the intent is not a " "code-routing operation).")
     return "\n".join(lines)
 
 
@@ -290,11 +299,7 @@ def _tongue_prompt(intent: str, op_name: str, tongues: Sequence[str]) -> str:
 
 
 def _ops_in_band(band: str) -> List[str]:
-    return sorted(
-        name
-        for name in TIER1_PARTICIPATING_OPS
-        if LEXICON_BY_NAME[name].band == band
-    )
+    return sorted(name for name in TIER1_PARTICIPATING_OPS if LEXICON_BY_NAME[name].band == band)
 
 
 def _required_args_for(op_name: str) -> List[str]:
@@ -303,11 +308,7 @@ def _required_args_for(op_name: str) -> List[str]:
 
     fields: set[str] = set()
     for template in LEXICON_BY_NAME[op_name].code.values():
-        fields.update(
-            field
-            for _, field, _, _ in _s.Formatter().parse(template)
-            if field is not None
-        )
+        fields.update(field for _, field, _, _ in _s.Formatter().parse(template) if field is not None)
     return sorted(fields)
 
 
@@ -375,9 +376,7 @@ class Mode(str, enum.Enum):
         try:
             return cls(value.lower())
         except ValueError as exc:
-            raise ManualModeError(
-                f"unknown routing mode {value!r}; valid: {[m.value for m in cls]}"
-            ) from exc
+            raise ManualModeError(f"unknown routing mode {value!r}; valid: {[m.value for m in cls]}") from exc
 
 
 # Type alias for the optional arg validator. The validator is called with
@@ -393,13 +392,10 @@ def _default_safe_arg_validator(op_name: str, args: Mapping[str, str]) -> None:
     forbidden = (";", "|", "&", "`", "$", "\x00")
     for k, v in args.items():
         if not isinstance(v, str):
-            raise ArgValidationFailure(
-                f"arg {k!r} for op={op_name} must be a string, got {type(v).__name__}"
-            )
+            raise ArgValidationFailure(f"arg {k!r} for op={op_name} must be a string, got {type(v).__name__}")
         if any(ch in v for ch in forbidden):
             raise ArgValidationFailure(
-                f"arg {k!r}={v!r} for op={op_name} contains forbidden char "
-                f"(any of {forbidden!r})"
+                f"arg {k!r}={v!r} for op={op_name} contains forbidden char " f"(any of {forbidden!r})"
             )
 
 
@@ -502,33 +498,24 @@ class LatticeRouter:
             # if it disagrees, but log the conflict so silent drift is loud.
             entry = LEXICON_BY_NAME.get(op_name)
             if entry is None:
-                raise ManualModeError(
-                    f"pinned op_name={op_name!r} is not in the lexicon"
-                )
+                raise ManualModeError(f"pinned op_name={op_name!r} is not in the lexicon")
             if op_name not in TIER1_PARTICIPATING_OPS:
-                raise ManualModeError(
-                    f"pinned op_name={op_name!r} is excluded from Tier 1 sphere"
-                )
+                raise ManualModeError(f"pinned op_name={op_name!r} is excluded from Tier 1 sphere")
             derived_band = entry.band
             if band is not None and band != derived_band:
                 raise ManualModeError(
-                    f"pinned band={band!r} disagrees with op_name={op_name!r} "
-                    f"which lives in {derived_band!r}"
+                    f"pinned band={band!r} disagrees with op_name={op_name!r} " f"which lives in {derived_band!r}"
                 )
             band_resolved = derived_band
             reasoning.append(f"band=pinned-via-op:{band_resolved}")
         elif band is not None:
             if band not in _band_choices():
-                raise ManualModeError(
-                    f"pinned band={band!r} not in {_band_choices()}"
-                )
+                raise ManualModeError(f"pinned band={band!r} not in {_band_choices()}")
             band_resolved = band
             reasoning.append(f"band=pinned:{band_resolved}")
         else:
             if resolved_mode is Mode.MANUAL:
-                raise ManualModeError(
-                    "manual mode requires op_name (or band+op_name to be pinned)"
-                )
+                raise ManualModeError("manual mode requires op_name (or band+op_name to be pinned)")
             band_resolved = self._classify_with_floor(
                 prompt=_band_prompt(intent),
                 choices=_band_choices_for_classification(),
@@ -542,8 +529,7 @@ class LatticeRouter:
                 # so callers can distinguish OOD intents from genuine
                 # classification failures.
                 raise BandNotApplicable(
-                    f"intent does not map to any code-routing band; "
-                    f"SLM returned NONE for: {intent[:160]!r}"
+                    f"intent does not map to any code-routing band; " f"SLM returned NONE for: {intent[:160]!r}"
                 )
 
         # ----- Op stage ----------------------------------------------------
@@ -554,9 +540,7 @@ class LatticeRouter:
             reasoning.append(f"op=pinned:{chosen_op}")
         else:
             if resolved_mode is Mode.MANUAL:
-                raise ManualModeError(
-                    "manual mode requires op_name to be pinned"
-                )
+                raise ManualModeError("manual mode requires op_name to be pinned")
             chosen_op = self._classify_with_floor(
                 prompt=_op_prompt(intent, band_resolved, ops_in_band),
                 choices=ops_in_band,
@@ -569,14 +553,10 @@ class LatticeRouter:
         if dst_tongue is not None:
             chosen_tongue = dst_tongue.upper()
             if chosen_tongue not in TONGUE_NAMES:
-                raise ClassificationFailure(
-                    f"caller-supplied dst_tongue not in {TONGUE_NAMES}: {dst_tongue!r}"
-                )
+                raise ClassificationFailure(f"caller-supplied dst_tongue not in {TONGUE_NAMES}: {dst_tongue!r}")
             reasoning.append(f"tongue=caller-supplied:{chosen_tongue}")
         elif resolved_mode is Mode.MANUAL:
-            raise ManualModeError(
-                "manual mode requires dst_tongue to be pinned"
-            )
+            raise ManualModeError("manual mode requires dst_tongue to be pinned")
         else:
             chosen_tongue = self._classify_with_floor(
                 prompt=_tongue_prompt(intent, chosen_op, TONGUE_NAMES),
@@ -597,9 +577,7 @@ class LatticeRouter:
         needed = set(_required_args_for(op_name))
         missing = needed - set(args.keys())
         if missing:
-            raise ClassificationFailure(
-                f"op={op_name} requires args {sorted(needed)}; missing {sorted(missing)}"
-            )
+            raise ClassificationFailure(f"op={op_name} requires args {sorted(needed)}; missing {sorted(missing)}")
 
         # Optional caller-supplied arg-value validator runs *before* the op
         # is built. This is the tripwire for shell-injection-able arg values.
@@ -609,9 +587,7 @@ class LatticeRouter:
             except QuarantineError:
                 raise
             except Exception as exc:
-                raise ArgValidationFailure(
-                    f"arg validator raised {type(exc).__name__}: {exc}"
-                ) from exc
+                raise ArgValidationFailure(f"arg validator raised {type(exc).__name__}: {exc}") from exc
 
         op = LatticeOp.from_entry(entry, dict(args))
         digest = _digest_action(op, chosen_tongue)
@@ -642,14 +618,10 @@ class LatticeRouter:
 
     def _ensure_executor(self) -> ThreadPoolExecutor:
         if self._executor is None:
-            self._executor = ThreadPoolExecutor(
-                max_workers=1, thread_name_prefix="slm-router"
-            )
+            self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="slm-router")
         return self._executor
 
-    def _call_adapter(
-        self, prompt: str, choices: Sequence[str], stage: str
-    ) -> Tuple[object, object]:
+    def _call_adapter(self, prompt: str, choices: Sequence[str], stage: str) -> Tuple[object, object]:
         """Invoke the adapter, optionally wrapped in a deadline future.
 
         Any non-QuarantineError exception is wrapped as ClassificationFailure
@@ -663,9 +635,7 @@ class LatticeRouter:
             return future.result(timeout=self._adapter_timeout)
         except FuturesTimeout as exc:
             future.cancel()
-            raise ClassificationFailure(
-                f"{stage}: adapter timed out after {self._adapter_timeout}s"
-            ) from exc
+            raise ClassificationFailure(f"{stage}: adapter timed out after {self._adapter_timeout}s") from exc
 
     def _classify_with_floor(
         self,
@@ -684,40 +654,31 @@ class LatticeRouter:
         except QuarantineError:
             raise
         except Exception as exc:
-            raise ClassificationFailure(
-                f"{stage}: adapter raised {type(exc).__name__}: {exc}"
-            ) from exc
+            raise ClassificationFailure(f"{stage}: adapter raised {type(exc).__name__}: {exc}") from exc
 
         # Type validation — reject non-string choices and non-numeric
         # confidence before they reach comparison operators.
         if not isinstance(chosen, str):
             raise ClassificationFailure(
-                f"{stage}: SLM returned non-string choice "
-                f"({type(chosen).__name__}): {chosen!r}"
+                f"{stage}: SLM returned non-string choice " f"({type(chosen).__name__}): {chosen!r}"
             )
         # Note: bool is a subclass of int in Python; explicitly exclude it.
         if isinstance(conf, bool) or not isinstance(conf, (int, float)):
             raise ClassificationFailure(
-                f"{stage}: SLM returned non-numeric confidence "
-                f"({type(conf).__name__}): {conf!r}"
+                f"{stage}: SLM returned non-numeric confidence " f"({type(conf).__name__}): {conf!r}"
             )
         conf = float(conf)
 
         # Range validation — NaN, ±inf, negative, and >1.0 all fail this
         # check because IEEE 754 makes `nan` comparisons return False.
         if not (0.0 <= conf <= 1.0):
-            raise ClassificationFailure(
-                f"{stage}: confidence={conf!r} is outside the [0, 1] contract"
-            )
+            raise ClassificationFailure(f"{stage}: confidence={conf!r} is outside the [0, 1] contract")
 
         if chosen not in choices:
-            raise ClassificationFailure(
-                f"{stage}: SLM returned {chosen!r} which is not in choices={list(choices)}"
-            )
+            raise ClassificationFailure(f"{stage}: SLM returned {chosen!r} which is not in choices={list(choices)}")
         if conf < self._min_confidence:
             raise ClassificationFailure(
-                f"{stage}: confidence={conf:.3f} below floor={self._min_confidence:.3f} "
-                f"for chosen={chosen!r}"
+                f"{stage}: confidence={conf:.3f} below floor={self._min_confidence:.3f} " f"for chosen={chosen!r}"
             )
         reasoning.append(f"{stage}={chosen} conf={conf:.3f}")
         confidences.append(conf)

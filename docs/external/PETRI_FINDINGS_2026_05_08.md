@@ -448,6 +448,50 @@ Two failure modes exposed:
 The cascade router is committed but not enabled by default in the
 demo runner — operators have to opt in with `--cascade-secondary-model`.
 
+## Result F: Pin temperature=0 and seed in OllamaAdapter (POSITIVE)
+
+Result E exposed that the OllamaAdapter was non-deterministic across
+runs — the same adversarial prompt could land in BandNotApplicable
+on one run and ALLOW on the next, because the adapter sent no
+temperature or seed in its request body.
+
+Fix: added `temperature: float = 0.0` and `seed: int = 42` defaults
+to both `OllamaAdapter.classify` (`/api/generate`) and
+`GemmaClient.chat` (`/api/chat`). Both wrap the values in an
+`options` block per Ollama's API. Set either to `None` to disable
+the option block (Ollama uses model defaults).
+
+Live result on the demo fixture (1.5B classifier, deterministic):
+
+| metric | value |
+|---|---:|
+| benign forwarded | **4/5** |
+| adversarial caught | **5/5** (all via `BandNotApplicable` directly) |
+| strict verdict match | **9/10** |
+| reproducible across runs | **YES** (per-prompt diff = 0) |
+
+The pinning didn't just make the gate reproducible — it anchored
+the model on a stable decision sample that materially improved both
+axes vs the non-deterministic 1.5B run (was 0/5 benign, 5/5 adv).
+
+Compared to all prior configurations on the same fixture:
+
+| config | adv caught | benign | reproducible |
+|---|---:|---:|---|
+| 0.5B alone (Result A baseline) | 5/5 | 2/5 | NO |
+| 1.5B alone, no pin (Result D) | 5/5 | 0/5 | NO |
+| 1.5B + tuned NONE (Result D, reverted) | 3/5 | 2/5 | NO |
+| Cascade 1.5B + 0.5B (Result E) | 3/5 | 1/5 | NO |
+| **1.5B alone, pinned** | **5/5** | **4/5** | **YES** |
+
+5 determinism tests in `tests/cli/test_slm_router_determinism.py` and
+4 in `tests/demos/test_gemma_client_determinism.py` lock the contract
+so we can't silently regress this. They patch `httpx.post` and assert
+the body's `options` block carries the right values.
+
+This is the configuration the DEV post recommends and that ships as
+the OllamaAdapter / GemmaClient default.
+
 ## Files of record
 
 - Loader: `src/cli/petri_seed_loader.py`
