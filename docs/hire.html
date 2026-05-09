@@ -582,6 +582,133 @@
           "
         ></div>
       </section>
+      <section>
+        <h2>Or scope a custom build directly</h2>
+        <p class="muted">
+          Skip the email back-and-forth — fill in the four fields below and you'll have a same-day
+          reply. Submissions land in a private dataset only Issac can see.
+        </p>
+        <form id="leadForm" style="display: grid; gap: 14px; max-width: 640px">
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--dim)">
+            <span>Email or phone *</span>
+            <input
+              id="leadContact"
+              name="contact"
+              type="text"
+              required
+              placeholder="you@company.com or (555) 555-5555"
+              style="
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                color: var(--text);
+                font-size: 14px;
+              "
+            />
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--dim)">
+            <span>Project type</span>
+            <select
+              id="leadProjectType"
+              name="project_type"
+              style="
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                color: var(--text);
+                font-size: 14px;
+              "
+            >
+              <option value="advisory-call">Short advisory call ($300)</option>
+              <option value="audit">Adversarial audit ($5K-15K)</option>
+              <option value="custom-overlay">Custom governance overlay ($25K-80K)</option>
+              <option value="subcontract">Federal subcontract role</option>
+              <option value="training">Workshop / internal training</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--dim)">
+            <span>Budget range</span>
+            <select
+              id="leadBudget"
+              name="budget"
+              style="
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                color: var(--text);
+                font-size: 14px;
+              "
+            >
+              <option value="open">Open / not sure yet</option>
+              <option value="under-5k">Under $5,000</option>
+              <option value="5k-15k">$5,000 - $15,000</option>
+              <option value="15k-50k">$15,000 - $50,000</option>
+              <option value="50k-plus">$50,000+</option>
+            </select>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--dim)">
+            <span>Timeline</span>
+            <select
+              id="leadTimeline"
+              name="timeline"
+              style="
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                color: var(--text);
+                font-size: 14px;
+              "
+            >
+              <option value="open">Flexible / open</option>
+              <option value="asap">ASAP / this week</option>
+              <option value="2-4-weeks">2-4 weeks</option>
+              <option value="1-3-months">1-3 months</option>
+              <option value="q3">Q3</option>
+              <option value="q4">Q4</option>
+            </select>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--dim)">
+            <span>What you need (be specific)</span>
+            <textarea
+              id="leadDescription"
+              name="description"
+              required
+              minlength="10"
+              maxlength="4000"
+              rows="6"
+              placeholder="What are you trying to do, what's the constraint, what does success look like..."
+              style="
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 10px 12px;
+                color: var(--text);
+                font-size: 14px;
+                font-family: inherit;
+                resize: vertical;
+              "
+            ></textarea>
+          </label>
+          <button
+            type="submit"
+            class="cta primary"
+            style="justify-self: start; cursor: pointer; border: 0"
+          >
+            Send to Issac
+          </button>
+          <div
+            id="leadStatus"
+            role="status"
+            aria-live="polite"
+            style="font-size: 13px; color: var(--dim)"
+          ></div>
+        </form>
+      </section>
       <footer>
         <div>
           <a href="https://aethermoore.com">aethermoore.com</a> ·
@@ -619,6 +746,48 @@
             instance.setConsent(consentBox.checked === true);
           });
         }
+      })();
+
+      (function () {
+        var form = document.getElementById('leadForm');
+        var status = document.getElementById('leadStatus');
+        if (!form || !status) return;
+        var apiBase =
+          window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app';
+        form.addEventListener('submit', async function (event) {
+          event.preventDefault();
+          status.textContent = 'Sending…';
+          status.style.color = 'var(--dim)';
+          var payload = {
+            contact: document.getElementById('leadContact').value,
+            project_type: document.getElementById('leadProjectType').value,
+            budget: document.getElementById('leadBudget').value,
+            timeline: document.getElementById('leadTimeline').value,
+            description: document.getElementById('leadDescription').value,
+            source: 'aethermoore.com/hire',
+          };
+          try {
+            var response = await fetch(apiBase.replace(/\/$/, '') + '/v1/polly/lead', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            var data = await response.json();
+            if (!response.ok || !data.ok) {
+              status.style.color = '#ff7a7a';
+              status.textContent =
+                'Could not send: ' + (data.error || 'unknown error') + '. Try again or email directly.';
+              return;
+            }
+            status.style.color = 'var(--green)';
+            status.textContent = data.message || 'Got it — Issac will reply soon.';
+            form.reset();
+          } catch (error) {
+            status.style.color = '#ff7a7a';
+            status.textContent =
+              'Network error sending the lead. Email issdandavis7795@gmail.com directly as a fallback.';
+          }
+        });
       })();
     </script>
   </body>

@@ -39,6 +39,10 @@
     {
       "src": "^/v1/polly/catalog/?$",
       "dest": "/api/polly/catalog.js"
+    },
+    {
+      "src": "^/v1/polly/lead/?$",
+      "dest": "/api/polly/lead.js"
     }
   ]
 }

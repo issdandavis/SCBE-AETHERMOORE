@@ -15,6 +15,8 @@ const feedbackHandler = require('../../api/polly/feedback.js');
 const catalogHandler = require('../../api/polly/catalog.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const trainCapture = require('../../api/_polly_train_capture.js');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const leadHandler = require('../../api/polly/lead.js');
 
 interface MockRes {
   statusCode: number;
@@ -326,6 +328,75 @@ describe('polly catalog handler', () => {
     const req = makeReq({ method: 'POST' });
     const res = makeRes();
     await catalogHandler(req, res);
+    expect(res.statusCode).toBe(405);
+  });
+});
+
+describe('polly lead handler', () => {
+  const validLead = {
+    contact: 'someone@example.com',
+    project_type: 'audit',
+    budget: '15k-50k',
+    timeline: '1-3-months',
+    description: 'Need an adversarial audit of our production LLM endpoint.',
+  };
+
+  it('accepts a valid lead and returns next-steps', async () => {
+    const req = makeReq({ body: validLead });
+    const res = makeRes();
+    await leadHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    const body = res.body as { ok: boolean; message: string; next_steps: string[] };
+    expect(body.ok).toBe(true);
+    expect(body.next_steps.length).toBeGreaterThan(0);
+  });
+
+  it('rejects a lead missing the contact field', async () => {
+    const req = makeReq({ body: { ...validLead, contact: '' } });
+    const res = makeRes();
+    await leadHandler(req, res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('rejects a lead with bogus contact format', async () => {
+    const req = makeReq({ body: { ...validLead, contact: 'not-an-email-or-phone' } });
+    const res = makeRes();
+    await leadHandler(req, res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('rejects a lead with too-short description', async () => {
+    const req = makeReq({ body: { ...validLead, description: 'too short' } });
+    const res = makeRes();
+    await leadHandler(req, res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('rejects a lead with unknown project_type', async () => {
+    const req = makeReq({ body: { ...validLead, project_type: 'shouldnt-exist' } });
+    const res = makeRes();
+    await leadHandler(req, res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('accepts a phone-shaped contact', async () => {
+    const req = makeReq({ body: { ...validLead, contact: '+1 (555) 555-5555' } });
+    const res = makeRes();
+    await leadHandler(req, res);
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('handles OPTIONS preflight with 204', async () => {
+    const req = makeReq({ method: 'OPTIONS' });
+    const res = makeRes();
+    await leadHandler(req, res);
+    expect(res.statusCode).toBe(204);
+  });
+
+  it('rejects GET with 405', async () => {
+    const req = makeReq({ method: 'GET' });
+    const res = makeRes();
+    await leadHandler(req, res);
     expect(res.statusCode).toBe(405);
   });
 });
