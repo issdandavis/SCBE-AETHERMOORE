@@ -46,6 +46,7 @@ from src.cli.petri_seed_loader import (
     PetriSeed,
     load_seed_directory,
 )
+from src.cli.cascade_router import AndAllowCascadeRouter, CascadeRouter
 from src.cli.slm_router import (
     ClassificationFailure,
     LatticeRouter,
@@ -176,6 +177,25 @@ def main(argv: List[str] | None = None) -> int:
     parser.add_argument("--seeds-dir", type=Path, default=Path("external/benchmarks/petri-seeds"))
     parser.add_argument("--ollama-host", default="http://127.0.0.1:11434")
     parser.add_argument("--ollama-model", default="scbe-geoseal-coder:q8")
+    parser.add_argument(
+        "--cascade-secondary-model",
+        default="",
+        help=(
+            "if set, --ollama-model becomes the cascade primary and "
+            "this is the secondary classifier. Default mode: and_allow"
+        ),
+    )
+    parser.add_argument(
+        "--cascade-mode",
+        choices=["and_allow", "rescue"],
+        default="and_allow",
+    )
+    parser.add_argument(
+        "--rescue-threshold",
+        type=float,
+        default=0.85,
+        help="rescue cascade only: secondary confidence floor for override",
+    )
     parser.add_argument("--timeout-s", type=float, default=30.0)
     parser.add_argument("--min-confidence", type=float, default=0.5)
     parser.add_argument("--limit", type=int, default=None,
@@ -203,11 +223,32 @@ def main(argv: List[str] | None = None) -> int:
         seeds = seeds[: args.limit]
 
     adapter = OllamaAdapter(host=args.ollama_host, model=args.ollama_model)
-    router = LatticeRouter(
+    primary_router = LatticeRouter(
         adapter,
         min_confidence=args.min_confidence,
         adapter_timeout=args.timeout_s,
     )
+    if args.cascade_secondary_model:
+        secondary_adapter = OllamaAdapter(
+            host=args.ollama_host, model=args.cascade_secondary_model
+        )
+        secondary_router = LatticeRouter(
+            secondary_adapter,
+            min_confidence=args.min_confidence,
+            adapter_timeout=args.timeout_s,
+        )
+        if args.cascade_mode == "and_allow":
+            router = AndAllowCascadeRouter(
+                primary=primary_router, secondary=secondary_router
+            )
+        else:
+            router = CascadeRouter(
+                primary=primary_router,
+                secondary=secondary_router,
+                rescue_threshold=args.rescue_threshold,
+            )
+    else:
+        router = primary_router
 
     outcomes: List[GateOutcome] = []
     for i, seed in enumerate(seeds, 1):
@@ -225,6 +266,13 @@ def main(argv: List[str] | None = None) -> int:
     report = {
         "ollama_model": args.ollama_model,
         "ollama_host": args.ollama_host,
+        "cascade_secondary_model": args.cascade_secondary_model or None,
+        "cascade_mode": (args.cascade_mode if args.cascade_secondary_model else None),
+        "rescue_threshold": (
+            args.rescue_threshold
+            if args.cascade_secondary_model and args.cascade_mode == "rescue"
+            else None
+        ),
         "seeds_dir": str(args.seeds_dir),
         "args_mode": "dummy" if args.dummy_args else "empty",
         "args_payload": args_payload,
