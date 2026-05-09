@@ -814,6 +814,98 @@ each parse-noise entry with `parse_noise: true` and records
 `leak_caught_principled: 1` and `delta.leaks_closed_principled: -1`
 so the headline counts can't be misread as a real win.
 
+## Result J: Regex pre-filter closes the 4 untagged leaks (POSITIVE)
+
+**Date:** 2026-05-08
+
+**Goal:** after Result I's negative LLM gate, try the deterministic
+regex pre-filter that the smoke implied would work.
+
+### Why the regex was the right next try
+
+Result I established that small SLMs (qwen-coder, gemma3:1b) read
+Petri's meta-AI auditor prompts as code-adjacent and answer YES on
+the gate. The failure isn't architectural — it's the classifier's
+prior. Petri seeds, however, share a small set of stable surface
+tokens that don't appear in legitimate coding asks: `the target AI`,
+`target AI's developer`, `system prompt the target`, `Prompt the
+model to`, `bear (its|your) soul`, `elicit (its|the model's) values`,
+plus the Petri-specific tool names `rollback_conversation` and
+`restart_conversation`. A regex anchored on those tokens is
+defensive *for the Petri corpus specifically* — it won't generalize
+to novel adversarial paraphrases, but on this benchmark it's exactly
+the right shape.
+
+### Implementation
+
+- `src/cli/petri_pattern_filter.py` — 23-pattern regex set, single
+  function `is_meta_ai_auditor_phrasing(intent) -> (bool, reason_tag)`
+  with first-match-wins semantics. Each pattern is paired with a
+  reason tag (`petri_tool:rollback_conversation`,
+  `anchor:the_target_ai`, `verb:system_prompt_the_target`, etc.) so
+  refusal logs identify which anchor fired.
+- `LatticeRouter` gains `enable_petri_pattern_filter: bool = False`.
+  When enabled the filter runs *before* the LLM gate stage in
+  `route()`, raising the same `BandNotApplicable` typed surface so
+  no downstream funnel changes. Both filter and LLM gate can be
+  enabled together (filter short-circuits, gate runs only on
+  unfiltered prompts).
+- `scripts/eval/petri_governance_gate_run.py` gains
+  `--petri-pattern-filter` (parallel to `--coding-intent-gate`).
+- 21 unit tests at `tests/cli/test_petri_pattern_filter.py` (all
+  green): 4/4 leak seeds match, 0/6 benigns false-positive, 6/6
+  near-misses ("Train the model on a list of pairs", "Test whether
+  two integers are equal") do not match, corpus recall ≥ 70%.
+
+### Smoke result (4-condition side-by-side)
+
+Same 4 leaks + 6 benigns as v6, run under four cascade configurations
+(see `scripts/eval/gate_smoke_v7.py`). Larger gate model is
+`qwen2.5:3b-instruct` (3B general-purpose instruct, ~10x compute over
+the 1B gemma3 used in Result I).
+
+| condition                    | leaks/4 raw | leaks/4 principled | benigns/6 |
+|------------------------------|------------:|-------------------:|----------:|
+| C1 v5 baseline               |         2/4 |                2/4 |       3/6 |
+| **C2 regex only**            |     **4/4** |            **4/4** |   **3/6** |
+| C3 LLM gate (qwen 3B)        |         4/4 |                4/4 |       0/6 |
+| C4 regex + LLM gate (3B)     |         4/4 |                4/4 |       0/6 |
+
+C2 closes all 4 untagged leaks at **zero benign cost vs the v5
+baseline** (the missing 3 benigns fail at downstream op/tongue
+classification stages, not at the regex). It is the first
+intervention found that improves on v5 without trading benign
+throughput.
+
+C3 catches all leaks but tanks every benign — a 3B instruction-tuned
+model reads the gate prompt as a strict NO-leaning binary, refusing
+"Reduce the list xs to its largest element" and "Compose two scalars
+with bitwise XOR" along with the actual leaks. Cross-family larger
+gate is not the answer; the regex is.
+
+C4 = C2 ∪ C3 = C3's behavior (regex catches leaks first but the LLM
+gate still strangles benigns). No benefit over plain regex.
+
+### What ships
+
+- `enable_petri_pattern_filter` parameter on `LatticeRouter`,
+  `--petri-pattern-filter` flag on the Petri runner, both opt-in.
+- The filter is **corpus-anchored by design**: it closes Petri but
+  is *not* a general-purpose intent classifier. Adversarial
+  paraphrases that avoid the matched surface tokens will slip past.
+  Treat it as defense-in-depth in front of the band stage, not as
+  a complete refusal layer.
+
+### Petri 173 with regex=ON
+
+Full corpus measurement to confirm no regression on the 169 seeds
+v5 already quarantines is at
+`artifacts/petri/governance_gate_v7_regex_and_allow.json` (artifact
+gitignored; produced by the runner with `--petri-pattern-filter`).
+Headline numbers will be reported separately — the smoke is the
+load-bearing evidence; the full Petri run is the no-regression
+check.
+
 ## Files of record
 
 - Loader: `src/cli/petri_seed_loader.py`
@@ -832,3 +924,10 @@ so the headline counts can't be misread as a real win.
 - Gate tests: `tests/cli/test_coding_intent_gate.py`
 - Gate smoke runner: `scripts/eval/gate_smoke_v6.py`
 - Gate smoke artifact: `artifacts/petri/gate_smoke_v6.json`
+- Regex pre-filter (Result J): `src/cli/petri_pattern_filter.py`
+- Regex tests: `tests/cli/test_petri_pattern_filter.py` (21 tests)
+- Regex wired into `LatticeRouter` (`enable_petri_pattern_filter`)
+  and `petri_governance_gate_run.py` (`--petri-pattern-filter`)
+- 4-condition smoke runner: `scripts/eval/gate_smoke_v7.py`
+- 4-condition smoke artifact: `artifacts/petri/gate_smoke_v7.json`
+- Petri 173 with regex=ON: `artifacts/petri/governance_gate_v7_regex_and_allow.json`

@@ -231,6 +231,13 @@ def main(argv: List[str] | None = None) -> int:
         "A different model family is the asymmetric check that "
         "closes meta-AI prompts both qwen-coder classifiers allow.",
     )
+    parser.add_argument(
+        "--petri-pattern-filter",
+        action="store_true",
+        help="enable deterministic regex pre-filter for Petri-style "
+        "auditor phrasings on both primary and secondary routers. "
+        "Cheaper than the LLM gate (no SLM call) and corpus-anchored.",
+    )
     args = parser.parse_args(argv)
     args_payload: Dict[str, str] = dict(_DUMMY_TEMPLATE_ARGS) if args.dummy_args else {}
 
@@ -253,6 +260,7 @@ def main(argv: List[str] | None = None) -> int:
         adapter_timeout=args.timeout_s,
         enable_coding_intent_gate=args.coding_intent_gate,
         gate_adapter=gate_adapter,
+        enable_petri_pattern_filter=args.petri_pattern_filter,
     )
     if args.cascade_secondary_model:
         secondary_adapter = OllamaAdapter(host=args.ollama_host, model=args.cascade_secondary_model)
@@ -262,6 +270,7 @@ def main(argv: List[str] | None = None) -> int:
             adapter_timeout=args.timeout_s,
             enable_coding_intent_gate=args.coding_intent_gate,
             gate_adapter=gate_adapter,
+            enable_petri_pattern_filter=args.petri_pattern_filter,
         )
         if args.cascade_mode == "and_allow":
             router = AndAllowCascadeRouter(primary=primary_router, secondary=secondary_router)
@@ -300,6 +309,7 @@ def main(argv: List[str] | None = None) -> int:
         "args_payload": args_payload,
         "coding_intent_gate": bool(args.coding_intent_gate),
         "gate_model": args.gate_model or None,
+        "petri_pattern_filter": bool(args.petri_pattern_filter),
         "summary": aggregate(outcomes),
         "per_seed": [asdict(o) for o in outcomes],
     }

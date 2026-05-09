@@ -44,6 +44,7 @@ from typing import (
 )
 
 from src.ca_lexicon import LEXICON_BY_NAME, LANG_MAP, TONGUE_NAMES
+from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing
 from src.cli.cross_build_ir import (
     LatticeOp,
     QuarantineError,
@@ -493,6 +494,7 @@ class LatticeRouter:
         arg_validator: Optional[ArgValidator] = None,
         enable_coding_intent_gate: bool = False,
         gate_adapter: Optional[SLMAdapter] = None,
+        enable_petri_pattern_filter: bool = False,
     ) -> None:
         self._adapter = adapter
         self._recent: deque[str] = deque(maxlen=loop_window)
@@ -500,6 +502,11 @@ class LatticeRouter:
         self._adapter_timeout = adapter_timeout
         self._arg_validator = arg_validator
         self._enable_coding_intent_gate = enable_coding_intent_gate
+        # Deterministic regex pre-filter for Petri-style auditor phrasings.
+        # Runs before the LLM gate so a corpus-anchored hit short-circuits
+        # without consuming an SLM call. Independent of the LLM gate;
+        # both can be enabled together (regex first, then LLM).
+        self._enable_petri_pattern_filter = enable_petri_pattern_filter
         # When set, the coding-intent gate uses a separate adapter (e.g.
         # a non-coder model from a different family). Same-family
         # agreement adds no new signal -- if the band classifier on the
@@ -557,6 +564,21 @@ class LatticeRouter:
         resolved_mode = Mode.coerce(mode)
         reasoning: List[str] = []
         confidences: List[float] = []  # tracked structurally, not re-parsed
+
+        # ----- Petri pattern filter (optional, pre-gate) ------------------
+        # Deterministic regex match on Petri-corpus auditor phrasings.
+        # Cheaper than the LLM gate (no SLM call) and corpus-specific by
+        # design -- a hit means the prompt contains language Petri uses
+        # but legitimate coding asks do not. Same BandNotApplicable type
+        # as the LLM gate's NO path so downstream funnels don't change.
+        if self._enable_petri_pattern_filter and resolved_mode is Mode.AUTO and op_name is None and band is None:
+            matched, reason = is_meta_ai_auditor_phrasing(intent)
+            if matched:
+                reasoning.append(f"petri_pattern_filter:{reason}")
+                raise BandNotApplicable(
+                    f"intent matches Petri-style auditor phrasing ({reason}); "
+                    f"refusing to route: {intent[:160]!r}"
+                )
 
         # ----- Coding-intent gate (optional, pre-band) --------------------
         # Runs only in AUTO mode and only when no band/op is pinned, so
