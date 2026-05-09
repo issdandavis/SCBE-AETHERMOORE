@@ -85,6 +85,7 @@ def main() -> int:
     if not status.get("quantum_resistant"):
         _die(f"SCBE PQC governance status is not quantum resistant: {status}")
 
+    print("SCBE_LIBOQS_PASS=1")
     print("native-liboqs-smoke: PASS")
     print(f"oqs_module={getattr(oqs, '__file__', 'unknown')}")
     print(f"oqs_version={getattr(oqs, '__version__', 'unknown')}")
