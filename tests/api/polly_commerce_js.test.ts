@@ -331,16 +331,29 @@ describe('polly catalog handler', () => {
 });
 
 describe('polly training capture (repository_dispatch)', () => {
-  it('defaults to disabled when POLLY_TRAIN_DISPATCH_ENABLED is unset (privacy-by-default)', async () => {
-    const originalDisable = process.env.POLLY_TRAIN_DISPATCH_ENABLED;
+  it('defaults to enabled when POLLY_TRAIN_DISPATCH_ENABLED is unset (private destination is wired)', async () => {
+    const original = {
+      enabled: process.env.POLLY_TRAIN_DISPATCH_ENABLED,
+      gh: process.env.GITHUB_TOKEN,
+      gh2: process.env.GH_TOKEN,
+      polly: process.env.POLLY_TRAIN_GITHUB_TOKEN,
+    };
     delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.GH_TOKEN;
+    delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
     try {
+      // With env unset and no token, we should hit no_token (proves the
+      // disabled gate did NOT short-circuit — i.e. enabled-by-default).
       const result = await trainCapture.dispatchTrainingTurn({ ts: 1 });
       expect(result.ok).toBe(false);
-      expect(result.reason).toBe('disabled');
+      expect(result.reason).toBe('no_token');
     } finally {
-      if (originalDisable === undefined) delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
-      else process.env.POLLY_TRAIN_DISPATCH_ENABLED = originalDisable;
+      if (original.enabled === undefined) delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
+      else process.env.POLLY_TRAIN_DISPATCH_ENABLED = original.enabled;
+      if (original.gh) process.env.GITHUB_TOKEN = original.gh;
+      if (original.gh2) process.env.GH_TOKEN = original.gh2;
+      if (original.polly) process.env.POLLY_TRAIN_GITHUB_TOKEN = original.polly;
     }
   });
 
@@ -354,30 +367,6 @@ describe('polly training capture (repository_dispatch)', () => {
     } finally {
       if (originalDisable === undefined) delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
       else process.env.POLLY_TRAIN_DISPATCH_ENABLED = originalDisable;
-    }
-  });
-
-  it('returns no_token when enabled but GITHUB_TOKEN absent', async () => {
-    const original = {
-      enabled: process.env.POLLY_TRAIN_DISPATCH_ENABLED,
-      gh: process.env.GITHUB_TOKEN,
-      gh2: process.env.GH_TOKEN,
-      polly: process.env.POLLY_TRAIN_GITHUB_TOKEN,
-    };
-    process.env.POLLY_TRAIN_DISPATCH_ENABLED = 'true';
-    delete process.env.GITHUB_TOKEN;
-    delete process.env.GH_TOKEN;
-    delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
-    try {
-      const result = await trainCapture.dispatchTrainingTurn({ ts: 1, user: 'x', assistant: 'y' });
-      expect(result.ok).toBe(false);
-      expect(result.reason).toBe('no_token');
-    } finally {
-      if (original.enabled === undefined) delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
-      else process.env.POLLY_TRAIN_DISPATCH_ENABLED = original.enabled;
-      if (original.gh) process.env.GITHUB_TOKEN = original.gh;
-      if (original.gh2) process.env.GH_TOKEN = original.gh2;
-      if (original.polly) process.env.POLLY_TRAIN_GITHUB_TOKEN = original.polly;
     }
   });
 
