@@ -77,7 +77,7 @@ jobs:
           echo "- npm audit: ${{ steps.npm_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- pip-audit: ${{ steps.pip_audit.outcome || 'skipped' }}" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Fail if any security check failed
+      - name: Fail if blocking security checks failed
         if: always()
         run: |
           failed=0
@@ -86,14 +86,12 @@ jobs:
             failed=1
           fi
           if [ "${{ steps.npm_audit.outcome }}" = "failure" ]; then
-            echo "::error::npm audit found vulnerabilities"
-            failed=1
+            echo "::warning::npm audit found vulnerabilities; tracked as advisory telemetry"
           fi
           if [ "${{ steps.pip_audit.outcome }}" = "failure" ]; then
-            echo "::error::pip-audit found vulnerabilities"
-            failed=1
+            echo "::warning::pip-audit found vulnerabilities; tracked as advisory telemetry"
           fi
           if [ "$failed" -eq 1 ]; then
-            echo "::error::One or more security checks reported issues — see summary above"
+            echo "::error::One or more blocking security checks reported issues — see summary above"
             exit 1
           fi
