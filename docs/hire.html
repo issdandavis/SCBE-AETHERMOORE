@@ -589,6 +589,27 @@
           reply. Submissions land in a private dataset only Issac can see.
         </p>
         <form id="leadForm" style="display: grid; gap: 14px; max-width: 640px">
+          <!--
+            Honeypot: hidden from real users via off-screen positioning + tab
+            removal + autocomplete-off. Spambots scraping the form will fill
+            it; the server short-circuits any submission with this field non-
+            empty. Don't relabel "website" to something humans understand —
+            the field's job is to look interesting to dumb scrapers.
+          -->
+          <div
+            style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden"
+            aria-hidden="true"
+          >
+            <label
+              >Website (leave blank)
+              <input
+                id="leadWebsite"
+                name="website"
+                type="text"
+                tabindex="-1"
+                autocomplete="off"
+              /></label>
+          </div>
           <label style="display: grid; gap: 6px; font-size: 13px; color: var(--dim)">
             <span>Email or phone *</span>
             <input
@@ -765,6 +786,7 @@
             timeline: document.getElementById('leadTimeline').value,
             description: document.getElementById('leadDescription').value,
             source: 'aethermoore.com/hire',
+            website: document.getElementById('leadWebsite').value,
           };
           try {
             var response = await fetch(apiBase.replace(/\/$/, '') + '/v1/polly/lead', {
