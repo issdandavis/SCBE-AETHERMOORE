@@ -1,0 +1,48 @@
+name: Polly Training Capture
+
+on:
+  repository_dispatch:
+    types: [polly_training_turn]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: polly-training-capture
+  cancel-in-progress: false
+
+jobs:
+  append-jsonl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Append consented turn to live corpus
+        env:
+          PAYLOAD: ${{ toJSON(github.event.client_payload.record) }}
+        run: |
+          set -euo pipefail
+          mkdir -p training-data/polly-chat-live
+          shard="training-data/polly-chat-live/$(date -u +%Y-%m).jsonl"
+          # Validate JSON before writing.
+          echo "$PAYLOAD" | python3 -c "import json,sys; json.loads(sys.stdin.read())"
+          # Compact to one line and append.
+          echo "$PAYLOAD" | python3 -c "import json,sys; print(json.dumps(json.loads(sys.stdin.read()), ensure_ascii=False))" >> "$shard"
+          echo "appended to $shard"
+
+      - name: Commit if anything changed
+        run: |
+          set -euo pipefail
+          if [[ -z "$(git status --porcelain training-data/polly-chat-live)" ]]; then
+            echo "no changes to commit"
+            exit 0
+          fi
+          git config user.name "polly-train-capture[bot]"
+          git config user.email "polly-train-capture@users.noreply.github.com"
+          git add training-data/polly-chat-live
+          git commit -m "chore(polly): append consented chat turn to live corpus"
+          git push
