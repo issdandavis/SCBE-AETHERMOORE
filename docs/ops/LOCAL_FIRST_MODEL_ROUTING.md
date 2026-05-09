@@ -19,7 +19,8 @@ AGENT_CHAT_PROVIDER_ORDER=ollama,huggingface,offline
 AGENT_OLLAMA_URL=http://127.0.0.1:11434
 AGENT_OLLAMA_MODEL=llama3.2
 HF_TOKEN=...
-AGENT_HF_MODEL=Qwen/Qwen2.5-72B-Instruct
+AGENT_HF_MODEL=Qwen/Qwen2.5-7B-Instruct
+HF_CHAT_URL=https://router.huggingface.co/v1/chat/completions
 AGENT_CHAT_TIMEOUT_MS=25000
 ```
 

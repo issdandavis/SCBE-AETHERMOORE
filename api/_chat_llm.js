@@ -6,7 +6,8 @@
 // dependency tree, but cross-function requires like `../agent/chat`
 // from `api/polly/chat.js` are not guaranteed to be hoisted).
 
-const DEFAULT_HF_MODEL = 'Qwen/Qwen2.5-72B-Instruct';
+const DEFAULT_HF_MODEL = 'Qwen/Qwen2.5-7B-Instruct';
+const DEFAULT_HF_CHAT_URL = 'https://router.huggingface.co/v1/chat/completions';
 const DEFAULT_OLLAMA_MODEL = 'llama3.2';
 const DEFAULT_MAX_TOKENS = 512;
 const DEFAULT_TIMEOUT_MS = 25000;
@@ -39,7 +40,7 @@ function chatConfig() {
       '',
     hfUrl:
       process.env.HF_CHAT_URL ||
-      `https://router.huggingface.co/hf-inference/models/${encodeURIComponent(hfModel)}/v1/chat/completions`,
+      DEFAULT_HF_CHAT_URL,
     ollamaUrl: cleanBaseUrl(process.env.OLLAMA_URL || process.env.AGENT_OLLAMA_URL || ''),
     ollamaModel,
     providerOrder: String(process.env.AGENT_CHAT_PROVIDER_ORDER || 'ollama,huggingface,offline')
