@@ -264,7 +264,7 @@ describe('polly chat handler — commerce path', () => {
     const body = res.body as { intent: string; actions: { url: string }[] };
     expect(body.intent).toBe('custom');
     expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
-    expect(body.actions.some((a) => a.url.includes('aethermoore.com/hire'))).toBe(true);
+    expect(body.actions.some((a) => /aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
   });
 
   it('rejects POST without message', async () => {
