@@ -7,6 +7,8 @@ const {
   renderCustomReply,
   renderMembershipReply,
   renderResearchReply,
+  HIRE_EMAIL,
+  CONSULTING_LANDING_URL,
 } = require('./commerce');
 const llm = require('../_chat_llm');
 const trainCapture = require('../_polly_train_capture');
@@ -121,6 +123,33 @@ module.exports = async function handler(req, res) {
     };
   }
 
+  // If the LLM router returns the offline placeholder, replace the dead-end
+  // message with a useful four-bucket router so the user always has a next
+  // step. Real LLM responses (provider in ollama|huggingface) pass through.
+  if (!llm || llm.provider === 'offline' || llm.provider === 'error') {
+    const fallback = renderOfflineRouter(message);
+    captureIfConsented({
+      req: body,
+      message,
+      reply: fallback.text,
+      intent: intent.name,
+      sessionId,
+      pageContext,
+      provider: 'offline-router',
+    });
+    return sendJson(res, 200, {
+      ok: true,
+      text: fallback.text,
+      provider: 'offline-router',
+      model: 'fallback-router-v1',
+      attempts: (llm && llm.attempts) || [],
+      intent: intent.name,
+      confidence: intent.confidence,
+      actions: fallback.actions,
+      cost: 'zero-deterministic',
+    });
+  }
+
   captureIfConsented({
     req: body,
     message,
@@ -144,10 +173,39 @@ module.exports = async function handler(req, res) {
   });
 };
 
+function renderOfflineRouter(message) {
+  const trimmed = String(message || '').slice(0, 300);
+  const subject = 'Polly conversation — direct follow-up';
+  const body =
+    `Hi Issac,\n\n` +
+    `I asked Polly: "${trimmed}"\n\n` +
+    `It didn't match a stock answer — could you reply directly? My context:\n\n`;
+  const mailto = `mailto:${HIRE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const text =
+    "I don't have a stock answer for that one — but here are the four ways " +
+    'I can actually help right now:\n\n' +
+    '- **Buy** a $29 toolkit (governance or training vault)\n' +
+    '- **Custom** scope: audit, advisory, or governance overlay\n' +
+    '- **Research**: ask about the harmonic wall, the 14-layer pipeline, ' +
+    'Sacred Tongues, axiom mesh, Petri composition, or DARPA work\n' +
+    '- **Stay close**: tip the work or watch the GitHub repo\n\n' +
+    'Or email me directly with your question — same-day reply where I can.';
+  const actions = [
+    { label: 'See products', url: CONSULTING_LANDING_URL },
+    { label: 'Email Issac with this question', url: mailto },
+    {
+      label: 'Browse the repo',
+      url: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
+    },
+  ];
+  return { text, actions };
+}
+
 module.exports._private = {
   COMMERCE_INTENTS,
   COMMERCE_CONFIDENCE_FLOOR,
   llmFallback,
   logTrainingTurn,
   captureIfConsented,
+  renderOfflineRouter,
 };
