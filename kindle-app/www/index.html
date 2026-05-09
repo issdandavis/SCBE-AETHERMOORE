@@ -48,17 +48,20 @@
       }
 
       .status-grid,
+      .system-grid,
       .action-grid,
       .provider-grid {
         display: grid;
         gap: 10px;
       }
 
-      .status-grid {
+      .status-grid,
+      .system-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .status-tile {
+      .status-tile,
+      .system-cell {
         min-height: 86px;
         padding: 14px;
         border: 1px solid var(--border);
@@ -66,17 +69,27 @@
         background: rgba(255, 255, 255, 0.045);
       }
 
-      .status-tile span {
+      .status-tile span,
+      .system-cell span {
         display: block;
         color: var(--muted);
         font-size: 12px;
         text-transform: uppercase;
       }
 
-      .status-tile strong {
+      .status-tile strong,
+      .system-cell strong {
         display: block;
         margin-top: 8px;
         font-size: 16px;
+      }
+
+      .system-grid {
+        margin-top: 10px;
+      }
+
+      .system-cell {
+        min-height: 76px;
       }
 
       .action-grid {
@@ -134,6 +147,7 @@
 
       @media (max-width: 420px) {
         .status-grid,
+        .system-grid,
         .action-grid {
           grid-template-columns: 1fr;
         }
@@ -143,27 +157,27 @@
         }
       }
     </style>
-    <script>
-      // Capacitor bridge — detect native vs web
-      window.isKindleApp = typeof window.Capacitor !== 'undefined';
+  <script>
+  // Capacitor bridge — detect native vs web
+  window.isKindleApp = typeof window.Capacitor !== 'undefined';
 
-      // Handle offline state
-      window.addEventListener('offline', () => {
-        const dot = document.getElementById('status-dot');
-        const txt = document.getElementById('status-text');
-        if (dot) dot.className = 'dot off';
-        if (txt) txt.textContent = 'Offline';
-      });
-      window.addEventListener('online', () => {
-        const dot = document.getElementById('status-dot');
-        const txt = document.getElementById('status-text');
-        if (dot) dot.className = 'dot on';
-        if (txt) txt.textContent = 'Online';
-        // Re-check health
-        if (typeof checkHealth === 'function') checkHealth();
-      });
-    </script>
-  </head>
+  // Handle offline state
+  window.addEventListener('offline', () => {
+    const dot = document.getElementById('status-dot');
+    const txt = document.getElementById('status-text');
+    if (dot) dot.className = 'dot off';
+    if (txt) txt.textContent = 'Offline';
+  });
+  window.addEventListener('online', () => {
+    const dot = document.getElementById('status-dot');
+    const txt = document.getElementById('status-text');
+    if (dot) dot.className = 'dot on';
+    if (txt) txt.textContent = 'Online';
+    // Re-check health
+    if (typeof checkHealth === 'function') checkHealth();
+  });
+</script>
+</head>
   <body>
     <main class="phone-shell bus-shell">
       <section class="hero">
@@ -183,6 +197,17 @@
         <div class="status-tile">
           <span>Bridge</span>
           <strong id="bridgeLabel">Checking</strong>
+        </div>
+      </section>
+
+      <section class="system-grid" aria-label="System contract" id="systemGrid">
+        <div class="system-cell">
+          <span>AI route</span>
+          <strong>Loading</strong>
+        </div>
+        <div class="system-cell">
+          <span>Offer lane</span>
+          <strong>Loading</strong>
         </div>
       </section>
 
@@ -216,6 +241,7 @@
     <script>
       const runtimeLabel = document.getElementById('runtimeLabel');
       const bridgeLabel = document.getElementById('bridgeLabel');
+      const systemGrid = document.getElementById('systemGrid');
       const storageProviders = document.getElementById('storageProviders');
       const base = window.PhoneShell.bridgeBase();
 
@@ -223,6 +249,33 @@
       bridgeLabel.textContent = base;
 
       async function loadStatus() {
+        try {
+          const system = await fetch(`${base}/api/agent/system`, { cache: 'no-store' }).then(
+            window.PhoneShell.readJson
+          );
+          const chat = system.backend?.health?.chat || {};
+          const offers = system.monetization?.live_offers || [];
+          const providers = system.bus?.storage_providers || [];
+          bridgeLabel.textContent = chat.huggingface_configured ? 'AI online' : 'offline fallback';
+          systemGrid.innerHTML = [
+            `<div class="system-cell"><span>AI route</span><strong>${window.PhoneShell.escapeHtml(chat.hf_model || 'local fallback')}</strong></div>`,
+            `<div class="system-cell"><span>Offer lane</span><strong>${window.PhoneShell.escapeHtml(String(offers.length))} live</strong></div>`,
+          ].join('');
+          storageProviders.innerHTML = providers.length
+            ? providers
+                .slice(0, 6)
+                .map(
+                  (provider) =>
+                    `<div class="provider"><span>${window.PhoneShell.escapeHtml(provider.label || provider.id)}</span><small>${window.PhoneShell.escapeHtml(provider.cost || 'user owned')}</small></div>`
+                )
+                .join('')
+            : '<div class="provider"><span>Local export</span><small>offline ready</small></div>';
+          return;
+        } catch {
+          systemGrid.innerHTML =
+            '<div class="system-cell"><span>AI route</span><strong>fallback</strong></div><div class="system-cell"><span>Offer lane</span><strong>local</strong></div>';
+        }
+
         try {
           const health = await fetch(`${base}/api/agent/health`, { cache: 'no-store' }).then(
             window.PhoneShell.readJson

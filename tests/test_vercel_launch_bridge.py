@@ -80,8 +80,18 @@ def test_supporter_page_uses_direct_stripe_checkout_not_broken_api_bridge() -> N
 def test_vercel_bridge_exposes_remote_offer_and_app_config_endpoints() -> None:
     offers_source = (REPO_ROOT / "api" / "agent" / "offers.js").read_text(encoding="utf-8")
     app_config_source = (REPO_ROOT / "api" / "agent" / "app-config.js").read_text(encoding="utf-8")
+    system_source = (REPO_ROOT / "api" / "agent" / "system.js").read_text(encoding="utf-8")
 
     assert "docs/offers.json" in offers_source
     assert "s-maxage=300" in offers_source
     assert "docs/app-config.json" in app_config_source
     assert "s-maxage=300" in app_config_source
+    assert "aethermoor.agent.system_contract.v1" in system_source
+    assert "/api/agent/chat" in system_source
+    assert "workspace_formation" in system_source
+
+
+def test_public_app_config_exposes_unified_system_contract() -> None:
+    config = json.loads((REPO_ROOT / "docs" / "app-config.json").read_text(encoding="utf-8"))
+
+    assert config["endpoints"]["agent_bridge_system"].endswith("/api/agent/system")
