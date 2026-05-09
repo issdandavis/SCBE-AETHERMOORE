@@ -70,6 +70,53 @@ def test_public_checkout_creates_session(monkeypatch):
     assert captured["metadata"]["source"] == "landing-page"
 
 
+def test_public_checkout_supporter_tier(monkeypatch):
+    captured = {}
+
+    def fake_create_checkout_session(
+        tier,
+        price_id,
+        customer_email=None,
+        customer_id=None,
+        success_url=None,
+        cancel_url=None,
+        metadata=None,
+    ):
+        captured["tier"] = tier
+        captured["price_id"] = price_id
+        captured["customer_email"] = customer_email
+        captured["metadata"] = metadata
+        return {
+            "session_id": "cs_test_supporter",
+            "checkout_url": "https://checkout.stripe.test/session/cs_test_supporter",
+            "tier": tier,
+        }
+
+    monkeypatch.setattr(
+        routes.StripeClient,
+        "create_checkout_session",
+        staticmethod(fake_create_checkout_session),
+    )
+    client = _client()
+
+    response = client.post(
+        "/v1/billing/public-checkout",
+        json={
+            "email": "supporter@example.com",
+            "tier": "supporter",
+            "source": "supporter-page",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["tier"] == "SUPPORTER"
+    assert captured["tier"] == "SUPPORTER"
+    assert captured["price_id"] == "price_supporter_monthly"
+    assert captured["customer_email"] == "supporter@example.com"
+    assert captured["metadata"]["source"] == "supporter-page"
+
+
 def test_public_checkout_rejects_invalid_tier():
     client = _client()
     response = client.post(

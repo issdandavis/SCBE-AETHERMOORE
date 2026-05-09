@@ -7,7 +7,6 @@ Uses SQLAlchemy with SQLite for MVP (easily upgradeable to PostgreSQL).
 import os
 import uuid
 from datetime import datetime
-from typing import Optional
 from contextlib import contextmanager
 
 from sqlalchemy import (
@@ -78,7 +77,7 @@ class Subscription(Base):
     stripe_price_id = Column(String(255), nullable=True)
     tier = Column(
         String(20),
-        CheckConstraint("tier IN ('FREE', 'STARTER', 'PRO', 'ENTERPRISE')"),
+        CheckConstraint("tier IN ('FREE', 'SUPPORTER', 'STARTER', 'PRO', 'ENTERPRISE')"),
         nullable=False,
         default="FREE",
     )

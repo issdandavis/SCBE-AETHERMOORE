@@ -9,6 +9,7 @@ from typing import Optional
 
 # Stripe Price IDs (set in environment or Stripe Dashboard)
 STRIPE_PRICE_STARTER = os.getenv("STRIPE_PRICE_STARTER", "price_starter_monthly")
+STRIPE_PRICE_SUPPORTER = os.getenv("STRIPE_PRICE_SUPPORTER", "price_supporter_monthly")
 STRIPE_PRICE_PRO = os.getenv("STRIPE_PRICE_PRO", "price_pro_monthly")
 STRIPE_PRICE_ENTERPRISE = os.getenv("STRIPE_PRICE_ENTERPRISE", "price_enterprise_monthly")
 
@@ -46,6 +47,23 @@ PRICING_TIERS = {
         ],
         "max_api_keys": 5,
         "audit_retention_days": 30,
+    },
+    "SUPPORTER": {
+        "stripe_price_id": STRIPE_PRICE_SUPPORTER,
+        "monthly_price_cents": 2000,  # $20/month
+        "rate_limits": {
+            "per_minute": 25,
+            "daily": 2500,
+            "monthly": 25_000,
+        },
+        "features": [
+            "basic_governance",
+            "audit_logs_14_days",
+            "monthly_operator_notes",
+            "community_support",
+        ],
+        "max_api_keys": 1,
+        "audit_retention_days": 14,
     },
     "PRO": {
         "stripe_price_id": STRIPE_PRICE_PRO,
