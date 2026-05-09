@@ -6,7 +6,10 @@ const fs = require('fs');
 const path = require('path');
 
 const WWW = path.resolve(__dirname, '../www');
+const APP_VARIANT = (process.env.AETHERCODE_APP_VARIANT || '').toLowerCase();
+const BUS_VARIANTS = new Set(['aethermoor-bus', 'aethermoorbus', 'bus']);
 const SOURCE_CANDIDATES = [
+  ...(BUS_VARIANTS.has(APP_VARIANT) ? [path.resolve(__dirname, '../bus-www')] : []),
   path.resolve(__dirname, '../../public'),
   path.resolve(__dirname, '../../src/aethercode'),
   WWW,
@@ -69,10 +72,7 @@ function patchAppHtml(content) {
   );
 
   // Fix manifest path
-  content = content.replace(
-    'href="/manifest.json"',
-    'href="./manifest.json"'
-  );
+  content = content.replace('href="/manifest.json"', 'href="./manifest.json"');
 
   return content;
 }
@@ -83,15 +83,15 @@ function patchManifest(content) {
   manifest.start_url = './index.html';
   manifest.scope = './';
   if (manifest.icons) {
-    manifest.icons = manifest.icons.map(icon => ({
+    manifest.icons = manifest.icons.map((icon) => ({
       ...icon,
-      src: icon.src.replace(/^\//, './')
+      src: icon.src.replace(/^\//, './'),
     }));
   }
   if (manifest.shortcuts) {
-    manifest.shortcuts = manifest.shortcuts.map(s => ({
+    manifest.shortcuts = manifest.shortcuts.map((s) => ({
       ...s,
-      url: s.url.replace(/^\//, './')
+      url: s.url.replace(/^\//, './'),
     }));
   }
   return JSON.stringify(manifest, null, 2);
@@ -99,10 +99,7 @@ function patchManifest(content) {
 
 function patchServiceWorker(content) {
   // Fix cache paths for Capacitor (no leading slashes)
-  content = content.replace(
-    /["']\/([^"']+)["']/g,
-    (match, p) => `"./${p}"`
-  );
+  content = content.replace(/["']\/([^"']+)["']/g, (match, p) => `"./${p}"`);
   content = content.replace('"/"', '"./index.html"');
   return content;
 }
@@ -119,9 +116,7 @@ function resolveSourceRoot() {
       return root;
     }
   }
-  throw new Error(
-    `No valid PWA source root found. Checked: ${SOURCE_CANDIDATES.join(', ')}`
-  );
+  throw new Error(`No valid PWA source root found. Checked: ${SOURCE_CANDIDATES.join(', ')}`);
 }
 
 // ---- Main ----
@@ -158,12 +153,18 @@ console.log('  patched: sw.js (paths → relative)');
 
 // 4. Copy arena.html if it exists
 const arenaPath = path.join(SRC, 'arena.html');
-if (fs.existsSync(arenaPath) && path.resolve(arenaPath) !== path.resolve(path.join(WWW, 'arena.html'))) {
+if (
+  fs.existsSync(arenaPath) &&
+  path.resolve(arenaPath) !== path.resolve(path.join(WWW, 'arena.html'))
+) {
   copyFile(arenaPath, path.join(WWW, 'arena.html'));
 }
 
 // 5. Copy icons
-const iconDir = path.join(SRC, 'static', 'icons');
+const fallbackIconDir = path.resolve(__dirname, '../../public/static/icons');
+const iconDir = fs.existsSync(path.join(SRC, 'static', 'icons'))
+  ? path.join(SRC, 'static', 'icons')
+  : fallbackIconDir;
 if (fs.existsSync(iconDir)) {
   for (const file of fs.readdirSync(iconDir)) {
     const sourceIcon = path.join(iconDir, file);
@@ -176,7 +177,9 @@ if (fs.existsSync(iconDir)) {
   console.log('  warn: no icons found at src/aethercode/static/icons/');
   console.log('  generating placeholder icons...');
   // Generate minimal SVG icons as placeholders
-  const svgIcon = (size) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+  const svgIcon = (
+    size
+  ) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
   <rect width="${size}" height="${size}" rx="${size * 0.17}" fill="#070b12"/>
   <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#17c6cf" font-family="sans-serif" font-size="${size * 0.45}" font-weight="800">A</text>
 </svg>`;

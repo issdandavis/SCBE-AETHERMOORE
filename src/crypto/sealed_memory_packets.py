@@ -23,9 +23,7 @@ Secret = Union[str, BytesLike]
 
 
 def _canonical_json_bytes(value: Any) -> bytes:
-    return json.dumps(
-        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    ).encode("utf-8")
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
 
 
 def _sha256_hex(data: bytes) -> str:
@@ -165,10 +163,7 @@ def unseal_memory_packet(
         raise ValueError("unsupported sealed memory packet kind")
     if packet_fields["tongue"] not in SACRED_TONGUE_TOKENIZER.tongues:
         raise ValueError(f"unknown Sacred Tongue code: {packet_fields['tongue']}")
-    if (
-        not isinstance(packet_fields["token_count"], int)
-        or packet_fields["token_count"] < 0
-    ):
+    if not isinstance(packet_fields["token_count"], int) or packet_fields["token_count"] < 0:
         raise ValueError("invalid token_count")
 
     aad = _build_aad(packet_fields, normalized_metadata)
@@ -191,18 +186,14 @@ def unseal_memory_packet(
     if token_document.get("tongue") != packet_fields["tongue"]:
         raise ValueError("sealed token tongue does not match packet tongue")
     tokens = token_document.get("tokens")
-    if not isinstance(tokens, list) or not all(
-        isinstance(token, str) for token in tokens
-    ):
+    if not isinstance(tokens, list) or not all(isinstance(token, str) for token in tokens):
         raise ValueError("sealed token document has invalid token list")
     if len(tokens) != packet_fields["token_count"]:
         raise ValueError("sealed token count mismatch")
     if _token_hash(tokens) != packet_fields["token_sha256"]:
         raise ValueError("sealed token hash mismatch")
 
-    payload_bytes = SACRED_TONGUE_TOKENIZER.decode_tokens(
-        packet_fields["tongue"], tokens
-    )
+    payload_bytes = SACRED_TONGUE_TOKENIZER.decode_tokens(packet_fields["tongue"], tokens)
     if _sha256_hex(payload_bytes) != packet_fields["source_sha256"]:
         raise ValueError("sealed payload hash mismatch")
 
@@ -224,9 +215,7 @@ def unseal_memory_packet(
     }
 
 
-def verify_memory_packet(
-    secret: Secret, packet: Mapping[str, Any], *, enable_pqc: bool = False
-) -> bool:
+def verify_memory_packet(secret: Secret, packet: Mapping[str, Any], *, enable_pqc: bool = False) -> bool:
     """Return True only if the sealed packet opens and all hashes verify."""
 
     try:

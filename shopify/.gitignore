@@ -1,0 +1,3 @@
+# Private storefront checkout. Keep it local or clone it during Shopify ops;
+# do not make public CI/Dependabot clone the private repo as a submodule.
+/aethermoore-creator-os/

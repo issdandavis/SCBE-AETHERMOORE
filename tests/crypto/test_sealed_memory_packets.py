@@ -36,9 +36,7 @@ def test_sealed_memory_packet_roundtrips_exact_bytes():
 
 
 def test_sealed_memory_packet_roundtrips_text():
-    packet = seal_memory_packet(
-        "test-secret", "Seal this instruction exactly.", tongue="dr"
-    )
+    packet = seal_memory_packet("test-secret", "Seal this instruction exactly.", tongue="dr")
     opened = unseal_memory_packet("test-secret", packet)
 
     assert opened["text"] == "Seal this instruction exactly."

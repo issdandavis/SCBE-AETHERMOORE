@@ -11,9 +11,11 @@ from __future__ import annotations
 import os
 import shlex
 import sys
+import hashlib
 from typing import Any, Optional
 
 from src.ca_lexicon import ALL_LANG_MAP, LANG_MAP, TONGUE_PARENT
+from src.coding_spine.skill_harness_tools import build_harness_skill_tools_v1
 
 
 def _exe() -> str:
@@ -48,7 +50,14 @@ def _tool_contracts() -> list[dict[str, Any]]:
             "risk": "low",
             "approval": "auto",
             "purpose": "Inspect repository files, manifests, docs, and generated reports.",
-            "routes": ["code-packet", "explain-route", "history", "backend-registry"],
+            "routes": [
+                "code-packet",
+                "explain-route",
+                "history",
+                "backend-registry",
+                "call-switchboard",
+                "lightning-indexer",
+            ],
         },
         {
             "tool": "write_workspace",
@@ -187,6 +196,15 @@ def build_agent_harness_manifest_v1(
     matrix = _language_matrix()
     language_row = next((row for row in matrix if row["language"] == preferred), matrix[0])
     bridge = build_agent_tool_bridge_v1(inline_goal=goal or "inspect harness")
+    skill_tools = build_harness_skill_tools_v1()
+    skill_route_names = [
+        str(row.get("route_name", "")) for row in skill_tools.get("skills", []) if row.get("route_name")
+    ]
+    skill_lookup_names = [
+        str(row.get("route_name", ""))
+        for row in skill_tools.get("skills", [])
+        if row.get("route_name") and row.get("invocation_kind") == "skill_lookup"
+    ]
     return {
         "schema_version": "scbe_agent_harness_manifest_v1",
         "goal_excerpt": goal[:500],
@@ -228,6 +246,7 @@ def build_agent_harness_manifest_v1(
             **bridge["geoseal_service"],
             "agent_harness": f"{bridge['geoseal_service']['env']['GEOSEAL_SERVICE_URL']}/v1/harness/agent-harness",
         },
+        "harness_skill_tools_v1": skill_tools,
         "external_router": bridge["vercel_agent_router"],
         "mcp_style_exports": {
             "tools": [row["tool"] for row in _tool_contracts()],
@@ -236,8 +255,12 @@ def build_agent_harness_manifest_v1(
                 "permission_profiles",
                 "standard_flow",
                 "ghost_terminal_audit",
+                "call_switchboard",
+                "lightning_indexer",
             ],
             "prompts": ["explain-route", "testing-cli", "project-scaffold"],
+            "skill_lookup_names": skill_lookup_names,
+            "skill_route_names": skill_route_names,
         },
     }
 
@@ -272,6 +295,8 @@ def build_agent_tool_bridge_v1(
         "compile_intent_json": f"{exe} -m src.geoseal_cli compile --json {shlex.quote(text if not intent_relative_posix else 'compile source intent')}",
         "ghost_terminal_audit_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -Json",
         "ghost_terminal_cleanup_stale_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -CleanStale",
+        "call_switchboard_json": f"{exe} -m src.geoseal_cli call-switchboard --request <json> --json",
+        "lightning_indexer_json": f"{exe} -m src.geoseal_cli lightning-indexer --goal <goal> --inline-candidates <json> --json",
     }
 
     base_url = os.environ.get("GEOSEAL_SERVICE_URL", "http://127.0.0.1:8765").rstrip("/")
@@ -323,5 +348,49 @@ def build_agent_tool_bridge_v1(
                 "system_build",
                 "agentic_ladder",
             ],
+        },
+    }
+
+
+def build_hydra_tokenizer_bridge_v1(
+    *,
+    goal: str,
+    preferred_language: str = "python",
+    permission_mode: str = "observe",
+) -> dict[str, Any]:
+    """Return the minimal six-head tokenizer bridge used by agent-bus watcher output."""
+
+    selected_tongue = "KO"
+    text = (goal or "").strip()
+    rows: list[dict[str, Any]] = []
+    heads: list[dict[str, Any]] = []
+    for idx, tongue in enumerate(("KO", "AV", "RU", "CA", "UM", "DR")):
+        seed = f"{tongue}:{preferred_language}:{permission_mode}:{text}".encode("utf-8")
+        language = ALL_LANG_MAP.get(tongue, tongue)
+        heads.append({"head": f"hydra-{idx + 1}", "tongue": tongue, "language": language})
+        rows.append(
+            {
+                "index": idx,
+                "tongue": tongue,
+                "name": language,
+                "token_sha256": hashlib.sha256(seed).hexdigest(),
+                "token_count": max(1, len(text.split())),
+            }
+        )
+    return {
+        "schema_version": "geoseal_hydra_tokenizer_bridge_v1",
+        "enabled": True,
+        "selected_tongue": selected_tongue,
+        "selected_language": {"language": preferred_language, "tongue": selected_tongue},
+        "hydra_heads": heads,
+        "head_count": len(heads),
+        "preferred_language": preferred_language,
+        "permission_mode": permission_mode,
+        "tokenizer_packet": {
+            "schema_version": "geoseal_hydra_tokenizer_packet_v1",
+            "payload_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "selected_tongue": selected_tongue,
+            "row_count": len(rows),
+            "rows": rows,
         },
     }
