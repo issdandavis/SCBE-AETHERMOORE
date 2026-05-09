@@ -120,6 +120,25 @@ function classifyIntent(message) {
     return { name: 'research', confidence: 0.8, matchedTerm: researchMatch[0], product: null };
   }
 
+  // Topic-key fallback: "What is the harmonic wall?" doesn't match the
+  // RESEARCH_PATTERN regex but contains a known topic key. If the message
+  // hits a registered topic AND looks like a question/explanation prompt,
+  // route it to research.
+  const looksLikeQuestion = /\b(what|how|why|when|where|who|which|explain|describe|tell\s+me)\b/i.test(
+    message
+  );
+  if (looksLikeQuestion) {
+    const topic = resolveResearchTopic(message);
+    if (topic) {
+      return {
+        name: 'research',
+        confidence: 0.78,
+        matchedTerm: topic.title,
+        product: null,
+      };
+    }
+  }
+
   const membershipMatch = MEMBERSHIP_PATTERN.exec(message);
   if (membershipMatch) {
     return { name: 'membership', confidence: 0.75, matchedTerm: membershipMatch[0], product: null };
