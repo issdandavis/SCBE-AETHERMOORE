@@ -13,12 +13,39 @@ if str(PKG_SRC) not in sys.path:
     sys.path.insert(0, str(PKG_SRC))
 
 import scbe_agent_bus  # noqa: E402
-from scbe_agent_bus import AgentBusError, run_batch, run_event  # noqa: E402
+from scbe_agent_bus import (
+    AgentBusError,
+    recommend_companion_packages,
+    run_batch,
+    run_event,
+)  # noqa: E402
 from scbe_agent_bus.__main__ import _parse_events, main  # noqa: E402
 
 
 def test_module_exports_version():
     assert scbe_agent_bus.__version__ == "0.2.0"
+
+
+def test_recommend_companion_packages_skips_installed_package():
+    rows = recommend_companion_packages(
+        ["operator_manifold", "tokenizer", "batch dispatch"],
+        available_packages=["scbe-agent-bus"],
+    )
+
+    assert rows == [
+        {
+            "feature": "operator-manifold",
+            "package": "scbe-aethermoore",
+            "install": "npm install scbe-aethermoore",
+            "reason": "scbe-aethermoore provides operator-manifold without being installed as a forced dependency.",
+        },
+        {
+            "feature": "tokenizer",
+            "package": "scbe-aethermoore",
+            "install": "npm install scbe-aethermoore",
+            "reason": "scbe-aethermoore provides tokenizer without being installed as a forced dependency.",
+        },
+    ]
 
 
 def test_run_batch_rejects_empty():
