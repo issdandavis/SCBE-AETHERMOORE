@@ -576,8 +576,7 @@ class LatticeRouter:
             if matched:
                 reasoning.append(f"petri_pattern_filter:{reason}")
                 raise BandNotApplicable(
-                    f"intent matches Petri-style auditor phrasing ({reason}); "
-                    f"refusing to route: {intent[:160]!r}"
+                    f"intent matches Petri-style auditor phrasing ({reason}); " f"refusing to route: {intent[:160]!r}"
                 )
 
         # ----- Coding-intent gate (optional, pre-band) --------------------

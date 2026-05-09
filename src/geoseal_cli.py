@@ -1773,8 +1773,7 @@ def cmd_loop_dispatch(args: argparse.Namespace) -> int:
         print(json.dumps(payload, indent=2))
     else:
         print(
-            f"{payload['schema_version']} provider={args.provider} task={args.task} "
-            f"decision={policy['decision']}"
+            f"{payload['schema_version']} provider={args.provider} task={args.task} " f"decision={policy['decision']}"
         )
     return 0 if policy.get("ok") else 2
 
@@ -2489,15 +2488,9 @@ class RouteCommand(BoundCommand):
         None,
         description="Override Ollama model name (default qwen2.5:1.5b-instruct-q4_K_M)",
     )
-    ollama_host: str = Field(
-        "http://localhost:11434", description="Ollama server URL"
-    )
-    min_confidence: float = Field(
-        0.5, ge=0.0, le=1.0, description="Reject SLM stages below this confidence"
-    )
-    timeout_seconds: float = Field(
-        30.0, ge=0.1, le=300.0, description="Per-classify timeout"
-    )
+    ollama_host: str = Field("http://localhost:11434", description="Ollama server URL")
+    min_confidence: float = Field(0.5, ge=0.0, le=1.0, description="Reject SLM stages below this confidence")
+    timeout_seconds: float = Field(30.0, ge=0.1, le=300.0, description="Per-classify timeout")
     no_ledger: bool = Field(
         False,
         description="Skip persisting this dispatch to the promotion ledger (stateless mode)",
@@ -2633,9 +2626,7 @@ def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
         try:
             if cmd.emit_all:
                 tongues = ("KO", "AV", "RU", "CA", "UM", "DR")
-                payload["translations"] = {
-                    t: emit_from_ir(result.op, t) for t in tongues
-                }
+                payload["translations"] = {t: emit_from_ir(result.op, t) for t in tongues}
                 # The "primary" dst_code is still the routed tongue.
                 payload["dst_code"] = payload["translations"][result.dst_tongue]
             else:
@@ -2667,13 +2658,13 @@ def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
             # the same op + args + tongue should hash identically regardless
             # of whether they came in via --intent or --manual.
             normalised_argv = (
-                "geoseal", "route",
-                "--op-name", result.op.op_name,
-                "--dst-tongue", result.dst_tongue,
-            ) + tuple(
-                flag for k, v in sorted(result.op.args.items())
-                for flag in ("--arg", f"{k}={v}")
-            )
+                "geoseal",
+                "route",
+                "--op-name",
+                result.op.op_name,
+                "--dst-tongue",
+                result.dst_tongue,
+            ) + tuple(flag for k, v in sorted(result.op.args.items()) for flag in ("--arg", f"{k}={v}"))
             trace = record_session(normalised_argv, env=os.environ)
             entry = ledger.observe(trace)
             ledger.save(ledger_path)
@@ -2732,18 +2723,10 @@ class PromoteCommand(BoundCommand):
     digest: Optional[str] = Field(
         None, description="Specific ledger digest to promote (use `geoseal promotions` to list)"
     )
-    latest: bool = Field(
-        False, description="Promote the current top candidate (highest count)"
-    )
-    ledger_path: str = Field(
-        ".scbe/route_ledger.jsonl", description="Path to the route promotion ledger"
-    )
-    registry_path: str = Field(
-        ".scbe/route_aliases.json", description="Path to the alias registry"
-    )
-    overwrite: bool = Field(
-        False, description="Replace an existing alias with the same name"
-    )
+    latest: bool = Field(False, description="Promote the current top candidate (highest count)")
+    ledger_path: str = Field(".scbe/route_ledger.jsonl", description="Path to the route promotion ledger")
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
+    overwrite: bool = Field(False, description="Replace an existing alias with the same name")
     threshold: int = Field(
         3,
         ge=1,
@@ -2757,9 +2740,7 @@ class AliasesCommand(BoundCommand):
 
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
-    registry_path: str = Field(
-        ".scbe/route_aliases.json", description="Path to the alias registry"
-    )
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
 
 
 class AliasCommand(BoundCommand):
@@ -2776,9 +2757,7 @@ class AliasCommand(BoundCommand):
     emit: bool = Field(False, description="Render LatticeOp into dst_tongue (adds dst_code)")
     emit_all: bool = Field(False, description="Render in all 6 tongues")
     raw: bool = Field(False, description="Emit code to stdout, envelope to stderr")
-    registry_path: str = Field(
-        ".scbe/route_aliases.json", description="Path to the alias registry"
-    )
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
 
 
 class UnpromoteCommand(BoundCommand):
@@ -2787,9 +2766,7 @@ class UnpromoteCommand(BoundCommand):
     model_config = ConfigDict(extra="forbid", validate_assignment=True)
 
     alias: str = Field(..., description="Alias name to remove")
-    registry_path: str = Field(
-        ".scbe/route_aliases.json", description="Path to the alias registry"
-    )
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
 
 
 def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
@@ -2809,10 +2786,7 @@ def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
                 "version": "geoseal-promote-v1",
                 "verdict": "QUARANTINE",
                 "error_type": "NoCandidate",
-                "message": (
-                    f"no ledger entry has crossed threshold={cmd.threshold} "
-                    f"in {cmd.ledger_path}"
-                ),
+                "message": (f"no ledger entry has crossed threshold={cmd.threshold} " f"in {cmd.ledger_path}"),
             }
             print(json.dumps(err, indent=2))
             return 2
@@ -2833,10 +2807,7 @@ def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
                 "version": "geoseal-promote-v1",
                 "verdict": "QUARANTINE",
                 "error_type": "BelowThreshold",
-                "message": (
-                    f"digest {cmd.digest} has count={target.count}, "
-                    f"below threshold={cmd.threshold}"
-                ),
+                "message": (f"digest {cmd.digest} has count={target.count}, " f"below threshold={cmd.threshold}"),
             }
             print(json.dumps(err, indent=2))
             return 2

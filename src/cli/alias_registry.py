@@ -32,7 +32,6 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional
 
-
 # ---------------------------------------------------------------------------
 #  Errors
 # ---------------------------------------------------------------------------
@@ -68,10 +67,28 @@ _ALIAS_NAME_RE = re.compile(r"^[a-z][a-z0-9\-]{0,63}$")
 # them. Keep this list in sync with geoseal_cli.py — checked at register time.
 RESERVED_ALIAS_NAMES: frozenset = frozenset(
     {
-        "alias", "aliases", "promote", "promotions", "unpromote",
-        "route", "cross-build", "xb", "seal-here", "swarm-exec",
-        "exec", "shell", "run", "swarm", "agent", "cursor", "ops",
-        "emit", "seal", "verify", "history", "replay",
+        "alias",
+        "aliases",
+        "promote",
+        "promotions",
+        "unpromote",
+        "route",
+        "cross-build",
+        "xb",
+        "seal-here",
+        "swarm-exec",
+        "exec",
+        "shell",
+        "run",
+        "swarm",
+        "agent",
+        "cursor",
+        "ops",
+        "emit",
+        "seal",
+        "verify",
+        "history",
+        "replay",
     }
 )
 
@@ -149,9 +166,7 @@ class AliasRegistry:
     ) -> AliasEntry:
         self.validate_name(name)
         if name in self.aliases and not overwrite:
-            raise AliasNameError(
-                f"alias {name!r} already exists; pass overwrite=True to replace"
-            )
+            raise AliasNameError(f"alias {name!r} already exists; pass overwrite=True to replace")
         entry = AliasEntry(
             name=name,
             op_name=op_name,
@@ -188,14 +203,11 @@ class AliasRegistry:
     @classmethod
     def from_dict(cls, data: Mapping) -> "AliasRegistry":
         if not isinstance(data, Mapping):
-            raise AliasError(
-                f"alias registry root must be a JSON object, got {type(data).__name__}"
-            )
+            raise AliasError(f"alias registry root must be a JSON object, got {type(data).__name__}")
         version = data.get("version")
         if version != ALIAS_SCHEMA_VERSION:
             raise AliasError(
-                f"unknown alias registry schema version: {version!r} "
-                f"(expected {ALIAS_SCHEMA_VERSION})"
+                f"unknown alias registry schema version: {version!r} " f"(expected {ALIAS_SCHEMA_VERSION})"
             )
         registry = cls()
         for name, entry_data in (data.get("aliases") or {}).items():

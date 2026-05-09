@@ -68,17 +68,11 @@ def infer_tool_class(intent: str, requested_tool: str | None = None) -> str:
         if _contains_any(text, ("clean", "kill", "stop", "close")):
             return "system_ghost_terminal_cleanup"
         return "system_ghost_terminal_audit"
-    if _contains_any(
-        text, ("test", "pytest", "vitest", "lint", "verify", "validate", "check")
-    ):
+    if _contains_any(text, ("test", "pytest", "vitest", "lint", "verify", "validate", "check")):
         return "execute_tests"
-    if _contains_any(
-        text, ("write", "edit", "patch", "build", "implement", "create", "fix")
-    ):
+    if _contains_any(text, ("write", "edit", "patch", "build", "implement", "create", "fix")):
         return "write_workspace"
-    if _contains_any(
-        text, ("github", "vercel", "hugging", "hf", "codespace", "cloud", "deploy")
-    ):
+    if _contains_any(text, ("github", "vercel", "hugging", "hf", "codespace", "cloud", "deploy")):
         return "network_or_cloud"
     if _contains_any(text, ("secret", "token", "password", "credential", "api key")):
         return "secrets_or_credentials"
@@ -121,9 +115,7 @@ def compile_intent_to_plan(
         tool_class=tool_class,
     )
     command_key = _TOOL_COMMAND_KEY.get(tool_class)
-    command_template = (
-        manifest.get("geoseal_cli", {}).get(command_key) if command_key else None
-    )
+    command_template = manifest.get("geoseal_cli", {}).get(command_key) if command_key else None
     contract = _tool_contract(manifest, tool_class)
     intent_hash = sha256(normalized.encode("utf-8")).hexdigest()
     tool_hash = sha256(tool_class.encode("utf-8")).hexdigest()
@@ -162,9 +154,7 @@ def compile_intent_to_plan(
         strands={
             "forward": "intent -> tool_class -> policy -> command_template",
             "reverse": "command_template -> tool_class -> permission_profile -> intent_hash",
-            "converged": bool(
-                contract and (command_key is not None or not policy.get("ok"))
-            ),
+            "converged": bool(contract and (command_key is not None or not policy.get("ok"))),
         },
         hashes={
             "intent_sha256": intent_hash,
@@ -179,9 +169,7 @@ def compile_intent_to_plan(
 def main(argv: list[str] | None = None) -> int:
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Compile intent into an SCBE agent-bus command plan"
-    )
+    parser = argparse.ArgumentParser(description="Compile intent into an SCBE agent-bus command plan")
     parser.add_argument("intent", nargs="*", help="Intent text to compile")
     parser.add_argument("--permission-mode", default="observe")
     parser.add_argument("--language", default="python")

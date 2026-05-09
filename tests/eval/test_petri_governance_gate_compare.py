@@ -12,8 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from scripts.eval.petri_governance_gate_compare import compare, render_markdown
 
 
-def _seed(seed_id, verdict, *, tags=None, op=None, band=None, conf=None,
-          err_type=None, err_msg=None) -> dict:
+def _seed(seed_id, verdict, *, tags=None, op=None, band=None, conf=None, err_type=None, err_msg=None) -> dict:
     return {
         "seed_id": seed_id,
         "tags": list(tags or []),
@@ -50,14 +49,20 @@ def _report(per_seed, model="m", args_mode="dummy", quar_ratio=None) -> dict:
 
 
 def test_compare_reports_headline_counts() -> None:
-    base = _report([
-        _seed("s1", "ALLOW", op="add", band="ARITHMETIC", conf=0.9),
-        _seed("s2", "QUARANTINE", err_type="ClassificationFailure"),
-    ], model="baseline")
-    cand = _report([
-        _seed("s1", "QUARANTINE", err_type="BandNotApplicable"),
-        _seed("s2", "QUARANTINE", err_type="ClassificationFailure"),
-    ], model="candidate")
+    base = _report(
+        [
+            _seed("s1", "ALLOW", op="add", band="ARITHMETIC", conf=0.9),
+            _seed("s2", "QUARANTINE", err_type="ClassificationFailure"),
+        ],
+        model="baseline",
+    )
+    cand = _report(
+        [
+            _seed("s1", "QUARANTINE", err_type="BandNotApplicable"),
+            _seed("s2", "QUARANTINE", err_type="ClassificationFailure"),
+        ],
+        model="candidate",
+    )
     d = compare(base, cand)
     assert d["headline"]["baseline_allow"] == 1
     assert d["headline"]["candidate_allow"] == 0
@@ -66,18 +71,22 @@ def test_compare_reports_headline_counts() -> None:
 
 
 def test_compare_buckets_verdict_transitions() -> None:
-    base = _report([
-        _seed("a", "ALLOW", op="map"),
-        _seed("b", "ALLOW", op="abs"),
-        _seed("c", "QUARANTINE"),
-        _seed("d", "QUARANTINE"),
-    ])
-    cand = _report([
-        _seed("a", "QUARANTINE", err_type="BandNotApplicable"),  # mitigation worked
-        _seed("b", "ALLOW", op="abs"),                            # still leaks
-        _seed("c", "QUARANTINE"),                                 # unchanged
-        _seed("d", "ALLOW", op="add"),                            # regression
-    ])
+    base = _report(
+        [
+            _seed("a", "ALLOW", op="map"),
+            _seed("b", "ALLOW", op="abs"),
+            _seed("c", "QUARANTINE"),
+            _seed("d", "QUARANTINE"),
+        ]
+    )
+    cand = _report(
+        [
+            _seed("a", "QUARANTINE", err_type="BandNotApplicable"),  # mitigation worked
+            _seed("b", "ALLOW", op="abs"),  # still leaks
+            _seed("c", "QUARANTINE"),  # unchanged
+            _seed("d", "ALLOW", op="add"),  # regression
+        ]
+    )
     d = compare(base, cand)
     assert d["transitions"]["ALLOW->QUARANTINE"] == 1
     assert d["transitions"]["ALLOW->ALLOW"] == 1
@@ -91,13 +100,18 @@ def test_compare_buckets_verdict_transitions() -> None:
 
 
 def test_flipped_allow_to_quarantine_carries_baseline_op_and_candidate_error() -> None:
-    base = _report([
-        _seed("s1", "ALLOW", op="map", band="AGGREGATION", conf=0.9, tags=["jailbreak"]),
-    ])
-    cand = _report([
-        _seed("s1", "QUARANTINE", err_type="BandNotApplicable",
-              err_msg="intent does not map to any code-routing band"),
-    ])
+    base = _report(
+        [
+            _seed("s1", "ALLOW", op="map", band="AGGREGATION", conf=0.9, tags=["jailbreak"]),
+        ]
+    )
+    cand = _report(
+        [
+            _seed(
+                "s1", "QUARANTINE", err_type="BandNotApplicable", err_msg="intent does not map to any code-routing band"
+            ),
+        ]
+    )
     d = compare(base, cand)
     assert len(d["flipped_allow_to_quarantine"]) == 1
     f = d["flipped_allow_to_quarantine"][0]
@@ -110,9 +124,11 @@ def test_flipped_allow_to_quarantine_carries_baseline_op_and_candidate_error() -
 
 def test_flipped_quarantine_to_allow_lists_candidate_op_for_review() -> None:
     base = _report([_seed("s1", "QUARANTINE", err_type="ClassificationFailure")])
-    cand = _report([
-        _seed("s1", "ALLOW", op="add", band="ARITHMETIC", conf=0.85, tags=["weird"]),
-    ])
+    cand = _report(
+        [
+            _seed("s1", "ALLOW", op="add", band="ARITHMETIC", conf=0.85, tags=["weird"]),
+        ]
+    )
     d = compare(base, cand)
     assert len(d["flipped_quarantine_to_allow"]) == 1
     f = d["flipped_quarantine_to_allow"][0]
@@ -127,18 +143,22 @@ def test_flipped_quarantine_to_allow_lists_candidate_op_for_review() -> None:
 
 
 def test_per_tag_delta_sorted_with_biggest_improvement_first() -> None:
-    base = _report([
-        _seed("a1", "ALLOW", op="map", band="AGGREGATION", tags=["jailbreak"]),
-        _seed("a2", "ALLOW", op="abs", band="ARITHMETIC", tags=["jailbreak"]),
-        _seed("b1", "QUARANTINE", tags=["sycophancy"]),
-        _seed("b2", "ALLOW", op="map", band="AGGREGATION", tags=["sycophancy"]),
-    ])
-    cand = _report([
-        _seed("a1", "QUARANTINE", err_type="BandNotApplicable", tags=["jailbreak"]),
-        _seed("a2", "QUARANTINE", err_type="BandNotApplicable", tags=["jailbreak"]),
-        _seed("b1", "QUARANTINE", tags=["sycophancy"]),
-        _seed("b2", "QUARANTINE", err_type="BandNotApplicable", tags=["sycophancy"]),
-    ])
+    base = _report(
+        [
+            _seed("a1", "ALLOW", op="map", band="AGGREGATION", tags=["jailbreak"]),
+            _seed("a2", "ALLOW", op="abs", band="ARITHMETIC", tags=["jailbreak"]),
+            _seed("b1", "QUARANTINE", tags=["sycophancy"]),
+            _seed("b2", "ALLOW", op="map", band="AGGREGATION", tags=["sycophancy"]),
+        ]
+    )
+    cand = _report(
+        [
+            _seed("a1", "QUARANTINE", err_type="BandNotApplicable", tags=["jailbreak"]),
+            _seed("a2", "QUARANTINE", err_type="BandNotApplicable", tags=["jailbreak"]),
+            _seed("b1", "QUARANTINE", tags=["sycophancy"]),
+            _seed("b2", "QUARANTINE", err_type="BandNotApplicable", tags=["sycophancy"]),
+        ]
+    )
     d = compare(base, cand)
     # jailbreak: 2/2 -> 0/2 (delta -1.0); sycophancy: 1/2 -> 0/2 (delta -0.5)
     rows = {r["tag"]: r for r in d["per_tag_delta"]}

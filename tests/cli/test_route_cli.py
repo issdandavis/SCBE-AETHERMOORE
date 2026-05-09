@@ -47,10 +47,14 @@ _OLLAMA_UP = _ollama_reachable()
 def test_route_manual_mode_basic_dispatch() -> None:
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "RU",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
     )
     assert proc.returncode == 0, proc.stderr
     body = json.loads(proc.stdout)
@@ -67,10 +71,14 @@ def test_route_manual_mode_basic_dispatch() -> None:
 def test_route_manual_mode_pinning_provenance_in_reasoning() -> None:
     proc = _run(
         "--manual",
-        "--op-name", "xor",
-        "--dst-tongue", "DR",
-        "--arg", "a=p",
-        "--arg", "b=q",
+        "--op-name",
+        "xor",
+        "--dst-tongue",
+        "DR",
+        "--arg",
+        "a=p",
+        "--arg",
+        "b=q",
     )
     assert proc.returncode == 0
     body = json.loads(proc.stdout)
@@ -83,9 +91,12 @@ def test_route_manual_mode_pinning_provenance_in_reasoning() -> None:
 def test_route_manual_mode_missing_op_name_quarantines() -> None:
     proc = _run(
         "--manual",
-        "--dst-tongue", "KO",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
     )
     assert proc.returncode == 2
     err = json.loads(proc.stdout)
@@ -97,9 +108,12 @@ def test_route_manual_mode_missing_op_name_quarantines() -> None:
 def test_route_manual_mode_missing_dst_tongue_quarantines() -> None:
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "add",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
     )
     assert proc.returncode == 2
     err = json.loads(proc.stdout)
@@ -114,9 +128,12 @@ def test_route_manual_mode_count_now_routes_after_lexicon_close() -> None:
     it asserts the inverse — the contract flipped when the lexicon closed."""
     proc = _run(
         "--manual",
-        "--op-name", "count",
-        "--dst-tongue", "KO",
-        "--arg", "xs=v",
+        "--op-name",
+        "count",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "xs=v",
     )
     assert proc.returncode == 0, proc.stdout
     body = json.loads(proc.stdout)
@@ -129,11 +146,16 @@ def test_route_manual_mode_count_now_routes_after_lexicon_close() -> None:
 def test_route_manual_mode_band_op_disagreement_quarantines() -> None:
     proc = _run(
         "--manual",
-        "--band", "LOGIC",
-        "--op-name", "add",  # actually ARITHMETIC
-        "--dst-tongue", "KO",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--band",
+        "LOGIC",
+        "--op-name",
+        "add",  # actually ARITHMETIC
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
     )
     assert proc.returncode == 2
     err = json.loads(proc.stdout)
@@ -149,9 +171,12 @@ def test_route_manual_mode_band_op_disagreement_quarantines() -> None:
 def test_route_malformed_arg_pair_rejected() -> None:
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "KO",
-        "--arg", "no_equals_sign",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "no_equals_sign",
     )
     assert proc.returncode == 2
     err = json.loads(proc.stdout)
@@ -163,10 +188,14 @@ def test_route_arg_value_can_contain_equals_sign() -> None:
     only on the first `=`."""
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "KO",
-        "--arg", "a=value_with=equals",
-        "--arg", "b=y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=value_with=equals",
+        "--arg",
+        "b=y",
     )
     # Lift step's identifier-only arg pattern will reject this on dispatch
     # — but the CLI parser itself must succeed. (Funnel-bounded: the IR
@@ -188,12 +217,18 @@ def test_route_auto_mode_with_pinned_op_calls_ollama_only_for_tongue() -> None:
     """Auto mode + pinned op → SLM only picks tongue. Confirms the
     hybrid path works end-to-end through the CLI."""
     proc = _run(
-        "--intent", "add x and y",
-        "--op-name", "add",
-        "--arg", "a=x",
-        "--arg", "b=y",
-        "--timeout-seconds", "30",
-        "--min-confidence", "0.0",
+        "--intent",
+        "add x and y",
+        "--op-name",
+        "add",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--timeout-seconds",
+        "30",
+        "--min-confidence",
+        "0.0",
     )
     # Auto mode without a qualified model may hit confidence floor or
     # produce a low-quality classification; the test guards on the
@@ -210,11 +245,16 @@ def test_route_auto_mode_unreachable_ollama_quarantines() -> None:
     """If Ollama isn't running and AUTO mode is invoked, the router
     must surface a clean QUARANTINE rather than crashing."""
     proc = _run(
-        "--intent", "Add",
-        "--arg", "a=x",
-        "--arg", "b=y",
-        "--ollama-host", "http://127.0.0.1:1",  # nothing listens here
-        "--timeout-seconds", "1",
+        "--intent",
+        "Add",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ollama-host",
+        "http://127.0.0.1:1",  # nothing listens here
+        "--timeout-seconds",
+        "1",
     )
     assert proc.returncode == 2
     err = json.loads(proc.stdout)
@@ -235,11 +275,16 @@ def test_route_auto_mode_unreachable_ollama_quarantines() -> None:
 def test_route_no_mode_flag_uses_intent_set() -> None:
     """Without --manual, the AUTO parameter set is selected (intent-driven)."""
     proc = _run(
-        "--intent", "Add",
-        "--op-name", "add",
-        "--dst-tongue", "KO",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--intent",
+        "Add",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
     )
     # With op + tongue both pinned in AUTO mode, no SLM call needed.
     assert proc.returncode == 0, proc.stderr
@@ -253,10 +298,14 @@ def test_route_manual_alone_is_acceptable_parameter_set() -> None:
     Without --intent and without --manual, both sets are absent and
     the parser rejects."""
     proc = _run(
-        "--op-name", "add",
-        "--dst-tongue", "KO",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
     )
     # Neither --intent nor --manual supplied → no parameter set satisfied.
     assert proc.returncode != 0
@@ -271,10 +320,14 @@ def test_route_manual_alone_is_acceptable_parameter_set() -> None:
 def test_route_emit_single_tongue_adds_dst_code() -> None:
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "RU",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
         "--emit",
     )
     assert proc.returncode == 0, proc.stderr
@@ -288,10 +341,14 @@ def test_route_emit_all_produces_six_translations() -> None:
     """The bijective sphere broadcast: one IR -> 6 valid implementations."""
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "KO",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
         "--emit-all",
     )
     assert proc.returncode == 0, proc.stderr
@@ -346,10 +403,14 @@ def test_route_emit_raw_puts_code_on_stdout_envelope_on_stderr() -> None:
     count just the code bytes (plus trailing newline)."""
     proc = _run(
         "--manual",
-        "--op-name", "mul",
-        "--dst-tongue", "RU",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "mul",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
         "--emit",
         "--raw",
     )
@@ -368,10 +429,14 @@ def test_route_emit_raw_ignored_when_emit_all_active() -> None:
     to stdout?) so we ignore --raw and fall back to envelope-on-stdout."""
     proc = _run(
         "--manual",
-        "--op-name", "sub",
-        "--dst-tongue", "KO",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "sub",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
         "--emit-all",
         "--raw",
     )
@@ -385,10 +450,14 @@ def test_route_emit_raw_ignored_when_emit_all_active() -> None:
 def test_route_no_emit_flag_omits_dst_code() -> None:
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "RU",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
     )
     assert proc.returncode == 0, proc.stderr
     body = json.loads(proc.stdout)
@@ -407,11 +476,16 @@ def test_route_persists_to_promotion_ledger(tmp_path) -> None:
     ledger_path = tmp_path / "ledger.jsonl"
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "RU",
-        "--arg", "a=x",
-        "--arg", "b=y",
-        "--ledger-path", str(ledger_path),
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
     )
     assert proc.returncode == 0, proc.stderr
     body = json.loads(proc.stdout)
@@ -425,12 +499,18 @@ def test_route_repeated_invocations_cross_promotion_threshold(tmp_path) -> None:
     ledger_path = tmp_path / "ledger.jsonl"
     args = (
         "--manual",
-        "--op-name", "mul",
-        "--dst-tongue", "RU",
-        "--arg", "a=x",
-        "--arg", "b=y",
-        "--ledger-path", str(ledger_path),
-        "--promotion-threshold", "3",
+        "--op-name",
+        "mul",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
+        "--promotion-threshold",
+        "3",
     )
     counts = []
     for _ in range(3):
@@ -447,12 +527,17 @@ def test_route_no_ledger_flag_skips_persistence(tmp_path) -> None:
     ledger_path = tmp_path / "ledger.jsonl"
     proc = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "KO",
-        "--arg", "a=x",
-        "--arg", "b=y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
         "--no-ledger",
-        "--ledger-path", str(ledger_path),
+        "--ledger-path",
+        str(ledger_path),
     )
     assert proc.returncode == 0, proc.stderr
     body = json.loads(proc.stdout)
@@ -472,21 +557,32 @@ def test_route_normalised_dispatch_has_stable_digest(tmp_path) -> None:
 
     # First: AUTO mode with both pinned (no SLM call needed).
     proc1 = _run(
-        "--intent", "add x and y",
-        "--op-name", "add",
-        "--dst-tongue", "RU",
-        "--arg", "a=x",
-        "--arg", "b=y",
-        "--ledger-path", str(ledger_path),
+        "--intent",
+        "add x and y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
     )
     # Second: MANUAL mode, same dispatch.
     proc2 = _run(
         "--manual",
-        "--op-name", "add",
-        "--dst-tongue", "RU",
-        "--arg", "a=x",
-        "--arg", "b=y",
-        "--ledger-path", str(ledger_path),
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
     )
     assert proc1.returncode == 0 and proc2.returncode == 0
     digest1 = json.loads(proc1.stdout)["ledger"]["digest"]
@@ -499,14 +595,30 @@ def test_route_distinct_dispatches_get_distinct_digests(tmp_path) -> None:
     """Different op + same args = different digest = no spurious recurrence."""
     ledger_path = tmp_path / "ledger.jsonl"
     proc_add = _run(
-        "--manual", "--op-name", "add", "--dst-tongue", "KO",
-        "--arg", "a=x", "--arg", "b=y",
-        "--ledger-path", str(ledger_path),
+        "--manual",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
     )
     proc_mul = _run(
-        "--manual", "--op-name", "mul", "--dst-tongue", "KO",
-        "--arg", "a=x", "--arg", "b=y",
-        "--ledger-path", str(ledger_path),
+        "--manual",
+        "--op-name",
+        "mul",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
     )
     digest_add = json.loads(proc_add.stdout)["ledger"]["digest"]
     digest_mul = json.loads(proc_mul.stdout)["ledger"]["digest"]

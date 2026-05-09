@@ -35,7 +35,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
-
 # The real Petri canary GUID — anything containing this is benchmark data
 # and must never be promoted into a training shard. Comparison is
 # case-insensitive on the hex characters but exact on the dash structure.
@@ -88,8 +87,7 @@ class PetriSeed:
         """
         if self.training_blocked:
             raise PetriLoadError(
-                f"sample {self.id!r} is benchmark data (canary detected); "
-                "refusing to feed into training corpus"
+                f"sample {self.id!r} is benchmark data (canary detected); " "refusing to feed into training corpus"
             )
 
 
@@ -116,16 +114,14 @@ def _split_frontmatter(text: str) -> tuple[str, str]:
     # Find the next "---" on its own line.
     closing = _FM_DELIM.search(after_open)
     if closing is None:
-        raise PetriLoadError(
-            "frontmatter opening delimiter found but no closing '---' on its own line"
-        )
+        raise PetriLoadError("frontmatter opening delimiter found but no closing '---' on its own line")
     fm_block = after_open[: closing.start()]
-    body = after_open[closing.end():]
+    body = after_open[closing.end() :]
     return fm_block, body.lstrip("\n")
 
 
-_TAGS_LINE = re.compile(r'^\s*tags\s*:\s*\[(?P<list>[^\]]*)\]\s*$')
-_KV_LINE = re.compile(r'^\s*(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?P<value>.+?)\s*$')
+_TAGS_LINE = re.compile(r"^\s*tags\s*:\s*\[(?P<list>[^\]]*)\]\s*$")
+_KV_LINE = re.compile(r"^\s*(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*:\s*(?P<value>.+?)\s*$")
 
 
 def _parse_frontmatter(block: str) -> Dict[str, Any]:
@@ -224,10 +220,7 @@ def load_seed_directory(
 
     if tags:
         tag_set = set(tags)
-        seeds = [
-            s for s in seeds
-            if tag_set & set(s.metadata.get("tags") or [])
-        ]
+        seeds = [s for s in seeds if tag_set & set(s.metadata.get("tags") or [])]
     return seeds
 
 

@@ -24,7 +24,6 @@ from src.cli.slm_router import (
     StubSLMAdapter,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Helpers
 # ---------------------------------------------------------------------------
@@ -41,8 +40,22 @@ def _stub_for_add_to_python(confidence: float = 0.95) -> StubSLMAdapter:
             # 16 ARITHMETIC ops in Tier 1 (none excluded from arithmetic band).
             frozenset(
                 {
-                    "abs", "add", "ceil", "dec", "div", "exp", "floor", "inc",
-                    "log", "mod", "mul", "neg", "pow", "round", "sqrt", "sub",
+                    "abs",
+                    "add",
+                    "ceil",
+                    "dec",
+                    "div",
+                    "exp",
+                    "floor",
+                    "inc",
+                    "log",
+                    "mod",
+                    "mul",
+                    "neg",
+                    "pow",
+                    "round",
+                    "sqrt",
+                    "sub",
                 }
             ): ("add", confidence),
             frozenset({"KO", "AV", "RU", "CA", "UM", "DR"}): ("KO", confidence),
@@ -134,8 +147,22 @@ def test_router_aggregate_confidence_is_minimum_across_stages() -> None:
             ),
             frozenset(
                 {
-                    "abs", "add", "ceil", "dec", "div", "exp", "floor", "inc",
-                    "log", "mod", "mul", "neg", "pow", "round", "sqrt", "sub",
+                    "abs",
+                    "add",
+                    "ceil",
+                    "dec",
+                    "div",
+                    "exp",
+                    "floor",
+                    "inc",
+                    "log",
+                    "mod",
+                    "mul",
+                    "neg",
+                    "pow",
+                    "round",
+                    "sqrt",
+                    "sub",
                 }
             ): ("add", 0.55),
             frozenset({"KO", "AV", "RU", "CA", "UM", "DR"}): ("KO", 0.95),
@@ -205,8 +232,22 @@ def test_router_loop_window_only_holds_recent_actions() -> None:
             ),
             frozenset(
                 {
-                    "abs", "add", "ceil", "dec", "div", "exp", "floor", "inc",
-                    "log", "mod", "mul", "neg", "pow", "round", "sqrt", "sub",
+                    "abs",
+                    "add",
+                    "ceil",
+                    "dec",
+                    "div",
+                    "exp",
+                    "floor",
+                    "inc",
+                    "log",
+                    "mod",
+                    "mul",
+                    "neg",
+                    "pow",
+                    "round",
+                    "sqrt",
+                    "sub",
                 }
             ): ("add", 0.95),
             frozenset({"KO", "AV", "RU", "CA", "UM", "DR"}): ("KO", 0.95),
@@ -235,8 +276,22 @@ def test_router_does_not_flag_same_op_to_different_tongue_as_loop() -> None:
             ),
             frozenset(
                 {
-                    "abs", "add", "ceil", "dec", "div", "exp", "floor", "inc",
-                    "log", "mod", "mul", "neg", "pow", "round", "sqrt", "sub",
+                    "abs",
+                    "add",
+                    "ceil",
+                    "dec",
+                    "div",
+                    "exp",
+                    "floor",
+                    "inc",
+                    "log",
+                    "mod",
+                    "mul",
+                    "neg",
+                    "pow",
+                    "round",
+                    "sqrt",
+                    "sub",
                 }
             ): ("add", 0.95),
         }

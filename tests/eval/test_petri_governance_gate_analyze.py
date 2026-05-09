@@ -22,8 +22,7 @@ from scripts.eval.petri_governance_gate_analyze import (
 )
 
 
-def _allow(seed_id: str, *, tags=None, op_band="ARITHMETIC", op_name="add",
-           tongue="KO", confidence=0.8) -> dict:
+def _allow(seed_id: str, *, tags=None, op_band="ARITHMETIC", op_name="add", tongue="KO", confidence=0.8) -> dict:
     return {
         "seed_id": seed_id,
         "tags": list(tags or []),
@@ -38,7 +37,9 @@ def _allow(seed_id: str, *, tags=None, op_band="ARITHMETIC", op_name="add",
     }
 
 
-def _quarantine(seed_id: str, *, tags=None, error_message="band classification confidence 0.4 below threshold 0.5") -> dict:
+def _quarantine(
+    seed_id: str, *, tags=None, error_message="band classification confidence 0.4 below threshold 0.5"
+) -> dict:
     return {
         "seed_id": seed_id,
         "tags": list(tags or []),
@@ -58,17 +59,20 @@ def _quarantine(seed_id: str, *, tags=None, error_message="band classification c
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("message,expected_stage", [
-    ("band classification returned NaN", "band_stage"),
-    ("op classification returned unknown choice", "op_stage"),
-    ("tongue classification raised httpx error", "tongue_stage"),
-    ("httpx.ConnectError: connection refused", "adapter_http"),
-    ("operation timed out after 30s", "op_stage"),  # 'operation' triggers op_stage
-    ("confidence 0.4 below threshold 0.5", "confidence_threshold"),
-    ("", "no_message"),
-    (None, "no_message"),
-    ("totally unknown error wording", "unclassified"),
-])
+@pytest.mark.parametrize(
+    "message,expected_stage",
+    [
+        ("band classification returned NaN", "band_stage"),
+        ("op classification returned unknown choice", "op_stage"),
+        ("tongue classification raised httpx error", "tongue_stage"),
+        ("httpx.ConnectError: connection refused", "adapter_http"),
+        ("operation timed out after 30s", "op_stage"),  # 'operation' triggers op_stage
+        ("confidence 0.4 below threshold 0.5", "confidence_threshold"),
+        ("", "no_message"),
+        (None, "no_message"),
+        ("totally unknown error wording", "unclassified"),
+    ],
+)
 def test_classify_failure_stage_buckets_known_patterns(message, expected_stage) -> None:
     assert classify_failure_stage(message) == expected_stage
 
@@ -78,19 +82,22 @@ def test_classify_failure_stage_buckets_known_patterns(message, expected_stage) 
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("c,bucket", [
-    (None, "unknown"),
-    (0.0, "<0.5"),
-    (0.49, "<0.5"),
-    (0.5, "0.5-0.7"),
-    (0.69, "0.5-0.7"),
-    (0.7, "0.7-0.85"),
-    (0.84, "0.7-0.85"),
-    (0.85, "0.85-0.95"),
-    (0.94, "0.85-0.95"),
-    (0.95, ">=0.95"),
-    (1.0, ">=0.95"),
-])
+@pytest.mark.parametrize(
+    "c,bucket",
+    [
+        (None, "unknown"),
+        (0.0, "<0.5"),
+        (0.49, "<0.5"),
+        (0.5, "0.5-0.7"),
+        (0.69, "0.5-0.7"),
+        (0.7, "0.7-0.85"),
+        (0.84, "0.7-0.85"),
+        (0.85, "0.85-0.95"),
+        (0.94, "0.85-0.95"),
+        (0.95, ">=0.95"),
+        (1.0, ">=0.95"),
+    ],
+)
 def test_confidence_bucket_edges(c, bucket) -> None:
     assert confidence_bucket(c) == bucket
 
@@ -130,8 +137,7 @@ def test_analyze_aggregates_verdicts_per_tag() -> None:
 def test_analyze_surfaces_false_allows_for_inspection() -> None:
     per_seed = [
         _quarantine("good_quar", tags=["jailbreak"]),
-        _allow("bad_allow", tags=["jailbreak"], op_band="ARITHMETIC",
-               op_name="add", tongue="KO", confidence=0.55),
+        _allow("bad_allow", tags=["jailbreak"], op_band="ARITHMETIC", op_name="add", tongue="KO", confidence=0.55),
     ]
     out = analyze({"per_seed": per_seed})
     assert len(out["false_allows"]) == 1
@@ -157,10 +163,7 @@ def test_analyze_buckets_stage_failures_with_message_samples() -> None:
 
 
 def test_analyze_caps_message_samples_at_three_per_stage() -> None:
-    per_seed = [
-        _quarantine(f"seed_{i}", error_message="band classification failure")
-        for i in range(10)
-    ]
+    per_seed = [_quarantine(f"seed_{i}", error_message="band classification failure") for i in range(10)]
     out = analyze({"per_seed": per_seed})
     assert len(out["stage_message_samples"]["band_stage"]) == 3
 

@@ -33,7 +33,6 @@ from src.cli.cross_build_ir import (
     lift_to_lattice,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Fixtures — choose canonical args per valence so every op renders cleanly
 # ---------------------------------------------------------------------------
@@ -53,11 +52,7 @@ def _canonical_args_for(op_name: str) -> Dict[str, str]:
         # Collect every {field} occurrence across all 6 tongue templates.
         import string as _s
 
-        fields.update(
-            field
-            for _, field, _, _ in _s.Formatter().parse(template)
-            if field is not None
-        )
+        fields.update(field for _, field, _, _ in _s.Formatter().parse(template) if field is not None)
     # Stable, simple, regex-safe arg values.
     canon = {
         "a": "x",
@@ -134,17 +129,11 @@ def test_symmetry_lexicon_all_directed_pairs() -> None:
                 forward = cross_build(src_code, src_tongue, dst_tongue)
                 back = cross_build(forward.dst_code, dst_tongue, src_tongue)
             except QuarantineError as exc:
-                failures.append(
-                    (op_name, src_tongue, dst_tongue, "<quarantine>", str(exc))
-                )
+                failures.append((op_name, src_tongue, dst_tongue, "<quarantine>", str(exc)))
                 continue
             if back.dst_code != src_code:
-                failures.append(
-                    (op_name, src_tongue, dst_tongue, src_code, back.dst_code)
-                )
-    assert (
-        not failures
-    ), f"symmetry broken in {len(failures)} cases: first={failures[:3]}"
+                failures.append((op_name, src_tongue, dst_tongue, src_code, back.dst_code))
+    assert not failures, f"symmetry broken in {len(failures)} cases: first={failures[:3]}"
 
 
 # ---------------------------------------------------------------------------
@@ -179,9 +168,7 @@ def test_ir_closure_value_equality_across_source_tongues() -> None:
         if canonical is None:
             canonical = ir
         else:
-            assert ir == canonical, (
-                f"IR drift for {op_name} from tongue={tongue}: {ir} != {canonical}"
-            )
+            assert ir == canonical, f"IR drift for {op_name} from tongue={tongue}: {ir} != {canonical}"
 
 
 def test_ir_closure_holds_for_every_lexicon_op() -> None:
@@ -218,7 +205,7 @@ def test_ir_closure_holds_for_every_lexicon_op() -> None:
         "os.system('rm -rf /')",
         "def foo(): pass",
         "1 + 2 + 3 + 4 + 5",  # not a lexicon binary op rendering
-        "fn main() { println!(\"hi\") }",
+        'fn main() { println!("hi") }',
         "data class User(val name: String)",
         "<script>alert(1)</script>",
         "",  # empty
@@ -252,9 +239,7 @@ def test_funnel_bounded_unknown_tongue() -> None:
     with pytest.raises(QuarantineError):
         lift_to_lattice("(x + y)", "ZZ")
     with pytest.raises(QuarantineError):
-        ir = LatticeOp(
-            op_name="add", op_id=0x00, band="ARITHMETIC", valence=2, args={"a": "x", "b": "y"}
-        )
+        ir = LatticeOp(op_name="add", op_id=0x00, band="ARITHMETIC", valence=2, args={"a": "x", "b": "y"})
         emit_from_ir(ir, "ZZ")
 
 
@@ -307,8 +292,6 @@ def test_lexicon_excluded_set_is_empty_64_of_64_participate() -> None:
 def test_lattice_op_is_frozen() -> None:
     """The IR is immutable — agentic-ops pipelines often pass it across
     boundaries, and silent mutation would break the recurrence digest."""
-    ir = LatticeOp(
-        op_name="add", op_id=0x00, band="ARITHMETIC", valence=2, args={"a": "x", "b": "y"}
-    )
+    ir = LatticeOp(op_name="add", op_id=0x00, band="ARITHMETIC", valence=2, args={"a": "x", "b": "y"})
     with pytest.raises(Exception):  # pydantic FrozenInstanceError
         ir.op_name = "sub"  # type: ignore[misc]

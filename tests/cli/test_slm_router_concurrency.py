@@ -22,12 +22,25 @@ from src.cli.slm_router import (
     _default_safe_arg_validator,
 )
 
-
 _BAND_SET = frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"})
 _ARITH_OPS = frozenset(
     {
-        "abs", "add", "ceil", "dec", "div", "exp", "floor", "inc",
-        "log", "mod", "mul", "neg", "pow", "round", "sqrt", "sub",
+        "abs",
+        "add",
+        "ceil",
+        "dec",
+        "div",
+        "exp",
+        "floor",
+        "inc",
+        "log",
+        "mod",
+        "mul",
+        "neg",
+        "pow",
+        "round",
+        "sqrt",
+        "sub",
     }
 )
 _TONGUE_SET = frozenset({"KO", "AV", "RU", "CA", "UM", "DR"})

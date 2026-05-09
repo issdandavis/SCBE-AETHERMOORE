@@ -43,9 +43,12 @@ def _run_alias(*extra: str) -> subprocess.CompletedProcess[str]:
 
 def test_cross_build_single_ko_to_ru_for_add() -> None:
     proc = _run(
-        "--src-code", "(x + y)",
-        "--src-tongue", "KO",
-        "--dst-tongue", "RU",
+        "--src-code",
+        "(x + y)",
+        "--src-tongue",
+        "KO",
+        "--dst-tongue",
+        "RU",
     )
     assert proc.returncode == 0, proc.stderr
     body = json.loads(proc.stdout)
@@ -60,9 +63,12 @@ def test_cross_build_single_ko_to_ru_for_add() -> None:
 
 def test_cross_build_single_av_to_dr_for_xor() -> None:
     proc = _run(
-        "--src-code", "(p ^ q)",
-        "--src-tongue", "AV",
-        "--dst-tongue", "DR",
+        "--src-code",
+        "(p ^ q)",
+        "--src-tongue",
+        "AV",
+        "--dst-tongue",
+        "DR",
     )
     assert proc.returncode == 0, proc.stderr
     body = json.loads(proc.stdout)
@@ -85,8 +91,10 @@ def test_alias_xb_works_identically() -> None:
 
 def test_cross_build_broadcast_emits_five_translations() -> None:
     proc = _run(
-        "--src-code", "(x + y)",
-        "--src-tongue", "KO",
+        "--src-code",
+        "(x + y)",
+        "--src-tongue",
+        "KO",
         "--all-tongues",
     )
     assert proc.returncode == 0, proc.stderr
@@ -126,9 +134,12 @@ def test_cross_build_list_ops_reports_64_participating() -> None:
 
 def test_cross_build_quarantines_arbitrary_code() -> None:
     proc = _run(
-        "--src-code", "import os",
-        "--src-tongue", "KO",
-        "--dst-tongue", "RU",
+        "--src-code",
+        "import os",
+        "--src-tongue",
+        "KO",
+        "--dst-tongue",
+        "RU",
     )
     assert proc.returncode == 2, "non-lexicon source must surface as QUARANTINE"
     err = json.loads(proc.stdout)
@@ -140,9 +151,12 @@ def test_cross_build_rejects_mutually_exclusive_modes() -> None:
     """Asking for single + broadcast + info at the same time must trip
     the parameter-set validator before we touch the IR."""
     proc = _run(
-        "--src-code", "(x + y)",
-        "--src-tongue", "KO",
-        "--dst-tongue", "RU",
+        "--src-code",
+        "(x + y)",
+        "--src-tongue",
+        "KO",
+        "--dst-tongue",
+        "RU",
         "--all-tongues",
     )
     assert proc.returncode != 0
@@ -158,18 +172,24 @@ def test_cross_tongue_parity_round_trip_through_cli() -> None:
     """Round-trip via the CLI itself: KO -> RU via subprocess A,
     then RU -> KO via subprocess B, must return the original source."""
     forward = _run(
-        "--src-code", "(x * y)",
-        "--src-tongue", "KO",
-        "--dst-tongue", "RU",
+        "--src-code",
+        "(x * y)",
+        "--src-tongue",
+        "KO",
+        "--dst-tongue",
+        "RU",
     )
     assert forward.returncode == 0
     forward_body = json.loads(forward.stdout)
     rust_code = forward_body["dst_code"]
 
     back = _run(
-        "--src-code", rust_code,
-        "--src-tongue", "RU",
-        "--dst-tongue", "KO",
+        "--src-code",
+        rust_code,
+        "--src-tongue",
+        "RU",
+        "--dst-tongue",
+        "KO",
     )
     assert back.returncode == 0
     assert json.loads(back.stdout)["dst_code"] == "(x * y)"

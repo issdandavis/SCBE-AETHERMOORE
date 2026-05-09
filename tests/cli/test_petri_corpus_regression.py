@@ -24,7 +24,6 @@ from src.cli.petri_seed_loader import (
     split_by_training_safety,
 )
 
-
 _REAL_SEEDS_DIR = Path(__file__).resolve().parents[2] / "external" / "benchmarks" / "petri-seeds"
 
 
@@ -36,10 +35,7 @@ def _real_seeds_available() -> bool:
 
 pytestmark = pytest.mark.skipif(
     not _real_seeds_available(),
-    reason=(
-        f"populate {_REAL_SEEDS_DIR} per docs/external/PETRI_SEEDS.md "
-        "to run the regression"
-    ),
+    reason=(f"populate {_REAL_SEEDS_DIR} per docs/external/PETRI_SEEDS.md " "to run the regression"),
 )
 
 
@@ -54,10 +50,7 @@ def test_every_real_seed_is_training_blocked() -> None:
     (escalate to Petri maintainers) or our detector regressed."""
     seeds = load_seed_directory(_REAL_SEEDS_DIR)
     blocked, safe = split_by_training_safety(seeds)
-    assert len(safe) == 0, (
-        f"{len(safe)} seeds slipped past canary detection: "
-        f"{sorted(s.id for s in safe)[:10]}"
-    )
+    assert len(safe) == 0, f"{len(safe)} seeds slipped past canary detection: " f"{sorted(s.id for s in safe)[:10]}"
     assert len(blocked) == len(seeds)
 
 
@@ -102,8 +95,7 @@ def test_required_adversarial_tags_present() -> None:
         all_tags.update(s.metadata.get("tags") or [])
     missing = [t for t in _REQUIRED_TAGS if t not in all_tags]
     assert not missing, (
-        f"upstream Petri dropped required adversarial tags: {missing}. "
-        f"present tags: {sorted(all_tags)}"
+        f"upstream Petri dropped required adversarial tags: {missing}. " f"present tags: {sorted(all_tags)}"
     )
 
 

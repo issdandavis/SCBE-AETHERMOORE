@@ -33,7 +33,6 @@ from src.ca_lexicon import (
     LexiconEntry,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Errors — all Quarantine-class so the funnel can pattern-match cleanly
 # ---------------------------------------------------------------------------
@@ -199,14 +198,10 @@ def lift_to_lattice(src_code: str, src_tongue: str) -> LatticeOp:
         matches.append((entry, _named_groups_to_args(m)))
 
     if not matches:
-        raise LiftFailure(
-            f"no lexicon op template matched in tongue={tongue}: {src_code!r}"
-        )
+        raise LiftFailure(f"no lexicon op template matched in tongue={tongue}: {src_code!r}")
     if len(matches) > 1:
         names = sorted(e.name for e, _ in matches)
-        raise AmbiguityError(
-            f"source matched multiple lexicon ops in tongue={tongue}: {names}"
-        )
+        raise AmbiguityError(f"source matched multiple lexicon ops in tongue={tongue}: {names}")
     entry, args = matches[0]
     return LatticeOp.from_entry(entry, args)
 
@@ -229,9 +224,7 @@ def emit_from_ir(ir: LatticeOp, dst_tongue: str) -> str:
     needed = set(_template_field_names(template))
     missing = needed - set(ir.args.keys())
     if missing:
-        raise EmitFailure(
-            f"IR missing args for tongue={tongue} template: {sorted(missing)}"
-        )
+        raise EmitFailure(f"IR missing args for tongue={tongue} template: {sorted(missing)}")
     return template.format(**ir.args)
 
 

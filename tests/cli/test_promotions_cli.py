@@ -62,11 +62,16 @@ def test_promotions_below_threshold_lists_no_candidates(tmp_path: Path) -> None:
     for _ in range(2):
         proc = _route(
             "--manual",
-            "--op-name", "add",
-            "--dst-tongue", "RU",
-            "--arg", "a=x",
-            "--arg", "b=y",
-            "--ledger-path", str(ledger_path),
+            "--op-name",
+            "add",
+            "--dst-tongue",
+            "RU",
+            "--arg",
+            "a=x",
+            "--arg",
+            "b=y",
+            "--ledger-path",
+            str(ledger_path),
         )
         assert proc.returncode == 0
 
@@ -88,11 +93,16 @@ def test_promotions_above_threshold_surfaces_candidate(tmp_path: Path) -> None:
     for _ in range(4):
         proc = _route(
             "--manual",
-            "--op-name", "mul",
-            "--dst-tongue", "RU",
-            "--arg", "a=x",
-            "--arg", "b=y",
-            "--ledger-path", str(ledger_path),
+            "--op-name",
+            "mul",
+            "--dst-tongue",
+            "RU",
+            "--arg",
+            "a=x",
+            "--arg",
+            "b=y",
+            "--ledger-path",
+            str(ledger_path),
         )
         assert proc.returncode == 0
 
@@ -115,11 +125,33 @@ def test_promotions_show_all_includes_below_threshold(tmp_path: Path) -> None:
     ledger_path = tmp_path / "ledger.jsonl"
     # add: 4 times → above threshold
     for _ in range(4):
-        _route("--manual", "--op-name", "add", "--dst-tongue", "RU",
-               "--arg", "a=x", "--arg", "b=y", "--ledger-path", str(ledger_path))
+        _route(
+            "--manual",
+            "--op-name",
+            "add",
+            "--dst-tongue",
+            "RU",
+            "--arg",
+            "a=x",
+            "--arg",
+            "b=y",
+            "--ledger-path",
+            str(ledger_path),
+        )
     # sub: 1 time → below
-    _route("--manual", "--op-name", "sub", "--dst-tongue", "RU",
-           "--arg", "a=p", "--arg", "b=q", "--ledger-path", str(ledger_path))
+    _route(
+        "--manual",
+        "--op-name",
+        "sub",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=p",
+        "--arg",
+        "b=q",
+        "--ledger-path",
+        str(ledger_path),
+    )
 
     proc = _promotions("--ledger-path", str(ledger_path), "--threshold", "3", "--show-all")
     assert proc.returncode == 0
@@ -138,12 +170,34 @@ def test_promotions_sorted_by_count_descending(tmp_path: Path) -> None:
     ledger_path = tmp_path / "ledger.jsonl"
     # add: 5 invocations
     for _ in range(5):
-        _route("--manual", "--op-name", "add", "--dst-tongue", "KO",
-               "--arg", "a=x", "--arg", "b=y", "--ledger-path", str(ledger_path))
+        _route(
+            "--manual",
+            "--op-name",
+            "add",
+            "--dst-tongue",
+            "KO",
+            "--arg",
+            "a=x",
+            "--arg",
+            "b=y",
+            "--ledger-path",
+            str(ledger_path),
+        )
     # mul: 3 invocations
     for _ in range(3):
-        _route("--manual", "--op-name", "mul", "--dst-tongue", "KO",
-               "--arg", "a=x", "--arg", "b=y", "--ledger-path", str(ledger_path))
+        _route(
+            "--manual",
+            "--op-name",
+            "mul",
+            "--dst-tongue",
+            "KO",
+            "--arg",
+            "a=x",
+            "--arg",
+            "b=y",
+            "--ledger-path",
+            str(ledger_path),
+        )
 
     proc = _promotions("--ledger-path", str(ledger_path), "--threshold", "3")
     body = json.loads(proc.stdout)
@@ -160,8 +214,19 @@ def test_promotions_sorted_by_count_descending(tmp_path: Path) -> None:
 def test_promotions_threshold_parameter_changes_candidate_set(tmp_path: Path) -> None:
     ledger_path = tmp_path / "ledger.jsonl"
     for _ in range(3):
-        _route("--manual", "--op-name", "div", "--dst-tongue", "KO",
-               "--arg", "a=x", "--arg", "b=y", "--ledger-path", str(ledger_path))
+        _route(
+            "--manual",
+            "--op-name",
+            "div",
+            "--dst-tongue",
+            "KO",
+            "--arg",
+            "a=x",
+            "--arg",
+            "b=y",
+            "--ledger-path",
+            str(ledger_path),
+        )
 
     # Threshold 3 → div is a candidate (count=3).
     proc_lo = _promotions("--ledger-path", str(ledger_path), "--threshold", "3")

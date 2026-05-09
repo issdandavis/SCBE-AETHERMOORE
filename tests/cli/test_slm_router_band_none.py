@@ -33,7 +33,6 @@ from src.cli.slm_router import (
     _band_choices_for_classification,
 )
 
-
 # ---------------------------------------------------------------------------
 #  Choice-set surface
 # ---------------------------------------------------------------------------
@@ -146,12 +145,31 @@ def test_in_distribution_intent_still_routes_cleanly() -> None:
     adapter = StubSLMAdapter(
         scripted_by_choice_set={
             frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"}): (
-                "ARITHMETIC", 0.9,
+                "ARITHMETIC",
+                0.9,
             ),
-            frozenset({"abs", "add", "ceil", "dec", "div", "exp", "floor", "inc",
-                       "log", "mod", "mul", "neg", "pow", "round", "sqrt",
-                       "sub"}): (
-                "add", 0.9,
+            frozenset(
+                {
+                    "abs",
+                    "add",
+                    "ceil",
+                    "dec",
+                    "div",
+                    "exp",
+                    "floor",
+                    "inc",
+                    "log",
+                    "mod",
+                    "mul",
+                    "neg",
+                    "pow",
+                    "round",
+                    "sqrt",
+                    "sub",
+                }
+            ): (
+                "add",
+                0.9,
             ),
             frozenset({"KO", "AV", "RU", "CA", "UM", "DR"}): ("KO", 0.9),
         },

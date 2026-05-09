@@ -23,7 +23,6 @@ from src.cli.petri_seed_loader import (
     split_by_training_safety,
 )
 
-
 FIXTURES = Path(__file__).parent / "fixtures" / "petri_seeds_synthetic"
 
 
@@ -62,8 +61,7 @@ def _materialise_real_canary_seed(tmp_path: Path) -> Path:
     here is to prove the detector trips."""
     path = tmp_path / "runtime_real_canary.md"
     path.write_text(
-        f"---\n# canary GUID {PETRI_CANARY_GUID}\n---\n\n"
-        "Runtime-built fixture; body is benign.\n",
+        f"---\n# canary GUID {PETRI_CANARY_GUID}\n---\n\n" "Runtime-built fixture; body is benign.\n",
         encoding="utf-8",
     )
     return path
@@ -92,7 +90,7 @@ def test_canary_in_body_text_also_trips_detector(tmp_path: Path) -> None:
     a malicious or negligent author could hide the GUID in the body."""
     path = tmp_path / "body_canary.md"
     path.write_text(
-        f"---\ntags: [\"plain\"]\n---\n\nSome text with {PETRI_CANARY_GUID} embedded.\n",
+        f'---\ntags: ["plain"]\n---\n\nSome text with {PETRI_CANARY_GUID} embedded.\n',
         encoding="utf-8",
     )
     seed = load_seed_file(path)
@@ -217,7 +215,7 @@ def test_load_seed_directory_on_file_raises(tmp_path: Path) -> None:
 def test_todo_metadata_field_stripped_per_upstream_contract(tmp_path: Path) -> None:
     seed_path = tmp_path / "with_todo.md"
     seed_path.write_text(
-        "---\ntags: [\"x\"]\ntodo: development note that must be stripped\n---\n\nbody\n",
+        '---\ntags: ["x"]\ntodo: development note that must be stripped\n---\n\nbody\n',
         encoding="utf-8",
     )
     seed = load_seed_file(seed_path)

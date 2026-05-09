@@ -30,12 +30,25 @@ from src.cli.slm_router import (
     StubSLMAdapter,
 )
 
-
 _BAND_SET = frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"})
 _ARITH_OPS = frozenset(
     {
-        "abs", "add", "ceil", "dec", "div", "exp", "floor", "inc",
-        "log", "mod", "mul", "neg", "pow", "round", "sqrt", "sub",
+        "abs",
+        "add",
+        "ceil",
+        "dec",
+        "div",
+        "exp",
+        "floor",
+        "inc",
+        "log",
+        "mod",
+        "mul",
+        "neg",
+        "pow",
+        "round",
+        "sqrt",
+        "sub",
     }
 )
 _TONGUE_SET = frozenset({"KO", "AV", "RU", "CA", "UM", "DR"})
@@ -60,9 +73,7 @@ class _RecordingAdapter:
 
     def classify(self, prompt: str, choices: Sequence[str]):
         self.call_count += 1
-        raise AssertionError(
-            f"adapter must not be called; got prompt={prompt[:60]!r}"
-        )
+        raise AssertionError(f"adapter must not be called; got prompt={prompt[:60]!r}")
 
 
 # ---------------------------------------------------------------------------
