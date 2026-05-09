@@ -58,6 +58,12 @@ Package links:
 
 - npm: [`scbe-aethermoore`](https://www.npmjs.com/package/scbe-aethermoore)
 - PyPI: [`scbe-aethermoore`](https://pypi.org/project/scbe-aethermoore/)
+- Optional Python agent bus: [`scbe-agent-bus`](https://pypi.org/project/scbe-agent-bus/)
+- Optional lightweight kernel: [`@scbe/kernel`](https://www.npmjs.com/package/@scbe/kernel)
+
+The packages are companion surfaces, not forced dependencies. Install the
+smallest package that fits your task; the operator and agent-bus APIs can
+recommend a companion package when a feature lives in another ecosystem.
 
 Website and public demos:
 

@@ -27,6 +27,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Literal, Optional, TypedDict
 
+from .companions import COMPANION_PACKAGES, recommend_companion_packages
+
 __all__ = [
     "AgentBusEvent",
     "AgentBusResult",
@@ -34,6 +36,8 @@ __all__ = [
     "run_event",
     "run_batch",
     "AgentBusError",
+    "COMPANION_PACKAGES",
+    "recommend_companion_packages",
     "__version__",
 ]
 
@@ -98,12 +102,16 @@ def _normalize_event(event: AgentBusEvent | dict, index: int) -> dict:
         "operation_command": str(
             event.get("operation_command") or event.get("operationCommand") or ""
         ).strip(),
-        "task_type": str(event.get("task_type") or event.get("taskType") or "general").strip(),
+        "task_type": str(
+            event.get("task_type") or event.get("taskType") or "general"
+        ).strip(),
         "series_id": str(
             event.get("series_id") or event.get("seriesId") or f"pipe-event-{index}"
         ).strip(),
         "privacy": str(event.get("privacy") or "local_only").strip(),
-        "budget_cents": float(event.get("budget_cents", event.get("budgetCents", 0)) or 0),
+        "budget_cents": float(
+            event.get("budget_cents", event.get("budgetCents", 0)) or 0
+        ),
         "dispatch": event.get("dispatch") is not False,
         "dispatch_provider": str(
             event.get("dispatch_provider") or event.get("dispatchProvider") or "offline"
