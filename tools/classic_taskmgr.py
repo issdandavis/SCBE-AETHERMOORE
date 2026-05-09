@@ -35,6 +35,11 @@ from typing import Deque, List, Optional, Tuple
 
 import psutil
 
+# Backend / data layer. Same module the HTTP intermediary
+# (taskmgr_server.py) and the CLI (taskmgr_core.py __main__) consume,
+# so GUI / CLI / HTTP all see identical data.
+from tools import taskmgr_core as core
+
 # --- Colors / sizes (locked to the classic Win2k/XP palette). -------
 BG_DARK = "#000000"
 GRID_DARK = "#101810"
@@ -694,47 +699,9 @@ class PerformanceTab(ttk.Frame):
 
 # ============================================================
 # AI Agents tab -- filtered view of agent processes + open files.
+# Classification logic lives in tools.taskmgr_core so the GUI, the
+# CLI, and the HTTP intermediary all share one source of truth.
 # ============================================================
-# Patterns that mark a process as agent-related. Exact-match on the
-# image name when bare; substring match when in `cmdline`.
-_AGENT_NAME_HITS = {"ollama", "ollama.exe", "ollama-runner", "ollama-runner.exe"}
-_AGENT_CMDLINE_HITS = (
-    "claude-code",
-    "claude_code",
-    "claude.cli",
-    "ollama",
-    "scbe",
-    "geoseal",
-    "aetherbrowse",
-    "aethermoore",
-    "petri_governance_gate",
-    "agent_bus",
-    "swarm_browser",
-    "antivirus_membrane",
-    "n8n",
-    "scbe_n8n_bridge",
-)
-
-
-def _classify_agent(name: str, cmdline: List[str]) -> Optional[str]:
-    """Tag the agent class for a process; None if not recognized."""
-    nm = (name or "").lower()
-    if nm in _AGENT_NAME_HITS or nm.startswith("ollama"):
-        return "Ollama"
-    cl = " ".join(cmdline or []).lower()
-    if "claude-code" in cl or "claude_code" in cl or "@anthropic" in cl:
-        return "Claude Code"
-    if "scbe" in cl and "petri" in cl:
-        return "SCBE / Petri"
-    if "scbe" in cl or "geoseal" in cl or "aethermoore" in cl or "aetherbrowse" in cl:
-        return "SCBE Agent"
-    if "agent_bus" in cl or "swarm_browser" in cl or "antivirus_membrane" in cl:
-        return "SCBE Subsystem"
-    if nm.startswith("n8n") or "scbe_n8n_bridge" in cl:
-        return "n8n / Bridge"
-    if any(h in cl for h in _AGENT_CMDLINE_HITS):
-        return "Agent (other)"
-    return None
 
 
 class AIAgentsTab(ttk.Frame):
@@ -780,7 +747,7 @@ class AIAgentsTab(ttk.Frame):
             try:
                 info = p.info
                 cmd = p.cmdline()
-                tag = _classify_agent(info["name"] or "", cmd)
+                tag = core.classify_agent(info["name"] or "", cmd)
                 if tag is None:
                     continue
                 mem = info["memory_info"].rss if info["memory_info"] else 0
@@ -841,99 +808,36 @@ class AIAgentsTab(ttk.Frame):
 
 
 # ============================================================
-# System tab -- architecture readout.
+# System tab -- architecture readout. Pulls from taskmgr_core so the
+# GUI / CLI / HTTP intermediary can't drift on what they report.
 # ============================================================
-def _read_system_info() -> List[Tuple[str, str]]:
-    """Build the architecture rows shown in the System tab."""
-    import platform
-
-    rows: List[Tuple[str, str]] = []
-    rows.append(("OS", f"{platform.system()} {platform.release()} ({platform.version()})"))
-    rows.append(("Machine", f"{platform.machine()}  /  {platform.processor() or '(processor str empty)'}"))
-    rows.append(("Python", f"{platform.python_version()} ({sys.executable})"))
-    try:
-        freq = psutil.cpu_freq()
-        freq_s = f"{freq.current:.0f} MHz (max {freq.max:.0f})" if freq else "(no cpu_freq)"
-    except Exception:
-        freq_s = "(no cpu_freq)"
-    rows.append(("CPU", f"phys={psutil.cpu_count(logical=False)}  log={psutil.cpu_count(logical=True)}  {freq_s}"))
-    vm = psutil.virtual_memory()
-    sm = psutil.swap_memory()
-    rows.append(
+def _format_system_rows() -> List[Tuple[str, str]]:
+    s = core.system_info()
+    rows: List[Tuple[str, str]] = [
+        ("OS", s.os),
+        ("Machine", f"{s.machine}  /  {s.processor or '(processor str empty)'}"),
+        ("Python", f"{s.python_version} ({s.python_executable})"),
+        (
+            "CPU",
+            f"phys={s.cpu_physical}  log={s.cpu_logical}  "
+            + (f"{s.cpu_freq_mhz:.0f} MHz (max {s.cpu_freq_max_mhz:.0f})" if s.cpu_freq_mhz else "(no cpu_freq)"),
+        ),
         (
             "Memory",
-            f"total {vm.total // (1024**3)} GB  /  avail {vm.available // (1024**3)} GB  "
-            f"/  swap {sm.total // (1024**3)} GB",
-        )
-    )
-    # Disks.
-    for part in psutil.disk_partitions(all=False):
-        try:
-            u = psutil.disk_usage(part.mountpoint)
-            rows.append(
-                (
-                    f"Disk {part.device}",
-                    f"{part.fstype:<6}  {u.used // (1024**3):>5} / {u.total // (1024**3):>5} GB used  "
-                    f"({u.percent:.0f}%)  @ {part.mountpoint}",
-                )
+            f"total {s.mem_total_bytes // (1024**3)} GB  /  avail {s.mem_available_bytes // (1024**3)} GB  "
+            f"/  swap {s.swap_total_bytes // (1024**3)} GB",
+        ),
+    ]
+    for d in s.disks:
+        rows.append(
+            (
+                f"Disk {d['device']}",
+                f"{d['fstype']:<6}  {d['used_bytes'] // (1024**3):>5} / {d['total_bytes'] // (1024**3):>5} GB used  "
+                f"({d['percent']:.0f}%)  @ {d['mountpoint']}",
             )
-        except (PermissionError, OSError):
-            continue
-    # Network interfaces.
-    try:
-        addrs = psutil.net_if_addrs()
-        stats = psutil.net_if_stats()
-        for nic, addr_list in addrs.items():
-            stat = stats.get(nic)
-            if stat is None or not stat.isup:
-                continue
-            v4 = next((a.address for a in addr_list if a.family.name == "AF_INET"), "(no v4)")
-            speed = f"{stat.speed} Mb/s" if stat.speed else "?"
-            rows.append((f"NIC {nic}", f"{v4}  {speed}  mtu={stat.mtu}"))
-    except Exception:
-        pass
-    return rows
-
-
-def _read_scbe_state() -> List[Tuple[str, str]]:
-    """SCBE-specific rows: package version, branch, ollama models."""
-    import json as _json
-    import subprocess
-
-    rows: List[Tuple[str, str]] = []
-    pkg = {}
-    try:
-        with open("package.json", encoding="utf-8") as fh:
-            pkg = _json.load(fh)
-    except Exception:
-        pass
-    rows.append(("scbe-aethermoore", f"v{pkg.get('version', '?')}"))
-    try:
-        out = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            capture_output=True,
-            text=True,
-            timeout=2,
-            check=False,
         )
-        rows.append(("git branch", out.stdout.strip() or "(no git)"))
-    except Exception:
-        rows.append(("git branch", "(unavailable)"))
-    try:
-        out = subprocess.run(
-            ["ollama", "list"],
-            capture_output=True,
-            text=True,
-            timeout=3,
-            check=False,
-        )
-        if out.returncode == 0:
-            models = [ln.split()[0] for ln in out.stdout.splitlines()[1:] if ln.strip()]
-            rows.append(("ollama models", ", ".join(models[:8]) or "(none)"))
-        else:
-            rows.append(("ollama models", "(ollama CLI unavailable)"))
-    except Exception:
-        rows.append(("ollama models", "(unavailable)"))
+    for n in s.nics:
+        rows.append((f"NIC {n['name']}", f"{n['ipv4'] or '-'}  {n['speed_mbps']} Mb/s  mtu={n['mtu']}"))
     return rows
 
 
@@ -967,7 +871,7 @@ class SystemTab(ttk.Frame):
         self._slow_tick = (self._slow_tick + 1) % 60  # update once a minute
         if not force and self._slow_tick != 0:
             return
-        for widget, fetch in ((self.arch_text, _read_system_info), (self.scbe_text, _read_scbe_state)):
+        for widget, fetch in ((self.arch_text, _format_system_rows), (self.scbe_text, core.scbe_state)):
             widget.configure(state="normal")
             widget.delete("1.0", tk.END)
             for label, value in fetch():
