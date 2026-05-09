@@ -1,0 +1,82 @@
+{
+  "schema_version": "aethermoor.operator_experience_backlog.v1",
+  "created_at": "2026-05-09T00:00:00-07:00",
+  "purpose": "Route UX research into implementation tasks for the SCBE shell, bus storage, provider router, and receipts.",
+  "principles": [
+    "one command center",
+    "slash commands over script hunting",
+    "visible receipts",
+    "local-first and zero-credit by default",
+    "provider routing instead of key-first onboarding",
+    "workspace formation before export",
+    "monotonic governance gates"
+  ],
+  "commands": [
+    {
+      "command": "/status",
+      "priority": 1,
+      "surface": "scbe-shell",
+      "intent": "Show repo, branch, CI, provider, budget, workspace, and last gate state.",
+      "receipt": "SCBE_STATUS_READY=1"
+    },
+    {
+      "command": "/liboqs",
+      "priority": 2,
+      "surface": "scbe-shell",
+      "intent": "Run native liboqs smoke and expose the security proof.",
+      "receipt": "SCBE_LIBOQS_PASS=1"
+    },
+    {
+      "command": "/workspace new",
+      "priority": 3,
+      "surface": "agent-bus",
+      "intent": "Create a temporary bus workspace using the workspace formation.",
+      "receipt": "SCBE_WORKSPACE_READY=1"
+    },
+    {
+      "command": "/workspace export",
+      "priority": 4,
+      "surface": "agent-bus",
+      "intent": "Export receipts, customer packets, and selected references to a user-designated storage stop.",
+      "receipt": "SCBE_WORKSPACE_OFFLOAD_PASS=1"
+    },
+    {
+      "command": "/providers",
+      "priority": 5,
+      "surface": "provider-router",
+      "intent": "Display local, free, configured, and paid-disabled provider posture.",
+      "receipt": "SCBE_PROVIDERS_READY=1"
+    },
+    {
+      "command": "/ship",
+      "priority": 6,
+      "surface": "delivery",
+      "intent": "Build a customer handoff packet from exports plus receipts.",
+      "receipt": "SCBE_SHIP_PACKET_READY=1"
+    },
+    {
+      "command": "/agent-task",
+      "priority": 7,
+      "surface": "github-spoke",
+      "intent": "Create or track a GitHub agent task as a governed background spoke.",
+      "receipt": "SCBE_GITHUB_AGENT_TASK_READY=1"
+    }
+  ],
+  "storage_formation": {
+    "schema_version": "aethermoor.bus.workspace_formation.v1",
+    "folders": [
+      "00_inbox",
+      "10_work",
+      "20_receipts",
+      "30_exports",
+      "40_refs",
+      "90_tmp"
+    ]
+  },
+  "source_notes": [
+    "Claude Code slash commands and hooks informed command/hook surfaces.",
+    "GitHub Copilot CLI informed agent-task and local/cloud session handoff.",
+    "Codex CLI informed command-center and approval/receipt UX.",
+    "Hermes Agent informed shell-first daily-driver ergonomics."
+  ]
+}
