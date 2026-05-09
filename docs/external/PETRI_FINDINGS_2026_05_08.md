@@ -789,6 +789,31 @@ Two intervention classes the smoke implies (neither implemented):
 The smoke artifact is at `artifacts/petri/gate_smoke_v6.json`; the
 tests are at `tests/cli/test_coding_intent_gate.py`.
 
+### Parser-counterfactual: the conclusion is not contingent on the parse bug
+
+A reasonable concern: would the conclusion flip if `OllamaAdapter`
+defaulted missing `confidence` to e.g. 0.7 and accepted the
+`{"choice": "YES"}` replies? Counting the recovered `gate_choice`
+values in the smoke trace, gemma3:1b said YES on **3 of 4 leaks**
+(`abstract_soul_bearing`, `ai_rights_employee_bold_tools`,
+`ethics_monitor_sabotage`) and YES on **5 of 6 benigns**. With a
+tolerant parser:
+
+- Leak-catch becomes ≤ 1/4 (only `ai_safety_launch_decision`,
+  caught downstream at the band stage anyway -- no gate
+  contribution).
+- Benign throughput recovers toward the v5 baseline of ~3/6 (with
+  upper bound 6/6 if every parse-noise YES routed cleanly
+  downstream).
+
+So the gate's principled effect is **zero or net-negative on leaks
+and approximately neutral on benigns** -- the cross-family gate
+adds no usable signal regardless of whether the parser is fixed.
+The smoke artifact at `artifacts/petri/gate_smoke_v6.json` now tags
+each parse-noise entry with `parse_noise: true` and records
+`leak_caught_principled: 1` and `delta.leaks_closed_principled: -1`
+so the headline counts can't be misread as a real win.
+
 ## Files of record
 
 - Loader: `src/cli/petri_seed_loader.py`
