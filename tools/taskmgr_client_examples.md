@@ -109,14 +109,36 @@ def call_tool(name, args, write_token=None):
 # tool_use blocks the model emits through `call_tool`.
 ```
 
-## SCBE n8n bridge route (suggested)
+## SCBE n8n bridge route (live)
 
-The SCBE n8n bridge already proxies HTTP to local services. Adding a
-single passthrough on the bridge gives every n8n workflow access:
+`workflows/n8n/scbe_n8n_bridge.py` now exposes `tools.taskmgr_core` directly
+under the `/v1/taskmgr/*` prefix, so every n8n workflow + every model that
+already uses the bridge gets task-manager access without a second host.
 
 ```
-n8n workflow -> POST /v1/taskmgr/{action} -> bridge -> taskmgr_server
+n8n workflow -> /v1/taskmgr/{action} -> bridge -> tools.taskmgr_core
 ```
 
-That keeps each workflow free of hard-coded host/port/token and lets
-the bridge own credential rotation.
+Auth model:
+- All routes require the bridge `x-api-key` header (`SCBE_API_KEYS`).
+- `/v1/taskmgr/kill` additionally requires `SCBE_TASKMGR_WRITE=1` in the
+  bridge's env, so a leaked read key cannot terminate processes.
+
+Example calls:
+
+```bash
+K="$SCBE_API_KEYS"
+
+curl -H "x-api-key: $K" http://127.0.0.1:8001/v1/taskmgr/scbe
+curl -H "x-api-key: $K" http://127.0.0.1:8001/v1/taskmgr/agents
+curl -H "x-api-key: $K" "http://127.0.0.1:8001/v1/taskmgr/procs?top=5"
+curl -H "x-api-key: $K" "http://127.0.0.1:8001/v1/taskmgr/sample?seconds=1"
+
+# Kill (only with SCBE_TASKMGR_WRITE=1):
+curl -X POST -H "x-api-key: $K" -H "Content-Type: application/json" \
+     -d '{"pid": 1234, "dry_run": true}' \
+     http://127.0.0.1:8001/v1/taskmgr/kill
+```
+
+The standalone `tools.taskmgr_server` is still useful for fleets that don't
+have the bridge running — pick whichever fits the deployment.
