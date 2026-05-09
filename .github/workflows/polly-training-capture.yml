@@ -1,5 +1,10 @@
 name: Polly Training Capture
 
+# Notification-only since 2026-05-09. Direct HF upload happens from the
+# Vercel runtime (api/_polly_hf_upload.js) using HF_TOKEN — that is the
+# primary durable capture path. This workflow exists only to fire the
+# side-effect notifications (GitHub issue + SMTP email) on lead records.
+
 on:
   repository_dispatch:
     types: [polly_training_turn]
@@ -13,70 +18,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  push-to-private-hf-dataset:
+  notify-on-lead:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Push consented turn to private HF dataset
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          PAYLOAD: ${{ toJSON(github.event.client_payload.record) }}
-          HF_REPO: ${{ vars.POLLY_HF_DATASET || 'issdandavis/polly-chat-live' }}
-        run: |
-          set -euo pipefail
-          if [[ -z "${HF_TOKEN:-}" ]]; then
-            echo "HF_TOKEN not configured; skipping push" >&2
-            exit 0
-          fi
-          python3 -m pip install --quiet 'huggingface_hub>=0.27,<1.0'
-          # PII guard: never echo PAYLOAD to logs. Pipe via env var into Python,
-          # which validates, writes a per-turn JSON file, and uploads it to the
-          # PRIVATE Hugging Face dataset. Only the dataset path + remote URL
-          # ever land in the workflow log.
-          python3 - <<'PY'
-          import datetime as dt
-          import io
-          import json
-          import os
-          import secrets
-          from huggingface_hub import HfApi
-
-          payload = os.environ["PAYLOAD"]
-          record = json.loads(payload)
-          repo_id = os.environ["HF_REPO"]
-          token = os.environ["HF_TOKEN"]
-
-          api = HfApi(token=token)
-          # Ensure the dataset exists and is private. exist_ok=True is idempotent.
-          api.create_repo(
-              repo_id=repo_id,
-              repo_type="dataset",
-              private=True,
-              exist_ok=True,
-          )
-
-          ts = dt.datetime.utcfromtimestamp(int(record.get("ts") or 0)) if record.get("ts") else dt.datetime.utcnow()
-          day = ts.strftime("%Y-%m-%d")
-          stamp = ts.strftime("%Y%m%dT%H%M%S")
-          nonce = secrets.token_hex(3)
-          # Route by kind so leads land separately from chat turns. Defaults
-          # to chat-live for any record without an explicit kind.
-          kind = str(record.get("kind") or "chat").lower()
-          prefix = "polly-leads" if kind == "lead" else "polly-chat-live"
-          path_in_repo = f"{prefix}/{day}/{stamp}-{nonce}.json"
-          payload_bytes = json.dumps(record, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-          buffer = io.BytesIO(payload_bytes)
-
-          api.upload_file(
-              path_or_fileobj=buffer,
-              path_in_repo=path_in_repo,
-              repo_id=repo_id,
-              repo_type="dataset",
-              commit_message=f"chore(polly): consented turn {stamp}",
-          )
-          print(f"uploaded to private dataset: {repo_id}/{path_in_repo}")
-          PY
-
       - name: File a private GitHub issue when the record is a lead
         if: ${{ github.event.client_payload.record.kind == 'lead' }}
         env:
