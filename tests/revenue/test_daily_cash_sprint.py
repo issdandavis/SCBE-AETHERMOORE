@@ -30,6 +30,28 @@ def test_daily_cash_sprint_generates_packet(tmp_path: Path) -> None:
     assert all("text" in json.loads(line) for line in queue_lines)
 
 
+def test_daily_cash_sprint_generates_governance_snapshot_offer(tmp_path: Path) -> None:
+    paths = generate_packet(
+        offer_id="ai_governance_snapshot",
+        minutes=20,
+        out_root=tmp_path,
+    )
+
+    report = json.loads(paths["json"].read_text(encoding="utf-8"))
+    assert report["offer"]["offer_id"] == "ai_governance_snapshot"
+    assert report["offer"]["title"] == "AI Governance Snapshot"
+    assert report["offer"]["price_floor_usd"] == 500
+    assert report["offer"]["price_anchor_usd"] == 500
+
+    drafts = report["outreach_drafts"]
+    assert len(drafts) == 3
+    assert any("https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" in draft["text"] for draft in drafts)
+    markdown = paths["markdown"].read_text(encoding="utf-8")
+    assert "2-page findings memo" in markdown
+    assert "Price: $500\n" in markdown
+    assert "$500-$500" not in markdown
+
+
 def test_daily_cash_sprint_continuous_advances_to_next_task(tmp_path: Path) -> None:
     state_path = tmp_path / "state.json"
 
