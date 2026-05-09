@@ -4,7 +4,7 @@
  * Mirrors the Python parity tests in test_polly_commerce.py.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const commerce = require('../../api/polly/commerce.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -19,6 +19,8 @@ const trainCapture = require('../../api/_polly_train_capture.js');
 const leadHandler = require('../../api/polly/lead.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const hfUpload = require('../../api/_polly_hf_upload.js');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const rateLimit = require('../../api/_polly_rate_limit.js');
 
 interface MockRes {
   statusCode: number;
@@ -71,6 +73,91 @@ function makeReq(opts: {
     },
   };
 }
+
+describe('polly rate limiter', () => {
+  it('allows requests under the limit and blocks beyond it', () => {
+    rateLimit.reset();
+    const ip = '203.0.113.42';
+    const req = { headers: { 'x-forwarded-for': ip } };
+    const res = makeRes();
+    // chat default: 30/min — fire 30 requests, 31st should be blocked
+    for (let i = 0; i < 30; i += 1) {
+      const result = rateLimit.enforce(req, res, 'chat');
+      expect(result.allowed).toBe(true);
+    }
+    const blocked = rateLimit.enforce(req, res, 'chat');
+    expect(blocked.allowed).toBe(false);
+    expect(blocked.retryAfterMs).toBeGreaterThan(0);
+    expect(res.statusCode).toBe(200); // headers set, status not changed by enforce
+  });
+
+  it('isolates per-IP buckets so one abuser does not block another', () => {
+    rateLimit.reset();
+    const abuserReq = { headers: { 'x-forwarded-for': '198.51.100.1' } };
+    const cleanReq = { headers: { 'x-forwarded-for': '198.51.100.2' } };
+    const res = makeRes();
+    for (let i = 0; i < 5; i += 1) rateLimit.enforce(abuserReq, res, 'lead'); // exhaust
+    const abuserBlocked = rateLimit.enforce(abuserReq, res, 'lead');
+    const cleanAllowed = rateLimit.enforce(cleanReq, res, 'lead');
+    expect(abuserBlocked.allowed).toBe(false);
+    expect(cleanAllowed.allowed).toBe(true);
+  });
+
+  it('extracts the leftmost X-Forwarded-For value', () => {
+    expect(
+      rateLimit.clientIp({ headers: { 'x-forwarded-for': '203.0.113.5, 10.0.0.1, 10.0.0.2' } })
+    ).toBe('203.0.113.5');
+  });
+
+  it('falls back to X-Real-IP then unknown', () => {
+    expect(rateLimit.clientIp({ headers: { 'x-real-ip': '203.0.113.7' } })).toBe('203.0.113.7');
+    expect(rateLimit.clientIp({ headers: {} })).toBe('unknown');
+  });
+});
+
+describe('polly lead handler — anti-abuse', () => {
+  beforeEach(() => rateLimit.reset());
+
+  it('honeypot filled → returns 200 but skips downstream side effects', async () => {
+    const req = makeReq({
+      body: {
+        contact: 'spambot@example.com',
+        project_type: 'audit',
+        budget: 'open',
+        timeline: 'open',
+        description: 'this is a spambot scraping the form blindly',
+        website: 'https://spambot.example/',
+      },
+      headers: { 'x-forwarded-for': '203.0.113.99' },
+    });
+    const res = makeRes();
+    await leadHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    const body = res.body as { ok: boolean; next_steps: string[] };
+    expect(body.ok).toBe(true);
+    // Honeypot path returns empty next_steps so we can distinguish from real path
+    expect(body.next_steps.length).toBe(0);
+  });
+
+  it('rate limit kicks in after 5 lead submissions per IP', async () => {
+    const headers = { 'x-forwarded-for': '203.0.113.50' };
+    const validBody = {
+      contact: 'real@example.com',
+      project_type: 'audit',
+      budget: 'open',
+      timeline: 'open',
+      description: 'this is a real lead description from a real human',
+    };
+    for (let i = 0; i < 5; i += 1) {
+      const res = makeRes();
+      await leadHandler(makeReq({ body: validBody, headers }), res);
+      expect(res.statusCode).toBe(200);
+    }
+    const overRes = makeRes();
+    await leadHandler(makeReq({ body: validBody, headers }), overRes);
+    expect(overRes.statusCode).toBe(429);
+  });
+});
 
 describe('polly commerce intent classification', () => {
   it('catalog has three live products with valid stripe/kofi urls', () => {
@@ -192,6 +279,7 @@ describe('polly commerce reply rendering', () => {
 });
 
 describe('polly chat handler — research path', () => {
+  beforeEach(() => rateLimit.reset());
   it('returns deterministic answer for harmonic wall research question', async () => {
     const req = makeReq({
       body: {
@@ -209,6 +297,7 @@ describe('polly chat handler — research path', () => {
 });
 
 describe('polly chat handler — offline-router fallback', () => {
+  beforeEach(() => rateLimit.reset());
   it('replaces dead-end LLM offline message with the four-bucket router', async () => {
     const original = {
       hf: process.env.HF_TOKEN,
@@ -237,6 +326,7 @@ describe('polly chat handler — offline-router fallback', () => {
 });
 
 describe('polly chat handler — commerce path', () => {
+  beforeEach(() => rateLimit.reset());
   it('returns Stripe link when buy intent + product matches', async () => {
     const req = makeReq({
       body: { message: 'I want to buy the AI governance toolkit', consent_to_train: false },
@@ -294,6 +384,7 @@ describe('polly chat handler — commerce path', () => {
 });
 
 describe('polly feedback handler', () => {
+  beforeEach(() => rateLimit.reset());
   it('captures up rating', async () => {
     const req = makeReq({
       body: { rating: 'up', user_message: 'hi', assistant_reply: 'hello', session_id: 'test-1' },
@@ -335,6 +426,8 @@ describe('polly catalog handler', () => {
 });
 
 describe('polly lead handler', () => {
+  beforeEach(() => rateLimit.reset());
+
   const validLead = {
     contact: 'someone@example.com',
     project_type: 'audit',

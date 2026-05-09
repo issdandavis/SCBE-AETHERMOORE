@@ -1,6 +1,7 @@
 'use strict';
 
 const { readJsonBody, sendJson, setCors } = require('../_agent_common');
+const rateLimit = require('../_polly_rate_limit');
 
 const VALID_RATINGS = new Set(['up', 'down']);
 const FEEDBACK_LOG_PREFIX = 'polly_feedback_v1 ';
@@ -18,6 +19,15 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') {
     return sendJson(res, 405, { ok: false, error: 'POST only' });
+  }
+
+  const rl = rateLimit.enforce(req, res, 'feedback');
+  if (!rl.allowed) {
+    return sendJson(res, 429, {
+      ok: false,
+      error: 'rate limit exceeded',
+      retry_after_ms: rl.retryAfterMs,
+    });
   }
 
   let body;
