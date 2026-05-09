@@ -14,7 +14,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.governance.bijective_tamper import (  # noqa: E402
     L13_MAPPING_RECOMMENDATION,
-    TamperResult,
     evaluate_code,
     recommended_l13_action,
 )
