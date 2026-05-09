@@ -2,7 +2,21 @@
  * @file polly_commerce_js.test.ts
  * Tests the JS Vercel-side port of polly commerce intent classification.
  * Mirrors the Python parity tests in test_polly_commerce.py.
+ *
+ * Test pollution guard: the lead + chat handlers fire HF upload + GitHub
+ * dispatch as side effects of capture. If a developer has HF_TOKEN /
+ * GITHUB_TOKEN exported in their shell, those side effects will reach the
+ * live private dataset during `npx vitest run`. Strip the env vars at the
+ * very top of the module so all subsequent require()s and handler calls
+ * see no credentials and short-circuit with no_token.
  */
+
+delete process.env.HF_TOKEN;
+delete process.env.HUGGINGFACE_TOKEN;
+delete process.env.HUGGING_FACE_HUB_TOKEN;
+delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
+delete process.env.GITHUB_TOKEN;
+delete process.env.GH_TOKEN;
 
 import { describe, it, expect, beforeEach } from 'vitest';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
