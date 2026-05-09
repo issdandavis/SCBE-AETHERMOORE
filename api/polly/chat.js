@@ -12,6 +12,7 @@ const {
 } = require('./commerce');
 const llm = require('../_chat_llm');
 const trainCapture = require('../_polly_train_capture');
+const hfUpload = require('../_polly_hf_upload');
 
 const COMMERCE_INTENTS = new Set(['buy', 'custom', 'membership', 'research']);
 const COMMERCE_CONFIDENCE_FLOOR = 0.6;
@@ -25,7 +26,15 @@ function logTrainingTurn(record) {
   }
 }
 
-function captureIfConsented({ req, message, reply, intent, sessionId, pageContext, provider }) {
+async function captureIfConsented({
+  req,
+  message,
+  reply,
+  intent,
+  sessionId,
+  pageContext,
+  provider,
+}) {
   if (!req || req.consent_to_train !== true) return;
   if (typeof message !== 'string' || !message.trim()) return;
   if (typeof reply !== 'string' || !reply.trim()) return;
@@ -40,8 +49,19 @@ function captureIfConsented({ req, message, reply, intent, sessionId, pageContex
     transport: 'vercel-polly-chat',
   };
   logTrainingTurn(record);
-  // Best-effort durable capture via GitHub repository_dispatch — never throws.
-  trainCapture.dispatchTrainingTurn(record).catch(() => {});
+  // Two parallel best-effort signal channels. Awaited together so the
+  // serverless runtime doesn't kill the function before the HF commit
+  // completes — chat is non-realtime and the extra ~1-2s is acceptable.
+  // Errors from either channel are swallowed (allSettled) so a transient
+  // HF or GitHub blip never poisons the chat response.
+  //   1. Direct HF upload using HF_TOKEN (already on Vercel) — primary
+  //      durable capture, works without any GitHub PAT.
+  //   2. GitHub repository_dispatch — fires the issue + email side
+  //      effects when POLLY_TRAIN_GITHUB_TOKEN is also set.
+  await Promise.allSettled([
+    hfUpload.uploadRecord(record),
+    trainCapture.dispatchTrainingTurn(record),
+  ]);
 }
 
 async function llmFallback(message, history) {
@@ -89,7 +109,7 @@ module.exports = async function handler(req, res) {
       rendered = renderMembershipReply();
     }
 
-    captureIfConsented({
+    await captureIfConsented({
       req: body,
       message,
       reply: rendered.text,
@@ -128,7 +148,7 @@ module.exports = async function handler(req, res) {
   // step. Real LLM responses (provider in ollama|huggingface) pass through.
   if (!llm || llm.provider === 'offline' || llm.provider === 'error') {
     const fallback = renderOfflineRouter(message);
-    captureIfConsented({
+    await captureIfConsented({
       req: body,
       message,
       reply: fallback.text,
@@ -150,7 +170,7 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  captureIfConsented({
+  await captureIfConsented({
     req: body,
     message,
     reply: llm && llm.text,
