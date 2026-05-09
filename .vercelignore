@@ -6,4 +6,6 @@
 !docs
 !docs/offers.json
 !docs/app-config.json
+!public
+!public/hire.html
 !vercel.json
