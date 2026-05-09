@@ -109,6 +109,22 @@ describe('polly commerce intent classification', () => {
     expect(intent.confidence).toBeCloseTo(0.8, 2);
   });
 
+  it('classifies "what is the harmonic wall" via topic-key fallback at 0.78', () => {
+    const intent = commerce.classifyIntent('What is the harmonic wall in SCBE?');
+    expect(intent.name).toBe('research');
+    expect(intent.confidence).toBeCloseTo(0.78, 2);
+  });
+
+  it('classifies "explain the 14-layer pipeline" via topic-key fallback', () => {
+    const intent = commerce.classifyIntent('Explain the 14-layer pipeline please');
+    expect(intent.name).toBe('research');
+  });
+
+  it('does NOT route question-shaped non-topic prompts to research', () => {
+    const intent = commerce.classifyIntent('What time is it?');
+    expect(intent.name).toBe('general');
+  });
+
   it('returns general intent when nothing matches', () => {
     const intent = commerce.classifyIntent('What is the weather today?');
     expect(intent.name).toBe('general');
