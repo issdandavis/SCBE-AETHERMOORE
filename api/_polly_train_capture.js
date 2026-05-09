@@ -19,7 +19,7 @@ function trainConfig() {
       process.env.GH_TOKEN ||
       '',
     repo: process.env.POLLY_TRAIN_REPO || process.env.GITHUB_REPO || DEFAULT_REPO,
-    enabled: String(process.env.POLLY_TRAIN_DISPATCH_ENABLED || 'true').toLowerCase() !== 'false',
+    enabled: String(process.env.POLLY_TRAIN_DISPATCH_ENABLED || 'false').toLowerCase() === 'true',
     timeoutMs: Math.max(500, Number(process.env.POLLY_TRAIN_DISPATCH_TIMEOUT_MS || 4000)),
   };
 }
