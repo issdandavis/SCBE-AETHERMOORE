@@ -112,6 +112,8 @@
     "cash:sprint": "python scripts/revenue/daily_cash_sprint.py",
     "cash:sprint:run": "python scripts/revenue/daily_cash_sprint.py --continuous",
     "cash:sprint:watch": "python scripts/revenue/daily_cash_sprint.py --continuous --cycle-when-complete --max-steps 1",
+    "smoke:remote-app-config": "python scripts/system/remote_app_config_smoke.py",
+    "smoke:remote-app-config:live": "python scripts/system/remote_app_config_smoke.py --live",
     "feature:explore": "python scripts/explore_scbe_feature_space.py",
     "eval:legacy:hf": "python scripts/run_legacy_hf_eval.py",
     "probe:attention:fft": "python scripts/probe_attention_fft.py",
