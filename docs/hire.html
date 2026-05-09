@@ -221,6 +221,12 @@ footer a:hover{color:var(--accent)}
 </div>
 </section>
 
+
+<section>
+<h2>Talk to Polly</h2>
+<p class="muted">Polly is the SCBE assistant. Ask about products, scope a custom build, or get pointed at the right resource. Conversations help train the next release (with your consent).</p>
+<div id="pollyChatRoot" style="min-height:560px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card);"></div>
+</section>
 <footer>
 <div>
 <a href="https://aethermoore.com">aethermoore.com</a> · <a href="https://github.com/issdandavis/SCBE-AETHERMOORE">GitHub</a> · <a href="mailto:issdandavis7795@gmail.com">issdandavis7795@gmail.com</a>
@@ -231,5 +237,28 @@ Built solo · Last updated 2026-05-09
 </footer>
 
 </div>
+
+<script src="/static/polly-hf-chat.js"></script>
+<script>
+(function(){
+  var root = document.getElementById('pollyChatRoot');
+  if (!root || !window.PollyHFChat) return;
+  window.PollyHFChat.mount(root, {
+    title: 'Polly',
+    subtitle: 'Direct line to product, custom builds, and the work itself.',
+    mode: 'scbe-polly',
+    scbeApiBase: window.location.origin,
+    consentToTrain: true,
+    sessionId: 'hire-' + Date.now(),
+    initialAssistantText: "Ask anything: products, custom builds, federal subcontract conversations, or how the 14-layer pipeline works.",
+    suggestions: [
+      'How much is the AI Governance Toolkit?',
+      'I need a custom audit for my finance LLM',
+      'How do I sponsor the work?',
+      'What does the harmonic wall actually do?'
+    ]
+  });
+})();
+</script>
 </body>
 </html>
