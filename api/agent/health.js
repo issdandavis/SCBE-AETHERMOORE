@@ -31,7 +31,7 @@ module.exports = async function handler(req, res) {
         process.env.HF_TOKEN || process.env.HUGGINGFACE_TOKEN || process.env.HUGGING_FACE_HUB_TOKEN
       ),
       ollama_model: process.env.OLLAMA_MODEL || process.env.AGENT_OLLAMA_MODEL || 'llama3.2',
-      hf_model: process.env.HF_MODEL || process.env.AGENT_HF_MODEL || 'Qwen/Qwen2.5-72B-Instruct',
+      hf_model: process.env.HF_MODEL || process.env.AGENT_HF_MODEL || 'Qwen/Qwen2.5-7B-Instruct',
       cost_policy:
         'prefer local Ollama, then configured Hugging Face, then deterministic offline fallback',
     },
