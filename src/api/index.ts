@@ -95,7 +95,7 @@ export interface GateResult {
 
 /** Harmonic complexity pricing tier */
 export interface PricingTier {
-  tier: 'FREE' | 'STARTER' | 'PRO' | 'ENTERPRISE';
+  tier: 'FREE' | 'SUPPORTER' | 'STARTER' | 'PRO' | 'ENTERPRISE';
   complexity: number;
   description: string;
 }

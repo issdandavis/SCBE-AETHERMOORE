@@ -10,7 +10,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from pydantic import BaseModel
 
-from .database import get_db, Customer, Subscription, UsageRecord, BillingEvent
+from .database import get_db, Customer, Subscription, UsageRecord
 from .stripe_client import StripeClient
 from .tiers import PRICING_TIERS, get_price_id_for_tier
 from .webhooks import process_webhook_event
@@ -77,8 +77,8 @@ async def create_public_checkout_session(request: PublicCheckoutRequest):
     This route intentionally avoids API-key auth to support first-time buyers.
     """
     tier = request.tier.upper().strip()
-    if tier not in {"STARTER", "PRO"}:
-        raise HTTPException(status_code=400, detail="Public checkout supports STARTER or PRO tiers.")
+    if tier not in {"SUPPORTER", "STARTER", "PRO"}:
+        raise HTTPException(status_code=400, detail="Public checkout supports SUPPORTER, STARTER, or PRO tiers.")
     if "@" not in request.email:
         raise HTTPException(status_code=400, detail="Valid email is required.")
 
@@ -201,7 +201,7 @@ async def cancel_subscription(
         if not subscription or not subscription.stripe_subscription_id:
             raise HTTPException(status_code=400, detail="No active subscription found")
 
-        result = StripeClient.cancel_subscription(subscription.stripe_subscription_id)
+        StripeClient.cancel_subscription(subscription.stripe_subscription_id)
         subscription.cancel_at_period_end = True
 
     return {"status": "cancellation_scheduled", "cancel_at_period_end": True}
@@ -219,7 +219,7 @@ async def reactivate_subscription(
             db.query(Subscription)
             .filter(
                 Subscription.customer_id == customer.customer_id,
-                Subscription.cancel_at_period_end == True,
+                Subscription.cancel_at_period_end,
             )
             .first()
         )
@@ -227,7 +227,7 @@ async def reactivate_subscription(
         if not subscription or not subscription.stripe_subscription_id:
             raise HTTPException(status_code=400, detail="No subscription to reactivate")
 
-        result = StripeClient.reactivate_subscription(subscription.stripe_subscription_id)
+        StripeClient.reactivate_subscription(subscription.stripe_subscription_id)
         subscription.cancel_at_period_end = False
 
     return {"status": "reactivated", "cancel_at_period_end": False}
