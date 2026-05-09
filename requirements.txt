@@ -39,7 +39,7 @@ certifi>=2024.7.0
 # Browser Automation & Content Extraction
 playwright>=1.59.0
 beautifulsoup4>=4.12.0
-lxml>=5.0.0
+lxml>=6.1.0
 
 # Optional: Visualization (for extended demos)
 # matplotlib>=3.5.0
