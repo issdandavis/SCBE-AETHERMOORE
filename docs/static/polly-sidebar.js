@@ -316,7 +316,7 @@
     }
   }
 
-  var HF_MODEL = "Qwen/Qwen2.5-72B-Instruct";
+  var HF_MODEL = "Qwen/Qwen2.5-7B-Instruct";
   var VERCEL_BASE = window.POLLY_VERCEL_BASE || "https://scbe-agent-bridge-vercel.vercel.app";
   var CHAT_PROXY = VERCEL_BASE + "/api/agent/chat";
   var SEARCH_PROXY = VERCEL_BASE + "/api/agent/search";
