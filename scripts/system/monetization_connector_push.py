@@ -31,7 +31,9 @@ from src.security.secret_store import get_secret
 
 try:
     from scripts.gumroad_publish import GumroadPublisher, PRODUCTS, STRIPE_LINKS
-except ModuleNotFoundError:  # pragma: no cover - depends on optional local sales tooling
+except (
+    ModuleNotFoundError
+):  # pragma: no cover - depends on optional local sales tooling
     GumroadPublisher = None
     PRODUCTS = {}
     STRIPE_LINKS = {}
@@ -47,6 +49,8 @@ class StaticOffer:
     tags: List[str]
     cadence: str
     proof_url: str
+    intake_url: str = ""
+    fulfillment_command: str = ""
 
 
 STATIC_OFFERS: List[StaticOffer] = [
@@ -69,6 +73,11 @@ STATIC_OFFERS: List[StaticOffer] = [
         tags=["consulting", "governance", "fixed-scope", "cash-sprint"],
         cadence="one_time",
         proof_url="https://aethermoore.com/governance-snapshot.html",
+        intake_url="https://aethermoore.com/governance-snapshot.html#intake",
+        fulfillment_command=(
+            "python scripts/revenue/governance_snapshot_intake.py "
+            "--buyer-email <buyer-email> --workflow-name <workflow-name>"
+        ),
     ),
 ]
 
@@ -85,7 +94,11 @@ def _latest_lead_file() -> Optional[Path]:
     sales_dir = REPO_ROOT / "artifacts" / "sales"
     if not sales_dir.exists():
         return None
-    files = sorted(sales_dir.glob("github_leads_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    files = sorted(
+        sales_dir.glob("github_leads_*.json"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
     return files[0] if files else None
 
 
@@ -125,6 +138,8 @@ def _build_offers(include_gumroad: bool) -> List[Dict[str, Any]]:
             "tags": offer.tags,
             "cadence": offer.cadence,
             "proof_url": offer.proof_url,
+            "intake_url": offer.intake_url,
+            "fulfillment_command": offer.fulfillment_command,
         }
         for offer in STATIC_OFFERS
     ]
@@ -182,24 +197,41 @@ async def _dispatch(
             out["n8n"] = {"status": "skipped", "reason": "not_configured"}
         else:
             res = await bridge.execute("n8n", "trigger", payload)
-            out["n8n"] = {"status": "sent" if res.success else "failed", **_result_to_dict(res)}
+            out["n8n"] = {
+                "status": "sent" if res.success else "failed",
+                **_result_to_dict(res),
+            }
 
     if route_zapier:
         if not bridge.is_configured("zapier"):
             out["zapier"] = {"status": "skipped", "reason": "not_configured"}
         else:
             res = await bridge.execute("zapier", "trigger", payload)
-            out["zapier"] = {"status": "sent" if res.success else "failed", **_result_to_dict(res)}
+            out["zapier"] = {
+                "status": "sent" if res.success else "failed",
+                **_result_to_dict(res),
+            }
 
     return out
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Push latest leads + offers to n8n/Zapier monetization connectors.")
-    parser.add_argument("--leads-json", default="", help="Optional leads JSON file path.")
-    parser.add_argument("--top-leads", type=int, default=10, help="Number of leads to include in connector payload.")
+    parser = argparse.ArgumentParser(
+        description="Push latest leads + offers to n8n/Zapier monetization connectors."
+    )
     parser.add_argument(
-        "--include-gumroad", action="store_true", help="Attempt to enrich offers with Gumroad live URLs."
+        "--leads-json", default="", help="Optional leads JSON file path."
+    )
+    parser.add_argument(
+        "--top-leads",
+        type=int,
+        default=10,
+        help="Number of leads to include in connector payload.",
+    )
+    parser.add_argument(
+        "--include-gumroad",
+        action="store_true",
+        help="Attempt to enrich offers with Gumroad live URLs.",
     )
 
     parser.add_argument("--route-n8n", dest="route_n8n", action="store_true")
@@ -210,8 +242,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-route-zapier", dest="route_zapier", action="store_false")
     parser.set_defaults(route_zapier=True)
 
-    parser.add_argument("--dry-run", action="store_true", help="Do not send connector traffic.")
-    parser.add_argument("--output-dir", default="artifacts/monetization", help="Output root for run artifacts.")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Do not send connector traffic."
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="artifacts/monetization",
+        help="Output root for run artifacts.",
+    )
     return parser.parse_args()
 
 
@@ -220,7 +258,11 @@ def main() -> int:
     day = _utc_now().strftime("%Y%m%d")
     run_id = f"monetization-connector-push-{_utc_stamp()}"
 
-    lead_path = Path(args.leads_json).resolve() if args.leads_json.strip() else _latest_lead_file()
+    lead_path = (
+        Path(args.leads_json).resolve()
+        if args.leads_json.strip()
+        else _latest_lead_file()
+    )
     leads: List[Dict[str, Any]] = []
     if lead_path and lead_path.exists():
         loaded = _load_json(lead_path, default=[])
