@@ -550,8 +550,9 @@
         <h2>Talk to Polly</h2>
         <p class="muted">
           Polly is the SCBE assistant. Ask about products, scope a custom build, or get pointed at
-          the right resource. By default conversations are NOT used for training — tick the box
-          below if you want to contribute the conversation to the next release.
+          the right resource. Conversations are routed to a private Hugging Face dataset and used
+          to train the next release — uncheck the box below if you'd rather opt out for this
+          conversation.
         </p>
         <label
           style="
@@ -564,10 +565,10 @@
             cursor: pointer;
           "
         >
-          <input id="pollyConsentToTrain" type="checkbox" />
+          <input id="pollyConsentToTrain" type="checkbox" checked />
           <span
-            >Use this conversation to improve the next Polly release. Avoid sharing personal
-            information either way.</span
+            >Contribute this conversation to the private training dataset. Don't paste secrets,
+            credentials, or anything you wouldn't want a reviewer to see.</span
           >
         </label>
         <div
@@ -602,7 +603,7 @@
           subtitle: 'Direct line to product, custom builds, and the work itself.',
           mode: 'scbe-polly',
           scbeApiBase: window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app',
-          consentToTrain: false,
+          consentToTrain: true,
           sessionId: 'hire-' + Date.now(),
           initialAssistantText:
             'Ask anything: products, custom builds, federal subcontract conversations, or how the 14-layer pipeline works.',
