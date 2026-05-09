@@ -610,3 +610,49 @@ describe('polly training capture (repository_dispatch)', () => {
     expect(trainCapture.EVENT_TYPE).toBe('polly_training_turn');
   });
 });
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const statsHandler = require('../../api/polly/stats.js');
+
+describe('polly stats handler', () => {
+  beforeEach(() => rateLimit.reset());
+
+  it('returns capture_enabled=false when no HF token is set', async () => {
+    // Test pollution guard at top of file already strips HF_TOKEN. So this
+    // exercises the no-token branch that the live endpoint hits when the
+    // operator has not yet wired HF_TOKEN on Vercel.
+    const req = { method: 'GET', headers: {}, query: {} };
+    const res = makeRes();
+    await statsHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    const body = res.body as { ok: boolean; capture_enabled: boolean; message?: string };
+    expect(body.ok).toBe(true);
+    expect(body.capture_enabled).toBe(false);
+    expect(typeof body.message).toBe('string');
+  });
+
+  it('rejects non-GET methods', async () => {
+    const req = { method: 'POST', headers: {}, query: {} };
+    const res = makeRes();
+    await statsHandler(req, res);
+    expect(res.statusCode).toBe(405);
+  });
+
+  it('handles OPTIONS preflight with 204 + CORS headers', async () => {
+    const req = { method: 'OPTIONS', headers: {}, query: {} };
+    const res = makeRes();
+    await statsHandler(req, res);
+    expect(res.statusCode).toBe(204);
+    expect(res.headers['Access-Control-Allow-Origin']).toBe('*');
+  });
+
+  it('exposes internal helpers and the date-validation guard', () => {
+    const internal = statsHandler._internal;
+    expect(internal).toBeDefined();
+    expect(internal.isValidDate('2026-05-09')).toBe(true);
+    expect(internal.isValidDate('2026-5-9')).toBe(false);
+    expect(internal.isValidDate("'); DROP TABLE x;--")).toBe(false);
+    expect(internal.isValidDate('')).toBe(false);
+    expect(internal.todayUtc()).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
