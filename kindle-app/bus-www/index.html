@@ -143,26 +143,6 @@
         }
       }
     </style>
-    <script>
-      // Capacitor bridge — detect native vs web
-      window.isKindleApp = typeof window.Capacitor !== 'undefined';
-
-      // Handle offline state
-      window.addEventListener('offline', () => {
-        const dot = document.getElementById('status-dot');
-        const txt = document.getElementById('status-text');
-        if (dot) dot.className = 'dot off';
-        if (txt) txt.textContent = 'Offline';
-      });
-      window.addEventListener('online', () => {
-        const dot = document.getElementById('status-dot');
-        const txt = document.getElementById('status-text');
-        if (dot) dot.className = 'dot on';
-        if (txt) txt.textContent = 'Online';
-        // Re-check health
-        if (typeof checkHealth === 'function') checkHealth();
-      });
-    </script>
   </head>
   <body>
     <main class="phone-shell bus-shell">

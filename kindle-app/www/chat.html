@@ -1,205 +1,358 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Polly Chat</title>
-<link rel="manifest" href="./manifest.json">
-<style>
-  :root {
-    color-scheme: dark;
-    --bg: #08101b;
-    --panel: rgba(9, 20, 35, 0.82);
-    --panel-strong: rgba(13, 28, 47, 0.94);
-    --line: rgba(183, 218, 255, 0.16);
-    --text: #eef5ff;
-    --muted: #9fb6cf;
-    --accent: #73d2ff;
-    --accent-2: #d4b676;
-    --shadow: 0 26px 80px rgba(0, 0, 0, 0.45);
-  }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Aethermoor Assistant</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./static/icons/icon-192.png" />
+    <meta name="theme-color" content="#07111d" />
+    <link rel="stylesheet" href="./static/phone-shell.css" />
+    <style>
+      body {
+        background:
+          radial-gradient(700px 420px at 20% -8%, rgba(23, 198, 207, 0.22), transparent 62%),
+          linear-gradient(180deg, #07111d 0%, #091421 48%, #050a12 100%);
+      }
 
-  * { box-sizing: border-box; }
+      .chat-shell {
+        max-width: 760px;
+        min-height: 100vh;
+        grid-template-rows: auto 1fr auto;
+      }
 
-  body {
-    margin: 0;
-    min-height: 100vh;
-    font-family: "Aptos", "Segoe UI Variable Text", "Trebuchet MS", sans-serif;
-    background:
-      radial-gradient(circle at top left, rgba(115, 210, 255, 0.15), transparent 34%),
-      radial-gradient(circle at bottom right, rgba(212, 182, 118, 0.16), transparent 30%),
-      linear-gradient(180deg, #07101b 0%, #08111d 48%, #050b14 100%);
-    color: var(--text);
-  }
+      .assistant-hero {
+        padding-bottom: 12px;
+      }
 
-  .shell {
-    min-height: 100vh;
-    display: grid;
-    grid-template-columns: minmax(260px, 360px) 1fr;
-  }
+      .assistant-hero h1 {
+        max-width: 12ch;
+        font-size: clamp(36px, 12vw, 58px);
+      }
 
-  .rail {
-    padding: 28px 22px 24px;
-    border-right: 1px solid var(--line);
-    background: linear-gradient(180deg, rgba(4, 10, 18, 0.78), rgba(4, 10, 18, 0.38));
-    backdrop-filter: blur(18px);
-  }
+      .conversation-panel {
+        min-height: 52vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
 
-  .eyebrow {
-    margin: 0 0 12px;
-    color: var(--accent);
-    font-size: 0.76rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
+      .thread {
+        min-height: 46vh;
+        max-height: 58vh;
+      }
 
-  h1 {
-    margin: 0 0 12px;
-    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-    font-weight: 600;
-    font-size: clamp(2rem, 5vw, 3rem);
-    line-height: 0.94;
-  }
+      .composer textarea {
+        min-height: 72px;
+        border-radius: 18px;
+      }
 
-  .lead {
-    margin: 0 0 20px;
-    color: var(--muted);
-    line-height: 1.6;
-    max-width: 28rem;
-  }
+      .tool-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
 
-  .rail-group {
-    margin-top: 28px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
-  }
+      .tool-row .btn {
+        min-height: 44px;
+        border-radius: 14px;
+      }
 
-  .rail-group h2 {
-    margin: 0 0 10px;
-    font-size: 0.96rem;
-    font-weight: 600;
-  }
+      .settings-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: end;
+      }
 
-  .rail-list {
-    margin: 0;
-    padding-left: 18px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .rail-links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 12px;
-  }
-
-  .rail-links a {
-    color: var(--text);
-    text-decoration: none;
-    padding: 12px 14px;
-    border: 1px solid var(--line);
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 14px;
-  }
-
-  .main {
-    padding: 24px;
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-  }
-
-  .chat-stage {
-    width: min(100%, 1120px);
-    min-height: calc(100vh - 48px);
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: var(--shadow);
-    background: linear-gradient(180deg, var(--panel) 0%, var(--panel-strong) 100%);
-    backdrop-filter: blur(22px);
-  }
-
-  @media (max-width: 960px) {
-    .shell {
-      grid-template-columns: 1fr;
-    }
-
-    .rail {
-      border-right: 0;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 18px;
-    }
-
-    .main {
-      padding: 16px;
-    }
-
-    .chat-stage {
-      min-height: calc(100vh - 32px);
-      border-radius: 20px;
-    }
-  }
-</style>
-</head>
-<body>
-  <div class="shell">
-    <aside class="rail">
-      <p class="eyebrow">SCBE assistant lane</p>
-      <h1>Polly Chat</h1>
-      <p class="lead">
-        This is the first real HF-backed assistant surface for the Kindle app. It is designed to work in full-page mode now and collapse into a sidebar later without changing the core client.
-      </p>
-
-      <div class="rail-group">
-        <h2>Default model path</h2>
-        <ul class="rail-list">
-          <li>Chat default: <code>issdandavis/scbe-pivot-qwen-0.5b</code></li>
-          <li><code>phdm-21d-embedding</code> stays for embeddings, not chat</li>
-          <li><code>spiralverse-ai-federated-v1</code> stays for federated learning, not chat</li>
-        </ul>
-      </div>
-
-      <div class="rail-group">
-        <h2>Security rule</h2>
-        <ul class="rail-list">
-          <li>Local app use can store an HF token on-device.</li>
-          <li>Public site use should go through a proxy endpoint.</li>
-          <li>Conversation feedback can be exported for future training.</li>
-        </ul>
-      </div>
-
-      <div class="rail-group">
-        <h2>Quick routes</h2>
-        <div class="rail-links">
-          <a href="./polly-pad.html">Back to Polly Pad</a>
-          <a href="./browse.html">Open Browse lane</a>
-          <a href="./ops.html">Open Ops lane</a>
+      @media (max-width: 520px) {
+        .tool-row {
+          grid-template-columns: 1fr;
+        }
+        .settings-row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone-shell chat-shell">
+      <section class="hero assistant-hero">
+        <div class="hero-top">
+          <span class="eyebrow">Aethermoor Assistant</span>
+          <a class="btn-link" href="./index.html">Bus</a>
         </div>
-      </div>
-    </aside>
-
-    <main class="main">
-      <section class="chat-stage">
-        <div id="chatApp"></div>
+        <h1>Ask the bus.</h1>
+        <p class="lede">
+          No customer model key required. The backend tries local/cloud providers, then falls back
+          instead of breaking.
+        </p>
+        <div class="actions">
+          <span class="pill" id="bridgePill">Bridge</span>
+          <span class="status-pill" id="statusPill">Ready</span>
+        </div>
       </section>
-    </main>
-  </div>
 
-  <script src="./static/polly-hf-chat.js"></script>
-  <script>
-    window.PollyHFChat.mount(document.getElementById("chatApp"), {
-      title: "Polly",
-      subtitle: "HF-backed chat surface for apps, sidebars, and private device use.",
-      model: "issdandavis/scbe-pivot-qwen-0.5b",
-      suggestions: [
-        "Summarize the current SCBE product surfaces and tell me what is actually sellable right now.",
-        "Walk me through one clean buyer flow from landing page to delivery bundle.",
-        "Read this page state and tell me the next operational action, not a theory essay."
-      ],
-      initialAssistantText: "I am ready. Add an HF token for direct device use, or set a proxy endpoint if this surface moves to a public site."
-    });
-  </script>
-</body>
+      <section class="stack-card conversation-panel">
+        <div class="stack-head">
+          <div class="meta-row">
+            <div>
+              <h2>Conversation</h2>
+              <p class="section-copy" id="policyLine">
+                Free-first route: local, configured backend, offline.
+              </p>
+            </div>
+            <button class="btn" type="button" id="clearBtn">Clear</button>
+          </div>
+        </div>
+        <div class="stack-body">
+          <div class="thread" id="thread"></div>
+          <form id="composerForm">
+            <div class="composer">
+              <textarea
+                id="composerInput"
+                placeholder="Ask for a product check, research summary, setup help, or next action."
+              ></textarea>
+              <div class="tool-row">
+                <button class="btn" type="button" id="searchBtn">Search</button>
+                <button class="btn" type="button" id="exportBtn">Export</button>
+                <button class="btn primary" type="submit" id="sendBtn">Send</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <h2>Bridge</h2>
+            <p class="section-copy">
+              Change this only if you are testing a local or private backend.
+            </p>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="field">
+            <label for="apiBaseInput">Agent API base</label>
+            <input id="apiBaseInput" type="text" />
+          </div>
+          <button class="btn secondary" type="button" id="saveBridgeBtn">Save</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="./static/phone-shell.js"></script>
+    <script>
+      const THREAD_KEY = 'aethermoor.bus.chatThread.v1';
+      const API_BASE_KEY = 'aethermoor.agentApiBase';
+
+      let thread = PhoneShell.readStorageJson(THREAD_KEY, []);
+      let pending = false;
+
+      function apiBase() {
+        return (document.getElementById('apiBaseInput').value || PhoneShell.bridgeBase()).replace(
+          /\/+$/,
+          ''
+        );
+      }
+
+      function saveApiBase() {
+        const value = apiBase();
+        localStorage.setItem(API_BASE_KEY, value);
+        document.getElementById('bridgePill').textContent = value.replace(/^https?:\/\//, '');
+        return value;
+      }
+
+      function setStatus(text, tone) {
+        const pill = document.getElementById('statusPill');
+        pill.textContent = text;
+        pill.className = `status-pill ${tone || ''}`;
+      }
+
+      function storeThread() {
+        PhoneShell.writeStorageJson(THREAD_KEY, thread.slice(-40));
+      }
+
+      function renderThread() {
+        const target = document.getElementById('thread');
+        if (!thread.length) {
+          target.innerHTML = `
+      <article class="bubble assistant">
+        <div class="bubble-text">I am ready. Try: "check launch readiness", "search low resource computing", or "export this conversation".</div>
+        <div class="bubble-meta">no customer API key required</div>
+      </article>`;
+          return;
+        }
+        target.innerHTML = thread
+          .map(
+            (item) => `
+    <article class="bubble ${PhoneShell.escapeHtml(item.role)}">
+      <div class="bubble-text">${PhoneShell.escapeHtml(item.content)}</div>
+      ${item.meta ? `<div class="bubble-meta">${PhoneShell.escapeHtml(item.meta)}</div>` : ''}
+    </article>
+  `
+          )
+          .join('');
+        target.scrollTop = target.scrollHeight;
+      }
+
+      async function readResponse(response) {
+        const text = await response.text();
+        const payload = text ? JSON.parse(text) : {};
+        if (!response.ok)
+          throw new Error(payload.error || payload.detail || `HTTP ${response.status}`);
+        return payload;
+      }
+
+      async function refreshHealth() {
+        try {
+          const response = await fetch(`${apiBase()}/api/agent/health`, { cache: 'no-store' });
+          const payload = await readResponse(response);
+          document.getElementById('policyLine').textContent =
+            payload.chat?.cost_policy || 'Free-first fallback route active.';
+          setStatus('Bridge ready', 'good');
+        } catch {
+          document.getElementById('policyLine').textContent =
+            'Bridge unreachable. Local thread still works; try again when connected.';
+          setStatus('Offline', 'warn');
+        }
+      }
+
+      async function sendMessage(event) {
+        event.preventDefault();
+        if (pending) return;
+        const text = document.getElementById('composerInput').value.trim();
+        if (!text) return;
+        pending = true;
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('composerInput').value = '';
+        thread.push({ role: 'user', content: text });
+        storeThread();
+        renderThread();
+        setStatus('Sending', 'warn');
+        try {
+          const response = await fetch(`${apiBase()}/api/agent/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: text,
+              history: thread
+                .filter((row) => row.role === 'user' || row.role === 'assistant')
+                .slice(-8),
+            }),
+          });
+          const payload = await readResponse(response);
+          thread.push({
+            role: 'assistant',
+            content: payload.text || payload.response || 'No response text returned.',
+            meta: `${payload.provider || 'provider?'} / ${payload.model || 'model?'} / ${payload.cost || 'cost?'}`,
+          });
+          setStatus('Answered', 'good');
+        } catch (error) {
+          thread.push({
+            role: 'assistant',
+            content: `I could not reach the agent bridge. Your message is saved locally.\n\n${String(error.message || error)}`,
+            meta: 'offline local fallback',
+          });
+          setStatus('Offline fallback', 'warn');
+        } finally {
+          pending = false;
+          document.getElementById('sendBtn').disabled = false;
+          storeThread();
+          renderThread();
+        }
+      }
+
+      async function runSearch() {
+        const text = document.getElementById('composerInput').value.trim();
+        if (!text) {
+          setStatus('Type a search first', 'warn');
+          return;
+        }
+        setStatus('Searching', 'warn');
+        try {
+          const response = await fetch(`${apiBase()}/api/agent/search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: text, max_results: 6 }),
+          });
+          const payload = await readResponse(response);
+          const lines = (payload.results || [])
+            .map((row, index) => `${index + 1}. ${row.title}\n${row.url}`)
+            .join('\n\n');
+          thread.push({ role: 'user', content: `Search: ${text}` });
+          thread.push({
+            role: 'assistant',
+            content: lines || 'No results returned.',
+            meta: `${payload.cost || 'zero-credit-public-sources'}`,
+          });
+          storeThread();
+          renderThread();
+          setStatus('Search complete', 'good');
+        } catch (error) {
+          thread.push({
+            role: 'assistant',
+            content: `Search failed: ${String(error.message || error)}`,
+            meta: 'offline',
+          });
+          storeThread();
+          renderThread();
+          setStatus('Search failed', 'bad');
+        }
+      }
+
+      async function exportThread() {
+        const content = { thread, exported_at: new Date().toISOString() };
+        try {
+          const response = await fetch(`${apiBase()}/api/agent/storage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              kind: 'agent-bus-chat',
+              name: 'aethermoor-chat-export',
+              content,
+            }),
+          });
+          const payload = await readResponse(response);
+          const anchor = document.createElement('a');
+          anchor.href = `data:${payload.download.mime};base64,${payload.download.base64}`;
+          anchor.download = payload.download.filename;
+          anchor.click();
+          setStatus('Export ready', 'good');
+        } catch {
+          const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' });
+          const anchor = document.createElement('a');
+          anchor.href = URL.createObjectURL(blob);
+          anchor.download = 'aethermoor-chat-export.json';
+          anchor.click();
+          setStatus('Local export', 'warn');
+        }
+      }
+
+      document.getElementById('apiBaseInput').value = PhoneShell.bridgeBase();
+      saveApiBase();
+      renderThread();
+      refreshHealth();
+
+      document.getElementById('saveBridgeBtn').addEventListener('click', () => {
+        saveApiBase();
+        refreshHealth();
+      });
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        thread = [];
+        storeThread();
+        renderThread();
+        setStatus('Cleared', 'warn');
+      });
+      document.getElementById('composerForm').addEventListener('submit', sendMessage);
+      document.getElementById('searchBtn').addEventListener('click', runSearch);
+      document.getElementById('exportBtn').addEventListener('click', exportThread);
+      document.getElementById('composerInput').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+          event.preventDefault();
+          document.getElementById('composerForm').requestSubmit();
+        }
+      });
+    </script>
+  </body>
 </html>

@@ -1,4 +1,4 @@
-package com.issdandavis.aethercode;
+package io.aethermoor.bus;
 
 import com.getcapacitor.BridgeActivity;
 
