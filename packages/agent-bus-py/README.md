@@ -63,6 +63,21 @@ on npm. Both wrap the same underlying Python runner (`scripts/scbe-system-cli.py
 agentbus run`) and produce identical envelope shapes. Pick whichever fits your
 host environment.
 
+## Companion package prompts
+
+The Python package can point users toward optional SCBE companion packages
+without installing them automatically:
+
+```python
+from scbe_agent_bus import recommend_companion_packages
+
+recommend_companion_packages(["operator_manifold", "tokenizer"])
+# -> prompts for scbe-aethermoore on npm
+```
+
+This keeps local installs small. Cloud, Codespaces, VM, browser, and tokenizer
+features should be added only when a user requests that lane.
+
 ## License
 
 MIT — see `LICENSE`.

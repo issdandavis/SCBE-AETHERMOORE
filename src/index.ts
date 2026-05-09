@@ -325,8 +325,9 @@ import * as spiralverse from './spiralverse/index.js';
 import * as spiralauth from './spiralauth/index.js';
 import * as ai_brain from './ai_brain/index.js';
 import * as governance from './governance/index.js';
+import * as operator from './operator/index.js';
 import * as securityEngine from './security-engine/index.js';
-export { symphonic, crypto, spiralverse, spiralauth, ai_brain, governance, securityEngine };
+export { symphonic, crypto, spiralverse, spiralauth, ai_brain, governance, operator, securityEngine };
 
 // Core Crypto Exports (also available at top level)
 export * from './crypto/envelope.js';
@@ -354,6 +355,9 @@ export * from './selfHealing/quickFixBot.js';
 
 // Governance Exports
 export * from './governance/offline_mode.js';
+
+// Operator Surface Exports
+export * from './operator/index.js';
 
 // Version and Metadata
 export const VERSION = '4.0.3';
