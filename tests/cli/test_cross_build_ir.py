@@ -237,13 +237,7 @@ def test_funnel_bounded_unknown_tongue() -> None:
     with pytest.raises(QuarantineError):
         lift_to_lattice("(x + y)", "ZZ")
     with pytest.raises(QuarantineError):
-        ir = LatticeOp(
-            op_name="add",
-            op_id=0x00,
-            band="ARITHMETIC",
-            valence=2,
-            args={"a": "x", "b": "y"},
-        )
+        ir = LatticeOp(op_name="add", op_id=0x00, band="ARITHMETIC", valence=2, args={"a": "x", "b": "y"})
         emit_from_ir(ir, "ZZ")
 
 
@@ -276,35 +270,26 @@ def test_cross_build_is_pure_no_global_state() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_lexicon_excluded_set_is_documented() -> None:
-    """The excluded set is small, named, and stable. If the lexicon's
-    aggregation templates ever get canonicalised, this test fails loudly
-    and the cross-build sphere automatically picks up the new ops."""
-    assert TIER1_EXCLUDED_OPS == (
-        "count",
-        "fold",
-        "mean",
-        "reduce",
-        "scan",
-        "stdev",
-        "variance",
-    )
-    assert len(TIER1_PARTICIPATING_OPS) == 57
+def test_lexicon_excluded_set_is_empty_64_of_64_participate() -> None:
+    """All 64 lexicon ops now round-trip across the bijective sphere.
+
+    The 7 aggregation ops (count, fold, mean, reduce, scan, stdev, variance)
+    were previously excluded due to CA-tongue templates with dropped/renamed
+    placeholders and reduce/fold sharing identical templates. The lexicon was
+    canonicalised so each op uses one placeholder set across all six tongues
+    and reduce/fold are syntactically distinct, closing the sphere 57→64.
+    """
+    assert TIER1_EXCLUDED_OPS == ()
+    assert len(TIER1_PARTICIPATING_OPS) == 64
     assert len(LEXICON_BY_NAME) == 64
     assert len(TIER1_PARTICIPATING_OPS) + len(TIER1_EXCLUDED_OPS) == 64
-    # Excluded set must not overlap with participating set.
-    assert set(TIER1_EXCLUDED_OPS).isdisjoint(set(TIER1_PARTICIPATING_OPS))
+    for op in ("count", "fold", "mean", "reduce", "scan", "stdev", "variance"):
+        assert op in TIER1_PARTICIPATING_OPS, f"{op} should now participate"
 
 
 def test_lattice_op_is_frozen() -> None:
     """The IR is immutable — agentic-ops pipelines often pass it across
     boundaries, and silent mutation would break the recurrence digest."""
-    ir = LatticeOp(
-        op_name="add",
-        op_id=0x00,
-        band="ARITHMETIC",
-        valence=2,
-        args={"a": "x", "b": "y"},
-    )
+    ir = LatticeOp(op_name="add", op_id=0x00, band="ARITHMETIC", valence=2, args={"a": "x", "b": "y"})
     with pytest.raises(Exception):  # pydantic FrozenInstanceError
         ir.op_name = "sub"  # type: ignore[misc]

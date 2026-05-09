@@ -37,6 +37,7 @@ def geoseal_command_to_tool_class(command: str, *, execute: bool = False) -> str
         "explain-route",
         "backend-registry",
         "agent-harness",
+        "compile",
         "skill-tools",
         "hydra-bridge",
         "call-switchboard",

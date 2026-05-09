@@ -55,6 +55,25 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         data = _parse_json_stdout(stdout, stderr, rc)
         return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
+    if command == "compile":
+        intent = body.get("intent") or body.get("goal") or ""
+        if isinstance(intent, str):
+            intent_parts = intent.split()
+        elif isinstance(intent, list):
+            intent_parts = [str(part) for part in intent]
+        else:
+            intent_parts = [str(intent)]
+        ns = argparse.Namespace(
+            intent=intent_parts,
+            permission_mode=body.get("permission_mode") or "observe",
+            language=body.get("language") or "python",
+            tool=body.get("tool"),
+            json=True,
+        )
+        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_compile, ns)
+        data = _parse_json_stdout(stdout, stderr, rc)
+        return {"exit_code": rc, "data": data, "stderr": stderr or None}
+
     if command == "explain-route":
         forbid = body.get("forbid_provider")
         if isinstance(forbid, str):

@@ -1712,13 +1712,74 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_assist(args: argparse.Namespace) -> int:
-    from scripts.system.micro_agent_assist import (
-        build_advice,
-        post_packet,
-        render_text,
-        resolve_bus,
+def cmd_compile(args: argparse.Namespace) -> int:
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    payload = compile_intent_to_plan(
+        intent=" ".join(args.intent or []),
+        permission_mode=args.permission_mode,
+        preferred_language=args.language,
+        requested_tool=args.tool,
     )
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(
+            f"{payload['schema_version']} tool={payload['tool']['class']} "
+            f"decision={payload['policy']['decision']} runnable={payload['command']['runnable']}"
+        )
+        if payload["command"]["template"]:
+            print(payload["command"]["template"])
+    return 0 if payload["policy"]["decision"] != "DENY" else 2
+
+
+def cmd_loop_dispatch(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_tool_policy import (
+        evaluate_harness_tool_policy,
+        geoseal_command_to_tool_class,
+    )
+
+    tool_class = geoseal_command_to_tool_class("loop-dispatch", execute=bool(args.execute))
+    policy = evaluate_harness_tool_policy(
+        permission_mode=args.permission_mode,
+        tool_class=tool_class,
+    )
+    payload = {
+        "schema_version": "scbe_loop_dispatch_plan_v1",
+        "provider": args.provider,
+        "task": args.task,
+        "execute": bool(args.execute),
+        "policy": policy,
+    }
+    if args.execute and policy.get("ok"):
+        execute_armed = os.environ.get("SCBE_AGENTIC_LOOP_EXECUTE", "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+        payload["execute_gate"] = {
+            "armed": execute_armed,
+            "decision": "ALLOW" if execute_armed else "QUARANTINE",
+            "reason": "set SCBE_AGENTIC_LOOP_EXECUTE=1 to perform external loop dispatch",
+        }
+        if not execute_armed:
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("loop-dispatch execute gate is not armed")
+            return 2
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(
+            f"{payload['schema_version']} provider={args.provider} task={args.task} " f"decision={policy['decision']}"
+        )
+    return 0 if policy.get("ok") else 2
+
+
+def cmd_assist(args: argparse.Namespace) -> int:
+    from scripts.system.micro_agent_assist import build_advice, post_packet, render_text, resolve_bus
 
     repo_root = Path(args.repo_root).resolve()
     bus_path = resolve_bus(repo_root, Path(args.bus) if args.bus else None)
@@ -2109,16 +2170,7 @@ def cmd_shell(args: argparse.Namespace) -> int:
     )
     if TIER_RANK[gate.tier] > TIER_RANK[args.max_tier]:
         if args.json:
-            print(
-                json.dumps(
-                    {
-                        "version": "geoseal-shell-v1",
-                        "gate": gate.to_dict(),
-                        "ran": False,
-                    },
-                    indent=2,
-                )
-            )
+            print(json.dumps({"version": "geoseal-shell-v1", "gate": gate.to_dict(), "ran": False}, indent=2))
         else:
             print(f"[gate] {gate.tier}: blocked nested command")
             for finding in gate.findings:
@@ -2405,8 +2457,7 @@ class RouteCommand(BoundCommand):
         description="MANUAL mode: SLM never called, requires --op-name and --dst-tongue",
     )
     op_name: Optional[str] = Field(
-        None,
-        description="Pin the lexicon op (e.g. add, mul, xor) — skips band+op SLM stages",
+        None, description="Pin the lexicon op (e.g. add, mul, xor) — skips band+op SLM stages"
     )
     band: Optional[_Literal["ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"]] = Field(
         None, description="Pin the operation band — skips band SLM stage"
@@ -2440,6 +2491,20 @@ class RouteCommand(BoundCommand):
     ollama_host: str = Field("http://localhost:11434", description="Ollama server URL")
     min_confidence: float = Field(0.5, ge=0.0, le=1.0, description="Reject SLM stages below this confidence")
     timeout_seconds: float = Field(30.0, ge=0.1, le=300.0, description="Per-classify timeout")
+    no_ledger: bool = Field(
+        False,
+        description="Skip persisting this dispatch to the promotion ledger (stateless mode)",
+    )
+    ledger_path: Optional[str] = Field(
+        None,
+        description="Override promotion-ledger path (default: .scbe/route_ledger.jsonl)",
+    )
+    promotion_threshold: int = Field(
+        3,
+        ge=2,
+        le=100,
+        description="Recurrence count at which a trace becomes a promotion candidate",
+    )
 
 
 def _parse_args_pairs(pairs: List[str]) -> Dict[str, str]:
@@ -2576,6 +2641,42 @@ def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
             router.close()
             return 2
 
+    # Promotion ledger — persist this dispatch's trace so frequent
+    # invocations surface as candidates for subcommand promotion. This
+    # is the floating-tower mechanic: the CLI grows new named primitives
+    # from agent usage patterns, not from a release cycle.
+    if not cmd.no_ledger:
+        try:
+            from src.cli.command_trace import PromotionLedger, record_session
+
+            ledger_path = Path(cmd.ledger_path) if cmd.ledger_path else Path(".scbe/route_ledger.jsonl")
+            ledger = PromotionLedger.load(ledger_path, threshold=cmd.promotion_threshold)
+            # Build a synthetic argv that captures the *normalised* dispatch
+            # rather than the raw CLI flags. Two invocations that resolve to
+            # the same op + args + tongue should hash identically regardless
+            # of whether they came in via --intent or --manual.
+            normalised_argv = (
+                "geoseal",
+                "route",
+                "--op-name",
+                result.op.op_name,
+                "--dst-tongue",
+                result.dst_tongue,
+            ) + tuple(flag for k, v in sorted(result.op.args.items()) for flag in ("--arg", f"{k}={v}"))
+            trace = record_session(normalised_argv, env=os.environ)
+            entry = ledger.observe(trace)
+            ledger.save(ledger_path)
+            payload["ledger"] = {
+                "path": str(ledger_path),
+                "digest": entry.digest,
+                "count": entry.count,
+                "is_candidate": entry.count >= cmd.promotion_threshold,
+                "threshold": cmd.promotion_threshold,
+            }
+        except Exception as exc:
+            # Ledger is best-effort — never fail the route on persistence error.
+            payload["ledger_error"] = f"{type(exc).__name__}: {exc}"
+
     # Output routing — `--raw` puts emitted code on stdout for clean
     # piping (e.g. `geoseal route ... --emit --raw | bash`). The JSON
     # envelope still goes somewhere so audit trails aren't lost.
@@ -2585,6 +2686,411 @@ def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
     else:
         print(json.dumps(payload, indent=2))
     router.close()
+    return 0
+
+
+#  promote / aliases / alias / unpromote — the floating-tower self-modify path.
+#
+#  Workflow:
+#    geoseal route ... (×N times)        -> ledger accumulates digests
+#    geoseal promotions                  -> see candidates above threshold
+#    geoseal promote --digest <hex> --as <name>
+#    geoseal aliases                     -> list registered aliases
+#    geoseal alias <name> [--arg ...]    -> invoke the saved dispatch
+#    geoseal unpromote --alias <name>    -> remove
+# ---------------------------------------------------------------------------
+
+
+class PromoteCommand(BoundCommand):
+    """Upgrade a ledger candidate into a registered alias."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+        validate_assignment=True,
+        # Either name a specific digest or take the top current candidate.
+        parameter_sets={
+            "by-digest": ["digest"],
+            "latest": ["latest"],
+        },
+    )
+
+    name: str = Field(
+        ...,
+        description="Alias name to register (lowercase letters/digits/hyphens, max 64 chars)",
+    )
+    digest: Optional[str] = Field(
+        None, description="Specific ledger digest to promote (use `geoseal promotions` to list)"
+    )
+    latest: bool = Field(False, description="Promote the current top candidate (highest count)")
+    ledger_path: str = Field(".scbe/route_ledger.jsonl", description="Path to the route promotion ledger")
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
+    overwrite: bool = Field(False, description="Replace an existing alias with the same name")
+    threshold: int = Field(
+        3,
+        ge=1,
+        le=1000,
+        description="Recurrence threshold required to promote (matches `geoseal promotions`)",
+    )
+
+
+class AliasesCommand(BoundCommand):
+    """List registered aliases."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
+
+
+class AliasCommand(BoundCommand):
+    """Invoke a registered alias — dispatches in MANUAL mode using the
+    stored op + tongue + default args, with caller-supplied --arg overrides."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    name: str = Field(..., description="Alias name to invoke")
+    arg: List[str] = Field(
+        default_factory=list,
+        description="Repeatable arg override `name=value`; missing keys fall back to alias defaults",
+    )
+    emit: bool = Field(False, description="Render LatticeOp into dst_tongue (adds dst_code)")
+    emit_all: bool = Field(False, description="Render in all 6 tongues")
+    raw: bool = Field(False, description="Emit code to stdout, envelope to stderr")
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
+
+
+class UnpromoteCommand(BoundCommand):
+    """Remove a registered alias."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    alias: str = Field(..., description="Alias name to remove")
+    registry_path: str = Field(".scbe/route_aliases.json", description="Path to the alias registry")
+
+
+def _handle_promote(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.alias_registry import AliasError, AliasRegistry
+    from src.cli.command_trace import PromotionLedger
+
+    cmd = bound
+    assert isinstance(cmd, PromoteCommand)
+
+    ledger = PromotionLedger.load(Path(cmd.ledger_path), threshold=cmd.threshold)
+
+    # Resolve which entry to promote.
+    if cmd.latest:
+        candidates = ledger.candidates()
+        if not candidates:
+            err = {
+                "version": "geoseal-promote-v1",
+                "verdict": "QUARANTINE",
+                "error_type": "NoCandidate",
+                "message": (f"no ledger entry has crossed threshold={cmd.threshold} " f"in {cmd.ledger_path}"),
+            }
+            print(json.dumps(err, indent=2))
+            return 2
+        target = candidates[0]
+    else:
+        target = ledger.entries.get(cmd.digest or "")
+        if target is None:
+            err = {
+                "version": "geoseal-promote-v1",
+                "verdict": "QUARANTINE",
+                "error_type": "DigestNotFound",
+                "message": f"digest {cmd.digest!r} not in ledger {cmd.ledger_path}",
+            }
+            print(json.dumps(err, indent=2))
+            return 2
+        if target.count < cmd.threshold:
+            err = {
+                "version": "geoseal-promote-v1",
+                "verdict": "QUARANTINE",
+                "error_type": "BelowThreshold",
+                "message": (f"digest {cmd.digest} has count={target.count}, " f"below threshold={cmd.threshold}"),
+            }
+            print(json.dumps(err, indent=2))
+            return 2
+
+    # Recover dispatch shape from the normalised sample_argv.
+    op_name, dst_tongue, default_args = _parse_normalised_argv(target.sample_argv)
+    if op_name is None or dst_tongue is None:
+        err = {
+            "version": "geoseal-promote-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "MalformedSampleArgv",
+            "message": f"could not parse sample_argv: {list(target.sample_argv)}",
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+
+    registry = AliasRegistry.load(Path(cmd.registry_path))
+    try:
+        entry = registry.register(
+            cmd.name,
+            op_name=op_name,
+            dst_tongue=dst_tongue,
+            default_args=default_args,
+            source_digest=target.digest,
+            promoted_from_count=target.count,
+            overwrite=cmd.overwrite,
+        )
+    except AliasError as exc:
+        err = {
+            "version": "geoseal-promote-v1",
+            "verdict": "QUARANTINE",
+            "error_type": type(exc).__name__,
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+    registry.save(Path(cmd.registry_path))
+
+    payload = {
+        "version": "geoseal-promote-v1",
+        "verdict": "ALLOW",
+        "registry_path": cmd.registry_path,
+        "promoted": entry.to_dict(),
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _handle_aliases(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.alias_registry import AliasRegistry
+
+    cmd = bound
+    assert isinstance(cmd, AliasesCommand)
+    path = Path(cmd.registry_path)
+    registry = AliasRegistry.load(path)
+    payload = {
+        "version": "geoseal-aliases-list-v1",
+        "registry_path": str(path),
+        "registry_exists": path.exists(),
+        "alias_count": len(registry.aliases),
+        "aliases": [e.to_dict() for e in registry.list_aliases()],
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _handle_alias(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.alias_registry import AliasNotFoundError, AliasRegistry
+    from src.cli.cross_build_ir import (
+        QuarantineError as _IRQuarantine,
+        emit_from_ir,
+    )
+
+    cmd = bound
+    assert isinstance(cmd, AliasCommand)
+    registry = AliasRegistry.load(Path(cmd.registry_path))
+    try:
+        entry = registry.lookup(cmd.name)
+    except AliasNotFoundError as exc:
+        err = {
+            "version": "geoseal-alias-invoke-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "AliasNotFoundError",
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+
+    # Merge default_args with caller overrides.
+    try:
+        overrides = _parse_args_pairs(cmd.arg)
+    except ValueError as exc:
+        err = {
+            "version": "geoseal-alias-invoke-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "ArgParseError",
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+    merged_args = {**dict(entry.default_args), **overrides}
+
+    # Build LatticeOp directly via the lexicon — alias dispatch is
+    # deterministic and bypasses the SLM router entirely.
+    from src.ca_lexicon import LEXICON_BY_NAME
+    from src.cli.cross_build_ir import LatticeOp, TIER1_PARTICIPATING_OPS
+
+    if entry.op_name not in LEXICON_BY_NAME:
+        err = {
+            "version": "geoseal-alias-invoke-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "StaleAlias",
+            "message": f"alias {cmd.name!r} references unknown op {entry.op_name!r}",
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+    if entry.op_name not in TIER1_PARTICIPATING_OPS:
+        err = {
+            "version": "geoseal-alias-invoke-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "StaleAlias",
+            "message": f"alias {cmd.name!r} op {entry.op_name!r} excluded from Tier 1",
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+
+    lex_entry = LEXICON_BY_NAME[entry.op_name]
+    op = LatticeOp.from_entry(lex_entry, merged_args)
+
+    payload = {
+        "version": "geoseal-alias-invoke-v1",
+        "verdict": "ALLOW",
+        "alias": entry.name,
+        "op_name": op.op_name,
+        "op_id": op.op_id,
+        "band": op.band,
+        "dst_tongue": entry.dst_tongue,
+        "args": dict(op.args),
+    }
+
+    if cmd.emit or cmd.emit_all:
+        try:
+            if cmd.emit_all:
+                tongues = ("KO", "AV", "RU", "CA", "UM", "DR")
+                payload["translations"] = {t: emit_from_ir(op, t) for t in tongues}
+                payload["dst_code"] = payload["translations"][entry.dst_tongue]
+            else:
+                payload["dst_code"] = emit_from_ir(op, entry.dst_tongue)
+        except _IRQuarantine as exc:
+            err = {
+                "version": "geoseal-alias-invoke-v1",
+                "verdict": "QUARANTINE",
+                "stage": "emit",
+                "error_type": type(exc).__name__,
+                "message": str(exc),
+            }
+            print(json.dumps(err, indent=2))
+            return 2
+
+    if cmd.raw and cmd.emit and not cmd.emit_all:
+        print(payload["dst_code"])
+        sys.stderr.write(json.dumps(payload, indent=2) + "\n")
+    else:
+        print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _handle_unpromote(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.alias_registry import AliasNotFoundError, AliasRegistry
+
+    cmd = bound
+    assert isinstance(cmd, UnpromoteCommand)
+    registry = AliasRegistry.load(Path(cmd.registry_path))
+    try:
+        removed = registry.unregister(cmd.alias)
+    except AliasNotFoundError as exc:
+        err = {
+            "version": "geoseal-unpromote-v1",
+            "verdict": "QUARANTINE",
+            "error_type": "AliasNotFoundError",
+            "message": str(exc),
+        }
+        print(json.dumps(err, indent=2))
+        return 2
+    registry.save(Path(cmd.registry_path))
+    payload = {
+        "version": "geoseal-unpromote-v1",
+        "verdict": "ALLOW",
+        "removed": removed.to_dict(),
+    }
+    print(json.dumps(payload, indent=2))
+    return 0
+
+
+def _parse_normalised_argv(argv: tuple) -> tuple:
+    """Recover (op_name, dst_tongue, args_dict) from the normalised
+    sample_argv stored by the route handler.
+
+    The normalised shape is:
+      ("geoseal", "route", "--op-name", <op>, "--dst-tongue", <tongue>,
+       "--arg", "k1=v1", "--arg", "k2=v2", ...)
+    """
+    op_name = None
+    dst_tongue = None
+    args: Dict[str, str] = {}
+    i = 0
+    while i < len(argv):
+        token = argv[i]
+        if token == "--op-name" and i + 1 < len(argv):
+            op_name = argv[i + 1]
+            i += 2
+        elif token == "--dst-tongue" and i + 1 < len(argv):
+            dst_tongue = argv[i + 1]
+            i += 2
+        elif token == "--arg" and i + 1 < len(argv):
+            pair = argv[i + 1]
+            if "=" in pair:
+                k, v = pair.split("=", 1)
+                args[k] = v
+            i += 2
+        else:
+            i += 1
+    return op_name, dst_tongue, args
+
+
+#  promotions: list candidates from the route ledger.
+# ---------------------------------------------------------------------------
+
+
+class PromotionsCommand(BoundCommand):
+    """List recurrence candidates from the route promotion ledger."""
+
+    model_config = ConfigDict(extra="forbid", validate_assignment=True)
+
+    ledger_path: str = Field(
+        ".scbe/route_ledger.jsonl",
+        description="Path to the promotion ledger (default .scbe/route_ledger.jsonl)",
+    )
+    threshold: int = Field(
+        3,
+        ge=1,
+        le=1000,
+        description="Recurrence count at which an entry surfaces as a candidate",
+    )
+    show_all: bool = Field(
+        False,
+        description="Include all entries (below threshold too), not just candidates",
+    )
+
+
+def _handle_promotions(bound: BoundCommand, ns: argparse.Namespace) -> int:
+    from src.cli.command_trace import PromotionLedger
+
+    cmd = bound
+    assert isinstance(cmd, PromotionsCommand)
+
+    path = Path(cmd.ledger_path)
+    ledger = PromotionLedger.load(path, threshold=cmd.threshold)
+
+    if cmd.show_all:
+        rows = sorted(ledger.entries.values(), key=lambda e: e.count, reverse=True)
+    else:
+        rows = ledger.candidates()
+
+    payload = {
+        "version": "geoseal-promotions-v1",
+        "ledger_path": str(path),
+        "ledger_exists": path.exists(),
+        "threshold": cmd.threshold,
+        "total_entries": len(ledger.entries),
+        "candidate_count": len(ledger.candidates()),
+        "shown_count": len(rows),
+        "shown": [
+            {
+                "digest": e.digest,
+                "count": e.count,
+                "first_seen_us": e.first_seen_us,
+                "last_seen_us": e.last_seen_us,
+                "sample_argv": list(e.sample_argv),
+                "is_candidate": e.count >= cmd.threshold,
+            }
+            for e in rows
+        ],
+    }
+    print(json.dumps(payload, indent=2))
     return 0
 
 
@@ -3818,165 +4324,6 @@ def cmd_workflow(args: argparse.Namespace) -> int:
     return 2
 
 
-def cmd_call_switchboard(args: argparse.Namespace) -> int:
-    from src.coding_spine.agent_call_switchboard import evaluate_call_request
-
-    calls_path = Path(args.calls) if args.calls else None
-    existing: list[dict[str, Any]] = []
-    if calls_path and calls_path.exists():
-        loaded = json.loads(calls_path.read_text(encoding="utf-8"))
-        existing = loaded if isinstance(loaded, list) else loaded.get("calls", [])
-    request = json.loads(args.request)
-    payload = evaluate_call_request(existing, request)
-    print(json.dumps(payload, indent=2 if not args.json else None))
-    return 0
-
-
-def cmd_lightning_indexer(args: argparse.Namespace) -> int:
-    from src.coding_spine.lightning_indexer import select_sparse_candidates
-
-    if args.inline_candidates:
-        candidates = json.loads(args.inline_candidates)
-    elif args.candidates:
-        candidates = json.loads(Path(args.candidates).read_text(encoding="utf-8"))
-    else:
-        candidates = []
-    payload = select_sparse_candidates(
-        args.goal,
-        candidates,
-        top_k=args.top_k,
-        block_size=args.block_size,
-        block_multiplier=args.block_multiplier,
-        channel_budget=args.channel_budget,
-    )
-    print(json.dumps(payload, indent=2 if not args.json else None))
-    return 0
-
-
-def cmd_loop_dispatch(args: argparse.Namespace) -> int:
-    from src.coding_spine.agent_tool_policy import evaluate_harness_tool_policy, geoseal_command_to_tool_class
-
-    tool_class = geoseal_command_to_tool_class("loop-dispatch", execute=args.execute)
-    policy = evaluate_harness_tool_policy(permission_mode=args.permission_mode, tool_class=tool_class)
-    payload: dict[str, Any] = {
-        "schema_version": "geoseal_loop_dispatch_v1",
-        "provider": args.provider,
-        "task": args.task,
-        "execute": bool(args.execute),
-        "policy": policy,
-    }
-    if not policy.get("ok"):
-        print(json.dumps(payload, indent=2 if not args.json else None))
-        return 2
-    if args.execute and not os.environ.get("SCBE_AGENTIC_LOOP_EXECUTE"):
-        payload["execute_gate"] = {
-            "ok": False,
-            "decision": "QUARANTINE",
-            "reason": "execution requires SCBE_AGENTIC_LOOP_EXECUTE=1",
-        }
-        print(json.dumps(payload, indent=2 if not args.json else None))
-        return 2
-    payload["execute_gate"] = {"ok": True, "decision": "ALLOW", "reason": "dry_run_or_env_approved"}
-    print(json.dumps(payload, indent=2 if not args.json else None))
-    return 0
-
-
-def cmd_terminus_training(args: argparse.Namespace) -> int:
-    from scripts.benchmark.terminus_training_runner import run_benchmark
-
-    out_dir = Path(args.out_dir)
-    if args.mode != "benchmark":
-        raise SystemExit("only --mode benchmark is supported by geoseal terminus-training")
-    payload = run_benchmark(out_dir, agent_id=args.agent_id)
-    print(json.dumps(payload, indent=2 if not args.json else None))
-    return 0 if payload.get("pass") else 1
-
-
-def cmd_yin_yang_dual(args: argparse.Namespace) -> int:
-    from src.tokenizer.yin_yang_lattice import build_yin_yang_dual_packet
-
-    payload = build_yin_yang_dual_packet(
-        ko_text=args.ko_text,
-        dr_text=args.dr_text,
-        size=args.size,
-        active_frame=args.frame,
-    )
-    print(json.dumps(payload, indent=2 if not args.json else None))
-    return 0
-
-
-def cmd_pair_agent_training(args: argparse.Namespace) -> int:
-    from scripts.training_data.build_geoshell_pair_agent_sft import build_dataset, write_outputs
-
-    dataset = build_dataset()
-    paths = write_outputs(dataset, Path(args.output_dir), Path(args.event_path))
-    payload = {
-        "schema_version": "geoseal_pair_agent_training_v1",
-        "ok": True,
-        "train_count": len(dataset["train"]),
-        "holdout_count": len(dataset["holdout"]),
-        "geoshell_event_feed": str(paths["events"]),
-        "paths": {name: str(path) for name, path in paths.items()},
-    }
-    print(json.dumps(payload, indent=2 if not args.json else None))
-    return 0
-
-
-def cmd_agent_endurance_pack(args: argparse.Namespace) -> int:
-    out_dir = Path(args.output_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-    round_id = args.round_id
-    regimen = {
-        "schema_version": "scbe_agent_endurance_regimen_v1",
-        "regimen_id": f"regimen-{round_id}",
-        "round_id": round_id,
-        "permission_mode": args.permission_mode,
-        "lanes": ["observe", "route", "test", "summarize"],
-    }
-    taskset = {
-        "schema_version": "scbe_agent_endurance_taskset_v1",
-        "taskset_id": f"taskset-{round_id}",
-        "regimen_id": regimen["regimen_id"],
-        "tasks": [
-            {"task_id": "readiness", "goal": "inspect launch readiness", "tool_class": "read"},
-            {"task_id": "bounded-test", "goal": "run focused verification", "tool_class": "execute_tests"},
-        ],
-    }
-    run_report = {
-        "schema_version": "scbe_agent_endurance_run_report_v1",
-        "run_id": f"run-{round_id}",
-        "regimen_id": regimen["regimen_id"],
-        "taskset_id": taskset["taskset_id"],
-        "status": "prepared",
-    }
-    manifest = {
-        "schema_version": "geoseal_agent_endurance_pack_manifest_v1",
-        "round_id": round_id,
-        "permission_mode": args.permission_mode,
-    }
-    paths = {
-        "regimen": out_dir / "regimen.json",
-        "taskset": out_dir / "taskset.json",
-        "run_report": out_dir / "run_report.json",
-        "manifest": out_dir / "manifest.json",
-    }
-    for name, payload in (
-        ("regimen", regimen),
-        ("taskset", taskset),
-        ("run_report", run_report),
-        ("manifest", manifest),
-    ):
-        paths[name].write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    payload = {
-        "schema_version": "geoseal_agent_endurance_pack_v1",
-        "round_id": round_id,
-        "permission_mode": args.permission_mode,
-        "paths": {name: str(path) for name, path in paths.items()},
-    }
-    print(json.dumps(payload, indent=2 if not args.json else None))
-    return 0
-
-
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="geoseal", description="GeoSeal swarm CLI")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -4128,68 +4475,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
 
-    p_switchboard = sub.add_parser("call-switchboard", help="Evaluate multi-agent call collisions")
-    p_switchboard.add_argument("--calls", default=None, help="JSON file with current calls")
-    p_switchboard.add_argument("--request", required=True, help="JSON call request")
-    p_switchboard.add_argument("--json", action="store_true")
-    p_switchboard.set_defaults(func=cmd_call_switchboard)
-
-    p_lightning = sub.add_parser("lightning-indexer", help="Select sparse candidates for agent context")
-    p_lightning.add_argument("--goal", required=True)
-    p_lightning.add_argument("--inline-candidates", default=None)
-    p_lightning.add_argument("--candidates", default=None, help="JSON candidate file")
-    p_lightning.add_argument("--top-k", type=int, default=8)
-    p_lightning.add_argument("--block-size", type=int, default=16)
-    p_lightning.add_argument("--block-multiplier", type=int, default=3)
-    p_lightning.add_argument("--channel-budget", type=int, default=3)
-    p_lightning.add_argument("--json", action="store_true")
-    p_lightning.set_defaults(func=cmd_lightning_indexer)
-
-    p_loop = sub.add_parser("loop-dispatch", help="Policy-check an agentic loop dispatch")
-    p_loop.add_argument("--provider", required=True)
-    p_loop.add_argument("--task", required=True)
-    p_loop.add_argument(
+    p_compile = sub.add_parser("compile", help="Compile intent into an SCBE agent-bus command plan")
+    p_compile.add_argument("intent", nargs=argparse.REMAINDER)
+    p_compile.add_argument(
         "--permission-mode",
         default="observe",
         choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
-        dest="permission_mode",
     )
-    p_loop.add_argument("--execute", action="store_true")
-    p_loop.add_argument("--json", action="store_true")
-    p_loop.set_defaults(func=cmd_loop_dispatch)
+    p_compile.add_argument("--language", default="python")
+    p_compile.add_argument("--tool", default=None, help="Force harness tool class")
+    p_compile.add_argument("--json", action="store_true")
+    p_compile.set_defaults(func=cmd_compile)
 
-    p_terminus = sub.add_parser("terminus-training", help="Run the Terminus training benchmark")
-    p_terminus.add_argument("--mode", default="benchmark", choices=["benchmark"])
-    p_terminus.add_argument("--out-dir", required=True)
-    p_terminus.add_argument("--agent-id", default="geoseal-terminus")
-    p_terminus.add_argument("--json", action="store_true")
-    p_terminus.set_defaults(func=cmd_terminus_training)
-
-    p_yinyang = sub.add_parser("yin-yang-dual", help="Build a KO/DR dual lattice packet")
-    p_yinyang.add_argument("--ko-text", required=True)
-    p_yinyang.add_argument("--dr-text", required=True)
-    p_yinyang.add_argument("--frame", type=int, default=0)
-    p_yinyang.add_argument("--size", type=int, default=9)
-    p_yinyang.add_argument("--json", action="store_true")
-    p_yinyang.set_defaults(func=cmd_yin_yang_dual)
-
-    p_pair = sub.add_parser("pair-agent-training", help="Build GeoShell pair-agent SFT outputs")
-    p_pair.add_argument("--output-dir", required=True)
-    p_pair.add_argument("--event-path", required=True)
-    p_pair.add_argument("--json", action="store_true")
-    p_pair.set_defaults(func=cmd_pair_agent_training)
-
-    p_endurance = sub.add_parser("agent-endurance-pack", help="Generate an agent endurance regimen bundle")
-    p_endurance.add_argument("--round-id", required=True)
-    p_endurance.add_argument(
+    p_loop_dispatch = sub.add_parser("loop-dispatch", help="Policy-gated external agent loop dispatch")
+    p_loop_dispatch.add_argument("--provider", required=True)
+    p_loop_dispatch.add_argument("--task", required=True)
+    p_loop_dispatch.add_argument(
         "--permission-mode",
         default="observe",
         choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
-        dest="permission_mode",
     )
-    p_endurance.add_argument("--output-dir", required=True)
-    p_endurance.add_argument("--json", action="store_true")
-    p_endurance.set_defaults(func=cmd_agent_endurance_pack)
+    p_loop_dispatch.add_argument("--execute", action="store_true")
+    p_loop_dispatch.add_argument("--json", action="store_true")
+    p_loop_dispatch.set_defaults(func=cmd_loop_dispatch)
 
     p_assist = sub.add_parser("assist", help="Run local micro-assist for terminal agents")
     p_assist.add_argument("task", help="Task text to classify and route")
@@ -4334,6 +4642,41 @@ def build_parser() -> argparse.ArgumentParser:
     )
     bind_subparser(p_route, RouteCommand, _handle_route)
 
+    # promotions — list recurrence candidates from the route ledger.
+    p_promotions = sub.add_parser(
+        "promotions",
+        help="List dispatch patterns that have crossed the promotion threshold",
+    )
+    bind_subparser(p_promotions, PromotionsCommand, _handle_promotions)
+
+    # promote — upgrade a ledger candidate into a registered alias.
+    p_promote = sub.add_parser(
+        "promote",
+        help="Register a recurring dispatch as a named alias",
+    )
+    bind_subparser(p_promote, PromoteCommand, _handle_promote)
+
+    # aliases — list registered aliases.
+    p_aliases = sub.add_parser(
+        "aliases",
+        help="List registered alias names + their dispatch shape",
+    )
+    bind_subparser(p_aliases, AliasesCommand, _handle_aliases)
+
+    # alias — invoke a registered alias.
+    p_alias = sub.add_parser(
+        "alias",
+        help="Invoke a registered alias (deterministic dispatch via stored op + tongue)",
+    )
+    bind_subparser(p_alias, AliasCommand, _handle_alias)
+
+    # unpromote — remove a registered alias.
+    p_unpromote = sub.add_parser(
+        "unpromote",
+        help="Remove a registered alias",
+    )
+    bind_subparser(p_unpromote, UnpromoteCommand, _handle_unpromote)
+
     p_swarm_exec = sub.add_parser(
         "swarm-exec",
         help="Meet-in-the-middle codegen: merge two halves through the bijective seam, then run through the gate",
@@ -4357,11 +4700,7 @@ def build_parser() -> argparse.ArgumentParser:
         default="ko",
         help="Sacred Tongue used for seam canonicalization (default: ko)",
     )
-    p_swarm_exec.add_argument(
-        "--execute",
-        action="store_true",
-        help="Actually run the merged module through the gate",
-    )
+    p_swarm_exec.add_argument("--execute", action="store_true", help="Actually run the merged module through the gate")
     p_swarm_exec.add_argument("--cwd", default=None, help="Working directory for the merged-module subprocess")
     p_swarm_exec.add_argument("--timeout", type=float, default=30.0)
     p_swarm_exec.add_argument(
@@ -4605,12 +4944,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = build_parser()
-    args, extras = parser.parse_known_args(argv)
-    if extras:
-        if hasattr(args, "args") and isinstance(args.args, list) and all("=" in item for item in extras):
-            args.args.extend(extras)
-        else:
-            parser.error(f"unrecognized arguments: {' '.join(extras)}")
+    args = parser.parse_args(argv)
     return args.func(args)
 
 

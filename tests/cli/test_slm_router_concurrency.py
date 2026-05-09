@@ -21,7 +21,7 @@ from src.cli.slm_router import (
     _default_safe_arg_validator,
 )
 
-_BAND_SET = frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"})
+_BAND_SET = frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"})
 _ARITH_OPS = frozenset(
     {
         "abs",

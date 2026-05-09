@@ -104,6 +104,75 @@ def test_agent_harness_manifest_routes_all_code_languages():
     assert "agent_harness_json" in manifest["geoseal_cli"]
 
 
+def test_agent_harness_exposes_ghost_terminal_audit_tool():
+    from src.coding_spine.agent_tool_bridge import build_agent_harness_manifest_v1
+
+    manifest = build_agent_harness_manifest_v1(
+        inline_goal="audit blank terminal popups",
+        preferred_language="python",
+        permission_mode="observe",
+    )
+    tools = {row["tool"]: row for row in manifest["tool_contracts"]}
+    assert tools["system_ghost_terminal_audit"]["risk"] == "low"
+    assert "ghost-terminal-audit" in tools["system_ghost_terminal_audit"]["routes"]
+    assert tools["system_ghost_terminal_cleanup"]["risk"] == "medium"
+    assert "ghost-terminal-audit-clean-stale" in tools["system_ghost_terminal_cleanup"]["routes"]
+    observe = next(row for row in manifest["permission_profiles"] if row["mode"] == "observe")
+    maintenance = next(row for row in manifest["permission_profiles"] if row["mode"] == "maintenance")
+    assert "system_ghost_terminal_audit" in observe["allows"]
+    assert "system_ghost_terminal_cleanup" in observe["blocks"]
+    assert "system_ghost_terminal_cleanup" in maintenance["allows"]
+    assert "ghost_terminal_audit_ps1" in manifest["geoseal_cli"]
+    assert "-Json" in manifest["geoseal_cli"]["ghost_terminal_audit_ps1"]
+    assert "ghost_terminal_cleanup_stale_ps1" in manifest["geoseal_cli"]
+    assert "compile_intent_json" in manifest["geoseal_cli"]
+    assert "ghost_terminal_audit" in manifest["mcp_style_exports"]["resources"]
+    assert "system_ghost_terminal_audit" in manifest["mcp_style_exports"]["tools"]
+
+
+def test_command_compiler_lowers_ghost_audit_to_runnable_bus_plan():
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    plan = compile_intent_to_plan(
+        intent="audit the blank ghost terminal popup",
+        permission_mode="observe",
+    )
+    assert plan["schema_version"] == "scbe_command_plan_v1"
+    assert plan["tool"]["class"] == "system_ghost_terminal_audit"
+    assert plan["policy"]["decision"] == "ALLOW"
+    assert plan["command"]["runnable"] is True
+    assert plan["command"]["key"] == "ghost_terminal_audit_ps1"
+    assert "-Json" in plan["command"]["template"]
+    assert plan["strands"]["converged"] is True
+    assert len(plan["hashes"]["plan_sha256"]) == 64
+
+
+def test_command_compiler_blocks_cleanup_in_observe_mode():
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    plan = compile_intent_to_plan(
+        intent="clean and stop the ghost terminal popup",
+        permission_mode="observe",
+    )
+    assert plan["tool"]["class"] == "system_ghost_terminal_cleanup"
+    assert plan["policy"]["decision"] == "DENY"
+    assert plan["command"]["runnable"] is False
+    assert plan["command"]["key"] == "ghost_terminal_cleanup_stale_ps1"
+
+
+def test_command_compiler_allows_cleanup_in_maintenance_mode():
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    plan = compile_intent_to_plan(
+        intent="clean and stop the ghost terminal popup",
+        permission_mode="maintenance",
+    )
+    assert plan["tool"]["class"] == "system_ghost_terminal_cleanup"
+    assert plan["policy"]["decision"] == "ALLOW"
+    assert plan["command"]["runnable"] is True
+    assert "-CleanStale" in plan["command"]["template"]
+
+
 def test_geoseal_agent_harness_cli_json():
     proc = subprocess.run(
         [
@@ -131,6 +200,64 @@ def test_geoseal_agent_harness_cli_json():
     assert payload["schema_version"] == "scbe_agent_harness_manifest_v1"
     assert payload["selected_language"]["language"] == "zig"
     assert payload["selected_language"]["parent_tongue"] == "RU"
+
+
+def test_geoseal_compile_cli_json():
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.geoseal_cli",
+            "compile",
+            "--json",
+            "audit",
+            "the",
+            "ghost",
+            "terminal",
+            "popup",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_command_plan_v1"
+    assert payload["tool"]["class"] == "system_ghost_terminal_audit"
+    assert payload["policy"]["decision"] == "ALLOW"
+    assert payload["command"]["runnable"] is True
+
+
+def test_geoseal_compile_cli_denies_blocked_plan():
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.geoseal_cli",
+            "compile",
+            "--json",
+            "--permission-mode",
+            "observe",
+            "clean",
+            "the",
+            "ghost",
+            "terminal",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 2
+    payload = json.loads(proc.stdout)
+    assert payload["tool"]["class"] == "system_ghost_terminal_cleanup"
+    assert payload["policy"]["decision"] == "DENY"
+    assert payload["command"]["runnable"] is False
 
 
 def test_geoseal_service_tool_bridge_endpoint():
@@ -194,6 +321,25 @@ def test_geoseal_service_cli_bridge_agent_harness():
     assert body["status"] == "ok"
     assert body["exit_code"] == 0
     assert body["data"]["selected_language"]["tongue"] == "AV"
+
+
+def test_geoseal_service_cli_bridge_compile():
+    from fastapi.testclient import TestClient
+
+    from src.api.geoseal_service import app
+
+    client = TestClient(app)
+    response = client.post(
+        "/v1/geoseal/compile",
+        json={"intent": "audit the ghost terminal popup", "permission_mode": "observe"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["exit_code"] == 0
+    assert body["data"]["schema_version"] == "scbe_command_plan_v1"
+    assert body["data"]["tool"]["class"] == "system_ghost_terminal_audit"
+    assert body["data"]["command"]["runnable"] is True
 
 
 def test_geoseal_service_cli_bridge_code_packet():
