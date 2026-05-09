@@ -15,8 +15,8 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "fix/vercel-*" in config["ignoreCommand"]
     assert ("^/$", "/api/agent/launch.js") in routes
     assert ("^/launch$", "/api/agent/launch.js") in routes
-    assert ("^/hire/?$", "/hire.html") in routes
-    assert ("^/SCBE-AETHERMOORE/hire\\.html$", "/hire.html") in routes
+    assert ("^/hire/?$", "/api/agent/hire.js") in routes
+    assert ("^/SCBE-AETHERMOORE/hire\\.html$", "/api/agent/hire.js") in routes
     assert ("^/api/agent/(.*)$", "/api/agent/$1.js") in routes
 
 
@@ -25,6 +25,7 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     handler = REPO_ROOT / "api" / "agent" / "launch.js"
 
     assert handler.exists()
+    assert (REPO_ROOT / "api" / "agent" / "hire.js").exists()
     assert "!api" in ignore
     assert "!api/**" in ignore
     assert "!docs/offers.json" in ignore
@@ -34,8 +35,11 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
 def test_launch_page_links_to_public_docs_and_bridge_endpoints() -> None:
     source = (REPO_ROOT / "api" / "agent" / "launch.js").read_text(encoding="utf-8")
     hire_page = REPO_ROOT / "public" / "hire.html"
+    hire_handler = (REPO_ROOT / "api" / "agent" / "hire.js").read_text(encoding="utf-8")
 
     assert hire_page.exists()
+    assert "public', 'hire.html" in hire_handler
+    assert "Content-Type" in hire_handler
     assert "/api/agent/health" in source
     assert "/api/agent/status?limit=5" in source
     assert "https://aethermoore.com/SCBE-AETHERMOORE" in source
