@@ -23,7 +23,6 @@ from src.cli.slm_router import (
     LatticeRouter,
     Mode,
     StubSLMAdapter,
-    _band_choices,
     _band_choices_for_classification,
     _coding_intent_choices,
 )

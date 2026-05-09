@@ -17,7 +17,6 @@ Test groups:
 
 from __future__ import annotations
 
-import math
 from typing import Sequence
 from unittest.mock import MagicMock, patch
 

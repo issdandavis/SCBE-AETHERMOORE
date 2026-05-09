@@ -7,7 +7,6 @@ from the secondary, otherwise the primary's typed error stands.
 
 from __future__ import annotations
 
-from typing import Tuple
 
 import pytest
 

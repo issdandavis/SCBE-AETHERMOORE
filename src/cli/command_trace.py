@@ -28,7 +28,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import List, Mapping, Optional, Sequence, Tuple
 
 from src.input.bijective_input import (
     KeyAction,

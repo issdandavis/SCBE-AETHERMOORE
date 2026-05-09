@@ -17,7 +17,6 @@ import pytest
 from src.cli.petri_seed_loader import (
     PETRI_CANARY_GUID,
     PetriLoadError,
-    PetriSeed,
     load_seed_directory,
     load_seed_file,
     split_by_training_safety,

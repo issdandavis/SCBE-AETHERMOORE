@@ -38,10 +38,7 @@ from dataclasses import dataclass
 from typing import Mapping, Optional, Union
 
 from src.cli.slm_router import (
-    BandNotApplicable,
-    ClassificationFailure,
     LatticeRouter,
-    LoopDetected,
     Mode,
     QuarantineError,
     RoutingResult,

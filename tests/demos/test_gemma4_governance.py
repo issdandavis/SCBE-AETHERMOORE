@@ -13,14 +13,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from demos.gemma4_scbe_governance.lib import (  # noqa: E402
-    GovernedResponse,
     govern_and_generate,
 )
 from src.cli.slm_router import LatticeRouter, StubSLMAdapter  # noqa: E402

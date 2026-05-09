@@ -13,14 +13,12 @@ mechanic is real, not a 6x6 lookup table dressed up as architecture.
 
 from __future__ import annotations
 
-import itertools
 from typing import Dict
 
 import pytest
 
 from src.ca_lexicon import LEXICON_BY_NAME, TONGUE_NAMES, lookup
 from src.cli.cross_build_ir import (
-    AmbiguityError,
     CrossBuildResult,
     EmitFailure,
     LatticeOp,

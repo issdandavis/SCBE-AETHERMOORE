@@ -11,11 +11,10 @@ server. Three things under test:
 
 from __future__ import annotations
 
-from typing import Dict
 
 import pytest
 
-from src.cli.cross_build_ir import LatticeOp, QuarantineError, emit_from_ir
+from src.cli.cross_build_ir import QuarantineError, emit_from_ir
 from src.cli.slm_router import (
     ClassificationFailure,
     LatticeRouter,

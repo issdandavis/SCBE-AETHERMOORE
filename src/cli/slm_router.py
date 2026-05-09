@@ -32,9 +32,7 @@ from dataclasses import dataclass, field
 from typing import (
     Callable,
     Dict,
-    Iterable,
     List,
-    Literal,
     Mapping,
     Optional,
     Protocol,
@@ -43,7 +41,7 @@ from typing import (
     Union,
 )
 
-from src.ca_lexicon import LEXICON_BY_NAME, LANG_MAP, TONGUE_NAMES
+from src.ca_lexicon import LEXICON_BY_NAME, TONGUE_NAMES
 from src.cli.petri_pattern_filter import is_meta_ai_auditor_phrasing
 from src.cli.cross_build_ir import (
     LatticeOp,

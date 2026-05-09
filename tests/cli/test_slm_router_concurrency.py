@@ -15,7 +15,6 @@ import pytest
 from src.cli.cross_build_ir import QuarantineError, emit_from_ir
 from src.cli.slm_router import (
     ArgValidationFailure,
-    ClassificationFailure,
     LatticeRouter,
     LoopDetected,
     StubSLMAdapter,
@@ -240,7 +239,7 @@ def test_custom_validator_can_refuse_for_any_reason() -> None:
     shell-injection check."""
 
     def only_two_letter_args(op_name: str, args) -> None:
-        for k, v in args.items():
+        for _k, v in args.items():
             if len(v) > 2:
                 raise ArgValidationFailure(f"value too long: {v!r}")
 

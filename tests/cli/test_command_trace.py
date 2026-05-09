@@ -10,12 +10,10 @@ Three behaviours under test:
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
 
 import pytest
 
 from src.cli.command_trace import (
-    CommandTrace,
     PromotionLedger,
     TRACE_VERSION,
     record_and_observe,

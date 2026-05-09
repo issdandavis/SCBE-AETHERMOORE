@@ -2524,9 +2524,7 @@ def _parse_args_pairs(pairs: List[str]) -> Dict[str, str]:
 
 def _handle_route(bound: BoundCommand, ns: argparse.Namespace) -> int:
     from src.cli.slm_router import (
-        ClassificationFailure,
         LatticeRouter,
-        ManualModeError,
         Mode,
         OllamaAdapter,
         QuarantineError,
