@@ -24,6 +24,19 @@ from urllib.parse import quote_plus
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
 
+from src.api.polly_commerce import (
+    PRODUCT_CATALOG,
+    append_training_record,
+    classify_intent,
+    render_buy_reply,
+    render_custom_reply,
+    render_membership_reply,
+)
+from src.api.polly_workers import (
+    all_statuses as workers_all_statuses,
+    voice_response_twiml,
+)
+
 logger = logging.getLogger("scbe.api.polly")
 
 polly_router = APIRouter(prefix="/v1/polly", tags=["polly"])
@@ -127,6 +140,16 @@ class ChatRequest(BaseModel):
     thinking: bool = Field(default=False, description="Enable step-by-step reasoning mode (Gemini)")
     history: List[ChatMessage] = Field(default_factory=list, max_length=20)
     page_context: Optional[str] = Field(default=None, max_length=512)
+    consent_to_train: bool = Field(
+        default=False,
+        description="If True, the turn is appended to the live training corpus.",
+    )
+    session_id: Optional[str] = Field(default=None, max_length=128)
+
+
+class ActionLink(BaseModel):
+    label: str
+    url: str
 
 
 class ChatResponse(BaseModel):
@@ -135,6 +158,8 @@ class ChatResponse(BaseModel):
     thinking: bool
     model: str
     ts: int
+    actions: List[ActionLink] = Field(default_factory=list)
+    intent: Optional[str] = None
 
 
 class SearchRequest(BaseModel):
@@ -375,6 +400,121 @@ async def polly_context() -> ContextResponse:
     )
 
 
+class CatalogProduct(BaseModel):
+    sku: str
+    name: str
+    price_label: str
+    short: str
+    checkout_url: str
+    delivery_url: str = ""
+
+
+class CatalogResponse(BaseModel):
+    products: List[CatalogProduct]
+
+
+@polly_router.get("/catalog", response_model=CatalogResponse, summary="Product catalog")
+async def polly_catalog() -> CatalogResponse:
+    """Return the list of products Polly can sell."""
+    return CatalogResponse(
+        products=[
+            CatalogProduct(
+                sku=p.sku,
+                name=p.name,
+                price_label=p.price_label,
+                short=p.short,
+                checkout_url=p.checkout_url,
+                delivery_url=p.delivery_url,
+            )
+            for p in PRODUCT_CATALOG
+        ]
+    )
+
+
+class FeedbackRequest(BaseModel):
+    rating: str = Field(..., pattern="^(up|down)$")
+    user_message: str = Field(..., min_length=1, max_length=4096)
+    assistant_reply: str = Field(..., min_length=1, max_length=8192)
+    intent: Optional[str] = Field(default=None, max_length=64)
+    session_id: Optional[str] = Field(default=None, max_length=128)
+    consent_to_train: bool = Field(default=True)
+
+
+class FeedbackResponse(BaseModel):
+    ok: bool
+    captured: bool
+
+
+class WorkerStatusItem(BaseModel):
+    name: str
+    configured: bool
+    detail: str = ""
+
+
+class WorkersResponse(BaseModel):
+    workers: List[WorkerStatusItem]
+
+
+@polly_router.get(
+    "/workers",
+    response_model=WorkersResponse,
+    summary="External integration status (Ollama, HF, Kaggle, Twilio)",
+)
+async def polly_workers_status() -> WorkersResponse:
+    """Report which external integrations are configured.
+
+    Used by the chat widget to decide which features to surface (e.g. show
+    the AI-call CTA only if Twilio is configured) and by ops dashboards.
+    """
+    return WorkersResponse(
+        workers=[
+            WorkerStatusItem(name=s.name, configured=s.configured, detail=s.detail) for s in workers_all_statuses()
+        ]
+    )
+
+
+from fastapi import Response
+
+
+@polly_router.api_route(
+    "/voice/inbound",
+    methods=["GET", "POST"],
+    summary="Twilio inbound voice webhook",
+)
+async def polly_voice_inbound() -> Response:
+    """TwiML response for an inbound Twilio call.
+
+    Twilio webhooks default to POST; we accept GET as well to make
+    smoke-testing from a browser easy.
+    """
+    xml = voice_response_twiml()
+    return Response(content=xml, media_type="text/xml")
+
+
+@polly_router.post(
+    "/feedback",
+    response_model=FeedbackResponse,
+    summary="Record thumbs-up / thumbs-down on an assistant reply",
+)
+async def polly_feedback(req: FeedbackRequest) -> FeedbackResponse:
+    """Append a feedback-bearing turn to the live training corpus.
+
+    Treated as the supervised-finetune signal: thumbs-up stays as a positive
+    example, thumbs-down feeds the rejection sampler. Storage is the same
+    JSONL shard used by ``polly_chat``; downstream tooling reads the
+    ``feedback`` field to split positive vs. negative.
+    """
+    written = append_training_record(
+        consent=req.consent_to_train,
+        user_message=req.user_message,
+        assistant_reply=req.assistant_reply,
+        intent=req.intent or "feedback",
+        feedback=req.rating,
+        session_id=req.session_id,
+    )
+    return FeedbackResponse(ok=True, captured=written is not None)
+
+
 @polly_router.post("/chat", response_model=ChatResponse, summary="Chat with Polly")
 async def polly_chat(req: ChatRequest) -> ChatResponse:
     """
@@ -385,38 +525,90 @@ async def polly_chat(req: ChatRequest) -> ChatResponse:
     - Otherwise a deterministic router handles common query types (pricing,
       support, science, lore, training, setup, contact).
     """
+    # 1. Commerce + custom-build + membership intents take precedence over LLMs.
+    #    Direct buying signals deserve a direct answer with a real Stripe link,
+    #    not a freeform LLM riff that may hallucinate the price or skip the URL.
+    intent = classify_intent(req.message)
+    if intent.confidence >= 0.6 and intent.name in {"buy", "custom", "membership"}:
+        if intent.name == "buy":
+            text, action_dicts = render_buy_reply(intent.product)
+        elif intent.name == "custom":
+            text, action_dicts = render_custom_reply(req.message)
+        else:
+            text, action_dicts = render_membership_reply()
+
+        actions = [ActionLink(**a) for a in action_dicts]
+        response_obj = ChatResponse(
+            response=text,
+            route=f"commerce-{intent.name}",
+            thinking=False,
+            model="polly-commerce",
+            ts=int(time.time()),
+            actions=actions,
+            intent=intent.name,
+        )
+        _capture_training_turn(req, response_obj)
+        return response_obj
+
     if req.thinking and _gemini_key():
         try:
             text = await _gemini_chat(req.message, req.history, req.page_context)
-            return ChatResponse(
+            response_obj = ChatResponse(
                 response=text,
                 route="gemini-thinking",
                 thinking=True,
                 model=os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL),
                 ts=int(time.time()),
+                intent=intent.name,
             )
+            _capture_training_turn(req, response_obj)
+            return response_obj
         except RuntimeError as exc:
             logger.warning("Gemini fallback: %s", exc)
 
     # Try free LLM (HuggingFace / Ollama) before deterministic fallback
     free_result = await _free_llm_chat(req.message, req.page_context)
     if free_result:
-        return ChatResponse(
+        response_obj = ChatResponse(
             response=free_result["text"],
             route=f"free-llm-{free_result['provider']}",
             thinking=req.thinking,
             model=free_result["model"],
             ts=int(time.time()),
+            intent=intent.name,
         )
+        _capture_training_turn(req, response_obj)
+        return response_obj
 
     route, response = _deterministic_route(req.message)
-    return ChatResponse(
+    response_obj = ChatResponse(
         response=response,
         route=route,
         thinking=False,
         model="polly-deterministic",
         ts=int(time.time()),
+        intent=intent.name,
     )
+    _capture_training_turn(req, response_obj)
+    return response_obj
+
+
+def _capture_training_turn(req: "ChatRequest", resp: "ChatResponse") -> None:
+    """Append the turn to the live training corpus when consent is granted.
+
+    Never raises — training capture must not break the chat path.
+    """
+    try:
+        append_training_record(
+            consent=req.consent_to_train,
+            user_message=req.message,
+            assistant_reply=resp.response,
+            intent=resp.intent or resp.route,
+            page_context=req.page_context,
+            session_id=req.session_id,
+        )
+    except Exception as exc:  # pragma: no cover — defensive
+        logger.debug("training capture skipped: %s", exc)
 
 
 @polly_router.post("/search", response_model=SearchResponse, summary="Web search")
