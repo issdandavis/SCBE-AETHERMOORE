@@ -167,7 +167,8 @@ Cross-model biblical null-space evaluation:
 - **14-layer governance pipeline** — from context embedding to risk decision
 - **6 Sacred Tongues** — KO (intent), AV (transport), RU (policy), CA (compute), UM (security), DR (structure)
 - **Semantic projector** — trained 385x6 matrix mapping sentence embeddings to tongue coordinates
-- **Harmonic wall** — H(d*, R) = R^((φ · d*)²), canonical cost scaling
+- **Bijective tongue transport** — byte/token round-trip layer for exact packet and code transport
+- **Harmonic score** — H_score(d*, pd) = 1 / (1 + d* + 2·pd), bounded production Layer 12 score
 - **Fibonacci trust** — session-aware trust ladder (1,1,2,3,5,8,13...), one betrayal drops to floor
 - **Null-space signatures** — detect attacks by what's ABSENT, not what's present
 - **Neural dye injection** — trace signals through all 14 layers, visualize tongue activation heatmaps
@@ -274,7 +275,7 @@ Layer 6-7:   Breathing Transform + Phase (Möbius addition)
 Layer 8:     Multi-Well Realms
 Layer 9-10:  Spectral + Spin Coherence
 Layer 11:    Triadic Temporal Distance
-Layer 12:    H(d*, R) = R^((φ · d*)²)  [HARMONIC WALL]
+Layer 12:    H_score(d*, pd) = 1/(1+d*+2·pd)  [BOUNDED HARMONIC SCORE]
 Layer 13:    Risk' → ALLOW / QUARANTINE / DENY
 Layer 14:    Audio Axis (FFT telemetry)
 
