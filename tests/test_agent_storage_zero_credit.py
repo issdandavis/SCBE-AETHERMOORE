@@ -33,9 +33,7 @@ def test_agent_storage_endpoint_requires_commonjs_cleanly() -> None:
     assert payload["handlerType"] == "function"
     assert payload["hasBuilder"] == "function"
     assert payload["providers"][:2] == ["local_download", "browser_local"]
-    assert {"github", "dropbox", "onedrive", "gdrive"}.issubset(
-        set(payload["providers"])
-    )
+    assert {"github", "dropbox", "onedrive", "gdrive"}.issubset(set(payload["providers"]))
 
 
 def test_agent_storage_builds_zero_server_storage_export_packet() -> None:
