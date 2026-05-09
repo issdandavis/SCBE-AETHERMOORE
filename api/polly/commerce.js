@@ -63,7 +63,10 @@ const CONSULTING_TIERS = [
   },
 ];
 
-const CONSULTING_LANDING_URL = 'https://aethermoore.com/hire';
+// Apex aethermoore.com only resolves Pages content under the project-prefixed
+// path; bare /hire returns 404 via the current Cloudflare routing. Use the
+// canonical Pages URL until a custom rewrite is configured.
+const CONSULTING_LANDING_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hire.html';
 const HIRE_EMAIL = 'issdandavis7795@gmail.com';
 const MEMBERSHIP_KOFI_URL = 'https://ko-fi.com/Y8Y51UQYWZ';
 
@@ -317,7 +320,7 @@ const RESEARCH_TOPICS = [
       'as post-quantum hyperbolic successor to DARPA I2O Mission-oriented Resilient Clouds ' +
       '(MRC, ~2011-2017). SAM.gov UEI J4NXHM6N5F59, CAGE 1EXD5.',
     links: [
-      { label: 'Hire / federal subcontract', url: 'https://aethermoore.com/hire' },
+      { label: 'Hire / federal subcontract', url: CONSULTING_LANDING_URL },
     ],
   },
 ];
