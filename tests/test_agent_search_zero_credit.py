@@ -62,3 +62,30 @@ def test_agent_search_zero_credit_fanout_with_mocked_fetch() -> None:
         "wikipedia",
         "openalex",
     }
+
+
+def test_agent_search_accepts_get_query_for_browser_smoke() -> None:
+    payload = run_node("""
+        global.fetch = async () => ({
+          ok: true,
+          json: async () => ({ query: { search: [{ title: 'Ollama', snippet: 'local model runtime' }] } }),
+          text: async () => ''
+        });
+        const handler = require('./api/agent/search.js');
+        const req = { method: 'GET', query: { q: 'ollama', sources: 'wikipedia', max_results: '3' } };
+        const res = {
+          statusCode: 0,
+          headers: {},
+          setHeader(name, value) { this.headers[name] = value; },
+          status(code) { this.statusCode = code; return this; },
+          json(body) { console.log(JSON.stringify({ statusCode: this.statusCode, body })); },
+          end() { console.log(JSON.stringify({ statusCode: this.statusCode, ended: true })); }
+        };
+        handler(req, res).catch((error) => {
+          console.error(error);
+          process.exit(1);
+        });
+        """)
+    assert payload["statusCode"] == 200
+    assert payload["body"]["ok"] is True
+    assert payload["body"]["query"] == "ollama"

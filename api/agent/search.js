@@ -231,17 +231,29 @@ async function searchAll(query, options = {}) {
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
-  let body;
-  try {
-    body = await readJsonBody(req);
-  } catch (error) {
-    return sendJson(res, 400, {
-      ok: false,
-      error: 'invalid JSON body',
-      detail: String(error.message || error),
-    });
+  let body = {};
+  if (req.method === 'GET') {
+    body = {
+      query: req.query && (req.query.query || req.query.q),
+      max_results: req.query && (req.query.max_results || req.query.maxResults),
+      sources:
+        req.query && typeof req.query.sources === 'string'
+          ? req.query.sources.split(',').map((item) => item.trim())
+          : undefined,
+    };
+  } else if (req.method === 'POST') {
+    try {
+      body = await readJsonBody(req);
+    } catch (error) {
+      return sendJson(res, 400, {
+        ok: false,
+        error: 'invalid JSON body',
+        detail: String(error.message || error),
+      });
+    }
+  } else {
+    return sendJson(res, 405, { ok: false, error: 'GET or POST only' });
   }
 
   const query = String((body && body.query) || '').trim();
