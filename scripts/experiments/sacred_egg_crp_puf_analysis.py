@@ -94,15 +94,11 @@ def load_measurements(path: Path) -> tuple[list[CrpMeasurement], list[str]]:
             challenge_id = str(row.get("challenge_id") or "").strip()
             read_id = str(row.get("read_id") or "").strip()
             if not device_id or not challenge_id or not read_id:
-                raise ValueError(
-                    f"line {line_number}: device_id/challenge_id/read_id required"
-                )
+                raise ValueError(f"line {line_number}: device_id/challenge_id/read_id required")
             try:
                 values = tuple(float(row[name]) for name in feature_names)
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    f"line {line_number}: non-numeric response value"
-                ) from exc
+                raise ValueError(f"line {line_number}: non-numeric response value") from exc
             rows.append(CrpMeasurement(device_id, challenge_id, read_id, values))
     return rows, feature_names
 
@@ -125,9 +121,7 @@ def _thresholds(rows: Sequence[CrpMeasurement]) -> tuple[float, ...]:
 def quantize(values: Sequence[float], thresholds: Sequence[float]) -> tuple[int, ...]:
     if len(values) != len(thresholds):
         raise ValueError("values and thresholds length mismatch")
-    return tuple(
-        1 if value >= threshold else 0 for value, threshold in zip(values, thresholds)
-    )
+    return tuple(1 if value >= threshold else 0 for value, threshold in zip(values, thresholds))
 
 
 def hamming_fraction(left: Sequence[int], right: Sequence[int]) -> float:
@@ -139,9 +133,7 @@ def hamming_fraction(left: Sequence[int], right: Sequence[int]) -> float:
 def summarize(values: Sequence[float]) -> DistanceSummary:
     if not values:
         return DistanceSummary(0, 0.0, 0.0, 0.0)
-    return DistanceSummary(
-        len(values), float(mean(values)), float(min(values)), float(max(values))
-    )
+    return DistanceSummary(len(values), float(mean(values)), float(min(values)), float(max(values)))
 
 
 def bit_min_entropy(bit_rows: Sequence[tuple[int, ...]]) -> tuple[float, float]:
@@ -190,12 +182,8 @@ def analyze_measurements(rows: Sequence[CrpMeasurement]) -> CrpMetrics:
     cross_challenge = summarize(cross_values)
     mean_entropy, total_entropy = bit_min_entropy([bits for _, bits in bit_rows])
     estimated_t_bits = math.ceil(genuine.maximum * feature_count)
-    estimated_impostor_delta_bits = (
-        math.floor(impostor.minimum * feature_count) if impostor.count else 0
-    )
-    challenge_separation = (
-        impostor.minimum - genuine.maximum if genuine.count and impostor.count else 0.0
-    )
+    estimated_impostor_delta_bits = math.floor(impostor.minimum * feature_count) if impostor.count else 0
+    challenge_separation = impostor.minimum - genuine.maximum if genuine.count and impostor.count else 0.0
     return CrpMetrics(
         schema_version=SCHEMA_VERSION,
         architecture_status=ARCHITECTURE_STATUS,
@@ -210,9 +198,7 @@ def analyze_measurements(rows: Sequence[CrpMeasurement]) -> CrpMetrics:
         uniqueness=impostor.mean,
         challenge_separation=challenge_separation,
         works_for_authentication=bool(
-            genuine.count
-            and impostor.count
-            and estimated_t_bits < estimated_impostor_delta_bits / 2
+            genuine.count and impostor.count and estimated_t_bits < estimated_impostor_delta_bits / 2
         ),
         estimated_t_bits=estimated_t_bits,
         estimated_impostor_delta_bits=estimated_impostor_delta_bits,
@@ -224,9 +210,7 @@ def analyze_measurements(rows: Sequence[CrpMeasurement]) -> CrpMetrics:
 def metrics_to_report(metrics: CrpMetrics, *, feature_names: Sequence[str]) -> dict:
     report = asdict(metrics)
     report["feature_names"] = list(feature_names)
-    report["verdict"] = (
-        "auth_candidate" if metrics.works_for_authentication else "overlap_or_unproven"
-    )
+    report["verdict"] = "auth_candidate" if metrics.works_for_authentication else "overlap_or_unproven"
     report["sacred_egg_role"] = (
         "Sacred Egg / GeoSeal context should select challenge_id and bind the response receipt; "
         "this harness only tests whether enrolled CRP responses separate genuine from impostor reads."
@@ -241,15 +225,11 @@ def metrics_to_report(metrics: CrpMetrics, *, feature_names: Sequence[str]) -> d
 
 def write_report(report: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Analyze challenge-response PUF measurement CSVs."
-    )
+    parser = argparse.ArgumentParser(description="Analyze challenge-response PUF measurement CSVs.")
     parser.add_argument(
         "csv",
         type=Path,

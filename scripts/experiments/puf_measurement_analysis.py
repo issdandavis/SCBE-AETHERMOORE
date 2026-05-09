@@ -128,9 +128,7 @@ def load_measurements(path: Path) -> tuple[list[Measurement], list[str]]:
             try:
                 values = tuple(float(row[name]) for name in feature_names)
             except (TypeError, ValueError) as exc:
-                raise ValueError(
-                    f"line {line_number}: non-numeric feature value"
-                ) from exc
+                raise ValueError(f"line {line_number}: non-numeric feature value") from exc
             seed_id = str(row.get("seed_id") or "").strip() or None
             fabrication_id = str(row.get("fabrication_id") or "").strip() or None
             rows.append(
@@ -177,9 +175,7 @@ def load_thresholds(path: Path, feature_names: Sequence[str]) -> tuple[float, ..
 def quantize(values: Sequence[float], thresholds: Sequence[float]) -> tuple[int, ...]:
     if len(values) != len(thresholds):
         raise ValueError("values and thresholds length mismatch")
-    return tuple(
-        1 if value >= threshold else 0 for value, threshold in zip(values, thresholds)
-    )
+    return tuple(1 if value >= threshold else 0 for value, threshold in zip(values, thresholds))
 
 
 def hamming_fraction(left: Sequence[int], right: Sequence[int]) -> float:
@@ -245,9 +241,7 @@ def analyze_measurements(
     feature_count = len(measurements[0].values)
     if any(len(row.values) != feature_count for row in measurements):
         raise ValueError("all measurements must have the same feature count")
-    thresholds = (
-        tuple(thresholds) if thresholds is not None else median_thresholds(measurements)
-    )
+    thresholds = tuple(thresholds) if thresholds is not None else median_thresholds(measurements)
     bit_rows = [(row, quantize(row.values, thresholds)) for row in measurements]
     intra_values, clone_values, inter_values = pairwise_distances(bit_rows)
     intra = summarize_distances(intra_values)
@@ -256,25 +250,13 @@ def analyze_measurements(
     bit_vectors = [bits for _, bits in bit_rows]
     mean_entropy, total_entropy = bit_min_entropy(bit_vectors)
     estimated_t_bits = math.ceil(intra.maximum * feature_count)
-    estimated_clone_delta_bits = (
-        math.floor(clone.minimum * feature_count) if clone.count else 0
-    )
-    estimated_delta_bits = (
-        math.floor(inter.minimum * feature_count) if inter.count else 0
-    )
-    fuzzy_vs_inter = bool(
-        intra.count and inter.count and estimated_t_bits < estimated_delta_bits / 2
-    )
-    fuzzy_vs_clone = bool(
-        intra.count
-        and clone.count
-        and estimated_t_bits < estimated_clone_delta_bits / 2
-    )
+    estimated_clone_delta_bits = math.floor(clone.minimum * feature_count) if clone.count else 0
+    estimated_delta_bits = math.floor(inter.minimum * feature_count) if inter.count else 0
+    fuzzy_vs_inter = bool(intra.count and inter.count and estimated_t_bits < estimated_delta_bits / 2)
+    fuzzy_vs_clone = bool(intra.count and clone.count and estimated_t_bits < estimated_clone_delta_bits / 2)
     clone_gap = clone.minimum - intra.maximum if intra.count and clone.count else 0.0
     clone_vs_intra_ratio = clone.mean / max(intra.mean, 1e-12) if clone.count else 0.0
-    clone_vs_inter_ratio = (
-        clone.mean / max(inter.mean, 1e-12) if clone.count and inter.count else 0.0
-    )
+    clone_vs_inter_ratio = clone.mean / max(inter.mean, 1e-12) if clone.count and inter.count else 0.0
     return PufMetrics(
         schema_version=SCHEMA_VERSION,
         measurement_count=len(measurements),
@@ -287,9 +269,7 @@ def analyze_measurements(
         reliability=1.0 - intra.mean,
         clone_gap=clone_gap,
         uniqueness=inter.mean,
-        separation_margin=(
-            inter.minimum - intra.maximum if intra.count and inter.count else 0.0
-        ),
+        separation_margin=(inter.minimum - intra.maximum if intra.count and inter.count else 0.0),
         works_for_fuzzy_extractor=fuzzy_vs_inter,
         works_against_seed_clone=fuzzy_vs_clone,
         estimated_t_bits=estimated_t_bits,
@@ -329,9 +309,7 @@ def bootstrap_gap_ci(
     return float(low), float(high)
 
 
-def metrics_to_report(
-    metrics: PufMetrics, *, feature_names: Sequence[str], gap_ci: tuple[float, float]
-) -> dict:
+def metrics_to_report(metrics: PufMetrics, *, feature_names: Sequence[str], gap_ci: tuple[float, float]) -> dict:
     report = asdict(metrics)
     report["architecture_status"] = ARCHITECTURE_STATUS
     report["status_note"] = NEGATIVE_FINDING_NOTE
@@ -339,15 +317,9 @@ def metrics_to_report(
     report["feature_names"] = list(feature_names)
     report["separation_margin_ci95"] = {"low": gap_ci[0], "high": gap_ci[1]}
     if metrics.clone.count:
-        report["verdict"] = (
-            "clone_resistant_candidate"
-            if metrics.clone_gap > 0
-            else "clone_overlap_or_barcode"
-        )
+        report["verdict"] = "clone_resistant_candidate" if metrics.clone_gap > 0 else "clone_overlap_or_barcode"
     else:
-        report["verdict"] = (
-            "separated" if metrics.separation_margin > 0 else "overlap_or_unproven"
-        )
+        report["verdict"] = "separated" if metrics.separation_margin > 0 else "overlap_or_unproven"
     report["recommended_next"] = (
         "choose ECC parameters from estimated_t_bits and estimated_clone_delta_bits"
         if metrics.works_against_seed_clone
@@ -362,15 +334,11 @@ def metrics_to_report(
 
 def write_report(report: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Analyze PUF measurement CSVs for uniqueness/reliability."
-    )
+    parser = argparse.ArgumentParser(description="Analyze PUF measurement CSVs for uniqueness/reliability.")
     parser.add_argument(
         "csv",
         type=Path,
@@ -399,9 +367,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     measurements, feature_names = load_measurements(args.csv)
-    thresholds = (
-        load_thresholds(args.thresholds, feature_names) if args.thresholds else None
-    )
+    thresholds = load_thresholds(args.thresholds, feature_names) if args.thresholds else None
     metrics = analyze_measurements(
         measurements,
         thresholds=thresholds,
@@ -420,14 +386,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     print(CLI_NEGATIVE_FINDING_WARNING)
     print(f"report={args.report}")
-    return (
-        0
-        if (
-            metrics.works_against_seed_clone
-            or (not metrics.clone.count and metrics.separation_margin > 0)
-        )
-        else 2
-    )
+    return 0 if (metrics.works_against_seed_clone or (not metrics.clone.count and metrics.separation_margin > 0)) else 2
 
 
 if __name__ == "__main__":
