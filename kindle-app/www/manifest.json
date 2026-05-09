@@ -6,7 +6,10 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#07111d",
   "theme_color": "#07111d",
   "orientation": "portrait",
@@ -28,7 +31,11 @@
       "purpose": "maskable any"
     }
   ],
-  "categories": ["developer", "productivity", "utilities"],
+  "categories": [
+    "developer",
+    "productivity",
+    "utilities"
+  ],
   "shortcuts": [
     {
       "name": "Assistant",

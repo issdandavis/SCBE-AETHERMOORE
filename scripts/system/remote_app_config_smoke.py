@@ -180,6 +180,7 @@ def validate_app_config(data: dict[str, Any], source: str) -> list[CheckResult]:
     expected_endpoints = {
         "offers_json": f"{PAGES_BASE}/offers.json",
         "supporter_page": f"{PAGES_BASE}/supporter.html",
+        "agent_bridge_system": f"{VERCEL_BASE}/api/agent/system",
         "agent_bridge_offers": f"{VERCEL_BASE}/api/agent/offers",
         "agent_bridge_app_config": f"{VERCEL_BASE}/api/agent/app-config",
     }
@@ -227,6 +228,48 @@ def validate_supporter_page(text: str, source: str) -> list[CheckResult]:
     ]
 
 
+def validate_system_contract(data: dict[str, Any], source: str) -> list[CheckResult]:
+    payload = normalize_vercel_payload(data)
+    checks: list[CheckResult] = []
+
+    schema = payload.get("schema")
+    checks.append(
+        pass_check(f"{source}:schema", schema)
+        if schema == "aethermoor.agent.system_contract.v1"
+        else fail_check(f"{source}:schema", f"expected aethermoor.agent.system_contract.v1, got {schema!r}")
+    )
+
+    backend = payload.get("backend")
+    endpoints = backend.get("endpoints") if isinstance(backend, dict) else None
+    checks.append(
+        pass_check(f"{source}:endpoint:chat", "/api/agent/chat")
+        if isinstance(endpoints, dict) and endpoints.get("chat") == "/api/agent/chat"
+        else fail_check(f"{source}:endpoint:chat", "missing /api/agent/chat")
+    )
+    checks.append(
+        pass_check(f"{source}:endpoint:storage", "/api/agent/storage")
+        if isinstance(endpoints, dict) and endpoints.get("storage") == "/api/agent/storage"
+        else fail_check(f"{source}:endpoint:storage", "missing /api/agent/storage")
+    )
+
+    bus = payload.get("bus")
+    formation = bus.get("workspace_formation") if isinstance(bus, dict) else None
+    checks.append(
+        pass_check(f"{source}:workspace_formation", "present")
+        if isinstance(formation, dict) and formation.get("schema_version") == "aethermoor.bus.workspace_formation.v1"
+        else fail_check(f"{source}:workspace_formation", "missing workspace formation")
+    )
+
+    offers = payload.get("monetization", {}).get("live_offers") if isinstance(payload.get("monetization"), dict) else None
+    checks.append(
+        pass_check(f"{source}:live_offers", str(len(offers)))
+        if isinstance(offers, list) and len(offers) >= len(REQUIRED_OFFER_IDS)
+        else fail_check(f"{source}:live_offers", "missing live offer list")
+    )
+
+    return checks
+
+
 def run_checks(live: bool = False) -> list[CheckResult]:
     checks: list[CheckResult] = []
 
@@ -252,6 +295,7 @@ def run_checks(live: bool = False) -> list[CheckResult]:
     live_json_targets = [
         (f"{PAGES_BASE}/offers.json", validate_offer_catalog, "live:pages:offers"),
         (f"{PAGES_BASE}/app-config.json", validate_app_config, "live:pages:app_config"),
+        (f"{VERCEL_BASE}/api/agent/system", validate_system_contract, "live:vercel:system"),
         (f"{VERCEL_BASE}/api/agent/offers", validate_offer_catalog, "live:vercel:offers"),
         (f"{VERCEL_BASE}/api/agent/app-config", validate_app_config, "live:vercel:app_config"),
     ]
