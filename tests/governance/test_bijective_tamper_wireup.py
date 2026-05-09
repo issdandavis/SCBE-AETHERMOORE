@@ -9,6 +9,7 @@ The contract under test:
   5. base ALLOW + synthetic kind="syntax"      -> DENY (true tamper escalates)
   6. prose with code keywords                  -> NOT DENY (heuristic safety)
 """
+
 from __future__ import annotations
 
 import sys
@@ -22,7 +23,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.governance.runtime_gate import Decision, RuntimeGate  # noqa: E402
 
-
 CLEAN_PY = "def add(x, y):\n    return x + y\n"
 BROKEN_PY = "def add(:\n    return\n"
 
@@ -30,6 +30,7 @@ BROKEN_PY = "def add(:\n    return\n"
 # --------------------------------------------------------------------------- #
 #  1. flag off — no behavior change
 # --------------------------------------------------------------------------- #
+
 
 def test_flag_off_default_is_no_op():
     """With the flag off, the tamper overlay must not run at all."""
@@ -54,6 +55,7 @@ def test_flag_off_does_not_deny_broken_code():
 #  2. flag on  + clean code  -> ALLOW (with annotation)
 # --------------------------------------------------------------------------- #
 
+
 def test_flag_on_clean_code_allows():
     gate = RuntimeGate(use_bijective_tamper=True)
     assert gate._bijective_tamper_enabled is True
@@ -69,6 +71,7 @@ def test_flag_on_clean_code_allows():
 # --------------------------------------------------------------------------- #
 #  3. flag on  + user-submitted syntax-broken code  -> no-op
 # --------------------------------------------------------------------------- #
+
 
 def test_flag_on_user_syntax_broken_is_noop():
     """input_invalid is NOT a tamper signal at the runtime-gate layer.
@@ -86,6 +89,7 @@ def test_flag_on_user_syntax_broken_is_noop():
 # --------------------------------------------------------------------------- #
 #  4. base DENY + tamper ALLOW -> stays DENY (monotonic)
 # --------------------------------------------------------------------------- #
+
 
 def test_base_deny_plus_tamper_allow_stays_deny():
     """If the base gate denies for non-tamper reasons, a clean tamper signal
@@ -107,9 +111,7 @@ def test_base_deny_plus_tamper_allow_stays_deny():
     ).hexdigest()
     gate._immune.add(h)
     result = gate.evaluate(forced_immune_text)
-    assert result.decision == Decision.DENY, (
-        f"immune-hit path must DENY regardless of tamper; got {result.decision}"
-    )
+    assert result.decision == Decision.DENY, f"immune-hit path must DENY regardless of tamper; got {result.decision}"
     # Tamper receipt should still be present in audit (overlay computed at top).
     assert result.bijective_tamper_kind == "none"
     assert result.bijective_tamper_action == "ALLOW"
@@ -118,6 +120,7 @@ def test_base_deny_plus_tamper_allow_stays_deny():
 # --------------------------------------------------------------------------- #
 #  5. base ALLOW + synthetic kind="syntax" -> DENY (escalation via top short-circuit)
 # --------------------------------------------------------------------------- #
+
 
 def test_synthetic_syntax_tamper_escalates_to_deny(monkeypatch):
     """Inject a synthetic kind='syntax' TamperResult to verify the escalation
@@ -154,6 +157,7 @@ def test_synthetic_syntax_tamper_escalates_to_deny(monkeypatch):
 #  6. prose with code keywords -> NOT DENY (heuristic false-positive guard)
 # --------------------------------------------------------------------------- #
 
+
 def test_prose_with_code_keywords_not_denied():
     """Prose containing 'function', 'import', 'return', 'class', 'from' must
     not get parsed as Python and falsely DENY'd. The two-signal heuristic
@@ -168,17 +172,16 @@ def test_prose_with_code_keywords_not_denied():
     ]
     for text in prose_samples:
         result = gate.evaluate(text)
-        assert result.decision != Decision.DENY, (
-            f"prose falsely DENY'd: {text!r} (signals={result.signals})"
-        )
-        assert result.bijective_tamper_kind == "", (
-            f"prose triggered tamper kind={result.bijective_tamper_kind!r}: {text!r}"
-        )
+        assert result.decision != Decision.DENY, f"prose falsely DENY'd: {text!r} (signals={result.signals})"
+        assert (
+            result.bijective_tamper_kind == ""
+        ), f"prose triggered tamper kind={result.bijective_tamper_kind!r}: {text!r}"
 
 
 # --------------------------------------------------------------------------- #
 #  Env-var enablement path
 # --------------------------------------------------------------------------- #
+
 
 def test_env_var_enables_overlay(monkeypatch):
     monkeypatch.setenv("SCBE_ENABLE_BIJECTIVE_TAMPER_GATE", "1")
@@ -204,6 +207,7 @@ def test_explicit_kwarg_beats_env(monkeypatch):
 #  Heuristic skip — non-code action_text never invokes the tokenizer
 # --------------------------------------------------------------------------- #
 
+
 def test_non_code_skips_tamper(monkeypatch):
     """Plain prose must not trigger the AST/tokenizer path."""
     gate = RuntimeGate(use_bijective_tamper=True)
@@ -218,6 +222,7 @@ def test_non_code_skips_tamper(monkeypatch):
 # --------------------------------------------------------------------------- #
 #  Receipt envelope is parseable
 # --------------------------------------------------------------------------- #
+
 
 def test_receipt_envelope_format():
     gate = RuntimeGate(use_bijective_tamper=True)
