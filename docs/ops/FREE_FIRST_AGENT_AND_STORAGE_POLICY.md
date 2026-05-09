@@ -78,4 +78,3 @@ Add storage buttons to the mobile/web agent UI:
 - Send to Google Drive
 
 The first two should work immediately. The cloud buttons can begin as export/download handoffs, then upgrade to OAuth flows later.
-
