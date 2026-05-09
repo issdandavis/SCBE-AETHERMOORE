@@ -43,7 +43,7 @@ def test_auth_candidate_separates_genuine_from_impostor() -> None:
     assert metrics.impostor.count == 5
     assert metrics.reliability == 1.0
     assert metrics.challenge_separation > 0.0
-    assert metrics.works_for_authentication is True
+    assert metrics.passes_separation_condition is True
     assert metrics.estimated_t_bits == 0
     assert metrics.estimated_impostor_delta_bits > 0
 
@@ -51,7 +51,7 @@ def test_auth_candidate_separates_genuine_from_impostor() -> None:
 def test_overlap_rejects_authentication_claim() -> None:
     metrics = analyze_measurements(overlapping_rows())
 
-    assert metrics.works_for_authentication is False
+    assert metrics.passes_separation_condition is False
     assert metrics.challenge_separation <= 0.0
 
 
@@ -74,15 +74,49 @@ def test_load_measurements_from_csv(tmp_path) -> None:
 
 def test_report_carries_sacred_egg_role(tmp_path) -> None:
     metrics = analyze_measurements(auth_candidate_rows())
-    report = metrics_to_report(metrics, feature_names=["r0"] * metrics.feature_count)
+    report = metrics_to_report(
+        metrics,
+        feature_names=["r0"] * metrics.feature_count,
+        min_entropy_bits=0.0,
+    )
     path = tmp_path / "report.json"
 
     write_report(report, path)
     loaded = json.loads(path.read_text(encoding="utf-8"))
 
     assert loaded["verdict"] == "auth_candidate"
+    assert loaded["min_entropy_bits_threshold"] == 0.0
     assert "Sacred Egg / GeoSeal context" in loaded["sacred_egg_role"]
     assert "challenge_id selection" in loaded["recommended_next"]
+
+
+def test_separation_pass_with_low_entropy_downgrades_to_separation_only() -> None:
+    """The auth_candidate fixture only delivers ~4 entropy bits. Under the
+    production-default 64-bit threshold, geometry separation alone is not
+    enough — the verdict must downgrade to separation_only_low_entropy.
+    """
+    metrics = analyze_measurements(auth_candidate_rows())
+    report = metrics_to_report(
+        metrics,
+        feature_names=["r0"] * metrics.feature_count,
+        min_entropy_bits=64.0,
+    )
+    assert metrics.passes_separation_condition is True
+    assert metrics.estimated_total_min_entropy_bits < 64.0
+    assert report["verdict"] == "separation_only_low_entropy"
+    assert report["min_entropy_bits_threshold"] == 64.0
+    assert "entropy is below the auth floor" in report["recommended_next"]
+
+
+def test_overlap_verdict_when_separation_fails() -> None:
+    metrics = analyze_measurements(overlapping_rows())
+    report = metrics_to_report(
+        metrics,
+        feature_names=["r0"] * metrics.feature_count,
+        min_entropy_bits=0.0,
+    )
+    assert metrics.passes_separation_condition is False
+    assert report["verdict"] == "overlap_or_unproven"
 
 
 def test_load_requires_response_columns(tmp_path) -> None:
