@@ -111,3 +111,72 @@ jobs:
             --body "$body" \
             --label "lead" \
             --repo "${{ github.repository }}"
+
+      - name: Email the lead via SMTP (Proton / Gmail / Mailgun / any)
+        if: ${{ github.event.client_payload.record.kind == 'lead' }}
+        env:
+          SMTP_HOST: ${{ secrets.POLLY_LEAD_SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.POLLY_LEAD_SMTP_PORT }}
+          SMTP_USER: ${{ secrets.POLLY_LEAD_SMTP_USER }}
+          SMTP_PASS: ${{ secrets.POLLY_LEAD_SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.POLLY_LEAD_SMTP_FROM }}
+          SMTP_TO: ${{ secrets.POLLY_LEAD_SMTP_TO }}
+          PAYLOAD: ${{ toJSON(github.event.client_payload.record) }}
+        run: |
+          set -euo pipefail
+          # Bail quietly when SMTP isn't configured — the workflow stays green
+          # so the only signal channel is the GitHub issue + HF dataset row.
+          if [[ -z "${SMTP_HOST:-}" || -z "${SMTP_USER:-}" || -z "${SMTP_PASS:-}" ]]; then
+            echo "SMTP credentials missing (POLLY_LEAD_SMTP_HOST/USER/PASS); skipping email send" >&2
+            exit 0
+          fi
+          # Pipe PAYLOAD via env into Python so it never echoes; build the
+          # full lead email server-side then submit via SMTP. starttls is
+          # the default for port 587 (Proton, Gmail, most providers); for
+          # implicit TLS on 465 the script auto-switches.
+          python3 - <<'PY'
+          import os, ssl, json, smtplib
+          from email.message import EmailMessage
+
+          record = json.loads(os.environ["PAYLOAD"])
+          host = os.environ["SMTP_HOST"]
+          port = int(os.environ.get("SMTP_PORT") or "587")
+          user = os.environ["SMTP_USER"]
+          password = os.environ["SMTP_PASS"]
+          sender = os.environ.get("SMTP_FROM") or user
+          recipient = os.environ.get("SMTP_TO") or user
+
+          subject = f"[polly lead] {record.get('project_type','?')} - {record.get('budget','?')} - {record.get('timeline','?')}"
+          body_lines = [
+              "A new lead landed via the /hire form.",
+              "",
+              f"contact:      {record.get('contact','')}",
+              f"project type: {record.get('project_type','')}",
+              f"budget:       {record.get('budget','')}",
+              f"timeline:     {record.get('timeline','')}",
+              f"source:       {record.get('source','')}",
+              "",
+              "description:",
+              record.get("description",""),
+              "",
+              "(also stored in the private HF dataset issdandavis/polly-chat-live under polly-leads/)",
+          ]
+          msg = EmailMessage()
+          msg["Subject"] = subject
+          msg["From"] = sender
+          msg["To"] = recipient
+          msg["Reply-To"] = record.get("contact","") or sender
+          msg.set_content("\n".join(body_lines))
+
+          context = ssl.create_default_context()
+          if port == 465:
+              with smtplib.SMTP_SSL(host, port, context=context, timeout=20) as s:
+                  s.login(user, password)
+                  s.send_message(msg)
+          else:
+              with smtplib.SMTP(host, port, timeout=20) as s:
+                  s.starttls(context=context)
+                  s.login(user, password)
+                  s.send_message(msg)
+          print(f"emailed lead to {recipient}")
+          PY
