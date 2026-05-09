@@ -3,4 +3,7 @@
 *
 !api
 !api/**
+!docs
+!docs/offers.json
+!docs/app-config.json
 !vercel.json
