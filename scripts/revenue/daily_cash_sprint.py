@@ -42,6 +42,33 @@ class Offer:
 
 DEFAULT_OFFERS = [
     Offer(
+        offer_id="ai_governance_snapshot",
+        title="AI Governance Snapshot",
+        buyer="small teams, founders, and subcontract leads using AI who need a plain governance risk read",
+        price_floor_usd=500,
+        price_anchor_usd=500,
+        promise="Review one AI workflow and deliver a 2-page findings memo, three prioritized fixes, and a practical evidence checklist.",
+        deliverables=[
+            "Review one AI workflow, toolchain, or customer-facing AI feature.",
+            "Identify data, decision, audit, and vendor-risk gaps in plain English.",
+            "Deliver a 2-page findings memo, three prioritized fixes, and a practical evidence checklist.",
+        ],
+        proof_paths=[
+            "docs/governance-snapshot.html",
+            "docs/offers/index.html",
+            "scripts/system/create_governance_snapshot_stripe_link.py",
+            "src/governance/runtime_gate.py",
+            "src/governance/bijective_tamper.py",
+            "src/governance/identifier_canonicality.py",
+            "docs/specs/BIJECTIVE_TAMPER_L13.md",
+            "docs/specs/IDENTIFIER_CANONICALITY_L13.md",
+        ],
+        call_to_action=(
+            "Send one AI workflow you want reviewed, or use the fixed checkout link: "
+            "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j"
+        ),
+    ),
+    Offer(
         offer_id="local_ai_command_center_setup",
         title="GeoSeal CLI Agent Bus Setup",
         buyer="solo founders, indie devs, and small teams trying to make local AI coding agents cooperate",
@@ -216,11 +243,15 @@ def _select_offer(offer_id: str) -> Offer:
     raise SystemExit(f"unknown offer_id={offer_id!r}; valid: rotate, {valid}")
 
 
+def _price_label(offer: Offer | dict[str, object]) -> str:
+    floor = int(offer["price_floor_usd"] if isinstance(offer, dict) else offer.price_floor_usd)
+    anchor = int(offer["price_anchor_usd"] if isinstance(offer, dict) else offer.price_anchor_usd)
+    return f"${floor}" if floor == anchor else f"${floor}-${anchor}"
+
+
 def _build_outreach(offer: Offer) -> list[dict[str, str]]:
-    base = (
-        f"I am offering a small {offer.title} sprint (${offer.price_floor_usd}-${offer.price_anchor_usd}). "
-        f"{offer.promise} {offer.call_to_action}"
-    )
+    price = _price_label(offer)
+    base = f"I am offering a small {offer.title} sprint ({price}). " f"{offer.promise} {offer.call_to_action}"
     return [
         {
             "channel": "dm_short",
@@ -233,9 +264,7 @@ def _build_outreach(offer: Offer) -> list[dict[str, str]]:
                 f"Hi,\n\n"
                 f"I am running a fixed-scope {offer.title} sprint for {offer.buyer}.\n\n"
                 f"Result: {offer.promise}\n\n"
-                f"Includes:\n"
-                + "\n".join(f"- {item}" for item in offer.deliverables)
-                + f"\n\nPrice: ${offer.price_floor_usd}-${offer.price_anchor_usd}, depending on scope.\n"
+                f"Includes:\n" + "\n".join(f"- {item}" for item in offer.deliverables) + f"\n\nPrice: {price}.\n"
                 f"{offer.call_to_action}\n\n"
                 f"- Issac"
             ),
@@ -245,7 +274,7 @@ def _build_outreach(offer: Offer) -> list[dict[str, str]]:
             "text": (
                 f"I am opening a few fixed-scope {offer.title} slots this week. "
                 f"Built for {offer.buyer}. {offer.promise} "
-                f"Starting at ${offer.price_floor_usd}. {offer.call_to_action}"
+                f"Price: {price}. {offer.call_to_action}"
             ),
         },
     ]
@@ -263,7 +292,7 @@ def _markdown(report: dict[str, object]) -> str:
         f"- ID: `{offer['offer_id']}`",
         f"- Title: {offer['title']}",
         f"- Buyer: {offer['buyer']}",
-        f"- Price: ${offer['price_floor_usd']}-${offer['price_anchor_usd']}",
+        f"- Price: {_price_label(offer)}",
         f"- Promise: {offer['promise']}",
         "",
         "## 20-Minute Loop",
