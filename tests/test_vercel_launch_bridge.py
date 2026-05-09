@@ -25,6 +25,8 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert handler.exists()
     assert "!api" in ignore
     assert "!api/**" in ignore
+    assert "!docs/offers.json" in ignore
+    assert "!docs/app-config.json" in ignore
 
 
 def test_launch_page_links_to_public_docs_and_bridge_endpoints() -> None:
