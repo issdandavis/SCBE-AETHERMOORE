@@ -42,6 +42,26 @@ class Offer:
 
 DEFAULT_OFFERS = [
     Offer(
+        offer_id="tip_jar",
+        title="AetherMoore Tip Jar",
+        buyer="people who want to help the work without a subscription, account setup, or sales call",
+        price_floor_usd=5,
+        price_anchor_usd=5,
+        promise="A tiny one-time support payment that keeps the work moving and proves the payment rail is alive.",
+        deliverables=[
+            "One direct Stripe-hosted $5 support link.",
+            "No account setup, subscription decision, or paperwork required.",
+            "Supporter can still upgrade later to the $20/month tier or $500 governance snapshot.",
+        ],
+        proof_paths=[
+            "docs/supporter.html",
+            "docs/offers/index.html",
+            "scripts/system/create_tip_jar_stripe_link.py",
+            "scripts/system/monetization_connector_push.py",
+        ],
+        call_to_action="Tip $5 here: https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+    ),
+    Offer(
         offer_id="ai_governance_snapshot",
         title="AI Governance Snapshot",
         buyer="small teams, founders, and subcontract leads using AI who need a plain governance risk read",
@@ -154,9 +174,7 @@ def _path_status(paths: Iterable[str]) -> list[dict[str, object]]:
             {
                 "path": raw,
                 "exists": path.exists(),
-                "kind": (
-                    "dir" if path.is_dir() else "file" if path.is_file() else "missing"
-                ),
+                "kind": ("dir" if path.is_dir() else "file" if path.is_file() else "missing"),
             }
         )
     return rows
@@ -202,9 +220,7 @@ def _proof_snapshot() -> dict[str, object]:
     return {"checks": [_run_quick(cmd) for cmd in checks]}
 
 
-def _dispatch_bus_task(
-    prompt: str, *, task_id: str, dry_run: bool = False
-) -> dict[str, object]:
+def _dispatch_bus_task(prompt: str, *, task_id: str, dry_run: bool = False) -> dict[str, object]:
     """Route one real task through the local HYDRA free-LLM bus."""
 
     try:
@@ -255,21 +271,44 @@ def _select_offer(offer_id: str) -> Offer:
 
 
 def _price_label(offer: Offer | dict[str, object]) -> str:
-    floor = int(
-        offer["price_floor_usd"] if isinstance(offer, dict) else offer.price_floor_usd
-    )
-    anchor = int(
-        offer["price_anchor_usd"] if isinstance(offer, dict) else offer.price_anchor_usd
-    )
+    floor = int(offer["price_floor_usd"] if isinstance(offer, dict) else offer.price_floor_usd)
+    anchor = int(offer["price_anchor_usd"] if isinstance(offer, dict) else offer.price_anchor_usd)
     return f"${floor}" if floor == anchor else f"${floor}-${anchor}"
 
 
 def _build_outreach(offer: Offer) -> list[dict[str, str]]:
     price = _price_label(offer)
-    base = (
-        f"I am offering a small {offer.title} sprint ({price}). "
-        f"{offer.promise} {offer.call_to_action}"
-    )
+    if offer.offer_id == "tip_jar":
+        return [
+            {
+                "channel": "dm_short",
+                "text": (
+                    "I added a tiny AetherMoore support lane so people can help without a subscription "
+                    "or sales call. It is $5 one-time: https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+                ),
+            },
+            {
+                "channel": "email",
+                "subject": "Tiny AetherMoore support lane",
+                "text": (
+                    "Hi,\n\n"
+                    "I added a small one-time AetherMoore support lane for people who want to help the "
+                    "work without a subscription, account setup, or sales call.\n\n"
+                    "It is $5 through Stripe: https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k\n\n"
+                    "That is it. No paperwork, no pitch deck, no platform signup.\n\n"
+                    "- Issac"
+                ),
+            },
+            {
+                "channel": "post",
+                "text": (
+                    "I added a tiny $5 one-time AetherMoore support lane for anyone who wants to help "
+                    "the work move without a subscription or sales call: "
+                    "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+                ),
+            },
+        ]
+    base = f"I am offering a small {offer.title} sprint ({price}). " f"{offer.promise} {offer.call_to_action}"
     return [
         {
             "channel": "dm_short",
@@ -282,9 +321,7 @@ def _build_outreach(offer: Offer) -> list[dict[str, str]]:
                 f"Hi,\n\n"
                 f"I am running a fixed-scope {offer.title} sprint for {offer.buyer}.\n\n"
                 f"Result: {offer.promise}\n\n"
-                f"Includes:\n"
-                + "\n".join(f"- {item}" for item in offer.deliverables)
-                + f"\n\nPrice: {price}.\n"
+                f"Includes:\n" + "\n".join(f"- {item}" for item in offer.deliverables) + f"\n\nPrice: {price}.\n"
                 f"{offer.call_to_action}\n\n"
                 f"- Issac"
             ),
@@ -341,9 +378,7 @@ def _markdown(report: dict[str, object]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def generate_packet(
-    *, offer_id: str, minutes: int, out_root: Path = OUT_ROOT
-) -> dict[str, Path]:
+def generate_packet(*, offer_id: str, minutes: int, out_root: Path = OUT_ROOT) -> dict[str, Path]:
     offer = _select_offer(offer_id)
     date = datetime.now().strftime("%Y-%m-%d")
     out_dir = out_root / date
@@ -367,18 +402,13 @@ def generate_packet(
     json_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     md_path.write_text(_markdown(report), encoding="utf-8")
     queue_path.write_text(
-        "".join(
-            json.dumps(row, ensure_ascii=True) + "\n"
-            for row in report["outreach_drafts"]
-        ),
+        "".join(json.dumps(row, ensure_ascii=True) + "\n" for row in report["outreach_drafts"]),
         encoding="utf-8",
     )
     return {"json": json_path, "markdown": md_path, "queue": queue_path}
 
 
-def _task(
-    task_id: str, kind: str, label: str, payload: dict[str, object]
-) -> dict[str, object]:
+def _task(task_id: str, kind: str, label: str, payload: dict[str, object]) -> dict[str, object]:
     return {
         "task_id": task_id,
         "kind": kind,
@@ -472,9 +502,7 @@ def _write_state(state_path: Path, state: dict[str, object]) -> None:
     state_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
-def _cycle_state(
-    state: dict[str, object], *, offer_id: str, minutes: int, out_root: Path
-) -> dict[str, object]:
+def _cycle_state(state: dict[str, object], *, offer_id: str, minutes: int, out_root: Path) -> dict[str, object]:
     tasks = state.get("tasks", [])
     assert isinstance(tasks, list)
     cycle_history = state.setdefault("cycle_history", [])
@@ -493,9 +521,7 @@ def _cycle_state(
     return next_state
 
 
-def _record(
-    task: dict[str, object], state: StateName, result: dict[str, object]
-) -> None:
+def _record(task: dict[str, object], state: StateName, result: dict[str, object]) -> None:
     task["state"] = state
     task["attempts"] = int(task.get("attempts", 0)) + 1
     history = task.setdefault("history", [])
@@ -535,14 +561,10 @@ def _run_task(
         paths = generate_packet(offer_id=offer_id, minutes=minutes, out_root=out_root)
         return "DONE", {name: _safe_rel(path) for name, path in paths.items()}
     if kind == "bus_dispatch":
-        result = _dispatch_bus_task(
-            str(payload["prompt"]), task_id=str(task["task_id"])
-        )
+        result = _dispatch_bus_task(str(payload["prompt"]), task_id=str(task["task_id"]))
         return ("DONE" if result.get("status") == "ok" else "BLOCKED"), result
     if kind == "command":
-        result = _run_quick(
-            list(payload["command"]), timeout=int(payload.get("timeout", 120))
-        )
+        result = _run_quick(list(payload["command"]), timeout=int(payload.get("timeout", 120)))
         if result.get("returncode") == 0:
             return "DONE", result
         if bool(payload.get("nonblocking")):
@@ -582,33 +604,21 @@ def run_continuous(
     assert isinstance(tasks, list)
     steps: list[dict[str, object]] = []
     for _ in range(max_steps):
-        next_task = next(
-            (task for task in tasks if task.get("state") == "PENDING"), None
-        )
+        next_task = next((task for task in tasks if task.get("state") == "PENDING"), None)
         if not next_task:
-            if cycle_when_complete and not any(
-                task.get("state") == "BLOCKED" for task in tasks
-            ):
-                state = _cycle_state(
-                    state, offer_id=offer_id, minutes=minutes, out_root=out_root
-                )
+            if cycle_when_complete and not any(task.get("state") == "BLOCKED" for task in tasks):
+                state = _cycle_state(state, offer_id=offer_id, minutes=minutes, out_root=out_root)
                 tasks = state["tasks"]
                 assert isinstance(tasks, list)
                 _write_state(state_path, state)
-                next_task = next(
-                    (task for task in tasks if task.get("state") == "PENDING"), None
-                )
+                next_task = next((task for task in tasks if task.get("state") == "PENDING"), None)
             if not next_task:
                 break
         next_task["state"] = "RUNNING"
         _write_state(state_path, state)
-        final_state, result = _run_task(
-            next_task, offer_id=offer_id, minutes=minutes, out_root=out_root
-        )
+        final_state, result = _run_task(next_task, offer_id=offer_id, minutes=minutes, out_root=out_root)
         _record(next_task, final_state, result)
-        steps.append(
-            {"task_id": next_task["task_id"], "state": final_state, "result": result}
-        )
+        steps.append({"task_id": next_task["task_id"], "state": final_state, "result": result})
         if final_state == "BLOCKED":
             break
         _write_state(state_path, state)
@@ -628,18 +638,10 @@ def run_continuous(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Generate the daily 20-minute SCBE cash sprint packet."
-    )
-    parser.add_argument(
-        "--offer", default="rotate", help="Offer ID to use, or 'rotate'."
-    )
-    parser.add_argument(
-        "--minutes", type=int, default=20, help="Execution budget in minutes."
-    )
-    parser.add_argument(
-        "--out-root", default=str(OUT_ROOT), help="Output directory root."
-    )
+    parser = argparse.ArgumentParser(description="Generate the daily 20-minute SCBE cash sprint packet.")
+    parser.add_argument("--offer", default="rotate", help="Offer ID to use, or 'rotate'.")
+    parser.add_argument("--minutes", type=int, default=20, help="Execution budget in minutes.")
+    parser.add_argument("--out-root", default=str(OUT_ROOT), help="Output directory root.")
     parser.add_argument(
         "--continuous",
         action="store_true",
@@ -680,9 +682,7 @@ def main() -> int:
         )
         print(json.dumps(result, indent=2))
         return 1 if int(result["blocked_count"]) else 0
-    paths = generate_packet(
-        offer_id=args.offer, minutes=args.minutes, out_root=out_root
-    )
+    paths = generate_packet(offer_id=args.offer, minutes=args.minutes, out_root=out_root)
     for name, path in paths.items():
         print(f"{name}={_safe_rel(path)}")
     return 0

@@ -7,6 +7,10 @@ def test_monetization_connector_push_includes_live_cash_offers() -> None:
     offers = _build_offers(include_gumroad=False)
     by_id = {offer["id"]: offer for offer in offers}
 
+    assert by_id["tip_jar"]["price_usd"] == 5.0
+    assert by_id["tip_jar"]["stripe_url"] == "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+    assert by_id["tip_jar"]["cadence"] == "one_time"
+
     assert by_id["supporter_monthly"]["price_usd"] == 20.0
     assert by_id["supporter_monthly"]["stripe_url"] == "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
     assert by_id["supporter_monthly"]["cadence"] == "monthly"

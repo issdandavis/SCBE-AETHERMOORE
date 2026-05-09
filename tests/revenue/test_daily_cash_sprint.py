@@ -52,6 +52,24 @@ def test_daily_cash_sprint_generates_governance_snapshot_offer(tmp_path: Path) -
     assert "$500-$500" not in markdown
 
 
+def test_daily_cash_sprint_generates_tip_jar_offer(tmp_path: Path) -> None:
+    paths = generate_packet(
+        offer_id="tip_jar",
+        minutes=10,
+        out_root=tmp_path,
+    )
+
+    report = json.loads(paths["json"].read_text(encoding="utf-8"))
+    assert report["offer"]["offer_id"] == "tip_jar"
+    assert report["offer"]["price_floor_usd"] == 5
+    assert report["offer"]["price_anchor_usd"] == 5
+    assert any("https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k" in draft["text"] for draft in report["outreach_drafts"])
+
+    markdown = paths["markdown"].read_text(encoding="utf-8")
+    assert "Price: $5\n" in markdown
+    assert "$5-$5" not in markdown
+
+
 def test_daily_cash_sprint_continuous_advances_to_next_task(tmp_path: Path) -> None:
     state_path = tmp_path / "state.json"
 
