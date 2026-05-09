@@ -1111,7 +1111,7 @@ def test_emit_audio_phase_wraps_every_16_nodes():
     # Build two events with node ids 0 and 16: phases should match
     tree = Tree()
     # Add 16 OP nodes after the VOID singleton
-    for i in range(16):
+    for _ in range(16):
         tree.add_node(
             Node(
                 id=len(tree.nodes),

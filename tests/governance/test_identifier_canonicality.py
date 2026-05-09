@@ -5,16 +5,12 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.governance.identifier_canonicality import (  # noqa: E402
     L13_MAPPING_RECOMMENDATION,
-    CanonicalityResult,
-    IdentifierFinding,
     evaluate_code,
     recommended_l13_action,
 )
