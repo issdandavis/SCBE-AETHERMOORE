@@ -28,17 +28,32 @@ jobs:
           set -euo pipefail
           mkdir -p training-data/polly-chat-live
           shard="training-data/polly-chat-live/$(date -u +%Y-%m).jsonl"
-          # Validate JSON before writing.
-          echo "$PAYLOAD" | python3 -c "import json,sys; json.loads(sys.stdin.read())"
-          # Compact to one line and append.
-          echo "$PAYLOAD" | python3 -c "import json,sys; print(json.dumps(json.loads(sys.stdin.read()), ensure_ascii=False))" >> "$shard"
-          echo "appended to $shard"
+          # PII guard: never echo PAYLOAD to logs. Pipe via env var into Python,
+          # which validates and writes the compact JSON to the shard file. Only
+          # the shard path and a row counter ever land in the workflow log.
+          python3 - <<'PY'
+          import json, os, pathlib
+          payload = os.environ["PAYLOAD"]
+          record = json.loads(payload)
+          shard = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "training-data" / "polly-chat-live"
+          shard.mkdir(parents=True, exist_ok=True)
+          import datetime
+          name = datetime.datetime.utcnow().strftime("%Y-%m") + ".jsonl"
+          target = shard / name
+          with target.open("a", encoding="utf-8") as f:
+              f.write(json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n")
+          rows = sum(1 for _ in target.open("r", encoding="utf-8"))
+          print(f"appended to {target.relative_to(os.environ['GITHUB_WORKSPACE'])} (rows={rows})")
+          PY
 
       - name: Commit if anything changed
         run: |
           set -euo pipefail
+          # training-data/**/*.jsonl is gitignored at .gitignore:92 — git status
+          # will report no changes and we exit cleanly. Keeping this step so a
+          # future un-ignoring would still need an explicit decision.
           if [[ -z "$(git status --porcelain training-data/polly-chat-live)" ]]; then
-            echo "no changes to commit"
+            echo "no tracked changes to commit (path is gitignored — record kept ephemerally on the runner)"
             exit 0
           fi
           git config user.name "polly-train-capture[bot]"

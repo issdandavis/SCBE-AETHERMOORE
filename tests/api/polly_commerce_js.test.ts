@@ -248,27 +248,20 @@ describe('polly catalog handler', () => {
 });
 
 describe('polly training capture (repository_dispatch)', () => {
-  it('returns no_token when GITHUB_TOKEN not set', async () => {
-    const original = {
-      gh: process.env.GITHUB_TOKEN,
-      gh2: process.env.GH_TOKEN,
-      polly: process.env.POLLY_TRAIN_GITHUB_TOKEN,
-    };
-    delete process.env.GITHUB_TOKEN;
-    delete process.env.GH_TOKEN;
-    delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
+  it('defaults to disabled when POLLY_TRAIN_DISPATCH_ENABLED is unset (privacy-by-default)', async () => {
+    const originalDisable = process.env.POLLY_TRAIN_DISPATCH_ENABLED;
+    delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
     try {
-      const result = await trainCapture.dispatchTrainingTurn({ ts: 1, user: 'x', assistant: 'y' });
+      const result = await trainCapture.dispatchTrainingTurn({ ts: 1 });
       expect(result.ok).toBe(false);
-      expect(result.reason).toBe('no_token');
+      expect(result.reason).toBe('disabled');
     } finally {
-      if (original.gh) process.env.GITHUB_TOKEN = original.gh;
-      if (original.gh2) process.env.GH_TOKEN = original.gh2;
-      if (original.polly) process.env.POLLY_TRAIN_GITHUB_TOKEN = original.polly;
+      if (originalDisable === undefined) delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
+      else process.env.POLLY_TRAIN_DISPATCH_ENABLED = originalDisable;
     }
   });
 
-  it('returns disabled when env opt-out is set', async () => {
+  it('returns disabled when env opt-out is explicitly set to false', async () => {
     const originalDisable = process.env.POLLY_TRAIN_DISPATCH_ENABLED;
     process.env.POLLY_TRAIN_DISPATCH_ENABLED = 'false';
     try {
@@ -278,6 +271,30 @@ describe('polly training capture (repository_dispatch)', () => {
     } finally {
       if (originalDisable === undefined) delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
       else process.env.POLLY_TRAIN_DISPATCH_ENABLED = originalDisable;
+    }
+  });
+
+  it('returns no_token when enabled but GITHUB_TOKEN absent', async () => {
+    const original = {
+      enabled: process.env.POLLY_TRAIN_DISPATCH_ENABLED,
+      gh: process.env.GITHUB_TOKEN,
+      gh2: process.env.GH_TOKEN,
+      polly: process.env.POLLY_TRAIN_GITHUB_TOKEN,
+    };
+    process.env.POLLY_TRAIN_DISPATCH_ENABLED = 'true';
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.GH_TOKEN;
+    delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
+    try {
+      const result = await trainCapture.dispatchTrainingTurn({ ts: 1, user: 'x', assistant: 'y' });
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('no_token');
+    } finally {
+      if (original.enabled === undefined) delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
+      else process.env.POLLY_TRAIN_DISPATCH_ENABLED = original.enabled;
+      if (original.gh) process.env.GITHUB_TOKEN = original.gh;
+      if (original.gh2) process.env.GH_TOKEN = original.gh2;
+      if (original.polly) process.env.POLLY_TRAIN_GITHUB_TOKEN = original.polly;
     }
   });
 
