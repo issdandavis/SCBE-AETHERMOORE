@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "case \"$VERCEL_GIT_COMMIT_REF\" in main|launch/*|vercel-test/*|customer/*|fix/launch-*|feat/vercel-*) exit 1 ;; *) exit 0 ;; esac",
+  "ignoreCommand": "case \"$VERCEL_GIT_COMMIT_REF\" in main|launch/*|vercel-test/*|customer/*|fix/launch-*|feat/vercel-*|fix/vercel-*) exit 1 ;; *) exit 0 ;; esac",
   "builds": [
     {
       "src": "api/agent/*.js",
