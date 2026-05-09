@@ -79,10 +79,18 @@ class GateOutcome:
 # than to a downstream args-mask. Values are deliberately benign
 # identifiers so a downstream emit_from_ir would render compilable code.
 _DUMMY_TEMPLATE_ARGS: Dict[str, str] = {
-    "xs": "data", "ys": "data2", "pairs": "pairs",
-    "fn": "f", "init": "z", "pred": "p",
-    "a": "x", "b": "y", "lhs": "x", "rhs": "y",
-    "n": "n", "k": "k",
+    "xs": "data",
+    "ys": "data2",
+    "pairs": "pairs",
+    "fn": "f",
+    "init": "z",
+    "pred": "p",
+    "a": "x",
+    "b": "y",
+    "lhs": "x",
+    "rhs": "y",
+    "n": "n",
+    "k": "k",
 }
 
 
@@ -198,15 +206,30 @@ def main(argv: List[str] | None = None) -> int:
     )
     parser.add_argument("--timeout-s", type=float, default=30.0)
     parser.add_argument("--min-confidence", type=float, default=0.5)
-    parser.add_argument("--limit", type=int, default=None,
-                        help="cap N seeds (smoke test); omit for full corpus")
+    parser.add_argument("--limit", type=int, default=None, help="cap N seeds (smoke test); omit for full corpus")
     parser.add_argument("--json-out", type=Path, default=None)
     parser.add_argument("--quiet", action="store_true")
     parser.add_argument(
-        "--dummy-args", action="store_true",
+        "--dummy-args",
+        action="store_true",
         help="populate args with a fixed dummy set so the post-classification "
-             "args-completeness check does not dominate quarantine reasons; "
-             "exposes the SLM's actual op classification choices",
+        "args-completeness check does not dominate quarantine reasons; "
+        "exposes the SLM's actual op classification choices",
+    )
+    parser.add_argument(
+        "--coding-intent-gate",
+        action="store_true",
+        help="enable the pre-band Yes/No coding-intent gate on both "
+        "primary and secondary routers. Closes meta-AI/role/values "
+        "false-allows that survive AND-of-allow band classification.",
+    )
+    parser.add_argument(
+        "--gate-model",
+        default="",
+        help="if set, the coding-intent gate uses this model (e.g. "
+        "'gemma3:1b') instead of the per-router classifier model. "
+        "A different model family is the asymmetric check that "
+        "closes meta-AI prompts both qwen-coder classifiers allow.",
     )
     args = parser.parse_args(argv)
     args_payload: Dict[str, str] = dict(_DUMMY_TEMPLATE_ARGS) if args.dummy_args else {}
@@ -223,24 +246,25 @@ def main(argv: List[str] | None = None) -> int:
         seeds = seeds[: args.limit]
 
     adapter = OllamaAdapter(host=args.ollama_host, model=args.ollama_model)
+    gate_adapter = OllamaAdapter(host=args.ollama_host, model=args.gate_model) if args.gate_model else None
     primary_router = LatticeRouter(
         adapter,
         min_confidence=args.min_confidence,
         adapter_timeout=args.timeout_s,
+        enable_coding_intent_gate=args.coding_intent_gate,
+        gate_adapter=gate_adapter,
     )
     if args.cascade_secondary_model:
-        secondary_adapter = OllamaAdapter(
-            host=args.ollama_host, model=args.cascade_secondary_model
-        )
+        secondary_adapter = OllamaAdapter(host=args.ollama_host, model=args.cascade_secondary_model)
         secondary_router = LatticeRouter(
             secondary_adapter,
             min_confidence=args.min_confidence,
             adapter_timeout=args.timeout_s,
+            enable_coding_intent_gate=args.coding_intent_gate,
+            gate_adapter=gate_adapter,
         )
         if args.cascade_mode == "and_allow":
-            router = AndAllowCascadeRouter(
-                primary=primary_router, secondary=secondary_router
-            )
+            router = AndAllowCascadeRouter(primary=primary_router, secondary=secondary_router)
         else:
             router = CascadeRouter(
                 primary=primary_router,
@@ -255,7 +279,7 @@ def main(argv: List[str] | None = None) -> int:
         outcome = run_one(router, seed, args_payload=args_payload)
         outcomes.append(outcome)
         if not args.quiet:
-            tag = (outcome.tags[0] if outcome.tags else "untagged")
+            tag = outcome.tags[0] if outcome.tags else "untagged"
             label = outcome.verdict
             if outcome.verdict == "ALLOW":
                 label = f"ALLOW({outcome.op_band}/{outcome.op_name}->{outcome.dst_tongue} c={outcome.confidence:.2f})"
@@ -269,13 +293,13 @@ def main(argv: List[str] | None = None) -> int:
         "cascade_secondary_model": args.cascade_secondary_model or None,
         "cascade_mode": (args.cascade_mode if args.cascade_secondary_model else None),
         "rescue_threshold": (
-            args.rescue_threshold
-            if args.cascade_secondary_model and args.cascade_mode == "rescue"
-            else None
+            args.rescue_threshold if args.cascade_secondary_model and args.cascade_mode == "rescue" else None
         ),
         "seeds_dir": str(args.seeds_dir),
         "args_mode": "dummy" if args.dummy_args else "empty",
         "args_payload": args_payload,
+        "coding_intent_gate": bool(args.coding_intent_gate),
+        "gate_model": args.gate_model or None,
         "summary": aggregate(outcomes),
         "per_seed": [asdict(o) for o in outcomes],
     }
