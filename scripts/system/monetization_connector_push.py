@@ -17,8 +17,8 @@ import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -28,7 +28,49 @@ if str(REPO_ROOT / "src") not in sys.path:
 
 from src.fleet.connector_bridge import ConnectorBridge, ConnectorResult
 from src.security.secret_store import get_secret
-from scripts.gumroad_publish import GumroadPublisher, PRODUCTS, STRIPE_LINKS
+
+try:
+    from scripts.gumroad_publish import GumroadPublisher, PRODUCTS, STRIPE_LINKS
+except ModuleNotFoundError:  # pragma: no cover - depends on optional local sales tooling
+    GumroadPublisher = None
+    PRODUCTS = {}
+    STRIPE_LINKS = {}
+
+
+@dataclass(frozen=True)
+class StaticOffer:
+    id: str
+    name: str
+    sku: str
+    price_usd: float
+    stripe_url: str
+    tags: List[str]
+    cadence: str
+    proof_url: str
+
+
+STATIC_OFFERS: List[StaticOffer] = [
+    StaticOffer(
+        id="supporter_monthly",
+        name="AetherMoore Supporter",
+        sku="aethermoore-supporter-monthly",
+        price_usd=20.0,
+        stripe_url="https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
+        tags=["supporter", "subscription", "operator-notes"],
+        cadence="monthly",
+        proof_url="https://aethermoore.com/supporter.html",
+    ),
+    StaticOffer(
+        id="governance_snapshot",
+        name="AI Governance Snapshot",
+        sku="aethermoore-governance-snapshot",
+        price_usd=500.0,
+        stripe_url="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j",
+        tags=["consulting", "governance", "fixed-scope", "cash-sprint"],
+        cadence="one_time",
+        proof_url="https://aethermoore.com/governance-snapshot.html",
+    ),
+]
 
 
 def _utc_now() -> datetime:
@@ -61,7 +103,7 @@ def _build_offers(include_gumroad: bool) -> List[Dict[str, Any]]:
             os.environ["GUMROAD_API_TOKEN"] = token
 
     gumroad_map: Dict[str, str] = {}
-    if include_gumroad:
+    if include_gumroad and GumroadPublisher is not None:
         try:
             listing = GumroadPublisher().list_products()
             if listing.success and isinstance(listing.data, list):
@@ -72,7 +114,20 @@ def _build_offers(include_gumroad: bool) -> List[Dict[str, Any]]:
         except Exception:
             pass
 
-    offers: List[Dict[str, Any]] = []
+    offers: List[Dict[str, Any]] = [
+        {
+            "id": offer.id,
+            "name": offer.name,
+            "sku": offer.sku,
+            "price_usd": offer.price_usd,
+            "stripe_url": offer.stripe_url,
+            "gumroad_url": "",
+            "tags": offer.tags,
+            "cadence": offer.cadence,
+            "proof_url": offer.proof_url,
+        }
+        for offer in STATIC_OFFERS
+    ]
     for key, spec in PRODUCTS.items():
         stripe = STRIPE_LINKS.get(key, {})
         offers.append(
