@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <title>AetherMoore Governed AI Toolkit | Dual-Layer Training Through The Six Tongues Protocol</title>
-  <meta name="description" content="Buy the AetherMoore governed AI toolkit, try the live demos, and inspect the public proof stack. The system includes The Six Tongues Protocol, a narrative training layer that teaches the same SCBE mechanics to humans and models.">
+  <meta name="description" content="Buy the AetherMoore governed AI toolkit, tip $5, support monthly, try the live demos, and inspect the public proof stack. The system includes The Six Tongues Protocol, a narrative training layer that teaches the same SCBE mechanics to humans and models.">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta property="og:title" content="AetherMoore Governed AI Toolkit">
   <meta property="og:description" content="Governed AI workflow starter pack, live proof demos, and a narrative training layer through The Six Tongues Protocol.">
@@ -215,6 +215,64 @@
       background: rgba(255,255,255,0.02);
     }
     .btn-secondary:hover { border-color: var(--accent); }
+    .support-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      max-width: 760px;
+      margin: 4px 0 18px;
+      padding: 12px 14px;
+      border: 1px solid rgba(45, 211, 166, 0.24);
+      border-radius: 18px;
+      background: rgba(45, 211, 166, 0.07);
+      color: var(--text);
+      font-size: 15px;
+    }
+    .support-strip strong { color: #2dd3a6; }
+    .support-strip a {
+      color: var(--text);
+      text-decoration: underline;
+      text-decoration-color: rgba(45, 211, 166, 0.7);
+      text-underline-offset: 3px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .quick-support-bar {
+      border-bottom: 1px solid rgba(45, 211, 166, 0.16);
+      background: rgba(11, 19, 24, 0.96);
+    }
+    .quick-support-inner {
+      width: min(var(--max), calc(100% - 32px));
+      min-height: 48px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .quick-support-inner strong { color: var(--text); }
+    .quick-support-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .quick-support-actions a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(45, 211, 166, 0.24);
+      background: rgba(45, 211, 166, 0.08);
+      color: var(--text);
+      font-weight: 700;
+      white-space: nowrap;
+    }
     .meta {
       display: flex;
       gap: 16px;
@@ -477,6 +535,8 @@
     @media (max-width: 640px) {
       .topbar-inner { padding: 14px 0; align-items: flex-start; }
       .nav { gap: 12px; }
+      .quick-support-inner { align-items: flex-start; flex-direction: column; padding: 10px 0; }
+      .quick-support-actions { width: 100%; justify-content: flex-start; }
       .hero { padding-top: 72px; }
       .btn { width: 100%; }
     }
@@ -607,6 +667,7 @@
         <a href="#recent-milestones">Research</a>
         <a href="https://medium.com/@issdandavis7795" target="_blank" rel="noopener">Blog</a>
         <a href="https://github.com/issdandavis/SCBE-AETHERMOORE/discussions" target="_blank" rel="noopener">Community</a>
+        <a href="supporter.html">Support $5/$20</a>
         <a href="mailto:ai@aethermoore.com?subject=AetherMoore%20inquiry">Contact</a>
       </nav>
     </div>
@@ -627,6 +688,15 @@
       </div>
     </div>
   </div>
+  <div class="quick-support-bar" aria-label="Fast support links">
+    <div class="quick-support-inner">
+      <span><strong>Keep the work moving:</strong> one-time tip or monthly support, no sales call.</span>
+      <div class="quick-support-actions">
+        <a href="https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k" target="_blank" rel="noopener">Tip $5</a>
+        <a href="supporter.html">Support $20/month</a>
+      </div>
+    </div>
+  </div>
 
   <main>
     <section class="hero" id="offer">
@@ -641,11 +711,18 @@
             Built by Issac Davis. Patent pending (USPTO #63/961,403). SAM.gov registered (UEI: J4NXHM6N5F59). The site includes live demos, public proof, and Polly chat so you can inspect the system instead of taking my word for it.
           </p>
           <div class="cta-row">
+            <a class="btn btn-primary" href="https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k" target="_blank" rel="noopener">Tip $5 one time</a>
+            <a class="btn btn-secondary" href="supporter.html">Support $20/month</a>
             <a class="btn btn-primary" href="#recent-milestones" style="background:linear-gradient(135deg,#2dd3a6,#17c6cf);">See the Results</a>
             <a class="btn btn-secondary" href="chat.html">Open Polly Chat</a>
             <a class="btn btn-secondary" href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener">Try the Demos</a>
             <a class="btn btn-secondary" href="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06" target="_blank" rel="noopener">Explore the Toolkit ($29)</a>
             <a class="btn btn-secondary" href="mailto:ai@aethermoore.com?subject=Licensing%20inquiry">Contact for Licensing</a>
+          </div>
+          <div class="support-strip" aria-label="Low-friction support lane">
+            <strong>Lowest-friction ask:</strong>
+            <span>If the work helped, use the $5 tip lane. No account, subscription, or sales call.</span>
+            <a href="https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k" target="_blank" rel="noopener">Tip through Stripe</a>
           </div>
           <p style="margin-top:14px;font-size:14px;color:var(--muted);max-width:56ch;">For buyers: starter tools and manuals. For researchers: the live pipeline and proof trail. For partners: a real system with measurable behavior, not just a deck.</p>
           <div class="proof-strip" aria-label="Proof highlights">
