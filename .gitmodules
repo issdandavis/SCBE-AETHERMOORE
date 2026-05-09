@@ -43,10 +43,6 @@
 [submodule "external_repos/spiralverse-protocol"]
 	path = external_repos/spiralverse-protocol
 	url = https://github.com/issdandavis/spiralverse-protocol.git
-[submodule "shopify/aethermoore-creator-os"]
-	path = shopify/aethermoore-creator-os
-	url = https://github.com/issdandavis/aethermoore-creator-os.git
-
 [submodule "packages/six-tongues-geoseal"]
 	path = packages/six-tongues-geoseal
 	url = https://github.com/issdandavis/six-tongues-geoseal.git
