@@ -56,17 +56,6 @@ jobs:
   # NOTE: Stale management is handled by the dedicated stale.yml workflow.
   # Removed duplicate stale-management job to prevent conflicting policies.
 
-  conflict-detection:
-    name: Detect PR Conflicts
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    if: github.event_name == 'pull_request_target'
-    steps:
-      - uses: eps1lon/actions-label-merge-conflict@v3
-        with:
-          dirtyLabel: 'needs-rebase'
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-
   auto-approve-dependabot:
     name: Auto Approve Dependabot PRs
     runs-on: ubuntu-latest
