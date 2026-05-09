@@ -154,7 +154,7 @@ opentelemetry-util-http==0.62b0
 packaging==26.1
 pandas==3.0.1
 pathable==0.5.0
-pathspec==1.0.4
+pathspec==1.1.1
 pillow==12.2.0
 platformdirs==4.9.6
 playwright==1.59.0
