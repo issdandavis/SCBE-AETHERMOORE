@@ -327,7 +327,16 @@ import * as ai_brain from './ai_brain/index.js';
 import * as governance from './governance/index.js';
 import * as operator from './operator/index.js';
 import * as securityEngine from './security-engine/index.js';
-export { symphonic, crypto, spiralverse, spiralauth, ai_brain, governance, operator, securityEngine };
+export {
+  symphonic,
+  crypto,
+  spiralverse,
+  spiralauth,
+  ai_brain,
+  governance,
+  operator,
+  securityEngine,
+};
 
 // Core Crypto Exports (also available at top level)
 export * from './crypto/envelope.js';
