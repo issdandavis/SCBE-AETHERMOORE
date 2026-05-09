@@ -22,12 +22,17 @@ GitHub PAT isn't configured.
 By default everything is on:
 
 - Widget checkbox at `docs/hire.html` ships **checked** — `consentToTrain: true`
-- `POLLY_TRAIN_DISPATCH_ENABLED` defaults to `'true'` in `api/_polly_train_capture.js`
-  unless explicitly set to `'false'` on Vercel
-- Workflow runs on every dispatched event and uploads one JSON file per turn
+- Vercel direct HF upload is enabled when `HF_TOKEN` is present on the project
+- `POLLY_TRAIN_DISPATCH_ENABLED` controls only the GitHub notification dispatch
+  path; it defaults to `'true'` in `api/_polly_train_capture.js` unless
+  explicitly set to `'false'` on Vercel
+- The workflow runs on dispatched lead events and files/sends notifications; it
+  no longer uploads chat turns to Hugging Face
 
-To turn capture off per-deploy, set `POLLY_TRAIN_DISPATCH_ENABLED=false` on
-Vercel. To turn capture off per-conversation, the user unticks the checkbox.
+To turn direct capture off per-deploy, remove or rotate the Vercel `HF_TOKEN`
+used by `api/_polly_hf_upload.js`. To turn lead notifications off per-deploy,
+set `POLLY_TRAIN_DISPATCH_ENABLED=false` on Vercel. To turn capture off
+per-conversation, the user unticks the checkbox.
 
 ## Required secrets
 
@@ -35,8 +40,9 @@ Set once on the GitHub repository (Settings → Secrets and variables → Action
 
 | Secret | Where to get it | Purpose |
 |---|---|---|
-| `HF_TOKEN` | <https://huggingface.co/settings/tokens> | workflow uploads to the private dataset |
+| `HF_TOKEN` | <https://huggingface.co/settings/tokens> | optional fallback for other HF workflows; the live Polly data path uses the Vercel `HF_TOKEN` |
 | `GITHUB_TOKEN` (auto) | provided by GitHub | dispatch event from Vercel uses this |
+| `POLLY_LEAD_SMTP_*` | your SMTP provider | optional email notifications for lead records; see `docs/deployment/POLLY_LEAD_EMAIL_SMTP.md` |
 
 Set on the Vercel project (Settings → Environment Variables):
 
@@ -45,7 +51,8 @@ Set on the Vercel project (Settings → Environment Variables):
 | `POLLY_TRAIN_GITHUB_TOKEN` | a fine-grained PAT with `Contents: read` and `Metadata: read` on `issdandavis/SCBE-AETHERMOORE` | Vercel-side dispatch auth (or set `GITHUB_TOKEN` if your env already has one) |
 | `POLLY_TRAIN_DISPATCH_ENABLED` | `true` (default) or `false` | per-deploy kill switch |
 | `POLLY_TRAIN_REPO` | optional, defaults to `issdandavis/SCBE-AETHERMOORE` | which repo receives the dispatch event |
-| `POLLY_HF_DATASET` (workflow var) | optional, defaults to `issdandavis/polly-chat-live` | which HF dataset receives the records — set as a repo *variable*, not secret |
+| `POLLY_HF_DATASET` | optional, defaults to `issdandavis/polly-chat-live` | which HF dataset receives the records |
+| `HF_TOKEN` | Hugging Face write token | direct private dataset upload from the Vercel function |
 
 ## Path layout in the dataset
 
@@ -82,19 +89,21 @@ single `polly-chat-live/{YYYY-MM}.jsonl` shard for easier training-data import.
 ## Cost / volume notes
 
 - HF dataset commits are free for accounts with a paid plan; the user has HF Pro.
-- Each consented turn = 1 GitHub Actions minute (workflow runtime ~30s).
-- At 100 turns/day that's ~3000 minutes/month — within free GitHub Actions
-  allotment for personal accounts (2000) plus public-repo concession.
+- Consented chat turns do **not** consume GitHub Actions minutes; they upload
+  directly from Vercel to Hugging Face.
+- Lead submissions may consume one short GitHub Actions run for issue/email
+  notifications when dispatch is enabled.
 
-If volume grows past ~500 turns/day, batch the workflow (e.g. trigger every
-N minutes) instead of per-event.
+If lead volume grows past ~500/day, batch only the notification dispatch path.
+The direct HF data path can remain one file per event unless commit volume
+becomes inconvenient for dataset browsing.
 
 ## What never leaves the runtime
 
 - Vercel function logs see a `polly_train_v1 {...}` line per consented turn
   (private to the project).
-- Workflow logs see only `uploaded to private dataset: {repo}/{path}` —
-  PAYLOAD is read via env var into Python without echoing.
+- Workflow logs see only lead notification side effects. Full lead contact and
+  description stay in the private HF dataset and SMTP email body.
 - The dataset itself is private; only the owner (Issac) and any explicit
   collaborators can list or download files.
 
