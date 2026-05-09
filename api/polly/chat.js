@@ -6,11 +6,12 @@ const {
   renderBuyReply,
   renderCustomReply,
   renderMembershipReply,
+  renderResearchReply,
 } = require('./commerce');
 const llm = require('../_chat_llm');
 const trainCapture = require('../_polly_train_capture');
 
-const COMMERCE_INTENTS = new Set(['buy', 'custom', 'membership']);
+const COMMERCE_INTENTS = new Set(['buy', 'custom', 'membership', 'research']);
 const COMMERCE_CONFIDENCE_FLOOR = 0.6;
 const TRAIN_LOG_PREFIX = 'polly_train_v1 ';
 
@@ -80,6 +81,8 @@ module.exports = async function handler(req, res) {
       rendered = renderBuyReply(intent.product);
     } else if (intent.name === 'custom') {
       rendered = renderCustomReply(message);
+    } else if (intent.name === 'research') {
+      rendered = renderResearchReply(message);
     } else {
       rendered = renderMembershipReply();
     }
@@ -91,13 +94,13 @@ module.exports = async function handler(req, res) {
       intent: intent.name,
       sessionId,
       pageContext,
-      provider: 'commerce',
+      provider: intent.name === 'research' ? 'research' : 'commerce',
     });
 
     return sendJson(res, 200, {
       ok: true,
       text: rendered.text,
-      provider: 'commerce',
+      provider: intent.name === 'research' ? 'research' : 'commerce',
       model: 'intent-classifier-v1',
       intent: intent.name,
       confidence: intent.confidence,
