@@ -1,65 +1,65 @@
 (() => {
   const DEFAULTS = {
-    title: "Polly",
-    subtitle: "A quiet operating surface for SCBE chat.",
-    endpoint: "https://router.huggingface.co/v1/chat/completions",
-    model: "issdandavis/scbe-pivot-qwen-0.5b",
-    proxyEndpoint: "",
-    storagePrefix: "scbe_hf_chat",
+    title: 'Polly',
+    subtitle: 'A quiet operating surface for SCBE chat.',
+    endpoint: 'https://router.huggingface.co/v1/chat/completions',
+    model: 'issdandavis/scbe-pivot-qwen-0.5b',
+    proxyEndpoint: '',
+    storagePrefix: 'scbe_hf_chat',
     compact: false,
     maxTokens: 480,
     temperature: 0.45,
     systemPrompt:
-      "You are Polly, a practical SCBE assistant on aethermoore.com, created by Issac Davis. " +
-      "PRODUCTS: Two $29 toolkits — AI Governance Toolkit and AI Security Training Vault. Also a 41-chapter novel. Support via Ko-fi. " +
-      "When asked about buying/products/pricing, answer with real products. When asked who made you, say Issac Davis. " +
-      "Be direct, structured, and useful. Help with the current page, workflow, or product without drifting into vague theory or making up lore.",
+      'You are Polly, a practical SCBE assistant on aethermoore.com, created by Issac Davis. ' +
+      'PRODUCTS: Two $29 toolkits — AI Governance Toolkit and AI Security Training Vault. Also a 41-chapter novel. Support via Ko-fi. ' +
+      'When asked about buying/products/pricing, answer with real products. When asked who made you, say Issac Davis. ' +
+      'Be direct, structured, and useful. Help with the current page, workflow, or product without drifting into vague theory or making up lore.',
     suggestions: [],
-    initialAssistantText: "Add a token or proxy and start talking.",
+    initialAssistantText: 'Add a token or proxy and start talking.',
     // SCBE-Polly mode: when set, route through /v1/polly/chat instead of HF.
     // Enables auto-train capture, commerce intents (Stripe links), and the
     // server-side action[] rendering. Set mode: "scbe-polly" + scbeApiBase.
-    mode: "hf",
-    scbeApiBase: "",
+    mode: 'hf',
+    scbeApiBase: '',
     consentToTrain: false,
-    sessionId: ""
+    sessionId: '',
   };
 
   function escapeHtml(value) {
     return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/\"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function normalizeContent(content) {
-    if (typeof content === "string") return content.trim();
+    if (typeof content === 'string') return content.trim();
     if (Array.isArray(content)) {
       return content
         .map((part) => {
-          if (!part) return "";
-          if (typeof part === "string") return part;
-          if (part.type === "text") return part.text || "";
-          if (part.type === "output_text") return part.text || "";
-          if (part.type === "input_text") return part.text || "";
-          return "";
+          if (!part) return '';
+          if (typeof part === 'string') return part;
+          if (part.type === 'text') return part.text || '';
+          if (part.type === 'output_text') return part.text || '';
+          if (part.type === 'input_text') return part.text || '';
+          return '';
         })
-        .join("\n")
+        .join('\n')
         .trim();
     }
-    if (content && typeof content === "object" && typeof content.text === "string") {
+    if (content && typeof content === 'object' && typeof content.text === 'string') {
       return content.text.trim();
     }
-    return "";
+    return '';
   }
 
   function storageKey(prefix, suffix) {
     return `${prefix}:${suffix}`;
   }
 
-  function readStored(prefix, suffix, fallback = "") {
+  function readStored(prefix, suffix, fallback = '') {
     try {
       return window.localStorage.getItem(storageKey(prefix, suffix)) || fallback;
     } catch {
@@ -76,7 +76,7 @@
   }
 
   function readFeedback(prefix) {
-    const raw = readStored(prefix, "feedback", "[]");
+    const raw = readStored(prefix, 'feedback', '[]');
     try {
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
@@ -86,13 +86,13 @@
   }
 
   function writeFeedback(prefix, records) {
-    writeStored(prefix, "feedback", JSON.stringify(records));
+    writeStored(prefix, 'feedback', JSON.stringify(records));
   }
 
   function downloadFile(filename, text, mimeType) {
     const blob = new Blob([text], { type: mimeType });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -104,21 +104,21 @@
   async function requestScbePolly(config, lastUserMessage, history) {
     // Route through /v1/polly/chat — picks up auto-train capture and the
     // server-side commerce intent classifier (returns Stripe-link actions).
-    const base = (config.scbeApiBase || "").trim().replace(/\/$/, "");
+    const base = (config.scbeApiBase || '').trim().replace(/\/$/, '');
     if (!base) {
-      throw new Error("scbeApiBase not configured for SCBE-Polly mode.");
+      throw new Error('scbeApiBase not configured for SCBE-Polly mode.');
     }
     const url = `${base}/v1/polly/chat`;
     const body = {
-      message: String(lastUserMessage || "").slice(0, 4096),
+      message: String(lastUserMessage || '').slice(0, 4096),
       history: (history || []).slice(-6).map((m) => ({ role: m.role, content: m.content })),
       consent_to_train: Boolean(config.consentToTrain),
-      session_id: config.sessionId || ""
+      session_id: config.sessionId || '',
     };
     const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     });
     const rawText = await response.text();
     let data = {};
@@ -128,29 +128,30 @@
       data = { rawText };
     }
     if (!response.ok) {
-      const message = data.detail || data.error || data.rawText || `Polly request failed (${response.status})`;
+      const message =
+        data.detail || data.error || data.rawText || `Polly request failed (${response.status})`;
       throw new Error(String(message).slice(0, 400));
     }
-    const text = (data.response || "").trim();
+    const text = (data.response || '').trim();
     if (!text) {
-      throw new Error("Polly returned no assistant text.");
+      throw new Error('Polly returned no assistant text.');
     }
     return {
       text,
       actions: Array.isArray(data.actions) ? data.actions : [],
       intent: data.intent || null,
-      route: data.route || ""
+      route: data.route || '',
     };
   }
 
   async function postFeedbackToScbe(config, payload) {
-    const base = (config.scbeApiBase || "").trim().replace(/\/$/, "");
+    const base = (config.scbeApiBase || '').trim().replace(/\/$/, '');
     if (!base) return false;
     try {
       const response = await fetch(`${base}/v1/polly/feedback`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
       return response.ok;
     } catch {
@@ -160,29 +161,29 @@
 
   async function requestCompletion(config, messages) {
     const headers = {
-      "Content-Type": "application/json"
+      'Content-Type': 'application/json',
     };
 
-    const target = (config.proxyEndpoint || "").trim() || config.endpoint;
-    const usingProxy = Boolean((config.proxyEndpoint || "").trim());
+    const target = (config.proxyEndpoint || '').trim() || config.endpoint;
+    const usingProxy = Boolean((config.proxyEndpoint || '').trim());
 
     if (!usingProxy) {
       if (!config.token.trim()) {
-        throw new Error("Add a Hugging Face token or configure a proxy endpoint.");
+        throw new Error('Add a Hugging Face token or configure a proxy endpoint.');
       }
       headers.Authorization = `Bearer ${config.token.trim()}`;
     }
 
     const response = await fetch(target, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify({
         model: config.model.trim(),
         messages,
         max_tokens: config.maxTokens,
         temperature: config.temperature,
-        stream: false
-      })
+        stream: false,
+      }),
     });
 
     const rawText = await response.text();
@@ -196,10 +197,7 @@
 
     if (!response.ok) {
       const message =
-        data.error ||
-        data.message ||
-        data.rawText ||
-        `HF request failed (${response.status})`;
+        data.error || data.message || data.rawText || `HF request failed (${response.status})`;
       throw new Error(String(message).slice(0, 400));
     }
 
@@ -209,10 +207,10 @@
       normalizeContent(data?.content) ||
       normalizeContent(data?.generated_text) ||
       normalizeContent(data?.text) ||
-      normalizeContent(Array.isArray(data) ? data[0]?.generated_text : "");
+      normalizeContent(Array.isArray(data) ? data[0]?.generated_text : '');
 
     if (!text) {
-      throw new Error("HF returned no assistant text.");
+      throw new Error('HF returned no assistant text.');
     }
 
     return text;
@@ -234,14 +232,14 @@
       }
       .polly-shell {
         display: grid;
-        grid-template-columns: ${compact ? "1fr" : "minmax(280px, 340px) 1fr"};
+        grid-template-columns: ${compact ? '1fr' : 'minmax(280px, 340px) 1fr'};
         height: 100%;
-        min-height: ${compact ? "540px" : "680px"};
+        min-height: ${compact ? '540px' : '680px'};
       }
       .polly-context {
         padding: 22px;
-        border-right: ${compact ? "0" : "1px solid var(--polly-line)"};
-        border-bottom: ${compact ? "1px solid var(--polly-line)" : "0"};
+        border-right: ${compact ? '0' : '1px solid var(--polly-line)'};
+        border-bottom: ${compact ? '1px solid var(--polly-line)' : '0'};
         background: linear-gradient(180deg, rgba(5,12,20,0.35), rgba(5,12,20,0.08));
       }
       .polly-kicker {
@@ -254,7 +252,7 @@
       .polly-title {
         margin: 0;
         font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-        font-size: ${compact ? "1.75rem" : "2.35rem"};
+        font-size: ${compact ? '1.75rem' : '2.35rem'};
         line-height: 0.96;
       }
       .polly-subtitle {
@@ -402,7 +400,7 @@
       }
       .polly-textarea {
         width: 100%;
-        min-height: ${compact ? "88px" : "118px"};
+        min-height: ${compact ? '88px' : '118px'};
         resize: vertical;
         border-radius: 18px;
         border: 1px solid var(--polly-line);
@@ -479,55 +477,59 @@
     const config = { ...DEFAULTS, ...options };
     const state = {
       settings: {
-        token: options.token || readStored(config.storagePrefix, "token", ""),
-        model: options.model || readStored(config.storagePrefix, "model", config.model),
-        proxyEndpoint: options.proxyEndpoint || readStored(config.storagePrefix, "proxy", config.proxyEndpoint),
+        token: options.token || readStored(config.storagePrefix, 'token', ''),
+        model: options.model || readStored(config.storagePrefix, 'model', config.model),
+        proxyEndpoint:
+          options.proxyEndpoint || readStored(config.storagePrefix, 'proxy', config.proxyEndpoint),
         systemPrompt:
-          options.systemPrompt || readStored(config.storagePrefix, "systemPrompt", config.systemPrompt)
+          options.systemPrompt ||
+          readStored(config.storagePrefix, 'systemPrompt', config.systemPrompt),
       },
       messages: [
         {
-          role: "assistant",
+          role: 'assistant',
           content: options.initialAssistantText || config.initialAssistantText,
-          initial: true
-        }
+          initial: true,
+        },
       ],
       busy: false,
       settingsOpen: false,
-      status: ""
+      status: '',
     };
 
     function getUserMessageBefore(index) {
       for (let i = index - 1; i >= 0; i -= 1) {
-        if (state.messages[i] && state.messages[i].role === "user") {
+        if (state.messages[i] && state.messages[i].role === 'user') {
           return state.messages[i].content;
         }
       }
-      return "";
+      return '';
     }
 
     function saveSettings() {
-      writeStored(config.storagePrefix, "token", state.settings.token);
-      writeStored(config.storagePrefix, "model", state.settings.model);
-      writeStored(config.storagePrefix, "proxy", state.settings.proxyEndpoint);
-      writeStored(config.storagePrefix, "systemPrompt", state.settings.systemPrompt);
+      writeStored(config.storagePrefix, 'token', state.settings.token);
+      writeStored(config.storagePrefix, 'model', state.settings.model);
+      writeStored(config.storagePrefix, 'proxy', state.settings.proxyEndpoint);
+      writeStored(config.storagePrefix, 'systemPrompt', state.settings.systemPrompt);
     }
 
     function exportFeedback() {
       const records = readFeedback(config.storagePrefix);
-      const lines = records.map((record) => JSON.stringify(record)).join("\n");
+      const lines = records.map((record) => JSON.stringify(record)).join('\n');
       downloadFile(
-        `scbe-hf-feedback-${new Date().toISOString().replace(/[:.]/g, "-")}.jsonl`,
-        lines || "",
-        "application/jsonl"
+        `scbe-hf-feedback-${new Date().toISOString().replace(/[:.]/g, '-')}.jsonl`,
+        lines || '',
+        'application/jsonl'
       );
-      state.status = records.length ? `Exported ${records.length} feedback records.` : "No feedback records yet.";
+      state.status = records.length
+        ? `Exported ${records.length} feedback records.`
+        : 'No feedback records yet.';
       render();
     }
 
     function pushFeedback(index, rating) {
       const message = state.messages[index];
-      if (!message || message.role !== "assistant") return;
+      if (!message || message.role !== 'assistant') return;
       const userMessage = getUserMessageBefore(index);
       const records = readFeedback(config.storagePrefix);
       records.push({
@@ -535,22 +537,22 @@
         model: state.settings.model,
         rating,
         prompt: userMessage,
-        response: message.content
+        response: message.content,
       });
       writeFeedback(config.storagePrefix, records);
 
       // In SCBE mode, also POST to /v1/polly/feedback so the server-side
       // training corpus picks up the rating. Fire-and-forget.
-      if (config.mode === "scbe-polly" && (config.scbeApiBase || "").trim() && userMessage) {
+      if (config.mode === 'scbe-polly' && (config.scbeApiBase || '').trim() && userMessage) {
         postFeedbackToScbe(
           { scbeApiBase: config.scbeApiBase },
           {
             rating,
             user_message: userMessage,
             assistant_reply: message.content,
-            intent: message.intent || "feedback",
-            session_id: config.sessionId || "",
-            consent_to_train: Boolean(config.consentToTrain)
+            intent: message.intent || 'feedback',
+            session_id: config.sessionId || '',
+            consent_to_train: Boolean(config.consentToTrain),
           }
         ).catch(() => {});
       }
@@ -563,10 +565,10 @@
       const prompt = text.trim();
       if (!prompt || state.busy) return;
 
-      state.messages.push({ role: "user", content: prompt });
+      state.messages.push({ role: 'user', content: prompt });
       state.busy = true;
-      const usingScbe = config.mode === "scbe-polly" && (config.scbeApiBase || "").trim();
-      state.status = usingScbe ? "Waiting for Polly..." : "Waiting for Hugging Face...";
+      const usingScbe = config.mode === 'scbe-polly' && (config.scbeApiBase || '').trim();
+      state.status = usingScbe ? 'Waiting for Polly...' : 'Waiting for Hugging Face...';
       render();
 
       try {
@@ -582,24 +584,24 @@
             {
               scbeApiBase: config.scbeApiBase,
               consentToTrain: config.consentToTrain,
-              sessionId: config.sessionId
+              sessionId: config.sessionId,
             },
             prompt,
             conversation.slice(0, -1) // history excludes the just-pushed prompt
           );
           state.messages.push({
-            role: "assistant",
+            role: 'assistant',
             content: reply.text,
             actions: reply.actions,
-            intent: reply.intent
+            intent: reply.intent,
           });
-          state.status = reply.intent ? `Reply ready (${reply.intent}).` : "Reply ready.";
+          state.status = reply.intent ? `Reply ready (${reply.intent}).` : 'Reply ready.';
         } else {
           const requestMessages = [
-            { role: "system", content: state.settings.systemPrompt.trim() },
+            { role: 'system', content: state.settings.systemPrompt.trim() },
             ...state.messages
               .filter((entry) => !entry.initial)
-              .map((entry) => ({ role: entry.role, content: entry.content }))
+              .map((entry) => ({ role: entry.role, content: entry.content })),
           ];
 
           const reply = await requestCompletion(
@@ -609,28 +611,28 @@
               endpoint: config.endpoint,
               proxyEndpoint: state.settings.proxyEndpoint,
               maxTokens: config.maxTokens,
-              temperature: config.temperature
+              temperature: config.temperature,
             },
             requestMessages
           );
 
-          state.messages.push({ role: "assistant", content: reply });
-          state.status = "Reply ready.";
+          state.messages.push({ role: 'assistant', content: reply });
+          state.status = 'Reply ready.';
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown chat error.";
+        const message = error instanceof Error ? error.message : 'Unknown chat error.';
         const hint = usingScbe
-          ? "Check that scbeApiBase points at a reachable Polly endpoint."
-          : "If this is a public page, use a proxy endpoint instead of a raw token.";
+          ? 'Check that scbeApiBase points at a reachable Polly endpoint.'
+          : 'If this is a public page, use a proxy endpoint instead of a raw token.';
         state.messages.push({
-          role: "assistant",
-          content: `Request failed.\n\n${message}\n\n${hint}`
+          role: 'assistant',
+          content: `Request failed.\n\n${message}\n\n${hint}`,
         });
-        state.status = "Request failed.";
+        state.status = 'Request failed.';
       } finally {
         state.busy = false;
         render();
-        const thread = root.querySelector(".polly-thread");
+        const thread = root.querySelector('.polly-thread');
         if (thread) {
           thread.scrollTop = thread.scrollHeight;
         }
@@ -649,9 +651,11 @@
 
               <div class="polly-meta">
                 <h3>Current route</h3>
-                <p>${state.settings.proxyEndpoint.trim()
-                  ? "Proxy endpoint active. Safe for public surfaces if the proxy keeps the token server-side."
-                  : "Direct Hugging Face route active. Good for private device use. Do not expose the token on public pages."}</p>
+                <p>${
+                  state.settings.proxyEndpoint.trim()
+                    ? 'Proxy endpoint active. Safe for public surfaces if the proxy keeps the token server-side.'
+                    : 'Direct Hugging Face route active. Good for private device use. Do not expose the token on public pages.'
+                }</p>
               </div>
 
               <div class="polly-tips">
@@ -668,7 +672,7 @@
               <div class="polly-bar">
                 <div class="polly-bar-title">
                   <strong>${escapeHtml(state.settings.model || config.model)}</strong>
-                  <span>${state.settings.proxyEndpoint.trim() ? "Proxy-backed" : "Direct HF chat route"}</span>
+                  <span>${state.settings.proxyEndpoint.trim() ? 'Proxy-backed' : 'Direct HF chat route'}</span>
                 </div>
                 <div class="polly-actions">
                   <button class="polly-button" type="button" data-action="toggle-settings">Settings</button>
@@ -680,42 +684,58 @@
                 ${state.messages
                   .map((message, index) => {
                     const actions = Array.isArray(message.actions) ? message.actions : [];
-                    const actionsHtml = actions.length ? `
+                    const actionsHtml = actions.length
+                      ? `
                         <div class="polly-actions" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
                           ${actions
-                            .map((a) => `<a class="polly-button primary" href="${escapeHtml(a.url || "")}" target="_blank" rel="noopener">${escapeHtml(a.label || "Open")}</a>`)
-                            .join("")}
+                            .map(
+                              (a) =>
+                                `<a class="polly-button primary" href="${escapeHtml(a.url || '')}" target="_blank" rel="noopener">${escapeHtml(a.label || 'Open')}</a>`
+                            )
+                            .join('')}
                         </div>
-                      ` : "";
+                      `
+                      : '';
                     return `
                     <article class="polly-message ${message.role}">
                       <div class="polly-message-header">
-                        <span>${message.role === "assistant" ? "Polly" : "You"}</span>
+                        <span>${message.role === 'assistant' ? 'Polly' : 'You'}</span>
                       </div>
                       <div>${escapeHtml(message.content)}</div>
                       ${actionsHtml}
-                      ${message.role === "assistant" && !message.initial ? `
+                      ${
+                        message.role === 'assistant' && !message.initial
+                          ? `
                         <div class="polly-feedback">
                           <button type="button" data-action="feedback-up" data-index="${index}">Useful</button>
                           <button type="button" data-action="feedback-down" data-index="${index}">Needs work</button>
                         </div>
-                      ` : ""}
+                      `
+                          : ''
+                      }
                     </article>
                   `;
                   })
-                  .join("")}
+                  .join('')}
               </div>
 
-              ${config.suggestions.length ? `
+              ${
+                config.suggestions.length
+                  ? `
                 <div class="polly-suggestions">
                   ${config.suggestions
-                    .map((suggestion) => `<button class="polly-chip" type="button" data-action="suggestion">${escapeHtml(suggestion)}</button>`)
-                    .join("")}
+                    .map(
+                      (suggestion) =>
+                        `<button class="polly-chip" type="button" data-action="suggestion">${escapeHtml(suggestion)}</button>`
+                    )
+                    .join('')}
                 </div>
-              ` : ""}
+              `
+                  : ''
+              }
 
               <div class="polly-compose">
-                <div class="polly-settings ${state.settingsOpen ? "open" : ""}">
+                <div class="polly-settings ${state.settingsOpen ? 'open' : ''}">
                   <div class="polly-field">
                     <label for="pollyToken">HF token</label>
                     <input id="pollyToken" type="password" value="${escapeHtml(state.settings.token)}" placeholder="hf_xxx for private device use">
@@ -737,13 +757,13 @@
                   </div>
                 </div>
 
-                <textarea class="polly-textarea" id="pollyComposer" placeholder="Ask Polly something concrete.">${state.busy ? "" : ""}</textarea>
+                <textarea class="polly-textarea" id="pollyComposer" placeholder="Ask Polly something concrete.">${state.busy ? '' : ''}</textarea>
 
                 <div class="polly-compose-row">
                   <div class="polly-status">${escapeHtml(state.status)}</div>
                   <div class="polly-actions">
                     <button class="polly-button" type="button" data-action="clear-thread">Clear</button>
-                    <button class="polly-button primary" type="button" data-action="send"${state.busy ? " disabled" : ""}>${state.busy ? "Thinking..." : "Send"}</button>
+                    <button class="polly-button primary" type="button" data-action="send"${state.busy ? ' disabled' : ''}>${state.busy ? 'Thinking...' : 'Send'}</button>
                   </div>
                 </div>
               </div>
@@ -752,41 +772,41 @@
         </div>
       `;
 
-      const composer = root.querySelector("#pollyComposer");
+      const composer = root.querySelector('#pollyComposer');
       if (composer instanceof HTMLTextAreaElement) {
-        composer.addEventListener("keydown", (event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
+        composer.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
             sendPrompt(composer.value);
-            composer.value = "";
+            composer.value = '';
           }
         });
       }
 
       root.querySelectorAll("[data-action='suggestion']").forEach((button) => {
-        button.addEventListener("click", () => {
+        button.addEventListener('click', () => {
           if (composer instanceof HTMLTextAreaElement) {
-            composer.value = button.textContent || "";
+            composer.value = button.textContent || '';
             composer.focus();
           }
         });
       });
 
       root.querySelectorAll("[data-action='feedback-up']").forEach((button) => {
-        button.addEventListener("click", () => {
-          pushFeedback(Number(button.getAttribute("data-index")), "up");
+        button.addEventListener('click', () => {
+          pushFeedback(Number(button.getAttribute('data-index')), 'up');
         });
       });
 
       root.querySelectorAll("[data-action='feedback-down']").forEach((button) => {
-        button.addEventListener("click", () => {
-          pushFeedback(Number(button.getAttribute("data-index")), "down");
+        button.addEventListener('click', () => {
+          pushFeedback(Number(button.getAttribute('data-index')), 'down');
         });
       });
 
       const toggle = root.querySelector("[data-action='toggle-settings']");
       if (toggle) {
-        toggle.addEventListener("click", () => {
+        toggle.addEventListener('click', () => {
           state.settingsOpen = !state.settingsOpen;
           render();
         });
@@ -794,60 +814,60 @@
 
       const exporter = root.querySelector("[data-action='export-feedback']");
       if (exporter) {
-        exporter.addEventListener("click", exportFeedback);
+        exporter.addEventListener('click', exportFeedback);
       }
 
       const sendButton = root.querySelector("[data-action='send']");
       if (sendButton) {
-        sendButton.addEventListener("click", () => {
+        sendButton.addEventListener('click', () => {
           if (!(composer instanceof HTMLTextAreaElement)) return;
           sendPrompt(composer.value);
-          composer.value = "";
+          composer.value = '';
         });
       }
 
       const clearButton = root.querySelector("[data-action='clear-thread']");
       if (clearButton) {
-        clearButton.addEventListener("click", () => {
+        clearButton.addEventListener('click', () => {
           state.messages = [
             {
-              role: "assistant",
+              role: 'assistant',
               content: options.initialAssistantText || config.initialAssistantText,
-              initial: true
-            }
+              initial: true,
+            },
           ];
-          state.status = "Thread cleared.";
+          state.status = 'Thread cleared.';
           render();
         });
       }
 
-      const tokenField = root.querySelector("#pollyToken");
+      const tokenField = root.querySelector('#pollyToken');
       if (tokenField instanceof HTMLInputElement) {
-        tokenField.addEventListener("change", () => {
+        tokenField.addEventListener('change', () => {
           state.settings.token = tokenField.value;
           saveSettings();
         });
       }
 
-      const proxyField = root.querySelector("#pollyProxy");
+      const proxyField = root.querySelector('#pollyProxy');
       if (proxyField instanceof HTMLInputElement) {
-        proxyField.addEventListener("change", () => {
+        proxyField.addEventListener('change', () => {
           state.settings.proxyEndpoint = proxyField.value;
           saveSettings();
         });
       }
 
-      const modelField = root.querySelector("#pollyModel");
+      const modelField = root.querySelector('#pollyModel');
       if (modelField instanceof HTMLInputElement) {
-        modelField.addEventListener("change", () => {
+        modelField.addEventListener('change', () => {
           state.settings.model = modelField.value;
           saveSettings();
         });
       }
 
-      const systemPromptField = root.querySelector("#pollySystemPrompt");
+      const systemPromptField = root.querySelector('#pollySystemPrompt');
       if (systemPromptField instanceof HTMLTextAreaElement) {
-        systemPromptField.addEventListener("change", () => {
+        systemPromptField.addEventListener('change', () => {
           state.settings.systemPrompt = systemPromptField.value;
           saveSettings();
         });
@@ -855,10 +875,19 @@
     }
 
     render();
+
+    return {
+      setConsent(value) {
+        config.consentToTrain = value === true;
+      },
+      getConsent() {
+        return config.consentToTrain === true;
+      },
+    };
   }
 
   window.PollyHFChat = {
     mount,
-    requestCompletion
+    requestCompletion,
   };
 })();

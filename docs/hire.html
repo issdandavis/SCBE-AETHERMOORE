@@ -550,8 +550,26 @@
         <h2>Talk to Polly</h2>
         <p class="muted">
           Polly is the SCBE assistant. Ask about products, scope a custom build, or get pointed at
-          the right resource. Conversations help train the next release (with your consent).
+          the right resource. By default conversations are NOT used for training — tick the box
+          below if you want to contribute the conversation to the next release.
         </p>
+        <label
+          style="
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--dim);
+            cursor: pointer;
+          "
+        >
+          <input id="pollyConsentToTrain" type="checkbox" />
+          <span
+            >Use this conversation to improve the next Polly release. Avoid sharing personal
+            information either way.</span
+          >
+        </label>
         <div
           id="pollyChatRoot"
           style="
@@ -578,12 +596,13 @@
       (function () {
         var root = document.getElementById('pollyChatRoot');
         if (!root || !window.PollyHFChat) return;
-        window.PollyHFChat.mount(root, {
+        var consentBox = document.getElementById('pollyConsentToTrain');
+        var instance = window.PollyHFChat.mount(root, {
           title: 'Polly',
           subtitle: 'Direct line to product, custom builds, and the work itself.',
           mode: 'scbe-polly',
           scbeApiBase: window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app',
-          consentToTrain: true,
+          consentToTrain: false,
           sessionId: 'hire-' + Date.now(),
           initialAssistantText:
             'Ask anything: products, custom builds, federal subcontract conversations, or how the 14-layer pipeline works.',
@@ -594,6 +613,11 @@
             'What does the harmonic wall actually do?',
           ],
         });
+        if (consentBox && instance && typeof instance.setConsent === 'function') {
+          consentBox.addEventListener('change', function () {
+            instance.setConsent(consentBox.checked === true);
+          });
+        }
       })();
     </script>
   </body>
