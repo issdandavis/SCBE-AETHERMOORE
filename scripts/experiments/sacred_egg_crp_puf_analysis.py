@@ -38,6 +38,19 @@ from typing import Sequence
 SCHEMA_VERSION = "sacred_egg_crp_puf_analysis_v1"
 ARCHITECTURE_STATUS = "CHALLENGE_SELECTOR_CRP_PUF_CANDIDATE_2026_05"
 
+# Default min-entropy floor for treating a separation pass as an auth candidate.
+# 64 bits is the conventional modern auth floor (cf. NIST SP 800-63B effective
+# entropy guidance). Override per-call with --min-entropy-bits.
+MIN_ENTROPY_BITS_DEFAULT = 64
+
+VERDICT_AUTH_CANDIDATE = "auth_candidate"
+VERDICT_SEPARATION_ONLY = "separation_only_low_entropy"
+VERDICT_OVERLAP = "overlap_or_unproven"
+
+EXIT_AUTH_CANDIDATE = 0
+EXIT_SEPARATION_ONLY = 3
+EXIT_OVERLAP = 2
+
 
 @dataclass(frozen=True)
 class CrpMeasurement:
@@ -69,7 +82,7 @@ class CrpMetrics:
     reliability: float
     uniqueness: float
     challenge_separation: float
-    works_for_authentication: bool
+    passes_separation_condition: bool
     estimated_t_bits: int
     estimated_impostor_delta_bits: int
     mean_min_entropy_per_bit: float
@@ -197,7 +210,7 @@ def analyze_measurements(rows: Sequence[CrpMeasurement]) -> CrpMetrics:
         reliability=1.0 - genuine.mean,
         uniqueness=impostor.mean,
         challenge_separation=challenge_separation,
-        works_for_authentication=bool(
+        passes_separation_condition=bool(
             genuine.count and impostor.count and estimated_t_bits < estimated_impostor_delta_bits / 2
         ),
         estimated_t_bits=estimated_t_bits,
@@ -207,19 +220,42 @@ def analyze_measurements(rows: Sequence[CrpMeasurement]) -> CrpMetrics:
     )
 
 
-def metrics_to_report(metrics: CrpMetrics, *, feature_names: Sequence[str]) -> dict:
+def classify_verdict(metrics: CrpMetrics, min_entropy_bits: float) -> str:
+    """Three-state verdict gating geometric separation against entropy floor."""
+    if not metrics.passes_separation_condition:
+        return VERDICT_OVERLAP
+    if metrics.estimated_total_min_entropy_bits < min_entropy_bits:
+        return VERDICT_SEPARATION_ONLY
+    return VERDICT_AUTH_CANDIDATE
+
+
+def metrics_to_report(
+    metrics: CrpMetrics,
+    *,
+    feature_names: Sequence[str],
+    min_entropy_bits: float = MIN_ENTROPY_BITS_DEFAULT,
+) -> dict:
     report = asdict(metrics)
     report["feature_names"] = list(feature_names)
-    report["verdict"] = "auth_candidate" if metrics.works_for_authentication else "overlap_or_unproven"
+    report["min_entropy_bits_threshold"] = float(min_entropy_bits)
+    verdict = classify_verdict(metrics, min_entropy_bits)
+    report["verdict"] = verdict
     report["sacred_egg_role"] = (
         "Sacred Egg / GeoSeal context should select challenge_id and bind the response receipt; "
         "this harness only tests whether enrolled CRP responses separate genuine from impostor reads."
     )
-    report["recommended_next"] = (
-        "bind challenge_id selection to Sacred Egg context and sealed measurement receipts"
-        if metrics.works_for_authentication
-        else "increase response dimensionality, improve fixture stability, or collect cleaner challenge data"
-    )
+    if verdict == VERDICT_AUTH_CANDIDATE:
+        report["recommended_next"] = "bind challenge_id selection to Sacred Egg context and sealed measurement receipts"
+    elif verdict == VERDICT_SEPARATION_ONLY:
+        report["recommended_next"] = (
+            "geometry separates but entropy is below the auth floor "
+            f"({metrics.estimated_total_min_entropy_bits:.1f} < {min_entropy_bits:.1f} bits); "
+            "expand challenge set, increase response dimensionality, or enroll more devices"
+        )
+    else:
+        report["recommended_next"] = (
+            "increase response dimensionality, improve fixture stability, or collect cleaner challenge data"
+        )
     return report
 
 
@@ -241,6 +277,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=Path("artifacts/aetherfab/sacred_egg_crp_puf_report.json"),
         help="Output JSON report path",
     )
+    parser.add_argument(
+        "--min-entropy-bits",
+        type=float,
+        default=MIN_ENTROPY_BITS_DEFAULT,
+        help=(
+            "Minimum estimated_total_min_entropy_bits required to label the run "
+            f"as auth_candidate (default: {MIN_ENTROPY_BITS_DEFAULT}). "
+            "Below this floor, a passing separation downgrades to "
+            "separation_only_low_entropy."
+        ),
+    )
     return parser
 
 
@@ -248,17 +295,29 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     rows, feature_names = load_measurements(args.csv)
     metrics = analyze_measurements(rows)
-    report = metrics_to_report(metrics, feature_names=feature_names)
+    report = metrics_to_report(
+        metrics,
+        feature_names=feature_names,
+        min_entropy_bits=args.min_entropy_bits,
+    )
     write_report(report, args.report)
+    verdict = report["verdict"]
     print(
         "Sacred Egg CRP-PUF analysis: "
         f"reliability={metrics.reliability:.4f} "
         f"uniqueness={metrics.uniqueness:.4f} "
         f"challenge_separation={metrics.challenge_separation:.4f} "
-        f"auth_ready={metrics.works_for_authentication}"
+        f"passes_separation_condition={metrics.passes_separation_condition} "
+        f"min_entropy_bits={metrics.estimated_total_min_entropy_bits:.1f}/"
+        f"{args.min_entropy_bits:.1f} "
+        f"verdict={verdict}"
     )
     print(f"report={args.report}")
-    return 0 if metrics.works_for_authentication else 2
+    if verdict == VERDICT_AUTH_CANDIDATE:
+        return EXIT_AUTH_CANDIDATE
+    if verdict == VERDICT_SEPARATION_ONLY:
+        return EXIT_SEPARATION_ONLY
+    return EXIT_OVERLAP
 
 
 if __name__ == "__main__":

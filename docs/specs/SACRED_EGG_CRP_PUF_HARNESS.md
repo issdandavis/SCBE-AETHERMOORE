@@ -52,21 +52,37 @@ The harness estimates:
 - `reliability = 1 - mean(genuine)`
 - `uniqueness = mean(impostor)`
 - `challenge_separation = min(impostor) - max(genuine)`
-- `works_for_authentication`
+- `passes_separation_condition` — boolean for the geometric separation check
+  above. **Necessary but not sufficient for real authentication.** A small
+  device + challenge set can satisfy this with only a handful of entropy
+  bits; gate any production claim on `estimated_total_min_entropy_bits`
+  meeting your auth threshold (typical floor: 64+ bits).
 - `estimated_t_bits`
 - `estimated_impostor_delta_bits`
 - per-bit min-entropy estimate
+- `estimated_total_min_entropy_bits`
 
 ## Command
 
 ```powershell
 python scripts/experiments/sacred_egg_crp_puf_analysis.py measurements.csv `
-  --report artifacts/aetherfab/sacred_egg_crp_puf_report.json
+  --report artifacts/aetherfab/sacred_egg_crp_puf_report.json `
+  --min-entropy-bits 64
 ```
 
-The command exits `0` only when the current measurements satisfy the estimated
-authentication condition. It exits `2` when the measurement set overlaps or is
-unproven.
+`--min-entropy-bits` (default `64`) is the floor below which a passing
+separation downgrades to `separation_only_low_entropy`. 64 bits is the
+typical modern auth floor (cf. NIST SP 800-63B effective entropy guidance);
+override to `0` for raw geometric checks during bring-up, or raise it for
+hardened deployments.
+
+## Verdicts and Exit Codes
+
+| Verdict                          | Exit | Meaning |
+|----------------------------------|------|---------|
+| `auth_candidate`                 | `0`  | Geometry separates AND entropy ≥ threshold. Real silicon evidence still required before any production claim. |
+| `separation_only_low_entropy`    | `3`  | Geometry separates but entropy < threshold. Promising shape, insufficient bits. Expand challenge set / response dim / device count. |
+| `overlap_or_unproven`            | `2`  | Geometry does not separate. Fix fixture / collect cleaner data before re-running. |
 
 ## How It Fits Sacred Eggs
 
