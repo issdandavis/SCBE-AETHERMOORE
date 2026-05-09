@@ -521,7 +521,12 @@ describe('polly direct HF upload', () => {
     delete process.env.HUGGINGFACE_TOKEN;
     delete process.env.HUGGING_FACE_HUB_TOKEN;
     try {
-      const result = await hfUpload.uploadRecord({ ts: 1, kind: 'chat', user: 'x', assistant: 'y' });
+      const result = await hfUpload.uploadRecord({
+        ts: 1,
+        kind: 'chat',
+        user: 'x',
+        assistant: 'y',
+      });
       expect(result.ok).toBe(false);
       expect(result.reason).toBe('no_token');
     } finally {
