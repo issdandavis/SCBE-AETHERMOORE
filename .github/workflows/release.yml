@@ -14,8 +14,13 @@ permissions:
   contents: write
 
 jobs:
+  pqc-native-liboqs:
+    name: PQC Native liboqs Gate
+    uses: ./.github/workflows/pqc-native-liboqs.yml
+
   github-release:
     name: Create GitHub Release
+    needs: pqc-native-liboqs
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
