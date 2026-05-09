@@ -6,6 +6,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: polly-training-capture
@@ -58,7 +59,11 @@ jobs:
           day = ts.strftime("%Y-%m-%d")
           stamp = ts.strftime("%Y%m%dT%H%M%S")
           nonce = secrets.token_hex(3)
-          path_in_repo = f"polly-chat-live/{day}/{stamp}-{nonce}.json"
+          # Route by kind so leads land separately from chat turns. Defaults
+          # to chat-live for any record without an explicit kind.
+          kind = str(record.get("kind") or "chat").lower()
+          prefix = "polly-leads" if kind == "lead" else "polly-chat-live"
+          path_in_repo = f"{prefix}/{day}/{stamp}-{nonce}.json"
           payload_bytes = json.dumps(record, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
           buffer = io.BytesIO(payload_bytes)
 
@@ -71,3 +76,38 @@ jobs:
           )
           print(f"uploaded to private dataset: {repo_id}/{path_in_repo}")
           PY
+
+      - name: File a private GitHub issue when the record is a lead
+        if: ${{ github.event.client_payload.record.kind == 'lead' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROJECT_TYPE: ${{ github.event.client_payload.record.project_type }}
+          BUDGET: ${{ github.event.client_payload.record.budget }}
+          TIMELINE: ${{ github.event.client_payload.record.timeline }}
+          SOURCE: ${{ github.event.client_payload.record.source }}
+        run: |
+          set -euo pipefail
+          # PII stays in the private HF dataset; the issue body deliberately
+          # excludes contact + description so notifications are safe to view
+          # in the GitHub mobile app or email previews.
+          title="lead: ${PROJECT_TYPE} (${BUDGET}, ${TIMELINE})"
+          body=$(cat <<EOF
+          A new lead landed via $SOURCE.
+
+          - project type: $PROJECT_TYPE
+          - budget: $BUDGET
+          - timeline: $TIMELINE
+
+          Contact + description are in the private HF dataset:
+          https://huggingface.co/datasets/issdandavis/polly-chat-live
+
+          Look in polly-leads/$(date -u +%Y-%m-%d)/ for today's submissions.
+          EOF
+          )
+          # Best-effort label creation; ignore if it already exists.
+          gh label create lead --description "Polly /hire form lead" --color "FFD166" --repo "${{ github.repository }}" 2>/dev/null || true
+          gh issue create \
+            --title "$title" \
+            --body "$body" \
+            --label "lead" \
+            --repo "${{ github.repository }}"
