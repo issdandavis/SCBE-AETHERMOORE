@@ -108,19 +108,14 @@ def test_load_measurements_from_wide_csv(tmp_path) -> None:
 
 def test_report_contains_verdict_and_next_step(tmp_path) -> None:
     metrics = analyze_measurements(separated_measurements())
-    report = metrics_to_report(
-        metrics, feature_names=["f0"] * metrics.feature_count, gap_ci=(0.25, 0.75)
-    )
+    report = metrics_to_report(metrics, feature_names=["f0"] * metrics.feature_count, gap_ci=(0.25, 0.75))
     path = tmp_path / "report.json"
 
     write_report(report, path)
     loaded = json.loads(path.read_text(encoding="utf-8"))
 
     assert loaded["verdict"] == "clone_resistant_candidate"
-    assert (
-        loaded["architecture_status"]
-        == "RAW_SEEDED_TOPOLOGY_PUF_DISCONFIRMED_STANDALONE_2026_05"
-    )
+    assert loaded["architecture_status"] == "RAW_SEEDED_TOPOLOGY_PUF_DISCONFIRMED_STANDALONE_2026_05"
     assert "Parked raw seeded-topology diagnostic" in loaded["status_note"]
     assert "Sacred Eggs" in loaded["status_note"]
     assert "challenge-selector" in loaded["recommended_pivot"]
