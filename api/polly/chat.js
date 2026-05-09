@@ -11,7 +11,6 @@ const {
   CONSULTING_LANDING_URL,
 } = require('./commerce');
 const llm = require('../_chat_llm');
-const trainCapture = require('../_polly_train_capture');
 const hfUpload = require('../_polly_hf_upload');
 
 const COMMERCE_INTENTS = new Set(['buy', 'custom', 'membership', 'research']);
@@ -49,19 +48,15 @@ async function captureIfConsented({
     transport: 'vercel-polly-chat',
   };
   logTrainingTurn(record);
-  // Two parallel best-effort signal channels. Awaited together so the
-  // serverless runtime doesn't kill the function before the HF commit
-  // completes — chat is non-realtime and the extra ~1-2s is acceptable.
-  // Errors from either channel are swallowed (allSettled) so a transient
-  // HF or GitHub blip never poisons the chat response.
-  //   1. Direct HF upload using HF_TOKEN (already on Vercel) — primary
-  //      durable capture, works without any GitHub PAT.
-  //   2. GitHub repository_dispatch — fires the issue + email side
-  //      effects when POLLY_TRAIN_GITHUB_TOKEN is also set.
-  await Promise.allSettled([
-    hfUpload.uploadRecord(record),
-    trainCapture.dispatchTrainingTurn(record),
-  ]);
+  // Direct HF upload only for chat turns. The repository_dispatch path
+  // exists for the lead-notification side effects (GitHub issue + SMTP
+  // email) and isn't needed for chat — dispatching for chats would
+  // trigger an empty workflow run per turn and burn CI minutes.
+  // Awaited so the serverless runtime doesn't kill the function before
+  // the HF commit returns.
+  await hfUpload.uploadRecord(record).catch(() => {
+    /* never raise into the chat path */
+  });
 }
 
 async function llmFallback(message, history) {
