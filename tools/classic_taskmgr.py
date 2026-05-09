@@ -224,6 +224,11 @@ class ProcessesTab(ttk.Frame):
         self._sort_desc = True
         # I/O rate calc needs prior-tick byte counts.
         self._io_prev: dict[int, Tuple[int, float]] = {}
+        # Cache of (pid -> last value tuple) so refresh() can do diff
+        # updates instead of rebuilding the treeview each tick. With
+        # 400+ rows the rebuild dominates the tick; diff cuts it to
+        # the actually-changed rows.
+        self._row_cache: dict[str, Tuple] = {}
         self.refresh()
 
     def _make_count_var(self) -> tk.StringVar:
@@ -293,22 +298,39 @@ class ProcessesTab(ttk.Frame):
         }
         rows.sort(key=key_map[self._sort_col], reverse=self._sort_desc)
 
-        for iid in self.tree.get_children():
-            self.tree.delete(iid)
-        for r in rows:
-            self.tree.insert(
-                "",
-                "end",
-                iid=str(r["pid"]),
-                values=(
-                    r["pid"],
-                    r["name"],
-                    r["user"],
-                    f"{r['cpu_raw']:>5.1f}",
-                    f"{r['mem_raw'] // 1024:>9,} K",
-                    f"{r['io_raw']:>8.0f}",
-                ),
+        # Diff-based update: only insert new PIDs, remove dead ones,
+        # and `set` values on existing rows. Avoids rebuilding the
+        # treeview on every tick (the rebuild dominated CPU on 400+
+        # row workloads in the prior version).
+        seen_iids: set[str] = set()
+        for idx, r in enumerate(rows):
+            iid = str(r["pid"])
+            seen_iids.add(iid)
+            values = (
+                r["pid"],
+                r["name"],
+                r["user"],
+                f"{r['cpu_raw']:>5.1f}",
+                f"{r['mem_raw'] // 1024:>9,} K",
+                f"{r['io_raw']:>8.0f}",
             )
+            if iid in self._row_cache:
+                if self._row_cache[iid] != values:
+                    self.tree.item(iid, values=values)
+                    self._row_cache[iid] = values
+                # Keep position in sort order.
+                if self.tree.index(iid) != idx:
+                    self.tree.move(iid, "", idx)
+            else:
+                self.tree.insert("", idx, iid=iid, values=values)
+                self._row_cache[iid] = values
+
+        # Remove dead PIDs.
+        for stale in [iid for iid in self._row_cache if iid not in seen_iids]:
+            if self.tree.exists(stale):
+                self.tree.delete(stale)
+            del self._row_cache[stale]
+
         if sel is not None and self.tree.exists(str(sel)):
             self.tree.selection_set(str(sel))
         self._count_var.set(f"{len(rows)} processes")
@@ -484,8 +506,18 @@ class PerformanceTab(ttk.Frame):
         # CPU panel: little gauge + history strip.
         self.cpu_gauge = HistoryGraph(top, title="CPU", width=120, height=110)
         self.cpu_gauge.grid(row=1, column=0, padx=4)
-        self.cpu_history = HistoryGraph(top, title="CPU Usage History", width=420, height=110)
-        self.cpu_history.grid(row=1, column=1, padx=4, sticky="w")
+        # The history slot swaps between a single big graph and a grid
+        # of per-core mini-graphs (View > Per-CPU graphs). Both are
+        # children of `cpu_history_slot` so swapping is just grid_remove
+        # + grid on the desired sub-widget.
+        self.cpu_history_slot = ttk.Frame(top)
+        self.cpu_history_slot.grid(row=1, column=1, padx=4, sticky="w")
+        self.cpu_history = HistoryGraph(self.cpu_history_slot, title="CPU Usage History", width=420, height=110)
+        self.cpu_history.grid(row=0, column=0)
+        # Per-core graphs lazily built when first toggled on.
+        self._per_core_graphs: List[HistoryGraph] = []
+        self._per_core_frame: Optional[ttk.Frame] = None
+        self._per_core_mode = False
 
         self.mem_gauge = HistoryGraph(top, title="MEM", width=120, height=110)
         self.mem_gauge.grid(row=3, column=0, padx=4)
@@ -557,14 +589,52 @@ class PerformanceTab(ttk.Frame):
         self._peak_commit_kb = 0
         self.refresh()
 
+    def set_per_core_mode(self, enabled: bool) -> None:
+        """Swap between single CPU history graph and a per-core grid."""
+        if enabled == self._per_core_mode:
+            return
+        self._per_core_mode = enabled
+        if enabled:
+            self.cpu_history.grid_remove()
+            if self._per_core_frame is None:
+                ncpu = psutil.cpu_count(logical=True) or 1
+                self._per_core_frame = ttk.Frame(self.cpu_history_slot)
+                cols = 4 if ncpu > 4 else max(1, ncpu)
+                rows = (ncpu + cols - 1) // cols
+                # Each mini-graph is sized so the whole grid fits the
+                # 420x110 slot the single graph used.
+                cell_w = 420 // cols
+                cell_h = 110 // rows
+                for i in range(ncpu):
+                    g = HistoryGraph(
+                        self._per_core_frame,
+                        title=f"CPU{i}",
+                        width=max(60, cell_w - 2),
+                        height=max(40, cell_h - 2),
+                    )
+                    g.grid(row=i // cols, column=i % cols, padx=1, pady=1)
+                    self._per_core_graphs.append(g)
+            self._per_core_frame.grid(row=0, column=0)
+        else:
+            if self._per_core_frame is not None:
+                self._per_core_frame.grid_remove()
+            self.cpu_history.grid()
+
     def refresh(self) -> None:
         import time
 
         cpu = psutil.cpu_percent(interval=None)
+        # Pull per-core values regardless of mode -- cheap, and avoids
+        # a discontinuity when toggling.
+        per_core = psutil.cpu_percent(interval=None, percpu=True)
         vm = psutil.virtual_memory()
         sm = psutil.swap_memory()
         self.cpu_gauge.push(cpu)
-        self.cpu_history.push(cpu)
+        if self._per_core_mode and self._per_core_graphs:
+            for g, v in zip(self._per_core_graphs, per_core):
+                g.push(v)
+        else:
+            self.cpu_history.push(cpu)
         mem_pct = vm.percent
         self.mem_gauge.push(mem_pct)
         self.mem_history.push(mem_pct)
@@ -623,14 +693,465 @@ class PerformanceTab(ttk.Frame):
 
 
 # ============================================================
+# AI Agents tab -- filtered view of agent processes + open files.
+# ============================================================
+# Patterns that mark a process as agent-related. Exact-match on the
+# image name when bare; substring match when in `cmdline`.
+_AGENT_NAME_HITS = {"ollama", "ollama.exe", "ollama-runner", "ollama-runner.exe"}
+_AGENT_CMDLINE_HITS = (
+    "claude-code",
+    "claude_code",
+    "claude.cli",
+    "ollama",
+    "scbe",
+    "geoseal",
+    "aetherbrowse",
+    "aethermoore",
+    "petri_governance_gate",
+    "agent_bus",
+    "swarm_browser",
+    "antivirus_membrane",
+    "n8n",
+    "scbe_n8n_bridge",
+)
+
+
+def _classify_agent(name: str, cmdline: List[str]) -> Optional[str]:
+    """Tag the agent class for a process; None if not recognized."""
+    nm = (name or "").lower()
+    if nm in _AGENT_NAME_HITS or nm.startswith("ollama"):
+        return "Ollama"
+    cl = " ".join(cmdline or []).lower()
+    if "claude-code" in cl or "claude_code" in cl or "@anthropic" in cl:
+        return "Claude Code"
+    if "scbe" in cl and "petri" in cl:
+        return "SCBE / Petri"
+    if "scbe" in cl or "geoseal" in cl or "aethermoore" in cl or "aetherbrowse" in cl:
+        return "SCBE Agent"
+    if "agent_bus" in cl or "swarm_browser" in cl or "antivirus_membrane" in cl:
+        return "SCBE Subsystem"
+    if nm.startswith("n8n") or "scbe_n8n_bridge" in cl:
+        return "n8n / Bridge"
+    if any(h in cl for h in _AGENT_CMDLINE_HITS):
+        return "Agent (other)"
+    return None
+
+
+class AIAgentsTab(ttk.Frame):
+    COLUMNS = (
+        ("class", "Agent", 130, "w"),
+        ("pid", "PID", 70, "e"),
+        ("name", "Image", 180, "w"),
+        ("cpu", "CPU", 55, "e"),
+        ("mem", "Mem", 90, "e"),
+        ("cmdline", "Cmdline", 360, "w"),
+    )
+
+    def __init__(self, parent: tk.Misc) -> None:
+        super().__init__(parent, padding=4)
+        col_ids = [c[0] for c in self.COLUMNS]
+        self.tree = ttk.Treeview(self, columns=col_ids, show="headings", height=14)
+        for cid, label, width, anchor in self.COLUMNS:
+            self.tree.heading(cid, text=label)
+            self.tree.column(cid, width=width, anchor=anchor)
+        sb = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=sb.set)
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        sb.grid(row=0, column=1, sticky="ns")
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.tree.bind("<<TreeviewSelect>>", lambda _e: self._update_files_panel())
+
+        # Below: open-files panel for the selected agent.
+        files_frame = ttk.LabelFrame(self, text="Open Files (selected agent)")
+        files_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", pady=(6, 0))
+        self.files_box = tk.Listbox(files_frame, height=8, font=("Consolas", 9))
+        self.files_box.pack(fill="both", expand=True, padx=4, pady=4)
+        self.rowconfigure(1, weight=1)
+
+        self.refresh()
+
+    def refresh(self) -> None:
+        sel = self.tree.selection()
+        sel_iid = sel[0] if sel else None
+        seen: set[str] = set()
+        rows = []
+        for p in psutil.process_iter(attrs=["pid", "name", "cpu_percent", "memory_info"]):
+            try:
+                info = p.info
+                cmd = p.cmdline()
+                tag = _classify_agent(info["name"] or "", cmd)
+                if tag is None:
+                    continue
+                mem = info["memory_info"].rss if info["memory_info"] else 0
+                rows.append(
+                    (
+                        tag,
+                        info["pid"],
+                        info["name"] or "?",
+                        info["cpu_percent"] or 0.0,
+                        mem,
+                        " ".join(cmd)[:240],
+                    )
+                )
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+        rows.sort(key=lambda r: (r[0], -r[3]))  # group by tag, hottest first
+
+        existing = set(self.tree.get_children())
+        for tag, pid, name, cpu_pct, mem_b, cmdline in rows:
+            iid = str(pid)
+            seen.add(iid)
+            values = (
+                tag,
+                pid,
+                name,
+                f"{cpu_pct:>5.1f}",
+                f"{mem_b // 1024:>7,} K",
+                cmdline,
+            )
+            if iid in existing:
+                self.tree.item(iid, values=values)
+            else:
+                self.tree.insert("", "end", iid=iid, values=values)
+        for iid in existing - seen:
+            self.tree.delete(iid)
+
+        if sel_iid and self.tree.exists(sel_iid):
+            self.tree.selection_set(sel_iid)
+        self._update_files_panel()
+
+    def _update_files_panel(self) -> None:
+        self.files_box.delete(0, tk.END)
+        sel = self.tree.selection()
+        if not sel:
+            self.files_box.insert(tk.END, "(select an agent to see its open files)")
+            return
+        try:
+            p = psutil.Process(int(sel[0]))
+            files = p.open_files()
+        except (psutil.NoSuchProcess, psutil.AccessDenied) as exc:
+            self.files_box.insert(tk.END, f"(unavailable: {exc})")
+            return
+        if not files:
+            self.files_box.insert(tk.END, "(no open files reported)")
+            return
+        for f in files[:200]:
+            self.files_box.insert(tk.END, f.path)
+
+
+# ============================================================
+# System tab -- architecture readout.
+# ============================================================
+def _read_system_info() -> List[Tuple[str, str]]:
+    """Build the architecture rows shown in the System tab."""
+    import platform
+
+    rows: List[Tuple[str, str]] = []
+    rows.append(("OS", f"{platform.system()} {platform.release()} ({platform.version()})"))
+    rows.append(("Machine", f"{platform.machine()}  /  {platform.processor() or '(processor str empty)'}"))
+    rows.append(("Python", f"{platform.python_version()} ({sys.executable})"))
+    try:
+        freq = psutil.cpu_freq()
+        freq_s = f"{freq.current:.0f} MHz (max {freq.max:.0f})" if freq else "(no cpu_freq)"
+    except Exception:
+        freq_s = "(no cpu_freq)"
+    rows.append(("CPU", f"phys={psutil.cpu_count(logical=False)}  log={psutil.cpu_count(logical=True)}  {freq_s}"))
+    vm = psutil.virtual_memory()
+    sm = psutil.swap_memory()
+    rows.append(
+        (
+            "Memory",
+            f"total {vm.total // (1024**3)} GB  /  avail {vm.available // (1024**3)} GB  "
+            f"/  swap {sm.total // (1024**3)} GB",
+        )
+    )
+    # Disks.
+    for part in psutil.disk_partitions(all=False):
+        try:
+            u = psutil.disk_usage(part.mountpoint)
+            rows.append(
+                (
+                    f"Disk {part.device}",
+                    f"{part.fstype:<6}  {u.used // (1024**3):>5} / {u.total // (1024**3):>5} GB used  "
+                    f"({u.percent:.0f}%)  @ {part.mountpoint}",
+                )
+            )
+        except (PermissionError, OSError):
+            continue
+    # Network interfaces.
+    try:
+        addrs = psutil.net_if_addrs()
+        stats = psutil.net_if_stats()
+        for nic, addr_list in addrs.items():
+            stat = stats.get(nic)
+            if stat is None or not stat.isup:
+                continue
+            v4 = next((a.address for a in addr_list if a.family.name == "AF_INET"), "(no v4)")
+            speed = f"{stat.speed} Mb/s" if stat.speed else "?"
+            rows.append((f"NIC {nic}", f"{v4}  {speed}  mtu={stat.mtu}"))
+    except Exception:
+        pass
+    return rows
+
+
+def _read_scbe_state() -> List[Tuple[str, str]]:
+    """SCBE-specific rows: package version, branch, ollama models."""
+    import json as _json
+    import subprocess
+
+    rows: List[Tuple[str, str]] = []
+    pkg = {}
+    try:
+        with open("package.json", encoding="utf-8") as fh:
+            pkg = _json.load(fh)
+    except Exception:
+        pass
+    rows.append(("scbe-aethermoore", f"v{pkg.get('version', '?')}"))
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        )
+        rows.append(("git branch", out.stdout.strip() or "(no git)"))
+    except Exception:
+        rows.append(("git branch", "(unavailable)"))
+    try:
+        out = subprocess.run(
+            ["ollama", "list"],
+            capture_output=True,
+            text=True,
+            timeout=3,
+            check=False,
+        )
+        if out.returncode == 0:
+            models = [ln.split()[0] for ln in out.stdout.splitlines()[1:] if ln.strip()]
+            rows.append(("ollama models", ", ".join(models[:8]) or "(none)"))
+        else:
+            rows.append(("ollama models", "(ollama CLI unavailable)"))
+    except Exception:
+        rows.append(("ollama models", "(unavailable)"))
+    return rows
+
+
+class SystemTab(ttk.Frame):
+    """Static-ish architecture readout. Refreshes every minute -- the
+    figures here change slowly compared to per-second CPU/mem readings.
+    """
+
+    def __init__(self, parent: tk.Misc) -> None:
+        super().__init__(parent, padding=8)
+        # Architecture group.
+        arch = ttk.LabelFrame(self, text="System Architecture")
+        arch.grid(row=0, column=0, sticky="nsew", pady=(0, 6))
+        self.arch_text = tk.Text(arch, height=14, width=92, font=("Consolas", 9), wrap="none")
+        self.arch_text.pack(fill="both", expand=True, padx=4, pady=4)
+        self.arch_text.configure(state="disabled")
+
+        # SCBE state group.
+        scbe = ttk.LabelFrame(self, text="SCBE Components")
+        scbe.grid(row=1, column=0, sticky="nsew")
+        self.scbe_text = tk.Text(scbe, height=6, width=92, font=("Consolas", 9), wrap="none")
+        self.scbe_text.pack(fill="both", expand=True, padx=4, pady=4)
+        self.scbe_text.configure(state="disabled")
+
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self._slow_tick = 0
+        self.refresh(force=True)
+
+    def refresh(self, *, force: bool = False) -> None:
+        self._slow_tick = (self._slow_tick + 1) % 60  # update once a minute
+        if not force and self._slow_tick != 0:
+            return
+        for widget, fetch in ((self.arch_text, _read_system_info), (self.scbe_text, _read_scbe_state)):
+            widget.configure(state="normal")
+            widget.delete("1.0", tk.END)
+            for label, value in fetch():
+                widget.insert(tk.END, f"{label:<18}  {value}\n")
+            widget.configure(state="disabled")
+
+
+# ============================================================
+# System Task Manager tab -- embeds the real taskmgr.exe via SetParent.
+# ============================================================
+class EmbeddedTaskMgrTab(ttk.Frame):
+    """Embeds Windows' real Task Manager into a tk frame using the Win32
+    SetParent API. On non-Windows or if the embed fails, shows a fallback
+    'Launch Task Manager' button. On window close, restores the original
+    parent so taskmgr survives independently.
+    """
+
+    def __init__(self, parent: tk.Misc) -> None:
+        super().__init__(parent, padding=4)
+        self._tm_proc = None
+        self._tm_hwnd: Optional[int] = None
+        self._original_parent: Optional[int] = None
+        self._original_style: Optional[int] = None
+
+        if not sys.platform.startswith("win"):
+            ttk.Label(
+                self,
+                text="System Task Manager embedding is Win32-only.",
+                anchor="center",
+                padding=20,
+            ).pack(expand=True)
+            return
+
+        self._host = tk.Frame(self, background="#000000")
+        self._host.pack(fill="both", expand=True)
+
+        controls = ttk.Frame(self)
+        controls.pack(fill="x", side="bottom", pady=(4, 0))
+        ttk.Button(controls, text="Launch & Embed", command=self._launch_and_embed).pack(side="left", padx=2)
+        ttk.Button(controls, text="Pop Out", command=self._pop_out).pack(side="left", padx=2)
+        ttk.Label(
+            controls,
+            text=(
+                "Note: Win11 may show a UAC prompt. If embedding fails, the real Task Manager "
+                "will still open as a separate window."
+            ),
+        ).pack(side="left", padx=8)
+
+        # Resize the embedded window when the host frame resizes.
+        self._host.bind("<Configure>", self._on_host_resize)
+
+    # --- Win32 helpers ------------------------------------------------
+    @staticmethod
+    def _u32():
+        import ctypes
+
+        return ctypes.windll.user32
+
+    @staticmethod
+    def _find_taskmgr_hwnd() -> Optional[int]:
+        """Locate taskmgr's main window. Win11+ uses class
+        TaskManagerWindow; older builds had the same class name."""
+        import ctypes
+
+        u32 = ctypes.windll.user32
+        FindWindowW = u32.FindWindowW
+        FindWindowW.restype = ctypes.c_void_p
+        for cls in ("TaskManagerWindow", None):
+            h = FindWindowW(cls, None) if cls else FindWindowW(None, "Task Manager")
+            if h:
+                return int(h)
+        return None
+
+    def _launch_and_embed(self) -> None:
+        import ctypes
+        import subprocess
+        import time
+
+        if self._tm_hwnd:
+            return  # already embedded
+
+        # Launch the real Task Manager (no shell so we get a process handle).
+        try:
+            self._tm_proc = subprocess.Popen(["taskmgr.exe"])
+        except FileNotFoundError:
+            messagebox.showerror("Embed Task Manager", "taskmgr.exe not found on PATH.")
+            return
+
+        # Poll up to ~3s for its main window.
+        u32 = self._u32()
+        hwnd = None
+        for _ in range(30):
+            hwnd = self._find_taskmgr_hwnd()
+            if hwnd:
+                break
+            time.sleep(0.1)
+        if not hwnd:
+            messagebox.showinfo(
+                "Embed Task Manager",
+                "Couldn't locate Task Manager's window. It may be launching with elevation; "
+                "running as administrator from this app is required for embedding.",
+            )
+            return
+
+        host_hwnd = self._host.winfo_id()
+        # Save originals so Pop Out can restore.
+        GWL_STYLE = -16
+        WS_CHILD = 0x40000000
+        WS_POPUP = 0x80000000
+        GetWindowLongW = u32.GetWindowLongW
+        SetWindowLongW = u32.SetWindowLongW
+        GetParent = u32.GetParent
+        GetParent.restype = ctypes.c_void_p
+        SetParent = u32.SetParent
+        SetParent.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+        SetParent.restype = ctypes.c_void_p
+
+        self._original_parent = int(GetParent(hwnd) or 0)
+        self._original_style = GetWindowLongW(hwnd, GWL_STYLE)
+        # Switch to child style so SetParent renders the window inside us.
+        new_style = (self._original_style & ~WS_POPUP) | WS_CHILD
+        SetWindowLongW(hwnd, GWL_STYLE, new_style)
+        SetParent(hwnd, host_hwnd)
+        self._tm_hwnd = hwnd
+        self._resize_embedded()
+
+    def _on_host_resize(self, _event: tk.Event) -> None:
+        self._resize_embedded()
+
+    def _resize_embedded(self) -> None:
+        if not self._tm_hwnd:
+            return
+        import ctypes
+
+        u32 = self._u32()
+        w = max(80, self._host.winfo_width())
+        h = max(80, self._host.winfo_height())
+        u32.MoveWindow(self._tm_hwnd, 0, 0, w, h, True)
+
+    def _pop_out(self) -> None:
+        """Restore the embedded taskmgr to its own top-level window."""
+        if not self._tm_hwnd:
+            return
+        import ctypes
+
+        u32 = self._u32()
+        GWL_STYLE = -16
+        WS_CHILD = 0x40000000
+        WS_POPUP = 0x80000000
+        GetWindowLongW = u32.GetWindowLongW
+        SetWindowLongW = u32.SetWindowLongW
+        SetParent = u32.SetParent
+        SetParent.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+        SetParent.restype = ctypes.c_void_p
+
+        if self._original_style is not None:
+            new_style = (self._original_style & ~WS_CHILD) | WS_POPUP
+            SetWindowLongW(self._tm_hwnd, GWL_STYLE, new_style)
+        SetParent(self._tm_hwnd, ctypes.c_void_p(self._original_parent or 0))
+        u32.ShowWindow(self._tm_hwnd, 1)  # SW_NORMAL
+        self._tm_hwnd = None  # the window is no longer ours
+
+    def refresh(self) -> None:
+        # No periodic work; taskmgr refreshes itself.
+        pass
+
+    def destroy(self) -> None:  # type: ignore[override]
+        # On teardown, pop the real taskmgr back out so we don't kill it.
+        try:
+            self._pop_out()
+        except Exception:
+            pass
+        super().destroy()
+
+
+# ============================================================
 # Main window.
 # ============================================================
 class TaskManager(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("Windows Task Manager")
-        self.geometry("700x680")
-        self.minsize(540, 480)
+        self.geometry("840x720")
+        self.minsize(620, 520)
 
         # Force a more retro-feeling default font where possible.
         try:
@@ -661,6 +1182,13 @@ class TaskManager(tk.Tk):
                         command=self._on_speed_change,
                     )
                 m.add_cascade(label="Update Speed", menu=speed_menu)
+                m.add_separator()
+                self._per_core_var = tk.BooleanVar(value=False)
+                m.add_checkbutton(
+                    label="Per-CPU Graphs (XP-style)",
+                    variable=self._per_core_var,
+                    command=self._on_per_core_toggle,
+                )
             elif label == "Help":
                 m.add_command(label="About Task Manager", command=self._about)
             else:
@@ -673,9 +1201,15 @@ class TaskManager(tk.Tk):
         self.apps_tab = ApplicationsTab(nb)
         self.proc_tab = ProcessesTab(nb)
         self.perf_tab = PerformanceTab(nb)
+        self.agents_tab = AIAgentsTab(nb)
+        self.system_tab = SystemTab(nb)
+        self.embedded_tab = EmbeddedTaskMgrTab(nb)
         nb.add(self.apps_tab, text="Applications")
         nb.add(self.proc_tab, text="Processes")
         nb.add(self.perf_tab, text="Performance")
+        nb.add(self.agents_tab, text="AI Agents")
+        nb.add(self.system_tab, text="System")
+        nb.add(self.embedded_tab, text="System Task Manager")
 
         # Status bar.
         self._status_proc = tk.StringVar(value="Processes: -")
@@ -705,10 +1239,21 @@ class TaskManager(tk.Tk):
             return
         self._scheduled_after = self.after(self._refresh_ms, self._tick)
 
+    def _on_per_core_toggle(self) -> None:
+        self.perf_tab.set_per_core_mode(self._per_core_var.get())
+
     def _tick(self) -> None:
-        self.apps_tab.refresh()
+        # EnumWindows + agent classification + open files are heavier
+        # than the per-second proc/perf updates. Throttle them to every
+        # other tick so the main loop stays responsive at "High" speed.
+        self._tick_count = getattr(self, "_tick_count", 0) + 1
+        if self._tick_count % 2 == 0:
+            self.apps_tab.refresh()
+            self.agents_tab.refresh()
         self.proc_tab.refresh()
         self.perf_tab.refresh()
+        self.system_tab.refresh()  # internally guards on slow_tick
+        self.embedded_tab.refresh()
         vm = psutil.virtual_memory()
         sm = psutil.swap_memory()
         self._status_proc.set(f"Processes: {len(psutil.pids())}")
