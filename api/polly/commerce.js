@@ -179,6 +179,174 @@ function renderCustomReply(message) {
   return { text, actions };
 }
 
+const RESEARCH_TOPICS = [
+  {
+    keys: ['harmonic wall', 'h(d', 'safety score', 'governance score'],
+    title: 'Harmonic wall (L12)',
+    body:
+      'The harmonic wall is the canonical SCBE safety score: H(d, pd) = 1/(1 + phi*d_H + 2*pd). ' +
+      'd_H is hyperbolic distance from the safe-operating manifold (Layer 5), pd is the prior ' +
+      'governance penalty. The score sits in (0, 1] — closer to 0 means heavier governance ' +
+      'pressure, closer to 1 means safer operation. Layer 13 maps the score to ' +
+      'ALLOW / QUARANTINE / ESCALATE / DENY decisions.',
+    links: [
+      {
+        label: 'LAYER_INDEX.md',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/LAYER_INDEX.md',
+      },
+      {
+        label: 'src/harmonic/harmonicScaling.ts',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/src/harmonic/harmonicScaling.ts',
+      },
+    ],
+  },
+  {
+    keys: ['14-layer', 'pipeline', 'fourteen layer', 'layers'],
+    title: '14-layer pipeline',
+    body:
+      'SCBE runs every interaction through 14 layers: L1-2 complex context + realification, ' +
+      'L3-4 weighted Sacred Tongues + Poincare embedding, L5 hyperbolic distance, L6-7 breathing ' +
+      'transform + Mobius phase, L8 multi-well Hamiltonian realms, L9-10 spectral + spin ' +
+      'coherence, L11 triadic temporal distance, L12 harmonic wall, L13 risk decision, L14 audio ' +
+      'telemetry. Adversarial intent costs grow exponentially with hyperbolic distance.',
+    links: [
+      {
+        label: 'LAYER_INDEX.md',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/LAYER_INDEX.md',
+      },
+      {
+        label: 'SYSTEM_ARCHITECTURE.md',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SYSTEM_ARCHITECTURE.md',
+      },
+    ],
+  },
+  {
+    keys: ['axiom', 'unitarity', 'locality', 'causality', 'symmetry', 'composition'],
+    title: 'Quantum Axiom Mesh',
+    body:
+      'Five axioms enforce mathematical invariants across the 14 layers: Unitarity (norm ' +
+      'preservation, L2/4/7), Locality (spatial bounds, L3/8), Causality (time-ordering, ' +
+      'L6/11/13), Symmetry (gauge invariance, L5/9/10/12), Composition (pipeline integrity, ' +
+      'L1/14). Each has a Python reference implementation and TypeScript canonical version.',
+    links: [
+      {
+        label: 'CORE_AXIOMS_CANONICAL_INDEX.md',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/CORE_AXIOMS_CANONICAL_INDEX.md',
+      },
+    ],
+  },
+  {
+    keys: [
+      'sacred tongue',
+      'tongues',
+      'kor',
+      'avali',
+      'runethic',
+      'cassisivadan',
+      'umbroth',
+      'draumric',
+      'langues',
+    ],
+    title: 'Sacred Tongues / Langues Weighting System',
+    body:
+      'Six tongues (Kor’aelin, Avali, Runethic, Cassisivadan, Umbroth, Draumric) weight ' +
+      'token vectors by phi-scaled energy. KO=1.00, AV=1.62, RU=2.62, CA=4.24, UM=6.85, ' +
+      'DR=11.09. Each tongue has a 16x16 token grid (256 tokens each, 1536 total). The ' +
+      'weighting drives Layer 3 transform and bridges into the Poincare embedding.',
+    links: [
+      {
+        label: 'LANGUES_WEIGHTING_SYSTEM.md',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/docs/LANGUES_WEIGHTING_SYSTEM.md',
+      },
+    ],
+  },
+  {
+    keys: ['petri', 'anthropic petri'],
+    title: 'Composing with Anthropic Petri',
+    body:
+      'Petri is detection-only auditing (36 dims, 181 seeds). SCBE composes with it as the ' +
+      'enforcement layer: 173/173 Petri seeds blocked when SCBE wired in front. Petri tells ' +
+      'you what the model would do; SCBE prevents the high-cost trajectories from running.',
+    links: [
+      {
+        label: 'Anthropic Petri (2026 Q1)',
+        url: 'https://www.anthropic.com/research',
+      },
+    ],
+  },
+  {
+    keys: ['post-quantum', 'pqc', 'ml-kem', 'ml-dsa', 'kyber', 'dilithium'],
+    title: 'Post-quantum primitives',
+    body:
+      'SCBE uses ML-KEM-768 (key encapsulation, formerly Kyber768), ML-DSA-65 (signatures, ' +
+      'formerly Dilithium3), and AES-256-GCM throughout. Key auditor agent verifies key ' +
+      'rotation and algorithm migration. liboqs is the underlying C library; Python and ' +
+      'TypeScript bindings both target the new ML- naming with fall-through to the legacy names.',
+    links: [
+      {
+        label: 'src/crypto/',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/src/crypto',
+      },
+    ],
+  },
+  {
+    keys: ['darpa', 'mathbac', 'clara', 'federal'],
+    title: 'Federal proposals',
+    body:
+      'Two active DARPA proposals: CLARA FP-033 (submitted, award decision 2026-06-16) and ' +
+      'MATHBAC abstract (submitted 2026-04-27, full proposal due 2026-06-16). SCBE positions ' +
+      'as post-quantum hyperbolic successor to DARPA I2O Mission-oriented Resilient Clouds ' +
+      '(MRC, ~2011-2017). SAM.gov UEI J4NXHM6N5F59, CAGE 1EXD5.',
+    links: [
+      { label: 'Hire / federal subcontract', url: 'https://aethermoore.com/hire' },
+    ],
+  },
+];
+
+function resolveResearchTopic(message) {
+  const lower = String(message || '').toLowerCase();
+  for (const topic of RESEARCH_TOPICS) {
+    for (const key of topic.keys) {
+      if (lower.includes(key)) return topic;
+    }
+  }
+  return null;
+}
+
+function renderResearchReply(message) {
+  const topic = resolveResearchTopic(message);
+  if (topic) {
+    const linkLines = topic.links.map((link) => `- [${link.label}](${link.url})`);
+    const text =
+      `**${topic.title}**\n\n${topic.body}\n\n` +
+      (linkLines.length ? `Read more:\n${linkLines.join('\n')}` : '');
+    const actions = topic.links.map((link) => ({ label: link.label, url: link.url }));
+    actions.push({
+      label: 'Full repo',
+      url: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
+    });
+    return { text, actions };
+  }
+
+  const titles = RESEARCH_TOPICS.map((t) => `- ${t.title}`);
+  const text =
+    "I can answer research questions about any of these directly without an LLM call:\n\n" +
+    titles.join('\n') +
+    '\n\nAsk again with one of those terms in your question, or ' +
+    'browse the full repo for the longer-form documentation.';
+  const actions = [
+    {
+      label: 'LAYER_INDEX.md',
+      url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/LAYER_INDEX.md',
+    },
+    {
+      label: 'Full repo',
+      url: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
+    },
+  ];
+  return { text, actions };
+}
+
 function renderMembershipReply() {
   const text =
     'Three ways to stay close to the work:\n\n' +
@@ -201,9 +369,12 @@ module.exports = {
   CONSULTING_LANDING_URL,
   HIRE_EMAIL,
   MEMBERSHIP_KOFI_URL,
+  RESEARCH_TOPICS,
   classifyIntent,
   renderBuyReply,
   renderCustomReply,
   renderMembershipReply,
+  renderResearchReply,
   resolveProduct,
+  resolveResearchTopic,
 };
