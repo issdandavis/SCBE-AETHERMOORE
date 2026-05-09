@@ -2,6 +2,7 @@
 
 const { readJsonBody, sendJson, setCors } = require('../_agent_common');
 const trainCapture = require('../_polly_train_capture');
+const hfUpload = require('../_polly_hf_upload');
 
 const PROJECT_TYPES = new Set([
   'audit',
@@ -135,16 +136,19 @@ module.exports = async function handler(req, res) {
 
   logLead(record);
 
-  // Reuse the same dispatch path as chat capture; the workflow uploads to the
-  // PRIVATE dataset issdandavis/polly-chat-live, with leads landing under a
-  // distinct path prefix via the record's `kind` field. Lead submission is
-  // always-on (no consent gate) — the act of submitting the form IS consent
-  // to be contacted.
-  trainCapture
-    .dispatchTrainingTurn(record)
-    .catch(() => {
-      /* never raise into the request path */
-    });
+  // Two parallel best-effort signal channels, awaited together so the
+  // serverless runtime doesn't kill the function before the HF commit
+  // completes. allSettled means a transient HF or GitHub blip never
+  // poisons the lead response.
+  //   1. Direct HF upload using HF_TOKEN — primary durable capture.
+  //      Lead lands at polly-leads/{YYYY-MM-DD}/{stamp}-{nonce}.json in
+  //      the PRIVATE dataset issdandavis/polly-chat-live.
+  //   2. GitHub repository_dispatch — fires the issue + email side
+  //      effects when POLLY_TRAIN_GITHUB_TOKEN is also set on Vercel.
+  await Promise.allSettled([
+    hfUpload.uploadRecord(record),
+    trainCapture.dispatchTrainingTurn(record),
+  ]);
 
   return sendJson(res, 200, {
     ok: true,
