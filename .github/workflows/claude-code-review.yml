@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Local deterministic review gate
         shell: bash
@@ -25,6 +25,9 @@ jobs:
 
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
+
+          git cat-file -e "${base}^{commit}" || git fetch --no-tags --prune origin "${{ github.event.pull_request.base.ref }}"
+          git cat-file -e "${head}^{commit}" || git fetch --no-tags --prune origin "pull/${{ github.event.pull_request.number }}/head:refs/remotes/origin/pr-${{ github.event.pull_request.number }}"
 
           echo "## Local deterministic review gate" >> "$GITHUB_STEP_SUMMARY"
           echo >> "$GITHUB_STEP_SUMMARY"
