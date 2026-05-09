@@ -45,7 +45,10 @@ def test_daily_cash_sprint_generates_governance_snapshot_offer(tmp_path: Path) -
 
     drafts = report["outreach_drafts"]
     assert len(drafts) == 3
-    assert any("https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" in draft["text"] for draft in drafts)
+    assert any(
+        "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" in draft["text"]
+        for draft in drafts
+    )
     markdown = paths["markdown"].read_text(encoding="utf-8")
     assert "2-page findings memo" in markdown
     assert "Price: $500\n" in markdown
