@@ -1,6 +1,6 @@
 # Triadic Operator Manifold
 
-**Status:** v1 product slice.  
+**Status:** v1 product slice.
 **Code:** `src/operator/triadic_manifold.ts` and `packages/agent-bus-py/src/scbe_agent_bus/companions.py`.
 
 ## Purpose
