@@ -31,7 +31,7 @@ from demos.gemma4_scbe_governance.lib import (  # noqa: E402
     GovernedResponse,
     govern_and_generate,
 )
-from src.cli.cascade_router import CascadeRouter  # noqa: E402
+from src.cli.cascade_router import AndAllowCascadeRouter, CascadeRouter  # noqa: E402
 from src.cli.slm_router import LatticeRouter, OllamaAdapter  # noqa: E402
 
 EXAMPLES_PATH = Path(__file__).resolve().parent / "example_prompts.json"
@@ -130,15 +130,27 @@ def _parse_args(argv: Optional[list] = None) -> argparse.Namespace:
         default="",
         help=(
             "if set, --slm-model becomes the cascade primary and this is "
-            "the secondary (rescue) classifier. Recommended pairing: "
-            "primary=qwen2.5-coder:1.5b, secondary=qwen2.5-coder:0.5b"
+            "the secondary classifier. Default cascade mode is "
+            "and_allow (BOTH must allow); use --cascade-mode rescue for "
+            "the older rescue-on-quarantine cascade."
+        ),
+    )
+    p.add_argument(
+        "--cascade-mode",
+        choices=["and_allow", "rescue"],
+        default="and_allow",
+        help=(
+            "and_allow: ALLOW iff both classifiers ALLOW (composes "
+            "catches; ~2x latency). "
+            "rescue: secondary rescues a primary refusal at high conf "
+            "(historical, Result E showed it regresses safety)."
         ),
     )
     p.add_argument(
         "--rescue-threshold",
         type=float,
         default=0.85,
-        help="cascade: minimum secondary confidence to override primary refusal",
+        help="rescue cascade: minimum secondary confidence to override primary refusal",
     )
     p.add_argument(
         "--no-gemma",
@@ -172,11 +184,14 @@ def main(argv: Optional[list] = None) -> int:
     if args.cascade_secondary_model:
         secondary_adapter = OllamaAdapter(model=args.cascade_secondary_model, host=args.ollama_host)
         secondary_router = LatticeRouter(secondary_adapter, min_confidence=args.min_confidence)
-        router = CascadeRouter(
-            primary=primary_router,
-            secondary=secondary_router,
-            rescue_threshold=args.rescue_threshold,
-        )
+        if args.cascade_mode == "and_allow":
+            router = AndAllowCascadeRouter(primary=primary_router, secondary=secondary_router)
+        else:
+            router = CascadeRouter(
+                primary=primary_router,
+                secondary=secondary_router,
+                rescue_threshold=args.rescue_threshold,
+            )
     else:
         router = primary_router
     gemma = None if args.no_gemma else GemmaClient(model=args.gemma_model, host=args.ollama_host)
@@ -191,7 +206,10 @@ def main(argv: Optional[list] = None) -> int:
     payload = {
         "slm_model": args.slm_model,
         "cascade_secondary_model": args.cascade_secondary_model or None,
-        "rescue_threshold": (args.rescue_threshold if args.cascade_secondary_model else None),
+        "cascade_mode": (args.cascade_mode if args.cascade_secondary_model else None),
+        "rescue_threshold": (
+            args.rescue_threshold if args.cascade_secondary_model and args.cascade_mode == "rescue" else None
+        ),
         "gemma_model": None if args.no_gemma else args.gemma_model,
         "min_confidence": args.min_confidence,
         "summary": summary,

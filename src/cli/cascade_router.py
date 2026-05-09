@@ -141,3 +141,112 @@ def _with_cascade_marker(result: RoutingResult, *, source: str, rescued: bool) -
         confidence=result.confidence,
         reasoning=result.reasoning + (marker,),
     )
+
+
+# ---------------------------------------------------------------------------
+#  AND-of-allow cascade — both classifiers must independently allow
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class AndAllowCascadeRouter:
+    """Two-tier classifier requiring BOTH to allow before forwarding.
+
+    The opposite asymmetry from CascadeRouter: instead of letting the
+    secondary RESCUE a primary refusal, this requires the secondary to
+    independently agree before any prompt is forwarded. ALLOW iff both
+    classifiers ALLOW; QUARANTINE if either refuses.
+
+    Motivated by Petri Result G (2026-05-08): the SCBE-tuned 0.5B coder
+    and the qwen2.5-coder:1.5b classifier have *different* blind spots.
+    v3 caught praise/escalation/sycophancy seeds that v4 missed; v4
+    caught blackmail/leaking/multi-agent seeds that v3 missed.
+    Composing the catches (require both to ALLOW) should reject the
+    leaks of either classifier alone, at the cost of ~2x latency and
+    a higher benign-refusal rate.
+
+    Behavior:
+      1. Run primary. If it raises QuarantineError, re-raise it
+         (short-circuit; do not waste a secondary call).
+      2. If primary ALLOWs, run secondary.
+      3. If secondary raises QuarantineError, re-raise it (the
+         secondary's typed error is the more interesting signal —
+         primary already agreed it was allowable, so secondary's
+         disagreement is the new information).
+      4. If both ALLOW, return primary's routing annotated with the
+         AND-of-allow marker. Primary's band/op/tongue are the action
+         surface; secondary's classification is consulted only for
+         the verdict, not to override the routing.
+    """
+
+    primary: LatticeRouter
+    secondary: LatticeRouter
+
+    def route(
+        self,
+        intent: str,
+        args: Mapping[str, str],
+        *,
+        dst_tongue: Optional[str] = None,
+        mode: Union[Mode, str, None] = None,
+        band: Optional[str] = None,
+        op_name: Optional[str] = None,
+    ) -> RoutingResult:
+        # Stage 1: primary. Refusal short-circuits.
+        primary_result = self.primary.route(
+            intent,
+            args,
+            dst_tongue=dst_tongue,
+            mode=mode,
+            band=band,
+            op_name=op_name,
+        )
+
+        # Stage 2: secondary. Must also ALLOW for AND-of-allow contract.
+        try:
+            secondary_result = self.secondary.route(
+                intent,
+                args,
+                dst_tongue=dst_tongue,
+                mode=mode,
+                band=band,
+                op_name=op_name,
+            )
+        except QuarantineError:
+            # Secondary's disagreement is the new information — re-raise
+            # its typed error so downstream funnels can see why.
+            raise
+
+        # Both ALLOW. Use primary's routing as the action surface.
+        return _with_and_allow_marker(
+            primary_result,
+            secondary_band=secondary_result.op.band,
+            secondary_op=secondary_result.op.op_name,
+            secondary_conf=secondary_result.confidence,
+        )
+
+
+def _with_and_allow_marker(
+    result: RoutingResult,
+    *,
+    secondary_band: str,
+    secondary_op: str,
+    secondary_conf: float,
+) -> RoutingResult:
+    """Annotate routing with the secondary's choice for diagnostic visibility.
+
+    The returned op/tongue are still primary's, but the reasoning trail
+    surfaces what secondary picked — useful for analyzing classifier
+    agreement after the fact.
+    """
+    marker = (
+        f"and_allow: both_agreed=True "
+        f"secondary_band={secondary_band} secondary_op={secondary_op} "
+        f"secondary_conf={secondary_conf:.2f}"
+    )
+    return RoutingResult(
+        op=result.op,
+        dst_tongue=result.dst_tongue,
+        confidence=result.confidence,
+        reasoning=result.reasoning + (marker,),
+    )
