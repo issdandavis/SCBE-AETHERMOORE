@@ -12,6 +12,7 @@ const {
 } = require('./commerce');
 const llm = require('../_chat_llm');
 const hfUpload = require('../_polly_hf_upload');
+const rateLimit = require('../_polly_rate_limit');
 
 const COMMERCE_INTENTS = new Set(['buy', 'custom', 'membership', 'research']);
 const COMMERCE_CONFIDENCE_FLOOR = 0.6;
@@ -68,6 +69,15 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') {
     return sendJson(res, 405, { ok: false, error: 'POST only' });
+  }
+
+  const rl = rateLimit.enforce(req, res, 'chat');
+  if (!rl.allowed) {
+    return sendJson(res, 429, {
+      ok: false,
+      error: 'rate limit exceeded',
+      retry_after_ms: rl.retryAfterMs,
+    });
   }
 
   let body;

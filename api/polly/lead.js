@@ -3,6 +3,7 @@
 const { readJsonBody, sendJson, setCors } = require('../_agent_common');
 const trainCapture = require('../_polly_train_capture');
 const hfUpload = require('../_polly_hf_upload');
+const rateLimit = require('../_polly_rate_limit');
 
 const PROJECT_TYPES = new Set([
   'audit',
@@ -108,6 +109,15 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST only' });
 
+  const rl = rateLimit.enforce(req, res, 'lead');
+  if (!rl.allowed) {
+    return sendJson(res, 429, {
+      ok: false,
+      error: 'rate limit exceeded',
+      retry_after_ms: rl.retryAfterMs,
+    });
+  }
+
   let body;
   try {
     body = await readJsonBody(req);
@@ -116,6 +126,18 @@ module.exports = async function handler(req, res) {
       ok: false,
       error: 'invalid JSON body',
       detail: String(error.message || error),
+    });
+  }
+
+  // Honeypot: real users never see or fill the `website` hidden field.
+  // Bots scraping the form will. We accept the request with 200 so the
+  // bot doesn't retry, but skip every downstream side effect (no HF
+  // upload, no GitHub issue, no email).
+  if (body && typeof body.website === 'string' && body.website.trim().length > 0) {
+    return sendJson(res, 200, {
+      ok: true,
+      message: "Got it — Issac will reply within 24 hours.",
+      next_steps: [],
     });
   }
 
