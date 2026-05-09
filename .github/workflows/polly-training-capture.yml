@@ -5,59 +5,69 @@ on:
     types: [polly_training_turn]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: polly-training-capture
   cancel-in-progress: false
 
 jobs:
-  append-jsonl:
+  push-to-private-hf-dataset:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Append consented turn to live corpus
+      - name: Push consented turn to private HF dataset
         env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
           PAYLOAD: ${{ toJSON(github.event.client_payload.record) }}
+          HF_REPO: ${{ vars.POLLY_HF_DATASET || 'issdandavis/polly-chat-live' }}
         run: |
           set -euo pipefail
-          mkdir -p training-data/polly-chat-live
-          shard="training-data/polly-chat-live/$(date -u +%Y-%m).jsonl"
-          # PII guard: never echo PAYLOAD to logs. Pipe via env var into Python,
-          # which validates and writes the compact JSON to the shard file. Only
-          # the shard path and a row counter ever land in the workflow log.
-          python3 - <<'PY'
-          import json, os, pathlib
-          payload = os.environ["PAYLOAD"]
-          record = json.loads(payload)
-          shard = pathlib.Path(os.environ["GITHUB_WORKSPACE"]) / "training-data" / "polly-chat-live"
-          shard.mkdir(parents=True, exist_ok=True)
-          import datetime
-          name = datetime.datetime.utcnow().strftime("%Y-%m") + ".jsonl"
-          target = shard / name
-          with target.open("a", encoding="utf-8") as f:
-              f.write(json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n")
-          rows = sum(1 for _ in target.open("r", encoding="utf-8"))
-          print(f"appended to {target.relative_to(os.environ['GITHUB_WORKSPACE'])} (rows={rows})")
-          PY
-
-      - name: Commit if anything changed
-        run: |
-          set -euo pipefail
-          # training-data/**/*.jsonl is gitignored at .gitignore:92 — git status
-          # will report no changes and we exit cleanly. Keeping this step so a
-          # future un-ignoring would still need an explicit decision.
-          if [[ -z "$(git status --porcelain training-data/polly-chat-live)" ]]; then
-            echo "no tracked changes to commit (path is gitignored — record kept ephemerally on the runner)"
+          if [[ -z "${HF_TOKEN:-}" ]]; then
+            echo "HF_TOKEN not configured; skipping push" >&2
             exit 0
           fi
-          git config user.name "polly-train-capture[bot]"
-          git config user.email "polly-train-capture@users.noreply.github.com"
-          git add training-data/polly-chat-live
-          git commit -m "chore(polly): append consented chat turn to live corpus"
-          git push
+          python3 -m pip install --quiet 'huggingface_hub>=0.27,<1.0'
+          # PII guard: never echo PAYLOAD to logs. Pipe via env var into Python,
+          # which validates, writes a per-turn JSON file, and uploads it to the
+          # PRIVATE Hugging Face dataset. Only the dataset path + remote URL
+          # ever land in the workflow log.
+          python3 - <<'PY'
+          import datetime as dt
+          import io
+          import json
+          import os
+          import secrets
+          from huggingface_hub import HfApi
+
+          payload = os.environ["PAYLOAD"]
+          record = json.loads(payload)
+          repo_id = os.environ["HF_REPO"]
+          token = os.environ["HF_TOKEN"]
+
+          api = HfApi(token=token)
+          # Ensure the dataset exists and is private. exist_ok=True is idempotent.
+          api.create_repo(
+              repo_id=repo_id,
+              repo_type="dataset",
+              private=True,
+              exist_ok=True,
+          )
+
+          ts = dt.datetime.utcfromtimestamp(int(record.get("ts") or 0)) if record.get("ts") else dt.datetime.utcnow()
+          day = ts.strftime("%Y-%m-%d")
+          stamp = ts.strftime("%Y%m%dT%H%M%S")
+          nonce = secrets.token_hex(3)
+          path_in_repo = f"polly-chat-live/{day}/{stamp}-{nonce}.json"
+          payload_bytes = json.dumps(record, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+          buffer = io.BytesIO(payload_bytes)
+
+          api.upload_file(
+              path_or_fileobj=buffer,
+              path_in_repo=path_in_repo,
+              repo_id=repo_id,
+              repo_type="dataset",
+              commit_message=f"chore(polly): consented turn {stamp}",
+          )
+          print(f"uploaded to private dataset: {repo_id}/{path_in_repo}")
+          PY

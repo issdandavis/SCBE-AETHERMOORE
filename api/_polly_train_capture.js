@@ -19,7 +19,11 @@ function trainConfig() {
       process.env.GH_TOKEN ||
       '',
     repo: process.env.POLLY_TRAIN_REPO || process.env.GITHUB_REPO || DEFAULT_REPO,
-    enabled: String(process.env.POLLY_TRAIN_DISPATCH_ENABLED || 'false').toLowerCase() === 'true',
+    // Dispatch defaults to ON — the workflow pushes to a PRIVATE Hugging Face
+    // dataset (issdandavis/polly-chat-live), so always-on capture is the
+    // intended state. Set POLLY_TRAIN_DISPATCH_ENABLED='false' on Vercel to
+    // explicitly opt out per-deploy.
+    enabled: String(process.env.POLLY_TRAIN_DISPATCH_ENABLED || 'true').toLowerCase() !== 'false',
     timeoutMs: Math.max(500, Number(process.env.POLLY_TRAIN_DISPATCH_TIMEOUT_MS || 4000)),
   };
 }
