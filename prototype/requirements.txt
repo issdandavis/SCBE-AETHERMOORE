@@ -4,7 +4,7 @@
 numpy>=1.24.0
 
 # Visualization
-matplotlib>=3.7.0
+matplotlib>=3.10.9
 plotly>=6.7.0
 
 # Interactive demo
