@@ -21,7 +21,9 @@ def load_module(path: Path, name: str):
 
 
 def test_agent_task_run_builds_trajectory_scaling():
-    module = load_module(REPO_ROOT / "scripts" / "agents" / "run_agent_task.py", "_run_agent_task_test")
+    module = load_module(
+        REPO_ROOT / "scripts" / "agents" / "run_agent_task.py", "_run_agent_task_test"
+    )
     payload = module.build_task_run(
         goal="improve agentic coding harness",
         workers=4,
@@ -33,7 +35,9 @@ def test_agent_task_run_builds_trajectory_scaling():
     assert payload["trajectory_scaling"]["max_attempts"] == 3
     assert len(payload["packets"]) == 4
     assert any(step["role"] == "critic" for step in payload["packets"][0]["trajectory"])
-    assert any(step["role"] == "reranker" for step in payload["packets"][0]["trajectory"])
+    assert any(
+        step["role"] == "reranker" for step in payload["packets"][0]["trajectory"]
+    )
     module.attach_build_bijection(payload)
     assert payload["build_bijection"]["ok"] is True
     assert set(payload["build_bijection"]["tongues"]) == {
@@ -47,7 +51,9 @@ def test_agent_task_run_builds_trajectory_scaling():
 
 
 def test_agent_task_run_write_emits_tool_bridge(tmp_path):
-    module = load_module(REPO_ROOT / "scripts" / "agents" / "run_agent_task.py", "_run_agent_task_write")
+    module = load_module(
+        REPO_ROOT / "scripts" / "agents" / "run_agent_task.py", "_run_agent_task_write"
+    )
     payload = module.build_task_run(
         goal="wire geoseal harness",
         workers=1,
@@ -57,7 +63,9 @@ def test_agent_task_run_write_emits_tool_bridge(tmp_path):
         rerank=False,
     )
     module.write_task_run(payload, tmp_path, attach_bijection=False)
-    json_paths = [p for p in tmp_path.glob("**/agent_task_run.json") if p.parent.name != "latest"]
+    json_paths = [
+        p for p in tmp_path.glob("**/agent_task_run.json") if p.parent.name != "latest"
+    ]
     assert len(json_paths) == 1
     saved = json.loads(json_paths[0].read_text(encoding="utf-8"))
     bridge = saved["tool_bridge"]
@@ -116,17 +124,68 @@ def test_agent_harness_exposes_ghost_terminal_audit_tool():
     assert tools["system_ghost_terminal_audit"]["risk"] == "low"
     assert "ghost-terminal-audit" in tools["system_ghost_terminal_audit"]["routes"]
     assert tools["system_ghost_terminal_cleanup"]["risk"] == "medium"
-    assert "ghost-terminal-audit-clean-stale" in tools["system_ghost_terminal_cleanup"]["routes"]
-    observe = next(row for row in manifest["permission_profiles"] if row["mode"] == "observe")
-    maintenance = next(row for row in manifest["permission_profiles"] if row["mode"] == "maintenance")
+    assert (
+        "ghost-terminal-audit-clean-stale"
+        in tools["system_ghost_terminal_cleanup"]["routes"]
+    )
+    observe = next(
+        row for row in manifest["permission_profiles"] if row["mode"] == "observe"
+    )
+    maintenance = next(
+        row for row in manifest["permission_profiles"] if row["mode"] == "maintenance"
+    )
     assert "system_ghost_terminal_audit" in observe["allows"]
     assert "system_ghost_terminal_cleanup" in observe["blocks"]
     assert "system_ghost_terminal_cleanup" in maintenance["allows"]
     assert "ghost_terminal_audit_ps1" in manifest["geoseal_cli"]
     assert "-Json" in manifest["geoseal_cli"]["ghost_terminal_audit_ps1"]
     assert "ghost_terminal_cleanup_stale_ps1" in manifest["geoseal_cli"]
+    assert "compile_intent_json" in manifest["geoseal_cli"]
     assert "ghost_terminal_audit" in manifest["mcp_style_exports"]["resources"]
     assert "system_ghost_terminal_audit" in manifest["mcp_style_exports"]["tools"]
+
+
+def test_command_compiler_lowers_ghost_audit_to_runnable_bus_plan():
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    plan = compile_intent_to_plan(
+        intent="audit the blank ghost terminal popup",
+        permission_mode="observe",
+    )
+    assert plan["schema_version"] == "scbe_command_plan_v1"
+    assert plan["tool"]["class"] == "system_ghost_terminal_audit"
+    assert plan["policy"]["decision"] == "ALLOW"
+    assert plan["command"]["runnable"] is True
+    assert plan["command"]["key"] == "ghost_terminal_audit_ps1"
+    assert "-Json" in plan["command"]["template"]
+    assert plan["strands"]["converged"] is True
+    assert len(plan["hashes"]["plan_sha256"]) == 64
+
+
+def test_command_compiler_blocks_cleanup_in_observe_mode():
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    plan = compile_intent_to_plan(
+        intent="clean and stop the ghost terminal popup",
+        permission_mode="observe",
+    )
+    assert plan["tool"]["class"] == "system_ghost_terminal_cleanup"
+    assert plan["policy"]["decision"] == "DENY"
+    assert plan["command"]["runnable"] is False
+    assert plan["command"]["key"] == "ghost_terminal_cleanup_stale_ps1"
+
+
+def test_command_compiler_allows_cleanup_in_maintenance_mode():
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    plan = compile_intent_to_plan(
+        intent="clean and stop the ghost terminal popup",
+        permission_mode="maintenance",
+    )
+    assert plan["tool"]["class"] == "system_ghost_terminal_cleanup"
+    assert plan["policy"]["decision"] == "ALLOW"
+    assert plan["command"]["runnable"] is True
+    assert "-CleanStale" in plan["command"]["template"]
 
 
 def test_geoseal_agent_harness_cli_json():
@@ -156,6 +215,64 @@ def test_geoseal_agent_harness_cli_json():
     assert payload["schema_version"] == "scbe_agent_harness_manifest_v1"
     assert payload["selected_language"]["language"] == "zig"
     assert payload["selected_language"]["parent_tongue"] == "RU"
+
+
+def test_geoseal_compile_cli_json():
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.geoseal_cli",
+            "compile",
+            "--json",
+            "audit",
+            "the",
+            "ghost",
+            "terminal",
+            "popup",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_command_plan_v1"
+    assert payload["tool"]["class"] == "system_ghost_terminal_audit"
+    assert payload["policy"]["decision"] == "ALLOW"
+    assert payload["command"]["runnable"] is True
+
+
+def test_geoseal_compile_cli_denies_blocked_plan():
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.geoseal_cli",
+            "compile",
+            "--json",
+            "--permission-mode",
+            "observe",
+            "clean",
+            "the",
+            "ghost",
+            "terminal",
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    assert proc.returncode == 2
+    payload = json.loads(proc.stdout)
+    assert payload["tool"]["class"] == "system_ghost_terminal_cleanup"
+    assert payload["policy"]["decision"] == "DENY"
+    assert payload["command"]["runnable"] is False
 
 
 def test_geoseal_service_tool_bridge_endpoint():
@@ -221,6 +338,25 @@ def test_geoseal_service_cli_bridge_agent_harness():
     assert body["data"]["selected_language"]["tongue"] == "AV"
 
 
+def test_geoseal_service_cli_bridge_compile():
+    from fastapi.testclient import TestClient
+
+    from src.api.geoseal_service import app
+
+    client = TestClient(app)
+    response = client.post(
+        "/v1/geoseal/compile",
+        json={"intent": "audit the ghost terminal popup", "permission_mode": "observe"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["exit_code"] == 0
+    assert body["data"]["schema_version"] == "scbe_command_plan_v1"
+    assert body["data"]["tool"]["class"] == "system_ghost_terminal_audit"
+    assert body["data"]["command"]["runnable"] is True
+
+
 def test_geoseal_service_cli_bridge_code_packet():
     from fastapi.testclient import TestClient
 
@@ -243,7 +379,9 @@ def test_external_eval_manifest_validates():
         REPO_ROOT / "scripts" / "benchmark" / "external_agentic_eval_driver.py",
         "_external_agentic_eval_driver_test",
     )
-    tasks = module.load_manifest(REPO_ROOT / "config" / "eval" / "external_agentic_eval_tasks.sample.json")
+    tasks = module.load_manifest(
+        REPO_ROOT / "config" / "eval" / "external_agentic_eval_tasks.sample.json"
+    )
     validation = module.validate_tasks(tasks)
     assert validation["ok"], validation
     assert {task.suite for task in tasks} >= {
@@ -258,10 +396,15 @@ def test_external_eval_report_includes_sacred_tongue_bijection(tmp_path):
         REPO_ROOT / "scripts" / "benchmark" / "external_agentic_eval_driver.py",
         "_external_agentic_eval_driver_bijection_test",
     )
-    tasks = module.load_manifest(REPO_ROOT / "config" / "eval" / "external_agentic_eval_tasks.sample.json")
+    tasks = module.load_manifest(
+        REPO_ROOT / "config" / "eval" / "external_agentic_eval_tasks.sample.json"
+    )
     out = module.write_report(tasks, tmp_path, execute=False)
     assert out["payload"]["sacred_tongue_bijection"]["ok"] is True
-    assert out["payload"]["sacred_tongue_bijection"]["schema_version"] == "scbe_sacred_tongue_payload_bijection_v1"
+    assert (
+        out["payload"]["sacred_tongue_bijection"]["schema_version"]
+        == "scbe_sacred_tongue_payload_bijection_v1"
+    )
 
 
 def test_external_eval_validate_subcommand():

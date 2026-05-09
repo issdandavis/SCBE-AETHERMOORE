@@ -1712,6 +1712,73 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_compile(args: argparse.Namespace) -> int:
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    payload = compile_intent_to_plan(
+        intent=" ".join(args.intent or []),
+        permission_mode=args.permission_mode,
+        preferred_language=args.language,
+        requested_tool=args.tool,
+    )
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(
+            f"{payload['schema_version']} tool={payload['tool']['class']} "
+            f"decision={payload['policy']['decision']} runnable={payload['command']['runnable']}"
+        )
+        if payload["command"]["template"]:
+            print(payload["command"]["template"])
+    return 0 if payload["policy"]["decision"] != "DENY" else 2
+
+
+def cmd_loop_dispatch(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_tool_policy import (
+        evaluate_harness_tool_policy,
+        geoseal_command_to_tool_class,
+    )
+
+    tool_class = geoseal_command_to_tool_class("loop-dispatch", execute=bool(args.execute))
+    policy = evaluate_harness_tool_policy(
+        permission_mode=args.permission_mode,
+        tool_class=tool_class,
+    )
+    payload = {
+        "schema_version": "scbe_loop_dispatch_plan_v1",
+        "provider": args.provider,
+        "task": args.task,
+        "execute": bool(args.execute),
+        "policy": policy,
+    }
+    if args.execute and policy.get("ok"):
+        execute_armed = os.environ.get("SCBE_AGENTIC_LOOP_EXECUTE", "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
+        payload["execute_gate"] = {
+            "armed": execute_armed,
+            "decision": "ALLOW" if execute_armed else "QUARANTINE",
+            "reason": "set SCBE_AGENTIC_LOOP_EXECUTE=1 to perform external loop dispatch",
+        }
+        if not execute_armed:
+            if args.json:
+                print(json.dumps(payload, indent=2))
+            else:
+                print("loop-dispatch execute gate is not armed")
+            return 2
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        print(
+            f"{payload['schema_version']} provider={args.provider} task={args.task} "
+            f"decision={policy['decision']}"
+        )
+    return 0 if policy.get("ok") else 2
+
+
 def cmd_assist(args: argparse.Namespace) -> int:
     from scripts.system.micro_agent_assist import build_advice, post_packet, render_text, resolve_bus
 
@@ -4438,6 +4505,30 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
+
+    p_compile = sub.add_parser("compile", help="Compile intent into an SCBE agent-bus command plan")
+    p_compile.add_argument("intent", nargs=argparse.REMAINDER)
+    p_compile.add_argument(
+        "--permission-mode",
+        default="observe",
+        choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
+    )
+    p_compile.add_argument("--language", default="python")
+    p_compile.add_argument("--tool", default=None, help="Force harness tool class")
+    p_compile.add_argument("--json", action="store_true")
+    p_compile.set_defaults(func=cmd_compile)
+
+    p_loop_dispatch = sub.add_parser("loop-dispatch", help="Policy-gated external agent loop dispatch")
+    p_loop_dispatch.add_argument("--provider", required=True)
+    p_loop_dispatch.add_argument("--task", required=True)
+    p_loop_dispatch.add_argument(
+        "--permission-mode",
+        default="observe",
+        choices=["observe", "workspace-write", "cloud-dispatch", "maintenance"],
+    )
+    p_loop_dispatch.add_argument("--execute", action="store_true")
+    p_loop_dispatch.add_argument("--json", action="store_true")
+    p_loop_dispatch.set_defaults(func=cmd_loop_dispatch)
 
     p_assist = sub.add_parser("assist", help="Run local micro-assist for terminal agents")
     p_assist.add_argument("task", help="Task text to classify and route")

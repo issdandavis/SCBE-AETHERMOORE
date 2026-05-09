@@ -19,11 +19,18 @@ GEOSEAL_CLI_COMMANDS = frozenset(
         "explain-route",
         "backend-registry",
         "agent-harness",
+        "compile",
         "history",
         "replay",
         "testing-cli",
         "project-scaffold",
         "code-roundtrip",
+        "call-switchboard",
+        "lightning-indexer",
+        "yin-yang-dual",
+        "pair-agent-training",
+        "terminus-training",
+        "agent-endurance-pack",
     }
 )
 
@@ -120,10 +127,17 @@ def _build_runtime_deck_payload(
 @app.get("/health", tags=["System"])
 @app.get("/v1/health", tags=["System"])
 async def health() -> dict[str, Any]:
+    try:
+        from src.api.postgres_lite import health_postgres_payload
+
+        postgres_lite: dict[str, Any] = health_postgres_payload()
+    except Exception as exc:  # pragma: no cover - local optional dependency drift
+        postgres_lite = {"status": "unavailable", "error": str(exc)[:200]}
     return {
         "status": "healthy",
         "version": "geoseal-service-v1",
         "uptime_seconds": int(time.time() - STARTED_AT),
+        "postgres_lite": postgres_lite,
     }
 
 
@@ -156,6 +170,7 @@ async def spaceport_status() -> dict[str, Any]:
                     "/v1/geoseal/explain-route",
                     "/v1/geoseal/backend-registry",
                     "/v1/geoseal/agent-harness",
+                    "/v1/geoseal/compile",
                     "/v1/geoseal/history",
                     "/v1/geoseal/replay",
                     "/v1/geoseal/testing-cli",
@@ -267,6 +282,8 @@ async def runtime_stream_wheel(request: RuntimePortalBoxRequest, user: str = Dep
 async def geoseal_cli_http(command: str, body: dict[str, Any] = Body(default_factory=dict)) -> dict[str, Any]:
     """Expose curated GeoSeal CLI subcommands over HTTP for ``bin/geoseal.cjs`` routing."""
 
+    if command == "skill-tools":
+        return await geoseal_skill_tools(body)
     if command not in GEOSEAL_CLI_COMMANDS:
         raise HTTPException(status_code=404, detail=f"Unknown GeoSeal command: {command}")
     from src.api.geoseal_cli_bridge import dispatch_geoseal_command
@@ -300,6 +317,18 @@ async def harness_agent_harness(request: AgentHarnessRequest) -> dict[str, Any]:
             preferred_language=request.language,
             permission_mode=request.permission_mode,
         ),
+    }
+
+
+@app.post("/v1/geoseal/skill-tools", tags=["GeoSeal CLI"])
+async def geoseal_skill_tools(body: dict[str, Any] = Body(default_factory=dict)) -> dict[str, Any]:
+    _ = body
+    from src.coding_spine.skill_harness_tools import build_harness_skill_tools_v1
+
+    return {
+        "status": "ok",
+        "exit_code": 0,
+        "data": build_harness_skill_tools_v1(),
     }
 
 

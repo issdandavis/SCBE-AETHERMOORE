@@ -219,6 +219,7 @@ def build_agent_harness_manifest_v1(
         "geoseal_cli": {
             **bridge["geoseal_cli"],
             "agent_harness_json": f"{_exe()} -m src.geoseal_cli agent-harness --goal <goal> --json",
+            "compile_intent_json": f"{_exe()} -m src.geoseal_cli compile --json <intent>",
             "language_matrix_json": f"{_exe()} -m src.geoseal_cli agent-harness --language {preferred} --json",
             "ghost_terminal_audit_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -Json",
             "ghost_terminal_cleanup_stale_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -CleanStale",
@@ -268,6 +269,7 @@ def build_agent_tool_bridge_v1(
         "code_packet_json": f"{exe} -m src.geoseal_cli code-packet {file_args} --json",
         "history_json": f"{exe} -m src.geoseal_cli history --json",
         "testing_cli_json": f"{exe} -m src.geoseal_cli testing-cli {file_args} --json",
+        "compile_intent_json": f"{exe} -m src.geoseal_cli compile --json {shlex.quote(text if not intent_relative_posix else 'compile source intent')}",
         "ghost_terminal_audit_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -Json",
         "ghost_terminal_cleanup_stale_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -CleanStale",
     }

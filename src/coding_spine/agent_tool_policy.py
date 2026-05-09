@@ -37,6 +37,7 @@ def geoseal_command_to_tool_class(command: str, *, execute: bool = False) -> str
         "explain-route",
         "backend-registry",
         "agent-harness",
+        "compile",
         "skill-tools",
         "hydra-bridge",
         "call-switchboard",
@@ -111,7 +112,9 @@ def evaluate_harness_tool_policy(
         if cloud_dispatch_approval is not None:
             env = str(cloud_dispatch_approval).strip().lower()
         else:
-            env = os.environ.get("SCBE_POLICY_APPROVE_CLOUD_DISPATCH", "").strip().lower()
+            env = (
+                os.environ.get("SCBE_POLICY_APPROVE_CLOUD_DISPATCH", "").strip().lower()
+            )
         if env in ("1", "true", "yes", "on"):
             return {
                 **base,
