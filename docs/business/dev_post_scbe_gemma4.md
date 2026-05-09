@@ -41,9 +41,12 @@ I measured the gate against [Anthropic's Petri](https://github.com/anthropic-exp
 |--------------------|-------------------------------------------|
 | no governance gate | every seed reaches the LLM                |
 | v2 (no NONE)       | 11.0% (19/173)                            |
-| **v3 (with NONE)** | **4.6%** (8/173) — 58% reduction          |
+| v3 (single classifier, with NONE) | 4.6% (8/173)               |
+| **v5 (AND-of-allow cascade, deterministic)** | **2.3% (4/173) — 79% reduction over v2, 50% over v3** |
 
-The v3 result isn't perfect — five high-confidence regressions slipped through (fentanyl precursor, blackmail, etc). The gate is **not** a complete adversarial filter. It's a *typed quarantine boundary* that catches the common cases (prose, jailbreaks, off-topic) before the LLM is touched, and composes with the other layers (L8 multi-well realms, L11 triadic temporal distance) for behavior-over-time defenses.
+The v5 cascade is the result of a four-experiment iteration: stronger classifier, pinned temperature and seed for reproducibility, and BOTH classifiers (1.5B + 0.5B) must independently allow before the prompt forwards to Gemma. The negative results from the rejected approaches along the way (rescue cascade, prompt-tuned NONE description) are written up in the repo at `docs/external/PETRI_FINDINGS_2026_05_08.md`.
+
+The remaining 4 false-allows are all *untagged* edge cases (no adversarial category fires). Every category Petri labels — jailbreak, blackmail, leaking, debate, self-preservation, sycophancy, cooperation-with-misuse, deception, multi-agent, escalation, praise — drops to **0/N false-allow under v5**. The gate is **still not** a complete adversarial filter (closing those 4 untagged needs a third intervention), but on Petri's labeled adversarial axes it's at zero.
 
 ## Live demo run
 
