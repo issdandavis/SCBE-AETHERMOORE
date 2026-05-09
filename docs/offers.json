@@ -1,0 +1,51 @@
+{
+  "schema": "aethermoore-offers-v1",
+  "updated_at": "2026-05-09",
+  "site_base": "https://aethermoore.com/SCBE-AETHERMOORE",
+  "offers": [
+    {
+      "id": "tip_jar",
+      "name": "Tip Jar",
+      "price_label": "$5 one time",
+      "type": "one_time",
+      "checkout_url": "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
+      "status": "live"
+    },
+    {
+      "id": "supporter_monthly",
+      "name": "AetherMoore Supporter",
+      "price_label": "$20/month",
+      "type": "subscription",
+      "checkout_url": "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
+      "status": "live"
+    },
+    {
+      "id": "governance_snapshot",
+      "name": "Governance Snapshot",
+      "price_label": "$500 fixed scope",
+      "type": "service",
+      "checkout_url": "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
+      "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#intake",
+      "status": "live"
+    },
+    {
+      "id": "toolkit",
+      "name": "SCBE Toolkit",
+      "price_label": "$29",
+      "type": "digital_download",
+      "checkout_url": "https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06",
+      "status": "live"
+    },
+    {
+      "id": "training_vault",
+      "name": "Training Vault",
+      "price_label": "$29",
+      "type": "digital_download",
+      "checkout_url": "https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g",
+      "status": "live"
+    }
+  ]
+}

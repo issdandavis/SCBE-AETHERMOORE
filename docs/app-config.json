@@ -1,0 +1,48 @@
+{
+  "schema": "aethermoor-bus-app-config-v1",
+  "updated_at": "2026-05-09",
+  "app": {
+    "name": "Aethermoor Bus",
+    "package_name": "io.aethermoor.bus",
+    "current_release": "0.1.0"
+  },
+  "remote_update": {
+    "supported": true,
+    "applies_to": [
+      "offer links",
+      "public copy",
+      "backend endpoints",
+      "feature flags",
+      "support and intake destinations"
+    ],
+    "requires_store_release": [
+      "package name",
+      "signing certificate",
+      "native permissions",
+      "native Android shell code",
+      "offline bundled assets"
+    ]
+  },
+  "endpoints": {
+    "site_home": "https://aethermoore.com/SCBE-AETHERMOORE/",
+    "offers_page": "https://aethermoore.com/SCBE-AETHERMOORE/offers/",
+    "supporter_page": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
+    "governance_snapshot_page": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
+    "offers_json": "https://aethermoore.com/SCBE-AETHERMOORE/offers.json",
+    "agent_bridge_health": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/health",
+    "agent_bridge_offers": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/offers",
+    "agent_bridge_app_config": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/app-config"
+  },
+  "features": {
+    "tip_jar": true,
+    "supporter_monthly": true,
+    "governance_snapshot": true,
+    "zero_key_agent_bus": true,
+    "local_download_storage": true,
+    "user_owned_cloud_storage": true
+  },
+  "fallbacks": {
+    "primary_offer": "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+    "support_email": "aethermoregames@pm.me"
+  }
+}

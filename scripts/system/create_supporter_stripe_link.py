@@ -37,7 +37,9 @@ def resolve_output(raw_path: str) -> Path:
     return target
 
 
-def stripe_request(secret_key: str, method: str, path: str, data: dict[str, Any] | None = None) -> dict[str, Any]:
+def stripe_request(
+    secret_key: str, method: str, path: str, data: dict[str, Any] | None = None
+) -> dict[str, Any]:
     encoded = urllib.parse.urlencode(data or {}, doseq=True).encode("utf-8")
     token = base64.b64encode(f"{secret_key}:".encode("utf-8")).decode("ascii")
     req = urllib.request.Request(
@@ -104,7 +106,7 @@ def create_payment_link(secret_key: str, price_id: str) -> dict[str, Any]:
             "line_items[0][price]": price_id,
             "line_items[0][quantity]": "1",
             "after_completion[type]": "redirect",
-            "after_completion[redirect][url]": "https://aethermoore.com/supporter.html?status=success",
+            "after_completion[redirect][url]": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html?status=success",
             "metadata[scbe_tier]": "SUPPORTER",
             "metadata[scbe_offer]": "supporter_monthly",
         },
@@ -112,9 +114,13 @@ def create_payment_link(secret_key: str, price_id: str) -> dict[str, Any]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Create/reuse the AetherMoore $20/month SUPPORTER Stripe link")
+    parser = argparse.ArgumentParser(
+        description="Create/reuse the AetherMoore $20/month SUPPORTER Stripe link"
+    )
     parser.add_argument("--lookup-key", default=DEFAULT_LOOKUP_KEY)
-    parser.add_argument("--output", default="artifacts/monetization/supporter_stripe_link.json")
+    parser.add_argument(
+        "--output", default="artifacts/monetization/supporter_stripe_link.json"
+    )
     args = parser.parse_args()
 
     secret_key = os.getenv("STRIPE_SECRET_KEY", "").strip()

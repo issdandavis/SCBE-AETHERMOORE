@@ -8,7 +8,7 @@
       name="description"
       content="Support AetherMoore and receive monthly operator notes, early package updates, and a visible support route."
     />
-    <link rel="canonical" href="https://aethermoore.com/supporter.html" />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/supporter.html" />
     <style>
       :root {
         --bg: #101216;
@@ -207,7 +207,7 @@
       <section class="panel" aria-label="Join">
         <h2>Join with Stripe</h2>
         <p>
-          Use the direct Stripe checkout link, or enter your email to try the API checkout path.
+          Use the direct Stripe checkout link. Stripe collects the email at checkout.
         </p>
         <form id="supporter-form">
           <label for="email">Email</label>
@@ -236,8 +236,8 @@
           </div>
           <div class="status" id="status" role="status"></div>
           <p class="note">
-            If checkout is not configured yet, use the manual payment link. That keeps this lane
-            usable even before the full processor path is polished.
+            The button uses the same Stripe-hosted checkout as the direct link, so it does not
+            depend on the API bridge being online.
           </p>
         </form>
       </section>
@@ -247,28 +247,8 @@
       const statusEl = document.getElementById('status');
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        statusEl.textContent = 'Opening checkout...';
-        const email = document.getElementById('email').value.trim();
-        try {
-          const response = await fetch('https://api.aethermoore.com/v1/billing/public-checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email,
-              tier: 'SUPPORTER',
-              source: 'supporter-page',
-              success_url: 'https://aethermoore.com/supporter.html?status=success',
-              cancel_url: 'https://aethermoore.com/supporter.html?status=cancel',
-            }),
-          });
-          const data = await response.json();
-          if (!response.ok || !data.checkout_url) {
-            throw new Error(data.detail || data.error || 'Checkout is not configured yet.');
-          }
-          window.location.href = data.checkout_url;
-        } catch (err) {
-          statusEl.textContent = 'Checkout is not ready. Use the manual payment link button.';
-        }
+        statusEl.textContent = 'Opening Stripe checkout...';
+        window.location.href = 'https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i';
       });
     </script>
   </body>
