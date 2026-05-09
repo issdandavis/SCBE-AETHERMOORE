@@ -12,6 +12,7 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
 
     assert {"src": "api/agent/*.js", "use": "@vercel/node"} in config["builds"]
     assert "feat/vercel-*" in config["ignoreCommand"]
+    assert "fix/vercel-*" in config["ignoreCommand"]
     assert ("^/$", "/api/agent/launch.js") in routes
     assert ("^/launch$", "/api/agent/launch.js") in routes
     assert ("^/api/agent/(.*)$", "/api/agent/$1.js") in routes
