@@ -174,35 +174,37 @@ _ASCII_CONFUSABLES: Dict[str, str] = {
 # identifiers (they are valid Python identifier characters per PEP 3131 in
 # some cases, which is exactly the supply-chain risk).
 _INVISIBLE_CODEPOINTS: frozenset = frozenset(
-    {
-        "​",  # zero-width space
-        "‌",  # zero-width non-joiner
-        "‍",  # zero-width joiner
-        "⁠",  # word joiner
-        "﻿",  # zero-width no-break space (BOM)
-        "­",  # soft hyphen
-        "᠎",  # Mongolian vowel separator
-        "⁡",  # function application
-        "⁢",  # invisible times
-        "⁣",  # invisible separator
-        "⁤",  # invisible plus
-    }
+    chr(cp)
+    for cp in (
+        0x200B,  # zero-width space
+        0x200C,  # zero-width non-joiner
+        0x200D,  # zero-width joiner
+        0x2060,  # word joiner
+        0xFEFF,  # zero-width no-break space (BOM)
+        0x00AD,  # soft hyphen
+        0x180E,  # Mongolian vowel separator
+        0x2061,  # function application
+        0x2062,  # invisible times
+        0x2063,  # invisible separator
+        0x2064,  # invisible plus
+    )
 )
 
 # BiDi control codepoints — the Trojan Source class. NEVER legitimate inside
 # identifiers; very rarely legitimate in source at all.
 _BIDI_CODEPOINTS: frozenset = frozenset(
-    {
-        "‪",  # LRE
-        "‫",  # RLE
-        "‬",  # PDF
-        "‭",  # LRO
-        "‮",  # RLO
-        "⁦",  # LRI
-        "⁧",  # RLI
-        "⁨",  # FSI
-        "⁩",  # PDI
-    }
+    chr(cp)
+    for cp in (
+        0x202A,  # LRE
+        0x202B,  # RLE
+        0x202C,  # PDF
+        0x202D,  # LRO
+        0x202E,  # RLO
+        0x2066,  # LRI
+        0x2067,  # RLI
+        0x2068,  # FSI
+        0x2069,  # PDI
+    )
 )
 
 
