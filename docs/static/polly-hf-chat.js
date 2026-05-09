@@ -132,7 +132,10 @@
         data.detail || data.error || data.rawText || `Polly request failed (${response.status})`;
       throw new Error(String(message).slice(0, 400));
     }
-    const text = (data.response || '').trim();
+    // /v1/polly/chat returns the assistant text under `text` (Vercel JS) or
+    // `response` (older Python /v1/polly/chat path). Accept both so the
+    // widget keeps working through any backend swap.
+    const text = (data.text || data.response || '').trim();
     if (!text) {
       throw new Error('Polly returned no assistant text.');
     }
