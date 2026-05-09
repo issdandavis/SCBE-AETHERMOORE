@@ -7,7 +7,8 @@ const {
   renderCustomReply,
   renderMembershipReply,
 } = require('./commerce');
-const agentChat = require('../agent/chat');
+const llm = require('../_chat_llm');
+const trainCapture = require('../_polly_train_capture');
 
 const COMMERCE_INTENTS = new Set(['buy', 'custom', 'membership']);
 const COMMERCE_CONFIDENCE_FLOOR = 0.6;
@@ -25,7 +26,7 @@ function captureIfConsented({ req, message, reply, intent, sessionId, pageContex
   if (!req || req.consent_to_train !== true) return;
   if (typeof message !== 'string' || !message.trim()) return;
   if (typeof reply !== 'string' || !reply.trim()) return;
-  logTrainingTurn({
+  const record = {
     ts: Math.floor(Date.now() / 1000),
     session_id: sessionId || '',
     intent,
@@ -34,12 +35,14 @@ function captureIfConsented({ req, message, reply, intent, sessionId, pageContex
     assistant: reply.slice(0, 8192),
     page_context: pageContext ? String(pageContext).slice(0, 512) : '',
     transport: 'vercel-polly-chat',
-  });
+  };
+  logTrainingTurn(record);
+  // Best-effort durable capture via GitHub repository_dispatch — never throws.
+  trainCapture.dispatchTrainingTurn(record).catch(() => {});
 }
 
 async function llmFallback(message, history) {
-  const cfg = agentChat._private.chatConfig();
-  return agentChat._private.routeChat(cfg, message, history);
+  return llm.routeChat(llm.chatConfig(), message, history);
 }
 
 module.exports = async function handler(req, res) {

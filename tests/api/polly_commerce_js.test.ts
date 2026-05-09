@@ -13,6 +13,8 @@ const chatHandler = require('../../api/polly/chat.js');
 const feedbackHandler = require('../../api/polly/feedback.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const catalogHandler = require('../../api/polly/catalog.js');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const trainCapture = require('../../api/_polly_train_capture.js');
 
 interface MockRes {
   statusCode: number;
@@ -242,5 +244,44 @@ describe('polly catalog handler', () => {
     const res = makeRes();
     await catalogHandler(req, res);
     expect(res.statusCode).toBe(405);
+  });
+});
+
+describe('polly training capture (repository_dispatch)', () => {
+  it('returns no_token when GITHUB_TOKEN not set', async () => {
+    const original = {
+      gh: process.env.GITHUB_TOKEN,
+      gh2: process.env.GH_TOKEN,
+      polly: process.env.POLLY_TRAIN_GITHUB_TOKEN,
+    };
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.GH_TOKEN;
+    delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
+    try {
+      const result = await trainCapture.dispatchTrainingTurn({ ts: 1, user: 'x', assistant: 'y' });
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('no_token');
+    } finally {
+      if (original.gh) process.env.GITHUB_TOKEN = original.gh;
+      if (original.gh2) process.env.GH_TOKEN = original.gh2;
+      if (original.polly) process.env.POLLY_TRAIN_GITHUB_TOKEN = original.polly;
+    }
+  });
+
+  it('returns disabled when env opt-out is set', async () => {
+    const originalDisable = process.env.POLLY_TRAIN_DISPATCH_ENABLED;
+    process.env.POLLY_TRAIN_DISPATCH_ENABLED = 'false';
+    try {
+      const result = await trainCapture.dispatchTrainingTurn({ ts: 1 });
+      expect(result.ok).toBe(false);
+      expect(result.reason).toBe('disabled');
+    } finally {
+      if (originalDisable === undefined) delete process.env.POLLY_TRAIN_DISPATCH_ENABLED;
+      else process.env.POLLY_TRAIN_DISPATCH_ENABLED = originalDisable;
+    }
+  });
+
+  it('exports the canonical event type so the workflow listens correctly', () => {
+    expect(trainCapture.EVENT_TYPE).toBe('polly_training_turn');
   });
 });
