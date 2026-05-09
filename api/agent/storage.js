@@ -4,6 +4,52 @@ const { readJsonBody, sendJson, setCors } = require('../_agent_common');
 
 const MAX_EXPORT_BYTES = 256 * 1024;
 
+const WORKSPACE_FORMATION = {
+  schema_version: 'aethermoor.bus.workspace_formation.v1',
+  default_root: '.aethermoor-bus/workspaces',
+  lifecycle: 'temp-local-first-offload-required',
+  folders: [
+    {
+      path: '00_inbox',
+      role: 'raw drops, user uploads, unclassified imports',
+      ship: false,
+    },
+    {
+      path: '10_work',
+      role: 'active editable working files',
+      ship: false,
+    },
+    {
+      path: '20_receipts',
+      role: 'governance verdicts, hashes, signatures, run receipts',
+      ship: true,
+    },
+    {
+      path: '30_exports',
+      role: 'customer-ready packets and handoff bundles',
+      ship: true,
+    },
+    {
+      path: '40_refs',
+      role: 'non-secret reference files and source notes',
+      ship: true,
+    },
+    {
+      path: '90_tmp',
+      role: 'scratch files; delete after successful offload',
+      ship: false,
+    },
+  ],
+  transport_stops: ['local_download', 'browser_local', 'github', 'dropbox', 'onedrive', 'gdrive'],
+  rules: [
+    'Classify before offload.',
+    'Never export secrets by default.',
+    'Receipts and manifests travel with customer work.',
+    'Temporary local workspaces are disposable after offload verification.',
+    'External storage is user-designated; the bus does not retain export content.',
+  ],
+};
+
 const PROVIDERS = [
   {
     id: 'local_download',
@@ -103,6 +149,7 @@ function buildExportPacket(body) {
     byte_length: bytes,
     destination_hint: body.destination || 'local_download',
     metadata: body.metadata && typeof body.metadata === 'object' ? body.metadata : {},
+    workspace_formation: WORKSPACE_FORMATION,
     content,
   };
   return {
@@ -129,6 +176,7 @@ module.exports = async function handler(req, res) {
       cost: 'zero-server-storage',
       default_provider: 'local_download',
       providers: PROVIDERS,
+      workspace_formation: WORKSPACE_FORMATION,
     });
   }
 
@@ -150,5 +198,6 @@ module.exports._private = {
   buildExportPacket,
   normalizeContent,
   PROVIDERS,
+  WORKSPACE_FORMATION,
   slugify,
 };
