@@ -1,4 +1,5 @@
 """Unit tests for the identifier-canonicality signal."""
+
 from __future__ import annotations
 
 import sys
@@ -18,10 +19,10 @@ from src.governance.identifier_canonicality import (  # noqa: E402
     recommended_l13_action,
 )
 
-
 # --------------------------------------------------------------------------- #
 #  Clean cases
 # --------------------------------------------------------------------------- #
+
 
 def test_clean_ascii_python():
     r = evaluate_code("def add(x, y):\n    return x + y\n")
@@ -43,6 +44,7 @@ def test_clean_with_unicode_string_literal():
 # --------------------------------------------------------------------------- #
 #  Mixed-script attack (Latin + Cyrillic in one identifier)
 # --------------------------------------------------------------------------- #
+
 
 def test_mixed_script_cyrillic_latin():
     # Cyrillic а sneaked into 'password'
@@ -68,6 +70,7 @@ def test_mixed_script_greek_latin():
 #  Confusable-only attack (pure non-Latin script that mimics ASCII)
 # --------------------------------------------------------------------------- #
 
+
 def test_all_confusable_cyrillic():
     # 'аре' is all Cyrillic, looks like ASCII 'ape'
     src = "def get():\n    аре = 1\n    return аре\n"
@@ -80,6 +83,7 @@ def test_all_confusable_cyrillic():
 # --------------------------------------------------------------------------- #
 #  Invisible / BiDi character attacks
 # --------------------------------------------------------------------------- #
+
 
 def test_zero_width_joiner_in_identifier():
     # ZWJ between 'admin' and '_check'
@@ -108,6 +112,7 @@ def test_bidi_control_in_identifier_rejected_by_parser():
 #  Legitimate non-ASCII single-script identifier (allow with annotation)
 # --------------------------------------------------------------------------- #
 
+
 def test_greek_single_script_legitimate():
     # 'τ' is a legitimate Greek-only identifier
     src = "def τ(x):\n    return x\n"
@@ -120,6 +125,7 @@ def test_greek_single_script_legitimate():
 # --------------------------------------------------------------------------- #
 #  Catastrophic / edge cases
 # --------------------------------------------------------------------------- #
+
 
 def test_input_invalid_python():
     r = evaluate_code("def f(:\n    return\n")
@@ -137,6 +143,7 @@ def test_unsupported_language():
 #  L13 mapping coverage
 # --------------------------------------------------------------------------- #
 
+
 def test_l13_mapping_covers_all_kinds():
     expected = {"clean", "non_ascii", "confusable", "mixed_script", "invisible", "input_invalid"}
     assert set(L13_MAPPING_RECOMMENDATION.keys()) == expected
@@ -151,6 +158,7 @@ def test_l13_mapping_actions_are_valid():
 # --------------------------------------------------------------------------- #
 #  Fingerprint stability
 # --------------------------------------------------------------------------- #
+
 
 def test_fingerprint_equal_for_same_identifiers_different_order():
     src_a = "def f(x):\n    y = x\n    z = y\n    return z\n"
@@ -170,6 +178,7 @@ def test_fingerprint_differs_for_different_identifiers():
 # --------------------------------------------------------------------------- #
 #  Serialization
 # --------------------------------------------------------------------------- #
+
 
 def test_to_dict_is_json_serializable():
     import json

@@ -12,6 +12,7 @@ Contract:
   9. env-var enables overlay
  10. tamper + canonicality compose: both signals visible in receipts
 """
+
 from __future__ import annotations
 
 import sys
@@ -23,7 +24,6 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.governance.runtime_gate import Decision, RuntimeGate  # noqa: E402
 
-
 CLEAN_PY = "def add(x, y):\n    return x + y\n"
 MIXED_SCRIPT_PY = "def login(pаssword):\n    return pаssword\n"  # Cyrillic а
 CONFUSABLE_PY = "def get():\n    аре = 1\n    return аре\n"  # all Cyrillic
@@ -34,6 +34,7 @@ GREEK_PY = "def τ(x):\n    return x\n"  # legitimate Greek single-script
 # --------------------------------------------------------------------------- #
 #  1. flag off — no behavior change
 # --------------------------------------------------------------------------- #
+
 
 def test_flag_off_default_is_no_op():
     gate = RuntimeGate()
@@ -48,6 +49,7 @@ def test_flag_off_default_is_no_op():
 # --------------------------------------------------------------------------- #
 #  2. flag on + clean -> ALLOW with receipt
 # --------------------------------------------------------------------------- #
+
 
 def test_flag_on_clean_allows_with_receipt():
     gate = RuntimeGate(use_identifier_canonicality=True)
@@ -64,6 +66,7 @@ def test_flag_on_clean_allows_with_receipt():
 #  3. mixed-script -> DENY + immune
 # --------------------------------------------------------------------------- #
 
+
 def test_mixed_script_attack_denies():
     gate = RuntimeGate(use_identifier_canonicality=True)
     result = gate.evaluate(MIXED_SCRIPT_PY)
@@ -77,6 +80,7 @@ def test_mixed_script_attack_denies():
 # --------------------------------------------------------------------------- #
 #  4. confusable-only -> QUARANTINE
 # --------------------------------------------------------------------------- #
+
 
 def test_confusable_only_quarantines():
     gate = RuntimeGate(use_identifier_canonicality=True)
@@ -92,6 +96,7 @@ def test_confusable_only_quarantines():
 #  5. invisible char -> DENY + immune
 # --------------------------------------------------------------------------- #
 
+
 def test_invisible_char_denies():
     gate = RuntimeGate(use_identifier_canonicality=True)
     result = gate.evaluate(INVISIBLE_PY)
@@ -105,6 +110,7 @@ def test_invisible_char_denies():
 #  6. legitimate Greek -> ALLOW (non_ascii)
 # --------------------------------------------------------------------------- #
 
+
 def test_legitimate_greek_allows():
     gate = RuntimeGate(use_identifier_canonicality=True)
     result = gate.evaluate(GREEK_PY)
@@ -116,6 +122,7 @@ def test_legitimate_greek_allows():
 # --------------------------------------------------------------------------- #
 #  7. base DENY (immune-hit) + canonicality clean -> stays DENY
 # --------------------------------------------------------------------------- #
+
 
 def test_base_deny_plus_canonicality_clean_stays_deny():
     gate = RuntimeGate(use_identifier_canonicality=True)
@@ -132,6 +139,7 @@ def test_base_deny_plus_canonicality_clean_stays_deny():
 # --------------------------------------------------------------------------- #
 #  8. prose with code keywords -> NOT DENY (heuristic safety)
 # --------------------------------------------------------------------------- #
+
 
 def test_prose_with_code_keywords_not_denied():
     gate = RuntimeGate(use_identifier_canonicality=True)
@@ -150,6 +158,7 @@ def test_prose_with_code_keywords_not_denied():
 #  9. env-var enablement
 # --------------------------------------------------------------------------- #
 
+
 def test_env_var_enables_overlay(monkeypatch):
     monkeypatch.setenv("SCBE_ENABLE_IDENTIFIER_CANONICALITY_GATE", "1")
     gate = RuntimeGate()
@@ -165,6 +174,7 @@ def test_env_var_explicit_kwarg_wins(monkeypatch):
 # --------------------------------------------------------------------------- #
 #  10. tamper + canonicality compose — both signals visible
 # --------------------------------------------------------------------------- #
+
 
 def test_tamper_and_canonicality_compose():
     """Both overlays on at once: both receipts must appear in audit."""

@@ -52,16 +52,15 @@ L13 integration sketch (not wired here to keep the change additive):
 The fingerprint is a SHA-256 of the canonical AST. Two semantically-equal
 programs hash the same — useful for replay detection, dedup, whitelisting.
 """
+
 from __future__ import annotations
 
 import ast
 import hashlib
-import json
 import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
-
 
 # --------------------------------------------------------------------------- #
 #  Public types
@@ -100,6 +99,7 @@ class TamperResult:
 #  Per-language AST canonicalization
 # --------------------------------------------------------------------------- #
 
+
 def _ast_canonical_python(src: str) -> str:
     """Canonical AST dump for Python. Raises SyntaxError on bad input."""
     tree = ast.parse(src)
@@ -116,10 +116,7 @@ _AST_CANONICAL = {
 # --------------------------------------------------------------------------- #
 
 _DEFAULT_TOKENIZER_DIR = (
-    Path(__file__).resolve().parents[2]
-    / "artifacts"
-    / "extended_tokenizer"
-    / "qwen25-coder-7b-sacred-tongues"
+    Path(__file__).resolve().parents[2] / "artifacts" / "extended_tokenizer" / "qwen25-coder-7b-sacred-tongues"
 )
 _TOKENIZER_CACHE: dict[str, object] = {}
 
@@ -147,6 +144,7 @@ def _decode_through_tokenizer(src: str, tokenizer) -> str:
 # --------------------------------------------------------------------------- #
 #  Public evaluate_code
 # --------------------------------------------------------------------------- #
+
 
 def evaluate_code(
     src: str,
@@ -209,7 +207,6 @@ def evaluate_code(
     # Step 3: does decoded source parse?
     try:
         decoded_canonical = canonicalize(decoded)
-        decoded_parses = True
     except SyntaxError as e:
         return TamperResult(
             score=1.0,
@@ -284,9 +281,7 @@ def evaluate_code(
         detail={
             "note": "AST canonical changed after tokenize-decode (not NFC-recoverable)",
             "src_fingerprint": src_fingerprint,
-            "decoded_fingerprint": hashlib.sha256(
-                decoded_canonical.encode("utf-8")
-            ).hexdigest(),
+            "decoded_fingerprint": hashlib.sha256(decoded_canonical.encode("utf-8")).hexdigest(),
         },
     )
 

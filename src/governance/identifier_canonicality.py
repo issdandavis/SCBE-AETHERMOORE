@@ -56,14 +56,13 @@ L13 mapping (recommendation; production may compose with other signals):
     invisible     → DENY
     input_invalid → no-op (handled by sibling gates / not a tamper signal)
 """
+
 from __future__ import annotations
 
 import ast
 import hashlib
-import unicodedata
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
-
+from typing import Dict, List, Optional
 
 # --------------------------------------------------------------------------- #
 #  Public types
@@ -303,9 +302,7 @@ def _classify_identifier(name: str) -> Optional[IdentifierFinding]:
             name=name,
             kind="invisible",
             scripts=_scripts_in(name),
-            detail=(
-                f"contains invisible/BiDi codepoint U+{ord(invisible_ch):04X}"
-            ),
+            detail=(f"contains invisible/BiDi codepoint U+{ord(invisible_ch):04X}"),
         )
 
     # Math-alphanumeric block check — always treat as catastrophic confusable
@@ -352,6 +349,7 @@ def _classify_identifier(name: str) -> Optional[IdentifierFinding]:
 # --------------------------------------------------------------------------- #
 #  AST identifier extraction
 # --------------------------------------------------------------------------- #
+
 
 def _extract_identifiers_python(src: str) -> List[str]:
     """Return all identifier strings used in the AST.
@@ -441,9 +439,7 @@ def evaluate_code(src: str, language: str = "python") -> CanonicalityResult:
             detail={"error": f"input does not parse: {e}"},
         )
 
-    fingerprint = hashlib.sha256(
-        "\n".join(sorted(set(identifiers))).encode("utf-8")
-    ).hexdigest()
+    fingerprint = hashlib.sha256("\n".join(sorted(set(identifiers))).encode("utf-8")).hexdigest()
 
     findings: List[IdentifierFinding] = []
     seen: set = set()
