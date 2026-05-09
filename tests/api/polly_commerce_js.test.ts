@@ -188,6 +188,34 @@ describe('polly chat handler — research path', () => {
   });
 });
 
+describe('polly chat handler — offline-router fallback', () => {
+  it('replaces dead-end LLM offline message with the four-bucket router', async () => {
+    const original = {
+      hf: process.env.HF_TOKEN,
+      ollama: process.env.OLLAMA_URL,
+    };
+    delete process.env.HF_TOKEN;
+    delete process.env.HUGGINGFACE_TOKEN;
+    delete process.env.HUGGING_FACE_HUB_TOKEN;
+    delete process.env.OLLAMA_URL;
+    try {
+      const req = makeReq({
+        body: { message: 'tell me a joke about ducks please', consent_to_train: false },
+      });
+      const res = makeRes();
+      await chatHandler(req, res);
+      const body = res.body as { provider: string; text: string; actions: { url: string }[] };
+      expect(body.provider).toBe('offline-router');
+      expect(body.text).toContain('four ways');
+      expect(body.actions.length).toBeGreaterThanOrEqual(2);
+      expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
+    } finally {
+      if (original.hf) process.env.HF_TOKEN = original.hf;
+      if (original.ollama) process.env.OLLAMA_URL = original.ollama;
+    }
+  });
+});
+
 describe('polly chat handler — commerce path', () => {
   it('returns Stripe link when buy intent + product matches', async () => {
     const req = makeReq({
