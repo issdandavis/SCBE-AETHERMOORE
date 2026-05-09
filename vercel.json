@@ -22,11 +22,11 @@
     },
     {
       "src": "^/hire/?$",
-      "dest": "/hire.html"
+      "dest": "/api/agent/hire.js"
     },
     {
       "src": "^/SCBE-AETHERMOORE/hire\\.html$",
-      "dest": "/hire.html"
+      "dest": "/api/agent/hire.js"
     },
     {
       "src": "^/api/agent/(.*)$",
