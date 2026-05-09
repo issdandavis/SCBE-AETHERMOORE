@@ -1,9 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "case \"$VERCEL_GIT_COMMIT_REF\" in main|launch/*|vercel-test/*|customer/*|fix/launch-*|feat/vercel-*|fix/vercel-*) exit 1 ;; *) exit 0 ;; esac",
+  "ignoreCommand": "case \"$VERCEL_GIT_COMMIT_REF\" in main|launch/*|vercel-test/*|customer/*|fix/launch-*|feat/vercel-*|fix/vercel-*|feat/polly-*|fix/polly-*) exit 1 ;; *) exit 0 ;; esac",
   "builds": [
     {
       "src": "api/agent/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/polly/*.js",
       "use": "@vercel/node"
     }
   ],
@@ -19,6 +23,22 @@
     {
       "src": "^/api/agent/(.*)$",
       "dest": "/api/agent/$1.js"
+    },
+    {
+      "src": "^/api/polly/(.*)$",
+      "dest": "/api/polly/$1.js"
+    },
+    {
+      "src": "^/v1/polly/chat/?$",
+      "dest": "/api/polly/chat.js"
+    },
+    {
+      "src": "^/v1/polly/feedback/?$",
+      "dest": "/api/polly/feedback.js"
+    },
+    {
+      "src": "^/v1/polly/catalog/?$",
+      "dest": "/api/polly/catalog.js"
     }
   ]
 }
