@@ -104,6 +104,31 @@ def test_agent_harness_manifest_routes_all_code_languages():
     assert "agent_harness_json" in manifest["geoseal_cli"]
 
 
+def test_agent_harness_exposes_ghost_terminal_audit_tool():
+    from src.coding_spine.agent_tool_bridge import build_agent_harness_manifest_v1
+
+    manifest = build_agent_harness_manifest_v1(
+        inline_goal="audit blank terminal popups",
+        preferred_language="python",
+        permission_mode="observe",
+    )
+    tools = {row["tool"]: row for row in manifest["tool_contracts"]}
+    assert tools["system_ghost_terminal_audit"]["risk"] == "low"
+    assert "ghost-terminal-audit" in tools["system_ghost_terminal_audit"]["routes"]
+    assert tools["system_ghost_terminal_cleanup"]["risk"] == "medium"
+    assert "ghost-terminal-audit-clean-stale" in tools["system_ghost_terminal_cleanup"]["routes"]
+    observe = next(row for row in manifest["permission_profiles"] if row["mode"] == "observe")
+    maintenance = next(row for row in manifest["permission_profiles"] if row["mode"] == "maintenance")
+    assert "system_ghost_terminal_audit" in observe["allows"]
+    assert "system_ghost_terminal_cleanup" in observe["blocks"]
+    assert "system_ghost_terminal_cleanup" in maintenance["allows"]
+    assert "ghost_terminal_audit_ps1" in manifest["geoseal_cli"]
+    assert "-Json" in manifest["geoseal_cli"]["ghost_terminal_audit_ps1"]
+    assert "ghost_terminal_cleanup_stale_ps1" in manifest["geoseal_cli"]
+    assert "ghost_terminal_audit" in manifest["mcp_style_exports"]["resources"]
+    assert "system_ghost_terminal_audit" in manifest["mcp_style_exports"]["tools"]
+
+
 def test_geoseal_agent_harness_cli_json():
     proc = subprocess.run(
         [

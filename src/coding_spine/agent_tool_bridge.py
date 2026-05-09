@@ -58,6 +58,20 @@ def _tool_contracts() -> list[dict[str, Any]]:
             "routes": ["project-scaffold", "agent:task", "workflow run"],
         },
         {
+            "tool": "system_ghost_terminal_audit",
+            "risk": "low",
+            "approval": "auto",
+            "purpose": "Inspect local terminal/helper processes and broken scheduled tasks without stopping anything.",
+            "routes": ["ghost-terminal-audit"],
+        },
+        {
+            "tool": "system_ghost_terminal_cleanup",
+            "risk": "medium",
+            "approval": "human_explicit_or_maintenance",
+            "purpose": "Stop only stale helper windows selected by the ghost terminal audit script.",
+            "routes": ["ghost-terminal-audit-clean-stale"],
+        },
+        {
             "tool": "execute_tests",
             "risk": "medium",
             "approval": "ask_or_policy_allow",
@@ -93,9 +107,16 @@ def _permission_profiles() -> list[dict[str, Any]]:
         {
             "mode": "observe",
             "default": True,
-            "allows": ["read", "route_explain", "packetize", "history"],
+            "allows": [
+                "read",
+                "route_explain",
+                "packetize",
+                "history",
+                "system_ghost_terminal_audit",
+            ],
             "blocks": [
                 "write_workspace",
+                "system_ghost_terminal_cleanup",
                 "network_or_cloud",
                 "secrets_or_credentials",
                 "destructive_filesystem",
@@ -109,6 +130,7 @@ def _permission_profiles() -> list[dict[str, Any]]:
                 "packetize",
                 "write_workspace",
                 "execute_tests",
+                "system_ghost_terminal_audit",
             ],
             "blocks": ["secrets_or_credentials", "destructive_filesystem"],
             "requires_approval": ["network_or_cloud"],
@@ -121,9 +143,14 @@ def _permission_profiles() -> list[dict[str, Any]]:
                 "packetize",
                 "execute_tests",
                 "network_or_cloud",
+                "system_ghost_terminal_audit",
             ],
             "requires_approval": ["write_workspace"],
-            "blocks": ["secrets_or_credentials", "destructive_filesystem"],
+            "blocks": [
+                "system_ghost_terminal_cleanup",
+                "secrets_or_credentials",
+                "destructive_filesystem",
+            ],
         },
         {
             "mode": "maintenance",
@@ -133,6 +160,8 @@ def _permission_profiles() -> list[dict[str, Any]]:
                 "packetize",
                 "write_workspace",
                 "execute_tests",
+                "system_ghost_terminal_audit",
+                "system_ghost_terminal_cleanup",
             ],
             "requires_approval": ["network_or_cloud", "destructive_filesystem"],
             "blocks": ["secrets_or_credentials"],
@@ -182,6 +211,7 @@ def build_agent_harness_manifest_v1(
             "agent chooses language/tongue route",
             "agent emits code-packet or explain-route",
             "policy gate checks requested tool class",
+            "agent may request system_ghost_terminal_audit before cleaning terminal helpers",
             "runner executes only approved command",
             "testing-cli or benchmark validates result",
             "history/replay records trajectory",
@@ -190,6 +220,8 @@ def build_agent_harness_manifest_v1(
             **bridge["geoseal_cli"],
             "agent_harness_json": f"{_exe()} -m src.geoseal_cli agent-harness --goal <goal> --json",
             "language_matrix_json": f"{_exe()} -m src.geoseal_cli agent-harness --language {preferred} --json",
+            "ghost_terminal_audit_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -Json",
+            "ghost_terminal_cleanup_stale_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -CleanStale",
         },
         "service_routes": {
             **bridge["geoseal_service"],
@@ -198,7 +230,12 @@ def build_agent_harness_manifest_v1(
         "external_router": bridge["vercel_agent_router"],
         "mcp_style_exports": {
             "tools": [row["tool"] for row in _tool_contracts()],
-            "resources": ["language_routes", "permission_profiles", "standard_flow"],
+            "resources": [
+                "language_routes",
+                "permission_profiles",
+                "standard_flow",
+                "ghost_terminal_audit",
+            ],
             "prompts": ["explain-route", "testing-cli", "project-scaffold"],
         },
     }
@@ -231,6 +268,8 @@ def build_agent_tool_bridge_v1(
         "code_packet_json": f"{exe} -m src.geoseal_cli code-packet {file_args} --json",
         "history_json": f"{exe} -m src.geoseal_cli history --json",
         "testing_cli_json": f"{exe} -m src.geoseal_cli testing-cli {file_args} --json",
+        "ghost_terminal_audit_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -Json",
+        "ghost_terminal_cleanup_stale_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -CleanStale",
     }
 
     base_url = os.environ.get("GEOSEAL_SERVICE_URL", "http://127.0.0.1:8765").rstrip("/")

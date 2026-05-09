@@ -1,5 +1,6 @@
 param(
-    [switch]$CleanStale
+    [switch]$CleanStale,
+    [switch]$Json
 )
 
 $ErrorActionPreference = "Stop"
@@ -100,12 +101,19 @@ try {
             }
 
             if ($target -and -not (Test-Path -LiteralPath $target)) {
+                $category = "broken-scheduled-task"
+                $recommendedAction = "Disable or repoint this task; missing script can flash blank terminal windows."
+                if ($task.State -eq "Disabled") {
+                    $category = "broken-disabled-scheduled-task"
+                    $recommendedAction = "Already disabled; repoint or delete later if this task is no longer needed."
+                }
                 $records.Add([pscustomobject]@{
                     Pid = "-"
                     ParentPid = "-"
                     Name = $task.TaskName
-                    Category = "broken-scheduled-task"
-                    RecommendedAction = "Disable or repoint this task; missing script can flash blank terminal windows."
+                    Category = $category
+                    RecommendedAction = $recommendedAction
+                    State = [string]$task.State
                     CommandLine = "$($action.Execute) $($action.Arguments)"
                 })
             }
@@ -124,6 +132,24 @@ if ($CleanStale) {
             Write-Warning "Could not stop PID=${pid}: $($_.Exception.Message)"
         }
     }
+}
+
+if ($Json) {
+    $rows = @($records | Sort-Object Category, Pid)
+    [pscustomobject]@{
+        schema_version = "scbe_ghost_terminal_audit_v1"
+        generated_at = (Get-Date).ToString("o")
+        clean_stale_requested = [bool]$CleanStale
+        total_records = $rows.Count
+        categories = @($rows | Group-Object Category | ForEach-Object {
+            [pscustomobject]@{
+                category = $_.Name
+                count = $_.Count
+            }
+        })
+        records = $rows
+    } | ConvertTo-Json -Depth 6
+    return
 }
 
 $records |
