@@ -79,6 +79,11 @@ from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent import (
 from symphonic_cipher.scbe_aethermoore.concept_blocks.web_agent.publishers import create_publisher
 from workflows.n8n.scbe_automation_hub import AutomationHub, parse_allowed_hosts
 
+try:
+    from tools import taskmgr_core as _taskmgr_core  # local task manager backend
+except Exception:  # pragma: no cover - optional dep on psutil
+    _taskmgr_core = None
+
 # ---------------------------------------------------------------------------
 #  App setup
 # ---------------------------------------------------------------------------
@@ -2216,3 +2221,95 @@ async def agents_dispatch(req: AgentDispatchRequest, x_api_key: Optional[str] = 
         "text": text,
         "blocked": False,
     }
+
+
+# ---------------------------------------------------------------------------
+#  Task Manager passthrough (tools.taskmgr_core)
+#
+#  Exposes the same surface as `tools/taskmgr_server.py` over the n8n bridge,
+#  so n8n workflows + multi-model fleets share one auth + one host. The
+#  bridge's existing `_check_key(x_api_key)` is reused; /kill additionally
+#  requires `SCBE_TASKMGR_WRITE=1` so a leaked read key cannot terminate
+#  processes.
+# ---------------------------------------------------------------------------
+
+def _taskmgr_or_503():
+    if _taskmgr_core is None:
+        raise HTTPException(503, "tools.taskmgr_core unavailable (psutil not installed)")
+    return _taskmgr_core
+
+
+def _jsonable(obj: Any) -> Any:
+    import dataclasses as _dc
+    if _dc.is_dataclass(obj):
+        return _dc.asdict(obj)
+    if isinstance(obj, list):
+        return [_jsonable(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: _jsonable(v) for k, v in obj.items()}
+    return obj
+
+
+class TaskmgrKillRequest(BaseModel):
+    pid: int = Field(..., description="Process id to terminate")
+    tree: bool = Field(False, description="Also terminate descendants")
+    dry_run: bool = Field(False, description="Report what would be killed without doing it")
+
+
+@app.get("/v1/taskmgr/procs")
+async def taskmgr_procs(
+    filter: str = "",
+    top: int = 0,
+    x_api_key: Optional[str] = Header(None),
+):
+    """List processes (optionally filtered + top-N by CPU%)."""
+    _check_key(x_api_key)
+    core = _taskmgr_or_503()
+    rows = core.list_processes(filter=filter)
+    rows.sort(key=lambda p: -p.cpu_percent)
+    if top:
+        rows = rows[: int(top)]
+    return _jsonable(rows)
+
+
+@app.get("/v1/taskmgr/agents")
+async def taskmgr_agents(x_api_key: Optional[str] = Header(None)):
+    """List AI agent processes (Ollama, Claude Code, n8n, SCBE)."""
+    _check_key(x_api_key)
+    core = _taskmgr_or_503()
+    return _jsonable(core.list_agents())
+
+
+@app.get("/v1/taskmgr/system")
+async def taskmgr_system(x_api_key: Optional[str] = Header(None)):
+    """OS, CPU, memory, disks, NICs."""
+    _check_key(x_api_key)
+    core = _taskmgr_or_503()
+    return _jsonable(core.system_info())
+
+
+@app.get("/v1/taskmgr/scbe")
+async def taskmgr_scbe(x_api_key: Optional[str] = Header(None)):
+    """SCBE-specific state: package version, current branch, available Ollama models."""
+    _check_key(x_api_key)
+    core = _taskmgr_or_503()
+    return dict(core.scbe_state())
+
+
+@app.get("/v1/taskmgr/sample")
+async def taskmgr_sample(seconds: float = 1.0, x_api_key: Optional[str] = Header(None)):
+    """Single CPU+mem+net sample over the given window."""
+    _check_key(x_api_key)
+    core = _taskmgr_or_503()
+    return _jsonable(core.sample_cpu_mem_net(seconds=float(seconds)))
+
+
+@app.post("/v1/taskmgr/kill")
+async def taskmgr_kill(req: TaskmgrKillRequest, x_api_key: Optional[str] = Header(None)):
+    """Terminate a process. Gated behind SCBE_TASKMGR_WRITE=1 in addition to api-key."""
+    _check_key(x_api_key)
+    if os.environ.get("SCBE_TASKMGR_WRITE", "0") != "1":
+        raise HTTPException(403, "/v1/taskmgr/kill is disabled. Set SCBE_TASKMGR_WRITE=1 to enable.")
+    core = _taskmgr_or_503()
+    result = core.kill_process(req.pid, tree=bool(req.tree), dry_run=bool(req.dry_run))
+    return _jsonable(result)

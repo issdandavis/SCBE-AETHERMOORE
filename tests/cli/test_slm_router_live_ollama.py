@@ -119,11 +119,7 @@ def test_live_ollama_classifies_band_for_arithmetic_intent() -> None:
     Uses the production `_band_prompt` builder so the test catches any
     regression in the prompt that goes back to bare 'which band?' (the
     bare prompt mis-classified 'add' as AGGREGATION on qwen2.5:1.5b)."""
-    from src.cli.slm_router import (
-        OllamaAdapter,
-        _band_prompt,
-        _band_choices,
-    )  # noqa: PLC0415
+    from src.cli.slm_router import OllamaAdapter, _band_prompt, _band_choices  # noqa: PLC0415
 
     adapter = OllamaAdapter(model=_QUALIFIED_MODEL, host=_HOST)
     bands = _band_choices()
@@ -134,11 +130,7 @@ def test_live_ollama_classifies_band_for_arithmetic_intent() -> None:
 
 
 def test_live_ollama_classifies_op_within_arithmetic_band() -> None:
-    from src.cli.slm_router import (
-        OllamaAdapter,
-        _op_prompt,
-        _ops_in_band,
-    )  # noqa: PLC0415
+    from src.cli.slm_router import OllamaAdapter, _op_prompt, _ops_in_band  # noqa: PLC0415
 
     adapter = OllamaAdapter(model=_QUALIFIED_MODEL, host=_HOST)
     arith_ops = _ops_in_band("ARITHMETIC")
@@ -173,11 +165,7 @@ def test_live_ollama_full_router_pipeline_emits_runnable_code() -> None:
 def test_live_ollama_router_handles_timeout_gracefully() -> None:
     """Even a real adapter must respect the router's timeout. We use
     an absurdly short deadline so it almost certainly fires."""
-    from src.cli.slm_router import (
-        LatticeRouter,
-        OllamaAdapter,
-        ClassificationFailure,
-    )  # noqa: PLC0415
+    from src.cli.slm_router import LatticeRouter, OllamaAdapter, ClassificationFailure  # noqa: PLC0415
 
     adapter = OllamaAdapter(model=_QUALIFIED_MODEL, host=_HOST)
     router = LatticeRouter(adapter, adapter_timeout=0.001)

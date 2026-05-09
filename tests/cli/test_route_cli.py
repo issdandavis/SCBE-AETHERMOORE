@@ -121,9 +121,11 @@ def test_route_manual_mode_missing_dst_tongue_quarantines() -> None:
     assert "dst_tongue" in err["message"]
 
 
-def test_route_manual_mode_excluded_op_quarantines() -> None:
-    """Pinning a Tier-1-excluded op (count, fold, etc.) must surface
-    cleanly via the CLI."""
+def test_route_manual_mode_count_now_routes_after_lexicon_close() -> None:
+    """After the CA-tongue canonicalisation closed the sphere from 57→64,
+    `count` (and the other 6 previously-excluded aggregation ops) routes
+    in manual mode like any other op. This used to assert quarantine; now
+    it asserts the inverse — the contract flipped when the lexicon closed."""
     proc = _run(
         "--manual",
         "--op-name",
@@ -133,10 +135,12 @@ def test_route_manual_mode_excluded_op_quarantines() -> None:
         "--arg",
         "xs=v",
     )
-    assert proc.returncode == 2
-    err = json.loads(proc.stdout)
-    assert err["error_type"] == "ManualModeError"
-    assert "Tier 1" in err["message"]
+    assert proc.returncode == 0, proc.stdout
+    body = json.loads(proc.stdout)
+    assert body["verdict"] == "ALLOW"
+    assert body["op_name"] == "count"
+    assert body["dst_tongue"] == "KO"
+    assert body["band"] == "AGGREGATION"
 
 
 def test_route_manual_mode_band_op_disagreement_quarantines() -> None:
@@ -459,6 +463,169 @@ def test_route_no_emit_flag_omits_dst_code() -> None:
     body = json.loads(proc.stdout)
     assert "dst_code" not in body
     assert "translations" not in body
+
+
+# ---------------------------------------------------------------------------
+#  Promotion ledger — recurrence detection across CLI invocations
+# ---------------------------------------------------------------------------
+
+
+def test_route_persists_to_promotion_ledger(tmp_path) -> None:
+    """First invocation lands count=1 in the ledger and is not yet a
+    promotion candidate (threshold defaults to 3)."""
+    ledger_path = tmp_path / "ledger.jsonl"
+    proc = _run(
+        "--manual",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
+    )
+    assert proc.returncode == 0, proc.stderr
+    body = json.loads(proc.stdout)
+    assert body["ledger"]["count"] == 1
+    assert body["ledger"]["is_candidate"] is False
+    assert ledger_path.exists()
+
+
+def test_route_repeated_invocations_cross_promotion_threshold(tmp_path) -> None:
+    """Three identical dispatches must trip the promotion threshold."""
+    ledger_path = tmp_path / "ledger.jsonl"
+    args = (
+        "--manual",
+        "--op-name",
+        "mul",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
+        "--promotion-threshold",
+        "3",
+    )
+    counts = []
+    for _ in range(3):
+        proc = _run(*args)
+        assert proc.returncode == 0, proc.stderr
+        counts.append(json.loads(proc.stdout)["ledger"]["count"])
+    assert counts == [1, 2, 3]
+    final_body = json.loads(_run(*args).stdout)
+    assert final_body["ledger"]["count"] == 4
+    assert final_body["ledger"]["is_candidate"] is True
+
+
+def test_route_no_ledger_flag_skips_persistence(tmp_path) -> None:
+    ledger_path = tmp_path / "ledger.jsonl"
+    proc = _run(
+        "--manual",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--no-ledger",
+        "--ledger-path",
+        str(ledger_path),
+    )
+    assert proc.returncode == 0, proc.stderr
+    body = json.loads(proc.stdout)
+    # No ledger key in the response.
+    assert "ledger" not in body
+    assert "ledger_error" not in body
+    # No file written.
+    assert not ledger_path.exists()
+
+
+def test_route_normalised_dispatch_has_stable_digest(tmp_path) -> None:
+    """Two semantically-identical dispatches produce the same digest
+    regardless of which surface arguments are used. Both produce
+    op=add, dst_tongue=RU, args={'a':'x','b':'y'} so they should
+    hash to the same ledger entry."""
+    ledger_path = tmp_path / "ledger.jsonl"
+
+    # First: AUTO mode with both pinned (no SLM call needed).
+    proc1 = _run(
+        "--intent",
+        "add x and y",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
+    )
+    # Second: MANUAL mode, same dispatch.
+    proc2 = _run(
+        "--manual",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "RU",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
+    )
+    assert proc1.returncode == 0 and proc2.returncode == 0
+    digest1 = json.loads(proc1.stdout)["ledger"]["digest"]
+    digest2 = json.loads(proc2.stdout)["ledger"]["digest"]
+    assert digest1 == digest2, "same dispatch via different mode should share digest"
+    assert json.loads(proc2.stdout)["ledger"]["count"] == 2
+
+
+def test_route_distinct_dispatches_get_distinct_digests(tmp_path) -> None:
+    """Different op + same args = different digest = no spurious recurrence."""
+    ledger_path = tmp_path / "ledger.jsonl"
+    proc_add = _run(
+        "--manual",
+        "--op-name",
+        "add",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
+    )
+    proc_mul = _run(
+        "--manual",
+        "--op-name",
+        "mul",
+        "--dst-tongue",
+        "KO",
+        "--arg",
+        "a=x",
+        "--arg",
+        "b=y",
+        "--ledger-path",
+        str(ledger_path),
+    )
+    digest_add = json.loads(proc_add.stdout)["ledger"]["digest"]
+    digest_mul = json.loads(proc_mul.stdout)["ledger"]["digest"]
+    assert digest_add != digest_mul
+    # Each one should be count=1 (never collided).
+    assert json.loads(proc_add.stdout)["ledger"]["count"] == 1
+    assert json.loads(proc_mul.stdout)["ledger"]["count"] == 1
 
 
 def test_route_emit_round_trips_all_57_tier1_ops() -> None:

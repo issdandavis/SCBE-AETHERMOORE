@@ -109,14 +109,19 @@ def test_cross_build_broadcast_emits_five_translations() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_cross_build_list_ops_reports_57_participating() -> None:
+def test_cross_build_list_ops_reports_64_participating() -> None:
+    """After CA-tongue canonicalisation the sphere closes — all 64
+    lexicon ops round-trip, the excluded set is empty."""
     proc = _run("--list-ops")
     assert proc.returncode == 0, proc.stderr
     body = json.loads(proc.stdout)
-    assert body["participating_count"] == 57
-    assert body["excluded_count"] == 7
+    assert body["participating_count"] == 64
+    assert body["excluded_count"] == 0
     assert "add" in body["participating_ops"]
-    assert "count" in body["excluded_ops"]
+    # The 7 previously-excluded aggregation ops now round-trip cleanly.
+    for op in ("count", "fold", "mean", "reduce", "scan", "stdev", "variance"):
+        assert op in body["participating_ops"], f"{op} should participate"
+        assert op not in body["excluded_ops"]
 
 
 # ---------------------------------------------------------------------------

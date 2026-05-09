@@ -30,7 +30,7 @@ from src.cli.slm_router import (
     StubSLMAdapter,
 )
 
-_BAND_SET = frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"})
+_BAND_SET = frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"})
 _ARITH_OPS = frozenset(
     {
         "abs",
@@ -183,19 +183,26 @@ def test_manual_mode_op_not_in_lexicon_raises() -> None:
         )
 
 
-def test_manual_mode_op_excluded_from_tier1_raises() -> None:
-    """Pinning a Tier-1-excluded op (count, fold, etc.) must error
-    rather than silently dispatching into the broken sphere region."""
+def test_manual_mode_count_now_routes_after_lexicon_close() -> None:
+    """After the CA-tongue canonicalisation closed the sphere from 57→64,
+    every op (including the previously-excluded `count`/`fold`/`mean`/`reduce`/
+    `scan`/`stdev`/`variance`) routes in manual mode without quarantining.
+    This test used to assert ManualModeError on `count`; the contract flipped
+    once the lexicon's CA templates were canonicalised. Adapter is recording
+    only — manual mode never invokes the SLM."""
     adapter = _RecordingAdapter()
     router = LatticeRouter(adapter)
-    with pytest.raises(ManualModeError, match="excluded from Tier 1"):
-        router.route(
-            intent="",
-            args={"xs": "v"},
-            op_name="count",
-            dst_tongue="KO",
-            mode=Mode.MANUAL,
-        )
+    decision = router.route(
+        intent="",
+        args={"xs": "v"},
+        op_name="count",
+        dst_tongue="KO",
+        mode=Mode.MANUAL,
+    )
+    assert decision.op.op_name == "count"
+    assert decision.op.band == "AGGREGATION"
+    assert decision.dst_tongue == "KO"
+    assert adapter.call_count == 0, "manual mode must not consult the SLM"
 
 
 # ---------------------------------------------------------------------------
@@ -333,21 +340,12 @@ def test_manual_mode_still_detects_loops() -> None:
     router = LatticeRouter(adapter, loop_window=4)
     router.route("a", args={"a": "x", "b": "y"}, op_name="add", dst_tongue="KO", mode=Mode.MANUAL)
     with pytest.raises(LoopDetected):
-        router.route(
-            "b",
-            args={"a": "x", "b": "y"},
-            op_name="add",
-            dst_tongue="KO",
-            mode=Mode.MANUAL,
-        )
+        router.route("b", args={"a": "x", "b": "y"}, op_name="add", dst_tongue="KO", mode=Mode.MANUAL)
 
 
 def test_manual_mode_still_runs_arg_validator() -> None:
     """Arg validator must run even when SLM is bypassed."""
-    from src.cli.slm_router import (
-        ArgValidationFailure,
-        _default_safe_arg_validator,
-    )  # noqa: PLC0415
+    from src.cli.slm_router import ArgValidationFailure, _default_safe_arg_validator  # noqa: PLC0415
 
     adapter = _RecordingAdapter()
     router = LatticeRouter(adapter, arg_validator=_default_safe_arg_validator)

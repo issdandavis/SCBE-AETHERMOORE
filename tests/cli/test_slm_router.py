@@ -32,7 +32,7 @@ def _stub_for_add_to_python(confidence: float = 0.95) -> StubSLMAdapter:
     """Wire a stub that routes any 'add' intent to (ARITHMETIC, add, KO)."""
     return StubSLMAdapter(
         scripted_by_choice_set={
-            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"}): (
+            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"}): (
                 "ARITHMETIC",
                 confidence,
             ),
@@ -140,7 +140,7 @@ def test_router_aggregate_confidence_is_minimum_across_stages() -> None:
     the weakest link, not the average."""
     adapter = StubSLMAdapter(
         scripted_by_choice_set={
-            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"}): (
+            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"}): (
                 "ARITHMETIC",
                 0.99,
             ),
@@ -182,7 +182,7 @@ def test_router_rejects_out_of_set_choice() -> None:
     must refuse rather than dispatch a fabricated op."""
     adapter = StubSLMAdapter(
         scripted_by_choice_set={
-            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"}): (
+            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"}): (
                 "TRANSCENDENT",
                 0.99,
             ),
@@ -225,7 +225,7 @@ def test_router_loop_window_only_holds_recent_actions() -> None:
     permitted again."""
     adapter = StubSLMAdapter(
         scripted_by_choice_set={
-            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"}): (
+            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"}): (
                 "ARITHMETIC",
                 0.95,
             ),
@@ -269,7 +269,7 @@ def test_router_does_not_flag_same_op_to_different_tongue_as_loop() -> None:
     """Same op + same args + DIFFERENT dst tongue is a different action."""
     adapter = StubSLMAdapter(
         scripted_by_choice_set={
-            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"}): (
+            frozenset({"ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION", "NONE"}): (
                 "ARITHMETIC",
                 0.95,
             ),

@@ -273,22 +273,14 @@ def cross_build(src_code: str, src_tongue: str, dst_tongue: str) -> CrossBuildRe
 #  Tier 1 participating-ops allowlist
 # ---------------------------------------------------------------------------
 #
-# 57 of the 64 lexicon ops participate cleanly in the bijective sphere
-# today. The remaining 7 are excluded because the lexicon's CA-tongue (C)
-# templates drop or rename placeholders relative to the other tongues —
-# e.g. `count` in C is bare `n`, `mean` in C uses `{n}` instead of `{xs}`.
-# That's a lexicon-content issue, not an IR design issue: a follow-up to
-# canonicalise the C templates would expand the sphere to 64/64 and show
-# up as a visible test diff in test_lexicon_excluded_set_is_documented.
-TIER1_EXCLUDED_OPS: Tuple[str, ...] = (
-    "count",
-    "fold",
-    "mean",
-    "reduce",
-    "scan",
-    "stdev",
-    "variance",
-)
+# All 64 lexicon ops now participate in the bijective sphere. The seven
+# previously-excluded aggregation ops (count, fold, mean, reduce, scan,
+# stdev, variance) had CA-tongue templates that dropped/renamed placeholders
+# (e.g. `count` was bare `n`, `mean` used `{n}` instead of `{xs}`) and
+# reduce/fold shared identical templates in RU + CA causing AmbiguityError.
+# The lexicon was canonicalised so every tongue per op shares one
+# placeholder set and reduce/fold are syntactically distinct.
+TIER1_EXCLUDED_OPS: Tuple[str, ...] = ()
 
 
 def _participating_ops() -> List[str]:
