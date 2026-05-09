@@ -31,7 +31,9 @@ from src.security.secret_store import get_secret
 
 try:
     from scripts.gumroad_publish import GumroadPublisher, PRODUCTS, STRIPE_LINKS
-except ModuleNotFoundError:  # pragma: no cover - depends on optional local sales tooling
+except (
+    ModuleNotFoundError
+):  # pragma: no cover - depends on optional local sales tooling
     GumroadPublisher = None
     PRODUCTS = {}
     STRIPE_LINKS = {}
@@ -60,7 +62,7 @@ STATIC_OFFERS: List[StaticOffer] = [
         stripe_url="https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
         tags=["tip", "one-time", "low-friction", "support"],
         cadence="one_time",
-        proof_url="https://aethermoore.com/supporter.html",
+        proof_url="https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
     ),
     StaticOffer(
         id="supporter_monthly",
@@ -70,7 +72,7 @@ STATIC_OFFERS: List[StaticOffer] = [
         stripe_url="https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
         tags=["supporter", "subscription", "operator-notes"],
         cadence="monthly",
-        proof_url="https://aethermoore.com/supporter.html",
+        proof_url="https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
     ),
     StaticOffer(
         id="governance_snapshot",
@@ -80,8 +82,8 @@ STATIC_OFFERS: List[StaticOffer] = [
         stripe_url="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j",
         tags=["consulting", "governance", "fixed-scope", "cash-sprint"],
         cadence="one_time",
-        proof_url="https://aethermoore.com/governance-snapshot.html",
-        intake_url="https://aethermoore.com/governance-snapshot.html#intake",
+        proof_url="https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
+        intake_url="https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#intake",
         fulfillment_command=(
             "python scripts/revenue/governance_snapshot_intake.py "
             "--buyer-email <buyer-email> --workflow-name <workflow-name>"
@@ -224,8 +226,12 @@ async def _dispatch(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Push latest leads + offers to n8n/Zapier monetization connectors.")
-    parser.add_argument("--leads-json", default="", help="Optional leads JSON file path.")
+    parser = argparse.ArgumentParser(
+        description="Push latest leads + offers to n8n/Zapier monetization connectors."
+    )
+    parser.add_argument(
+        "--leads-json", default="", help="Optional leads JSON file path."
+    )
     parser.add_argument(
         "--top-leads",
         type=int,
@@ -246,7 +252,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-route-zapier", dest="route_zapier", action="store_false")
     parser.set_defaults(route_zapier=True)
 
-    parser.add_argument("--dry-run", action="store_true", help="Do not send connector traffic.")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Do not send connector traffic."
+    )
     parser.add_argument(
         "--output-dir",
         default="artifacts/monetization",
@@ -260,7 +268,11 @@ def main() -> int:
     day = _utc_now().strftime("%Y%m%d")
     run_id = f"monetization-connector-push-{_utc_stamp()}"
 
-    lead_path = Path(args.leads_json).resolve() if args.leads_json.strip() else _latest_lead_file()
+    lead_path = (
+        Path(args.leads_json).resolve()
+        if args.leads_json.strip()
+        else _latest_lead_file()
+    )
     leads: List[Dict[str, Any]] = []
     if lead_path and lead_path.exists():
         loaded = _load_json(lead_path, default=[])

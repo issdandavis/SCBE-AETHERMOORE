@@ -43,3 +43,57 @@ def test_download_bridge_serves_private_blob_with_delivery_token() -> None:
     assert "product must be toolkit or vault" in source
     assert "Content-Disposition" in source
     assert 'Cache-Control", "private, no-store"' in source
+
+
+def test_public_offer_catalog_has_live_revenue_links() -> None:
+    offers = json.loads(
+        (REPO_ROOT / "docs" / "offers.json").read_text(encoding="utf-8")
+    )
+    by_id = {offer["id"]: offer for offer in offers["offers"]}
+
+    assert offers["schema"] == "aethermoore-offers-v1"
+    assert (
+        by_id["tip_jar"]["checkout_url"]
+        == "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+    )
+    assert (
+        by_id["supporter_monthly"]["checkout_url"]
+        == "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
+    )
+    assert by_id["governance_snapshot"]["intake_url"].endswith(
+        "/governance-snapshot.html#intake"
+    )
+
+
+def test_public_app_config_explains_remote_update_boundary() -> None:
+    config = json.loads(
+        (REPO_ROOT / "docs" / "app-config.json").read_text(encoding="utf-8")
+    )
+
+    assert config["schema"] == "aethermoor-bus-app-config-v1"
+    assert config["app"]["package_name"] == "io.aethermoor.bus"
+    assert config["remote_update"]["supported"] is True
+    assert "offer links" in config["remote_update"]["applies_to"]
+    assert "package name" in config["remote_update"]["requires_store_release"]
+    assert config["features"]["tip_jar"] is True
+
+
+def test_supporter_page_uses_direct_stripe_checkout_not_broken_api_bridge() -> None:
+    page = (REPO_ROOT / "docs" / "supporter.html").read_text(encoding="utf-8")
+
+    assert "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i" in page
+    assert "https://api.aethermoore.com/v1/billing/public-checkout" not in page
+
+
+def test_vercel_bridge_exposes_remote_offer_and_app_config_endpoints() -> None:
+    offers_source = (REPO_ROOT / "api" / "agent" / "offers.js").read_text(
+        encoding="utf-8"
+    )
+    app_config_source = (REPO_ROOT / "api" / "agent" / "app-config.js").read_text(
+        encoding="utf-8"
+    )
+
+    assert "docs/offers.json" in offers_source
+    assert "s-maxage=300" in offers_source
+    assert "docs/app-config.json" in app_config_source
+    assert "s-maxage=300" in app_config_source
