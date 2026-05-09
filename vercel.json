@@ -21,6 +21,14 @@
       "dest": "/api/agent/launch.js"
     },
     {
+      "src": "^/hire/?$",
+      "dest": "/hire.html"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/hire\\.html$",
+      "dest": "/hire.html"
+    },
+    {
       "src": "^/api/agent/(.*)$",
       "dest": "/api/agent/$1.js"
     },
