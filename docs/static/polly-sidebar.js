@@ -114,6 +114,43 @@
     return el;
   }
 
+  // Render server-returned action items as inline buttons under the assistant
+  // message. Two action shapes are supported, mirroring polly-hf-chat.js:
+  //   { label, url }    -> opens link in new tab
+  //   { label, prompt } -> submits the prompt as a follow-up chat message
+  // Returns a string of HTML; click delegation lives on the thread element so
+  // dynamically-inserted buttons keep working without per-message rewires.
+  function renderSidebarActions(actions) {
+    if (!actions || !actions.length) return "";
+    var styles = [
+      "display:inline-block",
+      "margin: 4px 6px 0 0",
+      "padding: 6px 12px",
+      "border-radius: 999px",
+      "background: linear-gradient(135deg, #d6a756, #f0bf67)",
+      "color: #14110c",
+      "text-decoration: none",
+      "font-weight: 700",
+      "font-size: 0.85rem",
+      "border: 0",
+      "cursor: pointer",
+    ].join(";");
+    var html = '<div class="polly-sidebar-actions" style="margin-top:10px;">';
+    for (var i = 0; i < actions.length; i++) {
+      var a = actions[i] || {};
+      var label = esc(a.label || "Open");
+      if (a.prompt) {
+        html += '<button type="button" data-polly-prompt="' + esc(String(a.prompt)) + '" style="' + styles + '">' + label + '</button>';
+      } else if (a.url) {
+        var url = esc(String(a.url));
+        var target = /^(mailto:|tel:)/.test(url) ? "" : ' target="_blank" rel="noopener"';
+        html += '<a href="' + url + '"' + target + ' style="' + styles + '">' + label + '</a>';
+      }
+    }
+    html += '</div>';
+    return html;
+  }
+
   // -------------------------------------------------------------------------
   // Status bar
   // -------------------------------------------------------------------------
@@ -348,11 +385,17 @@
         var data = await resp.json();
         if (pending) pending.remove();
         var routeMeta = [
-          chip(data.route || "general", data.thinking ? "science" : "hybrid"),
+          chip(data.route || data.intent || "general", data.thinking ? "science" : "hybrid"),
           chip(data.model || "polly", data.thinking ? "online" : "lore"),
         ].join("");
-        addMsg(thread, "assistant", md(data.response || "No response."), routeMeta);
-        appendMemory("polly", data.response || "");
+        // /v1/polly/chat returns the assistant text under `text` (Vercel JS handler)
+        // or `response` (older Python handler). Accept both so the widget keeps
+        // working through any backend swap. Without this, the Vercel route sets
+        // text but the sidebar would render "No response." for every reply.
+        var replyText = data.text || data.response || "No response.";
+        var actionsHtml = renderSidebarActions(Array.isArray(data.actions) ? data.actions : []);
+        addMsg(thread, "assistant", md(replyText) + actionsHtml, routeMeta);
+        appendMemory("polly", replyText);
         answered = true;
       }
     } catch (_) {}
@@ -451,12 +494,16 @@
 
     var thinkingOn = false;
 
-    // Starter prompts
+    // Starter prompts. Ordered so a cold visitor sees the picker entry
+    // first, followed by a buy-shaped prompt that routes cleanly to the
+    // governance snapshot, then the technical research lookup, then /help
+    // as the safety hatch. Each prompt is verified to route through a
+    // deterministic commerce/research path — no LLM dependency.
     var STARTERS = [
+      "Help me choose a product",
+      "Tell me about the governance snapshot",
       "What is the harmonic wall?",
       "search hyperbolic geometry AI safety",
-      "How do I get started?",
-      "think about the 14-layer pipeline",
       "/help",
     ];
     startersContainer.innerHTML = STARTERS.map(function (s) {
@@ -572,6 +619,25 @@
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         submit();
+      }
+    });
+
+    // Click delegation for in-chat action buttons. Server replies can include
+    // { label, prompt } actions (via renderSidebarActions); clicking submits
+    // the prompt as a follow-up message. URL actions render as <a> and
+    // navigate normally — they don't carry data-polly-prompt so this handler
+    // ignores them.
+    thread.addEventListener("click", function (event) {
+      var target = event.target;
+      while (target && target !== thread) {
+        var prompt = target.getAttribute && target.getAttribute("data-polly-prompt");
+        if (prompt) {
+          if (sendBtn.disabled) return;
+          input.value = prompt;
+          submit();
+          return;
+        }
+        target = target.parentNode;
       }
     });
 
