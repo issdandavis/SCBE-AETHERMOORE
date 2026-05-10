@@ -45,6 +45,7 @@ describe('AetherDesk server — health + introspection', () => {
     expect(body.schema).toBe('aetherdesk_commands_v0');
     const ids = body.commands.map((c: { id: string }) => c.id).sort();
     expect(ids).toEqual([
+      'benchmark_aetherdesk_mechanical_coding',
       'benchmark_cli',
       'benchmark_coding_agents',
       'research_aether_lattice',
@@ -71,6 +72,7 @@ describe('AetherDesk server — allowlist enforcement (security boundary)', () =
     // that the allowlist export contains exactly the spec's five entries.
     const ids = Object.keys(aetherdesk.COMMAND_ALLOWLIST).sort();
     expect(ids).toEqual([
+      'benchmark_aetherdesk_mechanical_coding',
       'benchmark_cli',
       'benchmark_coding_agents',
       'research_aether_lattice',

@@ -17,7 +17,6 @@ import numpy as np
 from .atomic_tokenization import AtomicTokenState, DualState, Element, TritVector
 from .chemical_fusion import FusionParams, FusionResult, fuse_atomic_states
 
-
 KO, AV, RU, CA, UM, DR = 0, 1, 2, 3, 4, 5
 TONGUE_ID_CA = 3
 
@@ -108,7 +107,20 @@ AGGREGATION = [
     (0x3F, "accum", [0, 0, +1, +1, 0, 0], [63, 4, 3, 2, 0.4, 3, 3, 0]),
 ]
 
-ALL_OPS = ARITHMETIC + LOGIC + COMPARISON + AGGREGATION
+TIER1_OPS = ARITHMETIC + LOGIC + COMPARISON + AGGREGATION
+
+# STACK_OPS: pure stack-machine plumbing. Live OUTSIDE the 64-op tier-1
+# bijective lexicon (op_id >= 0x40). Added because the tier-1 set has no
+# way to reach the second argument of a 2-arg expression, which made
+# certain canonical aliases (abs(a)+abs(b) = [abs,abs,add]) silently
+# incorrect under non-symmetric inputs. Stack ops do not contribute to
+# the cross-language lexicon — they exist only inside the CA dispatcher.
+STACK_OPS = [
+    # swap: pop top two, push them in reverse order. [..., a, b] -> [..., b, a]
+    (0x40, "swap", [0, 0, 0, +1, 0, 0], [64, 5, 1, 2, 0.0, 2, 3, 0]),
+]
+
+ALL_OPS = TIER1_OPS + STACK_OPS
 
 OP_TABLE: Dict[int, CAOpcodeEntry] = {
     op_id: CAOpcodeEntry(
@@ -127,12 +139,18 @@ NAMES = [entry.name for entry in OP_TABLE.values()]
 
 def validate_ca_table() -> tuple[bool, list[str]]:
     errors: list[str] = []
-    if len(ALL_OPS) != 64:
-        errors.append(f"Expected 64 ops, got {len(ALL_OPS)}")
+    if len(TIER1_OPS) != 64:
+        errors.append(f"Expected 64 tier-1 ops, got {len(TIER1_OPS)}")
 
-    ids = [op[0] for op in ALL_OPS]
-    if sorted(ids) != list(range(64)):
-        errors.append("ID range broken or contains duplicates")
+    tier1_ids = [op[0] for op in TIER1_OPS]
+    if sorted(tier1_ids) != list(range(64)):
+        errors.append("Tier-1 ID range broken or contains duplicates")
+
+    stack_ids = [op[0] for op in STACK_OPS]
+    if any(sid < 0x40 for sid in stack_ids):
+        errors.append(f"Stack ops must use opcode bytes >= 0x40 (got {stack_ids})")
+    if len(stack_ids) != len(set(stack_ids)):
+        errors.append(f"Stack op ID collision: {stack_ids}")
 
     for op_id, name, trit, feat in ALL_OPS:
         if trit[CA] != +1:
@@ -279,6 +297,8 @@ def print_ca_table() -> str:
 __all__ = [
     "CAOpcodeEntry",
     "ALL_OPS",
+    "TIER1_OPS",
+    "STACK_OPS",
     "OP_TABLE",
     "TRIT_MATRIX",
     "FEAT_MATRIX",

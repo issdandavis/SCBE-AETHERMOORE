@@ -81,9 +81,39 @@ def test_ca_plan_resolves_abs_abs_add_from_table():
 
 
 def test_ca_plan_known_abs_add_expression():
+    # The abs(a)+abs(b) alias must produce a swap-aware sequence.
+    # Naive [abs, abs, add] is a stack-machine bug: it runs abs twice on
+    # the same top-of-stack and returns abs(b)+abs(b) under non-symmetric
+    # inputs. Correct sequence is [swap, abs, swap, abs, add] so each
+    # input gets abs'd exactly once before the add.
     rc, stdout, _ = _run_cli(["ca-plan", "--expr", "abs(a)+abs(b)"])
     assert rc == 0
-    assert stdout.strip() == "0x09, 0x09, 0x00"
+    assert stdout.strip() == "0x40, 0x09, 0x40, 0x09, 0x00"
+
+
+def test_ca_plan_swap_resolves_to_0x40():
+    # swap is a STACK_OP at 0x40 (outside the tier-1 0x00..0x3F range).
+    rc, stdout, _ = _run_cli(["ca-plan", "--ops", "swap", "--json"])
+    assert rc == 0
+    payload = json.loads(stdout)
+    assert payload["ops"] == ["swap"]
+    assert payload["hex_sequence"] == ["0x40"]
+
+
+def test_compile_ca_abs_add_produces_correct_python():
+    # End-to-end: the swap-aware opcode sequence must compile to Python
+    # whose round-tripped result for (-5, 2) is 7, not -3.
+    rc, stdout, _ = _run_cli(["compile-ca", "--opcodes", "0x40 0x09 0x40 0x09 0x00", "--args", "a,b", "--json"])
+    assert rc == 0
+    payload = json.loads(stdout)
+    assert payload["round_trip_ok"] is True
+    ns: dict = {"__name__": "_test_swap_aware"}
+    exec(compile(payload["source"], "<test>", "exec"), ns)  # noqa: S102
+    fn = ns["tongue_fn"]
+    assert fn(-5, 2) == 7
+    assert fn(3, -4) == 7
+    assert fn(0, 0) == 0
+    assert fn(-10, -10) == 20
 
 
 def test_ca_plan_unknown_op_fails():

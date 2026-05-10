@@ -140,6 +140,18 @@ _BIN = {
         stack_in=2,
         stack_out=1,
     ),
+    # Stack-machine plumbing (CA opcode 0x40+, see ca_opcode_table.STACK_OPS).
+    # swap reverses the order of the top two stack values, which lets a
+    # caller reach the second argument of a 2-arg expression without
+    # dropping it. Required for canonical aliases like abs(a)+abs(b) =
+    # [swap, abs, swap, abs, add].
+    "swap": OpTemplate(
+        py="b = _stack.pop(); a = _stack.pop(); _stack.append(b); _stack.append(a)",
+        ts=("{ const b = _stack.pop()!; const a = _stack.pop()!; " "_stack.push(b); _stack.push(a); }"),
+        go=("a, b, stack := caPop2(stack); " "stack = append(stack, b); stack = append(stack, a)"),
+        stack_in=2,
+        stack_out=2,
+    ),
 }
 
 

@@ -62,6 +62,13 @@ const COMMAND_ALLOWLIST = Object.freeze({
     description:
       'Run scripts/eval/functional_coding_agent_benchmark.py. Note: TS scenario runner is missing per spec; see AETHERDESK_OPERATOR_SHELL_v0.md.',
   },
+  benchmark_aetherdesk_mechanical_coding: {
+    label: 'Mechanical-coding bench (vs Ollama + Sonnet est.)',
+    npmScript: 'benchmark:aetherdesk-mechanical-coding',
+    risk_tier: 'read-only',
+    description:
+      'Bench SCBE mechanical compile-ca vs local Ollama (qwen2.5-coder 0.5b + 1.5b) and a Sonnet cost estimate. Writes a GeoSeal receipt per (arm, task) plus an aggregate report.',
+  },
 });
 
 function ensureDir(dir) {

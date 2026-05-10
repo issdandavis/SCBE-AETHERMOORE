@@ -133,11 +133,17 @@ def _parse_ca_ops(spec: str) -> List[str]:
 
 def _ops_for_expression(expr: str) -> List[str]:
     key = expr.strip().lower().replace(" ", "")
+    # The abs(a)+abs(b) sequence MUST swap the two stack values around
+    # each abs so each input gets abs'd. Naive [abs, abs, add] runs abs
+    # twice on the SAME top value and silently returns abs(b)+abs(b).
+    # See bench: artifacts/aetherdesk_bench/bench_report_*.json (the
+    # 2026-05 bench surfaced this with inputs (-5, 2) returning -3).
+    abs_add_seq = ["swap", "abs", "swap", "abs", "add"]
     known = {
-        "abs_add": ["abs", "abs", "add"],
-        "abs(a)+abs(b)": ["abs", "abs", "add"],
-        "|a|+|b|": ["abs", "abs", "add"],
-        "abs(left)+abs(right)": ["abs", "abs", "add"],
+        "abs_add": abs_add_seq,
+        "abs(a)+abs(b)": abs_add_seq,
+        "|a|+|b|": abs_add_seq,
+        "abs(left)+abs(right)": abs_add_seq,
     }
     if key not in known:
         raise ValueError(f"unknown CA expression {expr!r}; use --ops for explicit op names")
@@ -258,9 +264,7 @@ def cmd_manifest(args: argparse.Namespace) -> int:
 
     manifest = {
         "system_prompt": SYSTEM_PROMPT,
-        "kinds": [
-            {"kind": k, "tokens": list(PREFIX_ORDER[k]), "forced_prefix": build_prefix(k)} for k in kinds
-        ],
+        "kinds": [{"kind": k, "tokens": list(PREFIX_ORDER[k]), "forced_prefix": build_prefix(k)} for k in kinds],
     }
     print(json.dumps(manifest, indent=2))
     return 0
