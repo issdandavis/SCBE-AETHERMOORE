@@ -1,17 +1,40 @@
 {
   "name": "scbe-agent-bus",
-  "version": "0.2.0",
-  "description": "SCBE agent-bus: typed Node surface over the SCBE governed event runner.",
-  "license": "MIT OR Apache-2.0",
-  "type": "commonjs",
+  "version": "0.2.1",
+  "description": "SCBE agent-bus: typed Node surface over the SCBE governed event runner. Routes AI/human/AI events through the harmonic-wall pipeline and returns a typed envelope.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "scbe-agent-bus": "bin/scbe-agent-bus.cjs"
+  },
   "files": [
+    "bin",
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
-    "LICENSE-APACHE"
+    "LICENSE-APACHE",
+    "LICENSE-NOTICE.md"
   ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "agentbus:pipe": "node ../../scripts/system/agentbus_pipe.mjs",
+    "pack:dry": "npm pack --dry-run --json",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "scbe",
+    "agent-bus",
+    "governance",
+    "harmonic-wall",
+    "agent-orchestration",
+    "ai-safety"
+  ],
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
+  "license": "MIT OR Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
@@ -20,5 +43,12 @@
   "bugs": {
     "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
   },
-  "homepage": "https://aethermoore.com/SCBE-AETHERMOORE/offers/"
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/packages/agent-bus#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^6.0.2"
+  }
 }
