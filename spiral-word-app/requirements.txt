@@ -1,5 +1,5 @@
 # SpiralWord App Dependencies
-fastapi>=0.104.0
+fastapi>=0.136.1
 uvicorn[standard]>=0.24.0
 websockets>=12.0
 textual>=0.40.0
