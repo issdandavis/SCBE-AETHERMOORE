@@ -139,6 +139,7 @@ scripts/*.bak
 artifacts/npm-pack/
 artifacts/shopify-both-side/
 artifacts/social/
+artifacts/aetherdesk_receipts/
 
 artifacts/
 *.gif
