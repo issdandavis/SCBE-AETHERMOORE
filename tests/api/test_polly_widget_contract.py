@@ -38,8 +38,7 @@ def test_chat_handler_emits_assistant_text_under_text_key() -> None:
     # (The handler builds replies in multiple branches — research, commerce,
     # llm fallback, offline-router. All must use `text` as the key.)
     assert re.search(r"\btext:\s*", src), (
-        "api/polly/chat.js must emit assistant reply under `text:` key — "
-        "widget reads it from there"
+        "api/polly/chat.js must emit assistant reply under `text:` key — " "widget reads it from there"
     )
 
 
