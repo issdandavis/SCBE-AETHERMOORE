@@ -528,6 +528,26 @@
     loadAgentStatus();
     setInterval(loadResults, 300000);
     setInterval(loadAgentStatus, 120000);
+
+    // Polly chat (and other deep-links) can route visitors here with the
+    // dispatch form pre-filled via ?task=...&query=... — same effect as
+    // clicking a starter card. Keeps non-tech visitors one click away from
+    // running an agent without typing anything.
+    (function prefillFromUrl() {
+      try {
+        var params = new URLSearchParams(location.search);
+        var task = (params.get('task') || '').trim();
+        var query = (params.get('query') || '').trim();
+        if (!task) return;
+        var taskSelect = document.getElementById('d-task');
+        var validTasks = Array.prototype.map.call(
+          taskSelect.options,
+          function (opt) { return opt.value; }
+        );
+        if (validTasks.indexOf(task) === -1) return;
+        trySample(task, query);
+      } catch (_e) { /* never break the page on prefill */ }
+    })();
   </script>
 
   <script src="static/polly-sidebar.js"></script>
