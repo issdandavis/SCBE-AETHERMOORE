@@ -1,5 +1,10 @@
 'use strict';
 
+function checkoutUrlFromEnv(envName, fallback) {
+  const value = String(process.env[envName] || '').trim();
+  return value || fallback;
+}
+
 const PRODUCT_CATALOG = [
   {
     sku: 'scbe-service-credits',
@@ -29,7 +34,10 @@ const PRODUCT_CATALOG = [
     priceLabel: '$500 one-time',
     short:
       'Fixed-scope governance assessment for one AI workflow. Includes a 2-page findings memo, three prioritized fixes, and an evidence checklist.',
-    checkoutUrl: 'https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j',
+    checkoutUrl: checkoutUrlFromEnv(
+      'SCBE_PAYMENT_LINK_SNAPSHOT',
+      'https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j'
+    ),
     deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html',
     keywords: [
       'governance snapshot',
@@ -46,7 +54,10 @@ const PRODUCT_CATALOG = [
     priceLabel: '$99/month',
     short:
       'Monthly governance scan for one AI workflow. Includes a short delta report, risk/change summary, recommended action list, and optional training/dataset capture notes.',
-    checkoutUrl: 'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup',
+    checkoutUrl: checkoutUrlFromEnv(
+      'SCBE_PAYMENT_LINK_HEARTBEAT',
+      'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup'
+    ),
     deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#heartbeat',
     keywords: [
       'governance heartbeat',
@@ -68,7 +79,10 @@ const PRODUCT_CATALOG = [
     priceLabel: '$29 one-time',
     short:
       'Templates, decision records, setup guidance, buyer manual, and a support route for governed AI workflows. Shipped as a downloadable ZIP after Stripe checkout.',
-    checkoutUrl: 'https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06',
+    checkoutUrl: checkoutUrlFromEnv(
+      'SCBE_PAYMENT_LINK_TOOLKIT',
+      'https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06'
+    ),
     deliveryUrl: 'https://aethermoore.com/product-manual/ai-governance-toolkit.html',
     keywords: ['toolkit', 'governance toolkit', 'ai governance', 'templates', 'decision records'],
   },
@@ -78,7 +92,10 @@ const PRODUCT_CATALOG = [
     priceLabel: '$29 one-time',
     short:
       'Training data, projector weights, benchmark suite, and notebook materials for governed AI model work. Shipped as a downloadable ZIP after Stripe checkout.',
-    checkoutUrl: 'https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g',
+    checkoutUrl: checkoutUrlFromEnv(
+      'SCBE_PAYMENT_LINK_VAULT',
+      'https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g'
+    ),
     deliveryUrl: 'https://aethermoore.com/product-manual/training-vault.html',
     keywords: [
       'training vault',

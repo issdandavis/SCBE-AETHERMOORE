@@ -38,6 +38,27 @@ const hfUpload = require('../../api/_polly_hf_upload.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const rateLimit = require('../../api/_polly_rate_limit.js');
 
+function loadCommerceWithEnv(env: Record<string, string>) {
+  const modulePath = require.resolve('../../api/polly/commerce.js');
+  const original: Record<string, string | undefined> = {};
+  for (const [key, value] of Object.entries(env)) {
+    original[key] = process.env[key];
+    process.env[key] = value;
+  }
+  delete require.cache[modulePath];
+  const loaded = require('../../api/polly/commerce.js');
+  for (const key of Object.keys(env)) {
+    if (original[key] === undefined) {
+      delete process.env[key];
+    } else {
+      process.env[key] = original[key];
+    }
+  }
+  delete require.cache[modulePath];
+  require('../../api/polly/commerce.js');
+  return loaded;
+}
+
 interface MockRes {
   statusCode: number;
   headers: Record<string, string>;
@@ -188,6 +209,16 @@ describe('polly commerce intent classification', () => {
     const intent = commerce.classifyIntent('I want to buy service credits for hosted routing');
     expect(intent.name).toBe('buy');
     expect(intent.product.sku).toBe('scbe-service-credits');
+  });
+
+  it('honors env checkout override for governance heartbeat', () => {
+    const loaded = loadCommerceWithEnv({
+      SCBE_PAYMENT_LINK_HEARTBEAT: 'https://buy.stripe.com/heartbeat-live-placeholder',
+    });
+    const product = loaded.PRODUCT_CATALOG.find(
+      (p: { sku: string }) => p.sku === 'governance-heartbeat'
+    );
+    expect(product.checkoutUrl).toBe('https://buy.stripe.com/heartbeat-live-placeholder');
   });
 
   it('classifies "buy" verb with bound product at 0.95 confidence', () => {
