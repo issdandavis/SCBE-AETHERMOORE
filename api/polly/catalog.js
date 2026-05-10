@@ -4,6 +4,7 @@ const { sendJson, setCors } = require('../_agent_common');
 const {
   PRODUCT_CATALOG,
   CONSULTING_TIERS,
+  SERVICE_CREDITS_POLICY,
   CONSULTING_LANDING_URL,
   HIRE_EMAIL,
 } = require('./commerce');
@@ -25,6 +26,7 @@ module.exports = async function handler(req, res) {
       checkout_url: p.checkoutUrl,
       delivery_url: p.deliveryUrl,
     })),
+    service_credits_policy: SERVICE_CREDITS_POLICY,
     consulting_tiers: CONSULTING_TIERS,
     consulting_landing_url: CONSULTING_LANDING_URL,
     hire_email: HIRE_EMAIL,

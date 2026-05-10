@@ -29,7 +29,9 @@ def test_catalog_is_nonempty_and_has_real_stripe_links() -> None:
         assert product.name
         assert product.price_label
         assert product.short
-        assert product.checkout_url.startswith(("https://buy.stripe.com/", "https://ko-fi.com/"))
+        assert product.checkout_url.startswith(
+            ("https://buy.stripe.com/", "https://ko-fi.com/")
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -45,6 +47,8 @@ def test_catalog_is_nonempty_and_has_real_stripe_links() -> None:
         ("Can I purchase the SCBE governance toolkit?", "buy"),
         ("Add to cart please", "buy"),
         ("Sign me up for the toolkit", "buy"),
+        ("I want to buy service credits", "buy"),
+        ("hosted routing credits", "buy"),
         ("toolkit", "buy"),
         ("training vault", "buy"),
         ("buy a coffee", "buy"),  # tip jar keyword
@@ -77,6 +81,13 @@ def test_classify_intent_buy_resolves_training_vault() -> None:
     assert intent.name == "buy"
     assert intent.product is not None
     assert intent.product.sku == "ai-security-training-vault"
+
+
+def test_classify_intent_buy_resolves_service_credits() -> None:
+    intent = classify_intent("Can I buy service credits for cloud models?")
+    assert intent.name == "buy"
+    assert intent.product is not None
+    assert intent.product.sku == "scbe-service-credits"
 
 
 def test_classify_intent_buy_without_product_keyword() -> None:
@@ -113,7 +124,9 @@ def test_render_buy_reply_without_product_lists_full_catalog() -> None:
 
 
 def test_render_custom_reply_includes_mailto_with_user_context() -> None:
-    text, actions = render_custom_reply("I need a governance overlay for our finance LLM")
+    text, actions = render_custom_reply(
+        "I need a governance overlay for our finance LLM"
+    )
     mailto_action = next((a for a in actions if a["url"].startswith("mailto:")), None)
     assert mailto_action is not None
     # mailto: URLs treat @ as a safe character; urllib.parse.quote leaves it as-is.
@@ -124,8 +137,11 @@ def test_render_custom_reply_includes_mailto_with_user_context() -> None:
 def test_render_membership_reply_returns_kofi_link() -> None:
     text, actions = render_membership_reply()
     kofi = next((a for a in actions if "ko-fi.com" in a["url"]), None)
+    credits = next((a for a in actions if "service-credits" in a["url"]), None)
+    assert credits is not None
     assert kofi is not None
     assert "Ko-fi" in text or "ko-fi" in text.lower()
+    assert "2-5%" in text
 
 
 # ---------------------------------------------------------------------------
@@ -133,7 +149,9 @@ def test_render_membership_reply_returns_kofi_link() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_append_training_record_writes_jsonl_with_consent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_append_training_record_writes_jsonl_with_consent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     shard = append_training_record(
         consent=True,
@@ -151,7 +169,9 @@ def test_append_training_record_writes_jsonl_with_consent(tmp_path: Path, monkey
     assert "ts" in record
 
 
-def test_append_training_record_skips_without_consent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_append_training_record_skips_without_consent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     shard = append_training_record(
         consent=False,
@@ -163,7 +183,9 @@ def test_append_training_record_skips_without_consent(tmp_path: Path, monkeypatc
     assert list(tmp_path.glob("*.jsonl")) == []
 
 
-def test_append_training_record_appends_multiple_turns(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_append_training_record_appends_multiple_turns(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     for i in range(3):
         append_training_record(
@@ -183,7 +205,9 @@ def test_append_training_record_appends_multiple_turns(tmp_path: Path, monkeypat
         assert record["session_id"] == "session-1"
 
 
-def test_append_training_record_records_feedback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_append_training_record_records_feedback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     shard = append_training_record(
         consent=True,
@@ -197,7 +221,9 @@ def test_append_training_record_records_feedback(tmp_path: Path, monkeypatch: py
     assert record["feedback"] == "up"
 
 
-def test_append_training_record_truncates_long_inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_append_training_record_truncates_long_inputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     shard = append_training_record(
         consent=True,
@@ -211,6 +237,8 @@ def test_append_training_record_truncates_long_inputs(tmp_path: Path, monkeypatc
     assert len(record["assistant"]) <= 8192
 
 
-def test_train_corpus_dir_respects_env_override(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_train_corpus_dir_respects_env_override(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     assert train_corpus_dir() == tmp_path

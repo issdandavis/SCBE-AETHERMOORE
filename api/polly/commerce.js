@@ -2,6 +2,28 @@
 
 const PRODUCT_CATALOG = [
   {
+    sku: 'scbe-service-credits',
+    name: 'SCBE Service Credits',
+    priceLabel: '$5+ pay-as-you-go',
+    short:
+      'Small credit top-ups for hosted SCBE routing, governed runs, reports, and provider/model usage. We pass through compute/model cost and add only a 2-5% coordination fee where usage is billable.',
+    checkoutUrl: 'https://ko-fi.com/izdandavis',
+    deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html',
+    keywords: [
+      'credits',
+      'service credits',
+      'pay as you go',
+      'pay-as-you-go',
+      'token routing',
+      'tokens',
+      'usage',
+      'hosted run',
+      'hosted routing',
+      'ollama cloud',
+      'cloud models',
+    ],
+  },
+  {
     sku: 'ai-governance-snapshot',
     name: 'AI Governance Snapshot',
     priceLabel: '$500 one-time',
@@ -79,6 +101,18 @@ const CONSULTING_TIERS = [
     fit: "AI safety / LLM evaluation work on a SAM-registered prime's contract",
   },
 ];
+
+const SERVICE_CREDITS_POLICY = {
+  name: 'SCBE Service Credits',
+  serviceFeePercentRange: [2, 5],
+  minimumTopUpUsd: 5,
+  usageModel:
+    'mostly-free local tools; service credits only pay for hosted routing, reports, delivery, storage, and provider/model usage',
+  feeFormula:
+    'customer_charge = actual_provider_cost + max(actual_provider_cost * service_fee_percent, small_run_floor)',
+  preferredRouting:
+    'local/Ollama and deterministic harness first; paid providers only when the run needs hosted capacity or a customer explicitly requests it',
+};
 
 // Apex aethermoore.com only resolves Pages content under the project-prefixed
 // path; bare /hire returns 404 via the current Cloudflare routing. Use the
@@ -390,13 +424,18 @@ function renderResearchReply(message) {
 function renderMembershipReply() {
   const text =
     'Three ways to stay close to the work:\n\n' +
+    '- **Use service credits** for pay-as-you-go hosted routing without a big subscription\n' +
     '- **Sponsor / tip** the open-source work via Ko-fi\n' +
     '- **Watch the GitHub repo** for releases (`Watch -> Custom -> Releases`)\n' +
     '- **Email** me at the address below for a private update list\n\n' +
-    'There is no paid membership tier yet — open-source first; ' +
-    'sponsorships keep the next release shipping.';
+    'The target model is mostly free local tools, with credits only used when a hosted run, report, ' +
+    'or provider/model call is needed. Billable usage is passed through with a small 2-5% SCBE coordination fee.';
   const actions = [
-    { label: 'Tip on Ko-fi', url: MEMBERSHIP_KOFI_URL },
+    {
+      label: 'Service credits',
+      url: 'https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html',
+    },
+    { label: 'Top up on Ko-fi', url: MEMBERSHIP_KOFI_URL },
     { label: 'Watch the repo', url: 'https://github.com/issdandavis/SCBE-AETHERMOORE' },
     { label: 'Email Issac', url: `mailto:${HIRE_EMAIL}` },
   ];
@@ -406,6 +445,7 @@ function renderMembershipReply() {
 module.exports = {
   PRODUCT_CATALOG,
   CONSULTING_TIERS,
+  SERVICE_CREDITS_POLICY,
   CONSULTING_LANDING_URL,
   HIRE_EMAIL,
   MEMBERSHIP_KOFI_URL,

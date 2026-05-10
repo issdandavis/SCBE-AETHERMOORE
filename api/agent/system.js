@@ -2,7 +2,13 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { ALLOWED_TASKS, MAX_QUERY_LENGTH, envConfig, sendJson, setCors } = require('../_agent_common');
+const {
+  ALLOWED_TASKS,
+  MAX_QUERY_LENGTH,
+  envConfig,
+  sendJson,
+  setCors,
+} = require('../_agent_common');
 const { chatConfig } = require('../_chat_llm');
 const storage = require('./storage');
 
@@ -56,7 +62,11 @@ function buildSystemContract() {
     frontend: {
       static_host: appConfig.endpoints?.site_home || '',
       mobile_routes: [
-        { id: 'home', path: './index.html', purpose: 'status, offers, storage, and bridge overview' },
+        {
+          id: 'home',
+          path: './index.html',
+          purpose: 'status, offers, storage, and bridge overview',
+        },
         { id: 'chat', path: './chat.html', purpose: 'assistant, search, and export thread' },
         { id: 'ops', path: './ops.html', purpose: 'operator diagnostics and backend checks' },
         { id: 'browse', path: './browse.html', purpose: 'web lane entrypoint' },
@@ -89,6 +99,7 @@ function buildSystemContract() {
     },
     monetization: {
       offers_schema: offers.schema,
+      usage_policy: offers.usage_policy || {},
       live_offers: (offers.offers || [])
         .filter((offer) => offer.status === 'live')
         .map((offer) => ({
