@@ -76,13 +76,64 @@
 <body>
   <div class="container">
     <h1>AI Agents</h1>
-    <p class="subtitle">Free AI agents that research, monitor, and analyze the web. Powered by Qwen 72B + DuckDuckGo + the SCBE governance pipeline.</p>
+    <p class="subtitle">Free AI helpers that research the web, monitor sites, and answer questions for you. Pick a starter task below — no setup, no signup.</p>
 
     <div class="nav">
       <a href="index.html">Home</a>
-      <a href="chat.html">Chat</a>
-      <a href="agents.html">Agents</a>
+      <a href="start-here.html">Start Here</a>
+      <a href="products.html">Products</a>
+      <a href="chat.html">Chat with Polly</a>
+      <a href="agents.html" style="background:#30363d;">Agents</a>
       <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank">GitHub</a>
+    </div>
+
+    <!-- Plain-language entry for non-tech visitors -->
+    <div class="section">
+      <div class="card" style="background: linear-gradient(180deg, rgba(35, 134, 54, 0.08), rgba(22, 27, 34, 0.92)); border-color: rgba(35, 134, 54, 0.3);">
+        <h2 style="color:#3fb950;">New here? Read this first.</h2>
+        <div class="body" style="font-size:0.95rem;">
+          <p style="margin-bottom:10px;">An <strong>agent</strong> is a small AI helper that does one job and reports back. The agents below are free to use. You don't need an account.</p>
+          <p style="margin-bottom:10px;"><strong>The simplest use:</strong> click a starter card below, click <em>Run Agent</em>, and check back in a few minutes for the result. The agent runs on a free GitHub server, not your machine.</p>
+          <p style="color:#8b949e; font-size:0.9rem;">If you'd rather have help picking the right tool for a bigger task, <a href="chat.html">open Polly chat</a> or <a href="start-here.html">see the three starter routes</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plain-language starter tasks -->
+    <div class="section">
+      <h2>Try one of these — one click, no typing</h2>
+      <p style="color:#8b949e; font-size:0.9rem; margin-bottom:1rem;">Each card pre-fills the dispatch form below and scrolls you to the Run Agent button. Pick whatever sounds useful.</p>
+      <div class="grid">
+        <div class="card" style="cursor:pointer;" onclick="trySample('research','Latest news about AI safety governance')">
+          <h2 style="color:#58a6ff;">📚 Research a topic</h2>
+          <div class="body">
+            Asks the research agent to find recent sources on a topic, read them, and produce a structured report with citations.
+            <p style="margin-top:10px;color:#8b949e;font-size:0.85rem;"><em>Pre-fills with: "Latest news about AI safety governance"</em></p>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="trySample('ask','What is the difference between an LLM and an AI agent?')">
+          <h2 style="color:#58a6ff;">💬 Ask a question</h2>
+          <div class="body">
+            Web-searches for context and produces a plain-language answer with source links. Good for "explain this to me" questions.
+            <p style="margin-top:10px;color:#8b949e;font-size:0.85rem;"><em>Pre-fills with a sample question</em></p>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="trySample('monitor','https://aethermoore.com/SCBE-AETHERMOORE/,https://github.com/issdandavis/SCBE-AETHERMOORE')">
+          <h2 style="color:#58a6ff;">🔭 Watch a site</h2>
+          <div class="body">
+            Quick-reads one or more URLs and reports title, word count, link count, and a content preview. Useful as a smoke test.
+            <p style="margin-top:10px;color:#8b949e;font-size:0.85rem;"><em>Pre-fills with two example URLs (comma-separated)</em></p>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;" onclick="trySample('scrape','https://en.wikipedia.org/wiki/Hyperbolic_geometry')">
+          <h2 style="color:#58a6ff;">🪟 Read a page</h2>
+          <div class="body">
+            Pulls structured data from any URL — text, links, tables, headings, metadata. No AI involved, just a clean read.
+            <p style="margin-top:10px;color:#8b949e;font-size:0.85rem;"><em>Pre-fills with a Wikipedia URL</em></p>
+          </div>
+        </div>
+      </div>
+      <p style="color:#8b949e; font-size:0.85rem; margin-top:1rem;">Developer? The full agent catalog and recipes are below. Skip the friendly cards.</p>
     </div>
 
     <!-- What the agents can do -->
@@ -386,6 +437,22 @@
       document.getElementById('d-task').value = task;
       document.getElementById('d-query').value = query;
       document.getElementById('d-status').textContent = 'Recipe loaded. Click Run Agent to use the Vercel bridge when available, or the GitHub fallback.';
+    }
+
+    // Plain-language entry from the starter cards. Pre-fills the dispatch
+    // form, scrolls to it, and gives a friendly status message that does NOT
+    // assume the visitor knows what "dispatch" or "Vercel bridge" mean.
+    function trySample(task, query) {
+      setRecipe(task, query);
+      document.getElementById('d-status').textContent = "Ready — click 'Run Agent' below to start.";
+      var dispatchSection = document.querySelector('.dispatch');
+      if (dispatchSection) dispatchSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var btn = dispatchSection && dispatchSection.querySelector('button');
+      if (btn) {
+        btn.style.transition = 'box-shadow 200ms ease';
+        btn.style.boxShadow = '0 0 0 4px rgba(63, 185, 113, 0.35)';
+        setTimeout(function () { btn.style.boxShadow = ''; }, 1600);
+      }
     }
 
     function renderReceipt(task, file, data, hash) {
