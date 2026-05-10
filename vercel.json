@@ -29,6 +29,10 @@
       "dest": "/api/agent/hire.js"
     },
     {
+      "src": "^/(?:SCBE-AETHERMOORE/)?product-manual/service-fast-start\\.html$",
+      "dest": "/api/agent/service-fast-start.js"
+    },
+    {
       "src": "^/api/agent/(.*)$",
       "dest": "/api/agent/$1.js"
     },
