@@ -3,6 +3,7 @@
 const { readJsonBody, sendJson, setCors } = require('../_agent_common');
 const {
   classifyIntent,
+  renderAgentTaskReply,
   renderBuyReply,
   renderCustomReply,
   renderGuideReply,
@@ -15,7 +16,14 @@ const llm = require('../_chat_llm');
 const hfUpload = require('../_polly_hf_upload');
 const rateLimit = require('../_polly_rate_limit');
 
-const COMMERCE_INTENTS = new Set(['buy', 'custom', 'guide', 'membership', 'research']);
+const COMMERCE_INTENTS = new Set([
+  'agent_task',
+  'buy',
+  'custom',
+  'guide',
+  'membership',
+  'research',
+]);
 const COMMERCE_CONFIDENCE_FLOOR = 0.6;
 const TRAIN_LOG_PREFIX = 'polly_train_v1 ';
 
@@ -113,9 +121,18 @@ module.exports = async function handler(req, res) {
       rendered = renderGuideReply();
     } else if (intent.name === 'research') {
       rendered = renderResearchReply(message);
+    } else if (intent.name === 'agent_task') {
+      rendered = renderAgentTaskReply(message);
     } else {
       rendered = renderMembershipReply();
     }
+
+    const provider =
+      intent.name === 'research'
+        ? 'research'
+        : intent.name === 'agent_task'
+        ? 'agent_task'
+        : 'commerce';
 
     await captureIfConsented({
       req: body,
@@ -124,13 +141,13 @@ module.exports = async function handler(req, res) {
       intent: intent.name,
       sessionId,
       pageContext,
-      provider: intent.name === 'research' ? 'research' : 'commerce',
+      provider,
     });
 
     return sendJson(res, 200, {
       ok: true,
       text: rendered.text,
-      provider: intent.name === 'research' ? 'research' : 'commerce',
+      provider,
       model: 'intent-classifier-v1',
       intent: intent.name,
       confidence: intent.confidence,
