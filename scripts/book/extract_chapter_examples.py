@@ -131,8 +131,8 @@ def main() -> int:
         print(f"book: {payload['book']}  chapter {payload['chapter']}: {payload['title']}")
         print(f"examples: {len(payload['examples'])}  output-only blocks: {view.output_only_blocks}")
         for i, ex in enumerate(view.examples, 1):
-            head = ex["code"].splitlines()[0] if ex["code"].strip() else "(empty)"
-            print(f"  [{i}] {ex['language']}  {head[:80]}")
+            head = ex.code.splitlines()[0] if ex.code.strip() else "(empty)"
+            print(f"  [{i}] {ex.language}  {head[:80]}")
     return 0
 
 

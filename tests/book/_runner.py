@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import io
 import sys
+import types
 from contextlib import redirect_stdout
 from pathlib import Path
 from typing import Any, Dict, List
@@ -55,14 +56,31 @@ def run_chapter(book_slug: str, chapter_number: int) -> Dict[str, Any]:
         # Only Python examples are auto-executed in v1 of the format.
         if example.language != "python":
             continue
-        ns: Dict[str, Any] = {"__name__": f"_chapter_example_{idx}"}
+        # Register a synthetic module so @dataclass (Python 3.14+) can resolve
+        # cls.__module__ via sys.modules during type introspection.
+        mod_name = f"_chapter_example_{md_path.stem}_{idx}"
+        mod = types.ModuleType(mod_name)
+        sys.modules[mod_name] = mod
+        ns: Dict[str, Any] = mod.__dict__
+        ns["__name__"] = mod_name
         buf = io.StringIO()
         try:
             with redirect_stdout(buf):
                 exec(compile(example.code, f"<{md_path.name}#example-{idx}>", "exec"), ns)  # noqa: S102
         except Exception as exc:  # noqa: BLE001
-            failures.append({"example": idx, "kind": "exception", "detail": f"{type(exc).__name__}: {exc}"})
+            import traceback as _tb
+
+            failures.append(
+                {
+                    "example": idx,
+                    "kind": "exception",
+                    "detail": f"{type(exc).__name__}: {exc}",
+                    "traceback": _tb.format_exc().splitlines()[-6:],
+                }
+            )
             continue
+        finally:
+            sys.modules.pop(mod_name, None)
 
         if example.expected_output:
             captured = _normalize_lines(buf.getvalue())
