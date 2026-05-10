@@ -96,8 +96,6 @@
     "format:python": "black src/ tests/",
     "lint": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "lint:python": "flake8 src/ tests/",
-    "docs:format": "python scripts/format_doc_markdown.py docs/specs docs/proposals --write",
-    "docs:check": "python scripts/format_doc_markdown.py docs/specs docs/proposals --check",
     "cli": "python scbe-cli.py",
     "codeprism:build": "python scripts/code_prism_build.py",
     "codeprism:mesh": "python scripts/code_prism_build.py --mesh",
