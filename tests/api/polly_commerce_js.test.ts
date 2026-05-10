@@ -392,6 +392,48 @@ describe('polly commerce intent classification', () => {
     expect(intent.confidence).toBeGreaterThanOrEqual(0.6);
   });
 
+  it('routes discount/coupon/student/nonprofit phrases to discount intent', () => {
+    expect(commerce.classifyIntent('discount').name).toBe('discount');
+    expect(commerce.classifyIntent('do you have a coupon?').name).toBe('discount');
+    expect(commerce.classifyIntent('promo code').name).toBe('discount');
+    expect(commerce.classifyIntent("I'm a student").name).toBe('discount');
+    expect(commerce.classifyIntent("we're a nonprofit").name).toBe('discount');
+    expect(commerce.classifyIntent("I can't afford the full price").name).toBe('discount');
+  });
+
+  it('routes "chapter N" to chapter intent (specific) before book intent', () => {
+    expect(commerce.classifyIntent('show me chapter 1').name).toBe('chapter');
+    expect(commerce.classifyIntent('chapter 2 of the book').name).toBe('chapter');
+    expect(commerce.classifyIntent('ch 1').name).toBe('chapter');
+    expect(commerce.classifyIntent('chapter one').name).toBe('chapter');
+  });
+
+  it('routes book/ebook/textbook phrases to book intent', () => {
+    expect(commerce.classifyIntent('show me the book').name).toBe('book');
+    expect(commerce.classifyIntent('what ebooks do you have').name).toBe('book');
+    expect(commerce.classifyIntent('table of contents').name).toBe('book');
+  });
+
+  it('routes demo/show-me/try-it phrases to demo intent', () => {
+    expect(commerce.classifyIntent('demo').name).toBe('demo');
+    expect(commerce.classifyIntent('show me a demo').name).toBe('demo');
+    expect(commerce.classifyIntent('let me try it').name).toBe('demo');
+    expect(commerce.classifyIntent('see it in action').name).toBe('demo');
+  });
+
+  it('does not steal "demo me chapter 1" from chapter intent', () => {
+    // CHAPTER must run before DEMO so a specific chapter request still wins.
+    expect(commerce.classifyIntent('show me chapter 1').name).toBe('chapter');
+  });
+
+  it('extractChapterNumber handles digits and number words', () => {
+    expect(commerce.extractChapterNumber('show me chapter 1')).toBe(1);
+    expect(commerce.extractChapterNumber('chapter 7 please')).toBe(7);
+    expect(commerce.extractChapterNumber('chapter one')).toBe(1);
+    expect(commerce.extractChapterNumber('chapter ten')).toBe(10);
+    expect(commerce.extractChapterNumber('no number here')).toBeNull();
+  });
+
   it('routes "monitor these sites" to agent_task', () => {
     expect(commerce.classifyIntent('monitor these sites: a.com, b.com').name).toBe('agent_task');
     expect(commerce.classifyIntent('monitor this site for me').name).toBe('agent_task');
@@ -443,6 +485,83 @@ describe('polly agent_task task-type and query extraction', () => {
     expect(commerce.extractAgentQuery('research about hyperbolic geometry', 'research')).toContain(
       'hyperbolic geometry'
     );
+  });
+});
+
+describe('polly renderDiscountReply', () => {
+  it('returns active codes + a buy CTA + email mailto for custom rates', () => {
+    const out = commerce.renderDiscountReply();
+    expect(out.text).toContain('WELCOME20');
+    expect(out.text).toContain('STUDENT50');
+    expect(out.text).toContain('NONPROFIT50');
+    const mailtoAction = out.actions.find(
+      (a: { url?: string }) => typeof a.url === 'string' && a.url.startsWith('mailto:')
+    );
+    expect(mailtoAction).toBeDefined();
+    expect(mailtoAction!.url).toContain('Custom%20discount%20rate');
+  });
+
+  it('every prompt action round-trips to a non-discount intent', () => {
+    const out = commerce.renderDiscountReply();
+    for (const action of out.actions) {
+      if (typeof action.prompt !== 'string') continue;
+      const reIntent = commerce.classifyIntent(action.prompt);
+      expect(reIntent.name).not.toBe('discount');
+      expect(reIntent.confidence).toBeGreaterThanOrEqual(0.6);
+    }
+  });
+});
+
+describe('polly renderBookReply', () => {
+  it('lists every book + chapter with a buy CTA', () => {
+    const out = commerce.renderBookReply();
+    expect(out.text).toContain('AI Governance Fundamentals');
+    expect(out.text).toContain('Chapter 1');
+    expect(out.text).toContain('Harmonic Wall');
+    const buyAction = out.actions.find(
+      (a: { url?: string }) => typeof a.url === 'string' && a.url.includes('buy.stripe.com')
+    );
+    expect(buyAction).toBeDefined();
+  });
+});
+
+describe('polly renderChapterReply', () => {
+  it('returns the 5W summary for a known chapter', () => {
+    const out = commerce.renderChapterReply('show me chapter 1');
+    expect(out.text).toContain('Chapter 1');
+    expect(out.text).toContain('**Who**');
+    expect(out.text).toContain('**What**');
+    expect(out.text).toContain('**When**');
+    expect(out.text).toContain('**Where**');
+    expect(out.text).toContain('**Why**');
+    const readAction = out.actions.find(
+      (a: { url?: string }) =>
+        typeof a.url === 'string' && a.url.includes('chapter-01-harmonic-wall.md')
+    );
+    expect(readAction).toBeDefined();
+  });
+
+  it('falls back to book listing when no chapter number can be parsed', () => {
+    const out = commerce.renderChapterReply('chapter please');
+    // Falls through to renderBookReply
+    expect(out.text).toContain('AI Governance Fundamentals');
+  });
+
+  it('returns a graceful "not yet" reply for non-existent chapter numbers', () => {
+    const out = commerce.renderChapterReply('show me chapter 99');
+    expect(out.text).toContain("don't have a chapter 99");
+  });
+});
+
+describe('polly renderDemoReply', () => {
+  it('lists every chapter as a runnable demo + offers a research-agent fallback', () => {
+    const out = commerce.renderDemoReply();
+    expect(out.text).toContain('Harmonic Wall');
+    const agentAction = out.actions.find(
+      (a: { prompt?: string }) =>
+        typeof a.prompt === 'string' && a.prompt.startsWith('search the web')
+    );
+    expect(agentAction).toBeDefined();
   });
 });
 
