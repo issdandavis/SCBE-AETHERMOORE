@@ -4,6 +4,7 @@ const { readJsonBody, sendJson, setCors } = require('../_agent_common');
 const trainCapture = require('../_polly_train_capture');
 const hfUpload = require('../_polly_hf_upload');
 const rateLimit = require('../_polly_rate_limit');
+const { CONSULTING_LANDING_URL, SERVICE_FAST_START_URL } = require('./commerce');
 
 const PROJECT_TYPES = new Set([
   'audit',
@@ -14,22 +15,9 @@ const PROJECT_TYPES = new Set([
   'other',
 ]);
 
-const BUDGET_RANGES = new Set([
-  'under-5k',
-  '5k-15k',
-  '15k-50k',
-  '50k-plus',
-  'open',
-]);
+const BUDGET_RANGES = new Set(['under-5k', '5k-15k', '15k-50k', '50k-plus', 'open']);
 
-const TIMELINES = new Set([
-  'asap',
-  '2-4-weeks',
-  '1-3-months',
-  'q3',
-  'q4',
-  'open',
-]);
+const TIMELINES = new Set(['asap', '2-4-weeks', '1-3-months', 'q3', 'q4', 'open']);
 
 const FIELD_CAPS = {
   contact: 240,
@@ -58,7 +46,9 @@ function validateLead(body) {
     return { ok: false, error: 'description must be at least 10 characters' };
   }
 
-  const projectType = String((body && body.project_type) || 'other').trim().toLowerCase();
+  const projectType = String((body && body.project_type) || 'other')
+    .trim()
+    .toLowerCase();
   if (!PROJECT_TYPES.has(projectType)) {
     return {
       ok: false,
@@ -66,7 +56,9 @@ function validateLead(body) {
     };
   }
 
-  const budget = String((body && body.budget) || 'open').trim().toLowerCase();
+  const budget = String((body && body.budget) || 'open')
+    .trim()
+    .toLowerCase();
   if (!BUDGET_RANGES.has(budget)) {
     return {
       ok: false,
@@ -74,7 +66,9 @@ function validateLead(body) {
     };
   }
 
-  const timeline = String((body && body.timeline) || 'open').trim().toLowerCase();
+  const timeline = String((body && body.timeline) || 'open')
+    .trim()
+    .toLowerCase();
   if (!TIMELINES.has(timeline)) {
     return {
       ok: false,
@@ -102,6 +96,211 @@ function logLead(record) {
   } catch (_err) {
     /* never raise into the request path */
   }
+}
+
+const OFFER_PACKETS = {
+  'advisory-call': {
+    offer: 'Short advisory call',
+    price_anchor: '$300 / 60 minutes',
+    review_window: 'Same-day human review when possible; always within 24 hours.',
+    gifts: [
+      {
+        label: 'Service fast-start packet',
+        url: SERVICE_FAST_START_URL,
+        why: 'Prepare the problem, evidence, and success criteria before the call.',
+      },
+      {
+        label: 'AI Governance Toolkit guide',
+        url: 'https://aethermoore.com/product-manual/ai-governance-toolkit.html',
+        why: 'Preview the template style used in paid governance work.',
+      },
+      {
+        label: 'Public SCBE repository',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
+        why: 'Proof surface for shipped governance code and tests.',
+      },
+    ],
+    next_steps: [
+      'Issac reviews the description and replies with a yes/no fit check.',
+      'If it fits, the reply includes payment/scheduling instructions and a short agenda.',
+      'After the call, buyer receives a written recap and action list.',
+    ],
+  },
+  audit: {
+    offer: 'Adversarial audit',
+    price_anchor: '$5,000-$15,000 / 1-3 weeks',
+    review_window:
+      'Initial human scope review within 24 hours; urgent production-risk leads are prioritized.',
+    gifts: [
+      {
+        label: 'Service fast-start packet',
+        url: SERVICE_FAST_START_URL,
+        why: 'Contains the intake checklist and no-secrets submission guidance.',
+      },
+      {
+        label: 'AI Governance Snapshot',
+        url: 'https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html',
+        why: 'Cheaper fixed-scope starting point if the audit is not ready yet.',
+      },
+      {
+        label: 'Training Vault guide',
+        url: 'https://aethermoore.com/product-manual/training-vault.html',
+        why: 'Shows the evaluation/training materials behind the security lane.',
+      },
+      {
+        label: 'SCBE governance tests',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/tree/main/tests/governance',
+        why: 'Public proof of the governance overlay test surface.',
+      },
+    ],
+    next_steps: [
+      'AI triage classifies the lead as an audit request and stores it in the private lead dataset.',
+      'Issac inspects scope, endpoint risk, test boundaries, and whether secrets/customer data can be avoided.',
+      'The reply proposes either a $500 Snapshot, a $5K-$15K audit scope, or a no-fit explanation.',
+    ],
+  },
+  'custom-overlay': {
+    offer: 'Custom governance overlay',
+    price_anchor: '$25,000-$80,000 / 4-10 weeks',
+    review_window:
+      'Initial architecture review within 24 hours; scope may require a paid discovery step.',
+    gifts: [
+      {
+        label: 'Service fast-start packet',
+        url: SERVICE_FAST_START_URL,
+        why: 'Prepares model, API, latency, logging, and deployment constraints.',
+      },
+      {
+        label: 'Hire page proof packet',
+        url: CONSULTING_LANDING_URL,
+        why: 'Canonical scope and proof surface.',
+      },
+      {
+        label: 'AI Governance Toolkit guide',
+        url: 'https://aethermoore.com/product-manual/ai-governance-toolkit.html',
+        why: 'Shows the decision-record and evidence style used in delivery.',
+      },
+      {
+        label: 'SCBE source',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
+        why: 'Open-source-first implementation reference.',
+      },
+    ],
+    next_steps: [
+      'AI triage stores the request with project type, budget range, and timeline.',
+      'Issac checks whether the requested overlay can be delivered without unsafe data access.',
+      'The reply proposes discovery, implementation milestones, rollback boundaries, and payment structure.',
+    ],
+  },
+  subcontract: {
+    offer: 'Federal subcontract role',
+    price_anchor: '$150-$250 / hour, contract',
+    review_window:
+      'Human review within 24 hours; same-day where a prime or agency deadline is active.',
+    gifts: [
+      {
+        label: 'Hire page proof packet',
+        url: CONSULTING_LANDING_URL,
+        why: 'Capability, pricing, and direct contact surface.',
+      },
+      {
+        label: 'Public SCBE repository',
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE',
+        why: 'Open-source proof of work for technical review.',
+      },
+      {
+        label: 'Service fast-start packet',
+        url: SERVICE_FAST_START_URL,
+        why: 'Use the subcontract intake section to prepare period of performance and deliverables.',
+      },
+    ],
+    next_steps: [
+      'Issac checks deadline, workshare, role fit, and conflict constraints.',
+      'The reply asks for the solicitation/prime context, period of performance, and expected deliverables.',
+      'If it fits, the next step is a short scope call or written teaming note.',
+    ],
+  },
+  training: {
+    offer: 'Workshop / internal training',
+    price_anchor: '$2,500-$7,500 / half day or full day',
+    review_window: 'Human review within 24 hours; curriculum fit checked before payment.',
+    gifts: [
+      {
+        label: 'Training Vault guide',
+        url: 'https://aethermoore.com/product-manual/training-vault.html',
+        why: 'Preview the training materials and evaluation language.',
+      },
+      {
+        label: 'Service fast-start packet',
+        url: SERVICE_FAST_START_URL,
+        why: 'Use the workshop intake section to define audience, outcome, and constraints.',
+      },
+      {
+        label: 'AI Governance Toolkit guide',
+        url: 'https://aethermoore.com/product-manual/ai-governance-toolkit.html',
+        why: 'Preview the practical templates used in training.',
+      },
+    ],
+    next_steps: [
+      'Issac reviews audience, technical level, and desired outcome.',
+      'The reply proposes a half-day or full-day outline with prep materials.',
+      'After payment, the buyer receives agenda, slide/source packet, and follow-up notes.',
+    ],
+  },
+  other: {
+    offer: 'Custom inquiry',
+    price_anchor: 'Scoped after review',
+    review_window: 'Human review within 24 hours.',
+    gifts: [
+      {
+        label: 'Service fast-start packet',
+        url: SERVICE_FAST_START_URL,
+        why: 'Use this to turn the idea into a reviewable scope.',
+      },
+      {
+        label: 'Hire page proof packet',
+        url: CONSULTING_LANDING_URL,
+        why: 'See the existing paid paths and direct contact routes.',
+      },
+      {
+        label: 'AI Governance Snapshot',
+        url: 'https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html',
+        why: 'Best fixed-scope fallback if the custom idea is too broad.',
+      },
+    ],
+    next_steps: [
+      'AI triage stores the lead and labels it as custom/other.',
+      'Issac replies with a fit check, a narrower offer, or a no-fit answer.',
+      'If the idea is broad, the $500 Snapshot is the recommended first paid step.',
+    ],
+  },
+};
+
+function buildFulfillmentPacket(lead) {
+  const base = OFFER_PACKETS[lead.projectType] || OFFER_PACKETS.other;
+  return {
+    status: 'instant-service-intake-v1',
+    offer: base.offer,
+    project_type: lead.projectType,
+    budget: lead.budget,
+    timeline: lead.timeline,
+    price_anchor: base.price_anchor,
+    review_window: base.review_window,
+    order_recap: [
+      `Requested path: ${base.offer}`,
+      `Budget signal: ${lead.budget}`,
+      `Timeline signal: ${lead.timeline}`,
+      'Payment status: not charged by this form; payment/scope is confirmed after human review.',
+    ],
+    initial_ai_inspection: [
+      'Contact format validated.',
+      'Project type, budget range, and timeline normalized.',
+      'Description stored for private review and training capture when enabled.',
+      'No secrets are required at this stage.',
+    ],
+    immediate_value: base.gifts,
+    follow_up_steps: base.next_steps,
+  };
 }
 
 module.exports = async function handler(req, res) {
@@ -136,7 +335,7 @@ module.exports = async function handler(req, res) {
   if (body && typeof body.website === 'string' && body.website.trim().length > 0) {
     return sendJson(res, 200, {
       ok: true,
-      message: "Got it — Issac will reply within 24 hours.",
+      message: 'Got it — Issac will reply within 24 hours.',
       next_steps: [],
     });
   }
@@ -172,15 +371,15 @@ module.exports = async function handler(req, res) {
     trainCapture.dispatchTrainingTurn(record),
   ]);
 
+  const fulfillmentPacket = buildFulfillmentPacket(lead);
+
   return sendJson(res, 200, {
     ok: true,
     message:
       "Got it — Issac will reply within 24 hours. If it's urgent, " +
       'phone (360) 808-0876 is the fastest path.',
-    next_steps: [
-      'Watch your inbox / phone for a direct reply',
-      'In the meantime, browse the open-source work at https://github.com/issdandavis/SCBE-AETHERMOORE',
-    ],
+    next_steps: [...fulfillmentPacket.order_recap, ...fulfillmentPacket.follow_up_steps],
+    fulfillment_packet: fulfillmentPacket,
   });
 };
 
@@ -190,4 +389,6 @@ module.exports._private = {
   TIMELINES,
   validateLead,
   logLead,
+  buildFulfillmentPacket,
+  OFFER_PACKETS,
 };
