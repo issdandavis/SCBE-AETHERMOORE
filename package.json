@@ -102,6 +102,8 @@
     "connector:health": "python scripts/connector_health_check.py",
     "repo:shape": "python scripts/system/report_repo_surface_shape.py",
     "docs:check": "python scripts/system/docs_finish_audit.py",
+    "book:test": "python -m pytest tests/book/ -v",
+    "book:extract": "python scripts/book/extract_chapter_examples.py",
     "scbe:bootstrap": "node scripts/scbe_bootstrap.mjs",
     "system:cli": "python scripts/scbe-system-cli.py",
     "training:terminal": "python scripts/system/training_terminal.py",
