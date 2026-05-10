@@ -217,6 +217,28 @@ const MEMBERSHIP_PATTERN =
 const HELP_PATTERN =
   /^(\/help|\/\?|help)\s*$|^\?+\s*$|\b(what\s+can\s+you\s+(do|help\s+with)|what\s+do\s+you\s+know(\s+about)?\s*$|what\s+(commands?|options?|features?|topics?)\s+do\s+you\s+(have|support)|how\s+do\s+(you|i\s+use\s+you)\s+work|help\s+menu|show\s+me\s+(the\s+)?(commands?|options?|menu))\b/i;
 
+// DISCOUNT: user is asking for cheaper / coupon / student / nonprofit /
+// first-time pricing. Direct purchase lever — every reply ends with an
+// active code + checkout link.
+const DISCOUNT_PATTERN =
+  /\b(discount|coupon|promo(\s*code)?|sale|deal|cheap(er)?|afford(able)?|student|non[-\s]?profit|nonprofit|charity|educational|first[-\s]?time|trial|free\s+trial|broke|tight\s+budget|on\s+a\s+budget|can'?t\s+afford)\b/i;
+
+// CHAPTER: user wants a specific chapter — "chapter 1", "ch 2", "show me
+// chapter 1 of the book". Numeric extraction handles "one"/"two" too.
+const CHAPTER_PATTERN =
+  /\b(chapter|ch\.?)\s*(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b/i;
+
+// BOOK: catalog-level — "book", "ebook", "textbook", "table of contents",
+// "what's in the book". CHAPTER is more specific so it runs first.
+const BOOK_PATTERN =
+  /\b(books?|ebooks?|textbooks?|manuals?|table\s+of\s+contents|what'?s\s+in\s+(the\s+)?(book|ebook)|read(ing)?\s+(material|list))\b/i;
+
+// DEMO: "demo", "show me", "try it", "see it work", "play with it" —
+// returns runnable chapter / notebook links. Distinct from BOOK because the
+// user wants to *do* something, not browse.
+const DEMO_PATTERN =
+  /\b(demo|demos|show\s+me\s+(a|the|how|it)|try\s+(it|the|a)|see\s+it\s+(work|in\s+action)|play\s+with(\s+it)?|live\s+(example|demo)|interactive)\b/i;
+
 // AGENT TASK: user wants to dispatch a one-shot agent run (research, monitor,
 // scrape, web_search) through the SCBE agent-router workflow. Distinct from
 // the `research` intent above which renders topic explainers — this intent
@@ -286,6 +308,31 @@ function classifyIntent(message) {
   const helpMatch = HELP_PATTERN.exec(message);
   if (helpMatch) {
     return { name: 'help', confidence: 0.95, matchedTerm: helpMatch[0], product: null };
+  }
+
+  // DISCOUNT runs before buy/guide so "I want a discount on the toolkit"
+  // surfaces the coupon code instead of the full-price checkout, AND so
+  // "I'm a student" doesn't get classified as custom-engagement intake.
+  const discountMatch = DISCOUNT_PATTERN.exec(message);
+  if (discountMatch) {
+    return { name: 'discount', confidence: 0.88, matchedTerm: discountMatch[0], product: null };
+  }
+
+  // CHAPTER before BOOK because "chapter 1 of the book" matches both —
+  // chapter is more specific.
+  const chapterMatch = CHAPTER_PATTERN.exec(message);
+  if (chapterMatch) {
+    return { name: 'chapter', confidence: 0.9, matchedTerm: chapterMatch[0], product: null };
+  }
+
+  const bookMatch = BOOK_PATTERN.exec(message);
+  if (bookMatch) {
+    return { name: 'book', confidence: 0.85, matchedTerm: bookMatch[0], product: null };
+  }
+
+  const demoMatch = DEMO_PATTERN.exec(message);
+  if (demoMatch) {
+    return { name: 'demo', confidence: 0.82, matchedTerm: demoMatch[0], product: null };
   }
 
   // Guide goes before buy: "what should I get" / "i don't know what to buy"
@@ -675,16 +722,248 @@ function renderMembershipReply() {
   return { text, actions };
 }
 
+// Discount codes. Real Stripe coupons should match these names so checkout
+// auto-applies. If env vars are unset, the codes still surface (the user
+// can copy them and we can wire Stripe coupons later — every reply ends
+// with a working full-price checkout link as a safety hatch).
+const DISCOUNT_CODES = {
+  WELCOME20: {
+    code: process.env.SCBE_DISCOUNT_CODE_WELCOME || 'WELCOME20',
+    description: '20% off your first SCBE purchase',
+    audience: 'First-time buyers — no verification needed',
+  },
+  STUDENT50: {
+    code: process.env.SCBE_DISCOUNT_CODE_STUDENT || 'STUDENT50',
+    description: '50% off any one-time SCBE product',
+    audience: 'Verified students — email a .edu address for confirmation',
+  },
+  NONPROFIT50: {
+    code: process.env.SCBE_DISCOUNT_CODE_NONPROFIT || 'NONPROFIT50',
+    description: '50% off any one-time SCBE product or month of subscription',
+    audience: '501(c)(3) non-profits — email your EIN for confirmation',
+  },
+};
+
+// Book catalog. Mirrors book/<slug>/book.yaml; commerce.js runs in Vercel
+// Node so the YAML is hand-mirrored here for v1 (one book, one chapter).
+// When the catalog grows beyond 3 books, switch to a JSON sidecar built
+// at deploy time.
+const BOOK_CATALOG = [
+  {
+    slug: 'ai-governance-fundamentals',
+    title: 'AI Governance Fundamentals',
+    subtitle: 'A runnable book for engineers shipping their first governed LLM feature',
+    sample_price: 'Free',
+    bundle_price: '$19 one-time (planned)',
+    catalog_url: 'https://aethermoore.com/SCBE-AETHERMOORE/book/ai-governance-fundamentals/',
+    chapters: [
+      {
+        number: 1,
+        slug: 'harmonic-wall',
+        title: 'The Harmonic Wall — bounded safety scoring',
+        who: 'AI engineers shipping LLM-backed features for the first time',
+        what: 'How H(d, pd) = 1/(1+d+2*pd) bounds adversarial cost in (0, 1]',
+        when: 'Before deploying any model that takes free-form user input',
+        where: 'At the output gate, between the model response and the downstream caller',
+        why: 'Unbounded safety scores let attackers walk the threshold without paying cost',
+        estimated_minutes: 12,
+        url: 'https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/book/ai-governance-fundamentals/chapter-01-harmonic-wall.md',
+        notebook: null,
+      },
+    ],
+  },
+];
+
+const NUMBER_WORDS = {
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+};
+
+function extractChapterNumber(message) {
+  const match = CHAPTER_PATTERN.exec(message);
+  if (!match) return null;
+  const raw = (match[2] || '').toLowerCase();
+  if (/^\d+$/.test(raw)) return parseInt(raw, 10);
+  return NUMBER_WORDS[raw] || null;
+}
+
+function findChapter(chapterNumber, bookSlug) {
+  const book = bookSlug ? BOOK_CATALOG.find((b) => b.slug === bookSlug) : BOOK_CATALOG[0]; // default to first book when not specified
+  if (!book) return null;
+  const chapter = book.chapters.find((c) => c.number === chapterNumber);
+  if (!chapter) return null;
+  return { book, chapter };
+}
+
+function renderDiscountReply() {
+  const lines = [
+    "Yes — here's the current discount ladder. All codes go in the Stripe checkout's promo field:",
+    '',
+  ];
+  for (const slot of Object.values(DISCOUNT_CODES)) {
+    lines.push(`- **\`${slot.code}\`** — ${slot.description}. _${slot.audience}._`);
+  }
+  lines.push('');
+  lines.push(
+    "Pick a product and I'll send you to checkout — the code applies at the Stripe page. " +
+      "If it doesn't auto-apply, paste the code into the promo field. If you need a custom rate " +
+      '(volume / federal / open-source maintainer), email the address below.'
+  );
+
+  const actions = [
+    {
+      label: 'See all products',
+      url: PRODUCTS_PAGE_URL,
+    },
+    {
+      label: 'Help me pick',
+      prompt: 'Help me choose a product',
+    },
+    {
+      label: `Email about a custom rate`,
+      url: `mailto:${HIRE_EMAIL}?subject=Custom%20discount%20rate&body=Hi%20Issac%2C%0A%0AMy%20situation%3A%20`,
+    },
+  ];
+  return { text: lines.join('\n'), actions };
+}
+
+function renderBookReply() {
+  const lines = [
+    "Here's the runnable book catalog (every chapter ships with a tested code example):",
+    '',
+  ];
+  for (const book of BOOK_CATALOG) {
+    lines.push(`### ${book.title}`);
+    lines.push(`_${book.subtitle}_`);
+    lines.push('');
+    lines.push(`Sample chapter: ${book.sample_price} · Full bundle: ${book.bundle_price}`);
+    lines.push('');
+    for (const ch of book.chapters) {
+      lines.push(`- **Chapter ${ch.number}** — ${ch.title} _(≈${ch.estimated_minutes} min read)_`);
+    }
+    lines.push('');
+  }
+  lines.push(
+    'Ask me about a specific chapter ("show me chapter 1") for the 5W summary + the full chapter link.'
+  );
+
+  const actions = [];
+  const firstBook = BOOK_CATALOG[0];
+  if (firstBook && firstBook.chapters.length) {
+    const first = firstBook.chapters[0];
+    actions.push({ label: `Read chapter ${first.number} free`, url: first.url });
+    actions.push({
+      label: `Show me chapter ${first.number}`,
+      prompt: `Show me chapter ${first.number}`,
+    });
+  }
+  actions.push({
+    label: 'Buy the toolkit ($29)',
+    url: PRODUCT_CATALOG.find((p) => p.sku === 'ai-governance-toolkit').checkoutUrl,
+  });
+  return { text: lines.join('\n'), actions };
+}
+
+function renderChapterReply(message) {
+  const chapterNumber = extractChapterNumber(message);
+  if (!chapterNumber) {
+    return renderBookReply();
+  }
+  const found = findChapter(chapterNumber);
+  if (!found) {
+    const lines = [`I don't have a chapter ${chapterNumber} yet. The current catalog:`, ''];
+    for (const book of BOOK_CATALOG) {
+      lines.push(`**${book.title}** — ${book.chapters.length} chapter(s) shipped`);
+    }
+    return {
+      text: lines.join('\n'),
+      actions: [{ label: 'Browse the book', prompt: 'Show me the book' }],
+    };
+  }
+
+  const { book, chapter } = found;
+  const lines = [
+    `**${book.title}** · Chapter ${chapter.number}: ${chapter.title}`,
+    '',
+    `**Who** — ${chapter.who}`,
+    `**What** — ${chapter.what}`,
+    `**When** — ${chapter.when}`,
+    `**Where** — ${chapter.where}`,
+    `**Why** — ${chapter.why}`,
+    '',
+    `≈${chapter.estimated_minutes} min read. Every code example is verified against the live SCBE codebase on every CI run.`,
+  ];
+  const actions = [{ label: 'Read the full chapter', url: chapter.url }];
+  if (chapter.notebook) {
+    actions.push({ label: 'Try the notebook', url: chapter.notebook });
+  }
+  actions.push({
+    label: 'Buy the toolkit ($29)',
+    url: PRODUCT_CATALOG.find((p) => p.sku === 'ai-governance-toolkit').checkoutUrl,
+  });
+  actions.push({ label: 'Discount codes', prompt: 'discount' });
+  return { text: lines.join('\n'), actions };
+}
+
+function renderDemoReply() {
+  const lines = [
+    'Live demos are linked from the chapters — every chapter ships with a runnable example.',
+    '',
+  ];
+  let count = 0;
+  for (const book of BOOK_CATALOG) {
+    for (const ch of book.chapters) {
+      lines.push(
+        `- **${ch.title}** _(book: ${book.title})_ — read the chapter, paste the example.`
+      );
+      count += 1;
+    }
+  }
+  if (!count) {
+    lines.push('_No chapters published yet — check back soon._');
+  }
+  lines.push('');
+  lines.push(
+    "If you'd rather have me run a real-time agent against the web instead, ask me to 'search the web for X' or 'monitor these sites'."
+  );
+
+  const actions = [];
+  const firstBook = BOOK_CATALOG[0];
+  if (firstBook && firstBook.chapters.length) {
+    const first = firstBook.chapters[0];
+    actions.push({ label: `Read ${first.title}`, url: first.url });
+  }
+  actions.push({
+    label: 'Run a research agent instead',
+    prompt: 'search the web for SCBE governance latest',
+  });
+  actions.push({ label: 'Browse all chapters', prompt: 'Show me the book' });
+  return { text: lines.join('\n'), actions };
+}
+
 function renderHelpReply() {
   const text =
     "Here's what I can do — pick a chip below or just ask in plain English.\n\n" +
     '**Pick a tool**\n' +
     '- "Help me choose a product" → 3-question picker\n' +
     '- "Buy the toolkit" / "I want the snapshot" → direct checkout\n' +
-    '- "I need a custom audit" → scoping path\n\n' +
+    '- "I need a custom audit" → scoping path\n' +
+    '- "discount" / "student" / "nonprofit" → active coupon codes\n\n' +
     '**Ask a question**\n' +
     '- "What is the harmonic wall?" → topic explainer\n' +
     '- "Tell me about the 14-layer pipeline" / Sacred Tongues / axiom mesh\n\n' +
+    '**Read the runnable book**\n' +
+    '- "Show me the book" / "table of contents" → catalog\n' +
+    '- "Show me chapter 1" → 5W summary + full chapter link\n' +
+    '- "demo" / "show me a demo" → runnable chapter examples\n\n' +
     '**Run an agent**\n' +
     '- "Search the web for X" → web_search agent\n' +
     '- "Monitor these sites: a.com, b.com" → monitor agent\n' +
@@ -698,13 +977,10 @@ function renderHelpReply() {
 
   const actions = [
     { label: 'Help me choose a product', prompt: 'Help me choose a product' },
+    { label: 'Show me chapter 1 of the book', prompt: 'Show me chapter 1' },
+    { label: 'Discount codes', prompt: 'discount' },
     { label: 'What is the harmonic wall?', prompt: 'What is the harmonic wall?' },
-    {
-      label: 'Run a research agent',
-      prompt: 'search the web for SCBE hyperbolic geometry AI safety',
-    },
     { label: 'Browse all products', url: PRODUCTS_PAGE_URL },
-    { label: 'Open the agents page', url: AGENT_TASK_PAGE_URL },
   ];
   return { text, actions };
 }
@@ -763,9 +1039,13 @@ module.exports = {
   START_HERE_URL,
   PRODUCTS_PAGE_URL,
   AGENT_TASK_PAGE_URL,
+  BOOK_CATALOG,
+  DISCOUNT_CODES,
   classifyIntent,
   classifyAgentTaskType,
   extractAgentQuery,
+  extractChapterNumber,
+  findChapter,
   renderBuyReply,
   renderCustomReply,
   renderGuideReply,
@@ -773,6 +1053,10 @@ module.exports = {
   renderMembershipReply,
   renderResearchReply,
   renderAgentTaskReply,
+  renderBookReply,
+  renderChapterReply,
+  renderDemoReply,
+  renderDiscountReply,
   resolveProduct,
   resolveResearchTopic,
 };

@@ -4,8 +4,12 @@ const { readJsonBody, sendJson, setCors } = require('../_agent_common');
 const {
   classifyIntent,
   renderAgentTaskReply,
+  renderBookReply,
   renderBuyReply,
+  renderChapterReply,
   renderCustomReply,
+  renderDemoReply,
+  renderDiscountReply,
   renderGuideReply,
   renderHelpReply,
   renderMembershipReply,
@@ -19,8 +23,12 @@ const rateLimit = require('../_polly_rate_limit');
 
 const COMMERCE_INTENTS = new Set([
   'agent_task',
+  'book',
   'buy',
+  'chapter',
   'custom',
+  'demo',
+  'discount',
   'guide',
   'help',
   'membership',
@@ -123,6 +131,14 @@ module.exports = async function handler(req, res) {
       rendered = renderGuideReply();
     } else if (intent.name === 'help') {
       rendered = renderHelpReply();
+    } else if (intent.name === 'discount') {
+      rendered = renderDiscountReply();
+    } else if (intent.name === 'chapter') {
+      rendered = renderChapterReply(message);
+    } else if (intent.name === 'book') {
+      rendered = renderBookReply();
+    } else if (intent.name === 'demo') {
+      rendered = renderDemoReply();
     } else if (intent.name === 'research') {
       rendered = renderResearchReply(message);
     } else if (intent.name === 'agent_task') {
