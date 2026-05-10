@@ -198,7 +198,7 @@ referencing==0.37.0
 requests==2.33.1
 responses==0.26.0
 rfc3339-validator==0.1.4
-rich==14.3.3
+rich==15.0.0
 rpds-py==0.30.0
 rsa==4.9.1
 ruamel.yaml==0.19.1
