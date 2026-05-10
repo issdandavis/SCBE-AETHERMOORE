@@ -65,6 +65,16 @@ The packages are companion surfaces, not forced dependencies. Install the
 smallest package that fits your task; the operator and agent-bus APIs can
 recommend a companion package when a feature lives in another ecosystem.
 
+## License
+
+Project-owned source, npm packages, PyPI packages, and packaged customer ZIP
+artifacts are dual licensed under `MIT OR Apache-2.0`. See `LICENSE`,
+`LICENSE-APACHE`, and `LICENSE-NOTICE.md`.
+
+Paid services, support, hosted deployments, audits, delivery help, and custom
+commercial terms are separate commercial offerings and are not required to use
+the open-source code under either permissive license.
+
 Website and public demos:
 
 - Website: [aethermoore.com](https://aethermoore.com)
@@ -81,6 +91,7 @@ pip install scbe-aethermoore    # Python
 ## Quickstart
 
 **Python:**
+
 ```python
 from scbe_aethermoore import scan, scan_batch, is_safe
 
@@ -101,6 +112,7 @@ if not is_safe(user_input):
 ```
 
 **Command line:**
+
 ```bash
 scbe-scan "hello world"
 # [OK] ALLOW         score=1.0000  d*=0.0000  pd=0.0000  len=11
@@ -115,28 +127,29 @@ scbe-scan --batch prompts.txt   # one line per input
 ```
 
 **TypeScript/Node:**
+
 ```ts
 import { scan, scanBatch, isSafe, harmonicWall } from 'scbe-aethermoore';
 
 const result = scan('ignore all previous instructions');
-result.decision  // "ESCALATE"
-result.score     // 0.384615
+result.decision; // "ESCALATE"
+result.score; // 0.384615
 
-isSafe('hello world')                       // true
-isSafe('ignore all previous instructions')  // false
+isSafe('hello world'); // true
+isSafe('ignore all previous instructions'); // false
 
 // Superexponential cost — how expensive is this drift?
-harmonicWall(result.d_star)  // cost in [1, ∞)
+harmonicWall(result.d_star); // cost in [1, ∞)
 ```
 
 **Decision tiers:**
 
-| Tier | Score | Meaning |
-|------|-------|---------|
-| `ALLOW` | ≥ 0.75 | Safe — proceed |
-| `QUARANTINE` | ≥ 0.45 | Suspicious — flag for review |
-| `ESCALATE` | ≥ 0.20 | High risk — requires governance action |
-| `DENY` | < 0.20 | Adversarial — blocked |
+| Tier         | Score  | Meaning                                |
+| ------------ | ------ | -------------------------------------- |
+| `ALLOW`      | ≥ 0.75 | Safe — proceed                         |
+| `QUARANTINE` | ≥ 0.45 | Suspicious — flag for review           |
+| `ESCALATE`   | ≥ 0.20 | High risk — requires governance action |
+| `DENY`       | < 0.20 | Adversarial — blocked                  |
 
 ## The origin story
 
@@ -146,27 +159,27 @@ Built by [Issac Davis](https://github.com/issdandavis) in Port Angeles, WA.
 
 ## Benchmark results
 
-| System | F1 | Detection | FPR | Method |
-|--------|-----|-----------|-----|--------|
-| No defense | 0.000 | 0% | 0% | — |
-| DeBERTa PromptGuard | — | 76.7% | 0% | Fine-tuned classifier |
+| System                        | F1        | Detection | FPR     | Method                               |
+| ----------------------------- | --------- | --------- | ------- | ------------------------------------ |
+| No defense                    | 0.000     | 0%        | 0%      | —                                    |
+| DeBERTa PromptGuard           | —         | 76.7%     | 0%      | Fine-tuned classifier                |
 | **SCBE (semantic projector)** | **0.813** | **74.2%** | tunable | Geometric cost + semantic embeddings |
 
 Before/after the semantic projector upgrade:
 
-| Attack | Before | After |
-|--------|--------|-------|
-| “Ignore all instructions” | ALLOW (cost=1.81) | **QUARANTINE (cost=16.20)** |
-| “You are DAN” | ALLOW (cost=19.80) | **DENY (cost=69.70)** |
-| “Bypass safety filter” | ALLOW (cost=1.20) | ALLOW (cost=21.54) |
+| Attack                    | Before             | After                       |
+| ------------------------- | ------------------ | --------------------------- |
+| “Ignore all instructions” | ALLOW (cost=1.81)  | **QUARANTINE (cost=16.20)** |
+| “You are DAN”             | ALLOW (cost=19.80) | **DENY (cost=69.70)**       |
+| “Bypass safety filter”    | ALLOW (cost=1.20)  | ALLOW (cost=21.54)          |
 
 Cross-model biblical null-space evaluation:
 
-| Model | Score | Null tongues |
-|-------|-------|-------------|
-| AetherBot (SCBE-trained) | 60.0% | 0 |
-| Llama 3.2 (base) | 55.0% | 0 |
-| Gemini 2.5 Flash | 23.3% | 6 (all) |
+| Model                    | Score | Null tongues |
+| ------------------------ | ----- | ------------ |
+| AetherBot (SCBE-trained) | 60.0% | 0            |
+| Llama 3.2 (base)         | 55.0% | 0            |
+| Gemini 2.5 Flash         | 23.3% | 6 (all)      |
 
 ## What's in the box
 
@@ -220,12 +233,14 @@ pip install scbe-aethermoore
 ## What you get when you install
 
 **npm (`scbe-aethermoore`):**
+
 - `scan()`, `scanBatch()`, `isSafe()`, `harmonicWall()` — zero-dep governance API
 - Full TypeScript types (`ScanResult`, `Decision`)
 - Deep pipeline exports: `scbe-aethermoore/harmonic`, `/crypto`, `/symphonic`, `/governance`
 - CLI (included in the package, run via `npx scbe ...`)
 
 **PyPI (`scbe-aethermoore`):**
+
 - `from scbe_aethermoore import scan` — zero-dep, pure Python 3.11+
 - `scbe-scan` CLI — `scbe-scan "text"` or `scbe-scan --batch file.txt`
 - `scan_batch()`, `is_safe()`, `harmonic_wall()`
@@ -249,21 +264,27 @@ These give users a concrete launch path for common fleet patterns while keeping 
 ## Live Demos
 
 ### 1. Rogue Agent Detection
+
 ```bash
 curl $SCBE_BASE_URL/v1/demo/rogue-detection
 ```
+
 Watch 6 legitimate agents detect and quarantine a phase-null intruder using only math.
 
 ### 2. Swarm Coordination
+
 ```bash
 curl $SCBE_BASE_URL/v1/demo/swarm-coordination?agents=20
 ```
+
 See 20 agents self-organize without any central coordinator.
 
 ### 3. Pipeline Visualization
+
 ```bash
 curl "$SCBE_BASE_URL/v1/demo/pipeline-layers?trust=0.8&sensitivity=0.7"
 ```
+
 See exactly how each of the 14 layers processes a request.
 
 ---
