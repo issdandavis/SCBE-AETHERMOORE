@@ -8,4 +8,7 @@
 !docs/app-config.json
 !public
 !public/hire.html
+!scripts
+!scripts/vercel
+!scripts/vercel/ignore-build.cjs
 !vercel.json
