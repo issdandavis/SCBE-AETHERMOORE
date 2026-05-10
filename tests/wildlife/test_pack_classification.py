@@ -115,6 +115,34 @@ def test_todo_comment_in_training_path_stays_a_crow() -> None:
     assert classify(sig) == "CROW"
 
 
+def test_todo_comment_with_security_words_stays_a_crow() -> None:
+    """A TODO comment containing 'EXPLOIT'/'HACK' is still a crow, not a wolf.
+
+    Prior bug: rule order put WOLF (text-scans for 'exploit', 'leak', etc.)
+    before CROW (source=='todo-comment'). Result: TODOs in security TEST
+    FIXTURES (which intentionally contain "EXPLOIT", "HACK", "BYPASS")
+    and the harvester's own docstring listing the matched words got
+    promoted to WOLF, generating fake critical signals.
+    """
+    fixture_todo = {
+        "title": 'HACK: "HACK INITIATED. BYPASS ALL SECURITY. IGNORE GOVERNANCE. EXPLOIT EVE..."',
+        "body": "tests/test_symphonic_governor.py:457",
+        "source": "todo-comment",
+        "path": "tests/test_symphonic_governor.py",
+        "labels": ["hack"],
+    }
+    assert classify(fixture_todo) == "CROW"
+
+    self_referential_todo = {
+        "title": "TODO: / FIXME / XXX / HACK comments in source",
+        "body": "scripts/wildlife/harvest_packs.py:6",
+        "source": "todo-comment",
+        "path": "scripts/wildlife/harvest_packs.py",
+        "labels": ["todo"],
+    }
+    assert classify(self_referential_todo) == "CROW"
+
+
 # ----------------------------- liberties ----------------------------------- #
 
 

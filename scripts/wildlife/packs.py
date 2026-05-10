@@ -204,13 +204,18 @@ def _is_feature(s: dict) -> bool:
 
 # Rule order: specific → broad. First match wins.
 RULES: list[tuple[str, Callable[[dict], bool]]] = [
-    # Wolves first — anything that's actively hurting
-    ("WOLF", _is_critical_label),
-    ("WOLF", _is_security),
-    ("WOLF", _is_failing_ci),
-    # TODO/FIXME comments are crows by definition, regardless of file path —
-    # a TODO in training/ doesn't make it a training job; it's still a comment.
+    # TODO/FIXME comments are crows by definition, regardless of what the
+    # comment text says — a TODO in tests/test_security.py containing the
+    # word "EXPLOIT" is a security TEST FIXTURE, not an active exploit.
+    # Same for the harvester's own docstring listing "TODO/FIXME/XXX/HACK".
+    # Source-based identity beats content-based pattern matching here, so
+    # this MUST come before the text-scanning WOLF rules.
     ("CROW", _is_todo_comment),
+    # Wolves — anything that's actively hurting (label/source-based first;
+    # text-based _is_security only fires on real issues/PRs now)
+    ("WOLF", _is_critical_label),
+    ("WOLF", _is_failing_ci),
+    ("WOLF", _is_security),
     # Dragons before training/research — federal/major
     ("DRAGON", _is_proposal),
     # Horses — training jobs (issues/PRs only at this point)
