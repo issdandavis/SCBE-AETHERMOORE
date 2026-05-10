@@ -133,6 +133,9 @@ def call_hf_router(model: str, prompt: str, token: str, timeout: int) -> dict:
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {token}",
+            # Cloudflare in front of router.huggingface.co 403s the default
+            # `Python-urllib/3.x` UA; send a normal one.
+            "User-Agent": "scbe-wildlife-dispatch/1.0",
         },
         method="POST",
     )

@@ -48,9 +48,24 @@ SKIP_DIRS = (
     "external",
     ".home",
     ".scbe",
+    # vendored / cached / generated content — TODOs in here aren't ours
+    # to triage and flooded the crow pack with 195 third-party comments
+    "artifacts",
+    "training-data",
+    "training_data",
+    "training",
+    ".cache",
+    ".next",
+    "site-packages",
     "rust/scbe_core/target",
     "scbe-visual-system/node_modules",
     "kindle-app/node_modules",
+    # vendored repos
+    "unsloth",
+    "_external",
+    "vendored",
+    "third_party",
+    "third-party",
 )
 
 
@@ -180,13 +195,20 @@ def _walk_source_files(root: Path) -> list[Path]:
 
     A naive `root.glob('**/*.py')` walks every directory including
     node_modules and external/ before filtering, which is many seconds on
-    this repo.
+    this repo. Match SKIP_DIRS by exact name OR prefix so e.g.
+    `unsloth_compiled_cache/` is pruned by the `unsloth` entry.
     """
     out: list[Path] = []
-    skip = set(SKIP_DIRS)
+    skip = tuple(SKIP_DIRS)
+
+    def _pruned(d: str) -> bool:
+        if d.startswith(".") or d.startswith("_"):
+            return True
+        return any(d == s or d.startswith(s + "_") or d.startswith(s + "-") for s in skip)
+
     for dirpath, dirnames, filenames in os.walk(root, topdown=True):
         # Prune in place — must mutate dirnames so os.walk skips them
-        dirnames[:] = [d for d in dirnames if d not in skip and not d.startswith(".")]
+        dirnames[:] = [d for d in dirnames if not _pruned(d)]
         for name in filenames:
             ext = os.path.splitext(name)[1]
             if ext not in _SOURCE_EXTS:
