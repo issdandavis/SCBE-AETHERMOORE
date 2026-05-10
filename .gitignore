@@ -243,3 +243,13 @@ external/cli-quests/
 .roots/
 .home/.codex/
 .vercel
+
+# Per-developer agent skills (personal Claude/Codex skill installs, not repo work)
+.home/.agents/skills/
+
+# Wildlife-flock runtime state: dispatch plans + result snapshots
+# (the dispatcher source itself lives under scripts/wildlife/)
+.scbe/wildlife/
+
+# Local replica directory created by some sync tools — never commit
+/origin/
