@@ -178,6 +178,17 @@ export const PQC_ALGORITHMS = {
     signatureSize: 3293,
     productionReady: true,
   },
+  'ML-DSA-87': {
+    kind: 'signature' as const,
+    name: 'ML-DSA-87',
+    family: 'lattice' as PQCFamily,
+    nistLevel: 5 as NISTLevel,
+    standard: 'FIPS 204',
+    publicKeySize: 2592,
+    secretKeySize: 4896,
+    signatureSize: 4595,
+    productionReady: true,
+  },
   'ML-DSA-44': {
     kind: 'signature' as const,
     name: 'ML-DSA-44',

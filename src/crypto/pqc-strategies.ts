@@ -61,6 +61,21 @@ export interface PQCStrategy {
   families: PQCFamily[];
 }
 
+export type StarFortressDefenseRing = 'outer-lattice' | 'middle-hash' | 'inner-dev-fallback';
+
+export interface StarFortressDefenseReport {
+  strategyName: string;
+  rings: Array<{
+    ring: StarFortressDefenseRing;
+    purpose: string;
+    algorithms: string[];
+    status: 'active' | 'standby' | 'dev-only';
+  }>;
+  triadicFallbackOrder: StarFortressDefenseRing[];
+  productionReady: boolean;
+  warning?: string;
+}
+
 /** Built-in strategy catalog */
 export const STRATEGY_CATALOG: Record<string, PQCStrategy> = {
   'balanced-v1': {
@@ -103,6 +118,18 @@ export const STRATEGY_CATALOG: Record<string, PQCStrategy> = {
     useCase: 'Edge devices, IoT agents, bandwidth-constrained environments',
     families: ['lattice'],
   },
+  'star-fortress-v1': {
+    name: 'star-fortress-v1',
+    description:
+      'Triadic fallback defense: CNSA-class lattice outer wall, SLH hash-signature middle wall, explicit dev-only fallback inner wall.',
+    kemAlgorithms: ['ML-KEM-1024', 'Classic-McEliece-348864', 'ML-KEM-768'],
+    sigAlgorithm: 'ML-DSA-87',
+    classicalHybrid: true,
+    minNistLevel: 5,
+    useCase:
+      'High-value agent routing, fortress boundary receipts, defense-facing governance profiles',
+    families: ['lattice', 'code-based', 'hash-based'],
+  },
 };
 
 // User-defined strategies
@@ -130,6 +157,56 @@ export function listStrategyNames(): string[] {
 /** Clear custom strategies (for testing) */
 export function clearCustomStrategies(): void {
   customStrategies.clear();
+}
+
+export function starFortressDefenseReport(
+  strategyName: string = 'star-fortress-v1'
+): StarFortressDefenseReport {
+  const strategy = getStrategy(strategyName);
+  const hasCNSAClassLattice =
+    strategy.kemAlgorithms.includes('ML-KEM-1024') && strategy.sigAlgorithm === 'ML-DSA-87';
+  const hasHashFallback =
+    strategy.families.includes('hash-based') || strategy.sigAlgorithm.startsWith('SLH-DSA');
+  const warning =
+    hasCNSAClassLattice && hasHashFallback
+      ? undefined
+      : 'Profile is not a full Star Fortress posture; use only as a partial defense ring.';
+
+  return {
+    strategyName: strategy.name,
+    rings: [
+      {
+        ring: 'outer-lattice',
+        purpose:
+          'Primary CNSA-class key establishment and signature wall for active fortress boundaries.',
+        algorithms: [
+          ...strategy.kemAlgorithms.filter((name) => name.startsWith('ML-KEM')),
+          strategy.sigAlgorithm,
+        ],
+        status: hasCNSAClassLattice ? 'active' : 'standby',
+      },
+      {
+        ring: 'middle-hash',
+        purpose:
+          'Conservative hash-signature fallback for long-lived receipts and lattice-break contingency.',
+        algorithms: [
+          'SLH-DSA-256s',
+          'LMS/XMSS (firmware/software signing profile, external implementation)',
+        ],
+        status: hasHashFallback ? 'active' : 'standby',
+      },
+      {
+        ring: 'inner-dev-fallback',
+        purpose:
+          'Local deterministic fallback for tests and air-gapped development; never market as PQ-secure.',
+        algorithms: ['HMAC-SHA256-dev-fallback'],
+        status: 'dev-only',
+      },
+    ],
+    triadicFallbackOrder: ['outer-lattice', 'middle-hash', 'inner-dev-fallback'],
+    productionReady: !warning,
+    warning,
+  };
 }
 
 // ============================================================
