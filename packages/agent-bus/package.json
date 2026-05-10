@@ -1,0 +1,24 @@
+{
+  "name": "scbe-agent-bus",
+  "version": "0.2.0",
+  "description": "SCBE agent-bus: typed Node surface over the SCBE governed event runner.",
+  "license": "MIT OR Apache-2.0",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "LICENSE-APACHE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "packages/agent-bus"
+  },
+  "bugs": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "homepage": "https://aethermoore.com/SCBE-AETHERMOORE/offers/"
+}

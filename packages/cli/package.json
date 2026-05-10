@@ -1,0 +1,24 @@
+{
+  "name": "scbe-aethermoore-cli",
+  "version": "4.1.3",
+  "description": "Standalone CLI for SCBE-AETHERMOORE GeoSeal tools, tokenizer lanes, governance packets, web lookup, and mechanical verification.",
+  "license": "MIT OR Apache-2.0",
+  "type": "commonjs",
+  "bin": {
+    "geoseal": "../../bin/geoseal.cjs",
+    "scbe-geoseal": "../../bin/geoseal.cjs"
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "LICENSE-APACHE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git"
+  },
+  "bugs": {
+    "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
+  },
+  "homepage": "https://aethermoore.com/SCBE-AETHERMOORE/offers/"
+}

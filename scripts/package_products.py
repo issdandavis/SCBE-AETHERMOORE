@@ -30,7 +30,10 @@ DEFAULT_OUTPUT = REPO_ROOT / "products" / "packaged"
 TOOLKIT_FILES = [
     # Buyer-facing start guide
     ("deliverables/SCBE_Production_Pack/BUYER_START_GUIDE.md", "BUYER_START_GUIDE.md"),
-    ("deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/README.md", "quickstart/README.md"),
+    (
+        "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/README.md",
+        "quickstart/README.md",
+    ),
     # Practical buyer templates promised on the sales/manual pages
     (
         "deliverables/SCBE_Production_Pack/packages/ai-governance-toolkit/decision-record-template.md",
@@ -118,7 +121,10 @@ VAULT_EXTRA_FILES = [
     # Benchmark scripts
     ("scripts/benchmark/scbe_vs_baseline.py", "benchmark/scbe_vs_baseline.py"),
     ("scripts/benchmark/scbe_vs_industry.py", "benchmark/scbe_vs_industry.py"),
-    ("scripts/benchmark/context_embedding_benchmark.py", "benchmark/context_embedding_benchmark.py"),
+    (
+        "scripts/benchmark/context_embedding_benchmark.py",
+        "benchmark/context_embedding_benchmark.py",
+    ),
     ("scripts/benchmark/null_space_ablation.py", "benchmark/null_space_ablation.py"),
     # Architecture reference
     ("docs/specs/CANONICAL_FORMULA_REGISTRY.md", "docs/CANONICAL_FORMULA_REGISTRY.md"),
@@ -186,7 +192,11 @@ def package_toolkit(output_dir: Path) -> Path:
 
     with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
         zf.writestr("README.md", TOOLKIT_README)
-        zf.writestr("LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n")
+        zf.writestr(
+            "LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n"
+        )
+        zf.write(REPO_ROOT / "LICENSE-APACHE", "LICENSE-APACHE")
+        zf.write(REPO_ROOT / "LICENSE-NOTICE.md", "LICENSE-NOTICE.md")
 
         for src_rel, dst_rel in TOOLKIT_FILES:
             src = REPO_ROOT / src_rel
@@ -210,7 +220,11 @@ def package_vault(output_dir: Path) -> Path:
 
     with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
         zf.writestr("README.md", VAULT_README)
-        zf.writestr("LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n")
+        zf.writestr(
+            "LICENSE", "MIT License\n\nCopyright (c) 2026 Issac Davis / AetherMoore\n"
+        )
+        zf.write(REPO_ROOT / "LICENSE-APACHE", "LICENSE-APACHE")
+        zf.write(REPO_ROOT / "LICENSE-NOTICE.md", "LICENSE-NOTICE.md")
 
         # SFT data files
         for sft_rel in VAULT_SFT_FILES:
@@ -245,7 +259,9 @@ def package_vault(output_dir: Path) -> Path:
         zf.writestr("metadata.json", json.dumps(metadata, indent=2))
 
     size_mb = zip_path.stat().st_size / (1024 * 1024)
-    print(f"\nVault packaged: {zip_path} ({size_mb:.1f} MB, {total_records} SFT records)")
+    print(
+        f"\nVault packaged: {zip_path} ({size_mb:.1f} MB, {total_records} SFT records)"
+    )
     return zip_path
 
 
@@ -267,7 +283,9 @@ def main() -> None:
         package_vault(args.output_dir)
         print()
 
-    print("Done. Upload these ZIPs to your delivery system (GitHub Releases, S3, or direct email).")
+    print(
+        "Done. Upload these ZIPs to your delivery system (GitHub Releases, S3, or direct email)."
+    )
 
 
 if __name__ == "__main__":
