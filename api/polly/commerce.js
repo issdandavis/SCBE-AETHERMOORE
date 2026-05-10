@@ -211,6 +211,49 @@ const RESEARCH_PATTERN =
 const MEMBERSHIP_PATTERN =
   /\b(member|membership|subscribe|signup|sign\s*up|join|newsletter|follow|stay\s+updated|notify|sponsor|tip|donate)\b/i;
 
+// AGENT TASK: user wants to dispatch a one-shot agent run (research, monitor,
+// scrape, web_search) through the SCBE agent-router workflow. Distinct from
+// the `research` intent above which renders topic explainers — this intent
+// hands off to /agents.html with the dispatch form pre-filled. Worded to
+// catch action verbs that imply tool use ("the web", "these sites", "this
+// URL", "/dispatch") without colliding with topic explainer phrases.
+const AGENT_TASK_PATTERN =
+  /\b(use\s+the\s+agent|run\s+(an?\s+)?agent|dispatch\s+(an?\s+)?agent|agent\s+router|search\s+the\s+web|monitor\s+(these|this|the)\s+(sites?|urls?|pages?)|scrape\s+(this|the)\s+(url|page|site)|crawl\s+(this|the)|fetch\s+(this|the)\s+url)\b|^\/(?:agent|dispatch|bus)\b/i;
+
+const AGENT_TASK_PAGE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/agents.html';
+const URL_EXTRACT_PATTERN = /\bhttps?:\/\/[^\s,]+/gi;
+
+// Heuristic: pick the most-specific agent-router task the user implied.
+// Defaults to research because that's the safest "tell me about X" run.
+function classifyAgentTaskType(message) {
+  const lower = String(message || '').toLowerCase();
+  if (/\bmonitor\b/.test(lower)) return 'monitor';
+  if (/\bscrape\b|\bcrawl\b|\bfetch\s+this\s+url\b/.test(lower)) return 'scrape';
+  if (/\b(search\s+the\s+web|web\s+search)\b/.test(lower)) return 'web_search';
+  if (/\bdispatch\b|\bbus\b|^\/(?:agent|dispatch|bus)\b/i.test(message || '')) return 'agent_bus';
+  return 'research';
+}
+
+// Strip the trigger phrasing so the dispatch form's query field gets just
+// the substantive part. Falls back to the whole message when nothing comes
+// after the trigger (e.g. bare "run an agent").
+function extractAgentQuery(message, taskType) {
+  const text = String(message || '').trim();
+  if (!text) return '';
+  const urls = text.match(URL_EXTRACT_PATTERN);
+  if (urls && (taskType === 'monitor' || taskType === 'scrape')) {
+    return urls.join(',');
+  }
+  // Try splitting on common connector words so "search the web for AI safety"
+  // → "AI safety".
+  const split = text.split(/\b(?:for|on|about|regarding|of)\b/i);
+  if (split.length >= 2) {
+    const tail = split.slice(1).join(' ').trim();
+    if (tail) return tail.replace(/^[,:\s-]+/, '').slice(0, 400);
+  }
+  return text.slice(0, 400);
+}
+
 // "I don't know what I need" signals. These are the chat-side mirror of the
 // /products.html "find your fit" picker. When the user is uncertain, we walk
 // them through 2-3 plain-language questions instead of dumping the catalog.
@@ -253,6 +296,19 @@ function classifyIntent(message) {
   const product = resolveProduct(message);
   if (product) {
     return { name: 'buy', confidence: 0.6, matchedTerm: product.sku, product };
+  }
+
+  // AGENT_TASK comes BEFORE custom AND research because its trigger phrases
+  // ("search the web", "monitor these sites", "/dispatch") are more specific
+  // than custom's broad keywords like "ai safety" and research's "search".
+  const agentTaskMatch = AGENT_TASK_PATTERN.exec(message);
+  if (agentTaskMatch) {
+    return {
+      name: 'agent_task',
+      confidence: 0.82,
+      matchedTerm: agentTaskMatch[0],
+      product: null,
+    };
   }
 
   const customMatch = CUSTOM_PATTERN.exec(message);
@@ -606,6 +662,47 @@ function renderMembershipReply() {
   return { text, actions };
 }
 
+function renderAgentTaskReply(message) {
+  const taskType = classifyAgentTaskType(message);
+  const query = extractAgentQuery(message, taskType);
+  const params = new URLSearchParams();
+  params.set('task', taskType);
+  if (query) params.set('query', query);
+  const dispatchUrl = `${AGENT_TASK_PAGE_URL}?${params.toString()}`;
+
+  const taskDescriptions = {
+    research: 'deep web research with AI summary and source citations',
+    monitor: 'quick-read of multiple URLs (titles, word counts, key text)',
+    scrape: 'structured extraction from one URL (text, links, metadata, JSON-LD)',
+    web_search: 'web search + AI summary',
+    agent_bus: 'one SCBE agent-bus event through the typed envelope pipeline',
+  };
+  const description = taskDescriptions[taskType] || taskDescriptions.research;
+
+  const lines = [
+    `I can route that to the **${taskType}** agent — ${description}.`,
+    '',
+    query
+      ? `I pulled this query from your message: \`${query.slice(0, 200)}\``
+      : 'Click through and I\'ll leave the query field blank for you to fill in.',
+    '',
+    'The agent runs on a free GitHub server (the Vercel bridge will queue it ' +
+      'when configured, otherwise the page falls back to opening the GitHub ' +
+      'workflow form). Results land on the Latest Results panel and are ' +
+      'published to the public agent-data feed when the run finishes.',
+  ];
+
+  const actions = [
+    { label: `Open ${taskType} dispatch`, url: dispatchUrl },
+    { label: 'See all agent tasks', url: AGENT_TASK_PAGE_URL },
+    {
+      label: 'Pick a different tool',
+      prompt: 'Help me choose a product',
+    },
+  ];
+  return { text: lines.join('\n'), actions, taskType, query };
+}
+
 module.exports = {
   PRODUCT_CATALOG,
   CONSULTING_TIERS,
@@ -618,12 +715,16 @@ module.exports = {
   GUIDE_ROUTES,
   START_HERE_URL,
   PRODUCTS_PAGE_URL,
+  AGENT_TASK_PAGE_URL,
   classifyIntent,
+  classifyAgentTaskType,
+  extractAgentQuery,
   renderBuyReply,
   renderCustomReply,
   renderGuideReply,
   renderMembershipReply,
   renderResearchReply,
+  renderAgentTaskReply,
   resolveProduct,
   resolveResearchTopic,
 };

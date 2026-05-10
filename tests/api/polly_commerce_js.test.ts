@@ -370,6 +370,92 @@ describe('polly commerce intent classification', () => {
     expect(commerce.classifyIntent('I want to buy the toolkit').name).toBe('buy');
     expect(commerce.classifyIntent('Purchase the snapshot').name).toBe('buy');
   });
+
+  it('routes "search the web for X" to agent_task (not research topic)', () => {
+    const intent = commerce.classifyIntent('search the web for AI safety governance');
+    expect(intent.name).toBe('agent_task');
+    expect(intent.confidence).toBeGreaterThanOrEqual(0.6);
+  });
+
+  it('routes "monitor these sites" to agent_task', () => {
+    expect(commerce.classifyIntent('monitor these sites: a.com, b.com').name).toBe('agent_task');
+    expect(commerce.classifyIntent('monitor this site for me').name).toBe('agent_task');
+  });
+
+  it('routes "scrape this URL" to agent_task', () => {
+    expect(commerce.classifyIntent('scrape this URL https://example.com').name).toBe('agent_task');
+    expect(commerce.classifyIntent('scrape the page please').name).toBe('agent_task');
+  });
+
+  it('routes "/agent" or "/dispatch" slash commands to agent_task', () => {
+    expect(commerce.classifyIntent('/agent monitor').name).toBe('agent_task');
+    expect(commerce.classifyIntent('/dispatch research foo').name).toBe('agent_task');
+    expect(commerce.classifyIntent('/bus ping').name).toBe('agent_task');
+  });
+
+  it('does not steal "what is X" topic explainers from research intent', () => {
+    expect(commerce.classifyIntent('What is the harmonic wall?').name).toBe('research');
+    expect(commerce.classifyIntent('Tell me about the 14-layer pipeline').name).toBe('research');
+  });
+});
+
+describe('polly agent_task task-type and query extraction', () => {
+  it('classifyAgentTaskType picks monitor/scrape/web_search/agent_bus', () => {
+    expect(commerce.classifyAgentTaskType('monitor these sites')).toBe('monitor');
+    expect(commerce.classifyAgentTaskType('scrape this page')).toBe('scrape');
+    expect(commerce.classifyAgentTaskType('search the web for X')).toBe('web_search');
+    expect(commerce.classifyAgentTaskType('/dispatch ping')).toBe('agent_bus');
+  });
+
+  it('classifyAgentTaskType defaults to research', () => {
+    expect(commerce.classifyAgentTaskType('use the agent router for AI safety')).toBe('research');
+    expect(commerce.classifyAgentTaskType('run an agent')).toBe('research');
+  });
+
+  it('extractAgentQuery joins URLs for monitor/scrape', () => {
+    const q = commerce.extractAgentQuery(
+      'monitor these: https://a.com and https://b.com please',
+      'monitor'
+    );
+    expect(q).toContain('https://a.com');
+    expect(q).toContain('https://b.com');
+  });
+
+  it('extractAgentQuery splits on connector words for non-URL tasks', () => {
+    expect(commerce.extractAgentQuery('search the web for AI safety governance', 'web_search')).toBe(
+      'AI safety governance'
+    );
+    expect(
+      commerce.extractAgentQuery('research about hyperbolic geometry', 'research')
+    ).toContain('hyperbolic geometry');
+  });
+});
+
+describe('polly renderAgentTaskReply', () => {
+  it('returns a dispatch URL with task and query params', () => {
+    const out = commerce.renderAgentTaskReply('search the web for AI safety');
+    expect(out.taskType).toBe('web_search');
+    expect(out.actions[0].url).toContain('agents.html');
+    expect(out.actions[0].url).toContain('task=web_search');
+    expect(out.actions[0].url).toMatch(/AI(\+|%20)safety/);
+  });
+
+  it('still emits a dispatch URL when no query can be extracted', () => {
+    const out = commerce.renderAgentTaskReply('run an agent');
+    expect(out.taskType).toBe('research');
+    expect(out.actions[0].url).toContain('task=research');
+  });
+
+  it('exposes a "pick a different tool" prompt action', () => {
+    const out = commerce.renderAgentTaskReply('monitor these sites: https://example.com');
+    const promptAction = out.actions.find(
+      (a: { prompt?: string }) => typeof a.prompt === 'string'
+    );
+    expect(promptAction).toBeDefined();
+    // Round-trip safety: the prompt action should re-classify cleanly.
+    const reIntent = commerce.classifyIntent(promptAction!.prompt as string);
+    expect(reIntent.name).not.toBe('agent_task');
+  });
 });
 
 describe('polly commerce reply rendering', () => {
@@ -563,6 +649,27 @@ describe('polly chat handler — commerce path', () => {
     expect(body.text).toContain('Three or four routes');
     expect(body.actions.some((a) => a.url.includes('products.html'))).toBe(true);
     expect(body.actions.some((a) => a.url.includes('start-here.html'))).toBe(true);
+  });
+
+  it('routes "search the web for X" to agent_task with dispatch URL', async () => {
+    const req = makeReq({
+      body: { message: 'search the web for AI safety governance', consent_to_train: false },
+    });
+    const res = makeRes();
+    await chatHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    const body = res.body as {
+      provider: string;
+      intent: string;
+      actions: { url?: string; prompt?: string }[];
+    };
+    expect(body.provider).toBe('agent_task');
+    expect(body.intent).toBe('agent_task');
+    const dispatchAction = body.actions.find(
+      (a) => typeof a.url === 'string' && a.url.includes('agents.html')
+    );
+    expect(dispatchAction).toBeDefined();
+    expect(dispatchAction!.url).toContain('task=web_search');
   });
 
   it('rejects POST without message', async () => {
