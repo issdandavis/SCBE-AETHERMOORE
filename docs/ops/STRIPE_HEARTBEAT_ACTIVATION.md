@@ -39,3 +39,32 @@ STRIPE_HEARTBEAT_PAYMENT_LINK_ID=plink_<live_heartbeat_payment_link_id>
 
 The commerce layer rejects `plink_...` and `https://buy.stripe.com/test_...` as public checkout overrides.
 
+## Digital Product Delivery
+
+For paid Toolkit and Vault package delivery, also pin the live Payment Link IDs.
+Both products are `$29`, so the webhook deliberately refuses to guess by price
+alone.
+
+Set these Vercel production environment variables:
+
+```text
+STRIPE_TOOLKIT_PAYMENT_LINK_ID=plink_<live_toolkit_payment_link_id>
+STRIPE_VAULT_PAYMENT_LINK_ID=plink_<live_vault_payment_link_id>
+```
+
+Set these GitHub Actions secrets if the product-delivery workflow should email
+buyers a direct access link:
+
+```text
+SCBE_DELIVERY_BASE_URL=https://scbe-agent-bridge-vercel.vercel.app/api/agent/download
+SCBE_DELIVERY_TOKEN=<buyer_delivery_token>
+POLLY_LEAD_SMTP_HOST=<smtp host>
+POLLY_LEAD_SMTP_PORT=<smtp port>
+POLLY_LEAD_SMTP_USER=<smtp user>
+POLLY_LEAD_SMTP_PASS=<smtp password>
+POLLY_LEAD_SMTP_FROM=<from address>
+POLLY_LEAD_SMTP_TO=<operator copy>
+```
+
+If SMTP or delivery secrets are missing, the workflow still files a
+`product-delivery` issue so manual fulfillment does not disappear.

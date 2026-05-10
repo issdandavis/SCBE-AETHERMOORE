@@ -19,11 +19,15 @@ const stripeWebhook = require('../../api/billing/stripe_webhook.js');
 const TEST_SECRET = 'whsec_test_secret_xyz';
 const SNAPSHOT_LINK_ID = 'plink_snapshot_test_42';
 const HEARTBEAT_LINK_ID = 'plink_heartbeat_test_99';
+const TOOLKIT_LINK_ID = 'plink_toolkit_test_29';
+const VAULT_LINK_ID = 'plink_vault_test_29';
 
 function setEnv(): void {
   process.env.STRIPE_WEBHOOK_SECRET = TEST_SECRET;
   process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID = SNAPSHOT_LINK_ID;
   process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID = HEARTBEAT_LINK_ID;
+  process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID = TOOLKIT_LINK_ID;
+  process.env.STRIPE_VAULT_PAYMENT_LINK_ID = VAULT_LINK_ID;
   process.env.GITHUB_TOKEN = 'ghp_test_token';
   process.env.GITHUB_REPO = 'test-org/test-repo';
   process.env.POLLY_SNAPSHOT_DISPATCH_ENABLED = 'true';
@@ -33,6 +37,8 @@ function clearEnv(): void {
   delete process.env.STRIPE_WEBHOOK_SECRET;
   delete process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID;
   delete process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID;
+  delete process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID;
+  delete process.env.STRIPE_VAULT_PAYMENT_LINK_ID;
   delete process.env.GITHUB_TOKEN;
   delete process.env.GH_TOKEN;
   delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
@@ -162,6 +168,41 @@ function heartbeatEvent(overrides: Record<string, unknown> = {}): string {
         },
         livemode: false,
         created: 1715200099,
+        ...overrides,
+      },
+    },
+  });
+}
+
+function productEvent(
+  productKey: 'toolkit' | 'vault',
+  overrides: Record<string, unknown> = {}
+): string {
+  const linkId = productKey === 'toolkit' ? TOOLKIT_LINK_ID : VAULT_LINK_ID;
+  return JSON.stringify({
+    id: `evt_test_${productKey}`,
+    type: 'checkout.session.completed',
+    data: {
+      object: {
+        id: `cs_test_${productKey}_29`,
+        object: 'checkout.session',
+        mode: 'payment',
+        amount_total: 2900,
+        currency: 'usd',
+        payment_link: linkId,
+        payment_intent: `pi_test_${productKey}`,
+        customer: `cus_test_${productKey}`,
+        customer_email: `${productKey}@example.com`,
+        customer_details: {
+          email: `${productKey}@example.com`,
+          name: `${productKey} Buyer`,
+          phone: null,
+        },
+        metadata: {
+          scbe_product: productKey,
+        },
+        livemode: false,
+        created: 1715200290,
         ...overrides,
       },
     },
@@ -371,6 +412,72 @@ describe('stripe webhook — heartbeat detection', () => {
   });
 });
 
+describe('stripe webhook — digital product detection', () => {
+  beforeEach(() => setEnv());
+  afterEach(() => {
+    clearEnv();
+    vi.restoreAllMocks();
+  });
+
+  it('matches toolkit by payment_link id', () => {
+    const { isToolkitSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(isToolkitSession({ payment_link: TOOLKIT_LINK_ID }, cfg)).toBe(true);
+  });
+
+  it('matches vault by payment_link id', () => {
+    const { isVaultSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(isVaultSession({ payment_link: VAULT_LINK_ID }, cfg)).toBe(true);
+  });
+
+  it('matches toolkit by explicit metadata + $29 payment when link id is absent', () => {
+    const { isToolkitSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = { ...snapshotConfig(), toolkitPaymentLinkId: '' };
+    expect(
+      isToolkitSession(
+        {
+          mode: 'payment',
+          amount_total: 2900,
+          currency: 'usd',
+          payment_link: 'plink_recreated',
+          metadata: { scbe_product: 'toolkit' },
+        },
+        cfg
+      )
+    ).toBe(true);
+  });
+
+  it('does not route ambiguous $29 payments without product metadata or link id', () => {
+    const { isToolkitSession, isVaultSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = { ...snapshotConfig(), toolkitPaymentLinkId: '', vaultPaymentLinkId: '' };
+    const session = {
+      mode: 'payment',
+      amount_total: 2900,
+      currency: 'usd',
+      payment_link: 'plink_unrelated',
+    };
+    expect(isToolkitSession(session, cfg)).toBe(false);
+    expect(isVaultSession(session, cfg)).toBe(false);
+  });
+
+  it('rejects subscription mode even with matching toolkit metadata', () => {
+    const { isToolkitSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = { ...snapshotConfig(), toolkitPaymentLinkId: '' };
+    expect(
+      isToolkitSession(
+        {
+          mode: 'subscription',
+          amount_total: 2900,
+          currency: 'usd',
+          metadata: { scbe_product: 'toolkit' },
+        },
+        cfg
+      )
+    ).toBe(false);
+  });
+});
+
 describe('stripe webhook — event routing', () => {
   beforeEach(() => setEnv());
   afterEach(() => {
@@ -472,5 +579,50 @@ describe('stripe webhook — event routing', () => {
     expect(rec.contact_email).toBe('heartbeat@example.com');
     expect(rec.amount_total).toBe(9900);
     expect(rec.source).toBe('governance-heartbeat');
+  });
+
+  it('toolkit checkout completes → product delivery dispatch payload', async () => {
+    let capturedBody: string | undefined;
+    vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
+      capturedBody = (init as { body: string }).body;
+      return new Response('{}', { status: 200 });
+    });
+    const raw = productEvent('toolkit');
+    const sig = signPayload(raw, TEST_SECRET);
+    const req = makeReq({ rawBody: raw, headers: { 'stripe-signature': sig } });
+    const res = makeRes();
+    await stripeWebhook(req as never, res as never);
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { handled: string; product_key: string }).handled).toBe('product_delivery');
+    expect((res.body as { handled: string; product_key: string }).product_key).toBe('toolkit');
+    expect(capturedBody).toBeDefined();
+    const dispatched = JSON.parse(capturedBody as string);
+    expect(dispatched.event_type).toBe('polly_product_delivery');
+    const rec = dispatched.client_payload.record;
+    expect(rec.kind).toBe('product_delivery');
+    expect(rec.session_id).toBe('cs_test_toolkit_29');
+    expect(rec.contact_email).toBe('toolkit@example.com');
+    expect(rec.amount_total).toBe(2900);
+    expect(rec.product_key).toBe('toolkit');
+    expect(rec.product_name).toBe('SCBE AI Governance Toolkit');
+    expect(rec.package_name).toBe('SCBE_AI_Governance_Toolkit_v1.zip');
+    expect(rec.source).toBe('ai-governance-toolkit');
+  });
+
+  it('ambiguous $29 checkout completes → checkout_other, no dispatch', async () => {
+    const fetchSpy = vi
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(new Response('{}', { status: 200 }));
+    const raw = productEvent('toolkit', {
+      payment_link: 'plink_unrelated_29',
+      metadata: {},
+    });
+    const sig = signPayload(raw, TEST_SECRET);
+    const req = makeReq({ rawBody: raw, headers: { 'stripe-signature': sig } });
+    const res = makeRes();
+    await stripeWebhook(req as never, res as never);
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { handled: string }).handled).toBe('checkout_other');
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

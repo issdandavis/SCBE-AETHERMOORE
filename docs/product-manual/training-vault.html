@@ -1,78 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Security Training Vault Manual | AetherMoore</title>
-  <meta name="description" content="Buyer manual for the SCBE AI Security Training Vault.">
-  <link rel="stylesheet" href="assets/manual.css">
-  <link rel="canonical" href="https://aethermoore.com/product-manual/training-vault.html">
-</head>
-<body>
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="../index.html">SCBE</a>
-      <nav class="nav-links" aria-label="Training Vault navigation">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Security Training Vault Manual | AetherMoore</title>
+    <meta name="description" content="Buyer manual for the SCBE AI Security Training Vault." />
+    <link rel="stylesheet" href="assets/manual.css" />
+    <link rel="canonical" href="https://aethermoore.com/product-manual/training-vault.html" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="../index.html">SCBE</a>
+        <nav class="nav-links" aria-label="Training Vault navigation">
+          <a href="../index.html">Home</a>
+          <a href="index.html">Manuals</a>
+          <a href="delivery-and-access.html">Delivery + Access</a>
+          <a href="../support.html">Support</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <div class="hero-card">
+          <div class="eyebrow">AI Security Training Vault</div>
+          <h1>Training records, schemas, and benchmark scripts for security-oriented AI work.</h1>
+          <p class="lead">
+            The Vault is a starter product for people who want inspectable SFT data and benchmark
+            references without pulling the whole monorepo into their first experiment.
+          </p>
+          <div class="cta-row">
+            <a
+              class="btn btn-primary"
+              href="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g"
+              target="_blank"
+              rel="noopener"
+              >Buy Training Vault $29</a
+            >
+            <a class="btn btn-secondary" href="delivery-and-access.html">Delivery help</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="card-grid">
+          <article class="card">
+            <h2>Included</h2>
+            <ul class="checklist">
+              <li>
+                Curated supervised fine-tuning JSONL records where available in the packaged build.
+              </li>
+              <li>Training schema reference.</li>
+              <li>Benchmark scripts.</li>
+              <li>Architecture notes for the training context.</li>
+              <li>Delivery + Access recovery route and email support path.</li>
+            </ul>
+          </article>
+          <article class="card">
+            <h2>First working result</h2>
+            <p>
+              Inspect one JSONL file, confirm it matches the schema, then run or review one
+              benchmark script before training anything. The goal is to understand the data path
+              before spending compute.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="article">
+          <h2>Expected workflow</h2>
+          <ol>
+            <li>Open the package README.</li>
+            <li>Inspect the `schemas/` folder.</li>
+            <li>Review the included `sft/` records.</li>
+            <li>Use a small local or Colab run first.</li>
+            <li>Record the model, seed, data subset, and evaluation result.</li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="article">
+          <h2>Value position</h2>
+          <p>
+            The $29 Vault is intentionally priced below a normal technical consultation. It gives
+            buyers a concrete dataset-and-benchmark starter kit without forcing them to clone the
+            full repo, pay for compute, or commit to a larger service first.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer container">
+      <div class="footer-links">
         <a href="../index.html">Home</a>
-        <a href="index.html">Manuals</a>
         <a href="delivery-and-access.html">Delivery + Access</a>
         <a href="../support.html">Support</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="hero">
-      <div class="hero-card">
-        <div class="eyebrow">AI Security Training Vault</div>
-        <h1>Training records, schemas, and benchmark scripts for security-oriented AI work.</h1>
-        <p class="lead">The Vault is a starter product for people who want inspectable SFT data and benchmark references without pulling the whole monorepo into their first experiment.</p>
-        <div class="cta-row">
-          <a class="btn btn-primary" href="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g" target="_blank" rel="noopener">Buy Training Vault $29</a>
-          <a class="btn btn-secondary" href="delivery-and-access.html">Delivery help</a>
-        </div>
+        <a href="mailto:ai@aethermoore.com?subject=SCBE%20Training%20Vault%20Support"
+          >Email support</a
+        >
       </div>
-    </section>
-
-    <section class="section">
-      <div class="card-grid">
-        <article class="card">
-          <h2>Included</h2>
-          <ul class="checklist">
-            <li>Curated supervised fine-tuning JSONL records where available in the packaged build.</li>
-            <li>Training schema reference.</li>
-            <li>Benchmark scripts.</li>
-            <li>Architecture notes for the training context.</li>
-          </ul>
-        </article>
-        <article class="card">
-          <h2>First working result</h2>
-          <p>Inspect one JSONL file, confirm it matches the schema, then run or review one benchmark script before training anything. The goal is to understand the data path before spending compute.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="article">
-        <h2>Expected workflow</h2>
-        <ol>
-          <li>Open the package README.</li>
-          <li>Inspect the `schemas/` folder.</li>
-          <li>Review the included `sft/` records.</li>
-          <li>Use a small local or Colab run first.</li>
-          <li>Record the model, seed, data subset, and evaluation result.</li>
-        </ol>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer container">
-    <div class="footer-links">
-      <a href="../index.html">Home</a>
-      <a href="delivery-and-access.html">Delivery + Access</a>
-      <a href="../support.html">Support</a>
-      <a href="mailto:ai@aethermoore.com?subject=SCBE%20Training%20Vault%20Support">Email support</a>
-    </div>
-  </footer>
-</body>
+    </footer>
+  </body>
 </html>
