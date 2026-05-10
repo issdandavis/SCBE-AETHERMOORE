@@ -203,6 +203,13 @@
             <div style="margin-top:8px;"><span class="tag">Training</span> <span class="tag">GeoSeal</span></div>
           </div>
         </div>
+        <div class="card">
+          <h2>Agent Bus</h2>
+          <div class="body">
+            Dispatches one SCBE agent-bus event through scripts/system/agentbus_pipe.mjs. Bridge between the published scbe-agent-bus npm/PyPI package and the website chat surface; returns a typed envelope.
+            <div style="margin-top:8px;"><span class="tag green">Local</span> <span class="tag blue">scbe-agent-bus</span> <span class="tag">Typed envelope</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -222,6 +229,7 @@
           <option value="agentic_ladder">Agentic ladder — Levels 0–1 + optional 6 (query = max level: 1 fast, 6 includes CLI/GeoSeal pytest)</option>
           <option value="pair_benchmark">Pair Benchmark — compare solo vs paired coding workflow</option>
           <option value="poly_coding_seed">Poly Coding Seed — rebuild external poly-coded training seed records</option>
+          <option value="agent_bus">Agent Bus — dispatch one SCBE bus event (query = task text or JSON event)</option>
         </select>
         <label for="d-query">Query or URLs</label>
         <input id="d-query" placeholder="e.g. URLs, research query, or ladder max level: 1 (default depth) or 6 (adds CLI/GeoSeal tests)">
@@ -239,6 +247,7 @@
           <button type="button" onclick="setRecipe('agentic_ladder','6')">Ladder through L6 (CLI/GeoSeal)</button>
           <button type="button" onclick="setRecipe('pair_benchmark','Run dual-agent pair benchmark')">Pair benchmark</button>
           <button type="button" onclick="setRecipe('poly_coding_seed','Regenerate external poly coding seed corpus')">Poly seed</button>
+          <button type="button" onclick="setRecipe('agent_bus','Summarize the latest SCBE governance posture in three sentences')">Agent bus demo</button>
         </div>
       </div>
     </div>
