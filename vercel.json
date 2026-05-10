@@ -9,6 +9,10 @@
     {
       "src": "api/polly/*.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/billing/*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -67,6 +71,10 @@
     {
       "src": "^/v1/polly/funnel/?$",
       "dest": "/api/polly/funnel.js"
+    },
+    {
+      "src": "^/v1/billing/stripe-webhook/?$",
+      "dest": "/api/billing/stripe_webhook.js"
     }
   ]
 }
