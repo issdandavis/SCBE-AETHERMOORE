@@ -41,6 +41,46 @@
       "dest": "/api/agent/hire-b.js"
     },
     {
+      "src": "^/products/?$",
+      "dest": "/api/agent/products.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/products\\.html$",
+      "dest": "/api/agent/products.js"
+    },
+    {
+      "src": "^/start-here/?$",
+      "dest": "/api/agent/start-here.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/start-here\\.html$",
+      "dest": "/api/agent/start-here.js"
+    },
+    {
+      "src": "^/agents/?$",
+      "dest": "/api/agent/agents.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/agents\\.html$",
+      "dest": "/api/agent/agents.js"
+    },
+    {
+      "src": "^/chat/?$",
+      "dest": "/api/agent/chat-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/chat\\.html$",
+      "dest": "/api/agent/chat-page.js"
+    },
+    {
+      "src": "^/static/(.*)$",
+      "dest": "/api/agent/static.js?path=$1"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/static/(.*)$",
+      "dest": "/api/agent/static.js?path=$1"
+    },
+    {
       "src": "^/(?:SCBE-AETHERMOORE/)?product-manual/service-fast-start\\.html$",
       "dest": "/api/agent/service-fast-start.js"
     },
