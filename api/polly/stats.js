@@ -68,17 +68,20 @@ async function listFolder(repo, token, prefix, dateDir, timeoutMs) {
 }
 
 async function gather(repo, token, dateDir, timeoutMs) {
-  const [chats, leads] = await Promise.all([
+  const [chats, leads, funnel] = await Promise.all([
     listFolder(repo, token, 'polly-chat-live', dateDir, timeoutMs),
     listFolder(repo, token, 'polly-leads', dateDir, timeoutMs),
+    listFolder(repo, token, 'polly-funnel', dateDir, timeoutMs),
   ]);
   return {
     date: dateDir,
     chats: chats.count,
     leads: leads.count,
+    funnel_events: funnel.count,
     chats_dir_exists: chats.exists,
     leads_dir_exists: leads.exists,
-    errors: [chats.error, leads.error].filter(Boolean),
+    funnel_dir_exists: funnel.exists,
+    errors: [chats.error, leads.error, funnel.error].filter(Boolean),
   };
 }
 
