@@ -3,7 +3,7 @@
   "version": "4.0.3",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
-  "license": "MIT",
+  "license": "MIT OR Apache-2.0",
   "type": "commonjs",
   "bin": {
     "geoseal": "bin/geoseal.cjs",
@@ -74,6 +74,8 @@
     "dist/packages",
     "README.md",
     "LICENSE",
+    "LICENSE-APACHE",
+    "LICENSE-NOTICE.md",
     "examples/npm"
   ],
   "scripts": {

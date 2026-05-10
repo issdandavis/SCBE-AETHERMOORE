@@ -7,8 +7,8 @@ name = "scbe-agent-bus"
 version = "0.2.0"
 description = "SCBE agent-bus: Python surface over the SCBE governed event runner. Routes AI/human/AI events through the harmonic-wall pipeline and returns a typed envelope."
 readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE"]
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE", "LICENSE-APACHE"]
 requires-python = ">=3.11"
 authors = [
     {name = "Issac Daniel Davis", email = "issdandavis@gmail.com"},

@@ -80,4 +80,4 @@ features should be added only when a user requests that lane.
 
 ## License
 
-MIT — see `LICENSE`.
+Dual licensed under `MIT OR Apache-2.0`. See `LICENSE` and `LICENSE-APACHE`.
