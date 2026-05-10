@@ -198,7 +198,7 @@ describe('polly lead handler — anti-abuse', () => {
 
 describe('polly commerce intent classification', () => {
   it('catalog has live products with valid checkout urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(6);
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(7);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^(https:\/\/(buy\.stripe\.com|ko-fi\.com)|mailto:)/);
       expect(product.keywords.length).toBeGreaterThan(0);
@@ -209,6 +209,13 @@ describe('polly commerce intent classification', () => {
     const intent = commerce.classifyIntent('I want to buy service credits for hosted routing');
     expect(intent.name).toBe('buy');
     expect(intent.product.sku).toBe('scbe-service-credits');
+  });
+
+  it('classifies the $20 supporter offer as a buyable subscription', () => {
+    const intent = commerce.classifyIntent('I want to buy the $20 monthly supporter subscription');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('aethermoore-supporter');
+    expect(intent.product.checkoutUrl).toMatch(/^https:\/\/buy\.stripe\.com\//);
   });
 
   it('honors env checkout override for governance heartbeat', () => {
@@ -358,15 +365,17 @@ describe('polly commerce reply rendering', () => {
     );
   });
 
-  it('renderMembershipReply has credits + Ko-fi + GitHub + email actions', () => {
+  it('renderMembershipReply has credits + supporter + heartbeat + Ko-fi + GitHub + email actions', () => {
     const out = commerce.renderMembershipReply();
-    expect(out.actions).toHaveLength(5);
+    expect(out.actions).toHaveLength(6);
     expect(out.actions[0].url).toContain('service-credits');
-    expect(out.actions[1].url).toContain('Governance%20Heartbeat');
-    expect(out.actions[2].url).toContain('ko-fi.com');
-    expect(out.actions[3].url).toContain('github.com');
-    expect(out.actions[4].url).toContain('mailto:');
+    expect(out.actions[1].url).toMatch(/^https:\/\/buy\.stripe\.com\//);
+    expect(out.actions[2].url).toContain('Governance%20Heartbeat');
+    expect(out.actions[3].url).toContain('ko-fi.com');
+    expect(out.actions[4].url).toContain('github.com');
+    expect(out.actions[5].url).toContain('mailto:');
     expect(out.text).toContain('2-5%');
+    expect(out.text).toContain('$20/month');
     expect(out.text).toContain('$99/month');
   });
 

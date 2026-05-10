@@ -41,6 +41,28 @@ const PRODUCT_CATALOG = [
     ],
   },
   {
+    sku: 'aethermoore-supporter',
+    name: 'AetherMoore Supporter',
+    priceLabel: '$20/month',
+    short:
+      'Monthly supporter subscription for people who want the open-source work to keep moving without scoping a formal service engagement.',
+    checkoutUrl: checkoutUrlFromEnv(
+      'SCBE_PAYMENT_LINK_SUPPORTER',
+      'https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i'
+    ),
+    deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/supporter.html',
+    keywords: [
+      'supporter',
+      'aethermoore supporter',
+      'monthly supporter',
+      'support monthly',
+      '20/month',
+      '$20',
+      'sponsor monthly',
+      'small subscription',
+    ],
+  },
+  {
     sku: 'ai-governance-snapshot',
     name: 'AI Governance Snapshot',
     priceLabel: '$500 one-time',
@@ -484,6 +506,7 @@ function renderMembershipReply() {
   const text =
     'Three ways to stay close to the work:\n\n' +
     '- **Use service credits** for pay-as-you-go hosted routing without a big subscription\n' +
+    '- **AetherMoore Supporter** for a $20/month open-source support subscription\n' +
     '- **Governance Heartbeat** for a $99/month scan/report loop on one AI workflow\n' +
     '- **Sponsor / tip** the open-source work via Ko-fi\n' +
     '- **Watch the GitHub repo** for releases (`Watch -> Custom -> Releases`)\n' +
@@ -494,6 +517,13 @@ function renderMembershipReply() {
     {
       label: 'Service credits',
       url: 'https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html',
+    },
+    {
+      label: 'AetherMoore Supporter',
+      url: checkoutUrlFromEnv(
+        'SCBE_PAYMENT_LINK_SUPPORTER',
+        'https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i'
+      ),
     },
     {
       label: 'Governance Heartbeat',
