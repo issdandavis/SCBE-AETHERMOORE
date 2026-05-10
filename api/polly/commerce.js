@@ -2,7 +2,19 @@
 
 function checkoutUrlFromEnv(envName, fallback) {
   const value = String(process.env[envName] || '').trim();
-  return value || fallback;
+  if (!value) return fallback;
+
+  // Stripe Payment Link IDs (`plink_...`) are not browser checkout URLs.
+  // Vercel historically stored those internal IDs in SCBE_PAYMENT_LINK_*.
+  // Only accept public URLs that a customer can actually click.
+  if (
+    value.startsWith('https://buy.stripe.com/') ||
+    value.startsWith('https://ko-fi.com/') ||
+    value.startsWith('mailto:')
+  ) {
+    return value;
+  }
+  return fallback;
 }
 
 const PRODUCT_CATALOG = [

@@ -221,6 +221,21 @@ describe('polly commerce intent classification', () => {
     expect(product.checkoutUrl).toBe('https://buy.stripe.com/heartbeat-live-placeholder');
   });
 
+  it('ignores Stripe internal payment link IDs as public checkout overrides', () => {
+    const loaded = loadCommerceWithEnv({
+      SCBE_PAYMENT_LINK_TOOLKIT: 'plink_1T5t5MJTF2SuUODITNiC7v43',
+      SCBE_PAYMENT_LINK_VAULT: 'plink_1TG7QuJTF2SuUODIpeN0DUVw',
+    });
+    const toolkit = loaded.PRODUCT_CATALOG.find(
+      (p: { sku: string }) => p.sku === 'ai-governance-toolkit'
+    );
+    const vault = loaded.PRODUCT_CATALOG.find(
+      (p: { sku: string }) => p.sku === 'ai-security-training-vault'
+    );
+    expect(toolkit.checkoutUrl).toMatch(/^https:\/\/buy\.stripe\.com\//);
+    expect(vault.checkoutUrl).toMatch(/^https:\/\/buy\.stripe\.com\//);
+  });
+
   it('classifies "buy" verb with bound product at 0.95 confidence', () => {
     const intent = commerce.classifyIntent('I want to buy the AI governance toolkit');
     expect(intent.name).toBe('buy');
