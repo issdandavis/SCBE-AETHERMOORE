@@ -17,6 +17,17 @@ from typing import Iterable
 UNFINISHED_RE = re.compile(r"\b(TODO|TBD|WIP|FIXME|placeholder|to be configured)\b", re.IGNORECASE)
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 EXCLUDE_PREFIXES = ("http://", "https://", "mailto:", "#")
+# Strip fenced code blocks (```...```) and inline code (`...`) before scanning
+# so rust `todo!()` macros, `M[i,j](op)` inline-code expressions, and similar
+# legitimate code references don't false-trigger as unfinished work or broken
+# markdown links.
+FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
+INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
+
+
+def _strip_code(content: str) -> str:
+    without_fenced = FENCED_CODE_RE.sub("", content)
+    return INLINE_CODE_RE.sub("", without_fenced)
 
 
 @dataclass
@@ -46,7 +57,7 @@ def _normalize_link_target(raw: str) -> str:
 
 
 def _find_broken_links(md_path: Path) -> list[str]:
-    content = md_path.read_text(encoding="utf-8", errors="replace")
+    content = _strip_code(md_path.read_text(encoding="utf-8", errors="replace"))
     broken: list[str] = []
     for match in MARKDOWN_LINK_RE.finditer(content):
         raw_target = match.group(1)
@@ -66,7 +77,7 @@ def audit_docs(repo_root: Path, docs_dir: str = "docs") -> dict[str, object]:
     total_markers = 0
     total_broken_links = 0
     for md in _iter_docs(repo_root, docs_dir):
-        content = md.read_text(encoding="utf-8", errors="replace")
+        content = _strip_code(md.read_text(encoding="utf-8", errors="replace"))
         markers = len(UNFINISHED_RE.findall(content))
         broken = _find_broken_links(md)
         if markers or broken:
