@@ -11,7 +11,7 @@ numpy>=1.26.0
 scipy>=1.11.0
 
 # Security (minimal set for Lambda)
-cryptography>=41.0.0
+cryptography>=48.0.0
 
 # Optional: Firebase persistence
 # firebase-admin>=6.2.0
