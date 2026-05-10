@@ -15,6 +15,10 @@
 //   - mode='payment' AND amount_total === 50000 AND currency === 'usd'
 // Both keep working if the Payment Link is re-created.
 //
+// Digital package delivery is stricter: Toolkit and Vault are both $29, so
+// price alone cannot identify which package to send. They require a pinned
+// Payment Link id or explicit checkout metadata.
+//
 // Always responds 200 after a valid signature so Stripe stops retrying;
 // the side-effect dispatch is best-effort and logged on failure.
 
@@ -22,7 +26,25 @@ const crypto = require('crypto');
 
 const SNAPSHOT_AMOUNT_CENTS = 50000;
 const HEARTBEAT_AMOUNT_CENTS = 9900;
+const DIGITAL_PRODUCT_AMOUNT_CENTS = 2900;
 const TOLERANCE_SECONDS = 300; // Stripe default replay window
+
+const DIGITAL_PRODUCTS = {
+  toolkit: {
+    key: 'toolkit',
+    source: 'ai-governance-toolkit',
+    displayName: 'SCBE AI Governance Toolkit',
+    packageName: 'SCBE_AI_Governance_Toolkit_v1.zip',
+    manualUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/ai-governance-toolkit.html',
+  },
+  vault: {
+    key: 'vault',
+    source: 'ai-security-training-vault',
+    displayName: 'SCBE AI Security Training Vault',
+    packageName: 'SCBE_AI_Security_Training_Vault_v1.zip',
+    manualUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/training-vault.html',
+  },
+};
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -102,6 +124,8 @@ function snapshotConfig() {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     paymentLinkId: process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID || '',
     heartbeatPaymentLinkId: process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID || '',
+    toolkitPaymentLinkId: process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID || '',
+    vaultPaymentLinkId: process.env.STRIPE_VAULT_PAYMENT_LINK_ID || '',
     repo: process.env.POLLY_TRAIN_REPO || process.env.GITHUB_REPO || 'issdandavis/SCBE-AETHERMOORE',
     githubToken:
       process.env.POLLY_TRAIN_GITHUB_TOKEN ||
@@ -115,6 +139,26 @@ function snapshotConfig() {
       Number(process.env.POLLY_SNAPSHOT_DISPATCH_TIMEOUT_MS || 4000)
     ),
   };
+}
+
+function normalizeProductKey(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^scbe[-_]/, '')
+    .replace(/^ai[-_]/, '')
+    .replace(/[-_\s]+/g, '_');
+}
+
+function sessionProductMetadata(session) {
+  const metadata = (session && session.metadata) || {};
+  return normalizeProductKey(
+    metadata.scbe_product ||
+      metadata.product_key ||
+      metadata.product ||
+      metadata.offer_id ||
+      metadata.offer
+  );
 }
 
 function isSnapshotSession(session, cfg) {
@@ -149,6 +193,39 @@ function isHeartbeatSession(session, cfg) {
     return true;
   }
   return false;
+}
+
+function isDigitalProductSession(session, cfg, productKey) {
+  if (!session || typeof session !== 'object') return false;
+  const product = DIGITAL_PRODUCTS[productKey];
+  if (!product) return false;
+
+  const paymentLinkId =
+    productKey === 'toolkit' ? cfg.toolkitPaymentLinkId : cfg.vaultPaymentLinkId;
+  if (paymentLinkId && session.payment_link === paymentLinkId) return true;
+
+  const metadataKey = sessionProductMetadata(session);
+  if (
+    metadataKey === productKey ||
+    metadataKey === product.source ||
+    metadataKey === normalizeProductKey(product.displayName)
+  ) {
+    return (
+      session.mode === 'payment' &&
+      Number(session.amount_total) === DIGITAL_PRODUCT_AMOUNT_CENTS &&
+      String(session.currency || '').toLowerCase() === 'usd'
+    );
+  }
+
+  return false;
+}
+
+function isToolkitSession(session, cfg) {
+  return isDigitalProductSession(session, cfg, 'toolkit');
+}
+
+function isVaultSession(session, cfg) {
+  return isDigitalProductSession(session, cfg, 'vault');
 }
 
 async function fetchWithTimeout(url, init, timeoutMs) {
@@ -219,6 +296,17 @@ function buildSessionRecord(session, kind, source) {
   };
 }
 
+function buildProductDeliveryRecord(session, productKey) {
+  const product = DIGITAL_PRODUCTS[productKey];
+  return {
+    ...buildSessionRecord(session, 'product_delivery', product.source),
+    product_key: product.key,
+    product_name: product.displayName,
+    package_name: product.packageName,
+    manual_url: product.manualUrl,
+  };
+}
+
 async function dispatchSnapshotPaid(session, cfg) {
   const record = buildSessionRecord(session, 'snapshot_paid', 'governance-snapshot');
   return dispatchEvent('polly_snapshot_paid', record, cfg);
@@ -227,6 +315,11 @@ async function dispatchSnapshotPaid(session, cfg) {
 async function dispatchHeartbeatStarted(session, cfg) {
   const record = buildSessionRecord(session, 'heartbeat_started', 'governance-heartbeat');
   return dispatchEvent('polly_heartbeat_started', record, cfg);
+}
+
+async function dispatchProductDelivery(session, cfg, productKey) {
+  const record = buildProductDeliveryRecord(session, productKey);
+  return dispatchEvent('polly_product_delivery', record, cfg);
 }
 
 module.exports = async function handler(req, res) {
@@ -303,6 +396,26 @@ module.exports = async function handler(req, res) {
         dispatch,
       });
     }
+    if (isToolkitSession(session, cfg)) {
+      const dispatch = await dispatchProductDelivery(session, cfg, 'toolkit');
+      return sendJson(res, 200, {
+        ok: true,
+        handled: 'product_delivery',
+        product_key: 'toolkit',
+        session_id: session && session.id,
+        dispatch,
+      });
+    }
+    if (isVaultSession(session, cfg)) {
+      const dispatch = await dispatchProductDelivery(session, cfg, 'vault');
+      return sendJson(res, 200, {
+        ok: true,
+        handled: 'product_delivery',
+        product_key: 'vault',
+        session_id: session && session.id,
+        dispatch,
+      });
+    }
     return sendJson(res, 200, {
       ok: true,
       handled: 'checkout_other',
@@ -318,10 +431,16 @@ module.exports._private = {
   verifySignature,
   isSnapshotSession,
   isHeartbeatSession,
+  isToolkitSession,
+  isVaultSession,
+  isDigitalProductSession,
   snapshotConfig,
   buildSessionRecord,
+  buildProductDeliveryRecord,
   SNAPSHOT_AMOUNT_CENTS,
   HEARTBEAT_AMOUNT_CENTS,
+  DIGITAL_PRODUCT_AMOUNT_CENTS,
+  DIGITAL_PRODUCTS,
   TOLERANCE_SECONDS,
 };
 
