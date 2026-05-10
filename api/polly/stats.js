@@ -46,34 +46,52 @@ async function listFolder(repo, token, prefix, dateDir, timeoutMs) {
   try {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const response = await fetch(url, { method: 'GET', headers, signal: controller.signal });
-    if (response.status === 404) return { count: 0, exists: false };
+    if (response.status === 404) return { count: 0, exists: false, files: [] };
     if (!response.ok) {
-      return { count: 0, exists: false, error: `hf list ${response.status}` };
+      return { count: 0, exists: false, error: `hf list ${response.status}`, files: [] };
     }
     const data = await response.json();
-    if (!Array.isArray(data)) return { count: 0, exists: false };
-    const fileCount = data.filter(
+    if (!Array.isArray(data)) return { count: 0, exists: false, files: [] };
+    const files = data.filter(
       (entry) => entry && entry.type === 'file' && /\.json$/i.test(entry.path || '')
-    ).length;
-    return { count: fileCount, exists: true };
+    );
+    return { count: files.length, exists: true, files };
   } catch (error) {
     return {
       count: 0,
       exists: false,
       error: String((error && error.message) || error).slice(0, 120),
+      files: [],
     };
   } finally {
     clearTimeout(timer);
   }
 }
 
-async function gather(repo, token, dateDir, timeoutMs) {
+// Per-event count from funnel filenames. Files written after the
+// `${event}__${compact}-${nonce}.json` naming change have an event
+// prefix; older files (no `__` separator) are bucketed under
+// `unknown` so the breakdown stays additive without losing rows.
+function breakdownByEvent(files) {
+  const counts = {};
+  for (const entry of files) {
+    const path = (entry && entry.path) || '';
+    const filename = path.split('/').pop() || '';
+    const sep = filename.indexOf('__');
+    const event = sep > 0 ? filename.slice(0, sep) : 'unknown';
+    counts[event] = (counts[event] || 0) + 1;
+  }
+  return counts;
+}
+
+async function gather(repo, token, dateDir, timeoutMs, options) {
+  const includeBreakdown = !!(options && options.breakdown);
   const [chats, leads, funnel] = await Promise.all([
     listFolder(repo, token, 'polly-chat-live', dateDir, timeoutMs),
     listFolder(repo, token, 'polly-leads', dateDir, timeoutMs),
     listFolder(repo, token, 'polly-funnel', dateDir, timeoutMs),
   ]);
-  return {
+  const result = {
     date: dateDir,
     chats: chats.count,
     leads: leads.count,
@@ -83,6 +101,10 @@ async function gather(repo, token, dateDir, timeoutMs) {
     funnel_dir_exists: funnel.exists,
     errors: [chats.error, leads.error, funnel.error].filter(Boolean),
   };
+  if (includeBreakdown) {
+    result.funnel_by_event = breakdownByEvent(funnel.files || []);
+  }
+  return result;
 }
 
 module.exports = async function handler(req, res) {
@@ -113,17 +135,17 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  const queryDate =
-    (req.query && (req.query.date || (req.query.date === '' ? '' : null))) || '';
+  const queryDate = (req.query && (req.query.date || (req.query.date === '' ? '' : null))) || '';
   const dateDir = isValidDate(queryDate) ? queryDate : todayUtc();
-  const cacheKey = `${dateDir}|${cfg.repo}`;
+  const breakdown = String((req.query && req.query.breakdown) || '').toLowerCase() === 'event';
+  const cacheKey = `${dateDir}|${cfg.repo}|${breakdown ? 'b' : 'p'}`;
   const cached = cache.get(cacheKey);
   const now = Date.now();
   if (cached && now - cached.at < CACHE_TTL_MS) {
     return sendJson(res, 200, { ...cached.payload, cached: true });
   }
 
-  const stats = await gather(cfg.repo, cfg.token, dateDir, cfg.timeoutMs);
+  const stats = await gather(cfg.repo, cfg.token, dateDir, cfg.timeoutMs, { breakdown });
   const payload = {
     ok: true,
     capture_enabled: true,
@@ -134,4 +156,4 @@ module.exports = async function handler(req, res) {
   return sendJson(res, 200, payload);
 };
 
-module.exports._internal = { todayUtc, isValidDate, gather };
+module.exports._internal = { todayUtc, isValidDate, gather, breakdownByEvent };

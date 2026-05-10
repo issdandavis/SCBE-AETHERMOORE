@@ -64,10 +64,28 @@ const KIND_PREFIX = {
   chat: 'polly-chat-live',
 };
 
+// Funnel event names are constrained at /v1/polly/funnel to a fixed
+// allow-list of [a-z_0-9]+, so prefixing the filename with `${event}__`
+// is path-safe and lets /v1/polly/stats?breakdown=event count by event
+// in one HF directory listing instead of N file reads.
+function safeFunnelEvent(value) {
+  if (typeof value !== 'string') return '';
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, '')
+    .slice(0, 60);
+}
+
 function pathFor(record) {
   const kind = String(record.kind || 'chat').toLowerCase();
   const prefix = KIND_PREFIX[kind] || 'polly-chat-live';
   const { day, compact } = stamp(record);
+  if (kind === 'funnel') {
+    const event = safeFunnelEvent(record.event);
+    if (event) {
+      return `${prefix}/${day}/${event}__${compact}-${nonceHex(3)}.json`;
+    }
+  }
   return `${prefix}/${day}/${compact}-${nonceHex(3)}.json`;
 }
 
@@ -160,3 +178,5 @@ module.exports = {
   uploadRecord,
   pathFor,
 };
+
+module.exports._internal = { pathFor, safeFunnelEvent, KIND_PREFIX };

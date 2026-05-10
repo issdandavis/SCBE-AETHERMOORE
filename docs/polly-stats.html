@@ -1,211 +1,473 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Polly Capture Stats — SCBE</title>
-<meta name="robots" content="noindex" />
-<style>
-  :root {
-    color-scheme: light dark;
-    --bg: #0d0f14;
-    --panel: #161922;
-    --text: #e8eaf0;
-    --muted: #8a93a3;
-    --green: #4ade80;
-    --red: #f87171;
-    --amber: #fbbf24;
-    --bar: #38bdf8;
-    --bar-leads: #a78bfa;
-    --bar-funnel: #4ade80;
-    --border: #232936;
-  }
-  @media (prefers-color-scheme: light) {
-    :root { --bg:#fafafa;--panel:#fff;--text:#111;--muted:#666;--border:#e5e7eb; }
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: var(--bg); color: var(--text);
-    padding: 24px 16px; max-width: 760px; margin-inline: auto;
-  }
-  h1 { font-size: 20px; margin: 0 0 4px; }
-  .sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
-  .panel {
-    background: var(--panel); border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px; margin-bottom: 16px;
-  }
-  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .badge {
-    display: inline-block; padding: 2px 8px; border-radius: 999px;
-    font-size: 12px; font-weight: 600;
-    background: var(--muted); color: var(--bg);
-  }
-  .badge.green { background: var(--green); color: #062e15; }
-  .badge.red   { background: var(--red);   color: #2a0606; }
-  .badge.amber { background: var(--amber); color: #2a1a06; }
-  .totals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px; }
-  .stat { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; }
-  .stat .n { font-size: 28px; font-weight: 700; }
-  .stat .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  th, td { padding: 8px 6px; text-align: right; border-bottom: 1px solid var(--border); }
-  th:first-child, td:first-child { text-align: left; color: var(--muted); }
-  th { font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
-  .bar { height: 6px; background: var(--bar); border-radius: 3px; display: inline-block; vertical-align: middle; min-width: 2px; }
-  .bar.leads { background: var(--bar-leads); }
-  .bar.funnel { background: var(--bar-funnel); }
-  .footer { color: var(--muted); font-size: 12px; margin-top: 16px; text-align: center; }
-  .footer a { color: var(--muted); }
-  details { font-size: 12px; color: var(--muted); margin-top: 8px; }
-  code { background: var(--bg); padding: 1px 4px; border-radius: 3px; font-size: 12px; }
-</style>
-</head>
-<body>
-  <h1>Polly Capture Stats</h1>
-  <div class="sub">Daily counts of consented chat turns + lead submissions captured to the private HF dataset. Auto-refresh every 60 s.</div>
-
-  <div class="panel" id="status-panel">
-    <div class="row">
-      <span class="badge" id="status-badge">checking…</span>
-      <span class="sub" id="status-text">probing endpoint…</span>
-    </div>
-    <div class="totals">
-      <div class="stat"><div class="n" id="total-chats">—</div><div class="label">chats (7 d)</div></div>
-      <div class="stat"><div class="n" id="total-leads">—</div><div class="label">leads (7 d)</div></div>
-      <div class="stat"><div class="n" id="total-funnel">—</div><div class="label">funnel events (7 d)</div></div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <table>
-      <thead>
-        <tr><th>Date</th><th>Chats</th><th>Leads</th><th>Funnel</th><th>Activity</th></tr>
-      </thead>
-      <tbody id="rows">
-        <tr><td colspan="5" style="text-align:center;color:var(--muted)">loading…</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <details>
-    <summary>About this page</summary>
-    <p>
-      Reads <code>/v1/polly/stats?date=YYYY-MM-DD</code> for today + the previous 6 days.
-      Counts come from listing per-day directories on the HF dataset; no contents are exposed.
-      The endpoint is rate-limited (60/min, <code>feedback</code> bucket) and cached 60 s
-      per Vercel instance. <code>noindex</code> so search engines don't index the page.
-    </p>
-  </details>
-  <div class="footer">
-    Endpoint: <a id="endpoint-link" href="#" target="_blank" rel="noopener">/v1/polly/stats</a>
-    · last sync: <span id="last-sync">—</span>
-  </div>
-
-<script>
-(function () {
-  var API_BASE = (window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app').replace(/\/$/, '');
-  var STATS_URL = API_BASE + '/v1/polly/stats';
-  var REFRESH_MS = 60_000;
-  var DAYS = 7;
-
-  document.getElementById('endpoint-link').href = STATS_URL;
-  document.getElementById('endpoint-link').textContent = STATS_URL;
-
-  function pad(n) { return n < 10 ? '0' + n : '' + n; }
-  function ymdUTC(d) {
-    return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
-  }
-  function lastNDates(n) {
-    var out = [], today = new Date();
-    for (var i = 0; i < n; i++) {
-      var d = new Date(today);
-      d.setUTCDate(today.getUTCDate() - i);
-      out.push(ymdUTC(d));
-    }
-    return out;
-  }
-
-  function setBadge(state, msg) {
-    var b = document.getElementById('status-badge');
-    var t = document.getElementById('status-text');
-    b.className = 'badge ' + state;
-    b.textContent = state === 'green' ? 'live' : state === 'amber' ? 'partial' : 'down';
-    t.textContent = msg;
-  }
-
-  function fetchOne(date) {
-    return fetch(STATS_URL + '?date=' + encodeURIComponent(date))
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, data: j }; }); })
-      .catch(function (e) { return { ok: false, data: { error: String(e) } }; });
-  }
-
-  function render(results) {
-    var rows = document.getElementById('rows');
-    rows.innerHTML = '';
-    var totalChats = 0, totalLeads = 0, totalFunnel = 0, maxAct = 1;
-    results.forEach(function (r) {
-      var c = (r.data && r.data.chats) || 0;
-      var l = (r.data && r.data.leads) || 0;
-      var f = (r.data && r.data.funnel_events) || 0;
-      totalChats += c; totalLeads += l; totalFunnel += f;
-      // Funnel events are noisier than chats/leads (one visitor → many
-      // events) so cap their bar contribution at 5x leads to keep the
-      // small intent signals visible.
-      var fScaled = Math.min(f, l * 5 + 5);
-      if (c + l + fScaled > maxAct) maxAct = c + l + fScaled;
-    });
-    results.forEach(function (r) {
-      var c = (r.data && r.data.chats) || 0;
-      var l = (r.data && r.data.leads) || 0;
-      var f = (r.data && r.data.funnel_events) || 0;
-      var fScaled = Math.min(f, l * 5 + 5);
-      var cw = Math.max(0, Math.round((c / maxAct) * 100));
-      var lw = Math.max(0, Math.round((l / maxAct) * 100));
-      var fw = Math.max(0, Math.round((fScaled / maxAct) * 100));
-      var tr = document.createElement('tr');
-      tr.innerHTML =
-        '<td>' + r.date + '</td>' +
-        '<td>' + c + '</td>' +
-        '<td>' + l + '</td>' +
-        '<td>' + f + '</td>' +
-        '<td><span class="bar" style="width:' + cw + '%"></span> ' +
-        '<span class="bar leads" style="width:' + lw + '%"></span> ' +
-        '<span class="bar funnel" style="width:' + fw + '%"></span></td>';
-      rows.appendChild(tr);
-    });
-    document.getElementById('total-chats').textContent = totalChats;
-    document.getElementById('total-leads').textContent = totalLeads;
-    document.getElementById('total-funnel').textContent = totalFunnel;
-  }
-
-  function tick() {
-    var dates = lastNDates(DAYS);
-    Promise.all(dates.map(fetchOne))
-      .then(function (results) {
-        var withDates = results.map(function (r, i) { return { date: dates[i], ok: r.ok, data: r.data }; });
-        var failed = withDates.filter(function (r) { return !r.ok; }).length;
-        var disabled = withDates.some(function (r) { return r.data && r.data.capture_enabled === false; });
-        if (disabled) {
-          setBadge('amber', (withDates[0].data && withDates[0].data.message) || 'capture disabled');
-        } else if (failed === 0) {
-          setBadge('green', 'all ' + DAYS + ' days fetched');
-        } else if (failed < DAYS) {
-          setBadge('amber', failed + ' of ' + DAYS + ' day(s) failed');
-        } else {
-          setBadge('red', 'endpoint unreachable');
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Polly Capture Stats — SCBE</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0d0f14;
+        --panel: #161922;
+        --text: #e8eaf0;
+        --muted: #8a93a3;
+        --green: #4ade80;
+        --red: #f87171;
+        --amber: #fbbf24;
+        --bar: #38bdf8;
+        --bar-leads: #a78bfa;
+        --bar-funnel: #4ade80;
+        --border: #232936;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #fafafa;
+          --panel: #fff;
+          --text: #111;
+          --muted: #666;
+          --border: #e5e7eb;
         }
-        render(withDates);
-        document.getElementById('last-sync').textContent = new Date().toLocaleTimeString();
-      })
-      .catch(function (e) {
-        setBadge('red', 'fetch failed: ' + e);
-      });
-  }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font:
+          15px/1.5 system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 24px 16px;
+        max-width: 760px;
+        margin-inline: auto;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 24px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--muted);
+        color: var(--bg);
+      }
+      .badge.green {
+        background: var(--green);
+        color: #062e15;
+      }
+      .badge.red {
+        background: var(--red);
+        color: #2a0606;
+      }
+      .badge.amber {
+        background: var(--amber);
+        color: #2a1a06;
+      }
+      .totals {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .stat {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+      }
+      .stat .n {
+        font-size: 28px;
+        font-weight: 700;
+      }
+      .stat .label {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th,
+      td {
+        padding: 8px 6px;
+        text-align: right;
+        border-bottom: 1px solid var(--border);
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+        color: var(--muted);
+      }
+      th {
+        font-weight: 600;
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .bar {
+        height: 6px;
+        background: var(--bar);
+        border-radius: 3px;
+        display: inline-block;
+        vertical-align: middle;
+        min-width: 2px;
+      }
+      .bar.leads {
+        background: var(--bar-leads);
+      }
+      .bar.funnel {
+        background: var(--bar-funnel);
+      }
+      .footer {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 16px;
+        text-align: center;
+      }
+      .footer a {
+        color: var(--muted);
+      }
+      details {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+      code {
+        background: var(--bg);
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Polly Capture Stats</h1>
+    <div class="sub">
+      Daily counts of consented chat turns + lead submissions captured to the private HF dataset.
+      Auto-refresh every 60 s.
+    </div>
 
-  tick();
-  setInterval(tick, REFRESH_MS);
-})();
-</script>
-</body>
+    <div class="panel" id="status-panel">
+      <div class="row">
+        <span class="badge" id="status-badge">checking…</span>
+        <span class="sub" id="status-text">probing endpoint…</span>
+      </div>
+      <div class="totals">
+        <div class="stat">
+          <div class="n" id="total-chats">—</div>
+          <div class="label">chats (7 d)</div>
+        </div>
+        <div class="stat">
+          <div class="n" id="total-leads">—</div>
+          <div class="label">leads (7 d)</div>
+        </div>
+        <div class="stat">
+          <div class="n" id="total-funnel">—</div>
+          <div class="label">funnel events (7 d)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Chats</th>
+            <th>Leads</th>
+            <th>Funnel</th>
+            <th>Activity</th>
+          </tr>
+        </thead>
+        <tbody id="rows">
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--muted)">loading…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div style="margin-bottom: 8px; font-size: 13px; color: var(--muted)">
+        7-day funnel breakdown by event (where the leak is). Events captured before the
+        filename-prefix migration land under <code>unknown</code>.
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>7-day total</th>
+            <th>Share</th>
+          </tr>
+        </thead>
+        <tbody id="event-rows">
+          <tr>
+            <td colspan="3" style="text-align: center; color: var(--muted)">loading…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details>
+      <summary>About this page</summary>
+      <p>
+        Reads <code>/v1/polly/stats?date=YYYY-MM-DD</code> for today + the previous 6 days. Counts
+        come from listing per-day directories on the HF dataset; no contents are exposed. The
+        endpoint is rate-limited (60/min, <code>feedback</code> bucket) and cached 60 s per Vercel
+        instance. <code>noindex</code> so search engines don't index the page.
+      </p>
+    </details>
+    <div class="footer">
+      Endpoint: <a id="endpoint-link" href="#" target="_blank" rel="noopener">/v1/polly/stats</a> ·
+      last sync: <span id="last-sync">—</span>
+    </div>
+
+    <script>
+      (function () {
+        var API_BASE = (
+          window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app'
+        ).replace(/\/$/, '');
+        var STATS_URL = API_BASE + '/v1/polly/stats';
+        var REFRESH_MS = 60_000;
+        var DAYS = 7;
+
+        document.getElementById('endpoint-link').href = STATS_URL;
+        document.getElementById('endpoint-link').textContent = STATS_URL;
+
+        function pad(n) {
+          return n < 10 ? '0' + n : '' + n;
+        }
+        function ymdUTC(d) {
+          return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+        }
+        function lastNDates(n) {
+          var out = [],
+            today = new Date();
+          for (var i = 0; i < n; i++) {
+            var d = new Date(today);
+            d.setUTCDate(today.getUTCDate() - i);
+            out.push(ymdUTC(d));
+          }
+          return out;
+        }
+
+        function setBadge(state, msg) {
+          var b = document.getElementById('status-badge');
+          var t = document.getElementById('status-text');
+          b.className = 'badge ' + state;
+          b.textContent = state === 'green' ? 'live' : state === 'amber' ? 'partial' : 'down';
+          t.textContent = msg;
+        }
+
+        function fetchOne(date) {
+          // breakdown=event lets the same call return per-event counts without
+          // a second round-trip, so the per-event card stays in sync with the
+          // per-day table on every refresh.
+          return fetch(STATS_URL + '?date=' + encodeURIComponent(date) + '&breakdown=event')
+            .then(function (r) {
+              return r.json().then(function (j) {
+                return { ok: r.ok, data: j };
+              });
+            })
+            .catch(function (e) {
+              return { ok: false, data: { error: String(e) } };
+            });
+        }
+
+        // Stage order matches the buyer journey on /hire and
+        // /governance-snapshot. Anything not in this list (legacy, or
+        // unprefixed files captured before the migration) renders after.
+        var EVENT_ORDER = [
+          'arrival',
+          'scroll_50',
+          'scroll_90',
+          'chat_open',
+          'chat_msg',
+          'lead_form_focus',
+          'lead_submit_attempt',
+          'lead_submit_ok',
+          'lead_submit_fail',
+          'cta_click_buy',
+          'cta_click_chat',
+          'cta_click_email',
+          'snapshot_intake_attempt',
+          'snapshot_intake_ok',
+          'snapshot_intake_fail',
+          'unknown',
+        ];
+
+        function renderEventTable(results) {
+          var rows = document.getElementById('event-rows');
+          rows.innerHTML = '';
+          var totals = {};
+          results.forEach(function (r) {
+            var by = (r.data && r.data.funnel_by_event) || {};
+            Object.keys(by).forEach(function (k) {
+              totals[k] = (totals[k] || 0) + by[k];
+            });
+          });
+          var grand = Object.keys(totals).reduce(function (s, k) {
+            return s + totals[k];
+          }, 0);
+          var ordered = EVENT_ORDER.filter(function (k) {
+            return totals[k] != null;
+          }).concat(
+            Object.keys(totals).filter(function (k) {
+              return EVENT_ORDER.indexOf(k) < 0;
+            })
+          );
+          if (!ordered.length) {
+            rows.innerHTML =
+              '<tr><td colspan="3" style="text-align:center;color:var(--muted)">' +
+              'no funnel events captured yet</td></tr>';
+            return;
+          }
+          ordered.forEach(function (event) {
+            var n = totals[event];
+            var pct = grand ? Math.round((n / grand) * 1000) / 10 : 0;
+            var pctW = grand ? Math.max(0, Math.round((n / grand) * 100)) : 0;
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td><code>' +
+              event +
+              '</code></td>' +
+              '<td>' +
+              n +
+              '</td>' +
+              '<td><span class="bar funnel" style="width:' +
+              pctW +
+              '%"></span> ' +
+              pct +
+              '%</td>';
+            rows.appendChild(tr);
+          });
+        }
+
+        function render(results) {
+          var rows = document.getElementById('rows');
+          rows.innerHTML = '';
+          var totalChats = 0,
+            totalLeads = 0,
+            totalFunnel = 0,
+            maxAct = 1;
+          results.forEach(function (r) {
+            var c = (r.data && r.data.chats) || 0;
+            var l = (r.data && r.data.leads) || 0;
+            var f = (r.data && r.data.funnel_events) || 0;
+            totalChats += c;
+            totalLeads += l;
+            totalFunnel += f;
+            // Funnel events are noisier than chats/leads (one visitor → many
+            // events) so cap their bar contribution at 5x leads to keep the
+            // small intent signals visible.
+            var fScaled = Math.min(f, l * 5 + 5);
+            if (c + l + fScaled > maxAct) maxAct = c + l + fScaled;
+          });
+          results.forEach(function (r) {
+            var c = (r.data && r.data.chats) || 0;
+            var l = (r.data && r.data.leads) || 0;
+            var f = (r.data && r.data.funnel_events) || 0;
+            var fScaled = Math.min(f, l * 5 + 5);
+            var cw = Math.max(0, Math.round((c / maxAct) * 100));
+            var lw = Math.max(0, Math.round((l / maxAct) * 100));
+            var fw = Math.max(0, Math.round((fScaled / maxAct) * 100));
+            var tr = document.createElement('tr');
+            tr.innerHTML =
+              '<td>' +
+              r.date +
+              '</td>' +
+              '<td>' +
+              c +
+              '</td>' +
+              '<td>' +
+              l +
+              '</td>' +
+              '<td>' +
+              f +
+              '</td>' +
+              '<td><span class="bar" style="width:' +
+              cw +
+              '%"></span> ' +
+              '<span class="bar leads" style="width:' +
+              lw +
+              '%"></span> ' +
+              '<span class="bar funnel" style="width:' +
+              fw +
+              '%"></span></td>';
+            rows.appendChild(tr);
+          });
+          document.getElementById('total-chats').textContent = totalChats;
+          document.getElementById('total-leads').textContent = totalLeads;
+          document.getElementById('total-funnel').textContent = totalFunnel;
+          renderEventTable(results);
+        }
+
+        function tick() {
+          var dates = lastNDates(DAYS);
+          Promise.all(dates.map(fetchOne))
+            .then(function (results) {
+              var withDates = results.map(function (r, i) {
+                return { date: dates[i], ok: r.ok, data: r.data };
+              });
+              var failed = withDates.filter(function (r) {
+                return !r.ok;
+              }).length;
+              var disabled = withDates.some(function (r) {
+                return r.data && r.data.capture_enabled === false;
+              });
+              if (disabled) {
+                setBadge(
+                  'amber',
+                  (withDates[0].data && withDates[0].data.message) || 'capture disabled'
+                );
+              } else if (failed === 0) {
+                setBadge('green', 'all ' + DAYS + ' days fetched');
+              } else if (failed < DAYS) {
+                setBadge('amber', failed + ' of ' + DAYS + ' day(s) failed');
+              } else {
+                setBadge('red', 'endpoint unreachable');
+              }
+              render(withDates);
+              document.getElementById('last-sync').textContent = new Date().toLocaleTimeString();
+            })
+            .catch(function (e) {
+              setBadge('red', 'fetch failed: ' + e);
+            });
+        }
+
+        tick();
+        setInterval(tick, REFRESH_MS);
+      })();
+    </script>
+  </body>
 </html>
