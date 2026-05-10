@@ -371,6 +371,21 @@ describe('polly commerce intent classification', () => {
     expect(commerce.classifyIntent('Purchase the snapshot').name).toBe('buy');
   });
 
+  it('routes "/help" and "?" to the help intent', () => {
+    expect(commerce.classifyIntent('/help').name).toBe('help');
+    expect(commerce.classifyIntent('help').name).toBe('help');
+    expect(commerce.classifyIntent('?').name).toBe('help');
+    expect(commerce.classifyIntent('what can you do?').name).toBe('help');
+    expect(commerce.classifyIntent('what commands do you support').name).toBe('help');
+  });
+
+  it('does not steal "help me choose a product" from guide intent', () => {
+    // HELP must run before GUIDE but its phrasing must be specific enough that
+    // "help me choose" is still routed to guide.
+    expect(commerce.classifyIntent('Help me choose a product').name).toBe('guide');
+    expect(commerce.classifyIntent('help me pick a product').name).toBe('guide');
+  });
+
   it('routes "search the web for X" to agent_task (not research topic)', () => {
     const intent = commerce.classifyIntent('search the web for AI safety governance');
     expect(intent.name).toBe('agent_task');
@@ -422,12 +437,35 @@ describe('polly agent_task task-type and query extraction', () => {
   });
 
   it('extractAgentQuery splits on connector words for non-URL tasks', () => {
-    expect(commerce.extractAgentQuery('search the web for AI safety governance', 'web_search')).toBe(
-      'AI safety governance'
-    );
     expect(
-      commerce.extractAgentQuery('research about hyperbolic geometry', 'research')
-    ).toContain('hyperbolic geometry');
+      commerce.extractAgentQuery('search the web for AI safety governance', 'web_search')
+    ).toBe('AI safety governance');
+    expect(commerce.extractAgentQuery('research about hyperbolic geometry', 'research')).toContain(
+      'hyperbolic geometry'
+    );
+  });
+});
+
+describe('polly renderHelpReply', () => {
+  it('returns a structured capability list with prompt + url actions', () => {
+    const out = commerce.renderHelpReply();
+    expect(out.text).toContain('Pick a tool');
+    expect(out.text).toContain('Run an agent');
+    expect(out.actions.length).toBeGreaterThanOrEqual(3);
+    const promptActions = out.actions.filter(
+      (a: { prompt?: string }) => typeof a.prompt === 'string'
+    );
+    expect(promptActions.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('every prompt action round-trips to a non-help intent', () => {
+    const out = commerce.renderHelpReply();
+    for (const action of out.actions) {
+      if (typeof action.prompt !== 'string') continue;
+      const reIntent = commerce.classifyIntent(action.prompt);
+      expect(reIntent.name).not.toBe('help');
+      expect(reIntent.confidence).toBeGreaterThanOrEqual(0.6);
+    }
   });
 });
 
@@ -448,9 +486,7 @@ describe('polly renderAgentTaskReply', () => {
 
   it('exposes a "pick a different tool" prompt action', () => {
     const out = commerce.renderAgentTaskReply('monitor these sites: https://example.com');
-    const promptAction = out.actions.find(
-      (a: { prompt?: string }) => typeof a.prompt === 'string'
-    );
+    const promptAction = out.actions.find((a: { prompt?: string }) => typeof a.prompt === 'string');
     expect(promptAction).toBeDefined();
     // Round-trip safety: the prompt action should re-classify cleanly.
     const reIntent = commerce.classifyIntent(promptAction!.prompt as string);
@@ -649,6 +685,23 @@ describe('polly chat handler — commerce path', () => {
     expect(body.text).toContain('Three or four routes');
     expect(body.actions.some((a) => a.url.includes('products.html'))).toBe(true);
     expect(body.actions.some((a) => a.url.includes('start-here.html'))).toBe(true);
+  });
+
+  it('routes "/help" to deterministic capability list (no LLM fallback)', async () => {
+    const req = makeReq({ body: { message: '/help', consent_to_train: false } });
+    const res = makeRes();
+    await chatHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    const body = res.body as {
+      provider: string;
+      intent: string;
+      text: string;
+      actions: { prompt?: string; url?: string }[];
+    };
+    expect(body.provider).toBe('commerce');
+    expect(body.intent).toBe('help');
+    expect(body.text).toContain('Pick a tool');
+    expect(body.actions.length).toBeGreaterThan(0);
   });
 
   it('routes "search the web for X" to agent_task with dispatch URL', async () => {

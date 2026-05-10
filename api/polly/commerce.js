@@ -211,6 +211,12 @@ const RESEARCH_PATTERN =
 const MEMBERSHIP_PATTERN =
   /\b(member|membership|subscribe|signup|sign\s*up|join|newsletter|follow|stay\s+updated|notify|sponsor|tip|donate)\b/i;
 
+// HELP: bare "/help", "?", "what can you do" — meta-help asking what Polly
+// understands. Sidebar starters advertise /help so this can't be a dead-end.
+// Returns a structured capability list with one-click action chips.
+const HELP_PATTERN =
+  /^(\/help|\/\?|help)\s*$|^\?+\s*$|\b(what\s+can\s+you\s+(do|help\s+with)|what\s+do\s+you\s+know(\s+about)?\s*$|what\s+(commands?|options?|features?|topics?)\s+do\s+you\s+(have|support)|how\s+do\s+(you|i\s+use\s+you)\s+work|help\s+menu|show\s+me\s+(the\s+)?(commands?|options?|menu))\b/i;
+
 // AGENT TASK: user wants to dispatch a one-shot agent run (research, monitor,
 // scrape, web_search) through the SCBE agent-router workflow. Distinct from
 // the `research` intent above which renders topic explainers — this intent
@@ -273,6 +279,13 @@ function resolveProduct(message) {
 function classifyIntent(message) {
   if (typeof message !== 'string' || !message.trim()) {
     return { name: 'general', confidence: 0, matchedTerm: null, product: null };
+  }
+
+  // HELP runs first so "/help" and "what can you do" never fall through to
+  // a topic-explainer or LLM fallback. Sidebar starters advertise /help.
+  const helpMatch = HELP_PATTERN.exec(message);
+  if (helpMatch) {
+    return { name: 'help', confidence: 0.95, matchedTerm: helpMatch[0], product: null };
   }
 
   // Guide goes before buy: "what should I get" / "i don't know what to buy"
@@ -608,7 +621,7 @@ const PRODUCTS_PAGE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/products.htm
 
 function renderGuideReply() {
   const lines = [
-    "Happy to help you pick. Three or four routes cover almost everyone — which one fits?",
+    'Happy to help you pick. Three or four routes cover almost everyone — which one fits?',
     '',
   ];
   for (const route of GUIDE_ROUTES) {
@@ -616,7 +629,7 @@ function renderGuideReply() {
   }
   lines.push('');
   lines.push(
-    'Tell me which one and I\'ll point you at the right product. ' +
+    "Tell me which one and I'll point you at the right product. " +
       "If you'd rather see all options at once, the full picker is on the products page."
   );
 
@@ -662,6 +675,40 @@ function renderMembershipReply() {
   return { text, actions };
 }
 
+function renderHelpReply() {
+  const text =
+    "Here's what I can do — pick a chip below or just ask in plain English.\n\n" +
+    '**Pick a tool**\n' +
+    '- "Help me choose a product" → 3-question picker\n' +
+    '- "Buy the toolkit" / "I want the snapshot" → direct checkout\n' +
+    '- "I need a custom audit" → scoping path\n\n' +
+    '**Ask a question**\n' +
+    '- "What is the harmonic wall?" → topic explainer\n' +
+    '- "Tell me about the 14-layer pipeline" / Sacred Tongues / axiom mesh\n\n' +
+    '**Run an agent**\n' +
+    '- "Search the web for X" → web_search agent\n' +
+    '- "Monitor these sites: a.com, b.com" → monitor agent\n' +
+    '- "Scrape this URL: https://..." → scrape agent\n' +
+    '- "/agent" or "/dispatch" → agent_bus event\n\n' +
+    '**Stay close**\n' +
+    '- "Subscribe / tip / sponsor" → membership routes\n' +
+    '- "Watch the repo" → GitHub releases\n\n' +
+    "If your question doesn't match any of the above, I'll fall back to a free " +
+    'LLM with the SCBE governance pipeline checking the response.';
+
+  const actions = [
+    { label: 'Help me choose a product', prompt: 'Help me choose a product' },
+    { label: 'What is the harmonic wall?', prompt: 'What is the harmonic wall?' },
+    {
+      label: 'Run a research agent',
+      prompt: 'search the web for SCBE hyperbolic geometry AI safety',
+    },
+    { label: 'Browse all products', url: PRODUCTS_PAGE_URL },
+    { label: 'Open the agents page', url: AGENT_TASK_PAGE_URL },
+  ];
+  return { text, actions };
+}
+
 function renderAgentTaskReply(message) {
   const taskType = classifyAgentTaskType(message);
   const query = extractAgentQuery(message, taskType);
@@ -684,7 +731,7 @@ function renderAgentTaskReply(message) {
     '',
     query
       ? `I pulled this query from your message: \`${query.slice(0, 200)}\``
-      : 'Click through and I\'ll leave the query field blank for you to fill in.',
+      : "Click through and I'll leave the query field blank for you to fill in.",
     '',
     'The agent runs on a free GitHub server (the Vercel bridge will queue it ' +
       'when configured, otherwise the page falls back to opening the GitHub ' +
@@ -722,6 +769,7 @@ module.exports = {
   renderBuyReply,
   renderCustomReply,
   renderGuideReply,
+  renderHelpReply,
   renderMembershipReply,
   renderResearchReply,
   renderAgentTaskReply,
