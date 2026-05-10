@@ -139,6 +139,7 @@
     "benchmark:coding-agents:compare": "python scripts/eval/compare_functional_benchmark_reports.py",
     "benchmark:coding-agents:gate": "python scripts/eval/gate_functional_benchmark.py",
     "benchmark:cli": "python scripts/benchmark/cli_competitive_benchmark.py",
+    "aetherdesk": "node aetherdesk/server.js",
     "benchmark:representation-kaleidoscope": "python scripts/benchmark/build_representation_kaleidoscope.py",
     "benchmark:agentic:external": "python scripts/benchmark/external_agentic_eval_driver.py",
     "training:adapter-registry": "python scripts/model_training/build_adapter_registry.py",
