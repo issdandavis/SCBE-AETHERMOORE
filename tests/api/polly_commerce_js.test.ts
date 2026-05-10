@@ -337,6 +337,39 @@ describe('polly commerce intent classification', () => {
     expect(commerce.classifyIntent('').name).toBe('general');
     expect(commerce.classifyIntent(null as unknown as string).name).toBe('general');
   });
+
+  it('classifies "help me choose" as guide at >= 0.85', () => {
+    const intent = commerce.classifyIntent('Help me choose a product');
+    expect(intent.name).toBe('guide');
+    expect(intent.confidence).toBeGreaterThanOrEqual(0.85);
+  });
+
+  it('classifies "what should I buy" as guide before falling into buy', () => {
+    const intent = commerce.classifyIntent("What should I buy if I'm new here?");
+    expect(intent.name).toBe('guide');
+  });
+
+  it('classifies "i don\'t know what i need" as guide', () => {
+    expect(commerce.classifyIntent("I don't know what I need").name).toBe('guide');
+    expect(commerce.classifyIntent('I do not know which one fits').name).toBe('guide');
+  });
+
+  it('classifies "where do I start" / "i\'m new" as guide', () => {
+    expect(commerce.classifyIntent('Where do I start?').name).toBe('guide');
+    expect(commerce.classifyIntent("I'm new here, can you help?").name).toBe('guide');
+    expect(commerce.classifyIntent('Where should I begin?').name).toBe('guide');
+  });
+
+  it('classifies "guide me" / "walk me through" / "recommend something" as guide', () => {
+    expect(commerce.classifyIntent('Guide me through the products').name).toBe('guide');
+    expect(commerce.classifyIntent('Walk me through what you offer').name).toBe('guide');
+    expect(commerce.classifyIntent('Recommend something for my situation').name).toBe('guide');
+  });
+
+  it('does NOT misclassify clear product purchases as guide', () => {
+    expect(commerce.classifyIntent('I want to buy the toolkit').name).toBe('buy');
+    expect(commerce.classifyIntent('Purchase the snapshot').name).toBe('buy');
+  });
 });
 
 describe('polly commerce reply rendering', () => {
@@ -405,6 +438,27 @@ describe('polly commerce reply rendering', () => {
     expect(out.text).toContain('I can answer research questions');
     expect(out.text).toContain('Harmonic wall');
     expect(out.text).toContain('Sacred Tongues');
+  });
+
+  it('renderGuideReply lists the four routes with the products page action first', () => {
+    const out = commerce.renderGuideReply();
+    expect(out.text).toContain('Support the open work');
+    expect(out.text).toContain('Get a written read');
+    expect(out.text).toContain('Build with the code');
+    expect(out.text).toContain('My situation is custom');
+    expect(out.actions).toHaveLength(3);
+    expect(out.actions[0].url).toContain('products.html');
+    expect(out.actions[1].url).toContain('start-here.html');
+    expect(out.actions[2].url).toContain('mailto:');
+  });
+
+  it('GUIDE_ROUTES references valid product SKUs from PRODUCT_CATALOG', () => {
+    const skus = new Set(commerce.PRODUCT_CATALOG.map((p: { sku: string }) => p.sku));
+    for (const route of commerce.GUIDE_ROUTES) {
+      for (const sku of route.products) {
+        expect(skus.has(sku)).toBe(true);
+      }
+    }
   });
 });
 
@@ -489,6 +543,26 @@ describe('polly chat handler — commerce path', () => {
     expect(body.intent).toBe('custom');
     expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
     expect(body.actions.some((a) => /aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
+  });
+
+  it('routes "help me choose" to guide intent with picker + start-here actions', async () => {
+    const req = makeReq({
+      body: { message: 'Help me choose a product', consent_to_train: false },
+    });
+    const res = makeRes();
+    await chatHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    const body = res.body as {
+      provider: string;
+      intent: string;
+      text: string;
+      actions: { url: string }[];
+    };
+    expect(body.provider).toBe('commerce');
+    expect(body.intent).toBe('guide');
+    expect(body.text).toContain('Three or four routes');
+    expect(body.actions.some((a) => a.url.includes('products.html'))).toBe(true);
+    expect(body.actions.some((a) => a.url.includes('start-here.html'))).toBe(true);
   });
 
   it('rejects POST without message', async () => {
