@@ -31,7 +31,7 @@ psycopg[binary]>=3.2.0
 
 # Security - pinned to secure versions
 cryptography>=48.0.0
-urllib3>=2.2.0
+urllib3>=2.7.0
 pyasn1>=0.6.0
 protobuf>=5.28.0
 Werkzeug>=3.1.8
