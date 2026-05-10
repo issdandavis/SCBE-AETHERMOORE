@@ -59,6 +59,10 @@
     {
       "src": "^/v1/polly/stats/?$",
       "dest": "/api/polly/stats.js"
+    },
+    {
+      "src": "^/v1/polly/funnel/?$",
+      "dest": "/api/polly/funnel.js"
     }
   ]
 }

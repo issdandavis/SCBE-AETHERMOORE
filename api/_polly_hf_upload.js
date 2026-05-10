@@ -55,9 +55,15 @@ function nonceHex(bytes) {
   return Array.from(out, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+const KIND_PREFIX = {
+  lead: 'polly-leads',
+  funnel: 'polly-funnel',
+  chat: 'polly-chat-live',
+};
+
 function pathFor(record) {
   const kind = String(record.kind || 'chat').toLowerCase();
-  const prefix = kind === 'lead' ? 'polly-leads' : 'polly-chat-live';
+  const prefix = KIND_PREFIX[kind] || 'polly-chat-live';
   const { day, compact } = stamp(record);
   return `${prefix}/${day}/${compact}-${nonceHex(3)}.json`;
 }
