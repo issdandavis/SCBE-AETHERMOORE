@@ -17,6 +17,7 @@
     --amber: #fbbf24;
     --bar: #38bdf8;
     --bar-leads: #a78bfa;
+    --bar-funnel: #4ade80;
     --border: #232936;
   }
   @media (prefers-color-scheme: light) {
@@ -53,6 +54,7 @@
   th { font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
   .bar { height: 6px; background: var(--bar); border-radius: 3px; display: inline-block; vertical-align: middle; min-width: 2px; }
   .bar.leads { background: var(--bar-leads); }
+  .bar.funnel { background: var(--bar-funnel); }
   .footer { color: var(--muted); font-size: 12px; margin-top: 16px; text-align: center; }
   .footer a { color: var(--muted); }
   details { font-size: 12px; color: var(--muted); margin-top: 8px; }
@@ -71,16 +73,17 @@
     <div class="totals">
       <div class="stat"><div class="n" id="total-chats">—</div><div class="label">chats (7 d)</div></div>
       <div class="stat"><div class="n" id="total-leads">—</div><div class="label">leads (7 d)</div></div>
+      <div class="stat"><div class="n" id="total-funnel">—</div><div class="label">funnel events (7 d)</div></div>
     </div>
   </div>
 
   <div class="panel">
     <table>
       <thead>
-        <tr><th>Date</th><th>Chats</th><th>Leads</th><th>Activity</th></tr>
+        <tr><th>Date</th><th>Chats</th><th>Leads</th><th>Funnel</th><th>Activity</th></tr>
       </thead>
       <tbody id="rows">
-        <tr><td colspan="4" style="text-align:center;color:var(--muted)">loading…</td></tr>
+        <tr><td colspan="5" style="text-align:center;color:var(--muted)">loading…</td></tr>
       </tbody>
     </table>
   </div>
@@ -140,29 +143,40 @@
   function render(results) {
     var rows = document.getElementById('rows');
     rows.innerHTML = '';
-    var totalChats = 0, totalLeads = 0, maxAct = 1;
+    var totalChats = 0, totalLeads = 0, totalFunnel = 0, maxAct = 1;
     results.forEach(function (r) {
       var c = (r.data && r.data.chats) || 0;
       var l = (r.data && r.data.leads) || 0;
-      totalChats += c; totalLeads += l;
-      if (c + l > maxAct) maxAct = c + l;
+      var f = (r.data && r.data.funnel_events) || 0;
+      totalChats += c; totalLeads += l; totalFunnel += f;
+      // Funnel events are noisier than chats/leads (one visitor → many
+      // events) so cap their bar contribution at 5x leads to keep the
+      // small intent signals visible.
+      var fScaled = Math.min(f, l * 5 + 5);
+      if (c + l + fScaled > maxAct) maxAct = c + l + fScaled;
     });
     results.forEach(function (r) {
       var c = (r.data && r.data.chats) || 0;
       var l = (r.data && r.data.leads) || 0;
+      var f = (r.data && r.data.funnel_events) || 0;
+      var fScaled = Math.min(f, l * 5 + 5);
       var cw = Math.max(0, Math.round((c / maxAct) * 100));
       var lw = Math.max(0, Math.round((l / maxAct) * 100));
+      var fw = Math.max(0, Math.round((fScaled / maxAct) * 100));
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td>' + r.date + '</td>' +
         '<td>' + c + '</td>' +
         '<td>' + l + '</td>' +
+        '<td>' + f + '</td>' +
         '<td><span class="bar" style="width:' + cw + '%"></span> ' +
-        '<span class="bar leads" style="width:' + lw + '%"></span></td>';
+        '<span class="bar leads" style="width:' + lw + '%"></span> ' +
+        '<span class="bar funnel" style="width:' + fw + '%"></span></td>';
       rows.appendChild(tr);
     });
     document.getElementById('total-chats').textContent = totalChats;
     document.getElementById('total-leads').textContent = totalLeads;
+    document.getElementById('total-funnel').textContent = totalFunnel;
   }
 
   function tick() {
