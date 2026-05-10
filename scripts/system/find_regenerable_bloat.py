@@ -105,51 +105,73 @@ def _dir_size_bytes(path: Path) -> Tuple[int, int]:
     return total, count
 
 
-def find_bloat(scope_root: Path, *, progress_every: float = 5.0) -> List[Dict]:
-    """Walk scope_root, yielding hits at regenerable dirs (no recursion into them)."""
-    hits: List[Dict] = []
+class _BloatScanResult:
+    """Result of a (possibly interrupted) walk."""
+
+    def __init__(self) -> None:
+        self.hits: List[Dict] = []
+        self.dirs_visited: int = 0
+        self.interrupted: bool = False
+
+
+def find_bloat(scope_root: Path, *, progress_every: float = 5.0) -> _BloatScanResult:
+    """Walk scope_root, returning hits at regenerable dirs (no recursion into them).
+
+    On KeyboardInterrupt (Ctrl+C), returns whatever has been collected so far
+    with `interrupted=True` so the caller can still write a partial report.
+    """
+    result = _BloatScanResult()
     last_progress = time.perf_counter()
-    dirs_visited = 0
     stack = [scope_root]
-    while stack:
-        current = stack.pop()
-        try:
-            with os.scandir(current) as it:
-                for entry in it:
-                    try:
-                        if not entry.is_dir(follow_symlinks=False):
+    try:
+        while stack:
+            current = stack.pop()
+            try:
+                with os.scandir(current) as it:
+                    for entry in it:
+                        try:
+                            if not entry.is_dir(follow_symlinks=False):
+                                continue
+                            name_lower = entry.name.lower()
+                            if name_lower in _HARD_SKIP_LOWER:
+                                continue
+                            child = Path(entry.path)
+                            if name_lower in _REGEN_LOWER:
+                                size_bytes, file_count = _dir_size_bytes(child)
+                                result.hits.append(
+                                    {
+                                        "path": str(child),
+                                        "kind": entry.name,
+                                        "bytes": size_bytes,
+                                        "file_count": file_count,
+                                    }
+                                )
+                                # Do NOT descend — we already counted everything under it.
+                                continue
+                            stack.append(child)
+                            result.dirs_visited += 1
+                            now = time.perf_counter()
+                            if now - last_progress >= progress_every:
+                                print(
+                                    f"[bloat] visited {result.dirs_visited} dirs, "
+                                    f"{len(result.hits)} regenerable hits so far",
+                                    file=sys.stderr,
+                                    flush=True,
+                                )
+                                last_progress = now
+                        except (PermissionError, OSError):
                             continue
-                        name_lower = entry.name.lower()
-                        if name_lower in _HARD_SKIP_LOWER:
-                            continue
-                        child = Path(entry.path)
-                        if name_lower in _REGEN_LOWER:
-                            size_bytes, file_count = _dir_size_bytes(child)
-                            hits.append(
-                                {
-                                    "path": str(child),
-                                    "kind": entry.name,
-                                    "bytes": size_bytes,
-                                    "file_count": file_count,
-                                }
-                            )
-                            # Do NOT descend — we already counted everything under it.
-                            continue
-                        stack.append(child)
-                        dirs_visited += 1
-                        now = time.perf_counter()
-                        if now - last_progress >= progress_every:
-                            print(
-                                f"[bloat] visited {dirs_visited} dirs, " f"{len(hits)} regenerable hits so far",
-                                file=sys.stderr,
-                                flush=True,
-                            )
-                            last_progress = now
-                    except (PermissionError, OSError):
-                        continue
-        except (PermissionError, OSError, NotADirectoryError):
-            continue
-    return hits
+            except (PermissionError, OSError, NotADirectoryError):
+                continue
+    except KeyboardInterrupt:
+        result.interrupted = True
+        print(
+            f"[bloat] INTERRUPTED after {result.dirs_visited} dirs, "
+            f"{len(result.hits)} hits — writing partial report",
+            file=sys.stderr,
+            flush=True,
+        )
+    return result
 
 
 def main(argv=None) -> int:
@@ -165,9 +187,11 @@ def main(argv=None) -> int:
 
     started = time.perf_counter()
     print(f"[bloat] scanning {args.scope_root} for regenerable dirs", file=sys.stderr, flush=True)
-    hits = find_bloat(args.scope_root)
+    scan_result = find_bloat(args.scope_root)
+    hits = scan_result.hits
     elapsed = time.perf_counter() - started
-    print(f"[bloat] done in {elapsed:.1f}s: {len(hits)} regenerable dirs found", file=sys.stderr, flush=True)
+    status = "interrupted" if scan_result.interrupted else "done"
+    print(f"[bloat] {status} in {elapsed:.1f}s: {len(hits)} regenerable dirs found", file=sys.stderr, flush=True)
 
     by_kind: Dict[str, Dict] = {}
     for h in hits:
@@ -186,6 +210,8 @@ def main(argv=None) -> int:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "scope_root": str(args.scope_root),
         "duration_seconds": round(elapsed, 2),
+        "interrupted": scan_result.interrupted,
+        "dirs_visited": scan_result.dirs_visited,
         "regenerable_dir_names": sorted(REGENERABLE_DIR_NAMES),
         "hard_skip_dir_names": sorted(HARD_SKIP_DIR_NAMES),
         "totals": {
@@ -200,7 +226,8 @@ def main(argv=None) -> int:
     }
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    out_path = args.output_dir / f"regenerable_bloat_{_utc_stamp()}.json"
+    suffix = "_partial" if scan_result.interrupted else ""
+    out_path = args.output_dir / f"regenerable_bloat_{_utc_stamp()}{suffix}.json"
     out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print()
