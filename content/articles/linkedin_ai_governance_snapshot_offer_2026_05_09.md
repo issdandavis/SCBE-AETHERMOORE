@@ -29,4 +29,3 @@ https://scbe-agent-bridge-vercel.vercel.app/hire
 
 Fast-start packet:
 https://scbe-agent-bridge-vercel.vercel.app/product-manual/service-fast-start.html
-
