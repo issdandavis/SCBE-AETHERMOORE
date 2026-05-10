@@ -174,3 +174,37 @@ def test_bloat_ignores_hard_skip_dirs(tmp_path: Path) -> None:
         assert (
             "onedrive" not in hit["path"].replace("\\", "/").lower()
         ), f"OneDrive leaked into bloat scan: {hit['path']}"
+
+
+@pytest.mark.skipif(not BLOAT.exists(), reason="find_regenerable_bloat.py missing")
+def test_bloat_partial_report_on_keyboard_interrupt(tmp_path: Path, monkeypatch) -> None:
+    """KeyboardInterrupt mid-scan returns whatever hits we already have."""
+    # Import the script's module by path so we can monkeypatch it.
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("_bloat_under_test", BLOAT)
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    # Build a tree with TWO node_modules; force interrupt after the first.
+    for sub in ("a/node_modules", "b/node_modules"):
+        d = tmp_path / sub
+        d.mkdir(parents=True)
+        (d / "x").write_bytes(b"q" * 512)
+
+    real_dir_size = mod._dir_size_bytes
+    call_count = {"n": 0}
+
+    def fake_dir_size(path):
+        call_count["n"] += 1
+        if call_count["n"] >= 2:
+            raise KeyboardInterrupt
+        return real_dir_size(path)
+
+    monkeypatch.setattr(mod, "_dir_size_bytes", fake_dir_size)
+
+    result = mod.find_bloat(tmp_path)
+    assert result.interrupted is True
+    assert len(result.hits) == 1, "should have exactly the one hit collected before interrupt"
+    assert result.hits[0]["kind"] == "node_modules"
