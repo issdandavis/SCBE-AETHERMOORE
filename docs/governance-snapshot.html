@@ -205,29 +205,142 @@
       <section class="panel" id="intake">
         <h2>After checkout, send this intake</h2>
         <p>
-          Payment opens the slot. The review starts when the intake arrives by email. Keep the
-          package small enough to inspect quickly.
+          Payment opens the slot. The review starts when the intake arrives. Keep the package
+          small enough to inspect quickly.
         </p>
-        <ol class="checklist">
-          <li>Payment email or receipt email.</li>
-          <li>The one AI workflow, tool, prompt chain, agent, or customer-facing feature to review.</li>
-          <li>What decision, output, or failure would create risk if the AI gets it wrong.</li>
-          <li>Links, screenshots, prompts, policy notes, or public docs that explain the workflow.</li>
-          <li>Any deadline, buyer conversation, grant packet, or internal review this needs to support.</li>
-        </ol>
         <p class="note">
           Do not send secrets, private keys, customer records, medical records, export-controlled
           files, classified material, bank data, or regulated production data. Use redacted examples
           or screenshots when possible.
         </p>
-        <p>
-          <a
-            class="small-link"
-            href="mailto:ai@aethermoore.com?subject=AI%20Governance%20Snapshot%20intake&body=Payment%20email%3A%0AWorkflow%20or%20tool%20to%20review%3A%0AWhat%20decision%20or%20output%20matters%3A%0ALinks%20or%20screenshots%20I%20can%20share%3A%0ADeadline%20or%20context%3A%0A"
-            >Open the intake email template</a
-          >
-        </p>
+        <form id="intakeForm" style="display: grid; gap: 14px; margin-top: 18px">
+          <!-- Honeypot: hidden via off-screen positioning. Bots fill, humans don't. -->
+          <div style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden" aria-hidden="true">
+            <label>Website (leave blank)
+              <input id="intakeWebsite" name="website" type="text" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
+            <span>Payment or receipt email *</span>
+            <input id="intakeEmail" type="email" required autocomplete="email"
+              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px;" />
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
+            <span>Workflow, tool, prompt chain, or feature to review *</span>
+            <textarea id="intakeWorkflow" required rows="2"
+              placeholder="e.g. our customer-support GPT that answers refund questions"
+              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px; font-family: inherit;"></textarea>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
+            <span>What decision or output matters most if the AI gets it wrong *</span>
+            <textarea id="intakeRisk" required rows="2"
+              placeholder="e.g. wrongly approving a refund, leaking other customers' info"
+              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px; font-family: inherit;"></textarea>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
+            <span>Links, redacted screenshots, prompts, policy notes</span>
+            <textarea id="intakeLinks" rows="2"
+              placeholder="public docs URL, drive folder, gist, or paste a prompt"
+              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px; font-family: inherit;"></textarea>
+          </label>
+          <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
+            <span>Deadline or context (grant, subcontract, internal review)</span>
+            <input id="intakeDeadline" type="text"
+              placeholder="e.g. need it before grant submission 2026-06-01"
+              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px;" />
+          </label>
+          <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
+            <button type="submit" class="btn" style="border: none; cursor: pointer; font: inherit;">Send intake</button>
+            <span id="intakeStatus" style="font-size: 13px; color: var(--muted)"></span>
+          </div>
+          <p class="note" style="margin-top: 4px">
+            Submission goes to a private dataset only Issac can see. Falls back to
+            <a class="small-link" id="intakeMailto"
+              href="mailto:ai@aethermoore.com?subject=AI%20Governance%20Snapshot%20intake&body=Payment%20email%3A%0AWorkflow%20or%20tool%20to%20review%3A%0AWhat%20decision%20or%20output%20matters%3A%0ALinks%20or%20screenshots%20I%20can%20share%3A%0ADeadline%20or%20context%3A%0A"
+            >email</a> if the form fails.
+          </p>
+        </form>
       </section>
+      <script>
+        (function () {
+          var apiBase = (window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app').replace(/\/$/, '');
+          var form = document.getElementById('intakeForm');
+          if (!form) return;
+          var status = document.getElementById('intakeStatus');
+          var mailto = document.getElementById('intakeMailto');
+
+          function buildMailto(values) {
+            var body =
+              'Payment email: ' + (values.email || '') + '\n' +
+              'Workflow or tool to review:\n' + (values.workflow || '') + '\n\n' +
+              'What decision or output matters:\n' + (values.risk || '') + '\n\n' +
+              'Links or screenshots I can share:\n' + (values.links || '') + '\n\n' +
+              'Deadline or context:\n' + (values.deadline || '') + '\n';
+            return 'mailto:ai@aethermoore.com?subject=' +
+              encodeURIComponent('AI Governance Snapshot intake') +
+              '&body=' + encodeURIComponent(body);
+          }
+
+          form.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            status.style.color = 'var(--muted)';
+            status.textContent = 'Sending…';
+            var values = {
+              email: document.getElementById('intakeEmail').value.trim(),
+              workflow: document.getElementById('intakeWorkflow').value.trim(),
+              risk: document.getElementById('intakeRisk').value.trim(),
+              links: document.getElementById('intakeLinks').value.trim(),
+              deadline: document.getElementById('intakeDeadline').value.trim(),
+              website: document.getElementById('intakeWebsite').value,
+            };
+            // Keep the email fallback link in sync with what they typed, so a
+            // failure path doesn't lose their work.
+            mailto.href = buildMailto(values);
+            // Pack snapshot fields into the standard /v1/polly/lead schema as
+            // a labeled block in description, so it shows up alongside other
+            // leads in the same operator dashboard.
+            var description =
+              'GOVERNANCE SNAPSHOT INTAKE\n\n' +
+              'Workflow / tool to review:\n' + values.workflow + '\n\n' +
+              'What matters if AI gets it wrong:\n' + values.risk + '\n\n' +
+              'Links / screenshots:\n' + (values.links || '(none provided)') + '\n\n' +
+              'Deadline / context:\n' + (values.deadline || '(none provided)');
+            var payload = {
+              contact: values.email,
+              project_type: 'governance_snapshot_intake',
+              budget: '$500 (paid via Stripe)',
+              timeline: values.deadline || 'standard 5-business-day target',
+              description: description,
+              source: 'aethermoore.com/governance-snapshot',
+              website: values.website,
+            };
+            try {
+              var response = await fetch(apiBase + '/v1/polly/lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+              });
+              var data = await response.json();
+              if (!response.ok || !data.ok) {
+                status.style.color = '#ff7a7a';
+                status.textContent =
+                  'Could not send: ' + ((data && data.error) || 'unknown error') +
+                  '. Use the email fallback below.';
+                return;
+              }
+              form.innerHTML =
+                '<p style="font-size: 16px; color: var(--ink)"><strong>Intake received.</strong> ' +
+                'Issac will start the review within one business day and email you the findings memo at <code>' +
+                values.email.replace(/[<>&]/g, '') + '</code> within 5 business days.</p>' +
+                '<p class="note">If you forgot to mention something, just reply to that email or send a follow-up to ai@aethermoore.com.</p>';
+            } catch (error) {
+              status.style.color = '#ff7a7a';
+              status.textContent = 'Network error: ' + (error && error.message ? error.message : error) +
+                '. Use the email fallback below.';
+            }
+          });
+        })();
+      </script>
 
       <section class="panel">
         <h2>Boundaries</h2>
