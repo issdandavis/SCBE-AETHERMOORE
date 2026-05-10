@@ -1,0 +1,23 @@
+schema: scbe_runnable_ebook_v1
+slug: ai-governance-fundamentals
+title: AI Governance Fundamentals
+subtitle: A runnable book for engineers shipping their first governed LLM feature
+version: 0.1.0
+authors:
+  - Issac Davis <issdandavis7795@gmail.com>
+license: MIT-OR-Apache-2.0-content-CC-BY-4.0
+target_reader: AI engineers and team leads shipping LLM-backed features for the first time
+audience_assumed_knowledge:
+  - Python (any version >= 3.11)
+  - Calling an LLM API (OpenAI, Anthropic, HF Inference, etc.)
+  - Basic linear algebra (vectors, distances)
+chapters:
+  - number: 1
+    slug: harmonic-wall
+    file: chapter-01-harmonic-wall.md
+    estimated_minutes: 12
+    status: published
+checkout:
+  sample_price_label: Free
+  bundle_price_label: $19 one-time (planned)
+  full_book_url: https://aethermoore.com/SCBE-AETHERMOORE/book/ai-governance-fundamentals/
