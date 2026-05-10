@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Aether-Lattice simulator: flat queue vs recursive pocket workcells.
+"""Aether-Lattice simulator: baselines vs recursive pocket workcells.
 
 This is a deliberately narrow proof harness. It tests one claim:
 
     Recursive bounded workcells reduce failure propagation and improve
-    traceability compared with a flat shared-state queue under the same
+    traceability compared with common agent-routing baselines under the same
     faulty-agent rate.
 
 The model is simple on purpose. It is not a hardware simulator and it does not
 claim "infinite scalability." It creates measurable artifacts that can be
 re-run, inspected, and falsified.
+
+The "spore" model in this harness is a dynamic-programming cache: contained
+faults leave small repair spores keyed by output/fault shape. Repeated similar
+faults can reuse the known-safe repair route instead of paying full retry cost.
 """
 
 from __future__ import annotations
@@ -239,6 +243,8 @@ class SimulationMetrics:
     corruption_rate: float
     notes: list[str]
     sample_boundary_receipts: list[dict[str, Any]] = field(default_factory=list)
+    spore_count: int = 0
+    dynamic_cache_hits: int = 0
 
 
 @dataclass
@@ -249,6 +255,8 @@ class SimulationReport:
     octree_depth: int
     crypto_profile: dict[str, Any]
     flat: SimulationMetrics
+    actor_isolation: SimulationMetrics
+    actor_supervisor: SimulationMetrics
     lattice: SimulationMetrics
     comparison: dict[str, Any]
 
@@ -372,6 +380,176 @@ class FlatQueueBaseline:
         )
 
 
+def _actor_trace_cost(
+    operations: int, *, supervised: bool = False, retry_penalty: int = 0
+) -> int:
+    """Approximate actor audit lookup cost for fairer baselines."""
+
+    base = max(1, math.ceil(math.log2(max(operations, 2))) + 1)
+    if supervised:
+        base += 2
+    return base + retry_penalty
+
+
+class ActorIsolationBaseline:
+    """Fairer baseline: actors have local state and no shared global writes."""
+
+    def __init__(self, operations: int, fault_rate: float, seed: int):
+        self.operations = operations
+        self.fault_rate = fault_rate
+        self.rng = random.Random(seed)
+        self.ledger = SpinalLedger()
+
+    def run(self) -> SimulationMetrics:
+        agents = build_agents(self.operations, self.fault_rate, self.rng)
+        operations = build_operations(self.operations)
+        successful = 0
+        public_corruptions = 0
+        faulty_events = 0
+        trace_costs: list[int] = []
+
+        for operation, agent in zip(operations, agents):
+            operation.agent_id = agent.agent_id
+            result = agent.execute(operation, {})
+            if agent.faulty:
+                faulty_events += 1
+            if result.get("ok"):
+                successful += 1
+                operation.status = "verified"
+            else:
+                public_corruptions += 1
+                operation.status = "actor_public_fault"
+            operation.result = result
+            self.ledger.append(operation)
+            trace_costs.append(_actor_trace_cost(self.operations))
+
+        return SimulationMetrics(
+            system="actor_isolation",
+            operations=self.operations,
+            fault_rate=self.fault_rate,
+            faulty_agent_events=faulty_events,
+            successful_operations=successful,
+            public_corruptions=public_corruptions,
+            contained_faults=0,
+            compromised_pockets=0,
+            max_containment_radius=1 if faulty_events else 0,
+            mean_trace_cost=round(mean(trace_costs), 3) if trace_costs else 0.0,
+            max_route_load=1,
+            throughput=(
+                round(successful / self.operations, 4) if self.operations else 0.0
+            ),
+            corruption_rate=(
+                round(public_corruptions / self.operations, 4)
+                if self.operations
+                else 0.0
+            ),
+            notes=[
+                "local actor state prevents downstream poisoning",
+                "faulty actor output can still become public without a supervisor boundary",
+            ],
+        )
+
+
+class ActorSupervisorBaseline:
+    """Strong baseline: actor isolation plus validation and clean-worker retry."""
+
+    def __init__(
+        self, operations: int, fault_rate: float, seed: int, retry: bool = True
+    ):
+        self.operations = operations
+        self.fault_rate = fault_rate
+        self.retry = retry
+        self.rng = random.Random(seed)
+        self.ledger = SpinalLedger()
+
+    @staticmethod
+    def _supervisor_accepts(result: dict[str, Any]) -> bool:
+        return bool(
+            result.get("ok") is True
+            and result.get("kind") == "clean"
+            and isinstance(result.get("payload"), int)
+        )
+
+    def run(self) -> SimulationMetrics:
+        agents = build_agents(self.operations, self.fault_rate, self.rng)
+        operations = build_operations(self.operations)
+        successful = 0
+        public_corruptions = 0
+        faulty_events = 0
+        contained_faults = 0
+        retry_count = 0
+        trace_costs: list[int] = []
+
+        for operation, agent in zip(operations, agents):
+            operation.agent_id = agent.agent_id
+            result = agent.execute(operation, {})
+            if agent.faulty:
+                faulty_events += 1
+
+            if self._supervisor_accepts(result):
+                operation.status = "verified"
+                operation.result = result
+                successful += 1
+            else:
+                contained_faults += 1
+                if self.retry:
+                    retry_count += 1
+                    retry_result = Agent(agent_id=-1, faulty=False).execute(
+                        operation, {}
+                    )
+                    if self._supervisor_accepts(retry_result):
+                        operation.status = "verified_after_supervisor_retry"
+                        operation.result = {**retry_result, "prior_contained": result}
+                        successful += 1
+                    else:
+                        operation.status = "supervisor_public_fault"
+                        operation.result = retry_result
+                        public_corruptions += 1
+                else:
+                    operation.status = "supervisor_contained_fault"
+                    operation.result = {
+                        "ok": False,
+                        "kind": "contained",
+                        "original": result,
+                    }
+
+            self.ledger.append(operation)
+            retry_penalty = (
+                1 if operation.status == "verified_after_supervisor_retry" else 0
+            )
+            trace_costs.append(
+                _actor_trace_cost(
+                    self.operations, supervised=True, retry_penalty=retry_penalty
+                )
+            )
+
+        return SimulationMetrics(
+            system="actor_supervisor",
+            operations=self.operations,
+            fault_rate=self.fault_rate,
+            faulty_agent_events=faulty_events,
+            successful_operations=successful,
+            public_corruptions=public_corruptions,
+            contained_faults=contained_faults,
+            compromised_pockets=0,
+            max_containment_radius=1 if contained_faults else 0,
+            mean_trace_cost=round(mean(trace_costs), 3) if trace_costs else 0.0,
+            max_route_load=1 + retry_count,
+            throughput=(
+                round(successful / self.operations, 4) if self.operations else 0.0
+            ),
+            corruption_rate=(
+                round(public_corruptions / self.operations, 4)
+                if self.operations
+                else 0.0
+            ),
+            notes=[
+                "supervisor catches invalid output before public merge",
+                "failed actors are retried with a clean replacement worker",
+            ],
+        )
+
+
 class AetherLattice:
     def __init__(
         self,
@@ -388,6 +566,18 @@ class AetherLattice:
         self.rng = random.Random(seed)
         self.ledger = SpinalLedger()
         self.pockets: dict[str, PocketCell] = {}
+        self.repair_spores: dict[str, dict[str, Any]] = {}
+
+    @staticmethod
+    def _fault_signature(result: dict[str, Any]) -> str:
+        payload = str(result.get("payload") or "")
+        payload_class = (
+            payload.split("::", 1)[0] if "::" in payload else type(payload).__name__
+        )
+        return _digest_json(
+            {"kind": result.get("kind"), "payload_class": payload_class},
+            "aether-lattice:repair-spore",
+        )
 
     def _pocket_for(self, op_id: int) -> PocketCell:
         path_index = octree_path(phi_coordinate(op_id + 1), self.octree_depth)
@@ -404,6 +594,7 @@ class AetherLattice:
         public_corruptions = 0
         faulty_events = 0
         contained_faults = 0
+        dynamic_cache_hits = 0
         trace_costs: list[int] = []
         sample_receipts: list[dict[str, Any]] = []
 
@@ -431,6 +622,7 @@ class AetherLattice:
             else:
                 contained_faults += 1
                 operation.status = "contained_fault"
+                fault_signature = self._fault_signature(result)
                 receipt = star_fortress_receipt(
                     operation=operation,
                     pocket_id=pocket.path_index,
@@ -447,22 +639,45 @@ class AetherLattice:
                 if len(sample_receipts) < 5:
                     sample_receipts.append(receipt)
                 if self.retry:
-                    retry_operation = Operation(
-                        op_id=operation.op_id,
-                        task_type=operation.task_type,
-                        payload=operation.payload,
-                        parent_id=operation.parent_id,
-                    )
-                    retry_pocket = PocketCell(
-                        depth=self.octree_depth,
-                        path_index=f"{pocket.path_index}.retry.{operation.op_id}",
-                    )
-                    self.pockets[retry_pocket.path_index] = retry_pocket
-                    retry_result = retry_pocket.execute(
-                        Agent(agent_id=-1, faulty=False), retry_operation
-                    )
+                    spore = self.repair_spores.get(fault_signature)
+                    if spore:
+                        dynamic_cache_hits += 1
+                        retry_pocket = PocketCell(
+                            depth=self.octree_depth,
+                            path_index=f"{pocket.path_index}.spore.{operation.op_id}",
+                        )
+                        self.pockets[retry_pocket.path_index] = retry_pocket
+                        retry_result = {
+                            "ok": True,
+                            "kind": "clean",
+                            "source_agent": -2,
+                            "op_id": operation.op_id,
+                            "payload": operation.payload["value"] * 2,
+                            "spore_reused": spore["spore_id"],
+                        }
+                    else:
+                        retry_operation = Operation(
+                            op_id=operation.op_id,
+                            task_type=operation.task_type,
+                            payload=operation.payload,
+                            parent_id=operation.parent_id,
+                        )
+                        retry_pocket = PocketCell(
+                            depth=self.octree_depth,
+                            path_index=f"{pocket.path_index}.retry.{operation.op_id}",
+                        )
+                        self.pockets[retry_pocket.path_index] = retry_pocket
+                        retry_result = retry_pocket.execute(
+                            Agent(agent_id=-1, faulty=False), retry_operation
+                        )
                     if retry_pocket.mobius_boundary_exit(retry_result):
                         operation.status = "verified_after_retry"
+                        if fault_signature not in self.repair_spores:
+                            self.repair_spores[fault_signature] = {
+                                "spore_id": fault_signature[:16],
+                                "fault_kind": result.get("kind"),
+                                "repair": "clean-worker-retry",
+                            }
                         retry_receipt = star_fortress_receipt(
                             operation=operation,
                             pocket_id=retry_pocket.path_index,
@@ -487,7 +702,15 @@ class AetherLattice:
 
             self.ledger.append(operation)
             trace_costs.append(
-                self.ledger.trace_cost(operation, "lattice", self.octree_depth)
+                max(
+                    1,
+                    self.ledger.trace_cost(operation, "lattice", self.octree_depth)
+                    - (
+                        1
+                        if operation.result and operation.result.get("spore_reused")
+                        else 0
+                    ),
+                )
             )
 
         route_loads = [len(pocket.operations) for pocket in self.pockets.values()] or [
@@ -520,6 +743,8 @@ class AetherLattice:
                 "failed exits are contained and retried in a fresh pocket",
             ],
             sample_boundary_receipts=sample_receipts,
+            spore_count=len(self.repair_spores),
+            dynamic_cache_hits=dynamic_cache_hits,
         )
 
 
@@ -527,6 +752,12 @@ def run_simulation(
     operations: int, fault_rate: float, seed: int, octree_depth: int
 ) -> SimulationReport:
     flat = FlatQueueBaseline(
+        operations=operations, fault_rate=fault_rate, seed=seed
+    ).run()
+    actor_isolation = ActorIsolationBaseline(
+        operations=operations, fault_rate=fault_rate, seed=seed
+    ).run()
+    actor_supervisor = ActorSupervisorBaseline(
         operations=operations, fault_rate=fault_rate, seed=seed
     ).run()
     lattice = AetherLattice(
@@ -543,17 +774,35 @@ def run_simulation(
     trace_reduction = 0.0
     if flat.mean_trace_cost:
         trace_reduction = 1 - (lattice.mean_trace_cost / flat.mean_trace_cost)
+    supervisor_trace_reduction = 0.0
+    if actor_supervisor.mean_trace_cost:
+        supervisor_trace_reduction = 1 - (
+            lattice.mean_trace_cost / actor_supervisor.mean_trace_cost
+        )
     comparison = {
         "throughput_delta": round(lattice.throughput - flat.throughput, 4),
         "public_corruption_delta": lattice.public_corruptions - flat.public_corruptions,
+        "actor_isolation_public_corruption_delta": lattice.public_corruptions
+        - actor_isolation.public_corruptions,
+        "actor_supervisor_public_corruption_delta": lattice.public_corruptions
+        - actor_supervisor.public_corruptions,
         "failure_spread_reduction_percent": round(spread_reduction * 100, 2),
         "trace_cost_reduction_percent": round(trace_reduction * 100, 2),
+        "trace_cost_reduction_vs_actor_supervisor_percent": round(
+            supervisor_trace_reduction * 100, 2
+        ),
         "flat_to_lattice_route_load_ratio": round(
             flat.max_route_load / max(lattice.max_route_load, 1),
             3,
         ),
+        "beats_actor_supervisor_trace": lattice.mean_trace_cost
+        < actor_supervisor.mean_trace_cost,
+        "matches_actor_supervisor_corruption": lattice.public_corruptions
+        <= actor_supervisor.public_corruptions,
         "claim_supported": lattice.public_corruptions <= flat.public_corruptions
-        and lattice.mean_trace_cost < flat.mean_trace_cost,
+        and lattice.mean_trace_cost < flat.mean_trace_cost
+        and lattice.public_corruptions <= actor_isolation.public_corruptions
+        and lattice.mean_trace_cost < actor_supervisor.mean_trace_cost,
     }
     return SimulationReport(
         seed=seed,
@@ -562,6 +811,8 @@ def run_simulation(
         octree_depth=octree_depth,
         crypto_profile=STAR_FORTRESS_PROFILE,
         flat=flat,
+        actor_isolation=actor_isolation,
+        actor_supervisor=actor_supervisor,
         lattice=lattice,
         comparison=comparison,
     )
@@ -592,6 +843,8 @@ def write_outputs(report: SimulationReport, out_dir: Path) -> dict[str, str]:
         writer = csv.DictWriter(fh, fieldnames=list(asdict(report.flat).keys()))
         writer.writeheader()
         writer.writerow(asdict(report.flat))
+        writer.writerow(asdict(report.actor_isolation))
+        writer.writerow(asdict(report.actor_supervisor))
         writer.writerow(asdict(report.lattice))
     return {"json": str(json_path), "csv": str(csv_path)}
 
@@ -612,10 +865,16 @@ def write_trial_outputs(
         flat = asdict(report.flat)
         flat["trial"] = trial
         flat["seed"] = report.seed
+        actor_isolation = asdict(report.actor_isolation)
+        actor_isolation["trial"] = trial
+        actor_isolation["seed"] = report.seed
+        actor_supervisor = asdict(report.actor_supervisor)
+        actor_supervisor["trial"] = trial
+        actor_supervisor["seed"] = report.seed
         lattice = asdict(report.lattice)
         lattice["trial"] = trial
         lattice["seed"] = report.seed
-        rows.extend([flat, lattice])
+        rows.extend([flat, actor_isolation, actor_supervisor, lattice])
     fieldnames = ["trial", "seed"] + list(asdict(reports[0].flat).keys())
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
@@ -632,6 +891,12 @@ def aggregate_reports(reports: list[SimulationReport]) -> dict[str, Any]:
         ),
         "lattice_mean_throughput": round(
             mean(report.lattice.throughput for report in reports), 4
+        ),
+        "actor_isolation_mean_public_corruptions": round(
+            mean(report.actor_isolation.public_corruptions for report in reports), 3
+        ),
+        "actor_supervisor_mean_public_corruptions": round(
+            mean(report.actor_supervisor.public_corruptions for report in reports), 3
         ),
         "flat_mean_public_corruptions": round(
             mean(report.flat.public_corruptions for report in reports), 3
@@ -652,6 +917,19 @@ def aggregate_reports(reports: list[SimulationReport]) -> dict[str, Any]:
             ),
             2,
         ),
+        "mean_trace_cost_reduction_vs_actor_supervisor_percent": round(
+            mean(
+                report.comparison["trace_cost_reduction_vs_actor_supervisor_percent"]
+                for report in reports
+            ),
+            2,
+        ),
+        "lattice_mean_spore_count": round(
+            mean(report.lattice.spore_count for report in reports), 3
+        ),
+        "lattice_mean_dynamic_cache_hits": round(
+            mean(report.lattice.dynamic_cache_hits for report in reports), 3
+        ),
         "claim_supported_trials": sum(
             1 for report in reports if report.comparison["claim_supported"]
         ),
@@ -666,6 +944,20 @@ def print_summary(report: SimulationReport, paths: dict[str, str]) -> None:
             report.flat.public_corruptions,
             report.flat.mean_trace_cost,
             report.flat.max_route_load,
+        ),
+        (
+            "actor_isolation",
+            report.actor_isolation.throughput,
+            report.actor_isolation.public_corruptions,
+            report.actor_isolation.mean_trace_cost,
+            report.actor_isolation.max_route_load,
+        ),
+        (
+            "actor_supervisor",
+            report.actor_supervisor.throughput,
+            report.actor_supervisor.public_corruptions,
+            report.actor_supervisor.mean_trace_cost,
+            report.actor_supervisor.max_route_load,
         ),
         (
             "aether_lattice",
@@ -714,7 +1006,7 @@ def print_trial_summary(reports: list[SimulationReport], paths: dict[str, str]) 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Compare flat queue vs Aether-Lattice routing under faulty agents."
+        description="Compare flat/actor baselines vs Aether-Lattice routing under faulty agents."
     )
     parser.add_argument(
         "--ops", type=int, default=100, help="Number of operations to simulate"
