@@ -9,10 +9,20 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     config = json.loads((REPO_ROOT / "vercel.json").read_text(encoding="utf-8"))
     routes = {(item["src"], item["dest"]) for item in config["routes"]}
+    ignore_script = REPO_ROOT / "scripts" / "vercel" / "ignore-build.cjs"
+    ignore_source = ignore_script.read_text(encoding="utf-8")
 
     assert {"src": "api/agent/*.js", "use": "@vercel/node"} in config["builds"]
-    assert "feat/vercel-*" in config["ignoreCommand"]
-    assert "fix/vercel-*" in config["ignoreCommand"]
+    assert config["ignoreCommand"] == "node scripts/vercel/ignore-build.cjs"
+    assert ignore_script.exists()
+    assert "ref === 'main'" in ignore_source
+    assert "ref.startsWith('launch/')" in ignore_source
+    assert "ref.startsWith('customer/')" in ignore_source
+    assert "'api/agent'" in ignore_source
+    assert "'api/polly'" in ignore_source
+    assert "'api/billing'" in ignore_source
+    assert "'docs/hire.html'" in ignore_source
+    assert "'docs/hire-b.html'" in ignore_source
     assert ("^/$", "/api/agent/launch.js") in routes
     assert ("^/launch$", "/api/agent/launch.js") in routes
     assert ("^/hire/?$", "/api/agent/hire.js") in routes
