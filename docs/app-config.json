@@ -28,16 +28,19 @@
     "offers_page": "https://aethermoore.com/SCBE-AETHERMOORE/offers/",
     "supporter_page": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
     "service_credits_page": "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
+    "hosted_run_page": "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html",
     "governance_snapshot_page": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
     "offers_json": "https://aethermoore.com/SCBE-AETHERMOORE/offers.json",
     "agent_bridge_health": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/health",
     "agent_bridge_system": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/system",
     "agent_bridge_offers": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/offers",
-    "agent_bridge_app_config": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/app-config"
+    "agent_bridge_app_config": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/app-config",
+    "polly_hosted_run": "https://scbe-agent-bridge-vercel.vercel.app/v1/polly/hosted-run"
   },
   "features": {
     "tip_jar": true,
     "service_credits": true,
+    "hosted_run_intake": true,
     "supporter_monthly": true,
     "governance_snapshot": true,
     "zero_key_agent_bus": true,

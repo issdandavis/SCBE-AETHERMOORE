@@ -65,6 +65,22 @@ The packages are companion surfaces, not forced dependencies. Install the
 smallest package that fits your task; the operator and agent-bus APIs can
 recommend a companion package when a feature lives in another ecosystem.
 
+### Free Local Use + Paid Hosted Runs
+
+The npm packages are free to run locally under `MIT OR Apache-2.0`. Use local
+Node, Python, deterministic harnesses, and Ollama first whenever possible.
+
+If you want SCBE to run hosted routing, a governed report, a benchmark pass, or
+provider/model-backed work for you, use:
+
+- Hosted run intake: [hosted-run.html](https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html)
+- Service credits: [service-credits.html](https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html)
+- Credit top-up: [Ko-fi / izdandavis](https://ko-fi.com/izdandavis)
+
+Service credits are the small pay-as-you-go path: billable provider/model usage
+is passed through with a 2-5% SCBE coordination fee. No subscription is required
+for the open-source packages.
+
 ## License
 
 Project-owned source, npm packages, PyPI packages, and packaged customer ZIP

@@ -57,6 +57,10 @@
       "dest": "/api/polly/lead.js"
     },
     {
+      "src": "^/v1/polly/hosted-run/?$",
+      "dest": "/api/polly/hosted-run.js"
+    },
+    {
       "src": "^/v1/polly/stats/?$",
       "dest": "/api/polly/stats.js"
     },

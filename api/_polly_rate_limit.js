@@ -16,6 +16,7 @@ const DEFAULT_WINDOW_MS = 60_000;
 const DEFAULTS = {
   chat: { limit: 30, windowMs: DEFAULT_WINDOW_MS },
   lead: { limit: 5, windowMs: DEFAULT_WINDOW_MS },
+  hosted_run: { limit: 8, windowMs: DEFAULT_WINDOW_MS },
   feedback: { limit: 60, windowMs: DEFAULT_WINDOW_MS },
 };
 
@@ -32,9 +33,7 @@ function clientIp(req) {
 function envLimit(name, fallback) {
   const upper = name.toUpperCase();
   const limit = Number(process.env[`POLLY_RATE_LIMIT_${upper}`] || fallback.limit);
-  const windowMs = Number(
-    process.env[`POLLY_RATE_LIMIT_${upper}_WINDOW_MS`] || fallback.windowMs
-  );
+  const windowMs = Number(process.env[`POLLY_RATE_LIMIT_${upper}_WINDOW_MS`] || fallback.windowMs);
   return {
     limit: Number.isFinite(limit) && limit > 0 ? limit : fallback.limit,
     windowMs: Number.isFinite(windowMs) && windowMs > 0 ? windowMs : fallback.windowMs,

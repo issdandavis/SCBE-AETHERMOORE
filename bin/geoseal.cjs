@@ -23,6 +23,14 @@ Modes:
        python -m geoseal_cli
      Use SCBE_GEOSEAL_PYTHON to pin the Python executable.
 
+Hosted run path:
+  Local/npm/Ollama-first use stays free under the open-source license.
+  For AetherMoore-hosted routing, governed reports, benchmarks, storage,
+  delivery, or provider/model-backed work:
+    https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html
+    https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html
+  Service credits pass through provider/model cost with a 2-5% SCBE fee.
+
 Useful commands:
   geoseal doctor --json
   geoseal permissions --json

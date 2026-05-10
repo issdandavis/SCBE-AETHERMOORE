@@ -17,8 +17,7 @@ function uploadConfig() {
       process.env.HUGGING_FACE_HUB_TOKEN ||
       '',
     repo: process.env.POLLY_HF_DATASET || DEFAULT_DATASET,
-    enabled:
-      String(process.env.POLLY_HF_UPLOAD_ENABLED || 'true').toLowerCase() !== 'false',
+    enabled: String(process.env.POLLY_HF_UPLOAD_ENABLED || 'true').toLowerCase() !== 'false',
     timeoutMs: Math.max(2000, Number(process.env.POLLY_HF_UPLOAD_TIMEOUT_MS || 8000)),
   };
 }
@@ -40,8 +39,11 @@ function stamp(record) {
       : Math.floor(Date.now() / 1000);
   const date = new Date(tsSeconds * 1000);
   const day = date.toISOString().slice(0, 10);
-  const compact =
-    date.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, '').replace('T', 'T');
+  const compact = date
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d+Z$/, '')
+    .replace('T', 'T');
   return { day, compact };
 }
 
@@ -57,6 +59,7 @@ function nonceHex(bytes) {
 
 const KIND_PREFIX = {
   lead: 'polly-leads',
+  hosted_run: 'polly-hosted-runs',
   funnel: 'polly-funnel',
   chat: 'polly-chat-live',
 };
@@ -144,7 +147,11 @@ async function uploadRecord(record) {
     const commit = await commitFile(cfg, pathInRepo, payload, summary);
     return { ok: true, repo: cfg.repo, path: pathInRepo, commit };
   } catch (error) {
-    return { ok: false, reason: 'fetch_error', detail: String(error.message || error).slice(0, 240) };
+    return {
+      ok: false,
+      reason: 'fetch_error',
+      detail: String(error.message || error).slice(0, 240),
+    };
   }
 }
 
