@@ -162,8 +162,11 @@ jobs:
           TASK="${{ steps.task.outputs.task }}"
           TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-          # Copy result to pages-accessible location
-          cp artifacts/agent-router/result.json docs/static/agent-data/latest-${TASK}.json
+          # Copy a public-safe result to the pages-accessible location. The
+          # private workflow artifact keeps raw stderr/stdout for debugging.
+          python scripts/system/sanitize_agent_router_public_result.py \
+            --input artifacts/agent-router/result.json \
+            --output docs/static/agent-data/latest-${TASK}.json
 
           # Build index of all agent data
           python -c "
@@ -180,7 +183,7 @@ jobs:
               index['tasks'][name] = {
                 'file': os.path.basename(f),
                 'updated': '$TIMESTAMP',
-                'preview': str(data)[:200]
+                'preview': json.dumps(data, sort_keys=True)[:200]
               }
             except:
               pass
