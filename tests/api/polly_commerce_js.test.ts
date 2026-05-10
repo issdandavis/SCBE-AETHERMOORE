@@ -243,6 +243,18 @@ describe('polly commerce intent classification', () => {
     expect(vault.checkoutUrl).toMatch(/^https:\/\/buy\.stripe\.com\//);
   });
 
+  it('ignores Stripe test-mode checkout links as public checkout overrides', () => {
+    const loaded = loadCommerceWithEnv({
+      SCBE_PAYMENT_LINK_HEARTBEAT: 'https://buy.stripe.com/test_00w14oaPgdEJejL6I35Ne05',
+    });
+    const heartbeat = loaded.PRODUCT_CATALOG.find(
+      (p: { sku: string }) => p.sku === 'governance-heartbeat'
+    );
+    expect(heartbeat.checkoutUrl).toBe(
+      'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup'
+    );
+  });
+
   it('classifies "buy" verb with bound product at 0.95 confidence', () => {
     const intent = commerce.classifyIntent('I want to buy the AI governance toolkit');
     expect(intent.name).toBe('buy');
