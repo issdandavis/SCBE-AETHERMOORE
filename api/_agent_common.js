@@ -15,6 +15,11 @@ const ALLOWED_TASKS = new Set([
   "agentic_ladder",
   "pair_benchmark",
   "poly_coding_seed",
+  // agent_bus dispatches the query as a single SCBE agent-bus event via
+  // scripts/system/agentbus_pipe.mjs in the GH Actions runner. Returns the
+  // typed envelope result. This is the bridge between the website's chat
+  // surface and the published scbe-agent-bus npm/PyPI package.
+  "agent_bus",
 ]);
 const PAGES_DATA_BASE = "https://aethermoore.com/SCBE-AETHERMOORE/static/agent-data";
 
