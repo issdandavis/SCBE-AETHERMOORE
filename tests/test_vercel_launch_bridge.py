@@ -43,6 +43,7 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert "!docs/app-config.json" in ignore
     assert "!public" in ignore
     assert "!public/hire.html" in ignore
+    assert "!scripts/vercel/ignore-build.cjs" in ignore
 
 
 def test_launch_page_links_to_public_docs_and_bridge_endpoints() -> None:
