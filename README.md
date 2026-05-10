@@ -50,6 +50,22 @@ The supporting platform lives mainly in:
 - `src/crypto/`
 - `python/scbe/`
 
+## Current Research Harnesses
+
+These are narrow, measurable harnesses that support the product and proposal
+lanes without claiming more than they test:
+
+- Aether-Lattice failure-containment simulator:
+  [docs/specs/AETHER_LATTICE.md](docs/specs/AETHER_LATTICE.md)
+- Star Fortress / Aether-Lattice capability note:
+  [docs/business/STAR_FORTRESS_AETHER_LATTICE_CAPABILITY_NOTE.md](docs/business/STAR_FORTRESS_AETHER_LATTICE_CAPABILITY_NOTE.md)
+
+Run the current containment sweep:
+
+```bash
+npm run research:aether-lattice
+```
+
 ## What Works Now
 
 The installable package surface is the simplest public entry point.

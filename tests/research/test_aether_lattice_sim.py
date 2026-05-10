@@ -1,0 +1,61 @@
+from scripts.research.aether_lattice_sim import (
+    aggregate_reports,
+    run_simulation,
+    run_trials,
+)
+
+
+def test_lattice_contains_faults_better_than_flat_queue():
+    report = run_simulation(operations=100, fault_rate=0.05, seed=42, octree_depth=3)
+
+    assert report.flat.faulty_agent_events > 0
+    assert report.flat.public_corruptions > report.lattice.public_corruptions
+    assert report.lattice.max_containment_radius <= 1
+    assert report.crypto_profile["name"] == "star-fortress-v1"
+    assert report.crypto_profile["sacred_egg_mapping"]["yolk"].startswith("CORE")
+    assert report.comparison["claim_supported"] is True
+
+
+def test_lattice_outputs_star_fortress_receipts():
+    report = run_simulation(operations=24, fault_rate=0.25, seed=12, octree_depth=3)
+
+    receipts = report.lattice.sample_boundary_receipts
+    assert receipts
+    assert any(receipt["fail_to_noise"] for receipt in receipts)
+    assert any(receipt["active_ring"] == "outer-lattice" for receipt in receipts)
+    assert all(receipt["sacred_egg"]["yolk_emitted"] is False for receipt in receipts)
+    assert report.crypto_profile["triadic_fallback_order"] == [
+        "outer-lattice",
+        "middle-hash",
+        "inner-dev-fallback",
+    ]
+
+
+def test_lattice_trace_cost_is_log_like_not_linear():
+    report = run_simulation(operations=128, fault_rate=0.1, seed=7, octree_depth=4)
+
+    assert report.flat.mean_trace_cost == 64.5
+    assert report.lattice.mean_trace_cost == 5.0
+    assert report.comparison["trace_cost_reduction_percent"] > 90
+
+
+def test_no_fault_run_still_routes_without_public_corruption():
+    report = run_simulation(operations=32, fault_rate=0.0, seed=9, octree_depth=2)
+
+    assert report.flat.public_corruptions == 0
+    assert report.lattice.public_corruptions == 0
+    assert report.lattice.throughput == 1.0
+
+
+def test_trial_sweep_reports_supported_claims():
+    reports = run_trials(
+        operations=64, fault_rate=0.05, seed=100, octree_depth=3, trials=5
+    )
+    aggregate = aggregate_reports(reports)
+
+    assert aggregate["trials"] == 5
+    assert aggregate["claim_supported_trials"] == 5
+    assert (
+        aggregate["lattice_mean_public_corruptions"]
+        <= aggregate["flat_mean_public_corruptions"]
+    )
