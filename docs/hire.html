@@ -835,7 +835,33 @@
     </div>
 
     <script src="/static/polly-hf-chat.js"></script>
+    <script src="/static/polly-funnel.js"></script>
     <script>
+      // Funnel beacons — operator-only telemetry. PollyFunnel auto-fires
+      // 'arrival' on DOMContentLoaded and 'scroll_50' / 'scroll_90' as
+      // the user scrolls. Below we add stage-specific beacons:
+      // chat_open, chat_msg, lead_form_focus, lead_submit_*, cta_click_*.
+      (function () {
+        if (!window.PollyFunnel) return;
+        // Buy-CTA clicks
+        document.querySelectorAll('a[href*="buy.stripe.com"]').forEach(function (link) {
+          link.addEventListener('click', function () {
+            window.PollyFunnel.fire('cta_click_buy', {
+              href: link.getAttribute('href') || '',
+              label: (link.textContent || '').trim().slice(0, 60),
+            });
+          });
+        });
+        // Email CTAs (mailto links)
+        document.querySelectorAll('a[href^="mailto:"]').forEach(function (link) {
+          link.addEventListener('click', function () {
+            window.PollyFunnel.fire('cta_click_email', {
+              href: link.getAttribute('href') || '',
+            });
+          });
+        });
+      })();
+
       (function () {
         var root = document.getElementById('pollyChatRoot');
         if (!root || !window.PollyHFChat) return;
@@ -868,6 +894,17 @@
         var status = document.getElementById('leadStatus');
         if (!form || !status) return;
         var apiBase = window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app';
+        // First-focus beacon — fires once when the user starts engaging
+        // with the form (any field). PollyFunnel dedupes additional fires.
+        if (window.PollyFunnel) {
+          form.addEventListener(
+            'focusin',
+            function () {
+              window.PollyFunnel.fire('lead_form_focus');
+            },
+            { once: true }
+          );
+        }
 
         // Contextual self-serve options based on project_type. The API now
         // returns the canonical fulfillment packet; this table is a fallback.
@@ -1008,6 +1045,9 @@
           status.textContent = 'Sending…';
           status.style.color = 'var(--dim)';
           var projectType = document.getElementById('leadProjectType').value;
+          if (window.PollyFunnel) {
+            window.PollyFunnel.fire('lead_submit_attempt', { project_type: projectType });
+          }
           var payload = {
             contact: document.getElementById('leadContact').value,
             project_type: projectType,
@@ -1030,7 +1070,16 @@
                 'Could not send: ' +
                 (data.error || 'unknown error') +
                 '. Try again or email directly.';
+              if (window.PollyFunnel) {
+                window.PollyFunnel.fire('lead_submit_fail', {
+                  http: response.status,
+                  error: (data && data.error) || '',
+                });
+              }
               return;
+            }
+            if (window.PollyFunnel) {
+              window.PollyFunnel.fire('lead_submit_ok', { project_type: projectType });
             }
             // Replace the form with the contextual thank-you panel so the
             // user gets a clear next step instead of a one-line confirmation.
@@ -1049,6 +1098,11 @@
             status.style.color = '#ff7a7a';
             status.textContent =
               'Network error sending the lead. Email issdandavis7795@gmail.com directly as a fallback.';
+            if (window.PollyFunnel) {
+              window.PollyFunnel.fire('lead_submit_fail', {
+                error: String((error && error.message) || error).slice(0, 80),
+              });
+            }
           }
         });
       })();

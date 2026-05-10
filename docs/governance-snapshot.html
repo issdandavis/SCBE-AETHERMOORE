@@ -261,13 +261,41 @@
           </p>
         </form>
       </section>
+      <script src="/SCBE-AETHERMOORE/static/polly-funnel.js"></script>
       <script>
+        // Funnel beacons — operator-only telemetry. PollyFunnel auto-fires
+        // 'arrival' + scroll thresholds. Below: stripe CTA clicks +
+        // snapshot intake stages.
+        (function () {
+          if (!window.PollyFunnel) return;
+          document.querySelectorAll('a[href*="buy.stripe.com"]').forEach(function (link) {
+            link.addEventListener('click', function () {
+              window.PollyFunnel.fire('cta_click_buy', {
+                href: link.getAttribute('href') || '',
+              });
+            });
+          });
+          document.querySelectorAll('a[href^="mailto:"]').forEach(function (link) {
+            link.addEventListener('click', function () {
+              window.PollyFunnel.fire('cta_click_email');
+            });
+          });
+        })();
         (function () {
           var apiBase = (window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app').replace(/\/$/, '');
           var form = document.getElementById('intakeForm');
           if (!form) return;
           var status = document.getElementById('intakeStatus');
           var mailto = document.getElementById('intakeMailto');
+          if (window.PollyFunnel) {
+            form.addEventListener(
+              'focusin',
+              function () {
+                window.PollyFunnel.fire('lead_form_focus');
+              },
+              { once: true }
+            );
+          }
 
           function buildMailto(values) {
             var body =
@@ -285,6 +313,9 @@
             event.preventDefault();
             status.style.color = 'var(--muted)';
             status.textContent = 'Sending…';
+            if (window.PollyFunnel) {
+              window.PollyFunnel.fire('snapshot_intake_attempt');
+            }
             var values = {
               email: document.getElementById('intakeEmail').value.trim(),
               workflow: document.getElementById('intakeWorkflow').value.trim(),
@@ -331,7 +362,16 @@
                 status.textContent =
                   'Could not send: ' + ((data && data.error) || 'unknown error') +
                   '. Use the email fallback below.';
+                if (window.PollyFunnel) {
+                  window.PollyFunnel.fire('snapshot_intake_fail', {
+                    http: response.status,
+                    error: ((data && data.error) || '').slice(0, 80),
+                  });
+                }
                 return;
+              }
+              if (window.PollyFunnel) {
+                window.PollyFunnel.fire('snapshot_intake_ok');
               }
               form.innerHTML =
                 '<p style="font-size: 16px; color: var(--ink)"><strong>Intake received.</strong> ' +
@@ -342,6 +382,11 @@
               status.style.color = '#ff7a7a';
               status.textContent = 'Network error: ' + (error && error.message ? error.message : error) +
                 '. Use the email fallback below.';
+              if (window.PollyFunnel) {
+                window.PollyFunnel.fire('snapshot_intake_fail', {
+                  error: String((error && error.message) || error).slice(0, 80),
+                });
+              }
             }
           });
         })();
