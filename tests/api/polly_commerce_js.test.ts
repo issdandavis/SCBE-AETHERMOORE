@@ -32,6 +32,8 @@ const trainCapture = require('../../api/_polly_train_capture.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const leadHandler = require('../../api/polly/lead.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
+const hostedRunHandler = require('../../api/polly/hosted-run.js');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const hfUpload = require('../../api/_polly_hf_upload.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const rateLimit = require('../../api/_polly_rate_limit.js');
@@ -547,6 +549,65 @@ describe('polly lead handler', () => {
     const res = makeRes();
     await leadHandler(req, res);
     expect(res.statusCode).toBe(405);
+  });
+});
+
+describe('polly hosted-run handler', () => {
+  beforeEach(() => rateLimit.reset());
+
+  const validHostedRun = {
+    contact: 'buyer@example.com',
+    run_type: 'governance-scan',
+    route: 'ollama-first',
+    budget: '5-20',
+    task: 'Run a small governed scan and tell me if local Ollama is enough.',
+    source: 'test',
+  };
+
+  it('accepts a hosted run intake and returns immediate value links', async () => {
+    const req = makeReq({ body: validHostedRun });
+    const res = makeRes();
+    await hostedRunHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    const body = res.body as {
+      ok: boolean;
+      next_steps: string[];
+      hosted_run_packet: {
+        status: string;
+        usage_policy: { fee: string };
+        immediate_value: { url: string }[];
+      };
+    };
+    expect(body.ok).toBe(true);
+    expect(body.next_steps.length).toBeGreaterThan(0);
+    expect(body.hosted_run_packet.status).toBe('hosted-run-intake-v1');
+    expect(body.hosted_run_packet.usage_policy.fee).toContain('2-5%');
+    expect(
+      body.hosted_run_packet.immediate_value.some((item) => item.url.includes('service-credits'))
+    ).toBe(true);
+    expect(
+      body.hosted_run_packet.immediate_value.some((item) => item.url.includes('ko-fi.com'))
+    ).toBe(true);
+  });
+
+  it('rejects hosted run intake without contact', async () => {
+    const req = makeReq({ body: { ...validHostedRun, contact: '' } });
+    const res = makeRes();
+    await hostedRunHandler(req, res);
+    expect(res.statusCode).toBe(400);
+    const body = res.body as { ok: boolean; error: string };
+    expect(body.ok).toBe(false);
+    expect(body.error).toContain('contact');
+  });
+
+  it('honeypot returns success with no downstream next steps', async () => {
+    const req = makeReq({ body: { ...validHostedRun, website: 'https://bot.example' } });
+    const res = makeRes();
+    await hostedRunHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    const body = res.body as { ok: boolean; next_steps: string[] };
+    expect(body.ok).toBe(true);
+    expect(body.next_steps).toHaveLength(0);
   });
 });
 

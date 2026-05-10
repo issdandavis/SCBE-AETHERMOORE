@@ -80,6 +80,7 @@ function buildSystemContract() {
         health: '/api/agent/health',
         system: '/api/agent/system',
         chat: '/api/agent/chat',
+        hosted_run: '/v1/polly/hosted-run',
         search: '/api/agent/search',
         storage: '/api/agent/storage',
         status: '/api/agent/status',

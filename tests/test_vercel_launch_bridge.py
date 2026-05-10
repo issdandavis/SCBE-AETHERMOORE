@@ -18,6 +18,7 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert ("^/hire/?$", "/api/agent/hire.js") in routes
     assert ("^/SCBE-AETHERMOORE/hire\\.html$", "/api/agent/hire.js") in routes
     assert ("^/api/agent/(.*)$", "/api/agent/$1.js") in routes
+    assert ("^/v1/polly/hosted-run/?$", "/api/polly/hosted-run.js") in routes
 
 
 def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
@@ -67,6 +68,7 @@ def test_public_offer_catalog_has_live_revenue_links() -> None:
     assert by_id["tip_jar"]["checkout_url"] == "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
     assert by_id["service_credits"]["checkout_url"] == "https://ko-fi.com/izdandavis"
     assert by_id["service_credits"]["proof_url"].endswith("/service-credits.html")
+    assert by_id["service_credits"]["intake_url"].endswith("/hosted-run.html")
     assert by_id["supporter_monthly"]["checkout_url"] == "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
     assert by_id["governance_snapshot"]["intake_url"].endswith("/governance-snapshot.html#intake")
     assert offers["usage_policy"]["service_fee_percent_range"] == [2, 5]
@@ -82,6 +84,9 @@ def test_public_app_config_explains_remote_update_boundary() -> None:
     assert "package name" in config["remote_update"]["requires_store_release"]
     assert config["features"]["tip_jar"] is True
     assert config["features"]["service_credits"] is True
+    assert config["features"]["hosted_run_intake"] is True
+    assert config["endpoints"]["hosted_run_page"].endswith("/hosted-run.html")
+    assert config["endpoints"]["polly_hosted_run"].endswith("/v1/polly/hosted-run")
 
 
 def test_supporter_page_uses_direct_stripe_checkout_not_broken_api_bridge() -> None:
@@ -102,6 +107,7 @@ def test_vercel_bridge_exposes_remote_offer_and_app_config_endpoints() -> None:
     assert "s-maxage=300" in app_config_source
     assert "aethermoor.agent.system_contract.v1" in system_source
     assert "/api/agent/chat" in system_source
+    assert "/v1/polly/hosted-run" in system_source
     assert "workspace_formation" in system_source
     assert "usage_policy" in system_source
 
@@ -110,3 +116,14 @@ def test_public_app_config_exposes_unified_system_contract() -> None:
     config = json.loads((REPO_ROOT / "docs" / "app-config.json").read_text(encoding="utf-8"))
 
     assert config["endpoints"]["agent_bridge_system"].endswith("/api/agent/system")
+
+
+def test_hosted_run_page_and_endpoint_are_present() -> None:
+    page = (REPO_ROOT / "docs" / "hosted-run.html").read_text(encoding="utf-8")
+    handler = (REPO_ROOT / "api" / "polly" / "hosted-run.js").read_text(encoding="utf-8")
+
+    assert "SCBE hosted run intake" in page
+    assert "/v1/polly/hosted-run" in page
+    assert "ko-fi.com/izdandavis" in page
+    assert "hosted-run-intake-v1" in handler
+    assert "2-5% SCBE coordination fee" in handler
