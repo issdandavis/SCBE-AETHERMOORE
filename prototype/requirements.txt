@@ -8,7 +8,7 @@ matplotlib>=3.10.9
 plotly>=6.7.0
 
 # Interactive demo
-streamlit>=1.29.0
+streamlit>=1.57.0
 
 # Optional: For advanced embeddings
 # sentence-transformers>=2.2.0
