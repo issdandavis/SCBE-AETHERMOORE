@@ -17,9 +17,11 @@ const currentSha = process.env.VERCEL_GIT_COMMIT_SHA || '';
 const previousSha = process.env.VERCEL_GIT_PREVIOUS_SHA || '';
 
 const relevantPaths = [
+  '.vercelignore',
   'vercel.json',
   'package.json',
   'package-lock.json',
+  'scripts/vercel/ignore-build.cjs',
   'api/agent',
   'api/polly',
   'api/billing',
@@ -43,11 +45,11 @@ function finish(files) {
   const changed = files.filter(Boolean);
   if (!changed.some(isRelevant)) {
     console.log('vercel-build: skip; no deployed paths changed');
-    process.exit(0);
+    return 0;
   }
 
   console.log('vercel-build: deploy; deployed paths changed');
-  process.exit(1);
+  return 1;
 }
 
 async function githubJson(path) {
@@ -95,27 +97,29 @@ async function main() {
     ref.startsWith('vercel-test/')
   ) {
     console.log(`vercel-build: deploy branch '${ref}'`);
-    process.exit(1);
+    return 1;
   }
 
   if (process.env.SCBE_VERCEL_CHANGED_FILES) {
-    finish(process.env.SCBE_VERCEL_CHANGED_FILES.split(/[\r\n,]+/).map((item) => item.trim()));
+    return finish(process.env.SCBE_VERCEL_CHANGED_FILES.split(/[\r\n,]+/).map((item) => item.trim()));
   }
 
   try {
     if (prId) {
-      finish(await prFiles());
+      return finish(await prFiles());
     }
 
     const files = await compareFiles();
-    if (files) finish(files);
+    if (files) return finish(files);
 
     console.log('vercel-build: deploy; no PR or compare metadata available');
-    process.exit(1);
+    return 1;
   } catch (error) {
     console.error(`vercel-build: deploy; path check failed: ${error.message || error}`);
-    process.exit(1);
+    return 1;
   }
 }
 
-main();
+main().then((code) => {
+  process.exitCode = code;
+});

@@ -18,6 +18,8 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "ref === 'main'" in ignore_source
     assert "ref.startsWith('launch/')" in ignore_source
     assert "ref.startsWith('customer/')" in ignore_source
+    assert "'.vercelignore'" in ignore_source
+    assert "'scripts/vercel/ignore-build.cjs'" in ignore_source
     assert "'api/agent'" in ignore_source
     assert "'api/polly'" in ignore_source
     assert "'api/billing'" in ignore_source
