@@ -305,11 +305,16 @@
               'What matters if AI gets it wrong:\n' + values.risk + '\n\n' +
               'Links / screenshots:\n' + (values.links || '(none provided)') + '\n\n' +
               'Deadline / context:\n' + (values.deadline || '(none provided)');
+            // The shared /v1/polly/lead endpoint enforces strict enums on
+            // project_type / budget / timeline. Snapshot intake distinction
+            // lives in `source` ('aethermoore.com/governance-snapshot') and
+            // the labeled "GOVERNANCE SNAPSHOT INTAKE" header at the top of
+            // description — that's enough to filter in the operator view.
             var payload = {
               contact: values.email,
-              project_type: 'governance_snapshot_intake',
-              budget: '$500 (paid via Stripe)',
-              timeline: values.deadline || 'standard 5-business-day target',
+              project_type: 'other',
+              budget: 'under-5k',
+              timeline: 'asap',
               description: description,
               source: 'aethermoore.com/governance-snapshot',
               website: values.website,
