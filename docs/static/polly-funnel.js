@@ -31,6 +31,10 @@
   function pageId() {
     var p = (location.pathname || '').toLowerCase();
     if (p.indexOf('governance-snapshot') !== -1) return 'governance-snapshot';
+    // Variant pages MUST be detected before the generic /hire match,
+    // otherwise hire-b.html would funnel into the same bucket as /hire
+    // and the A/B comparison would be impossible.
+    if (p.indexOf('hire-b') !== -1) return 'hire-b';
     if (p.indexOf('/hire') !== -1) return 'hire';
     if (p.indexOf('hire.html') !== -1) return 'hire';
     if (p.indexOf('polly-stats') !== -1) return 'polly-stats';
