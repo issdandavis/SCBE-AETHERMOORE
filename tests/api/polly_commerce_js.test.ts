@@ -176,10 +176,10 @@ describe('polly lead handler — anti-abuse', () => {
 });
 
 describe('polly commerce intent classification', () => {
-  it('catalog has five live products with valid stripe/kofi urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(5);
+  it('catalog has live products with valid checkout urls', () => {
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(6);
     for (const product of commerce.PRODUCT_CATALOG) {
-      expect(product.checkoutUrl).toMatch(/^https:\/\/(buy\.stripe\.com|ko-fi\.com)/);
+      expect(product.checkoutUrl).toMatch(/^(https:\/\/(buy\.stripe\.com|ko-fi\.com)|mailto:)/);
       expect(product.keywords.length).toBeGreaterThan(0);
     }
   });
@@ -209,6 +209,19 @@ describe('polly commerce intent classification', () => {
     const intent = commerce.classifyIntent('Can I get the $500 governance snapshot?');
     expect(intent.name).toBe('buy');
     expect(intent.product.sku).toBe('ai-governance-snapshot');
+  });
+
+  it('classifies governance heartbeat as the monthly subscription offer', () => {
+    const intent = commerce.classifyIntent('I want the $99 monthly governance heartbeat');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('governance-heartbeat');
+  });
+
+  it('classifies monthly scan as governance heartbeat without an explicit buy verb', () => {
+    const intent = commerce.classifyIntent('Do you have a monthly AI governance scan?');
+    expect(intent.name).toBe('buy');
+    expect(intent.confidence).toBeCloseTo(0.6, 2);
+    expect(intent.product.sku).toBe('governance-heartbeat');
   });
 
   it('classifies custom intent at 0.85', () => {
@@ -274,8 +287,18 @@ describe('polly commerce reply rendering', () => {
     const out = commerce.renderBuyReply(null);
     expect(out.actions).toHaveLength(commerce.PRODUCT_CATALOG.length);
     for (const action of out.actions) {
-      expect(action.url).toMatch(/^https:\/\//);
+      expect(action.url).toMatch(/^(https:\/\/|mailto:)/);
     }
+  });
+
+  it('renderBuyReply for heartbeat includes immediate signup value', () => {
+    const product = commerce.PRODUCT_CATALOG.find(
+      (p: { sku: string }) => p.sku === 'governance-heartbeat'
+    );
+    const out = commerce.renderBuyReply(product);
+    expect(out.text).toContain('$99/month');
+    expect(out.text).toContain('first scan starts');
+    expect(out.actions[0].url).toMatch(/^mailto:/);
   });
 
   it('renderCustomReply returns mailto with pre-filled context', () => {
@@ -291,12 +314,14 @@ describe('polly commerce reply rendering', () => {
 
   it('renderMembershipReply has credits + Ko-fi + GitHub + email actions', () => {
     const out = commerce.renderMembershipReply();
-    expect(out.actions).toHaveLength(4);
+    expect(out.actions).toHaveLength(5);
     expect(out.actions[0].url).toContain('service-credits');
-    expect(out.actions[1].url).toContain('ko-fi.com');
-    expect(out.actions[2].url).toContain('github.com');
-    expect(out.actions[3].url).toContain('mailto:');
+    expect(out.actions[1].url).toContain('Governance%20Heartbeat');
+    expect(out.actions[2].url).toContain('ko-fi.com');
+    expect(out.actions[3].url).toContain('github.com');
+    expect(out.actions[4].url).toContain('mailto:');
     expect(out.text).toContain('2-5%');
+    expect(out.text).toContain('$99/month');
   });
 
   it('renderResearchReply with matching topic returns canonical body + repo links', () => {
