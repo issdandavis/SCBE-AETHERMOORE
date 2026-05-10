@@ -7,6 +7,7 @@ const {
   renderBuyReply,
   renderCustomReply,
   renderGuideReply,
+  renderHelpReply,
   renderMembershipReply,
   renderResearchReply,
   HIRE_EMAIL,
@@ -21,6 +22,7 @@ const COMMERCE_INTENTS = new Set([
   'buy',
   'custom',
   'guide',
+  'help',
   'membership',
   'research',
 ]);
@@ -119,6 +121,8 @@ module.exports = async function handler(req, res) {
       rendered = renderCustomReply(message);
     } else if (intent.name === 'guide') {
       rendered = renderGuideReply();
+    } else if (intent.name === 'help') {
+      rendered = renderHelpReply();
     } else if (intent.name === 'research') {
       rendered = renderResearchReply(message);
     } else if (intent.name === 'agent_task') {
@@ -131,8 +135,8 @@ module.exports = async function handler(req, res) {
       intent.name === 'research'
         ? 'research'
         : intent.name === 'agent_task'
-        ? 'agent_task'
-        : 'commerce';
+          ? 'agent_task'
+          : 'commerce';
 
     await captureIfConsented({
       req: body,
