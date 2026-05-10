@@ -129,6 +129,20 @@
       "excerpt": "M6 SphereMesh is a 6-seed, 6-tongue multi-nodal geometric model on the 14-layer stack. Seeds KO/AV/RU/CA/UM/DR. 14-layer dressing and governance stamps. Sacred Eggs as a controlled mutation/genesis gate. 21D canonical state lift for decision consistency."
     },
     {
+      "id": "products-find-your-fit",
+      "title": "Products — find your fit",
+      "path": "docs/products.html",
+      "tags": ["products", "catalog", "compare", "find-your-fit", "buyer", "non-technical"],
+      "excerpt": "Single-page catalog with a 3-question 'find your fit' picker that maps a visitor to one or two products. Lists all seven offers with plain-language pitches: Tip Jar $5, Service Credits $5+, Supporter $20/mo, Toolkit $29, Training Vault $29, Heartbeat $99/mo, Snapshot $500, plus custom engagement tiers. Works fully client-side; no API needed to use the picker."
+    },
+    {
+      "id": "start-here-three-routes",
+      "title": "Start here — three routes in",
+      "path": "docs/start-here.html",
+      "tags": ["onboarding", "start", "new-visitor", "routes", "guidance"],
+      "excerpt": "Plain-language onboarding page with three routes: (A) support the work (tip / supporter / credits), (B) get a written read on an AI workflow (Snapshot $500 or Heartbeat $99/mo), (C) build with the open code yourself (Toolkit / Vault / GitHub). Each route is 3 numbered steps and a single primary CTA. The fastest path for a cold visitor who doesn't know where to start."
+    },
+    {
       "id": "hydra-orchestration",
       "title": "HYDRA Orchestration",
       "path": "docs/hydra/ARCHITECTURE.md",

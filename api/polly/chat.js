@@ -5,6 +5,7 @@ const {
   classifyIntent,
   renderBuyReply,
   renderCustomReply,
+  renderGuideReply,
   renderMembershipReply,
   renderResearchReply,
   HIRE_EMAIL,
@@ -14,7 +15,7 @@ const llm = require('../_chat_llm');
 const hfUpload = require('../_polly_hf_upload');
 const rateLimit = require('../_polly_rate_limit');
 
-const COMMERCE_INTENTS = new Set(['buy', 'custom', 'membership', 'research']);
+const COMMERCE_INTENTS = new Set(['buy', 'custom', 'guide', 'membership', 'research']);
 const COMMERCE_CONFIDENCE_FLOOR = 0.6;
 const TRAIN_LOG_PREFIX = 'polly_train_v1 ';
 
@@ -108,6 +109,8 @@ module.exports = async function handler(req, res) {
       rendered = renderBuyReply(intent.product);
     } else if (intent.name === 'custom') {
       rendered = renderCustomReply(message);
+    } else if (intent.name === 'guide') {
+      rendered = renderGuideReply();
     } else if (intent.name === 'research') {
       rendered = renderResearchReply(message);
     } else {
