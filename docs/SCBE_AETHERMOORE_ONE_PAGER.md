@@ -154,8 +154,8 @@ teaming. Subcontract rates: $150–$250/hour.
 
 | For | Read |
 |---|---|
-| Architecture overview | `LAYER_INDEX.md`, `SYSTEM_ARCHITECTURE.md` |
-| Canonical spec | `SPEC.md` |
+| Architecture overview | `docs/LAYER_INDEX.md`, `docs/SYSTEM_ARCHITECTURE.md` |
+| Canonical spec | `docs/SPEC.md` |
 | 14-layer pipeline (TypeScript canon) | `src/harmonic/pipeline14.ts` |
 | Harmonic wall implementation | `src/harmonic/harmonicScaling.ts` |
 | Sacred Tongues (Python reference) | `src/symphonic_cipher/scbe_aethermoore/axiom_grouped/langues_metric.py` |

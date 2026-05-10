@@ -52,8 +52,9 @@ PITCH = textwrap.dedent("""
 PATHS = textwrap.dedent("""
     Canonical file pointers
     =======================
-      Architecture overview     LAYER_INDEX.md, SYSTEM_ARCHITECTURE.md
-      Canonical spec            SPEC.md
+      Architecture overview     docs/LAYER_INDEX.md
+                                docs/SYSTEM_ARCHITECTURE.md
+      Canonical spec            docs/SPEC.md
       14-layer pipeline (TS)    src/harmonic/pipeline14.ts
       Harmonic wall             src/harmonic/harmonicScaling.ts
       Sacred Tongues (Python)   src/symphonic_cipher/scbe_aethermoore/
