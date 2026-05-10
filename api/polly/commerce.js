@@ -41,6 +41,28 @@ const PRODUCT_CATALOG = [
     ],
   },
   {
+    sku: 'governance-heartbeat',
+    name: 'Governance Heartbeat',
+    priceLabel: '$99/month',
+    short:
+      'Monthly governance scan for one AI workflow. Includes a short delta report, risk/change summary, recommended action list, and optional training/dataset capture notes.',
+    checkoutUrl: 'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup',
+    deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#heartbeat',
+    keywords: [
+      'governance heartbeat',
+      'heartbeat',
+      'monthly governance',
+      'monthly scan',
+      'monthly ai governance',
+      'monthly report',
+      'recurring governance',
+      'subscription governance',
+      '$99',
+      '99/month',
+      '99 per month',
+    ],
+  },
+  {
     sku: 'ai-governance-toolkit',
     name: 'SCBE AI Governance Toolkit',
     priceLabel: '$29 one-time',
@@ -204,7 +226,7 @@ function classifyIntent(message) {
 
 function renderBuyReply(product) {
   if (!product) {
-    const lines = ['Three current products. Click to check out:', ''];
+    const lines = ['Current products. Click to check out:', ''];
     const actions = [];
     for (const item of PRODUCT_CATALOG) {
       lines.push(`- **${item.name}** — ${item.priceLabel}. ${item.short}`);
@@ -216,6 +238,14 @@ function renderBuyReply(product) {
   let text = `**${product.name}** — ${product.priceLabel}.\n\n${product.short}\n\nCheckout: ${product.checkoutUrl}`;
   if (product.deliveryUrl) {
     text += `\nWhat you get + delivery: ${product.deliveryUrl}`;
+  }
+  if (product.sku === 'governance-heartbeat') {
+    text +=
+      '\n\nImmediate value after signup: reply with one workflow URL or repo path and the first scan starts as an intake checklist + baseline review.';
+  }
+  if (product.sku === 'ai-governance-snapshot') {
+    text +=
+      '\n\nImmediate value after purchase: buyer intake checklist, order recap, starter governance resources, and a 1-business-day human inspection window.';
   }
   const actions = [{ label: `Buy ${product.name}`, url: product.checkoutUrl }];
   if (product.deliveryUrl) {
@@ -425,6 +455,7 @@ function renderMembershipReply() {
   const text =
     'Three ways to stay close to the work:\n\n' +
     '- **Use service credits** for pay-as-you-go hosted routing without a big subscription\n' +
+    '- **Governance Heartbeat** for a $99/month scan/report loop on one AI workflow\n' +
     '- **Sponsor / tip** the open-source work via Ko-fi\n' +
     '- **Watch the GitHub repo** for releases (`Watch -> Custom -> Releases`)\n' +
     '- **Email** me at the address below for a private update list\n\n' +
@@ -434,6 +465,10 @@ function renderMembershipReply() {
     {
       label: 'Service credits',
       url: 'https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html',
+    },
+    {
+      label: 'Governance Heartbeat',
+      url: 'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup',
     },
     { label: 'Top up on Ko-fi', url: MEMBERSHIP_KOFI_URL },
     { label: 'Watch the repo', url: 'https://github.com/issdandavis/SCBE-AETHERMOORE' },
