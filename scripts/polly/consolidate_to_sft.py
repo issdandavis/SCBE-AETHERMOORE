@@ -56,6 +56,20 @@ from typing import Iterable
 
 DEFAULT_REPO = "issdandavis/polly-chat-live"
 CHAT_PREFIX = "polly-chat-live/"
+LEAD_PREFIX = "polly-leads/"
+
+# project_type → offer Polly should steer the buyer toward. Mirrors
+# the JS commerce catalog at api/polly/commerce.js but kept inline so
+# the training script doesn't take a Node dependency. When the
+# project_type isn't in this map, fall through to advisory-call.
+LEAD_OFFER_MAP = {
+    "audit": ("Adversarial audit ($5k–$15k, 1–3 weeks)", "advisory-call"),
+    "custom-overlay": ("Custom governance overlay ($25k–$80k, 4–10 weeks)", "advisory-call"),
+    "advisory-call": ("Short advisory call ($300, 60 min)", "advisory-call"),
+    "subcontract": ("Federal subcontract role ($150–$250/hr)", "advisory-call"),
+    "training": ("Custom AI safety training engagement", "advisory-call"),
+    "other": ("AI Governance Snapshot ($500, fixed scope)", "snapshot"),
+}
 
 POLLY_SYSTEM_PROMPT = (
     "You are Polly, the AI assistant for AetherMoore — an AI safety and "
@@ -106,16 +120,88 @@ def to_sft(record: dict, source_path: str) -> dict | None:
     }
 
 
-def list_chat_files(api, repo: str, month: str | None) -> Iterable[str]:
+def lead_to_sft(record: dict, source_path: str) -> dict | None:
+    # Captured leads contain genuine buying-intent text we wrote 0% of.
+    # Convert each into an SFT pair so the model learns to recognize and
+    # route real intent shapes. The user side reconstructs what a buyer
+    # would type in chat; the assistant side steers them to the right
+    # offer using the same routing the JS commerce module would pick.
+    project_type = str(record.get("project_type") or "").strip().lower()
+    budget = str(record.get("budget") or "").strip()
+    timeline = str(record.get("timeline") or "").strip()
+    description = str(record.get("description") or "").strip()
+    if not description and not project_type:
+        return None
+
+    user_parts = []
+    if project_type:
+        user_parts.append(f"I'm looking for help with {project_type.replace('-', ' ')}.")
+    if budget and budget != "open":
+        user_parts.append(f"Budget is around {budget}.")
+    if timeline and timeline != "open":
+        user_parts.append(f"Timeline {timeline}.")
+    if description:
+        user_parts.append(description)
+    user = " ".join(user_parts).strip()
+    if not user:
+        return None
+
+    offer_label, offer_kind = LEAD_OFFER_MAP.get(
+        project_type, ("AI Governance Snapshot ($500, fixed scope)", "snapshot")
+    )
+    if offer_kind == "snapshot":
+        assistant = (
+            f"From what you described, the right starting point is the {offer_label}. "
+            "It's one workflow, one written read, three prioritized fixes, and an evidence "
+            "checklist — five business days from intake. Buy here: "
+            "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html"
+        )
+    else:
+        assistant = (
+            f"What you're describing fits {offer_label}. The fastest path is a short call to "
+            "scope it — email issdandavis7795@gmail.com with a one-paragraph outcome and I'll "
+            "reply same day. Full menu: https://aethermoore.com/SCBE-AETHERMOORE/hire.html"
+        )
+
+    return {
+        "messages": [
+            {"role": "system", "content": POLLY_SYSTEM_PROMPT},
+            {"role": "user", "content": user},
+            {"role": "assistant", "content": assistant},
+        ],
+        "metadata": {
+            "ts": record.get("ts"),
+            "session_id": None,
+            "intent": "lead",
+            "provider": "lead-template",
+            "project_type": project_type or None,
+            "budget": budget or None,
+            "timeline": timeline or None,
+            "source_path": source_path,
+        },
+    }
+
+
+def list_files_under(api, repo: str, prefix: str, month: str | None) -> Iterable[str]:
+    # Generic version of the prior list_chat_files — works for both
+    # polly-chat-live/ and polly-leads/ since the date-folder layout is
+    # identical between them.
     files = api.list_repo_files(repo_id=repo, repo_type="dataset")
     for path in files:
-        if not path.startswith(CHAT_PREFIX):
+        if not path.startswith(prefix):
             continue
-        if month and f"/{month}-" not in path and not path.startswith(f"{CHAT_PREFIX}{month}/"):
-            # path layout is polly-chat-live/2026-05-09/...; match by YYYY-MM prefix
-            if not path.startswith(f"{CHAT_PREFIX}{month}"):
+        if month and f"/{month}-" not in path and not path.startswith(f"{prefix}{month}/"):
+            if not path.startswith(f"{prefix}{month}"):
                 continue
         yield path
+
+
+def list_chat_files(api, repo: str, month: str | None) -> Iterable[str]:
+    return list_files_under(api, repo, CHAT_PREFIX, month)
+
+
+def list_lead_files(api, repo: str, month: str | None) -> Iterable[str]:
+    return list_files_under(api, repo, LEAD_PREFIX, month)
 
 
 def download_record(api, repo: str, path: str) -> dict | None:
@@ -165,6 +251,18 @@ def main() -> int:
         action="store_true",
         help="Keep smoke-test records in the output.",
     )
+    leads = parser.add_mutually_exclusive_group()
+    leads.add_argument(
+        "--include-leads",
+        action="store_true",
+        default=True,
+        help="Also pull polly-leads/ records and synthesize SFT pairs from them (default).",
+    )
+    leads.add_argument(
+        "--skip-leads",
+        action="store_true",
+        help="Skip lead records; use chat turns only.",
+    )
     args = parser.parse_args()
 
     token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
@@ -182,7 +280,10 @@ def main() -> int:
     out_path = args.out or f"polly-sft-{args.month or 'all'}.jsonl"
     skip_smoke = not args.include_smoke
 
-    kept = 0
+    include_leads = not args.skip_leads
+
+    kept_chat = 0
+    kept_leads = 0
     skipped_smoke = 0
     skipped_empty = 0
     with open(out_path, "w", encoding="utf-8") as out:
@@ -198,11 +299,27 @@ def main() -> int:
                 skipped_empty += 1
                 continue
             out.write(json.dumps(sft, ensure_ascii=False) + "\n")
-            kept += 1
+            kept_chat += 1
 
+        if include_leads:
+            for path in list_lead_files(api, args.repo, args.month):
+                record = download_record(api, args.repo, path)
+                if not isinstance(record, dict):
+                    continue
+                if skip_smoke and is_smoke(record):
+                    skipped_smoke += 1
+                    continue
+                sft = lead_to_sft(record, path)
+                if sft is None:
+                    skipped_empty += 1
+                    continue
+                out.write(json.dumps(sft, ensure_ascii=False) + "\n")
+                kept_leads += 1
+
+    kept = kept_chat + kept_leads
     print(
-        f"[done] kept={kept} skipped_smoke={skipped_smoke} skipped_empty={skipped_empty} "
-        f"out={out_path}"
+        f"[done] kept={kept} (chat={kept_chat}, leads={kept_leads}) "
+        f"skipped_smoke={skipped_smoke} skipped_empty={skipped_empty} out={out_path}"
     )
 
     if args.upload and kept > 0:
