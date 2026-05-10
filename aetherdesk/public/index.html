@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AetherDesk Operator Shell v0</title>
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --panel: #11161f;
+        --border: rgba(214, 167, 86, 0.25);
+        --text: #f2f0ea;
+        --muted: #8a8b8c;
+        --accent: #d6a756;
+        --pass: #7ed99c;
+        --fail: #e88080;
+        --running: #8cc7e8;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: 'JetBrains Mono', Consolas, Menlo, monospace;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+      }
+      header {
+        padding: 14px 22px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 18px;
+        color: var(--accent);
+        letter-spacing: 0.5px;
+      }
+      header .sub {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+        gap: 0;
+        height: calc(100vh - 53px);
+      }
+      .panel {
+        padding: 18px 22px;
+        overflow-y: auto;
+      }
+      .panel + .panel {
+        border-left: 1px solid var(--border);
+      }
+      .panel h2 {
+        margin: 0 0 12px 0;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--accent);
+      }
+      .commands {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .cmd {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 12px 14px;
+      }
+      .cmd-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .cmd-label {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .cmd-tier {
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .cmd-desc {
+        margin: 6px 0 10px 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .cmd-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .cmd-script {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      button.run {
+        background: transparent;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 4px;
+        padding: 4px 12px;
+        font-family: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      button.run:hover {
+        background: var(--accent);
+        color: var(--bg);
+      }
+      button.run:disabled {
+        opacity: 0.4;
+        cursor: wait;
+      }
+      .status {
+        font-size: 11px;
+        margin-top: 8px;
+        color: var(--muted);
+      }
+      .status.pass {
+        color: var(--pass);
+      }
+      .status.fail {
+        color: var(--fail);
+      }
+      .status.running {
+        color: var(--running);
+      }
+      .receipts {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .receipt {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 8px 12px;
+        cursor: pointer;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 4px 12px;
+      }
+      .receipt:hover {
+        border-color: var(--accent);
+      }
+      .receipt.selected {
+        border-color: var(--accent);
+      }
+      .receipt-label {
+        font-size: 13px;
+      }
+      .receipt-meta {
+        font-size: 10px;
+        color: var(--muted);
+        text-align: right;
+      }
+      .receipt-result {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .receipt-result.pass {
+        color: var(--pass);
+      }
+      .receipt-result.fail {
+        color: var(--fail);
+      }
+      .detail {
+        margin-top: 14px;
+        padding: 12px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font-size: 11px;
+      }
+      .detail h3 {
+        margin: 0 0 8px 0;
+        font-size: 12px;
+        color: var(--accent);
+      }
+      .detail pre {
+        margin: 6px 0 0 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 280px;
+        overflow-y: auto;
+        background: var(--bg);
+        padding: 8px;
+        border-radius: 3px;
+        font-size: 11px;
+      }
+      .empty {
+        color: var(--muted);
+        font-size: 12px;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>AetherDesk</h1>
+      <span class="sub">Operator Shell v0 — local only · 127.0.0.1</span>
+    </header>
+    <main>
+      <section class="panel">
+        <h2>Terminal Task Pane</h2>
+        <div id="commands" class="commands"><p class="empty">loading...</p></div>
+      </section>
+      <section class="panel">
+        <h2>GeoSeal Receipts</h2>
+        <div id="receipts" class="receipts"><p class="empty">no runs yet</p></div>
+        <div id="detail"></div>
+      </section>
+    </main>
+
+    <script>
+      const $ = (sel) => document.querySelector(sel);
+      const cmdsEl = $('#commands');
+      const receiptsEl = $('#receipts');
+      const detailEl = $('#detail');
+
+      async function loadCommands() {
+        const r = await fetch('/api/commands').then((r) => r.json());
+        cmdsEl.innerHTML = '';
+        for (const c of r.commands) {
+          const div = document.createElement('div');
+          div.className = 'cmd';
+          div.innerHTML = `
+            <div class="cmd-head">
+              <div class="cmd-label">${c.label}</div>
+              <div class="cmd-tier">${c.risk_tier}</div>
+            </div>
+            <div class="cmd-desc">${c.description}</div>
+            <div class="cmd-row">
+              <code class="cmd-script">npm run ${c.npm_script}</code>
+              <button class="run" data-id="${c.id}">Run</button>
+            </div>
+            <div class="status" id="status-${c.id}"></div>
+          `;
+          cmdsEl.appendChild(div);
+        }
+        cmdsEl.querySelectorAll('button.run').forEach((b) => {
+          b.addEventListener('click', () => runCommand(b.dataset.id, b));
+        });
+      }
+
+      async function loadReceipts() {
+        const r = await fetch('/api/receipts').then((r) => r.json());
+        if (!r.receipts.length) {
+          receiptsEl.innerHTML = '<p class="empty">no runs yet</p>';
+          return;
+        }
+        receiptsEl.innerHTML = '';
+        for (const rec of r.receipts) {
+          const div = document.createElement('div');
+          div.className = 'receipt';
+          const dur = rec.duration_ms ? Math.round(rec.duration_ms / 1000) + 's' : '';
+          div.innerHTML = `
+            <div>
+              <div class="receipt-label">${rec.command_label || rec.command_id}</div>
+              <div class="receipt-meta">${rec.started_at || ''} · ${dur}</div>
+            </div>
+            <div class="receipt-result ${rec.result}">${rec.result}</div>
+          `;
+          div.addEventListener('click', () => showReceipt(rec.file, div));
+          receiptsEl.appendChild(div);
+        }
+      }
+
+      async function showReceipt(file, el) {
+        receiptsEl.querySelectorAll('.receipt').forEach((d) => d.classList.remove('selected'));
+        el.classList.add('selected');
+        const r = await fetch('/api/receipts/' + encodeURIComponent(file)).then((r) => r.json());
+        if (!r.ok) {
+          detailEl.innerHTML = '<p class="empty">receipt not found</p>';
+          return;
+        }
+        const rec = r.receipt;
+        detailEl.innerHTML = `
+          <div class="detail">
+            <h3>${rec.command_label}</h3>
+            <div>task_id: ${rec.task_id}</div>
+            <div>command: <code>${rec.command}</code></div>
+            <div>digest: ${rec.command_digest.slice(0, 16)}...</div>
+            <div>result: <span class="receipt-result ${rec.result}">${rec.result}</span> (exit ${rec.exit_code})</div>
+            <div>duration: ${Math.round(rec.duration_ms / 1000)}s</div>
+            <div>artifact: ${rec.artifact_path}</div>
+            <h3 style="margin-top:10px">stdout (tail)</h3>
+            <pre>${(rec.stdout_tail || '(empty)').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c])}</pre>
+            <h3 style="margin-top:10px">stderr (tail)</h3>
+            <pre>${(rec.stderr_tail || '(empty)').replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c])}</pre>
+          </div>
+        `;
+      }
+
+      async function runCommand(id, btn) {
+        const status = $('#status-' + id);
+        btn.disabled = true;
+        status.textContent = 'running...';
+        status.className = 'status running';
+        try {
+          const r = await fetch('/api/run/' + encodeURIComponent(id), { method: 'POST' }).then(
+            (r) => r.json()
+          );
+          if (!r.ok) {
+            status.textContent = 'error: ' + (r.error || 'unknown');
+            status.className = 'status fail';
+          } else {
+            status.textContent = `${r.receipt.result} (exit ${r.receipt.exit_code}, ${Math.round(r.receipt.duration_ms / 1000)}s)`;
+            status.className = 'status ' + r.receipt.result;
+          }
+        } catch (err) {
+          status.textContent = 'fetch error: ' + String(err);
+          status.className = 'status fail';
+        } finally {
+          btn.disabled = false;
+          loadReceipts();
+        }
+      }
+
+      loadCommands();
+      loadReceipts();
+      setInterval(loadReceipts, 5000);
+    </script>
+  </body>
+</html>
