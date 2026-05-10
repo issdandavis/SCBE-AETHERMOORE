@@ -61,8 +61,23 @@ describe('mcp-context — path security (security boundary)', () => {
   it('isAllowedDocPath rejects paths with shell metacharacters', () => {
     expect(ctx.isAllowedDocPath('docs/file;rm.md')).toBe(false);
     expect(ctx.isAllowedDocPath('docs/file$(whoami).md')).toBe(false);
-    expect(ctx.isAllowedDocPath('docs/file with space.md')).toBe(false);
     expect(ctx.isAllowedDocPath('docs/file|pipe.md')).toBe(false);
+  });
+
+  it('isAllowedDocPath allows spaces (Obsidian vault has "System Library/" etc.)', () => {
+    // Paths are jailed by the resolved-path-startsWith-root check, not the regex.
+    // Spaces appear in real vault directory names, so they must pass.
+    expect(ctx.isAllowedDocPath('notes/System Library/Home.md')).toBe(true);
+    expect(ctx.isAllowedDocPath('notes/Messges Dumps_trainging files/First Dump.md')).toBe(true);
+  });
+
+  it('Obsidian vault notes/ is exposed as a doc root', () => {
+    const files = ctx.listMarkdownFiles(path.join(REPO_ROOT, 'notes'));
+    expect(Array.isArray(files)).toBe(true);
+    expect(files.length).toBeGreaterThan(0);
+    for (const f of files) {
+      expect(f.startsWith('notes/')).toBe(true);
+    }
   });
 
   it('readDocStrict throws on paths outside allowed roots', () => {
@@ -115,6 +130,50 @@ describe('mcp-context — listing + reading + searching', () => {
   it('searchDocs respects limit', () => {
     const hits = ctx.searchDocs('the', 3);
     expect(hits.length).toBeLessThanOrEqual(3);
+  });
+});
+
+describe('mcp-context — content cache', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require('fs') as typeof import('fs');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const os = require('os') as typeof import('os');
+
+  it('readDocStrict returns identical content on repeat calls', () => {
+    ctx._resetCachesForTests();
+    const a = ctx.readDocStrict('docs/SCBE_AETHERMOORE_ONE_PAGER.md');
+    const b = ctx.readDocStrict('docs/SCBE_AETHERMOORE_ONE_PAGER.md');
+    expect(b.content).toBe(a.content);
+    expect(b.bytes).toBe(a.bytes);
+  });
+
+  it('cache invalidates when file mtime changes', () => {
+    // Use a real file under docs/ so the path-jail accepts it. Restore on cleanup.
+    const rel = 'docs/.cache_invalidation_test.md';
+    const full = path.join(REPO_ROOT, rel);
+    const original = '# original\nfind-me-AAAA\n';
+    const mutated = '# mutated\nfind-me-BBBB\n';
+    try {
+      fs.writeFileSync(full, original, 'utf8');
+      ctx._resetCachesForTests();
+      const first = ctx.readDocStrict(rel);
+      expect(first.content).toContain('AAAA');
+      // Force a noticeably different mtime — some filesystems have 1-2s resolution.
+      const future = new Date(Date.now() + 5000);
+      fs.writeFileSync(full, mutated, 'utf8');
+      fs.utimesSync(full, future, future);
+      const second = ctx.readDocStrict(rel);
+      expect(second.content).toContain('BBBB');
+      expect(second.content).not.toContain('AAAA');
+    } finally {
+      try {
+        fs.unlinkSync(full);
+      } catch (_err) {
+        /* ignore */
+      }
+    }
+    // touch os to silence unused-import lint
+    void os.tmpdir();
   });
 });
 

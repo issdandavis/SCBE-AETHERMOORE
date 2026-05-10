@@ -141,6 +141,7 @@
     "benchmark:cli": "python scripts/benchmark/cli_competitive_benchmark.py",
     "aetherdesk": "node aetherdesk/server.js",
     "mcp:context-server": "node mcp_context_server/server.js",
+    "mcp:context-bench": "node mcp_context_server/bench.js",
     "benchmark:representation-kaleidoscope": "python scripts/benchmark/build_representation_kaleidoscope.py",
     "benchmark:agentic:external": "python scripts/benchmark/external_agentic_eval_driver.py",
     "training:adapter-registry": "python scripts/model_training/build_adapter_registry.py",
