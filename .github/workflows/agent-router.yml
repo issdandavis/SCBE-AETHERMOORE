@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder | pair_benchmark | poly_coding_seed'
+        description: 'Task type: research | monitor | ask | scrape | web_search | coding | system_build | agentic_ladder | pair_benchmark | poly_coding_seed | agent_bus'
         required: true
         default: 'monitor'
         type: string
@@ -130,6 +130,23 @@ jobs:
             poly_coding_seed)
               python scripts/system/agent_router_smoke.py poly_coding_seed \
                 > artifacts/agent-router/result.json
+              ;;
+            agent_bus)
+              # Dispatch QUERY as one SCBE agent-bus event. Defaults
+              # taskType=general / privacy=remote_ok; advanced callers can
+              # override by passing a JSON-shaped QUERY whose task field
+              # carries the natural-language instruction.
+              if echo "$QUERY" | python -c 'import json,sys; json.loads(sys.stdin.read())' >/dev/null 2>&1; then
+                EVENT_JSON="$QUERY"
+              else
+                EVENT_JSON=$(python -c "import json,sys; print(json.dumps({'task': sys.argv[1], 'taskType': 'general', 'privacy': 'remote_ok'}))" "$QUERY")
+              fi
+              echo "$EVENT_JSON" | node scripts/system/agentbus_pipe.mjs \
+                > artifacts/agent-router/result.json || {
+                  echo "agent_bus event failed; emitting fallback envelope"
+                  echo '{"schema_version":"scbe-agentbus-pipe-result-v1","ok":false,"exit_code":null,"stderr_tail":"agentbus_pipe failed in CI","result":null}' \
+                    > artifacts/agent-router/result.json
+                }
               ;;
             *)
               echo "Unknown task: $TASK"

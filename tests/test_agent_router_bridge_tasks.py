@@ -18,6 +18,7 @@ EXPECTED_TASKS = {
     "agentic_ladder",
     "pair_benchmark",
     "poly_coding_seed",
+    "agent_bus",
 }
 
 
