@@ -160,4 +160,3 @@ model:
 
 This is the shortest path from SCBE's current backend strength to a product
 surface a buyer can understand.
-
