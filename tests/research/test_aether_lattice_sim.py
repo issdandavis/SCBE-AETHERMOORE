@@ -11,9 +11,7 @@ def test_lattice_contains_faults_better_than_flat_queue():
     assert report.flat.faulty_agent_events > 0
     assert report.flat.public_corruptions > report.lattice.public_corruptions
     assert report.actor_isolation.public_corruptions > report.lattice.public_corruptions
-    assert (
-        report.actor_supervisor.public_corruptions == report.lattice.public_corruptions
-    )
+    assert report.actor_supervisor.public_corruptions == report.lattice.public_corruptions
     assert report.lattice.max_containment_radius <= 1
     assert report.crypto_profile["name"] == "star-fortress-v1"
     assert report.crypto_profile["sacred_egg_mapping"]["yolk"].startswith("CORE")
@@ -62,17 +60,12 @@ def test_no_fault_run_still_routes_without_public_corruption():
 
 
 def test_trial_sweep_reports_supported_claims():
-    reports = run_trials(
-        operations=64, fault_rate=0.05, seed=100, octree_depth=3, trials=5
-    )
+    reports = run_trials(operations=64, fault_rate=0.05, seed=100, octree_depth=3, trials=5)
     aggregate = aggregate_reports(reports)
 
     assert aggregate["trials"] == 5
     assert aggregate["claim_supported_trials"] == 5
     assert aggregate["actor_supervisor_mean_public_corruptions"] == 0
-    assert (
-        aggregate["lattice_mean_public_corruptions"]
-        <= aggregate["flat_mean_public_corruptions"]
-    )
+    assert aggregate["lattice_mean_public_corruptions"] <= aggregate["flat_mean_public_corruptions"]
     assert aggregate["mean_trace_cost_reduction_vs_actor_supervisor_percent"] > 0
     assert aggregate["lattice_mean_dynamic_cache_hits"] >= 0

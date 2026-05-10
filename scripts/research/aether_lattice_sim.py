@@ -107,9 +107,7 @@ def star_fortress_receipt(
         "active_ring": active_ring,
         "triadic_fallback_order": STAR_FORTRESS_PROFILE["triadic_fallback_order"],
         "algorithms": next(
-            ring["algorithms"]
-            for ring in STAR_FORTRESS_PROFILE["rings"]
-            if ring["ring"] == active_ring
+            ring["algorithms"] for ring in STAR_FORTRESS_PROFILE["rings"] if ring["ring"] == active_ring
         ),
         "sacred_egg": {
             "shell": shell,
@@ -139,9 +137,7 @@ class Agent:
     agent_id: int
     faulty: bool = False
 
-    def execute(
-        self, operation: Operation, visible_state: dict[str, Any]
-    ) -> dict[str, Any]:
+    def execute(self, operation: Operation, visible_state: dict[str, Any]) -> dict[str, Any]:
         if self.faulty:
             return {
                 "ok": False,
@@ -220,9 +216,7 @@ class PocketCell:
         """
 
         return bool(
-            result.get("ok") is True
-            and result.get("kind") == "clean"
-            and isinstance(result.get("payload"), int)
+            result.get("ok") is True and result.get("kind") == "clean" and isinstance(result.get("payload"), int)
         )
 
 
@@ -261,9 +255,7 @@ class SimulationReport:
     comparison: dict[str, Any]
 
 
-def phi_coordinate(
-    n: int, r0: float = 1.0, c: float = 0.5
-) -> tuple[float, float, float]:
+def phi_coordinate(n: int, r0: float = 1.0, c: float = 0.5) -> tuple[float, float, float]:
     radius = r0 * math.sqrt(max(n, 1))
     theta = n * GOLDEN_ANGLE
     z = c * math.log1p(n)
@@ -301,9 +293,7 @@ def octree_path(point: tuple[float, float, float], depth: int) -> str:
 
 
 def build_agents(operations: int, fault_rate: float, rng: random.Random) -> list[Agent]:
-    return [
-        Agent(agent_id=i, faulty=rng.random() < fault_rate) for i in range(operations)
-    ]
+    return [Agent(agent_id=i, faulty=rng.random() < fault_rate) for i in range(operations)]
 
 
 def build_operations(operations: int) -> list[Operation]:
@@ -341,9 +331,7 @@ class FlatQueueBaseline:
             if agent.faulty:
                 faulty_events += 1
                 self.global_state["poisoned"] = True
-                self.global_state.setdefault("poison_sources", []).append(
-                    operation.op_id
-                )
+                self.global_state.setdefault("poison_sources", []).append(operation.op_id)
             if result.get("ok"):
                 successful += 1
                 operation.status = "verified"
@@ -366,23 +354,13 @@ class FlatQueueBaseline:
             max_containment_radius=public_corruptions if faulty_events else 0,
             mean_trace_cost=round(mean(trace_costs), 3) if trace_costs else 0.0,
             max_route_load=self.operations,
-            throughput=(
-                round(successful / self.operations, 4) if self.operations else 0.0
-            ),
-            corruption_rate=(
-                round(public_corruptions / self.operations, 4)
-                if self.operations
-                else 0.0
-            ),
-            notes=[
-                "shared global state lets one poisoned write taint downstream operations"
-            ],
+            throughput=(round(successful / self.operations, 4) if self.operations else 0.0),
+            corruption_rate=(round(public_corruptions / self.operations, 4) if self.operations else 0.0),
+            notes=["shared global state lets one poisoned write taint downstream operations"],
         )
 
 
-def _actor_trace_cost(
-    operations: int, *, supervised: bool = False, retry_penalty: int = 0
-) -> int:
+def _actor_trace_cost(operations: int, *, supervised: bool = False, retry_penalty: int = 0) -> int:
     """Approximate actor audit lookup cost for fairer baselines."""
 
     base = max(1, math.ceil(math.log2(max(operations, 2))) + 1)
@@ -435,14 +413,8 @@ class ActorIsolationBaseline:
             max_containment_radius=1 if faulty_events else 0,
             mean_trace_cost=round(mean(trace_costs), 3) if trace_costs else 0.0,
             max_route_load=1,
-            throughput=(
-                round(successful / self.operations, 4) if self.operations else 0.0
-            ),
-            corruption_rate=(
-                round(public_corruptions / self.operations, 4)
-                if self.operations
-                else 0.0
-            ),
+            throughput=(round(successful / self.operations, 4) if self.operations else 0.0),
+            corruption_rate=(round(public_corruptions / self.operations, 4) if self.operations else 0.0),
             notes=[
                 "local actor state prevents downstream poisoning",
                 "faulty actor output can still become public without a supervisor boundary",
@@ -453,9 +425,7 @@ class ActorIsolationBaseline:
 class ActorSupervisorBaseline:
     """Strong baseline: actor isolation plus validation and clean-worker retry."""
 
-    def __init__(
-        self, operations: int, fault_rate: float, seed: int, retry: bool = True
-    ):
+    def __init__(self, operations: int, fault_rate: float, seed: int, retry: bool = True):
         self.operations = operations
         self.fault_rate = fault_rate
         self.retry = retry
@@ -465,9 +435,7 @@ class ActorSupervisorBaseline:
     @staticmethod
     def _supervisor_accepts(result: dict[str, Any]) -> bool:
         return bool(
-            result.get("ok") is True
-            and result.get("kind") == "clean"
-            and isinstance(result.get("payload"), int)
+            result.get("ok") is True and result.get("kind") == "clean" and isinstance(result.get("payload"), int)
         )
 
     def run(self) -> SimulationMetrics:
@@ -494,9 +462,7 @@ class ActorSupervisorBaseline:
                 contained_faults += 1
                 if self.retry:
                     retry_count += 1
-                    retry_result = Agent(agent_id=-1, faulty=False).execute(
-                        operation, {}
-                    )
+                    retry_result = Agent(agent_id=-1, faulty=False).execute(operation, {})
                     if self._supervisor_accepts(retry_result):
                         operation.status = "verified_after_supervisor_retry"
                         operation.result = {**retry_result, "prior_contained": result}
@@ -514,14 +480,8 @@ class ActorSupervisorBaseline:
                     }
 
             self.ledger.append(operation)
-            retry_penalty = (
-                1 if operation.status == "verified_after_supervisor_retry" else 0
-            )
-            trace_costs.append(
-                _actor_trace_cost(
-                    self.operations, supervised=True, retry_penalty=retry_penalty
-                )
-            )
+            retry_penalty = 1 if operation.status == "verified_after_supervisor_retry" else 0
+            trace_costs.append(_actor_trace_cost(self.operations, supervised=True, retry_penalty=retry_penalty))
 
         return SimulationMetrics(
             system="actor_supervisor",
@@ -535,14 +495,8 @@ class ActorSupervisorBaseline:
             max_containment_radius=1 if contained_faults else 0,
             mean_trace_cost=round(mean(trace_costs), 3) if trace_costs else 0.0,
             max_route_load=1 + retry_count,
-            throughput=(
-                round(successful / self.operations, 4) if self.operations else 0.0
-            ),
-            corruption_rate=(
-                round(public_corruptions / self.operations, 4)
-                if self.operations
-                else 0.0
-            ),
+            throughput=(round(successful / self.operations, 4) if self.operations else 0.0),
+            corruption_rate=(round(public_corruptions / self.operations, 4) if self.operations else 0.0),
             notes=[
                 "supervisor catches invalid output before public merge",
                 "failed actors are retried with a clean replacement worker",
@@ -571,9 +525,7 @@ class AetherLattice:
     @staticmethod
     def _fault_signature(result: dict[str, Any]) -> str:
         payload = str(result.get("payload") or "")
-        payload_class = (
-            payload.split("::", 1)[0] if "::" in payload else type(payload).__name__
-        )
+        payload_class = payload.split("::", 1)[0] if "::" in payload else type(payload).__name__
         return _digest_json(
             {"kind": result.get("kind"), "payload_class": payload_class},
             "aether-lattice:repair-spore",
@@ -582,9 +534,7 @@ class AetherLattice:
     def _pocket_for(self, op_id: int) -> PocketCell:
         path_index = octree_path(phi_coordinate(op_id + 1), self.octree_depth)
         if path_index not in self.pockets:
-            self.pockets[path_index] = PocketCell(
-                depth=self.octree_depth, path_index=path_index
-            )
+            self.pockets[path_index] = PocketCell(depth=self.octree_depth, path_index=path_index)
         return self.pockets[path_index]
 
     def run(self) -> SimulationMetrics:
@@ -667,9 +617,7 @@ class AetherLattice:
                             path_index=f"{pocket.path_index}.retry.{operation.op_id}",
                         )
                         self.pockets[retry_pocket.path_index] = retry_pocket
-                        retry_result = retry_pocket.execute(
-                            Agent(agent_id=-1, faulty=False), retry_operation
-                        )
+                        retry_result = retry_pocket.execute(Agent(agent_id=-1, faulty=False), retry_operation)
                     if retry_pocket.mobius_boundary_exit(retry_result):
                         operation.status = "verified_after_retry"
                         if fault_signature not in self.repair_spores:
@@ -686,9 +634,7 @@ class AetherLattice:
                         )
                         operation.result = {
                             **retry_result,
-                            "prior_contained_receipt": operation.result[
-                                "fortress_receipt"
-                            ],
+                            "prior_contained_receipt": operation.result["fortress_receipt"],
                             "fortress_receipt": retry_receipt,
                         }
                         if len(sample_receipts) < 5:
@@ -705,17 +651,11 @@ class AetherLattice:
                 max(
                     1,
                     self.ledger.trace_cost(operation, "lattice", self.octree_depth)
-                    - (
-                        1
-                        if operation.result and operation.result.get("spore_reused")
-                        else 0
-                    ),
+                    - (1 if operation.result and operation.result.get("spore_reused") else 0),
                 )
             )
 
-        route_loads = [len(pocket.operations) for pocket in self.pockets.values()] or [
-            0
-        ]
+        route_loads = [len(pocket.operations) for pocket in self.pockets.values()] or [0]
         compromised = sum(1 for pocket in self.pockets.values() if pocket.compromised)
 
         return SimulationMetrics(
@@ -730,14 +670,8 @@ class AetherLattice:
             max_containment_radius=1 if contained_faults else 0,
             mean_trace_cost=round(mean(trace_costs), 3) if trace_costs else 0.0,
             max_route_load=max(route_loads),
-            throughput=(
-                round(successful / self.operations, 4) if self.operations else 0.0
-            ),
-            corruption_rate=(
-                round(public_corruptions / self.operations, 4)
-                if self.operations
-                else 0.0
-            ),
+            throughput=(round(successful / self.operations, 4) if self.operations else 0.0),
+            corruption_rate=(round(public_corruptions / self.operations, 4) if self.operations else 0.0),
             notes=[
                 "local pocket state is validated before append to spinal ledger",
                 "failed exits are contained and retried in a fresh pocket",
@@ -748,18 +682,10 @@ class AetherLattice:
         )
 
 
-def run_simulation(
-    operations: int, fault_rate: float, seed: int, octree_depth: int
-) -> SimulationReport:
-    flat = FlatQueueBaseline(
-        operations=operations, fault_rate=fault_rate, seed=seed
-    ).run()
-    actor_isolation = ActorIsolationBaseline(
-        operations=operations, fault_rate=fault_rate, seed=seed
-    ).run()
-    actor_supervisor = ActorSupervisorBaseline(
-        operations=operations, fault_rate=fault_rate, seed=seed
-    ).run()
+def run_simulation(operations: int, fault_rate: float, seed: int, octree_depth: int) -> SimulationReport:
+    flat = FlatQueueBaseline(operations=operations, fault_rate=fault_rate, seed=seed).run()
+    actor_isolation = ActorIsolationBaseline(operations=operations, fault_rate=fault_rate, seed=seed).run()
+    actor_supervisor = ActorSupervisorBaseline(operations=operations, fault_rate=fault_rate, seed=seed).run()
     lattice = AetherLattice(
         operations=operations,
         fault_rate=fault_rate,
@@ -768,37 +694,27 @@ def run_simulation(
     ).run()
     spread_reduction = 0.0
     if flat.max_containment_radius:
-        spread_reduction = 1 - (
-            lattice.max_containment_radius / flat.max_containment_radius
-        )
+        spread_reduction = 1 - (lattice.max_containment_radius / flat.max_containment_radius)
     trace_reduction = 0.0
     if flat.mean_trace_cost:
         trace_reduction = 1 - (lattice.mean_trace_cost / flat.mean_trace_cost)
     supervisor_trace_reduction = 0.0
     if actor_supervisor.mean_trace_cost:
-        supervisor_trace_reduction = 1 - (
-            lattice.mean_trace_cost / actor_supervisor.mean_trace_cost
-        )
+        supervisor_trace_reduction = 1 - (lattice.mean_trace_cost / actor_supervisor.mean_trace_cost)
     comparison = {
         "throughput_delta": round(lattice.throughput - flat.throughput, 4),
         "public_corruption_delta": lattice.public_corruptions - flat.public_corruptions,
-        "actor_isolation_public_corruption_delta": lattice.public_corruptions
-        - actor_isolation.public_corruptions,
-        "actor_supervisor_public_corruption_delta": lattice.public_corruptions
-        - actor_supervisor.public_corruptions,
+        "actor_isolation_public_corruption_delta": lattice.public_corruptions - actor_isolation.public_corruptions,
+        "actor_supervisor_public_corruption_delta": lattice.public_corruptions - actor_supervisor.public_corruptions,
         "failure_spread_reduction_percent": round(spread_reduction * 100, 2),
         "trace_cost_reduction_percent": round(trace_reduction * 100, 2),
-        "trace_cost_reduction_vs_actor_supervisor_percent": round(
-            supervisor_trace_reduction * 100, 2
-        ),
+        "trace_cost_reduction_vs_actor_supervisor_percent": round(supervisor_trace_reduction * 100, 2),
         "flat_to_lattice_route_load_ratio": round(
             flat.max_route_load / max(lattice.max_route_load, 1),
             3,
         ),
-        "beats_actor_supervisor_trace": lattice.mean_trace_cost
-        < actor_supervisor.mean_trace_cost,
-        "matches_actor_supervisor_corruption": lattice.public_corruptions
-        <= actor_supervisor.public_corruptions,
+        "beats_actor_supervisor_trace": lattice.mean_trace_cost < actor_supervisor.mean_trace_cost,
+        "matches_actor_supervisor_corruption": lattice.public_corruptions <= actor_supervisor.public_corruptions,
         "claim_supported": lattice.public_corruptions <= flat.public_corruptions
         and lattice.mean_trace_cost < flat.mean_trace_cost
         and lattice.public_corruptions <= actor_isolation.public_corruptions
@@ -818,9 +734,7 @@ def run_simulation(
     )
 
 
-def run_trials(
-    operations: int, fault_rate: float, seed: int, octree_depth: int, trials: int
-) -> list[SimulationReport]:
+def run_trials(operations: int, fault_rate: float, seed: int, octree_depth: int, trials: int) -> list[SimulationReport]:
     return [
         run_simulation(
             operations=operations,
@@ -836,9 +750,7 @@ def write_outputs(report: SimulationReport, out_dir: Path) -> dict[str, str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "aether_lattice_sim_report.json"
     csv_path = out_dir / "aether_lattice_sim_metrics.csv"
-    json_path.write_text(
-        json.dumps(asdict(report), indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    json_path.write_text(json.dumps(asdict(report), indent=2, sort_keys=True) + "\n", encoding="utf-8")
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=list(asdict(report.flat).keys()))
         writer.writeheader()
@@ -849,15 +761,12 @@ def write_outputs(report: SimulationReport, out_dir: Path) -> dict[str, str]:
     return {"json": str(json_path), "csv": str(csv_path)}
 
 
-def write_trial_outputs(
-    reports: list[SimulationReport], out_dir: Path
-) -> dict[str, str]:
+def write_trial_outputs(reports: list[SimulationReport], out_dir: Path) -> dict[str, str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     json_path = out_dir / "aether_lattice_sim_trials.json"
     csv_path = out_dir / "aether_lattice_sim_trials.csv"
     json_path.write_text(
-        json.dumps([asdict(report) for report in reports], indent=2, sort_keys=True)
-        + "\n",
+        json.dumps([asdict(report) for report in reports], indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     rows: list[dict[str, Any]] = []
@@ -886,53 +795,31 @@ def write_trial_outputs(
 def aggregate_reports(reports: list[SimulationReport]) -> dict[str, Any]:
     return {
         "trials": len(reports),
-        "flat_mean_throughput": round(
-            mean(report.flat.throughput for report in reports), 4
-        ),
-        "lattice_mean_throughput": round(
-            mean(report.lattice.throughput for report in reports), 4
-        ),
+        "flat_mean_throughput": round(mean(report.flat.throughput for report in reports), 4),
+        "lattice_mean_throughput": round(mean(report.lattice.throughput for report in reports), 4),
         "actor_isolation_mean_public_corruptions": round(
             mean(report.actor_isolation.public_corruptions for report in reports), 3
         ),
         "actor_supervisor_mean_public_corruptions": round(
             mean(report.actor_supervisor.public_corruptions for report in reports), 3
         ),
-        "flat_mean_public_corruptions": round(
-            mean(report.flat.public_corruptions for report in reports), 3
-        ),
-        "lattice_mean_public_corruptions": round(
-            mean(report.lattice.public_corruptions for report in reports), 3
-        ),
+        "flat_mean_public_corruptions": round(mean(report.flat.public_corruptions for report in reports), 3),
+        "lattice_mean_public_corruptions": round(mean(report.lattice.public_corruptions for report in reports), 3),
         "mean_failure_spread_reduction_percent": round(
-            mean(
-                report.comparison["failure_spread_reduction_percent"]
-                for report in reports
-            ),
+            mean(report.comparison["failure_spread_reduction_percent"] for report in reports),
             2,
         ),
         "mean_trace_cost_reduction_percent": round(
-            mean(
-                report.comparison["trace_cost_reduction_percent"] for report in reports
-            ),
+            mean(report.comparison["trace_cost_reduction_percent"] for report in reports),
             2,
         ),
         "mean_trace_cost_reduction_vs_actor_supervisor_percent": round(
-            mean(
-                report.comparison["trace_cost_reduction_vs_actor_supervisor_percent"]
-                for report in reports
-            ),
+            mean(report.comparison["trace_cost_reduction_vs_actor_supervisor_percent"] for report in reports),
             2,
         ),
-        "lattice_mean_spore_count": round(
-            mean(report.lattice.spore_count for report in reports), 3
-        ),
-        "lattice_mean_dynamic_cache_hits": round(
-            mean(report.lattice.dynamic_cache_hits for report in reports), 3
-        ),
-        "claim_supported_trials": sum(
-            1 for report in reports if report.comparison["claim_supported"]
-        ),
+        "lattice_mean_spore_count": round(mean(report.lattice.spore_count for report in reports), 3),
+        "lattice_mean_dynamic_cache_hits": round(mean(report.lattice.dynamic_cache_hits for report in reports), 3),
+        "claim_supported_trials": sum(1 for report in reports if report.comparison["claim_supported"]),
     }
 
 
@@ -972,13 +859,9 @@ def print_summary(report: SimulationReport, paths: dict[str, str]) -> None:
         f"seed={report.seed} ops={report.operations} fault_rate={report.fault_rate} octree_depth={report.octree_depth}"
     )
     print()
-    print(
-        f"{'system':<16} {'throughput':>10} {'public_bad':>10} {'trace_cost':>11} {'max_route':>10}"
-    )
+    print(f"{'system':<16} {'throughput':>10} {'public_bad':>10} {'trace_cost':>11} {'max_route':>10}")
     for system, throughput, public_bad, trace_cost, max_route in rows:
-        print(
-            f"{system:<16} {throughput:>10.4f} {public_bad:>10} {trace_cost:>11.3f} {max_route:>10}"
-        )
+        print(f"{system:<16} {throughput:>10.4f} {public_bad:>10} {trace_cost:>11.3f} {max_route:>10}")
     print()
     print("comparison:")
     for key, value in report.comparison.items():
@@ -1008,21 +891,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Compare flat/actor baselines vs Aether-Lattice routing under faulty agents."
     )
-    parser.add_argument(
-        "--ops", type=int, default=100, help="Number of operations to simulate"
-    )
+    parser.add_argument("--ops", type=int, default=100, help="Number of operations to simulate")
     parser.add_argument(
         "--fault-rate",
         type=float,
         default=0.05,
         help="Faulty agent probability in [0, 1]",
     )
-    parser.add_argument(
-        "--seed", type=int, default=42, help="Deterministic simulation seed"
-    )
-    parser.add_argument(
-        "--octree-depth", type=int, default=3, help="Recursive pocket depth"
-    )
+    parser.add_argument("--seed", type=int, default=42, help="Deterministic simulation seed")
+    parser.add_argument("--octree-depth", type=int, default=3, help="Recursive pocket depth")
     parser.add_argument("--trials", type=int, default=1, help="Monte Carlo trial count")
     parser.add_argument(
         "--out-dir",
