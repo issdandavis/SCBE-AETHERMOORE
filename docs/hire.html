@@ -18,7 +18,10 @@
     <meta property="og:image" content="https://aethermoore.com/SCBE-AETHERMOORE/hero.svg" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Hire Issac Davis — AI Safety & Governance Engineering" />
-    <meta name="twitter:description" content="Independent AI safety and governance engineering. Federal-registered, open-source-first." />
+    <meta
+      name="twitter:description"
+      content="Independent AI safety and governance engineering. Federal-registered, open-source-first."
+    />
     <meta name="twitter:image" content="https://aethermoore.com/SCBE-AETHERMOORE/hero.svg" />
     <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/hire.html" />
     <script type="application/ld+json">
@@ -42,6 +45,14 @@
           "Technical Advisory"
         ],
         "offers": [
+          {
+            "@type": "Offer",
+            "name": "AI Governance Snapshot",
+            "price": "500",
+            "priceCurrency": "USD",
+            "url": "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j",
+            "description": "Fixed-scope governance assessment for one AI workflow with a findings memo, prioritized fixes, evidence checklist, and fast-start packet"
+          },
           {
             "@type": "Offer",
             "name": "Short advisory call",
@@ -72,10 +83,7 @@
             "description": "4-10 weeks. Build a deployable governance layer in front of your model API"
           }
         ],
-        "sameAs": [
-          "https://github.com/issdandavis/SCBE-AETHERMOORE",
-          "https://aethermoore.com/"
-        ]
+        "sameAs": ["https://github.com/issdandavis/SCBE-AETHERMOORE", "https://aethermoore.com/"]
       }
     </script>
     <style>
@@ -359,8 +367,11 @@
         </p>
 
         <div class="cta-row">
+          <a class="cta primary" href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j"
+            >Buy $500 Snapshot</a
+          >
           <a
-            class="cta primary"
+            class="cta secondary"
             href="mailto:issdandavis7795@gmail.com?subject=Engagement%20inquiry%20%E2%80%94%20from%20aethermoore.com%2Fhire&body=Hi%20Issac%2C%0A%0AI%27d%20like%20to%20discuss%3A%0A%5B%20%5D%20Short%20advisory%20call%0A%5B%20%5D%20Custom%20governance%20overlay%0A%5B%20%5D%20Adversarial%20audit%0A%5B%20%5D%20Federal%20subcontract%20conversation%0A%5B%20%5D%20Other%3A%0A%0AContext%3A%0A%0AThanks%2C"
             >Email me directly</a
           >
@@ -383,6 +394,23 @@
           Concrete engagements with real deliverables. Pricing is anchored, not theoretical.
         </p>
         <div class="services">
+          <div class="service-card">
+            <h3>AI Governance Snapshot</h3>
+            <div class="price">$500 · fixed scope · immediate fast-start packet</div>
+            <p>
+              A first-pass governance assessment for one AI workflow. You get immediate checkout
+              confirmation, the service fast-start packet, a human-reviewed findings memo, three
+              prioritized fixes, and an evidence checklist you can reuse with leadership, auditors,
+              or proposal reviewers.
+            </p>
+            <p>
+              <a href="governance-snapshot.html" style="color: var(--accent)">View scope</a> ·
+              <a href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" style="color: var(--accent)"
+                >buy now</a
+              >
+            </p>
+          </div>
+
           <div class="service-card">
             <h3>Short advisory call</h3>
             <div class="price">$300 · 60 min · same week</div>
@@ -613,8 +641,8 @@
         <h2>Talk to Polly</h2>
         <p class="muted">
           Polly is the SCBE assistant. Ask about products, scope a custom build, or get pointed at
-          the right resource. Conversations are routed to a private Hugging Face dataset and used
-          to train the next release — uncheck the box below if you'd rather opt out for this
+          the right resource. Conversations are routed to a private Hugging Face dataset and used to
+          train the next release — uncheck the box below if you'd rather opt out for this
           conversation.
         </p>
         <label
@@ -660,18 +688,20 @@
             the field's job is to look interesting to dumb scrapers.
           -->
           <div
-            style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden"
+            style="
+              position: absolute;
+              left: -10000px;
+              top: auto;
+              width: 1px;
+              height: 1px;
+              overflow: hidden;
+            "
             aria-hidden="true"
           >
             <label
               >Website (leave blank)
-              <input
-                id="leadWebsite"
-                name="website"
-                type="text"
-                tabindex="-1"
-                autocomplete="off"
-              /></label>
+              <input id="leadWebsite" name="website" type="text" tabindex="-1" autocomplete="off"
+            /></label>
           </div>
           <label style="display: grid; gap: 6px; font-size: 13px; color: var(--dim)">
             <span>Email or phone *</span>
@@ -705,6 +735,7 @@
                 font-size: 14px;
               "
             >
+              <option value="ai-governance-snapshot">AI Governance Snapshot ($500)</option>
               <option value="advisory-call">Short advisory call ($300)</option>
               <option value="audit">Adversarial audit ($5K-15K)</option>
               <option value="custom-overlay">Custom governance overlay ($25K-80K)</option>
@@ -836,8 +867,7 @@
         var form = document.getElementById('leadForm');
         var status = document.getElementById('leadStatus');
         if (!form || !status) return;
-        var apiBase =
-          window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app';
+        var apiBase = window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app';
 
         // Contextual self-serve options based on project_type. The API now
         // returns the canonical fulfillment packet; this table is a fallback.
@@ -847,12 +877,12 @@
             cta: 'Open the service fast-start packet',
             href: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/service-fast-start.html',
           },
-          'audit': {
+          audit: {
             label: 'Want to start reviewing the methodology now?',
             cta: 'Open the service fast-start packet',
             href: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/service-fast-start.html',
           },
-          'training': {
+          training: {
             label: 'Want the workshop materials in advance?',
             cta: 'Open the service fast-start packet',
             href: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/service-fast-start.html',
@@ -997,7 +1027,9 @@
             if (!response.ok || !data.ok) {
               status.style.color = '#ff7a7a';
               status.textContent =
-                'Could not send: ' + (data.error || 'unknown error') + '. Try again or email directly.';
+                'Could not send: ' +
+                (data.error || 'unknown error') +
+                '. Try again or email directly.';
               return;
             }
             // Replace the form with the contextual thank-you panel so the
