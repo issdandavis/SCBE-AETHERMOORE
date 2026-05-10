@@ -56,4 +56,3 @@ Hire/intake page:
 https://scbe-agent-bridge-vercel.vercel.app/hire
 
 If the scope is bigger than one workflow, use the hire page and I will route it before quoting.
-
