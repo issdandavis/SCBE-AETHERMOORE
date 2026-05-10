@@ -7,6 +7,9 @@ function checkoutUrlFromEnv(envName, fallback) {
   // Stripe Payment Link IDs (`plink_...`) are not browser checkout URLs.
   // Vercel historically stored those internal IDs in SCBE_PAYMENT_LINK_*.
   // Only accept public URLs that a customer can actually click.
+  if (value.startsWith('https://buy.stripe.com/test_')) {
+    return fallback;
+  }
   if (
     value.startsWith('https://buy.stripe.com/') ||
     value.startsWith('https://ko-fi.com/') ||
