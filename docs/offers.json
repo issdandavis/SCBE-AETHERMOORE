@@ -67,18 +67,40 @@
     },
     {
       "id": "toolkit",
-      "name": "SCBE Toolkit",
+      "name": "SCBE AI Governance Toolkit",
       "price_label": "$29",
       "type": "digital_download",
       "checkout_url": "https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/product-manual/ai-governance-toolkit.html",
+      "delivery": {
+        "mode": "stripe_webhook_product_delivery",
+        "package_name": "SCBE_AI_Governance_Toolkit_v1.zip",
+        "requires_env": [
+          "STRIPE_TOOLKIT_PAYMENT_LINK_ID",
+          "SCBE_DELIVERY_TOKEN",
+          "SCBE_TOOLKIT_BLOB_URL"
+        ]
+      },
+      "value_position": "priced below a normal consulting call while delivering reusable governance templates on day one",
       "status": "live"
     },
     {
       "id": "training_vault",
-      "name": "Training Vault",
+      "name": "SCBE AI Security Training Vault",
       "price_label": "$29",
       "type": "digital_download",
       "checkout_url": "https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/product-manual/training-vault.html",
+      "delivery": {
+        "mode": "stripe_webhook_product_delivery",
+        "package_name": "SCBE_AI_Security_Training_Vault_v1.zip",
+        "requires_env": [
+          "STRIPE_VAULT_PAYMENT_LINK_ID",
+          "SCBE_DELIVERY_TOKEN",
+          "SCBE_TRAINING_VAULT_DOWNLOAD_URL or SCBE_VAULT_BLOB_URL"
+        ]
+      },
+      "value_position": "priced as a low-friction dataset and benchmark starter rather than a paid compute commitment",
       "status": "live"
     }
   ]
