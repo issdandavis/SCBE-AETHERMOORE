@@ -4,7 +4,10 @@
   "builds": [
     {
       "src": "api/agent/*.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["public/**", "docs/**"]
+      }
     },
     {
       "src": "api/polly/*.js",
