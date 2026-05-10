@@ -38,14 +38,67 @@ const BEARER = process.env.MCP_CONTEXT_TOKEN || null;
 const MAX_DOC_BYTES = 256 * 1024; // 256 KB per doc
 
 // The allowed-roots list is the security boundary. A request for
-// `read_doc` with anything outside these roots is rejected.
-const DOC_ROOTS = [path.join(REPO_ROOT, 'docs'), path.join(REPO_ROOT, 'book')];
+// `read_doc` with anything outside these roots is rejected. `notes/` is the
+// Obsidian vault — exposing the full thing was an explicit user request.
+const DOC_ROOTS = [
+  path.join(REPO_ROOT, 'docs'),
+  path.join(REPO_ROOT, 'book'),
+  path.join(REPO_ROOT, 'notes'),
+];
 
-const SAFE_NAME_RE = /^[A-Za-z0-9_./-]+$/;
+// Spaces allowed because the Obsidian vault has dirs like "System Library/".
+// Shell metacharacters (`;$|()` etc.) stay rejected — we never shell out, but
+// it's still a cheap defense-in-depth filter.
+const SAFE_NAME_RE = /^[A-Za-z0-9_./ -]+$/;
+
+// Listing cache: { root => { mtime_ns: dirMtimeMs, files: string[], cached_at: ms } }
+// Invalidated when any directory in the root subtree has a newer mtime than the
+// recorded `dirMtimeMs`. TTL keeps us from stat-walking on every call when the
+// tree is stable.
+const LISTING_TTL_MS = 5000;
+const _listingCache = new Map();
+
+// Content cache: { rel => { mtimeMs, size, body } }. Invalidated by mtime.
+// Capped by entry count to bound memory on long-lived processes.
+const CONTENT_CACHE_MAX = 512;
+const _contentCache = new Map();
+
+function _rootMtimeFingerprint(root) {
+  // Cheap fingerprint: max mtime across the top of the subtree. We don't
+  // walk every leaf — directory mtimes change when files are added/removed,
+  // so root-level + one nested level is enough to invalidate on edits.
+  if (!fs.existsSync(root)) return 0;
+  let max = fs.statSync(root).mtimeMs;
+  try {
+    for (const e of fs.readdirSync(root, { withFileTypes: true })) {
+      if (!e.isDirectory()) continue;
+      if (e.name.startsWith('.') || e.name === 'node_modules') continue;
+      try {
+        const m = fs.statSync(path.join(root, e.name)).mtimeMs;
+        if (m > max) max = m;
+      } catch (_err) {
+        /* skip */
+      }
+    }
+  } catch (_err) {
+    /* skip */
+  }
+  return max;
+}
 
 function listMarkdownFiles(root) {
+  const now = Date.now();
+  const cached = _listingCache.get(root);
+  if (cached && now - cached.cached_at < LISTING_TTL_MS) {
+    const fp = _rootMtimeFingerprint(root);
+    if (fp === cached.fingerprint) return cached.files;
+  }
+
   const out = [];
-  if (!fs.existsSync(root)) return out;
+  if (!fs.existsSync(root)) {
+    _listingCache.set(root, { fingerprint: 0, files: out, cached_at: now });
+    return out;
+  }
   const stack = [root];
   while (stack.length) {
     const current = stack.pop();
@@ -66,7 +119,47 @@ function listMarkdownFiles(root) {
       }
     }
   }
-  return out.sort();
+  out.sort();
+  _listingCache.set(root, {
+    fingerprint: _rootMtimeFingerprint(root),
+    files: out,
+    cached_at: now,
+  });
+  return out;
+}
+
+function _readCached(rel) {
+  const full = path.resolve(REPO_ROOT, rel);
+  let stat;
+  try {
+    stat = fs.statSync(full);
+  } catch (_err) {
+    return null;
+  }
+  if (!stat.isFile()) return null;
+  const cached = _contentCache.get(rel);
+  if (cached && cached.mtimeMs === stat.mtimeMs && cached.size === stat.size) {
+    return { stat, body: cached.body, bodyLower: cached.bodyLower };
+  }
+  let body;
+  try {
+    body = fs.readFileSync(full, 'utf8');
+  } catch (_err) {
+    return null;
+  }
+  if (_contentCache.size >= CONTENT_CACHE_MAX) {
+    // Drop oldest insertion-order entry — Map preserves insertion order.
+    const firstKey = _contentCache.keys().next().value;
+    if (firstKey !== undefined) _contentCache.delete(firstKey);
+  }
+  const bodyLower = body.toLowerCase();
+  _contentCache.set(rel, { mtimeMs: stat.mtimeMs, size: stat.size, body, bodyLower });
+  return { stat, body, bodyLower };
+}
+
+function _resetCachesForTests() {
+  _listingCache.clear();
+  _contentCache.clear();
 }
 
 function isAllowedDocPath(rel) {
@@ -81,11 +174,11 @@ function readDocStrict(rel) {
   if (!isAllowedDocPath(rel)) {
     throw new Error(`path not in allowed docs roots: ${rel}`);
   }
-  const full = path.resolve(REPO_ROOT, rel);
-  if (!fs.existsSync(full) || !fs.statSync(full).isFile()) {
+  const cached = _readCached(rel);
+  if (!cached) {
     throw new Error(`doc not found: ${rel}`);
   }
-  const stat = fs.statSync(full);
+  const { stat, body } = cached;
   if (stat.size > MAX_DOC_BYTES) {
     throw new Error(
       `doc too large (${stat.size} bytes; cap is ${MAX_DOC_BYTES}); fetch a section instead`
@@ -95,7 +188,7 @@ function readDocStrict(rel) {
     path: rel,
     bytes: stat.size,
     modified: stat.mtime.toISOString(),
-    content: fs.readFileSync(full, 'utf8'),
+    content: body,
   };
 }
 
@@ -107,14 +200,10 @@ function searchDocs(query, limit = 25) {
   const hits = [];
   for (const root of DOC_ROOTS) {
     for (const rel of listMarkdownFiles(root)) {
-      const full = path.join(REPO_ROOT, rel);
-      let body;
-      try {
-        body = fs.readFileSync(full, 'utf8');
-      } catch (_err) {
-        continue;
-      }
-      const idx = body.toLowerCase().indexOf(ql);
+      const cached = _readCached(rel);
+      if (!cached) continue;
+      const { body, bodyLower } = cached;
+      const idx = bodyLower.indexOf(ql);
       if (idx === -1) continue;
       const start = Math.max(0, idx - 80);
       const end = Math.min(body.length, idx + 80 + ql.length);
@@ -150,10 +239,7 @@ function buildMcpServer() {
       },
     },
     async ({ prefix }) => {
-      const files = [
-        ...listMarkdownFiles(path.join(REPO_ROOT, 'docs')),
-        ...listMarkdownFiles(path.join(REPO_ROOT, 'book')),
-      ];
+      const files = DOC_ROOTS.flatMap((root) => listMarkdownFiles(root));
       const filtered = prefix ? files.filter((f) => f.startsWith(prefix)) : files;
       return {
         content: [
@@ -350,6 +436,7 @@ module.exports = {
   isAllowedDocPath,
   readDocStrict,
   searchDocs,
+  _resetCachesForTests,
   DOC_ROOTS,
   REPO_ROOT,
   HOST,
