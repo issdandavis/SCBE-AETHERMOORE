@@ -61,44 +61,60 @@ def _take_topn(animals: list[dict], n: int) -> list[dict]:
     return sorted(animals, key=lambda a: a.get("liberties", 99))[:n]
 
 
-def call_ollama(model: str, prompt: str, base_url: str, timeout: int) -> dict:
+def call_ollama(model: str, prompt: str, base_url: str, timeout: int, retries: int = 3) -> dict:
     """One-shot completion against local Ollama HTTP API.
 
     `num_ctx` is held small so KV cache fits on consumer GPUs (6 GB VRAM
     can't hold the default 8 K context for a 1.5B model + prompt).
     `num_predict` caps reply length so a stuck model can't burn the
-    whole timeout.
+    whole timeout. `keep_alive` keeps the model resident between calls
+    so a sustained sweep doesn't pay the load cost on every request.
+    Transient 5xx (Ollama runner restart / brief OOM) is retried with
+    backoff before giving up.
     """
     body = json.dumps(
         {
             "model": model,
             "prompt": prompt,
             "stream": False,
+            "keep_alive": "5m",
             "options": {"num_ctx": 1024, "num_predict": 220},
         }
     ).encode("utf-8")
-    req = urllib.request.Request(
-        url=base_url.rstrip("/") + "/api/generate",
-        data=body,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            data = json.loads(resp.read().decode("utf-8", errors="ignore"))
-            return {
-                "ok": True,
-                "model": model,
-                "backend": "ollama",
-                "response": (data.get("response") or "").strip()[:1000],
-            }
-    except (urllib.error.URLError, urllib.error.HTTPError, OSError, json.JSONDecodeError) as exc:
-        return {
-            "ok": False,
-            "model": model,
-            "backend": "ollama",
-            "error": f"{type(exc).__name__}: {exc}"[:200],
-        }
+    last_exc: Exception | None = None
+    for attempt in range(retries):
+        req = urllib.request.Request(
+            url=base_url.rstrip("/") + "/api/generate",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                data = json.loads(resp.read().decode("utf-8", errors="ignore"))
+                return {
+                    "ok": True,
+                    "model": model,
+                    "backend": "ollama",
+                    "response": (data.get("response") or "").strip()[:1000],
+                    "attempts": attempt + 1,
+                }
+        except urllib.error.HTTPError as exc:
+            last_exc = exc
+            if exc.code in {500, 502, 503, 504} and attempt < retries - 1:
+                time.sleep(1.5 * (attempt + 1))
+                continue
+            break
+        except (urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
+            last_exc = exc
+            break
+    return {
+        "ok": False,
+        "model": model,
+        "backend": "ollama",
+        "error": f"{type(last_exc).__name__}: {last_exc}"[:200],
+        "attempts": retries,
+    }
 
 
 def call_hf_router(model: str, prompt: str, token: str, timeout: int) -> dict:
