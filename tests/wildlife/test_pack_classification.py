@@ -7,11 +7,6 @@ together.
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
-import pytest
-
 from scripts.wildlife.harvest_packs import build_board, liberties_for
 from scripts.wildlife.packs import PACKS, classify, severity_order
 
