@@ -157,6 +157,31 @@
     background: var(--good); color: #0a1714; border-color: transparent;
   }
 
+  .direct {
+    background: rgba(45, 211, 166, 0.06);
+    border: 1px solid rgba(45, 211, 166, 0.28);
+    border-radius: 20px;
+    padding: 22px;
+    margin: 0 0 24px;
+    text-align: left;
+    display: grid;
+    gap: 12px;
+  }
+  @media (min-width: 820px) {
+    .direct { grid-template-columns: 1fr auto; align-items: center; }
+  }
+  .direct strong { color: var(--text); font-size: 18px; }
+  .direct p { color: var(--muted); margin-top: 4px; }
+  .direct a {
+    display: inline-block;
+    padding: 12px 18px;
+    border-radius: 999px;
+    background: var(--good);
+    color: #0a1714;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
   .micro {
     text-align: center; color: var(--muted); font-size: 13px;
     padding: 24px 0 12px;
@@ -194,12 +219,21 @@
     <div class="eyebrow">Start here</div>
     <h1>Three routes in. Pick yours.</h1>
     <p class="lead">
-      AetherMoore is a governed AI workflow toolkit. Most people land here for one of three reasons.
-      Pick the one that fits and go.
+      AetherMoore is a governed AI workflow toolkit. If you need a useful result,
+      the fastest path is the $500 Governance Snapshot. Everything else supports,
+      extends, or explains that work.
     </p>
   </section>
 
   <section class="section-inner">
+    <div class="direct">
+      <div>
+        <strong>Most commercial visitors should start with the AI Governance Snapshot.</strong>
+        <p>Fixed scope, fixed price, five-business-day written read for one AI workflow.</p>
+      </div>
+      <a href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" target="_blank" rel="noopener">Buy Snapshot $500</a>
+    </div>
+
     <div class="routes">
 
       <article class="route">
@@ -226,7 +260,7 @@
         <div class="price-row"><strong>$500</strong> one-time read · <strong>$99/mo</strong> recurring monitor</div>
         <ol class="steps">
           <li>Buy the Governance Snapshot ($500). One workflow, one delivery, fixed scope.</li>
-          <li>You get an intake checklist within one business day. Reply with one workflow URL or repo path.</li>
+          <li>You immediately get a fast-start packet, then an intake checklist within one business day. Reply with one workflow URL or repo path.</li>
           <li>Five business days later, you receive a 2-page memo with three prioritized fixes and an evidence checklist.</li>
         </ol>
         <div class="route-cta">
