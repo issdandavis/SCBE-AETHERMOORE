@@ -3,12 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const FAST_START_PAGE = path.join(
-  process.cwd(),
-  'public',
-  'product-manual',
-  'service-fast-start.html'
-);
+const FAST_START_PAGE = path.join(process.cwd(), 'public', 'service-fast-start.html');
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
