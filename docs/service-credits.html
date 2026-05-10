@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SCBE Service Credits | AetherMoore</title>
+    <meta
+      name="description"
+      content="Pay-as-you-go SCBE service credits for hosted routing, governed reports, and provider usage."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #0b0d12;
+        color: #f2f0ea;
+        line-height: 1.55;
+      }
+      main {
+        width: min(920px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 46px 0;
+      }
+      a {
+        color: inherit;
+      }
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        color: #a3acb9;
+        margin-bottom: 40px;
+      }
+      h1 {
+        font-size: clamp(36px, 7vw, 70px);
+        line-height: 0.96;
+        margin: 0 0 18px;
+      }
+      .lead {
+        color: #a3acb9;
+        max-width: 740px;
+        font-size: 18px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        margin-top: 30px;
+      }
+      .card,
+      .notice {
+        border: 1px solid rgba(214, 167, 86, 0.2);
+        background: #11161f;
+        border-radius: 8px;
+        padding: 22px;
+      }
+      .notice {
+        margin-top: 28px;
+        background: #141b29;
+      }
+      .price {
+        color: #d6a756;
+        font-weight: 800;
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 11px 14px;
+        border-radius: 6px;
+        background: #d6a756;
+        color: #14110c;
+        font-weight: 800;
+        text-decoration: none;
+      }
+      code {
+        color: #d6a756;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav class="nav" aria-label="Service credits navigation">
+        <a href="index.html">Home</a>
+        <a href="offers/">Offers</a>
+        <a href="hire.html">Hire</a>
+        <a href="support.html">Support</a>
+      </nav>
+
+      <h1>SCBE Service Credits</h1>
+      <p class="lead">
+        Credits are the small, flexible payment path for hosted SCBE work. Local npm tools,
+        deterministic checks, and Ollama-first routing should stay free whenever possible. Credits
+        are used only when a run needs hosted capacity, report delivery, storage, or paid
+        provider/model usage.
+      </p>
+
+      <section class="grid" aria-label="Credit model">
+        <article class="card">
+          <h2>Fee Rule</h2>
+          <p>
+            Billable usage is charged as actual provider/model cost plus a small SCBE coordination
+            fee.
+          </p>
+          <p class="price">2-5% over actual usage cost</p>
+        </article>
+        <article class="card">
+          <h2>Routing Rule</h2>
+          <p>
+            The system tries local/Ollama, deterministic harnesses, and free hosted routes first.
+            Paid providers are reserved for work that actually needs them.
+          </p>
+          <p class="price">mostly free by default</p>
+        </article>
+        <article class="card">
+          <h2>Top Up</h2>
+          <p>
+            Small top-ups fund hosted runs while the automated wallet matures. Include your email
+            and what you want routed or reviewed.
+          </p>
+          <p class="price">$5+ pilot top-up</p>
+          <a class="btn" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
+            >Top Up Credits</a
+          >
+        </article>
+      </section>
+
+      <section class="notice">
+        <h2>What credits can pay for</h2>
+        <p>
+          Hosted agent-bus routing, governance snapshots, report generation, model calls, dataset
+          cleanup, private delivery links, and storage handoff. The receipt should show the routed
+          job, the provider/model used when applicable, the estimated or actual provider cost, and
+          the SCBE fee.
+        </p>
+        <p>
+          Target formula:
+          <code>customer charge = provider cost + 2-5% SCBE coordination fee</code>.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
