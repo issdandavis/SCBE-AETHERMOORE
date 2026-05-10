@@ -48,7 +48,7 @@ SHEPHERDS: dict[str, Shepherd] = {
     "SHEEP": Shepherd(
         pack="SHEEP",
         backend="ollama",
-        model="qwen2.5-coder:1.5b",
+        model="qwen2.5-coder:0.5b",
         bus_dispatch=False,  # bulk trivial: bypass bus, batch directly
         prompt_template=(
             "One-line action for this trivial chore (dependabot/format/lint): "
@@ -59,7 +59,7 @@ SHEPHERDS: dict[str, Shepherd] = {
     "CROW": Shepherd(
         pack="CROW",
         backend="ollama",
-        model="qwen2.5-coder:1.5b",
+        model="qwen2.5-coder:0.5b",
         bus_dispatch=False,
         prompt_template=(
             "TODO/FIXME comment to triage: {title}. Reply with one of: "
