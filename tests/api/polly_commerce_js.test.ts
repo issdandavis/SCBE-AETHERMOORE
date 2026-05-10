@@ -174,8 +174,8 @@ describe('polly lead handler — anti-abuse', () => {
 });
 
 describe('polly commerce intent classification', () => {
-  it('catalog has three live products with valid stripe/kofi urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(3);
+  it('catalog has four live products with valid stripe/kofi urls', () => {
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(4);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^https:\/\/(buy\.stripe\.com|ko-fi\.com)/);
       expect(product.keywords.length).toBeGreaterThan(0);
@@ -197,10 +197,21 @@ describe('polly commerce intent classification', () => {
     expect(intent.product.sku).toBe('ai-security-training-vault');
   });
 
+  it('classifies governance snapshot as a buyable fixed-scope product', () => {
+    const intent = commerce.classifyIntent('Can I get the $500 governance snapshot?');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('ai-governance-snapshot');
+  });
+
   it('classifies custom intent at 0.85', () => {
     const intent = commerce.classifyIntent('I need a custom audit for my team');
     expect(intent.name).toBe('custom');
     expect(intent.confidence).toBeGreaterThanOrEqual(0.85);
+  });
+
+  it('routes hire-Issac and chatbot-safety buyer questions to custom', () => {
+    expect(commerce.classifyIntent('How do I hire Issac?').name).toBe('custom');
+    expect(commerce.classifyIntent('I need help making my chatbot safer').name).toBe('custom');
   });
 
   it('classifies membership intent at 0.75', () => {
@@ -251,9 +262,9 @@ describe('polly commerce reply rendering', () => {
     expect(out.actions[0].url).toBe(product.checkoutUrl);
   });
 
-  it('renderBuyReply with null lists all 3 products', () => {
+  it('renderBuyReply with null lists all 4 products', () => {
     const out = commerce.renderBuyReply(null);
-    expect(out.actions).toHaveLength(3);
+    expect(out.actions).toHaveLength(4);
     for (const action of out.actions) {
       expect(action.url).toMatch(/^https:\/\//);
     }
@@ -265,6 +276,9 @@ describe('polly commerce reply rendering', () => {
     expect(mailtoAction).toBeDefined();
     expect(mailtoAction!.url).toContain('issdandavis7795@gmail.com');
     expect(mailtoAction!.url).toContain('finance');
+    expect(out.actions.some((a: { url: string }) => a.url.includes('service-fast-start'))).toBe(
+      true
+    );
   });
 
   it('renderMembershipReply has Ko-fi + GitHub + email actions', () => {
@@ -427,7 +441,7 @@ describe('polly catalog handler', () => {
     expect(res.statusCode).toBe(200);
     const body = res.body as { ok: boolean; products: unknown[]; consulting_tiers: unknown[] };
     expect(body.ok).toBe(true);
-    expect(body.products).toHaveLength(3);
+    expect(body.products).toHaveLength(4);
     expect(body.consulting_tiers.length).toBeGreaterThan(0);
   });
 
@@ -455,9 +469,27 @@ describe('polly lead handler', () => {
     const res = makeRes();
     await leadHandler(req, res);
     expect(res.statusCode).toBe(200);
-    const body = res.body as { ok: boolean; message: string; next_steps: string[] };
+    const body = res.body as {
+      ok: boolean;
+      message: string;
+      next_steps: string[];
+      fulfillment_packet: {
+        status: string;
+        offer: string;
+        initial_ai_inspection: string[];
+        immediate_value: { url: string }[];
+      };
+    };
     expect(body.ok).toBe(true);
     expect(body.next_steps.length).toBeGreaterThan(0);
+    expect(body.fulfillment_packet.status).toBe('instant-service-intake-v1');
+    expect(body.fulfillment_packet.offer).toBe('Adversarial audit');
+    expect(body.fulfillment_packet.initial_ai_inspection.length).toBeGreaterThan(0);
+    expect(
+      body.fulfillment_packet.immediate_value.some((item) =>
+        item.url.includes('service-fast-start')
+      )
+    ).toBe(true);
   });
 
   it('rejects a lead missing the contact field', async () => {

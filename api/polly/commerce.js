@@ -2,6 +2,23 @@
 
 const PRODUCT_CATALOG = [
   {
+    sku: 'ai-governance-snapshot',
+    name: 'AI Governance Snapshot',
+    priceLabel: '$500 one-time',
+    short:
+      'Fixed-scope governance assessment for one AI workflow. Includes a 2-page findings memo, three prioritized fixes, and an evidence checklist.',
+    checkoutUrl: 'https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j',
+    deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html',
+    keywords: [
+      'governance snapshot',
+      'snapshot',
+      'risk read',
+      'fixed scope',
+      'evidence checklist',
+      'governance assessment',
+    ],
+  },
+  {
     sku: 'ai-governance-toolkit',
     name: 'SCBE AI Governance Toolkit',
     priceLabel: '$29 one-time',
@@ -69,12 +86,14 @@ const CONSULTING_TIERS = [
 const CONSULTING_LANDING_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hire.html';
 const HIRE_EMAIL = 'issdandavis7795@gmail.com';
 const MEMBERSHIP_KOFI_URL = 'https://ko-fi.com/Y8Y51UQYWZ';
+const SERVICE_FAST_START_URL =
+  'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/service-fast-start.html';
 
 const BUY_PATTERN =
   /\b(buy|purchase|order|checkout|pay\s+for|get\s+the|want\s+the|how\s+much|sign\s+me\s+up|add\s+to\s+cart)\b/i;
 
 const CUSTOM_PATTERN =
-  /\b(custom|bespoke|tailor|specifically\s+for|my\s+team|my\s+company|my\s+org|my\s+(use\s*case|workflow)|something\s+else|not\s+listed|build\s+me|hire\s+you|consulting|advisory|audit|engagement|contract)\b/i;
+  /\b(custom|bespoke|tailor|specifically\s+for|my\s+team|my\s+company|my\s+org|my\s+(use\s*case|workflow)|something\s+else|not\s+listed|build\s+me|hire\s+(you|issac|isaac|davis|me)|consulting|advisory|audit|engagement|contract|chatbot\s+safer|llm\s+safer|ai\s+safety|governance\s+help)\b/i;
 
 const RESEARCH_PATTERN =
   /\b(research|find|look\s+up|search|investigate|what\s+do\s+you\s+know|recent|latest|news|paper|study|literature|sources?|cite|references?)\b/i;
@@ -127,9 +146,8 @@ function classifyIntent(message) {
   // RESEARCH_PATTERN regex but contains a known topic key. If the message
   // hits a registered topic AND looks like a question/explanation prompt,
   // route it to research.
-  const looksLikeQuestion = /\b(what|how|why|when|where|who|which|explain|describe|tell\s+me)\b/i.test(
-    message
-  );
+  const looksLikeQuestion =
+    /\b(what|how|why|when|where|who|which|explain|describe|tell\s+me)\b/i.test(message);
   if (looksLikeQuestion) {
     const topic = resolveResearchTopic(message);
     if (topic) {
@@ -192,11 +210,13 @@ function renderCustomReply(message) {
     "What you're describing is custom — not in the stock catalog. " +
     'Four ways we can scope it:\n\n' +
     tierLines.join('\n') +
-    '\n\nFastest path: email with a one-paragraph description of the ' +
-    'outcome you want. I reply same day where I can.';
+    '\n\nEvery serious inquiry now gets an instant fast-start packet: order recap, intake checklist, ' +
+    'starter governance resources, human inspection window, and follow-up steps. Fastest path: email ' +
+    'with a one-paragraph description of the outcome you want. I reply same day where I can.';
   const actions = [
     { label: 'Email Issac with this context', url: mailto },
     { label: 'Full hire details', url: CONSULTING_LANDING_URL },
+    { label: 'Service fast-start packet', url: SERVICE_FAST_START_URL },
   ];
   return { text, actions };
 }
@@ -319,9 +339,7 @@ const RESEARCH_TOPICS = [
       'MATHBAC abstract (submitted 2026-04-27, full proposal due 2026-06-16). SCBE positions ' +
       'as post-quantum hyperbolic successor to DARPA I2O Mission-oriented Resilient Clouds ' +
       '(MRC, ~2011-2017). SAM.gov UEI J4NXHM6N5F59, CAGE 1EXD5.',
-    links: [
-      { label: 'Hire / federal subcontract', url: CONSULTING_LANDING_URL },
-    ],
+    links: [{ label: 'Hire / federal subcontract', url: CONSULTING_LANDING_URL }],
   },
 ];
 
@@ -352,7 +370,7 @@ function renderResearchReply(message) {
 
   const titles = RESEARCH_TOPICS.map((t) => `- ${t.title}`);
   const text =
-    "I can answer research questions about any of these directly without an LLM call:\n\n" +
+    'I can answer research questions about any of these directly without an LLM call:\n\n' +
     titles.join('\n') +
     '\n\nAsk again with one of those terms in your question, or ' +
     'browse the full repo for the longer-form documentation.';
@@ -391,6 +409,7 @@ module.exports = {
   CONSULTING_LANDING_URL,
   HIRE_EMAIL,
   MEMBERSHIP_KOFI_URL,
+  SERVICE_FAST_START_URL,
   RESEARCH_TOPICS,
   classifyIntent,
   renderBuyReply,

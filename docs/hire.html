@@ -839,27 +839,73 @@
         var apiBase =
           window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app';
 
-        // Contextual self-serve options based on project_type. Lets buyers
-        // who don't want to wait 24h grab the matching paid artifact now.
+        // Contextual self-serve options based on project_type. The API now
+        // returns the canonical fulfillment packet; this table is a fallback.
         var SELF_SERVE = {
           'advisory-call': {
             label: 'Want a head start while I reach out?',
-            cta: 'Buy the AI Governance Toolkit ($29)',
-            href: 'https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06',
+            cta: 'Open the service fast-start packet',
+            href: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/service-fast-start.html',
           },
           'audit': {
             label: 'Want to start reviewing the methodology now?',
-            cta: 'Buy the Security Training Vault ($29)',
-            href: 'https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g',
+            cta: 'Open the service fast-start packet',
+            href: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/service-fast-start.html',
           },
           'training': {
             label: 'Want the workshop materials in advance?',
-            cta: 'Buy the Security Training Vault ($29)',
-            href: 'https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g',
+            cta: 'Open the service fast-start packet',
+            href: 'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/service-fast-start.html',
           },
         };
 
-        function renderThankYou(parent, projectType) {
+        function escapeHtml(value) {
+          return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function renderList(items) {
+          if (!items || !items.length) return '';
+          return (
+            '<ul style="margin:10px 0 0 18px;color:var(--dim);font-size:13px">' +
+            items
+              .map(function (item) {
+                return '<li style="margin-bottom:6px">' + escapeHtml(item) + '</li>';
+              })
+              .join('') +
+            '</ul>'
+          );
+        }
+
+        function renderGiftCards(gifts) {
+          if (!gifts || !gifts.length) return '';
+          return (
+            '<div style="display:grid;gap:10px;margin:12px 0 14px">' +
+            gifts
+              .map(function (gift) {
+                return (
+                  '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--card)">' +
+                  '<a href="' +
+                  escapeHtml(gift.url) +
+                  '" target="_blank" rel="noopener" style="color:var(--accent);font-weight:700;text-decoration:none">' +
+                  escapeHtml(gift.label) +
+                  '</a>' +
+                  '<p style="color:var(--dim);font-size:13px;margin:6px 0 0">' +
+                  escapeHtml(gift.why) +
+                  '</p>' +
+                  '</div>'
+                );
+              })
+              .join('') +
+            '</div>'
+          );
+        }
+
+        function renderThankYou(parent, projectType, packet) {
           var offer = SELF_SERVE[projectType];
           var blocks = [];
           blocks.push(
@@ -872,6 +918,37 @@
               "add it to your contacts so it doesn't go to spam." +
               '</p>'
           );
+          if (packet) {
+            blocks.push(
+              '<div style="border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--surface);margin-bottom:14px">' +
+                '<div style="font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Order recap</div>' +
+                '<strong style="color:var(--text)">' +
+                escapeHtml(packet.offer) +
+                '</strong>' +
+                '<div style="color:var(--gold);font-size:13px;margin-top:4px">' +
+                escapeHtml(packet.price_anchor) +
+                '</div>' +
+                renderList(packet.order_recap) +
+                '</div>'
+            );
+            blocks.push(
+              '<div style="border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--card);margin-bottom:14px">' +
+                '<div style="font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Initial AI inspection</div>' +
+                '<p style="color:var(--dim);font-size:13px;margin:0 0 8px">' +
+                escapeHtml(packet.review_window) +
+                '</p>' +
+                renderList(packet.initial_ai_inspection) +
+                '</div>'
+            );
+            blocks.push(
+              '<h4 style="margin:18px 0 8px;color:var(--text)">Free fast-start resources</h4>' +
+                renderGiftCards(packet.immediate_value)
+            );
+            blocks.push(
+              '<h4 style="margin:18px 0 8px;color:var(--text)">Follow-up steps</h4>' +
+                renderList(packet.follow_up_steps)
+            );
+          }
           if (offer) {
             blocks.push(
               '<div style="border:1px solid var(--border);border-radius:10px;padding:14px;background:var(--card);margin-bottom:14px">' +
@@ -935,7 +1012,7 @@
             thankYouHost.id = 'leadThankYou';
             thankYouHost.style.maxWidth = '640px';
             (section || document.body).appendChild(thankYouHost);
-            renderThankYou(thankYouHost, projectType);
+            renderThankYou(thankYouHost, projectType, data.fulfillment_packet);
           } catch (error) {
             status.style.color = '#ff7a7a';
             status.textContent =
