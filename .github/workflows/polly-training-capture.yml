@@ -35,13 +35,24 @@ jobs:
           # PII stays in the private HF dataset; the issue body deliberately
           # excludes contact + description so notifications are safe to view
           # in the GitHub mobile app or email previews.
-          title="lead: ${PROJECT_TYPE} (${BUDGET}, ${TIMELINE})"
+          # Disambiguate snapshot intakes ($500 paid customers) from generic
+          # /hire leads via the source field — they have different SLAs and
+          # the operator wants to spot them at a glance.
+          extra_label=""
+          if [[ "${SOURCE:-}" == *"governance-snapshot"* ]]; then
+            title="snapshot intake (\$500): ${BUDGET}/${TIMELINE}"
+            extra_label="snapshot-intake"
+            gh label create snapshot-intake --description "Paid AI Governance Snapshot intake" --color "D6A756" --repo "${{ github.repository }}" 2>/dev/null || true
+          else
+            title="lead: ${PROJECT_TYPE} (${BUDGET}, ${TIMELINE})"
+          fi
           body=$(cat <<EOF
           A new lead landed via $SOURCE.
 
           - project type: $PROJECT_TYPE
           - budget: $BUDGET
           - timeline: $TIMELINE
+          - source: $SOURCE
 
           Contact + description are in the private HF dataset:
           https://huggingface.co/datasets/issdandavis/polly-chat-live
@@ -51,11 +62,20 @@ jobs:
           )
           # Best-effort label creation; ignore if it already exists.
           gh label create lead --description "Polly /hire form lead" --color "FFD166" --repo "${{ github.repository }}" 2>/dev/null || true
-          gh issue create \
-            --title "$title" \
-            --body "$body" \
-            --label "lead" \
-            --repo "${{ github.repository }}"
+          if [[ -n "$extra_label" ]]; then
+            gh issue create \
+              --title "$title" \
+              --body "$body" \
+              --label "lead" \
+              --label "$extra_label" \
+              --repo "${{ github.repository }}"
+          else
+            gh issue create \
+              --title "$title" \
+              --body "$body" \
+              --label "lead" \
+              --repo "${{ github.repository }}"
+          fi
 
       - name: Email the lead via SMTP (Proton / Gmail / Mailgun / any)
         if: ${{ github.event.client_payload.record.kind == 'lead' }}
@@ -91,7 +111,17 @@ jobs:
           sender = os.environ.get("SMTP_FROM") or user
           recipient = os.environ.get("SMTP_TO") or user
 
-          subject = f"[polly lead] {record.get('project_type','?')} - {record.get('budget','?')} - {record.get('timeline','?')}"
+          source = record.get("source", "")
+          if "governance-snapshot" in source:
+              subject = (
+                  f"[SNAPSHOT INTAKE $500] {record.get('contact','?')}"
+                  f" - act within 1 business day"
+              )
+          else:
+              subject = (
+                  f"[polly lead] {record.get('project_type','?')}"
+                  f" - {record.get('budget','?')} - {record.get('timeline','?')}"
+              )
           body_lines = [
               "A new lead landed via the /hire form.",
               "",
