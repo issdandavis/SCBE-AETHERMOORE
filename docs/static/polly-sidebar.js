@@ -494,12 +494,16 @@
 
     var thinkingOn = false;
 
-    // Starter prompts
+    // Starter prompts. Ordered so a cold visitor sees the picker entry
+    // first, followed by a buy-shaped prompt that routes cleanly to the
+    // governance snapshot, then the technical research lookup, then /help
+    // as the safety hatch. Each prompt is verified to route through a
+    // deterministic commerce/research path — no LLM dependency.
     var STARTERS = [
+      "Help me choose a product",
+      "Tell me about the governance snapshot",
       "What is the harmonic wall?",
       "search hyperbolic geometry AI safety",
-      "How do I get started?",
-      "think about the 14-layer pipeline",
       "/help",
     ];
     startersContainer.innerHTML = STARTERS.map(function (s) {
