@@ -48,14 +48,9 @@ def test_no_fault_run_still_routes_without_public_corruption():
 
 
 def test_trial_sweep_reports_supported_claims():
-    reports = run_trials(
-        operations=64, fault_rate=0.05, seed=100, octree_depth=3, trials=5
-    )
+    reports = run_trials(operations=64, fault_rate=0.05, seed=100, octree_depth=3, trials=5)
     aggregate = aggregate_reports(reports)
 
     assert aggregate["trials"] == 5
     assert aggregate["claim_supported_trials"] == 5
-    assert (
-        aggregate["lattice_mean_public_corruptions"]
-        <= aggregate["flat_mean_public_corruptions"]
-    )
+    assert aggregate["lattice_mean_public_corruptions"] <= aggregate["flat_mean_public_corruptions"]
