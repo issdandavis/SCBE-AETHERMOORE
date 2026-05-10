@@ -1,0 +1,186 @@
+name: Polly Snapshot Paid Notify
+
+# Receives polly_snapshot_paid repository_dispatch events from the
+# Vercel-hosted Stripe webhook (api/billing/stripe_webhook.js). Two
+# side-effects: (1) file a GitHub issue tagged snapshot-paid so the
+# operator sees it on the wildlife board, (2) email the buyer the
+# intake checklist + scheduling reply within one business day.
+
+on:
+  repository_dispatch:
+    types: [polly_snapshot_paid]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: polly-snapshot-paid-${{ github.event.client_payload.record.session_id }}
+  cancel-in-progress: false
+
+jobs:
+  notify-buyer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: File a snapshot-paid GitHub issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SESSION_ID: ${{ github.event.client_payload.record.session_id }}
+          PAYMENT_INTENT: ${{ github.event.client_payload.record.payment_intent }}
+          AMOUNT_CENTS: ${{ github.event.client_payload.record.amount_total }}
+          CURRENCY: ${{ github.event.client_payload.record.currency }}
+          CONTACT_EMAIL: ${{ github.event.client_payload.record.contact_email }}
+          CONTACT_NAME: ${{ github.event.client_payload.record.contact_name }}
+          LIVEMODE: ${{ github.event.client_payload.record.livemode }}
+        run: |
+          set -euo pipefail
+          # Idempotency: if an issue already exists for this Stripe session id
+          # we skip both the issue create and the email send. Stripe retries
+          # webhooks on 5xx; we always 200, but a long network failure could
+          # leave a duplicate dispatch in flight.
+          existing=$(gh issue list --state all --search "snapshot paid: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}" || true)
+          if [[ -n "$existing" && "$existing" != "null" ]]; then
+            echo "issue already exists for session ${SESSION_ID} (#${existing}); skipping"
+            echo "ALREADY_FILED=1" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          # Compose pricing string defensively in case Stripe ever changes
+          # the unit. AMOUNT_CENTS is integer cents; convert to USD only
+          # when currency is usd, otherwise show the raw value.
+          if [[ "${CURRENCY,,}" == "usd" && -n "${AMOUNT_CENTS:-}" ]]; then
+            price="\$$(awk "BEGIN { printf \"%.2f\", ${AMOUNT_CENTS}/100 }")"
+          else
+            price="${AMOUNT_CENTS:-?} ${CURRENCY:-?}"
+          fi
+
+          mode_tag="LIVE"
+          if [[ "${LIVEMODE,,}" != "true" ]]; then
+            mode_tag="TEST-MODE"
+          fi
+
+          gh label create snapshot-paid --description "Snapshot Stripe checkout completed" --color "D6A756" --repo "${{ github.repository }}" 2>/dev/null || true
+
+          title="snapshot paid: ${SESSION_ID} (${price}, ${mode_tag})"
+          body=$(cat <<EOF
+          A buyer just completed a \$500 AI Governance Snapshot checkout.
+
+          - session id: \`${SESSION_ID}\`
+          - payment intent: \`${PAYMENT_INTENT}\`
+          - amount: ${price}
+          - mode: ${mode_tag}
+          - buyer name: ${CONTACT_NAME:-(not provided)}
+          - buyer email: ${CONTACT_EMAIL:-(not provided)}
+
+          **Operator action — within 1 business day:**
+
+          1. Confirm the intake email landed (see the SMTP step in this workflow run; if SMTP isn't configured, send manually).
+          2. Reply to ${CONTACT_EMAIL:-the buyer} with a 30-minute kickoff call slot.
+          3. Open the Snapshot delivery template and copy fixed-scope Q1-Q3 into the kickoff agenda.
+          EOF
+          )
+          gh issue create \
+            --title "$title" \
+            --body "$body" \
+            --label "snapshot-paid" \
+            --repo "${{ github.repository }}"
+
+      - name: Email the buyer the intake checklist
+        # Only send real emails on livemode events. `stripe trigger` and
+        # other test-mode events still file the GH issue (operator visibility)
+        # but never email a real (or test) buyer.
+        if: ${{ env.ALREADY_FILED != '1' && github.event.client_payload.record.livemode == true }}
+        env:
+          SMTP_HOST: ${{ secrets.POLLY_LEAD_SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.POLLY_LEAD_SMTP_PORT }}
+          SMTP_USER: ${{ secrets.POLLY_LEAD_SMTP_USER }}
+          SMTP_PASS: ${{ secrets.POLLY_LEAD_SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.POLLY_LEAD_SMTP_FROM }}
+          SMTP_OPERATOR: ${{ secrets.POLLY_LEAD_SMTP_TO }}
+          PAYLOAD: ${{ toJSON(github.event.client_payload.record) }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${SMTP_HOST:-}" || -z "${SMTP_USER:-}" || -z "${SMTP_PASS:-}" ]]; then
+            echo "SMTP credentials missing; intake email will need manual send (issue is filed)" >&2
+            exit 0
+          fi
+          python3 - <<'PY'
+          import os, ssl, json, smtplib, sys
+          from email.message import EmailMessage
+
+          record = json.loads(os.environ["PAYLOAD"])
+          host = os.environ["SMTP_HOST"]
+          port = int(os.environ.get("SMTP_PORT") or "587")
+          user = os.environ["SMTP_USER"]
+          password = os.environ["SMTP_PASS"]
+          sender = os.environ.get("SMTP_FROM") or user
+          operator_bcc = os.environ.get("SMTP_OPERATOR") or user
+          buyer = record.get("contact_email") or ""
+          name = record.get("contact_name") or "there"
+          if not buyer:
+              # No buyer email on the session — fall back to operator-only
+              # so the operator at least sees the unmailed intake. The
+              # filed GitHub issue is the durable trail.
+              print("buyer email missing; sending operator-only intake summary", file=sys.stderr)
+              buyer = operator_bcc
+
+          subject = f"Your AI Governance Snapshot intake checklist (session {record.get('session_id','?')})"
+          body_lines = [
+              f"Hi {name},",
+              "",
+              "Thanks for purchasing the $500 AI Governance Snapshot.",
+              "I'll reply within one business day to schedule a 30-minute kickoff call.",
+              "Until then, please prep these so the snapshot covers what you actually need:",
+              "",
+              "INTAKE CHECKLIST",
+              "  1. The one workflow you want assessed (one paragraph).",
+              "  2. Inputs and outputs the workflow handles (data types, sample volumes).",
+              "  3. Models / providers in the loop (e.g. GPT-4o, Claude, in-house, mixed).",
+              "  4. Existing guardrails: prompt filters, content moderation, human-in-the-loop?",
+              "  5. The single risk that bothers you most (regulatory, reputational, safety, $).",
+              "",
+              "WHAT YOU GET (within 5 business days of kickoff)",
+              "  - 2-page findings memo",
+              "  - 3 prioritized fixes (highest-leverage first)",
+              "  - Evidence checklist mapped to your inputs/outputs",
+              "  - 30 minutes of Q&A on the deliverable",
+              "",
+              "REPLY TO SCHEDULE",
+              "  Just reply to this email with 2-3 time windows that work for you.",
+              "  Anywhere from US Pacific morning through Eastern evening is fine.",
+              "",
+              f"Order ref: session {record.get('session_id','?')}, payment {record.get('payment_intent','?')}",
+              "",
+              "- Issac Davis",
+              "  https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
+          ]
+          msg = EmailMessage()
+          msg["Subject"] = subject
+          msg["From"] = sender
+          msg["To"] = buyer
+          msg["Reply-To"] = sender
+          if operator_bcc and operator_bcc != buyer:
+              msg["Bcc"] = operator_bcc
+          msg.set_content("\n".join(body_lines))
+
+          context = ssl.create_default_context()
+          try:
+              if port == 465:
+                  with smtplib.SMTP_SSL(host, port, context=context, timeout=20) as s:
+                      s.login(user, password)
+                      s.send_message(msg)
+              else:
+                  with smtplib.SMTP(host, port, timeout=20) as s:
+                      s.starttls(context=context)
+                      s.login(user, password)
+                      s.send_message(msg)
+              print(f"intake checklist emailed to {buyer}")
+          except Exception as exc:
+              print(
+                  f"SMTP send failed but snapshot-paid issue is already filed: "
+                  f"{type(exc).__name__}: {exc}",
+                  file=sys.stderr,
+              )
+              sys.exit(0)
+          PY
