@@ -211,6 +211,12 @@ const RESEARCH_PATTERN =
 const MEMBERSHIP_PATTERN =
   /\b(member|membership|subscribe|signup|sign\s*up|join|newsletter|follow|stay\s+updated|notify|sponsor|tip|donate)\b/i;
 
+// "I don't know what I need" signals. These are the chat-side mirror of the
+// /products.html "find your fit" picker. When the user is uncertain, we walk
+// them through 2-3 plain-language questions instead of dumping the catalog.
+const GUIDE_PATTERN =
+  /\b(help\s+me\s+(choose|pick|decide|figure|find|select)|what\s+should\s+i\s+(get|buy|use|pick|choose|order)|which\s+one\s+(is|fits|do|should|works)|i\s+(don'?t|do\s+not)\s+know\s+(what|which|where)|i'?m\s+new|i\s+am\s+new|where\s+(do|should)\s+i\s+(start|begin)|not\s+sure\s+(what|which|where)|guide\s+me|walk\s+me\s+through|recommend\s+(me|something|a\s+product)|find\s+my\s+fit|find\s+the\s+(right|best)\s+(one|tool|product|fit)|help\s+choosing)\b/i;
+
 function resolveProduct(message) {
   const lower = String(message || '').toLowerCase();
   for (const product of PRODUCT_CATALOG) {
@@ -224,6 +230,13 @@ function resolveProduct(message) {
 function classifyIntent(message) {
   if (typeof message !== 'string' || !message.trim()) {
     return { name: 'general', confidence: 0, matchedTerm: null, product: null };
+  }
+
+  // Guide goes before buy: "what should I get" / "i don't know what to buy"
+  // signal uncertainty, not purchase intent. Walk them through the picker.
+  const guideMatch = GUIDE_PATTERN.exec(message);
+  if (guideMatch) {
+    return { name: 'guide', confidence: 0.85, matchedTerm: guideMatch[0], product: null };
   }
 
   const buyMatch = BUY_PATTERN.exec(message);
@@ -505,6 +518,60 @@ function renderResearchReply(message) {
   return { text, actions };
 }
 
+// Mirror of the /products.html "find your fit" picker, in chat form. We keep
+// the four top-level routes terse so a cold visitor can pick one in one read.
+const GUIDE_ROUTES = [
+  {
+    key: 'support',
+    label: 'Support the open work',
+    hint: 'Tip, monthly subscription, or pay-as-you-go credits',
+    products: ['five-dollar-tip-jar', 'aethermoore-supporter', 'scbe-service-credits'],
+  },
+  {
+    key: 'read',
+    label: 'Get a written read on an AI workflow',
+    hint: 'Snapshot for a one-time read, Heartbeat for monthly',
+    products: ['ai-governance-snapshot', 'governance-heartbeat'],
+  },
+  {
+    key: 'build',
+    label: 'Build with the code yourself',
+    hint: 'Toolkit templates, training vault, or the open repo',
+    products: ['ai-governance-toolkit', 'ai-security-training-vault'],
+  },
+  {
+    key: 'custom',
+    label: 'My situation is custom',
+    hint: 'Talk to a human about scoping it',
+    products: [],
+  },
+];
+
+const START_HERE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/start-here.html';
+const PRODUCTS_PAGE_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/products.html';
+
+function renderGuideReply() {
+  const lines = [
+    "Happy to help you pick. Three or four routes cover almost everyone — which one fits?",
+    '',
+  ];
+  for (const route of GUIDE_ROUTES) {
+    lines.push(`- **${route.label}** — ${route.hint}`);
+  }
+  lines.push('');
+  lines.push(
+    'Tell me which one and I\'ll point you at the right product. ' +
+      "If you'd rather see all options at once, the full picker is on the products page."
+  );
+
+  const actions = [
+    { label: 'Open the find-your-fit picker', url: PRODUCTS_PAGE_URL },
+    { label: 'Three-route start page', url: START_HERE_URL },
+    { label: 'Email Issac', url: `mailto:${HIRE_EMAIL}?subject=Help%20me%20pick%20a%20product` },
+  ];
+  return { text: lines.join('\n'), actions };
+}
+
 function renderMembershipReply() {
   const text =
     'Three ways to stay close to the work:\n\n' +
@@ -548,9 +615,13 @@ module.exports = {
   MEMBERSHIP_KOFI_URL,
   SERVICE_FAST_START_URL,
   RESEARCH_TOPICS,
+  GUIDE_ROUTES,
+  START_HERE_URL,
+  PRODUCTS_PAGE_URL,
   classifyIntent,
   renderBuyReply,
   renderCustomReply,
+  renderGuideReply,
   renderMembershipReply,
   renderResearchReply,
   resolveProduct,
