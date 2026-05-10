@@ -148,4 +148,3 @@ SCBE's wedge is different:
 
 That lets SCBE sell governance and repeatability instead of competing only on
 chat UX.
-
