@@ -71,6 +71,45 @@
 
   .section-inner { width: min(var(--max), calc(100% - 32px)); margin: 0 auto; padding: 0 0 24px; }
 
+  .decision-strip {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin: 0 0 22px;
+  }
+  @media (min-width: 880px) {
+    .decision-strip { grid-template-columns: 1.25fr 0.75fr; align-items: stretch; }
+  }
+  .decision-main,
+  .decision-side {
+    background: rgba(45, 211, 166, 0.06);
+    border: 1px solid rgba(45, 211, 166, 0.28);
+    border-radius: 18px;
+    padding: 20px;
+  }
+  .decision-side {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .decision-main strong,
+  .decision-side strong { color: var(--text); }
+  .decision-main p,
+  .decision-side p { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  .decision-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .decision-actions a {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .decision-actions a.primary {
+    background: var(--good);
+    color: #0a1714;
+    border-color: transparent;
+  }
+
   /* Find your fit widget */
   .fit-card {
     background: var(--panel);
@@ -227,6 +266,67 @@
   details[open] > summary::after { content: "–"; }
   details > p { margin-top: 12px; color: var(--muted); }
 
+  .delivery {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 18px 0 42px;
+  }
+  @media (min-width: 760px) {
+    .delivery { grid-template-columns: repeat(4, 1fr); }
+  }
+  .delivery-step {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .delivery-step .num {
+    color: var(--good);
+    font-weight: 700;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .delivery-step strong { display: block; margin-bottom: 5px; }
+  .delivery-step span { color: var(--muted); font-size: 14px; }
+
+  .market-note {
+    background: rgba(140, 180, 255, 0.06);
+    border: 1px solid rgba(140, 180, 255, 0.22);
+    border-radius: 18px;
+    padding: 22px;
+    margin: 8px 0 38px;
+  }
+  .market-note h3 { color: var(--cool); font-size: 20px; margin-bottom: 8px; }
+  .market-note p { color: var(--muted); margin-bottom: 14px; }
+  .market-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  @media (min-width: 780px) {
+    .market-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  .market-cell {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 14px;
+  }
+  .market-cell strong { display: block; color: var(--text); margin-bottom: 4px; }
+  .market-cell span { color: var(--muted); }
+
+  .self-check {
+    background: rgba(214, 167, 86, 0.055);
+    border: 1px solid rgba(214, 167, 86, 0.22);
+    border-radius: 18px;
+    padding: 22px;
+    margin: 8px 0 42px;
+  }
+  .self-check ul { margin: 12px 0 0; padding-left: 18px; color: var(--text); }
+  .self-check li { margin: 7px 0; }
+
   .stuck {
     background: rgba(214, 167, 86, 0.06);
     border: 1px solid var(--line);
@@ -283,12 +383,41 @@
     <div class="eyebrow">Find your fit</div>
     <h1>Pick the right tool. In plain words.</h1>
     <p class="lead">
-      Three questions. One recommendation. No marketing maze.
-      If you'd rather skim the whole catalog, the comparison grid is right below the picker.
+      If you have an AI workflow and want a concrete written answer, start with the $500 Snapshot.
+      If you are browsing, the picker will route you in under a minute.
     </p>
   </section>
 
   <section class="section-inner">
+    <div class="decision-strip">
+      <div class="decision-main">
+        <strong>Best first paid move: AI Governance Snapshot — $500 fixed scope.</strong>
+        <p>One workflow, one written read, five-business-day delivery. You get immediate checkout confirmation, an intake checklist, and a fast-start packet before the human review begins.</p>
+        <div class="decision-actions">
+          <a class="primary" href="https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" target="_blank" rel="noopener">Buy Snapshot $500</a>
+          <a href="governance-snapshot.html">See the scope</a>
+        </div>
+      </div>
+      <div class="decision-side">
+        <strong>Not ready to buy?</strong>
+        <p>Use Polly or the picker. The low-cost products are for support, templates, and training materials; the Snapshot is the service offer.</p>
+        <div class="decision-actions">
+          <a href="chat.html">Ask Polly</a>
+          <a href="#fitCard">Use picker</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="market-note">
+      <h3>Why this is priced lower than most AI governance work</h3>
+      <p>Most AI governance platforms sell enterprise subscriptions or demo-led programs. Most AI testing consultancies start with multi-thousand-dollar assessments. The Snapshot is deliberately smaller: one workflow, one written read, one useful artifact.</p>
+      <div class="market-grid">
+        <div class="market-cell"><strong>Enterprise platform</strong><span>Best when you need a registry, dashboards, policy workflows, SSO, and organization-wide rollout.</span></div>
+        <div class="market-cell"><strong>Full red-team engagement</strong><span>Best when you need weeks of adversarial testing, exploit reproduction, and a large evidence pack.</span></div>
+        <div class="market-cell"><strong>AetherMoore Snapshot</strong><span>Best when you need the first defensible read quickly, before committing to a larger platform or audit.</span></div>
+      </div>
+    </div>
+
     <!-- Find your fit picker -->
     <div class="fit-card" id="fitCard">
       <div class="fit-step" data-step="1">
@@ -375,6 +504,26 @@
     </div>
 
     <!-- Price ladder -->
+    <h2>What happens after a Snapshot purchase</h2>
+    <div class="delivery">
+      <div class="delivery-step"><div class="num">Immediately</div><strong>Receipt + fast start</strong><span>You get checkout confirmation and a short packet so you know what to send.</span></div>
+      <div class="delivery-step"><div class="num">1 business day</div><strong>Human intake check</strong><span>We confirm the workflow, repo, prompt set, or tool surface that will be reviewed.</span></div>
+      <div class="delivery-step"><div class="num">During review</div><strong>AI-assisted inspection</strong><span>The SCBE harness produces the first pass; human inspection catches context and false positives.</span></div>
+      <div class="delivery-step"><div class="num">5 business days</div><strong>Written memo</strong><span>Two-page findings, three prioritized fixes, and an evidence checklist you can reuse.</span></div>
+    </div>
+
+    <div class="self-check">
+      <h3>Free 60-second self-check before you buy</h3>
+      <p class="pwho">If three or more are true, the Snapshot is probably worth doing:</p>
+      <ul>
+        <li>Your AI workflow touches customer, employee, legal, security, or financial information.</li>
+        <li>A model or agent can call tools, browse, write files, send messages, or change records.</li>
+        <li>You cannot explain what evidence you would show if a customer asked how the workflow is controlled.</li>
+        <li>You have no written prompt-injection, data-retention, or escalation policy for this workflow.</li>
+        <li>You need a buyer, boss, partner, or reviewer to trust the system before it expands.</li>
+      </ul>
+    </div>
+
     <h2>The ladder, at a glance</h2>
     <div class="ladder">
       <div class="rung"><div class="price">$5</div><div class="label">Tip</div></div>
