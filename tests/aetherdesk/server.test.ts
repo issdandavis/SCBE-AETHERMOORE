@@ -220,3 +220,87 @@ describe('AetherDesk server — receipts directory', () => {
     expect(RECEIPTS_DIR).toBe(aetherdesk.RECEIPTS_DIR);
   });
 });
+
+describe('AetherDesk server — Provider Status (v0.1)', () => {
+  it('PROVIDER_DEFS includes the spec providers (ollama, lmstudio, hf, anthropic, openai)', () => {
+    const ids = aetherdesk.PROVIDER_DEFS.map((p: { id: string }) => p.id);
+    expect(ids).toEqual(
+      expect.arrayContaining(['ollama', 'lmstudio', 'huggingface', 'anthropic', 'openai'])
+    );
+  });
+
+  it('GET /api/providers returns the v0 schema and a result per provider', async () => {
+    const { status, body } = await fetchJson(`${baseUrl}/api/providers`);
+    expect(status).toBe(200);
+    expect(body.ok).toBe(true);
+    expect(body.schema).toBe('aetherdesk_providers_v0');
+    expect(body.generated_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(Array.isArray(body.providers)).toBe(true);
+    expect(body.providers.length).toBe(aetherdesk.PROVIDER_DEFS.length);
+    for (const p of body.providers) {
+      expect(typeof p.id).toBe('string');
+      expect(typeof p.label).toBe('string');
+      expect(['local-http', 'env-var']).toContain(p.kind);
+    }
+  }, 10000);
+
+  it('local-http providers report reachable + latency_ms (or an error)', async () => {
+    const { body } = await fetchJson(`${baseUrl}/api/providers`);
+    const httpProviders = body.providers.filter((p: { kind: string }) => p.kind === 'local-http');
+    expect(httpProviders.length).toBeGreaterThan(0);
+    for (const p of httpProviders) {
+      expect(typeof p.reachable).toBe('boolean');
+      expect(typeof p.latency_ms).toBe('number');
+      expect(p.url).toMatch(/^http/);
+      // We don't assert true/false reachable — depends on what's running locally.
+    }
+  }, 10000);
+
+  it('env-var providers never expose secret values, only presence + name', async () => {
+    const { body } = await fetchJson(`${baseUrl}/api/providers`);
+    const envProviders = body.providers.filter((p: { kind: string }) => p.kind === 'env-var');
+    expect(envProviders.length).toBeGreaterThan(0);
+    for (const p of envProviders) {
+      expect(typeof p.has_secret).toBe('boolean');
+      expect(Array.isArray(p.env_vars_checked)).toBe(true);
+      // The env_vars_checked is just NAMES, not values:
+      for (const name of p.env_vars_checked) {
+        expect(typeof name).toBe('string');
+        // Sanity: shouldn't look like an API key
+        expect(name).not.toMatch(/^sk-/);
+        expect(name).not.toMatch(/^hf_/);
+      }
+      // secret_env_var is the matched name (or null), never the value
+      if (p.has_secret) {
+        expect(p.env_vars_checked).toContain(p.secret_env_var);
+      } else {
+        expect(p.secret_env_var).toBeNull();
+      }
+    }
+  }, 10000);
+
+  it('probeEnv detects truthy env vars and returns the matched name', () => {
+    const KEY = '__AETHERDESK_TEST_KEY_' + Math.random().toString(36).slice(2);
+    expect(aetherdesk.probeEnv([KEY])).toEqual({ has_secret: false, secret_env_var: null });
+    process.env[KEY] = 'sentinel-value';
+    try {
+      const r = aetherdesk.probeEnv([KEY, 'OTHER_NAME']);
+      expect(r.has_secret).toBe(true);
+      expect(r.secret_env_var).toBe(KEY);
+    } finally {
+      delete process.env[KEY];
+    }
+  });
+
+  it('probeEnv treats empty string as not-set', () => {
+    const KEY = '__AETHERDESK_EMPTY_' + Math.random().toString(36).slice(2);
+    process.env[KEY] = '';
+    try {
+      const r = aetherdesk.probeEnv([KEY]);
+      expect(r.has_secret).toBe(false);
+      expect(r.secret_env_var).toBeNull();
+    } finally {
+      delete process.env[KEY];
+    }
+  });
+});

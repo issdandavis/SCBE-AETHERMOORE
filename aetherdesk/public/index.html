@@ -45,9 +45,59 @@
       }
       main {
         display: grid;
-        grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+        grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr) minmax(240px, 280px);
         gap: 0;
         height: calc(100vh - 53px);
+      }
+      .provider {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 8px 12px;
+        margin-bottom: 6px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 2px 8px;
+      }
+      .provider-label {
+        font-size: 13px;
+      }
+      .provider-meta {
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .provider-pill {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        align-self: center;
+      }
+      .provider-pill.up {
+        color: var(--pass);
+      }
+      .provider-pill.down {
+        color: var(--fail);
+      }
+      .provider-pill.unknown {
+        color: var(--muted);
+      }
+      .provider-refresh {
+        margin-bottom: 10px;
+        font-size: 10px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .provider-refresh button {
+        background: transparent;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 3px;
+        padding: 2px 8px;
+        font-family: inherit;
+        font-size: 10px;
+        cursor: pointer;
       }
       .panel {
         padding: 18px 22px;
@@ -223,6 +273,14 @@
         <div id="receipts" class="receipts"><p class="empty">no runs yet</p></div>
         <div id="detail"></div>
       </section>
+      <section class="panel">
+        <h2>Provider Status</h2>
+        <div class="provider-refresh">
+          <span id="provider-stamp">never</span>
+          <button id="refresh-providers">Refresh</button>
+        </div>
+        <div id="providers"><p class="empty">checking...</p></div>
+      </section>
     </main>
 
     <script>
@@ -330,9 +388,55 @@
         }
       }
 
+      function escapeHtml(s) {
+        return String(s).replace(/[<>&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c]);
+      }
+
+      async function loadProviders() {
+        const providersEl = $('#providers');
+        const stampEl = $('#provider-stamp');
+        try {
+          const r = await fetch('/api/providers').then((r) => r.json());
+          stampEl.textContent = new Date(r.generated_at).toLocaleTimeString();
+          providersEl.innerHTML = '';
+          for (const p of r.providers) {
+            const div = document.createElement('div');
+            div.className = 'provider';
+            let statusClass, statusText, meta;
+            if (p.kind === 'local-http') {
+              statusClass = p.reachable ? 'up' : 'down';
+              statusText = p.reachable ? 'up' : 'down';
+              meta = p.reachable
+                ? `${p.latency_ms}ms · ${escapeHtml(new URL(p.url).host)}`
+                : `${escapeHtml(p.error || 'unreachable')}`;
+            } else {
+              statusClass = p.has_secret ? 'up' : 'unknown';
+              statusText = p.has_secret ? 'env set' : 'no env';
+              meta = p.has_secret
+                ? `via ${escapeHtml(p.secret_env_var)}`
+                : `checked: ${escapeHtml(p.env_vars_checked.join(', '))}`;
+            }
+            div.innerHTML = `
+              <div>
+                <div class="provider-label">${escapeHtml(p.label)}</div>
+                <div class="provider-meta">${meta}</div>
+              </div>
+              <div class="provider-pill ${statusClass}">${statusText}</div>
+            `;
+            providersEl.appendChild(div);
+          }
+        } catch (err) {
+          providersEl.innerHTML = `<p class="empty">probe failed: ${escapeHtml(err.message || err)}</p>`;
+        }
+      }
+
+      $('#refresh-providers').addEventListener('click', loadProviders);
+
       loadCommands();
       loadReceipts();
+      loadProviders();
       setInterval(loadReceipts, 5000);
+      setInterval(loadProviders, 30000);
     </script>
   </body>
 </html>

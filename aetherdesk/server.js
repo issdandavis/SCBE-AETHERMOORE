@@ -221,6 +221,73 @@ function runCommand(commandId) {
   });
 }
 
+// Provider status checks — read-only. Never expose secret values, only
+// their presence as booleans. HTTP probes use a hard 1.5s timeout so a
+// single slow provider can't block the whole panel.
+const PROVIDER_PROBE_TIMEOUT_MS = 1500;
+
+const PROVIDER_DEFS = Object.freeze([
+  { id: 'ollama', label: 'Ollama', kind: 'local-http', url: 'http://127.0.0.1:11434/api/tags' },
+  {
+    id: 'lmstudio',
+    label: 'LM Studio',
+    kind: 'local-http',
+    url: 'http://127.0.0.1:1234/v1/models',
+  },
+  {
+    id: 'huggingface',
+    label: 'HuggingFace',
+    kind: 'env-var',
+    env: ['HF_TOKEN', 'HUGGING_FACE_HUB_TOKEN'],
+  },
+  { id: 'anthropic', label: 'Anthropic', kind: 'env-var', env: ['ANTHROPIC_API_KEY'] },
+  { id: 'openai', label: 'OpenAI', kind: 'env-var', env: ['OPENAI_API_KEY'] },
+  { id: 'xai', label: 'xAI (Grok)', kind: 'env-var', env: ['XAI_API_KEY', 'GROK_API_KEY'] },
+  { id: 'groq', label: 'Groq', kind: 'env-var', env: ['GROQ_API_KEY'] },
+]);
+
+async function probeHttp(url, timeoutMs) {
+  const t0 = Date.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const resp = await fetch(url, { signal: controller.signal });
+    return {
+      reachable: resp.ok,
+      latency_ms: Date.now() - t0,
+      error: resp.ok ? null : `HTTP ${resp.status}`,
+    };
+  } catch (err) {
+    const msg = err && err.name === 'AbortError' ? 'timeout' : String((err && err.message) || err);
+    return { reachable: false, latency_ms: Date.now() - t0, error: msg };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function probeEnv(envNames) {
+  const found = envNames.find((n) => {
+    const v = process.env[n];
+    return typeof v === 'string' && v.length > 0;
+  });
+  return { has_secret: Boolean(found), secret_env_var: found || null };
+}
+
+async function checkAllProviders() {
+  const results = await Promise.all(
+    PROVIDER_DEFS.map(async (p) => {
+      const base = { id: p.id, label: p.label, kind: p.kind };
+      if (p.kind === 'local-http') {
+        const r = await probeHttp(p.url, PROVIDER_PROBE_TIMEOUT_MS);
+        return { ...base, url: p.url, ...r };
+      }
+      // env-var kind
+      return { ...base, env_vars_checked: p.env, ...probeEnv(p.env) };
+    })
+  );
+  return results;
+}
+
 function buildApp() {
   const app = express();
   app.use(express.json({ limit: '64kb' }));
@@ -228,6 +295,16 @@ function buildApp() {
 
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true, schema: 'aetherdesk_health_v0', port: PORT, host: HOST });
+  });
+
+  app.get('/api/providers', async (_req, res) => {
+    const providers = await checkAllProviders();
+    res.json({
+      ok: true,
+      schema: 'aetherdesk_providers_v0',
+      generated_at: new Date().toISOString(),
+      providers,
+    });
   });
 
   app.get('/api/commands', (_req, res) => {
@@ -283,12 +360,15 @@ if (require.main === module) {
 module.exports = {
   buildApp,
   COMMAND_ALLOWLIST,
+  PROVIDER_DEFS,
   buildReceipt,
   listReceipts,
   readReceipt,
   writeReceipt,
+  checkAllProviders,
+  probeEnv,
   RECEIPTS_DIR,
   HOST,
   PORT,
-  _private: { tailBytes, sha256, runCommand },
+  _private: { tailBytes, sha256, runCommand, probeHttp },
 };
