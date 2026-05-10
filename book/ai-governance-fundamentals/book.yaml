@@ -17,6 +17,21 @@ chapters:
     file: chapter-01-harmonic-wall.md
     estimated_minutes: 12
     status: published
+  - number: 2
+    slug: risk-tiers
+    file: chapter-02-risk-tiers.md
+    estimated_minutes: 10
+    status: published
+  - number: 3
+    slug: decision-records
+    file: chapter-03-decision-records.md
+    estimated_minutes: 11
+    status: published
+  - number: 4
+    slug: sacred-tongues
+    file: chapter-04-sacred-tongues.md
+    estimated_minutes: 12
+    status: published
 checkout:
   sample_price_label: Free
   bundle_price_label: $19 one-time (planned)
