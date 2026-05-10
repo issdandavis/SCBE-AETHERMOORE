@@ -18,10 +18,12 @@ const stripeWebhook = require('../../api/billing/stripe_webhook.js');
 
 const TEST_SECRET = 'whsec_test_secret_xyz';
 const SNAPSHOT_LINK_ID = 'plink_snapshot_test_42';
+const HEARTBEAT_LINK_ID = 'plink_heartbeat_test_99';
 
 function setEnv(): void {
   process.env.STRIPE_WEBHOOK_SECRET = TEST_SECRET;
   process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID = SNAPSHOT_LINK_ID;
+  process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID = HEARTBEAT_LINK_ID;
   process.env.GITHUB_TOKEN = 'ghp_test_token';
   process.env.GITHUB_REPO = 'test-org/test-repo';
   process.env.POLLY_SNAPSHOT_DISPATCH_ENABLED = 'true';
@@ -30,6 +32,7 @@ function setEnv(): void {
 function clearEnv(): void {
   delete process.env.STRIPE_WEBHOOK_SECRET;
   delete process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID;
+  delete process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID;
   delete process.env.GITHUB_TOKEN;
   delete process.env.GH_TOKEN;
   delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
@@ -130,6 +133,35 @@ function snapshotEvent(overrides: Record<string, unknown> = {}): string {
         },
         livemode: false,
         created: 1715200000,
+        ...overrides,
+      },
+    },
+  });
+}
+
+function heartbeatEvent(overrides: Record<string, unknown> = {}): string {
+  return JSON.stringify({
+    id: 'evt_test_heartbeat',
+    type: 'checkout.session.completed',
+    data: {
+      object: {
+        id: 'cs_test_heartbeat_99',
+        object: 'checkout.session',
+        mode: 'subscription',
+        amount_total: 9900,
+        currency: 'usd',
+        payment_link: HEARTBEAT_LINK_ID,
+        payment_intent: null,
+        subscription: 'sub_test_99',
+        customer: 'cus_test_99',
+        customer_email: 'heartbeat@example.com',
+        customer_details: {
+          email: 'heartbeat@example.com',
+          name: 'Heartbeat Buyer',
+          phone: null,
+        },
+        livemode: false,
+        created: 1715200099,
         ...overrides,
       },
     },
@@ -298,6 +330,47 @@ describe('stripe webhook — snapshot detection', () => {
   });
 });
 
+describe('stripe webhook — heartbeat detection', () => {
+  beforeEach(() => setEnv());
+  afterEach(() => {
+    clearEnv();
+    vi.restoreAllMocks();
+  });
+
+  it('matches heartbeat by payment_link id', () => {
+    const { isHeartbeatSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(isHeartbeatSession({ payment_link: HEARTBEAT_LINK_ID }, cfg)).toBe(true);
+  });
+
+  it('matches heartbeat by $99 subscription amount when no payment_link match', () => {
+    const { isHeartbeatSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(
+      isHeartbeatSession(
+        { mode: 'subscription', amount_total: 9900, currency: 'usd', payment_link: 'plink_other' },
+        cfg
+      )
+    ).toBe(true);
+  });
+
+  it('rejects one-time payment mode even with $99 total', () => {
+    const { isHeartbeatSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(isHeartbeatSession({ mode: 'payment', amount_total: 9900, currency: 'usd' }, cfg)).toBe(
+      false
+    );
+  });
+
+  it('rejects mismatched subscription amount', () => {
+    const { isHeartbeatSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(
+      isHeartbeatSession({ mode: 'subscription', amount_total: 2000, currency: 'usd' }, cfg)
+    ).toBe(false);
+  });
+});
+
 describe('stripe webhook — event routing', () => {
   beforeEach(() => setEnv());
   afterEach(() => {
@@ -374,5 +447,30 @@ describe('stripe webhook — event routing', () => {
     expect(rec.contact_email).toBe('buyer@example.com');
     expect(rec.amount_total).toBe(50000);
     expect(rec.source).toBe('governance-snapshot');
+  });
+
+  it('heartbeat checkout completes → heartbeat dispatch payload', async () => {
+    let capturedBody: string | undefined;
+    vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
+      capturedBody = (init as { body: string }).body;
+      return new Response('{}', { status: 200 });
+    });
+    const raw = heartbeatEvent();
+    const sig = signPayload(raw, TEST_SECRET);
+    const req = makeReq({ rawBody: raw, headers: { 'stripe-signature': sig } });
+    const res = makeRes();
+    await stripeWebhook(req as never, res as never);
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { handled: string }).handled).toBe('heartbeat_started');
+    expect(capturedBody).toBeDefined();
+    const dispatched = JSON.parse(capturedBody as string);
+    expect(dispatched.event_type).toBe('polly_heartbeat_started');
+    const rec = dispatched.client_payload.record;
+    expect(rec.kind).toBe('heartbeat_started');
+    expect(rec.session_id).toBe('cs_test_heartbeat_99');
+    expect(rec.subscription_id).toBe('sub_test_99');
+    expect(rec.contact_email).toBe('heartbeat@example.com');
+    expect(rec.amount_total).toBe(9900);
+    expect(rec.source).toBe('governance-heartbeat');
   });
 });

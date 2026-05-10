@@ -1,6 +1,6 @@
 {
   "schema": "aethermoore-offers-v1",
-  "updated_at": "2026-05-09",
+  "updated_at": "2026-05-10",
   "site_base": "https://aethermoore.com/SCBE-AETHERMOORE",
   "usage_policy": {
     "name": "SCBE Service Credits",
@@ -47,6 +47,23 @@
       "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
       "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#intake",
       "status": "live"
+    },
+    {
+      "id": "governance_heartbeat",
+      "name": "Governance Heartbeat",
+      "price_label": "$99/month",
+      "type": "subscription",
+      "checkout_url": "mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#heartbeat",
+      "status": "live",
+      "scope": [
+        "monthly AI governance scan of one workflow",
+        "one short report (delta vs. last month)",
+        "one risk / change summary",
+        "one recommended action list",
+        "optional dataset / training capture",
+        "cancel anytime"
+      ]
     },
     {
       "id": "toolkit",

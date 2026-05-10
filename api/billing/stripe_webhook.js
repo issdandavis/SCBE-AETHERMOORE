@@ -21,6 +21,7 @@
 const crypto = require('crypto');
 
 const SNAPSHOT_AMOUNT_CENTS = 50000;
+const HEARTBEAT_AMOUNT_CENTS = 9900;
 const TOLERANCE_SECONDS = 300; // Stripe default replay window
 
 function setCors(res) {
@@ -100,6 +101,7 @@ function snapshotConfig() {
   return {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     paymentLinkId: process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID || '',
+    heartbeatPaymentLinkId: process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID || '',
     repo: process.env.POLLY_TRAIN_REPO || process.env.GITHUB_REPO || 'issdandavis/SCBE-AETHERMOORE',
     githubToken:
       process.env.POLLY_TRAIN_GITHUB_TOKEN ||
@@ -108,7 +110,10 @@ function snapshotConfig() {
       '',
     dispatchEnabled:
       String(process.env.POLLY_SNAPSHOT_DISPATCH_ENABLED || 'true').toLowerCase() !== 'false',
-    dispatchTimeoutMs: Math.max(500, Number(process.env.POLLY_SNAPSHOT_DISPATCH_TIMEOUT_MS || 4000)),
+    dispatchTimeoutMs: Math.max(
+      500,
+      Number(process.env.POLLY_SNAPSHOT_DISPATCH_TIMEOUT_MS || 4000)
+    ),
   };
 }
 
@@ -127,6 +132,25 @@ function isSnapshotSession(session, cfg) {
   return false;
 }
 
+function isHeartbeatSession(session, cfg) {
+  if (!session || typeof session !== 'object') return false;
+  if (cfg.heartbeatPaymentLinkId && session.payment_link === cfg.heartbeatPaymentLinkId) {
+    return true;
+  }
+  // Fallback: a $99/mo USD subscription signup is the Heartbeat product.
+  // amount_total on a subscription checkout reflects the first invoice
+  // (the $99 first charge); subsequent invoice.paid events use a different
+  // shape and aren't routed here.
+  if (
+    session.mode === 'subscription' &&
+    Number(session.amount_total) === HEARTBEAT_AMOUNT_CENTS &&
+    String(session.currency || '').toLowerCase() === 'usd'
+  ) {
+    return true;
+  }
+  return false;
+}
+
 async function fetchWithTimeout(url, init, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -137,32 +161,12 @@ async function fetchWithTimeout(url, init, timeoutMs) {
   }
 }
 
-async function dispatchSnapshotPaid(session, cfg) {
+async function dispatchEvent(eventType, record, cfg) {
   if (!cfg.dispatchEnabled) return { ok: false, reason: 'disabled' };
   if (!cfg.githubToken) return { ok: false, reason: 'no_token' };
 
-  const details = (session && session.customer_details) || {};
-  const record = {
-    kind: 'snapshot_paid',
-    session_id: session && session.id,
-    payment_intent: session && session.payment_intent,
-    customer_id: session && session.customer,
-    amount_total: session && session.amount_total,
-    currency: session && session.currency,
-    contact_email: details.email || (session && session.customer_email) || '',
-    contact_name: details.name || '',
-    contact_phone: details.phone || '',
-    created: session && session.created,
-    livemode: !!(session && session.livemode),
-    payment_link: session && session.payment_link,
-    source: 'governance-snapshot',
-  };
-
   const url = `https://api.github.com/repos/${cfg.repo}/dispatches`;
-  const body = JSON.stringify({
-    event_type: 'polly_snapshot_paid',
-    client_payload: { record },
-  });
+  const body = JSON.stringify({ event_type: eventType, client_payload: { record } });
 
   try {
     const response = await fetchWithTimeout(
@@ -174,7 +178,7 @@ async function dispatchSnapshotPaid(session, cfg) {
           Authorization: `Bearer ${cfg.githubToken}`,
           'Content-Type': 'application/json',
           'X-GitHub-Api-Version': '2022-11-28',
-          'User-Agent': 'scbe-stripe-snapshot-webhook',
+          'User-Agent': 'scbe-stripe-billing-webhook',
         },
         body,
       },
@@ -186,8 +190,43 @@ async function dispatchSnapshotPaid(session, cfg) {
     }
     return { ok: true };
   } catch (error) {
-    return { ok: false, reason: 'fetch_error', detail: String(error && error.message).slice(0, 240) };
+    return {
+      ok: false,
+      reason: 'fetch_error',
+      detail: String(error && error.message).slice(0, 240),
+    };
   }
+}
+
+function buildSessionRecord(session, kind, source) {
+  const details = (session && session.customer_details) || {};
+  return {
+    kind,
+    session_id: session && session.id,
+    payment_intent: session && session.payment_intent,
+    subscription_id: session && session.subscription,
+    customer_id: session && session.customer,
+    amount_total: session && session.amount_total,
+    currency: session && session.currency,
+    contact_email: details.email || (session && session.customer_email) || '',
+    contact_name: details.name || '',
+    contact_phone: details.phone || '',
+    created: session && session.created,
+    livemode: !!(session && session.livemode),
+    payment_link: session && session.payment_link,
+    mode: session && session.mode,
+    source,
+  };
+}
+
+async function dispatchSnapshotPaid(session, cfg) {
+  const record = buildSessionRecord(session, 'snapshot_paid', 'governance-snapshot');
+  return dispatchEvent('polly_snapshot_paid', record, cfg);
+}
+
+async function dispatchHeartbeatStarted(session, cfg) {
+  const record = buildSessionRecord(session, 'heartbeat_started', 'governance-heartbeat');
+  return dispatchEvent('polly_heartbeat_started', record, cfg);
 }
 
 module.exports = async function handler(req, res) {
@@ -203,7 +242,11 @@ module.exports = async function handler(req, res) {
   try {
     raw = await readRawBody(req);
   } catch (error) {
-    return sendJson(res, 400, { ok: false, error: 'invalid body', detail: String(error.message || error) });
+    return sendJson(res, 400, {
+      ok: false,
+      error: 'invalid body',
+      detail: String(error.message || error),
+    });
   }
 
   const cfg = snapshotConfig();
@@ -214,16 +257,29 @@ module.exports = async function handler(req, res) {
   }
 
   const sigHeader = req.headers['stripe-signature'];
-  const verification = verifySignature(raw, sigHeader, cfg.webhookSecret, Math.floor(Date.now() / 1000));
+  const verification = verifySignature(
+    raw,
+    sigHeader,
+    cfg.webhookSecret,
+    Math.floor(Date.now() / 1000)
+  );
   if (!verification.ok) {
-    return sendJson(res, 400, { ok: false, error: 'signature verification failed', reason: verification.reason });
+    return sendJson(res, 400, {
+      ok: false,
+      error: 'signature verification failed',
+      reason: verification.reason,
+    });
   }
 
   let event;
   try {
     event = JSON.parse(raw);
   } catch (error) {
-    return sendJson(res, 400, { ok: false, error: 'invalid JSON', detail: String(error.message || error) });
+    return sendJson(res, 400, {
+      ok: false,
+      error: 'invalid JSON',
+      detail: String(error.message || error),
+    });
   }
 
   // Only act on the one event we care about; everything else is a 200 ack.
@@ -234,6 +290,15 @@ module.exports = async function handler(req, res) {
       return sendJson(res, 200, {
         ok: true,
         handled: 'snapshot_paid',
+        session_id: session && session.id,
+        dispatch,
+      });
+    }
+    if (isHeartbeatSession(session, cfg)) {
+      const dispatch = await dispatchHeartbeatStarted(session, cfg);
+      return sendJson(res, 200, {
+        ok: true,
+        handled: 'heartbeat_started',
         session_id: session && session.id,
         dispatch,
       });
@@ -252,8 +317,11 @@ module.exports._private = {
   parseSignatureHeader,
   verifySignature,
   isSnapshotSession,
+  isHeartbeatSession,
   snapshotConfig,
+  buildSessionRecord,
   SNAPSHOT_AMOUNT_CENTS,
+  HEARTBEAT_AMOUNT_CENTS,
   TOLERANCE_SECONDS,
 };
 
