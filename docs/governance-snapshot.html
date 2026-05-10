@@ -8,7 +8,10 @@
       name="description"
       content="A fixed-scope AI governance assessment for small teams that need an audit-ready findings memo and three practical fixes."
     />
-    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html" />
+    <link
+      rel="canonical"
+      href="https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html"
+    />
     <style>
       :root {
         --bg: #0f1217;
@@ -179,9 +182,14 @@
         <article class="card">
           <h2>What you receive</h2>
           <ul>
-            <li>A 2-page findings memo covering your AI workflow, data path, and decision risks.</li>
+            <li>
+              A 2-page findings memo covering your AI workflow, data path, and decision risks.
+            </li>
             <li>Three prioritized fixes you can implement without buying a new platform.</li>
-            <li>A short evidence checklist you can keep for buyers, grant reviewers, or internal notes.</li>
+            <li>
+              A short evidence checklist you can keep for buyers, grant reviewers, or internal
+              notes.
+            </li>
           </ul>
         </article>
         <article class="card">
@@ -202,11 +210,39 @@
         </article>
       </section>
 
+      <section class="panel" id="heartbeat" style="margin-top: 24px">
+        <h2>Optional: keep the read fresh — Governance Heartbeat ($99/month)</h2>
+        <p>
+          A snapshot is a point in time. The Heartbeat keeps it current — one short monthly report
+          with what changed, what to act on, and a fresh evidence row you can hand to a buyer or
+          reviewer. Cancel anytime.
+        </p>
+        <ul>
+          <li>Monthly AI governance scan of one workflow.</li>
+          <li>One short report (delta vs. last month).</li>
+          <li>One risk / change summary.</li>
+          <li>One recommended action list.</li>
+          <li>Optional dataset / training capture for your own records.</li>
+          <li>Cancel anytime, no contract.</li>
+        </ul>
+        <p style="margin-top: 12px">
+          <a
+            class="btn"
+            href="mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup&body=Workflow%20to%20monitor%3A%0ABilling%20email%3A%0APreferred%20report%20day%20of%20month%3A%0A"
+            >Email to start a Heartbeat</a
+          >
+          <span style="margin-left: 12px; font-size: 13px; color: var(--muted)"
+            >Direct Stripe checkout link coming. Email starts the first invoice within one business
+            day.</span
+          >
+        </p>
+      </section>
+
       <section class="panel" id="intake">
         <h2>After checkout, send this intake</h2>
         <p>
-          Payment opens the slot. The review starts when the intake arrives. Keep the package
-          small enough to inspect quickly.
+          Payment opens the slot. The review starts when the intake arrives. Keep the package small
+          enough to inspect quickly.
         </p>
         <p class="note">
           Do not send secrets, private keys, customer records, medical records, export-controlled
@@ -215,49 +251,129 @@
         </p>
         <form id="intakeForm" style="display: grid; gap: 14px; margin-top: 18px">
           <!-- Honeypot: hidden via off-screen positioning. Bots fill, humans don't. -->
-          <div style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden" aria-hidden="true">
-            <label>Website (leave blank)
-              <input id="intakeWebsite" name="website" type="text" tabindex="-1" autocomplete="off" />
+          <div
+            style="
+              position: absolute;
+              left: -10000px;
+              top: auto;
+              width: 1px;
+              height: 1px;
+              overflow: hidden;
+            "
+            aria-hidden="true"
+          >
+            <label
+              >Website (leave blank)
+              <input
+                id="intakeWebsite"
+                name="website"
+                type="text"
+                tabindex="-1"
+                autocomplete="off"
+              />
             </label>
           </div>
           <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
             <span>Payment or receipt email *</span>
-            <input id="intakeEmail" type="email" required autocomplete="email"
-              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px;" />
+            <input
+              id="intakeEmail"
+              type="email"
+              required
+              autocomplete="email"
+              style="
+                background: var(--bg);
+                border: 1px solid var(--line);
+                color: var(--ink);
+                padding: 10px;
+                border-radius: 6px;
+                font-size: 15px;
+              "
+            />
           </label>
           <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
             <span>Workflow, tool, prompt chain, or feature to review *</span>
-            <textarea id="intakeWorkflow" required rows="2"
+            <textarea
+              id="intakeWorkflow"
+              required
+              rows="2"
               placeholder="e.g. our customer-support GPT that answers refund questions"
-              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px; font-family: inherit;"></textarea>
+              style="
+                background: var(--bg);
+                border: 1px solid var(--line);
+                color: var(--ink);
+                padding: 10px;
+                border-radius: 6px;
+                font-size: 15px;
+                font-family: inherit;
+              "
+            ></textarea>
           </label>
           <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
             <span>What decision or output matters most if the AI gets it wrong *</span>
-            <textarea id="intakeRisk" required rows="2"
+            <textarea
+              id="intakeRisk"
+              required
+              rows="2"
               placeholder="e.g. wrongly approving a refund, leaking other customers' info"
-              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px; font-family: inherit;"></textarea>
+              style="
+                background: var(--bg);
+                border: 1px solid var(--line);
+                color: var(--ink);
+                padding: 10px;
+                border-radius: 6px;
+                font-size: 15px;
+                font-family: inherit;
+              "
+            ></textarea>
           </label>
           <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
             <span>Links, redacted screenshots, prompts, policy notes</span>
-            <textarea id="intakeLinks" rows="2"
+            <textarea
+              id="intakeLinks"
+              rows="2"
               placeholder="public docs URL, drive folder, gist, or paste a prompt"
-              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px; font-family: inherit;"></textarea>
+              style="
+                background: var(--bg);
+                border: 1px solid var(--line);
+                color: var(--ink);
+                padding: 10px;
+                border-radius: 6px;
+                font-size: 15px;
+                font-family: inherit;
+              "
+            ></textarea>
           </label>
           <label style="display: grid; gap: 6px; font-size: 13px; color: var(--muted)">
             <span>Deadline or context (grant, subcontract, internal review)</span>
-            <input id="intakeDeadline" type="text"
+            <input
+              id="intakeDeadline"
+              type="text"
               placeholder="e.g. need it before grant submission 2026-06-01"
-              style="background: var(--bg); border: 1px solid var(--line); color: var(--ink); padding: 10px; border-radius: 6px; font-size: 15px;" />
+              style="
+                background: var(--bg);
+                border: 1px solid var(--line);
+                color: var(--ink);
+                padding: 10px;
+                border-radius: 6px;
+                font-size: 15px;
+              "
+            />
           </label>
           <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap">
-            <button type="submit" class="btn" style="border: none; cursor: pointer; font: inherit;">Send intake</button>
+            <button type="submit" class="btn" style="border: none; cursor: pointer; font: inherit">
+              Send intake
+            </button>
             <span id="intakeStatus" style="font-size: 13px; color: var(--muted)"></span>
           </div>
           <p class="note" style="margin-top: 4px">
             Submission goes to a private dataset only Issac can see. Falls back to
-            <a class="small-link" id="intakeMailto"
+            <a
+              class="small-link"
+              id="intakeMailto"
               href="mailto:ai@aethermoore.com?subject=AI%20Governance%20Snapshot%20intake&body=Payment%20email%3A%0AWorkflow%20or%20tool%20to%20review%3A%0AWhat%20decision%20or%20output%20matters%3A%0ALinks%20or%20screenshots%20I%20can%20share%3A%0ADeadline%20or%20context%3A%0A"
-            >email</a> if the form fails.
+              >email</a
+            >
+            if the form fails.
           </p>
         </form>
       </section>
@@ -282,7 +398,9 @@
           });
         })();
         (function () {
-          var apiBase = (window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app').replace(/\/$/, '');
+          var apiBase = (
+            window.POLLY_VERCEL_BASE || 'https://scbe-agent-bridge-vercel.vercel.app'
+          ).replace(/\/$/, '');
           var form = document.getElementById('intakeForm');
           if (!form) return;
           var status = document.getElementById('intakeStatus');
@@ -299,14 +417,27 @@
 
           function buildMailto(values) {
             var body =
-              'Payment email: ' + (values.email || '') + '\n' +
-              'Workflow or tool to review:\n' + (values.workflow || '') + '\n\n' +
-              'What decision or output matters:\n' + (values.risk || '') + '\n\n' +
-              'Links or screenshots I can share:\n' + (values.links || '') + '\n\n' +
-              'Deadline or context:\n' + (values.deadline || '') + '\n';
-            return 'mailto:ai@aethermoore.com?subject=' +
+              'Payment email: ' +
+              (values.email || '') +
+              '\n' +
+              'Workflow or tool to review:\n' +
+              (values.workflow || '') +
+              '\n\n' +
+              'What decision or output matters:\n' +
+              (values.risk || '') +
+              '\n\n' +
+              'Links or screenshots I can share:\n' +
+              (values.links || '') +
+              '\n\n' +
+              'Deadline or context:\n' +
+              (values.deadline || '') +
+              '\n';
+            return (
+              'mailto:ai@aethermoore.com?subject=' +
               encodeURIComponent('AI Governance Snapshot intake') +
-              '&body=' + encodeURIComponent(body);
+              '&body=' +
+              encodeURIComponent(body)
+            );
           }
 
           form.addEventListener('submit', async function (event) {
@@ -332,10 +463,17 @@
             // leads in the same operator dashboard.
             var description =
               'GOVERNANCE SNAPSHOT INTAKE\n\n' +
-              'Workflow / tool to review:\n' + values.workflow + '\n\n' +
-              'What matters if AI gets it wrong:\n' + values.risk + '\n\n' +
-              'Links / screenshots:\n' + (values.links || '(none provided)') + '\n\n' +
-              'Deadline / context:\n' + (values.deadline || '(none provided)');
+              'Workflow / tool to review:\n' +
+              values.workflow +
+              '\n\n' +
+              'What matters if AI gets it wrong:\n' +
+              values.risk +
+              '\n\n' +
+              'Links / screenshots:\n' +
+              (values.links || '(none provided)') +
+              '\n\n' +
+              'Deadline / context:\n' +
+              (values.deadline || '(none provided)');
             // The shared /v1/polly/lead endpoint enforces strict enums on
             // project_type / budget / timeline. Snapshot intake distinction
             // lives in `source` ('aethermoore.com/governance-snapshot') and
@@ -360,7 +498,8 @@
               if (!response.ok || !data.ok) {
                 status.style.color = '#ff7a7a';
                 status.textContent =
-                  'Could not send: ' + ((data && data.error) || 'unknown error') +
+                  'Could not send: ' +
+                  ((data && data.error) || 'unknown error') +
                   '. Use the email fallback below.';
                 if (window.PollyFunnel) {
                   window.PollyFunnel.fire('snapshot_intake_fail', {
@@ -376,11 +515,14 @@
               form.innerHTML =
                 '<p style="font-size: 16px; color: var(--ink)"><strong>Intake received.</strong> ' +
                 'Issac will start the review within one business day and email you the findings memo at <code>' +
-                values.email.replace(/[<>&]/g, '') + '</code> within 5 business days.</p>' +
+                values.email.replace(/[<>&]/g, '') +
+                '</code> within 5 business days.</p>' +
                 '<p class="note">If you forgot to mention something, just reply to that email or send a follow-up to ai@aethermoore.com.</p>';
             } catch (error) {
               status.style.color = '#ff7a7a';
-              status.textContent = 'Network error: ' + (error && error.message ? error.message : error) +
+              status.textContent =
+                'Network error: ' +
+                (error && error.message ? error.message : error) +
                 '. Use the email fallback below.';
               if (window.PollyFunnel) {
                 window.PollyFunnel.fire('snapshot_intake_fail', {
@@ -396,16 +538,53 @@
         <h2>Boundaries</h2>
         <p>
           This is not legal advice, certification, penetration testing, FedRAMP authorization, or a
-          guaranteed contract outcome. It is a fixed-scope governance review built to turn a messy AI
-          workflow into a clearer risk memo and next-action list.
+          guaranteed contract outcome. It is a fixed-scope governance review built to turn a messy
+          AI workflow into a clearer risk memo and next-action list.
         </p>
         <p class="note">
           Best first buyers: small firms using AI in operations, founders applying to grants, teams
-          preparing subcontract conversations, or builders who need an outside governance read before
-          shipping.
+          preparing subcontract conversations, or builders who need an outside governance read
+          before shipping.
         </p>
       </section>
     </main>
-  <a href="https://aethermoore.com/SCBE-AETHERMOORE/hire.html" target="_self" aria-label="Hire Issac" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #17c6cf; color: #06121a; padding: 12px 20px; border-radius: 999px; font-family: Inter, system-ui, -apple-system, sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.01em; text-decoration: none; box-shadow: 0 4px 14px rgba(0,0,0,0.35); border: 1px solid #1ddae4; transition: transform 0.15s ease, box-shadow 0.15s ease;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 18px rgba(0,0,0,0.45)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 14px rgba(0,0,0,0.35)';">Hire Issac</a>
+    <a
+      href="https://aethermoore.com/SCBE-AETHERMOORE/hire.html"
+      target="_self"
+      aria-label="Hire Issac"
+      style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: #17c6cf;
+        color: #06121a;
+        padding: 12px 20px;
+        border-radius: 999px;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.01em;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+        border: 1px solid #1ddae4;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      "
+      onmouseover="
+        this.style.transform = 'translateY(-1px)';
+        this.style.boxShadow = '0 6px 18px rgba(0,0,0,0.45)';
+      "
+      onmouseout="
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 14px rgba(0,0,0,0.35)';
+      "
+      >Hire Issac</a
+    >
   </body>
 </html>
