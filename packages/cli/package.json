@@ -1,24 +1,55 @@
 {
   "name": "scbe-aethermoore-cli",
-  "version": "4.1.3",
+  "version": "4.1.5",
   "description": "Standalone CLI for SCBE-AETHERMOORE GeoSeal tools, tokenizer lanes, governance packets, web lookup, and mechanical verification.",
+  "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
   "type": "commonjs",
   "bin": {
-    "geoseal": "../../bin/geoseal.cjs",
-    "scbe-geoseal": "../../bin/geoseal.cjs"
+    "scbe": "bin/scbe.js",
+    "geoseal": "bin/scbe.js",
+    "scbe-geoseal": "bin/scbe.js"
   },
   "files": [
+    "bin",
     "README.md",
     "LICENSE",
-    "LICENSE-APACHE"
+    "LICENSE-APACHE",
+    "LICENSE-NOTICE.md"
+  ],
+  "scripts": {
+    "help": "node ./bin/scbe.js --help",
+    "selftest": "node ./bin/scbe.js selftest",
+    "pack:dry": "npm pack --dry-run --json"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "scbe-aethermoore": "^4.0.8",
+    "scbe-agent-bus": "^0.2.1"
+  },
+  "keywords": [
+    "scbe",
+    "aethermoore",
+    "cli",
+    "geoseal",
+    "tokenizer",
+    "governance",
+    "sacred-tongues",
+    "agent-tools",
+    "dimensional-analysis"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git"
+    "url": "git+https://github.com/issdandavis/SCBE-AETHERMOORE.git",
+    "directory": "packages/scbe-aethermoore-cli"
   },
   "bugs": {
     "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
   },
-  "homepage": "https://aethermoore.com/SCBE-AETHERMOORE/offers/"
+  "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
