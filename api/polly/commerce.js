@@ -51,7 +51,7 @@ const PRODUCT_CATALOG = [
     priceLabel: '$5 one-time',
     short:
       "If the open-source work has helped you and there's no formal engagement, a tip keeps the next release shipping.",
-    checkoutUrl: 'https://ko-fi.com/Y8Y51UQYWZ',
+    checkoutUrl: 'https://ko-fi.com/izdandavis',
     deliveryUrl: '',
     keywords: ['tip', 'tip jar', 'donate', 'donation', 'support', 'buy a coffee', 'coffee'],
   },
@@ -85,7 +85,7 @@ const CONSULTING_TIERS = [
 // canonical Pages URL until a custom rewrite is configured.
 const CONSULTING_LANDING_URL = 'https://aethermoore.com/SCBE-AETHERMOORE/hire.html';
 const HIRE_EMAIL = 'issdandavis7795@gmail.com';
-const MEMBERSHIP_KOFI_URL = 'https://ko-fi.com/Y8Y51UQYWZ';
+const MEMBERSHIP_KOFI_URL = 'https://ko-fi.com/izdandavis';
 const SERVICE_FAST_START_URL =
   'https://aethermoore.com/SCBE-AETHERMOORE/product-manual/service-fast-start.html';
 
