@@ -25,10 +25,23 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "'api/billing'" in ignore_source
     assert "'docs/hire.html'" in ignore_source
     assert "'docs/hire-b.html'" in ignore_source
+    assert "'docs/products.html'" in ignore_source
+    assert "'docs/start-here.html'" in ignore_source
+    assert "'docs/agents.html'" in ignore_source
+    assert "'docs/chat.html'" in ignore_source
     assert ("^/$", "/api/agent/launch.js") in routes
     assert ("^/launch$", "/api/agent/launch.js") in routes
     assert ("^/hire/?$", "/api/agent/hire.js") in routes
     assert ("^/SCBE-AETHERMOORE/hire\\.html$", "/api/agent/hire.js") in routes
+    assert ("^/products/?$", "/api/agent/products.js") in routes
+    assert ("^/SCBE-AETHERMOORE/products\\.html$", "/api/agent/products.js") in routes
+    assert ("^/start-here/?$", "/api/agent/start-here.js") in routes
+    assert ("^/SCBE-AETHERMOORE/start-here\\.html$", "/api/agent/start-here.js") in routes
+    assert ("^/agents/?$", "/api/agent/agents.js") in routes
+    assert ("^/SCBE-AETHERMOORE/agents\\.html$", "/api/agent/agents.js") in routes
+    assert ("^/chat/?$", "/api/agent/chat-page.js") in routes
+    assert ("^/SCBE-AETHERMOORE/chat\\.html$", "/api/agent/chat-page.js") in routes
+    assert ("^/static/(.*)$", "/api/agent/static.js?path=$1") in routes
     assert ("^/api/agent/(.*)$", "/api/agent/$1.js") in routes
     assert ("^/v1/polly/hosted-run/?$", "/api/polly/hosted-run.js") in routes
 
@@ -39,10 +52,19 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
 
     assert handler.exists()
     assert (REPO_ROOT / "api" / "agent" / "hire.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "products.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "start-here.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "agents.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "chat-page.js").exists()
     assert "!api" in ignore
     assert "!api/**" in ignore
     assert "!docs/offers.json" in ignore
     assert "!docs/app-config.json" in ignore
+    assert "!docs/products.html" in ignore
+    assert "!docs/start-here.html" in ignore
+    assert "!docs/agents.html" in ignore
+    assert "!docs/chat.html" in ignore
+    assert "!docs/static/**" in ignore
     assert "!public" in ignore
     assert "!public/hire.html" in ignore
     assert "!scripts/vercel/ignore-build.cjs" in ignore

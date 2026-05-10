@@ -6,6 +6,12 @@
 !docs
 !docs/offers.json
 !docs/app-config.json
+!docs/products.html
+!docs/start-here.html
+!docs/agents.html
+!docs/chat.html
+!docs/static
+!docs/static/**
 !public
 !public/hire.html
 !scripts
