@@ -186,8 +186,7 @@ SERVICE_CREDITS_POLICY: Dict[str, Any] = {
         "reports, delivery, storage, and provider/model usage"
     ),
     "fee_formula": (
-        "customer_charge = actual_provider_cost + "
-        "max(actual_provider_cost * service_fee_percent, small_run_floor)"
+        "customer_charge = actual_provider_cost + " "max(actual_provider_cost * service_fee_percent, small_run_floor)"
     ),
     "preferred_routing": (
         "local/Ollama and deterministic harness first; paid providers only "
@@ -212,8 +211,7 @@ class Intent:
 
 
 _BUY_PATTERN = re.compile(
-    r"\b(buy|purchase|order|checkout|pay\s+for|get\s+the|want\s+the|"
-    r"how\s+much|sign\s+me\s+up|add\s+to\s+cart)\b",
+    r"\b(buy|purchase|order|checkout|pay\s+for|get\s+the|want\s+the|" r"how\s+much|sign\s+me\s+up|add\s+to\s+cart)\b",
     re.IGNORECASE,
 )
 
@@ -260,30 +258,22 @@ def classify_intent(message: str) -> Intent:
     # Bare product keyword without explicit buy verb still surfaces the product.
     product = _resolve_product(message)
     if product is not None:
-        return Intent(
-            name="buy", confidence=0.6, matched_term=product.sku, product=product
-        )
+        return Intent(name="buy", confidence=0.6, matched_term=product.sku, product=product)
 
     # Custom-build intent.
     custom_match = _CUSTOM_PATTERN.search(message)
     if custom_match:
-        return Intent(
-            name="custom", confidence=0.85, matched_term=custom_match.group(0)
-        )
+        return Intent(name="custom", confidence=0.85, matched_term=custom_match.group(0))
 
     # Research intent.
     research_match = _RESEARCH_PATTERN.search(message)
     if research_match:
-        return Intent(
-            name="research", confidence=0.8, matched_term=research_match.group(0)
-        )
+        return Intent(name="research", confidence=0.8, matched_term=research_match.group(0))
 
     # Membership / sponsorship intent.
     membership_match = _MEMBERSHIP_PATTERN.search(message)
     if membership_match:
-        return Intent(
-            name="membership", confidence=0.75, matched_term=membership_match.group(0)
-        )
+        return Intent(name="membership", confidence=0.75, matched_term=membership_match.group(0))
 
     return Intent(name="general", confidence=0.0)
 
@@ -316,11 +306,7 @@ def render_buy_reply(product: Optional[Product]) -> Tuple[str, List[Dict[str, st
             actions.append({"label": f"Buy {item.name}", "url": item.checkout_url})
         return "\n".join(lines), actions
 
-    text = (
-        f"**{product.name}** — {product.price_label}.\n\n"
-        f"{product.short}\n\n"
-        f"Checkout: {product.checkout_url}"
-    )
+    text = f"**{product.name}** — {product.price_label}.\n\n" f"{product.short}\n\n" f"Checkout: {product.checkout_url}"
     if product.delivery_url:
         text += f"\nWhat you get + delivery: {product.delivery_url}"
     actions = [{"label": f"Buy {product.name}", "url": product.checkout_url}]
@@ -345,9 +331,7 @@ def render_custom_reply(message: str) -> Tuple[str, List[Dict[str, str]]]:
     )
     mailto = f"mailto:{HIRE_EMAIL}" f"?subject={quote(subject)}" f"&body={quote(body)}"
 
-    tier_lines = [
-        f"- **{t['name']}** ({t['price']}) — {t['fit']}" for t in CONSULTING_TIERS
-    ]
+    tier_lines = [f"- **{t['name']}** ({t['price']}) — {t['fit']}" for t in CONSULTING_TIERS]
     text = (
         "What you're describing is custom — not in the stock catalog. "
         "Four ways we can scope it:\n\n"
@@ -395,9 +379,7 @@ def render_membership_reply() -> Tuple[str, List[Dict[str, str]]]:
 
 
 _TRAIN_CORPUS_DIR_ENV = "POLLY_TRAIN_CORPUS_DIR"
-_DEFAULT_TRAIN_CORPUS_DIR = (
-    Path(__file__).resolve().parents[2] / "training-data" / "polly-chat-live"
-)
+_DEFAULT_TRAIN_CORPUS_DIR = Path(__file__).resolve().parents[2] / "training-data" / "polly-chat-live"
 
 
 def train_corpus_dir() -> Path:
