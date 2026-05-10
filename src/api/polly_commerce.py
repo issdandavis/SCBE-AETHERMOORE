@@ -60,6 +60,31 @@ class Product:
 
 PRODUCT_CATALOG: Tuple[Product, ...] = (
     Product(
+        sku="scbe-service-credits",
+        name="SCBE Service Credits",
+        price_label="$5+ pay-as-you-go",
+        short=(
+            "Small credit top-ups for hosted SCBE routing, governed runs, "
+            "reports, and provider/model usage. We pass through compute/model "
+            "cost and add only a 2-5% coordination fee where usage is billable."
+        ),
+        checkout_url="https://ko-fi.com/izdandavis",
+        delivery_url="https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
+        keywords=(
+            "credits",
+            "service credits",
+            "pay as you go",
+            "pay-as-you-go",
+            "token routing",
+            "tokens",
+            "usage",
+            "hosted run",
+            "hosted routing",
+            "ollama cloud",
+            "cloud models",
+        ),
+    ),
+    Product(
         sku="ai-governance-toolkit",
         name="SCBE AI Governance Toolkit",
         price_label="$29 one-time",
@@ -70,7 +95,13 @@ PRODUCT_CATALOG: Tuple[Product, ...] = (
         ),
         checkout_url="https://buy.stripe.com/cNibJ25Ca2TJ9gQ3a6dby06",
         delivery_url="https://aethermoore.com/product-manual/ai-governance-toolkit.html",
-        keywords=("toolkit", "governance toolkit", "ai governance", "templates", "decision records"),
+        keywords=(
+            "toolkit",
+            "governance toolkit",
+            "ai governance",
+            "templates",
+            "decision records",
+        ),
     ),
     Product(
         sku="ai-security-training-vault",
@@ -83,7 +114,14 @@ PRODUCT_CATALOG: Tuple[Product, ...] = (
         ),
         checkout_url="https://buy.stripe.com/28E8wQ5Cacuj64EaCydby0g",
         delivery_url="https://aethermoore.com/product-manual/training-vault.html",
-        keywords=("training vault", "training data", "vault", "ai security", "benchmark suite", "notebooks"),
+        keywords=(
+            "training vault",
+            "training data",
+            "vault",
+            "ai security",
+            "benchmark suite",
+            "notebooks",
+        ),
     ),
     Product(
         sku="five-dollar-tip-jar",
@@ -93,8 +131,16 @@ PRODUCT_CATALOG: Tuple[Product, ...] = (
             "If the open-source work has helped you and there's no formal "
             "engagement, a tip keeps the next release shipping."
         ),
-        checkout_url="https://ko-fi.com/Y8Y51UQYWZ",
-        keywords=("tip", "tip jar", "donate", "donation", "support", "buy a coffee", "coffee"),
+        checkout_url="https://ko-fi.com/izdandavis",
+        keywords=(
+            "tip",
+            "tip jar",
+            "donate",
+            "donation",
+            "support",
+            "buy a coffee",
+            "coffee",
+        ),
     ),
 )
 
@@ -129,7 +175,25 @@ CONSULTING_TIERS: Tuple[Dict[str, str], ...] = (
 
 CONSULTING_LANDING_URL = "https://aethermoore.com/hire"
 HIRE_EMAIL = "issdandavis7795@gmail.com"
-MEMBERSHIP_KOFI_URL = "https://ko-fi.com/Y8Y51UQYWZ"
+MEMBERSHIP_KOFI_URL = "https://ko-fi.com/izdandavis"
+
+SERVICE_CREDITS_POLICY: Dict[str, Any] = {
+    "name": "SCBE Service Credits",
+    "service_fee_percent_range": [2, 5],
+    "minimum_top_up_usd": 5,
+    "usage_model": (
+        "mostly-free local tools; service credits only pay for hosted routing, "
+        "reports, delivery, storage, and provider/model usage"
+    ),
+    "fee_formula": (
+        "customer_charge = actual_provider_cost + "
+        "max(actual_provider_cost * service_fee_percent, small_run_floor)"
+    ),
+    "preferred_routing": (
+        "local/Ollama and deterministic harness first; paid providers only "
+        "when the run needs hosted capacity or a customer explicitly requests it"
+    ),
+}
 
 
 # ---------------------------------------------------------------------------
@@ -148,7 +212,8 @@ class Intent:
 
 
 _BUY_PATTERN = re.compile(
-    r"\b(buy|purchase|order|checkout|pay\s+for|get\s+the|want\s+the|" r"how\s+much|sign\s+me\s+up|add\s+to\s+cart)\b",
+    r"\b(buy|purchase|order|checkout|pay\s+for|get\s+the|want\s+the|"
+    r"how\s+much|sign\s+me\s+up|add\s+to\s+cart)\b",
     re.IGNORECASE,
 )
 
@@ -195,22 +260,30 @@ def classify_intent(message: str) -> Intent:
     # Bare product keyword without explicit buy verb still surfaces the product.
     product = _resolve_product(message)
     if product is not None:
-        return Intent(name="buy", confidence=0.6, matched_term=product.sku, product=product)
+        return Intent(
+            name="buy", confidence=0.6, matched_term=product.sku, product=product
+        )
 
     # Custom-build intent.
     custom_match = _CUSTOM_PATTERN.search(message)
     if custom_match:
-        return Intent(name="custom", confidence=0.85, matched_term=custom_match.group(0))
+        return Intent(
+            name="custom", confidence=0.85, matched_term=custom_match.group(0)
+        )
 
     # Research intent.
     research_match = _RESEARCH_PATTERN.search(message)
     if research_match:
-        return Intent(name="research", confidence=0.8, matched_term=research_match.group(0))
+        return Intent(
+            name="research", confidence=0.8, matched_term=research_match.group(0)
+        )
 
     # Membership / sponsorship intent.
     membership_match = _MEMBERSHIP_PATTERN.search(message)
     if membership_match:
-        return Intent(name="membership", confidence=0.75, matched_term=membership_match.group(0))
+        return Intent(
+            name="membership", confidence=0.75, matched_term=membership_match.group(0)
+        )
 
     return Intent(name="general", confidence=0.0)
 
@@ -243,7 +316,11 @@ def render_buy_reply(product: Optional[Product]) -> Tuple[str, List[Dict[str, st
             actions.append({"label": f"Buy {item.name}", "url": item.checkout_url})
         return "\n".join(lines), actions
 
-    text = f"**{product.name}** — {product.price_label}.\n\n" f"{product.short}\n\n" f"Checkout: {product.checkout_url}"
+    text = (
+        f"**{product.name}** — {product.price_label}.\n\n"
+        f"{product.short}\n\n"
+        f"Checkout: {product.checkout_url}"
+    )
     if product.delivery_url:
         text += f"\nWhat you get + delivery: {product.delivery_url}"
     actions = [{"label": f"Buy {product.name}", "url": product.checkout_url}]
@@ -268,7 +345,9 @@ def render_custom_reply(message: str) -> Tuple[str, List[Dict[str, str]]]:
     )
     mailto = f"mailto:{HIRE_EMAIL}" f"?subject={quote(subject)}" f"&body={quote(body)}"
 
-    tier_lines = [f"- **{t['name']}** ({t['price']}) — {t['fit']}" for t in CONSULTING_TIERS]
+    tier_lines = [
+        f"- **{t['name']}** ({t['price']}) — {t['fit']}" for t in CONSULTING_TIERS
+    ]
     text = (
         "What you're describing is custom — not in the stock catalog. "
         "Four ways we can scope it:\n\n"
@@ -287,15 +366,24 @@ def render_membership_reply() -> Tuple[str, List[Dict[str, str]]]:
     """Render a membership / sponsorship CTA."""
     text = (
         "Three ways to stay close to the work:\n\n"
+        "- **Use service credits** for pay-as-you-go hosted routing without a big subscription\n"
         "- **Sponsor / tip** the open-source work via Ko-fi\n"
         "- **Watch the GitHub repo** for releases (`Watch -> Custom -> Releases`)\n"
         "- **Email** me at the address below for a private update list\n\n"
-        "There is no paid membership tier yet — open-source first; "
-        "sponsorships keep the next release shipping."
+        "The target model is mostly free local tools, with credits only used when "
+        "a hosted run, report, or provider/model call is needed. Billable usage is "
+        "passed through with a small 2-5% SCBE coordination fee."
     )
     actions = [
-        {"label": "Tip on Ko-fi", "url": MEMBERSHIP_KOFI_URL},
-        {"label": "Watch the repo", "url": "https://github.com/issdandavis/SCBE-AETHERMOORE"},
+        {
+            "label": "Service credits",
+            "url": "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
+        },
+        {"label": "Top up on Ko-fi", "url": MEMBERSHIP_KOFI_URL},
+        {
+            "label": "Watch the repo",
+            "url": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+        },
         {"label": "Email Issac", "url": f"mailto:{HIRE_EMAIL}"},
     ]
     return text, actions
@@ -307,7 +395,9 @@ def render_membership_reply() -> Tuple[str, List[Dict[str, str]]]:
 
 
 _TRAIN_CORPUS_DIR_ENV = "POLLY_TRAIN_CORPUS_DIR"
-_DEFAULT_TRAIN_CORPUS_DIR = Path(__file__).resolve().parents[2] / "training-data" / "polly-chat-live"
+_DEFAULT_TRAIN_CORPUS_DIR = (
+    Path(__file__).resolve().parents[2] / "training-data" / "polly-chat-live"
+)
 
 
 def train_corpus_dir() -> Path:
@@ -376,6 +466,7 @@ __all__ = [
     "Product",
     "PRODUCT_CATALOG",
     "CONSULTING_TIERS",
+    "SERVICE_CREDITS_POLICY",
     "CONSULTING_LANDING_URL",
     "HIRE_EMAIL",
     "MEMBERSHIP_KOFI_URL",

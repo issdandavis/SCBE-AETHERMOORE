@@ -60,17 +60,32 @@ def test_download_bridge_serves_private_blob_with_delivery_token() -> None:
 
 
 def test_public_offer_catalog_has_live_revenue_links() -> None:
-    offers = json.loads((REPO_ROOT / "docs" / "offers.json").read_text(encoding="utf-8"))
+    offers = json.loads(
+        (REPO_ROOT / "docs" / "offers.json").read_text(encoding="utf-8")
+    )
     by_id = {offer["id"]: offer for offer in offers["offers"]}
 
     assert offers["schema"] == "aethermoore-offers-v1"
-    assert by_id["tip_jar"]["checkout_url"] == "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
-    assert by_id["supporter_monthly"]["checkout_url"] == "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
-    assert by_id["governance_snapshot"]["intake_url"].endswith("/governance-snapshot.html#intake")
+    assert (
+        by_id["tip_jar"]["checkout_url"]
+        == "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+    )
+    assert by_id["service_credits"]["checkout_url"] == "https://ko-fi.com/izdandavis"
+    assert by_id["service_credits"]["proof_url"].endswith("/service-credits.html")
+    assert (
+        by_id["supporter_monthly"]["checkout_url"]
+        == "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
+    )
+    assert by_id["governance_snapshot"]["intake_url"].endswith(
+        "/governance-snapshot.html#intake"
+    )
+    assert offers["usage_policy"]["service_fee_percent_range"] == [2, 5]
 
 
 def test_public_app_config_explains_remote_update_boundary() -> None:
-    config = json.loads((REPO_ROOT / "docs" / "app-config.json").read_text(encoding="utf-8"))
+    config = json.loads(
+        (REPO_ROOT / "docs" / "app-config.json").read_text(encoding="utf-8")
+    )
 
     assert config["schema"] == "aethermoor-bus-app-config-v1"
     assert config["app"]["package_name"] == "io.aethermoor.bus"
@@ -78,6 +93,7 @@ def test_public_app_config_explains_remote_update_boundary() -> None:
     assert "offer links" in config["remote_update"]["applies_to"]
     assert "package name" in config["remote_update"]["requires_store_release"]
     assert config["features"]["tip_jar"] is True
+    assert config["features"]["service_credits"] is True
 
 
 def test_supporter_page_uses_direct_stripe_checkout_not_broken_api_bridge() -> None:
@@ -88,9 +104,15 @@ def test_supporter_page_uses_direct_stripe_checkout_not_broken_api_bridge() -> N
 
 
 def test_vercel_bridge_exposes_remote_offer_and_app_config_endpoints() -> None:
-    offers_source = (REPO_ROOT / "api" / "agent" / "offers.js").read_text(encoding="utf-8")
-    app_config_source = (REPO_ROOT / "api" / "agent" / "app-config.js").read_text(encoding="utf-8")
-    system_source = (REPO_ROOT / "api" / "agent" / "system.js").read_text(encoding="utf-8")
+    offers_source = (REPO_ROOT / "api" / "agent" / "offers.js").read_text(
+        encoding="utf-8"
+    )
+    app_config_source = (REPO_ROOT / "api" / "agent" / "app-config.js").read_text(
+        encoding="utf-8"
+    )
+    system_source = (REPO_ROOT / "api" / "agent" / "system.js").read_text(
+        encoding="utf-8"
+    )
 
     assert "docs/offers.json" in offers_source
     assert "s-maxage=300" in offers_source
@@ -99,9 +121,12 @@ def test_vercel_bridge_exposes_remote_offer_and_app_config_endpoints() -> None:
     assert "aethermoor.agent.system_contract.v1" in system_source
     assert "/api/agent/chat" in system_source
     assert "workspace_formation" in system_source
+    assert "usage_policy" in system_source
 
 
 def test_public_app_config_exposes_unified_system_contract() -> None:
-    config = json.loads((REPO_ROOT / "docs" / "app-config.json").read_text(encoding="utf-8"))
+    config = json.loads(
+        (REPO_ROOT / "docs" / "app-config.json").read_text(encoding="utf-8")
+    )
 
     assert config["endpoints"]["agent_bridge_system"].endswith("/api/agent/system")

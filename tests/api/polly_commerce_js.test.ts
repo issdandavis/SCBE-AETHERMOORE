@@ -174,12 +174,18 @@ describe('polly lead handler — anti-abuse', () => {
 });
 
 describe('polly commerce intent classification', () => {
-  it('catalog has four live products with valid stripe/kofi urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(4);
+  it('catalog has five live products with valid stripe/kofi urls', () => {
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(5);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^https:\/\/(buy\.stripe\.com|ko-fi\.com)/);
       expect(product.keywords.length).toBeGreaterThan(0);
     }
+  });
+
+  it('classifies service credits as the pay-as-you-go product', () => {
+    const intent = commerce.classifyIntent('I want to buy service credits for hosted routing');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('scbe-service-credits');
   });
 
   it('classifies "buy" verb with bound product at 0.95 confidence', () => {
@@ -262,9 +268,9 @@ describe('polly commerce reply rendering', () => {
     expect(out.actions[0].url).toBe(product.checkoutUrl);
   });
 
-  it('renderBuyReply with null lists all 4 products', () => {
+  it('renderBuyReply with null lists all products', () => {
     const out = commerce.renderBuyReply(null);
-    expect(out.actions).toHaveLength(4);
+    expect(out.actions).toHaveLength(commerce.PRODUCT_CATALOG.length);
     for (const action of out.actions) {
       expect(action.url).toMatch(/^https:\/\//);
     }
@@ -281,12 +287,14 @@ describe('polly commerce reply rendering', () => {
     );
   });
 
-  it('renderMembershipReply has Ko-fi + GitHub + email actions', () => {
+  it('renderMembershipReply has credits + Ko-fi + GitHub + email actions', () => {
     const out = commerce.renderMembershipReply();
-    expect(out.actions).toHaveLength(3);
-    expect(out.actions[0].url).toContain('ko-fi.com');
-    expect(out.actions[1].url).toContain('github.com');
-    expect(out.actions[2].url).toContain('mailto:');
+    expect(out.actions).toHaveLength(4);
+    expect(out.actions[0].url).toContain('service-credits');
+    expect(out.actions[1].url).toContain('ko-fi.com');
+    expect(out.actions[2].url).toContain('github.com');
+    expect(out.actions[3].url).toContain('mailto:');
+    expect(out.text).toContain('2-5%');
   });
 
   it('renderResearchReply with matching topic returns canonical body + repo links', () => {
@@ -441,7 +449,7 @@ describe('polly catalog handler', () => {
     expect(res.statusCode).toBe(200);
     const body = res.body as { ok: boolean; products: unknown[]; consulting_tiers: unknown[] };
     expect(body.ok).toBe(true);
-    expect(body.products).toHaveLength(4);
+    expect(body.products).toHaveLength(commerce.PRODUCT_CATALOG.length);
     expect(body.consulting_tiers.length).toBeGreaterThan(0);
   });
 
