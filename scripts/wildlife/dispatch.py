@@ -62,8 +62,21 @@ def _take_topn(animals: list[dict], n: int) -> list[dict]:
 
 
 def call_ollama(model: str, prompt: str, base_url: str, timeout: int) -> dict:
-    """One-shot completion against local Ollama HTTP API."""
-    body = json.dumps({"model": model, "prompt": prompt, "stream": False}).encode("utf-8")
+    """One-shot completion against local Ollama HTTP API.
+
+    `num_ctx` is held small so KV cache fits on consumer GPUs (6 GB VRAM
+    can't hold the default 8 K context for a 1.5B model + prompt).
+    `num_predict` caps reply length so a stuck model can't burn the
+    whole timeout.
+    """
+    body = json.dumps(
+        {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"num_ctx": 1024, "num_predict": 220},
+        }
+    ).encode("utf-8")
     req = urllib.request.Request(
         url=base_url.rstrip("/") + "/api/generate",
         data=body,
