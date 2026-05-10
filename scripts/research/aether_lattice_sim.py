@@ -11,9 +11,14 @@ The model is simple on purpose. It is not a hardware simulator and it does not
 claim "infinite scalability." It creates measurable artifacts that can be
 re-run, inspected, and falsified.
 
-The "spore" model in this harness is a dynamic-programming cache: contained
-faults leave small repair spores keyed by output/fault shape. Repeated similar
-faults can reuse the known-safe repair route instead of paying full retry cost.
+The dynamic-programming model has two parts:
+
+* Memoization: contained faults leave small repair spores keyed by output/fault
+  shape. Repeated similar faults reuse the known-safe repair route instead of
+  paying full retry cost.
+* Tabulation: operation routes are precomputed as a center-line tesseract
+  table. The 4D address is projected back into an octree pocket plus a
+  roundabout lane, so routing is deterministic and inspectable.
 """
 
 from __future__ import annotations
@@ -239,6 +244,9 @@ class SimulationMetrics:
     sample_boundary_receipts: list[dict[str, Any]] = field(default_factory=list)
     spore_count: int = 0
     dynamic_cache_hits: int = 0
+    tabulated_route_count: int = 0
+    tabulation_hits: int = 0
+    centerline_roundabout_hits: int = 0
 
 
 @dataclass
@@ -255,11 +263,61 @@ class SimulationReport:
     comparison: dict[str, Any]
 
 
+@dataclass(frozen=True)
+class TesseractAddress:
+    op_id: int
+    xyz: tuple[float, float, float]
+    w: float
+    octree_path: str
+    roundabout_lane: int
+    centerline_distance: float
+
+    @property
+    def route_key(self) -> str:
+        return f"{self.octree_path}|r{self.roundabout_lane}"
+
+
 def phi_coordinate(n: int, r0: float = 1.0, c: float = 0.5) -> tuple[float, float, float]:
     radius = r0 * math.sqrt(max(n, 1))
     theta = n * GOLDEN_ANGLE
     z = c * math.log1p(n)
     return radius * math.cos(theta), radius * math.sin(theta), z
+
+
+def tesseract_coordinate(n: int, r0: float = 1.0, c: float = 0.5) -> tuple[float, float, float, float]:
+    """Lift the phi spine into a bounded 4D routing coordinate.
+
+    The first three coordinates are the normal phi-indexed workcell position.
+    The fourth coordinate is a bounded phase term. It does not create a new
+    execution dimension; it picks a deterministic "roundabout" lane around the
+    center line before projection back into the octree.
+    """
+
+    x, y, z = phi_coordinate(n, r0=r0, c=c)
+    w = math.sin(n / PHI) * math.cos(n / (PHI**2))
+    return x, y, z, w
+
+
+def tesseract_address(op_id: int, depth: int) -> TesseractAddress:
+    x, y, z, w = tesseract_coordinate(op_id + 1)
+    centerline_distance = math.sqrt(x * x + y * y + z * z + w * w)
+    # Eight lanes mirror the octree's branching factor while keeping the 4D
+    # lift as routing metadata, not another hidden state space.
+    roundabout_lane = int(abs(w) * 10_000 + op_id * PHI) % 8
+    return TesseractAddress(
+        op_id=op_id,
+        xyz=(x, y, z),
+        w=w,
+        octree_path=octree_path((x, y, z), depth),
+        roundabout_lane=roundabout_lane,
+        centerline_distance=centerline_distance,
+    )
+
+
+def build_route_table(operations: int, depth: int) -> dict[int, TesseractAddress]:
+    """Tabulate all operation addresses before execution."""
+
+    return {op_id: tesseract_address(op_id, depth) for op_id in range(operations)}
 
 
 def octree_path(point: tuple[float, float, float], depth: int) -> str:
@@ -521,6 +579,7 @@ class AetherLattice:
         self.ledger = SpinalLedger()
         self.pockets: dict[str, PocketCell] = {}
         self.repair_spores: dict[str, dict[str, Any]] = {}
+        self.route_table = build_route_table(operations, octree_depth)
 
     @staticmethod
     def _fault_signature(result: dict[str, Any]) -> str:
@@ -532,7 +591,7 @@ class AetherLattice:
         )
 
     def _pocket_for(self, op_id: int) -> PocketCell:
-        path_index = octree_path(phi_coordinate(op_id + 1), self.octree_depth)
+        path_index = self.route_table[op_id].route_key
         if path_index not in self.pockets:
             self.pockets[path_index] = PocketCell(depth=self.octree_depth, path_index=path_index)
         return self.pockets[path_index]
@@ -545,10 +604,21 @@ class AetherLattice:
         faulty_events = 0
         contained_faults = 0
         dynamic_cache_hits = 0
+        tabulation_hits = 0
+        centerline_roundabout_hits = 0
         trace_costs: list[int] = []
         sample_receipts: list[dict[str, Any]] = []
 
         for operation, agent in zip(operations, agents):
+            address = self.route_table[operation.op_id]
+            tabulation_hits += 1
+            if address.roundabout_lane >= 0:
+                centerline_roundabout_hits += 1
+            operation.payload["tesseract_route"] = {
+                "route_key": address.route_key,
+                "roundabout_lane": address.roundabout_lane,
+                "centerline_distance": round(address.centerline_distance, 6),
+            }
             pocket = self._pocket_for(operation.op_id)
             result = pocket.execute(agent, operation)
             if agent.faulty:
@@ -604,6 +674,7 @@ class AetherLattice:
                             "op_id": operation.op_id,
                             "payload": operation.payload["value"] * 2,
                             "spore_reused": spore["spore_id"],
+                            "tabulated_route": address.route_key,
                         }
                     else:
                         retry_operation = Operation(
@@ -625,6 +696,8 @@ class AetherLattice:
                                 "spore_id": fault_signature[:16],
                                 "fault_kind": result.get("kind"),
                                 "repair": "clean-worker-retry",
+                                "tabulated_route": address.route_key,
+                                "roundabout_lane": address.roundabout_lane,
                             }
                         retry_receipt = star_fortress_receipt(
                             operation=operation,
@@ -679,6 +752,9 @@ class AetherLattice:
             sample_boundary_receipts=sample_receipts,
             spore_count=len(self.repair_spores),
             dynamic_cache_hits=dynamic_cache_hits,
+            tabulated_route_count=len(self.route_table),
+            tabulation_hits=tabulation_hits,
+            centerline_roundabout_hits=centerline_roundabout_hits,
         )
 
 
@@ -819,6 +895,13 @@ def aggregate_reports(reports: list[SimulationReport]) -> dict[str, Any]:
         ),
         "lattice_mean_spore_count": round(mean(report.lattice.spore_count for report in reports), 3),
         "lattice_mean_dynamic_cache_hits": round(mean(report.lattice.dynamic_cache_hits for report in reports), 3),
+        "lattice_mean_tabulated_route_count": round(
+            mean(report.lattice.tabulated_route_count for report in reports), 3
+        ),
+        "lattice_mean_tabulation_hits": round(mean(report.lattice.tabulation_hits for report in reports), 3),
+        "lattice_mean_centerline_roundabout_hits": round(
+            mean(report.lattice.centerline_roundabout_hits for report in reports), 3
+        ),
         "claim_supported_trials": sum(1 for report in reports if report.comparison["claim_supported"]),
     }
 

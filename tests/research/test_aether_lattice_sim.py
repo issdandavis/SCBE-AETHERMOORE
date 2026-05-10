@@ -1,7 +1,9 @@
 from scripts.research.aether_lattice_sim import (
     aggregate_reports,
+    build_route_table,
     run_simulation,
     run_trials,
+    tesseract_address,
 )
 
 
@@ -48,7 +50,23 @@ def test_lattice_spore_cache_reuses_repair_routes():
 
     assert report.lattice.spore_count > 0
     assert report.lattice.dynamic_cache_hits > 0
+    assert report.lattice.tabulated_route_count == 128
+    assert report.lattice.tabulation_hits == 128
+    assert report.lattice.centerline_roundabout_hits == 128
     assert report.lattice.mean_trace_cost < 5.0
+
+
+def test_tesseract_route_table_is_deterministic_and_projected_to_octree():
+    first = build_route_table(operations=16, depth=3)
+    second = build_route_table(operations=16, depth=3)
+    address = tesseract_address(op_id=7, depth=3)
+
+    assert first == second
+    assert first[7] == address
+    assert len(address.octree_path.split(".")) == 3
+    assert 0 <= address.roundabout_lane < 8
+    assert address.route_key.endswith(f"|r{address.roundabout_lane}")
+    assert address.centerline_distance > 0
 
 
 def test_no_fault_run_still_routes_without_public_corruption():
@@ -69,3 +87,5 @@ def test_trial_sweep_reports_supported_claims():
     assert aggregate["lattice_mean_public_corruptions"] <= aggregate["flat_mean_public_corruptions"]
     assert aggregate["mean_trace_cost_reduction_vs_actor_supervisor_percent"] > 0
     assert aggregate["lattice_mean_dynamic_cache_hits"] >= 0
+    assert aggregate["lattice_mean_tabulated_route_count"] == 64
+    assert aggregate["lattice_mean_tabulation_hits"] == 64
