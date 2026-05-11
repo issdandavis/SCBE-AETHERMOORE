@@ -229,6 +229,9 @@ jobs:
               cp "${chat_file}" "${diagnostics_dir}/${safe_name}.chat.history.md"
             fi
           done
+          python ../../../scripts/benchmark/workflow_completion_checklist.py \
+            --artifact-root ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored \
+            --output-root ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
 
       - name: Terminal-Bench remote setup note
         if: ${{ inputs.track == 'terminal-bench-setup' }}
