@@ -2,13 +2,14 @@ import importlib.util
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = REPO_ROOT / "scripts" / "benchmark" / "openclaw_swarm_benchmark.py"
 
 
 def load_module():
-    spec = importlib.util.spec_from_file_location("_openclaw_swarm_benchmark_test", MODULE_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "_openclaw_swarm_benchmark_test", MODULE_PATH
+    )
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     sys.modules[spec.name] = module
@@ -337,7 +338,11 @@ def test_geometric_consensus_is_advisory_not_a_score_gate():
                 "focus_paths": "scripts/file.py",
                 "agent_set": "openclaw",
                 "cloud_policy": {"allow_ollama_cloud": False},
-                "runtime": {"models": ["openclaw:latest"], "lanes": ["01-verification"], "run_dir": "artifacts/run"},
+                "runtime": {
+                    "models": ["openclaw:latest"],
+                    "lanes": ["01-verification"],
+                    "run_dir": "artifacts/run",
+                },
                 "gate_state": {
                     "completion_state": "blocked_correctly",
                     "quality_flags": {"evidence_symbol_not_found": 1},
@@ -363,9 +368,16 @@ def test_geometric_consensus_is_advisory_not_a_score_gate():
     assert consensus["code_5w"][0]["who"]["persona"] == "internal_ai_lane"
     assert consensus["code_5w"][0]["what"]["output_contract"] == "evidence"
     assert consensus["code_5w"][0]["where"]["focus_paths"] == "scripts/file.py"
-    assert consensus["code_5w"][0]["why"]["quality_flags"] == {"evidence_symbol_not_found": 1}
-    assert consensus["information_ray_trace"]["ray_model"] == "non_light_information_object_paths"
-    assert consensus["information_ray_trace"]["rays"][0]["source_face"] == "evidence_trace"
+    assert consensus["code_5w"][0]["why"]["quality_flags"] == {
+        "evidence_symbol_not_found": 1
+    }
+    assert (
+        consensus["information_ray_trace"]["ray_model"]
+        == "non_light_information_object_paths"
+    )
+    assert (
+        consensus["information_ray_trace"]["rays"][0]["source_face"] == "evidence_trace"
+    )
 
 
 def test_public_parallel_cases_are_registered():
@@ -381,7 +393,9 @@ def test_public_parallel_cases_are_registered():
 def test_safe_apply_patch_probe_uses_delete_me_test_path():
     module = load_module()
 
-    patch = module.build_safe_apply_patch("tests/_safe_apply_benchmark_probe_TEST_DELETE_ME.txt")
+    patch = module.build_safe_apply_patch(
+        "tests/_safe_apply_benchmark_probe_TEST_DELETE_ME.txt"
+    )
 
     assert "diff --git a/tests/_safe_apply_benchmark_probe_TEST_DELETE_ME.txt" in patch
     assert "--- /dev/null" in patch
@@ -503,7 +517,10 @@ def test_build_single_case_report_includes_trust_and_consensus(tmp_path):
     assert report["summary"]["average_score"] == 100.0
     assert report["trust_ladder_report"]["state"] == "trust_accruing"
     assert report["geometric_consensus"]["schema"] == "scbe_geometric_consensus_v1"
-    assert report["kaggle_winner_loop"]["schema"] == "scbe_kaggle_winner_improvement_loop_v1"
+    assert (
+        report["kaggle_winner_loop"]["schema"]
+        == "scbe_kaggle_winner_improvement_loop_v1"
+    )
 
 
 def test_kaggle_winner_loop_groups_stage_quality_and_cloud_policy():
@@ -552,7 +569,10 @@ def test_kaggle_winner_loop_groups_stage_quality_and_cloud_policy():
         },
     ]
     module.build_summary(results)
-    report = {"cases": results, "weakness_loop": module.build_weakness_loop({"cases": results})}
+    report = {
+        "cases": results,
+        "weakness_loop": module.build_weakness_loop({"cases": results}),
+    }
 
     loop = module.build_kaggle_winner_loop(report)
 
@@ -560,4 +580,7 @@ def test_kaggle_winner_loop_groups_stage_quality_and_cloud_policy():
     assert loop["weakest_stage"] == "ensemble_consensus"
     assert loop["ollama_cloud"]["enabled_case_count"] == 1
     assert loop["ollama_cloud"]["models_seen"] == ["qwen3-coder:cloud"]
-    assert any(stage["stage"] == "baseline" and stage["case_count"] == 1 for stage in loop["stages"])
+    assert any(
+        stage["stage"] == "baseline" and stage["case_count"] == 1
+        for stage in loop["stages"]
+    )

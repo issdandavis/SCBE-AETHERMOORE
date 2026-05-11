@@ -1,7 +1,7 @@
 import importlib.util
+import json
 import sys
 from pathlib import Path
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 MODULE_PATH = REPO_ROOT / "scripts" / "system" / "openclaw_swarm.py"
@@ -402,8 +402,26 @@ def test_choose_next_action_is_output_contract_aware():
     assert module.choose_next_action([], True) == "run_helper_guard_cycle_before_escalation"
 
 
-def test_task_graph_selects_public_answer_node():
+def test_task_graph_selects_public_answer_node(tmp_path):
     module = load_module()
+    graph_path = tmp_path / "task_graph.json"
+    graph_path.write_text(
+        json.dumps(
+            {
+                "task_types": {
+                    "public_answer": {
+                        "operation_frame": "answer",
+                        "description": "Answer public free-user capability questions.",
+                        "aliases": ["public free user"],
+                        "source_clues": ["public", "free user"],
+                        "response_format": ["direct answer"],
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    module.KNOWLEDGE_GRAPH_PATH = graph_path
 
     graph = module.load_task_graph()
     name, node = module.select_task_graph_node("Public free user role: what can I do?", "answer", graph)
@@ -412,8 +430,26 @@ def test_task_graph_selects_public_answer_node():
     assert node["operation_frame"] == "answer"
 
 
-def test_prompt_includes_task_graph_hint():
+def test_prompt_includes_task_graph_hint(tmp_path):
     module = load_module()
+    graph_path = tmp_path / "task_graph.json"
+    graph_path.write_text(
+        json.dumps(
+            {
+                "task_types": {
+                    "public_answer": {
+                        "operation_frame": "answer",
+                        "description": "Answer public free-user capability questions.",
+                        "aliases": ["public free user"],
+                        "source_clues": ["public", "free user"],
+                        "response_format": ["direct answer", "next step"],
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    module.KNOWLEDGE_GRAPH_PATH = graph_path
 
     agent = module.resolve_agent("openclaw", {"openclaw:latest"})
     lane = module.build_lanes("Public free user role: what can I do?", [agent], ("docs/",))[0]
@@ -445,13 +481,13 @@ def test_inventory_focus_paths_prevent_broad_repo_spray():
         ("scripts/", "tests/", "docs/"),
         (
             "scripts/system/openclaw_swarm.py",
-            "scripts/benchmark/openclaw_swarm_benchmark.py",
+            "scripts/system/scbe_swarm_router.py",
         ),
     )
 
     assert files == [
         "scripts/system/openclaw_swarm.py",
-        "scripts/benchmark/openclaw_swarm_benchmark.py",
+        "scripts/system/scbe_swarm_router.py",
     ]
 
 
@@ -471,7 +507,13 @@ def test_select_coding_systems_prefers_stisa_for_atomic_tasks():
 
     registry = {
         "systems": [
-            {"system_id": "swarm_router", "name": "Router", "purpose": "Route agents", "best_for": [], "benchmark_role": "swarm_surface"},
+            {
+                "system_id": "swarm_router",
+                "name": "Router",
+                "purpose": "Route agents",
+                "best_for": [],
+                "benchmark_role": "swarm_surface",
+            },
             {
                 "system_id": "stisa_atomic_tokenizer",
                 "name": "STISA Atomic Tokenizer Surface",
@@ -487,8 +529,27 @@ def test_select_coding_systems_prefers_stisa_for_atomic_tasks():
     assert selected[0]["system_id"] == "stisa_atomic_tokenizer"
 
 
-def test_prompt_includes_coding_system_registry_hints():
+def test_prompt_includes_coding_system_registry_hints(tmp_path):
     module = load_module()
+    registry_path = tmp_path / "coding_system_registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "systems": [
+                    {
+                        "system_id": "stisa_atomic_tokenizer",
+                        "purpose": "Atomic tokenizer feature rows",
+                        "best_for": ["precision coding", "cross-language"],
+                        "benchmark_role": "atomic_surface",
+                        "commands": ["python scripts/system/scbe_swarm_router.py --dry-run"],
+                        "expected_outputs": ["structured hints"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    module.CODING_SYSTEM_REGISTRY_PATH = registry_path
 
     agent = module.resolve_agent("openclaw", {"openclaw:latest"})
     lane = module.build_lanes("Use STISA and SS1 for cross-language precision coding", [agent], ("scripts/",))[0]
