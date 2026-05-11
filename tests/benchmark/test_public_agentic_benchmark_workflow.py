@@ -9,6 +9,8 @@ WORKFLOW = ROOT / ".github" / "workflows" / "public-agentic-benchmarks.yml"
 def test_scored_aider_workflow_exports_visible_diagnostics() -> None:
     workflow = WORKFLOW.read_text(encoding="utf-8")
 
+    assert "GeoSeal Aider adapter preflight" in workflow
+    assert "aider_polyglot_preflight" in workflow
     assert "aider_polyglot_scored/diagnostics" in workflow
     assert 'find "${latest_dir}" -name ".aider.results.json"' in workflow
     assert ".chat.history.md" in workflow

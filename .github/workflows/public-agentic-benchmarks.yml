@@ -81,6 +81,14 @@ jobs:
         if: ${{ inputs.track == 'aider-polyglot-smoke' }}
         run: python scripts/benchmark/aider_polyglot_smoke.py --download-polyglot --execute --num-tests "${{ inputs.num_tests }}"
 
+      - name: GeoSeal Aider adapter preflight
+        if: ${{ inputs.track == 'aider-polyglot-scored-small' }}
+        run: |
+          python scripts/benchmark/aider_polyglot_smoke.py \
+            --download-polyglot \
+            --num-tests "${{ inputs.num_tests }}" \
+            --output-root artifacts/public_agentic_benchmark_setup/aider_polyglot_preflight
+
       - name: Run Aider Polyglot scored small slice
         if: ${{ inputs.track == 'aider-polyglot-scored-small' }}
         shell: bash
