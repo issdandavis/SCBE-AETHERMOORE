@@ -12,9 +12,7 @@ CONFIG_PATH = ROOT / "config" / "eval" / "public_agentic_cli_suite.v1.json"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "public_agentic_cli_suite", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("public_agentic_cli_suite", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -41,21 +39,14 @@ def test_public_agentic_cli_suite_required_tracks_and_claim_guardrails() -> None
         "swe_bench_verified_or_lite",
         "aider_polyglot",
     }.issubset(track_ids)
-    assert any(
-        "all-around best coding agent" in item
-        for item in config["claim_policy"]["forbidden_now"]
-    )
+    assert any("all-around best coding agent" in item for item in config["claim_policy"]["forbidden_now"])
     required_core = {
         "geoseal_cli_competitive",
         "terminal_bench",
         "swe_bench_verified_or_lite",
         "aider_polyglot",
     }
-    assert all(
-        track.required_for_public_all_around_claim
-        for track in tracks
-        if track.track_id in required_core
-    )
+    assert all(track.required_for_public_all_around_claim for track in tracks if track.track_id in required_core)
 
 
 def test_public_agentic_cli_suite_plan_report_does_not_overclaim(

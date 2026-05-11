@@ -95,9 +95,7 @@ def parse_tiles(specs: list[str]) -> list[DominoTile]:
     return [parse_tile(spec, index) for index, spec in enumerate(specs)]
 
 
-def _balance_contact(
-    upstream: DominoTile, downstream: DominoTile
-) -> tuple[DominoTile, DominoTile, dict[str, Any]]:
+def _balance_contact(upstream: DominoTile, downstream: DominoTile) -> tuple[DominoTile, DominoTile, dict[str, Any]]:
     if upstream.right != downstream.left:
         raise ValueError("cannot balance non-contacting domino faces")
     total = upstream.right_dots + downstream.left_dots
@@ -125,9 +123,7 @@ def _balance_contact(
             "contract": upstream.right,
             "total_contact_dots": total,
             "transfer_direction": (
-                "downstream_to_upstream"
-                if transfer > 0
-                else "upstream_to_downstream" if transfer < 0 else "balanced"
+                "downstream_to_upstream" if transfer > 0 else "upstream_to_downstream" if transfer < 0 else "balanced"
             ),
             "transfer_amount": abs(transfer),
             "upstream_right_dots": new_upstream_right,
@@ -179,9 +175,7 @@ def build_domino_workflow(
     chain = [remaining.pop(start_index)]
     contacts: list[dict[str, Any]] = []
     while remaining:
-        match = _find_next_tile(
-            chain[-1].right, remaining, allow_rotation=allow_rotation
-        )
+        match = _find_next_tile(chain[-1].right, remaining, allow_rotation=allow_rotation)
         if match is None:
             break
         index, next_tile = match
@@ -226,6 +220,4 @@ def build_domino_workflow_from_specs(
     start: str | None = None,
     allow_rotation: bool = True,
 ) -> dict[str, Any]:
-    return build_domino_workflow(
-        parse_tiles(specs), start=start, allow_rotation=allow_rotation
-    )
+    return build_domino_workflow(parse_tiles(specs), start=start, allow_rotation=allow_rotation)

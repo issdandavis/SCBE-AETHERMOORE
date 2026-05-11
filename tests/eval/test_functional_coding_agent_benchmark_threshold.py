@@ -12,9 +12,7 @@ MODULE_PATH = REPO_ROOT / "scripts" / "eval" / "functional_coding_agent_benchmar
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "functional_coding_agent_benchmark", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("functional_coding_agent_benchmark", MODULE_PATH)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -169,9 +167,7 @@ def test_repair_prompt_includes_failure_receipt():
         ],
     }
 
-    prompt = module.build_code_repair_prompt(
-        task, "function evaluate(input, state) { return 13; }", score
-    )
+    prompt = module.build_code_repair_prompt(task, "function evaluate(input, state) { return 13; }", score)
 
     assert "Repair this TypeScript" in prompt
     assert '"expected_state"' in prompt
@@ -187,9 +183,7 @@ def test_compiler_receipt_records_geoseal_trace_and_language_route():
     source = "function evaluate(input, state) { state.score += input.points; return state.score; }"
     score = module.score_candidate(source, task)
 
-    receipt = module.build_compiler_receipt(
-        task, source, score, model_name="test-model"
-    )
+    receipt = module.build_compiler_receipt(task, source, score, model_name="test-model")
 
     assert receipt["schema"] == "scbe_cross_lingual_compiler_receipt_v1"
     assert receipt["source_language"] == "natural_language_task"
@@ -222,9 +216,7 @@ def test_atomic_response_audit_flags_missing_state_write():
     module = _load_module()
     task = module.TASKS[0]
 
-    audit = module.audit_atomic_response(
-        "function evaluate(input, state) { return state.score + input.points; }", task
-    )
+    audit = module.audit_atomic_response("function evaluate(input, state) { return state.score + input.points; }", task)
 
     assert audit["schema"] == "scbe_atomic_response_audit_v1"
     assert audit["aligned"] is False
@@ -443,10 +435,7 @@ def test_verified_mechanical_ensemble_routes_to_passing_artifacts():
     assert ensemble["summary"]["verified_path_signatures"] == 2
     assert ensemble["tasks"][0]["source_adapter"] == "model-b"
     assert ensemble["tasks"][0]["selection_rule"] == "fastest_verified_passing_artifact"
-    assert (
-        ensemble["tasks"][0]["verified_path_signature"]["schema"]
-        == "scbe_atomic_verified_path_signature_v1"
-    )
+    assert ensemble["tasks"][0]["verified_path_signature"]["schema"] == "scbe_atomic_verified_path_signature_v1"
 
 
 def test_joint_library_round_trip_reuses_verified_path(tmp_path: Path):
@@ -470,9 +459,7 @@ def test_joint_library_round_trip_reuses_verified_path(tmp_path: Path):
         "tasks": [
             {
                 **row,
-                "verified_path_signature": module.build_verified_path_signature(
-                    "seed-model", row
-                ),
+                "verified_path_signature": module.build_verified_path_signature("seed-model", row),
             }
         ]
     }
@@ -526,9 +513,7 @@ def test_verified_mechanical_ensemble_records_closest_failure():
 
 def test_common_return_shape_bridge_repairs_offer_object_return():
     module = _load_module()
-    task = module.load_task_file(
-        REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json"
-    )[3]
+    task = module.load_task_file(REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json")[3]
     source = """
 function evaluate(input, state) {
   let offer = "";
@@ -552,9 +537,7 @@ function evaluate(input, state) {
 }
 """
     initial = module.score_candidate(source, task)
-    repaired_score, repaired_code, record = module.maybe_apply_semantic_bridge_repair(
-        source, task, initial
-    )
+    repaired_score, repaired_code, record = module.maybe_apply_semantic_bridge_repair(source, task, initial)
 
     assert initial["passed"] is False
     assert repaired_score["passed"] is True
@@ -566,9 +549,7 @@ def test_contract_synthesis_joint_solves_artifact_retention_gate():
     module = _load_module()
     task = next(
         task
-        for task in module.load_task_file(
-            REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json"
-        )
+        for task in module.load_task_file(REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json")
         if task.task_id == "artifact_retention_gate"
     )
     near_miss = """
@@ -603,9 +584,7 @@ def test_contract_synthesis_joint_solves_task_priority_queue():
     module = _load_module()
     task = next(
         task
-        for task in module.load_task_file(
-            REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json"
-        )
+        for task in module.load_task_file(REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json")
         if task.task_id == "task_priority_queue"
     )
     near_miss = """
@@ -645,9 +624,7 @@ def test_contract_synthesis_joints_solve_common_public_style_failures():
     }
     tasks = {
         task.task_id: task
-        for task in module.load_task_file(
-            REPO_ROOT / "config" / "eval" / "common_agentic_benchmark_tasks.v1.json"
-        )
+        for task in module.load_task_file(REPO_ROOT / "config" / "eval" / "common_agentic_benchmark_tasks.v1.json")
     }
 
     for task_id, expected_kind in task_ids.items():
@@ -658,13 +635,11 @@ def test_contract_synthesis_joints_solve_common_public_style_failures():
             "checks": [{"passed": False}],
         }
         atomic_packet = module.build_atomic_contract_packet(task)
-        repaired_score, repaired_code, record = (
-            module.maybe_apply_contract_synthesis_joint(
-                "function evaluate(input, state) { return null; }",
-                task,
-                initial,
-                atomic_packet,
-            )
+        repaired_score, repaired_code, record = module.maybe_apply_contract_synthesis_joint(
+            "function evaluate(input, state) { return null; }",
+            task,
+            initial,
+            atomic_packet,
         )
 
         assert repaired_score["passed"] is True, task_id
@@ -691,9 +666,7 @@ def test_contract_synthesis_joints_solve_competitor_gap_and_mars_tasks():
     }
     tasks = {
         task.task_id: task
-        for task in module.load_task_file(
-            REPO_ROOT / "config" / "eval" / "competitor_gap_agentic_tasks.v1.json"
-        )
+        for task in module.load_task_file(REPO_ROOT / "config" / "eval" / "competitor_gap_agentic_tasks.v1.json")
     }
 
     for task_id, expected_kind in expected_kinds.items():
@@ -704,13 +677,11 @@ def test_contract_synthesis_joints_solve_competitor_gap_and_mars_tasks():
             "checks": [{"passed": False}],
         }
         atomic_packet = module.build_atomic_contract_packet(task)
-        repaired_score, repaired_code, record = (
-            module.maybe_apply_contract_synthesis_joint(
-                "function evaluate(input, state) { return null; }",
-                task,
-                initial,
-                atomic_packet,
-            )
+        repaired_score, repaired_code, record = module.maybe_apply_contract_synthesis_joint(
+            "function evaluate(input, state) { return null; }",
+            task,
+            initial,
+            atomic_packet,
         )
 
         assert repaired_score["passed"] is True, task_id
@@ -741,23 +712,16 @@ def test_candidate_benchmark_uses_contract_synthesis_joint(tmp_path: Path):
     )
     args = Namespace(
         replace_default_tasks=True,
-        task_file=[
-            REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json"
-        ],
+        task_file=[REPO_ROOT / "config" / "eval" / "scbe_productivity_eval_tasks.v1.json"],
         task_limit=0,
         task_ids=["task_priority_queue"],
         joint_library=None,
         disable_contract_synthesis=False,
     )
 
-    result = module.run_candidate_benchmark(
-        args, module.load_candidate_file(candidate_file)[0]
-    )
+    result = module.run_candidate_benchmark(args, module.load_candidate_file(candidate_file)[0])
     row = result["tasks"][0]
 
     assert result["summary"]["pass_rate"] == 1.0
     assert row["contract_synthesis_joint"]["passed"] is True
-    assert (
-        row["contract_synthesis_joint"]["kind"]
-        == "contract_synthesis:priority_queue_tie_break"
-    )
+    assert row["contract_synthesis_joint"]["kind"] == "contract_synthesis:priority_queue_tie_break"

@@ -34,9 +34,7 @@ def test_step_picks_required_token_under_strong_alpha() -> None:
     base_logits = np.array([4.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0], dtype=np.float32)
     req_mask = np.array([0, 1, 0, 0, 0, 0, 0, 0], dtype=np.float32)
     forb_mask = np.zeros(8, dtype=np.float32)
-    cfg = sw.SchrodingerConfig(
-        alpha_required=10.0, beta_forbidden=0.0, n_steps=20, tau=0.5
-    )
+    cfg = sw.SchrodingerConfig(alpha_required=10.0, beta_forbidden=0.0, n_steps=20, tau=0.5)
     chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
     assert chosen == 1
 
@@ -47,9 +45,7 @@ def test_step_long_distance_tunneling_with_more_evolution_time() -> None:
     base_logits = np.array([4.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0], dtype=np.float32)
     req_mask = np.array([0, 0, 0, 0, 0, 1, 0, 0], dtype=np.float32)
     forb_mask = np.zeros(8, dtype=np.float32)
-    cfg = sw.SchrodingerConfig(
-        alpha_required=15.0, beta_forbidden=0.0, n_steps=80, tau=0.5, inverse_mass=1.0
-    )
+    cfg = sw.SchrodingerConfig(alpha_required=15.0, beta_forbidden=0.0, n_steps=80, tau=0.5, inverse_mass=1.0)
     chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
     assert chosen == 5
 
@@ -57,12 +53,8 @@ def test_step_long_distance_tunneling_with_more_evolution_time() -> None:
 def test_step_avoids_forbidden_token_under_strong_beta() -> None:
     base_logits = np.array([0.0, 0.0, 4.0, 0.0, 0.0, 0.5, 0.0, 0.0], dtype=np.float32)
     req_mask = np.array([0, 0, 0, 0, 0, 1, 0, 0], dtype=np.float32)
-    forb_mask = np.array(
-        [0, 0, 1, 0, 0, 0, 0, 0], dtype=np.float32
-    )  # forbid base's favorite
-    cfg = sw.SchrodingerConfig(
-        alpha_required=8.0, beta_forbidden=20.0, n_steps=12, tau=0.4
-    )
+    forb_mask = np.array([0, 0, 1, 0, 0, 0, 0, 0], dtype=np.float32)  # forbid base's favorite
+    cfg = sw.SchrodingerConfig(alpha_required=8.0, beta_forbidden=20.0, n_steps=12, tau=0.4)
     chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
     assert chosen != 2  # the forbidden / base-favorite token must be avoided
     # Either the required token (5) or some other tunneled candidate; not the wall.
@@ -76,9 +68,7 @@ def test_step_falls_back_to_argmax_when_evolution_collapses() -> None:
     base_logits = np.array([0.1, 5.0, 0.1, 0.1], dtype=np.float32)
     req_mask = np.zeros(4, dtype=np.float32)
     forb_mask = np.zeros(4, dtype=np.float32)
-    cfg = sw.SchrodingerConfig(
-        alpha_required=0.0, beta_forbidden=0.0, inverse_mass=0.0, n_steps=4, tau=0.1
-    )
+    cfg = sw.SchrodingerConfig(alpha_required=0.0, beta_forbidden=0.0, inverse_mass=0.0, n_steps=4, tau=0.1)
     chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
     assert chosen == 1
 
@@ -91,9 +81,7 @@ def test_evolve_real_time_preserves_norm() -> None:
     p = p / p.sum()
     psi = np.sqrt(p).astype(np.complex128)
     V = rng.standard_normal(n).astype(np.float64)
-    cfg = sw.SchrodingerConfig(
-        n_steps=10, tau=0.2, inverse_mass=0.5, imaginary_time=False
-    )
+    cfg = sw.SchrodingerConfig(n_steps=10, tau=0.2, inverse_mass=0.5, imaginary_time=False)
     k_grid = np.fft.fftfreq(n) * (2.0 * np.pi)
     out = sw._evolve_wavefunction(psi.copy(), V, cfg, k_grid)
     assert np.isclose((np.abs(out) ** 2).sum(), 1.0, atol=1e-6)
@@ -107,9 +95,7 @@ def test_evolve_imaginary_time_renormalizes_to_unit_probability() -> None:
     p = p / p.sum()
     psi = np.sqrt(p).astype(np.complex128)
     V = rng.standard_normal(n).astype(np.float64)
-    cfg = sw.SchrodingerConfig(
-        n_steps=10, tau=0.2, inverse_mass=0.5, imaginary_time=True
-    )
+    cfg = sw.SchrodingerConfig(n_steps=10, tau=0.2, inverse_mass=0.5, imaginary_time=True)
     k_grid = np.fft.fftfreq(n) * (2.0 * np.pi)
     out = sw._evolve_wavefunction(psi.copy(), V, cfg, k_grid)
     assert np.isclose((np.abs(out) ** 2).sum(), 1.0, atol=1e-6)
@@ -142,9 +128,7 @@ def test_bakeoff_script_direct_schrodinger_dry_run(tmp_path: Path) -> None:
 
 
 def test_active_subset_includes_top_k_and_required_tokens() -> None:
-    base_logits = np.array(
-        [0.5, 0.1, 0.9, 0.3, 0.05, 0.7, 0.05, 0.05], dtype=np.float32
-    )
+    base_logits = np.array([0.5, 0.1, 0.9, 0.3, 0.05, 0.7, 0.05, 0.05], dtype=np.float32)
     req_mask = np.array([0, 0, 0, 0, 1, 0, 0, 1], dtype=np.float32)  # forces 4, 7
     active = sw._select_active_subset(base_logits, req_mask, top_k=3)
     s = set(int(i) for i in active)
@@ -172,9 +156,7 @@ def test_step_with_active_subset_preserves_required_pull() -> None:
     req_mask = np.zeros(n, dtype=np.float32)
     req_mask[1] = 1.0  # adjacent required
     forb_mask = np.zeros(n, dtype=np.float32)
-    cfg = sw.SchrodingerConfig(
-        alpha_required=10.0, beta_forbidden=0.0, n_steps=20, tau=0.5, active_top_k=64
-    )
+    cfg = sw.SchrodingerConfig(alpha_required=10.0, beta_forbidden=0.0, n_steps=20, tau=0.5, active_top_k=64)
     chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
     assert chosen == 1
 
@@ -203,9 +185,7 @@ def test_default_v_excludes_log_p_base() -> None:
     # Manually replicate the schrodinger_step_logits potential under default cfg:
     sub_req = np.zeros(n, dtype=np.float64)
     sub_forb = np.zeros(n, dtype=np.float64)
-    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(
-        np.float64
-    )
+    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(np.float64)
     if cfg.include_log_p_base:
         V = V - np.log(p + 1e-30).astype(np.float64)
     # In contract-only mode V is identically zero here:
@@ -230,9 +210,7 @@ def test_legacy_v_includes_log_p_base_when_flag_set() -> None:
     p = p / p.sum()
     sub_req = np.zeros(n, dtype=np.float64)
     sub_forb = np.zeros(n, dtype=np.float64)
-    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(
-        np.float64
-    )
+    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(np.float64)
     if cfg.include_log_p_base:
         V = V - np.log(p + 1e-30).astype(np.float64)
     # Deepest well = smallest V = at base argmax (index 0)

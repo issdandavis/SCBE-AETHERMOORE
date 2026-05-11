@@ -9,9 +9,7 @@ MODULE_PATH = REPO_ROOT / "scripts" / "eval" / "compare_functional_benchmark_rep
 
 
 def load_module():
-    spec = importlib.util.spec_from_file_location(
-        "_compare_functional_benchmark_reports_test", MODULE_PATH
-    )
+    spec = importlib.util.spec_from_file_location("_compare_functional_benchmark_reports_test", MODULE_PATH)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     sys.modules[spec.name] = module
