@@ -29,6 +29,7 @@ def test_public_agentic_benchmark_sources_load() -> None:
         "terminal_bench",
         "swe_bench",
         "aider_polyglot",
+        "vexp_swe_bench",
     }
     assert all(source.repo_url.startswith("https://github.com/") for source in sources)
 
@@ -41,7 +42,7 @@ def test_setup_public_agentic_benchmarks_plan_report(tmp_path: Path) -> None:
     assert payload["schema_version"] == "scbe_public_agentic_benchmark_setup_v1"
     assert payload["ok"] is True
     assert payload["full_run_ready"] is False
-    assert len(payload["results"]) == 3
+    assert len(payload["results"]) == 4
     assert Path(report["json"]).exists()
     assert Path(report["markdown"]).exists()
 

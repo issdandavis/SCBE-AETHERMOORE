@@ -880,7 +880,8 @@ def cmd_mars_mission(args: argparse.Namespace) -> int:
 def cmd_binary_to_tokenizer(args: argparse.Namespace) -> int:
     tongue = (args.tongue or "KO").upper()
     transport = _normalize_transport_tongue(tongue)
-    bit_chunks = [tok for tok in re.split(r"[\s,]+", (args.bits or "").strip()) if tok]
+    bits_text = getattr(args, "bits", None) or getattr(args, "bits_option", None) or ""
+    bit_chunks = [tok for tok in re.split(r"[\s,]+", bits_text.strip()) if tok]
     if not bit_chunks:
         print("binary-to-tokenizer requires one or more 8-bit chunks", file=sys.stderr)
         return 2
@@ -4364,6 +4365,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_binary = sub.add_parser("binary-to-tokenizer", help="Map binary bytes into Sacred Tongue tokenizer rows")
     p_binary.add_argument("--tongue", required=True, help="KO|AV|RU|CA|UM|DR")
+    p_binary.add_argument(
+        "--bits",
+        default=None,
+        dest="bits_option",
+        help="One or more 8-bit chunks. Equivalent to the positional bits argument.",
+    )
     p_binary.add_argument(
         "--language",
         default=None,

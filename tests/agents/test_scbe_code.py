@@ -248,3 +248,44 @@ def test_safe_apply_dry_run_smoke_passes(tmp_path):
     # Cleanup: remove the file we just patched into the main tree.
     if main_target.exists():
         main_target.unlink()
+
+
+@pytest.mark.skipif(
+    subprocess.call(
+        ["git", "-C", str(REPO_ROOT), "rev-parse", "--is-inside-work-tree"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    != 0,
+    reason="repo isn't a git work tree",
+)
+def test_safe_apply_apply_main_false_skips_main_tree(tmp_path):
+    """Sandbox smoke can pass while the main tree remains untouched."""
+    from scripts.agents.safe_apply import apply_patch_safely
+
+    rel = "tests/_safe_apply_dry_run_probe_DELETE_ME.txt"
+    main_target = REPO_ROOT / rel
+    if main_target.exists():
+        pytest.skip(f"{rel} already exists; refusing to overwrite")
+
+    patch = textwrap.dedent(f"""\
+        diff --git a/{rel} b/{rel}
+        new file mode 100644
+        index 0000000..e69de29
+        --- /dev/null
+        +++ b/{rel}
+        @@ -0,0 +1 @@
+        +scbe_code safe_apply dry-run probe
+        """)
+
+    result = apply_patch_safely(
+        patch,
+        smoke_cmd="python -c \"from pathlib import Path; assert Path('tests/_safe_apply_dry_run_probe_DELETE_ME.txt').exists(); print('sandbox ok')\"",
+        smoke_timeout=30,
+        apply_main=False,
+    )
+
+    assert result.ok is True
+    assert result.applied is False
+    assert "main-tree apply skipped" in result.error
+    assert not main_target.exists()
