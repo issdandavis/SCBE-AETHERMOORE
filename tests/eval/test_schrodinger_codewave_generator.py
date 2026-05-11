@@ -45,9 +45,7 @@ def test_step_long_distance_tunneling_with_more_evolution_time() -> None:
     base_logits = np.array([4.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0], dtype=np.float32)
     req_mask = np.array([0, 0, 0, 0, 0, 1, 0, 0], dtype=np.float32)
     forb_mask = np.zeros(8, dtype=np.float32)
-    cfg = sw.SchrodingerConfig(
-        alpha_required=15.0, beta_forbidden=0.0, n_steps=80, tau=0.5, inverse_mass=1.0
-    )
+    cfg = sw.SchrodingerConfig(alpha_required=15.0, beta_forbidden=0.0, n_steps=80, tau=0.5, inverse_mass=1.0)
     chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
     assert chosen == 5
 
@@ -70,9 +68,7 @@ def test_step_falls_back_to_argmax_when_evolution_collapses() -> None:
     base_logits = np.array([0.1, 5.0, 0.1, 0.1], dtype=np.float32)
     req_mask = np.zeros(4, dtype=np.float32)
     forb_mask = np.zeros(4, dtype=np.float32)
-    cfg = sw.SchrodingerConfig(
-        alpha_required=0.0, beta_forbidden=0.0, inverse_mass=0.0, n_steps=4, tau=0.1
-    )
+    cfg = sw.SchrodingerConfig(alpha_required=0.0, beta_forbidden=0.0, inverse_mass=0.0, n_steps=4, tau=0.1)
     chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
     assert chosen == 1
 
@@ -160,9 +156,7 @@ def test_step_with_active_subset_preserves_required_pull() -> None:
     req_mask = np.zeros(n, dtype=np.float32)
     req_mask[1] = 1.0  # adjacent required
     forb_mask = np.zeros(n, dtype=np.float32)
-    cfg = sw.SchrodingerConfig(
-        alpha_required=10.0, beta_forbidden=0.0, n_steps=20, tau=0.5, active_top_k=64
-    )
+    cfg = sw.SchrodingerConfig(alpha_required=10.0, beta_forbidden=0.0, n_steps=20, tau=0.5, active_top_k=64)
     chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
     assert chosen == 1
 
