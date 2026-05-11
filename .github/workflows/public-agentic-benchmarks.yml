@@ -21,7 +21,7 @@ on:
       model:
         description: "Aider model name for scored runs"
         required: false
-        default: "gpt-4o-mini"
+        default: "openai/Qwen/Qwen2.5-Coder-32B-Instruct"
       edit_format:
         description: "Aider edit format for scored runs"
         required: false
@@ -29,12 +29,21 @@ on:
       api_provider:
         description: "API provider for scored Aider runs"
         required: false
-        default: "openai"
+        default: "huggingface"
         type: choice
         options:
           - openai
           - huggingface
           - nvidia
+      cost_mode:
+        description: "Cost guard for scored runs"
+        required: false
+        default: "free_remote"
+        type: choice
+        options:
+          - local_artifact_only
+          - free_remote
+          - paid_allowed
 
 permissions:
   contents: read
@@ -49,6 +58,7 @@ jobs:
       AIDER_EDIT_FORMAT: ${{ inputs.edit_format }}
       AIDER_NUM_TESTS: ${{ inputs.num_tests }}
       AIDER_API_PROVIDER: ${{ inputs.api_provider }}
+      BENCHMARK_COST_MODE: ${{ inputs.cost_mode }}
       OPENAI_API_KEY_SECRET: ${{ secrets.OPENAI_API_KEY }}
       HF_TOKEN: ${{ secrets.HF_TOKEN }}
       NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
@@ -76,6 +86,47 @@ jobs:
 
       - name: Validate public benchmark plan
         run: python scripts/benchmark/public_agentic_cli_suite.py --validate-only
+
+      - name: Enforce benchmark cost guard
+        if: ${{ inputs.track == 'aider-polyglot-scored-small' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${BENCHMARK_COST_MODE}" in
+            local_artifact_only)
+              echo "local_artifact_only forbids live scored model calls. Use setup-only, aider-polyglot-smoke, or paid_allowed intentionally." >&2
+              exit 1
+              ;;
+            free_remote)
+              if [ "${AIDER_API_PROVIDER}" != "huggingface" ]; then
+                echo "free_remote scored runs only allow api_provider=huggingface. Got ${AIDER_API_PROVIDER}." >&2
+                exit 1
+              fi
+              case "${AIDER_MODEL}" in
+                openai/Qwen/Qwen2.5-Coder-7B-Instruct|openai/Qwen/Qwen2.5-Coder-32B-Instruct)
+                  ;;
+                *)
+                  echo "free_remote scored runs only allow known low/no-cost HF router models. Got ${AIDER_MODEL}." >&2
+                  exit 1
+                  ;;
+              esac
+              if ! [[ "${AIDER_NUM_TESTS}" =~ ^[0-9]+$ ]]; then
+                echo "num_tests must be a positive integer under free_remote. Got ${AIDER_NUM_TESTS}." >&2
+                exit 1
+              fi
+              if [ "${AIDER_NUM_TESTS}" -gt 1 ]; then
+                echo "free_remote scored runs are capped at num_tests=1. Use paid_allowed for larger sweeps." >&2
+                exit 1
+              fi
+              ;;
+            paid_allowed)
+              echo "paid_allowed set explicitly; cost guard permits provider ${AIDER_API_PROVIDER} and ${AIDER_NUM_TESTS} tests."
+              ;;
+            *)
+              echo "Unsupported BENCHMARK_COST_MODE=${BENCHMARK_COST_MODE}" >&2
+              exit 1
+              ;;
+          esac
 
       - name: Setup public benchmark harnesses
         run: python scripts/benchmark/setup_public_agentic_benchmarks.py --download --dry-run
