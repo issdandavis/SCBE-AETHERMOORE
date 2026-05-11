@@ -1,0 +1,107 @@
+{
+  "schema_version": "scbe_diffusion_bakeoff_contract_v1",
+  "contract_id": "coding_diffusion_bakeoff_v1",
+  "source_contract": "coding_verification_unseen_eval_v2",
+  "scoring": {
+    "rule": "lowercase_substring_required_AND_word_boundary_forbidden",
+    "missing_required": "any required token whose lowercase form is not a substring of the lowercased response",
+    "triggered_forbidden": "any forbidden token whose lowercase form (with word-boundary regex when alphanumeric) appears in the lowercased response",
+    "ok": "len(missing_required) == 0 AND len(triggered_forbidden) == 0"
+  },
+  "shape_taxonomy": {
+    "simple_implementation": "Single-tongue body, no cross-translation, no multi-lens, no negative constraint heavy.",
+    "body_fidelity_with_guards": "Single tongue but the body must contain explicit guard branches (None, zero, bounds, Option<T>).",
+    "cross_tongue_translation": "Source code given in tongue X; target code required in tongue Y, with slot map preserved.",
+    "multi_lens_parallel": "Same algorithm rendered in MULTIPLE tongues in one response.",
+    "meta_identification": "Identify-and-describe rather than implement (algorithm name + slot enumeration + tongue weight).",
+    "structured_card": "Fixed-shape verdict bundle: must include enum verdict + horizon + evidence + named lanes.",
+    "route_decision_with_body": "Tongue routing decision PLUS canonical implementation PLUS one-line route-reason.",
+    "negative_constraint": "Forbidden vocabulary dominates the contract; success means avoiding a vocabulary, not just emitting one."
+  },
+  "prompts": [
+    {
+      "id": "code_eval_inventory_unique_python",
+      "shape": "simple_implementation",
+      "prompt": "Implement inventory_unique(items) in tongue KO (Kor'aelin/Python). It must return a list of unique items in first-seen order. Use a seen-set guard. Show the function signature, the seen-set initialization, the loop, the membership check, and the return.",
+      "required": ["def inventory_unique", "items", "seen", "for ", "if ", "not in", "append", "return"],
+      "forbidden": ["TODO", "planned", "RDKit", "SMILES", "valence"]
+    },
+    {
+      "id": "code_eval_count_vowels_translate",
+      "shape": "cross_tongue_translation",
+      "prompt": "Algorithm: count_vowels (count the number of vowels in a string). Source tongue: KO (Kor'aelin, Python):\n\n```py\ndef count_vowels(s):\n    total = 0\n    for ch in s:\n        if ch in 'aeiouAEIOU':\n            total += 1\n    return total\n```\n\nTranslate to tongue UM (Umbroth, Haskell), preserving slot alignment (sig, init, loop_open, loop_body, ret). Mark each slot in the output.",
+      "required": ["count_vowels", "umbroth", "haskell", "sig", "init", "loop_open", "loop_body", "ret"],
+      "forbidden": ["def count_vowels", "function countVowels", "fn count_vowels", "TODO", "planned"]
+    },
+    {
+      "id": "code_eval_zero_guard_safe_subtract",
+      "shape": "body_fidelity_with_guards",
+      "prompt": "Implement safe_subtract(a, b) in tongue KO (Kor'aelin/Python). It must return None when either argument is None, otherwise return a - b. Show the explicit None guard and the subtraction.",
+      "required": ["def safe_subtract", "a", "b", "if ", "none", "return", "a - b"],
+      "forbidden": ["TODO", "planned", "raise", "valence", "molecule"]
+    },
+    {
+      "id": "code_eval_clamp_value_rust",
+      "shape": "body_fidelity_with_guards",
+      "prompt": "Implement clamp_value(x, lo, hi) in tongue RU (Runethic/Rust) returning x clamped into the inclusive range [lo, hi]. Show the function signature with i64 types, the lower-bound branch, the upper-bound branch, and the otherwise return.",
+      "required": ["fn clamp_value", "i64", "if ", "x < lo", "x > hi", "return"],
+      "forbidden": ["def clamp_value", "function clampValue", "TODO", "planned"]
+    },
+    {
+      "id": "code_eval_avali_javascript_lens",
+      "shape": "simple_implementation",
+      "prompt": "Implement first_word(s) in tongue AV (Avali/JavaScript). It must return the first whitespace-delimited token of the input string, or an empty string when the input is empty. Use export function syntax. Show the empty-input guard, the split, and the return.",
+      "required": ["export function firstWord", "if ", "split", "return", "''"],
+      "forbidden": ["def first_word", "fn first_word", "TODO", "planned"]
+    },
+    {
+      "id": "code_eval_identify_algorithm_haskell",
+      "shape": "meta_identification",
+      "prompt": "Identify the algorithm and its slot structure from this snippet (UM, Haskell):\n\n```hs\ndoubleAll :: [Int] -> [Int]\ndoubleAll xs = map (*2) xs\n```\n\nReturn algorithm name, description, tongue with phi-weight, and the slot list.",
+      "required": ["algorithm:", "double", "umbroth", "phi=6.85", "slots:", "sig", "body"],
+      "forbidden": ["kor'aelin", "runethic", "TODO", "valence"]
+    },
+    {
+      "id": "code_eval_multi_lens_consistency",
+      "shape": "multi_lens_parallel",
+      "prompt": "Implement triple(x) so it returns 3 * x. Provide three language lenses: KO (Kor'aelin/Python), AV (Avali/JavaScript), RU (Runethic/Rust). Each lens must show the function signature, the multiplication body, and the return. Mark each lens with its tongue label.",
+      "required": ["kor'aelin", "avali", "runethic", "def triple", "function triple", "fn triple", "* 3", "return"],
+      "forbidden": ["TODO", "planned", "valence", "molecule"]
+    },
+    {
+      "id": "code_eval_approval_card_verdict",
+      "shape": "structured_card",
+      "prompt": "Evaluate this agentic task-flow card before execution.\n\ntitle: Inventory Audit Runner\nscript_path: scripts/system/inventory_audit_runner.py\ncommand: python scripts/system/inventory_audit_runner.py\npurpose: Walks a stockroom CSV, flags duplicate SKUs, exports a corrected CSV.\ncard_route: DR / Draumric Markdown\nscript_route: KO / Kor'aelin / Python\nroute_reason: file_io\n\nReturn an explicit verdict (PROMOTE/HOLD/INCUBATE/TRANSFORM/ESCALATE/DENY/ARCHIVE), evidence requirement, next safe action, and whether this is fast, medium, or long return.",
+      "required": ["verdict", "evidence", "next", "horizon", "draumric", "kor'aelin"],
+      "forbidden": ["TODO", "valence", "RDKit", "SMILES"]
+    },
+    {
+      "id": "code_eval_geoseal_pair_route",
+      "shape": "route_decision_with_body",
+      "prompt": "A user asks the SCBE coding agent: 'Write a Python function `running_average(values)` that returns a list of the running mean of the input numeric list.' Provide the route decision (which tongue lens), the canonical Python implementation including the running-sum accumulator and divisor by index, and a one-line note on why KO is the appropriate routing tongue for this task.",
+      "required": ["kor'aelin", "def running_average", "values", "total", "for ", "append", "return", "/"],
+      "forbidden": ["TODO", "planned", "RDKit", "SMILES", "valence"]
+    },
+    {
+      "id": "code_eval_lane_boundary_no_chem",
+      "shape": "negative_constraint",
+      "prompt": "A user pastes the code token `queue_drain_guard` into the SCBE coding agent and asks: 'Verify this token.' Reply ONLY in code-side terms. Do NOT mention chemistry vocabulary at all (including in negation). Your response must (a) classify queue_drain_guard as a code identifier, (b) state the next action is to grep or search for its definition in the source tree, and (c) state that the unit test exercising it must be run. Treat the input as a symbol-resolution task, not a chemistry task.",
+      "required": ["queue_drain_guard", "code identifier", "definition", "unit test", "run"],
+      "forbidden": ["valence", "RDKit", "SMILES", "molecule", "atom", "chemistry", "pentavalent", "ester"]
+    },
+    {
+      "id": "code_eval_executable_dict_merge",
+      "shape": "body_fidelity_with_guards",
+      "prompt": "Implement merge_counts(a, b) in tongue KO (Kor'aelin/Python). Both arguments are dicts mapping str to int. Return a new dict whose keys are the union, and each value is the sum of the values from a and b (treat missing as 0). Show the new-dict initialization, the iteration over both inputs, the get-with-default, and the return.",
+      "required": ["def merge_counts", "a", "b", "result", "for ", "get(", ", 0)", "return"],
+      "forbidden": ["TODO", "planned", "RDKit", "valence"]
+    },
+    {
+      "id": "code_eval_runethic_option_chain",
+      "shape": "body_fidelity_with_guards",
+      "prompt": "Implement first_positive(xs) in tongue RU (Runethic/Rust) returning Option<i64>. It returns Some of the first positive integer in the slice, or None if no positive integer exists. Show the function signature with Option<i64> return type, the iter().find pattern OR an explicit for-loop with early return, and the None fallback.",
+      "required": ["fn first_positive", "i64", "Option", "Some", "None", "> 0"],
+      "forbidden": ["def first_positive", "function firstPositive", "TODO", "planned"]
+    }
+  ]
+}
