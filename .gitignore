@@ -2,6 +2,10 @@
 .secrets/
 # Kiro MCP Manager - Sensitive configuration files
 .kiro/settings/
+# MCP context server bearer token (created at tunnel-start time)
+.mcp_context_token
+# Bundled cloudflared binary (downloaded at runtime, not source)
+tools/cloudflared.exe
 
 # Performance test evidence files (hardware-specific)
 docs/evidence/*.json
