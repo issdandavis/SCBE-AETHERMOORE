@@ -320,7 +320,7 @@ def scan(
     )
 
     hash_to_paths: Dict[str, List[Path]] = {}
-    for sz, paths in candidate_groups.items():
+    for paths in candidate_groups.values():
         for p in paths:
             digest = _sha256_file(p)
             if digest is None:
