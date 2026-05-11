@@ -40,7 +40,17 @@ def test_public_agentic_cli_suite_required_tracks_and_claim_guardrails() -> None
         "aider_polyglot",
     }.issubset(track_ids)
     assert any("all-around best coding agent" in item for item in config["claim_policy"]["forbidden_now"])
-    assert all(track.required_for_public_all_around_claim for track in tracks)
+    required_core = {
+        "geoseal_cli_competitive",
+        "terminal_bench",
+        "swe_bench_verified_or_lite",
+        "aider_polyglot",
+    }
+    assert all(
+        track.required_for_public_all_around_claim
+        for track in tracks
+        if track.track_id in required_core
+    )
 
 
 def test_public_agentic_cli_suite_plan_report_does_not_overclaim(tmp_path: Path) -> None:

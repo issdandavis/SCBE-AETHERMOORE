@@ -159,6 +159,7 @@ def apply_patch_safely(
     patch_text: str,
     smoke_cmd: Optional[str] = None,
     smoke_timeout: int = 60,
+    apply_main: bool = True,
 ) -> ApplyResult:
     """Sandbox-apply a unified-diff patch. Returns ApplyResult."""
     if not patch_text.strip():
@@ -240,6 +241,12 @@ def apply_patch_safely(
             result.error = f"smoke command exited {proc.returncode}"
             return result
 
+        if not apply_main:
+            result.ok = True
+            result.applied = False
+            result.error = "dry-run: sandbox smoke passed; main-tree apply skipped"
+            return result
+
         main_patch = REPO_ROOT / f".scbe_patch-{sandbox_id}.diff"
         main_patch.write_text(patch_text, encoding="utf-8")
         try:
@@ -279,10 +286,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(json.dumps({"ok": False, "dry_run": True, "error": f"forbidden paths: {bad}"}, indent=2))
             return 2
 
-    result = apply_patch_safely(patch_text, smoke_cmd=args.smoke, smoke_timeout=args.smoke_timeout)
-    if args.dry_run and result.ok:
-        result.applied = False
-        result.error = "dry-run: smoke passed but main-tree apply skipped"
+    result = apply_patch_safely(
+        patch_text,
+        smoke_cmd=args.smoke,
+        smoke_timeout=args.smoke_timeout,
+        apply_main=not args.dry_run,
+    )
     print(result.to_json())
     return 0 if result.ok else 1
 

@@ -843,12 +843,27 @@ def _safe_kaggle_context_hint() -> str:
         return ""
 
 
+def format_kaggle_winner_loop_hint() -> str:
+    """Give every lane the same improvement process used by the benchmark harness."""
+    return textwrap.dedent("""
+        Kaggle-style improvement loop:
+        - Treat this lane as one experiment in a repeatable benchmark, not a one-off answer.
+        - First ground the task with exact files, declarations, and output contract.
+        - Then improve the input packet before asking for larger-model reasoning.
+        - Use ensemble consensus only when independent lanes produce compatible, traceable declarations.
+        - If output is weak, name the weakest dimension: gate_contract, evidence_integrity, traceability,
+          actionability, patch_readiness, or efficiency.
+        - End with one rerunnable command or one builder handoff, so the next cycle does not re-walk solved paths.
+    """).strip()
+
+
 def prompt_for_lane(lane: WorkLane, file_hints: list[str], constraint_mode: str) -> str:
     hints = "\n".join(f"- {path}" for path in file_hints[:80]) or "- no file hints available"
     declaration_hints = format_declaration_hints(file_hints)
     task_graph_hint = format_task_graph_hint(lane.goal, lane.output_contract)
     coding_system_hints = format_coding_system_hints(lane.goal, lane.output_contract)
     kaggle_context_hint = _safe_kaggle_context_hint()
+    kaggle_winner_loop_hint = format_kaggle_winner_loop_hint()
     if constraint_mode == "relaxed":
         rules = """
         Rules:
@@ -923,6 +938,8 @@ def prompt_for_lane(lane: WorkLane, file_hints: list[str], constraint_mode: str)
         {task_graph_hint}
 
         {coding_system_hints}
+
+        {kaggle_winner_loop_hint}
 
         {kaggle_context_hint}
 

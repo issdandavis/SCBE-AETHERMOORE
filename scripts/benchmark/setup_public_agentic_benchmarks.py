@@ -129,6 +129,12 @@ def _check_cwd(source: BenchmarkSource, source_root: Path, command: list[str]) -
         and command[:2] == ["python", "benchmark/benchmark.py"]
     ):
         return local_path
+    if (
+        source.benchmark_id == "vexp_swe_bench"
+        and local_path.exists()
+        and command[:2] == ["node", "dist/cli.js"]
+    ):
+        return local_path
     return REPO_ROOT
 
 
@@ -179,6 +185,10 @@ def inspect_source(source: BenchmarkSource, source_root: Path, download: bool, r
         blockers.append("Aider repository is not downloaded; benchmark/benchmark.py is unavailable.")
     if source.benchmark_id == "aider_polyglot" and repo_present and any(not item["ok"] for item in tool_results):
         blockers.append("Aider benchmark Python dependencies are not installed in the active environment.")
+    if source.benchmark_id == "vexp_swe_bench" and not repo_present:
+        blockers.append("Vexp SWE-bench harness is not downloaded; dist/cli.js is unavailable.")
+    if source.benchmark_id == "vexp_swe_bench" and repo_present and any(not item["ok"] for item in tool_results):
+        blockers.append("Vexp SWE-bench harness dependencies/build are not ready in the local checkout.")
     return {
         "benchmark_id": source.benchmark_id,
         "display_name": source.display_name,
@@ -212,6 +222,8 @@ def next_steps(results: list[dict[str, Any]]) -> list[str]:
         steps.append("Install SWE-bench from its checkout with pip install -e . after Docker is available.")
     if any(row["benchmark_id"] == "aider_polyglot" and not row["repo_present"] for row in results):
         steps.append("Run with --download to shallow-clone Aider before checking benchmark/benchmark.py.")
+    if any(row["benchmark_id"] == "vexp_swe_bench" and not row["repo_present"] for row in results):
+        steps.append("Run with --download to shallow-clone Vexp SWE-bench before checking its agent-comparison CLI.")
     if any(
         row["benchmark_id"] == "aider_polyglot"
         and "Aider benchmark Python dependencies are not installed in the active environment." in row["blockers"]

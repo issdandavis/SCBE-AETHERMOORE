@@ -499,6 +499,19 @@ def test_prompt_includes_coding_system_registry_hints():
     assert "stisa_atomic_tokenizer" in prompt
 
 
+def test_prompt_includes_kaggle_winner_loop_hint():
+    module = load_module()
+
+    agent = module.resolve_agent("openclaw", {"openclaw:latest"})
+    lane = module.build_lanes("Improve the coding harness without re-walking solved paths", [agent], ("scripts/",))[0]
+
+    prompt = module.prompt_for_lane(lane, ["scripts/system/openclaw_swarm.py"], "strict")
+
+    assert "Kaggle-style improvement loop:" in prompt
+    assert "weakest dimension" in prompt
+    assert "next cycle does not re-walk solved paths" in prompt
+
+
 def test_inventory_allowed_files_prioritizes_existing_focus_paths():
     module = load_module()
 
