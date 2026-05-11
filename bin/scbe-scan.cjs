@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 
-const fs = require("node:fs");
-const path = require("node:path");
+const fs = require('node:fs');
+const path = require('node:path');
 
 function loadApi() {
-  const apiPath = path.resolve(__dirname, "..", "dist", "src", "index.js");
+  const apiPath = path.resolve(__dirname, '..', 'dist', 'src', 'index.js');
   try {
     return require(apiPath);
-  } catch (err) {
-    throw new Error(`Unable to load built SCBE API at ${apiPath}. Run npm run build before using scbe-scan from source.`);
+  } catch {
+    throw new Error(
+      `Unable to load built SCBE API at ${apiPath}. Run npm run build before using scbe-scan from source.`
+    );
   }
 }
 
@@ -27,15 +29,15 @@ Options:
 }
 
 function parse(argv) {
-  const args = { json: false, batch: "", text: [] };
+  const args = { json: false, batch: '', text: [], help: false };
   for (let i = 2; i < argv.length; i += 1) {
     const token = argv[i];
-    if (token === "--help" || token === "-h") {
+    if (token === '--help' || token === '-h') {
       args.help = true;
-    } else if (token === "--json") {
+    } else if (token === '--json') {
       args.json = true;
-    } else if (token === "--batch") {
-      args.batch = argv[++i] || "";
+    } else if (token === '--batch') {
+      args.batch = argv[++i] || '';
     } else {
       args.text.push(token);
     }
@@ -60,11 +62,11 @@ function main() {
   const api = loadApi();
   const inputs = args.batch
     ? fs
-        .readFileSync(args.batch, "utf-8")
+        .readFileSync(args.batch, 'utf-8')
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean)
-    : [args.text.join(" ").trim()].filter(Boolean);
+    : [args.text.join(' ').trim()].filter(Boolean);
   if (!inputs.length) {
     help();
     process.exitCode = 1;

@@ -68,24 +68,24 @@ class SchrodingerConfig:
     Defaults are now mild; bump for stronger contract enforcement.
     """
 
-    alpha_required: float = 1.5     # required-token bonus depth (lowers V)
-    beta_forbidden: float = 4.0     # forbidden-token wall height (raises V)
-    inverse_mass: float = 0.3       # 1/m in T_kin = p^2 / (2m)
-    tau: float = 0.25               # time-step size
-    n_steps: int = 8                # Trotter steps per token decision
-    sample: bool = False            # False = argmax; True = sample from |psi|^2
-    imaginary_time: bool = True     # True = ground-state projection (default);
-                                    # False = unitary real-time (research lever)
-    active_top_k: int = 256         # Restrict wave evolution to top-K base
-                                    # logit tokens + any required-marker tokens.
-                                    # Drops FFT cost from O(V log V) to
-                                    # O(K log K). Set 0 to disable subsetting
-                                    # (full-vocab evolution; expensive).
+    alpha_required: float = 1.5  # required-token bonus depth (lowers V)
+    beta_forbidden: float = 4.0  # forbidden-token wall height (raises V)
+    inverse_mass: float = 0.3  # 1/m in T_kin = p^2 / (2m)
+    tau: float = 0.25  # time-step size
+    n_steps: int = 8  # Trotter steps per token decision
+    sample: bool = False  # False = argmax; True = sample from |psi|^2
+    imaginary_time: bool = True  # True = ground-state projection (default);
+    # False = unitary real-time (research lever)
+    active_top_k: int = 256  # Restrict wave evolution to top-K base
+    # logit tokens + any required-marker tokens.
+    # Drops FFT cost from O(V log V) to
+    # O(K log K). Set 0 to disable subsetting
+    # (full-vocab evolution; expensive).
     include_log_p_base: bool = False  # Include -log P_base(t) in V.
-                                      # Legacy=True scored 0/12 on v6h
-                                      # (the well *was* the LM distribution).
-                                      # Default False = contract-only well
-                                      # layered on top of psi_0 = sqrt(p_base).
+    # Legacy=True scored 0/12 on v6h
+    # (the well *was* the LM distribution).
+    # Default False = contract-only well
+    # layered on top of psi_0 = sqrt(p_base).
 
 
 def _build_indicator_masks(
@@ -110,7 +110,9 @@ def _build_indicator_masks(
     for f in forb:
         if re.fullmatch(r"[a-z0-9_ -]+", f):
             body = r"\s+".join(re.escape(part) for part in f.split())
-            forb_patterns.append(re.compile(r"(?<![a-z0-9_])" + body + r"(?![a-z0-9_])"))
+            forb_patterns.append(
+                re.compile(r"(?<![a-z0-9_])" + body + r"(?![a-z0-9_])")
+            )
         else:
             forb_patterns.append(re.compile(re.escape(f)))
 
@@ -149,7 +151,7 @@ def _evolve_wavefunction(
     # half-V step exponent
     half_V = np.exp(-factor * cfg.tau * V / 2.0)
     # kinetic step exponent (diagonal in momentum basis)
-    kin = np.exp(-factor * cfg.tau * (k_grid ** 2) * cfg.inverse_mass / 2.0)
+    kin = np.exp(-factor * cfg.tau * (k_grid**2) * cfg.inverse_mass / 2.0)
     for _ in range(int(cfg.n_steps)):
         psi = half_V * psi
         psi = np.fft.ifft(kin * np.fft.fft(psi))
@@ -207,7 +209,9 @@ def schrodinger_step_logits(
     p_base = p_base / np.maximum(p_base.sum(), 1e-30)
     psi = np.sqrt(p_base + 1e-30).astype(np.complex128)
 
-    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(np.float64)
+    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(
+        np.float64
+    )
     if cfg.include_log_p_base:
         V = V - np.log(p_base + 1e-30).astype(np.float64)
 
@@ -256,8 +260,12 @@ class SchrodingerLogitsProcessor:
         if np_scores.shape[0] != self.req_mask.shape[0]:
             if np_scores.shape[0] > self.req_mask.shape[0]:
                 pad = np_scores.shape[0] - self.req_mask.shape[0]
-                self.req_mask = np.concatenate([self.req_mask, np.zeros(pad, dtype=self.req_mask.dtype)])
-                self.forb_mask = np.concatenate([self.forb_mask, np.zeros(pad, dtype=self.forb_mask.dtype)])
+                self.req_mask = np.concatenate(
+                    [self.req_mask, np.zeros(pad, dtype=self.req_mask.dtype)]
+                )
+                self.forb_mask = np.concatenate(
+                    [self.forb_mask, np.zeros(pad, dtype=self.forb_mask.dtype)]
+                )
             else:
                 self.req_mask = self.req_mask[: np_scores.shape[0]]
                 self.forb_mask = self.forb_mask[: np_scores.shape[0]]
@@ -274,7 +282,9 @@ class SchrodingerLogitsProcessor:
         p_base = np.exp(shifted)
         p_base = p_base / np.maximum(p_base.sum(), 1e-30)
         psi = np.sqrt(p_base + 1e-30).astype(np.complex128)
-        V = (-self.cfg.alpha_required * sub_req + self.cfg.beta_forbidden * sub_forb).astype(np.float64)
+        V = (
+            -self.cfg.alpha_required * sub_req + self.cfg.beta_forbidden * sub_forb
+        ).astype(np.float64)
         if self.cfg.include_log_p_base:
             V = V - np.log(p_base + 1e-30).astype(np.float64)
 
@@ -387,7 +397,7 @@ class SchrodingerCodeWaveGenerator:
                 pad_token_id=self._tok.pad_token_id,
                 logits_processor=processors,
             )
-        new_tokens = out[0, input_ids.shape[1]:]
+        new_tokens = out[0, input_ids.shape[1] :]
         return self._tok.decode(new_tokens, skip_special_tokens=True)
 
 
@@ -397,7 +407,9 @@ def make_schrodinger_generator(
     cfg: SchrodingerConfig | None = None,
 ) -> Callable[[dict], str]:
     """Bake-off-compatible factory matching make_ar_generator signature."""
-    gen = SchrodingerCodeWaveGenerator(model_id=model_id, max_new_tokens=max_new_tokens, cfg=cfg)
+    gen = SchrodingerCodeWaveGenerator(
+        model_id=model_id, max_new_tokens=max_new_tokens, cfg=cfg
+    )
 
     def _call(prompt: dict) -> str:
         return gen.generate(prompt)

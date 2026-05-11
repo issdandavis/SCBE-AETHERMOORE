@@ -56,6 +56,24 @@ export interface AgentBusClientOptions {
   fetchImpl?: typeof fetch;
 }
 
+const TASK_TYPES = new Set(['coding', 'review', 'research', 'governance', 'training', 'general']);
+
+function normalizeTaskType(value: unknown): string {
+  const taskType = String(value || 'general')
+    .trim()
+    .toLowerCase();
+  return TASK_TYPES.has(taskType) ? taskType : 'general';
+}
+
+function normalizePrivacy(value: unknown): string {
+  const privacy = String(value || 'local_only')
+    .trim()
+    .toLowerCase();
+  if (privacy === 'remote_allowed') return 'remote_ok';
+  if (privacy === 'remote_ok') return 'remote_ok';
+  return 'local_only';
+}
+
 function normalizeEvent(event: AgentBusEvent, index: number): Required<AgentBusEvent> {
   if (!event || typeof event !== 'object') {
     throw new Error(`event ${index} must be an object`);
@@ -67,9 +85,9 @@ function normalizeEvent(event: AgentBusEvent, index: number): Required<AgentBusE
   return {
     task,
     operationCommand: String(event.operationCommand || '').trim(),
-    taskType: String(event.taskType || 'general').trim(),
+    taskType: normalizeTaskType(event.taskType),
     seriesId: String(event.seriesId || `node-event-${index}`).trim(),
-    privacy: String(event.privacy || 'local_only'),
+    privacy: normalizePrivacy(event.privacy),
     budgetCents: Number(event.budgetCents || 0),
     dispatch: event.dispatch !== false,
     dispatchProvider: String(event.dispatchProvider || 'offline').trim(),
@@ -88,7 +106,10 @@ function parseJson(text: string): unknown {
   }
 }
 
-export async function runEvent(event: AgentBusEvent, options: RunOptions = {}): Promise<AgentBusResult> {
+export async function runEvent(
+  event: AgentBusEvent,
+  options: RunOptions = {}
+): Promise<AgentBusResult> {
   const normalized = normalizeEvent(event, 1);
   const repoRoot = path.resolve(options.repoRoot || process.cwd());
   const python = options.python || process.env.PYTHON || 'python';
@@ -127,7 +148,8 @@ export async function runEvent(event: AgentBusEvent, options: RunOptions = {}): 
     maxBuffer: 1024 * 1024 * 8,
   });
   const payload = parseJson(result.stdout || '{}') as Record<string, unknown> | null;
-  const taskPayload = payload && typeof payload.task === 'object' ? (payload.task as Record<string, unknown>) : null;
+  const taskPayload =
+    payload && typeof payload.task === 'object' ? (payload.task as Record<string, unknown>) : null;
   return {
     schema_version: 'scbe-agentbus-node-result-v1',
     event_index: 1,
@@ -146,13 +168,19 @@ export async function runEvent(event: AgentBusEvent, options: RunOptions = {}): 
   };
 }
 
-export async function runBatch(events: AgentBusEvent[], options: RunOptions = {}): Promise<AgentBusResult[]> {
+export async function runBatch(
+  events: AgentBusEvent[],
+  options: RunOptions = {}
+): Promise<AgentBusResult[]> {
   if (!Array.isArray(events) || events.length === 0) {
     throw new Error('events sequence is empty');
   }
   const rows: AgentBusResult[] = [];
   for (const [index, event] of events.entries()) {
-    const row = await runEvent({ ...event, seriesId: event.seriesId || `node-event-${index + 1}` }, options);
+    const row = await runEvent(
+      { ...event, seriesId: event.seriesId || `node-event-${index + 1}` },
+      options
+    );
     rows.push({ ...row, event_index: index + 1 });
     if (!row.ok && !options.continueOnError) break;
   }
@@ -177,7 +205,9 @@ function sendJson(res: ServerResponse, status: number, payload: unknown): void {
   res.end(body);
 }
 
-export async function startAgentBusServer(options: AgentBusServerOptions = {}): Promise<AgentBusServerHandle> {
+export async function startAgentBusServer(
+  options: AgentBusServerOptions = {}
+): Promise<AgentBusServerHandle> {
   const host = options.host || '127.0.0.1';
   const port = Number(options.port || 8787);
   const server = createServer(async (req, res) => {
@@ -193,7 +223,9 @@ export async function startAgentBusServer(options: AgentBusServerOptions = {}): 
         return;
       }
       if (req.method === 'POST' && req.url === '/v1/batch') {
-        const body = JSON.parse(await readBody(req)) as { items?: AgentBusEvent[] } | AgentBusEvent[];
+        const body = JSON.parse(await readBody(req)) as
+          | { items?: AgentBusEvent[] }
+          | AgentBusEvent[];
         const items = Array.isArray(body) ? body : body.items || [];
         const rows = await runBatch(items, options);
         sendJson(res, rows.every((row) => row.ok) ? 200 : 500, { rows });
@@ -208,7 +240,8 @@ export async function startAgentBusServer(options: AgentBusServerOptions = {}): 
   return {
     url: `http://${host}:${port}`,
     server,
-    close: () => new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve()))),
+    close: () =>
+      new Promise((resolve, reject) => server.close((err) => (err ? reject(err) : resolve()))),
   };
 }
 
@@ -225,7 +258,9 @@ export async function postAgentBusEvent(
   });
   const payload = await res.json();
   if (!res.ok) {
-    throw new Error(`agent-bus request failed: ${res.status} ${JSON.stringify(payload).slice(0, 500)}`);
+    throw new Error(
+      `agent-bus request failed: ${res.status} ${JSON.stringify(payload).slice(0, 500)}`
+    );
   }
   return payload;
 }
@@ -237,7 +272,10 @@ export async function runAgentBusTerminalUi(options: AgentBusClientOptions = {})
     while (true) {
       const task = (await rl.question('task> ')).trim();
       if (!task || task === 'exit' || task === 'quit') break;
-      const result = await postAgentBusEvent({ task, taskType: 'general', privacy: 'local_only' }, options);
+      const result = await postAgentBusEvent(
+        { task, taskType: 'general', privacy: 'local_only' },
+        options
+      );
       output.write(`${JSON.stringify(result, null, 2)}\n`);
     }
   } finally {

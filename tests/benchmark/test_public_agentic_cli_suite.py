@@ -12,7 +12,9 @@ CONFIG_PATH = ROOT / "config" / "eval" / "public_agentic_cli_suite.v1.json"
 
 
 def _load_module():
-    spec = importlib.util.spec_from_file_location("public_agentic_cli_suite", MODULE_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "public_agentic_cli_suite", MODULE_PATH
+    )
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
@@ -39,7 +41,10 @@ def test_public_agentic_cli_suite_required_tracks_and_claim_guardrails() -> None
         "swe_bench_verified_or_lite",
         "aider_polyglot",
     }.issubset(track_ids)
-    assert any("all-around best coding agent" in item for item in config["claim_policy"]["forbidden_now"])
+    assert any(
+        "all-around best coding agent" in item
+        for item in config["claim_policy"]["forbidden_now"]
+    )
     required_core = {
         "geoseal_cli_competitive",
         "terminal_bench",
@@ -53,7 +58,9 @@ def test_public_agentic_cli_suite_required_tracks_and_claim_guardrails() -> None
     )
 
 
-def test_public_agentic_cli_suite_plan_report_does_not_overclaim(tmp_path: Path) -> None:
+def test_public_agentic_cli_suite_plan_report_does_not_overclaim(
+    tmp_path: Path,
+) -> None:
     module = _load_module()
     report = module.build_report(CONFIG_PATH, tmp_path, execute=False, timeout=60)
     payload = report["payload"]
@@ -86,7 +93,11 @@ def test_public_agentic_cli_suite_execute_smoke(tmp_path: Path) -> None:
 
 def test_public_agentic_cli_suite_cli_validate_only() -> None:
     proc = subprocess.run(
-        [sys.executable, "scripts/benchmark/public_agentic_cli_suite.py", "--validate-only"],
+        [
+            sys.executable,
+            "scripts/benchmark/public_agentic_cli_suite.py",
+            "--validate-only",
+        ],
         cwd=ROOT,
         text=True,
         stdout=subprocess.PIPE,

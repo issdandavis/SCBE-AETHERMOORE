@@ -1132,11 +1132,8 @@ def quality_flags(
                 flags.append(f"symbol_not_found:{path}#{symbol}")
     if re.search(r"decision(?:\*\*)?\s*:\s*(?:\*\*)?evidence\b", lowered):
         evidence_symbols = extract_evidence_declarations(text)
-        evidence_paths = [
-            path
-            for path in mentioned
-            if any(path.startswith(root) for root in allowed_paths) and (REPO_ROOT / path).exists()
-        ]
+        evidence_paths = [path for path in mentioned if any(path.startswith(root) for root in allowed_paths)]
+        existing_evidence_paths = [path for path in evidence_paths if (REPO_ROOT / path).exists()]
         evidence_path_tokens = {
             token
             for path in evidence_paths
@@ -1149,7 +1146,9 @@ def quality_flags(
         for symbol in sorted(evidence_symbols):
             if symbol in evidence_path_tokens or any(token.startswith(symbol) for token in evidence_path_tokens):
                 continue
-            if evidence_paths and not any(_file_contains_symbol(path, symbol) for path in evidence_paths):
+            if existing_evidence_paths and not any(
+                _file_contains_symbol(path, symbol) for path in existing_evidence_paths
+            ):
                 flags.append(f"evidence_symbol_not_found:{symbol}")
     if re.search(r"https?://", text) and not any(
         allowed in lowered
@@ -1450,13 +1449,13 @@ def build_integration_plan(task: str, results: list[dict[str, Any]], routing: di
         lines.extend(["No Pazaak board moves were generated.", ""])
     lines.extend(
         [
-        "## Assurance Packet",
-        "",
-        f"- readiness: `{routing['assurance_packet']['readiness']}`",
-        f"- acceptance_rule: {routing['assurance_packet']['acceptance_rule']}",
-        "",
-        "| Requirement | Evidence Rule |",
-        "|---|---|",
+            "## Assurance Packet",
+            "",
+            f"- readiness: `{routing['assurance_packet']['readiness']}`",
+            f"- acceptance_rule: {routing['assurance_packet']['acceptance_rule']}",
+            "",
+            "| Requirement | Evidence Rule |",
+            "|---|---|",
         ]
     )
     for key, value in routing["assurance_packet"]["requirements"].items():

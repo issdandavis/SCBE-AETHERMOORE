@@ -125,10 +125,7 @@ def _default_smoke_cmd(touched_files: List[str]) -> str:
             mod = mod[:-3]
         mods.append(mod)
     py_args = "; ".join(f"importlib.import_module({m!r})" for m in mods)
-    return (
-        "python -c \"import importlib, sys; sys.path.insert(0, '.'); "
-        f"{py_args}; print('imports ok')\""
-    )
+    return "python -c \"import importlib, sys; sys.path.insert(0, '.'); " f"{py_args}; print('imports ok')\""
 
 
 def _ensure_sandbox_root() -> None:
@@ -230,8 +227,12 @@ def apply_patch_safely(
             )
         except subprocess.TimeoutExpired as e:
             result.error = f"smoke timed out after {smoke_timeout}s"
-            result.smoke_stdout = (e.stdout or b"").decode("utf-8", errors="replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
-            result.smoke_stderr = (e.stderr or b"").decode("utf-8", errors="replace") if isinstance(e.stderr, bytes) else (e.stderr or "")
+            result.smoke_stdout = (
+                (e.stdout or b"").decode("utf-8", errors="replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
+            )
+            result.smoke_stderr = (
+                (e.stderr or b"").decode("utf-8", errors="replace") if isinstance(e.stderr, bytes) else (e.stderr or "")
+            )
             return result
 
         result.smoke_returncode = proc.returncode
@@ -271,7 +272,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--patch-file", help="Path to patch; if omitted, reads from stdin.")
     parser.add_argument("--smoke", help="Smoke command to run inside worktree before main-tree apply.")
     parser.add_argument("--smoke-timeout", type=int, default=60, help="Smoke command timeout in seconds.")
-    parser.add_argument("--dry-run", action="store_true", help="Run smoke in sandbox; do NOT apply on main even if smoke passes.")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Run smoke in sandbox; do NOT apply on main even if smoke passes."
+    )
     args = parser.parse_args(argv)
 
     if args.patch_file:
