@@ -1,0 +1,350 @@
+{
+  "schema_version": "scbe_diffusion_bakeoff_report_v1",
+  "contract_id": "coding_diffusion_bakeoff_v1",
+  "source_contract": "coding_verification_unseen_eval_v2",
+  "n_prompts": 12,
+  "generators": [
+    {
+      "label": "ar",
+      "model_id": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+      "n_pass": 4,
+      "n_total": 12,
+      "pass_rate": 0.3333333333333333,
+      "by_prompt": [
+        {
+          "id": "code_eval_inventory_unique_python",
+          "shape": "simple_implementation",
+          "ok": true,
+          "missing_required": [],
+          "triggered_forbidden": [],
+          "response_chars": 807
+        },
+        {
+          "id": "code_eval_count_vowels_translate",
+          "shape": "cross_tongue_translation",
+          "ok": false,
+          "missing_required": [
+            "count_vowels",
+            "haskell",
+            "sig",
+            "loop_open",
+            "loop_body",
+            "ret"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 715
+        },
+        {
+          "id": "code_eval_zero_guard_safe_subtract",
+          "shape": "body_fidelity_with_guards",
+          "ok": true,
+          "missing_required": [],
+          "triggered_forbidden": [],
+          "response_chars": 743
+        },
+        {
+          "id": "code_eval_clamp_value_rust",
+          "shape": "body_fidelity_with_guards",
+          "ok": true,
+          "missing_required": [],
+          "triggered_forbidden": [],
+          "response_chars": 534
+        },
+        {
+          "id": "code_eval_avali_javascript_lens",
+          "shape": "simple_implementation",
+          "ok": false,
+          "missing_required": [
+            "export function firstWord"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 833
+        },
+        {
+          "id": "code_eval_identify_algorithm_haskell",
+          "shape": "meta_identification",
+          "ok": false,
+          "missing_required": [
+            "algorithm:",
+            "umbroth",
+            "phi=6.85",
+            "slots:",
+            "sig",
+            "body"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 314
+        },
+        {
+          "id": "code_eval_multi_lens_consistency",
+          "shape": "multi_lens_parallel",
+          "ok": false,
+          "missing_required": [
+            "* 3"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 312
+        },
+        {
+          "id": "code_eval_approval_card_verdict",
+          "shape": "structured_card",
+          "ok": false,
+          "missing_required": [
+            "verdict",
+            "evidence",
+            "next",
+            "horizon",
+            "draumric",
+            "kor'aelin"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 7
+        },
+        {
+          "id": "code_eval_geoseal_pair_route",
+          "shape": "route_decision_with_body",
+          "ok": false,
+          "missing_required": [
+            "kor'aelin",
+            "def running_average",
+            "total",
+            "append",
+            "return",
+            "/"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 1072
+        },
+        {
+          "id": "code_eval_lane_boundary_no_chem",
+          "shape": "negative_constraint",
+          "ok": false,
+          "missing_required": [
+            "code identifier",
+            "definition",
+            "unit test"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 659
+        },
+        {
+          "id": "code_eval_executable_dict_merge",
+          "shape": "body_fidelity_with_guards",
+          "ok": false,
+          "missing_required": [
+            "result"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 765
+        },
+        {
+          "id": "code_eval_runethic_option_chain",
+          "shape": "body_fidelity_with_guards",
+          "ok": true,
+          "missing_required": [],
+          "triggered_forbidden": [],
+          "response_chars": 583
+        }
+      ]
+    }
+  ],
+  "triangulation": {
+    "by_shape": {
+      "simple_implementation": {
+        "ar": {
+          "pass": 1,
+          "fail": 1
+        }
+      },
+      "cross_tongue_translation": {
+        "ar": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "body_fidelity_with_guards": {
+        "ar": {
+          "pass": 3,
+          "fail": 1
+        }
+      },
+      "meta_identification": {
+        "ar": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "multi_lens_parallel": {
+        "ar": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "structured_card": {
+        "ar": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "route_decision_with_body": {
+        "ar": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "negative_constraint": {
+        "ar": {
+          "pass": 0,
+          "fail": 1
+        }
+      }
+    },
+    "by_prompt": [
+      {
+        "id": "code_eval_inventory_unique_python",
+        "shape": "simple_implementation",
+        "verdicts": {
+          "ar": true
+        },
+        "verdict_class": "all_pass",
+        "winners": [
+          "ar"
+        ],
+        "losers": []
+      },
+      {
+        "id": "code_eval_count_vowels_translate",
+        "shape": "cross_tongue_translation",
+        "verdicts": {
+          "ar": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "ar"
+        ]
+      },
+      {
+        "id": "code_eval_zero_guard_safe_subtract",
+        "shape": "body_fidelity_with_guards",
+        "verdicts": {
+          "ar": true
+        },
+        "verdict_class": "all_pass",
+        "winners": [
+          "ar"
+        ],
+        "losers": []
+      },
+      {
+        "id": "code_eval_clamp_value_rust",
+        "shape": "body_fidelity_with_guards",
+        "verdicts": {
+          "ar": true
+        },
+        "verdict_class": "all_pass",
+        "winners": [
+          "ar"
+        ],
+        "losers": []
+      },
+      {
+        "id": "code_eval_avali_javascript_lens",
+        "shape": "simple_implementation",
+        "verdicts": {
+          "ar": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "ar"
+        ]
+      },
+      {
+        "id": "code_eval_identify_algorithm_haskell",
+        "shape": "meta_identification",
+        "verdicts": {
+          "ar": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "ar"
+        ]
+      },
+      {
+        "id": "code_eval_multi_lens_consistency",
+        "shape": "multi_lens_parallel",
+        "verdicts": {
+          "ar": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "ar"
+        ]
+      },
+      {
+        "id": "code_eval_approval_card_verdict",
+        "shape": "structured_card",
+        "verdicts": {
+          "ar": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "ar"
+        ]
+      },
+      {
+        "id": "code_eval_geoseal_pair_route",
+        "shape": "route_decision_with_body",
+        "verdicts": {
+          "ar": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "ar"
+        ]
+      },
+      {
+        "id": "code_eval_lane_boundary_no_chem",
+        "shape": "negative_constraint",
+        "verdicts": {
+          "ar": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "ar"
+        ]
+      },
+      {
+        "id": "code_eval_executable_dict_merge",
+        "shape": "body_fidelity_with_guards",
+        "verdicts": {
+          "ar": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "ar"
+        ]
+      },
+      {
+        "id": "code_eval_runethic_option_chain",
+        "shape": "body_fidelity_with_guards",
+        "verdicts": {
+          "ar": true
+        },
+        "verdict_class": "all_pass",
+        "winners": [
+          "ar"
+        ],
+        "losers": []
+      }
+    ],
+    "shape_delta": {}
+  }
+}

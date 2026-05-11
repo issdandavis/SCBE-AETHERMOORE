@@ -1,0 +1,408 @@
+{
+  "schema_version": "scbe_diffusion_bakeoff_report_v1",
+  "contract_id": "coding_diffusion_bakeoff_v1",
+  "source_contract": "coding_verification_unseen_eval_v2",
+  "n_prompts": 12,
+  "generators": [
+    {
+      "label": "schrodinger",
+      "model_id": "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+      "n_pass": 0,
+      "n_total": 12,
+      "pass_rate": 0.0,
+      "by_prompt": [
+        {
+          "id": "code_eval_inventory_unique_python",
+          "shape": "simple_implementation",
+          "ok": false,
+          "missing_required": [
+            "def inventory_unique",
+            "items",
+            "seen",
+            "for ",
+            "if ",
+            "not in",
+            "append",
+            "return"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 725
+        },
+        {
+          "id": "code_eval_count_vowels_translate",
+          "shape": "cross_tongue_translation",
+          "ok": false,
+          "missing_required": [
+            "count_vowels",
+            "umbroth",
+            "haskell",
+            "sig",
+            "init",
+            "loop_open",
+            "loop_body",
+            "ret"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 1208
+        },
+        {
+          "id": "code_eval_zero_guard_safe_subtract",
+          "shape": "body_fidelity_with_guards",
+          "ok": false,
+          "missing_required": [
+            "def safe_subtract",
+            "a",
+            "b",
+            "if ",
+            "none",
+            "return",
+            "a - b"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 358
+        },
+        {
+          "id": "code_eval_clamp_value_rust",
+          "shape": "body_fidelity_with_guards",
+          "ok": false,
+          "missing_required": [
+            "fn clamp_value",
+            "i64",
+            "if ",
+            "x < lo",
+            "x > hi",
+            "return"
+          ],
+          "triggered_forbidden": [
+            "TODO"
+          ],
+          "response_chars": 1141
+        },
+        {
+          "id": "code_eval_avali_javascript_lens",
+          "shape": "simple_implementation",
+          "ok": false,
+          "missing_required": [
+            "export function firstWord",
+            "if ",
+            "split",
+            "return",
+            "''"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 1317
+        },
+        {
+          "id": "code_eval_identify_algorithm_haskell",
+          "shape": "meta_identification",
+          "ok": false,
+          "missing_required": [
+            "algorithm:",
+            "double",
+            "umbroth",
+            "phi=6.85",
+            "slots:",
+            "sig",
+            "body"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 706
+        },
+        {
+          "id": "code_eval_multi_lens_consistency",
+          "shape": "multi_lens_parallel",
+          "ok": false,
+          "missing_required": [
+            "kor'aelin",
+            "avali",
+            "runethic",
+            "def triple",
+            "function triple",
+            "fn triple",
+            "* 3",
+            "return"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 853
+        },
+        {
+          "id": "code_eval_approval_card_verdict",
+          "shape": "structured_card",
+          "ok": false,
+          "missing_required": [
+            "verdict",
+            "evidence",
+            "next",
+            "horizon",
+            "draumric",
+            "kor'aelin"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 444
+        },
+        {
+          "id": "code_eval_geoseal_pair_route",
+          "shape": "route_decision_with_body",
+          "ok": false,
+          "missing_required": [
+            "kor'aelin",
+            "def running_average",
+            "values",
+            "total",
+            "for ",
+            "append",
+            "return",
+            "/"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 1083
+        },
+        {
+          "id": "code_eval_lane_boundary_no_chem",
+          "shape": "negative_constraint",
+          "ok": false,
+          "missing_required": [
+            "queue_drain_guard",
+            "code identifier",
+            "definition",
+            "unit test",
+            "run"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 1088
+        },
+        {
+          "id": "code_eval_executable_dict_merge",
+          "shape": "body_fidelity_with_guards",
+          "ok": false,
+          "missing_required": [
+            "def merge_counts",
+            "a",
+            "b",
+            "result",
+            "for ",
+            "get(",
+            ", 0)",
+            "return"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 1005
+        },
+        {
+          "id": "code_eval_runethic_option_chain",
+          "shape": "body_fidelity_with_guards",
+          "ok": false,
+          "missing_required": [
+            "fn first_positive",
+            "i64",
+            "Option",
+            "Some",
+            "None",
+            "> 0"
+          ],
+          "triggered_forbidden": [],
+          "response_chars": 1354
+        }
+      ]
+    }
+  ],
+  "triangulation": {
+    "by_shape": {
+      "simple_implementation": {
+        "schrodinger": {
+          "pass": 0,
+          "fail": 2
+        }
+      },
+      "cross_tongue_translation": {
+        "schrodinger": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "body_fidelity_with_guards": {
+        "schrodinger": {
+          "pass": 0,
+          "fail": 4
+        }
+      },
+      "meta_identification": {
+        "schrodinger": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "multi_lens_parallel": {
+        "schrodinger": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "structured_card": {
+        "schrodinger": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "route_decision_with_body": {
+        "schrodinger": {
+          "pass": 0,
+          "fail": 1
+        }
+      },
+      "negative_constraint": {
+        "schrodinger": {
+          "pass": 0,
+          "fail": 1
+        }
+      }
+    },
+    "by_prompt": [
+      {
+        "id": "code_eval_inventory_unique_python",
+        "shape": "simple_implementation",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_count_vowels_translate",
+        "shape": "cross_tongue_translation",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_zero_guard_safe_subtract",
+        "shape": "body_fidelity_with_guards",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_clamp_value_rust",
+        "shape": "body_fidelity_with_guards",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_avali_javascript_lens",
+        "shape": "simple_implementation",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_identify_algorithm_haskell",
+        "shape": "meta_identification",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_multi_lens_consistency",
+        "shape": "multi_lens_parallel",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_approval_card_verdict",
+        "shape": "structured_card",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_geoseal_pair_route",
+        "shape": "route_decision_with_body",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_lane_boundary_no_chem",
+        "shape": "negative_constraint",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_executable_dict_merge",
+        "shape": "body_fidelity_with_guards",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      },
+      {
+        "id": "code_eval_runethic_option_chain",
+        "shape": "body_fidelity_with_guards",
+        "verdicts": {
+          "schrodinger": false
+        },
+        "verdict_class": "all_fail",
+        "winners": [],
+        "losers": [
+          "schrodinger"
+        ]
+      }
+    ],
+    "shape_delta": {}
+  }
+}

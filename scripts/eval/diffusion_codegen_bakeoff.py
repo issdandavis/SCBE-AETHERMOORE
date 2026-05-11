@@ -34,9 +34,12 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 DEFAULT_CONTRACT = REPO_ROOT / "config" / "eval" / "coding_diffusion_bakeoff_v1.json"
 DEFAULT_BASELINE = "Qwen/Qwen2.5-Coder-7B-Instruct"
 DEFAULT_DIFFUSION = "apple/DiffuCoder-7B-Instruct"
+DEFAULT_SCHRODINGER = "Qwen/Qwen2.5-Coder-1.5B-Instruct"
 ARTIFACT_DIR = REPO_ROOT / "artifacts" / "eval"
 
 
@@ -126,6 +129,17 @@ def make_dry_run_generator(label: str) -> Callable[[dict], str]:
     return _gen
 
 
+def make_schrodinger_generator_local(
+    model_id: str = DEFAULT_SCHRODINGER, max_new_tokens: int = 320
+) -> Callable[[dict], str]:
+    """Lazy-loaded Schrödinger code-wave generator (logit-space evolution)."""
+    from scripts.eval.schrodinger_codewave_generator import (  # noqa: WPS433
+        make_schrodinger_generator,
+    )
+
+    return make_schrodinger_generator(model_id=model_id, max_new_tokens=max_new_tokens)
+
+
 def make_ar_generator(model_id: str, max_new_tokens: int = 320) -> Callable[[dict], str]:
     """Lazy-loaded HF causal-LM generator.
 
@@ -170,6 +184,9 @@ def make_ar_generator(model_id: str, max_new_tokens: int = 320) -> Callable[[dic
             )
         except Exception:
             enc = tok(text, return_tensors="pt").input_ids
+        # Newer transformers may return a BatchEncoding here; unwrap to a tensor.
+        if hasattr(enc, "input_ids") and not hasattr(enc, "shape"):
+            enc = enc.input_ids
         if torch.cuda.is_available():
             enc = enc.to("cuda")
         with torch.inference_mode():
@@ -418,11 +435,26 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--contract", default=str(DEFAULT_CONTRACT), help="Path to bake-off contract JSON.")
     p.add_argument("--baseline-model", default=DEFAULT_BASELINE, help="HF model id for the AR baseline.")
     p.add_argument("--diffusion-model", default=DEFAULT_DIFFUSION, help="HF model id for the diffusion candidate.")
+    p.add_argument(
+        "--schrodinger-model",
+        default=DEFAULT_SCHRODINGER,
+        help="HF model id for the Schrödinger code-wave generator (logit-space evolution).",
+    )
     p.add_argument("--max-new-tokens", type=int, default=320)
     p.add_argument("--diffusion-steps", type=int, default=64)
     p.add_argument("--dry-run", action="store_true", help="Use stub generators; do not load models.")
     p.add_argument("--baseline-only", action="store_true")
     p.add_argument("--diffusion-only", action="store_true")
+    p.add_argument(
+        "--schrodinger-only",
+        action="store_true",
+        help="Run only the Schrödinger code-wave generator (skip AR + diffusion).",
+    )
+    p.add_argument(
+        "--with-schrodinger",
+        action="store_true",
+        help="Add the Schrödinger generator alongside whichever others run.",
+    )
     p.add_argument("--emit-report", action="store_true", help="Also emit the markdown report.")
     p.add_argument("--out-dir", default=str(ARTIFACT_DIR))
     return p.parse_args(argv)
@@ -434,14 +466,22 @@ def main(argv: list[str] | None = None) -> int:
     contract = load_contract(contract_path)
 
     generators: list[tuple[str, str, Callable[[dict], str]]] = []
-    use_baseline = not args.diffusion_only
-    use_diffusion = not args.baseline_only
+    if args.schrodinger_only:
+        use_baseline = False
+        use_diffusion = False
+        use_schrodinger = True
+    else:
+        use_baseline = not args.diffusion_only
+        use_diffusion = not args.baseline_only
+        use_schrodinger = bool(args.with_schrodinger)
 
     if args.dry_run:
         if use_baseline:
             generators.append(("ar", "dry-run::ar", make_dry_run_generator("ar")))
         if use_diffusion:
             generators.append(("diffusion", "dry-run::diffusion", make_dry_run_generator("diffusion")))
+        if use_schrodinger:
+            generators.append(("schrodinger", "dry-run::schrodinger", make_dry_run_generator("schrodinger")))
     else:
         if use_baseline:
             generators.append(
@@ -455,6 +495,14 @@ def main(argv: list[str] | None = None) -> int:
                     make_diffusion_generator(
                         args.diffusion_model, args.max_new_tokens, args.diffusion_steps
                     ),
+                )
+            )
+        if use_schrodinger:
+            generators.append(
+                (
+                    "schrodinger",
+                    args.schrodinger_model,
+                    make_schrodinger_generator_local(args.schrodinger_model, args.max_new_tokens),
                 )
             )
 
