@@ -17,6 +17,7 @@ not a public coding-agent leaderboard result.
 | Terminal-Bench | Proves end-to-end terminal task completion through a public benchmark harness. | Adapter planned | No |
 | SWE-bench Lite or Verified | Proves repository-level issue repair against public issue-to-patch tasks. | Adapter planned | No |
 | Aider Polyglot | Proves multi-language code editing across C++, Go, Java, JavaScript, Python, and Rust. | Adapter planned | No |
+| Vexp SWE-bench Harness | Proves agent comparison on a curated SWE-bench Verified subset with pass rate, cost, speed, and token-use fields. | Adapter planned | No |
 
 ## Run Commands
 

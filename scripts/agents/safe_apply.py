@@ -125,10 +125,7 @@ def _default_smoke_cmd(touched_files: List[str]) -> str:
             mod = mod[:-3]
         mods.append(mod)
     py_args = "; ".join(f"importlib.import_module({m!r})" for m in mods)
-    return (
-        "python -c \"import importlib, sys; sys.path.insert(0, '.'); "
-        f"{py_args}; print('imports ok')\""
-    )
+    return "python -c \"import importlib, sys; sys.path.insert(0, '.'); " f"{py_args}; print('imports ok')\""
 
 
 def _ensure_sandbox_root() -> None:
@@ -159,6 +156,7 @@ def apply_patch_safely(
     patch_text: str,
     smoke_cmd: Optional[str] = None,
     smoke_timeout: int = 60,
+    apply_main: bool = True,
 ) -> ApplyResult:
     """Sandbox-apply a unified-diff patch. Returns ApplyResult."""
     if not patch_text.strip():
@@ -229,8 +227,12 @@ def apply_patch_safely(
             )
         except subprocess.TimeoutExpired as e:
             result.error = f"smoke timed out after {smoke_timeout}s"
-            result.smoke_stdout = (e.stdout or b"").decode("utf-8", errors="replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
-            result.smoke_stderr = (e.stderr or b"").decode("utf-8", errors="replace") if isinstance(e.stderr, bytes) else (e.stderr or "")
+            result.smoke_stdout = (
+                (e.stdout or b"").decode("utf-8", errors="replace") if isinstance(e.stdout, bytes) else (e.stdout or "")
+            )
+            result.smoke_stderr = (
+                (e.stderr or b"").decode("utf-8", errors="replace") if isinstance(e.stderr, bytes) else (e.stderr or "")
+            )
             return result
 
         result.smoke_returncode = proc.returncode
@@ -238,6 +240,12 @@ def apply_patch_safely(
         result.smoke_stderr = proc.stderr
         if proc.returncode != 0:
             result.error = f"smoke command exited {proc.returncode}"
+            return result
+
+        if not apply_main:
+            result.ok = True
+            result.applied = False
+            result.error = "dry-run: sandbox smoke passed; main-tree apply skipped"
             return result
 
         main_patch = REPO_ROOT / f".scbe_patch-{sandbox_id}.diff"
@@ -264,7 +272,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--patch-file", help="Path to patch; if omitted, reads from stdin.")
     parser.add_argument("--smoke", help="Smoke command to run inside worktree before main-tree apply.")
     parser.add_argument("--smoke-timeout", type=int, default=60, help="Smoke command timeout in seconds.")
-    parser.add_argument("--dry-run", action="store_true", help="Run smoke in sandbox; do NOT apply on main even if smoke passes.")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Run smoke in sandbox; do NOT apply on main even if smoke passes."
+    )
     args = parser.parse_args(argv)
 
     if args.patch_file:
@@ -279,10 +289,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(json.dumps({"ok": False, "dry_run": True, "error": f"forbidden paths: {bad}"}, indent=2))
             return 2
 
-    result = apply_patch_safely(patch_text, smoke_cmd=args.smoke, smoke_timeout=args.smoke_timeout)
-    if args.dry_run and result.ok:
-        result.applied = False
-        result.error = "dry-run: smoke passed but main-tree apply skipped"
+    result = apply_patch_safely(
+        patch_text,
+        smoke_cmd=args.smoke,
+        smoke_timeout=args.smoke_timeout,
+        apply_main=not args.dry_run,
+    )
     print(result.to_json())
     return 0 if result.ok else 1
 

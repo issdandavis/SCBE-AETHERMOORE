@@ -112,6 +112,14 @@ def test_binary_to_tokenizer_maps_bits_to_tokens_and_prime_language() -> None:
     assert mapping["roundtrip"]["decoded_utf8"] == "hi"
 
 
+def test_binary_to_tokenizer_accepts_bits_flag() -> None:
+    result = _run_cli("binary-to-tokenizer", "--tongue", "KO", "--bits", "01101000 01101001", "--json")
+    assert result.returncode == 0, result.stderr
+    mapping = json.loads(result.stdout)
+    assert mapping["byte_count"] == 2
+    assert mapping["roundtrip"]["decoded_utf8"] == "hi"
+
+
 def test_binary_to_tokenizer_flags_language_mismatch() -> None:
     result = _run_cli(
         "binary-to-tokenizer",

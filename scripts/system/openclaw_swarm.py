@@ -843,12 +843,27 @@ def _safe_kaggle_context_hint() -> str:
         return ""
 
 
+def format_kaggle_winner_loop_hint() -> str:
+    """Give every lane the same improvement process used by the benchmark harness."""
+    return textwrap.dedent("""
+        Kaggle-style improvement loop:
+        - Treat this lane as one experiment in a repeatable benchmark, not a one-off answer.
+        - First ground the task with exact files, declarations, and output contract.
+        - Then improve the input packet before asking for larger-model reasoning.
+        - Use ensemble consensus only when independent lanes produce compatible, traceable declarations.
+        - If output is weak, name the weakest dimension: gate_contract, evidence_integrity, traceability,
+          actionability, patch_readiness, or efficiency.
+        - End with one rerunnable command or one builder handoff, so the next cycle does not re-walk solved paths.
+    """).strip()
+
+
 def prompt_for_lane(lane: WorkLane, file_hints: list[str], constraint_mode: str) -> str:
     hints = "\n".join(f"- {path}" for path in file_hints[:80]) or "- no file hints available"
     declaration_hints = format_declaration_hints(file_hints)
     task_graph_hint = format_task_graph_hint(lane.goal, lane.output_contract)
     coding_system_hints = format_coding_system_hints(lane.goal, lane.output_contract)
     kaggle_context_hint = _safe_kaggle_context_hint()
+    kaggle_winner_loop_hint = format_kaggle_winner_loop_hint()
     if constraint_mode == "relaxed":
         rules = """
         Rules:
@@ -923,6 +938,8 @@ def prompt_for_lane(lane: WorkLane, file_hints: list[str], constraint_mode: str)
         {task_graph_hint}
 
         {coding_system_hints}
+
+        {kaggle_winner_loop_hint}
 
         {kaggle_context_hint}
 
@@ -1115,11 +1132,8 @@ def quality_flags(
                 flags.append(f"symbol_not_found:{path}#{symbol}")
     if re.search(r"decision(?:\*\*)?\s*:\s*(?:\*\*)?evidence\b", lowered):
         evidence_symbols = extract_evidence_declarations(text)
-        evidence_paths = [
-            path
-            for path in mentioned
-            if any(path.startswith(root) for root in allowed_paths) and (REPO_ROOT / path).exists()
-        ]
+        evidence_paths = [path for path in mentioned if any(path.startswith(root) for root in allowed_paths)]
+        existing_evidence_paths = [path for path in evidence_paths if (REPO_ROOT / path).exists()]
         evidence_path_tokens = {
             token
             for path in evidence_paths
@@ -1132,7 +1146,9 @@ def quality_flags(
         for symbol in sorted(evidence_symbols):
             if symbol in evidence_path_tokens or any(token.startswith(symbol) for token in evidence_path_tokens):
                 continue
-            if evidence_paths and not any(_file_contains_symbol(path, symbol) for path in evidence_paths):
+            if existing_evidence_paths and not any(
+                _file_contains_symbol(path, symbol) for path in existing_evidence_paths
+            ):
                 flags.append(f"evidence_symbol_not_found:{symbol}")
     if re.search(r"https?://", text) and not any(
         allowed in lowered
@@ -1433,13 +1449,13 @@ def build_integration_plan(task: str, results: list[dict[str, Any]], routing: di
         lines.extend(["No Pazaak board moves were generated.", ""])
     lines.extend(
         [
-        "## Assurance Packet",
-        "",
-        f"- readiness: `{routing['assurance_packet']['readiness']}`",
-        f"- acceptance_rule: {routing['assurance_packet']['acceptance_rule']}",
-        "",
-        "| Requirement | Evidence Rule |",
-        "|---|---|",
+            "## Assurance Packet",
+            "",
+            f"- readiness: `{routing['assurance_packet']['readiness']}`",
+            f"- acceptance_rule: {routing['assurance_packet']['acceptance_rule']}",
+            "",
+            "| Requirement | Evidence Rule |",
+            "|---|---|",
         ]
     )
     for key, value in routing["assurance_packet"]["requirements"].items():

@@ -48,6 +48,22 @@
         "Full Polyglot runs are model/API-cost heavy; start with command-shape checks only."
       ],
       "dry_run_command": ["python", "benchmark/benchmark.py", "--help"]
+    },
+    {
+      "benchmark_id": "vexp_swe_bench",
+      "display_name": "Vexp SWE-bench Harness",
+      "official_url": "https://github.com/Vexp-ai/vexp-swe-bench",
+      "repo_url": "https://github.com/Vexp-ai/vexp-swe-bench.git",
+      "local_dir": "vexp-swe-bench",
+      "tool_checks": [
+        ["node", "dist/cli.js", "--help"],
+        ["docker", "--version"]
+      ],
+      "install_notes": [
+        "Compares coding agents on a curated SWE-bench Verified subset with pass rate, cost, duration, and token-use fields.",
+        "Requires Node.js, Python, Git, Docker, and an agent adapter. Keep first runs small and cost-capped."
+      ],
+      "dry_run_command": ["node", "dist/cli.js", "list"]
     }
   ]
 }
