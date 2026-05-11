@@ -16,6 +16,7 @@ looks good, feed its unified diff through ``scripts/agents/safe_apply.py``.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -36,6 +37,7 @@ DEFAULT_OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434").rstr
 DEFAULT_MODELS = ("openclaw:latest", "qwen2.5-coder:1.5b", "scbe-geoseal-coder:q8")
 KNOWLEDGE_GRAPH_PATH = REPO_ROOT / "docs" / "research" / "SCBE_BUS_TASK_KNOWLEDGE_GRAPH_2026-05-10.json"
 CODING_SYSTEM_REGISTRY_PATH = REPO_ROOT / "docs" / "research" / "SCBE_CODING_SYSTEM_REGISTRY_2026-05-10.json"
+PAZAAK_BOARD_PATH = Path(__file__).with_name("agentic_pazaak_board.py")
 
 
 @dataclass(frozen=True)
@@ -81,6 +83,16 @@ class WorkLane:
     cycle_policy: str
     trust_policy: str
     output_contract: str
+
+
+def _load_pazaak_board_module() -> Any:
+    spec = importlib.util.spec_from_file_location("_agentic_pazaak_board_runtime", PAZAAK_BOARD_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"could not load Pazaak planner from {PAZAAK_BOARD_PATH}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules.setdefault(spec.name, module)
+    spec.loader.exec_module(module)
+    return module
 
 
 AGENT_PROFILES: dict[str, AgentProfile] = {
@@ -741,6 +753,86 @@ def build_lanes(task: str, agents: list[ResolvedAgent], allowed_paths: tuple[str
     return lanes
 
 
+def _lane_conflicts(lanes: list[WorkLane]) -> set[str]:
+    owners_by_path: dict[str, set[str]] = {}
+    for lane in lanes:
+        if lane.lane_tier not in {"builder", "escalation"}:
+            continue
+        for path in lane.allowed_paths:
+            owners_by_path.setdefault(path, set()).add(lane.lane_id)
+    conflicts: set[str] = set()
+    for owners in owners_by_path.values():
+        if len(owners) > 1:
+            conflicts.update(owners)
+    return conflicts
+
+
+def _lane_value(lane: WorkLane, result: dict[str, Any] | None = None) -> int:
+    base_by_tier = {"helper": 2, "builder": 4, "guard": 4, "packager": 3, "escalation": 5}
+    value = base_by_tier.get(lane.lane_tier, 3)
+    if result is not None:
+        value += 1 if int(result.get("applicability_score", 0)) >= 85 else 0
+        value -= 1 if result.get("quality_flags") else 0
+    return max(1, min(5, value))
+
+
+def _lane_risk(lane: WorkLane, result: dict[str, Any] | None = None) -> int:
+    risk = 1
+    if lane.lane_tier in {"builder", "escalation"}:
+        risk += 1
+    if lane.cost_tier != "free_local":
+        risk += 1
+    if any(path.startswith(("package", ".github", "api/", "src/")) for path in lane.allowed_paths):
+        risk += 1
+    if result is not None:
+        risk += min(3, len(result.get("quality_flags") or []))
+        if not result.get("ok", False):
+            risk += 2
+        if int(result.get("applicability_score", 0)) >= 90 and not result.get("quality_flags"):
+            risk -= 1
+    return max(0, min(6, risk))
+
+
+def build_pazaak_plan(
+    lanes: list[WorkLane],
+    results: list[dict[str, Any]] | None = None,
+    limit: int = 8,
+) -> dict[str, Any]:
+    board = _load_pazaak_board_module()
+    result_by_lane = {item.get("lane", {}).get("lane_id"): item for item in results or []}
+    conflicts = _lane_conflicts(lanes)
+    pazaak_lanes = []
+    for lane in lanes:
+        result = result_by_lane.get(lane.lane_id)
+        flags = result.get("quality_flags") if result else []
+        ok = bool(result.get("ok", False)) if result else False
+        pazaak_lanes.append(
+            board.TaskLane(
+                lane_id=lane.lane_id,
+                value=_lane_value(lane, result),
+                risk=_lane_risk(lane, result),
+                verified=bool(result and ok and not flags),
+                blocked=bool(result and (not ok or flags)),
+                context_noise=len(lane.allowed_paths) > 3,
+                conflict=lane.lane_id in conflicts,
+                stalled=bool(result and (not ok or flags)),
+                owner=lane.agent_alias if lane.lane_tier in {"guard", "packager"} else "",
+            )
+        )
+    cards = board.load_cards()
+    moves = board.recommend_moves(pazaak_lanes, cards, limit=limit)
+    return {
+        "schema": "scbe_swarm_pazaak_plan_v1",
+        "planner": "scripts/system/agentic_pazaak_board.py",
+        "cards": str(board.DEFAULT_CARD_FILE.relative_to(REPO_ROOT)),
+        "lane_count": len(pazaak_lanes),
+        "bitboards": board.bitboards(pazaak_lanes),
+        "lanes": [asdict(lane) for lane in pazaak_lanes],
+        "moves": [asdict(move) for move in moves],
+        "top_move": asdict(moves[0]) if moves else None,
+    }
+
+
 def _safe_kaggle_context_hint() -> str:
     """Pull a Kaggle context block if the env var is set; never crash the bus."""
     try:
@@ -1319,6 +1411,28 @@ def build_integration_plan(task: str, results: list[dict[str, Any]], routing: di
         f"- mean_applicability_score: `{routing['assurance_packet']['mean_applicability_score']}`",
         f"- paid_escalation_note: {routing['paid_escalation_note']}",
         "",
+        "## Pazaak Board Recommendation",
+        "",
+    ]
+    pazaak_plan = routing.get("pazaak_plan") or {}
+    if pazaak_plan.get("moves"):
+        lines.extend(["| Lane | Card | Symbol | Score | Reason |", "|---|---|---:|---:|---|"])
+        for move in pazaak_plan["moves"][:6]:
+            lines.append(
+                f"| `{move['lane_id']}` | {move['card_name']} | `{move['symbol']}` | "
+                f"{move['score']} | {move['reason']} |"
+            )
+        lines.extend(
+            [
+                "",
+                f"- bitboards: `{json.dumps(pazaak_plan.get('bitboards', {}), sort_keys=True)}`",
+                "",
+            ]
+        )
+    else:
+        lines.extend(["No Pazaak board moves were generated.", ""])
+    lines.extend(
+        [
         "## Assurance Packet",
         "",
         f"- readiness: `{routing['assurance_packet']['readiness']}`",
@@ -1326,7 +1440,8 @@ def build_integration_plan(task: str, results: list[dict[str, Any]], routing: di
         "",
         "| Requirement | Evidence Rule |",
         "|---|---|",
-    ]
+        ]
+    )
     for key, value in routing["assurance_packet"]["requirements"].items():
         lines.append(f"| `{key}` | {value} |")
     lines.extend(
@@ -1537,6 +1652,9 @@ def main() -> int:
 
     _write_json(run_dir / "results.json", {"task": args.task, "results": results})
     routing = build_routing_recommendation(results, resolved_agents)
+    pazaak_plan = build_pazaak_plan(lanes, results, limit=8)
+    routing["pazaak_plan"] = pazaak_plan
+    _write_json(run_dir / "pazaak_plan.json", pazaak_plan)
     _write_json(run_dir / "routing.json", routing)
     plan = build_integration_plan(args.task, results, routing)
     (run_dir / "integration_plan.md").write_text(plan, encoding="utf-8")
@@ -1545,6 +1663,7 @@ def main() -> int:
     _write_json(latest / "results.json", {"task": args.task, "run_dir": str(run_dir), "results": results})
     _write_json(latest / "agents.json", [asdict(agent) for agent in resolved_agents])
     _write_json(latest / "routing.json", routing)
+    _write_json(latest / "pazaak_plan.json", pazaak_plan)
     (latest / "integration_plan.md").write_text(plan, encoding="utf-8")
 
     print(
@@ -1571,6 +1690,7 @@ def main() -> int:
                 "quality_flag_counts": summarize_quality_flags(results),
                 "next_action": routing["next_action"],
                 "next_cycle": routing["next_cycle"],
+                "pazaak_top_move": pazaak_plan.get("top_move"),
                 "integration_plan": str(run_dir / "integration_plan.md"),
             },
             indent=2,
