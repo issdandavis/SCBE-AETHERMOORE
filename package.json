@@ -1,13 +1,14 @@
 {
   "name": "scbe-aethermoore",
-  "version": "4.0.8",
+  "version": "4.0.9",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
   "type": "commonjs",
   "bin": {
     "geoseal": "bin/geoseal.cjs",
-    "scbe-geoseal": "bin/geoseal.cjs"
+    "scbe-geoseal": "bin/geoseal.cjs",
+    "scbe-scan": "bin/scbe-scan.cjs"
   },
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -213,6 +214,7 @@
     "publish:prepare": "npm run clean:release && npm run build",
     "publish:pack:json": "node -e \"require('fs').mkdirSync('artifacts/npm-pack',{recursive:true})\" && npm pack --dry-run --json --ignore-scripts --cache ./.npm-cache > artifacts/npm-pack/pack.json",
     "publish:check:strict": "npm run publish:pack:json && node scripts/npm_pack_guard.js --pack-json artifacts/npm-pack/pack.json",
+    "publish:smoke:consumer": "node scripts/npm_consumer_smoke.mjs",
     "publish:pypi:build": "python scripts/pypi_build.py --dist-dir artifacts/pypi-dist",
     "publish:pypi:check": "python scripts/pypi_dist_guard.py --dist-dir artifacts/pypi-dist",
     "prepublishOnly": "npm run publish:prepare",
