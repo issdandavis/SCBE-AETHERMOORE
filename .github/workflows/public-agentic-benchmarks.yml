@@ -232,6 +232,9 @@ jobs:
           python ../../../scripts/benchmark/workflow_completion_checklist.py \
             --artifact-root ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored \
             --output-root ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
+          python ../../../scripts/benchmark/known_fail_retry_prompts.py \
+            --checklist ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored/latest_completion_checklist.json \
+            --output-root ../../../artifacts/public_agentic_benchmark_setup/aider_polyglot_scored
 
       - name: Terminal-Bench remote setup note
         if: ${{ inputs.track == 'terminal-bench-setup' }}
