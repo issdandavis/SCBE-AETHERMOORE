@@ -5,10 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
 from scripts.eval import diffusion_codegen_bakeoff as bakeoff
-
 
 # ---------------------------------------------------------------------------
 # Scorer parity with v6h `_gate_score`
