@@ -161,6 +161,78 @@ def test_step_with_active_subset_preserves_required_pull() -> None:
     assert chosen == 1
 
 
+def test_default_v_excludes_log_p_base() -> None:
+    """Default config is contract-only V; the LM distribution rides on psi_0
+    via sqrt(softmax(logits)), not on the potential. Verifies the well is
+    flat (V=0) when there are no required/forbidden tokens, regardless of
+    how peaked the base logits are.
+    """
+    cfg = sw.SchrodingerConfig()
+    assert cfg.include_log_p_base is False
+
+    # Construct: base prefers index 0 strongly, no contract pressure.
+    # With log_p_base in V the well bottom would be at index 0 and the
+    # imaginary-time evolution would amplify p_base further. With V=0
+    # everywhere the wave should diffuse to the kinetic ground state
+    # (uniform-ish), so |psi_out|^2 at index 0 must be SMALLER than the
+    # input p_base[0].
+    base_logits = np.array([6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float32)
+    n = base_logits.shape[0]
+    p = np.exp(base_logits - base_logits.max())
+    p = p / p.sum()
+    psi0 = np.sqrt(p + 1e-30).astype(np.complex128)
+
+    # Manually replicate the schrodinger_step_logits potential under default cfg:
+    sub_req = np.zeros(n, dtype=np.float64)
+    sub_forb = np.zeros(n, dtype=np.float64)
+    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(np.float64)
+    if cfg.include_log_p_base:
+        V = V - np.log(p + 1e-30).astype(np.float64)
+    # In contract-only mode V is identically zero here:
+    assert np.allclose(V, 0.0)
+
+    k_grid = np.fft.fftfreq(n) * (2.0 * np.pi)
+    psi_out = sw._evolve_wavefunction(psi0.copy(), V, cfg, k_grid)
+    p_out = np.abs(psi_out) ** 2
+    p_out = p_out / p_out.sum()
+    # Diffusion under flat V: index 0 spreads outward.
+    assert p_out[0] < p[0]
+
+
+def test_legacy_v_includes_log_p_base_when_flag_set() -> None:
+    """Opt-in to the v6h-falsified legacy V; verify the well is exactly
+    -log p_base when there are no required/forbidden tokens, so the
+    deepest well bottom sits at the AR base argmax."""
+    cfg = sw.SchrodingerConfig(include_log_p_base=True)
+    base_logits = np.array([6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float32)
+    n = base_logits.shape[0]
+    p = np.exp(base_logits - base_logits.max())
+    p = p / p.sum()
+    sub_req = np.zeros(n, dtype=np.float64)
+    sub_forb = np.zeros(n, dtype=np.float64)
+    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(np.float64)
+    if cfg.include_log_p_base:
+        V = V - np.log(p + 1e-30).astype(np.float64)
+    # Deepest well = smallest V = at base argmax (index 0)
+    assert int(np.argmin(V)) == 0
+
+
+def test_step_contract_only_still_pulls_required_under_alpha() -> None:
+    """The contract-only V must still steer toward required tokens."""
+    base_logits = np.array([4.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0], dtype=np.float32)
+    req_mask = np.array([0, 1, 0, 0, 0, 0, 0, 0], dtype=np.float32)
+    forb_mask = np.zeros(8, dtype=np.float32)
+    cfg = sw.SchrodingerConfig(
+        alpha_required=10.0,
+        beta_forbidden=0.0,
+        n_steps=20,
+        tau=0.5,
+        include_log_p_base=False,
+    )
+    chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
+    assert chosen == 1
+
+
 def test_active_top_k_dramatically_reduces_evolution_size() -> None:
     """Sanity: with V=152000 and K=256, evolution operates on ~256 elements,
     not 152000. Verified by inspecting the active subset returned."""

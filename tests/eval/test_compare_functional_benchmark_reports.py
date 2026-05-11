@@ -27,7 +27,10 @@ def test_compare_reports_emits_pass_rate_delta():
     }
     candidate = {
         "results": [
-            {"adapter": "BASE", "summary": {"tasks": 4, "passed": 3, "pass_rate": 0.75}},
+            {
+                "adapter": "BASE",
+                "summary": {"tasks": 4, "passed": 3, "pass_rate": 0.75},
+            },
         ]
     }
 

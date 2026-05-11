@@ -49,7 +49,9 @@ def test_public_agentic_cli_suite_required_tracks_and_claim_guardrails() -> None
     assert all(track.required_for_public_all_around_claim for track in tracks if track.track_id in required_core)
 
 
-def test_public_agentic_cli_suite_plan_report_does_not_overclaim(tmp_path: Path) -> None:
+def test_public_agentic_cli_suite_plan_report_does_not_overclaim(
+    tmp_path: Path,
+) -> None:
     module = _load_module()
     report = module.build_report(CONFIG_PATH, tmp_path, execute=False, timeout=60)
     payload = report["payload"]
@@ -82,7 +84,11 @@ def test_public_agentic_cli_suite_execute_smoke(tmp_path: Path) -> None:
 
 def test_public_agentic_cli_suite_cli_validate_only() -> None:
     proc = subprocess.run(
-        [sys.executable, "scripts/benchmark/public_agentic_cli_suite.py", "--validate-only"],
+        [
+            sys.executable,
+            "scripts/benchmark/public_agentic_cli_suite.py",
+            "--validate-only",
+        ],
         cwd=ROOT,
         text=True,
         stdout=subprocess.PIPE,

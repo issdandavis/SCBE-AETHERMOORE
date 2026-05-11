@@ -160,7 +160,10 @@ def build_domino_workflow(
             "contacts": [],
             "blocked": [],
             "branches": [],
-            "mechanics": {"allow_rotation": allow_rotation, "dot_transfer": "balanced_contact_faces"},
+            "mechanics": {
+                "allow_rotation": allow_rotation,
+                "dot_transfer": "balanced_contact_faces",
+            },
         }
     remaining = list(tiles)
     start_index = 0

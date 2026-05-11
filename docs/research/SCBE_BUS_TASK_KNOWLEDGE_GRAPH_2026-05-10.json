@@ -1,0 +1,87 @@
+{
+  "schema": "scbe_bus_task_knowledge_graph_v1",
+  "purpose": "Reference graph for hard agentic tasks. It tells AI lanes what kind of work they are doing, what evidence to use, what format to return, and what counts as complete.",
+  "global_expectation": {
+    "quality_bar": "Useful and complete beats perfect. Follow the process, stay inside the designated operation frame, and expose uncertainty as a blocker instead of inventing missing facts.",
+    "completion_rule": "A task is complete when it returns the requested artifact shape, cites or names the evidence used, states residual risk, and gives the next routeable action.",
+    "do_not": [
+      "Do not claim files were edited.",
+      "Do not invent repo files, symbols, commands, package scripts, or external authorities.",
+      "Do not switch task type mid-response.",
+      "Do not patch greylisted files without marking approval needed.",
+      "Do not produce broad architecture prose when the contract asks for exact evidence."
+    ]
+  },
+  "task_types": {
+    "public_answer": {
+      "aliases": ["public free user", "capability answer", "what can I do"],
+      "operation_frame": "answer",
+      "source_clues": ["public docs", "README", "offer pages", "latest benchmark summary"],
+      "response_format": [
+        "Decision: answer",
+        "Capability: safe user-facing capability",
+        "Limits: what requires operator/admin approval",
+        "Next action: one concrete user action",
+        "Risk: short residual-risk note"
+      ],
+      "completion": "The user can act without needing repo mutation or hidden credentials."
+    },
+    "helper_evidence": {
+      "aliases": ["gather facts", "inspect files", "what exists", "prepare builder"],
+      "operation_frame": "evidence",
+      "source_clues": ["known repo file hints", "existing tests", "package scripts", "artifact paths"],
+      "response_format": [
+        "Decision: evidence",
+        "Files checked: exact paths",
+        "Declarations: real classes/functions/symbols or unknowns",
+        "Builder handoff: safe next patch target",
+        "Risk: what still needs checking"
+      ],
+      "completion": "A builder can use the evidence without rediscovering the same facts."
+    },
+    "patch_proposal": {
+      "aliases": ["fix", "implement", "code change", "safe improvement"],
+      "operation_frame": "patch-proposal",
+      "source_clues": ["existing file hints", "existing symbols", "tests that already exist", "allowed paths"],
+      "response_format": [
+        "Decision: build | defer | needs-human",
+        "Files: exact paths",
+        "Patch: git-style unified diff only if safe",
+        "Verification: exact foreground command",
+        "Risk: short compatibility note"
+      ],
+      "completion": "Patch references existing files/symbols and can be passed to safe_apply."
+    },
+    "admin_change": {
+      "aliases": ["package", "deploy", "workflow", "billing", "environment"],
+      "operation_frame": "patch-proposal",
+      "source_clues": ["package.json", "vercel.json", ".github/workflows", "deployment docs"],
+      "response_format": [
+        "Decision: build | defer | needs-human",
+        "Approval: why this is allowed or why human approval is needed",
+        "Files: exact greylisted/admin paths",
+        "Patch: only if approval is not required",
+        "Verification: command and rollback"
+      ],
+      "completion": "Admin risk is explicit, not hidden in a normal patch."
+    },
+    "darpa_assurance": {
+      "aliases": ["DARPA", "assurance", "proposal grade", "evidence packet"],
+      "operation_frame": "evidence",
+      "source_clues": ["official DARPA docs", "benchmark artifacts", "routing.json", "tests", "source links"],
+      "response_format": [
+        "Decision: evidence",
+        "Requirement map: official requirement -> SCBE evidence",
+        "Artifacts: exact local paths",
+        "Gap list: what is not proven yet",
+        "Next action: one measurable test or artifact"
+      ],
+      "completion": "The output separates proven behavior from proposal framing."
+    }
+  },
+  "trust_lists": {
+    "allow": ["src/", "scripts/", "api/", "python/", "tests/", "docs/", "aetherdesk/"],
+    "grey_requires_approval": ["package.json", "package-lock.json", "pyproject.toml", "vercel.json", ".github/workflows/"],
+    "black_blocked": [".env", ".home/", ".codex/", ".git/", "node_modules/", "artifacts/", "training-data/", "config/connector_oauth/"]
+  }
+}
