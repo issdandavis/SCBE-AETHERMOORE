@@ -34,6 +34,8 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 DEFAULT_CONTRACT = REPO_ROOT / "config" / "eval" / "coding_diffusion_bakeoff_v1.json"
 DEFAULT_BASELINE = "Qwen/Qwen2.5-Coder-7B-Instruct"
 DEFAULT_DIFFUSION = "apple/DiffuCoder-7B-Instruct"

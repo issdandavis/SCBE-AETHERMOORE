@@ -64,6 +64,11 @@ class SchrodingerConfig:
     sample: bool = False            # False = argmax; True = sample from |psi|^2
     imaginary_time: bool = True     # True = ground-state projection (default);
                                     # False = unitary real-time (research lever)
+    active_top_k: int = 256         # Restrict wave evolution to top-K base
+                                    # logit tokens + any required-marker tokens.
+                                    # Drops FFT cost from O(V log V) to
+                                    # O(K log K). Set 0 to disable subsetting
+                                    # (full-vocab evolution; expensive).
 
 
 def _build_indicator_masks(
@@ -139,6 +144,26 @@ def _evolve_wavefunction(
     return psi
 
 
+def _select_active_subset(
+    base_logits: np.ndarray, req_mask: np.ndarray, top_k: int
+) -> np.ndarray:
+    """Indices of (top-K base-logit tokens) ∪ (required-marker tokens).
+
+    The wave-evolution restriction set: large enough that the model's
+    actual candidates are present, plus any required-marker tokens so
+    the alpha bonus has somewhere to pull amplitude into.
+    """
+    n = base_logits.shape[0]
+    if top_k <= 0 or top_k >= n:
+        return np.arange(n, dtype=np.int64)
+    k = min(int(top_k), n)
+    # Top-k by base logit (np.argpartition is O(V); cheap relative to FFT).
+    top_idx = np.argpartition(-base_logits, k - 1)[:k]
+    req_idx = np.nonzero(req_mask > 0)[0]
+    union = np.unique(np.concatenate([top_idx, req_idx]))
+    return union.astype(np.int64)
+
+
 def schrodinger_step_logits(
     base_logits: np.ndarray,
     req_mask: np.ndarray,
@@ -148,36 +173,42 @@ def schrodinger_step_logits(
 ) -> int:
     """Pick one token id per AR step via Schrödinger evolution.
 
-    1. psi_0 = sqrt(softmax(logits))  -- real positive amplitudes
-    2. V = -log p_base - alpha*req_mask + beta*forb_mask
-    3. Evolve K Strang steps with FFT-diagonal kinetic term
-    4. Return argmax (or sample) of |psi|^2
+    1. select active subset (top-K base + required tokens)
+    2. psi_0 = sqrt(softmax(logits[active]))
+    3. V = -log p_base - alpha*req_mask + beta*forb_mask  (over active)
+    4. evolve K Strang steps with FFT-diagonal kinetic term
+    5. argmax (or sample) of |psi|^2 -> return ORIGINAL token id
     """
-    # Numerical-stable softmax over vocab
-    shifted = base_logits - np.max(base_logits)
+    active = _select_active_subset(base_logits, req_mask, cfg.active_top_k)
+
+    sub_logits = base_logits[active]
+    sub_req = req_mask[active].astype(np.float64)
+    sub_forb = forb_mask[active].astype(np.float64)
+
+    shifted = sub_logits - np.max(sub_logits)
     p_base = np.exp(shifted)
     p_base = p_base / np.maximum(p_base.sum(), 1e-30)
     psi = np.sqrt(p_base + 1e-30).astype(np.complex128)
 
-    # Contract-shaped potential
     log_p = np.log(p_base + 1e-30).astype(np.float64)
-    V = -log_p - cfg.alpha_required * req_mask.astype(np.float64) \
-        + cfg.beta_forbidden * forb_mask.astype(np.float64)
+    V = -log_p - cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb
 
-    n = base_logits.shape[0]
-    k_grid = np.fft.fftfreq(n) * (2.0 * np.pi)
+    n_sub = sub_logits.shape[0]
+    k_grid = np.fft.fftfreq(n_sub) * (2.0 * np.pi)
     psi = _evolve_wavefunction(psi, V, cfg, k_grid)
 
     prob = np.abs(psi) ** 2
     total = prob.sum()
     if not np.isfinite(total) or total <= 0:
-        return int(np.argmax(p_base))
+        return int(active[int(np.argmax(p_base))])
     prob = prob / total
 
     if cfg.sample:
         rng = rng or np.random.default_rng()
-        return int(rng.choice(n, p=prob))
-    return int(np.argmax(prob))
+        chosen_in_subset = int(rng.choice(n_sub, p=prob))
+    else:
+        chosen_in_subset = int(np.argmax(prob))
+    return int(active[chosen_in_subset])
 
 
 class SchrodingerLogitsProcessor:
@@ -213,27 +244,37 @@ class SchrodingerLogitsProcessor:
                 self.req_mask = self.req_mask[: np_scores.shape[0]]
                 self.forb_mask = self.forb_mask[: np_scores.shape[0]]
 
-        # Build psi from softmax(logits), evolve, then turn |psi|^2 back into logits.
-        shifted = np_scores - np.max(np_scores)
+        # Restrict the wave evolution to an active subset to keep CPU/RAM
+        # sane on a 152k-vocab model. Inactive tokens keep their original
+        # logits (so the rest of the generation pipeline still sees them).
+        active = _select_active_subset(np_scores, self.req_mask, self.cfg.active_top_k)
+        sub_logits = np_scores[active]
+        sub_req = self.req_mask[active].astype(np.float64)
+        sub_forb = self.forb_mask[active].astype(np.float64)
+
+        shifted = sub_logits - np.max(sub_logits)
         p_base = np.exp(shifted)
         p_base = p_base / np.maximum(p_base.sum(), 1e-30)
         psi = np.sqrt(p_base + 1e-30).astype(np.complex128)
         log_p = np.log(p_base + 1e-30).astype(np.float64)
-        V = (
-            -log_p
-            - self.cfg.alpha_required * self.req_mask.astype(np.float64)
-            + self.cfg.beta_forbidden * self.forb_mask.astype(np.float64)
-        )
-        n = np_scores.shape[0]
-        k_grid = np.fft.fftfreq(n) * (2.0 * np.pi)
+        V = -log_p - self.cfg.alpha_required * sub_req + self.cfg.beta_forbidden * sub_forb
+
+        n_sub = sub_logits.shape[0]
+        k_grid = np.fft.fftfreq(n_sub) * (2.0 * np.pi)
         psi = _evolve_wavefunction(psi, V, self.cfg, k_grid)
         prob = np.abs(psi) ** 2
         total = prob.sum()
         if not np.isfinite(total) or total <= 0:
             return scores
         prob = prob / total
-        new_logits = np.log(prob + 1e-30)
-        out = torch.from_numpy(new_logits).to(scores.dtype).to(scores.device)
+        sub_new_logits = np.log(prob + 1e-30)
+
+        # Splice the evolved logits back into the full-vocab scores tensor.
+        # Inactive token IDs keep their original (very-negative) logits,
+        # so they remain effectively un-pickable by argmax / softmax.
+        new_logits_np = np_scores.copy()
+        new_logits_np[active] = sub_new_logits
+        out = torch.from_numpy(new_logits_np).to(scores.dtype).to(scores.device)
         return out.unsqueeze(0)
 
 

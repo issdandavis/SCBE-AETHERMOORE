@@ -2,9 +2,15 @@
 
 from __future__ import annotations
 
+import subprocess
+import sys
+from pathlib import Path
+
 import numpy as np
 
 from scripts.eval import schrodinger_codewave_generator as sw
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_indicator_masks_mark_required_and_forbidden() -> None:
@@ -102,3 +108,79 @@ def test_evolve_imaginary_time_renormalizes_to_unit_probability() -> None:
 def test_factory_returns_callable() -> None:
     f = sw.make_schrodinger_generator(model_id="dummy/never-loaded", max_new_tokens=8)
     assert callable(f)
+
+
+def test_bakeoff_script_direct_schrodinger_dry_run(tmp_path: Path) -> None:
+    script = REPO_ROOT / "scripts" / "eval" / "diffusion_codegen_bakeoff.py"
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(script),
+            "--dry-run",
+            "--schrodinger-only",
+            "--out-dir",
+            str(tmp_path),
+        ],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert list(tmp_path.glob("diffusion_bakeoff_*.json"))
+
+
+def test_active_subset_includes_top_k_and_required_tokens() -> None:
+    base_logits = np.array([0.5, 0.1, 0.9, 0.3, 0.05, 0.7, 0.05, 0.05], dtype=np.float32)
+    req_mask = np.array([0, 0, 0, 0, 1, 0, 0, 1], dtype=np.float32)  # forces 4, 7
+    active = sw._select_active_subset(base_logits, req_mask, top_k=3)
+    s = set(int(i) for i in active)
+    # Top-3 by logit are indices {2, 5, 0}; required adds {4, 7}.
+    assert {2, 5, 0}.issubset(s)
+    assert {4, 7}.issubset(s)
+    # Result must be deduplicated and sorted
+    assert list(active) == sorted(s)
+
+
+def test_active_subset_disabled_returns_full_range() -> None:
+    base = np.zeros(16, dtype=np.float32)
+    req = np.zeros(16, dtype=np.float32)
+    active = sw._select_active_subset(base, req, top_k=0)
+    assert list(active) == list(range(16))
+
+
+def test_step_with_active_subset_preserves_required_pull() -> None:
+    """Active-subset variant still pulls amplitude into a required token
+    that the AR baseline would have skipped."""
+    n = 256
+    rng = np.random.default_rng(0)
+    base_logits = rng.standard_normal(n).astype(np.float32) * 0.1
+    base_logits[0] = 5.0  # base favorite
+    req_mask = np.zeros(n, dtype=np.float32)
+    req_mask[1] = 1.0  # adjacent required
+    forb_mask = np.zeros(n, dtype=np.float32)
+    cfg = sw.SchrodingerConfig(
+        alpha_required=10.0, beta_forbidden=0.0, n_steps=20, tau=0.5, active_top_k=64
+    )
+    chosen = sw.schrodinger_step_logits(base_logits, req_mask, forb_mask, cfg)
+    assert chosen == 1
+
+
+def test_active_top_k_dramatically_reduces_evolution_size() -> None:
+    """Sanity: with V=152000 and K=256, evolution operates on ~256 elements,
+    not 152000. Verified by inspecting the active subset returned."""
+    n = 152_000
+    rng = np.random.default_rng(1)
+    # Strictly-ordered base logits so the top-K is unambiguous.
+    base_logits = rng.standard_normal(n).astype(np.float32)
+    # Force index 42 to be a guaranteed-out-of-top-K low value.
+    base_logits[42] = -1000.0
+    req_mask = np.zeros(n, dtype=np.float32)
+    req_mask[42] = 1.0
+    active = sw._select_active_subset(base_logits, req_mask, top_k=256)
+    # 256 top-K + 1 required-but-not-in-top-K = 257
+    assert active.shape[0] == 257
+    assert 42 in active.tolist()
+    # And massively smaller than the full vocab.
+    assert active.shape[0] < n / 100
