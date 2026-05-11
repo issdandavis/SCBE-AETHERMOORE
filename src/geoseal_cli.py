@@ -1733,6 +1733,31 @@ def cmd_compile(args: argparse.Namespace) -> int:
     return 0 if payload["policy"]["decision"] != "DENY" else 2
 
 
+def cmd_domino(args: argparse.Namespace) -> int:
+    from src.coding_spine.domino_workflow import build_domino_workflow_from_specs
+
+    payload = build_domino_workflow_from_specs(
+        list(args.tile or []),
+        start=args.start,
+        allow_rotation=not args.no_rotate,
+    )
+    if args.json:
+        print(json.dumps(payload, indent=2))
+        return 0
+
+    chain = payload.get("chain") or []
+    print(
+        f"{payload['schema']} complete={payload['summary']['complete']} "
+        f"chain_length={payload['summary']['chain_length']}"
+    )
+    print("chain=" + " -> ".join(f"{tile['tile_id']}({tile['left']}|{tile['right']})" for tile in chain))
+    if payload.get("blocked"):
+        print("blocked=" + ",".join(tile["tile_id"] for tile in payload["blocked"]))
+    if payload.get("contacts"):
+        print("contacts=" + str(len(payload["contacts"])))
+    return 0
+
+
 def cmd_loop_dispatch(args: argparse.Namespace) -> int:
     from src.coding_spine.agent_tool_policy import (
         evaluate_harness_tool_policy,
@@ -4486,6 +4511,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_compile.add_argument("--tool", default=None, help="Force harness tool class")
     p_compile.add_argument("--json", action="store_true")
     p_compile.set_defaults(func=cmd_compile)
+
+    p_domino = sub.add_parser("domino", help="Arrange domino workflow tiles with contact dot transfer")
+    p_domino.add_argument(
+        "tile",
+        nargs="+",
+        help="Tile specs like gather:intent|evidence:1/3 or evidence|patch",
+    )
+    p_domino.add_argument("--start", default=None, help="Start tile id or left contract")
+    p_domino.add_argument("--no-rotate", action="store_true", help="Disable automatic tile rotation")
+    p_domino.add_argument("--json", action="store_true")
+    p_domino.set_defaults(func=cmd_domino)
 
     p_loop_dispatch = sub.add_parser("loop-dispatch", help="Policy-gated external agent loop dispatch")
     p_loop_dispatch.add_argument("--provider", required=True)
