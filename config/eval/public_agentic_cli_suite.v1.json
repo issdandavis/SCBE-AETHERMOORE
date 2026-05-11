@@ -102,6 +102,26 @@
       "primary_metric": "official_percent_correct",
       "pass_threshold": null,
       "cost_tier": "external-high"
+    },
+    {
+      "track_id": "vexp_swe_bench",
+      "family": "repo_issue_repair_cost_efficiency",
+      "official_url": "https://github.com/Vexp-ai/vexp-swe-bench",
+      "description": "Public SWE-bench Verified subset harness for comparing coding agents by pass rate, cost per task, duration, and token use.",
+      "claim_level": "adapter_readiness_only",
+      "adapter_status": "planned",
+      "required_for_public_all_around_claim": false,
+      "run_command": [
+        "python",
+        "scripts/benchmark/setup_public_agentic_benchmarks.py",
+        "--dry-run"
+      ],
+      "expected_artifacts": [
+        "artifacts/public_agentic_benchmark_setup/latest_setup.json"
+      ],
+      "primary_metric": "pass_at_1_cost_duration_tokens",
+      "pass_threshold": null,
+      "cost_tier": "external-medium"
     }
   ],
   "required_public_packet_fields": [

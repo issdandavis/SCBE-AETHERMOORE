@@ -25,13 +25,21 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_INPUT = (
+DEFAULT_INPUT_CANDIDATES = (
     REPO_ROOT
     / "artifacts"
     / "kaggle_datasets"
     / "scbe-coding-agent-stage6-repair-v7"
-    / "bijective_codeflow_v1_holdout.sft.jsonl"
+    / "bijective_codeflow_v1_holdout.sft.jsonl",
+    REPO_ROOT / "training-data" / "sft" / "bijective_codeflow_v1_holdout.sft.jsonl",
+    REPO_ROOT
+    / "artifacts"
+    / "kaggle_datasets"
+    / "scbe-coding-agent-stage6-repair-v7"
+    / "atomic_workflow_stage6_repair_holdout.sft.jsonl",
+    REPO_ROOT / "training-data" / "sft" / "atomic_workflow_stage6_repair_holdout.sft.jsonl",
 )
+DEFAULT_INPUT = DEFAULT_INPUT_CANDIDATES[0]
 DEFAULT_OUT = REPO_ROOT / "artifacts" / "benchmarks" / "scbe_bijective_round_trip"
 
 SCORER_SRC = Path(__file__).parent / "score.py"
@@ -176,17 +184,28 @@ def write_dataset_metadata(out_dir: Path, kaggle_user: str, slug: str) -> None:
     meta = {
         "title": "SCBE Bijective Tongue Coder Round-Trip Holdout",
         "id": f"{kaggle_user}/{slug}",
-        "licenses": [{"name": "CC0-1.0"}],
+        "subtitle": "Kaggle-style holdout for Sacred Tongue code round trips",
+        "licenses": [{"name": "cc"}],
         "keywords": [
-            "ai-safety",
-            "code-translation",
+            "ai",
+            "code",
             "tokenization",
             "benchmark",
             "scbe",
-            "sacred-tongues",
+            "education",
         ],
     }
     (out_dir / "dataset-metadata.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
+
+
+def resolve_input_path(path: Path) -> Path:
+    if path.is_file():
+        return path
+    if path == DEFAULT_INPUT:
+        for candidate in DEFAULT_INPUT_CANDIDATES[1:]:
+            if candidate.is_file():
+                return candidate
+    return path
 
 
 def main() -> int:
@@ -197,11 +216,13 @@ def main() -> int:
     parser.add_argument("--dataset-slug", type=str, default="scbe-bijective-tongue-coder-holdout")
     args = parser.parse_args()
 
-    if not args.input.is_file():
-        print(f"input not found: {args.input}", flush=True)
+    input_path = resolve_input_path(args.input)
+    if not input_path.is_file():
+        candidates = "\n".join(f"  - {p}" for p in DEFAULT_INPUT_CANDIDATES)
+        print(f"input not found: {args.input}\nchecked default candidates:\n{candidates}", flush=True)
         return 2
 
-    rows = build_clean_rows(args.input)
+    rows = build_clean_rows(input_path)
     if not rows:
         print("no rows extracted", flush=True)
         return 2
@@ -221,6 +242,7 @@ def main() -> int:
     summary = {
         "schema": "scbe_bijective_round_trip_assets_v1",
         "n_rows": len(rows),
+        "input": str(input_path.relative_to(REPO_ROOT)) if input_path.is_relative_to(REPO_ROOT) else str(input_path),
         "out_dir": str(out_dir.relative_to(REPO_ROOT)) if out_dir.is_relative_to(REPO_ROOT) else str(out_dir),
         "files": [p.name for p in sorted(out_dir.iterdir()) if p.is_file()],
     }
