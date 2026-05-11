@@ -14,10 +14,16 @@ import json
 import shutil
 import subprocess
 from datetime import datetime, timezone
+from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+import sys
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 DEFAULT_AIDER_ROOT = REPO_ROOT / "external" / "benchmarks" / "aider"
 DEFAULT_POLYGLOT_ROOT = DEFAULT_AIDER_ROOT / "tmp.benchmarks" / "polyglot-benchmark"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "artifacts" / "public_agentic_benchmark_setup" / "aider_polyglot"
@@ -119,6 +125,51 @@ def inspect_polyglot(polyglot_root: Path) -> dict[str, Any]:
     }
 
 
+def build_geoseal_adapter_preflight(polyglot: dict[str, Any], num_tests: int) -> dict[str, Any]:
+    """Build a deterministic SCBE gate packet before any scored Aider run."""
+    from src.coding_spine.command_compiler import compile_intent_to_plan
+
+    selected_languages = list(polyglot.get("languages_present") or [])
+    intent = (
+        "Run a tiny Aider Polyglot coding benchmark slice through a GeoSeal-controlled "
+        f"agent adapter; num_tests={num_tests}; languages={','.join(selected_languages) or 'none'}"
+    )
+    plan = compile_intent_to_plan(
+        intent=intent,
+        permission_mode="observe",
+        preferred_language="python",
+        requested_tool="read",
+    )
+    contract = {
+        "benchmark": "aider_polyglot",
+        "adapter": "geoseal_agent_adapter_preflight",
+        "permission_mode": "observe",
+        "selected_languages": selected_languages,
+        "num_tests": num_tests,
+        "requires_container_for_scored_run": True,
+        "must_capture": [
+            "model",
+            "edit_format",
+            "num_tests",
+            "exercise_dir",
+            "run_dir",
+            "stats_file",
+            "aider_results_json",
+            "chat_history",
+        ],
+    }
+    contract_sha = sha256(json.dumps(contract, sort_keys=True).encode("utf-8")).hexdigest()
+    return {
+        "schema_version": "scbe_geoseal_aider_adapter_preflight_v1",
+        "ok": bool(polyglot.get("complete_language_set") and plan["policy"].get("ok")),
+        "contract": contract,
+        "policy": plan["policy"],
+        "command": plan["command"],
+        "plan_sha256": plan["hashes"]["plan_sha256"],
+        "contract_sha256": contract_sha,
+    }
+
+
 def build_report(
     aider_root: Path = DEFAULT_AIDER_ROOT,
     polyglot_root: Path = DEFAULT_POLYGLOT_ROOT,
@@ -133,6 +184,7 @@ def build_report(
     if download_polyglot and not polyglot_root.exists():
         clone_polyglot_result = _clone_polyglot(polyglot_root)
     polyglot = inspect_polyglot(polyglot_root)
+    geoseal_preflight = build_geoseal_adapter_preflight(polyglot, num_tests)
     uv_present = shutil.which("uv") is not None
 
     help_result = None
@@ -161,6 +213,8 @@ def build_report(
         blockers.append("Aider Polyglot exercise checkout is missing.")
     elif not polyglot["complete_language_set"]:
         blockers.append("Aider Polyglot checkout is missing one or more expected language directories.")
+    if not geoseal_preflight["ok"]:
+        blockers.append("GeoSeal adapter preflight did not pass.")
     if help_result is not None and not help_result["ok"]:
         blockers.append("Aider benchmark --help failed in the isolated uv environment.")
     if smoke_result is not None and not smoke_result["ok"]:
@@ -177,6 +231,7 @@ def build_report(
         "polyglot_repo_url": POLYGLOT_REPO_URL,
         "clone_polyglot_result": clone_polyglot_result,
         "polyglot": polyglot,
+        "geoseal_adapter_preflight": geoseal_preflight,
         "uv_present": uv_present,
         "python_version": python_version,
         "num_tests": num_tests,
@@ -190,8 +245,8 @@ def build_report(
             "Full scoring needs a selected model/provider, budget, logs, patches, and containerized execution.",
         ],
         "next_steps": [
-            "Run this same smoke in the remote Docker workflow to prove the public runner lane.",
-            "Add a GeoSeal adapter invocation before any scored Aider Polyglot run.",
+            "Run scored Aider Polyglot only after this GeoSeal adapter preflight is attached to the artifact packet.",
+            "Convert the GeoSeal preflight contract into the scored-run adapter wrapper.",
             "Keep full Aider Polyglot scoring out of the local disk lane unless Docker and space are available.",
         ],
         "blockers": blockers,
@@ -208,6 +263,7 @@ def build_report(
 def render_markdown(payload: dict[str, Any]) -> str:
     help_ok = None if payload["help_result"] is None else payload["help_result"]["ok"]
     smoke_ok = None if payload["smoke_result"] is None else payload["smoke_result"]["ok"]
+    preflight = payload["geoseal_adapter_preflight"]
     lines = [
         "# Aider Polyglot Smoke",
         "",
@@ -219,6 +275,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"Languages: `{payload['polyglot']['language_count']}/6`",
         f"Help check: `{help_ok}`",
         f"No-model smoke: `{smoke_ok}`",
+        f"GeoSeal adapter preflight: `{preflight['ok']}`",
         f"Full scoring ready: `{payload['full_scoring_ready']}`",
         "",
         "## Claim",
@@ -229,6 +286,17 @@ def render_markdown(payload: dict[str, Any]) -> str:
         "",
     ]
     lines.extend(f"- {item}" for item in payload["limits"])
+    lines.extend(
+        [
+            "",
+            "## GeoSeal Adapter Preflight",
+            "",
+            f"- schema: `{preflight['schema_version']}`",
+            f"- policy: `{preflight['policy']['decision']}`",
+            f"- command: `{preflight['command']['key']}`",
+            f"- contract_sha256: `{preflight['contract_sha256']}`",
+        ]
+    )
     if payload["blockers"]:
         lines.extend(["", "## Blockers", ""])
         lines.extend(f"- {item}" for item in payload["blockers"])
