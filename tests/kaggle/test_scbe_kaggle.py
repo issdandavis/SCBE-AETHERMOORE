@@ -174,7 +174,7 @@ def test_list_my_datasets_shapes_results(sk) -> None:
     fake_ds = MagicMock(ref="me/x", title="X", totalBytes=100, lastUpdated="2026-05-11", isPrivate=True)
     api.dataset_list.return_value = [fake_ds]
     rows = bridge.list_my_datasets(limit=10)
-    api.dataset_list.assert_called_once_with(mine=True, page_size=10)
+    api.dataset_list.assert_called_once_with(mine=True)
     assert rows == [{"ref": "me/x", "title": "X", "size": 100, "last_updated": "2026-05-11", "is_private": True}]
 
 

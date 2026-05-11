@@ -155,7 +155,7 @@ class KaggleBridge:
     def list_my_datasets(self, limit: int = 50) -> list[dict]:
         api = self._get_api()
         # The CLI surface returns Dataset objects; convert to dicts.
-        raw = api.dataset_list(mine=True, page_size=limit)
+        raw = api.dataset_list(mine=True)
         out: list[dict] = []
         for ds in raw[:limit]:
             out.append(
