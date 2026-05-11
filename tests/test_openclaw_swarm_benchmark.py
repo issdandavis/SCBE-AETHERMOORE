@@ -336,7 +336,11 @@ def test_geometric_consensus_is_advisory_not_a_score_gate():
                 "focus_paths": "scripts/file.py",
                 "agent_set": "openclaw",
                 "cloud_policy": {"allow_ollama_cloud": False},
-                "runtime": {"models": ["openclaw:latest"], "lanes": ["01-verification"], "run_dir": "artifacts/run"},
+                "runtime": {
+                    "models": ["openclaw:latest"],
+                    "lanes": ["01-verification"],
+                    "run_dir": "artifacts/run",
+                },
                 "gate_state": {
                     "completion_state": "blocked_correctly",
                     "quality_flags": {"evidence_symbol_not_found": 1},
@@ -551,7 +555,10 @@ def test_kaggle_winner_loop_groups_stage_quality_and_cloud_policy():
         },
     ]
     module.build_summary(results)
-    report = {"cases": results, "weakness_loop": module.build_weakness_loop({"cases": results})}
+    report = {
+        "cases": results,
+        "weakness_loop": module.build_weakness_loop({"cases": results}),
+    }
 
     loop = module.build_kaggle_winner_loop(report)
 

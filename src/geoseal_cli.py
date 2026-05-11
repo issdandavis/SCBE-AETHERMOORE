@@ -1745,11 +1745,9 @@ def cmd_domino(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(payload, indent=2))
         return 0
-
     chain = payload.get("chain") or []
     print(
-        f"{payload['schema']} complete={payload['summary']['complete']} "
-        f"chain_length={payload['summary']['chain_length']}"
+        f"{payload['schema']} complete={payload['summary']['complete']} chain_length={payload['summary']['chain_length']}"
     )
     print("chain=" + " -> ".join(f"{tile['tile_id']}({tile['left']}|{tile['right']})" for tile in chain))
     if payload.get("blocked"):
@@ -1805,7 +1803,12 @@ def cmd_loop_dispatch(args: argparse.Namespace) -> int:
 
 
 def cmd_assist(args: argparse.Namespace) -> int:
-    from scripts.system.micro_agent_assist import build_advice, post_packet, render_text, resolve_bus
+    from scripts.system.micro_agent_assist import (
+        build_advice,
+        post_packet,
+        render_text,
+        resolve_bus,
+    )
 
     repo_root = Path(args.repo_root).resolve()
     bus_path = resolve_bus(repo_root, Path(args.bus) if args.bus else None)
@@ -2196,7 +2199,16 @@ def cmd_shell(args: argparse.Namespace) -> int:
     )
     if TIER_RANK[gate.tier] > TIER_RANK[args.max_tier]:
         if args.json:
-            print(json.dumps({"version": "geoseal-shell-v1", "gate": gate.to_dict(), "ran": False}, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "version": "geoseal-shell-v1",
+                        "gate": gate.to_dict(),
+                        "ran": False,
+                    },
+                    indent=2,
+                )
+            )
         else:
             print(f"[gate] {gate.tier}: blocked nested command")
             for finding in gate.findings:
@@ -2483,7 +2495,8 @@ class RouteCommand(BoundCommand):
         description="MANUAL mode: SLM never called, requires --op-name and --dst-tongue",
     )
     op_name: Optional[str] = Field(
-        None, description="Pin the lexicon op (e.g. add, mul, xor) — skips band+op SLM stages"
+        None,
+        description="Pin the lexicon op (e.g. add, mul, xor) — skips band+op SLM stages",
     )
     band: Optional[_Literal["ARITHMETIC", "LOGIC", "COMPARISON", "AGGREGATION"]] = Field(
         None, description="Pin the operation band — skips band SLM stage"
@@ -2745,7 +2758,8 @@ class PromoteCommand(BoundCommand):
         description="Alias name to register (lowercase letters/digits/hyphens, max 64 chars)",
     )
     digest: Optional[str] = Field(
-        None, description="Specific ledger digest to promote (use `geoseal promotions` to list)"
+        None,
+        description="Specific ledger digest to promote (use `geoseal promotions` to list)",
     )
     latest: bool = Field(False, description="Promote the current top candidate (highest count)")
     ledger_path: str = Field(".scbe/route_ledger.jsonl", description="Path to the route promotion ledger")
@@ -4743,7 +4757,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="ko",
         help="Sacred Tongue used for seam canonicalization (default: ko)",
     )
-    p_swarm_exec.add_argument("--execute", action="store_true", help="Actually run the merged module through the gate")
+    p_swarm_exec.add_argument(
+        "--execute",
+        action="store_true",
+        help="Actually run the merged module through the gate",
+    )
     p_swarm_exec.add_argument("--cwd", default=None, help="Working directory for the merged-module subprocess")
     p_swarm_exec.add_argument("--timeout", type=float, default=30.0)
     p_swarm_exec.add_argument(
