@@ -37,6 +37,8 @@ def test_aider_polyglot_plan_report_is_non_scoring(tmp_path: Path) -> None:
     assert payload["polyglot_repo_url"] == "https://github.com/Aider-AI/polyglot-benchmark.git"
     assert payload["full_scoring_ready"] is False
     assert "not a public leaderboard score" in payload["claim_allowed"]
+    assert payload["geoseal_adapter_preflight"]["schema_version"] == "scbe_geoseal_aider_adapter_preflight_v1"
+    assert payload["geoseal_adapter_preflight"]["policy"]["decision"] == "ALLOW"
     assert "Aider checkout is missing benchmark/benchmark.py." in payload["blockers"]
     assert Path(report["json"]).exists()
     assert Path(report["markdown"]).exists()
@@ -80,3 +82,21 @@ def test_aider_polyglot_cli_plan_only(tmp_path: Path) -> None:
     assert payload["execute"] is False
     assert payload["full_scoring_ready"] is False
     assert payload["json"].endswith("latest_aider_polyglot_smoke.json")
+    report_payload = json.loads(Path(payload["json"]).read_text(encoding="utf-8"))
+    assert report_payload["geoseal_adapter_preflight"]["contract"]["adapter"] == "geoseal_agent_adapter_preflight"
+
+
+def test_geoseal_preflight_passes_with_complete_polyglot_inventory(tmp_path: Path) -> None:
+    module = _load_module()
+    polyglot = tmp_path / "polyglot-benchmark"
+    for language in ["cpp", "go", "java", "javascript", "python", "rust"]:
+        language_path = polyglot / language
+        language_path.mkdir(parents=True)
+        (language_path / "README.md").write_text(language, encoding="utf-8")
+
+    preflight = module.build_geoseal_adapter_preflight(module.inspect_polyglot(polyglot), num_tests=1)
+
+    assert preflight["ok"] is True
+    assert preflight["policy"]["decision"] == "ALLOW"
+    assert preflight["command"]["key"] == "explain_route_json"
+    assert preflight["contract"]["must_capture"]
