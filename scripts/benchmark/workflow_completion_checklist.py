@@ -309,13 +309,36 @@ def _completion_items(known_failures: list[dict[str, Any]]) -> list[dict[str, An
     return base
 
 
+def _result_paths(artifact_root: Path) -> list[Path]:
+    diagnostics_dir = artifact_root / "diagnostics"
+    diagnostics_results = sorted(diagnostics_dir.glob("*.results.json")) if diagnostics_dir.exists() else []
+    if diagnostics_results:
+        return diagnostics_results
+    return [
+        path
+        for path in sorted(artifact_root.rglob("*.results.json"))
+        if path.name != ".aider.results.json" and "known_fail_retry_prompts" not in path.parts
+    ]
+
+
+def _recovered_after_retry(outcomes: Any, classes: list[str]) -> bool:
+    return (
+        isinstance(outcomes, list)
+        and bool(outcomes)
+        and any(item is False for item in outcomes)
+        and outcomes[-1] is True
+        and "retry_recovered" in classes
+    )
+
+
 def build_checklist(artifact_root: Path, output_root: Path) -> dict[str, Any]:
     latest_stats = _find_latest_stats(artifact_root)
     stats_text = _read_text(latest_stats) if latest_stats else ""
     stats = _extract_stats(stats_text)
 
     known_failures = []
-    for result_path in sorted(artifact_root.rglob("*.results.json")):
+    recovered_misses = []
+    for result_path in _result_paths(artifact_root):
         result = _load_json(result_path)
         if not result:
             continue
@@ -333,32 +356,35 @@ def build_checklist(artifact_root: Path, output_root: Path) -> dict[str, Any]:
         task = _task_from_stem(stem)
         classes = _classify_failure(result, chat_text)
         failure_lines = _extract_failure_lines(chat_text)
-        known_failures.append(
-            {
-                "id": stem,
-                "task": task,
-                "language": language,
-                "model": result.get("model") or stats.get("model"),
-                "edit_format": result.get("edit_format") or stats.get("edit_format"),
-                "tests_outcomes": outcomes,
-                "failure_classes": classes,
-                "evidence": {
-                    "result_json": str(result_path),
-                    "chat_history": str(chat_path) if chat_path.exists() else None,
-                    "failure_lines": failure_lines,
-                },
-                "five_w": {
-                    "what": f"{language}/{task} did not pass the executable benchmark tests.",
-                    "where": str(result.get("testdir") or result_path.parent),
-                    "when": stats.get("date") or _utc_now(),
-                    "who": result.get("model") or stats.get("model") or "unknown model",
-                    "why": ", ".join(classes),
-                    "how_to_retry": "preserve passing tests, repair only the failing invariant, rerun the exact task tests",
-                },
-                "help_plan": _help_plan(language, task, classes, failure_lines),
-                "retry_cycle": _retry_cycle(language, task, classes),
-            }
-        )
+        miss = {
+            "id": stem,
+            "task": task,
+            "language": language,
+            "model": result.get("model") or stats.get("model"),
+            "edit_format": result.get("edit_format") or stats.get("edit_format"),
+            "tests_outcomes": outcomes,
+            "failure_classes": classes,
+            "recovered": _recovered_after_retry(outcomes, classes),
+            "evidence": {
+                "result_json": str(result_path),
+                "chat_history": str(chat_path) if chat_path.exists() else None,
+                "failure_lines": failure_lines,
+            },
+            "five_w": {
+                "what": f"{language}/{task} did not pass the executable benchmark tests.",
+                "where": str(result.get("testdir") or result_path.parent),
+                "when": stats.get("date") or _utc_now(),
+                "who": result.get("model") or stats.get("model") or "unknown model",
+                "why": ", ".join(classes),
+                "how_to_retry": "preserve passing tests, repair only the failing invariant, rerun the exact task tests",
+            },
+            "help_plan": _help_plan(language, task, classes, failure_lines),
+            "retry_cycle": _retry_cycle(language, task, classes),
+        }
+        if miss["recovered"]:
+            recovered_misses.append(miss)
+        else:
+            known_failures.append(miss)
 
     payload = {
         "schema_version": SCHEMA_VERSION,
@@ -368,11 +394,14 @@ def build_checklist(artifact_root: Path, output_root: Path) -> dict[str, Any]:
         "stats": stats,
         "known_failure_count": len(known_failures),
         "known_failures": known_failures,
+        "recovered_miss_count": len(recovered_misses),
+        "recovered_misses": recovered_misses,
         "completion_status": "blocked_known_fails" if known_failures else "ready_to_claim_done",
         "completion_checklist": _completion_items(known_failures),
         "claim_guidance": (
-            "Claim harness execution only when known failures exist; claim benchmark task success only when "
-            "known_failure_count is zero and all required checklist items pass."
+            "Claim harness execution when the workflow completed. Claim benchmark task success only when "
+            "known_failure_count is zero and all required checklist items pass. Recovered misses are learning "
+            "packets, not blockers."
         ),
         "workingness_policy": {
             "consensus_role": "advisory_only",
@@ -397,6 +426,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"Generated: `{payload['created_at']}`",
         f"Status: `{payload['completion_status']}`",
         f"Known failures: `{payload['known_failure_count']}`",
+        f"Recovered misses: `{payload.get('recovered_miss_count', 0)}`",
         "",
         "## Required Checks",
         "",
@@ -445,6 +475,24 @@ def render_markdown(payload: dict[str, Any]) -> str:
         lines.append("")
         lines.append(f"Next retry prompt: {failure['retry_cycle']['next_retry_prompt']}")
         lines.append("")
+    lines.extend(["## Recovered Misses", ""])
+    if not payload.get("recovered_misses"):
+        lines.append("- None")
+    for failure in payload.get("recovered_misses", []):
+        lines.extend(
+            [
+                f"### {failure['id']}",
+                "",
+                f"- task: `{failure['language']}/{failure['task']}`",
+                f"- model: `{failure['model']}`",
+                f"- classes: `{', '.join(failure['failure_classes'])}`",
+                f"- outcomes: `{failure['tests_outcomes']}`",
+                f"- result: `{failure['evidence']['result_json']}`",
+                "",
+                "This miss recovered inside the run. Keep it as training signal and avoid blocking completion.",
+                "",
+            ]
+        )
     lines.extend(["## Claim Guidance", "", payload["claim_guidance"], ""])
     lines.extend(
         [

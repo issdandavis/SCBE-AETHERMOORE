@@ -94,3 +94,40 @@ def test_completion_checklist_ready_when_no_failures(tmp_path: Path) -> None:
     assert payload["completion_status"] == "ready_to_claim_done"
     assert payload["known_failure_count"] == 0
     assert all(item["status"] in {"pass", "not_needed"} for item in payload["completion_checklist"])
+
+
+def test_completion_checklist_keeps_recovered_miss_without_blocking(tmp_path: Path) -> None:
+    module = _load_module()
+    artifact_root = tmp_path / "artifacts"
+    diagnostics = artifact_root / "diagnostics"
+    run_dir = artifact_root / "run" / "python" / "exercises" / "practice" / "dominoes"
+    diagnostics.mkdir(parents=True)
+    run_dir.mkdir(parents=True)
+    result = {
+        "testcase": "dominoes",
+        "model": "openai/Qwen/Qwen2.5-Coder-32B-Instruct",
+        "edit_format": "whole",
+        "tests_outcomes": [False, True],
+        "syntax_errors": 0,
+        "indentation_errors": 0,
+        "num_malformed_responses": 0,
+        "test_timeouts": 0,
+    }
+    (diagnostics / "python_exercises_practice_dominoes.results.json").write_text(
+        json.dumps(result),
+        encoding="utf-8",
+    )
+    (diagnostics / "python_exercises_practice_dominoes.chat.history.md").write_text(
+        "FAILED dominoes_test.py::DominoesTest::test_can_t_be_chained\n",
+        encoding="utf-8",
+    )
+    (run_dir / ".aider.results.json").write_text(json.dumps(result), encoding="utf-8")
+
+    report = module.build_checklist(artifact_root=artifact_root, output_root=tmp_path / "out")
+    payload = report["payload"]
+
+    assert payload["completion_status"] == "ready_to_claim_done"
+    assert payload["known_failure_count"] == 0
+    assert payload["recovered_miss_count"] == 1
+    assert payload["recovered_misses"][0]["id"] == "python_exercises_practice_dominoes"
+    assert ".aider" not in {item["id"] for item in payload["known_failures"] + payload["recovered_misses"]}
