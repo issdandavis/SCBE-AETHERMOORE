@@ -1,0 +1,84 @@
+{
+  "schema": "scbe_agentic_pazaak_cards_v1",
+  "description": "Pazaak-inspired bounded action cards for agentic task routing. Cards are small deterministic moves over a bitboard-style task state.",
+  "symbols": {
+    "+1": "constructive/amplify",
+    "-1": "destructive/contract",
+    "+0": "neutral-pass/abstain-continue",
+    "-0": "neutral-hold/abstain-quarantine"
+  },
+  "cards": [
+    {
+      "id": "stand_hold",
+      "symbol": "-0",
+      "name": "Stand Hold",
+      "effect": "Hold a risky or under-evidenced lane without discarding it.",
+      "risk_delta": -1,
+      "value_delta": 0,
+      "best_for": ["high_risk", "missing_evidence", "needs_human"]
+    },
+    {
+      "id": "pass_continue",
+      "symbol": "+0",
+      "name": "Pass Continue",
+      "effect": "Leave a lane active when no intervention is needed.",
+      "risk_delta": 0,
+      "value_delta": 0,
+      "best_for": ["already_clean", "low_risk"]
+    },
+    {
+      "id": "focus_plus",
+      "symbol": "+1",
+      "name": "Focus Plus",
+      "effect": "Attach narrow context or focus paths to improve model signal.",
+      "risk_delta": -1,
+      "value_delta": 2,
+      "best_for": ["context_noise", "weak_model", "repo_large"]
+    },
+    {
+      "id": "verify_minus_risk",
+      "symbol": "-1",
+      "name": "Verify Minus Risk",
+      "effect": "Run deterministic verifier, lookup table, tests, or parser gate before promotion.",
+      "risk_delta": -3,
+      "value_delta": 1,
+      "best_for": ["unverified", "high_risk", "benchmark"]
+    },
+    {
+      "id": "swap_lane",
+      "symbol": "+1",
+      "name": "Swap Lane",
+      "effect": "Move the task to a better agent/model lane while preserving artifacts.",
+      "risk_delta": -1,
+      "value_delta": 1,
+      "best_for": ["wrong_agent", "model_mismatch", "stalled"]
+    },
+    {
+      "id": "double_team",
+      "symbol": "+1",
+      "name": "Double Team",
+      "effect": "Run two independent agents on the same bounded subproblem and compare.",
+      "risk_delta": 1,
+      "value_delta": 3,
+      "best_for": ["high_value", "ambiguous", "architecture"]
+    },
+    {
+      "id": "discard_branch",
+      "symbol": "-1",
+      "name": "Discard Branch",
+      "effect": "Prune a low-value or repeatedly failing branch.",
+      "risk_delta": -2,
+      "value_delta": -1,
+      "best_for": ["low_value", "repeated_fail", "off_scope"]
+    },
+    {
+      "id": "claim_territory",
+      "symbol": "+1",
+      "name": "Claim Territory",
+      "effect": "Assign ownership of a repo/file/domain region to one lane to prevent conflicts.",
+      "risk_delta": -2,
+      "value_delta": 2,
+      "best_for": ["multi_agent", "file_conflict", "go_influence"]
+    }
+  ]
+}
