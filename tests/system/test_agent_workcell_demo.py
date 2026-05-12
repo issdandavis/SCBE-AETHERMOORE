@@ -4,9 +4,7 @@ import scripts.system.agent_workcell_demo as demo
 from agents.agent_bus_schema import validate_log
 
 
-def test_workcell_writes_packets_report_and_markdown(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_workcell_writes_packets_report_and_markdown(tmp_path: Path, monkeypatch) -> None:
     def fake_run(
         command: str,
         cwd: Path,
@@ -35,13 +33,8 @@ def test_workcell_writes_packets_report_and_markdown(
     assert report["crosstalk"]["packet_count"] == 4
     assert report["collision_report"]["agent_slots"] == 100
     assert report["collision_report"]["collision_count"] == 0
-    assert report["coding_operating_system"]["agent_bus_policy"].startswith(
-        "all products"
-    )
-    assert (
-        "workflow_snapshot_starter"
-        in report["coding_operating_system"]["product_routes"]
-    )
+    assert report["coding_operating_system"]["agent_bus_policy"].startswith("all products")
+    assert "workflow_snapshot_starter" in report["coding_operating_system"]["product_routes"]
     assert {agent["agent_id"] for agent in report["agents"]} == {
         "planner",
         "builder",
@@ -52,9 +45,7 @@ def test_workcell_writes_packets_report_and_markdown(
     assert (tmp_path / "workcell-report.json").exists()
     assert (tmp_path / "leases.json").exists()
     assert (tmp_path / "crosstalk.jsonl").read_text(encoding="utf-8").count("\n") == 4
-    assert "Decision: **SHIP_READY**" in (tmp_path / "ship-report.md").read_text(
-        encoding="utf-8"
-    )
+    assert "Decision: **SHIP_READY**" in (tmp_path / "ship-report.md").read_text(encoding="utf-8")
     ship_report = (tmp_path / "ship-report.md").read_text(encoding="utf-8")
     assert "Bus event:" in ship_report
     assert report["artifacts"]["agent_bus_event_log"] in ship_report
@@ -65,9 +56,7 @@ def test_workcell_writes_packets_report_and_markdown(
     assert bus_report.rejected == 0
 
 
-def test_deploy_scenario_runs_deploy_gates_and_bus_event(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_deploy_scenario_runs_deploy_gates_and_bus_event(tmp_path: Path, monkeypatch) -> None:
     def fake_run(
         command: str,
         cwd: Path,
@@ -96,15 +85,10 @@ def test_deploy_scenario_runs_deploy_gates_and_bus_event(
     assert report["collision_report"]["agent_slots"] == 100
     assert report["collision_report"]["collision_count"] == 0
     assert "deployer" in {agent["agent_id"] for agent in report["agents"]}
-    assert any(
-        "smoke:remote-app-config" in item["command"]
-        for item in report["verification"]["checks"]
-    )
+    assert any("smoke:remote-app-config" in item["command"] for item in report["verification"]["checks"])
     assert report["deploy_policy"]["rollback"].startswith("failed gate")
     assert (tmp_path / "leases.json").exists()
-    assert "Scenario: `deploy`" in (tmp_path / "ship-report.md").read_text(
-        encoding="utf-8"
-    )
+    assert "Scenario: `deploy`" in (tmp_path / "ship-report.md").read_text(encoding="utf-8")
 
     bus_report = validate_log(tmp_path / "events.jsonl")
     assert bus_report.total == 1
@@ -123,9 +107,7 @@ def test_collision_report_detects_duplicate_write_scope() -> None:
     assert leases[0]["write_scope"][0] in report["collisions"]
 
 
-def test_workcell_blocks_when_any_verification_fails(
-    tmp_path: Path, monkeypatch
-) -> None:
+def test_workcell_blocks_when_any_verification_fails(tmp_path: Path, monkeypatch) -> None:
     def fake_run(
         command: str,
         cwd: Path,
