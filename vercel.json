@@ -25,6 +25,18 @@
       "dest": "/api/agent/launch.js"
     },
     {
+      "src": "^/index\\.html$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/?$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/index\\.html$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
       "src": "^/hire/?$",
       "dest": "/api/agent/hire.js"
     },

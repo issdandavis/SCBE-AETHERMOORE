@@ -35,6 +35,9 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "'docs/legal/terms.html'" in ignore_source
     assert ("^/$", "/api/agent/launch.js") in routes
     assert ("^/launch$", "/api/agent/launch.js") in routes
+    assert ("^/index\\.html$", "/api/agent/launch.js") in routes
+    assert ("^/SCBE-AETHERMOORE/?$", "/api/agent/launch.js") in routes
+    assert ("^/SCBE-AETHERMOORE/index\\.html$", "/api/agent/launch.js") in routes
     assert ("^/hire/?$", "/api/agent/hire.js") in routes
     assert ("^/SCBE-AETHERMOORE/hire\\.html$", "/api/agent/hire.js") in routes
     assert ("^/products/?$", "/api/agent/products.js") in routes
