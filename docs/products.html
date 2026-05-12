@@ -88,6 +88,27 @@
         width: min(var(--max), calc(100% - 32px));
         margin: 0 auto;
         padding: 72px 0 24px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
+        gap: 28px;
+        align-items: center;
+      }
+      .hero-copy {
+        min-width: 0;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .hero-image {
+        width: 100%;
+        min-height: 280px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        object-fit: cover;
+        box-shadow: var(--shadow);
       }
       .eyebrow {
         color: var(--accent);
@@ -177,6 +198,23 @@
         background: var(--good);
         color: #0a1714;
         border-color: transparent;
+      }
+      .btn.btn-primary {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: var(--good);
+        color: #0a1714;
+        border: 1px solid transparent;
+        font-weight: 700;
+      }
+      .btn.btn-secondary {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        color: var(--text);
+        font-weight: 700;
       }
 
       /* Find your fit widget */
@@ -585,6 +623,12 @@
           grid-template-columns: 1fr 1fr;
         }
       }
+      @media (max-width: 760px) {
+        .hero {
+          grid-template-columns: 1fr;
+          padding-top: 48px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -599,22 +643,30 @@
           <a href="hire.html">Hire</a>
           <a href="chat.html">Chat with Polly</a>
           <a href="agents.html">Agents</a>
-          <a href="https://github.com/issdandavis/SCBE-AETHERMOORE" target="_blank" rel="noopener"
-            >GitHub</a
-          >
         </nav>
       </div>
     </header>
 
     <main>
-      <section class="hero">
-        <div class="eyebrow">Find your fit</div>
-        <h1>Buy the right SCBE option for your AI agent workflow.</h1>
-        <p class="lead">
-          If you have an agent workflow and want a concrete first read, start with the $99 Workflow
-          Snapshot. If the workflow is already production-critical, use the $500 Governance
-          Snapshot.
-        </p>
+      <section id="offer" class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">Find your fit</div>
+          <h1>Buy the right SCBE option for your AI agent workflow.</h1>
+          <p class="lead">
+            If you have an agent workflow and want a concrete first read, start with the $99 Workflow
+            Snapshot. If the workflow is already production-critical, use the $500 Governance
+            Snapshot.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="workflow-snapshot.html">Start at $99</a>
+            <a class="btn btn-secondary" href="#fitCard">Use picker</a>
+          </div>
+        </div>
+        <img
+          class="hero-image"
+          src="hero.svg"
+          alt="AetherMoore SCBE product selection and workflow governance preview"
+        />
       </section>
 
       <section class="section-inner">
@@ -626,7 +678,7 @@
               observability gaps, and three next fixes without buying a large engagement first.
             </p>
             <div class="decision-actions">
-              <a class="primary" href="workflow-snapshot.html">Start at $99</a>
+              <a class="primary btn btn-primary" href="workflow-snapshot.html">Start at $99</a>
               <a href="workflow-snapshot.html#cash-app">Cash App</a>
               <a href="governance-snapshot.html">Compare the $500 scope</a>
             </div>
@@ -765,6 +817,29 @@
           </div>
         </div>
 
+        <section id="includes" aria-label="What the product path includes">
+          <h2>What the product path includes</h2>
+          <p class="lead">
+            The first paid service gives you concrete next steps, not an abstract platform pitch:
+            a decision record, threshold worksheet, pilot checklist, review notes format, manual
+            delivery path, and delivery recovery note.
+          </p>
+          <div class="market-grid">
+            <div class="market-cell">
+              <strong>Pick the fit</strong
+              ><span>Use the picker or start with the $99 Workflow Snapshot when the workflow is unclear.</span>
+            </div>
+            <div class="market-cell">
+              <strong>Get the first win</strong
+              ><span>Receive a short written read, missing controls, and three prioritized fixes.</span>
+            </div>
+            <div class="market-cell">
+              <strong>Upgrade only if needed</strong
+              ><span>Move to Heartbeat, Toolkit, or the $500 Snapshot after the first read proves value.</span>
+            </div>
+          </div>
+        </section>
+
         <!-- Price ladder -->
         <h2>What happens after a Snapshot purchase</h2>
         <div class="delivery">
@@ -800,6 +875,22 @@
         </div>
 
         <div class="self-check">
+          <h3>Good fit / not for</h3>
+          <p class="pwho">
+            Good fit: teams with an AI workflow, agent tool path, MCP stack, repo automation, or
+            prompt chain that needs a practical governance read before it grows.
+          </p>
+          <p class="pwho">
+            Not for: emergency incident response, custom enterprise procurement before scope is
+            agreed, consulting before a basic fit check, or buyers who need a full platform
+            deployment on day one.
+          </p>
+          <h3>Success check</h3>
+          <p class="pwho">
+            Success means you leave with one chosen offer, one clear delivery path, and either a
+            written risk read, a reusable template pack, or a support route you can act on.
+            Download products use a delivery link after checkout; services use manual intake.
+          </p>
           <h3>Free 60-second self-check before you buy</h3>
           <p class="pwho">If three or more are true, the Snapshot is probably worth doing:</p>
           <ul>
@@ -1127,67 +1218,84 @@
           </article>
         </div>
 
-        <!-- FAQ -->
-        <h2>Common questions</h2>
-        <details>
-          <summary>I'm not technical. Is this for me?</summary>
-          <p>
-            Yes — for the Snapshot and Heartbeat. You give us one workflow, we give you a written
-            read in plain language. You don't need to install or configure anything. The Toolkit and
-            Training Vault are for developers; everything else is for any team using AI tools.
-          </p>
-        </details>
-        <details>
-          <summary>Do I need to install your full system?</summary>
-          <p>
-            No. The Snapshot and Heartbeat are services — we run the analysis on our side. The
-            Toolkit ships as a ZIP with templates you can drop into your existing project. Only the
-            open-source repo path requires you to set things up yourself.
-          </p>
-        </details>
-        <details>
-          <summary>Will buying break anything I already have?</summary>
-          <p>
-            No. Nothing here modifies your existing setup. The Toolkit adds files to a folder you
-            choose. The Snapshot is a written report — it never touches your systems unless you ask
-            it to.
-          </p>
-        </details>
-        <details>
-          <summary>What if I'm not sure which one fits?</summary>
-          <p>
-            Use the picker at the top of this page. If you still aren't sure, open a chat with Polly
-            — she'll walk you through 2-3 questions and recommend a product. Or email
-            <a href="mailto:issdandavis7795@gmail.com" style="color: var(--accent)"
-              >issdandavis7795@gmail.com</a
-            >.
-          </p>
-        </details>
-        <details>
-          <summary>Can I get a refund?</summary>
-          <p>
-            The Snapshot is refundable any time before delivery. The Heartbeat is cancelable any
-            time. Tips and supporter subscriptions are not refunded but can be canceled. Toolkit and
-            Training Vault are digital downloads — refundable on a case-by-case basis if you can't
-            use them.
-          </p>
-        </details>
-        <details>
-          <summary>What does "governance" mean here?</summary>
-          <p>
-            It means: when you use AI tools, can you point to a written record of what the model
-            did, why, what the risks were, and what fix went in? AetherMoore tools produce that
-            record automatically and grade the workflow against five mathematical safety axioms.
-          </p>
-        </details>
+        <section id="faq" aria-label="Product FAQ">
+          <h2>Common questions</h2>
+          <details>
+            <summary>I'm not technical. Is this for me?</summary>
+            <p>
+              Yes — for the Snapshot and Heartbeat. You give us one workflow, we give you a written
+              read in plain language. You don't need to install or configure anything. The Toolkit and
+              Training Vault are for developers; everything else is for any team using AI tools.
+            </p>
+          </details>
+          <details>
+            <summary>Do I need to install your full system?</summary>
+            <p>
+              No. The Snapshot and Heartbeat are services — we run the analysis on our side. The
+              Toolkit ships as a ZIP with templates you can drop into your existing project. Only the
+              open-source repo path requires you to set things up yourself.
+            </p>
+          </details>
+          <details>
+            <summary>Will buying break anything I already have?</summary>
+            <p>
+              No. Nothing here modifies your existing setup. The Toolkit adds files to a folder you
+              choose. The Snapshot is a written report — it never touches your systems unless you ask
+              it to.
+            </p>
+          </details>
+          <details>
+            <summary>What if I'm not sure which one fits?</summary>
+            <p>
+              Use the picker at the top of this page, then compare the
+              <a href="use-cases/governed-ai-workflows.html" style="color: var(--accent)"
+                >governed workflow use case</a
+              >,
+              <a href="comparison/toolkit-vs-full-repo.html" style="color: var(--accent)"
+                >Toolkit vs Full Repo</a
+              >, and
+              <a href="proof/why-the-manual-exists.html" style="color: var(--accent)"
+                >manual delivery proof</a
+              >.
+            </p>
+          </details>
+          <details>
+            <summary>Where is the proof surface?</summary>
+            <p>
+              Review the <a href="redteam.html" style="color: var(--accent)">red-team page</a> and
+              <a href="proof/red-team-summary.html" style="color: var(--accent)"
+                >red-team summary</a
+              >
+              before buying a deeper service.
+            </p>
+          </details>
+          <details>
+            <summary>Can I get a refund?</summary>
+            <p>
+              The Snapshot is refundable any time before delivery. The Heartbeat is cancelable any
+              time. Tips and supporter subscriptions are not refunded but can be canceled. Toolkit and
+              Training Vault are digital downloads — refundable on a case-by-case basis if you can't
+              use them.
+            </p>
+          </details>
+          <details>
+            <summary>What does "governance" mean here?</summary>
+            <p>
+              It means: when you use AI tools, can you point to a written record of what the model
+              did, why, what the risks were, and what fix went in? AetherMoore tools produce that
+              record automatically and grade the workflow against five mathematical safety axioms.
+            </p>
+          </details>
+        </section>
 
         <div class="stuck">
-          <h3>Still not sure?</h3>
+          <h3>Final CTA</h3>
           <p>
-            Polly can walk you through the catalog in chat. Or send a one-paragraph note to Issac
-            directly.
+            Still not sure? Start with the $99 Workflow Snapshot for one practical read, or let
+            Polly walk you through the catalog in chat.
           </p>
-          <a class="primary" href="chat.html">Open Polly chat</a>
+          <a class="primary btn btn-primary" href="workflow-snapshot.html">Start $99 Snapshot</a>
+          <a href="chat.html">Open Polly chat</a>
           <a href="mailto:issdandavis7795@gmail.com?subject=Help%20me%20pick%20a%20product"
             >Email Issac</a
           >
