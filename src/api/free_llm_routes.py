@@ -165,6 +165,39 @@ def _append_bus_event(event: Dict[str, Any]) -> None:
         handle.write(json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n")
 
 
+def _public_dispatch_payload(response: Dict[str, Any]) -> Dict[str, Any]:
+    """Return only externally safe dispatch fields for API callers."""
+
+    data = response.get("data") if isinstance(response, dict) else {}
+    data = data if isinstance(data, dict) else {}
+    result = data.get("result")
+    result = result if isinstance(result, dict) else {}
+    bus_event = data.get("bus_event")
+    bus_event = bus_event if isinstance(bus_event, dict) else {}
+    return {
+        "status": response.get("status", "ok") if isinstance(response, dict) else "ok",
+        "data": {
+            "version": data.get("version", "hydra-free-llm-dispatch-v1"),
+            "user": data.get("user"),
+            "route": data.get("route"),
+            "result": {
+                "provider": result.get("provider"),
+                "model": result.get("model"),
+                "finish_reason": result.get("finish_reason"),
+                "text": result.get("text", ""),
+            },
+            "bus_event": {
+                "event_id": bus_event.get("event_id"),
+                "origin": bus_event.get("origin"),
+                "timestamp": bus_event.get("timestamp"),
+                "route": bus_event.get("route"),
+                "prompt": bus_event.get("prompt"),
+                "result": bus_event.get("result"),
+            },
+        },
+    }
+
+
 OLLAMA_LAUNCH_INTEGRATIONS: Dict[str, Dict[str, Any]] = {
     "claude": {"name": "Claude Code", "aliases": []},
     "cline": {"name": "Cline", "aliases": []},
@@ -554,4 +587,4 @@ def dispatch_free_llm_request(
 @free_llm_router.post("/dispatch")
 async def dispatch_free_llm(request: FreeLLMDispatchRequest, x_api_key: str = Header(...)):
     user = await verify_api_key(x_api_key)
-    return dispatch_free_llm_request(request, user=user, origin="outside")
+    return _public_dispatch_payload(dispatch_free_llm_request(request, user=user, origin="outside"))
