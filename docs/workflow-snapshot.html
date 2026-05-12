@@ -175,6 +175,13 @@
         padding: 18px;
         margin-top: 22px;
       }
+      .hero-image {
+        width: min(680px, 100%);
+        margin-top: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+      }
       .pay-grid {
         display: grid;
         grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.9fr);
@@ -218,7 +225,7 @@
       </nav>
     </div>
 
-    <header class="hero">
+    <header id="offer" class="hero">
       <div class="wrap">
         <div class="eyebrow">First paid step</div>
         <h1>Find the weak points in one AI agent workflow.</h1>
@@ -228,7 +235,7 @@
           missing recovery states, observability gaps, and three next fixes.
         </p>
         <div class="actions">
-          <a class="btn" href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" target="_blank" rel="noopener"
+          <a class="btn btn-primary" href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" target="_blank" rel="noopener"
             >Start for $99 with Stripe</a
           >
           <a class="btn secondary" href="#cash-app">Pay with Cash App</a>
@@ -238,7 +245,7 @@
         <div class="price-strip" aria-label="Offer ladder">
           <div class="price-box"><strong>Free</strong><span>Self-check and public docs.</span></div>
           <div class="price-box">
-            <strong>$99 starter</strong><span>Concise first-pass workflow read.</span>
+            <strong>$99 one-time</strong><span>Concise first-pass workflow read. No subscription.</span>
           </div>
           <div class="price-box">
             <strong>$500 full</strong><span>Fixed-scope written Governance Snapshot.</span>
@@ -247,6 +254,11 @@
         <div class="note">
           Stripe checkout is live for the exact $99 Workflow Snapshot SKU. Cash App <strong>$IzzyDDavis7</strong> remains available as a manual alternate payment path; include "Workflow Snapshot" in the note.
         </div>
+        <img
+          class="hero-image"
+          src="hero.svg"
+          alt="AetherMoore governed AI workflow visual"
+        />
       </div>
     </header>
 
@@ -280,6 +292,37 @@
                 <li>Developers who know something is brittle but need a clear failure map.</li>
                 <li>Anyone not ready for an enterprise platform or multi-thousand-dollar audit.</li>
               </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="includes">
+        <div class="wrap">
+          <div class="eyebrow">What is included</div>
+          <h2>A compact failure map, not a vague opinion.</h2>
+          <div class="grid">
+            <article class="card good">
+              <h3>Delivery package</h3>
+              <ul>
+                <li>One short decision record describing the workflow, risk level, and next move.</li>
+                <li>Threshold notes for when the workflow should stop, retry, escalate, or ask for help.</li>
+                <li>A pilot checklist for the next safe test run.</li>
+                <li>Review notes on tool boundaries, logs, recovery paths, and missing evidence.</li>
+                <li>A plain manual-style handoff so a technical or non-technical buyer can act on it.</li>
+                <li>Delivery through email or agreed handoff route after payment and intake are matched.</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>Good fit / not for</h3>
+              <p>
+                Good fit: one agent workflow that already exists or is close enough to describe. Best
+                when you want a practical first read before buying a larger review.
+              </p>
+              <p>
+                Not for: legal certification, compliance attestation, emergency incident response,
+                secret handling without a separate agreement, or unlimited consulting.
+              </p>
             </article>
           </div>
         </div>
@@ -373,6 +416,64 @@
                 <a class="btn secondary" href="hire.html">Ask first</a>
               </div>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="band">
+        <div class="wrap">
+          <div class="eyebrow">FAQ</div>
+          <h2>Common objections, answered plainly.</h2>
+          <div class="grid">
+            <article class="card">
+              <h3>Do I need to send secrets?</h3>
+              <p>
+                No. Start with a public repo, diagram, prompt chain, tool list, or redacted screenshots.
+                If deeper access is needed, handling rules are agreed first.
+              </p>
+            </article>
+            <article class="card">
+              <h3>What is the success check?</h3>
+              <p>
+                The first win is a clear list of failure points plus three fixes you can run next. If
+                the workflow is too thin to review, the memo says that instead of padding the report.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Can I use Cash App or Ko-fi?</h3>
+              <p>
+                Yes. Stripe is the structured checkout, Cash App is the direct manual path, and Ko-fi is
+                the low-pressure support path. The payment center lists all current routes.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Where can I inspect more first?</h3>
+              <p>
+                Read the <a href="use-cases/governed-ai-workflows.html">use cases</a>,
+                <a href="comparison/toolkit-vs-full-repo.html">toolkit comparison</a>,
+                <a href="proof/why-the-manual-exists.html">manual proof</a>,
+                <a href="redteam.html">red-team notes</a>, and
+                <a href="proof/red-team-summary.html">red-team summary</a>.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <div class="wrap">
+          <div class="eyebrow">Final CTA</div>
+          <h2>Start with one workflow and one written read.</h2>
+          <p class="lead">
+            The starter Snapshot is the smallest paid step: one workflow, one memo, three fixes,
+            and an upgrade path only if a deeper review is actually useful.
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" target="_blank" rel="noopener"
+              >Start the $99 read</a
+            >
+            <a class="btn secondary" href="payments.html">Open payment center</a>
+            <a class="btn secondary" href="legal/terms.html">Read terms</a>
           </div>
         </div>
       </section>

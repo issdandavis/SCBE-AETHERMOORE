@@ -134,7 +134,8 @@ def page_flags(html: str) -> dict[str, bool]:
     includes_text = includes_match.group(1) if includes_match else ""
 
     offer_match = re.search(
-        r"<section[^>]*\bid=\"offer\"[^>]*>([\s\S]*?)</section>", lower
+        r"<(?:section|header)[^>]*\bid=\"offer\"[^>]*>([\s\S]*?)</(?:section|header)>",
+        lower,
     )
     offer_text = offer_match.group(1) if offer_match else ""
 
@@ -144,9 +145,8 @@ def page_flags(html: str) -> dict[str, bool]:
 
     return {
         "has_h1": "<h1" in lower,
-        "has_price": ("$29" in html)
-        or ('"price": "29"' in html)
-        or ('"price":"29"' in html),
+        "has_price": bool(re.search(r"\$\s?\d+(?:[\d,]*)(?:\.\d{2})?", html))
+        or bool(re.search(r'"price"\s*:\s*"\d+(?:\.\d{2})?"', html)),
         "has_one_time": ("one-time" in lower) or ("one time" in lower),
         "has_no_subscription": "no subscription" in lower,
         "has_manual": "manual" in lower,
