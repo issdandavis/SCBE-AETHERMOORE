@@ -31,9 +31,7 @@ from src.security.secret_store import get_secret
 
 try:
     from scripts.gumroad_publish import GumroadPublisher, PRODUCTS, STRIPE_LINKS
-except (
-    ModuleNotFoundError
-):  # pragma: no cover - depends on optional local sales tooling
+except ModuleNotFoundError:  # pragma: no cover - depends on optional local sales tooling
     GumroadPublisher = None
     PRODUCTS = {}
     STRIPE_LINKS = {}
@@ -135,6 +133,7 @@ def _build_offers(include_gumroad: bool) -> List[Dict[str, Any]]:
                     if name:
                         gumroad_map[name] = str(row.get("short_url", "")).strip()
         except Exception:
+            # Optional Gumroad enrichment should not block core offer packaging.
             pass
 
     offers: List[Dict[str, Any]] = [
@@ -226,12 +225,8 @@ async def _dispatch(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Push latest leads + offers to n8n/Zapier monetization connectors."
-    )
-    parser.add_argument(
-        "--leads-json", default="", help="Optional leads JSON file path."
-    )
+    parser = argparse.ArgumentParser(description="Push latest leads + offers to n8n/Zapier monetization connectors.")
+    parser.add_argument("--leads-json", default="", help="Optional leads JSON file path.")
     parser.add_argument(
         "--top-leads",
         type=int,
@@ -252,9 +247,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-route-zapier", dest="route_zapier", action="store_false")
     parser.set_defaults(route_zapier=True)
 
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Do not send connector traffic."
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Do not send connector traffic.")
     parser.add_argument(
         "--output-dir",
         default="artifacts/monetization",
@@ -268,11 +261,7 @@ def main() -> int:
     day = _utc_now().strftime("%Y%m%d")
     run_id = f"monetization-connector-push-{_utc_stamp()}"
 
-    lead_path = (
-        Path(args.leads_json).resolve()
-        if args.leads_json.strip()
-        else _latest_lead_file()
-    )
+    lead_path = Path(args.leads_json).resolve() if args.leads_json.strip() else _latest_lead_file()
     leads: List[Dict[str, Any]] = []
     if lead_path and lead_path.exists():
         loaded = _load_json(lead_path, default=[])

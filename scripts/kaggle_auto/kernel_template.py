@@ -375,7 +375,7 @@ try:
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, use_fast=False)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-except BaseException as exc:
+except (Exception, SystemExit) as exc:
     fail_status("loading_tokenizer", exc)
 
 
@@ -497,7 +497,7 @@ try:
         quant_config = None
         compute_dtype = torch.float32
         load_kwargs = {"torch_dtype": torch.float32, "device_map": "cpu"}
-except BaseException as exc:
+except (Exception, SystemExit) as exc:
     fail_status("checking_device", exc)
 
 try:

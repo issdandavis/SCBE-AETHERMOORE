@@ -320,7 +320,7 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
         if text.strip():
             return {"text": text, "provider": "ollama", "model": ollama_model}
     except Exception:
-        pass
+        logger.debug("Ollama fallback unavailable", exc_info=True)
 
     # Try HuggingFace Inference API (free tier, chat completions)
     hf_token = os.environ.get("HF_TOKEN")
@@ -338,7 +338,7 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
             if text and text.strip():
                 return {"text": text.strip(), "provider": "huggingface", "model": hf_model}
         except Exception:
-            pass
+            logger.debug("HuggingFace fallback unavailable", exc_info=True)
 
     return None
 

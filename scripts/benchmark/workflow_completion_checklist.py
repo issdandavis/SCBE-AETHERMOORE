@@ -95,6 +95,7 @@ def _extract_stats(stats_text: str) -> dict[str, Any]:
             fields[key] = int(raw)
             continue
         except ValueError:
+            # Not an integer; try float parsing before preserving raw text.
             pass
         try:
             fields[key] = float(raw)

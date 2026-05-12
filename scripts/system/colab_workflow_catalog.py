@@ -11,7 +11,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_REPO = "issdandavis/SCBE-AETHERMOORE"
 CANONICAL_BRANCH = "main"
@@ -122,11 +121,7 @@ def _normalize(value: str) -> str:
 
 
 def _github_repo() -> str:
-    return (
-        CANONICAL_REPO.replace("\\", "/")
-        if CANONICAL_REPO
-        else "issdandavis/SCBE-AETHERMOORE"
-    )
+    return CANONICAL_REPO.replace("\\", "/") if CANONICAL_REPO else "issdandavis/SCBE-AETHERMOORE"
 
 
 def _github_branch() -> str:
@@ -147,6 +142,7 @@ def _github_branch() -> str:
         if result.returncode == 0 and branch:
             return branch
     except OSError:
+        # Git metadata is optional in packaged/catalog-only environments.
         pass
     return CANONICAL_BRANCH
 
@@ -214,12 +210,8 @@ def _print_text_list() -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Catalog SCBE Colab notebooks and derived Colab URLs"
-    )
-    parser.add_argument(
-        "action", nargs="?", default="list", choices=["list", "show", "url"]
-    )
+    parser = argparse.ArgumentParser(description="Catalog SCBE Colab notebooks and derived Colab URLs")
+    parser.add_argument("action", nargs="?", default="list", choices=["list", "show", "url"])
     parser.add_argument("name", nargs="?", default="")
     parser.add_argument("--json", action="store_true", help="Emit JSON")
     args = parser.parse_args()
