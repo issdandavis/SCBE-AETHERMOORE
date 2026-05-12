@@ -100,11 +100,17 @@ def test_public_offer_catalog_has_live_revenue_links() -> None:
     by_id = {offer["id"]: offer for offer in offers["offers"]}
 
     assert offers["schema"] == "aethermoore-offers-v1"
+    assert offers["payment_methods"]["card_checkout"]["provider"] == "Stripe hosted checkout"
+    assert offers["payment_methods"]["kofi"]["url"] == "https://ko-fi.com/izdandavis"
+    assert offers["payment_methods"]["cash_app"]["cashtag"] == "$IzzyDDavis7"
+    assert offers["payment_methods"]["manual_invoice"]["email"] == "aethermoregames@pm.me"
     assert by_id["tip_jar"]["checkout_url"] == "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
+    assert by_id["tip_jar"]["kofi_url"] == "https://ko-fi.com/izdandavis"
     assert by_id["service_credits"]["checkout_url"] == "https://ko-fi.com/izdandavis"
     assert by_id["service_credits"]["proof_url"].endswith("/service-credits.html")
     assert by_id["service_credits"]["intake_url"].endswith("/hosted-run.html")
     assert by_id["supporter_monthly"]["checkout_url"] == "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
+    assert by_id["supporter_monthly"]["kofi_url"] == "https://ko-fi.com/izdandavis"
     assert by_id["governance_snapshot"]["intake_url"].endswith("/governance-snapshot.html#intake")
     assert offers["usage_policy"]["service_fee_percent_range"] == [2, 5]
 
@@ -122,13 +128,36 @@ def test_public_app_config_explains_remote_update_boundary() -> None:
     assert config["features"]["hosted_run_intake"] is True
     assert config["endpoints"]["hosted_run_page"].endswith("/hosted-run.html")
     assert config["endpoints"]["polly_hosted_run"].endswith("/v1/polly/hosted-run")
+    assert config["endpoints"]["payment_center"].endswith("/payments.html")
+    assert config["features"]["unified_payment_center"] is True
+    assert config["fallbacks"]["payment_center"].endswith("/payments.html")
 
 
 def test_supporter_page_uses_direct_stripe_checkout_not_broken_api_bridge() -> None:
     page = (REPO_ROOT / "docs" / "supporter.html").read_text(encoding="utf-8")
 
     assert "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i" in page
+    assert "payments.html" in page
     assert "https://api.aethermoore.com/v1/billing/public-checkout" not in page
+
+
+def test_payment_center_exposes_all_live_payment_paths() -> None:
+    page = (REPO_ROOT / "docs" / "payments.html").read_text(encoding="utf-8")
+    hire_page = (REPO_ROOT / "docs" / "hire.html").read_text(encoding="utf-8")
+    sitemap = (REPO_ROOT / "docs" / "sitemap.xml").read_text(encoding="utf-8")
+    robots = (REPO_ROOT / "docs" / "robots.txt").read_text(encoding="utf-8")
+
+    assert "https://ko-fi.com/izdandavis" in page
+    assert "$IzzyDDavis7" in page
+    assert "static/cash-app-payment.png" in page
+    assert "https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" in page
+    assert "https://buy.stripe.com/eVqeVeaWu79ZgJi11Ydby0j" in page
+    assert "mailto:aethermoregames@pm.me?subject=AetherMoore%20invoice%20request" in page
+    assert "Do not send secrets" in page
+    assert "hire.html#small-business-liaison-intro" in page
+    assert 'id="small-business-liaison-intro"' in hire_page
+    assert "SCBE-AETHERMOORE/payments.html" in sitemap
+    assert "Payments: https://aethermoore.com/SCBE-AETHERMOORE/payments.html" in robots
 
 
 def test_vercel_bridge_exposes_remote_offer_and_app_config_endpoints() -> None:

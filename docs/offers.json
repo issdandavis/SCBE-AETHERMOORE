@@ -13,6 +13,10 @@
     "preferred_routing": "local/Ollama and deterministic harness first; paid providers only when needed"
   },
   "payment_methods": {
+    "card_checkout": {
+      "provider": "Stripe hosted checkout",
+      "note": "Structured card checkout for fixed offers, subscriptions, receipts, and product/service records."
+    },
     "kofi": {
       "url": "https://ko-fi.com/izdandavis",
       "note": "Primary low-friction support and service-credit path. Use when a buyer wants to help fund the work without a formal checkout flow."
@@ -21,6 +25,10 @@
       "cashtag": "$IzzyDDavis7",
       "qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
       "note": "For manual service purchases, include the offer name in the payment note."
+    },
+    "manual_invoice": {
+      "email": "aethermoregames@pm.me",
+      "note": "Use for Square/manual invoice, procurement, or buyer paperwork requests. Include the offer name, buyer email, and requested payment method."
     }
   },
   "offers": [

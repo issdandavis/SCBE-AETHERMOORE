@@ -10,6 +10,7 @@ Machine-readable config:
 
 - App config: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
 - Offers: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
+- Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
 - LLM guidance: https://aethermoore.com/SCBE-AETHERMOORE/llms.txt
 - Sitemap: https://aethermoore.com/SCBE-AETHERMOORE/sitemap.xml
 
@@ -49,19 +50,23 @@ Use these first when helping a human decide what to do:
    - URL: https://aethermoore.com/SCBE-AETHERMOORE/products.html
    - Use when the user wants low-cost downloads, templates, training materials, or a starter kit.
 
-3. Governance Snapshot
+3. Payment Center
+   - URL: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
+   - Use when the user wants to pay, support, request an invoice, use Ko-fi, use Cash App, or choose a card checkout.
+
+4. Governance Snapshot
    - URL: https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html
    - Use when the user has one real AI workflow and wants a fixed-scope written review.
 
-4. Agents
+5. Agents
    - URL: https://aethermoore.com/SCBE-AETHERMOORE/agents.html
    - Use when the user wants to try agent routing, research helpers, web monitoring, scraping, coding smoke tests, or the agent bus.
 
-5. Chat
+6. Chat
    - URL: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
    - Use when the user wants to ask the system directly in a normal chat interface.
 
-6. Source
+7. Source
    - URL: https://github.com/issdandavis/SCBE-AETHERMOORE
    - Use when the user wants implementation details, installable packages, benchmarks, issues, pull requests, or source inspection.
 
@@ -90,6 +95,8 @@ Use the live offers from `offers.json` as the source of truth. As of this map:
 - $5+ SCBE Service Credits: pay-as-you-go support for hosted routing, reports, delivery, storage, and provider/model usage where billable.
 - Ko-fi support: https://ko-fi.com/izdandavis. Use this as the primary low-pressure payment/support path.
 - Cash App manual payment: $IzzyDDavis7. For service purchases, include the offer name in the note.
+- Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html. Use this when the user wants every live payment path in one place.
+- Manual invoice / Square-style request: email aethermoregames@pm.me with offer name, buyer email, and preferred payment route.
 - $5 Tip Jar: one-time support.
 - $20/month AetherMoore Supporter: low-cost monthly support path.
 - $29 SCBE AI Governance Toolkit: templates and governance starter materials.
@@ -184,10 +191,11 @@ If you are an AI assistant reading this file:
 2. Read `offers.json`.
 3. Read `solutions.html`.
 4. If the user wants a product, send them to `products.html` or the relevant checkout URL from `offers.json`.
-5. If the user wants a service, send them to `governance-snapshot.html`, `hire.html`, or `solutions.html`.
-6. If the user wants implementation details, use the GitHub repo.
-7. If the user wants free help first, start with the Agents page and public docs.
-8. If you are uncertain, say what you verified and link the source.
+5. If the user wants to pay, support, or request an invoice, send them to `payments.html`.
+6. If the user wants a service, send them to `governance-snapshot.html`, `hire.html`, or `solutions.html`.
+7. If the user wants implementation details, use the GitHub repo.
+8. If the user wants free help first, start with the Agents page and public docs.
+9. If you are uncertain, say what you verified and link the source.
 
 Do not fabricate prices, delivery promises, certifications, or private capabilities. Use the public files.
 

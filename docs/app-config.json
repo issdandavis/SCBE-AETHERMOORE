@@ -25,6 +25,7 @@
   },
   "endpoints": {
     "site_home": "https://aethermoore.com/SCBE-AETHERMOORE/",
+    "payment_center": "https://aethermoore.com/SCBE-AETHERMOORE/payments.html",
     "offers_page": "https://aethermoore.com/SCBE-AETHERMOORE/offers/",
     "supporter_page": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
     "service_credits_page": "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
@@ -53,12 +54,15 @@
     "supporter_monthly": true,
     "workflow_snapshot_starter": true,
     "governance_snapshot": true,
+    "unified_payment_center": true,
     "zero_key_agent_bus": true,
     "local_download_storage": true,
     "user_owned_cloud_storage": true
   },
   "fallbacks": {
     "primary_offer": "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+    "payment_center": "https://aethermoore.com/SCBE-AETHERMOORE/payments.html",
+    "kofi_url": "https://ko-fi.com/izdandavis",
     "cash_app_cashtag": "$IzzyDDavis7",
     "support_email": "aethermoregames@pm.me"
   }
