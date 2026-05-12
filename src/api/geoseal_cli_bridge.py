@@ -178,9 +178,8 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         temp_dir: tempfile.TemporaryDirectory[str] | None = None
         try:
             if content is not None and str(content).strip() != "":
-                suffix = _safe_temp_suffix(body.get("source_name"), ".rs")
                 temp_dir = tempfile.TemporaryDirectory(prefix="geoseal_rt_")
-                temp_path = Path(temp_dir.name) / f"source{suffix}"
+                temp_path = Path(temp_dir.name) / "source.rs"
                 temp_path.write_bytes(str(content).encode("utf-8", errors="replace"))
                 source = str(temp_path)
             if not source:

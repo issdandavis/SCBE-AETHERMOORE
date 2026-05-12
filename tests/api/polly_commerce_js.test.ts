@@ -785,7 +785,7 @@ describe('polly chat handler — commerce path', () => {
     const body = res.body as { intent: string; actions: { url: string }[] };
     expect(body.intent).toBe('custom');
     expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
-    expect(body.actions.some((a) => /aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
+    expect(body.actions.some((a) => /^https:\/\/aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
   });
 
   it('routes "help me choose" to guide intent with picker + start-here actions', async () => {
