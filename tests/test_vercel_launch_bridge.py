@@ -114,9 +114,21 @@ def test_launch_page_links_to_public_docs_and_bridge_endpoints() -> None:
     assert hire_page.exists()
     assert "public', 'hire.html" in hire_handler
     assert "Content-Type" in hire_handler
+    assert "SCBE Customer Launch" in source
+    assert "Payment Center" in source
+    assert "Workflow Snapshot" in source
+    assert "Hosted Run Intake" in source
+    assert 'href="/payments"' in source
+    assert 'href="/products"' in source
+    assert 'href="/workflow-snapshot"' in source
+    assert 'href="/hosted-run"' in source
+    assert 'href="/service-credits"' in source
+    assert 'href="/supporter"' in source
     assert "/api/agent/health" in source
     assert "/api/agent/status?limit=5" in source
-    assert "https://aethermoore.com/SCBE-AETHERMOORE" in source
+    assert 'href="/agents"' in source
+    assert 'href="/chat"' in source
+    assert "support.html" not in source
 
 
 def test_download_bridge_serves_private_blob_with_delivery_token() -> None:
