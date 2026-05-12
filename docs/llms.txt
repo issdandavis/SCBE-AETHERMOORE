@@ -34,11 +34,25 @@ Free path:
 Low-cost path:
 
 - $5+ service credits.
+- Ko-fi support and service-credit path: https://ko-fi.com/izdandavis.
 - Cash App manual payment: $IzzyDDavis7.
 - $20/month supporter path.
 - $29 Toolkit.
 - $29 Training Vault.
 - $99 AI Agent Workflow Snapshot starter review: https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l
+
+Payment tone:
+
+- Present Ko-fi as the main low-pressure support path.
+- Present Cash App as direct manual payment.
+- Present Stripe as structured checkout for fixed offers and subscriptions.
+
+Federal posture:
+
+- Issac Davis is a CAGE-code verified small business owner.
+- CAGE: 1EXD5.
+- UEI: J4NXHM6N5F59.
+- Good fit language: post-quantum cryptographic metamaterial prototype, autonomous swarm hardware security, subcontracting, SBIR collaboration, and Small Business Liaison Officer conversations.
 
 Advanced path:
 
