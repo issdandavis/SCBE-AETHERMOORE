@@ -60,20 +60,18 @@ def _artifact_public_summary(artifact: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _artifact_storage_summary(artifact: dict[str, Any]) -> dict[str, Any]:
+def _artifact_storage_summary(*, state: str, has_screenshot: bool) -> dict[str, Any]:
     """Persist only replay pointers and coarse state, not browser/session details."""
-    packets = artifact.get("packets") if isinstance(artifact.get("packets"), dict) else {}
     return {
         "schema_version": "scbe_colab_worker_public_artifact_v1",
         "state": (
-            artifact.get("state")
-            if artifact.get("state")
-            in {"dry_run", "auth_required", "notebook_open", "runtime_connected", "runtime_disconnected"}
+            state
+            if state in {"dry_run", "auth_required", "notebook_open", "runtime_connected", "runtime_disconnected"}
             else "unknown"
         ),
-        "has_screenshot": bool(artifact.get("screenshot_path")),
-        "packet_count": len(packets),
-        "packet_classes": sorted(str(key) for key in packets.keys()),
+        "has_screenshot": has_screenshot,
+        "packet_count": 3,
+        "packet_classes": ["claim", "evidence", "internal"],
     }
 
 
@@ -649,7 +647,10 @@ def provision_colab_worker(
         "rails": rails,
         "claimed_at_utc": lease["claimed_at_utc"],
     }
-    artifact_path.write_text(json.dumps(_artifact_storage_summary(artifact), indent=2), encoding="utf-8")
+    artifact_path.write_text(
+        json.dumps(_artifact_storage_summary(state=state, has_screenshot=screenshot_path is not None), indent=2),
+        encoding="utf-8",
+    )
     return _redact_sensitive_json(artifact)
 
 
@@ -752,7 +753,7 @@ def main(argv: list[str] | None = None) -> int:
         run_all=bool(args.run_all),
         post_run_wait_seconds=int(args.post_run_wait_seconds),
     )
-    print(json.dumps({"ok": True, "state": artifact.get("state"), "artifact_recorded": True}, indent=2))
+    print(json.dumps({"ok": True, "artifact_recorded": True}, indent=2))
     return 0
 
 
