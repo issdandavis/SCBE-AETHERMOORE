@@ -1,8 +1,27 @@
 # Stripe Heartbeat Activation
 
 Generated: 2026-05-10
+Updated: 2026-05-12
 
-## Status
+## Live Status
+
+Live production objects created 2026-05-12:
+
+- Workflow Snapshot checkout URL: `https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l`
+- Workflow Snapshot Payment Link ID: `plink_1TW71yJTF2SuUODIqYFRU9JY`
+- Workflow Snapshot Price ID: `price_1TW71xJTF2SuUODIRvBZKUa9`
+- Governance Heartbeat checkout URL: `https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m`
+- Governance Heartbeat Payment Link ID: `plink_1TW71zJTF2SuUODICZLQCCS3`
+- Governance Heartbeat Price ID: `price_1TW71zJTF2SuUODIkHVk4Ws0`
+
+Set Vercel production environment variables:
+
+```text
+SCBE_PAYMENT_LINK_HEARTBEAT=https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m
+STRIPE_HEARTBEAT_PAYMENT_LINK_ID=plink_1TW71zJTF2SuUODICZLQCCS3
+```
+
+## Historical Sandbox Status
 
 The local Stripe connector is pointed at a sandbox account, not the live Stripe account.
 

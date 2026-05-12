@@ -111,7 +111,7 @@ def _campaign_items(offer: dict[str, Any]) -> list[dict[str, Any]]:
         "and three prioritized fixes."
     )
     payment_line = (
-        f"Start here: {proof_url}. Pay through Ko-fi/service credits: {checkout_url}. "
+        f"Start here: {proof_url}. Pay through Stripe checkout: {checkout_url}. "
         f"Cash App is also available: {cash_app}."
     )
     return [
@@ -190,7 +190,7 @@ def _campaign_items(offer: dict[str, Any]) -> list[dict[str, Any]]:
                 "Useful inputs include a repo link, agent routing diagram, prompt chain, MCP tool setup, or failed automation trace.\n\n"
                 f"Offer: {proof_url}\n"
                 f"Price: {price}\n"
-                f"Payment: Ko-fi/service credits or Cash App {cash_app}\n\n"
+                f"Payment: Stripe checkout or Cash App {cash_app}\n\n"
                 "This is intentionally small: one workflow, one readable memo, three prioritized fixes."
             ),
         },

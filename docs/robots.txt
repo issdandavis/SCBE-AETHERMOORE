@@ -9,3 +9,5 @@ Sitemap: https://aethermoore.com/SCBE-AETHERMOORE/sitemap.xml
 AI-Map: https://aethermoore.com/SCBE-AETHERMOORE/robot.html
 AI-Map-Source: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
 LLMs: https://aethermoore.com/SCBE-AETHERMOORE/llms.txt
+Privacy-Policy: https://aethermoore.com/SCBE-AETHERMOORE/legal/privacy.html
+Terms-of-Service: https://aethermoore.com/SCBE-AETHERMOORE/legal/terms.html
