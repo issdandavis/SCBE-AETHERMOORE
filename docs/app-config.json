@@ -1,6 +1,6 @@
 {
   "schema": "aethermoor-bus-app-config-v1",
-  "updated_at": "2026-05-09",
+  "updated_at": "2026-05-12",
   "app": {
     "name": "Aethermoor Bus",
     "package_name": "io.aethermoor.bus",
@@ -30,6 +30,8 @@
     "service_credits_page": "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
     "hosted_run_page": "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html",
     "solutions_page": "https://aethermoore.com/SCBE-AETHERMOORE/solutions.html",
+    "robot_map": "https://aethermoore.com/SCBE-AETHERMOORE/robot.md",
+    "robot_map_html": "https://aethermoore.com/SCBE-AETHERMOORE/robot.html",
     "governance_snapshot_page": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
     "offers_json": "https://aethermoore.com/SCBE-AETHERMOORE/offers.json",
     "agent_bridge_health": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/health",
