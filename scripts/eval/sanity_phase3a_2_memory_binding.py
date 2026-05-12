@@ -65,7 +65,7 @@ def main() -> int:
     print(f"{'helper':<22} {'self_cos':<10} {'best_other':<12} {'top_match':<22} {'OK'}")
     print("-" * 80)
     n_correct = 0
-    for i, (name, filler) in enumerate(helpers):
+    for i, (name, _filler) in enumerate(helpers):
         role_vec = mod.deterministic_role_vector(f"role::{name}", DIM)
         u = mod.circular_correlation_torch(role_vec, memory)
         # Cosine vs each filler in vocab (vocab is stacked in helper order)
