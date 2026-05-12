@@ -60,6 +60,23 @@ def _artifact_public_summary(artifact: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _artifact_storage_summary(artifact: dict[str, Any]) -> dict[str, Any]:
+    """Persist only replay pointers and coarse state, not browser/session details."""
+    packets = artifact.get("packets") if isinstance(artifact.get("packets"), dict) else {}
+    return {
+        "schema_version": "scbe_colab_worker_public_artifact_v1",
+        "state": (
+            artifact.get("state")
+            if artifact.get("state")
+            in {"dry_run", "auth_required", "notebook_open", "runtime_connected", "runtime_disconnected"}
+            else "unknown"
+        ),
+        "has_screenshot": bool(artifact.get("screenshot_path")),
+        "packet_count": len(packets),
+        "packet_classes": sorted(str(key) for key in packets.keys()),
+    }
+
+
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "colab_workers"
 DEFAULT_PROFILE_DIR = Path.home() / ".scbe-playwright-colab"
 
@@ -632,9 +649,8 @@ def provision_colab_worker(
         "rails": rails,
         "claimed_at_utc": lease["claimed_at_utc"],
     }
-    safe_artifact = _redact_sensitive_json(artifact)
-    artifact_path.write_text(json.dumps(safe_artifact, indent=2), encoding="utf-8")
-    return safe_artifact
+    artifact_path.write_text(json.dumps(_artifact_storage_summary(artifact), indent=2), encoding="utf-8")
+    return _redact_sensitive_json(artifact)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -704,9 +720,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.auth_bootstrap:
         print(
             json.dumps(
-                _redact_sensitive_json(
-                    open_auth_bootstrap(args.notebook, Path(args.profile_dir), args.browser_executable)
-                ),
+                {
+                    "ok": True,
+                    "state": open_auth_bootstrap(args.notebook, Path(args.profile_dir), args.browser_executable)[
+                        "state"
+                    ],
+                },
                 indent=2,
             )
         )
@@ -733,7 +752,7 @@ def main(argv: list[str] | None = None) -> int:
         run_all=bool(args.run_all),
         post_run_wait_seconds=int(args.post_run_wait_seconds),
     )
-    print(json.dumps(_artifact_public_summary(artifact), indent=2))
+    print(json.dumps({"ok": True, "state": artifact.get("state"), "artifact_recorded": True}, indent=2))
     return 0
 
 

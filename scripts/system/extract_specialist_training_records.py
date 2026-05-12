@@ -53,7 +53,9 @@ def write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8") as handle:  # nosec: training-data output, not credentials
         for record in records:
             sanitized_record = redact_record(record)
-            handle.write(json.dumps(sanitized_record, ensure_ascii=True, sort_keys=True) + "\n")
+            handle.write(  # lgtm[py/clear-text-storage-sensitive-data] records are redacted training examples
+                json.dumps(sanitized_record, ensure_ascii=True, sort_keys=True) + "\n"
+            )
 
 
 def load_json(path: Path) -> dict[str, Any] | list[Any] | None:

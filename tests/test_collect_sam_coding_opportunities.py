@@ -103,4 +103,5 @@ def test_dry_run_cli_does_not_require_key(monkeypatch):
     assert proc.returncode == 0, proc.stderr
     payload = json.loads(proc.stdout)
     assert payload["dry_run"] is True
-    assert payload["plan"]["api_key_present"] is False
+    assert payload["api_key_present"] is False
+    assert payload["query_count"] == 1
