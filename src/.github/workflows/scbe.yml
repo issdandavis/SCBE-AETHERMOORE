@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   axiom-verification:
     name: 'Axiom Compliance (A1-A12)'

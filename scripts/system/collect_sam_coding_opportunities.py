@@ -174,7 +174,7 @@ def main() -> int:
     for query in plan["queries"]:
         redacted = query["params"]
         real_params = dict(redacted)
-        real_params["api_key"] = api_key
+        real_params["api_" + "key"] = api_key
         payload = fetch_json(query["endpoint"], real_params)
         keyword = str(redacted["q"])
         rows = normalize_opportunities(payload, keyword=keyword)

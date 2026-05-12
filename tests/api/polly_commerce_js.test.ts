@@ -38,6 +38,10 @@ const hfUpload = require('../../api/_polly_hf_upload.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const rateLimit = require('../../api/_polly_rate_limit.js');
 
+function hostnameOf(value: string): string {
+  return new URL(value).hostname;
+}
+
 function loadCommerceWithEnv(env: Record<string, string>) {
   const modulePath = require.resolve('../../api/polly/commerce.js');
   const original: Record<string, string | undefined> = {};
@@ -517,7 +521,7 @@ describe('polly renderBookReply', () => {
     expect(out.text).toContain('Chapter 1');
     expect(out.text).toContain('Harmonic Wall');
     const buyAction = out.actions.find(
-      (a: { url?: string }) => typeof a.url === 'string' && a.url.includes('buy.stripe.com')
+      (a: { url?: string }) => typeof a.url === 'string' && hostnameOf(a.url) === 'buy.stripe.com'
     );
     expect(buyAction).toBeDefined();
   });
@@ -1028,9 +1032,7 @@ describe('polly hosted-run handler', () => {
     expect(
       body.hosted_run_packet.immediate_value.some((item) => item.url.includes('service-credits'))
     ).toBe(true);
-    expect(
-      body.hosted_run_packet.immediate_value.some((item) => item.url.includes('ko-fi.com'))
-    ).toBe(true);
+    expect(body.hosted_run_packet.immediate_value.some((item) => hostnameOf(item.url) === 'ko-fi.com')).toBe(true);
   });
 
   it('rejects hosted run intake without contact', async () => {

@@ -37,8 +37,6 @@ import {
   type ImmutableLaws,
   type EnforcementRequest,
   type OfflineRuntime,
-  type LocalKeySet,
-  type EnforcementContext,
   type GovernanceScalars,
 } from '../../src/governance/offline_mode.js';
 

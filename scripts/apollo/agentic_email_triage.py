@@ -107,6 +107,24 @@ class TriageResult:
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
+def _redacted_triage_result(result: TriageResult) -> dict:
+    """Return routing metadata without email bodies, drafts, sender PII, or subject text."""
+
+    return {
+        "msg_id": result.msg_id,
+        "agent": result.agent,
+        "confidence": result.confidence,
+        "urgency": result.urgency,
+        "action": result.action,
+        "tongue": result.tongue,
+        "timestamp": result.timestamp,
+        "summary_sha256": __import__("hashlib").sha256(result.summary.encode("utf-8", errors="replace")).hexdigest(),
+        "subject_chars": len(result.subject or ""),
+        "sender_domain": (result.sender.rsplit("@", 1)[-1] if "@" in result.sender else "unknown"),
+        "draft_reply_present": bool(result.draft_reply),
+    }
+
+
 def classify_with_llm(sender: str, subject: str, body: str, api_key: Optional[str] = None) -> dict:
     """Use Gemini to classify email intent and route to agentic employee.
 
@@ -272,7 +290,7 @@ def _dispatch_to_queue(triage: TriageResult):
                 triage.sender,
                 json.dumps(["inbox", triage.agent]),
                 json.dumps([]),
-                json.dumps(asdict(triage)),
+                json.dumps(_redacted_triage_result(triage)),
                 json.dumps({"queue": triage.agent, "action": triage.action}),
                 f"Agentic triage: {triage.agent} | confidence: {triage.confidence:.2f}",
                 True,
@@ -288,7 +306,7 @@ def _dispatch_to_queue(triage: TriageResult):
         conn.close()
         logger.info("Dispatched to %s (priority %s)", agent['name'], _urgency_to_priority(triage.urgency))
     except Exception as e:
-        logger.warning("Dispatch failed: %s", e)
+        logger.warning("Dispatch failed: %s", type(e).__name__)
 
 
 def _urgency_to_priority(urgency: str) -> int:
@@ -327,7 +345,7 @@ def main():
         print()
 
     if args.output:
-        Path(args.output).write_text(json.dumps([asdict(r) for r in results], indent=2))
+        Path(args.output).write_text(json.dumps([_redacted_triage_result(r) for r in results], indent=2))
         print(f"Results written to {args.output}")
 
 

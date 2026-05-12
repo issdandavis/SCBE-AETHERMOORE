@@ -10,7 +10,6 @@ examples/roundtable-demo.ts  /**
 import {
   SpiralverseProtocol,
   SacredTongue,
-  SecurityTier,
   classifyAction,
   getRequiredTongues,
   type ActionPayload,

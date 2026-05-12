@@ -1716,8 +1716,8 @@ async def startup_event():
     # Initialize HYDRA spine
     try:
         await init_hydra_spine()
-    except Exception as exc:
-        print(f"[HYDRA-API] Spine initialization failed (non-fatal): {exc}")
+    except Exception:
+        print("[HYDRA-API] Spine initialization failed (non-fatal)")
 
 
 if __name__ == "__main__":

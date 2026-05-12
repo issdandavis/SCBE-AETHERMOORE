@@ -140,7 +140,7 @@ function generateBundleId(): string {
  *
  * A4: Symmetry — all 6 encodings carry equivalent information.
  */
-function buildFECBlocks(payload: unknown, primaryTongue: BundleTongue): FECBlock[] {
+function buildFECBlocks(payload: unknown, _primaryTongue: BundleTongue): FECBlock[] {
   const payloadStr = typeof payload === 'string' ? payload : JSON.stringify(payload);
   const tongues: BundleTongue[] = ['KO', 'AV', 'RU', 'CA', 'UM', 'DR'];
 
