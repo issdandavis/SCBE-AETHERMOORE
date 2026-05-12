@@ -6,6 +6,8 @@
 !docs
 !docs/offers.json
 !docs/app-config.json
+!docs/robots.txt
+!docs/sitemap.xml
 !docs/solutions.html
 !docs/products.html
 !docs/start-here.html

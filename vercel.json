@@ -37,6 +37,38 @@
       "dest": "/api/agent/launch.js"
     },
     {
+      "src": "^/offers\\.json$",
+      "dest": "/api/agent/offers-file.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/offers\\.json$",
+      "dest": "/api/agent/offers-file.js"
+    },
+    {
+      "src": "^/app-config\\.json$",
+      "dest": "/api/agent/app-config-file.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/app-config\\.json$",
+      "dest": "/api/agent/app-config-file.js"
+    },
+    {
+      "src": "^/robots\\.txt$",
+      "dest": "/api/agent/robots.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robots\\.txt$",
+      "dest": "/api/agent/robots.js"
+    },
+    {
+      "src": "^/sitemap\\.xml$",
+      "dest": "/api/agent/sitemap.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/sitemap\\.xml$",
+      "dest": "/api/agent/sitemap.js"
+    },
+    {
       "src": "^/hire/?$",
       "dest": "/api/agent/hire.js"
     },
