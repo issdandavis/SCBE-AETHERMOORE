@@ -14,7 +14,9 @@ Live production objects created 2026-05-12:
 - Governance Heartbeat Payment Link ID: `plink_1TW71zJTF2SuUODICZLQCCS3`
 - Governance Heartbeat Price ID: `price_1TW71zJTF2SuUODIkHVk4Ws0`
 
-Set Vercel production environment variables:
+The public checkout URL and Payment Link ID are now baked in as safe public
+fallbacks. These Vercel production environment variables are still allowed as
+overrides, but the Heartbeat path no longer depends on setting them before use:
 
 ```text
 SCBE_PAYMENT_LINK_HEARTBEAT=https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m
@@ -46,7 +48,8 @@ In the live Stripe Dashboard:
    - not `https://buy.stripe.com/test_...`
 5. Copy the live Payment Link ID, which starts with `plink_`.
 
-Then set Vercel production environment variables:
+Then set Vercel production environment variables if you want to override the
+checked-in production defaults:
 
 ```text
 SCBE_PAYMENT_LINK_HEARTBEAT=https://buy.stripe.com/<live_heartbeat_subscription_link>
@@ -54,7 +57,9 @@ STRIPE_HEARTBEAT_PAYMENT_LINK_ID=plink_<live_heartbeat_payment_link_id>
 ```
 
 `SCBE_PAYMENT_LINK_HEARTBEAT` controls what Polly and the catalog give customers.
-`STRIPE_HEARTBEAT_PAYMENT_LINK_ID` lets the Stripe webhook classify the checkout as `polly_heartbeat_started`.
+`STRIPE_HEARTBEAT_PAYMENT_LINK_ID` lets the Stripe webhook classify the checkout
+as `polly_heartbeat_started`. If either variable is unset, the code falls back
+to the live 2026-05-12 Heartbeat link and `plink_1TW71zJTF2SuUODICZLQCCS3`.
 
 The commerce layer rejects `plink_...` and `https://buy.stripe.com/test_...` as public checkout overrides.
 
