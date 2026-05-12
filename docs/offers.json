@@ -9,6 +9,13 @@
     "fee_note": "Provider/model costs are passed through with a small 2-5% SCBE coordination fee where usage is billable.",
     "preferred_routing": "local/Ollama and deterministic harness first; paid providers only when needed"
   },
+  "payment_methods": {
+    "cash_app": {
+      "cashtag": "$IzzyDDavis7",
+      "qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+      "note": "For manual service purchases, include the offer name in the payment note."
+    }
+  },
   "offers": [
     {
       "id": "service_credits",
@@ -16,6 +23,10 @@
       "price_label": "$5+ pay-as-you-go",
       "type": "usage_credit",
       "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
       "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
       "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html",
       "status": "live"
@@ -44,6 +55,10 @@
       "price_label": "$99 starter",
       "type": "service",
       "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
       "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html",
       "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html#free-check",
       "status": "live_manual_checkout",

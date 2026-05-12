@@ -31,6 +31,7 @@
     "hosted_run_page": "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html",
     "solutions_page": "https://aethermoore.com/SCBE-AETHERMOORE/solutions.html",
     "workflow_snapshot_page": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html",
+    "cash_app_qr": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
     "robot_map": "https://aethermoore.com/SCBE-AETHERMOORE/robot.md",
     "robot_map_html": "https://aethermoore.com/SCBE-AETHERMOORE/robot.html",
     "governance_snapshot_page": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
@@ -54,6 +55,7 @@
   },
   "fallbacks": {
     "primary_offer": "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+    "cash_app_cashtag": "$IzzyDDavis7",
     "support_email": "aethermoregames@pm.me"
   }
 }
