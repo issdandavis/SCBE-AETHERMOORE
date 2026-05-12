@@ -18,12 +18,10 @@ import {
   type PQCStrategy,
   // TriStitch
   triStitch,
-  type TriStitchResult,
   // Geometric binding
   geometricFingerprint,
   bindKeyToGeometry,
   verifyGeometricBinding,
-  type GeoBoundKey,
   // Strategy executor
   executeStrategy,
   signWithStrategy,

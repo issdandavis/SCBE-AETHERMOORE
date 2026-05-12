@@ -495,7 +495,6 @@ try:
         else:
             MAX_STEPS = min(MAX_STEPS, CPU_SMOKE_MAX_STEPS)
         quant_config = None
-        compute_dtype = torch.float32
         load_kwargs = {"torch_dtype": torch.float32, "device_map": "cpu"}
 except (Exception, SystemExit) as exc:
     fail_status("checking_device", exc)
