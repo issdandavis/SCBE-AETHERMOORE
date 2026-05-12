@@ -302,7 +302,9 @@ def _revise_item(item: dict[str, Any], offer: dict[str, Any], score: dict[str, A
     return revised
 
 
-def _self_review_campaign(items: list[dict[str, Any]], offer: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _self_review_campaign(
+    items: list[dict[str, Any]], offer: dict[str, Any]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     final_items: list[dict[str, Any]] = []
     reviews: list[dict[str, Any]] = []
     for item in items:
@@ -354,8 +356,7 @@ def _connector_status() -> dict[str, Any]:
             "endpoint_env": "BLUESKY_HANDLE",
             "token_env": "BLUESKY_APP_PASSWORD",
             "ready": bool(
-                os.environ.get("BLUESKY_HANDLE", "").strip()
-                and os.environ.get("BLUESKY_APP_PASSWORD", "").strip()
+                os.environ.get("BLUESKY_HANDLE", "").strip() and os.environ.get("BLUESKY_APP_PASSWORD", "").strip()
             ),
         },
     }
@@ -456,12 +457,12 @@ def _operator_markdown(offer: dict[str, Any], drafts: list[dict[str, Any]], send
             lines.extend(["Body:", "```text", str(draft["text"]), "```"])
     lines.extend(
         [
-        "",
-        "## Connector Rule",
-        "- If X/n8n, GitHub, Hugging Face, Bluesky, or another publisher credential is connected, the queue can be consumed by an automation runner.",
-        "- If no publisher credential is connected in this shell, the campaign is still complete and waits in the queue.",
-        "- Do not send cold private-message batches.",
-        "- Do not fabricate customers, case studies, certifications, or guarantees.",
+            "",
+            "## Connector Rule",
+            "- If X/n8n, GitHub, Hugging Face, Bluesky, or another publisher credential is connected, the queue can be consumed by an automation runner.",
+            "- If no publisher credential is connected in this shell, the campaign is still complete and waits in the queue.",
+            "- Do not send cold private-message batches.",
+            "- Do not fabricate customers, case studies, certifications, or guarantees.",
         ]
     )
     return "\n".join(lines) + "\n"
@@ -502,8 +503,12 @@ def build_packet(out_root: Path = OUT_ROOT, *, offers_path: Path = OFFERS_PATH) 
         "".join(json.dumps(item, ensure_ascii=True) + "\n" for item in campaign_items),
         encoding="utf-8",
     )
-    x_ops_queue_path.write_text(json.dumps(_build_x_ops_queue(campaign_items), indent=2, ensure_ascii=True), encoding="utf-8")
-    bluesky_queue_path.write_text(json.dumps(_build_bluesky_queue(campaign_items), indent=2, ensure_ascii=True), encoding="utf-8")
+    x_ops_queue_path.write_text(
+        json.dumps(_build_x_ops_queue(campaign_items), indent=2, ensure_ascii=True), encoding="utf-8"
+    )
+    bluesky_queue_path.write_text(
+        json.dumps(_build_bluesky_queue(campaign_items), indent=2, ensure_ascii=True), encoding="utf-8"
+    )
     return {
         "folder": out_dir,
         "packet": packet_path,
@@ -600,9 +605,13 @@ def publish_packet(x_ops_queue: Path, *, dry_run: bool = False) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate and optionally publish a Workflow Snapshot marketing campaign.")
+    parser = argparse.ArgumentParser(
+        description="Generate and optionally publish a Workflow Snapshot marketing campaign."
+    )
     parser.add_argument("--out-root", default=str(OUT_ROOT), help="Output root for generated packet.")
-    parser.add_argument("--env-file", default=str(DEFAULT_ENV_FILE), help="Optional .env file to load before publishing.")
+    parser.add_argument(
+        "--env-file", default=str(DEFAULT_ENV_FILE), help="Optional .env file to load before publishing."
+    )
     parser.add_argument("--publish", action="store_true", help="Send ready queue to the configured n8n/X webhook.")
     parser.add_argument("--publish-bluesky", action="store_true", help="Publish one ready campaign item to Bluesky.")
     parser.add_argument("--dry-run", action="store_true", help="Print publish payloads without calling the webhook.")
