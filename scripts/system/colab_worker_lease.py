@@ -26,6 +26,25 @@ def _safe_url(raw_url: str) -> str:
     """Strip query string and fragment from a URL to avoid leaking secrets."""
     parsed = urlparse(raw_url)
     return parsed._replace(query="", fragment="").geturl()
+
+
+def _redact_sensitive_json(value: Any) -> Any:
+    """Recursively redact secret-shaped keys before writing artifacts."""
+
+    if isinstance(value, dict):
+        redacted: dict[str, Any] = {}
+        for key, item in value.items():
+            lowered = str(key).lower()
+            if any(marker in lowered for marker in ("secret", "token", "password", "api_key", "apikey", "credential")):
+                redacted[key] = "<redacted>"
+            else:
+                redacted[key] = _redact_sensitive_json(item)
+        return redacted
+    if isinstance(value, list):
+        return [_redact_sensitive_json(item) for item in value]
+    return value
+
+
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "colab_workers"
 DEFAULT_PROFILE_DIR = Path.home() / ".scbe-playwright-colab"
 
@@ -608,8 +627,9 @@ def provision_colab_worker(
         "rails": rails,
         "claimed_at_utc": lease["claimed_at_utc"],
     }
-    artifact_path.write_text(json.dumps(artifact, indent=2), encoding="utf-8")
-    return artifact
+    safe_artifact = _redact_sensitive_json(artifact)
+    artifact_path.write_text(json.dumps(safe_artifact, indent=2), encoding="utf-8")
+    return safe_artifact
 
 
 def _parser() -> argparse.ArgumentParser:

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Menu, X, Settings, Play, Eye, Code, Zap, PanelLeftClose, PanelLeftOpen, MessageSquare, Sparkles } from 'lucide-react';
+import { Menu, X, Settings, Play, Eye, Code, Zap, PanelLeftClose, PanelLeftOpen, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Resizable } from 're-resizable';
 

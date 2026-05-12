@@ -5,10 +5,32 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import re
 import tempfile
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any
+
+
+_SAFE_SUFFIX_RE = re.compile(r"^\.[A-Za-z0-9][A-Za-z0-9._-]{0,15}$")
+
+
+def _reject_external_file_fields(body: dict[str, Any], *fields: str) -> None:
+    """Keep the HTTP bridge content-only unless a command explicitly owns storage.
+
+    The CLI can read local files because it runs in an operator shell. The HTTP
+    service is a narrower bridge and should not turn request JSON into arbitrary
+    filesystem reads or writes.
+    """
+
+    for field in fields:
+        if body.get(field):
+            raise ValueError(f"{field} is not accepted by the HTTP GeoSeal bridge; send inline content instead")
+
+
+def _safe_temp_suffix(source_name: Any, default: str = ".rs") -> str:
+    suffix = Path(str(source_name or "")).suffix or default
+    return suffix if _SAFE_SUFFIX_RE.fullmatch(suffix) else default
 
 
 def _capture_cli(handler: Any, namespace: argparse.Namespace) -> tuple[int, str, str]:
@@ -27,9 +49,10 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
     from src import geoseal_cli
 
     if command == "code-packet":
+        _reject_external_file_fields(body, "source_file")
         ns = argparse.Namespace(
             content=body.get("content") or "",
-            source_file=body.get("source_file"),
+            source_file=None,
             source_name=body.get("source_name"),
             language=body.get("language") or "python",
             backend=body.get("backend"),
@@ -75,6 +98,7 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
     if command == "explain-route":
+        _reject_external_file_fields(body, "source_file")
         forbid = body.get("forbid_provider")
         if isinstance(forbid, str):
             forbid = [forbid]
@@ -82,7 +106,7 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
             forbid = []
         ns = argparse.Namespace(
             content=body.get("content") or "",
-            source_file=body.get("source_file"),
+            source_file=None,
             source_name=body.get("source_name"),
             language=body.get("language") or "python",
             tongue=body.get("tongue"),
@@ -97,8 +121,9 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
     if command == "history":
+        _reject_external_file_fields(body, "ledger")
         ns = argparse.Namespace(
-            ledger=body.get("ledger") or str(geoseal_cli.DEFAULT_LEDGER),
+            ledger=str(geoseal_cli.DEFAULT_LEDGER),
             limit=int(body.get("limit") or 20),
             type=body.get("type"),
             op=body.get("op"),
@@ -109,8 +134,9 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
     if command == "replay":
+        _reject_external_file_fields(body, "ledger")
         ns = argparse.Namespace(
-            ledger=body.get("ledger") or str(geoseal_cli.DEFAULT_LEDGER),
+            ledger=str(geoseal_cli.DEFAULT_LEDGER),
             index=body.get("index"),
             timeout=float(body.get("timeout") or 10.0),
             no_ledger=bool(body.get("no_ledger")),
@@ -121,9 +147,10 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
     if command == "testing-cli":
+        _reject_external_file_fields(body, "source_file")
         ns = argparse.Namespace(
             content=body.get("content") or "",
-            source_file=body.get("source_file"),
+            source_file=None,
             language=body.get("language") or "python",
             execute=bool(body.get("execute")),
             json=True,
@@ -135,12 +162,11 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
     if command == "project-scaffold":
         if not body.get("content"):
             raise ValueError("content is required for project-scaffold")
-        if not body.get("output_dir"):
-            raise ValueError("output_dir is required for project-scaffold")
+        _reject_external_file_fields(body, "output_dir")
         ns = argparse.Namespace(
             content=body.get("content") or "",
             language=body.get("language") or "python",
-            output_dir=body.get("output_dir"),
+            output_dir=str(Path(tempfile.mkdtemp(prefix="geoseal_scaffold_"))),
             json=True,
         )
         rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_project_scaffold, ns)
@@ -153,8 +179,7 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         temp_path: Path | None = None
         try:
             if content is not None and str(content).strip() != "":
-                stem = body.get("source_name") or "geoseal_roundtrip"
-                suffix = Path(stem).suffix or ".rs"
+                suffix = _safe_temp_suffix(body.get("source_name"), ".rs")
                 fd, path_str = tempfile.mkstemp(suffix=suffix, prefix="geoseal_rt_")
                 import os
 

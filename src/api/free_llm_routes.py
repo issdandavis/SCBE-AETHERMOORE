@@ -530,7 +530,7 @@ def dispatch_free_llm_request(
             origin=origin,
         )
         _append_bus_event(bus_event)
-        raise HTTPException(status_code=502, detail="provider_dispatch_failed") from exc
+        raise HTTPException(status_code=502, detail="provider_dispatch_failed") from None
     bus_event = _build_bus_event(
         request=request,
         user=user,

@@ -139,9 +139,9 @@ assertIncludes(
     node,
     [
       '-e',
-      `const bus=require('scbe-agent-bus'); (async()=>{const r=await bus.runEvent({task:'npm harness smoke from installed package', taskType:'smoke', privacy:'remote_allowed', dispatch:false},{repoRoot:${JSON.stringify(repoRoot)}}); console.log('bus-run', r.ok, r.exit_code, r.event.task_chars); if(!r.ok) { console.error(r.stderr_tail); process.exit(1); }})().catch(e=>{console.error(e); process.exit(1);});`,
+      "const bus=require('scbe-agent-bus'); (async()=>{const r=await bus.runEvent({task:'npm harness smoke from installed package', taskType:'smoke', privacy:'remote_allowed', dispatch:false},{repoRoot:process.env.SCBE_REPO_ROOT}); console.log('bus-run', r.ok, r.exit_code, r.event.task_chars); if(!r.ok) { console.error(r.stderr_tail); process.exit(1); }})().catch(e=>{console.error(e); process.exit(1);});",
     ],
-    { cwd: consumerDir }
+    { cwd: consumerDir, env: { ...process.env, SCBE_REPO_ROOT: repoRoot } }
   ),
   'bus-run true 0 40',
   'agent-bus repo-backed run'

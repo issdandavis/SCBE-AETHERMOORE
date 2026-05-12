@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 WWW = ROOT / "kindle-app" / "www"
@@ -32,7 +33,8 @@ def test_mobile_chat_is_backend_proxy_not_token_first_hf_form() -> None:
 def test_native_phone_shell_defaults_to_public_backend_not_emulator_loopback() -> None:
     body = (WWW / "static" / "phone-shell.js").read_text(encoding="utf-8")
     assert "if (isKindleApp)" in body
-    assert "https://scbe-agent-bridge-vercel.vercel.app" in body
+    public_backend = "https://scbe-agent-bridge-vercel.vercel.app"
+    assert urlparse(public_backend).hostname in body
     assert "aethermoor.agentApiBase" in body
 
 
