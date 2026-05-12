@@ -24,6 +24,8 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "'api/polly'" in ignore_source
     assert "'api/billing'" in ignore_source
     assert "'docs/app-config.json'" in ignore_source
+    assert "'docs/robots.txt'" in ignore_source
+    assert "'docs/sitemap.xml'" in ignore_source
     assert "'docs/solutions.html'" in ignore_source
     assert "'docs/governance-snapshot.html'" in ignore_source
     assert "'docs/hire.html'" in ignore_source
@@ -44,6 +46,14 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert ("^/index\\.html$", "/api/agent/launch.js") in routes
     assert ("^/SCBE-AETHERMOORE/?$", "/api/agent/launch.js") in routes
     assert ("^/SCBE-AETHERMOORE/index\\.html$", "/api/agent/launch.js") in routes
+    assert ("^/offers\\.json$", "/api/agent/offers-file.js") in routes
+    assert ("^/SCBE-AETHERMOORE/offers\\.json$", "/api/agent/offers-file.js") in routes
+    assert ("^/app-config\\.json$", "/api/agent/app-config-file.js") in routes
+    assert ("^/SCBE-AETHERMOORE/app-config\\.json$", "/api/agent/app-config-file.js") in routes
+    assert ("^/robots\\.txt$", "/api/agent/robots.js") in routes
+    assert ("^/SCBE-AETHERMOORE/robots\\.txt$", "/api/agent/robots.js") in routes
+    assert ("^/sitemap\\.xml$", "/api/agent/sitemap.js") in routes
+    assert ("^/SCBE-AETHERMOORE/sitemap\\.xml$", "/api/agent/sitemap.js") in routes
     assert ("^/hire/?$", "/api/agent/hire.js") in routes
     assert ("^/SCBE-AETHERMOORE/hire\\.html$", "/api/agent/hire.js") in routes
     assert ("^/products/?$", "/api/agent/products.js") in routes
@@ -111,6 +121,8 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert "!api/**" in ignore
     assert "!docs/offers.json" in ignore
     assert "!docs/app-config.json" in ignore
+    assert "!docs/robots.txt" in ignore
+    assert "!docs/sitemap.xml" in ignore
     assert "!docs/solutions.html" in ignore
     assert "!docs/products.html" in ignore
     assert "!docs/start-here.html" in ignore
@@ -236,6 +248,8 @@ def test_payment_center_exposes_all_live_payment_paths() -> None:
 
 
 def test_vercel_bridge_serves_payment_and_legal_static_pages() -> None:
+    offers_file_handler = (REPO_ROOT / "api" / "agent" / "offers-file.js").read_text(encoding="utf-8")
+    app_config_file_handler = (REPO_ROOT / "api" / "agent" / "app-config-file.js").read_text(encoding="utf-8")
     payment_handler = (REPO_ROOT / "api" / "agent" / "payments.js").read_text(encoding="utf-8")
     solutions_handler = (REPO_ROOT / "api" / "agent" / "solutions.js").read_text(encoding="utf-8")
     workflow_handler = (REPO_ROOT / "api" / "agent" / "workflow-snapshot.js").read_text(encoding="utf-8")
@@ -250,7 +264,11 @@ def test_vercel_bridge_serves_payment_and_legal_static_pages() -> None:
     robot_page_handler = (REPO_ROOT / "api" / "agent" / "robot-page.js").read_text(encoding="utf-8")
     robot_md_handler = (REPO_ROOT / "api" / "agent" / "robot-md.js").read_text(encoding="utf-8")
     llms_handler = (REPO_ROOT / "api" / "agent" / "llms.js").read_text(encoding="utf-8")
+    robots_handler = (REPO_ROOT / "api" / "agent" / "robots.js").read_text(encoding="utf-8")
+    sitemap_handler = (REPO_ROOT / "api" / "agent" / "sitemap.js").read_text(encoding="utf-8")
 
+    assert "offers.json" in offers_file_handler
+    assert "app-config.json" in app_config_file_handler
     assert "payments.html" in payment_handler
     assert "solutions.html" in solutions_handler
     assert "workflow-snapshot.html" in workflow_handler
@@ -263,6 +281,8 @@ def test_vercel_bridge_serves_payment_and_legal_static_pages() -> None:
     assert "robot.html" in robot_page_handler
     assert "robot.md" in robot_md_handler
     assert "llms.txt" in llms_handler
+    assert "robots.txt" in robots_handler
+    assert "sitemap.xml" in sitemap_handler
 
 
 def test_vercel_bridge_exposes_remote_offer_and_app_config_endpoints() -> None:
