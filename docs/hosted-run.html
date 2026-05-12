@@ -37,6 +37,9 @@
         line-height: 0.98;
         margin: 0 0 16px;
       }
+      h2 {
+        margin: 0 0 10px;
+      }
       .lead {
         color: #a3acb9;
         max-width: 780px;
@@ -53,6 +56,27 @@
         display: grid;
         gap: 16px;
         grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+      .card {
+        border: 1px solid rgba(214, 167, 86, 0.2);
+        background: #11161f;
+        border-radius: 8px;
+        padding: 20px;
+      }
+      .card p,
+      .card li {
+        color: #a3acb9;
+      }
+      .card ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+      .hero-image {
+        width: min(680px, 100%);
+        margin-top: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
       }
       label {
         display: grid;
@@ -116,6 +140,9 @@
         color: #a3acb9;
         font-size: 14px;
       }
+      .section {
+        margin-top: 28px;
+      }
     </style>
   </head>
   <body>
@@ -124,17 +151,58 @@
         <a href="./index.html">Home</a>
         <a href="./offers/">Offers</a>
         <a href="./service-credits.html">Service Credits</a>
+        <a href="./payments.html">Payments</a>
         <a href="./hire.html">Hire</a>
+        <a href="./legal/terms.html">Terms</a>
       </nav>
 
-      <section>
+      <section id="offer">
         <h1>SCBE hosted run intake</h1>
         <p class="lead">
           Use this when the npm packages or local/Ollama route are not enough and you want a small
           governed run, report, benchmark, or routing pass handled through SCBE. Intake is free.
           Credits are used only when hosted capacity, delivery, storage, or paid provider/model
-          usage is needed.
+          usage is needed. No subscription is required for a one-time hosted run request.
         </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#hosted-run-form">Submit free intake</a>
+          <a class="btn btn-secondary" href="./service-credits.html">Top up $5+ credits</a>
+          <a class="btn btn-secondary" href="./payments.html">All payment paths</a>
+        </div>
+        <img
+          class="hero-image"
+          src="hero.svg"
+          alt="AetherMoore governed hosted run visual"
+        />
+      </section>
+
+      <section id="includes" class="section grid" aria-label="What hosted runs include">
+        <article class="card">
+          <h2>What you get</h2>
+          <ul>
+            <li>A decision record for the requested run, route, and result.</li>
+            <li>Threshold notes for when to stay local, retry, escalate, or use hosted capacity.</li>
+            <li>A pilot checklist for repeating the run safely later.</li>
+            <li>Review notes covering errors, evidence, model/provider use, and next fixes.</li>
+            <li>A short manual-style delivery note so the result can be reused.</li>
+            <li>Delivery through the listed contact route after the intake is matched.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h2>Good fit / not for</h2>
+          <p>
+            Good fit: small governed runs, reports, benchmark passes, routing checks, or
+            local-first attempts that may need hosted help.
+          </p>
+          <p>
+            Not for: emergency production incident response, secret handling without prior rules,
+            regulated customer data, or open-ended consulting from a tiny credit top-up.
+          </p>
+          <p>
+            Success check: the first win is a clear answer about what ran, what failed, what it
+            cost if paid providers were used, and what to try next.
+          </p>
+        </article>
       </section>
 
       <section class="panel" aria-label="Hosted run form">
@@ -209,7 +277,7 @@
           </label>
 
           <div class="actions">
-            <button type="submit">Submit Hosted Run</button>
+            <button class="btn-primary" type="submit">Submit Hosted Run</button>
             <a
               class="btn btn-secondary"
               href="https://ko-fi.com/izdandavis"
@@ -218,6 +286,7 @@
               >Top Up Credits</a
             >
             <a class="btn btn-secondary" href="./service-credits.html">How Credits Work</a>
+            <a class="btn btn-secondary" href="mailto:aethermoregames@pm.me">Support</a>
           </div>
           <p class="fine">
             Do not paste secrets, private keys, passwords, customer data, or regulated data into
@@ -225,6 +294,53 @@
           </p>
         </form>
         <p id="hosted-run-status" class="status" role="status"></p>
+      </section>
+
+      <section id="faq" class="section grid" aria-label="Hosted run FAQ">
+        <article class="card">
+          <h2>Does intake cost money?</h2>
+          <p>
+            No. Intake is free. Credits apply only when the run needs hosted capacity, paid
+            provider/model usage, storage, delivery, or extra report work.
+          </p>
+        </article>
+        <article class="card">
+          <h2>How are costs handled?</h2>
+          <p>
+            The target rule is provider cost plus a small 2-5% SCBE coordination fee. Local,
+            deterministic, and Ollama-first paths are preferred when they are enough.
+          </p>
+        </article>
+        <article class="card">
+          <h2>What should I avoid sending?</h2>
+          <p>
+            Do not send passwords, private keys, regulated data, customer files, or confidential
+            third-party material through the form. Start with a description.
+          </p>
+        </article>
+        <article class="card">
+          <h2>Where can I inspect more?</h2>
+          <p>
+            See the <a href="use-cases/governed-ai-workflows.html">use cases</a>,
+            <a href="comparison/toolkit-vs-full-repo.html">toolkit comparison</a>,
+            <a href="proof/why-the-manual-exists.html">manual proof</a>,
+            <a href="redteam.html">red-team notes</a>, and
+            <a href="proof/red-team-summary.html">red-team summary</a>.
+          </p>
+        </article>
+      </section>
+
+      <section class="section panel final-cta" aria-label="Final CTA">
+        <h2>Start with the free intake.</h2>
+        <p class="lead">
+          If the request can stay local or Ollama-first, it should. If hosted help is useful, top up
+          service credits and keep the run small enough to verify.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#hosted-run-form">Submit free intake</a>
+          <a class="btn btn-secondary" href="./service-credits.html">Read service-credit rules</a>
+          <a class="btn btn-secondary" href="./legal/privacy.html">Privacy</a>
+        </div>
       </section>
     </main>
 
