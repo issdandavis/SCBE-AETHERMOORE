@@ -75,8 +75,18 @@ def safe_plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
     return {
         "source": "sam_gov_opportunities_api",
         "query_count": len(plan.get("queries", [])),
-        "keywords": [str(query.get("params", {}).get("q", "")) for query in plan.get("queries", [])],
         "api_key_present": bool(plan.get("api_key_present")),
+    }
+
+
+def public_plan_status(plan: dict[str, Any], *, ok: bool, dry_run: bool, error: str = "") -> dict[str, Any]:
+    """CLI status without query parameters or API credentials."""
+    return {
+        "ok": ok,
+        "dry_run": dry_run,
+        "query_count": len(plan.get("queries", [])),
+        "api_key_present": bool(plan.get("api_key_present")),
+        "error": error,
     }
 
 
@@ -172,15 +182,10 @@ def main() -> int:
     api_key = resolve_api_key()
     plan = build_plan(args, api_key)
     if not args.execute:
-        print(json.dumps({"ok": True, "dry_run": True, "plan": safe_plan_summary(plan)}, indent=2))
+        print(json.dumps(public_plan_status(plan, ok=True, dry_run=True), indent=2))
         return 0
     if not api_key:
-        print(
-            json.dumps(
-                {"ok": False, "error": "missing SAM_API_KEY or SAM_GOV_API_KEY", "plan": safe_plan_summary(plan)},
-                indent=2,
-            )
-        )
+        print(json.dumps(public_plan_status(plan, ok=False, dry_run=False, error="missing_api_key"), indent=2))
         return 2
 
     opportunities: list[dict[str, Any]] = []
