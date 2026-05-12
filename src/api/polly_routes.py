@@ -11,7 +11,6 @@ import json
 import logging
 import os
 import re
-import http.client
 import smtplib
 import ssl
 import time
@@ -20,7 +19,7 @@ from typing import Any, Dict, List, Optional
 from urllib import request as urlrequest
 import asyncio
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import quote_plus
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
@@ -647,47 +646,8 @@ async def polly_search(req: SearchRequest) -> SearchResponse:
         except (HTTPError, URLError, Exception) as exc:
             logger.warning("Tavily search error: %s", exc)
 
-    # Free fallback: DuckDuckGo Instant Answer API (no key needed)
-    try:
-        ddg_path = "/?" + urlencode({"q": query, "format": "json", "no_html": "1", "skip_disambig": "1"})
-        conn = http.client.HTTPSConnection("api.duckduckgo.com", timeout=8)
-        try:
-            conn.request("GET", ddg_path, headers={"User-Agent": "SCBE-Polly/1.0"})
-            resp = conn.getresponse()
-            ddg_data: Dict[str, Any] = json.loads(resp.read().decode())
-        finally:
-            conn.close()
-
-        ddg_results: list[SearchResult] = []
-        if ddg_data.get("AbstractURL"):
-            ddg_results.append(
-                SearchResult(
-                    title=ddg_data.get("Heading", query),
-                    url=ddg_data["AbstractURL"],
-                    excerpt=ddg_data.get("Abstract", "")[:300],
-                )
-            )
-        for topic in ddg_data.get("RelatedTopics", []):
-            if (
-                isinstance(topic, dict)
-                and topic.get("FirstURL")
-                and not topic["FirstURL"].startswith("https://duckduckgo.com/c/")
-            ):
-                ddg_results.append(
-                    SearchResult(
-                        title=topic.get("Text", "")[:100],
-                        url=topic["FirstURL"],
-                        excerpt=topic.get("Text", "")[:300],
-                    )
-                )
-            if len(ddg_results) >= MAX_SEARCH_RESULTS:
-                break
-        if ddg_results:
-            return SearchResponse(results=ddg_results, source="duckduckgo", query=query, ts=int(time.time()))
-    except Exception as exc:
-        logger.debug("DuckDuckGo fallback failed: %s", exc)
-
-    # Last resort: link to DDG
+    # Last resort: provide a user-clickable link instead of making unauthenticated
+    # server-side search calls from a public endpoint.
     return SearchResponse(
         results=[
             SearchResult(
