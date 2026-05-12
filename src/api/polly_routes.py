@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+import http.client
 import smtplib
 import ssl
 import time
@@ -19,7 +20,7 @@ from typing import Any, Dict, List, Optional
 from urllib import request as urlrequest
 import asyncio
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote_plus
+from urllib.parse import urlencode
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field, field_validator
@@ -648,10 +649,14 @@ async def polly_search(req: SearchRequest) -> SearchResponse:
 
     # Free fallback: DuckDuckGo Instant Answer API (no key needed)
     try:
-        ddg_url = f"https://api.duckduckgo.com/?q={quote_plus(query)}&format=json&no_html=1&skip_disambig=1"
-        ddg_req = urlrequest.Request(ddg_url, headers={"User-Agent": "SCBE-Polly/1.0"})
-        with urlrequest.urlopen(ddg_req, timeout=8) as resp:
+        ddg_path = "/?" + urlencode({"q": query, "format": "json", "no_html": "1", "skip_disambig": "1"})
+        conn = http.client.HTTPSConnection("api.duckduckgo.com", timeout=8)
+        try:
+            conn.request("GET", ddg_path, headers={"User-Agent": "SCBE-Polly/1.0"})
+            resp = conn.getresponse()
             ddg_data: Dict[str, Any] = json.loads(resp.read().decode())
+        finally:
+            conn.close()
 
         ddg_results: list[SearchResult] = []
         if ddg_data.get("AbstractURL"):
