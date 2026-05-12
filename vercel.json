@@ -73,6 +73,78 @@
       "dest": "/api/agent/chat-page.js"
     },
     {
+      "src": "^/payments/?$",
+      "dest": "/api/agent/payments.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/payments\\.html$",
+      "dest": "/api/agent/payments.js"
+    },
+    {
+      "src": "^/workflow-snapshot/?$",
+      "dest": "/api/agent/workflow-snapshot.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/workflow-snapshot\\.html$",
+      "dest": "/api/agent/workflow-snapshot.js"
+    },
+    {
+      "src": "^/service-credits/?$",
+      "dest": "/api/agent/service-credits.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/service-credits\\.html$",
+      "dest": "/api/agent/service-credits.js"
+    },
+    {
+      "src": "^/supporter/?$",
+      "dest": "/api/agent/supporter.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/supporter\\.html$",
+      "dest": "/api/agent/supporter.js"
+    },
+    {
+      "src": "^/hosted-run/?$",
+      "dest": "/api/agent/hosted-run.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/hosted-run\\.html$",
+      "dest": "/api/agent/hosted-run.js"
+    },
+    {
+      "src": "^/legal/privacy/?$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/privacy/?$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/privacy\\.html$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/legal/privacy\\.html$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/legal/terms/?$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/terms/?$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/terms\\.html$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/legal/terms\\.html$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
       "src": "^/static/(.*)$",
       "dest": "/api/agent/static.js?path=$1"
     },

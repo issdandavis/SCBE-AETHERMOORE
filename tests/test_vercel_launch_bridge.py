@@ -29,6 +29,10 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "'docs/start-here.html'" in ignore_source
     assert "'docs/agents.html'" in ignore_source
     assert "'docs/chat.html'" in ignore_source
+    assert "'docs/payments.html'" in ignore_source
+    assert "'docs/workflow-snapshot.html'" in ignore_source
+    assert "'docs/legal/privacy.html'" in ignore_source
+    assert "'docs/legal/terms.html'" in ignore_source
     assert ("^/$", "/api/agent/launch.js") in routes
     assert ("^/launch$", "/api/agent/launch.js") in routes
     assert ("^/hire/?$", "/api/agent/hire.js") in routes
@@ -41,6 +45,24 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert ("^/SCBE-AETHERMOORE/agents\\.html$", "/api/agent/agents.js") in routes
     assert ("^/chat/?$", "/api/agent/chat-page.js") in routes
     assert ("^/SCBE-AETHERMOORE/chat\\.html$", "/api/agent/chat-page.js") in routes
+    assert ("^/payments/?$", "/api/agent/payments.js") in routes
+    assert ("^/SCBE-AETHERMOORE/payments\\.html$", "/api/agent/payments.js") in routes
+    assert ("^/workflow-snapshot/?$", "/api/agent/workflow-snapshot.js") in routes
+    assert ("^/SCBE-AETHERMOORE/workflow-snapshot\\.html$", "/api/agent/workflow-snapshot.js") in routes
+    assert ("^/service-credits/?$", "/api/agent/service-credits.js") in routes
+    assert ("^/SCBE-AETHERMOORE/service-credits\\.html$", "/api/agent/service-credits.js") in routes
+    assert ("^/supporter/?$", "/api/agent/supporter.js") in routes
+    assert ("^/SCBE-AETHERMOORE/supporter\\.html$", "/api/agent/supporter.js") in routes
+    assert ("^/hosted-run/?$", "/api/agent/hosted-run.js") in routes
+    assert ("^/SCBE-AETHERMOORE/hosted-run\\.html$", "/api/agent/hosted-run.js") in routes
+    assert ("^/legal/privacy/?$", "/api/agent/legal-privacy.js") in routes
+    assert ("^/privacy/?$", "/api/agent/legal-privacy.js") in routes
+    assert ("^/SCBE-AETHERMOORE/privacy\\.html$", "/api/agent/legal-privacy.js") in routes
+    assert ("^/SCBE-AETHERMOORE/legal/privacy\\.html$", "/api/agent/legal-privacy.js") in routes
+    assert ("^/legal/terms/?$", "/api/agent/legal-terms.js") in routes
+    assert ("^/terms/?$", "/api/agent/legal-terms.js") in routes
+    assert ("^/SCBE-AETHERMOORE/terms\\.html$", "/api/agent/legal-terms.js") in routes
+    assert ("^/SCBE-AETHERMOORE/legal/terms\\.html$", "/api/agent/legal-terms.js") in routes
     assert ("^/static/(.*)$", "/api/agent/static.js?path=$1") in routes
     assert ("^/api/agent/(.*)$", "/api/agent/$1.js") in routes
     assert ("^/v1/polly/hosted-run/?$", "/api/polly/hosted-run.js") in routes
@@ -56,6 +78,13 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert (REPO_ROOT / "api" / "agent" / "start-here.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "agents.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "chat-page.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "payments.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "workflow-snapshot.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "service-credits.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "supporter.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "hosted-run.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "legal-privacy.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "legal-terms.js").exists()
     assert "!api" in ignore
     assert "!api/**" in ignore
     assert "!docs/offers.json" in ignore
@@ -64,6 +93,13 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert "!docs/start-here.html" in ignore
     assert "!docs/agents.html" in ignore
     assert "!docs/chat.html" in ignore
+    assert "!docs/payments.html" in ignore
+    assert "!docs/workflow-snapshot.html" in ignore
+    assert "!docs/service-credits.html" in ignore
+    assert "!docs/supporter.html" in ignore
+    assert "!docs/hosted-run.html" in ignore
+    assert "!docs/legal/privacy.html" in ignore
+    assert "!docs/legal/terms.html" in ignore
     assert "!docs/static/**" in ignore
     assert "!public" in ignore
     assert "!public/hire.html" in ignore
@@ -158,6 +194,24 @@ def test_payment_center_exposes_all_live_payment_paths() -> None:
     assert 'id="small-business-liaison-intro"' in hire_page
     assert "SCBE-AETHERMOORE/payments.html" in sitemap
     assert "Payments: https://aethermoore.com/SCBE-AETHERMOORE/payments.html" in robots
+
+
+def test_vercel_bridge_serves_payment_and_legal_static_pages() -> None:
+    payment_handler = (REPO_ROOT / "api" / "agent" / "payments.js").read_text(encoding="utf-8")
+    workflow_handler = (REPO_ROOT / "api" / "agent" / "workflow-snapshot.js").read_text(encoding="utf-8")
+    service_credits_handler = (REPO_ROOT / "api" / "agent" / "service-credits.js").read_text(encoding="utf-8")
+    supporter_handler = (REPO_ROOT / "api" / "agent" / "supporter.js").read_text(encoding="utf-8")
+    hosted_run_handler = (REPO_ROOT / "api" / "agent" / "hosted-run.js").read_text(encoding="utf-8")
+    privacy_handler = (REPO_ROOT / "api" / "agent" / "legal-privacy.js").read_text(encoding="utf-8")
+    terms_handler = (REPO_ROOT / "api" / "agent" / "legal-terms.js").read_text(encoding="utf-8")
+
+    assert "payments.html" in payment_handler
+    assert "workflow-snapshot.html" in workflow_handler
+    assert "service-credits.html" in service_credits_handler
+    assert "supporter.html" in supporter_handler
+    assert "hosted-run.html" in hosted_run_handler
+    assert "legal/privacy.html" in privacy_handler
+    assert "legal/terms.html" in terms_handler
 
 
 def test_vercel_bridge_exposes_remote_offer_and_app_config_endpoints() -> None:
