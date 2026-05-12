@@ -125,6 +125,38 @@ def _public_service_result(result: Any) -> Any:
     return result
 
 
+def _public_search_result(result: Any) -> dict[str, Any]:
+    """Build an explicit public schema for Polly search responses."""
+    if not isinstance(result, dict):
+        return {"ok": False, "error": "Search service temporarily unavailable."}
+    records = result.get("results") or result.get("sources") or result.get("data") or []
+    if not isinstance(records, list):
+        records = []
+    public_records = []
+    for record in records[:10]:
+        if not isinstance(record, dict):
+            continue
+        public_records.append(
+            {
+                "title": str(record.get("title") or "")[:240],
+                "url": str(record.get("url") or record.get("href") or "")[:500],
+                "snippet": str(record.get("snippet") or record.get("content") or record.get("excerpt") or "")[:800],
+            }
+        )
+    return {
+        "ok": bool(result.get("ok", True)),
+        "query": str(result.get("query") or "")[:500],
+        "results": public_records,
+    }
+
+
+def _public_email_result(result: Any) -> dict[str, Any]:
+    """Build an explicit public schema for email-send responses."""
+    if not isinstance(result, dict):
+        return {"ok": False, "error": "Email service temporarily unavailable."}
+    return {"ok": bool(result.get("ok", False)), "message_id": str(result.get("message_id") or "")[:128]}
+
+
 # ---------------------------------------------------------------------------
 #  Lazy-load the runtime gate (best effort — works even if deps are missing)
 # ---------------------------------------------------------------------------
@@ -3618,7 +3650,7 @@ async def polly_search(payload: PollySearchPayload):
         from scripts.system.polly_service import search
 
         result = await search(payload.query)
-        return _public_service_result(result)
+        return _public_search_result(result)
     except Exception as e:
         logger.warning("Polly search error: %s", type(e).__name__)
         return {"ok": False, "error": "Search service temporarily unavailable."}
@@ -3644,7 +3676,7 @@ async def polly_email(payload: PollyEmailPayload):
         from scripts.system.polly_service import send_email_from_chat
 
         result = await send_email_from_chat(payload.to, payload.subject, payload.body)
-        return {"ok": bool(result.get("ok", False)), "message_id": str(result.get("message_id") or "")[:128]}
+        return _public_email_result(result)
     except Exception as e:
         logger.warning("Polly email error: %s", type(e).__name__)
         return {"ok": False, "error": "Email service temporarily unavailable."}
