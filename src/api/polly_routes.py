@@ -14,6 +14,7 @@ import re
 import smtplib
 import ssl
 import time
+import functools
 from email.message import EmailMessage
 from typing import Any, Dict, List, Optional
 from urllib import request as urlrequest
@@ -66,28 +67,28 @@ from pathlib import Path
 
 _DEFAULT_ENV_FILE = Path(__file__).parent.parent.parent / "config" / "connector_oauth" / ".env.connector.oauth"
 ENV_FILE = os.environ.get("POLLY_ENV_FILE") or str(_DEFAULT_ENV_FILE)
-_env_loaded = False
 import threading
 
 _env_lock = threading.Lock()
 
 
+@functools.lru_cache(maxsize=1)
+def _load_env_file(env_file: str) -> None:
+    if os.path.isfile(env_file):
+        with open(env_file) as fh:
+            for line in fh:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, _, v = line.partition("=")
+                    k = k.strip()
+                    v = v.strip().strip("\"'")
+                    if k and v:
+                        os.environ.setdefault(k, v)
+
+
 def _load_env() -> None:
-    global _env_loaded
     with _env_lock:
-        if _env_loaded:
-            return
-        if os.path.isfile(ENV_FILE):
-            with open(ENV_FILE) as fh:
-                for line in fh:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        k, _, v = line.partition("=")
-                        k = k.strip()
-                        v = v.strip().strip("\"'")
-                        if k and v:
-                            os.environ.setdefault(k, v)
-        _env_loaded = True
+        _load_env_file(ENV_FILE)
 
 
 def _gemini_key() -> Optional[str]:
