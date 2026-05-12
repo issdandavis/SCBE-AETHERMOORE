@@ -1,8 +1,8 @@
 # SCBE Buyer Capability Buckets
 
-Status: working buyer-facing packaging sheet  
-Entity: Issac Davis dba SCBE AetherMoore  
-CAGE: 1EXD5  
+Status: working buyer-facing packaging sheet
+Entity: Issac Davis dba SCBE AetherMoore
+CAGE: 1EXD5
 UEI: J4NXHM6N5F59
 
 ## Purpose
@@ -216,4 +216,3 @@ Avoid overclaims:
 4. Convert successful Snapshot into `$99/month` Heartbeat or a custom
    integration quote.
 5. Use public code and benchmark artifacts only when the buyer asks for proof.
-
