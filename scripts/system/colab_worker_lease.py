@@ -31,6 +31,8 @@ def _safe_url(raw_url: str) -> str:
 def _redact_sensitive_json(value: Any) -> Any:
     """Recursively redact secret-shaped keys before writing artifacts."""
 
+    if isinstance(value, str):
+        return _safe_url(value) if value.startswith(("http://", "https://")) else value
     if isinstance(value, dict):
         redacted: dict[str, Any] = {}
         for key, item in value.items():
@@ -43,6 +45,19 @@ def _redact_sensitive_json(value: Any) -> Any:
     if isinstance(value, list):
         return [_redact_sensitive_json(item) for item in value]
     return value
+
+
+def _artifact_public_summary(artifact: dict[str, Any]) -> dict[str, Any]:
+    """Return CLI-safe metadata without raw browser or packet payload fields."""
+    return {
+        "schema_version": artifact.get("schema_version"),
+        "state": artifact.get("state"),
+        "worker_id": artifact.get("worker_id"),
+        "mission_id": artifact.get("mission_id"),
+        "artifact_path": artifact.get("artifact_path"),
+        "packets": artifact.get("packets"),
+        "claimed_at_utc": artifact.get("claimed_at_utc"),
+    }
 
 
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "colab_workers"
@@ -134,8 +149,7 @@ def _state_from_page(url: str, title: str) -> str:
 
 
 def _probe_colab_runtime(page) -> Dict[str, Any]:
-    return page.evaluate(
-        """
+    return page.evaluate("""
 () => {
   const usage = document.querySelector('colab-usage-display');
   const machine = document.querySelector('colab-machine-type');
@@ -169,8 +183,7 @@ def _probe_colab_runtime(page) -> Dict[str, Any]:
     button_samples: controls.slice(0, 12),
   };
 }
-"""
-    )
+""")
 
 
 def _derive_runtime_state(base_state: str, runtime_probe: Dict[str, Any]) -> str:
@@ -187,8 +200,7 @@ def _derive_runtime_state(base_state: str, runtime_probe: Dict[str, Any]) -> str
 
 def _attempt_runtime_connect(page) -> Dict[str, Any]:
     try:
-        clicked = page.evaluate(
-            """
+        clicked = page.evaluate("""
 () => {
   const el = document.querySelector('colab-toolbar-button#connect')
     || Array.from(document.querySelectorAll('colab-toolbar-button, [role="button"], button'))
@@ -199,8 +211,7 @@ def _attempt_runtime_connect(page) -> Dict[str, Any]:
   el.click();
   return true;
 }
-"""
-        )
+""")
         if not clicked:
             page.locator("colab-toolbar-button#connect").click(timeout=8000, force=True)
         page.wait_for_timeout(12000)
@@ -212,8 +223,7 @@ def _attempt_runtime_connect(page) -> Dict[str, Any]:
 def _attempt_run_all(page) -> Dict[str, Any]:
     try:
         secret_grants = 0
-        clicked = page.evaluate(
-            """
+        clicked = page.evaluate("""
 () => {
   const candidates = Array.from(document.querySelectorAll(
     'colab-toolbar-button, [role="button"], button, paper-button, mwc-button'
@@ -228,13 +238,11 @@ def _attempt_run_all(page) -> Dict[str, Any]:
   el.click();
   return true;
 }
-"""
-        )
+""")
         if not clicked:
             page.keyboard.press("Control+F9")
         page.wait_for_timeout(2500)
-        warning_dismissed = page.evaluate(
-            """
+        warning_dismissed = page.evaluate("""
 () => {
   const buttons = Array.from(document.querySelectorAll(
     'button, [role="button"], paper-button, mwc-button'
@@ -249,8 +257,7 @@ def _attempt_run_all(page) -> Dict[str, Any]:
   el.click();
   return true;
 }
-"""
-        )
+""")
         if not warning_dismissed:
             try:
                 page.get_by_text("Run anyway", exact=True).click(timeout=8000)
@@ -259,8 +266,7 @@ def _attempt_run_all(page) -> Dict[str, Any]:
                 warning_dismissed = False
         for _ in range(3):
             page.wait_for_timeout(5000)
-            granted = page.evaluate(
-                """
+            granted = page.evaluate("""
 () => {
   const buttons = Array.from(document.querySelectorAll(
     'button, [role="button"], paper-button, mwc-button'
@@ -275,8 +281,7 @@ def _attempt_run_all(page) -> Dict[str, Any]:
   el.click();
   return true;
 }
-"""
-            )
+""")
             if not granted:
                 try:
                     page.get_by_text("Grant access", exact=True).click(timeout=1500)
@@ -655,11 +660,30 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--headless", action="store_true", help="Launch browser headless.")
     parser.add_argument("--no-headless", dest="headless", action="store_false", help="Launch browser with UI.")
     parser.add_argument("--keep-open", action="store_true", help="Keep the browser open until Enter is pressed.")
-    parser.add_argument("--connect-runtime", action="store_true", help="Click Connect when the notebook is authenticated and disconnected.")
-    parser.add_argument("--run-all", action="store_true", help="Click the notebook Run all control after a connected runtime is detected.")
-    parser.add_argument("--post-run-wait-seconds", type=int, default=0, help="Seconds to wait after --run-all before capturing evidence.")
-    parser.add_argument("--auth-bootstrap", action="store_true", help="Open normal Chrome visibly with this worker profile for one-time Google sign-in.")
-    parser.add_argument("--browser-executable", default="", help="Optional normal Chrome executable path for --auth-bootstrap.")
+    parser.add_argument(
+        "--connect-runtime",
+        action="store_true",
+        help="Click Connect when the notebook is authenticated and disconnected.",
+    )
+    parser.add_argument(
+        "--run-all",
+        action="store_true",
+        help="Click the notebook Run all control after a connected runtime is detected.",
+    )
+    parser.add_argument(
+        "--post-run-wait-seconds",
+        type=int,
+        default=0,
+        help="Seconds to wait after --run-all before capturing evidence.",
+    )
+    parser.add_argument(
+        "--auth-bootstrap",
+        action="store_true",
+        help="Open normal Chrome visibly with this worker profile for one-time Google sign-in.",
+    )
+    parser.add_argument(
+        "--browser-executable", default="", help="Optional normal Chrome executable path for --auth-bootstrap."
+    )
     parser.add_argument(
         "--dry-run", action="store_true", help="Resolve notebook and emit packets without launching the browser."
     )
@@ -678,7 +702,14 @@ def main(argv: list[str] | None = None) -> int:
         jurisdictions=args.jurisdictions,
     )
     if args.auth_bootstrap:
-        print(json.dumps(open_auth_bootstrap(args.notebook, Path(args.profile_dir), args.browser_executable), indent=2))
+        print(
+            json.dumps(
+                _redact_sensitive_json(
+                    open_auth_bootstrap(args.notebook, Path(args.profile_dir), args.browser_executable)
+                ),
+                indent=2,
+            )
+        )
         return 0
     artifact = provision_colab_worker(
         notebook_query=args.notebook,
@@ -702,7 +733,7 @@ def main(argv: list[str] | None = None) -> int:
         run_all=bool(args.run_all),
         post_run_wait_seconds=int(args.post_run_wait_seconds),
     )
-    print(json.dumps(artifact, indent=2))
+    print(json.dumps(_artifact_public_summary(artifact), indent=2))
     return 0
 
 
