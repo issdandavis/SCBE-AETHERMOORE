@@ -27,6 +27,8 @@ const relevantPaths = [
   'api/billing',
   'docs/offers.json',
   'docs/app-config.json',
+  'docs/robots.txt',
+  'docs/sitemap.xml',
   'docs/solutions.html',
   'docs/governance-snapshot.html',
   'docs/hire.html',
