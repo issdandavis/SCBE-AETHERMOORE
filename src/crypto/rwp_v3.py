@@ -36,7 +36,6 @@ try:
     ARGON2_AVAILABLE = True
 except ImportError:
     ARGON2_AVAILABLE = False
-    print("Warning: argon2-cffi not installed. Install with: pip install argon2-cffi")
 
 try:
     from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
@@ -44,7 +43,6 @@ try:
     CHACHA_AVAILABLE = True
 except ImportError:
     CHACHA_AVAILABLE = False
-    print("Warning: cryptography not installed. Install with: pip install cryptography")
 
 _FORCE_SKIP_LIBOQS = os.getenv("SCBE_FORCE_SKIP_LIBOQS", "").strip().lower() in {
     "1",

@@ -83,7 +83,6 @@ function tailBytes(str, max) {
 
 function buildReceipt({
   commandId,
-  command,
   exitCode,
   stdoutTail,
   stderrTail,

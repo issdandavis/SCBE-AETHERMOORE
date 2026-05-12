@@ -375,9 +375,11 @@ def write_report(payload: dict[str, Any], output: Path) -> dict[str, str]:
             "",
             "## Realistic Interpretation",
             "",
-            "This benchmark is useful when the pair wins by routing exact facts through deterministic tools, "
-            "repairing generated code with tests, and separating apply/tool lanes. It should not be used as a "
-            "frontier-model capability claim.",
+            (
+                "This benchmark is useful when the pair wins by routing exact facts through deterministic tools, "
+                "repairing generated code with tests, and separating apply/tool lanes. It should not be used as a "
+                "frontier-model capability claim."
+            ),
             "",
         ]
     )
@@ -398,7 +400,15 @@ def main() -> int:
     args = build_parser().parse_args()
     payload = run_benchmark()
     if args.cmd == "validate":
-        print(json.dumps({"ok": payload["summary"]["pair_passed"] >= payload["summary"]["solo_passed"], "summary": payload["summary"]}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "ok": payload["summary"]["pair_passed"] >= payload["summary"]["solo_passed"],
+                    "summary": payload["summary"],
+                },
+                indent=2,
+            )
+        )
         return 0 if payload["summary"]["pair_passed"] >= payload["summary"]["solo_passed"] else 1
     paths = write_report(payload, args.output)
     print(json.dumps({"ok": True, **paths, "summary": payload["summary"]}, indent=2))

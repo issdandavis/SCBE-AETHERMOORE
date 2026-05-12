@@ -78,7 +78,8 @@ class SLMAdapter(Protocol):
     self-reported probability for the chosen option in [0, 1].
     """
 
-    def classify(self, prompt: str, choices: Sequence[str]) -> Tuple[str, float]: ...
+    def classify(self, prompt: str, choices: Sequence[str]) -> Tuple[str, float]:
+        raise NotImplementedError
 
 
 @dataclass
@@ -324,7 +325,7 @@ def _band_prompt(intent: str) -> str:
     lines = [
         f"Intent: {intent}",
         "",
-        "Classify into ONE of these operation bands " "(or NONE if no band applies):",
+        "Classify into ONE of these operation bands (or NONE if no band applies):",
     ]
     for band in _band_choices_for_classification():
         desc = _BAND_DESCRIPTIONS.get(band, "")
