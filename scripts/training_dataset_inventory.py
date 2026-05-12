@@ -22,7 +22,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "training_inventory" / "latest"
 DATA_EXTENSIONS = {".jsonl", ".json", ".csv", ".parquet", ".arrow", ".txt"}
@@ -269,6 +268,7 @@ def _jsonl_stats(path: Path) -> dict[str, Any]:
                     "lfs_pointer": True,
                 }
     except OSError:
+        # File disappeared or became unreadable during inventory; treat as empty.
         pass
     records = 0
     malformed = 0
@@ -503,7 +503,10 @@ def collect_cloud_surfaces(limit: int) -> dict[str, Any]:
                 if suffix not in DATA_EXTENSIONS and suffix != NOTEBOOK_EXTENSION:
                     continue
                 text = str(path)
-                if not any(token in text.lower() for token in ("scbe", "aether", "colab", "kaggle", "qwen", "polly", "training")):
+                if not any(
+                    token in text.lower()
+                    for token in ("scbe", "aether", "colab", "kaggle", "qwen", "polly", "training")
+                ):
                     continue
                 items.append(
                     {
@@ -530,8 +533,7 @@ def build_merge_plan(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) 
         ready_rows = [
             row
             for row in rows
-            if str(row.get("regularization_status", "")).startswith("ready")
-            and row.get("split_hint") != "eval"
+            if str(row.get("regularization_status", "")).startswith("ready") and row.get("split_hint") != "eval"
         ]
         eval_rows = [row for row in rows if row.get("split_hint") == "eval"]
         model_sets[purpose] = {
@@ -569,7 +571,9 @@ def build_merge_plan(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) 
     }
 
 
-def write_outputs(local_rows: list[dict[str, Any]], remotes: dict[str, Any], plan: dict[str, Any], output_dir: Path) -> dict[str, Path]:
+def write_outputs(
+    local_rows: list[dict[str, Any]], remotes: dict[str, Any], plan: dict[str, Any], output_dir: Path
+) -> dict[str, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     summary = summarize(local_rows, remotes)
     inventory = {
@@ -608,9 +612,7 @@ def summarize(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) -> dict
         "by_source": dict(sorted(by_source.items())),
         "by_purpose": dict(sorted(by_purpose.items())),
         "by_regularization_status": dict(sorted(by_status.items())),
-        "remote_counts": {
-            key: value.get("count", len(value.get("items", []))) for key, value in remotes.items()
-        },
+        "remote_counts": {key: value.get("count", len(value.get("items", []))) for key, value in remotes.items()},
     }
 
 

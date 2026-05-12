@@ -90,6 +90,7 @@ def _parse_max_level(query: str) -> int:
             if isinstance(obj, dict) and "max_level" in obj:
                 return max(0, min(7, int(obj["max_level"])))
         except json.JSONDecodeError:
+            # Plain-text config files are allowed; fall back to default level.
             pass
     return 1
 

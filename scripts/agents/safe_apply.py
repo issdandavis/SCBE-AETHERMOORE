@@ -140,15 +140,18 @@ def _remove_worktree(worktree: Path) -> None:
     try:
         _git(["worktree", "remove", "--force", str(worktree)], cwd=REPO_ROOT, check=False, timeout=30)
     except Exception:
+        # Best-effort cleanup; the caller must not fail because teardown did.
         pass
     if worktree.exists():
         try:
             shutil.rmtree(worktree, ignore_errors=True)
         except Exception:
+            # Best-effort cleanup; ignore stale or already-removed worktrees.
             pass
     try:
         _git(["worktree", "prune"], cwd=REPO_ROOT, check=False, timeout=30)
     except Exception:
+        # Best-effort cleanup; pruning failure should not mask apply results.
         pass
 
 
@@ -214,6 +217,7 @@ def apply_patch_safely(
         try:
             patch_file.unlink()
         except Exception:
+            # Best-effort cleanup of the temporary patch file.
             pass
 
         try:
@@ -261,6 +265,7 @@ def apply_patch_safely(
             try:
                 main_patch.unlink()
             except Exception:
+                # Best-effort cleanup of the temporary patch file.
                 pass
         return result
     finally:
