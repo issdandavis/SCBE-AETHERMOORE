@@ -288,7 +288,6 @@ def main(argv: List[str] | None = None) -> int:
         outcomes.append(outcome)
         if not args.quiet:
             tag = outcome.tags[0] if outcome.tags else "untagged"
-            label = outcome.verdict
             if outcome.verdict == "ALLOW":
                 label = f"ALLOW({outcome.op_band}/{outcome.op_name}->{outcome.dst_tongue} c={outcome.confidence:.2f})"
             else:

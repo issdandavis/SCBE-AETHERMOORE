@@ -578,6 +578,7 @@ def main() -> int:
         result = run_ladder(ml)
         print(json.dumps(public_ladder_summary(result), indent=2))
         return 0 if result["ok"] else 1
+    raise RuntimeError(f"unsupported command: {args.command}")
 
 
 if __name__ == "__main__":
