@@ -88,6 +88,7 @@ Tell users:
 Use the live offers from `offers.json` as the source of truth. As of this map:
 
 - $5+ SCBE Service Credits: pay-as-you-go support for hosted routing, reports, delivery, storage, and provider/model usage where billable.
+- Cash App manual payment: $IzzyDDavis7. For service purchases, include the offer name in the note.
 - $5 Tip Jar: one-time support.
 - $20/month AetherMoore Supporter: low-cost monthly support path.
 - $29 SCBE AI Governance Toolkit: templates and governance starter materials.
