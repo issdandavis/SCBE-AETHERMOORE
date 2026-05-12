@@ -26,12 +26,11 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
 import re
 import sys
 from dataclasses import dataclass, asdict, field
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any, Callable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -66,11 +65,7 @@ class GeneratorReport:
 def gate_score(prompt: dict, response: str) -> GateVerdict:
     """Identical to the v6h `_gate_score` rule (canonical scorer)."""
     body_lower = (response or "").lower()
-    missing_required = [
-        str(t)
-        for t in (prompt.get("required") or [])
-        if str(t).lower() not in body_lower
-    ]
+    missing_required = [str(t) for t in (prompt.get("required") or []) if str(t).lower() not in body_lower]
 
     def contains_forbidden(term: str) -> bool:
         needle = str(term).strip().lower()
@@ -82,9 +77,7 @@ def gate_score(prompt: dict, response: str) -> GateVerdict:
             return re.search(pattern, body_lower) is not None
         return needle in body_lower
 
-    triggered_forbidden = [
-        str(t) for t in (prompt.get("forbidden") or []) if contains_forbidden(t)
-    ]
+    triggered_forbidden = [str(t) for t in (prompt.get("forbidden") or []) if contains_forbidden(t)]
     return GateVerdict(
         id=str(prompt.get("id", "")),
         shape=str(prompt.get("shape", "unknown")),
@@ -179,9 +172,7 @@ def make_ar_generator(model_id: str, max_new_tokens: int = 320) -> Callable[[dic
         text = (prompt.get("prompt") or "").strip()
         messages = [{"role": "user", "content": text}]
         try:
-            enc = tok.apply_chat_template(
-                messages, return_tensors="pt", add_generation_prompt=True
-            )
+            enc = tok.apply_chat_template(messages, return_tensors="pt", add_generation_prompt=True)
         except Exception:
             enc = tok(text, return_tensors="pt").input_ids
         # Newer transformers may return a BatchEncoding here; unwrap to a tensor.
@@ -203,9 +194,7 @@ def make_ar_generator(model_id: str, max_new_tokens: int = 320) -> Callable[[dic
     return _gen
 
 
-def make_diffusion_generator(
-    model_id: str, max_new_tokens: int = 320, num_steps: int = 64
-) -> Callable[[dict], str]:
+def make_diffusion_generator(model_id: str, max_new_tokens: int = 320, num_steps: int = 64) -> Callable[[dict], str]:
     """Lazy-loaded diffusion-LM generator.
 
     DiffuCoder-style models expose `generate(...)` with `num_inference_steps`.
@@ -225,9 +214,7 @@ def make_diffusion_generator(
         if tok.pad_token_id is None:
             tok.pad_token_id = tok.eos_token_id
         dtype = torch.bfloat16 if torch.cuda.is_available() else torch.float32
-        model = AutoModel.from_pretrained(
-            model_id, torch_dtype=dtype, trust_remote_code=True
-        )
+        model = AutoModel.from_pretrained(model_id, torch_dtype=dtype, trust_remote_code=True)
         model.eval()
         if torch.cuda.is_available():
             model = model.to("cuda")
@@ -243,9 +230,7 @@ def make_diffusion_generator(
         text = (prompt.get("prompt") or "").strip()
         messages = [{"role": "user", "content": text}]
         try:
-            enc = tok.apply_chat_template(
-                messages, return_tensors="pt", add_generation_prompt=True
-            )
+            enc = tok.apply_chat_template(messages, return_tensors="pt", add_generation_prompt=True)
         except Exception:
             enc = tok(text, return_tensors="pt").input_ids
         if torch.cuda.is_available():
@@ -316,9 +301,7 @@ def triangulate(reports: list[GeneratorReport]) -> dict:
             (v.shape for v in verdicts.values() if v is not None and v.shape),
             "unknown",
         )
-        bucket = by_shape.setdefault(
-            shape, {lab: {"pass": 0, "fail": 0} for lab in labels}
-        )
+        bucket = by_shape.setdefault(shape, {lab: {"pass": 0, "fail": 0} for lab in labels})
         for lab in labels:
             v = verdicts[lab]
             key = "pass" if (v is not None and v.ok) else "fail"
@@ -398,9 +381,7 @@ def emit_markdown_report(report: dict, out_path: Path) -> None:
     lines.append("| Generator | Model | Pass | Rate |")
     lines.append("|---|---|---|---|")
     for g in report.get("generators") or []:
-        lines.append(
-            f"| {g['label']} | `{g['model_id']}` | {g['n_pass']}/{g['n_total']} | {g['pass_rate']:.3f} |"
-        )
+        lines.append(f"| {g['label']} | `{g['model_id']}` | {g['n_pass']}/{g['n_total']} | {g['pass_rate']:.3f} |")
     lines.append("")
     tri = report.get("triangulation") or {}
     if tri.get("shape_delta"):
@@ -408,12 +389,8 @@ def emit_markdown_report(report: dict, out_path: Path) -> None:
         lines.append("")
         lines.append("| Shape | AR pass | Diffusion pass | Delta |")
         lines.append("|---|---|---|---|")
-        for shape, row in sorted(
-            tri["shape_delta"].items(), key=lambda kv: -kv[1]["delta"]
-        ):
-            lines.append(
-                f"| {shape} | {row['ar_pass']} | {row['diffusion_pass']} | {row['delta']:+d} |"
-            )
+        for shape, row in sorted(tri["shape_delta"].items(), key=lambda kv: -kv[1]["delta"]):
+            lines.append(f"| {shape} | {row['ar_pass']} | {row['diffusion_pass']} | {row['delta']:+d} |")
         lines.append("")
     if tri.get("by_prompt"):
         lines.append("## Per-prompt verdict-class")
@@ -422,9 +399,7 @@ def emit_markdown_report(report: dict, out_path: Path) -> None:
         lines.append("|---|---|---|---|")
         for row in tri["by_prompt"]:
             winners = ", ".join(row.get("winners") or []) or "—"
-            lines.append(
-                f"| {row['id']} | {row['shape']} | {row['verdict_class']} | {winners} |"
-            )
+            lines.append(f"| {row['id']} | {row['shape']} | {row['verdict_class']} | {winners} |")
         lines.append("")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(lines), encoding="utf-8")
@@ -484,17 +459,13 @@ def main(argv: list[str] | None = None) -> int:
             generators.append(("schrodinger", "dry-run::schrodinger", make_dry_run_generator("schrodinger")))
     else:
         if use_baseline:
-            generators.append(
-                ("ar", args.baseline_model, make_ar_generator(args.baseline_model, args.max_new_tokens))
-            )
+            generators.append(("ar", args.baseline_model, make_ar_generator(args.baseline_model, args.max_new_tokens)))
         if use_diffusion:
             generators.append(
                 (
                     "diffusion",
                     args.diffusion_model,
-                    make_diffusion_generator(
-                        args.diffusion_model, args.max_new_tokens, args.diffusion_steps
-                    ),
+                    make_diffusion_generator(args.diffusion_model, args.max_new_tokens, args.diffusion_steps),
                 )
             )
         if use_schrodinger:

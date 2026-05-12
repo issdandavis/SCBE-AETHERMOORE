@@ -22,7 +22,7 @@ import math
 import re
 import sys
 from dataclasses import dataclass
-from typing import Iterable, List, Tuple
+from typing import List, Tuple
 
 PHI = (1 + math.sqrt(5)) / 2
 
@@ -178,7 +178,6 @@ def _format_cost(c: float) -> str:
 
 
 def _print_score(s: GateScore) -> None:
-    pad = lambda x: f"{x:>10}"
     color = VERDICT_COLOR.get(s.verdict, ANSI["muted"])
     verdict_pill = _color(f"  {s.verdict:<10}  ", ANSI["bold"] + color)
 

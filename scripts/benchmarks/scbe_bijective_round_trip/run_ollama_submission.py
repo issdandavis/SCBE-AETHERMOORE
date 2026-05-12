@@ -235,7 +235,6 @@ def with_metadata_preface(row: dict[str, Any], prediction: str) -> str:
 def build_contract_hint(row: dict[str, Any]) -> str:
     meta = row.get("meta") or {}
     task = str(meta.get("task", "unknown"))
-    prompt = str(row.get("prompt", ""))
     slots = expanded_slots(row)
 
     lines = ["Output contract:"]
@@ -264,7 +263,6 @@ def structural_scaffold(row: dict[str, Any], prediction: str) -> str:
     """Add deterministic format rails without copying the hidden reference."""
     meta = row.get("meta") or {}
     task = str(meta.get("task", "unknown"))
-    prompt = str(row.get("prompt", ""))
     slots = expanded_slots(row)
     body = prediction.strip()
 
@@ -292,7 +290,6 @@ def contract_repair(row: dict[str, Any], prediction: str) -> str:
     """Minimal deterministic repair pass for known benchmark output contracts."""
     meta = row.get("meta") or {}
     task = str(meta.get("task", "unknown"))
-    prompt = str(row.get("prompt", ""))
     slots = expanded_slots(row)
     out = with_metadata_preface(row, prediction)
 

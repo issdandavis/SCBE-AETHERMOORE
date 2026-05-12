@@ -33,8 +33,7 @@ import os
 import re
 import time
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable, Dict, List, Optional
-
+from typing import Any, Callable, Optional
 
 DEFAULT_MODEL = "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1"
 DEFAULT_TONGUES = ("AV",)
@@ -116,10 +115,7 @@ CASES: tuple[PromptCase, ...] = (
 SEEDS: dict[str, str] = {
     "reverse_string": "def reverse_string(s: str) -> str:\n    return s[::-1]\n",
     "safe_divide": (
-        "def safe_divide(a: float, b: float):\n"
-        "    if b == 0:\n"
-        "        return None\n"
-        "    return a / b\n"
+        "def safe_divide(a: float, b: float):\n" "    if b == 0:\n" "        return None\n" "    return a / b\n"
     ),
     "parse_json_name": (
         "import json\n"
@@ -269,9 +265,7 @@ def build_back_prompt(other_source: str, tongue: str, seed: str = "") -> str:
         joined = "\n".join(f"    {i}" for i in imports)
         contract_lines.append(f"  Required imports (must appear at top of code block):\n{joined}")
     contract_block = (
-        "\nThe Python output MUST satisfy this canonical contract:\n"
-        + "\n".join(contract_lines)
-        + "\n"
+        "\nThe Python output MUST satisfy this canonical contract:\n" + "\n".join(contract_lines) + "\n"
         if contract_lines
         else ""
     )
@@ -552,7 +546,7 @@ def main() -> int:
             )
         elapsed = time.time() - t0
         response = tokenizer.decode(
-            output[0][inputs["input_ids"].shape[1]:],
+            output[0][inputs["input_ids"].shape[1] :],
             skip_special_tokens=True,
         )
         return response, elapsed

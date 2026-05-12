@@ -53,7 +53,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Callable
 
 import numpy as np
 
@@ -110,9 +110,7 @@ def _build_indicator_masks(
     for f in forb:
         if re.fullmatch(r"[a-z0-9_ -]+", f):
             body = r"\s+".join(re.escape(part) for part in f.split())
-            forb_patterns.append(
-                re.compile(r"(?<![a-z0-9_])" + body + r"(?![a-z0-9_])")
-            )
+            forb_patterns.append(re.compile(r"(?<![a-z0-9_])" + body + r"(?![a-z0-9_])"))
         else:
             forb_patterns.append(re.compile(re.escape(f)))
 
@@ -163,9 +161,7 @@ def _evolve_wavefunction(
     return psi
 
 
-def _select_active_subset(
-    base_logits: np.ndarray, req_mask: np.ndarray, top_k: int
-) -> np.ndarray:
+def _select_active_subset(base_logits: np.ndarray, req_mask: np.ndarray, top_k: int) -> np.ndarray:
     """Indices of (top-K base-logit tokens) ∪ (required-marker tokens).
 
     The wave-evolution restriction set: large enough that the model's
@@ -209,9 +205,7 @@ def schrodinger_step_logits(
     p_base = p_base / np.maximum(p_base.sum(), 1e-30)
     psi = np.sqrt(p_base + 1e-30).astype(np.complex128)
 
-    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(
-        np.float64
-    )
+    V = (-cfg.alpha_required * sub_req + cfg.beta_forbidden * sub_forb).astype(np.float64)
     if cfg.include_log_p_base:
         V = V - np.log(p_base + 1e-30).astype(np.float64)
 
@@ -260,12 +254,8 @@ class SchrodingerLogitsProcessor:
         if np_scores.shape[0] != self.req_mask.shape[0]:
             if np_scores.shape[0] > self.req_mask.shape[0]:
                 pad = np_scores.shape[0] - self.req_mask.shape[0]
-                self.req_mask = np.concatenate(
-                    [self.req_mask, np.zeros(pad, dtype=self.req_mask.dtype)]
-                )
-                self.forb_mask = np.concatenate(
-                    [self.forb_mask, np.zeros(pad, dtype=self.forb_mask.dtype)]
-                )
+                self.req_mask = np.concatenate([self.req_mask, np.zeros(pad, dtype=self.req_mask.dtype)])
+                self.forb_mask = np.concatenate([self.forb_mask, np.zeros(pad, dtype=self.forb_mask.dtype)])
             else:
                 self.req_mask = self.req_mask[: np_scores.shape[0]]
                 self.forb_mask = self.forb_mask[: np_scores.shape[0]]
@@ -282,9 +272,7 @@ class SchrodingerLogitsProcessor:
         p_base = np.exp(shifted)
         p_base = p_base / np.maximum(p_base.sum(), 1e-30)
         psi = np.sqrt(p_base + 1e-30).astype(np.complex128)
-        V = (
-            -self.cfg.alpha_required * sub_req + self.cfg.beta_forbidden * sub_forb
-        ).astype(np.float64)
+        V = (-self.cfg.alpha_required * sub_req + self.cfg.beta_forbidden * sub_forb).astype(np.float64)
         if self.cfg.include_log_p_base:
             V = V - np.log(p_base + 1e-30).astype(np.float64)
 
@@ -343,9 +331,7 @@ class SchrodingerCodeWaveGenerator:
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         dtype = torch.float16 if device == "cuda" else torch.float32
-        model = AutoModelForCausalLM.from_pretrained(
-            self.model_id, torch_dtype=dtype, trust_remote_code=True
-        )
+        model = AutoModelForCausalLM.from_pretrained(self.model_id, torch_dtype=dtype, trust_remote_code=True)
         model.eval()
         model = model.to(device)
         self._tok = tok
@@ -407,9 +393,7 @@ def make_schrodinger_generator(
     cfg: SchrodingerConfig | None = None,
 ) -> Callable[[dict], str]:
     """Bake-off-compatible factory matching make_ar_generator signature."""
-    gen = SchrodingerCodeWaveGenerator(
-        model_id=model_id, max_new_tokens=max_new_tokens, cfg=cfg
-    )
+    gen = SchrodingerCodeWaveGenerator(model_id=model_id, max_new_tokens=max_new_tokens, cfg=cfg)
 
     def _call(prompt: dict) -> str:
         return gen.generate(prompt)

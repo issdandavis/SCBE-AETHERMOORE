@@ -14,7 +14,6 @@ import argparse
 import hashlib
 import json
 import sys
-from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any

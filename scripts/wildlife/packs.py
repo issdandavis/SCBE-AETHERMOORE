@@ -9,7 +9,7 @@ See docs/specs/WILDLIFE_BOARD_v1.md for the full spec.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable, Optional
 
 

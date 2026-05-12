@@ -13,11 +13,10 @@ import argparse
 import json
 import shutil
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = REPO_ROOT / "config" / "eval" / "cli_quest_tasks.sample.json"

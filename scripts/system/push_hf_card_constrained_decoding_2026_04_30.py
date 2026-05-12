@@ -11,15 +11,16 @@ pushing again.
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
 try:
     from dotenv import load_dotenv
 except ImportError:
+
     def load_dotenv(*_args, **_kwargs):
         return False
+
 
 from huggingface_hub import HfApi, hf_hub_download
 

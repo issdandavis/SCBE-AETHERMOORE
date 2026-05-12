@@ -18,7 +18,7 @@ import logging
 import os
 import re
 import sys
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
@@ -182,7 +182,7 @@ Classify this email. Respond ONLY with valid JSON in this exact format:
         elif "```" in text:
             text = text.split("```")[1].split("```")[0].strip()
         return json.loads(text)
-    except Exception as e:
+    except Exception:
         logger.warning("LLM classification failed — falling back to heuristic")
         return classify_heuristic(sender, subject, body)
 
