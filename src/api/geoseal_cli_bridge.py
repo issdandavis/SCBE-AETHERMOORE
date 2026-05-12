@@ -175,16 +175,13 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
     if command == "code-roundtrip":
         content = body.get("content")
         source = body.get("source")
-        temp_path: Path | None = None
+        temp_dir: tempfile.TemporaryDirectory[str] | None = None
         try:
             if content is not None and str(content).strip() != "":
                 suffix = _safe_temp_suffix(body.get("source_name"), ".rs")
-                fd, path_str = tempfile.mkstemp(suffix=suffix, prefix="geoseal_rt_")
-                import os
-
-                with os.fdopen(fd, "wb") as f:
-                    f.write(str(content).encode("utf-8", errors="replace"))
-                temp_path = Path(path_str)
+                temp_dir = tempfile.TemporaryDirectory(prefix="geoseal_rt_")
+                temp_path = Path(temp_dir.name) / f"source{suffix}"
+                temp_path.write_bytes(str(content).encode("utf-8", errors="replace"))
                 source = str(temp_path)
             if not source:
                 raise ValueError("source or content is required for code-roundtrip")
@@ -199,14 +196,8 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
             data = _parse_json_stdout(stdout, stderr, rc)
             return {"exit_code": rc, "data": data, "stderr": stderr or None}
         finally:
-            if temp_path is not None and temp_path.exists():
-                try:
-                    decoded = temp_path.with_name(temp_path.stem + ".decoded" + temp_path.suffix)
-                    if decoded.exists():
-                        decoded.unlink(missing_ok=True)
-                    temp_path.unlink(missing_ok=True)
-                except OSError:
-                    pass
+            if temp_dir is not None:
+                temp_dir.cleanup()
 
     raise ValueError(f"unsupported GeoSeal bridge command: {command}")
 

@@ -282,9 +282,11 @@ def build_agent_tool_bridge_v1(
     if intent_relative_posix:
         src = shlex.quote(intent_relative_posix)
         file_args = f"--source-file {src} --language python --source-name task_intent.txt"
+        compile_text = "compile source intent"
     else:
         text = (inline_goal or "")[:12000]
         file_args = f"--content {shlex.quote(text)} --language python --source-name agent_goal"
+        compile_text = text
 
     geoseal_cli = {
         "backend_registry_json": f"{exe} -m src.geoseal_cli backend-registry --json",
@@ -292,7 +294,7 @@ def build_agent_tool_bridge_v1(
         "code_packet_json": f"{exe} -m src.geoseal_cli code-packet {file_args} --json",
         "history_json": f"{exe} -m src.geoseal_cli history --json",
         "testing_cli_json": f"{exe} -m src.geoseal_cli testing-cli {file_args} --json",
-        "compile_intent_json": f"{exe} -m src.geoseal_cli compile --json {shlex.quote(text if not intent_relative_posix else 'compile source intent')}",
+        "compile_intent_json": f"{exe} -m src.geoseal_cli compile --json {shlex.quote(compile_text)}",
         "ghost_terminal_audit_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -Json",
         "ghost_terminal_cleanup_stale_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -CleanStale",
         "call_switchboard_json": f"{exe} -m src.geoseal_cli call-switchboard --request <json> --json",
