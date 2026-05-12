@@ -16,6 +16,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import sys
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -28,6 +29,14 @@ from typing import Optional
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
+
+_SAFE_LABEL_RE = re.compile(r"[^a-zA-Z0-9_. -]+")
+
+
+def _safe_label(value: str, *, default: str = "unknown") -> str:
+    cleaned = _SAFE_LABEL_RE.sub("", str(value or "")).strip()
+    return cleaned[:80] or default
+
 
 # Load env
 _env = ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
@@ -92,6 +101,7 @@ AGENTIC_EMPLOYEES = {
 # LLM Classification (Gemini fallback to local heuristic)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class TriageResult:
     msg_id: str
@@ -136,12 +146,12 @@ def classify_with_llm(sender: str, subject: str, body: str, api_key: Optional[st
 
     try:
         import google.generativeai as genai
+
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel("gemini-1.5-flash")
 
         agent_descriptions = "\n".join(
-            f"- {k}: handles {', '.join(v['handles'])}"
-            for k, v in AGENTIC_EMPLOYEES.items()
+            f"- {k}: handles {', '.join(v['handles'])}" for k, v in AGENTIC_EMPLOYEES.items()
         )
 
         prompt = f"""You are an email triage specialist for SCBE-AETHERMOORE, an AI governance company.
@@ -212,6 +222,7 @@ def classify_heuristic(sender: str, subject: str, body: str) -> dict:
 # ---------------------------------------------------------------------------
 # Triage Runner
 # ---------------------------------------------------------------------------
+
 
 def run_triage(dry_run: bool = False, days: int = 1, auto_reply: bool = False) -> list[TriageResult]:
     """Run agentic triage on recent emails.
@@ -304,7 +315,7 @@ def _dispatch_to_queue(triage: TriageResult):
         )
         conn.commit()
         conn.close()
-        logger.info("Dispatched to %s (priority %s)", agent['name'], _urgency_to_priority(triage.urgency))
+        logger.info("Dispatched triage item (priority %s)", _urgency_to_priority(triage.urgency))
     except Exception as e:
         logger.warning("Dispatch failed: %s", type(e).__name__)
 
@@ -316,6 +327,7 @@ def _urgency_to_priority(urgency: str) -> int:
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
+
 
 def main():
     parser = argparse.ArgumentParser(description="Agentic Email Triage for SCBE-AETHERMOORE")
@@ -337,8 +349,10 @@ def main():
     for r in results:
         agent = AGENTIC_EMPLOYEES.get(r.agent, {})
         # Log only non-sensitive fields; subject may contain PII
-        logger.debug("Triage result: agent=%s urgency=%s action=%s", agent.get('name', r.agent), r.urgency, r.action)
-        print(f"  [{r.urgency.upper()}] {agent.get('name', r.agent)} | action: {r.action}")
+        safe_agent = _safe_label(str(agent.get("name", r.agent)))
+        safe_urgency = _safe_label(r.urgency, default="normal").upper()
+        logger.debug("Triage result metadata: agent=%s urgency=%s", safe_agent, safe_urgency)
+        print(f"  [{safe_urgency}] {safe_agent} | action: captured in redacted output")
         print(f"           confidence: {r.confidence:.2f}")
         if r.draft_reply:
             logger.debug("Draft reply generated for agent %s", r.agent)
