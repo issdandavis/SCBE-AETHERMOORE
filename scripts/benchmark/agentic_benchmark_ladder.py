@@ -491,6 +491,21 @@ def run_ladder(max_level: int) -> dict[str, Any]:
     }
 
 
+def public_ladder_summary(result: dict[str, Any]) -> dict[str, Any]:
+    """Small CLI status object without command tails or task payloads."""
+    rollup = result.get("metrics_rollup") if isinstance(result.get("metrics_rollup"), dict) else {}
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "ok": bool(result.get("ok")),
+        "max_level": int(result.get("max_level", 0) or 0),
+        "tasks_evaluated": int(rollup.get("tasks_evaluated", 0) or 0),
+        "tasks_passed": int(rollup.get("tasks_passed", 0) or 0),
+        "tasks_failed": int(rollup.get("tasks_failed", 0) or 0),
+        "total_secret_leak_count": int(rollup.get("total_secret_leak_count", 0) or 0),
+        "detail": "full in-process result available via run_ladder(); CLI prints public summary only",
+    }
+
+
 def cmd_validate(_: argparse.Namespace) -> int:
     errors: list[str] = []
     for task_json in discover_tasks():
@@ -560,7 +575,7 @@ def main() -> int:
         if args.query:
             ml = _parse_max_level(args.query)
         result = run_ladder(ml)
-        print(json.dumps(_redact_sensitive_json(result), indent=2))
+        print(json.dumps(public_ladder_summary(result), indent=2))
         return 0 if result["ok"] else 1
 
 

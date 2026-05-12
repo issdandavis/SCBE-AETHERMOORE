@@ -347,15 +347,11 @@ def main():
 
     print(f"\nTriage complete. {len(results)} emails processed.\n")
     for r in results:
-        agent = AGENTIC_EMPLOYEES.get(r.agent, {})
-        # Log only non-sensitive fields; subject may contain PII
-        safe_agent = _safe_label(str(agent.get("name", r.agent)))
-        safe_urgency = _safe_label(r.urgency, default="normal").upper()
-        logger.debug("Triage result metadata: agent=%s urgency=%s", safe_agent, safe_urgency)
-        print(f"  [{safe_urgency}] {safe_agent} | action: captured in redacted output")
+        logger.debug("Triage result captured")
+        print("  triage item captured in redacted output")
         print(f"           confidence: {r.confidence:.2f}")
         if r.draft_reply:
-            logger.debug("Draft reply generated for agent %s", r.agent)
+            logger.debug("Draft reply generated")
         print()
 
     if args.output:
