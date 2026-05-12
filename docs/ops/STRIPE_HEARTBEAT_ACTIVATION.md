@@ -32,7 +32,7 @@ Sandbox objects created:
 - Product: `prod_UUQSk8tzQsQ1eK`
 - Price: `price_1TVRc3JjzxXjWlGn5Vr36BYc`
 - Payment Link ID: `plink_1TVRcAJjzxXjWlGnCMjblKK0`
-- Test checkout URL: `https://buy.stripe.com/test_00w14oaPgdEJejL6I35Ne05`
+- Test checkout URL: redacted sandbox URL, intentionally not stored as a clickable public link.
 
 Do not put the test checkout URL in `docs/offers.json`, Vercel production env, or public offer pages.
 
@@ -45,7 +45,7 @@ In the live Stripe Dashboard:
 3. Create a Payment Link for quantity `1`.
 4. Copy the public live checkout URL, which should look like:
    - `https://buy.stripe.com/...`
-   - not `https://buy.stripe.com/test_...`
+   - never a sandbox checkout URL
 5. Copy the live Payment Link ID, which starts with `plink_`.
 
 Then set Vercel production environment variables if you want to override the
@@ -61,7 +61,7 @@ STRIPE_HEARTBEAT_PAYMENT_LINK_ID=plink_<live_heartbeat_payment_link_id>
 as `polly_heartbeat_started`. If either variable is unset, the code falls back
 to the live 2026-05-12 Heartbeat link and `plink_1TW71zJTF2SuUODICZLQCCS3`.
 
-The commerce layer rejects `plink_...` and `https://buy.stripe.com/test_...` as public checkout overrides.
+The commerce layer rejects internal `plink_...` IDs and sandbox checkout URLs as public checkout overrides.
 
 ## Digital Product Delivery
 
