@@ -43,8 +43,8 @@
       "name": "Tip Jar",
       "price_label": "$5 one time",
       "type": "one_time",
-      "checkout_url": "https://ko-fi.com/izdandavis",
-      "stripe_checkout_url": "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+      "checkout_url": "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+      "kofi_url": "https://ko-fi.com/izdandavis",
       "alternate_checkout": {
         "cash_app": "$IzzyDDavis7",
         "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
@@ -57,8 +57,8 @@
       "name": "AetherMoore Supporter",
       "price_label": "$20/month",
       "type": "subscription",
-      "checkout_url": "https://ko-fi.com/izdandavis",
-      "stripe_checkout_url": "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
+      "checkout_url": "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
+      "kofi_url": "https://ko-fi.com/izdandavis",
       "alternate_checkout": {
         "cash_app": "$IzzyDDavis7",
         "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
