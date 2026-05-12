@@ -21,11 +21,13 @@ from typing import Any, Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT_DIR = REPO_ROOT / "artifacts" / "agent_workcells" / "latest"
+DEFAULT_BUS_LOG = REPO_ROOT / "artifacts" / "agent-bus" / "events.jsonl"
 DEFAULT_AGENT_COUNT = 100
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from agents.agent_bus_schema import CURRENT_SCHEMA_VERSION
 from src.crypto.geoseal_execution_gate import scan_command
 
 
@@ -220,6 +222,40 @@ def write_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
     path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
 
 
+def append_jsonl(path: Path, row: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(row, sort_keys=True) + "\n")
+
+
+def build_bus_event(report: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "_schema_version": CURRENT_SCHEMA_VERSION,
+        "task_type": "agent_workcell_sop",
+        "query": report["task"],
+        "timestamp": report["created_at"],
+        "success": report["decision"] == "SHIP_READY",
+        "agent_id": "scbe-workcell-os",
+        "llm_provider": "multi-slot-free-first",
+        "llm_model": "codex+claude+gemini+local-shell+github-ci slots",
+        "sources_used": len(report["agents"]),
+        "duration_seconds": round(
+            sum(item["duration_ms"] for item in report["verification"]["checks"]) / 1000,
+            3,
+        ),
+        "breaker_state": {"geoseal": "closed", "collision_gate": "closed"},
+        "scbe": {
+            "decision": report["decision"],
+            "geo_seal_gate_tiers": [item["geoseal_gate"]["tier"] for item in report["verification"]["checks"]],
+            "collision_count": report["collision_report"]["collision_count"],
+            "agent_slots": report["collision_report"]["agent_slots"],
+            "coding_systems": report["coding_operating_system"]["coding_systems"],
+            "product_routes": report["coding_operating_system"]["product_routes"],
+            "artifact_paths": report["artifacts"],
+        },
+    }
+
+
 def build_markdown(report: dict[str, Any]) -> str:
     checks = report["verification"]["checks"]
     check_lines = [
@@ -238,6 +274,7 @@ def build_markdown(report: dict[str, Any]) -> str:
         f"- Bus: {report['coding_operating_system']['agent_bus_policy']}",
         f"- Concurrency target: `{report['coding_operating_system']['concurrency_goal']}` agent slots",
         f"- Collision count: `{report['collision_report']['collision_count']}`",
+        f"- Bus event: `{report['artifacts']['agent_bus_event_log']}`",
     ]
     return "\n".join(
         [
@@ -325,6 +362,7 @@ def run_workcell(task: str, out_dir: Path, verify: bool = True, max_attempts: in
         "report_json": str((out_dir / "workcell-report.json").relative_to(REPO_ROOT)),
         "crosstalk_jsonl": str((out_dir / "crosstalk.jsonl").relative_to(REPO_ROOT)),
         "ship_report": str((out_dir / "ship-report.md").relative_to(REPO_ROOT)),
+        "agent_bus_event_log": str(DEFAULT_BUS_LOG.relative_to(REPO_ROOT)),
     }
     report: dict[str, Any] = {
         "schema": "scbe.agent_workcell_demo.v1",
@@ -347,6 +385,14 @@ def run_workcell(task: str, out_dir: Path, verify: bool = True, max_attempts: in
             ),
             "routing_policy": "free models do first-pass work; paid models review/escalate high-value or failing packets",
             "coding_systems": sorted({lease["coding_system"] for lease in leases}),
+            "product_routes": [
+                "workflow_snapshot_starter",
+                "governance_snapshot",
+                "governance_heartbeat",
+                "service_credits",
+                "toolkit",
+                "training_vault",
+            ],
         },
         "git": {
             "branch": git_value(["branch", "--show-current"], REPO_ROOT),
@@ -361,6 +407,7 @@ def run_workcell(task: str, out_dir: Path, verify: bool = True, max_attempts: in
         ),
     }
     write_jsonl(out_dir / "crosstalk.jsonl", packets)
+    append_jsonl(DEFAULT_BUS_LOG, build_bus_event(report))
     write_json(out_dir / "workcell-report.json", report)
     (out_dir / "ship-report.md").write_text(build_markdown(report), encoding="utf-8")
     return report
