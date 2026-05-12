@@ -254,11 +254,18 @@ def command_specs_for_scenario(scenario: str) -> list[dict[str, Any]]:
     if scenario == "deploy":
         return [
             {
-                "command": "python -m py_compile scripts\\system\\agent_workcell_demo.py scripts\\system\\remote_app_config_smoke.py scripts\\system\\product_launch_readiness.py",
+                "command": (
+                    "python -m py_compile scripts\\system\\agent_workcell_demo.py "
+                    "scripts\\system\\remote_app_config_smoke.py "
+                    "scripts\\system\\product_launch_readiness.py"
+                ),
                 "claimed_paths": ["scripts/system"],
             },
             {
-                "command": "python -m pytest tests\\system\\test_agent_workcell_demo.py tests\\system\\test_product_launch_readiness.py -q",
+                "command": (
+                    "python -m pytest tests\\system\\test_agent_workcell_demo.py "
+                    "tests\\system\\test_product_launch_readiness.py -q"
+                ),
                 "claimed_paths": ["tests/system", "scripts/system"],
             },
             {
@@ -277,11 +284,17 @@ def command_specs_for_scenario(scenario: str) -> list[dict[str, Any]]:
         ]
     return [
         {
-            "command": "python -m py_compile scripts\\system\\product_launch_readiness.py scripts\\system\\build_manufacturing_braid_package.py",
+            "command": (
+                "python -m py_compile scripts\\system\\product_launch_readiness.py "
+                "scripts\\system\\build_manufacturing_braid_package.py"
+            ),
             "claimed_paths": ["scripts/system"],
         },
         {
-            "command": "python -m pytest tests\\system\\test_product_launch_readiness.py tests\\system\\test_build_manufacturing_braid_package.py -q",
+            "command": (
+                "python -m pytest tests\\system\\test_product_launch_readiness.py "
+                "tests\\system\\test_build_manufacturing_braid_package.py -q"
+            ),
             "claimed_paths": ["tests/system", "scripts/system"],
         },
         {
@@ -386,7 +399,10 @@ def build_bus_event(report: dict[str, Any]) -> dict[str, Any]:
 def build_markdown(report: dict[str, Any]) -> str:
     checks = report["verification"]["checks"]
     check_lines = [
-        f"- `{item['command']}` -> `{item['returncode']}` in {item['duration_ms']} ms; GeoSeal `{item['geoseal_gate']['tier']}`"
+        (
+            f"- `{item['command']}` -> `{item['returncode']}` "
+            f"in {item['duration_ms']} ms; GeoSeal `{item['geoseal_gate']['tier']}`"
+        )
         for item in checks
     ]
     agent_lines = [
@@ -545,7 +561,10 @@ def run_workcell(
                 "all products and model workers support each other by emitting bus packets with task, "
                 "lease, proof, risk, product route, and training-capture metadata"
             ),
-            "routing_policy": "free models do first-pass work; paid models review/escalate high-value or failing packets",
+            "routing_policy": (
+                "free models do first-pass work; paid models review/escalate "
+                "high-value or failing packets"
+            ),
             "coding_systems": sorted({lease["coding_system"] for lease in leases}),
             "product_routes": [
                 "workflow_snapshot_starter",
@@ -557,8 +576,14 @@ def run_workcell(
             ],
         },
         "deploy_policy": {
-            "promotion": "staging proof must pass GeoSeal, regression checks, remote-app route smoke, and launch readiness gate before production promotion",
-            "rollback": "failed gate or post-deploy monitor returns BLOCKED and preserves artifacts for rollback review",
+            "promotion": (
+                "staging proof must pass GeoSeal, regression checks, remote-app "
+                "route smoke, and launch readiness gate before production promotion"
+            ),
+            "rollback": (
+                "failed gate or post-deploy monitor returns BLOCKED and preserves "
+                "artifacts for rollback review"
+            ),
             "monitor": "Agent Bus event plus route/product readiness artifacts become the post-deploy evidence trail",
         },
         "git": {
