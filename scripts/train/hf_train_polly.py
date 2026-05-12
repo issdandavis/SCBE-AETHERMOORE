@@ -71,6 +71,7 @@ def resolve_token():
             os.environ["HF_TOKEN"] = tok
             return tok
     except Exception:
+        # Colab userdata is optional; continue with normal environment lookup.
         pass
     return None
 
@@ -174,8 +175,7 @@ def main():
         lora_dropout=args.lora_dropout,
         bias="none",
         task_type=TaskType.CAUSAL_LM,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                        "gate_proj", "up_proj", "down_proj"],
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
     )
     model = get_peft_model(model, lora)
     model.print_trainable_parameters()

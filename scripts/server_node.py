@@ -120,14 +120,17 @@ def _start_service(name: str, cfg: dict) -> Optional[int]:
     log_file = PID_DIR / f"{name}.log"
     log_handle = open(log_file, "w")
 
-    proc = subprocess.Popen(
-        cmd,
-        cwd=str(ROOT),
-        stdout=log_handle,
-        stderr=subprocess.STDOUT,
-        env={**os.environ, "PYTHONPATH": str(ROOT)},
-        creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0,
-    )
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            cwd=str(ROOT),
+            stdout=log_handle,
+            stderr=subprocess.STDOUT,
+            env={**os.environ, "PYTHONPATH": str(ROOT)},
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0,
+        )
+    finally:
+        log_handle.close()
 
     _pid_file(name).write_text(str(proc.pid))
     logger.info("%s: started (pid=%d, port=%d)", name, proc.pid, port)

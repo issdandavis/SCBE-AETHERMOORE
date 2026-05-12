@@ -28,7 +28,7 @@ def _load_oqs_module():
         import oqs as oqs_module
 
         return oqs_module
-    except BaseException:
+    except (Exception, SystemExit):
         # liboqs-python can raise SystemExit while trying to bootstrap missing
         # shared libraries. PQC is optional here, so fall back instead.
         return None
