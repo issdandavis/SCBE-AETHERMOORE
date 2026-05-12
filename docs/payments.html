@@ -88,6 +88,20 @@
         gap: 12px;
         margin-top: 18px;
       }
+      .hero-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+        gap: 28px;
+        align-items: center;
+      }
+      .hero-image {
+        width: 100%;
+        min-height: 260px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-soft);
+        object-fit: cover;
+      }
       .btn {
         display: inline-flex;
         min-height: 46px;
@@ -101,7 +115,8 @@
         font-weight: 800;
         text-decoration: none;
       }
-      .btn.secondary {
+      .btn.secondary,
+      .btn.btn-secondary {
         background: transparent;
         color: var(--ink);
         border-color: rgba(255, 255, 255, 0.18);
@@ -162,6 +177,7 @@
         align-items: center;
       }
       @media (max-width: 760px) {
+        .hero-layout,
         .split {
           grid-template-columns: 1fr;
         }
@@ -179,22 +195,30 @@
         <a href="legal/terms.html">Terms</a>
       </nav>
 
-      <header>
-        <div class="eyebrow">Payment center</div>
-        <h1>Pay or support AetherMoore in the least annoying way.</h1>
-        <p>
-          Use Ko-fi for simple support, Cash App for direct manual payment, card checkout for fixed
-          offers, or email for an invoice/procurement path. Include the offer name in manual payment
-          notes so the work can be matched to the right delivery path.
-        </p>
-        <div class="hero-actions">
-          <a class="btn" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
-            >Support on Ko-fi</a
-          >
-          <a class="btn secondary" href="#cash-app">Cash App $IzzyDDavis7</a>
-          <a class="btn secondary" href="#card-checkout">Card checkout offers</a>
-          <a class="btn secondary" href="#invoice">Invoice / procurement</a>
+      <header id="offer" class="hero-layout">
+        <div>
+          <div class="eyebrow">Payment center</div>
+          <h1>Pay once, support monthly, or request an invoice.</h1>
+          <p>
+            Choose the easiest payment route for AetherMoore work: Ko-fi for support, Cash App for a
+            direct manual payment, card checkout for fixed offers, or invoice/procurement when a
+            buyer needs paperwork. One-time paths have no subscription unless the offer says
+            monthly.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
+              >Support on Ko-fi</a
+            >
+            <a class="btn secondary" href="#cash-app">Cash App $IzzyDDavis7</a>
+            <a class="btn secondary" href="#card-checkout">Card checkout offers</a>
+            <a class="btn secondary" href="#invoice">Invoice / procurement</a>
+          </div>
         </div>
+        <img
+          class="hero-image"
+          src="hero.svg"
+          alt="AetherMoore governance workspace preview for payment and delivery"
+        />
       </header>
 
       <section class="grid" aria-label="Payment methods">
@@ -297,6 +321,41 @@
         </div>
       </section>
 
+      <section id="includes" class="section panel" aria-label="What the payment center handles">
+        <h2>What this payment center handles</h2>
+        <p>
+          The payment route is not the product by itself. It connects the buyer to the right delivery
+          lane, support record, and manual review path before any sensitive files are requested.
+        </p>
+        <p>
+          Service purchases can route into a decision record, threshold worksheet, pilot checklist,
+          review notes format, manual handling path, and delivery recovery note.
+        </p>
+        <div class="grid">
+          <article class="card">
+            <h3>Receipt to delivery</h3>
+            <p>
+              Payment note, receipt, and buyer email become the delivery record so the right offer is
+              matched without a long intake form.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Review package routing</h3>
+            <p>
+              Service work routes to a decision record, threshold check, pilot checklist, and review
+              notes before the final manual handoff.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Buyer protection</h3>
+            <p>
+              Terms, privacy, delivery timing, and support contacts stay visible before checkout so
+              the buyer knows what happens next.
+            </p>
+          </article>
+        </div>
+      </section>
+
       <section id="cash-app" class="section panel split" aria-label="Cash App payment">
         <div>
           <h2>Cash App direct payment</h2>
@@ -346,6 +405,59 @@
         </div>
       </section>
 
+      <section class="section panel" aria-label="Buyer fit and success check">
+        <h2>Good fit / not for</h2>
+        <p>
+          Good fit: buyers who want a low-friction way to support the work, buy a starter review, or
+          route an agent-governance service payment without setting up a vendor portal first.
+        </p>
+        <p>
+          Not for: emergency incident response, regulated-data transfer before handling rules are
+          agreed, or buyers who need a custom statement of work before paying.
+        </p>
+        <h3>Success check</h3>
+        <p>
+          A successful payment leaves a receipt, a named offer, a buyer contact, and a clear next
+          step: delivery link after checkout, manual support follow-up, or an invoice/procurement
+          response.
+        </p>
+      </section>
+
+      <section id="faq" class="section panel" aria-label="Payment FAQ">
+        <h2>FAQ</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>What should I buy first?</h3>
+            <p>
+              Start with the Workflow Snapshot if you want a written agent workflow review. Read the
+              <a href="use-cases/governed-ai-workflows.html">governed workflow use case</a> first if
+              you are comparing options.
+            </p>
+          </article>
+          <article class="card">
+            <h3>What is included?</h3>
+            <p>
+              Compare starter downloads and deeper work on
+              <a href="comparison/toolkit-vs-full-repo.html">Toolkit vs Full Repo</a>.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Why manual delivery?</h3>
+            <p>
+              The <a href="proof/why-the-manual-exists.html">manual delivery proof</a> explains why
+              sensitive governance work uses a visible handoff instead of blind automation.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Where is the proof?</h3>
+            <p>
+              Review the <a href="redteam.html">red-team page</a> and
+              <a href="proof/red-team-summary.html">red-team summary</a> before buying.
+            </p>
+          </article>
+        </div>
+      </section>
+
       <section class="section panel" aria-label="After payment">
         <h2>After payment</h2>
         <p>
@@ -360,6 +472,29 @@
           <a class="btn secondary" href="offers.json">Machine-readable offers</a>
           <a class="btn secondary" href="legal/terms.html">Terms</a>
           <a class="btn secondary" href="legal/privacy.html">Privacy</a>
+        </div>
+      </section>
+
+      <section class="section panel" aria-label="Final CTA">
+        <h2>Final CTA</h2>
+        <p>
+          If you are not sure which route to use, Ko-fi is the simplest support path. For service
+          work, buy the Snapshot Starter or request an invoice with the offer name and buyer email.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
+            >Support on Ko-fi</a
+          >
+          <a
+            class="btn btn-primary"
+            href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l"
+            target="_blank"
+            rel="noopener"
+            >Buy Snapshot Starter</a
+          >
+          <a class="btn secondary" href="mailto:aethermoregames@pm.me?subject=AetherMoore%20payment%20question"
+            >Ask a payment question</a
+          >
         </div>
       </section>
     </main>
