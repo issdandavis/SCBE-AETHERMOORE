@@ -71,6 +71,15 @@ def redact_params(params: dict[str, str]) -> dict[str, str]:
     return out
 
 
+def safe_plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "source": "sam_gov_opportunities_api",
+        "query_count": len(plan.get("queries", [])),
+        "keywords": [str(query.get("params", {}).get("q", "")) for query in plan.get("queries", [])],
+        "api_key_present": bool(plan.get("api_key_present")),
+    }
+
+
 def fetch_json(endpoint: str, params: dict[str, str], timeout: int = 60) -> dict[str, Any]:
     url = f"{endpoint}?{urllib.parse.urlencode(params)}"
     request = urllib.request.Request(url, headers={"Accept": "application/json"})
@@ -163,10 +172,15 @@ def main() -> int:
     api_key = resolve_api_key()
     plan = build_plan(args, api_key)
     if not args.execute:
-        print(json.dumps({"ok": True, "dry_run": True, "plan": plan}, indent=2))
+        print(json.dumps({"ok": True, "dry_run": True, "plan": safe_plan_summary(plan)}, indent=2))
         return 0
     if not api_key:
-        print(json.dumps({"ok": False, "error": "missing SAM_API_KEY or SAM_GOV_API_KEY", "plan": plan}, indent=2))
+        print(
+            json.dumps(
+                {"ok": False, "error": "missing SAM_API_KEY or SAM_GOV_API_KEY", "plan": safe_plan_summary(plan)},
+                indent=2,
+            )
+        )
         return 2
 
     opportunities: list[dict[str, Any]] = []

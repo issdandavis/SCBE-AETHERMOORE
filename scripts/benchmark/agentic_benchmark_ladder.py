@@ -31,7 +31,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TASKS_DIR = REPO_ROOT / "benchmarks" / "scbe_agentic_v1" / "tasks"
 SCHEMA_VERSION = "scbe_agentic_benchmark_ladder_v1"
@@ -52,6 +51,23 @@ def _redact_secret_like_text(text: str) -> str:
     for pat in _SECRET_PATTERNS:
         redacted = pat.sub("<redacted-secret>", redacted)
     return redacted
+
+
+def _redact_sensitive_json(value: Any) -> Any:
+    if isinstance(value, str):
+        return _redact_secret_like_text(value)
+    if isinstance(value, list):
+        return [_redact_sensitive_json(item) for item in value]
+    if isinstance(value, dict):
+        out: dict[str, Any] = {}
+        for key, item in value.items():
+            lowered = str(key).lower()
+            if any(marker in lowered for marker in ("secret", "token", "password", "api_key", "apikey", "credential")):
+                out[key] = "<redacted>"
+            else:
+                out[key] = _redact_sensitive_json(item)
+        return out
+    return value
 
 
 def _utc_now() -> str:
@@ -100,9 +116,7 @@ class MetricRecord:
     evidence_quality: str
 
 
-def _default_metrics(
-    ok: bool, elapsed: float, commands_used: int, text: str, evidence: str = "log"
-) -> dict[str, Any]:
+def _default_metrics(ok: bool, elapsed: float, commands_used: int, text: str, evidence: str = "log") -> dict[str, Any]:
     return asdict(
         MetricRecord(
             task_success=ok,
@@ -174,9 +188,7 @@ def run_level0_smoke() -> dict[str, Any]:
                 "name": name,
                 "ok": ok,
                 "metrics": _default_metrics(ok, elapsed, 1, text),
-                "summary": (
-                    parsed if isinstance(parsed, dict) else {"raw": payload_txt[:500]}
-                ),
+                "summary": (parsed if isinstance(parsed, dict) else {"raw": payload_txt[:500]}),
             }
         )
     return out
@@ -189,11 +201,7 @@ def _load_task_json(path: Path) -> dict[str, Any]:
 def discover_tasks() -> list[Path]:
     if not TASKS_DIR.is_dir():
         return []
-    return sorted(
-        p / "task.json"
-        for p in TASKS_DIR.iterdir()
-        if p.is_dir() and (p / "task.json").is_file()
-    )
+    return sorted(p / "task.json" for p in TASKS_DIR.iterdir() if p.is_dir() and (p / "task.json").is_file())
 
 
 def run_level1_tasks(max_level: int) -> dict[str, Any]:
@@ -274,9 +282,7 @@ def run_level6_cli_readiness(max_level: int) -> dict[str, Any]:
         "tests/smoke/test_npm_geoseal_bin.py",
         "-q",
     ]
-    code, so, se, elapsed = _run_cmd(
-        cmd, REPO_ROOT, timeout=600, env=_env_with_repo_pythonpath()
-    )
+    code, so, se, elapsed = _run_cmd(cmd, REPO_ROOT, timeout=600, env=_env_with_repo_pythonpath())
     text = (so or "") + (se or "")
     ok = code == 0
     out["ok"] = ok
@@ -360,9 +366,7 @@ def run_level7_scbe_code_agent(max_level: int) -> dict[str, Any]:
     ]
 
     for name, cmd, timeout in checks:
-        code, so, se, elapsed = _run_cmd(
-            cmd, REPO_ROOT, timeout=timeout, env=_env_with_repo_pythonpath()
-        )
+        code, so, se, elapsed = _run_cmd(cmd, REPO_ROOT, timeout=timeout, env=_env_with_repo_pythonpath())
         text = (so or "") + (se or "")
         ok = code == 0
         if ok and name == "scbe_code_compile_ca":
@@ -543,9 +547,7 @@ def main() -> int:
         help="Same as workflow query: integer or max_level=N",
     )
 
-    sub.add_parser(
-        "validate", help="Validate task.json files under scbe_agentic_v1/tasks"
-    )
+    sub.add_parser("validate", help="Validate task.json files under scbe_agentic_v1/tasks")
     sub.add_parser("list", help="List discovered repo-native tasks")
 
     args = parser.parse_args()
@@ -558,7 +560,7 @@ def main() -> int:
         if args.query:
             ml = _parse_max_level(args.query)
         result = run_ladder(ml)
-        print(json.dumps(result, indent=2))
+        print(json.dumps(_redact_sensitive_json(result), indent=2))
         return 0 if result["ok"] else 1
 
 
