@@ -30,6 +30,7 @@ def _first_enabled(enabled: Iterable[str], candidates: Iterable[str]) -> str:
         if candidate in enabled_set:
             return candidate
     _die(f"none of {list(candidates)} are enabled")
+    raise RuntimeError("unreachable after _die")
 
 
 def _kem_roundtrip(oqs_module, algorithm: str) -> None:

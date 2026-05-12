@@ -376,7 +376,8 @@ class Reader(Protocol):
     op-stream the reader emits.
     """
 
-    def read(self, payload: bytes) -> Sequence[OpTrace]: ...
+    def read(self, payload: bytes) -> Sequence[OpTrace]:
+        raise NotImplementedError
 
 
 @dataclass
@@ -540,9 +541,11 @@ class MoralPrior(Protocol):
     """A prior that inspects flagged input and returns a transformed reading."""
 
     @property
-    def prior_id(self) -> str: ...
+    def prior_id(self) -> str:
+        raise NotImplementedError
 
-    def inspect(self, payload: bytes, flags: Sequence[Flag]) -> InspectionResult: ...
+    def inspect(self, payload: bytes, flags: Sequence[Flag]) -> InspectionResult:
+        raise NotImplementedError
 
 
 @dataclass
