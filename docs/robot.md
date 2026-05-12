@@ -92,6 +92,7 @@ Use the live offers from `offers.json` as the source of truth. As of this map:
 - $20/month AetherMoore Supporter: low-cost monthly support path.
 - $29 SCBE AI Governance Toolkit: templates and governance starter materials.
 - $29 SCBE AI Security Training Vault: training and benchmark starter materials.
+- $99 AI Agent Workflow Snapshot: starter written read for one agent workflow. Use the Ko-fi service-credit path until the exact Stripe checkout is active.
 - $99/month Governance Heartbeat: monthly workflow scan path. Check `offers.json`; if it still uses mailto, treat it as manual signup.
 - $500 Governance Snapshot: fixed-scope written review of one AI workflow.
 
@@ -119,11 +120,15 @@ Use this ladder when explaining when to pay:
    - Best for: immediate downloadable value, templates, training materials, and benchmark starters.
    - Upgrade when: the user wants SCBE applied to their own workflow.
 
-5. $99/month Governance Heartbeat
+5. $99 AI Agent Workflow Snapshot
+   - Best for: one concise starter read on an agent workflow before buying a deeper review.
+   - Upgrade when: the workflow has customer, legal, security, financial, or production impact.
+
+6. $99/month Governance Heartbeat
    - Best for: monthly monitoring of one AI workflow.
    - Upgrade when: the user needs a deeper first-pass review or a human-readable written report.
 
-6. $500 Governance Snapshot
+7. $500 Governance Snapshot
    - Best for: one serious AI workflow that needs a written review, risk summary, and next actions.
    - Upgrade when: the user needs custom integration, enterprise review, or subcontract/research work.
 

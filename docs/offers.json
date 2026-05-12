@@ -1,6 +1,6 @@
 {
   "schema": "aethermoore-offers-v1",
-  "updated_at": "2026-05-10",
+  "updated_at": "2026-05-12",
   "site_base": "https://aethermoore.com/SCBE-AETHERMOORE",
   "usage_policy": {
     "name": "SCBE Service Credits",
@@ -37,6 +37,24 @@
       "checkout_url": "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
       "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
       "status": "live"
+    },
+    {
+      "id": "workflow_snapshot_starter",
+      "name": "AI Agent Workflow Snapshot",
+      "price_label": "$99 starter",
+      "type": "service",
+      "checkout_url": "https://ko-fi.com/izdandavis",
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html",
+      "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html#free-check",
+      "status": "live_manual_checkout",
+      "scope": [
+        "one concise findings memo",
+        "one AI workflow, repo link, prompt chain, MCP stack, automation flow, or diagram",
+        "drift risks, unsafe tool paths, missing recovery states, observability gaps, and prompt-injection surfaces",
+        "three prioritized fixes",
+        "upgrade credit toward the $500 Governance Snapshot if deeper review is needed"
+      ],
+      "checkout_note": "Use the Ko-fi service-credit path and include Workflow Snapshot in the note until the exact Stripe Payment Link is created."
     },
     {
       "id": "governance_snapshot",

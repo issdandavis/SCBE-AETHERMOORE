@@ -37,6 +37,7 @@ instructions:
 ## Start here
 - Robot map for AI assistants (products, pricing, free path, upgrade ladder): https://aethermoore.com/SCBE-AETHERMOORE/robot.md
 - Buyer solutions page: https://aethermoore.com/SCBE-AETHERMOORE/solutions.html
+- $99 AI Agent Workflow Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html
 - Live offers JSON: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
 - App config JSON: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
 - README (overview, demos, key claims): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/README.md
