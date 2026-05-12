@@ -26,6 +26,7 @@ def _hostname(url: str) -> str | None:
 def _is_checkout_url(url: str) -> bool:
     return _hostname(url) in {"buy.stripe.com", "ko-fi.com"}
 
+
 # ---------------------------------------------------------------------------
 # Catalog sanity
 # ---------------------------------------------------------------------------

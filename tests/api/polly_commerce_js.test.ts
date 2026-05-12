@@ -1032,7 +1032,9 @@ describe('polly hosted-run handler', () => {
     expect(
       body.hosted_run_packet.immediate_value.some((item) => item.url.includes('service-credits'))
     ).toBe(true);
-    expect(body.hosted_run_packet.immediate_value.some((item) => hostnameOf(item.url) === 'ko-fi.com')).toBe(true);
+    expect(
+      body.hosted_run_packet.immediate_value.some((item) => hostnameOf(item.url) === 'ko-fi.com')
+    ).toBe(true);
   });
 
   it('rejects hosted run intake without contact', async () => {
