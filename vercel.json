@@ -61,6 +61,14 @@
       "dest": "/api/agent/products.js"
     },
     {
+      "src": "^/solutions/?$",
+      "dest": "/api/agent/solutions.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/solutions\\.html$",
+      "dest": "/api/agent/solutions.js"
+    },
+    {
       "src": "^/start-here/?$",
       "dest": "/api/agent/start-here.js"
     },
@@ -99,6 +107,14 @@
     {
       "src": "^/SCBE-AETHERMOORE/workflow-snapshot\\.html$",
       "dest": "/api/agent/workflow-snapshot.js"
+    },
+    {
+      "src": "^/governance-snapshot/?$",
+      "dest": "/api/agent/governance-snapshot.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/governance-snapshot\\.html$",
+      "dest": "/api/agent/governance-snapshot.js"
     },
     {
       "src": "^/service-credits/?$",
@@ -155,6 +171,30 @@
     {
       "src": "^/SCBE-AETHERMOORE/legal/terms\\.html$",
       "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/robot\\.html$",
+      "dest": "/api/agent/robot-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robot\\.html$",
+      "dest": "/api/agent/robot-page.js"
+    },
+    {
+      "src": "^/robot\\.md$",
+      "dest": "/api/agent/robot-md.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robot\\.md$",
+      "dest": "/api/agent/robot-md.js"
+    },
+    {
+      "src": "^/llms\\.txt$",
+      "dest": "/api/agent/llms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/llms\\.txt$",
+      "dest": "/api/agent/llms.js"
     },
     {
       "src": "^/static/(.*)$",
