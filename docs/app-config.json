@@ -29,6 +29,7 @@
     "supporter_page": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
     "service_credits_page": "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
     "hosted_run_page": "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html",
+    "solutions_page": "https://aethermoore.com/SCBE-AETHERMOORE/solutions.html",
     "governance_snapshot_page": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
     "offers_json": "https://aethermoore.com/SCBE-AETHERMOORE/offers.json",
     "agent_bridge_health": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/health",
