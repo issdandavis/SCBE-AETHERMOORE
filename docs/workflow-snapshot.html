@@ -175,6 +175,19 @@
         padding: 18px;
         margin-top: 22px;
       }
+      .pay-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.9fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .qr {
+        max-width: 260px;
+        width: 100%;
+        border-radius: 10px;
+        background: #fff;
+        padding: 8px;
+      }
       footer {
         padding: 36px 0;
         color: var(--muted);
@@ -183,7 +196,8 @@
       @media (max-width: 780px) {
         .price-strip,
         .grid,
-        .steps {
+        .steps,
+        .pay-grid {
           grid-template-columns: 1fr;
         }
         h1 {
@@ -217,6 +231,7 @@
           <a class="btn" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
             >Start for $99 via service credits</a
           >
+          <a class="btn secondary" href="#cash-app">Pay with Cash App</a>
           <a class="btn secondary" href="#free-check">Run the free self-check</a>
           <a class="btn secondary" href="governance-snapshot.html">Need the $500 review?</a>
         </div>
@@ -231,7 +246,8 @@
         </div>
         <div class="note">
           Stripe checkout for the exact $99 SKU is pending credential refresh. Until then, use the
-          live Ko-fi service-credit path and include "Workflow Snapshot" in the note.
+          live Ko-fi service-credit path or Cash App <strong>$IzzyDDavis7</strong> and include
+          "Workflow Snapshot" in the note.
         </div>
       </div>
     </header>
@@ -292,6 +308,38 @@
               <strong>4. Receive</strong>
               <p>You get a short memo with findings and the next three fixes.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cash-app">
+        <div class="wrap">
+          <div class="eyebrow">Manual payment option</div>
+          <h2>Pay with Cash App.</h2>
+          <div class="pay-grid">
+            <article class="card">
+              <h3>Cashtag: $IzzyDDavis7</h3>
+              <p>
+                For the $99 Workflow Snapshot, send the payment through Cash App and put
+                <strong>Workflow Snapshot</strong> in the note. Then use the project brief or email
+                route so the workflow details can be matched to the payment.
+              </p>
+              <div class="actions">
+                <a class="btn" href="hire.html">Send the workflow brief</a>
+                <a
+                  class="btn secondary"
+                  href="mailto:issdandavis7795@gmail.com?subject=Workflow%20Snapshot%20paid%20via%20Cash%20App"
+                  >Email payment note</a
+                >
+              </div>
+            </article>
+            <article class="card">
+              <img
+                class="qr"
+                src="static/cash-app-payment.png"
+                alt="Cash App QR code for Issac Davis, cashtag $IzzyDDavis7"
+              />
+            </article>
           </div>
         </div>
       </section>
