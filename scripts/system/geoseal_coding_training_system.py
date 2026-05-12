@@ -9,7 +9,6 @@ import json
 import os
 import re
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -285,7 +284,10 @@ def assess_job_health(inspect_summary: dict[str, Any], logs_payload: dict[str, A
     summary = (logs_payload or {}).get("summary") or {}
     has_training_signal = bool(
         tail
-        or (isinstance(summary, dict) and (summary.get("latest_loss") or summary.get("progress") or summary.get("training_complete")))
+        or (
+            isinstance(summary, dict)
+            and (summary.get("latest_loss") or summary.get("progress") or summary.get("training_complete"))
+        )
     )
     if stage == "RUNNING" and logs_payload is not None and not has_training_signal and logs_returncode == 0:
         return {
@@ -375,7 +377,9 @@ def status(manifest: dict[str, Any], profile_id: str | None, job_id: str | None,
                 first = inspected[0]
                 if isinstance(first, dict):
                     inspect_summary = {
-                        "stage": ((first.get("status") or {}) if isinstance(first.get("status"), dict) else {}).get("stage"),
+                        "stage": ((first.get("status") or {}) if isinstance(first.get("status"), dict) else {}).get(
+                            "stage"
+                        ),
                         "url": first.get("url"),
                         "flavor": first.get("flavor"),
                         "created_at": first.get("created_at"),
@@ -578,7 +582,9 @@ if __name__ == "__main__":
 '''
 
 
-def dispatch_smoke_eval(manifest: dict[str, Any], profile_id: str | None, adapter_repo: str | None, timeout: str) -> dict[str, Any]:
+def dispatch_smoke_eval(
+    manifest: dict[str, Any], profile_id: str | None, adapter_repo: str | None, timeout: str
+) -> dict[str, Any]:
     plan = smoke_eval_plan(manifest, profile_id, adapter_repo)
     out_dir = Path(plan["output_dir"])
     script_path = out_dir / "smoke_eval_hf.py"

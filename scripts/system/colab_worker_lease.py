@@ -731,7 +731,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0
-    artifact = provision_colab_worker(
+    provision_colab_worker(
         notebook_query=args.notebook,
         mission_id=mission_id,
         worker_id=worker_id,

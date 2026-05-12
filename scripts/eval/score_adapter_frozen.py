@@ -12,15 +12,13 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import os
 import re
 import sys
 import time
-from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BASE_MODEL = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
@@ -52,9 +50,7 @@ class FileMetrics:
 
     @property
     def mean_nll(self) -> float:
-        return (
-            self.sum_nll / self.n_assistant_tokens if self.n_assistant_tokens else 0.0
-        )
+        return self.sum_nll / self.n_assistant_tokens if self.n_assistant_tokens else 0.0
 
     @property
     def perplexity(self) -> float:
@@ -78,9 +74,7 @@ def load_records(path: Path) -> list[dict[str, Any]]:
             except json.JSONDecodeError:
                 continue
             msgs = payload.get("messages")
-            if isinstance(msgs, list) and any(
-                m.get("role") == "assistant" for m in msgs
-            ):
+            if isinstance(msgs, list) and any(m.get("role") == "assistant" for m in msgs):
                 records.append({"messages": msgs, "meta": payload.get("meta", {})})
     return records
 
@@ -89,10 +83,6 @@ def build_supervised_inputs(
     tokenizer, messages: list[dict[str, str]], max_length: int
 ) -> tuple[list[int], list[int]] | None:
     """Returns (input_ids, labels) where non-assistant positions are -100."""
-    full_text = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=False
-    )
-
     # Split before each assistant turn so we can mask user/system tokens.
     # We rebuild a prefix containing all turns up to (but not including) each
     # assistant turn, tokenize the prefix and the prefix+assistant, and the
@@ -103,24 +93,16 @@ def build_supervised_inputs(
 
     for msg in messages:
         prefix_text = (
-            tokenizer.apply_chat_template(
-                prefix_messages, tokenize=False, add_generation_prompt=False
-            )
+            tokenizer.apply_chat_template(prefix_messages, tokenize=False, add_generation_prompt=False)
             if prefix_messages
             else ""
         )
         prefix_messages_with = prefix_messages + [msg]
-        with_text = tokenizer.apply_chat_template(
-            prefix_messages_with, tokenize=False, add_generation_prompt=False
-        )
+        with_text = tokenizer.apply_chat_template(prefix_messages_with, tokenize=False, add_generation_prompt=False)
 
         # Tokenize without special tokens to keep alignment honest; chat
         # template already injects role markers as text.
-        prefix_ids = (
-            tokenizer(prefix_text, add_special_tokens=False)["input_ids"]
-            if prefix_text
-            else []
-        )
+        prefix_ids = tokenizer(prefix_text, add_special_tokens=False)["input_ids"] if prefix_text else []
         with_ids = tokenizer(with_text, add_special_tokens=False)["input_ids"]
 
         if len(with_ids) <= len(prefix_ids):
@@ -160,9 +142,7 @@ def score_file(
     import torch
 
     for rec in records:
-        prepared = build_supervised_inputs(
-            tokenizer, rec["messages"], max_length=max_length
-        )
+        prepared = build_supervised_inputs(tokenizer, rec["messages"], max_length=max_length)
         if prepared is None:
             metrics.skipped += 1
             continue
@@ -171,9 +151,7 @@ def score_file(
         label_tensor = torch.tensor([labels], dtype=torch.long, device=device)
         attn = torch.ones_like(input_tensor)
         with torch.no_grad():
-            out = model(
-                input_ids=input_tensor, attention_mask=attn, labels=label_tensor
-            )
+            out = model(input_ids=input_tensor, attention_mask=attn, labels=label_tensor)
         n_supervised = int((label_tensor != -100).sum().item())
         # HF returns mean loss over supervised positions; multiply back.
         loss_val = float(out.loss.item())
@@ -184,9 +162,7 @@ def score_file(
     return metrics
 
 
-def load_model_and_tokenizer(
-    base_model: str, adapter: str, dtype_arg: str, use_4bit: bool
-):
+def load_model_and_tokenizer(base_model: str, adapter: str, dtype_arg: str, use_4bit: bool):
     import torch
     from peft import PeftModel
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -199,9 +175,7 @@ def load_model_and_tokenizer(
         else:
             dtype = torch.float32
     else:
-        dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[
-            dtype_arg
-        ]
+        dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[dtype_arg]
 
     tok = AutoTokenizer.from_pretrained(base_model, use_fast=True)
     if tok.pad_token is None:
@@ -283,9 +257,7 @@ def write_report(
     }
 
     json_path = out_dir / "report.json"
-    json_path.write_text(
-        json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 
     md_lines = [
         f"# Frozen Eval — {adapter}",
@@ -321,9 +293,7 @@ def parse_args() -> argparse.Namespace:
         help="HF repo id OR local path to adapter; pass BASE to score the un-adapted base model",
     )
     p.add_argument("--base-model", default=DEFAULT_BASE_MODEL)
-    p.add_argument(
-        "--eval-dir", type=Path, default=PROJECT_ROOT / "training-data" / "sft"
-    )
+    p.add_argument("--eval-dir", type=Path, default=PROJECT_ROOT / "training-data" / "sft")
     p.add_argument(
         "--eval-files",
         nargs="*",
@@ -394,9 +364,7 @@ def main() -> int:
         "use_4bit": not args.no_4bit,
         "dtype": args.dtype,
     }
-    paths = write_report(
-        args.output_root, args.adapter, args.base_model, metrics, elapsed, runtime_meta
-    )
+    paths = write_report(args.output_root, args.adapter, args.base_model, metrics, elapsed, runtime_meta)
 
     total_records = sum(m.n_records for m in metrics)
     total_tokens = sum(m.n_assistant_tokens for m in metrics)

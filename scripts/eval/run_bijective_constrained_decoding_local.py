@@ -29,11 +29,10 @@ import gc
 import json
 import os
 import re
-import sys
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -43,9 +42,7 @@ BASE_MODEL = os.environ.get(
     "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1",
 ).strip()
 GATE_TONGUES = tuple(
-    t.strip()
-    for t in os.environ.get("SCBE_BIJ_GATE_TONGUES", "AV,RU,CA,UM,DR").split(",")
-    if t.strip()
+    t.strip() for t in os.environ.get("SCBE_BIJ_GATE_TONGUES", "AV,RU,CA,UM,DR").split(",") if t.strip()
 )
 GATE_PASS_RATE_MIN = float(os.environ.get("SCBE_BIJ_GATE_PASS_RATE_MIN", "0.80"))
 GATE_PER_CASE_MIN = float(os.environ.get("SCBE_BIJ_GATE_PER_CASE_MIN", "0.60"))
@@ -125,10 +122,7 @@ CASES = (
 SEEDS = {
     "reverse_string": "def reverse_string(s: str) -> str:\n    return s[::-1]\n",
     "safe_divide": (
-        "def safe_divide(a: float, b: float):\n"
-        "    if b == 0:\n"
-        "        return None\n"
-        "    return a / b\n"
+        "def safe_divide(a: float, b: float):\n" "    if b == 0:\n" "        return None\n" "    return a / b\n"
     ),
     "parse_json_name": (
         "import json\n"
@@ -171,30 +165,52 @@ BACK_PREFIX = {
         "        return None\n"
     ),
     "bounded_factorial": (
-        "def factorial(n: int) -> int:\n"
-        "    if n < 0:\n"
-        "        raise ValueError('n must be non-negative')\n"
+        "def factorial(n: int) -> int:\n" "    if n < 0:\n" "        raise ValueError('n must be non-negative')\n"
     ),
-    "eval_runner": (
-        "def run_expr(expr: str) -> object:\n"
-        "    _ALLOWED = {'__builtins__': {}}\n"
-    ),
+    "eval_runner": ("def run_expr(expr: str) -> object:\n" "    _ALLOWED = {'__builtins__': {}}\n"),
 }
 
 
 SAFE_BUILTINS = {
-    "abs": abs, "all": all, "any": any, "bool": bool, "dict": dict,
-    "enumerate": enumerate, "Exception": Exception, "float": float,
-    "filter": filter, "frozenset": frozenset, "int": int, "iter": iter,
-    "len": len, "list": list, "map": map, "max": max, "min": min,
-    "next": next, "print": print, "range": range, "reversed": reversed,
-    "set": set, "sorted": sorted, "str": str, "sum": sum, "tuple": tuple,
-    "type": type, "isinstance": isinstance, "zip": zip,
-    "AttributeError": AttributeError, "IndexError": IndexError,
-    "KeyError": KeyError, "RuntimeError": RuntimeError,
-    "StopIteration": StopIteration, "TypeError": TypeError,
-    "ValueError": ValueError, "ZeroDivisionError": ZeroDivisionError,
-    "__import__": __import__, "eval": eval,
+    "abs": abs,
+    "all": all,
+    "any": any,
+    "bool": bool,
+    "dict": dict,
+    "enumerate": enumerate,
+    "Exception": Exception,
+    "float": float,
+    "filter": filter,
+    "frozenset": frozenset,
+    "int": int,
+    "iter": iter,
+    "len": len,
+    "list": list,
+    "map": map,
+    "max": max,
+    "min": min,
+    "next": next,
+    "print": print,
+    "range": range,
+    "reversed": reversed,
+    "set": set,
+    "sorted": sorted,
+    "str": str,
+    "sum": sum,
+    "tuple": tuple,
+    "type": type,
+    "isinstance": isinstance,
+    "zip": zip,
+    "AttributeError": AttributeError,
+    "IndexError": IndexError,
+    "KeyError": KeyError,
+    "RuntimeError": RuntimeError,
+    "StopIteration": StopIteration,
+    "TypeError": TypeError,
+    "ValueError": ValueError,
+    "ZeroDivisionError": ZeroDivisionError,
+    "__import__": __import__,
+    "eval": eval,
 }
 
 
@@ -263,9 +279,7 @@ def build_back_prompt(other_source: str, tongue: str, seed: str = "") -> str:
         joined = "\n".join(f"    {i}" for i in imports)
         contract_lines.append(f"  Required imports (must appear at top of code block):\n{joined}")
     contract_block = (
-        "\nThe Python output MUST satisfy this canonical contract:\n"
-        + "\n".join(contract_lines)
-        + "\n"
+        "\nThe Python output MUST satisfy this canonical contract:\n" + "\n".join(contract_lines) + "\n"
         if contract_lines
         else ""
     )
@@ -338,10 +352,17 @@ def round_trip_case(case: PromptCase, tongue: str, fwd_generate, back_generate) 
         intermediate = extract_first_codeblock(forward_output)
         if not intermediate:
             return RoundTripResult(
-                case_id=case.case_id, tongue=tongue, forward_output=forward_output,
-                intermediate_code="", back_output="", round_tripped_python="",
-                syntax_ok=False, exec_ok=False, tests_passed=False,
-                error="forward_extract_empty", forward_seconds=forward_seconds,
+                case_id=case.case_id,
+                tongue=tongue,
+                forward_output=forward_output,
+                intermediate_code="",
+                back_output="",
+                round_tripped_python="",
+                syntax_ok=False,
+                exec_ok=False,
+                tests_passed=False,
+                error="forward_extract_empty",
+                forward_seconds=forward_seconds,
             )
     back_prompt = build_back_prompt(intermediate, tongue if tongue != "KO" else "AV", seed)
     forced_prefix = BACK_PREFIX.get(case.case_id, "")
@@ -349,10 +370,18 @@ def round_trip_case(case: PromptCase, tongue: str, fwd_generate, back_generate) 
     round_tripped = extract_first_codeblock(back_output)
     if not round_tripped:
         return RoundTripResult(
-            case_id=case.case_id, tongue=tongue, forward_output=forward_output,
-            intermediate_code=intermediate, back_output=back_output,
-            round_tripped_python="", syntax_ok=False, exec_ok=False, tests_passed=False,
-            error="back_extract_empty", forward_seconds=forward_seconds, back_seconds=back_seconds,
+            case_id=case.case_id,
+            tongue=tongue,
+            forward_output=forward_output,
+            intermediate_code=intermediate,
+            back_output=back_output,
+            round_tripped_python="",
+            syntax_ok=False,
+            exec_ok=False,
+            tests_passed=False,
+            error="back_extract_empty",
+            forward_seconds=forward_seconds,
+            back_seconds=back_seconds,
             back_used_prefix=bool(forced_prefix),
         )
     check = run_code_checks(round_tripped, case.assertions)
@@ -368,13 +397,22 @@ def round_trip_case(case: PromptCase, tongue: str, fwd_generate, back_generate) 
         repaired_tests_passed = False
         repaired_error = check.error
     return RoundTripResult(
-        case_id=case.case_id, tongue=tongue, forward_output=forward_output,
-        intermediate_code=intermediate, back_output=back_output,
-        round_tripped_python=round_tripped, syntax_ok=check.syntax_ok,
-        exec_ok=check.exec_ok, tests_passed=check.tests_passed,
-        repaired_python=repaired_python, repair_actions=repair_actions,
-        repaired_tests_passed=repaired_tests_passed, repaired_error=repaired_error,
-        error=check.error, forward_seconds=forward_seconds, back_seconds=back_seconds,
+        case_id=case.case_id,
+        tongue=tongue,
+        forward_output=forward_output,
+        intermediate_code=intermediate,
+        back_output=back_output,
+        round_tripped_python=round_tripped,
+        syntax_ok=check.syntax_ok,
+        exec_ok=check.exec_ok,
+        tests_passed=check.tests_passed,
+        repaired_python=repaired_python,
+        repair_actions=repair_actions,
+        repaired_tests_passed=repaired_tests_passed,
+        repaired_error=repaired_error,
+        error=check.error,
+        forward_seconds=forward_seconds,
+        back_seconds=back_seconds,
         back_used_prefix=bool(forced_prefix),
     )
 
@@ -408,7 +446,8 @@ def aggregate(results, model_id, tongues):
         passed = sum(1 for r in subset if r.tests_passed)
         repaired = sum(1 for r in subset if r.repaired_tests_passed)
         report["by_tongue"][tongue] = {
-            "n": len(subset), "pass": passed,
+            "n": len(subset),
+            "pass": passed,
             "pass_rate": round(passed / len(subset), 4),
             "repaired_pass": repaired,
             "repaired_pass_rate": round(repaired / len(subset), 4),
@@ -419,7 +458,8 @@ def aggregate(results, model_id, tongues):
         passed = sum(1 for r in subset if r.tests_passed)
         repaired = sum(1 for r in subset if r.repaired_tests_passed)
         report["by_case"][cid] = {
-            "n": len(subset), "pass": passed,
+            "n": len(subset),
+            "pass": passed,
             "pass_rate": round(passed / len(subset), 4),
             "repaired_pass": repaired,
             "repaired_pass_rate": round(repaired / len(subset), 4),
@@ -513,33 +553,51 @@ def main() -> int:
         if args.cases
         else CASES
     )
-    selected_tongues = (
-        tuple(t.strip() for t in args.tongues.split(",") if t.strip()) if args.tongues else GATE_TONGUES
-    )
+    selected_tongues = tuple(t.strip() for t in args.tongues.split(",") if t.strip()) if args.tongues else GATE_TONGUES
 
-    print(json.dumps({"event": "boot", "model": args.model, "tongues": list(selected_tongues),
-                      "cases": [c.case_id for c in selected_cases],
-                      "prefix_enabled": not args.no_prefix,
-                      "max_new_tokens": MAX_NEW_TOKENS}, ensure_ascii=True), flush=True)
+    print(
+        json.dumps(
+            {
+                "event": "boot",
+                "model": args.model,
+                "tongues": list(selected_tongues),
+                "cases": [c.case_id for c in selected_cases],
+                "prefix_enabled": not args.no_prefix,
+                "max_new_tokens": MAX_NEW_TOKENS,
+            },
+            ensure_ascii=True,
+        ),
+        flush=True,
+    )
 
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
     cuda = torch.cuda.is_available()
-    print(json.dumps({"event": "torch_env", "cuda": cuda,
-                      "device_name": torch.cuda.get_device_name(0) if cuda else "cpu",
-                      "vram_gb": (torch.cuda.get_device_properties(0).total_memory / 1024**3) if cuda else 0.0,
-                      }, ensure_ascii=True), flush=True)
+    print(
+        json.dumps(
+            {
+                "event": "torch_env",
+                "cuda": cuda,
+                "device_name": torch.cuda.get_device_name(0) if cuda else "cpu",
+                "vram_gb": (torch.cuda.get_device_properties(0).total_memory / 1024**3) if cuda else 0.0,
+            },
+            ensure_ascii=True,
+        ),
+        flush=True,
+    )
 
     dtype = torch.float16 if cuda else torch.float32
     t0 = time.time()
     tokenizer = AutoTokenizer.from_pretrained(args.model, trust_remote_code=True)
     model = AutoModelForCausalLM.from_pretrained(
-        args.model, torch_dtype=dtype, device_map="cuda" if cuda else "cpu", trust_remote_code=True,
+        args.model,
+        torch_dtype=dtype,
+        device_map="cuda" if cuda else "cpu",
+        trust_remote_code=True,
     )
     model.eval()
-    print(json.dumps({"event": "model_loaded", "seconds": round(time.time() - t0, 2)},
-                     ensure_ascii=True), flush=True)
+    print(json.dumps({"event": "model_loaded", "seconds": round(time.time() - t0, 2)}, ensure_ascii=True), flush=True)
 
     fwd_generate, back_generate = make_generators(model, tokenizer)
 
@@ -547,49 +605,68 @@ def main() -> int:
     for case in selected_cases:
         for tongue in selected_tongues:
             t_case = time.time()
-            print(json.dumps({"event": "case_start", "case": case.case_id, "tongue": tongue},
-                             ensure_ascii=True), flush=True)
+            print(
+                json.dumps({"event": "case_start", "case": case.case_id, "tongue": tongue}, ensure_ascii=True),
+                flush=True,
+            )
             r = round_trip_case(case, tongue, fwd_generate, back_generate)
             results.append(r)
-            print(json.dumps({"event": "case_done", "case": case.case_id, "tongue": tongue,
-                              "tests_passed": r.tests_passed,
-                              "repaired_tests_passed": r.repaired_tests_passed,
-                              "back_used_prefix": r.back_used_prefix,
-                              "seconds": round(time.time() - t_case, 2),
-                              "error": r.error,
-                              "repaired_error": r.repaired_error,
-                              }, ensure_ascii=True), flush=True)
+            print(
+                json.dumps(
+                    {
+                        "event": "case_done",
+                        "case": case.case_id,
+                        "tongue": tongue,
+                        "tests_passed": r.tests_passed,
+                        "repaired_tests_passed": r.repaired_tests_passed,
+                        "back_used_prefix": r.back_used_prefix,
+                        "seconds": round(time.time() - t_case, 2),
+                        "error": r.error,
+                        "repaired_error": r.repaired_error,
+                    },
+                    ensure_ascii=True,
+                ),
+                flush=True,
+            )
 
     report = aggregate(results, args.model, selected_tongues)
-    gate_pass = (
-        report["repaired_pass_rate"] >= GATE_PASS_RATE_MIN
-        and all(c["repaired_pass_rate"] >= GATE_PER_CASE_MIN for c in report["by_case"].values())
+    gate_pass = report["repaired_pass_rate"] >= GATE_PASS_RATE_MIN and all(
+        c["repaired_pass_rate"] >= GATE_PER_CASE_MIN for c in report["by_case"].values()
     )
     report["gate_pass_rate_min"] = GATE_PASS_RATE_MIN
     report["gate_per_case_min"] = GATE_PER_CASE_MIN
     report["gate_passed"] = gate_pass
 
-    out_path = Path(args.out) if args.out else (
-        REPO / "artifacts" / "bijective_tongue" /
-        f"local_constrained_{int(time.time())}.json"
+    out_path = (
+        Path(args.out)
+        if args.out
+        else (REPO / "artifacts" / "bijective_tongue" / f"local_constrained_{int(time.time())}.json")
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2, ensure_ascii=True), encoding="utf-8")
 
-    print(json.dumps({"event": "summary",
-                      "pass_rate": report["pass_rate"],
-                      "repaired_pass_rate": report["repaired_pass_rate"],
-                      "repair_lift": report["repair_lift"],
-                      "by_case": {k: v["repaired_pass_rate"] for k, v in report["by_case"].items()},
-                      "by_tongue": {k: v["repaired_pass_rate"] for k, v in report["by_tongue"].items()},
-                      "gate_passed": gate_pass,
-                      "report_path": str(out_path),
-                      }, ensure_ascii=True), flush=True)
+    print(
+        json.dumps(
+            {
+                "event": "summary",
+                "pass_rate": report["pass_rate"],
+                "repaired_pass_rate": report["repaired_pass_rate"],
+                "repair_lift": report["repair_lift"],
+                "by_case": {k: v["repaired_pass_rate"] for k, v in report["by_case"].items()},
+                "by_tongue": {k: v["repaired_pass_rate"] for k, v in report["by_tongue"].items()},
+                "gate_passed": gate_pass,
+                "report_path": str(out_path),
+            },
+            ensure_ascii=True,
+        ),
+        flush=True,
+    )
 
     del model, tokenizer
     gc.collect()
     if cuda:
         import torch
+
         torch.cuda.empty_cache()
 
     return 0 if gate_pass else 1

@@ -37,7 +37,7 @@ import json
 import sys
 import time
 from collections import Counter
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -48,7 +48,6 @@ from src.cli.petri_seed_loader import (
 )
 from src.cli.cascade_router import AndAllowCascadeRouter, CascadeRouter
 from src.cli.slm_router import (
-    ClassificationFailure,
     LatticeRouter,
     Mode,
     OllamaAdapter,

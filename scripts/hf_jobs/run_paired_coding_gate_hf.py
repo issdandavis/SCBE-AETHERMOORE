@@ -33,8 +33,7 @@ import os
 import re
 import time
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable, Dict, List, Optional
-
+from typing import Any, Callable, Optional
 
 DEFAULT_MODEL = "issdandavis/scbe-coding-agent-qwen-merged-coding-model-v1"
 
@@ -345,9 +344,7 @@ def _load_model(model_id: str, token: Optional[str]):
 def _make_generate(tokenizer, model, max_new_tokens: int) -> GenerateFn:
     def generate(prompt: str) -> tuple[str, float]:
         messages = [{"role": "user", "content": prompt}]
-        rendered = tokenizer.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
+        rendered = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         inputs = tokenizer(rendered, return_tensors="pt").to(model.device)
         t0 = time.time()
         with torch.no_grad():
@@ -359,7 +356,7 @@ def _make_generate(tokenizer, model, max_new_tokens: int) -> GenerateFn:
             )
         elapsed = time.time() - t0
         response = tokenizer.decode(
-            output[0][inputs["input_ids"].shape[1]:],
+            output[0][inputs["input_ids"].shape[1] :],
             skip_special_tokens=True,
         )
         return response, elapsed
