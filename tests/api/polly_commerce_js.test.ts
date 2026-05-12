@@ -250,9 +250,7 @@ describe('polly commerce intent classification', () => {
     const heartbeat = loaded.PRODUCT_CATALOG.find(
       (p: { sku: string }) => p.sku === 'governance-heartbeat'
     );
-    expect(heartbeat.checkoutUrl).toBe(
-      'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup'
-    );
+    expect(heartbeat.checkoutUrl).toBe('https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m');
   });
 
   it('classifies "buy" verb with bound product at 0.95 confidence', () => {
@@ -637,7 +635,7 @@ describe('polly commerce reply rendering', () => {
     const out = commerce.renderBuyReply(product);
     expect(out.text).toContain('$99/month');
     expect(out.text).toContain('first scan starts');
-    expect(out.actions[0].url).toMatch(/^mailto:/);
+    expect(out.actions[0].url).toBe('https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m');
   });
 
   it('renderCustomReply returns mailto with pre-filled context', () => {

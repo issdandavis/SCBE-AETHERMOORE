@@ -1,5 +1,7 @@
 'use strict';
 
+const LIVE_HEARTBEAT_CHECKOUT_URL = 'https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m';
+
 function checkoutUrlFromEnv(envName, fallback) {
   const value = String(process.env[envName] || '').trim();
   if (!value) return fallback;
@@ -93,7 +95,7 @@ const PRODUCT_CATALOG = [
       'Monthly governance scan for one AI workflow. Includes a short delta report, risk/change summary, recommended action list, and optional training/dataset capture notes.',
     checkoutUrl: checkoutUrlFromEnv(
       'SCBE_PAYMENT_LINK_HEARTBEAT',
-      'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup'
+      LIVE_HEARTBEAT_CHECKOUT_URL
     ),
     deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#heartbeat',
     keywords: [

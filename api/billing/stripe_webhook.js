@@ -26,6 +26,7 @@ const crypto = require('crypto');
 
 const SNAPSHOT_AMOUNT_CENTS = 50000;
 const HEARTBEAT_AMOUNT_CENTS = 9900;
+const LIVE_HEARTBEAT_PAYMENT_LINK_ID = 'plink_1TW71zJTF2SuUODICZLQCCS3';
 const DIGITAL_PRODUCT_AMOUNT_CENTS = 2900;
 const TOLERANCE_SECONDS = 300; // Stripe default replay window
 
@@ -123,7 +124,8 @@ function snapshotConfig() {
   return {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     paymentLinkId: process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID || '',
-    heartbeatPaymentLinkId: process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID || '',
+    heartbeatPaymentLinkId:
+      process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID || LIVE_HEARTBEAT_PAYMENT_LINK_ID,
     toolkitPaymentLinkId: process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID || '',
     vaultPaymentLinkId: process.env.STRIPE_VAULT_PAYMENT_LINK_ID || '',
     repo: process.env.POLLY_TRAIN_REPO || process.env.GITHUB_REPO || 'issdandavis/SCBE-AETHERMOORE',
