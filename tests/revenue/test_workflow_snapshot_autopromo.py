@@ -26,7 +26,14 @@ def test_workflow_snapshot_autopromo_generates_reviewable_packet(tmp_path: Path)
     assert "connector_status" in packet
 
     draft_ids = {draft["id"] for draft in packet["campaign_items"]}
-    assert {"x_thread", "linkedin_post", "reddit_sideproject", "github_discussion", "hf_community", "email_warm"} <= draft_ids
+    assert {
+        "x_thread",
+        "linkedin_post",
+        "reddit_sideproject",
+        "github_discussion",
+        "hf_community",
+        "email_warm",
+    } <= draft_ids
     assert all(draft["risk"] in {"low", "medium"} for draft in packet["campaign_items"])
     assert all(draft["status"] == "ready_to_publish" for draft in packet["campaign_items"])
     assert all(draft["quality_gate"]["passed"] for draft in packet["campaign_items"])
