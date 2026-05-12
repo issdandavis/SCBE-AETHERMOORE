@@ -2784,9 +2784,9 @@ async def contact_submit(payload: ContactFormPayload):
         )
         if result["ok"]:
             return {"ok": True, "message": "Message sent. We usually reply within 24 hours."}
-        return {"ok": False, "error": result.get("error", "Email delivery failed")}
+        return {"ok": False, "error": "Email delivery failed"}
     except Exception as e:
-        logger.warning("Contact form error: %s", e)
+        logger.warning("Contact form error: %s", type(e).__name__)
         return {"ok": False, "error": "Unable to send message. Please try again later."}
 
 
@@ -3593,7 +3593,7 @@ async def polly_context():
         result = await get_context()
         return {"ok": True, "data": result}
     except Exception as e:
-        logger.warning("Polly context error: %s", e)
+        logger.warning("Polly context error: %s", type(e).__name__)
         return {"ok": False, "error": "Context service temporarily unavailable."}
 
 
@@ -3605,7 +3605,7 @@ async def polly_search(payload: PollySearchPayload):
         result = await search(payload.query)
         return result
     except Exception as e:
-        logger.warning("Polly search error: %s", e)
+        logger.warning("Polly search error: %s", type(e).__name__)
         return {"ok": False, "error": "Search service temporarily unavailable."}
 
 
@@ -3617,7 +3617,7 @@ async def polly_delegate(payload: PollyDelegatePayload):
         result = await delegate(payload.text)
         return {"ok": True, "data": result}
     except Exception as e:
-        logger.warning("Polly delegate error: %s", e)
+        logger.warning("Polly delegate error: %s", type(e).__name__)
         return {"ok": False, "error": "Delegation service temporarily unavailable."}
 
 
@@ -3629,7 +3629,7 @@ async def polly_email(payload: PollyEmailPayload):
         result = await send_email_from_chat(payload.to, payload.subject, payload.body)
         return {"ok": result.get("ok", False), "message_id": result.get("message_id")}
     except Exception as e:
-        logger.warning("Polly email error: %s", e)
+        logger.warning("Polly email error: %s", type(e).__name__)
         return {"ok": False, "error": "Email service temporarily unavailable."}
 
 
@@ -3641,7 +3641,7 @@ async def polly_slack(payload: PollySlackPayload):
         result = await notify_slack(payload.message, payload.channel)
         return {"ok": result.get("ok", False)}
     except Exception as e:
-        logger.warning("Polly slack error: %s", e)
+        logger.warning("Polly slack error: %s", type(e).__name__)
         return {"ok": False, "error": "Slack service temporarily unavailable."}
 
 

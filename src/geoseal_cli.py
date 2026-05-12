@@ -499,6 +499,19 @@ def _runner_for(tongue: str) -> Optional[Tuple[List[str], str]]:
     return None
 
 
+_RUNNER_TEMP_NAMES: Dict[str, Tuple[str, str]] = {
+    "GO": (".go", "geoseal_go_"),
+    "ZI": (".zig", "geoseal_zi_"),
+}
+
+
+def _runner_temp_name(tongue: str) -> Tuple[str, str]:
+    try:
+        return _RUNNER_TEMP_NAMES[tongue]
+    except KeyError as exc:  # pragma: no cover - guarded by _runner_for mode
+        raise ValueError(f"no file-runner temp mapping for {tongue}") from exc
+
+
 def _cursor_agent_path() -> Optional[Path]:
     """Locate the installed Cursor Agent wrapper."""
     env_path = os.environ.get("CURSOR_AGENT_CMD")
@@ -624,10 +637,10 @@ def run_tongue_call(
     if mode == "file":
         import tempfile
 
-        suffix = ".go" if tongue == "GO" else ".zig"
-        fd, tmp_name = tempfile.mkstemp(suffix=suffix, prefix=f"geoseal_{tongue.lower()}_")
+        suffix, prefix = _runner_temp_name(tongue)
+        fd, tmp_name = tempfile.mkstemp(suffix=suffix, prefix=prefix)
         tmp_path = Path(tmp_name)
-        with open(fd, "w", encoding="utf-8") as fh:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
             fh.write(wrapped)
         argv = list(argv_prefix) + [str(tmp_path)]
     else:

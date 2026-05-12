@@ -47,6 +47,13 @@ _SECRET_PATTERNS: tuple[re.Pattern[str], ...] = (
 )
 
 
+def _redact_secret_like_text(text: str) -> str:
+    redacted = text or ""
+    for pat in _SECRET_PATTERNS:
+        redacted = pat.sub("<redacted-secret>", redacted)
+    return redacted
+
+
 def _utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -235,8 +242,8 @@ def run_level1_tasks(max_level: int) -> dict[str, Any]:
             "ok": ok,
             "path": str(task_json.relative_to(REPO_ROOT)),
             "metrics": _default_metrics(ok, elapsed, 1, text, evidence),
-            "stdout_tail": (so or "")[-2000:],
-            "stderr_tail": (se or "")[-2000:],
+            "stdout_tail": _redact_secret_like_text(so or "")[-2000:],
+            "stderr_tail": _redact_secret_like_text(se or "")[-2000:],
         }
         result["tasks"].append(entry)
     return result
@@ -279,8 +286,8 @@ def run_level6_cli_readiness(max_level: int) -> dict[str, Any]:
             "ok": ok,
             "metrics": _default_metrics(ok, elapsed, 1, text, "artifact"),
             "command": cmd,
-            "stdout_tail": (so or "")[-2500:],
-            "stderr_tail": (se or "")[-2500:],
+            "stdout_tail": _redact_secret_like_text(so or "")[-2500:],
+            "stderr_tail": _redact_secret_like_text(se or "")[-2500:],
         }
     )
     return out
@@ -376,8 +383,8 @@ def run_level7_scbe_code_agent(max_level: int) -> dict[str, Any]:
                 "ok": ok,
                 "metrics": _default_metrics(ok, elapsed, 1, text, "artifact"),
                 "command": cmd,
-                "stdout_tail": (so or "")[-2500:],
-                "stderr_tail": (se or "")[-2500:],
+                "stdout_tail": _redact_secret_like_text(so or "")[-2500:],
+                "stderr_tail": _redact_secret_like_text(se or "")[-2500:],
             }
         )
     return out

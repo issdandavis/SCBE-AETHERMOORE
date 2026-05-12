@@ -16,6 +16,10 @@ from typing import Any, Iterable
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "training-data" / "sft"
 
+SECRET_LIKE_RE = re.compile(
+    r"(?i)(api[_-]?key|token|secret|password|credential)(\s*[:=]\s*)(['\"]?)[^'\"\s,}]+"
+)
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -32,12 +36,26 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
 
 
+def redact_secret_like_text(text: str) -> str:
+    return SECRET_LIKE_RE.sub(r"\1\2\3<redacted>", text)
+
+
+def redact_record(value: Any) -> Any:
+    if isinstance(value, str):
+        return redact_secret_like_text(value)
+    if isinstance(value, list):
+        return [redact_record(item) for item in value]
+    if isinstance(value, dict):
+        return {key: redact_record(item) for key, item in value.items()}
+    return value
+
+
 def write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
     """Write training records to JSONL.  Records contain source-code excerpts, not secrets."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:  # nosec: training-data output, not credentials
         for record in records:
-            handle.write(json.dumps(record, ensure_ascii=True, sort_keys=True) + "\n")
+            handle.write(json.dumps(redact_record(record), ensure_ascii=True, sort_keys=True) + "\n")
 
 
 def load_json(path: Path) -> dict[str, Any] | list[Any] | None:
