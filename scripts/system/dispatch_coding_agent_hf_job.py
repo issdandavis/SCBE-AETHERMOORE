@@ -9,15 +9,12 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROFILE = (
-    REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-smoke.json"
-)
+DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "coding-agent-qwen-smoke.json"
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_coding_agent_jobs"
 ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
 
@@ -55,9 +52,7 @@ def _load_profile(path: Path) -> dict[str, Any]:
 def _count_jsonl(path: Path) -> int:
     if not path.exists():
         return 0
-    return sum(
-        1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
-    )
+    return sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
 
 
 def _dataset_rows(profile: dict[str, Any], split: str) -> list[dict[str, Any]]:
@@ -463,11 +458,7 @@ def build_packet(
             "flavor": selected_flavor,
             "timeout": selected_timeout,
             "cli": shutil.which("hf") or "",
-            "token_present": bool(
-                os.environ.get(
-                    str((profile.get("hub") or {}).get("token_env", "HF_TOKEN")), ""
-                )
-            ),
+            "token_present": bool(os.environ.get(str((profile.get("hub") or {}).get("token_env", "HF_TOKEN")), "")),
         },
         "command": command,
         "dispatched": False,
@@ -531,9 +522,7 @@ def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
             "--commit-message",
             f"Update SCBE coding agent data {name}",
         ]
-        result = subprocess.run(
-            command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False
-        )
+        result = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
         uploads.append(
             {
                 "name": str(name),
@@ -543,9 +532,7 @@ def upload_training_dataset(profile: dict[str, Any]) -> list[dict[str, Any]]:
             }
         )
         if result.returncode != 0:
-            raise RuntimeError(
-                f"Dataset upload failed for {name}: {result.stderr.strip()}"
-            )
+            raise RuntimeError(f"Dataset upload failed for {name}: {result.stderr.strip()}")
     return uploads
 
 

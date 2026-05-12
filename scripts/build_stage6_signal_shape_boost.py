@@ -33,13 +33,10 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_stage6_repair_sft import (  # noqa: E402
-    CONTRACT_FORBIDDEN,
-    CONTRACT_REQUIRED,
     SYSTEM_PROMPT,
     _assert_row_vocabulary,
     _token_hex,
 )
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SFT_ROOT = REPO_ROOT / "training-data" / "sft"
@@ -102,9 +99,7 @@ PREFIX_ORDER: dict[str, list[str]] = {
 }
 
 
-def _record(
-    prompt: str, response: str, *, kind: str, token: str, shape: str
-) -> dict[str, Any]:
+def _record(prompt: str, response: str, *, kind: str, token: str, shape: str) -> dict[str, Any]:
     return {
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -128,11 +123,16 @@ def _prefix_for(kind: str, *, anchor_token: str | None = None) -> str:
     a single deterministic prefix shape per kind.
     """
     tokens = list(PREFIX_ORDER[kind])
-    if anchor_token and anchor_token not in tokens and kind in {
-        "resource_jump_cancel",
-        "lane_separation",
-        "hex_trace",
-    }:
+    if (
+        anchor_token
+        and anchor_token not in tokens
+        and kind
+        in {
+            "resource_jump_cancel",
+            "lane_separation",
+            "hex_trace",
+        }
+    ):
         tokens[0] = anchor_token
     rendered = " | ".join(f"`{t}`" if "_" in t else t for t in tokens)
     return f"required-tokens: {rendered} ::"
@@ -143,46 +143,56 @@ def _prefix_for(kind: str, *, anchor_token: str | None = None) -> str:
 # ---------------------------------------------------------------------------
 
 JUMP_CASES: list[tuple[str, str, str, str]] = [
-    ("scan_ridge", "transmit_burst", "comms and power",
-     "power=0.18 compute=0.32 time=0.40 comms=0.08 wear=0.22"),
-    ("compress_map", "transmit_burst", "comms",
-     "power=0.21 compute=0.30 time=0.35 comms=0.05 wear=0.19"),
-    ("relay_cache_patch", "transmit_burst", "comms",
-     "power=0.27 compute=0.31 time=0.42 comms=0.04 wear=0.23"),
-    ("ridge_shadow_scan", "transmit_burst", "time and comms",
-     "power=0.40 compute=0.25 time=0.07 comms=0.06 wear=0.18"),
-    ("thermal_noise_gate", "transmit_burst", "comms and wear",
-     "power=0.33 compute=0.28 time=0.36 comms=0.05 wear=0.07"),
-    ("cache_delta_fold", "transmit_burst", "comms",
-     "power=0.45 compute=0.39 time=0.32 comms=0.04 wear=0.24"),
-    ("soil_shadow_index", "transmit_burst", "power and comms",
-     "power=0.05 compute=0.34 time=0.40 comms=0.06 wear=0.20"),
-    ("dust_blur_filter", "transmit_burst", "comms and time",
-     "power=0.46 compute=0.30 time=0.05 comms=0.04 wear=0.22"),
-    ("signal_calm_gate", "transmit_burst", "comms and time",
-     "power=0.34 compute=0.28 time=0.06 comms=0.05 wear=0.30"),
-    ("path_hash_guard", "transmit_burst", "power and comms",
-     "power=0.07 compute=0.41 time=0.22 comms=0.07 wear=0.27"),
-    ("crater_edge_index", "transmit_burst", "comms",
-     "power=0.31 compute=0.27 time=0.40 comms=0.04 wear=0.20"),
-    ("antenna_align_probe", "transmit_burst", "power and comms",
-     "power=0.06 compute=0.34 time=0.43 comms=0.05 wear=0.29"),
-    ("battery_taper_check", "transmit_burst", "power and comms",
-     "power=0.04 compute=0.32 time=0.45 comms=0.07 wear=0.26"),
-    ("comm_window_check", "transmit_burst", "comms",
-     "power=0.45 compute=0.38 time=0.34 comms=0.03 wear=0.20"),
-    ("storage_margin_check", "transmit_burst", "comms and time",
-     "power=0.33 compute=0.28 time=0.05 comms=0.04 wear=0.27"),
-    ("link_jitter_probe", "transmit_burst", "time and comms",
-     "power=0.37 compute=0.31 time=0.04 comms=0.05 wear=0.25"),
-    ("hazard_gradient_scan", "transmit_burst", "comms",
-     "power=0.40 compute=0.34 time=0.38 comms=0.04 wear=0.22"),
-    ("downlink_quota_probe", "transmit_burst", "comms",
-     "power=0.39 compute=0.32 time=0.41 comms=0.04 wear=0.21"),
-    ("orbiter_window_probe", "transmit_burst", "comms and time",
-     "power=0.36 compute=0.30 time=0.05 comms=0.04 wear=0.22"),
-    ("relay_pause_token", "transmit_burst", "comms",
-     "power=0.32 compute=0.29 time=0.39 comms=0.04 wear=0.21"),
+    ("scan_ridge", "transmit_burst", "comms and power", "power=0.18 compute=0.32 time=0.40 comms=0.08 wear=0.22"),
+    ("compress_map", "transmit_burst", "comms", "power=0.21 compute=0.30 time=0.35 comms=0.05 wear=0.19"),
+    ("relay_cache_patch", "transmit_burst", "comms", "power=0.27 compute=0.31 time=0.42 comms=0.04 wear=0.23"),
+    ("ridge_shadow_scan", "transmit_burst", "time and comms", "power=0.40 compute=0.25 time=0.07 comms=0.06 wear=0.18"),
+    (
+        "thermal_noise_gate",
+        "transmit_burst",
+        "comms and wear",
+        "power=0.33 compute=0.28 time=0.36 comms=0.05 wear=0.07",
+    ),
+    ("cache_delta_fold", "transmit_burst", "comms", "power=0.45 compute=0.39 time=0.32 comms=0.04 wear=0.24"),
+    (
+        "soil_shadow_index",
+        "transmit_burst",
+        "power and comms",
+        "power=0.05 compute=0.34 time=0.40 comms=0.06 wear=0.20",
+    ),
+    ("dust_blur_filter", "transmit_burst", "comms and time", "power=0.46 compute=0.30 time=0.05 comms=0.04 wear=0.22"),
+    ("signal_calm_gate", "transmit_burst", "comms and time", "power=0.34 compute=0.28 time=0.06 comms=0.05 wear=0.30"),
+    ("path_hash_guard", "transmit_burst", "power and comms", "power=0.07 compute=0.41 time=0.22 comms=0.07 wear=0.27"),
+    ("crater_edge_index", "transmit_burst", "comms", "power=0.31 compute=0.27 time=0.40 comms=0.04 wear=0.20"),
+    (
+        "antenna_align_probe",
+        "transmit_burst",
+        "power and comms",
+        "power=0.06 compute=0.34 time=0.43 comms=0.05 wear=0.29",
+    ),
+    (
+        "battery_taper_check",
+        "transmit_burst",
+        "power and comms",
+        "power=0.04 compute=0.32 time=0.45 comms=0.07 wear=0.26",
+    ),
+    ("comm_window_check", "transmit_burst", "comms", "power=0.45 compute=0.38 time=0.34 comms=0.03 wear=0.20"),
+    (
+        "storage_margin_check",
+        "transmit_burst",
+        "comms and time",
+        "power=0.33 compute=0.28 time=0.05 comms=0.04 wear=0.27",
+    ),
+    ("link_jitter_probe", "transmit_burst", "time and comms", "power=0.37 compute=0.31 time=0.04 comms=0.05 wear=0.25"),
+    ("hazard_gradient_scan", "transmit_burst", "comms", "power=0.40 compute=0.34 time=0.38 comms=0.04 wear=0.22"),
+    ("downlink_quota_probe", "transmit_burst", "comms", "power=0.39 compute=0.32 time=0.41 comms=0.04 wear=0.21"),
+    (
+        "orbiter_window_probe",
+        "transmit_burst",
+        "comms and time",
+        "power=0.36 compute=0.30 time=0.05 comms=0.04 wear=0.22",
+    ),
+    ("relay_pause_token", "transmit_burst", "comms", "power=0.32 compute=0.29 time=0.39 comms=0.04 wear=0.21"),
 ]
 
 
@@ -264,9 +274,7 @@ def _lane_prefix(token: str, domain: str) -> dict[str, Any]:
 
 def _lane_prefix_contrast(token: str, domain: str) -> dict[str, Any]:
     hex_trace = _token_hex(token)
-    prompt = (
-        f"Contrast Stage 6 lanes for `{token}` ({domain}). Where, if anywhere, does material chemistry enter?"
-    )
+    prompt = f"Contrast Stage 6 lanes for `{token}` ({domain}). Where, if anywhere, does material chemistry enter?"
     prefix = _prefix_for("lane_separation", anchor_token=token)
     body = (
         f"Structural lane: `{token}` is the byte and hex sequence `{hex_trace}`; nothing about the bytes asserts a "
@@ -484,9 +492,7 @@ def build() -> dict[str, Any]:
             if token in body:
                 must_pass_train[token] += 1
 
-    forced_prefix_train = sum(
-        1 for row in train_rows if row["messages"][-1]["content"].startswith("required-tokens:")
-    )
+    forced_prefix_train = sum(1 for row in train_rows if row["messages"][-1]["content"].startswith("required-tokens:"))
 
     manifest = {
         "schema_version": "atomic_workflow_stage6_signal_shape_boost_manifest_v1",
@@ -507,9 +513,7 @@ def build() -> dict[str, Any]:
             "prompt classes (v9 only covered 3 must_pass)."
         ),
     }
-    MANIFEST_OUT.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    MANIFEST_OUT.write_text(json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8")
     return manifest
 
 

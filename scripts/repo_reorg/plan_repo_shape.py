@@ -16,7 +16,6 @@ and performs the actual ``git mv`` for the docs phase only.
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 
