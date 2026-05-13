@@ -1,0 +1,105 @@
+name: Website Betterment Automation
+
+on:
+  schedule:
+    - cron: '35 10 * * *'
+  workflow_dispatch:
+    inputs:
+      live:
+        description: 'Check live Pages/Vercel endpoints'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+      min_score:
+        description: 'Minimum acceptable website sales audit score'
+        required: false
+        default: '7.0'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: website-betterment-automation
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run website betterment automation
+        id: betterment
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIVE_FLAG=""
+          if [[ "${{ github.event_name }}" == "schedule" || "${{ inputs.live || 'true' }}" == "true" ]]; then
+            LIVE_FLAG="--live"
+          fi
+          python scripts/system/website_betterment_automation.py \
+            $LIVE_FLAG \
+            --min-score "${{ inputs.min_score || '7.0' }}" \
+            --output-dir artifacts/marketing/website_betterment_automation
+
+      - name: Upload website betterment report
+        uses: actions/upload-artifact@v4
+        with:
+          name: website-betterment-automation
+          path: artifacts/marketing/website_betterment_automation
+          retention-days: 30
+
+      - name: Create or update website betterment issue
+        if: steps.betterment.outputs.issue_needed == 'true'
+        uses: actions/github-script@v7
+        env:
+          ISSUE_PATH: ${{ steps.betterment.outputs.issue_path }}
+          OVERALL: ${{ steps.betterment.outputs.overall }}
+        with:
+          script: |
+            const fs = require('fs');
+            const title = 'Website Betterment Automation Backlog';
+            const body = fs.readFileSync(process.env.ISSUE_PATH, 'utf8');
+            const {owner, repo} = context.repo;
+            async function ensureLabel(name, color, description) {
+              try {
+                await github.rest.issues.getLabel({owner, repo, name});
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({owner, repo, name, color, description});
+              }
+            }
+            await ensureLabel('website-betterment', '0E8A16', 'Scheduled public website improvement backlog');
+            await ensureLabel('automated', '5319E7', 'Created or updated by automation');
+            const existing = await github.rest.issues.listForRepo({
+              owner,
+              repo,
+              state: 'open',
+              labels: 'website-betterment'
+            });
+            const match = existing.data.find(issue => issue.title === title);
+            if (match) {
+              await github.rest.issues.update({
+                owner,
+                repo,
+                issue_number: match.number,
+                body
+              });
+            } else {
+              await github.rest.issues.create({
+                owner,
+                repo,
+                title,
+                body,
+                labels: ['website-betterment', 'automated']
+              });
+            }

@@ -1,0 +1,80 @@
+{
+  "schema": "aethermoore-package-products-v1",
+  "updated": "2026-05-13",
+  "products": [
+    {
+      "id": "scbe-aethermoore",
+      "name": "scbe-aethermoore",
+      "headline": "The 14-layer governance engine for Node and Python.",
+      "status": "Live",
+      "page": "packages/scbe-aethermoore.html",
+      "primary_install": "npm install scbe-aethermoore",
+      "npm": {
+        "name": "scbe-aethermoore",
+        "version": "4.0.9",
+        "url": "https://www.npmjs.com/package/scbe-aethermoore"
+      },
+      "pypi": {
+        "name": "scbe-aethermoore",
+        "version": "3.3.0",
+        "url": "https://pypi.org/project/scbe-aethermoore/"
+      },
+      "audience": "Developers who need the core SCBE scoring, harmonic wall, tokenizer, crypto, and governance exports.",
+      "use_cases": ["local risk scoring", "governed AI workflows", "security research", "agent safety experiments"]
+    },
+    {
+      "id": "scbe-aethermoore-cli",
+      "name": "scbe-aethermoore-cli",
+      "headline": "The five-minute SCBE command line for GeoSeal agent safety demos, tokenizer lanes, governance packets, and checks.",
+      "status": "Live",
+      "page": "packages/scbe-aethermoore-cli.html",
+      "primary_install": "npm install -g scbe-aethermoore-cli",
+      "npm": {
+        "name": "scbe-aethermoore-cli",
+        "version": "4.1.5",
+        "url": "https://www.npmjs.com/package/scbe-aethermoore-cli"
+      },
+      "pypi": null,
+      "audience": "Humans and AI agents that need a terminal-first control surface over SCBE tools.",
+      "use_cases": [
+        "five-minute agent safety demo",
+        "GeoSeal checks",
+        "repo inspection",
+        "tokenizer routing",
+        "agent terminal workflows"
+      ]
+    },
+    {
+      "id": "scbe-agent-bus",
+      "name": "scbe-agent-bus",
+      "headline": "A typed event bus for governed human and AI agent work.",
+      "status": "Live",
+      "page": "packages/scbe-agent-bus.html",
+      "primary_install": "npm install scbe-agent-bus",
+      "npm": {
+        "name": "scbe-agent-bus",
+        "version": "0.2.2",
+        "url": "https://www.npmjs.com/package/scbe-agent-bus"
+      },
+      "pypi": {
+        "name": "scbe-agent-bus",
+        "version": "0.2.0",
+        "url": "https://pypi.org/project/scbe-agent-bus/"
+      },
+      "audience": "Teams and agent harnesses that need task packets, typed envelopes, and local/private routing.",
+      "use_cases": ["multi-agent routing", "AI to AI handoff", "operator logs", "governed event envelopes"]
+    },
+    {
+      "id": "scbe-bookforge",
+      "name": "scbe-bookforge",
+      "headline": "Markdown to KDP-ready interiors, EPUB, and cover-wrap proofs.",
+      "status": "Publish pending",
+      "page": "packages/scbe-bookforge.html",
+      "primary_install": "pip install scbe-bookforge",
+      "npm": null,
+      "pypi": null,
+      "audience": "Authors and small publishers who need repeatable Kindle, paperback, and hardcover package builds.",
+      "use_cases": ["KDP formatting", "paperback interiors", "cover wrap math", "publishing operations"]
+    }
+  ]
+}
