@@ -36,13 +36,13 @@ function sendJson(res, status, payload) {
   res.status(status).json(payload);
 }
 
-function readJsonBody(req) {
+function readJsonBody(req, maxBytes = 4096) {
   if (req.body && typeof req.body === "object") return Promise.resolve(req.body);
   return new Promise((resolve, reject) => {
     let raw = "";
     req.on("data", (chunk) => {
       raw += chunk;
-      if (raw.length > 4096) {
+      if (raw.length > maxBytes) {
         reject(new Error("request body too large"));
         req.destroy();
       }
