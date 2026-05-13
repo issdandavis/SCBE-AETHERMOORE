@@ -83,6 +83,35 @@ async function llmFallback(message, history) {
   return llm.routeChat(llm.chatConfig(), message, history);
 }
 
+function buildPollyRoleContext(rolePacket) {
+  if (!rolePacket || typeof rolePacket !== 'object') return [];
+  const role = typeof rolePacket.role === 'string' ? rolePacket.role.slice(0, 80) : '';
+  if (role !== 'scbe-web-agent') return [];
+  const skills = Array.isArray(rolePacket.skills)
+    ? rolePacket.skills
+        .filter((item) => typeof item === 'string')
+        .slice(0, 8)
+        .map((item) => item.slice(0, 80))
+    : [];
+  const rules = Array.isArray(rolePacket.operating_rules)
+    ? rolePacket.operating_rules
+        .filter((item) => typeof item === 'string')
+        .slice(0, 8)
+        .map((item) => item.slice(0, 180))
+    : [];
+  const page = typeof rolePacket.page_context === 'string'
+    ? rolePacket.page_context.slice(0, 280)
+    : '';
+  const content = [
+    'Polly role packet: act as the SCBE web agent for this site.',
+    skills.length ? `Available role skills: ${skills.join(', ')}.` : '',
+    rules.length ? `Operating rules: ${rules.join(' | ')}.` : '',
+    page ? `Current page context: ${page}` : '',
+    'For uncertain work, return a bounded task packet with evidence needed and a next action.',
+  ].filter(Boolean).join('\n');
+  return [{ role: 'system', content }];
+}
+
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -115,7 +144,10 @@ module.exports = async function handler(req, res) {
     return sendJson(res, 400, { ok: false, error: 'message required' });
   }
 
-  const history = Array.isArray(body.history) ? body.history : [];
+  const history = [
+    ...buildPollyRoleContext(body.polly_role),
+    ...(Array.isArray(body.history) ? body.history : []),
+  ];
   const sessionId = body.session_id || '';
   const pageContext = body.page_context || '';
 
@@ -273,4 +305,5 @@ module.exports._private = {
   logTrainingTurn,
   captureIfConsented,
   renderOfflineRouter,
+  buildPollyRoleContext,
 };

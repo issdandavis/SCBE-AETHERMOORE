@@ -700,7 +700,7 @@
         gap: 36px;
         align-items: center;
         white-space: nowrap;
-        animation: rticker-scroll 90s linear infinite;
+        animation: rticker-scroll var(--rticker-duration, 72s) linear infinite;
         will-change: transform;
         padding-left: 16px;
       }
@@ -726,6 +726,12 @@
       }
       .rticker-item:hover {
         color: var(--text);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .rticker-track {
+          animation: none;
+          transform: none;
+        }
       }
       .rtk-badge {
         font-size: 7.5px;
@@ -902,8 +908,8 @@
     <div class="quick-support-bar" aria-label="Fast support links">
       <div class="quick-support-inner">
         <span
-          ><strong>Keep the work moving:</strong> Ko-fi support and Cash App direct payments are
-          live now. No sales call.</span
+          ><strong>Live now:</strong> $99 Workflow Snapshot, Ko-fi support, Cash App direct
+          payments, and Polly agent routing. No sales call.</span
         >
         <div class="quick-support-actions">
           <a href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
@@ -1678,12 +1684,11 @@
                 >
               </div>
               <div class="proof-cell">
-                <strong>Polly sidebar chat &middot; offline mode live</strong>
+                <strong>Polly sidebar chat &middot; SCBE web-agent routing live</strong>
                 <span
-                  >Browser sidebar companion shipped across the site. 59-passage curated corpus,
-                  slash commands (/nav /search /help /sections), DuckDuckGo instant answers, Ctrl+/
-                  keybind, full a11y. No backend required &mdash; runs offline by default,
-                  HuggingFace Space on deck.</span
+                  >Browser sidebar companion now carries the SCBE web-agent role packet: product
+                  routing, research answers, agent-task dispatch links, local memory export,
+                  keyboard access, and deterministic fallbacks before paid model calls.</span
                 >
               </div>
               <div class="proof-cell">
@@ -3150,6 +3155,8 @@
             })
             .join('');
           track.innerHTML = html;
+          var duration = Math.max(52, Math.min(118, items.length * 7));
+          track.style.setProperty('--rticker-duration', duration + 's');
         }
 
         function renderMarkets(mkts) {
