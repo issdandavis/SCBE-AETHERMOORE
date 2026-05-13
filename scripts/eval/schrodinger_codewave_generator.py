@@ -53,7 +53,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Callable
 
 import numpy as np
 
@@ -163,9 +163,7 @@ def _evolve_wavefunction(
     return psi
 
 
-def _select_active_subset(
-    base_logits: np.ndarray, req_mask: np.ndarray, top_k: int
-) -> np.ndarray:
+def _select_active_subset(base_logits: np.ndarray, req_mask: np.ndarray, top_k: int) -> np.ndarray:
     """Indices of (top-K base-logit tokens) ∪ (required-marker tokens).
 
     The wave-evolution restriction set: large enough that the model's
@@ -343,9 +341,7 @@ class SchrodingerCodeWaveGenerator:
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"
         dtype = torch.float16 if device == "cuda" else torch.float32
-        model = AutoModelForCausalLM.from_pretrained(
-            self.model_id, torch_dtype=dtype, trust_remote_code=True
-        )
+        model = AutoModelForCausalLM.from_pretrained(self.model_id, torch_dtype=dtype, trust_remote_code=True)
         model.eval()
         model = model.to(device)
         self._tok = tok

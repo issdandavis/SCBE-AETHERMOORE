@@ -38,6 +38,10 @@ const hfUpload = require('../../api/_polly_hf_upload.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const rateLimit = require('../../api/_polly_rate_limit.js');
 
+function hostnameOf(value: string): string {
+  return new URL(value).hostname;
+}
+
 function loadCommerceWithEnv(env: Record<string, string>) {
   const modulePath = require.resolve('../../api/polly/commerce.js');
   const original: Record<string, string | undefined> = {};
@@ -198,7 +202,7 @@ describe('polly lead handler — anti-abuse', () => {
 
 describe('polly commerce intent classification', () => {
   it('catalog has live products with valid checkout urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(7);
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(9);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^(https:\/\/(buy\.stripe\.com|ko-fi\.com)|mailto:)/);
       expect(product.keywords.length).toBeGreaterThan(0);
@@ -250,9 +254,7 @@ describe('polly commerce intent classification', () => {
     const heartbeat = loaded.PRODUCT_CATALOG.find(
       (p: { sku: string }) => p.sku === 'governance-heartbeat'
     );
-    expect(heartbeat.checkoutUrl).toBe(
-      'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup'
-    );
+    expect(heartbeat.checkoutUrl).toBe('https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m');
   });
 
   it('classifies "buy" verb with bound product at 0.95 confidence', () => {
@@ -274,6 +276,25 @@ describe('polly commerce intent classification', () => {
     const intent = commerce.classifyIntent('Can I get the $500 governance snapshot?');
     expect(intent.name).toBe('buy');
     expect(intent.product.sku).toBe('ai-governance-snapshot');
+  });
+
+  it('classifies workflow snapshot as the $99 starter instead of the $500 snapshot', () => {
+    const intent = commerce.classifyIntent('how much is the workflow snapshot?');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('ai-agent-workflow-snapshot');
+    expect(intent.product.priceLabel).toContain('$99');
+  });
+
+  it('classifies Shopify and ecommerce store setup as the Shopify store ops offer', () => {
+    const intent = commerce.classifyIntent('I need Shopify help with store setup and shipping');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('shopify-store-ops-snapshot');
+    expect(intent.product.deliveryUrl).toContain('shopify-command-center.html');
+  });
+
+  it('routes AI agent safer language to custom help instead of generic LLM chat', () => {
+    const intent = commerce.classifyIntent('I need help making my AI agent safer');
+    expect(intent.name).toBe('custom');
   });
 
   it('classifies governance heartbeat as the monthly subscription offer', () => {
@@ -325,6 +346,14 @@ describe('polly commerce intent classification', () => {
   it('does NOT route question-shaped non-topic prompts to research', () => {
     const intent = commerce.classifyIntent('What time is it?');
     expect(intent.name).toBe('general');
+  });
+
+  it('answers core SCBE identity questions with deterministic research copy', () => {
+    const intent = commerce.classifyIntent('what is SCBE?');
+    expect(intent.name).toBe('research');
+    expect(intent.confidence).toBeCloseTo(0.78, 2);
+    const rendered = commerce.renderResearchReply('what is SCBE?');
+    expect(rendered.text).toContain('AetherMoore governance stack');
   });
 
   it('returns general intent when nothing matches', () => {
@@ -519,7 +548,7 @@ describe('polly renderBookReply', () => {
     expect(out.text).toContain('Chapter 1');
     expect(out.text).toContain('Harmonic Wall');
     const buyAction = out.actions.find(
-      (a: { url?: string }) => typeof a.url === 'string' && a.url.includes('buy.stripe.com')
+      (a: { url?: string }) => typeof a.url === 'string' && hostnameOf(a.url) === 'buy.stripe.com'
     );
     expect(buyAction).toBeDefined();
   });
@@ -637,7 +666,7 @@ describe('polly commerce reply rendering', () => {
     const out = commerce.renderBuyReply(product);
     expect(out.text).toContain('$99/month');
     expect(out.text).toContain('first scan starts');
-    expect(out.actions[0].url).toMatch(/^mailto:/);
+    expect(out.actions[0].url).toBe('https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m');
   });
 
   it('renderCustomReply returns mailto with pre-filled context', () => {
@@ -721,6 +750,26 @@ describe('polly chat handler — research path', () => {
   });
 });
 
+describe('polly chat handler — role packet', () => {
+  it('turns the scbe-web-agent packet into bounded system context', () => {
+    const rows = chatHandler._private.buildPollyRoleContext({
+      role: 'scbe-web-agent',
+      skills: ['scbe-web-agent', 'superpowers:subagent-driven-development'],
+      operating_rules: ['Free path first', 'Return bounded task packets'],
+      page_context: 'Workflow Snapshot — /workflow-snapshot',
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].role).toBe('system');
+    expect(rows[0].content).toContain('SCBE web agent');
+    expect(rows[0].content).toContain('subagent-driven-development');
+    expect(rows[0].content).toContain('bounded task packet');
+  });
+
+  it('ignores unrecognized role packets', () => {
+    expect(chatHandler._private.buildPollyRoleContext({ role: 'random-bot' })).toEqual([]);
+  });
+});
+
 describe('polly chat handler — offline-router fallback', () => {
   beforeEach(() => rateLimit.reset());
   it('replaces dead-end LLM offline message with the four-bucket router', async () => {
@@ -783,7 +832,7 @@ describe('polly chat handler — commerce path', () => {
     const body = res.body as { intent: string; actions: { url: string }[] };
     expect(body.intent).toBe('custom');
     expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
-    expect(body.actions.some((a) => /aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
+    expect(body.actions.some((a) => /^https:\/\/aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
   });
 
   it('routes "help me choose" to guide intent with picker + start-here actions', async () => {
@@ -1031,7 +1080,7 @@ describe('polly hosted-run handler', () => {
       body.hosted_run_packet.immediate_value.some((item) => item.url.includes('service-credits'))
     ).toBe(true);
     expect(
-      body.hosted_run_packet.immediate_value.some((item) => item.url.includes('ko-fi.com'))
+      body.hosted_run_packet.immediate_value.some((item) => hostnameOf(item.url) === 'ko-fi.com')
     ).toBe(true);
   });
 

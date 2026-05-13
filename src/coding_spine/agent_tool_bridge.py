@@ -34,9 +34,16 @@ def _language_matrix() -> list[dict[str, Any]]:
                 "parent_tongue": parent,
                 "route_class": "native" if tongue in LANG_MAP else "extended",
                 "cli": {
-                    "code_packet": f"{_exe()} -m src.geoseal_cli code-packet --language {language} --source-file <file> --json",
-                    "explain_route": f"{_exe()} -m src.geoseal_cli explain-route --language {language} --source-file <file> --json",
-                    "testing_cli": f"{_exe()} -m src.geoseal_cli testing-cli --language {language} --source-file <file> --json",
+                    "code_packet": (
+                        f"{_exe()} -m src.geoseal_cli code-packet " f"--language {language} --source-file <file> --json"
+                    ),
+                    "explain_route": (
+                        f"{_exe()} -m src.geoseal_cli explain-route "
+                        f"--language {language} --source-file <file> --json"
+                    ),
+                    "testing_cli": (
+                        f"{_exe()} -m src.geoseal_cli testing-cli " f"--language {language} --source-file <file> --json"
+                    ),
                 },
             }
         )
@@ -98,7 +105,9 @@ def _tool_contracts() -> list[dict[str, Any]]:
             "tool": "secrets_or_credentials",
             "risk": "critical",
             "approval": "deny_by_default",
-            "purpose": "Secrets are never routed through free model prompts; tools receive only named env requirements.",
+            "purpose": (
+                "Secrets are never routed through free model prompts; " "tools receive only named env requirements."
+            ),
             "routes": ["connector_env_check", "redacted_evidence_only"],
         },
         {
@@ -205,6 +214,7 @@ def build_agent_harness_manifest_v1(
         for row in skill_tools.get("skills", [])
         if row.get("route_name") and row.get("invocation_kind") == "skill_lookup"
     ]
+    tongue_vm_gate = _build_tongue_vm_gate(permission_mode=permission_mode)
     return {
         "schema_version": "scbe_agent_harness_manifest_v1",
         "goal_excerpt": goal[:500],
@@ -239,9 +249,18 @@ def build_agent_harness_manifest_v1(
             "agent_harness_json": f"{_exe()} -m src.geoseal_cli agent-harness --goal <goal> --json",
             "compile_intent_json": f"{_exe()} -m src.geoseal_cli compile --json <intent>",
             "language_matrix_json": f"{_exe()} -m src.geoseal_cli agent-harness --language {preferred} --json",
-            "ghost_terminal_audit_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -Json",
-            "ghost_terminal_cleanup_stale_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -CleanStale",
+            "tongue_compile_json": f"{_exe()} -m src.geoseal_cli tongue-compile --source-file gate.sts",
+            "tongue_run_json": f"{_exe()} -m src.geoseal_cli tongue-run --source-file gate.sts --json",
+            "ghost_terminal_audit_ps1": (
+                "powershell.exe -NoProfile -ExecutionPolicy Bypass "
+                "-File scripts/system/ghost_terminal_audit.ps1 -Json"
+            ),
+            "ghost_terminal_cleanup_stale_ps1": (
+                "powershell.exe -NoProfile -ExecutionPolicy Bypass "
+                "-File scripts/system/ghost_terminal_audit.ps1 -CleanStale"
+            ),
         },
+        "tongue_vm_gate": tongue_vm_gate,
         "service_routes": {
             **bridge["geoseal_service"],
             "agent_harness": f"{bridge['geoseal_service']['env']['GEOSEAL_SERVICE_URL']}/v1/harness/agent-harness",
@@ -265,6 +284,43 @@ def build_agent_harness_manifest_v1(
     }
 
 
+def _build_tongue_vm_gate(*, permission_mode: str) -> dict[str, Any]:
+    """Return a compiled Sacred Tongues gate packet for agent self-tests."""
+
+    from src.sacred_tongues_toolchain import compile_packet, run_packet
+
+    gate_source = "\n".join(
+        [
+            "; r0 is the permission gate flag; 1 means continue, 0 means stop",
+            "ko:set r0, 1",
+            "ko:jz r0, blocked",
+            "ko:set r1, 1",
+            "ko:print r1",
+            "ko:halt",
+            "blocked:",
+            "ko:set r1, 0",
+            "ko:print r1",
+            "ko:halt",
+        ]
+    )
+    compile_result = compile_packet(gate_source, source_name=f"agent-harness-{permission_mode}-gate.sts")
+    run_result = run_packet(compile_result["bytecode"], max_steps=32)
+    return {
+        "schema_version": "scbe_agent_harness_tongue_vm_gate_v1",
+        "purpose": "bounded preflight gate agents can compile/run before requesting tools",
+        "permission_mode": permission_mode,
+        "source": gate_source,
+        "compile": compile_result,
+        "self_test": run_result,
+        "expected_output": [1],
+        "failure_output": [0],
+        "local_commands": {
+            "compile": f"{_exe()} -m src.geoseal_cli tongue-compile --source-file gate.sts",
+            "run": f"{_exe()} -m src.geoseal_cli tongue-run --source-file gate.sts --json",
+        },
+    }
+
+
 def build_agent_tool_bridge_v1(
     *,
     intent_relative_posix: Optional[str] = None,
@@ -282,9 +338,11 @@ def build_agent_tool_bridge_v1(
     if intent_relative_posix:
         src = shlex.quote(intent_relative_posix)
         file_args = f"--source-file {src} --language python --source-name task_intent.txt"
+        compile_text = "compile source intent"
     else:
         text = (inline_goal or "")[:12000]
         file_args = f"--content {shlex.quote(text)} --language python --source-name agent_goal"
+        compile_text = text
 
     geoseal_cli = {
         "backend_registry_json": f"{exe} -m src.geoseal_cli backend-registry --json",
@@ -292,11 +350,18 @@ def build_agent_tool_bridge_v1(
         "code_packet_json": f"{exe} -m src.geoseal_cli code-packet {file_args} --json",
         "history_json": f"{exe} -m src.geoseal_cli history --json",
         "testing_cli_json": f"{exe} -m src.geoseal_cli testing-cli {file_args} --json",
-        "compile_intent_json": f"{exe} -m src.geoseal_cli compile --json {shlex.quote(text if not intent_relative_posix else 'compile source intent')}",
-        "ghost_terminal_audit_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -Json",
-        "ghost_terminal_cleanup_stale_ps1": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/system/ghost_terminal_audit.ps1 -CleanStale",
+        "compile_intent_json": f"{exe} -m src.geoseal_cli compile --json {shlex.quote(compile_text)}",
+        "ghost_terminal_audit_ps1": (
+            "powershell.exe -NoProfile -ExecutionPolicy Bypass " "-File scripts/system/ghost_terminal_audit.ps1 -Json"
+        ),
+        "ghost_terminal_cleanup_stale_ps1": (
+            "powershell.exe -NoProfile -ExecutionPolicy Bypass "
+            "-File scripts/system/ghost_terminal_audit.ps1 -CleanStale"
+        ),
         "call_switchboard_json": f"{exe} -m src.geoseal_cli call-switchboard --request <json> --json",
-        "lightning_indexer_json": f"{exe} -m src.geoseal_cli lightning-indexer --goal <goal> --inline-candidates <json> --json",
+        "lightning_indexer_json": (
+            f"{exe} -m src.geoseal_cli lightning-indexer " "--goal <goal> --inline-candidates <json> --json"
+        ),
     }
 
     base_url = os.environ.get("GEOSEAL_SERVICE_URL", "http://127.0.0.1:8765").rstrip("/")

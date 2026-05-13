@@ -18,6 +18,7 @@ const stripeWebhook = require('../../api/billing/stripe_webhook.js');
 
 const TEST_SECRET = 'whsec_test_secret_xyz';
 const SNAPSHOT_LINK_ID = 'plink_snapshot_test_42';
+const WORKFLOW_SNAPSHOT_LINK_ID = 'plink_workflow_snapshot_test_99';
 const HEARTBEAT_LINK_ID = 'plink_heartbeat_test_99';
 const TOOLKIT_LINK_ID = 'plink_toolkit_test_29';
 const VAULT_LINK_ID = 'plink_vault_test_29';
@@ -25,6 +26,7 @@ const VAULT_LINK_ID = 'plink_vault_test_29';
 function setEnv(): void {
   process.env.STRIPE_WEBHOOK_SECRET = TEST_SECRET;
   process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID = SNAPSHOT_LINK_ID;
+  process.env.STRIPE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID = WORKFLOW_SNAPSHOT_LINK_ID;
   process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID = HEARTBEAT_LINK_ID;
   process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID = TOOLKIT_LINK_ID;
   process.env.STRIPE_VAULT_PAYMENT_LINK_ID = VAULT_LINK_ID;
@@ -36,9 +38,13 @@ function setEnv(): void {
 function clearEnv(): void {
   delete process.env.STRIPE_WEBHOOK_SECRET;
   delete process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID;
+  delete process.env.STRIPE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID;
+  delete process.env.SCBE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID;
   delete process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID;
   delete process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID;
   delete process.env.STRIPE_VAULT_PAYMENT_LINK_ID;
+  delete process.env.SCBE_PAYMENT_LINK_TOOLKIT;
+  delete process.env.SCBE_PAYMENT_LINK_VAULT;
   delete process.env.GITHUB_TOKEN;
   delete process.env.GH_TOKEN;
   delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
@@ -425,10 +431,35 @@ describe('stripe webhook — digital product detection', () => {
     expect(isToolkitSession({ payment_link: TOOLKIT_LINK_ID }, cfg)).toBe(true);
   });
 
+  it('matches workflow snapshot starter by payment_link id', () => {
+    const { isWorkflowSnapshotSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(isWorkflowSnapshotSession({ payment_link: WORKFLOW_SNAPSHOT_LINK_ID }, cfg)).toBe(true);
+  });
+
+  it('accepts existing SCBE workflow snapshot payment link env alias', () => {
+    clearEnv();
+    process.env.SCBE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID = 'plink_workflow_alias';
+    const { isWorkflowSnapshotSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+    expect(isWorkflowSnapshotSession({ payment_link: 'plink_workflow_alias' }, cfg)).toBe(true);
+  });
+
   it('matches vault by payment_link id', () => {
     const { isVaultSession, snapshotConfig } = stripeWebhook._private;
     const cfg = snapshotConfig();
     expect(isVaultSession({ payment_link: VAULT_LINK_ID }, cfg)).toBe(true);
+  });
+
+  it('accepts existing SCBE product payment link env aliases', () => {
+    clearEnv();
+    process.env.SCBE_PAYMENT_LINK_TOOLKIT = 'plink_toolkit_alias';
+    process.env.SCBE_PAYMENT_LINK_VAULT = 'plink_vault_alias';
+    const { isToolkitSession, isVaultSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+
+    expect(isToolkitSession({ payment_link: 'plink_toolkit_alias' }, cfg)).toBe(true);
+    expect(isVaultSession({ payment_link: 'plink_vault_alias' }, cfg)).toBe(true);
   });
 
   it('matches toolkit by explicit metadata + $29 payment when link id is absent', () => {
@@ -554,6 +585,33 @@ describe('stripe webhook — event routing', () => {
     expect(rec.contact_email).toBe('buyer@example.com');
     expect(rec.amount_total).toBe(50000);
     expect(rec.source).toBe('governance-snapshot');
+  });
+
+  it('workflow snapshot starter checkout completes → snapshot dispatch with workflow source', async () => {
+    let capturedBody: string | undefined;
+    vi.spyOn(global, 'fetch').mockImplementation(async (_url, init) => {
+      capturedBody = (init as { body: string }).body;
+      return new Response('{}', { status: 200 });
+    });
+    const raw = snapshotEvent({
+      id: 'cs_test_workflow_snapshot_99',
+      amount_total: 9900,
+      payment_link: WORKFLOW_SNAPSHOT_LINK_ID,
+    });
+    const sig = signPayload(raw, TEST_SECRET);
+    const req = makeReq({ rawBody: raw, headers: { 'stripe-signature': sig } });
+    const res = makeRes();
+    await stripeWebhook(req as never, res as never);
+    expect(res.statusCode).toBe(200);
+    expect((res.body as { handled: string }).handled).toBe('snapshot_paid');
+    expect(capturedBody).toBeDefined();
+    const dispatched = JSON.parse(capturedBody as string);
+    expect(dispatched.event_type).toBe('polly_snapshot_paid');
+    const rec = dispatched.client_payload.record;
+    expect(rec.kind).toBe('snapshot_paid');
+    expect(rec.session_id).toBe('cs_test_workflow_snapshot_99');
+    expect(rec.amount_total).toBe(9900);
+    expect(rec.source).toBe('workflow-snapshot');
   });
 
   it('heartbeat checkout completes → heartbeat dispatch payload', async () => {

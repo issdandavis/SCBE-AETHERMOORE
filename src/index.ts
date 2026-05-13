@@ -193,7 +193,7 @@ function _semanticPenalty(lower: string): number {
   return Math.min(total, 2.0);
 }
 
-function _phaseDeviation(text: string, dStar: number): number {
+function _phaseDeviation(text: string, _dStar: number): number {
   const { digit, ctrl, n } = _byteProfile(text);
   let pd = (ctrl / n) * 5.0;
   if (n > 10 && digit / n > 0.45) pd += 0.25;

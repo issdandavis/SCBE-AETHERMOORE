@@ -102,6 +102,9 @@ def test_agent_harness_manifest_routes_all_code_languages():
     assert manifest["permission_mode"] == "workspace-write"
     assert any(tool["tool"] == "execute_tests" for tool in manifest["tool_contracts"])
     assert "agent_harness_json" in manifest["geoseal_cli"]
+    assert manifest["tongue_vm_gate"]["schema_version"] == "scbe_agent_harness_tongue_vm_gate_v1"
+    assert manifest["tongue_vm_gate"]["self_test"]["output"] == [1]
+    assert "tongue-run" in manifest["geoseal_cli"]["tongue_run_json"]
 
 
 def test_agent_harness_exposes_ghost_terminal_audit_tool():
@@ -357,6 +360,84 @@ def test_geoseal_service_cli_bridge_code_packet():
     assert body["status"] == "ok"
     assert body["exit_code"] == 0
     assert "native_tokenization" in body["data"] or "transport_tokens" in body["data"]
+
+
+def test_geoseal_service_cli_bridge_call_switchboard():
+    from fastapi.testclient import TestClient
+
+    from src.api.geoseal_service import app
+
+    client = TestClient(app)
+    response = client.post(
+        "/v1/geoseal/call-switchboard",
+        json={
+            "calls": [
+                {
+                    "call_id": "active-writer",
+                    "agent_id": "agent.alpha",
+                    "lane": "ui",
+                    "resource": "route/home",
+                    "mode": "write",
+                    "state": "active",
+                }
+            ],
+            "request": {
+                "call_id": "next-writer",
+                "agent_id": "agent.beta",
+                "lane": "ui",
+                "resource": "route/home",
+                "mode": "write",
+            },
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["exit_code"] == 0
+    assert body["data"]["decision"] == "QUEUE"
+    assert body["data"]["reason"] == "exclusive_surface_collision"
+
+
+def test_geoseal_service_cli_bridge_lightning_indexer():
+    from fastapi.testclient import TestClient
+
+    from src.api.geoseal_service import app
+
+    client = TestClient(app)
+    response = client.post(
+        "/v1/geoseal/lightning-indexer",
+        json={
+            "goal": "multi agent switchboard route",
+            "candidates": [
+                {"candidate_id": "visual", "text": "demo colors"},
+                {
+                    "candidate_id": "switchboard",
+                    "text": "multi agent switchboard route",
+                    "kind": "tool",
+                },
+            ],
+            "top_k": 1,
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["exit_code"] == 0
+    assert body["data"]["selected"][0]["candidate_id"] == "switchboard"
+
+
+def test_geoseal_service_cli_bridge_blocks_code_roundtrip_over_http():
+    from fastapi.testclient import TestClient
+
+    from src.api.geoseal_service import app
+
+    client = TestClient(app)
+    response = client.post(
+        "/v1/geoseal/code-roundtrip",
+        json={"content": "def add(a, b):\n    return a + b\n", "language": "python"},
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Unknown GeoSeal command: code-roundtrip"
 
 
 def test_external_eval_manifest_validates():

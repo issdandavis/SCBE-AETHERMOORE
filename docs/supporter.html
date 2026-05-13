@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AetherMoore Supporter | $20/month</title>
+    <title>AetherMoore Support | Ko-fi, Cash App, and Stripe</title>
     <meta
       name="description"
-      content="Support AetherMoore and receive monthly operator notes, early package updates, and a visible support route."
+      content="Support AetherMoore through Ko-fi, Cash App, or Stripe. Low-friction support for SCBE-AETHERMOORE, agent workflow governance, and open-source tooling."
     />
     <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/supporter.html" />
     <style>
@@ -54,6 +54,9 @@
         font-size: clamp(38px, 7vw, 72px);
         line-height: 0.98;
         letter-spacing: 0;
+      }
+      h2 {
+        margin: 0 0 10px;
       }
       p {
         color: var(--muted);
@@ -150,64 +153,118 @@
         color: var(--green);
         font-size: 15px;
       }
+      .hero-image {
+        width: min(680px, 100%);
+        margin-top: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .section {
+        margin-top: 30px;
+      }
     </style>
   </head>
   <body>
     <main>
-      <div class="eyebrow">Simple support lane</div>
-      <h1>Support AetherMoore for $20/month.</h1>
-      <p>
-        This is the smallest useful paid tier: keep the work moving, receive monthly operator notes,
-        and get early access to cleaned packages as they are released. No giant enterprise pitch. No
-        mystery box.
-      </p>
-      <div class="price"><strong>$20</strong><span>/ month</span></div>
-      <div class="actions" aria-label="Quick support actions">
-        <a
-          class="btn"
-          href="https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k"
-          target="_blank"
-          rel="noopener"
-          >Tip $5 one time</a
-        >
-        <a
-          class="btn secondary"
-          href="https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
-          target="_blank"
-          rel="noopener"
-          >Support for $20/month</a
-        >
-      </div>
+      <section id="offer">
+        <div class="eyebrow">Simple support lane</div>
+        <h1>Support AetherMoore without a sales call.</h1>
+        <p>
+          Ko-fi is the main low-pressure way to send support or service-credit money. Cash App is
+          the direct backup. Stripe is still available for structured subscriptions and product
+          checkout. One-time support is welcome; no subscription is required.
+        </p>
+        <div class="price"><strong>$5+</strong><span>support, credits, or monthly backing</span></div>
+        <div class="actions" aria-label="Quick support actions">
+          <a
+            class="btn btn-primary"
+            href="https://ko-fi.com/izdandavis"
+            target="_blank"
+            rel="noopener"
+            >Support on Ko-fi</a
+          >
+          <a class="btn secondary" href="payments.html#cash-app">Cash App $IzzyDDavis7</a>
+          <a
+            class="btn secondary"
+            href="https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
+            target="_blank"
+            rel="noopener"
+            >Stripe $20/month</a
+          >
+          <a class="btn secondary" href="payments.html">All payment paths</a>
+        </div>
+        <img
+          class="hero-image"
+          src="hero.svg"
+          alt="AetherMoore supporter and service-credit visual"
+        />
+      </section>
 
-      <section class="grid" aria-label="Supporter benefits">
+      <section id="includes" class="grid" aria-label="Supporter benefits">
         <article class="card">
-          <h2>What you get</h2>
+          <h2>What support does</h2>
           <ul>
-            <li>Monthly operator notes: what shipped, what broke, what is usable.</li>
-            <li>Early supporter access to cleaned toolkit updates.</li>
-            <li>Direct support route for missing links or broken delivery.</li>
+            <li>Keeps the SCBE-AETHERMOORE open-source stack moving.</li>
+            <li>Funds cleanup, packaging, delivery fixes, and benchmark runs.</li>
+            <li>Supports decision record templates, threshold notes, and pilot checklist work.</li>
+            <li>Helps turn review notes into reusable docs, manuals, and delivery pages.</li>
+            <li>Creates a low-friction path before formal consulting or procurement.</li>
+            <li>Supports the free public pages people can inspect before checkout.</li>
           </ul>
         </article>
         <article class="card">
-          <h2>Who it is for</h2>
+          <h2>Good fit / not for</h2>
           <p>
-            People who want the system to keep getting built and want practical notes without
-            waiting for a polished course, enterprise onboarding, or a sales call.
+            Good fit: people who want the system to keep getting built and want practical notes
+            without waiting for a polished course, enterprise onboarding, or a sales call.
+          </p>
+          <p>
+            Not for: emergency support, custom development, legal/compliance certification, or a
+            guaranteed service level from a small support payment.
           </p>
         </article>
         <article class="card">
-          <h2>Plain terms</h2>
+          <h2>Success check</h2>
           <p>
-            Cancel when you want. This tier supports ongoing work and lightweight access; it is not
-            consulting, custom development, or guaranteed emergency support.
+            A useful support lane should make the public stack better: cleaner docs, clearer
+            delivery, stronger tests, easier payment paths, and less friction for the next buyer.
+          </p>
+        </article>
+      </section>
+
+      <section id="faq" class="section grid" aria-label="Supporter FAQ">
+        <article class="card">
+          <h2>Is support a product purchase?</h2>
+          <p>
+            No. Support helps keep the work moving. If you need a specific deliverable, use the
+            Workflow Snapshot, hosted-run intake, service credits, or products page.
+          </p>
+        </article>
+        <article class="card">
+          <h2>Can I cancel?</h2>
+          <p>
+            Yes. Stripe monthly support can be cancelled through Stripe. Ko-fi and Cash App can be
+            used for one-time support with no subscription.
+          </p>
+        </article>
+        <article class="card">
+          <h2>Where can I inspect more?</h2>
+          <p>
+            See the <a href="use-cases/governed-ai-workflows.html">use cases</a>,
+            <a href="comparison/toolkit-vs-full-repo.html">toolkit comparison</a>,
+            <a href="proof/why-the-manual-exists.html">manual proof</a>,
+            <a href="redteam.html">red-team notes</a>, and
+            <a href="proof/red-team-summary.html">red-team summary</a>.
           </p>
         </article>
       </section>
 
       <section class="panel" aria-label="Join">
-        <h2>Join with Stripe</h2>
+        <h2>Pick the payment path that is easiest.</h2>
         <p>
-          Use the direct Stripe checkout link. Stripe collects the email at checkout.
+          Ko-fi is best for simple support and service credits. Cash App is direct manual payment.
+          Stripe is best when you want an automatic subscription receipt.
         </p>
         <form id="supporter-form">
           <label for="email">Email</label>
@@ -222,12 +279,20 @@
           <div class="actions">
             <a
               class="btn"
+              href="https://ko-fi.com/izdandavis"
+              target="_blank"
+              rel="noopener"
+              >Open Ko-fi</a
+            >
+            <a class="btn secondary" href="payments.html#cash-app">Cash App $IzzyDDavis7</a>
+            <a
+              class="btn secondary"
               href="https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
               target="_blank"
               rel="noopener"
-              >Join for $20/month</a
+              >Stripe $20/month</a
             >
-            <button class="btn" type="submit">Start $20/month checkout</button>
+            <button class="btn secondary" type="submit">Start Stripe checkout</button>
             <a
               class="btn secondary"
               href="mailto:ai@aethermoore.com?subject=AetherMoore%20Supporter%20-%20manual%20payment&body=I%20want%20to%20support%20AetherMoore.%20Please%20send%20me%20a%20Stripe%20or%20Cash%20App%20payment%20link."
@@ -236,10 +301,25 @@
           </div>
           <div class="status" id="status" role="status"></div>
           <p class="note">
-            The button uses the same Stripe-hosted checkout as the direct link, so it does not
-            depend on the API bridge being online.
+            For Cash App payments, include the offer name in the note, for example:
+            "Workflow Snapshot", "service credits", or "support".
           </p>
         </form>
+      </section>
+
+      <section class="panel final-cta" aria-label="Final CTA">
+        <h2>Support only if the free stack is useful.</h2>
+        <p>
+          The public docs, AI map, products, and hosted-run intake stay inspectable first. If the
+          work helps, Ko-fi and Cash App are the fastest small support paths.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
+            >Support on Ko-fi</a
+          >
+          <a class="btn secondary" href="payments.html">Open payment center</a>
+          <a class="btn secondary" href="legal/terms.html">Read terms</a>
+        </div>
       </section>
     </main>
     <script>

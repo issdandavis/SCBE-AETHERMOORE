@@ -138,7 +138,10 @@ def test_geoseal_call_switchboard_cli(tmp_path: Path) -> None:
             "--calls",
             str(calls),
             "--request",
-            '{"call_id":"call-codex-ui","agent_id":"agent.codex","lane":"ui","resource":"scbe-visual-system","mode":"write"}',
+            (
+                '{"call_id":"call-codex-ui","agent_id":"agent.codex",'
+                '"lane":"ui","resource":"scbe-visual-system","mode":"write"}'
+            ),
             "--json",
         ],
         cwd=ROOT,

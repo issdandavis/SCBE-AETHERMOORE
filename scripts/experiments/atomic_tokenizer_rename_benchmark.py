@@ -30,12 +30,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.mathbac_cross_primary_atomic import (
-    ATOMIC_SEMANTIC_CLASSES,
-    TONGUES,
     _accuracy,
     _atomic_feature,
-    _feature_keys,
-    _l2_squared,
     _per_concept_accuracy,
     loo_nearest_concept,
 )

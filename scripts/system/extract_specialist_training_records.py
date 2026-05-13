@@ -12,9 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "training-data" / "sft"
+
+SECRET_LIKE_RE = re.compile(r"(?i)(api[_-]?key|token|secret|password|credential)(\s*[:=]\s*)(['\"]?)[^'\"\s,}]+")
 
 
 def utc_now() -> str:
@@ -32,12 +33,29 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
 
 
+def redact_secret_like_text(text: str) -> str:
+    return SECRET_LIKE_RE.sub(r"\1\2\3<redacted>", text)
+
+
+def redact_record(value: Any) -> Any:
+    if isinstance(value, str):
+        return redact_secret_like_text(value)
+    if isinstance(value, list):
+        return [redact_record(item) for item in value]
+    if isinstance(value, dict):
+        return {key: redact_record(item) for key, item in value.items()}
+    return value
+
+
 def write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
     """Write training records to JSONL.  Records contain source-code excerpts, not secrets."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:  # nosec: training-data output, not credentials
         for record in records:
-            handle.write(json.dumps(record, ensure_ascii=True, sort_keys=True) + "\n")
+            sanitized_record = redact_record(record)
+            handle.write(  # lgtm[py/clear-text-storage-sensitive-data] records are redacted training examples
+                json.dumps(sanitized_record, ensure_ascii=True, sort_keys=True) + "\n"
+            )
 
 
 def load_json(path: Path) -> dict[str, Any] | list[Any] | None:
@@ -64,9 +82,11 @@ def record(
         "purpose": purpose,
         "split": split,
         "source_path": repo_rel(source_path),
-        "source_sha256": sha256_text(source_path.read_text(encoding="utf-8", errors="replace"))
-        if source_path.exists() and source_path.is_file()
-        else None,
+        "source_sha256": (
+            sha256_text(source_path.read_text(encoding="utf-8", errors="replace"))
+            if source_path.exists() and source_path.is_file()
+            else None
+        ),
         "tags": tags,
         "dedupe_key": sha256_text(content),
         "quality": "source_extracted",
@@ -145,7 +165,9 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         ),
                         response=compact_json(
                             {
-                                "status": payload.get("status") or payload.get("workflow_status") or payload.get("ready_for_canary"),
+                                "status": payload.get("status")
+                                or payload.get("workflow_status")
+                                or payload.get("ready_for_canary"),
                                 "ready_for_canary": payload.get("ready_for_canary"),
                                 "ready_for_trusted": payload.get("ready_for_trusted"),
                                 "checks": payload.get("checks"),
@@ -334,7 +356,9 @@ def extract_research_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                     extra={"source_manifest": repo_rel(manifest_path), "source_record_index": idx},
                 )
             )
-    return [r for r in records if r["metadata"]["split"] == "train"], [r for r in records if r["metadata"]["split"] == "eval"]
+    return [r for r in records if r["metadata"]["split"] == "train"], [
+        r for r in records if r["metadata"]["split"] == "eval"
+    ]
 
 
 def import_module(path: Path, module_name: str):

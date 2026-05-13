@@ -9,6 +9,7 @@ import asyncio
 import glob
 import os
 import sys
+from urllib.parse import urlparse
 import pytest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
@@ -57,8 +58,8 @@ class TestPlaywrightRuntime:
 
             # Navigate
             url = await rt.navigate("https://example.com")
-            assert "example.com" in url
-            assert "example.com" in rt.current_url
+            assert urlparse(url).hostname == "example.com"
+            assert urlparse(rt.current_url).hostname == "example.com"
 
             # Title
             title = await rt.title()

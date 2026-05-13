@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 
@@ -17,6 +18,15 @@ from src.api.polly_commerce import (
     train_corpus_dir,
 )
 
+
+def _hostname(url: str) -> str | None:
+    return urlparse(url).hostname
+
+
+def _is_checkout_url(url: str) -> bool:
+    return _hostname(url) in {"buy.stripe.com", "ko-fi.com"}
+
+
 # ---------------------------------------------------------------------------
 # Catalog sanity
 # ---------------------------------------------------------------------------
@@ -29,7 +39,8 @@ def test_catalog_is_nonempty_and_has_real_stripe_links() -> None:
         assert product.name
         assert product.price_label
         assert product.short
-        assert product.checkout_url.startswith(("https://buy.stripe.com/", "https://ko-fi.com/"))
+        assert urlparse(product.checkout_url).scheme == "https"
+        assert _is_checkout_url(product.checkout_url)
 
 
 # ---------------------------------------------------------------------------
@@ -132,7 +143,7 @@ def test_render_custom_reply_includes_mailto_with_user_context() -> None:
 
 def test_render_membership_reply_returns_kofi_link() -> None:
     text, actions = render_membership_reply()
-    kofi = next((a for a in actions if "ko-fi.com" in a["url"]), None)
+    kofi = next((a for a in actions if _hostname(a["url"]) == "ko-fi.com"), None)
     credits = next((a for a in actions if "service-credits" in a["url"]), None)
     assert credits is not None
     assert kofi is not None

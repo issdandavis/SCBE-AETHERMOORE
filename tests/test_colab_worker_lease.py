@@ -76,9 +76,9 @@ def test_provision_colab_worker_dry_run_emits_packets(tmp_path: Path, monkeypatc
     assert artifact["intersection_scope"]["regions"] == ["global"]
     assert Path(artifact["artifact_path"]).exists()
     saved = json.loads(Path(artifact["artifact_path"]).read_text(encoding="utf-8"))
-    assert saved["packets"]["claim"] == "pkt-1"
-    assert saved["packets"]["internal"] == "pkt-2"
-    assert saved["packets"]["evidence"] == "pkt-3"
+    assert saved["schema_version"] == "scbe_colab_worker_public_artifact_v1"
+    assert saved["packet_count"] == 3
+    assert saved["packet_classes"] == ["claim", "evidence", "internal"]
 
 
 def test_provision_colab_worker_with_fake_playwright_marks_auth_required(tmp_path: Path, monkeypatch) -> None:

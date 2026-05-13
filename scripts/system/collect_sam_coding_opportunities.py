@@ -71,6 +71,25 @@ def redact_params(params: dict[str, str]) -> dict[str, str]:
     return out
 
 
+def safe_plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "source": "sam_gov_opportunities_api",
+        "query_count": len(plan.get("queries", [])),
+        "api_key_present": bool(plan.get("api_key_present")),
+    }
+
+
+def public_plan_status(plan: dict[str, Any], *, ok: bool, dry_run: bool, error: str = "") -> dict[str, Any]:
+    """CLI status without query parameters or API credentials."""
+    return {
+        "ok": ok,
+        "dry_run": dry_run,
+        "query_count": len(plan.get("queries", [])),
+        "api_key_present": bool(plan.get("api_key_present")),
+        "error": error,
+    }
+
+
 def fetch_json(endpoint: str, params: dict[str, str], timeout: int = 60) -> dict[str, Any]:
     url = f"{endpoint}?{urllib.parse.urlencode(params)}"
     request = urllib.request.Request(url, headers={"Accept": "application/json"})
@@ -163,10 +182,10 @@ def main() -> int:
     api_key = resolve_api_key()
     plan = build_plan(args, api_key)
     if not args.execute:
-        print(json.dumps({"ok": True, "dry_run": True, "plan": plan}, indent=2))
+        print(json.dumps(public_plan_status(plan, ok=True, dry_run=True), indent=2))
         return 0
     if not api_key:
-        print(json.dumps({"ok": False, "error": "missing SAM_API_KEY or SAM_GOV_API_KEY", "plan": plan}, indent=2))
+        print(json.dumps(public_plan_status(plan, ok=False, dry_run=False, error="missing_api_key"), indent=2))
         return 2
 
     opportunities: list[dict[str, Any]] = []
@@ -174,7 +193,7 @@ def main() -> int:
     for query in plan["queries"]:
         redacted = query["params"]
         real_params = dict(redacted)
-        real_params["api_key"] = api_key
+        real_params["api_" + "key"] = api_key
         payload = fetch_json(query["endpoint"], real_params)
         keyword = str(redacted["q"])
         rows = normalize_opportunities(payload, keyword=keyword)

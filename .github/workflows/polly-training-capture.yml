@@ -42,7 +42,9 @@ jobs:
           if [[ "${SOURCE:-}" == *"governance-snapshot"* ]]; then
             title="snapshot intake (\$500): ${BUDGET}/${TIMELINE}"
             extra_label="snapshot-intake"
-            gh label create snapshot-intake --description "Paid AI Governance Snapshot intake" --color "D6A756" --repo "${{ github.repository }}" 2>/dev/null || true
+            if ! gh label view snapshot-intake --repo "${{ github.repository }}" >/dev/null 2>&1; then
+              gh label create snapshot-intake --description "Paid AI Governance Snapshot intake" --color "D6A756" --repo "${{ github.repository }}"
+            fi
           else
             title="lead: ${PROJECT_TYPE} (${BUDGET}, ${TIMELINE})"
           fi
@@ -60,8 +62,9 @@ jobs:
           Look in polly-leads/$(date -u +%Y-%m-%d)/ for today's submissions.
           EOF
           )
-          # Best-effort label creation; ignore if it already exists.
-          gh label create lead --description "Polly /hire form lead" --color "FFD166" --repo "${{ github.repository }}" 2>/dev/null || true
+          if ! gh label view lead --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh label create lead --description "Polly /hire form lead" --color "FFD166" --repo "${{ github.repository }}"
+          fi
           if [[ -n "$extra_label" ]]; then
             gh issue create \
               --title "$title" \

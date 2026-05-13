@@ -2,3 +2,13 @@ User-agent: *
 Allow: /
 
 Sitemap: https://aethermoore.com/sitemap.xml
+Sitemap: https://aethermoore.com/SCBE-AETHERMOORE/sitemap.xml
+
+# AI and research agents: start here for the SCBE product, governance, fleet,
+# pricing, and machine-readable route map.
+AI-Map: https://aethermoore.com/SCBE-AETHERMOORE/robot.html
+AI-Map-Source: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
+LLMs: https://aethermoore.com/SCBE-AETHERMOORE/llms.txt
+Payments: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
+Privacy-Policy: https://aethermoore.com/SCBE-AETHERMOORE/legal/privacy.html
+Terms-of-Service: https://aethermoore.com/SCBE-AETHERMOORE/legal/terms.html

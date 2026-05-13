@@ -14,7 +14,6 @@ import sys
 from pathlib import Path
 from typing import Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -31,6 +30,7 @@ def _first_enabled(enabled: Iterable[str], candidates: Iterable[str]) -> str:
         if candidate in enabled_set:
             return candidate
     _die(f"none of {list(candidates)} are enabled")
+    raise RuntimeError("unreachable after _die")
 
 
 def _kem_roundtrip(oqs_module, algorithm: str) -> None:
@@ -60,7 +60,7 @@ def main() -> int:
 
     try:
         import oqs
-    except BaseException as exc:  # liboqs-python may raise SystemExit while bootstrapping.
+    except (Exception, SystemExit) as exc:  # liboqs-python may raise SystemExit while bootstrapping.
         _die(f"could not import oqs: {exc!r}")
 
     kem_algorithm = _first_enabled(

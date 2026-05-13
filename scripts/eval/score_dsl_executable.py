@@ -25,7 +25,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -163,12 +163,8 @@ def _build_prompt(messages: List[Dict[str, str]]) -> Tuple[List[Dict[str, str]],
     return prompt_msgs, expected
 
 
-def _generate(
-    model, tokenizer, prompt_msgs: List[Dict[str, str]], max_new_tokens: int = 96
-) -> str:
-    text = tokenizer.apply_chat_template(
-        prompt_msgs, tokenize=False, add_generation_prompt=True
-    )
+def _generate(model, tokenizer, prompt_msgs: List[Dict[str, str]], max_new_tokens: int = 96) -> str:
+    text = tokenizer.apply_chat_template(prompt_msgs, tokenize=False, add_generation_prompt=True)
     inputs = tokenizer(text, return_tensors="pt").to(model.device)
     n_in = inputs["input_ids"].shape[1]
     out = model.generate(
@@ -184,9 +180,7 @@ def _generate(
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "--adapter", required=True, help="HF repo id or local path of the LoRA"
-    )
+    ap.add_argument("--adapter", required=True, help="HF repo id or local path of the LoRA")
     ap.add_argument("--base", default="Qwen/Qwen2.5-Coder-0.5B-Instruct")
     ap.add_argument(
         "--holdout",
@@ -250,9 +244,7 @@ def main() -> int:
             continue
         try:
             with torch.no_grad():
-                prediction = _generate(
-                    model, tokenizer, prompt_msgs, max_new_tokens=args.max_new_tokens
-                )
+                prediction = _generate(model, tokenizer, prompt_msgs, max_new_tokens=args.max_new_tokens)
         except Exception as exc:
             failure_counts["generation_error"] += 1
             sample_diags.append({"idx": idx, "error": str(exc)})
@@ -285,10 +277,7 @@ def main() -> int:
             )
 
     overall = (n_pass / n_total) if n_total else 0.0
-    cat_acc: Dict[str, float] = {
-        cat: (cat_pass[cat] / cat_total[cat]) if cat_total[cat] else 0.0
-        for cat in cat_total
-    }
+    cat_acc: Dict[str, float] = {cat: (cat_pass[cat] / cat_total[cat]) if cat_total[cat] else 0.0 for cat in cat_total}
 
     floors = (contract.get("must_pass_categories") or {}).get("floors") or {}
     floor_failures: List[str] = []
@@ -296,9 +285,7 @@ def main() -> int:
         if cat in cat_acc and cat_acc[cat] < floor:
             floor_failures.append(f"{cat}: {cat_acc[cat]:.3f} < {floor}")
 
-    gate = ((contract.get("metrics") or {}).get("executable_accuracy") or {}).get(
-        "gate"
-    ) or 0.50
+    gate = ((contract.get("metrics") or {}).get("executable_accuracy") or {}).get("gate") or 0.50
     overall_pass = overall >= gate
     floor_pass = not floor_failures
 

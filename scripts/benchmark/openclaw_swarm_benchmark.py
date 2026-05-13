@@ -530,15 +530,20 @@ def score_case(parsed: dict[str, Any] | None, routing: dict[str, Any], exit_code
     points += 15 if parsed.get("models") else 0
     points += 15 if "promotable_lanes" in parsed and "blocked_lanes" in parsed else 0
     points += 20 if routing.get("schema") in {"scbe_swarm_routing_v1", "openclaw_swarm_routing_v1"} else 0
-    points += 10 if routing.get("next_action") in {
-        "extract_one_promotable_diff_then_safe_apply",
-        "escalate_to_paid_or_narrow_task",
-        "run_helper_guard_cycle_before_escalation",
-        "deliver_answer_to_user",
-        "handoff_evidence_to_builder",
-        "review_promotable_lane",
-        "safe_apply_verified",
-    } else 0
+    points += (
+        10
+        if routing.get("next_action")
+        in {
+            "extract_one_promotable_diff_then_safe_apply",
+            "escalate_to_paid_or_narrow_task",
+            "run_helper_guard_cycle_before_escalation",
+            "deliver_answer_to_user",
+            "handoff_evidence_to_builder",
+            "review_promotable_lane",
+            "safe_apply_verified",
+        }
+        else 0
+    )
     points += 5 if "correction_guide" in routing and "quality_flag_counts" in routing else 0
     if routing.get("assurance_packet"):
         points = min(100, points + 0)
@@ -589,7 +594,9 @@ def build_quality_vector(item: dict[str, Any]) -> dict[str, Any]:
     assurance = routing.get("assurance_packet") or {}
     quality_flags = routing.get("quality_flag_counts") or parsed.get("quality_flag_counts") or {}
     flag_total = sum(int(count) for count in quality_flags.values())
-    mean_applicability = float(assurance.get("mean_applicability_score", parsed.get("mean_applicability_score", 0)) or 0)
+    mean_applicability = float(
+        assurance.get("mean_applicability_score", parsed.get("mean_applicability_score", 0)) or 0
+    )
     next_action = str(routing.get("next_action") or parsed.get("next_action") or "")
     trace_parts = [
         bool(parsed.get("run_dir")),
@@ -661,14 +668,18 @@ def summarize_quality_vectors(results: list[dict[str, Any]]) -> dict[str, Any]:
         "schema": "scbe_swarm_quality_summary_v1",
         "average_quality_score": round(sum(float(vector["quality_score"]) for vector in vectors) / len(vectors), 2),
         "pass_depth_counts": depth_counts,
-        "dimension_averages": {
-            key: round(value / len(vectors), 2) for key, value in sorted(dimension_totals.items())
-        },
+        "dimension_averages": {key: round(value / len(vectors), 2) for key, value in sorted(dimension_totals.items())},
         "interpretation": "Use this to compare successful runs by quality, not just pass/fail. A green run with low traceability or patch_readiness is a thin pass.",
     }
 
 
-def build_summary(results: list[dict[str, Any]], *, completed_cases: int | None = None, planned_cases: int | None = None, case_workers: int | None = None) -> dict[str, Any]:
+def build_summary(
+    results: list[dict[str, Any]],
+    *,
+    completed_cases: int | None = None,
+    planned_cases: int | None = None,
+    case_workers: int | None = None,
+) -> dict[str, Any]:
     attach_quality_vectors(results)
     scores = [item["score"]["points"] for item in results]
     parsed_rows = [item.get("stdout_json") or {} for item in results]
@@ -750,7 +761,8 @@ def build_kaggle_winner_loop(report: dict[str, Any]) -> dict[str, Any]:
         )
 
     cloud_cases = [
-        item for item in cases
+        item
+        for item in cases
         if (item.get("case") or {}).get("allow_ollama_cloud") or (item.get("case") or {}).get("prefer_ollama_cloud")
     ]
     cloud_models: list[str] = []
@@ -779,10 +791,13 @@ def build_kaggle_winner_loop(report: dict[str, Any]) -> dict[str, Any]:
         "next_best_patch": first_weakness.get("patch_direction")
         or (weakest_stage or {}).get("next_repair_task")
         or "Run the benchmark before selecting a patch.",
-        "next_rerun": first_weakness.get("rerun") or "python scripts/benchmark/openclaw_swarm_benchmark.py --mode kaggle-loop",
+        "next_rerun": first_weakness.get("rerun")
+        or "python scripts/benchmark/openclaw_swarm_benchmark.py --mode kaggle-loop",
         "ollama_cloud": {
             "enabled_case_count": len(cloud_cases),
-            "prefer_cloud_case_count": sum(1 for item in cloud_cases if (item.get("case") or {}).get("prefer_ollama_cloud")),
+            "prefer_cloud_case_count": sum(
+                1 for item in cloud_cases if (item.get("case") or {}).get("prefer_ollama_cloud")
+            ),
             "models_seen": sorted(set(cloud_models)),
             "note": "Cloud models are used only by opted-in cases; local/free lanes remain the default first pass.",
         },
@@ -812,7 +827,7 @@ def run_safe_apply_case(output_dir: Path) -> dict[str, Any]:
     patch_path.parent.mkdir(parents=True, exist_ok=True)
     patch_path.write_text(build_safe_apply_patch(rel_path), encoding="utf-8")
     smoke = (
-        "python -c \"from pathlib import Path; "
+        'python -c "from pathlib import Path; '
         f"assert Path({rel_path!r}).exists(); "
         "print('sandbox patch visible')\""
     )
@@ -1022,7 +1037,11 @@ def run_self_cli_functional_case(
         "policy": "self_cli_functional_coding_gauntlet",
         "quality_flag_counts": quality_flags,
         "correction_guide": [],
-        "next_action": "safe_apply_verified" if failed_total == 0 and functional_report else "run_helper_guard_cycle_before_escalation",
+        "next_action": (
+            "safe_apply_verified"
+            if failed_total == 0 and functional_report
+            else "run_helper_guard_cycle_before_escalation"
+        ),
         "next_cycle": "inspect_failed_functional_tasks_then_repair_prompt_or_task_packet",
         "assurance_packet": {
             "schema": "scbe_darpa_style_assurance_packet_v1",
@@ -1089,7 +1108,6 @@ def run_self_cli_functional_case(
 
 
 def build_single_case_report(run_id: str, mode: str, output_dir: Path, item: dict[str, Any]) -> dict[str, Any]:
-    parsed = item.get("stdout_json") or {}
     results = [item]
     summary = build_summary(results)
     report = {
@@ -1416,7 +1434,9 @@ def build_geometric_consensus(report: dict[str, Any]) -> dict[str, Any]:
         "hexagonal_faces": face_coverage,
         "result_focus": {
             "completion_counts": completion_counts,
-            "dominant_completion": max(completion_counts, key=completion_counts.get) if completion_counts else "unknown",
+            "dominant_completion": (
+                max(completion_counts, key=completion_counts.get) if completion_counts else "unknown"
+            ),
             "note": "Dominant completion is a routing clue, not a consensus score.",
         },
         "information_ray_trace": {
@@ -1549,7 +1569,15 @@ def build_markdown(report: dict[str, Any]) -> str:
         for face, values in consensus["hexagonal_faces"].items():
             lines.append(f"| `{face}` | {values['coverage']} | {values['present']} | {values['total']} |")
         trace = consensus.get("information_ray_trace") or {}
-        lines.extend(["", "### Information Ray Trace", "", f"- ray_model: `{trace.get('ray_model', '')}`", f"- ray_count: `{trace.get('ray_count', 0)}`"])
+        lines.extend(
+            [
+                "",
+                "### Information Ray Trace",
+                "",
+                f"- ray_model: `{trace.get('ray_model', '')}`",
+                f"- ray_count: `{trace.get('ray_count', 0)}`",
+            ]
+        )
         if consensus.get("code_5w"):
             lines.extend(
                 [
@@ -1598,7 +1626,15 @@ def build_markdown(report: dict[str, Any]) -> str:
             ]
         )
     if grouped:
-        lines.extend(["", "## Grouped Totals", "", "| Group | Cases | Seconds | Promotable | Blocked | Failed |", "|---|---:|---:|---:|---:|---:|"])
+        lines.extend(
+            [
+                "",
+                "## Grouped Totals",
+                "",
+                "| Group | Cases | Seconds | Promotable | Blocked | Failed |",
+                "|---|---:|---:|---:|---:|---:|",
+            ]
+        )
         for key in sorted(grouped):
             bucket = grouped[key]
             lines.append(
@@ -1622,12 +1658,18 @@ def build_markdown(report: dict[str, Any]) -> str:
         )
         for target in loop["public_benchmark_targets"]:
             lines.append(f"| [{target['name']}]({target['url']}) | {target['what_it_tests']} | {target['scbe_gap']} |")
-        lines.extend(["", "### Current Weaknesses", "", "| Weakness | Observed | Why We Lose | Patch Direction | Rerun |", "|---|---|---|---|---|"])
+        lines.extend(
+            [
+                "",
+                "### Current Weaknesses",
+                "",
+                "| Weakness | Observed | Why We Lose | Patch Direction | Rerun |",
+                "|---|---|---|---|---|",
+            ]
+        )
         for weakness in loop["weaknesses"]:
             lines.append(
-                "| {weakness} | {observed} | {why_we_lose} | {patch_direction} | `{rerun}` |".format(
-                    **weakness
-                )
+                "| {weakness} | {observed} | {why_we_lose} | {patch_direction} | `{rerun}` |".format(**weakness)
             )
     if report.get("kaggle_winner_loop"):
         loop = report["kaggle_winner_loop"]
@@ -1652,7 +1694,9 @@ def build_markdown(report: dict[str, Any]) -> str:
                     stage=stage["stage"],
                     case_count=stage["case_count"],
                     quality=stage["average_quality_score"],
-                    delta="" if stage["delta_from_previous_run_stage"] is None else stage["delta_from_previous_run_stage"],
+                    delta=(
+                        "" if stage["delta_from_previous_run_stage"] is None else stage["delta_from_previous_run_stage"]
+                    ),
                     weakest=stage["weakest_dimension"],
                     repair=stage["next_repair_task"],
                 )
@@ -1721,7 +1765,9 @@ def main() -> int:
     if args.mode == "safe-apply":
         item = run_safe_apply_case(output_dir)
         report = build_single_case_report(run_id, args.mode, output_dir, item)
-        print(json.dumps({"ok": True, "report": str(output_dir / "report.json"), "summary": report["summary"]}, indent=2))
+        print(
+            json.dumps({"ok": True, "report": str(output_dir / "report.json"), "summary": report["summary"]}, indent=2)
+        )
         return 0
     if args.mode == "self-cli-functional":
         item = run_self_cli_functional_case(
@@ -1732,7 +1778,9 @@ def main() -> int:
             repair_attempts=max(0, int(args.self_cli_repair_attempts)),
         )
         report = build_single_case_report(run_id, args.mode, output_dir, item)
-        print(json.dumps({"ok": True, "report": str(output_dir / "report.json"), "summary": report["summary"]}, indent=2))
+        print(
+            json.dumps({"ok": True, "report": str(output_dir / "report.json"), "summary": report["summary"]}, indent=2)
+        )
         return 0
 
     if args.mode == "quick":

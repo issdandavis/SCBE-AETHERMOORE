@@ -30,7 +30,6 @@ DISPATCHER = Path(__file__).resolve().parents[1] / "eval" / "hf_job_v8_pre_phase
 spec = importlib.util.spec_from_file_location("d", DISPATCHER)
 mod = importlib.util.module_from_spec(spec)
 # Don't call main(); just import the helpers
-import torch.nn as nn
 spec.loader.exec_module(mod)
 
 DIM = 1024
@@ -43,7 +42,10 @@ def cosine(a: torch.Tensor, b: torch.Tensor) -> float:
 def main() -> int:
     helpers = [
         ("harmonic_wall", "(d_h: float, pd: float) -> float; returns 1/(1 + d_h + 2*pd)"),
-        ("phi_weight", "(tongue: str) -> float; returns {KO:1.00, AV:1.62, RU:2.62, CA:4.24, UM:6.85, DR:11.09}[tongue]"),
+        (
+            "phi_weight",
+            "(tongue: str) -> float; returns {KO:1.00, AV:1.62, RU:2.62, CA:4.24, UM:6.85, DR:11.09}[tongue]",
+        ),
         ("poincare_distance", "(u, v) -> float; returns arcosh(...)"),
         ("tongue_encode", "(text: str, tongue_code: str) -> list[int]; ..."),
         ("breath_phase", "(t: float) -> float; sin(2*pi*t/period)"),
@@ -63,13 +65,12 @@ def main() -> int:
     print(f"{'helper':<22} {'self_cos':<10} {'best_other':<12} {'top_match':<22} {'OK'}")
     print("-" * 80)
     n_correct = 0
-    for i, (name, filler) in enumerate(helpers):
+    for i, (name, _filler) in enumerate(helpers):
         role_vec = mod.deterministic_role_vector(f"role::{name}", DIM)
         u = mod.circular_correlation_torch(role_vec, memory)
         # Cosine vs each filler in vocab (vocab is stacked in helper order)
         cosines = []
         for j, (_, _other_filler) in enumerate(helpers):
-            target_filler = mod.deterministic_role_vector(f"filler::{name}::{filler}", DIM)
             # Note: filler vectors stored in vocab are namespaced by role::filler,
             # so vocab[j] corresponds to the j-th helper's filler under name
             cosines.append(cosine(u, vocab[j]))

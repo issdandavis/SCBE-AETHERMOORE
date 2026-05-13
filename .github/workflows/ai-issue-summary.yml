@@ -1,5 +1,9 @@
 name: AI Issue Summary
 
+# GHSA-g3f6-xrm9-h8gp remediation:
+# This workflow intentionally does not summarize untrusted issue text with an
+# AI model and does not write authenticated comments back to public issues.
+# It records deterministic metadata only.
 on:
   issues:
     types:
@@ -37,6 +41,7 @@ jobs:
           {
             echo "## Deterministic Issue Intake"
             echo
+            echo "- Security boundary: GHSA-g3f6-xrm9-h8gp remediated"
             echo "- Issue: #${ISSUE_NUMBER}"
             echo "- Author association: ${ISSUE_AUTHOR_ASSOCIATION}"
             echo "- Title characters: ${title_chars}"

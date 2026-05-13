@@ -10,8 +10,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -33,6 +35,18 @@ REQUIRED_OFFER_IDS = {
 }
 
 DEAD_CHECKOUT_ENDPOINT = "api.aethermoore.com/v1/billing/public-checkout"
+
+
+def _is_stripe_checkout_url(value: object) -> bool:
+    parsed = urllib.parse.urlparse(str(value))
+    return parsed.scheme == "https" and parsed.netloc == "buy.stripe.com" and parsed.path.startswith("/")
+
+
+def _contains_stripe_checkout_url(text: str) -> bool:
+    for match in re.finditer(r"https://buy\.stripe\.com/[^\s\"'<>]+", text):
+        if _is_stripe_checkout_url(match.group(0)):
+            return True
+    return False
 
 
 @dataclass(frozen=True)
@@ -133,7 +147,7 @@ def validate_offer_catalog(data: dict[str, Any], source: str) -> list[CheckResul
         checkout = str(offer.get("checkout_url", ""))
         checks.append(
             pass_check(f"{source}:{offer_id}:checkout", checkout)
-            if checkout.startswith("https://buy.stripe.com/")
+            if _is_stripe_checkout_url(checkout)
             else fail_check(f"{source}:{offer_id}:checkout", f"not a Stripe hosted checkout: {checkout!r}")
         )
         proof_url = str(offer.get("proof_url", ""))
@@ -206,7 +220,7 @@ def validate_app_config(data: dict[str, Any], source: str) -> list[CheckResult]:
     fallback = payload.get("fallbacks", {}).get("primary_offer") if isinstance(payload.get("fallbacks"), dict) else ""
     checks.append(
         pass_check(f"{source}:fallback_primary_offer", fallback)
-        if str(fallback).startswith("https://buy.stripe.com/")
+        if _is_stripe_checkout_url(fallback)
         else fail_check(f"{source}:fallback_primary_offer", f"not a Stripe hosted checkout: {fallback!r}")
     )
 
@@ -222,7 +236,7 @@ def validate_supporter_page(text: str, source: str) -> list[CheckResult]:
         ),
         (
             pass_check(f"{source}:stripe_checkout_present")
-            if "https://buy.stripe.com/" in text
+            if _contains_stripe_checkout_url(text)
             else fail_check(f"{source}:stripe_checkout_present", "no Stripe hosted checkout link found")
         ),
     ]

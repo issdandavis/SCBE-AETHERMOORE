@@ -499,6 +499,19 @@ def _runner_for(tongue: str) -> Optional[Tuple[List[str], str]]:
     return None
 
 
+_RUNNER_TEMP_NAMES: Dict[str, Tuple[str, str]] = {
+    "GO": (".go", "geoseal_go_"),
+    "ZI": (".zig", "geoseal_zi_"),
+}
+
+
+def _runner_temp_name(tongue: str) -> Tuple[str, str]:
+    try:
+        return _RUNNER_TEMP_NAMES[tongue]
+    except KeyError as exc:  # pragma: no cover - guarded by _runner_for mode
+        raise ValueError(f"no file-runner temp mapping for {tongue}") from exc
+
+
 def _cursor_agent_path() -> Optional[Path]:
     """Locate the installed Cursor Agent wrapper."""
     env_path = os.environ.get("CURSOR_AGENT_CMD")
@@ -624,10 +637,10 @@ def run_tongue_call(
     if mode == "file":
         import tempfile
 
-        suffix = ".go" if tongue == "GO" else ".zig"
-        fd, tmp_name = tempfile.mkstemp(suffix=suffix, prefix=f"geoseal_{tongue.lower()}_")
+        suffix, prefix = _runner_temp_name(tongue)
+        fd, tmp_name = tempfile.mkstemp(suffix=suffix, prefix=prefix)
         tmp_path = Path(tmp_name)
-        with open(fd, "w", encoding="utf-8") as fh:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
             fh.write(wrapped)
         argv = list(argv_prefix) + [str(tmp_path)]
     else:
@@ -1038,6 +1051,73 @@ def cmd_code_packet(args: argparse.Namespace) -> int:
     packet = _build_code_packet_payload(args)
     print(json.dumps(packet))
     return 0
+
+
+def _read_tongue_program_source(args: argparse.Namespace) -> tuple[str, str]:
+    source = getattr(args, "content", None)
+    source_name = getattr(args, "source_name", None) or "inline"
+    source_file = getattr(args, "source_file", None)
+    if source_file:
+        path = Path(source_file)
+        source = path.read_text(encoding="utf-8")
+        source_name = getattr(args, "source_name", None) or path.name
+    if source is None:
+        source = sys.stdin.read()
+        source_name = getattr(args, "source_name", None) or "stdin"
+    return source, source_name
+
+
+def cmd_tongue_compile(args: argparse.Namespace) -> int:
+    from src.sacred_tongues_toolchain import SacredTonguesToolchainError, compile_packet
+
+    try:
+        source, source_name = _read_tongue_program_source(args)
+        packet = compile_packet(source, source_name=source_name)
+        output = getattr(args, "output", None)
+        if output:
+            out_path = Path(output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            if getattr(args, "output_format", "json") == "bin":
+                out_path.write_bytes(bytes(packet["bytecode"]))
+            else:
+                out_path.write_text(json.dumps(packet["bytecode"], indent=2) + "\n", encoding="utf-8")
+            packet["output_path"] = str(out_path)
+        print(json.dumps(packet))
+        return 0
+    except SacredTonguesToolchainError as exc:
+        print(json.dumps({"status": "error", "error": str(exc)}), file=sys.stderr)
+        return 2
+
+
+def cmd_tongue_run(args: argparse.Namespace) -> int:
+    from src.sacred_tongues_toolchain import SacredTonguesToolchainError, compile_packet, load_program, run_packet
+
+    try:
+        program_file = getattr(args, "program_file", None)
+        compile_payload = None
+        if program_file:
+            program = load_program(Path(program_file))
+            source_name = Path(program_file).name
+        else:
+            source, source_name = _read_tongue_program_source(args)
+            compile_payload = compile_packet(source, source_name=source_name)
+            program = compile_payload["bytecode"]
+        run_payload = run_packet(program, max_steps=int(getattr(args, "max_steps", 10000)))
+        payload = {
+            "schema_version": "geoseal_tongue_run_v1",
+            "source_name": source_name,
+            "compile": compile_payload,
+            "run": run_payload,
+        }
+        if getattr(args, "json", False):
+            print(json.dumps(payload))
+        else:
+            for value in run_payload["output"]:
+                print(value)
+        return 0
+    except SacredTonguesToolchainError as exc:
+        print(json.dumps({"status": "error", "error": str(exc)}), file=sys.stderr)
+        return 2
 
 
 def _read_source_for_surface(args: argparse.Namespace) -> tuple[str, str, str]:
@@ -1710,6 +1790,51 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
     print(f"schema={payload['schema_version']} language={selected['language']} tongue={selected['tongue']}")
     print(f"permission_mode={payload['permission_mode']}")
     print("flow=" + " -> ".join(payload["standard_flow"]))
+    return 0
+
+
+def cmd_call_switchboard(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_call_switchboard import evaluate_call_request
+
+    calls: list[dict[str, Any]] = []
+    if args.calls:
+        loaded = json.loads(Path(args.calls).read_text(encoding="utf-8"))
+        if not isinstance(loaded, list):
+            raise SystemExit("--calls must point to a JSON array")
+        calls = loaded
+    if getattr(args, "inline_calls", None):
+        loaded = json.loads(args.inline_calls)
+        if not isinstance(loaded, list):
+            raise SystemExit("--inline-calls must be a JSON array")
+        calls.extend(loaded)
+    request = json.loads(args.request)
+    payload = evaluate_call_request(calls, request)
+    print(json.dumps(payload, indent=2 if args.json else None))
+    return 0
+
+
+def cmd_lightning_indexer(args: argparse.Namespace) -> int:
+    from src.coding_spine.lightning_indexer import select_sparse_candidates
+
+    candidates: list[dict[str, Any]] = []
+    if args.candidates_file:
+        loaded = json.loads(Path(args.candidates_file).read_text(encoding="utf-8"))
+        if not isinstance(loaded, list):
+            raise SystemExit("--candidates-file must point to a JSON array")
+        candidates = loaded
+    if args.inline_candidates:
+        loaded = json.loads(args.inline_candidates)
+        if not isinstance(loaded, list):
+            raise SystemExit("--inline-candidates must be a JSON array")
+        candidates.extend(loaded)
+    payload = select_sparse_candidates(
+        args.goal,
+        candidates,
+        top_k=args.top_k,
+        block_size=args.block_size,
+        channel_budget=args.channel_budget,
+    )
+    print(json.dumps(payload, indent=2 if args.json else None))
     return 0
 
 
@@ -4402,6 +4527,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_code_packet.add_argument("--backend", default=None, choices=["local", "ollama", "hf", "claude"])
     p_code_packet.set_defaults(func=cmd_code_packet)
 
+    p_tongue_compile = sub.add_parser(
+        "tongue-compile",
+        help="Compile Sacred Tongues .sts assembly into bounded VM bytecode",
+    )
+    p_tongue_compile.add_argument("--content", default=None, help="Inline .sts source; defaults to stdin")
+    p_tongue_compile.add_argument("--source-file", default=None, help="Read .sts source from file")
+    p_tongue_compile.add_argument("--source-name", default=None)
+    p_tongue_compile.add_argument("--output", default=None, help="Optional bytecode output path")
+    p_tongue_compile.add_argument("--output-format", default="json", choices=["json", "bin"])
+    p_tongue_compile.set_defaults(func=cmd_tongue_compile)
+
+    p_tongue_run = sub.add_parser(
+        "tongue-run",
+        help="Compile/run Sacred Tongues .sts assembly in the bounded VM",
+    )
+    p_tongue_run.add_argument("--content", default=None, help="Inline .sts source; defaults to stdin")
+    p_tongue_run.add_argument("--source-file", default=None, help="Read .sts source from file")
+    p_tongue_run.add_argument("--program-file", default=None, help="Run existing bytecode .json or .bin")
+    p_tongue_run.add_argument("--source-name", default=None)
+    p_tongue_run.add_argument("--max-steps", type=int, default=10000)
+    p_tongue_run.add_argument("--json", action="store_true")
+    p_tongue_run.set_defaults(func=cmd_tongue_run)
+
     p_braille = sub.add_parser("braille-lane", help="Build braille/polyhedral lane from source or code packet")
     p_braille.add_argument("--content", default="")
     p_braille.add_argument("--source-file", default=None)
@@ -4520,6 +4668,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
+
+    p_switchboard = sub.add_parser("call-switchboard", help="Evaluate a multi-agent call reservation")
+    p_switchboard.add_argument("--calls", default=None, help="Existing call reservations JSON array")
+    p_switchboard.add_argument("--inline-calls", default=None, help="Existing call reservations JSON array")
+    p_switchboard.add_argument("--request", required=True, help="Requested call JSON object")
+    p_switchboard.add_argument("--json", action="store_true")
+    p_switchboard.set_defaults(func=cmd_call_switchboard)
+
+    p_indexer = sub.add_parser("lightning-indexer", help="Select sparse agent context candidates")
+    p_indexer.add_argument("--goal", required=True)
+    p_indexer.add_argument("--inline-candidates", default=None, help="Candidate JSON array")
+    p_indexer.add_argument("--candidates-file", default=None, help="Candidate JSON array file")
+    p_indexer.add_argument("--top-k", type=int, default=8)
+    p_indexer.add_argument("--block-size", type=int, default=16)
+    p_indexer.add_argument("--channel-budget", type=int, default=3)
+    p_indexer.add_argument("--json", action="store_true")
+    p_indexer.set_defaults(func=cmd_lightning_indexer)
 
     p_compile = sub.add_parser("compile", help="Compile intent into an SCBE agent-bus command plan")
     p_compile.add_argument("intent", nargs=argparse.REMAINDER)

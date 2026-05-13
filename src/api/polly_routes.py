@@ -14,6 +14,7 @@ import re
 import smtplib
 import ssl
 import time
+import functools
 from email.message import EmailMessage
 from typing import Any, Dict, List, Optional
 from urllib import request as urlrequest
@@ -66,28 +67,28 @@ from pathlib import Path
 
 _DEFAULT_ENV_FILE = Path(__file__).parent.parent.parent / "config" / "connector_oauth" / ".env.connector.oauth"
 ENV_FILE = os.environ.get("POLLY_ENV_FILE") or str(_DEFAULT_ENV_FILE)
-_env_loaded = False
 import threading
 
 _env_lock = threading.Lock()
 
 
+@functools.lru_cache(maxsize=1)
+def _load_env_file(env_file: str) -> None:
+    if os.path.isfile(env_file):
+        with open(env_file) as fh:
+            for line in fh:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, _, v = line.partition("=")
+                    k = k.strip()
+                    v = v.strip().strip("\"'")
+                    if k and v:
+                        os.environ.setdefault(k, v)
+
+
 def _load_env() -> None:
-    global _env_loaded
     with _env_lock:
-        if _env_loaded:
-            return
-        if os.path.isfile(ENV_FILE):
-            with open(ENV_FILE) as fh:
-                for line in fh:
-                    line = line.strip()
-                    if line and not line.startswith("#") and "=" in line:
-                        k, _, v = line.partition("=")
-                        k = k.strip()
-                        v = v.strip().strip("\"'")
-                        if k and v:
-                            os.environ.setdefault(k, v)
-        _env_loaded = True
+        _load_env_file(ENV_FILE)
 
 
 def _gemini_key() -> Optional[str]:
@@ -320,7 +321,7 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
         if text.strip():
             return {"text": text, "provider": "ollama", "model": ollama_model}
     except Exception:
-        pass
+        logger.debug("Ollama fallback unavailable", exc_info=True)
 
     # Try HuggingFace Inference API (free tier, chat completions)
     hf_token = os.environ.get("HF_TOKEN")
@@ -338,7 +339,7 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
             if text and text.strip():
                 return {"text": text.strip(), "provider": "huggingface", "model": hf_model}
         except Exception:
-            pass
+            logger.debug("HuggingFace fallback unavailable", exc_info=True)
 
     return None
 
@@ -646,43 +647,8 @@ async def polly_search(req: SearchRequest) -> SearchResponse:
         except (HTTPError, URLError, Exception) as exc:
             logger.warning("Tavily search error: %s", exc)
 
-    # Free fallback: DuckDuckGo Instant Answer API (no key needed)
-    try:
-        ddg_url = f"https://api.duckduckgo.com/?q={quote_plus(query)}&format=json&no_html=1&skip_disambig=1"
-        ddg_req = urlrequest.Request(ddg_url, headers={"User-Agent": "SCBE-Polly/1.0"})
-        with urlrequest.urlopen(ddg_req, timeout=8) as resp:
-            ddg_data: Dict[str, Any] = json.loads(resp.read().decode())
-
-        ddg_results: list[SearchResult] = []
-        if ddg_data.get("AbstractURL"):
-            ddg_results.append(
-                SearchResult(
-                    title=ddg_data.get("Heading", query),
-                    url=ddg_data["AbstractURL"],
-                    excerpt=ddg_data.get("Abstract", "")[:300],
-                )
-            )
-        for topic in ddg_data.get("RelatedTopics", []):
-            if (
-                isinstance(topic, dict)
-                and topic.get("FirstURL")
-                and not topic["FirstURL"].startswith("https://duckduckgo.com/c/")
-            ):
-                ddg_results.append(
-                    SearchResult(
-                        title=topic.get("Text", "")[:100],
-                        url=topic["FirstURL"],
-                        excerpt=topic.get("Text", "")[:300],
-                    )
-                )
-            if len(ddg_results) >= MAX_SEARCH_RESULTS:
-                break
-        if ddg_results:
-            return SearchResponse(results=ddg_results, source="duckduckgo", query=query, ts=int(time.time()))
-    except Exception as exc:
-        logger.debug("DuckDuckGo fallback failed: %s", exc)
-
-    # Last resort: link to DDG
+    # Last resort: provide a user-clickable link instead of making unauthenticated
+    # server-side search calls from a public endpoint.
     return SearchResponse(
         results=[
             SearchResult(

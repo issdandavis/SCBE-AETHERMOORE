@@ -22,10 +22,15 @@ env:
   PYTHON_VERSION: '3.11'
   DEMO_REPO: 'issdandavis/scbe-aethermoore-demo'
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
@@ -103,6 +108,8 @@ print('Dual Lattice Consensus: OK')
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:

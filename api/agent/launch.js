@@ -19,13 +19,12 @@ function renderTaskList() {
 function renderLaunchPage(cfg) {
   const configured = Boolean(cfg.githubToken);
   const secretRequired = Boolean(cfg.dispatchSecret);
-  const docsBase = "https://aethermoore.com/SCBE-AETHERMOORE";
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SCBE Agent Bridge</title>
+  <title>SCBE Customer Launch</title>
   <style>
     :root {
       color-scheme: dark;
@@ -103,13 +102,64 @@ function renderLaunchPage(cfg) {
       border-color: var(--accent);
       background: var(--accent);
     }
+    .split {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      margin-top: 22px;
+    }
+    .split section {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 16px;
+      background: #0b1218;
+    }
+    .split ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .split h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
     .warn { color: var(--warn); }
   </style>
 </head>
 <body>
   <main>
-    <h1>SCBE Agent Bridge</h1>
-    <p>This Vercel surface is the lightweight launch and status bridge for the GitHub Actions agent router. The public documentation and checkout pages remain on GitHub Pages.</p>
+    <h1>SCBE Customer Launch</h1>
+    <p>Start with the public offers, pay through the live checkout paths, or open the agent bridge when you need the governed router. This page keeps customer entry points and operator status in one place.</p>
+    <nav class="actions" aria-label="Customer links">
+      <a class="primary" href="/payments">Payment Center</a>
+      <a href="/products">Products</a>
+      <a href="/workflow-snapshot">Workflow Snapshot</a>
+      <a href="/hosted-run">Hosted Run Intake</a>
+      <a href="/service-credits">Service Credits</a>
+      <a href="/supporter">Supporter</a>
+    </nav>
+    <div class="split" aria-label="Launch paths">
+      <section>
+        <h2>For Customers</h2>
+        <p>Use the payment center for Ko-fi, Cash App, Stripe, or manual invoice paths. Paid work routes into intake so delivery can start without another setup conversation.</p>
+        <ul>
+          <li>Buy or tip first, then submit intake when the task needs context.</li>
+          <li>Do not send secrets through public forms or payment notes.</li>
+          <li>For higher-touch work, use Workflow Snapshot or Hosted Run.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>For Operators</h2>
+        <p>The bridge below exposes health, recent runs, and the allowed dispatch task list for the GitHub Actions agent router.</p>
+        <ul>
+          <li>Health and run status stay available without touching customer pages.</li>
+          <li>Dispatch stays gated by configured credentials and task allowlists.</li>
+          <li>Public buyer pages are served through first-party Vercel routes.</li>
+        </ul>
+      </section>
+    </div>
     <section class="status" aria-label="Bridge status">
       <div>
         <strong>Repository</strong>
@@ -133,12 +183,13 @@ function renderLaunchPage(cfg) {
       </div>
     </section>
     <p><strong>Allowed Tasks</strong>${renderTaskList()}</p>
-    <nav class="actions" aria-label="Launch links">
+    <nav class="actions" aria-label="Operator links">
       <a class="primary" href="/api/agent/health">Health JSON</a>
       <a href="/api/agent/status?limit=5">Recent Runs</a>
-      <a href="${docsBase}/agents.html">Agent Console</a>
-      <a href="${docsBase}/">Public Launch Site</a>
-      <a href="${docsBase}/support.html">Support</a>
+      <a href="/agents">Agent Console</a>
+      <a href="/chat">Polly Chat</a>
+      <a href="/legal/privacy">Privacy</a>
+      <a href="/legal/terms">Terms</a>
     </nav>
   </main>
 </body>

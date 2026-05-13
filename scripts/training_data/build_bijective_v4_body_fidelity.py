@@ -12,6 +12,7 @@ Strategy:
 
 Output: training-data/sft/bijective_v4_body_fidelity.sft.jsonl
 """
+
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -251,10 +252,11 @@ KO_IDENTITY_TEMPLATES = [
 
 # Body-fidelity instruction pair (no intermediate; just contract -> python)
 CONTRACT_FIDELITY_TEMPLATES = [
-    "Given this Python contract, output a body-faithful implementation. Preserve "
-    "the {kind_hint} verbatim.\n\n{contract_text}",
-    "Realize the following contract in Python. The {kind_hint} is mandatory.\n\n"
-    "{contract_text}",
+    (
+        "Given this Python contract, output a body-faithful implementation. Preserve "
+        "the {kind_hint} verbatim.\n\n{contract_text}"
+    ),
+    "Realize the following contract in Python. The {kind_hint} is mandatory.\n\n{contract_text}",
 ]
 
 CONTRACTS_TEXT = {
@@ -303,11 +305,7 @@ def extract_contract_block(python_src: str) -> str:
         contract_lines.append(f"  Required imports (must appear at top of code block):\n{joined}")
     if not contract_lines:
         return ""
-    return (
-        "\nThe Python output MUST satisfy this canonical contract:\n"
-        + "\n".join(contract_lines)
-        + "\n"
-    )
+    return "\nThe Python output MUST satisfy this canonical contract:\n" + "\n".join(contract_lines) + "\n"
 
 
 def assistant_block(python_src: str) -> str:
@@ -327,9 +325,7 @@ def build_pairs() -> list[dict]:
             lang = TONGUE_LANG[tongue]
             tag = lang.lower()
             for template in BACK_PROMPT_TEMPLATES:
-                user_msg = template.format(
-                    lang=lang, contract=contract, tag=tag, src=intermediate
-                )
+                user_msg = template.format(lang=lang, contract=contract, tag=tag, src=intermediate)
                 pairs.append(
                     {
                         "messages": [

@@ -37,6 +37,9 @@
         line-height: 0.96;
         margin: 0 0 18px;
       }
+      h2 {
+        margin: 0 0 10px;
+      }
       .lead {
         color: #a3acb9;
         max-width: 740px;
@@ -63,6 +66,13 @@
         color: #d6a756;
         font-weight: 800;
       }
+      .hero-image {
+        width: min(680px, 100%);
+        margin-top: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+      }
       .btn {
         display: inline-block;
         margin: 12px 8px 0 0;
@@ -81,6 +91,19 @@
         color: #d7dde8;
         border: 1px solid rgba(255, 255, 255, 0.1);
       }
+      .section {
+        margin-top: 28px;
+      }
+      .card p,
+      .card li,
+      .notice p,
+      .notice li {
+        color: #a3acb9;
+      }
+      ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
     </style>
   </head>
   <body>
@@ -88,17 +111,32 @@
       <nav class="nav" aria-label="Service credits navigation">
         <a href="index.html">Home</a>
         <a href="offers/">Offers</a>
+        <a href="payments.html">Payments</a>
+        <a href="hosted-run.html">Hosted Run</a>
         <a href="hire.html">Hire</a>
-        <a href="support.html">Support</a>
+        <a href="legal/terms.html">Terms</a>
       </nav>
 
-      <h1>SCBE Service Credits</h1>
-      <p class="lead">
-        Credits are the small, flexible payment path for hosted SCBE work. Local npm tools,
-        deterministic checks, and Ollama-first routing should stay free whenever possible. Credits
-        are used only when a run needs hosted capacity, report delivery, storage, or paid
-        provider/model usage.
-      </p>
+      <section id="offer">
+        <h1>SCBE Service Credits</h1>
+        <p class="lead">
+          Credits are the small, flexible payment path for hosted SCBE work. Local npm tools,
+          deterministic checks, and Ollama-first routing should stay free whenever possible.
+          Credits are used only when a run needs hosted capacity, report delivery, storage, or
+          paid provider/model usage. Start with a one-time top-up. No subscription is required.
+        </p>
+        <a class="btn btn-primary" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
+          >Top up $5+ credits</a
+        >
+        <a class="btn btn-secondary" href="hosted-run.html">Submit free intake first</a>
+        <a class="btn btn-secondary" href="payments.html">All payment paths</a>
+        <a class="btn btn-secondary" href="mailto:aethermoregames@pm.me">Support</a>
+        <img
+          class="hero-image"
+          src="hero.svg"
+          alt="AetherMoore service-credit routing visual"
+        />
+      </section>
 
       <section class="grid" aria-label="Credit model">
         <article class="card">
@@ -131,6 +169,36 @@
         </article>
       </section>
 
+      <section id="includes" class="section grid" aria-label="What credits include">
+        <article class="card">
+          <h2>What credits buy</h2>
+          <ul>
+            <li>A decision record that names the run, route, and buyer-visible result.</li>
+            <li>Threshold notes showing when local/Ollama was enough or why hosted help was used.</li>
+            <li>A pilot checklist for repeating the run or moving it into a larger workflow.</li>
+            <li>Review notes on provider/model usage, errors, evidence, and next fixes.</li>
+            <li>A short manual-style delivery note so the result can be reused later.</li>
+            <li>Delivery through email, hosted-run response, or agreed handoff route.</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h2>Good fit / not for</h2>
+          <p>
+            Good fit: small hosted runs, report generation, governed routing passes, benchmark
+            checks, and paid model calls that are cheaper to run once than to set up yourself.
+          </p>
+          <p>
+            Not for: unlimited consulting, guaranteed procurement outcomes, legal/compliance
+            certification, secret handling without a separate agreement, or large projects that need
+            a written scope.
+          </p>
+          <p>
+            Success check: you can see what was attempted, what worked, what failed, what it cost,
+            and what the next useful step is.
+          </p>
+        </article>
+      </section>
+
       <section class="notice">
         <h2>What credits can pay for</h2>
         <p>
@@ -143,6 +211,53 @@
           Target formula:
           <code>customer charge = provider cost + 2-5% SCBE coordination fee</code>.
         </p>
+      </section>
+
+      <section id="faq" class="section grid" aria-label="Service credits FAQ">
+        <article class="card">
+          <h2>Should I pay before intake?</h2>
+          <p>
+            Use the hosted-run intake first if you are unsure. Top up credits when hosted capacity,
+            model calls, storage, delivery, or report work is actually useful.
+          </p>
+        </article>
+        <article class="card">
+          <h2>How much should I start with?</h2>
+          <p>
+            Start at $5-$20 for small tests. Use $20-$100 only when you already know the run needs
+            hosted effort or paid provider calls.
+          </p>
+        </article>
+        <article class="card">
+          <h2>Can I pay another way?</h2>
+          <p>
+            Yes. Ko-fi is the simplest top-up path, Cash App is direct manual payment, and the
+            payment center lists card checkout and invoice routes.
+          </p>
+        </article>
+        <article class="card">
+          <h2>Where can I inspect more?</h2>
+          <p>
+            See the <a href="use-cases/governed-ai-workflows.html">use cases</a>,
+            <a href="comparison/toolkit-vs-full-repo.html">toolkit comparison</a>,
+            <a href="proof/why-the-manual-exists.html">manual proof</a>,
+            <a href="redteam.html">red-team notes</a>, and
+            <a href="proof/red-team-summary.html">red-team summary</a>.
+          </p>
+        </article>
+      </section>
+
+      <section class="section notice final-cta" aria-label="Final CTA">
+        <h2>Use credits only when free routes are not enough.</h2>
+        <p>
+          Submit the free intake first, then top up a small amount if hosted work is actually
+          needed. That keeps the system cheap while still making paid model/provider runs possible.
+        </p>
+        <a class="btn btn-primary" href="hosted-run.html">Submit free intake</a>
+        <a class="btn btn-secondary" href="https://ko-fi.com/izdandavis" target="_blank" rel="noopener"
+          >Top up $5+ credits</a
+        >
+        <a class="btn btn-secondary" href="legal/privacy.html">Privacy</a>
       </section>
     </main>
   </body>
