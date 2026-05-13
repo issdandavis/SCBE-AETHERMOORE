@@ -228,9 +228,7 @@ def test_public_app_config_explains_remote_update_boundary() -> None:
     assert config["endpoints"]["polly_hosted_run"].endswith("/v1/polly/hosted-run")
     assert config["endpoints"]["polly_chat"].endswith("/chat.html")
     assert config["endpoints"]["shopify_command_center_page"].endswith("/shopify-command-center.html")
-    assert config["endpoints"]["shopify_command_center_demo"].startswith(
-        "https://shopify-command-center-"
-    )
+    assert config["endpoints"]["shopify_command_center_demo"].startswith("https://shopify-command-center-")
     assert config["endpoints"]["shopify_command_center_repo"].endswith("/Shopify-Command-Center")
     assert config["polly_role"]["role"] == "scbe-web-agent"
     assert "superpowers:subagent-driven-development" in config["polly_role"]["skills"]
