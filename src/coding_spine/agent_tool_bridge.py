@@ -35,16 +35,14 @@ def _language_matrix() -> list[dict[str, Any]]:
                 "route_class": "native" if tongue in LANG_MAP else "extended",
                 "cli": {
                     "code_packet": (
-                        f"{_exe()} -m src.geoseal_cli code-packet "
-                        f"--language {language} --source-file <file> --json"
+                        f"{_exe()} -m src.geoseal_cli code-packet " f"--language {language} --source-file <file> --json"
                     ),
                     "explain_route": (
                         f"{_exe()} -m src.geoseal_cli explain-route "
                         f"--language {language} --source-file <file> --json"
                     ),
                     "testing_cli": (
-                        f"{_exe()} -m src.geoseal_cli testing-cli "
-                        f"--language {language} --source-file <file> --json"
+                        f"{_exe()} -m src.geoseal_cli testing-cli " f"--language {language} --source-file <file> --json"
                     ),
                 },
             }
@@ -108,8 +106,7 @@ def _tool_contracts() -> list[dict[str, Any]]:
             "risk": "critical",
             "approval": "deny_by_default",
             "purpose": (
-                "Secrets are never routed through free model prompts; "
-                "tools receive only named env requirements."
+                "Secrets are never routed through free model prompts; " "tools receive only named env requirements."
             ),
             "routes": ["connector_env_check", "redacted_evidence_only"],
         },
@@ -355,8 +352,7 @@ def build_agent_tool_bridge_v1(
         "testing_cli_json": f"{exe} -m src.geoseal_cli testing-cli {file_args} --json",
         "compile_intent_json": f"{exe} -m src.geoseal_cli compile --json {shlex.quote(compile_text)}",
         "ghost_terminal_audit_ps1": (
-            "powershell.exe -NoProfile -ExecutionPolicy Bypass "
-            "-File scripts/system/ghost_terminal_audit.ps1 -Json"
+            "powershell.exe -NoProfile -ExecutionPolicy Bypass " "-File scripts/system/ghost_terminal_audit.ps1 -Json"
         ),
         "ghost_terminal_cleanup_stale_ps1": (
             "powershell.exe -NoProfile -ExecutionPolicy Bypass "
@@ -364,8 +360,7 @@ def build_agent_tool_bridge_v1(
         ),
         "call_switchboard_json": f"{exe} -m src.geoseal_cli call-switchboard --request <json> --json",
         "lightning_indexer_json": (
-            f"{exe} -m src.geoseal_cli lightning-indexer "
-            "--goal <goal> --inline-candidates <json> --json"
+            f"{exe} -m src.geoseal_cli lightning-indexer " "--goal <goal> --inline-candidates <json> --json"
         ),
     }
 
