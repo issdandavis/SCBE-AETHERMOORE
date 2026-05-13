@@ -80,6 +80,7 @@ function buildSystemContract() {
         health: '/api/agent/health',
         system: '/api/agent/system',
         chat: '/api/agent/chat',
+        governed_chat: '/v1/chat/completions',
         hosted_run: '/v1/polly/hosted-run',
         search: '/api/agent/search',
         storage: '/api/agent/storage',
@@ -88,6 +89,12 @@ function buildSystemContract() {
         app_config: '/api/agent/app-config',
       },
       health,
+      governed_output: {
+        schema: 'scbe.governed_output.v1',
+        openai_compatible_route: '/v1/chat/completions',
+        decisions: ['ALLOW', 'QUARANTINE', 'ESCALATE', 'DENY'],
+        response_extension: 'scbe_governance',
+      },
     },
     bus: {
       workspace_formation: WORKSPACE_FORMATION,
