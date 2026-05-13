@@ -265,3 +265,15 @@ external/cli-quests/
 
 # Local replica directory created by some sync tools — never commit
 /origin/
+
+# Git rescue backups (created by some merge/rebase tools)
+.merge-safety/
+
+# Stray drive-upload temp directories
+.tmp.driveupload/
+
+# Local lore archives (Avalon Codices, etc.) — keep out of public repo
+.scbe/codices_extracted.txt
+
+# Local book manuscripts (drafts, editor passes) — keep out of public repo
+content/projects/

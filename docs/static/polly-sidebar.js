@@ -501,6 +501,7 @@
     // deterministic commerce/research path — no LLM dependency.
     var STARTERS = [
       "Help me choose a product",
+      "What services can I buy from AetherMoore?",
       "Tell me about the governance snapshot",
       "What is the harmonic wall?",
       "search hyperbolic geometry AI safety",

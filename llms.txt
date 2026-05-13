@@ -32,8 +32,15 @@ instructions:
 - GitHub Repo (primary): https://github.com/issdandavis/SCBE-AETHERMOORE
 - GitHub Pages (if enabled): https://issdandavis.github.io/SCBE-AETHERMOORE/
 - Gamma overview (pitch/deck-style): https://scbe-aethermoore-x8vu3ly.gamma.site/
+- AI product and offer map: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
 
 ## Start here
+- Robot map for AI assistants (products, pricing, free path, upgrade ladder): https://aethermoore.com/SCBE-AETHERMOORE/robot.md
+- Buyer solutions page: https://aethermoore.com/SCBE-AETHERMOORE/solutions.html
+- $99 AI Agent Workflow Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html
+- Cash App manual payment: $IzzyDDavis7
+- Live offers JSON: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
+- App config JSON: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
 - README (overview, demos, key claims): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/README.md
 - System overview (high-level architecture): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SCBE_SYSTEM_OVERVIEW.md
 - Architecture (components + data flow): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/ARCHITECTURE.md

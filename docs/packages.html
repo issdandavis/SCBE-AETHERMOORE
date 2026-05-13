@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AetherMoore Package Products | npm and PyPI</title>
+    <meta
+      name="description"
+      content="Installable SCBE package products for npm and PyPI: the core engine, CLI, agent bus, and BookForge publishing lane."
+    />
+    <link rel="stylesheet" href="static/packages/package-products.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="index.html">AetherMoore</a>
+        <nav class="nav" aria-label="Primary">
+          <a href="products.html">Products</a>
+          <a href="packages.html">Packages</a>
+          <a href="books.html">Books</a>
+          <a href="solutions.html">Services</a>
+          <a href="chat.html">Chat</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Installable products</p>
+            <h1>npm and PyPI packages that make SCBE usable.</h1>
+            <p class="lede">
+              The public packages are the practical surface: install the engine, open the command line, route agent
+              events, or build book files for publishing.
+            </p>
+            <code class="command">npm install scbe-aethermoore && pip install scbe-agent-bus</code>
+            <div class="cta-row">
+              <a class="button" href="#packages">Browse Packages</a>
+              <a class="button secondary" href="products.html">See Buyer Products</a>
+            </div>
+          </div>
+          <div class="visual" aria-label="Package install preview">
+            <div class="terminal-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <div class="terminal-body">
+              <div><strong>$ npm i scbe-aethermoore-cli -g</strong></div>
+              <div>scbe selftest</div>
+              <div>geoseal verify-file ./release.tar.gz</div>
+              <br />
+              <div><strong>$ pip install scbe-agent-bus</strong></div>
+              <div>echo '{"task":"review changed files"}' | scbe-agent-bus</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="band reveal" id="packages">
+          <div class="section-head">
+            <h2>Package Lineup</h2>
+            <p class="section-note">Each package page says what it is, who uses it, how to install it, and where the live registry entry is.</p>
+          </div>
+          <div class="product-grid">
+            <article class="product-row">
+              <h3>scbe-aethermoore</h3>
+              <p>The core 14-layer governance engine for Node and Python.</p>
+              <div class="badge-row"><span class="badge">npm 4.0.9</span><span class="badge">PyPI 3.3.0</span></div>
+              <code class="command">npm install scbe-aethermoore</code>
+              <div class="cta-row">
+                <a class="button" href="packages/scbe-aethermoore.html">Open Page</a>
+              </div>
+            </article>
+            <article class="product-row">
+              <h3>scbe-aethermoore-cli</h3>
+              <p>The command line for GeoSeal, tokenizer lanes, governance packets, and mechanical checks.</p>
+              <div class="badge-row"><span class="badge">npm 4.1.5</span><span class="badge">CLI</span></div>
+              <code class="command">npm install -g scbe-aethermoore-cli</code>
+              <div class="cta-row">
+                <a class="button" href="packages/scbe-aethermoore-cli.html">Open Page</a>
+              </div>
+            </article>
+            <article class="product-row">
+              <h3>scbe-agent-bus</h3>
+              <p>A typed event bus for governed human and AI agent work.</p>
+              <div class="badge-row"><span class="badge">npm 0.2.2</span><span class="badge">PyPI 0.2.0</span></div>
+              <code class="command">npm install scbe-agent-bus</code>
+              <div class="cta-row">
+                <a class="button" href="packages/scbe-agent-bus.html">Open Page</a>
+              </div>
+            </article>
+            <article class="product-row">
+              <h3>scbe-bookforge</h3>
+              <p>Markdown to KDP-ready interiors, EPUB, and cover-wrap proofs.</p>
+              <div class="badge-row"><span class="badge">Python</span><span class="badge">Publish pending</span></div>
+              <code class="command">pip install scbe-bookforge</code>
+              <div class="cta-row">
+                <a class="button" href="packages/scbe-bookforge.html">Open Page</a>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">AetherMoore package products. Registry-backed where live, marked pending where not live.</footer>
+    </div>
+    <script src="static/packages/package-products.js"></script>
+  </body>
+</html>

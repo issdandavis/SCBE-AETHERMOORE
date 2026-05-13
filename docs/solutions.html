@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Agent Governance Solutions | AetherMoore</title>
+    <meta
+      name="description"
+      content="AetherMoore turns SCBE-AETHERMOORE into practical buyer-ready services: governance snapshots, agent drift evaluation, multi-agent containment, prompt injection review, and monthly heartbeat monitoring."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/solutions.html" />
+    <meta property="og:title" content="AetherMoore AI Agent Governance Solutions" />
+    <meta
+      property="og:description"
+      content="Five buyer-ready services for AI workflow governance, drift evaluation, prompt injection review, and multi-agent containment."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aethermoore.com/SCBE-AETHERMOORE/solutions.html" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="stylesheet" href="static/polly-sidebar.css" />
+    <style>
+      :root {
+        --bg: #0f1217;
+        --panel: #171c24;
+        --panel-soft: #131821;
+        --ink: #f6f1e8;
+        --muted: #c8bda9;
+        --line: #34313a;
+        --gold: #d6a756;
+        --green: #2dd3a6;
+        --blue: #8cb4ff;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 15% 0%, rgba(214, 167, 86, 0.12), transparent 30%),
+          linear-gradient(180deg, #0f1217 0%, #0b0d12 100%);
+        color: var(--ink);
+        line-height: 1.55;
+      }
+      a { color: inherit; }
+      .wrap {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 24px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      nav a { text-decoration: none; }
+      nav a:hover { color: var(--ink); }
+      .hero {
+        padding: 48px 0 36px;
+        border-bottom: 1px solid rgba(214, 167, 86, 0.18);
+      }
+      .eyebrow {
+        color: var(--gold);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+      h1 {
+        max-width: 900px;
+        margin: 0 0 18px;
+        font-size: clamp(38px, 7vw, 76px);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+      h2 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 42px); line-height: 1.05; }
+      h3 { margin: 0 0 8px; font-size: 20px; }
+      p { color: var(--muted); font-size: 17px; max-width: 780px; }
+      .hero p { font-size: clamp(17px, 2vw, 21px); }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+      }
+      .btn {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--gold);
+        border-radius: 6px;
+        padding: 12px 18px;
+        color: #12110f;
+        background: var(--gold);
+        font-weight: 800;
+        text-decoration: none;
+      }
+      .btn.secondary {
+        background: transparent;
+        color: var(--ink);
+      }
+      .proof-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin: 30px 0 0;
+      }
+      .proof {
+        border: 1px solid var(--line);
+        background: rgba(23, 28, 36, 0.8);
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .proof strong { display: block; color: var(--ink); font-size: 18px; margin-bottom: 4px; }
+      .proof span { color: var(--muted); font-size: 14px; }
+      section { padding: 48px 0; }
+      .section-head { margin-bottom: 24px; }
+      .solutions {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(190px, 1fr));
+        gap: 14px;
+      }
+      .solution {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 8px;
+        padding: 18px;
+      }
+      .solution .price {
+        display: inline-block;
+        margin: 8px 0 12px;
+        color: var(--green);
+        font-weight: 800;
+      }
+      .solution ul, .plain-list {
+        margin: 12px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+      }
+      li { margin-bottom: 7px; }
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .step {
+        border: 1px solid rgba(214, 167, 86, 0.28);
+        background: rgba(214, 167, 86, 0.06);
+        border-radius: 8px;
+        padding: 18px;
+      }
+      .step b { color: var(--gold); }
+      .translation {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-soft);
+      }
+      .translation th, .translation td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+      .translation th { color: var(--gold); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+      .translation td { color: var(--muted); }
+      .translation tr:last-child td { border-bottom: 0; }
+      .band {
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: rgba(255,255,255,0.025);
+      }
+      .note {
+        font-size: 14px;
+        color: var(--muted);
+      }
+      footer {
+        padding: 32px 0;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+      }
+      @media (max-width: 920px) {
+        .proof-row, .solutions, .flow { grid-template-columns: 1fr 1fr; }
+      }
+      @media (max-width: 620px) {
+        .proof-row, .solutions, .flow { grid-template-columns: 1fr; }
+        h1 { font-size: 40px; }
+      }
+    </style>
+  </head>
+  <body data-polly-context="solutions" data-polly-root=".">
+    <div class="wrap">
+      <nav aria-label="Solutions navigation">
+        <a href="index.html">Home</a>
+        <a href="products.html">Products</a>
+        <a href="governance-snapshot.html">Governance Snapshot</a>
+        <a href="robot.html">AI Map</a>
+        <a href="hire.html">Hire</a>
+        <a href="chat.html">Chat</a>
+      </nav>
+    </div>
+
+    <header class="hero">
+      <div class="wrap">
+        <div class="eyebrow">Buyer-ready AI governance</div>
+        <h1>Turn agent failures into a short report, a fixed scope, and a next action.</h1>
+        <p>
+          AetherMoore packages SCBE-AETHERMOORE into practical services for teams using AI
+          agents, tool-calling workflows, retrieval systems, or multi-agent automation. The goal
+          is not a giant compliance program. The goal is to find the weak joints, fix the ones
+          that matter, and leave you with evidence you can reuse.
+        </p>
+        <div class="actions">
+          <a class="btn" href="governance-snapshot.html">Buy the $500 Snapshot</a>
+          <a class="btn secondary" href="hire.html">Send a project brief</a>
+          <a class="btn secondary" href="#solutions">Compare the offers</a>
+        </div>
+        <div class="proof-row" aria-label="Proof points">
+          <div class="proof"><strong>Live offers</strong><span>Snapshot, service credits, toolkit, training vault, and supporter lanes are wired in the public offer registry.</span></div>
+          <div class="proof"><strong>Public code</strong><span>GitHub, npm/PyPI, and documented harnesses make the work inspectable.</span></div>
+          <div class="proof"><strong>Reusable evidence</strong><span>Reports focus on risk, routing, state, logging, recovery, and receipt gaps.</span></div>
+          <div class="proof"><strong>Federal posture</strong><span>CAGE 1EXD5 and UEI J4NXHM6N5F59 support subcontract and research conversations.</span></div>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section id="solutions">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="eyebrow">What you can buy</div>
+            <h2>Five concrete entry points.</h2>
+            <p>Start small. The first paid deliverable should be useful even if nothing else is bought afterward.</p>
+          </div>
+          <div class="solutions">
+            <article class="solution">
+              <h3>Governance Snapshot</h3>
+              <span class="price">$500 fixed scope</span>
+              <p>One AI workflow reviewed for drift, leakage, routing risk, logging gaps, and unsafe tool paths.</p>
+              <ul>
+                <li>2-page findings memo</li>
+                <li>Three prioritized fixes</li>
+                <li>Evidence checklist</li>
+              </ul>
+            </article>
+            <article class="solution">
+              <h3>Agent Drift Evaluation</h3>
+              <span class="price">quoted after brief</span>
+              <p>Stateful evaluation for agents that lose task history, mutate instructions, or recover poorly from failures.</p>
+              <ul>
+                <li>Before/after task pack</li>
+                <li>Failure-mode breakdown</li>
+                <li>Repair recommendations</li>
+              </ul>
+            </article>
+            <article class="solution">
+              <h3>Multi-Agent Containment</h3>
+              <span class="price">snapshot or custom</span>
+              <p>Flat-queue versus bounded-workcell simulation for teams routing multiple agents through shared state.</p>
+              <ul>
+                <li>Failure spread metrics</li>
+                <li>Trace cost metrics</li>
+                <li>Receipt schema suggestion</li>
+              </ul>
+            </article>
+            <article class="solution">
+              <h3>Prompt Injection Review</h3>
+              <span class="price">snapshot or custom</span>
+              <p>Boundary review for exposed tools, retrieval, MCP connectors, API routes, and dataset ingest.</p>
+              <ul>
+                <li>Finding list</li>
+                <li>Proof and severity</li>
+                <li>Regression test ideas</li>
+              </ul>
+            </article>
+            <article class="solution">
+              <h3>Governance Heartbeat</h3>
+              <span class="price">$99/month planned</span>
+              <p>A lightweight monthly scan for one workflow after the first Snapshot has a baseline.</p>
+              <ul>
+                <li>Delta report</li>
+                <li>Risk/change summary</li>
+                <li>Recommended action list</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="workflow">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="eyebrow">Delivery path</div>
+            <h2>How the work turns into evidence.</h2>
+          </div>
+          <div class="flow" aria-label="Delivery flow">
+            <div class="step"><b>1. Intake</b><p>One workflow, tool path, or agent problem. No secrets required.</p></div>
+            <div class="step"><b>2. Run</b><p>SCBE checks routing, state, prompt/tool boundaries, and recovery behavior.</p></div>
+            <div class="step"><b>3. Report</b><p>You receive a short memo with evidence, findings, and next actions.</p></div>
+            <div class="step"><b>4. Continue</b><p>Use the fixes, buy Heartbeat, or scope a custom integration.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="translation">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="eyebrow">Procurement translation</div>
+            <h2>Same system, buyer-readable language.</h2>
+            <p>Internal SCBE terms stay useful, but buyers need the operational translation first.</p>
+          </div>
+          <table class="translation">
+            <thead><tr><th>SCBE term</th><th>Buyer translation</th></tr></thead>
+            <tbody>
+              <tr><td>Harmonic governance</td><td>Adaptive risk scoring for AI workflows</td></tr>
+              <tr><td>Sacred Tongues / routing lanes</td><td>Domain-specialized orchestration and evidence lanes</td></tr>
+              <tr><td>GeoSeal</td><td>Trust-boundary receipt and verification layer</td></tr>
+              <tr><td>Aether-Lattice workcells</td><td>Bounded agent execution and failure containment</td></tr>
+              <tr><td>Spinal ledger</td><td>Append-only operational trace</td></tr>
+              <tr><td>Agent bus</td><td>Secure orchestration bus for agents, tools, and review gates</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="band" id="proof">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="eyebrow">Boundaries</div>
+            <h2>What this claims, and what it does not.</h2>
+          </div>
+          <ul class="plain-list">
+            <li>SCBE provides governance and traceability around AI agents. It is not a replacement foundation model.</li>
+            <li>Reports are technical risk reads and implementation guidance. They are not legal compliance guarantees.</li>
+            <li>Simulations are workflow evidence. They are not hardware guarantees or claims of infinite scalability.</li>
+            <li>Paid work starts with fixed scope because useful action beats vague enterprise theater.</li>
+          </ul>
+          <div class="actions">
+            <a class="btn" href="governance-snapshot.html">Start with the Snapshot</a>
+            <a class="btn secondary" href="robot.html">AI agent map</a>
+            <a class="btn secondary" href="business/SCBE_BUYER_CAPABILITY_BUCKETS_2026-05.md">Read the packaging sheet</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        AetherMoore. Geometric AI governance by Issac Davis. CAGE 1EXD5. UEI J4NXHM6N5F59. AI assistants can start from <a href="robot.html">the AI map</a>.
+      </div>
+    </footer>
+    <script src="static/polly-sidebar.js" data-polly-api="https://scbe-agent-bridge-vercel.vercel.app"></script>
+    <script src="static/polly-funnel.js" data-page="solutions"></script>
+  </body>
+</html>

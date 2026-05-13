@@ -1,13 +1,23 @@
 {
   "schema": "aethermoore-offers-v1",
-  "updated_at": "2026-05-10",
+  "updated_at": "2026-05-12",
   "site_base": "https://aethermoore.com/SCBE-AETHERMOORE",
   "usage_policy": {
     "name": "SCBE Service Credits",
     "model": "mostly-free local tools with pay-as-you-go credits only for hosted routing, reports, delivery, storage, and provider/model usage",
-    "service_fee_percent_range": [2, 5],
+    "service_fee_percent_range": [
+      2,
+      5
+    ],
     "fee_note": "Provider/model costs are passed through with a small 2-5% SCBE coordination fee where usage is billable.",
     "preferred_routing": "local/Ollama and deterministic harness first; paid providers only when needed"
+  },
+  "payment_methods": {
+    "cash_app": {
+      "cashtag": "$IzzyDDavis7",
+      "qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+      "note": "For manual service purchases, include the offer name in the payment note."
+    }
   },
   "offers": [
     {
@@ -16,6 +26,10 @@
       "price_label": "$5+ pay-as-you-go",
       "type": "usage_credit",
       "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
       "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/service-credits.html",
       "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/hosted-run.html",
       "status": "live"
@@ -39,6 +53,29 @@
       "status": "live"
     },
     {
+      "id": "workflow_snapshot_starter",
+      "name": "AI Agent Workflow Snapshot",
+      "price_label": "$99 starter",
+      "type": "service",
+      "checkout_url": "https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html",
+      "intake_url": "https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html#free-check",
+      "status": "live",
+      "scope": [
+        "one concise findings memo",
+        "one AI workflow, repo link, prompt chain, MCP stack, automation flow, or diagram",
+        "drift risks, unsafe tool paths, missing recovery states, observability gaps, and prompt-injection surfaces",
+        "three prioritized fixes",
+        "upgrade credit toward the $500 Governance Snapshot if deeper review is needed"
+      ],
+      "checkout_note": "Stripe checkout is live. Cash App remains available as an alternate manual payment path.",
+      "stripe_payment_link_id": "plink_1TW71yJTF2SuUODIqYFRU9JY"
+    },
+    {
       "id": "governance_snapshot",
       "name": "Governance Snapshot",
       "price_label": "$500 fixed scope",
@@ -53,7 +90,7 @@
       "name": "Governance Heartbeat",
       "price_label": "$99/month",
       "type": "subscription",
-      "checkout_url": "mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup",
+      "checkout_url": "https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m",
       "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#heartbeat",
       "status": "live",
       "scope": [
@@ -63,7 +100,15 @@
         "one recommended action list",
         "optional dataset / training capture",
         "cancel anytime"
-      ]
+      ],
+      "stripe_payment_link_id": "plink_1TW71zJTF2SuUODICZLQCCS3",
+      "delivery": {
+        "mode": "stripe_webhook_subscription_onboarding",
+        "requires_env": [
+          "STRIPE_HEARTBEAT_PAYMENT_LINK_ID",
+          "SCBE_PAYMENT_LINK_HEARTBEAT"
+        ]
+      }
     },
     {
       "id": "toolkit",

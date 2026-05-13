@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Agent Workflow Snapshot | AetherMoore</title>
+    <meta
+      name="description"
+      content="A $99 starter review for one AI agent workflow: drift risks, unsafe tool paths, missing recovery states, observability gaps, and three next fixes."
+    />
+    <link rel="canonical" href="https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html" />
+    <link rel="stylesheet" href="static/polly-sidebar.css" />
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --panel: #151a23;
+        --ink: #f5efe4;
+        --muted: #c8bdab;
+        --line: #34313a;
+        --gold: #d6a756;
+        --green: #2dd3a6;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        background:
+          radial-gradient(circle at 16% 0%, rgba(214, 167, 86, 0.14), transparent 32%),
+          linear-gradient(180deg, #0b0d12 0%, #10151d 46%, #0b0d12 100%);
+        color: var(--ink);
+        line-height: 1.58;
+      }
+      a {
+        color: inherit;
+      }
+      .wrap {
+        width: min(1080px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 22px 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      nav a {
+        text-decoration: none;
+      }
+      nav a:hover {
+        color: var(--ink);
+      }
+      .hero {
+        padding: 52px 0 42px;
+        border-bottom: 1px solid rgba(214, 167, 86, 0.18);
+      }
+      .eyebrow {
+        color: var(--gold);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 12px;
+      }
+      h1 {
+        max-width: 920px;
+        margin: 12px 0 18px;
+        font-size: clamp(42px, 8vw, 78px);
+        line-height: 0.98;
+        letter-spacing: 0;
+      }
+      h2 {
+        margin: 0 0 12px;
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.08;
+      }
+      h3 {
+        margin: 0 0 8px;
+        font-size: 21px;
+      }
+      p,
+      li {
+        color: var(--muted);
+        font-size: 17px;
+      }
+      .lead {
+        max-width: 760px;
+        font-size: clamp(18px, 2vw, 22px);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 24px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        border-radius: 7px;
+        border: 1px solid var(--gold);
+        padding: 12px 18px;
+        background: var(--gold);
+        color: #11100d;
+        font-weight: 850;
+        text-decoration: none;
+      }
+      .btn.secondary {
+        background: transparent;
+        color: var(--ink);
+      }
+      .price-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 28px;
+      }
+      .price-box {
+        border: 1px solid var(--line);
+        background: rgba(21, 26, 35, 0.84);
+        border-radius: 8px;
+        padding: 18px;
+      }
+      .price-box strong {
+        display: block;
+        font-size: 22px;
+        color: var(--ink);
+      }
+      section {
+        padding: 50px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+      .card {
+        border: 1px solid var(--line);
+        background: rgba(21, 26, 35, 0.9);
+        border-radius: 8px;
+        padding: 22px;
+      }
+      .card.good {
+        border-color: rgba(45, 211, 166, 0.36);
+      }
+      .band {
+        background: rgba(255, 255, 255, 0.035);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .step {
+        border-left: 3px solid var(--gold);
+        background: rgba(21, 26, 35, 0.82);
+        padding: 16px;
+      }
+      .note {
+        border: 1px solid rgba(214, 167, 86, 0.28);
+        background: rgba(214, 167, 86, 0.08);
+        border-radius: 8px;
+        padding: 18px;
+        margin-top: 22px;
+      }
+      .pay-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(220px, 0.9fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .qr {
+        max-width: 260px;
+        width: 100%;
+        border-radius: 10px;
+        background: #fff;
+        padding: 8px;
+      }
+      footer {
+        padding: 36px 0;
+        color: var(--muted);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      @media (max-width: 780px) {
+        .price-strip,
+        .grid,
+        .steps,
+        .pay-grid {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 42px;
+        }
+      }
+    </style>
+  </head>
+  <body data-polly-context="workflow-snapshot" data-polly-root=".">
+    <div class="wrap">
+      <nav aria-label="Workflow Snapshot navigation">
+        <a href="index.html">Home</a>
+        <a href="solutions.html">Solutions</a>
+        <a href="products.html">Products</a>
+        <a href="agents.html">Agents</a>
+        <a href="governance-snapshot.html">Full Snapshot</a>
+        <a href="chat.html">Chat</a>
+      </nav>
+    </div>
+
+    <header class="hero">
+      <div class="wrap">
+        <div class="eyebrow">First paid step</div>
+        <h1>Find the weak points in one AI agent workflow.</h1>
+        <p class="lead">
+          Send one agent setup, prompt chain, repo link, MCP stack, automation flow, or workflow
+          diagram. AetherMoore returns a concise starter read: drift risks, unsafe tool paths,
+          missing recovery states, observability gaps, and three next fixes.
+        </p>
+        <div class="actions">
+          <a class="btn" href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" target="_blank" rel="noopener"
+            >Start for $99 with Stripe</a
+          >
+          <a class="btn secondary" href="#cash-app">Pay with Cash App</a>
+          <a class="btn secondary" href="#free-check">Run the free self-check</a>
+          <a class="btn secondary" href="governance-snapshot.html">Need the $500 review?</a>
+        </div>
+        <div class="price-strip" aria-label="Offer ladder">
+          <div class="price-box"><strong>Free</strong><span>Self-check and public docs.</span></div>
+          <div class="price-box">
+            <strong>$99 starter</strong><span>Concise first-pass workflow read.</span>
+          </div>
+          <div class="price-box">
+            <strong>$500 full</strong><span>Fixed-scope written Governance Snapshot.</span>
+          </div>
+        </div>
+        <div class="note">
+          Stripe checkout is live for the exact $99 Workflow Snapshot SKU. Cash App <strong>$IzzyDDavis7</strong> remains available as a manual alternate payment path; include "Workflow Snapshot" in the note.
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section>
+        <div class="wrap">
+          <div class="grid">
+            <article class="card good">
+              <h2>What you get</h2>
+              <ul>
+                <li>One concise findings memo.</li>
+                <li>
+                  Risk list for drift, unsafe tool paths, missing logs, and prompt-injection
+                  surfaces.
+                </li>
+                <li>Three prioritized fixes you can actually do next.</li>
+                <li>
+                  Upgrade credit toward the $500 Governance Snapshot if the starter read shows a
+                  deeper issue.
+                </li>
+              </ul>
+            </article>
+            <article class="card">
+              <h2>Best fit</h2>
+              <ul>
+                <li>
+                  Solo founders building with LangGraph, CrewAI, OpenAI Agents, MCP, n8n, or custom
+                  scripts.
+                </li>
+                <li>Small teams using AI tools before they have observability or governance.</li>
+                <li>Developers who know something is brittle but need a clear failure map.</li>
+                <li>Anyone not ready for an enterprise platform or multi-thousand-dollar audit.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="band">
+        <div class="wrap">
+          <div class="eyebrow">Delivery path</div>
+          <h2>Simple enough to buy without a sales call.</h2>
+          <div class="steps">
+            <div class="step">
+              <strong>1. Pay</strong>
+              <p>Use the Stripe checkout link for the $99 Workflow Snapshot. Cash App remains available as a manual alternate path.</p>
+            </div>
+            <div class="step">
+              <strong>2. Send</strong>
+              <p>Share one workflow, repo, prompt chain, or diagram. No secrets required.</p>
+            </div>
+            <div class="step">
+              <strong>3. Review</strong>
+              <p>SCBE checks state, routing, tool boundaries, recovery, and evidence gaps.</p>
+            </div>
+            <div class="step">
+              <strong>4. Receive</strong>
+              <p>You get a short memo with findings and the next three fixes.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cash-app">
+        <div class="wrap">
+          <div class="eyebrow">Manual payment option</div>
+          <h2>Pay with Cash App.</h2>
+          <div class="pay-grid">
+            <article class="card">
+              <h3>Cashtag: $IzzyDDavis7</h3>
+              <p>
+                For the $99 Workflow Snapshot, send the payment through Cash App and put
+                <strong>Workflow Snapshot</strong> in the note. Then use the project brief or email
+                route so the workflow details can be matched to the payment.
+              </p>
+              <div class="actions">
+                <a class="btn" href="hire.html">Send the workflow brief</a>
+                <a
+                  class="btn secondary"
+                  href="mailto:issdandavis7795@gmail.com?subject=Workflow%20Snapshot%20paid%20via%20Cash%20App"
+                  >Email payment note</a
+                >
+              </div>
+            </article>
+            <article class="card">
+              <img
+                class="qr"
+                src="static/cash-app-payment.png"
+                alt="Cash App QR code for Issac Davis, cashtag $IzzyDDavis7"
+              />
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="free-check">
+        <div class="wrap">
+          <div class="eyebrow">Free mini-check</div>
+          <h2>If three are true, buy the starter read.</h2>
+          <div class="grid">
+            <article class="card">
+              <ul>
+                <li>
+                  Your agent can browse, call APIs, write files, send messages, or change records.
+                </li>
+                <li>You cannot replay what happened after a bad output.</li>
+                <li>Tool calls and model outputs are not logged together.</li>
+                <li>There is no explicit recovery path when the workflow fails.</li>
+                <li>Prompt injection, secrets, or retrieved content can influence tool use.</li>
+                <li>More than one model or agent touches the same task.</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>What to send</h3>
+              <p>
+                Send only what is safe to share: a public repo link, architecture sketch, prompt
+                chain, tool list, workflow description, screenshots with secrets removed, or a short
+                video walkthrough.
+              </p>
+              <div class="actions">
+                <a class="btn" href="https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l" target="_blank" rel="noopener"
+                  >Start the $99 read</a
+                >
+                <a class="btn secondary" href="hire.html">Ask first</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        AetherMoore / SCBE-AETHERMOORE. Starter workflow review for AI agent governance and failure
+        analysis.
+      </div>
+    </footer>
+    <script
+      src="static/polly-sidebar.js"
+      data-polly-api="https://scbe-agent-bridge-vercel.vercel.app"
+    ></script>
+    <script src="static/polly-funnel.js" data-page="workflow-snapshot"></script>
+  </body>
+</html>
