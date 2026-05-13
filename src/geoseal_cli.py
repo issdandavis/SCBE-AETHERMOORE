@@ -1053,6 +1053,73 @@ def cmd_code_packet(args: argparse.Namespace) -> int:
     return 0
 
 
+def _read_tongue_program_source(args: argparse.Namespace) -> tuple[str, str]:
+    source = getattr(args, "content", None)
+    source_name = getattr(args, "source_name", None) or "inline"
+    source_file = getattr(args, "source_file", None)
+    if source_file:
+        path = Path(source_file)
+        source = path.read_text(encoding="utf-8")
+        source_name = getattr(args, "source_name", None) or path.name
+    if source is None:
+        source = sys.stdin.read()
+        source_name = getattr(args, "source_name", None) or "stdin"
+    return source, source_name
+
+
+def cmd_tongue_compile(args: argparse.Namespace) -> int:
+    from src.sacred_tongues_toolchain import SacredTonguesToolchainError, compile_packet
+
+    try:
+        source, source_name = _read_tongue_program_source(args)
+        packet = compile_packet(source, source_name=source_name)
+        output = getattr(args, "output", None)
+        if output:
+            out_path = Path(output)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            if getattr(args, "output_format", "json") == "bin":
+                out_path.write_bytes(bytes(packet["bytecode"]))
+            else:
+                out_path.write_text(json.dumps(packet["bytecode"], indent=2) + "\n", encoding="utf-8")
+            packet["output_path"] = str(out_path)
+        print(json.dumps(packet))
+        return 0
+    except SacredTonguesToolchainError as exc:
+        print(json.dumps({"status": "error", "error": str(exc)}), file=sys.stderr)
+        return 2
+
+
+def cmd_tongue_run(args: argparse.Namespace) -> int:
+    from src.sacred_tongues_toolchain import SacredTonguesToolchainError, compile_packet, load_program, run_packet
+
+    try:
+        program_file = getattr(args, "program_file", None)
+        compile_payload = None
+        if program_file:
+            program = load_program(Path(program_file))
+            source_name = Path(program_file).name
+        else:
+            source, source_name = _read_tongue_program_source(args)
+            compile_payload = compile_packet(source, source_name=source_name)
+            program = compile_payload["bytecode"]
+        run_payload = run_packet(program, max_steps=int(getattr(args, "max_steps", 10000)))
+        payload = {
+            "schema_version": "geoseal_tongue_run_v1",
+            "source_name": source_name,
+            "compile": compile_payload,
+            "run": run_payload,
+        }
+        if getattr(args, "json", False):
+            print(json.dumps(payload))
+        else:
+            for value in run_payload["output"]:
+                print(value)
+        return 0
+    except SacredTonguesToolchainError as exc:
+        print(json.dumps({"status": "error", "error": str(exc)}), file=sys.stderr)
+        return 2
+
+
 def _read_source_for_surface(args: argparse.Namespace) -> tuple[str, str, str]:
     source = getattr(args, "content", "") or ""
     source_name = getattr(args, "source_name", None) or "inline"
@@ -4414,6 +4481,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_code_packet.add_argument("--language", default="python")
     p_code_packet.add_argument("--backend", default=None, choices=["local", "ollama", "hf", "claude"])
     p_code_packet.set_defaults(func=cmd_code_packet)
+
+    p_tongue_compile = sub.add_parser(
+        "tongue-compile",
+        help="Compile Sacred Tongues .sts assembly into bounded VM bytecode",
+    )
+    p_tongue_compile.add_argument("--content", default=None, help="Inline .sts source; defaults to stdin")
+    p_tongue_compile.add_argument("--source-file", default=None, help="Read .sts source from file")
+    p_tongue_compile.add_argument("--source-name", default=None)
+    p_tongue_compile.add_argument("--output", default=None, help="Optional bytecode output path")
+    p_tongue_compile.add_argument("--output-format", default="json", choices=["json", "bin"])
+    p_tongue_compile.set_defaults(func=cmd_tongue_compile)
+
+    p_tongue_run = sub.add_parser(
+        "tongue-run",
+        help="Compile/run Sacred Tongues .sts assembly in the bounded VM",
+    )
+    p_tongue_run.add_argument("--content", default=None, help="Inline .sts source; defaults to stdin")
+    p_tongue_run.add_argument("--source-file", default=None, help="Read .sts source from file")
+    p_tongue_run.add_argument("--program-file", default=None, help="Run existing bytecode .json or .bin")
+    p_tongue_run.add_argument("--source-name", default=None)
+    p_tongue_run.add_argument("--max-steps", type=int, default=10000)
+    p_tongue_run.add_argument("--json", action="store_true")
+    p_tongue_run.set_defaults(func=cmd_tongue_run)
 
     p_braille = sub.add_parser("braille-lane", help="Build braille/polyhedral lane from source or code packet")
     p_braille.add_argument("--content", default="")
