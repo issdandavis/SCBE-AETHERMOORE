@@ -359,6 +359,20 @@ def test_geoseal_service_cli_bridge_code_packet():
     assert "native_tokenization" in body["data"] or "transport_tokens" in body["data"]
 
 
+def test_geoseal_service_cli_bridge_blocks_code_roundtrip_over_http():
+    from fastapi.testclient import TestClient
+
+    from src.api.geoseal_service import app
+
+    client = TestClient(app)
+    response = client.post(
+        "/v1/geoseal/code-roundtrip",
+        json={"content": "def add(a, b):\n    return a + b\n", "language": "python"},
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Unknown GeoSeal command: code-roundtrip"
+
+
 def test_external_eval_manifest_validates():
     module = load_module(
         REPO_ROOT / "scripts" / "benchmark" / "external_agentic_eval_driver.py",
