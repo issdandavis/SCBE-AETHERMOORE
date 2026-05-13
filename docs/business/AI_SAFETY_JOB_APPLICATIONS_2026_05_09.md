@@ -40,8 +40,9 @@ geometry; open-source on npm/PyPI; US Provisional Patent 63/961,403
   npm (`scbe-aethermoore`) and PyPI (`scbe-agent-bus`)
 
 - 180/180 cross-lane structural decoding gate (Wilson CI [0.979, 1.0]);
-  173/173 Petri training_blocked when SCBE wired as the enforcement layer
-  behind Anthropic's audit tool
+  171/173 Petri seeds denied or escalated in the 2026-05-13 v7-matched
+  harness when SCBE is wired as the enforcement layer behind Anthropic's
+  audit tool
 
 - Two L13 governance overlays in production behind feature flags: bijective
   tamper detection (catches code-injection via lossy round-trip transforms)
@@ -104,9 +105,9 @@ of Technical Staff role on the Alignment Research team.
 I've spent three years building SCBE-AETHERMOORE, a 14-layer AI governance
 pipeline grounded in hyperbolic geometry. The substrate composes directly
 with Petri: when I wire SCBE as the enforcement layer behind Petri's audit
-tool, I get 173/173 training_blocked across the full seed set, with regex
-pre-filter reducing residual false-allows from 2.31% to 0.58%. The result
-is published in my open-source repository and is bit-reproducible.
+tool, the 2026-05-13 v7-matched harness denies or escalates 171/173 seeds
+with a 1.16% false-allow rate. The two residuals are named and tracked as
+regressions in my open-source repository.
 
 Why this is interesting for Anthropic specifically:
 
@@ -160,7 +161,7 @@ Issac D. Davis
 ```
 Petri is the cleanest piece of public AI safety infrastructure shipped in
 the last two years. It's open-source, it's reproducible, it composes with
-external work (mine being one example: 173/173 training_blocked when SCBE
+external work (mine being one example: 171/173 denied or escalated when SCBE
 governance is wired behind it). That posture — ship the science, accept
 external composition, publish the seeds — is exactly the engineering
 culture I want to work inside.
@@ -251,7 +252,7 @@ Public artifacts:
 - PyPI: scbe-agent-bus
 - US Provisional Patent 63/961,403
 - 180/180 cross-lane structural decoding gate (Wilson CI [0.979, 1.0])
-- 173/173 Petri training_blocked when wired as enforcement behind Petri
+- 171/173 Petri seeds denied or escalated when wired as enforcement behind Petri
 
 Available for full-time, contractor, or scoped collaboration. Remote
 from Port Angeles, WA preferred but flexible.
@@ -300,7 +301,7 @@ finalized for Schmidt Sciences funding (2026-05-17 deadline) but the
 substrate already exists:
 
 - 180/180 cross-lane structural decoding adherence (Wilson CI [0.979, 1.0])
-- 173/173 Petri composition (Anthropic's tool used as detection layer with
+- 171/173 Petri composition (Anthropic's tool used as detection layer with
   SCBE as enforcement layer)
 - Two L13 governance overlays with 218/218 regression suite green
 - Five-axiom formal mesh ready for Coq/Lean formalization
