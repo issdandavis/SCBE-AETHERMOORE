@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "4.0.9",
+  "version": "4.0.10",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
@@ -259,6 +259,20 @@
     "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
   },
   "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/issdandavis"
+    },
+    {
+      "type": "ko_fi",
+      "url": "https://ko-fi.com/izdandavis"
+    },
+    {
+      "type": "individual",
+      "url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html"
+    }
+  ],
   "engines": {
     "node": ">=18.0.0"
   },
