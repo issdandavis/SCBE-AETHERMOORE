@@ -195,6 +195,7 @@ untitled.webm
 
 # Claude session artifacts
 .claude/scheduled_tasks.lock
+.claude/settings.local.json
 .scbe/cli-context.json
 .scbe/route_ledger.jsonl
 .cell*_payload.json
