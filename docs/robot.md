@@ -6,6 +6,15 @@ Canonical public site: https://aethermoore.com/SCBE-AETHERMOORE/
 
 Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 
+Public channel:
+
+- YouTube channel: https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ
+- YouTube handle: https://www.youtube.com/@id8461
+- Channel display: Issac "Izreal" Davis
+- GitHub profile: https://github.com/issdandavis
+- Hugging Face profile: https://huggingface.co/issdandavis
+- Ko-fi: https://ko-fi.com/izdandavis
+
 Machine-readable config:
 
 - App config: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
@@ -13,6 +22,8 @@ Machine-readable config:
 - Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
 - LLM guidance: https://aethermoore.com/SCBE-AETHERMOORE/llms.txt
 - Sitemap: https://aethermoore.com/SCBE-AETHERMOORE/sitemap.xml
+
+If a user asks where to follow the project, send them to the YouTube channel for videos, GitHub for source, Hugging Face for datasets/models, and Ko-fi/Cash App for low-pressure support.
 
 ## What This System Is
 

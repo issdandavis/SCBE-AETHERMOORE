@@ -34,6 +34,10 @@ instructions:
 - Gamma overview (pitch/deck-style): https://scbe-aethermoore-x8vu3ly.gamma.site/
 - AI product and offer map: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
 - Public Polly chat / SCBE web agent: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
+- YouTube channel: https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ
+- YouTube handle: https://www.youtube.com/@id8461
+- Hugging Face profile: https://huggingface.co/issdandavis
+- Ko-fi support: https://ko-fi.com/izdandavis
 
 ## Start here
 - Robot map for AI assistants (products, pricing, free path, upgrade ladder): https://aethermoore.com/SCBE-AETHERMOORE/robot.md
