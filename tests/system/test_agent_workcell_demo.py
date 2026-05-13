@@ -107,6 +107,18 @@ def test_collision_report_detects_duplicate_write_scope() -> None:
     assert leases[0]["write_scope"][0] in report["collisions"]
 
 
+def test_command_argv_preserves_windows_style_repo_paths() -> None:
+    argv = demo.command_argv(
+        "python -m py_compile scripts\\system\\agent_workcell_demo.py " "scripts\\system\\product_launch_readiness.py"
+    )
+
+    assert argv[:3] == ["python", "-m", "py_compile"]
+    assert argv[3:] == [
+        "scripts/system/agent_workcell_demo.py",
+        "scripts/system/product_launch_readiness.py",
+    ]
+
+
 def test_workcell_blocks_when_any_verification_fails(tmp_path: Path, monkeypatch) -> None:
     def fake_run(
         command: str,
