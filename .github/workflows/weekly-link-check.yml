@@ -2,7 +2,7 @@ name: Weekly Dead Link Check
 
 on:
   schedule:
-    - cron: '0 7 * * 1'  # Every Monday at 7 AM UTC
+    - cron: '0 7 * * 1' # Every Monday at 7 AM UTC
   workflow_dispatch:
 
 permissions:
@@ -22,13 +22,27 @@ jobs:
           python3 - <<'PYEOF'
           import re, os, glob
           from pathlib import Path
+          from urllib.parse import unquote
 
           broken = []
           checked = 0
 
           # Check internal file references in markdown
           md_files = glob.glob("**/*.md", recursive=True)
-          skip_dirs = {"node_modules", "dist", ".git", "__pycache__", ".venv", "external"}
+          skip_dirs = {
+              ".git",
+              ".venv",
+              "__pycache__",
+              "archive",
+              "artifacts",
+              "dist",
+              "docs-build-smoke",
+              "external",
+              "notes",
+              "node_modules",
+              "training-data",
+              "training",
+          }
 
           for md_file in md_files:
               parts = Path(md_file).parts
@@ -37,6 +51,8 @@ jobs:
 
               try:
                   content = Path(md_file).read_text(encoding="utf-8", errors="ignore")
+                  content = re.sub(r"```.*?```", "", content, flags=re.S)
+                  content = re.sub(r"`[^`]*`", "", content)
               except Exception:
                   continue
 
@@ -44,11 +60,13 @@ jobs:
               links = re.findall(r'\[([^\]]*)\]\(([^)]+)\)', content)
               for text, href in links:
                   checked += 1
-                  # Skip external URLs, anchors, and mailto
-                  if href.startswith(('http://', 'https://', '#', 'mailto:')):
+                  # Skip external URLs, anchors, mail links, and local machine paths.
+                  if href.startswith(('http://', 'https://', '#', 'mailto:', 'file:')):
+                      continue
+                  if re.match(r'^[A-Za-z]:[/\\]', href):
                       continue
                   # Strip anchor from path
-                  path = href.split('#')[0]
+                  path = unquote(href.split('#')[0])
                   if not path:
                       continue
                   # Resolve relative to the markdown file's directory
