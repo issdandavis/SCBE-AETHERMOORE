@@ -248,7 +248,7 @@ pip install scbe-aethermoore
 ## Canonical public docs
 
 - Canonical system state: [`CANONICAL_SYSTEM_STATE.md`](CANONICAL_SYSTEM_STATE.md)
-- Repo surface map: [`REPO_SURFACE_MAP.md`](REPO_SURFACE_MAP.md)
+- Repo surface map: [`docs/REPO_SURFACE_MAP.md`](docs/REPO_SURFACE_MAP.md)
 - Architecture overview: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - Research hub: [`docs/README.md`](docs/README.md)
 - Review + cleanup report: [`docs/REPO_AUDIT.md`](docs/REPO_AUDIT.md)

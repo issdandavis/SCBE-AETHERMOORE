@@ -21,4 +21,4 @@ sam deploy --guided
 
 ## Documentation
 
-See [AWS Lambda Deployment Guide](../../docs/AWS_LAMBDA_DEPLOYMENT.md) for complete deployment instructions.
+See the current [Product Quickstart](../../docs/PRODUCT_QUICKSTART.md) for supported deployment and runtime entrypoints.
