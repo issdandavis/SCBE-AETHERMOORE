@@ -15,6 +15,8 @@ npm i -g scbe-aethermoore-cli
 ```bash
 scbe --help
 scbe version
+scbe demo
+scbe demo --json
 scbe selftest
 scbe doctor --json
 scbe credits
@@ -33,6 +35,9 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
 ## Tool Surface
 
 - `version`: prints the installed `scbe-aethermoore` package version.
+- `demo`: runs the 5-minute agent safety demo. It sends a risky AI-agent tool
+  request through the GeoSeal execution gate and prints the governed output
+  packet: output, decision, reasons, suggested correction, and audit id.
 - `doctor --json`: verifies the installed GeoSeal shell and reports available
   API-routed commands.
 - `selftest`: runs the npm-installable smoke test (`version` + `doctor`).
@@ -52,6 +57,27 @@ The same binary is also exposed as `geoseal` and `scbe-geoseal`.
 The full repo-local GeoSeal command set still lives in `scbe-aethermoore`.
 Commands that require Python repo modules need a source checkout or a backend
 API configured with `SCBE_API_BASE`.
+
+## Five-Minute Magic Moment
+
+The first product proof is intentionally small:
+
+```bash
+npm i -g scbe-aethermoore-cli
+scbe demo --json
+```
+
+The demo does not execute the risky command. It shows what happens when SCBE is
+placed between an AI agent and its tools:
+
+- the proposed tool call,
+- the governance decision,
+- reason codes,
+- a suggested correction,
+- a deterministic GeoSeal audit id.
+
+This is the buyer-facing promise: put SCBE in front of an AI agent and see what
+it catches, why it caught it, and what audit trail it leaves behind.
 
 ## Local Compiler Lane
 

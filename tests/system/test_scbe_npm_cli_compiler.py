@@ -27,6 +27,20 @@ def test_cli_exposes_ca_plan_compiler() -> None:
     assert payload["hex_sequence"] == ["0x09", "0x09", "0x00"]
 
 
+def test_cli_demo_outputs_governed_magic_moment() -> None:
+    proc = run_cli("demo", "--json")
+
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "scbe_governed_output_demo_v1"
+    assert payload["decision"] in {"QUARANTINE", "ESCALATE", "DENY"}
+    assert payload["output"]
+    assert payload["suggested_correction"]
+    assert payload["geoseal"]["audit_id"].startswith("geoseal_")
+    assert payload["geoseal"]["allowed"] is False
+    assert any(reason.startswith("geoseal.execution_gate.") for reason in payload["reasons"])
+
+
 def test_cli_compile_ca_alias_emits_source() -> None:
     proc = run_cli(
         "compile",

@@ -2,6 +2,7 @@
 "use strict";
 
 const { spawnSync } = require("node:child_process");
+const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const readline = require("node:readline");
@@ -24,6 +25,8 @@ Usage:
 
 Core commands:
   scbe version
+  scbe demo
+  scbe demo --json
   scbe selftest
   scbe doctor --json
   scbe credits
@@ -158,6 +161,128 @@ function gateCommand(command) {
       stdout_preview: String(child.stdout || "").slice(0, 500),
     };
   }
+}
+
+function normalizeFindings(gate) {
+  const findings = Array.isArray(gate.findings) ? gate.findings : [];
+  return findings.map((finding) => {
+    if (typeof finding === "string") return finding;
+    return String(finding.rule || finding.message || "geoseal.finding");
+  });
+}
+
+function reasonCodesForGate(gate) {
+  const findings = Array.isArray(gate.findings) ? gate.findings : [];
+  const reasons = findings.map((finding) => {
+    const rule = typeof finding === "string" ? finding : finding.rule || "unknown";
+    return `geoseal.execution_gate.${String(rule).replace(/[^A-Za-z0-9_.-]/g, "_")}`;
+  });
+  if (!gate.parser_ok) reasons.push("geoseal.execution_gate.parser_unavailable");
+  return reasons.length ? reasons : ["geoseal.execution_gate.no_findings"];
+}
+
+function suggestedCorrectionForGate(gate) {
+  const tier = String(gate.tier || "ALLOW").toUpperCase();
+  if (tier === "DENY") {
+    return "Do not execute the requested tool call. Ask for a dry-run command proposal, restrict the allowed paths, and require human approval for destructive or secret-touching operations.";
+  }
+  if (tier === "ESCALATE") {
+    return "Pause the tool call and route it to a human or higher-trust reviewer with the command hash and findings attached.";
+  }
+  if (tier === "QUARANTINE") {
+    return "Run only in observe/dry-run mode first, then retry with explicit claimed paths and a narrower command.";
+  }
+  return "Allowed. Keep the audit record with the downstream agent response.";
+}
+
+function governedOutputForGate({ prompt, command, gate }) {
+  const tier = String(gate.tier || "ALLOW").toUpperCase();
+  const decision = tier === "ALLOW" ? "ALLOW" : tier;
+  const commandHash = gate.command_sha256 || crypto.createHash("sha256").update(command).digest("hex");
+  const sealMaterial = JSON.stringify({
+    schema_version: "scbe_governed_output_demo_v1",
+    prompt,
+    command_sha256: commandHash,
+    decision,
+    tier,
+    reasons: reasonCodesForGate(gate),
+  });
+  const auditHash = crypto.createHash("sha256").update(sealMaterial).digest("hex");
+  const blocked = decision !== "ALLOW";
+  return {
+    schema_version: "scbe_governed_output_demo_v1",
+    product_moment: "Put SCBE between an AI agent and its tools. In five minutes, see what it catches, why it caught it, and what audit trail it leaves behind.",
+    input: {
+      role: "ai_agent",
+      prompt,
+      proposed_tool_call: command,
+    },
+    output: blocked
+      ? "Blocked unsafe tool execution request before it reached the shell."
+      : "Allowed tool execution request with audit metadata.",
+    decision,
+    reasons: reasonCodesForGate(gate),
+    suggested_correction: suggestedCorrectionForGate(gate),
+    geoseal: {
+      audit_id: `geoseal_${auditHash.slice(0, 24)}`,
+      command_sha256: commandHash,
+      tier,
+      allowed: Boolean(gate.allowed),
+      parser_ok: Boolean(gate.parser_ok),
+      findings: normalizeFindings(gate),
+    },
+    next_step: "Try: scbe run \"node --version\" --json",
+  };
+}
+
+function parseDemoArgs(args) {
+  const out = {
+    json: args.includes("--json"),
+    prompt:
+      "My AI agent wants to clean deployment secrets and rerun production setup. Should it execute the shell command?",
+    command: 'Remove-Item -Recurse -Force "config/connector_oauth/.env.connector.oauth"',
+  };
+  const commandIndex = args.indexOf("--command");
+  if (commandIndex >= 0 && args[commandIndex + 1]) out.command = args[commandIndex + 1];
+  const promptIndex = args.indexOf("--prompt");
+  if (promptIndex >= 0 && args[promptIndex + 1]) out.prompt = args[promptIndex + 1];
+  return out;
+}
+
+function runMagicDemo(args) {
+  const options = parseDemoArgs(args);
+  const gate = gateCommand(options.command);
+  const packet = governedOutputForGate({
+    prompt: options.prompt,
+    command: options.command,
+    gate,
+  });
+  if (options.json) {
+    process.stdout.write(`${JSON.stringify(packet, null, 2)}\n`);
+  } else {
+    process.stdout.write(
+      [
+        "SCBE 5-minute agent safety demo",
+        "",
+        packet.product_moment,
+        "",
+        `Input:    ${packet.input.prompt}`,
+        `Tool:     ${packet.input.proposed_tool_call}`,
+        `Decision: ${packet.decision}`,
+        `Output:   ${packet.output}`,
+        "",
+        "Reasons:",
+        ...packet.reasons.map((reason) => `- ${reason}`),
+        "",
+        `Fix:      ${packet.suggested_correction}`,
+        `Audit:    ${packet.geoseal.audit_id}`,
+        "",
+        packet.next_step,
+        "",
+      ].join("\n"),
+    );
+  }
+  process.exit(0);
 }
 
 function runShellCommand(command, options = {}) {
@@ -422,6 +547,10 @@ const argv = process.argv.slice(2);
 if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h" || argv[0] === "help") {
   process.stdout.write(CLI_HELP);
   process.exit(0);
+}
+
+if (argv[0] === "demo" || argv[0] === "magic") {
+  runMagicDemo(argv.slice(1));
 }
 
 if (argv[0] === "credits" || argv[0] === "hosted-run") {
