@@ -2,12 +2,12 @@
  * @file harmonicCamouflage.ts
  * @module fleet/drone-fleet/harmonicCamouflage
  * @layer Layer 9, Layer 14
- * @component Harmonic Camouflage via Stellar Pulse Protocol
+ * @component Harmonic Carrier Simulation via Stellar Pulse References
  *
  * Modulates fleet control signals at frequencies derived from celestial
- * body natural oscillation modes (p-modes) via 2ⁿ multiplication, making
- * coordination signals indistinguishable from background stellar/environmental
- * entropy.
+ * body natural oscillation references (p-modes) via 2ⁿ multiplication. This
+ * is a deterministic signal-shaping simulation, not an empirical stealth
+ * guarantee.
  *
  * camouflage_freq = base_freq * 2^n
  *

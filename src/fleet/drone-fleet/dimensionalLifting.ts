@@ -2,19 +2,19 @@
  * @file dimensionalLifting.ts
  * @module fleet/drone-fleet/dimensionalLifting
  * @layer Layer 8, Layer 13
- * @component Dimensional Lifting for Embedded Security
+ * @component Dimensional Lifting Simulation for Embedded Security
  *
- * Lifts control flow graphs from 3D into higher-dimensional spaces
- * (4D Hyper-Torus or 6D Symplectic Phase Space) to resolve topological
- * obstructions (e.g., Rhombic Dodecahedron with bipartite imbalance).
+ * Lifts control flow graphs from 3D into higher-dimensional coordinate
+ * spaces (4D Hyper-Torus or 6D Symplectic Phase Space) to explore how
+ * topological projections affect traversal checks.
  *
- * Mathematical guarantee: topological obstructions in 3D graphs
- * disappear in higher dimensions → Hamiltonian path always exists.
+ * Simulation invariant: lifted graphs preserve deterministic vertex and
+ * edge mappings so traversal behavior can be compared across dimensions.
  *
- * Security metrics:
- * - 99% detection rate for ROP attacks
- * - Zero runtime overhead (graph transformation at compile time)
- * - Critical for battery-powered drones (no energy penalty)
+ * Heuristic metrics:
+ * - invalid-transition scoring for ROP-like traces
+ * - deterministic graph transformation for repeatable tests
+ * - geometry-only simulation with no hardware power model
  *
  * A4: Symmetry — gauge invariance through dimensional lifting
  */

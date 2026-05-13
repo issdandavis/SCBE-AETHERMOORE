@@ -2,11 +2,11 @@
  * @file gravitationalBraking.ts
  * @module fleet/drone-fleet/gravitationalBraking
  * @layer Layer 11, Layer 13
- * @component Gravitational Braking for Rogue Drones
+ * @component Gravitational Braking Simulation for Off-Path Agents
  *
- * Binds drone CPU clock to Gravitational Time Axis so that behavioral
- * divergence from an authorized flight path mathematically freezes the
- * decision loop — no central kill switch required.
+ * Models a control-rate reduction as an agent diverges from an authorized
+ * flight path. This module emits deterministic braking factors for simulation
+ * and governance tests; it does not claim hardware-level clock control.
  *
  * Core formula:
  *   tG = t · (1 - (k · d) / (r + ε))
@@ -17,8 +17,8 @@
  *   k = scaling constant
  *   ε = epsilon (prevents division by zero)
  *
- * As d → r, tG → 0: the drone enters a computational "event horizon"
- * and cannot process new attack commands.
+ * As d approaches r, tG approaches zero in the simulation and downstream
+ * policy can mark the agent for neutralization.
  *
  * Patent: USPTO Provisional #63/961,403 — Gravitational Time Axis binding
  */

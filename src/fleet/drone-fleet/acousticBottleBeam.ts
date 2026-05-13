@@ -2,17 +2,16 @@
  * @file acousticBottleBeam.ts
  * @module fleet/drone-fleet/acousticBottleBeam
  * @layer Layer 14
- * @component Vacuum-Acoustic Bottle Beams for Data Security
+ * @component Vacuum-Acoustic Bottle Beam Simulation
  *
- * When a drone is physically captured and an adversary attempts data
- * extraction, the Vacuum-Acoustics Kernel generates an Acoustic Bottle
- * Beam within the storage enclosure.
+ * Models a capture-response interference pattern within a storage enclosure
+ * when a Hamiltonian CFI violation is reported.
  *
  * Trigger: Hamiltonian CFI violation (unauthorized access pattern)
  * Response: Destructive interference (W₂ = -W₁) → Φ_total = 0
  *
- * Data bus is scrambled before read; energy redistributed to
- * "nodal corners" (harmless dissipation).
+ * The simulated data bus protection state is marked as scrambled and energy
+ * redistribution is tracked as metadata for governance tests.
  *
  * A1: Unitarity — energy is conserved (redistributed, not destroyed)
  */

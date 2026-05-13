@@ -5,16 +5,16 @@
  * @component Drone Fleet Architecture Upgrades
  * @version 1.0.0
  *
- * Six architecturally consistent upgrades to the autonomous drone fleet
- * system, leveraging SCBE-AETHERMOORE's geometric security primitives,
- * Harmonic Wall physics, and Six Sacred Tongues protocol architecture.
+ * Six simulation-oriented autonomous fleet modules that exercise
+ * SCBE-AETHERMOORE geometric security primitives, Harmonic Wall-style
+ * scoring, and Six Sacred Tongues protocol architecture.
  *
- * 1. Gravitational Braking — CPU clock dilation for rogue drones
+ * 1. Gravitational Braking — simulated control-rate reduction for off-path agents
  * 2. Sphere-in-Cube Topology — mission bounds via GeoSeal pattern
- * 3. Harmonic Camouflage — stellar pulse signal stealth
+ * 3. Harmonic Camouflage — harmonic carrier selection simulation
  * 4. Sacred Tongues Flight Dynamics — tongue-to-maneuver mapping
- * 5. Acoustic Bottle Beams — data security via destructive interference
- * 6. Dimensional Lifting — CFI in higher-dimensional spaces
+ * 5. Acoustic Bottle Beams — capture-response interference simulation
+ * 6. Dimensional Lifting — CFI-inspired graph lifting heuristics
  *
  * Patent: USPTO Provisional #63/961,403
  */
