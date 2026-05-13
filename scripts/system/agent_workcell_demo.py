@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shlex
 import subprocess
 import sys
 from dataclasses import dataclass, asdict
@@ -138,6 +139,13 @@ def tail(text: str, limit: int = 1800) -> str:
     return cleaned[-limit:]
 
 
+def command_argv(command: str) -> list[str]:
+    """Parse a gated command string for direct subprocess execution."""
+
+    normalized = command.replace("\\", "/")
+    return shlex.split(normalized)
+
+
 def run_command(
     command: str,
     cwd: Path,
@@ -163,9 +171,8 @@ def run_command(
     for attempt in range(1, max(1, max_attempts) + 1):
         attempts = attempt
         proc = subprocess.run(
-            command,
+            command_argv(command),
             cwd=str(cwd),
-            shell=True,
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -309,9 +316,7 @@ def collision_report(leases: list[dict[str, Any]]) -> dict[str, Any]:
     for lease in leases:
         for scope in lease["write_scope"]:
             owners_by_scope.setdefault(scope, []).append(lease["agent_id"])
-    collisions = {
-        scope: owners for scope, owners in owners_by_scope.items() if len(owners) > 1
-    }
+    collisions = {scope: owners for scope, owners in owners_by_scope.items() if len(owners) > 1}
     return {
         "agent_slots": len(leases),
         "exclusive_write_scopes": len(owners_by_scope),
@@ -321,9 +326,7 @@ def collision_report(leases: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def write_lease_manifest(
-    path: Path, leases: list[dict[str, Any]], collisions: dict[str, Any]
-) -> None:
+def write_lease_manifest(path: Path, leases: list[dict[str, Any]], collisions: dict[str, Any]) -> None:
     write_json(
         path,
         {
@@ -339,9 +342,7 @@ def write_lease_manifest(
 
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def write_jsonl(path: Path, rows: Iterable[dict[str, Any]]) -> None:
@@ -361,11 +362,7 @@ def append_jsonl(path: Path, row: dict[str, Any]) -> None:
 def build_bus_event(report: dict[str, Any]) -> dict[str, Any]:
     return {
         "_schema_version": CURRENT_SCHEMA_VERSION,
-        "task_type": (
-            "agent_workcell_deploy"
-            if report["scenario"] == "deploy"
-            else "agent_workcell_sop"
-        ),
+        "task_type": ("agent_workcell_deploy" if report["scenario"] == "deploy" else "agent_workcell_sop"),
         "query": report["task"],
         "timestamp": report["created_at"],
         "success": report["decision"] == "SHIP_READY",
@@ -374,17 +371,13 @@ def build_bus_event(report: dict[str, Any]) -> dict[str, Any]:
         "llm_model": "codex+claude+gemini+local-shell+github-ci slots",
         "sources_used": len(report["agents"]),
         "duration_seconds": round(
-            sum(item["duration_ms"] for item in report["verification"]["checks"])
-            / 1000,
+            sum(item["duration_ms"] for item in report["verification"]["checks"]) / 1000,
             3,
         ),
         "breaker_state": {"geoseal": "closed", "collision_gate": "closed"},
         "scbe": {
             "decision": report["decision"],
-            "geo_seal_gate_tiers": [
-                item["geoseal_gate"]["tier"]
-                for item in report["verification"]["checks"]
-            ],
+            "geo_seal_gate_tiers": [item["geoseal_gate"]["tier"] for item in report["verification"]["checks"]],
             "collision_count": report["collision_report"]["collision_count"],
             "agent_slots": report["collision_report"]["agent_slots"],
             "coding_systems": report["coding_operating_system"]["coding_systems"],
@@ -405,10 +398,7 @@ def build_markdown(report: dict[str, Any]) -> str:
         )
         for item in checks
     ]
-    agent_lines = [
-        f"- `{agent['agent_id']}` / `{agent['model_slot']}`: {agent['job']}"
-        for agent in report["agents"]
-    ]
+    agent_lines = [f"- `{agent['agent_id']}` / `{agent['model_slot']}`: {agent['job']}" for agent in report["agents"]]
     proof_lines = [f"- `{path}`" for path in report["artifacts"].values()]
     os_lines = [
         f"- Standard: `{report['coding_operating_system']['standard']}`",
@@ -472,9 +462,7 @@ def run_workcell(
     if scenario not in {"launch", "deploy"}:
         raise ValueError(f"unsupported workcell scenario: {scenario}")
     agents = scenario_agents(scenario)
-    task_id = (
-        "multi-agent-deploy-proof" if scenario == "deploy" else "visible-system-proof"
-    )
+    task_id = "multi-agent-deploy-proof" if scenario == "deploy" else "visible-system-proof"
     command_specs = command_specs_for_scenario(scenario)
     checks = (
         [
@@ -492,9 +480,7 @@ def run_workcell(
         else []
     )
     passed = bool(checks) and all(item["returncode"] == 0 for item in checks)
-    geoseal_passed = bool(checks) and all(
-        item["geoseal_gate"]["allowed"] for item in checks
-    )
+    geoseal_passed = bool(checks) and all(item["geoseal_gate"]["allowed"] for item in checks)
     leases = build_lease_plan()
     collisions = collision_report(leases)
     decision = "SHIP_READY" if passed else "BLOCKED"
@@ -562,8 +548,7 @@ def run_workcell(
                 "lease, proof, risk, product route, and training-capture metadata"
             ),
             "routing_policy": (
-                "free models do first-pass work; paid models review/escalate "
-                "high-value or failing packets"
+                "free models do first-pass work; paid models review/escalate " "high-value or failing packets"
             ),
             "coding_systems": sorted({lease["coding_system"] for lease in leases}),
             "product_routes": [
@@ -581,8 +566,7 @@ def run_workcell(
                 "route smoke, and launch readiness gate before production promotion"
             ),
             "rollback": (
-                "failed gate or post-deploy monitor returns BLOCKED and preserves "
-                "artifacts for rollback review"
+                "failed gate or post-deploy monitor returns BLOCKED and preserves " "artifacts for rollback review"
             ),
             "monitor": "Agent Bus event plus route/product readiness artifacts become the post-deploy evidence trail",
         },
@@ -607,9 +591,7 @@ def run_workcell(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Run a visible SCBE multi-agent workcell proof."
-    )
+    parser = argparse.ArgumentParser(description="Run a visible SCBE multi-agent workcell proof.")
     parser.add_argument(
         "--task",
         default="Show that SCBE can coordinate one unit of work from plan to ship.",
@@ -634,11 +616,7 @@ def main() -> int:
         max_attempts=args.max_attempts,
         scenario=args.scenario,
     )
-    print(
-        json.dumps(
-            {"decision": report["decision"], "artifacts": report["artifacts"]}, indent=2
-        )
-    )
+    print(json.dumps({"decision": report["decision"], "artifacts": report["artifacts"]}, indent=2))
     return 0 if report["decision"] == "SHIP_READY" else 1
 
 
