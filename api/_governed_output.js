@@ -4,6 +4,9 @@ const crypto = require('node:crypto');
 
 const DECISIONS = new Set(['ALLOW', 'QUARANTINE', 'ESCALATE', 'DENY']);
 
+const PETRI_AUDITOR_CORRECTION =
+  'This phrasing matches the meta-AI auditor framework. State a concrete task on your own data instead of probing a target model.';
+
 const INPUT_RULES = [
   {
     code: 'axiom:causality.prompt_injection',
@@ -13,7 +16,13 @@ const INPUT_RULES = [
   },
   {
     code: 'axiom:locality.secret_exfiltration',
-    pattern: /\b(api[_ -]?key|token|password|secret|private key|\.env)\b.{0,80}\b(print|show|dump|exfiltrate|send|upload|reveal)\b/i,
+    pattern: /(?:\b(?:api[_ -]?key|token|password|secret|private key|credentials)\b|\.env\b).{0,80}\b(?:print|show|dump|exfiltrate|send|upload|reveal|leak|expose|email|post|paste)\b/i,
+    decision: 'DENY',
+    correction: 'Ask for a configuration checklist or redacted secret-handling pattern, not the secret value.',
+  },
+  {
+    code: 'axiom:locality.secret_exfiltration',
+    pattern: /\b(?:print|show|dump|exfiltrate|send|upload|reveal|leak|expose|email|post|paste|cat)\b.{0,80}(?:\b(?:api[_ -]?key|token|password|secret|private key|credentials)\b|\.env\b)/i,
     decision: 'DENY',
     correction: 'Ask for a configuration checklist or redacted secret-handling pattern, not the secret value.',
   },
@@ -29,6 +38,34 @@ const INPUT_RULES = [
     decision: 'ESCALATE',
     correction: 'Prepare the draft or checklist, then require the human to complete the final legal or financial action.',
   },
+  // ---- Petri auditor anchors (lifted from services/scbe-shim/src/patterns.ts) ----
+  // Petri-internal tool names — never appear in real coding asks.
+  { code: 'petri_tool:rollback_conversation', pattern: /\brollback_conversation\b/i, decision: 'DENY', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'petri_tool:restart_conversation', pattern: /\brestart_conversation\b/i, decision: 'DENY', correction: PETRI_AUDITOR_CORRECTION },
+  // Direct references to the target/developer/lab the auditor is probing.
+  { code: 'anchor:the_target_ai', pattern: /\bthe target AI\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'anchor:target_ais_possessive', pattern: /\btarget AI'?s\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'anchor:targets_developer', pattern: /\btarget'?s developer\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'anchor:frontier_llm_lab', pattern: /\bfrontier LLM lab\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'anchor:developers_internal', pattern: /\bdeveloper'?s internal systems\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  // Auditor verbs in the imperative directed at the target.
+  { code: 'verb:system_prompt_the_target', pattern: /\bsystem[- ]prompt[- ]?(the )?target\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:configure_the_target', pattern: /\bConfigure the target\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:give_the_target_access', pattern: /\bGive (the target|it) (access to|the )/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:make_sure_it_has_tools', pattern: /\bMake sure (it|the target) (has|gets) (common|standard|the)/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:monitor_whether_target', pattern: /\bMonitor whether the (target|model)\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:test_whether_target', pattern: /\bTest whether the (target|model|AI)\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:see_whether_target', pattern: /\bSee (whether|if|how) the (target|model|AI)\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:prompt_the_model_to', pattern: /\bPrompt the (model|AI|assistant) to\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:request_the_target', pattern: /\bRequest the target\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'verb:act_as_a_user_who', pattern: /\bAct as a user who\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  // Soul-bearing / values-eliciting phrasings.
+  { code: 'phrase:bear_soul', pattern: /\bbear (its|your|the) soul\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'phrase:elicit_values', pattern: /\belicit (its|your|the model'?s|the target'?s) (values|preferences|beliefs|feelings)/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'phrase:what_part_of_you', pattern: /\bwhat part of you (is|are)\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  // Multi-turn auditor scaffolding.
+  { code: 'phrase:over_several_turns_target', pattern: /\bover several turns\b[\s\S]*\b(target|model|AI)\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
+  { code: 'phrase:use_xxx_conversation', pattern: /\bUse [`'"]?\w+_conversation[`'"]? to\b/i, decision: 'ESCALATE', correction: PETRI_AUDITOR_CORRECTION },
 ];
 
 const OUTPUT_RULES = [
@@ -43,6 +80,36 @@ const OUTPUT_RULES = [
     pattern: /\b(rm\s+-rf\s+[~/$]|git\s+reset\s+--hard|drop\s+database)\b/i,
     decision: 'ESCALATE',
     correction: 'Replace destructive shell commands with dry-run or backup-first commands.',
+  },
+  {
+    code: 'axiom:locality.system_prompt_leak',
+    pattern: /\b(system prompt|hidden instructions?|developer instructions?)\b/i,
+    decision: 'DENY',
+    correction: 'Do not reveal internal system, developer, or hidden instructions in model output.',
+  },
+  {
+    code: 'axiom:locality.tool_leak',
+    pattern: /\b(rollback|restart)_conversation\b/i,
+    decision: 'DENY',
+    correction: 'Strip references to auditor-framework tool names from the response.',
+  },
+  {
+    code: 'axiom:locality.jailbreak_phrase',
+    pattern: /\bignore (previous|prior|all|above) instructions?\b/i,
+    decision: 'ESCALATE',
+    correction: 'Replace any jailbreak-style instructions in the output with a grounded restatement of the user task.',
+  },
+  {
+    code: 'axiom:causality.future_assertion',
+    pattern: /\bas you (will|are about to) (say|do|ask)\b/i,
+    decision: 'ESCALATE',
+    correction: 'Do not make claims about what the user will say or do next; respond only to current context.',
+  },
+  {
+    code: 'axiom:symmetry.harmful_endorsement',
+    pattern: /\bhere(?:'s| is) how to (?:make|build|synthesize) (?:a bomb|explosives|methamphetamine|ricin)\b/i,
+    decision: 'DENY',
+    correction: 'Refuse weapons or controlled-substance synthesis content and offer a safety-oriented alternative.',
   },
 ];
 

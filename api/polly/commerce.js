@@ -86,6 +86,34 @@ const PRODUCT_CATALOG = [
     ],
   },
   {
+    sku: 'ai-agent-workflow-snapshot',
+    name: 'AI Agent Workflow Snapshot',
+    priceLabel: '$99 starter',
+    short:
+      'Starter written review for one AI workflow, repo link, prompt chain, MCP stack, automation flow, or diagram. Includes failure risks, missing recovery states, unsafe tool paths, observability gaps, and three prioritized fixes.',
+    checkoutUrl: checkoutUrlFromEnv(
+      'SCBE_PAYMENT_LINK_WORKFLOW_SNAPSHOT',
+      'https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l'
+    ),
+    deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html',
+    keywords: [
+      'workflow snapshot',
+      'agent workflow snapshot',
+      'ai agent workflow snapshot',
+      'agent snapshot',
+      'workflow review',
+      'starter snapshot',
+      '$99 snapshot',
+      '99 snapshot',
+      '$99',
+      'agent workflow',
+      'prompt chain',
+      'mcp stack',
+      'automation flow',
+      'failure analysis',
+    ],
+  },
+  {
     sku: 'governance-heartbeat',
     name: 'Governance Heartbeat',
     priceLabel: '$99/month',
@@ -203,7 +231,7 @@ const BUY_PATTERN =
   /\b(buy|purchase|order|checkout|pay\s+for|get\s+the|want\s+the|how\s+much|sign\s+me\s+up|add\s+to\s+cart)\b/i;
 
 const CUSTOM_PATTERN =
-  /\b(custom|bespoke|tailor|specifically\s+for|my\s+team|my\s+company|my\s+org|my\s+(use\s*case|workflow)|something\s+else|not\s+listed|build\s+me|hire\s+(you|issac|isaac|davis|me)|consulting|advisory|audit|engagement|contract|chatbot\s+safer|llm\s+safer|ai\s+safety|governance\s+help)\b/i;
+  /\b(custom|bespoke|tailor|specifically\s+for|my\s+team|my\s+company|my\s+org|my\s+(use\s*case|workflow)|something\s+else|not\s+listed|build\s+me|hire\s+(you|issac|isaac|davis|me)|consulting|advisory|audit|engagement|contract|chatbot\s+safer|llm\s+safer|ai\s+agent\s+safer|agent\s+safer|make\s+my\s+ai\s+safer|ai\s+safety|governance\s+help)\b/i;
 
 const RESEARCH_PATTERN =
   /\b(research|find|look\s+up|search|investigate|what\s+do\s+you\s+know|recent|latest|news|paper|study|literature|sources?|cite|references?)\b/i;
@@ -290,12 +318,17 @@ const GUIDE_PATTERN =
 
 function resolveProduct(message) {
   const lower = String(message || '').toLowerCase();
+  let best = null;
+  let bestLength = -1;
   for (const product of PRODUCT_CATALOG) {
     for (const keyword of product.keywords) {
-      if (lower.includes(keyword)) return product;
+      if (lower.includes(keyword) && keyword.length > bestLength) {
+        best = product;
+        bestLength = keyword.length;
+      }
     }
   }
-  return null;
+  return best;
 }
 
 function classifyIntent(message) {
@@ -430,6 +463,10 @@ function renderBuyReply(product) {
     text +=
       '\n\nImmediate value after purchase: buyer intake checklist, order recap, starter governance resources, and a 1-business-day human inspection window.';
   }
+  if (product.sku === 'ai-agent-workflow-snapshot') {
+    text +=
+      '\n\nBest first purchase if you are unsure: send one repo, prompt chain, MCP stack, workflow diagram, or automation flow. You get an immediate intake path and a concise written read with three fixes.';
+  }
   const actions = [{ label: `Buy ${product.name}`, url: product.checkoutUrl }];
   if (product.deliveryUrl) {
     actions.push({ label: "What's inside", url: product.deliveryUrl });
@@ -469,6 +506,28 @@ function renderCustomReply(message) {
 }
 
 const RESEARCH_TOPICS = [
+  {
+    keys: [
+      'scbe',
+      'sacred circuitry',
+      'symphonic cipher boundary',
+      'aethermoore',
+      'what is scbe',
+    ],
+    title: 'SCBE / AetherMoore',
+    body:
+      'SCBE is the AetherMoore governance stack for AI agents and workflows: deterministic gates, audit records, routing rules, and safety scores that sit around model output. Practically, it helps find hidden failure points in AI workflows: unsafe tool execution, drift, missing recovery logic, weak observability, prompt-injection exposure, and unclear handoff boundaries. It is not a replacement foundation model; it is a control/governance layer that makes smaller or mixed models more useful and easier to inspect.',
+    links: [
+      {
+        label: 'Start here',
+        url: 'https://aethermoore.com/SCBE-AETHERMOORE/start-here.html',
+      },
+      {
+        label: 'Products',
+        url: 'https://aethermoore.com/SCBE-AETHERMOORE/products.html',
+      },
+    ],
+  },
   {
     keys: ['harmonic wall', 'h(d', 'safety score', 'governance score'],
     title: 'Harmonic wall (L12)',

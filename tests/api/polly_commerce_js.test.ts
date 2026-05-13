@@ -31,6 +31,26 @@ const catalogHandler = require('../../api/polly/catalog.js');
 const trainCapture = require('../../api/_polly_train_capture.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const leadHandler = require('../../api/polly/lead.js');
+
+function hasHost(rawUrl: string | undefined, host: string): boolean {
+  if (typeof rawUrl !== 'string') return false;
+  try {
+    const parsed = new URL(rawUrl);
+    return parsed.protocol === 'https:' && parsed.hostname === host;
+  } catch {
+    return false;
+  }
+}
+
+function hasScheme(rawUrl: string | undefined, scheme: string): boolean {
+  if (typeof rawUrl !== 'string') return false;
+  try {
+    const parsed = new URL(rawUrl);
+    return parsed.protocol === `${scheme}:`;
+  } catch {
+    return false;
+  }
+}
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const hostedRunHandler = require('../../api/polly/hosted-run.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -198,7 +218,7 @@ describe('polly lead handler — anti-abuse', () => {
 
 describe('polly commerce intent classification', () => {
   it('catalog has live products with valid checkout urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(7);
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(8);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^(https:\/\/(buy\.stripe\.com|ko-fi\.com)|mailto:)/);
       expect(product.keywords.length).toBeGreaterThan(0);
@@ -276,6 +296,18 @@ describe('polly commerce intent classification', () => {
     expect(intent.product.sku).toBe('ai-governance-snapshot');
   });
 
+  it('classifies workflow snapshot as the $99 starter instead of the $500 snapshot', () => {
+    const intent = commerce.classifyIntent('how much is the workflow snapshot?');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('ai-agent-workflow-snapshot');
+    expect(intent.product.priceLabel).toContain('$99');
+  });
+
+  it('routes AI agent safer language to custom help instead of generic LLM chat', () => {
+    const intent = commerce.classifyIntent('I need help making my AI agent safer');
+    expect(intent.name).toBe('custom');
+  });
+
   it('classifies governance heartbeat as the monthly subscription offer', () => {
     const intent = commerce.classifyIntent('I want the $99 monthly governance heartbeat');
     expect(intent.name).toBe('buy');
@@ -325,6 +357,14 @@ describe('polly commerce intent classification', () => {
   it('does NOT route question-shaped non-topic prompts to research', () => {
     const intent = commerce.classifyIntent('What time is it?');
     expect(intent.name).toBe('general');
+  });
+
+  it('answers core SCBE identity questions with deterministic research copy', () => {
+    const intent = commerce.classifyIntent('what is SCBE?');
+    expect(intent.name).toBe('research');
+    expect(intent.confidence).toBeCloseTo(0.78, 2);
+    const rendered = commerce.renderResearchReply('what is SCBE?');
+    expect(rendered.text).toContain('AetherMoore governance stack');
   });
 
   it('returns general intent when nothing matches', () => {
@@ -494,9 +534,7 @@ describe('polly renderDiscountReply', () => {
     expect(out.text).toContain('WELCOME20');
     expect(out.text).toContain('STUDENT50');
     expect(out.text).toContain('NONPROFIT50');
-    const mailtoAction = out.actions.find(
-      (a: { url?: string }) => typeof a.url === 'string' && a.url.startsWith('mailto:')
-    );
+    const mailtoAction = out.actions.find((a: { url?: string }) => hasScheme(a.url, 'mailto'));
     expect(mailtoAction).toBeDefined();
     expect(mailtoAction!.url).toContain('Custom%20discount%20rate');
   });
@@ -518,9 +556,7 @@ describe('polly renderBookReply', () => {
     expect(out.text).toContain('AI Governance Fundamentals');
     expect(out.text).toContain('Chapter 1');
     expect(out.text).toContain('Harmonic Wall');
-    const buyAction = out.actions.find(
-      (a: { url?: string }) => typeof a.url === 'string' && a.url.includes('buy.stripe.com')
-    );
+    const buyAction = out.actions.find((a: { url?: string }) => hasHost(a.url, 'buy.stripe.com'));
     expect(buyAction).toBeDefined();
   });
 });
@@ -637,12 +673,12 @@ describe('polly commerce reply rendering', () => {
     const out = commerce.renderBuyReply(product);
     expect(out.text).toContain('$99/month');
     expect(out.text).toContain('first scan starts');
-    expect(out.actions[0].url).toMatch(/^mailto:/);
+    expect(hasScheme(out.actions[0].url, 'mailto')).toBe(true);
   });
 
   it('renderCustomReply returns mailto with pre-filled context', () => {
     const out = commerce.renderCustomReply('We need governance for our finance LLM');
-    const mailtoAction = out.actions.find((a: { url: string }) => a.url.startsWith('mailto:'));
+    const mailtoAction = out.actions.find((a: { url: string }) => hasScheme(a.url, 'mailto'));
     expect(mailtoAction).toBeDefined();
     expect(mailtoAction!.url).toContain('issdandavis7795@gmail.com');
     expect(mailtoAction!.url).toContain('finance');
@@ -659,7 +695,7 @@ describe('polly commerce reply rendering', () => {
     expect(out.actions[2].url).toContain('Governance%20Heartbeat');
     expect(out.actions[3].url).toContain('ko-fi.com');
     expect(out.actions[4].url).toContain('github.com');
-    expect(out.actions[5].url).toContain('mailto:');
+    expect(hasScheme(out.actions[5].url, 'mailto')).toBe(true);
     expect(out.text).toContain('2-5%');
     expect(out.text).toContain('$20/month');
     expect(out.text).toContain('$99/month');
@@ -742,7 +778,7 @@ describe('polly chat handler — offline-router fallback', () => {
       expect(body.provider).toBe('offline-router');
       expect(body.text).toContain('four ways');
       expect(body.actions.length).toBeGreaterThanOrEqual(2);
-      expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
+      expect(body.actions.some((a) => hasScheme(a.url, 'mailto'))).toBe(true);
     } finally {
       if (original.hf) process.env.HF_TOKEN = original.hf;
       if (original.ollama) process.env.OLLAMA_URL = original.ollama;
@@ -782,7 +818,7 @@ describe('polly chat handler — commerce path', () => {
     await chatHandler(req, res);
     const body = res.body as { intent: string; actions: { url: string }[] };
     expect(body.intent).toBe('custom');
-    expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
+    expect(body.actions.some((a) => hasScheme(a.url, 'mailto'))).toBe(true);
     expect(body.actions.some((a) => /aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
   });
 
