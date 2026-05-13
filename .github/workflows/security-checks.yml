@@ -47,7 +47,6 @@ jobs:
       - name: Run bandit
         id: bandit
         # audit: hard gate for high-severity Python issues.
-        continue-on-error: true
         run: |
           bandit -r src scripts api python agents -q \
             --severity-level high \

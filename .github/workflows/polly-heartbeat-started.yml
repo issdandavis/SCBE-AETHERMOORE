@@ -34,7 +34,7 @@ jobs:
           LIVEMODE: ${{ github.event.client_payload.record.livemode }}
         run: |
           set -euo pipefail
-          existing=$(gh issue list --state all --search "heartbeat started: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}" || true)
+          existing=$(gh issue list --state all --search "heartbeat started: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}")
           if [[ -n "$existing" && "$existing" != "null" ]]; then
             echo "issue already exists for session ${SESSION_ID} (#${existing}); skipping"
             echo "ALREADY_FILED=1" >> "$GITHUB_ENV"
@@ -52,7 +52,9 @@ jobs:
             mode_tag="TEST-MODE"
           fi
 
-          gh label create heartbeat-started --description "Governance Heartbeat subscription started" --color "17C6CF" --repo "${{ github.repository }}" 2>/dev/null || true
+          if ! gh label view heartbeat-started --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh label create heartbeat-started --description "Governance Heartbeat subscription started" --color "17C6CF" --repo "${{ github.repository }}"
+          fi
 
           title="heartbeat started: ${SESSION_ID} (${price}, ${mode_tag})"
           body=$(cat <<EOF
