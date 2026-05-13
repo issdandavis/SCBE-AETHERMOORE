@@ -277,3 +277,6 @@ external/cli-quests/
 
 # Local book manuscripts (drafts, editor passes) — keep out of public repo
 content/projects/
+
+# Personal research scratch (paste dumps, half-written notes with date prefixes)
+notes/2026-*.md
