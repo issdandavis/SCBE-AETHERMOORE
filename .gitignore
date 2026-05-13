@@ -195,6 +195,7 @@ untitled.webm
 
 # Claude session artifacts
 .claude/scheduled_tasks.lock
+.claude/settings.local.json
 .scbe/cli-context.json
 .scbe/route_ledger.jsonl
 .cell*_payload.json
@@ -265,3 +266,18 @@ external/cli-quests/
 
 # Local replica directory created by some sync tools — never commit
 /origin/
+
+# Git rescue backups (created by some merge/rebase tools)
+.merge-safety/
+
+# Stray drive-upload temp directories
+.tmp.driveupload/
+
+# Local lore archives (Avalon Codices, etc.) — keep out of public repo
+.scbe/codices_extracted.txt
+
+# Local book manuscripts (drafts, editor passes) — keep out of public repo
+content/projects/
+
+# Personal research scratch (paste dumps, half-written notes with date prefixes)
+notes/2026-*.md

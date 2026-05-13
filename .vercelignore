@@ -10,6 +10,12 @@
 !docs/sitemap.xml
 !docs/solutions.html
 !docs/products.html
+!docs/packages.html
+!docs/packages
+!docs/packages/**
+!docs/books.html
+!docs/books
+!docs/books/**
 !docs/start-here.html
 !docs/agents.html
 !docs/chat.html
