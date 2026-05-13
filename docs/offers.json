@@ -5,10 +5,7 @@
   "usage_policy": {
     "name": "SCBE Service Credits",
     "model": "mostly-free local tools with pay-as-you-go credits only for hosted routing, reports, delivery, storage, and provider/model usage",
-    "service_fee_percent_range": [
-      2,
-      5
-    ],
+    "service_fee_percent_range": [2, 5],
     "fee_note": "Provider/model costs are passed through with a small 2-5% SCBE coordination fee where usage is billable.",
     "preferred_routing": "local/Ollama and deterministic harness first; paid providers only when needed"
   },
@@ -98,6 +95,29 @@
       "stripe_payment_link_id": "plink_1TW71yJTF2SuUODIqYFRU9JY"
     },
     {
+      "id": "shopify_command_center_snapshot",
+      "name": "Shopify Store Ops Snapshot",
+      "price_label": "$99 starter",
+      "type": "service",
+      "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+        "payment_center": "https://aethermoore.com/SCBE-AETHERMOORE/payments.html"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html",
+      "intake_url": "mailto:aethermoregames@pm.me?subject=Shopify%20Store%20Ops%20Snapshot",
+      "status": "live",
+      "scope": [
+        "one concise store-ops memo",
+        "one Shopify store, product line, launch plan, or ecommerce checklist",
+        "payment, shipping, subscription, bundle, wholesale, pricing, marketing, and analytics notes",
+        "three prioritized next actions",
+        "public demo and source links included for buyer confidence"
+      ],
+      "checkout_note": "Ko-fi and Cash App are the low-friction payment paths while card checkout is reserved for the existing fixed SCBE offers."
+    },
+    {
       "id": "governance_snapshot",
       "name": "Governance Snapshot",
       "price_label": "$500 fixed scope",
@@ -126,10 +146,7 @@
       "stripe_payment_link_id": "plink_1TW71zJTF2SuUODICZLQCCS3",
       "delivery": {
         "mode": "stripe_webhook_subscription_onboarding",
-        "requires_env": [
-          "STRIPE_HEARTBEAT_PAYMENT_LINK_ID",
-          "SCBE_PAYMENT_LINK_HEARTBEAT"
-        ]
+        "requires_env": ["STRIPE_HEARTBEAT_PAYMENT_LINK_ID", "SCBE_PAYMENT_LINK_HEARTBEAT"]
       }
     },
     {

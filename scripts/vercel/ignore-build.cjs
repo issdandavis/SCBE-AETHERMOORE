@@ -38,6 +38,7 @@ const relevantPaths = [
   'docs/agents.html',
   'docs/chat.html',
   'docs/payments.html',
+  'docs/shopify-command-center.html',
   'docs/workflow-snapshot.html',
   'docs/service-credits.html',
   'docs/supporter.html',
@@ -85,7 +86,7 @@ async function prFiles() {
   let page = 1;
   while (page <= 10) {
     const batch = await githubJson(
-      `/repos/${repoOwner}/${repoSlug}/pulls/${prId}/files?per_page=100&page=${page}`,
+      `/repos/${repoOwner}/${repoSlug}/pulls/${prId}/files?per_page=100&page=${page}`
     );
     if (!Array.isArray(batch) || batch.length === 0) break;
     files.push(...batch.map((item) => item.filename));
@@ -98,7 +99,7 @@ async function prFiles() {
 async function compareFiles() {
   if (!previousSha || !currentSha) return null;
   const compare = await githubJson(
-    `/repos/${repoOwner}/${repoSlug}/compare/${previousSha}...${currentSha}`,
+    `/repos/${repoOwner}/${repoSlug}/compare/${previousSha}...${currentSha}`
   );
   if (!Array.isArray(compare.files)) return null;
   return compare.files.map((item) => item.filename);
@@ -116,7 +117,9 @@ async function main() {
   }
 
   if (process.env.SCBE_VERCEL_CHANGED_FILES) {
-    return finish(process.env.SCBE_VERCEL_CHANGED_FILES.split(/[\r\n,]+/).map((item) => item.trim()));
+    return finish(
+      process.env.SCBE_VERCEL_CHANGED_FILES.split(/[\r\n,]+/).map((item) => item.trim())
+    );
   }
 
   try {

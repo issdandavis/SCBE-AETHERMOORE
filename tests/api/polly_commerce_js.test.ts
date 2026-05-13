@@ -202,7 +202,7 @@ describe('polly lead handler — anti-abuse', () => {
 
 describe('polly commerce intent classification', () => {
   it('catalog has live products with valid checkout urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(8);
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(9);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^(https:\/\/(buy\.stripe\.com|ko-fi\.com)|mailto:)/);
       expect(product.keywords.length).toBeGreaterThan(0);
@@ -283,6 +283,13 @@ describe('polly commerce intent classification', () => {
     expect(intent.name).toBe('buy');
     expect(intent.product.sku).toBe('ai-agent-workflow-snapshot');
     expect(intent.product.priceLabel).toContain('$99');
+  });
+
+  it('classifies Shopify and ecommerce store setup as the Shopify store ops offer', () => {
+    const intent = commerce.classifyIntent('I need Shopify help with store setup and shipping');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('shopify-store-ops-snapshot');
+    expect(intent.product.deliveryUrl).toContain('shopify-command-center.html');
   });
 
   it('routes AI agent safer language to custom help instead of generic LLM chat', () => {
