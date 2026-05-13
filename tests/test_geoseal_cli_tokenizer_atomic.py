@@ -35,6 +35,38 @@ def test_encode_decode_cmd_roundtrip() -> None:
     assert decoded.stdout == "hello"
 
 
+def test_tongue_compile_and_run_bounded_vm() -> None:
+    program = "\n".join(
+        [
+            "ko:set r0, 2",
+            "ko:set r1, 3",
+            "ca:add r2, r0, r1",
+            "ko:print r2",
+            "ko:halt",
+        ]
+    )
+    compiled = _run_cli("tongue-compile", "--content", program)
+    assert compiled.returncode == 0, compiled.stderr
+    compile_payload = json.loads(compiled.stdout)
+    assert compile_payload["schema_version"] == "scbe_tongues_toolchain_compile_v1"
+    assert compile_payload["instruction_count"] == 5
+    assert compile_payload["bytecode"] == [5, 0, 2, 0, 5, 1, 3, 0, 16, 2, 0, 1, 7, 2, 0, 0, 1, 0, 0, 0]
+
+    executed = _run_cli("tongue-run", "--content", program, "--json")
+    assert executed.returncode == 0, executed.stderr
+    run_payload = json.loads(executed.stdout)
+    assert run_payload["schema_version"] == "geoseal_tongue_run_v1"
+    assert run_payload["run"]["output"] == [5]
+    assert run_payload["run"]["registers"][2] == 5
+    assert run_payload["run"]["halted"] is True
+
+
+def test_tongue_run_rejects_unbounded_loop() -> None:
+    executed = _run_cli("tongue-run", "--content", "loop:\nko:jmp loop", "--max-steps", "3", "--json")
+    assert executed.returncode == 2
+    assert "execution exceeded max_steps=3" in executed.stderr
+
+
 def test_xlate_cmd_preserves_payload() -> None:
     encoded = _run_cli("encode-cmd", "--tongue", "KO", "abc")
     assert encoded.returncode == 0, encoded.stderr

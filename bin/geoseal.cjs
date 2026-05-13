@@ -57,6 +57,8 @@ Useful commands:
   geoseal decode-code-lanes "$(cat artifacts/tokenizer_code_lanes/shl_lanes.json)" --output-dir artifacts/tokenizer_code_lanes/decoded --from-binary --write-binary --json
   geoseal ai2ai-bridge --content "def add(a, b): return a + b" --language python --json
   geoseal code-packet --content "def add(a, b): return a + b" --language python
+  geoseal tongue-compile --content "ko:set r0, 2" --json
+  geoseal tongue-run --content "ko:set r0, 2\nko:print r0\nko:halt" --json
   geoseal explain-route --content "def add(a, b): return a + b" --language python --json
   geoseal backend-registry --json
   geoseal history --limit 20 --json
