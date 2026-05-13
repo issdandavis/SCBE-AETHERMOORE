@@ -202,7 +202,7 @@ describe('polly lead handler — anti-abuse', () => {
 
 describe('polly commerce intent classification', () => {
   it('catalog has live products with valid checkout urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(7);
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(8);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^(https:\/\/(buy\.stripe\.com|ko-fi\.com)|mailto:)/);
       expect(product.keywords.length).toBeGreaterThan(0);
@@ -278,6 +278,18 @@ describe('polly commerce intent classification', () => {
     expect(intent.product.sku).toBe('ai-governance-snapshot');
   });
 
+  it('classifies workflow snapshot as the $99 starter instead of the $500 snapshot', () => {
+    const intent = commerce.classifyIntent('how much is the workflow snapshot?');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('ai-agent-workflow-snapshot');
+    expect(intent.product.priceLabel).toContain('$99');
+  });
+
+  it('routes AI agent safer language to custom help instead of generic LLM chat', () => {
+    const intent = commerce.classifyIntent('I need help making my AI agent safer');
+    expect(intent.name).toBe('custom');
+  });
+
   it('classifies governance heartbeat as the monthly subscription offer', () => {
     const intent = commerce.classifyIntent('I want the $99 monthly governance heartbeat');
     expect(intent.name).toBe('buy');
@@ -327,6 +339,14 @@ describe('polly commerce intent classification', () => {
   it('does NOT route question-shaped non-topic prompts to research', () => {
     const intent = commerce.classifyIntent('What time is it?');
     expect(intent.name).toBe('general');
+  });
+
+  it('answers core SCBE identity questions with deterministic research copy', () => {
+    const intent = commerce.classifyIntent('what is SCBE?');
+    expect(intent.name).toBe('research');
+    expect(intent.confidence).toBeCloseTo(0.78, 2);
+    const rendered = commerce.renderResearchReply('what is SCBE?');
+    expect(rendered.text).toContain('AetherMoore governance stack');
   });
 
   it('returns general intent when nothing matches', () => {
