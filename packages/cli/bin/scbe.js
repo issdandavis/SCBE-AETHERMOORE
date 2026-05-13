@@ -2,7 +2,9 @@
 "use strict";
 
 const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
 const path = require("node:path");
+const readline = require("node:readline");
 
 const SERVICE_CREDITS = {
   schema_version: "scbe_service_credits_v1",
@@ -25,11 +27,22 @@ Core commands:
   scbe selftest
   scbe doctor --json
   scbe credits
+  scbe shell
+  scbe run "npm test"
+  scbe status
+  scbe history --limit 20
+
+Compiler and routing commands, available from a source checkout:
+  scbe compile-ca --opcodes "0x09 0x09 0x00" --target python
+  scbe ca-plan --ops "abs abs add" --json
+  scbe render-op --op add --target KO --a left --b right
+  scbe compile ca --opcodes "0x09 0x09 0x00" --target typescript
+  scbe route --program 'encode "run tests" in tongue KO'
 
 Hosted run path:
   scbe credits      Print service-credit policy and hosted-run links.
 
-All other commands are forwarded to the GeoSeal shell from scbe-aethermoore.
+Unknown commands are forwarded to the GeoSeal shell from scbe-aethermoore.
 `;
 
 function resolveGeosealBin() {
@@ -48,6 +61,315 @@ function resolveGeosealBin() {
       process.exit(1);
     }
   }
+}
+
+function repoRoot() {
+  return path.resolve(__dirname, "..", "..", "..");
+}
+
+function resolveRepoScript(relativePath) {
+  const target = path.resolve(repoRoot(), relativePath);
+  if (fs.existsSync(target)) return target;
+  return null;
+}
+
+function pythonCommand() {
+  return process.env.SCBE_PYTHON || process.env.PYTHON || "python";
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function timezone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown";
+}
+
+function historyPath() {
+  return path.resolve(repoRoot(), "artifacts", "scbe-terminal", "history.jsonl");
+}
+
+function appendHistory(row) {
+  const target = historyPath();
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.appendFileSync(target, `${JSON.stringify(row)}\n`, "utf8");
+}
+
+function inferCompass(command) {
+  const lower = command.toLowerCase();
+  const first = lower.trim().split(/\s+/)[0] || "";
+  let lane = "shell";
+  let language = "unknown";
+  let intent = "execute";
+  if (["npm", "pnpm", "yarn", "node", "npx"].includes(first)) {
+    lane = "node";
+    language = "javascript/typescript";
+  } else if (["python", "py", "pytest", "pip"].includes(first)) {
+    lane = "python";
+    language = "python";
+  } else if (["cargo", "rustc"].includes(first)) {
+    lane = "rust";
+    language = "rust";
+  } else if (["go", "gofmt"].includes(first)) {
+    lane = "go";
+    language = "go";
+  } else if (["git", "gh"].includes(first)) {
+    lane = "git";
+    language = "repository";
+  } else if (["vercel", "netlify", "firebase", "docker"].includes(first)) {
+    lane = "deploy";
+    language = "ops";
+  }
+  if (/\b(test|pytest|vitest|jest|check|verify)\b/.test(lower)) intent = "verify";
+  if (/\b(build|compile|tsc|cargo build)\b/.test(lower)) intent = "build";
+  if (/\b(deploy|publish|release|vercel|netlify|firebase)\b/.test(lower)) intent = "deploy";
+  if (/\b(lint|format|black|ruff|prettier)\b/.test(lower)) intent = "hygiene";
+  return { lane, language, intent };
+}
+
+function gateCommand(command) {
+  const code = [
+    "import json, sys",
+    "from src.crypto.geoseal_execution_gate import scan_command",
+    "print(json.dumps(scan_command(sys.argv[1]).to_dict()))",
+  ].join("; ");
+  const child = spawnSync(pythonCommand(), ["-c", code, command], {
+    cwd: repoRoot(),
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  if (child.status !== 0) {
+    return {
+      allowed: true,
+      tier: "WARN",
+      parser_ok: false,
+      findings: ["GeoSeal execution gate unavailable; command allowed with warning"],
+      stderr_preview: String(child.stderr || "").slice(0, 500),
+    };
+  }
+  try {
+    return JSON.parse(String(child.stdout || "{}"));
+  } catch (_err) {
+    return {
+      allowed: true,
+      tier: "WARN",
+      parser_ok: false,
+      findings: ["GeoSeal execution gate returned non-JSON; command allowed with warning"],
+      stdout_preview: String(child.stdout || "").slice(0, 500),
+    };
+  }
+}
+
+function runShellCommand(command, options = {}) {
+  const cwd = options.cwd || process.cwd();
+  const start = Date.now();
+  const compass = inferCompass(command);
+  const gate = gateCommand(command);
+  const startedAt = nowIso();
+  const row = {
+    schema_version: "scbe_terminal_run_v1",
+    started_at: startedAt,
+    cwd,
+    command,
+    clock: {
+      timezone: timezone(),
+      epoch_ms: start,
+    },
+    compass,
+    governance: gate,
+    exit_code: 126,
+    duration_ms: 0,
+    success: false,
+  };
+
+  if (!gate.allowed) {
+    row.duration_ms = Date.now() - start;
+    row.failure = {
+      kind: "governance_block",
+      summary: `GeoSeal blocked command at tier ${gate.tier}`,
+      next_step: "Inspect governance.findings and rerun with a narrower command.",
+    };
+    appendHistory(row);
+    if (!options.json) {
+      process.stderr.write(`SCBE BLOCKED: GeoSeal ${gate.tier}\n`);
+      for (const finding of gate.findings || []) process.stderr.write(`- ${finding}\n`);
+    }
+    return row;
+  }
+
+  if (!options.quiet && !options.json) {
+    process.stdout.write(`SCBE ${compass.intent}/${compass.lane} | GeoSeal ${gate.tier} | ${startedAt}\n`);
+  }
+  const child = spawnSync(command, {
+    cwd,
+    shell: true,
+    stdio: options.capture ? ["ignore", "pipe", "pipe"] : "inherit",
+    encoding: "utf8",
+  });
+  row.exit_code = typeof child.status === "number" ? child.status : 1;
+  row.duration_ms = Date.now() - start;
+  row.success = row.exit_code === 0;
+  if (options.capture) {
+    row.stdout_preview = String(child.stdout || "").slice(-2000);
+    row.stderr_preview = String(child.stderr || "").slice(-2000);
+  }
+  if (!row.success) {
+    row.failure = classifyFailure(command, row, child);
+  }
+  appendHistory(row);
+  return row;
+}
+
+function classifyFailure(command, row, child) {
+  const text = `${child?.stderr || ""}\n${child?.stdout || ""}`.toLowerCase();
+  if (text.includes("module not found") || text.includes("cannot find module")) {
+    return {
+      kind: "missing_dependency",
+      summary: "A module or package was not found.",
+      next_step: "Run the project install command, then retry the same command.",
+    };
+  }
+  if (text.includes("command not found") || text.includes("not recognized")) {
+    return {
+      kind: "missing_tool",
+      summary: "The shell could not find the requested executable.",
+      next_step: "Check PATH or install the missing CLI locally in this project.",
+    };
+  }
+  if (/\bsyntaxerror\b|parse error|unexpected token/.test(text)) {
+    return {
+      kind: "syntax",
+      summary: "The tool reported a parse or syntax error.",
+      next_step: "Open the reported file/line, fix syntax, and rerun verification.",
+    };
+  }
+  if (/\btest failed\b|failed\b|assert/.test(text)) {
+    return {
+      kind: "test_failure",
+      summary: "A verification command failed.",
+      next_step: "Inspect the first failing test or assertion, patch behavior, then rerun.",
+    };
+  }
+  return {
+    kind: "command_failed",
+    summary: `Command exited ${row.exit_code}.`,
+    next_step: "Rerun with --json or inspect the command output for the first concrete error.",
+  };
+}
+
+function parseRunArgs(args) {
+  const json = args.includes("--json");
+  const quiet = args.includes("--quiet");
+  const capture = json || args.includes("--capture");
+  const filtered = args.filter((arg) => !["--json", "--quiet", "--capture"].includes(arg));
+  return { command: filtered.join(" "), json, quiet, capture };
+}
+
+function printHistory(limit = 20) {
+  const target = historyPath();
+  if (!fs.existsSync(target)) {
+    process.stdout.write("No SCBE terminal history yet.\n");
+    return;
+  }
+  const rows = fs
+    .readFileSync(target, "utf8")
+    .trim()
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .slice(-limit)
+    .map((line) => JSON.parse(line));
+  for (const row of rows) {
+    const mark = row.success ? "PASS" : "FAIL";
+    process.stdout.write(
+      `${row.started_at} ${mark} ${row.compass.intent}/${row.compass.lane} ${row.exit_code} ${row.command}\n`,
+    );
+  }
+}
+
+function runStatus() {
+  const payload = {
+    schema_version: "scbe_terminal_status_v1",
+    cwd: process.cwd(),
+    repo_root: repoRoot(),
+    history_path: historyPath(),
+    timezone: timezone(),
+    compiler_available: Boolean(resolveRepoScript("scripts/agents/scbe_code.py")),
+    router_available: Boolean(resolveRepoScript("scripts/aetherpp/cli.py")),
+    geoseal_available: Boolean(resolveGeosealBin()),
+  };
+  process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function runInteractiveShell() {
+  process.stdout.write("SCBE Terminal. Type commands normally. Use :help or :exit.\n");
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: "scbe> ",
+  });
+  rl.prompt();
+  rl.on("line", (line) => {
+    const command = line.trim();
+    if (!command) {
+      rl.prompt();
+      return;
+    }
+    if (command === ":exit" || command === "exit" || command === "quit") {
+      rl.close();
+      return;
+    }
+    if (command === ":help" || command === "help") {
+      process.stdout.write(CLI_HELP);
+      rl.prompt();
+      return;
+    }
+    if (command === ":status" || command === "status") {
+      runStatus();
+      rl.prompt();
+      return;
+    }
+    if (command.startsWith(":history") || command === "history") {
+      printHistory(20);
+      rl.prompt();
+      return;
+    }
+    const scbeCommand = /^(compile|compile-ca|ca-plan|render-op|route|aetherpp)\b/.test(command)
+      ? `${process.execPath} "${__filename}" ${command}`
+      : command;
+    const row = runShellCommand(scbeCommand);
+    if (!row.success && row.failure) {
+      process.stdout.write(`SCBE failure: ${row.failure.summary}\nNext: ${row.failure.next_step}\n`);
+    }
+    rl.prompt();
+  });
+}
+
+function runPythonScript(relativePath, args) {
+  const script = resolveRepoScript(relativePath);
+  if (!script) {
+    process.stderr.write(
+      [
+        `scbe could not find ${relativePath}.`,
+        "This command needs a local SCBE-AETHERMOORE source checkout.",
+        "Use the repo-local CLI, or install the full source package before running compiler/routing lanes.",
+        "",
+      ].join("\n"),
+    );
+    process.exit(2);
+  }
+  const child = spawnSync(pythonCommand(), [script, ...args], {
+    stdio: "inherit",
+  });
+  if (typeof child.status === "number") process.exit(child.status);
+  process.exit(1);
+}
+
+function runCompiler(args) {
+  runPythonScript("scripts/agents/scbe_code.py", args);
+}
+
+function runRouteCompiler(args) {
+  runPythonScript("scripts/aetherpp/cli.py", args);
 }
 
 function runSelftest() {
@@ -69,6 +391,24 @@ function runSelftest() {
       stderr_preview: String(child.stderr || "").slice(0, 500),
     };
   });
+  const compilerScript = resolveRepoScript("scripts/agents/scbe_code.py");
+  if (compilerScript) {
+    const child = spawnSync(
+      pythonCommand(),
+      [compilerScript, "ca-plan", "--ops", "abs abs add", "--json"],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
+    results.push({
+      command: "scbe ca-plan --ops \"abs abs add\" --json",
+      ok: child.status === 0,
+      status: child.status,
+      stdout_preview: String(child.stdout || "").slice(0, 500),
+      stderr_preview: String(child.stderr || "").slice(0, 500),
+    });
+  }
   const payload = {
     schema_version: "scbe_aethermoore_cli_selftest_v1",
     ok: results.every((row) => row.ok),
@@ -108,6 +448,74 @@ if (argv[0] === "credits" || argv[0] === "hosted-run") {
 
 if (argv[0] === "selftest") {
   runSelftest();
+}
+
+if (argv[0] === "status") {
+  runStatus();
+  process.exit(0);
+}
+
+if (argv[0] === "history") {
+  const limitIndex = argv.indexOf("--limit");
+  const limit = limitIndex >= 0 ? Number(argv[limitIndex + 1] || 20) : 20;
+  printHistory(Number.isFinite(limit) ? limit : 20);
+  process.exit(0);
+}
+
+if (argv[0] === "run") {
+  const { command, json, quiet, capture } = parseRunArgs(argv.slice(1));
+  if (!command) {
+    process.stderr.write('Usage: scbe run "npm test"\n');
+    process.exit(2);
+  }
+  const row = runShellCommand(command, { json, quiet, capture });
+  if (json) process.stdout.write(`${JSON.stringify(row, null, 2)}\n`);
+  process.exit(row.exit_code);
+}
+
+if (argv[0] === "shell") {
+  runInteractiveShell();
+  return;
+}
+
+if (argv[0] === "compile-ca" || argv[0] === "ca-plan" || argv[0] === "render-op") {
+  runCompiler(argv);
+}
+
+if (argv[0] === "compile") {
+  const [, mode, ...rest] = argv;
+  if (!mode || mode === "--help" || mode === "-h") {
+    process.stdout.write(
+      [
+        "Usage:",
+        "  scbe compile ca --opcodes \"0x09 0x09 0x00\" --target python",
+        "  scbe compile plan --ops \"abs abs add\" --json",
+        "  scbe compile op --op add --target KO --a left --b right",
+        "",
+      ].join("\n"),
+    );
+    process.exit(0);
+  }
+  const compilerMode = {
+    ca: "compile-ca",
+    "compile-ca": "compile-ca",
+    plan: "ca-plan",
+    "ca-plan": "ca-plan",
+    op: "render-op",
+    "render-op": "render-op",
+    manifest: "manifest",
+    generate: "generate",
+    apply: "apply",
+  }[mode];
+  if (!compilerMode) {
+    process.stderr.write(`unknown compile mode ${mode}\n`);
+    process.exit(2);
+  }
+  runCompiler([compilerMode, ...rest]);
+}
+
+if (argv[0] === "route" || argv[0] === "aetherpp") {
+  runRouteCompiler(argv[0] === "route" ? argv.slice(1) : argv.slice(1));
 }
 
 const target = resolveGeosealBin();
