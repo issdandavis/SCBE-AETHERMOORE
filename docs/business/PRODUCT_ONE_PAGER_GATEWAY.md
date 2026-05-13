@@ -6,7 +6,7 @@
 
 ## The Problem
 
-Your AI agents make thousands of decisions per hour. You have no way to govern what they do, prove why they did it, or stop them before they cross a line. Traditional security watches the network — nobody watches the agent.
+Your AI agents make thousands of decisions per hour. You need a way to govern what they do, prove why they did it, and enforce a policy gate before high-risk actions run. Traditional security watches the network — it usually does not understand the agent decision path.
 
 ## The Solution
 
@@ -22,7 +22,7 @@ Agent → SCBE Gateway → [14-layer pipeline] → ALLOW / QUARANTINE / ESCALATE
 2. Gateway scores the action through hyperbolic distance + harmonic scaling
 3. Decision: ALLOW (safe), QUARANTINE (needs review), ESCALATE (requires governance), DENY (blocked)
 4. Cryptographic audit proof generated for every decision
-5. Agent proceeds or is blocked — attacker learns nothing from a DENY
+5. Agent proceeds, is denied, is quarantined for review, or is escalated — attacker learns nothing useful from a DENY
 
 ## Key Capabilities
 
@@ -62,13 +62,13 @@ Agent → SCBE Gateway → [14-layer pipeline] → ALLOW / QUARANTINE / ESCALATE
 | Alternative | Gap SCBE Fills |
 |-------------|---------------|
 | Build internally | 18+ months, $720K+ in engineering. SCBE deploys this week. |
-| Darktrace | Detects anomalies after the fact. SCBE prevents before the action. |
+| Darktrace | Detects anomalies after the fact. SCBE adds an action-time governance gate before configured actions run. |
 | CrowdStrike AIDR | Endpoint-focused detection. SCBE is agent-native governance. |
 | Policy-only tools | Documentation without enforcement. SCBE enforces mathematically. |
 
 ## The Math
 
-Adversarial actions cost **117,000x more** than authorized ones. Not through rules — through hyperbolic geometry where distance from safe operation grows exponentially. Patent-protected (USPTO #63/961,403).
+In the benchmarked geometry, adversarial trajectories cost **117,000x more** than authorized ones. Not through rules alone — through hyperbolic geometry where distance from safe operation grows exponentially. That is evidence for the gate design, not a blanket guarantee that every deployment stops every bad output. Patent-protected (USPTO #63/961,403).
 
 ---
 

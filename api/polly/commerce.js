@@ -636,8 +636,10 @@ const RESEARCH_TOPICS = [
     title: 'Composing with Anthropic Petri',
     body:
       'Petri is detection-only auditing (36 dims, 181 seeds). SCBE composes with it as the ' +
-      'enforcement layer: 173/173 Petri seeds blocked when SCBE wired in front. Petri tells ' +
-      'you what the model would do; SCBE prevents the high-cost trajectories from running.',
+      'enforcement layer: in the recorded harness, 173/173 Petri seeds were denied when SCBE was ' +
+      'wired in front. Petri tells you what the model would do; SCBE adds configured DENY, ' +
+      'QUARANTINE, and ESCALATE decisions before high-cost trajectories are allowed to run. That ' +
+      'is harness evidence, not a blanket guarantee for every deployment.',
     links: [
       {
         label: 'Anthropic Petri (2026 Q1)',

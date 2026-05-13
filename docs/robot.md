@@ -278,6 +278,7 @@ Open the Solutions page, then compare offers.json for live prices and links.
 - Public prices and delivery paths can change; verify `offers.json`.
 - Some routes may be manual while the system is still being hardened.
 - Prefer "governance review", "workflow evaluation", and "agent routing support" over claims of guaranteed safety.
+- Prefer "configured policy gate", "denied in this harness", "quarantined for review", and "evidence record" over absolute phrases like "we stop every chatbot failure" or "we guarantee safe AI".
 
 ## Contact And Support
 
