@@ -7,16 +7,21 @@ Usage:
     python scripts/security/code_governance_gate.py check-pr 752
     python scripts/security/code_governance_gate.py check-push
     python scripts/security/code_governance_gate.py check-diff HEAD~1
+    python scripts/security/code_governance_gate.py artifact ./download.bin
+    python scripts/security/code_governance_gate.py av-signals ./alerts.jsonl
+    python scripts/security/code_governance_gate.py security-events ./events.jsonl
     python scripts/security/code_governance_gate.py audit
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import re
 import shlex
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
@@ -273,6 +278,123 @@ def check_push_diff(ref: str = "HEAD~1") -> GateResult:
     return result
 
 
+def check_artifact(path: Path) -> GateResult:
+    """Run defensive artifact triage through the governance gate surface."""
+    artifact_script = ROOT / "scripts" / "security" / "artifact_triage.py"
+    spec = importlib.util.spec_from_file_location("_scbe_artifact_triage", artifact_script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load artifact triage script: {artifact_script}")
+    artifact_module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = artifact_module
+    spec.loader.exec_module(artifact_module)
+    report_to_dict = artifact_module.report_to_dict
+    triage_artifact = artifact_module.triage_artifact
+
+    author = run_cmd("git config user.email")
+    result = GateResult(decision="PASS", author_is_owner=is_owner(author))
+    report = triage_artifact(path)
+    payload = report_to_dict(report)
+    result.files_checked = 1
+    severity = "CRITICAL" if report.decision == "DENY" else "HIGH" if report.decision == "QUARANTINE" else "INFO"
+    result.add(
+        Finding(
+            severity=severity,
+            category="ARTIFACT_TRIAGE",
+            message=(
+                f"{report.decision} artifact triage score={report.risk_score} "
+                f"kind={report.file_kind} indicators={len(report.indicators)} sha256={report.artifact_sha256[:16]}"
+            ),
+            file=payload["artifact_path"],
+            evidence=", ".join(hit["rule_id"] for hit in payload["indicators"][:6]),
+        )
+    )
+    result.decision = "BLOCK" if report.decision == "DENY" and not result.author_is_owner else report.decision
+    if result.decision == "QUARANTINE":
+        result.decision = "WARN"
+    if result.author_is_owner and result.decision == "BLOCK":
+        result.decision = "WARN"
+    return result
+
+
+def check_av_signals(input_path: Path, artifact_path: Path | None = None, provider: str = "generic") -> GateResult:
+    """Run AV/EDR/SIEM signal fusion through the governance gate surface."""
+    fusion_script = ROOT / "scripts" / "security" / "av_signal_fusion.py"
+    spec = importlib.util.spec_from_file_location("_scbe_av_signal_fusion", fusion_script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load AV signal fusion script: {fusion_script}")
+    fusion_module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = fusion_module
+    spec.loader.exec_module(fusion_module)
+
+    author = run_cmd("git config user.email")
+    result = GateResult(decision="PASS", author_is_owner=is_owner(author))
+    raw_items = fusion_module.read_signal_input(input_path)
+    report = fusion_module.fuse_signals(raw_items, artifact=artifact_path, provider_hint=provider)
+    payload = fusion_module.report_to_dict(report)
+    result.files_checked = 1 + (1 if artifact_path else 0)
+    result.lines_checked = report.alert_count
+    severity = "CRITICAL" if report.decision == "DENY" else "HIGH" if report.decision == "QUARANTINE" else "INFO"
+    result.add(
+        Finding(
+            severity=severity,
+            category="AV_SIGNAL_FUSION",
+            message=(
+                f"{report.decision} av signal fusion alerts={report.alert_count} "
+                f"providers={','.join(report.providers) or 'none'} omega={report.metrics.omega} "
+                f"coherence={report.metrics.coherence}"
+            ),
+            file=str(input_path),
+            evidence=", ".join(f"{a['provider']}:{a['severity']}" for a in payload["alerts"][:6]),
+        )
+    )
+    if report.decision == "DENY":
+        result.decision = "BLOCK"
+    elif report.decision == "QUARANTINE":
+        result.decision = "WARN"
+    else:
+        result.decision = "PASS"
+    if result.author_is_owner and result.decision == "BLOCK":
+        result.decision = "WARN"
+    return result
+
+
+def check_security_events(input_path: Path) -> GateResult:
+    """Run non-artifact security event controls through the governance gate."""
+    event_script = ROOT / "scripts" / "security" / "security_event_layers.py"
+    spec = importlib.util.spec_from_file_location("_scbe_security_event_layers", event_script)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load security event layers script: {event_script}")
+    event_module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = event_module
+    spec.loader.exec_module(event_module)
+
+    author = run_cmd("git config user.email")
+    result = GateResult(decision="PASS", author_is_owner=is_owner(author))
+    report = event_module.classify_events(event_module.read_events(input_path))
+    payload = event_module.report_to_dict(report)
+    result.files_checked = 1
+    result.lines_checked = report.event_count
+    severity = "CRITICAL" if report.decision == "DENY" else "HIGH" if report.decision == "QUARANTINE" else "INFO"
+    result.add(
+        Finding(
+            severity=severity,
+            category="SECURITY_EVENT_LAYERS",
+            message=f"{report.decision} security events score={report.risk_score} controls={len(report.controls)}",
+            file=str(input_path),
+            evidence=", ".join(hit["control"] for hit in payload["controls"][:6]),
+        )
+    )
+    if report.decision == "DENY":
+        result.decision = "BLOCK"
+    elif report.decision == "QUARANTINE":
+        result.decision = "WARN"
+    else:
+        result.decision = "PASS"
+    if result.author_is_owner and result.decision == "BLOCK":
+        result.decision = "WARN"
+    return result
+
+
 def print_result(result: GateResult, context: str = ""):
     """Print gate result."""
     symbols = {"PASS": "[PASS]", "WARN": "[WARN]", "BLOCK": "[BLOCK]"}
@@ -300,7 +422,16 @@ def print_result(result: GateResult, context: str = ""):
     print()
 
 
-def main():
+def exit_code(result: GateResult) -> int:
+    """Return process status for automation."""
+    if result.decision == "BLOCK":
+        return 2
+    if result.decision == "WARN":
+        return 1
+    return 0
+
+
+def main() -> int:
     parser = argparse.ArgumentParser(description="Code Governance Gate")
     sub = parser.add_subparsers(dest="command")
 
@@ -312,6 +443,17 @@ def main():
     p3 = sub.add_parser("check-diff", help="Check diff against a ref")
     p3.add_argument("ref", default="HEAD~1", nargs="?")
 
+    p4 = sub.add_parser("artifact", help="Triage an unknown file without executing it")
+    p4.add_argument("path", type=Path)
+
+    p5 = sub.add_parser("av-signals", help="Fuse AV/EDR/SIEM/runtime alerts into one governance decision")
+    p5.add_argument("input", type=Path)
+    p5.add_argument("--artifact", type=Path, default=None)
+    p5.add_argument("--provider", default="generic")
+
+    p6 = sub.add_parser("security-events", help="Check command/network/model/runtime events")
+    p6.add_argument("input", type=Path)
+
     sub.add_parser("audit", help="Show recent gate decisions")
 
     args = parser.parse_args()
@@ -321,18 +463,37 @@ def main():
         title = pr_data.get("title", "?")
         author = pr_data.get("author", {}).get("login", "?")
         print_result(result, f"PR #{args.number}: {title} (by {author})")
+        return exit_code(result)
 
     elif args.command == "check-push":
         result = check_push_diff()
         print_result(result, "Pre-push check")
+        return exit_code(result)
 
     elif args.command == "check-diff":
         result = check_push_diff(args.ref)
         print_result(result, f"Diff against {args.ref}")
+        return exit_code(result)
+
+    elif args.command == "artifact":
+        result = check_artifact(args.path)
+        print_result(result, f"Artifact triage: {args.path}")
+        return exit_code(result)
+
+    elif args.command == "av-signals":
+        result = check_av_signals(args.input, artifact_path=args.artifact, provider=args.provider)
+        print_result(result, f"AV signals: {args.input}")
+        return exit_code(result)
+
+    elif args.command == "security-events":
+        result = check_security_events(args.input)
+        print_result(result, f"Security events: {args.input}")
+        return exit_code(result)
 
     else:
         parser.print_help()
+        return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
