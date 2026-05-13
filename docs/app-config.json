@@ -40,6 +40,12 @@
     "llms_guidance": "https://aethermoore.com/SCBE-AETHERMOORE/llms.txt",
     "polly_chat": "https://aethermoore.com/SCBE-AETHERMOORE/chat.html",
     "governance_snapshot_page": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
+    "youtube_channel": "https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ",
+    "youtube_handle": "https://www.youtube.com/@id8461",
+    "github_profile": "https://github.com/issdandavis",
+    "github_repo": "https://github.com/issdandavis/SCBE-AETHERMOORE",
+    "huggingface_profile": "https://huggingface.co/issdandavis",
+    "kofi_profile": "https://ko-fi.com/izdandavis",
     "offers_json": "https://aethermoore.com/SCBE-AETHERMOORE/offers.json",
     "workflow_snapshot_checkout": "https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l",
     "governance_heartbeat_checkout": "https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m",
@@ -65,6 +71,25 @@
       "workflow snapshot intake",
       "human handoff"
     ]
+  },
+  "public_profiles": {
+    "youtube": {
+      "channel_id": "UCO9aJ-ZH0Ddg_F0Dr655WIQ",
+      "handle": "@id8461",
+      "url": "https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ",
+      "display": "Issac \"Izreal\" Davis"
+    },
+    "github": {
+      "profile": "https://github.com/issdandavis",
+      "repo": "https://github.com/issdandavis/SCBE-AETHERMOORE"
+    },
+    "huggingface": {
+      "profile": "https://huggingface.co/issdandavis"
+    },
+    "support": {
+      "kofi": "https://ko-fi.com/izdandavis",
+      "cash_app": "$IzzyDDavis7"
+    }
   },
   "features": {
     "tip_jar": true,

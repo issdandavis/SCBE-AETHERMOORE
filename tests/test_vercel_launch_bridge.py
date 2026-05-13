@@ -219,6 +219,11 @@ def test_public_app_config_explains_remote_update_boundary() -> None:
     assert config["polly_role"]["role"] == "scbe-web-agent"
     assert "superpowers:subagent-driven-development" in config["polly_role"]["skills"]
     assert "agent-task packet creation" in config["polly_role"]["default_actions"]
+    assert config["endpoints"]["youtube_channel"].endswith("/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ")
+    assert config["public_profiles"]["youtube"]["channel_id"] == "UCO9aJ-ZH0Ddg_F0Dr655WIQ"
+    assert config["public_profiles"]["youtube"]["display"] == 'Issac "Izreal" Davis'
+    assert config["public_profiles"]["github"]["repo"].endswith("/SCBE-AETHERMOORE")
+    assert config["public_profiles"]["huggingface"]["profile"].endswith("/issdandavis")
     assert config["endpoints"]["payment_center"].endswith("/payments.html")
     assert config["features"]["unified_payment_center"] is True
     assert config["fallbacks"]["payment_center"].endswith("/payments.html")
@@ -230,6 +235,20 @@ def test_supporter_page_uses_direct_stripe_checkout_not_broken_api_bridge() -> N
     assert "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i" in page
     assert "payments.html" in page
     assert "https://api.aethermoore.com/v1/billing/public-checkout" not in page
+
+
+def test_public_pages_expose_follow_and_support_links() -> None:
+    required_links = [
+        "https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ",
+        "https://github.com/issdandavis/SCBE-AETHERMOORE",
+        "https://huggingface.co/issdandavis",
+        "https://ko-fi.com/izdandavis",
+    ]
+
+    for page_name in ["index.html", "products.html", "start-here.html", "robot.html"]:
+        page = (REPO_ROOT / "docs" / page_name).read_text(encoding="utf-8")
+        for link in required_links:
+            assert link in page, f"{page_name} missing {link}"
 
 
 def test_payment_center_exposes_all_live_payment_paths() -> None:
