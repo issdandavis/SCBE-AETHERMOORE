@@ -116,15 +116,43 @@ const PRODUCT_CATALOG = [
     ],
   },
   {
+    sku: 'shopify-store-ops-snapshot',
+    name: 'Shopify Store Ops Snapshot',
+    priceLabel: '$99 starter',
+    short:
+      'Starter review for one Shopify store, product line, or ecommerce launch setup. Covers payment path, subscriptions, shipping, automation, marketing, analytics, bundles, wholesale, pricing, and three next actions.',
+    checkoutUrl: 'https://ko-fi.com/izdandavis',
+    deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html',
+    keywords: [
+      'shopify',
+      'shopify command center',
+      'store ops',
+      'store ops snapshot',
+      'ecommerce',
+      'e-commerce',
+      'merchant',
+      'online store',
+      'shopify store',
+      'store setup',
+      'payment setup',
+      'shipping setup',
+      'subscriptions',
+      'subscription setup',
+      'product bundle',
+      'bundles',
+      'wholesale',
+      'pricing',
+      'marketing campaign',
+      'shopify help',
+    ],
+  },
+  {
     sku: 'governance-heartbeat',
     name: 'Governance Heartbeat',
     priceLabel: '$99/month',
     short:
       'Monthly governance scan for one AI workflow. Includes a short delta report, risk/change summary, recommended action list, and optional training/dataset capture notes.',
-    checkoutUrl: checkoutUrlFromEnv(
-      'SCBE_PAYMENT_LINK_HEARTBEAT',
-      LIVE_HEARTBEAT_CHECKOUT_URL
-    ),
+    checkoutUrl: checkoutUrlFromEnv('SCBE_PAYMENT_LINK_HEARTBEAT', LIVE_HEARTBEAT_CHECKOUT_URL),
     deliveryUrl: 'https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html#heartbeat',
     keywords: [
       'governance heartbeat',
@@ -509,16 +537,9 @@ function renderCustomReply(message) {
 
 const RESEARCH_TOPICS = [
   {
-    keys: [
-      'scbe',
-      'sacred circuitry',
-      'symphonic cipher boundary',
-      'aethermoore',
-      'what is scbe',
-    ],
+    keys: ['scbe', 'sacred circuitry', 'symphonic cipher boundary', 'aethermoore', 'what is scbe'],
     title: 'SCBE / AetherMoore',
-    body:
-      'SCBE is the AetherMoore governance stack for AI agents and workflows: deterministic gates, audit records, routing rules, and safety scores that sit around model output. Practically, it helps find hidden failure points in AI workflows: unsafe tool execution, drift, missing recovery logic, weak observability, prompt-injection exposure, and unclear handoff boundaries. It is not a replacement foundation model; it is a control/governance layer that makes smaller or mixed models more useful and easier to inspect.',
+    body: 'SCBE is the AetherMoore governance stack for AI agents and workflows: deterministic gates, audit records, routing rules, and safety scores that sit around model output. Practically, it helps find hidden failure points in AI workflows: unsafe tool execution, drift, missing recovery logic, weak observability, prompt-injection exposure, and unclear handoff boundaries. It is not a replacement foundation model; it is a control/governance layer that makes smaller or mixed models more useful and easier to inspect.',
     links: [
       {
         label: 'Start here',

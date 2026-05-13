@@ -133,6 +133,14 @@
       "dest": "/api/agent/payments.js"
     },
     {
+      "src": "^/shopify-command-center/?$",
+      "dest": "/api/agent/shopify-command-center.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/shopify-command-center\\.html$",
+      "dest": "/api/agent/shopify-command-center.js"
+    },
+    {
       "src": "^/workflow-snapshot/?$",
       "dest": "/api/agent/workflow-snapshot.js"
     },
