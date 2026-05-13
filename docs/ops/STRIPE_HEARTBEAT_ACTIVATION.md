@@ -76,6 +76,13 @@ STRIPE_TOOLKIT_PAYMENT_LINK_ID=plink_<live_toolkit_payment_link_id>
 STRIPE_VAULT_PAYMENT_LINK_ID=plink_<live_vault_payment_link_id>
 ```
 
+The webhook also accepts the older already-deployed aliases:
+
+```text
+SCBE_PAYMENT_LINK_TOOLKIT=plink_<live_toolkit_payment_link_id>
+SCBE_PAYMENT_LINK_VAULT=plink_<live_vault_payment_link_id>
+```
+
 Set these GitHub Actions secrets if the product-delivery workflow should email
 buyers a direct access link:
 
