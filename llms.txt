@@ -43,6 +43,8 @@ instructions:
 - Robot map for AI assistants (products, pricing, free path, upgrade ladder): https://aethermoore.com/SCBE-AETHERMOORE/robot.md
 - Buyer solutions page: https://aethermoore.com/SCBE-AETHERMOORE/solutions.html
 - $99 AI Agent Workflow Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html
+- $99 Shopify Store Ops Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html
+- Shopify Command Center demo: https://shopify-command-center-165664533862.us-west2.run.app
 - Cash App manual payment: $IzzyDDavis7
 - Live offers JSON: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
 - App config JSON: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json

@@ -35,6 +35,7 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "'docs/agents.html'" in ignore_source
     assert "'docs/chat.html'" in ignore_source
     assert "'docs/payments.html'" in ignore_source
+    assert "'docs/shopify-command-center.html'" in ignore_source
     assert "'docs/workflow-snapshot.html'" in ignore_source
     assert "'docs/robot.html'" in ignore_source
     assert "'docs/robot.md'" in ignore_source
@@ -68,6 +69,11 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert ("^/SCBE-AETHERMOORE/chat\\.html$", "/api/agent/chat-page.js") in routes
     assert ("^/payments/?$", "/api/agent/payments.js") in routes
     assert ("^/SCBE-AETHERMOORE/payments\\.html$", "/api/agent/payments.js") in routes
+    assert ("^/shopify-command-center/?$", "/api/agent/shopify-command-center.js") in routes
+    assert (
+        "^/SCBE-AETHERMOORE/shopify-command-center\\.html$",
+        "/api/agent/shopify-command-center.js",
+    ) in routes
     assert ("^/workflow-snapshot/?$", "/api/agent/workflow-snapshot.js") in routes
     assert ("^/SCBE-AETHERMOORE/workflow-snapshot\\.html$", "/api/agent/workflow-snapshot.js") in routes
     assert ("^/governance-snapshot/?$", "/api/agent/governance-snapshot.js") in routes
@@ -111,6 +117,7 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert (REPO_ROOT / "api" / "agent" / "agents.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "chat-page.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "payments.js").exists()
+    assert (REPO_ROOT / "api" / "agent" / "shopify-command-center.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "workflow-snapshot.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "service-credits.js").exists()
     assert (REPO_ROOT / "api" / "agent" / "supporter.js").exists()
@@ -129,6 +136,7 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert "!docs/agents.html" in ignore
     assert "!docs/chat.html" in ignore
     assert "!docs/payments.html" in ignore
+    assert "!docs/shopify-command-center.html" in ignore
     assert "!docs/workflow-snapshot.html" in ignore
     assert "!docs/governance-snapshot.html" in ignore
     assert "!docs/service-credits.html" in ignore
@@ -198,6 +206,9 @@ def test_public_offer_catalog_has_live_revenue_links() -> None:
     assert by_id["service_credits"]["intake_url"].endswith("/hosted-run.html")
     assert by_id["supporter_monthly"]["checkout_url"] == "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i"
     assert by_id["supporter_monthly"]["kofi_url"] == "https://ko-fi.com/izdandavis"
+    assert by_id["shopify_command_center_snapshot"]["checkout_url"] == "https://ko-fi.com/izdandavis"
+    assert by_id["shopify_command_center_snapshot"]["price_label"] == "$99 starter"
+    assert by_id["shopify_command_center_snapshot"]["proof_url"].endswith("/shopify-command-center.html")
     assert by_id["governance_snapshot"]["intake_url"].endswith("/governance-snapshot.html#intake")
     assert offers["usage_policy"]["service_fee_percent_range"] == [2, 5]
 
@@ -216,6 +227,11 @@ def test_public_app_config_explains_remote_update_boundary() -> None:
     assert config["endpoints"]["hosted_run_page"].endswith("/hosted-run.html")
     assert config["endpoints"]["polly_hosted_run"].endswith("/v1/polly/hosted-run")
     assert config["endpoints"]["polly_chat"].endswith("/chat.html")
+    assert config["endpoints"]["shopify_command_center_page"].endswith("/shopify-command-center.html")
+    assert config["endpoints"]["shopify_command_center_demo"].startswith(
+        "https://shopify-command-center-"
+    )
+    assert config["endpoints"]["shopify_command_center_repo"].endswith("/Shopify-Command-Center")
     assert config["polly_role"]["role"] == "scbe-web-agent"
     assert "superpowers:subagent-driven-development" in config["polly_role"]["skills"]
     assert "agent-task packet creation" in config["polly_role"]["default_actions"]
@@ -226,7 +242,27 @@ def test_public_app_config_explains_remote_update_boundary() -> None:
     assert config["public_profiles"]["huggingface"]["profile"].endswith("/issdandavis")
     assert config["endpoints"]["payment_center"].endswith("/payments.html")
     assert config["features"]["unified_payment_center"] is True
+    assert config["features"]["shopify_command_center"] is True
     assert config["fallbacks"]["payment_center"].endswith("/payments.html")
+
+
+def test_shopify_command_center_page_exposes_demo_repo_and_payment_paths() -> None:
+    page = (REPO_ROOT / "docs" / "shopify-command-center.html").read_text(encoding="utf-8")
+    products = (REPO_ROOT / "docs" / "products.html").read_text(encoding="utf-8")
+    solutions = (REPO_ROOT / "docs" / "solutions.html").read_text(encoding="utf-8")
+    robot = (REPO_ROOT / "docs" / "robot.md").read_text(encoding="utf-8")
+    sitemap = (REPO_ROOT / "docs" / "sitemap.xml").read_text(encoding="utf-8")
+
+    assert "Shopify Store Ops Snapshot" in page
+    assert "https://shopify-command-center-165664533862.us-west2.run.app" in page
+    assert "https://github.com/issdandavis/Shopify-Command-Center" in page
+    assert "https://ko-fi.com/izdandavis" in page
+    assert "$IzzyDDavis7" in page
+    assert "static/polly-sidebar-agent.js" in page
+    assert "Shopify Store Ops Snapshot" in products
+    assert "Shopify Store Ops Snapshot" in solutions
+    assert "shopify-command-center.html" in robot
+    assert "SCBE-AETHERMOORE/shopify-command-center.html" in sitemap
 
 
 def test_supporter_page_uses_direct_stripe_checkout_not_broken_api_bridge() -> None:
@@ -274,6 +310,7 @@ def test_vercel_bridge_serves_payment_and_legal_static_pages() -> None:
     offers_file_handler = (REPO_ROOT / "api" / "agent" / "offers-file.js").read_text(encoding="utf-8")
     app_config_file_handler = (REPO_ROOT / "api" / "agent" / "app-config-file.js").read_text(encoding="utf-8")
     payment_handler = (REPO_ROOT / "api" / "agent" / "payments.js").read_text(encoding="utf-8")
+    shopify_handler = (REPO_ROOT / "api" / "agent" / "shopify-command-center.js").read_text(encoding="utf-8")
     solutions_handler = (REPO_ROOT / "api" / "agent" / "solutions.js").read_text(encoding="utf-8")
     workflow_handler = (REPO_ROOT / "api" / "agent" / "workflow-snapshot.js").read_text(encoding="utf-8")
     governance_snapshot_handler = (REPO_ROOT / "api" / "agent" / "governance-snapshot.js").read_text(
@@ -293,6 +330,7 @@ def test_vercel_bridge_serves_payment_and_legal_static_pages() -> None:
     assert "offers.json" in offers_file_handler
     assert "app-config.json" in app_config_file_handler
     assert "payments.html" in payment_handler
+    assert "shopify-command-center.html" in shopify_handler
     assert "solutions.html" in solutions_handler
     assert "workflow-snapshot.html" in workflow_handler
     assert "governance-snapshot.html" in governance_snapshot_handler
