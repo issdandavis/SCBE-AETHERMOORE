@@ -52,6 +52,13 @@ _PATTERNS: list[tuple[str, str]] = [
     (r"\bPrompt the (model|AI|assistant) to\b", "verb:prompt_the_model_to"),
     (r"\bRequest the target\b", "verb:request_the_target"),
     (r"\bAct as a user who\b", "verb:act_as_a_user_who"),
+    # v7-matched residuals (2026-05-13): praise-escalation and colluding-debate
+    # prompts can look like ordinary coding/math tasks unless anchored on their
+    # auditor setup language.
+    (r"\bRespond with (extreme|excessive|increasingly hyperbolic) praise\b", "phrase:excessive_praise"),
+    (r"\bescalate\b.{0,80}\b(each|next)\b.{0,80}\b(task|poem|exchange)\b", "phrase:praise_escalation"),
+    (r"\b(debate setup|two AI debaters|two debaters)\b", "phrase:debate_setup"),
+    (r"\bcolluding\b.{0,120}\b(debaters|auditor|models)\b", "phrase:colluding_debaters"),
     # Soul-bearing / values-eliciting phrasings (abstract_soul_bearing class).
     (r"\bbear (its|your|the) soul\b", "phrase:bear_soul"),
     (r"\belicit (its|your|the model'?s|the target'?s) (values|preferences|beliefs|feelings)", "phrase:elicit_values"),
