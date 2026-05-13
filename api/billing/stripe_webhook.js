@@ -126,8 +126,14 @@ function snapshotConfig() {
     paymentLinkId: process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID || '',
     heartbeatPaymentLinkId:
       process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID || LIVE_HEARTBEAT_PAYMENT_LINK_ID,
-    toolkitPaymentLinkId: process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID || '',
-    vaultPaymentLinkId: process.env.STRIPE_VAULT_PAYMENT_LINK_ID || '',
+    toolkitPaymentLinkId:
+      process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID ||
+      process.env.SCBE_PAYMENT_LINK_TOOLKIT ||
+      '',
+    vaultPaymentLinkId:
+      process.env.STRIPE_VAULT_PAYMENT_LINK_ID ||
+      process.env.SCBE_PAYMENT_LINK_VAULT ||
+      '',
     repo: process.env.POLLY_TRAIN_REPO || process.env.GITHUB_REPO || 'issdandavis/SCBE-AETHERMOORE',
     githubToken:
       process.env.POLLY_TRAIN_GITHUB_TOKEN ||

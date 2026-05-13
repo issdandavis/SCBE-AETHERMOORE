@@ -39,6 +39,8 @@ function clearEnv(): void {
   delete process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID;
   delete process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID;
   delete process.env.STRIPE_VAULT_PAYMENT_LINK_ID;
+  delete process.env.SCBE_PAYMENT_LINK_TOOLKIT;
+  delete process.env.SCBE_PAYMENT_LINK_VAULT;
   delete process.env.GITHUB_TOKEN;
   delete process.env.GH_TOKEN;
   delete process.env.POLLY_TRAIN_GITHUB_TOKEN;
@@ -429,6 +431,17 @@ describe('stripe webhook — digital product detection', () => {
     const { isVaultSession, snapshotConfig } = stripeWebhook._private;
     const cfg = snapshotConfig();
     expect(isVaultSession({ payment_link: VAULT_LINK_ID }, cfg)).toBe(true);
+  });
+
+  it('accepts existing SCBE product payment link env aliases', () => {
+    clearEnv();
+    process.env.SCBE_PAYMENT_LINK_TOOLKIT = 'plink_toolkit_alias';
+    process.env.SCBE_PAYMENT_LINK_VAULT = 'plink_vault_alias';
+    const { isToolkitSession, isVaultSession, snapshotConfig } = stripeWebhook._private;
+    const cfg = snapshotConfig();
+
+    expect(isToolkitSession({ payment_link: 'plink_toolkit_alias' }, cfg)).toBe(true);
+    expect(isVaultSession({ payment_link: 'plink_vault_alias' }, cfg)).toBe(true);
   });
 
   it('matches toolkit by explicit metadata + $29 payment when link id is absent', () => {
