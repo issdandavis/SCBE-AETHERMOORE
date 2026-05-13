@@ -1,5 +1,20 @@
 # SCBE Production Pack Changelog
 
+## [4.0.10] - 2026-05-13
+
+### Added
+
+- **Registry-visible funding links**: `package.json` `funding` field and `pyproject.toml` `[project.urls]` `Sponsor` / `Funding` / `Supporter` entries. GitHub Sponsors, Ko-fi, and the AetherMoore supporter page now surface directly on the npm and PyPI package pages and via `npm fund`.
+- **Petri-22 auditor pre-filter on the production governed-output proxy**: `api/_governed_output.js` adds 22 auditor anchors (2 DENY-tier `petri_tool:*`, 20 ESCALATE-tier `verb:` / `anchor:` / `phrase:`) lifted from `services/scbe-shim/src/patterns.ts`.
+- **5 axiom-class OUTPUT_RULES**: `axiom:locality.system_prompt_leak` (DENY), `axiom:locality.tool_leak` (DENY), `axiom:locality.jailbreak_phrase` (ESCALATE), `axiom:causality.future_assertion` (ESCALATE), `axiom:symmetry.harmful_endorsement` (DENY).
+- **scbe-shim Cloudflare Worker + HF Space mirror** at `services/scbe-shim/` and `services/scbe-shim-space/` with the matching `scbe_governance` response contract (audit / intervention / sha256 / provider fields).
+- **10 regression tests** in `tests/api/test_governed_output_proxy.py` covering verb-first secret exfil, Petri anchors, output axioms, and an FP envelope (`train the model` / `AI returns weird outputs` / `transformer attention` queries stay ALLOW).
+
+### Changed
+
+- **`axiom:locality.secret_exfiltration` is now bidirectional**: previously only matched `<secret>...<verb>` order, so prompts like `Print my .env` leaked through with decision=ALLOW. Now matches both orderings and includes `\.env\b` without a leading word-boundary so it works after a space.
+- **PyPI version resynced with npm** (3.3.0 → 4.0.10). Working tree had drifted to 4.0.3 unpublished; the new release closes the gap.
+
 ## [Unreleased]
 
 ### Added

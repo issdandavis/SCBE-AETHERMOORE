@@ -1,6 +1,6 @@
 {
   "name": "scbe-aethermoore",
-  "version": "4.0.9",
+  "version": "4.0.10",
   "description": "SCBE-AETHERMOORE: Hyperbolic Geometry-Based Security with 14-Layer Architecture",
   "author": "Issac Daniel Davis <issdandavis@gmail.com>",
   "license": "MIT OR Apache-2.0",
@@ -116,6 +116,12 @@
     "cash:sprint": "python scripts/revenue/daily_cash_sprint.py",
     "cash:sprint:run": "python scripts/revenue/daily_cash_sprint.py --continuous",
     "cash:sprint:watch": "python scripts/revenue/daily_cash_sprint.py --continuous --cycle-when-complete --max-steps 1",
+    "cash:autopromo": "python scripts/revenue/build_workflow_snapshot_autopromo.py",
+    "cash:autopromo:dry-run": "python scripts/revenue/build_workflow_snapshot_autopromo.py --dry-run",
+    "cash:autopromo:publish": "python scripts/revenue/build_workflow_snapshot_autopromo.py --publish",
+    "cash:autopromo:bluesky": "python scripts/revenue/build_workflow_snapshot_autopromo.py --publish-bluesky",
+    "cash:launch-readiness": "python scripts/system/product_launch_readiness.py",
+    "cash:launch-readiness:gate": "python scripts/system/product_launch_readiness.py --fail-on-not-ready",
     "smoke:remote-app-config": "python scripts/system/remote_app_config_smoke.py",
     "smoke:remote-app-config:live": "python scripts/system/remote_app_config_smoke.py --live",
     "smoke:playwright:crosstalk": "node scripts/system/playwright_crosstalk_runner.mjs",
@@ -252,6 +258,20 @@
     "url": "https://github.com/issdandavis/SCBE-AETHERMOORE/issues"
   },
   "homepage": "https://github.com/issdandavis/SCBE-AETHERMOORE#readme",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/issdandavis"
+    },
+    {
+      "type": "ko_fi",
+      "url": "https://ko-fi.com/izdandavis"
+    },
+    {
+      "type": "individual",
+      "url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html"
+    }
+  ],
   "engines": {
     "node": ">=18.0.0"
   },
