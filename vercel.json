@@ -97,6 +97,14 @@
       "dest": "/api/polly/chat.js"
     },
     {
+      "src": "^/v1/chat/completions/?$",
+      "dest": "/api/agent/governed-chat.js"
+    },
+    {
+      "src": "^/v1/governed/chat/completions/?$",
+      "dest": "/api/agent/governed-chat.js"
+    },
+    {
       "src": "^/v1/polly/feedback/?$",
       "dest": "/api/polly/feedback.js"
     },
