@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import json
-from urllib.parse import urlparse
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 
@@ -19,17 +19,12 @@ from src.api.polly_commerce import (
 )
 
 
-def _has_host(url: str, host: str) -> bool:
-    parsed = urlparse(url)
-    return parsed.scheme in {"https", "http"} and parsed.hostname == host
+def _hostname(url: str) -> str | None:
+    return urlparse(url).hostname
 
 
-def _has_scheme(url: str, scheme: str) -> bool:
-    return urlparse(url).scheme == scheme
-
-
-def _has_path_segment(url: str, segment: str) -> bool:
-    return segment in [part for part in urlparse(url).path.split("/") if part]
+def _is_checkout_url(url: str) -> bool:
+    return _hostname(url) in {"buy.stripe.com", "ko-fi.com"}
 
 
 # ---------------------------------------------------------------------------
@@ -44,7 +39,8 @@ def test_catalog_is_nonempty_and_has_real_stripe_links() -> None:
         assert product.name
         assert product.price_label
         assert product.short
-        assert _has_host(product.checkout_url, "buy.stripe.com") or _has_host(product.checkout_url, "ko-fi.com")
+        assert urlparse(product.checkout_url).scheme == "https"
+        assert _is_checkout_url(product.checkout_url)
 
 
 # ---------------------------------------------------------------------------
@@ -137,10 +133,8 @@ def test_render_buy_reply_without_product_lists_full_catalog() -> None:
 
 
 def test_render_custom_reply_includes_mailto_with_user_context() -> None:
-    text, actions = render_custom_reply(
-        "I need a governance overlay for our finance LLM"
-    )
-    mailto_action = next((a for a in actions if _has_scheme(a["url"], "mailto")), None)
+    text, actions = render_custom_reply("I need a governance overlay for our finance LLM")
+    mailto_action = next((a for a in actions if a["url"].startswith("mailto:")), None)
     assert mailto_action is not None
     # mailto: URLs treat @ as a safe character; urllib.parse.quote leaves it as-is.
     assert "issdandavis7795@gmail.com" in mailto_action["url"]
@@ -149,8 +143,8 @@ def test_render_custom_reply_includes_mailto_with_user_context() -> None:
 
 def test_render_membership_reply_returns_kofi_link() -> None:
     text, actions = render_membership_reply()
-    kofi = next((a for a in actions if _has_host(a["url"], "ko-fi.com")), None)
-    credits = next((a for a in actions if _has_path_segment(a["url"], "service-credits.html")), None)
+    kofi = next((a for a in actions if _hostname(a["url"]) == "ko-fi.com"), None)
+    credits = next((a for a in actions if "service-credits" in a["url"]), None)
     assert credits is not None
     assert kofi is not None
     assert "Ko-fi" in text or "ko-fi" in text.lower()
@@ -162,9 +156,7 @@ def test_render_membership_reply_returns_kofi_link() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_append_training_record_writes_jsonl_with_consent(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_append_training_record_writes_jsonl_with_consent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     shard = append_training_record(
         consent=True,
@@ -182,9 +174,7 @@ def test_append_training_record_writes_jsonl_with_consent(
     assert "ts" in record
 
 
-def test_append_training_record_skips_without_consent(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_append_training_record_skips_without_consent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     shard = append_training_record(
         consent=False,
@@ -196,9 +186,7 @@ def test_append_training_record_skips_without_consent(
     assert list(tmp_path.glob("*.jsonl")) == []
 
 
-def test_append_training_record_appends_multiple_turns(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_append_training_record_appends_multiple_turns(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     for i in range(3):
         append_training_record(
@@ -218,9 +206,7 @@ def test_append_training_record_appends_multiple_turns(
         assert record["session_id"] == "session-1"
 
 
-def test_append_training_record_records_feedback(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_append_training_record_records_feedback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     shard = append_training_record(
         consent=True,
@@ -234,9 +220,7 @@ def test_append_training_record_records_feedback(
     assert record["feedback"] == "up"
 
 
-def test_append_training_record_truncates_long_inputs(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_append_training_record_truncates_long_inputs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     shard = append_training_record(
         consent=True,
@@ -250,8 +234,6 @@ def test_append_training_record_truncates_long_inputs(
     assert len(record["assistant"]) <= 8192
 
 
-def test_train_corpus_dir_respects_env_override(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_train_corpus_dir_respects_env_override(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("POLLY_TRAIN_CORPUS_DIR", str(tmp_path))
     assert train_corpus_dir() == tmp_path

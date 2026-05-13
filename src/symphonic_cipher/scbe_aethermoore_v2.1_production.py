@@ -28,6 +28,7 @@ import hashlib
 import hmac
 import time
 import os
+import sys
 from typing import List, Dict
 
 # =============================================================================
@@ -710,7 +711,7 @@ if __name__ == "__main__":
     # Exit with appropriate code
     if result.decision == "ALLOW" and tests_passed:
         print("\nSCBE-AETHERMOORE v2.1: ALL SYSTEMS NOMINAL")
-        exit(0)
+        sys.exit(0)
     else:
         print("\nSCBE-AETHERMOORE v2.1: ANOMALY DETECTED")
-        exit(1)
+        sys.exit(1)

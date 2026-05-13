@@ -122,6 +122,7 @@
     "cash:autopromo:bluesky": "python scripts/revenue/build_workflow_snapshot_autopromo.py --publish-bluesky",
     "cash:launch-readiness": "python scripts/system/product_launch_readiness.py",
     "cash:launch-readiness:gate": "python scripts/system/product_launch_readiness.py --fail-on-not-ready",
+    "system:workcell-demo": "python scripts/system/agent_workcell_demo.py",
     "smoke:remote-app-config": "python scripts/system/remote_app_config_smoke.py",
     "smoke:remote-app-config:live": "python scripts/system/remote_app_config_smoke.py --live",
     "smoke:playwright:crosstalk": "node scripts/system/playwright_crosstalk_runner.mjs",

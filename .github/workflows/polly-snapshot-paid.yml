@@ -33,13 +33,14 @@ jobs:
           CONTACT_EMAIL: ${{ github.event.client_payload.record.contact_email }}
           CONTACT_NAME: ${{ github.event.client_payload.record.contact_name }}
           LIVEMODE: ${{ github.event.client_payload.record.livemode }}
+          SOURCE: ${{ github.event.client_payload.record.source }}
         run: |
           set -euo pipefail
           # Idempotency: if an issue already exists for this Stripe session id
           # we skip both the issue create and the email send. Stripe retries
           # webhooks on 5xx; we always 200, but a long network failure could
           # leave a duplicate dispatch in flight.
-          existing=$(gh issue list --state all --search "snapshot paid: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}" || true)
+          existing=$(gh issue list --state all --search "snapshot paid: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}")
           if [[ -n "$existing" && "$existing" != "null" ]]; then
             echo "issue already exists for session ${SESSION_ID} (#${existing}); skipping"
             echo "ALREADY_FILED=1" >> "$GITHUB_ENV"
@@ -60,15 +61,18 @@ jobs:
             mode_tag="TEST-MODE"
           fi
 
-          gh label create snapshot-paid --description "Snapshot Stripe checkout completed" --color "D6A756" --repo "${{ github.repository }}" 2>/dev/null || true
+          if ! gh label view snapshot-paid --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh label create snapshot-paid --description "Snapshot Stripe checkout completed" --color "D6A756" --repo "${{ github.repository }}"
+          fi
 
           title="snapshot paid: ${SESSION_ID} (${price}, ${mode_tag})"
           body=$(cat <<EOF
-          A buyer just completed a \$500 AI Governance Snapshot checkout.
+          A buyer just completed an AetherMoore snapshot checkout.
 
           - session id: \`${SESSION_ID}\`
           - payment intent: \`${PAYMENT_INTENT}\`
           - amount: ${price}
+          - source: ${SOURCE:-snapshot}
           - mode: ${mode_tag}
           - buyer name: ${CONTACT_NAME:-(not provided)}
           - buyer email: ${CONTACT_EMAIL:-(not provided)}
@@ -129,7 +133,7 @@ jobs:
           body_lines = [
               f"Hi {name},",
               "",
-              "Thanks for purchasing the $500 AI Governance Snapshot.",
+              "Thanks for purchasing an AetherMoore AI workflow/snapshot review.",
               "I'll reply within one business day to schedule a 30-minute kickoff call.",
               "Until then, please prep these so the snapshot covers what you actually need:",
               "",

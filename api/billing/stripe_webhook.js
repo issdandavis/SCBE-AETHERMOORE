@@ -26,6 +26,8 @@ const crypto = require('crypto');
 
 const SNAPSHOT_AMOUNT_CENTS = 50000;
 const HEARTBEAT_AMOUNT_CENTS = 9900;
+const LIVE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID = 'plink_1TW71yJTF2SuUODIqYFRU9JY';
+const LIVE_HEARTBEAT_PAYMENT_LINK_ID = 'plink_1TW71zJTF2SuUODICZLQCCS3';
 const DIGITAL_PRODUCT_AMOUNT_CENTS = 2900;
 const TOLERANCE_SECONDS = 300; // Stripe default replay window
 
@@ -123,9 +125,20 @@ function snapshotConfig() {
   return {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     paymentLinkId: process.env.STRIPE_SNAPSHOT_PAYMENT_LINK_ID || '',
-    heartbeatPaymentLinkId: process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID || '',
-    toolkitPaymentLinkId: process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID || '',
-    vaultPaymentLinkId: process.env.STRIPE_VAULT_PAYMENT_LINK_ID || '',
+    workflowSnapshotPaymentLinkId:
+      process.env.STRIPE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID ||
+      process.env.SCBE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID ||
+      LIVE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID,
+    heartbeatPaymentLinkId:
+      process.env.STRIPE_HEARTBEAT_PAYMENT_LINK_ID || LIVE_HEARTBEAT_PAYMENT_LINK_ID,
+    toolkitPaymentLinkId:
+      process.env.STRIPE_TOOLKIT_PAYMENT_LINK_ID ||
+      process.env.SCBE_PAYMENT_LINK_TOOLKIT ||
+      '',
+    vaultPaymentLinkId:
+      process.env.STRIPE_VAULT_PAYMENT_LINK_ID ||
+      process.env.SCBE_PAYMENT_LINK_VAULT ||
+      '',
     repo: process.env.POLLY_TRAIN_REPO || process.env.GITHUB_REPO || 'issdandavis/SCBE-AETHERMOORE',
     githubToken:
       process.env.POLLY_TRAIN_GITHUB_TOKEN ||
@@ -171,6 +184,14 @@ function isSnapshotSession(session, cfg) {
     Number(session.amount_total) === SNAPSHOT_AMOUNT_CENTS &&
     String(session.currency || '').toLowerCase() === 'usd'
   ) {
+    return true;
+  }
+  return false;
+}
+
+function isWorkflowSnapshotSession(session, cfg) {
+  if (!session || typeof session !== 'object') return false;
+  if (cfg.workflowSnapshotPaymentLinkId && session.payment_link === cfg.workflowSnapshotPaymentLinkId) {
     return true;
   }
   return false;
@@ -308,7 +329,8 @@ function buildProductDeliveryRecord(session, productKey) {
 }
 
 async function dispatchSnapshotPaid(session, cfg) {
-  const record = buildSessionRecord(session, 'snapshot_paid', 'governance-snapshot');
+  const source = isWorkflowSnapshotSession(session, cfg) ? 'workflow-snapshot' : 'governance-snapshot';
+  const record = buildSessionRecord(session, 'snapshot_paid', source);
   return dispatchEvent('polly_snapshot_paid', record, cfg);
 }
 
@@ -378,7 +400,7 @@ module.exports = async function handler(req, res) {
   // Only act on the one event we care about; everything else is a 200 ack.
   if (event && event.type === 'checkout.session.completed') {
     const session = event.data && event.data.object;
-    if (isSnapshotSession(session, cfg)) {
+    if (isWorkflowSnapshotSession(session, cfg) || isSnapshotSession(session, cfg)) {
       const dispatch = await dispatchSnapshotPaid(session, cfg);
       return sendJson(res, 200, {
         ok: true,
@@ -429,6 +451,7 @@ module.exports = async function handler(req, res) {
 module.exports._private = {
   parseSignatureHeader,
   verifySignature,
+  isWorkflowSnapshotSession,
   isSnapshotSession,
   isHeartbeatSession,
   isToolkitSession,
@@ -438,6 +461,7 @@ module.exports._private = {
   buildSessionRecord,
   buildProductDeliveryRecord,
   SNAPSHOT_AMOUNT_CENTS,
+  LIVE_WORKFLOW_SNAPSHOT_PAYMENT_LINK_ID,
   HEARTBEAT_AMOUNT_CENTS,
   DIGITAL_PRODUCT_AMOUNT_CENTS,
   DIGITAL_PRODUCTS,

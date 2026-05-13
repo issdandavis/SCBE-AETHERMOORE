@@ -19,7 +19,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "docs" / "map-room" / "KAGGLE_KERNEL_CONSOLIDATION_2026-04-25.md"
 DEFAULT_JSON = REPO_ROOT / "artifacts" / "kaggle_consolidation" / "kaggle_kernel_inventory.json"
@@ -248,7 +247,9 @@ def main() -> int:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--json-out", type=Path, default=DEFAULT_JSON)
     parser.add_argument("--pull-root", type=Path, default=DEFAULT_PULL_ROOT)
-    parser.add_argument("--pull-archive", action="store_true", help="Pull all kernel source/metadata into local archive.")
+    parser.add_argument(
+        "--pull-archive", action="store_true", help="Pull all kernel source/metadata into local archive."
+    )
     parser.add_argument(
         "--apply-delete-candidates",
         action="store_true",

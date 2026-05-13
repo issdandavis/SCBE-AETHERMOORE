@@ -33,6 +33,7 @@ _HAS_TRADITIONAL_SECURITY = False
 try:
     import sys as _sys
     import pathlib as _pathlib
+
     _maybe_repo = _pathlib.Path(__file__).resolve().parents[2]
     if (_maybe_repo / "scripts" / "security" / "traditional_security_layers.py").exists():
         _sys.path.insert(0, str(_maybe_repo))
@@ -40,6 +41,7 @@ try:
         evaluate_artifact as _evaluate_artifact,
         report_to_dict as _report_to_dict,
     )
+
     _HAS_TRADITIONAL_SECURITY = True
 except Exception:  # pragma: no cover
     _evaluate_artifact = None
@@ -128,6 +130,7 @@ def scbe_triage(req: TriageRequest) -> dict:
             detail="traditional_security_layers not importable in this deploy; mount the repo or rebuild with --build-arg INCLUDE_REPO=1",
         )
     import pathlib as _pl
+
     p = _pl.Path(req.artifact_path)
     if not p.exists():
         raise HTTPException(status_code=404, detail=f"artifact not found: {p}")

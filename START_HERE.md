@@ -60,8 +60,8 @@ Open these first:
 
 1. [CANONICAL_SYSTEM_STATE.md](CANONICAL_SYSTEM_STATE.md)
 2. [docs/specs/SCBE_CANONICAL_CONSTANTS.md](docs/specs/SCBE_CANONICAL_CONSTANTS.md)
-3. [SPEC.md](SPEC.md)
-4. [CONCEPTS.md](CONCEPTS.md)
+3. [docs/SPEC.md](docs/SPEC.md)
+4. [docs/CONCEPTS.md](docs/CONCEPTS.md)
 
 ## If You Want Research Or Training
 

@@ -52,13 +52,11 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.governance.aligned_foundations_cross_lane import (  # noqa: E402
     aligned_foundations_concept_verdict,
-    group_records_by_concept,
     reference_assistant_text,
     score_packet_compliance,
     system_prompt_text,
     user_prompt_text,
 )
-
 
 DEFAULT_HOLDOUT = "training-data/sft/drill_langues_full_holdout.sft.jsonl"
 DEFAULT_BASE = "Qwen/Qwen2.5-7B-Instruct"

@@ -66,11 +66,7 @@ def test_score_eval_record_blocks_shell_command_payload() -> None:
 
 def test_score_endpoint_result_requires_artifacts(monkeypatch) -> None:
     module = _load_module()
-
-    def truthy_path_exists(value: object) -> bool:
-        return bool(value)
-
-    monkeypatch.setattr(module, "_path_exists", truthy_path_exists)
+    monkeypatch.setattr(module, "_path_exists", bool)
     result = {
         "task": {"task_id": "coding", "prompt": "raw prompt"},
         "returncode": 0,

@@ -136,9 +136,7 @@ def normalize_status_path(raw: str) -> str:
 
 
 def path_matches(path: str, prefixes: Iterable[str]) -> bool:
-    return any(
-        path == prefix.rstrip("/") or path.startswith(prefix) for prefix in prefixes
-    )
+    return any(path == prefix.rstrip("/") or path.startswith(prefix) for prefix in prefixes)
 
 
 def classify_path(path: str) -> str:
@@ -213,9 +211,7 @@ def summarize(rows: list[StatusRow], repo_root: Path) -> dict[str, object]:
         "repo_root": str(repo_root),
         "total_dirty_paths": len(rows),
         "status_counts": dict(sorted(status_counts.items())),
-        "bucket_counts": {
-            bucket: payload["count"] for bucket, payload in by_bucket.items()
-        },
+        "bucket_counts": {bucket: payload["count"] for bucket, payload in by_bucket.items()},
         "buckets": by_bucket,
         "next_actions": [
             "stage source/test/config changes in scoped commits only",
@@ -235,9 +231,7 @@ def write_report(payload: dict[str, object], output: Path | None) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Audit repo cleanliness without modifying files."
-    )
+    parser = argparse.ArgumentParser(description="Audit repo cleanliness without modifying files.")
     parser.add_argument(
         "--repo-root",
         default=None,
@@ -278,10 +272,7 @@ def main() -> int:
             print(f"[repo-cleanliness] report={output}")
 
     failed = False
-    if (
-        args.max_dirty is not None
-        and int(payload["total_dirty_paths"]) > args.max_dirty
-    ):
+    if args.max_dirty is not None and int(payload["total_dirty_paths"]) > args.max_dirty:
         failed = True
     unclassified = int(payload["bucket_counts"].get("needs_manual_classification", 0))
     if unclassified > args.max_unclassified:

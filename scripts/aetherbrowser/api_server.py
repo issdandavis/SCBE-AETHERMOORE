@@ -111,6 +111,52 @@ sys.path.insert(0, str(ROOT / "src"))
 
 logger = logging.getLogger(__name__)
 
+
+def _public_service_result(result: Any) -> Any:
+    """Drop debug/error payloads before returning service results to clients."""
+    if isinstance(result, dict):
+        return {
+            str(key): _public_service_result(value)
+            for key, value in result.items()
+            if str(key).lower() not in {"traceback", "stack", "exception", "exc", "error_detail", "stderr"}
+        }
+    if isinstance(result, list):
+        return [_public_service_result(item) for item in result]
+    return result
+
+
+def _public_search_result(result: Any) -> dict[str, Any]:
+    """Build an explicit public schema for Polly search responses."""
+    if not isinstance(result, dict):
+        return {"ok": False, "error": "Search service temporarily unavailable."}
+    records = result.get("results") or result.get("sources") or result.get("data") or []
+    if not isinstance(records, list):
+        records = []
+    public_records = []
+    for record in records[:10]:
+        if not isinstance(record, dict):
+            continue
+        public_records.append(
+            {
+                "title": str(record.get("title") or "")[:240],
+                "url": str(record.get("url") or record.get("href") or "")[:500],
+                "snippet": str(record.get("snippet") or record.get("content") or record.get("excerpt") or "")[:800],
+            }
+        )
+    return {
+        "ok": bool(result.get("ok", True)),
+        "query": str(result.get("query") or "")[:500],
+        "results": public_records,
+    }
+
+
+def _public_email_result(result: Any) -> dict[str, Any]:
+    """Build an explicit public schema for email-send responses."""
+    if not isinstance(result, dict):
+        return {"ok": False, "error": "Email service temporarily unavailable."}
+    return {"ok": bool(result.get("ok", False)), "message_id": str(result.get("message_id") or "")[:128]}
+
+
 # ---------------------------------------------------------------------------
 #  Lazy-load the runtime gate (best effort — works even if deps are missing)
 # ---------------------------------------------------------------------------
@@ -922,7 +968,9 @@ def _build_snippet(text: str, terms: list[str], max_chars: int = 320) -> str:
     return snippet
 
 
-def _chunk_text(text: str, target_chars: int = RAG_CHUNK_TARGET_CHARS, overlap_chars: int = RAG_CHUNK_OVERLAP_CHARS) -> list[str]:
+def _chunk_text(
+    text: str, target_chars: int = RAG_CHUNK_TARGET_CHARS, overlap_chars: int = RAG_CHUNK_OVERLAP_CHARS
+) -> list[str]:
     normalized = _normalize_text_blob(text)
     if not normalized:
         return []
@@ -1981,12 +2029,7 @@ async def arena_training_push():
 
 @app.get("/v1/lore/art")
 async def arena_lore_art_index():
-    return {
-        "items": [
-            {"title": item["title"], "url": f"/v1/lore/art/{item['slug']}"}
-            for item in LORE_ART_ITEMS
-        ]
-    }
+    return {"items": [{"title": item["title"], "url": f"/v1/lore/art/{item['slug']}"} for item in LORE_ART_ITEMS]}
 
 
 @app.get("/v1/lore/art/{slug}")
@@ -2123,11 +2166,7 @@ def _allowed_relative_paths(root: str) -> frozenset[str]:
     root_path = Path(root)
     if not root_path.exists():
         return frozenset()
-    return frozenset(
-        path.relative_to(root_path).as_posix()
-        for path in root_path.rglob("*")
-        if path.is_file()
-    )
+    return frozenset(path.relative_to(root_path).as_posix() for path in root_path.rglob("*") if path.is_file())
 
 
 def _resolve_safe_relative_file(root: Path, requested_path: str) -> Path:
@@ -2775,6 +2814,7 @@ async def contact_submit(payload: ContactFormPayload):
     """Receive contact form submissions from the website and notify via email."""
     try:
         from scripts.system.email_service import send_contact_notification
+
         result = send_contact_notification(
             name=payload.name,
             email=payload.email,
@@ -2784,9 +2824,9 @@ async def contact_submit(payload: ContactFormPayload):
         )
         if result["ok"]:
             return {"ok": True, "message": "Message sent. We usually reply within 24 hours."}
-        return {"ok": False, "error": result.get("error", "Email delivery failed")}
+        return {"ok": False, "error": "Email delivery failed"}
     except Exception as e:
-        logger.warning("Contact form error: %s", e)
+        logger.warning("Contact form error: %s", type(e).__name__)
         return {"ok": False, "error": "Unable to send message. Please try again later."}
 
 
@@ -3501,10 +3541,12 @@ _cli_jobs: dict[str, dict[str, Any]] = {}
 
 from pydantic import BaseModel
 
+
 class PollyChatPayload(BaseModel):
     message: str
     context: Optional[str] = "site"
     thinking: Optional[bool] = False
+
 
 class PollyRespondPayload(BaseModel):
     text: str
@@ -3512,16 +3554,20 @@ class PollyRespondPayload(BaseModel):
     intent: Optional[str] = ""
     thinking: Optional[bool] = False
 
+
 class PollySearchPayload(BaseModel):
     query: str
 
+
 class PollyDelegatePayload(BaseModel):
     text: str
+
 
 class PollyEmailPayload(BaseModel):
     to: str
     subject: str
     body: str
+
 
 class PollySlackPayload(BaseModel):
     message: str
@@ -3547,14 +3593,11 @@ async def polly_call(payload: PollyCallPayload):
 
     try:
         from twilio.rest import Client
+
         client = Client(account_sid, auth_token)
-        twiml = f'<Response><Dial>{business_number}</Dial></Response>'
-        call = client.calls.create(
-            to=payload.phone,
-            from_=twilio_number,
-            twiml=twiml
-        )
-        logger.info("Twilio call initiated: %s to %s", call.sid, payload.phone)
+        twiml = f"<Response><Dial>{business_number}</Dial></Response>"
+        call = client.calls.create(to=payload.phone, from_=twilio_number, twiml=twiml)
+        logger.info("Twilio call initiated")
         return {"ok": True, "data": {"call_sid": call.sid, "status": call.status}}
     except Exception as e:
         logger.warning("Twilio call error: %s", e)
@@ -3566,6 +3609,7 @@ async def polly_chat(payload: PollyChatPayload):
     """Main chat endpoint for Polly sidebar. Supports thinking mode."""
     try:
         from scripts.system.polly_service import chat
+
         result = await chat(payload.message, payload.context, thinking=payload.thinking)
         return {"ok": True, "data": result}
     except Exception as e:
@@ -3578,6 +3622,7 @@ async def polly_respond(payload: PollyRespondPayload):
     """Alternative response endpoint for Polly."""
     try:
         from scripts.system.polly_service import respond
+
         result = await respond(payload.text, payload.context, payload.intent, thinking=payload.thinking)
         return {"ok": True, "data": result}
     except Exception as e:
@@ -3590,10 +3635,11 @@ async def polly_context():
     """Return backend capabilities and service status."""
     try:
         from scripts.system.polly_service import get_context
+
         result = await get_context()
         return {"ok": True, "data": result}
     except Exception as e:
-        logger.warning("Polly context error: %s", e)
+        logger.warning("Polly context error: %s", type(e).__name__)
         return {"ok": False, "error": "Context service temporarily unavailable."}
 
 
@@ -3602,10 +3648,11 @@ async def polly_search(payload: PollySearchPayload):
     """Real web search via Tavily + intent fallback."""
     try:
         from scripts.system.polly_service import search
+
         result = await search(payload.query)
-        return result
+        return _public_search_result(result)
     except Exception as e:
-        logger.warning("Polly search error: %s", e)
+        logger.warning("Polly search error: %s", type(e).__name__)
         return {"ok": False, "error": "Search service temporarily unavailable."}
 
 
@@ -3614,10 +3661,11 @@ async def polly_delegate(payload: PollyDelegatePayload):
     """Delegation endpoint — routes to appropriate handler."""
     try:
         from scripts.system.polly_service import delegate
+
         result = await delegate(payload.text)
         return {"ok": True, "data": result}
     except Exception as e:
-        logger.warning("Polly delegate error: %s", e)
+        logger.warning("Polly delegate error: %s", type(e).__name__)
         return {"ok": False, "error": "Delegation service temporarily unavailable."}
 
 
@@ -3626,10 +3674,11 @@ async def polly_email(payload: PollyEmailPayload):
     """Send email from Polly chat via Proton SMTP."""
     try:
         from scripts.system.polly_service import send_email_from_chat
+
         result = await send_email_from_chat(payload.to, payload.subject, payload.body)
-        return {"ok": result.get("ok", False), "message_id": result.get("message_id")}
+        return _public_email_result(result)
     except Exception as e:
-        logger.warning("Polly email error: %s", e)
+        logger.warning("Polly email error: %s", type(e).__name__)
         return {"ok": False, "error": "Email service temporarily unavailable."}
 
 
@@ -3638,10 +3687,11 @@ async def polly_slack(payload: PollySlackPayload):
     """Send Slack notification from Polly chat."""
     try:
         from scripts.system.polly_service import notify_slack
+
         result = await notify_slack(payload.message, payload.channel)
-        return {"ok": result.get("ok", False)}
+        return {"ok": bool(result.get("ok", False))}
     except Exception as e:
-        logger.warning("Polly slack error: %s", e)
+        logger.warning("Polly slack error: %s", type(e).__name__)
         return {"ok": False, "error": "Slack service temporarily unavailable."}
 
 

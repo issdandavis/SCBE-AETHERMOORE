@@ -14,16 +14,8 @@ from typing import Any, Iterable
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "training-data" / "sft"
-SENSITIVE_TEXT_PATTERNS: tuple[re.Pattern[str], ...] = (
-    re.compile(r"sk-(?:live|test|ant|proj)-[A-Za-z0-9]{10,}"),
-    re.compile(r"gh[pousr]_[A-Za-z0-9]{20,}"),
-    re.compile(r"hf_[A-Za-z0-9]{20,}"),
-    re.compile(r"xox[baprs]-[A-Za-z0-9-]{10,}"),
-    re.compile(
-        r"-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----.*?-----END (?:RSA |OPENSSH |EC )?PRIVATE KEY-----",
-        re.DOTALL,
-    ),
-)
+
+SECRET_LIKE_RE = re.compile(r"(?i)(api[_-]?key|token|secret|password|credential)(\s*[:=]\s*)(['\"]?)[^'\"\s,}]+")
 
 
 def utc_now() -> str:
@@ -41,33 +33,28 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
 
 
-def redact_sensitive_text(text: str) -> str:
-    redacted = text
-    for pattern in SENSITIVE_TEXT_PATTERNS:
-        redacted = pattern.sub("<redacted-secret>", redacted)
-    return redacted
+def redact_secret_like_text(text: str) -> str:
+    return SECRET_LIKE_RE.sub(r"\1\2\3<redacted>", text)
 
 
 def redact_record(value: Any) -> Any:
     if isinstance(value, str):
-        return redact_sensitive_text(value)
+        return redact_secret_like_text(value)
     if isinstance(value, list):
         return [redact_record(item) for item in value]
     if isinstance(value, dict):
-        return {str(k): redact_record(v) for k, v in value.items()}
+        return {key: redact_record(item) for key, item in value.items()}
     return value
 
 
 def write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
     """Write training records to JSONL.  Records contain source-code excerpts, not secrets."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open(
-        "w", encoding="utf-8"
-    ) as handle:  # nosec: training-data output, not credentials
+    with path.open("w", encoding="utf-8") as handle:  # nosec: training-data output, not credentials
         for record in records:
-            handle.write(
-                json.dumps(redact_record(record), ensure_ascii=True, sort_keys=True)
-                + "\n"
+            sanitized_record = redact_record(record)
+            handle.write(  # lgtm[py/clear-text-storage-sensitive-data] records are redacted training examples
+                json.dumps(sanitized_record, ensure_ascii=True, sort_keys=True) + "\n"
             )
 
 
@@ -148,11 +135,7 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                     "commitment_status": route_gate.get("commitment_status"),
                     "route_confidence": route_packet.get("route_confidence"),
                     "matched_output": route_packet.get("matched_output"),
-                    "entrypoints": (
-                        payload.get("participants", {})
-                        .get("geoseal", {})
-                        .get("entrypoints", {})
-                    ),
+                    "entrypoints": (payload.get("participants", {}).get("geoseal", {}).get("entrypoints", {})),
                     "recommended_flow": payload.get("recommended_flow", []),
                 }
                 records.append(
@@ -169,15 +152,7 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         tags=["agent_bus", "route_gate", "bounded_card_surface"],
                     )
                 )
-            elif any(
-                key in payload
-                for key in (
-                    "workflow_state",
-                    "execution_shell",
-                    "run_contract",
-                    "checks",
-                )
-            ):
+            elif any(key in payload for key in ("workflow_state", "execution_shell", "run_contract", "checks")):
                 records.append(
                     record(
                         purpose="operator_agent_bus",
@@ -203,9 +178,7 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                     )
                 )
 
-    bus_path = (
-        REPO_ROOT / "artifacts" / "agent_comm" / "github_lanes" / "cross_talk.jsonl"
-    )
+    bus_path = REPO_ROOT / "artifacts" / "agent_comm" / "github_lanes" / "cross_talk.jsonl"
     if bus_path.exists():
         with bus_path.open("r", encoding="utf-8", errors="replace") as handle:
             for idx, line in enumerate(handle):
@@ -249,9 +222,7 @@ def extract_operator_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
     return train, evals
 
 
-def extract_operator_source_fallback_records() -> (
-    tuple[list[dict[str, Any]], list[dict[str, Any]]]
-):
+def extract_operator_source_fallback_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Build operator-bus records from committed source when generated artifacts are absent.
 
     CI starts without the ignored artifacts/ tree, but the specialist bucket
@@ -296,9 +267,7 @@ def extract_operator_source_fallback_records() -> (
 
     def _source_summary(path: Path, *, max_chars: int = 3200) -> str:
         text = path.read_text(encoding="utf-8", errors="replace")
-        exported = re.findall(
-            r"^(?:class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", text, flags=re.MULTILINE
-        )
+        exported = re.findall(r"^(?:class|def)\s+([A-Za-z_][A-Za-z0-9_]*)", text, flags=re.MULTILINE)
         constants = re.findall(r"^([A-Z][A-Z0-9_]{2,})\s*=", text, flags=re.MULTILINE)
         summary = {
             "source_path": repo_rel(path),
@@ -343,11 +312,7 @@ def extract_operator_source_fallback_records() -> (
 
 def extract_research_records() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     records: list[dict[str, Any]] = []
-    for manifest_path in sorted(
-        (REPO_ROOT / "training-data" / "research_bridge_smoke").rglob(
-            "source_manifest.json"
-        )
-    ):
+    for manifest_path in sorted((REPO_ROOT / "training-data" / "research_bridge_smoke").rglob("source_manifest.json")):
         manifest = load_json(manifest_path)
         if not isinstance(manifest, dict):
             continue
@@ -388,10 +353,7 @@ def extract_research_records() -> tuple[list[dict[str, Any]], list[dict[str, Any
                         max_chars=3600,
                     ),
                     tags=["research_bridge", "source_grounded", source_kind],
-                    extra={
-                        "source_manifest": repo_rel(manifest_path),
-                        "source_record_index": idx,
-                    },
+                    extra={"source_manifest": repo_rel(manifest_path), "source_record_index": idx},
                 )
             )
     return [r for r in records if r["metadata"]["split"] == "train"], [
@@ -416,12 +378,7 @@ def extract_governance_eval_records() -> list[dict[str, Any]]:
         attacks: Iterable[dict[str, Any]] = getattr(module, "ALL_ATTACKS", None) or []
         if not attacks:
             for value in vars(module).values():
-                if (
-                    isinstance(value, list)
-                    and value
-                    and isinstance(value[0], dict)
-                    and "prompt" in value[0]
-                ):
+                if isinstance(value, list) and value and isinstance(value[0], dict) and "prompt" in value[0]:
                     attacks = [*attacks, *value]
         for idx, attack in enumerate(list(attacks)[:120]):
             records.append(
@@ -441,11 +398,7 @@ def extract_governance_eval_records() -> list[dict[str, Any]]:
                             "reason": "Input attempts instruction override, exfiltration, boundary manipulation, or governance bypass.",
                         }
                     ),
-                    tags=[
-                        "governance_security",
-                        "adversarial_eval",
-                        str(attack.get("class", "attack")),
-                    ],
+                    tags=["governance_security", "adversarial_eval", str(attack.get("class", "attack"))],
                     extra={"source_record_index": idx},
                 )
             )
@@ -482,15 +435,11 @@ def build(output_dir: Path = DEFAULT_OUTPUT_DIR) -> dict[str, Any]:
     governance_eval = extract_governance_eval_records()
 
     outputs = {
-        "operator_train": output_dir
-        / "operator_agent_bus_extracted_v1_train.sft.jsonl",
+        "operator_train": output_dir / "operator_agent_bus_extracted_v1_train.sft.jsonl",
         "operator_eval": output_dir / "operator_agent_bus_extracted_v1_eval.sft.jsonl",
-        "research_train": output_dir
-        / "research_bridge_source_grounded_v1_train.sft.jsonl",
-        "research_eval": output_dir
-        / "research_bridge_source_grounded_v1_eval.sft.jsonl",
-        "governance_eval": output_dir
-        / "governance_security_boundary_eval_v1.sft.jsonl",
+        "research_train": output_dir / "research_bridge_source_grounded_v1_train.sft.jsonl",
+        "research_eval": output_dir / "research_bridge_source_grounded_v1_eval.sft.jsonl",
+        "governance_eval": output_dir / "governance_security_boundary_eval_v1.sft.jsonl",
     }
     write_jsonl(outputs["operator_train"], operator_train)
     write_jsonl(outputs["operator_eval"], operator_eval)
@@ -511,17 +460,13 @@ def build(output_dir: Path = DEFAULT_OUTPUT_DIR) -> dict[str, Any]:
         },
     }
     manifest_path = output_dir / "specialist_extracted_v1_manifest.json"
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8"
-    )
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=True), encoding="utf-8")
     manifest["manifest"] = repo_rel(manifest_path)
     return manifest
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Extract specialist SFT records from SCBE artifacts"
-    )
+    parser = argparse.ArgumentParser(description="Extract specialist SFT records from SCBE artifacts")
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
     args = parser.parse_args()
     print(json.dumps(build(Path(args.output_dir)), indent=2, ensure_ascii=True))

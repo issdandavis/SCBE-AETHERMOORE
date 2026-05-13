@@ -22,7 +22,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "artifacts" / "training_inventory" / "latest"
 DATA_EXTENSIONS = {".jsonl", ".json", ".csv", ".parquet", ".arrow", ".txt"}
@@ -252,30 +251,25 @@ def _split_hint(path_text: str) -> str:
 
 
 def _jsonl_stats(path: Path) -> dict[str, Any]:
-    is_lfs_pointer = False
     try:
         with path.open("r", encoding="utf-8", errors="replace") as probe:
             first_line = probe.readline().strip()
             second_line = probe.readline().strip()
-            is_lfs_pointer = first_line == "version https://git-lfs.github.com/spec/v1" and second_line.startswith(
-                "oid sha256:"
-            )
+            if first_line == "version https://git-lfs.github.com/spec/v1" and second_line.startswith("oid sha256:"):
+                return {
+                    "record_count": 0,
+                    "malformed_count": 0,
+                    "empty_line_count": 0,
+                    "first_keys": [],
+                    "schema_shape_count": 0,
+                    "top_schema_shapes": [],
+                    "prompt_response_records": 0,
+                    "messages_records": 0,
+                    "lfs_pointer": True,
+                }
     except OSError:
-        # If the probe fails, continue with the normal reader so callers get
-        # the same file-access error path as non-LFS files.
-        is_lfs_pointer = False
-    if is_lfs_pointer:
-        return {
-            "record_count": 0,
-            "malformed_count": 0,
-            "empty_line_count": 0,
-            "first_keys": [],
-            "schema_shape_count": 0,
-            "top_schema_shapes": [],
-            "prompt_response_records": 0,
-            "messages_records": 0,
-            "lfs_pointer": True,
-        }
+        # File disappeared or became unreadable during inventory; treat as empty.
+        pass
     records = 0
     malformed = 0
     empty = 0
@@ -509,7 +503,10 @@ def collect_cloud_surfaces(limit: int) -> dict[str, Any]:
                 if suffix not in DATA_EXTENSIONS and suffix != NOTEBOOK_EXTENSION:
                     continue
                 text = str(path)
-                if not any(token in text.lower() for token in ("scbe", "aether", "colab", "kaggle", "qwen", "polly", "training")):
+                if not any(
+                    token in text.lower()
+                    for token in ("scbe", "aether", "colab", "kaggle", "qwen", "polly", "training")
+                ):
                     continue
                 items.append(
                     {
@@ -536,8 +533,7 @@ def build_merge_plan(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) 
         ready_rows = [
             row
             for row in rows
-            if str(row.get("regularization_status", "")).startswith("ready")
-            and row.get("split_hint") != "eval"
+            if str(row.get("regularization_status", "")).startswith("ready") and row.get("split_hint") != "eval"
         ]
         eval_rows = [row for row in rows if row.get("split_hint") == "eval"]
         model_sets[purpose] = {
@@ -575,7 +571,9 @@ def build_merge_plan(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) 
     }
 
 
-def write_outputs(local_rows: list[dict[str, Any]], remotes: dict[str, Any], plan: dict[str, Any], output_dir: Path) -> dict[str, Path]:
+def write_outputs(
+    local_rows: list[dict[str, Any]], remotes: dict[str, Any], plan: dict[str, Any], output_dir: Path
+) -> dict[str, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     summary = summarize(local_rows, remotes)
     inventory = {
@@ -614,9 +612,7 @@ def summarize(local_rows: list[dict[str, Any]], remotes: dict[str, Any]) -> dict
         "by_source": dict(sorted(by_source.items())),
         "by_purpose": dict(sorted(by_purpose.items())),
         "by_regularization_status": dict(sorted(by_status.items())),
-        "remote_counts": {
-            key: value.get("count", len(value.get("items", []))) for key, value in remotes.items()
-        },
+        "remote_counts": {key: value.get("count", len(value.get("items", []))) for key, value in remotes.items()},
     }
 
 

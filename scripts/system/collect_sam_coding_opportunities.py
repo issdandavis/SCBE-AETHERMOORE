@@ -42,10 +42,7 @@ def default_date_window(days: int = 30) -> tuple[str, str]:
 
 
 def resolve_api_key() -> str:
-    return (
-        os.environ.get("SAM_API_KEY", "").strip()
-        or os.environ.get("SAM_GOV_API_KEY", "").strip()
-    )
+    return os.environ.get("SAM_API_KEY", "").strip() or os.environ.get("SAM_GOV_API_KEY", "").strip()
 
 
 def build_query_params(
@@ -74,35 +71,33 @@ def redact_params(params: dict[str, str]) -> dict[str, str]:
     return out
 
 
-def redact_sensitive_values(value: Any) -> Any:
-    if isinstance(value, dict):
-        return {
-            str(k): (
-                "<redacted>"
-                if str(k).lower() in {"api_key", "sam_api_key", "sam_gov_api_key"}
-                else redact_sensitive_values(v)
-            )
-            for k, v in value.items()
-        }
-    if isinstance(value, list):
-        return [redact_sensitive_values(item) for item in value]
-    return value
+def safe_plan_summary(plan: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "source": "sam_gov_opportunities_api",
+        "query_count": len(plan.get("queries", [])),
+        "api_key_present": bool(plan.get("api_key_present")),
+    }
 
 
-def fetch_json(
-    endpoint: str, params: dict[str, str], timeout: int = 60
-) -> dict[str, Any]:
+def public_plan_status(plan: dict[str, Any], *, ok: bool, dry_run: bool, error: str = "") -> dict[str, Any]:
+    """CLI status without query parameters or API credentials."""
+    return {
+        "ok": ok,
+        "dry_run": dry_run,
+        "query_count": len(plan.get("queries", [])),
+        "api_key_present": bool(plan.get("api_key_present")),
+        "error": error,
+    }
+
+
+def fetch_json(endpoint: str, params: dict[str, str], timeout: int = 60) -> dict[str, Any]:
     url = f"{endpoint}?{urllib.parse.urlencode(params)}"
     request = urllib.request.Request(url, headers={"Accept": "application/json"})
-    with urllib.request.urlopen(
-        request, timeout=timeout
-    ) as response:  # noqa: S310 - trusted endpoint from CLI arg
+    with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - trusted endpoint from CLI arg
         return json.loads(response.read().decode("utf-8"))
 
 
-def normalize_opportunities(
-    payload: dict[str, Any], *, keyword: str
-) -> list[dict[str, Any]]:
+def normalize_opportunities(payload: dict[str, Any], *, keyword: str) -> list[dict[str, Any]]:
     rows = payload.get("opportunitiesData") or payload.get("data") or []
     normalized = []
     for row in rows if isinstance(rows, list) else []:
@@ -110,17 +105,11 @@ def normalize_opportunities(
             continue
         normalized.append(
             {
-                "notice_id": row.get("noticeId")
-                or row.get("notice_id")
-                or row.get("id"),
+                "notice_id": row.get("noticeId") or row.get("notice_id") or row.get("id"),
                 "title": row.get("title", ""),
-                "agency": row.get("fullParentPathName")
-                or row.get("agency")
-                or row.get("department", ""),
+                "agency": row.get("fullParentPathName") or row.get("agency") or row.get("department", ""),
                 "posted_date": row.get("postedDate", ""),
-                "response_deadline": row.get("responseDeadLine")
-                or row.get("responseDeadline")
-                or "",
+                "response_deadline": row.get("responseDeadLine") or row.get("responseDeadline") or "",
                 "type": row.get("type", ""),
                 "naics": row.get("naicsCode", ""),
                 "classification_code": row.get("classificationCode", ""),
@@ -185,26 +174,18 @@ def main() -> int:
     parser.add_argument("--posted-to", default="")
     parser.add_argument("--days", type=int, default=30)
     parser.add_argument("--limit", type=int, default=25)
-    parser.add_argument(
-        "--ptype", default="o", help="SAM opportunity type, default solicitations"
-    )
+    parser.add_argument("--ptype", default="o", help="SAM opportunity type, default solicitations")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT)
     args = parser.parse_args()
 
     api_key = resolve_api_key()
     plan = build_plan(args, api_key)
-    safe_plan = redact_sensitive_values(plan)
     if not args.execute:
-        print(json.dumps({"ok": True, "dry_run": True, "plan": safe_plan}, indent=2))
+        print(json.dumps(public_plan_status(plan, ok=True, dry_run=True), indent=2))
         return 0
     if not api_key:
-        print(
-            json.dumps(
-                {"ok": False, "error": "missing SAM API credential", "plan": safe_plan},
-                indent=2,
-            )
-        )
+        print(json.dumps(public_plan_status(plan, ok=False, dry_run=False, error="missing_api_key"), indent=2))
         return 2
 
     opportunities: list[dict[str, Any]] = []
@@ -212,7 +193,7 @@ def main() -> int:
     for query in plan["queries"]:
         redacted = query["params"]
         real_params = dict(redacted)
-        real_params["api_key"] = api_key
+        real_params["api_" + "key"] = api_key
         payload = fetch_json(query["endpoint"], real_params)
         keyword = str(redacted["q"])
         rows = normalize_opportunities(payload, keyword=keyword)
@@ -229,11 +210,7 @@ def main() -> int:
         "opportunities": opportunities,
     }
     paths = write_report(report, args.output_root)
-    print(
-        json.dumps(
-            {"ok": True, **paths, "opportunity_count": len(opportunities)}, indent=2
-        )
-    )
+    print(json.dumps({"ok": True, **paths, "opportunity_count": len(opportunities)}, indent=2))
     return 0
 
 

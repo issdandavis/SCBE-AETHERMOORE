@@ -80,7 +80,7 @@ function createBridgeServer() {
         JSON.stringify({
           ok: false,
           error: 'local bridge handler failed',
-          detail: String(error && error.message ? error.message : error),
+          error_class: error && error.name ? String(error.name) : 'Error',
         })
       );
     }

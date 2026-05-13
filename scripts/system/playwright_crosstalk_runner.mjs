@@ -320,7 +320,9 @@ async function collectPageEvidence(browser, target, viewportName, args) {
   await page.close();
 
   const expectedCopyMissing = target.expects.filter((text) => !bodyText.includes(text));
-  const stripeLinks = links.filter((link) => /stripe\.com|buy\.stripe\.com/i.test(link.href));
+  const stripeLinks = links.filter((link) =>
+    /^(https?:\/\/)?([^/?#]+\.)?(stripe\.com|buy\.stripe\.com)([/?#]|$)/i.test(link.href)
+  );
 
   return {
     targetId: target.id,

@@ -29,7 +29,6 @@ from typing import Dict, List, Optional
 
 from src.cli.cascade_router import AndAllowCascadeRouter
 from src.cli.slm_router import (
-    BandNotApplicable,
     LatticeRouter,
     Mode,
     OllamaAdapter,

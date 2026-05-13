@@ -9,6 +9,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "scripts" / "security" / "traditional_security_layers.py"
 
+
 def _load_module():
     spec = importlib.util.spec_from_file_location("_traditional_security_layers", SCRIPT)
     assert spec is not None and spec.loader is not None

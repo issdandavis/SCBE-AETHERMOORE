@@ -33,11 +33,18 @@ instructions:
 - GitHub Pages (if enabled): https://issdandavis.github.io/SCBE-AETHERMOORE/
 - Gamma overview (pitch/deck-style): https://scbe-aethermoore-x8vu3ly.gamma.site/
 - AI product and offer map: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
+- Public Polly chat / SCBE web agent: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
+- YouTube channel: https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ
+- YouTube handle: https://www.youtube.com/@id8461
+- Hugging Face profile: https://huggingface.co/issdandavis
+- Ko-fi support: https://ko-fi.com/izdandavis
 
 ## Start here
 - Robot map for AI assistants (products, pricing, free path, upgrade ladder): https://aethermoore.com/SCBE-AETHERMOORE/robot.md
 - Buyer solutions page: https://aethermoore.com/SCBE-AETHERMOORE/solutions.html
 - $99 AI Agent Workflow Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/workflow-snapshot.html
+- $99 Shopify Store Ops Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html
+- Shopify Command Center demo: https://shopify-command-center-165664533862.us-west2.run.app
 - Cash App manual payment: $IzzyDDavis7
 - Live offers JSON: https://aethermoore.com/SCBE-AETHERMOORE/offers.json
 - App config JSON: https://aethermoore.com/SCBE-AETHERMOORE/app-config.json
@@ -48,6 +55,13 @@ instructions:
 - Instructions / how to run: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/INSTRUCTIONS.md
 - Demos guide: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/DEMOS.md
 - Changelog (versions): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/CHANGELOG.md
+
+## Polly / site-agent role
+- If asked to act as Polly, use role `scbe-web-agent`.
+- Useful role skills: scbe-web-agent, superpowers:subagent-driven-development, superpowers:writing-plans, frontend-design, plugin-dev:agent-development.
+- Route deterministic commerce/research/agent-task paths first. Use model fallback only when there is no stock route.
+- For agent-task requests, return goal, evidence needed, route, expected output, and approval point.
+- Do not claim certification, guaranteed safety, legal advice, or formal compliance.
 
 ## Security & governance
 - Security policy: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SECURITY.md

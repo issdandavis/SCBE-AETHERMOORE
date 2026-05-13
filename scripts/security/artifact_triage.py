@@ -36,13 +36,38 @@ SECRET_PATTERNS = [
 
 INDICATOR_RULES: list[tuple[str, str, int, re.Pattern[str]]] = [
     ("dynamic_code_execution", "CRITICAL", 28, re.compile(r"\b(eval|exec)\s*\(|base64\.b64decode|Function\s*\(", re.I)),
-    ("shell_execution", "HIGH", 20, re.compile(r"\b(os\.system|subprocess\.Popen|subprocess\.run|child_process|powershell|cmd\.exe)\b", re.I)),
+    (
+        "shell_execution",
+        "HIGH",
+        20,
+        re.compile(r"\b(os\.system|subprocess\.Popen|subprocess\.run|child_process|powershell|cmd\.exe)\b", re.I),
+    ),
     ("network_callback", "HIGH", 18, re.compile(r"https?://|socket\.connect|requests\.(post|put)|fetch\s*\(", re.I)),
-    ("persistence_terms", "HIGH", 16, re.compile(r"\b(run key|startup|schtasks|launch agent|registry|crontab)\b", re.I)),
-    ("credential_access_terms", "HIGH", 16, re.compile(r"\b(credentials?|keychain|browser cookies?|\.ssh|id_rsa|wallet)\b", re.I)),
-    ("filesystem_modification", "MEDIUM", 10, re.compile(r"\b(rm\s+-rf|unlink|deletefile|remove-item|writefile|open\s*\(.+['\"]w)\b", re.I)),
+    (
+        "persistence_terms",
+        "HIGH",
+        16,
+        re.compile(r"\b(run key|startup|schtasks|launch agent|registry|crontab)\b", re.I),
+    ),
+    (
+        "credential_access_terms",
+        "HIGH",
+        16,
+        re.compile(r"\b(credentials?|keychain|browser cookies?|\.ssh|id_rsa|wallet)\b", re.I),
+    ),
+    (
+        "filesystem_modification",
+        "MEDIUM",
+        10,
+        re.compile(r"\b(rm\s+-rf|unlink|deletefile|remove-item|writefile|open\s*\(.+['\"]w)\b", re.I),
+    ),
     ("obfuscation_markers", "MEDIUM", 10, re.compile(r"\b(fromcharcode|atob|packed|upx|xor|rot13)\b", re.I)),
-    ("debug_reverse_engineering_markers", "INFO", 2, re.compile(r"\b(strings|ghidra|ida|gdb|breakpoint|symbolic execution|angr)\b", re.I)),
+    (
+        "debug_reverse_engineering_markers",
+        "INFO",
+        2,
+        re.compile(r"\b(strings|ghidra|ida|gdb|breakpoint|symbolic execution|angr)\b", re.I),
+    ),
 ]
 
 

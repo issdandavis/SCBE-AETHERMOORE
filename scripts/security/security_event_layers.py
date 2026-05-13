@@ -112,7 +112,9 @@ def normalize_event(raw: Any) -> NormalizedSecurityEvent:
     action = _first(raw, ("action", "command", "method", "operation", "finish_reason", "decision"))
     target = _first(raw, ("target", "url", "host", "path", "file", "endpoint"))
     text = _first(raw, ("text", "prompt", "output", "content", "message", "body", "description", "command"))
-    metadata = {str(k): v for k, v in raw.items() if k not in {"text", "prompt", "output", "content", "message", "body"}}
+    metadata = {
+        str(k): v for k, v in raw.items() if k not in {"text", "prompt", "output", "content", "message", "body"}
+    }
     return NormalizedSecurityEvent(event_type, actor, action, target, text, metadata)
 
 
@@ -141,40 +143,97 @@ def classify_events(raw_events: list[Any], policy_path: Path = DEFAULT_POLICY_PA
         combined = " ".join([lower_text, lower_action, lower_target])
         scan = scan_text_for_threats(event.text)
         if scan.risk_score >= 0.85:
-            controls.append(EventHit("semantic_text_malicious", "CRITICAL", 35, "Prompt/output/log text matched malicious semantic controls."))
+            controls.append(
+                EventHit(
+                    "semantic_text_malicious",
+                    "CRITICAL",
+                    35,
+                    "Prompt/output/log text matched malicious semantic controls.",
+                )
+            )
         elif scan.risk_score >= 0.55:
-            controls.append(EventHit("semantic_text_suspicious", "HIGH", 22, "Prompt/output/log text matched suspicious semantic controls."))
+            controls.append(
+                EventHit(
+                    "semantic_text_suspicious",
+                    "HIGH",
+                    22,
+                    "Prompt/output/log text matched suspicious semantic controls.",
+                )
+            )
         elif scan.risk_score >= 0.25:
-            controls.append(EventHit("semantic_text_caution", "MEDIUM", 10, "Prompt/output/log text matched caution semantic controls."))
+            controls.append(
+                EventHit(
+                    "semantic_text_caution", "MEDIUM", 10, "Prompt/output/log text matched caution semantic controls."
+                )
+            )
 
         if any(pattern in combined for pattern in dangerous_commands):
-            controls.append(EventHit("dangerous_command", "CRITICAL", 42, "Command contains a known dangerous execution pattern."))
+            controls.append(
+                EventHit("dangerous_command", "CRITICAL", 42, "Command contains a known dangerous execution pattern.")
+            )
         if re.search(r"\b(subprocess|os\.system|child_process|exec|eval)\b", combined):
-            controls.append(EventHit("dynamic_execution_event", "HIGH", 18, "Event invokes dynamic command/code execution."))
+            controls.append(
+                EventHit("dynamic_execution_event", "HIGH", 18, "Event invokes dynamic command/code execution.")
+            )
         if any(command in combined for command in install_commands):
-            controls.append(EventHit("dependency_install_event", "MEDIUM", 10, "Event installs or runs dependency tooling."))
+            controls.append(
+                EventHit("dependency_install_event", "MEDIUM", 10, "Event installs or runs dependency tooling.")
+            )
         if re.search(r"--registry\s+https?://(?!registry\.npmjs\.org)|--index-url\s+https?://(?!pypi\.org)", combined):
-            controls.append(EventHit("non_default_package_registry", "HIGH", 24, "Dependency install uses a non-default package registry."))
+            controls.append(
+                EventHit(
+                    "non_default_package_registry",
+                    "HIGH",
+                    24,
+                    "Dependency install uses a non-default package registry.",
+                )
+            )
         if re.search(r"\b(--force|--legacy-peer-deps|--ignore-scripts|--trusted-host)\b", combined):
-            controls.append(EventHit("dependency_guardrail_override", "MEDIUM", 12, "Dependency command disables or weakens normal guardrails."))
+            controls.append(
+                EventHit(
+                    "dependency_guardrail_override",
+                    "MEDIUM",
+                    12,
+                    "Dependency command disables or weakens normal guardrails.",
+                )
+            )
 
         host = host_from_target(event.target)
         if host and host in blocked_hosts:
             controls.append(EventHit("blocked_host", "CRITICAL", 45, f"Target host is explicitly blocked: {host}"))
         elif host and host not in trusted_hosts and not host.endswith(".github.com"):
-            controls.append(EventHit("untrusted_network_target", "MEDIUM", 10, f"Target host is not in the trusted host policy: {host}"))
+            controls.append(
+                EventHit(
+                    "untrusted_network_target", "MEDIUM", 10, f"Target host is not in the trusted host policy: {host}"
+                )
+            )
 
         if any(marker in combined.upper() for marker in secret_markers):
-            controls.append(EventHit("secret_env_reference", "HIGH", 20, "Event references secret-looking environment material."))
+            controls.append(
+                EventHit("secret_env_reference", "HIGH", 20, "Event references secret-looking environment material.")
+            )
         if any(path in lower_target or path in combined for path in sensitive_paths):
-            controls.append(EventHit("sensitive_path_reference", "HIGH", 18, "Event references sensitive config/key material."))
+            controls.append(
+                EventHit("sensitive_path_reference", "HIGH", 18, "Event references sensitive config/key material.")
+            )
         if event.event_type.lower() in {"governed_output", "model_io", "chat"}:
             decision = str(event.metadata.get("decision") or event.action).upper()
             finish = str(event.metadata.get("finish_reason") or "").lower()
             if decision == "DENY" or finish == "content_filter":
-                controls.append(EventHit("governed_output_block", "CRITICAL", 40, "Governed-output surface blocked unsafe model/input behavior."))
+                controls.append(
+                    EventHit(
+                        "governed_output_block",
+                        "CRITICAL",
+                        40,
+                        "Governed-output surface blocked unsafe model/input behavior.",
+                    )
+                )
             elif decision in {"QUARANTINE", "ESCALATE"}:
-                controls.append(EventHit("governed_output_intervention", "HIGH", 18, "Governed-output surface required intervention."))
+                controls.append(
+                    EventHit(
+                        "governed_output_intervention", "HIGH", 18, "Governed-output surface required intervention."
+                    )
+                )
 
     score = max(0, sum(hit.weight for hit in controls))
     critical = any(hit.severity == "CRITICAL" for hit in controls)

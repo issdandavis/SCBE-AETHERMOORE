@@ -76,7 +76,7 @@ def probe_postgres(*, dsn: str | None = None, timeout_s: float = 3.0) -> dict[st
             "configured": True,
             "reachable": False,
             "driver": "psycopg3",
-            "error": str(exc)[:500],
+            "error": type(exc).__name__,
         }
 
 

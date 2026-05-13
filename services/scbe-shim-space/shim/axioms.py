@@ -31,13 +31,18 @@ def _check_unitarity(output: str) -> Optional[AxiomViolation]:
     if n < TOO_SHORT_MIN:
         return AxiomViolation("unitarity", 1.0, "axiom:unitarity.empty", "model returned empty content")
     if n > MAX_REASONABLE_LENGTH:
-        return AxiomViolation("unitarity", 0.8, "axiom:unitarity.overflow", f"output {n} chars exceeds {MAX_REASONABLE_LENGTH}")
+        return AxiomViolation(
+            "unitarity", 0.8, "axiom:unitarity.overflow", f"output {n} chars exceeds {MAX_REASONABLE_LENGTH}"
+        )
     return None
 
 
 def _check_locality(output: str) -> Optional[AxiomViolation]:
     patterns = [
-        (re.compile(r"\b(system prompt|hidden instructions?|developer instructions?)\b", re.I), "axiom:locality.system_prompt_leak"),
+        (
+            re.compile(r"\b(system prompt|hidden instructions?|developer instructions?)\b", re.I),
+            "axiom:locality.system_prompt_leak",
+        ),
         (re.compile(r"\b(rollback|restart)_conversation\b", re.I), "axiom:locality.tool_leak"),
         (re.compile(r"\bignore (previous|prior|all|above) instructions?\b", re.I), "axiom:locality.jailbreak_phrase"),
         (re.compile(r"\bbase64\s*[:=]\s*[A-Za-z0-9+/]{40,}"), "axiom:locality.suspicious_base64"),

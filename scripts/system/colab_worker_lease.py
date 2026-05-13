@@ -28,22 +28,51 @@ def _safe_url(raw_url: str) -> str:
     return parsed._replace(query="", fragment="").geturl()
 
 
-def _redact_artifact_value(value: Any, key: str = "") -> Any:
-    lowered_key = key.lower()
-    if any(
-        part in lowered_key
-        for part in ("token", "secret", "password", "credential", "api_key")
-    ):
-        return "<redacted>"
+def _redact_sensitive_json(value: Any) -> Any:
+    """Recursively redact secret-shaped keys before writing artifacts."""
+
     if isinstance(value, str):
-        if value.startswith(("http://", "https://")):
-            return _safe_url(value)
-        return value
-    if isinstance(value, list):
-        return [_redact_artifact_value(item) for item in value]
+        return _safe_url(value) if value.startswith(("http://", "https://")) else value
     if isinstance(value, dict):
-        return {str(k): _redact_artifact_value(v, str(k)) for k, v in value.items()}
+        redacted: dict[str, Any] = {}
+        for key, item in value.items():
+            lowered = str(key).lower()
+            if any(marker in lowered for marker in ("secret", "token", "password", "api_key", "apikey", "credential")):
+                redacted[key] = "<redacted>"
+            else:
+                redacted[key] = _redact_sensitive_json(item)
+        return redacted
+    if isinstance(value, list):
+        return [_redact_sensitive_json(item) for item in value]
     return value
+
+
+def _artifact_public_summary(artifact: dict[str, Any]) -> dict[str, Any]:
+    """Return CLI-safe metadata without raw browser or packet payload fields."""
+    return {
+        "schema_version": artifact.get("schema_version"),
+        "state": artifact.get("state"),
+        "worker_id": artifact.get("worker_id"),
+        "mission_id": artifact.get("mission_id"),
+        "artifact_path": artifact.get("artifact_path"),
+        "packets": artifact.get("packets"),
+        "claimed_at_utc": artifact.get("claimed_at_utc"),
+    }
+
+
+def _artifact_storage_summary(*, state: str, has_screenshot: bool) -> dict[str, Any]:
+    """Persist only replay pointers and coarse state, not browser/session details."""
+    return {
+        "schema_version": "scbe_colab_worker_public_artifact_v1",
+        "state": (
+            state
+            if state in {"dry_run", "auth_required", "notebook_open", "runtime_connected", "runtime_disconnected"}
+            else "unknown"
+        ),
+        "has_screenshot": has_screenshot,
+        "packet_count": 3,
+        "packet_classes": ["claim", "evidence", "internal"],
+    }
 
 
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "colab_workers"
@@ -60,19 +89,14 @@ def _utc_str(value: datetime | None = None) -> str:
 
 
 def _slug(value: str) -> str:
-    return (
-        "".join(ch.lower() if ch.isalnum() else "-" for ch in value).strip("-")
-        or "worker"
-    )
+    return "".join(ch.lower() if ch.isalnum() else "-" for ch in value).strip("-") or "worker"
 
 
 def _split_csv(value: str) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
-def build_intersection_scope(
-    *, languages: str = "", regions: str = "", jurisdictions: str = ""
-) -> Dict[str, Any]:
+def build_intersection_scope(*, languages: str = "", regions: str = "", jurisdictions: str = "") -> Dict[str, Any]:
     language_items = _split_csv(languages)
     region_items = _split_csv(regions)
     jurisdiction_items = _split_csv(jurisdictions)
@@ -80,8 +104,7 @@ def build_intersection_scope(
         "languages": language_items,
         "regions": region_items,
         "jurisdictions": jurisdiction_items,
-        "intersection_count": max(1, len(language_items) or 1)
-        * max(1, len(region_items) or 1),
+        "intersection_count": max(1, len(language_items) or 1) * max(1, len(region_items) or 1),
     }
 
 
@@ -185,9 +208,7 @@ def _derive_runtime_state(base_state: str, runtime_probe: Dict[str, Any]) -> str
         return "auth_required"
     if runtime_probe.get("usage_visible"):
         return "runtime_connected"
-    if runtime_probe.get("connect_button_visible") or runtime_probe.get(
-        "body_has_connect"
-    ):
+    if runtime_probe.get("connect_button_visible") or runtime_probe.get("body_has_connect"):
         return "runtime_disconnected"
     return base_state
 
@@ -209,12 +230,7 @@ def _attempt_runtime_connect(page) -> Dict[str, Any]:
         if not clicked:
             page.locator("colab-toolbar-button#connect").click(timeout=8000, force=True)
         page.wait_for_timeout(12000)
-        return {
-            "attempted": True,
-            "ok": True,
-            "method": "colab-toolbar-button",
-            "error": "",
-        }
+        return {"attempted": True, "ok": True, "method": "colab-toolbar-button", "error": ""}
     except Exception as exc:
         return {"attempted": True, "ok": False, "error": str(exc)[:500]}
 
@@ -304,21 +320,9 @@ def _attempt_run_all(page) -> Dict[str, Any]:
 
 def _default_chrome_executable() -> Path | None:
     candidates = [
-        Path(os.environ.get("ProgramFiles", ""))
-        / "Google"
-        / "Chrome"
-        / "Application"
-        / "chrome.exe",
-        Path(os.environ.get("ProgramFiles(x86)", ""))
-        / "Google"
-        / "Chrome"
-        / "Application"
-        / "chrome.exe",
-        Path(os.environ.get("LOCALAPPDATA", ""))
-        / "Google"
-        / "Chrome"
-        / "Application"
-        / "chrome.exe",
+        Path(os.environ.get("ProgramFiles", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
+        Path(os.environ.get("ProgramFiles(x86)", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Google" / "Chrome" / "Application" / "chrome.exe",
     ]
     for path in candidates:
         if path.exists():
@@ -326,13 +330,9 @@ def _default_chrome_executable() -> Path | None:
     return None
 
 
-def open_auth_bootstrap(
-    notebook_query: str, profile_dir: Path, browser_executable: str = ""
-) -> Dict[str, Any]:
+def open_auth_bootstrap(notebook_query: str, profile_dir: Path, browser_executable: str = "") -> Dict[str, Any]:
     notebook = catalog.resolve_notebook_payload(notebook_query)
-    executable = (
-        Path(browser_executable) if browser_executable else _default_chrome_executable()
-    )
+    executable = Path(browser_executable) if browser_executable else _default_chrome_executable()
     if executable is None or not executable.exists():
         raise FileNotFoundError("normal Google Chrome executable was not found")
     profile_dir.mkdir(parents=True, exist_ok=True)
@@ -414,13 +414,9 @@ def _packet_rails(
     if dry_run:
         friction.append({"type": "dry_run", "message": "browser launch skipped"})
     if state == "auth_required":
-        contradictions.append(
-            {"type": "auth_required", "url": current_url, "title": title}
-        )
+        contradictions.append({"type": "auth_required", "url": current_url, "title": title})
     if state == "runtime_disconnected":
-        friction.append(
-            {"type": "runtime_connect_needed", "url": current_url, "title": title}
-        )
+        friction.append({"type": "runtime_connect_needed", "url": current_url, "title": title})
     confirmations = [
         {"type": "state", "value": state},
         {"type": "title", "value": title},
@@ -512,12 +508,7 @@ def provision_colab_worker(
         mission_id=mission_id,
         worker_id=worker_id,
         lease=lease,
-        rails={
-            "P+": [{"type": "claim_lease", "notebook": notebook["name"]}],
-            "P-": [],
-            "D+": [],
-            "D-": [],
-        },
+        rails={"P+": [{"type": "claim_lease", "notebook": notebook["name"]}], "P-": [], "D+": [], "D-": []},
         layer14={
             "energy": 0.2,
             "centroid": 0.2,
@@ -551,28 +542,19 @@ def provision_colab_worker(
             )
             try:
                 page = context.pages[0] if context.pages else context.new_page()
-                page.goto(
-                    notebook["colab_url"],
-                    wait_until="domcontentloaded",
-                    timeout=timeout_ms,
-                )
+                page.goto(notebook["colab_url"], wait_until="domcontentloaded", timeout=timeout_ms)
                 page.wait_for_timeout(4000)
                 title = page.title()
                 current_url = page.url
                 state = _state_from_page(current_url, title)
                 runtime_probe = _probe_colab_runtime(page)
                 state = _derive_runtime_state(state, runtime_probe)
-                if connect_runtime and state in {
-                    "runtime_disconnected",
-                    "notebook_open",
-                }:
+                if connect_runtime and state in {"runtime_disconnected", "notebook_open"}:
                     connect_attempt = _attempt_runtime_connect(page)
                     title = page.title()
                     current_url = page.url
                     runtime_probe = _probe_colab_runtime(page)
-                    state = _derive_runtime_state(
-                        _state_from_page(current_url, title), runtime_probe
-                    )
+                    state = _derive_runtime_state(_state_from_page(current_url, title), runtime_probe)
                 if run_all and state in {"runtime_connected", "notebook_open"}:
                     run_all_attempt = _attempt_run_all(page)
                     if post_run_wait_seconds > 0:
@@ -580,9 +562,7 @@ def provision_colab_worker(
                     title = page.title()
                     current_url = page.url
                     runtime_probe = _probe_colab_runtime(page)
-                    state = _derive_runtime_state(
-                        _state_from_page(current_url, title), runtime_probe
-                    )
+                    state = _derive_runtime_state(_state_from_page(current_url, title), runtime_probe)
                 screenshot_path = artifact_dir / "colab_worker_page.png"
                 page.screenshot(path=str(screenshot_path), full_page=True)
                 if keep_open:  # pragma: no cover
@@ -614,9 +594,7 @@ def provision_colab_worker(
         layer14=layer14,
         proof=[notebook["colab_url"]],
         next_action="Attach workload or authenticate if required.",
-        status=(
-            "ready" if state in {"notebook_open", "runtime_connected"} else "attention"
-        ),
+        status="ready" if state in {"notebook_open", "runtime_connected"} else "attention",
     )
 
     evidence_proof = [str(artifact_path)]
@@ -651,14 +629,12 @@ def provision_colab_worker(
         "intersection_scope": lease["intersection_scope"],
         "state": state,
         "title": title,
-        "current_url": _safe_url(current_url),
+        "current_url": current_url,
         "profile_dir": str(profile_dir),
         "headless": headless,
         "dry_run": dry_run,
         "artifact_path": str(artifact_path),
-        "screenshot_path": (
-            str(screenshot_path) if screenshot_path is not None else None
-        ),
+        "screenshot_path": str(screenshot_path) if screenshot_path is not None else None,
         "runtime_probe": runtime_probe,
         "connect_attempt": connect_attempt,
         "run_all_attempt": run_all_attempt,
@@ -671,78 +647,36 @@ def provision_colab_worker(
         "rails": rails,
         "claimed_at_utc": lease["claimed_at_utc"],
     }
-    safe_artifact = _redact_artifact_value(artifact)
-    artifact_path.write_text(json.dumps(safe_artifact, indent=2), encoding="utf-8")
-    return safe_artifact
+    artifact_path.write_text(
+        json.dumps(_artifact_storage_summary(state=state, has_screenshot=screenshot_path is not None), indent=2),
+        encoding="utf-8",
+    )
+    return _redact_sensitive_json(artifact)
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Provision a browser-backed Colab worker lease."
-    )
-    parser.add_argument(
-        "--notebook",
-        required=True,
-        help="Notebook name or alias from the Colab catalog.",
-    )
+    parser = argparse.ArgumentParser(description="Provision a browser-backed Colab worker lease.")
+    parser.add_argument("--notebook", required=True, help="Notebook name or alias from the Colab catalog.")
     parser.add_argument("--mission-id", default="", help="Mission identifier.")
     parser.add_argument("--worker-id", default="", help="Worker identifier.")
     parser.add_argument("--session-id", default="", help="Session identifier.")
-    parser.add_argument(
-        "--recipient", default="agent.claude", help="Cross-talk recipient."
-    )
+    parser.add_argument("--recipient", default="agent.claude", help="Cross-talk recipient.")
     parser.add_argument("--sender", default="agent.codex", help="Cross-talk sender.")
     parser.add_argument(
-        "--profile-dir",
-        default=str(DEFAULT_PROFILE_DIR),
-        help="Persistent Chromium profile directory.",
+        "--profile-dir", default=str(DEFAULT_PROFILE_DIR), help="Persistent Chromium profile directory."
     )
-    parser.add_argument(
-        "--artifact-root", default=str(ARTIFACT_ROOT), help="Artifact root directory."
-    )
-    parser.add_argument(
-        "--lease-seconds", type=int, default=3600, help="Lease duration in seconds."
-    )
-    parser.add_argument(
-        "--parallel-group", default="", help="Shared group for parallel Colab workers."
-    )
-    parser.add_argument(
-        "--shard-index", type=int, default=0, help="Zero-based worker shard index."
-    )
-    parser.add_argument(
-        "--shard-count",
-        type=int,
-        default=1,
-        help="Total workers in this parallel group.",
-    )
-    parser.add_argument(
-        "--languages", default="", help="Comma-separated language scope for the worker."
-    )
-    parser.add_argument(
-        "--regions", default="", help="Comma-separated regional scope for the worker."
-    )
-    parser.add_argument(
-        "--jurisdictions",
-        default="",
-        help="Comma-separated jurisdiction or policy scope.",
-    )
-    parser.add_argument(
-        "--timeout-ms", type=int, default=90000, help="Page load timeout."
-    )
-    parser.add_argument(
-        "--headless", action="store_true", help="Launch browser headless."
-    )
-    parser.add_argument(
-        "--no-headless",
-        dest="headless",
-        action="store_false",
-        help="Launch browser with UI.",
-    )
-    parser.add_argument(
-        "--keep-open",
-        action="store_true",
-        help="Keep the browser open until Enter is pressed.",
-    )
+    parser.add_argument("--artifact-root", default=str(ARTIFACT_ROOT), help="Artifact root directory.")
+    parser.add_argument("--lease-seconds", type=int, default=3600, help="Lease duration in seconds.")
+    parser.add_argument("--parallel-group", default="", help="Shared group for parallel Colab workers.")
+    parser.add_argument("--shard-index", type=int, default=0, help="Zero-based worker shard index.")
+    parser.add_argument("--shard-count", type=int, default=1, help="Total workers in this parallel group.")
+    parser.add_argument("--languages", default="", help="Comma-separated language scope for the worker.")
+    parser.add_argument("--regions", default="", help="Comma-separated regional scope for the worker.")
+    parser.add_argument("--jurisdictions", default="", help="Comma-separated jurisdiction or policy scope.")
+    parser.add_argument("--timeout-ms", type=int, default=90000, help="Page load timeout.")
+    parser.add_argument("--headless", action="store_true", help="Launch browser headless.")
+    parser.add_argument("--no-headless", dest="headless", action="store_false", help="Launch browser with UI.")
+    parser.add_argument("--keep-open", action="store_true", help="Keep the browser open until Enter is pressed.")
     parser.add_argument(
         "--connect-runtime",
         action="store_true",
@@ -765,14 +699,10 @@ def _parser() -> argparse.ArgumentParser:
         help="Open normal Chrome visibly with this worker profile for one-time Google sign-in.",
     )
     parser.add_argument(
-        "--browser-executable",
-        default="",
-        help="Optional normal Chrome executable path for --auth-bootstrap.",
+        "--browser-executable", default="", help="Optional normal Chrome executable path for --auth-bootstrap."
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Resolve notebook and emit packets without launching the browser.",
+        "--dry-run", action="store_true", help="Resolve notebook and emit packets without launching the browser."
     )
     parser.set_defaults(headless=False)
     return parser
@@ -780,10 +710,7 @@ def _parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
-    mission_id = (
-        args.mission_id.strip()
-        or f"colab-mission-{_utc_now().strftime('%Y%m%d%H%M%S')}"
-    )
+    mission_id = args.mission_id.strip() or f"colab-mission-{_utc_now().strftime('%Y%m%d%H%M%S')}"
     worker_id = args.worker_id.strip() or f"worker-colab-{_slug(args.notebook)}"
     session_id = args.session_id.strip() or f"{worker_id}-session"
     intersection_scope = build_intersection_scope(
@@ -794,14 +721,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.auth_bootstrap:
         print(
             json.dumps(
-                open_auth_bootstrap(
-                    args.notebook, Path(args.profile_dir), args.browser_executable
-                ),
+                {
+                    "ok": True,
+                    "state": open_auth_bootstrap(args.notebook, Path(args.profile_dir), args.browser_executable)[
+                        "state"
+                    ],
+                },
                 indent=2,
             )
         )
         return 0
-    safe_artifact = provision_colab_worker(
+    provision_colab_worker(
         notebook_query=args.notebook,
         mission_id=mission_id,
         worker_id=worker_id,
@@ -823,7 +753,7 @@ def main(argv: list[str] | None = None) -> int:
         run_all=bool(args.run_all),
         post_run_wait_seconds=int(args.post_run_wait_seconds),
     )
-    print(json.dumps(safe_artifact, indent=2))
+    print(json.dumps({"ok": True, "artifact_recorded": True}, indent=2))
     return 0
 
 

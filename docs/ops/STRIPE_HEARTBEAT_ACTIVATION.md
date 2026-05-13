@@ -14,7 +14,9 @@ Live production objects created 2026-05-12:
 - Governance Heartbeat Payment Link ID: `plink_1TW71zJTF2SuUODICZLQCCS3`
 - Governance Heartbeat Price ID: `price_1TW71zJTF2SuUODIkHVk4Ws0`
 
-Set Vercel production environment variables:
+The public checkout URL and Payment Link ID are now baked in as safe public
+fallbacks. These Vercel production environment variables are still allowed as
+overrides, but the Heartbeat path no longer depends on setting them before use:
 
 ```text
 SCBE_PAYMENT_LINK_HEARTBEAT=https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m
@@ -30,7 +32,7 @@ Sandbox objects created:
 - Product: `prod_UUQSk8tzQsQ1eK`
 - Price: `price_1TVRc3JjzxXjWlGn5Vr36BYc`
 - Payment Link ID: `plink_1TVRcAJjzxXjWlGnCMjblKK0`
-- Test checkout URL: `https://buy.stripe.com/test_00w14oaPgdEJejL6I35Ne05`
+- Test checkout URL: redacted sandbox URL, intentionally not stored as a clickable public link.
 
 Do not put the test checkout URL in `docs/offers.json`, Vercel production env, or public offer pages.
 
@@ -43,10 +45,11 @@ In the live Stripe Dashboard:
 3. Create a Payment Link for quantity `1`.
 4. Copy the public live checkout URL, which should look like:
    - `https://buy.stripe.com/...`
-   - not `https://buy.stripe.com/test_...`
+   - never a sandbox checkout URL
 5. Copy the live Payment Link ID, which starts with `plink_`.
 
-Then set Vercel production environment variables:
+Then set Vercel production environment variables if you want to override the
+checked-in production defaults:
 
 ```text
 SCBE_PAYMENT_LINK_HEARTBEAT=https://buy.stripe.com/<live_heartbeat_subscription_link>
@@ -54,9 +57,11 @@ STRIPE_HEARTBEAT_PAYMENT_LINK_ID=plink_<live_heartbeat_payment_link_id>
 ```
 
 `SCBE_PAYMENT_LINK_HEARTBEAT` controls what Polly and the catalog give customers.
-`STRIPE_HEARTBEAT_PAYMENT_LINK_ID` lets the Stripe webhook classify the checkout as `polly_heartbeat_started`.
+`STRIPE_HEARTBEAT_PAYMENT_LINK_ID` lets the Stripe webhook classify the checkout
+as `polly_heartbeat_started`. If either variable is unset, the code falls back
+to the live 2026-05-12 Heartbeat link and `plink_1TW71zJTF2SuUODICZLQCCS3`.
 
-The commerce layer rejects `plink_...` and `https://buy.stripe.com/test_...` as public checkout overrides.
+The commerce layer rejects internal `plink_...` IDs and sandbox checkout URLs as public checkout overrides.
 
 ## Digital Product Delivery
 
@@ -69,6 +74,13 @@ Set these Vercel production environment variables:
 ```text
 STRIPE_TOOLKIT_PAYMENT_LINK_ID=plink_<live_toolkit_payment_link_id>
 STRIPE_VAULT_PAYMENT_LINK_ID=plink_<live_vault_payment_link_id>
+```
+
+The webhook also accepts the older already-deployed aliases:
+
+```text
+SCBE_PAYMENT_LINK_TOOLKIT=plink_<live_toolkit_payment_link_id>
+SCBE_PAYMENT_LINK_VAULT=plink_<live_vault_payment_link_id>
 ```
 
 Set these GitHub Actions secrets if the product-delivery workflow should email

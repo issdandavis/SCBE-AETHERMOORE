@@ -26,7 +26,7 @@ import hashlib
 import json
 import random
 import shutil
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -311,9 +311,7 @@ def generate_rows(
       ~45% of total rows -- the v6e-bumped target.
     """
     if not 1 <= marker_negative_variants <= len(MARKER_NEGATIVE_VARIANTS):
-        raise ValueError(
-            f"marker_negative_variants must be in [1, {len(MARKER_NEGATIVE_VARIANTS)}]"
-        )
+        raise ValueError(f"marker_negative_variants must be in [1, {len(MARKER_NEGATIVE_VARIANTS)}]")
     samples = load_coding_system_full_samples() + load_external_poly_samples()
     if not samples:
         return []
@@ -363,9 +361,7 @@ def generate_rows(
         active_variants = MARKER_NEGATIVE_VARIANTS[:marker_negative_variants]
         for s in samples:
             for variant_fn in active_variants:
-                rows.append(
-                    make_row(variant_fn(s), s.code, scenario="marker_negative", sample=s, split=split)
-                )
+                rows.append(make_row(variant_fn(s), s.code, scenario="marker_negative", sample=s, split=split))
 
     return rows
 
@@ -517,9 +513,7 @@ def build(
 ) -> dict[str, int]:
     train_path, eval_path, manifest_path, kaggle_root = _shard_paths_for(shard_suffix)
     rng = random.Random(seed)
-    rows = generate_rows(
-        rng, split="train", marker_negative_variants=marker_negative_variants
-    )
+    rows = generate_rows(rng, split="train", marker_negative_variants=marker_negative_variants)
     if not rows:
         raise RuntimeError(
             "No source rows loaded. Check that coding_system_full_v1_train.sft.jsonl and "

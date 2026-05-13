@@ -44,9 +44,6 @@ _OLLAMA_HEALTH_TIMEOUT = 1.5  # seconds — short so chain advances fast when do
 # Ordered list of provider tiers (cheapest/safest first).
 PROVIDER_TIERS = ("local", "ollama", "hf", "claude")
 
-# Governance tiers in ascending severity (lower index = more permissive).
-_GOVERNANCE_TIERS = ("ALLOW", "QUARANTINE", "ESCALATE", "DENY")
-
 # System prompt template — filled with tongue/language at call time
 _SYSTEM_TEMPLATE = textwrap.dedent("""\
     You are Polly, an expert {language} code generation assistant.

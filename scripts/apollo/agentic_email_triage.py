@@ -13,31 +13,30 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import logging
 import os
+import re
 import sys
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)
 from pathlib import Path
 from typing import Optional
 
-
-def _action_id(action: str) -> str:
-    return (
-        hashlib.sha256(action.encode("utf-8", errors="replace")).hexdigest()[:12]
-        if action
-        else "none"
-    )
-
-
 # Project paths
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "src"))
+
+_SAFE_LABEL_RE = re.compile(r"[^a-zA-Z0-9_. -]+")
+
+
+def _safe_label(value: str, *, default: str = "unknown") -> str:
+    cleaned = _SAFE_LABEL_RE.sub("", str(value or "")).strip()
+    return cleaned[:80] or default
+
 
 # Load env
 _env = ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
@@ -56,76 +55,42 @@ AGENTIC_EMPLOYEES = {
     "sales": {
         "name": "Ava (Sales)",
         "role": "agent.sales",
-        "handles": [
-            "pricing inquiry",
-            "custom project",
-            "enterprise scoping",
-            "pilot application",
-            "partnership",
-        ],
+        "handles": ["pricing inquiry", "custom project", "enterprise scoping", "pilot application", "partnership"],
         "tone": "professional, concise, outcome-focused",
         "actions": ["send pricing sheet", "book scoping call", "send pilot agreement"],
     },
     "support": {
         "name": "Sam (Support)",
         "role": "agent.support",
-        "handles": [
-            "delivery issue",
-            "missing file",
-            "broken link",
-            "refund request",
-            "purchase help",
-        ],
+        "handles": ["delivery issue", "missing file", "broken link", "refund request", "purchase help"],
         "tone": "helpful, patient, solution-oriented",
         "actions": ["resend delivery", "process refund", "escalate to human"],
     },
     "technical": {
         "name": "Tao (Technical)",
         "role": "agent.technical",
-        "handles": [
-            "api question",
-            "integration help",
-            "bug report",
-            "self-hosting",
-            "code review request",
-        ],
+        "handles": ["api question", "integration help", "bug report", "self-hosting", "code review request"],
         "tone": "precise, technical, references docs",
         "actions": ["link to docs", "provide code snippet", "open GitHub issue"],
     },
     "security": {
         "name": "Sage (Security)",
         "role": "agent.security",
-        "handles": [
-            "vulnerability report",
-            "penetration test inquiry",
-            "audit request",
-            "compliance question",
-        ],
+        "handles": ["vulnerability report", "penetration test inquiry", "audit request", "compliance question"],
         "tone": "serious, thorough, process-oriented",
         "actions": ["acknowledge receipt", "request details", "route to red team"],
     },
     "content": {
         "name": "Cara (Content)",
         "role": "agent.content",
-        "handles": [
-            "guest post",
-            "interview request",
-            "speaking engagement",
-            "media inquiry",
-        ],
+        "handles": ["guest post", "interview request", "speaking engagement", "media inquiry"],
         "tone": "warm, story-oriented, calendar-aware",
         "actions": ["send media kit", "propose dates", "decline politely"],
     },
     "admin": {
         "name": "Alex (Admin)",
         "role": "agent.admin",
-        "handles": [
-            "spam",
-            "newsletter signup",
-            "unsubscribe",
-            "generic hello",
-            "unclear intent",
-        ],
+        "handles": ["spam", "newsletter signup", "unsubscribe", "generic hello", "unclear intent"],
         "tone": "neutral, efficient",
         "actions": ["mark spam", "add to newsletter", "archive"],
     },
@@ -149,14 +114,28 @@ class TriageResult:
     action: str = ""
     urgency: str = "normal"  # low, normal, high, critical
     tongue: str = ""
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
-def classify_with_llm(
-    sender: str, subject: str, body: str, api_key: Optional[str] = None
-) -> dict:
+def _redacted_triage_result(result: TriageResult) -> dict:
+    """Return routing metadata without email bodies, drafts, sender PII, or subject text."""
+
+    return {
+        "msg_id": result.msg_id,
+        "agent": result.agent,
+        "confidence": result.confidence,
+        "urgency": result.urgency,
+        "action": result.action,
+        "tongue": result.tongue,
+        "timestamp": result.timestamp,
+        "summary_sha256": __import__("hashlib").sha256(result.summary.encode("utf-8", errors="replace")).hexdigest(),
+        "subject_chars": len(result.subject or ""),
+        "sender_domain": (result.sender.rsplit("@", 1)[-1] if "@" in result.sender else "unknown"),
+        "draft_reply_present": bool(result.draft_reply),
+    }
+
+
+def classify_with_llm(sender: str, subject: str, body: str, api_key: Optional[str] = None) -> dict:
     """Use Gemini to classify email intent and route to agentic employee.
 
     Falls back to heuristic if Gemini is unavailable.
@@ -172,8 +151,7 @@ def classify_with_llm(
         model = genai.GenerativeModel("gemini-1.5-flash")
 
         agent_descriptions = "\n".join(
-            f"- {k}: handles {', '.join(v['handles'])}"
-            for k, v in AGENTIC_EMPLOYEES.items()
+            f"- {k}: handles {', '.join(v['handles'])}" for k, v in AGENTIC_EMPLOYEES.items()
         )
 
         prompt = f"""You are an email triage specialist for SCBE-AETHERMOORE, an AI governance company.
@@ -204,7 +182,7 @@ Classify this email. Respond ONLY with valid JSON in this exact format:
         elif "```" in text:
             text = text.split("```")[1].split("```")[0].strip()
         return json.loads(text)
-    except Exception as e:
+    except Exception:
         logger.warning("LLM classification failed — falling back to heuristic")
         return classify_heuristic(sender, subject, body)
 
@@ -246,9 +224,7 @@ def classify_heuristic(sender: str, subject: str, body: str) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def run_triage(
-    dry_run: bool = False, days: int = 1, auto_reply: bool = False
-) -> list[TriageResult]:
+def run_triage(dry_run: bool = False, days: int = 1, auto_reply: bool = False) -> list[TriageResult]:
     """Run agentic triage on recent emails.
 
     Args:
@@ -268,14 +244,7 @@ def run_triage(
         print("[WARN] IMAP credentials not configured. Using mock data for demo.")
         digests = []
     else:
-        digests = read_account(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            account_name="proton",
-            days=days,
-        )
+        digests = read_account(host=host, port=port, user=user, password=password, account_name="proton", days=days)
 
     for digest in digests:
         classification = classify_with_llm(
@@ -308,11 +277,7 @@ def run_triage(
 def _dispatch_to_queue(triage: TriageResult):
     """Store triage result in the dispatch spine for agent pickup."""
     try:
-        from scripts.system.advanced_ai_dispatch import (
-            connect_db,
-            build_task_id,
-            utc_now,
-        )
+        from scripts.system.advanced_ai_dispatch import connect_db, build_task_id, utc_now
 
         agent = AGENTIC_EMPLOYEES.get(triage.agent, AGENTIC_EMPLOYEES["admin"])
         conn = connect_db()
@@ -336,7 +301,7 @@ def _dispatch_to_queue(triage: TriageResult):
                 triage.sender,
                 json.dumps(["inbox", triage.agent]),
                 json.dumps([]),
-                json.dumps(asdict(triage)),
+                json.dumps(_redacted_triage_result(triage)),
                 json.dumps({"queue": triage.agent, "action": triage.action}),
                 f"Agentic triage: {triage.agent} | confidence: {triage.confidence:.2f}",
                 True,
@@ -350,13 +315,9 @@ def _dispatch_to_queue(triage: TriageResult):
         )
         conn.commit()
         conn.close()
-        logger.info(
-            "Dispatched to %s (priority %s)",
-            agent["name"],
-            _urgency_to_priority(triage.urgency),
-        )
+        logger.info("Dispatched triage item (priority %s)", _urgency_to_priority(triage.urgency))
     except Exception as e:
-        logger.warning("Dispatch failed: %s", e)
+        logger.warning("Dispatch failed: %s", type(e).__name__)
 
 
 def _urgency_to_priority(urgency: str) -> int:
@@ -369,22 +330,12 @@ def _urgency_to_priority(urgency: str) -> int:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Agentic Email Triage for SCBE-AETHERMOORE"
-    )
-    parser.add_argument(
-        "--run", action="store_true", help="Run triage on recent emails"
-    )
-    parser.add_argument(
-        "--dry-run", action="store_true", help="Classify without dispatching"
-    )
+    parser = argparse.ArgumentParser(description="Agentic Email Triage for SCBE-AETHERMOORE")
+    parser.add_argument("--run", action="store_true", help="Run triage on recent emails")
+    parser.add_argument("--dry-run", action="store_true", help="Classify without dispatching")
     parser.add_argument("--days", type=int, default=1, help="Days back to look")
-    parser.add_argument(
-        "--auto-reply", action="store_true", help="Generate draft replies"
-    )
-    parser.add_argument(
-        "--output", type=str, default="", help="Write results to JSON file"
-    )
+    parser.add_argument("--auto-reply", action="store_true", help="Generate draft replies")
+    parser.add_argument("--output", type=str, default="", help="Write results to JSON file")
     args = parser.parse_args()
 
     if not args.run and not args.dry_run:
@@ -392,30 +343,19 @@ def main():
         return
 
     print(f"Running agentic email triage (days={args.days}, dry_run={args.dry_run})...")
-    results = run_triage(
-        dry_run=args.dry_run, days=args.days, auto_reply=args.auto_reply
-    )
+    results = run_triage(dry_run=args.dry_run, days=args.days, auto_reply=args.auto_reply)
 
     print(f"\nTriage complete. {len(results)} emails processed.\n")
     for r in results:
-        agent = AGENTIC_EMPLOYEES.get(r.agent, {})
-        # Log only non-sensitive fields; subject may contain PII
-        logger.debug(
-            "Triage result: agent=%s urgency=%s action_id=%s",
-            agent.get("name", r.agent),
-            r.urgency,
-            _action_id(r.action),
-        )
-        print(
-            f"  [{r.urgency.upper()}] {agent.get('name', r.agent)} | action_id: {_action_id(r.action)}"
-        )
+        logger.debug("Triage result captured")
+        print("  triage item captured in redacted output")
         print(f"           confidence: {r.confidence:.2f}")
         if r.draft_reply:
-            logger.debug("Draft reply generated for agent %s", r.agent)
+            logger.debug("Draft reply generated")
         print()
 
     if args.output:
-        Path(args.output).write_text(json.dumps([asdict(r) for r in results], indent=2))
+        Path(args.output).write_text(json.dumps([_redacted_triage_result(r) for r in results], indent=2))
         print(f"Results written to {args.output}")
 
 

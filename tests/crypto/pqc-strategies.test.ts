@@ -18,16 +18,13 @@ import {
   type PQCStrategy,
   // TriStitch
   triStitch,
-  type TriStitchResult,
   // Geometric binding
   geometricFingerprint,
   bindKeyToGeometry,
   verifyGeometricBinding,
-  type GeoBoundKey,
   // Strategy executor
   executeStrategy,
   signWithStrategy,
-  type StrategyExecutionResult,
   starFortressDefenseReport,
 } from '../../src/crypto/pqc-strategies.js';
 import { clearRegistry } from '../../src/crypto/quantum-safe.js';

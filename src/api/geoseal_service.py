@@ -24,7 +24,6 @@ GEOSEAL_CLI_COMMANDS = frozenset(
         "replay",
         "testing-cli",
         "project-scaffold",
-        "code-roundtrip",
         "call-switchboard",
         "lightning-indexer",
         "yin-yang-dual",
@@ -131,8 +130,8 @@ async def health() -> dict[str, Any]:
         from src.api.postgres_lite import health_postgres_payload
 
         postgres_lite: dict[str, Any] = health_postgres_payload()
-    except Exception as exc:  # pragma: no cover - local optional dependency drift
-        postgres_lite = {"status": "unavailable", "error": str(exc)[:200]}
+    except Exception:  # pragma: no cover - local optional dependency drift
+        postgres_lite = {"status": "unavailable", "error": "postgres_lite_unavailable"}
     return {
         "status": "healthy",
         "version": "geoseal-service-v1",
@@ -175,7 +174,6 @@ async def spaceport_status() -> dict[str, Any]:
                     "/v1/geoseal/replay",
                     "/v1/geoseal/testing-cli",
                     "/v1/geoseal/project-scaffold",
-                    "/v1/geoseal/code-roundtrip",
                 ],
                 "authenticated_runtime": [
                     "/runtime/inspect",
@@ -291,7 +289,7 @@ async def geoseal_cli_http(command: str, body: dict[str, Any] = Body(default_fac
     try:
         result = dispatch_geoseal_command(command, body)
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        raise HTTPException(status_code=400, detail=str(exc)) from None
     exit_code = int(result.get("exit_code") or 0)
     return {"status": "ok" if exit_code == 0 else "error", **result}
 

@@ -21,9 +21,7 @@ def _chromium_binary_available() -> bool:
     cache_root = os.path.expanduser("~/.cache/ms-playwright")
     if not os.path.isdir(cache_root):
         return False
-    matches = glob.glob(
-        os.path.join(cache_root, "chromium*", "**", "chrome*"), recursive=True
-    )
+    matches = glob.glob(os.path.join(cache_root, "chromium*", "**", "chrome*"), recursive=True)
     return any(os.path.isfile(p) and os.access(p, os.X_OK) for p in matches)
 
 
@@ -34,10 +32,6 @@ if not _chromium_binary_available():
     )
 
 pytestmark = pytest.mark.slow
-
-
-def _is_example_host(raw_url: str) -> bool:
-    return urlparse(raw_url).hostname == "example.com"
 
 
 @pytest.fixture
@@ -64,8 +58,8 @@ class TestPlaywrightRuntime:
 
             # Navigate
             url = await rt.navigate("https://example.com")
-            assert _is_example_host(url)
-            assert _is_example_host(rt.current_url)
+            assert urlparse(url).hostname == "example.com"
+            assert urlparse(rt.current_url).hostname == "example.com"
 
             # Title
             title = await rt.title()
@@ -99,9 +93,7 @@ class TestPlaywrightRuntime:
             await rt.launch(headless=True)
 
             # Use a data URI with a simple form
-            await rt.navigate(
-                "data:text/html,<input id='q' type='text'><button id='btn'>Go</button>"
-            )
+            await rt.navigate("data:text/html,<input id='q' type='text'><button id='btn'>Go</button>")
 
             await rt.type_text("#q", "hello aethermoore")
             value = await rt.evaluate("() => document.getElementById('q').value")
@@ -152,9 +144,7 @@ class TestPlaywrightRuntime:
             )
 
             await rt.wait_for_selector("#delayed", timeout=5_000)
-            text = await rt.evaluate(
-                "() => document.getElementById('delayed').textContent"
-            )
+            text = await rt.evaluate("() => document.getElementById('delayed').textContent")
             assert text == "arrived"
 
             await rt.close()
@@ -167,9 +157,7 @@ class TestPlaywrightRuntime:
 
         rt = PlaywrightRuntime()
         with pytest.raises(RuntimeError, match="not launched"):
-            asyncio.get_event_loop().run_until_complete(
-                rt.navigate("https://example.com")
-            )
+            asyncio.get_event_loop().run_until_complete(rt.navigate("https://example.com"))
 
 
 # ── RemoteDisplayManager ───────────────────────────────────────────────────

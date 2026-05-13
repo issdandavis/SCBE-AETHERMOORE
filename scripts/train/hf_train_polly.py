@@ -70,8 +70,9 @@ def resolve_token():
         if tok:
             os.environ["HF_TOKEN"] = tok
             return tok
-    except Exception as exc:
-        print(f"[hf_train_polly] colab userdata unavailable: {exc}", file=sys.stderr)
+    except Exception:
+        # Colab userdata is optional; continue with normal environment lookup.
+        pass
     return None
 
 
@@ -92,8 +93,8 @@ def ensure_repo(repo_id: str, token: str, private: bool = True) -> None:
         api.repo_info(repo_id, repo_type="model")
         print("[hf_train_polly] repo exists:", repo_id)
         return
-    except Exception as exc:
-        print(f"[hf_train_polly] repo lookup failed, creating if needed: {exc}", file=sys.stderr)
+    except Exception:
+        pass
     print("[hf_train_polly] creating repo:", repo_id)
     api.create_repo(
         repo_id=repo_id,
@@ -174,8 +175,7 @@ def main():
         lora_dropout=args.lora_dropout,
         bias="none",
         task_type=TaskType.CAUSAL_LM,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-                        "gate_proj", "up_proj", "down_proj"],
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
     )
     model = get_peft_model(model, lora)
     model.print_trainable_parameters()

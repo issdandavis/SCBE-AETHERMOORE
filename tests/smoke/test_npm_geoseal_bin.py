@@ -31,6 +31,7 @@ def test_npm_geoseal_bin_help() -> None:
     assert "nexus-dispatch" in proc.stdout
     assert "agent-io-contract" in proc.stdout
     assert "tokenizer-code-lanes" in proc.stdout
+    assert "tongue-run" in proc.stdout
 
 
 def test_npm_geoseal_bin_version_matches_package() -> None:
@@ -147,6 +148,31 @@ def test_npm_geoseal_bin_python_passthrough_shell_command() -> None:
     payload = json.loads(proc.stdout)
     assert payload["version"] == "geoseal-polly-portal-box-v1"
     assert payload["shell_contract"]["route_packet"]["command_key"] == "add"
+
+
+def test_npm_geoseal_bin_python_passthrough_tongue_run() -> None:
+    env = dict(os.environ)
+    env["SCBE_GEOSEAL_PYTHON"] = sys.executable
+    program = "ko:set r0, 4\nko:set r1, 6\nca:add r2, r0, r1\nko:print r2\nko:halt"
+    proc = subprocess.run(
+        [
+            "node",
+            str(ROOT / "bin" / "geoseal.cjs"),
+            "tongue-run",
+            "--content",
+            program,
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+        env=env,
+    )
+    assert proc.returncode == 0, proc.stderr
+    payload = json.loads(proc.stdout)
+    assert payload["schema_version"] == "geoseal_tongue_run_v1"
+    assert payload["run"]["output"] == [10]
 
 
 def test_npm_geoseal_bin_code_lanes_roundtrip(tmp_path: Path) -> None:

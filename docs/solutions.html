@@ -17,7 +17,7 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://aethermoore.com/SCBE-AETHERMOORE/solutions.html" />
     <meta name="twitter:card" content="summary" />
-    <link rel="stylesheet" href="static/polly-sidebar.css" />
+    <link rel="stylesheet" href="static/polly-sidebar-agent.css" />
     <style>
       :root {
         --bg: #0f1217;
@@ -30,18 +30,31 @@
         --green: #2dd3a6;
         --blue: #8cb4ff;
       }
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
         margin: 0;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
         background:
           radial-gradient(circle at 15% 0%, rgba(214, 167, 86, 0.12), transparent 30%),
           linear-gradient(180deg, #0f1217 0%, #0b0d12 100%);
         color: var(--ink);
         line-height: 1.55;
       }
-      a { color: inherit; }
+      a {
+        color: inherit;
+      }
       .wrap {
         width: min(1120px, calc(100% - 32px));
         margin: 0 auto;
@@ -54,8 +67,12 @@
         color: var(--muted);
         font-size: 14px;
       }
-      nav a { text-decoration: none; }
-      nav a:hover { color: var(--ink); }
+      nav a {
+        text-decoration: none;
+      }
+      nav a:hover {
+        color: var(--ink);
+      }
       .hero {
         padding: 48px 0 36px;
         border-bottom: 1px solid rgba(214, 167, 86, 0.18);
@@ -75,10 +92,23 @@
         line-height: 0.98;
         letter-spacing: 0;
       }
-      h2 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 42px); line-height: 1.05; }
-      h3 { margin: 0 0 8px; font-size: 20px; }
-      p { color: var(--muted); font-size: 17px; max-width: 780px; }
-      .hero p { font-size: clamp(17px, 2vw, 21px); }
+      h2 {
+        margin: 0 0 10px;
+        font-size: clamp(26px, 4vw, 42px);
+        line-height: 1.05;
+      }
+      h3 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+      p {
+        color: var(--muted);
+        font-size: 17px;
+        max-width: 780px;
+      }
+      .hero p {
+        font-size: clamp(17px, 2vw, 21px);
+      }
       .actions {
         display: flex;
         flex-wrap: wrap;
@@ -114,10 +144,22 @@
         border-radius: 8px;
         padding: 16px;
       }
-      .proof strong { display: block; color: var(--ink); font-size: 18px; margin-bottom: 4px; }
-      .proof span { color: var(--muted); font-size: 14px; }
-      section { padding: 48px 0; }
-      .section-head { margin-bottom: 24px; }
+      .proof strong {
+        display: block;
+        color: var(--ink);
+        font-size: 18px;
+        margin-bottom: 4px;
+      }
+      .proof span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      section {
+        padding: 48px 0;
+      }
+      .section-head {
+        margin-bottom: 24px;
+      }
       .solutions {
         display: grid;
         grid-template-columns: repeat(5, minmax(190px, 1fr));
@@ -135,12 +177,15 @@
         color: var(--green);
         font-weight: 800;
       }
-      .solution ul, .plain-list {
+      .solution ul,
+      .plain-list {
         margin: 12px 0 0;
         padding-left: 18px;
         color: var(--muted);
       }
-      li { margin-bottom: 7px; }
+      li {
+        margin-bottom: 7px;
+      }
       .flow {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -152,7 +197,9 @@
         border-radius: 8px;
         padding: 18px;
       }
-      .step b { color: var(--gold); }
+      .step b {
+        color: var(--gold);
+      }
       .translation {
         width: 100%;
         border-collapse: collapse;
@@ -161,19 +208,29 @@
         border-radius: 8px;
         background: var(--panel-soft);
       }
-      .translation th, .translation td {
+      .translation th,
+      .translation td {
         padding: 12px 14px;
         border-bottom: 1px solid var(--line);
         text-align: left;
         vertical-align: top;
       }
-      .translation th { color: var(--gold); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
-      .translation td { color: var(--muted); }
-      .translation tr:last-child td { border-bottom: 0; }
+      .translation th {
+        color: var(--gold);
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .translation td {
+        color: var(--muted);
+      }
+      .translation tr:last-child td {
+        border-bottom: 0;
+      }
       .band {
         border-top: 1px solid var(--line);
         border-bottom: 1px solid var(--line);
-        background: rgba(255,255,255,0.025);
+        background: rgba(255, 255, 255, 0.025);
       }
       .note {
         font-size: 14px;
@@ -185,11 +242,21 @@
         border-top: 1px solid var(--line);
       }
       @media (max-width: 920px) {
-        .proof-row, .solutions, .flow { grid-template-columns: 1fr 1fr; }
+        .proof-row,
+        .solutions,
+        .flow {
+          grid-template-columns: 1fr 1fr;
+        }
       }
       @media (max-width: 620px) {
-        .proof-row, .solutions, .flow { grid-template-columns: 1fr; }
-        h1 { font-size: 40px; }
+        .proof-row,
+        .solutions,
+        .flow {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 40px;
+        }
       }
     </style>
   </head>
@@ -208,23 +275,44 @@
     <header class="hero">
       <div class="wrap">
         <div class="eyebrow">Buyer-ready AI governance</div>
-        <h1>Turn agent failures into a short report, a fixed scope, and a next action.</h1>
+        <h1>Find hidden failure points in your AI agent workflow.</h1>
         <p>
-          AetherMoore packages SCBE-AETHERMOORE into practical services for teams using AI
-          agents, tool-calling workflows, retrieval systems, or multi-agent automation. The goal
-          is not a giant compliance program. The goal is to find the weak joints, fix the ones
-          that matter, and leave you with evidence you can reuse.
+          AetherMoore packages SCBE-AETHERMOORE into practical services for teams using AI agents,
+          tool-calling workflows, retrieval systems, or multi-agent automation. The goal is not a
+          giant compliance program. The goal is to find the weak joints, fix the ones that matter,
+          and leave you with evidence you can reuse.
         </p>
         <div class="actions">
-          <a class="btn" href="governance-snapshot.html">Buy the $500 Snapshot</a>
+          <a class="btn" href="workflow-snapshot.html">Start with the $99 Workflow Snapshot</a>
+          <a class="btn secondary" href="workflow-snapshot.html#cash-app">Cash App: $IzzyDDavis7</a>
+          <a class="btn secondary" href="governance-snapshot.html">Compare the $500 Snapshot</a>
           <a class="btn secondary" href="hire.html">Send a project brief</a>
           <a class="btn secondary" href="#solutions">Compare the offers</a>
         </div>
         <div class="proof-row" aria-label="Proof points">
-          <div class="proof"><strong>Live offers</strong><span>Snapshot, service credits, toolkit, training vault, and supporter lanes are wired in the public offer registry.</span></div>
-          <div class="proof"><strong>Public code</strong><span>GitHub, npm/PyPI, and documented harnesses make the work inspectable.</span></div>
-          <div class="proof"><strong>Reusable evidence</strong><span>Reports focus on risk, routing, state, logging, recovery, and receipt gaps.</span></div>
-          <div class="proof"><strong>Federal posture</strong><span>CAGE 1EXD5 and UEI J4NXHM6N5F59 support subcontract and research conversations.</span></div>
+          <div class="proof">
+            <strong>Live offers</strong
+            ><span
+              >Snapshot, service credits, toolkit, training vault, and supporter lanes are wired in
+              the public offer registry.</span
+            >
+          </div>
+          <div class="proof">
+            <strong>Public code</strong
+            ><span>GitHub, npm/PyPI, and documented harnesses make the work inspectable.</span>
+          </div>
+          <div class="proof">
+            <strong>Reusable evidence</strong
+            ><span
+              >Reports focus on risk, routing, state, logging, recovery, and receipt gaps.</span
+            >
+          </div>
+          <div class="proof">
+            <strong>Federal posture</strong
+            ><span
+              >CAGE 1EXD5 and UEI J4NXHM6N5F59 support subcontract and research conversations.</span
+            >
+          </div>
         </div>
       </div>
     </header>
@@ -234,14 +322,33 @@
         <div class="wrap">
           <div class="section-head">
             <div class="eyebrow">What you can buy</div>
-            <h2>Five concrete entry points.</h2>
-            <p>Start small. The first paid deliverable should be useful even if nothing else is bought afterward.</p>
+            <h2>Seven concrete entry points.</h2>
+            <p>
+              Start small. The first paid deliverable should be useful even if nothing else is
+              bought afterward.
+            </p>
           </div>
           <div class="solutions">
             <article class="solution">
+              <h3>AI Agent Workflow Snapshot</h3>
+              <span class="price">$99 starter</span>
+              <p>
+                One concise first read for an agent workflow, prompt chain, repo link, MCP stack, or
+                automation flow.
+              </p>
+              <ul>
+                <li>Drift and tool-path risks</li>
+                <li>Observability and recovery gaps</li>
+                <li>Three prioritized fixes</li>
+              </ul>
+            </article>
+            <article class="solution">
               <h3>Governance Snapshot</h3>
               <span class="price">$500 fixed scope</span>
-              <p>One AI workflow reviewed for drift, leakage, routing risk, logging gaps, and unsafe tool paths.</p>
+              <p>
+                One AI workflow reviewed in more depth for drift, leakage, routing risk, logging
+                gaps, and unsafe tool paths.
+              </p>
               <ul>
                 <li>2-page findings memo</li>
                 <li>Three prioritized fixes</li>
@@ -251,7 +358,10 @@
             <article class="solution">
               <h3>Agent Drift Evaluation</h3>
               <span class="price">quoted after brief</span>
-              <p>Stateful evaluation for agents that lose task history, mutate instructions, or recover poorly from failures.</p>
+              <p>
+                Stateful evaluation for agents that lose task history, mutate instructions, or
+                recover poorly from failures.
+              </p>
               <ul>
                 <li>Before/after task pack</li>
                 <li>Failure-mode breakdown</li>
@@ -259,9 +369,25 @@
               </ul>
             </article>
             <article class="solution">
+              <h3>Shopify Store Ops Snapshot</h3>
+              <span class="price">$99 starter</span>
+              <p>
+                One ecommerce setup read using the live Shopify Command Center: payments, shipping,
+                subscriptions, bundles, pricing, marketing, analytics, and next actions.
+              </p>
+              <ul>
+                <li>Live dashboard demo</li>
+                <li>Store-ops checklist</li>
+                <li>Three launch fixes</li>
+              </ul>
+            </article>
+            <article class="solution">
               <h3>Multi-Agent Containment</h3>
               <span class="price">snapshot or custom</span>
-              <p>Flat-queue versus bounded-workcell simulation for teams routing multiple agents through shared state.</p>
+              <p>
+                Flat-queue versus bounded-workcell simulation for teams routing multiple agents
+                through shared state.
+              </p>
               <ul>
                 <li>Failure spread metrics</li>
                 <li>Trace cost metrics</li>
@@ -271,7 +397,10 @@
             <article class="solution">
               <h3>Prompt Injection Review</h3>
               <span class="price">snapshot or custom</span>
-              <p>Boundary review for exposed tools, retrieval, MCP connectors, API routes, and dataset ingest.</p>
+              <p>
+                Boundary review for exposed tools, retrieval, MCP connectors, API routes, and
+                dataset ingest.
+              </p>
               <ul>
                 <li>Finding list</li>
                 <li>Proof and severity</li>
@@ -281,7 +410,9 @@
             <article class="solution">
               <h3>Governance Heartbeat</h3>
               <span class="price">$99/month planned</span>
-              <p>A lightweight monthly scan for one workflow after the first Snapshot has a baseline.</p>
+              <p>
+                A lightweight monthly scan for one workflow after the first Snapshot has a baseline.
+              </p>
               <ul>
                 <li>Delta report</li>
                 <li>Risk/change summary</li>
@@ -299,10 +430,22 @@
             <h2>How the work turns into evidence.</h2>
           </div>
           <div class="flow" aria-label="Delivery flow">
-            <div class="step"><b>1. Intake</b><p>One workflow, tool path, or agent problem. No secrets required.</p></div>
-            <div class="step"><b>2. Run</b><p>SCBE checks routing, state, prompt/tool boundaries, and recovery behavior.</p></div>
-            <div class="step"><b>3. Report</b><p>You receive a short memo with evidence, findings, and next actions.</p></div>
-            <div class="step"><b>4. Continue</b><p>Use the fixes, buy Heartbeat, or scope a custom integration.</p></div>
+            <div class="step">
+              <b>1. Intake</b>
+              <p>One workflow, tool path, or agent problem. No secrets required.</p>
+            </div>
+            <div class="step">
+              <b>2. Run</b>
+              <p>SCBE checks routing, state, prompt/tool boundaries, and recovery behavior.</p>
+            </div>
+            <div class="step">
+              <b>3. Report</b>
+              <p>You receive a short memo with evidence, findings, and next actions.</p>
+            </div>
+            <div class="step">
+              <b>4. Continue</b>
+              <p>Use the fixes, buy Heartbeat, or scope a custom integration.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -312,17 +455,42 @@
           <div class="section-head">
             <div class="eyebrow">Procurement translation</div>
             <h2>Same system, buyer-readable language.</h2>
-            <p>Internal SCBE terms stay useful, but buyers need the operational translation first.</p>
+            <p>
+              Internal SCBE terms stay useful, but buyers need the operational translation first.
+            </p>
           </div>
           <table class="translation">
-            <thead><tr><th>SCBE term</th><th>Buyer translation</th></tr></thead>
+            <thead>
+              <tr>
+                <th>SCBE term</th>
+                <th>Buyer translation</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td>Harmonic governance</td><td>Adaptive risk scoring for AI workflows</td></tr>
-              <tr><td>Sacred Tongues / routing lanes</td><td>Domain-specialized orchestration and evidence lanes</td></tr>
-              <tr><td>GeoSeal</td><td>Trust-boundary receipt and verification layer</td></tr>
-              <tr><td>Aether-Lattice workcells</td><td>Bounded agent execution and failure containment</td></tr>
-              <tr><td>Spinal ledger</td><td>Append-only operational trace</td></tr>
-              <tr><td>Agent bus</td><td>Secure orchestration bus for agents, tools, and review gates</td></tr>
+              <tr>
+                <td>Harmonic governance</td>
+                <td>Adaptive risk scoring for AI workflows</td>
+              </tr>
+              <tr>
+                <td>Sacred Tongues / routing lanes</td>
+                <td>Domain-specialized orchestration and evidence lanes</td>
+              </tr>
+              <tr>
+                <td>GeoSeal</td>
+                <td>Trust-boundary receipt and verification layer</td>
+              </tr>
+              <tr>
+                <td>Aether-Lattice workcells</td>
+                <td>Bounded agent execution and failure containment</td>
+              </tr>
+              <tr>
+                <td>Spinal ledger</td>
+                <td>Append-only operational trace</td>
+              </tr>
+              <tr>
+                <td>Agent bus</td>
+                <td>Secure orchestration bus for agents, tools, and review gates</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -335,15 +503,29 @@
             <h2>What this claims, and what it does not.</h2>
           </div>
           <ul class="plain-list">
-            <li>SCBE provides governance and traceability around AI agents. It is not a replacement foundation model.</li>
-            <li>Reports are technical risk reads and implementation guidance. They are not legal compliance guarantees.</li>
-            <li>Simulations are workflow evidence. They are not hardware guarantees or claims of infinite scalability.</li>
-            <li>Paid work starts with fixed scope because useful action beats vague enterprise theater.</li>
+            <li>
+              SCBE provides governance and traceability around AI agents. It is not a replacement
+              foundation model.
+            </li>
+            <li>
+              Reports are technical risk reads and implementation guidance. They are not legal
+              compliance guarantees.
+            </li>
+            <li>
+              Simulations are workflow evidence. They are not hardware guarantees or claims of
+              infinite scalability.
+            </li>
+            <li>
+              Paid work starts with fixed scope because useful action beats vague enterprise
+              theater.
+            </li>
           </ul>
           <div class="actions">
             <a class="btn" href="governance-snapshot.html">Start with the Snapshot</a>
             <a class="btn secondary" href="robot.html">AI agent map</a>
-            <a class="btn secondary" href="business/SCBE_BUYER_CAPABILITY_BUCKETS_2026-05.md">Read the packaging sheet</a>
+            <a class="btn secondary" href="business/SCBE_BUYER_CAPABILITY_BUCKETS_2026-05.md"
+              >Read the packaging sheet</a
+            >
           </div>
         </div>
       </section>
@@ -351,10 +533,14 @@
 
     <footer>
       <div class="wrap">
-        AetherMoore. Geometric AI governance by Issac Davis. CAGE 1EXD5. UEI J4NXHM6N5F59. AI assistants can start from <a href="robot.html">the AI map</a>.
+        AetherMoore. Geometric AI governance by Issac Davis. CAGE 1EXD5. UEI J4NXHM6N5F59. AI
+        assistants can start from <a href="robot.html">the AI map</a>.
       </div>
     </footer>
-    <script src="static/polly-sidebar.js" data-polly-api="https://scbe-agent-bridge-vercel.vercel.app"></script>
+    <script
+      src="static/polly-sidebar-agent.js"
+      data-polly-api="https://scbe-agent-bridge-vercel.vercel.app"
+    ></script>
     <script src="static/polly-funnel.js" data-page="solutions"></script>
   </body>
 </html>

@@ -31,32 +31,16 @@ const catalogHandler = require('../../api/polly/catalog.js');
 const trainCapture = require('../../api/_polly_train_capture.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const leadHandler = require('../../api/polly/lead.js');
-
-function hasHost(rawUrl: string | undefined, host: string): boolean {
-  if (typeof rawUrl !== 'string') return false;
-  try {
-    const parsed = new URL(rawUrl);
-    return parsed.protocol === 'https:' && parsed.hostname === host;
-  } catch {
-    return false;
-  }
-}
-
-function hasScheme(rawUrl: string | undefined, scheme: string): boolean {
-  if (typeof rawUrl !== 'string') return false;
-  try {
-    const parsed = new URL(rawUrl);
-    return parsed.protocol === `${scheme}:`;
-  } catch {
-    return false;
-  }
-}
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const hostedRunHandler = require('../../api/polly/hosted-run.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const hfUpload = require('../../api/_polly_hf_upload.js');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const rateLimit = require('../../api/_polly_rate_limit.js');
+
+function hostnameOf(value: string): string {
+  return new URL(value).hostname;
+}
 
 function loadCommerceWithEnv(env: Record<string, string>) {
   const modulePath = require.resolve('../../api/polly/commerce.js');
@@ -218,7 +202,7 @@ describe('polly lead handler — anti-abuse', () => {
 
 describe('polly commerce intent classification', () => {
   it('catalog has live products with valid checkout urls', () => {
-    expect(commerce.PRODUCT_CATALOG).toHaveLength(8);
+    expect(commerce.PRODUCT_CATALOG).toHaveLength(9);
     for (const product of commerce.PRODUCT_CATALOG) {
       expect(product.checkoutUrl).toMatch(/^(https:\/\/(buy\.stripe\.com|ko-fi\.com)|mailto:)/);
       expect(product.keywords.length).toBeGreaterThan(0);
@@ -270,9 +254,7 @@ describe('polly commerce intent classification', () => {
     const heartbeat = loaded.PRODUCT_CATALOG.find(
       (p: { sku: string }) => p.sku === 'governance-heartbeat'
     );
-    expect(heartbeat.checkoutUrl).toBe(
-      'mailto:issdandavis7795@gmail.com?subject=Governance%20Heartbeat%20signup'
-    );
+    expect(heartbeat.checkoutUrl).toBe('https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m');
   });
 
   it('classifies "buy" verb with bound product at 0.95 confidence', () => {
@@ -301,6 +283,13 @@ describe('polly commerce intent classification', () => {
     expect(intent.name).toBe('buy');
     expect(intent.product.sku).toBe('ai-agent-workflow-snapshot');
     expect(intent.product.priceLabel).toContain('$99');
+  });
+
+  it('classifies Shopify and ecommerce store setup as the Shopify store ops offer', () => {
+    const intent = commerce.classifyIntent('I need Shopify help with store setup and shipping');
+    expect(intent.name).toBe('buy');
+    expect(intent.product.sku).toBe('shopify-store-ops-snapshot');
+    expect(intent.product.deliveryUrl).toContain('shopify-command-center.html');
   });
 
   it('routes AI agent safer language to custom help instead of generic LLM chat', () => {
@@ -534,7 +523,9 @@ describe('polly renderDiscountReply', () => {
     expect(out.text).toContain('WELCOME20');
     expect(out.text).toContain('STUDENT50');
     expect(out.text).toContain('NONPROFIT50');
-    const mailtoAction = out.actions.find((a: { url?: string }) => hasScheme(a.url, 'mailto'));
+    const mailtoAction = out.actions.find(
+      (a: { url?: string }) => typeof a.url === 'string' && a.url.startsWith('mailto:')
+    );
     expect(mailtoAction).toBeDefined();
     expect(mailtoAction!.url).toContain('Custom%20discount%20rate');
   });
@@ -556,7 +547,9 @@ describe('polly renderBookReply', () => {
     expect(out.text).toContain('AI Governance Fundamentals');
     expect(out.text).toContain('Chapter 1');
     expect(out.text).toContain('Harmonic Wall');
-    const buyAction = out.actions.find((a: { url?: string }) => hasHost(a.url, 'buy.stripe.com'));
+    const buyAction = out.actions.find(
+      (a: { url?: string }) => typeof a.url === 'string' && hostnameOf(a.url) === 'buy.stripe.com'
+    );
     expect(buyAction).toBeDefined();
   });
 });
@@ -673,12 +666,12 @@ describe('polly commerce reply rendering', () => {
     const out = commerce.renderBuyReply(product);
     expect(out.text).toContain('$99/month');
     expect(out.text).toContain('first scan starts');
-    expect(hasScheme(out.actions[0].url, 'mailto')).toBe(true);
+    expect(out.actions[0].url).toBe('https://buy.stripe.com/5kQ6oI0hQgKz9gQ6midby0m');
   });
 
   it('renderCustomReply returns mailto with pre-filled context', () => {
     const out = commerce.renderCustomReply('We need governance for our finance LLM');
-    const mailtoAction = out.actions.find((a: { url: string }) => hasScheme(a.url, 'mailto'));
+    const mailtoAction = out.actions.find((a: { url: string }) => a.url.startsWith('mailto:'));
     expect(mailtoAction).toBeDefined();
     expect(mailtoAction!.url).toContain('issdandavis7795@gmail.com');
     expect(mailtoAction!.url).toContain('finance');
@@ -695,7 +688,7 @@ describe('polly commerce reply rendering', () => {
     expect(out.actions[2].url).toContain('Governance%20Heartbeat');
     expect(out.actions[3].url).toContain('ko-fi.com');
     expect(out.actions[4].url).toContain('github.com');
-    expect(hasScheme(out.actions[5].url, 'mailto')).toBe(true);
+    expect(out.actions[5].url).toContain('mailto:');
     expect(out.text).toContain('2-5%');
     expect(out.text).toContain('$20/month');
     expect(out.text).toContain('$99/month');
@@ -757,6 +750,26 @@ describe('polly chat handler — research path', () => {
   });
 });
 
+describe('polly chat handler — role packet', () => {
+  it('turns the scbe-web-agent packet into bounded system context', () => {
+    const rows = chatHandler._private.buildPollyRoleContext({
+      role: 'scbe-web-agent',
+      skills: ['scbe-web-agent', 'superpowers:subagent-driven-development'],
+      operating_rules: ['Free path first', 'Return bounded task packets'],
+      page_context: 'Workflow Snapshot — /workflow-snapshot',
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].role).toBe('system');
+    expect(rows[0].content).toContain('SCBE web agent');
+    expect(rows[0].content).toContain('subagent-driven-development');
+    expect(rows[0].content).toContain('bounded task packet');
+  });
+
+  it('ignores unrecognized role packets', () => {
+    expect(chatHandler._private.buildPollyRoleContext({ role: 'random-bot' })).toEqual([]);
+  });
+});
+
 describe('polly chat handler — offline-router fallback', () => {
   beforeEach(() => rateLimit.reset());
   it('replaces dead-end LLM offline message with the four-bucket router', async () => {
@@ -778,7 +791,7 @@ describe('polly chat handler — offline-router fallback', () => {
       expect(body.provider).toBe('offline-router');
       expect(body.text).toContain('four ways');
       expect(body.actions.length).toBeGreaterThanOrEqual(2);
-      expect(body.actions.some((a) => hasScheme(a.url, 'mailto'))).toBe(true);
+      expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
     } finally {
       if (original.hf) process.env.HF_TOKEN = original.hf;
       if (original.ollama) process.env.OLLAMA_URL = original.ollama;
@@ -818,8 +831,8 @@ describe('polly chat handler — commerce path', () => {
     await chatHandler(req, res);
     const body = res.body as { intent: string; actions: { url: string }[] };
     expect(body.intent).toBe('custom');
-    expect(body.actions.some((a) => hasScheme(a.url, 'mailto'))).toBe(true);
-    expect(body.actions.some((a) => /aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
+    expect(body.actions.some((a) => a.url.startsWith('mailto:'))).toBe(true);
+    expect(body.actions.some((a) => /^https:\/\/aethermoore\.com\/.*hire/.test(a.url))).toBe(true);
   });
 
   it('routes "help me choose" to guide intent with picker + start-here actions', async () => {
@@ -1067,7 +1080,7 @@ describe('polly hosted-run handler', () => {
       body.hosted_run_packet.immediate_value.some((item) => item.url.includes('service-credits'))
     ).toBe(true);
     expect(
-      body.hosted_run_packet.immediate_value.some((item) => item.url.includes('ko-fi.com'))
+      body.hosted_run_packet.immediate_value.some((item) => hostnameOf(item.url) === 'ko-fi.com')
     ).toBe(true);
   });
 

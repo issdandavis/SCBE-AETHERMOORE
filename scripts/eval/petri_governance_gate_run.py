@@ -37,7 +37,7 @@ import json
 import sys
 import time
 from collections import Counter
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -48,7 +48,6 @@ from src.cli.petri_seed_loader import (
 )
 from src.cli.cascade_router import AndAllowCascadeRouter, CascadeRouter
 from src.cli.slm_router import (
-    ClassificationFailure,
     LatticeRouter,
     Mode,
     OllamaAdapter,
@@ -289,7 +288,6 @@ def main(argv: List[str] | None = None) -> int:
         outcomes.append(outcome)
         if not args.quiet:
             tag = outcome.tags[0] if outcome.tags else "untagged"
-            label = outcome.verdict
             if outcome.verdict == "ALLOW":
                 label = f"ALLOW({outcome.op_band}/{outcome.op_name}->{outcome.dst_tongue} c={outcome.confidence:.2f})"
             else:

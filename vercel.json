@@ -25,6 +25,50 @@
       "dest": "/api/agent/launch.js"
     },
     {
+      "src": "^/index\\.html$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/?$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/index\\.html$",
+      "dest": "/api/agent/launch.js"
+    },
+    {
+      "src": "^/offers\\.json$",
+      "dest": "/api/agent/offers-file.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/offers\\.json$",
+      "dest": "/api/agent/offers-file.js"
+    },
+    {
+      "src": "^/app-config\\.json$",
+      "dest": "/api/agent/app-config-file.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/app-config\\.json$",
+      "dest": "/api/agent/app-config-file.js"
+    },
+    {
+      "src": "^/robots\\.txt$",
+      "dest": "/api/agent/robots.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robots\\.txt$",
+      "dest": "/api/agent/robots.js"
+    },
+    {
+      "src": "^/sitemap\\.xml$",
+      "dest": "/api/agent/sitemap.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/sitemap\\.xml$",
+      "dest": "/api/agent/sitemap.js"
+    },
+    {
       "src": "^/hire/?$",
       "dest": "/api/agent/hire.js"
     },
@@ -49,6 +93,14 @@
       "dest": "/api/agent/products.js"
     },
     {
+      "src": "^/solutions/?$",
+      "dest": "/api/agent/solutions.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/solutions\\.html$",
+      "dest": "/api/agent/solutions.js"
+    },
+    {
       "src": "^/start-here/?$",
       "dest": "/api/agent/start-here.js"
     },
@@ -71,6 +123,118 @@
     {
       "src": "^/SCBE-AETHERMOORE/chat\\.html$",
       "dest": "/api/agent/chat-page.js"
+    },
+    {
+      "src": "^/payments/?$",
+      "dest": "/api/agent/payments.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/payments\\.html$",
+      "dest": "/api/agent/payments.js"
+    },
+    {
+      "src": "^/shopify-command-center/?$",
+      "dest": "/api/agent/shopify-command-center.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/shopify-command-center\\.html$",
+      "dest": "/api/agent/shopify-command-center.js"
+    },
+    {
+      "src": "^/workflow-snapshot/?$",
+      "dest": "/api/agent/workflow-snapshot.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/workflow-snapshot\\.html$",
+      "dest": "/api/agent/workflow-snapshot.js"
+    },
+    {
+      "src": "^/governance-snapshot/?$",
+      "dest": "/api/agent/governance-snapshot.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/governance-snapshot\\.html$",
+      "dest": "/api/agent/governance-snapshot.js"
+    },
+    {
+      "src": "^/service-credits/?$",
+      "dest": "/api/agent/service-credits.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/service-credits\\.html$",
+      "dest": "/api/agent/service-credits.js"
+    },
+    {
+      "src": "^/supporter/?$",
+      "dest": "/api/agent/supporter.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/supporter\\.html$",
+      "dest": "/api/agent/supporter.js"
+    },
+    {
+      "src": "^/hosted-run/?$",
+      "dest": "/api/agent/hosted-run.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/hosted-run\\.html$",
+      "dest": "/api/agent/hosted-run.js"
+    },
+    {
+      "src": "^/legal/privacy/?$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/privacy/?$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/privacy\\.html$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/legal/privacy\\.html$",
+      "dest": "/api/agent/legal-privacy.js"
+    },
+    {
+      "src": "^/legal/terms/?$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/terms/?$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/terms\\.html$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/legal/terms\\.html$",
+      "dest": "/api/agent/legal-terms.js"
+    },
+    {
+      "src": "^/robot\\.html$",
+      "dest": "/api/agent/robot-page.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robot\\.html$",
+      "dest": "/api/agent/robot-page.js"
+    },
+    {
+      "src": "^/robot\\.md$",
+      "dest": "/api/agent/robot-md.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/robot\\.md$",
+      "dest": "/api/agent/robot-md.js"
+    },
+    {
+      "src": "^/llms\\.txt$",
+      "dest": "/api/agent/llms.js"
+    },
+    {
+      "src": "^/SCBE-AETHERMOORE/llms\\.txt$",
+      "dest": "/api/agent/llms.js"
     },
     {
       "src": "^/static/(.*)$",

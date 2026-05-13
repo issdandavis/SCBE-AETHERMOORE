@@ -5,18 +5,27 @@
   "usage_policy": {
     "name": "SCBE Service Credits",
     "model": "mostly-free local tools with pay-as-you-go credits only for hosted routing, reports, delivery, storage, and provider/model usage",
-    "service_fee_percent_range": [
-      2,
-      5
-    ],
+    "service_fee_percent_range": [2, 5],
     "fee_note": "Provider/model costs are passed through with a small 2-5% SCBE coordination fee where usage is billable.",
     "preferred_routing": "local/Ollama and deterministic harness first; paid providers only when needed"
   },
   "payment_methods": {
+    "card_checkout": {
+      "provider": "Stripe hosted checkout",
+      "note": "Structured card checkout for fixed offers, subscriptions, receipts, and product/service records."
+    },
+    "kofi": {
+      "url": "https://ko-fi.com/izdandavis",
+      "note": "Primary low-friction support and service-credit path. Use when a buyer wants to help fund the work without a formal checkout flow."
+    },
     "cash_app": {
       "cashtag": "$IzzyDDavis7",
       "qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
       "note": "For manual service purchases, include the offer name in the payment note."
+    },
+    "manual_invoice": {
+      "email": "aethermoregames@pm.me",
+      "note": "Use for Square/manual invoice, procurement, or buyer paperwork requests. Include the offer name, buyer email, and requested payment method."
     }
   },
   "offers": [
@@ -40,6 +49,11 @@
       "price_label": "$5 one time",
       "type": "one_time",
       "checkout_url": "https://buy.stripe.com/3cI00k9Sqbqf50A11Ydby0k",
+      "kofi_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
       "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
       "status": "live"
     },
@@ -49,6 +63,11 @@
       "price_label": "$20/month",
       "type": "subscription",
       "checkout_url": "https://buy.stripe.com/00w8wQd4CbqfgJidOKdby0i",
+      "kofi_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png"
+      },
       "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/supporter.html",
       "status": "live"
     },
@@ -74,6 +93,29 @@
       ],
       "checkout_note": "Stripe checkout is live. Cash App remains available as an alternate manual payment path.",
       "stripe_payment_link_id": "plink_1TW71yJTF2SuUODIqYFRU9JY"
+    },
+    {
+      "id": "shopify_command_center_snapshot",
+      "name": "Shopify Store Ops Snapshot",
+      "price_label": "$99 starter",
+      "type": "service",
+      "checkout_url": "https://ko-fi.com/izdandavis",
+      "alternate_checkout": {
+        "cash_app": "$IzzyDDavis7",
+        "cash_app_qr_url": "https://aethermoore.com/SCBE-AETHERMOORE/static/cash-app-payment.png",
+        "payment_center": "https://aethermoore.com/SCBE-AETHERMOORE/payments.html"
+      },
+      "proof_url": "https://aethermoore.com/SCBE-AETHERMOORE/shopify-command-center.html",
+      "intake_url": "mailto:aethermoregames@pm.me?subject=Shopify%20Store%20Ops%20Snapshot",
+      "status": "live",
+      "scope": [
+        "one concise store-ops memo",
+        "one Shopify store, product line, launch plan, or ecommerce checklist",
+        "payment, shipping, subscription, bundle, wholesale, pricing, marketing, and analytics notes",
+        "three prioritized next actions",
+        "public demo and source links included for buyer confidence"
+      ],
+      "checkout_note": "Ko-fi and Cash App are the low-friction payment paths while card checkout is reserved for the existing fixed SCBE offers."
     },
     {
       "id": "governance_snapshot",
@@ -104,10 +146,7 @@
       "stripe_payment_link_id": "plink_1TW71zJTF2SuUODICZLQCCS3",
       "delivery": {
         "mode": "stripe_webhook_subscription_onboarding",
-        "requires_env": [
-          "STRIPE_HEARTBEAT_PAYMENT_LINK_ID",
-          "SCBE_PAYMENT_LINK_HEARTBEAT"
-        ]
+        "requires_env": ["STRIPE_HEARTBEAT_PAYMENT_LINK_ID", "SCBE_PAYMENT_LINK_HEARTBEAT"]
       }
     },
     {

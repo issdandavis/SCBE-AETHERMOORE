@@ -2,7 +2,7 @@
 """Auto-generated Kaggle kernel - SCBE Polly Training.
 Config is injected via the KERNEL_CONFIG dict at the top."""
 
-import subprocess, sys, json, os, math, re
+import subprocess, sys, json, os
 from collections import Counter
 
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
@@ -375,7 +375,7 @@ try:
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL, use_fast=False)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-except BaseException as exc:
+except (Exception, SystemExit) as exc:
     fail_status("loading_tokenizer", exc)
 
 
@@ -495,9 +495,8 @@ try:
         else:
             MAX_STEPS = min(MAX_STEPS, CPU_SMOKE_MAX_STEPS)
         quant_config = None
-        compute_dtype = torch.float32
         load_kwargs = {"torch_dtype": torch.float32, "device_map": "cpu"}
-except BaseException as exc:
+except (Exception, SystemExit) as exc:
     fail_status("checking_device", exc)
 
 try:

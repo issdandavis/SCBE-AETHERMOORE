@@ -291,7 +291,6 @@ def execute_governed_command(
     decision = scan_command(command, claimed_paths=claimed_paths)
     allowed_by_threshold = decision.allowed and TIER_RANK[decision.tier] <= TIER_RANK[max_tier]
     started = time.time()
-    result = ExecGateResult(decision=decision, ran=False)
     resolved_argv, runtime_note = _resolve_runtime(decision.argv)
 
     if allowed_by_threshold:

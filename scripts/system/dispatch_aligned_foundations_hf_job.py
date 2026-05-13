@@ -26,15 +26,12 @@ import os
 import re
 import shutil
 import subprocess
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PROFILE = (
-    REPO_ROOT / "config" / "model_training" / "aligned-foundations-qwen-primary.json"
-)
+DEFAULT_PROFILE = REPO_ROOT / "config" / "model_training" / "aligned-foundations-qwen-primary.json"
 ARTIFACT_ROOT = REPO_ROOT / "artifacts" / "hf_aligned_foundations_jobs"
 ENV_FILE = REPO_ROOT / "config" / "connector_oauth" / ".env.connector.oauth"
 CROSS_LANE_SRC = REPO_ROOT / "src" / "governance" / "aligned_foundations_cross_lane.py"
@@ -595,11 +592,7 @@ def build_packet(
     profile = _load_profile(profile_path)
     execution = profile.get("execution") or {}
     hub_cfg = profile.get("hub") or {}
-    resolved_dataset_repo = (
-        dataset_repo
-        or str(hub_cfg.get("dataset_repo", "")).strip()
-        or DEFAULT_DATASET_REPO
-    )
+    resolved_dataset_repo = dataset_repo or str(hub_cfg.get("dataset_repo", "")).strip() or DEFAULT_DATASET_REPO
     stamp = _utc_stamp()
     run_dir = artifact_root / str(profile["profile_id"]) / stamp
     script_path = run_dir / "train_aligned_foundations_hf.py"
@@ -738,9 +731,7 @@ def upload_training_dataset(profile: dict[str, Any], dataset_repo: str) -> list[
             "--commit-message",
             f"Update SCBE aligned-foundations data {name}",
         ]
-        result = subprocess.run(
-            command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False
-        )
+        result = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
         uploads.append(
             {
                 "name": str(name),
@@ -766,9 +757,7 @@ def upload_training_dataset(profile: dict[str, Any], dataset_repo: str) -> list[
         "--commit-message",
         "Update SCBE aligned-foundations cross-lane primitives",
     ]
-    result = subprocess.run(
-        command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False
-    )
+    result = subprocess.run(command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
     uploads.append(
         {
             "name": CROSS_LANE_FILENAME,
@@ -778,9 +767,7 @@ def upload_training_dataset(profile: dict[str, Any], dataset_repo: str) -> list[
         }
     )
     if result.returncode != 0:
-        raise RuntimeError(
-            f"Cross-lane primitives upload failed: {result.stderr.strip()}"
-        )
+        raise RuntimeError(f"Cross-lane primitives upload failed: {result.stderr.strip()}")
     return uploads
 
 

@@ -21,6 +21,7 @@ import json
 import math
 import os
 import struct
+import sys
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
@@ -353,4 +354,4 @@ def self_test():
 
 if __name__ == "__main__":
     ok = self_test()
-    exit(0 if ok else 1)
+    sys.exit(0 if ok else 1)
