@@ -1793,6 +1793,51 @@ def cmd_agent_harness(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_call_switchboard(args: argparse.Namespace) -> int:
+    from src.coding_spine.agent_call_switchboard import evaluate_call_request
+
+    calls: list[dict[str, Any]] = []
+    if args.calls:
+        loaded = json.loads(Path(args.calls).read_text(encoding="utf-8"))
+        if not isinstance(loaded, list):
+            raise SystemExit("--calls must point to a JSON array")
+        calls = loaded
+    if getattr(args, "inline_calls", None):
+        loaded = json.loads(args.inline_calls)
+        if not isinstance(loaded, list):
+            raise SystemExit("--inline-calls must be a JSON array")
+        calls.extend(loaded)
+    request = json.loads(args.request)
+    payload = evaluate_call_request(calls, request)
+    print(json.dumps(payload, indent=2 if args.json else None))
+    return 0
+
+
+def cmd_lightning_indexer(args: argparse.Namespace) -> int:
+    from src.coding_spine.lightning_indexer import select_sparse_candidates
+
+    candidates: list[dict[str, Any]] = []
+    if args.candidates_file:
+        loaded = json.loads(Path(args.candidates_file).read_text(encoding="utf-8"))
+        if not isinstance(loaded, list):
+            raise SystemExit("--candidates-file must point to a JSON array")
+        candidates = loaded
+    if args.inline_candidates:
+        loaded = json.loads(args.inline_candidates)
+        if not isinstance(loaded, list):
+            raise SystemExit("--inline-candidates must be a JSON array")
+        candidates.extend(loaded)
+    payload = select_sparse_candidates(
+        args.goal,
+        candidates,
+        top_k=args.top_k,
+        block_size=args.block_size,
+        channel_budget=args.channel_budget,
+    )
+    print(json.dumps(payload, indent=2 if args.json else None))
+    return 0
+
+
 def cmd_compile(args: argparse.Namespace) -> int:
     from src.coding_spine.command_compiler import compile_intent_to_plan
 
@@ -4623,6 +4668,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_harness.add_argument("--json", action="store_true")
     p_harness.set_defaults(func=cmd_agent_harness)
+
+    p_switchboard = sub.add_parser("call-switchboard", help="Evaluate a multi-agent call reservation")
+    p_switchboard.add_argument("--calls", default=None, help="Existing call reservations JSON array")
+    p_switchboard.add_argument("--inline-calls", default=None, help="Existing call reservations JSON array")
+    p_switchboard.add_argument("--request", required=True, help="Requested call JSON object")
+    p_switchboard.add_argument("--json", action="store_true")
+    p_switchboard.set_defaults(func=cmd_call_switchboard)
+
+    p_indexer = sub.add_parser("lightning-indexer", help="Select sparse agent context candidates")
+    p_indexer.add_argument("--goal", required=True)
+    p_indexer.add_argument("--inline-candidates", default=None, help="Candidate JSON array")
+    p_indexer.add_argument("--candidates-file", default=None, help="Candidate JSON array file")
+    p_indexer.add_argument("--top-k", type=int, default=8)
+    p_indexer.add_argument("--block-size", type=int, default=16)
+    p_indexer.add_argument("--channel-budget", type=int, default=3)
+    p_indexer.add_argument("--json", action="store_true")
+    p_indexer.set_defaults(func=cmd_lightning_indexer)
 
     p_compile = sub.add_parser("compile", help="Compile intent into an SCBE agent-bus command plan")
     p_compile.add_argument("intent", nargs=argparse.REMAINDER)
