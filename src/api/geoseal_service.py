@@ -24,7 +24,6 @@ GEOSEAL_CLI_COMMANDS = frozenset(
         "replay",
         "testing-cli",
         "project-scaffold",
-        "code-roundtrip",
         "call-switchboard",
         "lightning-indexer",
         "yin-yang-dual",
@@ -175,7 +174,6 @@ async def spaceport_status() -> dict[str, Any]:
                     "/v1/geoseal/replay",
                     "/v1/geoseal/testing-cli",
                     "/v1/geoseal/project-scaffold",
-                    "/v1/geoseal/code-roundtrip",
                 ],
                 "authenticated_runtime": [
                     "/runtime/inspect",
