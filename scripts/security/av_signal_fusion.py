@@ -239,7 +239,9 @@ def normalize_alert(raw: Any, *, provider_hint: str = "generic") -> NormalizedAl
         title = str(raw["rule"].get("description") or raw["rule"].get("id") or title)
     description = _first_text(raw, ("description", "output", "message", "full_log", "alert"))
     category = _first_text(raw, ("category", "type", "source", "detectionSource", "event_type")) or provider
-    artifact_path = _first_text(raw, ("artifact_path", "file_path", "filePath", "path", "target", "filename", "fileName"))
+    artifact_path = _first_text(
+        raw, ("artifact_path", "file_path", "filePath", "path", "target", "filename", "fileName")
+    )
     artifact_sha256 = _first_text(raw, ("sha256", "artifact_sha256", "hash"))
     if provider == "microsoft_defender":
         defender_path, defender_sha = _defender_artifact(raw)
@@ -326,13 +328,17 @@ def recommended_actions(
         "Do not execute referenced artifacts unless a sandboxed analysis step is explicitly approved.",
     ]
     if decision == "DENY":
-        actions.append("Block agent execution, CI promotion, and customer-facing deploy until a human clears the event.")
+        actions.append(
+            "Block agent execution, CI promotion, and customer-facing deploy until a human clears the event."
+        )
     elif decision == "QUARANTINE":
         actions.append("Route the task to isolated review and require provenance before merge or execution.")
     else:
         actions.append("Allow the workflow but keep the receipt attached to the agent/job record.")
     if any(a.provider in {"falco", "wazuh"} for a in alerts):
-        actions.append("If this came from runtime telemetry, compare against expected service behavior before suppressing.")
+        actions.append(
+            "If this came from runtime telemetry, compare against expected service behavior before suppressing."
+        )
     if artifact_report:
         actions.extend(artifact_report.get("recommended_next_steps", [])[:3])
     if event_report:
