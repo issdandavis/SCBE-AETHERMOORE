@@ -33,6 +33,7 @@ jobs:
           CONTACT_EMAIL: ${{ github.event.client_payload.record.contact_email }}
           CONTACT_NAME: ${{ github.event.client_payload.record.contact_name }}
           LIVEMODE: ${{ github.event.client_payload.record.livemode }}
+          SOURCE: ${{ github.event.client_payload.record.source }}
         run: |
           set -euo pipefail
           # Idempotency: if an issue already exists for this Stripe session id
@@ -64,11 +65,12 @@ jobs:
 
           title="snapshot paid: ${SESSION_ID} (${price}, ${mode_tag})"
           body=$(cat <<EOF
-          A buyer just completed a \$500 AI Governance Snapshot checkout.
+          A buyer just completed an AetherMoore snapshot checkout.
 
           - session id: \`${SESSION_ID}\`
           - payment intent: \`${PAYMENT_INTENT}\`
           - amount: ${price}
+          - source: ${SOURCE:-snapshot}
           - mode: ${mode_tag}
           - buyer name: ${CONTACT_NAME:-(not provided)}
           - buyer email: ${CONTACT_EMAIL:-(not provided)}
@@ -129,7 +131,7 @@ jobs:
           body_lines = [
               f"Hi {name},",
               "",
-              "Thanks for purchasing the $500 AI Governance Snapshot.",
+              "Thanks for purchasing an AetherMoore AI workflow/snapshot review.",
               "I'll reply within one business day to schedule a 30-minute kickoff call.",
               "Until then, please prep these so the snapshot covers what you actually need:",
               "",
