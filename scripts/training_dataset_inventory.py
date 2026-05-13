@@ -252,24 +252,30 @@ def _split_hint(path_text: str) -> str:
 
 
 def _jsonl_stats(path: Path) -> dict[str, Any]:
+    is_lfs_pointer = False
     try:
         with path.open("r", encoding="utf-8", errors="replace") as probe:
             first_line = probe.readline().strip()
             second_line = probe.readline().strip()
-            if first_line == "version https://git-lfs.github.com/spec/v1" and second_line.startswith("oid sha256:"):
-                return {
-                    "record_count": 0,
-                    "malformed_count": 0,
-                    "empty_line_count": 0,
-                    "first_keys": [],
-                    "schema_shape_count": 0,
-                    "top_schema_shapes": [],
-                    "prompt_response_records": 0,
-                    "messages_records": 0,
-                    "lfs_pointer": True,
-                }
+            is_lfs_pointer = first_line == "version https://git-lfs.github.com/spec/v1" and second_line.startswith(
+                "oid sha256:"
+            )
     except OSError:
-        pass
+        # If the probe fails, continue with the normal reader so callers get
+        # the same file-access error path as non-LFS files.
+        is_lfs_pointer = False
+    if is_lfs_pointer:
+        return {
+            "record_count": 0,
+            "malformed_count": 0,
+            "empty_line_count": 0,
+            "first_keys": [],
+            "schema_shape_count": 0,
+            "top_schema_shapes": [],
+            "prompt_response_records": 0,
+            "messages_records": 0,
+            "lfs_pointer": True,
+        }
     records = 0
     malformed = 0
     empty = 0

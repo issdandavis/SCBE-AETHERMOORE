@@ -26,6 +26,10 @@ def test_vercel_launch_rewrites_root_and_launch_to_agent_page() -> None:
     assert "'docs/hire.html'" in ignore_source
     assert "'docs/hire-b.html'" in ignore_source
     assert "'docs/products.html'" in ignore_source
+    assert "'docs/packages.html'" in ignore_source
+    assert "'docs/packages'" in ignore_source
+    assert "'docs/books.html'" in ignore_source
+    assert "'docs/books'" in ignore_source
     assert "'docs/start-here.html'" in ignore_source
     assert "'docs/agents.html'" in ignore_source
     assert "'docs/chat.html'" in ignore_source
@@ -61,6 +65,10 @@ def test_vercelignore_ships_launch_handler_with_api_bridge() -> None:
     assert "!docs/offers.json" in ignore
     assert "!docs/app-config.json" in ignore
     assert "!docs/products.html" in ignore
+    assert "!docs/packages.html" in ignore
+    assert "!docs/packages/**" in ignore
+    assert "!docs/books.html" in ignore
+    assert "!docs/books/**" in ignore
     assert "!docs/start-here.html" in ignore
     assert "!docs/agents.html" in ignore
     assert "!docs/chat.html" in ignore

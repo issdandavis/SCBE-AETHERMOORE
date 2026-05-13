@@ -31,7 +31,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TASKS_DIR = REPO_ROOT / "benchmarks" / "scbe_agentic_v1" / "tasks"
 SCHEMA_VERSION = "scbe_agentic_benchmark_ladder_v1"
@@ -78,6 +77,15 @@ def _secret_leak_count(text: str) -> int:
     for pat in _SECRET_PATTERNS:
         n += len(pat.findall(text))
     return n
+
+
+def _redact_secret_text(text: str) -> str:
+    if not text:
+        return ""
+    redacted = text
+    for pat in _SECRET_PATTERNS:
+        redacted = pat.sub("<redacted-secret>", redacted)
+    return redacted
 
 
 @dataclass
@@ -235,8 +243,8 @@ def run_level1_tasks(max_level: int) -> dict[str, Any]:
             "ok": ok,
             "path": str(task_json.relative_to(REPO_ROOT)),
             "metrics": _default_metrics(ok, elapsed, 1, text, evidence),
-            "stdout_tail": (so or "")[-2000:],
-            "stderr_tail": (se or "")[-2000:],
+            "stdout_tail": _redact_secret_text((so or "")[-2000:]),
+            "stderr_tail": _redact_secret_text((se or "")[-2000:]),
         }
         result["tasks"].append(entry)
     return result
@@ -279,8 +287,8 @@ def run_level6_cli_readiness(max_level: int) -> dict[str, Any]:
             "ok": ok,
             "metrics": _default_metrics(ok, elapsed, 1, text, "artifact"),
             "command": cmd,
-            "stdout_tail": (so or "")[-2500:],
-            "stderr_tail": (se or "")[-2500:],
+            "stdout_tail": _redact_secret_text((so or "")[-2500:]),
+            "stderr_tail": _redact_secret_text((se or "")[-2500:]),
         }
     )
     return out
@@ -376,8 +384,8 @@ def run_level7_scbe_code_agent(max_level: int) -> dict[str, Any]:
                 "ok": ok,
                 "metrics": _default_metrics(ok, elapsed, 1, text, "artifact"),
                 "command": cmd,
-                "stdout_tail": (so or "")[-2500:],
-                "stderr_tail": (se or "")[-2500:],
+                "stdout_tail": _redact_secret_text((so or "")[-2500:]),
+                "stderr_tail": _redact_secret_text((se or "")[-2500:]),
             }
         )
     return out

@@ -634,7 +634,7 @@ def stage_sign(encrypted: dict) -> dict:
                         "sig_len": len(signature),
                         "pk_len": len(pub),
                     }
-            except BaseException:
+            except Exception:
                 alg = "Dilithium3"
                 with oqs.Signature(alg) as signer:
                     pub = signer.generate_keypair()
@@ -645,7 +645,7 @@ def stage_sign(encrypted: dict) -> dict:
                         "sig_len": len(signature),
                         "pk_len": len(pub),
                     }
-        except BaseException as exc:
+        except Exception as exc:
             sig_meta = {
                 "algorithm": "HMAC-SHA256-fallback",
                 "signature": _hmac256(_CHAIN_KEY, blob),

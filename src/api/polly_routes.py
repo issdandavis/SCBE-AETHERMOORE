@@ -49,14 +49,16 @@ MAX_HISTORY_TURNS = 6
 MAX_SEARCH_RESULTS = 5
 DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
 
-# Allowed recipient domains for the email relay.  Override via
-# POLLY_EMAIL_ALLOWLIST (comma-separated domains) in the environment.
-_EMAIL_ALLOWLIST_ENV = os.getenv("POLLY_EMAIL_ALLOWLIST", "").strip()
-EMAIL_ALLOWED_DOMAINS: set[str] = (
-    {d.strip().lower() for d in _EMAIL_ALLOWLIST_ENV.split(",") if d.strip()}
-    if _EMAIL_ALLOWLIST_ENV
-    else {"aethermoore.com", "scbe.dev"}
-)
+def _email_allowed_domains() -> set[str]:
+    """Allowed recipient domains for the email relay."""
+
+    configured = os.getenv("POLLY_EMAIL_ALLOWLIST", "").strip()
+    if configured:
+        return {domain.strip().lower() for domain in configured.split(",") if domain.strip()}
+    return {"aethermoore.com", "scbe.dev"}
+
+
+EMAIL_ALLOWED_DOMAINS: set[str] = _email_allowed_domains()
 
 # ---------------------------------------------------------------------------
 # Environment helpers
@@ -319,8 +321,8 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
         text = data.get("response", "")
         if text.strip():
             return {"text": text, "provider": "ollama", "model": ollama_model}
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Ollama fallback unavailable: %s", exc)
 
     # Try HuggingFace Inference API (free tier, chat completions)
     hf_token = os.environ.get("HF_TOKEN")
@@ -337,8 +339,8 @@ async def _free_llm_chat(message: str, page_context: Optional[str]) -> Optional[
             text = resp.choices[0].message.content
             if text and text.strip():
                 return {"text": text.strip(), "provider": "huggingface", "model": hf_model}
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("HuggingFace fallback unavailable: %s", exc)
 
     return None
 

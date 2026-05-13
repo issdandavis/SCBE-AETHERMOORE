@@ -70,8 +70,8 @@ def resolve_token():
         if tok:
             os.environ["HF_TOKEN"] = tok
             return tok
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[hf_train_polly] colab userdata unavailable: {exc}", file=sys.stderr)
     return None
 
 
@@ -92,8 +92,8 @@ def ensure_repo(repo_id: str, token: str, private: bool = True) -> None:
         api.repo_info(repo_id, repo_type="model")
         print("[hf_train_polly] repo exists:", repo_id)
         return
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[hf_train_polly] repo lookup failed, creating if needed: {exc}", file=sys.stderr)
     print("[hf_train_polly] creating repo:", repo_id)
     api.create_repo(
         repo_id=repo_id,

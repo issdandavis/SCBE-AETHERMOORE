@@ -6,11 +6,9 @@ Uses Gemini as the primary reasoning engine with deterministic keyword fallback.
 
 from __future__ import annotations
 
-import json
 import os
 import re
-import urllib.parse
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 
 def _env_get(key: str, default: str = "") -> str:

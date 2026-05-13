@@ -18,7 +18,7 @@ import argparse
 import json
 import random
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_OUTPUT = PROJECT_ROOT / "training-data" / "agentic_coding" / "seed_dataset.jsonl"

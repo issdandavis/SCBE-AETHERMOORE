@@ -209,10 +209,13 @@ def _protectai_score(prompt: str) -> float:
                 if r["label"] == "INJECTION":
                     return r["score"]
             return 0.0
-        except Exception:
+        except Exception as exc:
             if _external_model_loads_required():
                 raise
-            pass
+            _MODEL_LOAD_STATUS["protectai"] = {
+                "mode": "simulated",
+                "error": repr(exc),
+            }
 
     # Simulation based on published ProtectAI behavior:
     # - Strong on direct English injection (~85% detection)
@@ -345,10 +348,13 @@ def _meta_guard_score(prompt: str) -> float:
                 if r["label"] in ("INJECTION", "JAILBREAK", "UNSAFE", "1", "LABEL_1"):
                     return r["score"]
             return 0.0
-        except Exception:
+        except Exception as exc:
             if _external_model_loads_required():
                 raise
-            pass
+            _MODEL_LOAD_STATUS["meta_prompt_guard"] = {
+                "mode": "simulated",
+                "error": repr(exc),
+            }
 
     # Simulation based on Meta's published results
     score = 0.0

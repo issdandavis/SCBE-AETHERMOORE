@@ -2361,6 +2361,26 @@ def cmd_antivirus(args: argparse.Namespace) -> int:
     )
 
 
+def cmd_antivirus_fuse(args: argparse.Namespace) -> int:
+    script = args.repo_root / "scripts" / "security" / "av_signal_fusion.py"
+    if not script.exists():
+        print(f"Missing AV signal fusion script: {script}")
+        return 1
+    command = [
+        "--input",
+        str(args.input),
+        "--provider",
+        str(args.provider),
+        "--output-dir",
+        str(args.output_dir),
+    ]
+    if args.artifact:
+        command.extend(["--artifact", str(args.artifact)])
+    if args.print_json:
+        command.append("--json")
+    return _run_script(script, command)
+
+
 def cmd_aetherauth(args: argparse.Namespace) -> int:
     script = args.repo_root / "scripts" / "agentic_aetherauth.py"
     if not script.exists():
@@ -4758,6 +4778,15 @@ def build_parser() -> argparse.ArgumentParser:
     av.add_argument("--ring-core", type=float, default=0.70, help="Trust threshold for CORE ring")
     av.add_argument("--ring-outer", type=float, default=0.45, help="Trust threshold for OUTER ring")
     av.set_defaults(func=cmd_antivirus)
+
+    av_fuse = sub.add_parser("antivirus-fuse", help="Fuse AV/EDR/SIEM/runtime alerts into a SCBE decision")
+    add_runtime_cli_flags(av_fuse)
+    av_fuse.add_argument("--input", type=Path, required=True, help="JSON, JSONL, or log file with alerts")
+    av_fuse.add_argument("--artifact", type=Path, default=None, help="Optional local artifact to triage")
+    av_fuse.add_argument("--provider", default="generic", help="Provider hint when auto-detection is not enough")
+    av_fuse.add_argument("--output-dir", default="artifacts/security/av_signal_fusion")
+    av_fuse.add_argument("--print-json", action="store_true", help="Print full JSON receipt")
+    av_fuse.set_defaults(func=cmd_antivirus_fuse)
 
     auth = sub.add_parser("aetherauth", help="Run context-bound AetherAuth-style access decision")
     add_runtime_cli_flags(auth)

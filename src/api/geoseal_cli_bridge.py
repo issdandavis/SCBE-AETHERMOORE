@@ -5,10 +5,14 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
+import re
 import tempfile
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any
+
+_SAFE_SUFFIX_RE = re.compile(r"^\.[A-Za-z0-9][A-Za-z0-9_.-]{0,15}$")
 
 
 def _capture_cli(handler: Any, namespace: argparse.Namespace) -> tuple[int, str, str]:
@@ -19,6 +23,23 @@ def _capture_cli(handler: Any, namespace: argparse.Namespace) -> tuple[int, str,
     with redirect_stdout(out_buf), redirect_stderr(err_buf):
         rc = int(handler(namespace))
     return rc, out_buf.getvalue(), err_buf.getvalue()
+
+
+def _safe_temp_suffix(source_name: object, default: str = ".rs") -> str:
+    suffix = Path(str(source_name or "")).suffix or default
+    return suffix if _SAFE_SUFFIX_RE.fullmatch(suffix) else default
+
+
+def _trusted_temp_path(path_str: str) -> Path:
+    path = Path(path_str).resolve()
+    temp_root = Path(tempfile.gettempdir()).resolve()
+    if path.parent != temp_root and temp_root not in path.parents:
+        raise ValueError(f"temp path outside system temp dir: {path}")
+    return path
+
+
+def _unlink_trusted_temp(path: Path) -> None:
+    _trusted_temp_path(str(path)).unlink(missing_ok=True)
 
 
 def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, Any]:
@@ -153,14 +174,11 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         temp_path: Path | None = None
         try:
             if content is not None and str(content).strip() != "":
-                stem = body.get("source_name") or "geoseal_roundtrip"
-                suffix = Path(stem).suffix or ".rs"
+                suffix = _safe_temp_suffix(body.get("source_name"), ".rs")
                 fd, path_str = tempfile.mkstemp(suffix=suffix, prefix="geoseal_rt_")
-                import os
-
                 with os.fdopen(fd, "wb") as f:
                     f.write(str(content).encode("utf-8", errors="replace"))
-                temp_path = Path(path_str)
+                temp_path = _trusted_temp_path(path_str)
                 source = str(temp_path)
             if not source:
                 raise ValueError("source or content is required for code-roundtrip")
@@ -177,10 +195,16 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         finally:
             if temp_path is not None and temp_path.exists():
                 try:
-                    decoded = temp_path.with_name(temp_path.stem + ".decoded" + temp_path.suffix)
+                    decoded = _trusted_temp_path(
+                        str(
+                            temp_path.with_name(
+                                temp_path.stem + ".decoded" + temp_path.suffix
+                            )
+                        )
+                    )
                     if decoded.exists():
-                        decoded.unlink(missing_ok=True)
-                    temp_path.unlink(missing_ok=True)
+                        _unlink_trusted_temp(decoded)
+                    _unlink_trusted_temp(temp_path)
                 except OSError:
                     pass
 

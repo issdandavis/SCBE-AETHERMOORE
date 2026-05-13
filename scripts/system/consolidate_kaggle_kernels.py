@@ -14,7 +14,6 @@ import csv
 import json
 import re
 import subprocess
-import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
