@@ -117,7 +117,9 @@ def test_security_events_participate_in_fusion_decision() -> None:
 
 def test_cli_writes_receipt_and_returns_warn_for_quarantine(tmp_path: Path) -> None:
     signals = tmp_path / "signals.jsonl"
-    signals.write_text(json.dumps({"priority": "Warning", "rule": "Unexpected outbound connection"}) + "\n", encoding="utf-8")
+    signals.write_text(
+        json.dumps({"priority": "Warning", "rule": "Unexpected outbound connection"}) + "\n", encoding="utf-8"
+    )
     out_dir = tmp_path / "out"
 
     result = subprocess.run(

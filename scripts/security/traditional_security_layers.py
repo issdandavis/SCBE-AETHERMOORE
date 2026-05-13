@@ -121,7 +121,9 @@ def _is_trusted_repo_path(path: Path, policy: dict[str, Any]) -> bool:
     return first in set(policy.get("trusted_repo_prefixes", []))
 
 
-def evaluate_artifact(path: Path, policy_path: Path = DEFAULT_POLICY_PATH, max_bytes: int = 5_000_000) -> TraditionalSecurityReport:
+def evaluate_artifact(
+    path: Path, policy_path: Path = DEFAULT_POLICY_PATH, max_bytes: int = 5_000_000
+) -> TraditionalSecurityReport:
     if not path.exists() or not path.is_file():
         raise FileNotFoundError(path)
     policy = load_policy(policy_path)
@@ -136,34 +138,52 @@ def evaluate_artifact(path: Path, policy_path: Path = DEFAULT_POLICY_PATH, max_b
     blocked = {str(item).lower() for item in policy.get("blocked_sha256", [])}
     allowed = {str(item).lower() for item in policy.get("allowed_sha256", [])}
     if digest.lower() in blocked:
-        controls.append(ControlHit("hash_reputation_block", "CRITICAL", 50, "SHA-256 is present in the local blocklist."))
+        controls.append(
+            ControlHit("hash_reputation_block", "CRITICAL", 50, "SHA-256 is present in the local blocklist.")
+        )
     if digest.lower() in allowed:
         controls.append(ControlHit("hash_reputation_allow", "INFO", -8, "SHA-256 is present in the local allowlist."))
 
     high_risk_ext = set(policy.get("high_risk_extensions", []))
     archive_ext = set(policy.get("archive_extensions", []))
     if ext in high_risk_ext:
-        controls.append(ControlHit("high_risk_extension", "HIGH", 18, f"Extension {ext} is executable or script-capable."))
+        controls.append(
+            ControlHit("high_risk_extension", "HIGH", 18, f"Extension {ext} is executable or script-capable.")
+        )
     if ext in archive_ext or kind == "zip_archive":
-        controls.append(ControlHit("archive_payload", "MEDIUM", 10, "Archive-like payload requires unpacking controls."))
+        controls.append(
+            ControlHit("archive_payload", "MEDIUM", 10, "Archive-like payload requires unpacking controls.")
+        )
     if EICAR_ASCII in scanned:
         controls.append(ControlHit("eicar_test_signature", "CRITICAL", 45, "EICAR antivirus test string detected."))
     if path.name.count(".") >= 2 and ext in high_risk_ext:
         controls.append(ControlHit("double_extension", "HIGH", 16, "High-risk double extension pattern."))
     if kind in {"pe_binary", "elf_binary"} and ext not in {".exe", ".dll", ".com", ".scr", ".so", ""}:
-        controls.append(ControlHit("magic_extension_mismatch", "HIGH", 18, f"Magic bytes show {kind} but extension is {ext or '<none>'}."))
+        controls.append(
+            ControlHit(
+                "magic_extension_mismatch", "HIGH", 18, f"Magic bytes show {kind} but extension is {ext or '<none>'}."
+            )
+        )
     if kind in {"pdf", "ole_document"} and b"/JavaScript" in scanned:
         controls.append(ControlHit("document_javascript", "HIGH", 18, "Document contains JavaScript marker."))
     if ent >= 7.2 and kind in {"pe_binary", "elf_binary", "unknown_binary"}:
-        controls.append(ControlHit("high_entropy_binary", "MEDIUM", 12, "Binary has high entropy; packed or encrypted content is possible."))
+        controls.append(
+            ControlHit(
+                "high_entropy_binary", "MEDIUM", 12, "Binary has high entropy; packed or encrypted content is possible."
+            )
+        )
     if path.stat().st_size > int(policy.get("max_review_size_bytes", 52_428_800)):
         controls.append(ControlHit("large_artifact", "MEDIUM", 8, "Artifact exceeds normal review size threshold."))
 
     rendered = str(path.resolve())
     if any(marker.lower() in rendered.lower() for marker in policy.get("untrusted_path_markers", [])):
-        controls.append(ControlHit("untrusted_path_zone", "MEDIUM", 8, "Artifact path is in a download/temp-style zone."))
+        controls.append(
+            ControlHit("untrusted_path_zone", "MEDIUM", 8, "Artifact path is in a download/temp-style zone.")
+        )
     elif _is_trusted_repo_path(path, policy):
-        controls.append(ControlHit("trusted_repo_path", "INFO", -4, "Artifact is under a configured repo source/test/docs path."))
+        controls.append(
+            ControlHit("trusted_repo_path", "INFO", -4, "Artifact is under a configured repo source/test/docs path.")
+        )
 
     score = max(0, sum(hit.weight for hit in controls))
     critical = any(hit.severity == "CRITICAL" for hit in controls)
