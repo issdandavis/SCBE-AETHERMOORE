@@ -1,0 +1,25 @@
+name = "scbe-shim"
+main = "src/worker.ts"
+compatibility_date = "2026-05-12"
+compatibility_flags = ["nodejs_compat"]
+
+# Set secrets via:  wrangler secret put HF_TOKEN
+# (HF Inference API token — required to call HuggingFace inference endpoints.)
+
+[vars]
+HF_MODEL = "Qwen/Qwen2.5-7B-Instruct"
+HF_INFERENCE_BASE = "https://api-inference.huggingface.co/v1"
+SHIM_VERSION = "0.1.0"
+# Optional: URL of the FastAPI Space mirror that exposes /v1/scbe/triage
+# (Codex's traditional_security_layers bridge). Leave empty to disable.
+TRIAGE_BRIDGE_URL = ""
+
+# Optional KV cache binding — create with:
+#   wrangler kv:namespace create SHIM_CACHE
+# then paste the id below to enable response caching.
+# [[kv_namespaces]]
+# binding = "SHIM_CACHE"
+# id = ""
+
+[observability]
+enabled = true
