@@ -215,6 +215,10 @@ def test_public_app_config_explains_remote_update_boundary() -> None:
     assert config["features"]["hosted_run_intake"] is True
     assert config["endpoints"]["hosted_run_page"].endswith("/hosted-run.html")
     assert config["endpoints"]["polly_hosted_run"].endswith("/v1/polly/hosted-run")
+    assert config["endpoints"]["polly_chat"].endswith("/chat.html")
+    assert config["polly_role"]["role"] == "scbe-web-agent"
+    assert "superpowers:subagent-driven-development" in config["polly_role"]["skills"]
+    assert "agent-task packet creation" in config["polly_role"]["default_actions"]
     assert config["endpoints"]["payment_center"].endswith("/payments.html")
     assert config["features"]["unified_payment_center"] is True
     assert config["fallbacks"]["payment_center"].endswith("/payments.html")

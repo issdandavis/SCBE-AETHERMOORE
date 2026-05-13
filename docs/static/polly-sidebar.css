@@ -88,6 +88,7 @@
 
 .polly-statusbar,
 .polly-starters,
+.polly-mission,
 .polly-composer,
 .polly-settings {
   padding-left: 18px;
@@ -144,6 +145,23 @@
   color: #dcbaff;
   border-color: rgba(183, 148, 244, 0.24);
   background: rgba(183, 148, 244, 0.08);
+}
+
+.polly-mission {
+  margin: 0 18px 4px;
+  padding: 11px 12px;
+  border: 1px solid rgba(240, 191, 103, 0.18);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(240, 191, 103, 0.08), rgba(23, 198, 207, 0.05)),
+    rgba(255, 255, 255, 0.025);
+  color: #d8deea;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.polly-mission strong {
+  color: #f0bf67;
 }
 
 .polly-thread {
@@ -251,10 +269,18 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.02);
   color: #e7e4db;
-  border-radius: 999px;
+  border-radius: 12px;
   padding: 9px 12px;
   font-size: 12px;
   cursor: pointer;
+  min-height: 34px;
+}
+
+.polly-starter:hover,
+.polly-starter:focus-visible {
+  border-color: rgba(240, 191, 103, 0.45);
+  background: rgba(240, 191, 103, 0.08);
+  outline: none;
 }
 
 .polly-composer {

@@ -57,6 +57,28 @@ def test_widget_accepts_text_key_from_chat_response() -> None:
     )
 
 
+def test_sidebar_sends_scbe_web_agent_role_packet() -> None:
+    """The v2 sidebar should prime Polly with the public SCBE web-agent role."""
+    src = _read(ROOT / "docs" / "static" / "polly-sidebar.js")
+    assert "POLLY_AGENT_ROLE" in src
+    assert 'role: "scbe-web-agent"' in src
+    assert "superpowers:subagent-driven-development" in src
+    assert "polly_role: pollyRolePacket()" in src
+    assert "agent-task packet" in src
+
+
+def test_sidebar_has_useful_product_and_agent_starters() -> None:
+    """Cold visitors should see starters that route to useful deterministic paths."""
+    src = _read(ROOT / "docs" / "static" / "polly-sidebar.js")
+    for prompt in [
+        "What should I buy if I am new here?",
+        "How much is the workflow snapshot?",
+        "Make my AI agent safer",
+        "Search the web for AI agent governance",
+    ]:
+        assert prompt in src
+
+
 def test_kindle_widget_accepts_text_key_from_chat_response() -> None:
     """kindle-app PWA widget must accept the same response shape."""
     src = _read(ROOT / "kindle-app" / "www" / "static" / "polly-hf-chat.js")

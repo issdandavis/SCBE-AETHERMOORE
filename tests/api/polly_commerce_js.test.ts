@@ -743,6 +743,26 @@ describe('polly chat handler — research path', () => {
   });
 });
 
+describe('polly chat handler — role packet', () => {
+  it('turns the scbe-web-agent packet into bounded system context', () => {
+    const rows = chatHandler._private.buildPollyRoleContext({
+      role: 'scbe-web-agent',
+      skills: ['scbe-web-agent', 'superpowers:subagent-driven-development'],
+      operating_rules: ['Free path first', 'Return bounded task packets'],
+      page_context: 'Workflow Snapshot — /workflow-snapshot',
+    });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].role).toBe('system');
+    expect(rows[0].content).toContain('SCBE web agent');
+    expect(rows[0].content).toContain('subagent-driven-development');
+    expect(rows[0].content).toContain('bounded task packet');
+  });
+
+  it('ignores unrecognized role packets', () => {
+    expect(chatHandler._private.buildPollyRoleContext({ role: 'random-bot' })).toEqual([]);
+  });
+});
+
 describe('polly chat handler — offline-router fallback', () => {
   beforeEach(() => rateLimit.reset());
   it('replaces dead-end LLM offline message with the four-bucket router', async () => {
