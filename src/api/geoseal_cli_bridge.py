@@ -92,9 +92,7 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         _reject_external_file_fields(body, "candidates_file")
         ns = argparse.Namespace(
             goal=body.get("goal") or "",
-            inline_candidates=json.dumps(
-                body.get("candidates") or body.get("inline_candidates") or []
-            ),
+            inline_candidates=json.dumps(body.get("candidates") or body.get("inline_candidates") or []),
             candidates_file=None,
             top_k=int(body.get("top_k") or 8),
             block_size=int(body.get("block_size") or 16),
