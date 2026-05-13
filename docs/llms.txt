@@ -17,6 +17,11 @@ Canonical repository: https://github.com/issdandavis/SCBE-AETHERMOORE
 - Products: https://aethermoore.com/SCBE-AETHERMOORE/products.html
 - Payment center: https://aethermoore.com/SCBE-AETHERMOORE/payments.html
 - Governance Snapshot: https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html
+- YouTube channel: https://www.youtube.com/channel/UCO9aJ-ZH0Ddg_F0Dr655WIQ
+- YouTube handle: https://www.youtube.com/@id8461
+- GitHub profile: https://github.com/issdandavis
+- Hugging Face profile: https://huggingface.co/issdandavis
+- Ko-fi support: https://ko-fi.com/izdandavis
 
 ## Polly Role
 
