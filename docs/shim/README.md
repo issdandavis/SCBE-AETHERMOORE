@@ -10,7 +10,7 @@
 
 ## What it does in one sentence
 
-Every request goes through a 22-anchor adversarial prompt filter; every
+Every request goes through a 26-anchor adversarial prompt filter; every
 response is scored against 5 axioms and routed into one of 4 verdict
 bands; the caller receives an OpenAI-compatible response plus an `scbe_governance`
 field with the verdict, harmonic score, reason codes, and a suggested
@@ -24,7 +24,7 @@ safe correction.
 | Cross-lane concept preservation | Meaning held across 12 task lanes | **257 / 257 = 100%**, 95% CI ≥ 0.985 | Multi-task transfer eval |
 | Executable code holdout | Python answers that pass real tests | **180 / 180 = 100%** | HumanEval / MBPP family |
 | Chemistry contract | Domain-specific constraint enforcement | **66 / 75 = 88%** | SciCode |
-| Petri 173 adversarial seeds (Anthropic) | Meta-AI auditor probes blocked | **173 / 173 training_blocked**, **0.58% false-allow** | Petri (no public scoreboard, this IS the test) |
+| Petri 173 adversarial seeds (Anthropic) | Meta-AI auditor probes denied or escalated | **171 / 173**, **1.16% false-allow** in 2026-05-13 v7-matched harness | Petri (no public scoreboard, this IS the test) |
 | Stage 6 post-shim | Constrained generation under attack | **5 / 5** | No public equivalent |
 
 Numbers are from internal harnesses; the Cloudflare Worker `/v1/scorecard`

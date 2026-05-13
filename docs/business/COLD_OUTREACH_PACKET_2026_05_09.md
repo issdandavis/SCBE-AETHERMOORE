@@ -33,9 +33,9 @@ Hi Anthropic team,
 I'm Issac Davis. I've spent the last three years building SCBE-AETHERMOORE,
 a 14-layer AI governance pipeline grounded in hyperbolic geometry. The
 substrate composes with Petri — when I wire it as the enforcement layer
-behind your audit tool, I get 173/173 training_blocked across the full
-seed set, with regex pre-filter reducing residual false-allows from
-2.31% to 0.58%.
+behind your audit tool, the 2026-05-13 v7-matched harness denies or
+escalates 171/173 seeds, with a 1.16% false-allow rate and two named
+residuals now tracked as regressions.
 
 I work solo, MIT-license everything, and have shipped:
 - npm: scbe-aethermoore (the 14-layer pipeline)
@@ -102,7 +102,8 @@ proposed for Schmidt Sciences funding).
 
 I'm comfortable working on empirical eval design, capability-elicitation
 protocols, and red-team automation. Composed with Anthropic's Petri
-auditing tool for 173/173 training_blocked on the full seed set.
+auditing tool for 171/173 denied or escalated in the 2026-05-13
+v7-matched harness.
 
 I'd like to be considered for the Research Engineer role, or for any
 short-term contractor engagement on evaluation infrastructure.
@@ -194,7 +195,8 @@ I've built SCBE-AETHERMOORE — a 14-layer AI governance pipeline that uses
 hyperbolic geometry to bound adversarial cost in closed form, not via
 learned filtering. It's open-source on npm/PyPI (MIT-licensed) with a US
 provisional patent backing the substrate. Composes with Anthropic's Petri
-audit tool: 173/173 training_blocked on the full seed set.
+audit tool: 171/173 denied or escalated in the 2026-05-13 v7-matched
+harness.
 
 I'm SAM-registered (UEI J4NXHM6N5F59) and have two DARPA proposals in active
 evaluation. Available this quarter for:
@@ -225,7 +227,7 @@ LinkedIn DMs have ~3x the response rate of cold email but are limited to ~300 ch
 ```
 Hi [Name] — independent AI safety engineer here, SAM-registered, two DARPA
 proposals in eval. Built a 14-layer governance pipeline (npm scbe-aethermoore)
-that composes with Anthropic Petri for 173/173 blocked. Available for
+that composes with Anthropic Petri for 171/173 denied or escalated. Available for
 contractor / subcontract this quarter. Worth 15 min to discuss?
 ```
 
