@@ -40,7 +40,7 @@ jobs:
           # we skip both the issue create and the email send. Stripe retries
           # webhooks on 5xx; we always 200, but a long network failure could
           # leave a duplicate dispatch in flight.
-          existing=$(gh issue list --state all --search "snapshot paid: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}" || true)
+          existing=$(gh issue list --state all --search "snapshot paid: ${SESSION_ID} in:title" --json number --jq '.[0].number' --repo "${{ github.repository }}")
           if [[ -n "$existing" && "$existing" != "null" ]]; then
             echo "issue already exists for session ${SESSION_ID} (#${existing}); skipping"
             echo "ALREADY_FILED=1" >> "$GITHUB_ENV"
@@ -61,7 +61,9 @@ jobs:
             mode_tag="TEST-MODE"
           fi
 
-          gh label create snapshot-paid --description "Snapshot Stripe checkout completed" --color "D6A756" --repo "${{ github.repository }}" 2>/dev/null || true
+          if ! gh label view snapshot-paid --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh label create snapshot-paid --description "Snapshot Stripe checkout completed" --color "D6A756" --repo "${{ github.repository }}"
+          fi
 
           title="snapshot paid: ${SESSION_ID} (${price}, ${mode_tag})"
           body=$(cat <<EOF
