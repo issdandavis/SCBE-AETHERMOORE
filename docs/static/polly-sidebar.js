@@ -27,6 +27,30 @@
   var MEMORY_KEY = "pollyV2Memory";
   var MAX_MEMORY = 100; // max stored turns
   var STATUS_REFRESH_MS = 30000; // 30-second service status poll interval
+  var POLLY_AGENT_ROLE = {
+    role: "scbe-web-agent",
+    version: "2026-05-13",
+    goal: "Route visitors to useful SCBE actions: buy, ask, research, agent-task, or handoff.",
+    skills: [
+      "scbe-web-agent",
+      "superpowers:subagent-driven-development",
+      "superpowers:writing-plans",
+      "frontend-design",
+      "plugin-dev:agent-development"
+    ],
+    operating_rules: [
+      "Free path first; lowest-cost paid path second.",
+      "Prefer deterministic SCBE routes before open-ended model answers.",
+      "For agent work, return a task packet, evidence needed, and next action.",
+      "Never claim certification, guaranteed safety, legal advice, or formal compliance."
+    ],
+    public_maps: {
+      robot: "https://aethermoore.com/SCBE-AETHERMOORE/robot.md",
+      llms: "https://aethermoore.com/SCBE-AETHERMOORE/llms.txt",
+      app_config: "https://aethermoore.com/SCBE-AETHERMOORE/app-config.json",
+      offers: "https://aethermoore.com/SCBE-AETHERMOORE/offers.json"
+    }
+  };
 
   // -------------------------------------------------------------------------
   // Utilities
@@ -56,6 +80,25 @@
   function apiUrl(path) {
     var base = (window.POLLY_V2_API || localStorage.getItem("pollyV2Api") || DEFAULT_API).replace(/\/+$/, "");
     return base + path;
+  }
+
+  function pageContext() {
+    var title = document.title || "AetherMoore";
+    var path = window.location.pathname || "/";
+    var desc = document.querySelector('meta[name="description"]');
+    return title + " — " + path + (desc && desc.content ? " — " + desc.content.slice(0, 180) : "");
+  }
+
+  function pollyRolePacket() {
+    return {
+      role: POLLY_AGENT_ROLE.role,
+      version: POLLY_AGENT_ROLE.version,
+      goal: POLLY_AGENT_ROLE.goal,
+      skills: POLLY_AGENT_ROLE.skills,
+      operating_rules: POLLY_AGENT_ROLE.operating_rules,
+      public_maps: POLLY_AGENT_ROLE.public_maps,
+      page_context: pageContext()
+    };
   }
 
   // -------------------------------------------------------------------------
@@ -243,6 +286,10 @@
     return (
       "<p><strong>Polly v2 commands:</strong></p>" +
       '<ul class="polly-list">' +
+      "<li><code>help me choose a product</code> — routes to the product picker</li>" +
+      "<li><code>how much is the workflow snapshot?</code> — returns the $99 starter path</li>" +
+      "<li><code>make my AI agent safer</code> — opens the custom/governance route</li>" +
+      "<li><code>search the web for &lt;topic&gt;</code> — prepares an agent task packet</li>" +
       "<li><code>search &lt;query&gt;</code> — web search via Tavily</li>" +
       "<li><code>email &lt;to&gt; subject: &lt;s&gt; body: &lt;b&gt;</code> — send email</li>" +
       "<li><code>slack &lt;message&gt;</code> — post Slack notification</li>" +
@@ -376,7 +423,8 @@
           message: message,
           thinking: thinkingMode,
           history: history,
-          page_context: document.title + " — " + window.location.pathname,
+          page_context: pageContext(),
+          polly_role: pollyRolePacket(),
         }),
         signal: AbortSignal.timeout(8000),
       });
@@ -443,14 +491,14 @@
       '<div class="polly-panel" aria-live="polite">' +
         '<div class="polly-header">' +
           '<div class="polly-title-row">' +
-            '<div class="polly-title">Polly v2</div>' +
+            '<div class="polly-title">Polly · SCBE web agent</div>' +
             '<div style="display:flex;gap:6px;align-items:center;">' +
               '<button class="polly-icon-btn" type="button" data-role="toggle-think" aria-label="Toggle thinking mode" title="Thinking mode (uses Gemini)">💡</button>' +
               '<button class="polly-icon-btn" type="button" data-role="toggle-settings" aria-label="Settings">&#9881;</button>' +
               '<button class="polly-close" type="button" data-role="close" aria-label="Close">&times;</button>' +
             "</div>" +
           "</div>" +
-          '<div class="polly-subtitle" data-role="think-label">Chat · search · email · slack</div>' +
+          '<div class="polly-subtitle" data-role="think-label">Product routing · research · agent tasks · handoff</div>' +
         "</div>" +
         '<div class="polly-statusbar" data-role="statusbar"></div>' +
         '<div class="polly-settings" data-role="settings">' +
@@ -458,10 +506,13 @@
           '<input class="polly-config" data-role="config" placeholder="https://api.aethermoore.com">' +
           '<button class="polly-starter" type="button" data-role="export-btn" style="margin-top:10px;">Export memory JSONL</button>' +
         "</div>" +
+        '<div class="polly-mission" aria-label="Polly capabilities">' +
+          '<strong>Ask Polly for:</strong> the right offer, a workflow snapshot path, SCBE research, or an agent task packet.' +
+        '</div>' +
         '<div class="polly-thread" data-role="thread"></div>' +
         '<div class="polly-starters" data-role="starters"></div>' +
         '<div class="polly-composer">' +
-          '<textarea class="polly-input" data-role="input" aria-label="Message Polly" placeholder="Ask anything, or: search &lt;q&gt;, email &lt;to&gt;, slack &lt;msg&gt;, think about &lt;q&gt;"></textarea>' +
+          '<textarea class="polly-input" data-role="input" aria-label="Message Polly" placeholder="Try: help me choose, workflow snapshot price, make my AI agent safer, or search the web for AI governance"></textarea>' +
           '<div class="polly-actions">' +
             '<div class="polly-hint" data-role="mode-hint">Shift+Enter for newline</div>' +
             '<button class="polly-send" data-role="send" type="button">Send</button>' +
@@ -493,17 +544,15 @@
 
     var thinkingOn = false;
 
-    // Starter prompts. Ordered so a cold visitor sees the picker entry
-    // first, followed by a buy-shaped prompt that routes cleanly to the
-    // governance snapshot, then the technical research lookup, then /help
-    // as the safety hatch. Each prompt is verified to route through a
-    // deterministic commerce/research path — no LLM dependency.
+    // Starter prompts. Each prompt is chosen to route through a deterministic
+    // commerce/research/agent path first so Polly remains useful without paid
+    // model calls.
     var STARTERS = [
-      "Help me choose a product",
-      "What services can I buy from AetherMoore?",
-      "Tell me about the governance snapshot",
-      "What is the harmonic wall?",
-      "search hyperbolic geometry AI safety",
+      "What should I buy if I am new here?",
+      "How much is the workflow snapshot?",
+      "Make my AI agent safer",
+      "Search the web for AI agent governance",
+      "What is SCBE?",
       "/help",
     ];
     startersContainer.innerHTML = STARTERS.map(function (s) {
@@ -546,8 +595,8 @@
     addMsg(
       thread,
       "system",
-      "<p>Polly v2 ready. Chat, search, send email, post to Slack, or enable Thinking mode for deep reasoning. Type <code>/help</code> for commands.</p>",
-      chip("Polly v2", "lore")
+      "<p>Polly is loaded as the SCBE web agent. Ask for product routing, agent workflow help, SCBE research, or an agent-task packet. Type <code>/help</code> for exact commands.</p>",
+      chip("scbe-web-agent", "lore")
     );
 
     // Thinking toggle
@@ -558,7 +607,7 @@
         if (thinkLabel) {
           thinkLabel.textContent = thinkingOn
             ? "Thinking mode ON — step-by-step reasoning"
-            : "Chat · search · email · slack";
+            : "Product routing · research · agent tasks · handoff";
         }
         if (modeHint) {
           modeHint.textContent = thinkingOn ? "Thinking mode active (Gemini)" : "Shift+Enter for newline";

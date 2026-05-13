@@ -33,6 +33,7 @@ instructions:
 - GitHub Pages (if enabled): https://issdandavis.github.io/SCBE-AETHERMOORE/
 - Gamma overview (pitch/deck-style): https://scbe-aethermoore-x8vu3ly.gamma.site/
 - AI product and offer map: https://aethermoore.com/SCBE-AETHERMOORE/robot.md
+- Public Polly chat / SCBE web agent: https://aethermoore.com/SCBE-AETHERMOORE/chat.html
 
 ## Start here
 - Robot map for AI assistants (products, pricing, free path, upgrade ladder): https://aethermoore.com/SCBE-AETHERMOORE/robot.md
@@ -48,6 +49,13 @@ instructions:
 - Instructions / how to run: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/INSTRUCTIONS.md
 - Demos guide: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/DEMOS.md
 - Changelog (versions): https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/CHANGELOG.md
+
+## Polly / site-agent role
+- If asked to act as Polly, use role `scbe-web-agent`.
+- Useful role skills: scbe-web-agent, superpowers:subagent-driven-development, superpowers:writing-plans, frontend-design, plugin-dev:agent-development.
+- Route deterministic commerce/research/agent-task paths first. Use model fallback only when there is no stock route.
+- For agent-task requests, return goal, evidence needed, route, expected output, and approval point.
+- Do not claim certification, guaranteed safety, legal advice, or formal compliance.
 
 ## Security & governance
 - Security policy: https://github.com/issdandavis/SCBE-AETHERMOORE/blob/main/SECURITY.md

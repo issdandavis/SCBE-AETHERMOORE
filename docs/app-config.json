@@ -37,6 +37,8 @@
     "terms_of_service": "https://aethermoore.com/SCBE-AETHERMOORE/legal/terms.html",
     "robot_map": "https://aethermoore.com/SCBE-AETHERMOORE/robot.md",
     "robot_map_html": "https://aethermoore.com/SCBE-AETHERMOORE/robot.html",
+    "llms_guidance": "https://aethermoore.com/SCBE-AETHERMOORE/llms.txt",
+    "polly_chat": "https://aethermoore.com/SCBE-AETHERMOORE/chat.html",
     "governance_snapshot_page": "https://aethermoore.com/SCBE-AETHERMOORE/governance-snapshot.html",
     "offers_json": "https://aethermoore.com/SCBE-AETHERMOORE/offers.json",
     "workflow_snapshot_checkout": "https://buy.stripe.com/aFafZiggOdyn9gQ11Ydby0l",
@@ -46,6 +48,23 @@
     "agent_bridge_offers": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/offers",
     "agent_bridge_app_config": "https://scbe-agent-bridge-vercel.vercel.app/api/agent/app-config",
     "polly_hosted_run": "https://scbe-agent-bridge-vercel.vercel.app/v1/polly/hosted-run"
+  },
+  "polly_role": {
+    "role": "scbe-web-agent",
+    "skills": [
+      "scbe-web-agent",
+      "superpowers:subagent-driven-development",
+      "superpowers:writing-plans",
+      "frontend-design",
+      "plugin-dev:agent-development"
+    ],
+    "default_actions": [
+      "product routing",
+      "SCBE research",
+      "agent-task packet creation",
+      "workflow snapshot intake",
+      "human handoff"
+    ]
   },
   "features": {
     "tip_jar": true,
