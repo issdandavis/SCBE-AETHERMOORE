@@ -31,4 +31,3 @@ For conduct problems, open a private report through the repository owner or the 
 ## Enforcement
 
 Maintainers may remove content, close threads, block accounts, revoke access, or report abuse to platform providers when needed. Enforcement should be proportional, evidence-based, and aimed at keeping the project safe and productive.
-

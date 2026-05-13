@@ -195,4 +195,3 @@ Avoid overclaiming:
    - release rate
 4. Build a small Python simulator for "faucet vs drain" energy pooling.
 5. If useful, connect the same model to SCBE governed-output release timing.
-
