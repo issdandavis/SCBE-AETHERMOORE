@@ -126,6 +126,8 @@ jobs:
   harmonic-scaling:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     steps:
     - name: Checkout repository
@@ -149,6 +151,8 @@ jobs:
   core-cipher:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
 
     steps:
     - name: Checkout repository
