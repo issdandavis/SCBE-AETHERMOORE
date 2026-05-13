@@ -77,6 +77,34 @@ def dispatch_geoseal_command(command: str, body: dict[str, Any]) -> dict[str, An
         data = _parse_json_stdout(stdout, stderr, rc)
         return {"exit_code": rc, "data": data, "stderr": stderr or None}
 
+    if command == "call-switchboard":
+        ns = argparse.Namespace(
+            calls=None,
+            inline_calls=json.dumps(body.get("calls") or []),
+            request=json.dumps(body.get("request") or {}),
+            json=True,
+        )
+        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_call_switchboard, ns)
+        data = _parse_json_stdout(stdout, stderr, rc)
+        return {"exit_code": rc, "data": data, "stderr": stderr or None}
+
+    if command == "lightning-indexer":
+        _reject_external_file_fields(body, "candidates_file")
+        ns = argparse.Namespace(
+            goal=body.get("goal") or "",
+            inline_candidates=json.dumps(
+                body.get("candidates") or body.get("inline_candidates") or []
+            ),
+            candidates_file=None,
+            top_k=int(body.get("top_k") or 8),
+            block_size=int(body.get("block_size") or 16),
+            channel_budget=int(body.get("channel_budget") or 3),
+            json=True,
+        )
+        rc, stdout, stderr = _capture_cli(geoseal_cli.cmd_lightning_indexer, ns)
+        data = _parse_json_stdout(stdout, stderr, rc)
+        return {"exit_code": rc, "data": data, "stderr": stderr or None}
+
     if command == "compile":
         intent = body.get("intent") or body.get("goal") or ""
         if isinstance(intent, str):
