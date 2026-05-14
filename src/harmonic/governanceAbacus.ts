@@ -63,7 +63,11 @@ export interface AbacusInput {
  * >= 0.45 is QUARANTINE, >= 0.25 is ESCALATE, otherwise DENY. Stored as
  * rationals so the comparison is exact.
  */
-export const TIER_THRESHOLDS: ReadonlyArray<{ tier: GovernanceTier; minScoreNum: bigint; minScoreDen: bigint }> = [
+export const TIER_THRESHOLDS: ReadonlyArray<{
+  tier: GovernanceTier;
+  minScoreNum: bigint;
+  minScoreDen: bigint;
+}> = [
   { tier: 'ALLOW', minScoreNum: 65n, minScoreDen: 100n },
   { tier: 'QUARANTINE', minScoreNum: 45n, minScoreDen: 100n },
   { tier: 'ESCALATE', minScoreNum: 25n, minScoreDen: 100n },
@@ -183,7 +187,9 @@ export function runGovernanceAbacus(input: AbacusInput, config: AbacusConfig = {
   //   scaled_two_pd     = 2 * pd_pos
   const denPos = scale + d_h_pos + 2n * pd_pos;
   if (denPos <= 0n) {
-    throw new RangeError('abacus denominator collapsed to zero (impossible for non-negative inputs)');
+    throw new RangeError(
+      'abacus denominator collapsed to zero (impossible for non-negative inputs)'
+    );
   }
 
   // score = 1 / (1 + d_h + 2*pd)
