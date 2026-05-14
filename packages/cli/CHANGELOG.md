@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.6 - 2026-05-14
+
+### Added
+
+- **`scbe contract scan <file.sol> [--json] [--fail-on-finding]`**: SCONE-class static prefilter for Solidity smart contracts, motivated by the 2025 Anthropic Red SCONE-bench finding ($550.1M simulated exploits across 405 contracts; 2 zero-days; revenue doubling every 1.3 months). Checks four vulnerability classes — `missing_view_or_pure_modifier`, `missing_access_control_on_financial`, `unvalidated_critical_address`, `payable_without_value_check` — each mapping to a severity → SCBE tier (DENY / ESCALATE / QUARANTINE). Receipt schema `scbe.contract_scan.v1`; emits `SCBE_CONTRACT_SCAN_PASS=1` on clean, otherwise structured findings array with rule, severity, tier, line, function, detail. Honest about scope: regex/heuristic, NOT an AI-driven audit — cross-function and data-flow exploits will be missed. Backend at `scripts/contracts/scbe_contract_scan.py`; 8/8 pytest pass.
+
 ## 4.3.5 - 2026-05-14
 
 ### Added

@@ -57,6 +57,11 @@ Governance abacus (deterministic BigInt-only L12+L13 scoring — no float drift)
   scbe abacus run --d-h 0.4 --pd 0.1
   scbe abacus run --d-h 0.4 --pd 0.1 --json
 
+Contract scanner (SCONE-class static prefilter for Solidity — heuristic, not AI audit):
+  scbe contract scan path/to/contract.sol
+  scbe contract scan path/to/contract.sol --json
+  cat path/to/contract.sol | scbe contract scan --json
+
 Compiler and routing commands, available from a source checkout:
   scbe compile-ca --opcodes "0x09 0x09 0x00" --target python
   scbe ca-plan --ops "abs abs add" --json
@@ -786,6 +791,35 @@ function runFlow(args) {
   runPythonScript('scripts/scbe-system-cli.py', ['flow', ...args]);
 }
 
+function runContract(args) {
+  // scbe contract scan [path] [--json] — SCONE-class static prefilter for Solidity.
+  const sub = args[0] || 'help';
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    process.stdout.write(
+      [
+        'Usage:',
+        '  scbe contract scan <file.sol> [--json] [--fail-on-finding]',
+        '  cat file.sol | scbe contract scan [--json]',
+        '',
+        'SCONE-class static prefilter for Solidity smart contracts. Heuristic,',
+        'not an AI-driven audit. Cross-function and data-flow exploits will be',
+        'missed — see docs/external/SCONE_BENCH_2026_05_14.md for full scope.',
+        '',
+        'Receipt: SCBE_CONTRACT_SCAN_PASS=1 on a clean contract, otherwise a',
+        'structured findings array with rule, severity (tier mapping), line,',
+        "function name, and detail.",
+        '',
+      ].join('\n'),
+    );
+    process.exit(0);
+  }
+  if (sub !== 'scan') {
+    process.stderr.write(`unknown contract subcommand: ${sub}\n`);
+    process.exit(2);
+  }
+  runPythonScript('scripts/contracts/scbe_contract_scan.py', args.slice(1));
+}
+
 // Top-level commands scbe handles directly. Used by the typo-suggestion guard.
 // Order doesn't matter; this list is the complete set of scbe-owned verbs.
 const KNOWN_COMMANDS = [
@@ -808,6 +842,7 @@ const KNOWN_COMMANDS = [
   'agent-bus',
   'agentbus',
   'abacus',
+  'contract',
   'compile-ca',
   'ca-plan',
   'render-op',
@@ -1141,6 +1176,10 @@ if (argv[0] === 'upgrade') {
 
 if (argv[0] === 'abacus') {
   runAbacus(argv.slice(1));
+}
+
+if (argv[0] === 'contract') {
+  runContract(argv.slice(1));
 }
 
 if (argv[0] === 'compile-ca' || argv[0] === 'ca-plan' || argv[0] === 'render-op') {
