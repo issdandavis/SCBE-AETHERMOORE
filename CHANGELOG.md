@@ -1,5 +1,13 @@
 # SCBE Production Pack Changelog
 
+## [4.1.3] - 2026-05-14
+
+### Added
+
+- **`scbe contract scan --emit-redirect-prompt` (trap-in-good-loops bridge)**: when the SCONE-class static prefilter finds DENY-tier vulnerabilities, it now emits a structured `redirect` payload (schema `scbe.contract_scan.redirect.v1`) containing a defensive audit prompt that names the specific findings by rule + line number. The caller can hand this prompt to a model in place of any attacker exploit prompt that references the same file — companion to `api/_governed_output.js::buildRedirectPrompt()` which already does the same on the input side. ESCALATE-tier-only findings produce no redirect; only the "guaranteed bad" class triggers the swap.
+- **New helper `build_redirect_prompt(result)`** in `scripts/contracts/scbe_contract_scan.py`: pure-function constructor for the redirect payload, mirrors the JS `buildRedirectPrompt` contract (no attacker text quoted, refuse-reverse anchor, defensive-task framing, bans exploit-output explicitly).
+- **4 new pytest tests** in `tests/contracts/test_scbe_contract_scan.py` (now 12 total) — verifies clean contracts emit no redirect, ESCALATE-only findings emit no redirect, DENY findings produce the correct schema + rule list, and the prompt carries every required defensive anchor (DEFENSIVE task / security auditor / remediation plan / no exploit calldata / reverse-redirect refusal).
+
 ## [4.1.2] - 2026-05-14
 
 ### Added

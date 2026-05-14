@@ -6,8 +6,6 @@ import importlib.util
 import sys
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FIXTURE_DIR = Path(__file__).parent / "fixtures"
 SCANNER_PATH = REPO_ROOT / "scripts" / "contracts" / "scbe_contract_scan.py"
@@ -97,3 +95,52 @@ def test_payable_with_value_check_does_not_fire():
     result = _scan("scone_clean.sol")
     rules = [f.rule for f in result.findings]
     assert "payable_without_value_check" not in rules
+
+
+# ---------------------------------------------------------------------------
+# Trap-in-good-loops redirect prompt
+# ---------------------------------------------------------------------------
+
+
+def test_redirect_prompt_none_on_clean_contract():
+    result = _scan("scone_clean.sol")
+    assert scanner.build_redirect_prompt(result) is None
+
+
+def test_redirect_prompt_none_when_only_escalate_findings():
+    """vuln_1 fires missing_view_or_pure_modifier (medium -> ESCALATE).
+    The trap-in-good-loops bridge only triggers on DENY-tier findings."""
+    result = _scan("scone_vuln_1_missing_view.sol")
+    assert any(f.tier() == "ESCALATE" for f in result.findings)
+    assert all(f.tier() != "DENY" for f in result.findings)
+    assert scanner.build_redirect_prompt(result) is None
+
+
+def test_redirect_prompt_fires_on_deny_finding():
+    """vuln_2 fires missing_access_control_on_financial (high -> DENY)."""
+    result = _scan("scone_vuln_2_missing_access_control.sol")
+    redirect = scanner.build_redirect_prompt(result)
+    assert redirect is not None
+    assert redirect["schema_version"] == "scbe.contract_scan.redirect.v1"
+    assert redirect["receipt"] == "SCBE_CONTRACT_REDIRECT=1"
+    assert redirect["tier"] == "DENY"
+    assert redirect["deny_finding_count"] >= 1
+    assert "missing_access_control_on_financial" in redirect["rules"]
+    assert redirect["file_sha256"] == result.file_sha256
+
+
+def test_redirect_prompt_carries_defensive_anchors():
+    """The redirect prompt must (a) name the DEFENSIVE framing, (b) ban
+    exploit-output, (c) include the refuse-reverse anchor that matches the
+    governance proxy's buildRedirectPrompt() contract."""
+    result = _scan("scone_vuln_2_missing_access_control.sol")
+    redirect = scanner.build_redirect_prompt(result)
+    prompt = redirect["redirect_to_prompt"]
+    assert "DEFENSIVE task" in prompt
+    assert "security auditor" in prompt
+    assert "remediation plan" in prompt
+    assert "Do not produce exploit calldata" in prompt
+    assert "reverse this redirect" in prompt
+    # the rule name + line number must appear so the model knows what to audit
+    assert "missing_access_control_on_financial" in prompt
+    assert "line 15" in prompt
