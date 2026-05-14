@@ -3397,6 +3397,75 @@ def _write_flow_status_outputs(
     markdown_path.write_text(_render_flow_status_markdown(board), encoding="utf-8")
 
 
+def _execute_flow_packet(
+    packet: dict[str, object],
+    repo_root: Path,
+    timeout_seconds: int,
+    *,
+    dry_run: bool = False,
+) -> dict[str, object]:
+    command = [str(part) for part in packet.get("dispatch_command", [])]
+    if not command:
+        return {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "dry_run": dry_run,
+            "step_id": packet.get("step_id"),
+            "task_id": packet.get("task_id"),
+            "command": command,
+            "returncode": 2,
+            "stdout_tail": "",
+            "stderr_tail": "Ready packet is missing dispatch_command.",
+        }
+
+    if dry_run:
+        return {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": False,
+            "dry_run": True,
+            "step_id": packet["step_id"],
+            "task_id": packet["task_id"],
+            "command": command,
+            "returncode": None,
+            "stdout_tail": "",
+            "stderr_tail": "",
+        }
+
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=str(repo_root),
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=max(1, int(timeout_seconds)),
+            check=False,
+        )
+        return {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": True,
+            "dry_run": False,
+            "step_id": packet["step_id"],
+            "task_id": packet["task_id"],
+            "command": command,
+            "returncode": proc.returncode,
+            "stdout_tail": _flow_tail(proc.stdout),
+            "stderr_tail": _flow_tail(proc.stderr),
+        }
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "schema_version": "scbe_flow_run_next_result_v1",
+            "executed": True,
+            "dry_run": False,
+            "step_id": packet["step_id"],
+            "task_id": packet["task_id"],
+            "command": command,
+            "returncode": 124,
+            "stdout_tail": _flow_tail(exc.stdout or ""),
+            "stderr_tail": _flow_tail(exc.stderr or "flow packet execution timed out"),
+        }
+
+
 def cmd_flow_status(args: argparse.Namespace) -> int:
     repo_root = args.repo_root
     packets_path = _repo_path(repo_root, args.packets)
@@ -3495,61 +3564,16 @@ def cmd_flow_run_next(args: argparse.Namespace) -> int:
         return _json_result(args, payload, ["No ready packet."])
 
     packet = ready_packets[0]
-    command = [str(part) for part in packet.get("dispatch_command", [])]
-    if not command:
-        print("Ready packet is missing dispatch_command.")
-        return 2
 
-    if args.dry_run:
-        run_result = {
-            "schema_version": "scbe_flow_run_next_result_v1",
-            "executed": False,
-            "dry_run": True,
-            "step_id": packet["step_id"],
-            "task_id": packet["task_id"],
-            "command": command,
-            "returncode": None,
-            "stdout_tail": "",
-            "stderr_tail": "",
-        }
-        after_completed = set(completed_steps)
-        after_blocked = set(blocked_steps)
-    else:
-        try:
-            proc = subprocess.run(
-                command,
-                cwd=str(repo_root),
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                timeout=max(1, int(args.timeout_seconds)),
-                check=False,
-            )
-            run_result = {
-                "schema_version": "scbe_flow_run_next_result_v1",
-                "executed": True,
-                "dry_run": False,
-                "step_id": packet["step_id"],
-                "task_id": packet["task_id"],
-                "command": command,
-                "returncode": proc.returncode,
-                "stdout_tail": _flow_tail(proc.stdout),
-                "stderr_tail": _flow_tail(proc.stderr),
-            }
-        except subprocess.TimeoutExpired as exc:
-            run_result = {
-                "schema_version": "scbe_flow_run_next_result_v1",
-                "executed": True,
-                "dry_run": False,
-                "step_id": packet["step_id"],
-                "task_id": packet["task_id"],
-                "command": command,
-                "returncode": 124,
-                "stdout_tail": _flow_tail(exc.stdout or ""),
-                "stderr_tail": _flow_tail(exc.stderr or "flow run-next timed out"),
-            }
-        after_completed = set(completed_steps)
-        after_blocked = set(blocked_steps)
+    run_result = _execute_flow_packet(
+        packet,
+        repo_root,
+        args.timeout_seconds,
+        dry_run=bool(args.dry_run),
+    )
+    after_completed = set(completed_steps)
+    after_blocked = set(blocked_steps)
+    if not args.dry_run:
         if run_result["returncode"] == 0:
             after_completed.add(str(packet["step_id"]))
         else:
@@ -3589,6 +3613,115 @@ def cmd_flow_run_next(args: argparse.Namespace) -> int:
         f"Return code: {run_result['returncode']}",
         f"Saved flow status: {output_path}",
         f"Saved run result: {run_output_path}",
+    ]
+    return _json_result(args, payload, lines)
+
+
+def cmd_flow_continue(args: argparse.Namespace) -> int:
+    repo_root = args.repo_root
+    packets_path = _repo_path(repo_root, args.packets)
+    if not packets_path.exists():
+        print(f"Work packet bundle not found: {packets_path}")
+        return 2
+    try:
+        bundle = _load_flow_json(packets_path)
+        _ensure_work_packet_bundle(bundle)
+    except (json.JSONDecodeError, ValueError) as exc:
+        print(str(exc))
+        return 2
+
+    completed_steps = {str(item).strip() for item in args.completed if str(item).strip()}
+    blocked_steps = {str(item).strip() for item in args.blocked if str(item).strip()}
+    output_path = (
+        _repo_path(repo_root, args.output) if args.output else _default_flow_status_output_path(repo_root, packets_path)
+    )
+    markdown_path = (
+        _repo_path(repo_root, args.markdown_output)
+        if args.markdown_output
+        else _default_flow_status_markdown_path(output_path)
+    )
+    run_output_path = (
+        _repo_path(repo_root, args.run_output)
+        if args.run_output
+        else output_path.with_name(f"{output_path.stem}-continue.json")
+    )
+
+    runs: list[dict[str, object]] = []
+    stop_reason = "max_steps_reached"
+    max_steps = max(1, int(args.max_steps))
+
+    for _ in range(max_steps):
+        board = _build_flow_status_board(bundle, repo_root, completed_steps, blocked_steps)
+        ready_packets = list(board["next_packets"])
+        if blocked_steps:
+            stop_reason = "blocked"
+            break
+        if not ready_packets:
+            counts = dict(board.get("counts", {}))
+            if counts.get("waiting", 0) or counts.get("invalid", 0):
+                stop_reason = "no_ready_packet"
+            else:
+                stop_reason = "completed"
+            break
+
+        packet = ready_packets[0]
+        run_result = _execute_flow_packet(
+            packet,
+            repo_root,
+            args.timeout_seconds,
+            dry_run=bool(args.dry_run),
+        )
+        runs.append(run_result)
+        if args.dry_run:
+            stop_reason = "dry_run"
+            break
+        if run_result["returncode"] == 0:
+            completed_steps.add(str(packet["step_id"]))
+        else:
+            blocked_steps.add(str(packet["step_id"]))
+            stop_reason = "blocked"
+            break
+
+    final_board = _build_flow_status_board(bundle, repo_root, completed_steps, blocked_steps)
+    if stop_reason == "max_steps_reached" and not final_board["next_packets"]:
+        stop_reason = "completed" if not blocked_steps else "blocked"
+    continue_result = {
+        "schema_version": "scbe_flow_continue_result_v1",
+        "executed_count": sum(1 for run in runs if run.get("executed")),
+        "dry_run": bool(args.dry_run),
+        "stop_reason": stop_reason,
+        "max_steps": max_steps,
+        "completed_steps": final_board["completed_steps"],
+        "blocked_steps": final_board["blocked_steps"],
+        "ready_count": final_board["ready_count"],
+        "next_packet_ids": [row["task_id"] for row in final_board["next_packets"]],
+        "runs": runs,
+    }
+    final_board["flow_continue"] = continue_result
+    _write_flow_status_outputs(final_board, output_path, markdown_path)
+    run_output_path.parent.mkdir(parents=True, exist_ok=True)
+    run_output_path.write_text(json.dumps(continue_result, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+
+    payload = {
+        "schema_version": "scbe_flow_continue_result_v1",
+        "executed_count": continue_result["executed_count"],
+        "dry_run": continue_result["dry_run"],
+        "stop_reason": stop_reason,
+        "completed_steps": final_board["completed_steps"],
+        "blocked_steps": final_board["blocked_steps"],
+        "ready_count": final_board["ready_count"],
+        "next_packet_ids": continue_result["next_packet_ids"],
+        "output_path": _display_path(output_path, repo_root),
+        "markdown_path": _display_path(markdown_path, repo_root),
+        "run_output": _display_path(run_output_path, repo_root),
+    }
+    lines = [
+        f"Flow continue stopped: {stop_reason}",
+        f"Executed packets: {continue_result['executed_count']}",
+        f"Completed steps: {len(final_board['completed_steps'])}",
+        f"Blocked steps: {len(final_board['blocked_steps'])}",
+        f"Saved flow status: {output_path}",
+        f"Saved continue result: {run_output_path}",
     ]
     return _json_result(args, payload, lines)
 
@@ -5541,6 +5674,30 @@ def build_parser() -> argparse.ArgumentParser:
     flow_run_next.add_argument("--timeout-seconds", type=int, default=120)
     flow_run_next.add_argument("--dry-run", action="store_true", help="Show the selected packet without running it")
     flow_run_next.set_defaults(func=cmd_flow_run_next)
+    flow_continue = flow_sub.add_parser("continue", help="Run ready work packets until completion, block, or limit")
+    add_runtime_cli_flags(flow_continue)
+    flow_continue.add_argument("--packets", required=True, help="Path to an SCBE work packet bundle JSON")
+    flow_continue.add_argument(
+        "--completed",
+        action="append",
+        default=[],
+        help="Step id already completed; repeat for multiple completed packets",
+    )
+    flow_continue.add_argument(
+        "--blocked",
+        action="append",
+        default=[],
+        help="Step id intentionally blocked; repeat for multiple blocked packets",
+    )
+    flow_continue.add_argument("--output", default="", help="Output JSON path for the updated status board")
+    flow_continue.add_argument("--markdown-output", default="", help="Output Markdown path for the operator board")
+    flow_continue.add_argument("--run-output", default="", help="Output JSON path for the continue run log")
+    flow_continue.add_argument(
+        "--max-steps", type=int, default=8, help="Maximum packet executions in one continue call"
+    )
+    flow_continue.add_argument("--timeout-seconds", type=int, default=120, help="Per-packet execution timeout")
+    flow_continue.add_argument("--dry-run", action="store_true", help="Select the next packet without running it")
+    flow_continue.set_defaults(func=cmd_flow_continue)
 
     agentbus = sub.add_parser("agentbus", help="Run a user-facing shaped agent-bus task")
     add_runtime_cli_flags(agentbus)

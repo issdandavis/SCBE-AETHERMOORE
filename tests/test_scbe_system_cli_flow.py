@@ -292,3 +292,60 @@ def test_flow_run_next_dry_run_selects_first_ready_packet(tmp_path: Path) -> Non
     board = json.loads(status_path.read_text(encoding="utf-8"))
     assert board["run_next"]["dry_run"] is True
     assert board["next_packets"][0]["step_id"] == "scope"
+
+
+def test_flow_continue_dry_run_stops_after_first_ready_packet(tmp_path: Path) -> None:
+    plan_path = tmp_path / "flow-plan.json"
+    packet_path = tmp_path / "flow-packets.json"
+    status_path = tmp_path / "continue-status.json"
+    run_output = tmp_path / "continue.json"
+
+    plan_result = _run_cli(
+        "flow",
+        "plan",
+        "--task",
+        "continue packet loop",
+        "--workflow-template",
+        "implementation-loop",
+        "--output",
+        str(plan_path),
+        "--no-action-map",
+    )
+    assert plan_result.returncode == 0, plan_result.stderr
+
+    packet_result = _run_cli(
+        "flow",
+        "packetize",
+        "--plan",
+        str(plan_path),
+        "--output",
+        str(packet_path),
+        "--no-action-map",
+    )
+    assert packet_result.returncode == 0, packet_result.stderr
+
+    continue_result = _run_cli(
+        "flow",
+        "continue",
+        "--packets",
+        str(packet_path),
+        "--output",
+        str(status_path),
+        "--run-output",
+        str(run_output),
+        "--max-steps",
+        "3",
+        "--dry-run",
+    )
+    assert continue_result.returncode == 0, continue_result.stderr
+
+    run_log = json.loads(run_output.read_text(encoding="utf-8"))
+    assert run_log["schema_version"] == "scbe_flow_continue_result_v1"
+    assert run_log["stop_reason"] == "dry_run"
+    assert run_log["executed_count"] == 0
+    assert run_log["runs"][0]["step_id"] == "scope"
+    assert run_log["completed_steps"] == []
+
+    board = json.loads(status_path.read_text(encoding="utf-8"))
+    assert board["flow_continue"]["stop_reason"] == "dry_run"
+    assert board["next_packets"][0]["step_id"] == "scope"
